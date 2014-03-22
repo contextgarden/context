@@ -75,7 +75,7 @@
 \let\startmixedcolumns\relax % defined later
 \let\stopmixedcolumns \relax % defined later
 
-\appendtoks
+\appendtoks % could become an option
     \setuevalue{\e!start\currentmixedcolumns}{\startmixedcolumns[\currentmixedcolumns]}%
     \setuevalue{\e!stop \currentmixedcolumns}{\stopmixedcolumns}%
 \to \everydefinemixedcolumns
@@ -500,7 +500,9 @@
 \setvalue{\??mixedcolumnsstop\s!otr}%
   {\par
    \ifcase\c_page_mix_otr_nesting\or
-     \doif{\mixedcolumnsparameter\c!balance}\v!yes{\c_page_mix_routine\c_page_mix_routine_balance}%
+     \doifelse{\mixedcolumnsparameter\c!balance}\v!yes
+       {\c_page_mix_routine\c_page_mix_routine_balance}%
+       {\penalty-\plustenthousand}% weird hack, we need to trigger the otr sometimes (new per 20140306, see balancing-001.tex)
      \page_otr_trigger_output_routine
    \fi}
 

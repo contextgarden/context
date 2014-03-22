@@ -129,10 +129,10 @@ function datacell(a,b,...)
 end
 
 local function checktemplate(s)
-    if find(s,"%%") then
+    if find(s,"%",1,true) then
         -- normal template
         return s
-    elseif find(s,"@") then
+    elseif find(s,"@",1,true) then
         -- tex specific template
         return gsub(s,"@","%%")
     else

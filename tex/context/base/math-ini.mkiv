@@ -117,7 +117,7 @@
 \installswitchcommandhandler \??mathematics {mathematics} \??mathematics
 
 \unexpanded\def\startmathematics % no grouping, if ever then also an optional second
-  {\doifnextoptionalelse\math_mathematics_start_yes\math_mathematics_start_nop}
+  {\doifnextoptionalcselse\math_mathematics_start_yes\math_mathematics_start_nop}
 
 \unexpanded\def\math_mathematics_start_yes[#1]%
   {\pushmacro\currentmathematics
@@ -366,9 +366,38 @@
 
 %D Let's define a few comands here:
 
-\definemathcommand [mathstrut]       {\vphantom{(}}
+%definemathcommand [mathstrut]       {\vphantom{(}}
 %definemathcommand [joinrel]         {\mathrel{\mkern-3mu}}
 \definemathcommand [joinrel]   [rel] {\mkern-3mu}
+
+\chardef\c_math_strut"28
+
+\unexpanded\def\math_strut_htdp#1%
+  {\s!height\fontcharht#1\c_math_strut
+   \s!depth \fontchardp#1\c_math_strut}
+
+\unexpanded\def\math_strut_normal
+  {\vrule
+      \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
+      \s!width \zeropoint
+   \relax}
+
+\unexpanded\def\math_strut_visual
+  {\hskip-.01\emwidth
+   \vrule
+      \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
+      \s!width .02\emwidth
+   \relax
+   \hskip-.01\emwidth}
+
+\unexpanded\def\showmathstruts % let's not overload \nath_strut_normal
+  {\let\math_strut\math_strut_visual}
+
+\let\math_strut\math_strut_normal
+
+% \unexpanded\def\mathstrut{\mathcodecommand{nothing}{\math_strut}}
+
+\definemathcommand [mathstrut] {\math_strut}
 
 %D We could have a arg variant \unknown\ but not now.
 

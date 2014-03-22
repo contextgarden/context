@@ -60,15 +60,14 @@ local tonut               = nuts.tonut
 local nutstring           = nuts.tostring
 
 local getfield            = nuts.getfield
+local setfield            = nuts.setfield
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid
-local getattr             = nuts.getattr
 local getfont             = nuts.getfont
 local getsubtype          = nuts.getsubtype
 local getchar             = nuts.getchar
-
-local setfield            = nuts.setfield
+local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 
 local insert_node_after   = nuts.insert_after

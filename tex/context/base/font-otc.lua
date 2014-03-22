@@ -70,6 +70,7 @@ local function addfeature(data,feature,specifications)
                 local subtables     = specification.subtables or { specification.data } or { }
                 local featuretype   = types[specification.type or "substitution"]
                 local featureflags  = specification.flags or noflags
+                local featureorder  = specification.order or { feature }
                 local added         = false
                 local featurename   = format("ctx_%s_%s",feature,s)
                 local st = { }
@@ -138,6 +139,7 @@ local function addfeature(data,feature,specifications)
                         features  = { [feature] = askedfeatures },
                         flags     = featureflags,
                         name      = featurename,
+                        order     = featureorder,
                         subtables = st,
                         type      = featuretype,
                     }
@@ -204,6 +206,7 @@ local tlig_specification = {
     type     = "ligature",
     features = everywhere,
     data     = tlig,
+    order    = { "tlig" },
     flags    = noflags,
 }
 
@@ -226,6 +229,7 @@ local trep_specification = {
     type      = "substitution",
     features  = everywhere,
     data      = trep,
+    order     = { "trep" },
     flags     = noflags,
 }
 
@@ -256,6 +260,7 @@ if characters.combined then
         type       = "ligature",
         features   = everywhere,
         data       = tcom,
+        order     = { "tcom" },
         flags      = noflags,
         initialize = initialize,
     }
@@ -314,6 +319,7 @@ local anum_specification = {
     {
         type     = "substitution",
         features = { arab = { urd = true, dflt = true } },
+        order    = { "anum" },
         data     = anum_arabic,
         flags    = noflags, -- { },
         valid    = valid,
@@ -321,6 +327,7 @@ local anum_specification = {
     {
         type     = "substitution",
         features = { arab = { urd = true } },
+        order    = { "anum" },
         data     = anum_persian,
         flags    = noflags, -- { },
         valid    = valid,

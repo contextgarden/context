@@ -396,7 +396,7 @@ function filters.afm(name)
                 if key and #key > 0 then
                     hash[lower(key)] = value
                 end
-                if find(line,"StartCharMetrics") then
+                if find(line,"StartCharMetrics",1,true) then
                     break
                 end
             end
@@ -1801,7 +1801,7 @@ local lastlookups, lastpattern = { }, ""
 --         local lookups = specifications
 --         if name then
 --             lookups = families[name]
---         elseif not find(pattern,"=") then
+--         elseif not find(pattern,"=",1,true) then
 --             lookups = families[pattern]
 --         end
 --         if trace_names then
@@ -1810,7 +1810,7 @@ local lastlookups, lastpattern = { }, ""
 --         if lookups then
 --             for key, value in gmatch(pattern,"([^=,]+)=([^=,]+)") do
 --                 local t, n = { }, 0
---                 if find(value,"*") then
+--                 if find(value,"*",1,true) then
 --                     value = topattern(value)
 --                     for i=1,#lookups do
 --                         local s = lookups[i]
@@ -1843,7 +1843,7 @@ local lastlookups, lastpattern = { }, ""
 local function look_them_up(lookups,specification)
     for key, value in next, specification do
         local t, n = { }, 0
-        if find(value,"*") then
+        if find(value,"*",1,true) then
             value = topattern(value)
             for i=1,#lookups do
                 local s = lookups[i]
@@ -1906,7 +1906,7 @@ function names.lookup(pattern,name,reload) -- todo: find
         lastpattern = false
         lastlookups = lookups or { }
     elseif lastpattern ~= pattern then
-        local lookups = first_look(name or (not find(pattern,"=") and pattern),reload)
+        local lookups = first_look(name or (not find(pattern,"=",1,true) and pattern),reload)
         if lookups then
             if trace_names then
                 report_names("starting with %s lookups for %a",#lookups,pattern)

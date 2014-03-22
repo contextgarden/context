@@ -41,6 +41,18 @@ local experiment      = true -- uses context(node) that already does delayed nod
 local savedliterals   = nil  -- needs checking
 local mpsliteral      = nodes.pool.register(node.new("whatsit",nodes.whatsitcodes.pdfliteral)) -- pdfliteral.mode  = 1
 
+local f_f  = formatters["%F"]
+
+local f_m  = formatters["%F %F m"]
+local f_c  = formatters["%F %F %F %F %F %F c"]
+local f_l  = formatters["%F %F l"]
+local f_cm = formatters["%F %F %F %F %F %F cm"]
+local f_M  = formatters["%F M"]
+local f_j  = formatters["%i j"]
+local f_J  = formatters["%i J"]
+local f_d  = formatters["[%s] %F d"]
+local f_w  = formatters["%F w"]
+
 local pdfliteral = function(s)
     local literal = copy_node(mpsliteral)
     literal.data = s
@@ -119,7 +131,7 @@ end
 function pdfflusher.startfigure(n,llx,lly,urx,ury,message)
     savedliterals = nil
     metapost.n = metapost.n + 1
-    context.startMPLIBtoPDF(llx,lly,urx,ury)
+    context.startMPLIBtoPDF(f_f(llx),f_f(lly),f_f(urx),f_f(ury))
     if message then pdfflusher.comment(message) end
 end
 
@@ -192,11 +204,11 @@ local function flushnormalpath(path, t, open)
         nt = nt + 1
         pth = path[i]
         if not ith then
-            t[nt] = formatters["%f %f m"](pth.x_coord,pth.y_coord)
+            t[nt] = f_m(pth.x_coord,pth.y_coord)
         elseif curved(ith,pth) then
-            t[nt] = formatters["%f %f %f %f %f %f c"](ith.right_x,ith.right_y,pth.left_x,pth.left_y,pth.x_coord,pth.y_coord)
+            t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,pth.x_coord,pth.y_coord)
         else
-            t[nt] = formatters["%f %f l"](pth.x_coord,pth.y_coord)
+            t[nt] = f_l(pth.x_coord,pth.y_coord)
         end
         ith = pth
     end
@@ -204,15 +216,15 @@ local function flushnormalpath(path, t, open)
         nt = nt + 1
         local one = path[1]
         if curved(pth,one) then
-            t[nt] = formatters["%f %f %f %f %f %f c"](pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord )
+            t[nt] = f_c(pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord )
         else
-            t[nt] = formatters["%f %f l"](one.x_coord,one.y_coord)
+            t[nt] = f_l(one.x_coord,one.y_coord)
         end
     elseif #path == 1 then
         -- special case .. draw point
         local one = path[1]
         nt = nt + 1
-        t[nt] = formatters["%f %f l"](one.x_coord,one.y_coord)
+        t[nt] = f_l(one.x_coord,one.y_coord)
     end
     return t
 end
@@ -226,18 +238,18 @@ local function flushconcatpath(path, t, open)
         nt = 0
     end
     nt = nt + 1
-    t[nt] = formatters["%f %f %f %f %f %f cm"](sx,rx,ry,sy,tx,ty)
+    t[nt] = f_cm(sx,rx,ry,sy,tx,ty)
     for i=1,#path do
         nt = nt + 1
         pth = path[i]
         if not ith then
-            t[nt] = formatters["%f %f m"](mpconcat(pth.x_coord,pth.y_coord))
+            t[nt] = f_m(mpconcat(pth.x_coord,pth.y_coord))
         elseif curved(ith,pth) then
             local a, b = mpconcat(ith.right_x,ith.right_y)
             local c, d = mpconcat(pth.left_x,pth.left_y)
-            t[nt] = formatters["%f %f %f %f %f %f c"](a,b,c,d,mpconcat(pth.x_coord,pth.y_coord))
+            t[nt] = f_c(a,b,c,d,mpconcat(pth.x_coord,pth.y_coord))
         else
-           t[nt] = formatters["%f %f l"](mpconcat(pth.x_coord, pth.y_coord))
+           t[nt] = f_l(mpconcat(pth.x_coord, pth.y_coord))
         end
         ith = pth
     end
@@ -247,15 +259,15 @@ local function flushconcatpath(path, t, open)
         if curved(pth,one) then
             local a, b = mpconcat(pth.right_x,pth.right_y)
             local c, d = mpconcat(one.left_x,one.left_y)
-            t[nt] = formatters["%f %f %f %f %f %f c"](a,b,c,d,mpconcat(one.x_coord, one.y_coord))
+            t[nt] = f_c(a,b,c,d,mpconcat(one.x_coord, one.y_coord))
         else
-            t[nt] = formatters["%f %f l"](mpconcat(one.x_coord,one.y_coord))
+            t[nt] = f_l(mpconcat(one.x_coord,one.y_coord))
         end
     elseif #path == 1 then
         -- special case .. draw point
         nt = nt + 1
         local one = path[1]
-        t[nt] = formatters["%f %f l"](mpconcat(one.x_coord,one.y_coord))
+        t[nt] = f_l(mpconcat(one.x_coord,one.y_coord))
     end
     return t
 end
@@ -431,7 +443,7 @@ function metapost.flush(result,flusher,askedfig)
                                 elseif objecttype == "text" then
                                     t[#t+1] = "q"
                                     local ot = object.transform -- 3,4,5,6,1,2
-                                    t[#t+1] = formatters["%f %f %f %f %f %f cm"](ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: formatters["%f %f m %f %f %f %f 0 0 cm"](unpack(ot))
+                                    t[#t+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: formatters["%F %F m %F %F %F %F 0 0 cm"](unpack(ot))
                                     flushfigure(t) -- flush accumulated literals
                                     t = { }
                                     textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
@@ -456,21 +468,21 @@ function metapost.flush(result,flusher,askedfig)
                                     local ml = object.miterlimit
                                     if ml and ml ~= miterlimit then
                                         miterlimit = ml
-                                        t[#t+1] = formatters["%f M"](ml)
+                                        t[#t+1] = f_M(ml)
                                     end
                                     local lj = object.linejoin
                                     if lj and lj ~= linejoin then
                                         linejoin = lj
-                                        t[#t+1] = formatters["%i j"](lj)
+                                        t[#t+1] = f_j(lj)
                                     end
                                     local lc = object.linecap
                                     if lc and lc ~= linecap then
                                         linecap = lc
-                                        t[#t+1] = formatters["%i J"](lc)
+                                        t[#t+1] = f_J(lc)
                                     end
                                     local dl = object.dash
                                     if dl then
-                                        local d = formatters["[%s] %f d"](concat(dl.dashes or {}," "),dl.offset)
+                                        local d = f_d(concat(dl.dashes or {}," "),dl.offset)
                                         if d ~= dashed then
                                             dashed = d
                                             t[#t+1] = dashed
@@ -486,7 +498,7 @@ function metapost.flush(result,flusher,askedfig)
                                     if pen then
                                        if pen.type == 'elliptical' then
                                             transformed, penwidth = pen_characteristics(original) -- boolean, value
-                                            t[#t+1] = formatters["%f w"](penwidth) -- todo: only if changed
+                                            t[#t+1] = f_w(penwidth) -- todo: only if changed
                                             if objecttype == 'fill' then
                                                 objecttype = 'both'
                                             end
@@ -506,7 +518,7 @@ function metapost.flush(result,flusher,askedfig)
                                         if objecttype == "fill" then
                                             t[#t+1] = "h f"
                                         elseif objecttype == "outline" then
-                                            t[#t+1] = (open and "S") or "h S"
+                                            t[#t+1] = open and "S" or "h S"
                                         elseif objecttype == "both" then
                                             t[#t+1] = "h B"
                                         end
@@ -527,7 +539,7 @@ function metapost.flush(result,flusher,askedfig)
                                         if objecttype == "fill" then
                                             t[#t+1] = "h f"
                                         elseif objecttype == "outline" then
-                                            t[#t+1] = (open and "S") or "h S"
+                                            t[#t+1] = open and "S" or "h S"
                                         elseif objecttype == "both" then
                                             t[#t+1] = "h B"
                                         end

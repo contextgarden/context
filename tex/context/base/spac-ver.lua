@@ -584,15 +584,15 @@ do -- todo: interface.variables
     -- This will change: just node.write and we can store the values in skips which
     -- then obeys grouping
 
-    local fixedblankskip         = context.fixedblankskip
-    local flexibleblankskip      = context.flexibleblankskip
-    local setblankcategory       = context.setblankcategory
-    local setblankorder          = context.setblankorder
-    local setblankpenalty        = context.setblankpenalty
-    local setblankhandling       = context.setblankhandling
-    local flushblankhandling     = context.flushblankhandling
-    local addpredefinedblankskip = context.addpredefinedblankskip
-    local addaskedblankskip      = context.addaskedblankskip
+    local ctx_fixedblankskip         = context.fixedblankskip
+    local ctx_flexibleblankskip      = context.flexibleblankskip
+    local ctx_setblankcategory       = context.setblankcategory
+    local ctx_setblankorder          = context.setblankorder
+    local ctx_setblankpenalty        = context.setblankpenalty
+    ----- ctx_setblankhandling       = context.setblankhandling
+    local ctx_flushblankhandling     = context.flushblankhandling
+    local ctx_addpredefinedblankskip = context.addpredefinedblankskip
+    local ctx_addaskedblankskip      = context.addaskedblankskip
 
     local function analyze(str,oldcategory) -- we could use shorter names
         for s in gmatch(str,"([^ ,]+)") do
@@ -604,35 +604,35 @@ do -- todo: interface.variables
                 if mk then
                     category = analyze(mk,category)
                 elseif keyword == k_fixed then
-                    fixedblankskip()
+                    ctx_fixedblankskip()
                 elseif keyword == k_flexible then
-                    flexibleblankskip()
+                    ctx_flexibleblankskip()
                 elseif keyword == k_category then
                     local category = tonumber(detail)
                     if category then
-                        setblankcategory(category)
+                        ctx_setblankcategory(category)
                         if category ~= oldcategory then
-                            flushblankhandling()
+                            ctx_flushblankhandling()
                             oldcategory = category
                         end
                     end
                 elseif keyword == k_order and detail then
                     local order = tonumber(detail)
                     if order then
-                        setblankorder(order)
+                        ctx_setblankorder(order)
                     end
                 elseif keyword == k_penalty and detail then
                     local penalty = tonumber(detail)
                     if penalty then
-                        setblankpenalty(penalty)
+                        ctx_setblankpenalty(penalty)
                     end
                 else
                     amount = tonumber(amount) or 1
                     local sk = skip[keyword]
                     if sk then
-                        addpredefinedblankskip(amount,keyword)
+                        ctx_addpredefinedblankskip(amount,keyword)
                     else -- no check
-                        addaskedblankskip(amount,keyword)
+                        ctx_addaskedblankskip(amount,keyword)
                     end
                 end
             end
@@ -640,22 +640,22 @@ do -- todo: interface.variables
         return category
     end
 
-    local pushlogger         = context.pushlogger
-    local startblankhandling = context.startblankhandling
-    local stopblankhandling  = context.stopblankhandling
-    local poplogger          = context.poplogger
+    local ctx_pushlogger         = context.pushlogger
+    local ctx_startblankhandling = context.startblankhandling
+    local ctx_stopblankhandling  = context.stopblankhandling
+    local ctx_poplogger          = context.poplogger
 
     function vspacing.analyze(str)
         if trace_vspacing then
-            pushlogger(report_vspacing)
-            startblankhandling()
+            ctx_pushlogger(report_vspacing)
+            ctx_startblankhandling()
             analyze(str,1)
-            stopblankhandling()
-            poplogger()
+            ctx_stopblankhandling()
+            ctx_poplogger()
         else
-            startblankhandling()
+            ctx_startblankhandling()
             analyze(str,1)
-            stopblankhandling()
+            ctx_stopblankhandling()
         end
     end
 
@@ -774,7 +774,8 @@ local splittopskip_code          = skipcodes.splittopskip
 -- end
 
 local free_glue_node = free_node
-local free_glue_spec = function() end -- free_node
+local free_glue_spec = function() end
+----- free_glue_spec = free_node -- can be enabled in in 0.73 (so for the moment we leak due to old luatex engine issues)
 
 function vspacing.snapbox(n,how)
     local sv = snapmethods[how]
@@ -1403,3 +1404,4 @@ commands.vspacingdefine    = vspacing.setmap
 commands.vspacingcollapse  = vspacing.collapsevbox
 commands.vspacingsnap      = vspacing.snapbox
 commands.resetprevdepth    = vspacing.resetprevdepth
+commands.definesnapmethod  = vspacing.definesnapmethod

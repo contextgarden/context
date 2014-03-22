@@ -78,7 +78,7 @@ end
 --     end
 -- end
 
-local pattern = (C((1-P("%"))^1) * Carg(1)) /function(n,d) return format("%.0fsp",d * tonumber(n)/100) end * P("%") * P(-1)
+local pattern = (C((1-P("%"))^1) * Carg(1)) /function(n,d) return format("%.0fsp",d * tonumber(n)/100) end * P("%") * P(-1) -- .0 ?
 
 -- commands.percentageof("10%",65536*10)
 
@@ -109,7 +109,8 @@ function commands.thetexdefinition(str)
     context(lpegmatch(pattern,str))
 end
 
-local upper, lower = utf.upper, utf.lower
+local upper, lower, strip = utf.upper, utf.lower, string.strip
 
 function commands.upper(s) context(upper(s)) end
 function commands.lower(s) context(lower(s)) end
+function commands.strip(s) context(strip(s)) end

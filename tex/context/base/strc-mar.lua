@@ -712,6 +712,9 @@ end
 
 -- interface
 
+commands.markingtitle       = marks.title
+commands.markingnumber      = marks.number
+
 commands.definemarking      = marks.define
 commands.relatemarking      = marks.relate
 commands.setmarking         = marks.set

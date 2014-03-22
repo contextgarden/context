@@ -17,6 +17,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 % work in progress
 % to be checked: can we use the command handler code here?
 % all settings will move to lua
@@ -63,6 +65,11 @@
 
 \appendtoks
     \ifx\currentcounter\empty \else
+        \edef\p_number{\counterparameter\c!number}%
+        \ifx\p_number\empty \else
+          \ctxcommand{setcounter("\counterparameter\s!name",1,\number\p_number)}%
+          \letcounterparameter\c!number\empty
+        \fi
         \edef\p_start{\counterparameter\c!start}%
         \setexpandedcounterparameter\c!start{\ifx\p_start\empty0\else\number\p_start\fi}%
         \strc_counters_check_setup
@@ -351,7 +358,7 @@
   {\begingroup
    \edef\currentcounter{#1}%
    \ifsecondargument\setupcurrentcounter[#2]\fi
-   \ctxlua{structures.sections.prefixedconverted(
+   \ctxcommand{prefixedconverted(
      "\counterparameter\s!name",
      {
        prefix        = "\counterparameter\c!prefix",
@@ -379,7 +386,7 @@
    \endgroup}
 
 \def\directconvertedcounter#1#2% name, type
-  {\ctxlua{structures.sections.prefixedconverted(
+  {\ctxcommand{prefixedconverted(
      "\namedcounterparameter{#1}\s!name",
      {
        prefix        = "\namedcounterparameter{#1}\c!prefix",
@@ -609,7 +616,8 @@
         userdata = \!!bs\detokenize{#9}\!!es % will be converted to table at the lua end
        }
      }}%
-     \xdef\m_strc_counters_last_registered_attribute  {\ctxcommand    {setinternalreference(nil,nil,\nextinternalreference)}}%
+     \ctxcommand{setinternalreference(nil,nil,\nextinternalreference)}%
+     \xdef\m_strc_counters_last_registered_attribute  {\the\lastdestinationattribute}%
      \xdef\m_strc_counters_last_registered_synchronize{\ctxlatecommand{enhancelist(\m_strc_counters_last_registered_index)}}%
    \else
      \glet\m_strc_counters_last_registered_index      \relax
@@ -763,5 +771,7 @@
 %         \fi
 %     \fi
 % \to \everysetupcounter
+
+\stopcontextdefinitioncode
 
 \protect \endinput

@@ -20,7 +20,8 @@
 %D This will move:
 
 \unexpanded\def\setstructuresynchronization#1% todo: use ctxcontext
-  {\xdef\currentstructureattribute  {\ctxlua        {tex.write(structures.references.setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference,"\interactionparameter\c!focus"))}}%
+  {\ctxcommand{setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference,"\interactionparameter\c!focus")}%
+   \xdef\currentstructureattribute  {\the\lastdestinationattribute}%
    \xdef\currentstructuresynchronize{\ctxlatecommand{enhancelist(#1)}}}
 
 \protect \endinput

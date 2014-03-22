@@ -299,7 +299,7 @@
    \let\typescripttwo  \m_font_typescripts_two
    \let\typescriptthree\m_font_typescripts_three
    \let\m_font_typescripts_match\empty
-   \doifnextoptionalelse\font_typescripts_start_process_one\font_typescripts_start_process_all}
+   \doifnextoptionalcselse\font_typescripts_start_process_one\font_typescripts_start_process_all}
 
 \def\font_typescripts_start_process_all % could be a \let
   {\ifconditional\c_font_typescripts_first_pass
@@ -333,10 +333,10 @@
   {\font_typescripts_check\m_font_typescripts_three\typescriptthree\font_typescripts_start_process_again_three}
 
 \def\font_typescripts_start_process_again_one
-  {\doifnextoptionalelse\font_typescripts_start_process_two\font_typescripts_start_process_yes}
+  {\doifnextoptionalcselse\font_typescripts_start_process_two\font_typescripts_start_process_yes}
 
 \def\font_typescripts_start_process_again_two
-  {\doifnextoptionalelse\font_typescripts_start_process_three\font_typescripts_start_process_yes}
+  {\doifnextoptionalcselse\font_typescripts_start_process_three\font_typescripts_start_process_yes}
 
 \let\font_typescripts_start_process_again_three\font_typescripts_start_process_yes
 
@@ -389,9 +389,9 @@
 \unexpanded\def\forgetmapfiles
   {\ctxlua{fonts.mappings.reset()}}
 
-\prependtoks
-    \loadmapfile[mkiv-base.map]% can't we preload this one?
-\to \everystarttext
+% \prependtoks
+%     \loadmapfile[mkiv-base.map]% can't we preload this one?
+% \to \everystarttext
 
 %D A handy shortcut:
 

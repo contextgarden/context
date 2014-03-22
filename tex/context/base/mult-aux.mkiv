@@ -106,10 +106,14 @@
      \doubleexpandafter\gobbleoneargument
    \else
      \mult_interfaces_get_parameters_assign#1==\empty\_e_o_p_
-     \doubleexpandafter\mult_interfaces_get_parameters_item
+   % \doubleexpandafter\mult_interfaces_get_parameters_item % saves skipping when at end
    \fi\fi#2}
 
-\def\mult_interfaces_get_parameters_error#1#2#3%
+\def\mult_interfaces_get_parameters_error#1#2% #3%
+  {\mult_interfaces_get_parameters_error_indeed{#1}{#2}%
+   \gobbleoneargument}
+
+\def\mult_interfaces_get_parameters_error_indeed#1#2%
   {\showassignerror{#2}{\the\inputlineno\space(#1)}}
 
 \def\mult_interfaces_get_parameters_assign#1=#2=#3#4\_e_o_p_
@@ -118,9 +122,54 @@
    \else\ifx#3\empty
      \doubleexpandafter\mult_interfaces_get_parameters_error
    \else
-     \doubleexpandafter\dosetvalue
+     \doubleexpandafter\mult_interfaces_def
    \fi\fi
-   \m_mult_interfaces_namespace{#1}{#2}}
+   \m_mult_interfaces_namespace{#1}{#2}%
+   \doubleexpandafter\mult_interfaces_get_parameters_item}
+
+\startinterface english
+
+    % some 10% faster
+
+    \let\mult_interfaces_get_parameters_error\undefined
+
+    \def\mult_interfaces_get_parameters_error_one#1\csname#2#3\endcsname#4%
+      {\mult_interfaces_get_parameters_error_indeed{#2}{#3}\iftrue}
+
+    \def\mult_interfaces_get_parameters_error_two#1\csname#2#3\endcsname#4%
+      {\mult_interfaces_get_parameters_error_indeed{#2}{#3}}
+
+    \def\mult_interfaces_get_parameters_assign#1=#2=#3#4\_e_o_p_
+      {\ifx\empty#1\empty
+         \mult_interfaces_get_parameters_error_one
+       \else\ifx#3\empty
+         \mult_interfaces_get_parameters_error_two
+       \else
+         \expandafter\def\csname\m_mult_interfaces_namespace#1\endcsname{#2}%
+       \fi\fi
+       \doubleexpandafter\mult_interfaces_get_parameters_item}
+
+    % interesting but not faster
+    %
+    % \def\mult_interfaces_get_parameters_error_one#1\m_mult_interfaces_namespace#2\fi\fi%
+    %   {\mult_interfaces_get_parameters_error_indeed\m_mult_interfaces_namespace{#2}\m_mult_interfaces_namespace\s!dummy\fi}
+    %
+    % \def\mult_interfaces_get_parameters_error_two#1\m_mult_interfaces_namespace#2\fi\fi%
+    %   {\mult_interfaces_get_parameters_error_indeed\m_mult_interfaces_namespace{#2}\m_mult_interfaces_namespace\s!dummy\fi\fi}
+    %
+    % \def\mult_interfaces_get_parameters_assign#1=#2=#3#4\_e_o_p_
+    %   {\expandafter\def\csname
+    %      \ifx\empty#1\empty
+    %        \mult_interfaces_get_parameters_error_one
+    %      \else\ifx#3\empty
+    %        \mult_interfaces_get_parameters_error_two
+    %      \else
+    %        \m_mult_interfaces_namespace#1%
+    %      \fi\fi
+    %    \endcsname{#2}
+    %    \doubleexpandafter\mult_interfaces_get_parameters_item}
+
+\stopinterface
 
 \newif\ifassignment
 
@@ -131,6 +180,24 @@
   {\expandafter\mult_check_for_assignment_indeed\detokenize{#1}=@@\_end_}
 
 % End of experimental code.
+
+\unexpanded\def\mult_interfaces_let #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\unexpanded\def\mult_interfaces_lete#1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
+\unexpanded\def\mult_interfaces_def #1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\unexpanded\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\unexpanded\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\unexpanded\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+
+\startinterface english
+
+    \unexpanded\def\mult_interfaces_let #1#2{\expandafter \let\csname#1#2\endcsname}
+    \unexpanded\def\mult_interfaces_lete#1#2{\expandafter \let\csname#1#2\endcsname\empty}
+    \unexpanded\def\mult_interfaces_def #1#2{\expandafter \def\csname#1#2\endcsname}
+    \unexpanded\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1#2\endcsname}
+    \unexpanded\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1#2\endcsname}
+    \unexpanded\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1#2\endcsname}
+
+\stopinterface
 
 % the commented detokenized variant that backtracks ... needs testing usage first
 %
@@ -207,14 +274,14 @@
 % In \MKIV\ we can probably use the english variant for all other
 % languages too.
 
-% todo: inline the \do*value
+% todo: inline the def/let
 
 \unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
   {\ifx#2\relax\let#2\empty\fi
-   \unexpanded\def#3{\dosetvalue {#1#2:}}%        ##1 {##2} (braces are mandate)
-   \unexpanded\def#4{\dosetevalue{#1#2:}}%        ##1 {##2} (braces are mandate)
-   \unexpanded\def#5{\doletvalue {#1#2:}}%        ##1 ##2
-   \unexpanded\def#6{\doletvalue {#1#2:}\empty}}% ##1
+   \unexpanded\def#3{\mult_interfaces_def {#1#2:}}%              ##1 {##2} (braces are mandate)
+   \unexpanded\def#4{\mult_interfaces_edef{#1#2:}}%              ##1 {##2} (braces are mandate)
+   \unexpanded\def#5{\mult_interfaces_let {#1#2:}}%              ##1 ##2
+   \unexpanded\def#6{\mult_interfaces_lete{#1#2:}}}% ##1
 
 \startinterface english
 
@@ -548,10 +615,10 @@
         \expandafter\noexpand\csname everysetup#2\endcsname}}
 
 \unexpanded\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%
-  {\unexpanded\def#2{\dosetvalue #1}%
-   \unexpanded\def#3{\dosetevalue#1}%
-   \unexpanded\def#4{\doletvalue #1}%
-   \unexpanded\def#5{\doletvalue #1\empty}}%
+  {\unexpanded\def#2{\mult_interfaces_def #1}%
+   \unexpanded\def#3{\mult_interfaces_edef#1}%
+   \unexpanded\def#4{\mult_interfaces_let #1}%
+   \unexpanded\def#5{\mult_interfaces_let #1\empty}}%
 
 \startinterface english
 
@@ -694,9 +761,8 @@
      \ctxcommand{registernamespace(\number\c_mult_interfaces_n_of_namespaces,"#1")}%
    \fi}
 
-\def\mult_interfaces_get_parameters_error#1#2#3% redefined
-  {\ctxcommand{showassignerror("#1","#2","#3",\the\inputlineno)}%
-   \waitonfatalerror}
+\def\mult_interfaces_get_parameters_error_indeed#1#2%
+  {\ctxcommand{showassignerror("#1","#2",\the\inputlineno)}} % no longer \waitonfatalerror
 
 % We install two core namespaces here, as we want nice error messages. Maybe
 % we will reserve the first 9.
@@ -855,5 +921,199 @@
 %D \edef\p_class_whatever{\classparameter\c!whatever}
 %D \edef\m_class_whatever{whatever}
 %D \stoptyping
+
+% experiment: in principle this is faster but not that noticeable as we don't do that
+% many assignments and mechanism that do are also slow; the advantage is mostly nicer
+% in tracing
+
+\def\s!simple{simple}
+\def\s!single{single}
+\def\s!double{double}
+\def\s!triple{triple}
+
+\unexpanded\def\syst_helpers_double_empty#1#2#3%
+  {\syst_helpers_argument_reset
+   \doifnextoptionalelse
+     {\syst_helpers_double_empty_one_yes_mult#2#3}%
+     {\syst_helpers_double_empty_one_nop_mult#1}}
+
+\def\syst_helpers_double_empty_one_yes_mult#1#2[#3]%
+  {\firstargumenttrue
+   \doifnextoptionalelse
+     {\secondargumenttrue#2[{#3}]}%
+     {\syst_helpers_double_empty_two_nop_mult#1{#3}}}
+
+\def\syst_helpers_double_empty_one_nop_mult% #1%
+  {\firstargumentfalse
+   \secondargumentfalse
+   }% #1}
+
+\def\syst_helpers_double_empty_two_nop_mult
+  {\secondargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_double_empty_one_spaced_mult
+   \else
+     \expandafter\syst_helpers_double_empty_one_normal_mult
+   \fi}
+
+\def\syst_helpers_double_empty_one_spaced_mult#1#2{#1[{#2}] }
+\def\syst_helpers_double_empty_one_normal_mult#1#2{#1[{#2}]}
+
+\unexpanded\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6#7#8%
+  {\ifx#3\relax\let#3\empty\fi
+   \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
+   \newtoks#4%
+   \newtoks#7%
+   \edef\m_mult_interface_setup{\strippedcsname#2_}%
+   \unexpanded\edef#2{\syst_helpers_double_empty
+     \csname\m_mult_interface_setup\s!simple\endcsname
+     \csname\m_mult_interface_setup\s!single\endcsname
+     \csname\m_mult_interface_setup\s!double\endcsname}%
+   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!double\endcsname[##1][##2]%
+     {\let#6#3%
+      \def#8####1% we will have a simple one as well
+        {\edef#3{####1}%
+         \mult_interfaces_get_parameters{#1#3:}[##2]%
+         \the#4}%
+      \processcommalist[##1]#8%
+      \let#3#6%
+      \the#7}%
+   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!single\endcsname[##1]%
+     {\let#6#3%
+      \let#3\empty
+      \mult_interfaces_get_parameters{#1:}[##1]%
+      \the#4%
+      \let#3#6%
+      \the#7}%
+   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!simple\endcsname%
+     {\let#6#3%
+      \let#3\empty
+      \the#4%
+      \let#3#6%
+      \the#7}}
+
+\unexpanded\def\installsetuphandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_setup_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname setup#2\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname everysetup#2\endcsname
+        \expandafter\noexpand\csname setupcurrent#2\endcsname
+        \expandafter\noexpand\csname saved_setup_current#2\endcsname
+        \expandafter\noexpand\csname everysetup#2root\endcsname
+        \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
+
+\unexpanded\def\syst_helpers_triple_empty#1#2#3#4%
+  {\syst_helpers_argument_reset
+   \doifnextoptionalelse
+     {\syst_helpers_triple_empty_one_yes_mult#2#3#4}%
+     {\syst_helpers_triple_empty_one_nop_mult#1}}
+
+\def\syst_helpers_triple_empty_one_yes_mult#1#2#3[#4]%
+  {\firstargumenttrue
+   \doifnextoptionalelse
+     {\syst_helpers_triple_empty_two_yes_mult#2#3{#4}}%
+     {\syst_helpers_triple_empty_two_nop_mult#1{#4}}}
+
+\def\syst_helpers_triple_empty_two_yes_mult#1#2#3[#4]%
+  {\secondargumenttrue
+   \doifnextoptionalelse
+     {\thirdargumenttrue#2[{#3}][{#4}]}%
+     {\syst_helpers_triple_empty_three_nop_mult#1{#3}{#4}}}
+
+\def\syst_helpers_triple_empty_one_nop_mult % #1%
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   } % #1
+
+\def\syst_helpers_triple_empty_two_nop_mult
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_triple_empty_two_spaced_mult
+   \else
+     \expandafter\syst_helpers_triple_empty_two_normal_mult
+   \fi}
+
+\def\syst_helpers_triple_empty_three_nop_mult
+  {\thirdargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_triple_empty_three_spaced_mult
+   \else
+     \expandafter\syst_helpers_triple_empty_three_normal_mult
+   \fi}
+
+\def\syst_helpers_triple_empty_two_spaced_mult  #1#2{#1[{#2}] }
+\def\syst_helpers_triple_empty_two_normal_mult  #1#2{#1[{#2}]}
+\def\syst_helpers_triple_empty_three_spaced_mult#1#2#3{#1[{#2}][{#3}] }
+\def\syst_helpers_triple_empty_three_normal_mult#1#2#3{#1[{#2}][{#3}]}
+
+\unexpanded\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8%
+  {\ifx#3\relax\let#3\empty\fi
+   \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}%
+   \newtoks#4%
+   \edef\m_mult_interface_setup{\strippedcsname#2_}%
+   \unexpanded\edef#2{\syst_helpers_triple_empty
+     \csname\m_mult_interface_setup\s!simple\endcsname
+     \csname\m_mult_interface_setup\s!single\endcsname
+     \csname\m_mult_interface_setup\s!double\endcsname
+     \csname\m_mult_interface_setup\s!triple\endcsname}%
+   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!triple\endcsname[##1][##2][##3]%
+     {\let#7#3%
+      \def#8####1%
+        {\edef#3{####1}%
+         \expandafter\def\csname#1#3:\s!parent\endcsname{#1##2}%
+         \mult_interfaces_get_parameters{#1#3:}[##3]% always sets parent
+         \the#4}%
+      \processcommalist[##1]#8%
+      \let#3#7}%
+   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!double\endcsname[##1][##2]%
+     {\let#7#3%
+      \def#8####1%
+        {\edef#3{####1}%
+         #6% checks parent and sets if needed
+         \mult_interfaces_get_parameters{#1#3:}[##2]%
+         \the#4}%
+      \processcommalist[##1]#8%
+      \let#3#7}%
+   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!single\endcsname[##1]%
+     {\let#7#3%
+      \let#3\empty
+      \mult_interfaces_get_parameters{#1:}[##1]%
+      \the#4%
+      \let#3#7}%
+   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!simple\endcsname%
+     {\let#7#3%
+      \let#3\empty
+      \the#4%
+      \let#3#7}}
+
+\unexpanded\def\installautosetuphandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_auto_setup_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname setup#2\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname everysetup#2\endcsname
+        \expandafter\noexpand\csname setupcurrent#2\endcsname
+        \expandafter\noexpand\csname check#2parent\endcsname
+        \expandafter\noexpand\csname saved_setup_current#2\endcsname
+        \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
+
+% okay, we can also get rid of the #9, but thsi code looks pretty bad, while the previous is
+% still okay given that we can also use #6 as setup1 (so in fact we can save some cs again and
+% only use one extra)
+%
+% \global\advance\commalevel \plusone
+% \expandafter\def\csname\??nextcommalevel\the\commalevel\endcsname####1,%
+%   {\edef#3{####1}%
+%    \mult_interfaces_get_parameters{#1#3:}[##2]%
+%    \the#5%
+%    \syst_helpers_do_process_comma_item}%
+% \expandafter\syst_helpers_do_do_process_comma_item\gobbleoneargument\relax##1,]\relax
+%   % \syst_helpers_do_do_process_comma_item##1,]\relax
+% \global\advance\commalevel \minusone
 
 \protect

@@ -65,6 +65,7 @@ local getid               = nuts.getid
 local getsubtype          = nuts.getsubtype
 local getlist             = nuts.getlist
 local getattr             = nuts.getattr
+local setattr             = nuts.setattr
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
 
@@ -97,11 +98,11 @@ local getfences           = directions.getfences
 
 local a_directions        = attributes.private('directions')
 local a_textbidi          = attributes.private('textbidi')
-local a_state             = attributes.private('state')
+----- a_state             = attributes.private('state')
 
-local s_isol              = fonts.analyzers.states.isol
+----- s_isol              = fonts.analyzers.states.isol
 
--- current[a_state] = s_isol -- maybe better have a special bidi attr value -> override (9) -> todo
+----- current[a_state] = s_isol -- maybe better have a special bidi attr value -> override (9) -> todo
 
 local remove_controls     = true  directives.register("typesetters.directions.removecontrols",function(v) remove_controls  = v end)
 ----- analyze_fences      = true  directives.register("typesetters.directions.analyzefences", function(v) analyze_fences   = v end)

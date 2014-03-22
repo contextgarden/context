@@ -950,7 +950,7 @@
 		<cd:constant name='reduction' value='reductie'/>
 		<cd:constant name='ref' value='ref'/>
 		<cd:constant name='refcommand' value='refcommand'/>
-		<cd:constant name='reference' value='verwijzing'/>
+		<cd:constant name='reference' value='referentie'/>
 		<cd:constant name='referenceprefix' value='referenceprefix'/>
 		<cd:constant name='referencing' value='refereren'/>
 		<cd:constant name='region' value='gebied'/>
@@ -1100,7 +1100,7 @@
 		<cd:constant name='totalnumber' value='totalnumber'/>
 		<cd:constant name='type' value='type'/>
 		<cd:constant name='unit' value='eenheid'/>
-		<cd:constant name='unknownreference' value='onbekendeverwijzing'/>
+		<cd:constant name='unknownreference' value='onbekendereferentie'/>
 		<cd:constant name='urlalternative' value='urlvariant'/>
 		<cd:constant name='urlspace' value='urlspatie'/>
 		<cd:constant name='validate' value='valideer'/>

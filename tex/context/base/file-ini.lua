@@ -11,27 +11,29 @@ if not modules then modules = { } end modules ['file-ini'] = {
 <l n='tex'/>. These methods have counterparts at the <l n='tex'/> end.</p>
 --ldx]]--
 
-resolvers.jobs = resolvers.jobs or { }
+resolvers.jobs          = resolvers.jobs or { }
 
-local texsetcount = tex.setcount
-local setvalue    = context.setvalue
+local texsetcount       = tex.setcount
+
+local context_setvalue  = context.setvalue
+local commands_doifelse = commands.doifelse
 
 function commands.splitfilename(fullname)
     local t = file.nametotable(fullname)
     local path = t.path
     texsetcount("splitoffkind",(path == "" and 0) or (path == '.' and 1) or 2)
-    setvalue("splitofffull",fullname)
-    setvalue("splitoffpath",path)
-    setvalue("splitoffname",t.name)
-    setvalue("splitoffbase",t.base)
-    setvalue("splitofftype",t.suffix)
+    context_setvalue("splitofffull",fullname)
+    context_setvalue("splitoffpath",path)
+    context_setvalue("splitoffname",t.name)
+    context_setvalue("splitoffbase",t.base)
+    context_setvalue("splitofftype",t.suffix)
 end
 
 function commands.doifparentfileelse(n)
-    commands.doifelse(n == environment.jobname or n == environment.jobname .. '.tex' or n == environment.outputfilename)
+    commands_doifelse(n == environment.jobname or n == environment.jobname .. '.tex' or n == environment.outputfilename)
 end
 
 function commands.doiffileexistelse(name)
     local foundname = resolvers.findtexfile(name)
-    commands.doifelse(foundname and foundname ~= "")
+    commands_doifelse(foundname and foundname ~= "")
 end

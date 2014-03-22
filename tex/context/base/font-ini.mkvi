@@ -363,7 +363,7 @@
 \let\thedefinedfont\relax % not to be confused with \everydefinefont
 
 \unexpanded\def\definedfont
-  {\doifnextoptionalelse\font_basics_defined_font_yes\font_basics_defined_font_nop}
+  {\doifnextoptionalcselse\font_basics_defined_font_yes\font_basics_defined_font_nop}
 
 \def\font_basics_defined_font_yes[#specification]%
   {\c_font_feature_inheritance_mode\c_font_feature_inheritance_fontonly
@@ -2082,7 +2082,7 @@
 % \newtoks \everyswitchtobodyfont
 
 \unexpanded\def\setupbodyfont
-  {\doifnextoptionalelse\font_basics_setupbodyfont_yes\font_basics_setupbodyfont_nop}
+  {\doifnextoptionalcselse\font_basics_setupbodyfont_yes\font_basics_setupbodyfont_nop}
 
 \def\font_basics_setupbodyfont_nop
   {\restoreglobalbodyfont
@@ -2175,7 +2175,8 @@
 %D The next auxilliary macro is an alternative to \type
 %D {\fontname}.
 
-\def\purefontname#font{\ctxlua{file.basename("\fontname#font"}} % will be function using id
+\def\purefontname#font{\ctxcommand{purefontname("\fontname#font")}}
+%def\purefontname#font{\ctxcommand{purefontname(\number\fontid#font)}}
 
 %D \macros
 %D   {switchstyleonly}
@@ -2190,7 +2191,7 @@
 %D \stoptyping
 
 \unexpanded\def\switchstyleonly
-  {\doifnextoptionalelse\font_basics_switch_style_only_opt\font_basics_switch_style_only_arg}
+  {\doifnextoptionalcselse\font_basics_switch_style_only_opt\font_basics_switch_style_only_arg}
 
 \def\font_basics_switch_style_only_arg#name% stupid version
   {\font_helpers_set_current_font_style{\csname\??fontshortstyle\checkedstrippedcsname#name\endcsname}%
@@ -2348,6 +2349,83 @@
 \def\saveddefinedfontid  {\number\fontid\font}
 \def\saveddefinedfontname{\fontname\font}
 
+% yes or no:
 
+% \let\font_basics_check_text_bodyfont_slow\font_basics_check_text_bodyfont
+%
+% \unexpanded\def\font_basics_check_text_bodyfont
+%   {\ifproductionrun
+%      % not per se \s!..'s
+%      \glet\font_basics_check_text_bodyfont     \font_basics_check_text_bodyfont_slow
+%      \glet\font_basics_check_text_bodyfont_fast\relax
+%      \expandafter\font_basics_check_text_bodyfont
+%    \else
+%      \expandafter\font_basics_check_text_bodyfont_fast
+%    \fi}
+%
+% \def\font_basics_check_text_bodyfont_fast#style#alternative#size% size can be empty (checking needed as \bf is already defined)
+%   {\setugvalue{#style#size}% \rma
+%      {\let\fontstyle#style%
+%       \let\fontsize #size%
+%       \font_helpers_check_big_math_synchronization % double? better in everymath?
+%       \font_helpers_synchronize_font}%
+%    \setugvalue{#alternative#size}% \sla
+%      {\let\fontalternative#alternative%
+%       \let\fontsize       #size%
+%       \font_helpers_check_big_math_synchronization % double? better in everymath?
+%       \font_helpers_synchronize_font}%
+%    \setugvalue{#style#alternative#size}% \rmsla
+%      {\let\fontstyle      #style%
+%       \let\fontalternative#alternative%
+%       \let\fontsize       #size%
+%       \font_helpers_check_big_math_synchronization % double? better in everymath?
+%       \font_helpers_synchronize_font}%
+%    \ifcsname\s!normal#style\endcsname % text/math check
+%      \expandafter\let\csname#style\expandafter\endcsname\csname\s!normal#style\endcsname
+%    \else
+%      \setugvalue{#style}% \rm
+%        {\let\fontstyle#style%
+%         \font_typescripts_inherit_check\fontstyle
+%         \ifmmode\mr\fi % otherwise \rm not downward compatible ... not adapted yet
+%         \font_helpers_synchronize_font}%
+%    \fi
+%    \ifcsname\s!normal#alternative\endcsname % text/math check
+%      \expandafter\let\csname#alternative\expandafter\endcsname\csname\s!normal#alternative\endcsname
+%    \else
+%      \setugvalue{#alternative}% \sl
+%        {\let\fontalternative#alternative%
+%         \font_helpers_synchronize_font}%
+%    \fi
+%    \setugvalue{#style\s!x}% \rmx
+%      {\csname#style\endcsname\tx}%
+%    \setugvalue{#style\s!xx}% \rmxx
+%      {\csname#style\endcsname\txx}%
+%    \setugvalue{#alternative\s!x}% \slx
+%      {\font_helpers_check_nested_x_fontsize
+%       \ifmmode
+%          \scriptstyle
+%       \else
+%         \let\fontface4%
+%         \let\fontalternative#alternative%
+%         \font_helpers_synchronize_font
+%       \fi
+%       \currentxfontsize\plusone
+%       \let\tx\txx}%
+%    \setugvalue{#alternative\s!xx}% \slxx
+%      {\font_helpers_check_nested_x_fontsize
+%       \ifmmode
+%          \scriptscriptstyle
+%       \else
+%         \let\fontface5%
+%         \let\fontalternative#alternative%
+%         \font_helpers_synchronize_font
+%       \fi
+%       \currentxfontsize\plustwo
+%       \let\tx\empty
+%       \let\txx\empty}%
+%    \setugvalue{#style#alternative}% \rmsl
+%      {\let\fontstyle      #style%
+%       \let\fontalternative#alternative%
+%       \font_helpers_synchronize_font}}
 
 \protect \endinput

@@ -947,11 +947,12 @@
    \begingroup
    \let\crlf\space
    \let\\\space
-   \postponenotes
+   \postponenotes % might go
    \referencingparameter\c!left
    \doifreferencefoundelse{#label}
      {\goto{\limitatetext\currentreferencetitle{\referencingparameter\c!width}\unknown}[#label]}% not so efficient (dup lookup)
      {}% todo
+   \flushnotes % might go
    \referencingparameter\c!right
    \endgroup}
 

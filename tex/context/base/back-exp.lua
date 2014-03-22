@@ -609,8 +609,8 @@ function structurestags.setfigure(name,page,width,height)
     usedimages.image[detailedtag("image")] = {
         name   = name,
         page   = page,
-        width  = number.todimen(width,"cm","%0.3fcm"),
-        height = number.todimen(height,"cm","%0.3fcm"),
+        width  = number.todimen(width, "cm","%0.3Fcm"),
+        height = number.todimen(height,"cm","%0.3Fcm"),
     }
 end
 

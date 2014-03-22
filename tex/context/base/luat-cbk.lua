@@ -118,7 +118,7 @@ end
 
 function callbacks.freeze(name,freeze)
     freeze = type(freeze) == "string" and freeze
-    if find(name,"%*") then
+    if find(name,"*",1,true) then
         local pattern = name
         for name, _ in next, list do
             if find(name,pattern) then

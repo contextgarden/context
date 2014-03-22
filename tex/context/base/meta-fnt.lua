@@ -29,7 +29,7 @@ local characters, descriptions = { }, { }
 local factor, code, slot, width, height, depth, total, variants, bbox, llx, lly, urx, ury = 100, { }, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0
 
 -- The next variant of ActualText is what Taco and I could come up with
--- eventually. As of September 2013 Acrobat copies okay, Summatra copies a
+-- eventually. As of September 2013 Acrobat copies okay, Sumatra copies a
 -- question mark, pdftotext injects an extra space and Okular adds a
 -- newline plus space.
 
@@ -79,7 +79,7 @@ local flusher = {
         if inline then
             characters[slot] = {
                 commands = {
-                    { "special", "pdf: " .. topdf(slot,code) },
+                    { "special", "pdf:" .. topdf(slot,code) },
                 }
             }
         else

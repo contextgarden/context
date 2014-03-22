@@ -41,7 +41,6 @@ local format                  = string.format
 local concat                  = table.concat
 local points                  = number.points
 
-local context                 = context
 local context_beginvbox       = context.beginvbox
 local context_endvbox         = context.endvbox
 local context_blank           = context.blank

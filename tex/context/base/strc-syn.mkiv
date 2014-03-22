@@ -20,20 +20,6 @@
 
 \unprotect
 
-\ifdefined\dotagsynonym \else \let\dotagsynonym\relax \fi
-\ifdefined\dotagsorting \else \let\dotagsorting\relax \fi
-
-% general help, can be shared
-
-% simplifiedcommands -> flag in lua
-%
-% expansion
-% criterium -> when start, then flag in list
-% command-> wanneer?
-% state -> flagging enabled
-% conversion ?
-% todo: register xml mode etc
-
 % split but common in lua
 
 \def\preprocessexpansion#1#2#3#4%
@@ -51,13 +37,93 @@
      \globallet#3\s!tex
    \fi}
 
-\installcorenamespace{synonym}
+%D We now use a simple list variant:
 
-\installsimplecommandhandler \??synonym {synonym} \??synonym
+\installcorenamespace {simplelist}
 
-\let\setupsynonyms\setupsynonym
+\installcommandhandler \??simplelist {simplelist} \??simplelist
 
-\setupsynonyms
+\let\setupsimplelists\setupsimplelist
+
+\setupsimplelists[%
+    %c!title=,
+    %c!text=,
+    %
+    %c!style=,
+    %c!color=,
+    %c!command=,
+    %c!align=,
+    %
+    %c!headstyle=,
+    %c!headcolor=,
+    %c!headalign=,
+    %
+    %c!titlestyle=,
+    %c!titlecolor=,
+    %c!titlecommand=,
+    %c!titleleft=,
+    %c!titleright=,
+    %
+    %c!closesymbol=,
+    %c!closecommand=,
+    %
+    \c!alternative=\v!left,
+    \c!display=\v!yes,
+    \c!width=7\emwidth,
+    \c!distance=\emwidth,
+    \c!titledistance=.5\emwidth,
+    %c!hang=,
+    %c!sample=,
+    \c!margin=\v!no,
+    \c!before=\blank,
+    \c!inbetween=\blank,
+    \c!after=\blank,
+    %c!indentnext=,
+    %c!indenting=,
+    %
+    \c!expansion=\v!no,
+    %c!xmlsetup=,
+    %s!catcodes=,
+    \s!language=\currentmainlanguage,
+]
+
+\appendtoks
+    \setfalse\c_strc_constructions_define_commands
+    \ifx\currentsimplelistparent\empty
+        \defineconstruction[\currentsimplelist][\s!handler=\v!simplelist,\c!level=1]%
+    \else
+        \defineconstruction[\currentsimplelist][\currentsimplelistparent][\s!handler=\v!simplelist,\c!level=1]%
+    \fi
+    \settrue\c_strc_constructions_define_commands
+\to \everydefinesimplelist
+
+\setuvalue{\??constructioninitializer\v!simplelist}%
+  {\let\currentsimplelist               \currentconstruction
+   \let\constructionparameter           \simplelistparameter
+   \let\detokenizedconstructionparameter\detokenizedsimplelistparameter
+   \let\letconstructionparameter        \letsimplelistparameter
+   \let\useconstructionstyleandcolor    \usesimpleliststyleandcolor
+   \let\setupcurrentconstruction        \setupcurrentsimplelist}
+
+\setuvalue{\??constructionfinalizer\v!simplelist}%
+  {}
+
+\setuvalue{\??constructiontexthandler\v!simplelist}%
+  {\begingroup
+   \useconstructionstyleandcolor\c!headstyle\c!headcolor
+   \the\everyconstruction
+   \constructionparameter\c!headcommand
+     {\strut
+      \currentsimplelistentry}%
+   \endgroup}
+
+% And we build on top of this.
+
+\ifdefined\dotagsynonym \else \let\dotagsynonym\relax \fi
+\ifdefined\dotagsorting \else \let\dotagsorting\relax \fi
+
+\definesimplelist
+  [\v!synonym]
   [\c!state=\v!start,
   %\c!synonymstyle=,
   %\c!textstyle=,
@@ -75,50 +141,62 @@
   %\c!after=,
    \c!indentnext=\v!no,
   %\c!expansion=,
-   \c!method=,
-   \s!language=\currentmainlanguage]
+   \c!method=]
+
+\let\setupsynonyms\setupsimplelist
 
 \unexpanded\def\definesynonyms
-  {\doquadrupleempty\dodefinesynonyms}
+  {\doquadrupleempty\strc_synonyms_define}
 
-\def\dodefinesynonyms[#1][#2][#3][#4]% name plural \meaning \use
+\def\strc_synonyms_define[#1][#2][#3][#4]% name plural \meaning \use
   {\edef\currentsynonym{#1}%
    \iffourthargument
-     \unexpanded\def#4##1{\doinsertsynonym{#1}{##1}}% name tag
+     \unexpanded\def#4##1{\strc_synonyms_insert{#1}{##1}}% name tag
      \ifthirdargument
-       \unexpanded\def#3##1{\doinsertsynonymmeaning{#1}{##1}}% \meaning
+       \unexpanded\def#3##1{\strc_synonyms_insert_meaning{#1}{##1}}% \meaning
      \fi
      \setuvalue{#1}{\definesynonym[\v!no][#1]}% \name
    \else
      \ifthirdargument
-       \unexpanded\def#3##1{\doinsertsynonymmeaning{#1}{##1}}% \meaning
+       \unexpanded\def#3##1{\strc_synonyms_insert_meaning{#1}{##1}}% \meaning
      \fi
      \setuvalue{#1}{\definesynonym[\v!yes][#1]}% \name
    \fi
-   \checksynonymparent
-   \setupcurrentsynonym[\s!single={#1},\s!multi={#2}]%
+   %
+%  \checksynonymparent
+%  \setupcurrentsynonym[\s!single={#1},\s!multi={#2}]%
+   \setfalse\c_strc_constructions_define_commands
+   \definesimplelist
+     [\currentsynonym]%
+     [\v!sorting]
+     [\s!single={#1},%
+      \s!multi={#2}]%
+   \settrue\c_strc_constructions_define_commands
+   %
    \presetheadtext[#2=\Word{#2}]% changes the \if...argument
+   %
    \setvalue{\e!setup #2\e!endsetup}{\setupsynonym[#1]}% obsolete definition
    \setvalue{\e!place   \e!listof#2}{\placelistofsynonyms[#1]}% accepts extra argument
    \setvalue{\e!complete\e!listof#2}{\completelistofsynonyms[#1]}}
 
 \unexpanded\def\definesynonym
-  {\dotripleempty\dodefinesynonym}
+  {\dotripleempty\strc_synonyms_define_entry}
 
-\def\dodefinesynonym[#1][#2][#3]#4#5%
+\def\strc_synonyms_define_entry[#1][#2][#3]#4#5%
   {\begingroup
    \edef\currentsynonym{#2}%
    \edef\currentsynonymtag{#3}%
+   \let\currentsimplelist\currentsimplelist
    \ifx\currentsynonymtag\empty
      \edef\currentsynonymtag{#4}%
    \fi
    \ifx\currentsynonymtag\empty
      % todo: error message
    \else
-     \edef\currentsynonymexpansion{\synonymparameter\c!expansion}%
+     \edef\currentsynonymexpansion{\simplelistparameter\c!expansion}%
      \preprocessexpansion\currentsynonymexpansion\currentsynonymtext   \currentsynonymcoding{#4}%
      \preprocessexpansion\currentsynonymexpansion\currentsynonymmeaning\currentsynonymcoding{#5}%
-     \ctxlua{structures.synonyms.register("\currentsynonym", "synonym", {
+     \ctxcommand{registersynonym("\currentsynonym", "synonym", {
         metadata = {
             catcodes = \the\catcodetable,
             coding   = "\currentsynonymcoding",
@@ -131,91 +209,77 @@
             used    = false,
         }
      })}%
-     \doif{#1}\v!yes{\setuxvalue\currentsynonymtag{\noexpand\doinsertsynonym{\currentsynonym}{\currentsynonymtag}}}%
+     \doif{#1}\v!yes{\setuxvalue\currentsynonymtag{\strc_synonyms_insert{\currentsynonym}{\currentsynonymtag}}}%
    \fi
    \endgroup}
 
 \unexpanded\def\registersynonym
-  {\dodoubleargument\doregistersynonym}
+  {\dodoubleargument\strc_synonyms_register}
 
-\def\doregistersynonym[#1][#2]%
-  {\ctxlua{structures.synonyms.registerused("#1","#2")}}
+\def\strc_synonyms_register[#1][#2]%
+  {\ctxcommand{registerusedsynonym("#1","#2")}}
 
-\unexpanded\def\doinsertsynonymmeaning#1#2% name tag
+\unexpanded\def\strc_synonyms_insert_meaning#1#2% name tag
   {\begingroup
-   \def\currentsynonym{#1}%
-   \usesynonymstyleandcolor\c!textstyle\c!textcolor
-   \synonymparameter\c!textcommand{\ctxlua{structures.synonyms.meaning("#1","#2")}}%
+   \def\currentsimplelist{#1}%
+   \usesimpleliststyleandcolor\c!textstyle\c!textcolor
+   \simplelistparameter\c!textcommand{\ctxcommand{synonymmeaning("#1","#2")}}%
    \endgroup}
 
-\unexpanded\def\doinsertsynonym#1#2% name tag
+\unexpanded\def\strc_synonyms_insert#1#2% name tag
   {\begingroup
-   \def\currentsynonym{#1}%
+   \edef\currentsimplelist{#1}%
+   \let\currentsynonym\currentsimplelist % for a while
    \def\currentsynonymtag{#2}%
    \dostarttagged\t!synonym\currentsynonym
    \dotagsynonym
-   \usesynonymstyleandcolor\c!synonymstyle\c!synonymcolor
-   \synonymparameter\c!synonymcommand{\ctxlua{structures.synonyms.synonym("#1","#2")}}%
+   \usesimpleliststyleandcolor\c!synonymstyle\c!synonymcolor
+   \simplelistparameter\c!synonymcommand{\ctxcommand{synonymname("#1","#2")}}%
    \dostoptagged
-   \normalexpanded{\endgroup\synonymparameter\c!next}}
+   \normalexpanded{\endgroup\simplelistparameter\c!next}}
 
 \unexpanded\def\placelistofsynonyms
-  {\dodoubleempty\doplacelistofsynonyms}
+  {\dodoubleempty\strc_synonyms_place_list}
 
-\def\doplacelistofsynonyms[#1][#2]%
+\def\strc_synonyms_place_list[#1][#2]%
   {\begingroup
-   \def\currentsynonym{#1}%
-   \definedescription  % todo, per class
-    [syndef]
-    [\c!location=\synonymparameter\c!location,
-     \c!width=\synonymparameter\c!width,
-     \c!distance=\synonymparameter\c!distance,
-     \c!sample=\synonymparameter\c!sample,
-     \c!hang=\synonymparameter\c!hang,
-     \c!align=\synonymparameter\c!align,
-     \c!before=\synonymparameter\c!before,
-     \c!inbetween=\synonymparameter\c!inbetween,
-     \c!after=\synonymparameter\c!after,
-     \c!indentnext=\synonymparameter\c!indentnext,
-     \c!headstyle=\synonymparameter\c!textstyle,
-     \c!headcolor=\synonymparameter\c!textcolor,
-     \c!style=,
-     \c!color=.
-     #2]%
+   \edef\currentsimplelist{#1}%
+   \strc_constructions_initialize{#1}%
+   \setupcurrentsimplelist[#2]%
+   \let\synonymentry\strc_synonym_normal
    \startpacked
-     \ctxlua{structures.synonyms.process('#1',{
-        criterium = "\synonymparameter\c!criterium",
-        language  = "\synonymparameter\s!language",
-        method    = "\synonymparameter\c!method",
+     \ctxcommand{processsynonyms('#1',{
+        criterium = "\simplelistparameter\c!criterium",
+        language  = "\simplelistparameter\s!language",
+        method    = "\simplelistparameter\c!method",
      })}%
    \stoppacked
    \endgroup}
 
 \def\completelistofsynonyms
-  {\dodoubleempty\docompletelistofsynonyms}
+  {\dodoubleempty\strc_synonyms_complete_list}
 
-\def\docompletelistofsynonyms[#1][#2]%
-  {\edef\currentsynonym{#1}%
-   \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\synonymparameter\s!multi}},\c!reference=#1]}%
-   \doplacelistofsynonyms[#1][#2]%
+\def\strc_synonyms_complete_list[#1][#2]%
+  {\begingroup
+   \edef\currentsimplelist{#1}%
+   \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
+   \strc_synonyms_place_list[#1][#2]%
    \page
-   \stopnamedsection}
+   \stopnamedsection
+   \endgroup}
 
-\let\startsynonymoutput \relax
-\let\stopsynonymoutput  \relax
-\let\startsynonymsection\gobbleoneargument
-\let\stopsynonymsection \relax
-
-\unexpanded\def\synonymentry#1#2#3#4%
-  {\syndef{#3}#4\par}
+\unexpanded\def\strc_synonym_normal#1#2#3#4%
+  {\begingroup
+   \def\currentsimplelistentry{#3}%
+   \csname\??constructionstarthandler\v!construction\endcsname
+   #4%
+   \csname\??constructionstophandler\v!construction\endcsname
+   \endgroup}
 
 %D Sorting (a simplified version of synonym).
 
-\installcorenamespace{sorting}
-
-\installsimplecommandhandler \??sorting {sorting} \??sorting
-
-\setupsorting
+\definesimplelist
+  [\v!sorting]
   [\c!state=\v!start,
   %\c!command=, % we test for defined !
   %\c!criterium=,
@@ -223,48 +287,57 @@
   %\c!before=,
    \c!after=\endgraf,
   %\c!expansion=,
-   \c!method=,
-   \s!language=\currentmainlanguage]
+   \c!method=]
+
+\let\setupsorting\setupsimplelist
 
 \unexpanded\def\definesorting
-  {\dotripleempty\dodefinesorting}
+  {\dotripleempty\strc_sorting_define}
 
 % if #3=\relax or \v!none, then no command but still protected
 
-\def\dodefinesorting[#1][#2][#3]%
+\def\strc_sorting_define[#1][#2][#3]%
   {\edef\currentsorting{#1}%
    \ifthirdargument
      \doifnot{#3}\v!none
        {\ifx#3\relax \else
-          \unexpanded\def#3##1{\doinsertsort{#1}{##1}}%
+          \unexpanded\def#3##1{\strc_sorting_insert{#1}{##1}}%
         \fi}%
      \setuvalue{#1}{\definesort[\v!no][#1]}%
    \else
      \setuvalue{#1}{\definesort[\v!yes][#1]}%
    \fi
-   \checksortingparent
-   \setupcurrentsorting[\s!multi={#2}]%
+   \setfalse\c_strc_constructions_define_commands
+   \definesimplelist
+     [\currentsorting]%
+     [\v!sorting]
+     [\s!single={#1},%
+      \s!multi={#2}]%
+   \settrue\c_strc_constructions_define_commands
+   %
    \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
+   %
    \setvalue{\e!setup #2\e!endsetup}{\setupsorting[#1]}% obsolete definition
    \setvalue{\e!place   \e!listof#2}{\placelistofsorts[#1]}%
    \setvalue{\e!complete\e!listof#2}{\completelistofsorts[#1]}}
 
 \unexpanded\def\definesort
-  {\dotripleempty\dodefinesort}
+  {\dotripleempty\strc_sorting_define_entry}
 
-\def\dodefinesort[#1][#2][#3]#4%
+\def\strc_sorting_define_entry[#1][#2][#3]#4%
   {\begingroup
    \edef\currentsorting{#2}%
    \edef\currentsortingtag{#3}%
+   \let\currentsimplelist\currentsimplelist
    \ifx\currentsortingtag\empty
      \edef\currentsortingtag{#4}%
    \fi
    \ifx\currentsortingtag\empty
      % todo: error message
    \else
-     \edef\currentsortingexpansion{\sortingparameter\c!expansion}%
+     \edef\currentsortingexpansion{\simplelistparameter\c!expansion}%
      \preprocessexpansion\currentsortingexpansion\currentsortingtext\currentsortingcoding{#4}%
-     \ctxlua{structures.synonyms.register("\currentsorting", "sorting", {
+     \ctxcommand{registersynonym("\currentsorting", "sorting", {
         metadata = {
             catcodes = \the\catcodetable,
             coding   = "\currentsortingcoding",
@@ -276,67 +349,77 @@
         %   used    = false,
         }
      })}%
-     \doif{#1}\v!yes{\setuxvalue\currentsortingtag{\noexpand\doinsertsort{\currentsorting}{\currentsortingtag}}}%
+     \doif{#1}\v!yes{\setuxvalue\currentsortingtag{\strc_sorting_insert{\currentsorting}{\currentsortingtag}}}%
    \fi
    \endgroup}
 
-\unexpanded\def\doinsertsort#1#2% name tag
+\unexpanded\def\strc_sorting_insert#1#2% name tag
   {\begingroup
    % no kap currently, of .. we need to map cap onto WORD
    \edef\currentsorting{#1}%
    \def\currentsortingtag{#2}%
+   \let\currentsimplelist\currentsorting
    \dostarttagged\t!sorting\currentsorting
    \dotagsorting
-   \usesortingstyleandcolor\c!style\c!color
-   \ctxlua{structures.synonyms.synonym("#1","#2")}%
+   \usesimpleliststyleandcolor\c!style\c!color
+   \ctxcommand{synonymname("#1","#2")}%
    \dostoptagged
-   \normalexpanded{\endgroup\sortingparameter\c!next}}
+   \normalexpanded{\endgroup\simplelistparameter\c!next}}
 
 \unexpanded\def\registersort
-  {\dodoubleargument\doregistersort}
+  {\dodoubleargument\strc_sorting_register}
 
-\def\doregistersort[#1][#2]%
-  {\ctxlua{structures.synonyms.registerused("#1","#2")}}
+\def\strc_sorting_register[#1][#2]%
+  {\ctxcommand{registerusedsynonym("#1","#2")}}
 
 % before after
 %
 % maybe just 'commandset' and then combine
 
 \unexpanded\def\placelistofsorts
-  {\dodoubleempty\doplacelistofsorts}
+  {\dodoubleempty\strc_sorting_place_list}
 
-\def\doplacelistofsorts[#1][#2]% NOG EEN RUWE VERSIE MAKEN ZONDER WITRUIMTE ETC ETC
+\def\strc_sorting_place_list[#1][#2]%
   {\begingroup
-   \def\currentsorting{#1}%
-   \setupcurrentsorting[#2]%
+   \edef\currentsimplelist{#1}%
+   \strc_constructions_initialize{#1}%
+   \setupcurrentsimplelist[#2]%
+   \edef\p_simplelist_command{\simplelistparameter\c!command}%
+   \ifx\p_simplelist_command\empty
+     \let\synonymentry\strc_sorting_normal
+   \else
+     \let\synonymentry\strc_sorting_command
+   \fi
    \startpacked
-     \ctxlua{structures.synonyms.process('#1',{
-        criterium = "\sortingparameter\c!criterium",
-        language  = "\sortingparameter\s!language",
-        method    = "\sortingparameter\c!method",
+     \ctxcommand{processsynonyms('#1',{
+        criterium = "\simplelistparameter\c!criterium",
+        language  = "\simplelistparameter\s!language",
+        method    = "\simplelistparameter\c!method",
      })}%
    \stoppacked
    \endgroup}
 
 \unexpanded\def\completelistofsorts
-  {\dodoubleempty\docompletelistofsorts}
+  {\dodoubleempty\strc_sorting_complete_list}
 
-\def\docompletelistofsorts[#1][#2]%
-  {\edef\currentsorting{#1}%
-   \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\sortingparameter\s!multi}},\c!reference=#1]}%
-   \doplacelistofsorts[#1][#2]%
+\def\strc_sorting_complete_list[#1][#2]%
+  {\begingroup
+   \edef\currentsimplelist{#1}%
+   \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
+   \strc_sorting_place_list[#1][#2]%
    \page
-   \stopnamedsection}
+   \stopnamedsection
+   \endgroup}
 
-\let\startsortingoutput \relax
-\let\stopsortingoutput  \relax
-\let\startsortingsection\gobbleoneargument
-\let\stopsortingsection \relax
+\def\strc_sorting_command#1#2#3#4% #4 is meaning but empty here
+  {\p_simplelist_command{#1}{#2}{#3}}
 
-\def\sortingentry#1#2#3#4% #4 is meaning but empty here
-  {\doifelsenothing{\sortingparameter\c!command}
-     {\begingroup\usesortingstyleandcolor\c!style\c!color#3\endgroup\par} % todo
-     {\sortingparameter\c!command{#1}{#2}{#3}}}
+\def\strc_sorting_normal#1#2#3#4% #4 is meaning but empty here
+  {\begingroup
+   \usesimpleliststyleandcolor\c!style\c!color
+   #3%
+   \endgroup
+   \par}
 
 %D Presets.
 

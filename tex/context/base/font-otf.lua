@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.751 -- beware: also sync font-mis.lua
+otf.version              = 2.755 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -687,15 +687,22 @@ actions["prepare glyphs"] = function(data,filename,raw)
                         local glyph = cidglyphs[index]
                         if glyph then
                             local unicode = glyph.unicode
+if     unicode >= 0x00E000 and unicode <= 0x00F8FF then
+                                unicode = -1
+elseif unicode >= 0x0F0000 and unicode <= 0x0FFFFD then
+                                unicode = -1
+elseif unicode >= 0x100000 and unicode <= 0x10FFFD then
+                                unicode = -1
+end
                             local name    = glyph.name or cidnames[index]
-                            if not unicode or unicode == -1 or unicode >= criterium then
+                            if not unicode or unicode == -1 then -- or unicode >= criterium then
                                 unicode = cidunicodes[index]
                             end
                             if unicode and descriptions[unicode] then
                                 report_otf("preventing glyph %a at index %H to overload unicode %U",name or "noname",index,unicode)
                                 unicode = -1
                             end
-                            if not unicode or unicode == -1 or unicode >= criterium then
+                            if not unicode or unicode == -1 then -- or unicode >= criterium then
                                 if not name then
                                     name = format("u%06X",private)
                                 end
@@ -747,7 +754,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
             if glyph then
                 local unicode = glyph.unicode
                 local name    = glyph.name
-                if not unicode or unicode == -1 or unicode >= criterium then
+                if not unicode or unicode == -1 then -- or unicode >= criterium then
                     unicode = private
                     unicodes[name] = private
                     if trace_private then
@@ -809,6 +816,10 @@ end
 -- the next one is still messy but will get better when we have
 -- flattened map/enc tables in the font loader
 
+-- the next one is not using a valid base for unicode privates
+--
+-- PsuedoEncodeUnencoded(EncMap *map,struct ttfinfo *info)
+
 actions["check encoding"] = function(data,filename,raw)
     local descriptions = data.descriptions
     local resources    = data.resources
@@ -825,6 +836,7 @@ actions["check encoding"] = function(data,filename,raw)
  -- local encname        = lower(data.enc_name or raw.enc_name or mapdata.enc_name or "")
     local encname        = lower(data.enc_name or mapdata.enc_name or "")
     local criterium      = 0xFFFF -- for instance cambria has a lot of mess up there
+    local privateoffset  = constructors.privateoffset
 
     -- end of messy
 
@@ -832,81 +844,44 @@ actions["check encoding"] = function(data,filename,raw)
         if trace_loading then
             report_otf("checking embedded unicode map %a",encname)
         end
-     -- if false then
-     --     for unicode, index in next, unicodetoindex do -- altuni already covers this
-     --         if unicode <= criterium and not descriptions[unicode] then
-     --             local parent = indices[index] -- why nil?
-     --             if not parent then
-     --                 report_otf("weird, unicode %U points to nowhere with index %H",unicode,index)
-     --             else
-     --                 local parentdescription = descriptions[parent]
-     --                 if parentdescription then
-     --                     local altuni = parentdescription.altuni
-     --                     if not altuni then
-     --                         altuni = { { unicode = unicode } }
-     --                         parentdescription.altuni = altuni
-     --                         duplicates[parent] = { unicode }
-     --                     else
-     --                         local done = false
-     --                         for i=1,#altuni do
-     --                             if altuni[i].unicode == unicode then
-     --                                 done = true
-     --                                 break
-     --                             end
-     --                         end
-     --                         if not done then
-     --                             -- let's assume simple cjk reuse
-     --                             insert(altuni,{ unicode = unicode })
-     --                             insert(duplicates[parent],unicode)
-     --                         end
-     --                     end
-     --                  -- if trace_loading then
-     --                  --     report_otf("weird, unicode %U points to nowhere with index %H",unicode,index)
-     --                  -- end
-     --                 else
-     --                     report_otf("weird, unicode %U points to %U with index %H",unicode,index)
-     --                 end
-     --             end
-     --         end
-     --     end
-     -- else
-            local hash  = { }
-            for index, unicode in next, indices do -- indextounicode
-                hash[index] = descriptions[unicode]
-            end
-            local reported = { }
-            for unicode, index in next, unicodetoindex do
-                if not descriptions[unicode] then
-                    local d = hash[index]
+        local reported = { }
+        -- we loop over the original unicode->index mapping but we
+        -- need to keep in mind that that one can have weird entries
+        -- so we need some extra checking
+        for maybeunicode, index in next, unicodetoindex do
+            if descriptions[maybeunicode] then
+                -- we ignore invalid unicodes (unicode = -1) (ff can map wrong to non private)
+            else
+                local unicode = indices[index]
+                if not unicode then
+                    -- weird (cjk or so?)
+                elseif maybeunicode == unicode then
+                    -- no need to add
+                elseif unicode > privateoffset then
+                    -- we have a non-unicode
+                else
+                    local d = descriptions[unicode]
                     if d then
-                        if d.unicode ~= unicode then
-                            local c = d.copies
-                            if c then
-                                c[unicode] = true
-                            else
-                                d.copies = { [unicode] = true }
-                            end
+                        local c = d.copies
+                        if c then
+                            c[maybeunicode] = true
+                        else
+                            d.copies = { [maybeunicode] = true }
                         end
-                    elseif not reported[i] then
+                    elseif index and not reported[index] then
                         report_otf("missing index %i",index)
-                        reported[i] = true
+                        reported[index] = true
                     end
                 end
             end
-            for index, data in next, hash do -- indextounicode
-                data.copies = sortedkeys(data.copies)
+        end
+        for unicode, data in next, descriptions do
+            local d = data.copies
+            if d then
+                duplicates[unicode] = sortedkeys(d)
+                data.copies = nil
             end
-            for index, unicode in next, indices do -- indextounicode
-                local description = hash[index]
-                local copies = description.copies
-                if copies then
-                    duplicates[unicode] = copies
-                    description.copies = nil
-                else
-                    report_otf("copies but no unicode parent %U",unicode)
-                end
-            end
-     -- end
+        end
     elseif properties.cidinfo then
         report_otf("warning: no unicode map, used cidmap %a",properties.cidinfo.usedname)
     else
@@ -939,6 +914,7 @@ actions["add duplicates"] = function(data,filename,raw)
                 report_otf("ignoring excessive duplicates of %U (n=%s)",unicode,nofduplicates)
             end
         else
+         -- local validduplicates = { }
             for i=1,nofduplicates do
                 local u = d[i]
                 if not descriptions[u] then
@@ -957,16 +933,18 @@ actions["add duplicates"] = function(data,filename,raw)
                         end
                         -- todo: lookups etc
                     end
-                    if u > 0 then
+                    if u > 0 then -- and
                         local duplicate = table.copy(description) -- else packing problem
                         duplicate.comment = format("copy of U+%05X", unicode)
                         descriptions[u] = duplicate
+                     -- validduplicates[#validduplicates+1] = u
                         if trace_loading then
                             report_otf("duplicating %U to %U with index %H (%s kerns)",unicode,u,description.index,n)
                         end
                     end
                 end
             end
+         -- duplicates[unicode] = #validduplicates > 0 and validduplicates or nil
         end
     end
 end
@@ -1197,10 +1175,16 @@ actions["reorganize subtables"] = function(data,filename,raw)
                     elseif features then
                         -- scripts, tag, ismac
                         local f = { }
+                        local o = { }
                         for i=1,#features do
                             local df = features[i]
                             local tag = strip(lower(df.tag))
-                            local ft = f[tag] if not ft then ft = {} f[tag] = ft end
+                            local ft = f[tag]
+                            if not ft then
+                                ft = { }
+                                f[tag] = ft
+                                o[#o+1] = tag
+                            end
                             local dscripts = df.scripts
                             for i=1,#dscripts do
                                 local d = dscripts[i]
@@ -1220,6 +1204,7 @@ actions["reorganize subtables"] = function(data,filename,raw)
                             subtables = subtables,
                             markclass = markclass,
                             features  = f,
+                            order     = o,
                         }
                     else
                         lookups[name] = {

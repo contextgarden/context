@@ -152,10 +152,14 @@
 \unexpanded\def\setupinterlinespace
   {\dodoubleempty\spac_linespacing_setup}
 
+\ifdefined\setupinterlinespace_double \else
+    \let\setupinterlinespace_double\setup_interlinespace % for a while
+\fi
+
 \def\spac_linespacing_setup[#1][#2]%
   {\settrue\interlinespaceisset % reset has to be done when needed
    \ifsecondargument
-     \setup_interlinespace[#1][#2]%
+     \setupinterlinespace_double[#1][#2]%
    \else\iffirstargument
      \ifcsname\namedinterlinespacehash{#1}\s!parent\endcsname
         \edef\currentinterlinespace{#1}%
@@ -330,7 +334,7 @@
 \let\v_spac_whitespace_current\v!none
 
 \unexpanded\def\setupwhitespace
-  {\doifnextoptionalelse\spac_whitespace_setup_yes\spac_whitespace_setup_nop}
+  {\doifnextoptionalcselse\spac_whitespace_setup_yes\spac_whitespace_setup_nop}
 
 \def\spac_whitespace_setup_nop
   {\ifx\v_spac_whitespace_current\v!none\else
@@ -1154,6 +1158,10 @@
 
 \let\normaloffinterlineskip\offinterlineskip % knuth's original
 
+\appendtoks
+    \ifvmode\ctxcommand{resetprevdepth()}\fi % a nasty hack (tested for a while now)
+\to \everyafteroutput
+
 %D My own one:
 
 \unexpanded\def\spac_helpers_push_interlineskip_yes
@@ -1325,7 +1333,7 @@
 \unexpanded\def\installsnapvalues#1#2% todo: a proper define
   {\edef\currentsnapper{#1:#2}%
    \ifcsname\??gridsnapperattributes\currentsnapper\endcsname \else
-     \setevalue{\??gridsnapperattributes\currentsnapper}{\ctxlua{builders.vspacing.definesnapmethod("#1","#2")}}%
+     \setevalue{\??gridsnapperattributes\currentsnapper}{\ctxcommand{definesnapmethod("#1","#2")}}%
    \fi
    \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
 
@@ -1751,7 +1759,7 @@
 % The main spacer:
 
 \unexpanded\def\vspacing
-  {\doifnextoptionalelse\spac_vspacing_yes\spac_vspacing_nop}
+  {\doifnextoptionalcselse\spac_vspacing_yes\spac_vspacing_nop}
 
 \def\spac_vspacing_yes
   {\ifinpagebody % somewhat weird
@@ -1807,7 +1815,7 @@
 % these depend on bigskipamount cum suis so we'd better sync them
 
 \unexpanded\def\setupvspacing
-  {\doifnextoptionalelse\setupvspacing_yes\setupvspacing_nop}
+  {\doifnextoptionalcselse\setupvspacing_yes\setupvspacing_nop}
 
 \let\currentvspacing\s!default % hm, default, standard ...
 

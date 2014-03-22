@@ -648,3 +648,55 @@ nuts.untracedslide     = untracedslide
 nuts.nestedtracedslide = nestedtracedslide
 
 -- nuts.slide          = tracedslide
+
+-- this might move
+
+local propertydata = direct.get_properties_table and direct.get_properties_table()
+
+local getattr = nuts.getattr
+local setattr = nuts.setattr
+
+if propertydata then
+
+    nodes.properties = {
+        data = propertydata,
+    }
+
+    direct.set_properties_mode(true,false)
+ -- direct.set_properties_mode(true,true)
+
+    -- experimental code with respect to copying attributes has been removed
+    -- as it doesn't pay of (most attributes are only accessed once anyway)
+
+    nuts.getprop = function(n,k)
+        local p = propertydata[n]
+        if p then
+            return p[k]
+        end
+    end
+
+    nuts.setprop = function(n,k,v)
+        if v then
+            local p = propertydata[n]
+            if p then
+                p[k] = v
+            else
+                propertydata[n] = { [k] = v }
+            end
+        end
+    end
+
+    nodes.setprop = nodes.setproperty
+    nodes.getprop = nodes.getproperty
+
+else
+
+    -- for testing and simple cases
+
+    nuts.getprop  = getattr
+    nuts.setprop  = setattr
+
+    nodes.setprop = getattr
+    nodes.getprop = setattr
+
+end

@@ -626,12 +626,12 @@
 \unexpanded\def\placepairedbox[#1]%
   {\bgroup
    \edef\currentpairedbox{#1}%
-   \doifnextoptionalelse\pack_pairedboxes_place\pack_pairedboxes_place_indeed}
+   \doifnextoptionalcselse\pack_pairedboxes_place\pack_pairedboxes_place_indeed}
 
 \unexpanded\def\startplacepairedbox[#1]%
   {\bgroup
    \edef\currentpairedbox{#1}%
-   \doifnextoptionalelse\pack_pairedboxes_place\pack_pairedboxes_place_indeed}
+   \doifnextoptionalcselse\pack_pairedboxes_place\pack_pairedboxes_place_indeed}
 
 \unexpanded\def\stopplacepairedbox
   {}

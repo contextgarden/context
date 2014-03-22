@@ -13,6 +13,7 @@ local gmatch, format = string.gmatch, string.format
 local serialize, concat, sortedhash = table.serialize, table.concat, table.sortedhash
 local bytecode = lua.bytecode
 local strippedloadstring = utilities.lua.strippedloadstring
+local formatters = string.formatters
 
 local trace_storage  = false
 local report_storage = logs.reporter("system","storage")
@@ -48,38 +49,71 @@ function storage.register(...)
     return t
 end
 
-local n = 0
-local function dump()
-    local max = storage.max
-    for i=1,#data do
-        local d = data[i]
-        local message, original, target = d[1], d[2] ,d[3]
-        local c, code, name = 0, { }, nil
-        -- we have a nice definer for this
-        for str in gmatch(target,"([^%.]+)") do
-            if name then
-                name = name .. "." .. str
-            else
-                name = str
-            end
-            c = c + 1 ; code[c] = format("%s = %s or { }",name,name)
-        end
-        max = max + 1
-        if trace_storage then
-            c = c + 1 ; code[c] = format("print('restoring %s from slot %s')",message,max)
-        end
-        c = c + 1 ; code[c] = serialize(original,name)
-        if trace_storage then
-            report_storage('saving %a in slot %a, size %s',message,max,#code[c])
-        end
-        -- we don't need tracing in such tables
-        bytecode[max] = strippedloadstring(concat(code,"\n"),storage.strip,format("slot %s (%s)",max,name))
-        collectgarbage("step")
-    end
-    storage.max = max
-end
+local n = 0 -- is that one used ?
 
-lua.registerfinalizer(dump,"dump storage")
+if environment.initex then
+
+ -- local function dump()
+ --     local max = storage.max
+ --     for i=1,#data do
+ --         local d = data[i]
+ --         local message, original, target = d[1], d[2] ,d[3]
+ --         local c, code, name = 0, { }, nil
+ --         -- we have a nice definer for this
+ --         for str in gmatch(target,"([^%.]+)") do
+ --             if name then
+ --                 name = name .. "." .. str
+ --             else
+ --                 name = str
+ --             end
+ --             c = c + 1 ; code[c] = formatters["%s = %s or { }"](name,name)
+ --         end
+ --         max = max + 1
+ --         if trace_storage then
+ --             c = c + 1 ; code[c] = formatters["print('restoring %s from slot %s')"](message,max)
+ --         end
+ --         c = c + 1 ; code[c] = serialize(original,name)
+ --         if trace_storage then
+ --             report_storage('saving %a in slot %a, size %s',message,max,#code[c])
+ --         end
+ --         -- we don't need tracing in such tables
+ --         bytecode[max] = strippedloadstring(concat(code,"\n"),storage.strip,format("slot %s (%s)",max,name))
+ --         collectgarbage("step")
+ --     end
+ --     storage.max = max
+ -- end
+
+    local function dump()
+        local max   = storage.max
+        local strip = storage.strip
+        for i=1,#data do
+            max = max + 1
+            local tabledata  = data[i]
+            local message    = tabledata[1]
+            local original   = tabledata[2]
+            local target     = tabledata[3]
+            local definition = utilities.tables.definetable(target,false,true)
+            local comment    = formatters["restoring %s from slot %s"](message,max)
+            if trace_storage then
+                comment = formatters["print('%s')"](comment)
+            else
+                comment = formatters["-- %s"](comment)
+            end
+            local dumped = serialize(original,target)
+            if trace_storage then
+                report_storage('saving %a in slot %a, size %s',message,max,#dumped)
+            end
+            -- we don't need tracing in such tables
+            dumped = concat({ definition, comment, dumped },"\n")
+            bytecode[max] = strippedloadstring(dumped,strip,formatters["slot %s (%s)"](max,name))
+            collectgarbage("step")
+        end
+        storage.max = max
+    end
+
+    lua.registerfinalizer(dump,"dump storage")
+
+end
 
 -- to be tested with otf caching:
 
@@ -115,31 +149,14 @@ statistics.register("stored bytecode data", function()
     local tofmodules = storage.tofmodules or 0
     local tofdumps   = storage.toftables  or 0
     if environment.initex then
-        local luautilities      = utilities.lua
-        local nofstrippedbytes  = luautilities.nofstrippedbytes
-        local nofstrippedchunks = luautilities.nofstrippedchunks
-        if nofstrippedbytes > 0 then
-            return format("%s modules, %s tables, %s chunks, %s chunks stripped (%s bytes)",
-                nofmodules,
-                nofdumps,
-                nofmodules + nofdumps,
-                nofstrippedchunks,
-                nofstrippedbytes
-            )
-        elseif nofstrippedchunks > 0 then
-            return format("%s modules, %s tables, %s chunks, %s chunks stripped",
-                nofmodules,
-                nofdumps,
-                nofmodules + nofdumps,
-                nofstrippedchunks
-            )
-        else
-            return format("%s modules, %s tables, %s chunks",
-                nofmodules,
-                nofdumps,
-                nofmodules + nofdumps
-            )
-        end
+        local luautilities = utilities.lua
+        return format("%s modules, %s tables, %s chunks, %s chunks stripped (%s bytes)",
+            nofmodules,
+            nofdumps,
+            nofmodules + nofdumps,
+            luautilities.nofstrippedchunks or 0,
+            luautilities.nofstrippedbytes or 0
+        )
     else
         return format("%s modules (%0.3f sec), %s tables (%0.3f sec), %s chunks (%0.3f sec)",
             nofmodules, tofmodules,

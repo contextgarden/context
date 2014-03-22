@@ -106,7 +106,7 @@ local maximum_stack       = 60     -- probably spec but not needed
 local directions          = typesetters.directions
 local setcolor            = directions.setcolor
 
-local a_directions        = attributes.private('directions')
+----- a_directions        = attributes.private('directions')
 
 local remove_controls     = true  directives.register("typesetters.directions.one.removecontrols",function(v) remove_controls  = v end)
 

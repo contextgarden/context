@@ -439,7 +439,7 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
         local ht = getfield(current,"height")
         local dp = getfield(current,"depth")
         local next = getnext(current)
-        local prev = previous -- getprev(current) ... prev can be wrong in math mode
+        local prev = previous -- getprev(current) ... prev can be wrong in math mode < 0.78.3
         setfield(current,"next",nil)
         setfield(current,"prev",nil)
         local linewidth = emwidth/10
@@ -860,7 +860,7 @@ local function cleanup()
     nk, k_cache = freed(k_cache)
     nw, w_cache = freed(w_cache)
     nb, b_cache = freed(b_cache)
- -- report_visualize("cache: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes",nf,ng,np,nk,nw,nb)
+ -- report_visualize("cache cleanup: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes",nf,ng,np,nk,nw,nb)
 end
 
 local function handler(head)
@@ -931,9 +931,11 @@ function commands.markfonts(n)
     visualizers.markfonts(n)
 end
 
+luatex.registerstopactions(cleanup)
+
 statistics.register("visualization time",function()
     if enabled then
-        cleanup() -- in case we don't don't do it each time
+     -- cleanup() -- in case we don't don't do it each time
         return format("%s seconds",statistics.elapsedtime(visualizers))
     end
 end)

@@ -108,6 +108,14 @@
                 <flag name="once">
                     <short>only run once (no multipass data file is produced)</short>
                 </flag>
+                <flag name="runs">
+                    <short>process at most this many times</short>
+                </flag>
+                <flag name="forcedruns">
+                    <short>process this many times (permits for optimization trial runs)</short>
+                </flag>
+            </subcategory>
+            <subcategory>
                 <flag name="batchmode">
                     <short>run without stopping and do not show messages on the console</short>
                 </flag>
@@ -117,7 +125,7 @@
                 <flag name="synctex">
                     <short>run with synctex enabled (optional value: zipped, unzipped, 1, -1)</short>
                 </flag>
-            </subcategory>
+                </subcategory>
             <subcategory>
                 <flag name="generate">
                     <short>generate file database etc. (as luatools does)</short>

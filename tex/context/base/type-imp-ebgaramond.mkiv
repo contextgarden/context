@@ -1,0 +1,45 @@
+%D \module
+%D   [       file=type-imp-ebgaramond,
+%D        version=2013.06.22,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=EB Garamond,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\definefontfeature
+  [eb-garamond-normal]
+  [default]
+  [mode=node,ccmp=yes,calt=yes,
+   liga=yes,dlig=yes,hlig=yes,
+   kern=yes,mark=yes,mkmk=yes,
+   onum=yes,pnum=yes,salt=yes,
+   script=latn]
+
+\definefontfeature
+  [eb-garamond-smallcaps]
+  [eb-garamond-normal]
+  [smcp=yes,c2sc=yes]
+
+\starttypescriptcollection[ebgaramond]
+
+    \starttypescript [serif] [ebgaramond]
+        \loadfontgoodies[ebgaramond]
+        \setups[font:fallback:serif]
+        \definefontsynonym [Serif]       [file:ebgaramond-regular] [features=eb-garamond-normal]
+        \definefontsynonym [SerifItalic] [file:ebgaramond-italic]  [features=eb-garamond-normal]
+        \definefontsynonym [SerifBold]   [file:ebgaramond-bold]    [features=eb-garamond-normal]
+        \definefontsynonym [SerifCaps]   [Serif]                   [features=eb-garamond-smallcaps]
+    \stoptypescript
+
+    \starttypescript[ebgaramond]
+        \definetypeface [ebgaramond] [rm] [serif] [ebgaramond] [default] [designsize=auto]
+        \definetypeface [ebgaramond] [tt] [mono]  [dejavu]     [default]
+        \definetypeface [ebgaramond] [mm] [math]  [bonum]      [default]
+    \stoptypescript
+
+\stoptypescriptcollection

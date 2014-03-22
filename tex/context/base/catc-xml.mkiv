@@ -114,20 +114,11 @@
 %D We register the catcodetables at the \LUA\ end where some further
 %D initializations take place.
 
-\ctxlua {
-    characters.define(
-        {   % letter catcodes
-            \number\xmlcatcodesn,
-            \number\xmlcatcodese,
-            \number\xmlcatcodesr,
-        },
-        {   % activate catcodes
-            \number\xmlcatcodesn,
-            \number\xmlcatcodese,
-            \number\xmlcatcodesr,
-        }
-    )
-   catcodes.register("xmlcatcodes",\number\xmlcatcodes)
-}
+\ctxcommand{definecatcodetable(
+    {\number\xmlcatcodesn,\number\xmlcatcodese,\number\xmlcatcodesr},% letter catcodes
+    {\number\xmlcatcodesn,\number\xmlcatcodese,\number\xmlcatcodesr} % activate catcodes
+)}
+
+\ctxcommand{registercatcodetable("xmlcatcodes",\number\xmlcatcodes)}
 
 \endinput

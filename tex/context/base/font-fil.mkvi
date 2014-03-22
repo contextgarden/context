@@ -89,11 +89,11 @@
 
 \def\font_basics_define_font_synonym_nop
   {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
-   \doifnextoptionalelse\font_basics_define_font_synonym_nop_opt\font_basics_define_font_synonym_nop_nil}
+   \doifnextoptionalcselse\font_basics_define_font_synonym_nop_opt\font_basics_define_font_synonym_nop_nil}
 
 \def\font_basics_define_font_synonym_yes
   {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
-   \doifnextoptionalelse\font_basics_define_font_synonym_yes_opt\font_basics_define_font_synonym_yes_nil}
+   \doifnextoptionalcselse\font_basics_define_font_synonym_yes_opt\font_basics_define_font_synonym_yes_nil}
 
 \def\font_basics_define_font_synonym_nop_opt[#specification]%
   {\let\p_features  \undefined

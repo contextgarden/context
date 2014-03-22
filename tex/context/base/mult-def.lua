@@ -3055,7 +3055,7 @@ return {
    ["pe"]="درج‌شماره‌صفحه",
    ["ro"]="punenumarpagina",
   },
-  ["placereferencelist"]={
+  ["placereferencelist"]={ -- not in mkiv
    ["cs"]="placereferencelist",
    ["de"]="placereferencelist",
    ["en"]="placereferencelist",
@@ -9708,7 +9708,7 @@ return {
    ["en"]="reference",
    ["fr"]="reference",
    ["it"]="riferimento",
-   ["nl"]="verwijzing",
+   ["nl"]="referentie",
    ["pe"]="مرجع",
    ["ro"]="referinta",
   },
@@ -10917,7 +10917,7 @@ return {
    ["en"]="unknownreference",
    ["fr"]="referenceinconnue",
    ["it"]="riferimentoingoto",
-   ["nl"]="onbekendeverwijzing",
+   ["nl"]="onbekendereferentie",
    ["pe"]="مرجع‌ناشناس",
    ["ro"]="referintanecunoscuta",
   },

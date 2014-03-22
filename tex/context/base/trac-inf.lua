@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 -- and rawget.
 
 local type, tonumber, select = type, tonumber, select
-local format, lower = string.format, string.lower
+local format, lower, find = string.format, string.lower, string.find
 local concat = table.concat
 local clock = os.gettimeofday or os.clock -- should go in environment
 
@@ -123,10 +123,8 @@ function statistics.show()
         -- this code will move
         local register = statistics.register
         register("used platform", function()
-            local mask = lua.mask or "ascii"
-            return format("%s, type: %s, binary subtree: %s, symbol mask: %s (%s)",
-                os.platform or "unknown",os.type or "unknown", environment.texos or "unknown",
-                mask,mask == "utf" and "τεχ" or "tex")
+            return format("%s, type: %s, binary subtree: %s",
+                os.platform or "unknown",os.type or "unknown", environment.texos or "unknown")
         end)
         register("luatex banner", function()
             return lower(status.banner)
@@ -139,16 +137,25 @@ function statistics.show()
             return format("%s direct, %s indirect, %s total", total-indirect, indirect, total)
         end)
         if jit then
-            local status = { jit.status() }
-            if status[1] then
-                register("luajit status", function()
-                    return concat(status," ",2)
-                end)
+            local jitstatus = { jit.status() }
+            if jitstatus[1] then
+                register("luajit options", concat(jitstatus," ",2))
             end
         end
         -- so far
      -- collectgarbage("collect")
-        register("current memory usage",statistics.memused)
+        register("lua properties",function()
+            local list = status.list()
+            local hashchar = tonumber(list.luatex_hashchars)
+            local mask = lua.mask or "ascii"
+            return format("engine: %s, used memory: %s, hash type: %s, hash chars: min(%s,40), symbol mask: %s (%s)",
+                jit and "luajit" or "lua",
+                statistics.memused(),
+                list.luatex_hashtype or "default",
+                hashchar and 2^hashchar or "unknown",
+                mask,
+                mask == "utf" and "τεχ" or "tex")
+        end)
         register("runtime",statistics.runtime)
         logs.newline() -- initial newline
         for i=1,#statusinfo do

@@ -28,7 +28,7 @@
 
 \def\root#1\of{\rootradical{#1}} % #2
 
-\unexpanded\def\sqrt{\doifnextoptionalelse\rootwithdegree\rootwithoutdegree}
+\unexpanded\def\sqrt{\doifnextoptionalcselse\rootwithdegree\rootwithoutdegree}
 
 \def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
   {\normalexpanded{\rootradical{\normalunexpanded{#1}}{\noexpand\triggermathstyle{\normalmathstyle}\normalunexpanded{#2}}}}
@@ -62,7 +62,7 @@
 \unexpanded\def\math_radical_handle#tag%
   {\begingroup
    \edef\currentmathradical{#tag}%
-   \doifnextoptionalelse\math_radical_degree_yes\math_radical_degree_nop}
+   \doifnextoptionalcselse\math_radical_degree_yes\math_radical_degree_nop}
 
 \def\math_radical_alternative{\csname\??mathradicalalternative\mathradicalparameter\c!alternative\endcsname}
 

@@ -24,7 +24,7 @@ local context = context
 local sind, cosd = math.sind, math.cosd
 local insert, remove = table.insert, table.remove
 
-local f_matrix = string.formatters["%0.8f %0.8f %0.8f %0.8f"]
+local f_matrix = string.formatters["%0.8F %0.8F %0.8F %0.8F"]
 
 function commands.pdfrotation(a)
     -- todo: check for 1 and 0 and flush sparse

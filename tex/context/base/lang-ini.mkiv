@@ -479,7 +479,7 @@
    \lang_basics_switch_asked}
 
 \unexpanded\def\language
-  {\doifnextoptionalelse\lang_basics_set_current\normallanguage}
+  {\doifnextoptionalcselse\lang_basics_set_current\normallanguage}
 
 \newcount\mainlanguagenumber
 
@@ -505,7 +505,7 @@
     \normallanguage\mainlanguagenumber
 \to \everybeforepagebody
 
-%D New (see nomarking and nolist):
+%D Used at all?
 
 \def\splitsequence#1#2%
   {\doifelse{#1}\v!no{#2}{\doifelse{#1}\v!yes{\languageparameter\c!limittext}{#1}}}

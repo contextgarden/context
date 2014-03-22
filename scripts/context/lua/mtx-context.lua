@@ -546,6 +546,7 @@ function scripts.context.run(ctxdata,filename)
     local a_arrange     = getargument("arrange")
     local a_noarrange   = getargument("noarrange")
     local a_jiton       = getargument("jiton")
+    local a_jithash     = getargument("jithash")
     local a_texformat   = getargument("texformat")
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or nil
@@ -582,7 +583,8 @@ function scripts.context.run(ctxdata,filename)
                 formatfile, scriptfile = resolvers.locateformat(formatname)
             end
             --
-            a_jiton = (a_jiton or toboolean(analysis.jiton,true)) and true or nil
+            a_jiton   = (a_jiton   or toboolean(analysis.jiton,true)) and true or nil
+            a_jithash = validstring(a_jithash or analysis.jithash) or nil
             --
             if not formatfile or not scriptfile then
                 report("warning: no format found, forcing remake (source driven)")
@@ -665,6 +667,7 @@ function scripts.context.run(ctxdata,filename)
                     ["lua"]                   = scriptfile,
                     ["jobname"]               = jobname,
                     ["jiton"]                 = a_jiton,
+                    ["jithash"]               = a_jithash,
                 }
                 --
                 if a_synctex then

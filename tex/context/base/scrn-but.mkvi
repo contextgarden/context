@@ -217,12 +217,12 @@
   {\global\settrue\c_scrn_button_skipped}
 
 \def\scrn_button_make_normal#currentparameter#inheritedframed#letparameter#setparameter#text%
-  {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
+  {\ctxcommand{injectcurrentreference()}%
    \hbox attr \referenceattribute \lastreferenceattribute
      {#inheritedframed{\ignorespaces#text\removeunwantedspaces}}}
 
 \def\scrn_button_make_contrast#currentparameter#inheritedframed#letparameter#setparameter#text%
-  {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
+  {\ctxcommand{injectcurrentreference()}%
    \hbox attr \referenceattribute \lastreferenceattribute
      {#setparameter\c!foregroundcolor{#currentparameter\c!contrastcolor}%
       #inheritedframed{\ignorespaces#text\removeunwantedspaces}}}

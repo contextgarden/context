@@ -129,10 +129,13 @@ local default   = "dflt"
 
 -- what about analyze in local and not in font
 
-local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr,dynamic)
+local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr,dynamic,ra)
     local features = sequence.features
     if features then
-        for kind, scripts in next, features do
+        local order = sequence.order or { }
+     -- for kind, scripts in next, features do
+        for i=1,#order do --
+            local kind = order[i] --
             local e_e
             local a_e = a_enabled and a_enabled[kind] -- the value (location)
             if a_e ~= nil then
@@ -141,6 +144,7 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                 e_e = s_enabled and s_enabled[kind] -- the value (font)
             end
             if e_e then
+                local scripts = features[kind] --
                 local languages = scripts[script] or scripts[wildcard]
                 if languages then
                  -- local valid, what = false
@@ -174,14 +178,14 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                                 "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a",
                                     font,attr or 0,dynamic,kind,script,language,sequence.name,valid)
                         end
-                        return { valid, attribute, sequence.chain or 0, kind, sequence }
+                        ra[#ra+1] = { valid, attribute, sequence.chain or 0, kind, sequence }
                     end
                 end
             end
         end
-        return false -- { valid, attribute, chain, "generic", sequence } -- false anyway, could be flag instead of table
+        -- { valid, attribute, chain, "generic", sequence } -- false anyway, could be flag instead of table
     else
-        return false -- { false, false, chain, false, sequence } -- indirect lookup, part of chain (todo: make this a separate table)
+        -- { false, false, chain, false, sequence } -- indirect lookup, part of chain (todo: make this a separate table)
     end
 end
 
@@ -249,12 +253,16 @@ function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in specia
      --         return v
      --     end
      -- end)
+--         for s=1,#sequences do
+--             local v = initialize(sequences[s],script,language,s_enabled,a_enabled,font,attr,dynamic)
+--             if v then
+--                 ra[#ra+1] = v
+--             end
+--         end
         for s=1,#sequences do
-            local v = initialize(sequences[s],script,language,s_enabled,a_enabled,font,attr,dynamic)
-            if v then
-                ra[#ra+1] = v
-            end
+            initialize(sequences[s],script,language,s_enabled,a_enabled,font,attr,dynamic,ra)
         end
+-- table.save((jit and "tmc-" or "tma-")..font..".log",ra) -- bug in jit
     end
     return ra
 

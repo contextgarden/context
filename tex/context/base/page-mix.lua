@@ -295,10 +295,31 @@ local function setsplit(specification) -- a rather large function
     local rest          = nil
     local lastlocked    = nil
     local lastcurrent   = nil
+    local lastcontent   = nil
     local backtracked   = false
 
     if trace_state then
         report_state("setting collector to column %s",column)
+    end
+
+    local function unlock(penalty)
+        if lastlocked then
+            if trace_state then
+                report_state("penalty %s, unlocking in column %s",penalty or "-",column)
+            end
+            lastlocked  = nil
+        end
+        lastcurrent = nil
+        lastcontent = nil
+    end
+
+    local function lock(penalty,current)
+        if trace_state then
+            report_state("penalty %s, locking in column %s",penalty,column)
+        end
+        lastlocked  = penalty
+        lastcurrent = current or lastcurrent
+        lastcontent = nil
     end
 
     local function backtrack(start)
@@ -306,7 +327,15 @@ local function setsplit(specification) -- a rather large function
         -- first skip over glue and penalty
         while current do
             local id = getid(current)
-            if id == glue_code or id == penalty_code then
+            if id == glue_code then
+                if trace_state then
+                    report_state("backtracking over %s in column %s","glue",column)
+                end
+                current = getprev(current)
+            elseif id == penalty_code then
+                if trace_state then
+                    report_state("backtracking over %s in column %s","penalty",column)
+                end
                 current = getprev(current)
             else
                 break
@@ -315,13 +344,24 @@ local function setsplit(specification) -- a rather large function
         -- then skip over content
         while current do
             local id = getid(current)
-            if id == glue_code or id == penalty_code then
+            if id == glue_code then
+                if trace_state then
+                    report_state("quitting at %s in column %s","glue",column)
+                end
+                break
+            elseif id == penalty_code then
+                if trace_state then
+                    report_state("quitting at %s in column %s","penalty",column)
+                end
                 break
             else
                 current = getprev(current)
             end
         end
         if not current then
+            if trace_state then
+                report_state("no effective backtracking in column %s",column)
+            end
             current = start
         end
         return current
@@ -338,7 +378,12 @@ local function setsplit(specification) -- a rather large function
                 backtracked = true
             end
             lastcurrent = nil
-            lastlocked = nil
+            if lastlocked then
+                if trace_state then
+                    report_state("unlocking in column %s",column)
+                end
+                lastlocked = nil
+            end
         end
         if head == lasthead then
             if trace_state then
@@ -439,6 +484,9 @@ local function setsplit(specification) -- a rather large function
         else
             -- what else? ignore? treat as valid as usual?
         end
+        if lastcontent then
+            unlock()
+        end
     end
 
     local function process_kern(current,nxt)
@@ -466,24 +514,27 @@ local function setsplit(specification) -- a rather large function
     local function process_rule(current,nxt)
         -- simple variant of h|vlist
         local advance = getfield(current,"height") -- + getfield(current,"depth")
-        local state, skipped = checked(advance+currentskips,"rule")
-        if trace_state then
-            report_state("%-7s > column %s, state %a, rule, advance %p, height %p","rule",column,state,advance,inserttotal,height)
-            if skipped ~= 0 then
-                report_state("%-7s > column %s, discarded %p","rule",column,skipped)
+        if advance ~= 0 then
+            local state, skipped = checked(advance,"rule")
+            if trace_state then
+                report_state("%-7s > column %s, state %a, rule, advance %p, height %p","rule",column,state,advance,inserttotal,height)
+                if skipped ~= 0 then
+                    report_state("%-7s > column %s, discarded %p","rule",column,skipped)
+                end
             end
+            if state == "quit" then
+                return true
+            end
+            height = height + depth + skip + advance
+         -- if state == "next" then
+         --     height = height + nextskips
+         -- else
+         --     height = height + currentskips
+         -- end
+            depth = getfield(current,"depth")
+            skip  = 0
         end
-        if state == "quit" then
-            return true
-        end
-        height = height + depth + skip + advance
-        if state == "next" then
-            height = height + nextskips
-        else
-            height = height + currentskips
-        end
-        depth = getfield(current,"depth")
-        skip  = 0
+        lastcontent = current
     end
 
     -- okay, here we could do some badness like magic but we want something
@@ -495,8 +546,7 @@ local function setsplit(specification) -- a rather large function
     local function process_penalty(current,nxt)
         local penalty = getfield(current,"penalty")
         if penalty == 0 then
-            lastlocked  = nil
-            lastcurrent = nil
+            unlock(penalty)
         elseif penalty == forcedbreak then
             local needed  = getattribute(current,a_checkedbreak)
             local proceed = not needed or needed == 0
@@ -508,8 +558,7 @@ local function setsplit(specification) -- a rather large function
                 end
             end
             if proceed then
-                lastlocked  = nil
-                lastcurrent = nil
+                unlock(penalty)
                 local okay, skipped = gotonext()
                 if okay then
                     if trace_state then
@@ -530,18 +579,15 @@ local function setsplit(specification) -- a rather large function
             end
         elseif penalty < 0 then
             -- we don't care too much
-            lastlocked  = nil
-            lastcurrent = nil
+            unlock(penalty)
         elseif penalty >= 10000 then
             if not lastcurrent then
-                lastcurrent = current
-                lastlocked = penalty
+                lock(penalty,current)
             elseif penalty > lastlocked then
-                lastlocked = penalty
+                lock(penalty)
             end
         else
-            lastlocked  = nil
-            lastcurrent = nil
+            unlock(penalty)
         end
     end
 
@@ -582,7 +628,10 @@ local function setsplit(specification) -- a rather large function
         if trace_state then
             report_state("%-7s > column %s, height %p, depth %p, skip %p","line",column,height,depth,skip)
         end
+        lastcontent = current
     end
+
+local kept = head
 
     while current do
 
@@ -633,14 +682,16 @@ local function setsplit(specification) -- a rather large function
 
     if not current then
         if trace_state then
-            report_state("nilling rest")
+            report_state("nothing left")
         end
-        rest = nil
-     elseif rest == lasthead then
+        -- needs well defined case
+     -- rest = nil
+    elseif rest == lasthead then
         if trace_state then
-            report_state("nilling rest as rest is lasthead")
+            report_state("rest equals lasthead")
         end
-        rest = nil
+        -- test case: x\index{AB} \index{AA}x \blank \placeindex
+        -- makes line disappear: rest = nil
     end
 
     if stripbottom then

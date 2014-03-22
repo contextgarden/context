@@ -349,7 +349,7 @@ local filenames = {
 }
 
 local function locatefile(filename)
-    local fullname = resolvers.findfile(filename,"icc")
+    local fullname = resolvers.findfile(filename,"icc",1,true)
     if not fullname or fullname == "" then
         fullname = resolvers.finders.byscheme("loc",filename) -- could be specific to the project
     end
@@ -743,7 +743,7 @@ end
 function codeinjections.supportedformats()
     local t = { }
     for k, v in table.sortedhash(formats) do
-        if find(k,"pdf") then
+        if find(k,"pdf",1,true) then
             t[#t+1] = k
         end
     end

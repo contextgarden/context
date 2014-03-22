@@ -67,11 +67,11 @@ local function splitreference(str)
         local t = lpegmatch(referencesplitter,str)
         if t then
             local a = t.arguments
-            if a and find(a,"\\") then
+            if a and find(a,"\\",1,true) then
                 t.has_tex = true
             else
                 local o = t.arguments
-                if o and find(o,"\\") then
+                if o and find(o,"\\",1,true) then
                     t.has_tex = true
                 end
             end

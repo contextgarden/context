@@ -14,6 +14,8 @@ local byte, lower = string.byte, string.lower
 -- to be redone: characters will become tagged spaces instead as then we keep track of
 -- spaceskip etc
 
+-- todo: only setattr when export
+
 local next = next
 
 trace_characters = false  trackers.register("typesetters.characters", function(v) trace_characters = v end)

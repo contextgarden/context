@@ -39,27 +39,36 @@
 
 % \enablemode[lmmath]
 
+\let\m_font_fallback_name\empty
+
 \def\font_preloads_reset_nullfont % this is needed because some macro packages (tikz) misuse \nullfont
   {\dorecurse\plusseven{\fontdimen\recurselevel\nullfont\zeropoint}% keep en eye on this as:
    \ctxcommand{resetnullfont()}% in luatex 0.70 this will also do the previous
    \globallet\font_preloads_reset_nullfont\relax}
 
+\def\font_preload_check_mode
+  {\doifmodeelse{lmmath}
+     {\def\m_font_fallback_name{modern-designsize-virtual}}% this will stay
+     {\def\m_font_fallback_name{modern-designsize}}%       % this might become 'modern'
+   \glet\font_preload_check_mode\relax}
+
 \def\font_preload_default_fonts
   {\font_preloads_reset
-   \doifmodeelse{lmmath}
-     {\setupbodyfont[modern-designsize-virtual,\fontstyle,\fontbody]}% this will stay
-     {\setupbodyfont[modern-designsize,\fontstyle,\fontbody]}%       % this might become 'modern'
-   \showmessage\m!fonts6{fallback modern \fontstyle\normalspace\normalizedbodyfontsize}}
+   \font_preload_check_mode
+   \setupbodyfont[\m_font_fallback_name,\fontstyle,\fontbody]%
+   \showmessage\m!fonts6{fallback \m_font_fallback_name\space \fontstyle\normalspace\normalizedbodyfontsize}}
 
 \def\font_preload_default_fonts_mm
-  {\writestatus\m!fonts{preloading latin modern fonts (math)}%
-   \definetypeface[\fontclass][\s!mm][\s!math][modern][\s!default]%
-   \showmessage\m!fonts6{fallback modern mm \normalizedbodyfontsize}}
+  {\font_preload_check_mode
+   \writestatus\m!fonts{preloading \m_font_fallback_name\space (math)}%
+   \definetypeface[\fontclass][\s!mm][\s!math][\m_font_fallback_name][\s!default]%
+   \showmessage\m!fonts6{fallback \m_font_fallback_name\space mm \normalizedbodyfontsize}}
 
 \def\font_preload_default_fonts_tt
-  {\writestatus\m!fonts{preloading latin modern fonts (mono)}%
-   \definetypeface[\fontclass][\s!tt][\s!mono][modern][\s!default]%
-   \showmessage\m!fonts6{fallback modern tt \normalizedbodyfontsize}}
+  {\font_preload_check_mode
+   \writestatus\m!fonts{preloading \m_font_fallback_name\space (mono)}%
+   \definetypeface[\fontclass][\s!tt][\s!mono][\m_font_fallback_name][\s!default]%
+   \showmessage\m!fonts6{fallback \m_font_fallback_name\space tt \normalizedbodyfontsize}}
 
 \def\font_preloads_reset
   {\glet\font_preload_default_fonts   \relax

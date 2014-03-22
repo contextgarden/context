@@ -34,6 +34,8 @@ local stopapplyprocessor  = processors.stopapply
 local texsetcount         = tex.setcount
 local texgetcount         = tex.getcount
 
+local ctx_convertnumber   = context.convertnumber
+
 -- storage
 
 local collected, tobesaved = allocate(), allocate()
@@ -101,11 +103,11 @@ function counters.specials.userpage()
     end
 end
 
-local f_convert = string.formatters["\\convertnumber{%s}{%s}"]
-
-local function convertnumber(str,n)
-    return f_convert(str or "numbers",n)
-end
+-- local f_convert = string.formatters["\\convertnumber{%s}{%s}"]
+--
+-- local function convertnumber(str,n)
+--     return f_convert(str or "numbers",n)
+-- end
 
 function pages.number(realdata,pagespec)
     local userpage, block = realdata.number, realdata.block or "" -- sections.currentblock()
@@ -118,12 +120,12 @@ function pages.number(realdata,pagespec)
         applyprocessor(starter)
     end
     if conversion ~= "" then
-        context.convertnumber(conversion,userpage)
+        ctx_convertnumber(conversion,userpage)
     else
         if conversionset == "" then conversionset = "default" end
         local theconversion = sets.get("structure:conversions",block,conversionset,1,"numbers") -- to be checked: 1
         local data = startapplyprocessor(theconversion)
-        context.convertnumber(data or "number",userpage)
+        ctx_convertnumber(data or "number",userpage)
         stopapplyprocessor()
     end
     if stopper ~= "" then
@@ -318,3 +320,8 @@ function sections.prefixedconverted(name,prefixspec,numberspec)
         counters.converted(name,numberspec)
     end
 end
+
+--
+
+commands.savepagedata      = pages.save
+commands.prefixedconverted = sections.prefixedconverted -- weird place

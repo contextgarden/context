@@ -17,6 +17,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 % todo: tag:: becomes rendering
 % todo: language, character, linked, location
 % todo: fonts etc at sublevels (already defined)
@@ -106,6 +108,14 @@
    \c!entries=,
    \c!alternative=]
 
+
+\definemixedcolumns
+  [\v!register]
+  [\c!n=\registerparameter\c!n,
+   \c!balance=\registerparameter\c!balance,
+   \c!align=\registerparameter\c!align,
+   \c!tolerance=\registerparameter\c!tolerance]
+
 %D \starttyping
 %D \setupregister[index][1][textcolor=darkred]
 %D \setupregister[index][2][textcolor=darkgreen,textstyle=bold]
@@ -123,7 +133,8 @@
 \appendtoks
     \ifconditional\c_strc_registers_defining \else % todo: dosingle ...
       \settrue\c_strc_registers_defining
-      \ctxlua{structures.registers.define('\currentregister')}%
+      \definemixedcolumns[\currentregister][\v!register]% first as otherwise it overloads start/stop
+      \ctxcommand{defineregister("\currentregister","\registerparameter\c!referencemethod")}%
       \normalexpanded{\presetheadtext[\currentregister=\Word{\currentregister}]}%
       \setuevalue{\currentregister}{\dodoubleempty\strc_registers_insert_entry[\currentregister]}%
       \setuevalue{\e!see\currentregister}{\dodoubleempty\strc_registers_insert_see[\currentregister]}%
@@ -143,6 +154,10 @@
     \fi
 \to \everydefineregister
 
+\appendtoks
+    \ctxcommand{setregistermethod("\currentregister","\registerparameter\c!referencemethod")}%
+\to \everysetupregister
+
 %D Registering:
 
 \def\strc_registers_register_page_entry
@@ -151,6 +166,52 @@
    \else
      \expandafter\strc_registers_register_page_entry_indeed
    \fi}
+
+\def\strc_registers_register_page_expand_xml_entries
+  {\xmlstartraw
+     \xdef\currentregisterentriesa{\registerparameter{\c!entries:1}}%
+     \xdef\currentregisterentriesb{\registerparameter{\c!entries:2}}%
+     \xdef\currentregisterentriesc{\registerparameter{\c!entries:3}}%
+   \xmlstopraw
+   \globallet\currentregistercoding\s!xml}
+
+\def\strc_registers_register_page_expand_yes_entries
+  {\xdef\currentregisterentriesa{\registerparameter{\c!entries:1}}%
+   \xdef\currentregisterentriesb{\registerparameter{\c!entries:2}}%
+   \xdef\currentregisterentriesc{\registerparameter{\c!entries:3}}%
+   \globallet\currentregistercoding\s!tex}
+
+\def\strc_registers_register_page_expand_nop_entries
+  {\xdef\currentregisterentriesa{\detokenizedregisterparameter{\c!entries:1}}%
+   \xdef\currentregisterentriesb{\detokenizedregisterparameter{\c!entries:2}}%
+   \xdef\currentregisterentriesc{\detokenizedregisterparameter{\c!entries:3}}%
+   \globallet\currentregistercoding\s!tex}
+
+\def\strc_registers_register_page_expand_xml
+  {\xmlstartraw
+     \xdef\currentregisterentries{\registerparameter\c!entries}%
+   \xmlstopraw
+   \globallet\currentregistercoding\s!xml}
+
+\def\strc_registers_register_page_expand_yes
+  {\xdef\currentregisterentries{\registerparameter\c!entries}%
+   \globallet\currentregistercoding\s!tex}
+
+\def\strc_registers_register_page_expand_nop
+  {\xdef\currentregisterentries{\detokenizedregisterparameter\c!entries}%
+   \globallet\currentregistercoding\s!tex}
+
+\def\strc_registers_register_page_expand_xml_keys
+  {\xmlstartraw
+     \xdef\currentregisterkeysa{\registerparameter{\c!keys:1}}%
+     \xdef\currentregisterkeysb{\registerparameter{\c!keys:2}}%
+     \xdef\currentregisterkeysc{\registerparameter{\c!keys:3}}%
+   \xmlstopraw}
+
+\def\strc_registers_register_page_expand_yes_keys
+  {\xdef\currentregisterkeysa{\registerparameter{\c!keys:1}}%
+   \xdef\currentregisterkeysb{\registerparameter{\c!keys:2}}%
+   \xdef\currentregisterkeysc{\registerparameter{\c!keys:3}}}
 
 \def\strc_registers_register_page_entry_indeed#1#2#3% register data userdata
   {\begingroup
@@ -165,75 +226,54 @@
    \xdef\currentregisterxmlsetup {\registerparameter\c!xmlsetup}%
    \ifx\currentregisterentries\empty
      \ifx\currentregisterexpansion\s!xml
-       \xmlstartraw
-         \xdef\currentregisterentriesa{\registerparameter{\c!entries:1}}%
-         \xdef\currentregisterentriesb{\registerparameter{\c!entries:2}}%
-         \xdef\currentregisterentriesc{\registerparameter{\c!entries:3}}%
-       \xmlstopraw
-       \globallet\currentregistercoding\s!xml
+       \strc_registers_register_page_expand_xml_entries
+     \else\ifx\currentregisterexpansion\v!yes
+       \strc_registers_register_page_expand_yes_entries
      \else
-       \ifx\currentregisterexpansion\v!yes
-         \xdef\currentregisterentriesa{\registerparameter{\c!entries:1}}%
-         \xdef\currentregisterentriesb{\registerparameter{\c!entries:2}}%
-         \xdef\currentregisterentriesc{\registerparameter{\c!entries:3}}%
-       \else
-         \xdef\currentregisterentriesa{\detokenizedregisterparameter{\c!entries:1}}%
-         \xdef\currentregisterentriesb{\detokenizedregisterparameter{\c!entries:2}}%
-         \xdef\currentregisterentriesc{\detokenizedregisterparameter{\c!entries:3}}%
-       \fi
-       \globallet\currentregistercoding\s!tex
-     \fi
+       \strc_registers_register_page_expand_nop_entries
+     \fi\fi
    \else
      \ifx\currentregisterexpansion\s!xml
-       \xmlstartraw
-         \xdef\currentregisterentries{\registerparameter\c!entries}%
-       \xmlstopraw
-       \globallet\currentregistercoding\s!xml
+       \strc_registers_register_page_expand_xml
+     \else\ifx\currentregisterexpansion\v!yes
+       \strc_registers_register_page_expand_yes
      \else
-       \ifx\currentregisterexpansion\v!yes
-         \xdef\currentregisterentries{\registerparameter\c!entries}%
-       \else
-         \xdef\currentregisterentries{\detokenizedregisterparameter\c!entries}%
-       \fi
-       \globallet\currentregistercoding\s!tex
-     \fi
+       \strc_registers_register_page_expand_nop
+     \fi\fi
    \fi
    \ifx\currentregisterkeys\empty
      \ifx\currentregistercoding\s!xml
-       \xmlstartraw
-         \xdef\currentregisterkeysa{\registerparameter{\c!keys:1}}%
-         \xdef\currentregisterkeysb{\registerparameter{\c!keys:2}}%
-         \xdef\currentregisterkeysc{\registerparameter{\c!keys:3}}%
-       \xmlstopraw
+       \strc_registers_register_page_expand_xml_keys
      \else
-       \xdef\currentregisterkeysa{\registerparameter{\c!keys:1}}%
-       \xdef\currentregisterkeysb{\registerparameter{\c!keys:2}}%
-       \xdef\currentregisterkeysc{\registerparameter{\c!keys:3}}%
+       \strc_registers_register_page_expand_yes_keys
      \fi
    \fi
    \setnextinternalreference
    % we could consider storing register entries in a list which we
    % could then sort
-   \xdef\currentregisternumber{\ctxlua{
-    structures.registers.store { % 'own' should not be in metadata
+   \xdef\currentregisternumber{\ctxcommand{storeregister{ % 'own' should not be in metadata
         metadata = {
-            kind     = "entry",
+          % kind     = "entry",
             name     = "\currentregister",
-            level    = structures.sections.currentlevel(),
+          % level    = structures.sections.currentlevel(),
             coding   = "\currentregistercoding",
-            catcodes = \the\catcodetable,
+          % catcodes = \the\catcodetable,
         \ifx\currentregisterownnumber\v!yes
             own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
         \fi
-            xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
+        \ifx\currentreferencecoding\s!xml
+            xmlroot  =  "\xmldocument", % only useful when text
+        \fi
         \ifx\currentregisterxmlsetup\empty \else
             xmlsetup = "\currentregisterxmlsetup",
         \fi
         },
         references = {
-            internal = \nextinternalreference,
-            section  = structures.sections.currentid(), % hm, why then not also lastsection the same way
+          % internal = \nextinternalreference,
+          % section  = structures.sections.currentid(), % hm, why then not also lastsection the same way
+        \ifx\currentregisterlabel\empty \else
             label    = "\currentregisterlabel",
+        \fi
         },
     % \ifx\currentregisterentries\empty \else
         entries = {
@@ -253,11 +293,11 @@
         userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
      }
    }}%
-   \ctxlua{structures.references.setinternalreference(nil,nil,\nextinternalreference)}%
+ % \ctxcommand{setinternalreference(nil,nil,\nextinternalreference)}% in previous
    \ifx\currentregisterownnumber\v!yes
      \glet\currentregistersynchronize\relax
    \else
-     \xdef\currentregistersynchronize{\ctxlatelua{structures.registers.enhance("\currentregister",\currentregisternumber)}}%
+     \xdef\currentregistersynchronize{\ctxlatecommand{enhanceregister("\currentregister",\currentregisternumber)}}%
    \fi
    \currentregistersynchronize % here?
    % needs thinking ... bla\index{bla}. will break before the . but adding a
@@ -296,7 +336,7 @@
    \fi}
 
 \def\strc_registers_stop_entry[#1][#2]%
-  {\normalexpanded{\ctxlatelua{structures.registers.extend("#1","#2")}}}
+  {\normalexpanded{\ctxlatecommand{extendregister("#1","#2")}}}
 
 \def\setregisterentry   {\dotripleempty\strc_registers_set_entry}
 \def\finishregisterentry{\dotripleempty\strc_registers_finish_entry}
@@ -329,19 +369,19 @@
    \fi
    % I hate this kind of mess ... but it's a user request.
    \ifx\currentregisterentries\empty
-       \normalexpanded{\ctxlua{structures.registers.extend("\currentregister","\currentregisterlabel", {
+       \normalexpanded{\ctxcommand{extendregister("\currentregister","\currentregisterlabel", {
             metadata = {
             \ifx\currentregisterownnumber\v!yes
                 own = "\registerparameter\c!alternative", % can be used instead of pagenumber
             \fi
             },
-            userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+            userdata = \!!bs\detokenize{#3}\!!es
          })%
        }}%
    \else
-       \normalexpanded{\ctxlua{structures.registers.extend("\currentregister","\currentregisterlabel", {
+       \normalexpanded{\ctxcommand{extendregister("\currentregister","\currentregisterlabel", {
             metadata = {
-                catcodes = \the\catcodetable,
+              % catcodes = \the\catcodetable,
                 coding   = "\currentregistercoding",
             \ifx\currentregisterownnumber\v!yes
                 own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
@@ -352,7 +392,7 @@
                 \!!bs\currentregisterentries\!!es,
                 \!!bs\currentregisterkeys\!!es
             },
-            userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+            userdata = \!!bs\detokenize{#3}\!!es
          })
        }}%
    \fi
@@ -374,7 +414,7 @@
 %     \placeregister[index][n=1]
 % \stoptext
 
-% some overlap wit previous
+% some overlap with previous
 
 \unexpanded\def\setstructurepageregister
   {\dotripleempty\strc_registers_set}
@@ -421,16 +461,16 @@
    \fi
    \setnextinternalreference
    % we could consider storing register entries in list
-   \edef\temp{\ctxlua{ structures.registers.store {
+   \edef\temp{\ctxcommand{storeregister{
         metadata = {
             kind     = "see",
             name     = "\currentregister",
-            level    = structures.sections.currentlevel(),
-            catcodes = \the\catcodetable,
+          % level    = structures.sections.currentlevel(),
+          % catcodes = \the\catcodetable,
         },
         references = {
-            internal = \nextinternalreference,
-            section  = structures.sections.currentid(),
+          % internal = \nextinternalreference,
+          % section  = structures.sections.currentid(),
         },
         entries = {
             % we need a special one for xml, this is just a single one
@@ -457,12 +497,13 @@
   {\begingroup
    \edef\currentregister{#1}%
    \setupregister[\currentregister][#2]%
-   \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\ctxlua{structures.registers.analyze('\currentregister',{
+   \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\ctxcommand{analyzeregister('\currentregister',{
         language    = "\registerparameter\s!language",
         method      = "\registerparameter\c!method",
         numberorder = "\registerparameter\c!numberorder",
         compress    = "\registerparameter\c!compress",
         criterium   = "\registerparameter\c!criterium",
+        pagenumber  = \ifx\registerpageseparatorsymbol\empty false\else true\fi,
    })}}}% brrr
    \ifcase\utilityregisterlength\relax
      \resetsystemmode\v!register
@@ -479,6 +520,27 @@
 \unexpanded\def\placeregister
   {\dodoubleempty\strc_registers_place}
 
+% \def\strc_registers_place[#1][#2]%
+%   {\iffirstargument
+%      \begingroup
+%     %\forgetall
+%      \edef\currentregister{#1}%
+%      \setupregister[\currentregister][#2]%
+%      \the\everyplaceregister
+%      \ifnum\registerparameter\c!n>\plusone
+%        \startcolumns
+%          [\c!n=\registerparameter\c!n,
+%           \c!balance=\registerparameter\c!balance,
+%           \c!align=\registerparameter\c!align,
+%           \c!tolerance=\registerparameter\c!tolerance]%
+%        \strc_registers_place_indeed
+%        \stopcolumns
+%      \else
+%        \strc_registers_place_indeed
+%      \fi
+%      \endgroup
+%    \fi}
+
 \def\strc_registers_place[#1][#2]%
   {\iffirstargument
      \begingroup
@@ -486,43 +548,36 @@
      \edef\currentregister{#1}%
      \setupregister[\currentregister][#2]%
      \the\everyplaceregister
-     \ifnum\registerparameter\c!n>\plusone
-       \startcolumns
-         [\c!n=\registerparameter\c!n,
-          \c!balance=\registerparameter\c!balance,
-          \c!align=\registerparameter\c!align,
-          \c!tolerance=\registerparameter\c!tolerance]%
-       \strc_registers_place_indeed
-       \stopcolumns
+     \ifnum\namedmixedcolumnsparameter\currentregister\c!n>\plusone
+       \startmixedcolumns[\currentregister]
+         \strc_registers_place_indeed
+       \stopmixedcolumns
      \else
        \strc_registers_place_indeed
      \fi
      \endgroup
    \fi}
 
-\def\strc_registers_place_columns
-  {\startcolumns
-     [\c!n=\registerparameter\c!n,
-      \c!balance=\registerparameter\c!balance,
-      \c!align=\registerparameter\c!align,
-      \c!tolerance=\registerparameter\c!tolerance]%
-     \startpacked[\v!blank]%
-       \strc_registers_place_indeed
-     \stoppacked
-   \stopcolumns}
-
-\def\strc_registers_place_normal
-  {\startpacked[\v!blank]%
-     \strc_registers_place_indeed
-   \stoppacked}
+% \def\strc_registers_place_columns
+%   {\startmixedcolumns[\currentregister]
+%      \startpacked[\v!blank]%
+%        \strc_registers_place_indeed
+%      \stoppacked
+%    \stopmixedcolumns}
+%
+% \def\strc_registers_place_normal
+%   {\startpacked[\v!blank]%
+%      \strc_registers_place_indeed
+%    \stoppacked}
 
 \def\strc_registers_place_indeed
-  {\ctxlua{structures.registers.process('\currentregister',{
+  {\ctxcommand{processregister('\currentregister',{
         language    = "\registerparameter\s!language",
         method      = "\registerparameter\c!method",
         numberorder = "\registerparameter\c!numberorder",
         compress    = "\registerparameter\c!compress",
         criterium   = "\registerparameter\c!criterium",
+        pagenumber  = \ifx\registerpageseparatorsymbol\empty false\else true\fi,
    },{
         separatorset  = "\registerparameter\c!pageprefixseparatorset",
         conversionset = "\registerparameter\c!pageprefixconversionset",
@@ -685,6 +740,9 @@
 %    \hangafter\plusone
 %    \let\currentregister\savedcurrentregister}
 
+\newdimen\d_strc_registers_hangindent
+\newcount\c_strc_registers_hangafter
+
 \unexpanded\def\startregisterentries#1% depth
   {\endgraf
    \begingroup
@@ -696,13 +754,23 @@
    \ifnum\scratchcounter>\plusone
      \advance\leftskip\d_strc_registers_distance\relax
    \fi
-   \hangindent\registerparameter\c!distance\relax
-   \hangafter\plusone
+   \d_strc_registers_hangindent\registerparameter\c!distance\relax
+   \c_strc_registers_hangafter \plusone
+\blank[\v!samepage]%
    \let\currentregister\savedcurrentregister}
 
 \unexpanded\def\stopregisterentries
   {\endgraf
    \dostoptagged
+   \endgroup}
+
+\unexpanded\def\startregisterentry#1% todo: level
+  {\begingroup
+   \hangindent\d_strc_registers_hangindent
+   \hangafter \c_strc_registers_hangafter}
+
+\unexpanded\def\stopregisterentry
+  {\endgraf
    \endgroup}
 
 \unexpanded\def\startregistersection#1% title
@@ -745,7 +813,7 @@
    \fi}
 
 \unexpanded\def\registeronepagerangeseparator
-  {|\endash|}
+  {|\endash|} % todo use \prewordbreak
 
 \def\withregisterpagecommand#1#2#3#4%
   {\def\currentregisterpageindex{#2}%
@@ -846,7 +914,7 @@
 %     \placeregister[index][n=1,pagecommand=\MyRegisterPageCommand]
 % \stoptext
 
-\def\registerpageuserdata       #1#2{\ctxlua{structures.registers.userdata(#1,"#2")}}
+\def\registerpageuserdata       #1#2{\ctxcommand{registeruserdata(#1,"#2")}}
 \def\currentregisterpageuserdata    {\registerpageuserdata\currentregisterpageindex} % {#1}
 
 % not yet ok : new internal handler names
@@ -857,10 +925,10 @@
 \installcorenamespace{registersymbol}
 
 \setvalue{\??registersymbol n}%
-  {\def\registerpageseparatorsymbol{, }}
+  {\def\registerpageseparatorsymbol{,\space}}
 
 \setvalue{\??registersymbol a}%
-  {\def\registerpageseparatorsymbol{, }} % now done via conversion
+  {\def\registerpageseparatorsymbol{,\space}} % now done via conversion
 
 \setvalue{\??registersymbol\v!none}%
   {\let\registerpageseparatorsymbol\empty
@@ -903,5 +971,7 @@
 \defineregister
   [\v!index]
 %  [\v!indices]
+
+\stopcontextdefinitioncode
 
 \protect \endinput

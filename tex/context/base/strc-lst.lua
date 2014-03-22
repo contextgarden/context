@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 -- move more to commands
 
 local format, gmatch, gsub = string.format, string.gmatch, string.gsub
-local tonumber = tonumber
+local tonumber, type = tonumber, type
 local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
 local simple_hash_to_string, settings_to_hash = utilities.parsers.simple_hash_to_string, utilities.parsers.settings_to_hash
@@ -49,7 +49,7 @@ lists.collected         = collected
 lists.tobesaved         = tobesaved
 
 lists.enhancers         = lists.enhancers or { }
-lists.internals         = allocate(lists.internals or { }) -- to be checked
+-----.internals         = allocate(lists.internals or { }) -- to be checked
 lists.ordered           = allocate(lists.ordered   or { }) -- to be checked
 lists.cached            = cached
 lists.pushed            = pushed
@@ -88,6 +88,7 @@ local function initializer()
     local collected = lists.collected
     local internals = checked(references.internals)
     local ordered   = lists.ordered
+    local usedinternals = references.usedinternals
     local blockdone = { }
     for i=1,#collected do
         local c = collected[i]
@@ -99,6 +100,7 @@ local function initializer()
                 local internal = r.internal
                 if internal then
                     internals[internal] = c
+                    usedinternals[internal] = r.used
                 end
                 local block = r.block
                 if block and not blockdone[block] then
@@ -128,7 +130,17 @@ local function initializer()
     end
 end
 
-job.register('structures.lists.collected', tobesaved, initializer)
+local function finalizer()
+    local flaginternals = references.flaginternals
+    for i=1,#tobesaved do
+        local r = tobesaved[i].references
+        if r and flaginternals[r.internal] then
+            r.used = true
+        end
+    end
+end
+
+job.register('structures.lists.collected', tobesaved, initializer, finalizer)
 
 local groupindices = table.setmetatableindex("table")
 

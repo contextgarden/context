@@ -197,7 +197,7 @@ function environment.reconstructcommandline(arg,noquote)
             a = resolvers.resolve(a)
             a = unquoted(a)
             a = gsub(a,'"','\\"') -- tricky
-            if find(a," ") then
+            if find(a," ",1,true) then
                 result[#result+1] = quoted(a)
             else
                 result[#result+1] = a

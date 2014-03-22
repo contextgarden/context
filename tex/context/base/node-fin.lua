@@ -20,14 +20,13 @@ local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
 local getfield           = nuts.getfield
+local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getlist            = nuts.getlist
 local getleader          = nuts.getleader
 local getattr            = nuts.getattr
-
-local setfield           = nuts.setfield
 local setattr            = nuts.setattr
 
 local copy_node          = nuts.copy

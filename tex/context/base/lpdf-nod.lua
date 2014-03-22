@@ -90,10 +90,10 @@ function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
             if rx == 1 and ry == 1 then
                 setfield(t,"data","1 0 0 1")
             else
-                setfield(t,"data",formatters["%0.6f 0 0 %0.6f"](rx,ry))
+                setfield(t,"data",formatters["%0.6F 0 0 %0.6F"](rx,ry))
             end
         else
-            setfield(t,"data",formatters["%0.6f %0.6f %0.6f %0.6f"](rx,sx,sy,ry))
+            setfield(t,"data",formatters["%0.6F %0.6F %0.6F %0.6F"](rx,sx,sy,ry))
         end
     end
     return t
@@ -103,24 +103,28 @@ nodeinjections.save      = nodepool.pdfsave
 nodeinjections.restore   = nodepool.pdfrestore
 nodeinjections.transform = nodepool.pdfsetmatrix
 
+-- the next one is implemented differently, using latelua
+
 function nodepool.pdfannotation(w,h,d,data,n)
-    local t = copy_node(pdfannot)
-    if w and w ~= 0 then
-        setfield(t,"width",w)
-    end
-    if h and h ~= 0 then
-        setfield(t,"height",h)
-    end
-    if d and d ~= 0 then
-        setfield(t,"depth",d)
-    end
-    if n then
-        setfield(t,"objnum",n)
-    end
-    if data and data ~= "" then
-        setfield(t,"data",data)
-    end
-    return t
+    report("don't use node based annotations!")
+    os.exit()
+--     local t = copy_node(pdfannot)
+--     if w and w ~= 0 then
+--         setfield(t,"width",w)
+--     end
+--     if h and h ~= 0 then
+--         setfield(t,"height",h)
+--     end
+--     if d and d ~= 0 then
+--         setfield(t,"depth",d)
+--     end
+--     if n then
+--         setfield(t,"objnum",n)
+--     end
+--     if data and data ~= "" then
+--         setfield(t,"data",data)
+--     end
+--     return t
 end
 
 -- (!) The next code in pdfdest.w is wrong:
@@ -137,41 +141,43 @@ end
 -- so we need to force a matrix.
 
 function nodepool.pdfdestination(w,h,d,name,view,n)
-    local t = copy_node(pdfdest)
-    local hasdimensions = false
-    if w and w ~= 0 then
-        setfield(t,"width",w)
-        hasdimensions = true
-    end
-    if h and h ~= 0 then
-        setfield(t,"height",h)
-        hasdimensions = true
-    end
-    if d and d ~= 0 then
-        setfield(t,"depth",d)
-        hasdimensions = true
-    end
-    if n then
-        setfield(t,"objnum",n)
-    end
-    view = views[view] or view or 1 -- fit is default
-    setfield(t,"dest_id",name)
-    setfield(t,"dest_type",view)
-    if hasdimensions and view == 0 then -- xyz
-        -- see (!) s -> m -> t -> r
-        -- linked
-        local s = copy_node(pdfsave)
-        local m = copy_node(pdfsetmatrix)
-        local r = copy_node(pdfrestore)
-        setfield(m,"data","1 0 0 1")
-        setfield(s,"next",m)
-        setfield(m,"next",t)
-        setfield(t,"next",r)
-        setfield(m,"prev",s)
-        setfield(t,"prev",m)
-        setfield(r,"prev",t)
-        return s -- a list
-    else
-        return t
-    end
+    report("don't use node based destinations!")
+    os.exit()
+--     local t = copy_node(pdfdest)
+--     local hasdimensions = false
+--     if w and w ~= 0 then
+--         setfield(t,"width",w)
+--         hasdimensions = true
+--     end
+--     if h and h ~= 0 then
+--         setfield(t,"height",h)
+--         hasdimensions = true
+--     end
+--     if d and d ~= 0 then
+--         setfield(t,"depth",d)
+--         hasdimensions = true
+--     end
+--     if n then
+--         setfield(t,"objnum",n)
+--     end
+--     view = views[view] or view or 1 -- fit is default
+--     setfield(t,"dest_id",name)
+--     setfield(t,"dest_type",view)
+--     if hasdimensions and view == 0 then -- xyz
+--         -- see (!) s -> m -> t -> r
+--         -- linked
+--         local s = copy_node(pdfsave)
+--         local m = copy_node(pdfsetmatrix)
+--         local r = copy_node(pdfrestore)
+--         setfield(m,"data","1 0 0 1")
+--         setfield(s,"next",m)
+--         setfield(m,"next",t)
+--         setfield(t,"next",r)
+--         setfield(m,"prev",s)
+--         setfield(t,"prev",m)
+--         setfield(r,"prev",t)
+--         return s -- a list
+--     else
+--         return t
+--     end
 end

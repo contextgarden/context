@@ -8,8 +8,7 @@ if not modules then modules = { } end modules ['node-inj'] = {
 
 -- This is very experimental (this will change when we have luatex > .50 and
 -- a few pending thingies are available. Also, Idris needs to make a few more
--- test fonts. Btw, future versions of luatex will have extended glyph properties
--- that can be of help. Some optimizations can go away when we have faster machines.
+-- test fonts. Some optimizations can go away when we have faster machines.
 
 -- todo: ignore kerns between disc and glyph
 
@@ -30,7 +29,6 @@ local injections         = nodes.injections
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
-local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
 
 local nuts               = nodes.nuts
@@ -58,7 +56,7 @@ local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 
 local a_kernpair = attributes.private('kernpair')
-local a_ligacomp = attributes.private('ligacomp')
+----- a_ligacomp = attributes.private('ligacomp')
 local a_markbase = attributes.private('markbase')
 local a_markmark = attributes.private('markmark')
 local a_markdone = attributes.private('markdone')
@@ -127,9 +125,9 @@ function injections.setkern(current,factor,rlmode,x,tfmchr)
     end
 end
 
-function injections.setmark(start,base,factor,rlmode,ba,ma,index,baseismark) -- ba=baseanchor, ma=markanchor
-    local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])     -- the index argument is no longer used but when this
-    local bound = getattr(base,a_markbase)                   -- fails again we should pass it
+function injections.setmark(start,base,factor,rlmode,ba,ma) -- ba=baseanchor, ma=markanchor
+    local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])
+    local bound = getattr(base,a_markbase)
     local index = 1
     if bound then
         local mb = marks[bound]
@@ -144,13 +142,12 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,index,baseismark) -- 
             report_injections("possible problem, %U is base mark without data (id %a)",getchar(base),bound)
         end
     end
---     index = index or 1
     index = index or 1
     bound = #marks + 1
     setattr(base,a_markbase,bound)
     setattr(start,a_markmark,bound)
     setattr(start,a_markdone,index)
-    marks[bound] = { [index] = { dx, dy, rlmode, baseismark } }
+    marks[bound] = { [index] = { dx, dy, rlmode } }
     return dx, dy, bound
 end
 
@@ -354,7 +351,7 @@ function injections.handler(head,where,keep)
                     end
                 end
                 if maxt > 0 then
-                    local ny = getfield(n,"yoffset")
+                    local ny = getfield(n,"yoffset") -- hm, n unset ?
                     for i=maxt,1,-1 do
                         ny = ny + d[i]
                         local ti = t[i]
@@ -516,8 +513,7 @@ function injections.handler(head,where,keep)
          -- if trace_injections then
          --     show_result(head)
          -- end
-head = tonode(head)
-            return head, true
+            return tonode(head), true
         elseif not keep then
             kerns, cursives, marks = { }, { }, { }
         end

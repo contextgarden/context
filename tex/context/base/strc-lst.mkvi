@@ -147,8 +147,8 @@
    \ifx\p_location\v!here
      % this branch injects nodes !
      \expanded{\ctxlatecommand{enhancelist(\currentlistnumber)}}%
-     \ctxlua{structures.references.setinternalreference(nil,nil,\nextinternalreference)}% will change
-     \xdef\currentstructurelistattribute{\number\lastdestinationattribute}%
+     \ctxcommand{setinternalreference(nil,nil,\nextinternalreference)}% will change
+     \xdef\currentstructurelistattribute{\the\lastdestinationattribute}%
      \dontleavehmode\hbox attr \destinationattribute \lastdestinationattribute{}% todo
    \else
      % and this one doesn't
@@ -1050,7 +1050,7 @@
             \listparameter\c!numbercommand\currentlistsymbol
             \listparameter\c!right
             \endgroup
-            \kern.5em
+            \kern.5\emwidth\relax
             \nobreak
         \fi
     \fi
@@ -1069,7 +1069,7 @@
     \ifconditional\c_lists_has_page
         \ifconditional\c_lists_show_page
             \nobreak
-            \hskip.75em\relax
+            \hskip.75\emwidth\relax
             \nobreak
             \strc_lists_set_reference_attribute\v!pagenumber
             \strc_lists_set_style_color\c!pagestyle\c!pagecolor\v!pagenumber

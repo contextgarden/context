@@ -32,9 +32,8 @@ local getchar            = nuts.getchar
 local getfont            = nuts.getfont
 local getid              = nuts.getid
 local getfield           = nuts.getfield
-local getattr            = nuts.getattr
-
 local setfield           = nuts.setfield
+local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 
 local copy_node          = nuts.copy

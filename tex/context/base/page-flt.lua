@@ -21,20 +21,23 @@ local C, S, P, lpegmatch = lpeg.C, lpeg.S, lpeg.P, lpeg.match
 -- we use floatbox, floatwidth, floatheight
 -- text page leftpage rightpage (todo: top, bottom, margin, order)
 
-local copy_node_list = node.copy_list
+local copy_node_list   = node.copy_list
+local flush_node_list  = node.flush_list
+local copy_node        = node.copy
 
-local setdimen       = tex.setdimen
-local setcount       = tex.setcount
-local texgetbox      = tex.getbox
-local texsetbox      = tex.setbox
+local setdimen         = tex.setdimen
+local setcount         = tex.setcount
+local texgetbox        = tex.getbox
+local texsetbox        = tex.setbox
+local textakebox       = nodes.takebox
 
-floats               = floats or { }
-local floats         = floats
+floats                 = floats or { }
+local floats           = floats
 
-local noffloats      = 0
-local last           = nil
-local default        = "text"
-local pushed         = { }
+local noffloats        = 0
+local last             = nil
+local default          = "text"
+local pushed           = { }
 
 local function initialize()
     return {
@@ -105,21 +108,20 @@ end
 
 function floats.save(which,data)
     which = which or default
-    local b = texgetbox("floatbox")
+    local b = textakebox("floatbox")
     if b then
         local stack = stacks[which]
         noffloats = noffloats + 1
-        local w, h, d = b.width, b.height, b.depth
         local t = {
             n    = noffloats,
             data = data or { },
-            box  = copy_node_list(b),
+            box  = b,
         }
-        texsetbox("floatbox",nil)
         insert(stack,t)
         setcount("global","savednoffloats",#stacks[default])
         if trace_floats then
-            report_floats("%s, category %a, number %a, slot %a, width %p, height %p, depth %p","saving",which,noffloats,#stack,w,h,d)
+            report_floats("%s, category %a, number %a, slot %a, width %p, height %p, depth %p","saving",
+                which,noffloats,#stack,b.width,b.height,b.depth)
         else
             interfaces.showmessage("floatblocks",2,noffloats)
         end
@@ -132,14 +134,13 @@ function floats.resave(which)
     if last then
         which = which or default
         local stack = stacks[which]
-        local b = texgetbox("floatbox")
-        local w, h, d = b.width, b.height, b.depth
-        last.box = copy_node_list(b)
-        texsetbox("floatbox",nil)
+        local b = textakebox("floatbox")
+        last.box = b
         insert(stack,1,last)
         setcount("global","savednoffloats",#stacks[default])
         if trace_floats then
-            report_floats("%s, category %a, number %a, slot %a width %p, height %p, depth %p","resaving",which,noffloats,#stack,w,h,d)
+            report_floats("%s, category %a, number %a, slot %a width %p, height %p, depth %p","resaving",
+                which,noffloats,#stack,b.width,b.height,b.depth)
         else
             interfaces.showmessage("floatblocks",2,noffloats)
         end
@@ -153,9 +154,10 @@ function floats.flush(which,n,bylabel)
     local stack = stacks[which]
     local t, b, n = get(stack,n or 1,bylabel)
     if t then
-        local w, h, d = setdimensions(b)
         if trace_floats then
-            report_floats("%s, category %a, number %a, slot %a width %p, height %p, depth %p","flushing",which,t.n,n,w,h,d)
+            local w, h, d = setdimensions(b) -- ?
+            report_floats("%s, category %a, number %a, slot %a width %p, height %p, depth %p","flushing",
+                which,t.n,n,w,h,d)
         else
             interfaces.showmessage("floatblocks",3,t.n)
         end
@@ -173,9 +175,10 @@ function floats.consult(which,n)
     local stack = stacks[which]
     local t, b, n = get(stack,n)
     if t then
-        local w, h, d = setdimensions(b)
         if trace_floats then
-            report_floats("%s, category %a, number %a, slot %a width %p, height %p, depth %p","consulting",which,t.n,n,w,h,d)
+            local w, h, d = setdimensions(b)
+            report_floats("%s, category %a, number %a, slot %a width %p, height %p, depth %p","consulting",
+                which,t.n,n,w,h,d)
         end
         return t, b, n
     else
@@ -270,16 +273,16 @@ end
 
 -- interface
 
-local context  = context
-local setvalue = context.setvalue
+local context          = context
+local context_setvalue = context.setvalue
 
-commands.flushfloat   = floats.flush
-commands.savefloat    = floats.save
-commands.resavefloat  = floats.resave
-commands.pushfloat    = floats.push
-commands.popfloat     = floats.pop
-commands.consultfloat = floats.consult
-commands.collectfloat = floats.collect
+commands.flushfloat    = floats.flush
+commands.savefloat     = floats.save
+commands.resavefloat   = floats.resave
+commands.pushfloat     = floats.push
+commands.popfloat      = floats.pop
+commands.consultfloat  = floats.consult
+commands.collectfloat  = floats.collect
 
 function commands.getfloatvariable  (...) local v = floats.getvariable(...)      if v then context(v) end end
 function commands.checkedpagefloat  (...) local v = floats.checkedpagefloat(...) if v then context(v) end end
@@ -289,8 +292,8 @@ function commands.doifelsesavedfloat(...) commands.doifelse(floats.nofstacked(..
 
 function commands.analysefloatmethod(str) -- currently only one method
     local method, label, row, column = floats.analysemethod(str)
-    setvalue("floatmethod",method or "")
-    setvalue("floatlabel", label  or "")
-    setvalue("floatrow",   row    or "")
-    setvalue("floatcolumn",column or "")
+    context_setvalue("floatmethod",method or "")
+    context_setvalue("floatlabel", label  or "")
+    context_setvalue("floatrow",   row    or "")
+    context_setvalue("floatcolumn",column or "")
 end

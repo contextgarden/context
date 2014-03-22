@@ -12,7 +12,7 @@ local concat = table.concat
 local floor = math.floor
 local type = type
 
-if string.find(os.getenv("PATH"),";") then
+if string.find(os.getenv("PATH"),";",1,true) then
     io.fileseparator, io.pathseparator = "\\", ";"
 else
     io.fileseparator, io.pathseparator = "/" , ":"

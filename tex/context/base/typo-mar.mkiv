@@ -258,11 +258,13 @@
    \fi
    \ifdone
      \anch_positions_initialize % we use positions at the lua end
-     \ctxlua{typesetters.margins.save{
+     \ctxcommand{savemargindata{
        location    = "\margindataparameter\c!location",
        method      = "\margindataparameter\c!method",
        category    = "\margindataparameter\c!category",
        name        = "\margindataparameter\c!name",
+       scope       = "\margindataparameter\c!scope",
+       number      = \number\nextbox,
        margin      = "\margindataparameter\c!margin", % local normal margin edge
        distance    = \number\dimexpr\margindataparameter\c!distance,
        hoffset     = \number\dimexpr\margindataparameter\c!hoffset,
@@ -286,14 +288,12 @@
    % \ifzeropt\leftskip \else
    %   rightskip = \number\rightskip,
    % \fi
-       scope       = "\margindataparameter\c!scope",
        align       = "\margindataparameter\c!align",
        line        = \number\margindataparameter\c!line,
        stack       = "\margindataparameter\c!stack",
-       number      = \number\nextbox,
      }}%
    \else
-     \ctxlua{typesetters.margins.save{
+     \ctxcommand{savemargindata{
        location    = "\margindataparameter\c!location",
        method      = "\margindataparameter\c!method",
        category    = "\margindataparameter\c!category",

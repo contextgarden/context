@@ -15,75 +15,78 @@ local trace_tags = false  trackers.register("structures.tags", function(v) trace
 
 local report_tags = logs.reporter("backend","tags")
 
-local backends         = backends
-local lpdf             = lpdf
-local nodes            = nodes
+local backends            = backends
+local lpdf                = lpdf
+local nodes               = nodes
 
-local nodeinjections   = backends.pdf.nodeinjections
-local codeinjections   = backends.pdf.codeinjections
+local nodeinjections      = backends.pdf.nodeinjections
+local codeinjections      = backends.pdf.codeinjections
 
-local tasks            = nodes.tasks
+local tasks               = nodes.tasks
 
-local pdfdictionary    = lpdf.dictionary
-local pdfarray         = lpdf.array
-local pdfboolean       = lpdf.boolean
-local pdfconstant      = lpdf.constant
-local pdfreference     = lpdf.reference
-local pdfunicode       = lpdf.unicode
-local pdfstring        = lpdf.string
-local pdfflushobject   = lpdf.flushobject
-local pdfreserveobject = lpdf.reserveobject
-local pdfpagereference = lpdf.pagereference
+local pdfdictionary       = lpdf.dictionary
+local pdfarray            = lpdf.array
+local pdfboolean          = lpdf.boolean
+local pdfconstant         = lpdf.constant
+local pdfreference        = lpdf.reference
+local pdfunicode          = lpdf.unicode
+local pdfstring           = lpdf.string
+local pdfflushobject      = lpdf.flushobject
+local pdfreserveobject    = lpdf.reserveobject
+local pdfpagereference    = lpdf.pagereference
 
-local texgetcount      = tex.getcount
+local addtocatalog        = lpdf.addtocatalog
+local addtopageattributes = lpdf.addtopageattributes
 
-local nodecodes        = nodes.nodecodes
+local texgetcount         = tex.getcount
 
-local hlist_code       = nodecodes.hlist
-local vlist_code       = nodecodes.vlist
-local glyph_code       = nodecodes.glyph
+local nodecodes           = nodes.nodecodes
 
-local a_tagged         = attributes.private('tagged')
-local a_image          = attributes.private('image')
+local hlist_code          = nodecodes.hlist
+local vlist_code          = nodecodes.vlist
+local glyph_code          = nodecodes.glyph
 
-local nuts             = nodes.nuts
-local tonut            = nuts.tonut
-local tonode           = nuts.tonode
+local a_tagged            = attributes.private('tagged')
+local a_image             = attributes.private('image')
 
-local nodepool         = nuts.pool
-local pdfliteral       = nodepool.pdfliteral
+local nuts                = nodes.nuts
+local tonut               = nuts.tonut
+local tonode              = nuts.tonode
 
-local getid            = nuts.getid
-local getattr          = nuts.getattr
-local getprev          = nuts.getprev
-local getnext          = nuts.getnext
-local getlist          = nuts.getlist
-local setfield         = nuts.setfield
+local nodepool            = nuts.pool
+local pdfliteral          = nodepool.pdfliteral
 
-local traverse_nodes   = nuts.traverse
-local tosequence       = nuts.tosequence
-local copy_node        = nuts.copy
-local slide_nodelist   = nuts.slide
-local insert_before    = nuts.insert_before
-local insert_after     = nuts.insert_after
+local getid               = nuts.getid
+local getattr             = nuts.getattr
+local getprev             = nuts.getprev
+local getnext             = nuts.getnext
+local getlist             = nuts.getlist
+local setfield            = nuts.setfield
 
-local structure_stack = { }
-local structure_kids  = pdfarray()
-local structure_ref   = pdfreserveobject()
-local parent_ref      = pdfreserveobject()
-local root            = { pref = pdfreference(structure_ref), kids = structure_kids }
-local tree            = { }
-local elements        = { }
-local names           = pdfarray()
-local taglist         = structures.tags.taglist
-local usedlabels      = structures.tags.labels
-local properties      = structures.tags.properties
-local usedmapping     = { }
+local traverse_nodes      = nuts.traverse
+local tosequence          = nuts.tosequence
+local copy_node           = nuts.copy
+local slide_nodelist      = nuts.slide
+local insert_before       = nuts.insert_before
+local insert_after        = nuts.insert_after
 
-local colonsplitter   = lpeg.splitat(":")
-local dashsplitter    = lpeg.splitat("-")
+local structure_stack     = { }
+local structure_kids      = pdfarray()
+local structure_ref       = pdfreserveobject()
+local parent_ref          = pdfreserveobject()
+local root                = { pref = pdfreference(structure_ref), kids = structure_kids }
+local tree                = { }
+local elements            = { }
+local names               = pdfarray()
+local taglist             = structures.tags.taglist
+local usedlabels          = structures.tags.labels
+local properties          = structures.tags.properties
+local usedmapping         = { }
 
-local add_ids         = false -- true
+local colonsplitter       = lpeg.splitat(":")
+local dashsplitter        = lpeg.splitat("-")
+
+local add_ids             = false -- true
 
 -- function codeinjections.maptag(original,target,kind)
 --     mapping[original] = { target, kind or "inline" }
@@ -124,14 +127,14 @@ local function finishstructure()
             RoleMap    = rolemap,
         }
         pdfflushobject(structure_ref,structuretree)
-        lpdf.addtocatalog("StructTreeRoot",pdfreference(structure_ref))
+        addtocatalog("StructTreeRoot",pdfreference(structure_ref))
         --
         local markinfo = pdfdictionary {
             Marked         = pdfboolean(true),
          -- UserProperties = pdfboolean(true),
          -- Suspects       = pdfboolean(true),
         }
-        lpdf.addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
+        addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
         --
         for fulltag, element in next, elements do
             pdfflushobject(element.knum,element.kids)
@@ -156,7 +159,7 @@ end
 
 local function finishpage()
     -- flush what can be flushed
-    lpdf.addtopageattributes("StructParents",pagenum-1)
+    addtopageattributes("StructParents",pagenum-1)
 end
 
 -- here we can flush and free elements that are finished

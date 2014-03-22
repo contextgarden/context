@@ -33,8 +33,6 @@ local getsubtype      = nuts.getsubtype
 local getbox          = nuts.getbox
 
 local hpack           = nuts.hpack
-local free            = nuts.free
-local copy            = nuts.copy_list
 local traverse_id     = nuts.traverse_id
 local node_dimensions = nuts.dimensions
 

@@ -17,6 +17,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 % Allocation:
 
 \countdef\realpageno \zerocount  \realpageno \plusone
@@ -109,7 +111,7 @@
 % invisible =
 
 \def\strc_pagenumbers_page_state_save % \normalexpanded?
-  {\ctxlua{structures.pages.save({
+  {\ctxcommand{savepagedata({
         prefix        = "\namedcounterparameter\s!userpage\c!prefix",
         separatorset  = "\namedcounterparameter\s!userpage\c!prefixseparatorset",
         conversion    = "\namedcounterparameter\s!userpage\c!prefixconversion",
@@ -461,5 +463,7 @@
 \to \everysetuppagenumbering
 
 \initializepagecounters
+
+\stopcontextdefinitioncode
 
 \protect \endinput

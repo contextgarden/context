@@ -108,7 +108,7 @@
    \expandafter\xdef\csname\??catcodetablen\number\c_syst_catcodes_n\endcsname{\string#1}% logging
    \newconstant#1%
    #1\c_syst_catcodes_n
-   \ctxlua{catcodes.register("\expandafter\gobbleoneargument\string#1",\number#1)}}
+   \ctxcommand{registercatcodetable("\expandafter\gobbleoneargument\string#1",\number#1)}}
 
 \newtoks \everysetdefaultcatcodes
 

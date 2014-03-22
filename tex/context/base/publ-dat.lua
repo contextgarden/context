@@ -382,9 +382,7 @@ end
 
 function loaders.lua(dataset,filename) -- if filename is a table we load that one
     dataset = datasets[dataset]
-    if type(dataset) == "table" then
-        dataset = datasets[dataset]
-    end
+    inspect(filename)
     local data = type(filename) == "table" and filename or table.load(filename)
     if data then
         local luadata = dataset.luadata
@@ -401,13 +399,13 @@ function loaders.xml(dataset,filename)
     dataset = datasets[dataset]
     local luadata = dataset.luadata
     local root = xml.load(filename)
-    for entry in xmlcollected(root,"/bibtex/entry") do
-        local attributes = entry.at
+    for bibentry in xmlcollected(root,"/bibtex/entry") do
+        local attributes = bibentry.at
         local tag = attributes.tag
         local entry = {
             category = attributes.category
         }
-        for field in xmlcollected(entry,"/field") do
+        for field in xmlcollected(bibentry,"/field") do
          -- entry[field.at.name] = xmltext(field)
             entry[field.at.name] = field.dt[1] -- no cleaning yet
         end

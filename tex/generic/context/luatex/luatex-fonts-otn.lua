@@ -2038,9 +2038,12 @@ local autofeatures = fonts.analyzers.features -- was: constants
 local function initialize(sequence,script,language,enabled)
     local features = sequence.features
     if features then
-        for kind, scripts in next, features do
+        local order = features.order
+        for i=1,#order do
+            local kind = order[i] --
             local valid = enabled[kind]
             if valid then
+                local scripts = features[kind] --
                 local languages = scripts[script] or scripts[wildcard]
                 if languages and (languages[language] or languages[wildcard]) then
                     return { valid, autofeatures[kind] or false, sequence.chain or 0, kind, sequence }
@@ -2074,19 +2077,12 @@ function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
         }
         rs[language] = rl
         local sequences = tfmdata.resources.sequences
---         setmetatableindex(rl, function(t,k)
---             if type(k) == "number" then
---                 local v = enabled and initialize(sequences[k],script,language,enabled)
---                 t[k] = v
---                 return v
---             end
---         end)
-for s=1,#sequences do
-    local v = enabled and initialize(sequences[s],script,language,enabled)
-    if v then
-        rl[#rl+1] = v
-    end
-end
+        for s=1,#sequences do
+            local v = enabled and initialize(sequences[s],script,language,enabled)
+            if v then
+                rl[#rl+1] = v
+            end
+        end
     end
     return rl
 end

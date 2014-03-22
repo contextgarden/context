@@ -159,7 +159,7 @@ local variants = {
     { tag = "yellow",  r = .6, g = .6, b =  0 },
 }
 
-local pdf_blob = "pdf: q %0.6f 0 0 %0.6f 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
+local pdf_blob = "pdf: q %0.6F 0 0 %0.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
 
 local cache = { } -- saves some tables but not that impressive
 

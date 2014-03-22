@@ -32,9 +32,8 @@ local getchar           = nuts.getchar
 local getid             = nuts.getid
 local getsubtype        = nuts.getsubtype
 local getfield          = nuts.getfield
-local getattr           = nuts.getattr
-
 local setfield          = nuts.setfield
+local getattr           = nuts.getattr
 local setattr           = nuts.setattr
 
 local hpack_nodes       = nuts.hpack

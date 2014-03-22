@@ -34,6 +34,7 @@ local tonut           = nuts.tonut
 local setfield        = nuts.setfield
 local getchar         = nuts.getchar
 local getattr         = nuts.getattr
+local setattr         = nuts.setattr
 
 local traverse_id     = nuts.traverse_id
 

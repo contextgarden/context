@@ -107,7 +107,7 @@
 \newtoks\everysetupmodule
 
 \unexpanded\def\startmodule
-  {\doifnextoptionalelse\syst_modules_start_yes\syst_modules_start_nop}
+  {\doifnextoptionalcselse\syst_modules_start_yes\syst_modules_start_nop}
 
 \def\syst_modules_start_yes[#name]%
   {\pushmacro\currentmodule

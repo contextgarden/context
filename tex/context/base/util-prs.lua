@@ -179,12 +179,12 @@ function parsers.settings_to_array(str,strict)
     elseif not str or str == "" then
         return { }
     elseif strict then
-        if find(str,"{") then
+        if find(str,"{",1,true) then
             return lpegmatch(pattern,str)
         else
             return { str }
         end
-    elseif find(str,",") then
+    elseif find(str,",",1,true) then
         return lpegmatch(pattern,str)
     else
         return { str }

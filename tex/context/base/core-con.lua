@@ -14,14 +14,13 @@ slower but look nicer this way.</p>
 <p>Some code may move to a module in the language namespace.</p>
 --ldx]]--
 
-local command, context = commands, context
-
 local floor, date, time, concat = math.floor, os.date, os.time, table.concat
 local lower, rep, match = string.lower, string.rep, string.match
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring = tonumber, tostring
 
 local context            = context
+local commands           = commands
 
 local settings_to_array  = utilities.parsers.settings_to_array
 local allocate           = utilities.storage.allocate
@@ -37,9 +36,8 @@ local languages          = languages
 converters.number  = tonumber
 converters.numbers = tonumber
 
-function commands.number(n) context(n) end
-
-commands.numbers = commands.number
+commands.number  = context
+commands.numbers = context
 
 -- to be reconsidered ... languages namespace here, might become local plus a register command
 

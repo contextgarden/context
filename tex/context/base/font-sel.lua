@@ -174,28 +174,58 @@ local names = {
         ["heavyitalic"]  = { "heavyitalic" },
     },
     ["default"] = { -- weight, width, italic
-        ["thin"]        = { weight = { 100, 200, 300, 400, 500 }, width = 5, italic = false },
-        ["extralight"]  = { weight = { 200, 100, 300, 400, 500 }, width = 5, italic = false },
-        ["light"]       = { weight = { 300, 200, 100, 400, 500 }, width = 5, italic = false },
-        ["regular"]     = { weight = { 400, 500, 300, 200, 100 }, width = 5, italic = false },
-        ["italic"]      = { weight = { 400, 500, 300, 200, 100 }, width = 5, italic = true  },
-        ["medium"]      = { weight = { 500, 400, 300, 200, 100 }, width = 5, italic = false },
-        ["demibold"]    = { weight = { 600, 700, 800, 900 },      width = 5, italic = false },
-        ["bold"]        = { weight = { 700, 600, 800, 900 },      width = 5, italic = false },
-        ["bolditalic"]  = { weight = { 700, 600, 800, 900 },      width = 5, italic = true  },
-        ["smallcaps"]   = { weight = { 400, 500, 300, 200, 100 }, width = 5, italic = false },
-        ["heavy"]       = { weight = { 800, 900, 700, 600 },      width = 5, italic = false },
-        ["black"]       = { weight = { 900, 800, 700, 600 },      width = 5, italic = false },
+        ["thin"]             = { weight = { 100, 200, 300, 400, 500 }, width = 5, italic = false },
+        ["thinitalic"]       = { weight = { 100, 200, 300, 400, 500 }, width = 5, italic = true  },
+        ["extralight"]       = { weight = { 200, 100, 300, 400, 500 }, width = 5, italic = false },
+        ["extralightitalic"] = { weight = { 200, 100, 300, 400, 500 }, width = 5, italic = true  },
+        ["light"]            = { weight = { 300, 200, 100, 400, 500 }, width = 5, italic = false },
+        ["lightitalic"]      = { weight = { 300, 200, 100, 400, 500 }, width = 5, italic = true  },
+        ["regular"]          = { weight = { 400, 500, 300, 200, 100 }, width = 5, italic = false },
+        ["italic"]           = { weight = { 400, 500, 300, 200, 100 }, width = 5, italic = true  },
+        ["medium"]           = { weight = { 500, 400, 300, 200, 100 }, width = 5, italic = false },
+        ["mediumitalic"]     = { weight = { 500, 400, 300, 200, 100 }, width = 5, italic = true  },
+        ["demibold"]         = { weight = { 600, 700, 800, 900 },      width = 5, italic = false },
+        ["demibolditalic"]   = { weight = { 600, 700, 800, 900 },      width = 5, italic = true  },
+        ["bold"]             = { weight = { 700, 600, 800, 900 },      width = 5, italic = false },
+        ["bolditalic"]       = { weight = { 700, 600, 800, 900 },      width = 5, italic = true  },
+        ["extrabold"]        = { weight = { 800, 900, 700, 600 },      width = 5, italic = false },
+        ["extrabolditalic"]  = { weight = { 800, 900, 700, 600 },      width = 5, italic = true  },
+        ["heavy"]            = { weight = { 900, 800, 700, 600 },      width = 5, italic = false },
+        ["heavyitalic"]      = { weight = { 900, 800, 700, 600 },      width = 5, italic = true  },
     }
 }
 
-names.simplefonts.slanted     = names.simplefonts.italic
-names.simplefonts.boldslanted = names.simplefonts.bolditalic
+-- simplefonts synonyms
 
-names.default.normal          = names.default.regular
-names.default.slanted         = names.default.italic
-names.default.semibold        = names.default.demibold
-names.default.boldslanted     = names.default.bolditalic
+names.simplefonts.slanted       = names.simplefonts.italic
+names.simplefonts.boldslanted   = names.simplefonts.bolditalic
+
+-- default synonyms
+
+names.default.ultralight        = names.default.extralight
+names.default.semibold          = names.default.demibold
+names.default.ultrabold         = names.default.extrabold
+names.default.black             = names.default.heavy
+
+names.default.ultralightitalic  = names.default.extralightitalic
+names.default.semibolditalic    = names.default.demibolditalic
+names.default.ultrabolditalic   = names.default.extrabolditalic
+names.default.blackitalic       = names.default.heavyitalic
+
+names.default.thinslanted       = names.default.thinitalic
+names.default.extralightslanted = names.default.extralightitalic
+names.default.ultralightslanted = names.default.extralightitalic
+names.default.lightslanted      = names.default.lightitalic
+names.default.slanted           = names.default.italic
+names.default.demiboldslanted   = names.default.demibolditalic
+names.default.semiboldslanted   = names.default.demibolditalic
+names.default.boldslanted       = names.default.bolditalic
+names.default.extraboldslanted  = names.default.extrabolditalic
+names.default.ultraboldslanted  = names.default.extrabolditalic
+names.default.heavyslanted      = names.default.heavyitalic
+names.default.blackslanted      = names.default.heavyitalic
+
+names.default.smallcaps         = names.default.regular
 
 local mathsettings = {
     ["asanamath"] = {
@@ -494,7 +524,7 @@ local function definefontsynonym(data,alternative,index,fallback)
         end
         for _, entry in next, fontdata do
             local designsize = entry["designsize"] or 100
-            if designsize == 100 or designsize == 120 or designsize == 0 or #fontdata == 1 then
+            if designsize == 100 or designsize == 110 or designsize == 120 or designsize == 0 or #fontdata == 1 then
                 local filepath, filename = splitbase(entry["filename"])
                 registerdesignsizes( fontfile, "default", filename )
                 break
@@ -600,7 +630,7 @@ local function definemathfontfallback(data,alternative,index)
         for _, entry in next, fontdata do
             local filename   = entry["filename"]
             local designsize = entry["designsize"] or 100
-            if designsize == 100 or designsize == 120 or designsize == 0 or #fontdata == 1 then
+            if designsize == 100 or designsize == 110 or designsize == 120 or designsize == 0 or #fontdata == 1 then
                 context.definefontfallback( { fallback }, { formatters["file:%s*%s"](filename,features) }, { range }, { rscale = rscale, check = check, force = force, offset = offset } )
                 break
             end

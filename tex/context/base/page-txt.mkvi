@@ -440,12 +440,12 @@
 
 \def\page_layouts_set_text_content[#vertical][#horizontal][#one][#two][#three]% header text middle text/text
   {\iffifthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\c!text:#one}\c!middletext}%
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\v!text:#one}\c!middletext}%
        {\page_layouts_process_element_double
           \c!leftstyle \c!leftcolor \c!leftwidth {#two}%
           \c!rightstyle\c!rightcolor\c!rightwidth{#three}}%
    \else\iffourthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\c!text:#one}\c!middletext}%
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\v!text:#one}\c!middletext}%
        {\page_layouts_process_element_double
           \c!leftstyle \c!leftcolor \c!leftwidth {#two}%
           \c!rightstyle\c!rightcolor\c!rightwidth{#two}}%
@@ -462,16 +462,16 @@
 \def\page_layouts_reset_text_content[#vertical][#horizontal][#tag]% header text middle
   {\edef\currentlayoutelement{#vertical:#horizontal}%
    \ifthirdargument
-     \letvalueempty{\layoutelementhash\executeifdefined{\??layouttextcontent\c!text:#tag}\c!middletext}%
+     \letvalueempty{\layoutelementhash\executeifdefined{\??layouttextcontent\v!text:#tag}\c!middletext}%
    \else\ifsecondargument
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!middletext
      \resetlayoutelementparameter\c!righttext
    \fi\fi}
 
-\letvalue{\??layouttextcontent\c!middle:\c!text}\c!middletext
-\letvalue{\??layouttextcontent\c!left  :\c!text}\c!lefttext
-\letvalue{\??layouttextcontent\c!right :\c!text}\c!righttext
+\letvalue{\??layouttextcontent\c!middle:\v!text}\c!middletext
+\letvalue{\??layouttextcontent\c!left  :\v!text}\c!lefttext
+\letvalue{\??layouttextcontent\c!right :\v!text}\c!righttext
 
 %D The placement of a whole line is handled by the next two
 %D macros. These are hooked into the general purpose token

@@ -38,7 +38,7 @@ local function splitmethod(filename) -- todo: filetype in specification
 
  -- filename = gsub(filename,"^%./",getcurrentdir().."/") -- we will merge dir.expandname and collapse some day
 
-    if not find(filename,"://") then
+    if not find(filename,"://",1,true) then
         return { scheme = "file", path = filename, original = filename, filename = filename }
     end
     local specification = url.hashed(filename)

@@ -401,7 +401,7 @@
   {\doifassignmentelse{#title}
      {\setupcurrentcomment[#title]}
      {\setupcurrentcomment[\c!title=#title,#settings]}%
-   \ctxlua{buffers.assign("\v!comment",\!!bs#text\!!es)}% todo: expansion control, but expanded by default (xml)
+   \ctxcommand{assignbuffer("\v!comment",\!!bs#text\!!es)}% todo: expansion control, but expanded by default (xml)
    \scrn_comment_inject
    \ignorespaces}
 

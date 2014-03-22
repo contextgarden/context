@@ -9,27 +9,30 @@ if not modules then modules = { } end modules ['trac-deb'] = {
 local lpeg, status = lpeg, status
 
 local lpegmatch = lpeg.match
-local format, concat, match = string.format, table.concat, string.match
+local format, concat, match, find = string.format, table.concat, string.match, string.find
 local tonumber, tostring = tonumber, tostring
 
 -- maybe tracers -> tracers.tex (and tracers.lua for current debugger)
 
-local report_system = logs.reporter("system","tex")
+local report_tex  = logs.reporter("tex error")
+local report_lua  = logs.reporter("lua error")
+local report_nl   = logs.newline
+local report_str  = logs.writer
 
-tracers             = tracers or { }
-local tracers       = tracers
+tracers           = tracers or { }
+local tracers     = tracers
 
-tracers.lists       = { }
-local lists         = tracers.lists
+tracers.lists     = { }
+local lists       = tracers.lists
 
-tracers.strings     = { }
-local strings       = tracers.strings
+tracers.strings   = { }
+local strings     = tracers.strings
 
-local texgetdimen   = tex.getdimen
-local texgettoks    = tex.gettoks
-local texgetcount   = tex.getcount
+local texgetdimen = tex.getdimen
+local texgettoks  = tex.gettoks
+local texgetcount = tex.getcount
 
-strings.undefined   = "undefined"
+strings.undefined = "undefined"
 
 lists.scratch = {
     0, 2, 4, 6, 8
@@ -96,7 +99,9 @@ function tracers.knownlist(name)
     return l and #l > 0
 end
 
-function tracers.showlines(filename,linenumber,offset,errorstr)
+local savedluaerror = nil
+
+function tracers.showlines(filename,linenumber,offset,luaerrorline)
     local data = io.loaddata(filename)
     if not data or data == "" then
         local hash = url.hashed(filename)
@@ -109,35 +114,18 @@ function tracers.showlines(filename,linenumber,offset,errorstr)
     end
     local lines = data and string.splitlines(data)
     if lines and #lines > 0 then
-        -- This does not work completely as we cannot access the last Lua error using
-        -- table.print(status.list()). This is on the agenda. Eventually we will
-        -- have a sequence of checks here (tex, lua, mp) at this end.
-        --
-        -- Actually, in 0.75+ the lua error message is even weirder as you can
-        -- get:
-        --
-        --   LuaTeX error [string "\directlua "]:3: unexpected symbol near '1' ...
-        --
-        --   <inserted text> \endgroup \directlua {
-        --
-        -- So there is some work to be done in the LuaTeX engine.
-        --
-        local what, where = match(errorstr,[[LuaTeX error <main (%a+) instance>:(%d+)]])
-                         or match(errorstr,[[LuaTeX error %[string "\\(.-lua) "%]:(%d+)]]) -- buglet
-        if where then
+        if luaerrorline and luaerrorline > 0 then
             -- lua error: linenumber points to last line
             local start = "\\startluacode"
             local stop  = "\\stopluacode"
-            local where = tonumber(where)
-            if lines[linenumber] == start then
-                local n = linenumber
-                for i=n,1,-1 do
-                    if lines[i] == start then
-                        local n = i + where
-                        if n <= linenumber then
-                            linenumber = n
-                        end
+            local n = linenumber
+            for i=n,1,-1 do
+                if find(lines[i],start) then
+                    n = i + luaerrorline - 1
+                    if n <= linenumber then
+                        linenumber = n
                     end
+                    break
                 end
             end
         end
@@ -160,29 +148,46 @@ function tracers.showlines(filename,linenumber,offset,errorstr)
 end
 
 function tracers.printerror(offset)
-    local inputstack = resolvers.inputstack
-    local filename   = inputstack[#inputstack] or status.filename
-    local linenumber = tonumber(status.linenumber) or 0
+    local inputstack   = resolvers.inputstack
+    local filename     = inputstack[#inputstack] or status.filename
+    local linenumber   = tonumber(status.linenumber) or 0
+    local lasttexerror = status.lasterrorstring or "?"
+    local lastluaerror = status.lastluaerrorstring or lasttexerror
+    local luaerrorline = match(lastluaerror,[[%[.-lua%].-:.-(%d+)]]) -- this will work ok in >=0.79
+    local report       = luaerrorline and report_lua or report_tex
     if not filename then
-        report_system("error not related to input file: %s ...",status.lasterrorstring)
+        report("error not related to input file: %s ...",lasttexerror)
     elseif type(filename) == "number" then
-        report_system("error on line %s of filehandle %s: %s ...",linenumber,filename,status.lasterrorstring)
+        report("error on line %s of filehandle %s: %s ...",linenumber,lasttexerror)
     else
-        -- currently we still get the error message printed to the log/console so we
-        -- add a bit of spacing around our variant
-        texio.write_nl("\n")
-        local errorstr = status.lasterrorstring or "?"
-     -- inspect(status.list())
-        report_system("error on line %s in file %s: %s ...\n",linenumber,filename,errorstr) -- lua error?
-        texio.write_nl(tracers.showlines(filename,linenumber,offset,errorstr),"\n")
+        report_nl()
+        if luaerrorline then
+            report("error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
+        else
+            report("error on line %s in file %s: %s",linenumber,filename,lasttexerror)
+            if tex.show_context then
+                report_nl()
+                tex.show_context()
+            end
+        end
+        report_nl()
+        report_str(tracers.showlines(filename,linenumber,offset,tonumber(luaerrorline)))
+        report_nl()
     end
 end
 
+local nop = function() end
+
 directives.register("system.errorcontext", function(v)
+    local register = callback.register
     if v then
-        callback.register('show_error_hook', function() tracers.printerror(v) end)
+        register('show_error_message',  nop)
+        register('show_error_hook',     function() tracers.printerror(v) end)
+        register('show_lua_error_hook', nop)
     else
-        callback.register('show_error_hook', nil)
+        register('show_error_message',  nil)
+        register('show_error_hook',     nil)
+        register('show_lua_error_hook', nil)
     end
 end)
 

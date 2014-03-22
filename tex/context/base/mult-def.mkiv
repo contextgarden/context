@@ -64,6 +64,8 @@
 \def\c!group            {group}
 \def\c!groupsuffix      {groupsuffix}
 
+\def\c!referencemethod  {referencemethod} % forward both
+
 \def\v!dataset          {dataset}
 \def\v!compressseparator{compressseparator}
 \def\v!notation         {notation}
@@ -116,6 +118,10 @@
 \def\c!etallimit  {etallimit}
 \def\c!etaldisplay{etaldisplay}
 \def\c!etaltext   {etaltext}
+
+\ifdefined\v!simplelist\else \def\v!simplelist{simplelist} \fi
+\ifdefined\v!sorting   \else \def\v!sorting   {sorting}    \fi
+\ifdefined\v!synonym   \else \def\v!synonym   {synonym}    \fi
 
 % stop todo
 

@@ -123,7 +123,7 @@ local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpeggi
             local old = str
             str = lpegmatch(l_rest,  str)
         until old == str
-    until old == str -- or not find(str,"{")
+    until old == str -- or not find(str,"{",1,true)
     str = lpegmatch(stripper_1,str)
     if validate then
         for s in gmatch(str,"[^,]+") do
@@ -191,7 +191,7 @@ function resolvers.cleanpath(str) -- tricky, maybe only simple paths
             report_expansions("no home dir set, ignoring dependent paths")
         end
         function resolvers.cleanpath(str)
-            if not str or find(str,"~") then
+            if not str or find(str,"~",1,true) then
                 return "" -- special case
             else
                 return lpegmatch(cleanup,str)

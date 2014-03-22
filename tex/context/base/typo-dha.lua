@@ -65,12 +65,13 @@ local getfield           = nuts.getfield
 local setfield           = nuts.setfield
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
+local getprop            = nuts.getprop
+local setprop            = nuts.setprop
 
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
 local end_of_math        = nuts.end_of_math
-
 
 local nodepool           = nuts.pool
 
@@ -240,7 +241,7 @@ local function process(start)
                         end
                     elseif lro or override < 0 then
                         if direction == "r" or direction == "al" then
-                            setattr(current,a_state,s_isol)
+                            setprop(current,a_state,s_isol)
                             direction = "l"
                             reversed = true
                         end

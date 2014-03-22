@@ -51,6 +51,9 @@ function lua.registercode(filename,version)
                 bytecode[n] = code
                 lua.lastbytecode = n
             end
+        elseif environment.initex then
+            texio.write_nl("\nerror loading file: " .. filename .. " (aborting)")
+            os.exit()
         end
     end
 end
@@ -85,7 +88,7 @@ local environment = environment
 -- no string.unquoted yet
 
 local sourcefile = gsub(arg and arg[1] or "","^\"(.*)\"$","%1")
-local sourcepath = find(sourcefile,"/") and gsub(sourcefile,"/[^/]+$","") or ""
+local sourcepath = find(sourcefile,"/",1,true) and gsub(sourcefile,"/[^/]+$","") or ""
 local targetpath = "."
 
 -- delayed (via metatable):

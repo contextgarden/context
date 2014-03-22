@@ -457,7 +457,7 @@ function sorters.strip(str) -- todo: only letters and such
         str = gsub(str,"\\[\"\'~^`]*","") -- \"e -- hm, too greedy
         str = gsub(str,"\\%S*","") -- the rest
         str = gsub(str,"%s","\001") -- can be option
-        str = gsub(str,"[%s%[%](){}%$\"\']*","")
+        str = gsub(str,"[%s%[%](){}%$\"\']*","") -- %s already done
         if digits == v_numbers then
             str = gsub(str,"(%d+)",numify) -- sort numbers properly
         end

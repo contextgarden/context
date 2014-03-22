@@ -56,16 +56,18 @@ function context.tocontext(first,...)
     end
 end
 
-function context.tobuffer(name,str)
-    context.startbuffer { name }
-    context.pushcatcodes("verbatim")
-    local lines = (type(str) == "string" and find(str,"[\n\r]") and splitlines(str)) or str
-    for i=1,#lines do
-        context(lines[i] .. " ")
-    end
-    context.stopbuffer()
-    context.popcatcodes()
-end
+-- function context.tobuffer(name,str)
+--     context.startbuffer { name }
+--     context.pushcatcodes("verbatim")
+--     local lines = (type(str) == "string" and find(str,"[\n\r]") and splitlines(str)) or str
+--     for i=1,#lines do
+--         context(lines[i] .. " ")
+--     end
+--     context.stopbuffer()
+--     context.popcatcodes()
+-- end
+
+context.tobuffer = buffers.assign -- (name,str,catcodes)
 
 function context.tolines(str)
     local lines = type(str) == "string" and splitlines(str) or str

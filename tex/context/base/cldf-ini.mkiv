@@ -36,6 +36,15 @@
 \def\cldf#1{\directlua{_cldf_(#1)}} % global (functions)
 \def\cldn#1{\directlua{_cldn_(#1)}} % global (nodes)
 
+\ifx\luafunction\undefined
+    \def\luafunction#1{\directlua{_cldl_(#1)}}
+\fi
+
+\let\cldl\luafunction
+
+% \catcodetable\ctxcatcodes \catcode`^=\superscriptcatcode\catcode1=\activecatcode \global\let^^A=\cldf
+% \catcodetable\ctxcatcodes \catcode`^=\superscriptcatcode\catcode2=\activecatcode \global\let^^B=\cldn
+
 \normalprotected\def\cldprocessfile#1{\directlua{context.runfile("#1")}}
                 \def\cldloadfile   #1{\directlua{context.loadfile("#1")}}
                 \def\cldcontext    #1{\directlua{context(#1)}}

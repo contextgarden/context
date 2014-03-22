@@ -15,47 +15,51 @@ local settings_to_array = utilities.parsers.settings_to_array
 
 local backends, lpdf, nodes, node = backends, lpdf, nodes, node
 
-local nodeinjections   = backends.pdf.nodeinjections
-local codeinjections   = backends.pdf.codeinjections
-local registrations    = backends.pdf.registrations
-local viewerlayers     = attributes.viewerlayers
+local nodeinjections      = backends.pdf.nodeinjections
+local codeinjections      = backends.pdf.codeinjections
+local registrations       = backends.pdf.registrations
+local viewerlayers        = attributes.viewerlayers
 
-local references       = structures.references
+local references          = structures.references
 
-references.executers   = references.executers or { }
-local executers        = references.executers
+references.executers      = references.executers or { }
+local executers           = references.executers
 
-local variables        = interfaces.variables
+local variables           = interfaces.variables
 
-local v_no             = variables.no
-local v_yes            = variables.yes
-local v_start          = variables.start
-local v_stop           = variables.stop
-local v_reset          = variables.reset
-local v_auto           = variables.auto
-local v_random         = variables.random
+local v_no                = variables.no
+local v_yes               = variables.yes
+local v_start             = variables.start
+local v_stop              = variables.stop
+local v_reset             = variables.reset
+local v_auto              = variables.auto
+local v_random            = variables.random
 
-local pdfconstant      = lpdf.constant
-local pdfdictionary    = lpdf.dictionary
-local pdfarray         = lpdf.array
-local pdfreference     = lpdf.reference
-local pdfflushobject   = lpdf.flushobject
-local pdfreserveobject = lpdf.reserveobject
+local pdfconstant         = lpdf.constant
+local pdfdictionary       = lpdf.dictionary
+local pdfarray            = lpdf.array
+local pdfreference        = lpdf.reference
+local pdfflushobject      = lpdf.flushobject
+local pdfreserveobject    = lpdf.reserveobject
 
-local nodepool         = nodes.pool
-local register         = nodepool.register
-local pdfliteral       = nodepool.pdfliteral
+local addtopageattributes = lpdf.addtopageattributes
+local addtopageresources  = lpdf.addtopageresources
+local addtocatalog        = lpdf.addtocatalog
 
-local pdf_ocg          = pdfconstant("OCG")
-local pdf_ocmd         = pdfconstant("OCMD")
-local pdf_off          = pdfconstant("OFF")
-local pdf_on           = pdfconstant("ON")
-local pdf_toggle       = pdfconstant("Toggle")
-local pdf_setocgstate  = pdfconstant("SetOCGState")
+local nodepool            = nodes.pool
+local register            = nodepool.register
+local pdfliteral          = nodepool.pdfliteral
 
-local copy_node        = node.copy
+local pdf_ocg             = pdfconstant("OCG")
+local pdf_ocmd            = pdfconstant("OCMD")
+local pdf_off             = pdfconstant("OFF")
+local pdf_on              = pdfconstant("ON")
+local pdf_toggle          = pdfconstant("Toggle")
+local pdf_setocgstate     = pdfconstant("SetOCGState")
 
-local lpdf_usage = pdfdictionary { Print = pdfdictionary { PrintState = pdf_off } }
+local copy_node           = node.copy
+
+local lpdf_usage          = pdfdictionary { Print = pdfdictionary { PrintState = pdf_off } }
 
 -- We can have references to layers before they are places, for instance from
 -- hide and vide actions. This is why we need to be able to force usage of layers
@@ -163,7 +167,7 @@ local function flushtextlayers()
                     BaseState = pdf_on,
                 },
             }
-            lpdf.addtocatalog("OCProperties",d)
+            addtocatalog("OCProperties",d)
             textlayers = nil
         end
     end
@@ -171,7 +175,7 @@ end
 
 local function flushpagelayers() -- we can share these
     if pagelayers then
-        lpdf.addtopageresources("Properties",pdfreference(pagelayersreference)) -- we could cache this
+        addtopageresources("Properties",pdfreference(pagelayersreference)) -- we could cache this
     end
 end
 
@@ -342,8 +346,8 @@ function codeinjections.setpagetransition(specification)
         end
         delay = tonumber(delay)
         if delay and delay > 0 then
-            lpdf.addtopageattributes("Dur",delay)
+            addtopageattributes("Dur",delay)
         end
-        lpdf.addtopageattributes("Trans",d)
+        addtopageattributes("Trans",d)
     end
 end

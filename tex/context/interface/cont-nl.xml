@@ -6525,7 +6525,7 @@
         <cd:parameter name="maxbreedte">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
-        <cd:parameter name="onbekendeverwijzing">
+        <cd:parameter name="onbekendereferentie">
           <cd:constant type="leeg"/>
           <cd:constant type="geen"/>
         </cd:parameter>
@@ -8996,7 +8996,7 @@
           <cd:constant type="nee"/>
           <cd:constant type="geen"/>
         </cd:parameter>
-        <cd:parameter name="onbekendeverwijzing">
+        <cd:parameter name="onbekendereferentie">
           <cd:constant type="ja"/>
           <cd:constant type="leeg"/>
           <cd:constant type="nee"/>

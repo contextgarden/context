@@ -78,7 +78,7 @@ end
 
 function blocks.select(state,name,tag,criterium)
     criterium = criterium or "text"
-    if find(tag,"=") then tag = "" end
+    if find(tag,"=",1,true) then tag = "" end
     local names = settings_to_set(name)
     local all = tag == ""
     local tags = not all and settings_to_set(tag)

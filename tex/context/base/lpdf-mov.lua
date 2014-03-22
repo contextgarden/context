@@ -11,7 +11,6 @@ local format = string.format
 local lpdf = lpdf
 
 local nodeinjections     = backends.pdf.nodeinjections
-local pdfannotation_node = nodes.pool.pdfannotation
 local pdfconstant        = lpdf.constant
 local pdfdictionary      = lpdf.dictionary
 local pdfarray           = lpdf.array
@@ -38,7 +37,7 @@ function nodeinjections.insertmovie(specification)
         Movie   = moviedict,
         A       = controldict,
     }
-    write_node(pdfannotation_node(width,height,0,action())) -- test: context(...)
+    write_node(nodeinjections.annotation(width,height,0,action())) -- test: context(...)
 end
 
 function nodeinjections.insertsound(specification)
@@ -58,6 +57,6 @@ function nodeinjections.insertsound(specification)
             Movie   = sounddict,
             A       = controldict,
         }
-        write_node(pdfannotation_node(0,0,0,action())) -- test: context(...)
+        write_node(nodeinjections.annotation(0,0,0,action())) -- test: context(...)
     end
 end

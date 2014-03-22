@@ -27,8 +27,8 @@ local tonode          = nuts.tonode
 local getnext         = nuts.getnext
 local getchar         = nuts.getchar
 local getid           = nuts.getid
-local getattr         = nuts.getid
 
+local getattr         = nuts.getattr
 local setattr         = nuts.setattr
 
 local delete_node     = nuts.delete

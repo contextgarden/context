@@ -29,11 +29,11 @@ local getprev              = nuts.getprev
 local getid                = nuts.getid
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
-local getattr              = nuts.getattr
 local getfield             = nuts.getfield
-
-local setattr              = nuts.setattr
 local setfield             = nuts.setfield
+
+local getattr              = nuts.getattr
+local setattr              = nuts.setattr
 
 local insert_node_before   = nuts.insert_before
 local insert_node_after    = nuts.insert_after

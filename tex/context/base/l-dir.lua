@@ -27,7 +27,7 @@ local currentdir = lfs.currentdir
 local chdir      = lfs.chdir
 local mkdir      = lfs.mkdir
 
-local onwindows  = os.type == "windows" or find(os.getenv("PATH"),";")
+local onwindows  = os.type == "windows" or find(os.getenv("PATH"),";",1,true)
 
 -- in case we load outside luatex
 
@@ -189,7 +189,7 @@ local function glob(str,t)
             local split = lpegmatch(pattern,str) -- we could use the file splitter
             if split then
                 local root, path, base = split[1], split[2], split[3]
-                local recurse = find(base,"%*%*")
+                local recurse = find(base,"**",1,true) -- find(base,"%*%*")
                 local start = root .. path
                 local result = lpegmatch(filter,start .. base)
                 globpattern(start,result,recurse,t)
@@ -215,7 +215,7 @@ local function glob(str,t)
                 local t = t or { }
                 local action = action or function(name) t[#t+1] = name end
                 local root, path, base = split[1], split[2], split[3]
-                local recurse = find(base,"%*%*")
+                local recurse =  find(base,"**",1,true) -- find(base,"%*%*")
                 local start = root .. path
                 local result = lpegmatch(filter,start .. base)
                 globpattern(start,result,recurse,action)
@@ -295,7 +295,6 @@ if onwindows then
         else
             str = ""
             for i=1,n do
-                local s = select(i,...)
                 local s = select(i,...)
                 if s == "" then
                     -- skip

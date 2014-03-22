@@ -61,6 +61,10 @@ local strippedprocessor   = processors.stripped
 
 local a_internal          = attributes.private('internal')
 
+local ctx_convertnumber   = context.convertnumber
+local ctx_sprint          = context.sprint
+local ctx_finalizeauto    = context.finalizeautostructurelevel
+
 -- -- -- document -- -- --
 
 local data -- the current state
@@ -239,7 +243,7 @@ end
 
 local saveset = { } -- experiment, see sections/tricky-001.tex
 
-function sections.somelevel(given)
+function sections.setentry(given)
     -- old number
     local numbers     = data.numbers
 
@@ -456,7 +460,7 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
     local data = data.status[depth]
     local d
     if data then
-        if find(key,"%.") then
+        if find(key,".",1,true) then
             d = accesstable(key,data)
         else
             d = data.titledata
@@ -468,7 +472,7 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
             local metadata = data.metadata
             local catcodes = metadata and metadata.catcodes
             if catcodes then
-                context.sprint(catcodes,d)
+                ctx_sprint(catcodes,d)
             else
                 context(d)
             end
@@ -477,7 +481,7 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
         else
             local catcodes = catcodenumbers[honorcatcodetable]
             if catcodes then
-                context.sprint(catcodes,d)
+                ctx_sprint(catcodes,d)
             else
                 context(d)
             end
@@ -512,14 +516,20 @@ function sections.current()
     return data.status[data.depth]
 end
 
-function sections.depthnumber(n)
+local function depthnumber(n)
     local depth = data.depth
     if not n or n == 0 then
         n = depth
     elseif n < 0 then
         n = depth + n
     end
-    return context(data.numbers[n] or 0)
+    return data.numbers[n] or 0
+end
+
+sections.depthnumber = depthnumber
+
+function commands.depthnumber(n)
+    return context(depthnumber(n))
 end
 
 function sections.autodepth(numbers)
@@ -580,11 +590,11 @@ local function process(index,numbers,ownnumbers,criterium,separatorset,conversio
             if ownnumber ~= "" then
                 applyprocessor(ownnumber)
             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
-                context.convertnumber(conversion,number)
+                ctx_convertnumber(conversion,number)
             else
                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
                 local data = startapplyprocessor(theconversion)
-                context.convertnumber(data or "numbers",number)
+                ctx_convertnumber(data or "numbers",number)
                 stopapplyprocessor()
             end
         end
@@ -926,7 +936,7 @@ function commands.autonextstructurelevel(level)
     else
         for i=level,#levels do
             if levels[i] then
-                context.finalizeautostructurelevel()
+                ctx_finalizeauto()
                 levels[i] = false
             end
         end
@@ -937,7 +947,7 @@ end
 function commands.autofinishstructurelevels()
     for i=1,#levels do
         if levels[i] then
-            context.finalizeautostructurelevel()
+            ctx_finalizeauto()
         end
     end
     levels = { }
@@ -945,8 +955,8 @@ end
 
 -- interface (some are actually already commands, like sections.fullnumber)
 
-commands.structurenumber            = function()             sections.fullnumber()                        end
-commands.structuretitle             = function()             sections.title     ()                        end
+commands.structurenumber            = sections.fullnumber
+commands.structuretitle             = sections.title
 
 commands.structurevariable          = function(name)         sections.structuredata(nil,name)             end
 commands.structureuservariable      = function(name)         sections.userdata     (nil,name)             end
@@ -954,15 +964,23 @@ commands.structurecatcodedget       = function(name)         sections.structured
 commands.structuregivencatcodedget  = function(name,catcode) sections.structuredata(nil,name,nil,catcode) end
 commands.structureautocatcodedget   = function(name,catcode) sections.structuredata(nil,name,nil,catcode) end
 
-commands.namedstructurevariable     = function(depth,name)   sections.structuredata(depth,name)           end
-commands.namedstructureuservariable = function(depth,name)   sections.userdata     (depth,name)           end
+commands.namedstructurevariable     = sections.structuredata
+commands.namedstructureuservariable = sections.userdata
 
---
+commands.setsectionlevel            = sections.setlevel
+commands.setsectionnumber           = sections.setnumber
+commands.getsectionnumber           = sections.getnumber
+commands.getfullsectionnumber       = sections.fullnumber
+commands.getstructuredata           = sections.structuredata
+commands.getcurrentsectionlevel     = sections.getcurrentlevel
 
-commands.setsectionblock  = sections.setblock
-commands.pushsectionblock = sections.pushblock
-commands.popsectionblock  = sections.popblock
+commands.setsectionblock            = sections.setblock
+commands.pushsectionblock           = sections.pushblock
+commands.popsectionblock            = sections.popblock
 
+commands.registersection            = sections.register
+commands.setsectionentry            = sections.setentry
+commands.reportstructure            = sections.reportstructure
 --
 
 local byway = "^" .. v_by -- ugly but downward compatible

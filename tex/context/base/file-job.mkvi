@@ -129,20 +129,20 @@
 \unexpanded\def\processfileonce#name{\ctxcommand{processfileonce("#name")}}
 \unexpanded\def\processfilenone#name{\ctxcommand{processfilenone("#name")}}
 
-\unexpanded\def\project    {\doifnextoptionalelse\useproject    \syst_structure_arg_project}
-\unexpanded\def\product    {\doifnextoptionalelse\useproduct    \syst_structure_arg_product}
-\unexpanded\def\component  {\doifnextoptionalelse\usecomponent  \syst_structure_arg_component}
-\unexpanded\def\environment{\doifnextoptionalelse\useenvironment\syst_structure_arg_environment}
+\unexpanded\def\project    {\doifnextoptionalcselse\useproject    \syst_structure_arg_project}
+\unexpanded\def\product    {\doifnextoptionalcselse\useproduct    \syst_structure_arg_product}
+\unexpanded\def\component  {\doifnextoptionalcselse\usecomponent  \syst_structure_arg_component}
+\unexpanded\def\environment{\doifnextoptionalcselse\useenvironment\syst_structure_arg_environment}
 
 \def\syst_structure_arg_project    #name {\ctxcommand{useproject    ("#name")}}
 \def\syst_structure_arg_product    #name {\ctxcommand{useproduct    ("#name")}}
 \def\syst_structure_arg_component  #name {\ctxcommand{usecomponent  ("#name")}}
 \def\syst_structure_arg_environment#name {\ctxcommand{useenvironment("#name")}}
 
-\unexpanded\def\startproject    {\doifnextoptionalelse\syst_structure_start_opt_project    \syst_structure_start_arg_project    }
-\unexpanded\def\startproduct    {\doifnextoptionalelse\syst_structure_start_opt_product    \syst_structure_start_arg_product    }
-\unexpanded\def\startcomponent  {\doifnextoptionalelse\syst_structure_start_opt_component  \syst_structure_start_arg_component  }
-\unexpanded\def\startenvironment{\doifnextoptionalelse\syst_structure_start_opt_environment\syst_structure_start_arg_environment}
+\unexpanded\def\startproject    {\doifnextoptionalcselse\syst_structure_start_opt_project    \syst_structure_start_arg_project    }
+\unexpanded\def\startproduct    {\doifnextoptionalcselse\syst_structure_start_opt_product    \syst_structure_start_arg_product    }
+\unexpanded\def\startcomponent  {\doifnextoptionalcselse\syst_structure_start_opt_component  \syst_structure_start_arg_component  }
+\unexpanded\def\startenvironment{\doifnextoptionalcselse\syst_structure_start_opt_environment\syst_structure_start_arg_environment}
 
 \def\syst_structure_start_arg_project    #name {\ctxcommand{startproject    ("#name")}}
 \def\syst_structure_start_arg_product    #name {\ctxcommand{startproduct    ("#name")}}
@@ -216,7 +216,7 @@
 %      {\letvalue{\e!stop\v!localenvironment}\relax}
 %      {\grabuntil{\e!stop\v!localenvironment}\gobbleoneargument}}
 %
-% \setvalue{\v!localenvironment}{\doifnextoptionalelse\uselocalenvironment\redolocalenvironment}
+% \setvalue{\v!localenvironment}{\doifnextoptionalcselse\uselocalenvironment\redolocalenvironment}
 %
 % \def\redolocalenvironment#1 {\uselocalenvironment[#1]}
 % \def\uselocalenvironment[#1]{\doexecutefileonce{#1}}

@@ -9,14 +9,27 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
 local utfchar, utfvalues = utf.char, utf.values
-local sind, cosd, floor = math.sind, math.cosd, math.floor
+local sind, cosd, floor, max, min = math.sind, math.cosd, math.floor, math.max, math.min
 local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 local formatters = string.formatters
+
+-- pdf.mapfile pdf.mapline (todo: used in font-ctx.lua)
+-- pdf.getpos pdf.gethpos pdf.getvpos
+-- pdf.reserveobj pdf.immediateobj pdf.obj pdf.refobj
+-- pdf.pageref
+-- pdf.catalog pdf.info pdf.names pdf.trailer
+
+local backends           = backends
+local pdf                = pdf
+lpdf                     = lpdf or { }
+local lpdf               = lpdf
 
 local pdfreserveobject   = pdf.reserveobj
 local pdfimmediateobject = pdf.immediateobj
 local pdfdeferredobject  = pdf.obj
 local pdfreferenceobject = pdf.refobj
+
+local factor             = number.dimenfactors.bp
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
@@ -26,8 +39,6 @@ local trace_detail     = false  trackers.register("backend.detail",     function
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
 
-local backends = backends
-
 backends.pdf = backends.pdf or {
     comment        = "backend for directly generating pdf output",
     nodeinjections = { },
@@ -36,8 +47,76 @@ backends.pdf = backends.pdf or {
     tables         = { },
 }
 
-lpdf       = lpdf or { }
-local lpdf = lpdf
+-- first some helpers
+
+local codeinjections = backends.pdf.codeinjections
+
+local pdfgetpos, pdfgethpos, pdfgetvpos, pdfhasmatrix, pdfgetmatrix
+
+if pdf.getpos then
+    pdfgetpos    = pdf.getpos
+    pdfgethpos   = pdf.gethpos
+    pdfgetvpos   = pdf.getvpos
+    pdfgetmatrix = pdf.getmatrix
+    pdfhasmatrix = pdf.hasmatrix
+else
+    if pdf.h then
+        function pdfgetpos () return pdf.h, pdf.v end
+        function pdfgethpos() return pdf.h        end
+        function pdfgetvpos() return pdf.v        end
+    end
+    function pdfhasmatrix() return false            end
+    function pdfgetmatrix() return 1, 0, 0, 1, 0, 0 end
+end
+
+codeinjections.getpos    = pdfgetpos    lpdf.getpos    = pdfgetpos
+codeinjections.gethpos   = pdfgethpos   lpdf.gethpos   = pdfgethpos
+codeinjections.getvpos   = pdfgetvpos   lpdf.getvpos   = pdfgetvpos
+codeinjections.hasmatrix = pdfhasmatrix lpdf.hasmatrix = pdfhasmatrix
+codeinjections.getmatrix = pdfgetmatrix lpdf.getmatrix = pdfgetmatrix
+
+function lpdf.transform(llx,lly,urx,ury)
+    if pdfhasmatrix() then
+        local sx, rx, ry, sy = pdfgetmatrix()
+        local w, h = urx - llx, ury - lly
+        return llx, lly, llx + sy*w - ry*h, lly + sx*h - rx*w
+    else
+        return llx, lly, urx, ury
+    end
+end
+
+-- function lpdf.rectangle(width,height,depth)
+--     local h, v = pdfgetpos()
+--     local llx, lly, urx, ury
+--     if pdfhasmatrix() then
+--         local sx, rx, ry, sy = pdfgetmatrix()
+--         llx = 0
+--         lly = -depth
+--      -- llx =                ry * depth
+--      -- lly = -sx * depth
+--         urx =  sy * width  - ry * height
+--         ury =  sx * height - rx * width
+--     else
+--         llx = 0
+--         lly = -depth
+--         urx = width
+--         ury = height
+--         return (h+llx)*factor, (v+lly)*factor, (h+urx)*factor, (v+ury)*factor
+--     end
+-- end
+
+function lpdf.rectangle(width,height,depth)
+    local h, v = pdfgetpos()
+    if pdfhasmatrix() then
+        local sx, rx, ry, sy = pdfgetmatrix()
+     -- return (h+ry*depth)*factor, (v-sx*depth)*factor, (h+sy*width-ry*height)*factor, (v+sx*height-rx*width)*factor
+        return h           *factor, (v-   depth)*factor, (h+sy*width-ry*height)*factor, (v+sx*height-rx*width)*factor
+    else
+        return h           *factor, (v-   depth)*factor, (h+   width          )*factor, (v+   height         )*factor
+    end
+end
+
+--
 
 local function tosixteen(str) -- an lpeg might be faster (no table)
     if not str or str == "" then
@@ -91,13 +170,13 @@ end
 
 lpdf.toeight = toeight
 
---~ local escaped = lpeg.Cs((lpeg.S("\0\t\n\r\f ()[]{}/%")/function(s) return format("#%02X",byte(s)) end + lpeg.P(1))^0)
-
---~ local function cleaned(str)
---~     return (str and str ~= "" and lpegmatch(escaped,str)) or ""
---~ end
-
---~ lpdf.cleaned = cleaned -- not public yet
+-- local escaped = lpeg.Cs((lpeg.S("\0\t\n\r\f ()[]{}/%")/function(s) return format("#%02X",byte(s)) end + lpeg.P(1))^0)
+--
+-- local function cleaned(str)
+--     return (str and str ~= "" and lpegmatch(escaped,str)) or ""
+-- end
+--
+-- lpdf.cleaned = cleaned -- not public yet
 
 local function merge_t(a,b)
     local t = { }
@@ -112,16 +191,16 @@ local f_dictionary     = formatters["<< % t >>"]
 local f_key_array      = formatters["/%s [ % t ]"]
 local f_array          = formatters["[ % t ]"]
 
+-- local f_key_value      = formatters["/%s %s"]
+-- local f_key_dictionary = formatters["/%s <<% t>>"]
+-- local f_dictionary     = formatters["<<% t>>"]
+-- local f_key_array      = formatters["/%s [% t]"]
+-- local f_array          = formatters["[% t]"]
+
 local tostring_a, tostring_d
 
 tostring_d = function(t,contentonly,key)
-    if not next(t) then
-        if contentonly then
-            return ""
-        else
-            return "<< >>"
-        end
-    else
+    if next(t) then
         local r, rn = { }, 0
         for k, v in next, t do
             rn = rn + 1
@@ -150,18 +229,16 @@ tostring_d = function(t,contentonly,key)
         else
             return f_dictionary(r)
         end
+    elseif contentonly then
+        return ""
+    else
+        return "<< >>"
     end
 end
 
 tostring_a = function(t,contentonly,key)
     local tn = #t
-    if tn == 0 then
-        if contentonly then
-            return ""
-        else
-            return "[ ]"
-        end
-    else
+    if tn ~= 0 then
         local r = { }
         for k=1,tn do
             local v = t[k]
@@ -191,10 +268,14 @@ tostring_a = function(t,contentonly,key)
         else
             return f_array(r)
         end
+    elseif contentonly then
+        return ""
+    else
+        return "[ ]"
     end
 end
 
-local tostring_x = function(t) return concat(t, " ")  end
+local tostring_x = function(t) return concat(t," ")   end
 local tostring_s = function(t) return toeight(t[1])   end
 local tostring_u = function(t) return tosixteen(t[1]) end
 local tostring_n = function(t) return tostring(t[1])  end -- tostring not needed
@@ -207,7 +288,7 @@ local tostring_r = function(t) local n = t[1] return n and n > 0 and (n .. " 0 R
 local tostring_v = function(t)
     local s = t[1]
     if type(s) == "table" then
-        return concat(s,"")
+        return concat(s)
     else
         return s
     end
@@ -325,12 +406,27 @@ local function pdfboolean(b,default)
     end
 end
 
-local function pdfreference(r)
-    return setmetatable({ r or 0 },mt_r)
+local r_zero = setmetatable({ 0 },mt_r)
+
+local function pdfreference(r)  -- maybe make a weak table
+    if r and r ~= 0 then
+        return setmetatable({ r },mt_r)
+    else
+        return r_zero
+    end
 end
 
+local v_zero  = setmetatable({ 0  },mt_v)
+local v_empty = setmetatable({ "" },mt_v)
+
 local function pdfverbose(t) -- maybe check for type
-    return setmetatable({ t or "" },mt_v)
+    if t == 0 then
+        return v_zero
+    elseif t == "" then
+        return v_empty
+    else
+        return setmetatable({ t },mt_v)
+    end
 end
 
 lpdf.stream      = pdfstream -- THIS WILL PROBABLY CHANGE
@@ -345,37 +441,19 @@ lpdf.boolean     = pdfboolean
 lpdf.reference   = pdfreference
 lpdf.verbose     = pdfverbose
 
--- n = pdf.obj(n, str)
--- n = pdf.obj(n, "file", filename)
--- n = pdf.obj(n, "stream", streamtext, attrtext)
--- n = pdf.obj(n, "streamfile", filename, attrtext)
-
--- we only use immediate objects
-
--- todo: tracing
-
 local names, cache = { }, { }
 
 function lpdf.reserveobject(name)
-    if name == "annot" then
-        -- catch misuse
-        return pdfreserveobject("annot")
-    else
-        local r = pdfreserveobject()
-        if name then
-            names[name] = r
-            if trace_objects then
-                report_objects("reserving number %a under name %a",r,name)
-            end
-        elseif trace_objects then
-            report_objects("reserving number %a",r)
+    local r = pdfreserveobject() -- we don't support "annot"
+    if name then
+        names[name] = r
+        if trace_objects then
+            report_objects("reserving number %a under name %a",r,name)
         end
-        return r
+    elseif trace_objects then
+        report_objects("reserving number %a",r)
     end
-end
-
-function lpdf.reserveannotation()
-    return pdfreserveobject("annot")
+    return r
 end
 
 -- lpdf.immediateobject = pdfimmediateobject
@@ -383,11 +461,29 @@ end
 -- lpdf.object          = pdfdeferredobject
 -- lpdf.referenceobject = pdfreferenceobject
 
-lpdf.pagereference      = pdf.pageref or tex.pdfpageref
-lpdf.registerannotation = pdf.registerannot
+local pagereference = pdf.pageref or tex.pdfpageref
+local nofpages      = 0
 
-function lpdf.delayedobject(data) -- we will get rid of this one
-    local n = pdfdeferredobject(data)
+function lpdf.pagereference(n)
+    if nofpages == 0 then
+        nofpages = structures.pages.nofpages
+        if nofpages == 0 then
+            nofpages = 1
+        end
+    end
+    if n > nofpages then
+        return pagereference(nofpages) -- or 1, could be configureable
+    else
+        return pagereference(n)
+    end
+end
+
+function lpdf.delayedobject(data,n)
+    if n then
+        pdfdeferredobject(n,data)
+    else
+        n = pdfdeferredobject(data)
+    end
     pdfreferenceobject(n)
     return n
 end
@@ -484,57 +580,6 @@ function lpdf.shareobjectreference(content)
     end
 end
 
---~ local d = lpdf.dictionary()
---~ local e = lpdf.dictionary { ["e"] = "abc", x = lpdf.dictionary { ["f"] = "ABC" }  }
---~ local f = lpdf.dictionary { ["f"] = "ABC" }
---~ local a = lpdf.array { lpdf.array { lpdf.string("xxx") } }
-
---~ print(a)
---~ os.exit()
-
---~ d["test"] = lpdf.string ("test")
---~ d["more"] = "more"
---~ d["bool"] = true
---~ d["numb"] = 1234
---~ d["oeps"] = lpdf.dictionary { ["hans"] = "ton" }
---~ d["whow"] = lpdf.array { lpdf.string("ton") }
-
---~ a[#a+1] = lpdf.string("xxx")
---~ a[#a+1] = lpdf.string("yyy")
-
---~ d.what = a
-
---~ print(e)
-
---~ local d = lpdf.dictionary()
---~ d["abcd"] = { 1, 2, 3, "test" }
---~ print(d)
---~ print(d())
-
---~ local d = lpdf.array()
---~ d[#d+1] = 1
---~ d[#d+1] = 2
---~ d[#d+1] = 3
---~ d[#d+1] = "test"
---~ print(d)
-
---~ local d = lpdf.array()
---~ d[#d+1] = { 1, 2, 3, "test" }
---~ print(d)
-
---~ local d = lpdf.array()
---~ d[#d+1] = { a=1, b=2, c=3, d="test" }
---~ print(d)
-
---~ local s = lpdf.constant("xx")
---~ print(s) -- fails somehow
---~ print(s()) -- fails somehow
-
---~ local s = lpdf.boolean(false)
---~ s.value = true
---~ print(s)
---~ print(s())
-
 -- three priority levels, default=2
 
 local pagefinalizers, documentfinalizers = { { }, { }, { } }, { { }, { }, { } }
@@ -606,8 +651,8 @@ end
 lpdf.registerpagefinalizer     = registerpagefinalizer
 lpdf.registerdocumentfinalizer = registerdocumentfinalizer
 
-function lpdf.finalizepage()
-    if not environment.initex then
+function lpdf.finalizepage(shipout)
+    if shipout and not environment.initex then
      -- resetpageproperties() -- maybe better before
         run(pagefinalizers,"page")
         setpageproperties()
@@ -625,9 +670,27 @@ function lpdf.finalizedocument()
     end
 end
 
-backends.pdf.codeinjections.finalizepage = lpdf.finalizepage      -- will go when we have hook
+-- backends.pdf.codeinjections.finalizepage = lpdf.finalizepage -- no longer triggered at the tex end
 
---~ callbacks.register("finish_pdfpage", lpdf.finalizepage)
+if not callbacks.register("finish_pdfpage", lpdf.finalizepage) then
+
+    local find_tail    = nodes.tail
+    local latelua_node = nodes.pool.latelua
+
+    function backends.pdf.nodeinjections.finalizepage(head)
+        local t = find_tail(head.list)
+        if t then
+            local n = latelua_node("lpdf.finalizepage(true)") -- last in the shipout
+            t.next = n
+            n.prev = t
+        end
+        return head, true
+    end
+
+    nodes.tasks.appendaction("shipouts","normalizers","backends.pdf.nodeinjections.finalizepage")
+
+end
+
 callbacks.register("finish_pdffile", lpdf.finalizedocument)
 
 -- some minimal tracing, handy for checking the order
@@ -718,7 +781,7 @@ registerpagefinalizer(checkshades,3,"shades")
 
 function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)
-    return format("%0.6f %0.6f %0.6f %0.6f 0 0 cm",c,s,-s,c)
+    return format("%0.6F %0.6F %0.6F %0.6F 0 0 cm",c,s,-s,c)
 end
 
 -- ! -> universaltime
@@ -795,29 +858,29 @@ end
 -- lpdf.addtoinfo("ConTeXt.Jobname", environment.jobname)
 -- lpdf.addtoinfo("ConTeXt.Url",     "www.pragma-ade.com")
 
-if not pdfreferenceobject then
-
-    local delayed = { }
-
-    local function flush()
-        local n = 0
-        for k,v in next, delayed do
-            pdfimmediateobject(k,v)
-            n = n + 1
-        end
-        if trace_objects then
-            report_objects("%s objects flushed",n)
-        end
-        delayed = { }
-    end
-
-    lpdf.registerdocumentfinalizer(flush,3,"objects") -- so we need a final flush too
-    lpdf.registerpagefinalizer    (flush,3,"objects") -- somehow this lags behind .. I need to look into that some day
-
-    function lpdf.delayedobject(data)
-        local n = pdfreserveobject()
-        delayed[n] = data
-        return n
-    end
-
-end
+-- if not pdfreferenceobject then
+--
+--     local delayed = { }
+--
+--     local function flush()
+--         local n = 0
+--         for k,v in next, delayed do
+--             pdfimmediateobject(k,v)
+--             n = n + 1
+--         end
+--         if trace_objects then
+--             report_objects("%s objects flushed",n)
+--         end
+--         delayed = { }
+--     end
+--
+--     lpdf.registerdocumentfinalizer(flush,3,"objects") -- so we need a final flush too
+--     lpdf.registerpagefinalizer    (flush,3,"objects") -- somehow this lags behind .. I need to look into that some day
+--
+--     function lpdf.delayedobject(data)
+--         local n = pdfreserveobject()
+--         delayed[n] = data
+--         return n
+--     end
+--
+-- end

@@ -14,6 +14,10 @@ more efficient.</p>
 
 -- plus (extra) is obsolete but we will keep it for a while
 
+-- context(new_latelua_node(f_enhance(tag)))
+--     =>
+-- context.lateluafunction(function() f_enhance(tag) end)
+
 -- maybe replace texsp by our own converter (stay at the lua end)
 -- eventually mp will have large numbers so we can use sp there too
 
@@ -174,9 +178,12 @@ local nofpages   = nil
 
 -- beware ... we're not sparse here as lua will reserve slots for the nilled
 
+local getpos  = function() getpos  = backends.codeinjections.getpos  return getpos () end
+local gethpos = function() gethpos = backends.codeinjections.gethpos return gethpos() end
+local getvpos = function() getvpos = backends.codeinjections.getvpos return getvpos() end
+
 local function setdim(name,w,h,d,extra) -- will be used when we move to sp allover
-    local x = pdf.h
-    local y = pdf.v
+    local x, y = getpos()
     if x == 0 then x = nil end
     if y == 0 then y = nil end
     if w == 0 then w = nil end
@@ -226,10 +233,13 @@ local function enhance(data)
         data.r = region
     end
     if data.x == true then
-        data.x = pdf.h
-    end
-    if data.y == true then
-        data.y = pdf.v
+        if data.y == true then
+            data.x, data.y = getpos()
+        else
+            data.x = gethpos()
+        end
+    elseif data.y == true then
+        data.y = getvpos()
     end
     if data.p == true then
         data.p = texgetcount("realpageno")
@@ -289,7 +299,7 @@ commands.setpos     = setall
 function jobpositions.b_col(tag)
     tobesaved[tag] = {
         r = true,
-        x = pdf.h,
+        x = gethpos(),
         w = 0,
     }
     insert(columns,tag)
@@ -301,7 +311,7 @@ function jobpositions.e_col(tag)
     if not t then
         -- something's wrong
     else
-        t.w = pdf.h - t.x
+        t.w = gethpos() - t.x
         t.r = region
     end
     remove(columns)
@@ -328,8 +338,7 @@ end
 
 function jobpositions.b_region(tag)
     local last = tobesaved[tag]
-    last.x = pdf.h
-    last.y = pdf.v
+    last.x, last.y = getpos()
     last.p = texgetcount("realpageno")
     insert(regions,tag)
     region = tag
@@ -337,10 +346,11 @@ end
 
 function jobpositions.e_region(correct)
     local last = tobesaved[region]
+    local v = getvpos()
     if correct then
-        last.h = last.y - pdf.v
+        last.h = last.y - v
     end
-    last.y = pdf.v
+    last.y = v
     remove(regions)
     region = regions[#regions]
 end
@@ -357,7 +367,7 @@ function jobpositions.markregionbox(n,tag,correct)
     tobesaved[tag] = {
         p = true,
         x = true,
-        y = pdf.v, -- true,
+        y = getvpos(), -- true,
         w = w ~= 0 and w or nil,
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
@@ -748,7 +758,7 @@ function commands.MPx(id)
     if jpi then
         local x = jpi.x
         if x and x ~= true and x ~= 0 then
-            context("%.5fpt",x*pt)
+            context("%.5Fpt",x*pt)
             return
         end
     end
@@ -760,7 +770,7 @@ function commands.MPy(id)
     if jpi then
         local y = jpi.y
         if y and y ~= true and y ~= 0 then
-            context("%.5fpt",y*pt)
+            context("%.5Fpt",y*pt)
             return
         end
     end
@@ -772,7 +782,7 @@ function commands.MPw(id)
     if jpi then
         local w = jpi.w
         if w and w ~= 0 then
-            context("%.5fpt",w*pt)
+            context("%.5Fpt",w*pt)
             return
         end
     end
@@ -784,7 +794,7 @@ function commands.MPh(id)
     if jpi then
         local h = jpi.h
         if h and h ~= 0 then
-            context("%.5fpt",h*pt)
+            context("%.5Fpt",h*pt)
             return
         end
     end
@@ -796,7 +806,7 @@ function commands.MPd(id)
     if jpi then
         local d = jpi.d
         if d and d ~= 0 then
-            context("%.5fpt",d*pt)
+            context("%.5Fpt",d*pt)
             return
         end
     end
@@ -806,7 +816,7 @@ end
 function commands.MPxy(id)
     local jpi = collected[id]
     if jpi then
-        context('(%.5fpt,%.5fpt)',
+        context('(%.5Fpt,%.5Fpt)',
             jpi.x*pt,
             jpi.y*pt
         )
@@ -818,7 +828,7 @@ end
 function commands.MPll(id)
     local jpi = collected[id]
     if jpi then
-        context('(%.5fpt,%.5fpt)',
+        context('(%.5Fpt,%.5Fpt)',
              jpi.x       *pt,
             (jpi.y-jpi.d)*pt
         )
@@ -830,7 +840,7 @@ end
 function commands.MPlr(id)
     local jpi = collected[id]
     if jpi then
-        context('(%.5fpt,%.5fpt)',
+        context('(%.5Fpt,%.5Fpt)',
             (jpi.x + jpi.w)*pt,
             (jpi.y - jpi.d)*pt
         )
@@ -842,7 +852,7 @@ end
 function commands.MPur(id)
     local jpi = collected[id]
     if jpi then
-        context('(%.5fpt,%.5fpt)',
+        context('(%.5Fpt,%.5Fpt)',
             (jpi.x + jpi.w)*pt,
             (jpi.y + jpi.h)*pt
         )
@@ -854,7 +864,7 @@ end
 function commands.MPul(id)
     local jpi = collected[id]
     if jpi then
-        context('(%.5fpt,%.5fpt)',
+        context('(%.5Fpt,%.5Fpt)',
              jpi.x         *pt,
             (jpi.y + jpi.h)*pt
         )
@@ -868,7 +878,7 @@ local function MPpos(id)
     if jpi then
         local p = jpi.p
         if p then
-            context("%s,%.5fpt,%.5fpt,%.5fpt,%.5fpt,%.5fpt",
+            context("%s,%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt",
                 p,
                 jpi.x*pt,
                 jpi.y*pt,
@@ -926,7 +936,7 @@ local function MPpardata(n)
         t = collected[tag]
     end
     if t then
-        context("%.5fpt,%.5fpt,%.5fpt,%.5fpt,%s,%.5fpt",
+        context("%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt,%s,%.5Fpt",
             t.hs*pt,
             t.ls*pt,
             t.rs*pt,
@@ -952,7 +962,7 @@ end
 function commands.MPls(id)
     local t = collected[id]
     if t then
-        context("%.5fpt",t.ls*pt)
+        context("%.5Fpt",t.ls*pt)
     else
         context("0pt")
     end
@@ -961,7 +971,7 @@ end
 function commands.MPrs(id)
     local t = collected[id]
     if t then
-        context("%.5fpt",t.rs*pt)
+        context("%.5Fpt",t.rs*pt)
     else
         context("0pt")
     end
@@ -994,7 +1004,7 @@ end
 function commands.MPxywhd(id)
     local t = collected[id]
     if t then
-        context("%.5fpt,%.5fpt,%.5fpt,%.5fpt,%.5fpt",
+        context("%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt",
             t.x*pt,
             t.y*pt,
             t.w*pt,

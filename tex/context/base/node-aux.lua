@@ -49,6 +49,7 @@ local copy_node_list     = nuts.copy_list
 local find_tail          = nuts.tail
 local insert_node_after  = nuts.insert_after
 local isnode             = nuts.is_node
+local getbox             = nuts.getbox
 
 local nodes_traverse_id  = nodes.traverse_id
 local nodes_first_glyph  = nodes.first_glyph
@@ -61,7 +62,51 @@ local unsetvalue         = attributes.unsetvalue
 
 local current_font       = font.current
 
+local texsetbox          = tex.setbox
+
 local report_error       = logs.reporter("node-aux:error")
+
+-- At some point we figured that copying before using was the safest bet
+-- when dealing with boxes at the tex end. This is because tex also needs
+-- to manage the grouping (i.e. savestack). However, there is an easy
+-- solution that keeps the tex end happy as tex.setbox deals with this. The
+-- overhead of one temporary list node is neglectable.
+--
+-- function tex.takebox(id)
+--     local box = tex.getbox(id)
+--     if box then
+--         local copy = node.copy(box)
+--         local list = box.list
+--         copy.list = list
+--         box.list = nil
+--         tex.setbox(id,nil)
+--         return copy
+--     end
+-- end
+
+local function takebox(id)
+    local box = getbox(id)
+    if box then
+        local copy = copy_node(box)
+        local list = getlist(box)
+        setfield(copy,"list",list)
+        setfield(box,"list",nil)
+        texsetbox(id,nil)
+        return copy
+    end
+end
+
+function nodes.takebox(id)
+    local b = takebox(id)
+    if b then
+        return tonode(b)
+    end
+end
+
+nuts.takebox = takebox
+tex.takebox  = nodes.takebox -- sometimes more clear
+
+-- so far
 
 local function repackhlist(list,...)
     local temp, b = hpack_nodes(list,...)

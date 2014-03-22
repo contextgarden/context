@@ -38,8 +38,8 @@ local mptopdf    = metapost.mptopdf
 
 mptopdf.nofconverted = 0
 
-local f_translate = formatters["1 0 0 0 1 %f %f cm"]   -- no %s due to 1e-035 issues
-local f_concat    = formatters["%f %f %f %f %f %f cm"] -- no %s due to 1e-035 issues
+local f_translate = formatters["1 0 0 0 1 %F %F cm"]   -- no %s due to 1e-035 issues
+local f_concat    = formatters["%F %F %F %F %F %F cm"] -- no %s due to 1e-035 issues
 
 local m_path, m_stack, m_texts, m_version, m_date, m_shortcuts = { }, { }, { }, 0, 0, false
 

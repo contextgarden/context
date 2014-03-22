@@ -72,6 +72,8 @@ lua.messages = lua.messages or { } local messages = lua.messages
 storage.register("lua/numbers",  numbers,  "lua.numbers" )
 storage.register("lua/messages", messages, "lua.messages")
 
+local f_message = string.formatters["=[instance: %s]"] -- the = controls the lua error / see: lobject.c
+
 local setfenv = setfenv or debug.setfenv -- < 5.2
 
 if setfenv then
@@ -183,7 +185,7 @@ elseif libraries then  -- assume >= 5.2
             messages[lnn] = message
             numbers[name] = lnn
         end
-        luanames[lnn] = message
+        luanames[lnn] = f_message(message)
         context(lnn)
     end
 
@@ -198,7 +200,7 @@ else
             messages[lnn] = message
             numbers[name] = lnn
         end
-        luanames[lnn] = message
+        luanames[lnn] = f_message(message)
         context(lnn)
     end
 

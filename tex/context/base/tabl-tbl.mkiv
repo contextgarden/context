@@ -1076,8 +1076,8 @@
      \tabulatenoalign{\kern-\lineheight}%
    \fi}
 
-\setuvalue{\e!start\v!tabulatehead}{\doifnextoptionalelse\tabl_tabulate_start_head_yes\tabl_tabulate_start_head_nop}
-\setuvalue{\e!start\v!tabulatetail}{\doifnextoptionalelse\tabl_tabulate_start_foot_yes\tabl_tabulate_start_foot_nop}
+\setuvalue{\e!start\v!tabulatehead}{\doifnextoptionalcselse\tabl_tabulate_start_head_yes\tabl_tabulate_start_head_nop}
+\setuvalue{\e!start\v!tabulatetail}{\doifnextoptionalcselse\tabl_tabulate_start_foot_yes\tabl_tabulate_start_foot_nop}
 
 \let\m_tabl_tabulate_data\empty
 
@@ -1097,7 +1097,7 @@
 %   {\bgroup
 %    \edef\currenttabulationparent{#1}%
 %    \let\currenttabulation\currenttabulationparent
-%    \doifnextoptionalelse\tabl_start_defined_yes\tabl_start_defined_nop}
+%    \doifnextoptionalcselse\tabl_start_defined_yes\tabl_start_defined_nop}
 %
 % \def\tabl_start_defined_yes[#1]%
 %   {\edef\currenttabulation{\currenttabulation:#1}%

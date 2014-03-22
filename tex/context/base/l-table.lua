@@ -88,6 +88,38 @@ local function sortedkeys(tab)
     end
 end
 
+local function sortedhashonly(tab)
+    if tab then
+        local srt, s = { }, 0
+        for key,_ in next, tab do
+            if type(key) == "string" then
+                s = s + 1
+                srt[s] = key
+            end
+        end
+        sort(srt)
+        return srt
+    else
+        return { }
+    end
+end
+
+local function sortedindexonly(tab)
+    if tab then
+        local srt, s = { }, 0
+        for key,_ in next, tab do
+            if type(key) == "number" then
+                s = s + 1
+                srt[s] = key
+            end
+        end
+        sort(srt)
+        return srt
+    else
+        return { }
+    end
+end
+
 local function sortedhashkeys(tab,cmp) -- fast one
     if tab then
         local srt, s = { }, 0
@@ -114,8 +146,10 @@ function table.allkeys(t)
     return sortedkeys(keys)
 end
 
-table.sortedkeys     = sortedkeys
-table.sortedhashkeys = sortedhashkeys
+table.sortedkeys      = sortedkeys
+table.sortedhashonly  = sortedhashonly
+table.sortedindexonly = sortedindexonly
+table.sortedhashkeys  = sortedhashkeys
 
 local function nothing() end
 

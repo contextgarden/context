@@ -136,7 +136,7 @@ function getreadfilename(scheme,path,name) -- better do a split and then pass ta
     if hasscheme(name) or is_qualified_path(name) then
         fullname = name
     else
-        if not find(name,"%%") then
+        if not find(name,"%",1,true) then
             name = urlescape(name) -- if no % in names
         end
         fullname = ((path == "") and format("%s:///%s",scheme,name)) or format("%s:///%s/%s",scheme,path,name)

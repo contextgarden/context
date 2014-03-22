@@ -68,7 +68,7 @@ local nodes                = nodes
 
 nodes.gonuts               = gonuts
 
-local nodecodes            = nodes.codes
+local nodecodes            = nodes.nodecodes
 local hlist_code           = nodecodes.hlist
 local vlist_code           = nodecodes.vlist
 

@@ -120,23 +120,31 @@
    \obeyluatokens
    \csname\??luacode#1\endcsname}
 
+% \unexpanded\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet / we could use numbers instead (more efficient)
+%   {\ifcsname\??luacode#1\endcsname \else
+%      \scratchcounter\ctxlua{lua.registername("#1","#3")}%
+%      \normalexpanded{\xdef\csname\??luacode#1\endcsname##1\csname\e!stop#1\v!code\endcsname}%
+%        {\noexpand\normalexpanded{\endgroup\noexpand\directlua\the\scratchcounter{_G=protect("#1\s!data")##1}}}%
+%      \expandafter\edef\csname\e!start#1\v!code\endcsname   {\luat_start_named_lua_code{#1}}%
+%      \expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{_G=protect("#1\s!data")##1}}%
+%    \fi}
+
 \unexpanded\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet / we could use numbers instead (more efficient)
   {\ifcsname\??luacode#1\endcsname \else
-     \scratchcounter\ctxlua{lua.registername("#1","#3")}%
+     \expandafter\chardef\csname\??luacode:#1\endcsname\ctxlua{lua.registername("#1","#3")}%
      \normalexpanded{\xdef\csname\??luacode#1\endcsname##1\csname\e!stop#1\v!code\endcsname}%
-      %{\endgroup\noexpand\directlua\the\scratchcounter{local _ENV=protect("#1\s!data")##1}}%
-       {\noexpand\normalexpanded{\endgroup\noexpand\directlua\the\scratchcounter{local _ENV=protect("#1\s!data")##1}}}%
+       {\noexpand\normalexpanded{\endgroup\noexpand\directlua\csname\??luacode:#1\endcsname{_G=protect("#1\s!data")##1}}}%
      \expandafter\edef\csname\e!start#1\v!code\endcsname   {\luat_start_named_lua_code{#1}}%
-     \expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{local _ENV=protect("#1\s!data")##1}}%
+     \expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\csname\??luacode:#1\endcsname{_G=protect("#1\s!data")##1}}%
    \fi}
 
 %D We predefine a few.
 
 % \definenamedlua[module][module instance] % not needed
 
-\definenamedlua[user]    [private user instance]
-\definenamedlua[third]   [third party module instance]
-\definenamedlua[isolated][isolated instance]
+\definenamedlua[user]    [private user]
+\definenamedlua[third]   [third party module]
+\definenamedlua[isolated][isolated]
 
 %D In practice this works out as follows:
 %D
@@ -265,5 +273,54 @@
 
 \def\luat_lua_code
   {\normalexpanded{\endgroup\noexpand\directlua\expandafter{\the\scratchtoks}}} % \zerocount is default
+
+% \startctxfunction MyFunctionA
+%     context(" A1 ")
+% \stopctxfunction
+%
+% \startctxfunctiondefinition MyFunctionB
+%     context(" B2 ")
+% \stopctxfunctiondefinition
+%
+% \starttext
+%     \dorecurse{10000}{\ctxfunction{MyFunctionA}} \page
+%     \dorecurse{10000}{\MyFunctionB} \page
+%     \dorecurse{10000}{\ctxlua{context(" C3 ")}} \page
+% \stoptext
+
+\installcorenamespace{ctxfunction}
+
+\normalprotected\def\startctxfunctiondefinition #1 %
+  {\begingroup \obeylualines \obeyluatokens \luat_start_lua_function_definition_indeed{#1}}
+
+% \def\luat_start_lua_function_definition_indeed#1#2\stopctxfunctiondefinition
+%   {\endgroup\expandafter\edef\csname#1\endcsname{\noexpand\luafunction\ctxcommand{ctxfunction(\!!bs#2\!!es)}\relax}}
+
+\installcorenamespace{luafunction}
+
+\def\luat_start_lua_function_definition_indeed#1#2\stopctxfunctiondefinition
+  {\endgroup
+   \expandafter\chardef\csname\??luafunction#1\endcsname\ctxcommand{ctxfunction(\!!bs#2\!!es)}\relax
+   \expandafter\edef\csname#1\endcsname{\noexpand\luafunction\csname\??luafunction#1\endcsname}}
+
+% \unexpanded\def\setctxluafunction#1#2% experiment
+%   {\expandafter\chardef\csname#1\endcsname#2\relax}
+
+\unexpanded\def\setctxluafunction#1#2% experiment
+  {\expandafter\chardef\csname\??luafunction#1\endcsname#2\relax
+   \expandafter\edef\csname#1\endcsname{\noexpand\luafunction\csname\??luafunction#1\endcsname}}
+
+\let\stopctxfunctiondefinition\relax
+
+\normalprotected\def\startctxfunction #1 %
+  {\begingroup \obeylualines \obeyluatokens \luat_start_lua_function_indeed{#1}}
+
+\def\luat_start_lua_function_indeed#1#2\stopctxfunction
+  {\endgroup\expandafter\edef\csname\??ctxfunction#1\endcsname{\noexpand\luafunction\ctxcommand{ctxfunction(\!!bs#2\!!es)}\relax}}
+
+\let\stopctxfunction\relax
+
+\def\ctxfunction#1%
+  {\csname\??ctxfunction#1\endcsname}
 
 \protect \endinput

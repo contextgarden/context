@@ -76,6 +76,7 @@ if not modules then modules = { } end modules ['typo-mar'] = {
 local format, validstring = string.format, string.valid
 local insert, remove = table.insert, table.remove
 local setmetatable, next = setmetatable, next
+local formatters = string.formatters
 
 local attributes, nodes, node, variables = attributes, nodes, node, variables
 
@@ -170,6 +171,8 @@ local new_stretch        = nodepool.stretch
 local new_usernumber     = nodepool.usernumber
 local new_latelua        = nodepool.latelua
 
+local lateluafunction    = nodepool.lateluafunction
+
 local texgetcount        = tex.getcount
 local texgetdimen        = tex.getdimen
 local texget             = tex.get
@@ -179,12 +182,14 @@ local points             = number.points
 local isleftpage         = layouts.status.isleftpage
 local registertogether   = builders.paragraphs.registertogether -- tonode
 
-local jobpositions       = job.positions
-local getposition        = jobpositions.position
-
 local a_margindata       = attributes.private("margindata")
 
 local inline_mark        = nodepool.userids["margins.inline"]
+
+local jobpositions       = job.positions
+local getposition        = jobpositions.get
+local setposition        = jobpositions.set
+local getreserved        = jobpositions.getreserved
 
 local margins            = { }
 typesetters.margins      = margins
@@ -368,6 +373,16 @@ end
 
 local status, nofstatus = { }, 0
 
+local f_anchor = formatters["_plib_.set('md:h',%i,{x=true,c=true})"]
+local function setanchor(h_anchor)
+    return new_latelua(f_anchor(h_anchor))
+end
+
+-- local t_anchor = { x = true, c = true }
+-- local function setanchor(h_anchor)
+--      return lateluafunction(function() setposition("md:h",h_anchor,t_anchor) end)
+-- end
+
 local function realign(current,candidate)
     local location      = candidate.location
     local margin        = candidate.margin
@@ -436,10 +451,10 @@ local function realign(current,candidate)
     if inline or anchor ~= v_text or candidate.psubtype == alignment_code then
         -- the alignment_code check catches margintexts ste before a tabulate
         h_anchors = h_anchors + 1
-        anchornode = new_latelua(format("_plib_.set('md:h',%i,{x=true,c=true})",h_anchors))
-        local blob = jobpositions.get('md:h', h_anchors)
+        anchornode = setanchor(h_anchors)
+        local blob = getposition('md:h',h_anchors)
         if blob then
-            local reference = jobpositions.getreserved(anchor,blob.c)
+            local reference = getreserved(anchor,blob.c)
             if reference then
                 if location == v_left then
                     move_x = (reference.x or 0) - (blob.x or 0)
@@ -494,25 +509,36 @@ end
 
 -- resetstacked()
 
-function margins.ha(tag) -- maybe l/r keys ipv left/right keys
+local function ha(tag) -- maybe l/r keys ipv left/right keys
     local p = cache[tag]
     p.p = true
     p.y = true
-    jobpositions.set('md:v',tag,p)
+    setposition('md:v',tag,p)
     cache[tag] = nil
 end
 
-local function markovershoot(current)
+margins.ha = ha
+
+local f_anchor = formatters["typesetters.margins.ha(%s)"]
+local function setanchor(v_anchor)
+    return new_latelua(f_anchor(v_anchor))
+end
+
+-- local function setanchor(v_anchor) -- freezes the global here
+--     return lateluafunction(function() ha(v_anchor) end)
+-- end
+
+local function markovershoot(current) -- todo: alleen als offset > line
     v_anchors = v_anchors + 1
     cache[v_anchors] = stacked
-    local anchor = new_latelua(format("typesetters.margins.ha(%s)",v_anchors)) -- todo: alleen als offset > line
+    local anchor = setanchor(v_anchors)
     local list = hpack_nodes(linked_nodes(anchor,getlist(current)))
     setfield(current,"list",list)
 end
 
 local function getovershoot(location)
-    local p = jobpositions.get("md:v",v_anchors)
-    local c = jobpositions.get("md:v",v_anchors+1)
+    local p = getposition("md:v",v_anchors)
+    local c = getposition("md:v",v_anchors+1)
     if p and c and p.p and p.p == c.p then
         local distance = p.y - c.y
         local offset = p[location] or 0
@@ -901,3 +927,5 @@ statistics.register("margin data", function()
         return nil
     end
 end)
+
+commands.savemargindata = margins.save

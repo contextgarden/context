@@ -55,7 +55,8 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
 -- for printing especially when highlighting (those colorfull foregrounds) is
 -- on.
 
-local gmatch, lower, format = string.gmatch, string.lower, string.format
+local tostring, next = tostring, next
+local gmatch, lower, format, formatters = string.gmatch, string.lower, string.format, string.formatters
 local lpegmatch = lpeg.match
 local utfchar = utf.char
 local bpfactor, todimen = number.dimenfactors.bp, string.todimen
@@ -92,14 +93,13 @@ local pdfflushobject          = lpdf.flushobject
 local pdfshareobjectreference = lpdf.shareobjectreference
 local pdfshareobject          = lpdf.shareobject
 local pdfreserveobject        = lpdf.reserveobject
-local pdfreserveannotation    = lpdf.reserveannotation
 local pdfaction               = lpdf.action
 
+local pdfcolor                = lpdf.color
+local pdfcolorvalues          = lpdf.colorvalues
+local pdflayerreference       = lpdf.layerreference
+
 local hpack_node              = node.hpack
-
-local nodepool                = nodes.pool
-
-local pdfannotation_node      = nodepool.pdfannotation
 
 local submitoutputformat      = 0 --  0=unknown 1=HTML 2=FDF 3=XML   => not yet used, needs to be checked
 
@@ -125,39 +125,39 @@ function codeinjections.setformsmethod(name)
 end
 
 local flag = { -- /Ff
-    ReadOnly          =         1, --   1
-    Required          =         2, --   2
-    NoExport          =         4, --   3
-    MultiLine         =      4096, --  13
-    Password          =      8192, --  14
-    NoToggleToOff     =     16384, --  15
-    Radio             =     32768, --  16
-    PushButton        =     65536, --  17
-    PopUp             =    131072, --  18
-    Edit              =    262144, --  19
-    Sort              =    524288, --  20
-    FileSelect        =   1048576, --  21
-    DoNotSpellCheck   =   4194304, --  23
-    DoNotScroll       =   8388608, --  24
-    Comb              =  16777216, --  25
-    RichText          =  33554432, --  26
-    RadiosInUnison    =  33554432, --  26
-    CommitOnSelChange =  67108864, --  27
+    ReadOnly          = 2^ 0, --  1
+    Required          = 2^ 1, --  2
+    NoExport          = 2^ 2, --  3
+    MultiLine         = 2^12, -- 13
+    Password          = 2^13, -- 14
+    NoToggleToOff     = 2^14, -- 15
+    Radio             = 2^15, -- 16
+    PushButton        = 2^16, -- 17
+    PopUp             = 2^17, -- 18
+    Edit              = 2^18, -- 19
+    Sort              = 2^19, -- 20
+    FileSelect        = 2^20, -- 21
+    DoNotSpellCheck   = 2^22, -- 23
+    DoNotScroll       = 2^23, -- 24
+    Comb              = 2^24, -- 25
+    RichText          = 2^25, -- 26
+    RadiosInUnison    = 2^25, -- 26
+    CommitOnSelChange = 2^26, -- 27
 }
 
 local plus = { -- /F
-    Invisible         =         1, --   1
-    Hidden            =         2, --   2
-    Printable         =         4, --   3
-    Print             =         4, --   3
-    NoZoom            =         8, --   4
-    NoRotate          =        16, --   5
-    NoView            =        32, --   6
-    ReadOnly          =        64, --   7
-    Locked            =       128, --   8
-    ToggleNoView      =       256, --   9
-    LockedContents    =       512, --  10,
-    AutoView          =       256, -- 288 (6+9)
+    Invisible         = 2^0, --   1
+    Hidden            = 2^1, --   2
+    Printable         = 2^2, --   3
+    Print             = 2^2, --   3
+    NoZoom            = 2^3, --   4
+    NoRotate          = 2^4, --   5
+    NoView            = 2^5, --   6
+    ReadOnly          = 2^6, --   7
+    Locked            = 2^7, --   8
+    ToggleNoView      = 2^8, --   9
+    LockedContents    = 2^9, --  10,
+    AutoView          = 2^8, --   6 + 9 ?
 }
 
 -- todo: check what is interfaced
@@ -198,33 +198,82 @@ local function fieldplus(specification) -- /F
     return n
 end
 
-local function checked(what)
-    local set, bug = references.identify("",what)
-    if not bug and #set > 0 then
-        local r, n = pdfaction(set)
-        return pdfshareobjectreference(r)
-    end
-end
+-- keep:
+--
+-- local function checked(what)
+--     local set, bug = references.identify("",what)
+--     if not bug and #set > 0 then
+--         local r, n = pdfaction(set)
+--         return pdfshareobjectreference(r)
+--     end
+-- end
+--
+-- local function fieldactions(specification) -- share actions
+--     local d, a = { }, nil
+--     a = specification.mousedown
+--      or specification.clickin           if a and a ~= "" then d.D  = checked(a) end
+--     a = specification.mouseup
+--      or specification.clickout          if a and a ~= "" then d.U  = checked(a) end
+--     a = specification.regionin          if a and a ~= "" then d.E  = checked(a) end -- Enter
+--     a = specification.regionout         if a and a ~= "" then d.X  = checked(a) end -- eXit
+--     a = specification.afterkey          if a and a ~= "" then d.K  = checked(a) end
+--     a = specification.format            if a and a ~= "" then d.F  = checked(a) end
+--     a = specification.validate          if a and a ~= "" then d.V  = checked(a) end
+--     a = specification.calculate         if a and a ~= "" then d.C  = checked(a) end
+--     a = specification.focusin           if a and a ~= "" then d.Fo = checked(a) end
+--     a = specification.focusout          if a and a ~= "" then d.Bl = checked(a) end
+--     a = specification.openpage          if a and a ~= "" then d.PO = checked(a) end
+--     a = specification.closepage         if a and a ~= "" then d.PC = checked(a) end
+--  -- a = specification.visiblepage       if a and a ~= "" then d.PV = checked(a) end
+--  -- a = specification.invisiblepage     if a and a ~= "" then d.PI = checked(a) end
+--     return next(d) and pdfdictionary(d)
+-- end
+
+local mapping = {
+    mousedown         = "D",    clickin  = "D",
+    mouseup           = "U",    clickout = "U",
+    regionin          = "E",
+    regionout         = "X",
+    afterkey          = "K",
+    format            = "F",
+    validate          = "V",
+    calculate         = "C",
+    focusin           = "Fo",
+    focusout          = "Bl",
+    openpage          = "PO",
+    closepage         = "PC",
+ -- visiblepage       = "PV",
+ -- invisiblepage     = "PI",
+}
 
 local function fieldactions(specification) -- share actions
-    local d, a = { }, nil
-    a = specification.mousedown
-     or specification.clickin           if a and a ~= "" then d.D  = checked(a) end
-    a = specification.mouseup
-     or specification.clickout          if a and a ~= "" then d.U  = checked(a) end
-    a = specification.regionin          if a and a ~= "" then d.E  = checked(a) end -- Enter
-    a = specification.regionout         if a and a ~= "" then d.X  = checked(a) end -- eXit
-    a = specification.afterkey          if a and a ~= "" then d.K  = checked(a) end
-    a = specification.format            if a and a ~= "" then d.F  = checked(a) end
-    a = specification.validate          if a and a ~= "" then d.V  = checked(a) end
-    a = specification.calculate         if a and a ~= "" then d.C  = checked(a) end
-    a = specification.focusin           if a and a ~= "" then d.Fo = checked(a) end
-    a = specification.focusout          if a and a ~= "" then d.Bl = checked(a) end
-    a = specification.openpage          if a and a ~= "" then d.PO = checked(a) end
-    a = specification.closepage         if a and a ~= "" then d.PC = checked(a) end
- -- a = specification.visiblepage       if a and a ~= "" then d.PV = checked(a) end
- -- a = specification.invisiblepage     if a and a ~= "" then d.PI = checked(a) end
-    return next(d) and pdfdictionary(d)
+    local d = nil
+    for key, target in next, mapping do
+        local code = specification[key]
+        if code and code ~= "" then
+         -- local a = checked(code)
+            local set, bug = references.identify("",code)
+            if not bug and #set > 0 then
+                local a = pdfaction(set) -- r, n
+                if a then
+                    local r = pdfshareobjectreference(a)
+                    if d then
+                        d[target] = r
+                    else
+                        d = pdfdictionary { [target] = r }
+                    end
+                else
+                    report_fields("invalid field action %a, case %s",code,2)
+                end
+            else
+                report_fields("invalid field action %a, case %s",code,1)
+            end
+        end
+    end
+ -- if d then
+ --     d = pdfshareobjectreference(d) -- not much overlap or maybe only some patterns
+ -- end
+    return d
 end
 
 -- fonts and color
@@ -298,16 +347,16 @@ local function fieldsurrounding(specification)
     fontsize = todimen(fontsize)
     fontsize = fontsize and (bpfactor * fontsize) or 12
     fontraise = 0.1 * fontsize -- todo: figure out what the natural one is and compensate for strutdp
-    local fontcode  = format("%0.4f Tf %0.4f Ts",fontsize,fontraise)
+    local fontcode  = formatters["%0.4f Tf %0.4f Ts"](fontsize,fontraise)
     -- we could test for colorvalue being 1 (black) and omit it then
-    local colorcode = lpdf.color(3,colorvalue) -- we force an rgb color space
+    local colorcode = pdfcolor(3,colorvalue) -- we force an rgb color space
     if trace_fields then
         report_fields("using font, style %a, alternative %a, size %p, tag %a, code %a",fontstyle,fontalternative,fontsize,tag,fontcode)
         report_fields("using color, value %a, code %a",colorvalue,colorcode)
     end
     local stream = pdfstream {
         pdfconstant(tag),
-        format("%s %s",fontcode,colorcode)
+        formatters["%s %s"](fontcode,colorcode)
     }
     usedfonts[tag] = a -- the name
     -- move up with "x.y Ts"
@@ -579,8 +628,8 @@ local function fieldrendering(specification)
     local svalue = specification.fontsymbol
     if bvalue or fvalue or (svalue and svalue ~= "") then
         return pdfdictionary {
-            BG = bvalue and pdfarray { lpdf.colorvalues(3,bvalue) } or nil, -- or zero_bg,
-            BC = fvalue and pdfarray { lpdf.colorvalues(3,fvalue) } or nil, -- or zero_bc,
+            BG = bvalue and pdfarray { pdfcolorvalues(3,bvalue) } or nil, -- or zero_bg,
+            BC = fvalue and pdfarray { pdfcolorvalues(3,fvalue) } or nil, -- or zero_bc,
             CA = svalue and pdfstring (svalue) or nil,
         }
     end
@@ -590,7 +639,7 @@ end
 
 local function fieldlayer(specification) -- we can move this in line
     local layer = specification.layer
-    return (layer and lpdf.layerreference(layer)) or nil
+    return (layer and pdflayerreference(layer)) or nil
 end
 
 -- defining
@@ -611,7 +660,7 @@ local xfdftemplate = [[
 function codeinjections.exportformdata(name)
     local result = { }
     for k, v in table.sortedhash(fields) do
-        result[#result+1] = format("    <field name='%s'><value>%s</value></field>",v.name or k,v.default or "")
+        result[#result+1] = formatters["    <field name='%s'><value>%s</value></field>"](v.name or k,v.default or "")
     end
     local base = file.basename(tex.jobname)
     local xfdf = format(xfdftemplate,base,table.concat(result,"\n"))
@@ -912,7 +961,7 @@ local function save_parent(field,specification,d,hasopt)
 end
 
 local function save_kid(field,specification,d,optname)
-    local kn = pdfreserveannotation()
+    local kn = pdfreserveobject()
     field.kids[#field.kids+1] = pdfreference(kn)
     if optname then
         local opt = field.opt
@@ -921,7 +970,7 @@ local function save_kid(field,specification,d,optname)
         end
     end
     local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
-    local box = hpack_node(pdfannotation_node(width,height,depth,d(),kn))
+    local box = hpack_node(nodeinjections.annotation(width,height,depth,d(),kn))
     box.width, box.height, box.depth = width, height, depth -- redundant
     return box
 end
@@ -969,6 +1018,8 @@ local function makelinechild(name,specification)
     if trace_fields then
         report_fields("using child text %a",name)
     end
+    -- we could save a little by not setting some key/value when it's the
+    -- same as parent but it would cost more memory to keep track of it
     local d = pdfdictionary {
         Subtype = pdf_widget,
         Parent  = pdfreference(parent.pobj),

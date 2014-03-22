@@ -18,21 +18,19 @@
 \registerctxluafile{core-uti}{1.001}
 
 \def\savecurrentvalue#1#2% immediate, so not \unexpanded
-  {\ctxlua{job.variables.save("\strippedcsname#1","#2")}}
+  {\ctxcommand{savevariable("\strippedcsname#1","#2")}}
 
 \appendtoks
-    \ctxlua {
-      % job.comment("file","\jobname")
-        job.comment("file",tex.jobname)
-        job.comment("format","\contextformat")
-        job.comment("stamp","\contextversion")
-        job.comment("escape","\!!bs\space...\space\!!es")
-    }%
+    \ctxlua{job.comment{
+        file   = tex.jobname,
+        format = "\contextformat",
+        stamp  = "\contextversion",
+        escape = "\!!bs\space...\space\!!es"
+    }}%
 \to \everystarttext
 
 \appendtoks
     \ctxlua {
-      % job.initialize("\jobname.tuc","\jobname.tua")
         job.initialize(tex.jobname .. ".tuc",tex.jobname .. ".tua")
     }%
 \to \everyjob

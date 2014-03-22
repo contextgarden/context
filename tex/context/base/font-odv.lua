@@ -118,8 +118,8 @@ local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getfield           = nuts.getfield
 local setfield           = nuts.setfield
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
+local getprop            = nuts.getprop
+local setprop            = nuts.setprop
 
 local insert_node_after  = nuts.insert_after
 local copy_node          = nuts.copy
@@ -649,7 +649,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
             current = start
         else
             current = getnext(n)
-            setattr(start,a_state,s_rphf)
+            setprop(start,a_state,s_rphf)
         end
     end
 
@@ -682,9 +682,9 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                             local nextcurrent = copy_node(current)
                             setfield(tempcurrent,"next",nextcurrent)
                             setfield(nextcurrent,"prev",tempcurrent)
-                            setattr(tempcurrent,a_state,s_blwf)
+                            setprop(tempcurrent,a_state,s_blwf)
                             tempcurrent = processcharacters(tempcurrent,font)
-                            setattr(tempcurrent,a_state,unsetvalue)
+                            setprop(tempcurrent,a_state,unsetvalue)
                             if getchar(next) == getchar(tempcurrent) then
                                 flush_list(tempcurrent)
                                 local n = copy_node(current)
@@ -713,7 +713,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
     while not basefound do
         -- find base consonant
         if consonant[getchar(current)] then
-            setattr(current,a_state,s_half)
+            setprop(current,a_state,s_half)
             if not firstcons then
                 firstcons = current
             end
@@ -722,7 +722,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                 base = current
             elseif blwfcache[getchar(current)] then
                 -- consonant has below-base (or post-base) form
-                setattr(current,a_state,s_blwf)
+                setprop(current,a_state,s_blwf)
             else
                 base = current
             end
@@ -802,15 +802,15 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
     while current ~= stop do
         local next = getnext(current)
         if next ~= stop and halant[getchar(next)] and getchar(getnext(next)) == c_zwnj then
-            setattr(current,a_state,unsetvalue)
+            setprop(current,a_state,unsetvalue)
         end
         current = next
     end
 
-    if base ~= stop and getattr(base,a_state) then
+    if base ~= stop and getprop(base,a_state) then
         local next = getnext(base)
         if halant[getchar(next)] and not (next ~= stop and getchar(getnext(next)) == c_zwj) then
-            setattr(base,a_state,unsetvalue)
+            setprop(base,a_state,unsetvalue)
         end
     end
 
@@ -906,7 +906,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                     end
                     bn = next
                 end
-                if getattr(current,a_state) == s_rphf then
+                if getprop(current,a_state) == s_rphf then
                     -- position Reph (Ra + H) after post-base 'matra' (if any) since these
                     -- become marks on the 'matra', not on the base glyph
                     if b ~= current then
@@ -998,12 +998,12 @@ end
 function handlers.devanagari_reorder_matras(head,start,kind,lookupname,replacement) -- no leak
     local current = start -- we could cache attributes here
     local startfont = getfont(start)
-    local startattr = getattr(start,a_syllabe)
+    local startattr = getprop(start,a_syllabe)
     -- can be fast loop
-    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font and getattr(current,a_syllabe) == startattr do
+    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font and getprop(current,a_syllabe) == startattr do
         local next = getnext(current)
-        if halant[getchar(current)] and not getattr(current,a_state) then
-            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == font and getattr(next,a_syllabe) == startattr and zw_char[getchar(next)] then
+        if halant[getchar(current)] and not getprop(current,a_state) then
+            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == font and getprop(next,a_syllabe) == startattr and zw_char[getchar(next)] then
                 current = next
             end
             local startnext = getnext(start)
@@ -1054,11 +1054,11 @@ function handlers.devanagari_reorder_reph(head,start,kind,lookupname,replacement
     local startnext = nil
     local startprev = nil
     local startfont = getfont(start)
-    local startattr = getattr(start,a_syllabe)
-    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getattr(current,a_syllabe) == startattr do    --step 2
-        if halant[getchar(current)] and not getattr(current,a_state) then
+    local startattr = getprop(start,a_syllabe)
+    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do    --step 2
+        if halant[getchar(current)] and not getprop(current,a_state) then
             local next = getnext(current)
-            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == startfont and getattr(next,a_syllabe) == startattr and zw_char[getchar(next)] then
+            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == startfont and getprop(next,a_syllabe) == startattr and zw_char[getchar(next)] then
                 current = next
             end
             startnext = getnext(start)
@@ -1071,15 +1071,15 @@ function handlers.devanagari_reorder_reph(head,start,kind,lookupname,replacement
             setfield(current,"next",start)
             setfield(start,"prev",current)
             start = startnext
-            startattr = getattr(start,a_syllabe)
+            startattr = getprop(start,a_syllabe)
             break
         end
         current = getnext(current)
     end
     if not startnext then
         current = getnext(start)
-        while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getattr(current,a_syllabe) == startattr do    --step 4
-            if getattr(current,a_state) == s_pstf then    --post-base
+        while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do    --step 4
+            if getprop(current,a_state) == s_pstf then    --post-base
                 startnext = getnext(start)
                 head = remove_node(head,start)
                 local prev = getprev(current)
@@ -1088,7 +1088,7 @@ function handlers.devanagari_reorder_reph(head,start,kind,lookupname,replacement
                 setfield(start,"next",current)
                 setfield(current,"prev",start)
                 start = startnext
-                startattr = getattr(start,a_syllabe)
+                startattr = getprop(start,a_syllabe)
                 break
             end
             current = getnext(current)
@@ -1100,7 +1100,7 @@ function handlers.devanagari_reorder_reph(head,start,kind,lookupname,replacement
     if not startnext then
         current = getnext(start)
         local c = nil
-        while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getattr(current,a_syllabe) == startattr do    --step 5
+        while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do    --step 5
             if not c then
                 local char = getchar(current)
                 -- todo: combine in one
@@ -1121,14 +1121,14 @@ function handlers.devanagari_reorder_reph(head,start,kind,lookupname,replacement
             setfield(c,"prev",start)
             -- end
             start = startnext
-            startattr = getattr(start,a_syllabe)
+            startattr = getprop(start,a_syllabe)
         end
     end
     -- leaks
     if not startnext then
         current = start
         local next = getnext(current)
-        while next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == startfont and getattr(next,a_syllabe) == startattr do    --step 6
+        while next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == startfont and getprop(next,a_syllabe) == startattr do    --step 6
             current = next
             next = getnext(current)
         end
@@ -1165,12 +1165,12 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start,k
     local startnext = nil
     local startprev = nil
     local startfont = getfont(start)
-    local startattr = getattr(start,a_syllabe)
+    local startattr = getprop(start,a_syllabe)
     -- can be fast for loop + caching state
-    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getattr(current,a_syllabe) == startattr do
+    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do
         local next = getnext(current)
-        if halant[getchar(current)] and not getattr(current,a_state) then
-            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == font and getattr(next,a_syllabe) == startattr then
+        if halant[getchar(current)] and not getprop(current,a_state) then
+            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == font and getprop(next,a_syllabe) == startattr then
                 local char = getchar(next)
                 if char == c_zwnj or char == c_zwj then
                     current = next
@@ -1192,9 +1192,9 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start,k
     end
     if not startnext then
         current = getnext(start)
-        startattr = getattr(start,a_syllabe)
-        while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getattr(current,a_syllabe) == startattr do
-            if not consonant[getchar(current)] and getattr(current,a_state) then    --main
+        startattr = getprop(start,a_syllabe)
+        while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do
+            if not consonant[getchar(current)] and getprop(current,a_state) then    --main
                 startnext = getnext(start)
                 removenode(start,start)
                 local prev = getprev(current)
@@ -1377,7 +1377,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                                 current = next
                                 current = getnext(current)
                             elseif current == start then
-                                setattr(current,a_state,s_rphf)
+                                setprop(current,a_state,s_rphf)
                                 current = next
                             else
                                 current = next
@@ -1418,8 +1418,8 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         local next = getnext(current)
                         local n = locl[next] or getchar(next)
                         if found[n] then
-                            setattr(current,a_state,s_pref)
-                            setattr(next,a_state,s_pref)
+                            setprop(current,a_state,s_pref)
+                            setprop(next,a_state,s_pref)
                             current = next
                         end
                     end
@@ -1440,7 +1440,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                             if next ~= stop and getchar(getnext(next)) == c_zwnj then    -- zwnj prevent creation of half
                                 current = next
                             else
-                                setattr(current,a_state,s_half)
+                                setprop(current,a_state,s_half)
                                 if not halfpos then
                                     halfpos = current
                                 end
@@ -1462,8 +1462,8 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         local next = getnext(current)
                         local n = locl[next] or getchar(next)
                         if found[n] then
-                            setattr(current,a_state,s_blwf)
-                            setattr(next,a_state,s_blwf)
+                            setprop(current,a_state,s_blwf)
+                            setprop(next,a_state,s_blwf)
                             current = next
                             subpos = current
                         end
@@ -1482,8 +1482,8 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         local next = getnext(current)
                         local n = locl[next] or getchar(next)
                         if found[n] then
-                            setattr(current,a_state,s_pstf)
-                            setattr(next,a_state,s_pstf)
+                            setprop(current,a_state,s_pstf)
+                            setprop(next,a_state,s_pstf)
                             current = next
                             postpos = current
                         end
@@ -1501,7 +1501,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
 
     local current, base, firstcons = start, nil, nil
 
-    if getattr(start,a_state) == s_rphf then
+    if getprop(start,a_state) == s_rphf then
         -- if syllable starts with Ra + H and script has 'Reph' then exclude Reph from candidates for base consonants
         current = getnext(getnext(start))
     end
@@ -1532,13 +1532,13 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         local tmp = getnext(next)
                         local changestop = next == stop
                         setfield(next,"next",nil)
-                        setattr(current,a_state,s_pref)
+                        setprop(current,a_state,s_pref)
                         current = processcharacters(current,font)
-                        setattr(current,a_state,s_blwf)
+                        setprop(current,a_state,s_blwf)
                         current = processcharacters(current,font)
-                        setattr(current,a_state,s_pstf)
+                        setprop(current,a_state,s_pstf)
                         current = processcharacters(current,font)
-                        setattr(current,a_state,unsetvalue)
+                        setprop(current,a_state,unsetvalue)
                         if halant[getchar(current)] then
                             setfield(getnext(current),"next",tmp)
                             local nc = copy_node(current)
@@ -1572,7 +1572,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         firstcons = current
                     end
                     -- check whether consonant has below-base or post-base form or is pre-base reordering Ra
-                    local a = getattr(current,a_state)
+                    local a = getprop(current,a_state)
                     if not (a == s_pref or a == s_blwf or a == s_pstf) then
                         base = current
                     end
@@ -1586,13 +1586,13 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
     end
 
     if not base then
-        if getattr(start,a_state) == s_rphf then
-            setattr(start,a_state,unsetvalue)
+        if getprop(start,a_state) == s_rphf then
+            setprop(start,a_state,unsetvalue)
         end
         return head, stop, nbspaces
     else
-        if getattr(base,a_state) then
-            setattr(base,a_state,unsetvalue)
+        if getprop(base,a_state) then
+            setprop(base,a_state,unsetvalue)
         end
         basepos = base
     end
@@ -2319,14 +2319,14 @@ function methods.dev2(head,font,attr)
             local c = syllablestart
             local n = getnext(syllableend)
             while c ~= n do
-                setattr(c,a_syllabe,syllabe)
+                setprop(c,a_syllabe,syllabe)
                 c = getnext(c)
             end
         end
         if syllableend and syllablestart ~= syllableend then
             head, current, nbspaces = dev2_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
         end
-        if not syllableend and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font and not getattr(current,a_state) then
+        if not syllableend and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font and not getprop(current,a_state) then
             local mark = mark_four[getchar(current)]
             if mark then
                 head, current = inject_syntax_error(head,current,mark)

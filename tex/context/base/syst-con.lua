@@ -6,29 +6,39 @@ if not modules then modules = { } end modules ['syst-con'] = {
     license   = "see context related readme files"
 }
 
-converters = converters or { }
+local tonumber = tonumber
+local utfchar = utf.char
+local gsub, format = string.gsub, string.format
+
+converters       = converters or { }
+local converters = converters
+
+local context    = context
+local comands    = commands
+
+local formatters = string,formatters
 
 --[[ldx--
 <p>For raw 8 bit characters, the offset is 0x110000 (bottom of plane 18) at
 the top of <l n='luatex'/>'s char range but outside the unicode range.</p>
 --ldx]]--
 
-local tonumber = tonumber
-local utfchar = utf.char
-local gsub, format = string.gsub, string.format
+function converters.hexstringtonumber(n) tonumber(n,16) end
+function converters.octstringtonumber(n) tonumber(n, 8) end
 
-function converters.hexstringtonumber(n) tonumber(n,16)   end
-function converters.octstringtonumber(n) tonumber(n, 8)   end
 function converters.rawcharacter     (n) utfchar(0x110000+n) end
-function converters.lchexnumber      (n) format("%x"  ,n) end
-function converters.uchexnumber      (n) format("%X"  ,n) end
-function converters.lchexnumbers     (n) format("%02x",n) end
-function converters.uchexnumbers     (n) format("%02X",n) end
-function converters.octnumber        (n) format("%03o",n) end
+
+converters.lchexnumber  = formatters["%x"  ]
+converters.uchexnumber  = formatters["%X"  ]
+converters.lchexnumbers = formatters["%02x"]
+converters.uchexnumbers = formatters["%02X"]
+converters.octnumber    = formatters["%03o"]
 
 function commands.hexstringtonumber(n) context(tonumber(n,16)) end
 function commands.octstringtonumber(n) context(tonumber(n, 8)) end
+
 function commands.rawcharacter     (n) context(utfchar(0x110000+n)) end
+
 function commands.lchexnumber      (n) context("%x"  ,n) end
 function commands.uchexnumber      (n) context("%X"  ,n) end
 function commands.lchexnumbers     (n) context("%02x",n) end
@@ -53,10 +63,10 @@ local cos, sin, tan = math.cos, math.sin, math.tan
 -- function commands.cos (n) context(cos (n)) end
 -- function commands.tan (n) context(tan (n)) end
 
-function commands.sind(n) context("%0.6f",sind(n)) end
-function commands.cosd(n) context("%0.6f",cosd(n)) end
-function commands.tand(n) context("%0.6f",tand(n)) end
+function commands.sind(n) context("%0.6F",sind(n)) end
+function commands.cosd(n) context("%0.6F",cosd(n)) end
+function commands.tand(n) context("%0.6F",tand(n)) end
 
-function commands.sin (n) context("%0.6f",sin (n)) end
-function commands.cos (n) context("%0.6f",cos (n)) end
-function commands.tan (n) context("%0.6f",tan (n)) end
+function commands.sin (n) context("%0.6F",sin (n)) end
+function commands.cos (n) context("%0.6F",cos (n)) end
+function commands.tan (n) context("%0.6F",tan (n)) end

@@ -23,6 +23,11 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- todo: context("%bold{total: }%s",total)
 -- todo: context.documentvariable("title")
 
+-- during the crited project we ran into the situation that luajittex was 10-20 times
+-- slower that luatex ... after 3 days of testing and probing we finally figured out that
+-- the the differences between the lua and luajit hashers can lead to quite a slowdown
+-- in some cases.
+
 local tex = tex
 
 context       = context or { }
@@ -37,7 +42,6 @@ local formatters = string.formatters -- using formatteds is slower in this case
 local loaddata          = io.loaddata
 
 local texsprint         = tex.sprint
-local textprint         = tex.tprint
 local texprint          = tex.print
 local texwrite          = tex.write
 local texgetcount       = tex.getcount
@@ -64,72 +68,239 @@ local report_cld        = logs.reporter("cld","stack")
 
 local processlines      = true -- experiments.register("context.processlines", function(v) processlines = v end)
 
--- for tracing it's easier to have two stacks
+-- In earlier experiments a function tables was referred to as lua.calls and the
+-- primitive \luafunctions was \luacall.
 
-local _stack_f_, _n_f_ = { }, 0
-local _stack_n_, _n_n_ = { }, 0
+local luafunctions   = lua.get_functions_table and lua.get_functions_table()
+local usedstack      = nil
+local showstackusage = false
 
-local function _store_f_(ti)
-    _n_f_ = _n_f_ + 1
-    _stack_f_[_n_f_] = ti
-    return _n_f_
-end
+-- luafunctions = false
 
-local function _store_n_(ti)
-    _n_n_ = _n_n_ + 1
-    _stack_n_[_n_n_] = ti
-    return _n_n_
-end
+trackers.register("context.stack",function(v) showstackusage = v end)
 
-local function _flush_f_(n)
-    local sn = _stack_f_[n]
-    if not sn then
-        report_cld("data with id %a cannot be found on stack",n)
-    else
-        local tn = type(sn)
-        if tn == "function" then
-            if not sn() and texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
-                _stack_f_[n] = nil
-            else
-                -- keep, beware, that way the stack can grow
-            end
+local storefunction, flushfunction
+local storenode, flushnode
+local registerfunction, unregisterfunction, reservefunction, knownfunctions, callfunctiononce
+
+if luafunctions then
+
+    local freed, nofused, noffreed = { }, 0, 0 -- maybe use the number of @@trialtypesetting
+
+    usedstack = function()
+        return nofused, noffreed
+    end
+
+    flushfunction = function(slot,arg)
+        if arg() then
+            -- keep
+        elseif texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
+            noffreed = noffreed + 1
+            freed[noffreed] = slot
+            luafunctions[slot] = false
         else
-            if texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
-                writenode(sn)
-                _stack_f_[n] = nil
-            else
-                writenode(copynodelist(sn))
-                -- keep, beware, that way the stack can grow
-            end
+            -- keep
         end
     end
-end
 
-local function _flush_n_(n)
-    local sn = _stack_n_[n]
-    if not sn then
-        report_cld("data with id %a cannot be found on stack",n)
-    elseif texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
-        writenode(sn)
-        _stack_n_[n] = nil
-    else
-        writenode(copynodelist(sn))
-        -- keep, beware, that way the stack can grow
+    storefunction = function(arg)
+        local f = function(slot) flushfunction(slot,arg) end
+        if noffreed > 0 then
+            local n = freed[noffreed]
+            freed[noffreed] = nil
+            noffreed = noffreed - 1
+            luafunctions[n] = f
+            return n
+        else
+            nofused = nofused + 1
+            luafunctions[nofused] = f
+            return nofused
+        end
     end
+
+    flushnode = function(slot,arg)
+        if texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
+            writenode(arg)
+            noffreed = noffreed + 1
+            freed[noffreed] = slot
+            luafunctions[slot] = false
+        else
+            writenode(copynodelist(arg))
+        end
+    end
+
+    storenode = function(arg)
+        local f = function(slot) flushnode(slot,arg) end
+        if noffreed > 0 then
+            local n = freed[noffreed]
+            freed[noffreed] = nil
+            noffreed = noffreed - 1
+            luafunctions[n] = f
+            return n
+        else
+            nofused = nofused + 1
+            luafunctions[nofused] = f
+            return nofused
+        end
+    end
+
+    registerfunction = function(f)
+        if type(f) == "string" then
+            f = loadstring(f)
+        end
+        if type(f) ~= "function" then
+            f = function() report_cld("invalid function %A",f) end
+        end
+        if noffreed > 0 then
+            local n = freed[noffreed]
+            freed[noffreed] = nil
+            noffreed = noffreed - 1
+            luafunctions[n] = f
+            return n
+        else
+            nofused = nofused + 1
+            luafunctions[nofused] = f
+            return nofused
+        end
+    end
+
+    unregisterfunction = function(slot)
+        if luafunctions[slot] then
+            noffreed = noffreed + 1
+            freed[noffreed] = slot
+            luafunctions[slot] = false
+        else
+            report_cld("invalid function slot %A",slot)
+        end
+    end
+
+    reservefunction = function()
+        if noffreed > 0 then
+            local n = freed[noffreed]
+            freed[noffreed] = nil
+            noffreed = noffreed - 1
+            return n
+        else
+            nofused = nofused + 1
+            return nofused
+        end
+    end
+
+    callfunctiononce = function(slot)
+        luafunctions[slot](slot)
+        noffreed = noffreed + 1
+        freed[noffreed] = slot
+        luafunctions[slot] = false
+    end
+
+    table.setmetatablecall(luafunctions,function(t,n) return luafunctions[n](n) end)
+
+    knownfunctions = luafunctions
+
+else
+
+    local luafunctions, noffunctions = { }, 0
+    local luanodes, nofnodes = { }, 0
+
+    usedstack = function()
+        return noffunctions + nofnodes, 0
+    end
+
+    flushfunction = function(n)
+        local sn = luafunctions[n]
+        if not sn then
+            report_cld("data with id %a cannot be found on stack",n)
+        elseif not sn() and texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
+            luafunctions[n] = nil
+        end
+    end
+
+    storefunction = function(ti)
+        noffunctions = noffunctions + 1
+        luafunctions[noffunctions] = ti
+        return noffunctions
+    end
+
+ -- freefunction = function(n)
+ --     luafunctions[n] = nil
+ -- end
+
+    flushnode = function(n)
+        local sn = luanodes[n]
+        if not sn then
+            report_cld("data with id %a cannot be found on stack",n)
+        elseif texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
+            writenode(sn)
+            luanodes[n] = nil
+        else
+            writenode(copynodelist(sn))
+        end
+    end
+
+    storenode = function(ti)
+        nofnodes = nofnodes + 1
+        luanodes[nofnodes] = ti
+        return nofnodes
+    end
+
+    _cldf_ = flushfunction -- global
+    _cldn_ = flushnode     -- global
+ -- _cldl_ = function(n) return luafunctions[n]() end -- luafunctions(n)
+    _cldl_ = luafunctions
+
+    registerfunction = function(f)
+        if type(f) == "string" then
+            f = loadstring(f)
+        end
+        if type(f) ~= "function" then
+            f = function() report_cld("invalid function %A",f) end
+        end
+        noffunctions = noffunctions + 1
+        luafunctions[noffunctions] = f
+        return noffunctions
+    end
+
+    unregisterfunction = function(slot)
+        if luafunctions[slot] then
+            luafunctions[slot] = nil
+        else
+            report_cld("invalid function slot %A",slot)
+        end
+    end
+
+    reservefunction = function()
+        noffunctions = noffunctions + 1
+        return noffunctions
+    end
+
+    callfunctiononce = function(slot)
+        luafunctions[slot](slot)
+        luafunctions[slot] = nil
+    end
+
+    table.setmetatablecall(luafunctions,function(t,n) return luafunctions[n](n) end)
+
+    knownfunctions = luafunctions
+
 end
 
-function context.restart()
-    _stack_f_, _n_f_ = { }, 0
-    _stack_n_, _n_n_ = { }, 0
+context.registerfunction   = registerfunction
+context.unregisterfunction = unregisterfunction
+context.reservefunction    = reservefunction
+context.knownfunctions     = knownfunctions
+context.callfunctiononce   = callfunctiononce   _cldo_ = callfunctiononce
+context.storenode          = storenode -- private helper
+
+function commands.ctxfunction(code)
+    context(registerfunction(code))
 end
 
-context._stack_f_ = _stack_f_
-context._store_f_ = _store_f_
-context._flush_f_ = _flush_f_  _cldf_ = _flush_f_
-
-context._stack_n_ = _stack_n_
-context._store_n_ = _store_n_
-context._flush_n_ = _flush_n_  _cldn_ = _flush_n_
+-- local f_cldo       = formatters["_cldo_(%i)"]
+-- local latelua_node = nodes.pool.latelua
+--
+-- function context.lateluafunctionnnode(f)
+--     return latelua_node(f_cldo(registerfunction(f)))
+-- end
 
 -- Should we keep the catcodes with the function?
 
@@ -359,98 +530,210 @@ end
 
 local containseol = patterns.containseol
 
-local function writer(parent,command,first,...) -- already optimized before call
-    local t = { first, ... }
-    flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
-    local direct = false
-    for i=1,#t do
-        local ti = t[i]
-        local typ = type(ti)
-        if direct then
-            if typ == "string" or typ == "number" then
-                flush(currentcatcodes,ti)
-            else -- node.write
-                report_context("error: invalid use of direct in %a, only strings and numbers can be flushed directly, not %a",command,typ)
-            end
-            direct = false
-        elseif ti == nil then
-            -- nothing
-        elseif ti == "" then
-            flush(currentcatcodes,"{}")
-        elseif typ == "string" then
-            -- is processelines seen ?
-            if processlines and lpegmatch(containseol,ti) then
-                flush(currentcatcodes,"{")
-                local flushlines = parent.__flushlines or flushlines
-                flushlines(ti)
-                flush(currentcatcodes,"}")
-            elseif currentcatcodes == contentcatcodes then
+local writer
+
+if luafunctions then
+
+    writer = function (parent,command,first,...) -- already optimized before call
+        local t = { first, ... }
+        flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
+        local direct = false
+        for i=1,#t do
+            local ti = t[i]
+            local typ = type(ti)
+            if direct then
+                if typ == "string" or typ == "number" then
+                    flush(currentcatcodes,ti)
+                else -- node.write
+                    report_context("error: invalid use of direct in %a, only strings and numbers can be flushed directly, not %a",command,typ)
+                end
+                direct = false
+            elseif ti == nil then
+                -- nothing
+            elseif ti == "" then
+                flush(currentcatcodes,"{}")
+            elseif typ == "string" then
+                -- is processelines seen ?
+                if processlines and lpegmatch(containseol,ti) then
+                    flush(currentcatcodes,"{")
+                    local flushlines = parent.__flushlines or flushlines
+                    flushlines(ti)
+                    flush(currentcatcodes,"}")
+                elseif currentcatcodes == contentcatcodes then
+                    flush(currentcatcodes,"{",ti,"}")
+                else
+                    flush(currentcatcodes,"{")
+                    flush(contentcatcodes,ti)
+                    flush(currentcatcodes,"}")
+                end
+            elseif typ == "number" then
+                -- numbers never have funny catcodes
                 flush(currentcatcodes,"{",ti,"}")
-            else
-                flush(currentcatcodes,"{")
-                flush(contentcatcodes,ti)
-                flush(currentcatcodes,"}")
-            end
-        elseif typ == "number" then
-            -- numbers never have funny catcodes
-            flush(currentcatcodes,"{",ti,"}")
-        elseif typ == "table" then
-            local tn = #ti
-            if tn == 0 then
-                local done = false
-                for k, v in next, ti do
+            elseif typ == "table" then
+                local tn = #ti
+                if tn == 0 then
+                    local done = false
+                    for k, v in next, ti do
+                        if done then
+                            if v == "" then
+                                flush(currentcatcodes,",",k,'=')
+                            else
+                                flush(currentcatcodes,",",k,"={",v,"}")
+                            end
+                        else
+                            if v == "" then
+                                flush(currentcatcodes,"[",k,"=")
+                            else
+                                flush(currentcatcodes,"[",k,"={",v,"}")
+                            end
+                            done = true
+                        end
+                    end
                     if done then
-                        if v == "" then
-                            flush(currentcatcodes,",",k,'=')
-                        else
-                            flush(currentcatcodes,",",k,"={",v,"}")
-                        end
+                        flush(currentcatcodes,"]")
                     else
-                        if v == "" then
-                            flush(currentcatcodes,"[",k,"=")
-                        else
-                            flush(currentcatcodes,"[",k,"={",v,"}")
-                        end
-                        done = true
+                        flush(currentcatcodes,"[]")
                     end
-                end
-                if done then
-                    flush(currentcatcodes,"]")
-                else
-                    flush(currentcatcodes,"[]")
-                end
-            elseif tn == 1 then -- some 20% faster than the next loop
-                local tj = ti[1]
-                if type(tj) == "function" then
-                    flush(currentcatcodes,"[\\cldf{",_store_f_(tj),"}]")
-                else
-                    flush(currentcatcodes,"[",tj,"]")
-                end
-            else -- is concat really faster than flushes here? probably needed anyway (print artifacts)
-                for j=1,tn do
-                    local tj = ti[j]
+                elseif tn == 1 then -- some 20% faster than the next loop
+                    local tj = ti[1]
                     if type(tj) == "function" then
-                        ti[j] = "\\cldf{" .. _store_f_(tj) .. "}"
+                        flush(currentcatcodes,"[\\cldl",storefunction(tj),"]")
+                    else
+                        flush(currentcatcodes,"[",tj,"]")
+                    end
+                else -- is concat really faster than flushes here? probably needed anyway (print artifacts)
+                    flush(currentcatcodes,"[")
+                    for j=1,tn do
+                        local tj = ti[j]
+                        if type(tj) == "function" then
+                            if j == tn then
+                                flush(currentcatcodes,"\\cldl",storefunction(tj),"]")
+                            else
+                                flush(currentcatcodes,"\\cldl",storefunction(tj),",")
+                            end
+                        else
+                            if j == tn then
+                                flush(currentcatcodes,tj,"]")
+                            else
+                                flush(currentcatcodes,tj,",")
+                            end
+                        end
                     end
                 end
-                flush(currentcatcodes,"[",concat(ti,","),"]")
-            end
-        elseif typ == "function" then
-            flush(currentcatcodes,"{\\cldf{",_store_f_(ti),"}}") -- todo: ctx|prt|texcatcodes
-        elseif typ == "boolean" then
-            if ti then
-                flushdirect(currentcatcodes,"\r")
+            elseif typ == "function" then
+                flush(currentcatcodes,"{\\cldl ",storefunction(ti),"}") -- todo: ctx|prt|texcatcodes
+            elseif typ == "boolean" then
+                if ti then
+                    flushdirect(currentcatcodes,"\r")
+                else
+                    direct = true
+                end
+            elseif typ == "thread" then
+                report_context("coroutines not supported as we cannot yield across boundaries")
+            elseif isnode(ti) then -- slow
+                flush(currentcatcodes,"{\\cldl",storenode(ti),"}")
             else
-                direct = true
+                report_context("error: %a gets a weird argument %a",command,ti)
             end
-        elseif typ == "thread" then
-            report_context("coroutines not supported as we cannot yield across boundaries")
-        elseif isnode(ti) then -- slow
-            flush(currentcatcodes,"{\\cldn{",_store_n_(ti),"}}")
-        else
-            report_context("error: %a gets a weird argument %a",command,ti)
         end
     end
+
+else
+
+    writer = function (parent,command,first,...) -- already optimized before call
+        local t = { first, ... }
+        flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
+        local direct = false
+        for i=1,#t do
+            local ti = t[i]
+            local typ = type(ti)
+            if direct then
+                if typ == "string" or typ == "number" then
+                    flush(currentcatcodes,ti)
+                else -- node.write
+                    report_context("error: invalid use of direct in %a, only strings and numbers can be flushed directly, not %a",command,typ)
+                end
+                direct = false
+            elseif ti == nil then
+                -- nothing
+            elseif ti == "" then
+                flush(currentcatcodes,"{}")
+            elseif typ == "string" then
+                -- is processelines seen ?
+                if processlines and lpegmatch(containseol,ti) then
+                    flush(currentcatcodes,"{")
+                    local flushlines = parent.__flushlines or flushlines
+                    flushlines(ti)
+                    flush(currentcatcodes,"}")
+                elseif currentcatcodes == contentcatcodes then
+                    flush(currentcatcodes,"{",ti,"}")
+                else
+                    flush(currentcatcodes,"{")
+                    flush(contentcatcodes,ti)
+                    flush(currentcatcodes,"}")
+                end
+            elseif typ == "number" then
+                -- numbers never have funny catcodes
+                flush(currentcatcodes,"{",ti,"}")
+            elseif typ == "table" then
+                local tn = #ti
+                if tn == 0 then
+                    local done = false
+                    for k, v in next, ti do
+                        if done then
+                            if v == "" then
+                                flush(currentcatcodes,",",k,'=')
+                            else
+                                flush(currentcatcodes,",",k,"={",v,"}")
+                            end
+                        else
+                            if v == "" then
+                                flush(currentcatcodes,"[",k,"=")
+                            else
+                                flush(currentcatcodes,"[",k,"={",v,"}")
+                            end
+                            done = true
+                        end
+                    end
+                    if done then
+                        flush(currentcatcodes,"]")
+                    else
+                        flush(currentcatcodes,"[]")
+                    end
+                elseif tn == 1 then -- some 20% faster than the next loop
+                    local tj = ti[1]
+                    if type(tj) == "function" then
+                        flush(currentcatcodes,"[\\cldf{",storefunction(tj),"}]")
+                    else
+                        flush(currentcatcodes,"[",tj,"]")
+                    end
+                else -- is concat really faster than flushes here? probably needed anyway (print artifacts)
+                    for j=1,tn do
+                        local tj = ti[j]
+                        if type(tj) == "function" then
+                            ti[j] = "\\cldf{" .. storefunction(tj) .. "}"
+                        end
+                    end
+                    flush(currentcatcodes,"[",concat(ti,","),"]")
+                end
+            elseif typ == "function" then
+                flush(currentcatcodes,"{\\cldf{",storefunction(ti),"}}") -- todo: ctx|prt|texcatcodes
+            elseif typ == "boolean" then
+                if ti then
+                    flushdirect(currentcatcodes,"\r")
+                else
+                    direct = true
+                end
+            elseif typ == "thread" then
+                report_context("coroutines not supported as we cannot yield across boundaries")
+            elseif isnode(ti) then -- slow
+                flush(currentcatcodes,"{\\cldn{",storenode(ti),"}}")
+            else
+                report_context("error: %a gets a weird argument %a",command,ti)
+            end
+        end
+    end
+
 end
 
 local generics = { }  context.generics = generics
@@ -507,70 +790,154 @@ end
 
 function context.constructcsonly(k) -- not much faster than the next but more mem efficient
     local c = "\\" .. tostring(generics[k] or k)
-    rawset(context, k, function()
+    local v = function()
         flush(prtcatcodes,c)
-    end)
+    end
+    rawset(context,k,v)
+    return v
 end
 
 function context.constructcs(k)
     local c = "\\" .. tostring(generics[k] or k)
-    rawset(context, k, function(first,...)
+    local v = function(first,...)
         if first == nil then
             flush(prtcatcodes,c)
         else
             return writer(context,c,first,...)
         end
-    end)
+    end
+    rawset(context,k,v)
+    return v
 end
 
-local function caller(parent,f,a,...)
-    if not parent then
-        -- so we don't need to test in the calling (slower but often no issue)
-    elseif f ~= nil then
-        local typ = type(f)
-        if typ == "string" then
-            if a then
-                flush(contentcatcodes,formatters[f](a,...)) -- was currentcatcodes
-            elseif processlines and lpegmatch(containseol,f) then
-                local flushlines = parent.__flushlines or flushlines
-                flushlines(f)
-            else
-                flush(contentcatcodes,f)
-            end
-        elseif typ == "number" then
-            if a then
-                flush(currentcatcodes,f,a,...)
-            else
-                flush(currentcatcodes,f)
-            end
-        elseif typ == "function" then
-            -- ignored: a ...
-            flush(currentcatcodes,"{\\cldf{",_store_f_(f),"}}") -- todo: ctx|prt|texcatcodes
-        elseif typ == "boolean" then
-            if f then
-                if a ~= nil then
+-- local splitformatters = utilities.strings.formatters.new(true) -- not faster (yet)
+
+local caller
+
+if luafunctions then
+
+    caller = function(parent,f,a,...)
+        if not parent then
+            -- so we don't need to test in the calling (slower but often no issue)
+        elseif f ~= nil then
+            local typ = type(f)
+            if typ == "string" then
+                if f == "" then
+                    -- new, can save a bit sometimes
+                 -- if trace_context then
+                 --     report_context("empty argument to context()")
+                 -- end
+                elseif a then
+                    flush(contentcatcodes,formatters[f](a,...)) -- was currentcatcodes
+                 -- flush(contentcatcodes,splitformatters[f](a,...)) -- was currentcatcodes
+                elseif processlines and lpegmatch(containseol,f) then
                     local flushlines = parent.__flushlines or flushlines
-                    flushlines(a)
+                    flushlines(f)
                 else
-                    flushdirect(currentcatcodes,"\n") -- no \r, else issues with \startlines ... use context.par() otherwise
+                    flush(contentcatcodes,f)
                 end
+            elseif typ == "number" then
+                if a then
+                    flush(currentcatcodes,f,a,...)
+                else
+                    flush(currentcatcodes,f)
+                end
+            elseif typ == "function" then
+                -- ignored: a ...
+                flush(currentcatcodes,"{\\cldl",storefunction(f),"}") -- todo: ctx|prt|texcatcodes
+            elseif typ == "boolean" then
+                if f then
+                    if a ~= nil then
+                        local flushlines = parent.__flushlines or flushlines
+                        flushlines(a)
+                    else
+                        flushdirect(currentcatcodes,"\n") -- no \r, else issues with \startlines ... use context.par() otherwise
+                    end
+                else
+                    if a ~= nil then
+                        -- no command, same as context(a,...)
+                        writer(parent,"",a,...)
+                    else
+                        -- ignored
+                    end
+                end
+            elseif typ == "thread" then
+                report_context("coroutines not supported as we cannot yield across boundaries")
+            elseif isnode(f) then -- slow
+             -- writenode(f)
+                flush(currentcatcodes,"\\cldl",storenode(f)," ")
             else
-                if a ~= nil then
-                    -- no command, same as context(a,...)
-                    writer(parent,"",a,...)
-                else
-                    -- ignored
-                end
+                report_context("error: %a gets a weird argument %a","context",f)
             end
-        elseif typ == "thread" then
-            report_context("coroutines not supported as we cannot yield across boundaries")
-        elseif isnode(f) then -- slow
-         -- writenode(f)
-            flush(currentcatcodes,"\\cldn{",_store_n_(f),"}")
-        else
-            report_context("error: %a gets a weird argument %a","context",f)
         end
     end
+
+    function context.flushnode(n)
+        flush(currentcatcodes,"\\cldl",storenode(n)," ")
+    end
+
+else
+
+    caller = function(parent,f,a,...)
+        if not parent then
+            -- so we don't need to test in the calling (slower but often no issue)
+        elseif f ~= nil then
+            local typ = type(f)
+            if typ == "string" then
+                if f == "" then
+                    -- new, can save a bit sometimes
+                 -- if trace_context then
+                 --     report_context("empty argument to context()")
+                 -- end
+                elseif a then
+                    flush(contentcatcodes,formatters[f](a,...)) -- was currentcatcodes
+                 -- flush(contentcatcodes,splitformatters[f](a,...)) -- was currentcatcodes
+                elseif processlines and lpegmatch(containseol,f) then
+                    local flushlines = parent.__flushlines or flushlines
+                    flushlines(f)
+                else
+                    flush(contentcatcodes,f)
+                end
+            elseif typ == "number" then
+                if a then
+                    flush(currentcatcodes,f,a,...)
+                else
+                    flush(currentcatcodes,f)
+                end
+            elseif typ == "function" then
+                -- ignored: a ...
+                flush(currentcatcodes,"{\\cldf{",storefunction(f),"}}") -- todo: ctx|prt|texcatcodes
+            elseif typ == "boolean" then
+                if f then
+                    if a ~= nil then
+                        local flushlines = parent.__flushlines or flushlines
+                        flushlines(a)
+                    else
+                        flushdirect(currentcatcodes,"\n") -- no \r, else issues with \startlines ... use context.par() otherwise
+                    end
+                else
+                    if a ~= nil then
+                        -- no command, same as context(a,...)
+                        writer(parent,"",a,...)
+                    else
+                        -- ignored
+                    end
+                end
+            elseif typ == "thread" then
+                report_context("coroutines not supported as we cannot yield across boundaries")
+            elseif isnode(f) then -- slow
+             -- writenode(f)
+                flush(currentcatcodes,"\\cldn{",storenode(f),"}")
+            else
+                report_context("error: %a gets a weird argument %a","context",f)
+            end
+        end
+    end
+
+    function context.flushnode(n)
+        flush(currentcatcodes,"\\cldn{",storenode(n),"}")
+    end
+
 end
 
 local defaultcaller = caller
@@ -642,8 +1009,12 @@ local visualizer = lpeg.replacer {
 }
 
 statistics.register("traced context", function()
+    local used, freed = usedstack()
+    local unreachable = used - freed
     if nofwriters > 0 or nofflushes > 0 then
-        return format("writers: %s, flushes: %s, maxstack: %s",nofwriters,nofflushes,_n_f_)
+        return format("writers: %s, flushes: %s, maxstack: %s",nofwriters,nofflushes,used,freed,unreachable)
+    elseif showstackusage or unreachable > 0 then
+        return format("maxstack: %s, freed: %s, unreachable: %s",used,freed,unreachable)
     end
 end)
 
@@ -1019,7 +1390,8 @@ local function caller(parent,f,a,...)
             end
         elseif typ == "function" then
             -- ignored: a ...
-            flush(currentcatcodes,mpdrawing,"{\\cldf{",store_(f),"}}")
+--             flush(currentcatcodes,mpdrawing,"{\\cldf{",store_(f),"}}")
+            flush(currentcatcodes,mpdrawing,"{\\cldl",store_(f),"}")
         elseif typ == "boolean" then
             -- ignored: a ...
             if f then

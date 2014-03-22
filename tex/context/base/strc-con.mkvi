@@ -980,10 +980,11 @@
        }
      }\relax
    % \writestatus{constructions}{registering \currentconstruction: \number\scratchcounter}%
+     \ctxcommand{setinternalreference("\referenceprefix","\currentconstructionreference",\nextinternalreference,"\interactionparameter\c!focus")}%
      \normalexpanded{%
        \endgroup
        \edef\noexpand\currentconstructionlistentry  {\the\scratchcounter}%
-       \edef\noexpand\currentconstructionattribute  {\ctxcommand    {setinternalreference("\referenceprefix","\currentconstructionreference",\nextinternalreference,"\interactionparameter\c!focus")}}%
+       \edef\noexpand\currentconstructionattribute  {\the\lastdestinationattribute}%
        \edef\noexpand\currentconstructionsynchronize{\ctxlatecommand{enhancelist(\the\scratchcounter)}}%
      }%
    \fi}
@@ -993,7 +994,7 @@
 % macros.
 
 \def\reinstateconstructionnumberentry#1% was xdef
-  {\edef\currentconstructionattribute  {\ctxcommand    {getinternalreference(#1)}}%
+  {\edef\currentconstructionattribute  {\ctxcommand    {getinternallistreference(#1)}}%
    \edef\currentconstructionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
 
 \installstructurelistprocessor{construction}{\usestructurelistprocessor{number+title}}

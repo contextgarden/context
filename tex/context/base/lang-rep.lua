@@ -90,7 +90,7 @@ local function add(root,word,replacement)
          -- for i=1,#newlist do
          --     newlist[i] = utfbyte(newlist[i])
          -- end
-            local special = find(replacement,"{")
+            local special = find(replacement,"{",1,true)
             local newlist = lpegmatch(splitter,replacement)
             --
             root[l].final = {

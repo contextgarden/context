@@ -299,12 +299,12 @@ function commands.getmessage(category,tag,default)
     context(interfaces.getmessage(category,tag,default))
 end
 
-function commands.showassignerror(namespace,key,value,line)
-    local ns, instance = match(namespace,"^(%d+)[^%a]+(%a+)")
+function commands.showassignerror(namespace,key,line)
+    local ns, instance = match(namespace,"^(%d+)[^%a]+(%a*)")
     if ns then
         namespace = corenamespaces[tonumber(ns)] or ns
     end
-    if instance then
+    if instance and instance ~= "" then
         context.writestatus("setup",formatters["error in line %a, namespace %a, instance %a, key %a"](line,namespace,instance,key))
     else
         context.writestatus("setup",formatters["error in line %a, namespace %a, key %a"](line,namespace,key))

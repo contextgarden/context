@@ -6,8 +6,8 @@ if not modules then modules = { } end modules ['luat-run'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
-local insert = table.insert
+local format, find = string.format, string.find
+local insert, remove = table.insert, table.remove
 
 -- trace_job_status is also controlled by statistics.enable that is set via the directive system.nostatistics
 
@@ -156,5 +156,77 @@ end)
 statistics.register("synctex tracing",function()
     if synctex or tex.synctex ~= 0 then
         return "synctex has been enabled (extra log file generated)"
+    end
+end)
+
+-- filenames
+
+local types = {
+    "data",
+    "font map",
+    "image",
+    "font subset",
+    "full font",
+}
+
+local report_open  = logs.reporter("open source")
+local report_close = logs.reporter("close source")
+local report_load  = logs.reporter("load resource")
+
+local register     = callbacks.register
+
+local level = 0
+local total = 0
+local stack = { }
+local all   = true
+
+local function report_start(left,name)
+    if not left then
+        -- skip
+    elseif left ~= 1 then
+        if all then
+            report_load("%s > %s",types[left],name or "?")
+        end
+    elseif find(name,"virtual://") then
+        insert(stack,false)
+    else
+        insert(stack,name)
+        total = total + 1
+        level = level + 1
+        report_open("%i > %i > %s",level,total,name or "?")
+    end
+end
+
+local function report_stop(right)
+    if level == 1 or not right or right == 1 then
+        local name = remove(stack)
+        if name then
+            report_close("%i > %i > %s",level,total,name or "?")
+            level = level - 1
+        end
+    end
+end
+
+local function report_none()
+end
+
+register("start_file",report_start)
+register("stop_file", report_stop)
+
+directives.register("system.reportfiles", function(v)
+    if v == "noresources" then
+        all = false
+        register("start_file",report_start)
+        register("stop_file", report_stop)
+    elseif toboolean(v) or v == "all" then
+        all = true
+        register("start_file",report_start)
+        register("stop_file", report_stop)
+    elseif v == "traditional" then
+        register("start_file",nil)
+        register("stop_file", nil)
+    else
+        register("start_file",report_none)
+        register("stop_file", report_none)
     end
 end)

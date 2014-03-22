@@ -19,9 +19,7 @@
 
 \registerctxluafile{node-ini}{1.001}
 \registerctxluafile{node-met}{1.001}
-
-\ctxlua{if nodes.gonuts then context.registerctxluafile("node-nut","1.001") end}
-
+\registerctxluafile{node-nut}{1.001}
 \registerctxluafile{node-res}{1.001}
 \registerctxluafile{node-dir}{1.001}
 \registerctxluafile{node-aux}{1.001}
@@ -35,6 +33,8 @@
 \registerctxluafile{node-ext}{1.001}
 \registerctxluafile{node-acc}{1.001} % experimental
 %registerctxluafile{node-prp}{1.001} % makes no sense (yet)
+
+\doiffileelse{node-ppt.lua}{\registerctxluafile{node-ppt}{1.001}}{}
 
 \newcount\c_node_tracers_show_box % box number
 

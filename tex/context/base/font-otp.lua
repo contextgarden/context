@@ -407,6 +407,14 @@ local function packdata(data)
                             features[script] = pack_normal(feature)
                         end
                     end
+                    local order = sequence.order
+                    if order then
+                        sequence.order = pack_indexed(order)
+                    end
+                    local markclass = sequence.markclass
+                    if markclass then
+                        sequence.markclass = pack_boolean(markclass)
+                    end
                 end
             end
             local lookups = resources.lookups
@@ -823,6 +831,20 @@ local function unpackdata(data)
                                     features[script] = tv
                                 end
                             end
+                        end
+                    end
+                    local order = feature.order
+                    if order then
+                        local tv = tables[order]
+                        if tv then
+                            feature.order = tv
+                        end
+                    end
+                    local markclass = feature.markclass
+                    if markclass then
+                        local tv = tables[markclass]
+                        if tv then
+                            feature.markclass = tv
                         end
                     end
                 end

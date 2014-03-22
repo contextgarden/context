@@ -11,8 +11,8 @@ local info = {
 if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
 
 local lexer = lexer
-local token, style, colors, exact_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.style_nothing
-local P, R, S, C, Cg, Cb, Cs, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cg, lpeg.Cb, lpeg.Cs, lpeg.Cmt
+local token, style, colors, exact_match, just_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.just_match, lexer.style_nothing
+local P, R, S, C, Cg, Cb, Cs, Cmt, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cg, lpeg.Cb, lpeg.Cs, lpeg.Cmt, lpeg.Cp
 local match, find = string.match, string.find
 local setmetatable = setmetatable
 
@@ -28,6 +28,9 @@ local stringlexer = lexer.load("scite-context-lexer-lua-longstring")
 local directives = { } -- communication channel
 
 -- this will be extended
+
+-- we could combine some in a hash that returns the class that then makes the token
+-- this can save time on large files
 
 local keywords = {
     'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', -- 'goto',
@@ -54,6 +57,12 @@ local constants = {
     'NaN',
 }
 
+-- local tokenmappings = { }
+--
+-- for i=1,#keywords  do tokenmappings[keywords [i]] = "keyword"  }
+-- for i=1,#functions do tokenmappings[functions[i]] = "function" }
+-- for i=1,#constants do tokenmappings[constants[i]] = "constant" }
+
 local internals = { -- __
     'add', 'call', 'concat', 'div', 'eq', 'gc', 'index',
     'le', 'lt', 'metatable', 'mode', 'mul', 'newindex',
@@ -67,7 +76,9 @@ local depricated = {
 }
 
 local csnames = { -- todo: option
+    "commands",
     "context",
+    "ctx",
     "metafun",
     "metapost",
 }
@@ -154,16 +165,18 @@ local number        = token("number", lexer.float + integer)
 
 -- officially 127-255 are ok but not utf so useless
 
-local validword     = R("AZ","az","__") * R("AZ","az","__","09")^0
+----- validword     = R("AZ","az","__") * R("AZ","az","__","09")^0
 
 local utf8character = P(1) * R("\128\191")^1
 local validword     = (R("AZ","az","__") + utf8character) * (R("AZ","az","__","09") + utf8character)^0
+local validsuffix   = (R("AZ","az")      + utf8character) * (R("AZ","az","__","09") + utf8character)^0
 
 local identifier    = token("default",validword)
 
 ----- operator      = token("special", P('..') + P('~=') + S('+-*/%^#=<>;:,.{}[]()')) -- maybe split off {}[]()
 ----- operator      = token("special", S('+-*/%^#=<>;:,{}[]()') + P('..') + P('.') + P('~=') ) -- maybe split off {}[]()
-local operator      = token("special", S('+-*/%^#=<>;:,{}[]().') + P('~=') ) -- no ^1 because of nested lexers
+----- operator      = token("special", S('+-*/%^#=<>;:,{}[]().') + P('~=') ) -- no ^1 because of nested lexers
+local operator      = token("special", S('+-*/%^#=<>;:,{}[]().|~')) -- no ^1 because of nested lexers
 
 local structure     = token("special", S('{}[]()'))
 
@@ -182,8 +195,7 @@ local p_functions   = exact_match(functions)
 local p_constants   = exact_match(constants)
 local p_internals   = P("__")
                     * exact_match(internals)
-local p_csnames     = exact_match(csnames)
-
+local p_csnames     = just_match(csnames)
 local keyword       = token("keyword", p_keywords)
 local builtin       = token("plain",   p_functions)
 local constant      = token("data",    p_constants)
@@ -191,8 +203,10 @@ local internal      = token("data",    p_internals)
 local csname        = token("user",    p_csnames)
                     * (
                         optionalspace * hasargument
-                      + ( optionalspace * token("special", S(".:")) * optionalspace * token("user", validword) )^1
+                      + ( optionalspace * token("special", S(".:")) * optionalspace * token("user", validword  ) )^1
+                      + token("user", P("_") * validsuffix)
                     )
+
 local identifier    = token("default", validword)
                     * ( optionalspace * token("special", S(".:")) * optionalspace * (
                             token("warning", p_keywords) +
@@ -200,13 +214,24 @@ local identifier    = token("default", validword)
                             token("default", validword )
                     ) )^0
 
+-- local t = { } for k, v in next, tokenmappings do t[#t+1] = k end t = table.concat(t)
+-- -- local experimental =  (S(t)^1) / function(s) return tokenmappings[s] end * Cp()
+--
+-- local experimental =  Cmt(S(t)^1, function(_,i,s)
+--     local t = tokenmappings[s]
+--     if t then
+--         return true, t, i
+--     end
+-- end)
+
 lualexer._rules = {
     { 'whitespace',   spacing      },
-    { 'keyword',      keyword      },
+    { 'keyword',      keyword      }, -- can be combined
  -- { 'structure',    structure    },
-    { 'function',     builtin      },
+    { 'function',     builtin      }, -- can be combined
+    { 'constant',     constant     }, -- can be combined
+ -- { 'experimental', experimental }, -- works but better split
     { 'csname',       csname       },
-    { 'constant',     constant     },
     { 'goto',         gotokeyword  },
     { 'identifier',   identifier   },
     { 'string',       string       },

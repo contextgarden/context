@@ -47,7 +47,7 @@ return {
         "inicatcodes",
         "ctxcatcodes", "texcatcodes", "notcatcodes", "txtcatcodes", "vrbcatcodes",
         "prtcatcodes", "nilcatcodes", "luacatcodes", "tpacatcodes", "tpbcatcodes",
-        "xmlcatcodes",
+        "xmlcatcodes", "ctdcatcodes",
         --
         "escapecatcode", "begingroupcatcode", "endgroupcatcode", "mathshiftcatcode", "alignmentcatcode",
         "endoflinecatcode", "parametercatcode", "superscriptcatcode", "subscriptcatcode", "ignorecatcode",
@@ -136,6 +136,7 @@ return {
         "starttexdefinition", "stoptexdefinition",
         "starttexcode", "stoptexcode",
         "startcontextcode", "stopcontextcode",
+        "startcontextdefinitioncode", "stopcontextdefinitioncode",
         --
         "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup",
         "doifelsecommandhandler","doifnotcommandhandler","doifcommandhandler",
@@ -219,7 +220,9 @@ return {
         --
         "doif", "doifnot", "doifelse",
         "doifinset", "doifnotinset", "doifinsetelse",
-        "doifnextcharelse", "doifnextoptionalelse", "doifnextbgroupelse", "doifnextparenthesiselse", "doiffastoptionalcheckelse",
+        "doifnextcharelse", "doifnextoptionalelse", "doifnextoptionalcselse", "doiffastoptionalcheckelse",
+        "doifnextbgroupelse", "doifnextbgroupcselse",
+        "doifnextparenthesiselse",
         "doifundefinedelse", "doifdefinedelse", "doifundefined", "doifdefined",
         "doifelsevalue", "doifvalue", "doifnotvalue",
         "doifnothing", "doifsomething", "doifelsenothing", "doifsomethingelse",
@@ -353,6 +356,8 @@ return {
         "definenamedlua",
         "obeylualines", "obeyluatokens",
         "startluacode", "stopluacode", "startlua", "stoplua",
+        "startctxfunction","stopctxfunction","ctxfunction",
+        "startctxfunctiondefinition","stopctxfunctiondefinition",
         --
         "carryoverpar",
         --

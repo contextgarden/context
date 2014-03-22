@@ -236,7 +236,7 @@ function img.package(image) -- see lpdf-u3d **
     local height = boundingbox[4]
     local xform = img.scan {
         attr   = resources(),
-        stream = format("%f 0 0 %f 0 0 cm /%s Do",width,height,imagetag),
+        stream = format("%F 0 0 %F 0 0 cm /%s Do",width,height,imagetag),
         bbox   = { 0, 0, width/factor, height/factor },
     }
     img.immediatewrite(xform)

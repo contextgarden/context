@@ -346,6 +346,12 @@
    \let\if_next_blank_space_token\iffalse
    \futurelet\nexttoken\syst_helpers_inspect_next_bgroup_character}
 
+\unexpanded\def\doifnextbgroupcselse#1#2%
+  {\let\m_syst_action_yes#1%
+   \let\m_syst_action_nop#2%
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_bgroup_character}
+
 \def\syst_helpers_inspect_next_bgroup_character
   {\ifx\nexttoken\blankspace
      \expandafter\syst_helpers_reinspect_next_bgroup_character

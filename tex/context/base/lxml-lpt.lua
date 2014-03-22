@@ -1039,37 +1039,6 @@ local function normal_apply(list,parsed,nofparsed,order)
     return collected
 end
 
---~ local function applylpath(list,pattern)
---~     -- we avoid an extra call
---~     local parsed = cache[pattern]
---~     if parsed then
---~         lpathcalls = lpathcalls + 1
---~         lpathcached = lpathcached + 1
---~     elseif type(pattern) == "table" then
---~         lpathcalls = lpathcalls + 1
---~         parsed = pattern
---~     else
---~         parsed = lpath(pattern) or pattern
---~     end
---~     if not parsed then
---~         return
---~     end
---~     local nofparsed = #parsed
---~     if nofparsed == 0 then
---~         return -- something is wrong
---~     end
---~     local one = list[1] -- we could have a third argument: isroot and list or list[1] or whatever we like ... todo
---~     if not one then
---~         return -- something is wrong
---~     elseif not trace_lpath then
---~         return normal_apply(list,parsed,nofparsed,one.mi)
---~     elseif trace_lprofile then
---~         return profiled_apply(list,parsed,nofparsed,one.mi)
---~     else
---~         return traced_apply(list,parsed,nofparsed,one.mi)
---~     end
---~ end
-
 local function applylpath(list,pattern)
     if not list then
         return
@@ -1384,8 +1353,13 @@ function xml.elements(root,pattern,reverse) -- r, d, k
     local collected = applylpath(root,pattern)
     if not collected then
         return dummy
-    elseif reverse then
-        local c = #collected + 1
+    end
+    local n = #collected
+    if n == 0 then
+        return dummy
+    end
+    if reverse then
+        local c = n + 1
         return function()
             if c > 1 then
                 c = c - 1
@@ -1395,7 +1369,7 @@ function xml.elements(root,pattern,reverse) -- r, d, k
             end
         end
     else
-        local n, c = #collected, 0
+        local c = 0
         return function()
             if c < n then
                 c = c + 1
@@ -1411,8 +1385,13 @@ function xml.collected(root,pattern,reverse) -- e
     local collected = applylpath(root,pattern)
     if not collected then
         return dummy
-    elseif reverse then
-        local c = #collected + 1
+    end
+    local n = #collected
+    if n == 0 then
+        return dummy
+    end
+    if reverse then
+        local c = n + 1
         return function()
             if c > 1 then
                 c = c - 1
@@ -1420,7 +1399,7 @@ function xml.collected(root,pattern,reverse) -- e
             end
         end
     else
-        local n, c = #collected, 0
+        local c = 0
         return function()
             if c < n then
                 c = c + 1
@@ -1441,7 +1420,7 @@ end
 
 -- texy (see xfdf):
 
-local function split(e)
+local function split(e) -- todo: use helpers / lpeg
     local dt = e.dt
     if dt then
         for i=1,#dt do

@@ -30,12 +30,11 @@ local tonode             = nuts.tonode
 local getnext            = nuts.getnext
 local getid              = nuts.getid
 local getfield           = nuts.getfield
+local setfield           = nuts.setfield
 local getlist            = nuts.getlist
 local getattr            = nuts.getattr
-local getbox             = nuts.getbox
-
-local setfield           = nuts.setfield
 local setattr            = nuts.setattr
+local getbox             = nuts.getbox
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph

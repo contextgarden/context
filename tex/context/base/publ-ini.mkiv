@@ -530,7 +530,7 @@
 % \to \everysetupbtxlistplacement
 
 \unexpanded\def\btxflushauthor
-  {\doifnextoptionalelse\btx_flush_author_yes\btx_flush_author_nop}
+  {\doifnextoptionalcselse\btx_flush_author_yes\btx_flush_author_nop}
 
 \def\btx_flush_author_yes[#1]{\btx_flush_author{#1}}
 \def\btx_flush_author_nop    {\btx_flush_author{\btxlistvariantparameter\c!author}}

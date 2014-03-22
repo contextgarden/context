@@ -38,7 +38,15 @@
 \registerctxluafile{font-ott}{1.001} % otf tables (first)
 \registerctxluafile{font-otf}{1.001} % otf main
 \registerctxluafile{font-otb}{1.001} % otf main base
-\registerctxluafile{node-inj}{1.001} % we might split it off
+
+\ctxcommand{doifelse(nodes.properties)} {
+    \doiffileelse{font-inj.lua}
+        {\registerctxluafile{font-inj}{1.001}}
+        {\registerctxluafile{node-inj}{1.001}}
+} {
+    \registerctxluafile{node-inj}{1.001}
+}
+
 %registerctxluafile{font-ota}{1.001} % otf analyzers
 \registerctxluafile{font-otx}{1.001} % otf analyzers
 \registerctxluafile{font-otn}{1.001} % otf main node

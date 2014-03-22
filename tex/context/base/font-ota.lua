@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['font-ota'] = {
 
 -- this might become scrp-*.lua
 
+-- [attr] : getprop or getattr
+-- [attr] : setprop or setattr
+
 local type = type
 
 if not trackers then trackers = { register = function() end } end

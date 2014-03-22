@@ -46,70 +46,70 @@ local v_all                = variables.all
 
 -- beware, all macros have an argument:
 
-local doinlineverbatimnewline     = context.doinlineverbatimnewline
-local doinlineverbatimbeginline   = context.doinlineverbatimbeginline
-local doinlineverbatimemptyline   = context.doinlineverbatimemptyline
-local doinlineverbatimstart       = context.doinlineverbatimstart
-local doinlineverbatimstop        = context.doinlineverbatimstop
+local ctx_inlineverbatimnewline     = context.doinlineverbatimnewline
+local ctx_inlineverbatimbeginline   = context.doinlineverbatimbeginline
+local ctx_inlineverbatimemptyline   = context.doinlineverbatimemptyline
+local ctx_inlineverbatimstart       = context.doinlineverbatimstart
+local ctx_inlineverbatimstop        = context.doinlineverbatimstop
 
-local dodisplayverbatiminitialize = context.dodisplayverbatiminitialize -- the number of arguments might change over time
-local dodisplayverbatimnewline    = context.dodisplayverbatimnewline
-local dodisplayverbatimbeginline  = context.dodisplayverbatimbeginline
-local dodisplayverbatimemptyline  = context.dodisplayverbatimemptyline
-local dodisplayverbatimstart      = context.dodisplayverbatimstart
-local dodisplayverbatimstop       = context.dodisplayverbatimstop
+local ctx_displayverbatiminitialize = context.dodisplayverbatiminitialize -- the number of arguments might change over time
+local ctx_displayverbatimnewline    = context.dodisplayverbatimnewline
+local ctx_displayverbatimbeginline  = context.dodisplayverbatimbeginline
+local ctx_displayverbatimemptyline  = context.dodisplayverbatimemptyline
+local ctx_displayverbatimstart      = context.dodisplayverbatimstart
+local ctx_displayverbatimstop       = context.dodisplayverbatimstop
 
-local verbatim                    = context.verbatim
-local doverbatimspace             = context.doverbatimspace
+local ctx_verbatim                  = context.verbatim
+local ctx_verbatimspace             = context.doverbatimspace
 
 local CargOne = Carg(1)
 
 local function f_emptyline(s,settings)
     if settings and settings.nature == "inline" then
-        doinlineverbatimemptyline()
+        ctx_inlineverbatimemptyline()
     else
-        dodisplayverbatimemptyline()
+        ctx_displayverbatimemptyline()
     end
 end
 
 local function f_beginline(s,settings)
     if settings and settings.nature == "inline" then
-        doinlineverbatimbeginline()
+        ctx_inlineverbatimbeginline()
     else
-        dodisplayverbatimbeginline()
+        ctx_displayverbatimbeginline()
     end
 end
 
 local function f_newline(s,settings)
     if settings and settings.nature == "inline" then
-        doinlineverbatimnewline()
+        ctx_inlineverbatimnewline()
     else
-        dodisplayverbatimnewline()
+        ctx_displayverbatimnewline()
     end
 end
 
 local function f_start(s,settings)
     if settings and settings.nature == "inline" then
-        doinlineverbatimstart()
+        ctx_inlineverbatimstart()
     else
-        dodisplayverbatimstart()
+        ctx_displayverbatimstart()
     end
 end
 
 local function f_stop(s,settings)
     if settings and settings.nature == "inline" then
-        doinlineverbatimstop()
+        ctx_inlineverbatimstop()
     else
-        dodisplayverbatimstop()
+        ctx_displayverbatimstop()
     end
 end
 
 local function f_default(s) -- (s,settings)
-    verbatim(s)
+    ctx_verbatim(s)
 end
 
 local function f_space() -- (s,settings)
-    doverbatimspace()
+    ctx_verbatimspace()
 end
 
 local function f_signal() -- (s,settings)
@@ -200,7 +200,7 @@ local function getvisualizer(method,nature)
     end
 end
 
-local fallback = context.verbatim
+local ctx_fallback = ctx_verbatim
 
 local function makepattern(visualizer,replacement,pattern)
     if not pattern then
@@ -208,9 +208,9 @@ local function makepattern(visualizer,replacement,pattern)
         return patterns.alwaystrue
     else
         if type(visualizer) == "table" and type(replacement) == "string" then
-            replacement = visualizer[replacement] or fallback
+            replacement = visualizer[replacement] or ctx_fallback
         else
-            replacement = fallback
+            replacement = ctx_fallback
         end
         return (C(pattern) * CargOne) / replacement
     end
@@ -506,7 +506,7 @@ local function visualize(content,settings) -- maybe also method in settings
             if trace_visualize then
                 report_visualizers("visualize using method %a",method)
             end
-            fallback(content,1,settings)
+            ctx_fallback(content,1,settings)
         end
     end
 end
@@ -711,7 +711,7 @@ commands.loadvisualizer = visualizers.load
 function commands.typebuffer(settings)
     local lines = getlines(settings.name)
     if lines then
-        dodisplayverbatiminitialize(#lines)
+        ctx_displayverbatiminitialize(#lines)
         local content, m = filter(lines,settings)
         if content and content ~= "" then
          -- content = decodecomment(content)

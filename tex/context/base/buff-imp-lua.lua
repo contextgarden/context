@@ -139,7 +139,7 @@ local comment     = P("--")
 local name        = (patterns.letter + patterns.underscore)
                   * (patterns.letter + patterns.underscore + patterns.digit)^0
 local boundary    = S('()[]{}')
-local special     = S("-+/*^%=#") + P("..")
+local special     = S("-+/*^%=#~|<>") + P("..")
 
 -- The following longstring parser is taken from Roberto's documentation
 -- that can be found at http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html.

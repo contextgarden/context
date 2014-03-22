@@ -70,7 +70,7 @@
 % \definecharacterkerning [\v!letterspacing ] [\v!kerncharacters] [\c!features=letterspacing]
 %
 % \unexpanded\def\kerncharacters
-%   {\doifnextoptionalelse\typo_kerning_apply_yes\typo_kerning_apply_nop}
+%   {\doifnextoptionalcselse\typo_kerning_apply_yes\typo_kerning_apply_nop}
 %
 % \def\typo_kerning_apply_yes[#1]%
 %   {\groupedcommand{\typo_kerning_apply_yes_indeed{#1}}\donothing}

@@ -65,24 +65,37 @@ function colors.setlist(name)
     return table.sortedkeys(name and name ~= "" and colorsets[name] or colorsets.default or {})
 end
 
+local context_colordefagc = context.colordefagc
+local context_colordefagt = context.colordefagt
+local context_colordefalc = context.colordefalc
+local context_colordefalt = context.colordefalt
+local context_colordeffgc = context.colordeffgc
+local context_colordeffgt = context.colordeffgt
+local context_colordefflc = context.colordefflc
+local context_colordefflt = context.colordefflt
+local context_colordefrgc = context.colordefrgc
+local context_colordefrgt = context.colordefrgt
+local context_colordefrlc = context.colordefrlc
+local context_colordefrlt = context.colordefrlt
+
 local function definecolor(name, ca, global)
     if ca and ca > 0 then
         if global then
             if trace_define then
                 report_colors("define global color %a with attribute %a",name,ca)
             end
-            context.colordefagc(name,ca)
+            context_colordefagc(name,ca)
         else
             if trace_define then
                 report_colors("define local color %a with attribute %a",name,ca)
             end
-            context.colordefalc(name,ca)
+            context_colordefalc(name,ca)
         end
     else
         if global then
-            context.colordefrgc(name)
+            context_colordefrgc(name)
         else
-            context.colordefrlc(name)
+            context_colordefrlc(name)
         end
     end
     colorset[name] = true-- maybe we can store more
@@ -94,18 +107,18 @@ local function inheritcolor(name, ca, global)
             if trace_define then
                 report_colors("inherit global color %a with attribute %a",name,ca)
             end
-            context.colordeffgc(name,ca) -- some day we will set the macro directly
+            context_colordeffgc(name,ca) -- some day we will set the macro directly
         else
             if trace_define then
                 report_colors("inherit local color %a with attribute %a",name,ca)
             end
-            context.colordefflc(name,ca)
+            context_colordefflc(name,ca)
         end
     else
         if global then
-            context.colordefrgc(name)
+            context_colordefrgc(name)
         else
-            context.colordefrlc(name)
+            context_colordefrlc(name)
         end
     end
     colorset[name] = true-- maybe we can store more
@@ -117,18 +130,18 @@ local function definetransparent(name, ta, global)
             if trace_define then
                 report_colors("define global transparency %a with attribute %a",name,ta)
             end
-            context.colordefagt(name,ta)
+            context_colordefagt(name,ta)
         else
             if trace_define then
                 report_colors("define local transparency %a with attribute %a",name,ta)
             end
-            context.colordefalt(name,ta)
+            context_colordefalt(name,ta)
         end
     else
         if global then
-            context.colordefrgt(name)
+            context_colordefrgt(name)
         else
-            context.colordefrlt(name)
+            context_colordefrlt(name)
         end
     end
 end
@@ -139,18 +152,18 @@ local function inherittransparent(name, ta, global)
             if trace_define then
                 report_colors("inherit global transparency %a with attribute %a",name,ta)
             end
-            context.colordeffgt(name,ta)
+            context_colordeffgt(name,ta)
         else
             if trace_define then
                 report_colors("inherit local transparency %a with attribute %a",name,ta)
             end
-            context.colordefflt(name,ta)
+            context_colordefflt(name,ta)
         end
     else
         if global then
-            context.colordefrgt(name)
+            context_colordefrgt(name)
         else
-            context.colordefrlt(name)
+            context_colordefrlt(name)
         end
     end
 end
@@ -382,7 +395,7 @@ function colors.isblack(ca) -- maybe commands
 end
 
 function colors.definespotcolor(name,parent,str,global)
-    if parent == "" or find(parent,"=") then
+    if parent == "" or find(parent,"=",1,true) then
         colors.registerspotcolor(name, parent)
     elseif name ~= parent then
         local cp = attributes_list[a_color][parent]

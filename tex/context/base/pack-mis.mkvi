@@ -46,7 +46,7 @@
 \unexpanded\def\pack_placement#tag%
   {\bgroup
    \edef\currentplacement{#tag}%
-   \doifnextoptionalelse\pack_placement_yes\pack_placement_nop}
+   \doifnextoptionalcselse\pack_placement_yes\pack_placement_nop}
 
 \def\pack_placement_yes[#settings]%
   {\setupcurrentplacement[#settings]%

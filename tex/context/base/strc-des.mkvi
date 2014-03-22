@@ -102,7 +102,7 @@
 \unexpanded\def\strc_descriptions_start#1%
   {\begingroup
    \strc_constructions_initialize{#1}%
-   \doifnextoptionalelse\strc_descriptions_start_yes\strc_descriptions_start_nop}
+   \doifnextoptionalcselse\strc_descriptions_start_yes\strc_descriptions_start_nop}
 
 \unexpanded\def\strc_descriptions_start_yes[#1]%
   {\doifassignmentelse{#1}\strc_descriptions_start_yes_assignment\strc_descriptions_start_yes_reference[#1]}
@@ -162,7 +162,7 @@
 \unexpanded\def\strc_descriptions_command#1%
   {\begingroup
    \strc_constructions_initialize{#1}%
-   \doifnextoptionalelse\strc_descriptions_yes\strc_descriptions_nop}
+   \doifnextoptionalcselse\strc_descriptions_yes\strc_descriptions_nop}
 
 \unexpanded\def\strc_descriptions_yes
   {\ifconditional\c_strc_constructions_title_state

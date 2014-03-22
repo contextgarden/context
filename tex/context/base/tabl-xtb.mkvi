@@ -402,7 +402,7 @@
 
 \unexpanded\def\startxrow
   {\begingroup
-   \doifnextoptionalelse\tabl_x_start_row_yes\tabl_x_start_row_nop}
+   \doifnextoptionalcselse\tabl_x_start_row_yes\tabl_x_start_row_nop}
 
 \unexpanded\def\tabl_x_start_row_reflow_width_yes[#settings]%
   {\setupcurrentxtable[#settings]%
@@ -435,7 +435,7 @@
    \endgroup}
 
 \unexpanded\def\startxcell
-  {\doifnextoptionalelse\tabl_x_start_cell_yes\tabl_x_start_cell_nop}
+  {\doifnextoptionalcselse\tabl_x_start_cell_yes\tabl_x_start_cell_nop}
 
 \unexpanded\def\stopxcell
   {\tabl_x_stop_cell}
@@ -677,7 +677,7 @@
 
 \unexpanded\def\startxgroup
   {\begingroup
-   \doifnextoptionalelse\tabl_x_start_group_delayed_one\relax}
+   \doifnextoptionalcselse\tabl_x_start_group_delayed_one\relax}
 
 \unexpanded\def\stopxgroup
   {\endgroup}
@@ -695,7 +695,7 @@
      \chaintocurrentxtable{#tag}%
    \fi
    \edef\currentxtable{#tag}%
-   \doifnextoptionalelse\setupcurrentxtable\relax}
+   \doifnextoptionalcselse\setupcurrentxtable\relax}
 
 \let\startxrowgroup \startxgroup
 \let\stopxrowgroup  \stopxgroup
@@ -706,7 +706,7 @@
 
 \unexpanded\def\startxcell
   {\begingroup
-   \doifnextoptionalelse\tabl_x_start_cell_delayed_one\tabl_x_start_cell_nop}
+   \doifnextoptionalcselse\tabl_x_start_cell_delayed_one\tabl_x_start_cell_nop}
 
 \unexpanded\def\tabl_x_start_cell_delayed_one[#tag]%
 % {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
@@ -721,7 +721,7 @@
      \chaintocurrentxtable{#tag}%
    \fi
    \edef\currentxtable{#tag}%
-   \doifnextoptionalelse\tabl_x_start_cell_yes\tabl_x_start_cell_nop}
+   \doifnextoptionalcselse\tabl_x_start_cell_yes\tabl_x_start_cell_nop}
 
 \unexpanded\def\stopxcell
   {\tabl_x_stop_cell
@@ -731,7 +731,7 @@
 
 \unexpanded\def\startxrow
   {\begingroup
-   \doifnextoptionalelse\tabl_x_start_row_delayed_one\tabl_x_start_row_nop}
+   \doifnextoptionalcselse\tabl_x_start_row_delayed_one\tabl_x_start_row_nop}
 
 \unexpanded\def\tabl_x_start_row_delayed_one[#tag]%
 % {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
@@ -746,7 +746,7 @@
      \chaintocurrentxtable{#tag}%
    \fi
    \edef\currentxtable{#tag}%
-   \doifnextoptionalelse\tabl_x_start_row_yes\tabl_x_start_row_nop}
+   \doifnextoptionalcselse\tabl_x_start_row_yes\tabl_x_start_row_nop}
 
 \unexpanded\def\stopxrow
   {\tabl_x_stop_row

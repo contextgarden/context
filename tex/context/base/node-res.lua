@@ -74,6 +74,9 @@ local copy_nut  = nuts.copy
 local new_nut   = nuts.new
 local free_nut  = nuts.free
 
+local copy_node = nodes.copy
+local new_node  = nodes.new
+
 -- at some point we could have a dual set (the overhead of tonut is not much larger than
 -- metatable associations at the lua/c end esp if we also take assignments into account
 
@@ -288,19 +291,85 @@ function nutpool.rule(width,height,depth,dir) -- w/h/d == nil will let them adap
     return n
 end
 
--- if node.has_field(latelua,'string') then
-    function nutpool.latelua(code)
-        local n = copy_nut(latelua)
-        setfield(n,"string",code)
+function nutpool.latelua(code)
+    local n = copy_nut(latelua)
+    setfield(n,"string",code)
+    return n
+end
+
+if context and _cldo_ then
+
+    -- a typical case where we have more nodes than nuts
+
+    local context = context
+
+    local f_cldo   = string.formatters["_cldo_(%i)"]
+    local register = context.registerfunction
+
+    local latelua_node  = register_node(new_node("whatsit",whatsitcodes.latelua))
+    local latelua_nut   = register_nut (new_nut ("whatsit",whatsitcodes.latelua))
+
+    local setfield_node = nodes.setfield
+    local setfield_nut  = nuts .setfield
+
+    function nodepool.lateluafunction(f)
+        local n = copy_node(latelua_node)
+        setfield_node(n,"string",f_cldo(register(f)))
         return n
     end
--- else
---     function nutpool.latelua(code)
---         local n = copy_nut(latelua)
---         setfield(n,"data",code)
---         return n
---     end
--- end
+    function nutpool.lateluafunction(f)
+        local n = copy_nut(latelua_nut)
+        setfield_nut(n,"string",f_cldo(register(f)))
+        return n
+    end
+
+    -- when function in latelua:
+
+ -- function nodepool.lateluafunction(f)
+ --     local n = copy_node(latelua_node)
+ --     setfield_node(n,"string",f)
+ --     return n
+ -- end
+ -- function nutpool.lateluafunction(f)
+ --     local n = copy_nut(latelua_nut)
+ --     setfield_nut(n,"string",f)
+ --     return n
+ -- end
+
+    local latefunction = nodepool.lateluafunction
+    local flushnode    = context.flushnode
+
+    function context.lateluafunction(f)
+        flushnode(latefunction(f)) -- hm, quite some indirect calls
+    end
+
+    -- when function in latelua:
+
+ -- function context.lateluafunction(f)
+ --     local n = copy_node(latelua_node)
+ --     setfield_node(n,"string",f)
+ --     flushnode(n)
+ -- end
+
+ -- local contextsprint = context.sprint
+ -- local ctxcatcodes   = tex.ctxcatcodes
+ -- local storenode     = context.storenode
+
+     -- when 0.79 is out:
+
+ -- function context.lateluafunction(f)
+ --     contextsprint(ctxcatcodes,"\\cldl",storenode(latefunction(f))," ")
+ -- end
+
+    -- when function in latelua:
+
+ -- function context.lateluafunction(f)
+ --     local n = copy_node(latelua_node)
+ --     setfield_node(n,"string",f)
+ --     contextsprint(ctxcatcodes,"\\cldl",storenode(n)," ")
+ -- end
+
+end
 
 function nutpool.leftmarginkern(glyph,width)
     local n = copy_nut(left_margin_kern)

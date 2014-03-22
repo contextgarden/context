@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['lpdf-mis'] = {
 -- course there are a couple of more changes.
 
 local next, tostring = next, tostring
-local format, gsub = string.format, string.gsub
+local format, gsub, formatters = string.format, string.gsub, string.formatters
 local texset = tex.set
 
 local backends, lpdf, nodes = backends, lpdf, nodes
@@ -41,6 +41,14 @@ local pdfverbose           = lpdf.verbose
 local pdfstring            = lpdf.string
 local pdfflushobject       = lpdf.flushobject
 local pdfflushstreamobject = lpdf.flushstreamobject
+local pdfaction            = lpdf.action
+
+local formattedtimestamp   = lpdf.pdftimestamp
+local adddocumentextgstate = lpdf.adddocumentextgstate
+local addtocatalog         = lpdf.addtocatalog
+local addtoinfo            = lpdf.addtoinfo
+local addtopageattributes  = lpdf.addtopageattributes
+local addtonames           = lpdf.addtonames
 
 local variables            = interfaces.variables
 local v_stop               = variables.stop
@@ -60,8 +68,8 @@ local function initializenegative()
     }
     local negative = pdfdictionary { Type = g, TR = pdfreference(pdfflushstreamobject("{ 1 exch sub }",d)) }
     local positive = pdfdictionary { Type = g, TR = pdfconstant("Identity") }
-    lpdf.adddocumentextgstate("GSnegative", pdfreference(pdfflushobject(negative)))
-    lpdf.adddocumentextgstate("GSpositive", pdfreference(pdfflushobject(positive)))
+    adddocumentextgstate("GSnegative", pdfreference(pdfflushobject(negative)))
+    adddocumentextgstate("GSpositive", pdfreference(pdfflushobject(positive)))
     initializenegative = nil
 end
 
@@ -69,8 +77,8 @@ local function initializeoverprint()
     local g = pdfconstant("ExtGState")
     local knockout  = pdfdictionary { Type = g, OP = false, OPM  = 0 }
     local overprint = pdfdictionary { Type = g, OP = true,  OPM  = 1 }
-    lpdf.adddocumentextgstate("GSknockout",  pdfreference(pdfflushobject(knockout)))
-    lpdf.adddocumentextgstate("GSoverprint", pdfreference(pdfflushobject(overprint)))
+    adddocumentextgstate("GSknockout",  pdfreference(pdfflushobject(knockout)))
+    adddocumentextgstate("GSoverprint", pdfreference(pdfflushobject(overprint)))
     initializeoverprint = nil
 end
 
@@ -92,8 +100,6 @@ function nodeinjections.negative()
     return copy_node(negative)
 end
 
---
-
 -- function codeinjections.addtransparencygroup()
 --     -- png: /CS /DeviceRGB /I true
 --     local d = pdfdictionary {
@@ -101,7 +107,7 @@ end
 --         I = true,
 --         K = true,
 --     }
---     lpdf.registerpagefinalizer(function() lpdf.addtopageattributes("Group",d) end) -- hm
+--     lpdf.registerpagefinalizer(function() addtopageattributes("Group",d) end) -- hm
 -- end
 
 -- actions (todo: store and update when changed)
@@ -126,10 +132,10 @@ end
 
 local function flushdocumentactions()
     if opendocument then
-        lpdf.addtocatalog("OpenAction",lpdf.action(opendocument))
+        addtocatalog("OpenAction",pdfaction(opendocument))
     end
     if closedocument then
-        lpdf.addtocatalog("CloseAction",lpdf.action(closedocument))
+        addtocatalog("CloseAction",pdfaction(closedocument))
     end
 end
 
@@ -137,12 +143,12 @@ local function flushpageactions()
     if openpage or closepage then
         local d = pdfdictionary()
         if openpage then
-            d.O = lpdf.action(openpage)
+            d.O = pdfaction(openpage)
         end
         if closepage then
-            d.C = lpdf.action(closepage)
+            d.C = pdfaction(closepage)
         end
-        lpdf.addtopageattributes("AA",d)
+        addtopageattributes("AA",d)
     end
 end
 
@@ -169,37 +175,37 @@ local function setupidentity()
         if not title or title == "" then
             title = tex.jobname
         end
-        lpdf.addtoinfo("Title", pdfunicode(title), title)
+        addtoinfo("Title", pdfunicode(title), title)
         local subtitle = identity.subtitle or ""
         if subtitle ~= "" then
-            lpdf.addtoinfo("Subject", pdfunicode(subtitle), subtitle)
+            addtoinfo("Subject", pdfunicode(subtitle), subtitle)
         end
         local author = identity.author or ""
         if author ~= "" then
-            lpdf.addtoinfo("Author",  pdfunicode(author), author) -- '/Author' in /Info, 'Creator' in XMP
+            addtoinfo("Author",  pdfunicode(author), author) -- '/Author' in /Info, 'Creator' in XMP
         end
         local creator = identity.creator or ""
         if creator ~= "" then
-            lpdf.addtoinfo("Creator", pdfunicode(creator), creator) -- '/Creator' in /Info, 'CreatorTool' in XMP
+            addtoinfo("Creator", pdfunicode(creator), creator) -- '/Creator' in /Info, 'CreatorTool' in XMP
         end
-        lpdf.addtoinfo("CreationDate", pdfstring(lpdf.pdftimestamp(lpdf.timestamp())))
+        local currenttimestamp = lpdf.timestamp()
+        addtoinfo("CreationDate", pdfstring(formattedtimestamp(currenttimestamp)))
         local date = identity.date or ""
-        local pdfdate = lpdf.pdftimestamp(date)
+        local pdfdate = formattedtimestamp(date)
         if pdfdate then
-            lpdf.addtoinfo("ModDate", pdfstring(pdfdate), date)
+            addtoinfo("ModDate", pdfstring(pdfdate), date)
         else
             -- users should enter the date in 2010-01-19T23:27:50+01:00 format
             -- and if not provided that way we use the creation time instead
-            date = lpdf.timestamp()
-            lpdf.addtoinfo("ModDate", pdfstring(lpdf.pdftimestamp(date)), date)
+            addtoinfo("ModDate", pdfstring(formattedtimestamp(currenttimestamp)), currenttimestamp)
         end
         local keywords = identity.keywords or ""
         if keywords ~= "" then
             keywords = gsub(keywords, "[%s,]+", " ")
-            lpdf.addtoinfo("Keywords",pdfunicode(keywords), keywords)
+            addtoinfo("Keywords",pdfunicode(keywords), keywords)
         end
         local id = lpdf.id()
-        lpdf.addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
+        addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
         done = true
     else
         -- no need for a message
@@ -226,7 +232,7 @@ local function flushjavascripts()
             a[#a+1] = pdfstring(name)
             a[#a+1] = pdfreference(pdfflushobject(j))
         end
-        lpdf.addtonames("JavaScript",pdfreference(pdfflushobject(pdfdictionary{ Names = a })))
+        addtonames("JavaScript",pdfreference(pdfflushobject(pdfdictionary{ Names = a })))
     end
 end
 
@@ -285,16 +291,16 @@ local function documentspecification()
         layout = layout and pdfconstant(layout)
         fit = fit and pdfdictionary { FitWindow = true }
         if layout then
-            lpdf.addtocatalog("PageLayout",layout)
+            addtocatalog("PageLayout",layout)
         end
         if mode then
-            lpdf.addtocatalog("PageMode",mode)
+            addtocatalog("PageMode",mode)
         end
         if fit then
-            lpdf.addtocatalog("ViewerPreferences",fit)
+            addtocatalog("ViewerPreferences",fit)
         end
-        lpdf.addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
-        lpdf.addtocatalog("Version", pdfconstant(format("1.%s",tex.pdfminorversion)))
+        addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
+        addtocatalog("Version", pdfconstant(format("1.%s",tex.pdfminorversion)))
     end
 end
 
@@ -303,7 +309,7 @@ end
 local factor = number.dimenfactors.bp
 
 local function boxvalue(n) -- we could share them
-    return pdfverbose(format("%0.4f",factor * n))
+    return pdfverbose(formatters["%0.4F"](factor * n))
 end
 
 local function pagespecification()
@@ -314,10 +320,10 @@ local function pagespecification()
         boxvalue(width-leftoffset),
         boxvalue(pageheight-topoffset),
     }
-    lpdf.addtopageattributes("CropBox",box) -- mandate for rendering
-    lpdf.addtopageattributes("TrimBox",box) -- mandate for pdf/x
- -- lpdf.addtopageattributes("BleedBox",box)
- -- lpdf.addtopageattributes("ArtBox",box)
+    addtopageattributes("CropBox",box) -- mandate for rendering
+    addtopageattributes("TrimBox",box) -- mandate for pdf/x
+ -- addtopageattributes("BleedBox",box)
+ -- addtopageattributes("ArtBox",box)
 end
 
 lpdf.registerpagefinalizer(pagespecification,"page specification")
@@ -365,7 +371,7 @@ local map = {
 --             end
 --         end
 --     end
---     lpdf.addtocatalog("PageLabels", pdfdictionary { Nums = list })
+--     addtocatalog("PageLabels", pdfdictionary { Nums = list })
 -- end
 
 local function featurecreep()
@@ -416,7 +422,7 @@ local function featurecreep()
             stopped       = false
         end
     end
-    lpdf.addtocatalog("PageLabels", pdfdictionary { Nums = list })
+    addtocatalog("PageLabels", pdfdictionary { Nums = list })
 end
 
 lpdf.registerdocumentfinalizer(featurecreep,"featurecreep")

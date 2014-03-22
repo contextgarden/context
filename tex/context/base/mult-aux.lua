@@ -54,7 +54,7 @@ function namespaces.define(namespace,settings)
         if trace_namespaces then
             report_namespaces("namespace %a for %a uses parent %a",namespace,name,parent)
         end
-        if not find(parent,"\\") then
+        if not find(parent,"\\",1,true) then
             parent = "\\" .. prefix .. parent
             -- todo: check if defined
         end

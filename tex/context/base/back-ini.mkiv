@@ -23,8 +23,9 @@
 
 \unprotect
 
-\ifdefined\everybackendshipout     \else \newtoks\everybackendshipout     \fi
-\ifdefined\everylastbackendshipout \else \newtoks\everylastbackendshipout \fi
+\ifdefined\everybackendshipout       \else \newtoks\everybackendshipout       \fi
+\ifdefined\everylastbackendshipout   \else \newtoks\everylastbackendshipout   \fi
+\ifdefined\everybackendlastinshipout \else \newtoks\everybackendlastinshipout \fi % e.g. finalize via latelua
 
 %D Right from the start \CONTEXT\ had a backend system based on
 %D runtime pluggable code. As most backend issues involved specials
@@ -126,9 +127,9 @@
 %D From now on, mapfile loading is also a special; we assume the
 %D more or less standard dvips syntax.
 
-\let \doresetmapfilelist \donothing
-\let \doloadmapfile      \gobbletwoarguments % + - = | filename
-\let \doloadmapline      \gobbletwoarguments % + - = | fileline
+%let \doresetmapfilelist \donothing
+%let \doloadmapfile      \gobbletwoarguments % + - = | filename
+%let \doloadmapline      \gobbletwoarguments % + - = | fileline
 
 %D \macros
 %D   {jobsuffix}

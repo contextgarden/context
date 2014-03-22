@@ -182,16 +182,17 @@ local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
 local getfield           = nuts.getfield
+local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getattr            = nuts.getattr
+local setattr            = nuts.setattr
+local getprop            = nuts.getprop
+local setprop            = nuts.setprop
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
-
-local setfield           = nuts.setfield
-local setattr            = nuts.setattr
 
 local insert_node_after  = nuts.insert_after
 local delete_node        = nuts.delete
@@ -234,13 +235,7 @@ local privateattribute   = attributes.private
 -- of only some.
 
 local a_state            = privateattribute('state')
-local a_markbase         = privateattribute('markbase')
-local a_markmark         = privateattribute('markmark')
-local a_markdone         = privateattribute('markdone') -- assigned at the injection end
-local a_cursbase         = privateattribute('cursbase')
-local a_curscurs         = privateattribute('curscurs')
-local a_cursdone         = privateattribute('cursdone')
-local a_kernpair         = privateattribute('kernpair')
+local a_cursbase         = privateattribute('cursbase') -- to be checked
 local a_ligacomp         = privateattribute('ligacomp') -- assigned here (ideally it should be combined)
 
 local injections         = nodes.injections
@@ -249,9 +244,7 @@ local setcursive         = injections.setcursive
 local setkern            = injections.setkern
 local setpair            = injections.setpair
 
-local markonce           = true
 local cursonce           = true
-local kernonce           = true
 
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
@@ -459,9 +452,9 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
                 baseindex = baseindex + componentindex
                 componentindex = getcomponentindex(start)
             elseif not deletemarks then -- quite fishy
-                setattr(start,a_ligacomp,baseindex + (getattr(start,a_ligacomp) or componentindex))
+                setprop(start,a_ligacomp,baseindex + (getprop(start,a_ligacomp) or componentindex))
                 if trace_marks then
-                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),getattr(start,a_ligacomp))
+                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),getprop(start,a_ligacomp))
                 end
                 head, current = insert_node_after(head,current,copy_node(start)) -- unlikely that mark has components
             elseif trace_marks then
@@ -475,9 +468,9 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
         while start and getid(start) == glyph_code do
             local char = getchar(start)
             if marks[char] then
-                setattr(start,a_ligacomp,baseindex + (getattr(start,a_ligacomp) or componentindex))
+                setprop(start,a_ligacomp,baseindex + (getprop(start,a_ligacomp) or componentindex))
                 if trace_marks then
-                    logwarning("%s: set mark %s, gets index %s",pref(kind,lookupname),gref(char),getattr(start,a_ligacomp))
+                    logwarning("%s: set mark %s, gets index %s",pref(kind,lookupname),gref(char),getprop(start,a_ligacomp))
                 end
             else
                 break
@@ -710,7 +703,7 @@ function handlers.gpos_mark2base(head,start,kind,lookupname,markanchors,sequence
                         if al[anchor] then
                             local ma = markanchors[anchor]
                             if ma then
-                                local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
+                                local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,characters[basechar])
                                 if trace_marks then
                                     logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
                                         pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -759,7 +752,7 @@ function handlers.gpos_mark2ligature(head,start,kind,lookupname,markanchors,sequ
                     end
                 end
             end
-            local index = getattr(start,a_ligacomp)
+            local index = getprop(start,a_ligacomp)
             local baseanchors = descriptions[basechar]
             if baseanchors then
                 baseanchors = baseanchors.anchors
@@ -773,7 +766,7 @@ function handlers.gpos_mark2ligature(head,start,kind,lookupname,markanchors,sequ
                                 if ma then
                                     ba = ba[index]
                                     if ba then
-                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma) -- index
+                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,characters[basechar]) -- index
                                         if trace_marks then
                                             logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
                                                 pref(kind,lookupname),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -809,10 +802,10 @@ function handlers.gpos_mark2mark(head,start,kind,lookupname,markanchors,sequence
     local markchar = getchar(start)
     if marks[markchar] then
         local base = getprev(start) -- [glyph] [basemark] [start=mark]
-        local slc = getattr(start,a_ligacomp)
+        local slc = getprop(start,a_ligacomp)
         if slc then -- a rather messy loop ... needs checking with husayni
             while base do
-                local blc = getattr(base,a_ligacomp)
+                local blc = getprop(base,a_ligacomp)
                 if blc and blc ~= slc then
                     base = getprev(base)
                 else
@@ -833,7 +826,7 @@ function handlers.gpos_mark2mark(head,start,kind,lookupname,markanchors,sequence
                             if al[anchor] then
                                 local ma = markanchors[anchor]
                                 if ma then
-                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,true)
+                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,characters[basechar])
                                     if trace_marks then
                                         logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                                             pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -861,7 +854,7 @@ function handlers.gpos_mark2mark(head,start,kind,lookupname,markanchors,sequence
 end
 
 function handlers.gpos_cursive(head,start,kind,lookupname,exitanchors,sequence) -- to be checked
-    local alreadydone = cursonce and getattr(start,a_cursbase)
+    local alreadydone = cursonce and getprop(start,a_cursbase)
     if not alreadydone then
         local done = false
         local startchar = getchar(start)
@@ -1343,7 +1336,7 @@ function chainprocs.gpos_mark2base(head,start,stop,kind,chainname,currentcontext
                             if al[anchor] then
                                 local ma = markanchors[anchor]
                                 if ma then
-                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma)
+                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,characters[basechar])
                                     if trace_marks then
                                         logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
                                             cref(kind,chainname,chainlookupname,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -1399,7 +1392,7 @@ function chainprocs.gpos_mark2ligature(head,start,stop,kind,chainname,currentcon
                     end
                 end
                 -- todo: like marks a ligatures hash
-                local index = getattr(start,a_ligacomp)
+                local index = getprop(start,a_ligacomp)
                 local baseanchors = descriptions[basechar].anchors
                 if baseanchors then
                    local baseanchors = baseanchors['baselig']
@@ -1411,7 +1404,7 @@ function chainprocs.gpos_mark2ligature(head,start,stop,kind,chainname,currentcon
                                 if ma then
                                     ba = ba[index]
                                     if ba then
-                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma) -- index
+                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,characters[basechar])
                                         if trace_marks then
                                             logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
                                                 cref(kind,chainname,chainlookupname,lookupname),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -1441,62 +1434,57 @@ end
 function chainprocs.gpos_mark2mark(head,start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname)
     local markchar = getchar(start)
     if marks[markchar] then
-     -- local alreadydone = markonce and getattr(start,a_markmark)
-     -- if not alreadydone then
-        --  local markanchors = descriptions[markchar].anchors markanchors = markanchors and markanchors.mark
-            local subtables = currentlookup.subtables
-            local lookupname = subtables[1]
-            local markanchors = lookuphash[lookupname]
-            if markanchors then
-                markanchors = markanchors[markchar]
-            end
-            if markanchors then
-                local base = getprev(start) -- [glyph] [basemark] [start=mark]
-                local slc = getattr(start,a_ligacomp)
-                if slc then -- a rather messy loop ... needs checking with husayni
-                    while base do
-                        local blc = getattr(base,a_ligacomp)
-                        if blc and blc ~= slc then
-                            base = getprev(base)
-                        else
-                            break
-                        end
+    --  local markanchors = descriptions[markchar].anchors markanchors = markanchors and markanchors.mark
+        local subtables = currentlookup.subtables
+        local lookupname = subtables[1]
+        local markanchors = lookuphash[lookupname]
+        if markanchors then
+            markanchors = markanchors[markchar]
+        end
+        if markanchors then
+            local base = getprev(start) -- [glyph] [basemark] [start=mark]
+            local slc = getprop(start,a_ligacomp)
+            if slc then -- a rather messy loop ... needs checking with husayni
+                while base do
+                    local blc = getprop(base,a_ligacomp)
+                    if blc and blc ~= slc then
+                        base = getprev(base)
+                    else
+                        break
                     end
                 end
-                if base and getid(base) == glyph_code and getfont(base) == currentfont and getsubtype(base)<256 then -- subtype test can go
-                    local basechar = getchar(base)
-                    local baseanchors = descriptions[basechar].anchors
+            end
+            if base and getid(base) == glyph_code and getfont(base) == currentfont and getsubtype(base)<256 then -- subtype test can go
+                local basechar = getchar(base)
+                local baseanchors = descriptions[basechar].anchors
+                if baseanchors then
+                    baseanchors = baseanchors['basemark']
                     if baseanchors then
-                        baseanchors = baseanchors['basemark']
-                        if baseanchors then
-                            local al = anchorlookups[lookupname]
-                            for anchor,ba in next, baseanchors do
-                                if al[anchor] then
-                                    local ma = markanchors[anchor]
-                                    if ma then
-                                        local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,true)
-                                        if trace_marks then
-                                            logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
-                                                cref(kind,chainname,chainlookupname,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
-                                        end
-                                        return head, start, true
+                        local al = anchorlookups[lookupname]
+                        for anchor,ba in next, baseanchors do
+                            if al[anchor] then
+                                local ma = markanchors[anchor]
+                                if ma then
+                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,characters[basechar])
+                                    if trace_marks then
+                                        logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
+                                            cref(kind,chainname,chainlookupname,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
                                     end
+                                    return head, start, true
                                 end
                             end
-                            if trace_bugs then
-                                logwarning("%s: no matching anchors for mark %s and basemark %s",gref(kind,chainname,chainlookupname,lookupname),gref(markchar),gref(basechar))
-                            end
+                        end
+                        if trace_bugs then
+                            logwarning("%s: no matching anchors for mark %s and basemark %s",gref(kind,chainname,chainlookupname,lookupname),gref(markchar),gref(basechar))
                         end
                     end
-                elseif trace_bugs then
-                    logwarning("%s: prev node is no mark",cref(kind,chainname,chainlookupname,lookupname))
                 end
             elseif trace_bugs then
-                logwarning("%s: mark %s has no anchors",cref(kind,chainname,chainlookupname,lookupname),gref(markchar))
+                logwarning("%s: prev node is no mark",cref(kind,chainname,chainlookupname,lookupname))
             end
-     -- elseif trace_marks and trace_details then
-     --     logprocess("%s, mark %s is already bound (n=%s), ignoring mark2mark",pref(kind,lookupname),gref(markchar),alreadydone)
-     -- end
+        elseif trace_bugs then
+            logwarning("%s: mark %s has no anchors",cref(kind,chainname,chainlookupname,lookupname),gref(markchar))
+        end
     elseif trace_bugs then
         logwarning("%s: mark %s is no mark",cref(kind,chainname,chainlookupname),gref(markchar))
     end
@@ -1504,7 +1492,7 @@ function chainprocs.gpos_mark2mark(head,start,stop,kind,chainname,currentcontext
 end
 
 function chainprocs.gpos_cursive(head,start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname)
-    local alreadydone = cursonce and getattr(start,a_cursbase)
+    local alreadydone = cursonce and getprop(start,a_cursbase)
     if not alreadydone then
         local startchar = getchar(start)
         local subtables = currentlookup.subtables
@@ -2065,9 +2053,12 @@ local autofeatures = fonts.analyzers.features -- was: constants
 local function initialize(sequence,script,language,enabled)
     local features = sequence.features
     if features then
-        for kind, scripts in next, features do
+        local order = features.order
+        for i=1,#order do --
+            local kind = order[i] --
             local valid = enabled[kind]
             if valid then
+                local scripts = features[kind] --
                 local languages = scripts[script] or scripts[wildcard]
                 if languages and (languages[language] or languages[wildcard]) then
                     return { valid, autofeatures[kind] or false, sequence.chain or 0, kind, sequence }
@@ -2101,19 +2092,12 @@ function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
         }
         rs[language] = rl
         local sequences = tfmdata.resources.sequences
---         setmetatableindex(rl, function(t,k)
---             if type(k) == "number" then
---                 local v = enabled and initialize(sequences[k],script,language,enabled)
---                 t[k] = v
---                 return v
---             end
---         end)
-for s=1,#sequences do
-    local v = enabled and initialize(sequences[s],script,language,enabled)
-    if v then
-        rl[#rl+1] = v
-    end
-end
+        for s=1,#sequences do
+            local v = enabled and initialize(sequences[s],script,language,enabled)
+            if v then
+                rl[#rl+1] = v
+            end
+        end
     end
     return rl
 end
@@ -2141,7 +2125,7 @@ end
 -- attr = attr or false
 --
 -- local a = getattr(start,0)
--- if (a == attr and (not attribute or getattr(start,a_state) == attribute)) or (not attribute or getattr(start,a_state) == attribute) then
+-- if (a == attr and (not attribute or getprop(start,a_state) == attribute)) or (not attribute or getprop(start,a_state) == attribute) then
 --     -- the action
 -- end
 
@@ -2263,9 +2247,9 @@ local function featuresprocessor(head,font,attr)
                             if id == glyph_code and getfont(start) == font and getsubtype(start) < 256 then
                                 local a = getattr(start,0)
                                 if a then
-                                    a = (a == attr) and (not attribute or getattr(start,a_state) == attribute)
+                                    a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
                                 else
-                                    a = not attribute or getattr(start,a_state) == attribute
+                                    a = not attribute or getprop(start,a_state) == attribute
                                 end
                                 if a then
                                     local lookupmatch = lookupcache[getchar(start)]
@@ -2299,9 +2283,9 @@ local function featuresprocessor(head,font,attr)
                          -- setfield(next,"prev",prev)
                             local a = getattr(prev,0)
                             if a then
-                                a = (a == attr) and (not attribute or getattr(prev,a_state) == attribute)
+                                a = (a == attr) and (not attribute or getprop(prev,a_state) == attribute)
                             else
-                                a = not attribute or getattr(prev,a_state) == attribute
+                                a = not attribute or getprop(prev,a_state) == attribute
                             end
                             if a then
                                 local lookupmatch = lookupcache[getchar(prev)]
@@ -2326,9 +2310,9 @@ local function featuresprocessor(head,font,attr)
                             if getfont(start) == font and getsubtype(start) < 256 then
                                 local a = getattr(start,0)
                                 if a then
-                                    a = (a == attr) and (not attribute or getattr(start,a_state) == attribute)
+                                    a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
                                 else
-                                    a = not attribute or getattr(start,a_state) == attribute
+                                    a = not attribute or getprop(start,a_state) == attribute
                                 end
                                 if a then
                                     local lookupmatch = lookupcache[getchar(start)]
@@ -2424,9 +2408,9 @@ elseif typ == "gpos_single" or typ == "gpos_pair" then
                         if id == glyph_code and getfont(start) == font and getsubtype(start) < 256 then
                             local a = getattr(start,0)
                             if a then
-                                a = (a == attr) and (not attribute or getattr(start,a_state) == attribute)
+                                a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
                             else
-                                a = not attribute or getattr(start,a_state) == attribute
+                                a = not attribute or getprop(start,a_state) == attribute
                             end
                             if a then
                                 for i=1,ns do
@@ -2472,9 +2456,9 @@ elseif typ == "gpos_single" or typ == "gpos_pair" then
                      -- setfield(next,"prev",prev)
                         local a = getattr(prev,0)
                         if a then
-                            a = (a == attr) and (not attribute or getattr(prev,a_state) == attribute)
+                            a = (a == attr) and (not attribute or getprop(prev,a_state) == attribute)
                         else
-                            a = not attribute or getattr(prev,a_state) == attribute
+                            a = not attribute or getprop(prev,a_state) == attribute
                         end
                         if a then
                             for i=1,ns do
@@ -2507,9 +2491,9 @@ elseif typ == "gpos_single" or typ == "gpos_pair" then
                         if getfont(start) == font and getsubtype(start) < 256 then
                             local a = getattr(start,0)
                             if a then
-                                a = (a == attr) and (not attribute or getattr(start,a_state) == attribute)
+                                a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
                             else
-                                a = not attribute or getattr(start,a_state) == attribute
+                                a = not attribute or getprop(start,a_state) == attribute
                             end
                             if a then
                                 for i=1,ns do

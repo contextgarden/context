@@ -15,6 +15,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 \installcorenamespace{structure}
 
 \installdirectcommandhandler \??structure {structure} % unchecked, so we need to initialize used parameters
@@ -130,9 +132,9 @@
        \xdef\currentstructuremarking {\structureparameter\c!marking}%
        \xdef\currentstructurelist    {\structureparameter\c!list}%
      \xmlstopraw
-\iflocation \ifx\currentstructurebookmark\empty \ifconditional\c_strc_bookmarks_preroll
-  \strc_sectioning_autobookmark\currentstructuretitle
-\fi \fi \fi
+     \iflocation \ifx\currentstructurebookmark\empty \ifconditional\c_strc_bookmarks_preroll
+       \strc_sectioning_autobookmark\currentstructuretitle
+     \fi \fi \fi
      \ifx\currentstructurelist\empty
        \globallet\currentstructurelist\currentstructuretitle
      \fi
@@ -143,23 +145,23 @@
        \xdef\currentstructurebookmark{\structureparameter\c!bookmark}%
        \xdef\currentstructuremarking {\structureparameter\c!marking}%
        \xdef\currentstructurelist    {\structureparameter\c!list}%
-\iflocation \ifx\currentstructurebookmark\empty \ifconditional\c_strc_bookmarks_preroll
-  \strc_sectioning_autobookmark\currentstructuretitle
-\fi \fi \fi
+       \iflocation \ifx\currentstructurebookmark\empty \ifconditional\c_strc_bookmarks_preroll
+         \strc_sectioning_autobookmark\currentstructuretitle
+       \fi \fi \fi
      \else
        \xdef\currentstructuretitle   {\detokenizedstructureparameter\c!title}%
        \xdef\currentstructurebookmark{\detokenizedstructureparameter\c!bookmark}%
        \xdef\currentstructuremarking {\detokenizedstructureparameter\c!marking}%
        \xdef\currentstructurelist    {\detokenizedstructureparameter\c!list}%
        \iflocation \ifx\currentstructurebookmark\empty
-\ifconditional\c_strc_bookmarks_preroll
-  \strc_sectioning_autobookmark{\structureparameter\c!title}%
-\else
-            \begingroup
-            \simplifycommands
-            \xdef\currentstructurebookmark{\detokenize\expandafter{\normalexpanded{\structureparameter\c!title}}}%
-            \endgroup
-\fi
+         \ifconditional\c_strc_bookmarks_preroll
+           \strc_sectioning_autobookmark{\structureparameter\c!title}%
+         \else
+           \begingroup
+           \simplifycommands
+           \xdef\currentstructurebookmark{\detokenize\expandafter{\normalexpanded{\structureparameter\c!title}}}%
+           \endgroup
+         \fi
        \fi \fi
      \fi
      \ifx\currentstructurelist\empty
@@ -170,8 +172,8 @@
    \setnextinternalreference
    \storeinternalreference\currentstructurename\nextinternalreference %
    \strc_sectioning_set_reference_prefix
-   \xdef\currentstructurenumber{\ctxlua{ % todo: combine with next call, adapt marks accordingly
-        structures.sections.somelevel {
+   \ctxcommand{% todo: combine with next call, adapt marks accordingly
+        setsectionentry{
             references = {
                 internal        = \nextinternalreference,
                 block           = "\currentsectionblock",
@@ -218,7 +220,9 @@
             numberdata = {
                 % needed ?
                 block         = "\currentsectionblock",
-                hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
+            \ifx\currentstructureshownumber\v!no
+                hidenumber    = true, % titles
+            \fi
                 % so far
                 separatorset  = "\structureparameter\c!sectionseparatorset",
                 conversion    = "\structureparameter\c!sectionconversion", % for good old times sake
@@ -231,14 +235,12 @@
             },
             userdata = \!!bs\detokenize{#3}\!!es % will be converted to table at the lua end
         }
-    }}%
-   % \xdef\currentstructurelistnumber{\ctxcommand{addtolist(structures.sections.current())}}%
+   }%
    \xdef\currentstructurelistnumber{\ctxcommand{currentsectiontolist()}}%
    % \currentstructuresynchronize has to be called someplace, since it introduces a node
    \setstructuresynchronization\currentstructurelistnumber
    \endgroup}
 
-\let\currentstructurenumber     \!!zerocount
 \let\currentsectioncountervalue \!!zerocount % redefined later
 \let\previoussectioncountervalue\!!zerocount % redefined later
 
@@ -300,14 +302,14 @@
 
 \newconditional\c_strc_rendering_continuous % not used (mkii ?)
 
-\def\setstructurelevel         #1#2{\ctxlua{structures.sections.setlevel("#1","#2")}}  % name, level|parent
-\def\getstructurelevel           #1{\ctxlua{structures.sections.getcurrentlevel("#1")}}% name
-\def\setstructurenumber        #1#2{\ctxlua{structures.sections.setnumber(#1,"#2")}}   % level, number (+/-)
-\def\getstructurenumber          #1{\ctxlua{structures.sections.getnumber(#1)}}        % level
-\def\getsomestructurenumber    #1#2{\ctxlua{structures.sections.getnumber(#1,"#2")}}   % level, what
-\def\getfullstructurenumber      #1{\ctxlua{structures.sections.fullnumber(#1)}}       % level
-\def\getsomefullstructurenumber#1#2{\ctxlua{structures.sections.fullnumber(#1,"#2")}}
-\def\getspecificstructuretitle   #1{\ctxlua{structures.sections.structuredata("#1","titledata.title",nil,"\headparameter\s!catcodes")}}%
+\def\setstructurelevel         #1#2{\ctxcommand{setsectionlevel("#1","#2")}}  % name, level|parent
+\def\getstructurelevel           #1{\ctxcommand{getcurrentsectionlevel("#1")}}% name
+\def\setstructurenumber        #1#2{\ctxcommand{setsectionnumber(#1,"#2")}}   % level, number (+/-)
+\def\getstructurenumber          #1{\ctxcommand{getsectionnumber(#1)}}        % level
+\def\getsomestructurenumber    #1#2{\ctxcommand{getsectionnumber(#1,"#2")}}   % level, what
+\def\getfullstructurenumber      #1{\ctxcommand{getfullsectionnumber(#1)}}       % level
+\def\getsomefullstructurenumber#1#2{\ctxcommand{getfullsectionnumber(#1,"#2")}}
+\def\getspecificstructuretitle   #1{\ctxcommand{getstructuredata("#1","titledata.title",nil,"\headparameter\s!catcodes")}}%
 
 % will be:
 %
@@ -435,7 +437,7 @@
     \edef\currentsectionheadcoupling{\sectionheadcoupling\currenthead}%
     \edef\currentsectionheadsection {\sectionheadsection \currentsectionheadcoupling}%
     \edef\currentsectionlevel       {\sectionlevel       \currentsectionheadsection}%
-    \ctxlua{structures.sections.register("\currenthead",{
+    \ctxcommand{registersection("\currenthead",{
         coupling = "\currentsectionheadcoupling",
         section  = "\currentsectionheadsection",
         level    = \currentsectionlevel,
@@ -578,8 +580,8 @@
 
 % head -> head
 
-\def\sectionheadmarkingtitle #1#2{\ctxlua{structures.marks.title("#1","#2")}}
-\def\sectionheadmarkingnumber#1#2{\ctxlua{structures.marks.number("#1","#2")}}
+\def\sectionheadmarkingtitle #1#2{\ctxcommand{markingtitle("#1","#2")}}
+\def\sectionheadmarkingnumber#1#2{\ctxcommand{markingnumber("#1","#2")}}
 
 \def\sectionheadcoupling#1{\namedheadparameter{#1}\c!coupling}
 \def\sectionheadsection #1{\namedheadparameter{#1}\c!section}
@@ -763,7 +765,7 @@
 \unexpanded\def\placeheadtext  {\dosingleempty\strc_sectioning_place_head_text  } % use with care
 \unexpanded\def\placeheadnumber{\dosingleempty\strc_sectioning_place_head_number} % use with care
 
-\unexpanded\def\strc_sectioning_report{\ctxlua{structures.sections.reportstructure()}}
+\unexpanded\def\strc_sectioning_report{\ctxcommand{reportstructure()}}
 
 \ifdefined\strc_rendering_initialize_style_and_color \else
 
@@ -1039,8 +1041,8 @@
      #1%
    \fi}
 
-\def\currentsectioncountervalue {\ctxlua{structures.sections.depthnumber(\thenamedheadlevel\currenthead)}}
-\def\previoussectioncountervalue{\ctxlua{structures.sections.depthnumber(\thenamedheadlevel\currenthead-1)}}
+\def\currentsectioncountervalue {\ctxcommand{depthnumber(\thenamedheadlevel\currenthead)}}
+\def\previoussectioncountervalue{\ctxcommand{depthnumber(\thenamedheadlevel\currenthead-1)}}
 
 \def\strc_sectioning_handle_page_nop
   {\edef\p_continue{\headparameter\c!continue}%
@@ -1119,7 +1121,7 @@
 
 \let\sectioncountervalue\structurevalue
 
-\def\currentheadtext{obsolete, use marks}
+\def\currentheadtext{obsolete,\space use marks}
 
 % list references, will be redone in lua when we need it
 
@@ -1153,5 +1155,7 @@
 \appendtoks
     \finalizeautostructurelevels
 \to \everystoptext
+
+\stopcontextdefinitioncode
 
 \protect \endinput

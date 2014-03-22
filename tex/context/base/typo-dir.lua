@@ -33,99 +33,41 @@ local formatters = string.formatters
 
 local nodes, node = nodes, node
 
-local trace_textdirections = false  trackers.register("typesetters.directions.text", function(v) trace_textdirections = v end)
-local trace_mathdirections = false  trackers.register("typesetters.directions.math", function(v) trace_mathdirections = v end)
-local trace_directions     = false  trackers.register("typesetters.directions",      function(v) trace_textdirections = v trace_mathdirections = v end)
+local trace_textdirections  = false  trackers.register("typesetters.directions.text", function(v) trace_textdirections = v end)
+local trace_mathdirections  = false  trackers.register("typesetters.directions.math", function(v) trace_mathdirections = v end)
+local trace_directions      = false  trackers.register("typesetters.directions",      function(v) trace_textdirections = v trace_mathdirections = v end)
 
 local report_textdirections = logs.reporter("typesetting","text directions")
 local report_mathdirections = logs.reporter("typesetting","math directions")
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
-local nutstring          = nuts.tostring
+local hasbit                = number.hasbit
 
-local getnext            = nuts.getnext
-local getprev            = nuts.getprev
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
-local getid              = nuts.getid
-local getsubtype         = nuts.getsubtype
-local getlist            = nuts.getlist
-local getfield           = nuts.getfield
-local setfield           = nuts.setfield
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
+local texsetattribute       = tex.setattribute
+local unsetvalue            = attributes.unsetvalue
 
-local hasbit             = number.hasbit
+local tasks                 = nodes.tasks
+local tracers               = nodes.tracers
+local setcolor              = tracers.colors.set
+local resetcolor            = tracers.colors.reset
 
-local traverse_id        = nuts.traverse_id
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
-local remove_node        = nuts.remove
-local end_of_math        = nuts.end_of_math
+local directions            = typesetters.directions or { }
+typesetters.directions      = directions
 
-local texsetattribute    = tex.setattribute
-local texsetcount        = tex.setcount
-local unsetvalue         = attributes.unsetvalue
+local a_directions          = attributes.private('directions')
 
-local nodecodes          = nodes.nodecodes
-local whatcodes          = nodes.whatcodes
-local mathcodes          = nodes.mathcodes
+local variables             = interfaces.variables
+local v_global              = variables["global"]
+local v_local               = variables["local"]
+local v_on                  = variables.on
+local v_yes                 = variables.yes
 
-local tasks              = nodes.tasks
-local tracers            = nodes.tracers
-local setcolor           = tracers.colors.set
-local resetcolor         = tracers.colors.reset
+local m_enabled             = 2^6 -- 64
+local m_global              = 2^7
+local m_fences              = 2^8
 
-local glyph_code         = nodecodes.glyph
-local whatsit_code       = nodecodes.whatsit
-local math_code          = nodecodes.math
-local penalty_code       = nodecodes.penalty
-local kern_code          = nodecodes.kern
-local glue_code          = nodecodes.glue
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
-
-local localpar_code      = whatcodes.localpar
-local dir_code           = whatcodes.dir
-
-local nodepool           = nuts.pool
-
-local new_textdir        = nodepool.textdir
-
-local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
-local fontchar           = fonthashes.characters
-
-local chardirections     = characters.directions
-local charmirrors        = characters.mirrors
-local charclasses        = characters.textclasses
-
-local directions         = typesetters.directions or { }
-typesetters.directions   = directions
-
-local a_state            = attributes.private('state')
-local a_directions       = attributes.private('directions')
-local a_mathbidi         = attributes.private('mathbidi')
-
-local strip              = false
-
-local s_isol             = fonts.analyzers.states.isol
-
-local variables          = interfaces.variables
-local v_global           = variables["global"]
-local v_local            = variables["local"]
-local v_on               = variables.on
-local v_yes              = variables.yes
-
-local m_enabled          = 2^6 -- 64
-local m_global           = 2^7
-local m_fences           = 2^8
-
-local handlers           = { }
-local methods            = { }
-local lastmethod         = 0
+local handlers              = { }
+local methods               = { }
+local lastmethod            = 0
 
 local function installhandler(name,handler)
     local method = methods[name]

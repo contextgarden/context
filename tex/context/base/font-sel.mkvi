@@ -1,6 +1,6 @@
 %D \module
 %D   [     file=font-sel,
-%D      version=2013.10.19,
+%D      version=2014.03.10,
 %D        title=\CONTEXT\ User Module,
 %D     subtitle=Selectfont,
 %D       author=Wolfgang Schuster,
@@ -115,11 +115,18 @@
      % unknown preset
    \fi}
 
-\definefontfamilypreset [range:chinese]  [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,bopomofo,bopomofoextended}]
-\definefontfamilypreset [range:japanese] [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hiragana,katakana}]
-\definefontfamilypreset [range:korean]   [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hangulcompatibilityjamo,hanguljamo,hanguljamoextendeda,hanguljamoextendedb,hangulsyllables}]
-\definefontfamilypreset [range:cyrillic] [\c!range={cyrillic,cyrillicextendeda,cyrillicextendedb,cyrillicsupplement}]
-\definefontfamilypreset [range:greek]    [\c!range={greekandcoptic,greekextended,ancientgreeknumbers}]
+%definefontfamilypreset [range:chinese]  [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,bopomofo,bopomofoextended}]
+%definefontfamilypreset [range:japanese] [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hiragana,katakana}]
+%definefontfamilypreset [range:korean]   [\c!range={cjkcompatibilityforms,cjkcompatibilityideographs,cjkcompatibilityideographssupplement,cjkradicalssupplement,cjkstrokes,cjksymbolsandpunctuation,cjkunifiedideographs,cjkunifiedideographsextensiona,cjkunifiedideographsextensionb,halfwidthandfullwidthforms,verticalforms,hangulcompatibilityjamo,hanguljamo,hanguljamoextendeda,hanguljamoextendedb,hangulsyllables}]
+%definefontfamilypreset [range:cyrillic] [\c!range={cyrillic,cyrillicextendeda,cyrillicextendedb,cyrillicsupplement}]
+%definefontfamilypreset [range:greek]    [\c!range={greekandcoptic,greekextended,ancientgreeknumbers}]
+
+\definefontfamilypreset [range:chinese]  [\c!range={0x02E80-0x02EFF,0x03000-0x031EF,0x03300-0x09FFF,0x0F900-0x0FFEF,0x20000-0x2A6DF,0x2F800-0x2FA1F,0x03100-0x0312F,0x031A0-0x031BF}]
+\definefontfamilypreset [range:japanese] [\c!range={0x02E80-0x02EFF,0x03000-0x031EF,0x03300-0x09FFF,0x0F900-0x0FFEF,0x20000-0x2A6DF,0x2F800-0x2FA1F,0x03040-0x0309F,0x030A0-0x030FF}]
+\definefontfamilypreset [range:korean]   [\c!range={0x02E80-0x02EFF,0x03000-0x031EF,0x03300-0x09FFF,0x0F900-0x0FFEF,0x20000-0x2A6DF,0x2F800-0x2FA1F,0x01100-0x011FF,0x03130-0x0318F,0x0A960-0x0D7FF}]
+\definefontfamilypreset [range:cyrillic] [\c!range={0x00400-0x0052F,0x02DE0-0x02DFF,0x0A640-0x0A69F}]
+\definefontfamilypreset [range:greek]    [\c!range={0x00370-0x003FF,0x01F00-0x01FFF,0x10140-0x1018F}]
+\definefontfamilypreset [range:hebrew]   [\c!range={0x00590-0x005FF,0x0FB00-0x0FB4F}]
 
 \definefontfamilypreset [math:digitsnormal]             [\c!range=digitsnormal]
 \definefontfamilypreset [math:digitsbold]               [\c!range=digitsnormal,\c!offset=digitsbold,\s!tf=style:bold]
@@ -219,13 +226,13 @@
 %D \stoptyping
 %D
 %D When a document contains different languages and the global font lacks some characters
-%D for one language, one could set a different font where these charcters are taken from.
+%D for one language, one could set a different font where these characters are taken from.
 %D This fallback font (there can be more than one for a certain style) could be set with
 %D the \tex{definefallbackfamily} command which takes the same argument as
 %D the \tex{definefontfamily} command.
 %D
 %D \starttyping
-%D \definefallbackfamily [mainface] [serif] [DejaVu Serif] [range=cyrillic,force=yes]
+%D \definefallbackfamily [mainface] [serif] [DejaVu Serif] [range=cyrillic]
 %D \definefontfamily     [mainface] [serif] [TeX Gyre Pagella]
 %D
 %D \setupbodyfont[mainface]

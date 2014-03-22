@@ -278,7 +278,7 @@ local function setcolorscheme(tfmdata,scheme)
                             end
                         elseif type(name) == "number" then
                             reverse[name] = i
-                        elseif find(name,":") then
+                        elseif find(name,":",1,true) then
                             local start, stop = splitup(name,":")
                             start = tonumber(start)
                             stop = tonumber(stop)

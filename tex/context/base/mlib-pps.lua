@@ -18,6 +18,9 @@ local formatters = string.formatters
 
 local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 
+local context              = context
+local context_setvalue     = context.setvalue
+
 local texgetbox            = tex.getbox
 local texsetbox            = tex.setbox
 local copy_list            = node.copy_list
@@ -82,10 +85,13 @@ function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattri
     innertransparency = outertransparency -- not yet used
 end
 
-local f_gray  = formatters["%.3f g %.3f G"]
-local f_rgb   = formatters["%.3f %.3f %.3f rg %.3f %.3f %.3f RG"]
-local f_cmyk  = formatters["%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K"]
-local f_cm    = formatters["q %f %f %f %f %f %f cm"]
+local f_f     = formatters["%F"]
+local f_f3    = formatters["%.3F"]
+
+local f_gray  = formatters["%.3F g %.3F G"]
+local f_rgb   = formatters["%.3F %.3F %.3F rg %.3F %.3F %.3F RG"]
+local f_cmyk  = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
+local f_cm    = formatters["q %F %F %F %F %F %F cm"]
 local f_shade = formatters["MpSh%s"]
 
 local function checked_color_pair(color,...)
@@ -482,8 +488,8 @@ local factor = 65536*(7227/7200)
 
 function metapost.edefsxsy(wd,ht,dp) -- helper for figure
     local hd = ht + dp
-    context.setvalue("sx",wd ~= 0 and factor/wd or 0)
-    context.setvalue("sy",hd ~= 0 and factor/hd or 0)
+    context_setvalue("sx",wd ~= 0 and factor/wd or 0)
+    context_setvalue("sy",hd ~= 0 and factor/hd or 0)
 end
 
 local function sxsy(wd,ht,dp) -- helper for text
@@ -887,21 +893,21 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
                 -- no color
             elseif #c == 1 then
                 if a and t then
-                    s = formatters["\\directcolored[s=%f,a=%f,t=%f]%s"](c[1],a,t,s)
+                    s = formatters["\\directcolored[s=%F,a=%F,t=%F]%s"](c[1],a,t,s)
                 else
-                    s = formatters["\\directcolored[s=%f]%s"](c[1],s)
+                    s = formatters["\\directcolored[s=%F]%s"](c[1],s)
                 end
             elseif #c == 3 then
                 if a and t then
-                    s = formatters["\\directcolored[r=%f,g=%f,b=%f,a=%f,t=%f]%s"](c[1],c[2],c[3],a,t,s)
+                    s = formatters["\\directcolored[r=%F,g=%F,b=%F,a=%F,t=%F]%s"](c[1],c[2],c[3],a,t,s)
                 else
-                    s = formatters["\\directcolored[r=%f,g=%f,b=%f]%s"](c[1],c[2],c[3],s)
+                    s = formatters["\\directcolored[r=%F,g=%F,b=%F]%s"](c[1],c[2],c[3],s)
                 end
             elseif #c == 4 then
                 if a and t then
-                    s = formatters["\\directcolored[c=%f,m=%f,y=%f,k=%f,a=%f,t=%f]%s"](c[1],c[2],c[3],c[4],a,t,s)
+                    s = formatters["\\directcolored[c=%F,m=%F,y=%F,k=%F,a=%F,t=%F]%s"](c[1],c[2],c[3],c[4],a,t,s)
                 else
-                    s = formatters["\\directcolored[c=%f,m=%f,y=%f,k=%f]%s"](c[1],c[2],c[3],c[4],s)
+                    s = formatters["\\directcolored[c=%F,m=%F,y=%F,k=%F]%s"](c[1],c[2],c[3],c[4],s)
                 end
             end
             context.MPLIBsettext(tx_last,s)
@@ -956,12 +962,12 @@ local function tx_process(object,prescript,before,after)
                 before[#before+1] = function()
                  -- flush always happens, we can have a special flush function injected before
                     context.MPLIBgettextscaledcm(n,
-                        format("%f",sx), -- bah ... %s no longer checks
-                        format("%f",rx), -- bah ... %s no longer checks
-                        format("%f",ry), -- bah ... %s no longer checks
-                        format("%f",sy), -- bah ... %s no longer checks
-                        format("%f",tx), -- bah ... %s no longer checks
-                        format("%f",ty), -- bah ... %s no longer checks
+                        f_f(sx), -- bah ... %s no longer checks
+                        f_f(rx), -- bah ... %s no longer checks
+                        f_f(ry), -- bah ... %s no longer checks
+                        f_f(sy), -- bah ... %s no longer checks
+                        f_f(tx), -- bah ... %s no longer checks
+                        f_f(ty), -- bah ... %s no longer checks
                         sxsy(box.width,box.height,box.depth))
                 end
             else
@@ -1136,7 +1142,7 @@ end
 -- color and transparency
 
 local value = Cs ( (
-    (Carg(1) * C((1-P(","))^1)) / function(a,b) return format("%0.3f",a * tonumber(b)) end
+    (Carg(1) * C((1-P(","))^1)) / function(a,b) return f_f3(a * tonumber(b)) end
   + P(","))^1
 )
 

@@ -271,21 +271,41 @@ function context.exact_match(words,word_chars,case_insensitive)
     end
     if case_insensitive then
         local list = { }
-        for i=1,#words do
-            list[lower(words[i])] = true
+        if #words == 0 then
+            for k, v in next, words do
+                list[lower(k)] = v
+            end
+        else
+            for i=1,#words do
+                list[lower(words[i])] = true
+            end
         end
         return Cmt(pattern^1, function(_,i,s)
             return list[lower(s)] -- and i or nil
         end)
     else
         local list = { }
-        for i=1,#words do
-            list[words[i]] = true
+        if #words == 0 then
+            for k, v in next, words do
+                list[k] = v
+            end
+        else
+            for i=1,#words do
+                list[words[i]] = true
+            end
         end
         return Cmt(pattern^1, function(_,i,s)
             return list[s] -- and i or nil
         end)
     end
+end
+
+function context.just_match(words)
+    local p = P(words[1])
+    for i=2,#words do
+        p = p + P(words[i])
+    end
+    return p
 end
 
 -- spell checking (we can only load lua files)
@@ -752,6 +772,7 @@ lexers.fold        = context.fold
 lexers.lex         = context.lex
 lexers.token       = context.token
 lexers.exact_match = context.exact_match
+lexers.just_match  = context.just_match
 
 -- helper .. alas ... the lexer's lua instance is rather crippled .. not even
 -- math is part of it

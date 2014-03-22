@@ -273,7 +273,7 @@
 \unexpanded\def\startmodeset
   {\pushmacro\c_syst_modes_set_done
    \setfalse\conditionalfalse
-   \doifnextoptionalelse\syst_modes_set_start\syst_modes_set_quit}
+   \doifnextoptionalcselse\syst_modes_set_start\syst_modes_set_quit}
 
 \def\syst_modes_set_start[#1]%
   {\edef\m_mode_case{#1}%
@@ -293,10 +293,10 @@
 \def\syst_modes_set_yes#1%
   {\settrue\c_syst_modes_set_done
    #1%
-   \doifnextoptionalelse\syst_modes_set_start\syst_modes_set_quit}
+   \doifnextoptionalcselse\syst_modes_set_start\syst_modes_set_quit}
 
 \def\syst_modes_set_nop#1%
-  {\doifnextoptionalelse\syst_modes_set_start\syst_modes_set_quit}
+  {\doifnextoptionalcselse\syst_modes_set_start\syst_modes_set_quit}
 
 \def\syst_modes_set_quit#1\stopmodeset
   {\popmacro\c_syst_modes_set_done}
@@ -316,7 +316,7 @@
 
 \expanded % will become obsolete
   {\def\expandafter\noexpand\csname\e!start\v!setups\endcsname
-     {\begingroup\noexpand\doifnextoptionalelse
+     {\begingroup\noexpand\doifnextoptionalcselse
         {\noexpand\dostartsetupsA\expandafter\noexpand\csname\e!stop\v!setups\endcsname}
         {\noexpand\dostartsetupsB\expandafter\noexpand\csname\e!stop\v!setups\endcsname}}}
 
@@ -467,11 +467,11 @@
 
 % Is doglobal still relevant? Maybe always global? Or never? Anyway, it will become obsolete.
 
-\unexpanded\def\startluasetups  {\begingroup\doifnextoptionalelse\syst_setups_start_lua_a\syst_setups_start_lua_b}
-\unexpanded\def\startxmlsetups  {\begingroup\doifnextoptionalelse\syst_setups_start_xml_a\syst_setups_start_xml_b}
-\unexpanded\def\startrawsetups  {\begingroup\doifnextoptionalelse\syst_setups_start_raw_a\syst_setups_start_raw_b}
-\unexpanded\def\startlocalsetups{\begingroup\doifnextoptionalelse\syst_setups_start_loc_a\syst_setups_start_loc_b}
-\unexpanded\def\startsetups     {\begingroup\doifnextoptionalelse\syst_setups_start_tex_a\syst_setups_start_tex_b}
+\unexpanded\def\startluasetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_lua_a\syst_setups_start_lua_b}
+\unexpanded\def\startxmlsetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_xml_a\syst_setups_start_xml_b}
+\unexpanded\def\startrawsetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_raw_a\syst_setups_start_raw_b}
+\unexpanded\def\startlocalsetups{\begingroup\doifnextoptionalcselse\syst_setups_start_loc_a\syst_setups_start_loc_b}
+\unexpanded\def\startsetups     {\begingroup\doifnextoptionalcselse\syst_setups_start_tex_a\syst_setups_start_tex_b}
 
 \let\stopluasetups              \relax
 \let\stopxmlsetups              \relax

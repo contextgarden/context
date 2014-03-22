@@ -359,7 +359,7 @@ local function identify_configuration_files()
             -- todo: environment.skipweirdcnfpaths directive
             if trace_locating then
                 local fullpath  = gsub(resolvers.resolve(collapsepath(filepath)),"//","/")
-                local weirdpath = find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c")
+                local weirdpath = find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c",1,true)
                 report_resolving("looking for %a on %s path %a from specification %a",luacnfname,weirdpath and "weird" or "given",fullpath,filepath)
             end
             if lfs.isfile(realname) then
@@ -1027,7 +1027,7 @@ local function find_direct(filename,allresults)
 end
 
 local function find_wildcard(filename,allresults)
-    if find(filename,'%*') then
+    if find(filename,'*',1,true) then
         if trace_locating then
             report_resolving("checking wildcard %a", filename)
         end
@@ -1204,7 +1204,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                 local scheme = url.hasscheme(pathname)
                 if not scheme or scheme == "file" then
                     local pname = gsub(pathname,"%.%*$",'')
-                    if not find(pname,"%*") then
+                    if not find(pname,"*",1,true) then
                         if can_be_dir(pname) then
                             -- quick root scan first
                             for k=1,#wantedfiles do
@@ -1510,7 +1510,7 @@ local function findwildcardfiles(filename,allresults,result) -- todo: remap: and
     local path = lower(lpegmatch(makewildcard,dirn) or dirn)
     local name = lower(lpegmatch(makewildcard,base) or base)
     local files, done = instance.files, false
-    if find(name,"%*") then
+    if find(name,"*",1,true) then
         local hashes = instance.hashes
         for k=1,#hashes do
             local hash = hashes[k]

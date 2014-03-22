@@ -95,6 +95,12 @@ use luajittex with jit turned on (in most cases not faster, even slower)
 .B --once
 only run once (no multipass data file is produced)
 .TP
+.B --runs
+process at most this many times
+.TP
+.B --forcedruns
+process this many times (permits for optimization trial runs)
+.TP
 .B --batchmode
 run without stopping and do not show messages on the console
 .TP

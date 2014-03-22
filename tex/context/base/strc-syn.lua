@@ -12,12 +12,19 @@ local allocate = utilities.storage.allocate
 
 -- interface to tex end
 
+local context      = context
+local sorters      = sorters
+
 local structures   = structures
 local synonyms     = structures.synonyms
 local tags         = structures.tags
 
 local collected    = allocate()
 local tobesaved    = allocate()
+
+local firstofsplit = sorters.firstofsplit
+local strip        = sorters.strip
+local splitter     = sorters.splitters.utf
 
 synonyms.collected = collected
 synonyms.tobesaved = tobesaved
@@ -114,8 +121,6 @@ function synonyms.filter(data,options)
 end
 
 function synonyms.prepare(data)
-    local strip = sorters.strip
-    local splitter = sorters.splitters.utf
     local result = data.result
     if result then
         for i=1, #result do
@@ -123,7 +128,7 @@ function synonyms.prepare(data)
             local rd = r.definition
             if rd then
                 local rt = rd.tag
-                local sortkey = (rt and rt ~= "" and rt) or rd.synonym
+                local sortkey = rt and rt ~= "" and rt or rd.synonym
                 r.split = splitter(strip(sortkey))
             end
         end
@@ -140,13 +145,17 @@ function synonyms.finalize(data,options)
     local split = { }
     for k=1,#result do
         local v = result[k]
-        local entry, tag = sorters.firstofsplit(v)
+        local entry, tag = firstofsplit(v)
         local s = split[entry] -- keeps track of change
+        local d
         if not s then
-            s = { tag = tag, data = { } }
+            d = { }
+            s = { tag = tag, data = d }
             split[entry] = s
+        else
+            d = s.data
         end
-        s.data[#s.data+1] = v
+        d[#d+1] = v
     end
     data.result = split
 end
@@ -154,24 +163,21 @@ end
 -- for now, maybe at some point we will do a multipass or so
 -- maybe pass the settings differently
 
+local ctx_synonymentry = context.synonymentry
+
 function synonyms.flush(data,options)
     local kind = data.metadata.kind -- hack, will be done better
- -- context[format("\\start%soutput",kind)]()
     local result = data.result
     local sorted = table.sortedkeys(result)
     for k=1,#sorted do
         local letter = sorted[k]
         local sublist = result[letter]
         local data = sublist.data
-     -- context[format("\\start%ssection",kind)](sublist.tag)
         for d=1,#data do
             local entry = data[d].definition
-         -- context[format("\\%sentry",kind)](d,entry.tag,entry.synonym,entry.meaning or "")
-            context("\\%sentry{%s}{%s}{%s}{%s}",kind,d,entry.tag,entry.synonym,entry.meaning or "")
+            ctx_synonymentry(d,entry.tag,entry.synonym,entry.meaning or "")
         end
-     -- context[format("\\stop%ssection",kind)]()
     end
- -- context[format("\\stop%soutput",kind)]()
     data.result = nil
     data.metadata.sorted = false
 end
@@ -196,3 +202,8 @@ function synonyms.process(class,options)
     end
 end
 
+commands.registersynonym     = synonyms.register
+commands.registerusedsynonym = synonyms.registerused
+commands.synonymmeaning      = synonyms.meaning
+commands.synonymname         = synonyms.synonym
+commands.processsynonyms     = synonyms.process

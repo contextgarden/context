@@ -46,14 +46,13 @@ local pdfcolorspec             = lpdf.colorspec
 local pdfflushobject           = lpdf.flushobject
 local pdfflushstreamobject     = lpdf.flushstreamobject
 local pdfflushstreamfileobject = lpdf.flushstreamfileobject
-local pdfreserveannotation     = lpdf.reserveannotation
 local pdfreserveobject         = lpdf.reserveobject
 local pdfpagereference         = lpdf.pagereference
 local pdfshareobjectreference  = lpdf.shareobjectreference
+local pdfaction                = lpdf.action
 
-local nodepool                 = nodes.pool
-
-local pdfannotation_node       = nodepool.pdfannotation
+local pdftransparencyvalue     = lpdf.transparencyvalue
+local pdfcolorvalues           = lpdf.colorvalues
 
 local hpack_node               = node.hpack
 local write_node               = node.write -- test context(...) instead
@@ -170,12 +169,12 @@ end
 local function analyzecolor(colorvalue,colormodel)
     local cvalue = colorvalue and tonumber(colorvalue)
     local cmodel = colormodel and tonumber(colormodel) or 3
-    return cvalue and pdfarray { lpdf.colorvalues(cmodel,cvalue) } or nil
+    return cvalue and pdfarray { pdfcolorvalues(cmodel,cvalue) } or nil
 end
 
 local function analyzetransparency(transparencyvalue)
     local tvalue = transparencyvalue and tonumber(transparencyvalue)
-    return tvalue and lpdf.transparencyvalue(tvalue) or nil
+    return tvalue and pdftransparencyvalue(tvalue) or nil
 end
 
 -- Attachments
@@ -342,7 +341,7 @@ function nodeinjections.attachfile(specification)
             OC       = analyzelayer(specification.layer),
         }
         local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
-        local box = hpack_node(pdfannotation_node(width,height,depth,d()))
+        local box = hpack_node(nodeinjections.annotation(width,height,depth,d()))
         box.width, box.height, box.depth = width, height, depth
         return box
     end
@@ -427,19 +426,19 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
     local box
     if usepopupcomments then
         -- rather useless as we can hide/vide
-        local nd = pdfreserveannotation()
-        local nc = pdfreserveannotation()
+        local nd = pdfreserveobject()
+        local nc = pdfreserveobject()
         local c = pdfdictionary {
             Subtype = pdfconstant("Popup"),
             Parent  = pdfreference(nd),
         }
         d.Popup = pdfreference(nc)
         box = hpack_node(
-            pdfannotation_node(0,0,0,d(),nd),
-            pdfannotation_node(width,height,depth,c(),nc)
+            nodeinjections.annotation(0,0,0,d(),nd),
+            nodeinjections.annotation(width,height,depth,c(),nc)
         )
     else
-        box = hpack_node(pdfannotation_node(width,height,depth,d()))
+        box = hpack_node(nodeinjections.annotation(width,height,depth,d()))
     end
     box.width, box.height, box.depth = width, height, depth -- redundant
     return box
@@ -484,7 +483,7 @@ end
 local ms, mu, mf = { }, { }, { }
 
 local function delayed(label)
-    local a = pdfreserveannotation()
+    local a = pdfreserveobject()
     mu[label] = a
     return pdfreference(a)
 end
@@ -504,12 +503,12 @@ local function insertrenderingwindow(specification)
     local actions = nil
     if openpage or closepage then
         actions = pdfdictionary {
-            PO = (openpage  and lpdf.action(openpage )) or nil,
-            PC = (closepage and lpdf.action(closepage)) or nil,
+            PO = (openpage  and lpdfaction(openpage )) or nil,
+            PC = (closepage and lpdfaction(closepage)) or nil,
         }
     end
     local page = tonumber(specification.page) or texgetcount("realpageno") -- todo
-    local r = mu[label] or pdfreserveannotation() -- why the reserve here?
+    local r = mu[label] or pdfreserveobject() -- why the reserve here?
     local a = pdfdictionary {
         S  = pdfconstant("Rendition"),
         R  = mf[label],
@@ -528,7 +527,7 @@ local function insertrenderingwindow(specification)
     if height == 0 or width == 0 then
         -- todo: sound needs no window
     end
-    write_node(pdfannotation_node(width,height,0,d(),r)) -- save ref
+    write_node(nodeinjections.annotation(width,height,0,d(),r)) -- save ref
     return pdfreference(r)
 end
 
@@ -539,7 +538,7 @@ local function insertrendering(specification)
     local option = settings_to_hash(specification.option)
     if not mf[label] then
         local filename = specification.filename
-        local isurl = find(filename,"://")
+        local isurl = find(filename,"://",1,true)
      -- local start = pdfdictionary {
      --     Type = pdfconstant("MediaOffset"),
      --     S = pdfconstant("T"), -- time

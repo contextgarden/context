@@ -21,27 +21,29 @@ local utftoeight = utf.toeight
 
 local splitter = lpeg.tsplitat(".")
 
-function tables.definetable(target,nofirst,nolast) -- defines undefined tables
-    local composed, shortcut, t = nil, nil, { }
+function utilities.tables.definetable(target,nofirst,nolast) -- defines undefined tables
+    local composed, t = nil, {  }
     local snippets = lpegmatch(splitter,target)
     for i=1,#snippets - (nolast and 1 or 0) do
         local name = snippets[i]
         if composed then
-            composed = shortcut .. "." .. name
-            shortcut = shortcut .. "_" .. name
-            t[#t+1] = formatters["local %s = %s if not %s then %s = { } %s = %s end"](shortcut,composed,shortcut,shortcut,composed,shortcut)
+            composed = composed .. "." .. name
+                t[#t+1] = formatters["if not %s then %s = { } end"](composed,composed)
         else
             composed = name
-            shortcut = name
             if not nofirst then
                 t[#t+1] = formatters["%s = %s or { }"](composed,composed)
             end
         end
     end
-    if nolast then
-        composed = shortcut .. "." .. snippets[#snippets]
+    if composed then
+        if nolast then
+            composed = composed .. "." .. snippets[#snippets]
+        end
+        return concat(t,"\n"), composed -- could be shortcut
+    else
+        return "", target
     end
-    return concat(t,"\n"), composed
 end
 
 -- local t = tables.definedtable("a","b","c","d")
@@ -73,7 +75,7 @@ end
 
 function tables.migratetable(target,v,root)
     local t = root or _G
-    local names = string.split(target,".")
+    local names = lpegmatch(splitter,target)
     for i=1,#names-1 do
         local name = names[i]
         t[name] = t[name] or { }
@@ -493,7 +495,8 @@ end
 
 -- The next version is somewhat faster, although in practice one will seldom
 -- serialize a lot using this one. Often the above variants are more efficient.
--- If we would really need this a lot, we could hash q keys.
+-- If we would really need this a lot, we could hash q keys, or just not used
+-- indented code.
 
 -- char-def.lua : 0.53 -> 0.38
 -- husayni.tma  : 0.28 -> 0.19

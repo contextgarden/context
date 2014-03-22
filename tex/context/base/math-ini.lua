@@ -22,8 +22,8 @@ local floor = math.floor
 local context           = context
 local commands          = commands
 
-local contextsprint     = context.sprint
-local contextfprint     = context.fprint -- a bit inefficient
+local context_sprint    = context.sprint
+----- context_fprint    = context.fprint -- a bit inefficient
 
 local trace_defining    = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
@@ -213,28 +213,28 @@ local f_char      = formatters[ [[\Umathchardef\%s "%X "%X "%X ]] ]
 
 local setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
     if class == classes.accent then
-        contextsprint(f_accent(name,family,slot))
+        context_sprint(f_accent(name,family,slot))
     elseif class == classes.topaccent then
-        contextsprint(f_topaccent(name,family,slot))
+        context_sprint(f_topaccent(name,family,slot))
     elseif class == classes.botaccent then
-        contextsprint(f_botaccent(name,family,slot))
+        context_sprint(f_botaccent(name,family,slot))
     elseif class == classes.over then
-        contextsprint(f_over(name,family,slot))
+        context_sprint(f_over(name,family,slot))
     elseif class == classes.under then
-        contextsprint(f_under(name,family,slot))
+        context_sprint(f_under(name,family,slot))
     elseif class == open_class or class == close_class or class == middle_class then
         setdelcode("global",slot,{family,slot,0,0})
-        contextsprint(f_fence(name,class,family,slot))
+        context_sprint(f_fence(name,class,family,slot))
     elseif class == classes.delimiter then
         setdelcode("global",slot,{family,slot,0,0})
-        contextsprint(f_delimiter(name,family,slot))
+        context_sprint(f_delimiter(name,family,slot))
     elseif class == classes.radical then
-        contextsprint(f_radical(name,family,slot))
+        context_sprint(f_radical(name,family,slot))
     elseif class == classes.root then
-        contextsprint(f_root(name,family,slot))
+        context_sprint(f_root(name,family,slot))
     else
         -- beware, open/close and other specials should not end up here
-        contextsprint(f_char(name,class,family,slot))
+        context_sprint(f_char(name,class,family,slot))
     end
 end
 

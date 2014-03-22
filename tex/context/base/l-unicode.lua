@@ -6,7 +6,14 @@ if not modules then modules = { } end modules ['l-unicode'] = {
     license   = "see context related readme files"
 }
 
--- this module will be reorganized
+-- in lua 5.3:
+
+-- utf8.char(···)         : concatinated
+-- utf8.charpatt          : "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
+-- utf8.codes(s)          : for p, c in utf8.codes(s) do body end
+-- utf8.codepoint(s [, i [, j]])
+-- utf8.len(s [, i])
+-- utf8.offset(s, n [, i])
 
 -- todo: utf.sub replacement (used in syst-aux)
 -- we put these in the utf namespace:

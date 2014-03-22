@@ -19,6 +19,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 \definesystemattribute[verbatimline][public]
 
 \appendtoksonce
@@ -169,7 +171,11 @@
 \appendtoks
     \setuevalue{\e!start\currenttyping}{\buff_verbatim_typing_start{\currenttyping}}%
     \setuevalue{\e!stop \currenttyping}{\buff_verbatim_typing_stop {\currenttyping}}%
-    \normalexpanded{\definelinenumbering[\currenttyping]}%
+    \ifx\currenttypingparent\empty
+        \normalexpanded{\definelinenumbering[\currenttyping]}%
+    \else
+        \normalexpanded{\definelinenumbering[\currenttyping][\currenttypingparent]}%
+    \fi
 \to \everydefinetyping
 
 \appendtoks
@@ -261,7 +267,7 @@
   {\dontleavehmode
    \bgroup
    \edef\currenttype{#1}%
-   \doifnextoptionalelse\buff_verbatim_type_yes\buff_verbatim_type_nop}
+   \doifnextoptionalcselse\buff_verbatim_type_yes\buff_verbatim_type_nop}
 
 \def\buff_verbatim_type_yes[#1]%
   {\setupcurrenttype[#1]%
@@ -277,7 +283,7 @@
    \edef\currenttype{#1}%
    \lettypeparameter\c!lines\v!hyphenated
    \let\specialobeyedspace\specialstretchedspace
-   \doifnextoptionalelse\buff_verbatim_type_yes\buff_verbatim_type_nop}
+   \doifnextoptionalcselse\buff_verbatim_type_yes\buff_verbatim_type_nop}
 
 \def\buff_verbatim_type_one
   {\ifx\next\bgroup
@@ -696,8 +702,11 @@
 
 \definetyping[\v!typing]
 
-\setuptyping[\v!file]  [\s!parent=\??typing\v!typing] % we don't want \start..\stop overload
-\setuptyping[\v!buffer][\s!parent=\??typing\v!file]   % we don't want \start..\stop overload
+\setuptyping       [\v!file]  [\s!parent=\??typing       \v!typing] % we don't want \start..\stop overload
+\setuplinenumbering[\v!file]  [\s!parent=\??linenumbering\v!typing]
+
+\setuptyping       [\v!buffer][\s!parent=\??typing       \v!file]   % we don't want \start..\stop overload
+\setuplinenumbering[\v!buffer][\s!parent=\??linenumbering\v!file]
 
 %D The setups for inline verbatim default to:
 
@@ -909,5 +918,7 @@
     \def\type#1{\letterbackslash\checkedstrippedcsname#1}% or maybe detokenize
     \def\tex #1{\letterbackslash#1}%
 \to \everysimplifycommands
+
+\stopcontextdefinitioncode
 
 \protect \endinput

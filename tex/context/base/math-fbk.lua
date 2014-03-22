@@ -180,12 +180,12 @@ end
 -- virtualcharacters[0x208B] = 0x002B
 
 virtualcharacters[0x207A] = function(data)
-    data.replacement = 0x2212
+    data.replacement = 0x002B
     return raised(data)
 end
 
 virtualcharacters[0x207B] = function(data)
-    data.replacement = 0x002B
+    data.replacement = 0x2212
     return raised(data)
 end
 
@@ -512,7 +512,7 @@ addextra(0xFE940, { category = "mn", description="SMALL ANNUITY SYMBOL", unicode
 local function actuarian(data)
     local characters = data.target.characters
     local parameters = data.target.parameters
-    local basechar   = characters[0x0078] -- x (0x0058 X)
+    local basechar   = characters[0x0078] -- x (0x0058 X) or 0x1D431
     local linewidth  = parameters.xheight / 10
     local basewidth  = basechar.width
     local baseheight = basechar.height

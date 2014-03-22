@@ -28,8 +28,6 @@ local checkedkey         = lpdf.checkedkey
 local codeinjections     = backends.pdf.codeinjections
 local nodeinjections     = backends.pdf.nodeinjections
 
-local pdfannotation_node = nodes.pool.pdfannotation
-
 local trace_swf = false  trackers.register("backend.swf", function(v) trace_swf = v end)
 
 local report_swf = logs.reporter("backend","swf")
@@ -302,5 +300,5 @@ function backends.pdf.nodeinjections.insertswf(spec)
      -- factor    = spec.factor,
      -- label     = spec.label,
     }
-    context(pdfannotation_node(spec.width,spec.height,0,annotation())) -- the context wrap is probably also needed elsewhere
+    context(nodeinjections.annotation(spec.width,spec.height,0,annotation())) -- the context wrap is probably also needed elsewhere
 end

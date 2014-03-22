@@ -1214,3 +1214,6 @@ end
 --     entities.amp = utfchar(characters.activeoffset + utfbyte("&"))
 --     entities.gt  = utfchar(characters.activeoffset + utfbyte(">"))
 -- end
+
+commands.definecatcodetable = characters.define
+commands.setcharactercodes  = characters.setcodes

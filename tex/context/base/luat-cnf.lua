@@ -134,13 +134,14 @@ function texconfig.init()
 
     -- shortcut and helper
 
+    local bytecode = lua.bytecode
+
     local function init(start)
-        local b = lua.bytecode
         local i = start
         local t = os.clock()
-        while b[i] do
-            b[i]() ;
-            b[i] = nil ;
+        while bytecode[i] do
+            bytecode[i]() ;
+            bytecode[i] = nil ;
             i = i + 1
          -- collectgarbage('step')
         end
@@ -158,6 +159,8 @@ function texconfig.init()
             loaded[module] = true
         end
     end
+
+    texconfig.init = function() end
 
 end
 

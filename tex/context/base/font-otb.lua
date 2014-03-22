@@ -594,8 +594,9 @@ basemethod = "independent"
 
 local function featuresinitializer(tfmdata,value)
     if true then -- value then
-        local t = trace_preparing and os.clock()
-        local features = tfmdata.shared.features
+        local starttime = trace_preparing and os.clock()
+        local features  = tfmdata.shared.features
+        local fullname  = trace_preparing and tfmdata.properties.fullname
         if features then
             applybasemethod("initializehashes",tfmdata)
             local collectlookups    = otf.collectlookups
@@ -605,34 +606,70 @@ local function featuresinitializer(tfmdata,value)
             local language          = properties.language
             local basesubstitutions = rawdata.resources.features.gsub
             local basepositionings  = rawdata.resources.features.gpos
-            if basesubstitutions then
-                for feature, data in next, basesubstitutions do
-                    local value = features[feature]
-                    if value then
-                        local validlookups, lookuplist = collectlookups(rawdata,feature,script,language)
-                        if validlookups then
-                            applybasemethod("preparesubstitutions",tfmdata,feature,value,validlookups,lookuplist)
-                            registerbasefeature(feature,value)
+            --
+         -- if basesubstitutions then
+         --     for feature, data in next, basesubstitutions do
+         --         local value = features[feature]
+         --         if value then
+         --             local validlookups, lookuplist = collectlookups(rawdata,feature,script,language)
+         --             if validlookups then
+         --                 applybasemethod("preparesubstitutions",tfmdata,feature,value,validlookups,lookuplist)
+         --                 registerbasefeature(feature,value)
+         --             end
+         --         end
+         --     end
+         -- end
+         -- if basepositionings then
+         --     for feature, data in next, basepositionings do
+         --         local value = features[feature]
+         --         if value then
+         --             local validlookups, lookuplist = collectlookups(rawdata,feature,script,language)
+         --             if validlookups then
+         --                 applybasemethod("preparepositionings",tfmdata,feature,features[feature],validlookups,lookuplist)
+         --                 registerbasefeature(feature,value)
+         --             end
+         --         end
+         --     end
+         -- end
+            --
+            if basesubstitutions or basepositionings then
+                local sequences = tfmdata.resources.sequences
+                for s=1,#sequences do
+                    local sequence = sequences[s]
+                    local sfeatures = sequence.features
+                    if sfeatures then
+                        local order = sequence.order
+                        if order then
+                            for i=1,#order do --
+                                local feature = order[i]
+                                if features[feature] then
+                                    local validlookups, lookuplist = collectlookups(rawdata,feature,script,language)
+                                    if not validlookups then
+                                        -- skip
+                                    elseif basesubstitutions and basesubstitutions[feature] then
+                                        if trace_preparing then
+                                            report_prepare("filtering base feature %a for %a",feature,fullname)
+                                        end
+                                        applybasemethod("preparesubstitutions",tfmdata,feature,value,validlookups,lookuplist)
+                                        registerbasefeature(feature,value)
+                                    elseif basepositionings and basepositionings[feature] then
+                                        if trace_preparing then
+                                            report_prepare("filtering base feature %a for %a",feature,fullname)
+                                        end
+                                        applybasemethod("preparepositionings",tfmdata,feature,features[feature],validlookups,lookuplist)
+                                        registerbasefeature(feature,value)
+                                    end
+                                end
+                            end
                         end
                     end
                 end
             end
-            if basepositionings then
-                for feature, data in next, basepositionings do
-                    local value = features[feature]
-                    if value then
-                        local validlookups, lookuplist = collectlookups(rawdata,feature,script,language)
-                        if validlookups then
-                            applybasemethod("preparepositionings",tfmdata,feature,features[feature],validlookups,lookuplist)
-                            registerbasefeature(feature,value)
-                        end
-                    end
-                end
-            end
+            --
             registerbasehash(tfmdata)
         end
         if trace_preparing then
-            report_prepare("preparation time is %0.3f seconds for %a",os.clock()-t,tfmdata.properties.fullname)
+            report_prepare("preparation time is %0.3f seconds for %a",os.clock()-starttime,fullname)
         end
     end
 end

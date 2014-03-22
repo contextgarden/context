@@ -137,7 +137,7 @@ function os.resultof(command)
 end
 
 if not io.fileseparator then
-    if find(os.getenv("PATH"),";") then
+    if find(os.getenv("PATH"),";",1,true) then
         io.fileseparator, io.pathseparator, os.type = "\\", ";", os.type or "mswin"
     else
         io.fileseparator, io.pathseparator, os.type = "/" , ":", os.type or "unix"
@@ -236,7 +236,7 @@ elseif os.type == "windows" then
 
     function resolvers.platform(t,k)
         local platform, architecture = "", os.getenv("PROCESSOR_ARCHITECTURE") or ""
-        if find(architecture,"AMD64") then
+        if find(architecture,"AMD64",1,true) then
          -- platform = "mswin-64"
             platform = "win64"
         else
@@ -252,9 +252,9 @@ elseif name == "linux" then
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
         local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
-        if find(architecture,"x86_64") then
+        if find(architecture,"x86_64",1,true) then
             platform = "linux-64"
-        elseif find(architecture,"ppc") then
+        elseif find(architecture,"ppc",1,true) then
             platform = "linux-ppc"
         else
             platform = "linux"
@@ -285,9 +285,9 @@ elseif name == "macosx" then
         if architecture == "" then
          -- print("\nI have no clue what kind of OSX you're running so let's assume an 32 bit intel.\n")
             platform = "osx-intel"
-        elseif find(architecture,"i386") then
+        elseif find(architecture,"i386",1,true) then
             platform = "osx-intel"
-        elseif find(architecture,"x86_64") then
+        elseif find(architecture,"x86_64",1,true) then
             platform = "osx-64"
         else
             platform = "osx-ppc"
@@ -301,7 +301,7 @@ elseif name == "sunos" then
 
     function resolvers.platform(t,k)
         local platform, architecture = "", os.resultof("uname -m") or ""
-        if find(architecture,"sparc") then
+        if find(architecture,"sparc",1,true) then
             platform = "solaris-sparc"
         else -- if architecture == 'i86pc'
             platform = "solaris-intel"
@@ -315,7 +315,7 @@ elseif name == "freebsd" then
 
     function resolvers.platform(t,k)
         local platform, architecture = "", os.resultof("uname -m") or ""
-        if find(architecture,"amd64") then
+        if find(architecture,"amd64",1,true) then
             platform = "freebsd-amd64"
         else
             platform = "freebsd"
@@ -330,7 +330,7 @@ elseif name == "kfreebsd" then
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
         local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
-        if find(architecture,"x86_64") then
+        if find(architecture,"x86_64",1,true) then
             platform = "kfreebsd-amd64"
         else
             platform = "kfreebsd-i386"
@@ -356,7 +356,7 @@ else
 end
 
 function resolvers.bits(t,k)
-    local bits = find(os.platform,"64") and 64 or 32
+    local bits = find(os.platform,"64",1,true) and 64 or 32
     os.bits = bits
     return bits
 end

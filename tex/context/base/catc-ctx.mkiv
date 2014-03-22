@@ -142,4 +142,38 @@
 \normalprotected\def\stopcontextcode
   {\popcatcodetable}
 
+% not visible, only for special cases
+
+\newcatcodetable \ctdcatcodes % context definitions
+
+\startcatcodetable \ctdcatcodes
+    \catcode\tabasciicode            \ignorecatcode
+    \catcode\endoflineasciicode      \ignorecatcode
+    \catcode\formfeedasciicode       \ignorecatcode
+    \catcode\spaceasciicode          \ignorecatcode
+    \catcode\endoffileasciicode      \ignorecatcode
+    \catcode\circumflexasciicode     \superscriptcatcode     % candidate
+    \catcode\underscoreasciicode     \lettercatcode
+    \catcode\ampersandasciicode      \alignmentcatcode
+%   \catcode\colonasciicode          \lettercatcode          % candidate
+    \catcode\backslashasciicode      \escapecatcode
+    \catcode\leftbraceasciicode      \begingroupcatcode
+    \catcode\rightbraceasciicode     \endgroupcatcode
+    \catcode\dollarasciicode         \mathshiftcatcode
+    \catcode\hashasciicode           \parametercatcode
+    \catcode\commentasciicode        \commentcatcode
+    \catcode\atsignasciicode         \lettercatcode
+    \catcode\exclamationmarkasciicode\lettercatcode
+    \catcode\questionmarkasciicode   \lettercatcode
+    \catcode\tildeasciicode          \activecatcode
+    \catcode\barasciicode            \activecatcode
+\stopcatcodetable
+
+\normalprotected\def\startcontextdefinitioncode
+  {\pushcatcodetable
+   \catcodetable\ctdcatcodes}
+
+\normalprotected\def\stopcontextdefinitioncode
+  {\popcatcodetable}
+
 \endinput

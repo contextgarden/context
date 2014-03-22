@@ -91,6 +91,8 @@ local tobesaved          = allocate()
 local collected          = allocate()
 local tobereferred       = allocate()
 local referred           = allocate()
+local usedinternals      = allocate()
+local flaginternals      = allocate()
 
 references.derived       = derived
 references.specials      = specials
@@ -103,6 +105,8 @@ references.tobesaved     = tobesaved
 references.collected     = collected
 references.tobereferred  = tobereferred
 references.referred      = referred
+references.usedinternals = usedinternals
+references.flaginternals = flaginternals
 
 local splitreference     = references.splitreference
 local splitprefix        = references.splitcomponent -- replaces: references.splitprefix
@@ -119,6 +123,7 @@ local finalizers   = { }
 function references.registerinitializer(func) -- we could use a token register instead
     initializers[#initializers+1] = func
 end
+
 function references.registerfinalizer(func) -- we could use a token register instead
     finalizers[#finalizers+1] = func
 end
@@ -246,14 +251,19 @@ local function setnextorder(kind,name)
     texsetcount("global","locationorder",lastorder)
 end
 
-references.setnextorder = setnextorder
 
-function references.setnextinternal(kind,name)
+local function setnextinternal(kind,name)
     setnextorder(kind,name) -- always incremented with internal
     local n = texgetcount("locationcount") + 1
     texsetcount("global","locationcount",n)
     return n
 end
+
+references.setnextorder    = setnextorder
+references.setnextinternal = setnextinternal
+
+commands.setnextreferenceorder    = setnextorder
+commands.setnextinternalreference = setnextinternal
 
 function references.currentorder(kind,name)
     return orders[kind] and orders[kind][name] or lastorder
@@ -271,8 +281,6 @@ local function setcomponent(data)
     end
     -- but for the moment we do it here (experiment)
 end
-
-commands.setnextinternalreference = references.setnextinternal
 
 function commands.currentreferenceorder(kind,name)
     context(references.currentorder(kind,name))
@@ -448,9 +456,9 @@ function references.urls.define(name,url,file,description)
     end
 end
 
-local pushcatcodes = context.pushcatcodes
-local popcatcodes  = context.popcatcodes
-local txtcatcodes  = catcodes.numbers.txtcatcodes -- or just use "txtcatcodes"
+local ctx_pushcatcodes = context.pushcatcodes
+local ctx_popcatcodes  = context.popcatcodes
+local txtcatcodes      = catcodes.numbers.txtcatcodes -- or just use "txtcatcodes"
 
 function references.urls.get(name)
     local u = urls[name]
@@ -467,9 +475,9 @@ end
 function commands.geturl(name)
     local url = references.urls.get(name)
     if url and url ~= "" then
-        pushcatcodes(txtcatcodes)
+        ctx_pushcatcodes(txtcatcodes)
         context(url)
-        popcatcodes()
+        ctx_popcatcodes()
     end
 end
 
@@ -685,8 +693,8 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
         if not set then
             set = { prefix = prefix, reference = reference }
         else
-            set.reference = set.reference or reference
-            set.prefix    = set.prefix    or prefix
+            if not set.reference then set.reference = reference end
+            if not set.prefix    then set.prefix    = prefix    end
         end
         local r = settings_to_array(reference)
         for i=1,#r do
@@ -760,8 +768,8 @@ function commands.setreferencearguments(k,v)
     references.currentset[k].arguments = v
 end
 
-local expandreferenceoperation = context.expandreferenceoperation
-local expandreferencearguments = context.expandreferencearguments
+local ctx_expandreferenceoperation = context.expandreferenceoperation
+local ctx_expandreferencearguments = context.expandreferencearguments
 
 function references.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
     local currentset = references.currentset
@@ -769,12 +777,12 @@ function references.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
         for i=1,#currentset do
             local ci = currentset[i]
             local operation = ci.operation
-            if operation and find(operation,"\\") then -- if o_has_tex then
-                expandreferenceoperation(i,operation)
+            if operation and find(operation,"\\",1,true) then -- if o_has_tex then
+                ctx_expandreferenceoperation(i,operation)
             end
             local arguments = ci.arguments
-            if arguments and find(arguments,"\\") then -- if a_has_tex then
-                expandreferencearguments(i,arguments)
+            if arguments and find(arguments,"\\",1,true) then -- if a_has_tex then
+                ctx_expandreferencearguments(i,arguments)
             end
         end
     end
@@ -1194,7 +1202,7 @@ local function identify_arguments(set,var,i)
     local s = specials[var.inner]
     if s then
         -- inner{argument}
-        var.kind = "special with arguments"
+        var.kind = "special operation with arguments"
     else
         var.error = "unknown inner or special"
     end
@@ -1685,23 +1693,30 @@ end
 
 luatex.registerstopactions(references.reportproblems)
 
-local innermethod = "names"
+-- The auto method will try to avoid named internals in a clever way which
+-- can make files smaller without sacrificing external references. Some of
+-- the housekeeping happens the backend side.
+
+local innermethod        = "auto" -- was "names"
+local defaultinnermethod = defaultinnermethod
+references.innermethod   = innermethod        -- don't mess with this one directly
 
 function references.setinnermethod(m)
     if m then
-        if m == "page" or m == "mixed" or m == "names" then
+        if m == "page" or m == "mixed" or m == "names" or m == "auto" then
             innermethod = m
         elseif m == true or m == v_yes then
             innermethod = "page"
         end
     end
+    references.innermethod = innermethod
     function references.setinnermethod()
         report_references("inner method is already set and frozen to %a",innermethod)
     end
 end
 
 function references.getinnermethod()
-    return innermethod or "names"
+    return innermethod or defaultinnermethod
 end
 
 directives.register("references.linkmethod", function(v) -- page mixed names
@@ -1710,28 +1725,21 @@ end)
 
 -- this is inconsistent
 
-function references.setinternalreference(prefix,tag,internal,view) -- needs checking
-    if innermethod == "page" then
-        return unsetvalue
-    else
+local destinationattributes = { }
+
+local function setinternalreference(prefix,tag,internal,view) -- needs checking
+    local destination = unsetvalue
+    if innermethod ~= "page" then
         local t, tn = { }, 0 -- maybe add to current
         if tag then
             if prefix and prefix ~= "" then
                 prefix = prefix .. ":" -- watch out, : here
-             -- for ref in gmatch(tag,"[^,]+") do
-             --     tn = tn + 1
-             --     t[tn] = prefix .. ref
-             -- end
                 local function action(ref)
                     tn = tn + 1
                     t[tn] = prefix .. ref
                 end
                 process_settings(tag,action)
             else
-             -- for ref in gmatch(tag,"[^,]+") do
-             --     tn = tn + 1
-             --     t[tn] = ref
-             -- end
                 local function action(ref)
                     tn = tn + 1
                     t[tn] = ref
@@ -1739,36 +1747,48 @@ function references.setinternalreference(prefix,tag,internal,view) -- needs chec
                 process_settings(tag,action)
             end
         end
-        if internal and innermethod == "names" then -- mixed or page
+        -- ugly .. later we decide to ignore it when we have a real one
+        -- but for testing we might want to see them all
+        if internal and (innermethod == "names" or innermethod == "auto") then -- mixed or page
             tn = tn + 1
-            t[tn] = "aut:" .. internal
+            t[tn] = internal -- when number it's internal
         end
-        local destination = references.mark(t,nil,nil,view) -- returns an attribute
-        texsetcount("lastdestinationattribute",destination)
-        return destination
+        destination = references.mark(t,nil,nil,view) -- returns an attribute
     end
+    if internal then -- new
+        destinationattributes[internal] = destination
+    end
+    texsetcount("lastdestinationattribute",destination)
+    return destination
 end
 
+local function getinternalreference(internal)
+    return destinationattributes[internal] or 0
+end
+
+references.setinternalreference = setinternalreference
+references.getinternalreference = getinternalreference
+commands.setinternalreference   = setinternalreference
+commands.getinternalreference   = getinternalreference
+
 function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
-    local attr = references.set(kind,prefix,tag,data) and references.setinternalreference(prefix,tag,nil,view) or unsetvalue
+    local attr = references.set(kind,prefix,tag,data) and setinternalreference(prefix,tag,nil,view) or unsetvalue
     texsetcount("lastdestinationattribute",attr)
     return attr
 end
 
 commands.setreferenceattribute = references.setandgetattribute
 
-function references.getinternalreference(n) -- n points into list (todo: registers)
+function references.getinternallistreference(n) -- n points into list (todo: registers)
     local l = lists.collected[n]
-    return l and l.references.internal or n
+    local i = l and l.references.internal
+    return i and destinationattributes[i] or 0
 end
 
-function commands.setinternalreference(prefix,tag,internal,view) -- needs checking
-    context(references.setinternalreference(prefix,tag,internal,view))
-end
-
-function commands.getinternalreference(n) -- this will also be a texcount
+function commands.getinternallistreference(n) -- this will also be a texcount
     local l = lists.collected[n]
-    context(l and l.references.internal or n)
+    local i = l and l.references.internal
+    context(i and destinationattributes[i] or 0)
 end
 
 --
@@ -2164,7 +2184,7 @@ runners["special operation with arguments"] = runners["special"]
 -- check the validity.
 
 function specials.internal(var,actions)
-    local v = references.internals[tonumber(var.operation)]
+    local v = internals[tonumber(var.operation)]
     local r = v and v.references.realpage
     if r then
         actions.realpage = r
