@@ -193,12 +193,12 @@
          \globallet\currentreferencecoding\s!tex
        \fi
        % beware, the structures.references.set writes a
-       % \setnextinternalreference
+\setnextinternalreference
        \strc_references_start_destination_nodes
          \ctxcommand{setreferenceattribute("\currentreferencekind", "\referenceprefix","\currentreferencelabels",
            {
                 references = {
-                %   internal = \nextinternalreference, % no need for an internal as we have an explicit
+internal = \nextinternalreference,
                     block    = "\currentsectionblock",
                     section  = structures.sections.currentid(),
                 },

@@ -61,12 +61,12 @@ if pdf.getpos then
     pdfhasmatrix = pdf.hasmatrix
 else
     if pdf.h then
-        function pdfgetpos () return pdf.h, pdf.v end
-        function pdfgethpos() return pdf.h        end
-        function pdfgetvpos() return pdf.v        end
+        pdfgetpos  = function() return pdf.h, pdf.v end
+        pdfgethpos = function() return pdf.h        end
+        pdfgetvpos = function() return pdf.v        end
     end
-    function pdfhasmatrix() return false            end
-    function pdfgetmatrix() return 1, 0, 0, 1, 0, 0 end
+     pdfhasmatrix = function() return false            end
+     pdfgetmatrix = function() return 1, 0, 0, 1, 0, 0 end
 end
 
 codeinjections.getpos    = pdfgetpos    lpdf.getpos    = pdfgetpos

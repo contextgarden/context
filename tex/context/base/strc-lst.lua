@@ -132,10 +132,15 @@ end
 
 local function finalizer()
     local flaginternals = references.flaginternals
+    local usedviews     = references.usedviews
     for i=1,#tobesaved do
         local r = tobesaved[i].references
-        if r and flaginternals[r.internal] then
-            r.used = true
+        if r then
+            local i = r.internal
+            local f = flaginternals[i]
+            if f then
+                r.used = usedviews[i] or true
+            end
         end
     end
 end
@@ -151,11 +156,11 @@ end
 
 -- we could use t (as hash key) in order to check for dup entries
 
-function lists.addto(t)
+function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
     local m = t.metadata
     local u = t.userdata
     if u and type(u) == "string" then
-        t.userdata = helpers.touserdata(u) -- nicer at the tex end
+        t.userdata = helpers.touserdata(u)
     end
     local numberdata = t.numberdata
     local group = numberdata and numberdata.group
@@ -170,6 +175,10 @@ function lists.addto(t)
             numberdata.numbers = cached[groupindex].numberdata.numbers
         end
     end
+    local setcomponent = references.setcomponent
+    if setcomponent then
+        setcomponent(t) -- can be inlined
+    end
     local r = t.references
     local i = r and r.internal or 0 -- brrr
     local p = pushed[i]
@@ -178,10 +187,6 @@ function lists.addto(t)
         cached[p] = helpers.simplify(t)
         pushed[i] = p
         r.listindex = p
-    end
-    local setcomponent = references.setcomponent
-    if setcomponent then
-        setcomponent(t) -- might move to the tex end
     end
     if group then
         groupindices[name][group] = p

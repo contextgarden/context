@@ -619,9 +619,6 @@ local function todingbat(n)
     end
 end
 
--- local zero_bc = pdfarray { 0, 0, 0 }
--- local zero_bg = pdfarray { 1, 1, 1 }
-
 local function fieldrendering(specification)
     local bvalue = tonumber(specification.backgroundcolorvalue)
     local fvalue = tonumber(specification.framecolorvalue)

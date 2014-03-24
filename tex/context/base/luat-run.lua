@@ -178,7 +178,7 @@ local register     = callbacks.register
 local level = 0
 local total = 0
 local stack = { }
-local all   = true
+local all   = false
 
 local function report_start(left,name)
     if not left then

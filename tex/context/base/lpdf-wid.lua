@@ -50,14 +50,13 @@ local pdfreserveobject         = lpdf.reserveobject
 local pdfpagereference         = lpdf.pagereference
 local pdfshareobjectreference  = lpdf.shareobjectreference
 local pdfaction                = lpdf.action
+local pdfborder                = lpdf.border
 
 local pdftransparencyvalue     = lpdf.transparencyvalue
 local pdfcolorvalues           = lpdf.colorvalues
 
 local hpack_node               = node.hpack
 local write_node               = node.write -- test context(...) instead
-
-local pdf_border               = pdfarray { 0, 0, 0 } -- can be shared
 
 -- symbols
 
@@ -515,11 +514,13 @@ local function insertrenderingwindow(specification)
         OP = 0,
         AN = pdfreference(r),
     }
+    local bs, bc = pdfborder()
     local d = pdfdictionary {
         Subtype = pdfconstant("Screen"),
         P       = pdfreference(pdfpagereference(page)),
         A       = a, -- needed in order to make the annotation clickable (i.e. don't bark)
-        Border  = pdf_border,
+        Border  = bs,
+        C       = bc,
         AA      = actions,
     }
     local width = specification.width or 0

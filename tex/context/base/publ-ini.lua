@@ -120,13 +120,17 @@ statistics.register("publications load time", function()
 end)
 
 luatex.registerstopactions(function()
-    logspushtarget("logfile")
-    logsnewline()
-    report("start used btx commands")
-    logsnewline()
+    local done = false
     local undefined = csname_id("undefined*crap")
     for name, dataset in sortedhash(datasets) do
         for command, n in sortedhash(dataset.commands) do
+            if not done then
+                logspushtarget("logfile")
+                logsnewline()
+                report("start used btx commands")
+                logsnewline()
+                done = true
+            end
             local c = csname_id(command)
             if c and c ~= undefined then
                 report("%-20s %-20s % 5i %s",name,command,n,"known")
@@ -140,10 +144,12 @@ luatex.registerstopactions(function()
             end
         end
     end
-    logsnewline()
-    report("stop used btxcommands")
-    logsnewline()
-    logspoptarget()
+    if done then
+        logsnewline()
+        report("stop used btx commands")
+        logsnewline()
+        logspoptarget()
+    end
 end)
 
 -- multipass, we need to sort because hashing is random per run and not per
