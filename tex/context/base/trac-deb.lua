@@ -147,13 +147,35 @@ function tracers.showlines(filename,linenumber,offset,luaerrorline)
     end
 end
 
-function tracers.printerror(offset)
+-- this will work ok in >=0.79
+
+local function processerror(offset)
     local inputstack   = resolvers.inputstack
     local filename     = inputstack[#inputstack] or status.filename
     local linenumber   = tonumber(status.linenumber) or 0
     local lasttexerror = status.lasterrorstring or "?"
     local lastluaerror = status.lastluaerrorstring or lasttexerror
-    local luaerrorline = match(lastluaerror,[[%[.-lua%].-:.-(%d+)]]) -- this will work ok in >=0.79
+    local luaerrorline = match(lastluaerror,[[%[.-lua%].-:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
+    local report       = luaerrorline and report_lua or report_tex
+    tracers.printerror {
+        filename     = filename,
+        linenumber   = linenumber,
+        lasttexerror = lasttexerror,
+        lastluaerror = lastluaerror,
+        luaerrorline = luaerrorline,
+        offset       = tonumber(offset) or 10,
+    }
+end
+
+-- so one can overload the printer if (really) needed
+
+function tracers.printerror(specification)
+    local filename     = specification.filename
+    local linenumber   = specification.linenumber
+    local lasttexerror = specification.lasttexerror
+    local lastluaerror = specification.lastluaerror
+    local luaerrorline = specification.luaerrorline
+    local offset       = specification.offset
     local report       = luaerrorline and report_lua or report_tex
     if not filename then
         report("error not related to input file: %s ...",lasttexerror)
@@ -182,7 +204,7 @@ directives.register("system.errorcontext", function(v)
     local register = callback.register
     if v then
         register('show_error_message',  nop)
-        register('show_error_hook',     function() tracers.printerror(v) end)
+        register('show_error_hook',     function() processerror(v) end)
         register('show_lua_error_hook', nop)
     else
         register('show_error_message',  nil)

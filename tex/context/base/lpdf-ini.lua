@@ -13,67 +13,131 @@ local sind, cosd, floor, max, min = math.sind, math.cosd, math.floor, math.max, 
 local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 local formatters = string.formatters
 
--- pdf.mapfile pdf.mapline (todo: used in font-ctx.lua)
--- pdf.getpos pdf.gethpos pdf.getvpos
--- pdf.reserveobj pdf.immediateobj pdf.obj pdf.refobj
--- pdf.pageref
--- pdf.catalog pdf.info pdf.names pdf.trailer
+local report_objects    = logs.reporter("backend","objects")
+local report_finalizing = logs.reporter("backend","finalizing")
+local report_blocked    = logs.reporter("backend","blocked")
 
-local backends           = backends
-local pdf                = pdf
-lpdf                     = lpdf or { }
-local lpdf               = lpdf
+-- gethpos              : used
+-- getpos               : used
+-- getvpos              : used
+--
+-- getmatrix            : used
+-- hasmatrix            : used
+--
+-- mapfile              : used in font-ctx.lua
+-- mapline              : used in font-ctx.lua
+--
+-- maxobjnum            : not used
+-- obj                  : used
+-- immediateobj         : used
+-- objtype              : not used
+-- pageref              : used
+-- print                : can be used
+-- refobj               : used
+-- registerannot        : not to be used
+-- reserveobj           : used
 
-local pdfreserveobject   = pdf.reserveobj
-local pdfimmediateobject = pdf.immediateobj
-local pdfdeferredobject  = pdf.obj
-local pdfreferenceobject = pdf.refobj
+-- pdf.catalog          : used
+-- pdf.info             : used
+-- pdf.trailer          : used
+-- pdf.names            : not to be used
 
-local factor             = number.dimenfactors.bp
+-- pdf.setinfo          : used
+-- pdf.setcatalog       : used
+-- pdf.setnames         : not to be used
+-- pdf.settrailer       : used
+
+-- pdf.getinfo          : used
+-- pdf.getcatalog       : used
+-- pdf.getnames         : not to be used
+-- pdf.gettrailer       : used
+
+local pdf    = pdf
+local factor = number.dimenfactors.bp
+
+if pdf.setinfo then
+--     table.setmetatablenewindex(pdf,function(t,k,v)
+--         report_blocked("'pdf.%s' is not supported",k)
+--     end)
+    -- the getters are harmless
+end
+
+if not pdf.setinfo then
+    function pdf.setinfo   (s) pdf.info    = s end
+    function pdf.setcatalog(s) pdf.catalog = s end
+    function pdf.setnames  (s) pdf.names   = s end
+    function pdf.settrailer(s) pdf.trailer = s end
+end
+
+if not pdf.getpos then
+    function pdf.getpos   () return pdf.h, pdf.v     end
+    function pdf.gethpos  () return pdf.h            end
+    function pdf.getvpos  () return pdf.v            end
+    function pdf.hasmatrix() return false            end
+    function pdf.getmatrix() return 1, 0, 0, 1, 0, 0 end
+end
+
+if not pdf.setpageresources then
+    function pdf.setpageresources  (s) pdf.pageresources   = s end
+    function pdf.setpageattributes (s) pdf.pageattributes  = s end
+    function pdf.setpagesattributes(s) pdf.pagesattributes = s end
+end
+
+local pdfsetinfo            = pdf.setinfo
+local pdfsetcatalog         = pdf.setcatalog
+local pdfsetnames           = pdf.setnames
+local pdfsettrailer         = pdf.settrailer
+
+local pdfsetpageresources   = pdf.setpageresources
+local pdfsetpageattributes  = pdf.setpageattributes
+local pdfsetpagesattributes = pdf.setpagesattributes
+
+local pdfgetpos             = pdf.getpos
+local pdfgethpos            = pdf.gethpos
+local pdfgetvpos            = pdf.getvpos
+local pdfgetmatrix          = pdf.getmatrix
+local pdfhasmatrix          = pdf.hasmatrix
+
+local pdfreserveobject      = pdf.reserveobj
+local pdfimmediateobject    = pdf.immediateobj
+local pdfdeferredobject     = pdf.obj
+local pdfreferenceobject    = pdf.refobj
+
+function pdf.setinfo           () report_blocked("'pdf.%s' is not supported","setinfo")            end -- use lpdf.addtoinfo etc
+function pdf.setcatalog        () report_blocked("'pdf.%s' is not supported","setcatalog")         end
+function pdf.setnames          () report_blocked("'pdf.%s' is not supported","setnames")           end
+function pdf.settrailer        () report_blocked("'pdf.%s' is not supported","settrailer")         end
+function pdf.setpageresources  () report_blocked("'pdf.%s' is not supported","setpageresources")   end
+function pdf.setpageattributes () report_blocked("'pdf.%s' is not supported","setpageattributes")  end
+function pdf.setpagesattributes() report_blocked("'pdf.%s' is not supported","setpagesattributes") end
+
+function pdf.registerannot() report_blocked("'pdf.%s' is not supported","registerannot") end
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
 local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
 local trace_detail     = false  trackers.register("backend.detail",     function(v) trace_detail     = v end)
 
-local report_objects    = logs.reporter("backend","objects")
-local report_finalizing = logs.reporter("backend","finalizing")
-
-backends.pdf = backends.pdf or {
+local backends   = backends
+local pdfbackend = {
     comment        = "backend for directly generating pdf output",
     nodeinjections = { },
     codeinjections = { },
     registrations  = { },
     tables         = { },
 }
+backends.pdf     = pdfbackend
+lpdf             = lpdf or { }
+local lpdf       = lpdf
 
--- first some helpers
+local codeinjections = pdfbackend.codeinjections
+local nodeinjections = pdfbackend.nodeinjections
 
-local codeinjections = backends.pdf.codeinjections
-
-local pdfgetpos, pdfgethpos, pdfgetvpos, pdfhasmatrix, pdfgetmatrix
-
-if pdf.getpos then
-    pdfgetpos    = pdf.getpos
-    pdfgethpos   = pdf.gethpos
-    pdfgetvpos   = pdf.getvpos
-    pdfgetmatrix = pdf.getmatrix
-    pdfhasmatrix = pdf.hasmatrix
-else
-    if pdf.h then
-        pdfgetpos  = function() return pdf.h, pdf.v end
-        pdfgethpos = function() return pdf.h        end
-        pdfgetvpos = function() return pdf.v        end
-    end
-     pdfhasmatrix = function() return false            end
-     pdfgetmatrix = function() return 1, 0, 0, 1, 0, 0 end
-end
-
-codeinjections.getpos    = pdfgetpos    lpdf.getpos    = pdfgetpos
-codeinjections.gethpos   = pdfgethpos   lpdf.gethpos   = pdfgethpos
-codeinjections.getvpos   = pdfgetvpos   lpdf.getvpos   = pdfgetvpos
-codeinjections.hasmatrix = pdfhasmatrix lpdf.hasmatrix = pdfhasmatrix
-codeinjections.getmatrix = pdfgetmatrix lpdf.getmatrix = pdfgetmatrix
+codeinjections.getpos    = pdfgetpos     lpdf.getpos    = pdfgetpos
+codeinjections.gethpos   = pdfgethpos    lpdf.gethpos   = pdfgethpos
+codeinjections.getvpos   = pdfgetvpos    lpdf.getvpos   = pdfgetvpos
+codeinjections.hasmatrix = pdfhasmatrix  lpdf.hasmatrix = pdfhasmatrix
+codeinjections.getmatrix = pdfgetmatrix  lpdf.getmatrix = pdfgetmatrix
 
 function lpdf.transform(llx,lly,urx,ury)
     if pdfhasmatrix() then
@@ -582,7 +646,8 @@ end
 
 -- three priority levels, default=2
 
-local pagefinalizers, documentfinalizers = { { }, { }, { } }, { { }, { }, { } }
+local pagefinalizers     = { { }, { }, { } }
+local documentfinalizers = { { }, { }, { } }
 
 local pageresources, pageattributes, pagesattributes
 
@@ -595,9 +660,9 @@ end
 resetpageproperties()
 
 local function setpageproperties()
-    pdf.pageresources   = pageresources  ()
-    pdf.pageattributes  = pageattributes ()
-    pdf.pagesattributes = pagesattributes()
+    pdfsetpageresources  (pageresources  ())
+    pdfsetpageattributes (pageattributes ())
+    pdfsetpagesattributes(pagesattributes())
 end
 
 local function addtopageresources  (k,v) pageresources  [k] = v end
@@ -670,14 +735,14 @@ function lpdf.finalizedocument()
     end
 end
 
--- backends.pdf.codeinjections.finalizepage = lpdf.finalizepage -- no longer triggered at the tex end
+-- codeinjections.finalizepage = lpdf.finalizepage -- no longer triggered at the tex end
 
 if not callbacks.register("finish_pdfpage", lpdf.finalizepage) then
 
     local find_tail    = nodes.tail
     local latelua_node = nodes.pool.latelua
 
-    function backends.pdf.nodeinjections.finalizepage(head)
+    function nodeinjections.finalizepage(head)
         local t = find_tail(head.list)
         if t then
             local n = latelua_node("lpdf.finalizepage(true)") -- last in the shipout
@@ -710,15 +775,33 @@ lpdf.protectresources = true
 
 local catalog = pdfdictionary { Type = pdfconstant("Catalog") } -- nicer, but when we assign we nil the Type
 local info    = pdfdictionary { Type = pdfconstant("Info")    } -- nicer, but when we assign we nil the Type
-local names   = pdfdictionary { Type = pdfconstant("Names")   } -- nicer, but when we assign we nil the Type
+----- names   = pdfdictionary { Type = pdfconstant("Names")   } -- nicer, but when we assign we nil the Type
 
-local function flushcatalog() if not environment.initex then trace_flush("catalog") catalog.Type = nil pdf.catalog = catalog() end end
-local function flushinfo   () if not environment.initex then trace_flush("info")    info   .Type = nil pdf.info    = info   () end end
-local function flushnames  () if not environment.initex then trace_flush("names")   names  .Type = nil pdf.names   = names  () end end
+local function flushcatalog() if not environment.initex then trace_flush("catalog") catalog.Type = nil pdfsetcatalog(catalog()) end end
+local function flushinfo   () if not environment.initex then trace_flush("info")    info   .Type = nil pdfsetinfo   (info   ()) end end
+-------------- flushnames  () if not environment.initex then trace_flush("names")   names  .Type = nil pdfsetnames  (names  ()) end end
 
 function lpdf.addtocatalog(k,v) if not (lpdf.protectresources and catalog[k]) then trace_set("catalog",k) catalog[k] = v end end
 function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) then trace_set("info",   k) info   [k] = v end end
-function lpdf.addtonames  (k,v) if not (lpdf.protectresources and names  [k]) then trace_set("names",  k) names  [k] = v end end
+-------- lpdf.addtonames  (k,v) if not (lpdf.protectresources and names  [k]) then trace_set("names",  k) names  [k] = v end end
+
+local names = pdfdictionary {
+    Type = pdfconstant("Names")
+}
+
+local function flushnames()
+    if next(names) and not environment.initex then
+        trace_flush("names")
+        lpdf.addtocatalog("Names",pdfreference(pdfimmediateobject(tostring(names))))
+    end
+end
+
+function lpdf.addtonames(k,v)
+    if not (lpdf.protectresources and names  [k]) then
+        trace_set("names",  k)
+        names  [k] = v
+    end
+end
 
 local dummy = pdfreserveobject() -- else bug in hvmd due so some internal luatex conflict
 
@@ -768,9 +851,9 @@ registerdocumentfinalizer(flushcolorspaces,3,"color spaces")
 registerdocumentfinalizer(flushpatterns,3,"patterns")
 registerdocumentfinalizer(flushshades,3,"shades")
 
+registerdocumentfinalizer(flushnames,3,"names") -- before catalog
 registerdocumentfinalizer(flushcatalog,3,"catalog")
 registerdocumentfinalizer(flushinfo,3,"info")
-registerdocumentfinalizer(flushnames,3,"names") -- before catalog
 
 registerpagefinalizer(checkextgstates,3,"extended graphic states")
 registerpagefinalizer(checkcolorspaces,3,"color spaces")
@@ -884,3 +967,30 @@ end
 --     end
 --
 -- end
+
+-- setmetatable(pdf, {
+--     __index = function(t,k)
+--         if     k == "info"           then return pdf.getinfo()
+--         elseif k == "catalog"        then return pdf.getcatalog()
+--         elseif k == "names"          then return pdf.getnames()
+--         elseif k == "trailer"        then return pdf.gettrailer()
+--         elseif k == "pageattribute"  then return pdf.getpageattribute()
+--         elseif k == "pageattributes" then return pdf.getpageattributes()
+--         elseif k == "pageresources"  then return pdf.getpageresources()
+--         elseif
+--             return nil
+--         end
+--     end,
+--     __newindex = function(t,k,v)
+--         if     k == "info"           then return pdf.setinfo(v)
+--         elseif k == "catalog"        then return pdf.setcatalog(v)
+--         elseif k == "names"          then return pdf.setnames(v)
+--         elseif k == "trailer"        then return pdf.settrailer(v)
+--         elseif k == "pageattribute"  then return pdf.setpageattribute(v)
+--         elseif k == "pageattributes" then return pdf.setpageattributes(v)
+--         elseif k == "pageresources"  then return pdf.setpageresources(v)
+--         else
+--             rawset(t,k,v)
+--         end
+--     end,
+-- })

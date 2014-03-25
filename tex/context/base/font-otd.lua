@@ -132,58 +132,61 @@ local default   = "dflt"
 local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr,dynamic,ra)
     local features = sequence.features
     if features then
-        local order = sequence.order or { }
-     -- for kind, scripts in next, features do
-        for i=1,#order do --
-            local kind = order[i] --
-            local e_e
-            local a_e = a_enabled and a_enabled[kind] -- the value (location)
-            if a_e ~= nil then
-                e_e = a_e
-            else
-                e_e = s_enabled and s_enabled[kind] -- the value (font)
-            end
-            if e_e then
-                local scripts = features[kind] --
-                local languages = scripts[script] or scripts[wildcard]
-                if languages then
-                 -- local valid, what = false
-                    local valid = false
-                    -- not languages[language] or languages[default] or languages[wildcard] because we want tracing
-                    -- only first attribute match check, so we assume simple fina's
-                    -- default can become a font feature itself
-                    if languages[language] then
-                        valid = e_e -- was true
-                     -- what  = language
-                 -- elseif languages[default] then
-                 --     valid = true
-                 --     what  = default
-                    elseif languages[wildcard] then
-                        valid = e_e -- was true
-                     -- what  = wildcard
-                    end
-                    if valid then
-                        local attribute = autofeatures[kind] or false
-                     -- if a_e and dynamic < 0 then
-                     --     valid = false
-                     -- end
-                     -- if trace_applied then
-                     --     local typ, action = match(sequence.type,"(.*)_(.*)") -- brrr
-                     --     report_process(
-                     --         "%s font: %03i, dynamic: %03i, kind: %s, script: %-4s, language: %-4s (%-4s), type: %s, action: %s, name: %s",
-                     --         (valid and "+") or "-",font,attr or 0,kind,script,language,what,typ,action,sequence.name)
-                     -- end
-                        if trace_applied then
-                            report_process(
-                                "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a",
-                                    font,attr or 0,dynamic,kind,script,language,sequence.name,valid)
+        local order = sequence.order
+        if order then
+            for i=1,#order do --
+                local kind = order[i] --
+                local e_e
+                local a_e = a_enabled and a_enabled[kind] -- the value (location)
+                if a_e ~= nil then
+                    e_e = a_e
+                else
+                    e_e = s_enabled and s_enabled[kind] -- the value (font)
+                end
+                if e_e then
+                    local scripts = features[kind] --
+                    local languages = scripts[script] or scripts[wildcard]
+                    if languages then
+                     -- local valid, what = false
+                        local valid = false
+                        -- not languages[language] or languages[default] or languages[wildcard] because we want tracing
+                        -- only first attribute match check, so we assume simple fina's
+                        -- default can become a font feature itself
+                        if languages[language] then
+                            valid = e_e -- was true
+                         -- what  = language
+                     -- elseif languages[default] then
+                     --     valid = true
+                     --     what  = default
+                        elseif languages[wildcard] then
+                            valid = e_e -- was true
+                         -- what  = wildcard
                         end
-                        ra[#ra+1] = { valid, attribute, sequence.chain or 0, kind, sequence }
+                        if valid then
+                            local attribute = autofeatures[kind] or false
+                         -- if a_e and dynamic < 0 then
+                         --     valid = false
+                         -- end
+                         -- if trace_applied then
+                         --     local typ, action = match(sequence.type,"(.*)_(.*)") -- brrr
+                         --     report_process(
+                         --         "%s font: %03i, dynamic: %03i, kind: %s, script: %-4s, language: %-4s (%-4s), type: %s, action: %s, name: %s",
+                         --         (valid and "+") or "-",font,attr or 0,kind,script,language,what,typ,action,sequence.name)
+                         -- end
+                            if trace_applied then
+                                report_process(
+                                    "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a",
+                                        font,attr or 0,dynamic,kind,script,language,sequence.name,valid)
+                            end
+                            ra[#ra+1] = { valid, attribute, sequence.chain or 0, kind, sequence }
+                        end
                     end
                 end
             end
+            -- { valid, attribute, chain, "generic", sequence } -- false anyway, could be flag instead of table
+        else
+            -- can't happen
         end
-        -- { valid, attribute, chain, "generic", sequence } -- false anyway, could be flag instead of table
     else
         -- { false, false, chain, false, sequence } -- indirect lookup, part of chain (todo: make this a separate table)
     end

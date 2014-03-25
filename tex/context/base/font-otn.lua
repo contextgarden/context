@@ -2053,17 +2053,21 @@ local autofeatures = fonts.analyzers.features -- was: constants
 local function initialize(sequence,script,language,enabled)
     local features = sequence.features
     if features then
-        local order = features.order
-        for i=1,#order do --
-            local kind = order[i] --
-            local valid = enabled[kind]
-            if valid then
-                local scripts = features[kind] --
-                local languages = scripts[script] or scripts[wildcard]
-                if languages and (languages[language] or languages[wildcard]) then
-                    return { valid, autofeatures[kind] or false, sequence.chain or 0, kind, sequence }
+        local order = sequence.order
+        if order then
+            for i=1,#order do --
+                local kind = order[i] --
+                local valid = enabled[kind]
+                if valid then
+                    local scripts = features[kind] --
+                    local languages = scripts[script] or scripts[wildcard]
+                    if languages and (languages[language] or languages[wildcard]) then
+                        return { valid, autofeatures[kind] or false, sequence.chain or 0, kind, sequence }
+                    end
                 end
             end
+        else
+            -- can't happen
         end
     end
     return false

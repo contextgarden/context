@@ -449,7 +449,6 @@ local function somedestination(destination,internal,page)
             if used == defaultview or used == true then
                 return pagereferences[page]
             end
-            flaginternals[internal] = true -- to be sure
             if type(destination) ~= "string" then
                 destination = autoprefix .. internal
             end
@@ -705,7 +704,6 @@ runners["inner"] = function(var,actions)
                 end
                 internal = vir.internal
                 if internal then
---                     var.inner = internal
                     flaginternals[internal] = true
                 end
             end

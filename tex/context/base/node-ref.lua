@@ -226,20 +226,27 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
         txtdir = txtdir or "==="
         while current do
             local id = getid(current)
--- do
---     local r = getattr(current,attribute)
---     if r then print(attribute,r) end
--- end
             if id == hlist_code or id == vlist_code then
                 local r = getattr(current,attribute)
-                -- somehow reference is true so the following fails (second one not done) in
-                --    test \goto{test}[page(2)] test \gotobox{test}[page(2)]
-                -- so let's wait till this fails again
-                -- if not reference and r and (not skip or r > skip) then -- > or ~=
-                if r and (not skip or r > skip) then -- > or ~=
-                    inject_list(id,current,r,make,stack,pardir,txtdir)
-                end
+                -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
+                -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
+             -- if r and (not skip or r >) skip then -- maybe no > test
+             --     inject_list(id,current,r,make,stack,pardir,txtdir)
+             -- end
                 if r then
+                    if not reference then
+                        reference, first, last, firstdir = r, current, current, txtdir
+                    elseif r == reference then
+                        -- same link
+                        last = current
+                    elseif (done[reference] or 0) == 0 then
+                        if not skip or r > skip then -- maybe no > test
+                            head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
+                            reference, first, last, firstdir = nil, nil, nil, nil
+                        end
+                    else
+                        reference, first, last, firstdir = r, current, current, txtdir
+                    end
                     done[r] = (done[r] or 0) + 1
                 end
                 local list = getlist(current)
