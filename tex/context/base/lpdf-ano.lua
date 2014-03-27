@@ -436,7 +436,7 @@ end
 
 -- we could share dictionaries ... todo
 
-local function somedestination(destination,internal,page)
+local function somedestination(destination,internal,page) -- no view anyway
     if references.innermethod ~= v_page then
         if type(destination) == "number" then
             if not internal then
@@ -445,6 +445,7 @@ local function somedestination(destination,internal,page)
             destination = nil
         end
         if internal then
+            flaginternals[internal] = true -- for bookmarks and so
             local used = usedinternals[internal]
             if used == defaultview or used == true then
                 return pagereferences[page]
@@ -456,7 +457,9 @@ local function somedestination(destination,internal,page)
                 S = pdf_goto,
                 D = destination,
             }
-        elseif destination then
+        end
+        if destination then
+            -- hopefully this one is flushed
             return pdfdictionary {
                 S = pdf_goto,
                 D = destination,
@@ -1048,8 +1051,9 @@ local function build(levels,start,parent,method)
                 Title  = pdfunicode(title),
                 Parent = parent,
                 Prev   = prev and pdfreference(prev),
+                A      = somedestination(reference.internal,reference.internal,reference.realpage),
             }
-            entry.Dest = somedestination(reference.internal,reference.internal,reference.realpage)
+         -- entry.Dest = somedestination(reference.internal,reference.internal,reference.realpage)
             if not first then first, last = child, child end
             prev = child
             last = prev

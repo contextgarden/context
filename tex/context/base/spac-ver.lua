@@ -535,14 +535,15 @@ local categories = allocate {
      [5] = 'disable',
      [6] = 'nowhite',
      [7] = 'goback',
-     [8] = 'together'
+     [8] = 'together', -- not used (?)
+     [9] = 'overlay',
 }
 
 vspacing.categories = categories
 
 function vspacing.tocategories(str)
     local t = { }
-    for s in gmatch(str,"[^, ]") do
+    for s in gmatch(str,"[^, ]") do -- use lpeg instead
         local n = tonumber(s)
         if n then
             t[categories[n]] = true
@@ -553,7 +554,7 @@ function vspacing.tocategories(str)
     return t
 end
 
-function vspacing.tocategory(str)
+function vspacing.tocategory(str) -- can be optimized
     if type(str) == "string" then
         return set.tonumber(vspacing.tocategories(str))
     else
@@ -854,7 +855,16 @@ end
 
 -- penalty only works well when before skip
 
-local discard, largest, force, penalty, add, disable, nowhite, goback, together = 0, 1, 2, 3, 4, 5, 6, 7, 8 -- move into function when upvalue 60 issue
+local discard  = 0
+local largest  = 1
+local force    = 2
+local penalty  = 3
+local add      = 4
+local disable  = 5
+local nowhite  = 6
+local goback   = 7
+local together = 8 -- not used (?)
+local overlay  = 9
 
 -- [whatsits][hlist][glue][glue][penalty]
 
@@ -884,6 +894,106 @@ local function specialpenalty(start,penalty)
             current = getprev(current)
         end
     end
+end
+
+local function check_experimental_overlay(head,current) -- todo
+    local p = nil
+    local c = current
+    local n = nil
+
+    local function overlay(p, n, s, mvl)
+        local c = getprev(n)
+        while c and c ~= p do
+            local p = getprev(c)
+            free_node(c)
+            c = p
+        end
+        setfield(n,"prev",nil)
+        if not mvl then
+            setfield(p,"next",n)
+        end
+        local p_ht = getfield(p,"height")
+        local p_dp = getfield(p,"depth")
+        local n_ht = getfield(n,"height")
+        local delta = n_ht + s + p_dp
+        local k = new_kern(-delta)
+        if trace_vspacing then
+            report_vspacing("overlaying, prev height: %p, prev depth: %p, next height: %p, skips: %p, move up: %p",p_ht,p_dp,n_ht,s,delta)
+        end
+        if n_ht > p_ht then
+            -- we should adapt pagetotal ! (need a hook for that)
+            setfield(p,"height",n_ht)
+        end
+        return k
+    end
+
+    while c do
+        local id = getid(c)
+        if id == glue_code or id == penalty_code or id == kern_code then
+            -- skip (actually, remove)
+            c = getnext(c)
+        elseif id == hlist_code then
+            n = c
+            break
+        else
+            break
+        end
+    end
+    if n then
+        -- we have a next line
+        c = current
+        while c do
+            local id = getid(c)
+            if id == glue_code or id == penalty_code then
+                c = getprev(c)
+            elseif id == hlist_code then
+                p = c
+                break
+            else
+                break
+            end
+        end
+        if not p then
+            if a_snapmethod == a_snapvbox then
+                -- quit, we're not on the mvl
+            else
+                -- messy
+                local c = tonut(texlists.page_head)
+                local s = 0
+                while c do
+                    local id = getid(c)
+                    if id == glue_code then
+                        if p then
+                            s = s + getfield(getfield(c,"glue_spec"),"width")
+                        end
+                    elseif id == kern_code then
+                        if p then
+                            s = s + getfield(c,"kern")
+                        end
+                    elseif id == penalty_code then
+                        -- skip (actually, remove)
+                    elseif id == hlist_code then
+                        p = c
+                        s = 0
+                    else
+                        p = nil
+                        s = 0
+                    end
+                    c = getnext(c)
+                end
+                if p and p ~= n then
+                    local k = overlay(p,n,s,true)
+                    insert_node_before(n,n,k)
+                    return k, getnext(n)
+                end
+            end
+        elseif p ~= n then
+            local k = overlay(p,n,0,false   )
+            insert_node_after(p,p,k)
+            return head, getnext(n)
+        end
+    end
+    return remove_node(head, current, true)
 end
 
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
@@ -1060,6 +1170,10 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 elseif sc == discard then
                     if trace then trace_skip("discard",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)
+                elseif sc == overlay then
+                    -- todo (overlay following line over previous
+                    if trace then trace_skip("overlay",sc,so,sp,current) end
+                    head, current = check_experimental_overlay(head,current,a_snapmethod)
                 elseif ignore_following then
                     if trace then trace_skip("disabled",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)

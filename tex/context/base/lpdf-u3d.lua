@@ -17,6 +17,7 @@ if not modules then modules = { } end modules ['lpdf-u3d'] = {
 -- point we will end up with a reimplementation. For instance
 -- it makes sense to add the same activation code as with swf.
 
+local tonumber = tonumber
 local format, find = string.format, string.find
 local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, math.atan2, math.abs
 

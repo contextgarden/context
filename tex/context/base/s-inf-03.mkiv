@@ -343,6 +343,10 @@ show("global","",sameglobal.global,false,_G,builtin,"darkgreen",globals,"darkblu
 
 for k, v in table.sortedpairs(_G) do
     if not skipglobal[k] and not obsolete[k] and type(v) == "table" and not marked(v) then
+
+ --     local mt = getmetatable(v)
+ --     print("!!!!!!!!!!",k,v,mt,mt and mt.__index)
+
         if     basiclua[k] then show(k,"basic lua",sameglobal[k],basiclua[k],v,builtin[k],"darkred",   false,false,true)
         elseif extralua[k] then show(k,"extra lua",sameglobal[k],extralua[k],v,builtin[k],"darkred",   false,false,true)
         elseif basictex[k] then show(k,"basic tex",sameglobal[k],basictex[k],v,builtin[k],"darkred",   false,false,true)

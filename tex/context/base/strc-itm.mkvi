@@ -1009,8 +1009,21 @@
      \strc_itemgroups_between_command
    \fi}
 
-\unexpanded\def\strc_itemgroups_start_item[#1]% we can reuse more
-  {\def\currentitemreference{#1}%
+% c_strc_itemgroups_concat:
+%
+% the problem is that we use leftskip so concat cannot reliable take the height into
+% account; it's .. rather tricky when white space in there anyway (due to \par) .. so
+% we rely on a special blank method
+%
+% \startitemize[n]
+%     \item bla
+%     \item \startitemize[a]
+%         \item bla $\displaystyle\int^{x^{y^4}}$ \item bla
+%     \stopitemize
+% \stopitemize
+
+\unexpanded\def\strc_itemgroups_start_item[#reference]% we can reuse more
+  {\def\currentitemreference{#reference}%
    \ifconditional\c_strc_itemgroups_text
      % begin of item
    \else
@@ -1026,10 +1039,12 @@
      \strc_itemgroups_start_item_next
    \fi
    \ifconditional\c_strc_itemgroups_concat
-   % \vskip-\dimexpr\lastskip+\lineheight\relax
-     \vskip-\lastskip   % we cannot use a \dimexpr here  because
-     \vskip-\lineheight % then we loose the stretch and shrink
-     \nobreak
+     % \vskip-\lastskip   % we cannot use a \dimexpr here  because
+     % \vskip-\lineheight % then we loose the stretch and shrink
+     % \nobreak
+     %
+     \blank[\v!overlay]% new per 2014-03-27
+     %
      \setfalse\c_strc_itemgroups_concat
    \fi
    \dostarttagged\t!item\empty

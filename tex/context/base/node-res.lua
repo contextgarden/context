@@ -69,6 +69,7 @@ local getbox    = nuts.getbox
 local getfield  = nuts.getfield
 local setfield  = nuts.setfield
 local getid     = nuts.getid
+local getlist   = nuts.getlist
 
 local copy_nut  = nuts.copy
 local new_nut   = nuts.new
@@ -513,6 +514,7 @@ local function cleanup(nofboxes) -- todo
         for i=0,nofboxes do
             local l = getbox(i)
             if l then
+-- print(nodes.listtoutf(getlist(l)))
                 free_nut(l) -- also list ?
                 nl = nl + 1
             end

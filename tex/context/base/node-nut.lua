@@ -129,7 +129,7 @@ nuts.getfield             = direct.getfield
 nuts.getnext              = direct.getnext
 nuts.getprev              = direct.getprev
 nuts.getid                = direct.getid
-nuts.getattr              = direct.getfield
+nuts.getattr              = direct.has_attribute or direct.getfield
 nuts.getchar              = direct.getchar
 nuts.getfont              = direct.getfont
 nuts.getsubtype           = direct.getsubtype
@@ -141,7 +141,7 @@ nuts.getleader            = direct.getleader
 -- setters
 
 nuts.setfield             = direct.setfield
-nuts.setattr              = direct.setfield
+nuts.setattr              = direct.set_attribute or setfield
 
 nuts.getbox               = direct.getbox
 nuts.setbox               = direct.setbox

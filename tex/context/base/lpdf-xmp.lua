@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['lpdf-xmp'] = {
     comment   = "with help from Peter Rolf",
 }
 
+local tostring = tostring
 local format, random, char, gsub, concat = string.format, math.random, string.char, string.gsub, table.concat
 local xmlfillin = xml.fillin
 
@@ -119,16 +120,16 @@ end
 
 -- redefined
 
-local addtoinfo  = lpdf.addtoinfo
-local addxmpinfo = lpdf.addxmpinfo
+local pdfaddtoinfo  = lpdf.addtoinfo
+local pdfaddxmpinfo = lpdf.addxmpinfo
 
 function lpdf.addtoinfo(tag,pdfvalue,strvalue)
-    addtoinfo(tag,pdfvalue)
+    pdfaddtoinfo(tag,pdfvalue)
     local value = strvalue or gsub(tostring(pdfvalue),"^%((.*)%)$","%1") -- hack
     if trace_info then
         report_info("set %a to %a",tag,value)
     end
-    addxmpinfo(tag,value)
+    pdfaddxmpinfo(tag,value)
 end
 
 -- for the do-it-yourselvers
@@ -159,20 +160,20 @@ local function flushxmpinfo()
     local fullbanner = tex.pdftexbanner
  -- local fullbanner = gsub(tex.pdftexbanner,"kpse.*","")
 
-    addxmpinfo("DocumentID",      documentid)
-    addxmpinfo("InstanceID",      instanceid)
-    addxmpinfo("Producer",        producer)
-    addxmpinfo("CreatorTool",     creator)
-    addxmpinfo("CreateDate",      time)
-    addxmpinfo("ModifyDate",      time)
-    addxmpinfo("MetadataDate",    time)
-    addxmpinfo("PTEX.Fullbanner", fullbanner)
+    pdfaddxmpinfo("DocumentID",      documentid)
+    pdfaddxmpinfo("InstanceID",      instanceid)
+    pdfaddxmpinfo("Producer",        producer)
+    pdfaddxmpinfo("CreatorTool",     creator)
+    pdfaddxmpinfo("CreateDate",      time)
+    pdfaddxmpinfo("ModifyDate",      time)
+    pdfaddxmpinfo("MetadataDate",    time)
+    pdfaddxmpinfo("PTEX.Fullbanner", fullbanner)
 
-    addtoinfo("Producer",         producer)
-    addtoinfo("Creator",          creator)
-    addtoinfo("CreationDate",     time)
-    addtoinfo("ModDate",          time)
---  addtoinfo("PTEX.Fullbanner",  fullbanner) -- no checking done on existence
+    pdfaddtoinfo("Producer",         producer)
+    pdfaddtoinfo("Creator",          creator)
+    pdfaddtoinfo("CreationDate",     time)
+    pdfaddtoinfo("ModDate",          time)
+--  pdfaddtoinfo("PTEX.Fullbanner",  fullbanner) -- no checking done on existence
 
     local blob = xml.tostring(xml.first(xmp or valid_xmp(),"/x:xmpmeta"))
     local md = pdfdictionary {
