@@ -155,7 +155,7 @@ local function processerror(offset)
     local linenumber   = tonumber(status.linenumber) or 0
     local lasttexerror = status.lasterrorstring or "?"
     local lastluaerror = status.lastluaerrorstring or lasttexerror
-    local luaerrorline = match(lastluaerror,[[%[.-lua%].-:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
+    local luaerrorline = match(lastluaerror,[[lua:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
     local report       = luaerrorline and report_lua or report_tex
     tracers.printerror {
         filename     = filename,
@@ -185,6 +185,7 @@ function tracers.printerror(specification)
         report_nl()
         if luaerrorline then
             report("error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
+--             report("error on line %s in file %s:\n\n%s",linenumber,filename,lasttexerror)
         else
             report("error on line %s in file %s: %s",linenumber,filename,lasttexerror)
             if tex.show_context then

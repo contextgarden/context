@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 
 -- we also need to call the spacer for inserts!
 
--- todo: directly set skips
+-- todo: use lua nodes with lua data (>0.79)
+-- see ** can go when 0.79
 
 -- this code dates from the beginning and is kind of experimental; it
 -- will be optimized and improved soon
@@ -120,8 +121,8 @@ builders.vspacing         = vspacing
 local vspacingdata        = vspacing.data or { }
 vspacing.data             = vspacingdata
 
-vspacingdata.snapmethods  = vspacingdata.snapmethods or { }
-local snapmethods         = vspacingdata.snapmethods --maybe some older code can go
+local snapmethods         = vspacingdata.snapmethods or { }
+vspacingdata.snapmethods  = snapmethods
 
 storage.register("builders/vspacing/data/snapmethods", snapmethods, "builders.vspacing.data.snapmethods")
 
@@ -901,6 +902,8 @@ local function check_experimental_overlay(head,current) -- todo
     local c = current
     local n = nil
 
+setfield(head,"prev",nil) -- till we have 0.79 **
+
     local function overlay(p, n, s, mvl)
         local c = getprev(n)
         while c and c ~= p do
@@ -1011,7 +1014,17 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         if penalty_data then
             local p = new_penalty(penalty_data)
             if trace then trace_done("flushed due to " .. why,p) end
+if penalty_data >= 10000 then -- or whatever threshold?
+    local prev = getprev(current)
+    if getid(prev) == glue_code then -- maybe go back more, or maybe even push back before any glue
+            -- tricky case: spacing/grid-007.tex: glue penalty glue
+            head = insert_node_before(head,prev,p)
+    else
             head = insert_node_before(head,current,p)
+    end
+else
+            head = insert_node_before(head,current,p)
+end
         end
         if glue_data then
             local spec = getfield(glue_data,"spec")
