@@ -70,6 +70,7 @@ local getfield            = nuts.getfield
 local setfield            = nuts.setfield
 
 local remove_node         = nuts.remove
+local copy_node           = nuts.copy
 local insert_node_after   = nuts.insert_after
 local insert_node_before  = nuts.insert_before
 
@@ -818,20 +819,26 @@ local function apply_to_list(list,size,head,pardir)
         elseif id == glue_code then
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
-                head = insert_node_before(head,current,new_textdir(enddir))
+                local d = new_textdir(enddir)
+-- setfield(d,"attr",copy_node(getfield(current,"attr")))
+                head = insert_node_before(head,current,d)
                 enddir = false
                 done = true
             end
         elseif id == whatsit_code then
             if begindir and getsubtype(current) == localpar_code then
                 -- local_par should always be the 1st node
-                head, current = insert_node_after(head,current,new_textdir(begindir))
+                local d = new_textdir(begindir)
+-- setfield(d,"attr",copy_node(getfield(current,"attr")))
+                head, current = insert_node_after(head,current,d)
                 begindir = nil
                 done = true
             end
         end
         if begindir then
-            head = insert_node_before(head,current,new_textdir(begindir))
+            local d = new_textdir(begindir)
+-- setfield(d,"attr",copy_node(getfield(current,"attr")))
+            head = insert_node_before(head,current,d)
             done = true
         end
         local skip = entry.skip
@@ -841,7 +848,9 @@ local function apply_to_list(list,size,head,pardir)
             end
         end
         if enddir then
-            head, current = insert_node_after(head,current,new_textdir(enddir))
+            local d = new_textdir(enddir)
+-- setfield(d,"attr",copy_node(getfield(current,"attr")))
+            head, current = insert_node_after(head,current,d)
             done = true
         end
         if not entry.remove then

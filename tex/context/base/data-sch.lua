@@ -54,7 +54,7 @@ end
 local cached, loaded, reused, thresholds, handlers = { }, { }, { }, { }, { }
 
 local function runcurl(name,cachename) -- we use sockets instead or the curl library when possible
-    local command = "curl --silent --create-dirs --output " .. cachename .. " " .. name
+    local command = "curl --silent --insecure --create-dirs --output " .. cachename .. " " .. name
     os.spawn(command)
 end
 

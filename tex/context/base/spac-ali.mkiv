@@ -1035,15 +1035,37 @@
 % \simplealignedbox{2cm}{right}{x}
 
 \installcorenamespace{alignsimple}
+\installcorenamespace{alignsimplereverse}
 
-\setvalue{\??alignsimple\v!right     }#1{{#1\hss}}
-\setvalue{\??alignsimple\v!left      }#1{{\hss#1}}
-\setvalue{\??alignsimple\v!flushright}#1{{\hss#1}}
-\setvalue{\??alignsimple\v!flushleft }#1{{#1\hss}}
-\setvalue{\??alignsimple\v!middle    }#1{{\hss#1\hss}}
+% todo: also handle \bgroup ... \egroup
+
+\unexpanded\def\spac_align_simple_left  #1{{#1\hss}}
+\unexpanded\def\spac_align_simple_right #1{{\hss#1}}
+\unexpanded\def\spac_align_simple_middle#1{{\hss#1\hss}}
+
+\letvalue{\??alignsimple       \v!right     }\spac_align_simple_left
+\letvalue{\??alignsimple       \v!outer     }\spac_align_simple_left   % not managed! see linenumbers
+\letvalue{\??alignsimple       \v!flushleft }\spac_align_simple_left
+\letvalue{\??alignsimple       \v!left      }\spac_align_simple_right
+\letvalue{\??alignsimple       \v!inner     }\spac_align_simple_right  % not managed! see linenumbers
+\letvalue{\??alignsimple       \v!flushright}\spac_align_simple_right
+\letvalue{\??alignsimple       \v!middle    }\spac_align_simple_middle
+
+\letvalue{\??alignsimplereverse\v!right     }\spac_align_simple_right
+\letvalue{\??alignsimplereverse\v!outer     }\spac_align_simple_right % not managed! see linenumbers
+\letvalue{\??alignsimplereverse\v!flushleft }\spac_align_simple_right
+\letvalue{\??alignsimplereverse\v!left      }\spac_align_simple_left
+\letvalue{\??alignsimplereverse\v!inner     }\spac_align_simple_left  % not managed! see linenumbers
+\letvalue{\??alignsimplereverse\v!flushright}\spac_align_simple_left
+\letvalue{\??alignsimplereverse\v!middle    }\spac_align_simple_middle
 
 \unexpanded\def\simplealignedbox#1#2%
   {\hbox to #1\csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\endcsname}
+
+\newconditional\alignsimplelefttoright \settrue\alignsimplelefttoright
+
+\unexpanded\def\simplereversealignedbox#1#2%
+  {\hbox to #1\csname\??alignsimplereverse\ifcsname\??alignsimplereverse#2\endcsname#2\else\v!left\fi\endcsname}
 
 % \installnamespace{alignsets}
 %

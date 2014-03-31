@@ -254,6 +254,18 @@ function caches.loaddata(paths,name)
     for i=1,#paths do
         local data = false
         local luaname, lucname = makefullname(paths[i],name)
+        if lucname and not lfs.isfile(lucname) and type(caches.compile) == "function" then
+            -- in case we used luatex and luajittex mixed ... lub or luc file
+            texio.write(string.format("(compiling luc: %s)",lucname))
+            data = loadfile(luaname)
+            if data then
+                data = data()
+            end
+            if data then
+                caches.compile(data,luaname,lucname)
+                return data
+            end
+        end
         if lucname and lfs.isfile(lucname) then -- maybe also check for size
             texio.write(string.format("(load luc: %s)",lucname))
             data = loadfile(lucname)

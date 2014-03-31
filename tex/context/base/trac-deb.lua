@@ -153,9 +153,11 @@ local function processerror(offset)
     local inputstack   = resolvers.inputstack
     local filename     = inputstack[#inputstack] or status.filename
     local linenumber   = tonumber(status.linenumber) or 0
+-- print(status.lasterrorstring)
+-- print(status.lastluaerrorstring)
     local lasttexerror = status.lasterrorstring or "?"
     local lastluaerror = status.lastluaerrorstring or lasttexerror
-    local luaerrorline = match(lastluaerror,[[lua:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
+    local luaerrorline = match(lastluaerror,[[lua?]:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
     local report       = luaerrorline and report_lua or report_tex
     tracers.printerror {
         filename     = filename,

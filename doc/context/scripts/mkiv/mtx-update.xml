@@ -3,7 +3,7 @@
  <metadata>
   <entry name="name">mtx-update</entry>
   <entry name="detail">ConTeXt Minimals Updater</entry>
-  <entry name="version">1.01</entry>
+  <entry name="version">1.02</entry>
  </metadata>
  <flags>
   <category name="basic">

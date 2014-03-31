@@ -257,6 +257,19 @@ function nutpool.glue(width,stretch,shrink,stretch_order,shrink_order)
     return someskip(glue,width,stretch,shrink,stretch_order,shrink_order)
 end
 
+function nutpool.negatedglue(glue)
+    local n = copy_nut(glue)
+    local s = copy_nut(getfield(n,"spec"))
+    local width   = getfield(s,"width")
+    local stretch = getfield(s,"stretch")
+    local shrink  = getfield(s,"shrink")
+    if width   then setfield(s,"width",  -width)   end
+    if stretch then setfield(s,"stretch",-stretch) end
+    if shrink  then setfield(s,"shrink", -shrink)  end
+    setfield(n,"spec",s)
+    return n
+end
+
 function nutpool.leftskip(width,stretch,shrink,stretch_order,shrink_order)
     return someskip(leftskip,width,stretch,shrink,stretch_order,shrink_order)
 end
