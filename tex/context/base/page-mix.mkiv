@@ -542,8 +542,8 @@
   {\ctxcommand{mixfinalize()}%
    \setbox\b_page_mix_collected\vbox \bgroup
      \ifvoid\b_page_mix_preceding \else
-       \page_lines_add_numbers_to_box\b_page_mix_preceding\plusone\plusone\plusone
-      %\box\b_page_mix_preceding
+       \page_postprocessors_linenumbers_deepbox\b_page_mix_preceding
+       \box\b_page_mix_preceding
        \global\d_page_mix_preceding_height\zeropoint
        \nointerlineskip
      \fi
