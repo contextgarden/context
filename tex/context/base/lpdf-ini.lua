@@ -786,11 +786,12 @@ function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) th
 -------- lpdf.addtonames  (k,v) if not (lpdf.protectresources and names  [k]) then trace_set("names",  k) names  [k] = v end end
 
 local names = pdfdictionary {
-    Type = pdfconstant("Names")
+ -- Type = pdfconstant("Names")
 }
 
 local function flushnames()
     if next(names) and not environment.initex then
+        names.Type = pdfconstant("Names")
         trace_flush("names")
         lpdf.addtocatalog("Names",pdfreference(pdfimmediateobject(tostring(names))))
     end

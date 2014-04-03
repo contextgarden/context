@@ -46,6 +46,7 @@ local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local whatsit_code       = nodecodes.whatsit
 local glue_code          = nodecodes.glue
+local glyph_code         = nodecodes.glyph
 local leftskip_code      = skipcodes.leftskip
 local textdir_code       = whatcodes.dir
 
@@ -218,17 +219,18 @@ end
 local function identify(list)
     if list then
         for n in traverse_id(hlist_code,list) do
-            if getattr(n,a_linenumber) then
-                return list
+            local a = getattr(n,a_linenumber)
+            if a then
+                return list, a
             end
         end
         local n = list
         while n do
             local id = getid(n)
             if id == hlist_code or id == vlist_code then
-                local ok = identify(getlist(n))
+                local ok, a = identify(getlist(n))
                 if ok then
-                    return ok
+                    return ok, a
                 end
             end
             n = getnext(n)
@@ -248,59 +250,67 @@ function boxed.stage_one(n,nested)
     current_list = { }
     local box = getbox(n)
     if box then
-        local list = getlist(box)
-        if nested then
-            list = identify(list)
+        local found = nil
+        local list  = getlist(box)
+        if list and nested then
+            list, found = identify(list)
         end
-        local last_a, last_v, skip = nil, -1, false
-        for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
-            if getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
-                -- skip funny hlists -- todo: check line subtype
-            else
-                local list = getlist(n)
-                local a = getattr(list,a_linenumber)
-if not a or a == 0 then
-    local n = getnext(list)
-    while n do
-        local id = getid(n)
-        if id == whatsit_code and getsubtype(n) == textdir_code then
-            n = getnext(n)
-        elseif id == glue_code and getsubtype(n) == leftskip_code then
-            n = getnext(n)
-        else
-            break
-        end
-    end
-    a = n and getattr(n,a_linenumber)
+        if list then
+            local last_a, last_v, skip = nil, -1, false
+            for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
+                if getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
+                    -- skip funny hlists -- todo: check line subtype
+                else
+                    local list = getlist(n)
+                    local a = getattr(list,a_linenumber)
+                    if not a or a == 0 then
+                        local n = getnext(list)
+                        while n do
+                            local id = getid(n)
+                            if id == whatsit_code and getsubtype(n) == textdir_code then
+                                n = getnext(n)
+                            elseif id == glue_code and getsubtype(n) == leftskip_code then
+                                n = getnext(n)
+                            else
+if id == glyph_code then
+                                break
+else
+    -- can be hlist or skip (e.g. footnote line)
+    n = getnext(n)
 end
-                if a and a > 0 then
-                    if last_a ~= a then
-                        local da = data[a]
-                        local ma = da.method
-                        if ma == v_next then
-                            skip = true
-                        elseif ma == v_page then
-                            da.start = 1 -- eventually we will have a normal counter
+                            end
                         end
-                        last_a = a
-                        if trace_numbers then
-                            report_lines("starting line number range %s: start %s, continue %s",a,da.start,da.continue or v_no)
-                        end
+                        a = n and getattr(n,a_linenumber)
                     end
-                    if getattr(n,a_displaymath) then
-                        if is_display_math(n) then
-                            check_number(n,a,skip)
+                    if a and a > 0 then
+                        if last_a ~= a then
+                            local da = data[a]
+                            local ma = da.method
+                            if ma == v_next then
+                                skip = true
+                            elseif ma == v_page then
+                                da.start = 1 -- eventually we will have a normal counter
+                            end
+                            last_a = a
+                            if trace_numbers then
+                                report_lines("starting line number range %s: start %s, continue %s",a,da.start,da.continue or v_no)
+                            end
                         end
-                    else
-                        local v = getattr(list,a_verbatimline)
-                        if not v or v ~= last_v then
-                            last_v = v
-                            check_number(n,a,skip)
+                        if getattr(n,a_displaymath) then
+                            if is_display_math(n) then
+                                check_number(n,a,skip)
+                            end
                         else
-                            check_number(n,a,skip,true)
+                            local v = getattr(list,a_verbatimline)
+                            if not v or v ~= last_v then
+                                last_v = v
+                                check_number(n,a,skip)
+                            else
+                                check_number(n,a,skip,true)
+                            end
                         end
+                        skip = false
                     end
-                    skip = false
                 end
             end
         end

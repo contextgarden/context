@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/31/14 16:08:17
+-- merge date  : 04/03/14 16:20:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -5775,7 +5775,6 @@ unify=function(data,filename)
         if unicode then
           krn[unicode]=kern
         else
-          print(unicode,name)
         end
       end
       description.kerns=krn

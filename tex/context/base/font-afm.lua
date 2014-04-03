@@ -15,6 +15,14 @@ n='otf'/>.</p>
 <p>The following code still has traces of intermediate font support
 where we handles font encodings. Eventually font encoding goes
 away.</p>
+
+<p>The embedding of a font involves creating temporary files and
+depending on your system setup that can fail. It took more than a
+day to figure out why sometimes embedding failed in mingw luatex
+where running on a real path like c:\... failed while running on
+say e:\... being a link worked well. The native windows binaries
+don't have this issue.</p>
+
 --ldx]]--
 
 local fonts, logs, trackers, containers, resolvers = fonts, logs, trackers, containers, resolvers
@@ -221,6 +229,7 @@ local function get_indexes(data,pfbname)
                     report_afm("getting index data from %a",pfbname)
                 end
                 for index, glyph in next, glyphs do
+            --  for index, glyph in table.sortedhash(glyphs) do
                     local name = glyph.name
                     if name then
                         local char = characters[name]
@@ -336,6 +345,7 @@ function afm.load(filename)
                     get_indexes(data,pfbname)
                 elseif trace_loading then
                     report_afm("no pfb file for %a",filename)
+                 -- data.resources.filename = "unset" -- better than loading the afm file
                 end
                 report_afm("unifying %a",filename)
                 unify(data,filename)
@@ -410,7 +420,7 @@ unify = function(data, filename)
                 if unicode then
                     krn[unicode] = kern
                 else
-                    print(unicode,name)
+                 -- print(unicode,name)
                 end
             end
             description.kerns = krn

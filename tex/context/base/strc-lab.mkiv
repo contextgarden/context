@@ -58,10 +58,15 @@
      {\normalexpanded{\defineconstruction[#1][#3][\s!handler=\v!label,\c!level=#2]}%
       \setevalue{\??label#1:\s!parent}{\??label#3}}%
    \ifconditional\c_strc_constructions_define_commands
-     \setuevalue{\e!next #1}{\strc_labels_next   {#1}{\number#2}}% obsolete
-     \setuevalue{\c!reset#1}{\strc_labels_reset  {#1}{\number#2}}% obsolete
-     %setuevalue{\c!set  #1}{\strc_labels_set    {#1}{\number#2}}% obsolete
-     \setuevalue        {#1}{\strc_labels_command{#1}}%
+     \setuevalue{\e!next   #1}{\strc_labels_next   {#1}{\number#2}}% obsolete
+     \setuevalue{\v!reset  #1}{\strc_labels_reset  {#1}{\number#2}}% obsolete % should be \e!reset anyway
+     %setuevalue{\c!set    #1}{\strc_labels_set    {#1}{\number#2}}% obsolete
+   \ifcsname\v!current#1\endcsname
+     % we play safe
+   \else
+     \setuevalue{\v!current#1}{\strc_labels_current{#1}}%          % obsolete % should be \e!current anyway
+   \fi
+     \setuevalue          {#1}{\strc_labels_command{#1}}%
    \fi}
 
 % todo: \strc_labels_command for user
@@ -103,6 +108,8 @@
 \let\p_strc_constructions_title \empty
 \let\p_strc_constructions_number\empty
 
+\newconditional\c_strc_constructions_number_keep
+
 \setvalue{\??constructioninitializer\v!label}%
   {\let\currentlabel                    \currentconstruction
    \let\constructionparameter           \labelparameter
@@ -117,7 +124,9 @@
      \iftrialtypesetting
        \strc_counters_save\currentconstructionnumber
      \fi
-     \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+     \ifconditional\c_strc_constructions_number_keep \else
+       \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
+     \fi
    \else
      \setfalse\c_strc_constructions_number_state
    \fi
@@ -137,11 +146,12 @@
 
 %D Interfaces:
 
-\let\strc_labels_command\strc_descriptions_command
+\unexpanded\def\strc_labels_command{\setfalse\c_strc_constructions_number_keep\strc_descriptions_command}
+\unexpanded\def\strc_labels_current{\settrue \c_strc_constructions_number_keep\strc_descriptions_command}
 
-\unexpanded\def\strc_labels_next {\strc_constructions_next_indeed \namedlabelparameter} % #1#2
-\unexpanded\def\strc_labels_reset{\strc_constructions_reset_indeed\namedlabelparameter} % #1#2
-%unexpanded\def\strc_labels_set  {\strc_constructions_set_indeed  \namedlabelparameter} % #1#2
+\unexpanded\def\strc_labels_next   {\strc_constructions_next_indeed \namedlabelparameter} % #1#2
+\unexpanded\def\strc_labels_reset  {\strc_constructions_reset_indeed\namedlabelparameter} % #1#2
+%unexpanded\def\strc_labels_set    {\strc_constructions_set_indeed  \namedlabelparameter} % #1#2
 
 % similar to enumerations
 

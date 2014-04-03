@@ -494,9 +494,7 @@ local function pdfurllink(url,destination,page)
         return false
     end
     if destination and destination ~= "" then
-        url = file.join(url,filename).."#"..destination
-    else
-        url = file.join(url,filename)
+        url = url .. "#" .. destination
     end
     return pdfdictionary {
         S   = pdf_uri,

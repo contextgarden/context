@@ -192,6 +192,38 @@ local function initializer() -- can we use a tobesaved as metatable for collecte
     nofreferred = #referred
 end
 
+-- no longer fone this way
+
+-- references.resolvers = references.resolvers or { }
+-- local resolvers = references.resolvers
+--
+-- function resolvers.section(var)
+--     local vi = lists.collected[var.i[2]]
+--     if vi then
+--         var.i = vi
+--         var.r = (vi.references and vi.references.realpage) or (vi.pagedata and vi.pagedata.realpage) or 1
+--     else
+--         var.i = nil
+--         var.r = 1
+--     end
+-- end
+--
+-- resolvers.float       = resolvers.section
+-- resolvers.description = resolvers.section
+-- resolvers.formula     = resolvers.section
+-- resolvers.note        = resolvers.section
+--
+-- function resolvers.reference(var)
+--     local vi = var.i[2]
+--     if vi then
+--         var.i = vi
+--         var.r = (vi.references and vi.references.realpage) or (vi.pagedata and vi.pagedata.realpage) or 1
+--     else
+--         var.i = nil
+--         var.r = 1
+--     end
+-- end
+
 -- We make the array sparse (maybe a finalizer should optionally return a table) because
 -- there can be quite some page links involved. We only store one action number per page
 -- which is normally good enough for what we want (e.g. see above/below) and we do
@@ -1383,6 +1415,8 @@ local function identify_outer(set,var,i)
     local arguments = var.arguments
     local operation = var.operation
     if inner then
+        -- tricky: in this case we can only use views when we're sure that all inners
+        -- are flushed in the outer document so that should become an option
         if arguments then
             -- outer::inner{argument}
             var.kind = "outer with inner with arguments"
@@ -1390,9 +1424,9 @@ local function identify_outer(set,var,i)
             -- outer::inner
             var.kind = "outer with inner"
         end
-        var.i = { "reference", inner }
-        resolvers.reference(var)
+        var.i = inner
         var.f = outer
+        var.r = (inner.references and inner.references.realpage) or (inner.pagedata and inner.pagedata.realpage) or 1
         if trace_identifying then
             report_identify_outer(set,var,i,"2e")
         end

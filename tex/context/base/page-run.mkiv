@@ -79,13 +79,27 @@ local function todimen(name,unit,fmt)
     return number.todimen(tex.dimen[name],unit,fmt)
 end
 
-function commands.showlayoutvariables(options)
-
-    if options == "" then
+local function checkedoptions(options)
+    if type(options) == "table" then
+        return options
+    elseif not options or options == "" then
         options = "pt,cm"
     end
+    options = utilities.parsers.settings_to_hash(options)
+    local n = 4
+    for k, v in table.sortedhash(options) do
+        local m = tonumber(k)
+        if m then
+            n = m
+        end
+    end
+    options.n = n
+    return options
+end
 
-    local options = utilities.parsers.settings_to_hash(options)
+function commands.showlayoutvariables(options)
+
+    options = checkedoptions(options)
 
     local dimensions = { "pt", "bp", "cm", "mm", "dd", "cc", "pc", "nd", "nc", "sp", "in" }
 
@@ -215,6 +229,8 @@ end
 
 function commands.showlayout(options)
 
+    options = checkedoptions(options)
+
     if tex.count.textlevel == 0 then
 
         commands.showlayoutvariables(options)
@@ -225,7 +241,7 @@ function commands.showlayout(options)
         context.bgroup()
         context.showframe()
         context.setuplayout { marking = interfaces.variables.on }
-        for i=1,4 do
+        for i=1,(options.n or 4) do
             commands.showlayoutvariables(options)
             context.page()
         end
