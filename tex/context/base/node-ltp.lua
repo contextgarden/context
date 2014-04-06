@@ -1439,6 +1439,10 @@ local function post_line_break(par)
                 elseif id < math_code then
                     -- messy criterium
                     break
+elseif id == math_code then
+    -- keep the math node
+    setfield(next,"surround",0)
+    break
                 elseif id == kern_code and (subtype ~= userkern_code and not getattr(next,a_fontkern)) then
                     -- fontkerns and accent kerns as well as otf injections
                     break

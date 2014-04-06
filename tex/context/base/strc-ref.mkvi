@@ -193,12 +193,12 @@
          \globallet\currentreferencecoding\s!tex
        \fi
        % beware, the structures.references.set writes a
-\setnextinternalreference
+       \setnextinternalreference
        \strc_references_start_destination_nodes
          \ctxcommand{setreferenceattribute("\currentreferencekind", "\referenceprefix","\currentreferencelabels",
            {
                 references = {
-internal = \nextinternalreference,
+                    internal = \nextinternalreference,
                     block    = "\currentsectionblock",
                     section  = structures.sections.currentid(),
                 },
@@ -243,9 +243,11 @@ internal = \nextinternalreference,
        \lastdestinationattribute\attributeunsetvalue
      \else
        \strc_references_start_destination_nodes
-         \ctxcommand{setreferenceattribute("\s!page", "\referenceprefix","\currentreferencelabels",
+\setnextinternalreference
+       \ctxcommand{setreferenceattribute("\s!page", "\referenceprefix","\currentreferencelabels",
             {
                 references = {
+                    internal = \nextinternalreference,
                     block    = "\currentsectionblock",
                     section  = structures.sections.currentid(),
                 },
@@ -264,9 +266,11 @@ internal = \nextinternalreference,
 \unexpanded\def\strc_references_direct_full#labels#text%
   {\ifreferencing
      \strc_references_start_destination_nodes
-       \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","#labels",
+\setnextinternalreference
+     \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","#labels",
          {
               references = {
+                  internal = \nextinternalreference,
                   block    = "\currentsectionblock",
                   section  = structures.sections.currentid(),
               },

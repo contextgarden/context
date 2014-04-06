@@ -535,9 +535,10 @@ local function setblocked(category,value)
             v.state = value
         end
     else
-        states = utilities.parsers.settings_to_hash(category)
+        states = utilities.parsers.settings_to_hash(category,type(states)=="table" and states or nil)
         for c, _ in next, states do
-            if data[c] then
+            local v = data[c]
+            if v then
                 v.state = value
             else
                 c = topattern(c,true,true)

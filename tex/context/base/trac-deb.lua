@@ -14,8 +14,8 @@ local tonumber, tostring = tonumber, tostring
 
 -- maybe tracers -> tracers.tex (and tracers.lua for current debugger)
 
-local report_tex  = logs.reporter("tex error")
-local report_lua  = logs.reporter("lua error")
+----- report_tex  = logs.reporter("tex error")
+----- report_lua  = logs.reporter("lua error")
 local report_nl   = logs.newline
 local report_str  = logs.writer
 
@@ -101,6 +101,16 @@ end
 
 local savedluaerror = nil
 
+local function errorreporter(luaerror)
+    if luaerror then
+        logs.enable("lua error") --
+        return logs.reporter("lua error")
+    else
+        logs.enable("tex error")
+        return logs.reporter("tex error")
+    end
+end
+
 function tracers.showlines(filename,linenumber,offset,luaerrorline)
     local data = io.loaddata(filename)
     if not data or data == "" then
@@ -153,12 +163,12 @@ local function processerror(offset)
     local inputstack   = resolvers.inputstack
     local filename     = inputstack[#inputstack] or status.filename
     local linenumber   = tonumber(status.linenumber) or 0
--- print(status.lasterrorstring)
--- print(status.lastluaerrorstring)
+ -- print(status.lasterrorstring)
+ -- print(status.lastluaerrorstring)
     local lasttexerror = status.lasterrorstring or "?"
     local lastluaerror = status.lastluaerrorstring or lasttexerror
-    local luaerrorline = match(lastluaerror,[[lua?]:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
-    local report       = luaerrorline and report_lua or report_tex
+    local luaerrorline = match(lastluaerror,[[lua%]?:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
+    local report       = errorreporter(luaerrorline)
     tracers.printerror {
         filename     = filename,
         linenumber   = linenumber,
@@ -178,7 +188,7 @@ function tracers.printerror(specification)
     local lastluaerror = specification.lastluaerror
     local luaerrorline = specification.luaerrorline
     local offset       = specification.offset
-    local report       = luaerrorline and report_lua or report_tex
+    local report       = errorreporter(luaerrorline)
     if not filename then
         report("error not related to input file: %s ...",lasttexerror)
     elseif type(filename) == "number" then

@@ -98,8 +98,10 @@ local unsetvalue          = attributes.unsetvalue
 
 local current_font        = font.current
 
-local exheights           = fonts.hashes.exheights
-local emwidths            = fonts.hashes.emwidths
+local fonthashes          = fonts.hashes
+local chardata            = fonthashes.characters
+local exheights           = fonthashes.exheights
+local emwidths            = fonthashes.emwidths
 local pt_factor           = number.dimenfactors.pt
 
 local nodepool            = nuts.pool
@@ -538,6 +540,7 @@ end
 
 local function ruledglyph(head,current,previous)
     local wd = getfield(current,"width")
+ -- local wd = chardata[getfield(current,"font")][getfield(current,"char")].width
     if wd ~= 0 then
         local ht = getfield(current,"height")
         local dp = getfield(current,"depth")

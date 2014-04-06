@@ -487,6 +487,7 @@
 
 % currentstructurecomponent => \strc_current_ or just \m_strc_
 
+
 \unexpanded\def\strc_counters_register_component#1#2#3#4#5#6#7[#8][#9]% maybe also nolist
   {\begingroup
    %
@@ -511,120 +512,153 @@
    \fi
    %
    \ifx\p_hascaption\v!yes
-     \xdef\currentstructurecomponentname           {#3\s!name}%
-     \xdef\currentstructurecomponentlevel          {#3\c!level}%
-     \edef\currentstructurecomponentexpansion      {#3\c!expansion}%
-     \xdef\currentstructurecomponentxmlsetup       {#3\c!xmlsetup}%
-     \xdef\currentstructurecomponentcatcodes       {#3\s!catcodes}%
-     \xdef\currentstructurecomponentlabel          {#3\c!label}%
-     \xdef\currentstructurecomponentreference      {#3\c!reference}%
-     \xdef\currentstructurecomponentreferenceprefix{#3\c!referenceprefix}%
-     \ifx\currentstructurecomponentexpansion\s!xml
-       \xmlstartraw
-         \xdef\currentstructurecomponenttitle   {#3\c!title}%
-         \xdef\currentstructurecomponentbookmark{#3\c!bookmark}%
-         \xdef\currentstructurecomponentmarking {#3\c!marking}%
-         \xdef\currentstructurecomponentlist    {#3\c!list}%
-       \xmlstopraw
-       \ifx\currentstructurecomponentlist\empty
-         \globallet\currentstructurecomponentlist\currentstructurecomponenttitle
-       \fi
-       \globallet\currentstructurecomponentcoding\s!xml
-     \else
-       \ifx\currentstructurecomponentexpansion\v!yes
-         \xdef\currentstructurecomponenttitle   {#3\c!title}%
-         \xdef\currentstructurecomponentbookmark{#3\c!bookmark}%
-         \xdef\currentstructurecomponentmarking {#3\c!marking}%
-         \xdef\currentstructurecomponentlist    {#3\c!list}%
-       \else
-         \xdef\currentstructurecomponenttitle   {#4\c!title}%
-         \xdef\currentstructurecomponentbookmark{#4\c!bookmark}%
-         \xdef\currentstructurecomponentmarking {#4\c!marking}%
-         \xdef\currentstructurecomponentlist    {#4\c!list}%
-         \iflocation \ifx\currentstructurecomponentbookmark\empty
-           \begingroup
-           \simplifycommands
-           \xdef\currentstructurecomponentbookmark{\detokenize\expandafter{\normalexpanded{#3\c!title}}}%
-          \endgroup
-         \fi \fi
-       \fi
-       \ifx\currentstructurecomponentlist\empty
-         \globallet\currentstructurecomponentlist\currentstructurecomponenttitle
-       \fi
-       \globallet\currentstructurecomponentcoding\s!tex
-     \fi
-     %
-     \setnextinternalreference
-     \xdef\m_strc_counters_last_registered_index{\ctxcommand{addtolist{
-        metadata = {
-            kind     = "#1",
-            name     = "\currentname",
-            level    = structures.sections.currentlevel(),
-            catcodes  = \the\ifx\currentstructurecomponentcatcodes\empty\catcodetable\else\csname\currentstructurecomponentcatcodes\endcsname\fi,
-            coding    = "\currentstructurecomponentcoding",
-        \ifx\currentstructurecomponentcoding\s!xml
-            xmlroot   =  "\xmldocument",
-        \fi
-        \ifx\currentstructurecomponentxmlsetup\empty \else
-            xmlsetup  = "\currentstructurexmlsetup",
-        \fi
-        },
-        references = {
-            internal        = \nextinternalreference,
-            block           = "\currentsectionblock",
-            reference       = "\currentstructurecomponentreference",
-            referenceprefix = "\currentstructurecomponentreferenceprefix",
-            section         = structures.sections.currentid(),
-        },
-        titledata = {
-            label    = \!!bs\detokenize\expandafter{\currentstructurecomponentlabel    }\!!es,
-            title    = \!!bs\detokenize\expandafter{\currentstructurecomponenttitle    }\!!es,
-        \ifx\currentstructurecomponentbookmark\currentstructurecomponenttitle \else
-            bookmark = \!!bs\detokenize\expandafter{\currentstructurecomponentbookmark }\!!es,
-        \fi
-        \ifx\currentstructurecomponentmarking\currentstructurecomponenttitle \else
-            marking  = \!!bs\detokenize\expandafter{\currentstructurecomponentmarking  }\!!es,
-        \fi
-        \ifx\currentstructurecomponentlist\currentstructurecomponenttitle \else
-          list     = \!!bs\detokenize\expandafter{\currentstructurecomponentlist}\!!es,
-        \fi
-        },
-    \ifx\p_hasnumber\v!yes
-        prefixdata = {
-            prefix        = "#3\c!prefix",
-            separatorset  = "#3\c!prefixseparatorset",
-            conversion    = \!!bs#3\c!prefixconversion\!!es,
-            conversionset = "#3\c!prefixconversionset",
-            set           = "#3\c!prefixset",
-        %   segments      = "#3\c!prefixsegments",
-            segments      = "\p_prefixsegments",
-            connector     = \!!bs#3\c!prefixconnector\!!es,
-        },
-        numberdata = { % more helpers here, like compact elsewhere
-            numbers       = structures.counters.compact("\currentcounter",nil,true),
-            group         = "#3\c!group",
-            groupsuffix   = \!!bs#3\c!groupsuffix\!!es,
-            counter       = "\currentcounter",
-            separatorset  = "#3\c!numberseparatorset",
-            conversion    = \!!bs#3\c!numberconversion\!!es,
-            conversionset = "#3\c!numberconversionset",
-            starter       = \!!bs#3\c!numberstarter\!!es,
-            stopper       = \!!bs#3\c!numberstopper\!!es,
-            segments      = "#3\c!numbersegments",
-        },
-    \fi
-        userdata = \!!bs\detokenize{#9}\!!es % will be converted to table at the lua end
-       }
-     }}%
-     \ctxcommand{setinternalreference(nil,nil,\nextinternalreference)}%
-     \xdef\m_strc_counters_last_registered_attribute  {\the\lastdestinationattribute}%
-     \xdef\m_strc_counters_last_registered_synchronize{\ctxlatecommand{enhancelist(\m_strc_counters_last_registered_index)}}%
+     \strc_counters_register_component_list{#1}{#3}{#4}{#9}%
+   \else\ifx\currentstructurecomponentreference\empty
+     \strc_counters_register_component_none
    \else
-     \glet\m_strc_counters_last_registered_index      \relax
-     \glet\m_strc_counters_last_registered_attribute  \attributeunsetvalue
-     \glet\m_strc_counters_last_registered_synchronize\relax
-   \fi
+     \strc_counters_register_component_page{#3}%
+   \fi\fi
    \endgroup}
+
+\def\strc_counters_register_component_none
+  {\glet\m_strc_counters_last_registered_index      \relax
+   \glet\m_strc_counters_last_registered_attribute  \attributeunsetvalue
+   \glet\m_strc_counters_last_registered_synchronize\relax}
+
+\def\strc_counters_register_component_page#1%
+  {\xdef\currentstructurecomponentreference      {#1\c!reference}%
+   \xdef\currentstructurecomponentreferenceprefix{#1\c!referenceprefix}%
+   % maybe have a helper in strc-ref.mkvi
+   \setnextinternalreference
+   \ctxcommand{setreferenceattribute(% can be helper with less passed
+      "\s!page",
+      "\currentstructurecomponentreferenceprefix",
+      "\currentstructurecomponentreference",
+      {
+          references = {
+              internal = \nextinternalreference,
+              block    = "\currentsectionblock",
+              section  = structures.sections.currentid(),
+          },
+          metadata = {
+              kind = "page",
+          },
+      },
+      "\interactionparameter\c!focus")
+   }%
+   \xdef\m_strc_counters_last_registered_attribute  {\the\lastdestinationattribute}%
+   \glet\m_strc_counters_last_registered_index      \relax
+   \glet\m_strc_counters_last_registered_synchronize\relax}
+
+\def\strc_counters_register_component_list#1#2#3#4%
+  {\xdef\currentstructurecomponentname           {#2\s!name}%
+   \xdef\currentstructurecomponentlevel          {#2\c!level}%
+   \edef\currentstructurecomponentexpansion      {#2\c!expansion}%
+   \xdef\currentstructurecomponentxmlsetup       {#2\c!xmlsetup}%
+   \xdef\currentstructurecomponentcatcodes       {#2\s!catcodes}%
+   \xdef\currentstructurecomponentlabel          {#2\c!label}%
+   \xdef\currentstructurecomponentreference      {#2\c!reference}%
+   \xdef\currentstructurecomponentreferenceprefix{#2\c!referenceprefix}%
+   \ifx\currentstructurecomponentexpansion\s!xml
+     \xmlstartraw
+       \xdef\currentstructurecomponenttitle   {#2\c!title}%
+       \xdef\currentstructurecomponentbookmark{#2\c!bookmark}%
+       \xdef\currentstructurecomponentmarking {#2\c!marking}%
+       \xdef\currentstructurecomponentlist    {#2\c!list}%
+     \xmlstopraw
+     \ifx\currentstructurecomponentlist\empty
+       \globallet\currentstructurecomponentlist\currentstructurecomponenttitle
+     \fi
+     \globallet\currentstructurecomponentcoding\s!xml
+   \else
+     \ifx\currentstructurecomponentexpansion\v!yes
+       \xdef\currentstructurecomponenttitle   {#2\c!title}%
+       \xdef\currentstructurecomponentbookmark{#2\c!bookmark}%
+       \xdef\currentstructurecomponentmarking {#2\c!marking}%
+       \xdef\currentstructurecomponentlist    {#2\c!list}%
+     \else
+       \xdef\currentstructurecomponenttitle   {#4\c!title}%
+       \xdef\currentstructurecomponentbookmark{#4\c!bookmark}%
+       \xdef\currentstructurecomponentmarking {#4\c!marking}%
+       \xdef\currentstructurecomponentlist    {#4\c!list}%
+       \iflocation \ifx\currentstructurecomponentbookmark\empty
+         \begingroup
+         \simplifycommands
+         \xdef\currentstructurecomponentbookmark{\detokenize\expandafter{\normalexpanded{#2\c!title}}}%
+        \endgroup
+       \fi \fi
+     \fi
+     \ifx\currentstructurecomponentlist\empty
+       \globallet\currentstructurecomponentlist\currentstructurecomponenttitle
+     \fi
+     \globallet\currentstructurecomponentcoding\s!tex
+   \fi
+   %
+   \setnextinternalreference
+   \xdef\m_strc_counters_last_registered_index{\ctxcommand{addtolist{
+      metadata = {
+          kind     = "#1",
+          name     = "\currentname",
+          level    = structures.sections.currentlevel(),
+          catcodes = \the\ifx\currentstructurecomponentcatcodes\empty\catcodetable\else\csname\currentstructurecomponentcatcodes\endcsname\fi,
+          coding   = "\currentstructurecomponentcoding",
+      \ifx\currentstructurecomponentcoding\s!xml
+          xmlroot  =  "\xmldocument",
+      \fi
+      \ifx\currentstructurecomponentxmlsetup\empty \else
+          xmlsetup = "\currentstructurexmlsetup",
+      \fi
+      },
+      references = {
+          internal        = \nextinternalreference,
+          block           = "\currentsectionblock",
+          reference       = "\currentstructurecomponentreference",
+          referenceprefix = "\currentstructurecomponentreferenceprefix",
+          section         = structures.sections.currentid(),
+      },
+      titledata = {
+          label    = \!!bs\detokenize\expandafter{\currentstructurecomponentlabel   }\!!es,
+          title    = \!!bs\detokenize\expandafter{\currentstructurecomponenttitle   }\!!es,
+      \ifx\currentstructurecomponentbookmark\currentstructurecomponenttitle \else
+          bookmark = \!!bs\detokenize\expandafter{\currentstructurecomponentbookmark}\!!es,
+      \fi
+      \ifx\currentstructurecomponentmarking\currentstructurecomponenttitle \else
+          marking  = \!!bs\detokenize\expandafter{\currentstructurecomponentmarking }\!!es,
+      \fi
+      \ifx\currentstructurecomponentlist\currentstructurecomponenttitle \else
+        list     = \!!bs\detokenize\expandafter{\currentstructurecomponentlist}\!!es,
+      \fi
+      },
+    \ifx\p_hasnumber\v!yes
+      prefixdata = {
+          prefix        = "#2\c!prefix",
+          separatorset  = "#2\c!prefixseparatorset",
+          conversion    = \!!bs#2\c!prefixconversion\!!es,
+          conversionset = "#2\c!prefixconversionset",
+          set           = "#2\c!prefixset",
+      %   segments      = "#2\c!prefixsegments",
+          segments      = "\p_prefixsegments",
+          connector     = \!!bs#2\c!prefixconnector\!!es,
+      },
+      numberdata = { % more helpers here, like compact elsewhere
+          numbers       = structures.counters.compact("\currentcounter",nil,true),
+          group         = "#2\c!group",
+          groupsuffix   = \!!bs#2\c!groupsuffix\!!es,
+          counter       = "\currentcounter",
+          separatorset  = "#2\c!numberseparatorset",
+          conversion    = \!!bs#2\c!numberconversion\!!es,
+          conversionset = "#2\c!numberconversionset",
+          starter       = \!!bs#2\c!numberstarter\!!es,
+          stopper       = \!!bs#2\c!numberstopper\!!es,
+          segments      = "#2\c!numbersegments",
+      },
+    \fi
+      userdata = \!!bs\detokenize{#4}\!!es % will be converted to table at the lua end
+     }
+   }}%
+   \ctxcommand{setinternalreference(nil,nil,\nextinternalreference)}%
+   \xdef\m_strc_counters_last_registered_attribute  {\the\lastdestinationattribute}%
+   \xdef\m_strc_counters_last_registered_synchronize{\ctxlatecommand{enhancelist(\m_strc_counters_last_registered_index)}}}
 
 \let\m_strc_counters_last_registered_index      \relax
 \let\m_strc_counters_last_registered_attribute  \relax
