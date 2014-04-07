@@ -32,6 +32,7 @@ local formatters = string.formatters
 -- todo: global switch (so no attributes)
 -- todo: maybe also xoffset, yoffset of glyph
 -- todo: inline concat (more efficient)
+-- todo: tags can also be numbers (just add to hash)
 
 local nodecodes           = nodes.nodecodes
 local disc_code           = nodecodes.disc
@@ -43,6 +44,7 @@ local glue_code           = nodecodes.glue
 local penalty_code        = nodecodes.penalty
 local whatsit_code        = nodecodes.whatsit
 local user_code           = nodecodes.user
+local math_code           = nodecodes.math
 local gluespec_code       = nodecodes.gluespec
 
 local kerncodes           = nodes.kerncodes
@@ -58,6 +60,7 @@ local leftskip_code       = gluecodes.leftskip
 local rightskip_code      = gluecodes.rightskip
 
 local whatsitcodes        = nodes.whatsitcodes
+local mathcodes           = nodes.mathcodes
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
@@ -140,6 +143,7 @@ local trace_fontkern
 local trace_strut
 local trace_whatsit
 local trace_user
+local trace_math
 
 local report_visualize = logs.reporter("visualize")
 
@@ -159,21 +163,22 @@ local modes = {
     simplevbox = 1024 + 2,
     simplevtop = 1024 + 4,
     user       = 2048,
+    math       = 4096,
 }
 
 local modes_makeup = { "hbox", "vbox", "kern", "glue", "penalty" }
 local modes_boxes  = { "hbox", "vbox"  }
-local modes_all    = { "hbox", "vbox", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph", "user" }
+local modes_all    = { "hbox", "vbox", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph", "user", "math" }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math
 
 local enabled = false
 local layers  = { }
 
 local preset_boxes  = modes.hbox + modes.vbox
 local preset_makeup = preset_boxes + modes.kern + modes.glue + modes.penalty
-local preset_all    = preset_makeup + modes.fontkern + modes.whatsit + modes.glyph + modes.user
+local preset_all    = preset_makeup + modes.fontkern + modes.whatsit + modes.glyph + modes.user + modes.math
 
 function visualizers.setfont(id)
     usedfont = id or current_font()
@@ -210,6 +215,7 @@ local function enable()
     l_whatsit  = layers.whatsit
     l_glyph    = layers.glyph
     l_user     = layers.user
+    l_math     = layers.math
     nodes.tasks.enableaction("shipouts","nodes.visualizers.handler")
     report_visualize("enabled")
     enabled = true
@@ -303,6 +309,7 @@ local c_skip_a     = "trace:c"
 local c_skip_b     = "trace:m"
 local c_glyph      = "trace:o"
 local c_white      = "trace:w"
+local c_math       = "trace:r"
 
 local c_positive_d = "trace:db"
 local c_negative_d = "trace:dr"
@@ -313,6 +320,7 @@ local c_skip_a_d   = "trace:dc"
 local c_skip_b_d   = "trace:dm"
 local c_glyph_d    = "trace:do"
 local c_white_d    = "trace:dw"
+local c_math_d     = "trace:dr"
 
 local function sometext(str,layer,color,textcolor) -- we can just paste verbatim together .. no typesteting needed
     local text = fast_hpack_string(str,usedfont)
@@ -371,8 +379,7 @@ local function fontkern(head,current)
 end
 
 local w_cache = { }
-
-local tags = {
+local tags    = {
     open           = "FIC",
     write          = "FIW",
     close          = "FIC",
@@ -419,15 +426,38 @@ local function whatsit(head,current)
     return head, current
 end
 
+local u_cache = { }
+
 local function user(head,current)
     local what = getsubtype(current)
-    local info = w_cache[what]
+    local info = u_cache[what]
     if info then
         -- print("hit user")
     else
         info = sometext(formatters["U:%s"](what),usedfont)
         setattr(info,a_layer,l_user)
-        w_cache[what] = info
+        u_cache[what] = info
+    end
+    head, current = insert_node_after(head,current,copy_list(info))
+    return head, current
+end
+
+local m_cache = { }
+local tags    = {
+    beginmath = "B",
+    endmath   = "E",
+}
+
+local function math(head,current)
+    local what = getsubtype(current)
+    local info = m_cache[what]
+    if info then
+        -- print("hit math")
+    else
+        local tag = mathcodes[what]
+        info = sometext(formatters["M:%s"](tag and tags[tag] or what),usedfont,nil,c_math_d)
+        setattr(info,a_layer,l_math)
+        m_cache[what] = info
     end
     head, current = insert_node_after(head,current,copy_list(info))
     return head, current
@@ -723,6 +753,7 @@ local function visualize(head,vertical)
     local trace_glyph    = false
     local trace_simple   = false
     local trace_user     = false
+    local trace_math     = false
     local current        = head
     local previous       = nil
     local attr           = unsetvalue
@@ -745,6 +776,7 @@ local function visualize(head,vertical)
                 trace_glyph    = false
                 trace_simple   = false
                 trace_user     = false
+                trace_math     = false
             else -- dead slow:
                 trace_hbox     = hasbit(a,   1)
                 trace_vbox     = hasbit(a,   2)
@@ -758,6 +790,7 @@ local function visualize(head,vertical)
                 trace_glyph    = hasbit(a, 512)
                 trace_simple   = hasbit(a,1024)
                 trace_user     = hasbit(a,2048)
+                trace_math     = hasbit(a,4096)
             end
             attr = a
         end
@@ -832,8 +865,12 @@ local function visualize(head,vertical)
                 head, current = whatsit(head,current)
             end
         elseif id == user_code then
-            if trace_whatsit then
+            if trace_user then
                 head, current = user(head,current)
+            end
+        elseif id == math_code then
+            if trace_math then
+                head, current = math(head,current)
             end
         end
         previous = current

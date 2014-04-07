@@ -290,14 +290,15 @@ constructors.nofsharedfonts = 0
 local sharednames           = { }
 
 function constructors.trytosharefont(target,tfmdata)
-    if constructors.sharefonts then
+    if constructors.sharefonts then -- not robust !
         local characters = target.characters
         local n = 1
         local t = { target.psname }
         local u = sortedkeys(characters)
         for i=1,#u do
+            local k = u[i]
             n = n + 1 ; t[n] = k
-            n = n + 1 ; t[n] = characters[u[i]].index or k
+            n = n + 1 ; t[n] = characters[k].index or k
         end
         local h = md5.HEX(concat(t," "))
         local s = sharednames[h]
@@ -451,8 +452,6 @@ function constructors.scale(tfmdata,specification)
     target.filename = filename
     target.psname   = psname
     target.name     = name
-    --
- -- inspect(properties)
     --
     properties.fontname = fontname
     properties.fullname = fullname
@@ -826,7 +825,6 @@ function constructors.scale(tfmdata,specification)
         end
         targetcharacters[unicode] = chr
     end
-
     --
     constructors.aftercopyingcharacters(target,tfmdata)
     --
@@ -964,6 +962,7 @@ function constructors.finalize(tfmdata)
     tfmdata.units_per_em   = nil
     --
     properties.finalized   = true
+    --
     --
     return tfmdata
 end

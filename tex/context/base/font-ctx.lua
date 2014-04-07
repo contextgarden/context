@@ -188,8 +188,9 @@ function constructors.trytosharefont(target,tfmdata)
                 local t = { target.psname }
                 local u = sortedkeys(characters)
                 for i=1,#u do
+                    local k = u[i]
                     n = n + 1 ; t[n] = k
-                    n = n + 1 ; t[n] = characters[u[i]].index or k
+                    n = n + 1 ; t[n] = characters[k].index or k
                 end
                 local checksum   = md5.HEX(concat(t," "))
                 local sharedname = shares[checksum]

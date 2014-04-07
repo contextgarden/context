@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/06/14 13:09:15
+-- merge date  : 04/07/14 18:06:43
 
 do -- begin closure to overcome local limits and interference
 
@@ -3932,14 +3932,15 @@ constructors.sharefonts=false
 constructors.nofsharedfonts=0
 local sharednames={}
 function constructors.trytosharefont(target,tfmdata)
-  if constructors.sharefonts then
+  if constructors.sharefonts then 
     local characters=target.characters
     local n=1
     local t={ target.psname }
     local u=sortedkeys(characters)
     for i=1,#u do
+      local k=u[i]
       n=n+1;t[n]=k
-      n=n+1;t[n]=characters[u[i]].index or k
+      n=n+1;t[n]=characters[k].index or k
     end
     local h=md5.HEX(concat(t," "))
     local s=sharednames[h]
