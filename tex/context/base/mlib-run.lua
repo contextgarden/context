@@ -121,7 +121,7 @@ local function o_finder(name,mode,ftype)
     return name
 end
 
-local function finder(name, mode, ftype)
+local function finder(name,mode,ftype)
     if mode == "w" then
         return o_finder(name,mode,ftype)
     else
@@ -295,8 +295,9 @@ else
     local methods = {
         double  = "double",
         scaled  = "scaled",
+        binary  = "binary",
+        decimal = "decimal",
         default = "scaled",
-        decimal = false, -- for the moment
     }
 
     function metapost.load(name,method)
@@ -306,6 +307,7 @@ else
             ini_version = true,
             find_file   = finder,
             math_mode   = method,
+
         }
         report_metapost("initializing number mode %a",method)
         local result
@@ -623,5 +625,22 @@ function metapost.quickanddirty(mpxformat,data)
         }
     else
         report_metapost("invalid quick and dirty run")
+    end
+end
+
+function metapost.getstatistics(memonly)
+    if memonly then
+        local n, m = 0, 0
+        for name, mpx in next, mpxformats do
+            n = n + 1
+            m = m + mpx:statistics().memory
+        end
+        return n, m
+    else
+        local t = { }
+        for name, mpx in next, mpxformats do
+            t[name] = mpx:statistics()
+        end
+        return t
     end
 end

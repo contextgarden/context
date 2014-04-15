@@ -58,12 +58,19 @@
 \newtoks \everyforgetall
 \newtoks \everycleanupfeatures
 \newtoks \everysimplifycommands
+\newtoks \everypreroll
 
 \let\simplifiedcommands\everysimplifycommands % backward compatible, will stay as it's used in styles
+
+\newconditional\simplifyingcommands % public
 
 \unexpanded\def\forgetall       {\the\everyforgetall}
 \unexpanded\def\cleanupfeatures {\the\everycleanupfeatures}
 \unexpanded\def\simplifycommands{\the\everysimplifycommands}
+
+\appendtoks
+    \settrue\simplifyingcommands
+\to \everysimplifycommands
 
 \appendtoks
     \everypar\emptytoks % pretty important

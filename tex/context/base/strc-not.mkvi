@@ -760,7 +760,9 @@
 
 %appendtoks \notesenabledfalse \to \everymarking
 \appendtoks \notesenabledfalse \to \everybeforepagebody
-\appendtoks \notesenabledfalse \to \everystructurelist % quick hack
+\appendtoks \notesenabledfalse \to \everystructurelist    % quick hack
+\appendtoks \notesenabledfalse \to \everysimplifycommands % quick hack
+\appendtoks \notesenabledfalse \to \everypreroll          % quick hack
 
 %D Often we need to process the whole set of notes and to make that
 %D fast, we use a token register:
@@ -1784,19 +1786,19 @@
   {\dodoubleempty\strc_notes_symbol}
 
 \def\strc_notes_symbol[#tag][#reference]%
-  {\dontleavehmode
-   \begingroup
-   \edef\currentnote{#tag}%
-   \usenotestyleandcolor\c!textstyle\c!textcolor
-   \ifnotesenabled
+  {\ifnotesenabled
+     \dontleavehmode
+     \begingroup
+     \edef\currentnote{#tag}%
+     \usenotestyleandcolor\c!textstyle\c!textcolor
      \ifsecondargument
        \unskip
        \noteparameter\c!textcommand{\in[#reference]}% command here?
      \else
        \noteparameter\c!textcommand\lastnotesymbol % check if command double
      \fi
-   \fi
-   \endgroup}
+     \endgroup
+   \fi}
 
 \unexpanded\def\note
   {\dodoubleempty\strc_notes_note}

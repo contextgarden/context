@@ -146,9 +146,11 @@ statistics.register("metapost processing time", function()
         local nofconverted = metapost.makempy.nofconverted
         local elapsedtime = statistics.elapsedtime
         local elapsed = statistics.elapsed
-        local str = format("%s seconds, loading: %s, execution: %s, n: %s, average: %s",
+        local instances, memory = metapost.getstatistics(true)
+        local str = format("%s seconds, loading: %s, execution: %s, n: %s, average: %s, instances: %i, memory: %0.3f M",
             elapsedtime(metapost), elapsedtime(mplib), elapsedtime(metapost.exectime), n,
-            elapsedtime((elapsed(metapost) + elapsed(mplib) + elapsed(metapost.exectime)) / n))
+            elapsedtime((elapsed(metapost) + elapsed(mplib) + elapsed(metapost.exectime)) / n),
+            instances, memory/(1024*1024))
         if nofconverted > 0 then
             return format("%s, external: %s (%s calls)",
                 str, elapsedtime(metapost.makempy), nofconverted)

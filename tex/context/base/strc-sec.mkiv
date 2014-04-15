@@ -103,8 +103,11 @@
   {\setfalse\c_strc_bookmarks_preroll}
 
 \def\strc_sectioning_autobookmark#1%
-  {\nodestostring\tempstring{#1}%
-   \globallet\currentstructurebookmark\tempstring}
+  {\begingroup
+   \the\everypreroll
+   \nodestostring\tempstring{#1}%
+   \globallet\currentstructurebookmark\tempstring
+   \endgroup}
 
 % so it's an experiment
 
