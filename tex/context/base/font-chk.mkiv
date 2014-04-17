@@ -15,6 +15,15 @@
 
 \registerctxluafile{font-chk}{1.001}
 
+\tracinglostchars\zerocount
+
+% Use this instead:
+%
+% \definefontfeature[default][default][missing=yes]
+% \enabletrackers[fonts.missing=replace]
+%
+% or better:
+
 \unexpanded\def\checkcharactersinfont   {\ctxcommand{checkcharactersinfont()}}
 \unexpanded\def\removemissingcharacters {\ctxcommand{removemissingcharacters()}}
 \unexpanded\def\replacemissingcharacters{\ctxcommand{replacemissingcharacters()}}

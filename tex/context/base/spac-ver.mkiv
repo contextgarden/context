@@ -546,6 +546,8 @@
    \ignorespaces
    \let\spac_lines_stop_correction\spac_lines_stop_correction_yes}
 
+% still not ok ... will move to the lua end ... needs a final solution
+
 \unexpanded\def\spac_lines_stop_correction_yes
   {\removeunwantedspaces
    \egroup
@@ -553,6 +555,11 @@
      \blank[\v!white]%
      \snaptogrid\hbox{\box\scratchbox}%
    \else
+\blank[\v!nowhite]%
+\ifdim\parskip>\zeropoint
+     % too fuzzy otherwise
+\else
+     % doesn't like whitespace
      \ifdim\d_spac_prevdepth<\maxdimen
        \unless\ifdim\d_spac_prevdepth<\zeropoint
          \ifdim\d_spac_prevdepth<\strutdp \relax
@@ -566,6 +573,7 @@
          \fi
        \fi
      \fi
+\fi
      \ifdim\pagegoal<\maxdimen
        \blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
      \fi

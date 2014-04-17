@@ -300,14 +300,23 @@ else
         default = "scaled",
     }
 
+    function metapost.runscript(code)
+        return code
+    end
+
+    function metapost.scripterror(str)
+        report_metapost("script error: %s",str)
+    end
+
     function metapost.load(name,method)
         starttiming(mplib)
         method = method and methods[method] or "scaled"
         local mpx = mplib.new {
-            ini_version = true,
-            find_file   = finder,
-            math_mode   = method,
-
+            ini_version  = true,
+            find_file    = finder,
+            math_mode    = method,
+            run_script   = metapost.runscript,
+            script_error = metapost.scripterror,
         }
         report_metapost("initializing number mode %a",method)
         local result
@@ -404,6 +413,10 @@ local mp_inp, mp_log, mp_tag = { }, { }, 0
 
 -- key/values
 
+if not metapost.initializescriptrunner then
+    function metapost.initializescriptrunner() end
+end
+
 function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig)
     local converted, result = false, { }
     if type(mpx) == "string" then
@@ -411,6 +424,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
     end
     if mpx and data then
         starttiming(metapost)
+        metapost.initializescriptrunner(mpx,trialrun)
         if trace_graphics then
             if not mp_inp[mpx] then
                 mp_tag = mp_tag + 1

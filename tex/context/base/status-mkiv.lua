@@ -3207,6 +3207,12 @@ return {
   },
   {
    category = "lua",
+   filename = "font-inj",
+   loading  = "font-lib",
+   status   = "okay",
+  },
+  {
+   category = "lua",
    filename = "font-ldr",
    loading  = "on demand",
    status   = "okay",
@@ -4085,6 +4091,11 @@ return {
   {
    category = "lua",
    filename = "node-pag",
+   status   = "todo",
+  },
+  {
+   category = "lua",
+   filename = "node-ppt",
    status   = "todo",
   },
   {

@@ -124,8 +124,8 @@ appendaction("vboxbuilders", "normalizers", "typesetters.checkers.handler")
 
 -- rather special (this might get hardcoded):
 
--- prependaction("processors",  "before",      "nodes.properties.attach")
--- appendaction ("shipouts",    "normalizers", "nodes.properties.delayed")
+prependaction("processors",  "before",      "nodes.properties.attach")  -- enabled but optimized for quick abort
+appendaction ("shipouts",    "normalizers", "nodes.properties.delayed") -- enabled but optimized for quick abort
 
 -- speedup: only kick in when used
 

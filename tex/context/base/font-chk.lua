@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['font-chk'] = {
 -- possible optimization: delayed initialization of vectors
 -- move to the nodes namespace
 
+local next = next
+
 local formatters         = string.formatters
 local bpfactor           = number.dimenfactors.bp
 local fastcopy           = table.fastcopy
@@ -32,6 +34,8 @@ local getprivatenode     = helpers.getprivatenode
 
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
+local afmfeatures        = fonts.constructors.newfeatures("afm")
+local registerafmfeature = afmfeatures.register
 
 local is_character       = characters.is_character
 local chardata           = characters.data
@@ -403,3 +407,48 @@ local function expandglyph(characters,index,done)
 end
 
 helpers.expandglyph = expandglyph
+
+-- should not be needed as we add .notdef in the engine
+
+local dummyzero = {
+ -- width    = 0,
+ -- height   = 0,
+ -- depth    = 0,
+ -- commands = { { "special", "pdf: q Q" } },
+    commands = { { "special", "" } },
+}
+
+local function adddummysymbols(tfmdata,...)
+    local characters = tfmdata.characters
+    if not characters[0] then
+        characters[0] = dummyzero
+    end
+    -- temp test:
+    if not characters[1] then
+        characters[1] = dummyzero
+    end
+end
+
+registerotffeature {
+    name        = "dummies",
+    description = "dummy symbols",
+    default     = true,
+    manipulators = {
+        base = adddummysymbols,
+        node = adddummysymbols,
+    }
+}
+
+registerafmfeature {
+    name        = "dummies",
+    description = "dummy symbols",
+    default     = true,
+    manipulators = {
+        base = adddummysymbols,
+        node = adddummysymbols,
+    }
+}
+
+-- callback.register("char_exists",function(f,c) -- to slow anyway as called often so we should flag in tfmdata
+--     return true
+-- end)

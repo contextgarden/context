@@ -366,6 +366,8 @@ vardef thetextext@#(expr p,z) =
   % interim labeloffset := textextoffset ;
     if string p :
         thetextext@#(rawtextext(p),z)
+    elseif numeric p :
+        thetextext@#(rawtextext(decimal p),z)
     else :
         p
             if (mfun_labtype@# >= 10) :

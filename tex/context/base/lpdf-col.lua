@@ -32,6 +32,7 @@ local pdfarray                = lpdf.array
 local pdfreference            = lpdf.reference
 local pdfverbose              = lpdf.verbose
 local pdfflushobject          = lpdf.flushobject
+local pdfdelayedobject        = lpdf.delayedobject
 local pdfflushstreamobject    = lpdf.flushstreamobject
 
 local pdfshareobjectreference = lpdf.shareobjectreference
@@ -82,11 +83,13 @@ lpdf.transparencygroups  = transparencygroups
 table.setmetatableindex(transparencygroups, function(transparencygroups,colormodel)
     local cs = colorspaceconstants[colormodel]
     if cs then
-        local g = pdfreference(pdfflushobject(pdfdictionary {
+        local d = pdfdictionary {
             S  = c_transparency,
             CS = cs,
             I  = true,
-        }))
+        }
+     -- local g = pdfreference(pdfflushobject(tostring(d)))
+        local g = pdfreference(pdfdelayedobject(tostring(d)))
         transparencygroups[colormodel] = g
         return g
     else
