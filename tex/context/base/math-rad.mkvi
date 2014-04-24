@@ -74,8 +74,8 @@
 \def\math_radical_indeed#body%
   {\math_radical_alternative{#body}\endgroup}
 
-\setvalue{\??mathradicalalternative\v!default}% #1%
-  {\rootradical{\currentmathradicaldegree}}
+\setvalue{\??mathradicalalternative\v!default}%  #body%
+  {\rootradical{\currentmathradicaldegree}}   % {#body}}
 
 \setvalue{\??mathradicalalternative\v!normal}#body%
   {\edef\p_color{\mathradicalparameter\c!color}%

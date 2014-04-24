@@ -153,7 +153,7 @@
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [helvetica]      [\s!default] [\s!rscale=0.9]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.05]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [times]          [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [termes]         [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
@@ -161,7 +161,7 @@
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.075]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.075]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [palatino]       [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [pagella]        [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
@@ -169,7 +169,7 @@
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.1]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.1]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default] [\s!rscale=1.1]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [schola]         [\s!default] [\s!rscale=1.1]
         \quittypescriptscanning
     \stoptypescript
 
@@ -274,6 +274,15 @@
     \starttypescript [\s!math][bookman,bonum][\s!all]
         \loadfontgoodies[texgyre]
         \definefontsynonym[\s!MathRoman][file:texgyre-bonum-math-regular.otf][\s!features=\s!math\mathsizesuffix]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\starttypescriptcollection[texgyre-math-schola]
+
+    \starttypescript [\s!math][schoolbook,schola][\s!all]
+        \loadfontgoodies[texgyre]
+        \definefontsynonym[\s!MathRoman][file:texgyre-schola-math-regular.otf][\s!features=\s!math\mathsizesuffix]
     \stoptypescript
 
 \stoptypescriptcollection

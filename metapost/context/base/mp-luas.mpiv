@@ -1,0 +1,90 @@
+%D \module
+%D   [       file=mp-luas.mpiv,
+%D        version=2014.04.14,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=\LUA,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+if known context_luas : endinput ; fi ;
+
+boolean context_luas ; context_luas := true ;
+
+% First variant:
+%
+% let lua = runscript ;
+%
+% Second variant:
+%
+% vardef lua (text t) =
+%     runscript(for s = t : s & endfor "")
+% enddef;
+%
+% Third variant:
+%
+% vardef lua (text t) =
+%     runscript("" for s = t :
+%         if string s :
+%             & s
+%         elseif numeric s :
+%             & decimal s
+%         elseif boolean s :
+%             & if s : "true" else "false" fi
+%         fi endfor)
+% enddef;
+%
+% Fourth variant:
+
+vardef mlib_luas_luacall(text t) =
+    runscript("" for s = t :
+        if string s :
+            & s
+        elseif numeric s :
+            & decimal s
+        elseif boolean s :
+            & if s : "true" else "false" fi
+        fi endfor
+    )
+enddef ;
+
+vardef mlib_luas_lualist(expr c)(text t) =
+    save b ; boolean b ; b := false ;
+    runscript(c & "(" for s = t :
+        if b :
+            & ","
+        else :
+            hide(b := true)
+        fi
+        if string s :
+            & ditto & s & ditto
+        elseif numeric s :
+            & decimal s
+        elseif boolean s :
+            & if s : "true" else "false" fi
+        fi endfor & ")"
+    )
+enddef ;
+
+def luacall = mlib_luas_luacall enddef ; % why no let
+
+vardef lualist@#(text t) = mlib_luas_lualist(str @#)(t) enddef ;
+
+string mlib_luas_s ; % saves save/restore
+
+vardef lua@#(text t) =
+    mlib_luas_s := str @# ;
+    if length(mlib_luas_s) > 0 :
+        mlib_luas_lualist(mlib_luas_s,t)
+    else :
+        mlib_luas_luacall(t)
+    fi
+enddef ;
+
+vardef MP@#(text t) =
+    mlib_luas_lualist("MP." & str @#,t)
+enddef ;

@@ -19,6 +19,7 @@ input "mp-base.mpiv" ;
 input "mp-tool.mpiv" ;
 input "mp-mlib.mpiv" ;
 %     "mp-core.mpiv" ; % todo: namespace and cleanup
+input "mp-luas.mpiv" ; % experimental
 input "mp-page.mpiv" ; % todo: namespace and cleanup
 input "mp-butt.mpiv" ; % todo: namespace and cleanup
 input "mp-shap.mpiv" ; % will be improved

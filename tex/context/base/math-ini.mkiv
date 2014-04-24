@@ -1296,7 +1296,9 @@
 %D
 %D \typebuffer \getbuffer
 
-\unexpanded\def\mathstylehbox#1%
+% to be tested: {#1} but it could have side effects
+
+\unexpanded\def\mathstylehbox#1% sensitive for: a \over b => {a\over b} or \frac{a}{b}
   {\normalexpanded{\hbox\bgroup
      \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
 

@@ -418,13 +418,13 @@
 
 \continueifinputfile{s-math-repertoire.mkiv}
 
-\showmathcharacterssetbodyfonts{lucidanova,cambria,xits,modern,pagella,termes,bonum}
+\showmathcharacterssetbodyfonts{lucidanova,cambria,xits,modern,pagella,termes,bonum,schola}
 
 \starttext
 
     \doifelse {\getdocumentargument{bodyfont}} {} {
 
-        \setupbodyfont[cambria,   12pt]
+      % \setupbodyfont[cambria,   12pt]
       % \setupbodyfont[modern,    12pt]
       % \setupbodyfont[lmvirtual, 12pt]
       % \setupbodyfont[pxvirtual, 12pt]
@@ -437,6 +437,7 @@
       % \setupbodyfont[lucidanova,12pt]
       % \setupbodyfont[pagella,   12pt]
       % \setupbodyfont[bonum,     12pt]
+        \setupbodyfont[schola,    12pt]
 
     } {
 

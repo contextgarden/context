@@ -26,5 +26,11 @@ return {
             "tgbonummath-regular.otf",
             "tgbonum-math.otf",
         },
+        ["texgyre-schola-math-regular.otf"] = {
+            "texgyreschola-math.otf", -- beta
+            "texgyrescholamath-regular.otf",
+            "tgscholamath-regular.otf",
+            "tgschola-math.otf",
+        },
     },
 }
