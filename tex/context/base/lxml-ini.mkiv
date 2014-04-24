@@ -58,6 +58,7 @@
 \def\xmldirect             #1{\ctxlxml{direct("#1")}} % in loops, not dt but root
 \def\xmlidx            #1#2#3{\ctxlxml{idx("#1","#2",\number#3)}}
 \def\xmlinclude        #1#2#3{\ctxlxml{include("#1","#2","#3",true)}}
+\def\xmlsave             #1#2{\ctxlxml{save("#1","#2")}}
 \def\xmlindex          #1#2#3{\ctxlxml{index("#1","#2",\number#3)}}
 \def\xmlinfo               #1{\hbox{\ttxx[\ctxlxml{info("#1")}]}}
 \def\xmlshow               #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}

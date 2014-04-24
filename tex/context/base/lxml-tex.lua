@@ -458,6 +458,10 @@ function lxml.include(id,pattern,attribute,recurse)
     stoptiming(xml)
 end
 
+function lxml.save(id,name)
+    xml.save(getid(id),name)
+end
+
 function xml.getbuffer(name,compress,entities) -- we need to make sure that commands are processed
     if not name or name == "" then
         name = tex.jobname

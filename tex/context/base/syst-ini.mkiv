@@ -301,7 +301,7 @@
 %D 128-1023 are private and should not be touched.
 
 \let\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
-\normalprotected\def\newattribute{\syst_basics_allocate\c_syst_min_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
+\normalprotected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a trick to force
 %D strings instead of tokens that take more memory. It's a trick to trick to force

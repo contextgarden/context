@@ -6,17 +6,19 @@ local info = {
     license   = "see context related readme files",
 }
 
-if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
-
-local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg
-local token, exact_match = lexer.token, lexer.exact_match
 local P, R, S, V, C, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt
 local type = type
 
-local metafunlexer       = { _NAME = "mps", _FILENAME = "scite-context-lexer-mps" }
-local whitespace         = lexer.WHITESPACE
+local lexer              = require("lexer")
 local context            = lexer.context
+local patterns           = context.patterns
+
+local token              = lexer.token
+local exact_match        = lexer.exact_match
+
+local metafunlexer       = lexer.new("mps","scite-context-lexer-mps")
+local whitespace         = metafunlexer.whitespace
 
 local metapostprimitives = { }
 local metapostinternals  = { }
@@ -65,15 +67,15 @@ do
 
 end
 
-local space      = lexer.space -- S(" \n\r\t\f\v")
-local any        = lexer.any
+local space      = patterns.space -- S(" \n\r\t\f\v")
+local any        = patterns.any
 
 local dquote     = P('"')
-local cstoken    = R("az","AZ") + P("_")
-local mptoken    = R("az","AZ")
+local cstoken    = patterns.idtoken
+local mptoken    = patterns.alpha
 local leftbrace  = P("{")
 local rightbrace = P("}")
-local number     = context.patterns.real
+local number     = patterns.real
 
 local cstokentex = R("az","AZ","\127\255") + S("@!?_")
 
@@ -129,15 +131,21 @@ metafunlexer._rules = {
 
 metafunlexer._tokenstyles = context.styleset
 
-metafunlexer._foldpattern = R("az")^2 -- separate entry else interference
+metafunlexer._foldpattern = patterns.lower^2 -- separate entry else interference
 
 metafunlexer._foldsymbols = {
     _patterns = {
         '[a-z][a-z]+',
     },
-    ["primitive"] = {
+    ["plain"] = {
         ["beginfig"]      =  1,
         ["endfig"]        = -1,
+        ["beginglyph"]    =  1,
+        ["endglyph"]      = -1,
+     -- ["begingraph"]    =  1,
+     -- ["endgraph"]      = -1,
+    },
+    ["primitive"] = {
         ["def"]           =  1,
         ["vardef"]        =  1,
         ["primarydef"]    =  1,
@@ -151,5 +159,7 @@ metafunlexer._foldsymbols = {
         ["endfor"]        = -1,
     }
 }
+
+-- if inspect then inspect(metafunlexer) end
 
 return metafunlexer

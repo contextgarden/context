@@ -8,16 +8,18 @@ local info = {
 
 -- this will be extended
 
-if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
-
-local lexer = lexer
-local token, style, colors, exact_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.style_nothing
 local P, R, S, C, Cg, Cb, Cs, Cmt, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cg, lpeg.Cb, lpeg.Cs, lpeg.Cmt, lpeg.match
 local setmetatable = setmetatable
 
-local weblexer    = { _NAME = "web", _FILENAME = "scite-context-lexer-web" }
-local whitespace  = lexer.WHITESPACE
+local lexer       = require("lexer")
 local context     = lexer.context
+local patterns    = context.patterns
+
+local token       = lexer.token
+local exact_match = lexer.exact_match
+
+local weblexer    = lexer.new("web","scite-context-lexer-web")
+local whitespace  = weblexer.whitespace
 
 local keywords = { -- copied from cpp.lua
     -- c
@@ -45,9 +47,8 @@ local macros = { -- copied from cpp.lua
     'include', 'line', 'pragma', 'undef', 'using', 'warning'
 }
 
-local space         = lexer.space -- S(" \n\r\t\f\v")
-local any           = lexer.any
-local patterns      = context.patterns
+local space         = patterns.space -- S(" \n\r\t\f\v")
+local any           = patterns.any
 local restofline    = patterns.restofline
 local startofline   = patterns.startofline
 
@@ -58,6 +59,11 @@ local slashes       = P('//')
 local begincomment  = P("/*")
 local endcomment    = P("*/")
 local percent       = P("%")
+
+local hexadecimal   = patterns.hexadecimal
+local decimal       = patterns.decimal
+local float         = patterns.float
+local integer       = P("-")^-1 * (hexadecimal + decimal) -- also in patterns ?
 
 local spacing       = token(whitespace, space^1)
 local rest          = token("default", any)
@@ -73,11 +79,9 @@ local shortstring   = token("quote",  dquote) -- can be shared
                     * token("string", (escaped + (1-squote))^0)
                     * token("quote",  squote)
 
-local integer       = P("-")^-1 * (lexer.hex_num + lexer.dec_num)
-local number        = token("number", lexer.float + integer)
+local number        = token("number", float + integer)
 
 local validword     = R("AZ","az","__") * R("AZ","az","__","09")^0
-
 local identifier    = token("default",validword)
 
 local operator      = token("special", S('+-*/%^!=<>;:{}[]().&|?~'))
@@ -99,9 +103,9 @@ local endweb        = P("@c")
 
 local webcomment    = token("comment", #beginweb * startofline * beginweb * (1-endweb)^0 * endweb)
 
-local texlexer      = lexer.load('scite-context-lexer-tex')
+-- local texlexer      = lexer.load('scite-context-lexer-tex')
 
-lexer.embed_lexer(weblexer, texlexer, #beginweb * startofline * token("comment",beginweb), token("comment",endweb))
+-- lexer.embed_lexer(weblexer, texlexer, #beginweb * startofline * token("comment",beginweb), token("comment",endweb))
 
 weblexer._rules = {
     { 'whitespace',   spacing      },
@@ -148,7 +152,7 @@ weblexer._foldsymbols = {
 }
 
 -- -- by indentation:
---
+
 weblexer._foldpatterns = nil
 weblexer._foldsymbols  = nil
 

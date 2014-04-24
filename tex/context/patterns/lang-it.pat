@@ -21,6 +21,8 @@
 .opto1
 .orto3p2
 .para1
+.ph2l
+.ph2r
 .poli3p2
 .pre1
 .p2s
@@ -137,6 +139,7 @@ g2r
 2gh2t
 2g.
 2g'
+.h2
 1h
 2hb
 2hd
@@ -149,9 +152,11 @@ h2l
 2hv
 2h.
 2h'
+.j2
 1j
 2j.
 2j'
+.k2
 1k
 2kg
 2kf
@@ -288,6 +293,7 @@ s4s3m
 4s.
 4s'.
 4s''
+.t2
 1t
 2tb
 2tc
@@ -295,6 +301,7 @@ s4s3m
 2tf
 2tg
 t2h
+2th.
 t2l
 2tm
 2tn

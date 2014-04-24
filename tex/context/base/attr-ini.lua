@@ -38,13 +38,13 @@ storage.register("attributes/names",   names,   "attributes.names")
 storage.register("attributes/numbers", numbers, "attributes.numbers")
 storage.register("attributes/list",    list,    "attributes.list")
 
-function attributes.define(name,number) -- at the tex end
-    if not numbers[name] then
-        numbers[name] = number
-        names[number] = name
-        list[number]  = { }
-    end
-end
+-- function attributes.define(name,number) -- at the tex end
+--     if not numbers[name] then
+--         numbers[name] = number
+--         names[number] = name
+--         list[number]  = { }
+--     end
+-- end
 
 --[[ldx--
 <p>We reserve this one as we really want it to be always set (faster).</p>
@@ -58,33 +58,14 @@ are only used when no attribute is set at the \TEX\ end which normally
 happens in <l n='context'/>.</p>
 --ldx]]--
 
-sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or 127
-
--- to be considered (so that we can use an array access):
---
--- local private = { } attributes.private = private
---
--- setmetatable(private, {
---     __index = function(t,name)
---         local number = sharedstorage.attributes_last_private
---         if number < 1023 then -- texgetcount("minallocatedattribute") - 1
---             number = number + 1
---             sharedstorage.attributes_last_private = number
---         end
---         numbers[name], names[number], list[number] = number, name, { }
---         private[name] = number
---         return number
---     end,
---     __call = function(t,name)
---         return t[name]
---     end
--- } )
+sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or  127
+sharedstorage.attributes_last_public  = sharedstorage.attributes_last_public  or 1024
 
 function attributes.private(name) -- at the lua end (hidden from user)
     local number = numbers[name]
     if not number then
         local last = sharedstorage.attributes_last_private
-        if last < 1023 then -- texgetcount("minallocatedattribute") - 1
+        if last < 1023 then
             last = last + 1
             sharedstorage.attributes_last_private = last
         else
@@ -95,6 +76,29 @@ function attributes.private(name) -- at the lua end (hidden from user)
         numbers[name], names[number], list[number] = number, name, { }
     end
     return number
+end
+
+function attributes.public(name) -- at the lua end (hidden from user)
+    local number = numbers[name]
+    if not number then
+        local last = sharedstorage.attributes_last_public
+        if last < 65535 then
+            last = last + 1
+            sharedstorage.attributes_last_public = last
+        else
+            report_attribute("no more room for public attributes")
+            os.exit()
+        end
+        number = last
+        numbers[name], names[number], list[number] = number, name, { }
+    end
+    return number
+end
+
+attributes.system = attributes.private
+
+function attributes.define(name,number,category)
+    return (attributes[category or "public"] or attributes["public"])(name,number)
 end
 
 -- tracers
@@ -124,11 +128,10 @@ end
 
 -- interface
 
-commands.defineattribute = attributes.define
-commands.showattributes  = attributes.showcurrent
+commands.showattributes = attributes.showcurrent
 
-function commands.getprivateattribute(name)
-    context(attributes.private(name))
+function commands.defineattribute(name,category)
+    context(attributes.define(name,category))
 end
 
 -- rather special

@@ -12,9 +12,9 @@ local sub, format = string.sub, string.format
 local splitlines, validstring = string.splitlines, string.valid
 local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 
-local trace_run         = false  trackers  .register("buffers.run",       function(v) trace_run       = v end)
-local trace_grab        = false  trackers  .register("buffers.grab",      function(v) trace_grab      = v end)
-local trace_visualize   = false  trackers  .register("buffers.visualize", function(v) trace_visualize = v end)
+local trace_run         = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
+local trace_grab        = false  trackers.register("buffers.grab",      function(v) trace_grab      = v end)
+local trace_visualize   = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 
 local report_buffers    = logs.reporter("buffers","usage")
 local report_typeset    = logs.reporter("buffers","typeset")

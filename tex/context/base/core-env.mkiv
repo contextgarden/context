@@ -232,21 +232,21 @@
 %D \starttyping
 %D \enablemode[two]
 %D
-%D \startmodes
+%D \startmodeset
 %D     [one]     {1}
 %D     [two]     {2}
 %D     [two]     {2}
 %D     [three]   {3}
 %D     [default] {?}
-%D \stopmodes
+%D \stopmodeset
 %D
-%D \startmodes
+%D \startmodeset
 %D     [one]     {1}
 %D     [three]   {3}
 %D     [default] {?}
-%D \stopmodes
+%D \stopmodeset
 %D
-%D \startmodes
+%D \startmodeset
 %D     [one] {
 %D         \input tufte
 %D     }
@@ -265,7 +265,7 @@
 %D     [default] {
 %D         \input ward
 %D     }
-%D \stopmodes
+%D \stopmodeset
 %D \stoptyping
 
 \newconditional\c_syst_modes_set_done % conditionals can be pushed/popped

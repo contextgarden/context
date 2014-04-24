@@ -6,15 +6,18 @@ local info = {
     license   = "see context related readme files",
 }
 
-local lexer = lexer
-local token = lexer.token
 local P = lpeg.P
 
-local stringlexer = { _NAME = "lua-longstring", _FILENAME = "scite-context-lexer-lua-longstring" }
-local whitespace  = lexer.WHITESPACE
+local lexer       = require("lexer") -- require("scite-context-lexer")
 local context     = lexer.context
+local patterns    = context.patterns
 
-local space       = lexer.space
+local token       = lexer.token
+
+local stringlexer = lexer.new("lua-longstring","scite-context-lexer-lua-longstring")
+local whitespace  = stringlexer.whitespace
+
+local space       = patterns.space
 local nospace     = 1 - space
 
 local p_spaces    = token(whitespace, space  ^1)
@@ -25,6 +28,6 @@ stringlexer._rules = {
     { "string",     p_string },
 }
 
-stringlexer._tokenstyles = lexer.context.styleset
+stringlexer._tokenstyles = context.styleset
 
 return stringlexer

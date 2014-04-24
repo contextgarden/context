@@ -6,13 +6,14 @@ local info = {
     license   = "see context related readme files",
 }
 
-local lexer = lexer
+local lexer           = require("lexer")
+local context         = lexer.context
+local patterns        = context.patterns
 
-local cldlexer   = { _NAME = "cld", _FILENAME = "scite-context-lexer-cld" }
-local whitespace = lexer.WHITESPACE -- maybe we need to fix this
-local context    = lexer.context
+local cldlexer        = lexer.new("cld","scite-context-lexer-cld")
+local lualexer        = lexer.load('scite-context-lexer-lua')
 
-local lualexer   = lexer.load('scite-context-lexer-lua')
+-- can probably be done nicer now, a bit of a hack
 
 cldlexer._rules       = lualexer._rules_cld
 cldlexer._tokenstyles = lualexer._tokenstyles

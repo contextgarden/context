@@ -6,20 +6,19 @@ local info = {
     license   = "see context related readme files",
 }
 
-if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
-
-local lexer = lexer
-local token = lexer.token
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
-local pdflexer          = { _NAME = "pdf", _FILENAME = "scite-context-lexer-pdf" }
-local whitespace        = lexer.WHITESPACE -- triggers states
+local lexer             = require("lexer")
+local context           = lexer.context
+local patterns          = context.patterns
+
+local token             = lexer.token
+
+local pdflexer          = lexer.new("pdf","scite-context-lexer-pdf")
+local whitespace        = pdflexer.whitespace
 
 local pdfobjectlexer    = lexer.load("scite-context-lexer-pdf-object")
 local pdfxreflexer      = lexer.load("scite-context-lexer-pdf-xref")
-
-local context           = lexer.context
-local patterns          = context.patterns
 
 local space             = patterns.space
 local spacing           = patterns.spacing

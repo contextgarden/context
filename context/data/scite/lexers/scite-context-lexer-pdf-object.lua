@@ -6,19 +6,21 @@ local info = {
     license   = "see context related readme files",
 }
 
-local lexer = lexer
-local token = lexer.token
 local P, R, S, C, V = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.V
 
-local pdfobjectlexer    = { _NAME = "pdf-object", _FILENAME = "scite-context-lexer-pdf-object" }
-local whitespace        = lexer.WHITESPACE -- triggers states
+local lexer             = require("lexer")
 local context           = lexer.context
 local patterns          = context.patterns
 
-local space             = lexer.space
+local token             = lexer.token
+
+local pdfobjectlexer    = lexer.new("pdf-object","scite-context-lexer-pdf-object")
+local whitespace        = pdfobjectlexer.whitespace
+
+local space             = patterns.space
 local somespace         = space^1
 
-local newline           = S("\n\r")
+local newline           = paterns.eol
 local real              = patterns.real
 local cardinal          = patterns.cardinal
 

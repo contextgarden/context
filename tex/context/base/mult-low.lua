@@ -90,6 +90,7 @@ return {
         --
         "startmode", "stopmode", "startnotmode", "stopnotmode", "startmodeset", "stopmodeset",
         "doifmode", "doifmodeelse", "doifnotmode",
+        "startmodeset","stopmodeset",
         "startallmodes", "stopallmodes", "startnotallmodes", "stopnotallmodes", "doifallmodes", "doifallmodeselse", "doifnotallmodes",
         "startenvironment", "stopenvironment", "environment",
         "startcomponent", "stopcomponent", "component",

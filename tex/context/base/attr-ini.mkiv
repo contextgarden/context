@@ -40,31 +40,51 @@
 
 \newtoks \attributesresetlist
 
-\ifdefined \s!global \else \def\s!global{global} \fi % for metatex % or hard check later
-\ifdefined \s!public \else \def\s!public{public} \fi % for metatex % or hard check later
+\ifdefined \s!global    \else \def\s!global   {global}    \fi % for metatex % or hard check later
+\ifdefined \s!public    \else \def\s!public   {public}    \fi % for metatex % or hard check later
+\ifdefined \s!attribute \else \def\s!attribute{attribute} \fi % for metatex % or hard check later
 
-\unexpanded\def\defineattribute
-  {\dodoubleempty\attr_basics_define}
+% \unexpanded\def\defineattribute
+%   {\dodoubleempty\attr_basics_define}
+%
+% \unexpanded\def\definesystemattribute
+%   {\dodoubleempty\attr_basics_define_system}
+%
+% \def\attr_basics_define[#1]%
+%   {\expandafter\newattribute\csname\??attributecount#1\endcsname
+%    \expandafter\newconstant \csname\??attributeid#1\endcsname
+%    \csname\??attributeid#1\endcsname\c_syst_last_allocated_attribute
+%    \ctxcommand{defineattribute("#1",\number\csname\??attributeid#1\endcsname)}%
+%    \attr_basics_define_properties[#1]}
+%
+% \def\attr_basics_define_system[#1]%
+%   {\scratchcounter\ctxcommand{getprivateattribute("#1")}\relax
+%    \expandafter\attributedef\csname\??attributecount#1\endcsname\scratchcounter
+%    \expandafter\newconstant \csname\??attributeid#1\endcsname
+%    \csname\??attributeid#1\endcsname\scratchcounter
+%   %\writestatus\m!system{defining system attribute #1 with number \number\scratchcounter}%
+%    \attr_basics_define_properties[#1]}
+%
+% \def\attr_basics_define_properties[#1][#2]%
+%   {\doifnotinset\s!global{#2}{\appendetoks\csname\??attributecount#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
+%    \doifinset   \s!public{#2}{\expandafter\let\csname#1\s!attribute\expandafter\endcsname\csname\??attributeid#1\endcsname}}
 
-\def\attr_basics_define[#1][#2]% alternatively we can let lua do the housekeeping
-  {\expandafter\newattribute\csname\??attributecount#1\endcsname
-   \expandafter\newconstant \csname\??attributeid#1\endcsname
-   \csname\??attributeid#1\endcsname\c_syst_last_allocated_attribute
-   \ctxcommand{defineattribute("#1",\number\c_syst_last_allocated_attribute)}%
-   \doifnotinset\s!global{#2}{\appendetoks\csname\??attributecount#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
-   \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname\??attributeid#1\endcsname}}
+\unexpanded\def\defineattribute      {\dodoubleempty\attr_basics_define}
+\unexpanded\def\definesystemattribute{\dodoubleempty\attr_basics_define_system}
 
-\unexpanded\def\definesystemattribute
-  {\dodoubleempty\attr_basics_define_system}
+\def\attr_basics_define       {\attr_basics_define_indeed{public}}
+\def\attr_basics_define_system{\attr_basics_define_indeed{private}}
 
-\def\attr_basics_define_system[#1][#2]% alternatively we can let lua do the housekeeping
-  {\scratchcounter\ctxcommand{getprivateattribute("#1")}\relax
-   \expandafter\attributedef\csname\??attributecount#1\endcsname\scratchcounter
-   \expandafter\newconstant \csname\??attributeid#1\endcsname
-   \csname\??attributeid#1\endcsname\scratchcounter
-  %\writestatus\m!system{defining system attribute #1 with number \number\scratchcounter}%
-   \doifnotinset\s!global{#2}{\appendetoks\csname\??attributecount#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
-   \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname\??attributeid#1\endcsname}}
+\def\attr_basics_define_indeed#1[#2][#3]%
+  {\scratchcounter\ctxcommand{defineattribute("#2","#1")}\relax
+  %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
+   \expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
+   \expandafter\newconstant \csname\??attributeid#2\endcsname
+   \csname\??attributeid#2\endcsname\scratchcounter
+   \doifnotinset\s!global{#3}{\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\attributesresetlist}%
+   \doifinset   \s!public{#3}{\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}}
+
+\unexpanded\def\newattribute#1{\attr_basics_define_indeed{public}[\strippedcsname#1][]}
 
 % expandable so we can \edef them for speed
 

@@ -6,22 +6,23 @@ local info = {
     license   = "see context related readme files",
 }
 
-if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
-
-local lexer = lexer
-local token = lexer.token
 local P, S, Cmt, Cp, Ct = lpeg.P, lpeg.S, lpeg.Cmt, lpeg.Cp, lpeg.Ct
 local find, match = string.find, string.match
 
-local textlexer    = { _NAME = "txt", _FILENAME = "scite-context-lexer-txt" }
-local whitespace   = lexer.WHITESPACE
+local lexer        = require("lexer")
 local context      = lexer.context
+local patterns     = context.patterns
 
-local space        = lexer.space
-local any          = lexer.any
+local token        = lexer.token
 
-local wordtoken    = context.patterns.wordtoken
-local wordpattern  = context.patterns.wordpattern
+local textlexer    = lexer.new("txt","scite-context-lexer-txt")
+local whitespace   = textlexer.whitespace
+
+local space        = patterns.space
+local any          = patterns.any
+local wordtoken    = patterns.wordtoken
+local wordpattern  = patterns.wordpattern
+
 local checkedword  = context.checkedword
 local styleofword  = context.styleofword
 local setwordlist  = context.setwordlist

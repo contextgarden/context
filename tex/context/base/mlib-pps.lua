@@ -866,7 +866,11 @@ local function tx_reset()
 end
 
 local fmt = formatters["%s %s %s % t"]
-local pat = tsplitat(":")
+----- pat = tsplitat(":")
+local pat = lpeg.tsplitter(":",tonumber) -- so that %F can do its work
+
+local ctx_MPLIBsetNtext = context.MPLIBsetNtext
+local ctx_MPLIBsetCtext = context.MPLIBsetCtext
 
 local function tx_analyze(object,prescript) -- todo: hash content and reuse them
     local tx_stage = prescript.tx_stage
@@ -890,27 +894,28 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
             local tx_last = top.texlast + 1
             top.texlast = tx_last
             if not c then
-                -- no color
+                ctx_MPLIBsetNtext(tx_last,s)
             elseif #c == 1 then
                 if a and t then
-                    s = formatters["\\directcolored[s=%F,a=%F,t=%F]%s"](c[1],a,t,s)
+                    ctx_MPLIBsetCtext(tx_last,formatters["s=%F,a=%F,t=%F"](c[1],a,t),s)
                 else
-                    s = formatters["\\directcolored[s=%F]%s"](c[1],s)
+                    ctx_MPLIBsetCtext(tx_last,formatters["s=%F"](c[1]),s)
                 end
             elseif #c == 3 then
                 if a and t then
-                    s = formatters["\\directcolored[r=%F,g=%F,b=%F,a=%F,t=%F]%s"](c[1],c[2],c[3],a,t,s)
+                    ctx_MPLIBsetCtext(tx_last,formatters["r=%F,g=%F,b=%F,a=%F,t=%F"](c[1],c[2],c[3],a,t),s)
                 else
-                    s = formatters["\\directcolored[r=%F,g=%F,b=%F]%s"](c[1],c[2],c[3],s)
+                    ctx_MPLIBsetCtext(tx_last,formatters["r=%F,g=%F,b=%F"](c[1],c[2],c[3]),s)
                 end
             elseif #c == 4 then
                 if a and t then
-                    s = formatters["\\directcolored[c=%F,m=%F,y=%F,k=%F,a=%F,t=%F]%s"](c[1],c[2],c[3],c[4],a,t,s)
+                    ctx_MPLIBsetCtext(tx_last,formatters["c=%F,m=%F,y=%F,k=%F,a=%F,t=%F"](c[1],c[2],c[3],c[4],a,t),s)
                 else
-                    s = formatters["\\directcolored[c=%F,m=%F,y=%F,k=%F]%s"](c[1],c[2],c[3],c[4],s)
+                    ctx_MPLIBsetCtext(tx_last,formatters["c=%F,m=%F,y=%F,k=%F"](c[1],c[2],c[3],c[4]),s)
                 end
+            else
+                ctx_MPLIBsetNtext(tx_last,s)
             end
-            context.MPLIBsettext(tx_last,s)
             top.multipass = true
             metapost.multipass = true -- ugly
             top.texhash[h] = tx_last

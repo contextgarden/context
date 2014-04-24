@@ -115,8 +115,8 @@ codeinjections.presetsymbollist = presetsymbollist
 -- }
 
 local attachment_symbols = {
-    Graph     = pdfconstant("GraphPushPin"),
-    Paperclip = pdfconstant("PaperclipTag"),
+    Graph     = pdfconstant("Graph"),
+    Paperclip = pdfconstant("Paperclip"),
     Pushpin   = pdfconstant("PushPin"),
 }
 

@@ -33,23 +33,24 @@ local info = {
 
 ]]--
 
-if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
-
-local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg
-local token, exact_match = lexer.token, lexer.exact_match
 local P, R, S, V, C, Cmt, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt, lpeg.Cp, lpeg.Cc, lpeg.Ct
 local type, next = type, next
 local find, match, lower, upper = string.find, string.match, string.lower, string.upper
 
+local lexer        = require("lexer")
+local context      = lexer.context
+local patterns     = context.patterns
+
+local token        = lexer.token
+local exact_match  = lexer.exact_match
+
 -- module(...)
 
-local contextlexer = { _NAME = "tex", _FILENAME = "scite-context-lexer-tex" }
-local whitespace   = lexer.WHITESPACE
-local context      = lexer.context
+local contextlexer = lexer.new("tex","scite-context-lexer-tex")
+local whitespace   = contextlexer.whitespace
 
 local cldlexer     = lexer.load('scite-context-lexer-cld')
------ cldlexer     = lexer.load('scite-context-lexer-lua')
 local mpslexer     = lexer.load('scite-context-lexer-mps')
 
 local commands     = { en = { } }
@@ -205,8 +206,8 @@ end)
 local commentline            = P('%') * (1-S("\n\r"))^0
 local endline                = S("\n\r")^1
 
-local space                  = lexer.space -- S(" \n\r\t\f\v")
-local any                    = lexer.any
+local space                  = patterns.space -- S(" \n\r\t\f\v")
+local any                    = patterns.any
 local backslash              = P("\\")
 local hspace                 = S(" \t")
 
@@ -436,7 +437,7 @@ lexer.embed_lexer(contextlexer, cldlexer, startluacode,     stopluacode)
 lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
 
 -- Watch the text grabber, after all, we're talking mostly of text (beware,
--- no punctuation here as it can be special. We might go for utf here.
+-- no punctuation here as it can be special). We might go for utf here.
 
 contextlexer._rules = {
     { "whitespace",  spacing     },
@@ -462,10 +463,6 @@ contextlexer._rules = {
 }
 
 contextlexer._tokenstyles = context.styleset
--- contextlexer._tokenstyles = context.stylesetcopy() -- experiment
-
--- contextlexer._tokenstyles[#contextlexer._tokenstyles + 1] = { cldlexer._NAME..'_whitespace', lexer.style_whitespace }
--- contextlexer._tokenstyles[#contextlexer._tokenstyles + 1] = { mpslexer._NAME..'_whitespace', lexer.style_whitespace }
 
 local environment = {
     ["\\start"] = 1, ["\\stop"] = -1,

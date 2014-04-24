@@ -12,26 +12,28 @@ local info = {
 
 -- todo: parse entities in attributes
 
-if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
-
-local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg
-local token, exact_match = lexer.token, lexer.exact_match
 local P, R, S, V, C, Cmt, Ct, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt, lpeg.Ct, lpeg.Cp
 local type = type
 local match, find = string.match, string.find
 
-local xmllexer         = { _NAME = "xml", _FILENAME = "scite-context-lexer-xml" }
-local whitespace       = lexer.WHITESPACE -- triggers states
+local lexer            = require("lexer")
 local context          = lexer.context
+local patterns         = context.patterns
+
+local token            = lexer.token
+local exact_match      = lexer.exact_match
+
+local xmllexer         = lexer.new("xml","scite-context-lexer-xml")
+local whitespace       = xmllexer.whitespace
 
 local xmlcommentlexer  = lexer.load("scite-context-lexer-xml-comment") -- indirect (some issue with the lexer framework)
 local xmlcdatalexer    = lexer.load("scite-context-lexer-xml-cdata")   -- indirect (some issue with the lexer framework)
 local xmlscriptlexer   = lexer.load("scite-context-lexer-xml-script")  -- indirect (some issue with the lexer framework)
 local lualexer         = lexer.load("scite-context-lexer-lua")         --
 
-local space            = lexer.space -- S(" \t\n\r\v\f")
-local any              = lexer.any -- P(1)
+local space            = patterns.space
+local any              = patterns.any
 
 local dquote           = P('"')
 local squote           = P("'")

@@ -414,7 +414,6 @@ local dummyzero = {
  -- width    = 0,
  -- height   = 0,
  -- depth    = 0,
- -- commands = { { "special", "pdf: q Q" } },
     commands = { { "special", "" } },
 }
 
@@ -423,10 +422,9 @@ local function adddummysymbols(tfmdata,...)
     if not characters[0] then
         characters[0] = dummyzero
     end
-    -- temp test:
-    if not characters[1] then
-        characters[1] = dummyzero
-    end
+ -- if not characters[1] then
+ --     characters[1] = dummyzero -- test only
+ -- end
 end
 
 registerotffeature {

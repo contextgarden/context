@@ -6,15 +6,18 @@ local info = {
     license   = "see context related readme files",
 }
 
-local lexer = lexer
-local token = lexer.token
 local P = lpeg.P
 
-local xmlcdatalexer = { _NAME = "xml-cdata", _FILENAME = "scite-context-lexer-xml-cdata" }
-local whitespace    = lexer.WHITESPACE -- triggers states
+local lexer         = require("lexer")
 local context       = lexer.context
+local patterns      = context.patterns
 
-local space         = lexer.space
+local token         = lexer.token
+
+local xmlcdatalexer = lexer.new("xml-cdata","scite-context-lexer-xml-cdata")
+local whitespace    = xmlcdatalexer.whitespace
+
+local space         = patterns.space
 local nospace       = 1 - space - P("]]>")
 
 local p_spaces      = token(whitespace, space  ^1)

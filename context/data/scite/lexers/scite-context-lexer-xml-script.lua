@@ -6,19 +6,22 @@ local info = {
     license   = "see context related readme files",
 }
 
-local lexer = lexer
-local token = lexer.token
 local P = lpeg.P
 
-local xmlscriptlexer = { _NAME = "xml-script", _FILENAME = "scite-context-lexer-xml-script" }
-local whitespace    = lexer.WHITESPACE -- triggers states
-local context       = lexer.context
+local lexer          = require("lexer")
+local context        = lexer.context
+local patterns       = context.patterns
 
-local space         = lexer.space
-local nospace       = 1 - space - (P("</") * P("script") + P("SCRIPT")) * P(">")
+local token          = lexer.token
 
-local p_spaces      = token(whitespace, space  ^1)
-local p_cdata       = token("default",  nospace^1)
+local xmlscriptlexer = lexer.new("xml-script","scite-context-lexer-xml-script")
+local whitespace     = xmlscriptlexer.whitespace
+
+local space          = patterns.space
+local nospace        = 1 - space - (P("</") * P("script") + P("SCRIPT")) * P(">")
+
+local p_spaces       = token(whitespace, space  ^1)
+local p_cdata        = token("default",  nospace^1)
 
 xmlscriptlexer._rules = {
     { "whitespace", p_spaces },

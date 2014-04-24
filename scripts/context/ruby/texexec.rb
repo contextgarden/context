@@ -685,22 +685,22 @@ end
 
 # so far for compatibility, will move to tex
 
-@@extrastringvars = [
+extrastringvars = [
     'pages', 'background', 'backspace', 'topspace', 'boxtype', 'tempdir','bannerheight',
     'printformat', 'method', 'scale', 'selection',
     'combination', 'textwidth', 'addempty', 'logfile',
     'startline', 'endline', 'startcolumn', 'endcolumn', 'scale'
 ]
 
-@@extrabooleanvars = [
+extrabooleanvars = [
     'centerpage', 'noduplex', 'color', 'pretty',
     'fullscreen', 'screensaver', 'markings'
 ]
 
 if job = TEX.new(logger) then
 
-    job.setextrastringvars(@@extrastringvars)
-    job.setextrabooleanvars(@@extrabooleanvars)
+    job.setextrastringvars(extrastringvars)
+    job.setextrabooleanvars(extrabooleanvars)
 
     job.booleanvars.each do |k|
         commandline.registerflag(k)

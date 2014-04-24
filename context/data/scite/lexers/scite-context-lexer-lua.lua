@@ -6,26 +6,27 @@ local info = {
     license   = "see context related readme files",
 }
 
--- todo: _G.print (keep _G colored)
+-- beware: all multiline is messy, so even if it's no lexer, it should be an embedded lexer
+-- we probably could use a local whitespace variant but this is cleaner
 
-if not lexer._CONTEXTEXTENSIONS then require("scite-context-lexer") end
-
-local lexer = lexer
-local token, style, colors, exact_match, just_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.just_match, lexer.style_nothing
 local P, R, S, C, Cg, Cb, Cs, Cmt, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cg, lpeg.Cb, lpeg.Cs, lpeg.Cmt, lpeg.Cp
 local match, find = string.match, string.find
 local setmetatable = setmetatable
 
--- beware: all multiline is messy, so even if it's no lexer, it should be an embedded lexer
--- we probably could use a local whitespace variant but this is cleaner
-
-local lualexer    = { _NAME = "lua", _FILENAME = "scite-context-lexer-lua" }
-local whitespace  = lexer.WHITESPACE
+local lexer       = require("lexer")
 local context     = lexer.context
+local patterns    = context.patterns
+
+local token       = lexer.token
+local exact_match = lexer.exact_match
+local just_match  = lexer.just_match
+
+local lualexer    = lexer.new("lua","scite-context-lexer-lua")
+local whitespace  = lualexer.whitespace
 
 local stringlexer = lexer.load("scite-context-lexer-lua-longstring")
 
-local directives = { } -- communication channel
+local directives  = { } -- communication channel
 
 -- this will be extended
 
@@ -124,8 +125,9 @@ local longcomment = Cmt(#('[[' + ('[' * C(equals) * '[')), function(input,index,
     return stop and stop + 1 or #input + 1
 end)
 
-local space         = lexer.space -- S(" \n\r\t\f\v")
-local any           = lexer.any
+local space         = patterns.space -- S(" \n\r\t\f\v")
+local any           = patterns.any
+local eol           = patterns.eol
 
 local squote        = P("'")
 local dquote        = P('"')
@@ -135,7 +137,7 @@ local dashes        = P('--')
 local spacing       = token(whitespace, space^1)
 local rest          = token("default",  any)
 
-local shortcomment  = token("comment", dashes * lexer.nonnewline^0)
+local shortcomment  = token("comment", dashes * (1-eol)^0)
 local longcomment   = token("comment", dashes * longcomment)
 
 -- fails on very long string with \ at end of lines (needs embedded lexer)
@@ -160,8 +162,8 @@ local string        = shortstring
 
 lexer.embed_lexer(lualexer, stringlexer, token("quote",longtwostart), token("string",longtwostring_body) * token("quote",longtwostring_end))
 
-local integer       = P("-")^-1 * (lexer.hex_num + lexer.dec_num)
-local number        = token("number", lexer.float + integer)
+local integer       = P("-")^-1 * (patterns.hexadecimal + patterns.decimal)
+local number        = token("number", patterns.float + integer)
 
 -- officially 127-255 are ok but not utf so useless
 
@@ -337,7 +339,7 @@ local texstring       = token("quote",  longthreestart)
                       * token("string", longthreestring)
                       * token("quote",  longthreestop)
 
--- local texcommand      = token("user", texcsname)
+----- texcommand      = token("user", texcsname)
 local texcommand      = token("warning", texcsname)
 
 -- local texstring    = token("quote", longthreestart)

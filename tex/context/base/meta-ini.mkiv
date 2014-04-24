@@ -264,7 +264,10 @@
    \ifx\p_setups\empty \else
      \setups[\p_setups]%
    \fi
-   \useMPinstancestyleandcolor\c!textstyle\c!textcolor}
+   \useMPinstancestyleparameter\c!textstyle}
+
+\def\meta_set_current_color
+  {\useMPinstancecolorparameter\c!textcolor}
 
 \def\meta_stop_current_graphic
   {\global\t_meta_definitions\emptytoks
