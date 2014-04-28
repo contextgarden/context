@@ -105,7 +105,7 @@ local spacing    = space^0
 local equal      = P("=")
 local collapsed  = (space^1)/ " "
 
-local function add(a,b) if b then return a..b else return a end end
+----- function add(a,b) if b then return a..b else return a end end
 
 local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)  -- C((1-space)^1)
 local s_quoted   = ((escape*single) + collapsed + (1-single))^0

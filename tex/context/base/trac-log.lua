@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['trac-log'] = {
     license   = "see context related readme files"
 }
 
+-- In fact all writes could go through lua and we could write the console and
+-- terminal handler in lua then. Ok, maybe it's slower then, so a no-go.
+
 -- if tex and (tex.jobname or tex.formatname) then
 --
 --     -- quick hack, awaiting speedup in engine (8 -> 6.4 sec for --make with console2)

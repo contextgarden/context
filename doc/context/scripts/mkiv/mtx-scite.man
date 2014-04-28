@@ -13,6 +13,12 @@
 .TP
 .B --words
 convert spell-*.txt into spell-*.lua
+.TP
+.B --tree
+converts a tree into an html tree (--source --target --numbers)
+.TP
+.B --file
+converts a file into an html tree (--source --target --numbers --lexer)
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

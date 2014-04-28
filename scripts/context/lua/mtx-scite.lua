@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mtx-scite'] = {
     license   = "see context related readme files"
 }
 
+-- mtxrun --script scite --tree --source=t:/texmf/tex/context --target=e:/tmp/context --numbers
+
 local P, R, S, C, Ct, Cf, Cc, Cg = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cf, lpeg.Cc, lpeg.Cg
 local lpegmatch = lpeg.match
 local format, lower, gmatch = string.format, string.lower, string.gmatch
@@ -22,6 +24,8 @@ local helpinfo = [[
   <category name="basic">
    <subcategory>
     <flag name="words"><short>convert spell-*.txt into spell-*.lua</short></flag>
+    <flag name="tree"><short>converts a tree into an html tree (--source --target --numbers)</short></flag>
+    <flag name="file"><short>converts a file into an html tree (--source --target --numbers --lexer)</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -35,6 +39,8 @@ local application = logs.application {
 }
 
 local report = application.report
+
+local scite = require("util-sci")
 
 scripts       = scripts       or { }
 scripts.scite = scripts.scite or { }
@@ -241,6 +247,51 @@ function scripts.scite.words()
     report("you need to move the lua files to lexers/data")
 end
 
+function scripts.scite.tree()
+    local source  = environment.argument("source")
+    local target  = environment.argument("target")
+    local numbers = environment.argument("numbers")
+    if not lfs.isdir(source) then
+        report("you need to pass a valid source path with --source")
+        return
+    end
+    if not lfs.isdir(target) then
+        report("you need to pass a valid target path with --target")
+        return
+    end
+    if source == target then
+        report("source and target paths must be different")
+        return
+    end
+    scite.converttree(source,target,numbers)
+end
+
+function scripts.scite.file()
+    local source  = environment.argument("source")
+    local target  = environment.argument("target")
+    local lexer   = environment.argument("lexer")
+    local numbers = environment.argument("numbers")
+    if source then
+        local target = target or file.replacesuffix(source,"html")
+        if source == target then
+            report("the source file cannot be the same as the target")
+        else
+            scite.filetohtml(source,lexer,target,numbers)
+        end
+
+    else
+        for i=1,#environment.files do
+            local source  = environment.files[i]
+            local target  = file.replacesuffix(source,"html")
+            if source == target then
+                report("the source file cannot be the same as the target")
+            else
+                scite.filetohtml(source,nil,target,numbers)
+            end
+        end
+    end
+end
+
 -- if environment.argument("start") then
 --     scripts.scite.start(true)
 -- elseif environment.argument("test") then
@@ -251,6 +302,10 @@ end
 
 if environment.argument("words") then
     scripts.scite.words()
+elseif environment.argument("tree") then
+    scripts.scite.tree()
+elseif environment.argument("file") then
+    scripts.scite.file()
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else

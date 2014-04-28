@@ -1,0 +1,269 @@
+%D \module
+%D   [       file=m-scite,
+%D        version=2014.04.28,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\SCITE\ lexers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% We can simplify the scite lexers, as long as we're able to return the
+% lexed result table and provide alexer module with the functions that
+% the lexer expects (so I need to decipher the cxx file).
+%
+% lexer._TOKENSTYLES : table
+% lexer._CHILDREN    : flag
+% lexer._EXTRASTYLES : table
+% lexer._GRAMMAR     : flag
+%
+% lexers.load        : function
+% lexers.lex         : function
+%
+% And some properties that map styles onto scintilla styling. I get the
+% impression that we end up with something simpler, a hybrid between the
+% scite lexing and the current context way, so we get an intermediate
+% step, with some penalty for context, but at least I don't have to
+% maintain two sets (three sets as we also have a line based series).
+
+% TODO: as these files are in tds we can locate them and set the lexer root
+% to that one. Currently we're on: we're on context/documents.
+
+% This is an experiment: eventually we need to hook it into the verbatim code
+% and deal with widow lines and so.
+
+\startluacode
+
+-- todo: merge with collapse
+-- todo: prehash whitespaces
+
+-- todo: hook into the pretty print code
+-- todo: a simple catcode regime with only \ { }
+
+local gsub, sub, find = string.gsub, string.sub, string.find
+local concat = table.concat
+local formatters = string.formatters
+local lpegmatch = lpeg.match
+local setmetatableindex = table.setmetatableindex
+
+local scite   = require("util-sci")
+buffers.scite = scite
+
+-- context output:
+
+local f_def_color = formatters["\\definecolor[slxc%s][h=%s%s%s]%%"]
+local f_fore_none = formatters["\\def\\slx%s#1{{\\slxc%s#1}}%%"]
+local f_fore_bold = formatters["\\def\\slx%s#1{{\\slxc%s\\bf#1}}%%"]
+local f_none_bold = formatters["\\def\\slx%s#1{{\\bf#1}}%%"]
+local f_none_none = formatters["\\def\\slx%s#1{{#1}}%%"]
+local f_texstyled = formatters["\\slx%s{%s}"]
+
+local f_mapping   = [[
+\let\string\slxL\string\letterleftbrace
+\let\string\slxR\string\letterrightbrace
+\let\string\slxM\string\letterdollar
+\let\string\slxV\string\letterbar
+\let\string\slxH\string\letterhash
+\let\string\slxB\string\letterbackslash
+\let\string\slxP\string\letterpercent
+\let\string\slxS\string\fixedspace
+%]]
+
+local replacer = lpeg.replacer {
+    ["{"]  = "\\slxL ",
+    ["}"]  = "\\slxR ",
+    ["$"]  = "\\slxM ",
+    ["|"]  = "\\slxV ",
+    ["#"]  = "\\slxH ",
+    ["\\"] = "\\slxB ",
+    ["%"]  = "\\slxP ",
+    [" "]  = "\\slxS ",
+}
+
+local colors = nil
+
+local function exportcolors()
+    if not colors then
+        scite.loadscitelexer()
+        local function black(f)
+            return (f[1] == f[2]) and (f[2] == f[3]) and (f[3] == '00')
+        end
+        local result, r = { f_mapping }, 1
+        for k, v in table.sortedhash(lexer.context.styles) do
+            local fore = v.fore
+            if fore and not black(fore) then
+                r = r + 1
+                result[r] = f_def_color(k,fore[1],fore[2],fore[3])
+            end
+        end
+        r = r + 1
+        result[r] = "%"
+        for k, v in table.sortedhash(lexer.context.styles) do
+            local bold = v.bold
+            local fore = v.fore
+            r = r + 1
+            if fore and not black(fore) then
+                if bold then
+                    result[r] = f_fore_bold(k,k)
+                else
+                    result[r] = f_fore_none(k,k)
+                end
+            else
+                if bold then
+                    result[r] = f_none_bold(k)
+                else
+                    result[r] = f_none_none(k)
+                end
+            end
+        end
+        colors = concat(result,"\n")
+    end
+    return colors
+end
+
+local function exportwhites()
+    return setmetatableindex(function(t,k)
+        local v = find(k,"white") and true or false
+        t[k] = v
+        return v
+    end)
+end
+
+local function exportstyled(lexer,text)
+    local result = lexer.lex(lexer,text,0)
+    local start = 1
+    local whites = exportwhites()
+    local buffer = { }
+    for i=1,#result,2 do
+        local style = result[i]
+        local position = result[i+1]
+        local txt = sub(text,start,position-1)
+        txt = lpegmatch(replacer,txt)
+        if whites[style] then
+            buffer[#buffer+1] = txt
+        else
+            buffer[#buffer+1] = f_texstyled(style,txt)
+        end
+        start = position
+    end
+    buffer = concat(buffer)
+    return buffer
+end
+
+function scite.installcommands()
+    context(exportcolors())
+end
+
+local function lexdata(data,lexname)
+    buffers.assign("lex",exportstyled(scite.loadedlexers[lexname],data or ""))
+end
+
+scite.lexdata = lexdata
+
+function scite.lexbuffer(name,lexname)
+    lexdata(buffers.getcontent(name) or "",lexname or "tex")
+end
+
+function scite.lexfile(filename,lexname)
+    lexdata(io.loaddata(filename) or "",lexname or file.suffix(filename))
+end
+
+-- html output
+
+\stopluacode
+
+% This is a preliminary interface.
+
+\unprotect
+
+\unexpanded\def\installscitecommands
+  {\ctxlua{buffers.scite.installcommands()}%
+   \let\installscitecommands\relax}
+
+\unexpanded\def\startscite{\startlines}
+\unexpanded\def\stopscite {\stoplines}
+
+\unexpanded\def\scitefile
+  {\dosingleargument\module_scite_file}
+
+\unexpanded\def\module_scite_file[#1]%
+  {\start
+   \ctxlua{buffers.scite.lexfile("#1")}%
+   \installscitecommands
+   \tt
+   \dontcomplain
+   \startscite
+   \getbuffer[lex]%
+   \stopscite
+   \stop}
+
+\unexpanded\def\scitebuffer
+  {\dodoubleargument\module_scite_buffer}
+
+\unexpanded\def\module_scite_buffer[#1][#2]%
+  {\start
+   \ifsecondargument
+     \ctxlua{buffers.scite.lexbuffer("#2","#1")}%
+   \else
+     \ctxlua{buffers.scite.lexbuffer("#1","tex")}%
+   \fi
+   \installscitecommands
+   \tt
+   \dontcomplain
+   \startscite
+   \getbuffer[lex]%
+   \stopscite
+   \stop}
+
+\protect
+
+\continueifinputfile{m-scite.mkiv}
+
+\setupbodyfont[dejavu,8pt]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   header=1cm,
+   footer=1cm,
+   topspace=1cm,
+   bottomspace=1cm,
+   backspace=1cm]
+
+\startbuffer[demo]
+\startsubsubject[title={oeps}]
+
+\startMPcode
+    draw fullcircle
+        scaled 2cm
+        withpen pencircle scaled 1mm
+        withcolor .5green;
+    draw textext (
+        lua (
+            "local function f(s) return string.upper(s) end mp.quoted(f('foo'))"
+        )
+    ) withcolor .5red ;
+\stopMPcode
+
+\startluacode
+    context("foo")
+\stopluacode
+
+\stopsubsubject
+\stopbuffer
+
+\starttext
+
+% \scitefile[../lexers/scite-context-lexer.lua]  \page
+% \scitefile[t:/manuals/about/about-metafun.tex] \page
+% \scitefile[t:/sources/strc-sec.mkiv]           \page
+% \scitefile[e:/tmp/mp.w]                        \page
+% \scitefile[t:/manuals/hybrid/tugboat.bib]        \page
+\scitefile[e:/tmp/test.bib]        \page
+
+% \getbuffer[demo] \scitebuffer[demo]
+
+\stoptext

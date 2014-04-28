@@ -159,12 +159,24 @@ end
 
 -- this will work ok in >=0.79
 
+-- todo: last tex error has ! prepended
+-- todo: some nested errors have two line numbers
+-- todo: collect errorcontext in string (after code cleanup)
+-- todo: have a separate status.lualinenumber
+
+-- todo: \starttext bla \blank[foo] bla \stoptext
+
 local function processerror(offset)
     local inputstack   = resolvers.inputstack
     local filename     = inputstack[#inputstack] or status.filename
     local linenumber   = tonumber(status.linenumber) or 0
- -- print(status.lasterrorstring)
- -- print(status.lastluaerrorstring)
+    --
+    -- print("[[ last tex error: " .. tostring(status.lasterrorstring) .. " ]]")
+    -- print("[[ last lua error: " .. tostring(status.lastluaerrorstring) .. " ]]")
+    -- print("[[ start errorcontext ]]")
+    -- tex.show_context()
+    -- print("\n[[ stop errorcontext ]]")
+    --
     local lasttexerror = status.lasterrorstring or "?"
     local lastluaerror = status.lastluaerrorstring or lasttexerror
     local luaerrorline = match(lastluaerror,[[lua%]?:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
