@@ -24,7 +24,7 @@ numeric
     chem_text_min, chem_text_max,
     chem_rotation, chem_adjacent, chem_stack_n,
     chem_substituent, chem_substituent.lft, chem_substituent.rt,
-    chem_setting_offset, chem_text_offset, chem_picture_offset,
+    chem_setting_offset, chem_text_offset,
     chem_center_offset, chem_dbl_offset,
     chem_bb_angle, chem_axis_rulethickness,
     chem_setting_l, chem_setting_r, chem_setting_t, chem_setting_b,
@@ -72,19 +72,18 @@ chem_axis_rulethickness := 1pt ;
 chem_emwidth            := 10pt ; % EmWidth or \the\emwidth does not work...
 chem_b_length           := 3  chem_emwidth ;
 chem_text_offset        := -.3chem_emwidth ; % -.71chem_emwidth ; % 1/sqrt(2)
-chem_center_offset      := .5  chem_emwidth ;
-chem_picture_offset     :=     chem_emwidth ;
+chem_center_offset      :=  .5chem_emwidth ;
 chem_dbl_offset         := .05 ;
 chem_bb_angle           := angle(1,2chem_dbl_offset) ;
 chem_text_min           := 0.75 ;
 chem_text_max           := 1.25 ;
-chem_dot_factor         := 4 ; % *linewidth
+chem_dot_factor         := 2 ; % *linewidth
 chem_sb_pair            := (0.25,0.75) ; %chem_sb_dash   := dashpattern(off 0.25 on 0.5 off 0.25) ;
 chem_sb_pair.m          := (0.25,1   ) ; %chem_sb_dash.m := dashpattern(off 0.25 on 0.75) ;
 chem_sb_pair.p          := (0   ,0.75) ; %chem_sb_dash.p := dashpattern(on  0.75 off 0.25) ;
-chem_sb_pair.b          := (0,   1   ) ; %chem_sb_dash.b := dashpattern(on  1) ;
+chem_sb_pair.b          := (0   ,1   ) ; %chem_sb_dash.b := dashpattern(on  1) ;
 
-chem_bd_wedge           := false ; % true is incorrect, but quite common...
+chem_bd_wedge           := true ; % according to IUPAC 2005
 
 def chem_reset =
     chem_rotation         := 0 ;
@@ -149,7 +148,7 @@ vardef chem_init_some (suffix $) (expr e) =
                            chem_num2 := i ;
                        fi
                    endfor)
-             scaled (2*(abs(point chem_num2+.5 of chem_b_path[$]) - chem_dbl_offset))
+             scaled (2*(abs(point chem_num2+.5 of chem_b_path[$]) - 2chem_dbl_offset))
         fi ;
 
     chem_r_path[$] :=
@@ -307,11 +306,15 @@ chem_init_all ; % WHY does this not work unless defined and then called?
 
 % \startchemical
 
-def chem_start_structure(expr i, l, r, t, b, rotation, unit, factor, offset, axis, rulethickness, axiscolor) =
+def chem_start_structure(expr i, l, r, t, b, rotation, unit, bond, scale, offset, axis, rulethickness, axiscolor) =
     save chem_setting_l, chem_setting_r, chem_setting_t, chem_setting_b ;
 
-    chem_emwidth            := unit ;
-    chem_b_length           := factor * unit ;
+    chem_emwidth            := unit ; % dynamically set for each structure.
+    chem_text_offset        := -.3chem_emwidth ; % -.71chem_emwidth ; % 1/sqrt(2)
+    chem_center_offset      :=  .5chem_emwidth ;
+    chem_b_length           :=    chem_emwidth * bond * scale ;
+    % scale (normally 1) scales the structure but not the text.
+
     if numeric l :
         chem_setting_l      := -l ;
     fi
@@ -798,28 +801,39 @@ vardef chem_eb@# (suffix $) (expr f, t, r, c) = % EB
 enddef ;
 
 vardef chem_ad@# (suffix $) (expr f, t, r, c) = % AD
-    if not chem_star[$] :
-        chem_t := identity chem_transformed($) ;
-        for i=f upto t :
-            chem_drawarrow(
-                ((subpath (chem_sb_pair@# shifted (i-1,i-1)) of chem_b_path[$])
-                paralleled 2chem_dbl_offset) transformed chem_t,
-                r,c,) ;
-        endfor
-    fi
+    chem_t := identity chem_transformed($) ;
+    for i=f upto t :
+        chem_drawarrow(
+            (
+            (subpath
+            if chem_star[$] :
+                 chem_sb_pair@#                    of chem_r_fragment($,i)
+                ) paralleled 5chem_dbl_offset
+             else :
+                (chem_sb_pair@# shifted (i-1,i-1)) of chem_b_path[$]
+                ) paralleled 2chem_dbl_offset
+             fi
+            ) transformed chem_t,
+            r,c,) ;
+    endfor
 enddef ;
 
 vardef chem_au@# (suffix $) (expr f, t, r, c) = % AU
-    if not chem_star[$] :
-        chem_t := identity chem_transformed($) ;
-        for i=f upto t :
-            chem_drawarrow(
-                reverse(
-                (subpath (chem_sb_pair@# shifted (i-1,i-1)) of chem_b_path[$])
-                paralleled 2chem_dbl_offset) transformed chem_t,
-                r,c,) ;
-        endfor
-    fi
+    chem_t := identity chem_transformed($) ;
+    for i=f upto t :
+        chem_drawarrow(
+             ((reverse
+               subpath
+             if chem_star[$] :
+                 chem_sb_pair@#                    of chem_r_fragment($,i)
+                ) paralleled -5chem_dbl_offset
+             else :
+                (chem_sb_pair@# shifted (i-1,i-1)) of chem_b_path[$]
+                ) paralleled -2chem_dbl_offset
+             fi
+            ) transformed chem_t,
+            r,c,) ;
+    endfor
 enddef ;
 
 vardef chem_es@# (suffix $) (expr f, t, r, c) = % ES
@@ -1004,6 +1018,15 @@ enddef ;
 vardef chem_hb@# (suffix $) (expr f, t, r, c) = % HB
     if chem_star[$] :
         chem_rh@#($,f,t,r,c)
+    else :
+        chem_t := identity chem_transformed($) ;
+        for i=f upto t :
+            chem_draw(
+                (subpath (chem_sb_pair@# shifted (i-1,i-1)) of chem_b_path[$])
+                transformed chem_t,
+                chem_dot_factor*r,c,dashed withdots scaled ((.5chem_b_length/3)/5bp)) ;
+                % not symmetric - needs to be tweaked...
+        endfor
     fi
 enddef ;
 

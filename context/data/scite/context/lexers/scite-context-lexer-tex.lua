@@ -528,7 +528,7 @@ local group = {
 
 contextlexer._foldpattern = P("\\" ) * (P("start") + P("stop")) + S("{}") -- separate entry else interference
 
-contextlexer._foldsymbols = { -- these need to be style references
+contextlexer._foldsymbols = { -- these need to be style references .. todo: multiple styles
     _patterns    = {
         "\\start", "\\stop", -- regular environments
      -- "\\begin", "\\end",  -- (moveable) blocks
@@ -539,6 +539,8 @@ contextlexer._foldsymbols = { -- these need to be style references
     ["data"]     = environment,
     ["user"]     = environment,
     ["embedded"] = environment,
+    ["helper"]   = environment,
+    ["plain"]    = environment,
     ["grouping"] = group,
 }
 

@@ -147,6 +147,8 @@ local one_keys = {
     es    = "line",
     ed    = "line",
     et    = "line",
+    au    = "line",
+    ad    = "line",
     cz    = "text",
     rot   = "transform",
     dir   = "transform",
@@ -156,6 +158,7 @@ local one_keys = {
 
 local ring_keys = {
     db    = "line",
+    hb    = "line",
     br    = "line",
     lr    = "line",
     rr    = "line",
@@ -316,7 +319,7 @@ local pattern   =
 -- print(lpegmatch(pattern,"RZ13=x"))      -- 1 RZ false false table x
 
 local f_initialize       = 'if unknown context_chem : input mp-chem.mpiv ; fi ;'
-local f_start_structure  = formatters['chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);']
+local f_start_structure  = formatters['chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);']
 local f_set_trace_bounds = formatters['chem_trace_boundingbox := %l ;']
 local f_stop_structure   = 'chem_stop_structure;'
 local f_start_component  = 'chem_start_component;'
@@ -536,6 +539,8 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                             if not t then txt, t = fetch(txt) end
                             if t then
                                 t = molecule(processor_tostring(t))
+-- local p, t = processors.split(t)
+-- m = m + 1 ; metacode[m] = f_text(operation,p or align,variant,si,t)
                                 m = m + 1 ; metacode[m] = f_text(operation,align,variant,si,t)
                             end
                         end
@@ -605,7 +610,7 @@ end
 --
 -- rulethickness in points
 
-local function checked(d,factor,unit,scale)
+local function checked(d,bondlength,unit,scale)
     if d == v_none then
         return 0
     end
@@ -613,9 +618,9 @@ local function checked(d,factor,unit,scale)
     if not n then
         -- assume dimen
     elseif n >= 10 or n <= -10 then
-        return factor * unit * n / 1000
+        return bondlength * unit * n / 1000
     else
-        return factor * unit * n
+        return bondlength * unit * n
     end
     local n = todimen(d)
     if n then
@@ -625,7 +630,7 @@ local function checked(d,factor,unit,scale)
     end
 end
 
-local function calculated(height,bottom,top,factor,unit,scale)
+local function calculated(height,bottom,top,bondlength,unit,scale)
     local scaled = 0
     if height == v_none then
         -- this always wins
@@ -634,24 +639,24 @@ local function calculated(height,bottom,top,factor,unit,scale)
         top    = "0pt"
     elseif height == v_fit then
         height = "true"
-        bottom = bottom == v_fit and "true" or topoints(checked(bottom,factor,unit,scale))
-        top    = top    == v_fit and "true" or topoints(checked(top,   factor,unit,scale))
+        bottom = bottom == v_fit and "true" or topoints(checked(bottom,bondlength,unit,scale))
+        top    = top    == v_fit and "true" or topoints(checked(top,   bondlength,unit,scale))
     else
-        height = checked(height,factor,unit,scale)
+        height = checked(height,bondlength,unit,scale)
         if bottom == v_fit then
             if top == v_fit then
                 bottom  = height / 2
                 top     = bottom
             else
-                top     = checked(top,factor,unit,scale)
+                top     = checked(top,bondlength,unit,scale)
                 bottom  = height - top
             end
         elseif top == v_fit then
-            bottom = checked(bottom,factor,unit,scale)
+            bottom = checked(bottom,bondlength,unit,scale)
             top    = height - bottom
         else
-            bottom  = checked(bottom,factor,unit,scale)
-            top     = checked(top,   factor,unit,scale)
+            bottom  = checked(bottom,bondlength,unit,scale)
+            top     = checked(top,   bondlength,unit,scale)
             local ratio = height / (bottom+top)
             bottom  = bottom  * ratio
             top     = top     * ratio
@@ -669,7 +674,7 @@ function chemistry.start(settings)
     local width          = settings.width         or v_fit
     local height         = settings.height        or v_fit
     local unit           = settings.unit          or 655360
-    local factor         = settings.factor        or 3
+    local bondlength     = settings.factor        or 3
     local rulethickness  = settings.rulethickness or 65536
     local rulecolor      = settings.rulecolor     or ""
     local axiscolor      = settings.framecolor    or ""
@@ -683,7 +688,7 @@ function chemistry.start(settings)
     --
     align = settings.symalign or "auto"
     if trace_structure then
-        report_chemistry("unit %p, factor %s, symalign %s",unit,factor,align)
+        report_chemistry("unit %p, bondlength %s, symalign %s",unit,bondlength,align)
     end
     if align ~= "" then
         align = "." .. align
@@ -713,8 +718,8 @@ function chemistry.start(settings)
     local sp_width  = 0
     local sp_height = 0
     --
-    width,  left,   right, sp_width  = calculated(width, left,  right,factor,unit,scale)
-    height, bottom, top,   sp_height = calculated(height,bottom,top,  factor,unit,scale)
+    width,  left,   right, sp_width  = calculated(width, left,  right,bondlength,unit,scale)
+    height, bottom, top,   sp_height = calculated(height,bottom,top,  bondlength,unit,scale)
     --
     if width ~= "true" and height ~= "true" and texgetcount("@@trialtypesetting") ~= 0 then
         if trace_structure then
@@ -736,7 +741,7 @@ function chemistry.start(settings)
     metacode[#metacode+1] = f_start_structure(
         chemistry.structures,
         left, right, top, bottom,
-        rotation, topoints(unit), factor, topoints(offset),
+        rotation, topoints(unit), bondlength, scale, topoints(offset),
         tostring(settings.axis == v_on), topoints(rulethickness), tostring(axiscolor)
     )
     metacode[#metacode+1] = f_set_trace_bounds(trace_boundingbox) ;

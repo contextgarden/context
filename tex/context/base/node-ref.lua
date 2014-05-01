@@ -416,17 +416,20 @@ function references.get(n) -- not public so functionality can change
     return sn and sn[1]
 end
 
-local function makereference(width,height,depth,reference)
+local function makereference(width,height,depth,reference) -- height and depth are of parent
     local sr = stack[reference]
     if sr then
         if trace_references then
             report_reference("resolving attribute %a",reference)
         end
         local resolved, ht, dp, set, n = sr[1], sr[2], sr[3], sr[4], sr[5]
+-- logs.report("temp","child: ht=%p dp=%p, parent: ht=%p dp=%p",ht,dp,height,depth)
         if ht then
             if height < ht then height = ht end
             if depth  < dp then depth  = dp end
         end
+-- logs.report("temp","used: ht=%p dp=%p",height,depth)
+-- step = 0
         local annot = nodeinjections.reference(width,height,depth,set)
         if annot then
 annot = tonut(annot)
