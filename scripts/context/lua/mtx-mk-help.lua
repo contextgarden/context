@@ -403,7 +403,7 @@ local helpinfo = [[
 <application>
  <metadata>
   <entry name="name">mptopdf</entry>
-  <entry name="detail">convert MetaPost to PDF</entry>
+  <entry name="detail">convert MetaPost figures to PDF</entry>
   <entry name="version">1.4.1</entry>
  </metadata>
  <flags>

@@ -18,6 +18,7 @@ local floor, date, time, concat = math.floor, os.date, os.time, table.concat
 local lower, rep, match = string.lower, string.rep, string.match
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring = tonumber, tostring
+local P, C, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.match
 
 local context            = context
 local commands           = commands
@@ -124,13 +125,26 @@ local counters = allocate {
 
 languages.counters = counters
 
-counters['ar']   = counters['arabic']
-counters['gr']   = counters['greek']
-counters['g']    = counters['greek']
-counters['sl']   = counters['slovenian']
-counters['kr']   = counters['korean']
-counters['kr-p'] = counters['korean-parent']
-counters['kr-c'] = counters['korean-circle']
+counters['ar']                   = counters['arabic']
+counters['gr']                   = counters['greek']
+counters['g']                    = counters['greek']
+counters['sl']                   = counters['slovenian']
+counters['kr']                   = counters['korean']
+counters['kr-p']                 = counters['korean-parent']
+counters['kr-c']                 = counters['korean-circle']
+
+counters['thainumerals']         = counters['thai']
+counters['devanagarinumerals']   = counters['devanagari']
+counters['gurmurkhinumerals']    = counters['gurmurkhi']
+counters['gujaratinumerals']     = counters['gujarati']
+counters['tibetannumerals']      = counters['tibetan']
+counters['greeknumerals']        = counters['greek']
+counters['arabicnumerals']       = counters['arabic']
+counters['persiannumerals']      = counters['persian']
+counters['arabicexnumerals']     = counters['persian']
+counters['koreannumerals']       = counters['korean']
+counters['koreanparentnumerals'] = counters['korean-parent']
+counters['koreancirclenumerals'] = counters['korean-circle']
 
 local fallback = utfbyte('0')
 
@@ -207,6 +221,11 @@ function converters.Character (n) return chr (n,upper_offset) end
 function converters.characters(n) return chrs(n,lower_offset) end
 function converters.Characters(n) return chrs(n,upper_offset) end
 
+converters['a']  = converters.characters
+converters['A']  = converters.Characters
+converters['AK'] = converters.Characters
+converters['KA'] = converters.Characters
+
 function commands.alphabetic(n,c) context(do_alphabetic(n,counters[c],lowercharacter)) end
 function commands.Alphabetic(n,c) context(do_alphabetic(n,counters[c],uppercharacter)) end
 function commands.character (n)   context(chr (n,lower_offset)) end
@@ -270,6 +289,13 @@ end
 converters.toroman       = toroman
 converters.Romannumerals = toroman
 converters.romannumerals = function(n) return lower(toroman(n)) end
+
+converters['i']  = converters.romannumerals
+converters['I']  = converters.Romannumerals
+converters['r']  = converters.romannumerals
+converters['R']  = converters.Romannumerals
+converters['KR'] = converters.Romannumerals
+converters['RK'] = converters.Romannumerals
 
 function commands.romannumerals(n) context(lower(toroman(n))) end
 function commands.Romannumerals(n) context(      toroman(n))  end
@@ -471,6 +497,10 @@ converters.tochinese = tochinese
 function converters.chinesenumerals   (n) return tochinese(n,"normal") end
 function converters.chinesecapnumerals(n) return tochinese(n,"cap"   ) end
 function converters.chineseallnumerals(n) return tochinese(n,"all"   ) end
+
+converters['cn']   = converters.chinesenumerals
+converters['cn-c'] = converters.chinesecapnumerals
+converters['cn-a'] = converters.chineseallnumerals
 
 function commands.chinesenumerals   (n) context(tochinese(n,"normal")) end
 function commands.chinesecapnumerals(n) context(tochinese(n,"cap"   )) end
@@ -698,8 +728,6 @@ function commands.ordinal(n,language)
         context.highordinalstr(o)
     end
 end
-
--- verbose numbers
 
 -- verbose numbers
 
@@ -947,6 +975,20 @@ function commands.verbose(n,language)
     local t = language and data[language]
     context(t and t.translate(n) or n)
 end
+
+-- These are just helpers but not really for the tex end. Do we have to
+-- use translate here?
+
+local whitespace  = lpeg.patterns.whitespace
+local word        = (1-whitespace) / characters.upper * (1-whitespace)^1
+local spacing     = whitespace^1
+local pattern_one = Cs(word * P(1)^1)
+local pattern_all = Cs((word + spacing)^1)
+
+function converters.word (s) return s end
+function converters.words(s) return s end
+function converters.Word (s) return lpegmatch(pattern_one,s) end
+function converters.Words(s) return lpegmatch(pattern_all,s) end
 
 -- --
 

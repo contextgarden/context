@@ -54,7 +54,7 @@ local f_fore_none  = formatters['.%s { display: inline ; font-weight: normal ; c
 local f_none_bold  = formatters['.%s { display: inline ; font-weight: bold   ; }']
 local f_none_none  = formatters['.%s { display: inline ; font-weight: normal ; }']
 local f_div_class  = formatters['<div class="%s">%s</div>']
-local f_linenumber = formatters['\n<div class="linenumber">%s</div>']
+local f_linenumber = formatters['<div class="linenumber">%s</div>\n']
 local f_div_number = formatters['.linenumber { display: inline-block ; font-weight: normal ; width: %sem ; margin-right: 2em ; padding-right: .25em ; text-align: right ; background-color: #C7C7C7 ; }']
 
 local replacer_regular = lpeg.replacer {
@@ -63,13 +63,18 @@ local replacer_regular = lpeg.replacer {
     ["&"]  = "&amp;",
 }
 
-local linenumber = 0
+local linenumber  = 0
+local linenumbers = { }
 
 local replacer_numbered = lpeg.replacer {
     ["<"]  = "&lt;",
     [">"]  = "&gt;",
     ["&"]  = "&amp;",
-    [lpeg.patterns.newline] = function() linenumber = linenumber + 1 return f_linenumber(linenumber) end,
+    [lpeg.patterns.newline] = function()
+        linenumber = linenumber + 1
+        linenumbers[linenumber] = f_linenumber(linenumber)
+        return "\n"
+    end,
 }
 
 local css = nil
@@ -114,24 +119,19 @@ end
 
 local function exportstyled(lexer,text,numbered)
     local result = lexer.lex(lexer,text,0)
-    local start = 1
+    local start  = 1
     local whites = exportwhites()
-    local buffer, b = { "<pre>" }, 1
-    linenumber = 1
+    local buffer = { }
+    local b      = 0
+    linenumber   = 0
+    linenumbers  = { }
     local replacer = numbered and replacer_numbered or replacer_regular
-    if numbered then
-        b = b + 1
-        buffer[b] = f_linenumber(1)
-    end
     local n = #result
     for i=1,n,2 do
         local ii = i + 1
         local style = result[i]
         local position = result[ii]
         local txt = sub(text,start,position-1)
-        if ii == n then
-            txt = gsub(txt,"[%s]+$","")
-        end
         txt = lpegmatch(replacer,txt)
         b = b + 1
         if whites[style] then
@@ -141,9 +141,8 @@ local function exportstyled(lexer,text,numbered)
         end
         start = position
     end
-    buffer[b+1] = "</pre>"
     buffer = concat(buffer)
-    return buffer
+    return buffer, concat(linenumbers)
 end
 
 local function exportcsslinenumber()
@@ -154,28 +153,44 @@ local htmlfile = utilities.templates.replacer([[
 <?xml version="1.0"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
-    <title>context util-sci web page: text</title>
+    <title>%title%</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
     <style type="text/css"><!--
 %lexingstyles%
 %numberstyles%
     --></style>
     <body>
-%lexedcontent%
+        <table style="padding:0; margin:0;">
+            <tr>
+                <td><pre>%linenumbers%</pre></td>
+                <td><pre>%lexedcontent%</pre></td>
+            </tr>
+        </table>
     </body>
 </html>
 ]])
 
-function scite.tohtml(data,lexname,numbered)
+function scite.tohtml(data,lexname,numbered,title)
+    local source, lines = exportstyled(loadedlexers[lexname],data or "",numbered)
     return htmlfile {
-        lexedcontent = exportstyled(loadedlexers[lexname],data or "",numbered), -- before numberstyles
+        lexedcontent = source, -- before numberstyles
         lexingstyles = exportcsslexing(),
         numberstyles = exportcsslinenumber(),
+        title        = title or "context source file",
+        linenumbers  = lines,
     }
 end
 
-function scite.filetohtml(filename,lexname,targetname,numbered)
-    io.savedata(targetname or "util-sci.html",scite.tohtml(io.loaddata(filename),lexname or file.suffix(filename),numbered))
+local function maketargetname(name)
+    if name then
+        return file.removesuffix(name) .. "-" .. file.suffix(name) .. ".html"
+    else
+        return "util-sci.html"
+    end
+end
+
+function scite.filetohtml(filename,lexname,targetname,numbered,title)
+    io.savedata(targetname or "util-sci.html",scite.tohtml(io.loaddata(filename),lexname or file.suffix(filename),numbered,title or filename))
 end
 
 function scite.css()
@@ -192,7 +207,7 @@ local htmlfile = utilities.templates.replacer([[
 <?xml version="1.0"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml">
-    <title>context util-sci web page: text</title>
+    <title>%title%</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
     <style type="text/css"><!--
 %styles%
@@ -211,20 +226,22 @@ function scite.converttree(sourceroot,targetroot,numbered)
         local skipped = { }
         local noffiles = 0
         dir.makedirs(targetroot)
-        local function scan(sourceroot,targetroot)
+        local function scan(sourceroot,targetroot,subpath)
             local tree = { }
             for name in lfs.dir(sourceroot) do
                 if name ~= "." and name ~= ".." then
                     local sourcename = file.join(sourceroot,name)
                     local targetname = file.join(targetroot,name)
                     local mode = lfs.attributes(sourcename,'mode')
+                    local path = subpath and file.join(subpath,name) or name
                     if mode == 'file' then
-                        local filetype = file.suffix(sourcename)
-                        local basename = file.basename(name)
-                        local targetname = file.replacesuffix(targetname,"html")
+                        local filetype   = file.suffix(sourcename)
+                        local basename   = file.basename(name)
+                        local targetname = maketargetname(targetname)
+                        local fullname   = file.join(path,name)
                         if knownlexers[filetype] then
                             report("converting file %a to %a",sourcename,targetname)
-                            scite.filetohtml(sourcename,nil,targetname,numbered)
+                            scite.filetohtml(sourcename,nil,targetname,numbered,fullname)
                             noffiles = noffiles + 1
                             tree[#tree+1] = f_tree_entry(file.basename(targetname),basename)
                         else
@@ -233,15 +250,16 @@ function scite.converttree(sourceroot,targetroot,numbered)
                         end
                     else
                         dir.makedirs(targetname)
-                        scan(sourcename,targetname)
+                        scan(sourcename,targetname,path)
                         tree[#tree+1] = f_tree_entry(file.join(name,"files.html"),name)
                     end
                 end
             end
-            report("saving tree in %a",treename)
+            report("saving tree in %a",targetroot)
             local htmldata = htmlfile {
                 dirlist = concat(tree,"\n"),
-                styles = "",
+                styles  = "",
+                title   = path or "context dir listing",
             }
             io.savedata(file.join(targetroot,"files.html"),htmldata)
         end

@@ -265,9 +265,15 @@ function interfaces.cachesetup(t)
     end
 end
 
-function interfaces.is_command(str)
-    return (str and str ~= "" and token.csname_name(token.create(str)) ~= "") or false -- there will be a proper function for this
-end
+-- if token.lookup then
+--     interfaces.is_command = token.lookup
+-- else
+
+    function interfaces.is_command(str)
+        return (str and str ~= "" and token.csname_name(token.create(str)) ~= "") or false -- there will be a proper function for this
+    end
+
+-- end
 
 function interfaces.interfacedcommand(name)
     local command = complete.commands[name]

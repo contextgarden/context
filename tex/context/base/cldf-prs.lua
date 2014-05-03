@@ -67,6 +67,7 @@ cpatterns.nested   = nested
 
 -- print(lpegmatch(scripted,"10^-3_x"))
 -- print(lpegmatch(scripted,"\\L {C_5}"))
+-- print(lpegmatch(scripted,"\\SL{}"))
 -- print(lpegmatch(scripted,"\\SL{C_5}"))
 -- print(lpegmatch(scripted,"\\SL{C_5}"))
 -- print(lpegmatch(scripted,"{C_5}"))

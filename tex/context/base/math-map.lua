@@ -445,6 +445,8 @@ mathematics.alphabets = alphabets
 
 local boldmap = { }
 
+-- ["blackboard"] = { ["bf"] = { ["digits"] = {
+
 local function remap(tf,bf)
     for _, alphabet in next, alphabets do
         local tfdata = alphabet[tf]

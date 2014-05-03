@@ -2067,9 +2067,9 @@
      \donetrue
    \fi\fi
    \ifdone
-     \c_tabl_tabulate_repeathead\executeifdefined{\??tabulateheader\tabulationparameter\c!header}\zerocount
+     \global\c_tabl_tabulate_repeathead\executeifdefined{\??tabulateheader\tabulationparameter\c!header}\zerocount
    \else
-     \c_tabl_tabulate_repeathead\zerocount
+     \global\c_tabl_tabulate_repeathead\zerocount
    \fi
    %
    \the\t_tabl_tabulate_initializers_first % collect more here

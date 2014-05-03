@@ -20,7 +20,8 @@
 % --sort                : sort filenames first
 % --topspace=dimension  : distance above first line
 % --backspace=dimension : distance before left margin
-% --pretty              : pretty print comform suffix (temporarily disabled)
+% --pretty              : pretty print comform suffix
+% --scite               : pretty print comform suffix using scite lexer
 % --bodyfont=list       : additional bodyfont settings
 % --paperformat=spec    : paper*print or paperxprint
 %
@@ -70,9 +71,14 @@
     }
 
     local pattern = document.arguments.pattern
+    local scite   = document.arguments.scite
 
     if pattern then
         document.files = dir.glob(pattern)
+    end
+
+    if scite then
+        context.usemodule { "scite" }
     end
 
     if #document.files > 0 then
@@ -94,19 +100,24 @@
                     { function() context.detokenize(pattern and filename or file.basename(filename)) return true end },
                     { function() context.pagenumber() return true end }
                 )
-                if pretty then
+                if scite then
+                    context.scitefile { filename } -- here { }
+                elseif pretty then
                     if type(pretty) ~= "string" or pretty == "" then
                         context.setuptyping { option = "color" }
                     else
                         context.setuptyping { option = types[pretty] or pretty }
                     end
+                    context.typefile(filename)
+                else
+                    context.typefile(filename)
                 end
-                context.typefile(filename)
             end
         end
     else
         context("no files given")
     end
+
 \stopluacode
 
 \stoptext
