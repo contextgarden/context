@@ -194,7 +194,7 @@ local continue   = false
 -- An \n is unlikely to show up as \r is the endlinechar but \n is more generic
 -- for us.
 
--- This fits the way we fetch verbatim: the indentatio before the sentinel
+-- This fits the way we fetch verbatim: the indentation before the sentinel
 -- determines the stripping.
 
 -- str = [[
@@ -238,7 +238,7 @@ local whatever  = (P(1)-eol)^0 * eol^1
 
 local strippers = { }
 
-local function undent(str) -- new version, needs testing
+local function undent(str) -- new version, needs testing: todo: not always needed, like in xtables
     local margin = lpegmatch(getmargin,str)
     if type(margin) ~= "string" then
         return str
@@ -255,7 +255,7 @@ local function undent(str) -- new version, needs testing
     return lpegmatch(stripper,str) or str
 end
 
-function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes) -- maybe move \\ to call
+function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes,doundent) -- maybe move \\ to call
     local dn = getcontent(name)
     if dn == "" then
         nesting  = 0
@@ -291,8 +291,8 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes) -- maybe 
         if last == "\n" or last == "\r" then -- \n is unlikely as \r is the endlinechar
             dn = sub(dn,1,-2)
         end
-        if autoundent then
-            dn =  undent(dn)
+        if doundent or (autoundent and doundent == nil) then
+            dn = undent(dn)
         end
     end
     assign(name,dn,catcodes)

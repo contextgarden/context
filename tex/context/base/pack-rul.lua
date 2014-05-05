@@ -14,6 +14,8 @@ if not modules then modules = { } end modules ['pack-rul'] = {
 -- challenge: adapt glue_set
 -- setfield(h,"glue_set", getfield(h,"glue_set") * getfield(h,"width")/maxwidth -- interesting ... doesn't matter much
 
+local type = type
+
 local hlist_code      = nodes.nodecodes.hlist
 local vlist_code      = nodes.nodecodes.vlist
 local box_code        = nodes.listcodes.box
@@ -29,6 +31,7 @@ local setfield        = nuts.setfield
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
 local getlist         = nuts.getlist
+local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getbox          = nuts.getbox
 
@@ -151,4 +154,45 @@ function commands.doanalyzeframedbox(n)
     texsetcount("global","framednoflines",noflines)
     texsetdimen("global","framedfirstheight",firstheight or 0)
     texsetdimen("global","framedlastdepth",lastdepth or 0)
+end
+
+
+function nodes.maxboxwidth(box)
+    local boxwidth = getfield(box,"width")
+    if boxwidth == 0 then
+        return 0
+    end
+    local list = getlist(box)
+    if not list then
+        return 0
+    end
+    if getid(box) == hlist_code then
+        return boxwidth
+    end
+    local lastlinelength = 0
+    local maxwidth       = 0
+    local function check(n,repack)
+        local l = getlist(n)
+        if l then
+            if repack then
+                local subtype = getsubtype(n)
+                if subtype == box_code or subtype == line_code then
+                    lastlinelength = node_dimensions(l,getfield(n,"dir"))
+                else
+                    lastlinelength = getfield(n,"width")
+                end
+            else
+                lastlinelength = getfield(n,"width")
+            end
+            if lastlinelength > maxwidth then
+                maxwidth = lastlinelength
+            end
+        end
+    end
+    for h in traverse_id(hlist_code,list) do -- no dir etc needed
+        check(h,true)
+    end
+    for v in traverse_id(vlist_code,list) do -- no dir etc needed
+        check(v,false)
+    end
 end

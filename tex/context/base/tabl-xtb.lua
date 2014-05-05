@@ -66,6 +66,7 @@ local setfield                = nuts.setfield
 local copy_node_list          = nuts.copy_list
 local hpack_node_list         = nuts.hpack
 local flush_node_list         = nuts.flush_list
+local takebox                 = nuts.takebox
 
 local nodepool                = nuts.pool
 
@@ -81,6 +82,7 @@ local v_height                = variables.height
 local v_repeat                = variables["repeat"]
 local v_max                   = variables.max
 local v_fixed                 = variables.fixed
+local v_auto                  = variables.auto
 
 local xtables                 = { }
 typesetters.xtables           = xtables
@@ -257,13 +259,26 @@ function xtables.set_reflow_width()
     elseif dimensionstate == 3 then
         fixedrows[r]    = height -- width
         fixedcolumns[c] = width -- height
-    else -- probably something frozen, like an image -- we could parse the list
+    elseif data.options[v_auto] then -- new per 5/5/2014
+        data.autowidths[c] = true
+    else
+        -- no dimensions are set in the cell
         if width <= data.criterium_h and height >= data.criterium_v then
+            -- somewhat tricky branch
             if width > fixedcolumns[c] then -- how about a span here?
-                fixedcolumns[c] = width
+                -- maybe an image, so let's fix
+                 fixedcolumns[c] = width
+            end
+        else
+            -- safeguard as it could be text that can be recalculated
+            -- and the previous branch could have happened in a previous
+            -- row and then forces a wrong one-liner in a multiliner
+            if width > fixedcolumns[c] then
+                data.autowidths[c] = true -- new per 5/5/2014
             end
         end
     end
+    --
     drc.dimensionstate = dimensionstate
     --
     local nx, ny = drc.nx, drc.ny
@@ -309,6 +324,7 @@ function xtables.initialize_reflow_height()
     end
     texsetdimen("d_tabl_x_width",w)
     local dimensionstate = drc.dimensionstate or 0
+-- print(r,c,w,data.autowidths[c])
     if dimensionstate == 1 or dimensionstate == 3 then
         -- width was fixed so height is known
         texsetcount("c_tabl_x_skip_mode",1)
@@ -385,7 +401,8 @@ function xtables.set_construct()
  -- end
     local drc = row[c]
     -- this will change as soon as in luatex we can reset a box list without freeing
-    drc.list = copy_node_list(getbox("b_tabl_x"))
+--     drc.list = copy_node_list(getbox("b_tabl_x"))
+drc.list = takebox("b_tabl_x")
  -- c = c + drc.nx - 1
  -- data.currentcolumn = c
 end
@@ -395,7 +412,7 @@ local function showwidths(where,widths,autowidths)
     for i=1,#widths do
         result[#result+1] = format("%12s%s",points(widths[i]),autowidths[i] and "*" or " ")
     end
-    return report_xtable("%s : %s",where,concat(result," "))
+    return report_xtable("%s widths: %s",where,concat(result," "))
 end
 
 function xtables.reflow_width()

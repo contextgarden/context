@@ -159,7 +159,7 @@
   {\bgroup
    \tabl_x_prepare{#settings}%
    \edef\tabl_x_current_buffer{\tabl_x_default_buffer}%
-   \buff_pickup{\tabl_x_current_buffer}{startxtable}{stopxtable}\relax\tabl_x_process}
+   \buff_pickup{\tabl_x_current_buffer}{startxtable}{stopxtable}\relax\tabl_x_process\zerocount}
 
 \unexpanded\def\processxtablebuffer
   {\dosingleempty\tabl_x_process_buffer_directly}
@@ -175,7 +175,7 @@
   {\bgroup
    \let\tabl_x_start_table\tabl_x_process_buffer
    \edef\tabl_x_current_buffer{#name}%
-   \tabl_x_get_buffer % pickup settings
+   \tabl_x_get_buffer %      settings
    \tabl_x_process}
 
 \unexpanded\def\tabl_x_start_ignore[#settings]%
@@ -223,7 +223,7 @@
    \tabl_x_check_textwidth
    \forgetall
    \edef\tabl_x_current_buffer{\tabl_x_default_buffer}%
-   \normalexpanded{\buff_pickup{\tabl_x_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\tabl_x_process}}
+   \normalexpanded{\buff_pickup{\tabl_x_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\tabl_x_process\zerocount}}
 
 \unexpanded\def\tabl_x_stop_named
   {}
@@ -569,7 +569,7 @@
   {\dostarttagged\t!tablecell\empty % can't we just tag the box
    \setbox\b_tabl_x\hbox\bgroup
    \letxtableparameter\c!width \d_tabl_x_width  % overloads given width
-   \letxtableparameter\c!height\d_tabl_x_height % overloads given height
+   \letxtableparameter\c!height\d_tabl_x_height % overloads given height (commenting it ... nice option)
    \ctxcommand{x_table_init_construct()}%
    \inheritedxtableframed\bgroup
    \tabl_x_begin_of_cell

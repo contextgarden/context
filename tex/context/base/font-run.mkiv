@@ -311,7 +311,7 @@
 
 \ifdefined\databox \else \newbox\databox \fi
 
-\unexpanded\gdef\testminimalbaseline#1%
+\unexpanded\gdef\testminimalbaseline#1% to be used in a tabulate
   {\setbox\databox\ruledhbox{#1}%
    \scratchdimen\ht\databox
    \advance\scratchdimen\dp\databox
