@@ -106,11 +106,56 @@
    \c!rulethickness=.25\exheight,
    \c!left=0x2E,
    \c!right=0x2E,
+   \c!topdistance=,
+   \c!bottomdistance=,
    \c!rule=\v!auto]
 
 \appendtoks
     \setuevalue{\currentmathfraction}{\math_frac{\currentmathfraction}}%
 \to \everydefinemathfraction
+
+% Sometimes users want control over the distances:
+
+\let\math_fraction_set_distance\relax
+
+\appendtoks
+    \math_fraction_set_distance
+\to \everymathematics
+
+\unexpanded\def\math_fraction_set_distance_top
+  {\Umathfractionnumup    \displaystyle\m_math_fraction_distance_top
+   \relax}
+
+\unexpanded\def\math_fraction_set_distance_bot
+  {\Umathfractiondenomdown\displaystyle\m_math_fraction_distance_bot
+   \relax}
+
+\unexpanded\def\math_fraction_set_distance_all
+  {\Umathfractionnumup    \displaystyle\m_math_fraction_distance_top
+   \Umathfractiondenomdown\displaystyle\m_math_fraction_distance_bot
+   \relax}
+
+\appendtoks
+    \ifx\currentmathfraction\empty
+      \edef\m_math_fraction_distance_top{\mathfractionparameter\c!topdistance}%
+      \edef\m_math_fraction_distance_bot{\mathfractionparameter\c!bottomdistance}%
+      \ifx\m_math_fraction_distance_top\empty
+        \ifx\m_math_fraction_distance_bot\empty
+          \let\math_fraction_set_distance\relax
+        \else
+          \let\math_fraction_set_distance\math_fraction_set_distance_bot
+        \fi
+      \else
+        \ifx\m_math_fraction_distance_bot\empty
+          \let\math_fraction_set_distance\math_fraction_set_distance_top
+        \else
+          \let\math_fraction_set_distance\math_fraction_set_distance_all
+        \fi
+      \fi
+    \fi
+\to \everysetupmathfraction
+
+% So far for control.
 
 \newdimen\d_math_fraction_margin
 

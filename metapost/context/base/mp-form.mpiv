@@ -27,4 +27,4 @@ string Fmfont_ ; Fmfont_ := "crap" ;
 
 vardef mfun_format_number(expr fmt, i) =
     "\ctxlua{metapost.formatnumber('" & fmt & "'," & if string i : i else : decimal i fi & ")}"
-enddef
+enddef ;

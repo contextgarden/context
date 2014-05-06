@@ -60,6 +60,8 @@ return {
         "expandafter",
         "minute", "hour", "outputformat", "outputtemplate", "filenametemplate", "fontmapfile", "fontmapline",
         "fontpart", "fontsize", "glyph", "restoreclipcolor", "troffmode",
+        --
+        "runscript",
     },
     commands = {
         "beginfig", "endfig",

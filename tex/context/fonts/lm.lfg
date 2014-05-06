@@ -34,8 +34,19 @@ return {
                 [0x2213] = { -- ∓
                     yoffset = -100,
                 },
-            }
-        }
+            },
+        },
+--         parameters = {
+--             FractionNumeratorDisplayStyleShiftUp = function(value,target,original)
+--                 local o = original.mathparameters.FractionNumeratorDisplayStyleShiftUp
+--                 if o > 675 then
+--                     o = 600
+--                 else
+--                     -- probably tuned
+--                 end
+--                 return o * target.parameters.factor
+--             end,
+--         }
     },
     filenames = {
         ["latinmodern-math-regular.otf"] = {

@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
 
 -- This is very preliminary code!
 
+-- maybe we need mplib.model, but how with instances
+
 local type, tostring, select, loadstring = type, tostring, select, loadstring
 local formatters = string.formatters
 local find, gsub = string.find, string.gsub
@@ -51,14 +53,25 @@ function mp._f_()
     end
 end
 
-local f_pair      = formatters["(%s,%s)"]
-local f_triplet   = formatters["(%s,%s,%s)"]
-local f_quadruple = formatters["(%s,%s,%s,%s)"]
+local f_numeric   = formatters["%.16f"]
+local f_pair      = formatters["(%.16f,%.16f)"]
+local f_triplet   = formatters["(%.16f,%.16f,%.16f)"]
+local f_quadruple = formatters["(%.16f,%.16f,%.16f,%.16f)"]
 
 function mp.print(...)
     for i=1,select("#",...) do
-        n = n + 1
-        buffer[n] = tostring((select(i,...)))
+        local value = select(i,...)
+        if value then
+            n = n + 1
+            local t = type(value)
+            if t == "number" then
+                buffer[n] = f_numeric(value)
+            elseif t == "string" then
+                buffer[n] = value
+            else
+                buffer[n] = tostring(value)
+            end
+        end
     end
 end
 
@@ -113,14 +126,23 @@ end
 
 local f_code = formatters["%s return mp._f_()"]
 
-function metapost.runscript(code)
-    local f = loadstring(f_code(code))
-    if f then
-        return tostring(f())
-    else
-        return ""
-    end
-end
+-- function metapost.runscript(code)
+--     local f = loadstring(f_code(code))
+--     if f then
+--         local result = f()
+--         if result then
+--             local t = type(result)
+--             if t == "number" then
+--                 return f_numeric(result)
+--             elseif t == "string" then
+--                 return result
+--             else
+--                 return tostring(result)
+--             end
+--         end
+--     end
+--     return ""
+-- end
 
 local cache, n = { }, 0 -- todo: when > n then reset cache or make weak
 
@@ -128,29 +150,34 @@ function metapost.runscript(code)
     if trace_enabled and trace_luarun then
         report_luarun("code: %s",code)
     end
+    local f
     if n > 100 then
         cache = nil -- forget about caching
-        local f = loadstring(f_code(code))
-        if f then
-            return tostring(f())
-        else
-            return ""
-        end
+        f = loadstring(f_code(code))
     else
-        local f = cache[code]
-        if f then
-            return tostring(f())
-        else
+        f = cache[code]
+        if not f then
             f = loadstring(f_code(code))
             if f then
                 n = n + 1
                 cache[code] = f
-                return tostring(f())
-            else
-                return ""
             end
         end
     end
+    if f then
+        local result = f()
+        if result then
+            local t = type(result)
+            if t == "number" then
+                return f_numeric(result)
+            elseif t == "string" then
+                return result
+            else
+                return tostring(result)
+            end
+        end
+    end
+    return ""
 end
 
 -- function metapost.initializescriptrunner(mpx)

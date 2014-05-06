@@ -783,6 +783,9 @@ enddef ;
 % passvariable("boolean",false) ;
 % passvariable("path",fullcircle scaled 1cm) ;
 
+% we could use the new lua interface but there is not that much gain i.e.
+% we still need to serialize
+
 vardef mfun_point_to_string(expr p,i) =
     decimal xpart (point       i of p) & " " &
     decimal ypart (point       i of p) & " " &

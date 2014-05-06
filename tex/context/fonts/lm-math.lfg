@@ -231,7 +231,7 @@ local seventeen = {
 return {
     name = "lm-math",
     version = "1.00",
-    comment = "Goodies that complement latin modern math.",
+    comment = "Goodies that complement latin modern math (virtual).",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
