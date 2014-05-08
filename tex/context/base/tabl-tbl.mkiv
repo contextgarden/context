@@ -1066,6 +1066,9 @@
 
 \def\tabl_tabulate_insert_content
   {\tabl_tabulate_insert_head
+   \ifcase\c_tabl_tabulate_repeathead \else
+     \tabulatenoalign{\penalty\zerocount}% added 7/5/2014 WS mail
+   \fi
    \tabl_tabulate_insert_body
    \tabl_tabulate_insert_foot
    \tabl_tabulate_remove_funny_line}

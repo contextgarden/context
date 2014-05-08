@@ -44,8 +44,8 @@ local registerotffeature  = otffeatures.register
 
 local setmetatableindex   = table.setmetatableindex
 
-local texgetattribute        = tex.getattribute
-local texsetattribute        = tex.setattribute
+local texgetattribute     = tex.getattribute
+local texsetattribute     = tex.setattribute
 
 local trace_greek         = false  trackers.register("math.greek",  function(v) trace_greek = v end)
 local report_remapping    = logs.reporter("mathematics","remapping")
@@ -59,7 +59,52 @@ local mathematics         = mathematics
 -- diagnostics and quick and dirty alphabet tracing (s-mat-10.mkiv) as we deal with
 -- it otherwise.
 
-mathematics.gaps = {
+-- todo: allocate
+
+mathematics.styles       = allocate { "regular", "sansserif", "monospaced", "fraktur", "script", "blackboard" }
+mathematics.alternatives = allocate { "normal", "bold", "italic", "bolditalic" }
+mathematics.sets         = allocate { "ucletters", "lcletters", "digits", "ucgreek", "lcgreek", "symbols" }
+
+mathematics.charactersets = allocate {
+    ucletters = {
+        0x00041, 0x00042, 0x00043, 0x00044, 0x00045,
+        0x00046, 0x00047, 0x00048, 0x00049, 0x0004A,
+        0x0004B, 0x0004C, 0x0004D, 0x0004E, 0x0004F,
+        0x00050, 0x00051, 0x00052, 0x00053, 0x00054,
+        0x00055, 0x00056, 0x00057, 0x00058, 0x00059,
+        0x0005A,
+    },
+    lcletters = {
+        0x00061, 0x00062, 0x00063, 0x00064, 0x00065,
+        0x00066, 0x00067, 0x00068, 0x00069, 0x0006A,
+        0x0006B, 0x0006C, 0x0006D, 0x0006E, 0x0006F,
+        0x00070, 0x00071, 0x00072, 0x00073, 0x00074,
+        0x00075, 0x00076, 0x00077, 0x00078, 0x00079,
+        0x0007A,
+    },
+    digits = {
+        0x00030, 0x00031, 0x00032, 0x00033, 0x00034,
+        0x00035, 0x00036, 0x00037, 0x00038, 0x00039,
+    },
+    ucgreek = {
+        0x0391, 0x0392, 0x0393, 0x0394, 0x0395,
+        0x0396, 0x0397, 0x0398, 0x0399, 0x039A,
+        0x039B, 0x039C, 0x039D, 0x039E, 0x039F,
+        0x03A0, 0x03A1, 0x03A3, 0x03A4, 0x03A5,
+        0x03A6, 0x03A7, 0x03A8, 0x03A9
+    },
+    lcgreek = {
+        0x03B1, 0x03B2, 0x03B3, 0x03B4, 0x03B5,
+        0x03B6, 0x03B7, 0x03B8, 0x03B9, 0x03BA,
+        0x03BB, 0x03BC, 0x03BD, 0x03BE, 0x03BF,
+        0x03C0, 0x03C1, 0x03C2, 0x03C3, 0x03C4,
+        0x03C5, 0x03C6, 0x03C7, 0x03C8, 0x03C9,
+        0x03D1, 0x03D5, 0x03D6, 0x03F0, 0x03F1,
+        0x03F4, 0x03F5
+    },
+}
+
+mathematics.gaps = allocate {
     [0x1D455] = 0x0210E, -- ℎ h
     [0x1D49D] = 0x0212C, -- ℬ script B
     [0x1D4A0] = 0x02130, -- ℰ script E
@@ -112,9 +157,10 @@ registerotffeature {
 -- following approach permits easier remapping of a-a, A-Z and 0-9 to
 -- fallbacks; symbols is currently mostly greek
 
-local function todigit(n) local t = { } for i=0, 9 do t[0x00030+i] = n+i end return t end
-local function toupper(n) local t = { } for i=0,25 do t[0x00041+i] = n+i end return t end
-local function tolower(n) local t = { } for i=0,25 do t[0x00061+i] = n+i end return t end
+local function todigit (n) local t = { } for i=0, 9 do t[0x00030+i] = n+i end return t end
+local function toupper (n) local t = { } for i=0,25 do t[0x00041+i] = n+i end return t end
+local function tolower (n) local t = { } for i=0,25 do t[0x00061+i] = n+i end return t end
+local function tovector(t)                                                    return t end
 
 local regular_tf = {
     digits    = todigit(0x00030),
@@ -143,7 +189,7 @@ local regular_tf = {
 }
 
 local regular_it = {
-    digits    = regular_tf.digits,
+    digits    = tovector(regular_tf.digits),
     ucletters = toupper(0x1D434),
     lcletters = { -- H
         [0x00061]=0x1D44E, [0x00062]=0x1D44F, [0x00063]=0x1D450, [0x00064]=0x1D451, [0x00065]=0x1D452,
@@ -202,7 +248,7 @@ local regular_bf= {
 }
 
 local regular_bi = {
-    digits    = regular_bf.digits,
+    digits    = tovector(regular_bf.digits),
     ucletters = toupper(0x1D468),
     lcletters = tolower(0x1D482),
     ucgreek   = {
@@ -238,18 +284,18 @@ local sansserif_tf = {
     digits    = todigit(0x1D7E2),
     ucletters = toupper(0x1D5A0),
     lcletters = tolower(0x1D5BA),
-    lcgreek   = regular_tf.lcgreek,
-    ucgreek   = regular_tf.ucgreek,
-    symbols   = regular_tf.symbols,
+    lcgreek   = tovector(regular_tf.lcgreek),
+    ucgreek   = tovector(regular_tf.ucgreek),
+    symbols   = tovector(regular_tf.symbols),
 }
 
 local sansserif_it = {
-    digits    = regular_tf.digits,
+    digits    = tovector(regular_tf.digits),
     ucletters = toupper(0x1D608),
     lcletters = tolower(0x1D622),
-    lcgreek   = regular_tf.lcgreek,
-    ucgreek   = regular_tf.ucgreek,
-    symbols   = regular_tf.symbols,
+    lcgreek   = tovector(regular_tf.lcgreek),
+    ucgreek   = tovector(regular_tf.ucgreek),
+    symbols   = tovector(regular_tf.symbols),
 }
 
 local sansserif_bf = {
@@ -279,7 +325,7 @@ local sansserif_bf = {
 }
 
 local sansserif_bi = {
-    digits    = sansserif_bf.digits,
+    digits    = tovector(sansserif_bf.digits),
     ucletters = toupper(0x1D63C),
     lcletters = tolower(0x1D656),
     ucgreek   = {
@@ -315,16 +361,20 @@ local monospaced_tf = {
     digits    = todigit(0x1D7F6),
     ucletters = toupper(0x1D670),
     lcletters = tolower(0x1D68A),
-    lcgreek   = sansserif_tf.lcgreek,
-    ucgreek   = sansserif_tf.ucgreek,
-    symbols   = sansserif_tf.symbols,
+    lcgreek   = tovector(sansserif_tf.lcgreek),
+    ucgreek   = tovector(sansserif_tf.ucgreek),
+    symbols   = tovector(sansserif_tf.symbols),
 }
+
+local monospaced_it = tovector(sansserif_it)
+local monospaced_bf = tovector(sansserif_bf)
+local monospaced_bi = tovector(sansserif_bi)
 
 local monospaced = {
     tf = monospaced_tf,
-    it = sansserif_tf,
-    bf = sansserif_tf,
-    bi = sansserif_bf,
+    it = monospaced_tf,
+    bf = monospaced_tf,
+    bi = monospaced_bf,
 }
 
 local blackboard_tf = {
@@ -362,7 +412,7 @@ local blackboard = {
 }
 
 local fraktur_tf= {
-    digits    = regular_tf.digits,
+    digits    = tovector(regular_tf.digits),
     ucletters = { -- C H I R Z
         [0x00041]=0x1D504, [0x00042]=0x1D505, [0x00043]=0x0212D, [0x00044]=0x1D507, [0x00045]=0x1D508,
         [0x00046]=0x1D509, [0x00047]=0x1D50A, [0x00048]=0x0210C, [0x00049]=0x02111, [0x0004A]=0x1D50D,
@@ -372,18 +422,18 @@ local fraktur_tf= {
         [0x0005A]=0x02128,
     },
     lcletters = tolower(0x1D51E),
-    lcgreek   = regular_tf.lcgreek,
-    ucgreek   = regular_tf.ucgreek,
-    symbols   = regular_tf.symbols,
+    lcgreek   = tovector(regular_tf.lcgreek),
+    ucgreek   = tovector(regular_tf.ucgreek),
+    symbols   = tovector(regular_tf.symbols),
 }
 
 local fraktur_bf = {
-    digits    = regular_bf.digits,
+    digits    = tovector(regular_bf.digits),
     ucletters = toupper(0x1D56C),
     lcletters = tolower(0x1D586),
-    lcgreek   = regular_bf.lcgreek,
-    ucgreek   = regular_bf.ucgreek,
-    symbols   = regular_bf.symbols,
+    lcgreek   = tovector(regular_bf.lcgreek),
+    ucgreek   = tovector(regular_bf.ucgreek),
+    symbols   = tovector(regular_bf.symbols),
 }
 
 local fraktur = { -- ok
@@ -394,7 +444,7 @@ local fraktur = { -- ok
 }
 
 local script_tf = {
-    digits    = regular_tf.digits,
+    digits    = tovector(regular_tf.digits),
     ucletters = { -- B E F H I L M R -- P 2118
         [0x00041]=0x1D49C, [0x00042]=0x0212C, [0x00043]=0x1D49E, [0x00044]=0x1D49F, [0x00045]=0x02130,
         [0x00046]=0x02131, [0x00047]=0x1D4A2, [0x00048]=0x0210B, [0x00049]=0x02110, [0x0004A]=0x1D4A5,
@@ -411,18 +461,18 @@ local script_tf = {
         [0x00075]=0x1D4CA, [0x00076]=0x1D4CB, [0x00077]=0x1D4CC, [0x00078]=0x1D4CD, [0x00079]=0x1D4CE,
         [0x0007A]=0x1D4CF,
     },
-    lcgreek = regular_tf.lcgreek,
-    ucgreek = regular_tf.ucgreek,
-    symbols = regular_tf.symbols,
+    lcgreek = tovector(regular_tf.lcgreek),
+    ucgreek = tovector(regular_tf.ucgreek),
+    symbols = tovector(regular_tf.symbols),
 }
 
 local script_bf = {
-    digits    = regular_bf.digits,
+    digits    = tovector(regular_bf.digits),
     ucletters = toupper(0x1D4D0),
     lcletters = tolower(0x1D4EA),
-    lcgreek   = regular_bf.lcgreek,
-    ucgreek   = regular_bf.ucgreek,
-    symbols   = regular_bf.symbols,
+    lcgreek   = tovector(regular_bf.lcgreek),
+    ucgreek   = tovector(regular_bf.ucgreek),
+    symbols   = tovector(regular_bf.symbols),
 }
 
 local script = {
@@ -441,82 +491,83 @@ local alphabets = allocate {
     script     = script,
 }
 
+alphabets.tt          = tovector(monospaced)
+alphabets.ss          = tovector(sansserif)
+alphabets.rm          = tovector(regular)
+alphabets.bb          = tovector(blackboard)
+alphabets.fr          = tovector(fraktur)
+alphabets.sr          = tovector(script)
+
+monospaced.normal     = tovector(monospaced_tf)
+monospaced.italic     = tovector(monospaced_it)
+monospaced.bold       = tovector(monospaced_bf)
+monospaced.bolditalic = tovector(monospaced_bi)
+
+sansserif.normal      = tovector(sansserif_tf)
+sansserif.italic      = tovector(sansserif_it)
+sansserif.bold        = tovector(sansserif_bf)
+sansserif.bolditalic  = tovector(sansserif_bi)
+
+regular.normal        = tovector(regular_tf)
+regular.italic        = tovector(regular_it)
+regular.bold          = tovector(regular_bf)
+regular.bolditalic    = tovector(regular_bi)
+
+alphabets.serif       = tovector(regular)
+alphabets.type        = tovector(monospaced)
+alphabets.teletype    = tovector(monospaced)
+
 mathematics.alphabets = alphabets
 
-local boldmap = { }
+local mathremap       = allocate { }
+mathematics.mapremap  = mathremap
 
--- ["blackboard"] = { ["bf"] = { ["digits"] = {
+local boldmap         = allocate { }
+mathematics.boldmap   = boldmap
 
-local function remap(tf,bf)
-    for _, alphabet in next, alphabets do
-        local tfdata = alphabet[tf]
-        local bfdata = alphabet[bf]
-        if tfdata then
-            for k, tfd in next, tfdata do
-                if type(tfd) == "table" then
-                    local bfd = bfdata[k]
-                    if bfd then
-                        for n, u in next, tfd do
-                            local bn = bfd[n]
-                            if bn then
-                                boldmap[u] = bn
-                            end
-                        end
-                    end
+-- all math (a bit of redundancy here)
+
+for alphabet, styles in next, alphabets do -- per 9/6/2011 we also have attr for missing
+    for style, data in next, styles do
+     -- let's keep the long names (for tracing)
+        local n = #mathremap + 1
+        local d = {
+            attribute = n,
+            alphabet  = alphabet,
+            style     = style,
+        }
+        styles[style] = d
+        setmetatableindex(d,data) -- we could use a alphadata table
+        mathremap[n] = d
+    end
+end
+
+-- bold math
+
+local function remapbold(tf,bf)
+    local styles = mathematics.styles
+    local sets   = mathematics.sets
+    for i=1,#styles do
+        for j=1,#sets do
+            local one = styles[i]
+            local two = sets[j]
+            local a  = alphabets[one]
+            local tf = a[tf][two]
+            local bf = a[bf][two]
+            if tf and bf then
+                for k, v in next, tf do
+                    boldmap[v] = bf[k]
                 end
             end
         end
     end
 end
 
-remap("tf","bf")
-remap("it","bi")
+remapbold("tf","bf")
+remapbold("it","bi")
 
-mathematics.boldmap = boldmap
-
-local mathremap = allocate { }
-
-for alphabet, styles in next, alphabets do -- per 9/6/2011 we also have attr for missing
-    for style, data in next, styles do
-     -- let's keep the long names (for tracing)
-        local n = #mathremap + 1
-        data.attribute = n
-        data.alphabet = alphabet
-        data.style = style
-        mathremap[n] = data
-    end
-end
-
-mathematics.mapremap = mathremap
-
--- beware, these are shared tables (no problem since they're not
--- in unicode)
-
-alphabets.tt          = monospaced
-alphabets.ss          = sansserif
-alphabets.rm          = regular
-alphabets.bb          = blackboard
-alphabets.fr          = fraktur
-alphabets.sr          = script
-
-alphabets.serif       = regular
-alphabets.type        = monospaced
-alphabets.teletype    = monospaced
-
-regular.normal        = regular_tf
-regular.italic        = regular_it
-regular.bold          = regular_bf
-regular.bolditalic    = regular_bi
-
-sansserif.normal      = sansserif_tf
-sansserif.italic      = sansserif_it
-sansserif.bold        = sansserif_bf
-sansserif.bolditalic  = sansserif_bi
-
-monospaced.normal     = monospaced_tf
-monospaced.italic     = monospaced_it
-monospaced.bold       = monospaced_bf
-monospaced.bolditalic = monospaced_bi
+-- table.save("e:/tmp/a.lua",alphabets)
+-- table.save("e:/tmp/b.lua",boldmap)
 
 function mathematics.tostyle(attribute)
     local r = mathremap[attribute]

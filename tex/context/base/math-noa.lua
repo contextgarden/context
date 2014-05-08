@@ -251,40 +251,6 @@ local familymap = { [0] =
     "pseudobold",
 }
 
--- families[math_char] = function(pointer)
---     if getfield(pointer,"fam") == 0 then
---         local a = getattr(pointer,a_mathfamily)
---         if a and a > 0 then
---             setattr(pointer,a_mathfamily,0)
---             if a > 5 then
---                 local char = getchar(pointer)
---                 local bold = boldmap[char]
---                 local newa = a - 3
---                 if bold then
---                     setattr(pointer,a_exportstatus,char)
---                     setfield(pointer,"char",bold)
---                     if trace_families then
---                         report_families("replacing %C by bold %C, family %s with remap %s becomes %s with remap %s",char,bold,a,familymap[a],newa,familymap[newa])
---                     end
---                 else
---                     if trace_families then
---                         report_families("no bold replacement for %C, family %s with remap %s becomes %s with remap %s",char,a,familymap[a],newa,familymap[newa])
---                     end
---                 end
---                 setfield(pointer,"fam",newa)
---             else
---                 if trace_families then
---                     local char = getchar(pointer)
---                     report_families("family of %C becomes %s with remap %s",char,a,familymap[a])
---                 end
---                 setfield(pointer,"fam",a)
---             end
---         else
---          -- pointer.fam = 0
---         end
---     end
--- end
-
 families[math_char] = function(pointer)
     if getfield(pointer,"fam") == 0 then
         local a = getattr(pointer,a_mathfamily)

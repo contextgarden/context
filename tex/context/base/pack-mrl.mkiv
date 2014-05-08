@@ -614,7 +614,7 @@
       \fi
       \doifelse{\directtextrulesparameter\c!depthcorrection}\v!on\pack_textrule_correct_depth_yes\pack_textrule_correct_depth_nop
       \nointerlineskip
-      \dontleavehmode\vbox
+      \noindent\vbox % was \dontleavehmode
         {\color[\directtextrulesparameter\c!rulecolor]
            {\hrule\s!depth\directtextrulesparameter\c!rulethickness\s!height\zeropoint\s!width\availablehsize}}}
      {\pack_textrule_with_text{#1}}%

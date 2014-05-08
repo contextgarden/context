@@ -758,7 +758,7 @@ function mathml.mtable(root)
     local framespacing = at.framespacing or "0pt"
     local framespacing = at.framespacing or "-\\ruledlinewidth" -- make this an option
 
-    context.bTABLE { frame = frametypes[frame or "none"] or "off", offset = framespacing }
+    context.bTABLE { frame = frametypes[frame or "none"] or "off", offset = framespacing, background = "" } -- todo: use xtables and definextable
     for e in lxml.collected(root,"/(mml:mtr|mml:mlabeledtr)") do
         context.bTR()
         local at = e.at
