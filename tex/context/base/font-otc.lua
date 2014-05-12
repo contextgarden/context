@@ -134,7 +134,7 @@ local function addfeature(data,feature,specifications)
                             askedfeatures[k] = table.tohash(v)
                         end
                     end
-                    sequences[#sequences+1] = {
+                    local sequence = {
                         chain     = 0,
                         features  = { [feature] = askedfeatures },
                         flags     = featureflags,
@@ -143,6 +143,11 @@ local function addfeature(data,feature,specifications)
                         subtables = st,
                         type      = featuretype,
                     }
+                    if specification.prepend then
+                        insert(sequences,1,sequence)
+                    else
+                        insert(sequences,sequence)
+                    end
                     -- register in metadata (merge as there can be a few)
                     if not gsubfeatures then
                         gsubfeatures  = { }
@@ -208,6 +213,7 @@ local tlig_specification = {
     data     = tlig,
     order    = { "tlig" },
     flags    = noflags,
+    prepend  = true,
 }
 
 otf.addfeature("tlig",tlig_specification)
@@ -231,6 +237,7 @@ local trep_specification = {
     data      = trep,
     order     = { "trep" },
     flags     = noflags,
+    prepend   = true,
 }
 
 otf.addfeature("trep",trep_specification)

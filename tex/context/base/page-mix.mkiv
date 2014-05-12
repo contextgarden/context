@@ -29,6 +29,7 @@
 % wide floats
 % move floats
 % offsets (inner ones, so we change the hsize  ... needed with backgrounds
+% when no content we currently loose the page
 
 % luatex buglet:
 %
@@ -208,7 +209,7 @@
    \fi
    \global\setbox\b_page_mix_preceding\vbox
      {\page_otr_command_flush_top_insertions
-      \ifdim\ht\b_page_mix_preceding=\zeropoint \else
+      \ifdim\htdp\b_page_mix_preceding=\zeropoint \else
         \writestatus\m!columns{preceding error}%
         \unvbox\b_page_mix_preceding
       \fi

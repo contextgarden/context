@@ -599,6 +599,7 @@ function constructors.scale(tfmdata,specification)
             -- basemode hack (we try to catch missing tounicodes, e.g. needed for ssty in math cambria)
             local c = changed[unicode]
             if c then
+local ligatures = character.ligatures
                 description = descriptions[c] or descriptions[unicode] or character
                 character = characters[c] or character
                 index = description.index or c
@@ -610,6 +611,9 @@ function constructors.scale(tfmdata,specification)
                         touni = tounicode[i] -- nb: index!
                     end
                 end
+if ligatures and not character.ligatures then
+    character.ligatures = ligatures
+end
             else
                 description = descriptions[unicode] or character
                 index = description.index or unicode
@@ -780,7 +784,7 @@ function constructors.scale(tfmdata,specification)
                     chr.ligatures = vl -- shared
                 else
                     local tt = { }
-                    for i,l in next, vl do
+                    for i, l in next, vl do
                         tt[i] = l
                     end
                     chr.ligatures = tt
@@ -962,7 +966,6 @@ function constructors.finalize(tfmdata)
     tfmdata.units_per_em   = nil
     --
     properties.finalized   = true
-    --
     --
     return tfmdata
 end

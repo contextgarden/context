@@ -307,6 +307,8 @@ return {
         --
         "leftorright",
         --
+        "offinterlineskip", "oninterlineskip", "nointerlineskip",
+        --
         "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",

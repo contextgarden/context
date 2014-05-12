@@ -268,5 +268,7 @@ parser = Cs { "main",
 
 }
 
-asciimath.reserved   = reserved
-asciimath.convert    = converted
+asciimath.reserved = reserved
+asciimath.convert  = converted
+
+commands.convert = converted

@@ -776,6 +776,17 @@ function characters.lower (str) return lpegmatch(tolower,str) end
 function characters.upper (str) return lpegmatch(toupper,str) end
 function characters.shaped(str) return lpegmatch(toshape,str) end
 
+-- maybe: (twice as fast when much ascii)
+--
+-- local tolower  = lpeg.patterns.tolower
+-- local lower    = string.lower
+--
+-- local allascii = R("\000\127")^1 * P(-1)
+--
+-- function characters.checkedlower(str)
+--     return lpegmatch(allascii,str) and lower(str) or lpegmatch(tolower,str) or str
+-- end
+
 function characters.lettered(str,spacing)
     local new, n = { }, 0
     if spacing then

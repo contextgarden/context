@@ -64,7 +64,8 @@
 
 \writestatus{asciimath}{beware, this is an experimental (m4all only) module}
 
-\unexpanded\def\asciimath#1{\ctxmoduleasciimath{convert(\!!bs\detokenize{#1}\!!es,true)}}
+%unexpanded\def\asciimath#1{\ctxmoduleasciimath{convert(\!!bs\detokenize{#1}\!!es,true)}}
+\unexpanded\def\asciimath#1{\ctxcommand{convert(\!!bs\detokenize\expandafter{\normalexpanded{#1}}\!!es,true)}}
 
 \protect
 
@@ -82,6 +83,7 @@
 \asciimath{int_0^1 f(x)dx}
 \asciimath{int^1_0 f(x)dx}
 \asciimath{a//b}
+\asciimath{a//\alpha}
 \asciimath{(a/b)/(d/c)}
 \asciimath{((a*b))/(d/c)}
 \asciimath{[[a,b],[c,d]]((n),(k))}

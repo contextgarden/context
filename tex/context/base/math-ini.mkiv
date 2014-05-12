@@ -230,6 +230,12 @@
 \ifdefined\mr \else \let\mr\relax \fi
 \ifdefined\mb \else \let\mb\relax \fi
 
+% 1: $\setmathattribute{ss}{bf}3$
+% 2: $\setmathattribute{ss}{bf}\setmathfontstylealterternate{bf}3$
+% 3: $\setmathattribute{ss}{bf}\setmathfontstyle{bf}3$
+% 4: $\setmathattribute{ss}{bf}\setmathfontstyle{bf}\setmathfontstylealterternate{bf}3$
+% 5: $e=mc^2 \quad \mb e=mc^2$
+
 \prependtoks
     \mathdefault
 \to \everymathematics
