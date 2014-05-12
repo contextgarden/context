@@ -1255,12 +1255,29 @@
    \fi
    \dostoptagged} % right spot
 
+% \def\tabl_ntb_cell_finalize
+%   {\doifnotinset\localwidth{\v!fit,\v!broad}% user set
+%      {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
+%       \ifdim\localwidth>\scratchdimen
+%         \tabl_ntb_set_aut\c_tabl_ntb_col{\the\dimexpr\localwidth}%
+%       \fi}}
+
 \def\tabl_ntb_cell_finalize
-  {\doifnotinset\localwidth{\v!fit,\v!broad}% user set
-     {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
-      \ifdim\localwidth>\scratchdimen
-        \tabl_ntb_set_aut\c_tabl_ntb_col{\the\dimexpr\localwidth}%
-      \fi}}
+  {\ifx\localwidth\v!fit
+      % nothing
+   \else\ifx\localwidth\v!broad
+      % nothing
+   \else\ifx\localwidth\empty
+      % nothing (safeguard)
+   \else
+     \tabl_ntb_cell_finalize_indeed
+   \fi\fi\fi}
+
+\def\tabl_ntb_cell_finalize_indeed
+  {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
+   \ifdim\localwidth>\scratchdimen
+     \tabl_ntb_set_aut\c_tabl_ntb_col{\the\dimexpr\localwidth}%
+   \fi}
 
 \def\tabl_ntb_table_stop
   {\setbox\scratchbox\hbox

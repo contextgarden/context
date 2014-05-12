@@ -27,77 +27,78 @@
 
 \unprotect % todo \!!bs \!!es where handy (slower)
 
-\def\ctxlxml               #1{\ctxlua{lxml.#1}}
+\def\ctxlxml                #1{\ctxlua{lxml.#1}}
 
-\def\xmlmain               #1{\ctxlxml{main("#1")}}
-\def\xmlmatch              #1{\ctxlxml{match("#1")}}
-\def\xmlall              #1#2{\ctxlxml{all("#1","#2")}}
-\def\xmlatt              #1#2{\ctxlxml{att("#1","#2")}}
-\def\xmlattdef         #1#2#3{\ctxlxml{att("#1","#2","#3")}}
-\def\xmlchainatt         #1#2{\ctxlxml{chainattribute("#1","/","#2")}}
-\def\xmlchainattdef    #1#2#3{\ctxlxml{chainattribute("#1","/","#2","#3")}}
-\def\xmlattribute      #1#2#3{\ctxlxml{attribute("#1","#2","#3")}}
-\def\xmlattributedef #1#2#3#4{\ctxlxml{attribute("#1","#2","#3","#4")}}
-\def\xmlcommand        #1#2#3{\ctxlxml{command("#1","#2","#3")}}
-\def\xmlconcat         #1#2#3{\ctxlxml{concat("#1","#2",[[\detokenize{#3}]])}}
-\def\xmlconcatrange#1#2#3#4#5{\ctxlxml{concatrange("#1","#2","#3","#4",[[\detokenize{#5}]])}}
-\def\xmlcount            #1#2{\ctxlxml{count("#1","#2")}}
-\def\xmldelete           #1#2{\ctxlxml{delete("#1","#2")}}
-\def\xmldirectives         #1{\ctxlxml{directives.setup("#1")}}
-\def\xmldirectivesbefore   #1{\ctxlxml{directives.before("#1")}}
-\def\xmldirectivesafter    #1{\ctxlxml{directives.after("#1")}}
-\def\xmlfilter           #1#2{\ctxlxml{filter("#1",\!!bs#2\!!es)}}
-\def\xmlfilterlist       #1#2{\ctxlxml{filterlist("#1",\!!bs#2\!!es)}}
-\def\xmlfunction         #1#2{\ctxlxml{applyfunction("#1",\!!bs#2\!!es)}}
-\def\xmlfirst            #1#2{\ctxlxml{first("#1","#2")}}
-\def\xmlflush              #1{\ctxlxml{flush("#1")}}
-\def\xmlflushlinewise      #1{\ctxlxml{flushlinewise("#1")}}
-\def\xmlflushspacewise     #1{\ctxlxml{flushspacewise("#1")}}
-%def\xmlcontent            #1{\ctxlxml{content("#1")}}
-%def\xmlflushstripped      #1{\ctxlxml{strip("#1",true)}}
-\def\xmldirect             #1{\ctxlxml{direct("#1")}} % in loops, not dt but root
-\def\xmlidx            #1#2#3{\ctxlxml{idx("#1","#2",\number#3)}}
-\def\xmlinclude        #1#2#3{\ctxlxml{include("#1","#2","#3",true)}}
-\def\xmlsave             #1#2{\ctxlxml{save("#1","#2")}}
-\def\xmlindex          #1#2#3{\ctxlxml{index("#1","#2",\number#3)}}
-\def\xmlinfo               #1{\hbox{\ttxx[\ctxlxml{info("#1")}]}}
-\def\xmlshow               #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
-\def\xmllast             #1#2{\ctxlxml{last("#1","#2")}}
-\def\xmlname               #1{\ctxlxml{name("#1")}}
-\def\xmlnamespace          #1{\ctxlxml{namespace("#1")}}
-\def\xmlnonspace         #1#2{\ctxlxml{nonspace("#1","#2")}}
-\def\xmlraw              #1#2{\ctxlxml{raw("#1","#2")}}
-\def\xmlcontext          #1#2{\ctxlxml{context("#1","#2")}}
-\def\xmlflushcontext       #1{\ctxlxml{context("#1")}}
-\def\xmlsnippet          #1#2{\ctxlxml{snippet("#1",#2)}}
-\def\xmlelement          #1#2{\ctxlxml{element("#1",#2)}}
-\def\xmlregisterns       #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document
-\def\xmlremapname    #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
-\def\xmlremapnamespace #1#2#3{\ctxlua{xml.renamespace(lxml.id("#1"),"#2","#3")}}    % document
-\def\xmlchecknamespace #1#2#3{\ctxlua{xml.checknamespace(lxml.id("#1"),"#2","#3")}} % element
-\def\xmlsetfunction    #1#2#3{\ctxlxml{setaction("#1",\!!bs#2\!!es,#3)}}
-\def\xmlsetsetup       #1#2#3{\ctxlxml{setsetup("#1",\!!bs#2\!!es,"#3")}}
-\def\xmlstrip            #1#2{\ctxlxml{strip("#1","#2")}}
-\def\xmlstripnolines     #1#2{\ctxlxml{strip("#1","#2",true)}}
-\def\xmlstripanywhere    #1#2{\ctxlxml{strip("#1","#2",true,true)}}
-\def\xmlstripped         #1#2{\ctxlxml{stripped("#1","#2")}}
-\def\xmlstrippednolines  #1#2{\ctxlxml{stripped("#1","#2",true)}}
-\def\xmltag                #1{\ctxlxml{tag("#1")}}
-\def\xmltext             #1#2{\ctxlxml{text("#1","#2")}}
-\def\xmlverbatim           #1{\ctxlxml{verbatim("#1")}}
-\def\xmldisplayverbatim    #1{\ctxlxml{displayverbatim("#1")}}
-\def\xmlinlineverbatim     #1{\ctxlxml{inlineverbatim("#1")}}
+\def\xmlmain                #1{\ctxlxml{main("#1")}}
+\def\xmlmatch               #1{\ctxlxml{match("#1")}}
+\def\xmlall               #1#2{\ctxlxml{all("#1","#2")}}
+\def\xmlatt               #1#2{\ctxlxml{att("#1","#2")}}
+\def\xmlattdef          #1#2#3{\ctxlxml{att("#1","#2","#3")}}
+\def\xmlchainatt          #1#2{\ctxlxml{chainattribute("#1","/","#2")}}
+\def\xmlchainattdef     #1#2#3{\ctxlxml{chainattribute("#1","/","#2","#3")}}
+\def\xmlattribute       #1#2#3{\ctxlxml{attribute("#1","#2","#3")}}
+\def\xmlattributedef  #1#2#3#4{\ctxlxml{attribute("#1","#2","#3","#4")}}
+\def\xmlcommand         #1#2#3{\ctxlxml{command("#1","#2","#3")}}
+\def\xmlconcat          #1#2#3{\ctxlxml{concat("#1","#2",[[\detokenize{#3}]])}}
+\def\xmlconcatrange #1#2#3#4#5{\ctxlxml{concatrange("#1","#2","#3","#4",[[\detokenize{#5}]])}}
+\def\xmlcount             #1#2{\ctxlxml{count("#1","#2")}}
+\def\xmldelete            #1#2{\ctxlxml{delete("#1","#2")}}
+\def\xmldirectives          #1{\ctxlxml{directives.setup("#1")}}
+\def\xmldirectivesbefore    #1{\ctxlxml{directives.before("#1")}}
+\def\xmldirectivesafter     #1{\ctxlxml{directives.after("#1")}}
+\def\xmlfilter            #1#2{\ctxlxml{filter("#1",\!!bs#2\!!es)}}
+\def\xmlfilterlist        #1#2{\ctxlxml{filterlist("#1",\!!bs#2\!!es)}}
+\def\xmlfunction          #1#2{\ctxlxml{applyfunction("#1",\!!bs#2\!!es)}}
+\def\xmlfirst             #1#2{\ctxlxml{first("#1","#2")}}
+\def\xmlflush               #1{\ctxlxml{flush("#1")}}
+\def\xmlflushlinewise       #1{\ctxlxml{flushlinewise("#1")}}
+\def\xmlflushspacewise      #1{\ctxlxml{flushspacewise("#1")}}
+%def\xmlcontent             #1{\ctxlxml{content("#1")}}
+%def\xmlflushstripped       #1{\ctxlxml{strip("#1",true)}}
+\def\xmldirect              #1{\ctxlxml{direct("#1")}} % in loops, not dt but root
+\def\xmlidx             #1#2#3{\ctxlxml{idx("#1","#2",\number#3)}}
+\def\xmlinclude         #1#2#3{\ctxlxml{include("#1","#2","#3",true)}}
+\def\xmlincludeoptions#1#2#3#4{\ctxlxml{include("#1","#2","#3","#4")}}
+\def\xmlsave              #1#2{\ctxlxml{save("#1","#2")}}
+\def\xmlindex           #1#2#3{\ctxlxml{index("#1","#2",\number#3)}}
+\def\xmlinfo                #1{\hbox{\ttxx[\ctxlxml{info("#1")}]}}
+\def\xmlshow                #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
+\def\xmllast              #1#2{\ctxlxml{last("#1","#2")}}
+\def\xmlname                #1{\ctxlxml{name("#1")}}
+\def\xmlnamespace           #1{\ctxlxml{namespace("#1")}}
+\def\xmlnonspace          #1#2{\ctxlxml{nonspace("#1","#2")}}
+\def\xmlraw               #1#2{\ctxlxml{raw("#1","#2")}}
+\def\xmlcontext           #1#2{\ctxlxml{context("#1","#2")}}
+\def\xmlflushcontext        #1{\ctxlxml{context("#1")}}
+\def\xmlsnippet           #1#2{\ctxlxml{snippet("#1",#2)}}
+\def\xmlelement           #1#2{\ctxlxml{element("#1",#2)}}
+\def\xmlregisterns        #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document
+\def\xmlremapname     #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
+\def\xmlremapnamespace  #1#2#3{\ctxlua{xml.renamespace(lxml.id("#1"),"#2","#3")}}    % document
+\def\xmlchecknamespace  #1#2#3{\ctxlua{xml.checknamespace(lxml.id("#1"),"#2","#3")}} % element
+\def\xmlsetfunction     #1#2#3{\ctxlxml{setaction("#1",\!!bs#2\!!es,#3)}}
+\def\xmlsetsetup        #1#2#3{\ctxlxml{setsetup("#1",\!!bs#2\!!es,"#3")}}
+\def\xmlstrip             #1#2{\ctxlxml{strip("#1","#2")}}
+\def\xmlstripnolines      #1#2{\ctxlxml{strip("#1","#2",true)}}
+\def\xmlstripanywhere     #1#2{\ctxlxml{strip("#1","#2",true,true)}}
+\def\xmlstripped          #1#2{\ctxlxml{stripped("#1","#2")}}
+\def\xmlstrippednolines   #1#2{\ctxlxml{stripped("#1","#2",true)}}
+\def\xmltag                 #1{\ctxlxml{tag("#1")}}
+\def\xmltext              #1#2{\ctxlxml{text("#1","#2")}}
+\def\xmlverbatim            #1{\ctxlxml{verbatim("#1")}}
+\def\xmldisplayverbatim     #1{\ctxlxml{displayverbatim("#1")}}
+\def\xmlinlineverbatim      #1{\ctxlxml{inlineverbatim("#1")}}
 
-\def\xmlload             #1#2{\ctxlxml{load("#1","#2","\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
-\def\xmlloadbuffer       #1#2{\ctxlxml{loadbuffer("#1","#2","\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
-\def\xmlloaddata         #1#2{\ctxlxml{loaddata("#1",\!!bs#2\!!es,"\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
-\def\xmlloadregistered   #1#2{\ctxlxml{loadregistered("#1","\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
-\def\xmlloaddirectives     #1{\ctxlxml{directives.load("any:///#1")}}
-\def\xmlpos                #1{\ctxlxml{pos("#1")}}
+\def\xmlload              #1#2{\ctxlxml{load("#1","#2","\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
+\def\xmlloadbuffer        #1#2{\ctxlxml{loadbuffer("#1","#2","\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
+\def\xmlloaddata          #1#2{\ctxlxml{loaddata("#1",\!!bs#2\!!es,"\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
+\def\xmlloadregistered    #1#2{\ctxlxml{loadregistered("#1","\directxmlparameter\c!entities","\directxmlparameter\c!compress")}}
+\def\xmlloaddirectives      #1{\ctxlxml{directives.load("any:///#1")}}
+\def\xmlpos                 #1{\ctxlxml{pos("#1")}}
 
-\def\xmltoparameters       #1{\ctxlxml{toparameters("#1")}}
+\def\xmltoparameters        #1{\ctxlxml{toparameters("#1")}}
 
-\def\xmltofile         #1#2#3{\ctxlxml{tofile("#1","#2","#3")}} % id pattern filename
+\def\xmltofile          #1#2#3{\ctxlxml{tofile("#1","#2","#3")}} % id pattern filename
 
 % kind of special:
 
@@ -106,12 +107,12 @@
 
 % todo: \xmldoifelseattribute
 
-\def\xmldoif             #1#2{\ctxlxml{doif        (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
-\def\xmldoifnot          #1#2{\ctxlxml{doifnot     (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
-\def\xmldoifelse         #1#2{\ctxlxml{doifelse    (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
-\def\xmldoiftext         #1#2{\ctxlxml{doiftext    (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
-\def\xmldoifnottext      #1#2{\ctxlxml{doifnottext (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
-\def\xmldoifelsetext     #1#2{\ctxlxml{doifelsetext(\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
+\def\xmldoif              #1#2{\ctxlxml{doif        (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
+\def\xmldoifnot           #1#2{\ctxlxml{doifnot     (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
+\def\xmldoifelse          #1#2{\ctxlxml{doifelse    (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
+\def\xmldoiftext          #1#2{\ctxlxml{doiftext    (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
+\def\xmldoifnottext       #1#2{\ctxlxml{doifnottext (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
+\def\xmldoifelsetext      #1#2{\ctxlxml{doifelsetext(\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
 
 %def\xmldoifelseempty    #1#2{\ctxlxml{doifelseempty("#1","#2")}} % #2, "*" or "" == self not yet implemented
 %def\xmldoifelseselfempty  #1{\ctxlxml{doifelseempty("#1")}}

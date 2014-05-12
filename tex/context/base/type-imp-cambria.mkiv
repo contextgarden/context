@@ -11,6 +11,10 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D We use Dejavu as it covers wider range of monospaced glyphs.
+
+\loadtypescriptfile[dejavu]
+
 \starttypescriptcollection[cambria]
 
     % microsoft: cambria.ttc cambriab.ttf cambriai.ttf cambriaz.ttf
@@ -60,13 +64,13 @@
     \starttypescript [cambria,cambria-m,cambria-a]
         % any
         \definetypeface [cambria] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
-        \definetypeface [cambria] [\s!tt] [\s!mono]  [modern]         [\s!default]
+        \definetypeface [cambria] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
         \definetypeface [cambria] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
     \stoptypescript
     \starttypescript [cambria-x,cambria-y]
         % test x
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [cambria]        [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
     \stoptypescript
 

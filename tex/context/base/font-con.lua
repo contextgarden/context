@@ -599,7 +599,7 @@ function constructors.scale(tfmdata,specification)
             -- basemode hack (we try to catch missing tounicodes, e.g. needed for ssty in math cambria)
             local c = changed[unicode]
             if c then
-local ligatures = character.ligatures
+                local ligatures = character.ligatures -- the original ligatures (as we cannot rely on remapping)
                 description = descriptions[c] or descriptions[unicode] or character
                 character = characters[c] or character
                 index = description.index or c
@@ -611,9 +611,9 @@ local ligatures = character.ligatures
                         touni = tounicode[i] -- nb: index!
                     end
                 end
-if ligatures and not character.ligatures then
-    character.ligatures = ligatures
-end
+                if ligatures and not character.ligatures then
+                    character.ligatures = ligatures -- the original targets (for now at least.. see libertine smallcaps)
+                end
             else
                 description = descriptions[unicode] or character
                 index = description.index or unicode

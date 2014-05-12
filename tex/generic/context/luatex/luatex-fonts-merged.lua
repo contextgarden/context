@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/12/14 16:53:28
+-- merge date  : 05/13/14 00:04:28
 
 do -- begin closure to overcome local limits and interference
 
@@ -4170,7 +4170,7 @@ function constructors.scale(tfmdata,specification)
     if changed then
       local c=changed[unicode]
       if c then
-local ligatures=character.ligatures
+        local ligatures=character.ligatures 
         description=descriptions[c] or descriptions[unicode] or character
         character=characters[c] or character
         index=description.index or c
@@ -4182,9 +4182,9 @@ local ligatures=character.ligatures
             touni=tounicode[i] 
           end
         end
-if ligatures and not character.ligatures then
-  character.ligatures=ligatures
-end
+        if ligatures and not character.ligatures then
+          character.ligatures=ligatures 
+        end
       else
         description=descriptions[unicode] or character
         index=description.index or unicode

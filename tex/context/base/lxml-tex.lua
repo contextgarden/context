@@ -38,9 +38,11 @@ local xmlapplylpath = xml.applylpath
 local xmlunprivatized, xmlprivatetoken, xmlprivatecodes = xml.unprivatized, xml.privatetoken, xml.privatecodes
 local xmlstripelement = xml.stripelement
 
-local variables = (interfaces and interfaces.variables) or { }
+local variables = interfaces and interfaces.variables or { }
 
-local insertbeforevalue, insertaftervalue = utilities.tables.insertbeforevalue, utilities.tables.insertaftervalue
+local settings_to_hash  = utilities.parsers.settings_to_hash
+local insertbeforevalue = utilities.tables.insertbeforevalue
+local insertaftervalue  = utilities.tables.insertaftervalue
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
@@ -434,16 +436,74 @@ function lxml.register(id,xmltable,filename)
     return xmltable
 end
 
-function lxml.include(id,pattern,attribute,recurse)
+-- function lxml.include(id,pattern,attribute,recurse,resolve)
+--     starttiming(xml)
+--     local root = getid(id)
+--     xml.include(root,pattern,attribute,recurse,function(filename)
+--         if filename then
+--             -- preprocessing
+--             filename = commands.preparedfile(filename)
+--             -- some protection
+--             if file.dirname(filename) == "" and root.filename then
+--                 local dn = file.dirname(root.filename)
+--                 if dn ~= "" then
+--                     filename = file.join(dn,filename)
+--                 end
+--             end
+--             if trace_loading then
+--                 report_lxml("including file %a",filename)
+--             end
+--             -- handy if we have a flattened structure
+--             if resolve then
+--                 filename = resolvers.resolve(filename) or filename
+--             end
+--             -- todo: check variants and provide
+--             noffiles, nofconverted = noffiles + 1, nofconverted + 1
+--             return resolvers.loadtexfile(filename) or ""
+--         else
+--             return ""
+--         end
+--     end)
+--     stoptiming(xml)
+-- end
+
+-- recurse prepare rootpath resolve basename
+
+local options_true = { "recurse", "prepare", "rootpath" }
+local options_nil  = { "prepare", "rootpath" }
+
+function lxml.include(id,pattern,attribute,options)
     starttiming(xml)
     local root = getid(id)
-    xml.include(root,pattern,attribute,recurse,function(filename)
+    if options == true then
+        -- downward compatible
+        options = options_true
+    elseif not options then
+        -- downward compatible
+        options = options_nil
+    else
+        options = settings_to_hash(options) or { }
+    end
+    xml.include(root,pattern,attribute,options.recurse,function(filename)
         if filename then
-            filename = commands.preparedfile(filename)
-            if file.dirname(filename) == "" and root.filename then
-                local dn = file.dirname(root.filename)
-                if dn ~= "" then
-                    filename = file.join(dn,filename)
+            -- preprocessing
+            if options.prepare then
+                filename = commands.preparedfile(filename)
+            end
+            -- handy if we have a flattened structure
+            if options.basename then
+                filename = file.basename(filename)
+            end
+            if options.resolve then
+                filename = resolvers.resolve(filename) or filename
+            end
+            -- some protection
+            if options.rootpath then
+                if file.dirname(filename) == "" and root.filename then
+                    local dn = file.dirname(root.filename)
+                    if dn ~= "" then
+                        filename = file.join(dn,filename)
+                    end
                 end
             end
             if trace_loading then

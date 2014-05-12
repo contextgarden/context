@@ -1188,6 +1188,8 @@ end
 
 local prefixsplitter = lpeg.splitat("::")
 
+-- num is special
+
 function commands.btxhandlecite(dataset,tag,mark,variant,sorttype,setup) -- variant for tracing
     local prefix, rest = lpegmatch(prefixsplitter,tag)
     if rest then
@@ -1371,16 +1373,18 @@ function citevariants.page(dataset,tags)
     end
 end
 
-function citevariants.num(dataset,tags)
---     ctx_btxdirectlink(f_destination(dataset,block,tags),listindex) -- not okay yet
-    lists.resolve(dataset,tags)
-end
-
 function citevariants.serial(dataset,tags) -- the traditional fieldname is "serial" and not "index"
     local index = getfield(dataset,tags,"index")
     if index then
         context(index)
     end
+end
+
+-- num is somewhat special as it can be more and we need to deal with ranges here
+
+function citevariants.num(dataset,tags)
+--     ctx_btxdirectlink(f_destination(dataset,block,tags),listindex) -- not okay yet
+    lists.resolve(dataset,tags)
 end
 
 -- List variants
