@@ -1619,3 +1619,7 @@ end
 -- interfacing
 
 commands.setfigurelookuporder = figures.setorder
+
+--
+
+figures.images = images

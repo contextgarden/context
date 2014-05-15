@@ -714,10 +714,10 @@ enddef ;
 
 def pen_pickup_ primary q =
     currentpen := q ;
-    pen_lft :=xpart penoffset down  of currentpen ;
-    pen_rt  :=xpart penoffset up    of currentpen ;
-    pen_top :=ypart penoffset left  of currentpen ;
-    pen_bot :=ypart penoffset right of currentpen ;
+    pen_lft := xpart penoffset down  of currentpen ;
+    pen_rt  := xpart penoffset up    of currentpen ;
+    pen_top := ypart penoffset left  of currentpen ;
+    pen_bot := ypart penoffset right of currentpen ;
     path currentpen_path ;
 enddef ;
 
@@ -733,7 +733,8 @@ vardef savepen =
     pen_count_
 enddef ;
 
-def clearpen = currentpen:=nullpen;
+def clearpen =
+    currentpen := nullpen;
     pen_lft := pen_rt := pen_top := pen_bot := 0 ;
     path currentpen_path ;
 enddef ;

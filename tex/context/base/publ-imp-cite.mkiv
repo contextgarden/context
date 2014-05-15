@@ -11,64 +11,122 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\startsetups btx:cite:author
-    \btxcitevariant{author}
-\stopsetups
+\unprotect
 
-\startsetups btx:cite:authoryear
-    \btxcitevariant{authoryear}
-\stopsetups
+% The null case:
 
-\startsetups btx:cite:authoryears
-    \btxcitevariant{authoryears}
-\stopsetups
-
-% \startsetups btx:cite:authornum
-%     \btxcitevariant{author}
-%     \btxcitevariantparameter\c!inbetween
-%     \btxcitevariant{num}
-% \stopsetups
-
-\startsetups btx:cite:authornum
-    \btxcitevariant{authornum}
-\stopsetups
-
-\startsetups btx:cite:year
-    \btxcitevariant{year}
-\stopsetups
-
-\startsetups btx:cite:short
-    \btxcitevariant{short}
-\stopsetups
-
-\startsetups btx:cite:serial
-    \btxcitevariant{serial}
-\stopsetups
-
-\startsetups btx:cite:key
-    \currentbtxtag % \btxcitevariant{tag}
-\stopsetups
-
-\startsetups btx:cite:doi
-    todo: \btxcitevariant{doi}
-\stopsetups
-
-\startsetups btx:cite:url
-    todo: \btxcitevariant{url}
-\stopsetups
-
-\startsetups btx:cite:type
-    \btxcitevariant{category}
-\stopsetups
-
-\startsetups btx:cite:page
-    \btxcitevariant{page}
-\stopsetups
-
-\startsetups btx:cite:none
+\startsetups \s!btx:\s!cite:none
     % dummy
 \stopsetups
 
-\startsetups btx:cite:num
-    \btxcitevariant{num}
+% This saves keying:
+
+\startsetups \s!btx:\s!cite:common:default
+    \ifx\currentbtxsecond\empty
+        \currentbtxfirst
+    \else
+        \currentbtxfirst
+        \btxcitevariantparameter\v!inbetween
+        \currentbtxsecond
+    \fi
 \stopsetups
+
+\startsetups \s!btx:\s!cite:concat
+    \ifcase\currentbtxconcat \or \or
+        \btxcitevariantparameter\c!pubsep
+    \or
+        \btxcitevariantparameter\c!finalpubsep
+    \or
+        \btxcitevariantparameter\c!lastpubsep
+    \fi
+\stopsetups
+
+\startsetups \s!btx:\s!cite:common
+    \directsetup{\s!btx:\s!cite:concat}
+    \ifconditional\btxinteractive
+        \goto {
+            \directsetup{\s!btx:\s!cite:common:default}
+        } [
+            internal(\currentbtxinternal)
+        ]
+    \else
+        \directsetup{\s!btx:\s!cite:common:default}
+    \fi
+\stopsetups
+
+\startsetups \s!btx:\s!cite:variant
+    \directsetup{\s!btx:\s!cite:concat}
+    \ifconditional\btxinteractive
+        \goto {
+            \directsetup{\s!btx:\s!cite:common:\currentbtxcitevariant}
+        } [
+            internal(\currentbtxinternal)
+        ]
+    \else
+        \directsetup{\s!btx:\s!cite:common:\currentbtxcitevariant}
+    \fi
+\stopsetups
+
+% author lists:
+
+\startsetups \s!btx:\s!cite:common:author
+    \currentbtxfirst
+\stopsetups
+\startsetups \s!btx:\s!cite:common:authoryear
+    \currentbtxfirst,\space(\currentbtxsecond)
+\stopsetups
+\startsetups \s!btx:\s!cite:common:authoryears
+    \currentbtxfirst,\space\currentbtxsecond
+\stopsetups
+\startsetups \s!btx:\s!cite:common:authornum
+    \currentbtxfirst\space[\currentbtxsecond]
+\stopsetups
+
+\startsetups \s!btx:\s!cite:author
+    \directsetup{\s!btx:\s!cite:variant}
+\stopsetups
+\startsetups \s!btx:\s!cite:authoryear
+    \directsetup{\s!btx:\s!cite:variant}
+\stopsetups
+\startsetups \s!btx:\s!cite:authoryears
+    \directsetup{\s!btx:\s!cite:variant}
+\stopsetups
+\startsetups \s!btx:\s!cite:authornum
+    \directsetup{\s!btx:\s!cite:variant}
+\stopsetups
+
+\startsetups \s!btx:\s!cite:year
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+\startsetups \s!btx:\s!cite:short
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+\startsetups \s!btx:\s!cite:serial
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+\startsetups \s!btx:\s!cite:tag
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+\startsetups \s!btx:\s!cite:key
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+\startsetups \s!btx:\s!cite:doi
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+\startsetups \s!btx:\s!cite:url
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+\startsetups \s!btx:\s!cite:category
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+\startsetups \s!btx:\s!cite:type
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+\startsetups \s!btx:\s!cite:num
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+\startsetups \s!btx:\s!cite:page
+    \directsetup{\s!btx:\s!cite:common}
+\stopsetups
+
+\protect

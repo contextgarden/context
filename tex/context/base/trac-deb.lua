@@ -209,7 +209,7 @@ function tracers.printerror(specification)
         report_nl()
         if luaerrorline then
             report("error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
---             report("error on line %s in file %s:\n\n%s",linenumber,filename,lasttexerror)
+         -- report("error on line %s in file %s:\n\n%s",linenumber,filename,lasttexerror)
         else
             report("error on line %s in file %s: %s",linenumber,filename,lasttexerror)
             if tex.show_context then

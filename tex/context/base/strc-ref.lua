@@ -158,7 +158,7 @@ local function initializer() -- can we use a tobesaved as metatable for collecte
             local r = data.references
             local i = r.internal
             if i then
-                internals[i]     = c
+                internals[i]     = data
                 usedinternals[i] = r.used
             end
         end

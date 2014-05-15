@@ -263,10 +263,11 @@
      \lastdestinationattribute\attributeunsetvalue
    \fi}
 
-\unexpanded\def\strc_references_direct_full#labels#text%
+\unexpanded\def\strc_references_direct_full_user#user#labels#text%
   {\ifreferencing
      \strc_references_start_destination_nodes
-\setnextinternalreference
+     \setnextinternalreference
+     \edef\m_strc_references_user{#user}%
      \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","#labels",
          {
               references = {
@@ -280,6 +281,11 @@
               entries = {
                   text = \!!bs#text\!!es
               },
+          \ifx\m_strc_references_user\empty \else
+              userdata = {
+                  \m_strc_references_user
+              }
+          \fi
           },"\interactionparameter\c!focus")
          }%
      \strc_references_stop_destination_nodes
@@ -297,7 +303,10 @@
      \prewordbreak % new
    \fi}
 
-\let\dodirectfullreference\strc_references_direct_full % for at lua end
+\unexpanded\def\strc_references_direct_full
+  {\strc_references_direct_full_user\empty}
+
+\let\dodirectfullreference\strc_references_direct_full % for at lua end (no longer)
 
 \def\strc_references_set_page_only_destination_box_attribute#cs#labels%
   {\strc_references_set_page_only_destination_attribute{#labels}%

@@ -707,6 +707,7 @@
 		<cd:constant name='file' value='file'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
+		<cd:constant name='finalpubsep' value='finalpubsep'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
 		<cd:constant name='firstpage' value='firstpage'/>
 		<cd:constant name='focus' value='focus'/>

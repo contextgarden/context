@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/13/14 00:04:28
+-- merge date  : 05/15/14 19:52:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -125,7 +125,7 @@ local uppercase=R("AZ")
 local underscore=P("_")
 local hexdigit=digit+lowercase+uppercase
 local cr,lf,crlf=P("\r"),P("\n"),P("\r\n")
-local newline=crlf+S("\r\n") 
+local newline=P("\r")*(P("\n")+P(true))+P("\n")
 local escaped=P("\\")*anything
 local squote=P("'")
 local dquote=P('"')
@@ -147,8 +147,8 @@ patterns.utfbom_32_le=utfbom_32_le
 patterns.utfbom_16_be=utfbom_16_be
 patterns.utfbom_16_le=utfbom_16_le
 patterns.utfbom_8=utfbom_8
-patterns.utf_16_be_nl=P("\000\r\000\n")+P("\000\r")+P("\000\n")
-patterns.utf_16_le_nl=P("\r\000\n\000")+P("\r\000")+P("\n\000")
+patterns.utf_16_be_nl=P("\000\r\000\n")+P("\000\r")+P("\000\n") 
+patterns.utf_16_le_nl=P("\r\000\n\000")+P("\r\000")+P("\n\000") 
 patterns.utf8one=R("\000\127")
 patterns.utf8two=R("\194\223")*utf8next
 patterns.utf8three=R("\224\239")*utf8next*utf8next

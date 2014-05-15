@@ -15,6 +15,7 @@
 % todo: \v!cite => \s!cite
 % todo: interface with (ml)bibtex (export -> call -> import)
 % todo: check if 'all' etc are ok ... either use list or use other criterium
+% todo: \the\everysetupbtxciteplacement probably too often
 
 % \definecolor[btx:field]   [darkred]
 % \definecolor[btx:crossref][darkblue]
@@ -44,7 +45,8 @@
 
 \unprotect
 
-\def\s!btx{btx}
+\def\s!btx    {btx}
+\def\s!cite   {cite}
 \def\v!btxlist{btxlist}
 
 % a dedicated construction mechanism
@@ -428,7 +430,8 @@
            keyword      = "\btxrenderingparameter\c!keyword",
        }}%
        % next we analyze the width
-       \ifx\btx_reference_inject_indeed\relax \else
+       \ifx\btx_reference_inject_indeed\relax
+       \else
          \edef\p_width{\btxrenderingparameter\c!width}%
          \ifx\p_width\v!auto
            \scratchcounter\btxcounter
@@ -558,37 +561,43 @@
 % \btxflushauthor[inverted]{author}
 % \btxflushauthor[invertedshort]{author}
 
-% Interaction
+% Interaction: only list
 
 \newconditional\btxinteractive
 
-\unexpanded\def\btxdoifelseinteraction
-  {\iflocation
-     \edef\p_interaction{\btxcitevariantparameter\c!interaction}%
-     \ifx\p_interaction\v!stop
-       \doubleexpandafter\secondoftwoarguments
-     \else
-       \doubleexpandafter\firstoftwoarguments
-     \fi
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+\unexpanded\def\btxdoifelseinteraction{\secondoftwoarguments}
 
 \appendtoks
     \iflocation
         \edef\p_interaction{\btxlistvariantparameter\c!interaction}%
         \ifx\p_interaction\v!stop
-            \let\doifelsebtxinteractionelse\secondoftwoarguments
+            \let\btxdoifelseinteraction\secondoftwoarguments
             \setfalse\btxinteractive
         \else
-            \let\doifelsebtxinteractionelse\firstoftwoarguments
+            \let\btxdoifelseinteraction\firstoftwoarguments
             \settrue\btxinteractive
         \fi
     \else
-        \let\doifelsebtxinteractionelse\secondoftwoarguments
+        \let\btxdoifelseinteraction\secondoftwoarguments
         \setfalse\btxinteractive
     \fi
 \to \everysetupbtxlistplacement
+
+\appendtoks
+    \iflocation
+        \edef\p_interaction{\btxcitevariantparameter\c!interaction}%
+        \ifx\p_interaction\v!stop
+            \let\btxdoifelseinteraction\secondoftwoarguments
+            \setfalse\btxinteractive
+        \else
+            \let\btxdoifelseinteraction\firstoftwoarguments
+            \settrue\btxinteractive
+        \fi
+    \else
+        \let\btxdoifelseinteraction\secondoftwoarguments
+        \setfalse\btxinteractive
+    \fi
+\to \everysetupbtxciteplacement
 
 % bib -> btx
 
@@ -651,14 +660,20 @@
 %    \iftrialtypesetting \else
 %      \processcommacommand[\currentbtxtag]{\publ_cite_indeed\currentbtxrendering}%
 %    \fi}
+%
+% \def\publ_cite_indeed#1#2%
+%   {\expanded{\writedatatolist[btx][btxset=#1,btxref=#2]}}
 
-\def\publ_cite_indeed#1#2%
-  {\expanded{\writedatatolist[btx][btxset=#1,btxref=#2]}}
-
-\def\btxdomarkcitation#1#2% called from lua end
-  {\iftrialtypesetting \else
-     \writedatatolist[btx][btxset=#1,btxref=#2]% \c!location=\v!here
+\unexpanded\def\btxdomarkcitation % called from lua end
+  {\iftrialtypesetting
+     \expandafter\gobbletwoarguments
+   \else
+     \expandafter\publ_cite_mark_citation
    \fi}
+
+\def\publ_cite_mark_citation#1#2% called from lua end
+  {\dontleavehmode
+   \writedatatolist[btx][btxset=#1,btxref=#2]}  % \c!location=\v!here
 
 %D \macros{cite,nocite,citation,nocitation,usecitation}
 %D
@@ -687,6 +702,7 @@
   {\letinteractionparameter\c!style\empty
    \edef\currentbtxcitevariant{\btxcitevariantparameter\c!alternative}%
    \edef\currentbtxcitetag{#1}%
+   \the\everysetupbtxciteplacement
    \publ_cite_variant
    \endgroup}
 
@@ -723,39 +739,37 @@
 \def\publ_cite_tags_variants_indeed#1%
   {\letinteractionparameter\c!style\empty
    \edef\currentbtxcitevariant{#1}%
+   \the\everysetupbtxciteplacement
    \publ_cite_variant
    \endgroup}
 
 \newconditional\btxcitecompress
 
 \def\publ_cite_variant
-  {\edef\p_compress{\btxcitevariantparameter\c!compress}%
- % \ifx\p_compress\v!no
- %   \setfalse\btxcitecompress
- % \else
- %   \settrue\btxcitecompress
- % \fi
-   \begingroup
+  {\begingroup
    \settrue\c_publ_cite_write
    \publ_cite_handle_variant_indeed[\currentbtxcitetag]}
 
 \unexpanded\def\publ_cite_handle_variant#1%
   {\begingroup
-   \the\everysetupbtxciteplacement
    \edef\currentbtxcitevariant{#1}%
+   \the\everysetupbtxciteplacement
    \dosingleargument\publ_cite_handle_variant_indeed}
 
 \def\publ_cite_handle_variant_indeed[#1]%
   {\usebtxcitevariantstyleandcolor\c!style\c!color
    \letbtxcitevariantparameter\c!alternative\currentbtxcitevariant
+   \btxcitevariantparameter\v!left
+   \edef\p_compress{\btxcitevariantparameter\c!compress}%
    \ctxcommand{btxhandlecite(%
      "\currentbtxdataset",%
      "#1",%
      \iftrialtypesetting false\else true\fi,%
      "\currentbtxcitevariant",%
      "\btxcitevariantparameter\c!sorttype",%
-     "\btxcitevariantparameter\c!setups"%
+     \ifx\p_compress\v!no false\else true\fi%
    )}%
+   \btxcitevariantparameter\v!right
    \endgroup}
 
 \unexpanded\def\btxcitation
@@ -778,6 +792,9 @@
      \ctxcommand{btxhandlenocite("\currentbtxdataset","#1",true)}%
    \fi}
 
+\unexpanded\def\btxmissing#1%
+  {{\tttf<#1>}}
+
 %D Compatibility:
 
 \let\cite          \btxcite
@@ -788,8 +805,30 @@
 
 %D Cite helpers:
 
+\newconstant\currentbtxconcat
+
 \unexpanded\def\btxcitevariant#1%
   {\ctxcommand{btxcitevariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1")}}
+
+\unexpanded\def\btxcitereset
+  {\let\currentbtxfirst   \empty
+   \let\currentbtxsecond  \empty
+   \let\currentbtxinternal\empty
+   \setconstant\currentbtxconcat\zerocount}
+
+\btxcitereset
+
+\unexpanded\def\btxcitesetup#1%
+  {\directsetup{btx:cite:#1}%
+   \btxcitereset}
+
+\unexpanded\def\btxsetfirst   {\def\currentbtxfirst}
+\unexpanded\def\btxsetsecond  {\def\currentbtxsecond}
+\unexpanded\def\btxsetinternal{\def\currentbtxinternal}
+\unexpanded\def\btxsetconcat#1{\setconstant\currentbtxconcat#1\relax}
+
+\unexpanded\def\btxsetreference#1#2% #3#4%
+  {\strc_references_direct_full_user{btxset="#1",btxref="#2"}}
 
 %D List helpers:
 
@@ -842,9 +881,11 @@
    \c!otherstext={ et al.},
    \c!pubsep={, },
    \c!lastpubsep={ and },
+   \c!finalpubsep={ and },
    \c!compress=\v!no,
    \c!inbetween={ },
    \c!left=,
+   \c!middle=,
    \c!right=]
 
 \definebtxcitevariant
@@ -869,52 +910,70 @@
 \definebtxcitevariant
    [authornum]
    [author]
-   [\c!left={[},
-    \c!right={]}]
+   [num:\c!left={[},
+    num:\c!right={]},
+    num:\c!middle={, }]
 
 \definebtxcitevariant
    [year]
    [\c!left={(},
+    \c!middle={, },
     \c!right={)}]
 
 \definebtxcitevariant
-   [key]
+   [tag]
    [\c!left={[},
+    \c!middle={, },
     \c!right={]}]
+
+\definebtxcitevariant
+   [key]
+   [tag]
 
 \definebtxcitevariant
    [serial]
    [\c!left={[},
+    \c!middle={, },
     \c!right={]}]
 
 \definebtxcitevariant
    [page]
    [\c!left={[},
+    \c!middle={, },
     \c!right={]}]
 
 \definebtxcitevariant
    [short]
    [\c!left={[},
+    \c!middle={, },
+    \c!right={]}]
+
+\definebtxcitevariant
+   [category]
+   [\c!left={[},
+    \c!middle={, },
     \c!right={]}]
 
 \definebtxcitevariant
    [type]
-   [\c!left={[},
-    \c!right={]}]
+   [category]
 
 \definebtxcitevariant
    [doi]
    [\c!left={[},
+    \c!middle={, },
     \c!right={]}]
 
 \definebtxcitevariant
    [url]
    [\c!left={[},
+    \c!middle={, },
     \c!right={]}]
 
 \definebtxcitevariant
    [page]
    [\c!left=,
+    \c!middle={, },
     \c!right=,
     \c!inbetween=\endash]
 

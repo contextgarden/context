@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ['trac-log'] = {
 --     local texio_write_nl = texio.write_nl
 --     local texio_write    = texio.write
 --     local io_write       = io.write
-
+--
 --     local write_nl = function(target,...)
 --         if not io_write then
 --             io_write = io.write
@@ -37,7 +37,7 @@ if not modules then modules = { } end modules ['trac-log'] = {
 --             io_write(target,...)
 --         end
 --     end
-
+--
 --     local write = function(target,...)
 --         if not io_write then
 --             io_write = io.write
@@ -54,7 +54,7 @@ if not modules then modules = { } end modules ['trac-log'] = {
 --             io_write(target,...)
 --         end
 --     end
-
+--
 --     texio.write    = write
 --     texio.write_nl = write_nl
 --

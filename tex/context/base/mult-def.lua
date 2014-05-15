@@ -6643,6 +6643,9 @@ return {
   ["lastpubsep"]={
    ["en"]="lastpubsep",
   },
+  ["finalpubsep"]={
+   ["en"]="finalpubsep",
+  },
   ["refcommand"]={
    ["en"]="refcommand",
   },

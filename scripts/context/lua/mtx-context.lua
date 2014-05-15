@@ -540,6 +540,7 @@ function scripts.context.run(ctxdata,filename)
     local a_profile     = getargument("profile")
     local a_batchmode   = getargument("batchmode")
     local a_nonstopmode = getargument("nonstopmode")
+    local a_scollmode   = getargument("scrollmode")
     local a_once        = getargument("once")
     local a_synctex     = getargument("synctex")
     local a_backend     = getargument("backend")
@@ -549,7 +550,7 @@ function scripts.context.run(ctxdata,filename)
     local a_jithash     = getargument("jithash")
     local a_texformat   = getargument("texformat")
     --
-    a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or nil
+    a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or (a_scrollmode and "scrollmode") or nil
     a_synctex   = check_synctex(a_synctex)
     --
     for i=1,#filelist do
