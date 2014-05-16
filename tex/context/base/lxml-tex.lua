@@ -354,7 +354,7 @@ end
 
 function lxml.checkindex(name)
     local root = getid(name)
-    return (root and root.index) or 0
+    return root and root.index or 0
 end
 
 function lxml.withindex(name,n,command) -- will change as name is always there now
@@ -1185,7 +1185,9 @@ local function command(collected,cmd,otherwise)
                 lxml.addindex(name,false,true)
                 ix = e.ix
             end
-            if wildcard then
+            if not ix then
+                report_lxml("no valid node index for element %a in command %s",name,cmd)
+            elseif wildcard then
                 contextsprint(ctxcatcodes,"\\xmlw{",(gsub(cmd,"%*",e.tg)),"}{",name,"::",ix,"}")
             else
                 contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",name,"::",ix,"}")

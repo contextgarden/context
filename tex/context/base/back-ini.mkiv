@@ -154,4 +154,10 @@
 
 \back_job_set_suffix{pdf} % default
 
+% \setupbackend[space=yes] % replace spacing in (pdf) file
+
+\appendtoks
+    \ctxcommand{setrealspaces("\backendparameter\c!space")}%
+\to \everysetupbackend
+
 \protect \endinput

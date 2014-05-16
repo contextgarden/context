@@ -459,29 +459,33 @@ local is_mark = allocate ( tohash {
     "mn", "ms",
 } )
 
+local is_punctuation = allocate ( tohash {
+    "pc","pd","ps","pe","pi","pf","po",
+} )
+
 -- to be redone: store checked characters
 
-characters.is_character = is_character
-characters.is_letter    = is_letter
-characters.is_command   = is_command
-characters.is_spacing   = is_spacing
-characters.is_mark      = is_mark
+characters.is_character   = is_character
+characters.is_letter      = is_letter
+characters.is_command     = is_command
+characters.is_spacing     = is_spacing
+characters.is_mark        = is_mark
+characters.is_punctuation = is_punctuation
 
-local mt = { -- yes or no ?
-    __index = function(t,k)
-        if type(k) == "number" then
-            local c = data[k].category
-            return c and rawget(t,c)
-        else
-            -- avoid auto conversion in data.characters lookups
-        end
+local mti = function(t,k)
+    if type(k) == "number" then
+        local c = data[k].category
+        return c and rawget(t,c)
+    else
+        -- avoid auto conversion in data.characters lookups
     end
-}
+end
 
-setmetatableindex(characters.is_character, mt)
-setmetatableindex(characters.is_letter,    mt)
-setmetatableindex(characters.is_command,   mt)
-setmetatableindex(characters.is_spacing,   mt)
+setmetatableindex(characters.is_character,  mti)
+setmetatableindex(characters.is_letter,     mti)
+setmetatableindex(characters.is_command,    mti)
+setmetatableindex(characters.is_spacing,    mti)
+setmetatableindex(characters.is_punctuation,mti)
 
 -- todo: also define callers for the above
 

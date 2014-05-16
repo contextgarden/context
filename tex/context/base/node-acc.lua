@@ -31,7 +31,7 @@ local copy_node      = nuts.copy
 local free_nodelist  = nuts.flush_list
 local insert_after   = nuts.insert_after
 
-local new_gluespec   = nuts.pool.gluespec -- temp hack 
+local new_gluespec   = nuts.pool.gluespec -- temp hack
 
 local glue_code      = nodecodes.glue
 local kern_code      = nodecodes.kern
@@ -41,7 +41,8 @@ local vlist_code     = nodecodes.vlist
 
 local a_characters   = attributes.private("characters")
 
-local threshold      = 65536
+local threshold      = 65536 -- not used
+local nofreplaced    = 0
 
 -- todo: nbsp etc
 -- todo: collapse kerns
@@ -83,6 +84,7 @@ local function injectspaces(head)
                 end
                 setattr(s,a_characters,0)
                 setattr(n,a_characters,0)
+                nofreplaced = nofreplaced + 1
             end
        -- end
         elseif id == hlist_code or id == vlist_code then
@@ -112,6 +114,12 @@ nodes.handlers.accessibility = function(head)
     local head, done = injectspaces(tonut(head))
     return tonode(head), done
 end
+
+statistics.register("inserted spaces in output",function()
+    if nofreplaced > 0 then
+        return nofreplaced
+    end
+end)
 
 -- todo:
 

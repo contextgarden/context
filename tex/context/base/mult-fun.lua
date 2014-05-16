@@ -24,6 +24,7 @@ return {
         "llcircle", "lrcircle", "urcircle", "ulcircle",
         "tcircle", "bcircle", "lcircle", "rcircle",
         "lltriangle", "lrtriangle", "urtriangle", "ultriangle",
+        "uptriangle", "downtriangle", "lefttriangle", "righttriangle", "triangle",
         "smoothed", "cornered", "superellipsed", "randomized", "squeezed", "enlonged", "shortened",
         "punked", "curved", "unspiked", "simplified", "blownup", "stretched",
         "enlarged", "leftenlarged", "topenlarged", "rightenlarged", "bottomenlarged",

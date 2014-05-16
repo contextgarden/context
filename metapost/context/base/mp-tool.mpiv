@@ -628,6 +628,15 @@ ultriangle := origin -- (0,+.5) -- (-.5,0) -- cycle ;
 lltriangle := origin -- (-.5,0) -- (0,-.5) -- cycle ;
 lrtriangle := origin -- (0,-.5) -- (+.5,0) -- cycle ;
 
+path triangle, uptriangle, downtriangle, lefttriangle, righttriangle ;
+
+triangle      := (1,0) -- (1,0) rotated 120 -- (1,0) rotated -120 -- cycle ;
+
+uptriangle    := triangle rotated  90 ;
+downtriangle  := triangle rotated -90 ;
+lefttriangle  := triangle rotated 180 ;
+righttriangle := triangle ;
+
 path unitdiamond, fulldiamond ;
 
 unitdiamond := (.5,0) -- (1,.5) -- (.5,1) -- (0,.5) -- cycle ;

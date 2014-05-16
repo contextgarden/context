@@ -45,6 +45,8 @@
 
 \unprotect
 
+\startcontextdefinitioncode
+
 \def\s!btx    {btx}
 \def\s!cite   {cite}
 \def\v!btxlist{btxlist}
@@ -720,12 +722,18 @@
 \def\publ_cite_tags_settings_indeed#1%
   {\letinteractionparameter\c!style\empty
   %\letinteractionparameter\c!color\empty
-   \getdummyparameters[\c!alternative=,\c!extras=,#1]%
+   \letdummyparameter\c!before     \empty
+   \letdummyparameter\c!after      \empty
+   \letdummyparameter\c!extras     \empty
+   \letdummyparameter\c!alternative\empty
+   \getdummyparameters[#1]%
    \edef\p_alternative{\dummyparameter\c!alternative}%
-   \ifx\p_alternative\empty \else
+   \ifx\p_alternative\empty
+     \edef\currentbtxcitevariant{\btxcitevariantparameter\c!alternative}%
+   \else
      \let\currentbtxcitevariant\p_alternative
    \fi
-   \setupcurrentbtxcitevariantparameters[#1]%
+   \setupcurrentbtxcitevariant[#1]%
    \edef\p_extras{\dummyparameter\c!extras}%
    \ifx\p_extras\empty \else
      \edef\p_right{\btxcitevariantparameter\c!right}%
@@ -733,7 +741,17 @@
        \setexpandedbtxcitevariantparameter\p_right{\p_extras\p_right}%
      \fi
    \fi
+   \edef\p_before{\dummyparameter\c!before}%
+   \edef\p_after {\dummyparameter\c!after}%
+   \ifx\p_before\empty \else
+     \p_before
+     \space
+   \fi
    \publ_cite_variant
+   \ifx\p_after\empty \else
+     \optionalspace
+     \p_after
+   \fi
    \endgroup}
 
 \def\publ_cite_tags_variants_indeed#1%
@@ -761,14 +779,22 @@
    \letbtxcitevariantparameter\c!alternative\currentbtxcitevariant
    \btxcitevariantparameter\v!left
    \edef\p_compress{\btxcitevariantparameter\c!compress}%
-   \ctxcommand{btxhandlecite(%
-     "\currentbtxdataset",%
-     "#1",%
-     \iftrialtypesetting false\else true\fi,%
-     "\currentbtxcitevariant",%
-     "\btxcitevariantparameter\c!sorttype",%
-     \ifx\p_compress\v!no false\else true\fi%
-   )}%
+%    \ctxcommand{btxhandlecite(%
+%      "\currentbtxdataset",%
+%      "#1",%
+%      \iftrialtypesetting false\else true\fi,%
+%      "\currentbtxcitevariant",%
+%      "\btxcitevariantparameter\c!sorttype",%
+%      \ifx\p_compress\v!yes true\else false\fi%
+%    )}%
+   \ctxcommand{btxhandlecite{%
+     dataset   = "\currentbtxdataset",%
+     reference = "#1",%
+     markentry = \iftrialtypesetting false\else true\fi,%
+     variant   = "\currentbtxcitevariant",%
+     sorttype  = "\btxcitevariantparameter\c!sorttype",%
+     compress  = \ifx\p_compress\v!yes true\else false\fi,%
+   }}%
    \btxcitevariantparameter\v!right
    \endgroup}
 
@@ -830,6 +856,16 @@
 \unexpanded\def\btxsetreference#1#2% #3#4%
   {\strc_references_direct_full_user{btxset="#1",btxref="#2"}}
 
+\unexpanded\def\btxstartsubcite#1%
+  {\bgroup
+   \btxcitereset
+   \def\currentbtxcitevariant{#1}%
+   \btxcitevariantparameter\c!left}
+
+\unexpanded\def\btxstopsubcite
+  {\btxcitevariantparameter\c!right
+   \egroup}
+
 %D List helpers:
 
 \def\currentbtxindex{0}
@@ -854,6 +890,8 @@
 \appendtoks
     \loadbtxdefinitionfile[\btxrenderingparameter\c!alternative]
 \to \everysetupbtxrendering
+
+\stopcontextdefinitioncode
 
 %D Defaults:
 
@@ -884,6 +922,7 @@
    \c!finalpubsep={ and },
    \c!compress=\v!no,
    \c!inbetween={ },
+   \c!range=\endash,
    \c!left=,
    \c!middle=,
    \c!right=]
@@ -894,6 +933,11 @@
     \c!left={(},
     \c!middle={, },
     \c!right={)}]
+
+\definebtxcitevariant
+   [authornum]
+   [author]
+   [\c!inbetween={ }]
 
 \definebtxcitevariant
    [authoryear]
@@ -908,16 +952,27 @@
    [authoryear]
 
 \definebtxcitevariant
+   [author:num]
    [authornum]
-   [author]
-   [num:\c!left={[},
-    num:\c!right={]},
-    num:\c!middle={, }]
+   [\c!left={[},
+    \c!right={]}]
+
+\definebtxcitevariant
+   [author:year]
+   [authoryear]
+   [\c!left={(},
+    \c!right={)}]
+
+\definebtxcitevariant
+   [author:years]
+   [authoryears]
+   [\c!left=,
+    \c!right=]
 
 \definebtxcitevariant
    [year]
    [\c!left={(},
-    \c!middle={, },
+    \c!middle={, }, % is middle used?
     \c!right={)}]
 
 \definebtxcitevariant
@@ -974,13 +1029,11 @@
    [page]
    [\c!left=,
     \c!middle={, },
-    \c!right=,
-    \c!inbetween=\endash]
+    \c!right=]
 
 \definebtxcitevariant
    [num]
    [\c!compress=\v!yes,
-    \c!inbetween={--},
     \c!left={[},
     \c!middle={, },
     \c!right={]}]

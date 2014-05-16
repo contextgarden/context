@@ -126,6 +126,7 @@ return {
         "twoperemspace", "threeperemspace", "fourperemspace", "fiveperemspace", "sixperemspace",
         "figurespace", "punctuationspace", "hairspace",
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
+        "optionalspace",
     },
     ["helpers"] = {
         --

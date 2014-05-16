@@ -2446,3 +2446,4 @@ commands.settagfigure            = structurestags.setfigure
 commands.settagcombination       = structurestags.setcombination
 commands.settagtablecell         = structurestags.settablecell
 commands.settagtabulatecell      = structurestags.settabulatecell
+

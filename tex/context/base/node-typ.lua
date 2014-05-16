@@ -46,7 +46,7 @@ local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
     if spacing then
         s, p, m = spacing, 0, 0
     else
-        s, p, m = fp.space, fp.space_stretch, fp,space_shrink
+        s, p, m = fp.space, fp.space_stretch, fp.space_shrink
     end
     local spacedone = false
     for c in utfvalues(str) do

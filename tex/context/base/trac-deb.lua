@@ -130,7 +130,10 @@ function tracers.showlines(filename,linenumber,offset,luaerrorline)
             local stop  = "\\stopluacode"
             local n = linenumber
             for i=n,1,-1 do
-                if find(lines[i],start) then
+                local line = lines[i]
+                if not line then
+                    break
+                elseif find(line,start) then
                     n = i + luaerrorline - 1
                     if n <= linenumber then
                         linenumber = n

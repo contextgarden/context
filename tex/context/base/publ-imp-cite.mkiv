@@ -21,12 +21,22 @@
 
 % This saves keying:
 
-\startsetups \s!btx:\s!cite:common:default
+\startsetups \s!btx:\s!cite:common:normal
     \ifx\currentbtxsecond\empty
         \currentbtxfirst
     \else
         \currentbtxfirst
         \btxcitevariantparameter\v!inbetween
+        \currentbtxsecond
+    \fi
+\stopsetups
+
+\startsetups \s!btx:\s!cite:common:range
+    \ifx\currentbtxsecond\empty
+        \currentbtxfirst
+    \else
+        \currentbtxfirst
+        \btxcitevariantparameter\c!range
         \currentbtxsecond
     \fi
 \stopsetups
@@ -41,92 +51,169 @@
     \fi
 \stopsetups
 
-\startsetups \s!btx:\s!cite:common
+% \startsetups \s!btx:\s!cite:render:normal
+%     \directsetup{\s!btx:\s!cite:concat}
+%     \ifconditional\btxinteractive
+%         \goto {
+%             \directsetup{\s!btx:\s!cite:common:normal}
+%         } [
+%             \s!internal(\currentbtxinternal)
+%         ]
+%     \else
+%         \directsetup{\s!btx:\s!cite:common:normal}
+%     \fi
+% \stopsetups
+%
+% more efficient:
+
+\startsetups \s!btx:\s!cite:render:normal
     \directsetup{\s!btx:\s!cite:concat}
     \ifconditional\btxinteractive
         \goto {
-            \directsetup{\s!btx:\s!cite:common:default}
+            \ifx\currentbtxsecond\empty
+                \currentbtxfirst
+            \else
+                \currentbtxfirst
+                \btxcitevariantparameter\v!inbetween
+                \currentbtxsecond
+            \fi
         } [
-            internal(\currentbtxinternal)
+            \s!internal(\currentbtxinternal)
         ]
     \else
-        \directsetup{\s!btx:\s!cite:common:default}
+        \ifx\currentbtxsecond\empty
+            \currentbtxfirst
+        \else
+            \currentbtxfirst
+            \btxcitevariantparameter\v!inbetween
+            \currentbtxsecond
+        \fi
     \fi
 \stopsetups
 
-\startsetups \s!btx:\s!cite:variant
+% \startsetups \s!btx:\s!cite:render:range
+%     \directsetup{\s!btx:\s!cite:concat}
+%     \ifconditional\btxinteractive
+%         \goto {
+%             \directsetup{\s!btx:\s!cite:common:range}
+%         } [
+%             \s!internal(\currentbtxinternal)
+%         ]
+%     \else
+%         \directsetup{\s!btx:\s!cite:common:range}
+%     \fi
+% \stopsetups
+%
+% more efficient:
+
+\startsetups \s!btx:\s!cite:render:range
     \directsetup{\s!btx:\s!cite:concat}
     \ifconditional\btxinteractive
         \goto {
-            \directsetup{\s!btx:\s!cite:common:\currentbtxcitevariant}
+            \ifx\currentbtxsecond\empty
+                \currentbtxfirst
+            \else
+                \currentbtxfirst
+                \btxcitevariantparameter\c!range
+                \currentbtxsecond
+            \fi
         } [
-            internal(\currentbtxinternal)
+            \s!internal(\currentbtxinternal)
         ]
     \else
-        \directsetup{\s!btx:\s!cite:common:\currentbtxcitevariant}
+        \ifx\currentbtxsecond\empty
+            \currentbtxfirst
+        \else
+            \currentbtxfirst
+            \btxcitevariantparameter\c!range
+            \currentbtxsecond
+        \fi
     \fi
 \stopsetups
 
-% author lists:
+\startsetups \s!btx:\s!cite:render:variant
+    \directsetup{\s!btx:\s!cite:concat}
+    \ifconditional\btxinteractive
+        \goto {
+            \directsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
+        } [
+            \s!internal(\currentbtxinternal)
+        ]
+    \else
+        \directsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
+    \fi
+\stopsetups
 
-\startsetups \s!btx:\s!cite:common:author
-    \currentbtxfirst
+% author lists: can be less
+
+\startsetups \s!btx:\s!cite:render:author
+    \directsetup{\s!btx:\s!cite:common:normal}
 \stopsetups
-\startsetups \s!btx:\s!cite:common:authoryear
-    \currentbtxfirst,\space(\currentbtxsecond)
+\startsetups \s!btx:\s!cite:render:authoryear
+    \directsetup{\s!btx:\s!cite:common:normal}
 \stopsetups
-\startsetups \s!btx:\s!cite:common:authoryears
-    \currentbtxfirst,\space\currentbtxsecond
+\startsetups \s!btx:\s!cite:render:authoryears
+    \directsetup{\s!btx:\s!cite:common:normal}
 \stopsetups
-\startsetups \s!btx:\s!cite:common:authornum
-    \currentbtxfirst\space[\currentbtxsecond]
+\startsetups \s!btx:\s!cite:render:authornum
+    \directsetup{\s!btx:\s!cite:common:normal}
+\stopsetups
+
+\startsetups \s!btx:\s!cite:author:num
+    \directsetup{\s!btx:\s!cite:render:range}
+\stopsetups
+\startsetups \s!btx:\s!cite:author:year
+    \directsetup{\s!btx:\s!cite:render:range}
+\stopsetups
+\startsetups \s!btx:\s!cite:author:years
+    \directsetup{\s!btx:\s!cite:render:range}
 \stopsetups
 
 \startsetups \s!btx:\s!cite:author
-    \directsetup{\s!btx:\s!cite:variant}
+    \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authoryear
-    \directsetup{\s!btx:\s!cite:variant}
+    \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authoryears
-    \directsetup{\s!btx:\s!cite:variant}
+    \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authornum
-    \directsetup{\s!btx:\s!cite:variant}
+    \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 
 \startsetups \s!btx:\s!cite:year
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:range}
 \stopsetups
 \startsetups \s!btx:\s!cite:short
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:serial
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:range}
 \stopsetups
 \startsetups \s!btx:\s!cite:tag
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:key
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:doi
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:url
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:category
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:type
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:num
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:range}
 \stopsetups
 \startsetups \s!btx:\s!cite:page
-    \directsetup{\s!btx:\s!cite:common}
+    \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 
 \protect

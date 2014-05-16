@@ -39,6 +39,7 @@ local setattr            = nuts.setattr
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 
+local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
 local copy_node_list     = nuts.copy_list
@@ -58,6 +59,7 @@ local glue_code          = nodecodes.glue
 local space_skip_code    = skipcodes["spaceskip"]
 
 local chardata           = characters.data
+local is_punctuation     = characters.is_punctuation
 
 local typesetters        = typesetters
 
@@ -161,6 +163,18 @@ local methods = {
 
     -- The next one uses an attribute assigned to the character but still we
     -- don't have the 'local' value.
+
+    [0x001F] = function(head,current)
+        local next = getnext(current)
+        if next and getid(next) == glyph_code then
+            local char = getchar(next)
+            head, current = remove_node(head,current,true)
+            if not is_punctuation[char] then
+                local p = fontparameters[getfont(next)]
+                head, current = insert_node_before(head,current,new_glue(p.space,p.space_stretch,p.space_shrink))
+            end
+        end
+    end,
 
     [0x00A0] = function(head,current) -- nbsp
         local next = getnext(current)
