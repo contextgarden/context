@@ -24,8 +24,9 @@ end
 local chardata  = characters.data
 local lowercase = characters.lower
 
-local lower, gsub, concat = string.lower, string.gsub, table.concat
-local next, type = next, type
+local lower, gsub, find = string.lower, string.gsub, string.find
+local concat = table.concat
+local next, type, rawget = next, type, rawget
 local utfchar = utf.char
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local textoutf = characters and characters.tex.toutf
@@ -73,13 +74,56 @@ local defaultshortcuts = {
     dec = "12",
 }
 
+local l_splitter = lpeg.tsplitat("+")
+local d_splitter = lpeg.splitat ("+")
+
 function publications.new(name)
     publicationsstats.nofdatasets = publicationsstats.nofdatasets + 1
+    local function getcombinedluadata(t,k)
+        if find(k,"%+") then
+            local tags   = lpegmatch(l_splitter,k)
+            local parent = tags[i]
+            local first  = rawget(t,parent)
+            if first then
+                local combined = first.combined
+                if not combined then
+                    combined = { }
+                    first.combined = combined
+                end
+                -- add new ones but only once
+                for i=1,#tags do
+                    local tag = tags[i]
+                    local new = true
+                    for j=1,#combined do
+                        if combined[j] == tag then
+                            new = false
+                        end
+                    end
+                    if new then
+                        local entry = rawget(t,tag)
+                        if entry then
+                            combined[#combined+1]  = tag
+                            entry.combined[parent] = true
+                        end
+                    end
+                end
+                return first
+            end
+        end
+    end
+    local function getcombineddetails(t,k)
+        if find(k,"%+") then
+            local tag = lpegmatch(d_splitter,k)
+            return rawget(t,tag)
+        end
+    end
+    local luadata = setmetatableindex({ },getcombinedluadata)
+    local details = setmetatableindex({ },getcombineddetails)
     local dataset = {
         name       = name or "dataset " .. publicationsstats.nofdatasets,
         nofentries = 0,
         shortcuts  = { },
-        luadata    = { },
+        luadata    = luadata,
         xmldata    = xmlconvert(xmlplaceholder),
      -- details    = { },
         nofbytes   = 0,
@@ -95,10 +139,13 @@ function publications.new(name)
             userdata  = false,
         },
     }
+    -- we delay details till we need it (maybe we just delay the
+    -- individual fields but that is tricky as there can be some
+    -- depedencies)
     setmetatableindex(dataset,function(t,k)
         -- will become a plugin
         if k == "details" and publications.enhance then
-            dataset.details = { }
+            dataset.details = details
             publications.enhance(dataset.name)
             return dataset.details
         end
@@ -150,7 +197,7 @@ local filter_2 = Cs(
 )
 
 -- Currently we expand shortcuts and for large ones (like the acknowledgements
--- in tugboat.bib this is not that efficient. However, eventually strings get
+-- in tugboat.bib) this is not that efficient. However, eventually strings get
 -- hashed again.
 
 local function do_shortcut(key,value,dataset)

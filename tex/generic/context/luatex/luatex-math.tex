@@ -19,15 +19,6 @@
 
 % a bunch of fonts:
 
-\font\tenrm   = file:lmroman10-regular.otf:+liga;+kern;+tlig;+trep at 10pt
-\font\sevenrm = file:lmroman7-regular.otf:+liga;+kern;+tlig;+trep  at  7pt
-\font\fiverm  = file:lmroman5-regular.otf:+liga;+kern;+tlig;+trep  at  5pt
-
-\font\tentt   = file:lmmono10-regular.otf at 10pt
-\font\tensl   = file:lmromanslant10-regular.otf:+liga;+kern;+tlig;+trep at 10pt
-\font\tenit   = file:lmroman10-italic.otf:+liga;+kern;+tlig;+trep at 10pt
-\font\tenbi   = file:lmroman10-bolditalic.otf:+liga;+kern;+tlig;+trep at 10pt
-
 \let \teni    = \relax
 \let \seveni  = \relax
 \let \fivei   = \relax
@@ -35,19 +26,58 @@
 \let \sevensy = \relax
 \let \fivesy  = \relax
 \let \tenex   = \relax
-\let \tenbf   = \relax
 \let \sevenbf = \relax
 \let \fivebf  = \relax
 
-\tenrm
+\def\latinmodern
+  {\font\tenrm   = file:lmroman10-regular.otf:+liga;+kern;+tlig;+trep at 10pt
+   \font\sevenrm = file:lmroman7-regular.otf:+liga;+kern;+tlig;+trep  at  7pt
+   \font\fiverm  = file:lmroman5-regular.otf:+liga;+kern;+tlig;+trep  at  5pt
+   %
+   \font\tentt   = file:lmmono10-regular.otf                               at 10pt
+   \font\tensl   = file:lmromanslant10-regular.otf:+liga;+kern;+tlig;+trep at 10pt
+   \font\tenit   = file:lmroman10-italic.otf:+liga;+kern;+tlig;+trep       at 10pt
+   \font\tenbf   = file:lmroman10-bold.otf:+liga;+kern;+tlig;+trep         at 10pt
+   \font\tenbi   = file:lmroman10-bolditalic.otf:+liga;+kern;+tlig;+trep   at 10pt
+   %
+   \font\mathfonttextupright         = file:latinmodern-math.otf:ssty=0;fixmath=yes at 10pt
+   \font\mathfontscriptupright       = file:latinmodern-math.otf:ssty=1;fixmath=yes at  7pt
+   \font\mathfontscriptscriptupright = file:latinmodern-math.otf:ssty=2;fixmath=yes at  5pt
+   %
+   \textfont         0 = \mathfonttextupright
+   \scriptfont       0 = \mathfontscriptupright
+   \scriptscriptfont 0 = \mathfontscriptscriptupright
+   %
+   \tenrm}
 
-\font\mathfonttextupright         = file:latinmodern-math.otf:ssty=0;fixmath=yes at 10pt
-\font\mathfontscriptupright       = file:latinmodern-math.otf:ssty=1;fixmath=yes at  7pt
-\font\mathfontscriptscriptupright = file:latinmodern-math.otf:ssty=2;fixmath=yes at  5pt
+\def\lucidabright
+  {\font\tenrm   = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at 10pt
+   \font\sevenrm = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at  7pt
+   \font\fiverm  = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at  5pt
+   %
+   \font\tentt   = file:lucidabrightot.otf                                    at 10pt
+   \font\tenit   = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep            at 10pt
+   \font\tenit   = file:lucidabrightot-italic.otf:+liga;+kern;+tlig;+trep     at 10pt
+   \font\tenbf   = file:lucidabrightot-demi.otf:+liga;+kern;+tlig;+trep       at 10pt
+   \font\tenbi   = file:lucidabrightot-demiitalic.otf:+liga;+kern;+tlig;+trep at 10pt
+   %
+   \font\mathfonttextupright         = file:lucidabrightmathot.otf:ssty=0;fixmath=yes at 10pt
+   \font\mathfontscriptupright       = file:lucidabrightmathot.otf:ssty=1;fixmath=yes at  7pt
+   \font\mathfontscriptscriptupright = file:lucidabrightmathot.otf:ssty=2;fixmath=yes at  5pt
+   %
+   \textfont         0 = \mathfonttextupright
+   \scriptfont       0 = \mathfontscriptupright
+   \scriptscriptfont 0 = \mathfontscriptscriptupright
+   %
+   \tenrm}
 
-\textfont         0 = \mathfonttextupright
-\scriptfont       0 = \mathfontscriptupright
-\scriptscriptfont 0 = \mathfontscriptscriptupright
+\directlua {
+    if arguments["mtx:lucidabright"] then
+        tex.print("\string\\lucidabright")
+    else
+        tex.print("\string\\latinmodern")
+    end
+}
 
 \newtoks\everymathrm
 \newtoks\everymathmit
@@ -58,12 +88,12 @@
 \newtoks\everymathbi
 \newtoks\everymathtt
 
-\def\rm{\fam0\relax\the\everymathmrm\relax\tenrm\relax}
-\def\it{\fam0\relax\the\everymathit \relax\tenit\relax}
-\def\sl{\fam0\relax\the\everymathsl \relax\tensl\relax}
-\def\bf{\fam0\relax\the\everymathbf \relax\tenbf\relax}
-\def\bi{\fam0\relax\the\everymathbi \relax\tenbi\relax}
-\def\tt{\fam0\relax\the\everymathtt \relax\tentt\relax}
+\def\rm{\fam0\relax\the\everymathrm\relax\tenrm\relax}
+\def\it{\fam0\relax\the\everymathit\relax\tenit\relax}
+\def\sl{\fam0\relax\the\everymathsl\relax\tensl\relax}
+\def\bf{\fam0\relax\the\everymathbf\relax\tenbf\relax}
+\def\bi{\fam0\relax\the\everymathbi\relax\tenbi\relax}
+\def\tt{\fam0\relax\the\everymathtt\relax\tentt\relax}
 
 \let\mit     \relax % use names or \Uchar or define a vector
 \let\cal     \relax % idem, i'm not in the mood for this now

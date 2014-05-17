@@ -146,17 +146,25 @@
 
 % author lists: can be less
 
+\startsetups \s!btx:\s!cite:common:author
+    \ifx\currentbtxcitevariant\v!normal
+        \currentbtxfirst
+    \else
+        \currentbtxciteauthor
+    \fi
+\stopsetups
+
 \startsetups \s!btx:\s!cite:render:author
-    \directsetup{\s!btx:\s!cite:common:normal}
+    \directsetup{\s!btx:\s!cite:common:author}
 \stopsetups
 \startsetups \s!btx:\s!cite:render:authoryear
-    \directsetup{\s!btx:\s!cite:common:normal}
+    \directsetup{\s!btx:\s!cite:common:author}
 \stopsetups
 \startsetups \s!btx:\s!cite:render:authoryears
-    \directsetup{\s!btx:\s!cite:common:normal}
+    \directsetup{\s!btx:\s!cite:common:author}
 \stopsetups
 \startsetups \s!btx:\s!cite:render:authornum
-    \directsetup{\s!btx:\s!cite:common:normal}
+    \directsetup{\s!btx:\s!cite:common:author}
 \stopsetups
 
 \startsetups \s!btx:\s!cite:author:num

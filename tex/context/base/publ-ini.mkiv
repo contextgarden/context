@@ -554,6 +554,13 @@
 \unexpanded\def\btxflushauthorinverted     {\btx_flush_author{inverted}}      % #1
 \unexpanded\def\btxflushauthorinvertedshort{\btx_flush_author{invertedshort}} % #1
 
+\unexpanded\def\currentbtxciteauthor % always author
+  {\ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","author",{
+        combiner    = "\btxcitevariantparameter\c!author",
+        etallimit   = \number\btxcitevariantparameter\c!etallimit,
+        etaldisplay = \number\btxcitevariantparameter\c!etaldisplay,
+   })}}
+
 % \btxflushauthor{author}
 % \btxflushauthor{artauthor}
 % \btxflushauthor{editor}
@@ -713,11 +720,15 @@
 \unexpanded\def\publ_cite_tags_options[#1]%
   {\strictdoifnextoptionalelse{\publ_cite_tags_options_indeed{#1}}{\publ_cite_tags_indeed{#1}}}
 
+% \unexpanded\def\publ_cite_tags_options_indeed#1[#2]%
+%   {\edef\currentbtxcitetag{#2}%
+%    \doifassignmentelse{#1}
+%      {\publ_cite_tags_settings_indeed{#1}}
+%      {\publ_cite_tags_variants_indeed{#1}}}
+
 \unexpanded\def\publ_cite_tags_options_indeed#1[#2]%
   {\edef\currentbtxcitetag{#2}%
-   \doifassignmentelse{#1}
-     {\publ_cite_tags_settings_indeed{#1}}
-     {\publ_cite_tags_variants_indeed{#1}}}
+   \doifassignmentelse{#1}\publ_cite_tags_settings_indeed\publ_cite_tags_variants_indeed{#1}}
 
 \def\publ_cite_tags_settings_indeed#1%
   {\letinteractionparameter\c!style\empty
@@ -778,22 +789,14 @@
   {\usebtxcitevariantstyleandcolor\c!style\c!color
    \letbtxcitevariantparameter\c!alternative\currentbtxcitevariant
    \btxcitevariantparameter\v!left
-   \edef\p_compress{\btxcitevariantparameter\c!compress}%
-%    \ctxcommand{btxhandlecite(%
-%      "\currentbtxdataset",%
-%      "#1",%
-%      \iftrialtypesetting false\else true\fi,%
-%      "\currentbtxcitevariant",%
-%      "\btxcitevariantparameter\c!sorttype",%
-%      \ifx\p_compress\v!yes true\else false\fi%
-%    )}%
    \ctxcommand{btxhandlecite{%
      dataset   = "\currentbtxdataset",%
      reference = "#1",%
      markentry = \iftrialtypesetting false\else true\fi,%
      variant   = "\currentbtxcitevariant",%
      sorttype  = "\btxcitevariantparameter\c!sorttype",%
-     compress  = \ifx\p_compress\v!yes true\else false\fi,%
+     compress  = "\btxcitevariantparameter\c!compress",%
+     author    = "\btxcitevariantparameter\c!author",%
    }}%
    \btxcitevariantparameter\v!right
    \endgroup}
@@ -815,7 +818,11 @@
 
 \unexpanded\def\publ_cite_no[#1]%
   {\iftrialtypesetting \else
-     \ctxcommand{btxhandlenocite("\currentbtxdataset","#1",true)}%
+     \ctxcommand{btxhandlecite{%
+       dataset   = "\currentbtxdataset",%
+       reference = "#1",%
+       markentry = \iftrialtypesetting false\else true\fi,%
+   }}%
    \fi}
 
 \unexpanded\def\btxmissing#1%
@@ -833,13 +840,14 @@
 
 \newconstant\currentbtxconcat
 
-\unexpanded\def\btxcitevariant#1%
-  {\ctxcommand{btxcitevariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1")}}
+% \unexpanded\def\btxcitevariant#1%
+%   {\ctxcommand{btxcitevariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1")}}
 
 \unexpanded\def\btxcitereset
   {\let\currentbtxfirst   \empty
    \let\currentbtxsecond  \empty
    \let\currentbtxinternal\empty
+   \let\currentbtxtag     \empty
    \setconstant\currentbtxconcat\zerocount}
 
 \btxcitereset
@@ -850,6 +858,7 @@
 
 \unexpanded\def\btxsetfirst   {\def\currentbtxfirst}
 \unexpanded\def\btxsetsecond  {\def\currentbtxsecond}
+\unexpanded\def\btxsettag     {\def\currentbtxtag}
 \unexpanded\def\btxsetinternal{\def\currentbtxinternal}
 \unexpanded\def\btxsetconcat#1{\setconstant\currentbtxconcat#1\relax}
 
@@ -1065,6 +1074,11 @@
 \definebtxlistvariant
   [artauthor]
   [author]
+
+\setupbtxcitevariant
+  [\c!author      =\btxlistvariantparameter\c!author,
+   \c!etallimit   =\btxlistvariantparameter\c!etallimit,
+   \c!etaldisplay =\btxlistvariantparameter\c!etaldisplay]
 
 % Do we want these in the format? Loading them delayed is somewhat messy.
 

@@ -353,3 +353,16 @@ end
 function table.setmetatableindex(t,f)
     setmetatable(t,{ __index = f })
 end
+
+-- helper for plain:
+
+arguments = { }
+
+if arg then
+    for i=1,#arg do
+        local k, v = string.match(arg[i],"^%-%-([^=]+)=?(.-)$")
+        if k and v then
+            arguments[k] = v
+        end
+    end
+end

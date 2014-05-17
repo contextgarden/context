@@ -103,7 +103,11 @@ function scripts.plain.make(texengine,texformat)
 end
 
 function scripts.plain.run(texengine,texformat,filename)
-    execute('%s --fmt=%s "%s"',texengine,file.removesuffix(texformat),filename)
+    local t = { }
+    for k, v in next, environment.arguments do
+        t[#t+1] = string.format("--mtx:%s=%s",k,v)
+    end
+    execute('%s --fmt=%s %s "%s"',texengine,file.removesuffix(texformat),table.concat(t," "),filename)
 end
 
 function scripts.plain.fonts()

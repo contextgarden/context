@@ -79,7 +79,7 @@ local v_left         = variables.left
 local v_right        = variables.right
 local v_middle       = variables.middle
 local v_inbetween    = variables.inbetween
-
+local v_yes          = variables.yes
 local v_short        = variables.short
 local v_cite         = variables.cite
 local v_default      = variables.default
@@ -121,6 +121,7 @@ local ctx_btxsetreference         = context.btxsetreference
 local ctx_directsetup             = context.directsetup
 local ctx_btxmissing              = context.btxmissing
 
+local ctx_btxsettag               = context.btxsettag
 local ctx_btxcitesetup            = context.btxcitesetup
 local ctx_btxsetfirst             = context.btxsetfirst
 local ctx_btxsetsecond            = context.btxsetsecond
@@ -386,30 +387,44 @@ end)
 --             end
 --         end
 
+local reported = { }
+
 local function findallused(dataset,reference,block,section)
-    local tags = settings_to_array(reference)
-    local todo = { }
-    local okay = { } -- only if mark
-    local set = usedentries[dataset]
+    local tags  = settings_to_array(reference)
+    local todo  = { }
+    local okay  = { } -- only if mark
+    local set   = usedentries[dataset]
+    local valid = datasets[dataset].luadata
     if set then
         for i=1,#tags do
             local tag = tags[i]
-            local entry = set[tag]
-            if entry then
-                -- only once in a list
-                if #entry == 1 then
-                    entry = entry[1]
-                else
-                    -- find best match
-                    entry = entry[1] -- for now
+            if valid[tag] then
+                local entry = set[tag]
+                if entry then
+                    -- only once in a list
+                    if #entry == 1 then
+                        entry = entry[1]
+                    else
+                        -- find best match (todo)
+                        entry = entry[1] -- for now
+                    end
+                    okay[#okay+1] = entry
                 end
-                okay[#okay+1] = entry
+                todo[tag] = true
+            elseif not reported[tag] then
+                reported[tag] = true
+                report_cite("non-existent entry %a in %a",tag,dataset)
             end
-            todo[tag] = true
         end
     else
         for i=1,#tags do
-            todo[tags[i]] = true
+            local tag = tags[i]
+            if valid[tag] then
+                todo[tag] = true
+            elseif not reported[tag] then
+                reported[tag] = true
+                report_cite("non-existent entry %a in %a",tag,dataset)
+            end
         end
     end
     return okay, todo, tags
@@ -1002,6 +1017,7 @@ function lists.flushentries(dataset,sortvariant)
     end
     for i=1,#list do
         ctx_setvalue("currentbtxindex",i)
+        -- todo: also flush combinations
         ctx_btxhandlelistentry(list[i][1]) -- we can pass i here too ... more efficient to avoid the setvalue
     end
 end
@@ -1010,6 +1026,7 @@ function lists.fetchentries(dataset)
     local list = renderings[dataset].list
     for i=1,#list do
         ctx_setvalue("currentbtxindex",i)
+        -- todo: what to do with combinations
         ctx_btxchecklistentry(list[i][1])
     end
 end
@@ -1123,14 +1140,17 @@ end
 
 local prefixsplitter = lpeg.splitat("::")
 
--- function commands.btxhandlecite(dataset,tag,mark,variant,sorttype,compress)
 function commands.btxhandlecite(specification)
-    local dataset   = specification.dataset
-    local tag       = specification.reference
+    local tag = specification.reference
+    if not tag or tag == "" then
+        return
+    end
+    --
+    local dataset   = specification.dataset or ""
     local mark      = specification.markentry ~= false
-    local variant   = specification.variant
+    local variant   = specification.variant or "num"
     local sorttype  = specification.sorttype
-    local compress  = specification.compress
+    local compress  = specification.compress == v_yes
     --
     local prefix, rest = lpegmatch(prefixsplitter,tag)
     if rest then
@@ -1138,41 +1158,46 @@ function commands.btxhandlecite(specification)
     else
         rest = tag
     end
-    local action = citevariants[variant]
-    if action then
-        if trace_cite then
-            report_cite("inject, dataset: %s, tag: %s, variant: %s, compressed",dataset or "-",rest,variant)
-        end
-        ctx_setvalue("currentbtxdataset",dataset)
-        action(dataset,rest,mark ~= false,compress,variant)
+    local action = citevariants[variant] -- there is always fallback on default
+    if trace_cite then
+        report_cite("inject, dataset: %s, tag: %s, variant: %s, compressed",dataset or "-",rest,variant)
+    end
+    ctx_setvalue("currentbtxdataset",dataset)
+    action(dataset,rest,mark,compress,variant)
+end
+
+function commands.btxhandlenocite(specification)
+    local mark = specification.markentry ~= false
+    if not mark then
+        return
+    end
+    local tag = specification.reference
+    if not tag or tag == "" then
+        return
+    end
+    local dataset = specification.dataset or ""
+    local prefix, rest = lpegmatch(prefixsplitter,tag)
+    if rest then
+        dataset = prefix
+    else
+        rest = tag
+    end
+    ctx_setvalue("currentbtxdataset",dataset)
+    local tags = settings_to_array(rest)
+    if trace_cite then
+        report_cite("mark, dataset: %s, tags: % | t",dataset or "-",tags)
+    end
+    for i=1,#tags do
+        markcite(dataset,tags[i])
     end
 end
 
-function commands.btxhandlenocite(dataset,tag,mark)
-    if mark ~= false then
-        local prefix, rest = lpegmatch(prefixsplitter,tag)
-        if rest then
-            dataset = prefix
-        else
-            rest = tag
-        end
-        ctx_setvalue("currentbtxdataset",dataset)
-        local tags = settings_to_array(rest)
-        if trace_cite then
-            report_cite("mark, dataset: %s, tags: % | t",dataset or "-",tags)
-        end
-        for i=1,#tags do
-            markcite(dataset,tags[i])
-        end
-    end
-end
-
-function commands.btxcitevariant(dataset,block,tags,variant)
-    local action = citevariants[variant]
-    if action then
-        action(dataset,tags,variant)
-    end
-end
+-- function commands.btxcitevariant(dataset,block,tags,variant) -- uses? specification ?
+--     local action = citevariants[variant]
+--     if action then
+--         action(dataset,tags,variant)
+--     end
+-- end
 
 -- sorter
 
@@ -1267,14 +1292,15 @@ local function processcite(dataset,reference,mark,compress,setup,getter,setter,c
                 local entry = target[i]
                 local first = entry.first
                 if first then
+                    local tags = entry.tags
                     if mark then
-                        local tags = entry.tags
                         for i=1,#tags do
                             local tag = tags[i]
                             markcite(dataset,tag)
                             todo[tag] = false
                         end
                     end
+                    ctx_btxsettag(tags[1])
                     local internal = first.internal
                     if internal then
                         ctx_btxsetinternal(internal)
@@ -1283,11 +1309,12 @@ local function processcite(dataset,reference,mark,compress,setup,getter,setter,c
                         ctx_btxsetfirst(f_missing(first.tag))
                     end
                 else
+                    local tag = entry.tag
                     if mark then
-                        local tag = entry.tag
                         markcite(dataset,tag)
                         todo[tag] = false
                     end
+                    ctx_btxsettag(tag)
                     local internal = entry.internal
                     if internal then
                         ctx_btxsetinternal(internal)
@@ -1308,6 +1335,7 @@ local function processcite(dataset,reference,mark,compress,setup,getter,setter,c
                     markcite(dataset,tag)
                     todo[tag] = false
                 end
+                ctx_btxsettag(tag)
                 local internal = entry.internal
                 if internal then
                     ctx_btxsetinternal(internal)
@@ -1650,7 +1678,7 @@ local function setter(dataset,tag,entry,internal)
         internal = internal,
         author   = getfield(dataset,tag,"author"),
         num      = text,
-        sortkey  = lpegmatch(numberonly,text)
+        sortkey  = text and lpegmatch(numberonly,text)
     }
 end
 
@@ -1676,7 +1704,7 @@ local function setter(dataset,tag,entry,internal)
         internal = internal,
         author   = getfield(dataset,tag,"author"),
         year     = year,
-        sortkey  = lpegmatch(numberonly,year)
+        sortkey  = year and lpegmatch(numberonly,year)
     }
 end
 
