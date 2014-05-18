@@ -254,6 +254,8 @@ local f_key_dictionary = formatters["/%s << % t >>"]
 local f_dictionary     = formatters["<< % t >>"]
 local f_key_array      = formatters["/%s [ % t ]"]
 local f_array          = formatters["[ % t ]"]
+local f_key_number     = formatters["/%s %F"]
+local f_tonumber       = formatters["%F"]
 
 -- local f_key_value      = formatters["/%s %s"]
 -- local f_key_dictionary = formatters["/%s <<% t>>"]
@@ -271,6 +273,8 @@ tostring_d = function(t,contentonly,key)
             local tv = type(v)
             if tv == "string" then
                 r[rn] = f_key_value(k,toeight(v))
+            elseif tv == "number" then
+                r[rn] = f_key_number(k,v)
             elseif tv == "unicode" then
                 r[rn] = f_key_value(k,tosixteen(v))
             elseif tv == "table" then
@@ -309,6 +313,8 @@ tostring_a = function(t,contentonly,key)
             local tv = type(v)
             if tv == "string" then
                 r[k] = toeight(v)
+            elseif tv == "number" then
+                r[k] = f_tonumber(v)
             elseif tv == "unicode" then
                 r[k] = tosixteen(v)
             elseif tv == "table" then
@@ -339,14 +345,15 @@ tostring_a = function(t,contentonly,key)
     end
 end
 
-local tostring_x = function(t) return concat(t," ")   end
-local tostring_s = function(t) return toeight(t[1])   end
-local tostring_u = function(t) return tosixteen(t[1]) end
-local tostring_n = function(t) return tostring(t[1])  end -- tostring not needed
-local tostring_c = function(t) return t[1]            end -- already prefixed (hashed)
-local tostring_z = function()  return "null"          end
-local tostring_t = function()  return "true"          end
-local tostring_f = function()  return "false"         end
+local tostring_x = function(t) return concat(t," ")    end
+local tostring_s = function(t) return toeight(t[1])    end
+local tostring_u = function(t) return tosixteen(t[1])  end
+local tostring_n = function(t) return tostring(t[1])   end -- tostring not needed
+local tostring_n = function(t) return f_tonumber(t[1]) end -- tostring not needed
+local tostring_c = function(t) return t[1]             end -- already prefixed (hashed)
+local tostring_z = function()  return "null"           end
+local tostring_t = function()  return "true"           end
+local tostring_f = function()  return "false"          end
 local tostring_r = function(t) local n = t[1] return n and n > 0 and (n .. " 0 R") or "NULL" end
 
 local tostring_v = function(t)

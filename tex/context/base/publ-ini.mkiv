@@ -350,9 +350,31 @@
     \fi
 \to \everydefinebtxrendering
 
+% \unexpanded\def\btx_entry_inject
+%   {\begingroup
+%    \edef\currentbtxcategory{\btxfield{category}}%
+%    \ignorespaces
+%    \directsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
+%    \removeunwantedspaces
+%    \endgroup}
+
+\let\currentbtxcombis\empty % goes into the setups
+
 \unexpanded\def\btx_entry_inject
   {\begingroup
    \edef\currentbtxcategory{\btxfield{category}}%
+   \ignorespaces
+   \directsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
+   \removeunwantedspaces
+   \ifx\currentbtxcombis\empty \else
+     ;\space % todo .. parameter .. what is a good name .. problem: what if ends with .
+     \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi
+   \fi
+   \endgroup}
+
+\def\btx_entry_inject_combi#1%
+  {\begingroup
+   \def\currentbtxtag{#1}%
    \ignorespaces
    \directsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
    \removeunwantedspaces
@@ -487,6 +509,13 @@
    \else
      \ctxcommand{btxdoifelselistentryplaced("\currentbtxdataset","\currentbtxtag")}\donothing\publ_check_list_entry
    \fi
+   \endgroup}
+
+\unexpanded\def\btxchecklistcombi#1% called at the lua end
+  {\begingroup
+   \edef\currentbtxtag{#1}%
+   ; % todo
+   \publ_check_list_entry
    \endgroup}
 
 \unexpanded\def\publ_check_list_entry

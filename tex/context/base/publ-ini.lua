@@ -116,6 +116,7 @@ local ctx_gobbleoneargument       = context.gobbleoneargument
 local ctx_btxdirectlink           = context.btxdirectlink
 local ctx_btxhandlelistentry      = context.btxhandlelistentry
 local ctx_btxchecklistentry       = context.btxchecklistentry
+local ctx_btxchecklistcombi       = context.btxchecklistcombi
 ----- ctx_dodirectfullreference   = context.dodirectfullreference
 local ctx_btxsetreference         = context.btxsetreference
 local ctx_directsetup             = context.directsetup
@@ -1016,18 +1017,32 @@ function lists.flushentries(dataset,sortvariant)
         list = sort(dataset,rendering,list) or list
     end
     for i=1,#list do
-        ctx_setvalue("currentbtxindex",i)
-        -- todo: also flush combinations
-        ctx_btxhandlelistentry(list[i][1]) -- we can pass i here too ... more efficient to avoid the setvalue
-    end
+--         ctx_setvalue("currentbtxindex",i) -- todo: helper
+--         -- todo: also flush combinations
+--         ctx_btxhandlelistentry(list[i][1]) -- we can pass i here too ... more efficient to avoid the setvalue
+        local tag = list[i][1]
+        local entry = datasets[dataset].luadata[tag]
+        if entry then
+            ctx_setvalue("currentbtxindex",i) -- todo: helper
+            local combined = entry.combined
+            if combined then
+                ctx_setvalue("currentbtxcombis",concat(combined,","))
+            else
+                ctx_setvalue("currentbtxcombis","")
+            end
+            ctx_btxhandlelistentry(tag) -- pas i instead
+        end
+     end
 end
 
 function lists.fetchentries(dataset)
     local list = renderings[dataset].list
     for i=1,#list do
-        ctx_setvalue("currentbtxindex",i)
-        -- todo: what to do with combinations
-        ctx_btxchecklistentry(list[i][1])
+        local tag = list[i][1]
+        local entry = datasets[dataset].luadata[tag]
+        if entry then
+            ctx_btxchecklistentry(tag) -- integrate doifalreadyplaced here
+        end
     end
 end
 
@@ -1262,6 +1277,7 @@ local f_missing  = formatters["<%s>"]
 -- maybe also sparse (e.g. pages)
 
 local function processcite(dataset,reference,mark,compress,setup,getter,setter,compressor)
+    reference = publications.parenttag(dataset,reference)
     local found, todo, list = findallused(dataset,reference)
     if found and setup then
         local source = { }

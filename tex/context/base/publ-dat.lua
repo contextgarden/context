@@ -77,53 +77,46 @@ local defaultshortcuts = {
 local l_splitter = lpeg.tsplitat("+")
 local d_splitter = lpeg.splitat ("+")
 
+function publications.parenttag(dataset,tag)
+    if find(tag,"%+") then
+        local tags    = lpegmatch(l_splitter,tag)
+        local parent  = tags[1]
+        local luadata = datasets[dataset].luadata
+        local first   = luadata[parent]
+        if first then
+            local combined = first.combined
+            if not combined then
+                combined = { }
+                first.combined = combined
+            end
+            -- add new ones but only once
+            for i=2,#tags do
+                local tag = tags[i]
+                for j=1,#combined do
+                    if combined[j] == tag then
+                        tag = false
+                    end
+                end
+                if tag then
+                    local entry = luadata[tag]
+                    if entry then
+                        combined[#combined+1] = tag
+                    end
+                end
+            end
+            return parent
+        end
+    end
+    return tag
+end
+
 function publications.new(name)
     publicationsstats.nofdatasets = publicationsstats.nofdatasets + 1
-    local function getcombinedluadata(t,k)
-        if find(k,"%+") then
-            local tags   = lpegmatch(l_splitter,k)
-            local parent = tags[i]
-            local first  = rawget(t,parent)
-            if first then
-                local combined = first.combined
-                if not combined then
-                    combined = { }
-                    first.combined = combined
-                end
-                -- add new ones but only once
-                for i=1,#tags do
-                    local tag = tags[i]
-                    local new = true
-                    for j=1,#combined do
-                        if combined[j] == tag then
-                            new = false
-                        end
-                    end
-                    if new then
-                        local entry = rawget(t,tag)
-                        if entry then
-                            combined[#combined+1]  = tag
-                            entry.combined[parent] = true
-                        end
-                    end
-                end
-                return first
-            end
-        end
-    end
-    local function getcombineddetails(t,k)
-        if find(k,"%+") then
-            local tag = lpegmatch(d_splitter,k)
-            return rawget(t,tag)
-        end
-    end
-    local luadata = setmetatableindex({ },getcombinedluadata)
-    local details = setmetatableindex({ },getcombineddetails)
     local dataset = {
         name       = name or "dataset " .. publicationsstats.nofdatasets,
         nofentries = 0,
         shortcuts  = { },
-        luadata    = luadata,
+        luadata    = { },
         xmldata    = xmlconvert(xmlplaceholder),
      -- details    = { },
         nofbytes   = 0,
@@ -145,7 +138,7 @@ function publications.new(name)
     setmetatableindex(dataset,function(t,k)
         -- will become a plugin
         if k == "details" and publications.enhance then
-            dataset.details = details
+            dataset.details = { }
             publications.enhance(dataset.name)
             return dataset.details
         end

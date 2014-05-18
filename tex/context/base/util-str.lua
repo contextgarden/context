@@ -284,6 +284,7 @@ end
 -- octal            %...o   number
 -- string           %...s   string number
 -- float            %...f   number
+-- checked float    %...F   number
 -- exponential      %...e   number
 -- exponential      %...E   number
 -- autofloat        %...g   number
@@ -526,7 +527,11 @@ end
 
 local format_F = function(f)
     n = n + 1
-    return format("((a%s == 0 and '0') or (a%s == 1 and '1') or format('%%%sf',a%s))",n,n,f,n)
+    if not f or f == "" then
+        return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or (a%s == 1 and '1') or format('%%.9f',a%s))",n,n,n,n)
+    else
+        return format("((a%s == 0 and '0') or (a%s == 1 and '1') or format('%%%sf',a%s))",n,n,f,n)
+    end
 end
 
 local format_g = function(f)
