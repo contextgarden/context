@@ -117,6 +117,7 @@ function publications.new(name)
         nofentries = 0,
         shortcuts  = { },
         luadata    = { },
+        suffixes   = { },
         xmldata    = xmlconvert(xmlplaceholder),
      -- details    = { },
         nofbytes   = 0,

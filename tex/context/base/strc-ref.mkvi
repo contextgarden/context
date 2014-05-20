@@ -268,6 +268,7 @@
      \strc_references_start_destination_nodes
      \setnextinternalreference
      \edef\m_strc_references_user{#user}%
+     \edef\m_strc_references_text{#text}%
      \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","#labels",
          {
               references = {
@@ -278,9 +279,11 @@
               metadata = {
                   kind = "\s!full",
               },
+          \ifx\m_strc_references_text\empty \else
               entries = {
-                  text = \!!bs#text\!!es
+                  text = \!!bs\m_strc_references_text\!!es
               },
+          \fi
           \ifx\m_strc_references_user\empty \else
               userdata = {
                   \m_strc_references_user

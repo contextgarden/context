@@ -43,6 +43,10 @@
 \registerctxluafile{publ-ini}{1.001}
 \registerctxluafile{publ-oth}{1.001} % this could become an option
 
+\doiffileelse{publ-fnd.lua}
+  {\registerctxluafile{publ-fnd}{1.001}} % new method (for the moment only local)
+  {}
+
 \unprotect
 
 \startcontextdefinitioncode
@@ -89,14 +93,23 @@
 \unexpanded\def\stopbtxlistentry
   {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
 
+% \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
+%   {\begingroup
+%    \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
+%    \the\everyconstruction
+%    \constructionparameter\c!headcommand
+%      {\strut
+%       \constructionparameter\c!text
+%       \btx_list_reference_inject}%
+%    \endgroup}
+
 \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
    \the\everyconstruction
-   \constructionparameter\c!headcommand
-     {\strut
-      \constructionparameter\c!text
-      \btx_reference_inject}%
+   \goto
+     {\strut\constructionparameter\c!text\btx_list_reference_inject}%
+     [\s!btx:\the\numexpr\locationcount+\plusone]% \nextinternalreference
    \endgroup}
 
 \unexpanded\def\strc_constructions_initialize#1% class instance
@@ -323,8 +336,9 @@
 \newdimen\d_publ_number_width
 %newdimen\d_publ_number_distance
 
-\ifdefined\btxblock   \else \newcount\btxblock   \fi \btxblock\plusone
-\ifdefined\btxcounter \else \newcount\btxcounter \fi
+\ifdefined\btxblock       \else \newcount\btxblock       \fi \btxblock\plusone
+\ifdefined\btxlistcounter \else \newcount\btxlistcounter \fi
+\ifdefined\btxcitecounter \else \newcount\btxcitecounter \fi
 
 \newtoks \everysetupbtxlistplacement % name will change
 \newtoks \everysetupbtxciteplacement % name will change
@@ -333,10 +347,10 @@
 %   {\ctxcommand{btxaddtolist("\currentbtxrendering",\currentlistindex,"btxref")}}
 
 \definelist % only used for selecting
-  [btx]
+  [\s!btx]
 
 \setuplist
-  [btx]%
+  [\s!btx]%
   [\c!state=\v!start]%
 
 \appendtoks
@@ -367,7 +381,7 @@
    \directsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
    \removeunwantedspaces
    \ifx\currentbtxcombis\empty \else
-     ;\space % todo .. parameter .. what is a good name .. problem: what if ends with .
+     \btxlistvariantparameter\c!separator
      \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi
    \fi
    \endgroup}
@@ -454,14 +468,14 @@
            keyword      = "\btxrenderingparameter\c!keyword",
        }}%
        % next we analyze the width
-       \ifx\btx_reference_inject_indeed\relax
+       \ifx\btx_list_reference_inject_indeed\relax
        \else
          \edef\p_width{\btxrenderingparameter\c!width}%
          \ifx\p_width\v!auto
-           \scratchcounter\btxcounter
+           \scratchcounter\btxlistcounter
            \setbox\scratchbox\vbox{\settrialtypesetting\ctxcommand{btxfetchlistentries("\currentbtxdataset")}}%
            \d_publ_number_width\wd\scratchbox
-           \global\btxcounter\scratchcounter
+           \global\btxlistcounter\scratchcounter
            \letbtxlistparameter\c!width\d_publ_number_width
          \fi
        \fi
@@ -492,7 +506,7 @@
    \endgroup}
 
 \unexpanded\def\publ_place_list_entry
-  {\global\advance\btxcounter\plusone
+  {\global\advance\btxlistcounter\plusone
    \ifconditional\c_publ_place_register
      \publ_place_list_entry_register
    \fi
@@ -511,31 +525,44 @@
    \fi
    \endgroup}
 
-\unexpanded\def\btxchecklistcombi#1% called at the lua end
-  {\begingroup
-   \edef\currentbtxtag{#1}%
-   ; % todo
-   \publ_check_list_entry
-   \endgroup}
+% \unexpanded\def\btxchecklistcombi#1% called at the lua end
+%   {\begingroup
+%    \edef\currentbtxtag{#1}%
+%    ; % todo
+%    \publ_check_list_entry
+%    \endgroup}
 
 \unexpanded\def\publ_check_list_entry
-  {\global\advance\btxcounter\plusone
+  {\global\advance\btxlistcounter\plusone
    % todo, switch to font
    \hbox{\btx_reference_checked}%
    \par}
 
-\unexpanded\def\btx_reference_inject % we can use a faster \reference
+\unexpanded\def\btx_list_reference_inject % we can use a faster \reference
   {\dontleavehmode\begingroup % no box
      \iftrialtypesetting\else
-       \ctxcommand{btxdestination("\currentbtxdataset","\currentbtxblock","\currentbtxtag","\number\btxcounter")}%
+       \ctxcommand{btxlistreference("\currentbtxdataset","\currentbtxblock","\currentbtxtag","\number\btxlistcounter")}%
      \fi
-     \btx_reference_inject_indeed
+     \btx_list_reference_inject_indeed
    \endgroup}
 
 \unexpanded\def\btx_reference_checked
   {\dontleavehmode\hbox\bgroup
-     \btx_reference_inject_indeed
+     \btx_list_reference_inject_indeed
    \egroup}
+
+\unexpanded\def\btx_cite_reference_inject % todo: wrap whole content?
+  {\dontleavehmode\begingroup % no box
+     \iftrialtypesetting\else
+       \ifx\currentbtxinternal\empty\else
+ %        \global\advance\btxcitecounter\plusone
+         \ctxcommand{btxcitereference(\number\currentbtxinternal)}%
+       \fi
+     \fi
+    % \btx_list_reference_inject_indeed
+   \endgroup}
+
+\let\btxcitereference\btx_cite_reference_inject
 
 \setuvalue{\??btxnumbering\v!short  }{\btxlistvariant{short}} % these will be setups
 \setuvalue{\??btxnumbering\v!bib    }{\btxlistvariant{num}}   % these will be setups
@@ -549,13 +576,13 @@
      \letlistparameter\c!textcommand\outdented % needed? we can use titlealign
      \letlistparameter\c!symbol     \v!none
      \letlistparameter\c!aligntitle \v!yes
-     \let\btx_reference_inject_indeed\relax
+     \let\btx_list_reference_inject_indeed\relax
    \else
      \ifcsname\??btxnumbering\p_btx_numbering\endcsname \else
        \let\p_btx_numbering\s!unknown
      \fi
      \letlistparameter\c!headnumber\v!always
-     \expandafter\let\expandafter\btx_reference_inject_indeed\csname\??btxnumbering\p_btx_numbering\endcsname
+     \expandafter\let\expandafter\btx_list_reference_inject_indeed\csname\??btxnumbering\p_btx_numbering\endcsname
    \fi
 \to \everysetupbtxlistplacement
 
@@ -676,7 +703,7 @@
 
 \appendtoks
    \doifnot{\btxrenderingparameter\c!continue}\v!yes
-     {\global\btxcounter\zerocount}%
+     {\global\btxlistcounter\zerocount}%
 \to \everysetupbtxlistplacement
 
 %D When a publication is cited, we need to signal that somehow. This is done with the
@@ -851,7 +878,7 @@
        dataset   = "\currentbtxdataset",%
        reference = "#1",%
        markentry = \iftrialtypesetting false\else true\fi,%
-   }}%
+     }}%
    \fi}
 
 \unexpanded\def\btxmissing#1%
@@ -891,8 +918,13 @@
 \unexpanded\def\btxsetinternal{\def\currentbtxinternal}
 \unexpanded\def\btxsetconcat#1{\setconstant\currentbtxconcat#1\relax}
 
-\unexpanded\def\btxsetreference#1#2% #3#4%
+\unexpanded\def\btxsetlistreference#1#2% #3#4%
   {\strc_references_direct_full_user{btxset="#1",btxref="#2"}}
+
+\unexpanded\def\btxsetcitereference#1#2%
+  {\ifx\currentbtxinternal\empty \else
+     \strc_references_direct_full_user{btxint=#2}{#1}\empty
+   \fi}
 
 \unexpanded\def\btxstartsubcite#1%
   {\bgroup
@@ -912,7 +944,7 @@
   {\begingroup
    \edef\currentbtxlistvariant{#1}%
    \btxlistvariantparameter\c!left
-   \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1","\number\btxcounter")}% some can go
+   \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1","\number\btxlistcounter")}% some can go
    \btxlistvariantparameter\c!right
    \endgroup}
 
@@ -1077,7 +1109,8 @@
     \c!right={]}]
 
 \setupbtxlistvariant
-  [\c!namesep={, },
+  [\c!separator={; },
+   \c!namesep={, },
    \c!lastnamesep={ and },
    \c!finalnamesep={ and },
    \c!firstnamesep={ },

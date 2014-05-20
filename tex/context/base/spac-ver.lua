@@ -50,10 +50,12 @@ local trace_collect_vspacing = false  trackers.register("vspacing.collect",  fun
 local trace_vspacing         = false  trackers.register("vspacing.spacing",  function(v) trace_vspacing         = v end)
 local trace_vsnapping        = false  trackers.register("vspacing.snapping", function(v) trace_vsnapping        = v end)
 local trace_vpacking         = false  trackers.register("vspacing.packing",  function(v) trace_vpacking         = v end)
+local trace_specials         = false  trackers.register("vspacing.specials", function(v) trace_specials         = v end)
 
 local report_vspacing     = logs.reporter("vspacing","spacing")
 local report_collapser    = logs.reporter("vspacing","collapsing")
 local report_snapper      = logs.reporter("vspacing","snapping")
+local report_specials     = logs.reporter("vspacing","specials")
 local report_page_builder = logs.reporter("builders","page")
 
 local a_skipcategory      = attributes.private('skipcategory')
@@ -871,31 +873,71 @@ local overlay  = 9
 
 local special_penalty_min = 32250
 local special_penalty_max = 35000
+local special_penalty_xxx =     0
 
-local function specialpenalty(start,penalty)
- -- nodes.showsimplelist(texlists.page_head,1)
-    local current = find_node_tail(tonut(texlists.page_head)) -- no texlists.page_tail yet
+-- this is rather messy and complex: we want to make sure that successive
+-- header don't break but also make sure that we have at least a decent
+-- break when we have succesive ones (often when testing)
+
+local specialmethods = { }
+local specialmethod  = 1
+
+local properties = nodes.properties.data
+
+specialmethods[1] = function(start,penalty)
+    --
+    if penalty < special_penalty_min or penalty > special_penalty_max then
+        return
+    end
+    -- this can move to the caller
+    local pagehead = tonut(texlists.page_head)
+    local pagetail = find_node_tail(pagehead) -- no texlists.page_tail yet-- no texlists.page_tail yet
+    local current  = pagetail
+    --
+    -- nodes.showsimplelist(pagehead,0)
+    --
+    if trace_specials then
+        report_specials("checking penalty %a",penalty)
+    end
     while current do
         local id = getid(current)
-        if id == glue_code then
-            current = getprev(current)
-        elseif id == penalty_code then
-            local p = getfield(current,"penalty")
-            if p == penalty then
-                if trace_vspacing then
-                    report_vspacing("overloading penalty %a",p)
+        if id == penalty_code then
+            local p = properties[current]
+            if p then
+                local p = p.special_penalty
+                if not p then
+                    if trace_specials then
+                        report_specials("  regular penalty, continue")
+                    end
+                elseif p == penalty then
+                    if trace_specials then
+                        report_specials("  context penalty %a, same level, overloading",p)
+                    end
+                    return special_penalty_xxx
+                elseif p > special_penalty_min and p < special_penalty_max then
+                    if penalty < p then
+                        if trace_specials then
+                            report_specials("  context penalty %a, lower level, overloading",p)
+                        end
+                        return special_penalty_xxx
+                    else
+                        if trace_specials then
+                            report_specials("  context penalty %a, higher level, quitting",p)
+                        end
+                        return
+                    end
+                elseif trace_specials then
+                    report_specials("  context %a, higher level, continue",p)
                 end
-                return current
-            elseif p >= 10000 then
-                current = getprev(current)
-            else
-                break
+            elseif trace_specials then
+                report_specials("  regular penalty, continue")
             end
-        else
-            current = getprev(current)
         end
+        current = getprev(current)
     end
 end
+
+-- specialmethods[2] : always put something before and use that as to-be-changed
 
 local function check_experimental_overlay(head,current) -- todo
     local p = nil
@@ -1005,7 +1047,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
     end
     local current, oldhead = head, head
     local glue_order, glue_data, force_glue = 0, nil, false
-    local penalty_order, penalty_data, natural_penalty = 0, nil, nil
+    local penalty_order, penalty_data, natural_penalty, special_penalty = 0, nil, nil, nil
     local parskip, ignore_parskip, ignore_following, ignore_whitespace, keep_together = nil, false, false, false, false
     --
     -- todo: keep_together: between headers
@@ -1014,17 +1056,20 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         if penalty_data then
             local p = new_penalty(penalty_data)
             if trace then trace_done("flushed due to " .. why,p) end
-if penalty_data >= 10000 then -- or whatever threshold?
-    local prev = getprev(current)
-    if getid(prev) == glue_code then -- maybe go back more, or maybe even push back before any glue
-            -- tricky case: spacing/grid-007.tex: glue penalty glue
-            head = insert_node_before(head,prev,p)
-    else
-            head = insert_node_before(head,current,p)
-    end
-else
-            head = insert_node_before(head,current,p)
-end
+            if penalty_data >= 10000 then -- or whatever threshold?
+                local prev = getprev(current)
+                if getid(prev) == glue_code then -- maybe go back more, or maybe even push back before any glue
+                        -- tricky case: spacing/grid-007.tex: glue penalty glue
+                    head = insert_node_before(head,prev,p)
+                else
+                    head = insert_node_before(head,current,p)
+                end
+            else
+                head = insert_node_before(head,current,p)
+            end
+-- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
+    properties[p] = { special_penalty = special_penalty or penalty_data }
+-- end
         end
         if glue_data then
             local spec = getfield(glue_data,"spec")
@@ -1113,11 +1158,14 @@ end
                 local so = getattr(current,a_skiporder) or 1 -- has  1 default, no unset (yet)
                 local sp = getattr(current,a_skippenalty)    -- has no default, no unset (yet)
                 if sp and sc == penalty then
-                    if where == "page" and sp >= special_penalty_min and sp <= special_penalty_max then
-                        local previousspecial = specialpenalty(current,sp)
-                        if previousspecial then
-                            setfield(previousspecial,"penalty",0)
-                            sp = 0
+                    if where == "page" then
+                        local p = specialmethods[specialmethod](current,sp)
+                        if p then
+                            if trace then
+                                trace_skip("previous special penalty %a is changed to %a using method %a",sp,p,specialmethod)
+                            end
+                            special_penalty = sp
+                            sp = p
                         end
                     end
                     if not penalty_data then
@@ -1137,7 +1185,7 @@ end
                         current = getnext(current)
                     else
                         -- not look back across head
--- todo: prev can be whatsit (latelua)
+                        -- todo: prev can be whatsit (latelua)
                         local previous = getprev(current)
                         if previous and getid(previous) == glue_code and getsubtype(previous) == userskip_code then
                             local ps = getfield(previous,"spec")
@@ -1383,6 +1431,9 @@ end
         local p = new_penalty(penalty_data)
         if trace then trace_done("result",p) end
         head, tail = insert_node_after(head,tail,p)
+-- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
+    properties[p] = { special_penalty = special_penalty or penalty_data }
+-- end
     end
     if glue_data then
         if not tail then tail = find_node_tail(head) end

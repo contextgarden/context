@@ -776,7 +776,7 @@ function specials.internal(var,actions) -- better resolve in strc-ref
     local v = i and references.internals[i]
     if not v then
         -- error
-        report_reference("no internal reference %a",i)
+        report_reference("no internal reference %a",i or "<unset>")
     else
         flaginternals[i] = true
         return pdflink(nil,i,v.references.realpage)

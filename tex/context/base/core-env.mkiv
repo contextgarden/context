@@ -331,14 +331,34 @@
 
 \letvalue{\??setup:\letterpercent}\gobbleoneargument
 
+% \def\syst_setups#1% the grid option will be extended to other main modes
+%   {\csname\??setup
+%      \ifgridsnapping
+%        \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else\ifcsname\??setup:#1\endcsname:#1\else:\letterpercent\fi\fi
+%      \else
+%                                                            \ifcsname\??setup:#1\endcsname:#1\else:\letterpercent\fi
+%      \fi
+%    \endcsname\empty} % takes one argument
+
 \def\syst_setups#1% the grid option will be extended to other main modes
   {\csname\??setup
      \ifgridsnapping
-       \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else\ifcsname\??setup:#1\endcsname:#1\else:\letterpercent\fi\fi
+       \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else:\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi\fi
      \else
-                                                           \ifcsname\??setup:#1\endcsname:#1\else:\letterpercent\fi
+                                                           :\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi
      \fi
    \endcsname\empty} % takes one argument
+
+% not faster but less tracing sometimes:
+%
+% \def\syst_setups% the grid option will be extended to other main modes
+%   {\csname\??setup\ifgridsnapping\expandafter\syst_setups_grid\else\expandafter\syst_setups_normal\fi}
+%
+% \def\syst_setups_grid#1%
+%   {\ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else\ifcsname\??setup:#1\endcsname:#1\else:\letterpercent\fi\fi\endcsname\empty} % takes one argument
+%
+% \def\syst_setups_normal#1%
+%   {:\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi\endcsname\empty} % takes one argument
 
 % We can consider:
 %
@@ -467,17 +487,11 @@
 
 % Is doglobal still relevant? Maybe always global? Or never? Anyway, it will become obsolete.
 
-\unexpanded\def\startluasetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_lua_a\syst_setups_start_lua_b}
-\unexpanded\def\startxmlsetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_xml_a\syst_setups_start_xml_b}
-\unexpanded\def\startrawsetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_raw_a\syst_setups_start_raw_b}
-\unexpanded\def\startlocalsetups{\begingroup\doifnextoptionalcselse\syst_setups_start_loc_a\syst_setups_start_loc_b}
-\unexpanded\def\startsetups     {\begingroup\doifnextoptionalcselse\syst_setups_start_tex_a\syst_setups_start_tex_b}
-
-\let\stopluasetups              \relax
-\let\stopxmlsetups              \relax
-\let\stoprawsetups              \relax
-\let\stoplocalsetups            \relax
-\let\stopsetups                 \relax
+\unexpanded\def\startluasetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_lua_a\syst_setups_start_lua_b} \let\stopluasetups              \relax
+\unexpanded\def\startxmlsetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_xml_a\syst_setups_start_xml_b} \let\stopxmlsetups              \relax
+\unexpanded\def\startrawsetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_raw_a\syst_setups_start_raw_b} \let\stoprawsetups              \relax
+\unexpanded\def\startlocalsetups{\begingroup\doifnextoptionalcselse\syst_setups_start_loc_a\syst_setups_start_loc_b} \let\stoplocalsetups            \relax
+\unexpanded\def\startsetups     {\begingroup\doifnextoptionalcselse\syst_setups_start_tex_a\syst_setups_start_tex_b} \let\stopsetups                 \relax
 
 \def\syst_setups_start_lua_indeed#1#2#3\stopluasetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
 \def\syst_setups_start_xml_indeed#1#2#3\stopxmlsetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}

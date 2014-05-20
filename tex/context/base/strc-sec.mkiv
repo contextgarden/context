@@ -1012,7 +1012,8 @@
 \def\strc_sectioning_after_yes
   {\ifconditional\headisdisplay
      \ifconditional\c_strc_sectioning_auto_break
-       \vspacing[\v!samepage-\currentheadlevel]%
+     % \vspacing[\v!samepage-\currentheadlevel]%
+\vspacing[\v!samepage]%
      \fi
      \strc_sectioning_empty_correction
      \headparameter\c!after
@@ -1068,10 +1069,16 @@
      \strc_sectioning_handle_page_nop
      \edef\p_aligntitle{\headparameter\c!aligntitle}%
      \ifx\p_aligntitle\v!float
+\ifconditional\c_strc_sectioning_auto_break
+  \vspacing[\v!samepage-\currentheadlevel]%
+\fi
          \headparameter\c!before\relax
          \indent
      \else
          \page_otr_command_flush_side_floats
+\ifconditional\c_strc_sectioning_auto_break
+  \vspacing[\v!samepage-\currentheadlevel]%
+\fi
          \headparameter\c!before\relax
      \fi
      \global\c_strc_sectioniong_preceding_level\currentheadlevel

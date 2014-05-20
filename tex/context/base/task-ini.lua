@@ -24,7 +24,6 @@ local disableaction   = tasks.disableaction
 local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
 
-
 appendaction("processors",   "normalizers", "typesetters.characters.handler")                    -- always on
 appendaction("processors",   "normalizers", "fonts.collections.process")                         -- disabled
 appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled

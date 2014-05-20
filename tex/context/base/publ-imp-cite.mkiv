@@ -70,6 +70,7 @@
     \directsetup{\s!btx:\s!cite:concat}
     \ifconditional\btxinteractive
         \goto {
+            \btxcitereference
             \ifx\currentbtxsecond\empty
                 \currentbtxfirst
             \else
@@ -110,6 +111,7 @@
     \directsetup{\s!btx:\s!cite:concat}
     \ifconditional\btxinteractive
         \goto {
+            \btxcitereference
             \ifx\currentbtxsecond\empty
                 \currentbtxfirst
             \else
@@ -135,6 +137,7 @@
     \directsetup{\s!btx:\s!cite:concat}
     \ifconditional\btxinteractive
         \goto {
+            \btxcitereference
             \directsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
         } [
             \s!internal(\currentbtxinternal)
@@ -151,6 +154,10 @@
         \currentbtxfirst
     \else
         \currentbtxciteauthor
+    \fi
+    \ifx\currentbtxsecond\empty \else
+        \btxcitevariantparameter\v!inbetween
+        \currentbtxsecond
     \fi
 \stopsetups
 

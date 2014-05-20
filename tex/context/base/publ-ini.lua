@@ -104,22 +104,23 @@ local settings_to_array = utilities.parsers.settings_to_array
 
 local context                     = context
 
-local ctx_btxlistparameter        = context.btxlistparameter
-local ctx_btxcitevariantparameter = context.btxcitevariantparameter
-local ctx_btxlistvariantparameter = context.btxlistvariantparameter
-local ctx_btxdomarkcitation       = context.btxdomarkcitation
 local ctx_setvalue                = context.setvalue
 local ctx_firstoftwoarguments     = context.firstoftwoarguments
 local ctx_secondoftwoarguments    = context.secondoftwoarguments
 local ctx_firstofoneargument      = context.firstofoneargument
 local ctx_gobbleoneargument       = context.gobbleoneargument
+----- ctx_directsetup             = context.directsetup
+
+local ctx_btxlistparameter        = context.btxlistparameter
+local ctx_btxcitevariantparameter = context.btxcitevariantparameter
+local ctx_btxlistvariantparameter = context.btxlistvariantparameter
+local ctx_btxdomarkcitation       = context.btxdomarkcitation
 local ctx_btxdirectlink           = context.btxdirectlink
 local ctx_btxhandlelistentry      = context.btxhandlelistentry
 local ctx_btxchecklistentry       = context.btxchecklistentry
 local ctx_btxchecklistcombi       = context.btxchecklistcombi
------ ctx_dodirectfullreference   = context.dodirectfullreference
-local ctx_btxsetreference         = context.btxsetreference
-local ctx_directsetup             = context.directsetup
+local ctx_btxsetcitereference     = context.btxsetcitereference
+local ctx_btxsetlistreference     = context.btxsetlistreference
 local ctx_btxmissing              = context.btxmissing
 
 local ctx_btxsettag               = context.btxsettag
@@ -389,42 +390,70 @@ end)
 --         end
 
 local reported = { }
+local finder   = publications.finder
 
 local function findallused(dataset,reference,block,section)
-    local tags  = settings_to_array(reference)
+local finder = publications.finder
+    local find  = finder and finder(reference)
+    local tags  = not find and settings_to_array(reference)
     local todo  = { }
     local okay  = { } -- only if mark
     local set   = usedentries[dataset]
     local valid = datasets[dataset].luadata
     if set then
-        for i=1,#tags do
-            local tag = tags[i]
-            if valid[tag] then
-                local entry = set[tag]
-                if entry then
-                    -- only once in a list
-                    if #entry == 1 then
-                        entry = entry[1]
-                    else
-                        -- find best match (todo)
-                        entry = entry[1] -- for now
-                    end
-                    okay[#okay+1] = entry
+        local function register(tag)
+            local entry = set[tag]
+            if entry then
+                -- only once in a list
+                if #entry == 1 then
+                    entry = entry[1]
+                else
+                    -- find best match (todo)
+                    entry = entry[1] -- for now
                 end
+                okay[#okay+1] = entry
                 todo[tag] = true
-            elseif not reported[tag] then
-                reported[tag] = true
-                report_cite("non-existent entry %a in %a",tag,dataset)
+            end
+        end
+        if find then
+            tags = { }
+            for tag, entry in next, valid do
+                local found = find(entry)
+                if found then
+                    register(tag)
+                    tags[#tags+1] = tag
+                end
+            end
+        else
+            for i=1,#tags do
+                local tag  = tags[i]
+                if valid[tag] then
+                    register(tag)
+                elseif not reported[tag] then
+                    reported[tag] = true
+                    report_cite("non-existent entry %a in %a",tag,dataset)
+                end
             end
         end
     else
-        for i=1,#tags do
-            local tag = tags[i]
-            if valid[tag] then
-                todo[tag] = true
-            elseif not reported[tag] then
-                reported[tag] = true
-                report_cite("non-existent entry %a in %a",tag,dataset)
+        if find then
+            tags = { }
+            for tag, entry in next, valid do
+                local found = find(entry)
+                if found then
+                    register(tag)
+                    tags[#tags+1] = tag
+                end
+            end
+        else
+            for i=1,#tags do
+                local tag = tags[i]
+                if valid[tag] then
+                    todo[tag] = true
+                elseif not reported[tag] then
+                    reported[tag] = true
+                    report_cite("non-existent entry %a in %a",tag,dataset)
+                end
             end
         end
     end
@@ -658,6 +687,13 @@ function commands.btxflush(name,tag,field)
             local manipulator, field = checked(field)
             local value = fields[field]
             if type(value) == "string" then
+                local suffixes = dataset.suffixes[tag]
+                if suffixes then
+                    local suffix = suffixes[field]
+                    if suffix then
+                        value = value .. converters.characters(suffix)
+                    end
+                end
                 context(manipulator and manipulated(manipulator,value) or value)
                 return
             end
@@ -665,6 +701,13 @@ function commands.btxflush(name,tag,field)
             if details then
                 local value = details[field]
                 if type(value) == "string" then
+                    local suffixes = dataset.suffixes[tag]
+                    if suffixes then
+                        local suffix = suffixes[field]
+                        if suffix then
+                            value = value .. converters.characters(suffix)
+                        end
+                    end
                     context(manipulator and manipulated(manipulator,value) or value)
                     return
                 end
@@ -686,6 +729,13 @@ function commands.btxdetail(name,tag,field)
             local manipulator, field = checked(field)
             local value = details[field]
             if type(value) == "string" then
+                local suffixes = dataset.suffixes[tag]
+                if suffixes then
+                    local suffix = suffixes[field]
+                    if suffix then
+                        value = value .. converters.characters(suffix)
+                    end
+                end
                 context(manipulator and manipulated(manipulator,value) or value)
             else
                 report("unknown detail %a of tag %a in dataset %a",field,tag,name)
@@ -706,6 +756,13 @@ function commands.btxfield(name,tag,field)
             local manipulator, field = checked(field)
             local value = fields[field]
             if type(value) == "string" then
+                local suffixes = dataset.suffixes[tag]
+                if suffixes then
+                    local suffix = suffixes[field]
+                    if suffix then
+                        value = value .. converters.characters(suffix)
+                    end
+                end
                 context(manipulator and manipulated(manipulator,value) or value)
             else
                 report("unknown field %a of tag %a in dataset %a",field,tag,name)
@@ -1076,34 +1133,47 @@ end
 
 -- todo: nicer refs
 
-local f_reference   = formatters["r:%s:%s:%s"] -- dataset, instance (block), tag
-local f_destination = formatters["d:%s:%s:%s"] -- dataset, instance (block), tag
-local f_listentry   = formatters["d:%s:%s:%s"] -- dataset, instance (block), tag
-local f_internal    = formatters["internal(%s)"] -- dataset, instance (block), tag
+local f_citereference = formatters["btx:%s"] -- dataset, instance (block), tag
+local f_listreference = formatters["btx:%s:%s:%s"] -- dataset, instance (block), tag
 
 local done = { }
 
-function commands.btxreference(dataset,block,tag,data)
-    local ref = f_reference(dataset,block,tag) -- we just need a unique key
-    if not done[ref] then
+function commands.btxcitereference(internal)
+    local ref = f_citereference(internal) -- we just need a unique key
+    local don = done[ref]
+    if don == nil then
         if trace_references then
-            report_reference("link: %s",ref)
+            report_reference("cite: %s",ref)
         end
         done[ref] = true
-        ctx_btxsetreference(dataset,tag,ref,data)
+        ctx_btxsetcitereference(ref,internal)
+    elseif don then
+        report_reference("duplicate cite: %s, skipped",ref)
+        done[ref] = false
+ -- else
+        -- no more messages
     end
 end
 
+-- we just need a unique key, so we could also use btx:<number> but this
+-- way we have a bit of a check for duplicates
+
 local done = { }
 
-function commands.btxdestination(dataset,block,tag,data)
-    local ref = f_destination(dataset,block,tag) -- we just need a unique key
-    if not done[ref] then
+function commands.btxlistreference(dataset,block,tag,data)
+    local ref = f_listreference(dataset,block,tag)
+    local don = done[ref]
+    if don == nil then
         if trace_references then
-            report_reference("link: %s",ref)
+            report_reference("list: %s",ref)
         end
         done[ref] = true
-        ctx_btxsetreference(dataset,tag,ref,data)
+        ctx_btxsetlistreference(dataset,tag,ref,data)
+    elseif don then
+        report_reference("duplicate link: %s, skipped",ref)
+        done[ref] = false
+ -- else
+        -- no more messages
     end
 end
 
@@ -1227,6 +1297,43 @@ local function compresslist(source)
     local first, last, firstr, lastr
     local target, noftarget, tags = { }, 0, { }
     sort(source,keysorter)
+    -- suffixes
+    local oldvalue = nil
+    local suffix   = 0
+    local function setsuffix(entry,suffix,sortfld)
+        entry.suffix  = suffix
+        local dataset = datasets[entry.dataset]
+        if dataset then
+            local suffixes = dataset.suffixes[entry.tag]
+            if suffixes then
+                suffixes[sortfld] = suffix
+            else
+                dataset.suffixes[entry.tag] = { [sortfld] = suffix }
+            end
+        end
+    end
+    for i=1,#source do
+        local entry   = source[i]
+        local sortfld = entry.sortfld
+        if sortfld then
+            local value = entry.sortkey
+            if value == oldvalue then
+                if suffix == 0 then
+                    suffix = 1
+                    local entry = source[i-1]
+                    setsuffix(entry,suffix,sortfld)
+                end
+                suffix = suffix + 1
+                setsuffix(entry,suffix,sortfld)
+            else
+                oldvalue = value
+                suffix   = 0
+            end
+        else
+            break
+        end
+    end
+    --
     local function flushrange()
         noftarget = noftarget + 1
         if last > first + 1 then
@@ -1303,7 +1410,7 @@ local function processcite(dataset,reference,mark,compress,setup,getter,setter,c
             source[i] = data
         end
         if compress and not badkey then
-            local target = (compressor or compresslist)(source)
+            local target  = (compressor or compresslist)(source)
             local function flush(i,state)
                 local entry = target[i]
                 local first = entry.first
@@ -1336,7 +1443,7 @@ local function processcite(dataset,reference,mark,compress,setup,getter,setter,c
                         ctx_btxsetinternal(internal)
                     end
                     if not setter(entry) then
-                        ctx_btxsetfirst(f_missing(entry.tag))
+                        ctx_btxsetfirst(f_missing(tag))
                     end
                 end
                 ctx_btxsetconcat(state)
@@ -1389,6 +1496,7 @@ local setters = setmetatableindex({},function(t,k)
             internal = internal,
             [k]      = value,
             sortkey  = value,
+            sortfld  = k,
         }
     end
     t[k] = v
@@ -1447,6 +1555,7 @@ end
 
 local function setter(dataset,tag,entry,internal)
     return {
+        dataset  = dataset,
         tag      = tag,
         internal = internal,
         pages    = getdetail(dataset,tag,"pages"),
@@ -1475,6 +1584,7 @@ end
 local function setter(dataset,tag,entry,internal)
     local text = entry.entries.text
     return {
+        dataset  = dataset,
         tag      = tag,
         internal = internal,
         num      = text,
@@ -1495,10 +1605,12 @@ end
 local function setter(dataset,tag,entry,internal)
     local year = getfield(dataset,tag,"year")
     return {
+        dataset  = dataset,
         tag      = tag,
         internal = internal,
         year     = year,
         sortkey  = year,
+        sortfld  = "year",
     }
 end
 
@@ -1515,6 +1627,7 @@ end
 local function setter(dataset,tag,entry,internal)
     local index = getfield(dataset,tag,"index")
     return {
+        dataset  = dataset,
         tag      = tag,
         internal = internal,
         index    = index,
@@ -1538,6 +1651,7 @@ end
 
 local function setter(dataset,tag,entry,internal)
     return {
+        dataset  = dataset,
         tag      = tag,
         internal = internal,
         category = getfield(dataset,tag,"category"),
@@ -1560,6 +1674,7 @@ end
 
 local function setter(dataset,tag,entry,internal)
     return {
+        dataset  = dataset,
         tag      = tag,
         internal = internal,
     }
@@ -1582,6 +1697,7 @@ end
 
 local function setter(dataset,tag,entry,internal)
     return {
+        dataset  = dataset,
         tag      = tag,
         internal = internal,
         author   = getfield(dataset,tag,"author"),
@@ -1614,12 +1730,10 @@ local function authorcompressor(found,key)
         local entry    = found[i]
         local author   = entry.author
         local aentries = entries[author]
-        -- will be just entry but for tracing ...
-        entry = { internal = entry.internal, author = author, [key] = entry[key], sortkey = entry.sortkey }
         if aentries then
             aentries[#aentries+1] = entry
         else
-            entries[author] =  { entry }
+            entries[author] = { entry }
         end
     end
     for i=1,#found do
@@ -1632,7 +1746,7 @@ local function authorcompressor(found,key)
             -- already done
         else
             result[#result+1] = entry
-            entry.entries  = aentries
+            entry.entries = aentries
             entries[author] = true
         end
     end
@@ -1650,13 +1764,25 @@ local function authorconcat(target,key,setup)
                 ctx_btxsetinternal(internal)
             end
             ctx_btxsetfirst(first[key] or f_missing(first.tag))
-            ctx_btxsetsecond(entry.last[key])
+            local suffix = entry.suffix
+            local value  = entry.last[key]
+            if suffix then
+                ctx_btxsetsecond(value .. converters.characters(suffix))
+            else
+                ctx_btxsetsecond(value)
+            end
         else
             local internal = entry.internal
             if internal then
                 ctx_btxsetinternal(internal)
             end
-            ctx_btxsetfirst(entry[key] or f_missing(entry.tag))
+            local suffix = entry.suffix
+            local value  = entry[key] or f_missing(entry.tag)
+            if suffix then
+                ctx_btxsetfirst(value .. converters.characters(suffix))
+            else
+                ctx_btxsetfirst(value)
+            end
         end
         ctx_btxsetconcat(state)
         ctx_btxcitesetup(setup)
@@ -1668,8 +1794,12 @@ end
 
 local function authorsingle(entry,key,setup)
     ctx_btxstartsubcite(setup)
+    local internal = entry.internal
+    if internal then
+        ctx_btxsetinternal(internal)
+    end
     ctx_btxsetfirst(entry[key] or f_missing(entry.tag))
-    ctx_btxcitesetup(setup)
+    ctx_btxcitesetup(setup) -- ??
     ctx_btxstopsubcite()
 end
 
@@ -1690,6 +1820,7 @@ end
 local function setter(dataset,tag,entry,internal)
     local text = entry.entries.text
     return {
+        dataset  = dataset,
         tag      = tag,
         internal = internal,
         author   = getfield(dataset,tag,"author"),
@@ -1716,11 +1847,13 @@ end
 local function setter(dataset,tag,entry,internal)
     local year = getfield(dataset,tag,"year")
     return {
+        dataset  = dataset,
         tag      = tag,
         internal = internal,
         author   = getfield(dataset,tag,"author"),
         year     = year,
-        sortkey  = year and lpegmatch(numberonly,year)
+        sortkey  = year and lpegmatch(numberonly,year),
+        sortfld  = "year",
     }
 end
 
@@ -1762,14 +1895,18 @@ function listvariants.default(dataset,block,tag,variant)
     context("?")
 end
 
+-- function listvariants.num(dataset,block,tag,variant,listindex)
+--     local lst = f_listentry(dataset,block,tag)
+--     local ref = f_reference(dataset,block,tag)
+--     if trace_references then
+--         report_reference("list: %s",lst)
+--     end
+--     -- todo
+--     ctx_btxdirectlink(ref,listindex) -- a goto
+-- end
+
 function listvariants.num(dataset,block,tag,variant,listindex)
-    local lst = f_listentry(dataset,block,tag)
-    local ref = f_reference(dataset,block,tag)
-    if trace_references then
-        report_reference("list: %s",lst)
-    end
-    -- todo
-    ctx_btxdirectlink(ref,listindex) -- a goto
+    context(listindex) -- a goto
 end
 
 function listvariants.short(dataset,block,tag,variant,listindex)
