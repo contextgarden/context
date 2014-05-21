@@ -1,6 +1,9 @@
 % language=uk
 
-% \setupbtxrendering[continue=yes]
+
+\setupbtxlistvariant [interaction=start]
+\setupbtxcitevariant [interaction=start]
+
 % \btxfield{manipulator_a->manipulator_b->fieldname}
 
 % engine=luajittex
@@ -8,16 +11,7 @@
 % criterium: all + sorttype=cite     => citex before rest
 % criterium: all + sorttype=database => database order
 % criterium: used
-%
 % numbering: label, short, indexinlist, indexused
-%
-% maybeyear
-%
-% \cite[data][whatever]
-
-% \showframe
-
-% \usemodule[lua-checkheads]
 
 \usemodule[abr-02]
 \usemodule[set-11]
@@ -1279,6 +1273,208 @@ suffix, you can do this:
 \starttyping
 \usebtxdataset[standard][myformat::myfile.txt]
 \stoptyping
+
+\stopchapter
+
+\startchapter[title=Searching]
+
+Finding the right key in a database can be a pain. On the other hand, asking for
+a wildcard also makes no sense. Nevertheless we provide a mechanism for matching
+a query. For this we load a small bibliographic database:
+
+\startbuffer
+\usebtxdataset[graph][mkiv-publications-graph.bib]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We could switch to this base using:
+
+\starttyping
+\setbtxdataset[graph]
+\stoptyping
+
+but instead we will use a prefix. For instance, if we have this in our source:
+
+\startbuffer
+searching give a few hits, so we get: \cite [ graph :: match ( author:cleveland and
+year:1993 ) ].
+\stopbuffer
+
+\typebuffer
+
+We will get: \quotation {\inlinebuffer}. Of course this assumes that we also
+typeset a list of referred to references, so let's do that:
+
+\startbuffer
+\definebtxrendering[graph][dataset=graph]
+\placebtxrendering[graph][criterium=chapter]
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\blank \getbuffer \blank
+
+Let's look in more detail at the \type {\cite} command. In order to distinguish
+efficiently between a normal reference and a more clever one, we use the \type
+{match} keyword:
+
+\startbuffer
+dataset::match(query)
+dataset :: match ( query )
+\stopbuffer
+
+The handler is rather tolerant for spaces:
+
+\startbuffer
+dataset :: match ( query )
+\stopbuffer
+
+Which is handy if you have long queries that wrap around in the source code. Of
+course the \type {dataset::} prefix is optional in which case the current dataset
+is taken.
+
+A query eventually becomes a \LUA\ expression so you can use helpers to achieve
+your goal. As a convenience there are some shortcuts to access fields. The
+following examples demonstrate this:
+
+\starttyping
+match(author:hagen)
+match(author:hagen and author:hoekwater and year:1990-2010)
+match(author:"Bogusław Jackowski")
+match(author:"Bogusław Jackowski" and (tonumber(field:year) or 0) > 2000)
+\stoptyping
+
+You can use quotes when spaces are involved. Of course you can use other
+characters that the basic alphabet. Ranges (of numbers) are recognized. String
+lookups are partial and case insensitive. \footnote {At the time of this
+writing, may 2014, this mechanism is still somewhat experimental.}
+
+\startbuffer
+Wildcards: \cite [graph::match(author:cleve)].
+\stopbuffer
+
+\typebuffer
+
+We get three entries: \quotation {\inlinebuffer}.
+
+% To be checked: are indeed three entries found?
+
+% Match : \cite [match(author:cleveland and year:1993)]      \par
+
+\stopchapter
+
+\startchapter[title=Combining]
+
+It is possible to refer to two sources in one go. In that case the list will have one
+entry for two bibliographic entries.
+
+\startbuffer
+Let's save numbers and refer to Bentley and Tufte with one: \cite [graph ::
+Bentley1990 + Tufte1983]!
+\stopbuffer
+
+\typebuffer
+
+Indeed we get one number only: \quotation {\inlinebuffer}.
+
+\startbuffer
+\setupbtxrendering[graph][continue=yes,separator={; }]
+\placebtxrendering[graph][criterium=chapter]
+\stopbuffer
+
+We produce the (local) list with:
+
+\typebuffer
+
+which shows the two entries pasted together:
+
+\setupbtxrendering[separator=]
+
+\blank \getbuffer \blank
+
+As demonstration we also specified the separator although that one is already
+set up by default.
+
+You can combine citations with additional text before and|/|or after it. This can
+be done per citation. This feature is of course not that useful, as one can
+put text before and after a citation anyway.
+
+\startbuffer
+foo bar \citation [before=<<,after=>>] [graph::Cleveland1993] foo bar
+\stopbuffer
+
+\typebuffer
+
+Gives:
+
+\blank \getbuffer \blank
+
+\stopchapter
+
+\startchapter[title=Summary]
+
+\start
+\setbtxdataset[graph]
+
+There are a lot of combinations possible and not all of them make sense.
+Nevertheless we show most of them here. (There will be more.)
+
+\startbuffer[samples]
+Cleveland : \cite [Cleveland1993,Cleveland1985,Cleveland1993a] \par
+Tufte     : \cite [Tufte1983]                                  \par
+Bentley   : \cite [Bentley1990]                                \par
+All       : \cite [Tufte1983,Cleveland1993,Bentley1990,Cleveland1985,
+                     Cleveland1993a] \par
+\stopbuffer
+
+\starttexdefinition BibSampleSet #1#2
+    \subsubsubject{alternative=#1 / compress=#2}
+    \startpacked
+        \setupbtxcitevariant[#1][compress=#2]
+        \setupbtxcitevariant[alternative=#1]
+        \getbuffer[samples]
+    \stoppacked
+\stoptexdefinition
+
+\BibSampleSet{author}     {no}
+\BibSampleSet{authoryear} {no}
+\BibSampleSet{authoryear} {yes}
+\BibSampleSet{authoryears}{no}
+\BibSampleSet{authoryears}{yes}
+\BibSampleSet{authornum}  {no}
+\BibSampleSet{authornum}  {yes}
+\BibSampleSet{year}       {no}
+\BibSampleSet{year}       {yes}
+\BibSampleSet{short}      {no}
+\BibSampleSet{serial}     {no}
+\BibSampleSet{serial}     {yes}
+\BibSampleSet{tag}        {no}
+\BibSampleSet{key}        {no}
+\BibSampleSet{doi}        {no}
+\BibSampleSet{url}        {no}
+\BibSampleSet{type}       {no}
+\BibSampleSet{category}   {no}
+\BibSampleSet{page}       {no}
+\BibSampleSet{num}        {no}
+\BibSampleSet{num}        {yes}
+
+\startbuffer
+\setupbtxrendering[graph][continue=yes]
+\placebtxrendering[graph][criterium=chapter]
+\stopbuffer
+
+We produce a local list with:
+
+\typebuffer
+
+and get a list with (new) entries:
+
+\blank \getbuffer \blank
+
+\stop
 
 \stopchapter
 

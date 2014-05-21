@@ -211,6 +211,14 @@ return {
 
          -- ["fonts.usesystemfonts"]     = false,
 
+            -- You can permit loading modules with no prefix:
+
+         -- ["modules.permitunprefixed"] = "no",
+
+            -- You can permit loading files from anywhere in the TDS tree:
+
+         -- ["resolvers.otherwise"]      = "no",
+
         },
 
         experiments = {

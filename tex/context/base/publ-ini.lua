@@ -412,8 +412,8 @@ local finder = publications.finder
                     entry = entry[1] -- for now
                 end
                 okay[#okay+1] = entry
-                todo[tag] = true
             end
+            todo[tag] = true
         end
         if find then
             tags = { }
@@ -441,7 +441,7 @@ local finder = publications.finder
             for tag, entry in next, valid do
                 local found = find(entry)
                 if found then
-                    register(tag)
+                    todo[tag] = true
                     tags[#tags+1] = tag
                 end
             end
@@ -1074,9 +1074,7 @@ function lists.flushentries(dataset,sortvariant)
         list = sort(dataset,rendering,list) or list
     end
     for i=1,#list do
---         ctx_setvalue("currentbtxindex",i) -- todo: helper
---         -- todo: also flush combinations
---         ctx_btxhandlelistentry(list[i][1]) -- we can pass i here too ... more efficient to avoid the setvalue
+     -- we can pass i here too ... more efficient to avoid the setvalue
         local tag = list[i][1]
         local entry = datasets[dataset].luadata[tag]
         if entry then
@@ -1133,49 +1131,79 @@ end
 
 -- todo: nicer refs
 
-local f_citereference = formatters["btx:%s"] -- dataset, instance (block), tag
-local f_listreference = formatters["btx:%s:%s:%s"] -- dataset, instance (block), tag
+-- local f_citereference = formatters["btx:%s:%s"]       -- dataset, instance (block), tag, order
+-- local f_listreference = formatters["btx:%s:%s:%s:%s"] -- dataset, instance (block), tag, order
+--
+-- -- local done = { }
+-- local last = 0
+--
+-- function commands.btxcitereference(internal)
+--     last = last + 1
+--     local ref = f_citereference(internal,last) -- we just need a unique key
+-- --     local don = done[ref]
+-- --     if don == nil then
+--         if trace_references then
+--             report_reference("cite: %s",ref)
+--         end
+-- --         done[ref] = true
+--         ctx_btxsetcitereference(ref,internal)
+-- --     elseif don then
+-- --         report_reference("duplicate cite: %s, skipped",ref)
+-- --         done[ref] = false
+-- --  -- else
+-- --         -- no more messages
+-- --     end
+-- end
+--
+-- -- we just need a unique key, so we could also use btx:<number> but this
+-- -- way we have a bit of a check for duplicates
+--
+-- -- local done = { }
+-- local last = 0
+--
+-- function commands.btxlistreference(dataset,block,tag,data)
+--     last = last + 1
+--     local ref = f_listreference(dataset,block,tag,last)
+-- --     local don = done[ref]
+-- --     if don == nil then
+--         if trace_references then
+--             report_reference("list: %s",ref)
+--         end
+-- --         done[ref] = true
+--         ctx_btxsetlistreference(dataset,tag,ref,data)
+-- --     elseif don then
+-- --         report_reference("duplicate link: %s, skipped",ref)
+-- --         done[ref] = false
+-- --  -- else
+-- --         -- no more messages
+-- --     end
+-- end
 
-local done = { }
+
+local f_citereference = formatters["btx:cite:%s"]
+local f_listreference = formatters["btx:list:%s"]
+
+local nofcite = 0
+local noflist = 0
 
 function commands.btxcitereference(internal)
-    local ref = f_citereference(internal) -- we just need a unique key
-    local don = done[ref]
-    if don == nil then
-        if trace_references then
-            report_reference("cite: %s",ref)
-        end
-        done[ref] = true
-        ctx_btxsetcitereference(ref,internal)
-    elseif don then
-        report_reference("duplicate cite: %s, skipped",ref)
-        done[ref] = false
- -- else
-        -- no more messages
+    nofcite = nofcite + 1
+    local ref = f_citereference(nofcite)
+    if trace_references then
+        report_reference("cite: %s",ref)
     end
+    ctx_btxsetcitereference(ref,internal)
 end
-
--- we just need a unique key, so we could also use btx:<number> but this
--- way we have a bit of a check for duplicates
-
-local done = { }
 
 function commands.btxlistreference(dataset,block,tag,data)
-    local ref = f_listreference(dataset,block,tag)
-    local don = done[ref]
-    if don == nil then
-        if trace_references then
-            report_reference("list: %s",ref)
-        end
-        done[ref] = true
-        ctx_btxsetlistreference(dataset,tag,ref,data)
-    elseif don then
-        report_reference("duplicate link: %s, skipped",ref)
-        done[ref] = false
- -- else
-        -- no more messages
+    noflist = noflist + 1
+    local ref = f_listreference(noflist)
+    if trace_references then
+        report_reference("list: %s",ref)
     end
+    ctx_btxsetlistreference(dataset,tag,ref,data)
 end
+
 
 commands.btxsetlistmethod           = lists.setmethod
 commands.btxresolvelistreference    = lists.resolve
@@ -1223,7 +1251,8 @@ end
 --         tags = sortedtags(dataset,tags,sorttype)
 --     end
 
-local prefixsplitter = lpeg.splitat("::")
+local optionalspace  = lpeg.patterns.whitespace^0
+local prefixsplitter = optionalspace * lpeg.splitat(optionalspace * P("::") * optionalspace)
 
 function commands.btxhandlecite(specification)
     local tag = specification.reference

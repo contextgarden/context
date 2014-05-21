@@ -8,10 +8,12 @@ if not modules then modules = { } end modules ['lang-url'] = {
 
 local utfcharacters, utfvalues, utfbyte, utfchar = utf.characters, utf.values, utf.byte, utf.char
 
-commands       = commands or { }
-local commands = commands
+commands        = commands or { }
+local commands  = commands
 
-context        = context
+context         = context
+
+local is_letter = characters.is_letter
 
 --[[
 <p>Hyphenating <l n='url'/>'s is somewhat tricky and a matter of taste. I did
@@ -72,27 +74,81 @@ hyphenatedurl.discretionary  = nil
 -- more fun is to write nodes .. maybe it's nicer to do this
 -- in an attribute handler anyway
 
+-- local ctx_a = context.a
+-- local ctx_b = context.b
+-- local ctx_d = context.d
+-- local ctx_n = context.n
+-- local ctx_s = context.s
+
+-- local function action(hyphenatedurl,str,left,right,disc)
+--     local n = 0
+--     local b = math.max(      left  or hyphenatedurl.lefthyphenmin,    2)
+--     local e = math.min(#str-(right or hyphenatedurl.righthyphenmin)+2,#str)
+--     local d = disc or hyphenatedurl.discretionary
+--     local p = nil
+--     for s in utfcharacters(str) do
+--         n = n + 1
+--         s = mapping[s] or s
+--         if n > 1 then
+--             ctx_s() -- can be option
+--         end
+--         if s == d then
+--             ctx_d(utfbyte(s))
+--         else
+--             local c = characters[s]
+--             if not c or n <= b or n >= e then
+--                 ctx_n(utfbyte(s))
+--             elseif c == 1 then
+--                 ctx_b(utfbyte(s))
+--             elseif c == 2 then
+--                 ctx_a(utfbyte(s))
+--             end
+--         end
+--         p = s
+--     end
+-- end
+
+local ctx_a = context.a
+local ctx_b = context.b
+local ctx_d = context.d
+local ctx_c = context.c
+local ctx_l = context.l
+local ctx_C = context.C
+local ctx_L = context.L
+
 local function action(hyphenatedurl,str,left,right,disc)
     local n = 0
     local b = math.max(      left  or hyphenatedurl.lefthyphenmin,    2)
     local e = math.min(#str-(right or hyphenatedurl.righthyphenmin)+2,#str)
     local d = disc or hyphenatedurl.discretionary
+    local p = nil
     for s in utfcharacters(str) do
         n = n + 1
         s = mapping[s] or s
-        if n > 1 then
-            context.s() -- can be option
-        end
         if s == d then
-            context.d(utfbyte(s))
+            ctx_d(utfbyte(s))
         else
             local c = characters[s]
-            if not c or n<=b or n>=e then
-                context.n(utfbyte(s))
-            elseif c == 1 then
-                context.b(utfbyte(s))
+            if c == 1 then
+                p = false
+                ctx_b(utfbyte(s))
             elseif c == 2 then
-                context.a(utfbyte(s))
+                p = false
+                ctx_a(utfbyte(s))
+            else
+                local l = is_letter[s]
+                if n <= b or n >= e then
+                    if p and l then
+                        ctx_L(utfbyte(s))
+                    else
+                        ctx_C(utfbyte(s))
+                    end
+                elseif p and l then
+                    ctx_l(utfbyte(s))
+                else
+                    ctx_c(utfbyte(s))
+                end
+                p = l
             end
         end
     end

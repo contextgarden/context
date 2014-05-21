@@ -7,24 +7,23 @@ if not modules then modules = { } end modules ['publ-fnd'] = {
 }
 
 local tonumber, next = tonumber, next
-local P, R, C, Cs, Carg = lpeg.P, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Carg
+local P, R, C, Cs, Cp, Carg = lpeg.P, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Carg
 local lpegmatch = lpeg.match
 local concat = table.concat
-local find = string.find
 
 local formatters = string.formatters
 local lowercase  = characters.lower
 
-local colon   = P(":")
-local dash    = P("-")
-local lparent = P("(")
-local rparent = P(")")
-local space   = lpeg.patterns.whitespace
-local valid   = 1 - colon - space - lparent - rparent
-local key     = C(valid^1)
-local key     = C(R("az","AZ")^1)
-local word    = Cs(lpeg.patterns.unquoted + valid^1)
-local number  = C(valid^1)
+local colon    = P(":")
+local dash     = P("-")
+local lparent  = P("(")
+local rparent  = P(")")
+local space    = lpeg.patterns.whitespace
+local valid    = 1 - colon - space - lparent - rparent
+----- key      = C(valid^1)
+local key      = C(R("az","AZ")^1)
+local word     = Cs(lpeg.patterns.unquoted + valid^1)
+local number   = C(valid^1)
 
 ----- f_string_key = formatters["  local s_%s = entry[%q]"]
 local f_string_key = formatters["  local s_%s = entry[%q] if s_%s then s_%s = lower(s_%s) end "]
@@ -55,8 +54,8 @@ end
 ----- pattern = Cs((field + range + match + P(1))^1)
 ----- b_match = P("match")/"" * lparent
 local b_match = lparent
-local e_match = rparent * P(-1)
-local pattern = Cs(b_match * ((field + range + match + P(1))-e_match)^1 * e_match)
+local e_match = rparent * space^0 * P(-1)
+local pattern = Cs(b_match * ((field + range + match + space + P(1))-e_match)^1 * e_match)
 
 -- -- -- -- -- -- -- -- -- -- -- -- --
 -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -106,16 +105,16 @@ end
 
 local cache = { } -- todo: make weak, or just remember the last one (trial typesetting)
 
+local check = P("match") * space^0 * Cp()
+
 local function finder(expression)
-    local b, e = find(expression,"^match")
-    if e then
-        local found  = cache[expression]
-        if found == nil then
-            found = compile(expression,e+1) or false
-            cache[expression] = found
-        end
-        return found
+    local found = cache[expression]
+    if found == nil then
+        local e = lpegmatch(check,expression)
+        found = e and compile(expression,e) or false
+        cache[expression] = found
     end
+    return found
 end
 
 publications.finder = finder

@@ -139,6 +139,9 @@
                 <cd:constant type="cd:name"/>
             </cd:keywords>
             <cd:assignments n="2">
+                <cd:parameter name="separator">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
                 <cd:parameter name="namesep">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>

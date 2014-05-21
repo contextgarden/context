@@ -53,6 +53,8 @@
 
 \def\s!btx    {btx}
 \def\s!cite   {cite}
+\def\s!list   {list}
+\def\v!btxcite{btxcite}
 \def\v!btxlist{btxlist}
 
 % a dedicated construction mechanism
@@ -93,23 +95,14 @@
 \unexpanded\def\stopbtxlistentry
   {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
 
-% \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
-%   {\begingroup
-%    \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
-%    \the\everyconstruction
-%    \constructionparameter\c!headcommand
-%      {\strut
-%       \constructionparameter\c!text
-%       \btx_list_reference_inject}%
-%    \endgroup}
-
 \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
    \the\everyconstruction
    \goto
      {\strut\constructionparameter\c!text\btx_list_reference_inject}%
-     [\s!btx:\the\numexpr\locationcount+\plusone]% \nextinternalreference
+%      [\s!btx:list:\the\numexpr\locationcount+\plusone]% \nextinternalreference
+     [internal(\the\numexpr\locationcount+\plusone)]% \nextinternalreference
    \endgroup}
 
 \unexpanded\def\strc_constructions_initialize#1% class instance
@@ -250,15 +243,15 @@
 
 \def\publ_command_nop#1%
   {\ifcsname#1\endcsname
-     \writestatus\m!publications{unknown command: #1, using built-in context variant #1}%
+     \showmessage\m!publications{10}{#1,#1}%
     %\setuxvalue{\??btxcommand#1}{\expandafter\noexpand\csname#1\endcsname}%
      \global\expandafter\let\csname\??btxcommand#1\expandafter\endcsname\csname#1\endcsname
    \else\ifcsname\utfupper{#1}\endcsname
-     \writestatus\m!publications{unknown command: #1, using built-in context variant \utfupper{#1}}%
+     \showmessage\m!publications{10}{#1}{\utfupper{#1}}%
     %\setuxvalue{\??btxcommand#1}{\expandafter\noexpand\csname\utfupper{#1}\endcsname}%
      \global\expandafter\let\csname\??btxcommand#1\expandafter\endcsname\csname\utfupper{#1}\endcsname
    \else
-     \writestatus\m!publications{unknown command: #1}%
+     \showmessage\m!publications{11}{#1}%
      \setugvalue{\??btxcommand#1}{\underbar{\tttf#1}}%
    \fi\fi
    \publ_command_yes{#1}}
@@ -364,14 +357,6 @@
     \fi
 \to \everydefinebtxrendering
 
-% \unexpanded\def\btx_entry_inject
-%   {\begingroup
-%    \edef\currentbtxcategory{\btxfield{category}}%
-%    \ignorespaces
-%    \directsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
-%    \removeunwantedspaces
-%    \endgroup}
-
 \let\currentbtxcombis\empty % goes into the setups
 
 \unexpanded\def\btx_entry_inject
@@ -381,7 +366,7 @@
    \directsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
    \removeunwantedspaces
    \ifx\currentbtxcombis\empty \else
-     \btxlistvariantparameter\c!separator
+     \btxrenderingparameter\c!separator
      \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi
    \fi
    \endgroup}
@@ -525,13 +510,6 @@
    \fi
    \endgroup}
 
-% \unexpanded\def\btxchecklistcombi#1% called at the lua end
-%   {\begingroup
-%    \edef\currentbtxtag{#1}%
-%    ; % todo
-%    \publ_check_list_entry
-%    \endgroup}
-
 \unexpanded\def\publ_check_list_entry
   {\global\advance\btxlistcounter\plusone
    % todo, switch to font
@@ -554,10 +532,10 @@
 \unexpanded\def\btx_cite_reference_inject % todo: wrap whole content?
   {\dontleavehmode\begingroup % no box
      \iftrialtypesetting\else
-       \ifx\currentbtxinternal\empty\else
+%        \ifx\currentbtxinternal\empty\else
  %        \global\advance\btxcitecounter\plusone
          \ctxcommand{btxcitereference(\number\currentbtxinternal)}%
-       \fi
+%        \fi
      \fi
     % \btx_list_reference_inject_indeed
    \endgroup}
@@ -686,9 +664,6 @@
    \btxcitevariantparameter\v!right
    \endgroup}
 
-% \def\btxnumberedplaceholder[#1]% \nobibtexnumref
-%   {[#1]}
-
 \appendtoks
     % for old times sake, for a while at least
     \let\maybeyear\gobbleoneargument
@@ -711,23 +686,6 @@
 %D we also store the location, which makes it possible to ask local lists.
 
 \newconditional\c_publ_cite_write
-
-% for reference, but split now done at the lua end
-%
-% \def\publ_cite_write#1% not used
-%   {\splitstring#1\at::\to\askedbtxrendering\and\askedbtxtag
-%    \ifx\askedbtxtag\empty
-%      \let\currentbtxtag      \askedbtxrendering
-%    \else
-%      \let\currentbtxtag      \askedbtxtag
-%      \let\currentbtxrendering\askedbtxrendering
-%    \fi
-%    \iftrialtypesetting \else
-%      \processcommacommand[\currentbtxtag]{\publ_cite_indeed\currentbtxrendering}%
-%    \fi}
-%
-% \def\publ_cite_indeed#1#2%
-%   {\expanded{\writedatatolist[btx][btxset=#1,btxref=#2]}}
 
 \unexpanded\def\btxdomarkcitation % called from lua end
   {\iftrialtypesetting
@@ -776,12 +734,6 @@
 \unexpanded\def\publ_cite_tags_options[#1]%
   {\strictdoifnextoptionalelse{\publ_cite_tags_options_indeed{#1}}{\publ_cite_tags_indeed{#1}}}
 
-% \unexpanded\def\publ_cite_tags_options_indeed#1[#2]%
-%   {\edef\currentbtxcitetag{#2}%
-%    \doifassignmentelse{#1}
-%      {\publ_cite_tags_settings_indeed{#1}}
-%      {\publ_cite_tags_variants_indeed{#1}}}
-
 \unexpanded\def\publ_cite_tags_options_indeed#1[#2]%
   {\edef\currentbtxcitetag{#2}%
    \doifassignmentelse{#1}\publ_cite_tags_settings_indeed\publ_cite_tags_variants_indeed{#1}}
@@ -810,6 +762,7 @@
    \fi
    \edef\p_before{\dummyparameter\c!before}%
    \edef\p_after {\dummyparameter\c!after}%
+   \the\everysetupbtxciteplacement
    \ifx\p_before\empty \else
      \p_before
      \space
@@ -896,9 +849,6 @@
 
 \newconstant\currentbtxconcat
 
-% \unexpanded\def\btxcitevariant#1%
-%   {\ctxcommand{btxcitevariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1")}}
-
 \unexpanded\def\btxcitereset
   {\let\currentbtxfirst   \empty
    \let\currentbtxsecond  \empty
@@ -976,6 +926,7 @@
    \c!numbering=\v!yes,
 %  \c!autohang=\v!no,
    \c!width=\v!auto,
+   \c!separator={; },
    \c!distance=1.5\emwidth]
 
 \definebtxrendering
@@ -1109,8 +1060,7 @@
     \c!right={]}]
 
 \setupbtxlistvariant
-  [\c!separator={; },
-   \c!namesep={, },
+  [\c!namesep={, },
    \c!lastnamesep={ and },
    \c!finalnamesep={ and },
    \c!firstnamesep={ },

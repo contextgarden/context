@@ -64,41 +64,48 @@
 \setnewconstant\hyphenatedurllefthyphenmin \plusthree
 \setnewconstant\hyphenatedurlrighthyphenmin\plusthree
 
-\def\lang_url_space         {\nobreak\hskip\zeropoint plus\onepoint\nobreak}
-\def\lang_url_after       #1{\char#1\discretionary{}{\hyphenatedurlseparator}{}}
-\def\lang_url_before      #1{\discretionary{\hyphenatedurlseparator}{}{}\char#1\relax}
-\def\lang_url_normal      #1{\char#1\relax}
-\def\lang_url_disc        #1{\discretionary{}{}{}}
+\def\lang_url_more{\penalty\plustenthousand\hskip\scratchskipone\penalty\plustenthousand}
+\def\lang_url_less{\penalty\plustenthousand\hskip\scratchskiptwo\penalty\plustenthousand}
+\def\lang_url_trac{\penalty\plustenthousand\hsmash{\darkred\vl}\penalty\plustenthousand}
 
-\def\lang_url_space_trace   {\nobreak\begingroup\darkyellow\ruledhskip\zeropoint plus\onepoint\endgroup\nobreak}
-\def\lang_url_after_trace #1{\char#1\hsmash{\darkblue\vl}\discretionary{}{\hyphenatedurlseparator}{}}
-\def\lang_url_before_trace#1{\discretionary{\hyphenatedurlseparator}{}{}\hsmash{\darkred\vl}\char#1\relax}
-\def\lang_url_normal_trace#1{\char#1\relax}
-\def\lang_url_disc_trace  #1{\discretionary{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}}
+\def\lang_url_a#1{\lang_url_more\char#1\lang_url_show\discretionary{}{\hyphenatedurlseparator}{}}
+\def\lang_url_b#1{\lang_url_more\discretionary{\hyphenatedurlseparator}{}{}\lang_url_show\char#1\relax}
+\def\lang_url_d#1{\lang_url_more\discretionary{\lang_url_show}{\lang_url_show}{\lang_url_show}}
+\def\lang_url_l#1{\lang_url_less\char#1\relax}
+\def\lang_url_c#1{\lang_url_more\char#1\relax}
+\def\lang_url_L#1{\lang_url_less\char#1\relax}
+\def\lang_url_C#1{\lang_url_more\char#1\relax}
 
-\def\showhyphenatedurlbreaks
- {\let\lang_url_space \lang_url_space_trace
-  \let\lang_url_after \lang_url_after_trace
-  \let\lang_url_before\lang_url_before_trace
-  \let\lang_url_normal\lang_url_normal_trace
-  \let\lang_url_disc  \lang_url_disc_trace}
+\unexpanded\def\showhyphenatedurlbreaks % for old times sake
+  {\let\lang_url_show\lang_url_trac}
 
-\def\sethyphenatedurlnormal#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}} % Lua names will change
-\def\sethyphenatedurlbefore#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}} % Lua names will change
-\def\sethyphenatedurlafter #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,2)}} % Lua names will change
+\installtextracker
+  {languages.url}
+  {\let\lang_url_show\lang_url_trac}
+  {\let\lang_url_show\relax}
+
+\let\lang_url_show\relax
+
+\unexpanded\def\sethyphenatedurlnormal#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}} % Lua names will change
+\unexpanded\def\sethyphenatedurlbefore#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}} % Lua names will change
+\unexpanded\def\sethyphenatedurlafter #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,2)}} % Lua names will change
 
 % \sethyphenatedurlafter{ABCDEF}
 
-\unexpanded \def\hyphenatedurl#1%
+\unexpanded\def\hyphenatedurl#1%
   {\dontleavehmode
    \begingroup
    \the\everyhyphenatedurl
    \normallanguage\zerocount
-   \let\s\lang_url_space
-   \let\a\lang_url_after
-   \let\b\lang_url_before
-   \let\n\lang_url_normal
-   \let\d\lang_url_disc
+   \let\a\lang_url_a % after
+   \let\b\lang_url_b % before
+   \let\d\lang_url_d % disc
+   \let\l\lang_url_l % letter
+   \let\c\lang_url_c % character
+   \let\L\lang_url_L % letter_nobreak
+   \let\C\lang_url_C % character_nobreak
+   \scratchskipone\zeropoint\s!plus\dimexpr\emwidth/12\s!minus\dimexpr\emwidth/24\relax % 1.00pt @ 12pt
+   \scratchskiptwo\zeropoint\s!plus\dimexpr\emwidth/48\s!minus\dimexpr\emwidth/96\relax % 0.25pt @ 12pt
    \normalexpanded{\noexpand\ctxcommand{hyphenatedurl(
         \!!bs\noexpand\detokenize{#1}\!!es,
         \number\hyphenatedurllefthyphenmin,

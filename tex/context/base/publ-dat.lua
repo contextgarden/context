@@ -74,8 +74,10 @@ local defaultshortcuts = {
     dec = "12",
 }
 
-local l_splitter = lpeg.tsplitat("+")
-local d_splitter = lpeg.splitat ("+")
+local space      = lpeg.patterns.whitespace^0
+local separator  = space * "+" * space
+local l_splitter = lpeg.tsplitat(separator)
+local d_splitter = lpeg.splitat (separator)
 
 function publications.parenttag(dataset,tag)
     if find(tag,"%+") then

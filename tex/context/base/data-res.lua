@@ -38,9 +38,10 @@ local setmetatableindex = table.setmetatableindex
 local luasuffixes       = utilities.lua.suffixes
 local getcurrentdir     = lfs.currentdir
 
-local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
-local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
-local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
+local trace_locating    = false  trackers  .register("resolvers.locating",   function(v) trace_locating    = v end)
+local trace_detail      = false  trackers  .register("resolvers.details",    function(v) trace_detail      = v end)
+local trace_expansions  = false  trackers  .register("resolvers.expansions", function(v) trace_expansions  = v end)
+local resolve_otherwise = true   directives.register("resolvers.otherwise",  function(v) resolve_otherwise = v end)
 
 local report_resolving = logs.reporter("resolvers","resolving")
 
@@ -1362,7 +1363,8 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
                     method, result = find_intree(filename,filetype,wantedfiles)
                     if not result then
                         method, result = find_onpath(filename,filetype,wantedfiles)
-                        if not result then
+                        if resolve_otherwise and not result then
+                            -- this will search everywhere in the tree
                             method, result = find_otherwise(filename,filetype,wantedfiles)
                         end
                     end

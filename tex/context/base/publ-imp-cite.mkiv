@@ -55,6 +55,7 @@
 %     \directsetup{\s!btx:\s!cite:concat}
 %     \ifconditional\btxinteractive
 %         \goto {
+%             \btxcitereference
 %             \directsetup{\s!btx:\s!cite:common:normal}
 %         } [
 %             \s!internal(\currentbtxinternal)
@@ -64,7 +65,7 @@
 %     \fi
 % \stopsetups
 %
-% more efficient:
+% more efficient (less tokens, less expansion):
 
 \startsetups \s!btx:\s!cite:render:normal
     \directsetup{\s!btx:\s!cite:concat}
@@ -96,6 +97,7 @@
 %     \directsetup{\s!btx:\s!cite:concat}
 %     \ifconditional\btxinteractive
 %         \goto {
+%             \btxcitereference
 %             \directsetup{\s!btx:\s!cite:common:range}
 %         } [
 %             \s!internal(\currentbtxinternal)
@@ -105,7 +107,7 @@
 %     \fi
 % \stopsetups
 %
-% more efficient:
+% more efficient (less tokens, less expansion):
 
 \startsetups \s!btx:\s!cite:render:range
     \directsetup{\s!btx:\s!cite:concat}
@@ -212,12 +214,12 @@
 \startsetups \s!btx:\s!cite:key
     \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
-\startsetups \s!btx:\s!cite:doi
-    \directsetup{\s!btx:\s!cite:render:normal}
-\stopsetups
-\startsetups \s!btx:\s!cite:url
-    \directsetup{\s!btx:\s!cite:render:normal}
-\stopsetups
+%startsetups \s!btx:\s!cite:doi
+%   \directsetup{\s!btx:\s!cite:render:normal}
+%stopsetups
+%startsetups \s!btx:\s!cite:url
+%   \directsetup{\s!btx:\s!cite:render:normal}
+%stopsetups
 \startsetups \s!btx:\s!cite:category
     \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
@@ -229,6 +231,26 @@
 \stopsetups
 \startsetups \s!btx:\s!cite:page
     \directsetup{\s!btx:\s!cite:render:normal}
+\stopsetups
+
+\startsetups \s!btx:\s!cite:doi
+  \directsetup{\s!btx:\s!cite:render:variant}
+\stopsetups
+\startsetups \s!btx:\s!cite:render:doi
+    \hyphenatedurl{\currentbtxfirst}
+\stopsetups
+
+\startsetups \s!btx:\s!cite:url
+    \ifconditional\btxinteractive
+        \goto {
+            \btxcitereference
+            \hyphenatedurl{\currentbtxfirst}
+        } [
+            url(\currentbtxfirst)
+        ]
+    \else
+        \hyphenatedurl{\currentbtxfirst}
+    \fi
 \stopsetups
 
 \protect

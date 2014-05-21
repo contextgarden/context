@@ -996,6 +996,12 @@ return {
         ["publications:7"] = {
             en = "placing all entries, use 'text' to be more selective",
         },
+        ["publications:10"] = {
+            en = "unknown command %a, using built-in context variant %a",
+        },
+        ["publications:11"] = {
+            en = "unknown command %a",
+        },
         ["pushing level: %a"] = {
             nl = "niveau omhoog: %a",
         },

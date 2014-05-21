@@ -20,17 +20,18 @@ at the <l n='tex'/> side.</p>
 
 local format, concat, tonumber = string.format, table.concat, tonumber
 
-local trace_modules  = false  trackers.register("modules.loading", function(v) trace_modules = v end)
+local trace_modules     = false  trackers  .register("modules.loading",          function(v) trace_modules     = v end)
+local permit_unprefixed = false  directives.register("modules.permitunprefixed", function(v) permit_unprefixed = v end)
 
-local report_modules = logs.reporter("resolvers","modules")
+local report_modules    = logs.reporter("resolvers","modules")
 
-commands             = commands or { }
-local commands       = commands
+commands                = commands or { }
+local commands          = commands
 
-local context        = context
+local context           = context
 
-local findbyscheme   = resolvers.finders.byscheme -- use different one
-local iterator       = utilities.parsers.iterator
+local findbyscheme      = resolvers.finders.byscheme -- use different one
+local iterator          = utilities.parsers.iterator
 
 -- modules can have a specific suffix or can specify one
 
@@ -117,7 +118,10 @@ function commands.usemodules(prefix,askedname,truename)
             end
             if status then
                 -- ok, don't change
+            elseif not permit_unprefixed then
+                -- forget about it
             elseif usemodule(truename) then
+                report_modules("using unprefixed file %a",truename)
                 status = 1
             else
                 status = 0
