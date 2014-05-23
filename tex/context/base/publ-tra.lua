@@ -17,6 +17,8 @@ local NC, NR = context.NC, context.NR
 local bold = context.bold
 local darkgreen, darkred, darkblue = context.darkgreen, context.darkred, context.darkblue
 
+-- TEXT hyperlink author number date
+
 local fields = table.sorted {
     "abstract",
     "address",
@@ -88,23 +90,6 @@ local listvariants = table.sorted {
     "editor",
     "artauthor",
 }
-
--- local categories = table.sorted {
---     "article",
---     "book",
---     "booklet",
---     "conference",
---     "inbook",
---     "incollection",
---     "inproceedings",
---     "manual",
---     "mastersthesis",
---     "misc",
---     "phdthesis",
---     "proceedings",
---     "techreport",
---     "unpublished",
--- }
 
 local categories = {
     article = {

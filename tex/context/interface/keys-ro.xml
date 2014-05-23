@@ -759,6 +759,7 @@
 		<cd:constant name='indenting' value='aliniat'/>
 		<cd:constant name='indentnext' value='aliniaturmator'/>
 		<cd:constant name='indicator' value='indicator'/>
+		<cd:constant name='initialsep' value='initialsep'/>
 		<cd:constant name='inner' value='intern'/>
 		<cd:constant name='innermargin' value='innermargin'/>
 		<cd:constant name='inputfile' value='inputfile'/>

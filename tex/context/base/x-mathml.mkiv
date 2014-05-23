@@ -16,7 +16,8 @@
 % This module is under construction and will be cleaned up. We use a funny mix of
 % xml, tex and lua. I could rewrite the lot but it also shows how context evolves.
 %
-% I might en dup with a lua-only implementation some day.
+% I might end up with a lua-only implementation some day. I must find a good reason
+% to spend time on it. In fact, it might even be more messy.
 %
 % no m:text strip (needs checking, maybe nbsp is mandate
 %
@@ -1709,7 +1710,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:annotation
-    \xmldoifelse {#1} {.[oneof(@encoding,'TeX','tex','TEX','ConTeXt','context','CONTEXT','ctx')]} {
+    \xmldoifelse {#1} {.[oneof(@encoding,'TeX','tex','application/x-tex','TEX','ConTeXt','context','CONTEXT','ctx')]} {
         \xmlflushcontext{#1}
     } {
         \xmldoifelse {#1} {.[oneof(@encoding,'calcmath','cm')]} {

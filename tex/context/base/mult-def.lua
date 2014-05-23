@@ -6625,6 +6625,9 @@ return {
   ["surnamesep"]={
    ["en"]="surnamesep",
   },
+  ["initialsep"]={
+   ["en"]="initialsep",
+  },
   ["surnameinitialsep"]={
    ["en"]="surnameinitialsep",
   },

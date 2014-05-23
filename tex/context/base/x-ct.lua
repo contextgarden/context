@@ -122,6 +122,8 @@ function moduledata.ct.tabulate(root,namespace)
 
 end
 
+-- todo: use content and caption
+
 function moduledata.ct.combination(root,namespace)
 
     if not root then

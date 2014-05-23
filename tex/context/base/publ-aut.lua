@@ -19,6 +19,8 @@ local concat = table.concat
 local lpeg = lpeg
 local utfchar = utf.char
 
+local P, C, V, Cs, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.match, lpeg.patterns
+
 local publications    = publications or { }
 
 local datasets        = publications.datasets or { }
@@ -26,8 +28,6 @@ publications.datasets = datasets
 
 publications.authors  = publications.authors or { }
 local authors         = publications.authors
-
-local P, C, V, Cs, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.match, lpeg.patterns
 
 -- local function makesplitter(separator)
 --     return Ct { "start",
@@ -230,6 +230,7 @@ local settings = { }
 
 -- local defaultsettings = {
 --     firstnamesep        = " ",
+--     initialsep          = " ",
 --     vonsep              = " ",
 --     surnamesep          = " ",
 --     juniorsep           = " ",
@@ -254,6 +255,7 @@ local defaultsettings = {
     juniorjuniorsep     = [[\btxlistvariantparameter{juniorjuniorsep}]],
     surnamefirstnamesep = [[\btxlistvariantparameter{surnamefirstnamesep}]],
     surnameinitialsep   = [[\btxlistvariantparameter{surnameinitialsep}]],
+    initialsep          = [[\btxlistvariantparameter{initialsep}]],
     namesep             = [[\btxlistvariantparameter{namesep}]],
     lastnamesep         = [[\btxlistvariantparameter{lastnamesep}]],
     finalnamesep        = [[\btxlistvariantparameter{finalnamesep}]],
@@ -300,7 +302,7 @@ function authors.normalshort(author,settings)
     local initials, vons, surnames, juniors = author.initials, author.vons, author.surnames, author.juniors
     local result, settings = { }, settings or defaultsettings
     if initials and #initials > 0 then
-        result[#result+1] = concat(initials," ")
+        result[#result+1] = concat(the_initials(initials)," ")
         result[#result+1] = settings.initialsep or defaultsettings.initialsep
     end
     if vons and #vons > 0 then
@@ -371,6 +373,8 @@ function authors.invertedshort(author,settings)
     return concat(result)
 end
 
+authors.short = authors.normalshort
+
 local lastconcatsize = 1
 
 local function concatnames(t,settings)
@@ -424,29 +428,6 @@ end
 
 function commands.btxauthor(...)
     context(authors.concat(...))
-end
-
-function authors.short(author,year)
-    -- todo
---     local result = { }
---     if author then
---         local authors = splitauthors(author)
---         for a=1,#authors do
---             local aa = authors[a]
---             local initials = aa.initials
---             for i=1,#initials do
---                 result[#result+1] = initials[i]
---             end
---             local surnames = aa.surnames
---             for s=1,#surnames do
---                 result[#result+1] = utfchar(lpegmatch(firstcharacter,surnames[s]))
---             end
---         end
---     end
---     if year then
---         result[#result+1] = year
---     end
---     return concat(result)
 end
 
 -- We can consider creating a hashtable key -> entry but I wonder if

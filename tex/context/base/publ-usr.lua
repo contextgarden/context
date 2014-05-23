@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['publ-usr'] = {
     license   = "see context related readme files"
 }
 
+local P, Cs, R, Cc, Carg = lpeg.P, lpeg.Cs, lpeg.R, lpeg.Cc, lpeg.Carg
+
+local settings_to_hash = utilities.parsers.settings_to_hash
 -- local chardata = characters.data
 
 -- local str = [[
@@ -29,8 +32,6 @@ local remapped = {
     artauthor = "author",
     arttitle  = "title",
 }
-
-local P, Cs, R, Cc, Carg = lpeg.P, lpeg.Cs, lpeg.R, lpeg.Cc, lpeg.Carg
 
 local function register(target,key,a,b,c,d,e)
     key = remapped[key] or key
@@ -78,7 +79,7 @@ local value        = optional^-1 * mandate^-1 * optional^-1 * mandate^-2
 local pattern      = ((Carg(1) * key * value) / register + P(1))^0
 
 function publications.addtexentry(dataset,settings,content)
-    settings = utilities.parsers.settings_to_hash(settings)
+    settings = settings_to_hash(settings)
     local data = {
         tag      = settings.tag      or settings.k or "no tag",
         category = settings.category or settings.t or "article",

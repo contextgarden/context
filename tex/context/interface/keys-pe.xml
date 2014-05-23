@@ -759,6 +759,7 @@
 		<cd:constant name='indenting' value='تورفتگی'/>
 		<cd:constant name='indentnext' value='متن‌تورفته'/>
 		<cd:constant name='indicator' value='اندیکاتور'/>
+		<cd:constant name='initialsep' value='initialsep'/>
 		<cd:constant name='inner' value='داخلی'/>
 		<cd:constant name='innermargin' value='حاشیه‌داخلی'/>
 		<cd:constant name='inputfile' value='پرونده‌ورودی'/>

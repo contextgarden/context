@@ -590,7 +590,7 @@
 
 \unexpanded\def\currentbtxciteauthor % always author
   {\ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","author",{
-        combiner    = "\btxcitevariantparameter\c!author",
+        combiner    = "\btxcitevariantparameter\c!authorconversion",
         etallimit   = \number\btxcitevariantparameter\c!etallimit,
         etaldisplay = \number\btxcitevariantparameter\c!etaldisplay,
    })}}
@@ -827,7 +827,7 @@
 
 \unexpanded\def\publ_cite_no[#1]%
   {\iftrialtypesetting \else
-     \ctxcommand{btxhandlecite{%
+     \ctxcommand{btxhandlenocite{%
        dataset   = "\currentbtxdataset",%
        reference = "#1",%
        markentry = \iftrialtypesetting false\else true\fi,%
@@ -936,6 +936,7 @@
   [\c!interaction=\v!start,
    \c!setups=btx:cite:\btxcitevariantparameter\c!alternative,
    \c!alternative=num,
+   \c!authorconversion=\v!normal,
    \c!andtext={ and },
    \c!otherstext={ et al.},
    \c!pubsep={, },
@@ -947,6 +948,8 @@
    \c!left=,
    \c!middle=,
    \c!right=]
+
+% \c!authorconversion=\v!normal
 
 \definebtxcitevariant
    [author]
@@ -1066,6 +1069,7 @@
    \c!firstnamesep={ },
    \c!juniorsep={ },
    \c!vonsep={ },
+   \c!initialsep={ },
    \c!surnamesep={, },
    \c!surnameinitialsep={, },
    \c!surnamefirstnamesep={, },
@@ -1088,9 +1092,9 @@
   [author]
 
 \setupbtxcitevariant
-  [\c!author      =\btxlistvariantparameter\c!author,
-   \c!etallimit   =\btxlistvariantparameter\c!etallimit,
-   \c!etaldisplay =\btxlistvariantparameter\c!etaldisplay]
+  [\c!authorconversion=\btxlistvariantparameter\c!authorconversion,
+   \c!etallimit       =\btxlistvariantparameter\c!etallimit,
+   \c!etaldisplay     =\btxlistvariantparameter\c!etaldisplay]
 
 % Do we want these in the format? Loading them delayed is somewhat messy.
 

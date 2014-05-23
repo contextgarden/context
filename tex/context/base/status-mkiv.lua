@@ -4907,6 +4907,11 @@ return {
   },
   {
    category = "lua",
+   filename = "typo-man",
+   status   = "todo",
+  },
+  {
+   category = "lua",
    filename = "typo-prc",
    status   = "todo",
   },
@@ -5083,6 +5088,12 @@ return {
   {
    category = "lua",
    filename = "publ-oth",
+   loading  = "publ-ini.mkiv",
+   status   = "pending",
+  },
+  {
+   category = "lua",
+   filename = "publ-fnd",
    loading  = "publ-ini.mkiv",
    status   = "pending",
   },

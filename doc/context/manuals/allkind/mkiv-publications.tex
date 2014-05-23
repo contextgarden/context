@@ -6,6 +6,11 @@
 
 % \btxfield{manipulator_a->manipulator_b->fieldname}
 
+% {\setupbtxcitevariant[author][authorconversion=normal]        normal        : \cite[author][match(author:tufte)]}\par
+% {\setupbtxcitevariant[author][authorconversion=normalshort]   normalshort   : \cite[author][match(author:tufte)]}\par
+% {\setupbtxcitevariant[author][authorconversion=inverted]      inverted      : \cite[author][match(author:tufte)]}\par
+% {\setupbtxcitevariant[author][authorconversion=invertedshort] invertedshort : \cite[author][match(author:tufte)]}\par
+
 % engine=luajittex
 
 % criterium: all + sorttype=cite     => citex before rest
@@ -458,7 +463,6 @@ can be much larger than needed for a document. The same is true for the fields
 that make up an entry. Here is the list of fields that are currently handled, but
 of course there can be additional ones:
 
-
 \startalignment[flushleft,verytolerant,nothyphenated]
 \startluacode
 local fields = publications.tracers.fields
@@ -490,7 +494,7 @@ ask for a complete list:
 
 This gives:
 
-\getbuffer
+\blank \getbuffer \blank
 
 The rendering itself is somewhat complex to set up because we have not only many
 different standards but also many fields that can be set up. This means that
@@ -579,15 +583,37 @@ more efficient, although in practice efficiency is not so important here.
 
 There are three commands to flush data:
 
-\starttabulate[|||] % Funny usage here! Could not tabulate work without
-                    % even specifying the number of columns?
+\starttabulate[|l|l|]
 \NC \type {\btxfield}  \NC fetch a explicit field (e.g. \type {year}) \NC \NR
 \NC \type {\btxdetail} \NC fetch a derived field (e.g. \type {short}) \NC \NR
 \NC \type {\btxflush}  \NC fetch a derived or explicit field \NC \NR
 \stoptabulate
 
 Normally you can use \type {\btxfield} or \type {\btxflush} as derived fields
-just like analyzed author fields are flushed in a special way.
+just like analyzed author fields are flushed in a special way. There is
+experimental support for so called manipulators. You can for instance say this:
+
+\starttyping
+\btxflush{lowercase->title}
+\stoptyping
+
+A sequence of manipulators is applied to fetched field, where a sequence is one
+or more manipulators:
+
+\starttyping
+\btxflush{stripperiod->uppercase->title}
+\stoptyping
+
+Some actions are recognized (built-in) but you can also use actions from other
+namespaces, like in:
+
+\starttyping
+\btxflush{converters.Word -> title}
+\stoptyping
+
+Watch how we can use spaces around the \type {->} which is nicer for wrapped
+around usage. Eventually, we might put some more function in the default
+namespace.
 
 You can improve readability by using setups, for instance:
 

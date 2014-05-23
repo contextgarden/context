@@ -14,16 +14,16 @@ local concat = table.concat
 local formatters = string.formatters
 local lowercase  = characters.lower
 
-local colon    = P(":")
-local dash     = P("-")
-local lparent  = P("(")
-local rparent  = P(")")
-local space    = lpeg.patterns.whitespace
-local valid    = 1 - colon - space - lparent - rparent
------ key      = C(valid^1)
-local key      = C(R("az","AZ")^1)
-local word     = Cs(lpeg.patterns.unquoted + valid^1)
-local number   = C(valid^1)
+local colon   = P(":")
+local dash    = P("-")
+local lparent = P("(")
+local rparent = P(")")
+local space   = lpeg.patterns.whitespace
+local valid   = 1 - colon - space - lparent - rparent
+----- key     = C(valid^1)
+local key     = C(R("az","AZ")^1)
+local word    = Cs(lpeg.patterns.unquoted + valid^1)
+local number  = C(valid^1)
 
 ----- f_string_key = formatters["  local s_%s = entry[%q]"]
 local f_string_key = formatters["  local s_%s = entry[%q] if s_%s then s_%s = lower(s_%s) end "]
@@ -134,7 +134,6 @@ function publications.search(dataset,expression)
         return { source[expression] }
     end
 end
-
 
 -- local dataset = publications.new()
 -- publications.load(dataset,"t:/manuals/hybrid/tugboat.bib")

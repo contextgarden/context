@@ -759,6 +759,7 @@
 		<cd:constant name='indenting' value='composeenalinea'/>
 		<cd:constant name='indentnext' value='indentesuivant'/>
 		<cd:constant name='indicator' value='indicateur'/>
+		<cd:constant name='initialsep' value='initialsep'/>
 		<cd:constant name='inner' value='interieur'/>
 		<cd:constant name='innermargin' value='margeinterieure'/>
 		<cd:constant name='inputfile' value='fichierentree'/>

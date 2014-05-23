@@ -8,41 +8,6 @@ if not modules then modules = { } end modules ['publ-ini'] = {
 
 -- we could store the destinations in the user list entries
 
--- will move:
-
-local lpegmatch  = lpeg.match
-local P, R, C, Ct, Cs = lpeg.P, lpeg.R, lpeg.C, lpeg.Ct, lpeg.Cs
-
-local lpegmatch  = lpeg.match
-local pattern    = Cs((1 - P(1) * P(-1))^0 * (P(".")/"" + P(1)))
-
-local manipulators = {
-    stripperiod = function(str) return lpegmatch(pattern,str) end,
-    uppercase   = characters.upper,
-    lowercase   = characters.lower,
-}
-
-local manipulation = C((1-P("->"))^1) * P("->") * C(P(1)^0)
-
-local pattern = manipulation / function(operation,str)
-    local manipulator = manipulators[operation]
-    return manipulator and manipulator(str) or str
-end
-
-local function manipulated(str)
-    return lpegmatch(pattern,str) or str
-end
-
-utilities.parsers.manipulation = manipulation
-utilities.parsers.manipulators = manipulators
-utilities.parsers.manipulated  = manipulated
-
-function commands.manipulated(str)
-    context(manipulated(str))
-end
-
--- use: for rest in gmatch(reference,"[^, ]+") do
-
 local next, rawget, type, tostring, tonumber = next, rawget, type, tostring, tonumber
 local match, gmatch, format, gsub = string.match, string.gmatch, string.format, string.gsub
 local concat, sort, tohash = table.concat, table.sort, table.tohash
@@ -53,7 +18,7 @@ local settings_to_array, settings_to_set = utilities.parsers.settings_to_array, 
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local lpegmatch = lpeg.match
-local P, C, Ct = lpeg.P, lpeg.C, lpeg.Ct
+local P, C, Ct, R = lpeg.P, lpeg.C, lpeg.Ct, lpeg.R
 
 local report           = logs.reporter("publications")
 local report_cite      = logs.reporter("publications","cite")
@@ -100,7 +65,8 @@ local sortcomparer   = sorters.comparers.basic -- (a,b)
 local sortstripper   = sorters.strip
 local sortsplitter   = sorters.splitters.utf
 
-local settings_to_array = utilities.parsers.settings_to_array
+local splitmanipulation = typesetters.manipulators.splitspecification
+local applymanipulation = typesetters.manipulators.applyspecification
 
 local context                     = context
 
@@ -196,10 +162,8 @@ local function serialize(t)
         local s = sortedkeys(entry)
         for i=1,#s do
             local k = s[i]
-         -- if k ~= "details" then
-                m = m + 1
-                r[m] = f_key_string(k,entry[k])
-         -- end
+            m = m + 1
+            r[m] = f_key_string(k,entry[k])
         end
         m = m + 1
         r[m] = " },"
@@ -248,7 +212,6 @@ end
 
 local function initializer()
     statistics.starttiming(publications)
-collected = publications.collected or collected -- for the moment as we load runtime
     for name, state in next, collected do
         local dataset     = datasets[name]
         local datasources = state.datasources
@@ -309,8 +272,7 @@ setmetatableindex(usedentries,function(t,k)
                             if u then
                                 u[#u+1] = entry
                             else
-                                u = { entry }
-                                s[tag] = u
+                                s[tag] = { entry }
                             end
                         else
                             usedentries[set] = { [tag] = { entry } }
@@ -318,93 +280,38 @@ setmetatableindex(usedentries,function(t,k)
                     end
                 end
             end
+-- table.save("temp.lua",usedentries)
         end
         return usedentries[k]
     end
 end)
 
---     local subsets   = nil
---     local block     = tex.count.btxblock
---     local collected = references.collected
---     local prefix    = nil -- todo: dataset ?
---     if prefix and prefix ~= "" then
---         subsets = { collected[prefix] or collected[""] }
---     else
---         local components = references.productdata.components
---         local subset = collected[""]
---         if subset then
---             subsets = { subset }
---         else
---             subsets = { }
---         end
---         for i=1,#components do
---             local subset = collected[components[i]]
---             if subset then
---                 subsets[#subsets+1] = subset
---             end
---         end
---     end
---     if #subsets == 0 then
---         subsets = { collected[""] }
---     end
---     local list = type(reference) == "string" and settings_to_array(reference) or reference
---     local todo = table.tohash(list)
---     if #subsets > 0 then
---         local result, nofresult, done = { }, 0, { }
---         for i=1,#subsets do
---             local subset = subsets[i]
---             for i=1,#list do
---                 local rest = list[i]
---                 local blk, tag, found = block, nil, nil
---                 if block then
---                     tag = f_destination(dataset,blk,rest)
---                     found = subset[tag]
---                     if not found then
---                         for i=block-1,1,-1 do
---                             tag = f_destination(dataset,i,rest)
---                             found = subset[tag]
---                             if found then
---                                 blk = i
---                                 break
---                             end
---                         end
---                     end
---                 end
---                 if not found then
---                     blk = "*"
---                     tag = f_destination(dataset,blk,rest)
---                     found = subset[tag]
---                 end
---                 if found then
---                     local entries = found.entries
---                     if entries then
---                         local current = tonumber(entries.text) -- todo: no ranges when no tonumber
---                         if current and not done[current] then
---                             nofresult = nofresult + 1
---                             result[nofresult] = { blk, rest, current, found.references.internal }
---                             done[current] = true
---                         end
---                     end
---                 end
---             end
---         end
+-- match:
+--
+-- [current|previous|following] section
+-- [current|previous|following] block
+-- [current|previous|following] component
+--
+-- by prefix
+-- by dataset
 
 local reported = { }
 local finder   = publications.finder
 
 local function findallused(dataset,reference,block,section)
-local finder = publications.finder
-    local find  = finder and finder(reference)
-    local tags  = not find and settings_to_array(reference)
-    local todo  = { }
-    local okay  = { } -- only if mark
-    local set   = usedentries[dataset]
-    local valid = datasets[dataset].luadata
+    local finder = publications.finder -- for the moment, not yes in all betas
+    local find   = finder and finder(reference)
+    local tags   = not find and settings_to_array(reference)
+    local todo   = { }
+    local okay   = { } -- only if mark
+    local set    = usedentries[dataset]
+    local valid  = datasets[dataset].luadata
     if set then
         local function register(tag)
             local entry = set[tag]
             if entry then
-                -- only once in a list
+                -- only once in a list but at some point we can have more (if we
+                -- decide to duplicate)
                 if #entry == 1 then
                     entry = entry[1]
                 else
@@ -643,48 +550,14 @@ function commands.setbtxentry(name,tag)
     end
 end
 
--- rendering of fields (maybe multiple manipulators)
-
--- local manipulation = utilities.parsers.manipulation
--- local manipulators = utilities.parsers.manipulators
---
--- local function checked(field)
---     local m, f = lpegmatch(manipulation,field)
---     if m then
---         return manipulators[m], f or field
---     else
---         return nil, field
---     end
--- end
-
-local manipulation = Ct((C((1-P("->"))^1) * P("->"))^1) * C(P(1)^0)
-local manipulators = utilities.parsers.manipulators
-
-local function checked(field)
-    local m, f = lpegmatch(manipulation,field)
-    if m then
-        return m, f or field
-    else
-        return nil, field
-    end
-end
-
-local function manipulated(actions,str)
-    for i=1,#actions do
-        local action = manipulators[actions[i]]
-        if action then
-            str = action(str) or str
-        end
-    end
-    return str
-end
+-- rendering of fields
 
 function commands.btxflush(name,tag,field)
     local dataset = rawget(datasets,name)
     if dataset then
         local fields = dataset.luadata[tag]
         if fields then
-            local manipulator, field = checked(field)
+            local manipulator, field = splitmanipulation(field)
             local value = fields[field]
             if type(value) == "string" then
                 local suffixes = dataset.suffixes[tag]
@@ -694,7 +567,7 @@ function commands.btxflush(name,tag,field)
                         value = value .. converters.characters(suffix)
                     end
                 end
-                context(manipulator and manipulated(manipulator,value) or value)
+                context(manipulator and applymanipulation(manipulator,value) or value)
                 return
             end
             local details = dataset.details[tag]
@@ -708,7 +581,7 @@ function commands.btxflush(name,tag,field)
                             value = value .. converters.characters(suffix)
                         end
                     end
-                    context(manipulator and manipulated(manipulator,value) or value)
+                    context(manipulator and applymanipulation(manipulator,value) or value)
                     return
                 end
             end
@@ -726,7 +599,7 @@ function commands.btxdetail(name,tag,field)
     if dataset then
         local details = dataset.details[tag]
         if details then
-            local manipulator, field = checked(field)
+            local manipulator, field = splitmanipulation(field)
             local value = details[field]
             if type(value) == "string" then
                 local suffixes = dataset.suffixes[tag]
@@ -736,7 +609,7 @@ function commands.btxdetail(name,tag,field)
                         value = value .. converters.characters(suffix)
                     end
                 end
-                context(manipulator and manipulated(manipulator,value) or value)
+                context(manipulator and applymanipulation(manipulator,value) or value)
             else
                 report("unknown detail %a of tag %a in dataset %a",field,tag,name)
             end
@@ -753,7 +626,7 @@ function commands.btxfield(name,tag,field)
     if dataset then
         local fields = dataset.luadata[tag]
         if fields then
-            local manipulator, field = checked(field)
+            local manipulator, field = splitmanipulation(field)
             local value = fields[field]
             if type(value) == "string" then
                 local suffixes = dataset.suffixes[tag]
@@ -763,7 +636,7 @@ function commands.btxfield(name,tag,field)
                         value = value .. converters.characters(suffix)
                     end
                 end
-                context(manipulator and manipulated(manipulator,value) or value)
+                context(manipulator and applymanipulation(manipulator,value) or value)
             else
                 report("unknown field %a of tag %a in dataset %a",field,tag,name)
             end

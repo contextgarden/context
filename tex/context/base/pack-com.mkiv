@@ -324,7 +324,10 @@
 \def\pack_combinations_caption_second
   {\ifx\nexttoken\egroup
      % the caption is empty
+   \else\ifx\nexttoken\stopcaption
+     % the caption is empty (new per 2014-05-24)
    \else
+     % todo: \p_pack_combinations_alternative\v!none: no style, strut etc
      \hsize\wd\b_pack_combinations_content
      \ifx\p_align\empty\else\setupalign[\p_align]\fi
      \usecombinationstyleandcolor\c!style\c!color
@@ -332,7 +335,7 @@
      \aftergroup\endstrut
      \aftergroup\egroup
      \begstrut
-   \fi}
+   \fi\fi}
 
 \def\pack_combinations_pickup_package_pair % we need to store the caption row
   {\vbox
