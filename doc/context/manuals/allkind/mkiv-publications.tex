@@ -1,17 +1,7 @@
 % language=uk
 
-
 \setupbtxlistvariant [interaction=start]
 \setupbtxcitevariant [interaction=start]
-
-% \btxfield{manipulator_a->manipulator_b->fieldname}
-
-% {\setupbtxcitevariant[author][authorconversion=normal]        normal        : \cite[author][match(author:tufte)]}\par
-% {\setupbtxcitevariant[author][authorconversion=normalshort]   normalshort   : \cite[author][match(author:tufte)]}\par
-% {\setupbtxcitevariant[author][authorconversion=inverted]      inverted      : \cite[author][match(author:tufte)]}\par
-% {\setupbtxcitevariant[author][authorconversion=invertedshort] invertedshort : \cite[author][match(author:tufte)]}\par
-
-% engine=luajittex
 
 % criterium: all + sorttype=cite     => citex before rest
 % criterium: all + sorttype=database => database order
@@ -112,11 +102,11 @@
 
 \stopMPpage
 
-
 \startfrontmatter
 
 \starttitle[title=Contents]
-    \placelist[chapter,section][color=black]
+    \setuplist[chapter][before=,after]
+    \placelist[chapter][color=black]
 \stoptitle
 
 \startchapter[title=Introduction]
@@ -715,6 +705,21 @@ but if you want to control it yourself you say something:
 \stoptyping
 
 In most cases the defaults will work out fine.
+
+Normally the references are numbered using one conunter for the whole
+document. If you want each list to have its own number, then you can
+set the \type {continue} parameter:
+
+\starttyping
+\setupbtxrendering[continue=no]
+\stoptyping
+
+In a simlar fashion you can influence if references are included only once
+of in each list:
+
+\starttyping
+\setupbtxrendering[repeat=yes]
+\stoptyping
 
 \stopchapter
 
@@ -1389,6 +1394,38 @@ We get three entries: \quotation {\inlinebuffer}.
 % To be checked: are indeed three entries found?
 
 % Match : \cite [match(author:cleveland and year:1993)]      \par
+
+\stopchapter
+
+\startchapter[title=Authors]
+
+The most complicated part of the rendering is authors. The way names are made up
+is quite different and depends on culture, history, country and personal taste.
+For instance, in the Netherlands you seldom see junior or senior being used, but
+in the Unites States this is quite common. Then there is the matter of several
+authors cooperating.
+
+\starttexdefinition TestAuthor#1
+    \starttabulate[|lT|p|]
+        \HL
+        \NC \ttx \rlap {\string\citation[alternative=author,authorconversion=...][#1]} \NC \NC \NR
+        \HL
+        \NC name          \NC \citation[alternative=author,authorconversion=name]         [#1] \NC \NR
+        \NC normal        \NC \citation[alternative=author,authorconversion=normal]       [#1] \NC \NR
+        \NC normalshort   \NC \citation[alternative=author,authorconversion=normalshort]  [#1] \NC \NR
+        \NC inverted      \NC \citation[alternative=author,authorconversion=inverted]     [#1] \NC \NR
+        \NC invertedshort \NC \citation[alternative=author,authorconversion=invertedshort][#1] \NC \NR
+        \HL
+    \stoptabulate
+\stoptexdefinition
+
+Herw we give some examples of rendering. The authornames are taken from the
+database, analyzed, split and depending on the demand, reconstructed.
+
+\TestAuthor{example::demo-001}
+\TestAuthor{example::demo-003}
+\TestAuthor{example::demo-003,demo-004}
+\TestAuthor{example::demo-006}
 
 \stopchapter
 

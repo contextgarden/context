@@ -321,8 +321,6 @@ function authors.normalshort(author,settings)
     return concat(result)
 end
 
--- vons surnames juniors, firstnames
-
 -- [vons] [vonsep] [surnames] [surnamejuniorsep] [juniors] [surnamefirstnamesep] [firstnames] (von Hoekwater jr, Taco)
 
 function authors.inverted(author,settings)
@@ -373,7 +371,24 @@ function authors.invertedshort(author,settings)
     return concat(result)
 end
 
-authors.short = authors.normalshort
+-- [vons] [vonsep] [surnames]
+
+function authors.name(author,settings)
+    local vons, surnames = author.vons, author.surnames
+    local result, settings = { }, settings or defaultsettings
+    if vons and #vons > 0 then
+        result[#result+1] = concat(vons," ")
+        result[#result+1] = settings.vonsep or defaultsettings.vonsep
+    end
+    if surnames and #surnames > 0 then
+        result[#result+1] = concat(surnames," ")
+        if juniors and #juniors > 0 then
+            result[#result+1] = settings.surnamejuniorsep or defaultsettings.surnamejuniorsep
+            result[#result+1] = concat(juniors," ")
+        end
+    end
+    return concat(result)
+end
 
 local lastconcatsize = 1
 

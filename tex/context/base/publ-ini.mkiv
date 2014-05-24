@@ -478,7 +478,7 @@
 \def\publ_place_list_entry_register
   {\ctxcommand{btxregisterlistentry("\currentbtxdataset","\currentbtxtag")}}
 
-\unexpanded\def\btxhandlelistentry#1% called at the lua end
+\unexpanded\def\btxhandlelistentry#1% called at the lua end / todo: pass check state
   {\begingroup
    \edef\currentbtxtag{#1}%
    \ifconditional\c_publ_place_all
@@ -583,6 +583,7 @@
         etaldisplay = \number\btxlistvariantparameter\c!etaldisplay,
    })}}
 
+\unexpanded\def\btxflushauthorname         {\btx_flush_author{name}}          % #1
 \unexpanded\def\btxflushauthornormal       {\btx_flush_author{normal}}        % #1
 \unexpanded\def\btxflushauthornormalshort  {\btx_flush_author{normalshort}}   % #1
 \unexpanded\def\btxflushauthorinverted     {\btx_flush_author{inverted}}      % #1
@@ -599,6 +600,7 @@
 % \btxflushauthor{artauthor}
 % \btxflushauthor{editor}
 %
+% \btxflushauthor[name]{author}
 % \btxflushauthor[normal]{author}
 % \btxflushauthor[normalshort]{author}
 % \btxflushauthor[inverted]{author}
@@ -913,10 +915,27 @@
 
 \stopcontextdefinitioncode
 
+%D Special:
+
+\def\publ_check_repeat
+  {\doifelse{\btxrenderingparameter\c!repeat}\v!yes
+     {\setfalse\c_publ_place_check\setfalse\c_publ_place_register}
+     {\settrue \c_publ_place_check\settrue \c_publ_place_register}}
+
+\appendtoks
+    \publ_check_repeat
+\to \everysetupbtxrendering
+
+\appendtoks
+    \globallet\publ_check_repeat\relax
+\to \everystarttext
+
 %D Defaults:
 
 \setupbtxrendering
   [\c!dataset=\v!standard,
+   \c!repeat=\v!no,
+   \c!continue=\v!no,
    \c!method=\v!global,
    \c!setups=btx:rendering:\btxrenderingparameter\c!alternative,
    \c!alternative=apa,
@@ -984,14 +1003,18 @@
 \definebtxcitevariant
    [author:year]
    [authoryear]
-   [\c!left={(},
-    \c!right={)}]
+   [\c!left=,
+    \c!right=]
+
+% \definebtxcitevariant
+%    [author:years]
+%    [authoryears]
+%    [\c!left=,
+%     \c!right=]
 
 \definebtxcitevariant
    [author:years]
-   [authoryears]
-   [\c!left=,
-    \c!right=]
+   [author:year]
 
 \definebtxcitevariant
    [year]
@@ -1092,7 +1115,7 @@
   [author]
 
 \setupbtxcitevariant
-  [\c!authorconversion=\btxlistvariantparameter\c!authorconversion,
+  [\c!authorconversion=name, % \btxlistvariantparameter\c!authorconversion,
    \c!etallimit       =\btxlistvariantparameter\c!etallimit,
    \c!etaldisplay     =\btxlistvariantparameter\c!etaldisplay]
 

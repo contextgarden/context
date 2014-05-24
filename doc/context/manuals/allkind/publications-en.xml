@@ -99,7 +99,11 @@
                 </cd:parameter>
                 <cd:parameter name="continue">
                     <cd:constant type="yes"/>
-                    <cd:constant type="no"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="repeat">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
@@ -190,6 +194,7 @@
                     <cd:constant type="month:mnem"/>
                 </cd:parameter>
                 <cd:parameter name="authorconversion">
+                    <cd:constant type="name"/>
                     <cd:constant type="normal"/>
                     <cd:constant type="inverted"/>
                     <cd:constant type="normalshort"/>
@@ -256,6 +261,16 @@
                 </cd:parameter>
                 <cd:parameter name="left">
                     <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="monthconversion">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="authorconversion">
+                    <cd:constant type="name"/>
+                    <cd:constant type="normal"/>
+                    <cd:constant type="inverted"/>
+                    <cd:constant type="normalshort"/>
+                    <cd:constant type="invertedshort"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>

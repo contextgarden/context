@@ -65,8 +65,17 @@ local sortcomparer   = sorters.comparers.basic -- (a,b)
 local sortstripper   = sorters.strip
 local sortsplitter   = sorters.splitters.utf
 
-local splitmanipulation = typesetters.manipulators.splitspecification
-local applymanipulation = typesetters.manipulators.applyspecification
+local manipulators       = typesetters.manipulators
+local splitmanipulation  = manipulators.splitspecification
+local applymanipulation  = manipulators.applyspecification
+local manipulatormethods = manipulators.methods
+
+-- this might move elsewhere
+
+manipulatormethods.Word  = converters.Word
+manipulatormethods.WORD  = converters.WORD
+manipulatormethods.Words = converters.Words
+manipulatormethods.WORDS = converters.WORDS
 
 local context                     = context
 
@@ -946,10 +955,12 @@ function lists.flushentries(dataset,sortvariant)
     if type(sort) == "function" then
         list = sort(dataset,rendering,list) or list
     end
+    local luadata = datasets[dataset].luadata
+ -- local details = datasets[dataset].details
     for i=1,#list do
      -- we can pass i here too ... more efficient to avoid the setvalue
         local tag = list[i][1]
-        local entry = datasets[dataset].luadata[tag]
+        local entry = luadata[tag]
         if entry then
             ctx_setvalue("currentbtxindex",i) -- todo: helper
             local combined = entry.combined
@@ -958,7 +969,7 @@ function lists.flushentries(dataset,sortvariant)
             else
                 ctx_setvalue("currentbtxcombis","")
             end
-            ctx_btxhandlelistentry(tag) -- pas i instead
+            ctx_btxhandlelistentry(tag) -- pass i instead and also pass 'placed'
         end
      end
 end
@@ -991,67 +1002,10 @@ function lists.doifalreadyplaced(dataset,tag)
     commands.doifelse(renderings[dataset].used[tag])
 end
 
--- we ask for <n>:tag but when we can't find it we go back
--- to look for previous definitions, and when not found again
--- we look forward
-
 local function compare(a,b)
     local aa, bb = a and a[3], b and b[3]
     return aa and bb and aa < bb
 end
-
--- rendering ?
-
--- todo: nicer refs
-
--- local f_citereference = formatters["btx:%s:%s"]       -- dataset, instance (block), tag, order
--- local f_listreference = formatters["btx:%s:%s:%s:%s"] -- dataset, instance (block), tag, order
---
--- -- local done = { }
--- local last = 0
---
--- function commands.btxcitereference(internal)
---     last = last + 1
---     local ref = f_citereference(internal,last) -- we just need a unique key
--- --     local don = done[ref]
--- --     if don == nil then
---         if trace_references then
---             report_reference("cite: %s",ref)
---         end
--- --         done[ref] = true
---         ctx_btxsetcitereference(ref,internal)
--- --     elseif don then
--- --         report_reference("duplicate cite: %s, skipped",ref)
--- --         done[ref] = false
--- --  -- else
--- --         -- no more messages
--- --     end
--- end
---
--- -- we just need a unique key, so we could also use btx:<number> but this
--- -- way we have a bit of a check for duplicates
---
--- -- local done = { }
--- local last = 0
---
--- function commands.btxlistreference(dataset,block,tag,data)
---     last = last + 1
---     local ref = f_listreference(dataset,block,tag,last)
--- --     local don = done[ref]
--- --     if don == nil then
---         if trace_references then
---             report_reference("list: %s",ref)
---         end
--- --         done[ref] = true
---         ctx_btxsetlistreference(dataset,tag,ref,data)
--- --     elseif don then
--- --         report_reference("duplicate link: %s, skipped",ref)
--- --         done[ref] = false
--- --  -- else
--- --         -- no more messages
--- --     end
--- end
-
 
 local f_citereference = formatters["btx:cite:%s"]
 local f_listreference = formatters["btx:list:%s"]
