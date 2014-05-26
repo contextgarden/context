@@ -902,13 +902,16 @@ local textlists = { -- taken from sort-lan.lua
         "U", "V", "W", "X", "Y", "Z",
     },
     fr = {
-        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
-        "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
-        "u", "v", "w", "x", "y", "z",
+        "a", "æ", "b", "c", "ç", "d", "e", "è", "é", "ê",
+        "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
+        "p", "q", "r", "s", "t", "u", "v", "w", "x", "y",
+        "z",
 
-        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-        "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-        "U", "V", "W", "X", "Y", "Z",
+        "A", "Æ", "B", "C", "Ç", "D", "E", "È", "É", "Ê",
+        "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",
+        "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y",
+        "Z",
+
     },
     de = {
         "a", "ä", "b", "c", "d", "e", "f", "g", "h", "i",
@@ -1169,12 +1172,12 @@ local textlists = { -- taken from sort-lan.lua
         "T", "U", "Ú", "Ü", "V", "W", "X", "Y", "Z",
     },
     lt = { -- lithuanian
-        "a", "ą", "b", "c", ch,  "č", "d", "e", "ę", "ė",
+        "a", "ą", "b", "c", "ch",  "č", "d", "e", "ę", "ė",
         "f", "g", "h", "i", "į", "y", "j", "k", "l", "m",
         "n", "o", "p", "r", "s", "š", "t", "u", "ų", "ū",
         "v", "z", "ž",
 
-        "A", "Ą", "B", "C", CH,  "Č", "D", "E", "Ę", "Ė",
+        "A", "Ą", "B", "C", "CH",  "Č", "D", "E", "Ę", "Ė",
         "F", "G", "H", "I", "Į", "Y", "J", "K", "L", "M",
         "N", "O", "P", "R", "S", "Š", "T", "U", "Ų", "Ū",
         "V", "Z", "Ž",
@@ -1389,7 +1392,7 @@ end
 
 function OnOpen(filename)
  -- print("opening: " .. filename .. " (size: " .. editor.TextLength .. ")")
-    editor:Colourise(1,editor.TextLength)
+    editor:Colourise(0,editor.TextLength)
 end
 
 -- output.LexerLanguage = ""

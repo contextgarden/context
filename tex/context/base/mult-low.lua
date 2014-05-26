@@ -121,7 +121,7 @@ return {
         --
         "lefttorightmark", "righttoleftmark",
         --
-        "breakablethinspace", "nobreakspace", "narrownobreakspace", "zerowidthnobreakspace",
+        "breakablethinspace", "nobreakspace", "nonbreakablespace", "narrownobreakspace", "zerowidthnobreakspace",
         "ideographicspace", "ideographichalffillspace",
         "twoperemspace", "threeperemspace", "fourperemspace", "fiveperemspace", "sixperemspace",
         "figurespace", "punctuationspace", "hairspace",
@@ -140,6 +140,7 @@ return {
         "starttexcode", "stoptexcode",
         "startcontextcode", "stopcontextcode",
         "startcontextdefinitioncode", "stopcontextdefinitioncode",
+        "texdefinition",
         --
         "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup",
         "doifelsecommandhandler","doifnotcommandhandler","doifcommandhandler",
@@ -239,7 +240,7 @@ return {
         --
         "removetoks", "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
-        "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace",
+        "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace", "nbsp",
         "obeyspaces", "obeylines", "obeyedspace", "obeyedline",
         "normalspace",
         --

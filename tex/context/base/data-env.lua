@@ -120,10 +120,12 @@ local relations = allocate { -- todo: handlers also here
         },
         bib = {
             names    = { 'bib' },
+            variable = 'BIBINPUTS',
             suffixes = { 'bib' },
         },
         bst = {
             names    = { 'bst' },
+            variable = 'BSTINPUTS',
             suffixes = { 'bst' },
         },
         fontconfig = {

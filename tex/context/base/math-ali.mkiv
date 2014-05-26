@@ -605,7 +605,7 @@
   {\iffirstargument
      \setupcurrentmathmatrix[#1]%
    \fi
-   \emptyhbox
+ % \emptyhbox % noted at 25-05-2014: what was that one doing here? it messed up spacing
    \math_matrix_align_method_analyze
    \mathmatrixleft
    \mathmatrixbox\bgroup

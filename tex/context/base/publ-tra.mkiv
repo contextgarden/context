@@ -21,15 +21,43 @@
 \unprotect
 
 \unexpanded\def\showbtxdatasetfields
-  {\dosingleempty\publ_dataset_show_fields}
+  {\dosingleempty\publ_show_dataset_fields}
 
-\def\publ_dataset_show_fields[#1]%
+\def\publ_show_dataset_fields[#1]%
   {\ctxcommand{showbtxdatasetfields("\iffirstargument#1\else\currentbtxdataset\fi")}}
 
 \unexpanded\def\showbtxdatasetcompleteness
-  {\dosingleempty\publ_dataset_show_completeness}
+  {\dosingleempty\publ_show_dataset_completeness}
 
-\def\publ_dataset_show_completeness[#1]%
+\def\publ_show_dataset_completeness[#1]%
   {\ctxcommand{showbtxdatasetcompleteness("\iffirstargument#1\else\currentbtxdataset\fi")}}
 
-\protect \endinput
+\unexpanded\def\showbtxfields
+  {\dosingleempty\publ_show_fields}
+
+\def\publ_show_fields[#1]%
+  {\begingroup
+   \getdummyparameters[#1]%
+   \ctxcommand{showbtxfields{ rotation = "\dummyparameter\c!rotation" }}%
+   \endgroup}
+
+\unexpanded\def\btxaddfields
+  {\dodoubleempty\publ_add_fields}
+
+\def\publ_add_fields[#1][#2]%
+  {\ifsecondargument
+     \ctxcommand{btxaddfield("#1","#2")}%
+   \fi}
+
+\protect
+
+\continueifinputfile{publ-tra.mkiv}
+
+\starttext
+
+    \btxaddfields[one,two][extra one, extra two]
+
+    \showbtxfields[rotation=85] \page
+    \showbtxfields[rotation=90] \page
+
+\stoptext

@@ -106,8 +106,8 @@ return {
 
             -- Not really used by MkIV so they might go away.
 
-            BIBINPUTS       = ".;$TEXMF/bibtex/bib//",
-            BSTINPUTS       = ".;$TEXMF/bibtex/bst//",
+            BIBINPUTS       = ".;$TEXMF/bibtex/bib//;$TEXMF/tex/context//",
+            BSTINPUTS       = ".;$TEXMF/bibtex/bst//;$TEXMF/tex/context//",
 
             -- Experimental
 

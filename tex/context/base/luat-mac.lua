@@ -92,7 +92,7 @@ local nolong         = 1 - longleft - longright
 local utf8character  = P(1) * R("\128\191")^1 -- unchecked but fast
 
 local name           = (R("AZ","az") + utf8character)^1
-local csname         = (R("AZ","az") + S("@?!_") + utf8character)^1
+local csname         = (R("AZ","az") + S("@?!_:-*") + utf8character)^1
 local longname       = (longleft/"") * (nolong^1) * (longright/"")
 local variable       = P("#") * Cs(name + longname)
 local escapedname    = escape * csname

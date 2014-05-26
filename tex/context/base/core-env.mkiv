@@ -647,6 +647,36 @@
      \expandafter\firstofoneargument
    \fi}
 
+%D A few more (we could use a public test variable so that we only need
+%D to expand once, assuming expandable variables):
+
+\letvalue{\??variables:}\empty
+
+\unexpanded\def\doifelseemptyvariable#1#2%
+  {\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\firstoffourarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\unexpanded\def\doifemptyvariable#1#2%
+  {\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\unexpanded\def\doifnotemptyvariable#1#2%
+  {\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+
 \def\getvariabledefault#1#2% #3% can be command, so no ifcsname here
   {\executeifdefined{\??variables#1:#2}}% {#3}
 

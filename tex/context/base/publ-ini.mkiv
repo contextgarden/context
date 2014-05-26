@@ -51,11 +51,13 @@
 
 \startcontextdefinitioncode
 
-\def\s!btx    {btx}
-\def\s!cite   {cite}
-\def\s!list   {list}
-\def\v!btxcite{btxcite}
-\def\v!btxlist{btxlist}
+\def\s!btx     {btx}
+\def\s!cite    {cite}
+\def\s!list    {list}
+\def\v!btxcite {btxcite}
+\def\v!btxlist {btxlist}
+
+\definelabelclass[btxlabel][2]
 
 % a dedicated construction mechanism
 
@@ -289,13 +291,17 @@
 
 %D Rendering.
 
-\unexpanded\def\btxspace   {\removeunwantedspaces\space}
-\unexpanded\def\btxperiod  {\removeunwantedspaces.\space}
-\unexpanded\def\btxcomma   {\removeunwantedspaces,\space}
-\unexpanded\def\btxlparent {\removeunwantedspaces\space(}
-\unexpanded\def\btxrparent {\removeunwantedspaces)\space}
-\unexpanded\def\btxlbracket{\removeunwantedspaces\space[}
-\unexpanded\def\btxrbracket{\removeunwantedspaces]\space}
+\unexpanded\def\btxspace       {\removeunwantedspaces\space}
+\unexpanded\def\btxnobreakspace{\removeunwantedspaces\nobreakspace} % these two are the
+\unexpanded\def\btxnbsp        {\removeunwantedspaces\nbsp}         % same anyway
+\unexpanded\def\btxperiod      {\removeunwantedspaces.\space}
+\unexpanded\def\btxcomma       {\removeunwantedspaces,\space}
+\unexpanded\def\btxcolon       {\removeunwantedspaces:\space}
+\unexpanded\def\btxsemicolon   {\removeunwantedspaces;\space}
+\unexpanded\def\btxlparent     {\removeunwantedspaces\space(}
+\unexpanded\def\btxrparent     {\removeunwantedspaces)\space}
+\unexpanded\def\btxlbracket    {\removeunwantedspaces\space[}
+\unexpanded\def\btxrbracket    {\removeunwantedspaces]\space}
 
 %D Rendering lists and citations.
 
@@ -890,7 +896,8 @@
 
 %D List helpers:
 
-\def\currentbtxindex{0}
+\let\currentbtxindex   \!!zerocount
+\let\currentbtxcategory\empty
 
 \unexpanded\def\btxlistvariant#1% was \currentbtxindex
   {\begingroup
@@ -956,11 +963,11 @@
    \c!setups=btx:cite:\btxcitevariantparameter\c!alternative,
    \c!alternative=num,
    \c!authorconversion=\v!normal,
-   \c!andtext={ and },
-   \c!otherstext={ et al.},
+   \c!andtext={ \btxlabeltext{and} },
+   \c!otherstext={ \btxlabeltext{others}},
    \c!pubsep={, },
-   \c!lastpubsep={ and },
-   \c!finalpubsep={ and },
+   \c!lastpubsep={ \btxlabeltext{and} },
+   \c!finalpubsep={ \btxlabeltext{and} },
    \c!compress=\v!no,
    \c!inbetween={ },
    \c!range=\endash,
@@ -1087,8 +1094,8 @@
 
 \setupbtxlistvariant
   [\c!namesep={, },
-   \c!lastnamesep={ and },
-   \c!finalnamesep={ and },
+   \c!lastnamesep={ \btxlabeltext{and} },
+   \c!finalnamesep={ \btxlabeltext{and} },
    \c!firstnamesep={ },
    \c!juniorsep={ },
    \c!vonsep={ },
@@ -1098,7 +1105,7 @@
    \c!surnamefirstnamesep={, },
    \c!etallimit=5,
    \c!etaldisplay=5,
-   \c!etaltext={ et al.},
+   \c!etaltext={ \btxlabeltext{others}},
    \c!monthconversion=\v!number,
    \c!authorconversion=\v!normal]
 
@@ -1127,3 +1134,68 @@
 \loadbtxdefinitionfile[definitions]
 
 \protect
+
+% define in lang-txt.lua:
+%
+% \setupbtxlabeltext
+%   [en]
+%   [mastersthesis={Master's thesis},
+%    phdthesis={PhD thesis},
+%    technicalreport={Technical report},
+%    editor=editor,
+%    editors=editors,
+%    edition=edition,
+%    volume=volume,
+%    Volume=Volume,
+%    number=number,
+%    Number=Number,
+%    in=in,
+%    of=of,
+%    In=In,
+%    p=p,
+%    pp=pp,
+%    pages=pages,
+%    and=and,
+%    others={et al.}]
+%
+% \setupbtxlabeltext
+%   [fr]
+%   [mastersthesis={Thèse de master (DEA, DESS, master)},
+%    phdthesis={Thèse de doctorat},
+%    technicalreport={Rapport technique},
+%    editor=éditeur,
+%    editors=éditeurs,
+%    edition=édition,
+%    volume=volume,
+%    Volume=Volume,
+%    number=numéro,
+%    Number=Numéro,
+%    in=dans,
+%    of=de,
+%    In=Dans,
+%    p=p,
+%    pp=pp,
+%    pages=pages,
+%    and=et,
+%    others={et al.}]
+%
+% \setupbtxlabeltext
+%   [de]
+%   [mastersthesis={Masterarbeit},
+%    phdthesis={Dissertation},
+%    technicalreport={Technischer Bericht},
+%    editor=Herausgeber,
+%    editors=Herausgeber,
+%    edition=Auflage,
+%    volume=Band,
+%    Volume=Band,
+%    number=Numer,
+%    Number=Numer,
+%    in=in,
+%    of=von,
+%    In=In,
+%    p=S,
+%    pp=S,
+%    pages=Seiten,
+%    and=und,
+%    others={et al.}]

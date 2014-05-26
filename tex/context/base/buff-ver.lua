@@ -43,6 +43,7 @@ local v_auto               = variables.auto
 local v_yes                = variables.yes
 local v_last               = variables.last
 local v_all                = variables.all
+local v_absolute           = variables.absolute
 
 -- beware, all macros have an argument:
 
@@ -742,8 +743,9 @@ end
 --
 -- needed in e.g. tabulate (manuals)
 
-local compact_all  = Cs((P("\\") * ((1-S("\\ "))^1) * (P(" ")/"") * (P(-1) + S("[{")) + 1)^0)
-local compact_last = Cs((P(" ")^1 * P(-1)/"" + 1)^0)
+local compact_all      = Cs((P("\\") * ((1-S("\\ "))^1) * (P(" ")/"") * (P(-1) + S("[{")) + 1)^0)
+local compact_absolute = Cs((P("\\") * ((1-S("\\ [{"))^1) * (P(" ")/"" * (S("[{\\"))) + 1) ^0)
+local compact_last     = Cs((P(" ")^1 * P(-1)/"" + 1)^0)
 
 function commands.typestring(settings)
     local content = settings.data
@@ -751,6 +753,8 @@ function commands.typestring(settings)
         local compact = settings.compact
         if compact == v_all then
             content = lpegmatch(compact_all,content)
+        elseif compact == v_absolute then
+            content = lpegmatch(compact_absolute,content)
         elseif compact == v_last then
             content = lpegmatch(compact_last,content)
         end

@@ -3,6 +3,29 @@
 \setupbtxlistvariant [interaction=start]
 \setupbtxcitevariant [interaction=start]
 
+% publisher
+% organization
+% school
+% institution
+% school
+% institution
+% publisher
+% organization
+%
+% p
+% pp
+% pages
+% edition
+% Number (... in)
+% number (... in)
+% Volume (... of)
+% volume (... of)
+% in
+% In
+% Master's thesis
+% PhD thesis
+% Technical Report
+
 % criterium: all + sorttype=cite     => citex before rest
 % criterium: all + sorttype=database => database order
 % criterium: used
@@ -1570,6 +1593,16 @@ operating systems performed equally well: 32 bit versions worked fine, but 64 bi
 while \MACOSX\ and \WINDOWS\ performed fine. In practice you will never run into
 this, unless you produce massive amounts of bibliographic entries. \LUAJIT\ has
 some benefits but also some drawbacks.
+
+\stopchapter
+
+\startchapter[title=APA files]
+
+Here are the possible fields per category for APA:
+
+\definebtxdataset[apadef]
+\usebtxdataset[apadef][publ-imp-apa.bib]
+\showbtxdatasetcompleteness[apadef]
 
 \stopchapter
 

@@ -2630,4 +2630,129 @@ data.labels={
    },
   },
  },
+ btx = {
+  ["mastersthesis"] = {
+   labels = {
+    en = "Master's thesis",
+    fr = "Thèse de master (DEA, DESS, master)",
+    de = "Masterarbeit",
+   },
+  },
+  ["phdthesis"] = {
+   labels = {
+    en = "PhD thesis",
+    fr = "Thèse de doctorat",
+    de = "Dissertation",
+   },
+  },
+  ["technicalreport"] = {
+   labels = {
+    en = "Technical report",
+    fr = "Rapport technique",
+    de = "Technischer Bericht",
+   },
+  },
+  --
+  ["editor"] = {
+   labels = {
+    en = "editor",
+    fr = "éditeur",
+    de = "Herausgeber",
+   },
+  },
+  ["editors"] = {
+   labels = {
+    en = "editors",
+    fr = "éditeurs",
+    de = "Herausgeber",
+   },
+  },
+  ["edition"] = {
+   labels = {
+    en = "edition",
+    fr = "édition",
+    de = "Auflage",
+   },
+  },
+  --
+  ["volume"] = {
+   labels = {
+    en = "volume",
+    de = "Band",
+   },
+  },
+  ["Volume"] = {
+   labels = {
+    en = "Volume",
+    de = "Band",
+   },
+  },
+  ["number"] = {
+   labels = {
+    en = "number",
+    fr = "numéro",
+    de = "Numer",
+   },
+  },
+  ["Number"] = {
+   labels = {
+    en = "Number",
+    fr = "Numéro",
+    de = "Numer",
+   },
+  },
+  ["in"] = {
+   labels = {
+    en = "in",
+    fr = "dans",
+    de = "in",
+   },
+  },
+  ["of"] = {
+   labels = {
+    en = "of",
+    fr = "de",
+    de = "von",
+   },
+  },
+  --
+  ["In"] = {
+   labels = {
+    en = "In",
+    fr = "Dans",
+    de = "In",
+   },
+  },
+  --
+  ["p"] = {
+   labels = {
+    en = "p",
+    de = "S",
+   },
+  },
+  ["pp"] = {
+   labels = {
+    en = "pp",
+    de = "S",
+   },
+  },
+  ["pages"] = {
+   labels = {
+    en = "pages",
+    de = "Seiten",
+   },
+  },
+  --
+  ["and"] = {
+   labels = {
+    en = "and",
+    de = "und",
+   },
+  },
+  ["others"] = {
+   labels = {
+    en = "et al.",
+   },
+  },
+ }
 }

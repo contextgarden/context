@@ -1385,7 +1385,7 @@
    \fi}
 
 \unexpanded\def\pack_framed_finish
-  {\pack_framed_stop_orientation % hm, wrong place ! should rotate the result (after reshape)
+  {%\pack_framed_stop_orientation % hm, wrong place ! should rotate the result (after reshape) .. moved down
    \pack_framed_locator_before\p_framed_location
    \ifconditional\c_framed_has_format
      \ifx\p_framed_autowidth\v!force
@@ -1417,6 +1417,7 @@
    \ifx\p_framed_empty\v!yes
      \pack_framed_fake_box
    \fi
+   \pack_framed_stop_orientation % moved here at 2014-05-25
    \iftrialtypesetting \else
      \edef\p_framed_region{\framedparameter\c!region}%
      \ifx\p_framed_region\v!yes % maybe later named

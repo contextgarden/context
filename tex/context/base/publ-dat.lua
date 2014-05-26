@@ -484,6 +484,9 @@ function publications.load(dataset,filename,kind)
             filetype = file.suffix(filename)
         end
         local fullname = resolvers.findfile(filename,"bib")
+        if fullname == "" then
+            fullname = resolvers.findfile(filename) -- let's not be too picky
+        end
         if dataset.loaded[fullname] then -- will become better
             -- skip
         elseif fullname == "" then

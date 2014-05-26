@@ -349,6 +349,18 @@
    \egroup
    \gobbleoneargument} % grab last >
 
+%D The \type {compact} option can come in handy in the case of inline argument passing
+%D
+%D \starttyping
+%D \definetype[TeXcodeA][option=TEX]
+%D \definetype[TeXcodeB][option=TEX,compact=all]
+%D \definetype[TeXcodeC][option=TEX,compact=absolute]
+%D
+%D \def\argA#1{\TeXcodeA{{#1}}}
+%D \def\argB#1{\TeXcodeB{{#1}}}
+%D \def\argC#1{\TeXcodeC{{#1}}}
+%D \stoptyping
+
 %D \macros
 %D   {obeyhyphens,obeybreakpoints}
 %D

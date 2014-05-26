@@ -935,6 +935,11 @@ specialmethods[1] = function(start,penalty)
         end
         current = getprev(current)
     end
+    -- none found, so no reson to be special
+    if trace_specials then
+        report_specials("  context penalty, discarding")
+    end
+    return special_penalty_xxx
 end
 
 -- specialmethods[2] : always put something before and use that as to-be-changed
@@ -1040,6 +1045,11 @@ setfield(head,"prev",nil) -- till we have 0.79 **
     end
     return remove_node(head, current, true)
 end
+
+-- This will be replaces after 0.79 when we have a more robust look-back and
+-- can look at the bigger picture.
+
+-- todo: look back and when a special is there before a list is seen penaltym keep ut
 
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then

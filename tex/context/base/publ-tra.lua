@@ -6,16 +6,22 @@ if not modules then modules = { } end modules ['publ-tra'] = {
     license   = "see context related readme files"
 }
 
-local sortedhash = table.sortedhash
+local next, type = next, type
+
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
+local settings_to_array = utilities.parsers.settings_to_array
+local formatters = string.formatters
 
 local tracers        = { }
 publications.tracers = tracers
 local datasets       = publications.datasets
 
 local context = context
-local NC, NR = context.NC, context.NR
-local bold = context.bold
-local darkgreen, darkred, darkblue = context.darkgreen, context.darkred, context.darkblue
+
+local ctx_NC, ctx_NR, ctx_HL, ctx_FL, ctx_ML, ctx_LL = context.NC, context.NR, context.HL, context.FL, context.ML, context.LL
+local ctx_bold, ctx_rotate = context.bold, context.rotate
+local ctx_darkgreen, ctx_darkred, ctx_darkblue = context.darkgreen, context.darkred, context.darkblue
+local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
 
 -- TEXT hyperlink author number date
 
@@ -151,28 +157,30 @@ publications.tracers.fields       = fields
 publications.tracers.categories   = categories
 publications.tracers.citevariants = citevariants
 publications.tracers.listvariants = listvariants
+
 -- -- --
 
 function tracers.showdatasetfields(dataset)
     local luadata = datasets[dataset].luadata
     if next(luadata) then
-        context.starttabulate { "|lT|lT|pT|" }
-            NC() bold("tag")
-            NC() bold("category")
-            NC() bold("fields")
-            NC() NR() context.FL() -- HL()
+        ctx_starttabulate { "|lT|lT|pT|" }
+            ctx_NC() bold("tag")
+            ctx_NC() bold("category")
+            ctx_NC() bold("fields")
+            ctx_NC() ctx_NR()
+            ctx_FL()
             for k, v in sortedhash(luadata) do
-                NC() context(k)
-                NC() context(v.category)
-                NC()
+                ctx_NC() context(k)
+                ctx_NC() context(v.category)
+                ctx_NC()
                 for k, v in sortedhash(v) do
                     if k ~= "details" and k ~= "tag" and k ~= "category" then
                         context("%s ",k)
                     end
                 end
-                NC() NR()
+                ctx_NC() ctx_NR()
             end
-        context.stoptabulate()
+        ctx_stoptabulate()
     end
 end
 
@@ -183,35 +191,35 @@ function tracers.showdatasetcompleteness(dataset)
     local preamble = { "|lBTw(10em)|p|" }
 
     local function required(key,value,indirect)
-        NC() darkgreen(key)
-        NC() if indirect then
-                darkblue(value)
+        ctx_NC() ctx_darkgreen(key)
+        ctx_NC() if indirect then
+                ctx_darkblue(value)
              elseif value then
                 context(value)
              else
-                darkred("\\tttf [missing]")
+                ctx_darkred("\\tttf [missing]")
              end
-        NC() NR()
+        ctx_NC() ctx_NR()
     end
 
     local function optional(key,value,indirect)
-        NC() context(key)
-        NC() if indirect then
-                darkblue(value)
+        ctx_NC() context(key)
+        ctx_NC() if indirect then
+                ctx_darkblue(value)
              elseif value then
                 context(value)
              end
-        NC() NR()
+        ctx_NC() ctx_NR()
     end
 
     local function identified(tag,crossref)
-        NC() context("tag")
-        NC() if crossref then
+        ctx_NC() context("tag")
+        ctx_NC() if crossref then
                 context("\\tttf %s\\hfill\\darkblue => %s",tag,crossref)
              else
                 context("\\tttf %s",tag)
              end
-        NC() NR()
+        ctx_NC() ctx_NR()
     end
 
     local luadata = datasets[dataset].luadata
@@ -221,9 +229,9 @@ function tracers.showdatasetcompleteness(dataset)
             local category = entry.category
             local fields = categories[category]
             if fields then
-                context.starttabulate(preamble)
+                ctx_starttabulate(preamble)
                 identified(tag,entry.crossref)
-                context.HL()
+                ctx_HL()
                 local requiredfields = fields.required
                 local optionalfields = fields.optional
                 for i=1,#requiredfields do
@@ -268,7 +276,7 @@ function tracers.showdatasetcompleteness(dataset)
                         optional(o,entry[o],true)
                     end
                 end
-                context.stoptabulate()
+                ctx_stoptabulate()
             else
                 -- error
             end
@@ -277,5 +285,92 @@ function tracers.showdatasetcompleteness(dataset)
 
 end
 
+function tracers.showfields(settings)
+    local rotation    = settings.rotation
+    local swapped     = { }
+    local validfields = { }
+    for category, fields in next, categories do
+        local categoryfields = { }
+        for name, list in next, fields do
+            for i=1,#list do
+                local field = list[i]
+                if type(field) == "table" then
+                    field = table.concat(field," + ")
+                end
+                validfields[field] = true
+                if swapped[field] then
+                    swapped[field][category] = true
+                else
+                    swapped[field] = { [category] = true }
+                end
+            end
+        end
+    end
+    local s_categories = sortedkeys(categories)
+    local s_fields     = sortedkeys(validfields)
+    ctx_starttabulate { "|l" .. string.rep("|c",#s_categories) .. "|" }
+    ctx_FL()
+    ctx_NC()
+    if rotation then
+        rotation = { rotation = rotation }
+    end
+    for i=1,#s_categories do
+        ctx_NC()
+        local txt = formatters["\\bf %s"](s_categories[i])
+        if rotation then
+            ctx_rotate(rotation,txt)
+        else
+            context(txt)
+        end
+    end
+    ctx_NC() ctx_NR()
+    ctx_FL()
+    for i=1,#s_fields do
+        local field  = s_fields[i]
+        local fields = swapped[field]
+        ctx_NC()
+        ctx_bold(field)
+        for j=1,#s_categories do
+            ctx_NC()
+            if fields[s_categories[j]] then
+                context("*")
+            end
+        end
+        ctx_NC() ctx_NR()
+    end
+    ctx_LL()
+    ctx_stoptabulate()
+end
+
+function tracers.addfield(f,c)
+    -- no checking now
+    if type(f) == "string" then
+        f = settings_to_array(f)
+        if #f == 1 then
+            f = f[1]
+        end
+    end
+    if type(c) == "string" then
+        c = settings_to_array(c)
+    end
+    for i=1,#c do
+        local ci = c[i]
+        local category = categories[ci]
+        if category then
+            local optional = category.optional
+            if optional then
+                optional[#optional+1] = f
+            else
+                categories[ci] = { optional = { f } }
+            end
+        else
+            categories[ci] = { optional = { f } }
+        end
+    end
+end
+
+
 commands.showbtxdatasetfields       = tracers.showdatasetfields
 commands.showbtxdatasetcompleteness = tracers.showdatasetcompleteness
+commands.showbtxfields              = tracers.showfields
+commands.btxaddfield                = tracers.addfield

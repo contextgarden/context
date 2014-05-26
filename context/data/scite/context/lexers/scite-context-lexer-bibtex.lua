@@ -17,7 +17,7 @@ local patterns         = context.patterns
 local token            = lexer.token
 local exact_match      = lexer.exact_match
 
-local bibtexlexer      = lexer.new("xml","scite-context-lexer-xml")
+local bibtexlexer      = lexer.new("bib","scite-context-lexer-bibtex")
 local whitespace       = bibtexlexer.whitespace
 
     local escape, left, right = P("\\"), P('{'), P('}')
@@ -45,8 +45,11 @@ local spaces       = space^1
 local equal        = P("=")
 
 local keyword      = (R("az","AZ","09") + S("@_:-"))^1
-local s_quoted     = ((escape*single) + spaces^1 + (1-single))^0
-local d_quoted     = ((escape*double) + spaces^1 + (1-double))^0
+----- s_quoted     = ((escape*single) + spaces + (1-single))^0
+----- d_quoted     = ((escape*double) + spaces + (1-double))^0
+local s_quoted     = ((escape*single) + (1-single))^0
+local d_quoted     = ((escape*double) + (1-double))^0
+
 local balanced     = patterns.balanced
 
 local t_spacing    = token(whitespace, space^1)
@@ -118,6 +121,22 @@ local t_rest       = token("default",anything)
 -- large enough .. but we can cheat and use this:
 --
 -- function OnOpen(filename) editor:Colourise(1,editor.TextLength) end -- or is it 0?
+
+-- somehow lexing fails on this more complex lexer when we insert something, there is no
+-- backtracking to whitespace when we have no embedded lexer, so we fake one ... this works
+-- to some extend but not in all cases (e.g. editing inside line fails) .. maybe i need to
+-- patch the dll ... (better not)
+
+local dummylexer = lexer.load("scite-context-lexer-dummy","bib-dum")
+
+local dummystart = token("embedded",P("\001")) -- an unlikely to be used character
+local dummystop  = token("embedded",P("\002")) -- an unlikely to be used character
+
+lexer.embed_lexer(bibtexlexer,dummylexer,dummystart,dummystop)
+
+-- maybe we need to define each functional block as lexer (some 4) so i'll do that when
+-- this issue is persistent ... maybe consider making a local lexer options (not load,
+-- just lexer.new or so) .. or maybe do the reverse, embed the main one in a dummy child
 
 bibtexlexer._rules = {
     { "whitespace",  t_spacing    },

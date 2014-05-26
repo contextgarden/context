@@ -30,19 +30,27 @@ end
 
 labels.split = split
 
-local contextsprint = context.sprint
+local contextsprint      = context.sprint
+
+local f_setlabeltextpair = formatters["\\setlabeltextpair{%s}{%s}{%s}{%s}{%s}"]
+local f_key_key          = formatters["\\v!%s:\\v!%s"]
+local f_key_raw          = formatters["\\v!%s:%s"]
+local f_raw_key          = formatters["%s:\\v!%s"]
+local f_raw_raw          = formatters["%s:%s"]
+local f_key              = formatters["\\v!%s"]
+local f_raw              = formatters["%s"]
 
 local function definelanguagelabels(data,class,tag,rawtag)
     for language, text in next, data.labels do
         if text == "" then
             -- skip
         elseif type(text) == "table" then
-            contextsprint(prtcatcodes,"\\setlabeltextpair{",class,"}{",language,"}{",tag,"}{",text[1],"}{",text[2],"}")
+            contextsprint(prtcatcodes,f_setlabeltextpair(class,language,tag,text[1],text[2]))
             if trace_labels then
                 report_labels("language %a, defining label %a as %a and %a",language,rawtag,text[1],text[2])
             end
         else
-            contextsprint(prtcatcodes,"\\setlabeltextpair{",class,"}{",language,"}{",tag,"}{",text,"}{}")
+            contextsprint(prtcatcodes,f_setlabeltextpair(class,language,tag,text,""))
             if trace_labels then
                 report_labels("language %a, defining label %a as %a",language,rawtag,text)
             end
@@ -62,17 +70,17 @@ function labels.define(class,name,prefixed)
                 if second then
                     if rawget(variables,first) then
                         if rawget(variables,second) then
-                            definelanguagelabels(data,class,formatters["\\v!%s:\\v!%s"](first,second),tag)
+                            definelanguagelabels(data,class,f_key_key(first,second),tag)
                         else
-                            definelanguagelabels(data,class,formatters["\\v!%s:%s"](first,second),tag)
+                            definelanguagelabels(data,class,f_key_raw(first,second),tag)
                         end
                      elseif rawget(variables,second) then
-                        definelanguagelabels(data,class,formatters["%s:\\v!%s"](first,second),tag)
+                        definelanguagelabels(data,class,f_raw_key(first,second),tag)
                     else
-                        definelanguagelabels(data,class,formatters["%s:%s"](first,second),tag)
+                        definelanguagelabels(data,class,f_raw_raw(first,second),tag)
                     end
                 elseif rawget(variables,rawtag) then
-                    definelanguagelabels(data,class,formatters["\\v!%s"](tag),tag)
+                    definelanguagelabels(data,class,f_key(tag),tag)
                 else
                     definelanguagelabels(data,class,tag,tag)
                 end

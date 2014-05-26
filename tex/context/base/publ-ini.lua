@@ -969,6 +969,7 @@ function lists.flushentries(dataset,sortvariant)
             else
                 ctx_setvalue("currentbtxcombis","")
             end
+            ctx_setvalue("currentbtxcategory",entry.category or "unknown")
             ctx_btxhandlelistentry(tag) -- pass i instead and also pass 'placed'
         end
      end
