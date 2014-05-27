@@ -51,11 +51,12 @@
 
 \startcontextdefinitioncode
 
-\def\s!btx     {btx}
-\def\s!cite    {cite}
-\def\s!list    {list}
-\def\v!btxcite {btxcite}
-\def\v!btxlist {btxlist}
+\def\s!btx          {btx}
+\def\s!cite         {cite}
+\def\s!list         {list}
+\def\v!btxcite      {btxcite}
+\def\v!btxlist      {btxlist}
+\def\v!btxrendering {btxrendering}
 
 \definelabelclass[btxlabel][2]
 
@@ -99,13 +100,38 @@
 
 \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
   {\begingroup
+   \xdef\btxcurrentlistinternal{\the\numexpr\locationcount+\plusone)}% \nextinternalreference
+   \directsetup{\v!btxrendering:\v!number:\constructionparameter\c!number}%
+   \endgroup}
+
+\startsetups[\v!btxrendering:\v!number:\v!no]
+    % \btx_reference_checked % needs testing
+\stopsetups
+
+\startsetups[\v!btxrendering:\v!number:\v!yes]
    \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
    \the\everyconstruction
-   \goto
-     {\strut\constructionparameter\c!text\btx_list_reference_inject}%
-%      [\s!btx:list:\the\numexpr\locationcount+\plusone]% \nextinternalreference
-     [internal(\the\numexpr\locationcount+\plusone)]% \nextinternalreference
-   \endgroup}
+   \relax
+   \iflocation
+     \goto
+       {\publ_list_number_normal}%
+       [\s!internal(\btxcurrentlistinternal)]%
+   \else
+     \publ_list_number_normal
+   \fi
+\stopsetups
+
+\unexpanded\def\publ_list_number_normal
+  {\strut
+   \constructionparameter\c!text
+   \btx_list_reference_inject
+   \relax}
+
+\let\btxcurrentlistinternal\relax
+
+% todo: low level builder commands without using the constructor
+
+% construction
 
 \unexpanded\def\strc_constructions_initialize#1% class instance
   {\edef\currentconstruction{#1}%
@@ -167,6 +193,7 @@
   %\s!catcodes=,
   %\c!title=\v!yes,
   %\c!text=,
+  \c!number=\v!yes,
   ]
 
 % here starts the bib stuff
@@ -448,6 +475,7 @@
      \let\currentbtxlist\currentbtxrendering
      \the\everysetupbtxlistplacement
      \forgetall
+     % why not pass this with collect .. todo
      \ctxcommand{btxsetlistmethod("\currentbtxdataset","\btxrenderingparameter\c!method")}%
      \startpacked[\v!blank]%
        % here we just collect items
@@ -484,9 +512,32 @@
 \def\publ_place_list_entry_register
   {\ctxcommand{btxregisterlistentry("\currentbtxdataset","\currentbtxtag")}}
 
-\unexpanded\def\btxhandlelistentry#1% called at the lua end / todo: pass check state
+\unexpanded\def\btxlistreset
+  {\let\currentbtxindex   \!!zerocount
+   \let\currentbtxcombis  \empty
+   \let\currentbtxcategory\empty
+   \let\currentbtxinternal\empty
+   \let\currentbtxlanguage\empty
+   \let\currentbtxtag     \empty}
+
+\unexpanded\def\btxsetindex   {\def\currentbtxindex}
+\unexpanded\def\btxsetcombis  {\def\currentbtxcombis}
+\unexpanded\def\btxsetcategory{\def\currentbtxcategory}
+\unexpanded\def\btxsetinternal{\def\currentbtxinternal}
+%unexpanded\def\btxsetlanguage{\def\currentbtxlanguage}
+\unexpanded\def\btxsettag     {\def\currentbtxtag}
+
+\unexpanded\def\btxsetlanguage#1%
+  {\def\currentbtxlanguage{#1}%
+   \ifx\currentbtxlanguage\currentlanguage \else
+      \setcurrentlanguage\currentmainlanguage\currentbtxlanguage
+   \fi}
+
+\btxlistreset
+
+\unexpanded\def\btxhandlelistentry% called at the lua end / todo: pass check state
   {\begingroup
-   \edef\currentbtxtag{#1}%
+   %edef\currentbtxtag{#1}% set at the Lua end
    \ifconditional\c_publ_place_all
      \publ_place_list_entry
    \else\ifconditional\c_publ_place_check
@@ -650,27 +701,18 @@
     \fi
 \to \everysetupbtxciteplacement
 
-% bib -> btx
+% these will go away or at least need to be checked:
 
-\unexpanded\def\btxgotolink#1[#2]{\doifreferencefoundelse{\bibrefprefix#2}{\goto{#1}[\bibrefprefix#2]}{#1}}
-\unexpanded\def\btxatlink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\at      [\bibrefprefix#1]}{#1}}
-\unexpanded\def\btxinlink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\expanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{#1}}
+% \unexpanded\def\btxgotolink#1[#2]{\doifreferencefoundelse{\bibrefprefix#2}{\goto{#1}[\bibrefprefix#2]}{#1}}
+% \unexpanded\def\btxatlink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\at      [\bibrefprefix#1]}{#1}}
+% \unexpanded\def\btxinlink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\expanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{#1}}
 
-\unexpanded\def\btxdirectlink#1#2{\goto{#2 {\tttf[#1]}}[#1]}
-\unexpanded\def\btxdirectlink#1#2{\goto{#2}[#1]}
+% \unexpanded\def\btxdirectlink#1#2{\goto{#2 {\tttf[#1]}}[#1]}
+% \unexpanded\def\btxdirectlink#1#2{\goto{#2}[#1]}
 
-\let\gotobiblink\btxgotolink
-\let\atbiblink  \btxatlink
-\let\inbiblink  \btxinlink
-
-\unexpanded\def\btxnumberedreference[#1]% \bibtexnumref (replaced by \cite[num])
-  {\dontleavehmode
-   \begingroup
-   \btxcitevariantparameter\v!left
-   \penalty\plustenthousand % todo
-   \ctxcommand{btxresolvelistreference("\currentbtxdataset","#1")}% todo: split dataset from #1, so another call
-   \btxcitevariantparameter\v!right
-   \endgroup}
+% \let\gotobiblink\btxgotolink
+% \let\atbiblink  \btxatlink
+% \let\inbiblink  \btxinlink
 
 \appendtoks
     % for old times sake, for a while at least
@@ -683,6 +725,17 @@
     \let\maybeyear\gobbleoneargument
     \let\noopsort \gobbleoneargument
 \to \everysetupbtxciteplacement
+
+% till here
+
+\unexpanded\def\btxnumberedreference[#1]% \bibtexnumref (replaced by \cite[num])
+  {\dontleavehmode
+   \begingroup
+   \btxcitevariantparameter\v!left
+   \penalty\plustenthousand % todo
+   \ctxcommand{btxresolvelistreference("\currentbtxdataset","#1")}% todo: split dataset from #1, so another call
+   \btxcitevariantparameter\v!right
+   \endgroup}
 
 \appendtoks
    \doifnot{\btxrenderingparameter\c!continue}\v!yes
@@ -861,6 +914,7 @@
   {\let\currentbtxfirst   \empty
    \let\currentbtxsecond  \empty
    \let\currentbtxinternal\empty
+   \let\currentbtxlanguage\empty
    \let\currentbtxtag     \empty
    \setconstant\currentbtxconcat\zerocount}
 
@@ -874,6 +928,7 @@
 \unexpanded\def\btxsetsecond  {\def\currentbtxsecond}
 \unexpanded\def\btxsettag     {\def\currentbtxtag}
 \unexpanded\def\btxsetinternal{\def\currentbtxinternal}
+%unexpanded\def\btxsetlanguage{\def\currentbtxlanguage}
 \unexpanded\def\btxsetconcat#1{\setconstant\currentbtxconcat#1\relax}
 
 \unexpanded\def\btxsetlistreference#1#2% #3#4%
@@ -1134,68 +1189,3 @@
 \loadbtxdefinitionfile[definitions]
 
 \protect
-
-% define in lang-txt.lua:
-%
-% \setupbtxlabeltext
-%   [en]
-%   [mastersthesis={Master's thesis},
-%    phdthesis={PhD thesis},
-%    technicalreport={Technical report},
-%    editor=editor,
-%    editors=editors,
-%    edition=edition,
-%    volume=volume,
-%    Volume=Volume,
-%    number=number,
-%    Number=Number,
-%    in=in,
-%    of=of,
-%    In=In,
-%    p=p,
-%    pp=pp,
-%    pages=pages,
-%    and=and,
-%    others={et al.}]
-%
-% \setupbtxlabeltext
-%   [fr]
-%   [mastersthesis={Thèse de master (DEA, DESS, master)},
-%    phdthesis={Thèse de doctorat},
-%    technicalreport={Rapport technique},
-%    editor=éditeur,
-%    editors=éditeurs,
-%    edition=édition,
-%    volume=volume,
-%    Volume=Volume,
-%    number=numéro,
-%    Number=Numéro,
-%    in=dans,
-%    of=de,
-%    In=Dans,
-%    p=p,
-%    pp=pp,
-%    pages=pages,
-%    and=et,
-%    others={et al.}]
-%
-% \setupbtxlabeltext
-%   [de]
-%   [mastersthesis={Masterarbeit},
-%    phdthesis={Dissertation},
-%    technicalreport={Technischer Bericht},
-%    editor=Herausgeber,
-%    editors=Herausgeber,
-%    edition=Auflage,
-%    volume=Band,
-%    Volume=Band,
-%    number=Numer,
-%    Number=Numer,
-%    in=in,
-%    of=von,
-%    In=In,
-%    p=S,
-%    pp=S,
-%    pages=Seiten,
-%    and=und,
-%    others={et al.}]

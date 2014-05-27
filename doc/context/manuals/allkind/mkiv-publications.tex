@@ -467,6 +467,24 @@ inherited.
 
 \getbuffer
 
+You can see all (currently known) fields with:
+
+\starttyping
+\showbtxfields[rotation=...]
+\stoptyping
+
+The result is shown \in {table} [tab:fields]. Here we also added a few extra fields:
+
+\startbuffer
+\btxaddfields[one,two][extra one, extra two]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startplacefigure[title={\type{\showbtxfields[rotation=90]}},reference=tab:fields]
+    \showbtxfields[rotation=90]
+\stopplacefigure
+
 \stopchapter
 
 \startchapter[title=Renderings]

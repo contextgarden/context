@@ -19,7 +19,7 @@ local datasets       = publications.datasets
 local context = context
 
 local ctx_NC, ctx_NR, ctx_HL, ctx_FL, ctx_ML, ctx_LL = context.NC, context.NR, context.HL, context.FL, context.ML, context.LL
-local ctx_bold, ctx_rotate = context.bold, context.rotate
+local ctx_bold, ctx_rotate, ctx_llap = context.bold, context.rotate, context.llap
 local ctx_darkgreen, ctx_darkred, ctx_darkblue = context.darkgreen, context.darkred, context.darkblue
 local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
 
@@ -164,9 +164,9 @@ function tracers.showdatasetfields(dataset)
     local luadata = datasets[dataset].luadata
     if next(luadata) then
         ctx_starttabulate { "|lT|lT|pT|" }
-            ctx_NC() bold("tag")
-            ctx_NC() bold("category")
-            ctx_NC() bold("fields")
+            ctx_NC() ctx_bold("tag")
+            ctx_NC() ctx_bold("category")
+            ctx_NC() ctx_bold("fields")
             ctx_NC() ctx_NR()
             ctx_FL()
             for k, v in sortedhash(luadata) do
@@ -190,7 +190,7 @@ function tracers.showdatasetcompleteness(dataset)
 
     local preamble = { "|lBTw(10em)|p|" }
 
-    local function required(key,value,indirect)
+    local function required(foundfields,key,value,indirect)
         ctx_NC() ctx_darkgreen(key)
         ctx_NC() if indirect then
                 ctx_darkblue(value)
@@ -200,9 +200,10 @@ function tracers.showdatasetcompleteness(dataset)
                 ctx_darkred("\\tttf [missing]")
              end
         ctx_NC() ctx_NR()
+        foundfields[key] = nil
     end
 
-    local function optional(key,value,indirect)
+    local function optional(foundfields,key,value,indirect)
         ctx_NC() context(key)
         ctx_NC() if indirect then
                 ctx_darkblue(value)
@@ -210,10 +211,11 @@ function tracers.showdatasetcompleteness(dataset)
                 context(value)
              end
         ctx_NC() ctx_NR()
+        foundfields[key] = nil
     end
 
-    local function identified(tag,crossref)
-        ctx_NC() context("tag")
+    local function identified(tag,category,crossref)
+        ctx_NC() context(category)
         ctx_NC() if crossref then
                 context("\\tttf %s\\hfill\\darkblue => %s",tag,crossref)
              else
@@ -222,59 +224,78 @@ function tracers.showdatasetcompleteness(dataset)
         ctx_NC() ctx_NR()
     end
 
+    local function extra(key,value)
+        ctx_NC() ctx_llap("+") context(key)
+        ctx_NC() context(value)
+        ctx_NC() ctx_NR()
+    end
+
     local luadata = datasets[dataset].luadata
 
     if next(luadata) then
-        for tag, entry in table.sortedhash(luadata) do
+        for tag, entry in sortedhash(luadata) do
             local category = entry.category
             local fields = categories[category]
             if fields then
+                local foundfields = { }
+                for k, v in next, entry do
+                    foundfields[k] = true
+                end
                 ctx_starttabulate(preamble)
-                identified(tag,entry.crossref)
-                ctx_HL()
+                identified(tag,category,entry.crossref)
+                ctx_FL()
                 local requiredfields = fields.required
                 local optionalfields = fields.optional
-                for i=1,#requiredfields do
-                    local r = requiredfields[i]
-                    if type(r) == "table" then
-                        local okay = true
-                        for i=1,#r do
-                            local ri = r[i]
-                            if rawget(entry,ri) then
-                                required(ri,entry[ri])
-                                okay = true
-                            elseif entry[ri] then
-                                required(ri,entry[ri],true)
-                                okay = true
+                if requiredfields then
+                    for i=1,#requiredfields do
+                        local r = requiredfields[i]
+                        if type(r) == "table" then
+                            local okay = true
+                            for i=1,#r do
+                                local ri = r[i]
+                                if rawget(entry,ri) then
+                                    required(foundfields,ri,entry[ri])
+                                    okay = true
+                                elseif entry[ri] then
+                                    required(foundfields,ri,entry[ri],true)
+                                    okay = true
+                                end
                             end
+                            if not okay then
+                                required(foundfields,table.concat(r,"\\letterbar "))
+                            end
+                        elseif rawget(entry,r) then
+                            required(foundfields,r,entry[r])
+                        elseif entry[r] then
+                            required(foundfields,r,entry[r],true)
+                        else
+                            required(foundfields,r)
                         end
-                        if not okay then
-                            required(table.concat(r,"\\letterbar "))
-                        end
-                    elseif rawget(entry,r) then
-                        required(r,entry[r])
-                    elseif entry[r] then
-                        required(r,entry[r],true)
-                    else
-                        required(r)
                     end
                 end
-                for i=1,#optionalfields do
-                    local o = optionalfields[i]
-                    if type(o) == "table" then
-                        for i=1,#o do
-                            local oi = o[i]
-                            if rawget(entry,oi) then
-                                optional(oi,entry[oi])
-                            elseif entry[oi] then
-                                optional(oi,entry[oi],true)
+                if optionalfields then
+                    for i=1,#optionalfields do
+                        local o = optionalfields[i]
+                        if type(o) == "table" then
+                            for i=1,#o do
+                                local oi = o[i]
+                                if rawget(entry,oi) then
+                                    optional(foundfields,oi,entry[oi])
+                                elseif entry[oi] then
+                                    optional(foundfields,oi,entry[oi],true)
+                                end
                             end
+                        elseif rawget(entry,o) then
+                            optional(foundfields,o,entry[o])
+                        elseif entry[o] then
+                            optional(foundfields,o,entry[o],true)
                         end
-                    elseif rawget(entry,o) then
-                        optional(o,entry[o])
-                    elseif entry[o] then
-                        optional(o,entry[o],true)
                     end
+                end
+                foundfields.category = nil
+                foundfields.tag = nil
+                for k, v in sortedhash(foundfields) do
+                    extra(k,entry[k])
                 end
                 ctx_stoptabulate()
             else
@@ -346,9 +367,15 @@ function tracers.addfield(f,c)
     -- no checking now
     if type(f) == "string" then
         f = settings_to_array(f)
-        if #f == 1 then
-            f = f[1]
+    end
+    for i=1,#f do
+        local field = f[i]
+        if not table.contains(fields,field) then
+            fields[#fields+1] = field
         end
+    end
+    if #f == 1 then
+        f = f[1]
     end
     if type(c) == "string" then
         c = settings_to_array(c)

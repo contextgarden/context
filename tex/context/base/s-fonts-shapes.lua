@@ -16,24 +16,32 @@ local NC, NR = context.NC, context.NR
 local space, dontleavehmode, glyph, getvalue = context.space, context.dontleavehmode, context.glyph, context.getvalue
 local formatters = string.formatters
 
+function char(id,k)
+    dontleavehmode()
+    glyph(id,k)
+end
+
+local function special(id,specials)
+    if specials and #specials > 1 then
+        context("%s:",specials[1])
+        if #specials > 5 then
+            space() char(id,specials[2])
+            space() char(id,specials[3])
+            space() context("...")
+            space() char(id,specials[#specials-1])
+            space() char(id,specials[#specials])
+        else
+            for i=2,#specials do
+                space() char(id,specials[i])
+            end
+        end
+    end
+end
+
 function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
     specification = interfaces.checkedspecification(specification)
     local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
     local chrs = fontdata[id].characters
-    function char(k)
-        dontleavehmode()
-        glyph(id,k)
-    end
-    local function special(v)
-        local specials = v.specials
-        if specials and #specials > 1 then
-            context("%s:",specials[1])
-            for i=2,#specials do
-                space()
-                char(specials[i])
-            end
-        end
-    end
     context.begingroup()
     context.tt()
     context.starttabulate { "|l|c|c|c|c|l|l|" }
@@ -50,11 +58,11 @@ function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
         for k, v in next, characters.data do
             if chrs[k] then
                 NC() context("0x%05X",k)
-                NC() char(k) -- getvalue(cs) context.char(k)
-                NC() char(v.shcode)
-                NC() char(v.lccode or k)
-                NC() char(v.uccode or k)
-                NC() special(v)
+                NC() char(id,k) -- getvalue(cs) context.char(k)
+                NC() char(id,v.shcode)
+                NC() char(id,v.lccode or k)
+                NC() char(id,v.uccode or k)
+                NC() special(id,v.specials)
                 NC() context.tx(v.description)
                 NC() NR()
             end
@@ -67,20 +75,6 @@ function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
     specification = interfaces.checkedspecification(specification)
     local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
     local chrs = fontdata[id].characters
-    function char(k)
-        dontleavehmode()
-        glyph(id,k)
-    end
-    local function special(v)
-        local specials = v.specials
-        if specials and #specials > 1 then
-            context("%s:",specials[1])
-            for i=2,#specials do
-                space()
-                char(specials[i])
-            end
-        end
-    end
     context.begingroup()
     context.tt()
     context.starttabulate { "|l|c|c|c|c|l|l|" }
@@ -97,11 +91,11 @@ function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
         for k, v in next, characters.data do
             if chrs[k] then
                 NC() context("0x%05X",k)
-                NC() char(k)
-                NC() char(v.shcode)
-                NC() char(v.lccode or k)
-                NC() char(v.uccode or k)
-                NC() special(v)
+                NC() char(id,k)
+                NC() char(id,v.shcode)
+                NC() char(id,v.lccode or k)
+                NC() char(id,v.uccode or k)
+                NC() special(id,v.specials)
                 NC() context.tx(v.description)
                 NC() NR()
             end

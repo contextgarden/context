@@ -275,9 +275,15 @@ local equal      = P("=")
 local collapsed  = (lpegpatterns.whitespace^1)/ " "
 
 ----- balanced   = lpegpatterns.balanced
+
+-- local balanced   = P {
+--     [1] = ((escape * (left+right)) + (collapsed + 1 - (left+right)) + V(2))^0,
+--     [2] = left * V(1) * right,
+-- }
+
 local balanced   = P {
-    [1] = ((escape * (left+right)) + (collapsed + 1 - (left+right)) + V(2))^0,
-    [2] = left * V(1) * right
+    [1] = left * V(2) * right,
+    [2] = ((escape * (left+right)) + (collapsed + 1 - (left+right)) + V(1))^0,
 }
 
 local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
@@ -293,14 +299,15 @@ local s_value    = (single/"") * (b_value + s_quoted) * (single/"")
 local d_value    = (double/"") * (b_value + d_quoted) * (double/"")
 local r_value    = reference * Carg(1) /resolve
 
-local somevalue  = s_value + d_value + b_value + r_value
+local somevalue  = d_value + b_value + s_value + r_value
 local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0))
 
+local forget     = percent^1 * (1-lineending)^0
+local spacing    = spacing * forget^0 * spacing
 local assignment = spacing * key * spacing * equal * spacing * value * spacing
 local shortcut   = P("@") * (P("string") + P("STRING")) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
 local definition = category * spacing * left * spacing * tag * spacing * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1) / do_definition
 local comment    = keyword * spacing * left * (1-right)^0 * spacing * right
-local forget     = percent^1 * (1-lineending)^0
 
 -- todo \%
 

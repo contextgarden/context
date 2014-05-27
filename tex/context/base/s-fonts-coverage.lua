@@ -99,7 +99,11 @@ function moduledata.fonts.coverage.showcomparison(specification)
                 NC()
                 for i=1,#names do
                     getvalue(names[i])
+if k < 0x110000 then
                     char(k)
+else
+    logs.report("warning","weird character %U",k)
+end
                     NC()
                 end
                     context(description)

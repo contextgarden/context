@@ -21,6 +21,12 @@ local digits = {
     dflt = {
         dflt = "1234567890 1/2",
     },
+    arab = {
+        dflt = "",
+    },
+    latn = {
+        dflt = "1234567890 1/2",
+    }
 }
 
 local punctuation = {
@@ -64,6 +70,9 @@ local lowercase = {
     },
     cyrl= {
         dflt = "абвгдежзиійклмнопрстуфхцчшщъыьѣэюяѳ"
+    },
+    arab = {
+        dflt = "ابجدهوزحطيكلمنسعفصقرشتثخذضظغ"
     },
 }
 

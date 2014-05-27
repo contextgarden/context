@@ -99,6 +99,10 @@ local ctx_btxsetlistreference     = context.btxsetlistreference
 local ctx_btxmissing              = context.btxmissing
 
 local ctx_btxsettag               = context.btxsettag
+local ctx_btxsetlanguage          = context.btxsetlanguage
+local ctx_btxsetindex             = context.btxsetindex
+local ctx_btxsetcombis            = context.btxsetcombis
+local ctx_btxsetcategory          = context.btxsetcategory
 local ctx_btxcitesetup            = context.btxcitesetup
 local ctx_btxsetfirst             = context.btxsetfirst
 local ctx_btxsetsecond            = context.btxsetsecond
@@ -268,28 +272,32 @@ setmetatableindex(usedentries,function(t,k)
         local internals = structures.references.internals
         for i=1,#internals do
             local entry = internals[i]
-            local metadata = entry.metadata
-            if metadata.kind == "full" then
-                local userdata = entry.userdata
-                if userdata then
-                    local set = userdata.btxset
-                    if set then
-                        local tag = userdata.btxref
-                        local s = usedentries[set]
-                        if s then
-                            local u = s[tag]
-                            if u then
-                                u[#u+1] = entry
+            if entry then
+                local metadata = entry.metadata
+                if metadata and metadata.kind == "full" then
+                    local userdata = entry.userdata
+                    if userdata then
+                        local set = userdata.btxset
+                        if set then
+                            local tag = userdata.btxref
+                            local s = usedentries[set]
+                            if s then
+                                local u = s[tag]
+                                if u then
+                                    u[#u+1] = entry
+                                else
+                                    s[tag] = { entry }
+                                end
                             else
-                                s[tag] = { entry }
+                                usedentries[set] = { [tag] = { entry } }
                             end
-                        else
-                            usedentries[set] = { [tag] = { entry } }
                         end
                     end
                 end
+            else
+                -- weird
             end
--- table.save("temp.lua",usedentries)
+         -- table.save("temp.lua",usedentries)
         end
         return usedentries[k]
     end
@@ -962,15 +970,18 @@ function lists.flushentries(dataset,sortvariant)
         local tag = list[i][1]
         local entry = luadata[tag]
         if entry then
-            ctx_setvalue("currentbtxindex",i) -- todo: helper
+            ctx_btxsetindex(i)
             local combined = entry.combined
             if combined then
-                ctx_setvalue("currentbtxcombis",concat(combined,","))
-            else
-                ctx_setvalue("currentbtxcombis","")
+                ctx_btxsetcombis(concat(combined,","))
             end
-            ctx_setvalue("currentbtxcategory",entry.category or "unknown")
-            ctx_btxhandlelistentry(tag) -- pass i instead and also pass 'placed'
+            ctx_btxsetcategory(entry.category or "unknown")
+            ctx_btxsettag(tag)
+            ctx_btxhandlelistentry()
+            local language = entry.language
+            if language then
+                ctx_btxsetlanguage(language)
+            end
         end
      end
 end
@@ -1060,7 +1071,6 @@ local function sortedtags(dataset,list,sorttype)
                     tag   = tag,
                     split = sortsplitter(sortstripper(key))
                 }
-            else
             end
         end
     end
@@ -1285,6 +1295,10 @@ local function processcite(dataset,reference,mark,compress,setup,getter,setter,c
                     if internal then
                         ctx_btxsetinternal(internal)
                     end
+                    local language = first.language
+                    if language then
+                        ctx_btxsetlanguage(language)
+                    end
                     if not setter(first,entry.last) then
                         ctx_btxsetfirst(f_missing(first.tag))
                     end
@@ -1298,6 +1312,10 @@ local function processcite(dataset,reference,mark,compress,setup,getter,setter,c
                     local internal = entry.internal
                     if internal then
                         ctx_btxsetinternal(internal)
+                    end
+                    local language = entry.language
+                    if language then
+                        ctx_btxsetlanguage(language)
                     end
                     if not setter(entry) then
                         ctx_btxsetfirst(f_missing(tag))
@@ -1319,6 +1337,10 @@ local function processcite(dataset,reference,mark,compress,setup,getter,setter,c
                 local internal = entry.internal
                 if internal then
                     ctx_btxsetinternal(internal)
+                end
+                local language = entry.language
+                if language then
+                    ctx_btxsetlanguage(language)
                 end
                 ctx_btxsetconcat(state)
                 if not setter(entry) then
