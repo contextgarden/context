@@ -29,6 +29,7 @@ function moduledata.fonts.coverage.showcomparison(specification)
     local present = { }
     local names   = { }
     local files   = { }
+    local chars   = { }
 
     if not pattern then
         -- skip
@@ -56,6 +57,7 @@ function moduledata.fonts.coverage.showcomparison(specification)
             end
             names[#names+1] = fontname
             files[#files+1] = fontfile
+            chars[#names]   = fontdata.characters
         end
     end
 
@@ -91,7 +93,11 @@ function moduledata.fonts.coverage.showcomparison(specification)
     NR()
     HL()
     for k, v in table.sortedpairs(present) do
-        if k > 0 then
+        if k <= 0 then
+            -- ignore
+        elseif k >= 0x110000 then
+            logs.report("warning","weird character %U",k)
+        else
             local description = chardata[k].description
             if not pattern or (pattern == k) or (description and lpegmatch(pattern,description)) then
                 NC()
@@ -99,11 +105,11 @@ function moduledata.fonts.coverage.showcomparison(specification)
                 NC()
                 for i=1,#names do
                     getvalue(names[i])
-if k < 0x110000 then
-                    char(k)
-else
-    logs.report("warning","weird character %U",k)
-end
+                    if chars[i][k] then
+                        char(k)
+                    else
+                        -- missing
+                    end
                     NC()
                 end
                     context(description)

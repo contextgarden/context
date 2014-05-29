@@ -221,8 +221,18 @@ function xml.delete(root,pattern)
                         report('deleting',pattern,c,e)
                     end
                     local d = p.dt
-                    remove(d,e.ni)
-                    redo_ni(d) -- can be made faster and inlined
+                    local ni = e.ni
+                    if ni <= #d then
+                        if false then
+                            p.dt[ni] = ""
+                        else
+                            -- what if multiple deleted in one set
+                            remove(d,ni)
+                            redo_ni(d) -- can be made faster and inlined
+                        end
+                    else
+                        -- disturbing
+                    end
                 end
             end
         end
@@ -365,7 +375,8 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
             local name = nil
             local ekdt = ek.dt
             local ekat = ek.at
-            local epdt = ek.__p__.dt
+            local ekrt = ek.__p__
+            local epdt = ekrt.dt
             if not attribute or attribute == "" then
                 name = (type(ekdt) == "table" and ekdt[1]) or ekdt -- check, probably always tab or str
             end
@@ -392,7 +403,9 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
                     if recursive then
                         include(xi,pattern,attribute,recursive,loaddata)
                     end
-                    epdt[ek.ni] = xml.body(xi) -- xml.assign(d,k,xi)
+                    local child = xml.body(xi) -- xml.assign(d,k,xi)
+                    child.__p__ = ekrt
+                    epdt[ek.ni] = child
                 end
             end
         end

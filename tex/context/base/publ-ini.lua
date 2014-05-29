@@ -716,7 +716,7 @@ function publications.singularorplural(singular,plural)
     end
 end
 
-local patterns = { "publ-imp-%s.mkiv", "publ-imp-%s.tex" }
+local patterns = { "publ-imp-%s.mkvi", "publ-imp-%s.mkiv", "publ-imp-%s.tex" }
 
 local function failure(name)
     report("unknown library %a",name)
@@ -732,7 +732,7 @@ function commands.loadbtxdefinitionfile(name) -- a more specific name
         patterns = patterns,
         action   = action,
         failure  = failure,
-        onlyonce = false,
+        onlyonce = true,
     }
 end
 

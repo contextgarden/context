@@ -272,18 +272,19 @@ local space      = S(" \t\n\r\f") -- / " "
 local spacing    = space^0
 local equal      = P("=")
 ----- collapsed  = (space^1)/ " "
-local collapsed  = (lpegpatterns.whitespace^1)/ " "
+local collapsed  = (lpegpatterns.whitespace^1)/" "
 
 ----- balanced   = lpegpatterns.balanced
 
--- local balanced   = P {
---     [1] = ((escape * (left+right)) + (collapsed + 1 - (left+right)) + V(2))^0,
---     [2] = left * V(1) * right,
--- }
-
 local balanced   = P {
+--     [1] = ((escape * (left+right)) + (collapsed + 1 - (left+right)) + V(2))^0,
+    [1] = ((escape * (left+right)) + collapsed + (1 - (left+right))^1 + V(2))^0,
+    [2] = left * V(1) * right,
+}
+
+local unbalanced = P {
     [1] = left * V(2) * right,
-    [2] = ((escape * (left+right)) + (collapsed + 1 - (left+right)) + V(1))^0,
+    [2] = ((escape * (left+right)) + collapsed + (1 - (left+right))^1 + V(1))^0,
 }
 
 local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
@@ -295,8 +296,9 @@ local s_quoted   = ((escape*single) + collapsed + (1-single))^0
 local d_quoted   = ((escape*double) + collapsed + (1-double))^0
 
 local b_value    = (left  /"") * balanced * (right /"")
-local s_value    = (single/"") * (b_value + s_quoted) * (single/"")
-local d_value    = (double/"") * (b_value + d_quoted) * (double/"")
+local u_value    = (left  /"") * unbalanced * (right /"") -- get rid of outer { }
+local s_value    = (single/"") * (u_value + s_quoted) * (single/"")
+local d_value    = (double/"") * (u_value + d_quoted) * (double/"")
 local r_value    = reference * Carg(1) /resolve
 
 local somevalue  = d_value + b_value + s_value + r_value
@@ -320,10 +322,20 @@ local bibtotable = (space + forget + shortcut + definition + comment + 1)^0
 -- converttoxml -> dataset.xmldata from dataset.luadata
 
 function publications.loadbibdata(dataset,content,source,kind)
+    if not source then
+        report("invalid source for dataset %a",dataset)
+        return
+    end
+    local size = #content
+    if size == 0 then
+        report("empty source %a for dataset %a",source,dataset)
+    else
+        report("adding bib data to set %a from source %a",dataset,source)
+    end
     dataset = datasets[dataset]
     statistics.starttiming(publications)
-    publicationsstats.nofbytes = publicationsstats.nofbytes + #content
-    dataset.nofbytes = dataset.nofbytes + #content
+    publicationsstats.nofbytes = publicationsstats.nofbytes + size
+    dataset.nofbytes = dataset.nofbytes + size
     if source then
         table.insert(dataset.sources, { filename = source, checksum = md5.HEX(content) })
         dataset.loaded[source] = kind or true

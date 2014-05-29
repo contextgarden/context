@@ -186,7 +186,7 @@ function synonyms.analyzed(class,options)
     local data = synonyms.collected[class]
     if data and data.entries then
         options = options or { }
-        sorters.setlanguage(options.language)
+        sorters.setlanguage(options.language,options.method)
         synonyms.filter(data,options)   -- filters entries to result
         synonyms.prepare(data,options)  -- adds split table parallel to list table
         synonyms.sort(data,options)     -- sorts entries in result

@@ -75,26 +75,35 @@
 
 \starttext
 
+\def\MyAsciiMath#1{\startformula\asciimath{#1}\stopformula}
+
 \startlines
-\asciimath{x^2+y_1+z_12^34}
-\asciimath{sin^-1(x)}
-\asciimath{d/dx f(x)=lim_(h->0) (f(x+h)-f(x))/h}
-\asciimath{f(x)=sum_(n=0)^oo(f^((n))(a))/(n!)(x-a)^n}
-\asciimath{int_0^1 f(x)dx}
-\asciimath{int^1_0 f(x)dx}
-\asciimath{a//b}
-\asciimath{a//\alpha}
-\asciimath{(a/b)/(d/c)}
-\asciimath{((a*b))/(d/c)}
-\asciimath{[[a,b],[c,d]]((n),(k))}
-\asciimath{1/x={(1,text{if } x!=0),(text{undefined},if x=0):}}
-\asciimath{{ (1,2), (x,(x + text(x))) }}
-\asciimath{{(1,2),(x,(x+text(x))),(x,text(x))}}
-\asciimath{{(1,2),(x,(x+text(x))),(x,x text(x))}}
-\asciimath{{(1,2/2),(x,(x+x^22+sqrt(xx))),(x,x text(xyz))}}
-\asciimath{{(1,2/2),(x,(x+x^22+sqrt(xx))),(x,text(xyz)+1+text(hans))}}
-\asciimath{<<a,b>> text{and} {:(x,y),(u,v):}}
-\asciimath{(a,b] = {x text(in) RR | a < x <= b}}
+% \MyAsciiMath{x^2 / 10 // z_12^34 / 20}
+% \MyAsciiMath{{:{:x^2:} / 10:} // {:{:z_12^34 :} / 20:}}
+% \MyAsciiMath{x^2+y_1+z_12^34}
+% \MyAsciiMath{sin^-1(x)}
+% \MyAsciiMath{d/dx f(x)=lim_(h->0) (f(x+h)-f(x))/h}
+% \MyAsciiMath{f(x)=sum_(n=0)^oo(f^((n))(a))/(n!)(x-a)^n}
+% \MyAsciiMath{int_0^1 f(x)dx}
+% \MyAsciiMath{int^1_0 f(x)dx}
+% \MyAsciiMath{a//b}
+% \MyAsciiMath{a//\alpha}
+% \MyAsciiMath{(a/b)/(d/c)}
+% \MyAsciiMath{((a*b))/(d/c)}
+% \MyAsciiMath{[[a,b],[c,d]]((n),(k))}
+% \MyAsciiMath{1/x={(1,text{if } x!=0),(text{undefined},if x=0):}}
+% \MyAsciiMath{{ (1,2), (x,(x + text(x))) }}
+% \MyAsciiMath{{(1,2),(x,(x+text(x))),(x,text(x))}}
+% \MyAsciiMath{{(1,2),(x,(x+text(x))),(x,x text(x))}}
+% \MyAsciiMath{{(1,2/2),(x,(x+x^22+sqrt(xx))),(x,x text(xyz))}}
+% \MyAsciiMath{{(1,2/2),(x,(x+x^22+sqrt(xx))),(x,text(xyz)+1+text(hans))}}
+% \MyAsciiMath{<<a,b>> text{and} {:(x,y),(u,v):}}
+% \MyAsciiMath{(a,b] = {x text(in) RR | a < x <= b}}
+% \MyAsciiMath{a/b / c/d = (a * d) / (b * d) / (b * c) / (b * d) = (a * d) / (b * c)}
+% \MyAsciiMath{ (a/b) // (c/d) =  ( (a * d) / (b * d) ) // ( (b * c) / (b * d) ) = (a * d) / (b * c)}
+\MyAsciiMath{sin(x+1)_3^2/b / c/d}
+% \MyAsciiMath{{:{:sin(x+1)_3^2:}/b:} / {:c/d:}}
+% \MyAsciiMath{cos(a) + sin(x+1)_3^2/b / c/d = (a * d) / (b * d) / (b * c) / (b * d) = (a * d) / (b * c)}
 \stoplines
 
 \stoptext

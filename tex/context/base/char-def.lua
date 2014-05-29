@@ -1830,6 +1830,7 @@ characters.data={
   linebreak="al",
   mathclass="topaccent",
   mathfiller="barfill",
+  mathmleq=0x203E,
   mathname="bar",
   mathmleq=0x203E,
   specials={ "compat", 0x0020, 0x0304 },
@@ -15166,6 +15167,13 @@ characters.data={
   direction="al",
   linebreak="ex",
   unicodeslot=0x061B,
+ },
+ [0x061C]={
+  category="cf",
+  description="ARABIC LETTER MARK",
+  direction="al",
+  linebreak="cm",
+  unicodeslot=0x061C,
  },
  [0x061E]={
   category="po",
@@ -42760,6 +42768,7 @@ characters.data={
   unicodeslot=0x1805,
  },
  [0x1806]={
+  arabic="u",
   category="pd",
   description="MONGOLIAN TODO SOFT HYPHEN",
   direction="on",
@@ -42767,6 +42776,7 @@ characters.data={
   unicodeslot=0x1806,
  },
  [0x1807]={
+  arabic="d",
   category="po",
   description="MONGOLIAN SIBE SYLLABLE BOUNDARY MARKER",
   direction="on",
@@ -42788,6 +42798,7 @@ characters.data={
   unicodeslot=0x1809,
  },
  [0x180A]={
+  arabic="c",
   category="po",
   description="MONGOLIAN NIRUGU",
   direction="on",
@@ -42816,9 +42827,10 @@ characters.data={
   unicodeslot=0x180D,
  },
  [0x180E]={
+  arabic="u",
   category="zs",
   description="MONGOLIAN VOWEL SEPARATOR",
-  direction="ws",
+  direction="bn",
   linebreak="gl",
   unicodeslot=0x180E,
  },
@@ -42893,6 +42905,7 @@ characters.data={
   unicodeslot=0x1819,
  },
  [0x1820]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER A",
   direction="l",
@@ -42904,6 +42917,7 @@ characters.data={
   },
  },
  [0x1821]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER E",
   direction="l",
@@ -42914,6 +42928,7 @@ characters.data={
   },
  },
  [0x1822]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER I",
   direction="l",
@@ -42924,6 +42939,7 @@ characters.data={
   },
  },
  [0x1823]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER O",
   direction="l",
@@ -42934,6 +42950,7 @@ characters.data={
   },
  },
  [0x1824]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER U",
   direction="l",
@@ -42944,6 +42961,7 @@ characters.data={
   },
  },
  [0x1825]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER OE",
   direction="l",
@@ -42955,6 +42973,7 @@ characters.data={
   },
  },
  [0x1826]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER UE",
   direction="l",
@@ -42966,6 +42985,7 @@ characters.data={
   },
  },
  [0x1827]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER EE",
   direction="l",
@@ -42973,6 +42993,7 @@ characters.data={
   unicodeslot=0x1827,
  },
  [0x1828]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER NA",
   direction="l",
@@ -42985,6 +43006,7 @@ characters.data={
   },
  },
  [0x1829]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ANG",
   direction="l",
@@ -42992,6 +43014,7 @@ characters.data={
   unicodeslot=0x1829,
  },
  [0x182A]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER BA",
   direction="l",
@@ -43002,6 +43025,7 @@ characters.data={
   },
  },
  [0x182B]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER PA",
   direction="l",
@@ -43009,6 +43033,7 @@ characters.data={
   unicodeslot=0x182B,
  },
  [0x182C]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER QA",
   direction="l",
@@ -43021,6 +43046,7 @@ characters.data={
   },
  },
  [0x182D]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER GA",
   direction="l",
@@ -43033,6 +43059,7 @@ characters.data={
   },
  },
  [0x182E]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MA",
   direction="l",
@@ -43040,6 +43067,7 @@ characters.data={
   unicodeslot=0x182E,
  },
  [0x182F]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER LA",
   direction="l",
@@ -43047,6 +43075,7 @@ characters.data={
   unicodeslot=0x182F,
  },
  [0x1830]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SA",
   direction="l",
@@ -43058,6 +43087,7 @@ characters.data={
   },
  },
  [0x1831]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SHA",
   direction="l",
@@ -43065,6 +43095,7 @@ characters.data={
   unicodeslot=0x1831,
  },
  [0x1832]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TA",
   direction="l",
@@ -43075,6 +43106,7 @@ characters.data={
   },
  },
  [0x1833]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER DA",
   direction="l",
@@ -43085,6 +43117,7 @@ characters.data={
   },
  },
  [0x1834]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER CHA",
   direction="l",
@@ -43092,6 +43125,7 @@ characters.data={
   unicodeslot=0x1834,
  },
  [0x1835]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER JA",
   direction="l",
@@ -43102,6 +43136,7 @@ characters.data={
   },
  },
  [0x1836]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER YA",
   direction="l",
@@ -43113,6 +43148,7 @@ characters.data={
   },
  },
  [0x1837]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER RA",
   direction="l",
@@ -43120,6 +43156,7 @@ characters.data={
   unicodeslot=0x1837,
  },
  [0x1838]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER WA",
   direction="l",
@@ -43130,6 +43167,7 @@ characters.data={
   },
  },
  [0x1839]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER FA",
   direction="l",
@@ -43137,6 +43175,7 @@ characters.data={
   unicodeslot=0x1839,
  },
  [0x183A]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER KA",
   direction="l",
@@ -43144,6 +43183,7 @@ characters.data={
   unicodeslot=0x183A,
  },
  [0x183B]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER KHA",
   direction="l",
@@ -43151,6 +43191,7 @@ characters.data={
   unicodeslot=0x183B,
  },
  [0x183C]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TSA",
   direction="l",
@@ -43158,6 +43199,7 @@ characters.data={
   unicodeslot=0x183C,
  },
  [0x183D]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ZA",
   direction="l",
@@ -43165,6 +43207,7 @@ characters.data={
   unicodeslot=0x183D,
  },
  [0x183E]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER HAA",
   direction="l",
@@ -43172,6 +43215,7 @@ characters.data={
   unicodeslot=0x183E,
  },
  [0x183F]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ZRA",
   direction="l",
@@ -43179,6 +43223,7 @@ characters.data={
   unicodeslot=0x183F,
  },
  [0x1840]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER LHA",
   direction="l",
@@ -43186,6 +43231,7 @@ characters.data={
   unicodeslot=0x1840,
  },
  [0x1841]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ZHI",
   direction="l",
@@ -43193,6 +43239,7 @@ characters.data={
   unicodeslot=0x1841,
  },
  [0x1842]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER CHI",
   direction="l",
@@ -43200,6 +43247,7 @@ characters.data={
   unicodeslot=0x1842,
  },
  [0x1843]={
+  arabic="d",
   category="lm",
   description="MONGOLIAN LETTER TODO LONG VOWEL SIGN",
   direction="l",
@@ -43207,6 +43255,7 @@ characters.data={
   unicodeslot=0x1843,
  },
  [0x1844]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO E",
   direction="l",
@@ -43217,6 +43266,7 @@ characters.data={
   },
  },
  [0x1845]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO I",
   direction="l",
@@ -43227,6 +43277,7 @@ characters.data={
   },
  },
  [0x1846]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO O",
   direction="l",
@@ -43237,6 +43288,7 @@ characters.data={
   },
  },
  [0x1847]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO U",
   direction="l",
@@ -43248,6 +43300,7 @@ characters.data={
   },
  },
  [0x1848]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO OE",
   direction="l",
@@ -43258,6 +43311,7 @@ characters.data={
   },
  },
  [0x1849]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO UE",
   direction="l",
@@ -43268,6 +43322,7 @@ characters.data={
   },
  },
  [0x184A]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO ANG",
   direction="l",
@@ -43275,6 +43330,7 @@ characters.data={
   unicodeslot=0x184A,
  },
  [0x184B]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO BA",
   direction="l",
@@ -43282,6 +43338,7 @@ characters.data={
   unicodeslot=0x184B,
  },
  [0x184C]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO PA",
   direction="l",
@@ -43289,6 +43346,7 @@ characters.data={
   unicodeslot=0x184C,
  },
  [0x184D]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO QA",
   direction="l",
@@ -43299,6 +43357,7 @@ characters.data={
   },
  },
  [0x184E]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO GA",
   direction="l",
@@ -43309,6 +43368,7 @@ characters.data={
   },
  },
  [0x184F]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO MA",
   direction="l",
@@ -43316,6 +43376,7 @@ characters.data={
   unicodeslot=0x184F,
  },
  [0x1850]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO TA",
   direction="l",
@@ -43323,6 +43384,7 @@ characters.data={
   unicodeslot=0x1850,
  },
  [0x1851]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO DA",
   direction="l",
@@ -43330,6 +43392,7 @@ characters.data={
   unicodeslot=0x1851,
  },
  [0x1852]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO CHA",
   direction="l",
@@ -43337,6 +43400,7 @@ characters.data={
   unicodeslot=0x1852,
  },
  [0x1853]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO JA",
   direction="l",
@@ -43344,6 +43408,7 @@ characters.data={
   unicodeslot=0x1853,
  },
  [0x1854]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO TSA",
   direction="l",
@@ -43351,6 +43416,7 @@ characters.data={
   unicodeslot=0x1854,
  },
  [0x1855]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO YA",
   direction="l",
@@ -43358,6 +43424,7 @@ characters.data={
   unicodeslot=0x1855,
  },
  [0x1856]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO WA",
   direction="l",
@@ -43365,6 +43432,7 @@ characters.data={
   unicodeslot=0x1856,
  },
  [0x1857]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO KA",
   direction="l",
@@ -43372,6 +43440,7 @@ characters.data={
   unicodeslot=0x1857,
  },
  [0x1858]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO GAA",
   direction="l",
@@ -43379,6 +43448,7 @@ characters.data={
   unicodeslot=0x1858,
  },
  [0x1859]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO HAA",
   direction="l",
@@ -43386,6 +43456,7 @@ characters.data={
   unicodeslot=0x1859,
  },
  [0x185A]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO JIA",
   direction="l",
@@ -43393,6 +43464,7 @@ characters.data={
   unicodeslot=0x185A,
  },
  [0x185B]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO NIA",
   direction="l",
@@ -43400,6 +43472,7 @@ characters.data={
   unicodeslot=0x185B,
  },
  [0x185C]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO DZA",
   direction="l",
@@ -43407,6 +43480,7 @@ characters.data={
   unicodeslot=0x185C,
  },
  [0x185D]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE E",
   direction="l",
@@ -43417,6 +43491,7 @@ characters.data={
   },
  },
  [0x185E]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE I",
   direction="l",
@@ -43428,6 +43503,7 @@ characters.data={
   },
  },
  [0x185F]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE IY",
   direction="l",
@@ -43435,6 +43511,7 @@ characters.data={
   unicodeslot=0x185F,
  },
  [0x1860]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE UE",
   direction="l",
@@ -43445,6 +43522,7 @@ characters.data={
   },
  },
  [0x1861]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE U",
   direction="l",
@@ -43452,6 +43530,7 @@ characters.data={
   unicodeslot=0x1861,
  },
  [0x1862]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE ANG",
   direction="l",
@@ -43459,6 +43538,7 @@ characters.data={
   unicodeslot=0x1862,
  },
  [0x1863]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE KA",
   direction="l",
@@ -43469,6 +43549,7 @@ characters.data={
   },
  },
  [0x1864]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE GA",
   direction="l",
@@ -43476,6 +43557,7 @@ characters.data={
   unicodeslot=0x1864,
  },
  [0x1865]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE HA",
   direction="l",
@@ -43483,6 +43565,7 @@ characters.data={
   unicodeslot=0x1865,
  },
  [0x1866]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE PA",
   direction="l",
@@ -43490,6 +43573,7 @@ characters.data={
   unicodeslot=0x1866,
  },
  [0x1867]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE SHA",
   direction="l",
@@ -43497,6 +43581,7 @@ characters.data={
   unicodeslot=0x1867,
  },
  [0x1868]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE TA",
   direction="l",
@@ -43508,6 +43593,7 @@ characters.data={
   },
  },
  [0x1869]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE DA",
   direction="l",
@@ -43518,6 +43604,7 @@ characters.data={
   },
  },
  [0x186A]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE JA",
   direction="l",
@@ -43525,6 +43612,7 @@ characters.data={
   unicodeslot=0x186A,
  },
  [0x186B]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE FA",
   direction="l",
@@ -43532,6 +43620,7 @@ characters.data={
   unicodeslot=0x186B,
  },
  [0x186C]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE GAA",
   direction="l",
@@ -43539,6 +43628,7 @@ characters.data={
   unicodeslot=0x186C,
  },
  [0x186D]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE HAA",
   direction="l",
@@ -43546,6 +43636,7 @@ characters.data={
   unicodeslot=0x186D,
  },
  [0x186E]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE TSA",
   direction="l",
@@ -43553,6 +43644,7 @@ characters.data={
   unicodeslot=0x186E,
  },
  [0x186F]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE ZA",
   direction="l",
@@ -43563,6 +43655,7 @@ characters.data={
   },
  },
  [0x1870]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE RAA",
   direction="l",
@@ -43570,6 +43663,7 @@ characters.data={
   unicodeslot=0x1870,
  },
  [0x1871]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE CHA",
   direction="l",
@@ -43577,6 +43671,7 @@ characters.data={
   unicodeslot=0x1871,
  },
  [0x1872]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER SIBE ZHA",
   direction="l",
@@ -43584,6 +43679,7 @@ characters.data={
   unicodeslot=0x1872,
  },
  [0x1873]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU I",
   direction="l",
@@ -43596,6 +43692,7 @@ characters.data={
   },
  },
  [0x1874]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU KA",
   direction="l",
@@ -43608,6 +43705,7 @@ characters.data={
   },
  },
  [0x1875]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU RA",
   direction="l",
@@ -43615,6 +43713,7 @@ characters.data={
   unicodeslot=0x1875,
  },
  [0x1876]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU FA",
   direction="l",
@@ -43625,6 +43724,7 @@ characters.data={
   },
  },
  [0x1877]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ZHA",
   direction="l",
@@ -43632,6 +43732,7 @@ characters.data={
   unicodeslot=0x1877,
  },
  [0x1880]={
+  arabic="u",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI ANUSVARA ONE",
   direction="l",
@@ -43642,6 +43743,7 @@ characters.data={
   },
  },
  [0x1881]={
+  arabic="u",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI VISARGA ONE",
   direction="l",
@@ -43652,6 +43754,7 @@ characters.data={
   },
  },
  [0x1882]={
+  arabic="u",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI DAMARU",
   direction="l",
@@ -43659,6 +43762,7 @@ characters.data={
   unicodeslot=0x1882,
  },
  [0x1883]={
+  arabic="u",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI UBADAMA",
   direction="l",
@@ -43666,6 +43770,7 @@ characters.data={
   unicodeslot=0x1883,
  },
  [0x1884]={
+  arabic="u",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI INVERTED UBADAMA",
   direction="l",
@@ -43673,6 +43778,7 @@ characters.data={
   unicodeslot=0x1884,
  },
  [0x1885]={
+  arabic="u",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI BALUDA",
   direction="l",
@@ -43680,6 +43786,7 @@ characters.data={
   unicodeslot=0x1885,
  },
  [0x1886]={
+  arabic="u",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI THREE BALUDA",
   direction="l",
@@ -43687,6 +43794,7 @@ characters.data={
   unicodeslot=0x1886,
  },
  [0x1887]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI A",
   direction="l",
@@ -43699,6 +43807,7 @@ characters.data={
   },
  },
  [0x1888]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI I",
   direction="l",
@@ -43709,6 +43818,7 @@ characters.data={
   },
  },
  [0x1889]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI KA",
   direction="l",
@@ -43716,6 +43826,7 @@ characters.data={
   unicodeslot=0x1889,
  },
  [0x188A]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI NGA",
   direction="l",
@@ -43726,6 +43837,7 @@ characters.data={
   },
  },
  [0x188B]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI CA",
   direction="l",
@@ -43733,6 +43845,7 @@ characters.data={
   unicodeslot=0x188B,
  },
  [0x188C]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI TTA",
   direction="l",
@@ -43740,6 +43853,7 @@ characters.data={
   unicodeslot=0x188C,
  },
  [0x188D]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI TTHA",
   direction="l",
@@ -43747,6 +43861,7 @@ characters.data={
   unicodeslot=0x188D,
  },
  [0x188E]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI DDA",
   direction="l",
@@ -43754,6 +43869,7 @@ characters.data={
   unicodeslot=0x188E,
  },
  [0x188F]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI NNA",
   direction="l",
@@ -43761,6 +43877,7 @@ characters.data={
   unicodeslot=0x188F,
  },
  [0x1890]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI TA",
   direction="l",
@@ -43768,6 +43885,7 @@ characters.data={
   unicodeslot=0x1890,
  },
  [0x1891]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI DA",
   direction="l",
@@ -43775,6 +43893,7 @@ characters.data={
   unicodeslot=0x1891,
  },
  [0x1892]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI PA",
   direction="l",
@@ -43782,6 +43901,7 @@ characters.data={
   unicodeslot=0x1892,
  },
  [0x1893]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI PHA",
   direction="l",
@@ -43789,6 +43909,7 @@ characters.data={
   unicodeslot=0x1893,
  },
  [0x1894]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI SSA",
   direction="l",
@@ -43796,6 +43917,7 @@ characters.data={
   unicodeslot=0x1894,
  },
  [0x1895]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI ZHA",
   direction="l",
@@ -43803,6 +43925,7 @@ characters.data={
   unicodeslot=0x1895,
  },
  [0x1896]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI ZA",
   direction="l",
@@ -43810,6 +43933,7 @@ characters.data={
   unicodeslot=0x1896,
  },
  [0x1897]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI AH",
   direction="l",
@@ -43817,6 +43941,7 @@ characters.data={
   unicodeslot=0x1897,
  },
  [0x1898]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO ALI GALI TA",
   direction="l",
@@ -43824,6 +43949,7 @@ characters.data={
   unicodeslot=0x1898,
  },
  [0x1899]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER TODO ALI GALI ZHA",
   direction="l",
@@ -43831,6 +43957,7 @@ characters.data={
   unicodeslot=0x1899,
  },
  [0x189A]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI GHA",
   direction="l",
@@ -43838,6 +43965,7 @@ characters.data={
   unicodeslot=0x189A,
  },
  [0x189B]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI NGA",
   direction="l",
@@ -43845,6 +43973,7 @@ characters.data={
   unicodeslot=0x189B,
  },
  [0x189C]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI CA",
   direction="l",
@@ -43852,6 +43981,7 @@ characters.data={
   unicodeslot=0x189C,
  },
  [0x189D]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI JHA",
   direction="l",
@@ -43859,6 +43989,7 @@ characters.data={
   unicodeslot=0x189D,
  },
  [0x189E]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI TTA",
   direction="l",
@@ -43866,6 +43997,7 @@ characters.data={
   unicodeslot=0x189E,
  },
  [0x189F]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI DDHA",
   direction="l",
@@ -43873,6 +44005,7 @@ characters.data={
   unicodeslot=0x189F,
  },
  [0x18A0]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI TA",
   direction="l",
@@ -43880,6 +44013,7 @@ characters.data={
   unicodeslot=0x18A0,
  },
  [0x18A1]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI DHA",
   direction="l",
@@ -43887,6 +44021,7 @@ characters.data={
   unicodeslot=0x18A1,
  },
  [0x18A2]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI SSA",
   direction="l",
@@ -43894,6 +44029,7 @@ characters.data={
   unicodeslot=0x18A2,
  },
  [0x18A3]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI CYA",
   direction="l",
@@ -43901,6 +44037,7 @@ characters.data={
   unicodeslot=0x18A3,
  },
  [0x18A4]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI ZHA",
   direction="l",
@@ -43908,6 +44045,7 @@ characters.data={
   unicodeslot=0x18A4,
  },
  [0x18A5]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI ZA",
   direction="l",
@@ -43915,6 +44053,7 @@ characters.data={
   unicodeslot=0x18A5,
  },
  [0x18A6]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI HALF U",
   direction="l",
@@ -43922,6 +44061,7 @@ characters.data={
   unicodeslot=0x18A6,
  },
  [0x18A7]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER ALI GALI HALF YA",
   direction="l",
@@ -43929,6 +44069,7 @@ characters.data={
   unicodeslot=0x18A7,
  },
  [0x18A8]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI BHA",
   direction="l",
@@ -43943,6 +44084,7 @@ characters.data={
   unicodeslot=0x18A9,
  },
  [0x18AA]={
+  arabic="d",
   category="lo",
   description="MONGOLIAN LETTER MANCHU ALI GALI LHA",
   direction="l",
@@ -46143,7 +46285,7 @@ characters.data={
  [0x1A1B]={
   category="mc",
   description="BUGINESE VOWEL SIGN AE",
-  direction="l",
+  direction="nsm",
   linebreak="cm",
   unicodeslot=0x1A1B,
  },
@@ -49270,7 +49412,7 @@ characters.data={
   category="nd",
   description="OL CHIKI DIGIT ZERO",
   direction="l",
-  linebreak="nu",
+  linebreak="pr",
   unicodeslot=0x1C50,
  },
  [0x1C51]={
@@ -58019,6 +58161,38 @@ characters.data={
   linebreak="al",
   unicodeslot=0x2064,
  },
+ [0x2066]={
+  arabic="u",
+  category="cf",
+  description="LEFT-TO-RIGHT ISOLATE",
+  direction="lri",
+  linebreak="cm",
+  unicodeslot=0x2066,
+ },
+ [0x2067]={
+  arabic="u",
+  category="cf",
+  description="RIGHT-TO-LEFT ISOLATE",
+  direction="rli",
+  linebreak="cm",
+  unicodeslot=0x2067,
+ },
+ [0x2068]={
+  arabic="u",
+  category="cf",
+  description="FIRST STRONG ISOLATE",
+  direction="fsi",
+  linebreak="cm",
+  unicodeslot=0x2068,
+ },
+ [0x2069]={
+  arabic="u",
+  category="cf",
+  description="POP DIRECTIONAL ISOLATE",
+  direction="pdi",
+  linebreak="cm",
+  unicodeslot=0x2069,
+ },
  [0x206A]={
   category="cf",
   description="INHIBIT SYMMETRIC SWAPPING",
@@ -58170,8 +58344,8 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0x207E,
-  textclass="open",
   specials={ "super", 0x0028 },
+  textclass="open",
   unicodeslot=0x207D,
  },
  [0x207E]={
@@ -58181,8 +58355,8 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0x207D,
-  textclass="close",
   specials={ "super", 0x0029 },
+  textclass="close",
   unicodeslot=0x207E,
  },
  [0x207F]={
@@ -58320,8 +58494,8 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0x208E,
-  textclass="open",
   specials={ "sub", 0x0028 },
+  textclass="open",
   unicodeslot=0x208D,
  },
  [0x208E]={
@@ -58331,8 +58505,8 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0x208D,
-  textclass="close",
   specials={ "sub", 0x0029 },
+  textclass="close",
   unicodeslot=0x208E,
  },
  [0x2090]={
@@ -58825,9 +58999,9 @@ characters.data={
   category="mn",
   description="COMBINING ANNUITY SYMBOL",
   direction="nsm",
+  linebreak="cm",
   mathclass="topaccent",
   mathname="actuarial",
-  linebreak="cm",
   unicodeslot=0x20E7,
  },
  [0x20E8]={
@@ -64256,8 +64430,14 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-   { class="ord", name="varnothing" },
-   { class="ord", name="diameter" },
+   {
+    class="ord",
+    name="varnothing",
+   },
+   {
+    class="ord",
+    name="diameter",
+   },
   },
   unicodeslot=0x2300,
  },
@@ -83565,7 +83745,6 @@ characters.data={
  },
  [0x2DB4]={
   category="lo",
-  cjkwd="w",
   description="ETHIOPIC SYLLABLE ZZEE",
   direction="l",
   linebreak="al",
@@ -83573,7 +83752,6 @@ characters.data={
  },
  [0x2DB5]={
   category="lo",
-  cjkwd="w",
   description="ETHIOPIC SYLLABLE ZZE",
   direction="l",
   linebreak="al",
@@ -83602,6 +83780,7 @@ characters.data={
  },
  [0x2DBA]={
   category="lo",
+  cjkwd="w",
   description="ETHIOPIC SYLLABLE CCHI",
   direction="l",
   linebreak="al",
@@ -83609,16 +83788,17 @@ characters.data={
  },
  [0x2DBB]={
   category="lo",
+  cjkwd="w",
   description="ETHIOPIC SYLLABLE CCHAA",
   direction="l",
-  linebreak="id",
+  linebreak="al",
   unicodeslot=0x2DBB,
  },
  [0x2DBC]={
   category="lo",
   description="ETHIOPIC SYLLABLE CCHEE",
   direction="l",
-  linebreak="id",
+  linebreak="al",
   unicodeslot=0x2DBC,
  },
  [0x2DBD]={
@@ -83674,14 +83854,14 @@ characters.data={
   category="lo",
   description="ETHIOPIC SYLLABLE QYE",
   direction="l",
-  linebreak="al",
+  linebreak="id",
   unicodeslot=0x2DC5,
  },
  [0x2DC6]={
   category="lo",
   description="ETHIOPIC SYLLABLE QYO",
   direction="l",
-  linebreak="al",
+  linebreak="id",
   unicodeslot=0x2DC6,
  },
  [0x2DC8]={
@@ -83987,7 +84167,6 @@ characters.data={
  },
  [0x2DF6]={
   category="mn",
-  cjkwd="w",
   description="COMBINING CYRILLIC LETTER A",
   direction="nsm",
   linebreak="cm",
@@ -83995,7 +84174,6 @@ characters.data={
  },
  [0x2DF7]={
   category="mn",
-  cjkwd="w",
   description="COMBINING CYRILLIC LETTER IE",
   direction="nsm",
   linebreak="cm",
@@ -84031,6 +84209,7 @@ characters.data={
  },
  [0x2DFC]={
   category="mn",
+  cjkwd="w",
   description="COMBINING CYRILLIC LETTER IOTIFIED A",
   direction="nsm",
   linebreak="cm",
@@ -84038,16 +84217,17 @@ characters.data={
  },
  [0x2DFD]={
   category="mn",
+  cjkwd="w",
   description="COMBINING CYRILLIC LETTER LITTLE YUS",
   direction="nsm",
-  linebreak="id",
+  linebreak="cm",
   unicodeslot=0x2DFD,
  },
  [0x2DFE]={
   category="mn",
   description="COMBINING CYRILLIC LETTER BIG YUS",
   direction="nsm",
-  linebreak="id",
+  linebreak="cm",
   unicodeslot=0x2DFE,
  },
  [0x2DFF]={
@@ -84114,14 +84294,14 @@ characters.data={
   category="po",
   description="RAISED DOTTED INTERPOLATION MARKER",
   direction="on",
-  linebreak="qu",
+  linebreak="id",
   unicodeslot=0x2E07,
  },
  [0x2E08]={
   category="po",
   description="DOTTED TRANSPOSITION MARKER",
   direction="on",
-  linebreak="qu",
+  linebreak="id",
   unicodeslot=0x2E08,
  },
  [0x2E09]={
@@ -87448,7 +87628,7 @@ characters.data={
   contextname="ideographicspace",
   description="IDEOGRAPHIC SPACE",
   direction="ws",
-  linebreak="id",
+  linebreak="ba",
   specials={ "wide", 0x0020 },
   unicodeslot=0x3000,
  },
@@ -87929,7 +88109,7 @@ characters.data={
   cjkwd="w",
   description="VERTICAL KANA REPEAT MARK LOWER HALF",
   direction="l",
-  linebreak="id",
+  linebreak="cm",
   unicodeslot=0x3035,
  },
  [0x3036]={
@@ -112108,6 +112288,7 @@ characters.data={
   unicodeslot=0xA839,
  },
  [0xA840]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER KA",
   direction="l",
@@ -112115,6 +112296,7 @@ characters.data={
   unicodeslot=0xA840,
  },
  [0xA841]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER KHA",
   direction="l",
@@ -112122,6 +112304,7 @@ characters.data={
   unicodeslot=0xA841,
  },
  [0xA842]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER GA",
   direction="l",
@@ -112129,6 +112312,7 @@ characters.data={
   unicodeslot=0xA842,
  },
  [0xA843]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER NGA",
   direction="l",
@@ -112136,6 +112320,7 @@ characters.data={
   unicodeslot=0xA843,
  },
  [0xA844]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER CA",
   direction="l",
@@ -112143,6 +112328,7 @@ characters.data={
   unicodeslot=0xA844,
  },
  [0xA845]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER CHA",
   direction="l",
@@ -112150,6 +112336,7 @@ characters.data={
   unicodeslot=0xA845,
  },
  [0xA846]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER JA",
   direction="l",
@@ -112157,6 +112344,7 @@ characters.data={
   unicodeslot=0xA846,
  },
  [0xA847]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER NYA",
   direction="l",
@@ -112164,6 +112352,7 @@ characters.data={
   unicodeslot=0xA847,
  },
  [0xA848]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER TA",
   direction="l",
@@ -112171,6 +112360,7 @@ characters.data={
   unicodeslot=0xA848,
  },
  [0xA849]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER THA",
   direction="l",
@@ -112178,6 +112368,7 @@ characters.data={
   unicodeslot=0xA849,
  },
  [0xA84A]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER DA",
   direction="l",
@@ -112185,6 +112376,7 @@ characters.data={
   unicodeslot=0xA84A,
  },
  [0xA84B]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER NA",
   direction="l",
@@ -112192,6 +112384,7 @@ characters.data={
   unicodeslot=0xA84B,
  },
  [0xA84C]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER PA",
   direction="l",
@@ -112199,6 +112392,7 @@ characters.data={
   unicodeslot=0xA84C,
  },
  [0xA84D]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER PHA",
   direction="l",
@@ -112206,6 +112400,7 @@ characters.data={
   unicodeslot=0xA84D,
  },
  [0xA84E]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER BA",
   direction="l",
@@ -112213,6 +112408,7 @@ characters.data={
   unicodeslot=0xA84E,
  },
  [0xA84F]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER MA",
   direction="l",
@@ -112220,6 +112416,7 @@ characters.data={
   unicodeslot=0xA84F,
  },
  [0xA850]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER TSA",
   direction="l",
@@ -112227,6 +112424,7 @@ characters.data={
   unicodeslot=0xA850,
  },
  [0xA851]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER TSHA",
   direction="l",
@@ -112234,6 +112432,7 @@ characters.data={
   unicodeslot=0xA851,
  },
  [0xA852]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER DZA",
   direction="l",
@@ -112241,6 +112440,7 @@ characters.data={
   unicodeslot=0xA852,
  },
  [0xA853]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER WA",
   direction="l",
@@ -112248,6 +112448,7 @@ characters.data={
   unicodeslot=0xA853,
  },
  [0xA854]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER ZHA",
   direction="l",
@@ -112255,6 +112456,7 @@ characters.data={
   unicodeslot=0xA854,
  },
  [0xA855]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER ZA",
   direction="l",
@@ -112262,6 +112464,7 @@ characters.data={
   unicodeslot=0xA855,
  },
  [0xA856]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER SMALL A",
   direction="l",
@@ -112272,6 +112475,7 @@ characters.data={
   },
  },
  [0xA857]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER YA",
   direction="l",
@@ -112279,6 +112483,7 @@ characters.data={
   unicodeslot=0xA857,
  },
  [0xA858]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER RA",
   direction="l",
@@ -112286,6 +112491,7 @@ characters.data={
   unicodeslot=0xA858,
  },
  [0xA859]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER LA",
   direction="l",
@@ -112293,6 +112499,7 @@ characters.data={
   unicodeslot=0xA859,
  },
  [0xA85A]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER SHA",
   direction="l",
@@ -112300,6 +112507,7 @@ characters.data={
   unicodeslot=0xA85A,
  },
  [0xA85B]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER SA",
   direction="l",
@@ -112307,6 +112515,7 @@ characters.data={
   unicodeslot=0xA85B,
  },
  [0xA85C]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER HA",
   direction="l",
@@ -112317,6 +112526,7 @@ characters.data={
   },
  },
  [0xA85D]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER A",
   direction="l",
@@ -112324,6 +112534,7 @@ characters.data={
   unicodeslot=0xA85D,
  },
  [0xA85E]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER I",
   direction="l",
@@ -112334,6 +112545,7 @@ characters.data={
   },
  },
  [0xA85F]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER U",
   direction="l",
@@ -112344,6 +112556,7 @@ characters.data={
   },
  },
  [0xA860]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER E",
   direction="l",
@@ -112354,6 +112567,7 @@ characters.data={
   },
  },
  [0xA861]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER O",
   direction="l",
@@ -112361,6 +112575,7 @@ characters.data={
   unicodeslot=0xA861,
  },
  [0xA862]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER QA",
   direction="l",
@@ -112368,6 +112583,7 @@ characters.data={
   unicodeslot=0xA862,
  },
  [0xA863]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER XA",
   direction="l",
@@ -112375,6 +112591,7 @@ characters.data={
   unicodeslot=0xA863,
  },
  [0xA864]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER FA",
   direction="l",
@@ -112382,6 +112599,7 @@ characters.data={
   unicodeslot=0xA864,
  },
  [0xA865]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER GGA",
   direction="l",
@@ -112389,6 +112607,7 @@ characters.data={
   unicodeslot=0xA865,
  },
  [0xA866]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER EE",
   direction="l",
@@ -112396,6 +112615,7 @@ characters.data={
   unicodeslot=0xA866,
  },
  [0xA867]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA SUBJOINED LETTER WA",
   direction="l",
@@ -112403,6 +112623,7 @@ characters.data={
   unicodeslot=0xA867,
  },
  [0xA868]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA SUBJOINED LETTER YA",
   direction="l",
@@ -112413,6 +112634,7 @@ characters.data={
   },
  },
  [0xA869]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER TTA",
   direction="l",
@@ -112420,6 +112642,7 @@ characters.data={
   unicodeslot=0xA869,
  },
  [0xA86A]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER TTHA",
   direction="l",
@@ -112427,6 +112650,7 @@ characters.data={
   unicodeslot=0xA86A,
  },
  [0xA86B]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER DDA",
   direction="l",
@@ -112434,6 +112658,7 @@ characters.data={
   unicodeslot=0xA86B,
  },
  [0xA86C]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER NNA",
   direction="l",
@@ -112441,6 +112666,7 @@ characters.data={
   unicodeslot=0xA86C,
  },
  [0xA86D]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER ALTERNATE YA",
   direction="l",
@@ -112448,6 +112674,7 @@ characters.data={
   unicodeslot=0xA86D,
  },
  [0xA86E]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER VOICELESS SHA",
   direction="l",
@@ -112455,6 +112682,7 @@ characters.data={
   unicodeslot=0xA86E,
  },
  [0xA86F]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER VOICED HA",
   direction="l",
@@ -112462,6 +112690,7 @@ characters.data={
   unicodeslot=0xA86F,
  },
  [0xA870]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA LETTER ASPIRATED FA",
   direction="l",
@@ -112469,6 +112698,7 @@ characters.data={
   unicodeslot=0xA870,
  },
  [0xA871]={
+  arabic="d",
   category="lo",
   description="PHAGS-PA SUBJOINED LETTER RA",
   direction="l",
@@ -112476,6 +112706,7 @@ characters.data={
   unicodeslot=0xA871,
  },
  [0xA872]={
+  arabic="l",
   category="lo",
   description="PHAGS-PA SUPERFIXED LETTER RA",
   direction="l",
@@ -112483,6 +112714,7 @@ characters.data={
   unicodeslot=0xA872,
  },
  [0xA873]={
+  arabic="u",
   category="lo",
   description="PHAGS-PA LETTER CANDRABINDU",
   direction="l",
@@ -127745,8 +127977,8 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0xFE5A,
-  textclass="open",
   specials={ "small", 0x0028 },
+  textclass="open",
   unicodeslot=0xFE59,
  },
  [0xFE5A]={
@@ -127757,8 +127989,8 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0xFE59,
-  textclass="close",
   specials={ "small", 0x0029 },
+  textclass="close",
   unicodeslot=0xFE5A,
  },
  [0xFE5B]={
@@ -127769,8 +128001,8 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0xFE5C,
-  textclass="open",
   specials={ "small", 0x007B },
+  textclass="open",
   unicodeslot=0xFE5B,
  },
  [0xFE5C]={
@@ -127781,8 +128013,8 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0xFE5B,
-  textclass="close",
   specials={ "small", 0x007D },
+  textclass="close",
   unicodeslot=0xFE5C,
  },
  [0xFE5D]={
@@ -127793,8 +128025,8 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0xFE5E,
-  textclass="open",
   specials={ "small", 0x3014 },
+  textclass="open",
   unicodeslot=0xFE5D,
  },
  [0xFE5E]={
@@ -127805,8 +128037,8 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0xFE5D,
-  textclass="close",
   specials={ "small", 0x3015 },
+  textclass="close",
   unicodeslot=0xFE5E,
  },
  [0xFE5F]={
@@ -127866,8 +128098,8 @@ characters.data={
   direction="on",
   linebreak="id",
   mirror=0xFE65,
-  textclass="open",
   specials={ "small", 0x003C },
+  textclass="open",
   unicodeslot=0xFE64,
  },
  [0xFE65]={
@@ -127878,8 +128110,8 @@ characters.data={
   direction="on",
   linebreak="id",
   mirror=0xFE64,
-  textclass="close",
   specials={ "small", 0x003E },
+  textclass="close",
   unicodeslot=0xFE65,
  },
  [0xFE66]={
@@ -129238,8 +129470,8 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0xFF09,
-  textclass="open",
   specials={ "wide", 0x0028 },
+  textclass="open",
   unicodeslot=0xFF08,
  },
  [0xFF09]={
@@ -129250,8 +129482,8 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0xFF08,
-  textclass="close",
   specials={ "wide", 0x0029 },
+  textclass="close",
   unicodeslot=0xFF09,
  },
  [0xFF0A]={
@@ -129442,8 +129674,8 @@ characters.data={
   direction="on",
   linebreak="id",
   mirror=0xFF1E,
-  textclass="open",
   specials={ "wide", 0x003C },
+  textclass="open",
   unicodeslot=0xFF1C,
  },
  [0xFF1D]={
@@ -129464,8 +129696,8 @@ characters.data={
   direction="on",
   linebreak="id",
   mirror=0xFF1C,
-  textclass="close",
   specials={ "wide", 0x003E },
+  textclass="close",
   unicodeslot=0xFF1E,
  },
  [0xFF1F]={
@@ -129782,8 +130014,8 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0xFF3D,
-  textclass="open",
   specials={ "wide", 0x005B },
+  textclass="open",
   unicodeslot=0xFF3B,
  },
  [0xFF3C]={
@@ -129804,8 +130036,8 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0xFF3B,
-  textclass="close",
   specials={ "wide", 0x005D },
+  textclass="close",
   unicodeslot=0xFF3D,
  },
  [0xFF3E]={
@@ -130132,8 +130364,8 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0xFF5D,
-  textclass="open",
   specials={ "wide", 0x007B },
+  textclass="open",
   unicodeslot=0xFF5B,
  },
  [0xFF5C]={
@@ -130154,8 +130386,8 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0xFF5B,
-  textclass="close",
   specials={ "wide", 0x007D },
+  textclass="close",
   unicodeslot=0xFF5D,
  },
  [0xFF5E]={
@@ -130175,8 +130407,8 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0xFF60,
-  textclass="open",
   specials={ "wide", 0x2985 },
+  textclass="open",
   unicodeslot=0xFF5F,
  },
  [0xFF60]={
@@ -130186,8 +130418,8 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0xFF5F,
-  textclass="close",
   specials={ "wide", 0x2986 },
+  textclass="close",
   unicodeslot=0xFF60,
  },
  [0xFF61]={
@@ -130208,8 +130440,8 @@ characters.data={
   direction="on",
   linebreak="op",
   mirror=0xFF63,
-  textclass="open",
   specials={ "narrow", 0x300C },
+  textclass="open",
   unicodeslot=0xFF62,
  },
  [0xFF63]={
@@ -130220,8 +130452,8 @@ characters.data={
   direction="on",
   linebreak="cl",
   mirror=0xFF62,
-  textclass="close",
   specials={ "narrow", 0x300D },
+  textclass="close",
   unicodeslot=0xFF63,
  },
  [0xFF64]={

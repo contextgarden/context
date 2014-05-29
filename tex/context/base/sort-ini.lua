@@ -113,6 +113,7 @@ sorters = {
         defaultlanguage   = v_default,
         defaultmethod     = v_default,
         defaultdigits     = v_numbers,
+        validmethods      = validmethods,
     }
 }
 
@@ -300,9 +301,9 @@ end
 
 local function setlanguage(l,m,d,u)
     language = (l ~= "" and l) or constants.defaultlanguage
-    data = definitions[language or constants.defaultlanguage] or definitions[constants.defaultlanguage]
-    method    = (m ~= "" and m) or data.method    or constants.defaultmethod
-    digits    = (d ~= "" and d) or data.digits    or constants.defaultdigits
+    data     = definitions[language or constants.defaultlanguage] or definitions[constants.defaultlanguage]
+    method   = (m ~= "" and m) or data.method or constants.defaultmethod
+    digits   = (d ~= "" and d) or data.digits or constants.defaultdigits
     if trace_tests then
         report_sorters("setting language %a, method %a, digits %a",language,method,digits)
     end
@@ -386,6 +387,7 @@ local function basic(a,b) -- trace ea and eb
         for j=1,#sequence do
             local m = sequence[j]
             result = basicsort(ea[m],eb[m])
+-- print(m,result)
             if result ~= 0 then
                 return result
             end

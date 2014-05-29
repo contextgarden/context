@@ -5,7 +5,6 @@ if not modules then modules = { } end modules ['x-asciimath'] = {
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
-
 --[[ldx--
 <p>Some backgrounds are discussed in <t>x-asciimath.mkiv</t>.</p>
 --ldx]]--
@@ -15,6 +14,11 @@ local trace_mapping = false  if trackers then trackers.register("modules.asciima
 local asciimath      = { }
 local moduledata     = moduledata or { }
 moduledata.asciimath = asciimath
+
+if not characters then
+    require("char-def")
+    require("char-ini")
+end
 
 local report_asciimath = logs.reporter("mathematics","asciimath")
 
@@ -225,8 +229,8 @@ local vec           = P("vec")      / "\\overrightarrow "
 local dot           = P("dot")      / "\\dot "
 local ddot          = P("ddot")     / "\\ddot "
 
-local left          = P("(:") + P("{:") + P("(") + P("[") + P("{")
-local right         = P(":)") + P(":}") + P(")") + P("]") + P("}")
+local left          = S("{(") * P(":") + S("([{")
+local right         = P(":") * S(")}") + S(")]}")
 local leftnorright  = 1 - left - right
 local singles       = sqrt + text + hat + underline + overbar + vec + ddot + dot
 local doubles       = root + frac + stackrel
@@ -246,13 +250,16 @@ local closegroup    = right/"\\egroup "
 local somescript    = S("^_") * spaces
 local beginargument = Cc("\\bgroup ")
 local endargument   = Cc("\\egroup ")
+local macro         = P("\\") * R("az","AZ")^1
 
 parser = Cs { "main",
 
     scripts     = somescript * V("argument"),
-    division    = Cc("\\frac") * V("argument") * spaces * ignoreslash * spaces * V("argument"),
+    division    = Cc("\\frac") * V("argument") * spaces * ignoreslash * spaces * V("argument")
+                + Cc("\\left.") * V("balanced") * spaces * (P("\\slash ")/"\\middle/") * spaces * V("balanced") * Cc("\\right."),
     double      = doubles * spaces * V("argument") * spaces * V("argument"),
     single      = singles * spaces * V("argument"),
+    macro       = macro,
 
     balanced    = opengroup * (C((leftnorright + V("balanced"))^0)/onlyconverted) * closegroup,
     argument    = V("balanced") + V("token"),
@@ -263,7 +270,7 @@ parser = Cs { "main",
 
     token       = beginargument * (texnic + float + real + number + letter) * endargument,
 
-    step        = V("scripts") + V("division") + V("single") + V("double"),
+    step        = V("scripts") + V("division") + V("macro") + V("single") + V("double"),
     main        = (V("matrix") + V("step") + anychar)^0,
 
 }

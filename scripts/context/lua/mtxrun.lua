@@ -11173,7 +11173,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 23804, stripped down to: 16817
+-- original size: 24291, stripped down to: 17063
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -11360,8 +11360,16 @@ function xml.delete(root,pattern)
             report('deleting',pattern,c,e)
           end
           local d=p.dt
-          remove(d,e.ni)
-          redo_ni(d) 
+          local ni=e.ni
+          if ni<=#d then
+            if false then
+              p.dt[ni]=""
+            else
+              remove(d,ni)
+              redo_ni(d) 
+            end
+          else
+          end
         end
       end
     end
@@ -11491,7 +11499,8 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
       local name=nil
       local ekdt=ek.dt
       local ekat=ek.at
-      local epdt=ek.__p__.dt
+      local ekrt=ek.__p__
+      local epdt=ekrt.dt
       if not attribute or attribute=="" then
         name=(type(ekdt)=="table" and ekdt[1]) or ekdt 
       end
@@ -11514,7 +11523,9 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
           if recursive then
             include(xi,pattern,attribute,recursive,loaddata)
           end
-          epdt[ek.ni]=xml.body(xi) 
+          local child=xml.body(xi) 
+          child.__p__=ekrt
+          epdt[ek.ni]=child
         end
       end
     end
@@ -16882,8 +16893,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 695252
--- stripped bytes    : 246810
+-- original bytes    : 695739
+-- stripped bytes    : 247051
 
 -- end library merge
 

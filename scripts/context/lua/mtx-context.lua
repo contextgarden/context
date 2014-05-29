@@ -704,7 +704,7 @@ function scripts.context.run(ctxdata,filename)
                     --
                     local command = luatex_command(l_flags,c_flags,mainfile,a_engine)
                     --
-                    report("run %s: %s",i,command)
+                    report("run %s: %s",currentrun,command)
                     print("") -- cleaner, else continuation on same line
                     local returncode, errorstring = os.spawn(command)
                     if not returncode then
