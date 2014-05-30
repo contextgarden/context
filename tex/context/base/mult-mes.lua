@@ -1002,6 +1002,15 @@ return {
         ["publications:11"] = {
             en = "unknown command %a",
         },
+        ["publications:12"] = {
+            en = "missing setup: %s",
+        },
+        ["publications:13"] = {
+            en = "no field %a for tag %a",
+        },
+        ["publications:14"] = {
+            en = "unknown rendering alternative %a",
+        },
         ["pushing level: %a"] = {
             nl = "niveau omhoog: %a",
         },

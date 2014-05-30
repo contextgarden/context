@@ -96,7 +96,7 @@ local function finishstructure()
     if #structure_kids > 0 then
         local nums, n = pdfarray(), 0
         for i=1,#tree do
-            n = n + 1 ; nums[n] = i-1
+            n = n + 1 ; nums[n] = i - 1
             n = n + 1 ; nums[n] = pdfreference(pdfflushobject(tree[i]))
         end
         local parenttree = pdfdictionary {

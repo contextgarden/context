@@ -4871,7 +4871,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 33063, stripped down to: 18397
+-- original size: 33334, stripped down to: 18384
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5184,12 +5184,12 @@ local format_f=function(f)
   n=n+1
   return format("format('%%%sf',a%s)",f,n)
 end
-local format_F=function(f)
+local format_F=function()
   n=n+1
   if not f or f=="" then
-    return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or (a%s == 1 and '1') or format('%%.9f',a%s))",n,n,n,n)
+    return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or format((a%s %% 1 == 0) and '%%i' or '%%.9f',a%s))",n,n,n,n)
   else
-    return format("((a%s == 0 and '0') or (a%s == 1 and '1') or format('%%%sf',a%s))",n,n,f,n)
+    return format("format((a%s %% 1 == 0) and '%%i' or '%%%sf',a%s)",n,f,n)
   end
 end
 local format_g=function(f)
@@ -16893,8 +16893,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 695739
--- stripped bytes    : 247051
+-- original bytes    : 696010
+-- stripped bytes    : 247335
 
 -- end library merge
 

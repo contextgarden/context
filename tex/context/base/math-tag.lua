@@ -304,7 +304,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             local left   = getfield(start,"left")
             local degree = getfield(start,"degree")
             if left then
-                start_tagged("")
+                start_tagged("ignore")
                 process(left) -- root symbol, ignored
                 stop_tagged()
             end

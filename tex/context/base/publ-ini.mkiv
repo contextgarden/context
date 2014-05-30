@@ -201,6 +201,8 @@
 \installcorenamespace {btxrendering}
 \installcorenamespace {btxcommand}
 \installcorenamespace {btxnumbering}
+\installcorenamespace {btxrenderingdefinition}
+
 
 \installcommandhandler \??btxdataset     {btxdataset}     \??btxdataset
 \installcommandhandler \??btxlistvariant {btxlistvariant} \??btxlistvariant
@@ -341,10 +343,12 @@
    \dosingleempty\btx_start_rendering}
 
 \def\btx_start_rendering[#1]%
-  {\edef\currentbtxrendering{#1}}
+  {\edef\currentbtxrendering{#1}%
+   \btxrenderingparameter\v!before}
 
 \unexpanded\def\stopbtxrendering
-  {\endgroup}
+  {\btxrenderingparameter\v!after
+   \endgroup}
 
 \unexpanded\def\btxtodo#1%
   {[#1]}
@@ -393,13 +397,22 @@
   {\begingroup
    \edef\currentbtxcategory{\btxfield{category}}%
    \ignorespaces
-   \directsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
+   \edef\currentbtxsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
+   \doifsetupselse\currentbtxsetup
+     \btx_entry_inject_yes
+     \btx_entry_inject_nop
+   \endgroup}
+
+\def\btx_entry_inject_yes
+  {\directsetup\currentbtxsetup
    \removeunwantedspaces
    \ifx\currentbtxcombis\empty \else
      \btxrenderingparameter\c!separator
      \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi
-   \fi
-   \endgroup}
+   \fi}
+
+\def\btx_entry_inject_nop
+  {\tttf \getmessage\m!publications{12}{\currentbtxsetup}}
 
 \def\btx_entry_inject_combi#1%
   {\begingroup
@@ -464,9 +477,9 @@
 
 \def\publ_place_list_indeed
   {\startbtxrendering[\currentbtxrendering]%
-     \directsetup{\btxrenderingparameter\c!setups}%
+   % \directsetup{\btxrenderingparameter\c!setups}% specific initializations
    % \determinelistcharacteristics[\currentbtxrendering]%
-     \edef\currentbtxalternative{\btxrenderingparameter\c!alternative}%
+     \btx_set_rendering_alternative
      \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
      \let\currentlist\s!btx
      \let\currentbtxlist\currentbtxrendering
@@ -968,6 +981,25 @@
 
 %D Loading variants:
 
+\let\currentbtxrenderingdefinition\empty
+\let\currentbtxalternative        \empty
+
+\unexpanded\def\startbtxrenderingdefinitions[#1]%
+  {\pushmacro\currentbtxrenderingdefinition
+   \edef\currentbtxrenderingdefinition{#1}%
+   \letvalue{\??btxrenderingdefinition\currentbtxrenderingdefinition}\currentbtxrenderingdefinition}
+
+\unexpanded\def\stopbtxrenderingdefinitions
+  {\popmacro\currentbtxrenderingdefinition}
+
+\def\btx_set_rendering_alternative
+  {\edef\currentbtxalternative{\btxrenderingparameter\c!alternative}%
+   \ifcsname\??btxrenderingdefinition\currentbtxalternative\endcsname
+     % maybe fall back on apa ?
+   \else
+     \showmessage\m!publications{14}{\currentbtxalternative}%
+   \fi}
+
 \appendtoks
     \loadbtxdefinitionfile[\btxrenderingparameter\c!alternative]
 \to \everysetupbtxrendering
@@ -996,13 +1028,13 @@
    \c!repeat=\v!no,
    \c!continue=\v!no,
    \c!method=\v!global,
-   \c!setups=btx:rendering:\btxrenderingparameter\c!alternative,
+ % \c!setups=btx:\btxrenderingparameter\c!alternative:initialize, % not the same usage as cite !
    \c!alternative=apa,
    \c!sorttype=,
    \c!criterium=,
    \c!refcommand=authoryears,  % todo
    \c!numbering=\v!yes,
-%  \c!autohang=\v!no,
+ % \c!autohang=\v!no, % not used
    \c!width=\v!auto,
    \c!separator={; },
    \c!distance=1.5\emwidth]
@@ -1012,7 +1044,7 @@
 
 \setupbtxcitevariant
   [\c!interaction=\v!start,
-   \c!setups=btx:cite:\btxcitevariantparameter\c!alternative,
+ % \c!setups=btx:cite:initialize,
    \c!alternative=num,
    \c!authorconversion=\v!normal,
    \c!andtext={ \btxlabeltext{and} },

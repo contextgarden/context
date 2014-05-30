@@ -384,7 +384,7 @@ local function findallused(dataset,reference,block,section)
     return okay, todo, tags
 end
 
-local function flushcollected(flush,nofcollected)
+local function flushcollected(reference,flush,nofcollected)
     if nofcollected > 0 then
         flush(1,1)
         if nofcollected > 2 then
@@ -395,6 +395,9 @@ local function flushcollected(flush,nofcollected)
         elseif nofcollected > 1 then
             flush(nofcollected,4)
         end
+    else
+        ctx_btxsettag(reference)
+        ctx_btxcitesetup("unknown")
     end
 end
 
@@ -1324,7 +1327,7 @@ local function processcite(dataset,reference,mark,compress,setup,getter,setter,c
                 ctx_btxsetconcat(state)
                 ctx_btxcitesetup(setup)
             end
-            flushcollected(flush,#target)
+            flushcollected(reference,flush,#target)
         else
             local function flush(i,state)
                 local entry = source[i]
@@ -1348,7 +1351,7 @@ local function processcite(dataset,reference,mark,compress,setup,getter,setter,c
                 end
                 ctx_btxcitesetup(setup)
             end
-            flushcollected(flush,#source)
+            flushcollected(reference,flush,#source)
         end
     end
     if mark then
@@ -1667,7 +1670,7 @@ local function authorconcat(target,key,setup)
         ctx_btxcitesetup(setup)
     end
     ctx_btxstartsubcite(setup)
-    flushcollected(flush,#target)
+    flushcollected(setup,flush,#target)
     ctx_btxstopsubcite()
 end
 

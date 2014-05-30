@@ -21,24 +21,36 @@
 
 % This saves keying:
 
+\startsetups [\s!btx:\s!cite:\s!unknown]
+    \begingroup
+        \showmessage\m!publications{13}{\currentbtxcitevariant,\currentbtxtag}
+        \tttf
+        <\currentbtxcitevariant:\currentbtxtag>
+    \endgroup
+\stopsetups
+
 \startsetups \s!btx:\s!cite:common:normal
-    \ifx\currentbtxsecond\empty
+    \ifx\currentbtxfirst\empty
+        \directsetup{\s!btx:\s!cite:\s!unknown}
+    \else\ifx\currentbtxsecond\empty
         \currentbtxfirst
     \else
         \currentbtxfirst
         \btxcitevariantparameter\v!inbetween
         \currentbtxsecond
-    \fi
+    \fi\fi
 \stopsetups
 
 \startsetups \s!btx:\s!cite:common:range
-    \ifx\currentbtxsecond\empty
+    \ifx\currentbtxfirst\empty
+        \directsetup{\s!btx:\s!cite:\s!unknown}
+    \else\ifx\currentbtxsecond\empty
         \currentbtxfirst
     \else
         \currentbtxfirst
         \btxcitevariantparameter\c!range
         \currentbtxsecond
-    \fi
+    \fi\fi
 \stopsetups
 
 \startsetups \s!btx:\s!cite:concat
@@ -51,31 +63,15 @@
     \fi
 \stopsetups
 
-% \startsetups \s!btx:\s!cite:render:normal
-%     \directsetup{\s!btx:\s!cite:concat}
-%     \ifconditional\btxinteractive
-%         \goto {
-%             \btxcitereference
-%             \directsetup{\s!btx:\s!cite:common:normal}
-%         } [
-%             \s!internal(\currentbtxinternal)
-%         ]
-%     \else
-%         \directsetup{\s!btx:\s!cite:common:normal}
-%     \fi
-% \stopsetups
-%
-% more efficient (less tokens, less expansion):
-
 \startsetups \s!btx:\s!cite:render:normal
     \directsetup{\s!btx:\s!cite:concat}
-    \ifconditional\btxinteractive
+    \ifx\currentbtxfirst\empty
+        \directsetup{\s!btx:\s!cite:\s!unknown}
+    \else\ifconditional\btxinteractive
         \goto {
             \btxcitereference
-            \ifx\currentbtxsecond\empty
-                \currentbtxfirst
-            \else
-                \currentbtxfirst
+            \currentbtxfirst
+            \ifx\currentbtxsecond\empty \else
                 \btxcitevariantparameter\v!inbetween
                 \currentbtxsecond
             \fi
@@ -83,41 +79,23 @@
             \s!internal(\currentbtxinternal)
         ]
     \else
-        \ifx\currentbtxsecond\empty
-            \currentbtxfirst
-        \else
-            \currentbtxfirst
+        \currentbtxfirst
+        \ifx\currentbtxsecond\empty \else
             \btxcitevariantparameter\v!inbetween
             \currentbtxsecond
         \fi
-    \fi
+    \fi\fi
 \stopsetups
-
-% \startsetups \s!btx:\s!cite:render:range
-%     \directsetup{\s!btx:\s!cite:concat}
-%     \ifconditional\btxinteractive
-%         \goto {
-%             \btxcitereference
-%             \directsetup{\s!btx:\s!cite:common:range}
-%         } [
-%             \s!internal(\currentbtxinternal)
-%         ]
-%     \else
-%         \directsetup{\s!btx:\s!cite:common:range}
-%     \fi
-% \stopsetups
-%
-% more efficient (less tokens, less expansion):
 
 \startsetups \s!btx:\s!cite:render:range
     \directsetup{\s!btx:\s!cite:concat}
-    \ifconditional\btxinteractive
+    \ifx\currentbtxfirst\empty
+        \directsetup{\s!btx:\s!cite:missing}
+    \else\ifconditional\btxinteractive
         \goto {
             \btxcitereference
-            \ifx\currentbtxsecond\empty
-                \currentbtxfirst
-            \else
-                \currentbtxfirst
+            \currentbtxfirst
+            \ifx\currentbtxsecond\empty \else
                 \btxcitevariantparameter\c!range
                 \currentbtxsecond
             \fi
@@ -125,14 +103,12 @@
             \s!internal(\currentbtxinternal)
         ]
     \else
-        \ifx\currentbtxsecond\empty
-            \currentbtxfirst
-        \else
-            \currentbtxfirst
+        \currentbtxfirst
+        \ifx\currentbtxsecond\empty \else
             \btxcitevariantparameter\c!range
             \currentbtxsecond
         \fi
-    \fi
+    \fi\fi
 \stopsetups
 
 \startsetups \s!btx:\s!cite:render:variant
@@ -152,11 +128,13 @@
 % author lists: can be less
 
 \startsetups \s!btx:\s!cite:common:author
-    \ifx\currentbtxcitevariant\v!normal
+    \ifx\currentbtxfirst\empty
+        \directsetup{\s!btx:\s!cite:\s!unknown}
+    \else\ifx\currentbtxcitevariant\v!normal
         \currentbtxfirst
     \else
         \currentbtxciteauthor
-    \fi
+    \fi\fi
     \ifx\currentbtxsecond\empty \else
         \btxcitevariantparameter\v!inbetween
         \currentbtxsecond
@@ -233,15 +211,18 @@
     \directsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 
-\startsetups \s!btx:\s!cite:doi
-  \directsetup{\s!btx:\s!cite:render:variant}
-\stopsetups
 \startsetups \s!btx:\s!cite:render:doi
-    \hyphenatedurl{\currentbtxfirst}
+    \ifx\currentbtxfirst\empty
+        \directsetup{\s!btx:\s!cite:\s!unknown}
+    \else
+        \hyphenatedurl{\currentbtxfirst}
+    \fi
 \stopsetups
 
 \startsetups \s!btx:\s!cite:url
-    \ifconditional\btxinteractive
+    \ifx\currentbtxfirst\empty
+        \directsetup{\s!btx:\s!cite:\s!unknown}
+    \else\ifconditional\btxinteractive
         \goto {
             \btxcitereference
             \hyphenatedurl{\currentbtxfirst}
@@ -250,7 +231,7 @@
         ]
     \else
         \hyphenatedurl{\currentbtxfirst}
-    \fi
+    \fi\fi
 \stopsetups
 
 \protect

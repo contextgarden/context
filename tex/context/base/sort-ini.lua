@@ -101,11 +101,11 @@ local predefinedmethods = {
 }
 
 sorters = {
-    comparers   = comparers,
-    splitters   = splitters,
-    definitions = definitions,
-    tracers     = tracers,
-    constants   = {
+    comparers    = comparers,
+    splitters    = splitters,
+    definitions  = definitions,
+    tracers      = tracers,
+    constants    = {
         ignoredoffset     = ignoredoffset,
         replacementoffset = replacementoffset,
         digitsoffset      = digitsoffset,
