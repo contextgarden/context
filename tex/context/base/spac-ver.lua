@@ -879,6 +879,8 @@ local special_penalty_xxx =     0
 -- header don't break but also make sure that we have at least a decent
 -- break when we have succesive ones (often when testing)
 
+-- todo: mark headers as such so that we can recognize them
+
 local specialmethods = { }
 local specialmethod  = 1
 
@@ -927,10 +929,21 @@ specialmethods[1] = function(start,penalty)
                         return
                     end
                 elseif trace_specials then
-                    report_specials("  context %a, higher level, continue",p)
+                    report_specials("  context penalty %a, higher level, continue",p)
                 end
-            elseif trace_specials then
-                report_specials("  regular penalty, continue")
+            else
+                local p = getfield(current,"penalty")
+                if p < 10000 then
+                    -- assume some other mechanism kicks in so we seem to have content
+                    if trace_specials then
+                        report_specials("  regular penalty %a, quitting",p)
+                    end
+                    break
+                else
+                    if trace_specials then
+                        report_specials("  regular penalty %a, continue",p)
+                    end
+                end
             end
         end
         current = getprev(current)

@@ -139,23 +139,26 @@ function synonyms.sort(data,options)
     sorters.sort(data.result,synonyms.compare)
 end
 
-function synonyms.finalize(data,options)
+function synonyms.finalize(data,options) -- mostly the same as registers so we will generalize it: sorters.split
     local result = data.result
     data.metadata.nofsorted = #result
-    local split = { }
+    local split, nofsplit, lasttag, done, nofdone = { }, 0, nil, nil, 0
+    local firstofsplit = sorters.firstofsplit
     for k=1,#result do
         local v = result[k]
         local entry, tag = firstofsplit(v)
-        local s = split[entry] -- keeps track of change
-        local d
-        if not s then
-            d = { }
-            s = { tag = tag, data = d }
-            split[entry] = s
-        else
-            d = s.data
+        if tag ~= lasttag then
+         -- if trace_registers then
+         --     report_registers("splitting at %a",tag)
+         -- end
+            done     = { }
+            nofdone  = 0
+            nofsplit = nofsplit + 1
+            lasttag  = tag
+            split[nofsplit] = { tag = tag, data = done }
         end
-        d[#d+1] = v
+        nofdone = nofdone + 1
+        done[nofdone] = v
     end
     data.result = split
 end
@@ -168,10 +171,9 @@ local ctx_synonymentry = context.synonymentry
 function synonyms.flush(data,options)
     local kind = data.metadata.kind -- hack, will be done better
     local result = data.result
-    local sorted = table.sortedkeys(result)
-    for k=1,#sorted do
-        local letter = sorted[k]
-        local sublist = result[letter]
+    for i=1,#result do
+        local sublist = result[i]
+        local letter = sublist.tag
         local data = sublist.data
         for d=1,#data do
             local entry = data[d].definition

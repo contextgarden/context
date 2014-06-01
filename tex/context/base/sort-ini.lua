@@ -39,11 +39,18 @@ relatively easy to do.</p>
 how they map onto this mechanism. I've learned that users can come up
 with any demand so nothing here is frozen.</p>
 
+<p>Todo: I ran into the Unicode Collation document and noticed that
+there are some similarities (like the weights) but using that method
+would still demand extra code for language specifics. One option is
+to use the allkeys.txt file for the uc vectors but then we would also
+use the collapsed key (sq, code is now commented). In fact, we could
+just hook those into the replacer code that we reun beforehand.</p>
+
 <p>In the future index entries will become more clever, i.e. they will
 have language etc properties that then can be used.</p>
 ]]--
 
-local gsub, rep, sub, sort, concat = string.gsub, string.rep, string.sub, table.sort, table.concat
+local gsub, rep, sub, sort, concat, tohash, format = string.gsub, string.rep, string.sub, table.sort, table.concat, table.tohash, string.format
 local utfbyte, utfchar, utfcharacters, utfvalues = utf.byte, utf.char, utf.characters, utf.values
 local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawset
 
@@ -52,6 +59,7 @@ local setmetatableindex = table.setmetatableindex
 
 local trace_tests       = false  trackers.register("sorters.tests",   function(v) trace_tests   = v end)
 local trace_methods     = false  trackers.register("sorters.methods", function(v) trace_methods = v end)
+local trace_orders      = false  trackers.register("sorters.orders",  function(v) trace_orders  = v end)
 
 local report_sorters    = logs.reporter("languages","sorters")
 
@@ -65,7 +73,9 @@ local digitsoffset      = 0x20000 -- frozen
 local digitsmaximum     = 0xFFFFF -- frozen
 
 local lccodes           = characters.lccodes
+local uccodes           = characters.uccodes
 local lcchars           = characters.lcchars
+local ucchars           = characters.ucchars
 local shchars           = characters.shchars
 local fscodes           = characters.fscodes
 local fschars           = characters.fschars
@@ -81,7 +91,7 @@ local v_after           = variables.after
 local v_first           = variables.first
 local v_last            = variables.last
 
-local validmethods      = table.tohash {
+local validmethods      = tohash {
     "ch", -- raw character (for tracing)
     "mm", -- minus mapping
     "zm", -- zero  mapping
@@ -169,12 +179,12 @@ local function preparetables(data)
         __index = function(t,k)
             local n, nn
             if k then
-                if trace_tests then
+                if trace_orders then
                     report_sorters("simplifing character %C",k)
                 end
                 local l = lower[k] or lcchars[k]
                 if l then
-                    if trace_tests then
+                    if trace_orders then
                         report_sorters(" 1 lower: %C",l)
                     end
                     local ml = rawget(t,l)
@@ -185,7 +195,7 @@ local function preparetables(data)
                             nn = nn + 1
                             n[nn] = ml[i] + (t.__delta or 0)
                         end
-                        if trace_tests then
+                        if trace_orders then
                             report_sorters(" 2 order: % t",n)
                         end
                     end
@@ -193,7 +203,7 @@ local function preparetables(data)
                 if not n then
                     local s = shchars[k] -- maybe all components?
                     if s and s ~= k then
-                        if trace_tests then
+                        if trace_orders then
                             report_sorters(" 3 shape: %C",s)
                         end
                         n = { }
@@ -201,7 +211,7 @@ local function preparetables(data)
                         for l in utfcharacters(s) do
                             local ml = rawget(t,l)
                             if ml then
-                                if trace_tests then
+                                if trace_orders then
                                     report_sorters(" 4 keep: %C",l)
                                 end
                                 if ml then
@@ -213,7 +223,7 @@ local function preparetables(data)
                             else
                                 l = lower[l] or lcchars[l]
                                 if l then
-                                    if trace_tests then
+                                    if trace_orders then
                                         report_sorters(" 5 lower: %C",l)
                                     end
                                     local ml = rawget(t,l)
@@ -232,7 +242,7 @@ local function preparetables(data)
                      --
                      -- s = fschars[k]
                      -- if s and s ~= k then
-                     --     if trace_tests then
+                     --     if trace_orders then
                      --         report_sorters(" 6 split: %s",s)
                      --     end
                      --     local ml = rawget(t,s)
@@ -247,24 +257,24 @@ local function preparetables(data)
                      -- end
                         local b = utfbyte(k)
                         n = decomposed[b] or { b }
-                        if trace_tests then
+                        if trace_orders then
                             report_sorters(" 6 split: %s",utf.tostring(b)) -- todo
                         end
                     end
                     if n then
-                        if trace_tests then
+                        if trace_orders then
                             report_sorters(" 7 order: % t",n)
                         end
                     else
                         n = noorder
-                        if trace_tests then
+                        if trace_orders then
                             report_sorters(" 8 order: 0")
                         end
                     end
                 end
             else
                 n = noorder
-                if trace_tests then
+                if trace_orders then
                     report_sorters(" 9 order: 0")
                 end
             end
@@ -334,8 +344,8 @@ local function setlanguage(l,m,d,u)
             report_sorters("invalid sorter method %a in %a",s,method)
         end
     end
+    usedinsequence = tohash(sequence)
     data.sequence = sequence
-    usedinsequence = table.tohash(sequence)
     data.usedinsequence = usedinsequence
 -- usedinsequence.ch = true -- better just store the string
     if trace_tests then
@@ -387,7 +397,6 @@ local function basic(a,b) -- trace ea and eb
         for j=1,#sequence do
             local m = sequence[j]
             result = basicsort(ea[m],eb[m])
--- print(m,result)
             if result ~= 0 then
                 return result
             end
@@ -438,6 +447,36 @@ local function basic(a,b) -- trace ea and eb
         end
     end
 end
+
+-- if we use sq:
+--
+-- local function basic(a,b) -- trace ea and eb
+--     local ea, eb = a.split, b.split
+--     local na, nb = #ea, #eb
+--     if na == 0 and nb == 0 then
+--         -- simple variant (single word)
+--         return basicsort(ea.sq,eb.sq)
+--     else
+--         -- complex variant, used in register (multiple words)
+--         local result = 0
+--         for i=1,nb < na and nb or na do
+--             local eai, ebi = ea[i], eb[i]
+--             result = basicsort(ea.sq,eb.sq)
+--             if result ~= 0 then
+--                 return result
+--             end
+--         end
+--         if result ~= 0 then
+--             return result
+--         elseif na > nb then
+--             return 1
+--         elseif nb > na then
+--             return -1
+--         else
+--             return 0
+--         end
+--     end
+-- end
 
 comparers.basic = basic
 
@@ -531,10 +570,15 @@ function splitters.utf(str,checked) -- we could append m and u but this is clean
         else
             n = n + 1
             local l = lower[sc]
-            l = l and utfbyte(l) or lccodes[b]
+            l = l and utfbyte(l) or lccodes[b] or b
+         -- local u = upper[sc]
+         -- u = u and utfbyte(u) or uccodes[b] or b
             if type(l) == "table" then
                 l = l[1] -- there are currently no tables in lccodes but it can be some, day
             end
+         -- if type(u) == "table" then
+         --     u = u[1] -- there are currently no tables in lccodes but it can be some, day
+         -- end
             z_case[n] = l
             if l ~= b then
                 m_case[n] = l - 1
@@ -593,9 +637,9 @@ function splitters.utf(str,checked) -- we could append m and u but this is clean
     --         p_mapping = { p_mappings[fs][1] }
     --     end
     -- end
-
+    local result
     if checked then
-        return {
+        result = {
             ch = trace_tests       and char      or nil, -- not in sequence
             uc = usedinsequence.uc and byte      or nil,
             mc = usedinsequence.mc and m_case    or nil,
@@ -606,7 +650,7 @@ function splitters.utf(str,checked) -- we could append m and u but this is clean
             pm = usedinsequence.pm and p_mapping or nil,
         }
     else
-        return {
+        result = {
             ch = char,
             uc = byte,
             mc = m_case,
@@ -617,7 +661,15 @@ function splitters.utf(str,checked) -- we could append m and u but this is clean
             pm = p_mapping,
         }
     end
-
+ -- local sq, n = { }, 0
+ -- for i=1,#byte do
+ --     for s=1,#sequence do
+ --         n = n + 1
+ --         sq[n] = result[sequence[s]][i]
+ --     end
+ -- end
+ -- result.sq = sq
+    return result
 end
 
 local function packch(entry)
@@ -648,11 +700,11 @@ local function packuc(entry)
     if #split > 0 then -- useless test
         local t = { }
         for i=1,#split do
-            t[i] = concat(split[i].uc, " ")
+            t[i] = concat(split[i].uc, " ") -- sq
         end
         return concat(t," + ")
     else
-        return concat(split.uc," ")
+        return concat(split.uc," ") -- sq
     end
 end
 

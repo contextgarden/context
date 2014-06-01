@@ -24,6 +24,8 @@
 %D \NEWLINE\ and \NEWPAGE\ active and assigning them
 %D \type{\obeysomething}, but first we set some default values.
 
+% These are expandable!
+
 \def\obeyedspace {\space}
 \def\obeyedtab   {\obeyedspace}
 \def\obeyedline  {\par}
@@ -36,7 +38,10 @@
 %D spaces (control spaces) we only have to adapt the definition
 %D of \type{\obeyedspace} to:
 
-\unexpanded\def\controlspace{\hbox{\char32}} % rather tex, we need the unicode value
+\chardef\asciispacechar\spaceasciicode % a real space character
+
+\unexpanded\def\naturalspace{\asciispacechar}
+\unexpanded\def\controlspace{\hbox{\asciispacechar}}               % rather tex, we need the unicode value
 \unexpanded\def\normalspaces{\catcode\spaceasciicode\spacecatcode}
 
 \bgroup

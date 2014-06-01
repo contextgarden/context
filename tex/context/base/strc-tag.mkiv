@@ -11,6 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% labels: no language needed
 % key/values and other names might change (and probably will)
 
 \writestatus{loading}{ConTeXt Structure Macros / Tags}
@@ -175,6 +176,11 @@
    \else
      \expandafter\strc_tags_element_stop_yes
    \fi}
+
+% if mainlanguage == en we can even omit the label (default to tag) which is faster
+%
+% \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
+%   {\ctxcommand{starttag("#1",{label="#1",userdata=\!!bs#2\!!es})}}
 
 \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
   {\ctxcommand{starttag("#1",{label="\dogetupsometaglabeltext{#1}",userdata=\!!bs#2\!!es})}}

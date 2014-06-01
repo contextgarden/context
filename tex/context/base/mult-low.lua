@@ -126,7 +126,7 @@ return {
         "twoperemspace", "threeperemspace", "fourperemspace", "fiveperemspace", "sixperemspace",
         "figurespace", "punctuationspace", "hairspace",
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
-        "optionalspace",
+        "optionalspace", "asciispacechar",
     },
     ["helpers"] = {
         --
@@ -241,7 +241,7 @@ return {
         "removetoks", "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
         "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace", "nbsp",
-        "obeyspaces", "obeylines", "obeyedspace", "obeyedline",
+        "obeyspaces", "obeylines", "obeyedspace", "obeyedline", "obeyedtab", "obeyedpage",
         "normalspace",
         --
         "executeifdefined",

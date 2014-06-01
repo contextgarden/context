@@ -376,6 +376,15 @@
 \unexpanded\def\specialstretchedspace{\hskip.5\interwordspace\s!plus.125\interwordspace\relax} % \interwordstretch can be zero
 \unexpanded\def\specialcontrolspace  {\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}
 
+% \unexpanded\def\taggedspecialfixedspace    {\hskip\zeropoint\asciispacechar\hskip\zeropoint}
+% \unexpanded\def\taggedspecialobeyedspace   {\hskip\zeropoint\asciispacechar\hskip\zeropoint}
+% \unexpanded\def\taggedspecialstretchedspace{\hskip\zeropoint\asciispacechar\hskip\zeropoint}
+% \unexpanded\def\taggedspecialcontrolspace  {\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}
+
+\appendtoks
+    \unexpanded\def\obeyedspace{\hskip\zeropoint\asciispacechar\hskip\zeropoint}%
+\to \everyenableelements
+
 \unexpanded\def\obeyhyphens
   {\let\obeyedspace \specialobeyedspace % maybe \specialstretchedspace
    \let\controlspace\specialcontrolspace
@@ -873,7 +882,7 @@
 \newcount      \c_buff_verbatim_current
 \newconditional\c_buff_optimize_linebreaks
 
-\def\doverbatimspace           {\obeyedspace}
+           \def\doverbatimspace           {\obeyedspace}
 
 \unexpanded\def\doinlineverbatimstart     {}
 \unexpanded\def\doinlineverbatimstop      {}
