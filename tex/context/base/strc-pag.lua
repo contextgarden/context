@@ -61,10 +61,12 @@ function pages.save(prefixdata,numberdata,extradata)
         if trace_pages then
             report_pages("saving page %s.%s",realpage,userpage)
         end
+        local viewerprefix = extradata.viewerprefix
+        local state = extradata.state
         local data = {
             number       = userpage,
-            viewerprefix = extradata.viewerprefix,
-            state        = extradata.state,
+            viewerprefix = viewerprefix ~= "" and viewerprefix or nil,
+            state        = state ~= "" and state or nil, -- maybe let "start" be default
             block        = sections.currentblock(),
             prefixdata   = prefixdata and helpers.simplify(prefixdata),
             numberdata   = numberdata and helpers.simplify(numberdata),

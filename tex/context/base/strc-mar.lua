@@ -29,7 +29,6 @@ local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getlist            = nuts.getlist
 local getattr            = nuts.getattr
-local setattr            = nuts.setattr
 local getbox             = nuts.getbox
 
 local traversenodes      = nuts.traverse

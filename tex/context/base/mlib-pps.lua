@@ -217,21 +217,34 @@ local function checkandconvert(ca,cb)
     end
 end
 
+-- We keep textexts in a shared list (as it's easier that way and we also had that in
+-- the beginning). Each graphic gets its own (1 based) subtable so that we can also
+-- handle multiple conversions in one go which is needed when we process mp files
+-- directly.
+
 local stack   = { } -- quick hack, we will pass topofstack around
 local top     = nil
 local nofruns = 0 -- askedfig: "all", "first", number
 
-local function startjob(texmode)
-    top = {
-        textexts = { }, -- all boxes, optionally with a different color
-        texslots = { }, -- references to textexts in order or usage
-        texorder = { }, -- references to textexts by mp index
+local function preset(t,k)
+    -- references to textexts by mp index
+    local v = {
         textrial = 0,
         texfinal = 0,
-        -- used by tx plugin
+        texslots = { },
+        texorder = { },
         texhash  = { },
+    }
+    t[k] = v
+    return v
+end
+
+local function startjob(texmode)
+    top = {
+        textexts = { },                          -- all boxes, optionally with a different color
         texlast  = 0,
-        texmode  = texmode, -- some day we can then skip all pre/postscripts
+        texdata  = setmetatableindex({},preset), -- references to textexts in order or usage
+        texmode  = texmode,                      -- some day we can then skip all pre/postscripts
     }
     insert(stack,top)
     if trace_runs then
@@ -245,7 +258,7 @@ local function stopjob()
         for n, tn in next, top.textexts do
             free_list(tn)
             if trace_textexts then
-                report_textexts("freeing box %s",n)
+                report_textexts("freeing text %s",n)
             end
         end
         if trace_runs then
@@ -508,21 +521,23 @@ local do_safeguard = ";"
 local f_text_data  = formatters["mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"]
 
 function metapost.textextsdata()
-    local texorder     = top.texorder
     local textexts     = top.textexts
     local collected    = { }
     local nofcollected = 0
-    for n=1,#texorder do
-        local box = textexts[texorder[n]]
-        if box then
-            local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
-            if trace_textexts then
-                report_textexts("passed data item %s: (%p,%p,%p)",n,wd,ht,dp)
+    for k, data in sortedhash(top.texdata) do -- sort is nicer in trace
+        local texorder = data.texorder
+        for n=1,#texorder do
+            local box = textexts[texorder[n]]
+            if box then
+                local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
+                if trace_textexts then
+                    report_textexts("passed data item %s:%s > (%p,%p,%p)",k,n,wd,ht,dp)
+                end
+                nofcollected = nofcollected + 1
+                collected[nofcollected] = f_text_data(n,wd,n,ht,n,dp)
+            else
+                break
             end
-            nofcollected = nofcollected + 1
-            collected[nofcollected] = f_text_data(n,wd,n,ht,n,dp)
-        else
-            break
         end
     end
     return collected
@@ -860,6 +875,7 @@ end
 
 local function tx_reset()
     if top then
+        -- why ?
         top.texhash = { }
         top.texlast = 0
     end
@@ -873,10 +889,11 @@ local ctx_MPLIBsetNtext = context.MPLIBsetNtext
 local ctx_MPLIBsetCtext = context.MPLIBsetCtext
 
 local function tx_analyze(object,prescript) -- todo: hash content and reuse them
+    local data = top.texdata[metapost.properties.number]
     local tx_stage = prescript.tx_stage
     if tx_stage == "trial" then
-        local tx_trial = top.textrial + 1
-        top.textrial = tx_trial
+        local tx_trial = data.textrial + 1
+        data.textrial = tx_trial
         local tx_number = tonumber(prescript.tx_number)
         local s = object.postscript or ""
         local c = object.color -- only simple ones, no transparency
@@ -889,7 +906,7 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
         local a = prescript.tr_alternative
         local t = prescript.tr_transparency
         local h = fmt(tx_number,a or "-",t or "-",c or "-")
-        local n = top.texhash[h] -- todo: hashed variant with s (nicer for similar labels)
+        local n = data.texhash[h] -- todo: hashed variant with s (nicer for similar labels)
         if not n then
             local tx_last = top.texlast + 1
             top.texlast = tx_last
@@ -918,31 +935,31 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
             end
             top.multipass = true
             metapost.multipass = true -- ugly
-            top.texhash[h] = tx_last
-            top.texslots[tx_trial] = tx_last
-            top.texorder[tx_number] = tx_last
+            data.texhash [h]         = tx_last
+            data.texslots[tx_trial]  = tx_last
+            data.texorder[tx_number] = tx_last
             if trace_textexts then
                 report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,tx_trial,tx_number,tx_last,h)
             end
         else
-            top.texslots[tx_trial] = n
+            data.texslots[tx_trial] = n
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,tx_trial,tx_number,n,h)
+                report_textexts("stage %a, usage %a, number %a, old %a, hash %a",tx_stage,tx_trial,tx_number,n,h)
             end
         end
     elseif tx_stage == "extra" then
-        local tx_trial = top.textrial + 1
-        top.textrial = tx_trial
+        local tx_trial = data.textrial + 1
+        data.textrial = tx_trial
         local tx_number = tonumber(prescript.tx_number)
-        if not top.texorder[tx_number] then
+        if not data.texorder[tx_number] then
             local s = object.postscript or ""
             local tx_last = top.texlast + 1
             top.texlast = tx_last
             context.MPLIBsettext(tx_last,s)
             top.multipass = true
             metapost.multipass = true -- ugly
-            top.texslots[tx_trial] = tx_last
-            top.texorder[tx_number] = tx_last
+            data.texslots[tx_trial] = tx_last
+            data.texorder[tx_number] = tx_last
             if trace_textexts then
                 report_textexts("stage %a, usage %a, number %a, extra %a",tx_stage,tx_trial,tx_number,tx_last)
             end
@@ -951,15 +968,16 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
 end
 
 local function tx_process(object,prescript,before,after)
-    local tx_number = prescript.tx_number
+    local data = top.texdata[metapost.properties.number]
+    local tx_number = tonumber(prescript.tx_number)
     if tx_number then
-        tx_number = tonumber(tx_number)
         local tx_stage = prescript.tx_stage
         if tx_stage == "final" then
-            top.texfinal = top.texfinal + 1
-            local n = top.texslots[top.texfinal]
+            local tx_final = data.texfinal + 1
+            data.texfinal = tx_final
+            local n = data.texslots[tx_final]
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, use %a",tx_stage,top.texfinal,tx_number,n)
+                report_textexts("stage %a, usage %a, number %a, use %a",tx_stage,tx_final,tx_number,n)
             end
             local sx, rx, ry, sy, tx, ty = cm(object) -- needs to be frozen outside the function
             local box = top.textexts[n]
@@ -983,7 +1001,7 @@ local function tx_process(object,prescript,before,after)
             if not trace_textexts then
                 object.path = false -- else: keep it
             end
-            object.color = false
+            object.color   = false
             object.grouped = true
         end
     end
@@ -1120,8 +1138,9 @@ local function ps_process(object,prescript,before,after)
         local first, third  = op[1], op[3]
         local x, y = first.x_coord, first.y_coord
         local w, h = third.x_coord - x, third.y_coord - y
-        x = x - metapost.llx
-        y = metapost.ury - y
+        local properties = metapost.properties
+        x = x - properties.llx
+        y = properties.ury - y
         before[#before+1] = function()
             context.MPLIBpositionwhd(ps_label,x,y,w,h)
         end

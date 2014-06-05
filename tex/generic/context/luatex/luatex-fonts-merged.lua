@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/01/14 13:44:02
+-- merge date  : 06/05/14 23:04:38
 
 do -- begin closure to overcome local limits and interference
 
@@ -217,9 +217,12 @@ patterns.integer=sign^-1*digit^1
 patterns.unsigned=digit^0*period*digit^1
 patterns.float=sign^-1*patterns.unsigned
 patterns.cunsigned=digit^0*comma*digit^1
+patterns.cpunsigned=digit^0*(period+comma)*digit^1
 patterns.cfloat=sign^-1*patterns.cunsigned
+patterns.cpfloat=sign^-1*patterns.cpunsigned
 patterns.number=patterns.float+patterns.integer
 patterns.cnumber=patterns.cfloat+patterns.integer
+patterns.cpnumber=patterns.cpfloat+patterns.integer
 patterns.oct=zero*octdigit^1
 patterns.octal=patterns.oct
 patterns.HEX=zero*P("X")*(digit+uppercase)^1
@@ -636,21 +639,22 @@ function lpeg.append(list,pp,delayed,checked)
   end
   return p
 end
-local function make(t)
-  local p
+local function make(t,hash)
+  local p=P(false)
   local keys=sortedkeys(t)
   for i=1,#keys do
     local k=keys[i]
     local v=t[k]
-    if not p then
+    local h=hash[v]
+    if h then
       if next(v) then
-        p=P(k)*make(v)
+        p=p+P(k)*(make(v,hash)+P(true))
       else
-        p=P(k)
+        p=p+P(k)*P(true)
       end
     else
       if next(v) then
-        p=p+P(k)*make(v)
+        p=p+P(k)*make(v,hash)
       else
         p=p+P(k)
       end
@@ -660,16 +664,20 @@ local function make(t)
 end
 function lpeg.utfchartabletopattern(list) 
   local tree={}
+  local hash={}
   for i=1,#list do
     local t=tree
     for c in gmatch(list[i],".") do
-      if not t[c] then
-        t[c]={}
+      local tc=t[c]
+      if not tc then
+        tc={}
+        t[c]=tc
       end
-      t=t[c]
+      t=tc
     end
+    hash[t]=list[i]
   end
-  return make(tree)
+  return make(tree,hash)
 end
 patterns.containseol=lpeg.finder(eol)
 local function nextstep(n,step,result)
@@ -2668,6 +2676,7 @@ local striplinepatterns={
   ["retain"]=p_retain_normal,
   ["retain and collapse"]=p_retain_collapse,
   ["retain and no empty"]=p_retain_noempty,
+  ["collapse"]=patterns.collapser,
 }
 strings.striplinepatterns=striplinepatterns
 function strings.striplines(str,how)

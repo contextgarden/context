@@ -1117,3 +1117,28 @@
 % \global\advance\commalevel \minusone
 
 \protect
+
+%\unprotect
+%  \installcorenamespace {test} \installcommandhandler \??test {test} \??test
+%  \unexpanded\def\TestMeA[#1]%
+%    {\edef\currenttest{#1}
+%     \edef\p_before{\testparameter\c!before}%
+%     \ifx\p_before\empty \relax \else \relax \fi}
+%  \unexpanded\def\TestMeB[#1]%
+%    {\edef\currenttest{#1}
+%     \doifelsenothing{\testparameter\c!before}\relax\relax}
+%  \unexpanded\def\TestMeC[#1]%
+%    {\edef\currenttest{#1}
+%     \expandafter\expandafter\expandafter\ifx\testparameter\c!before\empty \relax \else \relax \fi}
+%  \unexpanded\def\TestMeD[#1]%
+%    {\edef\currenttest{#1}
+%     \doubleexpandafter\ifx\testparameter\c!before\empty \relax \else \relax \fi}
+% \protect
+%
+% \starttext
+%   \definetest[foo] \definetest[bar][foo] \setuptest[bar][before=indeed]
+%   \resettimer \dorecurse{100000}{\TestMeA[bar]} A:\elapsedtime \par % 0.502
+%   \resettimer \dorecurse{100000}{\TestMeB[bar]} B:\elapsedtime \par % 0.530
+%   \resettimer \dorecurse{100000}{\TestMeC[bar]} C:\elapsedtime \par % 0.487
+%   \resettimer \dorecurse{100000}{\TestMeD[bar]} D:\elapsedtime \par % 0.493
+% \stoptext

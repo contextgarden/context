@@ -688,21 +688,39 @@
    \attribute\colorattribute\attributeunsetvalue
    \attribute\transparencyattribute\attributeunsetvalue}
 
+% todo: check if color is overloading a non-color command
+
+\newcount\c_colo_protection
+
+\unexpanded\def\startprotectedcolors
+  {\advance\c_colo_protection\plusone}
+
+\unexpanded\def\stopprotectedcolors
+  {\advance\c_colo_protection\minusone}
+
 \def\colo_basics_define[#1][#2]%
   {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
-   \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
+   \ifcase\c_colo_protection
+     \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
+   \fi}
 
 \def\colo_basics_define_global[#1][#2]%
   {\ctxcommand{defineprocesscolor("#1","#2",true,\v_colo_freeze_state)}%
-   \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}}
+   \ifcase\c_colo_protection
+     \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
+   \fi}
 
 \def\colo_basics_define_named[#1][#2]% currently same as define
   {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
-   \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
+   \ifcase\c_colo_protection
+     \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
+   \fi}
 
 \def\dodefinefastcolor[#1][#2]% still not fast but ok (might change)
   {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
-   \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
+   \ifcase\c_colo_protection
+     \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
+   \fi}
 
 \def\colo_basics_defined_and_activated#1%
   {\ctxcommand{defineprocesscolor("\v_colo_dummy_name","#1",false,false)}%
@@ -717,11 +735,15 @@
 
 \def\colo_basics_define_process_yes[#1][#2][#3]%
   {\ctxcommand{defineprocesscolor("#1","\processcolorcomponents{#2},#3",false,\v_colo_freeze_state)}%
-   \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
+   \ifcase\c_colo_protection
+     \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
+   \fi}
 
 \def\colo_basics_define_process_nop[#1][#2][#3]%
   {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
-   \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
+   \ifcase\c_colo_protection
+     \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
+   \fi}
 
 % Spotcolors used setxvalue but that messes up currentcolor
 % and probably no global is needed either but they are global
@@ -730,11 +752,15 @@
 
 \def\colo_basics_define_spot[#1][#2][#3]%
   {\ctxcommand{definespotcolor("#1","#2","#3",true)}%
-   \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}}
+   \ifcase\c_colo_protection
+     \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
+   \fi}
 
 \def\colo_basics_define_multitone[#1][#2][#3][#4]%
   {\ctxcommand{definemultitonecolor("#1","#2","#3","#4",true)}%
-   \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}}
+   \ifcase\c_colo_protection
+     \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
+   \fi}
 
 %D Transparencies (only):
 

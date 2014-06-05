@@ -287,17 +287,28 @@ local long_units = {
 
     -- synonyms
 
-    ["Metric Ton"]              = "tonne",
+    MetricTon                   = "tonne",
     Litre                       = "liter",
+
+    ["Metric Ton"]              = "tonne",
 
     -- non-SI units whose values must be obtained experimentally (Table 7)
 
-    ["Electron Volt"]           = "electronvolt",
+    AtomicMassUnit              = "atomicmassunit",
+    AstronomicalUnit            = "astronomicalunit",
+    ElectronVolt                = "electronvolt",
     Dalton                      = "dalton",
+
     ["Atomic Mass Unit"]        = "atomicmassunit",
     ["Astronomical Unit"]       = "astronomicalunit",
+    ["Electron Volt"]           = "electronvolt",
 
     -- special cases (catch doubles, okay, a bit over the top)
+
+    DegreesCelsius              = "celsius",
+    DegreesFahrenheit           = "fahrenheit",
+    DegreeCelsius               = "celsius",
+    DegreeFahrenheit            = "fahrenheit",
 
     ["Degrees Celsius"]         = "celsius",
     ["Degrees Fahrenheit"]      = "fahrenheit",
@@ -323,11 +334,13 @@ local long_units = {
     Hg                          = "mercury",
  -- ["Millimetre Of Mercury"]   = [[mmHg]],
     Angstrom                    = "angstrom", -- strictly Ångström
-    ["Nautical Mile"]           = "nauticalmile",
+    NauticalMile                = "nauticalmile",
     Barn                        = "barn",
     Knot                        = "knot",
     Neper                       = "neper",
     Bel                         = "bel", -- in practice only decibel used
+
+    ["Nautical Mile"]           = "nauticalmile",
 
     -- other non-SI units from CGS system (Table 9)
 
@@ -601,7 +614,7 @@ labels.units = allocate {
     electronvolt                = { labels = { en = [[eV]]                       } },
     dalton                      = { labels = { en = [[Da]]                       } },
     atomicmassunit              = { labels = { en = [[u]]                        } },
-    astronomicalunit            = { labels = { en = [[ua]]                       } },
+    astronomicalunit            = { labels = { en = [[au]]                       } },
     bar                         = { labels = { en = [[bar]]                      } },
     angstrom                    = { labels = { en = [[Å]]                        } }, -- strictly Ångström
     nauticalmile                = { labels = { en = [[M]]                        } },
@@ -799,6 +812,18 @@ local function update_parsers() -- todo: don't remap utf sequences
                       + V("nothing")     * V("shortunit")
                       + V("longprefix")  * V("shortunit")  -- centi m
                       + V("shortprefix") * V("longunit"),  -- c meter
+
+--         combination   = (   V("longprefix")   -- centi meter
+--                           + V("nothing")
+--                         ) * V("longunit")
+--                       + (   V("shortprefix")  -- c m
+--                           + V("nothing")
+--                           + V("longprefix")
+--                         ) * V("shortunit")    -- centi m
+--                       + (   V("shortprefix")  -- c meter
+--                         ) * V("longunit"),
+
+
         dimension     = V("somespace")
                       * (
                             V("packaged") / dimpre
@@ -812,9 +837,7 @@ local function update_parsers() -- todo: don't remap utf sequences
                       * V("somespace"),
         snippet       = V("dimension")
                       + V("somesymbol"),
-        unit          = (
-                            V("snippet")
-                          * (V("operator") * V("snippet"))^0
+        unit          = (   V("snippet") * (V("operator") * V("snippet"))^0
                           + V("somepackaged")
                         )^1,
     }

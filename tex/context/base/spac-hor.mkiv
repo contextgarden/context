@@ -733,8 +733,8 @@
 \unexpanded\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\csname\??skipadaptionleft #1\endcsname\else#1\fi\relax}
 \unexpanded\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\csname\??skipadaptionright#1\endcsname\else#1\fi\relax}
 
-\unexpanded\def\doadaptleftskip #1{\dosetleftskipadaption {#1}\advance\leftskip \leftskipadaption }
-\unexpanded\def\doadaptrightskip#1{\dosetrightskipadaption{#1}\advance\rightskip\rightskipadaption}
+\unexpanded\def\doadaptleftskip #1{\normalexpanded{\dosetleftskipadaption {#1}}\advance\leftskip \leftskipadaption }
+\unexpanded\def\doadaptrightskip#1{\normalexpanded{\dosetrightskipadaption{#1}}\advance\rightskip\rightskipadaption}
 
 \unexpanded\def\forgetbothskips
   {\leftskip\zeropoint

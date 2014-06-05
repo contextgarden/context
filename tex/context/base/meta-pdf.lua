@@ -329,7 +329,7 @@ handlers[50] = function() report_mptopdf("skipping special %s",50) end
 --end of not supported
 
 function mps.setrgbcolor(r,g,b) -- extra check
-    r, g = tonumber(r), tonumber(g) -- needed when we use lpeg
+    r, g, b = tonumber(r), tonumber(g), tonumber(b) -- needed when we use lpeg
     if r == 0.0123 and g < 0.1 then
         g, b = round(g*10000), round(b*10000)
         local s = specials[b]

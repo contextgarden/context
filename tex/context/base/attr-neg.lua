@@ -18,7 +18,7 @@ local tex = tex
 local states            = attributes.states
 local tasks             = nodes.tasks
 local nodeinjections    = backends.nodeinjections
-local settexattribute   = tex.setattribute
+local texsetattribute   = tex.setattribute
 local variables         = interfaces.variables
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
@@ -94,5 +94,5 @@ function commands.triggernegative(stamp)
         enable()
         enabled = true
     end
-    settexattribute(a_negative,register(stamp))
+    texsetattribute(a_negative,register(stamp))
 end

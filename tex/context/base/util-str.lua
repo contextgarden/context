@@ -216,6 +216,7 @@ local striplinepatterns = {
     ["retain"]              = p_retain_normal,
     ["retain and collapse"] = p_retain_collapse,
     ["retain and no empty"] = p_retain_noempty,
+    ["collapse"]            = patterns.collapser, -- how about: stripper fullstripper
 }
 
 strings.striplinepatterns = striplinepatterns
@@ -223,6 +224,8 @@ strings.striplinepatterns = striplinepatterns
 function strings.striplines(str,how)
     return str and lpegmatch(how and striplinepatterns[how] or p_prune_collapse,str) or str
 end
+
+-- also see: string.collapsespaces
 
 strings.striplong = strings.striplines -- for old times sake
 

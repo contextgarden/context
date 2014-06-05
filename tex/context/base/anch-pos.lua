@@ -259,9 +259,15 @@ local function enhance(data)
     return data
 end
 
-local function set(name,index,val)
+-- analyze some files (with lots if margindata) and then when one key optionally
+-- use that one instead of a table (so, a 3rd / 4th argument: key, e.g. "x")
+
+local function set(name,index,val) -- ,key
     local data = enhance(val or index)
     if val then
+-- if data[key] and not next(next(data)) then
+--     data = data[key]
+-- end
         container = tobesaved[name]
         if not container then
             tobesaved[name] = {
@@ -283,6 +289,25 @@ local function get(id,index)
         return collected[id]
     end
 end
+
+-- local function get(id,index) -- ,key
+--     local data
+--     if index then
+--         local container = collected[id]
+--         if container then
+--             data = container[index]
+--             if not data then
+--                 -- nothing
+--             elseif type(data) == "table" then
+--                 return data
+--             else
+--                 return { [key] = data }
+--             end
+--         end
+--     else
+--         return collected[id]
+--     end
+-- end
 
 jobpositions.setdim = setdim
 jobpositions.setall = setall

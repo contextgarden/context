@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mtx-metapost'] = { -- this was m
     license   = "see context related readme files"
 }
 
+-- todo: load map files
+
 local helpinfo = [[
 <?xml version="1.0"?>
 <application>
@@ -60,24 +62,42 @@ local function assumes_latex(filename)
     return find(d,"\\documentstyle") or find(d,"\\documentclass") or find(d,"\\begin{document}")
 end
 
+local basemaps = "original-base.map,original-ams-base.map,original-ams-euler.map,original-public-lm.map"
+
+local wrapper  = "\\starttext\n%s\n%s\\stoptext"
+local loadmap  = "\\loadmapfile[%s]\n"
 local template = "\\startTEXpage\n\\convertMPtoPDF{%s}{1}{1}\n\\stopTEXpage"
 local texified = "\\starttext\n%s\n\\stoptext"
 local splitter = "\\startTEXpage\\externalfigure[%s][page=%s]\\stopTEXpage"
 local tempname = "mptopdf-temp.tex"
 
-local function do_convert(filename)
+local function do_mapfiles(mapfiles)
+    local maps = { }
+    for i=1,#mapfiles do
+        local mapfile = mapfiles[i]
+        application.report("using map file %a",mapfile)
+        maps[i] = format(loadmap,mapfile)
+    end
+    return table.concat(maps)
+end
+
+local function do_convert(filename,mapfiles)
     if find(filename,".%d+$") or find(filename,"%.mps$") then
-        io.savedata(tempname,format(template,filename))
+        local body = format(template,filename)
+        local maps = do_mapfiles(mapfiles)
+        io.savedata(tempname,format(wrapper,maps,body))
         local resultname = format("%s-%s.pdf",file.nameonly(filename),file.suffix(filename))
         local result = os.execute(format([[context --once --batch --purge --result=%s "%s"]],resultname,tempname))
         return lfs.isfile(resultname) and resultname
     end
 end
 
-local function do_split(filename,numbers)
+local function do_split(filename,numbers,mapfiles)
     local name = file.nameonly(filename)
+    local maps = do_mapfiles(mapfiles)
     for i=1,#numbers do
-        io.savedata(tempname,format(splitter,file.addsuffix(name,"pdf"),i))
+        local body = format(splitter,file.addsuffix(name,"pdf"),i)
+        io.savedata(tempname,format(wrapper,maps,body))
         local resultname = format("%s-%s.pdf",name,numbers[i])
         local result = os.execute(format([[context --once --batch --purge --result=%s "%s"]],resultname,tempname))
     end
@@ -99,12 +119,12 @@ local function do_texify(str)
     return format(texified,str), numbers
 end
 
-local function do_convert_all(filename)
+local function do_convert_all(filename,mapfiles)
     local results = dir.glob(file.nameonly(filename) .. ".*") -- reset
     local report = { }
     for i=1,#results do
         local filename = results[i]
-        local resultname = do_convert(filename)
+        local resultname = do_convert(filename,mapfiles)
         if resultname then
             report[#report+1] = { filename, resultname }
         end
@@ -121,8 +141,8 @@ local function do_convert_all(filename)
     end
 end
 
-local function do_convert_one(filename)
-    local resultname = do_convert(filename)
+local function do_convert_one(filename,mapfiles)
+    local resultname = do_convert(filename,mapfiles)
     if resultname then
         report("%s => %s", filename,resultname)
     else
@@ -131,17 +151,13 @@ local function do_convert_one(filename)
 end
 
 function scripts.mptopdf.convertall()
-    local rawmp   = environment.arguments.rawmp   or false
-    local metafun = environment.arguments.metafun or false
-    local latex   = environment.arguments.latex   or false
-    local pattern = environment.arguments.pattern or false
-    local split   = environment.arguments.split   or false
-    local files
-    if pattern then
-        files = dir.glob(file.nameonly(filename))
-    else
-        files   = environment.files
-    end
+    local rawmp    = environment.arguments.rawmp    or false
+    local metafun  = environment.arguments.metafun  or false
+    local latex    = environment.arguments.latex    or false
+    local pattern  = environment.arguments.pattern  or false
+    local split    = environment.arguments.split    or false
+    local files    = pattern and dir.glob(file.nameonly(filename)) or environment.files
+    local mapfiles = utilities.parsers.settings_to_array(environment.arguments.mapfiles or basemaps)
     if #files > 0 then
         for i=1,#files do
             local filename = files[i]
@@ -168,16 +184,16 @@ function scripts.mptopdf.convertall()
                 local done = os.execute(command)
                 if done then
                     if convert then
-                        do_convert_all(filename)
+                        do_convert_all(filename,mapfiles)
                     elseif split then
-                        do_split(filename,numbers)
+                        do_split(filename,numbers,mapfiles)
                         -- already pdf, maybe optionally split
                     end
                 else
                     report("error while processing mp file '%s'", filename)
                 end
             else
-                do_convert_one(filename)
+                do_convert_one(filename,mapfiles)
             end
         end
     else

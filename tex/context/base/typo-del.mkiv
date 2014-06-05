@@ -205,6 +205,14 @@
   [\rightboundarycharacter\c!rightquotation{quotation}]
 
 \definesymbol
+  [\c!nextleftquotation]
+  [\rightboundarycharacter\c!leftquotation{quotation}]
+
+\definesymbol
+  [\c!nextrightquotation]
+  [\leftboundarycharacter\c!rightquotation{quotation}]
+
+\definesymbol
   [\c!leftquote]
   [\leftboundarycharacter\c!leftquote{quote}]
 
@@ -298,8 +306,8 @@
   {\begingroup
    \typo_delimited_push{#1}%
    \dostarttagged\t!delimitedblock\currentdelimitedtext
-   \edef\p_method{\delimitedtextparameter\c!method}%
-   \ifx\p_method\s!font
+   \edef\p_delimited_method{\delimitedtextparameter\c!method}%
+   \ifx\p_delimited_method\s!font
      \expandafter\typo_delimited_start_font
    \else
      \expandafter\typo_delimited_start_other
@@ -313,16 +321,16 @@
    \ignorespaces}
 
 \def\typo_delimited_start_other
-  {\edef\p_repeat{\delimitedtextparameter\c!repeat}%
-   \ifx\p_repeat\v!yes
+  {\edef\p_delimited_repeat{\delimitedtextparameter\c!repeat}%
+   \ifx\p_delimited_repeat\v!yes
      \let\typo_delimited_repeat\typo_delimited_repeat_ideed
    \else
      \let\typo_delimited_repeat\relax
    \fi
-   \edef\p_location{\delimitedtextparameter\c!location}%
-   \ifx\p_location\v!paragraph
+   \edef\p_delimited_location{\delimitedtextparameter\c!location}%
+   \ifx\p_delimited_location\v!paragraph
      \singleexpandafter\typo_delimited_start_par
-   \else\ifx\p_location\v!margin
+   \else\ifx\p_delimited_location\v!margin
      \doubleexpandafter\typo_delimited_start_par
    \else
      \doubleexpandafter\typo_delimited_start_txt
@@ -338,8 +346,10 @@
 
 \def\typo_delimited_start_par_indeed[#1]%
   {\let\typo_delimited_stop\typo_delimited_stop_par
-   \doifsomething{\delimitedtextparameter\c!spacebefore}
-     {\blank[\delimitedtextparameter\c!spacebefore]}%
+   \edef\p_delimited_spacebefore{\delimitedtextparameter\c!spacebefore}%
+   \ifx\p_delimited_spacebefore\empty \else
+     \blank[\p_delimited_spacebefore]%
+   \fi
    \delimitedtextparameter\c!before
    \edef\m_typo_delimited_narrower{#1}%
    \ifx\m_typo_delimited_narrower\empty
@@ -353,11 +363,24 @@
    \fi
    % so far
    \pushmacro\checkindentation
-   \doifsomething{\delimitedtextparameter\c!indenting} % WS
-     {\setupindenting[\delimitedtextparameter\c!indenting]}%
+   \edef\p_delimited_indenting{\delimitedtextparameter\c!indenting}%
+   \ifx\p_delimited_indenting\empty \else
+     \setupindenting[\p_indenting]% todo: use fast one (no [] checking)
+   \fi
+   %
    \begingroup
    \usedelimitedtextstyleandcolor\c!style\c!color
+   %
+   \edef\p_delimited_left     {\delimitedtextparameter{\c!left}}%
+   \edef\p_delimited_right    {\delimitedtextparameter{\c!right}}%
+   \edef\p_delimited_nextleft {\delimitedtextparameter{\c!nextleft}}%
+   \edef\p_delimited_nextright{\delimitedtextparameter{\c!nextright}}%
+   %
    \leftdelimitedtextmark
+   %
+   \setnextleftdelimitedtextmark
+   \setnextrightdelimitedtextmark
+   %
    \ignorespaces}
 
 \def\typo_delimited_stop_par
@@ -368,8 +391,10 @@
    \popmacro\checkindentation
    \typo_delimited_stop_par_indeed
    \delimitedtextparameter\c!after
-   \doifsomething{\delimitedtextparameter\c!spaceafter}
-     {\blank[\delimitedtextparameter\c!spaceafter]}%
+   \edef\p_delimited_spaceafter{\delimitedtextparameter\c!spaceafter}%
+   \ifx\p_delimited_spaceafter\empty \else
+     \blank[\p_delimited_spaceafter]%
+   \fi
    \useindentnextparameter\delimitedtextparameter
    \dorechecknextindentation}% AM: This was missing!
 
@@ -394,18 +419,18 @@
 \unexpanded\def\delimitedtext[#1]%
   {\dontleavehmode % following ones can be omited
    \typo_delimited_push{#1}%
-   \edef\p_method{\delimitedtextparameter\c!method}%
-   \ifx\p_method\s!font
+   \edef\p_delimited_method{\delimitedtextparameter\c!method}%
+   \ifx\p_delimited_method\s!font
      \expandafter\typo_delimited_fontdriven
    \else
      \expandafter\typo_delimited_other
    \fi}
 
 \def\typo_delimited_other
-  {\edef\p_location{\delimitedtextparameter\c!location}%
-   \ifx\p_location\v!paragraph
+  {\edef\p_delimited_location{\delimitedtextparameter\c!location}%
+   \ifx\p_delimited_location\v!paragraph
      \singleexpandafter\typo_delimited_par
-   \else\ifx\p_location\v!margin
+   \else\ifx\p_delimited_location\v!margin
      \doubleexpandafter\typo_delimited_par
    \else
      \doubleexpandafter\typo_delimited_txt
@@ -417,16 +442,89 @@
 \unexpanded\def\stopdelimited {\stopdelimitedtext}  % no let, dynamically assigned
            \def\delimited     {\delimitedtext}
 
+% todo: \dostarttagged\t!nothing\empty % for left/right boxes
+
+%D We have 4 different location and symbol handlers (two pairs):
+%D
+%D \starttyping
+%D \input tufte \startquotation \input tufte \stopquotation
+%D
+%D \setupdelimitedtext
+%D   [quotation]
+%D   [nextleft=right,
+%D    nextright=left]
+%D
+%D \input tufte \startquotation \input tufte \stopquotation
+%D
+%D \setupdelimitedtext
+%D   [quotation]
+%D   [nextleft={\symbol[nextleftquotation]},
+%D    nextright={\symbol[nextrightquotation]}]
+%D
+%D \input tufte \startquotation \input tufte \stopquotation
+%D \stoptyping
+
+\unexpanded\def\setnextleftdelimitedtextmark
+  {\ifx\p_delimited_nextleft\empty
+      % nothing
+   \else\ifx\p_delimited_nextleft\v!left
+     \typo_delimited_nextleft_symbol\p_delimited_left
+   \else\ifx\p_delimited_nextleft\v!right
+     \typo_delimited_nextleft_symbol\p_delimited_right
+   \else
+     \typo_delimited_nextleft_symbol\p_delimited_nextleft
+   \fi\fi\fi}
+
+\unexpanded\def\setnextrightdelimitedtextmark
+  {\ifx\p_delimited_nextright\empty
+      % nothing
+   \else\ifx\p_delimited_nextright\v!right
+     \typo_delimited_nextright_symbol\p_delimited_right
+   \else\ifx\p_delimited_nextright\v!left
+     \typo_delimited_nextright_symbol\p_delimited_left
+   \else
+     \typo_delimited_nextright_symbol\p_delimited_nextright
+   \fi\fi\fi}
+
 \unexpanded\def\leftdelimitedtextmark
-  {\doifsomething{\delimitedtextparameter\c!left}
-     {\setbox\scratchbox\hbox{\delimitedtextparameter\c!left}%
-      \dontleavehmode
-      \doif{\delimitedtextparameter\c!location}\v!margin{\hskip-\wd\scratchbox}%
-      \box\scratchbox}}
+  {\ifx\p_delimited_left\empty
+      % nothing
+   \else
+     \typo_delimited_left_symbol\p_delimited_left
+   \fi}
 
 \unexpanded\def\rightdelimitedtextmark
-  {\doifsomething{\delimitedtextparameter\c!right}
-     {\hsmash{\delimitedtextparameter\c!right}}}
+  {\ifx\p_delimited_right\empty
+      % nothing
+   \else
+      \typo_delimited_right_symbol\p_delimited_right
+   \fi}
+
+\def\typo_delimited_left_symbol#1%
+  {\setbox\scratchbox\hbox{#1}%
+   \dontleavehmode
+   \edef\p_delimited_margin{\delimitedtextparameter\c!location}%
+   \ifx\p_delimited_margin\v!margin
+      \hskip-\wd\scratchbox
+   \fi
+   \box\scratchbox}
+
+\def\typo_delimited_right_symbol#1%
+  {\hsmash{#1}}
+
+\def\typo_delimited_nextleft_symbol#1%
+  {\localleftbox\bgroup
+     \swapmacros\leftboundarycharacter\rightboundarycharacter
+     \boundarycharactermode\plusone
+     \typo_delimited_left_symbol#1%
+   \egroup}
+
+\def\typo_delimited_nextright_symbol#1%
+  {\localrightbox\bgroup
+     \swapmacros\leftboundarycharacter\rightboundarycharacter
+     \boundarycharactermode\plusone
+     \typo_delimited_right_symbol#1%
+   \egroup}
 
 % \starttext
 %    \hyphenatedword{groepsvrijstellingsverordeningen}\par

@@ -33,8 +33,8 @@
 \def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
   {\normalexpanded{\rootradical{\normalunexpanded{#1}}{\noexpand\triggermathstyle{\normalmathstyle}\normalunexpanded{#2}}}}
 
-\def\rootwithdegree[#1]{\rootradical{#1}}
-\def\rootwithoutdegree {\rootradical  {}}
+\unexpanded\def\rootwithdegree[#1]{\rootradical{#1}}
+\unexpanded\def\rootwithoutdegree {\rootradical  {}}
 
 %D Even older stuff:
 

@@ -437,7 +437,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 29983, stripped down to: 16202
+-- original size: 31588, stripped down to: 16483
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -566,9 +566,12 @@ patterns.integer=sign^-1*digit^1
 patterns.unsigned=digit^0*period*digit^1
 patterns.float=sign^-1*patterns.unsigned
 patterns.cunsigned=digit^0*comma*digit^1
+patterns.cpunsigned=digit^0*(period+comma)*digit^1
 patterns.cfloat=sign^-1*patterns.cunsigned
+patterns.cpfloat=sign^-1*patterns.cpunsigned
 patterns.number=patterns.float+patterns.integer
 patterns.cnumber=patterns.cfloat+patterns.integer
+patterns.cpnumber=patterns.cpfloat+patterns.integer
 patterns.oct=zero*octdigit^1
 patterns.octal=patterns.oct
 patterns.HEX=zero*P("X")*(digit+uppercase)^1
@@ -985,21 +988,22 @@ function lpeg.append(list,pp,delayed,checked)
   end
   return p
 end
-local function make(t)
-  local p
+local function make(t,hash)
+  local p=P(false)
   local keys=sortedkeys(t)
   for i=1,#keys do
     local k=keys[i]
     local v=t[k]
-    if not p then
+    local h=hash[v]
+    if h then
       if next(v) then
-        p=P(k)*make(v)
+        p=p+P(k)*(make(v,hash)+P(true))
       else
-        p=P(k)
+        p=p+P(k)*P(true)
       end
     else
       if next(v) then
-        p=p+P(k)*make(v)
+        p=p+P(k)*make(v,hash)
       else
         p=p+P(k)
       end
@@ -1009,16 +1013,20 @@ local function make(t)
 end
 function lpeg.utfchartabletopattern(list) 
   local tree={}
+  local hash={}
   for i=1,#list do
     local t=tree
     for c in gmatch(list[i],".") do
-      if not t[c] then
-        t[c]={}
+      local tc=t[c]
+      if not tc then
+        tc={}
+        t[c]=tc
       end
-      t=t[c]
+      t=tc
     end
+    hash[t]=list[i]
   end
-  return make(tree)
+  return make(tree,hash)
 end
 patterns.containseol=lpeg.finder(eol)
 local function nextstep(n,step,result)
@@ -4871,7 +4879,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 33334, stripped down to: 18384
+-- original size: 33456, stripped down to: 18419
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5001,6 +5009,7 @@ local striplinepatterns={
   ["retain"]=p_retain_normal,
   ["retain and collapse"]=p_retain_collapse,
   ["retain and no empty"]=p_retain_noempty,
+  ["collapse"]=patterns.collapser,
 }
 strings.striplinepatterns=striplinepatterns
 function strings.striplines(str,how)
@@ -16893,8 +16902,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 696010
--- stripped bytes    : 247335
+-- original bytes    : 697737
+-- stripped bytes    : 248746
 
 -- end library merge
 

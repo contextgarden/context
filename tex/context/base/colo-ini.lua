@@ -26,8 +26,8 @@ local colors              = attributes.colors
 local transparencies      = attributes.transparencies
 local colorintents        = attributes.colorintents
 local registrations       = backends.registrations
-local settexattribute     = tex.setattribute
-local gettexattribute     = tex.getattribute
+local texsetattribute     = tex.setattribute
+local texgetattribute     = tex.getattribute
 
 local a_color             = attributes.private('color')
 local a_transparency      = attributes.private('transparency')
@@ -512,7 +512,7 @@ local function mpcolor(model,ca,ta,default)
 end
 
 local function mpnamedcolor(name)
-    return mpcolor(gettexattribute(a_colorspace),l_color[name] or l_color.black)
+    return mpcolor(texgetattribute(a_colorspace),l_color[name] or l_color.black)
 end
 
 local function mpoptions(model,ca,ta,default) -- will move to mlib-col
@@ -812,11 +812,11 @@ end
 local setcolormodel = colors.setmodel
 
 function commands.setcolormodel(model,weight)
-    settexattribute(a_colorspace,setcolormodel(model,weight))
+    texsetattribute(a_colorspace,setcolormodel(model,weight))
 end
 
 -- function commands.setrastercolor(name,s)
---     settexattribute(a_color,colors.definesimplegray(name,s))
+--     texsetattribute(a_color,colors.definesimplegray(name,s))
 -- end
 
 function commands.registermaintextcolor(a)
@@ -851,7 +851,7 @@ function commands.doifblackelse(a)
 end
 
 function commands.doifdrawingblackelse()
-    commands.doifelse(colors.isblack(gettexattribute(a_color)))
+    commands.doifelse(colors.isblack(texgetattribute(a_color)))
 end
 
 -- function commands.withcolorsinset(name,command)

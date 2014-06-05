@@ -14,7 +14,7 @@ local byte, lower = string.byte, string.lower
 -- to be redone: characters will become tagged spaces instead as then we keep track of
 -- spaceskip etc
 
--- todo: only setattr when export
+-- todo: only setattr when export / use properties
 
 local next = next
 

@@ -1,6 +1,6 @@
 %D \module
-%D   [       file=m-asciimath,
-%D        version=2006.04.24, % 1999.11.06,
+%D   [       file=x-asciimath,
+%D        version=2014.06.01, % 2006.04.24, % 1999.11.06,
 %D          title=\CONTEXT\ Modules,
 %D       subtitle=AsciiMath,
 %D         author=Hans Hagen,
@@ -11,73 +11,238 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Lua code.
-
 \registerctxluafile{x-asciimath}{}
 
-\def\ctxmoduleasciimath#1{\ctxlua{moduledata.asciimath.#1}}
-
-%D The following code is not officially supported and is only meant
-%D for the Math4All project.
+%D When the Math4All project started, we immediately started using content \MATHML.
+%D Because in school math there is often a reference to calculator input, we also
+%D provided what we called \quote {calcmath}: a predictable expression based way
+%D entering math. At some point \OPENMATH\ was also used but that was later
+%D abandoned because editing is more cumbersome.
 %D
-%D The following code kind of maps ascii math
-%D http://www1.chapman.edu/~jipsen/mathml/asciimath.html onto \TEX. The
-%D code was written for the math4all project but in retrospect we
-%D could have used just tex code as the web version can handle that
-%D as well. Anyhow, as we use \MATHML\ as basis it makes sense to add
-%D this to the repertoire as annotation variant, so now we have
-%D content \MATHML\ (prefered), presentation \MATHML\ (often messy),
-%D \OPENMATH\ (what was which we started with in this project)
-%D calcmath (handy for students who are accustomed to calculators),
-%D asciimath (to make Frits's live easier) and of course \TEX. Of
-%D course all are used mixed.
+%D Due to limitations in the web variant (which is independent of rendering for
+%D paper but often determines the coding of document, not seldom for the worse) the
+%D switch was made to presentational \MATHML. But even that proved to be too complex
+%D for rendering on the web, so it got converted to so called \ASCIIMATH\ which
+%D can be rendered using some \JAVASCRIPT\ magic. However, all the formulas (and
+%D we're talking of tens of thousands of them) were very precisely coded by the main
+%D author. Because in intermediate stages of the editing (by additional authors) a
+%D mixture of \MATHML\ and \ASCIIMATH\ was used, we wrote the first version of this
+%D module. As reference we took \url
+%D {http://www1.chapman.edu/~jipsen/mathml/asciimath.html} and. The idea was to
+%D stick to \MATHML\ as reference and if needed use \ASCIIMATH\ as annotation.
 %D
-%D We don't support all quirks of asciimath as I am not in the mood to
-%D write a complex parser while a bit of sane coding can work as well.
+%D Eventually we ended up with supporting several math encodings in \CONTEXT\ that
+%D could be used mixed: content \MATHML\ (preferred), presentation \MATHML\ (often
+%D messy), \OPENMATH\ (somewhat minimalistic) calcmath (handy for students who are
+%D accustomed to calculators), \ASCIIMATH\ (to make web support easier) and of
+%D course \TEX.
 %D
+%D The first version had some limitations as we didn't want to support all quirks of
+%D \ASCIIMATH\ and also because I was not really in the mood to write a complex parser
+%D when a bit of sane coding can work equally well. Some comments from that version:
+%D
+%D \startnarrower
 %D \startitemize
-%D \item We support only the syntactically clear variants and as long
-%D       as lpeg does not support left recursion this is as far as we
-%D       want to go.
-%D \item The parser is rather insensitive for spaces but yet the advice is
-%D       to avoid weird coding like \type {d/dxf(x)} but use \type {d/dx
-%D       f(x)} instead. After all we're not in a compact coding cq.\
-%D       parser challenge.
-%D \item We also don't support the somewhat confusing \type {sqrt sqrt 2}
-%D       nor \type {root3x} (although the second one kind of works). A bit
-%D       of defensive coding does not hurt.
-%D \item We can process \type {a/b/c/d} but it's not compatible with the
-%D       default behaviour of asciimath. Use grouping instead. Yes, we do
-%D       support the somewhat nonstandard grouping token mix.
-%D \item You should use explicit \type {text(..)} directives as one can
-%D       never be sure what is a reserved word and  not.
+%D \item We support only the syntactically clear variants and as long as lpeg does
+%D       not support left recursion this is as far as we want to go.
+%D \item The parser is rather insensitive for spaces but yet the advice is to avoid
+%D       weird coding like \type {d/dxf(x)} but use \type {d/dx f(x)} instead. After
+%D       all we're not in a compact coding cq.\ parser challenge.
+%D \item We also don't support the somewhat confusing \type {sqrt sqrt 2} nor \type
+%D       {root3x} (although the second one kind of works). A bit of defensive coding
+%D       does not hurt.
+%D \item We can process \type {a/b/c/d} but it's not compatible with the default
+%D       behaviour of \ASCIIMATH. Use grouping instead. Yes, we do support the somewhat
+%D       nonstandard grouping token mix.
+%D \item You should use explicit \type {text(..)} directives as one can never be sure
+%D       what is a reserved word and  not.
 %D \stopitemize
 %D
-%D Actually, as the only parsing sensitive elements of \TEX\ are
-%D fractions (\type {\over} and friends, a restricted use of \TEX\
-%D coding is probably as comprehensive and parseble.
-%D
-%D The webpage with examples served as starting point so anything beyond
+%D Actually, as the only parsing sensitive elements of \TEX\ are fractions (\type {\over}
+%D and friends, a restricted use of \TEX\ coding is probably as comprehensive and
+%D parsable. The webpage with examples served as starting point so anything beyond
 %D what can be found there isn't supported.
+%D \stopnarrower
+%D
+%D Then in 2014 something bad happened. Following the fashion of minimal encoding
+%D (which of course means messy encoding of complex cases and which can make authors
+%D sloppy too) the web based support workflow of the mentioned project ran into some
+%D limitations and magically one day all carefully coded \MATHML\ was converted into
+%D \ASCIIMATH. As there was no way to recover the original thousands of files and
+%D tens of thousands of formulas we were suddenly stuck with \ASCIIMATH. Because the
+%D conversion had be done automagically, we also saw numerous errors and were forced
+%D to come up with some methods to check formulas. Because \MATHML\ poses some
+%D restrictions it has predictable rendering; \ASCIIMATH\ on the other hand enforces
+%D no structure. Also, because \MATHML\ has to be valid \XML\ it always processes.
+%D Of course, during the decade that the project had run we also had to built in
+%D some catches for abuse but at least we had a relatively stable and configurable
+%D subsystem. So, in order to deal with less predictable cases as well as extensive
+%D checking, a new \ASCIIMATH\ parser was written, one that could also be used to
+%D trace bad coding.
+%D
+%D Because the formal description is incomplete, and because some links to resources
+%D are broken, and because some testing on the web showed that sequences of characters
+%D are interpreted that were not mentioned anywhere (visible), and because we noticed
+%D that the parser was dangerously tolerant, the new code is quite different from the
+%D old code.
+%D
+%D One need to keep in mind that because spaces are optional, the only robust way to
+%D edit \ASCIIMATH\ is to use a \WYSIWYG\ editor and hope that the parser doesn't
+%D change ever. Keys are picked up from spaceless sequences and when not recognized
+%D a (sequence) of characters is considered to be variables. So, \type {xsqrtx} is
+%D valid and renders as \type {$x\sqrt{x}$}, \type {xx} becomes \type {×} (times)
+%D but \type {ac} becomes \type {$a c$} (a times c). We're lucky that \type {AC} is
+%D not turned into Alternating Current, but who knows what happens a few years from
+%D now. So, we do support this spaceless mess, but users are warned: best use a
+%D spacy sequence. The extra amount of spaces (at one byte each) an author has to
+%D include in his|/|her active writing time probably stays below the size of one
+%D holiday picture. Another complication is that numbers (in Dutch) use commas instead
+%D of periods, but vectors use commas as well. We also hav esome different names for
+%D functions which then can conflict with the expectations about collapsed variables.
+%D
+%D It must be noted that simplified encodings (that seem to be the fashion today)
+%D can demand from applications to apply fuzzy logic to make something work out
+%D well. Because we have sequential data that gets rendered, sometimes wrong input
+%D gets obscured simply by the rendering: like the comma's in numbers as well as
+%D for separators (depending on space usage), or plain wrong symbols that somehow
+%D get a representation anyway. This in itself is more a side effect of trying to
+%D use the simplified encoding without applying rules (in the input) or to use it
+%D beyong its intended usage, which then of course can lead to adapted parsers and
+%D catches that themselves trigger further abuse. Imagine that instead of developing
+%D new cars, planes, space ships, mobile phones, computers we would have adapted
+%D horse cars, kites, firework, old fashioned phones and mechanical calculators in a
+%D similar way: patch upon patch of traditional means for sure would not have
+%D worked. So, when you use \ASCIIMATH\ best check immediately how it gets rendered
+%D in the browser as well as on paper. And be prepared to check the more complex
+%D code in the future again. We don't offer any guarantees but of course will try to
+%D keep up.
+%D
+%D In retrospect I sometimes wonder if the energy put into constantly adapting to
+%D the fashion of the day pays off. Probably not. It definitely doesn't pay of.
 
 \unprotect
 
 \writestatus{asciimath}{beware, this is an experimental (m4all only) module}
 
-%unexpanded\def\asciimath#1{\ctxmoduleasciimath{convert(\!!bs\detokenize{#1}\!!es,true)}}
-\unexpanded\def\asciimath#1{\ctxcommand{convert(\!!bs\detokenize\expandafter{\normalexpanded{#1}}\!!es,true)}}
+%D The core commands:
+
+\unexpanded\def\asciimath#1%
+  {\ctxcommand{asciimath(\!!bs\detokenize\expandafter{\normalexpanded{#1}}\!!es)}}
+
+\unexpanded\def\ctxmoduleasciimath#1%
+  {\ctxlua{moduledata.asciimath.#1}}
+
+%D Some tracing commands. Using tex commands is 10\% slower that directly piping
+%D from \LUA, but this is non|-|critical code.
+
+\unexpanded\def\ShowAsciiMathLoad  [#1]{\ctxlua{moduledata.asciimath.show.load("#1")}}
+\unexpanded\def\ShowAsciiMathIgnore[#1]{\ctxlua{moduledata.asciimath.show.ignore("#1")}}
+\unexpanded\def\ShowAsciiMathStats     {\ctxlua{moduledata.asciimath.show.statistics()}}
+\unexpanded\def\ShowAsciiMathMax       {\ctxlua{moduledata.asciimath.show.max()}}
+
+\unexpanded\def\ShowAsciiMathResult#1%
+  {\begingroup
+     \blank
+     % if we are in vmode, we don't get positions i.e. a smaller tuc file
+     \inleft{\ttbf#1\hfill\ctxlua{moduledata.asciimath.show.count(#1,true)}}%
+     \dontleavehmode
+     \begingroup
+       \ttbf
+       \ctxlua{moduledata.asciimath.show.files(#1)}
+     \endgroup
+     \blank[medium,samepage]
+     \startcolor[darkblue]
+     \ctxlua{moduledata.asciimath.show.input(#1,true)}
+     \stopcolor
+     \blank[medium,samepage]
+     \doifmode{asciimath:show:dirty} {
+        \dorecurse{\ctxlua{moduledata.asciimath.show.nofdirty(#1)}} {
+          \ctxlua{moduledata.asciimath.show.dirty(\recurselevel,true)}
+          \blank[medium,samepage]
+        }
+     }
+     \ctxlua{moduledata.asciimath.show.result(#1)}
+     \blank
+   \endgroup}
+
+\unexpanded\def\ShowAsciiMathStart
+  {\begingroup
+   \let\normalmathoptext\mathoptext
+   \unexpanded\def\mathoptext##1{\normalmathoptext{\color[darkgreen]{##1}}}%
+   \setuptyping[\v!buffer][\c!before=,\c!after=]
+   \setupmargindata[\v!left][\c!style=]}
+
+\unexpanded\def\ShowAsciiMathStop
+  {\endgroup}
+
+\unexpanded\def\ShowAsciiMath
+  {\dodoubleempty\doShowAsciiMath}
+
+\unexpanded\def\doShowAsciiMath[#1][#2]%
+  {\iffirstargument
+     \ShowAsciiMathStart
+     \ShowAsciiMathLoad[#1]
+     \ifsecondargument
+       \ShowAsciiMathIgnore[#2]
+     \fi
+     \dorecurse{\ShowAsciiMathMax}{\ShowAsciiMathResult\recurselevel}
+     \page
+     \ShowAsciiMathStats
+     \ShowAsciiMathStop
+  \fi}
+
+\unexpanded\def\ShowAsciiMathSave
+  {\dosingleempty\doShowAsciiMathSave}
+
+\unexpanded\def\doShowAsciiMathSave[#1]%
+  {\ctxlua{moduledata.asciimath.show.save("#1")}}
 
 \protect
 
 \continueifinputfile{x-asciimath.mkiv}
 
-\enabletrackers[modules.asciimath.mapping]
+%D This will become an extra.
 
-\starttext
+\setupbodyfont
+%   [pagella,10pt]
+  [dejavu,10pt]
 
-\def\MyAsciiMath#1{\startformula\asciimath{#1}\stopformula}
+\setuplayout
+  [backspace=35mm,
+   leftmargin=20mm,
+   rightmargindistance=0pt,
+   leftmargindistance=5mm,
+   cutspace=1cm,
+   topspace=1cm,
+   bottomspace=1cm,
+   width=middle,
+   height=middle,
+   header=0cm,
+   footer=1cm]
 
-\startlines
+\setupheadertexts
+  []
+
+\setupfootertexts
+  [\currentdate][\pagenumber]
+
+\setupalign
+  [flushleft,verytolerant,stretch]
+
+\dontcomplain
+
+% \enabletrackers[modules.asciimath.mapping]
+% \enabletrackers[modules.asciimath.detail]
+
+% \starttext
+%     \enablemode[asciimath:show:dirty]
+%     \ShowAsciiMath[e:/temporary/asciimath/*.xml]
+%   % \ShowAsciiMathSave[e:/temporary/asciimath/asciimath.lua]
+% \stoptext
+
+% \starttext
+% \unexpanded\def\MyAsciiMath#1{\startformula\asciimath{#1}\stopformula}
+% \startlines
 % \MyAsciiMath{x^2 / 10 // z_12^34 / 20}
 % \MyAsciiMath{{:{:x^2:} / 10:} // {:{:z_12^34 :} / 20:}}
 % \MyAsciiMath{x^2+y_1+z_12^34}
@@ -101,9 +266,66 @@
 % \MyAsciiMath{(a,b] = {x text(in) RR | a < x <= b}}
 % \MyAsciiMath{a/b / c/d = (a * d) / (b * d) / (b * c) / (b * d) = (a * d) / (b * c)}
 % \MyAsciiMath{ (a/b) // (c/d) =  ( (a * d) / (b * d) ) // ( (b * c) / (b * d) ) = (a * d) / (b * c)}
-\MyAsciiMath{sin(x+1)_3^2/b / c/d}
+% \MyAsciiMath{sin(x+1)_3^2/b / c/d}
 % \MyAsciiMath{{:{:sin(x+1)_3^2:}/b:} / {:c/d:}}
 % \MyAsciiMath{cos(a) + sin(x+1)_3^2/b / c/d = (a * d) / (b * d) / (b * c) / (b * d) = (a * d) / (b * c)}
-\stoplines
-
-\stoptext
+% \MyAsciiMath{S_(11)}
+% \MyAsciiMath{f(x)}
+% \MyAsciiMath{sin(x)}
+% \MyAsciiMath{sin(x+1)}
+% \MyAsciiMath{sin^-1(x)}
+% \MyAsciiMath{sin(2x)}
+% \MyAsciiMath{a_2^2}
+% \MyAsciiMath{( (S_(11),S_(12),S_(1n)),(vdots,ddots,vdots),(S_(m1),S_(m2),S_(mn)) ]}
+% \MyAsciiMath{frac a b}
+% \MyAsciiMath{sin(x)/2 // cos(x)/pi}
+% \MyAsciiMath{a/13 // c/d}
+% \MyAsciiMath{a/b // c/d}
+% \MyAsciiMath{x}
+% \MyAsciiMath{x^2}
+% \MyAsciiMath{sqrt x}
+% \MyAsciiMath{sqrt (x)}
+% \MyAsciiMath{root 2 x}
+% \MyAsciiMath{x+x}
+% \MyAsciiMath{x/3}
+% \MyAsciiMath{x^2 / 10}
+% \MyAsciiMath{x^2 / 10 // z_12^34 / 20}
+% \MyAsciiMath{a^23}
+% \MyAsciiMath{a^{:b^23:}+3x}
+% \MyAsciiMath{a/b / c/d}
+% \MyAsciiMath{sin(x)/b / c/d}
+% \MyAsciiMath{sin(x)/b // c/d}
+% \MyAsciiMath{a/b / c/d = (a * d) / (b * d) / (b * c) / (b * d) = (a * d) / (b * c) }
+% \MyAsciiMath{{:{:x^2:} / 10:} // {:{:z_12^34 :} / 20:}}
+% \MyAsciiMath{x^2+y_1+z_12^34}
+% \MyAsciiMath{sin^-1(x)}
+% \MyAsciiMath{d/dx f(x)=lim_(h->0) (f(x+h)-f(x))/h}
+% \MyAsciiMath{f(x)=sum_(n=0)^oo(f^((n))(a))/(n!)(x-a)^n}
+% \MyAsciiMath{int_0^1 f(x)dx}
+% \MyAsciiMath{int^1_0 f(x)dx}
+% \MyAsciiMath{2x}
+% \MyAsciiMath{a//b}
+% \MyAsciiMath{a//\alpha}
+% \MyAsciiMath{(a/b)/(d/c)}
+% \MyAsciiMath{((a*b))/(d/c)}
+% \MyAsciiMath{[[a,b],[c,d]]((n),(k))}
+% \MyAsciiMath{1/x={(1,text{if } x!=0),(text{undefined},if x=0):}}
+% \MyAsciiMath{{ (1,2), (x,(x + text(x))) }}
+% \MyAsciiMath{{(1,2),(x,(x+text(x))),(x,text(x))}}
+% \MyAsciiMath{{(1,2),(x,(x+text(x))),(x,x text(x))}}
+% \MyAsciiMath{{(1,2/2),(x,(x+x^22+sqrt(xx))),(x,x text(xyz))}}
+% \MyAsciiMath{{(1,2/2),(x,(x+x^22+sqrt(xx))),(x,text(xyz)+1+text(hans))}}
+% \MyAsciiMath{<<a,b>> text{and} {:(x,y),(u,v):}}
+% \MyAsciiMath{(a,b] = {x text(in) RR | a < x <= b}}
+% \MyAsciiMath{x^-2}
+% \MyAsciiMath{x^2(x-1/16)=0}
+% \MyAsciiMath{y= ((1/4)) ^x}
+% \MyAsciiMath{log (0,002) / (log(1/4))}
+% \MyAsciiMath{x=ax+b \ oeps}
+% \MyAsciiMath{x=\ ^ (1/4) log(x)}
+% \MyAsciiMath{x=\ ^ (1/4) log(0 ,002 )= log(0,002) / (log(1/4))}
+% \MyAsciiMath{x^ (-1 1/2) =1/x^ (1 1/2)=1/ (x^1*x^ (1/2)) =1/ (xsqrt(x))}
+% \MyAsciiMath{x^2(10 -x)&gt;2 x^2}
+% \MyAsciiMath{x^4&gt;x}
+% \stoplines
+% \stoptext

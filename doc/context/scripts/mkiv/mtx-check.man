@@ -11,7 +11,7 @@
 .B Basic ConTeXt Syntax Checking
 .SH OPTIONS
 .TP
-.B --convert
+.B --check
 check tex file for errors
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:

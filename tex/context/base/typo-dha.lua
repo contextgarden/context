@@ -64,7 +64,6 @@ local getlist            = nuts.getlist
 local getfield           = nuts.getfield
 local setfield           = nuts.setfield
 local getattr            = nuts.getattr
-local setattr            = nuts.setattr
 local getprop            = nuts.getprop
 local setprop            = nuts.setprop
 

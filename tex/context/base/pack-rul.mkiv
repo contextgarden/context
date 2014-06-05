@@ -778,6 +778,33 @@
 
 \newcount\c_pack_framed_nesting
 
+% to be tested (slightly more efficient):
+%
+% \unexpanded\def\pack_frame_common % #1 #2
+%   {\bgroup
+%    \advance\c_pack_framed_nesting\plusone
+%    \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
+%    \edef\currentframed{>\the\c_pack_framed_nesting}%
+%    \pack_framed_initialize
+%    \bgroup
+%    \doifnextoptionalcselse} % #1 #2
+%
+% \unexpanded\def\framed     {\pack_frame_common\pack_framed_process_framed_pickup\pack_framed_process_indeed}
+% \unexpanded\def\startframed{\pack_frame_common\pack_framed_start_framed_pickup  \pack_framed_start_indeed  }
+%
+% \def\pack_framed_process_framed_pickup[#1]%
+%   {\setupcurrentframed[#1]%
+%    \pack_framed_process_indeed}
+%
+% \def\pack_framed_start_framed_pickup[#1]%
+%   {\setupcurrentframed[#1]% here !
+%    \secondargumenttrue % dirty trick
+%    \pack_framed_start_framed_indeed}
+%
+% \def\pack_framed_start_framed_indeed
+%   {\pack_framed_process_indeed
+%    \bgroup}
+
 \unexpanded\def\pack_framed_process_framed[#1]%
   {\bgroup
    \iffirstargument % faster
@@ -805,6 +832,8 @@
    \pack_framed_initialize
    \pack_framed_process_framed[#1]% can be inlined
    \bgroup}
+
+% till here
 
 \let\stopframed\egroup
 

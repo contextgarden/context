@@ -225,9 +225,12 @@ patterns.integer       = sign^-1 * digit^1
 patterns.unsigned      = digit^0 * period * digit^1
 patterns.float         = sign^-1 * patterns.unsigned
 patterns.cunsigned     = digit^0 * comma * digit^1
+patterns.cpunsigned    = digit^0 * (period + comma) * digit^1
 patterns.cfloat        = sign^-1 * patterns.cunsigned
+patterns.cpfloat       = sign^-1 * patterns.cpunsigned
 patterns.number        = patterns.float + patterns.integer
 patterns.cnumber       = patterns.cfloat + patterns.integer
+patterns.cpnumber      = patterns.cpfloat + patterns.integer
 patterns.oct           = zero * octdigit^1
 patterns.octal         = patterns.oct
 patterns.HEX           = zero * P("X") * (digit+uppercase)^1
@@ -813,21 +816,76 @@ end
 
 -- experiment:
 
-local function make(t)
-    local p
+-- local function make(t)
+--     local p
+--     local keys = sortedkeys(t)
+--     for i=1,#keys do
+--         local k = keys[i]
+--         local v = t[k]
+--         if not p then
+--             if next(v) then
+--                 p = P(k) * make(v)
+--             else
+--                 p = P(k)
+--             end
+--         else
+--             if next(v) then
+--                 p = p + P(k) * make(v)
+--             else
+--                 p = p + P(k)
+--             end
+--         end
+--     end
+--     return p
+-- end
+
+-- local function make(t)
+--     local p = P(false)
+--     local keys = sortedkeys(t)
+--     for i=1,#keys do
+--         local k = keys[i]
+--         local v = t[k]
+--         if next(v) then
+--             p = p + P(k) * make(v)
+--         else
+--             p = p + P(k)
+--         end
+--     end
+--     return p
+-- end
+
+-- function lpeg.utfchartabletopattern(list) -- goes to util-lpg
+--     local tree = { }
+--     for i=1,#list do
+--         local t = tree
+--         for c in gmatch(list[i],".") do
+--             local tc = t[c]
+--             if not tc then
+--                 tc = { }
+--                 t[c] = tc
+--             end
+--             t = tc
+--         end
+--     end
+--     return make(tree)
+-- end
+
+local function make(t,hash)
+    local p = P(false)
     local keys = sortedkeys(t)
     for i=1,#keys do
         local k = keys[i]
         local v = t[k]
-        if not p then
+        local h = hash[v]
+        if h then
             if next(v) then
-                p = P(k) * make(v)
+                p = p + P(k) * (make(v,hash) + P(true))
             else
-                p = P(k)
+                p = p + P(k) * P(true)
             end
         else
             if next(v) then
-                p = p + P(k) * make(v)
+                p = p + P(k) * make(v,hash)
             else
                 p = p + P(k)
             end
@@ -838,16 +896,20 @@ end
 
 function lpeg.utfchartabletopattern(list) -- goes to util-lpg
     local tree = { }
+    local hash = { }
     for i=1,#list do
         local t = tree
         for c in gmatch(list[i],".") do
-            if not t[c] then
-                t[c] = { }
+            local tc = t[c]
+            if not tc then
+                tc = { }
+                t[c] = tc
             end
-            t = t[c]
+            t = tc
         end
+        hash[t] = list[i]
     end
-    return make(tree)
+    return make(tree,hash)
 end
 
 -- inspect ( lpeg.utfchartabletopattern {

@@ -65,7 +65,6 @@ local getid               = nuts.getid
 local getsubtype          = nuts.getsubtype
 local getlist             = nuts.getlist
 local getattr             = nuts.getattr
-local setattr             = nuts.setattr
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
 

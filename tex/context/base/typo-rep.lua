@@ -29,7 +29,6 @@ local getchar         = nuts.getchar
 local getid           = nuts.getid
 
 local getattr         = nuts.getattr
-local setattr         = nuts.setattr
 
 local delete_node     = nuts.delete
 local replace_node    = nuts.replace

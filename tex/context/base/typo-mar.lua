@@ -374,11 +374,13 @@ end
 local status, nofstatus = { }, 0
 
 local f_anchor = formatters["_plib_.set('md:h',%i,{x=true,c=true})"]
+
 local function setanchor(h_anchor)
     return new_latelua(f_anchor(h_anchor))
 end
 
 -- local t_anchor = { x = true, c = true }
+--
 -- local function setanchor(h_anchor)
 --      return lateluafunction(function() setposition("md:h",h_anchor,t_anchor) end)
 -- end
@@ -449,7 +451,7 @@ local function realign(current,candidate)
         anchor = v_text
     end
     if inline or anchor ~= v_text or candidate.psubtype == alignment_code then
-        -- the alignment_code check catches margintexts ste before a tabulate
+        -- the alignment_code check catches margintexts before a tabulate
         h_anchors = h_anchors + 1
         anchornode = setanchor(h_anchors)
         local blob = getposition('md:h',h_anchors)

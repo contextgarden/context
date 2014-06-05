@@ -53,9 +53,9 @@ local f_J  = formatters["%i J"]
 local f_d  = formatters["[%s] %F d"]
 local f_w  = formatters["%F w"]
 
-local pdfliteral = function(s)
+local pdfliteral = function(pdfcode)
     local literal = copy_node(mpsliteral)
-    literal.data = s
+    literal.data = pdfcode
     return literal
 end
 
@@ -64,18 +64,36 @@ end
 -- get a new result table and the stored objects are forgotten. Otherwise they
 -- are reused.
 
-local function getobjects(result,figure,f)
+-- local function getobjects(result,figure,index)
+--     if metapost.optimize then
+--         local objects = result.objects
+--         if not objects then
+--             result.objects = { }
+--         end
+--         objects = result.objects[index]
+--         if not objects then
+--             objects = figure:objects()
+--             result.objects[index] = objects
+--         end
+--         return objects
+--     else
+--         return figure:objects()
+--     end
+-- end
+
+local function getobjects(result,figure,index)
     if metapost.optimize then
-        local objects = result.objects
-        if not objects then
-            result.objects = { }
+        local robjects = result.objects
+        if not robjects then
+            robjects = { }
+            result.objects = robjects
         end
-        objects = result.objects[f]
-        if not objects then
-            objects = figure:objects()
-            result.objects[f] = objects
+        local fobjects = robjects[index]
+        if not fobjects then
+            fobjects = figure:objects()
+            robjects[index] = fobjects
         end
-        return objects
+        return fobjects
     else
         return figure:objects()
     end
@@ -323,11 +341,8 @@ local variable =
 
 local pattern_lst = (variable * newline^0)^0
 
-metapost.variables = { } -- to be stacked
-metapost.llx       = 0   -- to be stacked
-metapost.lly       = 0   -- to be stacked
-metapost.urx       = 0   -- to be stacked
-metapost.ury       = 0   -- to be stacked
+metapost.variables  = { } -- to be stacked
+metapost.properties = { } -- to be stacked
 
 function commands.mprunvar(key,n) -- should be defined in another lib
     local value = metapost.variables[key]
@@ -374,6 +389,30 @@ function metapost.processspecial(str)
     end
 end
 
+local function setproperties(figure)
+    local boundingbox = figure:boundingbox()
+    local properties = {
+        llx    = boundingbox[1],
+        lly    = boundingbox[2],
+        urx    = boundingbox[3],
+        ury    = boundingbox[4],
+        slot   = figure:charcode(),
+        width  = figure:width(),
+        height = figure:height(),
+        depth  = figure:depth(),
+        italic = figure:italcorr(),
+        number = figure:charcode() or 0,
+    }
+    metapost.properties = properties
+    return properties
+end
+
+local function setvariables(figure)
+    local variables = { }
+    metapost.variables = variables
+    return variables
+end
+
 function metapost.flush(result,flusher,askedfig)
     if result then
         local figures = result.fig
@@ -388,42 +427,27 @@ function metapost.flush(result,flusher,askedfig)
             local flushfigure = flusher.flushfigure
             local textfigure = flusher.textfigure
             local processspecial = flusher.processspecial or metapost.processspecial
-            for f=1,#figures do
-                local figure = figures[f]
-                local objects = getobjects(result,figure,f)
-                local fignum  = figure:charcode() or 0
-                if askedfig == "direct" or askedfig == "all" or askedfig == fignum then
-                    local t = { }
+            local variables  = setvariables(figure) -- also resets then in case of not found
+            for index=1,#figures do
+                local figure = figures[index]
+                local properties = setproperties(figure)
+                if askedfig == "direct" or askedfig == "all" or askedfig == properties.number then
+                    local objects = getobjects(result,figure,index)
+                    local result = { }
                     local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
-                    local bbox = figure:boundingbox()
-                    local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4]
-                    local variables = { }
-                    metapost.variables = variables
-                    metapost.properties = {
-                        llx    = llx,
-                        lly    = lly,
-                        urx    = urx,
-                        ury    = ury,
-                        slot   = figure:charcode(),
-                        width  = figure:width(),
-                        height = figure:height(),
-                        depth  = figure:depth(),
-                        italic = figure:italcorr(),
-                    }
-                    -- replaced by the above
-                    metapost.llx = llx
-                    metapost.lly = lly
-                    metapost.urx = urx
-                    metapost.ury = ury
+                    local llx = properties.llx
+                    local lly = properties.lly
+                    local urx = properties.urx
+                    local ury = properties.ury
                     if urx < llx then
                         -- invalid
-                        startfigure(fignum,0,0,0,0,"invalid",figure)
+                        startfigure(properties.number,0,0,0,0,"invalid",figure)
                         stopfigure()
                     else
-                        startfigure(fignum,llx,lly,urx,ury,"begin",figure)
-                        t[#t+1] = "q"
+                        startfigure(properties.number,llx,lly,urx,ury,"begin",figure)
+                        result[#result+1] = "q"
                         if objects then
-                            resetplugins(t) -- we should move the colorinitializer here
+                            resetplugins(result) -- we should move the colorinitializer here
                             for o=1,#objects do
                                 local object = objects[o]
                                 local objecttype = object.type
@@ -434,20 +458,20 @@ function metapost.flush(result,flusher,askedfig)
                                         processspecial(object.prescript)
                                     end
                                 elseif objecttype == "start_clip" then
-                                    t[#t+1] = "q"
+                                    result[#result+1] = "q"
                                     flushnormalpath(object.path,t,false)
-                                    t[#t+1] = "W n"
+                                    result[#result+1] = "W n"
                                 elseif objecttype == "stop_clip" then
-                                    t[#t+1] = "Q"
+                                    result[#result+1] = "Q"
                                     miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
                                 elseif objecttype == "text" then
-                                    t[#t+1] = "q"
+                                    result[#result+1] = "q"
                                     local ot = object.transform -- 3,4,5,6,1,2
-                                    t[#t+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: formatters["%F %F m %F %F %F %F 0 0 cm"](unpack(ot))
-                                    flushfigure(t) -- flush accumulated literals
-                                    t = { }
+                                    result[#result+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: formatters["%F %F m %F %F %F %F 0 0 cm"](unpack(ot))
+                                    flushfigure(result) -- flush accumulated literals
+                                    result = { }
                                     textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
-                                    t[#t+1] = "Q"
+                                    result[#result+1] = "Q"
                                 else
                                     -- we use an indirect table as we want to overload
                                     -- entries but this is not possible in userdata
@@ -463,32 +487,32 @@ function metapost.flush(result,flusher,askedfig)
                                     local before, after = processplugins(object)
                                     local objecttype = object.type -- can have changed
                                     if before then
-                                        t = pluginactions(before,t,flushfigure)
+                                        result = pluginactions(before,result,flushfigure)
                                     end
                                     local ml = object.miterlimit
                                     if ml and ml ~= miterlimit then
                                         miterlimit = ml
-                                        t[#t+1] = f_M(ml)
+                                        result[#result+1] = f_M(ml)
                                     end
                                     local lj = object.linejoin
                                     if lj and lj ~= linejoin then
                                         linejoin = lj
-                                        t[#t+1] = f_j(lj)
+                                        result[#result+1] = f_j(lj)
                                     end
                                     local lc = object.linecap
                                     if lc and lc ~= linecap then
                                         linecap = lc
-                                        t[#t+1] = f_J(lc)
+                                        result[#result+1] = f_J(lc)
                                     end
                                     local dl = object.dash
                                     if dl then
                                         local d = f_d(concat(dl.dashes or {}," "),dl.offset)
                                         if d ~= dashed then
                                             dashed = d
-                                            t[#t+1] = dashed
+                                            result[#result+1] = dashed
                                         end
                                     elseif dashed then
-                                       t[#t+1] = "[] 0 d"
+                                       result[#result+1] = "[] 0 d"
                                        dashed = false
                                     end
                                     local path = object.path -- newpath
@@ -498,7 +522,7 @@ function metapost.flush(result,flusher,askedfig)
                                     if pen then
                                        if pen.type == 'elliptical' then
                                             transformed, penwidth = pen_characteristics(original) -- boolean, value
-                                            t[#t+1] = f_w(penwidth) -- todo: only if changed
+                                            result[#result+1] = f_w(penwidth) -- todo: only if changed
                                             if objecttype == 'fill' then
                                                 objecttype = 'both'
                                             end
@@ -507,48 +531,48 @@ function metapost.flush(result,flusher,askedfig)
                                        end
                                     end
                                     if transformed then
-                                        t[#t+1] = "q"
+                                        result[#result+1] = "q"
                                     end
                                     if path then
                                         if transformed then
-                                            flushconcatpath(path,t,open)
+                                            flushconcatpath(path,result,open)
                                         else
-                                            flushnormalpath(path,t,open)
+                                            flushnormalpath(path,result,open)
                                         end
                                         if objecttype == "fill" then
-                                            t[#t+1] = "h f"
+                                            result[#result+1] = "h f"
                                         elseif objecttype == "outline" then
-                                            t[#t+1] = open and "S" or "h S"
+                                            result[#result+1] = open and "S" or "h S"
                                         elseif objecttype == "both" then
-                                            t[#t+1] = "h B"
+                                            result[#result+1] = "h B"
                                         end
                                     end
                                     if transformed then
-                                        t[#t+1] = "Q"
+                                        result[#result+1] = "Q"
                                     end
                                     local path = object.htap
                                     if path then
                                         if transformed then
-                                            t[#t+1] = "q"
+                                            result[#result+1] = "q"
                                         end
                                         if transformed then
-                                            flushconcatpath(path,t,open)
+                                            flushconcatpath(path,result,open)
                                         else
-                                            flushnormalpath(path,t,open)
+                                            flushnormalpath(path,result,open)
                                         end
                                         if objecttype == "fill" then
-                                            t[#t+1] = "h f"
+                                            result[#result+1] = "h f"
                                         elseif objecttype == "outline" then
-                                            t[#t+1] = open and "S" or "h S"
+                                            result[#result+1] = open and "S" or "h S"
                                         elseif objecttype == "both" then
-                                            t[#t+1] = "h B"
+                                            result[#result+1] = "h B"
                                         end
                                         if transformed then
-                                            t[#t+1] = "Q"
+                                            result[#result+1] = "Q"
                                         end
                                     end
                                     if after then
-                                        t = pluginactions(after,t,flushfigure)
+                                        result = pluginactions(after,result,flushfigure)
                                     end
                                     if object.grouped then
                                         -- can be qQ'd so changes can end up in groups
@@ -557,8 +581,8 @@ function metapost.flush(result,flusher,askedfig)
                                 end
                             end
                         end
-                        t[#t+1] = "Q"
-                        flushfigure(t)
+                        result[#result+1] = "Q"
+                        flushfigure(result)
                         stopfigure("end")
                     end
                     if askedfig ~= "all" then
@@ -575,16 +599,11 @@ function metapost.parse(result,askedfig)
         local figures = result.fig
         if figures then
             local analyzeplugins = metapost.analyzeplugins -- each object
-            for f=1,#figures do
-                local figure = figures[f]
-                local fignum = figure:charcode() or 0
-                if askedfig == "direct" or askedfig == "all" or askedfig == fignum then
-                    local bbox = figure:boundingbox()
-                    metapost.llx = bbox[1]
-                    metapost.lly = bbox[2]
-                    metapost.urx = bbox[3]
-                    metapost.ury = bbox[4]
-                    local objects = getobjects(result,figure,f)
+            for index=1,#figures do
+                local figure = figures[index]
+                local properties = setproperties(figure)
+                if askedfig == "direct" or askedfig == "all" or askedfig == properties.number then
+                    local objects = getobjects(result,figure,index)
                     if objects then
                         for o=1,#objects do
                             analyzeplugins(objects[o])
@@ -601,18 +620,17 @@ end
 
 -- tracing:
 
-local t = { }
+local result = { }
 
 local flusher = {
     startfigure = function()
-        t = { }
+        result = { }
         context.startnointerference()
     end,
     flushfigure = function(literals)
-        local n = #t
-        for i=1, #literals do
-            n = n + 1
-            t[n] = literals[i]
+        local n = #result
+        for i=1,#literals do
+            result[n+i] = literals[i]
         end
     end,
     stopfigure = function()
@@ -622,7 +640,7 @@ local flusher = {
 
 function metapost.pdfliterals(result)
     metapost.flush(result,flusher)
-    return t
+    return result
 end
 
 -- so far
@@ -630,22 +648,27 @@ end
 function metapost.totable(result)
     local figure = result and result.fig and result.fig[1]
     if figure then
-        local t = { }
+        local results = { }
         local objects = figure:objects()
         for o=1,#objects do
             local object = objects[o]
-            local tt = { }
-            local fields = mplib.fields(object)
+            local result = { }
+            local fields = mplib.fields(object) -- hm, is this the whole list, if so, we can get it once
             for f=1,#fields do
                 local field = fields[f]
-                tt[field] = object[field]
+                result[field] = object[field]
             end
-            t[o] = tt
+            results[o] = result
         end
-        local b = figure:boundingbox()
+        local boundingbox = figure:boundingbox()
         return {
-            boundingbox = { llx = b[1], lly = b[2], urx = b[3], ury = b[4] },
-            objects = t
+            boundingbox = {
+                llx = boundingbox[1],
+                lly = boundingbox[2],
+                urx = boundingbox[3],
+                ury = boundingbox[4],
+            },
+            objects = results
         }
     else
         return nil

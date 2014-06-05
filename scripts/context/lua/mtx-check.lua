@@ -21,7 +21,7 @@ local helpinfo = [[
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="convert"><short>check tex file for errors</short></flag>
+    <flag name="check"><short>check tex file for errors</short></flag>
    </subcategory>
   </category>
  </flags>

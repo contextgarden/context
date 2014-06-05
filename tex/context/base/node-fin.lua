@@ -27,7 +27,6 @@ local getid              = nuts.getid
 local getlist            = nuts.getlist
 local getleader          = nuts.getleader
 local getattr            = nuts.getattr
-local setattr            = nuts.setattr
 
 local copy_node          = nuts.copy
 local insert_node_before = nuts.insert_before

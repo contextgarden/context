@@ -2756,3 +2756,9 @@ data.labels={
   },
  }
 }
+
+local functions = data.labels.functions
+
+functions.asin = functions.arcsin
+functions.acos = functions.arccos
+functions.atan = functions.arctan
