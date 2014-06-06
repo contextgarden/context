@@ -527,7 +527,7 @@
              \xmin \space \ymin \space \xmin \space \yymin\space y
            \or % 28
            \fi
-           \ifnum\mode>8\space
+           \ifnum\mode>\pluseight\space
                                        S
            \else
              \ifnum\dostroke=\plusone  S \fi
@@ -541,13 +541,15 @@
    \box\scratchbox
    \egroup}
 
-\unexpanded\def\pdfactualtext#1#2% not interfaced
-  {\pdfliteral direct{/Span <</ActualText \ctxlua{tex.write(lpdf.tosixteen("#2"))} >> BDC}%
+\unexpanded\def\pdfbackendactualtext#1#2% not interfaced
+  {\ctxcommand{startactualtext(\!!bs#2\!!es)}%
    #1%
-   \pdfliteral direct{EMC}}
+   \ctxcommand{stopactualtext()}}
+
+\let\pdfactualtext\pdfbackendactualtext
 
 % \starttext
-%     text \pdfactualtext{Meier}{Müller} text
+%     text \pdfbackendactualtext{Meier}{Müller} text
 % \stoptext
 
 \protect \endinput

@@ -532,7 +532,7 @@ end
 -- lpdf.object          = pdfdeferredobject
 -- lpdf.referenceobject = pdfreferenceobject
 
-local pagereference = pdf.pageref or tex.pdfpageref
+local pagereference = pdf.pageref -- tex.pdfpageref is obsolete
 local nofpages      = 0
 
 function lpdf.pagereference(n)
@@ -1002,3 +1002,34 @@ end
 --         end
 --     end,
 -- })
+
+
+-- The next variant of ActualText is what Taco and I could come up with
+-- eventually. As of September 2013 Acrobat copies okay, Sumatra copies a
+-- question mark, pdftotext injects an extra space and Okular adds a
+-- newline plus space.
+
+-- return formatters["BT /Span << /ActualText (CONTEXT) >> BDC [<feff>] TJ % t EMC ET"](code)
+
+local f_actual_text_one = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ %s EMC ET"]
+local f_actual_text_two = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ %s EMC ET"]
+local f_actual_text     = formatters["/Span <</ActualText %s >> BDC"]
+
+local context           = context
+local pdfdirect         = nodes.pool.pdfdirect
+
+function codeinjections.unicodetoactualtext(unicode,pdfcode)
+    if unicode < 0x10000 then
+        return f_actual_text_one(unicode,pdfcode)
+    else
+        return f_actual_text_two(unicode/1024+0xD800,unicode%1024+0xDC00,pdfcode)
+    end
+end
+
+function commands.startactualtext(str)
+    context(pdfdirect(f_actual_text(tosixteen(str))))
+end
+
+function commands.stopactualtext()
+    context(pdfdirect("EMC"))
+end

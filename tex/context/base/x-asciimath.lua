@@ -39,7 +39,7 @@ local report_asciimath = logs.reporter("mathematics","asciimath")
 local type, rawget = type, rawget
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local S, P, R, C, V, Cc, Ct, Cs = lpeg.S, lpeg.P, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Ct, lpeg.Cs
-local concat, sortedhash, sortedkeys = table.concat, table.sortedhash, table.sortedkeys
+local concat, remove, sortedhash, sortedkeys, keys = table.concat, table.remove, table.sortedhash, table.sortedkeys, table.keys
 local rep, gmatch, gsub, find = string.rep, string.gmatch, string.gsub, string.find
 local formatters = string.formatters
 
@@ -116,7 +116,7 @@ local reserved = {
  -- ["-"]     = "-",
     ["*"]     = "⋅",
     ["**"]    = "⋆",
-    ["//"]    = "/",
+    ["//"]    = "\\slash",
     ["\\"]    = "\\",
     ["xx"]    = "×",
     ["times"] = "×",
@@ -657,24 +657,27 @@ local isunary = {
     ["\\dot"]            = true, --
     ["\\ddot"]           = true, --
 
-    ["^"]                = true,
-    ["_"]                = true,
+--     ["^"]                = true,
+--     ["_"]                = true,
 
 }
 
--- local isinfix = {
---     ["\\slash"] = true
--- }
+local isinfix = {
+    ["^"] = true,
+    ["_"] = true,
+}
 
 local isleft = {
     ["\\left\\lparent"]  = true,
     ["\\left\\lbrace"]   = true,
     ["\\left\\lbracket"] = true,
+    ["\\left."]          = true,
 }
 local isright = {
     ["\\right\\rparent"]  = true,
     ["\\right\\rbrace"]   = true,
     ["\\right\\rbracket"] = true,
+    ["\\right."]          = true,
 }
 
 local issimplified = {
@@ -695,9 +698,6 @@ local float   = real * (P("E") * integer)^-1
 
 -- local number  = C(float + integer)
 local p_number  = C(float)
-
-local p_open   = S("{[") * P(":")
-local p_close  = P(":") * S("]}")
 
 local p_utf_base =
     patterns.utf8character
@@ -764,27 +764,74 @@ local p_text =
 
 -- either map to \left<utf> or map to \left\name
 
-local p_left   =
-    P("(:") / "\\left\\langle"
-  + P("(")  / "\\left\\lparent"
-  + P("[")  / "\\left\\lbracket"
-  + P("{")  / "\\left\\lbrace"
-  + P("<<") / "\\left\\langle"     -- why not <:
-  + P("|_") / "\\left\\lfloor"
-  + P("|~") / "\\left\\lceil"
+-- local p_open   = S("{[") * P(":")
+-- local p_close  = P(":") * S("]}")
 
-  + P("⟨")  / "\\left\\langle"
+-- local p_open_left   = (S("{[") * P(":")) / "\\left."
+-- local p_close_right = (P(":") * S("]}")) / "\\right."
 
-local p_right  =
-    P(")")  / "\\right\\rparent"
-  + P(":)") / "\\right\\rangle"
-  + P("]")  / "\\right\\rbracket"
-  + P("}")  / "\\right\\rbrace"
-  + P(">>") / "\\right\\rangle"    -- why not :>
-  + P("~|") / "\\right\\rceil"
-  + P("_|") / "\\right\\rfloor"
+-- local p_left   =
+--     P("(:") / "\\left\\langle"
+--   + P("{:") / "\\left."
+--   + P("[:") / "\\left."
+--   + P("(")  / "\\left\\lparent"
+--   + P("[")  / "\\left\\lbracket"
+--   + P("{")  / "\\left\\lbrace"
+--   + P("<<") / "\\left\\langle"     -- why not <:
+--   + P("|_") / "\\left\\lfloor"
+--   + P("|~") / "\\left\\lceil"
+--   + P("⟨")  / "\\left\\langle"
+--   + P("〈")  / "\\left\\langle"
+--   + P("〈")  / "\\left\\langle"
 
-  + P("⟩")  / "\\right\\rangle"
+-- local p_right  =
+--     P(")")  / "\\right\\rparent"
+--   + P(":)") / "\\right\\rangle"
+--   + P(":}") / "\\right."
+--   + P(":]") / "\\right."
+--   + P("]")  / "\\right\\rbracket"
+--   + P("}")  / "\\right\\rbrace"
+--   + P(">>") / "\\right\\rangle"    -- why not :>
+--   + P("~|") / "\\right\\rceil"
+--   + P("_|") / "\\right\\rfloor"
+--   + P("⟩")  / "\\right\\rangle"
+--   + P("〉")  / "\\right\\rangle"
+--   + P("〉")  / "\\right\\rangle"
+
+local m_left = {
+  ["(:"] = "\\left\\langle",
+  ["{:"] = "\\left.",
+  ["[:"] = "\\left.",
+  ["("]  = "\\left\\lparent",
+  ["["]  = "\\left\\lbracket",
+  ["{"]  = "\\left\\lbrace",
+  ["<<"] = "\\left\\langle",     -- why not <:
+  ["|_"] = "\\left\\lfloor",
+  ["|~"] = "\\left\\lceil",
+  ["⟨"]  = "\\left\\langle",
+  ["〈"]  = "\\left\\langle",
+  ["〈"]  = "\\left\\langle",
+}
+
+local m_right = {
+    [")"]  = "\\right\\rparent",
+    [":)"] = "\\right\\rangle",
+    [":}"] = "\\right.",
+    [":]"] = "\\right.",
+    ["]"]  = "\\right\\rbracket",
+    ["}"]  = "\\right\\rbrace",
+    [">>"] = "\\right\\rangle",   -- why not :>
+    ["~|"] = "\\right\\rceil",
+    ["_|"] = "\\right\\rfloor",
+    ["⟩"]  = "\\right\\rangle",
+    ["〉"]  = "\\right\\rangle",
+    ["〉"]  = "\\right\\rangle",
+}
+
+local p_left =
+    lpeg.utfchartabletopattern(keys(m_left)) / m_left
+local p_right =
+    lpeg.utfchartabletopattern(keys(m_right)) / m_right
 
 -- special cases
 
@@ -799,9 +846,11 @@ local p_right  =
 -- faster bug also uglier:
 
 local p_special =
-    C("/")
-  + P("|")    * Cc("\\|") -- "\\middle\\|" -- maybe always add left / right as in mml ?
-  + P("\\") * (
+--     C("/")
+--   +
+    P("|")  * Cc("\\|") -- "\\middle\\|" -- maybe always add left / right as in mml ?
+  +
+  P("\\") * (
         (
             P(" ") * (
                   Cc("{}") * p_spaces^0 * C(S("^_"))
@@ -812,17 +861,23 @@ local p_special =
       + (R("az","AZ")^1/entities)
     )
 
+-- open | close :: {: | :}
+
+
 local parser = Ct { "tokenizer",
     tokenizer = (
         p_spaces
       + p_number
       + p_text
-      + Ct(p_open * V("tokenizer") * p_close)
-      + Ct(p_left * V("tokenizer") * p_right)
+--       + Ct(p_open * V("tokenizer") * p_close)        -- {: (a+b,=,1),(a+b,=,7) :}
+--       + Ct(p_open * V("tokenizer") * p_close_right)  -- {  (a+b,=,1),(a+b,=,7) :}
+--       + Ct(p_open_left * V("tokenizer") * p_right)   -- {: (a+b,=,1),(a+b,=,7)  }
+      + Ct(p_left * V("tokenizer") * p_right)        -- {  (a+b,=,1),(a+b,=,7)  }
       + p_special
       + p_reserved
       + p_entity
-      + p_utf - p_close - p_right
+--       + p_utf - p_close - p_right
+      + p_utf - p_right
     )^1,
 }
 
@@ -880,7 +935,12 @@ local function collapse(t,level)
                         end
                     end
                     if valid then
-                        t[1] = l1 .. "\\startmatrix"
+                        local omit = l1 == "\\left." and r1 == "\\right."
+                        if omit then
+                            t[1] = "\\startmatrix"
+                        else
+                            t[1] = l1 .. "\\startmatrix"
+                        end
                         for i=2,n-1 do
                             if t[i] == "," then
                                 t[i] = "\\NR"
@@ -895,7 +955,11 @@ local function collapse(t,level)
                                 ti[#ti] = nil
                             end
                         end
-                        t[n] = "\\NR\\stopmatrix" .. r1
+                        if omit then
+                            t[n] = "\\NR\\stopmatrix"
+                        else
+                            t[n] = "\\NR\\stopmatrix" .. r1
+                        end
                     end
                 end
             end
@@ -906,8 +970,7 @@ local function collapse(t,level)
         state = show_state(state,level,t)
     end
     --
-    local n = #t
-    local i = 1
+    local n, i = #t, 1
     while i < n do
         local current = t[i]
         if current == "/" and i > 1 then
@@ -938,16 +1001,17 @@ local function collapse(t,level)
         state = show_state(state,level,t)
     end
     --
-    local n = #t
-    local i = 1
+    local n, i = #t, 1
     if n > 2 then
         while i < n do
             local current = t[i]
             if type(current) == "table" and isleft[t[i-1]] and isright[t[i+1]] then
                 local c = #current
                 if c > 2 and isleft[current[1]] and isright[current[c]] then
-                    current[1] = ""
-                    current[c] = nil
+--                     current[c] = nil
+--                     current[1] = ""
+                    remove(current,c)
+                    remove(current,1)
                 end
                 i = i + 3
             else
@@ -960,9 +1024,54 @@ local function collapse(t,level)
         state = show_state(state,level,t)
     end
     --
-    local n = #t
-    local i = 1
-    local m = 0
+    local n, m, i = #t, 0, 1
+    while i <= n do
+        m = m + 1
+        local current = t[i]
+        if isunary[current] then
+            local one = t[i+1]
+            if not one then
+                m = m + 1
+                t[m] = current .. "{}" -- error
+                break
+            end
+            if type(one) == "table" then
+                if isleft[one[1]] and isright[one[#one]] then
+--                     one[1]   = ""
+--                     one[#one] = nil
+                    remove(one,#one)
+                    remove(one,1)
+                end
+                one = collapse(one,level)
+            elseif one == "-" and i + 2 <= n then -- or another sign ? or unary ?
+                local t2 = t[i+2]
+                if type(t2) == "string" then
+                    one = one .. t2
+                    i = i + 1
+                end
+            end
+            t[m] = current .. "{" .. one .. "}"
+            i = i + 2
+        else
+            t[m] = current
+            i = i + 1
+        end
+    end
+    if i == n then -- yes?
+        m = m + 1
+        t[m] = t[n]
+    end
+    if m < n then
+        for i=n,m+1,-1 do
+            t[i] = nil
+        end
+    end
+    --
+    if trace_detail then
+        state = show_state(state,level,t)
+    end
+    --
+    local n, m, i = #t, 0, 1
     while i <= n do
         m = m + 1
         local current = t[i]
@@ -975,8 +1084,10 @@ local function collapse(t,level)
             end
             if type(one) == "table" then
                 if isleft[one[1]] and isright[one[#one]] then
-                    one[1]   = ""
-                    one[#one] = nil
+--                     one[1]   = ""
+--                     one[#one] = nil
+                    remove(one,#one)
+                    remove(one,1)
                 end
                 one = collapse(one,level)
             end
@@ -986,36 +1097,39 @@ local function collapse(t,level)
             end
             if type(two) == "table" then
                 if isleft[two[1]] and isright[two[#two]] then
-                    two[1]   = ""
-                    two[#two] = nil
+--                     two[1]   = ""
+--                     two[#two] = nil
+                    remove(two,#two)
+                    remove(two,1)
                 end
                 two = collapse(two,level)
             end
             t[m] = current .. "{" .. one .. "}{" .. two .. "}"
             i = i + 3
-        elseif isunary[current] then
-            local one = t[i+1]
-            if not one then
-                m = m + 1
-                t[m] = current .. "{}" -- error
-                break
-            end
-            if type(one) == "table" then
-                if isleft[one[1]] and isright[one[#one]] then
-                    one[1]   = ""
-                    one[#one] = nil
-                end
-                one = collapse(one,level)
-            elseif one == "-" and i + 2 <= n then -- or another sign ? or unary ?
-                local t2 = t[i+2]
-                if type(t2) == "string" then
-                    one = one .. t2
-                    i = i + 1
-                end
-            end
-            t[m] = current .. "{" .. one .. "}"
-            i = i + 2
-        elseif type(current) == "table" then
+        else
+            t[m] = current
+            i = i + 1
+        end
+    end
+    if i == n then -- yes?
+        m = m + 1
+        t[m] = t[n]
+    end
+    if m < n then
+        for i=n,m+1,-1 do
+            t[i] = nil
+        end
+    end
+    --
+    if trace_detail then
+        state = show_state(state,level,t)
+    end
+    --
+    local n, m, i = #t, 0, 1
+    while i <= n do
+        m = m + 1
+        local current = t[i]
+        if type(current) == "table" then
             if current[1] == "\\NC" then
                 t[m] = collapse(current,level)
             else
@@ -1041,9 +1155,35 @@ local function collapse(t,level)
         state = show_state(state,level,t)
     end
     --
-    local n = #t
-    local m = 0
-    local i = 1
+    local n, m, i = #t, 0, 1
+    while i < n do
+        local current = t[i]
+        if isinfix[current] and i > 1 then
+            local tl = t[i-1]
+            local tr = t[i+1]
+            t[m] = tl .. current .. "{" .. tr .. "}"
+            i = i + 2
+        else
+            m = m + 1
+            t[m] = current
+            i = i + 1
+        end
+    end
+    if i == n then
+        m = m + 1
+        t[m] = t[n]
+    end
+    if m < n then
+        for i=n,m+1,-1 do
+            t[i] = nil
+        end
+    end
+    --
+    if trace_detail then
+        state = show_state(state,level,t)
+    end
+    --
+    local n, m, i = #t, 0, 1
     while i < n do
         local current = t[i]
         if current == "/" and i > 1 then
@@ -1083,13 +1223,12 @@ local function collapse(t,level)
         state = show_state(state,level,t)
     end
     --
-    local n = #t
-    local m = 0
-    local i = 1
+    local n, m, i = #t, 0, 1
     while i < n do
         local current = t[i]
         if current == "\\slash" and i > 1 then
-            t[m] = "{\\left(" .. t[i-1] .. "\\middle/" .. t[i+1] .. "\\right)}"
+--             t[m] = "{\\left(" .. t[i-1] .. "\\middle/" .. t[i+1] .. "\\right)}"
+            t[m] = "{\\left." .. t[i-1] .. "\\middle/" .. t[i+1] .. "\\right.}"
             i = i + 2
         else
             m = m + 1
@@ -1111,9 +1250,12 @@ local function collapse(t,level)
         state = show_state(state,level,t)
     end
     --
-    local result = concat(t," ")
-    --
-    return result
+    local n = #t
+    if t[1] == "\\left." and t[n] == "\\right." then
+        return  concat(t," ",2,n-1)
+    else
+        return  concat(t," ")
+    end
 end
 
 -- todo: cache simple ones, say #str < 10, maybe weak
@@ -1183,15 +1325,17 @@ function collect(fpattern,element,collected,indexed)
     local element   = element or "am"
     local mpattern  = formatters["<%s>(.-)</%s>"](element,element)
     local filenames = dir.glob(fpattern)
-    local wildcard  = string.split(fpattern,"*")[1]
+    local cfpattern = gsub(fpattern,"^%./",lfs.currentdir())
+    local cfpattern = gsub(cfpattern,"\\","/")
+    local wildcard  = string.split(cfpattern,"*")[1]
     if not collected then
         collected = { }
         indexed   = { }
     end
     for i=1,#filenames do
-        filename = filenames[i]
-        local splitname = string.split(filename,wildcard)
-        local shortname  = temp and temp[2] or file.basename(filename)
+        filename = gsub(filenames[i],"\\","/")
+        local splitname = (wildcard and wildcard ~= "" and string.split(filename,wildcard)[2]) or filename
+        local shortname = gsub(splitname or file.basename(filename),"^%./","")
         for s in gmatch(io.loaddata(filename),mpattern) do
             local c = cleanedup(s)
             local f = collected[c]
@@ -1265,16 +1409,33 @@ if not context then
 --     trace_mapping = true
 --     trace_detail  = true
 
-    report_asciimath(cleanedup([[ac+sinx+xsqrtx+sinsqrtx+sinsqrt(x)]]))
-    report_asciimath(cleanedup([[a "αsinsqrtx" b]]))
-    report_asciimath(cleanedup([[a "α" b]]))
+--     report_asciimath(cleanedup([[ac+sinx+xsqrtx+sinsqrtx+sinsqrt(x)]]))
+--     report_asciimath(cleanedup([[a "αsinsqrtx" b]]))
+--     report_asciimath(cleanedup([[a "α" b]]))
+--     report_asciimath(cleanedup([[//4]]))
 
-    convert([[ac+sinx+xsqrtx]])
-    convert([[ac+\alpha x+xsqrtx-cc b*pi**psi-3alephx / bb X]])
-    convert([[ac+\ ^ x+xsqrtx]])
-    convert([[d/dx(x^2+1)]])
-    convert([[a "αsinsqrtx" b]])
-    convert([[a "α" b]])
+--     convert([[D_f=[0 ,→〉]])
+--     convert([[ac+sinx+xsqrtx]])
+--     convert([[ac+\alpha x+xsqrtx-cc b*pi**psi-3alephx / bb X]])
+--     convert([[ac+\ ^ x+xsqrtx]])
+--     convert([[d/dx(x^2+1)]])
+--     convert([[a "αsinsqrtx" b]])
+--     convert([[a "α" b]])
+--     convert([[//4]])
+--     convert([[ {(a+b,=,1),(a+b,=,7)) ]])
+
+-- convert([[ 2/a // 5/b = (2 b) / ( a b) // ( 5 a ) / ( a b ) = (2 b ) / ( 5 a ) ]])
+-- convert([[ (2+x)/a // 5/b  ]])
+
+-- convert([[ ( 2/a ) // ( 5/b ) = ( (2 b) / ( a b) ) // ( ( 5 a ) / ( a b ) ) = (2 b ) / ( 5 a ) ]])
+
+--     convert([[ (x/y)^3 = x^3/y^3 ]])
+
+--     convert([[ {: (1,2) :} ]])
+--     convert([[ {: (a+b,=,1),(a+b,=,7) :} ]])
+--     convert([[ {  (a+b,=,1),(a+b,=,7) :} ]])
+--     convert([[ {: (a+b,=,1),(a+b,=,7)  } ]])
+--     convert([[ {  (a+b,=,1),(a+b,=,7)  } ]])
 
 --     convert([[(1,5 ±sqrt(1,25 ),0 )]])
 --     convert([[1//2]])

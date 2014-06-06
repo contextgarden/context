@@ -253,21 +253,26 @@ local pagespecs = {
 
 local pagespec, topoffset, leftoffset, height, width, doublesided = "default", 0, 0, 0, 0, false
 
+local pdfpaperheight = tex.pdfpageheight
+local pdfpaperwidth  = tex.pdfpagewidth
+
 function codeinjections.setupcanvas(specification)
     local paperheight = specification.paperheight
     local paperwidth  = specification.paperwidth
     local paperdouble = specification.doublesided
     if paperheight then
         texset('global','pdfpageheight',paperheight)
+        pdfpaperheight = paperheight
     end
     if paperwidth then
         texset('global','pdfpagewidth',paperwidth)
+        pdfpaperwidth = paperwidth
     end
     pagespec    = specification.mode       or pagespec
     topoffset   = specification.topoffset  or 0
     leftoffset  = specification.leftoffset or 0
-    height      = specification.height     or tex.pdfpageheight
-    width       = specification.width      or tex.pdfpagewidth
+    height      = specification.height     or pdfpaperheight
+    width       = specification.width      or pdfpaperwidth
     if paperdouble ~= nil then
         doublesided = paperdouble
     end
@@ -313,7 +318,7 @@ local function boxvalue(n) -- we could share them
 end
 
 local function pagespecification()
-    local pageheight = tex.pdfpageheight
+    local pageheight = pdfpaperheight
     local box = pdfarray { -- can be cached
         boxvalue(leftoffset),
         boxvalue(pageheight+topoffset-height),

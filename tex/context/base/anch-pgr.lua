@@ -59,7 +59,7 @@ local function add(t,x,y,last,direction)
         if x == lx and y == ly then
             -- quick skip
         elseif n == 1 then
---             if abs(lx-x) <= eps or abs(ly-y) <= eps then
+         -- if abs(lx-x) <= eps or abs(ly-y) <= eps then
             if abs(lx-x) > eps or abs(ly-y) > eps then
                 t[n+1] = { x, y }
             end
@@ -67,10 +67,9 @@ local function add(t,x,y,last,direction)
             local tm = t[n-1]
             local px = tm[1]
             local py = tm[2]
-if (direction == "down" and y > ly) or (direction == "up" and y < ly) then
-    -- move back from too much hang
-else
-            if abs(lx-px) <= eps and abs(lx-x) <= eps then
+            if (direction == "down" and y > ly) or (direction == "up" and y < ly) then
+                -- move back from too much hang
+            elseif abs(lx-px) <= eps and abs(lx-x) <= eps then
                 if abs(ly-y) > eps then
                     tn[2] = y
                 end
@@ -81,7 +80,6 @@ else
             elseif not last then
                 t[n+1] = { x, y }
             end
-end
         end
     end
 end
@@ -430,7 +428,6 @@ local function calculatemultipar(tag,obeyhang)
     end
     -- Obeying intermediate changes of left/rightskip makes no sense as it will
     -- look bad, so we only look at the begin situation.
-    --
     local bn = b.n
     if bn then
         local bp = collected[f_p_tag(bn)]

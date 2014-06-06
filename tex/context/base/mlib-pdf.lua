@@ -459,7 +459,7 @@ function metapost.flush(result,flusher,askedfig)
                                     end
                                 elseif objecttype == "start_clip" then
                                     result[#result+1] = "q"
-                                    flushnormalpath(object.path,t,false)
+                                    flushnormalpath(object.path,result,false)
                                     result[#result+1] = "W n"
                                 elseif objecttype == "stop_clip" then
                                     result[#result+1] = "Q"

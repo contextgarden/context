@@ -6,6 +6,13 @@ if not modules then modules = { } end modules ['back-ini'] = {
     license   = "see context related readme files"
 }
 
+-- -- how to create a shortcut:
+--
+-- local function something(...)
+--     something = backends.codeinjections.something
+--     return something(...)
+-- end
+
 local next, type = next, type
 local format = string.format
 

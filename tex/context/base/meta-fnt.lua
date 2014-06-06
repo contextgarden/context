@@ -21,31 +21,17 @@ mpfonts.version  = mpfonts.version or 1.20
 mpfonts.inline   = true
 mpfonts.cache    = containers.define("fonts", "mp", mpfonts.version, true)
 
-metapost.fonts = metapost.fonts or { }
+metapost.fonts   = metapost.fonts or { }
+
+local function unicodetoactualtext(...)
+    unicodetoactualtext = backends.codeinjections.unicodetoactualtext
+    return unicodetoactualtext(...)
+end
 
 -- a few glocals
 
 local characters, descriptions = { }, { }
 local factor, code, slot, width, height, depth, total, variants, bbox, llx, lly, urx, ury = 100, { }, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0
-
--- The next variant of ActualText is what Taco and I could come up with
--- eventually. As of September 2013 Acrobat copies okay, Sumatra copies a
--- question mark, pdftotext injects an extra space and Okular adds a
--- newline plus space.
-
--- return formatters["BT /Span << /ActualText (CONTEXT) >> BDC [<feff>] TJ % t EMC ET"](code)
-
-local function topdf(n,code)
-    if n < 0x10000 then
-        return formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ % t EMC ET"](n,code)
-    else
-        return formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ % t EMC ET"](n/1024+0xD800,n%1024+0xDC00,code)
-    end
-end
-
--- local function topdf(n,code)
---     return formatters["/Span << /ActualText (CTX) >> BDC % t EMC"](code)
--- end
 
 local flusher = {
     startfigure = function(_chr_,_llx_,_lly_,_urx_,_ury_)
@@ -68,6 +54,7 @@ local flusher = {
     end,
     stopfigure = function()
         local cd = chardata[n]
+        local code = unicodetoactualtext(slot,concat(code," ")) or ""
         descriptions[slot] = {
         --  unicode     = slot,
             name        = cd and cd.adobename,
@@ -79,7 +66,7 @@ local flusher = {
         if inline then
             characters[slot] = {
                 commands = {
-                    { "special", "pdf:" .. topdf(slot,code) },
+                    { "special", "pdf:" .. code },
                 }
             }
         else
@@ -88,13 +75,14 @@ local flusher = {
                     {
                         "image",
                         {
-                            stream = topdf(slot,code),
+                            stream = code,
                             bbox   = { 0, -depth * 65536, width * 65536, height * 65536 }
                         },
                     },
                 }
             }
         end
+        code = nil -- no need to keep that
     end
 }
 
