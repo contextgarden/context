@@ -553,7 +553,7 @@ function lpdf.colorspec(model,ca,default)
 end
 
 function lpdf.pdfcolor(attribute) -- bonus, for pgf and friends
-    context(lpdfcolor(1,attribute))
+    return lpdfcolor(1,attribute)
 end
 
 function lpdf.transparency(ct,default) -- kind of overlaps with transparencycode

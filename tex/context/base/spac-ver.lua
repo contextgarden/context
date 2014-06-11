@@ -886,14 +886,11 @@ local specialmethod  = 1
 
 local properties = nodes.properties.data
 
-specialmethods[1] = function(start,penalty)
+specialmethods[1] = function(pagehead,pagetail,start,penalty)
     --
     if penalty < special_penalty_min or penalty > special_penalty_max then
         return
     end
-    -- this can move to the caller
-    local pagehead = tonut(texlists.page_head)
-    local pagetail = find_node_tail(pagehead) -- no texlists.page_tail yet-- no texlists.page_tail yet
     local current  = pagetail
     --
     -- nodes.showsimplelist(pagehead,0)
@@ -1075,6 +1072,14 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
     --
     -- todo: keep_together: between headers
     --
+    local function getpagelist()
+        if not pagehead then
+            pagehead = tonut(texlists.page_head)
+            pagetail = find_node_tail(pagehead) -- no texlists.page_tail yet-- no texlists.page_tail yet
+        end
+        return pagehead, pagetail
+    end
+    --
     local function flush(why)
         if penalty_data then
             local p = new_penalty(penalty_data)
@@ -1112,6 +1117,26 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         penalty_order, penalty_data, natural_penalty = 0, nil, nil
         parskip, ignore_parskip, ignore_following, ignore_whitespace = nil, false, false, false
     end
+    --
+
+-- quick hack, can be done nicer
+-- local nobreakfound = nil
+-- local function checknobreak()
+--     local pagehead, pagetail = getpagelist()
+--     local current = pagetail
+--     while current do
+--         local id = getid(current)
+--         if id == hlist_code or id == vlist_code then
+--             return false
+--         elseif id == penalty_code then
+--             return getfield(current,"penalty") >= 10000
+--         end
+--         current = getprev(current)
+--     end
+--     return false
+-- end
+
+    --
     if trace_vsnapping then
         report_snapper("global ht/dp = %p/%p, local ht/dp = %p/%p",
             texgetdimen("globalbodyfontstrutheight"), texgetdimen("globalbodyfontstrutdepth"),
@@ -1119,9 +1144,15 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         )
     end
     if trace then trace_info("start analyzing",where,what) end
+
     while current do
         local id = getid(current)
         if id == hlist_code or id == vlist_code then
+
+-- if nobreakfound == nil then
+--     nobreakfound = false
+-- end
+
             -- needs checking, why so many calls
             if snap then
                 local list = getlist(current)
@@ -1167,6 +1198,17 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
          -- natural_penalty = getfield(current,"penalty")
          -- if trace then trace_done("removed penalty",current) end
          -- head, current = remove_node(head, current, true)
+
+-- if nobreakfound == nil then
+--     nobreakfound = checknobreak()
+-- end
+-- if nobreakfound and getfield(current,"penalty") <= 10000 then
+--  -- if trace then
+--         trace_done("removed penalty",current)
+--  -- end
+--     head, current = remove_node(head, current, true)
+-- end
+
             current = getnext(current)
         elseif id == kern_code then
             if snap and trace_vsnapping and getfield(current,"kern") ~= 0 then
@@ -1182,7 +1224,8 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 local sp = getattr(current,a_skippenalty)    -- has no default, no unset (yet)
                 if sp and sc == penalty then
                     if where == "page" then
-                        local p = specialmethods[specialmethod](current,sp)
+                        local pagehead, pagetail = getpagelist()
+                        local p = specialmethods[specialmethod](pagehead,pagetail,current,sp)
                         if p then
                             if trace then
                                 trace_skip("previous special penalty %a is changed to %a using method %a",sp,p,specialmethod)
@@ -1190,6 +1233,12 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                             special_penalty = sp
                             sp = p
                         end
+
+-- else
+--     if nobreakfound == nil then
+--         nobreakfound = checknobreak()
+--     end
+
                     end
                     if not penalty_data then
                         penalty_data = sp
@@ -1199,6 +1248,14 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         penalty_data = sp
                     end
                     if trace then trace_skip("penalty in skip",sc,so,sp,current) end
+
+-- if nobreakfound then
+--     penalty_data = 10000
+--     if trace then
+--         trace_skip("nobreak found before penalty in skip",sc,so,sp,current)
+--     end
+-- end
+
                     head, current = remove_node(head, current, true)
                 elseif not sc then  -- if not sc then
                     if glue_data then

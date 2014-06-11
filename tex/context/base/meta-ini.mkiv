@@ -403,18 +403,9 @@
   {\begingroup
    \edef\width {#2\space}\let\overlaywidth \width
    \edef\height{#3\space}\let\overlayheight\height
-   \ifcsname\??mpclip#1\endcsname
-     \meta_start_current_graphic
-       \xdef\MPclippath{\normalexpanded{\noexpand\ctxlua{metapost.theclippath {
-            instance        = "\currentMPinstance",
-            format          = "\currentMPformat",
-            data            = \!!bs\getvalue{\??mpclip#1}\!!es,
-            initializations = \!!bs\meta_flush_current_initializations\!!es,
-            useextensions   = "\MPinstanceparameter\s!extensions",
-            inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
-            method          = "\MPinstanceparameter\c!method",
-       }}}}%
-     \meta_stop_current_graphic
+   \edef\currentMPclip{#1}%
+   \ifcsname\??mpclip\currentMPclip\endcsname
+     \meta_grab_clip_path_indeed
      \ifx\MPclippath\empty
        \xdef\MPclippath{#4}%
      \fi
@@ -422,6 +413,19 @@
      \xdef\MPclippath{#4}%
    \fi
    \endgroup}
+
+\def\meta_grab_clip_path_indeed
+  {\meta_start_current_graphic
+     \xdef\MPclippath{\normalexpanded{\noexpand\ctxlua{metapost.theclippath {
+          instance        = "\currentMPinstance",
+          format          = "\currentMPformat",
+          data            = \!!bs\csname\??mpclip\currentMPclip\endcsname\!!es,
+          initializations = \!!bs\meta_flush_current_initializations\!!es,
+          useextensions   = "\MPinstanceparameter\s!extensions",
+          inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
+          method          = "\MPinstanceparameter\c!method",
+     }}}}%
+   \meta_stop_current_graphic}
 
 %D Since we want lables to follow the document settings, we
 %D also set the font related variables.

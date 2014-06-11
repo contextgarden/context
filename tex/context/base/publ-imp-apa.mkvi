@@ -21,6 +21,72 @@
 
 \startbtxrenderingdefinitions[apa]
 
+%D Because we want to mix rendering (in the manual) we need a namespace in label
+%D texts:
+
+\setupbtxlabeltext
+  [en]
+  [apa:mastersthesis={Master's thesis},
+   apa:phdthesis={PhD thesis},
+   apa:technicalreport={Technical report},
+   apa:editor=editor,
+   apa:editors=editors,
+   apa:edition=edition,
+   apa:volume=volume,
+   apa:Volume=Volume,
+   apa:number=number,
+   apa:Number=Number,
+   apa:in=in,
+   apa:of=of,
+   apa:In=In,
+   apa:p=p,
+   apa:pp=pp,
+   apa:pages=pages,
+   apa:and=and,
+   apa:others={et al.}]
+
+\setupbtxlabeltext
+  [fr]
+  [apa:mastersthesis={Thèse de master (DEA, DESS, master)},
+   apa:phdthesis={Thèse de doctorat},
+   apa:technicalreport={Rapport technique},
+   apa:editor=éditeur,
+   apa:editors=éditeurs,
+   apa:edition=édition,
+   apa:volume=volume,
+   apa:Volume=Volume,
+   apa:number=numéro,
+   apa:Number=Numéro,
+   apa:in=dans,
+   apa:of=de,
+   apa:In=Dans,
+   apa:p=p,
+   apa:pp=pp,
+   apa:pages=pages,
+   apa:and=et,
+   apa:others={et al.}]
+
+\setupbtxlabeltext
+  [de]
+  [apa:mastersthesis={Masterarbeit},
+   apa:phdthesis={Dissertation},
+   apa:technicalreport={Technischer Bericht},
+   apa:editor=Herausgeber,
+   apa:editors=Herausgeber,
+   apa:edition=Auflage,
+   apa:volume=Band,
+   apa:Volume=Band,
+   apa:number=Numer,
+   apa:Number=Numer,
+   apa:in=in,
+   apa:of=von,
+   apa:In=In,
+   apa:p=S,
+   apa:pp=S,
+   apa:pages=Seiten,
+   apa:and=und,
+   apa:others={et al.}]
+
 %D The variables control the shared code for which we use a tex definition with
 %D one argument, specifying the field name.
 
@@ -159,9 +225,9 @@
             \btxflushauthor{editor}
             \btxcomma
             \btxsingularplural {editor} {
-                \btxlabeltext{editor}
+                \btxlabeltext{apa:editor}
             } {
-                \btxlabeltext{editors}
+                \btxlabeltext{apa:editors}
             }
         } {
             % weird period
@@ -187,9 +253,9 @@
         \btxflushauthor{editor}
         \btxcomma
         \btxsingularplural {editor} {
-            \btxlabeltext{editor}
+            \btxlabeltext{apa:editor}
         } {
-            \btxlabeltext{editors}
+            \btxlabeltext{apa:editors}
         }
     } {
         \btxdoif {key} {
@@ -228,7 +294,7 @@
         \btxspace
         \btxflush{pages}
         \btxspace
-        \btxlabeltext{p}
+        \btxlabeltext{apa:p}
         \btxperiod
     }
 \stoptexdefinition
@@ -238,7 +304,7 @@
         \btxspace
         \btxflush{pages}
         \btxspace
-        \btxlabeltext{pp}
+        \btxlabeltext{apa:pp}
         \btxperiod
     }
 \stoptexdefinition
@@ -246,7 +312,7 @@
 \starttexdefinition btx:apa:pages:pages
     \btxdoif {pages} {
         \btxcomma
-        \btxlabeltext{pages}
+        \btxlabeltext{apa:pages}
         \btxnbsp
         \btxflush{pages}
     }
@@ -257,7 +323,7 @@
         \btxspace
         \btxflush{edition}
         \btxspace
-        \btxlabeltext{edition}
+        \btxlabeltext{apa:edition}
         \btxperiod
     }
 \stoptexdefinition
@@ -269,7 +335,7 @@
 %         \btxspace
 %         \btxflush{edition}
 %         \btxspace
-%         \btxlabeltext{edition}
+%         \btxlabeltext{apa:edition}
 %     }
 % \stoptexdefinition
 
@@ -285,12 +351,13 @@
         \texdefinition{btx:apa:italic}{journal}
     } {
         \btxdoif {crossref} {
-            \btxlabeltext{In}
+            \btxlabeltext{apa:In}
             \btxspace
             \btxflush{crossref}
         }
     }
     \btxdoifelse {volume} {
+        \btxspace
         \texdefinition{btx:apa:italic}{volume}
         \btxdoif {issue} {
             \btxlparent
@@ -316,19 +383,19 @@
         \doifmodeelse {btx:apa:edited-book} {
             \btxdoifelse {volume} {
                 \btxspace
-                \btxlabeltext{Number}
+                \btxlabeltext{apa:Number}
                 \btxnbsp
                 \btxflush{volume}
                 \btxdoifelse {series} {
                     \btxspace
-                    \btxlabeltext{in}
+                    \btxlabeltext{apa:in}
                     \btxnbsp
                     \btxflush{series}
                     \btxperiod
                 } {
                     \btxdoifelse {crossref} {
                         \btxspace
-                        \btxlabeltext{in}
+                        \btxlabeltext{apa:in}
                         \btxlbracket
                         \btxsetup{btx:format:crossref}
                         \btxrbracket
@@ -352,22 +419,22 @@
                 \texdefinition{btx:apa:pages:pages}
                 \btxperiod
                 \btxdoif {volume} {
-                    \btxlabeltext{Volume}
+                    \btxlabeltext{apa:Volume}
                     \btxnbsp
                     \btxflush{volume}
                     \btxspace
-                    \btxlabeltext{of}
+                    \btxlabeltext{apa:of}
                     \btxnbsp
                 }
             } {
                 \btxdoif {volume} {
                     \btxcomma
-                    \btxlabeltext{volume}
+                    \btxlabeltext{apa:volume}
                     \btxnbsp
                     \btxflush{volume}
                     \btxdoif {series} {
                         \btxspace
-                        \btxlabeltext{of}
+                        \btxlabeltext{apa:of}
                         \btxnbsp
                         \texdefinition{btx:apa:italic}{series}
                     }
@@ -395,19 +462,19 @@
         \doifmodeelse {btx:apa:edited-book} {
             \btxdoifelse {volume} {
                 \btxspace
-                \btxlabeltext{number}
+                \btxlabeltext{apa:number}
                 \btxnbsp
                 \btxflush{volume}
                 \btxdoifelse {series} {
                     \btxspace
-                    \btxlabeltext{in}
+                    \btxlabeltext{apa:in}
                     \btxnbsp
                     \btxflush{series}
                     \btxperiod
                 } {
                     \btxdoifelse {crossref} {
                         \btxspace
-                        \btxlabeltext{in}
+                        \btxlabeltext{apa:in}
                         \btxlbracket
                         \btxsetup{btx:format:crossref}
                         \btxrbracket
@@ -430,11 +497,11 @@
                 }
                 \texdefinition{btx:apa:pages:pages}
                 \btxdoif {volume} {
-                    \btxlabeltext{Volume}
+                    \btxlabeltext{apa:Volume}
                     \btxnbsp
                     \btxflush{volume}
                     \btxspace
-                    \btxlabeltext{of}
+                    \btxlabeltext{apa:of}
                     \btxnbsp
                 }
                 \btxdoif {crossref} {
@@ -445,12 +512,12 @@
             } {
                 \btxdoif {volume} {
                     \btxcomma
-                    \btxlabeltext{volume}
+                    \btxlabeltext{apa:volume}
                     \btxnbsp
                     \btxflush{volume}
                     \btxdoif {series} {
                         \btxspace
-                        \btxlabeltext{of}
+                        \btxlabeltext{apa:of}
                         \btxnbsp
                         \texdefinition{btx:apa:italic}{series}
                     }
@@ -490,36 +557,48 @@
 
 \startsetups btx:apa:incollection
     \texdefinition{btx:apa:author-and-year}
-    \btxdoif {arttitle} {
-        \btxflush{arttitle}\btxperiod
+    \btxdoifelse {arttitle} {
+        \btxflush{arttitle}
+        \btxperiod
+    } {
+        \btxdoif {title} {
+            \btxflush{title}
+            \btxperiod
+        }
     }
-    \btxlabeltext{In}\btxspace
-    \btxdoifelse {title} {
-        \btxflushauthor{editor}
-        \btxcomma
-        \texdefinition{btx:apa:italic}{title}
+    \btxlabeltext{apa:In}
+    \btxspace
+    \btxdoifelse {booktitle} {
+        \btxdoif {editor} {
+            \btxflushauthor{editor}
+            \btxcomma
+        }
+        \texdefinition{btx:apa:italic}{booktitle}
         \btxdoif {series} {
             \btxdoif {volume} {
-                \btxcomma
-                \btxlabeltext{number}
+                \btxspace
+                \btxlabeltext{apa:number}
                 \btxspace
                 \btxflush{volume}
                 \btxspace
-                \btxlabeltext{in}
+                \btxlabeltext{apa:in}
             }
+            \btxspace
             \btxspace\btxflush{series}
+            \btxcomma
         }
         \btxdoif {chapter} {
-            \btxcomma
-            \btxflush{chapter}
             \btxspace
+            \btxflush{chapter}
         }
+        \btxspace
         \texdefinition{btx:apa:pages:pages}
         \btxdoif {edition} {
             \btxspace
             \btxflush{edition}
             \btxspace
-            \btxlabeltext{edition}
+            \btxlabeltext{apa:edition}
+            \btxspace
         }
         \texdefinition{btx:apa:wherefrom}{publisher}
     } {
@@ -544,15 +623,16 @@
         \btxflush{arttitle}
         \btxperiod
     }
-    \btxlabeltext{In}\btxspace
+    \btxlabeltext{apa:In}
+    \btxspace
     \btxdoifelse {title} {
         \btxdoif {editor} {
             \btxflush{btx:apa:format:editors}
             \btxcomma
             \btxsingularplural {editor} {
-                \btxlabeltext{editor}
+                \btxlabeltext{apa:editor}
             } {
-                \btxlabeltext{editors}
+                \btxlabeltext{apa:editors}
             }
             \btxcomma
         }
@@ -560,10 +640,12 @@
         \btxdoif {series} {
             \btxdoif {volume} {
                 \btxcomma
-                \btxlabeltext{number}\btxspace\btxflush{crossref}
+                \btxlabeltext{apa:number}
+                \btxspace
+                \btxflush{crossref}
                 \btxflush{volume}
                 \btxspace
-                \btxlabeltext{in}
+                \btxlabeltext{apa:in}
             }
             \btxspace
             \btxflush{series}
@@ -599,11 +681,11 @@
         \texdefinition{btx:apa:italic}{title}
         \btxdoif {volume} {
             \btxcomma
-            \btxlabeltext{number}
+            \btxlabeltext{apa:number}
             \btxspace
             \btxflush{volume}
             \btxspace
-            \btxlabeltext{in}
+            \btxlabeltext{apa:in}
             \btxspace
         }
         \btxdoif {chapter} {
@@ -624,7 +706,7 @@
     \btxdoifelse {type} {
         \btxflush{type}
     } {
-        \btxlabeltext{\currentbtxcategory}
+        \btxlabeltext{apa:\currentbtxcategory}
     }
     \texdefinition{btx:apa:wherefrom}{school}
     \texdefinition{btx:apa:pages:p}
@@ -650,8 +732,9 @@
         }
     } {
         \btxspace
-        \btxlabeltext{technicalreport}
+        \btxlabeltext{apa:technicalreport}
     }
+    \btxcomma
     \texdefinition{btx:apa:wherefrom}{institution}
     \texdefinition{btx:apa:pages:p}
     \texdefinition{btx:apa:note}

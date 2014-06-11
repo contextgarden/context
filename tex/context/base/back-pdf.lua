@@ -38,13 +38,17 @@ end
 --
 -- we could also do the save restore wrapping here + colorhack
 
+local pdfsave      = nodes.pool.pdfsave
+local pdfrestore   = nodes.pool.pdfrestore
 local pdfsetmatrix = nodes.pool.pdfsetmatrix
+
 local stack        = { }
 
 local function popmatrix()
     local top = remove(stack)
     if top then
         context(pdfsetmatrix(unpack(top)))
+        context(pdfrestore())
     end
 end
 
@@ -53,6 +57,7 @@ function commands.pdfstartrotation(a)
         insert(stack,false)
     else
         local s, c = sind(a), cosd(a)
+        context(pdfsave())
         context(pdfsetmatrix(c,s,-s,c))
         insert(stack,{ c, -s, s, c })
     end
@@ -68,6 +73,7 @@ function commands.pdfstartscaling(sx,sy)
         if sy == 0 then
             sy = 0.0001
         end
+        context(pdfsave())
         context(pdfsetmatrix(sx,0,0,sy))
         insert(stack,{ 1/sx, 0, 0, 1/sy })
     end
@@ -81,6 +87,7 @@ function commands.pdfstartmatrix(sx,rx,ry,sy) -- tx, ty
     if sx == 1 and rx == 0 and ry == 0 and sy == 1 then
         insert(stack,false)
     else
+        context(pdfsave())
         context(pdfsetmatrix(sx,rx,ry,sy))
         insert(stack,{ -sx, -rx, -ry, -sy })
     end
@@ -88,5 +95,7 @@ end
 
 commands.pdfstoprotation  = popmatrix
 commands.pdfstopscaling   = popmatrix
-commands.pdfstopmirroring = commands.pdfstartmirroring
+commands.pdfstopmirroring = popmatrix
 commands.pdfstopmatrix    = popmatrix
+
+-- todo : clipping

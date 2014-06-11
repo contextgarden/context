@@ -142,11 +142,11 @@
 %D \showsetup{noheaderandfooterlines}
 %D \showsetup{notopandbottomlines}
 
-\def\noheaderandfooterlines
+\unexpanded\def\noheaderandfooterlines
   {\setuplayoutelement[\v!header][\c!state=\v!empty]%
    \setuplayoutelement[\v!footer][\c!state=\v!empty]}
 
-\def\notopandbottomlines
+\unexpanded\def\notopandbottomlines
   {\setuplayoutelement[\v!top   ][\c!state=\v!empty]%
    \setuplayoutelement[\v!bottom][\c!state=\v!empty]}
 
@@ -418,7 +418,7 @@
 %D The following macro has to be called after a page
 %D is flushed.
 
-\def\resetlayouttextlines % public
+\unexpanded\def\resetlayouttextlines % public
   {\csname\??layouttextsreset\v!top   \endcsname
    \csname\??layouttextsreset\v!header\endcsname
    \csname\??layouttextsreset\v!text  \endcsname
@@ -435,7 +435,7 @@
 
 % \settext[header][text][middle][xxx][yyy]
 
-\def\settextcontent
+\unexpanded\def\settextcontent
   {\doquintupleempty\page_layouts_set_text_content}
 
 \def\page_layouts_set_text_content[#vertical][#horizontal][#one][#two][#three]% header text middle text/text
@@ -456,7 +456,7 @@
           \c!rightstyle\c!rightcolor\c!rightwidth{#one}}%
    \fi\fi\fi}
 
-\def\resettextcontent
+\unexpanded\def\resettextcontent
   {\dotripleempty\page_layouts_reset_text_content}
 
 \def\page_layouts_reset_text_content[#vertical][#horizontal][#tag]% header text middle

@@ -56,9 +56,9 @@ local pdf    = pdf
 local factor = number.dimenfactors.bp
 
 if pdf.setinfo then
---     table.setmetatablenewindex(pdf,function(t,k,v)
---         report_blocked("'pdf.%s' is not supported",k)
---     end)
+ -- table.setmetatablenewindex(pdf,function(t,k,v)
+ --     report_blocked("'pdf.%s' is not supported",k)
+ -- end)
     -- the getters are harmless
 end
 
@@ -103,15 +103,27 @@ local pdfimmediateobject    = pdf.immediateobj
 local pdfdeferredobject     = pdf.obj
 local pdfreferenceobject    = pdf.refobj
 
-function pdf.setinfo           () report_blocked("'pdf.%s' is not supported","setinfo")            end -- use lpdf.addtoinfo etc
-function pdf.setcatalog        () report_blocked("'pdf.%s' is not supported","setcatalog")         end
-function pdf.setnames          () report_blocked("'pdf.%s' is not supported","setnames")           end
-function pdf.settrailer        () report_blocked("'pdf.%s' is not supported","settrailer")         end
-function pdf.setpageresources  () report_blocked("'pdf.%s' is not supported","setpageresources")   end
-function pdf.setpageattributes () report_blocked("'pdf.%s' is not supported","setpageattributes")  end
-function pdf.setpagesattributes() report_blocked("'pdf.%s' is not supported","setpagesattributes") end
+-- function pdf.setinfo           () report_blocked("'pdf.%s' is not supported","setinfo")            end -- use lpdf.addtoinfo etc
+-- function pdf.setcatalog        () report_blocked("'pdf.%s' is not supported","setcatalog")         end
+-- function pdf.setnames          () report_blocked("'pdf.%s' is not supported","setnames")           end
+-- function pdf.settrailer        () report_blocked("'pdf.%s' is not supported","settrailer")         end
+-- function pdf.setpageresources  () report_blocked("'pdf.%s' is not supported","setpageresources")   end
+-- function pdf.setpageattributes () report_blocked("'pdf.%s' is not supported","setpageattributes")  end
+-- function pdf.setpagesattributes() report_blocked("'pdf.%s' is not supported","setpagesattributes") end
+-- function pdf.registerannot     () report_blocked("'pdf.%s' is not supported","registerannot")      end
 
-function pdf.registerannot() report_blocked("'pdf.%s' is not supported","registerannot") end
+local function pdfdisablecommand(command)
+    pdf[command] = function() report_blocked("'pdf.%s' is not supported",command) end
+end
+
+pdfdisablecommand("setinfo")
+pdfdisablecommand("setcatalog")
+pdfdisablecommand("setnames")
+pdfdisablecommand("settrailer")
+pdfdisablecommand("setpageresources")
+pdfdisablecommand("setpageattributes")
+pdfdisablecommand("setpagesattributes")
+pdfdisablecommand("registerannot")
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
@@ -784,13 +796,50 @@ local catalog = pdfdictionary { Type = pdfconstant("Catalog") } -- nicer, but wh
 local info    = pdfdictionary { Type = pdfconstant("Info")    } -- nicer, but when we assign we nil the Type
 ----- names   = pdfdictionary { Type = pdfconstant("Names")   } -- nicer, but when we assign we nil the Type
 
-local function flushcatalog() if not environment.initex then trace_flush("catalog") catalog.Type = nil pdfsetcatalog(catalog()) end end
-local function flushinfo   () if not environment.initex then trace_flush("info")    info   .Type = nil pdfsetinfo   (info   ()) end end
--------------- flushnames  () if not environment.initex then trace_flush("names")   names  .Type = nil pdfsetnames  (names  ()) end end
+local function flushcatalog()
+    if not environment.initex then
+        trace_flush("catalog")
+        catalog.Type = nil
+        pdfsetcatalog(catalog())
+    end
+end
 
-function lpdf.addtocatalog(k,v) if not (lpdf.protectresources and catalog[k]) then trace_set("catalog",k) catalog[k] = v end end
-function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) then trace_set("info",   k) info   [k] = v end end
--------- lpdf.addtonames  (k,v) if not (lpdf.protectresources and names  [k]) then trace_set("names",  k) names  [k] = v end end
+local function flushinfo()
+    if not environment.initex then
+        trace_flush("info")
+        info.Type = nil
+        pdfsetinfo(info())
+    end
+end
+
+-- local function flushnames()
+--     if not environment.initex then
+--         trace_flush("names")
+--         names.Type = nil
+--         pdfsetnames(names())
+--     end
+-- end
+
+function lpdf.addtocatalog(k,v)
+    if not (lpdf.protectresources and catalog[k]) then
+        trace_set("catalog",k)
+        catalog[k] = v
+    end
+end
+
+function lpdf.addtoinfo(k,v)
+    if not (lpdf.protectresources and info[k]) then
+        trace_set("info",k)
+        info[k] = v
+    end
+end
+
+-- local function lpdf.addtonames(k,v)
+--     if not (lpdf.protectresources and names[k]) then
+--         trace_set("names",k)
+--         names[k] = v
+--     end
+-- end
 
 local names = pdfdictionary {
  -- Type = pdfconstant("Names")
@@ -944,10 +993,11 @@ function lpdf.limited(n,min,max,default)
     end
 end
 
--- lpdf.addtoinfo("ConTeXt.Version", tex.contextversiontoks)
+-- lpdf.addtoinfo("ConTeXt.Version", environment.version)
 -- lpdf.addtoinfo("ConTeXt.Time",    os.date("%Y.%m.%d %H:%M")) -- :%S
 -- lpdf.addtoinfo("ConTeXt.Jobname", environment.jobname)
 -- lpdf.addtoinfo("ConTeXt.Url",     "www.pragma-ade.com")
+-- lpdf.addtoinfo("ConTeXt.Support", "contextgarden.net")
 
 -- if not pdfreferenceobject then
 --

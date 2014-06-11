@@ -25,7 +25,46 @@ local function defaultfailure(name)
     report_files("asked name %a, not found",name)
 end
 
-function commands.uselibrary(specification) -- todo; reporter
+-- function commands.uselibrary(specification) -- todo; reporter
+--     local name = specification.name
+--     if name and name ~= "" then
+--         local patterns = specification.patterns or defaultpatterns
+--         local action   = specification.action   or defaultaction
+--         local failure  = specification.failure  or defaultfailure
+--         local onlyonce = specification.onlyonce
+--         local files    = utilities.parsers.settings_to_array(name)
+--         local truename = environment.truefilename
+--         local done     = false
+--         for i=1,#files do
+--             local filename = files[i]
+--             if not loaded[filename] then
+--                 if onlyonce then
+--                     loaded[filename] = true -- todo: base this on return value
+--                 end
+--                 for i=1,#patterns do
+--                     local somename = format(patterns[i],filename)
+--                     if truename then
+--                         somename = truename(somename)
+--                     end
+--                     local foundname = resolvers.getreadfilename("any",".",somename) or ""
+--                     if foundname ~= "" then
+--                         action(name,foundname)
+--                         done = true
+--                         break
+--                     end
+--                 end
+--                 if done then
+--                     break
+--                 end
+--             end
+--         end
+--         if failure and not done then
+--             failure(name)
+--         end
+--     end
+-- end
+
+function commands.uselibrary(specification) -- todo: reporter
     local name = specification.name
     if name and name ~= "" then
         local patterns = specification.patterns or defaultpatterns
@@ -34,13 +73,15 @@ function commands.uselibrary(specification) -- todo; reporter
         local onlyonce = specification.onlyonce
         local files    = utilities.parsers.settings_to_array(name)
         local truename = environment.truefilename
-        local done     = false
         for i=1,#files do
             local filename = files[i]
-            if not loaded[filename] then
+            if loaded[filename] then
+                -- next one
+            else
                 if onlyonce then
                     loaded[filename] = true -- todo: base this on return value
                 end
+                local done = false
                 for i=1,#patterns do
                     local somename = format(patterns[i],filename)
                     if truename then
@@ -53,13 +94,10 @@ function commands.uselibrary(specification) -- todo; reporter
                         break
                     end
                 end
-                if done then
-                    break
+                if failure and not done then
+                    failure(name)
                 end
             end
-        end
-        if failure and not done then
-            failure(name)
         end
     end
 end

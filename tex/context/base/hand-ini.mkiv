@@ -51,10 +51,10 @@
 \let\pdfadjustspacing\relax \newcount\pdfadjustspacing % a little bit protection
 \let\pdfprotrudechars\relax \newcount\pdfprotrudechars % a little bit protection
 
-\def\font_expansion_enable  {\normalpdfadjustspacing\plustwo  }
-\def\font_expansion_disable {\normalpdfadjustspacing\zerocount}
-\def\font_protruding_enable {\normalpdfprotrudechars\plustwo  }
-\def\font_protruding_disable{\normalpdfprotrudechars\zerocount}
+\def\font_expansion_enable  {\normalpdfadjustspacing\plustwo  } % these will become normal primitives
+\def\font_expansion_disable {\normalpdfadjustspacing\zerocount} % these will become normal primitives
+\def\font_protruding_enable {\normalpdfprotrudechars\plustwo  } % these will become normal primitives
+\def\font_protruding_disable{\normalpdfprotrudechars\zerocount} % these will become normal primitives
 
 \appendtoks \font_expansion_disable  \to \everyforgetall % Here or not here?
 \appendtoks \font_protruding_disable \to \everyforgetall % Here or not here?

@@ -1016,12 +1016,18 @@
 % \bindprimitive ifabsnum       ifpdfabsnum
 
 %D We need to make sure that we start up in \DVI\ mode, so, after testing for running
-%D \PDFTEX, we default to \DVI.
+%D \PDFTEX, we default to \DVI. Why?
 
-\pdfoutput            \zerocount
-\pdfminorversion      \plusfive
-\pdfgentounicode      \plusone
-\pdfinclusioncopyfonts\plusone
+\pdfoutput              \zerocount
+\pdfminorversion        \plussix
+\pdfgentounicode        \plusone
+\pdfinclusioncopyfonts  \plusone
+\pdfinclusionerrorlevel \zerocount
+\pdfdecimaldigits       \plusten
+\pdfhorigin             1 true in
+\pdfvorigin             \pdfhorigin
+\pdfimageresolution     300
+\pdfpkresolution        600
 
 \normalprotected\def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
 \normalprotected\def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }

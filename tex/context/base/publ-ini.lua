@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['publ-ini'] = {
 -- we could store the destinations in the user list entries
 
 local next, rawget, type, tostring, tonumber = next, rawget, type, tostring, tonumber
-local match, gmatch, format, gsub = string.match, string.gmatch, string.format, string.gsub
+local match, gmatch, format, gsub, find = string.match, string.gmatch, string.format, string.gsub, string.find
 local concat, sort, tohash = table.concat, table.sort, table.tohash
 local utfsub = utf.sub
 local formatters = string.formatters
@@ -431,15 +431,41 @@ local function getdetail(dataset,tag,name)
     return d and d[name]
 end
 
-function commands.btxsingularorplural(dataset,tag,name) -- todo: make field dependent
+function commands.btxsingularorplural(dataset,tag,name)
     local d = datasets[dataset].details[tag]
     if d then
         d = d[name]
     end
-    if d then
+    if type(d) == "table" then
         d = #d <= 1
+    else
+        d = false
     end
     commands.doifelse(d)
+end
+
+function commands.oneorrange(dataset,tag,name)
+    local d = datasets[dataset].luadata[tag] -- details ?
+    if d then
+        d = d[name]
+    end
+    if type(d) == "string" then
+        d = find(d,"%-")
+    else
+        d = false
+
+    end
+    commands.doifelse(not d) -- so singular is default
+end
+
+function commands.firstinrange(dataset,tag,name)
+    local d = datasets[dataset].luadata[tag] -- details ?
+    if d then
+        d = d[name]
+    end
+    if type(d) == "string" then
+        context(match(d,"([^%-]+)"))
+    end
 end
 
 -- basic loading

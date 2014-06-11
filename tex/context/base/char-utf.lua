@@ -29,28 +29,31 @@ local utfchar, utfbyte, utfcharacters, utfvalues = utf.char, utf.byte, utf.chara
 local allocate = utilities.storage.allocate
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
-local charfromnumber = characters.fromnumber
+local charfromnumber   = characters.fromnumber
 
-characters            = characters or { }
-local characters      = characters
+characters             = characters or { }
+local characters       = characters
 
-characters.graphemes  = allocate()
-local graphemes       = characters.graphemes
+local graphemes        = allocate()
+characters.graphemes   = graphemes
 
-characters.combined   = allocate()
-local combined        = characters.combined
+local collapsed        = allocate()
+characters.collapsed   = collapsed
 
-characters.decomposed = allocate()
-local decomposed      = characters.decomposed
+local combined         = allocate()
+characters.combined    = combined
 
-characters.mathpairs  = allocate()
-local mathpairs       = characters.mathpairs
+local decomposed       = allocate()
+characters.decomposed  = decomposed
 
-characters.filters    = allocate()
-local filters         = characters.filters
+local mathpairs        = allocate()
+characters.mathpairs   = mathpairs
 
-filters.utf           = filters.utf  or { }
-local utffilters      = characters.filters.utf
+local filters          = allocate()
+characters.filters     = filters
+
+local utffilters       = { }
+characters.filters.utf = utffilters
 
 -- is characters.combined cached?
 
@@ -81,89 +84,131 @@ local decomposed = allocate {
 
 characters.decomposed = decomposed
 
-local function initialize() -- maybe only 'mn'
+-- local function initialize() -- maybe only 'mn'
+--     local data = characters.data
+--     for unicode, v in next, data do
+--         -- using vs and first testing for length is faster (.02->.01 s)
+--         local vs = v.specials
+--         if vs and #vs == 3 then
+--             local vc = vs[1]
+--             if vc == "char" then
+--                 local one, two = vs[2], vs[3]
+--                 if data[two].category == "mn" then
+--                     local cgf = combined[one]
+--                     if not cgf then
+--                         cgf = { [two] = unicode }
+--                         combined[one]  = cgf
+--                     else
+--                         cgf[two] = unicode
+--                     end
+--                 end
+--                 local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
+--                 local cgf = graphemes[first]
+--                 if not cgf then
+--                     cgf = { [second] = combination }
+--                     graphemes[first] = cgf
+--                 else
+--                     cgf[second] = combination
+--                 end
+--                 if v.mathclass or v.mathspec then
+--                     local mps = mathpairs[two]
+--                     if not mps then
+--                         mps = { [one] = unicode }
+--                         mathpairs[two] = mps
+--                     else
+--                         mps[one] = unicode -- here unicode
+--                     end
+--                     local mps = mathpairs[second]
+--                     if not mps then
+--                         mps = { [first] = combination }
+--                         mathpairs[second] = mps
+--                     else
+--                         mps[first] = combination
+--                     end
+--                 end
+--          -- elseif vc == "compat" then
+--          -- else
+--          --     local description = v.description
+--          --     if find(description,"LIGATURE") then
+--          --         if vs then
+--          --             local t = { }
+--          --             for i=2,#vs do
+--          --                 t[#t+1] = utfchar(vs[i])
+--          --             end
+--          --             decomposed[utfchar(unicode)] = concat(t)
+--          --         else
+--          --             local vs = v.shcode
+--          --             if vs then
+--          --                 local t = { }
+--          --                 for i=1,#vs do
+--          --                     t[i] = utfchar(vs[i])
+--          --                 end
+--          --                 decomposed[utfchar(unicode)] = concat(t)
+--          --             end
+--          --         end
+--          --     end
+--             end
+--         end
+--     end
+--     initialize = false
+--     characters.initialize = function() end -- when used outside tex
+-- end
+
+local function initialize()
     local data = characters.data
-    for unicode, v in next, data do
-        -- using vs and first testing for length is faster (.02->.01 s)
+    local function backtrack(v,last,target)
         local vs = v.specials
-        local vc = vs and #vs == 3 and vs[1]
-        if vc == "char" then
+        if vs and #vs == 3 and vs[1] == "char" then
             local one, two = vs[2], vs[3]
-            if data[two].category == "mn" then
-                local cgf = combined[one]
+            local first, second = utfchar(one), utfchar(two) .. last
+            collapsed[first..second] = target
+            backtrack(data[one],second,target)
+        end
+    end
+    for unicode, v in next, data do
+        local vs = v.specials
+        if vs and #vs == 3 then
+            if vs[1] == "char" then
+                --
+                local one, two = vs[2], vs[3]
+                local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
+                --
+                collapsed[first..second] = combination
+                backtrack(data[one],second,combination)
+                -- sort of obsolete:
+                local cgf = graphemes[first]
                 if not cgf then
-                    cgf = { [two] = unicode }
-                    combined[one]  = cgf
+                    cgf = { [second] = combination }
+                    graphemes[first] = cgf
                 else
-                    cgf[two] = unicode
+                    cgf[second] = combination
                 end
-            end
-            local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
-            local cgf = graphemes[first]
-            if not cgf then
-                cgf = { [second] = combination }
-                graphemes[first] = cgf
-            else
-                cgf[second] = combination
-            end
-            if v.mathclass or v.mathspec then
-                local mps = mathpairs[two]
-                if not mps then
-                    mps = { [one] = unicode }
-                    mathpairs[two] = mps
-                else
-                    mps[one] = unicode -- here unicode
+                --
+                if v.mathclass or v.mathspec then
+                    local mps = mathpairs[two]
+                    if not mps then
+                        mps = { [one] = unicode }
+                        mathpairs[two] = mps
+                    else
+                        mps[one] = unicode -- here unicode
+                    end
+                    local mps = mathpairs[second]
+                    if not mps then
+                        mps = { [first] = combination }
+                        mathpairs[second] = mps
+                    else
+                        mps[first] = combination
+                    end
                 end
-                local mps = mathpairs[second]
-                if not mps then
-                    mps = { [first] = combination }
-                    mathpairs[second] = mps
-                else
-                    mps[first] = combination
-                end
+                --
             end
-     -- elseif vc == "compat" then
-     -- else
-     --     local description = v.description
-     --     if find(description,"LIGATURE") then
-     --         if vs then
-     --             local t = { }
-     --             for i=2,#vs do
-     --                 t[#t+1] = utfchar(vs[i])
-     --             end
-     --             decomposed[utfchar(unicode)] = concat(t)
-     --         else
-     --             local vs = v.shcode
-     --             if vs then
-     --                 local t = { }
-     --                 for i=1,#vs do
-     --                     t[i] = utfchar(vs[i])
-     --                 end
-     --                 decomposed[utfchar(unicode)] = concat(t)
-     --             end
-     --         end
-     --     end
         end
     end
     initialize = false
-    characters.initialize = function() end -- when used outside tex
+    characters.initialize = function() end
 end
 
 characters.initialize = initialize
-
--- utffilters.addgrapheme(utfchar(318),'l','\string~')
--- utffilters.addgrapheme('c','a','b')
-
-function utffilters.addgrapheme(result,first,second) -- can be U+ 0x string or utf or number
-    local result = charfromnumber(result)
-    local first  = charfromnumber(first)
-    local second = charfromnumber(second)
-    if not graphemes[first] then
-        graphemes[first] = { [second] = result }
-    else
-        graphemes[first][second] = result
-    end
-end
 
 --[[ldx--
 <p>In order to deal with 8-bit output, we need to find a way to go from <l n='utf'/> to
@@ -252,109 +297,130 @@ not collecting tokens is not only faster but also saves garbage collecting.
 local skippable  = table.tohash { "mkiv", "mkvi" }
 local filesuffix = file.suffix
 
-function utffilters.collapse(str,filename)   -- we can make high a seperate pass (never needed with collapse)
-    if skippable[filesuffix(filename)] then
-        return str
- -- elseif find(filename,"^virtual://") then
- --     return str
- -- else
- --  -- print("\n"..filename)
-    end
-    if str and str ~= "" then
-        local nstr = #str
-        if nstr > 1 then
-            if initialize then -- saves a call
-                initialize()
-            end
-            local tokens, t, first, done, n = { }, 0, false, false, 0
-            for second in utfcharacters(str) do
-                if done then
-                    if first then
-                        if second == " " then
-                            t = t + 1
-                            tokens[t] = first
-                            first = second
-                        else
-                         -- local crs = high[second]
-                         -- if crs then
-                         --     t = t + 1
-                         --     tokens[t] = first
-                         --     first = crs
-                         -- else
-                                local cgf = graphemes[first]
-                                if cgf and cgf[second] then
-                                    first = cgf[second]
-                                else
-                                    t = t + 1
-                                    tokens[t] = first
-                                    first = second
-                                end
-                         -- end
-                        end
-                    elseif second == " " then
-                        first = second
-                    else
-                     -- local crs = high[second]
-                     -- if crs then
-                     --     first = crs
-                     -- else
-                            first = second
-                     -- end
-                    end
-                elseif second == " " then
-                    first = nil
-                    n = n + 1
-                else
-                 -- local crs = high[second]
-                 -- if crs then
-                 --     for s in utfcharacters(str) do
-                 --         if n == 1 then
-                 --             break
-                 --         else
-                 --             t = t + 1
-                 --             tokens[t] = s
-                 --             n = n - 1
-                 --         end
-                 --     end
-                 --     if first then
-                 --         t = t + 1
-                 --         tokens[t] = first
-                 --     end
-                 --     first = crs
-                 --     done = true
-                 -- else
-                        local cgf = graphemes[first]
-                        if cgf and cgf[second] then
-                            for s in utfcharacters(str) do
-                                if n == 1 then
-                                    break
-                                else
-                                    t = t + 1
-                                    tokens[t] = s
-                                    n = n - 1
-                                end
-                            end
-                            first = cgf[second]
-                            done = true
-                        else
-                            first = second
-                            n = n + 1
-                        end
-                 -- end
-                end
-            end
-            if done then
-                if first then
-                    t = t + 1
-                    tokens[t] = first
-                end
-                return concat(tokens) -- seldom called
-            end
-        elseif nstr > 0 then
-            return high[str] or str
+-- function utffilters.collapse(str,filename)   -- we can make high a seperate pass (never needed with collapse)
+--     if skippable[filesuffix(filename)] then
+--         return str
+--  -- elseif find(filename,"^virtual://") then
+--  --     return str
+--  -- else
+--  --  -- print("\n"..filename)
+--     end
+--     if str and str ~= "" then
+--         local nstr = #str
+--         if nstr > 1 then
+--             if initialize then -- saves a call
+--                 initialize()
+--             end
+--             local tokens, t, first, done, n = { }, 0, false, false, 0
+--             for second in utfcharacters(str) do
+--                 if done then
+--                     if first then
+--                         if second == " " then
+--                             t = t + 1
+--                             tokens[t] = first
+--                             first = second
+--                         else
+--                          -- local crs = high[second]
+--                          -- if crs then
+--                          --     t = t + 1
+--                          --     tokens[t] = first
+--                          --     first = crs
+--                          -- else
+--                                 local cgf = graphemes[first]
+--                                 if cgf and cgf[second] then
+--                                     first = cgf[second]
+--                                 else
+--                                     t = t + 1
+--                                     tokens[t] = first
+--                                     first = second
+--                                 end
+--                          -- end
+--                         end
+--                     elseif second == " " then
+--                         first = second
+--                     else
+--                      -- local crs = high[second]
+--                      -- if crs then
+--                      --     first = crs
+--                      -- else
+--                             first = second
+--                      -- end
+--                     end
+--                 elseif second == " " then
+--                     first = nil
+--                     n = n + 1
+--                 else
+--                  -- local crs = high[second]
+--                  -- if crs then
+--                  --     for s in utfcharacters(str) do
+--                  --         if n == 1 then
+--                  --             break
+--                  --         else
+--                  --             t = t + 1
+--                  --             tokens[t] = s
+--                  --             n = n - 1
+--                  --         end
+--                  --     end
+--                  --     if first then
+--                  --         t = t + 1
+--                  --         tokens[t] = first
+--                  --     end
+--                  --     first = crs
+--                  --     done = true
+--                  -- else
+--                         local cgf = graphemes[first]
+--                         if cgf and cgf[second] then
+--                             for s in utfcharacters(str) do
+--                                 if n == 1 then
+--                                     break
+--                                 else
+--                                     t = t + 1
+--                                     tokens[t] = s
+--                                     n = n - 1
+--                                 end
+--                             end
+--                             first = cgf[second]
+--                             done = true
+--                         else
+--                             first = second
+--                             n = n + 1
+--                         end
+--                  -- end
+--                 end
+--             end
+--             if done then
+--                 if first then
+--                     t = t + 1
+--                     tokens[t] = first
+--                 end
+--                 return concat(tokens) -- seldom called
+--             end
+--         elseif nstr > 0 then
+--             return high[str] or str -- thsi will go from here
+--         end
+--     end
+--     return str
+-- end
+
+-- this is about twice as fast
+
+local p_collapse = nil -- so we can reset if needed
+
+function utffilters.collapse(str,filename)
+    if not p_collapse then
+        if initialize then
+            initialize()
         end
+        local tree = lpeg.utfchartabletopattern(table.keys(collapsed))
+        p_collapse = lpeg.Cs((tree/collapsed + lpegpatterns.utf8char)^0)
     end
-    return str
+    if not str or #str == "" or #str == 1 then
+        return str
+    elseif filename and skippable[filesuffix(filename)] then -- we could hash the collapsables or do a quicker test
+        return str
+    else
+        return lpegmatch(p_collapse,str) or str
+    end
 end
 
 -- function utffilters.decompose(str)
@@ -399,16 +465,85 @@ end
 --     return str
 -- end
 
-local tree     = lpeg.utfchartabletopattern(table.keys(decomposed))
-local finder   = lpeg.finder(tree,false,true)
-local replacer = lpeg.replacer(tree,decomposed,false,true)
+-- local replacer = nil
+-- local finder   = nil
+--
+-- function utffilters.decompose(str) -- 3 to 4 times faster than the above
+--     if not replacer then
+--         if initialize then
+--             initialize()
+--         end
+--         local tree = lpeg.utfchartabletopattern(table.keys(decomposed))
+--         finder   = lpeg.finder(tree,false,true)
+--         replacer = lpeg.replacer(tree,decomposed,false,true)
+--     end
+--     if str and str ~= "" and #str > 1 and lpegmatch(finder,str) then
+--         return lpegmatch(replacer,str)
+--     end
+--     return str
+-- end
+
+local p_decompose = nil
 
 function utffilters.decompose(str) -- 3 to 4 times faster than the above
-    if str and str ~= "" and #str > 1 and lpegmatch(finder,str) then
-        return lpegmatch(replacer,str)
+    if not p_decompose then
+        if initialize then
+            initialize()
+        end
+        local tree = lpeg.utfchartabletopattern(table.keys(decomposed))
+        p_decompose = lpeg.Cs((tree/decomposed + lpegpatterns.utf8char)^0)
+
+    end
+    if str and str ~= "" and #str > 1 then
+        return lpegmatch(p_decompose,str)
     end
     return str
 end
+
+-- utffilters.addgrapheme(utfchar(318),'l','\string~')
+-- utffilters.addgrapheme('c','a','b')
+
+function utffilters.addgrapheme(result,first,second) -- can be U+ 0x string or utf or number
+    local result = charfromnumber(result)
+    local first  = charfromnumber(first)
+    local second = charfromnumber(second)
+    if not graphemes[first] then
+        graphemes[first] = { [second] = result }
+    else
+        graphemes[first][second] = result
+    end
+    local pair = first .. second
+    if not composed[pair] then
+        composed[pair] = result
+        p_composed = nil
+    end
+end
+
+-- --
+
+-- local c1, c2, c3 = "a", "̂", "̃"
+-- local r2, r3 = "â", "ẫ"
+-- local l1 = "ﬄ"
+--
+-- local str  = c1..c2..c3 .. " " .. c1..c2 .. " " .. l1
+-- local res  = r3 .. " " .. r2 .. " " .. "ffl"
+--
+-- local text  = io.loaddata("t:/sources/tufte.tex")
+--
+-- local function test(n)
+--     local data = text .. string.rep(str,100) .. text
+--     local okay = text .. string.rep(res,100) .. text
+--     local t = os.clock()
+--     for i=1,10000 do
+--         collapse(data)
+--     end
+--     print(os.clock()-t,decompose(collapse(data))==okay,decompose(collapse(str)))
+-- end
+--
+-- test(050)
+-- test(150)
+
+-- --
 
 local sequencers = utilities.sequencers
 

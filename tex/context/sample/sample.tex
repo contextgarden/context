@@ -1,75 +1,21 @@
+% this original file has been renamed to samples.tex and describes the
+% short quotes that can be used in test files
+
 \starttext
 
-The sample directory contains a few files with quotes that can be used
-while testing styles.
+see \type {samples.tex}
 
-I'll complete this file when I've reorganized my books and audio cd's.
+\blank
 
-If someone makes a nice bibtex file of these, the quotes can also be
-used in testing bibliographic references and citations.
+\startluacode
+    context("see \\type {samples.tex}")
+\stopluacode
 
-\starttabulate[|l|l|p|]
-\NC \bf file           \NC \bf author            \NC \bf source \NC \NR
-\HL
-%NC stork.tex          \NC David   F. Stork      \NC \NC \NR
-\NC knuth.tex          \NC Donald  E. Knuth      \NC \NC \NR
-\NC tufte.tex          \NC Edward  R. Tufte      \NC \NC \NR
-\NC reich.tex          \NC Steve      Reich      \NC \NC \NR
-\NC materie.tex        \NC Louis      Andriessen \NC De Materie \NC \NR
-\NC douglas.tex        \NC Douglas R. Hofstadter \NC \NC \NR
-\NC dawkins.tex        \NC            Dawkins    \NC \NC \NR
-\NC ward.tex           \NC Peter   D. Ward       \NC The Life and Death of Planet Earth \NC \NR
-\NC zapf.tex           \NC Hermann    Zapf       \NC About micro-typography and the hz-program, \endgraf
-                                                     Electronic Publishing, vol. 6(3), \endgraf
-                                                     283-288 (September 1993) \NC \NR
-\NC bryson.tex         \NC Bill       Bryson     \NC A Short History of Nearly Everything, \endgraf
-                                                     Random House, 2003 \NC \NR
-\NC davis.tex          \NC Kenneth C. Davis      \NC Don't Know Much About History, \endgraf
-                                                     Everything You Need to Know About American
-                                                     History but Never Learned, \endgraf
-                                                     HarperCollins, 2003 \NC \NR
-\NC thuan.tex          \NC Trinh Xuan Thuan      \NC Chaos and Harmony, Perspectives on Scientific
-                                                     Revolutions of the Twentieth Century, \endgraf
-                                                     Oxford University Press, 2001 \NC \NR
-\NC hawking.tex        \NC Steve W. Hawking      \NC The Universe in a Nutshell, Bantam Books
-                                                     Random House, 2001 \NC \NR
-\NC linden.tex         \NC Eugene Linden         \NC The Winds of Change, Climate, Weather, and the
-                                                     Destruction of Civilizations, \endgraf
-                                                     Simon \& Schuster, 2006, p.106 \NC \NR
-\NC weisman.tex        \NC Alan Weisman          \NC The World Without Us, \endgraf
-                                                     Thomas Dunne Books, 2007, p.160 \NC \NR
-\NC montgomery.tex     \NC David R Montgomery    \NC Dirt, The Erosion of Civilizations, \endgraf
-                                                     University of California Press, 2007, p.199 \NC \NR
-\NC carrol.tex         \NC Sean B. Carrol        \NC The Making of the Fittest, \endgraf
-                                                     Quercus, London, 2006 \NC \NR
-%NC schwarzenegger.tex \NC Arnold Schwarzenegger \NC Several place on the World Wide Web. \NC \NR
-\stoptabulate
+\blank
 
-% Tufte: This quote will always produce hyphenated text, apart from the content,
-% it's a pretty good test case for protruding.
-
-% Ward: I should find a quote in the extremely well written Rare Earth as well. All Wards
-% books excell.
-
-% A Short History of Nearly Everything: I wish that I had the memory to remember this book
-% verbatim.
-
-% Chaos and Harmony: very nice and well written book, but the typography is rather bad:
-% quite visible inter-character spacing in a text that can be typeset quite well by \TeX.
-
-% The Universe in a Nutshell: a beautiful designed book, (companion of A Short History
-% of Time).
-
-% The World Without Us: A properly typeset, very readable book. Read it and you'll look at
-% the world around you differently (and a bit more freightened).
-
-% Dirt, The Erosion of Civilizations: one of those books that you buy immediately after
-% reading a few sentences. Also one of those books that every politician should read.
-
-% The Making of the Fittest: nice sample for color ans subsentence testing. A very
-% readable book but unfortunately it has inter-character spacing.
-
-% The Schwarzenegger letter was originally typeset at a width equivalent to 16.1cm in
-% a default ConTeXt setup.
+\startMPcode
+    draw textext("see \type {samples.tex}") ;
+    draw boundingbox currentpicture enlarged 2pt ;
+\stopMPcode
 
 \stoptext

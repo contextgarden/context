@@ -35,8 +35,25 @@ local iterator          = utilities.parsers.iterator
 
 -- modules can have a specific suffix or can specify one
 
-local prefixes  = { "m", "p", "s", "x", "v", "t" }
-local suffixes  = { "mkvi", "mkiv", "tex", "cld", "lua" } -- order might change and how about cld
+local prefixes  = {
+    "m", -- module, extends functionality
+    "p", -- private code
+    "s", -- styles
+    "x", -- xml specific modules
+ -- "v", -- an old internal one for examples
+    "t", -- third party extensions
+}
+
+-- the order might change and how about cld
+
+local suffixes  = {
+    "mkvi", -- proprocessed mkiv files
+    "mkiv", -- mkiv files
+    "tex",  -- normally source code files
+    "cld",  -- context lua documents (often stand alone)
+    "lua",  -- lua files
+}
+
 local modstatus = { }
 
 local function usemodule(name,hasscheme)
@@ -118,6 +135,10 @@ function commands.usemodules(prefix,askedname,truename)
             end
             if status then
                 -- ok, don't change
+            elseif find(truename,"%-") and usemodule(truename) then
+                -- assume a user namespace
+                report_modules("using user prefixed file %a",truename)
+                status = 1
             elseif not permit_unprefixed then
                 -- forget about it
             elseif usemodule(truename) then

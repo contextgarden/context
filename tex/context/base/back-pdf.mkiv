@@ -41,17 +41,31 @@
 %D
 %D Here we initialize some internal quantities. We also protect them.
 
-\pdfoutput  1         \let\pdfoutput \undefined \newcount\pdfoutput  \pdfoutput  1
-\pdfhorigin 1 true in \let\pdfhorigin\undefined \newdimen\pdfhorigin \pdfhorigin 1 true in
-\pdfvorigin 1 true in \let\pdfvorigin\undefined \newdimen\pdfvorigin \pdfvorigin 1 true in
+\pdfoutput  \plusone    \let\pdfoutput \undefined \newcount\pdfoutput  \pdfoutput  \plusone
 
-% most of these will be protected as well
+%D These are already set:
 
+\pdfhorigin 1 true in   \let\pdfhorigin\undefined \newdimen\pdfhorigin \pdfhorigin 1 true in
+\pdfvorigin \pdfhorigin \let\pdfvorigin\undefined \newdimen\pdfvorigin \pdfvorigin \pdfhorigin
+
+%D These too and most of them will be protected as well:
+
+\pdfminorversion        \plussix
+\pdfgentounicode        \plusone    \let\pdfgentounicode       \undefined \newcount\pdfgentounicode
+\pdfinclusioncopyfonts  \plusone    \let\pdfinclusioncopyfonts \undefined \newcount\pdfinclusioncopyfonts
+\pdfinclusionerrorlevel \zerocount  \let\pdfinclusionerrorlevel\undefined \newcount\pdfinclusionerrorlevel
+\pdfdecimaldigits       \plusten    \let\pdfdecimaldigits      \undefined \newcount\pdfdecimaldigits
 \pdfimageresolution     300
 \pdfpkresolution        600
-\pdfdecimaldigits        10
-\pdfinclusionerrorlevel   0
-\pdfminorversion          6 % use setupbackend for changes
+
+%D Let's block these (we could share a dummy:
+
+\let\pdfcatalog      \relax  \newtoks\pdfcatalog
+\let\pdfinfo         \relax  \newtoks\pdfinfo
+\let\pdfnames        \relax  \newtoks\pdfnames
+\let\pdfpageresources\relax  \newtoks\pdfpageresources
+\let\pdfpageattr     \relax  \newtoks\pdfpageattr
+\let\pdfpagesattr    \relax  \newtoks\pdfpagesattr
 
 %D This one can be consulted by users although the suffix is also
 %D a system mode.
@@ -102,16 +116,8 @@
 \unexpanded\def\pdfbackendsetshade         #1#2{\ctxlua{lpdf.adddocumentshade     ("#1",lpdf.verbose(\!!bs#2\!!es))}}
 
            \def\pdfbackendcurrentresources     {\cldcontext{lpdf.collectedresources()}}
-           \def\pdfcolor                     #1{\ctxlua{lpdf.pdfcolor(\thecolorattribute{#1})}} \let\PDFcolor\pdfcolor
-
-%D Let's block these:
-
-\let\pdfcatalog      \relax  \newtoks\pdfcatalog
-\let\pdfinfo         \relax  \newtoks\pdfinfo
-\let\pdfnames        \relax  \newtoks\pdfnames
-\let\pdfpageresources\relax  \newtoks\pdfpageresources
-\let\pdfpageattr     \relax  \newtoks\pdfpageattr
-\let\pdfpagesattr    \relax  \newtoks\pdfpagesattr
+           \def\pdfcolor                     #1{\cldcontext{lpdf.pdfcolor(\thecolorattribute{#1})}}
+           \let\PDFcolor\pdfcolor
 
 %D An example of usage is:
 
@@ -120,38 +126,35 @@
     \pdfbackendsetinfo{ConTeXt.Time}   {\number\normalyear.\twodigits\normalmonth.\twodigits\normalday\space \twodigits\currenthour:\twodigits\currentminute}%
     \pdfbackendsetinfo{ConTeXt.Jobname}{\jobname}%
     \pdfbackendsetinfo{ConTeXt.Url}    {www.pragma-ade.com}%
+    \pdfbackendsetinfo{ConTeXt.Support}{contextgarden.net}%
 \to \everylastbackendshipout
 
 %D Transformations. Some day we will use primitives (once they're fixed).
+
 % todo: inject at the lua end cq. deal with #5 and #6 too
 
 % % % rotation % % %
 
 \unexpanded\def\dostartrotation#1% grouped
-  {\advance\backendtransformlevel\plusone
-   \forcecolorhack
+  {\forcecolorhack
    \pdfsave
    \pdfsetmatrix{\ctxcommand{pdfrotation(#1)}}}
 
 \unexpanded\def\dostoprotation
   {\pdfrestore
-   \forcecolorhack
-   \advance\backendtransformlevel\minusone}
+   \forcecolorhack}
 
 % \unexpanded\def\dostartrotation#1% grouped
 %   {\forcecolorhack
-%    \advance\backendtransformlevel\plusone
 %    \ctxcommand{pdfstartrotation(#1)}}
 
 % \unexpanded\def\dostoprotation
-%   {\ctxcommand{pdfstoprotation()}%
-%    \advance\backendtransformlevel\minusone}
+%   {\ctxcommand{pdfstoprotation()}}
 
 % % % scaling % % %
 
 \unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-  {\advance\backendtransformlevel\plusone
-   \forcecolorhack % maybe use signal instead
+  {\forcecolorhack % maybe use signal instead
    \pdfsave
    \pdfsetmatrix
      {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
@@ -159,60 +162,49 @@
 
 \unexpanded\def\dostopscaling
   {\pdfrestore
-   \forcecolorhack
-   \advance\backendtransformlevel\minusone}
+   \forcecolorhack}
 
 % \unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
 %   {\forcecolorhack
-%    \advance\backendtransformlevel\plusone
 %    \ctxcommand{pdfstartscaling(#1,#2)}}
 
 % \unexpanded\def\dostopscaling
-%   {\ctxcommand{pdfstopscaling()}%
-%    \advance\backendtransformlevel\minusone}
+%   {\ctxcommand{pdfstopscaling()}}
 
 % % % mirroring % % %
 
 \unexpanded\def\dostartmirroring
-  {\advance\backendtransformlevel\plusone
-   \forcecolorhack
+  {\forcecolorhack
    \pdfsave
    \pdfsetmatrix{-1 0 0 1}} % 0 0
 
 \unexpanded\def\dostopmirroring
   {\pdfrestore
-   \forcecolorhack
-   \advance\backendtransformlevel\minusone}
+   \forcecolorhack}
 
 % \unexpanded\def\dostartmirroring
-%   {\advance\backendtransformlevel\plusone
-%    \ctxcommand{pdfstartmirroring()}}
+%   {\ctxcommand{pdfstartmirroring()}}
 
 % \unexpanded\def\dostopmirroring
-%   {\ctxcommand{pdfstopmirroring()}%
-%    \advance\backendtransformlevel\minusone}
+%   {\ctxcommand{pdfstopmirroring()}}
 
 % % % transform % % %
 
 \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
-  {\advance\backendtransformlevel\plusone
-   % fixing ht/dp/wd should happen elsewhere
-   \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
+  {\dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
 
 \unexpanded\def\dodotransformnextbox#1#2#3%
-  {%\forcecolorhack
-   \hbox
+  {\hbox
      {\kern#1\onebasepoint
       \raise#2\onebasepoint\hbox
         {\pdfsave
          \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
          \box\nextbox
          \pdfrestore
-         \advance\backendtransformlevel\minusone}}}
+         }}}
 
 % \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
-%   {\advance\backendtransformlevel\plusone
-%    % fixing ht/dp/wd should happen elsewhere
+%   {% fixing ht/dp/wd should happen elsewhere
 %    \dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
 
 % \unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
@@ -222,8 +214,41 @@
 %       \hbox
 %         {\ctxcommand{pdfstartmatrix(#1,#2,#3,#4)}%
 %          \box\nextbox
-%          \ctxcommand{pdfstopmatrix()}%
-%          \advance\backendtransformlevel\minusone}}}
+%          \ctxcommand{pdfstopmatrix()}}}}
+
+% somehow the shift is not happening .. bug in luatex?
+%
+% \unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
+%   {\ctxcommand{pdftransformbox(\number\nextbox,#1,#2,#3,#4,\number\dimexpr#5\onebasepoint,\number\dimexpr#6\onebasepoint)}%
+%    \box\nextbox}
+%
+% \startluacode
+%     function commands.pdftransformbox(box,sx,rx,ry,sy,tx,ty)
+%         if sx == 1 and rx == 0 and ry == 0 and sy == 1 then
+%             if tx == 0 and ty == 0 then
+%                 local b = nodes.hpack(nodes.concat {
+%                     nodes.pool.kern(tx),
+%                     nodes.takebox(box),
+%                 })
+%                 b.shift = -ty
+%                 tex.setbox(box,b)
+%             else
+%                 -- no need to transform
+%             end
+%         else
+%             local b = nodes.hpack(nodes.concat {
+%                 nodes.pool.kern(tx),
+%                 nodes.pool.pdfsave(),
+%                 nodes.pool.pdfsetmatrix(sx,rx,ry,sy),
+%                 nodes.takebox(box),
+%                 nodes.pool.pdfsetmatrix(-sx,-rx,-ry,-sy),
+%                 nodes.pool.pdfrestore(),
+%             })
+%             b.shift = -ty
+%             tex.setbox(box,b)
+%         end
+%     end
+% \stopluacode
 
 % % % clipping % % %
 

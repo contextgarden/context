@@ -34,16 +34,20 @@
 \usemodule[abr-02]
 \usemodule[set-11]
 
+\startmode[export]
+
+    \setupbackend
+      [export=yes,
+       xhtml=yes,
+       css=export-example.css]
+
+    \setupexport
+      [hyphen=yes,
+       width=60em]
+
+\stopmode
+
 \loadsetups[publications-en.xml] \enablemode[interface:setup:defaults]
-
-\setupbackend
-  [export=yes,
-   xhtml=yes,
-   css=export-example.css]
-
-\setupexport
-  [hyphen=yes,
-   width=60em]
 
 % \input publ-tmp.mkiv
 
@@ -128,7 +132,7 @@
 \startfrontmatter
 
 \starttitle[title=Contents]
-    \setuplist[chapter][before=,after]
+    \setuplist[chapter][before=,after=]
     \placelist[chapter][color=black]
 \stoptitle
 
