@@ -293,10 +293,12 @@
 \let\currentbtxdataset\v!standard
 
 \unexpanded\def\setbtxdataset[#1]%
-  {\edef\currentbtxdataset{\ctxcommand{setbtxdataset("#1")}}}
+  {\edef\m_temp{\ctxcommand{setbtxdataset("#1","\currentbtxdataset")}}}
 
 \unexpanded\def\setbtxentry[#1]%
   {\edef\currentbtxtag{\ctxcommand{setbtxentry("\currentbtxdataset","#1")}}}
+
+\setbtxdataset[\v!standard]
 
 % \let\btxsetdataset\setbtxdataset
 % \let\btxsetentry  \setbtxentry

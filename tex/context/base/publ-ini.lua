@@ -209,7 +209,8 @@ local function finalizer()
         local used   = { }
         for i=1,#sources do
             local source = sources[i]
-            if loaded[source.filename] ~= "previous" then -- or loaded[source.filename] == "current"
+--             if loaded[source.filename] ~= "previous" then
+            if loaded[source.filename] ~= "previous" or loaded[source.filename] == "current" then
                 used[#used+1] = source
             end
         end
@@ -574,9 +575,11 @@ function commands.addbtxentry(name,settings,content)
     end
 end
 
-function commands.setbtxdataset(name)
+function commands.setbtxdataset(name,default)
     local dataset = rawget(datasets,name)
     if dataset then
+        context(name)
+    elseif default and default ~= "" then
         context(name)
     else
         report("unknown dataset %a",name)

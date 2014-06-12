@@ -662,8 +662,8 @@ if propertydata then
         data = propertydata,
     }
 
-    direct.set_properties_mode(true,false)
- -- direct.set_properties_mode(true,true)
+ -- direct.set_properties_mode(true,false) -- shallow copy ... problem: in fonts we then affect the originals too
+    direct.set_properties_mode(true,true)  -- create metatable, slower but needed for font-inj.lua (unless we use an intermediate table)
 
     -- experimental code with respect to copying attributes has been removed
     -- as it doesn't pay of (most attributes are only accessed once anyway)

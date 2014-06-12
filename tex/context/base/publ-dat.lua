@@ -326,13 +326,13 @@ function publications.loadbibdata(dataset,content,source,kind)
         report("invalid source for dataset %a",dataset)
         return
     end
+    dataset = datasets[dataset]
     local size = #content
     if size == 0 then
-        report("empty source %a for dataset %a",source,dataset)
+        report("empty source %a for dataset %a",source,dataset.name)
     else
-        report("adding bib data to set %a from source %a",dataset,source)
+        report("adding bib data to set %a from source %a",dataset.name,source)
     end
-    dataset = datasets[dataset]
     statistics.starttiming(publications)
     publicationsstats.nofbytes = publicationsstats.nofbytes + size
     dataset.nofbytes = dataset.nofbytes + size
