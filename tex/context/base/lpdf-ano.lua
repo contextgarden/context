@@ -157,6 +157,9 @@ local pagereferences   = allocate() -- annots are cached themselves
 
 setmetatableindex(pagedestinations, function(t,k)
     k = tonumber(k)
+    if not k or k <= 0 then
+        return pdfnull()
+    end
     local v = rawget(t,k)
     if v then
      -- report_reference("page number expected, got %s: %a",type(k),k)
@@ -172,6 +175,9 @@ end)
 
 setmetatableindex(pagereferences,function(t,k)
     k = tonumber(k)
+    if not k or k <= 0 then
+        return nil
+    end
     local v = rawget(t,k)
     if v then
         return v

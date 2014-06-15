@@ -1505,15 +1505,18 @@
 %   [ \c!width=\paperwidth,
 %    \c!height=\paperheight]
 
+\setuppapersize
+  [\c!distance=1.5cm] % offset is already taken
+
 \definepapersize
   [oversized]
-  [ \c!width=\dimexpr\paperwidth +1.5cm\relax,
-   \c!height=\dimexpr\paperheight+1.5cm\relax]
+  [ \c!width=\dimexpr\paperwidth +\layouttargetparameter\c!distance\relax,
+   \c!height=\dimexpr\paperheight+\layouttargetparameter\c!distance\relax]
 
 \definepapersize
   [undersized]
-  [ \c!width=\dimexpr\paperwidth -1.5cm\relax,
-   \c!height=\dimexpr\paperheight-1.5cm\relax]
+  [ \c!width=\dimexpr\paperwidth -\layouttargetparameter\c!distance\relax,
+   \c!height=\dimexpr\paperheight-\layouttargetparameter\c!distance\relax]
 
 \definepapersize
   [doublesized]
@@ -1522,8 +1525,8 @@
 
 \definepapersize
   [doubleoversized]
-  [ \c!width=\dimexpr \paperheight+1.5cm\relax,
-   \c!height=\dimexpr2\paperwidth +1.5cm\relax]
+  [ \c!width=\dimexpr \paperheight+\layouttargetparameter\c!distance\relax,
+   \c!height=\dimexpr2\paperwidth +\layouttargetparameter\c!distance\relax]
 
 % \setuppapersize
 %   [A4][A4]

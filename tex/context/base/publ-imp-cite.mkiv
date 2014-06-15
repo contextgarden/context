@@ -69,7 +69,6 @@
         \directsetup{\s!btx:\s!cite:\s!unknown}
     \else\ifconditional\btxinteractive
         \goto {
-            \btxcitereference
             \currentbtxfirst
             \ifx\currentbtxsecond\empty \else
                 \btxcitevariantparameter\v!inbetween
@@ -93,7 +92,6 @@
         \directsetup{\s!btx:\s!cite:missing}
     \else\ifconditional\btxinteractive
         \goto {
-            \btxcitereference
             \currentbtxfirst
             \ifx\currentbtxsecond\empty \else
                 \btxcitevariantparameter\c!range
@@ -115,7 +113,6 @@
     \directsetup{\s!btx:\s!cite:concat}
     \ifconditional\btxinteractive
         \goto {
-            \btxcitereference
             \directsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
         } [
             \s!internal(\currentbtxinternal)
@@ -224,7 +221,6 @@
         \directsetup{\s!btx:\s!cite:\s!unknown}
     \else\ifconditional\btxinteractive
         \goto {
-            \btxcitereference
             \hyphenatedurl{\currentbtxfirst}
         } [
             url(\currentbtxfirst)

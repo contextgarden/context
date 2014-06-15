@@ -55,6 +55,11 @@
 \def\v!btxlist      {btxlist}
 \def\v!btxrendering {btxrendering}
 
+\def\s!btxset       {btxset}
+\def\s!btxref       {btxref}
+\def\s!btxint       {btxint}
+\def\s!btxbck       {btxbck}
+
 \definelabelclass[btxlabel][2]
 
 % a dedicated construction mechanism
@@ -97,7 +102,6 @@
 
 \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
   {\begingroup
-   \xdef\btxcurrentlistinternal{\the\numexpr\locationcount+\plusone)}% \nextinternalreference
    \directsetup{\v!btxrendering:\v!number:\constructionparameter\c!number}%
    \endgroup}
 
@@ -112,7 +116,7 @@
    \iflocation
      \goto
        {\publ_list_number_normal}%
-       [\s!internal(\btxcurrentlistinternal)]%
+       [\s!internal(\currentbtxinternal)]%
    \else
      \publ_list_number_normal
    \fi
@@ -123,8 +127,6 @@
    \constructionparameter\c!text
    \btx_list_reference_inject
    \relax}
-
-\let\btxcurrentlistinternal\relax
 
 % todo: low level builder commands without using the constructor
 
@@ -202,7 +204,6 @@
 \installcorenamespace {btxcommand}
 \installcorenamespace {btxnumbering}
 \installcorenamespace {btxrenderingdefinition}
-
 
 \installcommandhandler \??btxdataset     {btxdataset}     \??btxdataset
 \installcommandhandler \??btxlistvariant {btxlistvariant} \??btxlistvariant
@@ -287,6 +288,15 @@
 \unexpanded\def\definebtxcommand#1% {body} #1..#n{body}
   {\setuvalue{\??btxcommand\strippedcsname#1}}%
 
+% tracing
+
+\installtextracker
+  {publications.crosslinks}
+  {\let\btx_trace_list_cross\strc_references_tracer}
+  {\let\btx_trace_list_cross\gobbletwoarguments}
+
+\let\btx_trace_list_cross\gobbletwoarguments
+
 % access
 
 \let\currentbtxtag    \empty
@@ -298,7 +308,8 @@
 \unexpanded\def\setbtxentry[#1]%
   {\edef\currentbtxtag{\ctxcommand{setbtxentry("\currentbtxdataset","#1")}}}
 
-\setbtxdataset[\v!standard]
+\setbtxdataset
+  [\v!standard]
 
 % \let\btxsetdataset\setbtxdataset
 % \let\btxsetentry  \setbtxentry
@@ -366,8 +377,8 @@
 %newdimen\d_publ_number_distance
 
 \ifdefined\btxblock       \else \newcount\btxblock       \fi \btxblock\plusone
-\ifdefined\btxlistcounter \else \newcount\btxlistcounter \fi
-\ifdefined\btxcitecounter \else \newcount\btxcitecounter \fi
+\ifdefined\btxlistcounter \else \newcount\btxlistcounter \fi % maintaned here, maybe in lua too?
+\ifdefined\btxcitecounter \else \newcount\btxcitecounter \fi % maybe pass this to lua
 
 \newtoks \everysetupbtxlistplacement % name will change
 \newtoks \everysetupbtxciteplacement % name will change
@@ -524,20 +535,34 @@
 \def\publ_place_list_entry_register
   {\ctxcommand{btxregisterlistentry("\currentbtxdataset","\currentbtxtag")}}
 
-\unexpanded\def\btxlistreset
-  {\let\currentbtxindex   \!!zerocount
-   \let\currentbtxcombis  \empty
-   \let\currentbtxcategory\empty
-   \let\currentbtxinternal\empty
-   \let\currentbtxlanguage\empty
-   \let\currentbtxtag     \empty}
+\unexpanded\def\btxchecklistentry#1% called at the lua end
+  {\begingroup
+   \edef\currentbtxtag{#1}%
+   \ifx\currentbtxcriterium\v!all % move this check to lua ... easier to test there anyway
+     \publ_check_list_entry
+   \else
+     \ctxcommand{btxdoifelselistentryplaced("\currentbtxdataset","\currentbtxtag")}\donothing\publ_check_list_entry
+   \fi
+   \endgroup}
 
-\unexpanded\def\btxsetindex   {\def\currentbtxindex}
-\unexpanded\def\btxsetcombis  {\def\currentbtxcombis}
-\unexpanded\def\btxsetcategory{\def\currentbtxcategory}
-\unexpanded\def\btxsetinternal{\def\currentbtxinternal}
-%unexpanded\def\btxsetlanguage{\def\currentbtxlanguage}
-\unexpanded\def\btxsettag     {\def\currentbtxtag}
+\unexpanded\def\btxlistreset
+  {\let\currentbtxindex    \!!zerocount
+   \let\currentbtxcombis   \empty
+   \let\currentbtxcategory \empty
+   \let\currentbtxinternal \empty
+   \let\currentbtxbacklink \empty
+   \let\currentbtxbacktrace\empty
+   \let\currentbtxlanguage \empty
+   \let\currentbtxtag      \empty}
+
+\unexpanded\def\btxsetindex    {\def\currentbtxindex}
+\unexpanded\def\btxsetcombis   {\def\currentbtxcombis}
+\unexpanded\def\btxsetcategory {\def\currentbtxcategory}
+\unexpanded\def\btxsetinternal {\def\currentbtxinternal}
+\unexpanded\def\btxsetbacklink {\def\currentbtxbacklink}
+\unexpanded\def\btxsetbacktrace{\def\currentbtxbacktrace}
+%unexpanded\def\btxsetlanguage {\def\currentbtxlanguage}
+\unexpanded\def\btxsettag      {\def\currentbtxtag}
 
 \unexpanded\def\btxsetlanguage#1%
   {\def\currentbtxlanguage{#1}%
@@ -569,47 +594,44 @@
      \btx_entry_inject
    \stopbtxlistentry}
 
-\unexpanded\def\btxchecklistentry#1% called at the lua end
-  {\begingroup
-   \edef\currentbtxtag{#1}%
-   \ifx\currentbtxcriterium\v!all % move this check to lua ... easier to test there anyway
-     \publ_check_list_entry
-   \else
-     \ctxcommand{btxdoifelselistentryplaced("\currentbtxdataset","\currentbtxtag")}\donothing\publ_check_list_entry
-   \fi
-   \endgroup}
-
 \unexpanded\def\publ_check_list_entry
   {\global\advance\btxlistcounter\plusone
    % todo, switch to font
    \hbox{\btx_reference_checked}%
    \par}
 
-\unexpanded\def\btx_list_reference_inject % we can use a faster \reference
-  {\dontleavehmode\begingroup % no box
-     \iftrialtypesetting\else
-       \ctxcommand{btxlistreference("\currentbtxdataset","\currentbtxblock","\currentbtxtag","\number\btxlistcounter")}%
-     \fi
-     \btx_list_reference_inject_indeed
-   \endgroup}
-
 \unexpanded\def\btx_reference_checked
   {\dontleavehmode\hbox\bgroup
      \btx_list_reference_inject_indeed
    \egroup}
 
-\unexpanded\def\btx_cite_reference_inject % todo: wrap whole content?
+\newcount\c_btx_list_reference
+
+\unexpanded\def\btx_list_reference_inject
   {\dontleavehmode\begingroup % no box
      \iftrialtypesetting\else
-%        \ifx\currentbtxinternal\empty\else
- %        \global\advance\btxcitecounter\plusone
-         \ctxcommand{btxcitereference(\number\currentbtxinternal)}%
-%        \fi
+       \btx_list_reference_inject_now
      \fi
-    % \btx_list_reference_inject_indeed
+     \btx_list_reference_inject_indeed % needs checking ... still needed?
    \endgroup}
 
-\let\btxcitereference\btx_cite_reference_inject
+\def\btx_list_reference_inject_now
+  {\btx_trace_list_cross\empty\currentbtxbacktrace
+   \global\advance\c_btx_list_reference\plusone
+   \strc_references_direct_full_user
+      {\s!btxset="\currentbtxdataset",\s!btxref="\currentbtxtag",\ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint=\currentbtxbacklink\else\s!btxbck="\currentbtxbacktrace"\fi}%
+      {\s!btx::\v!list::\number\c_btx_list_reference}%
+      {\number\btxlistcounter}}
+
+\unexpanded\def\btx_cite_reference_inject % todo: wrap whole content?
+  {\dontleavehmode\begingroup % no box
+     \iftrialtypesetting \else
+       \btx_trace_list_cross\currentbtxbacklink\empty
+     \fi
+   \endgroup}
+
+% \let\btxcitereference\btx_cite_reference_inject
+\let\btxcitereference\relax
 
 \setuvalue{\??btxnumbering\v!short  }{\btxlistvariant{short}} % these will be setups
 \setuvalue{\??btxnumbering\v!bib    }{\btxlistvariant{num}}   % these will be setups
@@ -762,14 +784,14 @@
 
 \unexpanded\def\btxdomarkcitation % called from lua end
   {\iftrialtypesetting
-     \expandafter\gobbletwoarguments
+     \expandafter\gobblethreearguments
    \else
      \expandafter\publ_cite_mark_citation
    \fi}
 
-\def\publ_cite_mark_citation#1#2% called from lua end
+\def\publ_cite_mark_citation#1#2#3% called from lua end
   {\dontleavehmode
-   \writedatatolist[btx][btxset=#1,btxref=#2]}  % \c!location=\v!here
+   \normalexpanded{\writedatatolist[\s!btx][\s!btxset=#1,\s!btxref=#2,\s!btxint=\number#3]}}  % \c!location=\v!here
 
 %D \macros{cite,nocite,citation,nocitation,usecitation}
 %D
@@ -923,17 +945,20 @@
 \newconstant\currentbtxconcat
 
 \unexpanded\def\btxcitereset
-  {\let\currentbtxfirst   \empty
-   \let\currentbtxsecond  \empty
-   \let\currentbtxinternal\empty
-   \let\currentbtxlanguage\empty
-   \let\currentbtxtag     \empty
+  {\let\currentbtxfirst    \empty
+   \let\currentbtxsecond   \empty
+   \let\currentbtxinternal \empty
+   \let\currentbtxbacklink \empty
+   \let\currentbtxbacktrace\empty
+   \let\currentbtxlanguage \empty
+   \let\currentbtxtag      \empty
    \setconstant\currentbtxconcat\zerocount}
 
 \btxcitereset
 
 \unexpanded\def\btxcitesetup#1%
-  {\directsetup{btx:cite:#1}%
+  {\btx_cite_reference_inject
+   \directsetup{btx:cite:#1}%
    \btxcitereset}
 
 \unexpanded\def\btxsetfirst   {\def\currentbtxfirst}
@@ -942,14 +967,6 @@
 \unexpanded\def\btxsetinternal{\def\currentbtxinternal}
 %unexpanded\def\btxsetlanguage{\def\currentbtxlanguage}
 \unexpanded\def\btxsetconcat#1{\setconstant\currentbtxconcat#1\relax}
-
-\unexpanded\def\btxsetlistreference#1#2% #3#4%
-  {\strc_references_direct_full_user{btxset="#1",btxref="#2"}}
-
-\unexpanded\def\btxsetcitereference#1#2%
-  {\ifx\currentbtxinternal\empty \else
-     \strc_references_direct_full_user{btxint=#2}{#1}\empty
-   \fi}
 
 \unexpanded\def\btxstartsubcite#1%
   {\bgroup
