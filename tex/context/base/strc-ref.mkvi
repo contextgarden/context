@@ -1358,6 +1358,35 @@
   %\egroup\unhbox\referencebox}
    \endgroup}
 
+\unexpanded\def\startgoto[#label]%
+  {\dontleavehmode
+   \begingroup
+   \iflocation
+     \ctxcommand{doifelsereference("\referenceprefix","#label",\extrareferencearguments)}{\expandafter\startgoto_yes}{\expandafter\startgoto_nop}%
+   \else
+     \expandafter\startgoto_nop
+   \fi}
+
+\unexpanded\def\startgoto_nop
+  {\let\stopgoto\stopgoto_nop}
+
+\unexpanded\def\stopgoto_nop
+  {\endgroup}
+
+\unexpanded\def\startgoto_yes
+  {\expandtexincurrentreference
+   \ctxcommand{injectcurrentreference(\number\ht\strutbox,\number\dp\strutbox)}%
+   \setlocationattributes
+   \setstrut % can be option
+   \global\lastsavedreferenceattribute\lastreferenceattribute
+   \attribute\referenceattribute\lastreferenceattribute
+   \dostarttagged\t!link\empty
+   \let\stopgoto\stopgoto_yes}
+
+\unexpanded\def\stopgoto_yes
+  {\dostoptagged
+   \endgroup}
+
 \def\dogotohtdp#content#dummy[#label]% dummy gobbles spaces
   {\dontleavehmode
    \begingroup

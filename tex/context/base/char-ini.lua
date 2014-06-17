@@ -145,6 +145,7 @@ local blocks = allocate {
     ["bamum"]                                      = { first = 0x0A6A0, last = 0x0A6FF,             description = "Bamum" },
     ["bamumsupplement"]                            = { first = 0x16800, last = 0x16A3F,             description = "Bamum Supplement" },
     ["basiclatin"]                                 = { first = 0x00000, last = 0x0007F, otf="latn", description = "Basic Latin" },
+    ["bassavah"]                                   = { first = 0x16AD0, last = 0x16AFF,             description = "Bassa Vah" },
     ["batak"]                                      = { first = 0x01BC0, last = 0x01BFF,             description = "Batak" },
     ["bengali"]                                    = { first = 0x00980, last = 0x009FF, otf="beng", description = "Bengali" },
     ["blockelements"]                              = { first = 0x02580, last = 0x0259F, otf="bopo", description = "Block Elements" },
@@ -156,8 +157,10 @@ local blocks = allocate {
     ["buginese"]                                   = { first = 0x01A00, last = 0x01A1F, otf="bugi", description = "Buginese" },
     ["buhid"]                                      = { first = 0x01740, last = 0x0175F, otf="buhd", description = "Buhid" },
     ["byzantinemusicalsymbols"]                    = { first = 0x1D000, last = 0x1D0FF, otf="byzm", description = "Byzantine Musical Symbols" },
+    ["caucasianalbanian"]                          = { first = 0x10530, last = 0x1056F,             description = "Caucasian Albanian" },
     ["commonindicnumberforms"]                     = { first = 0x0A830, last = 0x0A83F,             description = "Common Indic Number Forms" },
     ["carian"]                                     = { first = 0x102A0, last = 0x102DF,             description = "Carian" },
+    ["chakma"]                                     = { first = 0x11100, last = 0x1114F,             description = "Chakma" },
     ["cham"]                                       = { first = 0x0AA00, last = 0x0AA5F,             description = "Cham" },
     ["cherokee"]                                   = { first = 0x013A0, last = 0x013FF, otf="cher", description = "Cherokee" },
     ["cjkcompatibility"]                           = { first = 0x03300, last = 0x033FF, otf="hang", description = "CJK Compatibility" },
@@ -170,12 +173,16 @@ local blocks = allocate {
     ["cjkunifiedideographs"]                       = { first = 0x04E00, last = 0x09FFF, otf="hang", description = "CJK Unified Ideographs", catcode = "letter" },
     ["cjkunifiedideographsextensiona"]             = { first = 0x03400, last = 0x04DBF, otf="hang", description = "CJK Unified Ideographs Extension A" },
     ["cjkunifiedideographsextensionb"]             = { first = 0x20000, last = 0x2A6DF, otf="hang", description = "CJK Unified Ideographs Extension B" },
+    ["cjkunifiedideographsextensionc"]             = { first = 0x2A700, last = 0x2B73F,             description = "CJK Unified Ideographs Extension C" },
+    ["cjkunifiedideographsextensiond"]             = { first = 0x2B740, last = 0x2B81F,             description = "CJK Unified Ideographs Extension D" },
     ["combiningdiacriticalmarks"]                  = { first = 0x00300, last = 0x0036F,             description = "Combining Diacritical Marks" },
+    ["combiningdiacriticalmarksextended"]          = { first = 0x01AB0, last = 0x01AFF,             description = "Combining Diacritical Marks Extended" },
     ["combiningdiacriticalmarksforsymbols"]        = { first = 0x020D0, last = 0x020FF,             description = "Combining Diacritical Marks for Symbols" },
     ["combiningdiacriticalmarkssupplement"]        = { first = 0x01DC0, last = 0x01DFF,             description = "Combining Diacritical Marks Supplement" },
     ["combininghalfmarks"]                         = { first = 0x0FE20, last = 0x0FE2F,             description = "Combining Half Marks" },
     ["controlpictures"]                            = { first = 0x02400, last = 0x0243F,             description = "Control Pictures" },
     ["coptic"]                                     = { first = 0x02C80, last = 0x02CFF, otf="copt", description = "Coptic" },
+    ["copticepactnumbers"]                         = { first = 0x102E0, last = 0x102FF,             description = "Coptic Epact Numbers" },
     ["countingrodnumerals"]                        = { first = 0x1D360, last = 0x1D37F,             description = "Counting Rod Numerals" },
     ["cuneiform"]                                  = { first = 0x12000, last = 0x123FF, otf="xsux", description = "Cuneiform" },
     ["cuneiformnumbersandpunctuation"]             = { first = 0x12400, last = 0x1247F, otf="xsux", description = "Cuneiform Numbers and Punctuation" },
@@ -190,7 +197,9 @@ local blocks = allocate {
     ["devanagariextended"]                         = { first = 0x0A8E0, last = 0x0A8FF,             description = "Devanagari Extended" },
     ["dingbats"]                                   = { first = 0x02700, last = 0x027BF,             description = "Dingbats" },
     ["dominotiles"]                                = { first = 0x1F030, last = 0x1F09F,             description = "Domino Tiles" },
+    ["duployan"]                                   = { first = 0x1BC00, last = 0x1BC9F,             description = "Duployan" },
     ["egyptianhieroglyphs"]                        = { first = 0x13000, last = 0x1342F,             description = "Egyptian Hieroglyphs" },
+    ["elbasan"]                                    = { first = 0x10500, last = 0x1052F,             description = "Elbasan" },
     ["emoticons"]                                  = { first = 0x1F600, last = 0x1F64F,             description = "Emoticons" },
     ["enclosedalphanumericsupplement"]             = { first = 0x1F100, last = 0x1F1FF,             description = "Enclosed Alphanumeric Supplement" },
     ["enclosedalphanumerics"]                      = { first = 0x02460, last = 0x024FF,             description = "Enclosed Alphanumerics" },
@@ -202,10 +211,12 @@ local blocks = allocate {
     ["ethiopicsupplement"]                         = { first = 0x01380, last = 0x0139F, otf="ethi", description = "Ethiopic Supplement" },
     ["generalpunctuation"]                         = { first = 0x02000, last = 0x0206F,             description = "General Punctuation" },
     ["geometricshapes"]                            = { first = 0x025A0, last = 0x025FF,             description = "Geometric Shapes" },
+    ["geometricshapesextended"]                    = { first = 0x1F780, last = 0x1F7FF,             description = "Geometric Shapes Extended" },
     ["georgian"]                                   = { first = 0x010A0, last = 0x010FF, otf="geor", description = "Georgian" },
     ["georgiansupplement"]                         = { first = 0x02D00, last = 0x02D2F, otf="geor", description = "Georgian Supplement" },
     ["glagolitic"]                                 = { first = 0x02C00, last = 0x02C5F, otf="glag", description = "Glagolitic" },
     ["gothic"]                                     = { first = 0x10330, last = 0x1034F, otf="goth", description = "Gothic" },
+    ["grantha"]                                    = { first = 0x11300, last = 0x1137F,             description = "Grantha" },
     ["greekandcoptic"]                             = { first = 0x00370, last = 0x003FF, otf="grek", description = "Greek and Coptic" },
     ["greekextended"]                              = { first = 0x01F00, last = 0x01FFF, otf="grek", description = "Greek Extended" },
     ["gujarati"]                                   = { first = 0x00A80, last = 0x00AFF, otf="gujr", description = "Gujarati" },
@@ -238,29 +249,36 @@ local blocks = allocate {
     ["kharoshthi"]                                 = { first = 0x10A00, last = 0x10A5F, otf="khar", description = "Kharoshthi" },
     ["khmer"]                                      = { first = 0x01780, last = 0x017FF, otf="khmr", description = "Khmer" },
     ["khmersymbols"]                               = { first = 0x019E0, last = 0x019FF, otf="khmr", description = "Khmer Symbols" },
+    ["khojki"]                                     = { first = 0x11200, last = 0x1124F,             description = "Khojki" },
+    ["khudawadi"]                                  = { first = 0x112B0, last = 0x112FF,             description = "Khudawadi" },
     ["lao"]                                        = { first = 0x00E80, last = 0x00EFF, otf="lao",  description = "Lao" },
     ["latinextendeda"]                             = { first = 0x00100, last = 0x0017F, otf="latn", description = "Latin Extended-A" },
     ["latinextendedadditional"]                    = { first = 0x01E00, last = 0x01EFF, otf="latn", description = "Latin Extended Additional" },
     ["latinextendedb"]                             = { first = 0x00180, last = 0x0024F, otf="latn", description = "Latin Extended-B" },
     ["latinextendedc"]                             = { first = 0x02C60, last = 0x02C7F, otf="latn", description = "Latin Extended-C" },
     ["latinextendedd"]                             = { first = 0x0A720, last = 0x0A7FF, otf="latn", description = "Latin Extended-D" },
+    ["latinextendede"]                             = { first = 0x0AB30, last = 0x0AB6F,             description = "Latin Extended-E" },
     ["latinsupplement"]                            = { first = 0x00080, last = 0x000FF, otf="latn", description = "Latin-1 Supplement" },
     ["lepcha"]                                     = { first = 0x01C00, last = 0x01C4F,             description = "Lepcha" },
     ["letterlikesymbols"]                          = { first = 0x02100, last = 0x0214F,             description = "Letterlike Symbols" },
     ["limbu"]                                      = { first = 0x01900, last = 0x0194F, otf="limb", description = "Limbu" },
+    ["lineara"]                                    = { first = 0x10600, last = 0x1077F,             description = "Linear A" },
     ["linearbideograms"]                           = { first = 0x10080, last = 0x100FF, otf="linb", description = "Linear B Ideograms" },
     ["linearbsyllabary"]                           = { first = 0x10000, last = 0x1007F, otf="linb", description = "Linear B Syllabary" },
     ["lisu"]                                       = { first = 0x0A4D0, last = 0x0A4FF,             description = "Lisu" },
     ["lowsurrogates"]                              = { first = 0x0DC00, last = 0x0DFFF,             description = "Low Surrogates" },
     ["lycian"]                                     = { first = 0x10280, last = 0x1029F,             description = "Lycian" },
     ["lydian"]                                     = { first = 0x10920, last = 0x1093F,             description = "Lydian" },
+    ["mahajani"]                                   = { first = 0x11150, last = 0x1117F,             description = "Mahajani" },
     ["mahjongtiles"]                               = { first = 0x1F000, last = 0x1F02F,             description = "Mahjong Tiles" },
     ["malayalam"]                                  = { first = 0x00D00, last = 0x00D7F, otf="mlym", description = "Malayalam" },
-    ["mandiac"]                                    = { first = 0x00840, last = 0x0085F, otf="mand", description = "Mandaic" },
+    ["mandaic"]                                    = { first = 0x00840, last = 0x0085F, otf="mand", description = "Mandaic" },
+    ["manichaean"]                                 = { first = 0x10AC0, last = 0x10AFF,             description = "Manichaean" },
     ["mathematicalalphanumericsymbols"]            = { first = 0x1D400, last = 0x1D7FF,             description = "Mathematical Alphanumeric Symbols" },
     ["mathematicaloperators"]                      = { first = 0x02200, last = 0x022FF,             description = "Mathematical Operators" },
     ["meeteimayek"]                                = { first = 0x0ABC0, last = 0x0ABFF,             description = "Meetei Mayek" },
     ["meeteimayekextensions"]                      = { first = 0x0AAE0, last = 0x0AAFF,             description = "Meetei Mayek Extensions" },
+    ["mendekikakui"]                               = { first = 0x1E800, last = 0x1E8DF,             description = "Mende Kikakui" },
     ["meroiticcursive"]                            = { first = 0x109A0, last = 0x109FF,             description = "Meroitic Cursive" },
     ["meroitichieroglyphs"]                        = { first = 0x10980, last = 0x1099F,             description = "Meroitic Hieroglyphs" },
     ["miao"]                                       = { first = 0x16F00, last = 0x16F9F,             description = "Miao" },
@@ -268,25 +286,35 @@ local blocks = allocate {
     ["miscellaneousmathematicalsymbolsb"]          = { first = 0x02980, last = 0x029FF,             description = "Miscellaneous Mathematical Symbols-B" },
     ["miscellaneoussymbols"]                       = { first = 0x02600, last = 0x026FF,             description = "Miscellaneous Symbols" },
     ["miscellaneoussymbolsandarrows"]              = { first = 0x02B00, last = 0x02BFF,             description = "Miscellaneous Symbols and Arrows" },
-    ["miscellaneoussymbolsandpictographs"]         = { first = 0x1F300, last = 0x1F5FF,             description = "Miscellaneous Symbols And Pictographs" },
+    ["miscellaneoussymbolsandpictographs"]         = { first = 0x1F300, last = 0x1F5FF,             description = "Miscellaneous Symbols and Pictographs" },
     ["miscellaneoustechnical"]                     = { first = 0x02300, last = 0x023FF,             description = "Miscellaneous Technical" },
+    ["modi"]                                       = { first = 0x11600, last = 0x1165F,             description = "Modi" },
     ["modifiertoneletters"]                        = { first = 0x0A700, last = 0x0A71F,             description = "Modifier Tone Letters" },
     ["mongolian"]                                  = { first = 0x01800, last = 0x018AF, otf="mong", description = "Mongolian" },
+    ["mro"]                                        = { first = 0x16A40, last = 0x16A6F,             description = "Mro" },
     ["musicalsymbols"]                             = { first = 0x1D100, last = 0x1D1FF, otf="musc", description = "Musical Symbols" },
     ["myanmar"]                                    = { first = 0x01000, last = 0x0109F, otf="mymr", description = "Myanmar" },
     ["myanmarextendeda"]                           = { first = 0x0AA60, last = 0x0AA7F,             description = "Myanmar Extended-A" },
+    ["myanmarextendedb"]                           = { first = 0x0A9E0, last = 0x0A9FF,             description = "Myanmar Extended-B" },
+    ["nabataean"]                                  = { first = 0x10880, last = 0x108AF,             description = "Nabataean" },
     ["newtailue"]                                  = { first = 0x01980, last = 0x019DF,             description = "New Tai Lue" },
     ["nko"]                                        = { first = 0x007C0, last = 0x007FF, otf="nko",  description = "NKo" },
     ["numberforms"]                                = { first = 0x02150, last = 0x0218F,             description = "Number Forms" },
     ["ogham"]                                      = { first = 0x01680, last = 0x0169F, otf="ogam", description = "Ogham" },
     ["olchiki"]                                    = { first = 0x01C50, last = 0x01C7F,             description = "Ol Chiki" },
     ["olditalic"]                                  = { first = 0x10300, last = 0x1032F, otf="ital", description = "Old Italic" },
+    ["oldnortharabian"]                            = { first = 0x10A80, last = 0x10A9F,             description = "Old North Arabian" },
+    ["oldpermic"]                                  = { first = 0x10350, last = 0x1037F,             description = "Old Permic" },
     ["oldpersian"]                                 = { first = 0x103A0, last = 0x103DF, otf="xpeo", description = "Old Persian" },
     ["oldsoutharabian"]                            = { first = 0x10A60, last = 0x10A7F,             description = "Old South Arabian" },
-    ["odlturkic"]                                  = { first = 0x10C00, last = 0x10C4F,             description = "Old Turkic" },
+    ["oldturkic"]                                  = { first = 0x10C00, last = 0x10C4F,             description = "Old Turkic" },
     ["opticalcharacterrecognition"]                = { first = 0x02440, last = 0x0245F,             description = "Optical Character Recognition" },
     ["oriya"]                                      = { first = 0x00B00, last = 0x00B7F, otf="orya", description = "Oriya" },
+    ["ornamentaldingbats"]                         = { first = 0x1F650, last = 0x1F67F,             description = "Ornamental Dingbats" },
     ["osmanya"]                                    = { first = 0x10480, last = 0x104AF, otf="osma", description = "Osmanya" },
+    ["pahawhhmong"]                                = { first = 0x16B00, last = 0x16B8F,             description = "Pahawh Hmong" },
+    ["palmyrene"]                                  = { first = 0x10860, last = 0x1087F,             description = "Palmyrene" },
+    ["paucinhau"]                                  = { first = 0x11AC0, last = 0x11AFF,             description = "Pau Cin Hau" },
     ["phagspa"]                                    = { first = 0x0A840, last = 0x0A87F, otf="phag", description = "Phags-pa" },
     ["phaistosdisc"]                               = { first = 0x101D0, last = 0x101FF,             description = "Phaistos Disc" },
     ["phoenician"]                                 = { first = 0x10900, last = 0x1091F, otf="phnx", description = "Phoenician" },
@@ -294,6 +322,7 @@ local blocks = allocate {
     ["phoneticextensionssupplement"]               = { first = 0x01D80, last = 0x01DBF,             description = "Phonetic Extensions Supplement" },
     ["playingcards"]                               = { first = 0x1F0A0, last = 0x1F0FF,             description = "Playing Cards" },
     ["privateusearea"]                             = { first = 0x0E000, last = 0x0F8FF,             description = "Private Use Area" },
+    ["psalterpahlavi"]                             = { first = 0x10B80, last = 0x10BAF,             description = "Psalter Pahlavi" },
     ["rejang"]                                     = { first = 0x0A930, last = 0x0A95F,             description = "Rejang" },
     ["ruminumeralsymbols"]                         = { first = 0x10E60, last = 0x10E7F,             description = "Rumi Numeral Symbols" },
     ["runic"]                                      = { first = 0x016A0, last = 0x016FF, otf="runr", description = "Runic" },
@@ -301,7 +330,10 @@ local blocks = allocate {
     ["saurashtra"]                                 = { first = 0x0A880, last = 0x0A8DF,             description = "Saurashtra" },
     ["sharada"]                                    = { first = 0x11180, last = 0x111DF,             description = "Sharada" },
     ["shavian"]                                    = { first = 0x10450, last = 0x1047F, otf="shaw", description = "Shavian" },
+    ["shorthandformatcontrols"]                    = { first = 0x1BCA0, last = 0x1BCAF,             description = "Shorthand Format Controls" },
+    ["siddham"]                                    = { first = 0x11580, last = 0x115FF,             description = "Siddham" },
     ["sinhala"]                                    = { first = 0x00D80, last = 0x00DFF, otf="sinh", description = "Sinhala" },
+    ["sinhalaarchaicnumbers"]                      = { first = 0x111E0, last = 0x111FF,             description = "Sinhala Archaic Numbers" },
     ["smallformvariants"]                          = { first = 0x0FE50, last = 0x0FE6F,             description = "Small Form Variants" },
     ["sorasompeng"]                                = { first = 0x110D0, last = 0x110FF,             description = "Sora Sompeng" },
     ["spacingmodifierletters"]                     = { first = 0x002B0, last = 0x002FF,             description = "Spacing Modifier Letters" },
@@ -311,6 +343,7 @@ local blocks = allocate {
     ["superscriptsandsubscripts"]                  = { first = 0x02070, last = 0x0209F,             description = "Superscripts and Subscripts" },
     ["supplementalarrowsa"]                        = { first = 0x027F0, last = 0x027FF,             description = "Supplemental Arrows-A" },
     ["supplementalarrowsb"]                        = { first = 0x02900, last = 0x0297F,             description = "Supplemental Arrows-B" },
+    ["supplementalarrowsc"]                        = { first = 0x1F800, last = 0x1F8FF,             description = "Supplemental Arrows-C" },
     ["supplementalmathematicaloperators"]          = { first = 0x02A00, last = 0x02AFF,             description = "Supplemental Mathematical Operators" },
     ["supplementalpunctuation"]                    = { first = 0x02E00, last = 0x02E7F,             description = "Supplemental Punctuation" },
     ["supplementaryprivateuseareaa"]               = { first = 0xF0000, last = 0xFFFFF,             description = "Supplementary Private Use Area-A" },
@@ -331,7 +364,8 @@ local blocks = allocate {
     ["thai"]                                       = { first = 0x00E00, last = 0x00E7F, otf="thai", description = "Thai" },
     ["tibetan"]                                    = { first = 0x00F00, last = 0x00FFF, otf="tibt", description = "Tibetan" },
     ["tifinagh"]                                   = { first = 0x02D30, last = 0x02D7F, otf="tfng", description = "Tifinagh" },
-    ["transportandmapsymbols"]                     = { first = 0x1F680, last = 0x1F6FF,             description = "Transport And Map Symbols" },
+    ["tirhuta"]                                    = { first = 0x11480, last = 0x114DF,             description = "Tirhuta" },
+    ["transportandmapsymbols"]                     = { first = 0x1F680, last = 0x1F6FF,             description = "Transport and Map Symbols" },
     ["ugaritic"]                                   = { first = 0x10380, last = 0x1039F, otf="ugar", description = "Ugaritic" },
     ["unifiedcanadianaboriginalsyllabics"]         = { first = 0x01400, last = 0x0167F, otf="cans", description = "Unified Canadian Aboriginal Syllabics" },
     ["unifiedcanadianaboriginalsyllabicsextended"] = { first = 0x018B0, last = 0x018FF,             description = "Unified Canadian Aboriginal Syllabics Extended" },
@@ -340,6 +374,7 @@ local blocks = allocate {
     ["variationselectorssupplement"]               = { first = 0xE0100, last = 0xE01EF,             description = "Variation Selectors Supplement" },
     ["vedicextensions"]                            = { first = 0x01CD0, last = 0x01CFF,             description = "Vedic Extensions" },
     ["verticalforms"]                              = { first = 0x0FE10, last = 0x0FE1F,             description = "Vertical Forms" },
+    ["warangciti"]                                 = { first = 0x118A0, last = 0x118FF,             description = "Warang Citi" },
     ["yijinghexagramsymbols"]                      = { first = 0x04DC0, last = 0x04DFF, otf="yi",   description = "Yijing Hexagram Symbols" },
     ["yiradicals"]                                 = { first = 0x0A490, last = 0x0A4CF, otf="yi",   description = "Yi Radicals" },
     ["yisyllables"]                                = { first = 0x0A000, last = 0x0A48F, otf="yi",   description = "Yi Syllables" },
@@ -492,7 +527,68 @@ setmetatableindex(characters.is_punctuation,mti)
 -- linebreak: todo: hash
 --
 -- normative   : BK CR LF CM SG GL CB SP ZW NL WJ JL JV JT H2 H3
--- informative : XX OP CL QU NS EX SY IS PR PO NU AL ID IN HY BB BA SA AI B2 new:CP
+-- informative : XX OP CL CP QU NS EX SY IS PR PO NU AL ID IN HY BB BA SA AI B2 HL CJ RI
+--
+-- comments taken from standard:
+
+characters.linebreaks = {
+
+    -- non-tailorable line breaking classes
+
+    ["bk"] = "mandatory break",                              -- nl, ps : cause a line break (after)
+    ["cr"] = "carriage return",                              -- cr : cause a line break (after), except between cr and lf
+    ["lf"] = "line feed",                                    -- lf : cause a line break (after)
+    ["cm"] = "combining mark",                               -- combining marks, control codes : prohibit a line break between the character and the preceding character
+    ["nl"] = "next line",                                    -- nel : cause a line break (after)
+    ["sg"] = "surrogate",                                    -- surrogates :do not occur in well-formed text
+    ["wj"] = "word joiner",                                  -- wj : prohibit line breaks before and after
+    ["zw"] = "zero width space",                             -- zwsp : provide a break opportunity
+    ["gl"] = "non-breaking (glue)",                          -- cgj, nbsp, zwnbsp : prohibit line breaks before and after
+    ["sp"] = "space",                                        -- space : enable indirect line breaks
+
+    -- break opportunities
+
+    ["b2"] = "break opportunity before and after",           -- em dash : provide a line break opportunity before and after the character
+    ["ba"] = "break after",                                  -- spaces, hyphens : generally provide a line break opportunity after the character
+    ["bb"] = "break before",                                 -- punctuation used in dictionaries : generally provide a line break opportunity before the character
+    ["hy"] = "hyphen",                                       -- hyphen-minus : provide a line break opportunity after the character, except in numeric context
+    ["cb"] = "contingent break opportunity",                 -- inline objects : provide a line break opportunity contingent on additional information
+
+    -- characters prohibiting certain breaks
+
+    ["cl"] = "close punctuation",                            -- “}”, “❳”, “⟫” etc. : prohibit line breaks before
+    ["cp"] = "close parenthesis",                            -- “)”, “]” : prohibit line breaks before
+    ["ex"] = "exclamation/interrogation",                    -- “!”, “?”, etc. : prohibit line breaks before
+    ["in"] = "inseparable",                                  -- leaders : allow only indirect line breaks between pairs
+    ["ns"] = "nonstarter",                                   -- “‼”, “‽”, “⁇”, “⁉”, etc. : allow only indirect line breaks before
+    ["op"] = "open punctuation",                             -- “(“, “[“, “{“, etc. : prohibit line breaks after
+    ["qu"] = "quotation",                                    -- quotation marks : act like they are both opening and closing
+
+    -- numeric context
+
+    ["is"] = "infix numeric separator",                      -- . , : prevent breaks after any and before numeric
+    ["nu"] = "numeric",                                      -- digits : form numeric expressions for line breaking purposes
+    ["po"] = "postfix numeric",                              -- %, ¢ : do not break following a numeric expression
+    ["pr"] = "prefix numeric",                               -- $, £, ¥, etc. : do not break in front of a numeric expression
+    ["sy"] = "symbols allowing break after",                 -- / : prevent a break before, and allow a break after
+
+    -- other characters
+
+    ["ai"] = "ambiguous (alphabetic or ideographic)",        -- characters with ambiguous east asian width : act like al when the resolved eaw is n; otherwise, act as id
+    ["al"] = "alphabetic",                                   -- alphabets and regular symbols : are alphabetic characters or symbols that are used with alphabetic characters
+    ["cj"] = "conditional japanese starter",                 -- small kana : treat as ns or id for strict or normal breaking.
+    ["h2"] = "hangul lv syllable",                           -- hangul : form korean syllable blocks
+    ["h3"] = "hangul lvt syllable",                          -- hangul : form korean syllable blocks
+    ["hl"] = "hebrew letter",                                -- hebrew : do not break around a following hyphen; otherwise act as alphabetic
+    ["id"] = "ideographic",                                  -- ideographs : break before or after, except in some numeric context
+    ["jl"] = "hangul l jamo",                                -- conjoining jamo : form korean syllable blocks
+    ["jv"] = "hangul v jamo",                                -- conjoining jamo : form korean syllable blocks
+    ["jt"] = "hangul t jamo",                                -- conjoining jamo : form korean syllable blocks
+    ["ri"] = "regional indicator",                           -- regional indicator symbol letter a .. z : keep together, break before and after from others
+    ["sa"] = "complex context dependent (south east asian)", -- south east asian: thai, lao, khmer : provide a line break opportunity contingent on additional, language-specific context analysis
+    ["xx"] = "unknown",                                      -- most unassigned, private-use : have as yet unknown line breaking behavior or unassigned code positions
+
+}
 
 -- east asian width:
 --

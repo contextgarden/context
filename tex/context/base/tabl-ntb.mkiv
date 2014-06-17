@@ -208,6 +208,8 @@
 \installdirectcommandhandler       \??naturaltable      {naturaltable}      % \??naturaltable
 \installsimpleframedcommandhandler \??naturaltablelocal {naturaltablelocal} \??naturaltablelocal
 
+\installcorenamespace{naturaltabletal}
+\installcorenamespace{naturaltablegal}
 \installcorenamespace{naturaltablenob}
 \installcorenamespace{naturaltabletag}
 \installcorenamespace{naturaltablecol}
@@ -224,6 +226,12 @@
 \installcorenamespace{naturaltableref}
 \installcorenamespace{naturaltableset}
 \installcorenamespace{naturaltablecell}
+
+\def\tabl_ntb_let_gal{\global\expandafter\let\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
+\def\tabl_ntb_get_gal{\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
+
+\def\tabl_ntb_let_tal#1{\global\expandafter\let\csname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
+\def\tabl_ntb_get_tal#1{\csname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
 
 \def\tabl_ntb_set_nob#1{\expandafter\let\csname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone}
 \def\tabl_ntb_get_nob#1{\ifcsname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone\else\zerocount\fi}
@@ -1292,14 +1300,22 @@
         {\tabl_ntb_let_wd\recurselevel\c_tabl_ntb_current_col_one\zeropoint
          \tabl_ntb_let_ht\recurselevel\c_tabl_ntb_current_col_one\zeropoint}%
       % till here
+      \tabl_ntb_let_tal\recurselevel\zerocount
       \tabl_ntb_let_wid\recurselevel\zeropoint
       \tabl_ntb_let_dis\recurselevel\zeropoint}%
    \dorecurse\c_tabl_ntb_maximum_row
      {\tabl_ntb_let_hei\recurselevel\maxdimen}%
+   \tabl_ntb_let_gal\zerocount
    \c_tabl_tbl_pass\plusone
    \let\tabl_ntb_pass\tabl_ntb_pass_one
    \let\tabl_ntb_cell_process\tabl_ntb_cell_process_a
    \setbox0\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
+   \ifcase\tabl_ntb_get_gal\or
+    % \c_tabl_tbl_pass\plusone
+    % \let\tabl_ntb_pass\tabl_ntb_pass_one
+      \let\tabl_ntb_cell_process\tabl_ntb_cell_process_a_extra
+      \setbox0\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
+   \fi
    \tabl_ntb_let_dis\c_tabl_ntb_maximum_col\zeropoint
    \ifautoTBLspread
      % experimental, stretch non fixed cells to \hsize
@@ -1315,7 +1331,7 @@
        \let\tabl_ntb_cell_process\tabl_ntb_cell_process_b
        \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
      \fi
-   \else\ifautoTBLrowspan\ifnum\c_tabl_ntb_maximum_row_span>1 % max ?
+   \else\ifautoTBLrowspan\ifnum\c_tabl_ntb_maximum_row_span>\plusone % max ?
      % added jan 2002 because nx=* did no longer work
      \edef\savedhsize{\the\hsize}%
      \hsize\wd0\relax % new per 17/04/2006
@@ -1548,17 +1564,34 @@
 %    \setsecondpasscharacteralign \checkalignment{#3}% {\strut#2\unskip}%
 %    \ignorespaces}
 
-\def\tabl_ntb_char_align
-  {\doifelse{\naturaltablelocalparameter\c!aligncharacter}\v!yes
-     \tabl_ntb_char_align_indeed
-     \gobbletwoarguments}
+\def\tabl_ntb_char_align % called often
+  {\edef\p_characteralign{\naturaltablelocalparameter\c!aligncharacter}%
+   \ifx\p_characteralign\v!yes
+     \ifcase\c_tabl_tbl_pass\or
+       \tabl_ntb_let_tal\currentTABLEcolumn\plusone
+       \tabl_ntb_let_gal\plusone
+     \fi
+     \expandafter\tabl_ntb_char_align_indeed
+   \else
+     \expandafter\gobbletwoarguments
+   \fi}
 
 \def\tabl_ntb_char_align_indeed#1#2% row column
   {\ifcase\c_tabl_tbl_pass \or
-     \setcharacteralign{#2}{\naturaltablelocalparameter\c!alignmentcharacter}%
+     \setcharacteralign{#2}{\naturaltablelocalparameter\c!alignmentcharacter}% we could store the character in tal
    \fi
    \typo_charalign_adapt_font
    \signalcharacteralign{#2}{#1}}
+
+\unexpanded\def\tabl_ntb_cell_process_a_extra#1#2%
+  {\ifcase\tabl_ntb_get_tal{#2}\relax
+     \expandafter\tabl_ntb_cell_process_x
+   \else
+     \expandafter\tabl_ntb_cell_process_a
+   \fi{#1}{#2}}
+
+\unexpanded\def\tabl_ntb_cell_process_x#1#2[#3]#4%
+  {}
 
 \unexpanded\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
   {\bgroup

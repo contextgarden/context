@@ -162,7 +162,7 @@
 
 \starttexdefinition btx:apa:title-and-series
     \btxdoif {title} {
-        \btxflush{title}
+        \btxflush{converters.Word -> title}
         \btxdoif {series} {
             \btxlparent
             \btxflush{series}
@@ -174,7 +174,7 @@
 
 \starttexdefinition btx:apa:title-it-and-series
     \btxdoif {title} {
-        \texdefinition{btx:apa:italic}{title}
+        \texdefinition{btx:apa:italic}{converters.Word -> title}
         \btxdoif {series} {
             \btxlparent
             \btxflush{series}
@@ -344,7 +344,7 @@
 \startsetups btx:apa:article
     \texdefinition{btx:apa:author-or-key-and-year}
     \btxdoif {title} {
-        \btxflush{title}
+        \btxflush{converters.Word -> title}
         \btxperiod
     }
     \btxdoifelse {journal} {
@@ -379,7 +379,7 @@
 \startsetups btx:apa:book
     \texdefinition{btx:apa:author-editors-crossref-year}
     \btxdoif {title} {
-        \texdefinition{btx:apa:italic}{title}
+        \texdefinition{btx:apa:italic}{converters.Word -> title}
         \doifmodeelse {btx:apa:edited-book} {
             \btxdoifelse {volume} {
                 \btxspace
@@ -457,7 +457,7 @@
 \startsetups btx:apa:inbook
     \texdefinition{btx:apa:author-editors-crossref-year}
     \btxdoifelse {title} {
-        \texdefinition{btx:apa:italic}{title}
+        \texdefinition{btx:apa:italic}{converters.Word -> title}
     } {
         \doifmodeelse {btx:apa:edited-book} {
             \btxdoifelse {volume} {
@@ -558,11 +558,11 @@
 \startsetups btx:apa:incollection
     \texdefinition{btx:apa:author-and-year}
     \btxdoifelse {arttitle} {
-        \btxflush{arttitle}
+        \btxflush{converters.Word -> arttitle}
         \btxperiod
     } {
         \btxdoif {title} {
-            \btxflush{title}
+            \btxflush{converters.Word -> title}
             \btxperiod
         }
     }
@@ -573,7 +573,7 @@
             \btxflushauthor{editor}
             \btxcomma
         }
-        \texdefinition{btx:apa:italic}{booktitle}
+        \texdefinition{btx:apa:italic}{converters.Word -> booktitle}
         \btxdoif {series} {
             \btxdoif {volume} {
                 \btxspace
@@ -620,7 +620,7 @@
 \startsetups btx:apa:inproceedings
     \texdefinition{btx:apa:author-and-year}
     \btxdoif {arttitle} {
-        \btxflush{arttitle}
+        \btxflush{converters.Word -> arttitle}
         \btxperiod
     }
     \btxlabeltext{apa:In}
@@ -636,7 +636,7 @@
             }
             \btxcomma
         }
-        \texdefinition{btx:apa:italic}{title}
+        \texdefinition{btx:apa:italic}{converters.Word -> title}
         \btxdoif {series} {
             \btxdoif {volume} {
                 \btxcomma
@@ -678,7 +678,7 @@
 \startsetups btx:apa:proceedings
     \texdefinition{btx:apa:editor-or-key-and-year}
     \btxdoif {title} {
-        \texdefinition{btx:apa:italic}{title}
+        \texdefinition{btx:apa:italic}{converters.Word -> title}
         \btxdoif {volume} {
             \btxcomma
             \btxlabeltext{apa:number}

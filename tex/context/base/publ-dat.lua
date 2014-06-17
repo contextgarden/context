@@ -122,6 +122,7 @@ function publications.new(name)
         suffixes   = { },
         xmldata    = xmlconvert(xmlplaceholder),
      -- details    = { },
+     -- ordered    = { },
         nofbytes   = 0,
         entries    = nil, -- empty == all
         sources    = { },
@@ -140,10 +141,20 @@ function publications.new(name)
     -- depedencies)
     setmetatableindex(dataset,function(t,k)
         -- will become a plugin
-        if k == "details" and publications.enhance then
-            dataset.details = { }
-            publications.enhance(dataset.name)
-            return dataset.details
+        if k == "details" then
+            if publications.enhance then
+                dataset.details = { }
+                publications.enhance(dataset.name)
+                return dataset.details
+            end
+        elseif k == "ordered" then
+            local luadata = dataset.luadata
+            local ordered = sortedkeys(luadata)
+            for i=1,#ordered do
+                ordered[i] = luadata[ordered[i]]
+            end
+            dataset.ordered = ordered
+            return ordered
         end
     end)
     return dataset

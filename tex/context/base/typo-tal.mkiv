@@ -40,21 +40,21 @@
 %D
 %D \typebuffer \blank \getbuffer \blank
 
-%D \startbuffer
-%D \bTABLE
-%D     \bTR \bTD[aligncharacter=yes] €                      1,1     \eTD \eTR
-%D     \bTR \bTD[aligncharacter=yes] €                     11,11    \eTD \eTR
-%D     \bTR \bTD[aligncharacter=yes] € 12\punctuationspace111,11    \eTD \eTR
-%D     \bTR \bTD[aligncharacter=yes] €                 12 111,11    \eTD \eTR
-%D     \bTR \bTD[aligncharacter=yes] €              1.234.451,22222 \eTD \eTR
-%D     \bTR \bTD[aligncharacter=yes] €                234.451,2     \eTD \eTR
-%D     \bTR \bTD[aligncharacter=yes] €                234.451       \eTD \eTR
-%D     \bTR \bTD[aligncharacter=yes] €                    451       \eTD \eTR
-%D     \bTR \bTD                     \bf some text                  \eTD \eTR
-%D \eTABLE
-%D \stopbuffer
-%D
-%D \typebuffer \blank \getbuffer \blank
+% D \startbuffer
+% D \bTABLE
+% D     \bTR \bTD[aligncharacter=yes] €                      1,1     \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €                     11,11    \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] € 12\punctuationspace111,11    \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €                 12 111,11    \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €              1.234.451,22222 \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €                234.451,2     \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €                234.451       \eTD \eTR
+% D     \bTR \bTD[aligncharacter=yes] €                    451       \eTD \eTR
+% D     \bTR \bTD                     \bf some text                  \eTD \eTR
+% D \eTABLE
+% D \stopbuffer
+% D
+% D \typebuffer \blank \getbuffer \blank
 
 \unexpanded\def\signalcharacteralign#1#2{\attribute\characteralignattribute=\numexpr#1*\plushundred+#2\relax}
 \unexpanded\def\setcharacteralign   #1#2{\ctxcommand{setcharacteralign(\number#1,"#2")}}

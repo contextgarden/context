@@ -452,73 +452,163 @@ local compare  = sorters.comparers.basic -- (a,b)
 local strip    = sorters.strip
 local splitter = sorters.splitters.utf
 
-function authors.preparedsort(dataset,list,sorttype_a,sorttype_b,sorttype_c)
-    local luadata  = datasets[dataset].luadata
-    local details  = datasets[dataset].details
-    local valid    = { }
-    local splitted = { }
-    table.setmetatableindex(splitted,function(t,k) -- could be done in the sorter but seldom that many shared
-        local v = splitter(k,true)                 -- in other cases
+-- authors(s) | year | journal | title | pages
+
+local pubsorters = { }
+authors.sorters  = pubsorters
+
+-- local function assemble(snippets,key)
+--     -- maybe an option is to also sort the authors first
+--     if not key then
+--         return ""
+--     end
+--     local n = #key
+--     if n == 0 then
+--         return ""
+--     end
+--     local s = 0
+--     for i=1,n do
+--         local k = key[i]
+--         local vons     = k.vons
+--         local surnames = k.surnames
+--         local initials = k.initials
+--         if vons and #vons > 0 then
+--             s = s + 1 ; snippets[s] = concat(vons," ")
+--         end
+--         if surnames and #surnames > 0 then
+--             s = s + 1 ; snippets[s] = concat(surnames," ")
+--         end
+--         if initials and #initials > 0 then
+--             s = s + 1 ; snippets[s] = concat(initials," ")
+--         end
+--     end
+--     local result = concat(snippets," ",1,s)
+--     return strip(result)
+-- end
+
+-- local function byauthor(dataset,list,sorttype_a,sorttype_b,sorttype_c)
+--     local luadata  = datasets[dataset].luadata
+--     local details  = datasets[dataset].details
+--     local valid    = { }
+--     local splitted = { }
+--     table.setmetatableindex(splitted,function(t,k) -- could be done in the sorter but seldom that many shared
+--         local v = splitter(k,true)                 -- in other cases
+--         t[k] = v
+--         return v
+--     end)
+--     local snippets = { }
+--     for i=1,#list do
+--         -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
+--         local li        = list[i]
+--         local tag       = type(li) == "string" and li or li[1]
+--         local entry     = luadata[tag]
+--         local detail    = details[tag]
+--         local suffix    = tostring(i)
+--         local year      = nil
+--         local assembled = nil
+--         if entry and detail then
+--             assembled = assemble(snippets,detail.author or detail.editor)
+--             year      = entry.year or "9998"
+--         else
+--             assembled = ""
+--             year      = "9999"
+--         end
+--         valid[i] = {
+--             index  = i,
+--             split  = {
+--                 splitted[strip(assembled)],
+--                 splitted[year],
+--                 splitted[suffix],
+--                 splitted[entry.journal or ""],
+--                 splitted[entry.title   or ""],
+--                 splitted[entry.pages   or ""],
+--             },
+--         }
+--     end
+--     return valid
+-- end
+
+local function writer(snippets,key)
+    if not key then
+        return ""
+    end
+    local n = #key
+    if n == 0 then
+        return ""
+    end
+    local s = 0
+    for i=1,n do
+        local k = key[i]
+        local vons     = k.vons
+        local surnames = k.surnames
+        local initials = k.initials
+        if vons and #vons > 0 then
+            s = s + 1 ; snippets[s] = concat(vons," ")
+        end
+        if surnames and #surnames > 0 then
+            s = s + 1 ; snippets[s] = concat(surnames," ")
+        end
+        if initials and #initials > 0 then
+            s = s + 1 ; snippets[s] = concat(initials," ")
+        end
+    end
+    local result = concat(snippets," ",1,s)
+    return strip(result)
+end
+
+local function newsplitter(splitter)
+    return table.setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
+        local v = splitter(k,true)                  -- in other cases
         t[k] = v
         return v
     end)
-    local snippets = { }
-    for i=1,#list do
-        -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
-        local li        = list[i]
-        local tag       = type(li) == "string" and li or li[1]
-        local entry     = luadata[tag]
-        local detail    = details[tag]
-        local suffix    = tostring(i)
-        local year      = nil
-        local assembled = nil
-        if entry and detail then
-            local key  = detail[sorttype_a] or detail[sorttype_b] or detail[sorttype_c]
-            if key then
-                -- maybe an option is to also sort the authors first
-                local n = #key
-                local s = 0
-                for i=1,n do
-                    local k = key[i]
-                    local vons     = k.vons
-                    local surnames = k.surnames
-                    local initials = k.initials
-                    if vons and #vons > 0 then
-                        s = s + 1 ; snippets[s] = concat(vons," ")
-                    end
-                    if surnames and #surnames > 0 then
-                        s = s + 1 ; snippets[s] = concat(surnames," ")
-                    end
-                    if initials and #initials > 0 then
-                        s = s + 1 ; snippets[s] = concat(initials," ")
-                    end
-                end
-                assembled = concat(snippets," ",1,s)
-            else
-                assembled = ""
-            end
-            year = entry.year or "9998"
-        else
-            assembled = ""
-            year = "9999"
-        end
-        valid[i] = {
-            index = i,
-            split = {
-                splitted[strip(assembled)],
-                splitted[year],
-                splitted[suffix],
-            },
--- names  = assembled,
--- year   = year,
--- suffix = suffix,
-        }
-    end
-    return valid
 end
 
+local function byauthor(dataset,list,method) -- todo: yearsuffix
+    local luadata  = datasets[dataset].luadata
+    local details  = datasets[dataset].details
+    local result   = { }
+    local splitted = newsplitter(splitter) -- saves mem
+    local snippets = { } -- saves mem
+    for i=1,#list do
+        -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
+        local li     = list[i]
+        local tag    = type(li) == "string" and li or li[1]
+        local entry  = luadata[tag]
+        local detail = details[tag]
+        if entry and detail then
+            result[i] = {
+                index  = i,
+                split  = {
+                    splitted[writer(snippets,detail.author or detail.editor or "")],
+                    splitted[entry.year     or "9998"],
+                    splitted[entry.journal  or ""],
+                    splitted[entry.title    or ""],
+                    splitted[entry.pages    or ""],
+                    splitted[tostring(i)],
+                },
+            }
+        else
+            result[i] = {
+                index  = i,
+                split  = {
+                    splitted[""],
+                    splitted["9999"],
+                    splitted[""],
+                    splitted[""],
+                    splitted[""],
+                    splitted[tostring(i)],
+                },
+            }
+        end
+    end
+    return result
+end
+
+authors.sorters.author = byauthor
+
 function authors.sorted(dataset,list,sorttype) -- experimental
-    local valid = authors.preparedsort(dataset,list,sorttype)
+    local valid = byauthor(dataset,list,sorttype)
     if #valid == 0 or #valid ~= #list then
         return list
     else

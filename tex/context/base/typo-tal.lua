@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['typo-tal'] = {
     license   = "see context related readme files"
 }
 
--- I'll make it a bit more efficient and provide named instances too.
+-- I'll make it a bit more efficient and provide named instances too which is needed for
+-- nested tables.
 
 local next, type = next, type
 local div = math.div
@@ -114,6 +115,9 @@ function characteralign.handler(originalhead,where)
     local c         = nil
     local current   = first
     local sign      = nil
+    --
+    local validseparators = dataset.separators
+    local validsigns      = dataset.signs
     -- we can think of constraints
     while current do
         local id = getid(current)
@@ -158,19 +162,19 @@ function characteralign.handler(originalhead,where)
                         else
                             b_start = current
                             b_stop = current
-                            if trace_split then
-                                setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
-                            end
                         end
                     else
                         b_stop = current
-                        if trace_split then
-                            setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
-                        end
+                    end
+                    if trace_split and current ~= sign then
+                        setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
                     end
                 end
             elseif not b_start then
                 sign = validsigns[unicode] and current
+             -- if trace_split then
+             --     setcolor(current,"darkgreen")
+             -- end
             end
         elseif (b_start or a_start) and id == glue_code then
             -- somewhat inefficient
@@ -215,7 +219,7 @@ function characteralign.handler(originalhead,where)
         local maxafter  = dataset.maxafter
         local before    = entry.before or 0
         local after     = entry.after  or 0
-        local new_kern = trace_split and traced_kern or new_kern
+        local new_kern  = trace_split and traced_kern or new_kern
         if b_start then
             if before < maxbefore then
                 head = insert_node_before(head,b_start,new_kern(maxbefore-before))
@@ -270,6 +274,9 @@ function characteralign.handler(originalhead,where)
     return tonode(head), true
 end
 
+-- If needed we can have more modes which then also means a faster simple handler
+-- for non numbers.
+
 function setcharacteralign(column,separator)
     if not enabled then
         nodes.tasks.enableaction("processors","typesetters.characteralign.handler")
@@ -280,12 +287,17 @@ function setcharacteralign(column,separator)
     end
     local dataset = datasets[column] -- we can use a metatable
     if not dataset then
+        separator  = separator and utfbyte(separator) or comma
+        local auto = validseparators[separator]
         dataset = {
-            separator = separator and utfbyte(separator) or comma,
-            list      = { },
-            maxafter  = 0,
-            maxbefore = 0,
-            collected = false,
+            separator  = separator,
+            list       = { },
+            maxafter   = 0,
+            maxbefore  = 0,
+            collected  = false,
+            mode       = auto and "numeric",
+            separators = auto and validseparators or { [separator] = true },
+            signs      = auto and validsigns or { },
         }
         datasets[column] = dataset
         used = true

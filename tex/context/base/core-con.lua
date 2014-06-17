@@ -979,8 +979,9 @@ end
 -- These are just helpers but not really for the tex end. Do we have to
 -- use translate here?
 
+local character   = lpeg.patterns.utf8character
 local whitespace  = lpeg.patterns.whitespace
-local word        = (1-whitespace) / characters.upper * (1-whitespace)^1
+local word        = (character-whitespace) / characters.upper * (character-whitespace)^1
 local spacing     = whitespace^1
 local pattern_one = Cs(word * P(1)^1)
 local pattern_all = Cs((word + spacing)^1)

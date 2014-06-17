@@ -86,10 +86,17 @@
    \endgroup}
 
 \unexpanded\setvalue{\??constructionstarthandler\v!btxlist}%
-  {\csname\??constructionstarthandler\v!construction\endcsname}
+  {\csname\??constructionstarthandler\v!construction\endcsname
+   %\ifx\currentbtxnumbering\empty\else
+   %  \startgoto[\s!internal(\currentbtxinternal)]%
+   %\fi
+   }
 
 \unexpanded\setvalue{\??constructionstophandler\v!btxlist}%
-  {\csname\??constructionstophandler\v!construction\endcsname
+  {%\ifx\currentbtxnumbering\empty\else
+   %  \stopgoto
+   %\fi
+   \csname\??constructionstophandler\v!construction\endcsname
    \endgroup}
 
 \unexpanded\def\startbtxlistentry#1%
@@ -102,7 +109,13 @@
 
 \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
   {\begingroup
+   \ifx\currentbtxnumbering\empty\else
+     \startgoto[\s!internal(\currentbtxinternal)]%
+   \fi
    \directsetup{\v!btxrendering:\v!number:\constructionparameter\c!number}%
+   \ifx\currentbtxnumbering\empty\else
+     \stopgoto
+   \fi
    \endgroup}
 
 \startsetups[\v!btxrendering:\v!number:\v!no]
@@ -113,20 +126,11 @@
    \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
    \the\everyconstruction
    \relax
-   \iflocation
-     \goto
-       {\publ_list_number_normal}%
-       [\s!internal(\currentbtxinternal)]%
-   \else
-     \publ_list_number_normal
-   \fi
-\stopsetups
-
-\unexpanded\def\publ_list_number_normal
-  {\strut
+   \strut
    \constructionparameter\c!text
    \btx_list_reference_inject
-   \relax}
+   \relax
+\stopsetups
 
 % todo: low level builder commands without using the constructor
 
@@ -202,7 +206,7 @@
 \installcorenamespace {btxcitevariant}
 \installcorenamespace {btxrendering}
 \installcorenamespace {btxcommand}
-\installcorenamespace {btxnumbering}
+%installcorenamespace {btxnumbering}
 \installcorenamespace {btxrenderingdefinition}
 
 \installcommandhandler \??btxdataset     {btxdataset}     \??btxdataset
@@ -510,8 +514,7 @@
            keyword      = "\btxrenderingparameter\c!keyword",
        }}%
        % next we analyze the width
-       \ifx\btx_list_reference_inject_indeed\relax
-       \else
+       \ifx\currentbtxnumbering\empty \else
          \edef\p_width{\btxrenderingparameter\c!width}%
          \ifx\p_width\v!auto
            \scratchcounter\btxlistcounter
@@ -546,14 +549,16 @@
    \endgroup}
 
 \unexpanded\def\btxlistreset
-  {\let\currentbtxindex    \!!zerocount
-   \let\currentbtxcombis   \empty
-   \let\currentbtxcategory \empty
-   \let\currentbtxinternal \empty
-   \let\currentbtxbacklink \empty
-   \let\currentbtxbacktrace\empty
-   \let\currentbtxlanguage \empty
-   \let\currentbtxtag      \empty}
+  {\let        \currentbtxindex    \!!zerocount % can be a constant
+   \let        \currentbtxcombis   \empty
+   \let        \currentbtxcategory \empty
+   \let        \currentbtxinternal \empty
+   \let        \currentbtxbacklink \empty
+   \let        \currentbtxbacktrace\empty
+   \let        \currentbtxlanguage \empty
+   \let        \currentbtxtag      \empty
+   %setconstant\currentbtxrealpage \zerocount
+   }
 
 \unexpanded\def\btxsetindex    {\def\currentbtxindex}
 \unexpanded\def\btxsetcombis   {\def\currentbtxcombis}
@@ -600,9 +605,20 @@
    \hbox{\btx_reference_checked}%
    \par}
 
+\unexpanded\def\btxlistsetup#1%
+  {\directsetup{\s!btx:\s!list:#1}}
+
+\unexpanded\def\btx_reference_indeed
+  {\begingroup
+   \let\currentbtxlistvariant\currentbtxnumbering
+   \btxlistvariantparameter\c!left
+   \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","\currentbtxnumbering","\number\btxlistcounter")}% some can go
+   \btxlistvariantparameter\c!right
+   \endgroup}
+
 \unexpanded\def\btx_reference_checked
   {\dontleavehmode\hbox\bgroup
-     \btx_list_reference_inject_indeed
+     \btx_reference_indeed
    \egroup}
 
 \newcount\c_btx_list_reference
@@ -612,7 +628,7 @@
      \iftrialtypesetting\else
        \btx_list_reference_inject_now
      \fi
-     \btx_list_reference_inject_indeed % needs checking ... still needed?
+     \btx_reference_indeed
    \endgroup}
 
 \def\btx_list_reference_inject_now
@@ -623,35 +639,37 @@
       {\s!btx::\v!list::\number\c_btx_list_reference}%
       {\number\btxlistcounter}}
 
-\unexpanded\def\btx_cite_reference_inject % todo: wrap whole content?
-  {\dontleavehmode\begingroup % no box
-     \iftrialtypesetting \else
-       \btx_trace_list_cross\currentbtxbacklink\empty
-     \fi
-   \endgroup}
+\unexpanded\def\btx_cite_reference_inject
+  {\dontleavehmode
+   \iftrialtypesetting \else
+     \ifx\currentbtxbacklink\empty
+        % can be made empty when combining author / year
+     \else
+        \btx_trace_list_cross\currentbtxbacklink\empty
+        \normalexpanded{\writedatatolist[\s!btx][\s!btxset=\currentbtxdataset,\s!btxref=\currentbtxtag,\s!btxint=\number\currentbtxbacklink]}%  % \c!location=\v!here
+      \fi
+   \fi}
 
-% \let\btxcitereference\btx_cite_reference_inject
-\let\btxcitereference\relax
+\let\btxcitereference\btx_cite_reference_inject
 
-\setuvalue{\??btxnumbering\v!short  }{\btxlistvariant{short}} % these will be setups
-\setuvalue{\??btxnumbering\v!bib    }{\btxlistvariant{num}}   % these will be setups
-\setuvalue{\??btxnumbering\s!unknown}{\btxlistvariant{num}}   % these will be setups
-\setuvalue{\??btxnumbering\v!yes    }{\btxlistvariant{num}}   % these will be setups
+% \setuvalue{\??btxnumbering\v!page   }{\btxlistvariant{page}}  % these will be setups
+% \setuvalue{\??btxnumbering\v!short  }{\btxlistvariant{short}} % these will be setups
+% \setuvalue{\??btxnumbering\v!bib    }{\btxlistvariant{num}}   % these will be setups
+% \setuvalue{\??btxnumbering\s!unknown}{\btxlistvariant{num}}   % these will be setups
+% \setuvalue{\??btxnumbering\v!yes    }{\btxlistvariant{num}}   % these will be setups
+
+\let\currentbtxnumbering\empty
 
 \appendtoks
-   \edef\p_btx_numbering{\btxrenderingparameter\c!numbering}%
+   \edef\currentbtxnumbering{\btxrenderingparameter\c!numbering}%
    \letlistparameter\c!numbercommand\firstofoneargument % for the moment, no doubling needed
-   \ifx\p_btx_numbering\v!no
+   \ifx\currentbtxnumbering\v!no
      \letlistparameter\c!textcommand\outdented % needed? we can use titlealign
      \letlistparameter\c!symbol     \v!none
      \letlistparameter\c!aligntitle \v!yes
-     \let\btx_list_reference_inject_indeed\relax
+     \let\currentbtxnumbering\empty
    \else
-     \ifcsname\??btxnumbering\p_btx_numbering\endcsname \else
-       \let\p_btx_numbering\s!unknown
-     \fi
      \letlistparameter\c!headnumber\v!always
-     \expandafter\let\expandafter\btx_list_reference_inject_indeed\csname\??btxnumbering\p_btx_numbering\endcsname
    \fi
 \to \everysetupbtxlistplacement
 
@@ -735,19 +753,6 @@
     \fi
 \to \everysetupbtxciteplacement
 
-% these will go away or at least need to be checked:
-
-% \unexpanded\def\btxgotolink#1[#2]{\doifreferencefoundelse{\bibrefprefix#2}{\goto{#1}[\bibrefprefix#2]}{#1}}
-% \unexpanded\def\btxatlink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\at      [\bibrefprefix#1]}{#1}}
-% \unexpanded\def\btxinlink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\expanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{#1}}
-
-% \unexpanded\def\btxdirectlink#1#2{\goto{#2 {\tttf[#1]}}[#1]}
-% \unexpanded\def\btxdirectlink#1#2{\goto{#2}[#1]}
-
-% \let\gotobiblink\btxgotolink
-% \let\atbiblink  \btxatlink
-% \let\inbiblink  \btxinlink
-
 \appendtoks
     % for old times sake, for a while at least
     \let\maybeyear\gobbleoneargument
@@ -791,7 +796,7 @@
 
 \def\publ_cite_mark_citation#1#2#3% called from lua end
   {\dontleavehmode
-   \normalexpanded{\writedatatolist[\s!btx][\s!btxset=#1,\s!btxref=#2,\s!btxint=\number#3]}}  % \c!location=\v!here
+   \normalexpanded{\writedatatolist[\s!btx][\s!btxset=#1,\s!btxref=#2,\s!btxint=\number#3]}}% \c!location=\v!here for nocite?
 
 %D \macros{cite,nocite,citation,nocitation,usecitation}
 %D
@@ -903,6 +908,7 @@
      author    = "\btxcitevariantparameter\c!author",%
    }}%
    \btxcitevariantparameter\v!right
+   \ctxcommand{flushmarked()}%
    \endgroup}
 
 \unexpanded\def\btxcitation
@@ -943,30 +949,36 @@
 %D Cite helpers:
 
 \newconstant\currentbtxconcat
+\newconstant\currentbtxcount
+%newconstant\currentbtxrealpage
 
 \unexpanded\def\btxcitereset
-  {\let\currentbtxfirst    \empty
-   \let\currentbtxsecond   \empty
-   \let\currentbtxinternal \empty
-   \let\currentbtxbacklink \empty
-   \let\currentbtxbacktrace\empty
-   \let\currentbtxlanguage \empty
-   \let\currentbtxtag      \empty
-   \setconstant\currentbtxconcat\zerocount}
+  {\let        \currentbtxfirst    \empty
+   \let        \currentbtxsecond   \empty
+   \let        \currentbtxinternal \empty
+   \let        \currentbtxbacklink \empty
+   \let        \currentbtxbacktrace\empty % not used here
+   \let        \currentbtxlanguage \empty
+   \let        \currentbtxtag      \empty
+   %setconstant\currentbtxrealpage \zerocount
+   \setconstant\currentbtxconcat   \zerocount
+   \setconstant\currentbtxcount    \zerocount}
 
 \btxcitereset
 
 \unexpanded\def\btxcitesetup#1%
-  {\btx_cite_reference_inject
+  {%\btx_cite_reference_inject
    \directsetup{btx:cite:#1}%
    \btxcitereset}
 
-\unexpanded\def\btxsetfirst   {\def\currentbtxfirst}
-\unexpanded\def\btxsetsecond  {\def\currentbtxsecond}
-\unexpanded\def\btxsettag     {\def\currentbtxtag}
-\unexpanded\def\btxsetinternal{\def\currentbtxinternal}
-%unexpanded\def\btxsetlanguage{\def\currentbtxlanguage}
-\unexpanded\def\btxsetconcat#1{\setconstant\currentbtxconcat#1\relax}
+\unexpanded\def\btxsetfirst      {\def\currentbtxfirst}
+\unexpanded\def\btxsetsecond     {\def\currentbtxsecond}
+\unexpanded\def\btxsettag        {\def\currentbtxtag}
+%unexpanded\def\btxsetlanguage   {\def\currentbtxlanguage}
+\unexpanded\def\btxsetinternal   {\def\currentbtxinternal}
+\unexpanded\def\btxsetcount    #1{\setconstant\currentbtxcount   #1\relax}
+\unexpanded\def\btxsetconcat   #1{\setconstant\currentbtxconcat  #1\relax}
+%unexpanded\def\btxsetrealpage #1{\setconstant\currentbtxrealpage#1\relax}
 
 \unexpanded\def\btxstartsubcite#1%
   {\bgroup
@@ -982,14 +994,6 @@
 
 \let\currentbtxindex   \!!zerocount
 \let\currentbtxcategory\empty
-
-\unexpanded\def\btxlistvariant#1% was \currentbtxindex
-  {\begingroup
-   \edef\currentbtxlistvariant{#1}%
-   \btxlistvariantparameter\c!left
-   \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","#1","\number\btxlistcounter")}% some can go
-   \btxlistvariantparameter\c!right
-   \endgroup}
 
 %D Whatever helpers:
 
@@ -1239,6 +1243,7 @@
 
 \loadbtxdefinitionfile[apa]
 \loadbtxdefinitionfile[cite]
+\loadbtxdefinitionfile[list]
 \loadbtxdefinitionfile[commands]
 \loadbtxdefinitionfile[definitions]
 

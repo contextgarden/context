@@ -6,13 +6,25 @@ if not modules then modules = { } end modules ['publ-fnd'] = {
     license   = "see context related readme files"
 }
 
-local tonumber, next = tonumber, next
-local P, R, C, Cs, Cp, Carg = lpeg.P, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Carg
+if not characters then
+    dofile(resolvers.findfile("char-def.lua"))
+    dofile(resolvers.findfile("char-ini.lua"))
+    dofile(resolvers.findfile("char-tex.lua"))
+end
+
+if not publications then
+    publications = { }
+end
+
+local tonumber, next, type = tonumber, next, type
+local P, R, C, Cs, Cp, Cc, Carg = lpeg.P, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc, lpeg.Carg
 local lpegmatch = lpeg.match
 local concat = table.concat
 
 local formatters = string.formatters
 local lowercase  = characters.lower
+
+local report  = logs.reporter("publications")
 
 local colon   = P(":")
 local dash    = P("-")
@@ -51,11 +63,14 @@ local field  = (P("field:")/"") * key * Carg(1) / function(_,key,keys)
     return f_field_match(key)
 end
 
------ pattern = Cs((field + range + match + P(1))^1)
------ b_match = P("match")/"" * lparent
+----- b_match = lparent
+----- e_match = rparent * space^0 * P(-1)
+----- pattern = Cs(b_match * ((field + range + match + space + P(1))-e_match)^1 * e_match)
+
 local b_match = lparent
-local e_match = rparent * space^0 * P(-1)
-local pattern = Cs(b_match * ((field + range + match + space + P(1))-e_match)^1 * e_match)
+local e_match = rparent * space^0 * (P(-1) + P(",")/" or ")
+local p_match = b_match * ((field + range + match + space + P(1))-e_match)^1 * e_match
+local pattern = Cs(Cc("(") * (P("match")/"" * p_match)^1 * Cc(")"))
 
 -- -- -- -- -- -- -- -- -- -- -- -- --
 -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -81,17 +96,19 @@ return %s and true or false
 end
 ]] ]
 
-local function compile(expr,start)
+----- function compile(expr,start)
+local function compile(expr)
     local keys        = { }
-    local expression  = lpegmatch(pattern,expr,start,keys)
- -- print("!!!!",expression)
+ -- local expression  = lpegmatch(pattern,expr,start,keys)
+    local expression  = lpegmatch(pattern,expr,1,keys)
+ -- report("compiling expression: %s",expr)
     local definitions = { }
     for k, v in next, keys do
         definitions[#definitions+1] = v
     end
     definitions = concat(definitions,"\n")
     local code = f_template(definitions,expression)
- -- print(code)
+ -- report("generated code: %s",code)
     code = loadstring(code)
     if type(code) == "function" then
         code = code()
@@ -99,34 +116,48 @@ local function compile(expr,start)
             return code
         end
     end
-    print("no valid expression",expression)
+    report("invalid expression: %s",expr)
     return false
 end
 
 local cache = { } -- todo: make weak, or just remember the last one (trial typesetting)
 
-local check = P("match") * space^0 * Cp()
+local check = P("match") -- * space^0 * Cp()
 
 local function finder(expression)
     local found = cache[expression]
     if found == nil then
-        local e = lpegmatch(check,expression)
-        found = e and compile(expression,e) or false
+     -- local e = lpegmatch(check,expression)
+     -- found = e and compile(expression,e) or false
+        found = lpegmatch(check,expression) and compile(expression) or false
+        if found then
+            local okay, message = pcall(found,{})
+            if not okay then
+                found = false
+                report("error in match: %s",message)
+            end
+        end
         cache[expression] = found
     end
     return found
 end
 
+-- finder("match(author:foo)")
+-- finder("match(author:foo and author:bar)")
+-- finder("match(author:foo or (author:bar and page:123))")
+-- finder("match(author:foo),match(author:foo)")
+
 publications.finder = finder
 
 function publications.search(dataset,expression)
-    local find   = finder(expression)
-    local source = dataset.luadata
+    local find = finder(expression)
     if find then
-        local target = { }
-        for k, v in next, source do
-            if find(v) then
-                target[k] = v
+        local ordered = dataset.ordered
+        local target  = { }
+        for i=1,#ordered do
+            local entry = ordered[i]
+            if find(entry) then
+                target[entry.tag] = entry
             end
         end
         return target
