@@ -655,7 +655,6 @@
 % \setuvalue{\??btxnumbering\v!page   }{\btxlistvariant{page}}  % these will be setups
 % \setuvalue{\??btxnumbering\v!short  }{\btxlistvariant{short}} % these will be setups
 % \setuvalue{\??btxnumbering\v!bib    }{\btxlistvariant{num}}   % these will be setups
-% \setuvalue{\??btxnumbering\s!unknown}{\btxlistvariant{num}}   % these will be setups
 % \setuvalue{\??btxnumbering\v!yes    }{\btxlistvariant{num}}   % these will be setups
 
 \let\currentbtxnumbering\empty
@@ -1060,7 +1059,8 @@
  % \c!setups=btx:\btxrenderingparameter\c!alternative:initialize, % not the same usage as cite !
    \c!alternative=apa,
    \c!sorttype=,
-   \c!criterium=,
+%    \c!criterium=,
+   \c!criterium=\v!text,
    \c!refcommand=authoryears,  % todo
    \c!numbering=\v!yes,
  % \c!autohang=\v!no, % not used

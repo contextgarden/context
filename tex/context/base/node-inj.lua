@@ -343,7 +343,7 @@ function injections.handler(head,where,keep)
                             for i=maxt,1,-1 do
                                 ny = ny + d[i]
                                 local ti = t[i]
-                                setfield(ti,"yoffset",ny)
+                                setfield(ti,"yoffset",ny) -- maybe add to current yoffset
                             end
                             maxt = 0
                         end

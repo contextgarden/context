@@ -19,6 +19,8 @@ local global = global or _G
 local methods = {
     uppercase = characters.upper,
     lowercase = characters.lower,
+    Word      = converters.Word,
+    Words     = converters.Words,
 }
 
 local function nothing(s) return s end -- we already have that one somewhere

@@ -55,22 +55,18 @@
         \currentbtxfirst
     }
 \stopsetups
-
-\startsetups \s!btx:\s!list:short
-    \texdefinition {btx:list:inject} {
-        \currentbtxfirst
-        \currentbtxsecond
-    }
-\stopsetups
-
 \startsetups \s!btx:\s!list:num
     \directsetup{\s!btx:\s!list:yes}
 \stopsetups
 \startsetups \s!btx:\s!list:bib
     \directsetup{\s!btx:\s!list:yes}
 \stopsetups
-\startsetups \s!btx:\s!list:unknown
-    \directsetup{\s!btx:\s!list:yes}
+
+\startsetups \s!btx:\s!list:short
+    \texdefinition {btx:list:inject} {
+        \currentbtxfirst
+        \currentbtxsecond
+    }
 \stopsetups
 
 \protect

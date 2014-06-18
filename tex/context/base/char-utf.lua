@@ -27,7 +27,11 @@ over a string.</p>
 local concat, gmatch, gsub, find = table.concat, string.gmatch, string.gsub, string.find
 local utfchar, utfbyte, utfcharacters, utfvalues = utf.char, utf.byte, utf.characters, utf.values
 local allocate = utilities.storage.allocate
-local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local lpegmatch, lpegpatterns, P = lpeg.match, lpeg.patterns, lpeg.P
+
+if not characters then
+    require("char-def")
+end
 
 local charfromnumber   = characters.fromnumber
 
@@ -294,7 +298,7 @@ not collecting tokens is not only faster but also saves garbage collecting.
 </p>
 --ldx]]--
 
-local skippable  = table.tohash { "mkiv", "mkvi" }
+local skippable  = table.tohash { "mkiv", "mkvi", "mkix", "mkxi" }
 local filesuffix = file.suffix
 
 -- function utffilters.collapse(str,filename)   -- we can make high a seperate pass (never needed with collapse)
@@ -412,7 +416,7 @@ function utffilters.collapse(str,filename)
             initialize()
         end
         local tree = lpeg.utfchartabletopattern(table.keys(collapsed))
-        p_collapse = lpeg.Cs((tree/collapsed + lpegpatterns.utf8char)^0)
+        p_collapse = lpeg.Cs((tree/collapsed + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
     end
     if not str or #str == "" or #str == 1 then
         return str
@@ -491,8 +495,7 @@ function utffilters.decompose(str) -- 3 to 4 times faster than the above
             initialize()
         end
         local tree = lpeg.utfchartabletopattern(table.keys(decomposed))
-        p_decompose = lpeg.Cs((tree/decomposed + lpegpatterns.utf8char)^0)
-
+        p_decompose = lpeg.Cs((tree/decomposed + lpegpatterns.utf8char)^0 * P(-1))
     end
     if str and str ~= "" and #str > 1 then
         return lpegmatch(p_decompose,str)
@@ -518,30 +521,6 @@ function utffilters.addgrapheme(result,first,second) -- can be U+ 0x string or u
         p_composed = nil
     end
 end
-
--- --
-
--- local c1, c2, c3 = "a", "̂", "̃"
--- local r2, r3 = "â", "ẫ"
--- local l1 = "ﬄ"
---
--- local str  = c1..c2..c3 .. " " .. c1..c2 .. " " .. l1
--- local res  = r3 .. " " .. r2 .. " " .. "ffl"
---
--- local text  = io.loaddata("t:/sources/tufte.tex")
---
--- local function test(n)
---     local data = text .. string.rep(str,100) .. text
---     local okay = text .. string.rep(res,100) .. text
---     local t = os.clock()
---     for i=1,10000 do
---         collapse(data)
---     end
---     print(os.clock()-t,decompose(collapse(data))==okay,decompose(collapse(str)))
--- end
---
--- test(050)
--- test(150)
 
 -- --
 
@@ -571,3 +550,116 @@ if sequencers then
     end)
 
 end
+
+-- Faster when we deal with lots of data but somewhat complicated by the fact that we want to be
+-- downward compatible .. so maybe some day I'll simplify it. We seldom have large quantities of
+-- text.
+
+-- local p_processed = nil -- so we can reset if needed
+--
+-- function utffilters.preprocess(str,filename)
+--     if not p_processed then
+--         if initialize then
+--             initialize()
+--         end
+--         local merged = table.merged(collapsed,decomposed)
+--         local tree   = lpeg.utfchartabletopattern(table.keys(merged))
+--         p_processed  = lpeg.Cs((tree/merged     + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
+--         local tree   = lpeg.utfchartabletopattern(table.keys(collapsed))
+--         p_collapse   = lpeg.Cs((tree/collapsed  + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
+--         local tree   = lpeg.utfchartabletopattern(table.keys(decomposed))
+--         p_decompose  = lpeg.Cs((tree/decomposed + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
+--     end
+--     if not str or #str == "" or #str == 1 then
+--         return str
+--     elseif filename and skippable[filesuffix(filename)] then -- we could hash the collapsables or do a quicker test
+--         return str
+--     else
+--         return lpegmatch(p_processed,str) or str
+--     end
+-- end
+--
+-- local sequencers = utilities.sequencers
+--
+-- if sequencers then
+--
+--     local textfileactions = resolvers.openers.helpers.textfileactions
+--
+--     local collapse, decompose = false, false
+--
+--     sequencers.appendaction (textfileactions,"system","characters.filters.utf.preprocess")
+--     sequencers.disableaction(textfileactions,"characters.filters.utf.preprocess")
+--
+--     local function checkable()
+--         if decompose then
+--             if collapse then
+--                 sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
+--                 sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
+--                 sequencers.enableaction (textfileactions,"characters.filters.utf.preprocess")
+--             else
+--                 sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
+--                 sequencers.enableaction (textfileactions,"characters.filters.utf.decompose")
+--                 sequencers.disableaction(textfileactions,"characters.filters.utf.preprocess")
+--             end
+--         else
+--             if collapse then
+--                 sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
+--                 sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
+--                 sequencers.disableaction(textfileactions,"characters.filters.utf.preprocess")
+--             else
+--                 sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
+--                 sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
+--                 sequencers.disableaction(textfileactions,"characters.filters.utf.preprocess")
+--             end
+--         end
+--     end
+--
+--     function characters.filters.utf.enable()
+--         collapse  = true
+--         decompose = true
+--         checkable()
+--     end
+--
+--     directives.register("filters.utf.collapse", function(v)
+--         collapse = v
+--         checkable()
+--     end)
+--
+--     directives.register("filters.utf.decompose", function(v)
+--         decompose = v
+--         checkable()
+--     end)
+--
+-- end
+
+-- local collapse   = utffilters.collapse
+-- local decompose  = utffilters.decompose
+-- local preprocess = utffilters.preprocess
+--
+-- local c1, c2, c3 = "a", "̂", "̃"
+-- local r2, r3 = "â", "ẫ"
+-- local l1 = "ﬄ"
+--
+-- local str  = c1..c2..c3 .. " " .. c1..c2 .. " " .. l1
+-- local res  = r3 .. " " .. r2 .. " " .. "ffl"
+--
+-- local text  = io.loaddata("t:/sources/tufte.tex")
+--
+-- local function test(n)
+--     local data = text .. string.rep(str,100) .. text
+--     local okay = text .. string.rep(res,100) .. text
+--     local t = os.clock()
+--     for i=1,10000 do
+--         collapse(data)
+--         decompose(data)
+--      -- preprocess(data)
+--     end
+--     print(os.clock()-t,decompose(collapse(data))==okay,decompose(collapse(str)))
+-- end
+--
+-- test(050)
+-- test(150)
+--
+-- local old = "foo" .. string.char(0xE1) .. "bar"
+-- local new = collapse(old)
+-- print(old,new)

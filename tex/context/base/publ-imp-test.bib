@@ -1,63 +1,294 @@
-% The fields. This file needs to be filled with dummy data. Either fake names
-% or maybe something DEK.
+% This is a test bibliography for developing publ-impl-XXX files. Although
+% meant for testing apa styles, it can also be used for other styles.
+%
+% All publication categories have an example entry here. Most have an entry
+% with a "-min" key, containing only the minimal set of fields.
+%
+% Maintained by: Alan Braslau, Hans Hagen, Robin Kirkham
+
+@article {test-article-min,
+    author       = "An Author",
+    title        = "Title-article",
+    journal      = "Journal",
+    year         = "Year"
+}
 
 @article {test-article,
-    author   = "...",
-    comment  = "...",
-    crossref = "...",
-    editor   = "...",
-    issue    = "...",
-    journal  = "...",
-    note     = "...",
-    pages    = "...",
-    title    = "...",
-    volume   = "...",
-    year     = "...",
+    author       = "An Author",
+    title        = "Title-article",
+    journal      = "Journal",
+    year         = "Year",
+    volume       = "Volume",
+    number       = "Number",
+    pages        = "Pages",
+    month        = "Month",
+    note         = "Note"
 }
+
+% author, editor, or both
+
+@book {test-book-min,
+    author       = "An Author",
+    title        = "Title-book",
+    publisher    = "Publisher",
+    year         = "Year"
+}
+
+% author, editor, or both
+% volume, number, or both
 
 @book {test-book,
-    author    = "...",
-    comment   = "...",
-    chapter   = "...",
-    crossref  = "...",
-    editor    = "...",
-    series    = "...",
-    pages     = "...",
-    publisher = "...",
-    volume    = "...",
-    year      = "...",
+    author       = "An Author",
+    editor       = "An Editor",
+    title        = "Title-book",
+    publisher    = "Publisher",
+    year         = "Year",
+    volume       = "Volume",
+    number       = "Number",
+    series       = "Series",
+    address      = "Address",
+    edition      = "Edition",
+    month        = "Month",
+    note         = "Note"
 }
 
-@inbook {test-inbook,
+% no author
+
+@book {test-book-edited,
+    editor       = "An Editor",
+    title        = "Title-book-edited",
+    publisher    = "Publisher",
+    year         = "Year"
+}
+
+@booklet {test-booklet-min,
+    title        = "Title-booklet"
 }
 
 @booklet {test-booklet,
+    title        = "Title-booklet",
+    author       = "An Author",
+    howpublished = "How-published",
+    address      = "Address",
+    month        = "Month",
+    year         = "Year",
+    note         = "Note"
+}
+
+% author, editor, or both
+% chapter, pages, or both
+
+@inbook {test-inbook-min,
+    author       = "An Author",
+    editor       = "An Editor",
+    title        = "Title-inbook",
+    chapter      = "Chapter",
+    pages        = "Pages",
+    publisher    = "Publisher",
+    year         = "Year"
+}
+
+% author, editor, or both
+% chapter, pages, or both
+% volume, number, or both
+
+@inbook {test-inbook,
+    author       = "An Author",
+    editor       = "An Editor",
+    title        = "Title-inbook",
+    chapter      = "Chapter",
+    pages        = "Pages",
+    publisher    = "Publisher",
+    year         = "Year",
+    volume       = "Volume",
+    number       = "Number",
+    series       = "Series",
+    type         = "Type",
+    address      = "Address",
+    edition      = "Edition",
+    month        = "Month",
+    note         = "Note"
+}
+
+@incollection {test-incollection-min,
+    author       = "An Author",
+    title        = "Title-incollection",
+    booktitle    = "Booktitle",
+    publisher    = "Publisher",
+    year         = "Year"
+}
+
+% volume, number, or both
+
+@incollection {test-incollection,
+    author       = "An Author",
+    title        = "Title-incollection",
+    booktitle    = "Booktitle",
+    publisher    = "Publisher",
+    year         = "Year",
+    editor       = "An Editor",
+    volume       = "Volume",
+    number       = "Number",
+    series       = "Series",
+    type         = "Type",
+    chapter      = "Chapter",
+    pages        = "Pages",
+    address      = "Address",
+    edition      = "Edition",
+    month        = "Month",
+    note         = "Note"
+}
+
+@inproceedings {test-inproceedings-min,
+    author       = "An Author",
+    title        = "Title-inproceedings",
+    booktitle    = "Booktitle",
+    year         = "Year"
+}
+
+% volume, number, or both
+
+@inproceedings {test-inproceedings,
+    author       = "An Author",
+    title        = "Title-inproceedings",
+    booktitle    = "Booktitle",
+    year         = "Year",
+    editor       = "An Editor",
+    volume       = "Volume",
+    number       = "Number",
+    series       = "Series",
+    pages        = "Pages",
+    address      = "Address",
+    month        = "Month",
+    organization = "Organization",
+    publisher    = "Publisher",
+    note         = "Note"
+}
+
+@manual {test-manual-min,
+    title        = "Title-manual"
 }
 
 @manual {test-manual,
+    title        = "Title-manual",
+    author       = "An Author",
+    organization = "Organization",
+    address      = "Address",
+    edition      = "Edition",
+    month        = "Month",
+    year         = "Year"
+    note         = "Note"
 }
 
-@incollection {test-incollection,
-}
 
-@inproceedings {test-inproceedings,
-}
-
-@proceedings {test-proceedings,
+@mastersthesis {test-mastersthesis-min,
+    author       = "An Author",
+    title        = "Title-mastersthesis",
+    school       = "School",
+    year         = "Year",
 }
 
 @mastersthesis {test-mastersthesis,
+    author       = "An Author",
+    title        = "Title-mastersthesis",
+    school       = "School",
+    year         = "Year",
+    type         = "Type",
+    address      = "Address",
+    month        = "Month",
+    note         = "Note"
+}
+
+@proceedings {test-proceedings-min,
+    title        = "Title-proceedings",
+    year         = "Year",
+}
+
+% volume, number, or both
+
+@proceedings {test-proceedings,
+    title        = "Title-proceedings",
+    year         = "Year",
+    editor       = "An Editor",
+    volume       = "Volume",
+    number       = "Number",
+    series       = "Series",
+    address      = "Address",
+    month        = "Month",
+    organization = "Organization",
+    publisher    = "Publisher",
+    note         = "Note"
+}
+
+@phdthesis {test-phdthesis-min,
+    author       = "An Author",
+    title        = "Title-phdthesis",
+    school       = "School",
+    year         = "Year",
 }
 
 @phdthesis {test-phdthesis,
+    author       = "An Author",
+    title        = "Title-phdthesis",
+    school       = "School",
+    year         = "Year",
+    type         = "Type",
+    address      = "Address",
+    month        = "Month",
+    note         = "Note"
+}
+
+@techreport {test-techreport-min,
+    author       = "An Author",
+    title        = "Title-techreport",
+    institution  = "Institution",
+    year         = "Year",
 }
 
 @techreport {test-techreport,
+    author       = "An Author",
+    title        = "Title-techreport",
+    institution  = "Institution",
+    year         = "Year",
+    type         = "Type",
+    number       = "Number",
+    address      = "Address",
+    month        = "Month",
+    note         = "Note"
 }
 
 @misc {test-misc,
+    author       = "An Author",
+    title        = "Title-misc",
+    howpublished = "How-published",
+    month        = "Month",
+    year         = "Year",
+    note         = "Note"
+}
+
+@unpublished {test-unpublished-min,
+    author       = "An Author",
+    title        = "Title-unpublished",
+    note         = "Note"
 }
 
 @unpublished {test-unpublished,
+    author       = "An Author",
+    title        = "Title-unpublished",
+    note         = "Note",
+    month        = "Month",
+    year         = "Year"
 }
 
+% some other test entries
+
+@misc {test-manyauthor,
+    author       = "A Author and B Author and C Author and D Author and
+                    E Author and F Author and G Author and H Author and
+                    I Author and J Author and K Author and L Author and
+                    M Author and N Author and O Author and P Author and
+                    Q Author and R Author and S Author and T Author and
+                    U Author and V Author and W Author and X Author and
+                    Y Author and Z Author",
+    title        = "Title-Many Authors"
+}

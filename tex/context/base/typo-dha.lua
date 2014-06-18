@@ -346,7 +346,7 @@ local function process(start)
                             top = top - 1
                         end
                         obsolete[#obsolete+1] = current
-                    else
+                    elseif trace_directions then
                         setcolor(current)
                     end
                 else

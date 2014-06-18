@@ -243,8 +243,12 @@ end
 regimes.push = push
 regimes.pop  = pop
 
-sequencers.prependaction(textlineactions,"system","regimes.process")
-sequencers.disableaction(textlineactions,"regimes.process")
+if sequencers then
+
+    sequencers.prependaction(textlineactions,"system","regimes.process")
+    sequencers.disableaction(textlineactions,"regimes.process")
+
+end
 
 -- interface:
 
@@ -311,48 +315,82 @@ local patterns = { }
 --
 -- twice as fast and much less lpeg bytecode
 
+-- function regimes.cleanup(regime,str)
+--     if not str or str == "" then
+--         return str
+--     end
+--     local p = patterns[regime]
+--     if p == nil then
+--         regime = regime and synonyms[regime] or regime or currentregime
+--         local vector = regime ~= "utf" and regime ~= "utf-8" and mapping[regime]
+--         if vector then
+--             local utfchars = { }
+--             local firsts = { }
+--             for k, uchar in next, vector do
+--                 local stream = { }
+--                 local split = totable(uchar)
+--                 local nofsplits = #split
+--                 if nofsplits > 1 then
+--                     local first
+--                     for i=1,nofsplits do
+--                         local u = vector[split[i]]
+--                         if not first then
+--                             first = firsts[u]
+--                             if not first then
+--                                 first = { }
+--                                 firsts[u] = first
+--                             end
+--                         end
+--                         stream[i] = u
+--                     end
+--                     local nofstream = #stream
+--                     if nofstream > 1 then
+--                         first[#first+1] = concat(stream,2,nofstream)
+--                         utfchars[concat(stream)] = uchar
+--                     end
+--                 end
+--             end
+--             p = P(false)
+--             for k, v in next, firsts do
+--                 local q = P(false)
+--                 for i=1,#v do
+--                     q = q + P(v[i])
+--                 end
+--                 p = p + P(k) * q
+--             end
+--             p = Cs(((p+1)/utfchars)^1)
+--          -- lpeg.print(p) -- size: 1042
+--         else
+--             p = false
+--         end
+--         patterns[regime] = p
+--     end
+--     return p and lpegmatch(p,str) or str
+-- end
+--
+-- 5 times faster:
+
 function regimes.cleanup(regime,str)
+    if not str or str == "" then
+        return str
+    end
     local p = patterns[regime]
     if p == nil then
         regime = regime and synonyms[regime] or regime or currentregime
-        local vector = regime ~= "utf" and mapping[regime]
+        local vector = regime ~= "utf" and regime ~= "utf-8" and mapping[regime]
         if vector then
-            local utfchars = { }
-            local firsts = { }
-            for k, uchar in next, vector do
-                local stream = { }
-                local split = totable(uchar)
-                local nofsplits = #split
-                if nofsplits > 1 then
-                    local first
-                    for i=1,nofsplits do
-                        local u = vector[split[i]]
-                        if not first then
-                            first = firsts[u]
-                            if not first then
-                                first = { }
-                                firsts[u] = first
-                            end
-                        end
-                        stream[i] = u
-                    end
-                    local nofstream = #stream
-                    if nofstream > 1 then
-                        first[#first+1] = concat(stream,2,nofstream)
-                        utfchars[concat(stream)] = uchar
-                    end
+            local mapping = { }
+            for k, v in next, vector do
+                local split = totable(v)
+                for i=1,#split do
+                    split[i] = utfchar(byte(split[i]))
+                end
+                split = concat(split)
+                if v ~= split then
+                    mapping[split] = v
                 end
             end
-            p = P(false)
-            for k, v in next, firsts do
-                local q = P(false)
-                for i=1,#v do
-                    q = q + P(v[i])
-                end
-                p = p + P(k) * q
-            end
-            p = Cs(((p+1)/utfchars)^1)
-         -- lpeg.print(p) -- size: 1042
+            p = Cs((lpeg.utfchartabletopattern(table.keys(mapping))/mapping+P(1))^0)
         else
             p = false
         end
@@ -361,28 +399,9 @@ function regimes.cleanup(regime,str)
     return p and lpegmatch(p,str) or str
 end
 
--- local map = require("regi-cp1252")
 -- local old = [[test Ã« Ã¤ Ã¶ Ã¼ crap]]
--- local new = correctencoding(map,old)
---
--- print(old,new)
-
--- obsolete:
---
--- function regimes.setsynonym(synonym,target)
---     synonyms[synonym] = target
--- end
---
--- function regimes.truename(regime)
---     return regime and synonyms[regime] or regime or currentregime
--- end
---
--- commands.setregimesynonym = regimes.setsynonym
---
--- function commands.trueregimename(regime)
---     context(regimes.truename(regime))
--- end
---
--- function regimes.load(regime)
---     return mapping[synonyms[regime] or regime]
--- end
+-- local new = regimes.cleanup("cp1252",old)
+-- report_translating("%s -> %s",old,new)
+-- local old = "Pozn" .. char(0xE1) .. "mky"
+-- local new = translate(old,"cp1250")
+-- report_translating("%s -> %s",old,new)

@@ -363,7 +363,7 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                         done = done or ok
                     end
                     -- end nested
-					leader = false
+                    leader = false
                 end
             elseif default and inheritance then
                 if current ~= default then

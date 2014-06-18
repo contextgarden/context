@@ -1892,6 +1892,9 @@ function listvariants.num(dataset,block,tag,variant,listindex)
     ctx_btxlistsetup(variant)
 end
 
+listvariants[v_yes] = listvariants.num
+listvariants.bib    = listvariants.num
+
 function listvariants.short(dataset,block,tag,variant,listindex)
     local short  = getdetail(dataset,tag,"short","short")
     local suffix = getdetail(dataset,tag,"suffix","suffix")
