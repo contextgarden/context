@@ -56,13 +56,15 @@ local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 
 local a_kernpair = attributes.private('kernpair')
------ a_ligacomp = attributes.private('ligacomp')
+local a_ligacomp = attributes.private('ligacomp')
 local a_markbase = attributes.private('markbase')
 local a_markmark = attributes.private('markmark')
 local a_markdone = attributes.private('markdone')
 local a_cursbase = attributes.private('cursbase')
 local a_curscurs = attributes.private('curscurs')
 local a_cursdone = attributes.private('cursdone')
+
+local unsetvalue = attributes.unsetvalue
 
 -- This injector has been tested by Idris Samawi Hamid (several arabic fonts as well as
 -- the rather demanding Husayni font), Khaled Hosny (latin and arabic) and Kaj Eigner
@@ -83,6 +85,33 @@ local kerns    = { }
 
 -- For the moment we pass the r2l key ... volt/arabtype tests .. idris: this needs
 -- checking with husayni (volt and fontforge).
+
+function injections.reset(n)
+--     if getattr(n,a_kernpair) then
+--         setattr(n,a_kernpair,unsetvalue)
+--     end
+--     if getattr(n,a_markdone) then
+--         setattr(n,a_markbase,unsetvalue)
+--         setattr(n,a_markmark,unsetvalue)
+--         setattr(n,a_markdone,unsetvalue)
+--     end
+--     if getattr(n,a_cursdone) then
+--         setattr(n,a_cursbase,unsetvalue)
+--         setattr(n,a_curscurs,unsetvalue)
+--         setattr(n,a_cursdone,unsetvalue)
+--     end
+--     if getattr(n,a_ligacomp) then
+--         setattr(n,a_ligacomp,unsetvalue)
+--     end
+end
+
+function injections.setligaindex(n,index)
+    setattr(n,a_ligacomp,index)
+end
+
+function injections.getligaindex(n,default)
+    return getattr(n,a_ligacomp) or default
+end
 
 function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext)
     local dx, dy = factor*(exit[1]-entry[1]), factor*(exit[2]-entry[2])

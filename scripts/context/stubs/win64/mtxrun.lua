@@ -1195,7 +1195,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 31860, stripped down to: 20846
+-- original size: 31828, stripped down to: 20814
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1514,7 +1514,7 @@ local function simple_table(t)
         if tv=="number" then
           nt=nt+1
           if hexify then
-            tt[nt]=format("0x%04X",v)
+            tt[nt]=format("0x%X",v)
           else
             tt[nt]=tostring(v) 
           end
@@ -1545,7 +1545,7 @@ local function do_serialize(root,name,depth,level,indexed)
       local tn=type(name)
       if tn=="number" then
         if hexify then
-          handle(format("%s[0x%04X]={",depth,name))
+          handle(format("%s[0x%X]={",depth,name))
         else
           handle(format("%s[%s]={",depth,name))
         end
@@ -1584,7 +1584,7 @@ local function do_serialize(root,name,depth,level,indexed)
       if compact and first and tk=="number" and k>=first and k<=last then
         if tv=="number" then
           if hexify then
-            handle(format("%s 0x%04X,",depth,v))
+            handle(format("%s 0x%X,",depth,v))
           else
             handle(format("%s %s,",depth,v)) 
           end
@@ -1625,25 +1625,25 @@ local function do_serialize(root,name,depth,level,indexed)
       elseif tv=="number" then
         if tk=="number" then
           if hexify then
-            handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
+            handle(format("%s [0x%X]=0x%X,",depth,k,v))
           else
             handle(format("%s [%s]=%s,",depth,k,v)) 
           end
         elseif tk=="boolean" then
           if hexify then
-            handle(format("%s [%s]=0x%04X,",depth,k and "true" or "false",v))
+            handle(format("%s [%s]=0x%X,",depth,k and "true" or "false",v))
           else
             handle(format("%s [%s]=%s,",depth,k and "true" or "false",v)) 
           end
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           if hexify then
-            handle(format("%s %s=0x%04X,",depth,k,v))
+            handle(format("%s %s=0x%X,",depth,k,v))
           else
             handle(format("%s %s=%s,",depth,k,v)) 
           end
         else
           if hexify then
-            handle(format("%s [%q]=0x%04X,",depth,k,v))
+            handle(format("%s [%q]=0x%X,",depth,k,v))
           else
             handle(format("%s [%q]=%s,",depth,k,v)) 
           end
@@ -1652,7 +1652,7 @@ local function do_serialize(root,name,depth,level,indexed)
         if reduce and tonumber(v) then
           if tk=="number" then
             if hexify then
-              handle(format("%s [0x%04X]=%s,",depth,k,v))
+              handle(format("%s [0x%X]=%s,",depth,k,v))
             else
               handle(format("%s [%s]=%s,",depth,k,v))
             end
@@ -1666,7 +1666,7 @@ local function do_serialize(root,name,depth,level,indexed)
         else
           if tk=="number" then
             if hexify then
-              handle(format("%s [0x%04X]=%q,",depth,k,v))
+              handle(format("%s [0x%X]=%q,",depth,k,v))
             else
               handle(format("%s [%s]=%q,",depth,k,v))
             end
@@ -1682,7 +1682,7 @@ local function do_serialize(root,name,depth,level,indexed)
         if not next(v) then
           if tk=="number" then
             if hexify then
-              handle(format("%s [0x%04X]={},",depth,k))
+              handle(format("%s [0x%X]={},",depth,k))
             else
               handle(format("%s [%s]={},",depth,k))
             end
@@ -1698,7 +1698,7 @@ local function do_serialize(root,name,depth,level,indexed)
           if st then
             if tk=="number" then
               if hexify then
-                handle(format("%s [0x%04X]={ %s },",depth,k,concat(st,", ")))
+                handle(format("%s [0x%X]={ %s },",depth,k,concat(st,", ")))
               else
                 handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
               end
@@ -1718,7 +1718,7 @@ local function do_serialize(root,name,depth,level,indexed)
       elseif tv=="boolean" then
         if tk=="number" then
           if hexify then
-            handle(format("%s [0x%04X]=%s,",depth,k,v and "true" or "false"))
+            handle(format("%s [0x%X]=%s,",depth,k,v and "true" or "false"))
           else
             handle(format("%s [%s]=%s,",depth,k,v and "true" or "false"))
           end
@@ -1734,7 +1734,7 @@ local function do_serialize(root,name,depth,level,indexed)
           local f=getinfo(v).what=="C" and dump(dummy) or dump(v)
           if tk=="number" then
             if hexify then
-              handle(format("%s [0x%04X]=load(%q),",depth,k,f))
+              handle(format("%s [0x%X]=load(%q),",depth,k,f))
             else
               handle(format("%s [%s]=load(%q),",depth,k,f))
             end
@@ -1749,7 +1749,7 @@ local function do_serialize(root,name,depth,level,indexed)
       else
         if tk=="number" then
           if hexify then
-            handle(format("%s [0x%04X]=%q,",depth,k,tostring(v)))
+            handle(format("%s [0x%X]=%q,",depth,k,tostring(v)))
           else
             handle(format("%s [%s]=%q,",depth,k,tostring(v)))
           end
@@ -1803,7 +1803,7 @@ local function serialize(_handle,root,name,specification)
     end
   elseif tname=="number" then
     if hexify then
-      handle(format("[0x%04X]={",name))
+      handle(format("[0x%X]={",name))
     else
       handle("["..name.."]={")
     end
@@ -16902,7 +16902,7 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 697737
+-- original bytes    : 697705
 -- stripped bytes    : 248746
 
 -- end library merge

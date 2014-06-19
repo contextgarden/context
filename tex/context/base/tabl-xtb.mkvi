@@ -262,7 +262,7 @@
    \doifsomething{\xtableparameter\c!bodyfont}
      {\setupbodyfont[\xtableparameter\c!bodyfont]}%
    \setbox\scratchbox\vbox
-     {\xtableparameter\c!spaceinbetween}%
+     {\doifsomething{\xtableparameter\c!spaceinbetween}{\blank[\xtableparameter\c!spaceinbetween]}}%
    \ctxcommand{x_table_create {
         option              = "\xtableparameter\c!option",
         textwidth           = \number\d_tabl_x_textwidth,

@@ -90,7 +90,9 @@
 \def\font_preloads_reset_checked
   {\glet\font_preload_default_fonts_tt\relax
    \glet\font_preload_default_fonts_mm\relax
-   \glet\font_preloads_third_stage    \relax}
+   \glet\font_preloads_third_stage    \relax
+%  \glet\font_preloads_fourth_stage   \relax
+  }
 
 \def\font_preloads_zero_stage_indeed
   {\definedfont[\s!file:lmmono10-regular sa 1]}
@@ -132,7 +134,7 @@
 \unexpanded\def\font_preloads_fourth_stage
   {\begingroup
    %ifzeropt\fontcharwd\font\number`!\relax
-   \setbox\scratchbox\hbox{checking fonts}%
+   \setbox\scratchbox\hbox{c o n t e x t}%
    \ifzeropt\wd\scratchbox
      \writeline
      \writestatus\m!fonts{!! No bodyfont has been defined and no defaults have been}%

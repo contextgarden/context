@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/18/14 17:19:49
+-- merge date  : 06/19/14 23:33:02
 
 do -- begin closure to overcome local limits and interference
 
@@ -1150,7 +1150,7 @@ local function simple_table(t)
         if tv=="number" then
           nt=nt+1
           if hexify then
-            tt[nt]=format("0x%04X",v)
+            tt[nt]=format("0x%X",v)
           else
             tt[nt]=tostring(v) 
           end
@@ -1181,7 +1181,7 @@ local function do_serialize(root,name,depth,level,indexed)
       local tn=type(name)
       if tn=="number" then
         if hexify then
-          handle(format("%s[0x%04X]={",depth,name))
+          handle(format("%s[0x%X]={",depth,name))
         else
           handle(format("%s[%s]={",depth,name))
         end
@@ -1220,7 +1220,7 @@ local function do_serialize(root,name,depth,level,indexed)
       if compact and first and tk=="number" and k>=first and k<=last then
         if tv=="number" then
           if hexify then
-            handle(format("%s 0x%04X,",depth,v))
+            handle(format("%s 0x%X,",depth,v))
           else
             handle(format("%s %s,",depth,v)) 
           end
@@ -1261,25 +1261,25 @@ local function do_serialize(root,name,depth,level,indexed)
       elseif tv=="number" then
         if tk=="number" then
           if hexify then
-            handle(format("%s [0x%04X]=0x%04X,",depth,k,v))
+            handle(format("%s [0x%X]=0x%X,",depth,k,v))
           else
             handle(format("%s [%s]=%s,",depth,k,v)) 
           end
         elseif tk=="boolean" then
           if hexify then
-            handle(format("%s [%s]=0x%04X,",depth,k and "true" or "false",v))
+            handle(format("%s [%s]=0x%X,",depth,k and "true" or "false",v))
           else
             handle(format("%s [%s]=%s,",depth,k and "true" or "false",v)) 
           end
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           if hexify then
-            handle(format("%s %s=0x%04X,",depth,k,v))
+            handle(format("%s %s=0x%X,",depth,k,v))
           else
             handle(format("%s %s=%s,",depth,k,v)) 
           end
         else
           if hexify then
-            handle(format("%s [%q]=0x%04X,",depth,k,v))
+            handle(format("%s [%q]=0x%X,",depth,k,v))
           else
             handle(format("%s [%q]=%s,",depth,k,v)) 
           end
@@ -1288,7 +1288,7 @@ local function do_serialize(root,name,depth,level,indexed)
         if reduce and tonumber(v) then
           if tk=="number" then
             if hexify then
-              handle(format("%s [0x%04X]=%s,",depth,k,v))
+              handle(format("%s [0x%X]=%s,",depth,k,v))
             else
               handle(format("%s [%s]=%s,",depth,k,v))
             end
@@ -1302,7 +1302,7 @@ local function do_serialize(root,name,depth,level,indexed)
         else
           if tk=="number" then
             if hexify then
-              handle(format("%s [0x%04X]=%q,",depth,k,v))
+              handle(format("%s [0x%X]=%q,",depth,k,v))
             else
               handle(format("%s [%s]=%q,",depth,k,v))
             end
@@ -1318,7 +1318,7 @@ local function do_serialize(root,name,depth,level,indexed)
         if not next(v) then
           if tk=="number" then
             if hexify then
-              handle(format("%s [0x%04X]={},",depth,k))
+              handle(format("%s [0x%X]={},",depth,k))
             else
               handle(format("%s [%s]={},",depth,k))
             end
@@ -1334,7 +1334,7 @@ local function do_serialize(root,name,depth,level,indexed)
           if st then
             if tk=="number" then
               if hexify then
-                handle(format("%s [0x%04X]={ %s },",depth,k,concat(st,", ")))
+                handle(format("%s [0x%X]={ %s },",depth,k,concat(st,", ")))
               else
                 handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
               end
@@ -1354,7 +1354,7 @@ local function do_serialize(root,name,depth,level,indexed)
       elseif tv=="boolean" then
         if tk=="number" then
           if hexify then
-            handle(format("%s [0x%04X]=%s,",depth,k,v and "true" or "false"))
+            handle(format("%s [0x%X]=%s,",depth,k,v and "true" or "false"))
           else
             handle(format("%s [%s]=%s,",depth,k,v and "true" or "false"))
           end
@@ -1370,7 +1370,7 @@ local function do_serialize(root,name,depth,level,indexed)
           local f=getinfo(v).what=="C" and dump(dummy) or dump(v)
           if tk=="number" then
             if hexify then
-              handle(format("%s [0x%04X]=load(%q),",depth,k,f))
+              handle(format("%s [0x%X]=load(%q),",depth,k,f))
             else
               handle(format("%s [%s]=load(%q),",depth,k,f))
             end
@@ -1385,7 +1385,7 @@ local function do_serialize(root,name,depth,level,indexed)
       else
         if tk=="number" then
           if hexify then
-            handle(format("%s [0x%04X]=%q,",depth,k,tostring(v)))
+            handle(format("%s [0x%X]=%q,",depth,k,tostring(v)))
           else
             handle(format("%s [%s]=%q,",depth,k,tostring(v)))
           end
@@ -1439,7 +1439,7 @@ local function serialize(_handle,root,name,specification)
     end
   elseif tname=="number" then
     if hexify then
-      handle(format("[0x%04X]={",name))
+      handle(format("[0x%X]={",name))
     else
       handle("["..name.."]={")
     end
@@ -9725,6 +9725,7 @@ local isolated={
   [0x0856]=true,[0x0858]=true,[0x0857]=true,
   [0x07FA]=true,
   [zwnj]=true,
+  [0x08AD]=true,
 }
 local final={ 
   [0x0622]=true,[0x0623]=true,[0x0624]=true,[0x0625]=true,
@@ -9742,15 +9743,16 @@ local final={
   [0x06D3]=true,[0x06D5]=true,[0x06EE]=true,[0x06EF]=true,
   [0x0759]=true,[0x075A]=true,[0x075B]=true,[0x076B]=true,
   [0x076C]=true,[0x0771]=true,[0x0773]=true,[0x0774]=true,
-	[0x0778]=true,[0x0779]=true,
+  [0x0778]=true,[0x0779]=true,
   [0x08AA]=true,[0x08AB]=true,[0x08AC]=true,
   [0xFEF5]=true,[0xFEF7]=true,[0xFEF9]=true,[0xFEFB]=true,
-	[0x0710]=true,[0x0715]=true,[0x0716]=true,[0x0717]=true,
-	[0x0718]=true,[0x0719]=true,[0x0728]=true,[0x072A]=true,
-	[0x072C]=true,[0x071E]=true,
+  [0x0710]=true,[0x0715]=true,[0x0716]=true,[0x0717]=true,
+  [0x0718]=true,[0x0719]=true,[0x0728]=true,[0x072A]=true,
+  [0x072C]=true,[0x071E]=true,
   [0x072F]=true,[0x074D]=true,
   [0x0840]=true,[0x0849]=true,[0x0854]=true,[0x0846]=true,
-  [0x084F]=true
+  [0x084F]=true,
+  [0x08AE]=true,[0x08B1]=true,[0x08B2]=true,
 }
 local medial={ 
   [0x0626]=true,[0x0628]=true,[0x062A]=true,[0x062B]=true,
@@ -9810,8 +9812,8 @@ local medial={
   [0x07D2]=true,[0x07D0]=true,[0x07CF]=true,[0x07CD]=true,
   [0x07CB]=true,[0x07D3]=true,[0x07E4]=true,[0x07D5]=true,
   [0x07E6]=true,
-  [tatweel]=true,
-  [zwj]=true,
+  [tatweel]=true,[zwj]=true,
+  [0x08A1]=true,[0x08AF]=true,[0x08B0]=true,
 }
 local arab_warned={}
 local function warning(current,what)

@@ -235,14 +235,16 @@ local privateattribute   = attributes.private
 -- of only some.
 
 local a_state            = privateattribute('state')
-local a_cursbase         = privateattribute('cursbase') -- to be checked
-local a_ligacomp         = privateattribute('ligacomp') -- assigned here (ideally it should be combined)
+local a_cursbase         = privateattribute('cursbase') -- to be checked, probably can go
 
 local injections         = nodes.injections
 local setmark            = injections.setmark
 local setcursive         = injections.setcursive
 local setkern            = injections.setkern
 local setpair            = injections.setpair
+local resetinjection     = injections.reset
+local setligaindex       = injections.setligaindex
+local getligaindex       = injections.getligaindex
 
 local cursonce           = true
 
@@ -372,6 +374,7 @@ local function markstoligature(kind,lookupname,head,start,stop,char)
         if head == start then
             head = base
         end
+        resetinjection(base)
         setfield(base,"char",char)
         setfield(base,"subtype",ligature_code)
         setfield(base,"components",start)
@@ -416,6 +419,7 @@ end
 
 local function toligature(kind,lookupname,head,start,stop,char,markflag,discfound) -- brr head
     if start == stop and getchar(start) == char then
+        resetinjection(start)
         setfield(start,"char",char)
         return head, start
     end
@@ -427,6 +431,7 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
     if start == head then
         head = base
     end
+    resetinjection(base)
     setfield(base,"char",char)
     setfield(base,"subtype",ligature_code)
     setfield(base,"components",start) -- start can have components
@@ -452,9 +457,9 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
                 baseindex = baseindex + componentindex
                 componentindex = getcomponentindex(start)
             elseif not deletemarks then -- quite fishy
-                setprop(start,a_ligacomp,baseindex + (getprop(start,a_ligacomp) or componentindex))
+                setligaindex(start,baseindex + getligaindex(start,componentindex))
                 if trace_marks then
-                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),getprop(start,a_ligacomp))
+                    logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),getligaindex(start))
                 end
                 head, current = insert_node_after(head,current,copy_node(start)) -- unlikely that mark has components
             elseif trace_marks then
@@ -468,9 +473,9 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
         while start and getid(start) == glyph_code do
             local char = getchar(start)
             if marks[char] then
-                setprop(start,a_ligacomp,baseindex + (getprop(start,a_ligacomp) or componentindex))
+                setligaindex(start,baseindex + getligaindex(start,componentindex))
                 if trace_marks then
-                    logwarning("%s: set mark %s, gets index %s",pref(kind,lookupname),gref(char),getprop(start,a_ligacomp))
+                    logwarning("%s: set mark %s, gets index %s",pref(kind,lookupname),gref(char),getligaindex(start))
                 end
             else
                 break
@@ -485,6 +490,7 @@ function handlers.gsub_single(head,start,kind,lookupname,replacement)
     if trace_singles then
         logprocess("%s: replacing %s by single %s",pref(kind,lookupname),gref(getchar(start)),gref(replacement))
     end
+    resetinjection(start)
     setfield(start,"char",replacement)
     return head, start, true
 end
@@ -524,6 +530,7 @@ end
 local function multiple_glyphs(head,start,multiple,ignoremarks)
     local nofmultiples = #multiple
     if nofmultiples > 0 then
+        resetinjection(start)
         setfield(start,"char",multiple[1])
         if nofmultiples > 1 then
             local sn = getnext(start)
@@ -534,6 +541,7 @@ local function multiple_glyphs(head,start,multiple,ignoremarks)
 --     local sn = getnext(sn)
 -- end
                 local n = copy_node(start) -- ignore components
+                resetinjection(n)
                 setfield(n,"char",multiple[k])
                 setfield(n,"next",sn)
                 setfield(n,"prev",start)
@@ -560,6 +568,7 @@ function handlers.gsub_alternate(head,start,kind,lookupname,alternative,sequence
         if trace_alternatives then
             logprocess("%s: replacing %s by alternative %a to %s, %s",pref(kind,lookupname),gref(getchar(start)),choice,gref(choice),comment)
         end
+        resetinjection(start)
         setfield(start,"char",choice)
     else
         if trace_alternatives then
@@ -651,6 +660,7 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
                 end
             else
                 -- weird but happens (in some arabic font)
+                resetinjection(start)
                 setfield(start,"char",lig)
                 if trace_ligatures then
                     logprocess("%s: replacing %s by (no real) ligature %s case 3",pref(kind,lookupname),gref(startchar),gref(lig))
@@ -752,7 +762,7 @@ function handlers.gpos_mark2ligature(head,start,kind,lookupname,markanchors,sequ
                     end
                 end
             end
-            local index = getprop(start,a_ligacomp)
+            local index = getligaindex(start)
             local baseanchors = descriptions[basechar]
             if baseanchors then
                 baseanchors = baseanchors.anchors
@@ -802,10 +812,10 @@ function handlers.gpos_mark2mark(head,start,kind,lookupname,markanchors,sequence
     local markchar = getchar(start)
     if marks[markchar] then
         local base = getprev(start) -- [glyph] [basemark] [start=mark]
-        local slc = getprop(start,a_ligacomp)
+        local slc = getligaindex(start)
         if slc then -- a rather messy loop ... needs checking with husayni
             while base do
-                local blc = getprop(base,a_ligacomp)
+                local blc = getligaindex(base)
                 if blc and blc ~= slc then
                     base = getprev(base)
                 else
@@ -1032,6 +1042,7 @@ function chainprocs.reversesub(head,start,stop,kind,chainname,currentcontext,loo
         if trace_singles then
             logprocess("%s: single reverse replacement of %s by %s",cref(kind,chainname),gref(char),gref(replacement))
         end
+        resetinjection(start)
         setfield(start,"char",replacement)
         return head, start, true
     else
@@ -1116,6 +1127,7 @@ function chainprocs.gsub_single(head,start,stop,kind,chainname,currentcontext,lo
                     if trace_singles then
                         logprocess("%s: replacing single %s by %s",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(currentchar),gref(replacement))
                     end
+                    resetinjection(current)
                     setfield(current,"char",replacement)
                 end
             end
@@ -1197,6 +1209,7 @@ function chainprocs.gsub_alternate(head,start,stop,kind,chainname,currentcontext
                         if trace_alternatives then
                             logprocess("%s: replacing %s by alternative %a to %s, %s",cref(kind,chainname,chainlookupname,lookupname),gref(char),choice,gref(choice),comment)
                         end
+                        resetinjection(start)
                         setfield(start,"char",choice)
                     else
                         if trace_alternatives then
@@ -1392,7 +1405,7 @@ function chainprocs.gpos_mark2ligature(head,start,stop,kind,chainname,currentcon
                     end
                 end
                 -- todo: like marks a ligatures hash
-                local index = getprop(start,a_ligacomp)
+                local index = getligaindex(start)
                 local baseanchors = descriptions[basechar].anchors
                 if baseanchors then
                    local baseanchors = baseanchors['baselig']
@@ -1443,10 +1456,10 @@ function chainprocs.gpos_mark2mark(head,start,stop,kind,chainname,currentcontext
         end
         if markanchors then
             local base = getprev(start) -- [glyph] [basemark] [start=mark]
-            local slc = getprop(start,a_ligacomp)
+            local slc = getligaindex(start)
             if slc then -- a rather messy loop ... needs checking with husayni
                 while base do
-                    local blc = getprop(base,a_ligacomp)
+                    local blc = getligaindex(base)
                     if blc and blc ~= slc then
                         base = getprev(base)
                     else

@@ -66,7 +66,9 @@ characters.filters.utf = utffilters
 to depend on collapsing.</p>
 --ldx]]--
 
--- for the moment, will be entries in char-def.lua
+-- for the moment, will be entries in char-def.lua .. this is just a subset that for
+-- typographic (font) reasons we want to have split ... if we decompose all, we get
+-- problems with fonts
 
 local decomposed = allocate {
     ["Ĳ"] = "IJ",

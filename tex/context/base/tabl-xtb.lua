@@ -770,7 +770,7 @@ local function inject(row,copy,package)
         if row[4] then
             -- nothing as we have a span
         elseif row[3] then
-            context_blank(row[3] .. "sp") -- why blank ?
+            context_blank { row[3] .. "sp" } -- why blank ?
         else
             context(tonode(new_glue(0)))
         end
@@ -950,13 +950,13 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                 inject(head[i],false,true)
             end
             if #head > 0 and rowdistance > 0 then
-                context_blank(rowdistance .. "sp")
+                context_blank { rowdistance .. "sp" }
             end
             for i=1,#body do
                 inject(body[i],false,true)
             end
             if #foot > 0 and rowdistance > 0 then
-                context_blank(rowdistance .. "sp")
+                context_blank { rowdistance .. "sp" }
             end
             for i=1,#foot do
                 inject(foot[i],false,true)

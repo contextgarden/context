@@ -85,20 +85,6 @@
    \csname\??constructionstophandler \v!construction\endcsname
    \endgroup}
 
-\unexpanded\setvalue{\??constructionstarthandler\v!btxlist}%
-  {\csname\??constructionstarthandler\v!construction\endcsname
-   %\ifx\currentbtxnumbering\empty\else
-   %  \startgoto[\s!internal(\currentbtxinternal)]%
-   %\fi
-   }
-
-\unexpanded\setvalue{\??constructionstophandler\v!btxlist}%
-  {%\ifx\currentbtxnumbering\empty\else
-   %  \stopgoto
-   %\fi
-   \csname\??constructionstophandler\v!construction\endcsname
-   \endgroup}
-
 \unexpanded\def\startbtxlistentry#1%
   {\begingroup
    \strc_constructions_initialize{#1}%
@@ -107,15 +93,39 @@
 \unexpanded\def\stopbtxlistentry
   {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
 
+% interactivity is handled in setup
+%
+% \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
+%   {\begingroup
+%    \ifx\currentbtxnumbering\empty\else
+%      \startgoto[\s!internal(\currentbtxinternal)]% handled in setup
+%    \fi
+%    \directsetup{\v!btxrendering:\v!number:\constructionparameter\c!number}%
+%    \ifx\currentbtxnumbering\empty\else
+%      \stopgoto
+%    \fi
+%    \endgroup}
+%
+% so:
+
 \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
   {\begingroup
-   \ifx\currentbtxnumbering\empty\else
-     \startgoto[\s!internal(\currentbtxinternal)]%
-   \fi
    \directsetup{\v!btxrendering:\v!number:\constructionparameter\c!number}%
-   \ifx\currentbtxnumbering\empty\else
+   \endgroup}
+
+% the whole entry can be interactive
+
+\unexpanded\setvalue{\??constructionstarthandler\v!btxlist}%
+  {\csname\??constructionstarthandler\v!construction\endcsname
+   \ifx\currentbtxnumbering\v!no\else
+     \startgoto[\s!internal(\currentbtxinternal)]%
+   \fi}
+
+\unexpanded\setvalue{\??constructionstophandler\v!btxlist}%
+  {\ifx\currentbtxnumbering\v!no\else
      \stopgoto
    \fi
+   \csname\??constructionstophandler\v!construction\endcsname
    \endgroup}
 
 \startsetups[\v!btxrendering:\v!number:\v!no]

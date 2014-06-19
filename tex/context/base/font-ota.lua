@@ -231,6 +231,8 @@ local isolated = { -- isol
     [0x07FA] = true,
     -- also here:
     [zwnj]   = true,
+    -- 7
+    [0x08AD] = true,
 }
 
 local final = { -- isol_fina
@@ -249,17 +251,19 @@ local final = { -- isol_fina
     [0x06D3] = true, [0x06D5] = true, [0x06EE] = true, [0x06EF] = true,
     [0x0759] = true, [0x075A] = true, [0x075B] = true, [0x076B] = true,
     [0x076C] = true, [0x0771] = true, [0x0773] = true, [0x0774] = true,
-	[0x0778] = true, [0x0779] = true,
+    [0x0778] = true, [0x0779] = true,
     [0x08AA] = true, [0x08AB] = true, [0x08AC] = true,
     [0xFEF5] = true, [0xFEF7] = true, [0xFEF9] = true, [0xFEFB] = true,
     -- syriac
-	[0x0710] = true, [0x0715] = true, [0x0716] = true, [0x0717] = true,
-	[0x0718] = true, [0x0719] = true, [0x0728] = true, [0x072A] = true,
-	[0x072C] = true, [0x071E] = true,
+    [0x0710] = true, [0x0715] = true, [0x0716] = true, [0x0717] = true,
+    [0x0718] = true, [0x0719] = true, [0x0728] = true, [0x072A] = true,
+    [0x072C] = true, [0x071E] = true,
     [0x072F] = true, [0x074D] = true,
     -- mandaic
     [0x0840] = true, [0x0849] = true, [0x0854] = true, [0x0846] = true,
-    [0x084F] = true
+    [0x084F] = true,
+    -- 7
+    [0x08AE] = true, [0x08B1] = true, [0x08B2] = true,
 }
 
 local medial = { -- isol_fina_medi_init
@@ -324,8 +328,9 @@ local medial = { -- isol_fina_medi_init
     [0x07CB] = true, [0x07D3] = true, [0x07E4] = true, [0x07D5] = true,
     [0x07E6] = true,
     -- also here:
-    [tatweel]= true,
-    [zwj]    = true,
+    [tatweel]= true, [zwj]    = true,
+    -- 7
+    [0x08A1] = true, [0x08AF] = true, [0x08B0] = true,
 }
 
 local arab_warned = { }

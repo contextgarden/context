@@ -72,9 +72,12 @@
    \fi}
 
 \def\typo_processor_apply
-  {\doifelse{\processorparameter\c!state}\v!stop
-     \firstofoneargument
-     \typo_processor_apply_indeed}
+  {\edef\p_state{\processorparameter\c!state}%
+   \ifx\p_state\v!stop
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\typo_processor_apply_indeed
+   \fi}
 
 \def\typo_processor_apply_indeed#content%
   {\begingroup

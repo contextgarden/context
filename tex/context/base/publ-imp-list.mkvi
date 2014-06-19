@@ -56,10 +56,14 @@
     }
 \stopsetups
 \startsetups \s!btx:\s!list:num
-    \directsetup{\s!btx:\s!list:yes}
+    \texdefinition {btx:list:inject} {
+        \currentbtxfirst
+    }
 \stopsetups
 \startsetups \s!btx:\s!list:bib
-    \directsetup{\s!btx:\s!list:yes}
+    \texdefinition {btx:list:inject} {
+        \currentbtxfirst
+    }
 \stopsetups
 
 \startsetups \s!btx:\s!list:short

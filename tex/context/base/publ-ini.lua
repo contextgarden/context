@@ -480,7 +480,7 @@ local function flushmarked(dataset,list,todo)
 end
 
 function commands.flushmarked()
-    if marked_list then
+    if marked_list and tobemarked then
         for i=1,#marked_list do
             -- keep order
             local tag = marked_list[i]
@@ -1227,7 +1227,7 @@ function commands.btxhandlecite(specification)
     local variant  = specification.variant or "num"
     local sorttype = specification.sorttype
     local compress = specification.compress == v_yes
-    local internal = specification.internal or 0
+    local internal = specification.internal or ""
     --
     local prefix, rest = lpegmatch(prefixsplitter,tag)
     if rest then
@@ -1379,6 +1379,9 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
     reference = publications.parenttag(dataset,reference)
     local found, todo, list = findallused(dataset,reference,internal)
     tobemarked = mark and todo
+--     if type(tobemarked) ~= "table" then
+--         tobemarked = { }
+--     end
     if found and setup then
         local source = { }
         local badkey = false
@@ -1413,7 +1416,7 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
                     ctx_btxsettag(tag)
                     ctx_btxsetbacklink(currentcitation)
                     local bl = listtocite[currentcitation]
-                    ctx_btxsetinternal(bl and bl.references.internal or 0)
+                    ctx_btxsetinternal(bl and bl.references.internal or "")
                     local language = first.language
                     if language then
                         ctx_btxsetlanguage(language)
@@ -1427,7 +1430,7 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
                     ctx_btxsettag(tag)
                     ctx_btxsetbacklink(currentcitation)
                     local bl = listtocite[currentcitation]
-                    ctx_btxsetinternal(bl and bl.references.internal or 0)
+                    ctx_btxsetinternal(bl and bl.references.internal or "")
                     local language = entry.language
                     if language then
                         ctx_btxsetlanguage(language)
@@ -1448,7 +1451,7 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
                 ctx_btxsettag(tag)
                 ctx_btxsetbacklink(currentcitation)
                 local bl = listtocite[currentcitation]
-                ctx_btxsetinternal(bl and bl.references.internal or 0)
+                ctx_btxsetinternal(bl and bl.references.internal or "")
                 local language = entry.language
                 if language then
                     ctx_btxsetlanguage(language)
@@ -1753,7 +1756,7 @@ local function authorconcat(target,key,setup)
         ctx_btxsettag(tag)
         ctx_btxsetbacklink(currentcitation)
         local bl = listtocite[currentcitation]
-        ctx_btxsetinternal(bl and bl.references.internal or 0)
+        ctx_btxsetinternal(bl and bl.references.internal or "")
         if first then
             ctx_btxsetfirst(first[key] or f_missing(first.tag))
             local suffix = entry.suffix
@@ -1789,7 +1792,7 @@ local function authorsingle(entry,key,setup)
     local currentcitation = markcite(entry.dataset,tag)
     ctx_btxsetbacklink(currentcitation)
     local bl = listtocite[currentcitation]
-    ctx_btxsetinternal(bl and bl.references.internal or 0)
+    ctx_btxsetinternal(bl and bl.references.internal or "")
 end
 
 local function authorgetter(first,last,key,setup) -- only first
