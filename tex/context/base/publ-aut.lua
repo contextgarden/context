@@ -18,6 +18,7 @@ local tostring = tostring
 local concat = table.concat
 local lpeg = lpeg
 local utfchar = utf.char
+local formatters = string.formatters
 
 local P, C, V, Cs, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.match, lpeg.patterns
 
@@ -413,13 +414,26 @@ local function concatnames(t,settings)
     end
 end
 
+local f_invalid = formatters["<invalid %s: %s>"]
+
 function authors.concat(dataset,tag,field,settings)
     table.setmetatableindex(settings,defaultsettings)
     local combiner = settings.combiner
     if not combiner or type(combiner) == "string" then
         combiner = authors[combiner or "normal"] or authors.normal
     end
-    local split       = datasets[dataset].details[tag][field]
+    local ds = datasets[dataset]
+    if not ds then
+        return f_invalid("dataset",dataset)
+    end
+    local dt = ds.details[tag]
+    if not dt then
+        return f_invalid("details",tag)
+    end
+    local split = dt[field]
+    if not split then
+        return f_invalid("field",field)
+    end
     local etallimit   = settings.etallimit   or 1000
     local etaldisplay = settings.etaldisplay or etallimit
     local max = split and #split or 0

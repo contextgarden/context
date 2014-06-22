@@ -29,13 +29,13 @@
 %D
 %D will negate the colors in box zero.
 
-\unexpanded\def\negatecolorbox#1%
-  {\setbox#1\hbox
-     {\startnegative % might change
-    % \startcolor[\s!white]\vrule\s!height\ht#1\s!depth\dp#1\s!width\wd#1\stopcolor
-      \blackrule[\c!color=\s!white,\c!height=\ht#1,\c!depth=\dp#1,\c!width=\wd#1]%
-      \hskip-\wd#1%
-      \box#1%
+\unexpanded\def\negatecolorbox#1% or just set attr of #1
+  {\setbox#1\hbox to \wd#1%
+     {\scratchdimen\wd#1\relax
+      \startnegative % might change
+      \blackrule[\c!color=\s!white,\c!height=\ht#1,\c!depth=\dp#1,\c!width=\scratchdimen]%
+      \hskip-\scratchdimen
+      \leaders\box#1\hfill% this triggers application to the box .. a real dirty hack!
       \stopnegative}}
 
 %D There are in principle two ways to handle overprint: bound to colors

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-vir'] = {
     license   = "see context related readme files"
 }
 
-local format, validstrings = string.format, string.valid
+local formatters, validstrings = string.formatters, string.valid
 
 local trace_virtual  = false
 local report_virtual = logs.reporter("resolvers","virtual")
@@ -18,14 +18,14 @@ local resolvers = resolvers
 
 local finders, openers, loaders, savers = resolvers.finders, resolvers.openers, resolvers.loaders, resolvers.savers
 
-local data     = { }
-local n        = 0 -- hm, number can be query
-local template = "virtual://%s.%s"
+local data      = { }
+local n         = 0 -- hm, number can be query
+local f_virtual = formatters["virtual://%s.%s"]
 
 function savers.virtual(specification,content)
     n = n + 1 -- one number for all namespaces
     local path = specification.path
-    local filename = format(template,path ~= "" and path or "virtualfile",n)
+    local filename = f_virtual(path ~= "" and path or "virtualfile",n)
     if trace_virtual then
         report_virtual("saver: file %a saved",filename)
     end

@@ -411,7 +411,8 @@ function mps.fshow(str,font,scale) -- lpeg parser
     mps.textext(font,scale,lpegmatch(package,str))
 end
 
-local cnumber = lpegC(number)
+----- cnumber = lpegC(number)
+local cnumber = number/tonumber -- we now expect numbers (feeds into %F)
 local cstring = lpegC(nonspace)
 
 local specials           = (lpegP("%%MetaPostSpecials:") * sp * (cstring * sp^0)^0 * eol) / mps.specials

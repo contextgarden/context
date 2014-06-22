@@ -18,7 +18,7 @@ if not modules then modules = { } end modules ['file-mod'] = {
 at the <l n='tex'/> side.</p>
 --ldx]]--
 
-local format, concat, tonumber = string.format, table.concat, tonumber
+local format, find, concat, tonumber = string.format, string.find, table.concat, tonumber
 
 local trace_modules     = false  trackers  .register("modules.loading",          function(v) trace_modules     = v end)
 local permit_unprefixed = false  directives.register("modules.permitunprefixed", function(v) permit_unprefixed = v end)

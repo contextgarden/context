@@ -118,7 +118,7 @@ function nodeinjections.injectbitmap(t)
         height = width  * yresolution / xresolution
     end
     local image = img.new {
-        stream = format(template,d(),t.data),
+        stream = formatters[template](d(),t.data),
         width  = width,
         height = height,
         bbox   = { 0, 0, urx, ury },

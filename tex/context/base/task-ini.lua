@@ -41,7 +41,7 @@ appendaction("processors",   "words",       "builders.kernel.hyphenation")      
 appendaction("processors",   "words",       "languages.words.check")                             -- disabled  -- might move up, no disc check needed then
 
 appendaction("processors",   "words",       "typesetters.initials.handler")                      -- disabled  -- might move up
-appendaction("processors",   "words",       "typesetters.firstlines.handler")                    -- disabled  -- might move up
+appendaction("processors",   "words",       "typesetters.firstlines.handler")                    -- disabled  -- might move down
 
 appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
 appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
@@ -57,7 +57,8 @@ appendaction("processors",   "lists",       "typesetters.spacings.handler")     
 appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
 appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
-------------("processors",   "lists",       "typesetters.initials.handler")                      -- disabled
+
+-- appendaction("processors",   "lists",       "typesetters.initials.handler")                      -- disabled
 
 appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled

@@ -888,7 +888,7 @@ local properties = nodes.properties.data
 
 specialmethods[1] = function(pagehead,pagetail,start,penalty)
     --
-    if penalty < special_penalty_min or penalty > special_penalty_max then
+    if not pagehead or penalty < special_penalty_min or penalty > special_penalty_max then
         return
     end
     local current  = pagetail
@@ -1074,8 +1074,15 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
     --
     local function getpagelist()
         if not pagehead then
-            pagehead = tonut(texlists.page_head)
-            pagetail = find_node_tail(pagehead) -- no texlists.page_tail yet-- no texlists.page_tail yet
+            pagehead = texlists.page_head
+            if pagehead then
+                pagehead = tonut(texlists.page_head)
+                pagetail = find_node_tail(pagehead) -- no texlists.page_tail yet-- no texlists.page_tail yet
+            else
+                pagetail = nil
+            end
+        else
+            pagetail = nil
         end
         return pagehead, pagetail
     end

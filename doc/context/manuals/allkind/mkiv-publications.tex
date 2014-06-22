@@ -1,35 +1,18 @@
 % language=uk
 
-\setupbtxlistvariant [interaction=start]
-\setupbtxcitevariant [interaction=start]
-
-% publisher
-% organization
-% school
-% institution
-% school
-% institution
-% publisher
-% organization
-%
-% p
-% pp
-% pages
-% edition
-% Number (... in)
-% number (... in)
-% Volume (... of)
-% volume (... of)
-% in
-% In
-% Master's thesis
-% PhD thesis
-% Technical Report
+% todo: doi and url
 
 % criterium: all + sorttype=cite     => citex before rest
 % criterium: all + sorttype=database => database order
 % criterium: used
 % numbering: label, short, indexinlist, indexused
+
+% \enabletrackers[publications*]
+
+\dontcomplain
+
+\setupbtxlistvariant [interaction=start]
+\setupbtxcitevariant [interaction=start]
 
 \usemodule[abr-02]
 \usemodule[set-11]
@@ -89,6 +72,9 @@
   [state=start,
    color=darkcyan,
    contrastcolor=darkyellow]
+
+\setupalign
+  [verytolerant]
 
 \starttext
 
@@ -154,6 +140,15 @@ the first \BIBTEX\ module and saw it morf into a \TEX||\LUA\ hybrid in this
 century. The fact that there was support for bibliographies made it possible for
 users to use \CONTEXT\ in an academic environment, dominated by bibliographic
 databases encoded in the \BIBTEX\ format.
+
+The subsystem descibed here is one of the most complex and messy of all
+subsystems. This has to do with the fact that it combines (multiple) lists and
+(multiple) forward and backward references, all kind of rendering of the citation
+as well as the entry in the list, rather complex interactivity, multiple
+databases, datasets and renderings an dof course combinations of this. The
+implementation uses a mix of \TEX\ and \LUA\ code with so called setups as
+rendering specifications. At the cots of complexity (and abit runtime) this
+provides a lot of freedom and flexibility.
 
 \startlines
 Hans Hagen
@@ -330,11 +325,11 @@ need to complete the tag mapping (on Alan's plate).}
 So the user has a rather wide choice of formatting style for bibliography
 database files.
 
-\stopchapter
-
 You can load more data than you actually need. Only entries that are referred to
 explicitly through the \type {\cite} and \type {\nocite} commands will be shown
 in lists. We will cover these details later.
+
+\stopchapter
 
 \startchapter[title=Commands in entries]
 
@@ -759,7 +754,7 @@ set the \type {continue} parameter:
 \setupbtxrendering[continue=no]
 \stoptyping
 
-In a simlar fashion you can influence if references are included only once
+In a similar fashion you can influence if references are included only once
 of in each list:
 
 \starttyping
@@ -1002,7 +997,9 @@ into one:
 
 \startbuffer
 \startluacode
-for tag, entry in next, publications.datasets.drumming.luadata do
+local luadata = publications.datasets.drumming.luadata
+
+for tag, entry in next, luadata do
     if entry.subtitle then
         if entry.title then
             entry.title = entry.title .. ", " .. entry.subtitle
@@ -1010,13 +1007,62 @@ for tag, entry in next, publications.datasets.drumming.luadata do
             entry.title = entry.subtitle
         end
         entry.subtitle = nil
-        logs.report("btx","combining title and subtitle of entry tagged %a",tag)
+        logs.report("btx",
+            "combining title and subtitle of entry tagged %a into %a",
+            tag,entry.title)
     end
 end
 \stopluacode
 \stopbuffer
 
 \typebuffer \getbuffer
+
+As a hash comes in a different order each run (something that demands a lot
+of care in multipsass workflows that save data in between), we can use this
+instead:
+
+\starttyping
+\startluacode
+local ordered = publications.datasets.drumming.ordered
+
+for i=1,#ordered do
+    local entry = ordered[i]
+    if entry.subtitle then
+        if entry.title then
+            entry.title = entry.title .. ", " .. entry.subtitle
+        else
+            entry.title = entry.subtitle
+        end
+        entry.subtitle = nil
+        logs.report("btx",
+            "combining title and subtitle of entry tagged %a into %a",
+            entry.tag,entry.title)
+    end
+end
+\stopluacode
+\stoptyping
+
+This loops processes in the order of definition. You can also sort by tag:
+
+\starttyping
+\startluacode
+local luadata = publications.datasets.drumming.luadata
+
+for tag, entry in table.sortedhash(luadata) do
+    if entry.subtitle then
+        if entry.title then
+            entry.title = entry.title .. ", " .. entry.subtitle
+        else
+            entry.title = entry.subtitle
+        end
+        entry.subtitle = nil
+        logs.report("btx",
+            "combining title and subtitle of entry tagged %a into %a",
+            entry.tag,entry.title)
+    end
+end
+\stopluacode
+\stoptyping
 
 We can now typeset the entries with:
 
@@ -1126,7 +1172,8 @@ Here is another example:
     \xmlfilter {#1} {
         /bibtex
         /entry[@category='article']
-        /field[@name='author' and (find(text(),'Knuth') or find(text(),'DEK'))]
+        /field[@name='author'
+            and (find(text(),'Knuth') or find(text(),'DEK'))]
         /../command(btx:row)
     }
 \stopxmlsetups
@@ -1373,8 +1420,8 @@ We could switch to this base using:
 but instead we will use a prefix. For instance, if we have this in our source:
 
 \startbuffer
-searching give a few hits, so we get: \cite [ graph :: match ( author:cleveland and
-year:1993 ) ].
+searching gives a few hits, so we get: \cite [ graph :: match (
+author:cleveland and year:1993 ) ].
 \stopbuffer
 
 \typebuffer
@@ -1392,6 +1439,7 @@ typeset a list of referred to references, so let's do that:
 We get:
 
 \blank \getbuffer \blank
+
 
 Let's look in more detail at the \type {\cite} command. In order to distinguish
 efficiently between a normal reference and a more clever one, we use the \type
@@ -1522,10 +1570,164 @@ Gives:
 
 \stopchapter
 
+\startchapter[title=Other use]
+
+Because a bibliography is just a kind of database, you can use the publications
+mechanism for other purposes as well. During the re|-|implementation Mojca came
+up with the following definitions:
+
+\startbuffer
+\startbuffer[duane]
+@IMAGE {tug2013,
+    title       = "TUG 2013",
+    url         = "http://tug.org/tug2013/",
+    url_image   = "http://tug.org/tug2013/tug2013-color-300.jpg",
+    url_thumb   = "http://tug.org/tug2013/t2013-thumb.jpg",
+    description = "Official drawing of the TUG 2013 conference",
+    author      = "Duane Bibby",
+    year        = 2013,
+    copyright   = "TUG",
+}
+
+@IMAGE {tug2014,
+    title       = "TUG 2014",
+    url         = "http://tug.org/tug2014/",
+    url_image   = "http://tug.org/art/tug2014-color.jpg",
+    url_thumb   = "http://tug.org/tug2014/t2014-thumb.jpg",
+    description = "Official drawing of the TUG 2014 conference",
+    author      = "Duane Bibby",
+    year        = 2014,
+    copyright   = "TUG",
+}
+\stopbuffer
+\stopbuffer
+
+\typebuffer \getbuffer
+
+For documentation purposes we can have a definition in a buffer so that we can
+show it verbatim but also load it. The following code defines a dataset, loads
+the buffer and sets up a rendering.
+
+\startbuffer
+\definebtxdataset
+  [duane]
+
+\usebtxdataset
+  [duane]
+  [duane.buffer]
+
+\definebtxrendering
+  [duane]
+  [dataset=duane,
+   method=dataset,
+   alternative=duane,
+   criterium=all]
+
+\setupbtxlist
+  [duane]
+  [number=no]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Instead of for instance \type {apa} we use \type {duane} as alternative. Because
+categrories are rendered with a setup we can do the following:
+
+\startbuffer
+\startsetups btx:duane:image
+  \tbox \bgroup
+    \bTABLE[offset=1ex]
+      \bTR
+        \bTD[ny=4]
+          \dontleavehmode
+          \externalfigure[\btxfield{url_thumb}][width=3cm]
+        \eTD
+        \bTD \btxfield{title} \eTD
+      \eTR
+      \bTR
+        \bTD \btxfield{author} \eTD
+      \eTR
+      \bTR
+        \bTD \btxfield{description} \eTD
+      \eTR
+      \bTR
+        \bTD
+          \goto{high res variant}[url(\btxfield{url_image})]
+        \eTD
+      \eTR
+    \eTABLE
+  \egroup
+\stopsetups
+
+\placebtxrendering[duane]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+An alternative rendering is:
+
+\startbuffer
+\startsetups btx:duane:image
+  \bgroup
+    \bTABLE[offset=1ex]
+      \bTR
+        \bTD[ny=4]
+          \dontleavehmode
+          \externalfigure[\btxfield{url_thumb}][width=3cm]
+        \eTD
+        \bTD
+          \bold{\btxfield{title}}
+          \blank
+          \btxfield{description}
+          \blank
+          \goto{high res variant}[url(\btxfield{url_image})]
+        \eTD
+      \eTR
+    \eTABLE
+  \egroup
+\stopsetups
+
+\placebtxrendering[duane]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We only get the second rendering because we specified \type {criterium} as
+\type {all}. Future version of \CONTEXT\ will probably provide sorting
+options and ways to plug in additional functionality.
+
+\stopchapter
+
+\startchapter[title=Tracing]
+
+There are several tracing options. If you want to see where a citations refers to and
+where a list entry point back to, you can say:
+
+\starttyping
+\enabletrackers[publications.crosslinks]
+\stoptyping
+
+This injects markers in both places. One list entry can point to multiple citations. The
+other tracers a more for debugging and can generate lots of messages.
+
+\starttyping
+publications
+publications.cite
+publications.cite.missing
+publications.cite.references
+\stoptyping
+
+\stopchapter
+
 \startchapter[title=Summary]
 
+% beware: we use a new dataset for this as we want a full list
+
 \start
-\setbtxdataset[graph]
+\definebtxdataset    [summary]
+\usebtxdataset       [summary] [graph.bib]
+\setbtxdataset       [summary]
+\definebtxrendering  [summary] [dataset=summary]
 
 There are a lot of combinations possible and not all of them make sense.
 Nevertheless we show most of them here. (There will be more.)
@@ -1534,13 +1736,14 @@ Nevertheless we show most of them here. (There will be more.)
 Cleveland : \cite [Cleveland1993,Cleveland1985,Cleveland1993a] \par
 Tufte     : \cite [Tufte1983]                                  \par
 Bentley   : \cite [Bentley1990]                                \par
-All       : \cite [Tufte1983,Cleveland1993,Bentley1990,Cleveland1985,
+All       : \cite [Tufte1983,Cleveland1993,Bentley1990,Cleveland1985,%
                      Cleveland1993a] \par
 \stopbuffer
 
 \starttexdefinition BibSampleSet #1#2
     \subsubsubject{alternative=#1 / compress=#2}
     \startpacked
+        \setupalign[flushleft]
         \setupbtxcitevariant[#1][compress=#2]
         \setupbtxcitevariant[alternative=#1]
         \getbuffer[samples]
@@ -1570,8 +1773,7 @@ All       : \cite [Tufte1983,Cleveland1993,Bentley1990,Cleveland1985,
 \BibSampleSet{num}        {yes}
 
 \startbuffer
-\setupbtxrendering[graph][continue=yes]
-\placebtxrendering[graph][criterium=chapter]
+\placebtxrendering[summary][criterium=chapter]
 \stopbuffer
 
 We produce a local list with:

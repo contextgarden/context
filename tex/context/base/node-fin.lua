@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['node-fin'] = {
 -- this module is being reconstructed
 -- local functions, only slightly slower
 --
--- leaders are also triggers
+-- leaders are also triggers ... see colo-ext for an example (negate a box)
 
 local next, type, format = next, type, string.format
 

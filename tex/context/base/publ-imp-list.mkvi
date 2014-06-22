@@ -42,7 +42,7 @@
 
 \startsetups \s!btx:\s!list:page
     \directsetup{\s!btx:\s!list:concat}
-    \texdefinition {btx:list:inject} {
+    \texdefinition {\s!btx:\s!list:inject} {
         % real pagenumber: todo, userpage
         \currentbtxfirst
         % order
@@ -51,23 +51,23 @@
 \stopsetups
 
 \startsetups \s!btx:\s!list:yes
-    \texdefinition {btx:list:inject} {
+    \texdefinition {\s!btx:\s!list:inject} {
         \currentbtxfirst
     }
 \stopsetups
 \startsetups \s!btx:\s!list:num
-    \texdefinition {btx:list:inject} {
+    \texdefinition {\s!btx:\s!list:inject} {
         \currentbtxfirst
     }
 \stopsetups
 \startsetups \s!btx:\s!list:bib
-    \texdefinition {btx:list:inject} {
+    \texdefinition {\s!btx:\s!list:inject} {
         \currentbtxfirst
     }
 \stopsetups
 
 \startsetups \s!btx:\s!list:short
-    \texdefinition {btx:list:inject} {
+    \texdefinition {\s!btx:\s!list:inject} {
         \currentbtxfirst
         \currentbtxsecond
     }

@@ -537,7 +537,7 @@ end
 -- We could probably use just %s with integers but who knows what Lua 5.3 will do? So let's
 -- for the moment use %i.
 
-local format_F = function()
+local format_F = function() -- beware, no cast to number
     n = n + 1
     if not f or f == "" then
         return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or format((a%s %% 1 == 0) and '%%i' or '%%.9f',a%s))",n,n,n,n)

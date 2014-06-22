@@ -80,7 +80,9 @@ local l_splitter = lpeg.tsplitat(separator)
 local d_splitter = lpeg.splitat (separator)
 
 function publications.parenttag(dataset,tag)
-    if find(tag,"%+") then
+    if not dataset or not tag then
+        report("error in specification, dataset %a, tag %a",dataset,tag)
+    elseif find(tag,"%+") then
         local tags    = lpegmatch(l_splitter,tag)
         local parent  = tags[1]
         local luadata = datasets[dataset].luadata
@@ -109,7 +111,7 @@ function publications.parenttag(dataset,tag)
             return parent
         end
     end
-    return tag
+    return tag or ""
 end
 
 function publications.new(name)
@@ -442,55 +444,101 @@ end
 local loaders        = publications.loaders or { }
 publications.loaders = loaders
 
-function loaders.bib(dataset,filename,kind)
+local function resolvedname(dataset,filename)
     dataset = datasets[dataset]
+    if type(filename) ~= "string" then
+        report("invalid filename %a",tostring(filename))
+    end
+    local fullname = resolvers.findfile(filename,"bib")
+    if fullname == "" then
+        fullname = resolvers.findfile(filename) -- let's not be too picky
+    end
+    if not fullname or fullname == "" then
+        report("no file %a",filename)
+        dataset.fullname = filename
+        return dataset, false
+    else
+        dataset.fullname = fullname
+        return dataset, fullname
+    end
+end
+
+publications.resolvedname = resolvedname
+
+function loaders.bib(dataset,filename,kind)
+    local dataset, fullname = resolvedname(dataset,filename)
+    if not fullname then
+        return
+    end
     local data = io.loaddata(filename) or ""
     if data == "" then
-        report("empty file %a, nothing loaded",filename)
-    elseif trace then
-        report("loading file",filename)
+        report("empty file %a, nothing loaded",fullname)
+        return
     end
-    publications.loadbibdata(dataset,data,filename,kind)
+    if trace then
+        report("loading file",fullname)
+    end
+    publications.loadbibdata(dataset,data,fullname,kind)
 end
 
 function loaders.lua(dataset,filename) -- if filename is a table we load that one
-    dataset = datasets[dataset]
-    inspect(filename)
-    local data = type(filename) == "table" and filename or table.load(filename)
+    local data, fullname
+    if type(filename) == "table" then
+        dataset = datasets[dataset]
+        data = filename
+    else
+        dataset, fullname = resolvedname(dataset,filename)
+        if not fullname then
+            return
+        end
+        data = table.load(filename)
+    end
     if data then
         local luadata = dataset.luadata
         for tag, entry in next, data do
             if type(entry) == "table" then
                 entry.index  = getindex(dataset,luadata,tag)
+                entry.tag    = tag
                 luadata[tag] = entry -- no cleaning yet
             end
         end
     end
 end
 
-function loaders.xml(dataset,filename)
+function loaders.buffer(dataset,name) -- if filename is a table we load that one
     dataset = datasets[dataset]
+    name = file.removesuffix(name)
+    local data = buffers.getcontent(name) or ""
+    if data == "" then
+        report("empty buffer %a, nothing loaded",name)
+        return
+    end
+    if trace then
+        report("loading buffer",name)
+    end
+    publications.loadbibdata(dataset,data,name,"bib")
+end
+
+function loaders.xml(dataset,filename)
+    local dataset, fullname = resolvedname(dataset,filename)
+    if not fullname then
+        return
+    end
     local luadata = dataset.luadata
     local root = xml.load(filename)
     for bibentry in xmlcollected(root,"/bibtex/entry") do
         local attributes = bibentry.at
         local tag = attributes.tag
         local entry = {
-            category = attributes.category
+            category = attributes.category,
+            tag      = tag, -- afterwards also set, to prevent overload
+            index    = 0,   -- prelocated
         }
         for field in xmlcollected(bibentry,"/field") do
-         -- entry[field.at.name] = xmltext(field)
-            entry[field.at.name] = field.dt[1] -- no cleaning yet
+            entry[field.at.name] = field.dt[1] -- no cleaning yet | xmltext(field)
         end
-     -- local edt = entry.dt
-     -- for i=1,#edt do
-     --     local e = edt[i]
-     --     local a = e.at
-     --     if a and a.name then
-     --         t[a.name] = e.dt[1] -- no cleaning yet
-     --     end
-     -- end
         entry.index  = getindex(dataset,luadata,tag)
+        entry.tag    = tag
         luadata[tag] = entry
     end
 end
@@ -513,19 +561,9 @@ function publications.load(dataset,filename,kind)
             filename = filetype
             filetype = file.suffix(filename)
         end
-        local fullname = resolvers.findfile(filename,"bib")
-        if fullname == "" then
-            fullname = resolvers.findfile(filename) -- let's not be too picky
-        end
-        if dataset.loaded[fullname] then -- will become better
-            -- skip
-        elseif fullname == "" then
-            report("no file %a",filename)
-        else
-            loaders[filetype](dataset,fullname)
-        end
+        loaders[filetype](dataset,filename)
         if kind then
-            dataset.loaded[fullname] = kind
+            dataset.loaded[dataset.fullname or filename] = kind
         end
     end
     statistics.stoptiming(publications)

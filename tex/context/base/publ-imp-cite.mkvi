@@ -13,6 +13,11 @@
 
 \unprotect
 
+\startsetups \s!btx:\s!cite:nocite
+    \dontleavehmode
+    \btxcitereference
+\stopsetups
+
 \starttexdefinition btx:cite:inject #content
     \ifconditional\btxinteractive
         \ifx\currentbtxinternal\empty
@@ -46,7 +51,7 @@
 
 \startsetups [\s!btx:\s!cite:\s!unknown]
     \begingroup
-        \showmessage\m!publications{13}{\currentbtxcitevariant,\currentbtxtag}
+        \showmessage\m!publications{13}{\currentbtxcitevariant,\currentbtxtag,\currentbtxdataset}
         \tttf
         <\currentbtxcitevariant:\currentbtxtag>
     \endgroup
@@ -171,19 +176,15 @@
 \stopsetups
 
 \startsetups \s!btx:\s!cite:author
-    \texdefinition{btx:cite:checkconcat}
     \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authoryear
-    \texdefinition{btx:cite:checkconcat}
     \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authoryears
-    \texdefinition{btx:cite:checkconcat}
     \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authornum
-    \texdefinition{btx:cite:checkconcat}
     \directsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 
@@ -237,9 +238,9 @@
         \goto {
             \btxcitereference
             \hyphenatedurl{\currentbtxfirst}
-        } {
+        } [
             url(\currentbtxfirst)
-        }
+        ]
     \else
         \btxcitereference
         \hyphenatedurl{\currentbtxfirst}

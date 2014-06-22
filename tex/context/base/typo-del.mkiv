@@ -365,7 +365,7 @@
    \pushmacro\checkindentation
    \edef\p_delimited_indenting{\delimitedtextparameter\c!indenting}%
    \ifx\p_delimited_indenting\empty \else
-     \setupindenting[\p_indenting]% todo: use fast one (no [] checking)
+     \setupindenting[\p_delimited_indenting]% todo: use fast one (no [] checking)
    \fi
    %
    \begingroup

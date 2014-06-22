@@ -66,7 +66,10 @@ end
 
 function loaders.endnote(dataset,filename)
     -- we could combine the next into checkfield but let's not create too messy code
-    loaders.lua(dataset,publications.endnotes_to_btx(io.loaddata(filename) or ""))
+    local dataset, fullname = publications.resolvedname(dataset,filename)
+    if fullname then
+        loaders.lua(dataset,publications.endnotes_to_btx(io.loaddata(fullname) or ""))
+    end
 end
 
 -- refman --
@@ -97,7 +100,10 @@ end
 
 function loaders.refman(dataset,filename)
     -- we could combine the next into checkfield but let's not create too messy code
-    loaders.lua(dataset,publications.refman_to_btx(io.loaddata(filename) or ""))
+    local dataset, fullname = publications.resolvedname(dataset,filename)
+    if fullname then
+        loaders.lua(dataset,publications.refman_to_btx(io.loaddata(fullname) or ""))
+    end
 end
 
 -- test --

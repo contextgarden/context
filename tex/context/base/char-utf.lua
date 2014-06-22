@@ -24,10 +24,14 @@ of output (for instance <l n='pdf'/>).</p>
 over a string.</p>
 --ldx]]--
 
-local concat, gmatch, gsub, find = table.concat, string.gmatch, string.gsub, string.find
+local gmatch, gsub, find = string.gmatch, string.gsub, string.find
+local concat, sortedhash, keys, sort = table.concat, table.sortedhash, table.keys, table.sort
 local utfchar, utfbyte, utfcharacters, utfvalues = utf.char, utf.byte, utf.characters, utf.values
 local allocate = utilities.storage.allocate
-local lpegmatch, lpegpatterns, P = lpeg.match, lpeg.patterns, lpeg.P
+local lpegmatch, lpegpatterns, P, Cs, Cmt, Ct = lpeg.match, lpeg.patterns, lpeg.P, lpeg.Cs, lpeg.Cmt, lpeg.Ct
+
+local p_utf8character       = lpegpatterns.utf8character
+local utfchartabletopattern = lpeg.utfchartabletopattern
 
 if not characters then
     require("char-def")
@@ -412,13 +416,17 @@ local filesuffix = file.suffix
 
 local p_collapse = nil -- so we can reset if needed
 
+local function prepare()
+    if initialize then
+        initialize()
+    end
+    local tree = utfchartabletopattern(keys(collapsed))
+    p_collapse = Cs((tree/collapsed + p_utf8character)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
+end
+
 function utffilters.collapse(str,filename)
     if not p_collapse then
-        if initialize then
-            initialize()
-        end
-        local tree = lpeg.utfchartabletopattern(table.keys(collapsed))
-        p_collapse = lpeg.Cs((tree/collapsed + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
+        prepare()
     end
     if not str or #str == "" or #str == 1 then
         return str
@@ -479,7 +487,7 @@ end
 --         if initialize then
 --             initialize()
 --         end
---         local tree = lpeg.utfchartabletopattern(table.keys(decomposed))
+--         local tree = utfchartabletopattern(keys(decomposed))
 --         finder   = lpeg.finder(tree,false,true)
 --         replacer = lpeg.replacer(tree,decomposed,false,true)
 --     end
@@ -491,16 +499,27 @@ end
 
 local p_decompose = nil
 
+local function prepare()
+    if initialize then
+        initialize()
+    end
+    local tree = utfchartabletopattern(keys(decomposed))
+    p_decompose = Cs((tree/decomposed + p_utf8character)^0 * P(-1))
+end
+
 function utffilters.decompose(str) -- 3 to 4 times faster than the above
     if not p_decompose then
-        if initialize then
-            initialize()
-        end
-        local tree = lpeg.utfchartabletopattern(table.keys(decomposed))
-        p_decompose = lpeg.Cs((tree/decomposed + lpegpatterns.utf8char)^0 * P(-1))
+        prepare()
     end
     if str and str ~= "" and #str > 1 then
         return lpegmatch(p_decompose,str)
+    end
+    if not str or #str == "" or #str < 2 then
+        return str
+    elseif filename and skippable[filesuffix(filename)] then
+        return str
+    else
+        return lpegmatch(p_decompose,str) or str
     end
     return str
 end
@@ -526,11 +545,75 @@ end
 
 -- --
 
+local p_reorder = nil
+
+local sorter = function(a,b) return b[2] < a[2] end
+
+local function swapper(s,p,t)
+    local old = { }
+    for i=1,#t do
+        old[i] = t[i][1]
+    end
+    old = concat(old)
+    sort(t,sorter)
+    for i=1,#t do
+        t[i] = t[i][1]
+    end
+    local new = concat(t)
+    if old ~= new then
+        print("reordered",old,"->",new)
+    end
+    return p, new
+end
+
+local function swapper(s,p,t)
+    sort(t,sorter)
+    for i=1,#t do
+        t[i] = t[i][1]
+    end
+    return p, concat(t)
+end
+
+local function prepare()
+    local hash = { }
+    for k, v in sortedhash(characters.data) do
+        local combining = v.combining
+        if combining then
+            hash[utfchar(k)] = { utfchar(k), combining }
+        end
+    end
+    local p = utfchartabletopattern(keys(hash))
+    p_reorder = Cs((Cmt(Ct((p/hash)^2),swapper) + p_utf8character)^0) * P(-1)
+end
+
+function utffilters.reorder(str)
+    if not p_reorder then
+        prepare()
+    end
+    if not str or #str == "" or #str < 2 then
+        return str
+    elseif filename and skippable[filesuffix(filename)] then
+        return str
+    else
+        return lpegmatch(p_reorder,str) or str
+    end
+    return str
+end
+
+-- --
+
 local sequencers = utilities.sequencers
 
 if sequencers then
 
     local textfileactions = resolvers.openers.helpers.textfileactions
+    local textlineactions = resolvers.openers.helpers.textlineactions
+
+    sequencers.appendaction (textfileactions,"system","characters.filters.utf.reorder")
+    sequencers.disableaction(textfileactions,"characters.filters.utf.reorder")
+
+    sequencers.appendaction (textlineactions,"system","characters.filters.utf.reorder")
+    sequencers.disableaction(textlineactions,"characters.filters.utf.reorder")
 
     sequencers.appendaction (textfileactions,"system","characters.filters.utf.collapse")
     sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
@@ -539,16 +622,34 @@ if sequencers then
     sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
 
     function characters.filters.utf.enable()
+        sequencers.enableaction(textfileactions,"characters.filters.utf.reorder")
         sequencers.enableaction(textfileactions,"characters.filters.utf.collapse")
         sequencers.enableaction(textfileactions,"characters.filters.utf.decompose")
     end
 
+    local function configure(what,v)
+        if not v then
+            sequencers.disableaction(textfileactions,what)
+            sequencers.disableaction(textlineactions,what)
+        elseif v == "line" then
+            sequencers.disableaction(textfileactions,what)
+            sequencers.enableaction (textlineactions,what)
+        else -- true or text
+            sequencers.enableaction (textfileactions,what)
+            sequencers.disableaction(textlineactions,what)
+        end
+    end
+
+    directives.register("filters.utf.reorder", function(v)
+        configure("characters.filters.utf.reorder",v)
+    end)
+
     directives.register("filters.utf.collapse", function(v)
-        sequencers[v and "enableaction" or "disableaction"](textfileactions,"characters.filters.utf.collapse")
+        configure("characters.filters.utf.collapse",v)
     end)
 
     directives.register("filters.utf.decompose", function(v)
-        sequencers[v and "enableaction" or "disableaction"](textfileactions,"characters.filters.utf.decompose")
+        configure("characters.filters.utf.decompose",v)
     end)
 
 end
@@ -565,12 +666,12 @@ end
 --             initialize()
 --         end
 --         local merged = table.merged(collapsed,decomposed)
---         local tree   = lpeg.utfchartabletopattern(table.keys(merged))
---         p_processed  = lpeg.Cs((tree/merged     + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
---         local tree   = lpeg.utfchartabletopattern(table.keys(collapsed))
---         p_collapse   = lpeg.Cs((tree/collapsed  + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
---         local tree   = lpeg.utfchartabletopattern(table.keys(decomposed))
---         p_decompose  = lpeg.Cs((tree/decomposed + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
+--         local tree   = utfchartabletopattern(keys(merged))
+--         p_processed  = Cs((tree/merged     + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
+--         local tree   = utfchartabletopattern(keys(collapsed))
+--         p_collapse   = Cs((tree/collapsed  + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
+--         local tree   = utfchartabletopattern(keys(decomposed))
+--         p_decompose  = Cs((tree/decomposed + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
 --     end
 --     if not str or #str == "" or #str == 1 then
 --         return str
@@ -665,3 +766,14 @@ end
 -- local old = "foo" .. string.char(0xE1) .. "bar"
 -- local new = collapse(old)
 -- print(old,new)
+
+-- local one_old = "فَأَصَّدَّقَ دَّ" local one_new = utffilters.reorder(one_old)
+-- local two_old = "فَأَصَّدَّقَ دَّ" local two_new = utffilters.reorder(two_old)
+--
+-- print(one_old,two_old,one_old==two_old,false)
+-- print(one_new,two_new,one_new==two_new,true)
+--
+-- local test = "foo" .. utf.reverse("ؚ" .. "ً" .. "ٌ" .. "ٍ" .. "َ" .. "ُ" .. "ِ" .. "ّ" .. "ْ" ) .. "bar"
+-- local done = utffilters.reorder(test)
+--
+-- print(test,done,test==done,false)

@@ -903,8 +903,8 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
                 c = lpegmatch(pat,txc)
             end
         end
-        local a = prescript.tr_alternative
-        local t = prescript.tr_transparency
+        local a = tonumber(prescript.tr_alternative)
+        local t = tonumber(prescript.tr_transparency)
         local h = fmt(tx_number,a or "-",t or "-",c or "-")
         local n = data.texhash[h] -- todo: hashed variant with s (nicer for similar labels)
         if not n then
