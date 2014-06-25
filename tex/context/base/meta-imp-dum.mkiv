@@ -60,6 +60,8 @@
 % \stopuseMPgraphic
 
 \startuseMPgraphic{figure:placeholder}{width,height,reduction,color}
+    begingroup ;
+    save w, h, d, r, p, c, b ;
     numeric w, h, d, r ; path p ;
     if cmykcolor \MPvar{color} :
         cmykcolor c, b ; b := (0,0,0,0)
@@ -80,6 +82,7 @@
             withcolor r[c randomized(.3,.9),b] ;
     endfor ;
     clip currentpicture to p ;
+    endgroup ;
 \stopuseMPgraphic
 
 \defineoverlay

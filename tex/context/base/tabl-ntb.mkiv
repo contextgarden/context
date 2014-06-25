@@ -21,6 +21,8 @@
 
 \writestatus{loading}{ConTeXt Table Macros / Natural Tables}
 
+% sometimes this helps (with nc going wild): \setupTABLE[maxwidth=100cm]
+%
 % bug: width 3cm is not honored and column becomes too wide
 % as given width is added to distributed width
 %
@@ -144,6 +146,9 @@
 \newcount\c_tabl_ntb_maximum_col
 \newcount\c_tabl_ntb_maximum_row_span
 \newcount\c_tabl_ntb_maximum_col_span
+
+\newcount\c_tabl_ntb_encountered_col
+\newcount\c_tabl_ntb_encountered_max
 
 \newtoks\t_tabl_ntb
 \newtoks\t_tabl_ntb_row
@@ -585,6 +590,7 @@
 
 \unexpanded\def\tabl_ntb_tr
   {\c_tabl_ntb_running_col\zerocount
+   \c_tabl_ntb_encountered_col\zerocount
    \advance\c_tabl_ntb_maximum_row\plusone
    \iffirstargument
      \expandafter\tabl_ntb_tr_yes
@@ -599,7 +605,8 @@
 \def\m_tabl_ntb_default_nc{\naturaltableparameter\c!nc}
 
 \unexpanded\def\tabl_ntb_td
-  {\iffirstargument
+  {\advance\c_tabl_ntb_encountered_col\plusone
+   \iffirstargument
      \expandafter\tabl_ntb_td_yes
    \else
      \expandafter\tabl_ntb_td_nop
@@ -659,7 +666,10 @@
    % save text
    \normalexpanded
      {\tabl_ntb_set_txt_process\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col{\the\c_tabl_ntb_maximum_row}{\the\c_tabl_ntb_running_col}}%
-     {#1}{#2}}
+     {#1}{#2}%
+   \ifnum\c_tabl_ntb_encountered_col>\c_tabl_ntb_encountered_max
+     \c_tabl_ntb_encountered_max\c_tabl_ntb_encountered_col
+   \fi}
 
 \def\tabl_ntb_td_nop[#1]#2\eTD
   {\global\advance\c_tabl_ntb_spn\plusone\relax
@@ -679,7 +689,10 @@
    \tabl_ntb_let_ref\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col\empty
    \normalexpanded
      {\tabl_ntb_set_txt_process\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col{\the\c_tabl_ntb_maximum_row}{\the\c_tabl_ntb_running_col}}%
-     {#1}{#2}}
+     {#1}{#2}%
+   \ifnum\c_tabl_ntb_encountered_col>\c_tabl_ntb_encountered_max
+     \c_tabl_ntb_encountered_max\c_tabl_ntb_encountered_col
+   \fi}
 
 \def\tabl_ntb_td_pass_n#1%
   {\scratchcounter\numexpr\m_tabl_ntb_n-\c_tabl_ntb_running_col+\minusone-\c_tabl_ntb_spn\relax
@@ -1333,12 +1346,15 @@
      \fi
    \else\ifautoTBLrowspan\ifnum\c_tabl_ntb_maximum_row_span>\plusone % max ?
      % added jan 2002 because nx=* did no longer work
+     \ifnum\c_tabl_ntb_encountered_max<\c_tabl_ntb_maximum_col
+       % added jun 2014 because someone had less columns than nx .. sigh / see *nx*
+       \writestatus\m!TABLE{missing\space\number\numexpr\c_tabl_ntb_maximum_col-\c_tabl_ntb_encountered_max\relax\space column(s), guessing widths}%
+     \fi
      \edef\savedhsize{\the\hsize}%
      \hsize\wd0\relax % new per 17/04/2006
      \tabl_ntb_check_widths_one % trial run
      \tabl_ntb_check_widths_two % real run
      \hsize\savedhsize
-     %
      \let\tabl_ntb_cell_process\tabl_ntb_cell_process_c
      \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
    \fi\fi\fi\fi
@@ -1456,7 +1472,9 @@
           \else
             % eigenlijk moet dit alleen als de kolom wordt overspannen door een
             % vorige, maw extra dubbele loop en status var
-            \advance\!!counta \plusone
+            \ifnum\c_tabl_ntb_encountered_max=\c_tabl_ntb_maximum_col % *nx* bah
+              \advance\!!counta \plusone % settign maxwidth to a large value also works
+            \fi
           \fi
         \fi
       \fi}%
@@ -1641,8 +1659,7 @@
            % unless span
            \tabl_ntb_set_aut\c_tabl_ntb_col{\the\wd\scratchbox}%
            % to be translated
-           \writestatus\m!TABLE
-             {no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
+           \writestatus\m!TABLE{no auto width in (\number#1,\number#2)\space\the\wd\scratchbox/\the\hsize}%
          \fi\fi
        \fi
      \fi

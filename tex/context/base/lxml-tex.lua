@@ -518,6 +518,16 @@ function lxml.include(id,pattern,attribute,options)
     stoptiming(xml)
 end
 
+function lxml.includedfrom(id)
+    local x = getid(id)
+    local f = x and x.__f__
+    if f then
+        context(f)
+    else
+        -- maybe some message
+    end
+end
+
 function lxml.save(id,name)
     xml.save(getid(id),name)
 end

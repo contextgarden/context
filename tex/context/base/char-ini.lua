@@ -37,6 +37,12 @@ from the big character table that we use for all kind of purposes:
 loaded!</p>
 --ldx]]--
 
+-- todo: in 'char-def.lua' assume defaults:
+--
+-- directtions = l
+-- cjkwd       = a
+-- linebreak   = al
+
 characters       = characters or { }
 local characters = characters
 local data       = characters.data

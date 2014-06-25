@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
     license   = "see context related readme files",
 }
 
--- todo: pass multipass nicer
-
 local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
 local tonumber, type = tonumber, type
 local round = math.round
@@ -23,6 +21,7 @@ local context_setvalue     = context.setvalue
 
 local texgetbox            = tex.getbox
 local texsetbox            = tex.setbox
+local textakebox           = tex.takebox
 local copy_list            = node.copy_list
 local free_list            = node.flush_list
 local setmetatableindex    = table.setmetatableindex
@@ -239,12 +238,12 @@ local function preset(t,k)
     return v
 end
 
-local function startjob(texmode)
+local function startjob(plugmode)
     top = {
         textexts = { },                          -- all boxes, optionally with a different color
         texlast  = 0,
         texdata  = setmetatableindex({},preset), -- references to textexts in order or usage
-        texmode  = texmode,                      -- some day we can then skip all pre/postscripts
+        plugmode = plugmode,                     -- some day we can then skip all pre/postscripts
     }
     insert(stack,top)
     if trace_runs then
@@ -270,17 +269,13 @@ local function stopjob()
     end
 end
 
-function metapost.settextexts  () end -- obsolete
-function metapost.resettextexts() end -- obsolete
-
 -- end of new
 
 function metapost.settext(box,slot)
     top.textexts[slot] = copy_list(texgetbox(box))
     texsetbox(box,nil)
-    -- this will become
-    -- top.textexts[slot] = texgetbox(box)
-    -- unsetbox(box)
+    -- this can become
+    -- top.textexts[slot] = textakebox(box)
 end
 
 function metapost.gettext(box,slot)
@@ -582,7 +577,6 @@ local function extrapass()
         top.data,
         top.wrappit and do_end_fig or "",
     }, false, nil, false, true, top.askedfig)
- -- context.MPLIBresettexts() -- must happen afterwards
 end
 
 function metapost.graphic_base_pass(specification) -- name will change (see mlib-ctx.lua)
@@ -741,13 +735,13 @@ end
 
 -- -- the new plugin handler -- --
 
-local sequencers   = utilities.sequencers
-local appendgroup  = sequencers.appendgroup
-local appendaction = sequencers.appendaction
+local sequencers          = utilities.sequencers
+local appendgroup         = sequencers.appendgroup
+local appendaction        = sequencers.appendaction
 
-local resetter     = nil
-local analyzer     = nil
-local processor    = nil
+local resetter            = nil
+local analyzer            = nil
+local processor           = nil
 
 local resetteractions     = sequencers.new { arguments = "t" }
 local analyzeractions     = sequencers.new { arguments = "object,prescript" }
@@ -794,7 +788,7 @@ end
 -- end
 
 function metapost.pluginactions(what,t,flushfigure) -- before/after object, depending on what
-    if top.texmode then
+    if top.plugmode then -- hm, what about other features
         for i=1,#what do
             local wi = what[i]
             if type(wi) == "function" then
@@ -811,7 +805,7 @@ function metapost.pluginactions(what,t,flushfigure) -- before/after object, depe
 end
 
 function metapost.resetplugins(t) -- intialize plugins, before figure
-    if top.texmode then
+    if top.plugmode then
         -- plugins can have been added
         resetter  = resetteractions.runner
         analyzer  = analyzeractions.runner
@@ -822,16 +816,18 @@ function metapost.resetplugins(t) -- intialize plugins, before figure
 end
 
 function metapost.analyzeplugins(object) -- each object (first pass)
-    if top.texmode then
+    if top.plugmode then
         local prescript = object.prescript   -- specifications
         if prescript and #prescript > 0 then
-            return analyzer(object,splitprescript(prescript))
+            analyzer(object,splitprescript(prescript))
+            return top.multipass
         end
     end
+    return false
 end
 
 function metapost.processplugins(object) -- each object (second pass)
-    if top.texmode then
+    if top.plugmode then
         local prescript = object.prescript   -- specifications
         if prescript and #prescript > 0 then
             local before = { }
@@ -934,7 +930,6 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
                 ctx_MPLIBsetNtext(tx_last,s)
             end
             top.multipass = true
-            metapost.multipass = true -- ugly
             data.texhash [h]         = tx_last
             data.texslots[tx_trial]  = tx_last
             data.texorder[tx_number] = tx_last
@@ -957,7 +952,6 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
             top.texlast = tx_last
             context.MPLIBsettext(tx_last,s)
             top.multipass = true
-            metapost.multipass = true -- ugly
             data.texslots[tx_trial] = tx_last
             data.texorder[tx_number] = tx_last
             if trace_textexts then
@@ -1025,7 +1019,6 @@ local function gt_analyze(object,prescript)
         graphics[gt_index] = formatters["\\MPLIBgraphictext{%s}"](object.postscript or "")
         top.intermediate   = true
         top.multipass      = true
-        metapost.multipass = true -- ugly
     end
 end
 

@@ -52,6 +52,9 @@ trackers.register("parbuilders.keeptogether", function(v) trace_keeptogether  = 
 -- when no hlists are there ? ... maybe the local_par
 
 function parbuilders.registertogether(line,specification) -- might change
+    if not specification then
+        return
+    end
     if not enabled then
         nodes.tasks.enableaction("finalizers","builders.paragraphs.keeptogether")
     end
@@ -87,18 +90,16 @@ function parbuilders.registertogether(line,specification) -- might change
     if trace_keeptogether then
         local a = a or last
         local c = cache[a]
-        if trace_keeptogether then
-            local noflines = specification.lineheight
-            local height = c.height
-            local depth = c.depth
-            local slack = c.slack
-            if not noflines or noflines == 0 then
-                noflines = "unknown"
-            else
-                noflines = math.round((height + depth - slack) / noflines)
-            end
-            report_keeptogether("registered, index %s, height %p, depth %p, slack %p, noflines %a",a,height,depth,slack,noflines)
+        local noflines = specification.lineheight
+        local height = c.height
+        local depth = c.depth
+        local slack = c.slack
+        if not noflines or noflines == 0 then
+            noflines = "unknown"
+        else
+            noflines = math.round((height + depth - slack) / noflines)
         end
+        report_keeptogether("registered, index %s, height %p, depth %p, slack %p, noflines %a",a,height,depth,slack,noflines)
     end
 end
 

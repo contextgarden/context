@@ -520,27 +520,6 @@
 \unexpanded\def\placeregister
   {\dodoubleempty\strc_registers_place}
 
-% \def\strc_registers_place[#1][#2]%
-%   {\iffirstargument
-%      \begingroup
-%     %\forgetall
-%      \edef\currentregister{#1}%
-%      \setupregister[\currentregister][#2]%
-%      \the\everyplaceregister
-%      \ifnum\registerparameter\c!n>\plusone
-%        \startcolumns
-%          [\c!n=\registerparameter\c!n,
-%           \c!balance=\registerparameter\c!balance,
-%           \c!align=\registerparameter\c!align,
-%           \c!tolerance=\registerparameter\c!tolerance]%
-%        \strc_registers_place_indeed
-%        \stopcolumns
-%      \else
-%        \strc_registers_place_indeed
-%      \fi
-%      \endgroup
-%    \fi}
-
 \def\strc_registers_place[#1][#2]%
   {\iffirstargument
      \begingroup
@@ -557,18 +536,6 @@
      \fi
      \endgroup
    \fi}
-
-% \def\strc_registers_place_columns
-%   {\startmixedcolumns[\currentregister]
-%      \startpacked[\v!blank]%
-%        \strc_registers_place_indeed
-%      \stoppacked
-%    \stopmixedcolumns}
-%
-% \def\strc_registers_place_normal
-%   {\startpacked[\v!blank]%
-%      \strc_registers_place_indeed
-%    \stoppacked}
 
 \def\strc_registers_place_indeed
   {\ctxcommand{processregister('\currentregister',{
@@ -711,7 +678,7 @@
 %D placeindex as then flushing takes place inside the index. Took me hours
 %D to notice that.
 
-\newconditional\c_strc_registers_page_done
+\newconstant   \c_strc_registers_page_state % 0=nothing  1=page  2=see
 \newdimen      \d_strc_registers_distance
 
 \unexpanded\def\startregisteroutput
@@ -727,18 +694,6 @@
   {\endgraf
    \dostoptagged
    \endgroup}
-
-% \unexpanded\def\startregisterentries#1% depth
-%   {\endgraf
-%    \begingroup
-%    \dostarttagged\t!registerentries\empty
-%    \let\savedcurrentregister\currentregister
-%    \edef\currentregister{\currentregister:#1}%
-%    \useregisterstyleandcolor\c!textstyle\c!textcolor
-%    \advance\leftskip\numexpr#1-\plusone\relax\dimexpr\d_strc_registers_distance\relax
-%    \hangindent\registerparameter\c!distance\relax
-%    \hangafter\plusone
-%    \let\currentregister\savedcurrentregister}
 
 \newdimen\d_strc_registers_hangindent
 \newcount\c_strc_registers_hangafter
@@ -756,7 +711,7 @@
    \fi
    \d_strc_registers_hangindent\registerparameter\c!distance\relax
    \c_strc_registers_hangafter \plusone
-\blank[\v!samepage]%
+   \blank[\v!samepage]%
    \let\currentregister\savedcurrentregister}
 
 \unexpanded\def\stopregisterentries
@@ -766,11 +721,13 @@
 
 \unexpanded\def\startregisterentry#1% todo: level
   {\begingroup
+   \global\setconstant\c_strc_registers_page_state\zerocount
    \hangindent\d_strc_registers_hangindent
    \hangafter \c_strc_registers_hangafter}
 
 \unexpanded\def\stopregisterentry
   {\endgraf
+   \global\setconstant\c_strc_registers_page_state\zerocount
    \endgroup}
 
 \unexpanded\def\startregistersection#1% title
@@ -786,7 +743,6 @@
 \unexpanded\def\startregisterpages
   {\begingroup
    \dostarttagged\t!registerpages\empty
-   \setfalse\c_strc_registers_page_done
    \useregisterstyleandcolor\c!pagestyle\c!pagecolor}
 
 \unexpanded\def\stopregisterpages
@@ -794,9 +750,8 @@
    \endgroup}
 
 \unexpanded\def\startregisterseewords
-  {\ifhmode\crlf\fi
+  {%\par % \ifhmode\crlf\fi % otherwise wrong level
    \begingroup
-   \setfalse\c_strc_registers_page_done
    \dostarttagged\t!registerpage\empty
    \useregisterstyleandcolor\c!pagestyle\c!pagecolor}
 
@@ -805,11 +760,12 @@
    \endgroup}
 
 \unexpanded\def\registerpageseparator% todo: , configurable
-  {\ifconditional\c_strc_registers_page_done
-     \registerpageseparatorsymbol
-   \else
+  {\ifcase\c_strc_registers_page_state
      \hskip\d_strc_registers_distance\relax
-     \settrue\c_strc_registers_page_done
+   \or
+     \registerpageseparatorsymbol % page
+   \or
+     \registerpageseparatorsymbol % see
    \fi}
 
 \unexpanded\def\registeronepagerangeseparator
@@ -825,12 +781,14 @@
 
 \unexpanded\def\registeronepage#1#2#3#4% #1:processor content
   {\registerpageseparator
+   \global\setconstant\c_strc_registers_page_state\plusone
    \dostarttagged\t!registerpage\empty
    \withregisterpagecommand{#1}{#2}{#3}{#4}%
    \dostoptagged}
 
 \unexpanded\def\registerpagerange#1#2#3#4#5#6#7% #1:processor  content, content todo: -- configurable
   {\registerpageseparator
+   \global\setconstant\c_strc_registers_page_state\plusone
    \dostarttagged\t!registerpagerange\empty
    \dostarttagged\t!registerfrompage\empty
    \withregisterpagecommand{#1}{#2}{#3}{#4}%
@@ -876,7 +834,8 @@
    \fi}
 
 \unexpanded\def\defaultregisterseeword#1#2#3#4#5#6% i n #3:processor #4:internal #5:seeindex #6:word
-  {%\registerpageseparator
+  {\registerpageseparator
+   \global\setconstant\c_strc_registers_page_state\plustwo
    \def\currentregisterpageindex{#4}%
    \dostarttagged\t!registersee\empty
    \settrue\c_strc_registers_page_done

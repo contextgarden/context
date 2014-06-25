@@ -405,7 +405,14 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
                     end
                     local child = xml.body(xi) -- xml.assign(d,k,xi)
                     child.__p__ = ekrt
+                    child.__f__ = name -- handy for tracing
                     epdt[ek.ni] = child
+                    local inclusions = xmldata.settings.inclusions
+                    if inclusions then
+                        inclusions[#inclusions+1] = name
+                    else
+                        xmldata.settings.inclusions = { name }
+                    end
                 end
             end
         end

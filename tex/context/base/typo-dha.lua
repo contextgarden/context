@@ -184,9 +184,9 @@ local function process(start)
             finidir  = finish
         end
         if embedded <= 0 then
-            finish, autodir, done = "TRT", -1
+            finish, autodir = "TRT", -1
         else
-            finish, autodir, done = "TLT",  1
+            finish, autodir = "TLT",  1
         end
         done = true
         if finidir == finish then

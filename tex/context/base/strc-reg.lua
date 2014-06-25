@@ -508,7 +508,7 @@ end
 
 local seeindex = 0
 
--- meerdere loops, seewords, dan words, an seewords
+-- meerdere loops, seewords, dan words, anders seewords
 
 local function crosslinkseewords(result) -- all words
     -- collect all seewords
@@ -866,76 +866,88 @@ function registers.flush(data,options,prefixspec,pagespec)
         local data = sublist.data
         local d, n = 0, 0
         ctx_startregistersection(sublist.tag)
-        for d=1,#data do
-            local entry = data[d]
-            if entry.metadata.kind == "see" then
-                local list = entry.list
-                if #list > 1 then
-                    list[#list] = nil
-                else
-                    -- we have an \seeindex{Foo}{Bar} without Foo being defined anywhere
-                    report_registers("invalid see entry in register %a, reference %a",entry.metadata.name,list[1][1])
-                end
-            end
-        end
+
+-- -- no: we lost the see word
+--
+--         for d=1,#data do
+--             local entry = data[d]
+--             if entry.metadata.kind == "see" then
+--                 local list = entry.list
+--                 if #list > 1 then
+--                     list[#list] = nil
+--                 else
+--                     -- we have an \seeindex{Foo}{Bar} without Foo being defined anywhere
+--                     report_registers("invalid see entry in register %a, reference %a",entry.metadata.name,list[1][1])
+--                 end
+--             end
+--         end
+
         -- ok, this is tricky: we use e[i] delayed so we need it to be local
         -- but we don't want to allocate too many entries so there we go
         while d < #data do
             d = d + 1
-            local entry = data[d]
+            local entry    = data[d]
+            local metadata = entry.metadata
+            local kind     = metadata.kind
+            local list     = entry.list
             local e = { false, false, false }
             for i=3,maxlevel do
                 e[i] = false
             end
-            local metadata = entry.metadata
-            local kind = metadata.kind
-            local list = entry.list
             for i=1,maxlevel do
                 if list[i] then
                     e[i] = list[i][1]
                 end
-                if e[i] ~= done[i] then
-                    if e[i] and e[i] ~= "" then
-                        done[i] = e[i]
-                        for j=i+1,maxlevel do
-                            done[j] = false
-                        end
-                        if started then
-                            ctx_stopregisterentry()
-                            started = false
-                        end
-                        if n == i then
+                if e[i] == done[i] then
+                    -- skip
+                elseif not e[i] then
+                    -- see ends up here
+                    -- can't happen any more
+                    done[i] = false
+                    for j=i+1,maxlevel do
+                        done[j] = false
+                    end
+                elseif e[i] == "" then
+                    done[i] = false
+                    for j=i+1,maxlevel do
+                        done[j] = false
+                    end
+                else
+                    done[i] = e[i]
+                    for j=i+1,maxlevel do
+                        done[j] = false
+                    end
+                    if started then
+                        ctx_stopregisterentry()
+                        started = false
+                    end
+                    if n == i then
 --                             ctx_stopregisterentries()
 --                             ctx_startregisterentries(n)
-                        else
-                            while n > i do
-                                n = n - 1
-                                ctx_stopregisterentries()
-                            end
-                            while n < i do
-                                n = n + 1
-                                ctx_startregisterentries(n)
-                            end
-                        end
-                        local references = entry.references
-                        local processors = entry.processors
-                        local internal  = references.internal or 0
-                        local seeparent = references.seeparent or ""
-                        local processor = processors and processors[1] or ""
-                        -- so, we need to keep e as is (local), or we need local title = e[i] ... which might be
-                        -- more of a problem
-                        ctx_startregisterentry(0) -- will become a counter
-                        started = true
-                        if metadata then
-                            ctx_registerentry(processor,internal,seeparent,function() h_title(e[i],metadata) end)
-                        else -- ?
-                            ctx_registerentry(processor,internal,seeindex,e[i])
-                        end
                     else
-                        done[i] = false
-                        for j=i+1,maxlevel do
-                            done[j] = false
+                        while n > i do
+                            n = n - 1
+                            ctx_stopregisterentries()
                         end
+                        while n < i do
+                            n = n + 1
+                            ctx_startregisterentries(n)
+                        end
+                    end
+                    local references = entry.references
+                    local processors = entry.processors
+                    local internal   = references.internal or 0
+                    local seeparent  = references.seeparent or ""
+                    local processor  = processors and processors[1] or ""
+                    -- so, we need to keep e as is (local), or we need local title = e[i] ... which might be
+                    -- more of a problem
+                    ctx_startregisterentry(0) -- will become a counter
+                    started = true
+                    if metadata then
+                        ctx_registerentry(processor,internal,seeparent,function() h_title(e[i],metadata) end)
+                    else
+                        -- can this happen?
+                        ctx_registerentry(processor,internal,seeindex,e[i])
                     end
                 end
             end

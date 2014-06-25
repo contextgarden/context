@@ -33,26 +33,6 @@
 \newbox \MPtextbox
 \newtoks\everyMPLIBsettext % not used
 
-% \def\MPLIBsettext#1% #2%
-%   {\dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
-%
-% \def\MPLIBresettexts
-%   {\ctxlua{metapost.resettextexts()}}
-%
-% \newconditional\MPLIBtextgetdone
-%
-% \def\MPLIBsettext#1% #2%
-%   {\ifconditional\MPLIBtextgetdone
-%    \else
-%      \cldcontext{metapost.tex.get()}% MPenvironments are depricated
-%      \settrue\MPLIBtextgetdone % no \global needed
-%    \fi
-%    \dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
-%
-% \def\MPLIBresettexts
-%   {\ctxlua{metapost.resettextexts()}%
-%    \setfalse\MPLIBtextgetdone}
-
 \def\doMPLIBflushenvironment
   {%\writestatus\m!metapost{flushing environment}%
    \cldcontext{metapost.tex.get()}%
@@ -76,9 +56,6 @@
      \let\next} % gobble open brace
 
 \let\MPLIBsettext\MPLIBsetNtext
-
-\unexpanded\def\MPLIBresettexts
-  {\ctxlua{metapost.resettextexts()}}
 
 \unexpanded\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
   {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%

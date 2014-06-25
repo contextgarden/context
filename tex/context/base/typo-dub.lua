@@ -146,7 +146,7 @@ local report_directions   = logs.reporter("typesetting","directions two")
 --
 -- l   : left to right
 -- r   : right to left
--- al  : right to legt arabic (esp punctuation issues)
+-- al  : right to left arabic (esp punctuation issues)
 
 -- explicit: (new)
 --

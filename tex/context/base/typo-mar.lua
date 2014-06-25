@@ -557,6 +557,9 @@ end
 
 local function inject(parent,head,candidate)
     local box          = candidate.box
+    if not box then
+        return head, nil, false -- we can have empty texts
+    end
     local width        = getfield(box,"width")
     local height       = getfield(box,"height")
     local depth        = getfield(box,"depth")
@@ -749,7 +752,9 @@ local function flushed(scope,parent) -- current is hlist
                     done = true
                     continue = continue or con
                     nofstored = nofstored - 1
-                    registertogether(tonode(parent),room) -- !! tonode
+                    if room then
+                        registertogether(tonode(parent),room) -- !! tonode
+                    end
                 else
                     break
                 end

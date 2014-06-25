@@ -26,21 +26,47 @@ local fix_unifraktur = {
 }
 
 local fix_lmmonoregular = {
+    --
+    -- there are now some extra safeguards for idris
+    --
     comment = "wrong widths of some glyphs",
     fixes = function(data)
         report("fixing some wrong widths")
         local unicodes     = data.resources.unicodes
         local descriptions = data.descriptions
-        local defaultwidth = descriptions[unicodes["zero"]].width
-        descriptions[unicodes["six"]             ].width = defaultwidth
-        descriptions[unicodes["nine"]            ].width = defaultwidth
-        descriptions[unicodes["caron"]           ].width = defaultwidth
-        descriptions[unicodes["perthousand"]     ].width = defaultwidth
-        descriptions[unicodes["numero"]          ].width = defaultwidth
-        descriptions[unicodes["caron.cap"]       ].width = defaultwidth
-        descriptions[unicodes["six.taboldstyle"] ].width = defaultwidth
-        descriptions[unicodes["nine.taboldstyle"]].width = defaultwidth
-        descriptions[unicodes["dollar.oldstyle" ]].width = defaultwidth
+        local function getdescription(name)
+            local unicode = unicodes[name]
+            if not unicode then
+                report("no valid unicode for %a",name)
+                return
+            end
+            local description = descriptions[unicode]
+            if not description then
+                report("no glyph names %a in font",name)
+                return
+            end
+            return description
+        end
+        local zero = getdescription("zero")
+        if not zero then
+            return
+        end
+        local defaultwidth = zero.width
+        local function setwidth(name)
+            local data = getdescription(name)
+            if data then
+                data.width = defaultwidth
+            end
+        end
+        setwidth("six")
+        setwidth("nine")
+        setwidth("caron")
+        setwidth("perthousand")
+        setwidth("numero")
+        setwidth("caron.cap")
+        setwidth("six.taboldstyle")
+        setwidth("nine.taboldstyle")
+        setwidth("dollar.oldstyle")
     end
 }
 

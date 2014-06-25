@@ -199,37 +199,43 @@
 
 \protect
 
+\startsetups asciimath:layout
+
+    \setupbodyfont
+    % [pagella,10pt]
+      [dejavu,10pt]
+
+    \setuplayout
+      [backspace=35mm,
+       leftmargin=20mm,
+       rightmargindistance=0pt,
+       leftmargindistance=5mm,
+       cutspace=1cm,
+       topspace=1cm,
+       bottomspace=1cm,
+       width=middle,
+       height=middle,
+       header=0cm,
+       footer=1cm]
+
+    \setupheadertexts
+      []
+
+    \setupfootertexts
+      [\currentdate][\pagenumber]
+
+    \setupalign
+      [flushleft,verytolerant,stretch]
+
+    \dontcomplain
+
+\stopsetups
+
 \continueifinputfile{x-asciimath.mkiv}
 
 %D This will become an extra.
 
-\setupbodyfont
-%   [pagella,10pt]
-  [dejavu,10pt]
-
-\setuplayout
-  [backspace=35mm,
-   leftmargin=20mm,
-   rightmargindistance=0pt,
-   leftmargindistance=5mm,
-   cutspace=1cm,
-   topspace=1cm,
-   bottomspace=1cm,
-   width=middle,
-   height=middle,
-   header=0cm,
-   footer=1cm]
-
-\setupheadertexts
-  []
-
-\setupfootertexts
-  [\currentdate][\pagenumber]
-
-\setupalign
-  [flushleft,verytolerant,stretch]
-
-\dontcomplain
+\setups[asciimath:layout]
 
 % \enabletrackers[modules.asciimath.mapping]
 % \enabletrackers[modules.asciimath.detail]

@@ -1260,6 +1260,7 @@ end
 
 -- todo: cache simple ones, say #str < 10, maybe weak
 
+local context         = context
 local ctx_mathematics = context and context.mathematics or report_asciimath
 local ctx_type        = context and context.type        or function() end
 local ctx_inleft      = context and context.inleft      or function() end
@@ -1336,6 +1337,9 @@ function collect(fpattern,element,collected,indexed)
         filename = gsub(filenames[i],"\\","/")
         local splitname = (wildcard and wildcard ~= "" and string.split(filename,wildcard)[2]) or filename
         local shortname = gsub(splitname or file.basename(filename),"^%./","")
+        if shortname == "" then
+            shortname = filename
+        end
         for s in gmatch(io.loaddata(filename),mpattern) do
             local c = cleanedup(s)
             local f = collected[c]
@@ -1404,6 +1408,8 @@ end
 
 commands.asciimath = convert
 
+local context = context
+
 if not context then
 
 --     trace_mapping = true
@@ -1462,8 +1468,6 @@ if not context then
 
 end
 
-local context         = context
-
 local ctx_typebuffer  = context.typebuffer
 local ctx_mathematics = context.mathematics
 local ctx_color       = context.color
@@ -1471,13 +1475,14 @@ local ctx_color       = context.color
 local sequenced       = table.sequenced
 local assign_buffer   = buffers.assign
 
-asciimath.show = { }
+local show     = { }
+asciimath.show = show
 
 local collected, indexed, ignored = { }, { }, { }
 
 local color = { "darkred" }
 
-function asciimath.show.ignore(n)
+function show.ignore(n)
     if type(n) == "string" then
         local c = collected[n]
         n = c and c.n
@@ -1487,7 +1492,7 @@ function asciimath.show.ignore(n)
     end
 end
 
-function asciimath.show.count(n,showcleanedup)
+function show.count(n,showcleanedup)
     local v = collected[indexed[n]]
     local count = v.count
     local cleanedup = v.cleanedup
@@ -1501,9 +1506,10 @@ function asciimath.show.count(n,showcleanedup)
     end
 end
 
-local h = { }
+local h  = { }
+local am = { "am" }
 
-function asciimath.show.nofdirty(n)
+function show.nofdirty(n)
     local k = indexed[n]
     local v = collected[k]
     local n = v.cleanedup
@@ -1518,7 +1524,7 @@ function asciimath.show.nofdirty(n)
     context(#h)
 end
 
-function asciimath.show.dirty(m,wrapped)
+function show.dirty(m,wrapped)
     local d = h[m]
     if d then
         ctx_inleft(d[2])
@@ -1527,24 +1533,24 @@ function asciimath.show.dirty(m,wrapped)
         else
             assign_buffer("am",d[1])
         end
-        ctx_typebuffer { "am" }
+        ctx_typebuffer(am)
     end
 end
 
-function asciimath.show.files(n)
+function show.files(n)
     context(sequenced(collected[indexed[n]].files," "))
 end
 
-function asciimath.show.input(n,wrapped)
+function show.input(n,wrapped)
     if wrapped then
         assign_buffer("am",'"' .. indexed[n] .. '"')
     else
         assign_buffer("am",indexed[n])
     end
-    ctx_typebuffer { "am" }
+    ctx_typebuffer(am)
 end
 
-function asciimath.show.result(n)
+function show.result(n)
     local v = collected[indexed[n]]
     if ignored[n] then
         context("ignored")
@@ -1555,7 +1561,7 @@ function asciimath.show.result(n)
     end
 end
 
-function asciimath.show.load(str,element)
+function show.load(str,element)
     collected, indexed, ignored = { }, { }, { }
     local t = utilities.parsers.settings_to_array(str)
     for i=1,#t do
@@ -1563,11 +1569,11 @@ function asciimath.show.load(str,element)
     end
 end
 
-function asciimath.show.max()
+function show.max()
     context(#indexed)
 end
 
-function asciimath.show.statistics()
+function show.statistics()
     local usedfiles    = { }
     local noffiles     = 0
     local nofokay      = 0
@@ -1601,7 +1607,7 @@ function asciimath.show.statistics()
     context.stoptabulate()
 end
 
-function asciimath.show.save(name)
+function show.save(name)
     table.save(name ~= "" and name or "dummy.lua",collected)
 end
 

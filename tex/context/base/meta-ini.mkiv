@@ -338,14 +338,32 @@
 
 %D Calling up previously defined graphics.
 
+% \def\includeMPgraphic#1% gets expanded !
+%   {\ifcsname\??mpgraphic#1\endcsname
+%      \csname\??mpgraphic#1\endcsname ; % ; is safeguard
+%    \fi}
+%
+% \unexpanded\def\meta_enable_include % public
+%   {\let\meta_handle_use_graphic     \thirdofthreearguments
+%    \let\meta_handle_reusable_graphic\thirdofthreearguments}
+%
+% but ... we want this too:
+%
+% \startuseMPgraphic{x}
+%     draw textext("\externalfigure[foo.pdf]") ;
+% \stopuseMPgraphic
+%
+% \useMPgraphic{x}
+%
+% so we cannot overload unless we let back to the original meanings
+% each graphic ... a better solution is:
+
 \def\includeMPgraphic#1% gets expanded !
   {\ifcsname\??mpgraphic#1\endcsname
-     \csname\??mpgraphic#1\endcsname ; % ; is safeguard
+     \doubleexpandafter\fourthoffourarguments\csname\??mpgraphic#1\endcsname ; % ; is safeguard
    \fi}
 
-\unexpanded\def\meta_enable_include % public
-  {\let\meta_handle_use_graphic     \thirdofthreearguments
-   \let\meta_handle_reusable_graphic\thirdofthreearguments}
+\let\meta_enable_include\relax
 
 %D Drawings (stepwise built):
 
@@ -786,10 +804,6 @@
 
 \let\reuseMPgraphic   \useMPgraphic   % we can save a setup here if needed
 \let\reusableMPgraphic\reuseMPgraphic % we can save a setup here if needed
-
-\unexpanded\def\meta_enable_include
-  {\let\meta_handle_use_graphic     \thirdofthreearguments
-   \let\meta_handle_reusable_graphic\thirdofthreearguments}
 
 %D \macros
 %D   {startuniqueMPpagegraphic,uniqueMPpagegraphic}

@@ -33,7 +33,6 @@ metapost.flushers     = metapost.flushers or { }
 local pdfflusher      = { }
 metapost.flushers.pdf = pdfflusher
 
-metapost.multipass    = false -- to be stacked
 metapost.n            = 0
 metapost.optimize     = true  -- false
 
@@ -64,23 +63,6 @@ end
 -- get a new result table and the stored objects are forgotten. Otherwise they
 -- are reused.
 
--- local function getobjects(result,figure,index)
---     if metapost.optimize then
---         local objects = result.objects
---         if not objects then
---             result.objects = { }
---         end
---         objects = result.objects[index]
---         if not objects then
---             objects = figure:objects()
---             result.objects[index] = objects
---         end
---         return objects
---     else
---         return figure:objects()
---     end
--- end
-
 local function getobjects(result,figure,index)
     if metapost.optimize then
         local robjects = result.objects
@@ -101,15 +83,14 @@ end
 
 function metapost.convert(result, trialrun, flusher, multipass, askedfig)
     if trialrun then
-        metapost.multipass = false
-        metapost.parse(result, askedfig)
-        if multipass and not metapost.multipass and metapost.optimize then
-            metapost.flush(result, flusher, askedfig) -- saves a run
+        local multipassindeed = metapost.parse(result,askedfig)
+        if multipass and not multipassindeed and metapost.optimize then
+            metapost.flush(result,flusher,askedfig) -- saves a run
         else
             return false
         end
     else
-        metapost.flush(result, flusher, askedfig)
+        metapost.flush(result,flusher,askedfig)
     end
     return true -- done
 end
@@ -598,6 +579,7 @@ function metapost.parse(result,askedfig)
     if result then
         local figures = result.fig
         if figures then
+            local multipass = false
             local analyzeplugins = metapost.analyzeplugins -- each object
             for index=1,#figures do
                 local figure = figures[index]
@@ -606,7 +588,9 @@ function metapost.parse(result,askedfig)
                     local objects = getobjects(result,figure,index)
                     if objects then
                         for o=1,#objects do
-                            analyzeplugins(objects[o])
+                            if analyzeplugins(objects[o]) then
+                                multipass = true
+                            end
                         end
                     end
                     if askedfig ~= "all" then
@@ -614,6 +598,7 @@ function metapost.parse(result,askedfig)
                     end
                 end
             end
+            return multipass
         end
     end
 end
