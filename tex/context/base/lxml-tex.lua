@@ -37,6 +37,7 @@ local xmlserialize, xmlcollect, xmltext, xmltostring = xml.serialize, xml.collec
 local xmlapplylpath = xml.applylpath
 local xmlunprivatized, xmlprivatetoken, xmlprivatecodes = xml.unprivatized, xml.privatetoken, xml.privatecodes
 local xmlstripelement = xml.stripelement
+local xmlinclusion, xmlinclusions = xml.inclusion, xml.inclusions
 
 local variables = interfaces and interfaces.variables or { }
 
@@ -518,13 +519,17 @@ function lxml.include(id,pattern,attribute,options)
     stoptiming(xml)
 end
 
-function lxml.includedfrom(id)
-    local x = getid(id)
-    local f = x and x.__f__
-    if f then
-        context(f)
-    else
-        -- maybe some message
+function lxml.inclusion(id,default)
+    local inclusion = xmlinclusion(getid(id),default)
+    if inclusion then
+        context(inclusion)
+    end
+end
+
+function lxml.inclusions(id,sorted)
+    local inclusions = xmlinclusions(getid(id),sorted)
+    if inclusions then
+        context(table.concat(inclusions,","))
     end
 end
 

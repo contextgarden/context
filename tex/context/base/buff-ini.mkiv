@@ -39,7 +39,10 @@
 \def\buff_start[#1][#2]%
   {\buff_start_indeed{}{#1}{\e!start\v!buffer}{\e!stop\v!buffer}}
 
-\def\buff_start_indeed#1#2#3#4#5% \donothing needed ! #5=undent)
+% \def\buff_start_indeed#1#2#3#4#5% \donothing needed ! #5=undent)
+%   {\normalexpanded{\buff_pickup{#2}{#3}{#4}{}{\buff_stop{#4}}\plusone}}
+
+\def\buff_start_indeed#1#2#3#4%
   {\normalexpanded{\buff_pickup{#2}{#3}{#4}{}{\buff_stop{#4}}\plusone}}
 
 \unexpanded\def\grabbufferdata % was: \dostartbuffer

@@ -6311,7 +6311,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 19618, stripped down to: 14012
+-- original size: 20353, stripped down to: 14389
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -6714,13 +6714,13 @@ function parsers.stepper(str,n,action)
     lpegmatch(stepper,str,1,n,action or print)
   end
 end
-local pattern_math=Cs((P("%")/"\\percent "+P("^")*Cc("{")*lpegpatterns.integer*Cc("}")+P(1))^0)
-local pattern_text=Cs((P("%")/"\\percent "+(P("^")/"\\high")*Cc("{")*lpegpatterns.integer*Cc("}")+P(1))^0)
+local pattern_math=Cs((P("%")/"\\percent "+P("^")*Cc("{")*lpegpatterns.integer*Cc("}")+anything)^0)
+local pattern_text=Cs((P("%")/"\\percent "+(P("^")/"\\high")*Cc("{")*lpegpatterns.integer*Cc("}")+anything)^0)
 patterns.unittotex=pattern
 function parsers.unittotex(str,textmode)
   return lpegmatch(textmode and pattern_text or pattern_math,str)
 end
-local pattern=Cs((P("^")/"<sup>"*lpegpatterns.integer*Cc("</sup>")+P(1))^0)
+local pattern=Cs((P("^")/"<sup>"*lpegpatterns.integer*Cc("</sup>")+anything)^0)
 function parsers.unittoxml(str)
   return lpegmatch(pattern,str)
 end
@@ -6791,6 +6791,18 @@ function utilities.parsers.runtime(time)
   local minutes=div(time,60)
   local seconds=mod(time,60)
   return days,hours,minutes,seconds
+end
+local spacing=whitespace^0
+local apply=P("->")
+local method=C((1-apply)^1)
+local token=lbrace*C((1-rbrace)^1)*rbrace+C(anything^1)
+local pattern=spacing*(method*spacing*apply+Carg(1))*spacing*token
+function utilities.parsers.splitmethod(str,default)
+  if str then
+    return lpegmatch(pattern,str,1,default or false)
+  else
+    return default or false,""
+  end
 end
 
 
@@ -10042,7 +10054,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 48030, stripped down to: 30595
+-- original size: 48133, stripped down to: 30595
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -11182,7 +11194,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 24626, stripped down to: 17296
+-- original size: 25374, stripped down to: 17841
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -11548,6 +11560,36 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
   end
 end
 xml.include=include
+function xml.inclusion(e,default)
+  while e do
+    local f=e.__f__
+    if f then
+      return f
+    else
+      e=e.__p__
+    end
+  end
+  return default
+end
+function xml.inclusions(e,sorted)
+  while e do
+    local settings=e.settings
+    if settings then
+      local inclusions=settings.inclusions
+      if inclusions then
+        inclusions=table.unique(inclusions) 
+        if sorted then
+          table.sort(inclusions) 
+        end
+        return inclusions 
+      else
+        e=e.__p__
+      end
+    else
+      e=e.__p__
+    end
+  end
+end
 local function stripelement(e,nolines,anywhere)
   local edt=e.dt
   if edt then
@@ -16909,8 +16951,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 698069
--- stripped bytes    : 248876
+-- original bytes    : 699655
+-- stripped bytes    : 249540
 
 -- end library merge
 

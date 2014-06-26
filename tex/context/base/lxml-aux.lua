@@ -421,6 +421,38 @@ end
 
 xml.include = include
 
+function xml.inclusion(e,default)
+    while e do
+        local f = e.__f__
+        if f then
+            return f
+        else
+            e = e.__p__
+        end
+    end
+    return default
+end
+
+function xml.inclusions(e,sorted)
+    while e do
+        local settings = e.settings
+        if settings then
+            local inclusions = settings.inclusions
+            if inclusions then
+                inclusions = table.unique(inclusions) -- a copy
+                if sorted then
+                    table.sort(inclusions) -- so we sort the copy
+                end
+                return inclusions -- and return the copy
+            else
+                e = e.__p__
+            end
+        else
+            e = e.__p__
+        end
+    end
+end
+
 local function stripelement(e,nolines,anywhere)
     local edt = e.dt
     if edt then

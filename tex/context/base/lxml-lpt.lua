@@ -505,6 +505,9 @@ local function apply_expression(list,expression,order)
     return collected
 end
 
+-- this one can be made faster but there are not that many conversions so it doesn't
+-- really pay of
+
 local P, V, C, Cs, Cc, Ct, R, S, Cg, Cb = lpeg.P, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.R, lpeg.S, lpeg.Cg, lpeg.Cb
 
 local spaces     = S(" \n\r\t\f")^0

@@ -59,6 +59,7 @@
 \unexpanded\def\signalcharacteralign#1#2{\attribute\characteralignattribute=\numexpr#1*\plushundred+#2\relax}
 \unexpanded\def\setcharacteralign   #1#2{\ctxcommand{setcharacteralign(\number#1,"#2")}}
 \unexpanded\def\resetcharacteralign     {\ctxcommand{resetcharacteralign()}}
+\unexpanded\def\nocharacteralign        {\attribute\characteralignattribute\attributeunsetvalue}
 
 %D Mostly downward compatible:
 %D
@@ -73,6 +74,15 @@
 %D
 %D \typebuffer \blank \getbuffer \blank
 
+%D We have (currently) two modes: \type {text} and \type {number}. The handler tries
+%D to determine the mode automatically. When using periods and commas as separators
+%D the \type {number} mode is chosen. If you use for instance a \type {-} as
+%D separator, \type {text} is chosen, but you can enforce \type {number} with \type
+%D {number->-} (as with other mechanisms, the arrow indicates a methot to apply).
+%D
+%D One can use \type {\nocharacteralign} to disable this mechanism, for instance in
+%D a table cell.
+
 \def\alignmentcharacter{,}
 
 \unexpanded\def\typo_charalign_pass_one
@@ -86,19 +96,26 @@
 \def\typo_charalign_pass
   {\hbox\bgroup\signalcharacteralign\plusone\scratchcounter\let\next}
 
-\unexpanded\def\startcharacteralign#1\stopcharacteralign
+\unexpanded\def\startcharacteralig
+  {\dosingleempty\typo_charalign_start}
+
+\def\typo_charalign_start[#1]#2\stopcharacteralign
   {\bgroup
+   \edef\m_temp{#1}%
+   \ifx\m_temp\empty \else
+     \let\alignmentcharacter\m_temp
+   \fi
    \setcharacteralign\plusone\alignmentcharacter
    \begingroup
      \scratchcounter\zerocount
      \let\checkcharacteralign\typo_charalign_pass_one
      \settrialtypesetting
-     #1\relax
+     #2\relax
    \endgroup
    \begingroup
      \scratchcounter\zerocount
      \let\checkcharacteralign\typo_charalign_pass_two
-     #1\relax
+     #2\relax
    \endgroup
    \resetcharacteralign
    \egroup}

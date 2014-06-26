@@ -59,7 +59,7 @@
 \def\syst_modes_new#1%
   {\expandafter\newcount\csname\??mode#1\endcsname}
 
-\unexpanded\def\newmode#1%
+\unexpanded\def\newmode#1% so, no change of already set modes !
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi}
 
 \unexpanded\def\setmode#1%
@@ -113,8 +113,6 @@
 \unexpanded\def\globalenablemode {\let\syst_mode_prefix\global\unprotect\syst_modes_enable }
 \unexpanded\def\globaldisablemode{\let\syst_mode_prefix\global\unprotect\syst_modes_disable}
 
-\let\definemode\disablemode % nicer
-
 \def\syst_modes_prevent[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_prevent_indeed\let\syst_mode_prefix\relax}
 \def\syst_modes_enable [#1]{\protect\rawprocesscommacommand[#1]\syst_modes_enable_indeed \let\syst_mode_prefix\relax}
 \def\syst_modes_disable[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_disable_indeed\let\syst_mode_prefix\relax}
@@ -133,6 +131,29 @@
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
    \ifnum\csname\??mode#1\endcsname=\preventedmode \else
      \syst_mode_prefix\csname\??mode#1\endcsname\disabledmode
+   \fi}
+
+%D If you do a lot of mode testing, it makes sense to define modes (or disable them
+%D explicitly if unset. This makes testing twice as fast. Often one enables modes
+%D beforehand, in which case \type {\definemode} would reset the mode. The optional
+%D second argument \type {keep} will prevent changing the already set mode but defines
+%D it when undefined.
+
+\unexpanded\def\definemode
+  {\unprotect
+   \dodoubleempty\syst_modes_define}
+
+\def\syst_modes_define[#1][#2]%
+  {\protect
+   \edef\m_modes_asked{#2}%
+   \rawprocesscommacommand[#1]\syst_modes_define_indeed}
+
+\def\syst_modes_define_indeed#1%
+  {\syst_modes_new{#1}%
+   \ifx\m_modes_asked\v!keep
+     % not changes, disabled when undefined
+   \else
+     \csname\??mode#1\endcsname\ifx\m_modes_asked\v!yes\enabledmode\else\disabledmode\fi
    \fi}
 
 % handy for mp
@@ -539,14 +560,14 @@
 
 \def\systemsetups#1{\syst_setups{\systemsetupsprefix#1}}
 
-\def\resetsetups[#1]% see x-fo for usage
+\unexpanded\def\resetsetups[#1]% see x-fo for usage
   {\ifcsname\??setup\ifgridsnapping\v!grid\fi:#1\endcsname
      \dodoglobal\letbeundefined{\??setup\ifgridsnapping\v!grid\fi:#1}%
    \else
      \dodoglobal\letbeundefined{\??setup:#1}%
    \fi}
 
-\def\showsetupsdefinition[#1]%
+\unexpanded\def\showsetupsdefinition[#1]%
   {\showvalue{\??setup:#1}} % temp hack for debugging
 
 %D \macros

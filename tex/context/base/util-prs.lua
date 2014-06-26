@@ -542,8 +542,8 @@ end
 
 --
 
-local pattern_math = Cs((P("%")/"\\percent " +  P("^")           * Cc("{") * lpegpatterns.integer * Cc("}") + P(1))^0)
-local pattern_text = Cs((P("%")/"\\percent " + (P("^")/"\\high") * Cc("{") * lpegpatterns.integer * Cc("}") + P(1))^0)
+local pattern_math = Cs((P("%")/"\\percent " +  P("^")           * Cc("{") * lpegpatterns.integer * Cc("}") + anything)^0)
+local pattern_text = Cs((P("%")/"\\percent " + (P("^")/"\\high") * Cc("{") * lpegpatterns.integer * Cc("}") + anything)^0)
 
 patterns.unittotex = pattern
 
@@ -551,7 +551,7 @@ function parsers.unittotex(str,textmode)
     return lpegmatch(textmode and pattern_text or pattern_math,str)
 end
 
-local pattern = Cs((P("^") / "<sup>" * lpegpatterns.integer * Cc("</sup>") + P(1))^0)
+local pattern = Cs((P("^") / "<sup>" * lpegpatterns.integer * Cc("</sup>") + anything)^0)
 
 function parsers.unittoxml(str)
     return lpegmatch(pattern,str)
@@ -648,3 +648,27 @@ function utilities.parsers.runtime(time)
     local seconds = mod(time,60)
     return days, hours, minutes, seconds
 end
+
+--
+
+local spacing = whitespace^0
+local apply   = P("->")
+local method  = C((1-apply)^1)
+local token   = lbrace * C((1-rbrace)^1) * rbrace + C(anything^1)
+
+local pattern = spacing * (method * spacing * apply + Carg(1)) * spacing * token
+
+function utilities.parsers.splitmethod(str,default)
+    if str then
+        return lpegmatch(pattern,str,1,default or false)
+    else
+        return default or false, ""
+    end
+end
+
+-- print(utilities.parsers.splitmethod(" foo -> {bar} "))
+-- print(utilities.parsers.splitmethod("foo->{bar}"))
+-- print(utilities.parsers.splitmethod("foo->bar"))
+-- print(utilities.parsers.splitmethod("foo"))
+-- print(utilities.parsers.splitmethod("{foo}"))
+-- print(utilities.parsers.splitmethod())

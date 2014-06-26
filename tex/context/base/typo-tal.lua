@@ -8,10 +8,15 @@ if not modules then modules = { } end modules ['typo-tal'] = {
 
 -- I'll make it a bit more efficient and provide named instances too which is needed for
 -- nested tables.
+--
+-- Currently we have two methods: text and number with some downward compatible
+-- defaulting.
 
 local next, type = next, type
 local div = math.div
 local utfbyte = utf.byte
+
+local splitmethod          = utilities.parsers.splitmethod
 
 local nodecodes            = nodes.nodecodes
 local glyph_code           = nodecodes.glyph
@@ -20,6 +25,10 @@ local glue_code            = nodecodes.glue
 local fontcharacters       = fonts.hashes.characters
 local unicodes             = fonts.hashes.unicodes
 local categories           = characters.categories -- nd
+
+local variables            = interfaces.variables
+local v_text               = variables.text
+local v_number             = variables.number
 
 local nuts                 = nodes.nuts
 local tonut                = nuts.tonut
@@ -118,82 +127,123 @@ function characteralign.handler(originalhead,where)
     --
     local validseparators = dataset.separators
     local validsigns      = dataset.signs
+    local method          = dataset.method
     -- we can think of constraints
-    while current do
-        local id = getid(current)
-        if id == glyph_code then
-            local char = getchar(current)
-            local font = getfont(current)
-            local unicode = unicodes[font][char]
-            if not unicode then
-                -- no unicode so forget about it
-            elseif unicode == separator then
-                c = current
-                if trace_split then
-                    setcolor(current,"darkred")
-                end
-                dataset.hasseparator = true
-            elseif categories[unicode] == "nd" or validseparators[unicode] then
-                if c then
-                    if not a_start then
-                        a_start = current
-                    end
-                    a_stop = current
+    if method == v_number then
+        while current do
+            local id = getid(current)
+            if id == glyph_code then
+                local char = getchar(current)
+                local font = getfont(current)
+                local unicode = unicodes[font][char]
+                if not unicode then
+                    -- no unicode so forget about it
+                elseif unicode == separator then
+                    c = current
                     if trace_split then
-                        setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
+                        setcolor(current,"darkred")
                     end
-                else
-                    if not b_start then
-                        if sign then
-                            b_start = sign
-                            local new = validsigns[getchar(sign)]
-                            if char == new or not fontcharacters[getfont(sign)][new] then
-                                if trace_split then
-                                    setcolor(sign,"darkyellow")
-                                end
-                            else
-                                setfield(sign,"char",new)
-                                if trace_split then
-                                    setcolor(sign,"darkmagenta")
-                                end
-                            end
-                            sign = nil
-                            b_stop = current
-                        else
-                            b_start = current
-                            b_stop = current
+                    dataset.hasseparator = true
+                elseif categories[unicode] == "nd" or validseparators[unicode] then
+                    if c then
+                        if not a_start then
+                            a_start = current
+                        end
+                        a_stop = current
+                        if trace_split then
+                            setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
                         end
                     else
+                        if not b_start then
+                            if sign then
+                                b_start = sign
+                                local new = validsigns[getchar(sign)]
+                                if char == new or not fontcharacters[getfont(sign)][new] then
+                                    if trace_split then
+                                        setcolor(sign,"darkyellow")
+                                    end
+                                else
+                                    setfield(sign,"char",new)
+                                    if trace_split then
+                                        setcolor(sign,"darkmagenta")
+                                    end
+                                end
+                                sign = nil
+                                b_stop = current
+                            else
+                                b_start = current
+                                b_stop = current
+                            end
+                        else
+                            b_stop = current
+                        end
+                        if trace_split and current ~= sign then
+                            setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
+                        end
+                    end
+                elseif not b_start then
+                    sign = validsigns[unicode] and current
+                 -- if trace_split then
+                 --     setcolor(current,"darkgreen")
+                 -- end
+                end
+            elseif (b_start or a_start) and id == glue_code then
+                -- maybe only in number mode
+                -- somewhat inefficient
+                local next = getnext(current)
+                local prev = getprev(current)
+                if next and prev and getid(next) == glyph_code and getid(prev) == glyph_code then -- too much checking
+                    local width = fontcharacters[getfont(b_start)][separator or period].width
+                 -- local spec = getfield(current,"spec")
+                 -- free_spec(spec)
+                    setfield(current,"spec",new_gluespec(width))
+                    setattr(current,a_character,punctuationspace)
+                    if a_start then
+                        a_stop = current
+                    elseif b_start then
                         b_stop = current
                     end
-                    if trace_split and current ~= sign then
-                        setcolor(current,validseparators[unicode] and "darkcyan" or "darkblue")
+                end
+            end
+            current = getnext(current)
+        end
+    else
+        while current do
+            local id = getid(current)
+            if id == glyph_code then
+                local char = getchar(current)
+                local font = getfont(current)
+                local unicode = unicodes[font][char]
+                if not unicode then
+                    -- no unicode so forget about it
+                elseif unicode == separator then
+                    c = current
+                    if trace_split then
+                        setcolor(current,"darkred")
+                    end
+                    dataset.hasseparator = true
+                else
+                    if c then
+                        if not a_start then
+                            a_start = current
+                        end
+                        a_stop = current
+                        if trace_split then
+                            setcolor(current,"darkgreen")
+                        end
+                    else
+                        if not b_start then
+                            b_start = current
+                        end
+                        b_stop = current
+                        if trace_split then
+                            setcolor(current,"darkblue")
+                        end
                     end
                 end
-            elseif not b_start then
-                sign = validsigns[unicode] and current
-             -- if trace_split then
-             --     setcolor(current,"darkgreen")
-             -- end
             end
-        elseif (b_start or a_start) and id == glue_code then
-            -- somewhat inefficient
-            local next = getnext(current)
-            local prev = getprev(current)
-            if next and prev and getid(next) == glyph_code and getid(prev) == glyph_code then -- too much checking
-                local width = fontcharacters[getfont(b_start)][separator or period].width
-             -- local spec = getfield(current,"spec")
-             -- free_spec(spec)
-                setfield(current,"spec",new_gluespec(width))
-                setattr(current,a_character,punctuationspace)
-                if a_start then
-                    a_stop = current
-                elseif b_start then
-                    b_stop = current
-                end
-            end
+            current = getnext(current)
         end
-        current = getnext(current)
     end
     local entry = list[row]
     if entry then
@@ -287,17 +337,28 @@ function setcharacteralign(column,separator)
     end
     local dataset = datasets[column] -- we can use a metatable
     if not dataset then
-        separator  = separator and utfbyte(separator) or comma
-        local auto = validseparators[separator]
+        local method, token
+        if separator then
+            method, token = splitmethod(separator)
+            if method and token then
+                separator = utfbyte(token) or comma
+            else
+                separator = utfbyte(separator) or comma
+                method    = validseparators[separator] and v_number or v_text
+            end
+        else
+            separator = comma
+            method    = v_number
+        end
         dataset = {
             separator  = separator,
             list       = { },
             maxafter   = 0,
             maxbefore  = 0,
             collected  = false,
-            mode       = auto and "numeric",
-            separators = auto and validseparators or { [separator] = true },
-            signs      = auto and validsigns or { },
+            method     = method,
+            separators = validseparators,
+            signs      = validsigns,
         }
         datasets[column] = dataset
         used = true
