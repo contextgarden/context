@@ -547,23 +547,29 @@ end
 
 local p_reorder = nil
 
-local sorter = function(a,b) return b[2] < a[2] end
+-- local sorter = function(a,b) return b[2] < a[2] end
+--
+-- local function swapper(s,p,t)
+--     local old = { }
+--     for i=1,#t do
+--         old[i] = t[i][1]
+--     end
+--     old = concat(old)
+--     sort(t,sorter)
+--     for i=1,#t do
+--         t[i] = t[i][1]
+--     end
+--     local new = concat(t)
+--     if old ~= new then
+--         print("reordered",old,"->",new)
+--     end
+--     return p, new
+-- end
 
-local function swapper(s,p,t)
-    local old = { }
-    for i=1,#t do
-        old[i] = t[i][1]
-    end
-    old = concat(old)
-    sort(t,sorter)
-    for i=1,#t do
-        t[i] = t[i][1]
-    end
-    local new = concat(t)
-    if old ~= new then
-        print("reordered",old,"->",new)
-    end
-    return p, new
+-- -- the next one isnto stable for similar weights
+
+local sorter = function(a,b)
+    return b[2] < a[2]
 end
 
 local function swapper(s,p,t)
@@ -574,16 +580,48 @@ local function swapper(s,p,t)
     return p, concat(t)
 end
 
+-- -- the next one keeps similar weights in the original order
+--
+-- local sorter = function(a,b)
+--     local b2, a2 = b[2], a[2]
+--     if a2 == b2 then
+--         return b[3] > a[3]
+--     else
+--         return b2 < a2
+--     end
+-- end
+--
+-- local function swapper(s,p,t)
+--     for i=1,#t do
+--         t[i][3] = i
+--     end
+--     sort(t,sorter)
+--     for i=1,#t do
+--         t[i] = t[i][1]
+--     end
+--     return p, concat(t)
+-- end
+
+-- at some point exceptions will become an option, for now it's an experiment
+-- to overcome bugs (that have become features) in unicode .. or we might decide
+-- for an extra ordering key in char-def that takes precedence over combining
+
+local exceptions = {
+    -- frozen unicode bug
+    ["َّ"] = "َّ", -- U+64E .. U+651 => U+651 .. U+64E
+}
+
 local function prepare()
     local hash = { }
     for k, v in sortedhash(characters.data) do
-        local combining = v.combining
+        local combining = v.combining -- v.ordering or v.combining
         if combining then
-            hash[utfchar(k)] = { utfchar(k), combining }
+            hash[utfchar(k)] = { utfchar(k), combining, 0 } -- slot 3 can be used in sort
         end
     end
+    local e = utfchartabletopattern(keys(exceptions))
     local p = utfchartabletopattern(keys(hash))
-    p_reorder = Cs((Cmt(Ct((p/hash)^2),swapper) + p_utf8character)^0) * P(-1)
+    p_reorder = Cs((e/exceptions + Cmt(Ct((p/hash)^2),swapper) + p_utf8character)^0) * P(-1)
 end
 
 function utffilters.reorder(str)
