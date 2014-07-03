@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-zip'] = {
     license   = "see context related readme files"
 }
 
--- partly redone .. needs testing
+-- real old code ... partly redone .. needs testing due to changes as well as a decent overhaul
 
 local format, find, match = string.format, string.find, string.match
 
@@ -64,7 +64,7 @@ function zip.openarchive(name)
         local arch = archives[name]
         if not arch then
            local full = resolvers.findfile(name) or ""
-           arch = (full ~= "" and zip.open(full)) or false
+           arch = full ~= "" and zip.open(full) or false
            archives[name] = arch
         end
        return arch
@@ -235,30 +235,42 @@ function resolvers.usezipfile(archive)
 end
 
 function resolvers.registerzipfile(z,tree)
-    local files, filter = { }, ""
-    if tree == "" then
-        filter = "^(.+)/(.-)$"
-    else
-        filter = format("^%s/(.+)/(.-)$",tree)
-    end
+    local names    = { }
+    local files    = { } -- somewhat overkill .. todo
+    local remap    = { } -- somewhat overkill .. todo
+    local n        = 0
+    local filter   = tree == "" and "^(.+)/(.-)$" or format("^%s/(.+)/(.-)$",tree)
+    local register = resolvers.registerfile
     if trace_locating then
         report_zip("registering: using filter %a",filter)
     end
-    local register, n = resolvers.registerfile, 0
     for i in z:files() do
-        local path, name = match(i.filename,filter)
-        if path then
-            if name and name ~= '' then
-                register(files, name, path)
-                n = n + 1
-            else
-                -- directory
+        local filename = i.filename
+        local path, name = match(filename,filter)
+        if not path then
+            n = n + 1
+            register(names,filename,"")
+            local usedname  = lower(filename)
+            files[usedname] = ""
+            if usedname ~= filename then
+                remap[usedname] = filename
+            end
+        elseif name and name ~= "" then
+            n = n + 1
+            register(names,name,path)
+            local usedname  = lower(name)
+            files[usedname] = path
+            if usedname ~= name then
+                remap[usedname] = name
             end
         else
-            register(files, i.filename, '')
-            n = n + 1
+            -- directory
         end
     end
     report_zip("registering: %s files registered",n)
-    return files
+    return {
+     -- metadata = { },
+        files    = files,
+        remap    = remap,
+    }
 end

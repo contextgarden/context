@@ -54,12 +54,27 @@ local pdf_ocg             = pdfconstant("OCG")
 local pdf_ocmd            = pdfconstant("OCMD")
 local pdf_off             = pdfconstant("OFF")
 local pdf_on              = pdfconstant("ON")
+local pdf_view            = pdfconstant("View")
+local pdf_design          = pdfconstant("Design")
 local pdf_toggle          = pdfconstant("Toggle")
 local pdf_setocgstate     = pdfconstant("SetOCGState")
 
 local copy_node           = node.copy
 
-local lpdf_usage          = pdfdictionary { Print = pdfdictionary { PrintState = pdf_off } }
+local pdf_print = {
+    [v_yes] = pdfdictionary { PrintState = pdf_on  },
+    [v_no ] = pdfdictionary { PrintState = pdf_off },
+}
+
+local pdf_intent = {
+    [v_yes] = pdf_view,
+    [v_no]  = pdf_design,
+}
+
+local pdf_export = {
+    [v_yes] = pdf_on,
+    [v_no]  = pdf_off,
+}
 
 -- We can have references to layers before they are places, for instance from
 -- hide and vide actions. This is why we need to be able to force usage of layers
@@ -99,10 +114,13 @@ local function useviewerlayer(name) -- move up so that we can use it as local
             local nn = pdfreserveobject()
             local nr = pdfreference(nn)
             local nd = pdfdictionary {
-                Type   = pdf_ocg,
-                Name   = specification.title or "unknown",
-                Intent = ((specification.editable  ~= v_no) and pdf_design) or nil, -- disable layer hiding by user
-                Usage  = ((specification.printable == v_no) and lpdf_usage) or nil, -- printable or not
+                Type  = pdf_ocg,
+                Name  = specification.title or "unknown",
+                Usage = {
+                    Intent = pdf_intent[specification.editable  or v_yes], -- disable layer hiding by user (useless)
+                    Print  = pdf_print [specification.printable or v_yes], -- printable or not
+                    Export = pdf_export[specification.export    or v_yes], -- export or not
+                },
             }
             cache[#cache+1] = { nn, nd }
             pdfln[tag] = nr -- was n
@@ -165,6 +183,14 @@ local function flushtextlayers()
                     ON        = videlayers,
                     OFF       = hidelayers,
                     BaseState = pdf_on,
+
+AS = pdfarray {
+    pdfdictionary {
+        Category = pdfarray { pdfconstant("Print") },
+        Event    = pdfconstant("Print"),
+        OCGs     = (viewerlayers.hasorder and sortedlayers) or nil,
+    }
+},
                 },
             }
             addtocatalog("OCProperties",d)

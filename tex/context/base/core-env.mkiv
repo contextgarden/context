@@ -390,6 +390,8 @@
 % but it won't work out well with multiple setups (intercepted at the
 % lua end) that then get only one argument.
 
+\def\fastsetup#1{\csname\??setup:#1\endcsname\empty} % no checking and we assume it being defined (at least for now)
+
 % the next one is meant for \c!setups situations, hence the check for
 % a shortcut
 

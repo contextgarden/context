@@ -64,6 +64,10 @@ local a_destination        = attributes.private('destination')
 
 local absmaxlevel          = 5 -- \c_strc_registers_maxlevel
 
+local h_prefixpage              = helpers.prefixpage
+local h_prefixlastpage          = helpers.prefixlastpage
+local h_title                   = helpers.title
+
 local ctx_startregisteroutput   = context.startregisteroutput
 local ctx_stopregisteroutput    = context.stopregisteroutput
 local ctx_startregistersection  = context.startregistersection
@@ -74,12 +78,114 @@ local ctx_startregisterentry    = context.startregisterentry
 local ctx_stopregisterentry     = context.stopregisterentry
 local ctx_startregisterpages    = context.startregisterpages
 local ctx_stopregisterpages     = context.stopregisterpages
-local ctx_stopregisterseewords  = context.stopregisterseewords
 local ctx_startregisterseewords = context.startregisterseewords
+local ctx_stopregisterseewords  = context.stopregisterseewords
 local ctx_registerentry         = context.registerentry
 local ctx_registerseeword       = context.registerseeword
 local ctx_registerpagerange     = context.registerpagerange
 local ctx_registeronepage       = context.registeronepage
+
+-- possible export, but ugly code (overloads)
+--
+-- local output, section, entries, nofentries, pages, words, rawtext
+--
+-- h_title = function(a,b) rawtext = a end
+--
+-- local function ctx_startregisteroutput()
+--     output     = { }
+--     section    = nil
+--     entries    = nil
+--     nofentries = nil
+--     pages      = nil
+--     words      = nil
+--     rawtext    = nil
+-- end
+-- local function ctx_stopregisteroutput()
+--     inspect(output)
+--     output     = nil
+--     section    = nil
+--     entries    = nil
+--     nofentries = nil
+--     pages      = nil
+--     words      = nil
+--     rawtext    = nil
+-- end
+-- local function ctx_startregistersection(tag)
+--     section = { }
+--     output[#output+1] = {
+--         section = section,
+--         tag     = tag,
+--     }
+-- end
+-- local function ctx_stopregistersection()
+-- end
+-- local function ctx_startregisterentries(n)
+--     entries = { }
+--     nofentries = 0
+--     section[#section+1] = entries
+-- end
+-- local function ctx_stopregisterentries()
+-- end
+-- local function ctx_startregisterentry(n) -- or subentries (nested?)
+--     nofentries = nofentries + 1
+--     entry = { }
+--     entries[nofentries] = entry
+-- end
+-- local function ctx_stopregisterentry()
+--     nofentries = nofentries - 1
+--     entry = entries[nofentries]
+-- end
+-- local function ctx_startregisterpages()
+--     pages = { }
+--     entry.pages = pages
+-- end
+-- local function ctx_stopregisterpages()
+-- end
+-- local function ctx_startregisterseewords()
+--     words = { }
+--     entry.words = words
+-- end
+-- local function ctx_stopregisterseewords()
+-- end
+-- local function ctx_registerentry(processor,internal,seeparent,text)
+--     text()
+--     entry.text = {
+--         processor = processor,
+--         internal  = internal,
+--         seeparent = seeparent,
+--         text      = rawtext,
+--     }
+-- end
+-- local function ctx_registerseeword(i,n,processor,internal,seeindex,seetext)
+--     seetext()
+--     entry.words[i] = {
+--         processor = processor,
+--         internal  = internal,
+--         seeparent = seeparent,
+--         seetext   = rawtext,
+--     }
+-- end
+-- local function ctx_registerpagerange(fprocessor,finternal,frealpage,lprocessor,linternal,lrealpage)
+--     pages[#pages+1] = {
+--         first = {
+--             processor = fprocessor,
+--             internal  = finternal,
+--             realpage  = frealpage,
+--         },
+--         last = {
+--             processor = lprocessor,
+--             internal  = linternal,
+--             realpage  = lrealpage,
+--         },
+--     }
+-- end
+-- local function ctx_registeronepage(processor,internal,realpage)
+--     pages[#pages+1] = {
+--         processor = processor,
+--         internal  = internal,
+--         realpage  = realpage,
+--     }
+-- end
 
 -- some day we will share registers and lists (although there are some conceptual
 -- differences in the application of keywords)
@@ -716,7 +822,6 @@ function registers.analyze(class,options)
     context(analyzeregister(class,options))
 end
 
-
 -- todo take conversion from index
 
 function registers.userdata(index,name)
@@ -733,10 +838,6 @@ function commands.registeruserdata(index,name)
 end
 
 -- todo: ownnumber
-
-local h_prefixpage     = helpers.prefixpage
-local h_prefixlastpage = helpers.prefixlastpage
-local h_title          = helpers.title
 
 local function pagerange(f_entry,t_entry,is_last,prefixspec,pagespec)
     local fer, ter = f_entry.references, t_entry.references
@@ -1063,7 +1164,8 @@ function registers.flush(data,options,prefixspec,pagespec)
                     local seetext   = seeword.text or ""
                     local processor = seeword.processor or (entry.processors and entry.processors[1]) or ""
                     local seeindex  = entry.references.seeindex or ""
-                    ctx_registerseeword(i,n,processor,0,seeindex,seetext)
+                 -- ctx_registerseeword(i,nt,processor,0,seeindex,seetext)
+                    ctx_registerseeword(i,nt,processor,0,seeindex,function() h_title(seetext,metadata) end)
                 end
                 ctx_stopregisterseewords()
             end

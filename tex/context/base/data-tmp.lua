@@ -35,6 +35,7 @@ local report_caches    = logs.reporter("resolvers","caches")
 local report_resolvers = logs.reporter("resolvers","caching")
 
 local resolvers = resolvers
+local cleanpath = resolvers.cleanpath
 
 -- intermezzo
 
@@ -72,7 +73,7 @@ local writable, readables, usedreadables = nil, { }, { }
 local function identify()
     -- Combining the loops makes it messy. First we check the format cache path
     -- and when the last component is not present we try to create it.
-    local texmfcaches = resolvers.cleanpathlist("TEXMFCACHE")
+    local texmfcaches = resolvers.cleanpathlist("TEXMFCACHE") -- forward ref
     if texmfcaches then
         for k=1,#texmfcaches do
             local cachepath = texmfcaches[k]
@@ -369,10 +370,12 @@ function caches.contentstate()
     return content_state or { }
 end
 
-function caches.loadcontent(cachename,dataname)
-    local name = caches.hashed(cachename)
-    local full, path = caches.getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
-    local filename = file.join(path,name)
+function caches.loadcontent(cachename,dataname,filename)
+    if not filename then
+        local name = caches.hashed(cachename)
+        local full, path = caches.getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
+        filename = file.join(path,name)
+    end
     local blob = loadfile(addsuffix(filename,luasuffixes.luc)) or loadfile(addsuffix(filename,luasuffixes.lua))
     if blob then
         local data = blob()
@@ -406,10 +409,12 @@ function caches.collapsecontent(content)
     end
 end
 
-function caches.savecontent(cachename,dataname,content)
-    local name = caches.hashed(cachename)
-    local full, path = caches.setfirstwritablefile(addsuffix(name,luasuffixes.lua),"trees")
-    local filename = file.join(path,name) -- is full
+function caches.savecontent(cachename,dataname,content,filename)
+    if not filename then
+        local name = caches.hashed(cachename)
+        local full, path = caches.setfirstwritablefile(addsuffix(name,luasuffixes.lua),"trees")
+        filename = file.join(path,name) -- is full
+    end
     local luaname = addsuffix(filename,luasuffixes.lua)
     local lucname = addsuffix(filename,luasuffixes.luc)
     if trace_locating then

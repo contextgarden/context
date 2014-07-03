@@ -22,7 +22,7 @@ local handlers = fonts.handlers
 handlers.otf   = handlers.otf or { }
 local otf      = handlers.otf
 
-otf.version    = otf.version or 2.755
+otf.version    = otf.version or 2.756
 otf.cache      = otf.cache   or containers.define("fonts", "otf", otf.version, true)
 
 function otf.loadcached(filename,format,sub)

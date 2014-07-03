@@ -26,7 +26,7 @@ local pdfconstant          = lpdf.constant
 local pdfreference         = lpdf.reference
 local pdfflushstreamobject = lpdf.flushstreamobject
 
--- I wonder why this begin end is empty / w (no time now to look into it)
+-- I wonder why this begin end is empty / w (no time now to look into it) / begin can also be "?"
 
 local xpacket = [[
 <?xpacket begin="﻿" id="%s"?>
@@ -50,7 +50,7 @@ local mapping = {
     -- Dublin Core schema
     ["Author"]          = "rdf:Description/dc:creator/rdf:Seq/rdf:li",
     ["Format"]          = "rdf:Description/dc:format", -- optional, but nice to have
-    ["Subject"]         = "rdf:Description/dc:description",
+    ["Subject"]         = "rdf:Description/dc:description/rdf:Alt/rdf:li",
     ["Title"]           = "rdf:Description/dc:title/rdf:Alt/rdf:li",
     -- XMP Basic schema
     ["CreateDate"]      = "rdf:Description/xmp:CreateDate",
@@ -105,7 +105,7 @@ local function valid_xmp()
         if xmpfile ~= "" then
             report_xmp("using file %a",xmpfile)
         end
-        local xmpdata = (xmpfile ~= "" and io.loaddata(xmpfile)) or ""
+        local xmpdata = xmpfile ~= "" and io.loaddata(xmpfile) or ""
         xmp = xml.convert(xmpdata)
     end
     return xmp

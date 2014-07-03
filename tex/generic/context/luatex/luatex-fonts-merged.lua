@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/26/14 23:25:49
+-- merge date  : 07/03/14 19:52:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -978,14 +978,14 @@ local function sortedhash(t,cmp)
     end
     local n=0
     local m=#s
-    local function kv(s)
+    local function kv() 
       if n<m then
         n=n+1
         local k=s[n]
         return k,t[k]
       end
     end
-    return kv,s
+    return kv 
   else
     return nothing
   end
@@ -1744,6 +1744,44 @@ function table.values(t,s)
     return values
   else
     return {}
+  end
+end
+function table.filtered(t,pattern,sort,cmp)
+  if t and type(pattern)=="string" then
+    if sort then
+      local s
+      if cmp then
+        s=sortedhashkeys(t,function(a,b) return cmp(t,a,b) end)
+      else
+        s=sortedkeys(t) 
+      end
+      local n=0
+      local m=#s
+      local function kv(s)
+        while n<m do
+          n=n+1
+          local k=s[n]
+          if find(k,pattern) then
+            return k,t[k]
+          end
+        end
+      end
+      return kv,s
+    else
+      local n=next(t)
+      local function iterator()
+        while n do
+          local k=n
+          n=next(t,k)
+          if find(k,pattern) then
+            return k,t[k]
+          end
+        end
+      end
+      return iterator,t
+    end
+  else
+    return nothing
   end
 end
 
@@ -3210,6 +3248,15 @@ else
   add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=lpeg.patterns.xmlescape })
   add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=lpeg.patterns.texescape })
   add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=lpeg.patterns.luaescape })
+end
+local dquote=patterns.dquote 
+local equote=patterns.escaped+dquote/'\\"'+1
+local space=patterns.space
+local cquote=Cc('"')
+local pattern=Cs(dquote*(equote-P(-2))^0*dquote)          
++Cs(cquote*(equote-space)^0*space*equote^0*cquote) 
+function string.optionalquoted(str)
+  return lpegmatch(pattern,str) or str
 end
 
 end -- closure
@@ -6617,7 +6664,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.755 
+otf.version=2.756 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local fontdata=fonts.hashes.identifiers
 local chardata=characters and characters.data 
@@ -7821,6 +7868,14 @@ actions["reorganize lookups"]=function(data,filename,raw)
                 rule.current=s_hashed(names,s_h_cache)
               end
               rule.glyphs=nil
+              local lookups=rule.lookups
+              if lookups then
+                for i=1,#names do
+                  if not lookups[i] then
+                    lookups[i]="" 
+                  end
+                end
+              end
             end
           end
         end

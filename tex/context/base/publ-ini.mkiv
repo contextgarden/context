@@ -52,6 +52,7 @@
 \def\s!cite         {cite}
 \def\s!nocite       {nocite}
 \def\s!list         {list}
+\def\s!author       {author}
 \def\v!btxcite      {btxcite}
 \def\v!btxlist      {btxlist}
 \def\v!btxrendering {btxrendering}
@@ -94,24 +95,11 @@
 \unexpanded\def\stopbtxlistentry
   {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
 
-% interactivity is handled in setup
-%
-% \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
-%   {\begingroup
-%    \ifx\currentbtxnumbering\empty\else
-%      \startgoto[\s!internal(\currentbtxinternal)]% handled in setup
-%    \fi
-%    \directsetup{\v!btxrendering:\v!number:\constructionparameter\c!number}%
-%    \ifx\currentbtxnumbering\empty\else
-%      \stopgoto
-%    \fi
-%    \endgroup}
-%
-% so:
+% interactivity is handled in setups
 
 \unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
   {\begingroup
-   \directsetup{\v!btxrendering:\v!number:\constructionparameter\c!number}%
+   \fastsetup{\v!btxrendering:\v!number:\constructionparameter\c!number}%
    \endgroup}
 
 % the whole entry can be interactive
@@ -147,9 +135,7 @@
    \relax
 \stopsetups
 
-% todo: low level builder commands without using the constructor
-
-% construction
+% construction (todo:low level builder commands without using the constructor)
 
 \unexpanded\def\strc_constructions_initialize#1% class instance
   {\edef\currentconstruction{#1}%
@@ -221,7 +207,6 @@
 \installcorenamespace {btxcitevariant}
 \installcorenamespace {btxrendering}
 \installcorenamespace {btxcommand}
-%installcorenamespace {btxnumbering}
 \installcorenamespace {btxrenderingdefinition}
 
 \installcommandhandler \??btxdataset     {btxdataset}     \??btxdataset
@@ -333,15 +318,14 @@
 % \let\btxsetdataset\setbtxdataset
 % \let\btxsetentry  \setbtxentry
 
-\def\btxfield    #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdetail   #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxflush    #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
-%def\btxrendering#1{\ctxcommand{btxrendering("\currentbtxdataset","\currentbtxtag","#1","\btxrenderingparameter\c!interaction")}}
-\def\btxdoifelse #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoif     #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoifnot  #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfield   #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdetail  #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxflush   #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdoifelse#1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdoif    #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdoifnot #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
 
-\let\btxsetup    \directsetup
+\let\btxsetup\fastsetup
 
 %D How complex will we go? Can we assume that e.g. an apa style will not be mixed
 %D with another one? I think this assumption is okay. For manuals we might want to
@@ -361,7 +345,55 @@
 \unexpanded\def\btxlbracket    {\removeunwantedspaces\space[}
 \unexpanded\def\btxrbracket    {\removeunwantedspaces]\space}
 
-%D Rendering lists and citations.
+%D Variables:
+
+\let\currentbtxbacklink     \empty    \unexpanded\def\btxsetbacklink     {\def\currentbtxbacklink}
+\let\currentbtxbacktrace    \empty    \unexpanded\def\btxsetbacktrace    {\def\currentbtxbacktrace}
+\let\currentbtxcategory     \empty    \unexpanded\def\btxsetcategory     {\def\currentbtxcategory}
+\let\currentbtxcombis       \empty    \unexpanded\def\btxsetcombis       {\def\currentbtxcombis}
+\let\currentbtxdataset      \empty    \unexpanded\def\btxsetdataset      {\def\currentbtxdataset}
+\let\currentbtxfirst        \empty    \unexpanded\def\btxsetfirst        {\def\currentbtxfirst}
+\let\currentbtxfirstnames   \empty    \unexpanded\def\btxsetfirstnames   {\def\currentbtxfirstnames}
+\let\currentbtxinitials     \empty    \unexpanded\def\btxsetinitials     {\def\currentbtxinitials}
+\let\currentbtxinternal     \empty    \unexpanded\def\btxsetinternal     {\def\currentbtxinternal}
+\let\currentbtxjuniors      \empty    \unexpanded\def\btxsetjuniors      {\def\currentbtxjuniors}
+\let\currentbtxlanguage     \empty    \unexpanded\def\btxsetlanguage     {\def\currentbtxlanguage}
+\let\currentbtxsecond       \empty    \unexpanded\def\btxsetsecond       {\def\currentbtxsecond}
+\let\currentbtxsurnames     \empty    \unexpanded\def\btxsetsurnames     {\def\currentbtxsurnames}
+\let\currentbtxtag          \empty    \unexpanded\def\btxsettag          {\def\currentbtxtag}
+\let\currentbtxvons         \empty    \unexpanded\def\btxsetvons         {\def\currentbtxvons}
+\let\currentbtxauthorvariant\v!normal \unexpanded\def\btxsetauthorvariant{\def\currentbtxauthorvariant}
+
+\newconstant\currentbtxoverflow \unexpanded\def\btxsetoverflow#1{\currentbtxoverflow#1\relax}
+\newconstant\currentbtxconcat   \unexpanded\def\btxsetconcat  #1{\currentbtxconcat  #1\relax}
+\newconstant\currentbtxcount    \unexpanded\def\btxsetcount   #1{\currentbtxcount   #1\relax}
+
+\def\currentbtxauthorvariant{normal}
+
+\unexpanded\def\btxlistreset
+  {\let\currentbtxcombis   \empty
+   \let\currentbtxcategory \empty
+   \let\currentbtxinternal \empty
+   \let\currentbtxbacklink \empty
+   \let\currentbtxbacktrace\empty
+   \let\currentbtxlanguage \empty
+   \let\currentbtxtag      \empty
+   \let\currentbtxdataset  \empty}
+
+\unexpanded\def\btxcitereset % check for less .. not all resets needed
+  {\let        \currentbtxfirst    \empty
+   \let        \currentbtxsecond   \empty
+   \let        \currentbtxinternal \empty
+   \let        \currentbtxbacklink \empty
+   \let        \currentbtxbacktrace\empty % not used here
+   \let        \currentbtxlanguage \empty
+   \let        \currentbtxdataset  \empty
+   \let        \currentbtxtag      \empty
+   \setconstant\currentbtxoverflow \zerocount
+   \setconstant\currentbtxconcat   \zerocount
+   \setconstant\currentbtxcount    \zerocount}
+
+%D Tracing
 
 \newconditional\c_btx_trace
 
@@ -369,6 +401,8 @@
   {btxrendering}
   {\settrue \c_btx_trace}
   {\setfalse\c_btx_trace}
+
+%D Rendering lists and citations.
 
 \unexpanded\def\startbtxrendering
   {\begingroup
@@ -396,7 +430,7 @@
 %newdimen\d_publ_number_distance
 
 \ifdefined\btxblock       \else \newcount\btxblock       \fi \btxblock\plusone
-\ifdefined\btxlistcounter \else \newcount\btxlistcounter \fi % maintaned here, maybe in lua too?
+\ifdefined\btxlistcounter \else \newcount\btxlistcounter \fi % maintained here, maybe in lua too?
 \ifdefined\btxcitecounter \else \newcount\btxcitecounter \fi % maybe pass this to lua
 
 \newtoks \everysetupbtxlistplacement % name will change
@@ -423,8 +457,6 @@
     \fi
 \to \everydefinebtxrendering
 
-\let\currentbtxcombis\empty % goes into the setups
-
 \unexpanded\def\btx_entry_inject
   {\begingroup
    \edef\currentbtxcategory{\btxfield{category}}%
@@ -436,7 +468,7 @@
    \endgroup}
 
 \def\btx_entry_inject_yes
-  {\directsetup\currentbtxsetup
+  {\fastsetup\currentbtxsetup
    \removeunwantedspaces
    \ifx\currentbtxcombis\empty \else
      \btxrenderingparameter\c!separator
@@ -450,7 +482,7 @@
   {\begingroup
    \def\currentbtxtag{#1}%
    \ignorespaces
-   \directsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
+   \fastsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
    \removeunwantedspaces
    \endgroup}
 
@@ -497,7 +529,7 @@
 
 \def\publ_place_list_indeed
   {\startbtxrendering[\currentbtxrendering]%
-   % \directsetup{\btxrenderingparameter\c!setups}% specific initializations
+   % \fastsetup{\btxrenderingparameter\c!setups}% specific initializations
    % \determinelistcharacteristics[\currentbtxrendering]%
      \btx_set_rendering_alternative
      \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
@@ -540,35 +572,11 @@
 
 \def\currentbtxblock{\number\btxblock}
 
-\unexpanded\def\btxlistreset
-  {\let        \currentbtxindex    \!!zerocount % can be a constant
-   \let        \currentbtxcombis   \empty
-   \let        \currentbtxcategory \empty
-   \let        \currentbtxinternal \empty
-   \let        \currentbtxbacklink \empty
-   \let        \currentbtxbacktrace\empty
-   \let        \currentbtxlanguage \empty
-   \let        \currentbtxtag      \empty
-   \let        \currentbtxdataset  \empty
-   %setconstant\currentbtxrealpage \zerocount
-   }
-
-\unexpanded\def\btxsetindex    {\def\currentbtxindex}
-\unexpanded\def\btxsetcombis   {\def\currentbtxcombis}
-\unexpanded\def\btxsetcategory {\def\currentbtxcategory}
-\unexpanded\def\btxsetinternal {\def\currentbtxinternal}
-\unexpanded\def\btxsetbacklink {\def\currentbtxbacklink}
-\unexpanded\def\btxsetbacktrace{\def\currentbtxbacktrace}
-%unexpanded\def\btxsetlanguage {\def\currentbtxlanguage}
-\unexpanded\def\btxsettag      {\def\currentbtxtag}
-
 \unexpanded\def\btxsetlanguage#1%
   {\def\currentbtxlanguage{#1}%
    \ifx\currentbtxlanguage\currentlanguage \else
       \setcurrentlanguage\currentmainlanguage\currentbtxlanguage
    \fi}
-
-\btxlistreset
 
 % called at the lua end, for determining the width
 
@@ -592,7 +600,7 @@
    \endgroup}
 
 \unexpanded\def\btxlistsetup#1%
-  {\directsetup{\s!btx:\s!list:#1}}
+  {\fastsetup{\s!btx:\s!list:#1}}
 
 \unexpanded\def\btx_reference_indeed
   {\begingroup
@@ -664,13 +672,17 @@
 \def\btx_flush_author_nop    {\btx_flush_author{\btxlistvariantparameter\c!author}}
 
 \unexpanded\def\btx_flush_author#1#2%
-  {\edef\currentbtxfield{#2}%
+  {\begingroup
+   \edef\currentbtxfield{#2}%
    \let\currentbtxlistvariant\currentbtxfield
    \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\currentbtxfield",{
         combiner    = "#1",
+        kind        = "list",
+      % symbol      = ".",
         etallimit   = \number\btxlistvariantparameter\c!etallimit,
         etaldisplay = \number\btxlistvariantparameter\c!etaldisplay,
-   })}}
+   })}%
+   \endgroup}
 
 \unexpanded\def\btxflushauthorname         {\btx_flush_author{name}}          % #1
 \unexpanded\def\btxflushauthornormal       {\btx_flush_author{normal}}        % #1
@@ -679,11 +691,31 @@
 \unexpanded\def\btxflushauthorinvertedshort{\btx_flush_author{invertedshort}} % #1
 
 \unexpanded\def\currentbtxciteauthor % always author
-  {\ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","author",{
+  {\begingroup
+   \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","author",{
         combiner    = "\btxcitevariantparameter\c!authorconversion",
+        kind        = "cite",
+      % symbol      = ".",
         etallimit   = \number\btxcitevariantparameter\c!etallimit,
         etaldisplay = \number\btxcitevariantparameter\c!etaldisplay,
-   })}}
+   })}%
+   \endgroup}
+
+\unexpanded\def\btxstartauthor{\begingroup}
+\unexpanded\def\btxstopauthor {\endgroup}
+
+\unexpanded\def\btxciteauthorsetup#1{\fastsetup{\s!btx:\s!cite:\s!author:#1}}
+\unexpanded\def\btxlistauthorsetup#1{\fastsetup{\s!btx:\s!list:\s!author:#1}}
+
+% \btxflushauthor{author}
+% \btxflushauthor{artauthor}
+% \btxflushauthor{editor}
+%
+% \btxflushauthor[name]{author}
+% \btxflushauthor[normal]{author}
+% \btxflushauthor[normalshort]{author}
+% \btxflushauthor[inverted]{author}
+% \btxflushauthor[invertedshort]{author}
 
 % \btxflushauthor{author}
 % \btxflushauthor{artauthor}
@@ -764,24 +796,6 @@
 %D When a publication is cited, we need to signal that somehow. This is done with the
 %D following (not user) command. We could tag without injecting a node but this way
 %D we also store the location, which makes it possible to ask local lists.
-
-% all done at the lua end and using the nocite setup .. also tracing
-%
-% \unexpanded\def\btxdomarkcitation % called from lua end
-%   {\dontleavehmode
-%    \iftrialtypesetting
-%      \expandafter\gobblethreearguments
-%    \else
-%      \expandafter\publ_cite_mark_citation
-%    \fi}
-%
-% \def\publ_cite_mark_citation#1#2#3% called from lua end
-%   {\begingroup
-%    \edef\currentbtxdataset{#1}%
-%    \edef\currentbtxtag{#2}%
-%    \edef\currentbtxbacklink{#3}%
-%    \btxcitesetup\s!nocite
-%    \endgroup}
 
 %D \macros{cite,nocite,citation,nocitation,usecitation}
 %D
@@ -933,29 +947,8 @@
 
 %D Cite helpers:
 
-\newconstant\currentbtxconcat
-\newconstant\currentbtxcount
-%newconstant\currentbtxrealpage
-
-\unexpanded\def\btxcitereset
-  {\let        \currentbtxfirst    \empty
-   \let        \currentbtxsecond   \empty
-   \let        \currentbtxinternal \empty
-   \let        \currentbtxbacklink \empty
-   \let        \currentbtxbacktrace\empty % not used here
-   \let        \currentbtxlanguage \empty
-   \let        \currentbtxdataset  \empty
-   \let        \currentbtxtag      \empty
-   %setconstant\currentbtxrealpage \zerocount
-   \setconstant\currentbtxconcat   \zerocount
-   \setconstant\currentbtxcount    \zerocount}
-
-\btxcitereset
-
 \unexpanded\def\btxcitesetup#1%
-  {%\btx_cite_reference_inject
-   \directsetup{btx:cite:#1}%
-   \btxcitereset}
+  {\fastsetup{\s!btx:\s!cite:#1}} % no \btxcitereset as we loose dataset and such
 
 \unexpanded\def\btxsetfirst      {\def\currentbtxfirst}
 \unexpanded\def\btxsetsecond     {\def\currentbtxsecond}
@@ -965,22 +958,24 @@
 \unexpanded\def\btxsetinternal   {\def\currentbtxinternal}
 \unexpanded\def\btxsetcount    #1{\setconstant\currentbtxcount   #1\relax}
 \unexpanded\def\btxsetconcat   #1{\setconstant\currentbtxconcat  #1\relax}
-%unexpanded\def\btxsetrealpage #1{\setconstant\currentbtxrealpage#1\relax}
+\unexpanded\def\btxsetoverflow #1{\setconstant\currentbtxoverflow#1\relax}
 
-\unexpanded\def\btxstartsubcite#1%
-  {\bgroup
-   \btxcitereset
+\unexpanded\def\btxstartsubcite#1% #1 can go
+  {\begingroup
+   \btxcitereset % todo: limited set
    \def\currentbtxcitevariant{#1}%
-   \btxcitevariantparameter\c!left}
+   \btxcitevariantparameter\c!left
+   \relax}
 
 \unexpanded\def\btxstopsubcite
-  {\btxcitevariantparameter\c!right
-   \egroup}
+  {\relax
+   \btxcitevariantparameter\c!right
+   \endgroup}
 
-%D List helpers:
-
-\let\currentbtxindex   \!!zerocount
-\let\currentbtxcategory\empty
+\let\btxstartcite      \begingroup
+\let\btxstopcite       \endgroup
+\let\btxstartciteauthor\begingroup
+\let\btxstopciteauthor \endgroup
 
 %D Whatever helpers:
 
@@ -1201,17 +1196,34 @@
   [artauthor]
   [author]
 
+% Not that efficient but ...
+
 \setupbtxcitevariant
-  [\c!authorconversion=name, % \btxlistvariantparameter\c!authorconversion,
-   \c!etallimit       =\btxlistvariantparameter\c!etallimit,
-   \c!etaldisplay     =\btxlistvariantparameter\c!etaldisplay]
+  [\c!namesep=\btxlistvariantparameter\c!namesep,
+   \c!lastnamesep=\btxlistvariantparameter\c!lastnamesep,
+   \c!finalnamesep=\btxlistvariantparameter\c!finalnamesep,
+   \c!firstnamesep=\btxlistvariantparameter\c!firstnamesep,
+   \c!juniorsep=\btxlistvariantparameter\c!juniorsep,
+   \c!vonsep=\btxlistvariantparameter\c!vonsep,
+   \c!initialsep=\btxlistvariantparameter\c!initialsep,
+   \c!surnamesep=\btxlistvariantparameter\c!surnamesep,
+   \c!surnameinitialsep=\btxlistvariantparameter\c!surnameinitialsep,
+   \c!surnamefirstnamesep=\btxlistvariantparameter\c!surnamefirstnamesep,
+   \c!etallimit=\btxlistvariantparameter\c!etallimit,
+   \c!etaldisplay=\btxlistvariantparameter\c!etaldisplay,
+   \c!etaltext=\btxlistvariantparameter\c!etaltext,
+   \c!monthconversion=\btxlistvariantparameter\c!monthconversion,
+   \c!authorconversion=\v!name]
 
 % Do we want these in the format? Loading them delayed is somewhat messy.
 
-\loadbtxdefinitionfile[apa]
-\loadbtxdefinitionfile[cite]
-\loadbtxdefinitionfile[list]
 \loadbtxdefinitionfile[commands]
 \loadbtxdefinitionfile[definitions]
+
+\loadbtxdefinitionfile[cite]
+\loadbtxdefinitionfile[list]
+\loadbtxdefinitionfile[author]
+
+\loadbtxdefinitionfile[apa]
 
 \protect

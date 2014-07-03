@@ -10,7 +10,8 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local report_files = logs.reporter("resolvers","files")
 
-local resolvers = resolvers
+local resolvers     = resolvers
+local resolveprefix = resolvers.resolve
 
 local finders, openers, loaders, savers = resolvers.finders, resolvers.openers, resolvers.loaders, resolvers.savers
 local locators, hashers, generators, concatinators = resolvers.locators, resolvers.hashers, resolvers.generators, resolvers.concatinators
@@ -18,35 +19,34 @@ local locators, hashers, generators, concatinators = resolvers.locators, resolve
 local checkgarbage = utilities.garbagecollector and utilities.garbagecollector.check
 
 function locators.file(specification)
-    local name = specification.filename
-    local realname = resolvers.resolve(name) -- no shortcut
+    local filename = specification.filename
+    local realname = resolveprefix(filename) -- no shortcut
     if realname and realname ~= '' and lfs.isdir(realname) then
         if trace_locating then
-            report_files("file locator %a found as %a",name,realname)
+            report_files("file locator %a found as %a",filename,realname)
         end
-        resolvers.appendhash('file',name,true) -- cache
+        resolvers.appendhash('file',filename,true) -- cache
     elseif trace_locating then
-        report_files("file locator %a not found",name)
+        report_files("file locator %a not found",filename)
     end
 end
 
 function hashers.file(specification)
-    local name = specification.filename
-    local content = caches.loadcontent(name,'files')
-    resolvers.registerfilehash(name,content,content==nil)
+    local pathname = specification.filename
+    local content  = caches.loadcontent(pathname,'files')
+    resolvers.registerfilehash(pathname,content,content==nil)
 end
 
 function generators.file(specification)
-    local path = specification.filename
-    local content = resolvers.scanfiles(path,false,true) -- scan once
---~     inspect(content)
-    resolvers.registerfilehash(path,content,true)
+    local pathname = specification.filename
+    local content  = resolvers.scanfiles(pathname,false,true) -- scan once
+    resolvers.registerfilehash(pathname,content,true)
 end
 
 concatinators.file = file.join
 
 function finders.file(specification,filetype)
-    local filename = specification.filename
+    local filename  = specification.filename
     local foundname = resolvers.findfile(filename,filetype)
     if foundname and foundname ~= "" then
         if trace_locating then

@@ -6,10 +6,12 @@ if not modules then modules = { } end modules ['data-ini'] = {
     license   = "see context related readme files",
 }
 
+local next, type, getmetatable, rawset = next, type, getmetatable, rawset
 local gsub, find, gmatch, char = string.gsub, string.find, string.gmatch, string.char
-local next, type = next, type
-
 local filedirname, filebasename, filejoin = file.dirname, file.basename, file.join
+local ostype, osname, osuname, ossetenv, osgetenv = os.type, os.name, os.uname, os.setenv, os.getenv
+
+local P, S, R, C, Cs, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.match
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
@@ -17,11 +19,9 @@ local trace_expansions = false  trackers.register("resolvers.expansions", functi
 
 local report_initialization = logs.reporter("resolvers","initialization")
 
-local ostype, osname, ossetenv, osgetenv = os.type, os.name, os.setenv, os.getenv
-
--- The code here used to be part of a data-res but for convenience
--- we now split it over multiple files. As this file is now the
--- starting point we introduce resolvers here.
+-- The code here used to be part of a data-res but for convenience we now split it over multiple
+-- files. As this file is now the starting point we introduce resolvers here. We also put some
+-- helpers here that later can be reimplemented of extended.
 
 resolvers       = resolvers or { }
 local resolvers = resolvers
@@ -225,8 +225,117 @@ end
 
 -- a forward definition
 
-if not resolvers.resolve then
-    function resolvers.resolve  (s) return s end
-    function resolvers.unresolve(s) return s end
-    function resolvers.repath   (s) return s end
+-- Because we use resolvers.resolve a lot later on, we will implement the basics here and
+-- add more later.
+
+local prefixes     = utilities.storage.allocate()
+resolvers.prefixes = prefixes
+
+local resolved     = { }
+local abstract     = { }
+
+function resolvers.resetresolve(str)
+    resolved, abstract = { }, { }
+end
+
+function resolvers.allprefixes(separator)
+    local all = table.sortedkeys(prefixes)
+    if separator then
+        for i=1,#all do
+            all[i] = all[i] .. ":"
+        end
+    end
+    return all
+end
+
+local function _resolve_(method,target)
+    local action = prefixes[method]
+    if action then
+        return action(target)
+    else
+        return method .. ":" .. target
+    end
+end
+
+function resolvers.unresolve(str)
+    return abstract[str] or str
+end
+
+-- home:xx;selfautoparent:xx;
+
+local pattern = Cs((C(R("az")^2) * P(":") * C((1-S(" \"\';,"))^1) / _resolve_ + P(1))^0)
+
+local prefix   = C(R("az")^2) * P(":")
+local target   = C((1-S(" \"\';,"))^1)
+local notarget = (#S(";,") + P(-1)) * Cc("")
+
+local pattern  = Cs(((prefix * (target + notarget)) / _resolve_ + P(1))^0)
+
+local function resolve(str) -- use schemes, this one is then for the commandline only
+    if type(str) == "table" then
+        local res = { }
+        for i=1,#str do
+            res[i] = resolve(str[i])
+        end
+        return res
+    else
+        local res = resolved[str]
+        if not res then
+            res = lpegmatch(pattern,str)
+            resolved[str] = res
+            abstract[res] = str
+        end
+        return res
+    end
+end
+
+resolvers.resolve = resolve
+
+if type(osuname) == "function" then
+
+    for k, v in next, osuname() do
+        if not prefixes[k] then
+            prefixes[k] = function() return v end
+        end
+    end
+
+end
+
+if ostype == "unix" then
+
+    -- We need to distringuish between a prefix and something else : so we
+    -- have a special repath variant for linux. Also, when a new prefix is
+    -- defined, we need to remake the matcher.
+
+    local pattern
+
+    local function makepattern(t,k,v)
+        if t then
+            rawset(t,k,v)
+        end
+        local colon = P(":")
+        for k, v in table.sortedpairs(prefixes) do
+            if p then
+                p = P(k) + p
+            else
+                p = P(k)
+            end
+        end
+        pattern = Cs((p * colon + colon/";" + P(1))^0)
+    end
+
+    makepattern()
+
+    table.setmetatablenewindex(prefixes,makepattern)
+
+    function resolvers.repath(str)
+        return lpegmatch(pattern,str)
+    end
+
+else -- already the default:
+
+    function resolvers.repath(str)
+        return str
+    end
+
 end

@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['l-dir'] = {
 -- dir.expandname will be merged with cleanpath and collapsepath
 
 local type, select = type, select
-local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
+local find, gmatch, match, gsub, sub = string.find, string.gmatch, string.match, string.gsub, string.sub
 local concat, insert, remove, unpack = table.concat, table.insert, table.remove, table.unpack
 local lpegmatch = lpeg.match
 
@@ -21,8 +21,8 @@ local lfs = lfs
 
 local attributes = lfs.attributes
 local walkdir    = lfs.dir
-local isdir      = lfs.isdir
-local isfile     = lfs.isfile
+local isdir      = lfs.isdir  -- not robust, will be overloaded anyway
+local isfile     = lfs.isfile -- not robust, will be overloaded anyway
 local currentdir = lfs.currentdir
 local chdir      = lfs.chdir
 local mkdir      = lfs.mkdir
@@ -31,20 +31,36 @@ local onwindows  = os.type == "windows" or find(os.getenv("PATH"),";",1,true)
 
 -- in case we load outside luatex
 
-if not isdir then
-    function isdir(name)
-        local a = attributes(name)
-        return a and a.mode == "directory"
-    end
-    lfs.isdir = isdir
-end
+if onwindows then
 
-if not isfile then
-    function isfile(name)
-        local a = attributes(name)
-        return a and a.mode == "file"
+    -- lfs.isdir does not like trailing /
+    -- lfs.dir accepts trailing /
+
+    isdir = function(name)
+        name = gsub(name,"([/\\]+)$","/.")
+        return attributes(name,"mode") == "directory"
     end
+
+    isfile = function(name)
+        return attributes(name,"mode") == "file"
+    end
+
+    lfs.isdir  = isdir
     lfs.isfile = isfile
+
+else
+
+    isdir = function(name)
+        return attributes(name,"mode") == "directory"
+    end
+
+    isfile = function(name)
+        return attributes(name,"mode") == "file"
+    end
+
+    lfs.isdir  = isdir
+    lfs.isfile = isfile
+
 end
 
 -- handy
@@ -53,62 +69,103 @@ function dir.current()
     return (gsub(currentdir(),"\\","/"))
 end
 
--- optimizing for no find (*) does not save time
+-- somewhat optimized
 
---~ local function globpattern(path,patt,recurse,action) -- fails in recent luatex due to some change in lfs
---~     local ok, scanner
---~     if path == "/" then
---~         ok, scanner = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
---~     else
---~         ok, scanner = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
---~     end
---~     if ok and type(scanner) == "function" then
---~         if not find(path,"/$") then path = path .. '/' end
---~         for name in scanner do
---~             local full = path .. name
---~             local mode = attributes(full,'mode')
---~             if mode == 'file' then
---~                 if find(full,patt) then
---~                     action(full)
---~                 end
---~             elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
---~                 globpattern(full,patt,recurse,action)
---~             end
---~         end
---~     end
---~ end
-
-local lfsisdir = isdir
-
-local function isdir(path)
-    path = gsub(path,"[/\\]+$","")
-    return lfsisdir(path)
-end
-
-lfs.isdir = isdir
-
-local function globpattern(path,patt,recurse,action)
-    if path == "/" then
-        path = path .. "."
-    elseif not find(path,"/$") then
-        path = path .. '/'
-    end
-    if isdir(path) then -- lfs.isdir does not like trailing /
-        for name in walkdir(path) do -- lfs.dir accepts trailing /
-            local full = path .. name
-            local mode = attributes(full,'mode')
-            if mode == 'file' then
-                if find(full,patt) then
-                    action(full)
+local function glob_pattern_function(path,patt,recurse,action)
+    if isdir(path) then
+        local usedpath
+        if path == "/" then
+            usedpath = "/."
+        elseif not find(path,"/$") then
+            usedpath = path .. "/."
+            path = path .. "/"
+        else
+            usedpath = path
+        end
+        local dirs
+        for name in walkdir(usedpath) do
+            if name ~= "." and name ~= ".." then
+                local full = path .. name
+                local mode = attributes(full,'mode')
+                if mode == 'file' then
+                    if not patt or find(full,patt) then
+                        action(full)
+                    end
+                elseif recurse and mode == "directory" then
+                    if not dirs then
+                        dirs = { full }
+                    else
+                        dirs[#dirs+1] = full
+                    end
                 end
-            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                globpattern(full,patt,recurse,action)
+            end
+        end
+        if dirs then
+            for i=1,#dirs do
+                glob_pattern_function(dirs[i],patt,recurse,action)
             end
         end
     end
 end
 
+local function glob_pattern_table(path,patt,recurse,result)
+    if not result then
+        result = { }
+    end
+    if isdir(path) then
+        local usedpath
+        if path == "/" then
+            usedpath = "/."
+        elseif not find(path,"/$") then
+            usedpath = path .. "/."
+            path = path .. "/"
+        else
+            usedpath = path
+        end
+        local dirs
+        for name in walkdir(usedpath) do
+            if name ~= "." and name ~= ".." then
+                local full = path .. name
+                local mode = attributes(full,'mode')
+                if mode == 'file' then
+                    if not patt or find(full,patt) then
+                        result[#result+1] = full
+                    end
+                elseif recurse and mode == "directory" then
+                    if not dirs then
+                        dirs = { full }
+                    else
+                        dirs[#dirs+1] = full
+                    end
+                end
+            end
+        end
+        if dirs then
+            for i=1,#dirs do
+                glob_pattern_table(dirs[i],patt,recurse,result)
+            end
+        end
+    end
+    return result
+end
+
+local function globpattern(path,patt,recurse,method)
+    local kind = type(method)
+    if pattern and sub(patt,1,-3) == path then
+        patt = false
+    end
+    if kind == "function" then
+        return glob_pattern_function(path,patt,recurse,method)
+    elseif kind == "table" then
+        return glob_pattern_table(path,patt,recurse,method)
+    else
+        return glob_pattern_table(path,patt,recurse,{ })
+    end
+end
+
 dir.globpattern = globpattern
+
+-- never or seldom used so far:
 
 local function collectpattern(path,patt,recurse,result)
     local ok, scanner
@@ -119,18 +176,26 @@ local function collectpattern(path,patt,recurse,result)
         ok, scanner, first = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
     end
     if ok and type(scanner) == "function" then
-        if not find(path,"/$") then path = path .. '/' end
+        if not find(path,"/$") then
+            path = path .. '/'
+        end
         for name in scanner, first do
-            local full = path .. name
-            local attr = attributes(full)
-            local mode = attr.mode
-            if mode == 'file' then
-                if find(full,patt) then
+            if name == "." then
+                -- skip
+            elseif name == ".." then
+                -- skip
+            else
+                local full = path .. name
+                local attr = attributes(full)
+                local mode = attr.mode
+                if mode == 'file' then
+                    if find(full,patt) then
+                        result[name] = attr
+                    end
+                elseif recurse and mode == "directory" then
+                    attr.list = collectpattern(full,patt,recurse)
                     result[name] = attr
                 end
-            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                attr.list = collectpattern(full,patt,recurse)
-                result[name] = attr
             end
         end
     end
@@ -143,15 +208,10 @@ local separator
 
 if onwindows then -- we could sanitize here
 
---     pattern = Ct {
---         [1] = (C(P(".") + S("/\\")^1) + C(R("az","AZ") * P(":") * S("/\\")^0) + Cc("./")) * V(2) * V(3),
---         [2] = C(((1-S("*?/\\"))^0 * S("/\\"))^0),
---         [3] = C(P(1)^0)
---     }
-
     local slash = S("/\\") / "/"
 
-    pattern = Ct {
+--     pattern = Ct {
+    pattern = {
         [1] = (Cs(P(".") + slash^1) + Cs(R("az","AZ") * P(":") * slash^0) + Cc("./")) * V(2) * V(3),
         [2] = Cs(((1-S("*?/\\"))^0 * slash)^0),
         [3] = Cs(P(1)^0)
@@ -159,7 +219,8 @@ if onwindows then -- we could sanitize here
 
 else -- assume unix
 
-    pattern = Ct {
+--     pattern = Ct {
+    pattern = {
         [1] = (C(P(".") + P("/")^1) + Cc("./")) * V(2) * V(3),
         [2] = C(((1-S("*?/"))^0 * P("/"))^0),
         [3] = C(P(1)^0)
@@ -186,12 +247,11 @@ local function glob(str,t)
         elseif isfile(str) then
             t(str)
         else
-            local split = lpegmatch(pattern,str) -- we could use the file splitter
-            if split then
-                local root, path, base = split[1], split[2], split[3]
+            local root, path, base = lpegmatch(pattern,str) -- we could use the file splitter
+            if root and path and base then
                 local recurse = find(base,"**",1,true) -- find(base,"%*%*")
-                local start = root .. path
-                local result = lpegmatch(filter,start .. base)
+                local start   = root .. path
+                local result  = lpegmatch(filter,start .. base)
                 globpattern(start,result,recurse,t)
             end
         end
@@ -210,16 +270,12 @@ local function glob(str,t)
                 return { str }
             end
         else
-            local split = lpegmatch(pattern,str) -- we could use the file splitter
-            if split then
-                local t = t or { }
-                local action = action or function(name) t[#t+1] = name end
-                local root, path, base = split[1], split[2], split[3]
-                local recurse =  find(base,"**",1,true) -- find(base,"%*%*")
-                local start = root .. path
-                local result = lpegmatch(filter,start .. base)
-                globpattern(start,result,recurse,action)
-                return t
+            local root, path, base = lpegmatch(pattern,str) -- we could use the file splitter
+            if root and path and base then
+                local recurse = find(base,"**",1,true) -- find(base,"%*%*")
+                local start   = root .. path
+                local result  = lpegmatch(filter,start .. base)
+                return globpattern(start,result,recurse,t)
             else
                 return { }
             end
@@ -229,11 +285,20 @@ end
 
 dir.glob = glob
 
---~ list = dir.glob("**/*.tif")
---~ list = dir.glob("/**/*.tif")
---~ list = dir.glob("./**/*.tif")
---~ list = dir.glob("oeps/**/*.tif")
---~ list = dir.glob("/oeps/**/*.tif")
+-- local c = os.clock()
+-- local t = dir.glob("e:/**")
+-- local t = dir.glob("t:/sources/**")
+-- local t = dir.glob("t:/**")
+-- print(os.clock()-c,#t)
+
+-- for i=1,3000 do print(t[i]) end
+-- for i=1,10 do print(t[i]) end
+
+-- list = dir.glob("**/*.tif")
+-- list = dir.glob("/**/*.tif")
+-- list = dir.glob("./**/*.tif")
+-- list = dir.glob("oeps/**/*.tif")
+-- list = dir.glob("/oeps/**/*.tif")
 
 local function globfiles(path,recurse,func,files) -- func == pattern or function
     if type(func) == "string" then
@@ -275,10 +340,10 @@ function dir.ls(pattern)
     return concat(glob(pattern),"\n")
 end
 
---~ mkdirs("temp")
---~ mkdirs("a/b/c")
---~ mkdirs(".","/a/b/c")
---~ mkdirs("a","b","c")
+-- mkdirs("temp")
+-- mkdirs("a/b/c")
+-- mkdirs(".","/a/b/c")
+-- mkdirs("a","b","c")
 
 local make_indeed = true -- false
 
@@ -347,17 +412,17 @@ if onwindows then
         return pth, (isdir(pth) == true)
     end
 
-    --~ print(dir.mkdirs("","","a","c"))
-    --~ print(dir.mkdirs("a"))
-    --~ print(dir.mkdirs("a:"))
-    --~ print(dir.mkdirs("a:/b/c"))
-    --~ print(dir.mkdirs("a:b/c"))
-    --~ print(dir.mkdirs("a:/bbb/c"))
-    --~ print(dir.mkdirs("/a/b/c"))
-    --~ print(dir.mkdirs("/aaa/b/c"))
-    --~ print(dir.mkdirs("//a/b/c"))
-    --~ print(dir.mkdirs("///a/b/c"))
-    --~ print(dir.mkdirs("a/bbb//ccc/"))
+    -- print(dir.mkdirs("","","a","c"))
+    -- print(dir.mkdirs("a"))
+    -- print(dir.mkdirs("a:"))
+    -- print(dir.mkdirs("a:/b/c"))
+    -- print(dir.mkdirs("a:b/c"))
+    -- print(dir.mkdirs("a:/bbb/c"))
+    -- print(dir.mkdirs("/a/b/c"))
+    -- print(dir.mkdirs("/aaa/b/c"))
+    -- print(dir.mkdirs("//a/b/c"))
+    -- print(dir.mkdirs("///a/b/c"))
+    -- print(dir.mkdirs("a/bbb//ccc/"))
 
 else
 
@@ -408,13 +473,13 @@ else
         return pth, (isdir(pth) == true)
     end
 
-    --~ print(dir.mkdirs("","","a","c"))
-    --~ print(dir.mkdirs("a"))
-    --~ print(dir.mkdirs("/a/b/c"))
-    --~ print(dir.mkdirs("/aaa/b/c"))
-    --~ print(dir.mkdirs("//a/b/c"))
-    --~ print(dir.mkdirs("///a/b/c"))
-    --~ print(dir.mkdirs("a/bbb//ccc/"))
+    -- print(dir.mkdirs("","","a","c"))
+    -- print(dir.mkdirs("a"))
+    -- print(dir.mkdirs("/a/b/c"))
+    -- print(dir.mkdirs("/aaa/b/c"))
+    -- print(dir.mkdirs("//a/b/c"))
+    -- print(dir.mkdirs("///a/b/c"))
+    -- print(dir.mkdirs("a/bbb//ccc/"))
 
 end
 
@@ -424,7 +489,7 @@ dir.makedirs = dir.mkdirs
 
 if onwindows then
 
-    function dir.expandname(str) -- will be merged with cleanpath and collapsepath
+    function dir.expandname(str) -- will be merged with cleanpath and collapsepath\
         local first, nothing, last = match(str,"^(//)(//*)(.*)$")
         if first then
             first = dir.current() .. "/" -- dir.current sanitizes

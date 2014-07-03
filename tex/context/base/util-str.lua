@@ -1094,3 +1094,23 @@ end
 -- string.formatteds = formatteds
 --
 -- setmetatable(formatteds, { __index = make, __call = use })
+
+-- This is a somewhat silly one used in commandline reconstruction but the older
+-- method, using a combination of fine, gsub, quoted and unquoted was not that
+-- reliable.
+--
+-- '"foo"bar \"and " whatever"' => "foo\"bar \"and \" whatever"
+-- 'foo"bar \"and " whatever'   => "foo\"bar \"and \" whatever"
+
+local dquote = patterns.dquote -- P('"')
+local equote = patterns.escaped + dquote / '\\"' + 1
+local space  = patterns.space
+local cquote = Cc('"')
+
+local pattern =
+    Cs(dquote * (equote - P(-2))^0 * dquote)                    -- we keep the outer but escape unescaped ones
+  + Cs(cquote * (equote - space)^0 * space * equote^0 * cquote) -- we escape unescaped ones
+
+function string.optionalquoted(str)
+    return lpegmatch(pattern,str) or str
+end

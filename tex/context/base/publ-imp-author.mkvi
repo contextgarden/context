@@ -1,0 +1,278 @@
+%D \module
+%D   [       file=publ-imp-author,
+%D        version=2014.06.23,
+%D          title=\CONTEXT\ Publication Support,
+%D       subtitle=Authors,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+% We can do a better check for pre-sep-post at the lua end but by keeping it at the
+% tex end users can easier mess with it. So, we just assume sane names.
+%
+% maybe cite will just inherit from list (only \current.. alias)
+%
+% \startsetups \s!btx:\s!cite:\s!author:normal
+%     \fastsetup{\s!btx:\s!list:\s!author:normal}
+% \stopsetups
+
+% You can adapt these setups to your liking, for instance as:
+
+% \startsetups btx:cite:author:normal
+%     \fastsetup{btx:cite:author:concat}
+%     \ifx\currentbtxfirstnames\empty \else
+%         \begingroup
+%             \bf
+%             \currentbtxfirstnames
+%         \endgroup
+%         \btxcitevariantparameter{firstnamesep}
+%     \fi
+%     \ifx\currentbtxvons\empty \else
+%         \currentbtxvons
+%         \btxcitevariantparameter{vonsep}
+%     \fi
+%     \ifx\currentbtxsurnames\empty \else
+%         \currentbtxsurnames
+%         \ifx\currentbtxjuniors\empty \else
+%             \btxcitevariantparameter{juniorsep}
+%             \currentbtxjuniors
+%         \fi
+%     \fi
+%     \fastsetup{btx:cite:author:etaltext}
+% \stopsetups
+
+\startsetups \s!btx:\s!cite:\s!author:concat
+    \ifcase\currentbtxconcat \or \or
+        \btxcitevariantparameter\c!namesep
+    \or
+        \btxcitevariantparameter\c!lastnamesep
+    \or
+        \btxcitevariantparameter\c!finalnamesep
+    \fi
+\stopsetups
+
+\startsetups \s!btx:\s!cite:\s!author:etaltext
+    \ifcase\currentbtxoverflow \else
+        \btxcitevariantparameter\c!etaltext
+    \fi
+\stopsetups
+
+\startsetups \s!btx:\s!cite:\s!author:normal
+    \fastsetup{\s!btx:\s!cite:\s!author:concat}
+    \ifx\currentbtxfirstnames\empty \else
+        \currentbtxfirstnames
+        \btxcitevariantparameter\c!firstnamesep
+    \fi
+    \ifx\currentbtxvons\empty \else
+        \currentbtxvons
+        \ifx\currentbtxsurnames\empty \else
+            \btxcitevariantparameter\c!vonsep
+        \fi
+    \fi
+    \ifx\currentbtxsurnames\empty \else
+        \currentbtxsurnames
+        \ifx\currentbtxjuniors\empty \else
+            \btxcitevariantparameter\c!juniorsep
+            \currentbtxjuniors
+        \fi
+    \fi
+    \fastsetup{\s!btx:\s!cite:\s!author:etaltext}
+\stopsetups
+
+\startsetups \s!btx:\s!cite:\s!author:normalshort
+    \fastsetup{\s!btx:\s!cite:\s!author:concat}
+    \ifx\currentbtxinitials\empty \else
+        \currentbtxinitials
+        \btxcitevariantparameter\c!initialsep
+    \fi
+    \ifx\currentbtxvons\empty \else
+        \currentbtxvons
+        \ifx\currentbtxsurnames\empty \else
+            \btxcitevariantparameter\c!vonsep
+        \fi
+    \fi
+    \ifx\currentbtxsurnames\empty \else
+        \currentbtxsurnames
+        \ifx\currentbtxjuniors\empty \else
+            \btxcitevariantparameter\c!juniorsep
+            \currentbtxjuniors
+        \fi
+    \fi
+    \fastsetup{\s!btx:\s!cite:\s!author:etaltext}
+\stopsetups
+
+\startsetups \s!btx:\s!cite:\s!author:inverted
+    \fastsetup{\s!btx:\s!cite:\s!author:concat}
+    \ifx\currentbtxvons\empty \else
+        \currentbtxvons
+        \btxcitevariantparameter\c!vonsep
+    \fi
+    \ifx\currentbtxsurnames\empty \else
+        \currentbtxsurnames
+        \ifx\currentbtxjuniors\empty \else
+            \btxcitevariantparameter\c!juniorsep
+            \currentbtxjuniors
+        \fi
+    \fi
+    \ifx\currentbtxfirstnames\empty
+        % firstnames are optional
+    \else
+        \btxcitevariantparameter\c!surnamefirstnamesep
+        \currentbtxfirstnames
+    \fi
+    \fastsetup{\s!btx:\s!cite:\s!author:etaltext}
+\stopsetups
+
+\startsetups \s!btx:\s!cite:\s!author:invertedshort
+    \fastsetup{\s!btx:\s!cite:\s!author:concat}
+    \ifx\currentbtxvons\empty \else
+        \currentbtxvons
+        \btxcitevariantparameter\c!vonsep
+    \fi
+    \ifx\currentbtxsurnames\empty \else
+        \currentbtxsurnames
+        \ifx\currentbtxjuniors\empty \else
+            \btxcitevariantparameter\c!juniorsep
+            \currentbtxjuniors
+        \fi
+    \fi
+    \ifx\currentbtxinitials\empty
+        % initials are optional
+    \else
+        \btxcitevariantparameter\c!surnameinitialsep
+        \currentbtxinitials
+    \fi
+    \fastsetup{\s!btx:\s!cite:\s!author:etaltext}
+\stopsetups
+
+\startsetups \s!btx:\s!cite:\s!author:name
+    \fastsetup{\s!btx:\s!cite:\s!author:concat}
+    \ifx\currentbtxvons\empty \else
+        \currentbtxvons
+        \btxcitevariantparameter\c!vonsep
+    \fi
+    \currentbtxsurnames
+    \fastsetup{\s!btx:\s!cite:\s!author:etaltext}
+\stopsetups
+
+% list (mostly the same)
+
+\startsetups \s!btx:\s!list:\s!author:concat
+    \ifcase\currentbtxconcat \or \or
+        \btxlistvariantparameter\c!namesep
+    \or
+        \btxlistvariantparameter\c!lastnamesep
+    \or
+        \btxlistvariantparameter\c!finalnamesep
+    \fi
+\stopsetups
+
+\startsetups \s!btx:\s!list:\s!author:etaltext
+    \btxcitevariantparameter\c!etaltext
+\stopsetups
+
+\startsetups \s!btx:\s!list:\s!author:normal
+    \fastsetup{\s!btx:\s!list:\s!author:concat}
+    \ifx\currentbtxfirstnames\empty \else
+        \currentbtxfirstnames
+        \btxlistvariantparameter\c!firstnamesep
+    \fi
+    \ifx\currentbtxvons\empty \else
+        \currentbtxvons
+        \ifx\currentbtxsurnames\empty \else
+            \btxlistvariantparameter\c!vonsep
+        \fi
+    \fi
+    \ifx\currentbtxsurnames\empty \else
+        \currentbtxsurnames
+        \ifx\currentbtxjuniors\empty \else
+            \btxlistvariantparameter\c!juniorsep
+            \currentbtxjuniors
+        \fi
+    \fi
+    \fastsetup{\s!btx:\s!list:\s!author:etaltext}
+\stopsetups
+
+\startsetups \s!btx:\s!list:\s!author:normalshort
+    \fastsetup{\s!btx:\s!list:\s!author:concat}
+    \ifx\currentbtxinitials\empty \else
+        \currentbtxinitials
+        \btxlistvariantparameter\c!initialsep
+    \fi
+    \ifx\currentbtxvons\empty \else
+        \currentbtxvons
+        \ifx\currentbtxsurnames\empty \else
+            \btxlistvariantparameter\c!vonsep
+        \fi
+    \fi
+    \ifx\currentbtxsurnames\empty \else
+        \currentbtxsurnames
+        \ifx\currentbtxjuniors\empty \else
+            \btxlistvariantparameter\c!juniorsep
+            \currentbtxjuniors
+        \fi
+    \fi
+    \fastsetup{\s!btx:\s!list:\s!author:etaltext}
+\stopsetups
+
+\startsetups \s!btx:\s!list:\s!author:inverted
+    \fastsetup{\s!btx:\s!list:\s!author:concat}
+    \ifx\currentbtxvons\empty \else
+        \currentbtxvons
+        \btxlistvariantparameter\c!vonsep
+    \fi
+    \ifx\currentbtxsurnames\empty \else
+        \currentbtxsurnames
+        \ifx\currentbtxjuniors\empty \else
+            \btxlistvariantparameter\c!juniorsep
+            \currentbtxjuniors
+        \fi
+    \fi
+    \ifx\currentbtxfirstnames\empty
+        % firstnames are optional
+    \else
+        \btxlistvariantparameter\c!surnamefirstnamesep
+        \currentbtxfirstnames
+    \fi
+    \fastsetup{\s!btx:\s!list:\s!author:etaltext}
+\stopsetups
+
+\startsetups \s!btx:\s!list:\s!author:invertedshort
+    \fastsetup{\s!btx:\s!list:\s!author:concat}
+    \ifx\currentbtxvons\empty \else
+        \currentbtxvons
+        \btxlistvariantparameter\c!vonsep
+    \fi
+    \ifx\currentbtxsurnames\empty \else
+        \currentbtxsurnames
+        \ifx\currentbtxjuniors\empty \else
+            \btxlistvariantparameter\c!juniorsep
+            \currentbtxjuniors
+        \fi
+    \fi
+    \ifx\currentbtxinitials\empty
+        % initials are optional
+    \else
+        \btxlistvariantparameter\c!surnameinitialsep
+        \currentbtxinitials
+    \fi
+    \fastsetup{\s!btx:\s!list:\s!author:etaltext}
+\stopsetups
+
+\startsetups \s!btx:\s!list:\s!author:name
+    \fastsetup{\s!btx:\s!list:\s!author:concat}
+    \ifx\currentbtxvons\empty \else
+        \currentbtxvons
+        \btxlistvariantparameter\c!vonsep
+    \fi
+    \currentbtxsurnames
+    \fastsetup{\s!btx:\s!list:\s!author:etaltext}
+\stopsetups
+
+\protect

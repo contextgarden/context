@@ -42,6 +42,7 @@ local is_qualified_path = file.is_qualified_path
 
 local cleanpath         = resolvers.cleanpath
 local inputstack        = resolvers.inputstack
+local resolveprefix     = resolvers.resolve
 
 local v_outer           = variables.outer
 local v_text            = variables.text
@@ -535,7 +536,7 @@ local function process(what,name)
     local depth = #typestack
     local process
     --
-    name = resolvers.resolve(name)
+    name = resolveprefix(name)
     --
 --  if not tolerant then
         -- okay, would be best but not compatible with mkii

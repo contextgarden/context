@@ -142,7 +142,7 @@ return {
         "startcontextdefinitioncode", "stopcontextdefinitioncode",
         "texdefinition",
         --
-        "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup",
+        "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup", "fastsetup",
         "doifelsecommandhandler","doifnotcommandhandler","doifcommandhandler",
         --
         "newmode", "setmode", "resetmode",

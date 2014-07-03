@@ -9,11 +9,11 @@ if not modules then modules = { } end modules ['util-env'] = {
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
-local unquoted, quoted = string.unquoted, string.quoted
+local unquoted, quoted, optionalquoted = string.unquoted, string.quoted, string.optionalquoted
 local concat, insert, remove = table.concat, table.insert, table.remove
 
-environment       = environment or { }
-local environment = environment
+environment         = environment or { }
+local environment   = environment
 
 -- precautions
 
@@ -182,26 +182,14 @@ function environment.splitarguments(separator) -- rather special, cut-off before
 end
 
 function environment.reconstructcommandline(arg,noquote)
+    local resolveprefix = resolvers.resolve -- something rather special
     arg = arg or environment.originalarguments
     if noquote and #arg == 1 then
-        -- we could just do: return unquoted(resolvers.resolve(arg[i]))
-        local a = arg[1]
-        a = resolvers.resolve(a)
-        a = unquoted(a)
-        return a
+        return unquoted(resolveprefix and resolveprefix(arg[1]) or arg[1])
     elseif #arg > 0 then
         local result = { }
         for i=1,#arg do
-            -- we could just do: result[#result+1] = format("%q",unquoted(resolvers.resolve(arg[i])))
-            local a = arg[i]
-            a = resolvers.resolve(a)
-            a = unquoted(a)
-            a = gsub(a,'"','\\"') -- tricky
-            if find(a," ",1,true) then
-                result[#result+1] = quoted(a)
-            else
-                result[#result+1] = a
-            end
+            result[i] = optionalquoted(resolveprefix and resolveprefix(arg[i]) or resolveprefix)
         end
         return concat(result," ")
     else
@@ -238,26 +226,10 @@ end
 -- print(environment.relativepath("//x"))          -- //x
 -- print(environment.relativepath())               -- e:/tmp
 
--- -- to be tested:
---
--- function environment.reconstructcommandline(arg,noquote)
---     arg = arg or environment.originalarguments
---     if noquote and #arg == 1 then
---         return unquoted(resolvers.resolve(arg[1]))
---     elseif #arg > 0 then
---         local result = { }
---         for i=1,#arg do
---             result[#result+1] = format("%q",unquoted(resolvers.resolve(arg[i]))) -- always quote
---         end
---         return concat(result," ")
---     else
---         return ""
---     end
--- end
-
 if arg then
 
     -- new, reconstruct quoted snippets (maybe better just remove the " then and add them later)
+
     local newarg, instring = { }, false
 
     for index=1,#arg do

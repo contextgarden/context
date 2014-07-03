@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.755 -- beware: also sync font-mis.lua
+otf.version              = 2.756 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -1473,6 +1473,14 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                                 rule.current = s_hashed(names,s_h_cache)
                             end
                             rule.glyphs = nil
+                            local lookups = rule.lookups
+                            if lookups then
+                                for i=1,#names do
+                                    if not lookups[i] then
+                                        lookups[i] = "" -- fix sparse array
+                                    end
+                                end
+                            end
                         end
                     end
                 end

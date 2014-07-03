@@ -33,6 +33,7 @@
 \setupviewerlayer
   [\c!state=\v!start,
    \c!title=,
+   \c!export=\v!yes, % exportable is ugly
    \c!printable=\v!yes,
    \c!scope=\v!local, % maybe global but needs checking with layout
    \c!method=\v!none]
@@ -43,6 +44,7 @@
        title     = "\viewerlayerparameter\c!title",
        visible   = "\viewerlayerparameter\c!state",
        editable  = "\v!yes",
+       export    = "\viewerlayerparameter\c!export",
        printable = "\viewerlayerparameter\c!printable",
        scope     = "\viewerlayerparameter\c!scope"
   }}%

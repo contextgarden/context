@@ -11,12 +11,13 @@ if not characters then
     dofile(resolvers.findfile("char-ini.lua"))
 end
 
+local lpeg = lpeg
+
 local context  = context
 local chardata = characters.data
 
 local tostring = tostring
 local concat = table.concat
-local lpeg = lpeg
 local utfchar = utf.char
 local formatters = string.formatters
 
@@ -204,6 +205,8 @@ local function splitauthorstring(str)
     return authors
 end
 
+authors.splitstring = splitauthorstring
+
 -- local function splitauthors(dataset,tag,field)
 --     local entries = datasets[dataset]
 --     local luadata = entries.luadata
@@ -214,214 +217,38 @@ end
 --     if not entry then
 --         return { }
 --     end
---     return  splitauthorstring(entry[field])
+--     return splitauthorstring(entry[field])
 -- end
 
 local function the_initials(initials,symbol)
-    local t, symbol = { }, symbol or "."
-    for i=1,#initials do
-        t[i] = initials[i] .. symbol
-    end
-    return t
-end
-
--- authors
-
-local settings = { }
-
--- local defaultsettings = {
---     firstnamesep        = " ",
---     initialsep          = " ",
---     vonsep              = " ",
---     surnamesep          = " ",
---     juniorsep           = " ",
---     surnamejuniorsep    = ", ",
---     juniorjuniorsep     = ", ",
---     surnamefirstnamesep = ", ",
---     surnameinitialsep   = ", ",
---     namesep             = ", ",
---     lastnamesep         = " and ",
---     finalnamesep        = " and ",
---     etallimit           = 1000,
---     etaldisplay         = 1000,
---     etaltext            = "",
--- }
-
-local defaultsettings = {
-    firstnamesep        = [[\btxlistvariantparameter{firstnamesep}]],
-    vonsep              = [[\btxlistvariantparameter{vonsep}]],
-    surnamesep          = [[\btxlistvariantparameter{surnamesep}]],
-    juniorsep           = [[\btxlistvariantparameter{juniorsep}]],
-    surnamejuniorsep    = [[\btxlistvariantparameter{surnamejuniorsep}]],
-    juniorjuniorsep     = [[\btxlistvariantparameter{juniorjuniorsep}]],
-    surnamefirstnamesep = [[\btxlistvariantparameter{surnamefirstnamesep}]],
-    surnameinitialsep   = [[\btxlistvariantparameter{surnameinitialsep}]],
-    initialsep          = [[\btxlistvariantparameter{initialsep}]],
-    namesep             = [[\btxlistvariantparameter{namesep}]],
-    lastnamesep         = [[\btxlistvariantparameter{lastnamesep}]],
-    finalnamesep        = [[\btxlistvariantparameter{finalnamesep}]],
-    --
-    etaltext            = [[\btxlistvariantparameter{etaltext}]],
-    --
-    etallimit           = 1000,
-    etaldisplay         = 1000,
-}
-
-function authors.setsettings(s)
-end
-
-authors.splitstring = splitauthorstring
-
--- [firstnames] [firstnamesep] [vons] [vonsep] [surnames] [juniors] [surnamesep]  (Taco, von Hoekwater, jr)
-
-function authors.normal(author,settings)
-    local firstnames, vons, surnames, juniors = author.firstnames, author.vons, author.surnames, author.juniors
-    local result, settings = { }, settings or defaultsettings
-    if firstnames and #firstnames > 0 then
-        result[#result+1] = concat(firstnames," ")
-        result[#result+1] = settings.firstnamesep or defaultsettings.firstnamesep
-    end
-    if vons and #vons > 0 then
-        result[#result+1] = concat(vons," ")
-        result[#result+1] = settings.vonsep or defaultsettings.vonsep
-    end
-    if surnames and #surnames > 0 then
-        result[#result+1] = concat(surnames," ")
-        if juniors and #juniors > 0 then
-            result[#result+1] = settings.surnamejuniorsep or defaultsettings.surnamejuniorsep
-            result[#result+1] = concat(juniors," ")
-        end
-    elseif juniors and #juniors > 0 then
-        result[#result+1] = concat(juniors," ")
-    end
-    return concat(result)
-end
-
--- [initials] [initialsep] [vons] [vonsep] [surnames] [juniors] [surnamesep]  (T, von Hoekwater, jr)
-
-function authors.normalshort(author,settings)
-    local initials, vons, surnames, juniors = author.initials, author.vons, author.surnames, author.juniors
-    local result, settings = { }, settings or defaultsettings
-    if initials and #initials > 0 then
-        result[#result+1] = concat(the_initials(initials)," ")
-        result[#result+1] = settings.initialsep or defaultsettings.initialsep
-    end
-    if vons and #vons > 0 then
-        result[#result+1] = concat(vons," ")
-        result[#result+1] = settings.vonsep or defaultsettings.vonsep
-    end
-    if surnames and #surnames > 0 then
-        result[#result+1] = concat(surnames," ")
-        if juniors and #juniors > 0 then
-            result[#result+1] = settings.surnamejuniorsep or defaultsettings.surnamejuniorsep
-            result[#result+1] = concat(juniors," ")
-        end
-    elseif juniors and #juniors > 0 then
-        result[#result+1] = concat(juniors," ")
-    end
-    return concat(result)
-end
-
--- [vons] [vonsep] [surnames] [surnamejuniorsep] [juniors] [surnamefirstnamesep] [firstnames] (von Hoekwater jr, Taco)
-
-function authors.inverted(author,settings)
-    local firstnames, vons, surnames, juniors = author.firstnames, author.vons, author.surnames, author.juniors
-    local result, settings = { }, settings or defaultsettings
-    if vons and #vons > 0 then
-        result[#result+1] = concat(vons," ")
-        result[#result+1] = settings.vonsep or defaultsettings.vonsep
-    end
-    if surnames and #surnames > 0 then
-        result[#result+1] = concat(surnames," ")
-        if juniors and #juniors > 0 then
-            result[#result+1] = settings.surnamejuniorsep or defaultsettings.surnamejuniorsep
-            result[#result+1] = concat(juniors," ")
-        end
-    elseif juniors and #juniors > 0 then
-        result[#result+1] = concat(juniors," ")
-    end
-    if firstnames and #firstnames > 0 then
-        result[#result+1] = settings.surnamefirstnamesep or defaultsettings.surnamefirstnamesep
-        result[#result+1] = concat(firstnames," ")
-    end
-    return concat(result)
-end
-
--- [vons] [vonsep] [surnames] [surnamejuniorsep] [juniors] [surnamefirstnamesep] [initials] (von Hoekwater jr, T)
-
-function authors.invertedshort(author,settings)
-    local vons, surnames, initials, juniors = author.vons, author.surnames, author.initials, author.juniors
-    local result, settings = { }, settings or defaultsettings
-    if vons and #vons > 0 then
-        result[#result+1] = concat(vons," ")
-        result[#result+1] = settings.vonsep or defaultsettings.vonsep
-    end
-    if surnames and #surnames > 0 then
-        result[#result+1] = concat(surnames," ")
-        if juniors and #juniors > 0 then
-            result[#result+1] = settings.surnamejuniorsep or defaultsettings.surnamejuniorsep
-            result[#result+1] = concat(juniors," ")
-        end
-    elseif juniors and #juniors > 0 then
-        result[#result+1] = concat(juniors," ")
-    end
-    if initials and #initials > 0 then
-        result[#result+1] = settings.surnameinitialsep or defaultsettings.surnameinitialsep
-        result[#result+1] = concat(the_initials(initials)," ")
-    end
-    return concat(result)
-end
-
--- [vons] [vonsep] [surnames]
-
-function authors.name(author,settings)
-    local vons, surnames = author.vons, author.surnames
-    local result, settings = { }, settings or defaultsettings
-    if vons and #vons > 0 then
-        result[#result+1] = concat(vons," ")
-        result[#result+1] = settings.vonsep or defaultsettings.vonsep
-    end
-    if surnames and #surnames > 0 then
-        result[#result+1] = concat(surnames," ")
-        if juniors and #juniors > 0 then
-            result[#result+1] = settings.surnamejuniorsep or defaultsettings.surnamejuniorsep
-            result[#result+1] = concat(juniors," ")
-        end
-    end
-    return concat(result)
-end
-
-local lastconcatsize = 1
-
-local function concatnames(t,settings)
-    local namesep      = settings.namesep
-    local lastnamesep  = settings.lastnamesep
-    local finalnamesep = settings.finalnamesep
-    local lastconcatsize = #t
-    if lastconcatsize > 2 then
-        local s = { }
-        for i=1,lastconcatsize-2 do
-            s[i] = t[i] .. namesep
-        end
-        s[lastconcatsize-1], s[lastconcatsize] = t[lastconcatsize-1] .. finalnamesep, t[lastconcatsize]
-        return concat(s)
-    elseif lastconcatsize > 1 then
-        return concat(t,lastnamesep)
-    elseif lastconcatsize > 0 then
-        return t[1]
+    if not symbol or symbol == "" then
+        return initials
     else
-        return ""
+        local result = { }
+        for i=1,#initials do
+            result[i] = initials[i] .. symbol
+        end
+        return result
     end
 end
 
-local f_invalid = formatters["<invalid %s: %s>"]
+local ctx_btxsetconcat        = context.btxsetconcat
+local ctx_btxsetoverflow      = context.btxsetoverflow
+local ctx_btxsetinitials      = context.btxsetinitials
+local ctx_btxsetfirstnames    = context.btxsetfirstnames
+local ctx_btxsetvons          = context.btxsetvons
+local ctx_btxsetsurnames      = context.btxsetsurnames
+local ctx_btxsetjuniors       = context.btxsetjuniors
+local ctx_btxciteauthorsetup  = context.btxciteauthorsetup
+local ctx_btxlistauthorsetup  = context.btxlistauthorsetup
+local ctx_btxsetauthorvariant = context.btxsetauthorvariant
+local ctx_btxstartauthor      = context.btxstartauthor
+local ctx_btxstopauthor       = context.btxstopauthor
 
-function authors.concat(dataset,tag,field,settings)
-    table.setmetatableindex(settings,defaultsettings)
-    local combiner = settings.combiner
-    if not combiner or type(combiner) == "string" then
-        combiner = authors[combiner or "normal"] or authors.normal
-    end
+local concatstate = publications.concatstate
+local f_invalid   = formatters["<invalid %s: %s>"]
+
+function commands.btxauthor(dataset,tag,field,settings)
     local ds = datasets[dataset]
     if not ds then
         return f_invalid("dataset",dataset)
@@ -434,29 +261,56 @@ function authors.concat(dataset,tag,field,settings)
     if not split then
         return f_invalid("field",field)
     end
-    local etallimit   = settings.etallimit   or 1000
-    local etaldisplay = settings.etaldisplay or etallimit
     local max = split and #split or 0
     if max == 0 then
         -- error
     end
+    local etallimit   = tonumber(settings.etallimit) or 1000
+    local etaldisplay = tonumber(settings.etaldisplay) or etallimit
+    local combiner    = settings.combiner
+    local symbol      = settings.symbol
+    if not combiner or combiner == "" then
+        combiner = "normal"
+    end
+    if not symbol then
+        symbol = "."
+    end
+    local ctx_btxsetup = settings.kind == "cite" and ctx_btxciteauthorsetup or ctx_btxlistauthorsetup
     if max > etallimit and etaldisplay < max then
         max = etaldisplay
     end
-    local combined = { }
     for i=1,max do
-        combined[i] = combiner(split[i],settings)
+        ctx_btxstartauthor() -- i, max
+        ctx_btxsetconcat(concatstate(i,max))
+        ctx_btxsetauthorvariant(combiner)
+        local author = split[i]
+        local initials = author.initials
+        if initials then
+            ctx_btxsetinitials(concat(the_initials(initials,symbol)," "))
+        end
+        local firstnames = author.firstnames
+        if firstnames then
+            ctx_btxsetfirstnames(concat(firstnames," "))
+        end
+        local vons = author.vons
+        if vons then
+            ctx_btxsetvons(concat(vons," "))
+        end
+        local surnames = author.surnames
+        if surnames then
+            ctx_btxsetsurnames(concat(surnames," "))
+        end
+        local juniors = author.juniors
+        if juniors then
+            ctx_btxsetjuniors(concat(juniors," "))
+        end
+        ctx_btxsetup(combiner)
+        ctx_btxstopauthor()
     end
-    local result = concatnames(combined,settings)
-    if #combined <= max then
-        return result
-    else
-        return result .. settings.etaltext
+    local overflow = max - #split
+    if overflow > 0 then
+        ctx_btxsetoverflow(overflow)
     end
-end
-
-function commands.btxauthor(...)
-    context(authors.concat(...))
 end
 
 -- We can consider creating a hashtable key -> entry but I wonder if

@@ -8,10 +8,14 @@
             <dc:format>application/pdf</dc:format>
             <dc:creator>
                 <rdf:Seq>
-                    <rdf:li/>
+                    <rdf:li xml:lang="x-default"/>
                 </rdf:Seq>
             </dc:creator>
-            <dc:description/>
+            <dc:description>
+                <rdf:Alt>
+                    <rdf:li xml:lang="x-default"/>
+                </rdf:Alt>
+            </dc:description>
             <dc:title>
                 <rdf:Alt>
                     <rdf:li xml:lang="x-default"/>

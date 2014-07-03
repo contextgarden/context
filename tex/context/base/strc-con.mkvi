@@ -352,10 +352,6 @@
    \ifx\p_strc_constructions_align\empty \else
      \setupalign[\p_strc_constructions_align]% \use...
    \fi
-   \edef\p_strc_constructions_indenting{\constructionparameter\c!indenting}%
-   \ifx\p_strc_constructions_indenting\empty \else
-     \indenting[\p_strc_constructions_indenting]% \use...
-   \fi
    \ifcase\c_strc_constructions_nested_state
      \c_strc_constructions_nested_state\plusone
    \or
@@ -366,6 +362,11 @@
    \edef\p_strc_constructions_headalign{\constructionparameter\c!headalign}%
    %
    \directsetup\p_strc_constructions_renderingsetup\relax
+   % moved to here 2014-07-03
+   \edef\p_strc_constructions_indenting{\constructionparameter\c!indenting}%
+   \ifx\p_strc_constructions_indenting\empty \else
+     \indenting[\p_strc_constructions_indenting]% \use...
+   \fi
    %
    \dostoptagged % tag
    \dostarttagged\t!constructioncontent\empty

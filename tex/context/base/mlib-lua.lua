@@ -21,6 +21,8 @@ local report_luarun = logs.reporter("metapost","lua")
 local trace_luarun  = false  trackers.register("metapost.lua",function(v) trace_luarun = v end)
 local trace_enabled = true
 
+local be_tolerant   = true   directives.register("metapost.lua.tolerant",function(v) be_tolerant = v end)
+
 mp = mp or { } -- system namespace
 MP = MP or { } -- user namespace
 
@@ -146,14 +148,52 @@ local f_code = formatters["%s return mp._f_()"]
 
 local cache, n = { }, 0 -- todo: when > n then reset cache or make weak
 
+-- function metapost.runscript(code)
+--     if trace_enabled and trace_luarun then
+--         report_luarun("code: %s",code)
+--     end
+--     local f
+--     if n > 100 then
+--         cache = nil -- forget about caching
+--         f = loadstring(f_code(code))
+--     else
+--         f = cache[code]
+--         if not f then
+--             f = loadstring(f_code(code))
+--             if f then
+--                 n = n + 1
+--                 cache[code] = f
+--             end
+--         end
+--     end
+--     if f then
+--         local result = f()
+--         if result then
+--             local t = type(result)
+--             if t == "number" then
+--                 return f_numeric(result)
+--             elseif t == "string" then
+--                 return result
+--             else
+--                 return tostring(result)
+--             end
+--         end
+--     end
+--     return ""
+-- end
+
 function metapost.runscript(code)
-    if trace_enabled and trace_luarun then
+    local trace = trace_enabled and trace_luarun
+    if trace then
         report_luarun("code: %s",code)
     end
     local f
     if n > 100 then
         cache = nil -- forget about caching
         f = loadstring(f_code(code))
+        if not f and be_tolerant then
+            f = loadstring(code)
+        end
     else
         f = cache[code]
         if not f then
@@ -161,6 +201,12 @@ function metapost.runscript(code)
             if f then
                 n = n + 1
                 cache[code] = f
+            elseif be_tolerant then
+                f = loadstring(code)
+                if f then
+                    n = n + 1
+                    cache[code] = f
+                end
             end
         end
     end
@@ -169,13 +215,21 @@ function metapost.runscript(code)
         if result then
             local t = type(result)
             if t == "number" then
-                return f_numeric(result)
+                t = f_numeric(result)
             elseif t == "string" then
-                return result
+                t = result
             else
-                return tostring(result)
+                t = tostring(result)
             end
+            if trace then
+                report_luarun("result: %s",code)
+            end
+            return t
+        elseif trace then
+            report_luarun("no result")
         end
+    else
+        report_luarun("no result, invalid code")
     end
     return ""
 end
@@ -208,5 +262,8 @@ mp.number  = mp.numeric
 
 function metapost.initializescriptrunner(mpx,trialrun)
     currentmpx = mpx
-    trace_enabled = not trialrun
+    if trace_luarun then
+        report_luarun("type of run: %s", trialrun and "trial" or "final")
+    end
+ -- trace_enabled = not trialrun blocks too much
 end

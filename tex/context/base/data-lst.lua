@@ -8,12 +8,16 @@ if not modules then modules = { } end modules ['data-lst'] = {
 
 -- used in mtxrun, can be loaded later .. todo
 
-local find, concat, upper, format = string.find, table.concat, string.upper, string.format
+local rawget, type, next = rawget, type, next
+
+local find, concat, upper = string.find, table.concat, string.upper
 local fastcopy, sortedpairs = table.fastcopy, table.sortedpairs
 
-resolvers.listers = resolvers.listers or { }
+local resolvers     = resolvers
+local listers       = resolvers.listers or { }
+resolvers.listers   = listers
 
-local resolvers = resolvers
+local resolveprefix = resolvers.resolve
 
 local report_lists = logs.reporter("resolvers","lists")
 
@@ -25,7 +29,7 @@ local function tabstr(str)
     end
 end
 
-function resolvers.listers.variables(pattern)
+function listers.variables(pattern)
     local instance    = resolvers.instance
     local environment = instance.environment
     local variables   = instance.variables
@@ -46,10 +50,10 @@ function resolvers.listers.variables(pattern)
     for key, value in sortedpairs(configured) do
         if key ~= "" and (pattern == "" or find(upper(key),pattern)) then
             report_lists(key)
-            report_lists("  env: %s",tabstr(rawget(environment,key))    or "unset")
-            report_lists("  var: %s",tabstr(configured[key])            or "unset")
-            report_lists("  exp: %s",tabstr(expansions[key])            or "unset")
-            report_lists("  res: %s",tabstr(resolvers.resolve(expansions[key])) or "unset")
+            report_lists("  env: %s",tabstr(rawget(environment,key))        or "unset")
+            report_lists("  var: %s",tabstr(configured[key])                or "unset")
+            report_lists("  exp: %s",tabstr(expansions[key])                or "unset")
+            report_lists("  res: %s",tabstr(resolveprefix(expansions[key])) or "unset")
         end
     end
     instance.environment = fastcopy(env)
@@ -59,15 +63,15 @@ end
 
 local report_resolved = logs.reporter("system","resolved")
 
-function resolvers.listers.configurations()
+function listers.configurations()
     local configurations = resolvers.instance.specification
     for i=1,#configurations do
-        report_resolved("file : %s",resolvers.resolve(configurations[i]))
+        report_resolved("file : %s",resolveprefix(configurations[i]))
     end
     report_resolved("")
     local list = resolvers.expandedpathfromlist(resolvers.splitpath(resolvers.luacnfspec))
     for i=1,#list do
-        local li = resolvers.resolve(list[i])
+        local li = resolveprefix(list[i])
         if lfs.isdir(li) then
             report_resolved("path - %s",li)
         else

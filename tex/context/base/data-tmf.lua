@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-tmf'] = {
     license   = "see context related readme files"
 }
 
-local resolvers = resolvers
+local resolvers  = resolvers
 
 local report_tds = logs.reporter("resolvers","tds")
 

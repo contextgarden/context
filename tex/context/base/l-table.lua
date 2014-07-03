@@ -164,14 +164,14 @@ local function sortedhash(t,cmp)
         end
         local n = 0
         local m = #s
-        local function kv(s)
+        local function kv() -- (s)
             if n < m then
                 n = n + 1
                 local k = s[n]
                 return k, t[k]
             end
         end
-        return kv, s
+        return kv -- , s
     else
         return nothing
     end
@@ -1112,5 +1112,51 @@ function table.values(t,s) -- optional sort flag
         return values
     else
         return { }
+    end
+end
+
+-- maybe this will move to util-tab.lua
+
+-- for k, v in table.filtered(t,pattern)          do ... end
+-- for k, v in table.filtered(t,pattern,true)     do ... end
+-- for k, v in table.filtered(t,pattern,true,cmp) do ... end
+
+function table.filtered(t,pattern,sort,cmp)
+    if t and type(pattern) == "string" then
+        if sort then
+            local s
+            if cmp then
+                -- it would be nice if the sort function would accept a third argument (or nicer, an optional first)
+                s = sortedhashkeys(t,function(a,b) return cmp(t,a,b) end)
+            else
+                s = sortedkeys(t) -- the robust one
+            end
+            local n = 0
+            local m = #s
+            local function kv(s)
+                while n < m do
+                    n = n + 1
+                    local k = s[n]
+                    if find(k,pattern) then
+                        return k, t[k]
+                    end
+                end
+            end
+            return kv, s
+        else
+            local n = next(t)
+            local function iterator()
+                while n do
+                    local k = n
+                    n = next(t,k)
+                    if find(k,pattern) then
+                        return k, t[k]
+                    end
+                end
+            end
+            return iterator, t
+        end
+    else
+        return nothing
     end
 end

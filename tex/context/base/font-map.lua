@@ -149,6 +149,8 @@ local namesplitter = Ct(C((1 - ligseparator - varseparator)^1) * (ligseparator *
 --     print(string.formatters["%s: [% t]"](name,split))
 -- end
 
+-- maybe: ff fi fl ffi ffl => f_f f_i f_l f_f_i f_f_l
+
 -- test("i.f_")
 -- test("this")
 -- test("this.that")

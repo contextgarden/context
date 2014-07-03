@@ -36,8 +36,6 @@ local function splitmethod(filename) -- todo: filetype in specification
     end
     filename = file.collapsepath(filename,".") -- hm, we should keep ./ in some cases
 
- -- filename = gsub(filename,"^%./",getcurrentdir().."/") -- we will merge dir.expandname and collapse some day
-
     if not find(filename,"://",1,true) then
         return { scheme = "file", path = filename, original = filename, filename = filename }
     end

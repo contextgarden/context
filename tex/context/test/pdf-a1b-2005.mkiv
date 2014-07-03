@@ -1,9 +1,9 @@
 % PDF/A-1b:2005
 
-\enabletrackers[structure.tags,backend.tags]
+\enabletrackers[structure.tags,backend.tags,backend.xmp]
 
 \setupbackend
-  [format=PDF/A-1a:2005,
+  [format=PDF/A-1b:2005,
    intent=sRGB IEC61966-2.1, % use <info> entry here; otherwise problems with predefined default profile
    profile=sRGB.icc, % use <filename> here
    level=0]
@@ -19,8 +19,6 @@
 \starttextcolor[rgbblack] % forced /DeviceGray causes problems; we need a trigger
 
 Text is needed, otherwise tagging base entries are not applied.
-
-\stopchapter
 
 \stoptextcolor
 

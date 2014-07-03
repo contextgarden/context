@@ -90,12 +90,10 @@ local ctx_firstoftwoarguments     = context.firstoftwoarguments
 local ctx_secondoftwoarguments    = context.secondoftwoarguments
 local ctx_firstofoneargument      = context.firstofoneargument
 local ctx_gobbleoneargument       = context.gobbleoneargument
------ ctx_directsetup             = context.directsetup
 
 local ctx_btxlistparameter        = context.btxlistparameter
 local ctx_btxcitevariantparameter = context.btxcitevariantparameter
 local ctx_btxlistvariantparameter = context.btxlistvariantparameter
------ ctx_btxdomarkcitation       = context.btxdomarkcitation
 local ctx_btxdirectlink           = context.btxdirectlink
 local ctx_btxhandlelistentry      = context.btxhandlelistentry
 local ctx_btxchecklistentry       = context.btxchecklistentry
@@ -107,7 +105,6 @@ local ctx_btxmissing              = context.btxmissing
 local ctx_btxsetdataset           = context.btxsetdataset
 local ctx_btxsettag               = context.btxsettag
 local ctx_btxsetlanguage          = context.btxsetlanguage
-local ctx_btxsetindex             = context.btxsetindex
 local ctx_btxsetcombis            = context.btxsetcombis
 local ctx_btxsetcategory          = context.btxsetcategory
 local ctx_btxcitesetup            = context.btxcitesetup
@@ -117,8 +114,12 @@ local ctx_btxsetinternal          = context.btxsetinternal
 local ctx_btxsetbacklink          = context.btxsetbacklink
 local ctx_btxsetbacktrace         = context.btxsetbacktrace
 local ctx_btxsetcount             = context.btxsetcount
------ ctx_btxsetrealpage          = context.btxsetrealpage
 local ctx_btxsetconcat            = context.btxsetconcat
+local ctx_btxsetoveflow           = context.btxsetoverflow
+local ctx_btxstartcite            = context.btxstartcite
+local ctx_btxstopcite             = context.btxstopcite
+local ctx_btxstartciteauthor      = context.btxstartciteauthor
+local ctx_btxstopciteauthor       = context.btxstopciteauthor
 local ctx_btxstartsubcite         = context.btxstartsubcite
 local ctx_btxstopsubcite          = context.btxstopsubcite
 local ctx_btxlistsetup            = context.btxlistsetup
@@ -442,32 +443,23 @@ local function findallused(dataset,reference,internal)
     return okay, todo, tags
 end
 
-local function flushcollected(reference,flush,nofcollected)
-    if nofcollected > 0 then
-        flush(1,1)
-        if nofcollected > 2 then
-            for i=2,nofcollected-1 do
-                flush(i,2)
-            end
-            flush(nofcollected,3)
-        elseif nofcollected > 1 then
-            flush(nofcollected,4)
-        end
-    else
-        ctx_btxsettag(reference)
-        ctx_btxcitesetup("unknown")
-    end
+local function unknowncite(reference)
+    ctx_btxsettag(reference)
+    ctx_btxcitesetup("unknown")
 end
+
+local concatstate = publications.concatstate
 
 local tobemarked = nil
 
 function marknocite(dataset,tag,nofcitations) -- or just: ctx_btxdomarkcitation
-   ctx_btxsetdataset(dataset)
-   ctx_btxsettag(tag)
-   ctx_btxsetbacklink(nofcitations)
-   ctx_btxcitesetup("nocite")
+    ctx_btxstartcite()
+    ctx_btxsetdataset(dataset)
+    ctx_btxsettag(tag)
+    ctx_btxsetbacklink(nofcitations)
+    ctx_btxcitesetup("nocite")
+    ctx_btxstopcite()
 end
-
 
 local function markcite(dataset,tag,flush)
     if not tobemarked then
@@ -1169,7 +1161,6 @@ function lists.flushentries(dataset,sorttype)
         local tag   = li[1]
         local entry = luadata[tag]
         if entry and (forceall or repeated or not used[tag]) then
-            ctx_btxsetindex(i)
             local combined = entry.combined
             if combined then
                 ctx_btxsetcombis(concat(combined,","))
@@ -1448,9 +1439,10 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
             source[i] = data
         end
 
-        local function flushindeed(state,entry,tag)
+        local function flush(i,n,entry,tag)
             local tag = tag or entry.tag
             local currentcitation = markcite(dataset,tag)
+            ctx_btxstartcite()
             ctx_btxsettag(tag)
             ctx_btxsetbacklink(currentcitation)
             local bl = listtocite[currentcitation]
@@ -1468,27 +1460,36 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
             if not setter(entry,entry.last) then
                 ctx_btxsetfirst(f_missing(tag))
             end
-            ctx_btxsetconcat(state)
+            ctx_btxsetconcat(concatstate(i,n))
             ctx_btxcitesetup(setup)
+            ctx_btxstopcite()
         end
 
         if compress and not badkey then
             local target = (compressor or compresslist)(source)
-            local function flush(i,state)
-                local entry = target[i]
-                local first = entry.first
-                if first then
-                    flushindeed(state,first,list[1]) -- somewhat messy as we can be sorted so this needs checking! might be wrong
-                else
-                    flushindeed(state,entry)
+            local nofcollected = #target
+            if nofcollected == 0 then
+                unknowncite(reference)
+            else
+                for i=1,nofcollected do
+                    local entry = target[i]
+                    local first = entry.first
+                    if first then
+                        flush(i,nofcollected,first,list[1]) -- somewhat messy as we can be sorted so this needs checking! might be wrong
+                    else
+                        flush(i,nofcollected,entry)
+                    end
                 end
             end
-            flushcollected(reference,flush,#target)
         else
-            local function flush(i,state)
-                flushindeed(state,source[i])
+            local nofcollected = #source
+            if nofcollected == 0 then
+                unknowncite(reference)
+            else
+                for i=1,nofcollected do
+                    flush(i,nofcollected,source[i])
+                end
             end
-            flushcollected(reference,flush,#source)
         end
     end
     if tobemarked then
@@ -1713,26 +1714,6 @@ function citevariants.tag(dataset,reference,mark,compress,variant,internal)
     return processcite(dataset,reference,mark,compress,"tag",internal,setter,getter)
 end
 
--- author
-
-local function setter(dataset,tag,entry,internal)
-    return {
-        dataset  = dataset,
-        tag      = tag,
-        internal = internal,
-        author   = getfield(dataset,tag,"author"),
-    }
-end
-
-local function getter(first,last)
-    ctx_btxsetfirst(first.author) -- todo: formatted
-    return true
-end
-
-function citevariants.author(dataset,reference,mark,compress,variant,internal)
-    processcite(dataset,reference,mark,false,"author",internal,setter,getter)
-end
-
 -- todo : sort
 -- todo : choose between publications or commands namespace
 -- todo : use details.author
@@ -1742,6 +1723,11 @@ end
 -- \cite[{hh,afo},kvm]
 
 -- common
+
+local currentbtxciteauthor = function()
+    context.currentbtxciteauthor()
+    return true -- needed?
+end
 
 local function authorcompressor(found)
     local result  = { }
@@ -1775,43 +1761,50 @@ local function authorcompressor(found)
 end
 
 local function authorconcat(target,key,setup)
-    local function flush(i,state)
-        local entry = target[i]
-        local first = entry.first
-        local tag = entry.tag
-        local currentcitation = markcite(entry.dataset,tag)
-        ctx_btxsettag(tag)
-        ctx_btxsetbacklink(currentcitation)
-        local bl = listtocite[currentcitation]
-        ctx_btxsetinternal(bl and bl.references.internal or "")
-        if first then
-            ctx_btxsetfirst(first[key] or f_missing(first.tag))
-            local suffix = entry.suffix
-            local value  = entry.last[key]
-            if suffix then
-                ctx_btxsetsecond(value .. converters.characters(suffix))
-            else
-                ctx_btxsetsecond(value)
-            end
-        else
-            local suffix = entry.suffix
-            local value  = entry[key] or f_missing(tag)
-            if suffix then
-                ctx_btxsetfirst(value .. converters.characters(suffix))
-            else
-                ctx_btxsetfirst(value)
-            end
-        end
-        ctx_btxsetconcat(state)
-        ctx_btxcitesetup(setup)
-    end
     ctx_btxstartsubcite(setup)
-    flushcollected(setup,flush,#target)
+    local nofcollected = #target
+    if nofcollected == 0 then
+        unknowncite(tag)
+    else
+        for i=1,nofcollected do
+            local entry = target[i]
+            local first = entry.first
+            local tag   = entry.tag
+            local currentcitation = markcite(entry.dataset,tag)
+            ctx_btxstartciteauthor()
+            ctx_btxsettag(tag)
+            ctx_btxsetbacklink(currentcitation)
+            local bl = listtocite[currentcitation]
+            ctx_btxsetinternal(bl and bl.references.internal or "")
+            if first then
+                ctx_btxsetfirst(first[key] or f_missing(first.tag))
+                local suffix = entry.suffix
+                local value  = entry.last[key]
+                if suffix then
+                    ctx_btxsetsecond(value .. converters.characters(suffix))
+                else
+                    ctx_btxsetsecond(value)
+                end
+            else
+                local suffix = entry.suffix
+                local value  = entry[key] or f_missing(tag)
+                if suffix then
+                    ctx_btxsetfirst(value .. converters.characters(suffix))
+                else
+                    ctx_btxsetfirst(value)
+                end
+            end
+            ctx_btxsetconcat(concatstate(i,nofcollected))
+            ctx_btxcitesetup(setup)
+            ctx_btxstopciteauthor()
+        end
+    end
     ctx_btxstopsubcite()
 end
 
 local function authorsingle(entry,key,setup)
     ctx_btxstartsubcite(setup)
+    ctx_btxstartciteauthor()
     local tag = entry.tag
     ctx_btxsettag(tag)
  -- local currentcitation = markcite(entry.dataset,tag)
@@ -1820,13 +1813,15 @@ local function authorsingle(entry,key,setup)
  -- ctx_btxsetinternal(bl and bl.references.internal or "")
     ctx_btxsetfirst(entry[key] or f_missing(tag))
     ctx_btxcitesetup(setup)
+    ctx_btxstopciteauthor()
     ctx_btxstopsubcite()
 end
 
 local partialinteractive = false
 
 local function authorgetter(first,last,key,setup) -- only first
-    ctx_btxsetfirst(first.author) -- todo: reformat
+ -- ctx_btxsetfirst(first.author)         -- unformatted
+    ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
     local entries = first.entries
     -- alternatively we can use a concat with one ... so that we can only make the
     -- year interactive, as with the concat
@@ -1835,13 +1830,36 @@ local function authorgetter(first,last,key,setup) -- only first
     end
     if entries then
         local c = compresslist(entries)
+        local f = function() authorconcat(c,key,setup) return true end -- indeed return true?
         ctx_btxsetcount(#c)
-        ctx_btxsetsecond(function() authorconcat(c,key,setup) return true end) -- indeed return true?
+        ctx_btxsetsecond(f)
     else
+        local f = function() authorsingle(first,key,setup) return true end -- indeed return true?
         ctx_btxsetcount(0)
-        ctx_btxsetsecond(function() authorsingle(first,key,setup) return true end) -- indeed return true?
+        ctx_btxsetsecond(f)
     end
     return true
+end
+
+-- author
+
+local function setter(dataset,tag,entry,internal)
+    return {
+        dataset  = dataset,
+        tag      = tag,
+        internal = internal,
+        author   = getfield(dataset,tag,"author"),
+    }
+end
+
+local function getter(first,last,_,setup)
+ -- ctx_btxsetfirst(first.author)         -- unformatted
+    ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
+    return true
+end
+
+function citevariants.author(dataset,reference,mark,compress,variant,internal)
+    processcite(dataset,reference,mark,false,"author",internal,setter,getter)
 end
 
 -- authornum
@@ -1864,7 +1882,7 @@ local function getter(first,last)
 end
 
 local function compressor(found)
-    return authorcompressor(found)
+    return authorcompressor(found) -- can be just an alias
 end
 
 function citevariants.authornum(dataset,reference,mark,compress,variant,internal)

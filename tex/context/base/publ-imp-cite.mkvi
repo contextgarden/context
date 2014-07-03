@@ -59,7 +59,7 @@
 
 \startsetups \s!btx:\s!cite:common:normal
     \ifx\currentbtxfirst\empty
-        \directsetup{\s!btx:\s!cite:\s!unknown}
+        \fastsetup{\s!btx:\s!cite:\s!unknown}
     \else\ifx\currentbtxsecond\empty
         \btxcitereference
         \currentbtxfirst
@@ -73,7 +73,7 @@
 
 \startsetups \s!btx:\s!cite:common:range
     \ifx\currentbtxfirst\empty
-        \directsetup{\s!btx:\s!cite:\s!unknown}
+        \fastsetup{\s!btx:\s!cite:\s!unknown}
     \else\ifx\currentbtxsecond\empty
         \btxcitereference
         \currentbtxfirst
@@ -96,9 +96,9 @@
 \stopsetups
 
 \startsetups \s!btx:\s!cite:render:normal
-    \directsetup{\s!btx:\s!cite:concat}
+    \fastsetup{\s!btx:\s!cite:concat}
     \ifx\currentbtxfirst\empty
-        \directsetup{\s!btx:\s!cite:\s!unknown}
+        \fastsetup{\s!btx:\s!cite:\s!unknown}
     \else
         \texdefinition {btx:cite:inject} {
             \btxcitereference
@@ -112,9 +112,9 @@
 \stopsetups
 
 \startsetups \s!btx:\s!cite:render:range
-    \directsetup{\s!btx:\s!cite:concat}
+    \fastsetup{\s!btx:\s!cite:concat}
     \ifx\currentbtxfirst\empty
-        \directsetup{\s!btx:\s!cite:missing}
+        \fastsetup{\s!btx:\s!cite:missing}
     \else
         \texdefinition {btx:cite:inject} {
             \btxcitereference
@@ -128,103 +128,101 @@
 \stopsetups
 
 \startsetups \s!btx:\s!cite:render:variant
-    \directsetup{\s!btx:\s!cite:concat}
+    \fastsetup{\s!btx:\s!cite:concat}
     \texdefinition {btx:cite:inject} {
-        \directsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
+        \fastsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
     }
 \stopsetups
 
-% author lists: can be less
-
 \startsetups \s!btx:\s!cite:common:author
     \ifx\currentbtxfirst\empty
-        \directsetup{\s!btx:\s!cite:\s!unknown}
-    \else\ifx\currentbtxcitevariant\v!normal
-        \btxcitereference
-        \currentbtxfirst
+        \fastsetup{\s!btx:\s!cite:\s!unknown}
     \else
         \btxcitereference
-        \currentbtxciteauthor
-    \fi\fi
+        \currentbtxfirst
+    \fi
     \ifx\currentbtxsecond\empty \else
+        \relax % keeps a following space
         \btxcitevariantparameter\v!inbetween
         \currentbtxsecond
     \fi
 \stopsetups
 
+% one level will be removed
+
 \startsetups \s!btx:\s!cite:render:author
-    \directsetup{\s!btx:\s!cite:common:author}
+    \fastsetup{\s!btx:\s!cite:common:author}
 \stopsetups
 \startsetups \s!btx:\s!cite:render:authoryear
-    \directsetup{\s!btx:\s!cite:common:author}
+    \fastsetup{\s!btx:\s!cite:common:author}
 \stopsetups
 \startsetups \s!btx:\s!cite:render:authoryears
-    \directsetup{\s!btx:\s!cite:common:author}
+    \fastsetup{\s!btx:\s!cite:common:author}
 \stopsetups
 \startsetups \s!btx:\s!cite:render:authornum
-    \directsetup{\s!btx:\s!cite:common:author}
+    \fastsetup{\s!btx:\s!cite:common:author}
 \stopsetups
 
 \startsetups \s!btx:\s!cite:author:num
-    \directsetup{\s!btx:\s!cite:render:range}
+    \fastsetup{\s!btx:\s!cite:render:range}
 \stopsetups
 \startsetups \s!btx:\s!cite:author:year
-    \directsetup{\s!btx:\s!cite:render:range}
+    \fastsetup{\s!btx:\s!cite:render:range}
 \stopsetups
 \startsetups \s!btx:\s!cite:author:years
-    \directsetup{\s!btx:\s!cite:render:range}
+    \fastsetup{\s!btx:\s!cite:render:range}
 \stopsetups
 
 \startsetups \s!btx:\s!cite:author
-    \directsetup{\s!btx:\s!cite:render:variant}
+    \fastsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authoryear
-    \directsetup{\s!btx:\s!cite:render:variant}
+    \fastsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authoryears
-    \directsetup{\s!btx:\s!cite:render:variant}
+    \fastsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 \startsetups \s!btx:\s!cite:authornum
-    \directsetup{\s!btx:\s!cite:render:variant}
+    \fastsetup{\s!btx:\s!cite:render:variant}
 \stopsetups
 
 \startsetups \s!btx:\s!cite:year
-    \directsetup{\s!btx:\s!cite:render:range}
+    \fastsetup{\s!btx:\s!cite:render:range}
 \stopsetups
 \startsetups \s!btx:\s!cite:short
-    \directsetup{\s!btx:\s!cite:render:normal}
+    \fastsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:serial
-    \directsetup{\s!btx:\s!cite:render:range}
+    \fastsetup{\s!btx:\s!cite:render:range}
 \stopsetups
 \startsetups \s!btx:\s!cite:tag
-    \directsetup{\s!btx:\s!cite:render:normal}
+    \fastsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:key
-    \directsetup{\s!btx:\s!cite:render:normal}
+    \fastsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 %startsetups \s!btx:\s!cite:doi
-%   \directsetup{\s!btx:\s!cite:render:normal}
+%   \fastsetup{\s!btx:\s!cite:render:normal}
 %stopsetups
 %startsetups \s!btx:\s!cite:url
-%   \directsetup{\s!btx:\s!cite:render:normal}
+%   \fastsetup{\s!btx:\s!cite:render:normal}
 %stopsetups
 \startsetups \s!btx:\s!cite:category
-    \directsetup{\s!btx:\s!cite:render:normal}
+    \fastsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:type
-    \directsetup{\s!btx:\s!cite:render:normal}
+    \fastsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 \startsetups \s!btx:\s!cite:num
-    \directsetup{\s!btx:\s!cite:render:range}
+    \fastsetup{\s!btx:\s!cite:render:range}
 \stopsetups
 \startsetups \s!btx:\s!cite:page
-    \directsetup{\s!btx:\s!cite:render:normal}
+    \fastsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 
 \startsetups \s!btx:\s!cite:render:doi
     \ifx\currentbtxfirst\empty
-        \directsetup{\s!btx:\s!cite:\s!unknown}
+        \fastsetup{\s!btx:\s!cite:\s!unknown}
     \else
         \btxcitereference
         \hyphenatedurl{\currentbtxfirst}
@@ -233,7 +231,7 @@
 
 \startsetups \s!btx:\s!cite:url
     \ifx\currentbtxfirst\empty
-        \directsetup{\s!btx:\s!cite:\s!unknown}
+        \fastsetup{\s!btx:\s!cite:\s!unknown}
     \else\ifconditional\btxinteractive
         \goto {
             \btxcitereference

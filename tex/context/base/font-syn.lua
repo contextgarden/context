@@ -33,7 +33,7 @@ local exists               = io.exists
 
 local findfile             = resolvers.findfile
 local cleanpath            = resolvers.cleanpath
-local resolveresolved      = resolvers.resolve
+local resolveprefix        = resolvers.resolve
 
 local settings_to_hash     = utilities.parsers.settings_to_hash_tolerant
 
@@ -1065,15 +1065,15 @@ local function analyzefiles(olddata)
         resolvers.dowithfilesintree(".*%." .. suffix .. "$", function(method,root,path,name)
             if method == "file" or method == "tree" then
                 local completename = root .."/" .. path .. "/" .. name
-                completename = resolveresolved(completename) -- no shortcut
+                completename = resolveprefix(completename) -- no shortcut
                 identify(completename,name,suffix,name)
                 return true
             end
         end, function(blobtype,blobpath,pattern)
-            blobpath = resolveresolved(blobpath) -- no shortcut
+            blobpath = resolveprefix(blobpath) -- no shortcut
             report_names("scanning path %a for %s files",blobpath,suffix)
         end, function(blobtype,blobpath,pattern,total,checked,done)
-            blobpath = resolveresolved(blobpath) -- no shortcut
+            blobpath = resolveprefix(blobpath) -- no shortcut
             report_names("%s entries found, %s %s files checked, %s okay",total,checked,suffix,done)
         end)
     end

@@ -19,6 +19,8 @@ local P, S, C, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 
 local tex, xml = tex, xml
 local lowerchars, upperchars, lettered = characters.lower, characters.upper, characters.lettered
+local basename, dirname, joinfile = file.basename, file.dirname, file.join
+
 
 lxml = lxml or { }
 local lxml = lxml
@@ -39,24 +41,28 @@ local xmlunprivatized, xmlprivatetoken, xmlprivatecodes = xml.unprivatized, xml.
 local xmlstripelement = xml.stripelement
 local xmlinclusion, xmlinclusions = xml.inclusion, xml.inclusions
 
-local variables = interfaces and interfaces.variables or { }
+local variables         = interfaces and interfaces.variables or { }
 
 local settings_to_hash  = utilities.parsers.settings_to_hash
 local insertbeforevalue = utilities.tables.insertbeforevalue
 local insertaftervalue  = utilities.tables.insertaftervalue
 
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+local resolveprefix     = resolvers.resolve
 
-local trace_setups   = false  trackers.register("lxml.setups",   function(v) trace_setups   = v end)
-local trace_loading  = false  trackers.register("lxml.loading",  function(v) trace_loading  = v end)
-local trace_access   = false  trackers.register("lxml.access",   function(v) trace_access   = v end)
-local trace_comments = false  trackers.register("lxml.comments", function(v) trace_comments = v end)
-local trace_entities = false  trackers.register("xml.entities",  function(v) trace_entities = v end)
+local starttiming       = statistics.starttiming
+local stoptiming        = statistics.stoptiming
 
-local report_lxml = logs.reporter("xml","tex")
-local report_xml  = logs.reporter("xml","tex")
+local trace_setups      = false  trackers.register("lxml.setups",   function(v) trace_setups   = v end)
+local trace_loading     = false  trackers.register("lxml.loading",  function(v) trace_loading  = v end)
+local trace_access      = false  trackers.register("lxml.access",   function(v) trace_access   = v end)
+local trace_comments    = false  trackers.register("lxml.comments", function(v) trace_comments = v end)
+local trace_entities    = false  trackers.register("xml.entities",  function(v) trace_entities = v end)
 
-local forceraw, rawroot = false, nil
+local report_lxml       = logs.reporter("xml","tex")
+local report_xml        = logs.reporter("xml","tex")
+
+local forceraw          = false
+local forceraw          = nil
 
 -- tex entities
 --
@@ -437,37 +443,6 @@ function lxml.register(id,xmltable,filename)
     return xmltable
 end
 
--- function lxml.include(id,pattern,attribute,recurse,resolve)
---     starttiming(xml)
---     local root = getid(id)
---     xml.include(root,pattern,attribute,recurse,function(filename)
---         if filename then
---             -- preprocessing
---             filename = commands.preparedfile(filename)
---             -- some protection
---             if file.dirname(filename) == "" and root.filename then
---                 local dn = file.dirname(root.filename)
---                 if dn ~= "" then
---                     filename = file.join(dn,filename)
---                 end
---             end
---             if trace_loading then
---                 report_lxml("including file %a",filename)
---             end
---             -- handy if we have a flattened structure
---             if resolve then
---                 filename = resolvers.resolve(filename) or filename
---             end
---             -- todo: check variants and provide
---             noffiles, nofconverted = noffiles + 1, nofconverted + 1
---             return resolvers.loadtexfile(filename) or ""
---         else
---             return ""
---         end
---     end)
---     stoptiming(xml)
--- end
-
 -- recurse prepare rootpath resolve basename
 
 local options_true = { "recurse", "prepare", "rootpath" }
@@ -493,17 +468,17 @@ function lxml.include(id,pattern,attribute,options)
             end
             -- handy if we have a flattened structure
             if options.basename then
-                filename = file.basename(filename)
+                filename = basename(filename)
             end
             if options.resolve then
-                filename = resolvers.resolve(filename) or filename
+                filename = resolveprefix(filename) or filename
             end
             -- some protection
             if options.rootpath then
-                if file.dirname(filename) == "" and root.filename then
-                    local dn = file.dirname(root.filename)
+                if dirname(filename) == "" and root.filename then
+                    local dn = dirname(root.filename)
                     if dn ~= "" then
-                        filename = file.join(dn,filename)
+                        filename = joinfile(dn,filename)
                     end
                 end
             end

@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['data-lua'] = {
 
 -- This is now a plug in into l-lua (as we also use the extra paths elsewhere).
 
-local resolvers, package = resolvers, package
+local package, lpeg = package, lpeg
 
 local gsub = string.gsub
 local concat = table.concat
@@ -16,17 +16,20 @@ local addsuffix = file.addsuffix
 
 local P, S, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.Cs, lpeg.match
 
-local luasuffixes = { 'tex', 'lua' }
-local libsuffixes = { 'lib' }
-local luaformats  = { 'TEXINPUTS', 'LUAINPUTS' }
-local libformats  = { 'CLUAINPUTS' }
-local helpers     = package.helpers or { }
-local methods     = helpers.methods or { }
+local luasuffixes   = { 'tex', 'lua' }
+local libsuffixes   = { 'lib' }
+local luaformats    = { 'TEXINPUTS', 'LUAINPUTS' }
+local libformats    = { 'CLUAINPUTS' }
+local helpers       = package.helpers or { }
+local methods       = helpers.methods or { }
+
+local resolvers     = resolvers
+local resolveprefix = resolvers.resolve
+
+helpers.report      = logs.reporter("resolvers","libraries")
 
 trackers.register("resolvers.libraries", function(v) helpers.trace = v end)
 trackers.register("resolvers.locating",  function(v) helpers.trace = v end)
-
-helpers.report = logs.reporter("resolvers","libraries")
 
 helpers.sequence = {
     "already loaded",
@@ -44,7 +47,7 @@ helpers.sequence = {
 local pattern = Cs(P("!")^0 / "" * (P("/") * P(-1) / "/" + P("/")^1 / "/" + 1)^0)
 
 function helpers.cleanpath(path) -- hm, don't we have a helper for this?
-    return resolvers.resolve(lpegmatch(pattern,path))
+    return resolveprefix(lpegmatch(pattern,path))
 end
 
 local loadedaslib      = helpers.loadedaslib

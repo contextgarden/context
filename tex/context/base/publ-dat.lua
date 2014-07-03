@@ -639,3 +639,19 @@ end
 -- print(table.serialize(dataset.xmldata))
 -- print(table.serialize(dataset.shortcuts))
 -- print(xml.serialize(dataset.xmldata))
+
+-- a helper:
+
+function publications.concatstate(i,n)
+    if i == 0 then
+        return 0
+    elseif i == 1 then
+        return 1
+    elseif i == 2 and n == 2 then
+        return 4
+    elseif i == n then
+        return 3
+    else
+        return 2
+    end
+end

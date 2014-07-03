@@ -13,14 +13,17 @@ local Ct, Cs, Cc, Carg, P, C, S = lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.P, 
 local type, next = type, next
 
 local ostype = os.type
-local collapsepath = file.collapsepath
+local collapsepath, joinpath, basename = file.collapsepath, file.join, file.basename
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
+local trace_globbing   = true   trackers.register("resolvers.globbing",   function(v) trace_globbing   = v end)
 
 local report_expansions = logs.reporter("resolvers","expansions")
+local report_globbing   = logs.reporter("resolvers","globbing")
 
-local resolvers = resolvers
+local resolvers     = resolvers
+local resolveprefix = resolvers.resolve
 
 -- As this bit of code is somewhat special it gets its own module. After
 -- all, when working on the main resolver code, I don't want to scroll
@@ -177,34 +180,28 @@ end
 -- {a,b,c/{p,q/{x,y,z},w}v,d/{p,q,r}}
 -- {$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}
 
-local cleanup = lpeg.replacer {
-    { "!"  , ""  },
-    { "\\" , "/" },
-}
+local usedhomedir = nil
+local donegation  = (P("!") /""     )^0
+local doslashes   = (P("\\")/"/" + 1)^0
 
-function resolvers.cleanpath(str) -- tricky, maybe only simple paths
-    local doslashes  = (P("\\")/"/" + 1)^0
-    local donegation = (P("!") /""     )^0
-    local homedir = lpegmatch(Cs(donegation * doslashes),environment.homedir or "")
-    if homedir == "~" or homedir == "" or not lfs.isdir(homedir) then
-        if trace_expansions then
-            report_expansions("no home dir set, ignoring dependent paths")
-        end
-        function resolvers.cleanpath(str)
-            if not str or find(str,"~",1,true) then
-                return "" -- special case
-            else
-                return lpegmatch(cleanup,str)
+local function expandedhome()
+    if not usedhomedir then
+        usedhomedir = lpegmatch(Cs(donegation * doslashes),environment.homedir or "")
+        if usedhomedir == "~" or usedhomedir == "" or not lfs.isdir(usedhomedir) then
+            if trace_expansions then
+                report_expansions("no home dir set, ignoring dependent path using current path")
             end
-        end
-    else
-        local dohome  = ((P("~")+P("$HOME"))/homedir)^0
-        local cleanup = Cs(donegation * dohome * doslashes)
-        function resolvers.cleanpath(str)
-            return str and lpegmatch(cleanup,str) or ""
+            usedhomedir = "."
         end
     end
-    return resolvers.cleanpath(str)
+    return usedhomedir
+end
+
+local dohome  = ((P("~")+P("$HOME")+P("%HOME%"))/expandedhome)^0
+local cleanup = Cs(donegation * dohome * doslashes)
+
+resolvers.cleanpath = function(str)
+    return str and lpegmatch(cleanup,str) or ""
 end
 
 -- print(resolvers.cleanpath(""))
@@ -216,11 +213,18 @@ end
 
 -- This one strips quotes and funny tokens.
 
-local expandhome = P("~") / "$HOME" -- environment.homedir or "home:"
+-- we have several options here:
+--
+-- expandhome = P("~") / "$HOME"              : relocateble
+-- expandhome = P("~") / "home:"              : relocateble
+-- expandhome = P("~") / environment.homedir  : frozen but unexpanded
+-- expandhome = P("~") = dohome               : frozen and expanded
 
-local dodouble = P('"')/"" * (expandhome + (1 - P('"')))^0 * P('"')/""
-local dosingle = P("'")/"" * (expandhome + (1 - P("'")))^0 * P("'")/""
-local dostring =             (expandhome +  1              )^0
+local expandhome = P("~") / "$HOME"
+
+local dodouble = P('"') / "" * (expandhome + (1 - P('"')))^0 * P('"') / ""
+local dosingle = P("'") / "" * (expandhome + (1 - P("'")))^0 * P("'") / ""
+local dostring =               (expandhome +  1              )^0
 
 local stripper = Cs(
     lpegpatterns.unspacer * (dosingle + dodouble + dostring) * lpegpatterns.unspacer
@@ -285,7 +289,7 @@ end
 
 function resolvers.joinpath(str)
     if type(str) == 'table' then
-        return file.joinpath(str)
+        return joinpath(str)
     else
         return str
     end
@@ -293,25 +297,25 @@ end
 
 -- The next function scans directories and returns a hash where the
 -- entries are either strings or tables.
-
+--
 -- starting with . or .. etc or funny char
-
---~ local l_forbidden = S("~`!#$%^&*()={}[]:;\"\'||\\/<>,?\n\r\t")
---~ local l_confusing = P(" ")
---~ local l_character = lpegpatterns.utf8
---~ local l_dangerous = P(".")
-
---~ local l_normal = (l_character - l_forbidden - l_confusing - l_dangerous) * (l_character - l_forbidden - l_confusing^2)^0 * P(-1)
---~ ----- l_normal = l_normal * Cc(true) + Cc(false)
-
---~ local function test(str)
---~     print(str,lpegmatch(l_normal,str))
---~ end
---~ test("ヒラギノ明朝 Pro W3")
---~ test("..ヒラギノ明朝 Pro W3")
---~ test(":ヒラギノ明朝 Pro W3;")
---~ test("ヒラギノ明朝 /Pro W3;")
---~ test("ヒラギノ明朝 Pro  W3")
+--
+-- local l_forbidden = S("~`!#$%^&*()={}[]:;\"\'||\\/<>,?\n\r\t")
+-- local l_confusing = P(" ")
+-- local l_character = lpegpatterns.utf8
+-- local l_dangerous = P(".")
+--
+-- local l_normal = (l_character - l_forbidden - l_confusing - l_dangerous) * (l_character - l_forbidden - l_confusing^2)^0 * P(-1)
+-- ----- l_normal = l_normal * Cc(true) + Cc(false)
+--
+-- local function test(str)
+--     print(str,lpegmatch(l_normal,str))
+-- end
+-- test("ヒラギノ明朝 Pro W3")
+-- test("..ヒラギノ明朝 Pro W3")
+-- test(":ヒラギノ明朝 Pro W3;")
+-- test("ヒラギノ明朝 /Pro W3;")
+-- test("ヒラギノ明朝 Pro  W3")
 
 -- a lot of this caching can be stripped away when we have ssd's everywhere
 --
@@ -319,41 +323,65 @@ end
 
 local attributes, directory = lfs.attributes, lfs.dir
 
-local weird     = P(".")^1 + lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
-local timer     = { }
-local scanned   = { }
-local nofscans  = 0
-local scancache = { }
+local weird          = P(".")^1 + lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+local timer          = { }
+local scanned        = { }
+local nofscans       = 0
+local scancache      = { }
+local fullcache      = { }
+----- simplecache    = { }
+local nofsharedscans = 0
 
-local function scan(files,spec,path,n,m,r)
-    local full    = (path == "" and spec) or (spec .. path .. '/')
+-- So, we assume either a lowercase name or a mixed case one but only one such case
+-- as having Foo fOo foo FoO FOo etc on the system is braindead in any sane project.
+
+local function scan(files,remap,spec,path,n,m,r,onlyone)
+    local full    = path == "" and spec or (spec .. path .. '/')
     local dirs    = { }
     local nofdirs = 0
     for name in directory(full) do
         if not lpegmatch(weird,name) then
-            local mode = attributes(full..name,'mode')
-            if mode == 'file' then
+            local mode = attributes(full..name,"mode")
+            if mode == "file" then
                 n = n + 1
-                local f = files[name]
-                if f then
-                    if type(f) == 'string' then
-                        files[name] = { f, path }
+                local lower = lower(name)
+                local paths = files[lower]
+                if paths then
+                    if onlyone then
+                        -- forget about it
                     else
-                        f[#f+1] = path
+                        if type(paths) == "string" then
+                            files[lower] = { paths, path }
+                        else
+                            paths[#paths+1] = path
+                        end
+                        if name ~= lower then
+                            local rl = remap[lower]
+                            if not rl then
+                                remap[lower] = name
+                                r = r + 1
+                            elseif trace_globbing and rl ~= name then
+                                report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
+                            end
+                        end
                     end
                 else -- probably unique anyway
-                    files[name] = path
-                    local lower = lower(name)
+                    files[lower] = path
                     if name ~= lower then
-                        files["remap:"..lower] = name
-                        r = r + 1
+                        local rl = remap[lower]
+                        if not rl then
+                            remap[lower] = name
+                            r = r + 1
+                        elseif trace_globbing and rl ~= name then
+                            report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
+                        end
                     end
                 end
-            elseif mode == 'directory' then
+            elseif mode == "directory" then
                 m = m + 1
                 nofdirs = nofdirs + 1
                 if path ~= "" then
-                    dirs[nofdirs] = path..'/'..name
+                    dirs[nofdirs] = path .. "/" .. name
                 else
                     dirs[nofdirs] = name
                 end
@@ -363,113 +391,55 @@ local function scan(files,spec,path,n,m,r)
     if nofdirs > 0 then
         sort(dirs)
         for i=1,nofdirs do
-            files, n, m, r = scan(files,spec,dirs[i],n,m,r)
+            files, remap, n, m, r = scan(files,remap,spec,dirs[i],n,m,r,onlyone)
         end
     end
     scancache[sub(full,1,-2)] = files
-    return files, n, m, r
+    return files, remap, n, m, r
 end
 
-local fullcache = { }
-
-function resolvers.scanfiles(path,branch,usecache)
-    statistics.starttiming(timer)
-    local realpath = resolvers.resolve(path) -- no shortcut
+function resolvers.scanfiles(path,branch,usecache,onlyonce)
+    local realpath = resolveprefix(path)
     if usecache then
-        local files = fullcache[realpath]
-        if files then
+        local content = fullcache[realpath]
+        if content then
             if trace_locating then
-                report_expansions("using caches scan of path %a, branch %a",path,branch or path)
+                report_expansions("using cached scan of path %a, branch %a",path,branch or path)
             end
-            return files
+            nofsharedscans = nofsharedscans + 1
+            return content
         end
     end
+    --
+    statistics.starttiming(timer)
     if trace_locating then
         report_expansions("scanning path %a, branch %a",path,branch or path)
     end
-    local files, n, m, r = scan({ },realpath .. '/',"",0,0,0)
-    files.__path__        = path -- can be selfautoparent:texmf-whatever
-    files.__files__       = n
-    files.__directories__ = m
-    files.__remappings__  = r
+    local files, remap, n, m, r = scan({ },{ },realpath .. '/',"",0,0,0,onlyonce)
+    local content = {
+        metadata = {
+            path        = path, -- can be selfautoparent:texmf-whatever
+            files       = n,
+            directories = m,
+            remappings  = r,
+        },
+        files = files,
+        remap = remap,
+    }
     if trace_locating then
         report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
     end
     if usecache then
         scanned[#scanned+1] = realpath
-        fullcache[realpath] = files
+        fullcache[realpath] = content
     end
     nofscans = nofscans + 1
     statistics.stoptiming(timer)
-    return files
+    return content
 end
-
-local function simplescan(files,spec,path) -- first match only, no map and such
-    local full    = (path == "" and spec) or (spec .. path .. '/')
-    local dirs    = { }
-    local nofdirs = 0
-    for name in directory(full) do
-        if not lpegmatch(weird,name) then
-            local mode = attributes(full..name,'mode')
-            if mode == 'file' then
-                if not files[name] then
-                    -- only first match
-                    files[name] = path
-                end
-            elseif mode == 'directory' then
-                nofdirs = nofdirs + 1
-                if path ~= "" then
-                    dirs[nofdirs] = path..'/'..name
-                else
-                    dirs[nofdirs] = name
-                end
-            end
-        end
-    end
-    if nofdirs > 0 then
-        sort(dirs)
-        for i=1,nofdirs do
-            files = simplescan(files,spec,dirs[i])
-        end
-    end
-    return files
-end
-
-local simplecache    = { }
-local nofsharedscans = 0
 
 function resolvers.simplescanfiles(path,branch,usecache)
-    statistics.starttiming(timer)
-    local realpath = resolvers.resolve(path) -- no shortcut
-    if usecache then
-        local files = simplecache[realpath]
-        if not files then
-            files = scancache[realpath]
-            if files then
-                nofsharedscans = nofsharedscans + 1
-            end
-        end
-        if files then
-            if trace_locating then
-                report_expansions("using caches scan of path %a, branch %a",path,branch or path)
-            end
-            return files
-        end
-    end
-    if trace_locating then
-        report_expansions("scanning path %a, branch %a",path,branch or path)
-    end
-    local files = simplescan({ },realpath .. '/',"")
-    if trace_locating then
-        report_expansions("%s files found",table.count(files))
-    end
-    if usecache then
-        scanned[#scanned+1] = realpath
-        simplecache[realpath] = files
-    end
-    nofscans = nofscans + 1
-    statistics.stoptiming(timer)
-    return files
+    return resolvers.scanfiles(path,branch,usecache,true) -- onlyonce
 end
 
 function resolvers.scandata()
@@ -482,4 +452,54 @@ function resolvers.scandata()
     }
 end
 
---~ print(table.serialize(resolvers.scanfiles("t:/sources")))
+function resolvers.get_from_content(content,path,name) -- or (content,name)
+    local files = content.files
+    if not files then
+        return
+    end
+    local remap = content.remap
+    if not remap then
+        return
+    end
+    if name then
+        -- this one resolves a remapped name
+        local used = lower(name)
+        return path, remap[used] or used
+    else
+        -- this one does a lookup and resolves a remapped name
+        local name = path
+        local used = lower(name)
+        local path = files[used]
+        if path then
+            return path, remap[used] or used
+        end
+    end
+end
+
+local nothing = function() end
+
+function resolvers.filtered_from_content(content,pattern)
+    if content and type(pattern) == "string" then
+        local pattern = lower(pattern)
+        local files   = content.files
+        local remap   = content.remap
+        if files and remap then
+            local n = next(files)
+            local function iterator()
+                while n do
+                    local k = n
+                    n = next(files,k)
+                    if find(k,pattern) then
+                        return files[k], remap and remap[k] or k
+                    end
+                end
+            end
+            return iterator
+        end
+    end
+    return nothing
+end
+
+
+-- inspect(resolvers.simplescanfiles("e:/temporary/mb-mp"))
+-- inspect(resolvers.scanfiles("e:/temporary/mb-mp"))

@@ -710,7 +710,9 @@ function codeinjections.setformat(s)
                 end
             end
             function codeinjections.setformat(noname)
-                report_backend("error, format is already set to %a, ignoring %a",formatname,noname.format)
+                if trace_format then
+                    report_backend("error, format is already set to %a, ignoring %a",formatname,noname.format)
+                end
             end
         else
             report_backend("error, format %a is not supported",format)
