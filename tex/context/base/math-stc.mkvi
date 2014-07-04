@@ -376,7 +376,7 @@
       \egroup
       %
       \ifdim\htdp\scratchboxone>\zeropoint
-        \scratchoffset\dimexpr\scratchvoffset
+        \scratchoffset\scratchvoffset
         \kern-\scratchwidth
         \math_stackers_top\bgroup
           \raise\dimexpr\dp\scratchboxone+\scratchheight+\scratchoffset+\scratchtopoffset\relax
@@ -385,7 +385,7 @@
       \fi
       %
       \ifdim\htdp\scratchboxtwo>\zeropoint
-        \scratchoffset\dimexpr\scratchvoffset
+        \scratchoffset\scratchvoffset
         \kern-\scratchwidth
         \math_stackers_bottom\bgroup
           \lower\dimexpr\ht\scratchboxtwo+\scratchdepth+\scratchoffset+\scratchbottomoffset\relax
@@ -467,7 +467,7 @@
       %
       \math_stackers_check_unicode{#codepoint}%
       %
-      \ifx\currentmathtext\empty
+      \ifx\math_stackers_middle\empty
         \setbox\scratchboxthree\emptyhbox
       \else
         \setmathtextbox\scratchboxthree\hbox{\math_stackers_middletext}%

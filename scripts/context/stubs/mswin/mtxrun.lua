@@ -16101,7 +16101,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tre"] = package.loaded["data-tre"] or true
 
--- original size: 5933, stripped down to: 3272
+-- original size: 6621, stripped down to: 4280
 
 if not modules then modules={} end modules ['data-tre']={
   version=1.001,
@@ -16113,11 +16113,13 @@ if not modules then modules={} end modules ['data-tre']={
 local find,gsub,lower=string.find,string.gsub,string.lower
 local basename,dirname,joinname=file.basename,file.dirname,file  .join
 local globdir,isdir=dir.glob,lfs.isdir
+local P,lpegmatch=lpeg.P,lpeg.match
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local report_trees=logs.reporter("resolvers","trees")
 local resolvers=resolvers
 local resolveprefix=resolvers.resolve
 local notfound=resolvers.finders.notfound
+local lookup=resolvers.get_from_content
 local collectors={}
 local found={}
 function resolvers.finders.tree(specification) 
@@ -16171,32 +16173,62 @@ function resolvers.hashers.tree(specification)
   resolvers.generators.file(specification)
 end
 local collectors={}
+local splitter=lpeg.splitat("/**/")
+local stripper=lpeg.replacer { [P("/")*P("*")^1*P(-1)]="" }
 table.setmetatableindex(collectors,function(t,k)
-  local rootname=gsub(k,"[/%*]+$","")
+  local rootname=lpegmatch(stripper,k)
   local dataname=joinname(rootname,"dirlist")
   local content=caches.loadcontent(dataname,"files",dataname)
-  local lookup=resolvers.get_from_content
   if not content then
     content=resolvers.scanfiles(rootname)
     caches.savecontent(dataname,"files",content,dataname)
   end
-  local v=function(filename)
-    local path,name=lookup(content,filename)
-    if not path then
-      return filename
-    elseif type(path)=="table" then
-      path=path[1]
-    end
-    return joinname(rootname,path,name)
-  end
-  t[k]=v
-  return v
+  t[k]=content
+  return content
 end)
 function resolvers.finders.dirlist(specification) 
-  local spec=specification.filename
-  if spec~="" then
-    local path,name=dirname(spec),basename(spec)
-    return path and collectors[path](name) or notfound()
+  local filename=specification.filename
+  if filename~="" then
+    local root,rest=lpegmatch(splitter,filename)
+    if root and rest then
+      local path,name=dirname(rest),basename(rest)
+      if name~=rest then
+        local content=collectors[root]
+        local p,n=lookup(content,name)
+        if not p then
+          return notfound()
+        end
+        local pattern=".*/"..path.."$"
+        local istable=type(p)=="table"
+        if istable then
+          for i=1,#p do
+            local pi=p[i]
+            if pi==path or find(pi,pattern) then
+              return joinname(root,pi,n)
+            end
+          end
+        else
+          if p==path or find(p,pattern) then
+            return joinname(root,p,n)
+          end
+        end
+        local queries=specification.queries
+        if queries and queries.option=="fileonly" then
+          return joinname(root,istable and p[1] or p,n)
+        end
+        return notfound()
+      end
+    end
+    local path,name=dirname(filename),basename(filename)
+    local root=lpegmatch(stripper,path)
+    local content=collectors[path]
+    local p,n=lookup(content,name)
+    if not p then
+      return notfound()
+    elseif type(p)=="table" then
+      p=p[1]
+    end
+    return joinname(root,p,n)
   end
   return notfound()
 end
@@ -17124,8 +17156,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 705801
--- stripped bytes    : 251380
+-- original bytes    : 706489
+-- stripped bytes    : 251060
 
 -- end library merge
 

@@ -6,11 +6,23 @@ if not modules then modules = { } end modules ['data-tre'] = {
     license   = "see context related readme files"
 }
 
--- \input tree://oeps1/**/oeps.tex
+-- tree://e:/temporary/mb-mp/**/drawing.jpg"
+-- tree://e:/temporary/mb-mp/**/Drawing.jpg"
+-- tree://t:./**/tufte.tex"
+-- tree://t:/./**/tufte.tex"
+-- tree://t:/**/tufte.tex"
+-- dirlist://e:/temporary/mb-mp/**/drawing.jpg"
+-- dirlist://e:/temporary/mb-mp/**/Drawing.jpg"
+-- dirlist://e:/temporary/mb-mp/**/just/some/place/drawing.jpg"
+-- dirlist://e:/temporary/mb-mp/**/images/drawing.jpg"
+-- dirlist://e:/temporary/mb-mp/**/images/drawing.jpg?option=fileonly"
+-- dirlist://///storage-2/resources/mb-mp/**/drawing.jpg"
+-- dirlist://e:/**/drawing.jpg"
 
 local find, gsub, lower = string.find, string.gsub, string.lower
 local basename, dirname, joinname = file.basename, file.dirname, file   .join
 local globdir, isdir = dir.glob, lfs.isdir
+local P, lpegmatch = lpeg.P, lpeg.match
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
@@ -19,6 +31,7 @@ local report_trees   = logs.reporter("resolvers","trees")
 local resolvers      = resolvers
 local resolveprefix  = resolvers.resolve
 local notfound       = resolvers.finders.notfound
+local lookup         = resolvers.get_from_content
 
 -- A tree search is rather dumb ... there is some basic caching of searched trees
 -- but nothing is cached over runs ... it's also a wildcard one so we cannot use
@@ -87,67 +100,65 @@ end
 -- deal and we don't want too much overhead.
 
 local collectors = { }
-
--- table.setmetatableindex(collectors, function(t,k)
---     local rootname = gsub(k,"[/%*]+$","")
---     local dataname = joinname(rootname,"dirlist")
---     local content  = caches.loadcontent(dataname,"files",dataname)
---     local lookup   = resolvers.get_from_content
---     if not content then
---         content  = resolvers.scanfiles(rootname)
---         caches.savecontent(dataname,"files",content,dataname)
---     end
---     local v = function(filename)
---         local path, name = lookup(content,filename)
---         if not path then
---             return filename
---         elseif type(path) == "table" then
---             -- maybe a warning that the first name is taken
---             path = path[1]
---         end
---         return joinname(rootname,path,name)
---     end
---     t[k] = v
---     return v
--- end)
-
--- function resolvers.finders.dirlist(specification) -- can be called directly too
---     local spec = specification.filename
---     if spec ~= "" then
---         local path, name = dirname(spec), basename(spec)
---         return path and collectors[path](name) or notfound()
---     end
---     return notfound()
--- end
+local splitter   = lpeg.splitat("/**/")
+local stripper   = lpeg.replacer { [P("/") * P("*")^1 * P(-1)] = "" }
 
 table.setmetatableindex(collectors, function(t,k)
-    local rootname = gsub(k,"[/%*]+$","")
+    local rootname = lpegmatch(stripper,k)
     local dataname = joinname(rootname,"dirlist")
     local content  = caches.loadcontent(dataname,"files",dataname)
-    local lookup   = resolvers.get_from_content
     if not content then
         content  = resolvers.scanfiles(rootname)
         caches.savecontent(dataname,"files",content,dataname)
     end
-    local v = function(filename)
-        local path, name = lookup(content,filename)
-        if not path then
-            return filename
-        elseif type(path) == "table" then
-            -- maybe a warning that the first name is taken
-            path = path[1]
-        end
-        return joinname(rootname,path,name)
-    end
-    t[k] = v
-    return v
+    t[k] = content
+    return content
 end)
 
 function resolvers.finders.dirlist(specification) -- can be called directly too
-    local spec = specification.filename
-    if spec ~= "" then
-        local path, name = dirname(spec), basename(spec)
-        return path and collectors[path](name) or notfound()
+    local filename = specification.filename
+    if filename ~= "" then
+        local root, rest = lpegmatch(splitter,filename)
+        if root and rest then
+            local path, name = dirname(rest), basename(rest)
+            if name ~= rest then
+                local content = collectors[root]
+                local p, n = lookup(content,name)
+                if not p then
+                    return notfound()
+                end
+                local pattern = ".*/" .. path .. "$"
+                local istable = type(p) == "table"
+                if istable then
+                    for i=1,#p do
+                        local pi = p[i]
+                        if pi == path or find(pi,pattern) then
+                            return joinname(root,pi,n)
+                        end
+                    end
+                else
+                    if p == path or find(p,pattern) then
+                        return joinname(root,p,n)
+                    end
+                end
+                local queries = specification.queries
+                if queries and queries.option == "fileonly" then
+                    return joinname(root,istable and p[1] or p,n)
+                end
+                return notfound()
+            end
+        end
+        local path, name = dirname(filename), basename(filename)
+        local root = lpegmatch(stripper,path)
+        local content = collectors[path]
+        local p, n = lookup(content,name)
+        if not p then
+            return notfound()
+        elseif type(p) == "table" then
+            -- maybe a warning that the first name is taken
+            p = p[1]
+        end
+        return joinname(root,p,n)
     end
     return notfound()
 end
