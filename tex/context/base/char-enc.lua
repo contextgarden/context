@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['char-enc'] = {
 
 -- Thanks to tex4ht for these mappings.
 
+local next = next
+
 local allocate, setinitializer = utilities.storage.allocate, utilities.storage.setinitializer
 
 characters       = characters or { }
@@ -169,7 +171,10 @@ characters.synonyms = allocate { -- afm mess
 -- that table.print would not work on this file unless it is accessed once. This
 -- why the serializer does a dummy access.
 
-local enccodes = allocate()  characters.enccodes = enccodes
+local enccodes      = allocate()
+characters.enccodes = enccodes
+
+ -- maybe omit context name -> then same as encodings.make_unicode_vector
 
 local function initialize()
     for unicode, data in next, characters.data do
@@ -179,7 +184,9 @@ local function initialize()
         end
     end
     for name, unicode in next, characters.synonyms do
-        if not enccodes[name] then enccodes[name] = unicode end
+        if not enccodes[name] then
+            enccodes[name] = unicode
+        end
     end
 end
 

@@ -22,21 +22,14 @@
 
 \unprotect
 
+\registerctxluafile{char-def}{1.001}
+\registerctxluafile{char-ini}{1.001}
 \registerctxluafile{char-utf}{1.001}
+\registerctxluafile{char-cjk}{1.001}
 
 %D We enable collapsing (combining characters) by default, but
 %D since the source files are rather simple, we postpone the
 %D initialization till runtime.
-
-% resolvers.filters.install('utf',characters.filters.utf.collapse)
-
-% \appendtoks
-%     \ctxlua{
-%         local textfileactions = resolvers.openers.helpers.textfileactions
-%         utilities.sequencers.enableaction(textfileactions,"characters.filters.utf.collapse")
-%         utilities.sequencers.enableaction(textfileactions,"characters.filters.utf.decompose")
-%     }%
-% \to \everyjob
 
 \appendtoks
     \ctxlua{characters.filters.utf.enable()}%

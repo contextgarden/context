@@ -437,7 +437,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 31588, stripped down to: 16483
+-- original size: 32062, stripped down to: 16772
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1014,17 +1014,34 @@ end
 function lpeg.utfchartabletopattern(list) 
   local tree={}
   local hash={}
-  for i=1,#list do
-    local t=tree
-    for c in gmatch(list[i],".") do
-      local tc=t[c]
-      if not tc then
-        tc={}
-        t[c]=tc
+  local n=#list
+  if n==0 then
+    for s in next,list do
+      local t=tree
+      for c in gmatch(s,".") do
+        local tc=t[c]
+        if not tc then
+          tc={}
+          t[c]=tc
+        end
+        t=tc
       end
-      t=tc
+      hash[t]=s
     end
-    hash[t]=list[i]
+  else
+    for i=1,n do
+      local t=tree
+      local s=list[i]
+      for c in gmatch(s,".") do
+        local tc=t[c]
+        if not tc then
+          tc={}
+          t[c]=tc
+        end
+        t=tc
+      end
+      hash[t]=s
+    end
   end
   return make(tree,hash)
 end
@@ -17156,8 +17173,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 706489
--- stripped bytes    : 251060
+-- original bytes    : 706963
+-- stripped bytes    : 251245
 
 -- end library merge
 

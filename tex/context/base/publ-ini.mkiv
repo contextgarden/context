@@ -318,12 +318,14 @@
 % \let\btxsetdataset\setbtxdataset
 % \let\btxsetentry  \setbtxentry
 
-\def\btxfield   #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdetail  #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxflush   #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoifelse#1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoif    #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoifnot #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfield      #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdetail     #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxauthorfield#1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
+\def\btxflush      #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdoifelse   #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdoif       #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdoifnot    #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
+
 
 \let\btxsetup\fastsetup
 
@@ -353,20 +355,41 @@
 \let\currentbtxcombis       \empty    \unexpanded\def\btxsetcombis       {\def\currentbtxcombis}
 \let\currentbtxdataset      \empty    \unexpanded\def\btxsetdataset      {\def\currentbtxdataset}
 \let\currentbtxfirst        \empty    \unexpanded\def\btxsetfirst        {\def\currentbtxfirst}
-\let\currentbtxfirstnames   \empty    \unexpanded\def\btxsetfirstnames   {\def\currentbtxfirstnames}
-\let\currentbtxinitials     \empty    \unexpanded\def\btxsetinitials     {\def\currentbtxinitials}
 \let\currentbtxinternal     \empty    \unexpanded\def\btxsetinternal     {\def\currentbtxinternal}
-\let\currentbtxjuniors      \empty    \unexpanded\def\btxsetjuniors      {\def\currentbtxjuniors}
 \let\currentbtxlanguage     \empty    \unexpanded\def\btxsetlanguage     {\def\currentbtxlanguage}
 \let\currentbtxsecond       \empty    \unexpanded\def\btxsetsecond       {\def\currentbtxsecond}
-\let\currentbtxsurnames     \empty    \unexpanded\def\btxsetsurnames     {\def\currentbtxsurnames}
 \let\currentbtxtag          \empty    \unexpanded\def\btxsettag          {\def\currentbtxtag}
-\let\currentbtxvons         \empty    \unexpanded\def\btxsetvons         {\def\currentbtxvons}
 \let\currentbtxauthorvariant\v!normal \unexpanded\def\btxsetauthorvariant{\def\currentbtxauthorvariant}
 
-\newconstant\currentbtxoverflow \unexpanded\def\btxsetoverflow#1{\currentbtxoverflow#1\relax}
-\newconstant\currentbtxconcat   \unexpanded\def\btxsetconcat  #1{\currentbtxconcat  #1\relax}
-\newconstant\currentbtxcount    \unexpanded\def\btxsetcount   #1{\currentbtxcount   #1\relax}
+%let\currentbtxfirstnames   \empty    \unexpanded\def\btxsetfirstnames   {\def\currentbtxfirstnames}
+%let\currentbtxinitials     \empty    \unexpanded\def\btxsetinitials     {\def\currentbtxinitials}
+%let\currentbtxjuniors      \empty    \unexpanded\def\btxsetjuniors      {\def\currentbtxjuniors}
+%let\currentbtxsurnames     \empty    \unexpanded\def\btxsetsurnames     {\def\currentbtxsurnames}
+%let\currentbtxvons         \empty    \unexpanded\def\btxsetvons         {\def\currentbtxvons}
+
+%unexpanded\def\getcurrentbtxfirstnames{\ctxcommand{btxauthorfield("firstnames")}
+%unexpanded\def\getcurrentbtxinitials  {\ctxcommand{btxauthorfield("initials")}
+%unexpanded\def\getcurrentbtxjuniors   {\ctxcommand{btxauthorfield("juniors")}
+%unexpanded\def\getcurrentbtxsurnames  {\ctxcommand{btxauthorfield("surnames")}
+%unexpanded\def\getcurrentbtxvons      {\ctxcommand{btxauthorfield("vons")}
+
+\unexpanded\def\currentbtxfirstnames_indeed{\ctxcommand{btx_a_f(\number\currentbtxauthorindex)}}
+\unexpanded\def\currentbtxinitials_indeed  {\ctxcommand{btx_a_i(\number\currentbtxauthorindex)}}
+\unexpanded\def\currentbtxjuniors_indeed   {\ctxcommand{btx_a_j(\number\currentbtxauthorindex)}}
+\unexpanded\def\currentbtxsurnames_indeed  {\ctxcommand{btx_a_s(\number\currentbtxauthorindex)}}
+\unexpanded\def\currentbtxvons_indeed      {\ctxcommand{btx_a_v(\number\currentbtxauthorindex)}}
+
+\let\currentbtxfirstnames   \empty    \unexpanded\def\btxsetfirstnames{\let\currentbtxfirstnames\currentbtxfirstnames_indeed}
+\let\currentbtxinitials     \empty    \unexpanded\def\btxsetinitials  {\let\currentbtxinitials  \currentbtxinitials_indeed  }
+\let\currentbtxjuniors      \empty    \unexpanded\def\btxsetjuniors   {\let\currentbtxjuniors   \currentbtxjuniors_indeed   }
+\let\currentbtxsurnames     \empty    \unexpanded\def\btxsetsurnames  {\let\currentbtxsurnames  \currentbtxsurnames_indeed  }
+\let\currentbtxvons         \empty    \unexpanded\def\btxsetvons      {\let\currentbtxvons      \currentbtxvons_indeed      }
+
+\newconstant\currentbtxoverflow    \unexpanded\def\btxsetoverflow   #1{\currentbtxoverflow   #1\relax}
+\newconstant\currentbtxconcat      \unexpanded\def\btxsetconcat     #1{\currentbtxconcat     #1\relax}
+\newconstant\currentbtxcount       \unexpanded\def\btxsetcount      #1{\currentbtxcount      #1\relax}
+\newconstant\currentbtxauthorindex %unexpanded\def\btxsetauthorindex#1{\currentbtxauthorindex#1\relax} % passed directly
+\newconstant\currentbtxauthorcount %unexpanded\def\btxsetauthorcount#1{\currentbtxauthorcount#1\relax} % passed directly
 
 \def\currentbtxauthorvariant{normal}
 
@@ -381,17 +404,17 @@
    \let\currentbtxdataset  \empty}
 
 \unexpanded\def\btxcitereset % check for less .. not all resets needed
-  {\let        \currentbtxfirst    \empty
-   \let        \currentbtxsecond   \empty
-   \let        \currentbtxinternal \empty
-   \let        \currentbtxbacklink \empty
-   \let        \currentbtxbacktrace\empty % not used here
-   \let        \currentbtxlanguage \empty
-   \let        \currentbtxdataset  \empty
-   \let        \currentbtxtag      \empty
-   \setconstant\currentbtxoverflow \zerocount
-   \setconstant\currentbtxconcat   \zerocount
-   \setconstant\currentbtxcount    \zerocount}
+  {\let        \currentbtxfirst      \empty
+   \let        \currentbtxsecond     \empty
+   \let        \currentbtxinternal   \empty
+   \let        \currentbtxbacklink   \empty
+   \let        \currentbtxbacktrace  \empty % not used here
+   \let        \currentbtxlanguage   \empty
+   \let        \currentbtxdataset    \empty
+   \let        \currentbtxtag        \empty
+   \setconstant\currentbtxoverflow   \zerocount
+   \setconstant\currentbtxconcat     \zerocount
+   \setconstant\currentbtxcount      \zerocount}
 
 %D Tracing
 
@@ -701,8 +724,13 @@
    })}%
    \endgroup}
 
-\unexpanded\def\btxstartauthor{\begingroup}
-\unexpanded\def\btxstopauthor {\endgroup}
+\unexpanded\def\btxstartauthor#1#2%
+  {\begingroup
+   \currentbtxauthorindex#1\relax
+   \currentbtxauthorcount#2\relax}
+
+\unexpanded\def\btxstopauthor
+  {\endgroup}
 
 \unexpanded\def\btxciteauthorsetup#1{\fastsetup{\s!btx:\s!cite:\s!author:#1}}
 \unexpanded\def\btxlistauthorsetup#1{\fastsetup{\s!btx:\s!list:\s!author:#1}}
@@ -949,16 +977,6 @@
 
 \unexpanded\def\btxcitesetup#1%
   {\fastsetup{\s!btx:\s!cite:#1}} % no \btxcitereset as we loose dataset and such
-
-\unexpanded\def\btxsetfirst      {\def\currentbtxfirst}
-\unexpanded\def\btxsetsecond     {\def\currentbtxsecond}
-\unexpanded\def\btxsettag        {\def\currentbtxtag}
-\unexpanded\def\btxsetdataset    {\def\currentbtxdataset}
-%unexpanded\def\btxsetlanguage   {\def\currentbtxlanguage}
-\unexpanded\def\btxsetinternal   {\def\currentbtxinternal}
-\unexpanded\def\btxsetcount    #1{\setconstant\currentbtxcount   #1\relax}
-\unexpanded\def\btxsetconcat   #1{\setconstant\currentbtxconcat  #1\relax}
-\unexpanded\def\btxsetoverflow #1{\setconstant\currentbtxoverflow#1\relax}
 
 \unexpanded\def\btxstartsubcite#1% #1 can go
   {\begingroup

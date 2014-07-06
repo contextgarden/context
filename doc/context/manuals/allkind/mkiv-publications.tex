@@ -1520,6 +1520,52 @@ database, analyzed, split and depending on the demand, reconstructed.
 \TestAuthor{example::demo-003,demo-004}
 \TestAuthor{example::demo-006}
 
+As with all other elements of a bibliographic entry you can also finetune the
+author name. It's one of the reasons why this subsystem is so complex deep down.
+It makes no sense to have a parameter for each aspect, so again we use setups.
+You can tweak individual components. Here we show the user friendly variant, in
+\type {publ-imp-author} you can find an optimized version.
+
+\startsetups btx:cite:author:normal
+    \fastsetup{btx:cite:author:concat}
+    \doifsomething {\btxauthorfield{firstnames}} {
+        \btxauthorfield{firstnames}
+        \btxcitevariantparameter{firstnamesep}
+    }
+    \doifsomething {\btxauthorfield{vons}} {
+        \btxauthorfield{vons}
+        \doifsomething {\btxauthorfield{surnames}} {
+            \btxcitevariantparameter{vonsep}
+        }
+    }
+    \doifsomething {\btxauthorfield{surnames}} {
+        \btxauthorfield{surnames}
+        \doifsomething {\btxauthorfield{juniors}} {
+            \btxcitevariantparameter{juniorsep}
+            \btxauthorfield{juniors}
+        }
+    }
+    \fastsetup{btx:cite:author:etaltext}
+\stopsetups
+
+The two concat setups are not shown here. They can be configured using
+parameters: \type {namesep}, \type {lastnamesep}, \type {finalnamesep} and \type
+{etaltext}, so there is seldom a need to adapt them directly.
+
+Instead of the generic author field accessors you can use macro names which is more
+efficient.
+
+\starttabulate[|l|l|]
+\NC \type{\currentbtxinitials}   \NC \type{\btxauthorfield{initials}}   \NC \NR
+\NC \type{\currentbtxfirstnames} \NC \type{\btxauthorfield{firstnames}} \NC \NR
+\NC \type{\currentbtxvons}       \NC \type{\btxauthorfield{vons}}       \NC \NR
+\NC \type{\currentbtxsurnames}   \NC \type{\btxauthorfield{surnames}}   \NC \NR
+\NC \type{\currentbtxjuniors}    \NC \type{\btxauthorfield{juniors}}    \NC \NR
+\stoptabulate
+
+The advantage of the more verbose ones is that you can use manipulators to
+process them. This might come in handy when a database is inconsistent.
+
 \stopchapter
 
 \startchapter[title=Combining]

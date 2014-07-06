@@ -390,7 +390,7 @@ function regimes.cleanup(regime,str)
                     mapping[split] = v
                 end
             end
-            p = Cs((lpeg.utfchartabletopattern(table.keys(mapping))/mapping+P(1))^0)
+            p = Cs((lpeg.utfchartabletopattern(mapping)/mapping+P(1))^0)
         else
             p = false
         end

@@ -28,7 +28,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2014.07.04 15:55}
+\edef\contextversion{2014.07.06 22:50}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -112,9 +112,9 @@
 
 \loadmarkfile{supp-dir}
 
-\loadmarkfile{char-ini}
-\loadmarkfile{char-utf}
-\loadmarkfile{char-act}
+\loadmarkfile{char-utf} % generic code (i.e. not much tex) ... could become unic-ini
+\loadmarkfile{char-ini} % tex / context specific
+\loadmarkfile{char-act} % even more specific
 
 \loadmarkfile{mult-ini}
 \loadmarkfile{mult-sys}

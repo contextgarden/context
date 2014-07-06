@@ -233,6 +233,7 @@ local function the_initials(initials,symbol)
 end
 
 local ctx_btxsetconcat        = context.btxsetconcat
+local ctx_btxsetauthorindex   = context.btxsetauthorindex
 local ctx_btxsetoverflow      = context.btxsetoverflow
 local ctx_btxsetinitials      = context.btxsetinitials
 local ctx_btxsetfirstnames    = context.btxsetfirstnames
@@ -247,6 +248,56 @@ local ctx_btxstopauthor       = context.btxstopauthor
 
 local concatstate = publications.concatstate
 local f_invalid   = formatters["<invalid %s: %s>"]
+
+local currentauthordata   = nil
+local currentauthorsymbol = nil
+
+local manipulators       = typesetters.manipulators
+local splitmanipulation  = manipulators.splitspecification
+local applymanipulation  = manipulators.applyspecification
+local manipulatormethods = manipulators.methods
+
+local function value(i,field)
+    if currentauthordata then
+        local entry = currentauthordata[i]
+        if entry then
+            local value = entry[field]
+            if value and #value > 0 then
+                return value
+            end
+        end
+    end
+end
+
+function commands.btx_a_i(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol or "."))) end end
+function commands.btx_a_f(i) local v = value(i,"firstnames") if v then context(concat(v," ")) end end
+function commands.btx_a_j(i) local v = value(i,"juniors")    if v then context(concat(v," ")) end end
+function commands.btx_a_s(i) local v = value(i,"surnames")   if v then context(concat(v," ")) end end
+function commands.btx_a_v(i) local v = value(i,"vons")       if v then context(concat(v," ")) end end
+
+function commands.btxauthorfield(i,field)
+    if currentauthordata then
+        local entry = currentauthordata[i]
+        if entry then
+            local manipulator, field = splitmanipulation(field)
+            local value = entry[field]
+            if not value or #value == 0 then
+                -- value, no need for message
+            elseif manipulator then
+                for i=1,#value do
+                    if i > 1 then
+                        context(" ") -- symbol ?
+                    end
+                    context(applymanipulation(manipulator,value) or value)
+                end
+            elseif field == "initials" then
+                context(concat(the_initials(value,currentauthorsymbol or ".")))
+            else
+                context(concat(value," "))
+            end
+         end
+    end
+end
 
 function commands.btxauthor(dataset,tag,field,settings)
     local ds = datasets[dataset]
@@ -279,30 +330,32 @@ function commands.btxauthor(dataset,tag,field,settings)
     if max > etallimit and etaldisplay < max then
         max = etaldisplay
     end
+    currentauthordata   = split
+    currentauthorsymbol = symbol
     for i=1,max do
-        ctx_btxstartauthor() -- i, max
+        ctx_btxstartauthor(i,max)
         ctx_btxsetconcat(concatstate(i,max))
         ctx_btxsetauthorvariant(combiner)
         local author = split[i]
         local initials = author.initials
-        if initials then
-            ctx_btxsetinitials(concat(the_initials(initials,symbol)," "))
+        if initials and #initials > 0 then
+            ctx_btxsetinitials() -- (concat(the_initials(initials,symbol)," "))
         end
         local firstnames = author.firstnames
-        if firstnames then
-            ctx_btxsetfirstnames(concat(firstnames," "))
+        if firstnames and #firstnames > 0 then
+            ctx_btxsetfirstnames() -- (concat(firstnames," "))
         end
         local vons = author.vons
-        if vons then
-            ctx_btxsetvons(concat(vons," "))
+        if vons and #vons > 0 then
+            ctx_btxsetvons() -- (concat(vons," "))
         end
         local surnames = author.surnames
-        if surnames then
-            ctx_btxsetsurnames(concat(surnames," "))
+        if surnames and #surnames > 0 then
+            ctx_btxsetsurnames() -- (concat(surnames," "))
         end
         local juniors = author.juniors
-        if juniors then
-            ctx_btxsetjuniors(concat(juniors," "))
+        if juniors and #juniors > 0 then
+            ctx_btxsetjuniors() -- (concat(juniors," "))
         end
         ctx_btxsetup(combiner)
         ctx_btxstopauthor()
@@ -317,6 +370,7 @@ end
 -- pays off.
 
 local compare  = sorters.comparers.basic -- (a,b)
+-- local compare  = sorters.basicsorter -- (a,b)
 local strip    = sorters.strip
 local splitter = sorters.splitters.utf
 
@@ -480,7 +534,7 @@ function authors.sorted(dataset,list,sorttype) -- experimental
     if #valid == 0 or #valid ~= #list then
         return list
     else
-        sorters.sort(valid,compare)
+        sorters.sort(valid,function(a,b) return a ~= b and compare(a,b) == -1 end)
         for i=1,#valid do
             valid[i] = valid[i].index
         end

@@ -53,6 +53,7 @@ have language etc properties that then can be used.</p>
 local gsub, rep, sub, sort, concat, tohash, format = string.gsub, string.rep, string.sub, table.sort, table.concat, table.tohash, string.format
 local utfbyte, utfchar, utfcharacters, utfvalues = utf.byte, utf.char, utf.characters, utf.values
 local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawset
+local P, Cs, R, S, lpegmatch = lpeg.P, lpeg.Cs, lpeg.R, lpeg.S, lpeg.match
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
@@ -367,6 +368,8 @@ end
 
 -- tricky: { 0, 0, 0 } vs { 0, 0, 0, 0 } => longer wins and mm, pm, zm can have them
 
+-- inlining and checking first slot first doesn't speed up (the 400K complex author sort)
+
 local function basicsort(sort_a,sort_b)
     if sort_a and sort_b then
         local na = #sort_a
@@ -374,12 +377,14 @@ local function basicsort(sort_a,sort_b)
         if na > nb then
             na = nb
         end
-        for i=1,na do
-            local ai, bi = sort_a[i], sort_b[i]
-            if ai > bi then
-                return  1
-            elseif ai < bi then
-                return -1
+        if na > 0 then
+            for i=1,na do
+                local ai, bi = sort_a[i], sort_b[i]
+                if ai > bi then
+                    return  1
+                elseif ai < bi then
+                    return -1
+                end
             end
         end
     end
@@ -389,6 +394,10 @@ end
 -- todo: compile compare function
 
 local function basic(a,b) -- trace ea and eb
+    if a == b then
+        -- hashed (shared) entries
+        return 0
+    end
     local ea, eb = a.split, b.split
     local na, nb = #ea, #eb
     if na == 0 and nb == 0 then
@@ -484,25 +493,59 @@ function sorters.basicsorter(a,b)
     return basic(a,b) == -1
 end
 
+-- local function numify(s)
+--     s = digitsoffset + tonumber(s) -- alternatively we can create range or maybe just hex numbers
+--     if s > digitsmaximum then
+--         s = digitsmaximum
+--     end
+--     return utfchar(s)
+-- end
+--
+-- function sorters.strip(str) -- todo: only letters and such
+--     if str and str ~= "" then
+--         -- todo: make a decent lpeg
+--         str = gsub(str,"\\[\"\'~^`]*","") -- \"e -- hm, too greedy
+--         str = gsub(str,"\\%S*","") -- the rest
+--         str = gsub(str,"%s","\001") -- can be option
+--         str = gsub(str,"[%s%[%](){}%$\"\']*","") -- %s already done
+--         if digits == v_numbers then
+--             str = gsub(str,"(%d+)",numify) -- sort numbers properly
+--         end
+--         return str
+--     else
+--         return ""
+--     end
+-- end
+
 local function numify(s)
-    s = digitsoffset + tonumber(s) -- alternatively we can create range
-    if s > digitsmaximum then
-        s = digitsmaximum
+    if digits == v_numbers then
+        return s
+    else
+        s = digitsoffset + tonumber(s) -- alternatively we can create range
+        if s > digitsmaximum then
+            s = digitsmaximum
+        end
+        return utfchar(s)
     end
-    return utfchar(s)
+end
+
+local pattern = nil
+
+local function prepare()
+    pattern = Cs( (
+        characters.tex.toutfpattern()
+      + lpeg.patterns.whitespace / "\000"
+      + (P("\\") * P(1) * R("az","AZ")^0) / ""
+      + S("[](){}$\"'") / ""
+      + R("09")^1 / numify
+      + P(1)
+    )^0 )
+    return pattern
 end
 
 function sorters.strip(str) -- todo: only letters and such
     if str and str ~= "" then
-        -- todo: make a decent lpeg
-        str = gsub(str,"\\[\"\'~^`]*","") -- \"e -- hm, too greedy
-        str = gsub(str,"\\%S*","") -- the rest
-        str = gsub(str,"%s","\001") -- can be option
-        str = gsub(str,"[%s%[%](){}%$\"\']*","") -- %s already done
-        if digits == v_numbers then
-            str = gsub(str,"(%d+)",numify) -- sort numbers properly
-        end
-        return str
+        return lpegmatch(pattern or prepare(),str)
     else
         return ""
     end

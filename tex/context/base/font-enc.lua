@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['font-enc'] = {
 
 -- this module is obsolete
 
+local next = next
 local match, gmatch, gsub = string.match, string.gmatch, string.gsub
 
 local setmetatableindex = table.setmetatableindex
@@ -125,7 +126,12 @@ function encodings.make_unicode_vector()
         end
     end
     for name, code in next, characters.synonyms do
-        vector[code], hash[name] = name, code
+        if not vector[code] then
+            vector[code] = name
+        end
+        if not hash[name] then
+            hash[name]   = code
+        end
     end
     return containers.write(encodings.cache, 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
 end

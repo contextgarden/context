@@ -6,11 +6,6 @@ if not modules then modules = { } end modules ['char-utf'] = {
     license   = "see context related readme files"
 }
 
--- todo: trackers
--- todo: no longer special characters (high) here, only needed in special cases and
--- these don't go through this file anyway
--- graphemes: basic symbols
-
 --[[ldx--
 <p>When a sequence of <l n='utf'/> characters enters the application, it may be
 neccessary to collapse subsequences into their composed variant.</p>
@@ -24,44 +19,46 @@ of output (for instance <l n='pdf'/>).</p>
 over a string.</p>
 --ldx]]--
 
-local gmatch, gsub, find = string.gmatch, string.gsub, string.find
+local gsub, find = string.gsub, string.find
 local concat, sortedhash, keys, sort = table.concat, table.sortedhash, table.keys, table.sort
 local utfchar, utfbyte, utfcharacters, utfvalues = utf.char, utf.byte, utf.characters, utf.values
-local allocate = utilities.storage.allocate
-local lpegmatch, lpegpatterns, P, Cs, Cmt, Ct = lpeg.match, lpeg.patterns, lpeg.P, lpeg.Cs, lpeg.Cmt, lpeg.Ct
+local P, Cs, Cmt, Ct = lpeg.P, lpeg.Cs, lpeg.Cmt, lpeg.Ct
 
+if not characters        then require("char-def") end
+if not characters.blocks then require("char-ini") end
+
+local lpegmatch             = lpeg.match
+local lpegpatterns          = lpeg.patterns
 local p_utf8character       = lpegpatterns.utf8character
 local utfchartabletopattern = lpeg.utfchartabletopattern
 
-if not characters then
-    require("char-def")
-end
+local allocate              = utilities.storage.allocate or function() return { } end
 
-local charfromnumber   = characters.fromnumber
+local charfromnumber        = characters.fromnumber
 
-characters             = characters or { }
-local characters       = characters
+characters                  = characters or { }
+local characters            = characters
 
-local graphemes        = allocate()
-characters.graphemes   = graphemes
+local graphemes             = allocate()
+characters.graphemes        = graphemes
 
-local collapsed        = allocate()
-characters.collapsed   = collapsed
+local collapsed             = allocate()
+characters.collapsed        = collapsed
 
-local combined         = allocate()
-characters.combined    = combined
+local combined              = allocate()
+characters.combined         = combined
 
-local decomposed       = allocate()
-characters.decomposed  = decomposed
+local decomposed            = allocate()
+characters.decomposed       = decomposed
 
-local mathpairs        = allocate()
-characters.mathpairs   = mathpairs
+local mathpairs             = allocate()
+characters.mathpairs        = mathpairs
 
-local filters          = allocate()
-characters.filters     = filters
+local filters               = allocate()
+characters.filters          = filters
 
-local utffilters       = { }
-characters.filters.utf = utffilters
+local utffilters            = { }
+characters.filters.utf      = utffilters
 
 -- is characters.combined cached?
 
@@ -221,91 +218,27 @@ end
 characters.initialize = initialize
 
 --[[ldx--
-<p>In order to deal with 8-bit output, we need to find a way to go from <l n='utf'/> to
-8-bit. This is handled in the <l n='luatex'/> engine itself.</p>
-
-<p>This leaves us problems with characters that are specific to <l n='tex'/> like
-<type>{}</type>, <type>$</type> and alike. We can remap some chars that tex input files
-are sensitive for to a private area (while writing to a utility file) and revert then
-to their original slot when we read in such a file. Instead of reverting, we can (when
-we resolve characters to glyphs) map them to their right glyph there. For this purpose
-we can use the private planes 0x0F0000 and 0x100000.</p>
---ldx]]--
-
-local low     = allocate()
-local high    = allocate()
-local escapes = allocate()
-local special = "~#$%^&_{}\\|" -- "~#$%{}\\|"
-
-local private = {
-    low     = low,
-    high    = high,
-    escapes = escapes,
-}
-
-utffilters.private = private
-
-local tohigh = lpeg.replacer(low)   -- frozen, only for basic tex
-local tolow  = lpeg.replacer(high)  -- frozen, only for basic tex
-
-lpegpatterns.utftohigh = tohigh
-lpegpatterns.utftolow  = tolow
-
-function utffilters.harden(str)
-    return lpegmatch(tohigh,str)
-end
-
-function utffilters.soften(str)
-    return lpegmatch(tolow,str)
-end
-
-local function set(ch)
-    local cb
-    if type(ch) == "number" then
-        cb, ch = ch, utfchar(ch)
-    else
-        cb = utfbyte(ch)
-    end
-    if cb < 256 then
-        escapes[ch] = "\\" .. ch
-        low[ch] = utfchar(0x0F0000 + cb)
-        if ch == "%" then
-            ch = "%%" -- nasty, but we need this as in replacements (also in lpeg) % is interpreted
-        end
-        high[utfchar(0x0F0000 + cb)] = ch
-    end
-end
-
-private.set = set
-
--- function private.escape (str) return    gsub(str,"(.)", escapes) end
--- function private.replace(str) return utfgsub(str,"(.)", low    ) end
--- function private.revert (str) return utfgsub(str,"(.)", high   ) end
-
-private.escape  = utf.remapper(escapes)
-private.replace = utf.remapper(low)
-private.revert  = utf.remapper(high)
-
-for ch in gmatch(special,".") do set(ch) end
-
---[[ldx--
-<p>We get a more efficient variant of this when we integrate
-replacements in collapser. This more or less renders the previous
-private code redundant. The following code is equivalent but the
-first snippet uses the relocated dollars.</p>
-
-<typing>
-[󰀤x󰀤] [$x$]
-</typing>
-
 <p>The next variant has lazy token collecting, on a 140 page mk.tex this saves
 about .25 seconds, which is understandable because we have no graphemes and
 not collecting tokens is not only faster but also saves garbage collecting.
 </p>
 --ldx]]--
 
-local skippable  = table.tohash { "mkiv", "mkvi", "mkix", "mkxi" }
+local skippable  = { }
 local filesuffix = file.suffix
+
+function utffilters.setskippable(suffix,value)
+    if value == nil then
+        value = true
+    end
+    if type(suffix) == "table" then
+        for i=1,#suffix do
+            skippable[suffix[i]] = value
+        end
+    else
+        skippable[suffix] = value
+    end
+end
 
 -- function utffilters.collapse(str,filename)   -- we can make high a seperate pass (never needed with collapse)
 --     if skippable[filesuffix(filename)] then
@@ -406,7 +339,7 @@ local filesuffix = file.suffix
 --                 return concat(tokens) -- seldom called
 --             end
 --         elseif nstr > 0 then
---             return high[str] or str -- thsi will go from here
+--             return high[str] or str -- this will go from here
 --         end
 --     end
 --     return str
@@ -420,7 +353,7 @@ local function prepare()
     if initialize then
         initialize()
     end
-    local tree = utfchartabletopattern(keys(collapsed))
+    local tree = utfchartabletopattern(collapsed)
     p_collapse = Cs((tree/collapsed + p_utf8character)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
 end
 
@@ -487,7 +420,7 @@ end
 --         if initialize then
 --             initialize()
 --         end
---         local tree = utfchartabletopattern(keys(decomposed))
+--         local tree = utfchartabletopattern(decomposed)
 --         finder   = lpeg.finder(tree,false,true)
 --         replacer = lpeg.replacer(tree,decomposed,false,true)
 --     end
@@ -503,11 +436,11 @@ local function prepare()
     if initialize then
         initialize()
     end
-    local tree = utfchartabletopattern(keys(decomposed))
+    local tree = utfchartabletopattern(decomposed)
     p_decompose = Cs((tree/decomposed + p_utf8character)^0 * P(-1))
 end
 
-function utffilters.decompose(str) -- 3 to 4 times faster than the above
+function utffilters.decompose(str,filename) -- 3 to 4 times faster than the above
     if not p_decompose then
         prepare()
     end
@@ -619,12 +552,12 @@ local function prepare()
             hash[utfchar(k)] = { utfchar(k), combining, 0 } -- slot 3 can be used in sort
         end
     end
-    local e = utfchartabletopattern(keys(exceptions))
-    local p = utfchartabletopattern(keys(hash))
+    local e = utfchartabletopattern(exceptions)
+    local p = utfchartabletopattern(hash)
     p_reorder = Cs((e/exceptions + Cmt(Ct((p/hash)^2),swapper) + p_utf8character)^0) * P(-1)
 end
 
-function utffilters.reorder(str)
+function utffilters.reorder(str,filename)
     if not p_reorder then
         prepare()
     end
@@ -637,141 +570,6 @@ function utffilters.reorder(str)
     end
     return str
 end
-
--- --
-
-local sequencers = utilities.sequencers
-
-if sequencers then
-
-    local textfileactions = resolvers.openers.helpers.textfileactions
-    local textlineactions = resolvers.openers.helpers.textlineactions
-
-    sequencers.appendaction (textfileactions,"system","characters.filters.utf.reorder")
-    sequencers.disableaction(textfileactions,"characters.filters.utf.reorder")
-
-    sequencers.appendaction (textlineactions,"system","characters.filters.utf.reorder")
-    sequencers.disableaction(textlineactions,"characters.filters.utf.reorder")
-
-    sequencers.appendaction (textfileactions,"system","characters.filters.utf.collapse")
-    sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
-
-    sequencers.appendaction (textfileactions,"system","characters.filters.utf.decompose")
-    sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
-
-    function characters.filters.utf.enable()
-        sequencers.enableaction(textfileactions,"characters.filters.utf.reorder")
-        sequencers.enableaction(textfileactions,"characters.filters.utf.collapse")
-        sequencers.enableaction(textfileactions,"characters.filters.utf.decompose")
-    end
-
-    local function configure(what,v)
-        if not v then
-            sequencers.disableaction(textfileactions,what)
-            sequencers.disableaction(textlineactions,what)
-        elseif v == "line" then
-            sequencers.disableaction(textfileactions,what)
-            sequencers.enableaction (textlineactions,what)
-        else -- true or text
-            sequencers.enableaction (textfileactions,what)
-            sequencers.disableaction(textlineactions,what)
-        end
-    end
-
-    directives.register("filters.utf.reorder", function(v)
-        configure("characters.filters.utf.reorder",v)
-    end)
-
-    directives.register("filters.utf.collapse", function(v)
-        configure("characters.filters.utf.collapse",v)
-    end)
-
-    directives.register("filters.utf.decompose", function(v)
-        configure("characters.filters.utf.decompose",v)
-    end)
-
-end
-
--- Faster when we deal with lots of data but somewhat complicated by the fact that we want to be
--- downward compatible .. so maybe some day I'll simplify it. We seldom have large quantities of
--- text.
-
--- local p_processed = nil -- so we can reset if needed
---
--- function utffilters.preprocess(str,filename)
---     if not p_processed then
---         if initialize then
---             initialize()
---         end
---         local merged = table.merged(collapsed,decomposed)
---         local tree   = utfchartabletopattern(keys(merged))
---         p_processed  = Cs((tree/merged     + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
---         local tree   = utfchartabletopattern(keys(collapsed))
---         p_collapse   = Cs((tree/collapsed  + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
---         local tree   = utfchartabletopattern(keys(decomposed))
---         p_decompose  = Cs((tree/decomposed + lpegpatterns.utf8char)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
---     end
---     if not str or #str == "" or #str == 1 then
---         return str
---     elseif filename and skippable[filesuffix(filename)] then -- we could hash the collapsables or do a quicker test
---         return str
---     else
---         return lpegmatch(p_processed,str) or str
---     end
--- end
---
--- local sequencers = utilities.sequencers
---
--- if sequencers then
---
---     local textfileactions = resolvers.openers.helpers.textfileactions
---
---     local collapse, decompose = false, false
---
---     sequencers.appendaction (textfileactions,"system","characters.filters.utf.preprocess")
---     sequencers.disableaction(textfileactions,"characters.filters.utf.preprocess")
---
---     local function checkable()
---         if decompose then
---             if collapse then
---                 sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
---                 sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
---                 sequencers.enableaction (textfileactions,"characters.filters.utf.preprocess")
---             else
---                 sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
---                 sequencers.enableaction (textfileactions,"characters.filters.utf.decompose")
---                 sequencers.disableaction(textfileactions,"characters.filters.utf.preprocess")
---             end
---         else
---             if collapse then
---                 sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
---                 sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
---                 sequencers.disableaction(textfileactions,"characters.filters.utf.preprocess")
---             else
---                 sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
---                 sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
---                 sequencers.disableaction(textfileactions,"characters.filters.utf.preprocess")
---             end
---         end
---     end
---
---     function characters.filters.utf.enable()
---         collapse  = true
---         decompose = true
---         checkable()
---     end
---
---     directives.register("filters.utf.collapse", function(v)
---         collapse = v
---         checkable()
---     end)
---
---     directives.register("filters.utf.decompose", function(v)
---         decompose = v
---         checkable()
---     end)
---
--- end
 
 -- local collapse   = utffilters.collapse
 -- local decompose  = utffilters.decompose
@@ -815,3 +613,5 @@ end
 -- local done = utffilters.reorder(test)
 --
 -- print(test,done,test==done,false)
+
+return characters

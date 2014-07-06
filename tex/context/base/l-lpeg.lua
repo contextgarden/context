@@ -897,17 +897,35 @@ end
 function lpeg.utfchartabletopattern(list) -- goes to util-lpg
     local tree = { }
     local hash = { }
-    for i=1,#list do
-        local t = tree
-        for c in gmatch(list[i],".") do
-            local tc = t[c]
-            if not tc then
-                tc = { }
-                t[c] = tc
+    local n = #list
+    if n == 0 then
+        -- we could always use this branch
+        for s in next, list do
+            local t = tree
+            for c in gmatch(s,".") do
+                local tc = t[c]
+                if not tc then
+                    tc = { }
+                    t[c] = tc
+                end
+                t = tc
             end
-            t = tc
+            hash[t] = s
         end
-        hash[t] = list[i]
+    else
+        for i=1,n do
+            local t = tree
+            local s = list[i]
+            for c in gmatch(s,".") do
+                local tc = t[c]
+                if not tc then
+                    tc = { }
+                    t[c] = tc
+                end
+                t = tc
+            end
+            hash[t] = s
+        end
     end
     return make(tree,hash)
 end

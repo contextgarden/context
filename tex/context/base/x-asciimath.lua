@@ -829,9 +829,9 @@ local m_right = {
 }
 
 local p_left =
-    lpeg.utfchartabletopattern(keys(m_left)) / m_left
+    lpeg.utfchartabletopattern(m_left) / m_left
 local p_right =
-    lpeg.utfchartabletopattern(keys(m_right)) / m_right
+    lpeg.utfchartabletopattern(m_right) / m_right
 
 -- special cases
 

@@ -24,28 +24,13 @@
 
 % You can adapt these setups to your liking, for instance as:
 
-% \startsetups btx:cite:author:normal
-%     \fastsetup{btx:cite:author:concat}
-%     \ifx\currentbtxfirstnames\empty \else
-%         \begingroup
-%             \bf
-%             \currentbtxfirstnames
-%         \endgroup
-%         \btxcitevariantparameter{firstnamesep}
-%     \fi
-%     \ifx\currentbtxvons\empty \else
-%         \currentbtxvons
-%         \btxcitevariantparameter{vonsep}
-%     \fi
-%     \ifx\currentbtxsurnames\empty \else
-%         \currentbtxsurnames
-%         \ifx\currentbtxjuniors\empty \else
-%             \btxcitevariantparameter{juniorsep}
-%             \currentbtxjuniors
-%         \fi
-%     \fi
-%     \fastsetup{btx:cite:author:etaltext}
-% \stopsetups
+% these can be used instead of the macros and they accept manipulator prefixes
+%
+% \currentbtxinitials   : \btxauthorfield{initials}
+% \currentbtxfirstnames : \btxauthorfield{firstnames}
+% \currentbtxvons       : \btxauthorfield{vons}
+% \currentbtxsurnames   : \btxauthorfield{surnames}
+% \currentbtxjuniors    : \btxauthorfield{juniors}
 
 \startsetups \s!btx:\s!cite:\s!author:concat
     \ifcase\currentbtxconcat \or \or
@@ -174,7 +159,9 @@
 \stopsetups
 
 \startsetups \s!btx:\s!list:\s!author:etaltext
-    \btxcitevariantparameter\c!etaltext
+    \ifcase\currentbtxoverflow \else
+        \btxlistvariantparameter\c!etaltext
+    \fi
 \stopsetups
 
 \startsetups \s!btx:\s!list:\s!author:normal
