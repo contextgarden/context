@@ -1568,6 +1568,84 @@ process them. This might come in handy when a database is inconsistent.
 
 \stopchapter
 
+\startchapter[title=Journals]
+
+An experimental feature is the ability to load a list of mapping from complete
+journal names to abbreviated forms.
+
+\startbuffer
+\btxloadjournallist[journals.txt]
+
+\btxexpandedjournal   {Z. Ökol. Nat.schutz} or
+\btxabbreviatedjournal{Z. Ökol. Nat.schutz} or
+\btxabbreviatedjournal{Z. Ökol. Nat. schutz}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In this case the text file looks like:
+
+\starttyping
+Zeitschrift für Ökologie und Naturschutz = Z. Ökol. Nat.schutz
+...
+\stoptyping
+
+Instead you can have a \LUA\ file that looks like:
+
+\starttyping
+return {
+    ["Zeitschrift für Ökologie und Naturschutz"] = "Z. Ökol. Nat.schutz",
+    ...
+}
+\stoptyping
+
+or
+
+\starttyping
+return {
+    { "Zeitschrift für Ökologie und Naturschutz", "Z. Ökol. Nat.schutz" },
+    ...
+}
+\stoptyping
+
+A file can be saved with:
+
+\starttyping
+\btxsavejournallist[journals.lua]
+\stoptyping
+
+and then loaded again in a second run. For small lists it makes not much sense
+to cache the lists but if you have tens thousands of journals it can be
+considered. Normally loading is can be neglected compared to the run. Anyhow,
+such a list looks like this:
+
+\starttyping
+return {
+    ["abbreviations"]={
+        ["zeitschriftfürökologieundnaturschutz"] = "Z. Ökol. Nat.schutz",
+    },
+    ["expansions"]={
+        ["zökolnatschutz"] = "Zeitschrift für Ökologie und Naturschutz",
+    },
+}
+\stoptyping
+
+In the future \type {mtx-bibtex} might be able to generate such lists (once we know
+what users come up with).
+
+You can add additional entries with:
+
+\starttyping
+\btxaddjournal
+  [Zeitschrift für Ökologie und Naturschutz]
+  [Z. Ökol. Nat.schutz]
+\stoptyping
+
+As usual with such mechanisms, internally spaces, punctuation and case are
+ignored with a lookup.
+
+\stopchapter
+
 \startchapter[title=Combining]
 
 It is possible to refer to two sources in one go. In that case the list will have one

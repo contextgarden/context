@@ -43,6 +43,7 @@
 \registerctxluafile{publ-ini}{1.001}
 \registerctxluafile{publ-oth}{1.001} % this could become an option
 \registerctxluafile{publ-fnd}{1.001} % new method (for the moment only local)
+\registerctxluafile{publ-jrn}{1.001}
 
 \unprotect
 
@@ -466,8 +467,8 @@
   [\s!btx]
 
 \setuplist
-  [\s!btx]%
-  [\c!state=\v!start]%
+  [\s!btx]
+  [\c!state=\v!start]
 
 \appendtoks
     \ifx\currentbtxrenderingparent\empty
@@ -515,21 +516,29 @@
 \let\completelistofpublications\completebtxrendering
 \let\placelistofpublications   \placebtxrendering
 
-\def\publ_place_list_check_criterium
-  {\edef\currentbtxcriterium{\btxrenderingparameter\c!criterium}% \v!cite will become \s!cite
-   \ifx\currentbtxcriterium\empty
-     \let\currentbtxcriterium\v!previous
-   \else\ifx\currentbtxcriterium\v!cite
-     \let\currentbtxcriterium\v!here
-   \fi\fi}
+\newtoks\everybtxlistrendering
+
+\appendtoks
+    \let\currentlist\s!btx
+    \let\currentbtxlist\currentbtxrendering
+    %
+    \edef\currentbtxcriterium{\btxrenderingparameter\c!criterium}% \v!cite will become \s!cite
+    \ifx\currentbtxcriterium\empty
+        \let\currentbtxcriterium\v!previous
+    \else\ifx\currentbtxcriterium\v!cite
+        \let\currentbtxcriterium\v!here
+    \fi\fi
+    %
+    \iflocation
+        \letinteractionparameter\c!style\empty
+    \fi
+\to \everybtxlistrendering
 
 \def\publ_place_list_complete[#1][#2]% title might become obsolete, just headtext
   {\begingroup
    \edef\currentbtxrendering{#1}%
    \setupcurrentbtxrendering[#2]%
-   \let\currentlist\s!btx
-   \let\currentbtxlist\currentbtxrendering
-   \publ_place_list_check_criterium
+   \the\everybtxlistrendering
    \edef\currentbtxrenderingtitle{\btxrenderingparameter\c!title}%
    \ifx\currentbtxrenderingtitle\empty
      \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbtxrendering,\c!title={\headtext{\currentbtxrendering}}]}%
@@ -544,9 +553,7 @@
   {\begingroup
    \edef\currentbtxrendering{#1}%
    \setupcurrentbtxrendering[#2]%
-   \let\currentlist\s!btx
-   \let\currentbtxlist\currentbtxrendering
-   \publ_place_list_check_criterium
+   \the\everybtxlistrendering
    \publ_place_list_indeed
    \endgroup}
 
@@ -1029,6 +1036,19 @@
 \to \everysetupbtxrendering
 
 \stopcontextdefinitioncode
+
+%D Journals
+
+\unexpanded\def\btxloadjournallist [#1]{\ctxcommand{btxloadjournallist("#1")}}
+\unexpanded\def\btxsavejournallist [#1]{\ctxcommand{btxsavejournallist("#1")}}
+\unexpanded\def\btxaddjournal  [#1][#2]{\ctxcommand{btxaddjournal("#1"."#2")}}
+           \def\btxexpandedjournal   #1{\ctxcommand{btxexpandedjournal("#1")}}    % \unexpanded ?
+           \def\btxabbreviatedjournal#1{\ctxcommand{btxabbreviatedjournal("#1")}} % \unexpanded ?
+
+% \btxloadjournallist[list.txt] % Foo Journal of Bars = FBJ \n ....
+%
+% \btxexpandedjournal[fbj]
+% \btxabbreviatedjournal[foo journal of bars]
 
 %D Defaults:
 

@@ -6,18 +6,18 @@ if not modules then modules = { } end modules ['data-tre'] = {
     license   = "see context related readme files"
 }
 
--- tree://e:/temporary/mb-mp/**/drawing.jpg"
--- tree://e:/temporary/mb-mp/**/Drawing.jpg"
--- tree://t:./**/tufte.tex"
--- tree://t:/./**/tufte.tex"
--- tree://t:/**/tufte.tex"
--- dirlist://e:/temporary/mb-mp/**/drawing.jpg"
--- dirlist://e:/temporary/mb-mp/**/Drawing.jpg"
--- dirlist://e:/temporary/mb-mp/**/just/some/place/drawing.jpg"
--- dirlist://e:/temporary/mb-mp/**/images/drawing.jpg"
--- dirlist://e:/temporary/mb-mp/**/images/drawing.jpg?option=fileonly"
--- dirlist://///storage-2/resources/mb-mp/**/drawing.jpg"
--- dirlist://e:/**/drawing.jpg"
+-- tree://e:/temporary/mb-mp/**/drawing.jpg
+-- tree://e:/temporary/mb-mp/**/Drawing.jpg
+-- tree://t:./**/tufte.tex
+-- tree://t:/./**/tufte.tex
+-- tree://t:/**/tufte.tex
+-- dirlist://e:/temporary/mb-mp/**/drawing.jpg
+-- dirlist://e:/temporary/mb-mp/**/Drawing.jpg
+-- dirlist://e:/temporary/mb-mp/**/just/some/place/drawing.jpg
+-- dirlist://e:/temporary/mb-mp/**/images/drawing.jpg
+-- dirlist://e:/temporary/mb-mp/**/images/drawing.jpg?option=fileonly
+-- dirlist://///storage-2/resources/mb-mp/**/drawing.jpg
+-- dirlist://e:/**/drawing.jpg
 
 local find, gsub, lower = string.find, string.gsub, string.lower
 local basename, dirname, joinname = file.basename, file.dirname, file   .join
