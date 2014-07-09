@@ -8,8 +8,7 @@ if not modules then modules = { } end modules ['publ-fnd'] = {
 
 if not characters then
     dofile(resolvers.findfile("char-def.lua"))
-    dofile(resolvers.findfile("char-ini.lua"))
-    dofile(resolvers.findfile("char-tex.lua"))
+    dofile(resolvers.findfile("char-utf.lua"))
 end
 
 if not publications then
@@ -18,7 +17,7 @@ end
 
 local tonumber, next, type = tonumber, next, type
 local P, R, C, Cs, Cp, Cc, Carg = lpeg.P, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc, lpeg.Carg
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local concat = table.concat
 
 local formatters = string.formatters
@@ -30,11 +29,11 @@ local colon   = P(":")
 local dash    = P("-")
 local lparent = P("(")
 local rparent = P(")")
-local space   = lpeg.patterns.whitespace
+local space   = lpegpatterns.whitespace
 local valid   = 1 - colon - space - lparent - rparent
 ----- key     = C(valid^1)
 local key     = C(R("az","AZ")^1)
-local word    = Cs(lpeg.patterns.unquoted + valid^1)
+local word    = Cs(lpegpatterns.unquoted + lpegpatterns.argument + valid^1)
 local number  = C(valid^1)
 
 ----- f_string_key = formatters["  local s_%s = entry[%q]"]
@@ -75,21 +74,23 @@ local pattern = Cs(Cc("(") * (P("match")/"" * p_match)^1 * Cc(")"))
 -- -- -- -- -- -- -- -- -- -- -- -- --
 -- -- -- -- -- -- -- -- -- -- -- -- --
 
-local tolower  = lpeg.patterns.tolower
-local lower    = string.lower
-
-local allascii = R("\000\127")^1 * P(-1)
-
-function characters.checkedlower(str)
-    return lpegmatch(allascii,str) and lower(str) or lpegmatch(tolower,str) or str
-end
+-- no longer faster
+--
+-- local tolower  = lpegpatterns.tolower
+-- local lower    = string.lower
+--
+-- local allascii = R("\000\127")^1 * P(-1)
+--
+-- function characters.checkedlower(str)
+--     return lpegmatch(allascii,str) and lower(str) or lpegmatch(tolower,str) or str
+-- end
 
 -- -- -- -- -- -- -- -- -- -- -- -- --
 -- -- -- -- -- -- -- -- -- -- -- -- --
 
 local f_template = string.formatters[ [[
 local find = string.find
-local lower = characters.checkedlower
+local lower = characters.lower
 return function(entry)
 %s
 return %s and true or false
@@ -119,6 +120,10 @@ local function compile(expr)
     report("invalid expression: %s",expr)
     return false
 end
+
+-- compile([[match(key:"foo bar")]])
+-- compile([[match(key:'foo bar')]])
+-- compile([[match(key:{foo bar})]])
 
 local cache = { } -- todo: make weak, or just remember the last one (trial typesetting)
 

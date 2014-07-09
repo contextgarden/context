@@ -21,7 +21,7 @@ if not modules then modules = { } end modules ['data-tre'] = {
 
 local find, gsub, lower = string.find, string.gsub, string.lower
 local basename, dirname, joinname = file.basename, file.dirname, file   .join
-local globdir, isdir = dir.glob, lfs.isdir
+local globdir, isdir, isfile = dir.glob, lfs.isdir, lfs.isfile
 local P, lpegmatch = lpeg.P, lpeg.match
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
@@ -115,8 +115,29 @@ table.setmetatableindex(collectors, function(t,k)
     return content
 end)
 
-function resolvers.finders.dirlist(specification) -- can be called directly too
+
+local function checked(root,p,n)
+    if p then
+        if type(p) == "table" then
+            for i=1,#p do
+                local fullname = joinname(root,p[i],n)
+                if isfile(fullname) then -- safeguard
+                    return fullname
+                end
+            end
+        else
+            local fullname = joinname(root,p,n)
+            if isfile(fullname) then -- safeguard
+                return fullname
+            end
+        end
+    end
+    return notfound()
+end
+
+local function resolve(specification) -- can be called directly too
     local filename = specification.filename
+ -- print(filename) -- in case we want to check for unwanted lookups
     if filename ~= "" then
         local root, rest = lpegmatch(splitter,filename)
         if root and rest then
@@ -133,41 +154,59 @@ function resolvers.finders.dirlist(specification) -- can be called directly too
                     for i=1,#p do
                         local pi = p[i]
                         if pi == path or find(pi,pattern) then
-                            return joinname(root,pi,n)
+                            local fullname = joinname(root,pi,n)
+                            if isfile(fullname) then -- safeguard
+                                return fullname
+                            end
                         end
                     end
-                else
-                    if p == path or find(p,pattern) then
-                        return joinname(root,p,n)
+                elseif p == path or find(p,pattern) then
+                    local fullname = joinname(root,p,n)
+                    if isfile(fullname) then -- safeguard
+                        return fullname
                     end
                 end
                 local queries = specification.queries
                 if queries and queries.option == "fileonly" then
-                    return joinname(root,istable and p[1] or p,n)
+                    return checked(root,p,n)
+                else
+                    return notfound()
                 end
-                return notfound()
             end
         end
         local path, name = dirname(filename), basename(filename)
         local root = lpegmatch(stripper,path)
         local content = collectors[path]
         local p, n = lookup(content,name)
-        if not p then
-            return notfound()
-        elseif type(p) == "table" then
-            -- maybe a warning that the first name is taken
-            p = p[1]
+        if p then
+            return checked(root,p,n)
         end
-        return joinname(root,p,n)
     end
     return notfound()
 end
 
+resolvers.finders   .dirlist = resolve
 resolvers.locators  .dirlist = resolvers.locators  .tree
 resolvers.hashers   .dirlist = resolvers.hashers   .tree
 resolvers.generators.dirlist = resolvers.generators.file
 resolvers.openers   .dirlist = resolvers.openers   .file
 resolvers.loaders   .dirlist = resolvers.loaders   .file
+
+function resolvers.finders.dirfile(specification)
+    local queries = specification.queries
+    if queries then
+        queries.option = "fileonly"
+    else
+        specification.queries = { option = "fileonly" }
+    end
+    return resolve(specification)
+end
+
+resolvers.locators  .dirfile = resolvers.locators  .dirlist
+resolvers.hashers   .dirfile = resolvers.hashers   .dirlist
+resolvers.generators.dirfile = resolvers.generators.dirlist
+resolvers.openers   .dirfile = resolvers.openers   .dirlist
+resolvers.loaders   .dirfile = resolvers.loaders   .dirlist
 
 -- local locate = collectors[ [[E:\temporary\mb-mp]] ]
 -- local locate = collectors( [[\\storage-2\resources\mb-mp]] )

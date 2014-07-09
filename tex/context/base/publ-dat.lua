@@ -16,8 +16,7 @@ in a convenient way. Actually handling the data takes place elsewhere.</p>
 --ldx]]--
 
 if not characters then
-    dofile(resolvers.findfile("char-def.lua"))
-    dofile(resolvers.findfile("char-ini.lua"))
+    dofile(resolvers.findfile("char-utf.lua"))
     dofile(resolvers.findfile("char-tex.lua"))
 end
 

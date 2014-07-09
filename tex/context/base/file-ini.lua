@@ -34,6 +34,10 @@ function commands.doifparentfileelse(n)
 end
 
 function commands.doiffileexistelse(name)
-    local foundname = resolvers.findtexfile(name)
-    commands_doifelse(foundname and foundname ~= "")
+    name = resolvers.findtexfile(name)
+    commands_doifelse(name and name ~= "")
+end
+
+function commands.doifpathexistelse(name)
+    commands_doifelse(lfs.isdir(name))
 end

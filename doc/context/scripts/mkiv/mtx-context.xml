@@ -152,16 +152,19 @@
                     <short>update context version number (also provide <ref name="expert"/>, optionally provide <ref name="basepath"/>)</short>
                 </flag>
                     <flag name="nostatistics">
-                <short>omit runtime statistics at the end of the run</short>
+                    <short>omit runtime statistics at the end of the run</short>
                 </flag>
                     <flag name="update">
                 <short>update context from website (not to be confused with contextgarden)</short>
                 </flag>
-                    <flag name="profile">
-                <short>profile job (use: mtxrun <ref name="script"/> profile <ref name="analyze"/>)</short>
+                <flag name="profile">
+                    <short>profile job (use: mtxrun <ref name="script"/> profile <ref name="analyze"/>)</short>
                 </flag>
-                    <flag name="timing">
-                <short>generate timing and statistics overview</short>
+                <flag name="timing">
+                    <short>generate timing and statistics overview</short>
+                </flag>
+                <flag name="keeptuc">
+                    <short>keep previous tuc files (numbered by run)</short>
                 </flag>
             </subcategory>
             <subcategory>

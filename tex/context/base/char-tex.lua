@@ -18,8 +18,6 @@ local P, C, R, S, V, Cs, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.V, lpeg.Cs, l
 
 local lpegpatterns          = lpeg.patterns
 local lpegmatch             = lpeg.match
-local utf8byte              = lpegpatterns.utf8byte
-local utf8char              = lpegpatterns.utf8char
 local utfchartabletopattern = lpeg.utfchartabletopattern
 
 local allocate              = utilities.storage.allocate
@@ -43,19 +41,6 @@ local blocks                = characters.blocks
 local trace_defining        = false  trackers.register("characters.defining", function(v) characters_defining = v end)
 
 local report_defining       = logs.reporter("characters")
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 --[[ldx--
 <p>In order to deal with 8-bit output, we need to find a way to go from <l n='utf'/> to
@@ -424,6 +409,11 @@ function texcharacters.defineaccents()
             context.dodefineaccent(accent,character,mapping)
         end
     end
+end
+
+if not context or not commands then
+    -- used in e.g. mtx-bibtex
+    return
 end
 
 -- all kind of initializations

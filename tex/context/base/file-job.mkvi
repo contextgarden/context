@@ -45,6 +45,14 @@
 \unexpanded\def\locatefilepath#name% no [] ?
   {\edef\locatedfilepath{\ctxcommand{locatefilepath("#name")}}}
 
+% % maybe:
+%
+% % \dirlist{c:/data/temporary/foo}{images/bar.jpg}
+% % \dirfile{c:/data/temporary/foo}{images/bar.jpg}
+%
+% \def\dirlist#1#2{dirlist://#1/**/#2}
+% \def\dirfile#1#2{dirlist://#1/**/#2?option=fileonly}
+
 % zip files are tree'd
 
 \unexpanded\def\usezipfile

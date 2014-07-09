@@ -499,7 +499,6 @@ function lpeg.finder(lst,makefunction,isutf) -- beware: slower than find with 'p
         pattern = P(lst)
     end
     if isutf then
---         pattern = ((utf8char or 1)-pattern)^0 * pattern
         pattern = ((utf8char or 1)-pattern)^0 * pattern
     else
         pattern = (1-pattern)^0 * pattern

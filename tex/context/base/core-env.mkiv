@@ -149,7 +149,11 @@
    \rawprocesscommacommand[#1]\syst_modes_define_indeed}
 
 \def\syst_modes_define_indeed#1%
-  {\syst_modes_new{#1}%
+  {\ifcsname\??mode#1\endcsname
+     % already set
+   \else
+     \syst_modes_new{#1}
+   \fi
    \ifx\m_modes_asked\v!keep
      % not changes, disabled when undefined
    \else

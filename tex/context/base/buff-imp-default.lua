@@ -20,7 +20,7 @@ local grammar = { "visualizer",
     beginline  = makepattern(handler,"beginline",patterns.beginline),
     newline    = makepattern(handler,"newline",  patterns.newline),
     space      = makepattern(handler,"space",    patterns.space),
-    default    = makepattern(handler,"default",  patterns.utf8char),
+    default    = makepattern(handler,"default",  patterns.utf8character),
     content    = makepattern(handler,"default",  patterns.somecontent), -- not too efficient
 
     -- handy

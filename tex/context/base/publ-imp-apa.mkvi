@@ -29,6 +29,7 @@
   [apa:mastersthesis={Master's thesis},
    apa:phdthesis={PhD thesis},
    apa:technicalreport={Technical report},
+   apa:patent=patent,
    apa:editor=editor,
    apa:editors=editors,
    apa:edition=edition,
@@ -50,6 +51,7 @@
   [apa:mastersthesis={Thèse de master (DEA, DESS, master)},
    apa:phdthesis={Thèse de doctorat},
    apa:technicalreport={Rapport technique},
+   apa:patent=brevet,
    apa:editor=éditeur,
    apa:editors=éditeurs,
    apa:edition=édition,
@@ -71,6 +73,7 @@
   [apa:mastersthesis={Masterarbeit},
    apa:phdthesis={Dissertation},
    apa:technicalreport={Technischer Bericht},
+   apa:patent=Patent,
    apa:editor=Herausgeber,
    apa:editors=Herausgeber,
    apa:edition=Auflage,
@@ -737,6 +740,26 @@
     \btxcomma
     \texdefinition{btx:apa:wherefrom}{institution}
     \texdefinition{btx:apa:pages:p}
+    \texdefinition{btx:apa:note}
+\stopsetups
+
+\startsetups btx:apa:patent
+    \texdefinition{btx:apa:author-and-year}
+    \btxdoif {title} {
+      \btxspace
+      \texdefinition{btx:apa:italic}{converters.Word -> title}
+    }
+    \btxdoif {nationality} {
+      \btxspace
+      \btxflush{nationality}
+    }
+    \btxspace
+    \btxlabeltext{apa:patent}
+    \btxdoif {number} {
+      \btxspace
+      \btxflush{number}
+    }
+    \texdefinition{btx:apa:wherefrom}{publisher}
     \texdefinition{btx:apa:note}
 \stopsetups
 

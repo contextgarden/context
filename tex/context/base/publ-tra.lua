@@ -146,6 +146,10 @@ local categories = {
         required = { "author", "title", "institution", "year" },
         optional = { "type", "number", "address", "month", "note" },
     },
+    patent = {
+        required = { "nationality", "number", "year", "yearfiled" },
+        optional = { "author", "title", "language", "assignee", "address", "type", "day", "dayfiled", "month", "monthfiled", "note", },
+    },
     unpublished = {
         required = { "author", "title", "note" },
         optional = { "month", "year" },

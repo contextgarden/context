@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['core-con'] = {
     license   = "see context related readme files"
 }
 
+-- todo: split into char-lan.lua and core-con.lua
+
 --[[ldx--
 <p>This module implements a bunch of conversions. Some are more
 efficient than their <l n='tex'/> counterpart, some are even
@@ -979,17 +981,28 @@ end
 -- These are just helpers but not really for the tex end. Do we have to
 -- use translate here?
 
-local character   = lpeg.patterns.utf8character
 local whitespace  = lpeg.patterns.whitespace
-local word        = (character-whitespace) / characters.upper * (character-whitespace)^1
-local spacing     = whitespace^1
-local pattern_one = Cs(word * P(1)^1)
-local pattern_all = Cs((word + spacing)^1)
+local word        = lpeg.patterns.utf8uppercharacter^-1 * (1-whitespace)^1
+local pattern_one = Cs(whitespace^0 * word^-1 * P(1)^1)
+local pattern_all = Cs((whitespace^1 + word)^1)
 
-function converters.word (s) return s end
-function converters.words(s) return s end
-function converters.Word (s) return lpegmatch(pattern_one,s) end
-function converters.Words(s) return lpegmatch(pattern_all,s) end
+function converters.word (s) return s end -- dummies for typos
+function converters.words(s) return s end -- dummies for typos
+function converters.Word (s) return lpegmatch(pattern_one,s) or s end
+function converters.Words(s) return lpegmatch(pattern_all,s) or s end
+
+converters.upper = characters.upper
+converters.lower = characters.lower
+
+-- print(converters.Word("foo bar"))
+-- print(converters.Word(" foo bar"))
+-- print(converters.Word("123 foo bar"))
+-- print(converters.Word(" 123 foo bar"))
+
+-- print(converters.Words("foo bar"))
+-- print(converters.Words(" foo bar"))
+-- print(converters.Words("123 foo bar"))
+-- print(converters.Words(" 123 foo bar"))
 
 -- --
 

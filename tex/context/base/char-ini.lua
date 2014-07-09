@@ -22,7 +22,7 @@ if not characters then require("char-def") end
 local lpegpatterns          = lpeg.patterns
 local lpegmatch             = lpeg.match
 local utf8byte              = lpegpatterns.utf8byte
-local utf8char              = lpegpatterns.utf8char
+local utf8character         = lpegpatterns.utf8character
 
 local utfchartabletopattern = lpeg.utfchartabletopattern
 
@@ -879,13 +879,13 @@ end
 ----- toupper = Cs((utf8byte/ucchars)^0)
 ----- toshape = Cs((utf8byte/shchars)^0)
 
-local tolower = Cs((utf8char/lcchars)^0) -- no need to check spacing
-local toupper = Cs((utf8char/ucchars)^0) -- no need to check spacing
-local toshape = Cs((utf8char/shchars)^0) -- no need to check spacing
+local tolower = Cs((utf8character/lcchars)^0) -- no need to check spacing
+local toupper = Cs((utf8character/ucchars)^0) -- no need to check spacing
+local toshape = Cs((utf8character/shchars)^0) -- no need to check spacing
 
-lpegpatterns.tolower = tolower
-lpegpatterns.toupper = toupper
-lpegpatterns.toshape = toshape
+lpegpatterns.tolower = tolower -- old ones ... will be overloaded
+lpegpatterns.toupper = toupper -- old ones ... will be overloaded
+lpegpatterns.toshape = toshape -- old ones ... will be overloaded
 
 -- function characters.lower (str) return lpegmatch(tolower,str) end
 -- function characters.upper (str) return lpegmatch(toupper,str) end
@@ -931,13 +931,25 @@ for k, v in next, characters.data do
  -- end
 end
 
-local utf8lower = Cs((utfchartabletopattern(lhash) / lhash + utf8char)^0)
-local utf8upper = Cs((utfchartabletopattern(uhash) / uhash + utf8char)^0)
-local utf8shape = Cs((utfchartabletopattern(shash) / shash + utf8char)^0)
+local utf8lowercharacter = utfchartabletopattern(lhash) / lhash
+local utf8uppercharacter = utfchartabletopattern(uhash) / uhash
+local utf8shapecharacter = utfchartabletopattern(shash) / shash
 
-lpegpatterns.utf8lower = utf8lower
-lpegpatterns.utf8upper = utf8upper
-lpegpatterns.utf8shape = utf8shape
+local utf8lower = Cs((utf8lowercharacter + utf8character)^0)
+local utf8upper = Cs((utf8uppercharacter + utf8character)^0)
+local utf8shape = Cs((utf8shapecharacter + utf8character)^0)
+
+lpegpatterns.utf8lowercharacter = utf8lowercharacter -- one character
+lpegpatterns.utf8uppercharacter = utf8uppercharacter -- one character
+lpegpatterns.utf8shapecharacter = utf8shapecharacter -- one character
+
+lpegpatterns.utf8lower = utf8lower -- string
+lpegpatterns.utf8upper = utf8upper -- string
+lpegpatterns.utf8shape = utf8shape -- string
+
+characters.lhash = lhash -- nil if no conversion
+characters.uhash = uhash -- nil if no conversion
+characters.shash = shash -- nil if no conversion
 
 function characters.lower (str) return lpegmatch(utf8lower,str) end
 function characters.upper (str) return lpegmatch(utf8upper,str) end

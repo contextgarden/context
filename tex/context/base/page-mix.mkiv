@@ -554,6 +554,8 @@
          % needs packaging anyway
          \setbox\scratchbox\page_mix_command_package_column
          \page_marks_synchronize_column\plusone\c_page_mix_n_of_columns\recurselevel\scratchbox
+         % backgrounds
+\anch_mark_column_box\scratchbox
          % for the moment a quick and dirty patch .. we need to go into the box (hence the \plusone) .. a slowdowner
          \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_mix_n_of_columns\plusone
          % the framed needs a reset of strut, align, setups etc

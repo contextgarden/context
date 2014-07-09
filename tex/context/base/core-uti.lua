@@ -65,6 +65,7 @@ job.comment("version",job.version)
 local enabled = true
 
 directives.register("job.save",function(v) enabled = v end)
+----------.register("job.keep",function(v) kept    = v end)
 
 function job.disablesave() -- can be command
     enabled = false
@@ -74,6 +75,9 @@ function job.initialize(loadname,savename)
     job.load(loadname) -- has to come after  structure is defined !
     luatex.registerstopactions(function()
         if enabled and not status.lasterrorstring or status.lasterrorstring == "" then
+         -- if kept then
+         --     job.keep(loadname) -- could move to mtx-context instead
+         -- end
             job.save(savename)
         end
     end)
@@ -283,6 +287,28 @@ function job.loadother(filename)
     statistics.stoptiming(_load_)
 end
 
+-- function job.keep(filename)
+--     local suffix = file.suffix(filename)
+--     local base   = file.removesuffix(filename)
+--     if suffix == "" then
+--         suffix = "tuc"
+--     end
+--     for i=1,10 do
+--         local tmpname = format("%s-%s-%02d.tmp",base,suffix,i)
+--         if lfs.isfile(tmpname) then
+--             os.remove(tmpname)
+--             report_passes("removing %a",tmpname)
+--         end
+--     end
+--     if lfs.isfile(filename) then
+--         local tmpname = format("%s-%s-%02d.tmp",base,suffix,environment.currentrun or 1)
+--         report_passes("copying %a into %a",filename,tmpname)
+--         file.copy(filename,tmpname)
+--     else
+--         report_passes("no file %a, nothing kept",filename)
+--     end
+-- end
+
 -- eventually this will end up in strc-ini
 
 statistics.register("startup time", function()
@@ -351,7 +377,6 @@ function statistics.formatruntime(runtime)
         end
     end
 end
-
 
 commands.savevariable  = job.variables.save
 commands.setjobcomment = job.comment

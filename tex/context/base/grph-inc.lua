@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['grph-inc'] = {
     license   = "see context related readme files"
 }
 
+-- todo: files are sometimes located twice
 -- todo: empty filename or only suffix always false (not found)
 -- lowercase types
 -- mps tex tmp svg
@@ -552,6 +553,9 @@ local function register(askedname,specification)
                 report_inclusion("no converter for %a to %a",format,newformat)
             end
             if converter then
+                --
+                -- todo: outline as helper function
+                --
                 local oldname = specification.fullname
                 local newpath = file.dirname(oldname)
                 local oldbase = file.basename(oldname)
@@ -641,19 +645,21 @@ local function register(askedname,specification)
                 end
             end
         end
-        local found = figures_suffixes[format] -- validtypes[format]
-        if not found then
-            specification.found = false
-            if trace_figures then
-                report_inclusion("format %a is not supported",format)
-            end
-        else
-            specification.found = true
-            if trace_figures then
-                if validtypes[format] then -- format?
-                    report_inclusion("format %a natively supported by backend",format)
-                else
-                    report_inclusion("format %a supported by output file format",format)
+        if format then
+            local found = figures_suffixes[format] -- validtypes[format]
+            if not found then
+                specification.found = false
+                if trace_figures then
+                    report_inclusion("format %a is not supported",format)
+                end
+            else
+                specification.found = true
+                if trace_figures then
+                    if validtypes[format] then -- format?
+                        report_inclusion("format %a natively supported by backend",format)
+                    else
+                        report_inclusion("format %a supported by output file format",format)
+                    end
                 end
             end
         end
@@ -697,6 +703,7 @@ local function locate(request) -- name, format, cache
             askedname = path
         end
     else
+-- local fname = methodhandler('finders',pathname .. "/" .. wantedfiles[k])
         local foundname = resolvers.findbinfile(askedname)
         if not foundname or not lfs.isfile(foundname) then -- foundname can be dummy
             if trace_figures then
@@ -1011,11 +1018,15 @@ end
 function existers.generic(askedname,resolve)
     -- not findbinfile
     local result
-    if lfs.isfile(askedname) then
+    if url.hasscheme(askedname) then
+        result = resolvers.findbinfile(askedname)
+    elseif lfs.isfile(askedname) then
         result = askedname
     elseif resolve then
-        result = resolvers.findbinfile(askedname) or ""
-        if result == "" then result = false end
+        result = resolvers.findbinfile(askedname)
+    end
+    if not result or result == "" then
+        result = false
     end
     if trace_figures then
         if result then

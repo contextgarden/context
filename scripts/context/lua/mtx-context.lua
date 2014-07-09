@@ -28,10 +28,12 @@ local fileaddsuffix = file.addsuffix
 local filenewsuffix = file.replacesuffix
 local removesuffix  = file.removesuffix
 local validfile     = lfs.isfile
+local removefile    = os.remove
+local renamefile    = os.rename
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 0.60",
+    banner   = "ConTeXt Process Management 0.61",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }
@@ -279,11 +281,29 @@ local function multipass_changed(oldhash, newhash)
     return false
 end
 
-local function multipass_copyluafile(jobname)
+local function multipass_copyluafile(jobname,run)
     local tuaname, tucname = jobname..".tua", jobname..".tuc"
     if validfile(tuaname) then
-        os.remove(tucname)
-        os.rename(tuaname,tucname)
+        if run then
+            for i=1,10 do
+                local tmpname = format("%s-tuc-%02d.tmp",jobname,i)
+                if validfile(tmpname) then
+                    removefile(tmpname)
+                    report("removing %a",tmpname)
+                end
+            end
+            if validfile(tucname) then
+                local tmpname = format("%s-tuc-%02d.tmp",jobname,run or 1)
+                report("copying %a into %a",tucname,tmpname)
+                file.copy(tucname,tmpname)
+            else
+                report("no file %a, nothing kept",filename)
+            end
+            report("copying %a into %a",tuaname,tucname)
+            report()
+        end
+        removefile(tucname)
+        renamefile(tuaname,tucname)
     end
 end
 
@@ -348,8 +368,8 @@ local function result_push_purge(oldbase,newbase)
     for _, suffix in next, usedsuffixes.after do
         local oldname = fileaddsuffix(oldbase,suffix)
         local newname = fileaddsuffix(newbase,suffix)
-        os.remove(newname)
-        os.remove(oldname)
+        removefile(newname)
+        removefile(oldname)
     end
 end
 
@@ -358,10 +378,10 @@ local function result_push_keep(oldbase,newbase)
         local oldname = fileaddsuffix(oldbase,suffix)
         local newname = fileaddsuffix(newbase,suffix)
         local tmpname = "keep-"..oldname
-        os.remove(tmpname)
-        os.rename(oldname,tmpname)
-        os.remove(oldname)
-        os.rename(newname,oldname)
+        removefile(tmpname)
+        renamefile(oldname,tmpname)
+        removefile(oldname)
+        renamefile(newname,oldname)
     end
 end
 
@@ -369,8 +389,8 @@ local function result_save_error(oldbase,newbase)
     for _, suffix in next, usedsuffixes.keep do
         local oldname = fileaddsuffix(oldbase,suffix)
         local newname = fileaddsuffix(newbase,suffix)
-        os.remove(newname) -- to be sure
-        os.rename(oldname,newname)
+        removefile(newname) -- to be sure
+        renamefile(oldname,newname)
     end
 end
 
@@ -378,8 +398,8 @@ local function result_save_purge(oldbase,newbase)
     for _, suffix in next, usedsuffixes.after do
         local oldname = fileaddsuffix(oldbase,suffix)
         local newname = fileaddsuffix(newbase,suffix)
-        os.remove(newname) -- to be sure
-        os.rename(oldname,newname)
+        removefile(newname) -- to be sure
+        renamefile(oldname,newname)
     end
 end
 
@@ -388,9 +408,9 @@ local function result_save_keep(oldbase,newbase)
         local oldname = fileaddsuffix(oldbase,suffix)
         local newname = fileaddsuffix(newbase,suffix)
         local tmpname = "keep-"..oldname
-        os.remove(newname)
-        os.rename(oldname,newname)
-        os.rename(tmpname,oldname)
+        removefile(newname)
+        renamefile(oldname,newname)
+        renamefile(tmpname,oldname)
     end
 end
 
@@ -549,6 +569,7 @@ function scripts.context.run(ctxdata,filename)
     local a_jiton       = getargument("jiton")
     local a_jithash     = getargument("jithash")
     local a_texformat   = getargument("texformat")
+    local a_keeptuc     = getargument("keeptuc")
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or (a_scrollmode and "scrollmode") or nil
     a_synctex   = check_synctex(a_synctex)
@@ -715,7 +736,7 @@ function scripts.context.run(ctxdata,filename)
                         os.exit(1)
                         break
                     elseif returncode == 0 then
-                        multipass_copyluafile(jobname)
+                        multipass_copyluafile(jobname,a_keeptuc and currentrun)
                         if not multipass_forcedruns then
                             newhash = multipass_hashfiles(jobname)
                             if multipass_changed(oldhash,newhash) then
@@ -852,7 +873,7 @@ function scripts.context.pipe() -- still used?
             scripts.context.purge_job(filename)
         elseif getargument("purgeall") then
             scripts.context.purge_job(filename,true)
-            os.remove(filename)
+            removefile(filename)
         end
     else
         if formatname then
@@ -1046,11 +1067,11 @@ local special_runfiles = {
 
 local function purge_file(dfile,cfile)
     if cfile and validfile(cfile) then
-        if os.remove(dfile) then
+        if removefile(dfile) then
             return filebasename(dfile)
         end
     elseif dfile then
-        if os.remove(dfile) then
+        if removefile(dfile) then
             return filebasename(dfile)
         end
     end
@@ -1144,8 +1165,8 @@ local function touch(path,name,versionpattern,kind,kindpattern)
         end
         if newdata ~= "" and (oldversion ~= newversion or oldkind ~= newkind or newdata ~= olddata) then
             local backup = filenewsuffix(name,"tmp")
-            os.remove(backup)
-            os.rename(name,backup)
+            removefile(backup)
+            renamefile(name,backup)
             io.savedata(name,newdata)
             return name, oldversion, newversion, oldkind, newkind
         end

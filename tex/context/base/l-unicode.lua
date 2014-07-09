@@ -34,24 +34,28 @@ local type = type
 local char, byte, format, sub, gmatch = string.char, string.byte, string.format, string.sub, string.gmatch
 local concat = table.concat
 local P, C, R, Cs, Ct, Cmt, Cc, Carg, Cp = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Carg, lpeg.Cp
-local lpegmatch, patterns = lpeg.match, lpeg.patterns
 
-local bytepairs     = string.bytepairs
+local lpegmatch       = lpeg.match
+local patterns        = lpeg.patterns
+local tabletopattern  = lpeg.utfchartabletopattern
 
-local finder        = lpeg.finder
-local replacer      = lpeg.replacer
+local bytepairs       = string.bytepairs
 
-local utfvalues     = utf.values
-local utfgmatch     = utf.gmatch -- not always present
+local finder          = lpeg.finder
+local replacer        = lpeg.replacer
+
+local utfvalues       = utf.values
+local utfgmatch       = utf.gmatch -- not always present
 
 local p_utftype       = patterns.utftype
 local p_utfstricttype = patterns.utfstricttype
 local p_utfoffset     = patterns.utfoffset
-local p_utf8char      = patterns.utf8char
+local p_utf8char      = patterns.utf8character
 local p_utf8byte      = patterns.utf8byte
 local p_utfbom        = patterns.utfbom
 local p_newline       = patterns.newline
 local p_whitespace    = patterns.whitespace
+
 
 if not unicode then
 
@@ -510,8 +514,20 @@ end
 
 -- a replacement for simple gsubs:
 
+-- function utf.remapper(mapping)
+--     local pattern = Cs((p_utf8char/mapping)^0)
+--     return function(str)
+--         if not str or str == "" then
+--             return ""
+--         else
+--             return lpegmatch(pattern,str)
+--         end
+--     end, pattern
+-- end
+
 function utf.remapper(mapping)
-    local pattern = Cs((p_utf8char/mapping)^0)
+    local pattern = type(mapping) == "table" and tabletopattern(mapping) or p_utf8char
+    local pattern = Cs((pattern/mapping + p_utf8char)^0)
     return function(str)
         if not str or str == "" then
             return ""

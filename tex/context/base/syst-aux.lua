@@ -13,15 +13,16 @@ if not modules then modules = { } end modules ['syst-aux'] = {
 
 local commands, context = commands, context
 
+local tonumber = tonumber
 local settings_to_array = utilities.parsers.settings_to_array
 local format = string.format
 local utfsub = utf.sub
-local P, S, C, Cc, Cs, Carg, lpegmatch, utf8char = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match, lpeg.patterns.utf8char
-
+local P, S, C, Cc, Cs, Carg, lpegmatch, utf8character = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match, lpeg.patterns.utf8character
+local todimen = number.todimen
 
 local setvalue = context.setvalue
 
-local pattern = C(utf8char^-1) * C(P(1)^0)
+local pattern = C(utf8character^-1) * C(P(1)^0)
 
 function commands.getfirstcharacter(str)
     local first, rest = lpegmatch(pattern,str)
@@ -38,7 +39,7 @@ function commands.theremainingcharacters(str)
     context(rest)
 end
 
-local pattern = C(utf8char^-1)
+local pattern = C(utf8character^-1)
 
 function commands.doiffirstcharelse(chr,str)
     commands.doifelse(lpegmatch(pattern,str) == chr)
@@ -114,3 +115,5 @@ local upper, lower, strip = utf.upper, utf.lower, string.strip
 function commands.upper(s) context(upper(s)) end
 function commands.lower(s) context(lower(s)) end
 function commands.strip(s) context(strip(s)) end
+
+function commands.converteddimen(dimen,unit) context(todimen(dimen,unit or "pt","%0.5f")) end -- no unit appended

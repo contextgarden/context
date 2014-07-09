@@ -761,45 +761,47 @@ function resolvers.registerextrapath(paths,subpaths)
     end
 end
 
-local function made_list(instance,list)
+local function made_list(instance,list,extra_too)
+    if not extra_too then
+        return list
+    end
     local ep = instance.extra_paths
     if not ep or #ep == 0 then
         return list
-    else
-        local done, new, newn = { }, { }, 0
-        -- honour . .. ../.. but only when at the start
-        for k=1,#list do
-            local v = list[k]
-            if not done[v] then
-                if find(v,"^[%.%/]$") then
-                    done[v] = true
-                    newn = newn + 1
-                    new[newn] = v
-                else
-                    break
-                end
-            end
-        end
-        -- first the extra paths
-        for k=1,#ep do
-            local v = ep[k]
-            if not done[v] then
-                done[v] = true
-                newn = newn + 1
-                new[newn] = v
-            end
-        end
-        -- next the formal paths
-        for k=1,#list do
-            local v = list[k]
-            if not done[v] then
-                done[v] = true
-                newn = newn + 1
-                new[newn] = v
-            end
-        end
-        return new
     end
+    local done, new, newn = { }, { }, 0
+    -- honour . .. ../.. but only when at the start
+    for k=1,#list do
+        local v = list[k]
+        if not done[v] then
+            if find(v,"^[%.%/]$") then
+                done[v] = true
+                newn = newn + 1
+                new[newn] = v
+            else
+                break
+            end
+        end
+    end
+    -- first the extra paths
+    for k=1,#ep do
+        local v = ep[k]
+        if not done[v] then
+            done[v] = true
+            newn = newn + 1
+            new[newn] = v
+        end
+    end
+    -- next the formal paths
+    for k=1,#list do
+        local v = list[k]
+        if not done[v] then
+            done[v] = true
+            newn = newn + 1
+            new[newn] = v
+        end
+    end
+    return new
 end
 
 function resolvers.cleanpathlist(str)
@@ -816,7 +818,7 @@ function resolvers.expandpath(str)
     return joinpath(resolvers.expandedpathlist(str))
 end
 
-function resolvers.expandedpathlist(str)
+function resolvers.expandedpathlist(str,extra_too)
     if not str then
         return { }
     elseif instance.savelists then
@@ -824,14 +826,14 @@ function resolvers.expandedpathlist(str)
         local lists = instance.lists
         local lst = lists[str]
         if not lst then
-            local l = made_list(instance,resolvers.splitpath(resolvers.expansion(str)))
+            local l = made_list(instance,resolvers.splitpath(resolvers.expansion(str)),extra_too)
             lst = expandedpathfromlist(l)
             lists[str] = lst
         end
         return lst
     else
         local lst = resolvers.splitpath(resolvers.expansion(str))
-        return made_list(instance,expandedpathfromlist(lst))
+        return made_list(instance,expandedpathfromlist(lst),extra_too)
     end
 end
 
@@ -1138,7 +1140,7 @@ end
 
 local function find_intree(filename,filetype,wantedfiles,allresults)
     local typespec = resolvers.variableofformat(filetype)
-    local pathlist = resolvers.expandedpathlist(typespec)
+    local pathlist = resolvers.expandedpathlist(typespec,filetype=="tex") -- only extra path with user files
     local method = "intree"
     if pathlist and #pathlist > 0 then
         -- list search
@@ -1260,6 +1262,19 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                         end
                     else
                         -- no access needed for non existing path, speedup (esp in large tree with lots of fake)
+                    end
+                else
+                    -- we can have extra_paths that are urls
+                    for k=1,#wantedfiles do
+                        -- independent url scanner
+                        local fname = methodhandler('finders',pathname .. "/" .. wantedfiles[k])
+                        if fname then
+                            result[#result+1] = fname
+                            doen = true
+                            if not allresults then
+                                break
+                            end
+                        end
                     end
                 end
             end

@@ -364,10 +364,9 @@ xml.injectafter     =                 inject_element
 xml.injectbefore    = function(r,p,e) inject_element(r,p,e,true) end
 
 local function include(xmldata,pattern,attribute,recursive,loaddata)
-    -- parse="text" (default: xml), encoding="" (todo)
-    -- attribute = attribute or 'href'
-    pattern = pattern or 'include'
-    loaddata = loaddata or io.loaddata
+ -- attribute = attribute or 'href'
+    pattern   = pattern or 'include'
+    loaddata  = loaddata or io.loaddata
     local collected = xmlapplylpath(xmldata,pattern)
     if collected then
         for c=1,#collected do
@@ -386,16 +385,13 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
                     if name then break end
                 end
             end
-            local data = (name and name ~= "" and loaddata(name)) or ""
+            local data = name and name ~= "" and loaddata(name) or ""
             if data == "" then
                 epdt[ek.ni] = "" -- xml.empty(d,k)
             elseif ekat["parse"] == "text" then
                 -- for the moment hard coded
                 epdt[ek.ni] = xml.escaped(data) -- d[k] = xml.escaped(data)
             else
---~                 local settings = xmldata.settings
---~                 settings.parent_root = xmldata -- to be tested
---~                 local xi = xmlconvert(data,settings)
                 local xi = xmlinheritedconvert(data,xmldata)
                 if not xi then
                     epdt[ek.ni] = "" -- xml.empty(d,k)

@@ -437,7 +437,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 32062, stripped down to: 16772
+-- original size: 32003, stripped down to: 16772
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -4359,7 +4359,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 33706, stripped down to: 14938
+-- original size: 34171, stripped down to: 15086
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4375,7 +4375,9 @@ local type=type
 local char,byte,format,sub,gmatch=string.char,string.byte,string.format,string.sub,string.gmatch
 local concat=table.concat
 local P,C,R,Cs,Ct,Cmt,Cc,Carg,Cp=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Ct,lpeg.Cmt,lpeg.Cc,lpeg.Carg,lpeg.Cp
-local lpegmatch,patterns=lpeg.match,lpeg.patterns
+local lpegmatch=lpeg.match
+local patterns=lpeg.patterns
+local tabletopattern=lpeg.utfchartabletopattern
 local bytepairs=string.bytepairs
 local finder=lpeg.finder
 local replacer=lpeg.replacer
@@ -4384,7 +4386,7 @@ local utfgmatch=utf.gmatch
 local p_utftype=patterns.utftype
 local p_utfstricttype=patterns.utfstricttype
 local p_utfoffset=patterns.utfoffset
-local p_utf8char=patterns.utf8char
+local p_utf8char=patterns.utf8character
 local p_utf8byte=patterns.utf8byte
 local p_utfbom=patterns.utfbom
 local p_newline=patterns.newline
@@ -4584,7 +4586,8 @@ if not utf.sub then
   end
 end
 function utf.remapper(mapping)
-  local pattern=Cs((p_utf8char/mapping)^0)
+  local pattern=type(mapping)=="table" and tabletopattern(mapping) or p_utf8char
+  local pattern=Cs((pattern/mapping+p_utf8char)^0)
   return function(str)
     if not str or str=="" then
       return ""
@@ -11318,7 +11321,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 25374, stripped down to: 17841
+-- original size: 25139, stripped down to: 17839
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -11655,7 +11658,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
           if name then break end
         end
       end
-      local data=(name and name~="" and loaddata(name)) or ""
+      local data=name and name~="" and loaddata(name) or ""
       if data=="" then
         epdt[ek.ni]="" 
       elseif ekat["parse"]=="text" then
@@ -13207,7 +13210,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-env"] = package.loaded["data-env"] or true
 
--- original size: 8841, stripped down to: 6546
+-- original size: 8898, stripped down to: 6564
 
 if not modules then modules={} end modules ['data-env']={
   version=1.001,
@@ -13300,7 +13303,7 @@ local relations=allocate {
     tex={
       names={ "tex" },
       variable='TEXINPUTS',
-      suffixes={ 'tex',"mkvi","mkiv","mkii" },
+      suffixes={ "tex","mkvi","mkiv","mkii","cld","lfg","xml" },
     },
     icc={
       names={ "icc","icc profile","icc profiles" },
@@ -13976,7 +13979,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 61031, stripped down to: 42613
+-- original size: 61614, stripped down to: 42970
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -14562,42 +14565,44 @@ function resolvers.registerextrapath(paths,subpaths)
     instance.lists={} 
   end
 end
-local function made_list(instance,list)
+local function made_list(instance,list,extra_too)
+  if not extra_too then
+    return list
+  end
   local ep=instance.extra_paths
   if not ep or #ep==0 then
     return list
-  else
-    local done,new,newn={},{},0
-    for k=1,#list do
-      local v=list[k]
-      if not done[v] then
-        if find(v,"^[%.%/]$") then
-          done[v]=true
-          newn=newn+1
-          new[newn]=v
-        else
-          break
-        end
-      end
-    end
-    for k=1,#ep do
-      local v=ep[k]
-      if not done[v] then
-        done[v]=true
-        newn=newn+1
-        new[newn]=v
-      end
-    end
-    for k=1,#list do
-      local v=list[k]
-      if not done[v] then
-        done[v]=true
-        newn=newn+1
-        new[newn]=v
-      end
-    end
-    return new
   end
+  local done,new,newn={},{},0
+  for k=1,#list do
+    local v=list[k]
+    if not done[v] then
+      if find(v,"^[%.%/]$") then
+        done[v]=true
+        newn=newn+1
+        new[newn]=v
+      else
+        break
+      end
+    end
+  end
+  for k=1,#ep do
+    local v=ep[k]
+    if not done[v] then
+      done[v]=true
+      newn=newn+1
+      new[newn]=v
+    end
+  end
+  for k=1,#list do
+    local v=list[k]
+    if not done[v] then
+      done[v]=true
+      newn=newn+1
+      new[newn]=v
+    end
+  end
+  return new
 end
 function resolvers.cleanpathlist(str)
   local t=resolvers.expandedpathlist(str)
@@ -14611,7 +14616,7 @@ end
 function resolvers.expandpath(str)
   return joinpath(resolvers.expandedpathlist(str))
 end
-function resolvers.expandedpathlist(str)
+function resolvers.expandedpathlist(str,extra_too)
   if not str then
     return {}
   elseif instance.savelists then
@@ -14619,14 +14624,14 @@ function resolvers.expandedpathlist(str)
     local lists=instance.lists
     local lst=lists[str]
     if not lst then
-      local l=made_list(instance,resolvers.splitpath(resolvers.expansion(str)))
+      local l=made_list(instance,resolvers.splitpath(resolvers.expansion(str)),extra_too)
       lst=expandedpathfromlist(l)
       lists[str]=lst
     end
     return lst
   else
     local lst=resolvers.splitpath(resolvers.expansion(str))
-    return made_list(instance,expandedpathfromlist(lst))
+    return made_list(instance,expandedpathfromlist(lst),extra_too)
   end
 end
 function resolvers.expandedpathlistfromvariable(str) 
@@ -14881,7 +14886,7 @@ local function check_subpath(fname)
 end
 local function find_intree(filename,filetype,wantedfiles,allresults)
   local typespec=resolvers.variableofformat(filetype)
-  local pathlist=resolvers.expandedpathlist(typespec)
+  local pathlist=resolvers.expandedpathlist(typespec,filetype=="tex") 
   local method="intree"
   if pathlist and #pathlist>0 then
     local filelist=collect_files(wantedfiles)
@@ -14990,6 +14995,17 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
               end
             end
           else
+          end
+        else
+          for k=1,#wantedfiles do
+            local fname=methodhandler('finders',pathname.."/"..wantedfiles[k])
+            if fname then
+              result[#result+1]=fname
+              doen=true
+              if not allresults then
+                break
+              end
+            end
           end
         end
       end
@@ -16118,7 +16134,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tre"] = package.loaded["data-tre"] or true
 
--- original size: 6621, stripped down to: 4280
+-- original size: 7874, stripped down to: 5289
 
 if not modules then modules={} end modules ['data-tre']={
   version=1.001,
@@ -16129,7 +16145,7 @@ if not modules then modules={} end modules ['data-tre']={
 }
 local find,gsub,lower=string.find,string.gsub,string.lower
 local basename,dirname,joinname=file.basename,file.dirname,file  .join
-local globdir,isdir=dir.glob,lfs.isdir
+local globdir,isdir,isfile=dir.glob,lfs.isdir,lfs.isfile
 local P,lpegmatch=lpeg.P,lpeg.match
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local report_trees=logs.reporter("resolvers","trees")
@@ -16203,7 +16219,25 @@ table.setmetatableindex(collectors,function(t,k)
   t[k]=content
   return content
 end)
-function resolvers.finders.dirlist(specification) 
+local function checked(root,p,n)
+  if p then
+    if type(p)=="table" then
+      for i=1,#p do
+        local fullname=joinname(root,p[i],n)
+        if isfile(fullname) then 
+          return fullname
+        end
+      end
+    else
+      local fullname=joinname(root,p,n)
+      if isfile(fullname) then 
+        return fullname
+      end
+    end
+  end
+  return notfound()
+end
+local function resolve(specification) 
   local filename=specification.filename
   if filename~="" then
     local root,rest=lpegmatch(splitter,filename)
@@ -16221,39 +16255,56 @@ function resolvers.finders.dirlist(specification)
           for i=1,#p do
             local pi=p[i]
             if pi==path or find(pi,pattern) then
-              return joinname(root,pi,n)
+              local fullname=joinname(root,pi,n)
+              if isfile(fullname) then 
+                return fullname
+              end
             end
           end
-        else
-          if p==path or find(p,pattern) then
-            return joinname(root,p,n)
+        elseif p==path or find(p,pattern) then
+          local fullname=joinname(root,p,n)
+          if isfile(fullname) then 
+            return fullname
           end
         end
         local queries=specification.queries
         if queries and queries.option=="fileonly" then
-          return joinname(root,istable and p[1] or p,n)
+          return checked(root,p,n)
+        else
+          return notfound()
         end
-        return notfound()
       end
     end
     local path,name=dirname(filename),basename(filename)
     local root=lpegmatch(stripper,path)
     local content=collectors[path]
     local p,n=lookup(content,name)
-    if not p then
-      return notfound()
-    elseif type(p)=="table" then
-      p=p[1]
+    if p then
+      return checked(root,p,n)
     end
-    return joinname(root,p,n)
   end
   return notfound()
 end
+resolvers.finders  .dirlist=resolve
 resolvers.locators .dirlist=resolvers.locators .tree
 resolvers.hashers  .dirlist=resolvers.hashers  .tree
 resolvers.generators.dirlist=resolvers.generators.file
 resolvers.openers  .dirlist=resolvers.openers  .file
 resolvers.loaders  .dirlist=resolvers.loaders  .file
+function resolvers.finders.dirfile(specification)
+  local queries=specification.queries
+  if queries then
+    queries.option="fileonly"
+  else
+    specification.queries={ option="fileonly" }
+  end
+  return resolve(specification)
+end
+resolvers.locators .dirfile=resolvers.locators .dirlist
+resolvers.hashers  .dirfile=resolvers.hashers  .dirlist
+resolvers.generators.dirfile=resolvers.generators.dirlist
+resolvers.openers  .dirfile=resolvers.openers  .dirlist
+resolvers.loaders  .dirfile=resolvers.loaders  .dirlist
 
 
 end -- of closure
@@ -17173,8 +17224,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 706963
--- stripped bytes    : 251245
+-- original bytes    : 709027
+-- stripped bytes    : 251779
 
 -- end library merge
 

@@ -135,8 +135,10 @@
 %D \stoptyping
 
 \def\doiffileexistselse#name{\ctxcommand{doiffileexistelse([[#name]])}}
+\def\doifpathexistselse#name{\ctxcommand{doifpathexistelse([[#name]])}}
 
 \def\doiffileelse     {\doiffileexistselse}
+\def\doifpathelse     {\doifpathexistselse}
 \def\doiffile    #name{\doiffileexistselse{#name}\firstofoneargument\gobbleoneargument}
 \def\doifnotfile #name{\doiffileexistselse{#name}\gobbleoneargument\firstofoneargument}
 

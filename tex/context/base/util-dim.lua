@@ -24,13 +24,15 @@ local formatters        = string.formatters
 
 local texget            = tex and tex.get or function() return 65536*10*100 end
 
+local p_stripzeros      = lpeg.patterns.stripzeros
+
 --this might become another namespace
 
 number = number or { }
 local number = number
 
-number.tonumberf = function(n) return match(format("%.20f",n),"(.-0?)0*$") end -- one zero too much but alas
-number.tonumberg = function(n) return       format("%.20g",n)              end
+number.tonumberf = function(n) return lpegmatch(p_stripzeros,format("%.20f",n)) end
+number.tonumberg = function(n) return format("%.20g",n) end
 
 local dimenfactors = allocate {
     ["pt"] =             1/65536,
@@ -46,66 +48,65 @@ local dimenfactors = allocate {
     ["nc"] = ( 5080/65043)/65536
 }
 
---~ print(table.serialize(dimenfactors))
---~
---~  %.99g:
---~
---~  t={
---~   ["bp"]=1.5201782378580324e-005,
---~   ["cc"]=1.1883696112892098e-006,
---~   ["cm"]=5.3628510057769479e-007,
---~   ["dd"]=1.4260435335470516e-005,
---~   ["em"]=0.000152587890625,
---~   ["ex"]=6.103515625e-005,
---~   ["in"]=2.1113586636917117e-007,
---~   ["mm"]=5.3628510057769473e-008,
---~   ["nc"]=1.1917446679504327e-006,
---~   ["nd"]=1.4300936015405194e-005,
---~   ["pc"]=1.2715657552083333e-006,
---~   ["pt"]=1.52587890625e-005,
---~   ["sp"]=1,
---~  }
---~
---~  patched %s and tonumber
---~
---~  t={
---~   ["bp"]=0.00001520178238,
---~   ["cc"]=0.00000118836961,
---~   ["cm"]=0.0000005362851,
---~   ["dd"]=0.00001426043534,
---~   ["em"]=0.00015258789063,
---~   ["ex"]=0.00006103515625,
---~   ["in"]=0.00000021113587,
---~   ["mm"]=0.00000005362851,
---~   ["nc"]=0.00000119174467,
---~   ["nd"]=0.00001430093602,
---~   ["pc"]=0.00000127156576,
---~   ["pt"]=0.00001525878906,
---~   ["sp"]=1,
---~  }
+-- print(table.serialize(dimenfactors))
+--
+--  %.99g:
+--
+--  t={
+--   ["bp"]=1.5201782378580324e-005,
+--   ["cc"]=1.1883696112892098e-006,
+--   ["cm"]=5.3628510057769479e-007,
+--   ["dd"]=1.4260435335470516e-005,
+--   ["em"]=0.000152587890625,
+--   ["ex"]=6.103515625e-005,
+--   ["in"]=2.1113586636917117e-007,
+--   ["mm"]=5.3628510057769473e-008,
+--   ["nc"]=1.1917446679504327e-006,
+--   ["nd"]=1.4300936015405194e-005,
+--   ["pc"]=1.2715657552083333e-006,
+--   ["pt"]=1.52587890625e-005,
+--   ["sp"]=1,
+--  }
+--
+--  patched %s and tonumber
+--
+--  t={
+--   ["bp"]=0.00001520178238,
+--   ["cc"]=0.00000118836961,
+--   ["cm"]=0.0000005362851,
+--   ["dd"]=0.00001426043534,
+--   ["em"]=0.00015258789063,
+--   ["ex"]=0.00006103515625,
+--   ["in"]=0.00000021113587,
+--   ["mm"]=0.00000005362851,
+--   ["nc"]=0.00000119174467,
+--   ["nd"]=0.00001430093602,
+--   ["pc"]=0.00000127156576,
+--   ["pt"]=0.00001525878906,
+--   ["sp"]=1,
+--  }
 
 --[[ldx--
 <p>A conversion function that takes a number, unit (string) and optional
 format (string) is implemented using this table.</p>
 --ldx]]--
 
+local f_none = formatters["%s%s"]
+local f_true = formatters["%0.5f%s"]
 
 local function numbertodimen(n,unit,fmt)
     if type(n) == 'string' then
         return n
     else
         unit = unit or 'pt'
+        n = n * dimenfactors[unit]
         if not fmt then
-            fmt = "%s%s"
+            fmt = f_none(n,unit)
         elseif fmt == true then
-            fmt = "%0.5f%s"
+            fmt = f_true(n,unit)
+        else
+            return formatters[fmt](n,unit)
         end
-        return format(fmt,n*dimenfactors[unit],unit)
-     -- if fmt then
-     --     return format(fmt,n*dimenfactors[unit],unit)
-     -- else
-     --     return match(format("%.20f",n*dimenfactors[unit]),"(.-0?)0*$") .. unit
-     -- end
     end
 end
 
