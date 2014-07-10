@@ -11,6 +11,7 @@ local concat, sort = table.concat, table.sort
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local Ct, Cs, Cc, Carg, P, C, S = lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.P, lpeg.C, lpeg.S
 local type, next = type, next
+local isdir = lfs.isdir
 
 local ostype = os.type
 local collapsepath, joinpath, basename = file.collapsepath, file.join, file.basename
@@ -187,7 +188,7 @@ local doslashes   = (P("\\")/"/" + 1)^0
 local function expandedhome()
     if not usedhomedir then
         usedhomedir = lpegmatch(Cs(donegation * doslashes),environment.homedir or "")
-        if usedhomedir == "~" or usedhomedir == "" or not lfs.isdir(usedhomedir) then
+        if usedhomedir == "~" or usedhomedir == "" or not isdir(usedhomedir) then
             if trace_expansions then
                 report_expansions("no home dir set, ignoring dependent path using current path")
             end
@@ -415,19 +416,36 @@ function resolvers.scanfiles(path,branch,usecache,onlyonce)
     if trace_locating then
         report_expansions("scanning path %a, branch %a",path,branch or path)
     end
-    local files, remap, n, m, r = scan({ },{ },realpath .. '/',"",0,0,0,onlyonce)
-    local content = {
-        metadata = {
-            path        = path, -- can be selfautoparent:texmf-whatever
-            files       = n,
-            directories = m,
-            remappings  = r,
-        },
-        files = files,
-        remap = remap,
-    }
-    if trace_locating then
-        report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
+    local content
+    if isdir(realpath) then
+        local files, remap, n, m, r = scan({ },{ },realpath .. '/',"",0,0,0,onlyonce)
+        content = {
+            metadata = {
+                path        = path, -- can be selfautoparent:texmf-whatever
+                files       = n,
+                directories = m,
+                remappings  = r,
+            },
+            files = files,
+            remap = remap,
+        }
+        if trace_locating then
+            report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
+        end
+    else
+        content = {
+            metadata = {
+                path        = path, -- can be selfautoparent:texmf-whatever
+                files       = 0,
+                directories = 0,
+                remappings  = 0,
+            },
+            files = { },
+            remap = { },
+        }
+        if trace_locating then
+            report_expansions("invalid path %a",realpath)
+        end
     end
     if usecache then
         scanned[#scanned+1] = realpath
@@ -453,6 +471,9 @@ function resolvers.scandata()
 end
 
 function resolvers.get_from_content(content,path,name) -- or (content,name)
+    if not content then
+        return
+    end
     local files = content.files
     if not files then
         return

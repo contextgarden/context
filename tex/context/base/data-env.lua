@@ -18,11 +18,13 @@ local formats           = allocate()
 local suffixes          = allocate()
 local dangerous         = allocate()
 local suffixmap         = allocate()
+local usertypes         = allocate()
 
 resolvers.formats       = formats
 resolvers.suffixes      = suffixes
 resolvers.dangerous     = dangerous
 resolvers.suffixmap     = suffixmap
+resolvers.usertypes     = usertypes
 
 local luasuffixes       = utilities.lua.suffixes
 
@@ -92,11 +94,13 @@ local relations = allocate { -- todo: handlers also here
             names    = { "mp" },
             variable = 'MPINPUTS',
             suffixes = { 'mp', 'mpvi', 'mpiv', 'mpii' },
+            usertype = true,
         },
         tex = {
             names    = { "tex" },
             variable = 'TEXINPUTS',
             suffixes = { "tex", "mkvi", "mkiv", "mkii", "cld", "lfg", "xml" }, -- known suffixes have less lookups
+            usertype = true,
         },
         icc = {
             names    = { "icc", "icc profile", "icc profiles" },
@@ -112,6 +116,7 @@ local relations = allocate { -- todo: handlers also here
             names    = { "lua" },
             variable = 'LUAINPUTS',
             suffixes = { luasuffixes.lua, luasuffixes.luc, luasuffixes.tma, luasuffixes.tmc },
+            usertype = true,
         },
         lib = {
             names    = { "lib" },
@@ -122,11 +127,13 @@ local relations = allocate { -- todo: handlers also here
             names    = { 'bib' },
             variable = 'BIBINPUTS',
             suffixes = { 'bib' },
+            usertype = true,
         },
         bst = {
             names    = { 'bst' },
             variable = 'BSTINPUTS',
             suffixes = { 'bst' },
+            usertype = true,
         },
         fontconfig = {
             names    = { 'fontconfig', 'fontconfig file', 'fontconfig files' },
@@ -212,8 +219,9 @@ function resolvers.updaterelations()
         for name, relation in next, categories do
             local rn = relation.names
             local rv = relation.variable
-            local rs = relation.suffixes
             if rn and rv then
+                local rs = relation.suffixes
+                local ru = relation.usertype
                 for i=1,#rn do
                     local rni = lower(gsub(rn[i]," ",""))
                     formats[rni] = rv
@@ -225,8 +233,9 @@ function resolvers.updaterelations()
                         end
                     end
                 end
-            end
-            if rs then
+                if ru then
+                    usertypes[name] = true
+                end
             end
         end
     end

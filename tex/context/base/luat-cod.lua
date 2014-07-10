@@ -162,7 +162,7 @@ local function target_file(name)
     return targetpath .. "/" .. name
 end
 
-local function find_read_file (id,name)
+local function find_read_file(id,name)
     return source_file(name)
 end
 

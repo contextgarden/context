@@ -137,7 +137,7 @@ end
 
 local function resolve(specification) -- can be called directly too
     local filename = specification.filename
- -- print(filename) -- in case we want to check for unwanted lookups
+ -- inspect(specification)
     if filename ~= "" then
         local root, rest = lpegmatch(splitter,filename)
         if root and rest then

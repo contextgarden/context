@@ -146,6 +146,7 @@ local unset_variable = "unset"
 
 local formats   = resolvers.formats
 local suffixes  = resolvers.suffixes
+local usertypes = resolvers.usertypes
 local dangerous = resolvers.dangerous
 local suffixmap = resolvers.suffixmap
 
@@ -1140,7 +1141,7 @@ end
 
 local function find_intree(filename,filetype,wantedfiles,allresults)
     local typespec = resolvers.variableofformat(filetype)
-    local pathlist = resolvers.expandedpathlist(typespec,filetype=="tex") -- only extra path with user files
+    local pathlist = resolvers.expandedpathlist(typespec,filetype and usertypes[filetype]) -- only extra path with user files
     local method = "intree"
     if pathlist and #pathlist > 0 then
         -- list search
@@ -1358,7 +1359,11 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
     else
         local method, result, stamp, filetype, wantedfiles
         if instance.remember then
-            stamp = formatters["%s--%s"](filename,askedformat)
+            if askedformat == "" then
+                stamp = formatters["%s::%s"](suffixonly(filename),filename)
+            else
+                stamp = formatters["%s::%s"](askedformat,filename)
+            end
             result = stamp and instance.found[stamp]
             if result then
                 if trace_locating then
@@ -1394,7 +1399,7 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
         end
         if stamp then
             if trace_locating then
-                report_resolving("remembering file %a",filename)
+                report_resolving("remembering file %a using hash %a",filename,stamp)
             end
             instance.found[stamp] = result
         end

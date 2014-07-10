@@ -12851,7 +12851,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 16463, stripped down to: 10113
+-- original size: 17039, stripped down to: 10493
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -12865,6 +12865,7 @@ local concat,sort=table.concat,table.sort
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local Ct,Cs,Cc,Carg,P,C,S=lpeg.Ct,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.P,lpeg.C,lpeg.S
 local type,next=type,next
+local isdir=lfs.isdir
 local ostype=os.type
 local collapsepath,joinpath,basename=file.collapsepath,file.join,file.basename
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
@@ -12969,7 +12970,7 @@ local doslashes=(P("\\")/"/"+1)^0
 local function expandedhome()
   if not usedhomedir then
     usedhomedir=lpegmatch(Cs(donegation*doslashes),environment.homedir or "")
-    if usedhomedir=="~" or usedhomedir=="" or not lfs.isdir(usedhomedir) then
+    if usedhomedir=="~" or usedhomedir=="" or not isdir(usedhomedir) then
       if trace_expansions then
         report_expansions("no home dir set, ignoring dependent path using current path")
       end
@@ -13125,19 +13126,36 @@ function resolvers.scanfiles(path,branch,usecache,onlyonce)
   if trace_locating then
     report_expansions("scanning path %a, branch %a",path,branch or path)
   end
-  local files,remap,n,m,r=scan({},{},realpath..'/',"",0,0,0,onlyonce)
-  local content={
-    metadata={
-      path=path,
-      files=n,
-      directories=m,
-      remappings=r,
-    },
-    files=files,
-    remap=remap,
-  }
-  if trace_locating then
-    report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
+  local content
+  if isdir(realpath) then
+    local files,remap,n,m,r=scan({},{},realpath..'/',"",0,0,0,onlyonce)
+    content={
+      metadata={
+        path=path,
+        files=n,
+        directories=m,
+        remappings=r,
+      },
+      files=files,
+      remap=remap,
+    }
+    if trace_locating then
+      report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
+    end
+  else
+    content={
+      metadata={
+        path=path,
+        files=0,
+        directories=0,
+        remappings=0,
+      },
+      files={},
+      remap={},
+    }
+    if trace_locating then
+      report_expansions("invalid path %a",realpath)
+    end
   end
   if usecache then
     scanned[#scanned+1]=realpath
@@ -13160,6 +13178,9 @@ function resolvers.scandata()
   }
 end
 function resolvers.get_from_content(content,path,name) 
+  if not content then
+    return
+  end
   local files=content.files
   if not files then
     return
@@ -13210,7 +13231,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-env"] = package.loaded["data-env"] or true
 
--- original size: 8898, stripped down to: 6564
+-- original size: 9216, stripped down to: 6798
 
 if not modules then modules={} end modules ['data-env']={
   version=1.001,
@@ -13228,10 +13249,12 @@ local formats=allocate()
 local suffixes=allocate()
 local dangerous=allocate()
 local suffixmap=allocate()
+local usertypes=allocate()
 resolvers.formats=formats
 resolvers.suffixes=suffixes
 resolvers.dangerous=dangerous
 resolvers.suffixmap=suffixmap
+resolvers.usertypes=usertypes
 local luasuffixes=utilities.lua.suffixes
 local relations=allocate { 
   core={
@@ -13299,11 +13322,13 @@ local relations=allocate {
       names={ "mp" },
       variable='MPINPUTS',
       suffixes={ 'mp','mpvi','mpiv','mpii' },
+      usertype=true,
     },
     tex={
       names={ "tex" },
       variable='TEXINPUTS',
       suffixes={ "tex","mkvi","mkiv","mkii","cld","lfg","xml" },
+      usertype=true,
     },
     icc={
       names={ "icc","icc profile","icc profiles" },
@@ -13319,6 +13344,7 @@ local relations=allocate {
       names={ "lua" },
       variable='LUAINPUTS',
       suffixes={ luasuffixes.lua,luasuffixes.luc,luasuffixes.tma,luasuffixes.tmc },
+      usertype=true,
     },
     lib={
       names={ "lib" },
@@ -13329,11 +13355,13 @@ local relations=allocate {
       names={ 'bib' },
       variable='BIBINPUTS',
       suffixes={ 'bib' },
+      usertype=true,
     },
     bst={
       names={ 'bst' },
       variable='BSTINPUTS',
       suffixes={ 'bst' },
+      usertype=true,
     },
     fontconfig={
       names={ 'fontconfig','fontconfig file','fontconfig files' },
@@ -13415,8 +13443,9 @@ function resolvers.updaterelations()
     for name,relation in next,categories do
       local rn=relation.names
       local rv=relation.variable
-      local rs=relation.suffixes
       if rn and rv then
+        local rs=relation.suffixes
+        local ru=relation.usertype
         for i=1,#rn do
           local rni=lower(gsub(rn[i]," ",""))
           formats[rni]=rv
@@ -13428,8 +13457,9 @@ function resolvers.updaterelations()
             end
           end
         end
-      end
-      if rs then
+        if ru then
+          usertypes[name]=true
+        end
       end
     end
   end
@@ -13979,7 +14009,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 61614, stripped down to: 42970
+-- original size: 61840, stripped down to: 43162
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -14047,6 +14077,7 @@ end
 local unset_variable="unset"
 local formats=resolvers.formats
 local suffixes=resolvers.suffixes
+local usertypes=resolvers.usertypes
 local dangerous=resolvers.dangerous
 local suffixmap=resolvers.suffixmap
 resolvers.defaultsuffixes={ "tex" } 
@@ -14886,7 +14917,7 @@ local function check_subpath(fname)
 end
 local function find_intree(filename,filetype,wantedfiles,allresults)
   local typespec=resolvers.variableofformat(filetype)
-  local pathlist=resolvers.expandedpathlist(typespec,filetype=="tex") 
+  local pathlist=resolvers.expandedpathlist(typespec,filetype and usertypes[filetype]) 
   local method="intree"
   if pathlist and #pathlist>0 then
     local filelist=collect_files(wantedfiles)
@@ -15079,7 +15110,11 @@ collect_instance_files=function(filename,askedformat,allresults)
   else
     local method,result,stamp,filetype,wantedfiles
     if instance.remember then
-      stamp=formatters["%s--%s"](filename,askedformat)
+      if askedformat=="" then
+        stamp=formatters["%s::%s"](suffixonly(filename),filename)
+      else
+        stamp=formatters["%s::%s"](askedformat,filename)
+      end
       result=stamp and instance.found[stamp]
       if result then
         if trace_locating then
@@ -15114,7 +15149,7 @@ collect_instance_files=function(filename,askedformat,allresults)
     end
     if stamp then
       if trace_locating then
-        report_resolving("remembering file %a",filename)
+        report_resolving("remembering file %a using hash %a",filename,stamp)
       end
       instance.found[stamp]=result
     end
@@ -16134,7 +16169,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tre"] = package.loaded["data-tre"] or true
 
--- original size: 7874, stripped down to: 5289
+-- original size: 7832, stripped down to: 5289
 
 if not modules then modules={} end modules ['data-tre']={
   version=1.001,
@@ -17224,8 +17259,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 709027
--- stripped bytes    : 251779
+-- original bytes    : 710105
+-- stripped bytes    : 252051
 
 -- end library merge
 

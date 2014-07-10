@@ -234,21 +234,23 @@ local suffixes = {
 }
 
 local function useanyfile(name,onlyonce)
-    local s = suffixes[file.suffix(name)]
+    local s = suffixes[suffixonly(name)]
     if s then
-        s(removesuffix(name),onlyonce)
+     -- s(removesuffix(name),onlyonce)
+        s(name,onlyonce) -- so, first with suffix, then without
     else
         usetexfile(name,onlyonce) -- e.g. ctx file
---~         resolvers.readfilename(name)
+     -- resolvers.readfilename(name)
     end
 end
 
 commands.useanyfile = useanyfile
 
 function resolvers.jobs.usefile(name,onlyonce,notext)
-    local s = suffixes[file.suffix(name)]
+    local s = suffixes[suffixonly(name)]
     if s then
-        s(removesuffix(name),onlyonce,notext)
+     -- s(removesuffix(name),onlyonce,notext)
+        s(name,onlyonce,notext) -- so, first with suffix, then without
     end
 end
 
