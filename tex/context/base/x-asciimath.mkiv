@@ -137,6 +137,7 @@
 
 \unexpanded\def\ShowAsciiMathLoad  [#1]{\ctxlua{moduledata.asciimath.show.load("#1")}}
 \unexpanded\def\ShowAsciiMathIgnore[#1]{\ctxlua{moduledata.asciimath.show.ignore("#1")}}
+\unexpanded\def\ShowAsciiMathXML   #1#2{\ctxlua{moduledata.asciimath.show.filter("#1","#2")}}
 \unexpanded\def\ShowAsciiMathStats     {\ctxlua{moduledata.asciimath.show.statistics()}}
 \unexpanded\def\ShowAsciiMathMax       {\ctxlua{moduledata.asciimath.show.max()}}
 
@@ -185,6 +186,16 @@
      \ifsecondargument
        \ShowAsciiMathIgnore[#2]
      \fi
+     \dorecurse{\ShowAsciiMathMax}{\ShowAsciiMathResult\recurselevel}
+     \page
+     \ShowAsciiMathStats
+     \ShowAsciiMathStop
+  \fi}
+
+\unexpanded\def\xmlShowAsciiMath#1#2%
+  {\iffirstargument
+     \ShowAsciiMathStart
+     \ShowAsciiMathXML{#1}{#2}%
      \dorecurse{\ShowAsciiMathMax}{\ShowAsciiMathResult\recurselevel}
      \page
      \ShowAsciiMathStats

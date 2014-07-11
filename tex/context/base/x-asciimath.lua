@@ -43,6 +43,10 @@ local concat, remove, sortedhash, sortedkeys, keys = table.concat, table.remove,
 local rep, gmatch, gsub, find = string.rep, string.gmatch, string.gsub, string.find
 local formatters = string.formatters
 
+local xmltext      = xml.text
+local xmlinclusion = xml.inclusion
+local xmlcollected = xml.collected
+
 local reserved = {
  -- ["aleph"]     = "\\aleph",
  -- ["vdots"]     = "\\vdots",
@@ -1322,10 +1326,51 @@ end
 
 -- so far
 
+local function register(s,cleanedup,collected,shortname)
+    local c = cleanedup(s)
+    local f = collected[c]
+    if f then
+        f.count = f.count + 1
+        f.files[shortname] = (f.files[shortname] or 0) + 1
+        if s ~= c then
+            f.cleanedup = f.cleanedup + 1
+        end
+        f.dirty[s] = (f.dirty[s] or 0) + 1
+    else
+        local texcode = convert(s)
+        local message = invalidtex(texcode)
+        if message then
+            report_asciimath("%s: %s",message,s)
+        end
+        collected[c] = {
+            count     = 1,
+            files     = { [shortname] = 1 },
+            texcode   = texcode,
+            message   = message,
+            cleanedup = s ~= c and 1 or 0,
+            dirty     = { [s] = 1 }
+        }
+    end
+end
+
+local function wrapup(collected,indexed)
+    local n = 0
+    for k, v in sortedhash(collected) do
+        n = n + 1
+        v.n= n
+        indexed[n] = k
+    end
+end
+
 function collect(fpattern,element,collected,indexed)
     local element   = element or "am"
     local mpattern  = formatters["<%s>(.-)</%s>"](element,element)
-    local filenames = dir.glob(fpattern)
+    local filenames = resolvers.findtexfile(fpattern)
+    if filenames and filenames ~= "" then
+        filenames = { filenames }
+    else
+        filenames = dir.glob(fpattern)
+    end
     local cfpattern = gsub(fpattern,"^%./",lfs.currentdir())
     local cfpattern = gsub(cfpattern,"\\","/")
     local wildcard  = string.split(cfpattern,"*")[1]
@@ -1340,45 +1385,36 @@ function collect(fpattern,element,collected,indexed)
         if shortname == "" then
             shortname = filename
         end
-        for s in gmatch(io.loaddata(filename),mpattern) do
-            local c = cleanedup(s)
-            local f = collected[c]
-            if f then
-                f.count = f.count + 1
-                f.files[shortname] = (f.files[shortname] or 0) + 1
-                if s ~= c then
-                    f.cleanedup = f.cleanedup + 1
-                end
-                f.dirty[s] = (f.dirty[s] or 0) + 1
-            else
-                local texcode = convert(s)
-                local message = invalidtex(texcode)
-                if message then
-                    report_asciimath("%s: %s",message,s)
-                end
-                collected[c] = {
-                    count     = 1,
-                    files     = { [shortname] = 1 },
-                    texcode   = texcode,
-                    message   = message,
-                    cleanedup = s ~= c and 1 or 0,
-                    dirty     = { [s] = 1 }
-                }
+        local fullname = resolvers.findtexfile(filename) or filename
+        if fullname ~= "" then
+            for s in gmatch(io.loaddata(fullname),mpattern) do
+                register(s,cleanedup,collected,shortname)
             end
         end
     end
-    local n = 0
-    for k, v in sortedhash(collected) do
-        n = n + 1
-        v.n= n
-        indexed[n] = k
+    wrapup(collected,indexed)
+    return collected, indexed
+end
+
+function filter(root,pattern,collected,indexed)
+    if not pattern or pattern == "" then
+        pattern = "am"
     end
+    if not collected then
+        collected = { }
+        indexed   = { }
+    end
+    for c in xmlcollected(root,pattern) do
+        register(xmltext(c),cleanedup,collected,xmlinclusion(c) or "" )
+    end
+    wrapup(collected,indexed)
     return collected, indexed
 end
 
 asciimath.convert    = convert
 asciimath.reserved   = reserved
 asciimath.collect    = collect
+asciimath.filter     = filter
 asciimath.invalidtex = invalidtex
 asciimath.cleanedup  = cleanedup
 
@@ -1567,6 +1603,11 @@ function show.load(str,element)
     for i=1,#t do
         asciimath.collect(t[i],element or "am",collected,indexed)
     end
+end
+
+function show.filter(id,element)
+    collected, indexed, ignored = { }, { }, { }
+    asciimath.filter(lxml.getid(id),element or "am",collected,indexed)
 end
 
 function show.max()

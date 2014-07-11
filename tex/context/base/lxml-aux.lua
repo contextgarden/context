@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 -- compatibility reasons
 
 local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
+local trace_inclusions    = false  trackers.register("lxml.inclusions",    function(v) trace_inclusions    = v end)
 
 local report_xml = logs.reporter("xml")
 
@@ -363,12 +364,15 @@ xml.insertbefore    = function(r,p,e) insert_element(r,p,e,true) end
 xml.injectafter     =                 inject_element
 xml.injectbefore    = function(r,p,e) inject_element(r,p,e,true) end
 
-local function include(xmldata,pattern,attribute,recursive,loaddata)
+local function include(xmldata,pattern,attribute,recursive,loaddata,level)
  -- attribute = attribute or 'href'
     pattern   = pattern or 'include'
     loaddata  = loaddata or io.loaddata
     local collected = xmlapplylpath(xmldata,pattern)
     if collected then
+        if not level then
+            level = 1
+        end
         for c=1,#collected do
             local ek = collected[c]
             local name = nil
@@ -382,11 +386,19 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
             if not name then
                 for a in gmatch(attribute or "href","([^|]+)") do
                     name = ekat[a]
-                    if name then break end
+                    if name then
+                        break
+                    end
                 end
             end
-            local data = name and name ~= "" and loaddata(name) or ""
-            if data == "" then
+            local data = nil
+            if name and name ~= "" then
+                data = loaddata(name) or ""
+                if trace_inclusions then
+                    report_xml("including %s bytes from %a at level %s by pattern %a and attribute %a (%srecursing)",#data,name,level,pattern,attribute or "",recursive and "" or "not ")
+                end
+            end
+            if not data or data == "" then
                 epdt[ek.ni] = "" -- xml.empty(d,k)
             elseif ekat["parse"] == "text" then
                 -- for the moment hard coded
@@ -397,7 +409,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
                     epdt[ek.ni] = "" -- xml.empty(d,k)
                 else
                     if recursive then
-                        include(xi,pattern,attribute,recursive,loaddata)
+                        include(xi,pattern,attribute,recursive,loaddata,level+1)
                     end
                     local child = xml.body(xi) -- xml.assign(d,k,xi)
                     child.__p__ = ekrt
@@ -838,7 +850,7 @@ local function recurse(e,action)
         for i=1,#edt do
             local str = edt[i]
             if type(str) ~= "string" then
-                recurse(str,action,recursive)
+                recurse(str,action) -- ,recursive
             elseif str ~= "" then
                 edt[i] = action(str)
             end

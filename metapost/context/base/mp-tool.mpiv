@@ -292,11 +292,11 @@ enddef;
 %D Some missing functions can be implemented rather straightforward (thanks to
 %D Taco and others):
 
-pi := 3.14159265358979323846 ; radian := 180/pi ; % 2pi*radian = 360 ;
+% oldpi := 3.14159265358979323846 ; % from <math.h>
+pi      := 3.14159265358979323846264338327950288419716939937510 ; % 50 digits
+radian  := 180/pi ; % 2pi*radian = 360 ;
 
 % let +++ = ++ ;
-
-numeric Pi ; Pi := pi ; % for some old compatibility reasons i guess
 
 vardef sqr  primary x = x*x                                 enddef ;
 vardef log  primary x = if x=0: 0 else: mlog(x)/mlog(10) fi enddef ;
