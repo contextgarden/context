@@ -113,9 +113,12 @@
     \unexpanded\def\dotagsetnotesymbol{\taggedctxcommand{settagdescriptionsymbol("\currentnote",\currentnotenumber)}}%
 \to \everyenableelements
 
-% \appendtoks
-%     \unexpanded\def\doverbatimspace{\asciispacechar}% will be done permanently
-% \to \everyenableelements
+\appendtoks
+    \let\specialfixedspace    \explicitfixedspace
+    \let\specialobeyedspace   \explicitobeyedspace
+    \let\specialstretchedspace\explicitstretchedspace
+    \let\specialcontrolspace  \explicitcontrolspace
+\to \everyenableelements
 
 % The action: \setupbackend[export=yes] % or filename
 
@@ -137,6 +140,7 @@
    \c!author={\directinteractionparameter\c!author},
  % \c!firstpage=, % imagename
  % \c!lastpage=,  % imagename
+   \c!alternative=, % html, div
    \c!hyphen=\v!no]
 
 \def\dosynchronizeexport
@@ -166,6 +170,8 @@
       {\enabledirectives[backend.export.xhtml=\backendparameter\c!xhtml]}%
     \doifsomething{\backendparameter\c!css}
       {\enabledirectives[backend.export.css={\backendparameter\c!css}]}%
+    \doifsomething{\backendparameter\c!alternative}
+      {\enabledirectives[backend.export.alternative={\backendparameter\c!alternative}]}%
 \to \everysetupbackend
 
 \appendtoks

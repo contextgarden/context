@@ -17,7 +17,10 @@ local report_files  = logs.reporter("files","readfile")
 
 resolvers.maxreadlevel = 2
 
-directives.register("resolvers.maxreadlevel", function(v) resolvers.maxreadlevel = tonumber(v) or resolvers.maxreadlevel end)
+directives.register("resolvers.maxreadlevel", function(v)
+ -- resolvers.maxreadlevel = (v == false and 0) or (v == true and 2) or tonumber(v) or 2
+    resolvers.maxreadlevel = v == false and 0 or tonumber(v) or 2
+end)
 
 local finders, loaders, openers = resolvers.finders, resolvers.loaders, resolvers.openers
 

@@ -45,8 +45,6 @@
   {\spaceskip\fontcharwd\font`x\relax
    \xspaceskip\spaceskip}
 
-\unexpanded\def\specialcontrolspace{\hskip\zeropoint\fastcontrolspace\hskip\zeropoint}
-
 \setvalue{\??typinglines\v!no        }{\buff_verbatim_ignore_hyphens}
 \setvalue{\??typinglines\v!normal    }{\buff_verbatim_ignore_hyphens}
 \setvalue{\??typinglines\v!yes       }{\buff_verbatim_obey_breakpoints}
@@ -75,26 +73,23 @@
 \unexpanded\def\buff_verbatim_ignore_hyphens
   {\language\minusone} % tricky as this affects the pagebuilder
 
-\def\buff_verbatim_initialize_breaks % order matters
-  {\spaceskip.5\emwidth\relax
-   \let\obeyedspace\specialobeyedspace
-   \let\controlspace\specialcontrolspace
-   \edef\p_buff_lines{\typeparameter\c!lines}%
-   \ifcsname\??typinglines\p_buff_lines\endcsname % sets \obeyedspace, \controlspace,
-     \csname\??typinglines\p_buff_lines\endcsname
-   \fi
-   \edef\p_buff_space{\typeparameter\c!space}%
-   \ifcsname\??typingspace\p_buff_space\endcsname % sets \obeyedspace
-     \csname\??typingspace\p_buff_space\endcsname
-   \fi}
-
 \def\buff_verbatim_initialize_type_one
   {\let\obeylines\ignorelines
    \usetypestyleandcolor\c!style\c!color
    \setcatcodetable\vrbcatcodes}
 
 \def\buff_verbatim_initialize_type_two
-  {\buff_verbatim_initialize_breaks
+  {\spaceskip.5\emwidth\relax
+   \let\obeyedspace\specialobeyedspace
+   \let\controlspace\specialcontrolspace
+ % \edef\p_buff_lines{\typeparameter\c!lines}%
+ % \ifcsname\??typinglines\p_buff_lines\endcsname
+ %   \csname\??typinglines\p_buff_lines\endcsname
+ % \fi
+   \edef\p_buff_space{\typeparameter\c!space}%
+   \ifcsname\??typingspace\p_buff_space\endcsname
+     \csname\??typingspace\p_buff_space\endcsname
+   \fi
    \relax\the\everyinitializeverbatim\relax}
 
 \unexpanded\def\doinitializeverbatim % for use elsewhere .. temp hack (see lxml-ini)
@@ -106,8 +101,9 @@
 \def\buff_verbatim_set_line_margin_indeed
   {\hskip\doifoddpageelse{\typingparameter\c!oddmargin}{\typingparameter\c!evenmargin}\relax}
 
-\def\buff_verbatim_check_margins
-  {\scratchskip\typingparameter\c!oddmargin\relax
+\def\buff_verbatim_initialize_typing_one
+  {\switchtobodyfont[\typingparameter\c!bodyfont]% can be low level call
+   \scratchskip\typingparameter\c!oddmargin\relax
    \ifzeropt\scratchskip \else
      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
    \fi
@@ -117,16 +113,23 @@
    \fi
    \ifx\buff_verbatim_set_line_margin\relax
      \doadaptleftskip{\typingparameter\c!margin}%
-   \fi}
-
-\def\buff_verbatim_initialize_typing_one
-  {\switchtobodyfont[\typingparameter\c!bodyfont]% can be low level call
-   \buff_verbatim_check_margins
+   \fi
    \usetypingstyleandcolor\c!style\c!color
-   \doifsomething{\typingparameter\c!align}{\setupalign[\typingparameter\c!align]}}
+ % will become: \usealignparameter\typingparameter
+   \doifsomething{\typingparameter\c!align}{\setupalign[\typingparameter\c!align]}} % use fast one
 
 \def\buff_verbatim_initialize_typing_two
-  {\buff_verbatim_initialize_breaks
+  {\spaceskip.5\emwidth\relax
+   \let\obeyedspace\specialobeyedspace
+   \let\controlspace\specialcontrolspace
+   \edef\p_buff_lines{\typingparameter\c!lines}%
+   \ifcsname\??typinglines\p_buff_lines\endcsname
+     \csname\??typinglines\p_buff_lines\endcsname
+   \fi
+   \edef\p_buff_space{\typingparameter\c!space}%
+   \ifcsname\??typingspace\p_buff_space\endcsname
+     \csname\??typingspace\p_buff_space\endcsname
+   \fi
    \relax\the\everyinitializeverbatim\relax}
 
 %D \macros
@@ -371,15 +374,15 @@
 %D works all right, but a decent hyphenation support of
 %D \type{\tt} text will be implemented soon.
 
-\unexpanded\def\specialfixedspace    {\kern\interwordspace\relax}
-\unexpanded\def\specialobeyedspace   {\hskip\interwordspace\relax} % better than spaceskip
-\unexpanded\def\specialstretchedspace{\hskip.5\interwordspace\s!plus.125\interwordspace\relax} % \interwordstretch can be zero
-\unexpanded\def\specialcontrolspace  {\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}
+\unexpanded\def\specialfixedspace     {\kern\interwordspace\relax}
+\unexpanded\def\specialobeyedspace    {\hskip\interwordspace\relax} % better than spaceskip
+\unexpanded\def\specialstretchedspace {\hskip.5\interwordspace\s!plus.125\interwordspace\relax} % \interwordstretch can be zero
+\unexpanded\def\specialcontrolspace   {\normalcontrolspace\allowbreak} % uses fallback
 
-% \unexpanded\def\taggedspecialfixedspace    {\hskip\zeropoint\asciispacechar\hskip\zeropoint}
-% \unexpanded\def\taggedspecialobeyedspace   {\hskip\zeropoint\asciispacechar\hskip\zeropoint}
-% \unexpanded\def\taggedspecialstretchedspace{\hskip\zeropoint\asciispacechar\hskip\zeropoint}
-% \unexpanded\def\taggedspecialcontrolspace  {\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}
+\unexpanded\def\explicitfixedspace    {\asciispacechar}
+\unexpanded\def\explicitobeyedspace   {\asciispacechar\allowbreak}
+\unexpanded\def\explicitstretchedspace{\asciispacechar\hskip\zeropoint\s!plus.125\interwordspace\relax}%
+\unexpanded\def\explicitcontrolspace  {\optionalcontrolspace\allowbreak} % uses asciispace
 
 \appendtoks
     \unexpanded\def\obeyedspace{\hskip\zeropoint\asciispacechar\hskip\zeropoint}%
@@ -856,8 +859,10 @@
    \fi
    \noindent
    \buff_verbatim_set_line_margin
-   \the\everyline\strut
-   \dostarttagged\t!verbatimline\empty}
+   \the\everyline % maybe also after starttagged
+   \strut % after starttagged, else break !
+   \dostarttagged\t!verbatimline\empty
+   }
 
 \unexpanded\def\buff_verbatim_end_of_line
   {\dostoptagged

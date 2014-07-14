@@ -530,11 +530,11 @@
     } {
         \doifsetupselse {mml:csymbol:#1} {
             % full url
-            \directsetup{mml:csymbol:#1}
+            \fastsetup{mml:csymbol:#1}
         } {
             % somename (fallback)
             \doifsetupselse {mml:csymbol:#2} {
-                \directsetup{mml:csymbol:#2}
+                \fastsetup{mml:csymbol:#2}
             } {
                 \xmlval{mmc:cs}{#3}{}% todo
             }

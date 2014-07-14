@@ -250,9 +250,27 @@
 
 \chardef\textcontrolspace"2423
 
-\unexpanded\def\fallbackcontrolspace
- %{\getglyph{ComputerModernMono}\textcontrolspace}
-  {\getglyph{LMTypewriter-Regular}\textcontrolspace}
+\installcorenamespace{controlspace}
+
+% \unexpanded\def\fallbackcontrolspace % beware: non-matching widths
+%   {\hbox to \interwordspace{\hss\getglyph{LMTypewriter-Regular}\textcontrolspace\hss}%
+
+\unexpanded\def\fallbackcontrolspace % beware, current font, we also need to honor color
+  {\hbox to \interwordspace \bgroup
+     \hss
+     \ifcsname\??controlspace\number\interwordspace\endcsname
+       \csname\??controlspace\number\interwordspace\endcsname
+     \else
+       \enco_fast_control_space_define % only regular
+     \fi
+     \textcontrolspace
+     \hss
+   \egroup}
+
+\unexpanded\def\enco_fast_control_space_define
+  {\scratchdimen\interwordspace
+   \definedfont[LMTypewriter-Regular at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody]% see font-sym.mkiv
+   \expandafter\glet\csname\??controlspace\number\scratchdimen\endcsname\lastrawfontcall}
 
 \unexpanded\def\normalcontrolspace
   {\iffontchar\font\textcontrolspace
@@ -263,29 +281,35 @@
 
 \let\textvisiblespace\normalcontrolspace
 
-\unexpanded\def\fastcontrolspace % no glyph resolving after first (use grouped)
-  {\enco_fast_control_space}
-
-\def\enco_fast_control_space
+\unexpanded\def\optionalcontrolspace
   {\iffontchar\font\textcontrolspace
-     \enco_fast_control_space_nop
+     \textcontrolspace
    \else
-     \enco_fast_control_space_yes
-   \fi
-   \enco_fast_control_space}
+     \asciispacechar % used for export !
+   \fi}
 
-\newbox\b_enco_control_space
-
-\def\enco_fast_control_space_nop
-  {\let\enco_fast_control_space\textcontrolspace}
-
-\def\enco_fast_control_space_yes
-  {\setbox\b_enco_control_space\hbox{\space}%
-   \setbox\b_enco_control_space\hbox to \wd\b_enco_control_space{\hss\fallbackcontrolspace\hss}%
-   \let\enco_fast_control_space\flushcontrolspacebox}
-
-\def\flushcontrolspacebox
-  {\copy\b_enco_control_space}
+% \unexpanded\def\fastcontrolspace % no glyph resolving after first (use grouped)
+%   {\enco_fast_control_space}
+%
+% \def\enco_fast_control_space
+%   {\iffontchar\font\textcontrolspace
+%      \enco_fast_control_space_nop
+%    \else
+%      \enco_fast_control_space_yes
+%    \fi
+%    \enco_fast_control_space}
+%
+% \newbox\b_enco_control_space
+%
+% \def\enco_fast_control_space_nop
+%   {\let\enco_fast_control_space\textcontrolspace}
+%
+% \def\enco_fast_control_space_yes
+%   {\setbox\b_enco_control_space\fallbackcontrolspace
+%    \let\enco_fast_control_space\flushcontrolspacebox}
+%
+% \def\flushcontrolspacebox
+%   {\copy\b_enco_control_space}
 
 % a few defaults (\<whatever>{}), we really need the verbose \empty as it will be
 % stringified .. anyhow, we define this at the lua end now but keep it here as a

@@ -44,7 +44,7 @@ function commands.uselibrary(specification) -- todo: reporter
         local truename = environment.truefilename
         local function found(filename)
             local somename  = truename and truename(filename) or filename
-            local foundname = getreadfilename("any",".",somename)
+            local foundname = getreadfilename("any",".",somename) -- maybe some day also an option not to backtrack .. and ../.. (or block global)
             return foundname ~= "" and foundname
         end
         for i=1,#files do
