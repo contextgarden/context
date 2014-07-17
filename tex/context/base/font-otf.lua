@@ -699,7 +699,9 @@ end
                                 unicode = cidunicodes[index]
                             end
                             if unicode and descriptions[unicode] then
-                                report_otf("preventing glyph %a at index %H to overload unicode %U",name or "noname",index,unicode)
+                                if trace_private then
+                                    report_otf("preventing glyph %a at index %H to overload unicode %U",name or "noname",index,unicode)
+                                end
                                 unicode = -1
                             end
                             if not unicode or unicode == -1 then -- or unicode >= criterium then

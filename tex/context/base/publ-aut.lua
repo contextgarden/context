@@ -28,8 +28,11 @@ local publications    = publications or { }
 local datasets        = publications.datasets or { }
 publications.datasets = datasets
 
-publications.authors  = publications.authors or { }
-local authors         = publications.authors
+local writers         = publications.writers or { }
+publications.writers  = writers
+
+local authors         = publications.authors or { }
+publications.authors  = authors
 
 -- local function makesplitter(separator)
 --     return Ct { "start",
@@ -379,84 +382,16 @@ local splitter = sorters.splitters.utf
 local pubsorters = { }
 authors.sorters  = pubsorters
 
--- local function assemble(snippets,key)
---     -- maybe an option is to also sort the authors first
---     if not key then
---         return ""
---     end
---     local n = #key
---     if n == 0 then
---         return ""
---     end
---     local s = 0
---     for i=1,n do
---         local k = key[i]
---         local vons     = k.vons
---         local surnames = k.surnames
---         local initials = k.initials
---         if vons and #vons > 0 then
---             s = s + 1 ; snippets[s] = concat(vons," ")
---         end
---         if surnames and #surnames > 0 then
---             s = s + 1 ; snippets[s] = concat(surnames," ")
---         end
---         if initials and #initials > 0 then
---             s = s + 1 ; snippets[s] = concat(initials," ")
---         end
---     end
---     local result = concat(snippets," ",1,s)
---     return strip(result)
--- end
-
--- local function byauthor(dataset,list,sorttype_a,sorttype_b,sorttype_c)
---     local luadata  = datasets[dataset].luadata
---     local details  = datasets[dataset].details
---     local valid    = { }
---     local splitted = { }
---     table.setmetatableindex(splitted,function(t,k) -- could be done in the sorter but seldom that many shared
---         local v = splitter(k,true)                 -- in other cases
---         t[k] = v
---         return v
---     end)
---     local snippets = { }
---     for i=1,#list do
---         -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
---         local li        = list[i]
---         local tag       = type(li) == "string" and li or li[1]
---         local entry     = luadata[tag]
---         local detail    = details[tag]
---         local suffix    = tostring(i)
---         local year      = nil
---         local assembled = nil
---         if entry and detail then
---             assembled = assemble(snippets,detail.author or detail.editor)
---             year      = entry.year or "9998"
---         else
---             assembled = ""
---             year      = "9999"
---         end
---         valid[i] = {
---             index  = i,
---             split  = {
---                 splitted[strip(assembled)],
---                 splitted[year],
---                 splitted[suffix],
---                 splitted[entry.journal or ""],
---                 splitted[entry.title   or ""],
---                 splitted[entry.pages   or ""],
---             },
---         }
---     end
---     return valid
--- end
-
-local function writer(snippets,key)
+local function writer(key,snippets)
     if not key then
         return ""
     end
     local n = #key
     if n == 0 then
         return ""
+    end
+    if not snippets then
+        snippets = { }
     end
     local s = 0
     for i=1,n do
@@ -474,9 +409,11 @@ local function writer(snippets,key)
             s = s + 1 ; snippets[s] = concat(initials," ")
         end
     end
-    local result = concat(snippets," ",1,s)
-    return strip(result)
+    return concat(snippets," ",1,s)
 end
+
+writers.author = writer
+writers.editor = editor
 
 local function newsplitter(splitter)
     return table.setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
@@ -502,11 +439,11 @@ local function byauthor(dataset,list,method) -- todo: yearsuffix
             result[i] = {
                 index  = i,
                 split  = {
-                    splitted[writer(snippets,detail.author or detail.editor or "")],
-                    splitted[entry.year     or "9998"],
-                    splitted[entry.journal  or ""],
-                    splitted[entry.title    or ""],
-                    splitted[entry.pages    or ""],
+                    splitted[strip(writer(detail.author or detail.editor or "",snippets))],
+                    splitted[entry.year or "9998"],
+                    splitted[strip(entry.journal or "")],
+                    splitted[strip(entry.title or "")],
+                    splitted[entry.pages or ""],
                     splitted[tostring(i)],
                 },
             }
@@ -527,6 +464,7 @@ local function byauthor(dataset,list,method) -- todo: yearsuffix
     return result
 end
 
+authors.sorters.writer = writer
 authors.sorters.author = byauthor
 
 function authors.sorted(dataset,list,sorttype) -- experimental

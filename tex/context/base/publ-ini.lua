@@ -23,7 +23,7 @@ local settings_to_array, settings_to_set = utilities.parsers.settings_to_array, 
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local lpegmatch = lpeg.match
-local P, C, Ct, R, Carg = lpeg.P, lpeg.C, lpeg.Ct, lpeg.R, lpeg.Carg
+local P, S, C, Ct, R, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.R, lpeg.Carg
 
 local report           = logs.reporter("publications")
 local report_cite      = logs.reporter("publications","cite")
@@ -35,6 +35,7 @@ local trace_missing    = false  trackers.register("publications.cite.missing",  
 local trace_references = false  trackers.register("publications.cite.references", function(v) trace_references = v end)
 
 local datasets       = publications.datasets
+local writers        = publications.writers
 
 local variables      = interfaces.variables
 
@@ -904,6 +905,39 @@ setmetatableindex(renderings,function(t,k)
     return v
 end)
 
+-- helper
+
+-- local function sortedtags(dataset,list,sorttype)
+--     local luadata = datasets[dataset].luadata
+--     local valid = { }
+--     for i=1,#list do
+--         local tag = list[i]
+--         local entry = luadata[tag]
+--         if entry then
+--             local key = entry[sorttype]
+--             if key then
+--                 valid[#valid+1] = {
+--                     tag   = tag,
+--                     split = sortsplitter(sortstripper(key))
+--                 }
+--             end
+--         end
+--     end
+--     if #valid == 0 or #valid ~= #list then
+--         return list
+--     else
+--         sorters.sort(valid,basicsorter)
+--         for i=1,#valid do
+--             valid[i] = valid[i].tag
+--         end
+--         return valid
+--     end
+-- end
+--
+--     if sorttype and sorttype ~= "" then
+--         tags = sortedtags(dataset,tags,sorttype)
+--     end
+
 -- why shorts vs tags: only for sorting
 
 function lists.register(dataset,tag,short) -- needs checking now that we split
@@ -1060,6 +1094,82 @@ function lists.collectentries(specification)
     filtermethod(dataset,rendering,keyword)
 end
 
+-- experiment
+
+local splitspec = lpeg.splitat(S(":."))
+local splitter  = sorters.splitters.utf
+local strip     = sorters.strip
+
+local function newsplitter(splitter)
+    return table.setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
+        local v = splitter(k,true)                  -- in other cases
+        t[k] = v
+        return v
+    end)
+end
+
+local template = [[
+    local strip   = sorters.strip
+    local writers = publications.writers
+    return function(entry,detail,splitted,i) -- snippets
+        return {
+            index = i,
+            split = { %s, splitted[tostring(i)] }
+        }
+    end
+]]
+
+local function byspec(dataset,list,method) -- todo: yearsuffix
+    local luadata  = datasets[dataset].luadata
+    local details  = datasets[dataset].details
+    local result   = { }
+    local splitted = newsplitter(splitter) -- saves mem
+ -- local snippets = { } -- saves mem
+    local fields   = settings_to_array(method)
+    for i=1,#fields do
+        local f = settings_to_array(fields[i])
+        local r = { }
+        for i=1,#f do
+            local a, b = lpegmatch(splitspec,f[i])
+            if b then
+                if a == "detail" or a == "entry" then
+                    local w = writers[b]
+                    if w then
+                     -- r[#r+1] = formatters["(%s.%s and writers[%q](%s.%s,snippets))"](a,b,b,a,b)
+                        r[#r+1] = formatters["(%s.%s and writers[%q](%s.%s))"](a,b,b,a,b)
+                    else
+                        r[#r+1] = formatters["%s.%s"](a,b,a,b)
+                    end
+                end
+            elseif a then
+                r[#r+1] = formatters["%s"](a)
+            end
+        end
+        r[#r+1] = '""'
+        fields[i] = "splitted[strip(" .. concat(r," or ") .. ")]"
+    end
+    local action  = formatters[template](concat(fields,", "))
+    local prepare = loadstring(action)
+    if prepare then
+        prepare = prepare()
+        local dummy = { }
+        for i=1,#list do
+            -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
+            local li     = list[i]
+            local tag    = type(li) == "string" and li or li[1]
+            local entry  = luadata[tag]
+            local detail = details[tag]
+            if entry and detail then
+                result[i] = prepare(entry,detail,splitted,i) -- ,snippets)
+            else
+                result[i] = prepare(dummy,dummy,splitted,i) -- ,snippets)
+            end
+        end
+    end
+    return result
+end
+
+
 lists.sorters = {
     [v_short] = function(dataset,rendering,list)
         local shorts = rendering.shorts
@@ -1106,6 +1216,20 @@ lists.sorters = {
  --     end
  --     sort(list,compare)
  -- end,
+    [v_default] = function(dataset,rendering,list,sorttype) -- experimental
+        local valid = byspec(dataset,list,sorttype)
+        if #valid == 0 or #valid ~= #list then
+            -- nothing to sort
+        else
+            -- if needed we can wrap compare and use the list directly but this is cleaner
+            sorters.sort(valid,sortcomparer)
+            for i=1,#valid do
+                local v = valid[i]
+                valid[i] = list[v.index]
+            end
+            return valid
+        end
+    end,
     [v_author] = function(dataset,rendering,list)
         local valid = publications.authors.sorters.author(dataset,list)
         if #valid == 0 or #valid ~= #list then
@@ -1152,7 +1276,7 @@ function lists.flushentries(dataset,sorttype)
     local repeated  = rendering.repeated == v_yes
     local luadata = datasets[dataset].luadata
     if type(sorter) == "function" then
-        list = sorter(dataset,rendering,list) or list
+        list = sorter(dataset,rendering,list,sorttype) or list
     end
  -- local details = datasets[dataset].details
     for i=1,#list do
@@ -1207,39 +1331,6 @@ commands.btxflushlistentries     = lists.flushentries
 
 local citevariants        = { }
 publications.citevariants = citevariants
-
--- helper
-
-local function sortedtags(dataset,list,sorttype)
-    local luadata = datasets[dataset].luadata
-    local valid = { }
-    for i=1,#list do
-        local tag = list[i]
-        local entry = luadata[tag]
-        if entry then
-            local key = entry[sorttype]
-            if key then
-                valid[#valid+1] = {
-                    tag   = tag,
-                    split = sortsplitter(sortstripper(key))
-                }
-            end
-        end
-    end
-    if #valid == 0 or #valid ~= #list then
-        return list
-    else
-        sorters.sort(valid,basicsorter)
-        for i=1,#valid do
-            valid[i] = valid[i].tag
-        end
-        return valid
-    end
-end
-
---     if sorttype and sorttype ~= "" then
---         tags = sortedtags(dataset,tags,sorttype)
---     end
 
 local optionalspace  = lpeg.patterns.whitespace^0
 local prefixsplitter = optionalspace * lpeg.splitat(optionalspace * P("::") * optionalspace)

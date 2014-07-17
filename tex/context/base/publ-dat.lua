@@ -48,6 +48,9 @@ local publications      = publications
 local datasets          = publications.datasets or { }
 publications.datasets   = datasets
 
+local writers           = publications.writers or { }
+publications.writers    = writers
+
 publications.statistics = publications.statistics or { }
 local publicationsstats = publications.statistics
 

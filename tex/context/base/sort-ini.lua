@@ -535,6 +535,7 @@ local function prepare()
     pattern = Cs( (
         characters.tex.toutfpattern()
       + lpeg.patterns.whitespace / "\000"
+      + (P("\\") / "") * R("AZ")^0 * (P(-1) + #(1-R("AZ")))
       + (P("\\") * P(1) * R("az","AZ")^0) / ""
       + S("[](){}$\"'") / ""
       + R("09")^1 / numify

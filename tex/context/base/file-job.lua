@@ -44,6 +44,12 @@ local cleanpath         = resolvers.cleanpath
 local inputstack        = resolvers.inputstack
 local resolveprefix     = resolvers.resolve
 
+local hasscheme         = url.hasscheme
+
+local jobresolvers      = resolvers.jobs
+
+local registerextrapath = resolvers.registerextrapath
+
 local v_outer           = variables.outer
 local v_text            = variables.text
 local v_project         = variables.project
@@ -57,7 +63,7 @@ local c_prefix          = variables.prefix
 local function findctxfile(name) -- loc ? any ?
     if is_qualified_path(name) then -- maybe when no suffix do some test for tex
         return name
-    elseif not url.hasscheme(name) then
+    elseif not hasscheme(name) then
         return resolvers.finders.byscheme("loc",name) or ""
     else
         return resolvers.findtexfile(name) or ""
@@ -82,11 +88,11 @@ function commands.locatefilepath(name)
 end
 
 function commands.usepath(paths)
-    resolvers.registerextrapath(paths)
+    registerextrapath(paths)
 end
 
 function commands.usesubpath(subpaths)
-    resolvers.registerextrapath(nil,subpaths)
+    registerextrapath(nil,subpaths)
 end
 
 function commands.allinputpaths()
@@ -246,7 +252,7 @@ end
 
 commands.useanyfile = useanyfile
 
-function resolvers.jobs.usefile(name,onlyonce,notext)
+function jobresolvers.usefile(name,onlyonce,notext)
     local s = suffixes[suffixonly(name)]
     if s then
      -- s(removesuffix(name),onlyonce,notext)
@@ -404,10 +410,11 @@ luatex.registerstopactions(function()
     logspoptarget()
 end)
 
-job.structure            = job.structure or { }
-job.structure.collected  = job.structure.collected or { }
-job.structure.tobesaved  = root
-job.structure.components = { }
+local jobstructure      = job.structure or { }
+job.structure           = jobstructure
+jobstructure.collected  = jobstructure.collected or { }
+jobstructure.tobesaved  = root
+jobstructure.components = { }
 
 local function initialize()
     local function collect(root,result)
@@ -423,7 +430,7 @@ local function initialize()
         end
         return result
     end
-    job.structure.components = collect(job.structure.collected,{})
+    jobstructure.components = collect(jobstructure.collected,{})
 end
 
 job.register('job.structure.collected',root,initialize)
@@ -435,48 +442,63 @@ local context_processfilemany = context.processfilemany
 local context_processfileonce = context.processfileonce
 local context_processfilenone = context.processfilenone
 
+local function processfilecommon(name,action)
+    if not hasscheme(name) then
+        local path = dirname(name)
+        if path ~= "" then
+            registerextrapath(path)
+            report_jobfiles("adding search path %a",path)
+        end
+    end
+    action(name)
+end
+
+local function processfilemany(name) processfilecommon(name,context_processfilemany) end
+local function processfileonce(name) processfilecommon(name,context_processfileonce) end
+local function processfilenone(name) processfilecommon(name,context_processfilenone) end
+
 local processors = utilities.storage.allocate {
  -- [v_outer] = {
- --     [v_text]        = { "many", context_processfilemany },
- --     [v_project]     = { "once", context_processfileonce },
- --     [v_environment] = { "once", context_processfileonce },
- --     [v_product]     = { "once", context_processfileonce },
- --     [v_component]   = { "many", context_processfilemany },
+ --     [v_text]        = { "many", processfilemany },
+ --     [v_project]     = { "once", processfileonce },
+ --     [v_environment] = { "once", processfileonce },
+ --     [v_product]     = { "once", processfileonce },
+ --     [v_component]   = { "many", processfilemany },
  -- },
     [v_text] = {
-        [v_text]        = { "many", context_processfilemany },
-        [v_project]     = { "once", context_processfileonce }, -- dubious
-        [v_environment] = { "once", context_processfileonce },
-        [v_product]     = { "many", context_processfilemany }, -- dubious
-        [v_component]   = { "many", context_processfilemany },
+        [v_text]        = { "many", processfilemany },
+        [v_project]     = { "once", processfileonce }, -- dubious
+        [v_environment] = { "once", processfileonce },
+        [v_product]     = { "many", processfilemany }, -- dubious
+        [v_component]   = { "many", processfilemany },
     },
     [v_project] = {
-        [v_text]        = { "many", context_processfilemany },
-        [v_project]     = { "none", context_processfilenone },
-        [v_environment] = { "once", context_processfileonce },
-        [v_product]     = { "none", context_processfilenone },
-        [v_component]   = { "none", context_processfilenone },
+        [v_text]        = { "many", processfilemany },
+        [v_project]     = { "none", processfilenone },
+        [v_environment] = { "once", processfileonce },
+        [v_product]     = { "none", processfilenone },
+        [v_component]   = { "none", processfilenone },
     },
     [v_environment] = {
-        [v_text]        = { "many", context_processfilemany },
-        [v_project]     = { "none", context_processfilenone },
-        [v_environment] = { "once", context_processfileonce },
-        [v_product]     = { "none", context_processfilenone },
-        [v_component]   = { "none", context_processfilenone },
+        [v_text]        = { "many", processfilemany },
+        [v_project]     = { "none", processfilenone },
+        [v_environment] = { "once", processfileonce },
+        [v_product]     = { "none", processfilenone },
+        [v_component]   = { "none", processfilenone },
     },
     [v_product] = {
-        [v_text]        = { "many", context_processfilemany },
-        [v_project]     = { "once", context_processfileonce },
-        [v_environment] = { "once", context_processfileonce },
-        [v_product]     = { "many", context_processfilemany },
-        [v_component]   = { "many", context_processfilemany },
+        [v_text]        = { "many", processfilemany },
+        [v_project]     = { "once", processfileonce },
+        [v_environment] = { "once", processfileonce },
+        [v_product]     = { "many", processfilemany },
+        [v_component]   = { "many", processfilemany },
     },
     [v_component] = {
-        [v_text]        = { "many", context_processfilemany },
-        [v_project]     = { "once", context_processfileonce },
-        [v_environment] = { "once", context_processfileonce },
-        [v_product]     = { "none", context_processfilenone },
-        [v_component]   = { "many", context_processfilemany },
+        [v_text]        = { "many", processfilemany },
+        [v_project]     = { "once", processfileonce },
+        [v_environment] = { "once", processfileonce },
+        [v_product]     = { "none", processfilenone },
+        [v_component]   = { "many", processfilemany },
     }
 }
 
@@ -496,7 +518,7 @@ local stop = {
     [v_component]   = context.stoptext,
 }
 
-resolvers.jobs.processors = processors
+jobresolvers.processors = processors
 
 local function topofstack(what)
     local stack = stacks[what]
@@ -523,13 +545,13 @@ local function justacomponent()
     end
 end
 
-resolvers.jobs.productcomponent = productcomponent
-resolvers.jobs.justacomponent   = justacomponent
+jobresolvers.productcomponent = productcomponent
+jobresolvers.justacomponent   = justacomponent
 
-function resolvers.jobs.currentproject    () return topofstack(v_project    ) end
-function resolvers.jobs.currentproduct    () return topofstack(v_product    ) end
-function resolvers.jobs.currentcomponent  () return topofstack(v_component  ) end
-function resolvers.jobs.currentenvironment() return topofstack(v_environment) end
+function jobresolvers.currentproject    () return topofstack(v_project    ) end
+function jobresolvers.currentproduct    () return topofstack(v_product    ) end
+function jobresolvers.currentcomponent  () return topofstack(v_component  ) end
+function jobresolvers.currentenvironment() return topofstack(v_environment) end
 
 local done     = { }
 local tolerant = false -- too messy, mkii user with the wrong sructure should adapt

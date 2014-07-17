@@ -106,14 +106,24 @@ end
 
 mplib.preprocessed = preprocessed -- helper
 
+local function validftype(ftype)
+    if ftype == "" then
+        -- whatever
+    elseif ftype == 0 then
+        -- mplib bug
+    else
+        return ftype
+    end
+end
+
 finders.file = function(specification,name,mode,ftype)
-    return preprocessed(resolvers.findfile(name,ftype))
+    return preprocessed(resolvers.findfile(name,validftype(ftype)))
 end
 
 local function i_finder(name,mode,ftype) -- fake message for mpost.map and metafun.mpvi
     local specification = url.hashed(name)
     local finder = finders[specification.scheme] or finders.file
-    return finder(specification,name,mode,ftype)
+    return finder(specification,name,mode,validftype(ftype))
 end
 
 local function o_finder(name,mode,ftype)
@@ -123,9 +133,9 @@ end
 
 local function finder(name,mode,ftype)
     if mode == "w" then
-        return o_finder(name,mode,ftype)
+        return o_finder(name,mode,validftype(ftype))
     else
-        return i_finder(name,mode,ftype)
+        return i_finder(name,mode,validftype(ftype))
     end
 end
 

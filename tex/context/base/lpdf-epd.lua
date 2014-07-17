@@ -252,7 +252,7 @@ local function getlayers(document)
             local n = layers.n
             for i=1,n do
                 local layer = layers[i]
---~ print(document.xrefs[layer])
+             -- print(document.xrefs[layer])
                 t[i] = layer.Name
             end
             t.n = n
@@ -261,6 +261,10 @@ local function getlayers(document)
     end
 end
 
+local function getstructure(document)
+    -- this might become a tree
+    return document.Catalog.StructTreeRoot
+end
 
 local function getpages(document,Catalog)
     local data  = document.data
@@ -353,6 +357,7 @@ function lpdf.epdf.load(filename)
             document.widgets       = delayed(document,"widgets",      function() return getnames(document,Catalog.Names and Catalog.Names.AcroForm) end)
             document.embeddedfiles = delayed(document,"embeddedfiles",function() return getnames(document,Catalog.Names and Catalog.Names.EmbeddedFiles) end)
             document.layers        = delayed(document,"layers",       function() return getlayers(document) end)
+            document.structure     = delayed(document,"structure",    function() return getstructure(document) end)
         else
             document = false
         end

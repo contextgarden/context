@@ -710,12 +710,19 @@ function resolvers.resetextrapath()
 end
 
 function resolvers.registerextrapath(paths,subpaths)
-    paths = settings_to_array(paths)
-    subpaths = settings_to_array(subpaths)
-    local ep = instance.extra_paths or { }
-    local oldn = #ep
-    local newn = oldn
-    local nofpaths = #paths
+    if not subpaths or subpaths == "" then
+        if not paths or path == "" then
+            return -- invalid spec
+        elseif done[paths] then
+            return -- already done
+        end
+    end
+    local paths       = settings_to_array(paths)
+    local subpaths    = settings_to_array(subpaths)
+    local ep          = instance.extra_paths or { }
+    local oldn        = #ep
+    local newn        = oldn
+    local nofpaths    = #paths
     local nofsubpaths = #subpaths
     if nofpaths > 0 then
         if nofsubpaths > 0 then
@@ -762,14 +769,50 @@ function resolvers.registerextrapath(paths,subpaths)
     end
 end
 
+-- local function made_list(instance,list,extra_too)
+--     if not extra_too then
+--         return list
+--     end
+--     local ep = instance.extra_paths
+--     if not ep or #ep == 0 then
+--         return list
+--     end
+--     local done, new, newn = { }, { }, 0
+--     -- honour . .. ../.. but only when at the start
+--     for k=1,#list do
+--         local v = list[k]
+--         if not done[v] then
+--             if find(v,"^[%.%/]$") then
+--                 done[v] = true
+--                 newn = newn + 1
+--                 new[newn] = v
+--             else
+--                 break
+--             end
+--         end
+--     end
+--     -- first the extra paths
+--     for k=1,#ep do
+--         local v = ep[k]
+--         if not done[v] then
+--             done[v] = true
+--             newn = newn + 1
+--             new[newn] = v
+--         end
+--     end
+--     -- next the formal paths
+--     for k=1,#list do
+--         local v = list[k]
+--         if not done[v] then
+--             done[v] = true
+--             newn = newn + 1
+--             new[newn] = v
+--         end
+--     end
+--     return new
+-- end
+
 local function made_list(instance,list,extra_too)
-    if not extra_too then
-        return list
-    end
-    local ep = instance.extra_paths
-    if not ep or #ep == 0 then
-        return list
-    end
     local done, new, newn = { }, { }, 0
     -- honour . .. ../.. but only when at the start
     for k=1,#list do
@@ -785,12 +828,17 @@ local function made_list(instance,list,extra_too)
         end
     end
     -- first the extra paths
-    for k=1,#ep do
-        local v = ep[k]
-        if not done[v] then
-            done[v] = true
-            newn = newn + 1
-            new[newn] = v
+    if extra_too then
+        local ep = instance.extra_paths
+        if ep and #ep > 0 then
+            for k=1,#ep do
+                local v = ep[k]
+                if not done[v] then
+                    done[v] = true
+                    newn = newn + 1
+                    new[newn] = v
+                end
+            end
         end
     end
     -- next the formal paths

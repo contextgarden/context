@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/14/14 19:25:59
+-- merge date  : 07/17/14 13:24:59
 
 do -- begin closure to overcome local limits and interference
 
@@ -7236,7 +7236,9 @@ end
                 unicode=cidunicodes[index]
               end
               if unicode and descriptions[unicode] then
-                report_otf("preventing glyph %a at index %H to overload unicode %U",name or "noname",index,unicode)
+                if trace_private then
+                  report_otf("preventing glyph %a at index %H to overload unicode %U",name or "noname",index,unicode)
+                end
                 unicode=-1
               end
               if not unicode or unicode==-1 then 
