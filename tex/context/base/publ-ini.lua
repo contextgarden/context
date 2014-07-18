@@ -686,8 +686,9 @@ function commands.setbtxdataset(name,default)
     if dataset then
         context(name)
     elseif default and default ~= "" then
-        context(name)
+        context(default)
     else
+        context(v_standard)
         report("unknown dataset %a",name)
     end
 end

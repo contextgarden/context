@@ -922,16 +922,27 @@ end
 table.identical = identical
 table.are_equal = are_equal
 
--- maybe also make a combined one
-
-function table.compact(t) -- remove empty tables, assumes subtables
-    if t then
-        for k, v in next, t do
-            if not next(v) then -- no type checking
-                t[k] = nil
+local function sparse(old,nest,keeptables)
+    local new  = { }
+    for k, v in next, old do
+        if not (v == "" or v == false) then
+            if nest and type(v) == "table" then
+                v = sparse(v,nest)
+                if keeptables or next(v) then
+                    new[k] = v
+                end
+            else
+                new[k] = v
             end
         end
     end
+    return new
+end
+
+table.sparse = sparse
+
+function table.compact(t)
+    return sparse(t,true,true)
 end
 
 function table.contains(t, v)

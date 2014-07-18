@@ -313,9 +313,6 @@
 \unexpanded\def\setbtxentry[#1]%
   {\edef\currentbtxtag{\ctxcommand{setbtxentry("\currentbtxdataset","#1")}}}
 
-\setbtxdataset
-  [\v!standard]
-
 % \let\btxsetdataset\setbtxdataset
 % \let\btxsetentry  \setbtxentry
 
@@ -1051,6 +1048,9 @@
 % \btxabbreviatedjournal[foo journal of bars]
 
 %D Defaults:
+
+\setbtxdataset
+  [\v!standard]
 
 \setupbtxrendering
   [\c!dataset=\v!standard,

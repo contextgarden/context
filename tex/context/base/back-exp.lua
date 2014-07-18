@@ -1569,7 +1569,7 @@ do
         if metadata then
             result[#result+1] = f_metadata_begin(depth)
             for k, v in table.sortedpairs(metadata) do
-                result[#result+1] = f_medatadata(depth+1,k,lpegmatch(p_entity,v))
+                result[#result+1] = f_metadata(depth+1,k,lpegmatch(p_entity,v))
             end
             result[#result+1] = f_metadata_end(depth)
         end

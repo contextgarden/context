@@ -1212,7 +1212,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 33243, stripped down to: 21578
+-- original size: 33477, stripped down to: 21843
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1967,14 +1967,25 @@ local function identical(a,b)
 end
 table.identical=identical
 table.are_equal=are_equal
-function table.compact(t) 
-  if t then
-    for k,v in next,t do
-      if not next(v) then 
-        t[k]=nil
+local function sparse(old,nest,keeptables)
+  local new={}
+  for k,v in next,old do
+    if not (v=="" or v==false) then
+      if nest and type(v)=="table" then
+        v=sparse(v,nest)
+        if keeptables or next(v) then
+          new[k]=v
+        end
+      else
+        new[k]=v
       end
     end
   end
+  return new
+end
+table.sparse=sparse
+function table.compact(t)
+  return sparse(t,true,true)
 end
 function table.contains(t,v)
   if t then
@@ -17276,8 +17287,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 712066
--- stripped bytes    : 253417
+-- original bytes    : 712300
+-- stripped bytes    : 253386
 
 -- end library merge
 

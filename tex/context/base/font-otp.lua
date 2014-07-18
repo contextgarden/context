@@ -750,27 +750,28 @@ local function unpackdata(data)
                                     rule.replacements = tv
                                 end
                             end
-                            local fore = rule.fore
-                            if fore then
-                                local tv = tables[fore]
-                                if tv then
-                                    rule.fore = tv
-                                end
-                            end
-                            local back = rule.back
-                            if back then
-                                local tv = tables[back]
-                                if tv then
-                                    rule.back = tv
-                                end
-                            end
-                            local names = rule.names
-                            if names then
-                                local tv = tables[names]
-                                if tv then
-                                    rule.names = tv
-                                end
-                            end
+                         -- local fore = rule.fore
+                         -- if fore then
+                         --     local tv = tables[fore]
+                         --     if tv then
+                         --         rule.fore = tv
+                         --     end
+                         -- end
+                         -- local back = rule.back
+                         -- if back then
+                         --     local tv = tables[back]
+                         --     if tv then
+                         --         rule.back = tv
+                         --     end
+                         -- end
+                         -- local names = rule.names
+                         -- if names then
+                         --     local tv = tables[names]
+                         --     if tv then
+                         --         rule.names = tv
+                         --     end
+                         -- end
+                            --
                             local lookups = rule.lookups
                             if lookups then
                                 local tv = tables[lookups]

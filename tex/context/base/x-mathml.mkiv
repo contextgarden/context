@@ -2326,11 +2326,19 @@
 
 \def\mmlextensible#1{\ctxmodulemathml{extensible(\!!bs#1\!!es)}}
 
-\unexpanded\def\mmlunderuf#1{\mmlexecuteifdefined\mmlundercommand\relax  {\mmlunexpandedfirst {#1}}\relax}
-\unexpanded\def\mmlunderus#1{\mmlexecuteifdefined\mmlundercommand        {\mmlunexpandedsecond{#1}}\relax}
-\unexpanded\def\mmlunderbf#1{\mmlexecuteifdefined\mmlbasecommand         {\mmlunexpandedfirst {#1}}\relax}
-%unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\mmlunexpandedsecond{#1}}\relax}
-\unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax  {\mmlunexpandedsecond{#1}}\relax}
+% \unexpanded\def\mmlunderuf#1{\mmlexecuteifdefined\mmlundercommand\relax  {\mmlunexpandedfirst {#1}}\relax}
+% \unexpanded\def\mmlunderus#1{\mmlexecuteifdefined\mmlundercommand        {\mmlunexpandedsecond{#1}}\relax}
+% \unexpanded\def\mmlunderbf#1{\mmlexecuteifdefined\mmlbasecommand         {\mmlunexpandedfirst {#1}}\relax}
+% %unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\mmlunexpandedsecond{#1}}\relax}
+% \unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax  {\mmlunexpandedsecond{#1}}\relax}
+
+% \MMLhack
+
+\unexpanded\def\mmlunderuf#1{\mmlexecuteifdefined\mmlundercommand\relax  {\math_fences_checked_start\mmlunexpandedfirst {#1}\math_fences_checked_stop}\relax}
+\unexpanded\def\mmlunderus#1{\mmlexecuteifdefined\mmlundercommand        {\math_fences_checked_start\mmlunexpandedsecond{#1}\math_fences_checked_stop}\relax}
+\unexpanded\def\mmlunderbf#1{\mmlexecuteifdefined\mmlbasecommand         {\math_fences_checked_start\mmlunexpandedfirst {#1}\math_fences_checked_stop}\relax}
+%unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\math_fences_checked_start\mmlunexpandedsecond{#1}\math_fences_checked_stop}\relax}
+\unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax  {\math_fences_checked_start\mmlunexpandedsecond{#1}\math_fences_checked_stop}\relax}
 
 \startxmlsetups mml:munder
     \edef\mmlundertoken{\mmlextensible{\xmlraw{#1}{/mml:*[2]}}}% /text()
