@@ -984,41 +984,198 @@
 %D ... \atpage[someref] ...
 %D \stoptyping
 
-% 0 = unknown
-% 1 = same
-% 2 = before
-% 3 = after
-
-\def\strc_references_by_reference_page_state#unknown#before#current#after%
-  {\ifcase\referencepagestate\space#unknown\or#current\or#before\or#after\fi}
-
+% % 0 = unknown
+% % 1 = same
+% % 2 = before
+% % 3 = after
+%
+% \def\strc_references_by_reference_page_state#unknown#before#current#after%
+%   {\ifcase\referencepagestate\space#unknown\or#current\or#before\or#after\fi}
+%
+% % \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
+% %   {\doifreferencefoundelse{#label}% usage needs checking (useless)
+% %      {\goto{\strc_references_by_reference_page_state{#label}{#backward}{}{#foreward}}[#label]}
+% %      {[#label]}}
+% %
+% % better:
+%
 % \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
-%   {\doifreferencefoundelse{#label}% usage needs checking (useless)
-%      {\goto{\strc_references_by_reference_page_state{#label}{#backward}{}{#foreward}}[#label]}
+%   {\doifreferencefoundelse{#label}%
+%      {\strc_references_by_reference_page_state{#label}{\goto{#backward}[#label]}{}{\goto{#foreward}[#label]}}
 %      {[#label]}}
 %
-% better:
+% \unexpanded\def\atpage[#label]% todo
+%   {\doifreferencefoundelse{#label}% kind of inefficient as \goto also analyzes
+%      {\goto
+%         {\strc_references_by_reference_page_state
+%            {\labeltexts\v!page\dummyreference}%
+%            {\labeltext\v!hencefore}%
+%            {\labeltexts\v!atpage\currentreferencepage}%
+%            {\labeltext\v!hereafter}}%
+%            [#label]}
+%      {[#label]}}
+%
+% \unexpanded\def\referencesymbol
+%   {\hbox{\strut\high
+%      {\setupsymbolset[\interactionparameter\c!symbolset]%
+%       \symbol[\strc_references_by_reference_page_state\v!somewhere\v!nowhere\v!previous\v!next]}}}
 
-\unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
-  {\doifreferencefoundelse{#label}%
-     {\strc_references_by_reference_page_state{#label}{\goto{#backward}[#label]}{}{\goto{#foreward}[#label]}}
-     {[#label]}}
+% standard      detail
+%
+% 0 = unknown   unknown
+% 1 = same      on same page
+% 2 = before    preceding page
+% 3 = after     following page
+%
+% 4 = above     above on same page
+% 5 = below     below on same page
 
-\unexpanded\def\atpage[#label]% todo
-  {\doifreferencefoundelse{#label}% kind of inefficient as \goto also analyzes
-     {\goto
-        {\strc_references_by_reference_page_state
-           {\labeltexts\v!page\dummyreference}%
-           {\labeltext\v!hencefore}%
-           {\labeltexts\v!atpage\currentreferencepage}%
-           {\labeltext\v!hereafter}}%
-           [#label]}
-     {[#label]}}
+% todo: optimize for use in pagebody
+% todo: maybe make it optional
+
+% \setuppagenumbering[alternative=doublesided]
+% \setupreferencing  [doublesided=no] % yes is default
+%
+% \somewhere{backward}{foreward}[label]
+% \someplace{preceding}{backward}{current}{foreward}{following}[label]
+% \atpage[#label]
+% \doifcheckedpagestate{label}{preceding}{backward}{current}{foreward}{following}{otherwise}
+%
+% \dorecurse {20} {
+%     \placefigure[here][fig:#1]{}{\externalfigure[dummy]}
+%     \dorecurse {20} {
+%         ##1: \atpage[fig:##1] /
+%         \doifcheckedpagestate
+%             {fig:##1}
+%             {preceding}{backward}{current}{foreward}{following}
+%             {otherwise}
+%     }
+% }
+
+\newcount      \nofreferencestates
+\newconditional\pagestatespread
+
+\appendtoks
+    \doifelse{\referencingparameter\c!doublesided}\v!yes\settrue\setfalse\pagestatespread
+\to \everysetupreferencing
+
+\setupreferencing
+  [\c!doublesided=\v!yes]
+
+\def\referencepagestate {\numexpr\ctxcommand{referencepagestate("rst::\number\nofreferencestates")}\relax}
+\def\referencepagedetail{\numexpr\ctxcommand{referencepagestate("rst::\number\nofreferencestates",true\ifconditional\pagestatespread\ifdoublesided,\s!true\fi\fi)}\relax}
+
+\unexpanded\def\tracedpagestate
+  {{\blue\tttf(\ifcase\referencepagedetail unknown\or same\or previous\or next\or above\or below\else unknown\fi)}}
+
+\unexpanded\def\markreferencepage
+  {\dontleavehmode\begingroup
+   \iftrialtypesetting
+     % issue warning that not stable
+   \else
+     % needs checking ... but probably never in trialmode
+     \global\advance\nofreferencestates\plusone
+     \xypos{rst::\number\nofreferencestates}%
+     % \tracedpagestate
+   \fi
+   \endgroup}
+
+% \def\strc_references_by_reference_page_state#unknown#before#current#after% obsolete
+%   {\ifcase\referencepagestate#unknown\or#current\or#before\or#after\or#before\or#after\else#unknown\fi}
+%
+% \def\strc_references_by_reference_page_state#unknown#same#previous#next#above#below% not needed
+%   {\ifcase\referencepagestate#unknown\or#same\or#previous\or#next\or#above\or#below\else#unknown\fi}
+
+\unexpanded\def\doifcheckedpagestate#label% #preceding#backward#current#foreward#following#otherwise%
+  {\doifreferencefoundelse{#label}\strc_references_handle_page_state_yes\strc_references_handle_page_state_nop}
+
+\let\strc_references_handle_page_state_nop\sixthofsixarguments
+
+\def\strc_references_handle_page_state_yes
+  {\markreferencepage
+   \ifcase\referencepagedetail
+     \expandafter\sixthofsixarguments \or
+     \expandafter\thirdofsixarguments \or
+     \expandafter\firstofsixarguments \or
+     \expandafter\fifthofsixarguments \or
+     \expandafter\secondofsixarguments\or
+     \expandafter\fourthofsixarguments\else
+     \expandafter\sixthofsixarguments \fi}
 
 \unexpanded\def\referencesymbol
-  {\hbox{\strut\high
-     {\setupsymbolset[\interactionparameter\c!symbolset]%
-      \symbol[\strc_references_by_reference_page_state\v!somewhere\v!nowhere\v!previous\v!next]}}}
+  {\hbox\bgroup
+     \strut
+     \markreferencepage
+     \high
+       {\setupsymbolset[\interactionparameter\c!symbolset]%
+        \symbol[\ifcase\referencepagedetail\v!somewhere\or\v!nowhere\or\v!previous\or\v!next\or\v!previous\or\v!next\else\v!somewhere\fi]}%
+   \egroup}
+
+% \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
+%   {\doifreferencefoundelse{#label}%
+%      {\markreferencepage
+%       \ifcase\referencepagedetail
+%                           #label\or   % unknown
+%                                 \or   % same
+%         \goto{#backward}[#label]\or   % previous
+%         \goto{#foreward}[#label]\or   % next
+%         \goto{#backward}[#label]\or   % above
+%         \goto{#foreward}[#label]\else % below
+%                           #label\fi}%
+%      {[#label]}}
+
+\unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
+  {\doifcheckedpagestate{#label}%
+     {\goto{#backward}[#label]}%
+     {\goto{#backward}[#label]}%
+     {}%
+     {\goto{#foreward}[#label]}%
+     {\goto{#foreward}[#label]}%
+     {#label}}%
+
+% \unexpanded\def\someplace#preceding#backward#current#foreward#following#dummy[#label]% #dummy gobbles space around #foreward
+%   {\doifreferencefoundelse{#label}%
+%      {\markreferencepage
+%       \ifcase\referencepagedetail
+%                                                        #label\or   % unknown
+%         \doifsomething  {#current}{\goto  {#current}[#label]}\or   % same
+%         \doifsomething{#preceding}{\goto{#preceding}[#label]}\or   % previous
+%         \doifsomething{#following}{\goto{#following}[#label]}\or   % next
+%         \doifsomething {#backward}{\goto {#backward}[#label]}\or   % above
+%         \doifsomething {#foreward}{\goto {#foreward}[#label]}\else % below
+%                                                        #label\fi}%
+%      {[#label]}}
+
+\unexpanded\def\someplace#preceding#backward#current#foreward#following#dummy[#label]% #dummy gobbles space around #foreward
+  {\doifcheckedpagestate{#label}%
+     {\doifsomething{#preceding}{\goto{#preceding}[#label]}}%
+     {\doifsomething {#backward}{\goto {#backward}[#label]}}%
+     {\doifsomething  {#current}{\goto  {#current}[#label]}}%
+     {\doifsomething {#foreward}{\goto {#foreward}[#label]}}%
+     {\doifsomething{#following}{\goto{#following}[#label]}}%
+     {#label}}
+
+% \unexpanded\def\atpage[#label]% todo
+%   {\doifreferencefoundelse{#label}% kind of inefficient as \goto also analyzes
+%      {\markreferencepage
+%       \ifcase\referencepagedetail
+%         \goto{\labeltexts\v!page\dummyreference}[#label]\or   % unknown
+%                                                         \or   % same
+%         \goto{\labeltext \v!precedingpage      }[#label]\or   % previous
+%         \goto{\labeltext \v!followingpage      }[#label]\or   % next
+%         \goto{\labeltext \v!hencefore          }[#label]\or   % above
+%         \goto{\labeltext \v!hereafter          }[#label]\else % below
+%         \goto{\labeltexts\v!page\dummyreference}[#label]\fi}%
+%      {[#label]}}
+
+\unexpanded\def\atpage[#label]% todo
+  {\doifcheckedpagestate{#label}%
+     {\goto{\labeltext \v!precedingpage      }[#label]}%
+     {\goto{\labeltext \v!hencefore          }[#label]}%
+     {}%
+     {\goto{\labeltext \v!hereafter          }[#label]}%
+     {\goto{\labeltext \v!followingpage      }[#label]}%
+     {\goto{\labeltexts\v!page\dummyreference}[#label]}}
 
 %D The other alternatives just conform their names: only the
 %D label, only the text, or the label and the text.

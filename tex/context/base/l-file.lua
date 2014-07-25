@@ -495,6 +495,23 @@ function file.collapsepath(str,anchor) -- anchor: false|nil, true, "."
     end
 end
 
+-- better this way:
+
+local tricky     = S("/\\") * P(-1)
+local attributes = lfs.attributes
+
+function lfs.isdir(name)
+    if lpegmatch(tricky,name) then
+        return attributes(name,"mode") == "directory"
+    else
+        return attributes(name.."/.","mode") == "directory"
+    end
+end
+
+function lfs.isfile(name)
+    return attributes(name,"mode") == "file"
+end
+
 -- local function test(str,...)
 --    print(string.format("%-20s %-15s %-30s %-20s",str,file.collapsepath(str),file.collapsepath(str,true),file.collapsepath(str,".")))
 -- end

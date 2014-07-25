@@ -285,11 +285,13 @@ local function multipass_copyluafile(jobname,run)
     local tuaname, tucname = jobname..".tua", jobname..".tuc"
     if validfile(tuaname) then
         if run then
-            for i=1,10 do
-                local tmpname = format("%s-tuc-%02d.tmp",jobname,i)
-                if validfile(tmpname) then
-                    removefile(tmpname)
-                    report("removing %a",tmpname)
+            if run == 1 then
+                for i=1,10 do
+                    local tmpname = format("%s-tuc-%02d.tmp",jobname,i)
+                    if validfile(tmpname) then
+                        removefile(tmpname)
+                        report("removing %a",tmpname)
+                    end
                 end
             end
             if validfile(tucname) then

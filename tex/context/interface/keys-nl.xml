@@ -183,6 +183,7 @@
 		<cd:variable name='flushleft' value='lijnlinks'/>
 		<cd:variable name='flushouter' value='lijnbuiten'/>
 		<cd:variable name='flushright' value='lijnrechts'/>
+		<cd:variable name='followingpage' value='opvolgendepagina'/>
 		<cd:variable name='footer' value='voet'/>
 		<cd:variable name='footnote' value='voetnoot'/>
 		<cd:variable name='force' value='forceer'/>
@@ -363,6 +364,7 @@
 		<cd:variable name='positive' value='positief'/>
 		<cd:variable name='postponing' value='uitstellen'/>
 		<cd:variable name='postscript' value='postscript'/>
+		<cd:variable name='precedingpage' value='voorafgaandepagina'/>
 		<cd:variable name='preference' value='voorkeur'/>
 		<cd:variable name='preview' value='preview'/>
 		<cd:variable name='previous' value='vorige'/>

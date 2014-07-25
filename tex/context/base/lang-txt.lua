@@ -990,6 +990,18 @@ data.labels={
     vi="Đồ thị",
    },
   },
+  precedingpage={
+   labels={
+    en="on a preceding page",
+    nl="op een voorgaande bladzijde",
+   },
+  },
+  followingpage={
+   labels={
+    en="on a following page",
+    nl="op een volgende bladzijde",
+   },
+  },
   hencefore={
    labels={
     af="",

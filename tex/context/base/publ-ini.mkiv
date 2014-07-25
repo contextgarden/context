@@ -533,8 +533,13 @@
 
 \def\publ_place_list_complete[#1][#2]% title might become obsolete, just headtext
   {\begingroup
-   \edef\currentbtxrendering{#1}%
-   \setupcurrentbtxrendering[#2]%
+   \ifsecondargument
+     \edef\currentbtxrendering{#1}%
+     \setupcurrentbtxrendering[#2]%
+   \else\iffirstargument
+     \let\currentbtxrendering\currentbtxdataset
+     \setupcurrentbtxrendering[#1]%
+   \fi\fi
    \the\everybtxlistrendering
    \edef\currentbtxrenderingtitle{\btxrenderingparameter\c!title}%
    \ifx\currentbtxrenderingtitle\empty
@@ -548,8 +553,13 @@
 
 \def\publ_place_list_standard[#1][#2]%
   {\begingroup
-   \edef\currentbtxrendering{#1}%
-   \setupcurrentbtxrendering[#2]%
+   \ifsecondargument
+     \edef\currentbtxrendering{#1}%
+     \setupcurrentbtxrendering[#2]%
+   \else\iffirstargument
+     \let\currentbtxrendering\currentbtxdataset
+     \setupcurrentbtxrendering[#1]%
+   \fi\fi
    \the\everybtxlistrendering
    \publ_place_list_indeed
    \endgroup}

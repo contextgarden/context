@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/18/14 14:12:32
+-- merge date  : 07/25/14 12:57:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -2459,6 +2459,18 @@ function file.collapsepath(str,anchor)
       return newelements
     end
   end
+end
+local tricky=S("/\\")*P(-1)
+local attributes=lfs.attributes
+function lfs.isdir(name)
+  if lpegmatch(tricky,name) then
+    return attributes(name,"mode")=="directory"
+  else
+    return attributes(name.."/.","mode")=="directory"
+  end
+end
+function lfs.isfile(name)
+  return attributes(name,"mode")=="file"
 end
 local validchars=R("az","09","AZ","--","..")
 local pattern_a=lpeg.replacer(1-validchars)

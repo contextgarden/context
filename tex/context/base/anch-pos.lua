@@ -118,6 +118,8 @@ local nofusedregions    = 0
 local nofmissingregions = 0
 local nofregular        = 0
 
+jobpositions.used       = false
+
 -- todo: register subsets and count them indepently
 
 local function initializer()
@@ -162,6 +164,7 @@ local function initializer()
         end
         -- so, we can be sparse and don't need 'or 0' code
     end
+    jobpositions.used = next(collected)
 end
 
 job.register('job.positions.collected', tobesaved, initializer)

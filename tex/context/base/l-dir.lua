@@ -36,9 +36,14 @@ if onwindows then
     -- lfs.isdir does not like trailing /
     -- lfs.dir accepts trailing /
 
+    local tricky = S("/\\") * P(-1)
+
     isdir = function(name)
-        name = gsub(name,"([/\\]+)$","/.")
-        return attributes(name,"mode") == "directory"
+        if lpegmatch(tricky,name) then
+            return attributes(name,"mode") == "directory"
+        else
+            return attributes(name.."/.","mode") == "directory"
+        end
     end
 
     isfile = function(name)

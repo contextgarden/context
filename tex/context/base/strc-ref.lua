@@ -76,6 +76,8 @@ local references         = structures.references
 local lists              = structures.lists
 local counters           = structures.counters
 
+local jobpositions       = job.positions
+
 -- some might become local
 
 references.defined       = references.defined or allocate()
@@ -387,10 +389,28 @@ function references.set(kind,prefix,tag,data)
     return n > 0
 end
 
+-- function references.enhance(prefix,tag)
+--     local l = tobesaved[prefix][tag]
+--     if l then
+--         l.references.realpage = texgetcount("realpageno")
+--     end
+-- end
+
+local getpos = function() getpos = backends.codeinjections.getpos  return getpos () end
+
+local function synchronizepage(reference) -- non public helper
+    reference.realpage = texgetcount("realpageno")
+    if jobpositions.used then
+        reference.x, reference.y = getpos()
+    end
+end
+
+references.synchronizepage = synchronizepage
+
 function references.enhance(prefix,tag)
     local l = tobesaved[prefix][tag]
     if l then
-        l.references.realpage = texgetcount("realpageno")
+        synchronizepage(l.references)
     end
 end
 
@@ -2056,12 +2076,71 @@ local specials = references.testspecials
 -- pretty slow (progressively). In the pagebody one can best check the reference
 -- real page to determine if we need contrastlocation as that is more lightweight.
 
-local function checkedpagestate(n,page)
-    local r = referredpage(n)
+local function checkedpagestate(n,page,actions,position,spread)
     local p = tonumber(page)
     if not p then
         return 0
-    elseif p > r then
+    end
+    if position and #actions > 0 then
+        local i = actions[1].i -- brrr
+        if i then
+            local a = i.references
+            if a then
+                local x = a.x
+                local y = a.y
+                if x and y then
+                    local jp = jobpositions.collected[position]
+                    if jp then
+                        local px = jp.x
+                        local py = jp.y
+                        local pp = jp.p
+                        if p == pp then
+                            -- same page
+                            if py > y then
+                                return 5 -- above
+                            elseif py < y then
+                                return 4 -- below
+                            elseif px > x then
+                                return 4 -- below
+                            elseif px < x then
+                                return 5 -- above
+                            else
+                                return 1 -- same
+                            end
+                        elseif spread then
+                            if pp % 2 == 0 then
+                                -- left page
+                                if pp > p then
+                                    return 2 -- before
+                                elseif pp + 1 == p then
+--                                     return 4 -- below (on right page)
+                                    return 5 -- above (on left page)
+                                else
+                                    return 3 -- after
+                                end
+                            else
+                                -- right page
+                                if pp < p then
+                                    return 3 -- after
+                                elseif pp - 1 == p then
+--                                     return 5 -- above (on left page)
+                                    return 4 -- below (on right page)
+                                else
+                                    return 2 -- before
+                                end
+                            end
+                        elseif pp > p then
+                            return 2 -- before
+                        else
+                            return 3 -- after
+                        end
+                    end
+                end
+            end
+        end
+    end
+    local r = referredpage(n) -- sort of obsolete
+    if p > r then
         return 3 -- after
     elseif p < r then
         return 2 -- before
@@ -2104,7 +2183,7 @@ end
 -- at this moment only the real reference page is analyzed
 -- normally such an analysis happens in the backend code
 
-function references.analyze(actions)
+function references.analyze(actions,position,spread)
     if not actions then
         actions = references.currentset
     end
@@ -2119,24 +2198,44 @@ function references.analyze(actions)
         elseif actions.external then
             actions.pagestate = 0
         else
-            actions.pagestate = checkedpagestate(actions.n,realpage)
+            actions.pagestate = checkedpagestate(actions.n,realpage,actions,position,spread)
         end
     end
     return actions
 end
 
-function commands.referencepagestate(actions)
-    if not actions then
-        actions = references.currentset
-    end
+-- function commands.referencepagestate(actions)
+--     if not actions then
+--         actions = references.currentset
+--     end
+--     if not actions then
+--         context(0)
+--     else
+--         if not actions.pagestate then
+--             references.analyze(actions) -- delayed unless explicitly asked for
+--         end
+--         context(actions.pagestate)
+--     end
+-- end
+
+function commands.referencepagestate(position,detail,spread)
+    local actions = references.currentset
     if not actions then
         context(0)
     else
         if not actions.pagestate then
-            references.analyze(actions) -- delayed unless explicitly asked for
--- print("NO STATE",actions.reference,actions.pagestate)
+            references.analyze(actions,position,spread) -- delayed unless explicitly asked for
         end
-        context(actions.pagestate)
+        local pagestate = actions.pagestate
+        if detail then
+            context(pagestate)
+        elseif pagestate == 4 then
+            context(2) -- compatible
+        elseif pagestate == 5 then
+            context(3) -- compatible
+        else
+            context(pagestate)
+        end
     end
 end
 

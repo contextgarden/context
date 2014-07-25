@@ -171,6 +171,7 @@ local function tosequence(start,stop,compact)
 end
 
 nodes.tosequence = tosequence
+nuts .tosequence = tosequence
 
 function nodes.report(t,done)
     report_nodes("output %a, %changed %a, %s nodes",status.output_active,done,count_nodes(tonut(t)))

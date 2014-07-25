@@ -1,0 +1,96 @@
+%D \module
+%D   [      file=s-figures-names.mkiv,
+%D        version=2017.07.17,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Figure Names,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Normally this module will be run someplace at the end of a document in some kind of tracing
+%D mode. We could hook it into \type {\stoptext} but better leave it up to the user. Loading
+%D this module upfront will not show anything useful. The main reason for making this module
+%D was that we wanted to report weird figurenames: spaces, multiple hyphens in a row, mixed
+%D hyphens and underscores, inconsistently mixed upper and lowercase, etc.
+%D
+%D If you only want info in the logfile, you can use:
+%D
+%D \starttyping
+%D \enabletrackers[graphics.lognames]
+%D \stoptyping
+%D
+%D This directive is persistent and can be issued any time before the end of the run.
+
+\startmodule[figures-names]
+
+\startluacode
+
+local context           = context
+local ctx_NC            = context.NC
+local ctx_NR            = context.NR
+local ctx_red           = context.red
+local ctx_starttabulate = context.starttabulate
+local ctx_stoptabulate  = context.stoptabulate
+
+trackers.enable("graphics.lognames")
+
+context.start()
+
+    context.switchtobodyfont { "tt,small" }
+
+    local template = { "|Bl|l|" }
+
+    for _, data in table.sortedhash(figures.found) do
+        ctx_starttabulate(template)
+            local badname = data.badname
+            local found   = data.found
+            ctx_NC()
+                context("asked name")
+            ctx_NC()
+                if badname then
+                    ctx_red()
+                end
+                context(data.askedname)
+            ctx_NC() ctx_NR()
+            if found then
+                ctx_NC()
+                    context("format")
+                ctx_NC()
+                    context(data.format)
+                ctx_NC() ctx_NR()
+                ctx_NC()
+                    context("found file")
+                ctx_NC()
+                    context(data.foundname)
+                ctx_NC() ctx_NR()
+                ctx_NC()
+                    context("used file")
+                ctx_NC()
+                    context(data.fullname)
+                ctx_NC() ctx_NR()
+                if badname then
+                    ctx_NC()
+                        context("comment")
+                    ctx_NC()
+                        context("bad name")
+                    ctx_NC() ctx_NR()
+                end
+            else
+                ctx_NC()
+                    context("comment")
+                ctx_NC()
+                    context(data.comment or "not found")
+                ctx_NC() ctx_NR()
+            end
+        ctx_stoptabulate()
+    end
+
+context.stop()
+
+\stopluacode
+
+\stopmodule

@@ -183,6 +183,7 @@
 		<cd:variable name='flushleft' value='پمپ‌چپ'/>
 		<cd:variable name='flushouter' value='پمپ‌خارجی'/>
 		<cd:variable name='flushright' value='پمپ‌راست'/>
+		<cd:variable name='followingpage' value='followingpage'/>
 		<cd:variable name='footer' value='ته‌برگ'/>
 		<cd:variable name='footnote' value='پانوشت'/>
 		<cd:variable name='force' value='اجبار'/>
@@ -363,6 +364,7 @@
 		<cd:variable name='positive' value='مثبت'/>
 		<cd:variable name='postponing' value='تاخیر'/>
 		<cd:variable name='postscript' value='پست‌اسکریپت'/>
+		<cd:variable name='precedingpage' value='followingpage'/>
 		<cd:variable name='preference' value='ترجیح'/>
 		<cd:variable name='preview' value='پیش‌دید'/>
 		<cd:variable name='previous' value='قبلی'/>

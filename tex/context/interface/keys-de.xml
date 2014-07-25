@@ -183,6 +183,7 @@
 		<cd:variable name='flushleft' value='flushleft'/>
 		<cd:variable name='flushouter' value='flushouter'/>
 		<cd:variable name='flushright' value='flushright'/>
+		<cd:variable name='followingpage' value='followingpage'/>
 		<cd:variable name='footer' value='fusszeile'/>
 		<cd:variable name='footnote' value='fussnote'/>
 		<cd:variable name='force' value='zwinge'/>
@@ -363,6 +364,7 @@
 		<cd:variable name='positive' value='positiv'/>
 		<cd:variable name='postponing' value='verschieben'/>
 		<cd:variable name='postscript' value='postscript'/>
+		<cd:variable name='precedingpage' value='followingpage'/>
 		<cd:variable name='preference' value='einstellung'/>
 		<cd:variable name='preview' value='vorschau'/>
 		<cd:variable name='previous' value='vorig'/>

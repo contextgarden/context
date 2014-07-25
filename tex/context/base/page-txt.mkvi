@@ -756,10 +756,12 @@
      \page_layouts_reset_page_number_location
      \ifx\p_strc_pagenumbers_location\empty
        % set otherwise
+     \else\ifx\p_strc_pagenumbers_location\v!none
+       % set otherwise
      \else
        \page_layouts_identify_page_number_location
        \page_layouts_set_page_number_location
-     \fi
+     \fi\fi
    \fi}
 
 \def\page_layouts_place_page_number_left % historic

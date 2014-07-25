@@ -11405,6 +11405,14 @@ return {
   },
  },
  ["variables"]={
+  ["followingpage"]={
+   ["en"]="followingpage",
+   ["nl"]="opvolgendepagina",
+  },
+  ["precedingpage"]={
+   ["en"]="followingpage",
+   ["nl"]="voorafgaandepagina",
+  },
   ["math"]={
    ["en"]="math",
   },

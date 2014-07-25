@@ -221,6 +221,8 @@ end
 
 local enhanced = { }
 
+local synchronizepage = function(r) synchronizepage = references.synchronizepage  return synchronizepage(r) end -- bah ... will move
+
 function lists.enhance(n)
     local l = cached[n]
     if not l then
@@ -237,7 +239,7 @@ function lists.enhance(n)
         -- save in the right order (happens at shipout)
         lists.tobesaved[#lists.tobesaved+1] = l
         -- default enhancer (cross referencing)
-        references.realpage = texgetcount("realpageno")
+        synchronizepage(references)
         -- tags
         local kind = metadata.kind
         local name = metadata.name

@@ -91,6 +91,7 @@ local v_high    = variables.high
 local v_global  = variables["global"]
 local v_local   = variables["local"]
 local v_default = variables.default
+local v_auto    = variables.auto
 
 local maxdimen = 2^30-1
 
@@ -248,10 +249,12 @@ local pattern = (R("az","AZ") * P(":"))^-1 * (                -- a-z : | A-Z :
 ) * P(-1) * Cc(false) + Cc(true)
 
 function figures.badname(name)
-    if name and not hasscheme(name) then
+    if not name then
+        -- bad anyway
+    elseif not hasscheme(name) then
         return lpegmatch(pattern,name)
     else
-        return false
+        return lpegmatch(pattern,file.basename(name))
     end
 end
 
@@ -266,19 +269,19 @@ trackers.register("graphics.lognames", function(v)
                 report_newline()
                 report_figures("start names")
                 for _, data in table.sortedhash(figures_found) do
-                    local comment = data.comment
                     report_newline()
                     report_figure("asked   : %s",data.askedname)
-                    if data.badname then
-                        comment = "bad name"
-                    end
                     if data.found then
                         report_figure("format  : %s",data.format)
                         report_figure("found   : %s",data.foundname)
                         report_figure("used    : %s",data.fullname)
-                    end
-                    if comment then
-                        report_figure("comment : %s",comment)
+                        if data.badname then
+                            report_figure("comment : %s","bad name")
+                        elseif data.comment then
+                            report_figure("comment : %s",data.comment)
+                        end
+                    else
+                        report_figure("comment : %s","not found")
                     end
                 end
                 report_newline()
@@ -688,7 +691,7 @@ local function register(askedname,specification)
                     format = newformat
                     if not figures_suffixes[format] then
                         -- maybe the new format is lowres.png (saves entry in suffixes)
-                        -- so let's do thsi extra check
+                        -- so let's do this extra check
                         local suffix = file.suffix(newformat)
                         if figures_suffixes[suffix] then
                             if trace_figures then
@@ -698,8 +701,12 @@ local function register(askedname,specification)
                         end
                     end
                 elseif io.exists(oldname) then
-                    specification.fullname  = oldname -- was newname
+                    report_inclusion("file %a is bugged",oldname)
+                    if format and validtypes[format] then
+                        specification.fullname = oldname
+                    end
                     specification.converted = false
+                    specification.bugged    = true
                 end
             end
         end
@@ -710,14 +717,15 @@ local function register(askedname,specification)
                 if trace_figures then
                     report_inclusion("format %a is not supported",format)
                 end
-            else
+            elseif validtypes[format] then
                 specification.found = true
                 if trace_figures then
-                    if validtypes[format] then -- format?
-                        report_inclusion("format %a natively supported by backend",format)
-                    else
-                        report_inclusion("format %a supported by output file format",format)
-                    end
+                    report_inclusion("format %a natively supported by backend",format)
+                end
+            else
+                specification.found = false
+                if trace_figures then
+                    report_inclusion("format %a supported by output file format",format)
                 end
             end
         else
@@ -735,7 +743,10 @@ end
 local resolve_too = false -- true
 
 local internalschemes = {
-    file = true,
+    file    = true,
+    tree    = true,
+    dirfile = true,
+    dirtree = true,
 }
 
 local function locate(request) -- name, format, cache
@@ -752,8 +763,15 @@ local function locate(request) -- name, format, cache
     local askedconversion = request.conversion
     local askedresolution = request.resolution
     --
-    if request.format == "" or request.format == "unknown" then
-        request.format = nil
+    local askedformat = request.format
+    if not askedformat or askedformat == "" or askedformat == "unknown" then
+        askedformat = file.suffix(askedname) or ""
+    elseif askedformat == v_auto then
+        if trace_figures then
+            report_inclusion("ignoring suffix of %a",askedname)
+        end
+        askedformat = ""
+        askedname   = file.removesuffix(askedname)
     end
     -- protocol check
     local hashed = urlhashed(askedname)
@@ -765,7 +783,7 @@ local function locate(request) -- name, format, cache
             askedname = path
         end
     else
--- local fname = methodhandler('finders',pathname .. "/" .. wantedfiles[k])
+     -- local fname = methodhandler('finders',pathname .. "/" .. wantedfiles[k])
         local foundname = resolvers.findbinfile(askedname)
         if not foundname or not lfs.isfile(foundname) then -- foundname can be dummy
             if trace_figures then
@@ -774,7 +792,6 @@ local function locate(request) -- name, format, cache
             -- url not found
             return register(askedname)
         end
-        local askedformat = request.format or file.suffix(askedname) or ""
         local guessedformat = figures.guess(foundname)
         if askedformat ~= guessedformat then
             if trace_figures then
@@ -799,7 +816,6 @@ local function locate(request) -- name, format, cache
     -- we could use the hashed data instead
     local askedpath= file.is_rootbased_path(askedname)
     local askedbase = file.basename(askedname)
-    local askedformat = request.format or file.suffix(askedname) or ""
     if askedformat ~= "" then
         askedformat = lower(askedformat)
         if trace_figures then
@@ -861,7 +877,7 @@ local function locate(request) -- name, format, cache
                 if foundname then
                     return register(check, {
                         askedname  = askedname,
-                        fullname   = check,
+                        fullname   = foundname, -- check,
                         format     = askedformat,
                         cache      = askedcache,
                         conversion = askedconversion,
@@ -921,7 +937,7 @@ local function locate(request) -- name, format, cache
                     for i=1,#figure_paths do
                         local path = figure_paths[i]
                         local check = path .. "/" .. name
-                        local isfile = urlhashed(check).scheme == "file"
+                        local isfile = internalschemes[urlhashed(check).scheme]
                         if not isfile then
                             if trace_figures then
                                 report_inclusion("warning: skipping path %a",path)
@@ -1402,8 +1418,8 @@ local epstopdf = {
         -dAutoRotatePages=/None
         -dPDFSETTINGS=/%presets%
         -dEPSCrop
-        -sOutputFile=%newname%
-        %oldname%
+        -sOutputFile="%newname%"
+        "%oldname%"
         -c quit
     ]],
 }
@@ -1523,9 +1539,9 @@ bmpconverter.default = converter
 local bases         = allocate()
 figures.bases       = bases
 
-local bases_list    =  nil -- index      => { basename, fullname, xmlroot }
-local bases_used    =  nil -- [basename] => { basename, fullname, xmlroot } -- pointer to list
-local bases_found   =  nil
+local bases_list    = nil -- index      => { basename, fullname, xmlroot }
+local bases_used    = nil -- [basename] => { basename, fullname, xmlroot } -- pointer to list
+local bases_found   = nil
 local bases_enabled = false
 
 local function reset()

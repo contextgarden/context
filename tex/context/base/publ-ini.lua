@@ -503,7 +503,7 @@ function commands.flushmarked()
                 nofcitations = nofcitations + 1
                 marknocite(marked_dataset,tag,nofcitations)
                 if trace_cite then
-                    report_cite("mark, dataset: %s, tag: %s, number: %s, state: %s",dataset,tag,nofcitations,"unset")
+                    report_cite("mark, dataset: %s, tag: %s, number: %s, state: %s",marked_dataset,tag,nofcitations,"unset")
                 end
             else
             end
@@ -689,7 +689,7 @@ function commands.setbtxdataset(name,default)
         context(default)
     else
         context(v_standard)
-        report("unknown dataset %a",name)
+        report("unknown dataset %a, forcing %a",name,standard)
     end
 end
 
@@ -900,6 +900,7 @@ setmetatableindex(renderings,function(t,k)
         ordered      = { },
         shorts       = { },
         method       = v_none,
+        texts        = setmetatableindex("table"),
         currentindex = 0,
     }
     t[k] = v
@@ -1017,13 +1018,16 @@ end
 -- global : if tag and not alldone[tag] and done[tag] ~= section then ...
 
 methods[v_local] = function(dataset,rendering,keyword)
-    local result   = structures.lists.filter(rendering.specification) or { }
-    local section  = sections.currentid()
-    local list     = rendering.list
-    local done     = rendering.done
-    local alldone  = rendering.alldone
-    local doglobal = rendering.method == v_global
-    local traced   = { } -- todo: only if interactive (backlinks) or when tracing
+    local result    = structures.lists.filter(rendering.specification) or { }
+    local section   = sections.currentid()
+    local list      = rendering.list
+    local repeated  = rendering.repeated == v_yes
+    local r_done    = rendering.done
+    local r_alldone = rendering.alldone
+    local done      = repeated and { } or r_done
+    local alldone   = repeated and { } or r_alldone
+    local doglobal  = rendering.method == v_global
+    local traced    = { } -- todo: only if interactive (backlinks) or when tracing
     for listindex=1,#result do
         local r = result[listindex]
         local u = r.userdata
@@ -1031,7 +1035,7 @@ methods[v_local] = function(dataset,rendering,keyword)
             local tag = u.btxref
             if not tag then
                 -- problem
-            elseif done[tag] == section then
+            elseif done[tag] == section then -- a bit messy for global and all and so
                 -- skip
             elseif doglobal and alldone[tag] then
                 -- skip
@@ -1102,7 +1106,7 @@ local splitter  = sorters.splitters.utf
 local strip     = sorters.strip
 
 local function newsplitter(splitter)
-    return table.setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
+    return setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
         local v = splitter(k,true)                  -- in other cases
         t[k] = v
         return v
@@ -1275,7 +1279,7 @@ function lists.flushentries(dataset,sorttype)
     local used      = rendering.used
     local forceall  = rendering.criterium == v_all
     local repeated  = rendering.repeated == v_yes
-    local luadata = datasets[dataset].luadata
+    local luadata   = datasets[dataset].luadata
     if type(sorter) == "function" then
         list = sorter(dataset,rendering,list,sorttype) or list
     end
@@ -1586,6 +1590,7 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
     end
     if tobemarked then
         flushmarked(dataset,list)
+        commands.flushmarked() -- here (could also be done in caller)
     end
 end
 

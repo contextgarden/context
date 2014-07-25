@@ -831,11 +831,14 @@
    \edef\currentframed{>\the\c_pack_framed_nesting}%
    \pack_framed_initialize
    \pack_framed_process_framed[#1]% can be inlined
-   \bgroup}
+   \bgroup
+   \ignorespaces}
 
 % till here
 
-\let\stopframed\egroup
+\unexpanded\def\stopframed
+  {\removeunwantedspaces
+   \egroup}
 
 \unexpanded\def\normalframedwithsettings[#1]%
   {\bgroup
