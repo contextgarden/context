@@ -12649,7 +12649,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-ini"] = package.loaded["data-ini"] or true
 
--- original size: 10598, stripped down to: 7341
+-- original size: 11085, stripped down to: 7662
 
 if not modules then modules={} end modules ['data-ini']={
   version=1.001,
@@ -12803,6 +12803,7 @@ local prefixes=utilities.storage.allocate()
 resolvers.prefixes=prefixes
 local resolved={}
 local abstract={}
+local dynamic={}
 function resolvers.resetresolve(str)
   resolved,abstract={},{}
 end
@@ -12826,11 +12827,15 @@ end
 function resolvers.unresolve(str)
   return abstract[str] or str
 end
+function resolvers.setdynamic(str)
+  dynamic[str]=true
+end
 local pattern=Cs((C(R("az")^2)*P(":")*C((1-S(" \"\';,"))^1)/_resolve_+P(1))^0)
 local prefix=C(R("az")^2)*P(":")
 local target=C((1-S(" \"\';,"))^1)
 local notarget=(#S(";,")+P(-1))*Cc("")
-local pattern=Cs(((prefix*(target+notarget))/_resolve_+P(1))^0)
+local p_resolve=Cs(((prefix*(target+notarget))/_resolve_+P(1))^0)
+local p_simple=prefix*P(-1)
 local function resolve(str) 
   if type(str)=="table" then
     local res={}
@@ -12838,15 +12843,25 @@ local function resolve(str)
       res[i]=resolve(str[i])
     end
     return res
-  else
-    local res=resolved[str]
-    if not res then
-      res=lpegmatch(pattern,str)
-      resolved[str]=res
-      abstract[res]=str
+  end
+  local res=resolved[str]
+  if res then
+    return res
+  end
+  local simple=lpegmatch(p_simple,str)
+  local action=prefixes[simple]
+  if action then
+    local res=action(res)
+    if not dynamic[simple] then
+      resolved[simple]=res
+      abstract[res]=simple
     end
     return res
   end
+  res=lpegmatch(p_resolve,str)
+  resolved[str]=res
+  abstract[res]=str
+  return res
 end
 resolvers.resolve=resolve
 if type(osuname)=="function" then
@@ -14048,7 +14063,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 63245, stripped down to: 43315
+-- original size: 64069, stripped down to: 44444
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -14058,7 +14073,7 @@ if not modules then modules={} end modules ['data-res']={
   license="see context related readme files",
 }
 local gsub,find,lower,upper,match,gmatch=string.gsub,string.find,string.lower,string.upper,string.match,string.gmatch
-local concat,insert,sortedkeys,sortedhash=table.concat,table.insert,table.sortedkeys,table.sortedhash
+local concat,insert,remove,sortedkeys,sortedhash=table.concat,table.insert,table.remove,table.sortedkeys,table.sortedhash
 local next,type,rawget=next,type,rawget
 local os=os
 local P,S,R,C,Cc,Cs,Ct,Carg=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cc,lpeg.Cs,lpeg.Ct,lpeg.Carg
@@ -14083,6 +14098,7 @@ local luasuffixes=utilities.lua.suffixes
 local trace_locating=false trackers .register("resolvers.locating",function(v) trace_locating=v end)
 local trace_detail=false trackers .register("resolvers.details",function(v) trace_detail=v end)
 local trace_expansions=false trackers .register("resolvers.expansions",function(v) trace_expansions=v end)
+local trace_paths=false trackers .register("resolvers.paths",function(v) trace_paths=v end)
 local resolve_otherwise=true  directives.register("resolvers.otherwise",function(v) resolve_otherwise=v end)
 local report_resolving=logs.reporter("resolvers","resolving")
 local resolvers=resolvers
@@ -14185,6 +14201,7 @@ function resolvers.newinstance()
     savelists=true,
     pattern=nil,
     force_suffixes=true,
+    pathstack={},
   }
   setmetatableindex(variables,function(t,k)
     local v
@@ -14573,6 +14590,32 @@ end
 function resolvers.unexpandedpath(str)
   return joinpath(resolvers.unexpandedpathlist(str))
 end
+function resolvers.pushpath(name)
+  local pathstack=instance.pathstack
+  local lastpath=pathstack[#pathstack]
+  local pluspath=filedirname(name)
+  if lastpath then
+    lastpath=collapsepath(filejoin(lastpath,pluspath))
+  else
+    lastpath=collapsepath(pluspath)
+  end
+  insert(pathstack,lastpath)
+  if trace_paths then
+    report_resolving("pushing path %a",lastpath)
+  end
+end
+function resolvers.poppath()
+  local pathstack=instance.pathstack
+  if trace_paths and #pathstack>0 then
+    report_resolving("popping path %a",pathstack[#pathstack])
+  end
+  remove(pathstack)
+end
+function resolvers.stackpath()
+  local pathstack=instance.pathstack
+  local currentpath=pathstack[#pathstack]
+  return currentpath~="" and currentpath or nil
+end
 local done={}
 function resolvers.resetextrapath()
   local ep=instance.extra_paths
@@ -14743,8 +14786,8 @@ local function isreadable(name)
   end
   return readable
 end
-local function collect_files(names)
-  local filelist={}
+local function collect_files(names) 
+  local filelist={}      
   local noffiles=0
   local function check(hash,root,pathname,path,name)
     if not pathname or find(path,pathname) then
@@ -14778,7 +14821,7 @@ local function collect_files(names)
       local content=hashname and instance.files[hashname]
       if content then
         if trace_detail then
-          report_resolving("deep checking %a, base %a, pattern %a",blobpath,basename,pathname)
+          report_resolving("deep checking %a, base %a, pattern %a",hashname,basename,pathname)
         end
         local path,name=lookup(content,basename)
         if path then
@@ -14964,7 +15007,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
   local pathlist=resolvers.expandedpathlist(typespec,filetype and usertypes[filetype]) 
   local method="intree"
   if pathlist and #pathlist>0 then
-    local filelist=collect_files(wantedfiles)
+    local filelist=collect_files(wantedfiles) 
     local dirlist={}
     if filelist then
       for i=1,#filelist do
@@ -14972,7 +15015,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
       end
     end
     if trace_detail then
-      report_resolving("checking filename %a",filename)
+      report_resolving("checking filename %a in tree",filename)
     end
     local result={}
     for k=1,#pathlist do
@@ -15021,6 +15064,9 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
           local pname=gsub(pathname,"%.%*$",'')
           if not find(pname,"*",1,true) then
             if can_be_dir(pname) then
+              if trace_detail then
+                report_resolving("quick root scan for %a",pname)
+              end
               for k=1,#wantedfiles do
                 local w=wantedfiles[k]
                 local fname=check_subpath(filejoin(pname,w))
@@ -15033,6 +15079,9 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                 end
               end
               if not done and doscan then
+                if trace_detail then
+                  report_resolving("scanning filesystem for %a",pname)
+                end
                 local files=resolvers.simplescanfiles(pname,false,true)
                 for k=1,#wantedfiles do
                   local w=wantedfiles[k]
@@ -15489,7 +15538,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-pre"] = package.loaded["data-pre"] or true
 
--- original size: 3106, stripped down to: 2563
+-- original size: 3346, stripped down to: 2779
 
 if not modules then modules={} end modules ['data-pre']={
   version=1.001,
@@ -15587,6 +15636,15 @@ prefixes.kpse=prefixes.locate
 prefixes.full=prefixes.locate
 prefixes.file=prefixes.filename
 prefixes.path=prefixes.pathname
+prefixes.jobfile=function(str)
+  local path=resolvers.stackpath() or "."
+  if str and str~="" then
+    return cleanpath(joinpath(path,str))
+  else
+    return cleanpath(path)
+  end
+end
+resolvers.setdynamic("jobfile")
 
 
 end -- of closure
@@ -17303,8 +17361,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 712790
--- stripped bytes    : 253465
+-- original bytes    : 714341
+-- stripped bytes    : 253350
 
 -- end library merge
 

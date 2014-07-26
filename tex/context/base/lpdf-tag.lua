@@ -8,8 +8,9 @@ if not modules then modules = { } end modules ['lpdf-tag'] = {
 
 local next = next
 local format, match, concat = string.format, string.match, table.concat
-local lpegmatch = lpeg.match
+local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
 local utfchar = utf.char
+local settings_to_hash = utilities.parsers.settings_to_hash
 
 local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
 
@@ -78,9 +79,14 @@ local root                = { pref = pdfreference(structure_ref), kids = structu
 local tree                = { }
 local elements            = { }
 local names               = pdfarray()
-local taglist             = structures.tags.taglist
-local usedlabels          = structures.tags.labels
-local properties          = structures.tags.properties
+
+local structurestags      = structures.tags
+local taglist             = structurestags.taglist
+local usedlabels          = structurestags.labels
+local properties          = structurestags.properties
+local userdata            = structurestags.userdata
+local lasttaginchain      = structurestags.lastinchain
+
 local usedmapping         = { }
 
 local colonsplitter       = lpeg.splitat(":")
@@ -164,10 +170,30 @@ end
 
 -- here we can flush and free elements that are finished
 
+local userproperties     = structurestags.userproperties
+local pdf_userproperties = pdfconstant("UserProperties")
+
+local function makeattribute(t)
+    if t and next(t) then
+        local properties = pdfarray()
+        for k, v in next, t do
+            properties[#properties+1] = pdfdictionary {
+                N = pdfunicode(k),
+                V = pdfunicode(v),
+            }
+        end
+        return pdfdictionary {
+            O = pdf_userproperties,
+            P = properties,
+        }
+    end
+end
+
 local function makeelement(fulltag,parent)
     local tag, n = lpegmatch(dashsplitter,fulltag)
     local tg, detail = lpegmatch(colonsplitter,tag)
     local k, r = pdfarray(), pdfreserveobject()
+    local a = userproperties[fulltag]
     usedmapping[tg] = true
     tg = usedlabels[tg] or tg
     local d = pdfdictionary {
@@ -178,6 +204,7 @@ local function makeelement(fulltag,parent)
         P          = parent.pref,
         Pg         = pageref,
         K          = pdfreference(r),
+        A          = a and makeattribute(a) or nil,
      -- Alt        = " Who cares ",
      -- ActualText = " Hi Hans ",
     }

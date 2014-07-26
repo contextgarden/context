@@ -165,6 +165,11 @@ end
 
 --
 
+local typestack   = { }
+local currenttype = v_text
+
+--
+
 local action  = function(name,foundname) input(foundname) end
 local failure = function(name,foundname) report_jobfiles("unknown %s file %a","tex",name) end
 
@@ -241,6 +246,7 @@ local suffixes = {
 
 local function useanyfile(name,onlyonce)
     local s = suffixes[suffixonly(name)]
+    context(function() resolvers.pushpath(name) end)
     if s then
      -- s(removesuffix(name),onlyonce)
         s(name,onlyonce) -- so, first with suffix, then without
@@ -248,6 +254,7 @@ local function useanyfile(name,onlyonce)
         usetexfile(name,onlyonce) -- e.g. ctx file
      -- resolvers.readfilename(name)
     end
+    context(resolvers.poppath)
 end
 
 commands.useanyfile = useanyfile
@@ -344,14 +351,6 @@ function commands.processfilenone(name)
     -- skip file
 end
 
---
-
-local typestack          = { }
-local pathstack          = { }
-
-local currenttype        = v_text
-local currentpath        = "."
-
 local tree               = { type = "text", name = "", branches = { } }
 local treestack          = { }
 local top                = tree.branches
@@ -442,14 +441,18 @@ local context_processfilemany = context.processfilemany
 local context_processfileonce = context.processfileonce
 local context_processfilenone = context.processfilenone
 
+-- we need a plug in the nested loaded, push pop pseudo current dir
+
 local function processfilecommon(name,action)
-    if not hasscheme(name) then
-        local path = dirname(name)
-        if path ~= "" then
-            registerextrapath(path)
-            report_jobfiles("adding search path %a",path)
-        end
-    end
+    -- experiment, might go away
+--     if not hasscheme(name) then
+--         local path = dirname(name)
+--         if path ~= "" then
+--             registerextrapath(path)
+--             report_jobfiles("adding search path %a",path)
+--         end
+--     end
+    -- till here
     action(name)
 end
 
@@ -554,7 +557,7 @@ function jobresolvers.currentcomponent  () return topofstack(v_component  ) end
 function jobresolvers.currentenvironment() return topofstack(v_environment) end
 
 local done     = { }
-local tolerant = false -- too messy, mkii user with the wrong sructure should adapt
+local tolerant = false -- too messy, mkii user with the wrong structure should adapt
 
 local function process(what,name)
     local depth = #typestack
@@ -639,9 +642,7 @@ local stop = {
 local function gotonextlevel(what,name) -- todo: something with suffix name
     insert(stacks[what],name)
     insert(typestack,currenttype)
-    insert(pathstack,currentpath)
     currenttype = what
-    currentpath = dirname(name)
     pushtree(what,name)
     if start[what] then
         start[what]()
@@ -653,7 +654,6 @@ local function gotopreviouslevel(what)
         stop[what]()
     end
     poptree()
-    currentpath = remove(pathstack) or "."
     currenttype = remove(typestack) or v_text
     remove(stacks[what]) -- not currenttype ... weak recovery
  -- context.endinput() -- does not work

@@ -113,3 +113,14 @@ prefixes.kpse = prefixes.locate
 prefixes.full = prefixes.locate
 prefixes.file = prefixes.filename
 prefixes.path = prefixes.pathname
+
+prefixes.jobfile = function(str)
+    local path = resolvers.stackpath() or "."
+    if str and str ~= "" then
+        return cleanpath(joinpath(path,str))
+    else
+        return cleanpath(path)
+    end
+end
+
+resolvers.setdynamic("jobfile")

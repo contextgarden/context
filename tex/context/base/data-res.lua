@@ -18,7 +18,7 @@ if not modules then modules = { } end modules ['data-res'] = {
 -- todo: cache:/// home:/// selfautoparent:/// (sometime end 2012)
 
 local gsub, find, lower, upper, match, gmatch = string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
-local concat, insert, sortedkeys, sortedhash = table.concat, table.insert, table.sortedkeys, table.sortedhash
+local concat, insert, remove, sortedkeys, sortedhash = table.concat, table.insert, table.remove, table.sortedkeys, table.sortedhash
 local next, type, rawget = next, type, rawget
 local os = os
 
@@ -49,6 +49,7 @@ local luasuffixes       = utilities.lua.suffixes
 local trace_locating    = false  trackers  .register("resolvers.locating",   function(v) trace_locating    = v end)
 local trace_detail      = false  trackers  .register("resolvers.details",    function(v) trace_detail      = v end)
 local trace_expansions  = false  trackers  .register("resolvers.expansions", function(v) trace_expansions  = v end)
+local trace_paths       = false  trackers  .register("resolvers.paths",      function(v) trace_paths       = v end)
 local resolve_otherwise = true   directives.register("resolvers.otherwise",  function(v) resolve_otherwise = v end)
 
 local report_resolving = logs.reporter("resolvers","resolving")
@@ -251,6 +252,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         savelists       = true,
         pattern         = nil, -- lists
         force_suffixes  = true,
+        pathstack       = { },
     }
 
     setmetatableindex(variables,function(t,k)
@@ -697,6 +699,35 @@ function resolvers.unexpandedpath(str)
     return joinpath(resolvers.unexpandedpathlist(str))
 end
 
+function resolvers.pushpath(name)
+    local pathstack = instance.pathstack
+    local lastpath  = pathstack[#pathstack]
+    local pluspath  = filedirname(name)
+    if lastpath then
+        lastpath = collapsepath(filejoin(lastpath,pluspath))
+    else
+        lastpath = collapsepath(pluspath)
+    end
+    insert(pathstack,lastpath)
+    if trace_paths then
+        report_resolving("pushing path %a",lastpath)
+    end
+end
+
+function resolvers.poppath()
+    local pathstack = instance.pathstack
+    if trace_paths and #pathstack > 0 then
+        report_resolving("popping path %a",pathstack[#pathstack])
+    end
+    remove(pathstack)
+end
+
+function resolvers.stackpath()
+    local pathstack   = instance.pathstack
+    local currentpath = pathstack[#pathstack]
+    return currentpath ~= "" and currentpath or nil
+end
+
 local done = { }
 
 function resolvers.resetextrapath()
@@ -768,49 +799,6 @@ function resolvers.registerextrapath(paths,subpaths)
         instance.lists = { } -- erase the cache
     end
 end
-
--- local function made_list(instance,list,extra_too)
---     if not extra_too then
---         return list
---     end
---     local ep = instance.extra_paths
---     if not ep or #ep == 0 then
---         return list
---     end
---     local done, new, newn = { }, { }, 0
---     -- honour . .. ../.. but only when at the start
---     for k=1,#list do
---         local v = list[k]
---         if not done[v] then
---             if find(v,"^[%.%/]$") then
---                 done[v] = true
---                 newn = newn + 1
---                 new[newn] = v
---             else
---                 break
---             end
---         end
---     end
---     -- first the extra paths
---     for k=1,#ep do
---         local v = ep[k]
---         if not done[v] then
---             done[v] = true
---             newn = newn + 1
---             new[newn] = v
---         end
---     end
---     -- next the formal paths
---     for k=1,#list do
---         local v = list[k]
---         if not done[v] then
---             done[v] = true
---             newn = newn + 1
---             new[newn] = v
---         end
---     end
---     return new
--- end
 
 local function made_list(instance,list,extra_too)
     local done, new, newn = { }, { }, 0
@@ -930,8 +918,8 @@ end
 
 -- name | name/name
 
-local function collect_files(names)
-    local filelist = { }
+local function collect_files(names) -- potential files .. sort of too much when asking for just one file
+    local filelist = { }            -- but we need it for pattern matching later on
     local noffiles = 0
     local function check(hash,root,pathname,path,name)
         if not pathname or find(path,pathname) then
@@ -965,7 +953,7 @@ local function collect_files(names)
             local content  = hashname and instance.files[hashname]
             if content then
                 if trace_detail then
-                    report_resolving("deep checking %a, base %a, pattern %a",blobpath,basename,pathname)
+                    report_resolving("deep checking %a, base %a, pattern %a",hashname,basename,pathname)
                 end
                 local path, name = lookup(content,basename)
                 if path then
@@ -1193,7 +1181,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
     local method = "intree"
     if pathlist and #pathlist > 0 then
         -- list search
-        local filelist = collect_files(wantedfiles)
+        local filelist = collect_files(wantedfiles) -- okay, a bit over the top when we just look relative to the current path
         local dirlist = { }
         if filelist then
             for i=1,#filelist do
@@ -1201,7 +1189,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
             end
         end
         if trace_detail then
-            report_resolving("checking filename %a",filename)
+            report_resolving("checking filename %a in tree",filename)
         end
         local result = { }
         -- pathlist : resolved
@@ -1257,7 +1245,14 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                     local pname = gsub(pathname,"%.%*$",'')
                     if not find(pname,"*",1,true) then
                         if can_be_dir(pname) then
-                            -- quick root scan first
+                            -- hm, rather useless as we don't go deeper and if we would we could also
+                            -- auto generate the file database .. however, we need this for extra paths
+                            -- that are not hashed (like sources on my machine) .. so, this is slightly
+                            -- out of order but at least fast (anbd we seldom end up here, only when a file
+                            -- is not already found
+                            if trace_detail then
+                                report_resolving("quick root scan for %a",pname)
+                            end
                             for k=1,#wantedfiles do
                                 local w = wantedfiles[k]
                                 local fname = check_subpath(filejoin(pname,w))
@@ -1271,6 +1266,9 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                             end
                             if not done and doscan then
                                 -- collect files in path (and cache the result)
+                                if trace_detail then
+                                    report_resolving("scanning filesystem for %a",pname)
+                                end
                                 local files = resolvers.simplescanfiles(pname,false,true)
                                 for k=1,#wantedfiles do
                                     local w = wantedfiles[k]

@@ -357,6 +357,7 @@
 \let\currentbtxlanguage     \empty    \unexpanded\def\btxsetlanguage     {\def\currentbtxlanguage}
 \let\currentbtxsecond       \empty    \unexpanded\def\btxsetsecond       {\def\currentbtxsecond}
 \let\currentbtxtag          \empty    \unexpanded\def\btxsettag          {\def\currentbtxtag}
+\let\currentbtxnumber       \empty    \unexpanded\def\btxsetnumber       {\def\currentbtxnumber}
 \let\currentbtxauthorvariant\v!normal \unexpanded\def\btxsetauthorvariant{\def\currentbtxauthorvariant}
 
 %let\currentbtxfirstnames   \empty    \unexpanded\def\btxsetfirstnames   {\def\currentbtxfirstnames}
@@ -399,6 +400,7 @@
    \let\currentbtxbacktrace\empty
    \let\currentbtxlanguage \empty
    \let\currentbtxtag      \empty
+   \let\currentbtxnumber   \empty
    \let\currentbtxdataset  \empty}
 
 \unexpanded\def\btxcitereset % check for less .. not all resets needed
@@ -410,6 +412,7 @@
    \let        \currentbtxlanguage   \empty
    \let        \currentbtxdataset    \empty
    \let        \currentbtxtag        \empty
+   \let        \currentbtxnumber     \empty
    \setconstant\currentbtxoverflow   \zerocount
    \setconstant\currentbtxconcat     \zerocount
    \setconstant\currentbtxcount      \zerocount}
@@ -451,7 +454,6 @@
 %newdimen\d_publ_number_distance
 
 \ifdefined\btxblock       \else \newcount\btxblock       \fi \btxblock\plusone
-\ifdefined\btxlistcounter \else \newcount\btxlistcounter \fi % maintained here, maybe in lua too?
 \ifdefined\btxcitecounter \else \newcount\btxcitecounter \fi % maybe pass this to lua
 
 \newtoks \everysetupbtxlistplacement % name will change
@@ -587,17 +589,17 @@
            sorttype     = "\btxrenderingparameter\c!sorttype",
            repeated     = "\btxrenderingparameter\c!repeat",
        }}%
+       % sorting and so
+       \ctxcommand{btxpreparelistentries("\currentbtxdataset")}%
        % next we analyze the width
        \ifx\currentbtxnumbering\empty \else
          \edef\p_width{\btxrenderingparameter\c!width}%
          \ifx\p_width\v!auto
-           \scratchcounter\btxlistcounter
            \setbox\scratchbox\vbox \bgroup
              \settrialtypesetting
              \ctxcommand{btxfetchlistentries("\currentbtxdataset")}%
            \egroup
            \d_publ_number_width\wd\scratchbox
-           \global\btxlistcounter\scratchcounter
            \letbtxlistparameter\c!width\d_publ_number_width
          \fi
        \fi
@@ -620,7 +622,6 @@
 \unexpanded\def\btxchecklistentry
   {\begingroup
    % todo, switch to font
-   \global\advance\btxlistcounter\plusone
    \hbox{\btx_reference_checked}%
    \par
    \endgroup}
@@ -629,7 +630,6 @@
 
 \unexpanded\def\btxhandlelistentry
   {\begingroup
-   \global\advance\btxlistcounter\plusone
    \let\currentlist\s!btx % probably obsolete here
    \startbtxlistentry\currentbtxrendering
      \btx_entry_inject
@@ -643,7 +643,7 @@
   {\begingroup
    \let\currentbtxlistvariant\currentbtxnumbering
    \btxlistvariantparameter\c!left
-   \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","\currentbtxnumbering","\number\btxlistcounter")}% some can go
+   \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","\currentbtxnumbering","\currentbtxnumber")}% some can go
    \btxlistvariantparameter\c!right
    \endgroup}
 
@@ -668,7 +668,7 @@
    \strc_references_direct_full_user
       {\s!btxset="\currentbtxdataset",\s!btxref="\currentbtxtag",\ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint="\currentbtxbacklink"\else\s!btxbck="\currentbtxbacktrace"\fi}%
       {\s!btx::\v!list::\number\c_btx_list_reference}%
-      {\number\btxlistcounter}}
+      {\currentbtxnumber}}
 
 \unexpanded\def\btx_cite_reference_inject
   {\dontleavehmode
@@ -829,11 +829,6 @@
    \ctxcommand{btxresolvelistreference("\currentbtxdataset","#1")}% todo: split dataset from #1, so another call
    \btxcitevariantparameter\v!right
    \endgroup}
-
-\appendtoks
-   \doifnot{\btxrenderingparameter\c!continue}\v!yes
-     {\global\btxlistcounter\zerocount}%
-\to \everysetupbtxlistplacement
 
 %D When a publication is cited, we need to signal that somehow. This is done with the
 %D following (not user) command. We could tag without injecting a node but this way

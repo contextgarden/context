@@ -118,6 +118,8 @@
 \unexpanded\def\reference     {\dosingleargument\strc_references_full_reference} % never forgotten
 \unexpanded\def\setreference  {\dodoubleargument\strc_references_set_reference } %
 
+% maybe: \let\reference\textreference
+
 %D These are implemented in a low level form as:
 
 \unexpanded\def\strc_references_text_reference          [#labels]{\strc_references_set_named_reference\s!text{#labels}{}}
@@ -1080,12 +1082,6 @@
    \fi
    \endgroup}
 
-% \def\strc_references_by_reference_page_state#unknown#before#current#after% obsolete
-%   {\ifcase\referencepagestate#unknown\or#current\or#before\or#after\or#before\or#after\else#unknown\fi}
-%
-% \def\strc_references_by_reference_page_state#unknown#same#previous#next#above#below% not needed
-%   {\ifcase\referencepagestate#unknown\or#same\or#previous\or#next\or#above\or#below\else#unknown\fi}
-
 \unexpanded\def\doifcheckedpagestate#label% #preceding#backward#current#foreward#following#otherwise%
   {\doifreferencefoundelse{#label}\strc_references_handle_page_state_yes\strc_references_handle_page_state_nop}
 
@@ -1111,74 +1107,54 @@
         \symbol[\ifcase\referencepagedetail\v!somewhere\or\v!nowhere\or\v!previous\or\v!next\or\v!previous\or\v!next\else\v!somewhere\fi]}%
    \egroup}
 
-% \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
-%   {\doifreferencefoundelse{#label}%
-%      {\markreferencepage
-%       \ifcase\referencepagedetail
-%                           #label\or   % unknown
-%                                 \or   % same
-%         \goto{#backward}[#label]\or   % previous
-%         \goto{#foreward}[#label]\or   % next
-%         \goto{#backward}[#label]\or   % above
-%         \goto{#foreward}[#label]\else % below
-%                           #label\fi}%
-%      {[#label]}}
+%D Hereafter the \type {\ignorespaces} binds the state node to next character (more likely
+%D than a preceding one) and one can always add an explicit space.
 
 \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
   {\doifcheckedpagestate{#label}%
      {\goto{#backward}[#label]}%
      {\goto{#backward}[#label]}%
-     {}%
+     {\ignorespaces}%
      {\goto{#foreward}[#label]}%
      {\goto{#foreward}[#label]}%
      {#label}}%
 
-% \unexpanded\def\someplace#preceding#backward#current#foreward#following#dummy[#label]% #dummy gobbles space around #foreward
-%   {\doifreferencefoundelse{#label}%
-%      {\markreferencepage
-%       \ifcase\referencepagedetail
-%                                                        #label\or   % unknown
-%         \doifsomething  {#current}{\goto  {#current}[#label]}\or   % same
-%         \doifsomething{#preceding}{\goto{#preceding}[#label]}\or   % previous
-%         \doifsomething{#following}{\goto{#following}[#label]}\or   % next
-%         \doifsomething {#backward}{\goto {#backward}[#label]}\or   % above
-%         \doifsomething {#foreward}{\goto {#foreward}[#label]}\else % below
-%                                                        #label\fi}%
-%      {[#label]}}
-
 \unexpanded\def\someplace#preceding#backward#current#foreward#following#dummy[#label]% #dummy gobbles space around #foreward
   {\doifcheckedpagestate{#label}%
-     {\doifsomething{#preceding}{\goto{#preceding}[#label]}}%
-     {\doifsomething {#backward}{\goto {#backward}[#label]}}%
-     {\doifsomething  {#current}{\goto  {#current}[#label]}}%
-     {\doifsomething {#foreward}{\goto {#foreward}[#label]}}%
-     {\doifsomething{#following}{\goto{#following}[#label]}}%
+     {\doifelsenothing{#preceding}{\goto{#preceding}[#label]}\ignorespaces}%
+     {\doifelsenothing {#backward}{\goto {#backward}[#label]}\ignorespaces}%
+     {\doifelsenothing  {#current}{\goto  {#current}[#label]}\ignorespaces}%
+     {\doifelsenothing {#foreward}{\goto {#foreward}[#label]}\ignorespaces}%
+     {\doifelsenothing{#following}{\goto{#following}[#label]}\ignorespaces}%
      {#label}}
-
-% \unexpanded\def\atpage[#label]% todo
-%   {\doifreferencefoundelse{#label}% kind of inefficient as \goto also analyzes
-%      {\markreferencepage
-%       \ifcase\referencepagedetail
-%         \goto{\labeltexts\v!page\dummyreference}[#label]\or   % unknown
-%                                                         \or   % same
-%         \goto{\labeltext \v!precedingpage      }[#label]\or   % previous
-%         \goto{\labeltext \v!followingpage      }[#label]\or   % next
-%         \goto{\labeltext \v!hencefore          }[#label]\or   % above
-%         \goto{\labeltext \v!hereafter          }[#label]\else % below
-%         \goto{\labeltexts\v!page\dummyreference}[#label]\fi}%
-%      {[#label]}}
 
 \unexpanded\def\atpage[#label]% todo
   {\doifcheckedpagestate{#label}%
      {\goto{\labeltext \v!precedingpage      }[#label]}%
      {\goto{\labeltext \v!hencefore          }[#label]}%
-     {}%
+     {\ignorespaces}%
      {\goto{\labeltext \v!hereafter          }[#label]}%
      {\goto{\labeltext \v!followingpage      }[#label]}%
      {\goto{\labeltexts\v!page\dummyreference}[#label]}}
 
-%D The other alternatives just conform their names: only the
-%D label, only the text, or the label and the text.
+% Someone requested this but in retrospect didn't need it so we keep it as example.
+% Beware: a node is injected which is why we add ignorespaces!
+%
+% \unexpanded\def\strc_references_conditional#action#text[#condition]#dummy[#label]%
+%   {\doifcheckedpagestate{#label}%
+%      {\doifelse{#condition}\v!precedingpage{#action{#text}[#label]}\ignorespaces}%
+%      {\doifelse{#condition}\v!hencefore    {#action{#text}[#label]}\ignorespaces}%
+%      {\doifelse{#condition}\v!current      {#action{#text}[#label]}\ignorespaces}%
+%      {\doifelse{#condition}\v!hereafter    {#action{#text}[#label]}\ignorespaces}%
+%      {\doifelse{#condition}\v!followingpage{#action{#text}[#label]}\ignorespaces}%
+%      {#label}}
+%
+% \unexpanded\def\conditionalat   {\strc_references_conditional\at}
+% \unexpanded\def\conditionalin   {\strc_references_conditional\in}
+% \unexpanded\def\conditionalabout{\strc_references_conditional\about}
+
+%D The other alternatives just conform their names: only the label, only the text, or the
+%D label and the text.
 
 % \dounknownreference -> \dummyreference
 

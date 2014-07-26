@@ -25,52 +25,52 @@ local setmetatableindex = table.setmetatableindex
 local lpegmatch = lpeg.match
 local P, S, C, Ct, R, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.R, lpeg.Carg
 
-local report           = logs.reporter("publications")
-local report_cite      = logs.reporter("publications","cite")
-local report_reference = logs.reporter("publications","reference")
+local report             = logs.reporter("publications")
+local report_cite        = logs.reporter("publications","cite")
+local report_reference   = logs.reporter("publications","reference")
 
-local trace            = false  trackers.register("publications",                 function(v) trace            = v end)
-local trace_cite       = false  trackers.register("publications.cite",            function(v) trace_cite       = v end)
-local trace_missing    = false  trackers.register("publications.cite.missing",    function(v) trace_missing    = v end)
-local trace_references = false  trackers.register("publications.cite.references", function(v) trace_references = v end)
+local trace              = false  trackers.register("publications",                 function(v) trace            = v end)
+local trace_cite         = false  trackers.register("publications.cite",            function(v) trace_cite       = v end)
+local trace_missing      = false  trackers.register("publications.cite.missing",    function(v) trace_missing    = v end)
+local trace_references   = false  trackers.register("publications.cite.references", function(v) trace_references = v end)
 
-local datasets       = publications.datasets
-local writers        = publications.writers
+local datasets           = publications.datasets
+local writers            = publications.writers
 
-local variables      = interfaces.variables
+local variables          = interfaces.variables
 
-local v_local        = variables["local"]
-local v_global       = variables["global"]
+local v_local            = variables["local"]
+local v_global           = variables["global"]
 
-local v_force        = variables.force
-local v_standard     = variables.standard
-local v_start        = variables.start
-local v_none         = variables.none
-local v_left         = variables.left
-local v_right        = variables.right
-local v_middle       = variables.middle
-local v_inbetween    = variables.inbetween
-local v_yes          = variables.yes
-local v_all          = variables.all
-local v_short        = variables.short
-local v_cite         = variables.cite
-local v_default      = variables.default
-local v_reference    = variables.reference
-local v_dataset      = variables.dataset
-local v_author       = variables.author or "author"
-local v_editor       = variables.editor or "editor"
+local v_force            = variables.force
+local v_standard         = variables.standard
+local v_start            = variables.start
+local v_none             = variables.none
+local v_left             = variables.left
+local v_right            = variables.right
+local v_middle           = variables.middle
+local v_inbetween        = variables.inbetween
+local v_yes              = variables.yes
+local v_all              = variables.all
+local v_short            = variables.short
+local v_cite             = variables.cite
+local v_default          = variables.default
+local v_reference        = variables.reference
+local v_dataset          = variables.dataset
+local v_author           = variables.author or "author"
+local v_editor           = variables.editor or "editor"
 
-local numbertochar   = converters.characters
+local numbertochar       = converters.characters
 
-local logsnewline    = logs.newline
-local logspushtarget = logs.pushtarget
-local logspoptarget  = logs.poptarget
-local csname_id      = token.csname_id
+local logsnewline        = logs.newline
+local logspushtarget     = logs.pushtarget
+local logspoptarget      = logs.poptarget
+local csname_id          = token.csname_id
 
-local basicsorter    = sorters.basicsorter -- (a,b)
-local sortcomparer   = sorters.comparers.basic -- (a,b)
-local sortstripper   = sorters.strip
-local sortsplitter   = sorters.splitters.utf
+local basicsorter        = sorters.basicsorter -- (a,b)
+local sortcomparer       = sorters.comparers.basic -- (a,b)
+local sortstripper       = sorters.strip
+local sortsplitter       = sorters.splitters.utf
 
 local manipulators       = typesetters.manipulators
 local splitmanipulation  = manipulators.splitspecification
@@ -105,6 +105,7 @@ local ctx_btxmissing              = context.btxmissing
 
 local ctx_btxsetdataset           = context.btxsetdataset
 local ctx_btxsettag               = context.btxsettag
+local ctx_btxsetnumber            = context.btxsetnumber
 local ctx_btxsetlanguage          = context.btxsetlanguage
 local ctx_btxsetcombis            = context.btxsetcombis
 local ctx_btxsetcategory          = context.btxsetcategory
@@ -991,7 +992,7 @@ methods[v_dataset] = function(dataset,rendering,keyword)
     local list = rendering.list
     for tag, data in sortedhash(luadata) do
         if not keyword or validkeyword(dataset,tag,keyword) then
-            list[#list+1] = { tag }
+            list[#list+1] = { tag, false, false, 0 }
         end
     end
 end
@@ -1007,7 +1008,7 @@ methods[v_force] = function (dataset,rendering,keyword)
         if u and u.btxset == dataset then
             local tag = u.btxref
             if tag and (not keyword or validkeyword(dataset,tag,keyword)) then
-                list[#list+1] = { tag, listindex, u.btxint }
+                list[#list+1] = { tag, listindex, u.btxint, 0 }
             end
         end
     end
@@ -1045,14 +1046,14 @@ methods[v_local] = function(dataset,rendering,keyword)
                     if l then
                         l[#l+1] = u.btxint
                     else
-                        local l = { tag, listindex, u.btxint }
+                        local l = { tag, listindex, u.btxint, 0 }
                         list[#list+1] = l
                         traced[tag] = l
                     end
                 else
                     done[tag]    = section
                     alldone[tag] = true
-                    list[#list+1] = { tag, listindex, u.btxint }
+                    list[#list+1] = { tag, listindex, u.btxint, 0 }
                 end
             end
         end
@@ -1222,17 +1223,28 @@ lists.sorters = {
  --     sort(list,compare)
  -- end,
     [v_default] = function(dataset,rendering,list,sorttype) -- experimental
-        local valid = byspec(dataset,list,sorttype)
-        if #valid == 0 or #valid ~= #list then
-            -- nothing to sort
-        else
-            -- if needed we can wrap compare and use the list directly but this is cleaner
-            sorters.sort(valid,sortcomparer)
-            for i=1,#valid do
-                local v = valid[i]
-                valid[i] = list[v.index]
+        if sorttype == "" or sorttype == v_default then
+            local function compare(a,b)
+                local aa, bb = a and a[4], b and b[4]
+                if aa and bb then
+                    return aa and bb and aa < bb
+                end
+                return false
             end
-            return valid
+            sort(list,compare)
+        else
+            local valid = byspec(dataset,list,sorttype)
+            if #valid == 0 or #valid ~= #list then
+                -- nothing to sort
+            else
+                -- if needed we can wrap compare and use the list directly but this is cleaner
+                sorters.sort(valid,sortcomparer)
+                for i=1,#valid do
+                    local v = valid[i]
+                    valid[i] = list[v.index]
+                end
+                return valid
+            end
         end
     end,
     [v_author] = function(dataset,rendering,list)
@@ -1253,69 +1265,87 @@ lists.sorters = {
 
 -- for determining width
 
-function lists.fetchentries(dataset)
+local lastnumber = 0 -- document wide
+
+function lists.prepareentries(dataset)
     local rendering = renderings[dataset]
     local list      = rendering.list
     local used      = rendering.used
     local forceall  = rendering.criterium == v_all
     local repeated  = rendering.repeated == v_yes
+    local sorttype  = rendering.sorttype or v_default
+    local sorter    = lists.sorters[sorttype] or lists.sorters[v_default]
     local luadata   = datasets[dataset].luadata
+    local details   = datasets[dataset].details
+    local newlist   = { }
     for i=1,#list do
-        local tag = list[i][1]
-        if luadata[tag] and (forceall or repeated or not used[tag]) then
-            ctx_btxsettag(tag)
-            ctx_btxchecklistentry()
+        local li    = list[i]
+        local tag   = li[1]
+        local entry = luadata[tag]
+        if entry and (forceall or repeated or not used[tag]) then
+            newlist[#newlist+1] = li
+            -- already here:
+            if not repeated then
+                used[tag] = true -- beware we keep the old state (one can always use criterium=all)
+            end
+            local detail = details[tag]
+            local number = detail.number
+            if not number then
+                lastnumber    = lastnumber + 1
+                number        = lastnumber
+                detail.number = lastnumber
+            end
+            li[4] = number
         end
+    end
+    rendering.list = type(sorter) == "function" and sorter(dataset,rendering,newlist,sorttype) or newlist
+end
+
+function lists.fetchentries(dataset)
+    local rendering = renderings[dataset]
+    local list      = rendering.list
+    for i=1,#list do
+        local li = list[i]
+        ctx_btxsettag(li[1])
+        ctx_btxsetnumber(li[4])
+        ctx_btxchecklistentry()
     end
 end
 
 -- for rendering
 
-function lists.flushentries(dataset,sorttype)
+function lists.flushentries(dataset)
     local rendering = renderings[dataset]
     local list      = rendering.list
-    local sorttype  = rendering.sorttype or sorttype
-    local sorter    = lists.sorters[sorttype] or lists.sorters[v_default]
-    local used      = rendering.used
-    local forceall  = rendering.criterium == v_all
-    local repeated  = rendering.repeated == v_yes
     local luadata   = datasets[dataset].luadata
-    if type(sorter) == "function" then
-        list = sorter(dataset,rendering,list,sorttype) or list
-    end
- -- local details = datasets[dataset].details
     for i=1,#list do
-     -- we can pass i here too ... more efficient to avoid the setvalue
-        local li    = list[i]
-        local tag   = li[1]
-        local entry = luadata[tag]
-        if entry and (forceall or repeated or not used[tag]) then
-            local combined = entry.combined
-            if combined then
-                ctx_btxsetcombis(concat(combined,","))
-            end
-            ctx_btxsetcategory(entry.category or "unknown")
-            ctx_btxsettag(tag)
-            local language = entry.language
-            if language then
-                ctx_btxsetlanguage(language)
-            end
-            local bl = li[3]
-            if bl and bl ~= "" then
-                ctx_btxsetbacklink(bl)
-                ctx_btxsetbacktrace(concat(li," ",3))
-                local uc = citetolist[tonumber(bl)]
-                if uc then
-                    ctx_btxsetinternal(uc.references.internal or "")
-                end
-            else
-                -- nothing
-            end
-            ctx_btxhandlelistentry()
-            if not repeated then
-                used[tag] = true -- beware we keep the old state (one can always use criterium=all)
-            end
+        local li       = list[i]
+        local tag      = li[1]
+        local n        = li[4]
+        local entry    = luadata[tag]
+        local combined = entry.combined
+        local language = entry.language
+        if combined then
+            ctx_btxsetcombis(concat(combined,","))
         end
+        ctx_btxsetcategory(entry.category or "unknown")
+        ctx_btxsettag(tag)
+        ctx_btxsetnumber(n)
+        if language then
+            ctx_btxsetlanguage(language)
+        end
+        local bl = li[3]
+        if bl and bl ~= "" then
+            ctx_btxsetbacklink(bl)
+            ctx_btxsetbacktrace(concat(li," ",3)) -- how about 4
+            local uc = citetolist[tonumber(bl)]
+            if uc then
+                ctx_btxsetinternal(uc.references.internal or "")
+            end
+        else
+            -- nothing
+        end
+        ctx_btxhandlelistentry()
      end
 end
 
@@ -1324,13 +1354,14 @@ function lists.filterall(dataset)
     local list = r.list
     local registered = r.registered
     for i=1,#registered do
-        list[i] = { registered[i], i }
+        list[i] = { registered[i], i, false, 0 }
     end
 end
 
 commands.btxresolvelistreference = lists.resolve
 commands.btxaddtolist            = lists.addentry
 commands.btxcollectlistentries   = lists.collectentries
+commands.btxpreparelistentries   = lists.prepareentries
 commands.btxfetchlistentries     = lists.fetchentries
 commands.btxflushlistentries     = lists.flushentries
 

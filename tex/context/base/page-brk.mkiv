@@ -112,13 +112,13 @@
      \endgroup
    \fi}
 
-\def\resetpagebreak % used elsewhere too
+\unexpanded\def\resetpagebreak % used elsewhere too
   {\global\settrue\c_page_breaks_enabled}
 
-\def\simplifypagebreak % to be used grouped !
+\unexpanded\def\simplifypagebreak % to be used grouped !
   {\def\page_breaks_process[##1]{\goodbreak}}
 
-\def\disablepagebreaks % to be used grouped !
+\unexpanded\def\disablepagebreaks % to be used grouped !
   {\def\page_breaks_process[##1]{}}
 
 \installpagebreakmethod \s!dummy

@@ -28,6 +28,10 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- the the differences between the lua and luajit hashers can lead to quite a slowdown
 -- in some cases.
 
+-- context(lpeg.match(lpeg.patterns.texescape,"${}"))
+-- context(string.formatters["%!tex!"]("${}"))
+-- context("%!tex!","${}")
+
 local tex = tex
 
 context       = context or { }

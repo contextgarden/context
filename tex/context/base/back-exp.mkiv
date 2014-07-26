@@ -141,20 +141,22 @@
  % \c!firstpage=, % imagename
  % \c!lastpage=,  % imagename
    \c!alternative=, % html, div
+   \c!properties=\v!no, % no: ignore, yes: as attribute, otherwise: use as prefix
    \c!hyphen=\v!no]
 
 \def\dosynchronizeexport
   {\let\currentexport\empty
    \ctxcommand{setupexport{
-       align     = "\exportparameter\c!align",
-       bodyfont  = \number\dimexpr\exportparameter\c!bodyfont,
-       width     = \number\dimexpr\exportparameter\c!width,
-       hyphen    = "\exportparameter\c!hyphen",
-       title     = \!!bs\exportparameter\c!title\!!es,
-       subtitle  = \!!bs\exportparameter\c!subtitle\!!es,
-       author    = \!!bs\exportparameter\c!author\!!es,
-       firstpage = "\exportparameter\c!firstpage",
-       lastpage  = "\exportparameter\c!lastpage",
+       align      = "\exportparameter\c!align",
+       bodyfont   = \number\dimexpr\exportparameter\c!bodyfont,
+       width      = \number\dimexpr\exportparameter\c!width,
+       properties = "\exportparameter\c!properties",
+       hyphen     = "\exportparameter\c!hyphen",
+       title      = \!!bs\exportparameter\c!title\!!es,
+       subtitle   = \!!bs\exportparameter\c!subtitle\!!es,
+       author     = \!!bs\exportparameter\c!author\!!es,
+       firstpage  = "\exportparameter\c!firstpage",
+       lastpage   = "\exportparameter\c!lastpage",
    }}}
 
 \appendtoks

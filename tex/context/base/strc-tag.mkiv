@@ -239,6 +239,38 @@
   {\let\dostarttagged\strc_tags_start_nop
    \let\dostoptagged \strc_tags_stop_nop}
 
+% for luigi (beware: fully expandable):
+
+\def\strc_tags_get_element_tag_yes{\ctxcommand{getelementtag()}}
+\let\strc_tags_get_element_tag_nop\donothing
+
+\unexpanded\def\strc_tags_setup_element_user_properties_yes
+  {\dodoubleempty\strc_tags_setup_element_user_properties_indeed}
+
+\unexpanded\def\strc_tags_setup_element_user_properties_nop
+  {\dodoubleempty\strc_tags_setup_element_user_properties_indeed_nop}
+
+\def\strc_tags_setup_element_user_properties_indeed
+  {\iftrialtypesetting
+     \expandafter      \strc_tags_setup_element_user_properties_indeed_nop
+   \else\ifsecondargument
+     \doubleexpandafter\strc_tags_setup_element_user_properties_indeed_two
+   \else
+     \doubleexpandafter\strc_tags_setup_element_user_properties_indeed_one
+   \fi\fi}
+
+\def\strc_tags_setup_element_user_properties_indeed_nop[#1][#2]{}
+\def\strc_tags_setup_element_user_properties_indeed_one[#1][#2]{\ctxcommand{setelementuserproperties(\!!bs#1\!!es)}}
+\def\strc_tags_setup_element_user_properties_indeed_two[#1][#2]{\ctxcommand{setelementuserproperties("#1",\!!bs#2\!!es)}}
+
+\unexpanded\def\strc_tags_enable_properties
+  {\let\getelementtag             \strc_tags_get_element_tag_yes
+   \let\setupelementuserproperties\strc_tags_setup_element_user_properties_yes}
+
+\unexpanded\def\strc_tags_disable_properties
+  {\let\getelementtag             \strc_tags_get_element_tag_nop
+   \let\setupelementuserproperties\strc_tags_setup_element_user_properties_nop}
+
 %D The triggers:
 
 \newtoks\everyenableelements
@@ -246,11 +278,13 @@
 
 \appendtoks
     \strc_tags_enable_elements
+    \strc_tags_enable_properties
     \doifelse{\taggingparameter\c!method}\v!auto\strc_tags_enable\strc_tags_disable
 \to \everyenableelements
 
 \appendtoks
     \strc_tags_disable_elements
+    \strc_tags_disable_properties
     \strc_tags_disable
 \to \everydisableelements
 

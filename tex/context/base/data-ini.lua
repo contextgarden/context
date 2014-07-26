@@ -233,6 +233,7 @@ resolvers.prefixes = prefixes
 
 local resolved     = { }
 local abstract     = { }
+local dynamic      = { }
 
 function resolvers.resetresolve(str)
     resolved, abstract = { }, { }
@@ -261,15 +262,20 @@ function resolvers.unresolve(str)
     return abstract[str] or str
 end
 
+function resolvers.setdynamic(str)
+    dynamic[str] = true
+end
+
 -- home:xx;selfautoparent:xx;
 
-local pattern = Cs((C(R("az")^2) * P(":") * C((1-S(" \"\';,"))^1) / _resolve_ + P(1))^0)
+local pattern   = Cs((C(R("az")^2) * P(":") * C((1-S(" \"\';,"))^1) / _resolve_ + P(1))^0)
 
-local prefix   = C(R("az")^2) * P(":")
-local target   = C((1-S(" \"\';,"))^1)
-local notarget = (#S(";,") + P(-1)) * Cc("")
+local prefix    = C(R("az")^2) * P(":")
+local target    = C((1-S(" \"\';,"))^1)
+local notarget  = (#S(";,") + P(-1)) * Cc("")
 
-local pattern  = Cs(((prefix * (target + notarget)) / _resolve_ + P(1))^0)
+local p_resolve = Cs(((prefix * (target + notarget)) / _resolve_ + P(1))^0)
+local p_simple  = prefix * P(-1)
 
 local function resolve(str) -- use schemes, this one is then for the commandline only
     if type(str) == "table" then
@@ -278,15 +284,28 @@ local function resolve(str) -- use schemes, this one is then for the commandline
             res[i] = resolve(str[i])
         end
         return res
-    else
-        local res = resolved[str]
-        if not res then
-            res = lpegmatch(pattern,str)
-            resolved[str] = res
-            abstract[res] = str
+    end
+    -- already resolved
+    local res = resolved[str]
+    if res then
+        return res
+    end
+    -- simple resolving of (dynamic) methods
+    local simple = lpegmatch(p_simple,str)
+    local action = prefixes[simple]
+    if action then
+        local res = action(res)
+        if not dynamic[simple] then
+            resolved[simple] = res
+            abstract[res] = simple
         end
         return res
     end
+    -- more extensive resolving (multiple too)
+    res = lpegmatch(p_resolve,str)
+    resolved[str] = res
+    abstract[res] = str
+    return res
 end
 
 resolvers.resolve = resolve

@@ -133,6 +133,7 @@ local userdata          = structurestags.userdata -- might be combines with tagl
 local tagdata           = structurestags.data
 local tagmetadata       = structurestags.metadata
 local detailedtag       = structurestags.detailedtag
+local userproperties    = structurestags.userproperties
 
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
@@ -159,6 +160,7 @@ local dashsplitter      = lpeg.splitat("-")
 local threshold         = 65536
 local indexing          = false
 local keephyphens       = false
+local exportproperties  = false
 
 local finetuning        = { }
 
@@ -211,6 +213,7 @@ end)
 
 local f_entity    = formatters["&#x%X;"]
 local f_attribute = formatters[" %s=%q"]
+local f_property  = formatters[" %s%s=%q"]
 
 setmetatableindex(specialspaces, function(t,k)
     local v = utfchar(k)
@@ -341,7 +344,7 @@ document {
 ]] ]
 
 local f_style = formatters [ [[
-%s[detail='%s'] {
+%s[detail="%s"] {
     font-style   : %s ;
     font-variant : %s ;
     font-weight  : %s ;
@@ -544,8 +547,8 @@ do
 
     local itemgroups = { }
 
-    local f_symbol = formatters[" symbol='%s'"]
-    local s_packed = " packed='yes'"
+    local f_symbol = formatters[' symbol="%s"']
+    local s_packed = ' packed="yes"'
 
     function structurestags.setitemgroup(current,packed,symbol)
         itemgroups[detailedtag("itemgroup",current)] = {
@@ -575,7 +578,7 @@ do
     local synonyms = { }
     local sortings = { }
 
-    local f_tag    = formatters[" tag='%s'"]
+    local f_tag    = formatters[' tag="%s"']
 
     function structurestags.setsynonym(current,tag)
         synonyms[detailedtag("synonym",current)] = tag
@@ -621,7 +624,7 @@ do
     local symbols      = { }
     local linked       = { }
 
-    local f_insert     = formatters[" insert='%s'"]
+    local f_insert     = formatters[' insert="%s"']
 
     function structurestags.setdescription(tag,n)
         local nd = structures.notes.get(tag,n) -- todo: use listdata instead
@@ -678,8 +681,8 @@ do
     local image       = { }
     usedimages.image  = image
 
-    local f_imagespec = formatters[" id='%s' width='%s' height='%s'"]
-    local f_imagepage = formatters[" page='%s'"]
+    local f_imagespec = formatters[' id="%s" width="%s" height="%s"']
+    local f_imagepage = formatters[' page="%s"']
 
     function structurestags.setfigure(name,page,width,height)
         image[detailedtag("image")] = {
@@ -708,7 +711,7 @@ do
 
     local combinations = { }
 
-    local f_combispec  = formatters[" nx='%s' ny='%s'"]
+    local f_combispec  = formatters[' nx="%s" ny="%s"']
 
     function structurestags.setcombination(nx,ny)
         combinations[detailedtag("combination")] = {
@@ -773,12 +776,12 @@ do
     evaluators["special operation"]                = evaluators.special
     evaluators["special operation with arguments"] = evaluators.special
 
-    local f_location    = formatters[" location='aut:%s'"]
-    local f_prefix      = formatters[" prefix='%s'"]
-    local f_destination = formatters[" destination='%s'"]
-    local f_reference   = formatters[" reference='%s'"]
-    local f_url         = formatters[" url='%s'"]
-    local f_file        = formatters[" file='%s'"]
+    local f_location    = formatters[' location="aut:%s"']
+    local f_prefix      = formatters[' prefix="%s"']
+    local f_destination = formatters[' destination="%s"']
+    local f_reference   = formatters[' reference="%s"']
+    local f_url         = formatters[' url="%s"']
+    local f_file        = formatters[' file="%s"']
 
     function specials.url(result,var)
         local url = references.checkedurl(var.operation)
@@ -1279,12 +1282,12 @@ do
 
     local tabledata    = { }
 
-    local f_columns    = formatters[" columns='%s'"]
-    local f_rows       = formatters[" rows='%s'"]
+    local f_columns    = formatters[' columns="%s"']
+    local f_rows       = formatters[' rows="%s"']
 
-    local s_flushright = " align='flushright'"
-    local s_middle     = " align='middle'"
-    local s_flushleft  = " align='flushleft'"
+    local s_flushright = ' align="flushright"'
+    local s_middle     = ' align="middle"'
+    local s_flushleft  = ' align="flushleft"'
 
     local function hascontent(data)
         for i=1,#data do
@@ -1378,9 +1381,9 @@ end
 
 do
 
-    local f_detail                     = formatters[" detail='%s'"]
-    local f_index                      = formatters[" n='%s'"]
-    local f_spacing                    = formatters["<c n='%s'>%s</c>"]
+    local f_detail                     = formatters[' detail="%s"']
+    local f_index                      = formatters[' n="%s"']
+    local f_spacing                    = formatters['<c n="%s">%s</c>']
 
     local f_empty_inline               = formatters["<%s/>"]
     local f_empty_mixed                = formatters["%w<%s/>\n"]
@@ -1504,6 +1507,22 @@ do
                 for k, v in next, u do
                     n = n + 1
                     r[n] = f_attribute(k,v)
+                end
+            end
+            if exportproperties then
+                local p = userproperties[fulltag]
+                if not p then
+                    -- skip
+                elseif exportproperties == v_yes then
+                    for k, v in next, p do
+                        n = n + 1
+                        r[n] = f_attribute(k,v)
+                    end
+                else
+                    for k, v in next, p do
+                        n = n + 1
+                        r[n] = f_property(exportproperties,k,v)
+                    end
                 end
             end
             local a = di.attributes
@@ -2372,12 +2391,12 @@ function builders.paragraphs.tag(head)
     return false
 end
 
--- encoding='utf-8'
+-- encoding="utf-8"
 
 do
 
 local xmlpreamble = [[
-<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 
 <!-- input filename   : %- 17s -->
 <!-- processing date  : %- 17s -->
@@ -2498,7 +2517,7 @@ local f_d_template = formatters [ [[
             end
             return xmltree
         else
-            return xml.convert("<?xml version='1.0'?>\n<error>invalid xhtml tree</error>")
+            return xml.convert('<?xml version="1.0"?>\n<error>invalid xhtml tree</error>')
         end
     end
 
@@ -2689,7 +2708,8 @@ local f_d_template = formatters [ [[
 
     function commands.setupexport(t)
         table.merge(finetuning,t)
-        keephyphens = finetuning.hyphen == v_yes
+        keephyphens      = finetuning.hyphen == v_yes
+        exportproperties = finetuning.properties == v_no and false or finetuning.properties
     end
 
     local function startexport(v)

@@ -60,6 +60,8 @@ local images            = img
 local hasscheme         = url.hasscheme
 local urlhashed         = url.hashed
 
+local resolveprefix     = resolvers.resolve
+
 local texgetbox         = tex.getbox
 local texsetbox         = tex.setbox
 
@@ -869,7 +871,7 @@ local function locate(request) -- name, format, cache
         else
             -- type given
             for i=1,#figure_paths do
-                local path = figure_paths[i]
+                local path = resolveprefix(figure_paths[i]) -- we resolve (e.g. jobfile:)
                 local check = path .. "/" .. askedname
              -- we pass 'true' as it can be an url as well, as the type
              -- is given we don't waste much time
@@ -935,7 +937,7 @@ local function locate(request) -- name, format, cache
                  -- local name = file.replacesuffix(askedbase,suffix)
                     local name = file.replacesuffix(askedname,suffix)
                     for i=1,#figure_paths do
-                        local path = figure_paths[i]
+                        local path = resolveprefix(figure_paths[i]) -- we resolve (e.g. jobfile:)
                         local check = path .. "/" .. name
                         local isfile = internalschemes[urlhashed(check).scheme]
                         if not isfile then
@@ -963,7 +965,7 @@ local function locate(request) -- name, format, cache
                 report_inclusion("unknown format, using path strategy")
             end
             for i=1,#figure_paths do
-                local path = figure_paths[i]
+                local path = resolveprefix(figure_paths[i]) -- we resolve (e.g. jobfile:)
                 for j=1,#figures_order do
                     local format = figures_order[j]
                     local list = figures_formats[format].list or { format }
@@ -1588,7 +1590,7 @@ local function bases_find(basename,askedlabel)
         if base[2] == nil then
             -- no yet located
             for i=1,#figure_paths do
-                local path = figure_paths[i]
+                local path = resolveprefix(figure_paths[i]) -- we resolve (e.g. jobfile:)
                 local xmlfile = path .. "/" .. basename
                 if io.exists(xmlfile) then
                     base[2] = xmlfile
