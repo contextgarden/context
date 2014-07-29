@@ -423,7 +423,7 @@ local function newsplitter(splitter)
     end)
 end
 
-local function byauthor(dataset,list,method) -- todo: yearsuffix
+local function byauthor(dataset,list,method)
     local luadata  = datasets[dataset].luadata
     local details  = datasets[dataset].details
     local result   = { }
@@ -441,6 +441,7 @@ local function byauthor(dataset,list,method) -- todo: yearsuffix
                 split  = {
                     splitted[strip(writer(detail.author or detail.editor or "",snippets))],
                     splitted[entry.year or "9998"],
+                    splitted[detail.suffix or " "],
                     splitted[strip(entry.journal or "")],
                     splitted[strip(entry.title or "")],
                     splitted[entry.pages or ""],
@@ -453,6 +454,7 @@ local function byauthor(dataset,list,method) -- todo: yearsuffix
                 split  = {
                     splitted[""],
                     splitted["9999"],
+                    splitted[" "],
                     splitted[""],
                     splitted[""],
                     splitted[""],

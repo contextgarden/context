@@ -34,6 +34,7 @@
     <flag name="verbose"><short>give a bit more info</short></flag>
     <flag name="trackers" value="list"><short>enable given trackers</short></flag>
     <flag name="progname" value="str"><short>format or backend</short></flag>
+    <flag name="systeminfo" value="str"><short>show current operating system, processor, etc</short></flag>
    </subcategory>
    <subcategory>
     <flag name="edit"><short>launch editor with found file</short></flag>

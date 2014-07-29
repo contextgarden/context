@@ -112,7 +112,10 @@ local ctx_btxsetcategory          = context.btxsetcategory
 local ctx_btxcitesetup            = context.btxcitesetup
 local ctx_btxsetfirst             = context.btxsetfirst
 local ctx_btxsetsecond            = context.btxsetsecond
+local ctx_btxsetthird             = context.btxsetthird
 local ctx_btxsetinternal          = context.btxsetinternal
+local ctx_btxsetlefttext          = context.btxsetlefttext
+local ctx_btxsetrighttext         = context.btxsetrighttext
 local ctx_btxsetbacklink          = context.btxsetbacklink
 local ctx_btxsetbacktrace         = context.btxsetbacktrace
 local ctx_btxsetcount             = context.btxsetcount
@@ -582,10 +585,25 @@ local pagessplitter = lpeg.splitat(P("-")^1)
 
 -- maybe not redo when already done
 
+local function shortsorter(a,b)
+    local ay, by = a[2], b[2]
+    if ay ~= by then
+        return ay < by
+    end
+    local ay, by = a[3], b[3]
+    if ay ~= by then
+        return ay < by
+    end
+    return a[4] < b[4]
+end
+
 function publications.enhance(dataset) -- for the moment split runs (maybe publications.enhancers)
     statistics.starttiming(publications)
+    local used = usedentries[dataset]
     if type(dataset) == "string" then
         dataset = datasets[dataset]
+    else
+        -- message
     end
     local luadata = dataset.luadata
     local details = dataset.details
@@ -628,12 +646,17 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
                         local year = tonumber(entry.year) or 0
                         local short = formatters["%t%02i"](t,mod(year,100))
                         local s = shorts[short]
-                        if not s then
-                            shorts[short] = tag
-                        elseif type(s) == "string" then
-                            shorts[short] = { s, tag }
+                        -- we could also sort on reference i.e. entries.text
+                        local u = used[tag]
+                        if u then
+                            u = u[1].entries.text -- hm
                         else
-                            s[#s+1] = tag
+                            u = "0"
+                        end
+                        if not s then
+                            shorts[short] = { { tag, year, u, i } }
+                        else
+                            s[#s+1] = { tag, year, u, i }
                         end
                     else
                         --
@@ -660,16 +683,64 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
         end
     end
     for short, tags in next, shorts do -- ordered ?
-        if type(tags) == "table" then
-            sort(tags)
+        local done = #tags > 0
+        -- we only use suffixes when there are multiple references to same years
+        -- so we check for used first
+        if done then
+            local n = 0
             for i=1,#tags do
-             -- details[tags[i]].short = short .. numbertochar(i)
-                local detail = details[tags[i]]
-                detail.short  = short
-                detail.suffix = numbertochar(i)
+                local tag = tags[i][1]
+                if used[tag] then
+                    n = n + 1
+                    if n > 1 then
+                        break
+                    end
+                end
             end
+            done = n > 1
+        end
+        -- now we assign the suffixes, unless we have only one reference
+        if done then
+            sort(tags,shortsorter)
+            local n = 0
+            for i=1,#tags do
+                local tag = tags[i][1]
+                local detail = details[tag]
+                detail.short = short
+                if used[tag] then
+                    n = n + 1
+                    local suffix  = numbertochar(n)
+                    detail.suffix = suffix
+                    local entry   = luadata[tag]
+                    local year    = entry.year
+                    if year then
+                        detail.suffixedyear = year .. suffix
+                    end
+                end
+            end
+         -- for i=1,#tags do
+         --     local tag = tags[i][1]
+         --     local detail = details[tag]
+         --     if not detail.suffix then
+         --         n = n + 1
+         --         local suffix  = numbertochar(n)
+         --         detail.suffix = suffix
+         --         local entry   = luadata[tag]
+         --         local year    = entry.year
+         --         if year then
+         --             detail.suffixedyear = year .. suffix
+         --         end
+         --     end
+         -- end
         else
-            details[tags].short = short
+            local tag = tags[1][1]
+            local detail = details[tag]
+            detail.short = short
+            local entry  = luadata[tag]
+            local year   = entry.year
+            if year then
+                detail.suffixedyear = year
+            end
         end
     end
     statistics.stoptiming(publications)
@@ -717,13 +788,13 @@ function commands.btxflush(name,tag,field)
             local manipulator, field = splitmanipulation(field)
             local value = fields[field]
             if type(value) == "string" then
-                local suffixes = dataset.suffixes[tag]
-                if suffixes then
-                    local suffix = suffixes[field]
-                    if suffix then
-                        value = value .. converters.characters(suffix)
-                    end
-                end
+--                 local suffixes = dataset.suffixes[tag]
+--                 if suffixes then
+--                     local suffix = suffixes[field]
+--                     if suffix then
+--                         value = value .. converters.characters(suffix)
+--                     end
+--                 end
                 context(manipulator and applymanipulation(manipulator,value) or value)
                 return
             end
@@ -731,13 +802,13 @@ function commands.btxflush(name,tag,field)
             if details then
                 local value = details[field]
                 if type(value) == "string" then
-                    local suffixes = dataset.suffixes[tag]
-                    if suffixes then
-                        local suffix = suffixes[field]
-                        if suffix then
-                            value = value .. converters.characters(suffix)
-                        end
-                    end
+--                     local suffixes = dataset.suffixes[tag]
+--                     if suffixes then
+--                         local suffix = suffixes[field]
+--                         if suffix then
+--                             value = value .. converters.characters(suffix)
+--                         end
+--                     end
                     context(manipulator and applymanipulation(manipulator,value) or value)
                     return
                 end
@@ -759,13 +830,13 @@ function commands.btxdetail(name,tag,field)
             local manipulator, field = splitmanipulation(field)
             local value = details[field]
             if type(value) == "string" then
-                local suffixes = dataset.suffixes[tag]
-                if suffixes then
-                    local suffix = suffixes[field]
-                    if suffix then
-                        value = value .. converters.characters(suffix)
-                    end
-                end
+--                 local suffixes = dataset.suffixes[tag]
+--                 if suffixes then
+--                     local suffix = suffixes[field]
+--                     if suffix then
+--                         value = value .. converters.characters(suffix)
+--                     end
+--                 end
                 context(manipulator and applymanipulation(manipulator,value) or value)
             else
                 report("unknown detail %a of tag %a in dataset %a",field,tag,name)
@@ -786,13 +857,13 @@ function commands.btxfield(name,tag,field)
             local manipulator, field = splitmanipulation(field)
             local value = fields[field]
             if type(value) == "string" then
-                local suffixes = dataset.suffixes[tag]
-                if suffixes then
-                    local suffix = suffixes[field]
-                    if suffix then
-                        value = value .. converters.characters(suffix)
-                    end
-                end
+--                 local suffixes = dataset.suffixes[tag]
+--                 if suffixes then
+--                     local suffix = suffixes[field]
+--                     if suffix then
+--                         value = value .. converters.characters(suffix)
+--                     end
+--                 end
                 context(manipulator and applymanipulation(manipulator,value) or value)
             else
                 report("unknown field %a of tag %a in dataset %a",field,tag,name)
@@ -807,43 +878,54 @@ end
 
 -- testing: to be speed up with testcase
 
-function commands.btxdoifelse(name,tag,field)
+local function found(name,tag,field,yes)
     local dataset = rawget(datasets,name)
     if dataset then
         local data  = dataset.luadata[tag]
-        local value = data and data[field]
-        if value and value ~= "" then
-            ctx_firstoftwoarguments()
-            return
+        if data then
+            local value = data[field]
+            if value then
+                if value ~= "" then
+                    return true
+                end
+            else
+                local data = dataset.details[tag]
+                if data then
+                    local value = data[field]
+                    if value then
+                        if value ~= "" then
+                            return true
+                        end
+                    end
+                end
+            end
         end
     end
-    ctx_secondoftwoarguments()
+    return false
+end
+
+function commands.btxdoifelse(name,tag,field)
+    if found(name,tag,field) then
+        ctx_firstoftwoarguments()
+    else
+        ctx_secondoftwoarguments()
+    end
 end
 
 function commands.btxdoif(name,tag,field)
-    local dataset = rawget(datasets,name)
-    if dataset then
-        local data  = dataset.luadata[tag]
-        local value = data and data[field]
-        if value and value ~= "" then
-            ctx_firstofoneargument()
-            return
-        end
+    if found(name,tag,field) then
+        ctx_firstofoneargument()
+    else
+        ctx_gobbleoneargument()
     end
-    ctx_gobbleoneargument()
 end
 
 function commands.btxdoifnot(name,tag,field)
-    local dataset = rawget(datasets,name)
-    if dataset then
-        local data  = dataset.luadata[tag]
-        local value = data and data[field]
-        if value and value ~= "" then
-            ctx_gobbleoneargument()
-            return
-        end
+    if found(name,tag,field) then
+        ctx_gobbleoneargument()
+    else
+        ctx_firstofoneargument()
     end
-    ctx_firstofoneargument()
 end
 
 -- -- alternative approach: keep data at the tex end
@@ -989,10 +1071,10 @@ lists.methods = methods
 methods[v_dataset] = function(dataset,rendering,keyword)
     -- why only once inless criterium=all?
     local luadata = datasets[dataset].luadata
-    local list = rendering.list
+    local list    = rendering.list
     for tag, data in sortedhash(luadata) do
         if not keyword or validkeyword(dataset,tag,keyword) then
-            list[#list+1] = { tag, false, false, 0 }
+            list[#list+1] = { tag, false, 0, false, false }
         end
     end
 end
@@ -1008,7 +1090,7 @@ methods[v_force] = function (dataset,rendering,keyword)
         if u and u.btxset == dataset then
             local tag = u.btxref
             if tag and (not keyword or validkeyword(dataset,tag,keyword)) then
-                list[#list+1] = { tag, listindex, u.btxint, 0 }
+                list[#list+1] = { tag, listindex, 0, u, u.btxint }
             end
         end
     end
@@ -1046,14 +1128,14 @@ methods[v_local] = function(dataset,rendering,keyword)
                     if l then
                         l[#l+1] = u.btxint
                     else
-                        local l = { tag, listindex, u.btxint, 0 }
+                        local l = { tag, listindex, 0, u, u.btxint }
                         list[#list+1] = l
                         traced[tag] = l
                     end
                 else
                     done[tag]    = section
                     alldone[tag] = true
-                    list[#list+1] = { tag, listindex, u.btxint, 0 }
+                    list[#list+1] = { tag, listindex, 0, u, u.btxint }
                 end
             end
         end
@@ -1210,22 +1292,10 @@ lists.sorters = {
         end
         sort(list,compare)
     end,
- -- [v_default] = function(dataset,rendering,list) -- not really needed
- --     local ordered = rendering.ordered
- --     local function compare(a,b)
- --         local aa, bb = a and a[1], b and b[1]
- --         if aa and bb then
- --             aa, bb = ordered[aa], ordered[bb]
- --             return aa and bb and aa < bb
- --         end
- --         return false
- --     end
- --     sort(list,compare)
- -- end,
     [v_default] = function(dataset,rendering,list,sorttype) -- experimental
         if sorttype == "" or sorttype == v_default then
             local function compare(a,b)
-                local aa, bb = a and a[4], b and b[4]
+                local aa, bb = a and a[3], b and b[3]
                 if aa and bb then
                     return aa and bb and aa < bb
                 end
@@ -1295,7 +1365,7 @@ function lists.prepareentries(dataset)
                 number        = lastnumber
                 detail.number = lastnumber
             end
-            li[4] = number
+            li[3] = number
         end
     end
     rendering.list = type(sorter) == "function" and sorter(dataset,rendering,newlist,sorttype) or newlist
@@ -1321,7 +1391,7 @@ function lists.flushentries(dataset)
     for i=1,#list do
         local li       = list[i]
         local tag      = li[1]
-        local n        = li[4]
+        local n        = li[3]
         local entry    = luadata[tag]
         local combined = entry.combined
         local language = entry.language
@@ -1334,16 +1404,27 @@ function lists.flushentries(dataset)
         if language then
             ctx_btxsetlanguage(language)
         end
-        local bl = li[3]
+        local bl = li[5]
         if bl and bl ~= "" then
             ctx_btxsetbacklink(bl)
-            ctx_btxsetbacktrace(concat(li," ",3)) -- how about 4
+            ctx_btxsetbacktrace(concat(li," ",5))
             local uc = citetolist[tonumber(bl)]
             if uc then
                 ctx_btxsetinternal(uc.references.internal or "")
             end
         else
             -- nothing
+        end
+        local u = li[4]
+        if u then
+            local l = u.btxltx
+            local r = u.btxrtx
+            if l then
+                ctx_btxsetlefttext (l)
+            end
+            if r then
+                ctx_btxsetrighttext(r)
+            end
         end
         ctx_btxhandlelistentry()
      end
@@ -1354,7 +1435,7 @@ function lists.filterall(dataset)
     local list = r.list
     local registered = r.registered
     for i=1,#registered do
-        list[i] = { registered[i], i, false, 0 }
+        list[i] = { registered[i], i, 0, false, false }
     end
 end
 
@@ -1451,40 +1532,40 @@ local function compresslist(source)
     sort(source,keysorter)
     -- suffixes
     local oldvalue = nil
-    local suffix   = 0
-    local function setsuffix(entry,suffix,sortfld)
-        entry.suffix  = suffix
-        local dataset = datasets[entry.dataset]
-        if dataset then
-            local suffixes = dataset.suffixes[entry.tag]
-            if suffixes then
-                suffixes[sortfld] = suffix
-            else
-                dataset.suffixes[entry.tag] = { [sortfld] = suffix }
-            end
-        end
-    end
-    for i=1,#source do
-        local entry   = source[i]
-        local sortfld = entry.sortfld
-        if sortfld then
-            local value = entry.sortkey
-            if value == oldvalue then
-                if suffix == 0 then
-                    suffix = 1
-                    local entry = source[i-1]
-                    setsuffix(entry,suffix,sortfld)
-                end
-                suffix = suffix + 1
-                setsuffix(entry,suffix,sortfld)
-            else
-                oldvalue = value
-                suffix   = 0
-            end
-        else
-            break
-        end
-    end
+--     local suffix   = 0
+--     local function setsuffix(entry,suffix,sortfld)
+--         entry.suffix  = suffix
+--         local dataset = datasets[entry.dataset]
+--         if dataset then
+--             local suffixes = dataset.suffixes[entry.tag]
+--             if suffixes then
+--                 suffixes[sortfld] = suffix
+--             else
+--                 dataset.suffixes[entry.tag] = { [sortfld] = suffix }
+--             end
+--         end
+--     end
+--     for i=1,#source do
+--         local entry   = source[i]
+--         local sortfld = entry.sortfld
+--         if sortfld then
+--             local value = entry.sortkey
+--             if value == oldvalue then
+--                 if suffix == 0 then
+--                     suffix = 1
+--                     local entry = source[i-1]
+--                     setsuffix(entry,suffix,sortfld)
+--                 end
+--                 suffix = suffix + 1
+--                 setsuffix(entry,suffix,sortfld)
+--             else
+--                 oldvalue = value
+--                 suffix   = 0
+--             end
+--         else
+--             break
+--         end
+--     end
     --
     local function flushrange()
         noftarget = noftarget + 1
@@ -1659,6 +1740,8 @@ local getters = setmetatableindex({},function(t,k)
     return v
 end)
 
+-- todo: just a sort key and then fetch normal by fieldname
+
 -- default
 
 setmetatableindex(citevariants,function(t,k)
@@ -1677,8 +1760,8 @@ local function setter(dataset,tag,entry,internal)
     return {
         tag      = tag,
         internal = internal,
-        short    = getfield(dataset,tag,"short"),
-        suffix   = getfield(dataset,tag,"suffix"),
+        short    = getdetail(dataset,tag,"short"),
+        suffix   = getdetail(dataset,tag,"suffix"),
     }
 end
 
@@ -1751,15 +1834,26 @@ end
 
 -- year
 
+-- local function setter(dataset,tag,entry,internal)
+--     local year = getfield(dataset,tag,"year")
+--     return {
+--         dataset  = dataset,
+--         tag      = tag,
+--         internal = internal,
+--         year     = year,
+--         sortkey  = year,
+--         sortfld  = "year",
+--     }
+-- end
+
 local function setter(dataset,tag,entry,internal)
-    local year = getfield(dataset,tag,"year")
     return {
         dataset  = dataset,
         tag      = tag,
         internal = internal,
-        year     = year,
-        sortkey  = year,
-        sortfld  = "year",
+        year     = getfield(dataset,tag,"year"),
+        suffix   = getdetail(dataset,tag,"suffix"),
+        sortkey  = getdetail(dataset,tag,"suffixedyear"),
     }
 end
 
@@ -1906,21 +2000,30 @@ local function authorconcat(target,key,setup)
             ctx_btxsetinternal(bl and bl.references.internal or "")
             if first then
                 ctx_btxsetfirst(first[key] or f_missing(first.tag))
+-- third ? of gewoon getfield?
                 local suffix = entry.suffix
                 local value  = entry.last[key]
-                if suffix then
-                    ctx_btxsetsecond(value .. converters.characters(suffix))
-                else
-                    ctx_btxsetsecond(value)
-                end
+--                 if suffix then
+--                     ctx_btxsetsecond(value .. converters.characters(suffix))
+--                 else
+--                     ctx_btxsetsecond(value)
+--                 end
+ctx_btxsetsecond(value)
+if suffix then
+    ctx_btxsetthird(suffix)
+end
             else
                 local suffix = entry.suffix
                 local value  = entry[key] or f_missing(tag)
-                if suffix then
-                    ctx_btxsetfirst(value .. converters.characters(suffix))
-                else
-                    ctx_btxsetfirst(value)
-                end
+--                 if suffix then
+--                     ctx_btxsetfirst(value .. converters.characters(suffix))
+--                 else
+--                     ctx_btxsetfirst(value)
+--                 end
+ctx_btxsetfirst(value)
+if suffix then
+    ctx_btxsetthird(suffix)
+end
             end
             ctx_btxsetconcat(concatstate(i,nofcollected))
             ctx_btxcitesetup(setup)
@@ -1940,6 +2043,7 @@ local function authorsingle(entry,key,setup)
  -- local bl = listtocite[currentcitation]
  -- ctx_btxsetinternal(bl and bl.references.internal or "")
     ctx_btxsetfirst(entry[key] or f_missing(tag))
+    ctx_btxsetthird(entry.suffix)
     ctx_btxcitesetup(setup)
     ctx_btxstopciteauthor()
     ctx_btxstopsubcite()
@@ -2019,16 +2123,28 @@ end
 
 -- authoryear | authoryears
 
+-- local function setter(dataset,tag,entry,internal)
+--     local year = getfield(dataset,tag,"year")
+--     return {
+--         dataset  = dataset,
+--         tag      = tag,
+--         internal = internal,
+--         author   = getfield(dataset,tag,"author"),
+--         year     = year,
+--         sortkey  = year and lpegmatch(numberonly,year),
+--         sortfld  = "year",
+--     }
+-- end
+
 local function setter(dataset,tag,entry,internal)
-    local year = getfield(dataset,tag,"year")
     return {
         dataset  = dataset,
         tag      = tag,
         internal = internal,
         author   = getfield(dataset,tag,"author"),
-        year     = year,
-        sortkey  = year and lpegmatch(numberonly,year),
-        sortfld  = "year",
+        year     = getfield(dataset,tag,"year"),
+        suffix   = getdetail(dataset,tag,"suffix"),
+        sortkey  = getdetail(dataset,tag,"suffixedyear"),
     }
 end
 
@@ -2086,7 +2202,7 @@ function listvariants.short(dataset,block,tag,variant,listindex)
         ctx_btxsetfirst(short)
     end
     if suffix then
-        ctx_btxsetsecond(suffix)
+        ctx_btxsetthird(suffix)
     end
     ctx_btxlistsetup(variant)
 end

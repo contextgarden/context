@@ -385,31 +385,90 @@ local deslasher = lpeg.replacer(S("\\/")^1,"/")
 -- then we still have to deal with urls ... anyhow, multiple // are never a real
 -- problem but just ugly.
 
-function file.join(...)
-    local lst = { ... }
-    local one = lst[1]
+-- function file.join(...)
+--     local lst = { ... }
+--     local one = lst[1]
+--     if lpegmatch(isnetwork,one) then
+--         local one = lpegmatch(reslasher,one)
+--         local two = lpegmatch(deslasher,concat(lst,"/",2))
+--         if lpegmatch(hasroot,two) then
+--             return one .. two
+--         else
+--             return one .. "/" .. two
+--         end
+--     elseif lpegmatch(isroot,one) then
+--         local two = lpegmatch(deslasher,concat(lst,"/",2))
+--         if lpegmatch(hasroot,two) then
+--             return two
+--         else
+--             return "/" .. two
+--         end
+--     elseif one == "" then
+--         return lpegmatch(stripper,concat(lst,"/",2))
+--     else
+--         return lpegmatch(deslasher,concat(lst,"/"))
+--     end
+-- end
+
+function file.join(one, two, three, ...)
+    if not two then
+        return one == "" and one or lpegmatch(stripper,one)
+    end
+    if one == "" then
+        return lpegmatch(stripper,three and concat({ two, three, ... },"/") or two)
+    end
     if lpegmatch(isnetwork,one) then
         local one = lpegmatch(reslasher,one)
-        local two = lpegmatch(deslasher,concat(lst,"/",2))
+        local two = lpegmatch(deslasher,three and concat({ two, three, ... },"/") or two)
         if lpegmatch(hasroot,two) then
             return one .. two
         else
             return one .. "/" .. two
         end
     elseif lpegmatch(isroot,one) then
-        local two = lpegmatch(deslasher,concat(lst,"/",2))
+        local two = lpegmatch(deslasher,three and concat({ two, three, ... },"/") or two)
         if lpegmatch(hasroot,two) then
             return two
         else
             return "/" .. two
         end
-    elseif one == "" then
-        return lpegmatch(stripper,concat(lst,"/",2))
     else
-        return lpegmatch(deslasher,concat(lst,"/"))
+        return lpegmatch(deslasher,concat({  one, two, three, ... },"/"))
     end
 end
 
+-- or we can use this:
+--
+-- function file.join(...)
+--     local n = select("#",...)
+--     local one = select(1,...)
+--     if n == 1 then
+--         return one == "" and one or lpegmatch(stripper,one)
+--     end
+--     if one == "" then
+--         return lpegmatch(stripper,n > 2 and concat({ ... },"/",2) or select(2,...))
+--     end
+--     if lpegmatch(isnetwork,one) then
+--         local one = lpegmatch(reslasher,one)
+--         local two = lpegmatch(deslasher,n > 2 and concat({ ... },"/",2) or select(2,...))
+--         if lpegmatch(hasroot,two) then
+--             return one .. two
+--         else
+--             return one .. "/" .. two
+--         end
+--     elseif lpegmatch(isroot,one) then
+--         local two = lpegmatch(deslasher,n > 2 and concat({ ... },"/",2) or select(2,...))
+--         if lpegmatch(hasroot,two) then
+--             return two
+--         else
+--             return "/" .. two
+--         end
+--     else
+--         return lpegmatch(deslasher,concat({ ... },"/"))
+--     end
+-- end
+
+-- print(file.join("c:/whatever"))
 -- print(file.join("c:/whatever","name"))
 -- print(file.join("//","/y"))
 -- print(file.join("/","/y"))

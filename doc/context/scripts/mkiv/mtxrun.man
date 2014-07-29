@@ -71,6 +71,9 @@ enable given trackers
 .B --progname=str
 format or backend
 .TP
+.B --systeminfo=str
+show current operating system, processor, etc
+.TP
 .B --edit
 launch editor with found file
 .TP

@@ -63,11 +63,17 @@
     \else\ifx\currentbtxsecond\empty
         \btxcitereference
         \currentbtxfirst
+        \ifx\currentbtxthird\empty \else
+            \currentbtxthird
+        \fi
     \else
         \btxcitereference
         \currentbtxfirst
         \btxcitevariantparameter\v!inbetween
         \currentbtxsecond
+        \ifx\currentbtxthird\empty \else
+            \currentbtxthird
+        \fi
     \fi\fi
 \stopsetups
 
@@ -77,11 +83,17 @@
     \else\ifx\currentbtxsecond\empty
         \btxcitereference
         \currentbtxfirst
+        \ifx\currentbtxthird\empty \else
+            \currentbtxthird
+        \fi
     \else
         \btxcitereference
         \currentbtxfirst
         \btxcitevariantparameter\c!range
         \currentbtxsecond
+        \ifx\currentbtxthird\empty \else
+            \currentbtxthird
+        \fi
     \fi\fi
 \stopsetups
 
@@ -107,6 +119,9 @@
                 \btxcitevariantparameter\v!inbetween
                 \currentbtxsecond
             \fi
+            \ifx\currentbtxthird\empty \else
+                \currentbtxthird
+            \fi
         }
     \fi
 \stopsetups
@@ -122,6 +137,9 @@
             \ifx\currentbtxsecond\empty \else
                 \btxcitevariantparameter\c!range
                 \currentbtxsecond
+            \fi
+            \ifx\currentbtxthird\empty \else
+                \currentbtxthird
             \fi
         }
     \fi
@@ -145,6 +163,9 @@
         \relax % keeps a following space
         \btxcitevariantparameter\v!inbetween
         \currentbtxsecond
+    \fi
+    \ifx\currentbtxthird\empty \else
+        \currentbtxthird
     \fi
 \stopsetups
 

@@ -195,7 +195,11 @@
     }
     \btxdoif {year} {
         \btxlparent
+      % \btxflush{suffixedyear}
         \btxflush{year}
+        \btxdoif {suffix} {
+            \btxflush{suffix}
+        }
         \btxrparent
     }
     \btxperiod
@@ -213,7 +217,11 @@
     }
     \btxdoif {year} {
         \btxlparent
+      % \btxflush{suffixedyear}
         \btxflush{year}
+        \btxdoif {suffix} {
+            \btxflush{suffix}
+        }
         \btxrparent
     }
     \btxperiod
@@ -244,7 +252,11 @@
     }
     \btxdoif {year} {
         \btxlparent
+      % \btxflush{suffixedyear}
         \btxflush{year}
+        \btxdoif {suffix} {
+            \btxflush{suffix}
+        }
         \btxrparent
     }
     \btxperiod
@@ -270,7 +282,11 @@
     \btxspace
     \btxdoif {year} {
         \btxlparent
+      % \btxflush{suffixedyear}
         \btxflush{year}
+        \btxdoif {suffix} {
+            \btxflush{suffix}
+        }
         \btxrparent
     }
     \btxperiod
@@ -781,6 +797,18 @@
         \btxrparent
     }
     \texdefinition{btx:apa:note}
+\stopsetups
+
+%D Experiment:
+
+\startsetups btx:apa:lefttext
+    \currentbtxlefttext
+    \enspace
+\stopsetups
+
+\startsetups btx:apa:righttext
+    \enspace
+    \currentbtxrighttext
 \stopsetups
 
 \stopbtxrenderingdefinitions

@@ -858,10 +858,13 @@ function otf.features.normalize(features)
                 if uv then
                  -- report_checks("feature value %a first seen at %a",value,key)
                 else
-                    if type(value) == "string" then
+                    uv = tonumber(value) -- before boolean as there we also handle 0/1
+                    if uv then
+                        -- we're okay
+                    elseif type(value) == "string" then
                         local b = is_boolean(value)
                         if type(b) == "nil" then
-                            uv = tonumber(value) or lower(value)
+                            uv = lower(value)
                         else
                             uv = b
                         end

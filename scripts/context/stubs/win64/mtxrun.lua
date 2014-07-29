@@ -3103,7 +3103,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 18672, stripped down to: 10256
+-- original size: 20687, stripped down to: 10417
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -3353,28 +3353,30 @@ local isroot=fwslash^1*-1
 local hasroot=fwslash^1
 local reslasher=lpeg.replacer(S("\\/"),"/")
 local deslasher=lpeg.replacer(S("\\/")^1,"/")
-function file.join(...)
-  local lst={... }
-  local one=lst[1]
+function file.join(one,two,three,...)
+  if not two then
+    return one=="" and one or lpegmatch(stripper,one)
+  end
+  if one=="" then
+    return lpegmatch(stripper,three and concat({ two,three,... },"/") or two)
+  end
   if lpegmatch(isnetwork,one) then
     local one=lpegmatch(reslasher,one)
-    local two=lpegmatch(deslasher,concat(lst,"/",2))
+    local two=lpegmatch(deslasher,three and concat({ two,three,... },"/") or two)
     if lpegmatch(hasroot,two) then
       return one..two
     else
       return one.."/"..two
     end
   elseif lpegmatch(isroot,one) then
-    local two=lpegmatch(deslasher,concat(lst,"/",2))
+    local two=lpegmatch(deslasher,three and concat({ two,three,... },"/") or two)
     if lpegmatch(hasroot,two) then
       return two
     else
       return "/"..two
     end
-  elseif one=="" then
-    return lpegmatch(stripper,concat(lst,"/",2))
   else
-    return lpegmatch(deslasher,concat(lst,"/"))
+    return lpegmatch(deslasher,concat({ one,two,three,... },"/"))
   end
 end
 local drivespec=R("az","AZ")^1*colon
@@ -15538,7 +15540,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-pre"] = package.loaded["data-pre"] or true
 
--- original size: 3346, stripped down to: 2779
+-- original size: 3950, stripped down to: 2935
 
 if not modules then modules={} end modules ['data-pre']={
   version=1.001,
@@ -15613,6 +15615,13 @@ end
 prefixes.home=function(str)
   return cleanpath(joinpath(getenv('HOME'),str))
 end
+prefixes.env=prefixes.environment
+prefixes.rel=prefixes.relative
+prefixes.loc=prefixes.locate
+prefixes.kpse=prefixes.locate
+prefixes.full=prefixes.locate
+prefixes.file=prefixes.filename
+prefixes.path=prefixes.pathname
 local function toppath()
   local inputstack=resolvers.inputstack 
   if not inputstack then         
@@ -15625,25 +15634,21 @@ local function toppath()
     return pathname
   end
 end
-resolvers.toppath=toppath
-prefixes.toppath=function(str)
-  return cleanpath(joinpath(toppath(),str))
-end
-prefixes.env=prefixes.environment
-prefixes.rel=prefixes.relative
-prefixes.loc=prefixes.locate
-prefixes.kpse=prefixes.locate
-prefixes.full=prefixes.locate
-prefixes.file=prefixes.filename
-prefixes.path=prefixes.pathname
-prefixes.jobfile=function(str)
-  local path=resolvers.stackpath() or "."
-  if str and str~="" then
-    return cleanpath(joinpath(path,str))
+local function jobpath()
+  local path=resolvers.stackpath()
+  if not path or path=="" then
+    return "."
   else
-    return cleanpath(path)
+    return path
   end
 end
+resolvers.toppath=toppath
+resolvers.jobpath=jobpath
+prefixes.toppath=function(str) return cleanpath(joinpath(toppath(),str)) end 
+prefixes.jobpath=function(str) return cleanpath(joinpath(jobpath(),str)) end 
+resolvers.setdynamic("toppath")
+resolvers.setdynamic("jobpath")
+prefixes.jobfile=prefixes.jobpath
 resolvers.setdynamic("jobfile")
 
 
@@ -17361,8 +17366,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 714341
--- stripped bytes    : 253350
+-- original bytes    : 716960
+-- stripped bytes    : 255652
 
 -- end library merge
 
@@ -17613,6 +17618,7 @@ local helpinfo = [[
     <flag name="verbose"><short>give a bit more info</short></flag>
     <flag name="trackers" value="list"><short>enable given trackers</short></flag>
     <flag name="progname" value="str"><short>format or backend</short></flag>
+    <flag name="systeminfo" value="str"><short>show current operating system, processor, etc</short></flag>
    </subcategory>
    <subcategory>
     <flag name="edit"><short>launch editor with found file</short></flag>
@@ -18253,6 +18259,15 @@ function runners.gethelp(filename)
     end
 end
 
+function runners.systeminfo()
+    report("architecture      : %s",os.platform  or "<unset>")
+    report("operating system  : %s",os.name      or "<unset>")
+    report("file architecture : %s",os.type      or "<unset>")
+    report("binary path       : %s",os.selfdir   or "<unset>")
+    report("binary suffix     : %s",os.binsuffix or "<unset>")
+    report("library suffix    : %s",os.libsuffix or "<unset>")
+end
+
 -- this is a bit dirty ... first we store the first filename and next we
 -- split the arguments so that we only see the ones meant for this script
 -- ... later we will use the second half
@@ -18693,6 +18708,10 @@ elseif e_argument("exporthelp") then
 
     runners.loadbase()
     application.export(e_argument("exporthelp"),filename)
+
+elseif e_argument("systeminfo") then
+
+    runners.systeminfo()
 
 elseif e_argument("help") or filename=='help' or filename == "" then
 

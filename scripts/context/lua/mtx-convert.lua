@@ -48,7 +48,7 @@ local convert        = scripts.convert
 convert.converters   = convert.converters or { }
 local converters     = convert.converters
 
-local gsprogram      = os.type == "windows" and "gswin32c" or "gs"
+local gsprogram      = (os.type == "windows" and (os.which("gswin64c.exe") or os.which("gswin32c.exe"))) or "gs"
 local gstemplate_eps = "%s -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -dEPSCrop -dNOPAUSE -dSAFER -dNOCACHE -dBATCH -dAutoRotatePages=/None -dProcessColorModel=/DeviceCMYK -sOutputFile=%s %s -c quit"
 local gstemplate_ps  = "%s -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -dNOPAUSE -dSAFER -dNOCACHE -dBATCH -dAutoRotatePages=/None -dProcessColorModel=/DeviceCMYK -sOutputFile=%s %s -c quit"
 

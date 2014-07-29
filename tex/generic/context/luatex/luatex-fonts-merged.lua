@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/25/14 12:57:26
+-- merge date  : 07/29/14 22:25:18
 
 do -- begin closure to overcome local limits and interference
 
@@ -2377,28 +2377,30 @@ local isroot=fwslash^1*-1
 local hasroot=fwslash^1
 local reslasher=lpeg.replacer(S("\\/"),"/")
 local deslasher=lpeg.replacer(S("\\/")^1,"/")
-function file.join(...)
-  local lst={... }
-  local one=lst[1]
+function file.join(one,two,three,...)
+  if not two then
+    return one=="" and one or lpegmatch(stripper,one)
+  end
+  if one=="" then
+    return lpegmatch(stripper,three and concat({ two,three,... },"/") or two)
+  end
   if lpegmatch(isnetwork,one) then
     local one=lpegmatch(reslasher,one)
-    local two=lpegmatch(deslasher,concat(lst,"/",2))
+    local two=lpegmatch(deslasher,three and concat({ two,three,... },"/") or two)
     if lpegmatch(hasroot,two) then
       return one..two
     else
       return one.."/"..two
     end
   elseif lpegmatch(isroot,one) then
-    local two=lpegmatch(deslasher,concat(lst,"/",2))
+    local two=lpegmatch(deslasher,three and concat({ two,three,... },"/") or two)
     if lpegmatch(hasroot,two) then
       return two
     else
       return "/"..two
     end
-  elseif one=="" then
-    return lpegmatch(stripper,concat(lst,"/",2))
   else
-    return lpegmatch(deslasher,concat(lst,"/"))
+    return lpegmatch(deslasher,concat({ one,two,three,... },"/"))
   end
 end
 local drivespec=R("az","AZ")^1*colon
@@ -8854,7 +8856,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
   local lookuphash=resources.lookuphash
   local lookuptypes=resources.lookuptypes
   local ligatures={}
-  local alternate=tonumber(value)
+  local alternate=tonumber(value) or true and 1
   local defaultalt=otf.defaultbasealternate
   local trace_singles=trace_baseinit and trace_singles
   local trace_alternatives=trace_baseinit and trace_alternatives
@@ -9045,7 +9047,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
   local lookuphash=resources.lookuphash
   local lookuptypes=resources.lookuptypes
   local ligatures={}
-  local alternate=tonumber(value)
+  local alternate=tonumber(value) or true and 1
   local defaultalt=otf.defaultbasealternate
   local trace_singles=trace_baseinit and trace_singles
   local trace_alternatives=trace_baseinit and trace_alternatives
@@ -9061,7 +9063,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
         end
         changed[unicode]=data
       elseif lookuptype=="alternate" then
-         local replacement=data[alternate]
+        local replacement=data[alternate]
         if replacement then
           changed[unicode]=replacement
           if trace_alternatives then
@@ -9154,7 +9156,7 @@ local function featuresinitializer(tfmdata,value)
   if true then 
     local starttime=trace_preparing and os.clock()
     local features=tfmdata.shared.features
-    local fullname=trace_preparing and tfmdata.properties.fullname
+    local fullname=tfmdata.properties.fullname or "?"
     if features then
       applybasemethod("initializehashes",tfmdata)
       local collectlookups=otf.collectlookups
@@ -9174,20 +9176,21 @@ local function featuresinitializer(tfmdata,value)
             if order then
               for i=1,#order do 
                 local feature=order[i]
-                if features[feature] then
+                local value=features[feature]
+                if value then
                   local validlookups,lookuplist=collectlookups(rawdata,feature,script,language)
                   if not validlookups then
                   elseif basesubstitutions and basesubstitutions[feature] then
                     if trace_preparing then
-                      report_prepare("filtering base feature %a for %a",feature,fullname)
+                      report_prepare("filtering base %s feature %a for %a with value %a","sub",feature,fullname,value)
                     end
                     applybasemethod("preparesubstitutions",tfmdata,feature,value,validlookups,lookuplist)
                     registerbasefeature(feature,value)
                   elseif basepositionings and basepositionings[feature] then
                     if trace_preparing then
-                      report_prepare("filtering base feature %a for %a",feature,fullname)
+                      report_prepare("filtering base %a feature %a for %a with value %a","pos",feature,fullname,value)
                     end
-                    applybasemethod("preparepositionings",tfmdata,feature,features[feature],validlookups,lookuplist)
+                    applybasemethod("preparepositionings",tfmdata,feature,value,validlookups,lookuplist)
                     registerbasefeature(feature,value)
                   end
                 end

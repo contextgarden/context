@@ -87,6 +87,17 @@ prefixes.home = function(str)
     return cleanpath(joinpath(getenv('HOME'),str))
 end
 
+prefixes.env  = prefixes.environment
+prefixes.rel  = prefixes.relative
+prefixes.loc  = prefixes.locate
+prefixes.kpse = prefixes.locate
+prefixes.full = prefixes.locate
+prefixes.file = prefixes.filename
+prefixes.path = prefixes.pathname
+
+-- This one assumes that inputstack is set (used in the tex loader). It is a momentary resolve
+-- as the top of the input stack changes.
+
 local function toppath()
     local inputstack = resolvers.inputstack -- dependency, actually the code should move but it's
     if not inputstack then                  -- more convenient to keep it here
@@ -100,27 +111,32 @@ local function toppath()
     end
 end
 
-resolvers.toppath = toppath
+-- The next variant is similar but bound to explicitly registered paths. Practice should
+-- show if that gives the same results as the previous one. It is meant for a project
+-- stucture.
 
-prefixes.toppath = function(str)
-    return cleanpath(joinpath(toppath(),str))
-end
-
-prefixes.env  = prefixes.environment
-prefixes.rel  = prefixes.relative
-prefixes.loc  = prefixes.locate
-prefixes.kpse = prefixes.locate
-prefixes.full = prefixes.locate
-prefixes.file = prefixes.filename
-prefixes.path = prefixes.pathname
-
-prefixes.jobfile = function(str)
-    local path = resolvers.stackpath() or "."
-    if str and str ~= "" then
-        return cleanpath(joinpath(path,str))
+local function jobpath()
+    local path = resolvers.stackpath()
+    if not path or path == "" then
+        return "."
     else
-        return cleanpath(path)
+        return path
     end
 end
+
+resolvers.toppath = toppath
+resolvers.jobpath = jobpath
+
+-- This hook sit into the resolver:
+
+prefixes.toppath = function(str) return cleanpath(joinpath(toppath(),str)) end -- str can be nil or empty
+prefixes.jobpath = function(str) return cleanpath(joinpath(jobpath(),str)) end -- str can be nil or empty
+
+resolvers.setdynamic("toppath")
+resolvers.setdynamic("jobpath")
+
+-- for a while (obsolete):
+
+prefixes.jobfile = prefixes.jobpath
 
 resolvers.setdynamic("jobfile")

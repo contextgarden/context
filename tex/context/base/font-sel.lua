@@ -526,6 +526,9 @@ local function definefontsynonym(data,alternative,index,fallback)
             local designsize = entry["designsize"] or 100
             if designsize == 100 or designsize == 110 or designsize == 120 or designsize == 0 or #fontdata == 1 then
                 local filepath, filename = splitbase(entry["filename"])
+                if entry["format"] == "ttc" or entry["format"] == "dfont" then
+                    filename = formatters["%s(%s)"](filename, entry["rawname"])
+                end
                 registerdesignsizes( fontfile, "default", filename )
                 break
             end

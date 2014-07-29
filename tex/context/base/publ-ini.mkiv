@@ -62,6 +62,8 @@
 \def\s!btxref       {btxref}
 \def\s!btxint       {btxint}
 \def\s!btxbck       {btxbck}
+\def\s!btxltx       {btxltx}
+\def\s!btxrtx       {btxrtx}
 
 \definelabelclass[btxlabel][2]
 
@@ -353,9 +355,12 @@
 \let\currentbtxcombis       \empty    \unexpanded\def\btxsetcombis       {\def\currentbtxcombis}
 \let\currentbtxdataset      \empty    \unexpanded\def\btxsetdataset      {\def\currentbtxdataset}
 \let\currentbtxfirst        \empty    \unexpanded\def\btxsetfirst        {\def\currentbtxfirst}
-\let\currentbtxinternal     \empty    \unexpanded\def\btxsetinternal     {\def\currentbtxinternal}
-\let\currentbtxlanguage     \empty    \unexpanded\def\btxsetlanguage     {\def\currentbtxlanguage}
 \let\currentbtxsecond       \empty    \unexpanded\def\btxsetsecond       {\def\currentbtxsecond}
+\let\currentbtxthird        \empty    \unexpanded\def\btxsetthird        {\def\currentbtxthird}
+\let\currentbtxinternal     \empty    \unexpanded\def\btxsetinternal     {\def\currentbtxinternal}
+\let\currentbtxlefttext     \empty    \unexpanded\def\btxsetlefttext     {\def\currentbtxlefttext}
+\let\currentbtxrighttext    \empty    \unexpanded\def\btxsetrighttext    {\def\currentbtxrighttext}
+\let\currentbtxlanguage     \empty    \unexpanded\def\btxsetlanguage     {\def\currentbtxlanguage}
 \let\currentbtxtag          \empty    \unexpanded\def\btxsettag          {\def\currentbtxtag}
 \let\currentbtxnumber       \empty    \unexpanded\def\btxsetnumber       {\def\currentbtxnumber}
 \let\currentbtxauthorvariant\v!normal \unexpanded\def\btxsetauthorvariant{\def\currentbtxauthorvariant}
@@ -396,6 +401,8 @@
   {\let\currentbtxcombis   \empty
    \let\currentbtxcategory \empty
    \let\currentbtxinternal \empty
+   \let\currentbtxlefttext \empty
+   \let\currentbtxrighttext\empty
    \let\currentbtxbacklink \empty
    \let\currentbtxbacktrace\empty
    \let\currentbtxlanguage \empty
@@ -491,12 +498,14 @@
    \endgroup}
 
 \def\btx_entry_inject_yes
-  {\fastsetup\currentbtxsetup
+  {\fastsetup{\s!btx:\currentbtxalternative:lefttext}%
+   \fastsetup\currentbtxsetup
    \removeunwantedspaces
    \ifx\currentbtxcombis\empty \else
      \btxrenderingparameter\c!separator
      \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi
-   \fi}
+   \fi
+   \fastsetup{\s!btx:\currentbtxalternative:righttext}}%
 
 \def\btx_entry_inject_nop
   {\tttf \getmessage\m!publications{12}{\currentbtxsetup}}
@@ -666,7 +675,9 @@
   {\btx_trace_list_cross\empty\currentbtxbacktrace
    \global\advance\c_btx_list_reference\plusone
    \strc_references_direct_full_user
-      {\s!btxset="\currentbtxdataset",\s!btxref="\currentbtxtag",\ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint="\currentbtxbacklink"\else\s!btxbck="\currentbtxbacktrace"\fi}%
+      {\s!btxset="\currentbtxdataset",%
+       \s!btxref="\currentbtxtag",%
+       \ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint="\currentbtxbacklink"\else\s!btxbck="\currentbtxbacktrace"\fi}%
       {\s!btx::\v!list::\number\c_btx_list_reference}%
       {\currentbtxnumber}}
 
@@ -674,12 +685,21 @@
   {\dontleavehmode
    \iftrialtypesetting \else
      \ifx\currentbtxbacklink\empty
-        % can be made empty when combining author / year
+       % can be made empty when combining author / year
      \else
-        \btx_trace_list_cross\currentbtxbacklink\empty
-        \normalexpanded{\writedatatolist[\s!btx][\s!btxset=\currentbtxdataset,\s!btxref=\currentbtxtag,\s!btxint=\number\currentbtxbacklink]}%  % \c!location=\v!here
+       \btx_cite_reference_inject_indeed
      \fi
   \fi}
+
+\def\btx_cite_reference_inject_indeed
+  {\btx_trace_list_cross\currentbtxbacklink\empty
+   \normalexpanded{\writedatatolist%
+      [\s!btx]%
+      [\s!btxset=\currentbtxdataset,%
+       \s!btxref=\currentbtxtag,%
+       \ifx\p_publ_cite_lefttext \empty\else\s!btxltx={\p_publ_cite_lefttext },\fi%
+       \ifx\p_publ_cite_righttext\empty\else\s!btxrtx={\p_publ_cite_righttext},\fi%
+       \s!btxint=\number\currentbtxbacklink]}}%  % \c!location=\v!here
 
 \let\btxcitereference\btx_cite_reference_inject
 
@@ -852,6 +872,13 @@
 % [base::tags]
 % [settings|variant][base::tags]
 
+% these need to be sort of protected:
+
+\let\p_publ_cite_before   \empty
+\let\p_publ_cite_after    \empty
+\let\p_publ_cite_lefttext \empty
+\let\p_publ_cite_righttext\empty
+
 \unexpanded\def\btxcite
   {\dontleavehmode
    \begingroup
@@ -881,6 +908,8 @@
    \letdummyparameter\c!after      \empty
    \letdummyparameter\c!extras     \empty
    \letdummyparameter\c!alternative\empty
+   \letdummyparameter\c!lefttext   \empty
+   \letdummyparameter\c!righttext  \empty
    \getdummyparameters[#1]%
    \edef\p_alternative{\dummyparameter\c!alternative}%
    \ifx\p_alternative\empty
@@ -896,17 +925,19 @@
        \setexpandedbtxcitevariantparameter\p_right{\p_extras\p_right}%
      \fi
    \fi
-   \edef\p_before{\dummyparameter\c!before}%
-   \edef\p_after {\dummyparameter\c!after}%
+   \edef\p_publ_cite_before   {\dummyparameter\c!before}%
+   \edef\p_publ_cite_after    {\dummyparameter\c!after}%
+   \edef\p_publ_cite_lefttext {\dummyparameter\c!lefttext}%
+   \edef\p_publ_cite_righttext{\dummyparameter\c!righttext}%
    \the\everysetupbtxciteplacement
-   \ifx\p_before\empty \else
-     \p_before
+   \ifx\p_publ_cite_before\empty \else
+     \p_publ_cite_before
      \space
    \fi
    \publ_cite_variant
-   \ifx\p_after\empty \else
+   \ifx\p_publ_cite_after\empty \else
      \optionalspace
-     \p_after
+     \p_publ_cite_after
    \fi
    \endgroup}
 
