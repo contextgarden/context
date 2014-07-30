@@ -6,19 +6,26 @@ if not modules then modules = { } end modules ['publ-jrn'] = {
     license   = "see context related readme files"
 }
 
+-- http://jabref.sourceforge.net/journals/journal_abbreviations_general.txt
+--
+-- <full name> = <abbreviation> [;shortest unique abbreviation[;frequency]].
+
 -- require("char-utf")
 
 -- Abhandlungen aus dem Westfälischen Museum für Naturkunde = Abh. Westfäl. Mus. Nat.kd.
 -- Abhandlungen der Naturforschenden Gesellschaft in Zürich = Abh. Nat.forsch. Ges. Zür.
 -- Abhandlungen des Naturwissenschaftlichen Vereins zu Bremen = Abh. Nat.wiss. Ver. Bremen
 
+if not characters then require("char-utf") end
+
 local find = string.find
 local P, C, S, Cs, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.S, lpeg.Cs, lpeg.match, lpeg.patterns
 
-local lower = characters.lower
+local lower            = characters.lower
 
 local report_journals  = logs.reporter("publications","journals")
 
+publications           = publications or { }
 local journals         = { }
 publications.journals  = journals
 
@@ -50,11 +57,18 @@ local function add(expansion,abbreviation)
     end
 end
 
+-- [#%-] comment
+-- meaning = abbreviations [;.....]
+
 local whitespace = lpegpatterns.whitespace^0
-local separator  = whitespace * lpeg.P("=") * whitespace
-local endofline  = lpegpatterns.space^0 * (lpegpatterns.newline + P(-1))
-local splitter   = whitespace * C((1-separator)^1) * separator * C((1-endofline)^1)
-local pattern    = (splitter / add)^0
+local assignment = whitespace * P("=") * whitespace
+local separator  = P(";")
+local newline    = lpegpatterns.newline
+local endofline  = lpegpatterns.space^0 * (newline + P(-1) + separator)
+local restofline = (1-newline)^0
+local splitter   = whitespace * C((1-assignment)^1) * assignment * C((1-endofline)^1) * restofline
+local comment    = S("#-%") * restofline
+local pattern    = (comment + splitter / add)^0
 
 function journals.load(filename)
     if not filename then
@@ -122,11 +136,15 @@ function journals.abbreviated(name)
     return abbreviations[s] or abbreviations[simplify(expansions[s])] or name
 end
 
-commands.btxloadjournallist    = journals.load
-commands.btxsavejournallist    = journals.save
-commands.btxaddjournal         = function(...)  context(journals.add(...)) end
-commands.btxexpandedjournal    = function(name) context(journals.expanded(name)) end
-commands.btxabbreviatedjournal = function(name) context(journals.abbreviated(name)) end
+local commands, context = commands, context
+
+if commands then
+    commands.btxloadjournallist    = journals.load
+    commands.btxsavejournallist    = journals.save
+    commands.btxaddjournal         = function(...)  context(journals.add(...)) end
+    commands.btxexpandedjournal    = function(name) context(journals.expanded(name)) end
+    commands.btxabbreviatedjournal = function(name) context(journals.abbreviated(name)) end
+end
 
 -- journals.load("e:/tmp/journals.txt")
 -- journals.save("e:/tmp/journals.lua")
@@ -134,5 +152,10 @@ commands.btxabbreviatedjournal = function(name) context(journals.abbreviated(nam
 -- inspect(journals.expanded   ("Z. Ökol. Nat.schutz"))
 -- inspect(journals.abbreviated("Z.       Ökol. Nat. schutz"))
 
-typesetters.manipulators.methods.expandedjournal    = journals.expanded
-typesetters.manipulators.methods.abbreviatedjournal = journals.abbreviated
+if typesetters then
+    typesetters.manipulators.methods.expandedjournal    = journals.expanded
+    typesetters.manipulators.methods.abbreviatedjournal = journals.abbreviated
+end
+
+-- journals.load("t:/manuals/publications-mkiv/journals.txt")
+-- journals.save("t:/manuals/publications-mkiv/journals.lua")

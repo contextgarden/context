@@ -498,14 +498,18 @@
    \endgroup}
 
 \def\btx_entry_inject_yes
-  {\fastsetup{\s!btx:\currentbtxalternative:lefttext}%
+  {\ifx\currentbtxlefttext\empty\else
+     \fastsetup{\s!btx:\currentbtxalternative:lefttext}%
+   \fi
    \fastsetup\currentbtxsetup
    \removeunwantedspaces
    \ifx\currentbtxcombis\empty \else
      \btxrenderingparameter\c!separator
      \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi
    \fi
-   \fastsetup{\s!btx:\currentbtxalternative:righttext}}%
+   \ifx\currentbtxrighttext\empty\else
+     \fastsetup{\s!btx:\currentbtxalternative:righttext}%
+   \fi}%
 
 \def\btx_entry_inject_nop
   {\tttf \getmessage\m!publications{12}{\currentbtxsetup}}
@@ -1078,6 +1082,15 @@
            \def\btxexpandedjournal   #1{\ctxcommand{btxexpandedjournal("#1")}}    % \unexpanded ?
            \def\btxabbreviatedjournal#1{\ctxcommand{btxabbreviatedjournal("#1")}} % \unexpanded ?
 
+% \installcorenamespace{btxjournal}
+%
+% \letvalue{\s!btxjournal\v!long  }\btxexpandedjournal
+% \letvalue{\s!btxjournal\v!short }\btxabbreviatedjournal
+% \letvalue{\s!btxjournal\v!normal}\firstofoneargument
+%
+% \unexpanded\def\btxcheckedjournal
+%   {\expandnamespaceparameter\s!btxjournal\btxrenderingparameter\c!journalconversion}
+
 % \btxloadjournallist[list.txt] % Foo Journal of Bars = FBJ \n ....
 %
 % \btxexpandedjournal[fbj]
@@ -1255,6 +1268,7 @@
    \c!etallimit=5,
    \c!etaldisplay=5,
    \c!etaltext={ \btxlabeltext{others}},
+   %c!journalconversion=\v!normal,
    \c!monthconversion=\v!number,
    \c!authorconversion=\v!normal]
 

@@ -891,10 +891,10 @@
 
 % another set of (fast) helpers (grep for usage):
 
-\def\expandnamespaceparameter#1#2#3% \??xx \getp \c!xx \c!yy
+\def\expandnamespaceparameter#1#2#3% \??xx \getp \c!xx \v!yy
   {\csname#1\ifcsname#1\expandafter\expandafter\expandafter\mult_aux_expand_namespace_parameter#2#3}
 
-\def\mult_aux_expand_namespace_parameter#1#2% \cs \c!yy
+\def\mult_aux_expand_namespace_parameter#1#2% \cs \v!yy
   {#1\endcsname#1\else#2\fi\endcsname}
 
 \def\expandnamespacemacro#1#2#3% \??xx \some_edefed_cs \c!yy
