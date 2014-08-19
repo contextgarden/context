@@ -78,12 +78,11 @@ local texdefinefont       = tex.definefont
 local texsp               = tex.sp
 
 local fontdata            = hashes.identifiers
-local characters          = hashes.chardata
+local characters          = hashes.characters
 local descriptions        = hashes.descriptions
 local properties          = hashes.properties
 local resources           = hashes.resources
 local csnames             = hashes.csnames
-local marks               = hashes.markdata
 local lastmathids         = hashes.lastmathids
 local exheights           = hashes.exheights
 local emwidths            = hashes.emwidths
@@ -1449,7 +1448,28 @@ local function nametoslot(name)
     end
 end
 
-helpers.nametoslot = nametoslot
+local function indextoslot(index)
+    local r = resources[true]
+    if r then
+        local indices = r.indices
+        if not indices then
+            indices = { }
+            local c = characters[true]
+            for unicode, data in next, c do
+                local di = data.index
+                if di then
+                    indices[di] = unicode
+                end
+            end
+            r.indices = indices
+        end
+        return indices[tonumber(index)]
+    end
+end
+
+
+helpers.nametoslot  = nametoslot
+helpers.indextoslot = indextoslot
 
 -- this will change ...
 
@@ -1599,6 +1619,13 @@ local commands_doifelse = commands.doifelse
 
 function commands.fontchar(n)
     n = nametoslot(n)
+    if n then
+        context_char(n)
+    end
+end
+
+function commands.fontcharbyindex(n)
+    n = indextoslot(n)
     if n then
         context_char(n)
     end

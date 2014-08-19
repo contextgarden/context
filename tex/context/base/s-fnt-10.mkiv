@@ -100,7 +100,7 @@ function fonts.tracers.show_glyphs()
 end
 \stopluacode
 
-\def\ShowCompleteFont#1#2#3%
+\unexpanded\def\ShowCompleteFont#1#2#3%
   {\bgroup
    \page
    \font\TestFont=#1 at #2
@@ -118,7 +118,7 @@ end
    \page
    \egroup}
 
-\def\ShowAllGlyphs#1#2#3%
+\unexpanded\def\ShowAllGlyphs#1#2#3%
   {\bgroup
    \page
    \def\showglyph##1{\dontleavehmode\strut\char##1\relax\par}

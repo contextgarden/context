@@ -2172,6 +2172,9 @@
 \unexpanded\def\fontchar#character%
   {\ctxcommand{fontchar("#character")}}
 
+\unexpanded\def\fontcharbyindex#index% unofficial command, for idris' font building
+  {\ctxcommand{fontcharbyindex(\number#index)}}
+
 %D The next auxilliary macro is an alternative to \type
 %D {\fontname}.
 

@@ -13,7 +13,7 @@ return {
         --
         "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
         "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen", "plushundred",
-        "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard",
+        "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",
         "zeroskip",

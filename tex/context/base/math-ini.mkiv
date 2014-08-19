@@ -26,6 +26,13 @@
 %D restore a changed mathstyle so best avoid that one. However, there are cases where
 %D we really need to use such grouping.
 
+% Weird, these fail, maybe amp is solved in a later state from char noads (needs a
+% fix in luatex):
+%
+% $\char"26$
+% $\a$
+% $\string&$
+
 % mathop applied to characters centers it vertically
 
 \unprotect

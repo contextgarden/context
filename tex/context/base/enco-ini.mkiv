@@ -208,11 +208,42 @@
 \def\pound     {£} \def\sterling{£}
 \def\promille  {‰} \def\permille{‰}
 
-% tex specific (obsolete)
+% tex specific
 
-\def\procent   {\percent}
-\def\dollar    {\textdollar}
-\def\permine   {\fakepermine}
+\ifdefined\textpercent
+    \let\percent   \textpercent
+    \let\procent   \textpercent
+    \let\ampersand \textampersand
+    \let\dollar    \textdollar
+    \let\hash      \texthash
+\else
+    \def\percent   {\textpercent}
+    \def\procent   {\textpercent}
+    \def\ampersand {\textampersand}
+    \def\dollar    {\textdollar}
+    \def\hash      {\texthash}
+\fi
+
+% from enco-mis:
+
+\unexpanded\def\fakepercent
+  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle0}}}
+
+\unexpanded\def\fakeperthousand
+  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle00}}}
+
+\unexpanded\def\fakepermine
+  {\dontleavehmode
+   \bgroup
+   \setbox\scratchbox\hbox
+     {\mathematics{+}}%
+   \hbox to \wd\scratchbox
+     {\hss
+      \mathematics{\normalsuperscript{\scriptscriptstyle-}\kern-.4\emwidth/\kern-.3\emwidth\normalsubscript{\scriptscriptstyle-}}%
+      \hss}%
+   \egroup}
+
+\def\permine{\fakepermine}
 
 % some more
 
@@ -330,25 +361,6 @@
 % \defineaccent v {\empty} {\textcaron}
 
 \ctxlua{characters.tex.defineaccents()}
-
-% from enco-mis:
-
-\unexpanded\def\fakepercent
-  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle0}}}
-
-\unexpanded\def\fakeperthousand
-  {\mathematics{\normalsuperscript{\scriptscriptstyle0}\kern-.25\emwidth/\kern-.2\emwidth\normalsubscript{\scriptscriptstyle00}}}
-
-\unexpanded\def\fakepermine
-  {\dontleavehmode
-   \bgroup
-   \setbox\scratchbox\hbox
-     {\mathematics{+}}%
-   \hbox to \wd\scratchbox
-     {\hss
-      \mathematics{\normalsuperscript{\scriptscriptstyle-}\kern-.4\emwidth/\kern-.3\emwidth\normalsubscript{\scriptscriptstyle-}}%
-      \hss}%
-   \egroup}
 
 %D A smaller and bolder variant, more like the math and monospaced ones.
 

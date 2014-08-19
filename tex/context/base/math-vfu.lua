@@ -41,6 +41,8 @@ local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
 
+local chardata          = characters.data
+
 local mathencodings     = allocate()
 fonts.encodings.math    = mathencodings -- better is then: fonts.encodings.vectors
 local vfmath            = allocate()
@@ -432,6 +434,14 @@ local function repeated(main,characters,id,size,unicode,u,n,private,fraction) --
     end
 end
 
+local function cloned(main,characters,id,size,source,target)
+    local data = characters[source]
+    if data then
+        characters[target] = data
+        return true
+    end
+end
+
 -- we use the fact that context defines the smallest sizes first .. a real dirty and ugly hack
 
 local data_of_smaller = nil
@@ -451,10 +461,11 @@ function vfmath.addmissing(main,id,size)
 
     -- here id is the index in fonts (normally 14 or so) and that slot points to self
 
-    local characters = main.characters
-    local shared = main.shared
-    local variables = main.goodies.mathematics and main.goodies.mathematics.variables or { }
+    local characters    = main.characters
+    local shared        = main.shared
+    local variables     = main.goodies.mathematics and main.goodies.mathematics.variables or { }
     local joinrelfactor = variables.joinrelfactor or 3
+
     for i=0x7A,0x7D do
         make(main,characters,id,size,i,1)
     end
@@ -536,23 +547,24 @@ function vfmath.addmissing(main,id,size)
     -- 21CB leftrightharpoon
     -- 21CC rightleftharpoon
 
-    stack    (main,characters,id,size,0x2259,0x0003D,3,0x02227)                       -- \buildrel\wedge\over=
-    jointwo  (main,characters,id,size,0x22C8,0x022B3,joinrelfactor,0x022B2)           -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
-    jointwo  (main,characters,id,size,0x22A7,0x0007C,joinrelfactor,0x0003D)           -- \mathrel|\joinrel=
-    jointwo  (main,characters,id,size,0x2260,0x00338,0,0x0003D)                       -- \not\equal
-    jointwo  (main,characters,id,size,0x2284,0x00338,0,0x02282)                       -- \not\subset
-    jointwo  (main,characters,id,size,0x2285,0x00338,0,0x02283)                       -- \not\supset
-    jointwo  (main,characters,id,size,0x2209,0x00338,0,0x02208)                       -- \not\in
-    jointwo  (main,characters,id,size,0x2254,0x03A,0,0x03D)                           -- := (≔)
+    stack(main,characters,id,size,0x2259,0x0003D,3,0x02227)                       -- \buildrel\wedge\over=
+
+    jointwo(main,characters,id,size,0x22C8,0x022B3,joinrelfactor,0x022B2)           -- \mathrel\triangleright\joinrel\mathrel\triangleleft (4 looks better than 3)
+    jointwo(main,characters,id,size,0x22A7,0x0007C,joinrelfactor,0x0003D)           -- \mathrel|\joinrel=
+    jointwo(main,characters,id,size,0x2260,0x00338,0,0x0003D)                       -- \not\equal
+    jointwo(main,characters,id,size,0x2284,0x00338,0,0x02282)                       -- \not\subset
+    jointwo(main,characters,id,size,0x2285,0x00338,0,0x02283)                       -- \not\supset
+    jointwo(main,characters,id,size,0x2209,0x00338,0,0x02208)                       -- \not\in
+    jointwo(main,characters,id,size,0x2254,0x03A,0,0x03D)                           -- := (≔)
 
     repeated(main,characters,id,size,0x222C,0x222B,2,0xFF800,1/3)
     repeated(main,characters,id,size,0x222D,0x222B,3,0xFF810,1/3)
 
-    characters[0xFE325] = fastcopy(characters[0x2032])
-
-    raise    (main,characters,id,size,0x02032,0xFE325,1,id_of_smaller) -- prime
-    raise    (main,characters,id,size,0x02033,0xFE325,2,id_of_smaller) -- double prime
-    raise    (main,characters,id,size,0x02034,0xFE325,3,id_of_smaller) -- triple prime
+    if cloned(main,characters,id,size,0x2032,0xFE325) then
+        raise(main,characters,id,size,0x2032,0xFE325,1,id_of_smaller) -- prime
+        raise(main,characters,id,size,0x2033,0xFE325,2,id_of_smaller) -- double prime
+        raise(main,characters,id,size,0x2034,0xFE325,3,id_of_smaller) -- triple prime
+    end
 
     -- there are more (needs discussion first):
 
@@ -882,7 +894,7 @@ function vfmath.define(specification,set,goodies)
                                 local ru = rv[unicode]
                                 if not ru then
                                     if trace_virtual then
-                                        report_virtual("unicode slot %U has no index %H in vector %a for font %a",unicode,index,vectorname,fontname)
+                                        report_virtual("unicode slot %U has no index %H in vector %a for font %a (%S)",unicode,index,vectorname,fontname,chardata[unicode].description)
                                     elseif not already_reported then
                                         report_virtual("the mapping is incomplete for %a at %p",name,size)
                                         already_reported = true

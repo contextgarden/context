@@ -711,10 +711,10 @@ of the official <l n='api'/>.</p>
 
 -- we could make them virtual: characters.contextnames[n]
 
-function characters.contextname(n) return data[n].contextname or "" end
-function characters.adobename  (n) return data[n].adobename   or "" end
-function characters.description(n) return data[n].description or "" end
--------- characters.category   (n) return data[n].category    or "" end
+function characters.contextname(n) return data[n] and data[n].contextname or "" end
+function characters.adobename  (n) return data[n] and data[n].adobename   or "" end
+function characters.description(n) return data[n] and data[n].description or "" end
+-------- characters.category   (n) return data[n] and data[n].category    or "" end
 
 function characters.category(n,verbose)
     local c = data[n].category

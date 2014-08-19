@@ -103,7 +103,7 @@ function char_tracers.collect(head,list,tag,n)
                 ok, fn = false, f
             end
             local c = getchar(head)
-            local i = fontidentifiers[f].indices[c] or 0
+         -- local i = fontidentifiers[f].indices[c] or 0 -- zero anyway as indices is nilled
             if not ok then
                 ok = true
                 n = n + 1
@@ -111,7 +111,8 @@ function char_tracers.collect(head,list,tag,n)
                 list[n][tag] = { }
             end
             local l = list[n][tag]
-            l[#l+1] = { c, f, i }
+         -- l[#l+1] = { c, f, i }
+            l[#l+1] = { c, f }
         elseif id == disc_code then
             -- skip
         else
@@ -127,7 +128,8 @@ function char_tracers.equal(ta, tb)
     else
         for i=1,#ta do
             local a, b = ta[i], tb[i]
-            if a[1] ~= b[1] or a[2] ~= b[2] or a[3] ~= b[3] then
+         -- if a[1] ~= b[1] or a[2] ~= b[2] or a[3] ~= b[3] then
+            if a[1] ~= b[1] or a[2] ~= b[2] then
                 return false
             end
         end
@@ -160,20 +162,20 @@ function char_tracers.unicodes(t,decimal)
     return concat(tt," ")
 end
 
-function char_tracers.indices(t,decimal)
-    local tt = { }
-    for i=1,#t do
-        local n = t[i][3]
-        if n == 0 then
-            tt[i] = "-"
-        elseif decimal then
-            tt[i] = n
-        else
-            tt[i] = f_unicode(n)
-        end
-    end
-    return concat(tt," ")
-end
+-- function char_tracers.indices(t,decimal)
+--     local tt = { }
+--     for i=1,#t do
+--         local n = t[i][3]
+--         if n == 0 then
+--             tt[i] = "-"
+--         elseif decimal then
+--             tt[i] = n
+--         else
+--             tt[i] = f_unicode(n)
+--         end
+--     end
+--     return concat(tt," ")
+-- end
 
 function char_tracers.start()
     local npc = handlers.characters -- should accept nuts too

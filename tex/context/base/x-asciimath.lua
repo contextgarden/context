@@ -19,12 +19,14 @@ ugly and unsatisfying code mess down here. Don't take this as an example.</p>
 -- todo: spaces around all elements in cleanup?
 -- todo: filter from files listed in tuc file
 
-local trace_mapping = false  if trackers then trackers.register("modules.asciimath.mapping", function(v) trace_mapping = v end) end
-local trace_detail  = false  if trackers then trackers.register("modules.asciimath.detail",  function(v) trace_detail  = v end) end
+local trace_mapping    = false  if trackers then trackers.register("modules.asciimath.mapping", function(v) trace_mapping = v end) end
+local trace_detail     = false  if trackers then trackers.register("modules.asciimath.detail",  function(v) trace_detail  = v end) end
 
-local asciimath      = { }
-local moduledata     = moduledata or { }
-moduledata.asciimath = asciimath
+local report_asciimath = logs.reporter("mathematics","asciimath")
+
+local asciimath        = { }
+local moduledata       = moduledata or { }
+moduledata.asciimath   = asciimath
 
 if not characters then
     require("char-def")
@@ -32,16 +34,18 @@ if not characters then
     require("char-ent")
 end
 
-local entities = characters.entities or { }
-
-local report_asciimath = logs.reporter("mathematics","asciimath")
-
 local type, rawget = type, rawget
+local concat, insert, remove = table.concat, table.insert, table.remove
+local rep, gmatch, gsub, find = string.rep, string.gmatch, string.gsub, string.find
+
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local S, P, R, C, V, Cc, Ct, Cs = lpeg.S, lpeg.P, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Ct, lpeg.Cs
-local concat, remove, sortedhash, sortedkeys, keys = table.concat, table.remove, table.sortedhash, table.sortedkeys, table.keys
-local rep, gmatch, gsub, find = string.rep, string.gmatch, string.gsub, string.find
-local formatters = string.formatters
+
+local sortedhash   = table.sortedhash
+local sortedkeys   = table.sortedkeys
+local formatters   = string.formatters
+
+local entities     = characters.entities or { }
 
 local xmltext      = xml.text
 local xmlinclusion = xml.inclusion
@@ -147,23 +151,32 @@ local reserved = {
 
     -- brackets
 
---     ["("]  = "(,
---     [")"]  = "),
---     ["["]  = "[,
---     ["]"]  = "],
---     ["{"]  = "{,
---     ["}"]  = "},
---     ["(:"] = "〈",
---     [":)"] = "〉",
+ -- ["("]  = "(,
+ -- [")"]  = "),
+ -- ["["]  = "[,
+ -- ["]"]  = "],
+ -- ["{"]  = "{,
+ -- ["}"]  = "},
+ -- ["(:"] = "〈",
+ -- [":)"] = "〉",
 
     -- binary relations
 
     ["="]    = "=",
+    ["eq"]   = "=",
     ["!="]   = "≠",
+    ["ne"]   = "≠",
+    ["neq"]  = "≠",
     ["<"]    = "<",
+    ["lt"]   = "<",
     [">"]    = ">",
+    ["gt"]   = ">",
     ["<="]   = "≤",
+    ["le"]   = "≤",
+    ["leq"]  = "≤",
     [">="]   = "≥",
+    ["ge"]   = "≥",
+    ["geq"]  = "≥",
     ["-<"]   = "≺",
     [">-"]   = "≻",
     ["in"]   = "∈",
@@ -216,8 +229,8 @@ local reserved = {
     ["angle"]   = "∠",
     ["/_"]      = "∠",
     [":."]      = "∴",
-    ["..."]     = "...",               -- ldots
-    ["ldots"]   = "...",               -- ldots
+    ["..."]     = "...", -- ldots
+    ["ldots"]   = "...", -- ldots
     ["cdots"]   = "⋯",
     ["vdots"]   = "⋮",
     ["ddots"]   = "⋱",
@@ -227,6 +240,13 @@ local reserved = {
     ["__|"]     = "⌋",
     ["|~"]      = "⌈",
     ["~|"]      = "⌉",
+
+    -- special
+
+    ["%"] = "\\mathpercent",
+    ["&"] = "\\mathampersand",
+    ["#"] = "\\mathhash",
+    ["$"] = "\\mathdollar",
 
     -- more
     ["_="]      = "≡",
@@ -666,6 +686,10 @@ local isunary = {
 
 }
 
+local isfunny = {
+    ["\\sin"]           = true,
+}
+
 local isinfix = {
     ["^"] = true,
     ["_"] = true,
@@ -675,12 +699,14 @@ local isleft = {
     ["\\left\\lparent"]  = true,
     ["\\left\\lbrace"]   = true,
     ["\\left\\lbracket"] = true,
+    ["\\left\\langle"]   = true,
     ["\\left."]          = true,
 }
 local isright = {
     ["\\right\\rparent"]  = true,
     ["\\right\\rbrace"]   = true,
     ["\\right\\rbracket"] = true,
+    ["\\right\\rangle"]   = true,
     ["\\right."]          = true,
 }
 
@@ -803,18 +829,25 @@ local p_text =
 --   + P("〉")  / "\\right\\rangle"
 
 local m_left = {
-  ["(:"] = "\\left\\langle",
-  ["{:"] = "\\left.",
-  ["[:"] = "\\left.",
-  ["("]  = "\\left\\lparent",
-  ["["]  = "\\left\\lbracket",
-  ["{"]  = "\\left\\lbrace",
-  ["<<"] = "\\left\\langle",     -- why not <:
-  ["|_"] = "\\left\\lfloor",
-  ["|~"] = "\\left\\lceil",
-  ["⟨"]  = "\\left\\langle",
-  ["〈"]  = "\\left\\langle",
-  ["〈"]  = "\\left\\langle",
+    ["(:"] = "\\left\\langle",
+    ["{:"] = "\\left.",
+    ["[:"] = "\\left.",
+    ["("]  = "\\left\\lparent",
+    ["["]  = "\\left\\lbracket",
+    ["{"]  = "\\left\\lbrace",
+    ["<<"] = "\\left\\langle",     -- why not <:
+    ["|_"] = "\\left\\lfloor",
+    ["|~"] = "\\left\\lceil",
+    ["⟨"]  = "\\left\\langle",
+    ["〈"]  = "\\left\\langle",
+    ["〈"]  = "\\left\\langle",
+    --
+    ["lparent"]  = "\\left\\lparent",
+    ["lbracket"] = "\\left\\lbracket",
+    ["lbrace"]   = "\\left\\lbrace",
+    ["langle"]   = "\\left\\langle",
+    ["lfloor"]   = "\\left\\lfloor",
+    ["lceil"]    = "\\left\\lceil",
 }
 
 local m_right = {
@@ -830,6 +863,21 @@ local m_right = {
     ["⟩"]  = "\\right\\rangle",
     ["〉"]  = "\\right\\rangle",
     ["〉"]  = "\\right\\rangle",
+    --
+    ["rparent"]  = "\\right\\rparent",
+    ["rbracket"] = "\\right\\rbracket",
+    ["rbrace"]   = "\\right\\rbrace",
+    ["rangle"]   = "\\right\\rangle",
+    ["rfloor"]   = "\\right\\rfloor",
+    ["rceil"]    = "\\right\\rceil",
+}
+
+local islimits = {
+    ["\\sum"]  = true,
+    ["∑"]      = true,
+    ["\\prod"] = true,
+    ["∏"]      = true,
+    ["\\lim"]  = true,
 }
 
 local p_left =
@@ -850,11 +898,8 @@ local p_right =
 -- faster bug also uglier:
 
 local p_special =
---     C("/")
---   +
     P("|")  * Cc("\\|") -- "\\middle\\|" -- maybe always add left / right as in mml ?
-  +
-  P("\\") * (
+  + P("\\") * (
         (
             P(" ") * (
                   Cc("{}") * p_spaces^0 * C(S("^_"))
@@ -867,28 +912,29 @@ local p_special =
 
 -- open | close :: {: | :}
 
-
 local parser = Ct { "tokenizer",
     tokenizer = (
         p_spaces
       + p_number
       + p_text
---       + Ct(p_open * V("tokenizer") * p_close)        -- {: (a+b,=,1),(a+b,=,7) :}
---       + Ct(p_open * V("tokenizer") * p_close_right)  -- {  (a+b,=,1),(a+b,=,7) :}
---       + Ct(p_open_left * V("tokenizer") * p_right)   -- {: (a+b,=,1),(a+b,=,7)  }
+   -- + Ct(p_open * V("tokenizer") * p_close)        -- {: (a+b,=,1),(a+b,=,7) :}
+   -- + Ct(p_open * V("tokenizer") * p_close_right)  -- {  (a+b,=,1),(a+b,=,7) :}
+   -- + Ct(p_open_left * V("tokenizer") * p_right)   -- {: (a+b,=,1),(a+b,=,7)  }
       + Ct(p_left * V("tokenizer") * p_right)        -- {  (a+b,=,1),(a+b,=,7)  }
       + p_special
       + p_reserved
       + p_entity
---       + p_utf - p_close - p_right
+  --  + p_utf - p_close - p_right
       + p_utf - p_right
     )^1,
 }
 
-local function show_state(state,level,t)
-    state = state + 1
-    report_asciimath(table.serialize(t,formatters["stage %s:%s"](level,state)))
-    return state
+local collapse  = nil
+local serialize = table.serialize
+local f_state   = formatters["level %s : %s : intermediate"]
+
+local function show_state(t,level,state)
+    report_asciimath(serialize(t,f_state(level,state)))
 end
 
 local function show_result(str,result)
@@ -896,20 +942,7 @@ local function show_result(str,result)
     report_asciimath("result > %s",result)
 end
 
-local function collapse(t,level)
-    if not t then
-        return ""
-    end
-    local state = 0
-    if trace_detail then
-        if level then
-            level = level + 1
-        else
-            level = 1
-        end
-        state = show_state(state,level,t)
-    end
-    --
+local function collapse_matrices(t)
     local n = #t
     if n > 4 and t[3] == "," then
         local l1 = t[1]
@@ -969,11 +1002,55 @@ local function collapse(t,level)
             end
         end
     end
-    --
-    if trace_detail then
-        state = show_state(state,level,t)
+    return t
+end
+
+local function collapse_bars(t)
+    local n, i, l, m = #t, 1, false, 0
+    while i <= n do
+        local current = t[i]
+        if current == "\\|" then
+            if l then
+                m = m + 1
+                t[l] = "\\left\\|"
+                t[i] = "\\right\\|"
+                t[m] = { unpack(t,l,i) }
+                l = false
+            else
+                l = i
+            end
+        elseif not l then
+            m = m + 1
+            t[m] = current
+        end
+        i = i + 1
     end
-    --
+    if l then
+        local tt = { "\\left ." } -- space fools final checker
+        local tm  = 1
+        for i=1,m do
+            tm = tm + 1
+            tt[tm] = t[i]
+        end
+        tm = tm + 1
+        tt[tm] = "\\middle\\|"
+        for i=l+1,n do
+            tm = tm + 1
+            tt[tm] = t[i]
+        end
+        tm = tm + 1
+        tt[tm] = "\\right ." -- space fools final checker
+        m = tm
+        t = tt
+    elseif m < n then
+        for i=n,m+1,-1 do
+            t[i] = nil
+        end
+    end
+    return t
+end
+
+local function collapse_pairs(t)
     local n, i = #t, 1
     while i < n do
         local current = t[i]
@@ -1000,11 +1077,10 @@ local function collapse(t,level)
             i = i + 1
         end
     end
-    --
-    if trace_detail then
-        state = show_state(state,level,t)
-    end
-    --
+    return t
+end
+
+local function collapse_parentheses(t)
     local n, i = #t, 1
     if n > 2 then
         while i < n do
@@ -1012,8 +1088,6 @@ local function collapse(t,level)
             if type(current) == "table" and isleft[t[i-1]] and isright[t[i+1]] then
                 local c = #current
                 if c > 2 and isleft[current[1]] and isright[current[c]] then
---                     current[c] = nil
---                     current[1] = ""
                     remove(current,c)
                     remove(current,1)
                 end
@@ -1023,11 +1097,10 @@ local function collapse(t,level)
             end
         end
     end
-    --
-    if trace_detail then
-        state = show_state(state,level,t)
-    end
-    --
+    return t
+end
+
+local function collapse_signs(t)
     local n, m, i = #t, 0, 1
     while i <= n do
         m = m + 1
@@ -1041,8 +1114,6 @@ local function collapse(t,level)
             end
             if type(one) == "table" then
                 if isleft[one[1]] and isright[one[#one]] then
---                     one[1]   = ""
---                     one[#one] = nil
                     remove(one,#one)
                     remove(one,1)
                 end
@@ -1056,6 +1127,30 @@ local function collapse(t,level)
             end
             t[m] = current .. "{" .. one .. "}"
             i = i + 2
+        elseif i + 2 <= n and isfunny[current] then
+            local one = t[i+1]
+            if isinfix[one] then
+                local two = t[i+2]
+                if two == "-" then -- or another sign ? or unary ?
+                    local three = t[i+3]
+                    if three then
+                        if type(three) == "table" then
+                            three = collapse(three,level)
+                        end
+                        t[m] = current .. one .. "{" .. two .. three .. "}"
+                        i = i + 4
+                    else
+                        t[m] = current
+                        i = i + 1
+                    end
+                else
+                    t[m] = current
+                    i = i + 1
+                end
+            else
+                t[m] = current
+                i = i + 1
+            end
         else
             t[m] = current
             i = i + 1
@@ -1070,11 +1165,10 @@ local function collapse(t,level)
             t[i] = nil
         end
     end
-    --
-    if trace_detail then
-        state = show_state(state,level,t)
-    end
-    --
+    return t
+end
+
+local function collapse_binaries(t)
     local n, m, i = #t, 0, 1
     while i <= n do
         m = m + 1
@@ -1088,8 +1182,6 @@ local function collapse(t,level)
             end
             if type(one) == "table" then
                 if isleft[one[1]] and isright[one[#one]] then
---                     one[1]   = ""
---                     one[#one] = nil
                     remove(one,#one)
                     remove(one,1)
                 end
@@ -1101,8 +1193,6 @@ local function collapse(t,level)
             end
             if type(two) == "table" then
                 if isleft[two[1]] and isright[two[#two]] then
---                     two[1]   = ""
---                     two[#two] = nil
                     remove(two,#two)
                     remove(two,1)
                 end
@@ -1124,11 +1214,95 @@ local function collapse(t,level)
             t[i] = nil
         end
     end
-    --
-    if trace_detail then
-        state = show_state(state,level,t)
+    return t
+end
+
+local function collapse_infixes_1(t)
+    local n, i = #t, 1
+    while i <= n do
+        local current = t[i]
+        if isinfix[current] then
+            local what = t[i+1]
+            if what then
+                if type(what) == "table" then
+                    local f, l = what[1], what[#what]
+                    if isleft[f] and isright[l] then
+                        remove(what,#what)
+                        remove(what,1)
+                    end
+                    t[i+1] = collapse(what,level) -- collapse ?
+                end
+                i = i + 2
+            else
+                break
+            end
+        else
+            i = i + 1
+        end
     end
-    --
+    return t
+end
+
+function collapse_limits(t)
+    local n, m, i = #t, 0, 1
+    while i <= n do
+        m = m + 1
+        local current = t[i]
+        if islimits[current] then
+            local one, two, first, second = nil, nil, t[i+1], t[i+3]
+            if first and isinfix[first] then
+                one = t[i+2]
+                if one then
+                 -- if type(one) == "table" then
+                 --     if isleft[one[1]] and isright[one[#one]] then
+                 --         remove(one,#one)
+                 --         remove(one,1)
+                 --     end
+                 --     one = collapse(one,level)
+                 -- end
+                    if second and isinfix[second] then
+                        two = t[i+4]
+                     -- if type(two) == "table" then
+                     --     if isleft[two[1]] and isright[two[#two]] then
+                     --         remove(two,#two)
+                     --         remove(two,1)
+                     --     end
+                     --     two = collapse(two,level)
+                     -- end
+                    end
+                    if two then
+                        t[m] = current .. "\\limits" .. first .. "{" .. one .. "}" .. second .. "{" .. two .. "}"
+                        i = i + 5
+                    else
+                        t[m] = current .. "\\limits" .. first .. "{" .. one .. "}"
+                        i = i + 3
+                    end
+                else
+                    t[m] = current
+                    i = i + 1
+                end
+            else
+                t[m] = current
+                i = i + 1
+            end
+        else
+            t[m] = current
+            i = i + 1
+        end
+    end
+    if i == n then -- yes?
+        m = m + 1
+        t[m] = t[n]
+    end
+    if m < n then
+        for i=n,m+1,-1 do
+            t[i] = nil
+        end
+    end
+    return t
+end
+
+local function collapse_tables(t)
     local n, m, i = #t, 0, 1
     while i <= n do
         m = m + 1
@@ -1154,19 +1328,25 @@ local function collapse(t,level)
             t[i] = nil
         end
     end
-    --
-    if trace_detail then
-        state = show_state(state,level,t)
-    end
-    --
+    return t
+end
+
+local function collapse_infixes_2(t)
     local n, m, i = #t, 0, 1
     while i < n do
         local current = t[i]
         if isinfix[current] and i > 1 then
             local tl = t[i-1]
             local tr = t[i+1]
-            t[m] = tl .. current .. "{" .. tr .. "}"
-            i = i + 2
+            local ti = t[i+2]
+            local tn = t[i+3]
+            if ti and tn and isinfix[ti] then
+                t[m] = tl .. current .. "{" .. tr .. "}" .. ti .. "{" .. tn .. "}"
+                i = i + 4
+            else
+                t[m] = tl .. current .. "{" .. tr .. "}"
+                i = i + 2
+            end
         else
             m = m + 1
             t[m] = current
@@ -1182,11 +1362,10 @@ local function collapse(t,level)
             t[i] = nil
         end
     end
-    --
-    if trace_detail then
-        state = show_state(state,level,t)
-    end
-    --
+    return t
+end
+
+local function collapse_fractions_1(t)
     local n, m, i = #t, 0, 1
     while i < n do
         local current = t[i]
@@ -1222,16 +1401,14 @@ local function collapse(t,level)
             t[i] = nil
         end
     end
-    --
-    if trace_detail then
-        state = show_state(state,level,t)
-    end
-    --
+    return t
+end
+
+local function collapse_fractions_2(t)
     local n, m, i = #t, 0, 1
     while i < n do
         local current = t[i]
         if current == "\\slash" and i > 1 then
---             t[m] = "{\\left(" .. t[i-1] .. "\\middle/" .. t[i+1] .. "\\right)}"
             t[m] = "{\\left." .. t[i-1] .. "\\middle/" .. t[i+1] .. "\\right.}"
             i = i + 2
         else
@@ -1249,17 +1426,47 @@ local function collapse(t,level)
             t[i] = nil
         end
     end
-    --
-    if trace_detail then
-        state = show_state(state,level,t)
-    end
-    --
+    return t
+end
+
+local function collapse_result(t)
     local n = #t
-    if t[1] == "\\left." and t[n] == "\\right." then
-        return  concat(t," ",2,n-1)
+    if t[1] == "\\left." and t[n] == "\\right." then -- see bar .. space needed there
+        return concat(t," ",2,n-1)
     else
-        return  concat(t," ")
+        return concat(t," ")
     end
+end
+
+collapse = function(t,level)
+    -- check
+    if not t then
+        return ""
+    end
+    -- tracing
+    if trace_detail then
+        if level then
+            level = level + 1
+        else
+            level = 1
+        end
+        show_state(t,level,"parsed")
+    end
+    -- steps
+    t = collapse_matrices   (t) if trace_detail then show_state(t,level,"matrices")      end
+    t = collapse_bars       (t) if trace_detail then show_state(t,level,"bars")          end
+    t = collapse_pairs      (t) if trace_detail then show_state(t,level,"pairs")         end
+    t = collapse_parentheses(t) if trace_detail then show_state(t,level,"parentheses")   end
+    t = collapse_signs      (t) if trace_detail then show_state(t,level,"signs")         end
+    t = collapse_binaries   (t) if trace_detail then show_state(t,level,"binaries")      end
+    t = collapse_infixes_1  (t) if trace_detail then show_state(t,level,"infixes (1)")   end
+    t = collapse_limits     (t) if trace_detail then show_state(t,level,"limits")        end
+    t = collapse_tables     (t) if trace_detail then show_state(t,level,"tables")        end
+    t = collapse_infixes_2  (t) if trace_detail then show_state(t,level,"infixes (2)")   end
+    t = collapse_fractions_1(t) if trace_detail then show_state(t,level,"fractions (1)") end
+    t = collapse_fractions_2(t) if trace_detail then show_state(t,level,"fractions (2)") end
+    -- done
+    return collapse_result(t)
 end
 
 -- todo: cache simple ones, say #str < 10, maybe weak
@@ -1456,6 +1663,15 @@ if not context then
 --     report_asciimath(cleanedup([[a "α" b]]))
 --     report_asciimath(cleanedup([[//4]]))
 
+--     convert([[sum x]])
+--     convert([[sum^(1)_(2) x]])
+--     convert([[lim_(1)^(2) x]])
+--     convert([[lim_(1) x]])
+--     convert([[lim^(2) x]])
+
+--     convert([[{: rangle]])
+--     convert([[\langle\larr]])
+--     convert([[langlelarr]])
 --     convert([[D_f=[0 ,→〉]])
 --     convert([[ac+sinx+xsqrtx]])
 --     convert([[ac+\alpha x+xsqrtx-cc b*pi**psi-3alephx / bb X]])
@@ -1466,10 +1682,10 @@ if not context then
 --     convert([[//4]])
 --     convert([[ {(a+b,=,1),(a+b,=,7)) ]])
 
--- convert([[ 2/a // 5/b = (2 b) / ( a b) // ( 5 a ) / ( a b ) = (2 b ) / ( 5 a ) ]])
--- convert([[ (2+x)/a // 5/b  ]])
+--     convert([[ 2/a // 5/b = (2 b) / ( a b) // ( 5 a ) / ( a b ) = (2 b ) / ( 5 a ) ]])
+--     convert([[ (2+x)/a // 5/b  ]])
 
--- convert([[ ( 2/a ) // ( 5/b ) = ( (2 b) / ( a b) ) // ( ( 5 a ) / ( a b ) ) = (2 b ) / ( 5 a ) ]])
+--     convert([[ ( 2/a ) // ( 5/b ) = ( (2 b) / ( a b) ) // ( ( 5 a ) / ( a b ) ) = (2 b ) / ( 5 a ) ]])
 
 --     convert([[ (x/y)^3 = x^3/y^3 ]])
 

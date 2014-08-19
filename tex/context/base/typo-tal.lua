@@ -112,8 +112,8 @@ function characteralign.handler(originalhead,where)
     if not a or a == 0 then
         return originalhead, false
     end
-    local column    = div(a,100)
-    local row       = a % 100
+    local column    = div(a,0xFFFF)
+    local row       = a % 0xFFFF
     local dataset   = datasets and datasets[column] or setcharacteralign(column)
     local separator = dataset.separator
     local list      = dataset.list

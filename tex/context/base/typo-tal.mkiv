@@ -56,7 +56,7 @@
 % D
 % D \typebuffer \blank \getbuffer \blank
 
-\unexpanded\def\signalcharacteralign#1#2{\attribute\characteralignattribute=\numexpr#1*\plushundred+#2\relax}
+\unexpanded\def\signalcharacteralign#1#2{\attribute\characteralignattribute\numexpr#1*\maxcardminusone+#2\relax} % 0xFFFF
 \unexpanded\def\setcharacteralign   #1#2{\ctxcommand{setcharacteralign(\number#1,"#2")}}
 \unexpanded\def\resetcharacteralign     {\ctxcommand{resetcharacteralign()}}
 \unexpanded\def\nocharacteralign        {\attribute\characteralignattribute\attributeunsetvalue}

@@ -103,15 +103,23 @@ function mathematics.checkprivateparameters(target,original)
     local mathparameters = target.mathparameters
     if mathparameters then
         local parameters = target.parameters
+        local properties = target.properties
         if parameters then
-            if not mathparameters.FractionDelimiterSize then
-                mathparameters.FractionDelimiterSize = 1.01 * parameters.size
+            local size = parameters.size
+            if size then
+                if not mathparameters.FractionDelimiterSize then
+                    mathparameters.FractionDelimiterSize = 1.01 * size
+                end
+                if not mathparameters.FractionDelimiterDisplayStyleSize then
+                    mathparameters.FractionDelimiterDisplayStyleSize = 2.40 * size
+                end
+            elseif properties then
+                report_math("invalid parameters in font %a",properties.fullname or "?")
+            else
+                report_math("invalid parameters in font")
             end
-            if not mathparameters.FractionDelimiterDisplayStyleSize then
-                mathparameters.FractionDelimiterDisplayStyleSize = 2.40 * parameters.size
-            end
-        elseif target.properties then
-            report_math("no parameters in font %a",target.properties.fullname or "?")
+        elseif properties then
+            report_math("no parameters in font %a",properties.fullname or "?")
         else
             report_math("no parameters and properties in font")
         end
