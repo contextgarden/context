@@ -42,10 +42,10 @@ local xml = xml
 --~ local xml = xml
 
 local concat, remove, insert = table.concat, table.remove, table.insert
-local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
+local type, next, setmetatable, getmetatable, tonumber, rawset = type, next, setmetatable, getmetatable, tonumber, rawset
 local lower, find, match, gsub = string.lower, string.find, string.match, string.gsub
 local utfchar = utf.char
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 local formatters = string.formatters
 
@@ -325,12 +325,13 @@ end
 
 -- one level expansion (simple case), no checking done
 
-local rest = (1-P(";"))^0
-local many = P(1)^0
+local p_rest = (1-P(";"))^0
+local p_many = P(1)^0
+local p_char = lpegpatterns.utf8character
 
 local parsedentity =
-    P("&") * (P("#x")*(rest/fromhex) + P("#")*(rest/fromdec)) * P(";") * P(-1) +
-             (P("#x")*(many/fromhex) + P("#")*(many/fromdec))
+    P("&") * (P("#x")*(p_rest/fromhex) + P("#")*(p_rest/fromdec)) * P(";") * P(-1) +
+             (P("#x")*(p_many/fromhex) + P("#")*(p_many/fromdec))
 
 -- parsing in the xml file
 
@@ -367,7 +368,41 @@ local privates_n = {
     -- keeps track of defined ones
 }
 
-local escaped = utf.remapper(privates_u)
+-- -- local escaped      = utf.remapper(privates_u) -- can't be used as it freezes
+-- -- local unprivatized = utf.remapper(privates_p) -- can't be used as it freezes
+--
+-- local p_privates_u = false
+-- local p_privates_p = false
+--
+-- table.setmetatablenewindex(privates_u,function(t,k,v) rawset(t,k,v) p_privates_u = false end)
+-- table.setmetatablenewindex(privates_p,function(t,k,v) rawset(t,k,v) p_privates_p = false end)
+--
+-- local function escaped(str)
+--     if not str or str == "" then
+--         return ""
+--     else
+--         if not p_privates_u then
+--             p_privates_u = Cs((lpeg.utfchartabletopattern(privates_u)/privates_u + p_char)^0)
+--         end
+--         return lpegmatch(p_privates_u,str)
+--     end
+-- end
+--
+-- local function unprivatized(str)
+--     if not str or str == "" then
+--         return ""
+--     else
+--         if not p_privates_p then
+--             p_privates_p = Cs((lpeg.utfchartabletopattern(privates_p)/privates_p + p_char)^0)
+--         end
+--         return lpegmatch(p_privates_p,str)
+--     end
+-- end
+
+local escaped      = utf.remapper(privates_u,"dynamic")
+local unprivatized = utf.remapper(privates_p,"dynamic")
+
+xml.unprivatized = unprivatized
 
 local function unescaped(s)
     local p = privates_n[s]
@@ -382,10 +417,7 @@ local function unescaped(s)
     return p
 end
 
-local unprivatized = utf.remapper(privates_p)
-
 xml.privatetoken = unescaped
-xml.unprivatized = unprivatized
 xml.privatecodes = privates_n
 
 local function handle_hex_entity(str)
@@ -546,7 +578,7 @@ local valid            = R('az', 'AZ', '09') + S('_-.')
 local name_yes         = C(valid^1) * colon * C(valid^1)
 local name_nop         = C(P(true)) * C(valid^1)
 local name             = name_yes + name_nop
-local utfbom           = lpeg.patterns.utfbom -- no capture
+local utfbom           = lpegpatterns.utfbom -- no capture
 local spacing          = C(space^0)
 
 ----- entitycontent    = (1-open-semicolon)^0

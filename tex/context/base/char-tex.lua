@@ -98,9 +98,9 @@ function utffilters.soften(str)
     return lpegmatch(tolow,str)
 end
 
-private.escape  = utf.remapper(escapes)
-private.replace = utf.remapper(low)
-private.revert  = utf.remapper(high)
+private.escape  = utf.remapper(escapes) -- maybe: ,"dynamic"
+private.replace = utf.remapper(low)     -- maybe: ,"dynamic"
+private.revert  = utf.remapper(high)    -- maybe: ,"dynamic"
 
 --[[ldx--
 <p>We get a more efficient variant of this when we integrate

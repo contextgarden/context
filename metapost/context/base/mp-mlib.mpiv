@@ -76,16 +76,30 @@ def multitonecolor(expr name, fractions, components, value) =
     withprescript "sp_value="      & value
 enddef ;
 
-def transparent(expr alternative, transparency)(text c) =
+% def transparent(expr alternative, transparency)(text c) =
+%     1 % this permits withcolor x intoshade y
+%     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(alternative)
+%     withprescript "tr_transparency=" & decimal transparency
+%     withcolor c
+% enddef ;
+
+let transparency = pair ;
+
+def transparent(expr t)(text c) =
     1 % this permits withcolor x intoshade y
-    withprescript "tr_alternative="  & decimal transparency_alternative_to_number(alternative)
-    withprescript "tr_transparency=" & decimal transparency
+    withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
+    withprescript "tr_transparency=" & decimal ypart t
     withcolor c
 enddef ;
 
-def withtransparency(expr alternative, transparency) =
-    withprescript "tr_alternative="  & decimal transparency_alternative_to_number(alternative)
-    withprescript "tr_transparency=" & decimal transparency
+% def withtransparency(expr alternative, transparency) =
+%     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(alternative)
+%     withprescript "tr_transparency=" & decimal transparency
+% enddef ;
+
+def withtransparency expr t =
+    withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
+    withprescript "tr_transparency=" & decimal ypart t
 enddef ;
 
 def cmyk(expr c, m, y, k) = % provided for downward compability

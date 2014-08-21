@@ -101,7 +101,7 @@ function commands.usemodules(prefix,askedname,truename)
     local truename = truename or environment.truefilename(askedname)
     local hasprefix = prefix and prefix ~= ""
     local hashname = ((hasprefix and prefix) or "*") .. "-" .. truename
-    local status = modstatus[hashname]
+    local status = modstatus[hashname] or false -- yet unset
     if status == 0 then
         -- not found
     elseif status == 1 then
@@ -139,9 +139,7 @@ function commands.usemodules(prefix,askedname,truename)
                 -- assume a user namespace
                 report_modules("using user prefixed file %a",truename)
                 status = 1
-            elseif not permit_unprefixed then
-                -- forget about it
-            elseif usemodule(truename) then
+            elseif permit_unprefixed and usemodule(truename) then
                 report_modules("using unprefixed file %a",truename)
                 status = 1
             else

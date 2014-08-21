@@ -14,6 +14,7 @@ return {
         "maxdimensions",
     },
     commands = {
+        "transparency",
         --
         "sqr", "log", "ln", "exp", "inv", "pow", "pi", "radian",
         "tand", "cotd", "sin", "cos", "tan", "cot", "atan", "asin", "acos",

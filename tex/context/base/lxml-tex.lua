@@ -21,7 +21,6 @@ local tex, xml = tex, xml
 local lowerchars, upperchars, lettered = characters.lower, characters.upper, characters.lettered
 local basename, dirname, joinfile = file.basename, file.dirname, file.join
 
-
 lxml = lxml or { }
 local lxml = lxml
 
@@ -72,7 +71,7 @@ lxml.entities = lxml.entities or { }
 
 storage.register("lxml/entities",lxml.entities,"lxml.entities")
 
---~ xml.placeholders.unknown_any_entity = nil -- has to be per xml
+-- xml.placeholders.unknown_any_entity = nil -- has to be per xml
 
 local xmlentities  = xml.entities
 local texentities  = lxml.entities

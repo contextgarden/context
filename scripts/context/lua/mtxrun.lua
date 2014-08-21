@@ -4388,7 +4388,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 34171, stripped down to: 15086
+-- original size: 35080, stripped down to: 15712
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4614,16 +4614,38 @@ if not utf.sub then
     end
   end
 end
-function utf.remapper(mapping)
-  local pattern=type(mapping)=="table" and tabletopattern(mapping) or p_utf8char
-  local pattern=Cs((pattern/mapping+p_utf8char)^0)
-  return function(str)
-    if not str or str=="" then
-      return ""
+function utf.remapper(mapping,option) 
+  if type(mapping)=="table" then
+    if option=="dynamic" then
+      local pattern=false
+      table.setmetatablenewindex(mapping,function(t,k,v) rawset(t,k,v) pattern=false end)
+      return function(str)
+        if not str or str=="" then
+          return ""
+        else
+          if not pattern then
+            pattern=Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
+          end
+          return lpegmatch(pattern,str)
+        end
+      end
+    elseif option=="pattern" then
+      return Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
     else
-      return lpegmatch(pattern,str)
+      local pattern=Cs((tabletopattern(mapping)/mapping+p_utf8char)^0)
+      return function(str)
+        if not str or str=="" then
+          return ""
+        else
+          return lpegmatch(pattern,str)
+        end
+      end,pattern
     end
-  end,pattern
+  else
+    return function(str)
+      return str or ""
+    end
+  end
 end
 function utf.replacer(t) 
   local r=replacer(t,false,false,true)
@@ -4875,8 +4897,8 @@ local function big(c)
     return char(b1/256,b1%256,b2/256,b2%256)
   end
 end
-local _,l_remap=utf.remapper(little)
-local _,b_remap=utf.remapper(big)
+local l_remap=utf.remapper(little,"pattern")
+local b_remap=utf.remapper(big,"pattern")
 function utf.utf8_to_utf16_be(str,nobom)
   if nobom then
     return lpegmatch(b_remap,str)
@@ -9223,7 +9245,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 42614, stripped down to: 26694
+-- original size: 43799, stripped down to: 26806
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -9238,10 +9260,10 @@ if lpeg.setmaxstack then lpeg.setmaxstack(1000) end
 xml=xml or {}
 local xml=xml
 local concat,remove,insert=table.concat,table.remove,table.insert
-local type,next,setmetatable,getmetatable,tonumber=type,next,setmetatable,getmetatable,tonumber
+local type,next,setmetatable,getmetatable,tonumber,rawset=type,next,setmetatable,getmetatable,tonumber,rawset
 local lower,find,match,gsub=string.lower,string.find,string.match,string.gsub
 local utfchar=utf.char
-local lpegmatch=lpeg.match
+local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local P,S,R,C,V,C,Cs=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.V,lpeg.C,lpeg.Cs
 local formatters=string.formatters
 xml.xmlns=xml.xmlns or {}
@@ -9403,9 +9425,10 @@ local function fromdec(s)
     return formatters["d:%s"](s),true
   end
 end
-local rest=(1-P(";"))^0
-local many=P(1)^0
-local parsedentity=P("&")*(P("#x")*(rest/fromhex)+P("#")*(rest/fromdec))*P(";")*P(-1)+(P("#x")*(many/fromhex)+P("#")*(many/fromdec))
+local p_rest=(1-P(";"))^0
+local p_many=P(1)^0
+local p_char=lpegpatterns.utf8character
+local parsedentity=P("&")*(P("#x")*(p_rest/fromhex)+P("#")*(p_rest/fromdec))*P(";")*P(-1)+(P("#x")*(p_many/fromhex)+P("#")*(p_many/fromdec))
 local predefined_unified={
   [38]="&amp;",
   [42]="&quot;",
@@ -9431,7 +9454,9 @@ local privates_u={
 local privates_p={}
 local privates_n={
 }
-local escaped=utf.remapper(privates_u)
+local escaped=utf.remapper(privates_u,"dynamic")
+local unprivatized=utf.remapper(privates_p,"dynamic")
+xml.unprivatized=unprivatized
 local function unescaped(s)
   local p=privates_n[s]
   if not p then
@@ -9444,9 +9469,7 @@ local function unescaped(s)
   end
   return p
 end
-local unprivatized=utf.remapper(privates_p)
 xml.privatetoken=unescaped
-xml.unprivatized=unprivatized
 xml.privatecodes=privates_n
 local function handle_hex_entity(str)
   local h=hcache[str]
@@ -9599,7 +9622,7 @@ local valid=R('az','AZ','09')+S('_-.')
 local name_yes=C(valid^1)*colon*C(valid^1)
 local name_nop=C(P(true))*C(valid^1)
 local name=name_yes+name_nop
-local utfbom=lpeg.patterns.utfbom 
+local utfbom=lpegpatterns.utfbom 
 local spacing=C(space^0)
 local anyentitycontent=(1-open-semicolon-space-close)^0
 local hexentitycontent=R("AF","af","09")^0
@@ -17366,8 +17389,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 716960
--- stripped bytes    : 255652
+-- original bytes    : 719054
+-- stripped bytes    : 257008
 
 -- end library merge
 

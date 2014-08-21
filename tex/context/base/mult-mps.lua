@@ -32,7 +32,7 @@ return {
         "tertiary", "primarydef", "secondarydef", "tertiarydef",
         "randomseed", "also", "contour", "doublepath",
         "withcolor", "withcmykcolor", "withpen", "dashed", "if", "else", "elseif", "fi", "for", "endfor", "forever", "exitif", "within",
-        "forsuffixes", "downto", "upto", "step", "until",
+        "forsuffixes", "step", "until",
         "charlist", "extensible", "fontdimen", "headerbyte", "kern", "ligtable",
         "boundarychar", "chardp", "charext", "charht", "charic", "charwd", "designsize",
         "fontmaking", "charexists",
@@ -64,6 +64,7 @@ return {
         "runscript",
     },
     commands = {
+        "upto", "downto",
         "beginfig", "endfig",
         "beginglyph", "endglyph", "charscale",
         "rotatedaround", "reflectedabout",

@@ -525,22 +525,44 @@ end
 --     end, pattern
 -- end
 
-function utf.remapper(mapping)
-    local pattern = type(mapping) == "table" and tabletopattern(mapping) or p_utf8char
-    local pattern = Cs((pattern/mapping + p_utf8char)^0)
-    return function(str)
-        if not str or str == "" then
-            return ""
+function utf.remapper(mapping,option) -- static also returns a pattern
+    if type(mapping) == "table" then
+        if option == "dynamic" then
+            local pattern = false
+            table.setmetatablenewindex(mapping,function(t,k,v) rawset(t,k,v) pattern = false end)
+            return function(str)
+                if not str or str == "" then
+                    return ""
+                else
+                    if not pattern then
+                        pattern = Cs((tabletopattern(mapping)/mapping + p_utf8char)^0)
+                    end
+                    return lpegmatch(pattern,str)
+                end
+            end
+        elseif option == "pattern" then
+            return Cs((tabletopattern(mapping)/mapping + p_utf8char)^0)
+     -- elseif option == "static" then
         else
-            return lpegmatch(pattern,str)
+            local pattern = Cs((tabletopattern(mapping)/mapping + p_utf8char)^0)
+            return function(str)
+                if not str or str == "" then
+                    return ""
+                else
+                    return lpegmatch(pattern,str)
+                end
+            end, pattern
         end
-    end, pattern
+    else
+        -- is actually an error
+        return function(str)
+            return str or ""
+        end
+    end
 end
 
 -- local remap = utf.remapper { a = 'd', b = "c", c = "b", d = "a" }
 -- print(remap("abcd 1234 abcd"))
-
---
 
 function utf.replacer(t) -- no precheck, always string builder
     local r = replacer(t,false,false,true)
@@ -954,8 +976,8 @@ end
 --     end
 -- end
 
-local _, l_remap = utf.remapper(little)
-local _, b_remap = utf.remapper(big)
+local l_remap = utf.remapper(little,"pattern")
+local b_remap = utf.remapper(big,"pattern")
 
 function utf.utf8_to_utf16_be(str,nobom)
     if nobom then
