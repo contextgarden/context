@@ -222,9 +222,9 @@ local function finalizer()
             os.remove(username)
             username = nil
         end
-        local loaded = dataset.loaded
+        local loaded  = dataset.loaded
         local sources = dataset.sources
-        local used   = { }
+        local used    = { }
         for i=1,#sources do
             local source = sources[i]
          -- if loaded[source.filename] ~= "previous" then -- needs checking
@@ -336,6 +336,11 @@ setmetatableindex(usedentries,function(t,k)
                 -- weird
             end
         end
+        -- to be sure
+        setmetatableindex(usedentries,"table")
+        setmetatableindex(citetolist,"table")
+        setmetatableindex(listtocite,"table")
+        --
         return usedentries[k]
     end
 end)
@@ -599,12 +604,12 @@ end
 
 function publications.enhance(dataset) -- for the moment split runs (maybe publications.enhancers)
     statistics.starttiming(publications)
-    local used = usedentries[dataset]
     if type(dataset) == "string" then
         dataset = datasets[dataset]
     else
-        -- message
+        -- assume table, otherwise maybe issue an error
     end
+    local used    = usedentries[dataset.name] or { } -- already catched by metatable
     local luadata = dataset.luadata
     local details = dataset.details
     local ordered = dataset.ordered
@@ -1377,7 +1382,7 @@ function lists.fetchentries(dataset)
     for i=1,#list do
         local li = list[i]
         ctx_btxsettag(li[1])
-        ctx_btxsetnumber(li[4])
+        ctx_btxsetnumber(li[3])
         ctx_btxchecklistentry()
     end
 end
