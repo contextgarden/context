@@ -85,6 +85,14 @@ local function tolang(what) -- returns lang object
     end
 end
 
+function languages.getdata(tag) -- or number
+    if tag then
+        return registered[tag] or registered[numbers[tag]]
+    else
+        return registered[numbers[tex.language]]
+    end
+end
+
 -- languages.tolang = tolang
 
 -- patterns=en
@@ -137,13 +145,14 @@ local function loaddefinitions(tag,specification)
                         report_initialization("loading definition %a for language %a from %a",definition,tag,fullname)
                     end
                     local suffix, gzipped = gzip.suffix(fullname)
-                    local defs = table.load(fullname,gzipped and gzip.load)
-                    if defs then -- todo: version test
+                    local resources = table.load(fullname,gzipped and gzip.load)
+                    if resources then -- todo: version test
                         ok, nofloaded = true, nofloaded + 1
-                     -- instance:patterns   (defs.patterns   and defs.patterns  .data or "")
-                     -- instance:hyphenation(defs.exceptions and defs.exceptions.data or "")
-                        instance:patterns   (validdata(defs.patterns,  "patterns",  tag) or "")
-                        instance:hyphenation(validdata(defs.exceptions,"exceptions",tag) or "")
+                     -- instance:patterns   (resources.patterns   and resources.patterns  .data or "")
+                     -- instance:hyphenation(resources.exceptions and resources.exceptions.data or "")
+                        instance:patterns   (validdata(resources.patterns,  "patterns",  tag) or "")
+                        instance:hyphenation(validdata(resources.exceptions,"exceptions",tag) or "")
+data.resources = resources -- so we can use them otherwise
                     else
                         report_initialization("invalid definition %a for language %a in %a",definition,tag,filename)
                     end

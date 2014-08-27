@@ -117,6 +117,14 @@ function tasks.disableaction(name,action)
     end
 end
 
+function tasks.replaceaction(name,group,oldaction,newaction)
+    local data = valid(name)
+    if data then
+        sequencers.replaceaction(data.list,group,oldaction,newaction)
+        data.runner = false
+    end
+end
+
 function tasks.setaction(name,action,value)
     if value then
         tasks.enableaction(name,action)

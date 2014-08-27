@@ -7,65 +7,77 @@
 
 */
 
+/*
+
+	Because empty div elements are not seen we put a comment in them
+	so that empty table cells etc work ok.
+
+*/
+
 /* ignore  : mixed   */
 /* metadata: display */
 
-ignore {
+ignore, div.ignore {
 	display : none ;
 }
 
-xmetadata {
+xmetadata, div.xmetadata {
 	display : none ;
 }
 
-xmetavariable {
+xmetavariable, div.xmetavariable {
 	display : none ;
 }
 
 /* document : display */
 
-document:before {
+document:before, div.document:before {
 	content       : attr(title) ;
 	font-size     : 44pt ;
 	font-weight   : bold ;
 	margin-bottom : 1em ;
 }
 
-document {
+document, div.document {
 	font-family  : "DejaVu Serif", "Lucida Bright", serif ;
 	font-size    : 12pt ;
 	max-width    : 50em ;
 	padding      : 1em ;
  /* text-align   : justify ;    */
+    text-align   : justify ;
  /*	hyphens      : manual ;     */
  /* text-justify : inter-word ; */
 }
 
-document>metadata {
+document>metadata, div.document div.metadata {
 	font-family   : "Lucida Console", "DejaVu Sans Mono", monospace ;
 	margin-bottom : 2em ;
 }
 
-document>metadata>metavariable[name="title"]:before {
+document>metadata>metavariable[name="title"]:before,
+		div.document div.metadata div.metavariable.name-title:before {
 	content : "title\00A0\00A0\00A0:\00A0" ;
 }
 
-document>metadata>metavariable[name="author"]:before {
-		content : "author\00A0\00A0:\00A0" ;
+document>metadata>metavariable[name="author"]:before,
+		div.document div.metadata div.metavariable.name-author:before {
+	content : "author\00A0\00A0:\00A0" ;
 }
 
-document>metadata>metavariable[name="version"]:before {
+document>metadata>metavariable[name="version"]:before,
+		div.document div.metadata div.metavariable.name-version:before {
 	content : "version\00A0:\00A0" ;
 }
 
-document>metadata>metavariable[name="title"], document>metadata>metavariable[name="author"], document>metadata>metavariable[name="version"] {
+document>metadata>metavariable[name="title"], document>metadata>metavariable[name="author"], document>metadata>metavariable[name="version"],
+		div.document div.metadata div.metavariable.name-title, div.document div.metadata div.metavariable.name-author, div.document div.metadata div.metavariable.name-version {
 	display : block ;
 }
 
 /* paragraph : mixed */
 /* p         : mixed */
 
-paragraph, p {
+paragraph, p, div.paragraph, div.p {
 	display       : block ;
 	margin-top    : 0.5em ;
 	margin-bottom : 0.5em ;
@@ -73,7 +85,7 @@ paragraph, p {
 
 /* break : display */
 
-break {
+break, div.break {
 	display       : block ;
 	margin-bottom : 0.5em ;
 }
@@ -81,14 +93,14 @@ break {
 /* construct : inline */
 /* highlight : inline */
 
-construct {
+construct, div.construct {
 }
 
-construct[detail="important"] {
+construct[detail="important"], div.construct.detail-important {
 	font-weight : bold ;
 }
 
-highlight { /* todo: style and color */
+highlight, div.highlight { /* todo: style and color */
 }
 
 /* section        : display */
@@ -96,76 +108,90 @@ highlight { /* todo: style and color */
 /* sectionnumber  : mixed   */
 /* sectioncontent : display */
 
-section {
+section, div.section {
 	display : block ;
 }
 
-sectioncontent {
+sectioncontent, div.sectioncontent {
 	display       : block ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 }
 
-section[detail="chapter"], section[detail="title"] {
+section[detail="chapter"], section[detail="title"],
+		div.section.detail-chapter, div.section.detail-title {
 	margin-top    : 3em ;
 	margin-bottom : 2em ;
 }
 
-section[detail="section"], section[detail="subject"] {
+section[detail="section"], section[detail="subject"],
+		div.section.detail-section, div.section.detail-subject {
 	margin-top    : 2.5em ;
 	margin-bottom : 2.5em ;
 }
 
-section[detail="subsection"], section[detail="subsubject"] {
+section[detail="subsection"], section[detail="subsubject"],
+		div.section.detail-subsection, div.section.detail-subsubject {
 	margin-top    : 2em ;
 	margin-bottom : 2em ;
 }
 
-section[detail="subsubsection"], section[detail="subsubsubject"] {
+section[detail="subsubsection"], section[detail="subsubsubject"],
+		div.section.detail-subsubsection, div.section.detail-subsubsubject {
 	margin-top    : 1em ;
 	margin-bottom : 0em ;
 }
 
-section[detail="summary"], section[detail="subsummary"] {
+section[detail="summary"], section[detail="subsummary"],
+		div.section.detail-summary, div.section.detail-subsummary {
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 }
 
-section[detail="chapter"]>sectionnumber {
+section[detail="chapter"]>sectionnumber,
+		div.section.detail-chapter div.sectionnumber {
 	display      : inline-block ;
 	margin-right : 1em ;
 	font-size    : 3em ;
 	font-weight  : bold ;
 }
 
-section[detail="chapter"]>sectiontitle, section[detail="title"]>sectiontitle {
+section[detail="chapter"]>sectiontitle, section[detail="title"]>sectiontitle,
+		div.section.detail-chapter div.sectiontitle, div.section.detail-title div.sectiontitle {
+	display     : inline-block ;
 	font-size   : 3em ;
 	font-weight : bold ;
 }
 
-section[detail="section"]>sectiontitle, section[detail="subject"]>sectiontitle {
+section[detail="section"]>sectiontitle, section[detail="subject"]>sectiontitle,
+		div.section.detail-section div.sectiontitle, div.section.detail-subject div.sectiontitle {
+	display     : inline-block ;
 	font-size   : 2.5em ;
 	font-weight : bold ;
 }
 
-section[detail="subsection"]>sectiontitle, section[detail="subsubject"]>sectiontitle{
+section[detail="subsection"]>sectiontitle, section[detail="subsubject"]>sectiontitle,
+		div.section.detail-subsection div.sectiontitle, div.section.detail-subsubject div.sectiontitle {
+	display     : inline-block ;
 	font-size   : 2em ;
 	font-weight : bold ;
 }
 
-section[detail="subsubsection"]>sectiontitle, section[detail="subsubsubject"]>sectiontitle{
+section[detail="subsubsection"]>sectiontitle, section[detail="subsubsubject"]>sectiontitle,
+		div.section.detail-subsubsection div.sectiontitle, div.section.detail-subsubsubject div.sectiontitle {
+	display     : inline-block ;
 	font-size   : 1em ;
 	font-weight : bold ;
 }
 
-section[detail="section"]>sectionnumber {
+section[detail="section"]>sectionnumber, div.section.detail-section div.sectionnumber {
 	display      : inline-block ;
 	margin-right : 1em ;
 	font-size    : 2.5em ;
 	font-weight  : bold ;
 }
 
-section[detail="summary"]>sectiontitle {
+section[detail="summary"]>sectiontitle, div.section.detail-summary div.sectiontitle {
 	display             : block ;
 	margin-top          : 1em ;
 	margin-bottom       : 1em ;
@@ -175,21 +201,14 @@ section[detail="summary"]>sectiontitle {
 	border-width        : .15em;
 }
 
-section[detail="subsection"]>sectionnumber {
-	display      : inline-block ;
-	margin-right : 1em ;
-	font-size    : 2em ;
-	font-weight  : bold ;
-}
-
-section[detail="subsection"]>sectionnumber {
+section[detail="subsection"]>sectionnumber, div.section.detail-subsection div.sectionnumber {
 	display      : inline-block ;
 	margin-right : 1em ;
 	font-size    : 1em ;
 	font-weight  : bold ;
 }
 
-section[detail="subsummary"]>sectiontitle {
+section[detail="subsummary"]>sectiontitle, div.section.detail-subsummary div.sectiontitle {
 	display             : block ;
 	margin-top          : 1em ;
 	margin-bottom       : 1em ;
@@ -217,37 +236,37 @@ section[detail="subsummary"]>sectiontitle {
     glyphs : 'Α' 'B' 'Γ' 'Δ' 'Ε' 'Ζ' 'Η' 'Θ' 'Ι' 'Κ' 'Λ' 'Μ' 'Ν' 'Ξ' 'Ο' 'Π' 'Ρ' 'Σ' 'Τ' 'Υ' 'Φ' 'Χ' 'Ψ' 'Ω' ;
 }
 
-itemgroup {
+itemgroup, div.itemgroup {
 	display       : block ;
 	margin-bottom : 0.5em ;
 	margin-top    : 0.5em ;
 }
 
-itemgroup[symbol="1"] { list-style-type : disc ; }
-itemgroup[symbol="2"] { list-style-type : square ; }
-itemgroup[symbol="3"] { list-style-type : square ; }
-itemgroup[symbol="4"] { list-style-type : square ; }
-itemgroup[symbol="5"] { list-style-type : circ ; }
-itemgroup[symbol="a"] { list-style-type : lower-alpha ; }
-itemgroup[symbol="A"] { list-style-type : alpha ; }
-itemgroup[symbol="r"] { list-style-type : lower-roman ; }
-itemgroup[symbol="R"] { list-style-type : upper-roman ; }
-itemgroup[symbol="n"] { list-style-type : decimal ; }
-itemgroup[symbol="g"] { list-style-type : lower-greek ; }
-itemgroup[symbol="G"] { list-style-type : upper-greek ; }
+itemgroup[symbol="1"], div.itemgroup.symbol-1 { list-style-type : disc ; }
+itemgroup[symbol="2"], div.itemgroup.symbol-2 { list-style-type : square ; }
+itemgroup[symbol="3"], div.itemgroup.symbol-3 { list-style-type : square ; }
+itemgroup[symbol="4"], div.itemgroup.symbol-4 { list-style-type : square ; }
+itemgroup[symbol="5"], div.itemgroup.symbol-5 { list-style-type : circ ; }
+itemgroup[symbol="a"], div.itemgroup.symbol-a { list-style-type : lower-alpha ; }
+itemgroup[symbol="A"], div.itemgroup.symbol-A { list-style-type : alpha ; }
+itemgroup[symbol="r"], div.itemgroup.symbol-r { list-style-type : lower-roman ; }
+itemgroup[symbol="R"], div.itemgroup.symbol-R { list-style-type : upper-roman ; }
+itemgroup[symbol="n"], div.itemgroup.symbol-n { list-style-type : decimal ; }
+itemgroup[symbol="g"], div.itemgroup.symbol-g { list-style-type : lower-greek ; }
+itemgroup[symbol="G"], div.itemgroup.symbol-G { list-style-type : upper-greek ; }
 
-item {
+item, div.item {
 	display       : list-item ;
 	margin-left   : 1em ;
 	margin-bottom : 0.5em ;
 	margin-top    : 0.5em ;
 }
 
-itemtag {
+itemtag, div.item {
 	display: none ;
 }
 
-itemcontent {
+itemcontent, div.itemcontent {
 }
 
 /* description        : display */
@@ -255,13 +274,14 @@ itemcontent {
 /* descriptioncontent : mixed   */
 /* descriptionsymbol  : inline  */
 
-description {
+description, div.description {
 	display       : block ;
 	margin-bottom : 1em ;
 	margin-top    : 1em ;
 }
 
-descriptiontag {
+descriptiontag, div.descriptiontag {
+	display      : inline ;
     float        : left ;
     clear        : left ;
 	margin-right : 1em ;
@@ -269,10 +289,10 @@ descriptiontag {
     font-weight  : bold ;
 }
 
-descriptioncontent {
+descriptioncontent, div.descriptioncontent {
 }
 
-descriptionsymbol {
+descriptionsymbol, div.descriptionsymbol {
 }
 
 /* verbatimblock      : display */
@@ -280,7 +300,7 @@ descriptionsymbol {
 /* verbatimline       : mixed   */
 /* verbatim           : inline  */
 
-verbatimblock {
+verbatimblock, div.verbatimblock {
 	background-color : rgb(50%,50%,100%) ;
 	display          : block ;
 	padding          : 1em ;
@@ -289,17 +309,18 @@ verbatimblock {
 	font-family      : "Lucida Console", "DejaVu Sans Mono", monospace ;
 }
 
-verbatimlines+verbatimlines {
+verbatimlines+verbatimlines, div.verbatimlines+div.verbatimlines {
 	display    : block ;
 	margin-top : 1em ;
 }
 
-verbatimline {
+verbatimline, div.verbatimline {
 	display     : block ;
 	white-space : pre-wrap ;
 }
 
-verbatim {
+verbatim, div.verbatim {
+	display     : inline ;
 	white-space : pre-wrap ;
 	color       : rgb(60%,60%,0%) ;
 	font-family : "Lucida Console", "DejaVu Sans Mono", monospace ;
@@ -308,18 +329,18 @@ verbatim {
 /* lines : display */
 /* line  : mixed   */
 
-lines {
+lines, div.lines {
 	display       : block ;
 	margin-bottom : 1em ;
 	margin-top    : 1em ;
 }
 
-lines+lines {
+lines+lines, div.lines+div.lines {
 	display    : block ;
 	margin-top : 1em ;
 }
 
-line {
+line, div.line {
 	display     : block ;
 	white-space : pre-wrap ;
 }
@@ -327,7 +348,7 @@ line {
 /* synonym : inline  */
 /* sorting : inline  */
 
-sorting, synonym {
+sorting, synonym, div.sorting, div.synonym {
 	display      : inline ;
 	font-variant : small-caps ;
 }
@@ -342,7 +363,7 @@ sorting, synonym {
 /* registerpage      : inline  */
 /* registerpagerange : mixed   */
 
-register {
+register, div.register {
 	display: none ;
 }
 
@@ -350,33 +371,33 @@ register {
 /* tablerow  : display */
 /* tablecell : mixed   */
 
-table {
+table, div.table {
 	display : table ;
 }
 
-tablerow {
+tablerow, div.tablerow {
 	display : table-row ;
 }
 
-tablecell[align="middle"] {
+tablecell[align="middle"], div.tablecell.align-middle {
 	display    : table-cell ;
 	text-align : center ;
 	padding    : .1em ;
 }
 
-tablecell[align="flushleft"] {
+tablecell[align="flushleft"], div.tablecell.align-flushleft {
 	display    : table-cell ;
 	text-align : left ;
 	padding    : .1em ;
 }
 
-tablecell[align="flushright"] {
+tablecell[align="flushright"], div.tablecell.align-flushright {
 	display    : table-cell ;
 	text-align : right ;
 	padding    : .1em ;
 }
 
-tablecell {
+tablecell, div.tablecell {
 	display    : table-cell ;
 	text-align : left ;
 	padding    : .1em ;
@@ -386,36 +407,40 @@ tablecell {
 /* tabulaterow  : display */
 /* tabulatecell : mixed   */
 
-tabulate {
+tabulate, div.tabulate {
 	display       : table ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 	margin-left   : 2.5em ;
 }
 
-tabulaterow {
+floatcontent>tabulate, div.floatcontent div.tabulate {
+	margin-left   : 0em ;
+}
+
+tabulaterow, div.tabulaterow {
 	display : table-row ;
 }
 
-tabulatecell[align="middle"] {
+tabulatecell[align="middle"], div.tabulatecell.align-middle {
 	display       : table-cell ;
 	text-align    : center ;
 	padding-right : 1em ;
 }
 
-tabulatecell[align="flushleft"] {
+tabulatecell[align="flushleft"], div.tabulatecell.align-flushleft {
 	display       : table-cell ;
 	text-align    : left ;
 	padding-right : 1em ;
 }
 
-tabulatecell[align="flushright"] {
+tabulatecell[align="flushright"], div.tabulatecell.align-flushright {
 	display       : table-cell ;
 	text-align    : right ;
 	padding-right : 1em ;
 }
 
-tabulatecell {
+tabulatecell, div.tabulatecell {
 	display       : table-cell ;
 	text-align    : left ;
 	padding-right : 1em ;
@@ -426,23 +451,23 @@ tabulatecell {
 /* combinationcontent : mixed   */
 /* combinationcaption : mixed   */
 
-combination {
+combination, div.combination {
 	display       : table ;
 	margin-top    : 0em ;
 	margin-bottom : 0em ;
 }
 
-combinationpair {
+combinationpair, div.combinaitonpair {
 	display       : table-cell ;
 	padding-right : 1em ;
 }
 
-combinationcontent {
+combinationcontent, div.combinationcontent {
 	display    : table-row ;
 	text-align : center ;
 }
 
-combinationcaption {
+combinationcaption, div.combinationcaption {
 	display     : table-row ;
 	padding-top : 1ex ;
 	text-align  : center ;
@@ -456,36 +481,39 @@ combinationcaption {
 /* listdata    : mixed   */
 /* listpage    : mixed   */
 
-list {
+list, div.list {
 	display : block ;
 }
 
-listitem[detail="chapter"] {
+listitem[detail="chapter"], div.listitem.detail-chapter {
 	display     : block ;
 	margin-top  : 1em ;
 	font-weight : bold ;
 }
 
-listitem[detail="section"] {
+listitem[detail="section"], div.listitem.detail-section {
 	display : block ;
 }
 
-listitem[detail="subsection"] {
+listitem[detail="subsection"], div.listitem.detail-subsection {
 	display : block ;
+	display : inline-block ;
 }
 
-listtag {
+listtag, div.listtag {
 	display : inline-block ;
 	width   : 5em ;
 }
 
-listcontent {
+listcontent, div.listcontent {
+	display : inline-block ;
 }
 
-listdata {
+listdata, div.listdata {
+	display : inline-block ;
 }
 
-listpage {
+listpage, div.listpage {
 	display : none ;
 }
 
@@ -495,35 +523,43 @@ listpage {
 
 /* :lang(en) */
 
-delimited[detail="quotation"]:before, delimitedblock[detail="quotation"]:before {
-	content : "\201C" ;
+delimited[detail="quotation"]:before, delimitedblock[detail="quotation"]:before,
+	div.delimited.detail-quotation:before, div.delimitedblock.detail-quotation:before {
+	/* content : "\201C" ; */
+	font-style : italic ;
 }
 
-delimited[detail="quotation"]:after, delimitedblock[detail="quotation"]:after {
-	content : "\201D" ;
+delimited[detail="quotation"]:after, delimitedblock[detail="quotation"]:after,
+	div.delimited.detail-quotation:after, div.delimitedblock.detail-quotation:after {
+	/* content : "\201D" ; */
+	font-style : italic ;
 }
 
-delimited[detail="quote"]:before, delimitedblock[detail="quote"]:before {
-	content : "\2018" ;
+delimited[detail="quote"]:before, delimitedblock[detail="quote"]:before,
+	div.delimited.detail-quote:before, div.delimitedblock.detail-quote:before {
+	/* content : "\2018" ; */
+	font-style : italic ;
 }
 
-delimited[detail="quote"]:after, delimitedblock[detail="quote"]:after {
-	content : "\2019" ;
+delimited[detail="quote"]:after, delimitedblock[detail="quote"]:after,
+	div.delimited.detail-quote:after, div.delimitedblock.detail-quote:after {
+	/* content : "\2019" ; */
+	font-style : italic ;
 }
 
-delimited {
+delimited, div.delimited {
     display : inline
 }
 
-delimitedblock {
+delimitedblock, div.delimitedblock {
     display : block
 }
 
-subsentence:before, subsentence:after {
+subsentence:before, subsentence:after, div.subsentence:before, div.subsentence:after {
 	content : "\2014" ;
 }
 
-subsentence {
+subsentence, div.subsentence {
     display : inline
 }
 
@@ -537,32 +573,36 @@ subsentence {
 /* floattext    : mixed   */
 /* floatcontent : mixed   */
 
-float {
+float, div.float {
 	display       : block ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 	margin-left   : 2.5em ;
 }
 
-floatcaption {
+floatcaption, div.floatcaption {
 	display    : block ;
 	margin-top : 0.5em ;
 	color      : rgb(60%,60%,0%) ;
 }
 
-floatlabel {
+floatlabel, div.floatlabel {
+	display      : inline-block ;
 	font-weight  : bold ;
-	margin-right : 1em ;
+	margin-right : 0.25em ;
 }
 
-floatnumber {
-	font-weight : bold ;
+floatnumber, div.floatnumber {
+	display      : inline ;
+	font-weight  : bold ;
+	margin-right : 0.25em ;
 }
 
-floattext {
+floattext, div.floattext {
+	display      : inline ;
 }
 
-floatcontent {
+floatcontent, div.floatcontent {
 }
 
 /* image     : mixed */
@@ -576,11 +616,11 @@ floatcontent {
     height          : 5.994cm ;
 } */
 
-mpgraphic:before { /* does not work with empty element */
+mpgraphic:before, div.mpgraphic:before { /* does not work with empty element */
 	content : "[runtime metapost graphic]" ;
 }
 
-mpgraphic {
+mpgraphic, div.mpgraphic {
 	display : inline ;
 }
 
@@ -592,47 +632,51 @@ mpgraphic {
 /* formulanumber  : mixed   */
 /* formulacontent : display */
 
-formula {
+formula, div.formula {
 	display       : block ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 	margin-left   : 2.5em ;
 }
 
-subformula { /* todo */
+subformula, div.subformula { /* todo */
 	display       : block ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 	margin-left   : 2.5em ;
 }
 
-formulaset { /* todo */
+formulaset, div.formulaset { /* todo */
 	display       : block ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 	margin-left   : 2.5em ;
 }
 
-formulacaption { /* todo */
+formulacaption, div.formulacaption { /* todo */
 	display    : block ;
 	margin-top : 0.5em ;
 	color      : rgb(60%,60%,0%) ;
 }
 
-formulalabel {
+formulalabel, div.formulalabel {
+	display      : inline ;
 	font-weight  : bold ;
-	margin-right : 1em ;
+	margin-right : .25em ;
 }
 
-formulanumber {
+formulanumber, div.formulanumber {
+	display     : inline ;
 	font-weight : bold ;
 }
 
-formulacontent {
+formulacontent, div.formulacontent {
 	display : block ;
 }
 
-/* link : inline  */
+link, div.link {
+	display : inline ;
+}
 
 /* margintextblock : inline  */
 /* margintext      : inline  */
@@ -664,37 +708,43 @@ formulacontent {
 /* unit     : inline */
 /* number   : inline */
 
-quantity {
+quantity, div.quantity {
+	display : inline ;
 }
 
-quantity>unit {
+quantity>unit, div.quantity div.unit {
+	display : inline ;
 }
 
-quantity>number {
+quantity>number, div.quantity div.number {
+	display : inline ;
 }
 
 /* sub    : inline */
 /* sup    : inline */
 /* subsup : inline */
 
-sup {
+sup, div.sup {
+	display        : inline ;
 	font-size      : xx-small ;
     line-height    : 0 ;
 	vertical-align : top ;
 }
 
-sub {
+sub, div.sub {
+	display        : inline ;
 	font-size      : xx-small ;
     line-height    : 0 ;
 	vertical-align : bottom ;
 }
 
-
-subsup>sup {
+subsup>sup, div.subsup div.sup {
+	display        : inline ;
 	vertical-align : top ;
 }
 
-subsup>sub {
+subsup>sub, div.subsup div.sub {
+	display        : inline ;
 	vertical-align : bottom ;
 }
 
@@ -712,11 +762,11 @@ a[href]:hover {
 
 /* setups */
 
-setup {
-	display       : block ;
+setup, div.setup {
+	display : block ;
 }
 
-comment {
+comment, div.comment {
 	background-color : rgb(50%,75%,100%) ;
 	display          : block ;
 	padding          : 1em ;

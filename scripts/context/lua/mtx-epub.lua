@@ -20,6 +20,7 @@ if not modules then modules = { } end modules ['mtx-epub'] = {
 
 local format, gsub = string.format, string.gsub
 local concat = table.concat
+local replace = utilities.templates.replace
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -60,45 +61,45 @@ scripts.epub = scripts.epub or { }
 
 local mimetype = "application/epub+zip"
 
-local container = [[
+local t_container = [[
 <?xml version="1.0" encoding="UTF-8"?>
 
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
     <rootfiles>
-        <rootfile full-path="OEBPS/%s" media-type="application/oebps-package+xml"/>
+        <rootfile full-path="OEBPS/%rootfile%" media-type="application/oebps-package+xml"/>
     </rootfiles>
 </container>
 ]]
 
-local package = [[
+local t_package = [[
 <?xml version="1.0" encoding="UTF-8"?>
 
-<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="%s">
+<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="%identifier%">
 
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-        <dc:title>%s</dc:title>
-        <dc:language>%s</dc:language>
-        <dc:identifier id="%s" opf:scheme="UUID">urn:uuid:%s</dc:identifier>
-        <dc:creator>%s</dc:creator>
-        <dc:date>%s</dc:date>
-        <meta name="cover" content="%s" />
+        <dc:title>%title%</dc:title>
+        <dc:language>%language%</dc:language>
+        <dc:identifier id="%identifier%" opf:scheme="UUID">urn:uuid:%uuid%</dc:identifier>
+        <dc:creator>%creator%</dc:creator>
+        <dc:date>%date%</dc:date>
+        <meta name="cover" content="%firstpage%" />
     </metadata>
 
     <manifest>
-%s
+%manifest%
     </manifest>
 
     <spine toc="ncx">
         <itemref idref="cover-xhtml" />
-        <itemref idref="%s" />
+        <itemref idref="%rootfile%" />
     </spine>
 
 </package>
 ]]
 
-local item = [[        <item id="%s" href="%s" media-type="%s"/>]]
+local t_item = [[        <item id="%id%" href="%filename%" media-type="%mime%"/>]]
 
-local toc = [[
+local t_toc = [[
 <?xml version="1.0"?>
 
 <!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
@@ -106,29 +107,33 @@ local toc = [[
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
 
     <head>
-        <meta name="dtb:uid"           content="%s" />
+        <meta name="dtb:uid"           content="%identifier%" />
         <meta name="dtb:depth"         content="2" />
         <meta name="dtb:totalPgeCount" content="0" />
         <meta name="dtb:maxPageNumber" content="0" />
     </head>
 
     <docTitle>
-        <text>%s</text>
+        <text>%title%</text>
     </docTitle>
+
+    <docAuthor>
+        <text>%author%</text>
+    </docAuthor>
 
     <navMap>
         <navPoint id="np-1" playOrder="1">
             <navLabel>
                 <text>start</text>
             </navLabel>
-            <content src="%s"/>
+            <content src="%root%"/>
         </navPoint>
     </navMap>
 
 </ncx>
 ]]
 
-local coverxhtml = [[
+local t_coverxhtml = [[
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -139,7 +144,7 @@ local coverxhtml = [[
     </head>
     <body>
         <div>
-            <img src="%s" alt="The cover image" style="max-width: 100%%;" />
+            <img src="%image%" alt="The cover image" style="max-width: 100%%;" />
         </div>
     </body>
 </html>
@@ -225,8 +230,6 @@ function scripts.epub.make()
         local specfile = file.replacesuffix(filename,"specification")
         local specification = lfs.isfile(specfile) and dofile(specfile) or { }
 
---         inspect(specification)
-
         local name       = specification.name       or file.removesuffix(filename)
         local identifier = specification.identifier or os.uuid(true)
         local files      = specification.files      or { file.addsuffix(filename,"xhtml") }
@@ -271,7 +274,11 @@ function scripts.epub.make()
                 local target = file.join(epubpath,"OEBPS",filename)
                 file.copy(filename,target)
                 application.report("copying %s to %s",filename,target)
-                used[#used+1] = format(item,idmaker(filename),filename,mime)
+                used[#used+1] = replace(t_item, {
+                    id       = idmaker(filename),
+                    filename = filename,
+                    mime     = mime,
+                } )
             end
         end
 
@@ -304,29 +311,29 @@ function scripts.epub.make()
 
         local idmaker = idmakers[file.suffix(root)] or idmakers.default
 
-        container = format(container,
-            epubroot
-        )
-        package = format(package,
-            identifier,
-            title,
-            language,
-            identifier,
-            os.uuid(),
-            creator,
-            os.date("!%Y-%m-%dT%H:%M:%SZ"),
-            idmaker(firstpage),
-            concat(used,"\n"),
-            idmaker(root)
-        )
-        toc = format(toc,
-            identifier,
-            title,
-            root
-        )
-        coverxhtml = format(coverxhtml,
-            firstpage
-        )
+        container = replace(t_container, {
+            rootfile = epubroot
+        } )
+        package = replace(t_package, {
+            identifier = identifier,
+            title      = title,
+            language   = language,
+            uuid       = os.uuid(),
+            creator    = creator,
+            date       = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+            firstpage  = idmaker(firstpage),
+            manifest   = concat(used,"\n"),
+            rootfile   = idmaker(root)
+        } )
+        toc = replace(t_toc, {
+            identifier = identifier,
+            title      = title,
+            author     = author,
+            root       = root,
+        } )
+        coverxhtml = replace(t_coverxhtml, {
+            image      = firstpage
+        } )
 
         io.savedata(file.join(epubpath,"mimetype"),mimetype)
         io.savedata(file.join(epubpath,"META-INF","container.xml"),container)

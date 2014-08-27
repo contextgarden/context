@@ -31,6 +31,7 @@ local functions      = allocate()
 sequencers.functions = functions
 
 local removevalue       = tables.removevalue
+local replacevalue      = tables.replacevalue
 local insertaftervalue  = tables.insertaftervalue
 local insertbeforevalue = tables.insertbeforevalue
 
@@ -186,6 +187,18 @@ function sequencers.removeaction(t,group,action,force)
         removevalue(g,action)
         t.dirty  = true
         t.runner = nil
+    end
+end
+
+function sequencers.replaceaction(t,group,oldaction,newaction,force)
+    t = known[t]
+    if t then
+        local g = t.list[group]
+        if g and (force or validaction(oldaction)) then
+            replacevalue(g,oldaction,newaction)
+            t.dirty  = true
+            t.runner = nil
+        end
     end
 end
 

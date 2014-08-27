@@ -140,7 +140,7 @@ local stoptiming        = statistics.stoptiming
 
 -- todo: more locals (and optimize)
 
-local exportversion     = "0.31"
+local exportversion     = "0.32"
 local mathmlns          = "http://www.w3.org/1998/Math/MathML"
 
 local nofcurrentcontent = 0 -- so we don't free (less garbage collection)
@@ -2415,9 +2415,13 @@ local xmlpreamble = [[
 local f_csspreamble = formatters [ [[
 <?xml-stylesheet type="text/css" href="%s"?>
 ]] ]
+local f_cssheadlink = formatters [ [[
+<link type="text/css" rel="stylesheet" href="%s"/>
+]] ]
 
     local function allusedstylesheets(xmlfile,cssfiles,files)
         local result = { }
+        local extras = { }
         for i=1,#cssfiles do
             local cssfile = cssfiles[i]
             if type(cssfile) ~= "string" or cssfile == v_yes or cssfile == "" or cssfile == xmlfile then
@@ -2428,8 +2432,9 @@ local f_csspreamble = formatters [ [[
             files[#files+1] = cssfile
             report_export("adding css reference '%s'",cssfile)
             result[#result+1] = f_csspreamble(cssfile)
+            extras[#extras+1] = f_cssheadlink(cssfile)
         end
-        return concat(result)
+        return concat(result), concat(extras)
     end
 
 local f_e_template = formatters [ [[
@@ -2442,7 +2447,32 @@ local f_d_template = formatters [ [[
     display: %s ;
 }]] ]
 
-    local f_category = formatters["/* category: %s */"]
+local f_category = formatters["/* category: %s */"]
+
+local htmltemplate = [[
+%preamble%
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE math PUBLIC "-//W3C//DTD MathML 2.0//EN"       "http://www.w3.org/Math/DTD/mathml2/mathml2.dtd"   >
+
+<html>
+
+    <title>%title%</title>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+    <head>
+
+%style%
+
+    </head>
+    <body>
+
+%body%
+
+    </body>
+</html>
+]]
 
     local displaymapping = {
         inline  = "inline",
@@ -2539,7 +2569,7 @@ local f_d_template = formatters [ [[
             return
         end
         for i=1,#remapping do
-            local remap = remapping[i]
+            local remap     = remapping[i]
             local element   = remap.element
             local class     = remap.class
             local extras    = remap.extras
@@ -2577,10 +2607,44 @@ local f_d_template = formatters [ [[
                 end
             end
         end
-     -- if target then
-     --     xml.save(source,target)
-     -- end
-     -- return source
+    end
+
+    local function remap(specification,source,target)
+        local comment = nil -- share comments
+        for c in xml.collected(source,"*") do
+            if not c.special then
+                local tg = c.tg
+                local ns = c.ns
+                if ns == "m" then
+                    c.ns = ""
+                    c.at["xmlns:m"] = nil
+                elseif tg == "a" then
+                    c.ns = ""
+                else
+                 -- if tg == "tabulatecell" or tg == "tablecell" then
+                        local dt = c.dt
+                        local nt = #dt
+                        if nt == 0 or (nt == 1 and dt[1] == "") then
+                            if comment then
+                                c.dt = comment
+                            else
+                                xml.setcomment(c,"empty")
+                                comment = c.dt
+                            end
+                        end
+                 -- end
+                    local at = c.at
+                    local class = { tg }
+                    if tg ~= "document" then
+                        for k, v in next, at do
+                            class[#class+1] = k .. "-" .. v
+                        end
+                    end
+                    c.at = { class = concat(class," ") }
+                    c.tg = "div"
+                end
+            end
+        end
     end
 
     local cssfile, xhtmlfile, alternative = nil, nil, nil
@@ -2632,9 +2696,11 @@ local f_d_template = formatters [ [[
         --
         local files = {
         }
+        local x_styles, h_styles = allusedstylesheets(xmlfile,cssfiles,files)
+        local preamble = wholepreamble()
         local results = concat {
-            wholepreamble(),
-            allusedstylesheets(xmlfile,cssfiles,files), -- ads to files
+            preamble,
+            x_styles, -- adds to files
             result,
         }
         --
@@ -2654,6 +2720,7 @@ local f_d_template = formatters [ [[
         --
         local xmltree = nil
         if xhtmlfile then
+            -- basic
             if type(v) ~= "string" or xhtmlfile == true or xhtmlfile == v_yes or xhtmlfile == "" or xhtmlfile == xmlfile then
                 xhtmlfile = file.replacesuffix(xmlfile,"xhtml")
             else
@@ -2681,24 +2748,44 @@ local f_d_template = formatters [ [[
             }
             report_export("saving specification in %a (mtxrun --script epub --make %s)",specificationfilename,specificationfilename)
             io.savedata(specificationfilename,table.serialize(specification,true))
-        end
-        if type(alternative) == "string" then
-            local filename = "back-exp-"..alternative ..".lua"
-            local fullname = resolvers.findfile(filename) or ""
-            if fullname == "" then
-                report_export("no valid alternative %a in %a",alternative,filename)
-            else
-                specification = dofile(fullname) or false
-                if specification then
-                    if not xmltree then
-                        xmltree = xml.convert(results)
-                    end
-                    remap(specification,xmltree)
-                    local resultfile = file.replacesuffix(xmlfile,specification.suffix or alternative)
-                    report_export("saving alternative in %a",resultfile)
-                    xml.save(xmltree,resultfile)
-                end
-            end
+            -- bonus
+--             if type(alternative) == "string" then
+--                 local filename = "back-exp-"..alternative ..".lua"
+--                 local fullname = resolvers.findfile(filename) or ""
+--                 if fullname == "" then
+--                     report_export("no valid alternative %a in %a",alternative,filename)
+--                 else
+--                     specification = dofile(fullname) or false
+--                     if specification then
+--                         if not xmltree then
+--                             xmltree = xml.convert(results)
+--                         end
+--                         remap(specification,xmltree)
+--                         local resultfile = file.replacesuffix(xmlfile,specification.suffix or alternative)
+--                         report_export("saving alternative in %a",resultfile)
+--                         local variables = {
+--                             style    = h_styles,
+--                             body     = xml.tostring(xml.first(xmltree,"/div")),
+--                             preamble = preamble,
+--                             title    = specification.title,
+--                         }
+--                         local data = utilities.templates.replace(specification.template,variables,"xml")
+--                         io.savedata(resultfile,data)
+--                     end
+--                 end
+--             end
+         -- if alternative == "div" then
+                local resultfile = file.replacesuffix(xmlfile,"html")
+                report_export("saving div based alternative in %a",resultfile)
+                remap(specification,xmltree)
+                local variables = {
+                    style    = h_styles,
+                    body     = xml.tostring(xml.first(xmltree,"/div")),
+                    preamble = preamble,
+                    title    = specification.title,
+                }
+                io.savedata(resultfile,utilities.templates.replace(htmltemplate,variables,"xml"))
+         -- end
         end
         stoptiming(treehash)
     end

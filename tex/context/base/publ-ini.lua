@@ -337,9 +337,9 @@ setmetatableindex(usedentries,function(t,k)
             end
         end
         -- to be sure
-        setmetatableindex(usedentries,"table")
-        setmetatableindex(citetolist,"table")
-        setmetatableindex(listtocite,"table")
+--         setmetatableindex(usedentries,"table")
+--         setmetatableindex(citetolist,"table")
+--         setmetatableindex(listtocite,"table")
         --
         return usedentries[k]
     end
@@ -609,7 +609,7 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
     else
         -- assume table, otherwise maybe issue an error
     end
-    local used    = usedentries[dataset.name] or { } -- already catched by metatable
+    local used    = usedentries[dataset.name] or { }
     local luadata = dataset.luadata
     local details = dataset.details
     local ordered = dataset.ordered

@@ -98,6 +98,17 @@ function tables.removevalue(t,value) -- todo: n
     end
 end
 
+function tables.replacevalue(t,oldvalue,newvalue)
+    if oldvalue and newvalue then
+        for i=1,#t do
+            if t[i] == oldvalue then
+                t[i] = newvalue
+                -- replace all, so no: return
+            end
+        end
+    end
+end
+
 function tables.insertbeforevalue(t,value,extra)
     for i=1,#t do
         if t[i] == extra then

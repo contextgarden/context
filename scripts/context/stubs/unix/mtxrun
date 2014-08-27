@@ -5740,7 +5740,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 23985, stripped down to: 16069
+-- original size: 24247, stripped down to: 16248
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -5826,6 +5826,15 @@ function tables.removevalue(t,value)
     for i=1,#t do
       if t[i]==value then
         remove(t,i)
+      end
+    end
+  end
+end
+function tables.replacevalue(t,oldvalue,newvalue)
+  if oldvalue and newvalue then
+    for i=1,#t do
+      if t[i]==oldvalue then
+        t[i]=newvalue
       end
     end
   end
@@ -11373,7 +11382,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 25695, stripped down to: 18281
+-- original size: 26026, stripped down to: 18535
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -12021,8 +12030,8 @@ function xml.finalizers.xml.cdata(collected)
   end
   return ""
 end
-function xml.insertcomment(e,str,n) 
-  table.insert(e.dt,n or 1,{
+function xml.insertcomment(e,str,n)
+  insert(e.dt,n or 1,{
     tg="@cm@",
     ns="",
     special=true,
@@ -12030,7 +12039,25 @@ function xml.insertcomment(e,str,n)
     dt={ str },
   })
 end
-function xml.setcdata(e,str) 
+function xml.insertcdata(e,str,n)
+  insert(e.dt,n or 1,{
+    tg="@cd@",
+    ns="",
+    special=true,
+    at={},
+    dt={ str },
+  })
+end
+function xml.setcomment(e,str,n)
+  e.dt={ {
+    tg="@cm@",
+    ns="",
+    special=true,
+    at={},
+    dt={ str },
+  } }
+end
+function xml.setcdata(e,str)
   e.dt={ {
     tg="@cd@",
     ns="",
@@ -17389,8 +17416,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 719054
--- stripped bytes    : 257008
+-- original bytes    : 719647
+-- stripped bytes    : 257168
 
 -- end library merge
 

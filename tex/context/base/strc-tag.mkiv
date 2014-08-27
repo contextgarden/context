@@ -374,12 +374,24 @@
 \let\startpar\startparagraph
 \let\stoppar \stopparagraph
 
-\appendtoks
-    \dostarttagged\t!document\empty
-\to \everystarttext
+\def\strc_tags_document_start_indeed
+  {\glet\strc_tags_document_start_indeed\relax
+   \dostarttagged\t!document\empty}
+
+\def\strc_tags_document_stop_indeed
+  {\glet\strc_tags_document_stop_indeed\relax
+   \dostoptagged}
 
 \appendtoks
-    \dostoptagged
+    \strc_tags_document_start_indeed % here because otherwise products don't get a root (starttext before env)
+\to \everyenableelements
+
+% \appendtoks
+%     \strc_tags_document_start_indeed
+% \to \everystarttext
+
+\appendtoks
+    \strc_tags_document_stop_indeed
 \to \everystoptext
 
 \appendtoks

@@ -762,8 +762,8 @@ function xml.finalizers.xml.cdata(collected)
     return ""
 end
 
-function xml.insertcomment(e,str,n) -- also insertcdata
-    table.insert(e.dt,n or 1,{
+function xml.insertcomment(e,str,n)
+    insert(e.dt,n or 1,{
         tg      = "@cm@",
         ns      = "",
         special = true,
@@ -772,7 +772,27 @@ function xml.insertcomment(e,str,n) -- also insertcdata
     })
 end
 
-function xml.setcdata(e,str) -- also setcomment
+function xml.insertcdata(e,str,n)
+    insert(e.dt,n or 1,{
+        tg      = "@cd@",
+        ns      = "",
+        special = true,
+        at      = { },
+        dt      = { str },
+    })
+end
+
+function xml.setcomment(e,str,n)
+    e.dt = { {
+        tg      = "@cm@",
+        ns      = "",
+        special = true,
+        at      = { },
+        dt      = { str },
+    } }
+end
+
+function xml.setcdata(e,str)
     e.dt = { {
         tg      = "@cd@",
         ns      = "",
