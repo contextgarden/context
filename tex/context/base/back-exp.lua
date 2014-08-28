@@ -187,6 +187,8 @@ local attribentities    = { ["&"] = "&amp;", [">"] = "&gt;", ["<"] = "&lt;", ['"
 
 local p_entity          = lpeg.replacer(entities) -- was: entityremapper = utf.remapper(entities)
 local p_attribute       = lpeg.replacer(attribentities)
+local p_stripper        = lpeg.patterns.stripper
+local p_escaped         = lpeg.patterns.xml.escaped
 
 local alignmapping = {
     flushright = "right",
@@ -604,6 +606,30 @@ do
 
 end
 
+local function ignorebreaks(result,element,detail,n,fulltag,di)
+    local data = di.data
+    for i=1,#data do
+        local d = data[i]
+        if d.content == " " then
+            d.content = ""
+        end
+    end
+end
+
+local function ignorespaces(result,element,detail,n,fulltag,di)
+    local data = di.data
+    for i=1,#data do
+        local d = data[i]
+        local c = d.content
+        if type(c) == "string" then
+            d.content = lpegmatch(p_stripper,c)
+        end
+    end
+end
+
+extras.registerpages     = ignorebreaks
+extras.registerseparator = ignorespaces
+
 do
 
     local highlight      = { }
@@ -786,23 +812,23 @@ do
     function specials.url(result,var)
         local url = references.checkedurl(var.operation)
         if url and url ~= "" then
-            result[#result+1] = f_url(url)
+            result[#result+1] = f_url(lpegmatch(p_escaped,url))
         end
     end
 
     function specials.file(result,var)
         local file = references.checkedfile(var.operation)
         if file and file ~= "" then
-            result[#result+1] = f_file(file)
+            result[#result+1] = f_file(lpegmatch(p_escaped,file))
         end
     end
 
     function specials.fileorurl(result,var)
         local file, url = references.checkedfileorurl(var.operation,var.operation)
         if url and url ~= "" then
-            result[#result+1] = f_url(url)
+            result[#result+1] = f_url(lpegmatch(p_escaped,url))
         elseif file and file ~= "" then
-            result[#result+1] = f_file(file)
+            result[#result+1] = f_file(lpegmatch(p_escaped,file))
         end
     end
 
@@ -821,7 +847,7 @@ do
                 if prefix and prefix ~= "" then
                     result[#result+1] = f_prefix(prefix)
                 end
-                result[#result+1] = f_destination(reference)
+                result[#result+1] = f_destination(lpegmatch(p_escaped,reference))
                 for i=1,#references do
                     local r = references[i]
                     local e = evaluators[r.kind]
@@ -841,7 +867,7 @@ do
                 if prefix and prefix ~= "" then
                     result[#result+1] = f_prefix(prefix)
                 end
-                result[#result+1] = f_reference(reference)
+                result[#result+1] = f_reference(lpegmatch(p_escaped,reference))
             end
             local internal = references.internal
             if internal and internal ~= "" then
@@ -1429,7 +1455,7 @@ do
         local n = 0
         for k, v in next, a do
             n = n + 1
-            r[n] = f_attribute(k,v)
+            r[n] = f_attribute(k,v) -- lpegmatch(p_escaped,v)
         end
         return concat(r,"",1,n)
     end

@@ -37,7 +37,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
         local data = setter.data
         if data then
             for key, newvalue in next, values do
-                local newvalue = is_boolean(newvalue,newvalue)
+                local newvalue = is_boolean(newvalue,newvalue,true) -- strict
                 local functions = data[key]
                 if functions then
                     local oldvalue = functions.value
@@ -97,7 +97,7 @@ local function set(t,what,newvalue)
             elseif not value then
                 value = false -- catch nil
             else
-                value = is_boolean(value,value)
+                value = is_boolean(value,value,true) -- strict
             end
             w = topattern(w,true,true)
             for name, functions in next, data do

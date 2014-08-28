@@ -57,11 +57,11 @@ function string.booleanstring(str)
     end
 end
 
-function string.is_boolean(str,default)
+function string.is_boolean(str,default,strict)
     if type(str) == "string" then
-        if str == "true" or str == "yes" or str == "on" or str == "t" or str == "1" then
+        if str == "true" or str == "yes" or str == "on" or str == "t" or (not strict and str == "1") then
             return true
-        elseif str == "false" or str == "no" or str == "off" or str == "f" or str == "0" then
+        elseif str == "false" or str == "no" or str == "off" or str == "f" or (not strict and str == "0") then
             return false
         end
     end

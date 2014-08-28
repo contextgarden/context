@@ -43,14 +43,7 @@ local pdfrestore   = nodes.pool.pdfrestore
 local pdfsetmatrix = nodes.pool.pdfsetmatrix
 
 local stack        = { }
-
-local function popmatrix()
-    local top = remove(stack)
-    if top then
-        context(pdfsetmatrix(unpack(top)))
-        context(pdfrestore())
-    end
-end
+local restore      = true -- false
 
 function commands.pdfstartrotation(a)
     if a == 0 then
@@ -59,7 +52,7 @@ function commands.pdfstartrotation(a)
         local s, c = sind(a), cosd(a)
         context(pdfsave())
         context(pdfsetmatrix(c,s,-s,c))
-        insert(stack,{ c, -s, s, c })
+        insert(stack,restore and { c, -s, s, c } or false)
     end
 end
 
@@ -75,12 +68,8 @@ function commands.pdfstartscaling(sx,sy)
         end
         context(pdfsave())
         context(pdfsetmatrix(sx,0,0,sy))
-        insert(stack,{ 1/sx, 0, 0, 1/sy })
+        insert(stack,restore and { 1/sx, 0, 0, 1/sy } or false)
     end
-end
-
-function commands.pdfstartmirroring()
-    context(pdfsetmatrix(-1,0,0,1))
 end
 
 function commands.pdfstartmatrix(sx,rx,ry,sy) -- tx, ty
@@ -89,13 +78,30 @@ function commands.pdfstartmatrix(sx,rx,ry,sy) -- tx, ty
     else
         context(pdfsave())
         context(pdfsetmatrix(sx,rx,ry,sy))
-        insert(stack,{ -sx, -rx, -ry, -sy })
+        insert(stack,store and { -sx, -rx, -ry, -sy } or false)
     end
 end
 
-commands.pdfstoprotation  = popmatrix
-commands.pdfstopscaling   = popmatrix
-commands.pdfstopmirroring = popmatrix
-commands.pdfstopmatrix    = popmatrix
+local function pdfstopsomething()
+    local top = remove(stack)
+    if top == false then
+        context(pdfrestore())
+    elseif top then
+        context(pdfsetmatrix(unpack(top)))
+        context(pdfrestore())
+    else
+        -- nesting error
+    end
+end
+
+commands.pdfstoprotation = pdfstopsomething
+commands.pdfstopscaling  = pdfstopsomething
+commands.pdfstopmatrix   = pdfstopsomething
+
+function commands.pdfstartmirroring()
+    context(pdfsetmatrix(-1,0,0,1))
+end
+
+commands.pdfstopmirroring = commands.pdfstartmirroring
 
 -- todo : clipping

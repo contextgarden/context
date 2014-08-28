@@ -4316,7 +4316,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-boolean"] = package.loaded["l-boolean"] or true
 
--- original size: 1809, stripped down to: 1527
+-- original size: 1850, stripped down to: 1568
 
 if not modules then modules={} end modules ['l-boolean']={
   version=1.001,
@@ -4370,11 +4370,11 @@ function string.booleanstring(str)
     return str=="yes" or str=="on" or str=="t"
   end
 end
-function string.is_boolean(str,default)
+function string.is_boolean(str,default,strict)
   if type(str)=="string" then
-    if str=="true" or str=="yes" or str=="on" or str=="t" or str=="1" then
+    if str=="true" or str=="yes" or str=="on" or str=="t" or (not strict and str=="1") then
       return true
-    elseif str=="false" or str=="no" or str=="off" or str=="f" or str=="0" then
+    elseif str=="false" or str=="no" or str=="off" or str=="f" or (not strict and str=="0") then
       return false
     end
   end
@@ -7090,7 +7090,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 12365, stripped down to: 8799
+-- original size: 12395, stripped down to: 8811
 
 if not modules then modules={} end modules ['trac-set']={ 
   version=1.001,
@@ -7118,7 +7118,7 @@ function setters.initialize(filename,name,values)
     local data=setter.data
     if data then
       for key,newvalue in next,values do
-        local newvalue=is_boolean(newvalue,newvalue)
+        local newvalue=is_boolean(newvalue,newvalue,true) 
         local functions=data[key]
         if functions then
           local oldvalue=functions.value
@@ -7172,7 +7172,7 @@ local function set(t,what,newvalue)
       elseif not value then
         value=false 
       else
-        value=is_boolean(value,value)
+        value=is_boolean(value,value,true) 
       end
       w=topattern(w,true,true)
       for name,functions in next,data do
@@ -17416,8 +17416,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 719647
--- stripped bytes    : 257168
+-- original bytes    : 719718
+-- stripped bytes    : 257186
 
 -- end library merge
 

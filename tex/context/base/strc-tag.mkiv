@@ -23,123 +23,125 @@
 %D Eventually these labels will either move to the modules
 %D where they're used, or they will en dup in mult-tag.
 
-\def\t!document           {document}               % Div
+\def\t!document              {document}               % Div
 
-\def\t!division           {division}               % Div
-\def\t!paragraph          {paragraph}              % P
-\def\t!p                  {p}                      % P
-\def\t!construct          {construct}              % Span
-\def\t!highlight          {highlight}              % Span
+\def\t!division              {division}               % Div
+\def\t!paragraph             {paragraph}              % P
+\def\t!p                     {p}                      % P
+\def\t!construct             {construct}              % Span
+\def\t!highlight             {highlight}              % Span
 
-\def\t!section            {section}                % Sect
-\def\t!sectiontitle       {sectiontitle}           % H
-\def\t!sectionnumber      {sectionnumber}          % H
-\def\t!sectioncontent     {sectioncontent}         % Div
+\def\t!section               {section}                % Sect
+\def\t!sectiontitle          {sectiontitle}           % H
+\def\t!sectionnumber         {sectionnumber}          % H
+\def\t!sectioncontent        {sectioncontent}         % Div
 
-\def\t!itemgroup          {itemgroup}              % L
-\def\t!item               {item}                   % Li
-\def\t!itemtag            {itemtag}                % Lbl
-\def\t!itemcontent        {itemcontent}            % LBody
+\def\t!itemgroup             {itemgroup}              % L
+\def\t!item                  {item}                   % Li
+\def\t!itemtag               {itemtag}                % Lbl
+\def\t!itemcontent           {itemcontent}            % LBody
 
-\def\t!description        {description}            % Li
-\def\t!descriptiontag     {descriptiontag}         % Lbl
-\def\t!descriptioncontent {descriptioncontent}     % LBody
-\def\t!descriptionsymbol  {descriptionsymbol}      % Span
+\def\t!description           {description}            % Li
+\def\t!descriptiontag        {descriptiontag}         % Lbl
+\def\t!descriptioncontent    {descriptioncontent}     % LBody
+\def\t!descriptionsymbol     {descriptionsymbol}      % Span
 
-\let\t!construction       \t!description
-\let\t!constructiontag    \t!descriptiontag
-\let\t!constructioncontent\t!descriptioncontent
-\let\t!constructionsymbol \t!descriptionsymbol
+\let\t!construction          \t!description
+\let\t!constructiontag       \t!descriptiontag
+\let\t!constructioncontent   \t!descriptioncontent
+\let\t!constructionsymbol    \t!descriptionsymbol
 
-\def\t!verbatimblock      {verbatimblock}          % Code
-\def\t!verbatimlines      {verbatimlines}          % Code
-\def\t!verbatimline       {verbatimline}           % Code
-\def\t!verbatim           {verbatim}               % Code
+\def\t!verbatimblock         {verbatimblock}          % Code
+\def\t!verbatimlines         {verbatimlines}          % Code
+\def\t!verbatimline          {verbatimline}           % Code
+\def\t!verbatim              {verbatim}               % Code
 
-\def\t!lines              {lines}                  % Code
-\def\t!line               {line}                   % Code
+\def\t!lines                 {lines}                  % Code
+\def\t!line                  {line}                   % Code
 
-\def\t!sorting            {sorting}                % Span
-\def\t!synonym            {synonym}                % Span
+\def\t!sorting               {sorting}                % Span
+\def\t!synonym               {synonym}                % Span
 
-\def\t!register           {register}               % Div
-\def\t!registersection    {registersection}        % Div
-\def\t!registertag        {registertag}            % Span
-\def\t!registerentries    {registerentries}        % Div
-\def\t!registerentry      {registerentry}          % Span
-\def\t!registersee        {registersee}            % Span
-\def\t!registerpages      {registerpages}          % Span
-\def\t!registerpage       {registerpage}           % Span
-\def\t!registerpagerange  {registerpagerange}      % Span
+\def\t!register              {register}               % Div
+\def\t!registersection       {registersection}        % Div
+\def\t!registertag           {registertag}            % Span
+\def\t!registerentries       {registerentries}        % Div
+\def\t!registerentry         {registerentry}          % Span
+\def\t!registercontent       {registercontent}        % Span
+\def\t!registersee           {registersee}            % Span
+\def\t!registerpages         {registerpages}          % Span
+\def\t!registerpage          {registerpage}           % Span
+\def\t!registerpagerange     {registerpagerange}      % Span
+\def\t!registerseparator     {registerseparator}      % Span
 
-\def\t!table              {table}                  % Table
-\def\t!tablerow           {tablerow}               % TR
-\def\t!tablecell          {tablecell}              % TD
-\def\t!tabulate           {tabulate}               % Table
-\def\t!tabulaterow        {tabulaterow}            % TR
-\def\t!tabulatecell       {tabulatecell}           % TD
+\def\t!table                 {table}                  % Table
+\def\t!tablerow              {tablerow}               % TR
+\def\t!tablecell             {tablecell}              % TD
+\def\t!tabulate              {tabulate}               % Table
+\def\t!tabulaterow           {tabulaterow}            % TR
+\def\t!tabulatecell          {tabulatecell}           % TD
 
-\def\t!math               {math}                   % math
-\def\t!mathtable          {mtable}                 % Table
-\def\t!mathtablerow       {mtr}                    % TR
-\def\t!mathtablecell      {mtd}                    % TD
-\def\t!mathaction         {maction}                %
+\def\t!math                  {math}                   % math
+\def\t!mathtable             {mtable}                 % Table
+\def\t!mathtablerow          {mtr}                    % TR
+\def\t!mathtablecell         {mtd}                    % TD
+\def\t!mathaction            {maction}                %
 
-\def\t!list               {list}                   % TOC
-\def\t!listitem           {listitem}               % TOCI
-\def\t!listtag            {listtag}                % Lbl
-\def\t!listcontent        {listcontent}            % P
-\def\t!listdata           {listdata}               % P
-\def\t!listpage           {listpage}               % Reference
+\def\t!list                  {list}                   % TOC
+\def\t!listitem              {listitem}               % TOCI
+\def\t!listtag               {listtag}                % Lbl
+\def\t!listcontent           {listcontent}            % P
+\def\t!listdata              {listdata}               % P
+\def\t!listpage              {listpage}               % Reference
 
-\def\t!delimitedblock     {delimited}              % BlockQuote
-\def\t!delimited          {delimited}              % Quote
-\def\t!subsentence        {subsentence}            % Span
+\def\t!delimitedblock        {delimited}              % BlockQuote
+\def\t!delimited             {delimited}              % Quote
+\def\t!subsentence           {subsentence}            % Span
 
-\def\t!float              {float}                  % Div
-\def\t!floatcaption       {floatcaption}           % Caption
-\def\t!floatlabel         {floatlabel}             % Span
-\def\t!floattext          {floattext}              % Span
-\def\t!floatnumber        {floatnumber}            % Span
-\def\t!floatcontent       {floatcontent}           % P
+\def\t!float                 {float}                  % Div
+\def\t!floatcaption          {floatcaption}           % Caption
+\def\t!floatlabel            {floatlabel}             % Span
+\def\t!floattext             {floattext}              % Span
+\def\t!floatnumber           {floatnumber}            % Span
+\def\t!floatcontent          {floatcontent}           % P
 
-\def\t!image              {image}                  % P
+\def\t!image                 {image}                  % P
 
-\def\t!mpgraphic          {mpgraphic}              % P
+\def\t!mpgraphic             {mpgraphic}              % P
 
-\def\t!formulaset         {formulaset}             % Div
-\def\t!formula            {formula}                % Div
-\def\t!formulacaption     {formulacaption}         % Span
-\def\t!formulalabel       {formulalabel}           % Span
-\def\t!formulanumber      {formulanumber}          % P
-\def\t!formulacontent     {formulacontent}         % P
-\def\t!subformula         {subformula}             % Div
+\def\t!formulaset            {formulaset}             % Div
+\def\t!formula               {formula}                % Div
+\def\t!formulacaption        {formulacaption}         % Span
+\def\t!formulalabel          {formulalabel}           % Span
+\def\t!formulanumber         {formulanumber}          % P
+\def\t!formulacontent        {formulacontent}         % P
+\def\t!subformula            {subformula}             % Div
 
-\def\t!link               {link}                   % Link
+\def\t!link                  {link}                   % Link
 
-\def\t!margintext         {margintext}             % Span
-\def\t!margintextblock    {margintextblock}        % Div
+\def\t!margintext            {margintext}             % Span
+\def\t!margintextblock       {margintextblock}        % Div
 
 % we might opt for verbose variants so this is experimental:
 
-\def\t!label              {label}                  % Span
-\def\t!number             {number}                 % Span
+\def\t!label                 {label}                  % Span
+\def\t!number                {number}                 % Span
 
-\def\t!ignore             {ignore}                 % Span
+\def\t!ignore                {ignore}                 % Span
 
-\def\t!mid                {mid}                    % Span
-\def\t!sub                {sub}                    % Span
-\def\t!sup                {sup}                    % Span
-\def\t!subsup             {subsup}                 % Span
+\def\t!mid                   {mid}                    % Span
+\def\t!sub                   {sub}                    % Span
+\def\t!sup                   {sup}                    % Span
+\def\t!subsup                {subsup}                 % Span
 
-\def\t!unit               {unit}                   % Span
-\def\t!quantity           {quantity}               % Span
-\def\t!number             {number}                 % Span
+\def\t!unit                  {unit}                   % Span
+\def\t!quantity              {quantity}               % Span
+\def\t!number                {number}                 % Span
 
-\def\t!combination        {combination}            % Span
-\def\t!combinationpair    {combinationpair}        % Span
-\def\t!combinationcontent {combinationcontent}     % Span
-\def\t!combinationcaption {combinationcaption}     % Span
+\def\t!combination           {combination}            % Span
+\def\t!combinationpair       {combinationpair}        % Span
+\def\t!combinationcontent    {combinationcontent}     % Span
+\def\t!combinationcaption    {combinationcaption}     % Span
 
 % \setuptaglabeltext
 %   [en]

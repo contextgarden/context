@@ -721,6 +721,7 @@
 
 \unexpanded\def\startregisterentry#1% todo: level
   {\begingroup
+   \dostarttagged\t!registerentry\empty
    \global\setconstant\c_strc_registers_page_state\zerocount
    \hangindent\d_strc_registers_hangindent
    \hangafter \c_strc_registers_hangafter}
@@ -728,6 +729,7 @@
 \unexpanded\def\stopregisterentry
   {\endgraf
    \global\setconstant\c_strc_registers_page_state\zerocount
+   \dostoptagged
    \endgroup}
 
 \unexpanded\def\startregistersection#1% title
@@ -759,13 +761,17 @@
   {\dostoptagged
    \endgroup}
 
-\unexpanded\def\registerpageseparator% todo: , configurable
+\unexpanded\def\registerpageseparator % todo: , configurable
   {\ifcase\c_strc_registers_page_state
      \hskip\d_strc_registers_distance\relax
    \or
+     \dostarttagged\t!registerseparator\empty
      \registerpageseparatorsymbol % page
+     \dostoptagged
    \or
+     \dostarttagged\t!registerseparator\empty
      \registerpageseparatorsymbol % see
+     \dostoptagged
    \fi}
 
 \unexpanded\def\registeronepagerangeseparator
@@ -816,7 +822,7 @@
    \fi}
 
 \unexpanded\def\doapplyregisterentrycommand#1#2% processor text
-  {\dostarttagged\t!registerentry\empty
+  {\dostarttagged\t!registercontent\empty
    \ifx\currentregisterseeindex\empty \else
      \dontleavehmode
      \strc_register_injector_show
