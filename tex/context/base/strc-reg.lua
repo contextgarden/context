@@ -570,6 +570,11 @@ registers.store   = storeregister
 registers.enhance = enhanceregister
 registers.extend  = extendregister
 
+function registers.get(tag,n)
+    local list = tobesaved[tag]
+    return list and list.entries[n]
+end
+
 function commands.storeregister(rawdata)
     local nofentries = storeregister(rawdata)
     setinternalreference(nil,nil,rawdata.references.internal)

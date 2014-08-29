@@ -83,6 +83,7 @@ local properties     = allocate {
     sorting               = { pdf = "Span",       nature = "inline"  },
 
     register              = { pdf = "Div",        nature = "display" },
+    registerlocation      = { pdf = "Span",       nature = "inline"  },
     registersection       = { pdf = "Div",        nature = "display" },
     registertag           = { pdf = "Span",       nature = "mixed"   },
     registerentries       = { pdf = "Div",        nature = "display" },

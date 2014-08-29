@@ -302,8 +302,13 @@
    \currentregistersynchronize % here?
    % needs thinking ... bla\index{bla}. will break before the . but adding a
    % penalty is also no solution
+   \dostarttagged\t!registerlocation\currentregister
    \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
+   \dotagregisterlocation
+   \dostoptagged
    \endgroup}
+
+\let\dotagregisterlocation\relax % experiment
 
 \unexpanded\def\strc_registers_insert_entry[#1][#2]%
   {\def\currentregister{#1}%
@@ -482,6 +487,10 @@
         },
      }
    }}%
+   \dostarttagged\t!registerlocation\currentregister
+   \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
+   \dotagregisterlocation
+   \dostoptagged
    \endgroup}
 
 %D Rendering:

@@ -173,6 +173,27 @@
 
 \newconditional\c_checked_mode
 
+% one
+
+% \def\syst_modes_check_indeed#1%
+%   {\ifcsname\??mode#1\endcsname
+%      \ifcase\csname\??mode#1\endcsname\else
+%        \let\syst_modes_check_step\gobbleoneargument
+%      \fi
+%    \fi}
+%
+% \def\syst_modes_check#1#2#3%
+%   {\let\syst_modes_check_step\syst_modes_check_indeed
+%    \rawprocesscommacommand[#3]\syst_modes_check_step
+%    \ifx\syst_modes_check_step\gobbleoneargument
+%      \expandafter#1%
+%    \else
+%      \expandafter#2%
+%    \fi}
+
+% modes .. twice as fast on defined modes .. we could use definers and make it even faster
+% if needed
+
 \def\syst_modes_check_indeed#1%
   {\ifcsname\??mode#1\endcsname
      \ifcase\csname\??mode#1\endcsname\else
@@ -180,7 +201,7 @@
      \fi
    \fi}
 
-\def\syst_modes_check#1#2#3%
+\def\syst_modes_check_nop#1#2#3%
   {\let\syst_modes_check_step\syst_modes_check_indeed
    \rawprocesscommacommand[#3]\syst_modes_check_step
    \ifx\syst_modes_check_step\gobbleoneargument
@@ -188,6 +209,22 @@
    \else
      \expandafter#2%
    \fi}
+
+\def\syst_modes_check_yes#1#2#3%
+  {\ifcase\csname\??mode#3\endcsname
+     \expandafter#2%
+   \else
+     \expandafter#1%
+   \fi}
+
+\def\syst_modes_check#1#2#3%
+  {\ifcsname\??mode#3\endcsname
+     \expandafter\syst_modes_check_yes
+   \else
+     \expandafter\syst_modes_check_nop
+   \fi#1#2{#3}}
+
+% all
 
 \def\syst_modes_check_all_indeed#1%
   {\ifcsname\??mode#1\endcsname
@@ -384,6 +421,28 @@
 %
 % \def\syst_setups_normal#1%
 %   {:\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi\endcsname\empty} % takes one argument
+%
+% only makes sense with many setups
+%
+% \def\syst_setups% the grid option will be extended to other main modes
+%   {\ifgridsnapping
+%      \expandafter\syst_setups_grid
+%    \else
+%      \expandafter\syst_setups_normal
+%    \fi}
+%
+% \def\syst_setups_normal#1% the grid option will be extended to other main modes
+%   {\csname\??setup
+%      :\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi
+%    \endcsname\empty} % takes one argument
+%
+% \def\syst_setups_grid#1% the grid option will be extended to other main modes
+%   {\csname\??setup
+%        \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else:\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi\fi
+%    \endcsname\empty} % takes one argument
+%
+% \let\directsetup\syst_setups
+% \let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup
 
 % We can consider:
 %

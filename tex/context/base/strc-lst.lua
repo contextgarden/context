@@ -550,6 +550,10 @@ end
 
 lists.result = { }
 
+function lists.getresult(r)
+    return lists.result[r]
+end
+
 function lists.process(specification)
     lists.result = lists.filter(specification)
     local specials = utilities.parsers.settings_to_hash(specification.extras or "")

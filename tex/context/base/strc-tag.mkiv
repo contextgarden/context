@@ -63,6 +63,7 @@
 \def\t!synonym               {synonym}                % Span
 
 \def\t!register              {register}               % Div
+\def\t!registerlocation      {registerlocation}       % Span
 \def\t!registersection       {registersection}        % Div
 \def\t!registertag           {registertag}            % Span
 \def\t!registerentries       {registerentries}        % Div
@@ -327,7 +328,9 @@
    {\dodoubleempty\paragraph_start}
 
 \def\paragraph_start
-   {\iffirstargument
+   {\endgraf % we end before the group
+    \begingroup
+    \iffirstargument
       \ifsecondargument
         \doubleexpandafter\paragraph_start_two
       \else
@@ -338,21 +341,19 @@
     \fi}
 
 \def\paragraph_start_two[#1][#2]%
-   {\endgraf % we end before the group
-    \begingroup
-    \let\stopparagraph\paragraph_stop_indeed
-    \edef\currentparagraph{#1}%
+   {\edef\currentparagraph{#1}%
     \setupcurrentparagraph[#2]%
     \paragraph_start_indeed}
 
 \def\paragraph_start_one[#1][#2]%
-   {\endgraf % we end before the group
-    \begingroup
-    \let\stopparagraph\paragraph_stop_indeed
-    \doifassignmentelse{#1}
+   {\doifassignmentelse{#1}
       {\let\currentparagraph\empty
        \setupcurrentparagraph[#1]}
       {\edef\currentparagraph{#1}}%
+    \paragraph_start_indeed}
+
+\def\paragraph_start_zero[#1][#2]%
+   {\let\currentparagraph\empty
     \paragraph_start_indeed}
 
 \def\paragraph_start_indeed
@@ -361,17 +362,10 @@
    \usesetupsparameter\paragraphparameter
    \dostarttagged\t!paragraph\currentparagraph}
 
-\def\paragraph_start_zero[#1][#2]%
-   {\let\currentparagraph\empty
-    \paragraph_start_indeed}
-
-\unexpanded\def\paragraph_stop_indeed
+\unexpanded\def\stopparagraph
    {\dostoptagged
     \endgraf % we end inside the group
     \endgroup}
-
-\unexpanded\def\stopparagraph
-   {\dostoptagged}
 
 \let\startpar\startparagraph
 \let\stoppar \stopparagraph

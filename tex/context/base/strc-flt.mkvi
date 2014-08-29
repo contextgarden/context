@@ -1104,11 +1104,22 @@
 \unexpanded\def\betweenfloatblanko % assumes that spaceafter is present
   {\blank[\rootfloatparameter\c!spacebefore]} % or v!back,....
 
+% \unexpanded\def\doplacefloatbox % used elsewhere
+%   {%\forgetall % NO
+%    \whitespace
+%    \blank[\rootfloatparameter\c!spacebefore]
+%    \page_otr_command_flush_float_box
+%    \blank[\rootfloatparameter\c!spaceafter]}
+
 \unexpanded\def\doplacefloatbox % used elsewhere
   {%\forgetall % NO
    \whitespace
    \blank[\rootfloatparameter\c!spacebefore]
+   \nointerlineskip
+   \flushnotes % new per 2014-05-29 : todo: move them up in the mvl
+   \nointerlineskip
    \page_otr_command_flush_float_box
+   \nointerlineskip
    \blank[\rootfloatparameter\c!spaceafter]}
 
 % test case:

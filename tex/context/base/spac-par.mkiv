@@ -203,6 +203,8 @@
 %      \glet\flushpostponednodedata\spac_postponed_data_flush
 %    \fi}
 
+\newtoks\everyflushatnextpar
+
 \unexpanded\def\pushpostponednodedata
   {\globalpushbox\b_spac_postponed_data}
 
@@ -214,6 +216,7 @@
 
 \unexpanded\def\flushatnextpar
   {\begingroup
+   \the\everyflushatnextpar
    \glet\flushpostponednodedata\spac_postponed_data_flush
    \dowithnextboxcs\spac_postponed_data_finish\hbox}
 

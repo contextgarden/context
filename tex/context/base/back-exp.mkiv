@@ -53,12 +53,25 @@
 \newcount\tagparcounter
 
 \let\dotagsetparcounter\relax
+\let\doresetparcounter \relax
 
 \appendtoks
+    \doresetparcounter
+\to \everyflushatnextpar
+
+% \appendtoks
+%     \dotagsetparcounter
+% \to \everypar
+
+\prependtoks
     \dotagsetparcounter
 \to \everypar
 
-\appendtoks
+% \appendtoks
+%     \dotagsetparcounter
+% \to \neverypar
+
+\prependtoks
     \dotagsetparcounter
 \to \neverypar
 
@@ -99,6 +112,7 @@
 
 \appendtoks
     \unexpanded\def\dotagsetparcounter{\global\advance\tagparcounter\plusone\attribute\taggedparattribute\tagparcounter}%
+    \unexpanded\def\doresetparcounter {\attribute\taggedparattribute\attributeunsetvalue}%
 \to \everyenableelements
 
 \appendtoks
@@ -111,6 +125,14 @@
 
 \appendtoks
     \unexpanded\def\dotagsetnotesymbol{\taggedctxcommand{settagdescriptionsymbol("\currentnote",\currentnotenumber)}}%
+\to \everyenableelements
+
+\appendtoks
+    \unexpanded\def\dotagregisterlocation{\taggedctxcommand{settagregister("\currentregister",\currentregisternumber)}}%
+\to \everyenableelements
+
+\appendtoks
+    \unexpanded\def\dotaglistlocation{\taggedctxcommand{settaglist("\currentlist",\currentlistindex)}}%
 \to \everyenableelements
 
 \appendtoks

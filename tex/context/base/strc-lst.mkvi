@@ -451,6 +451,8 @@
 \def\usestructurelistprocessor#tag%
   {\csname\??structurelistprocessor#tag\endcsname}
 
+\let\dotaglistlocation\relax
+
 \unexpanded\def\strclistsentryprocess#tag#method#index#extra% This one is called at the lua end!
   {\ctxcommand{pushlist(#index)}%
    \edef\currentlist      {#tag}%
@@ -459,6 +461,7 @@
    \edef\currentlistextra {#extra}%
    \listextraparameter\c!before
    \dostarttagged\t!listitem\currentlist
+   \dotaglistlocation
    \csname\??structurelistprocessor
      \ifcsname\??structurelistprocessor\currentlist:\currentlistmethod\endcsname\currentlist:\currentlistmethod\else
      \ifcsname\??structurelistprocessor\currentlistmethod             \endcsname\currentlistmethod             \else
