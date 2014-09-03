@@ -25,6 +25,7 @@ local lualexer    = lexer.new("lua","scite-context-lexer-lua")
 local whitespace  = lualexer.whitespace
 
 local stringlexer = lexer.load("scite-context-lexer-lua-longstring")
+local labellexer  = lexer.load("scite-context-lexer-lua-labelstring")
 
 local directives  = { } -- communication channel
 
@@ -185,11 +186,15 @@ local structure     = token("special", S('{}[]()'))
 local optionalspace = spacing^0
 local hasargument   = #S("{([")
 
+-- ideal should be an embedded lexer ..
+
 local gotokeyword   = token("keyword", P("goto"))
                     * spacing
                     * token("grouping",validword)
 local gotolabel     = token("keyword", P("::"))
+                    * (spacing + shortcomment)^0
                     * token("grouping",validword)
+                    * (spacing + shortcomment)^0
                     * token("keyword", P("::"))
 
 local p_keywords    = exact_match(keywords)

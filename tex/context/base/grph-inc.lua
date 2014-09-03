@@ -47,7 +47,7 @@ local formatters = string.formatters
 local longtostring = string.longtostring
 local expandfilename = dir.expandname
 
-local P, R, S, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.match
+local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
@@ -754,7 +754,7 @@ local internalschemes = {
 local function locate(request) -- name, format, cache
     -- not resolvers.cleanpath(request.name) as it fails on a!b.pdf and b~c.pdf
     -- todo: more restricted cleanpath
-    local askedname = request.name
+    local askedname = request.name or ""
     local askedhash = f_hash_part(askedname,request.conversion or "default",request.resolution or "default")
     local foundname = figures_found[askedhash]
     if foundname then
@@ -1429,14 +1429,53 @@ local epstopdf = {
 programs.epstopdf = epstopdf
 programs.gs       = epstopdf
 
+local cleanups    = { }
+local cleaners    = { }
+
+local whitespace  = lpeg.patterns.whitespace
+local quadruple   = Ct((whitespace^0 * lpeg.patterns.number/tonumber * whitespace^0)^4)
+local betterbox   = P("%%BoundingBox:")      * quadruple
+                  * P("%%HiResBoundingBox:") * quadruple
+                  * P("%AI3_Cropmarks:")     * quadruple
+                  * P("%%CropBox:")          * quadruple
+                  / function(b,h,m,c)
+                         return formatters["%%%%BoundingBox: %i %i %i %i\n%%%%HiResBoundingBox: %F %F %F %F\n%%%%CropBox: %F %F %F %F\n"](
+                             m[1],m[2],m[3],m[4],
+                             m[1],m[2],m[3],m[4],
+                             m[1],m[2],m[3],m[4]
+                         )
+                     end
+local nocrap      = P("%") / "" * (
+                         (P("AI9_PrivateDataBegin") * P(1)^0)                            / "%%%%EOF"
+                       + (P("%EOF") * whitespace^0 * P("%AI9_PrintingDataEnd") * P(1)^0) / "%%%%EOF"
+                       + (P("AI7_Thumbnail") * (1-P("%%EndData"))^0 * P("%%EndData"))    / ""
+                    )
+local whatever    = nocrap + P(1)
+local pattern     = Cs((betterbox * whatever^1 + whatever)^1)
+
+directives.register("graphics.conversion.eps.cleanup.ai",function(v) cleanups.ai = v end)
+
+cleaners.ai = function(name)
+    local tmpname = name .. ".tmp"
+    io.savedata(tmpname,lpegmatch(pattern,io.loaddata(name)))
+    return tmpname
+end
+
 function epsconverter.pdf(oldname,newname,resolution) -- the resolution interface might change
     local epstopdf = programs.epstopdf -- can be changed
-    local presets = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
+    local presets  = epstopdf.resolutions[resolution or "high"] or epstopdf.resolutions.high
+    local tmpname  = oldname
+    if cleanups.ai then
+        tmpname = cleaners.ai(oldname)
+    end
     runprogram(epstopdf.command, epstopdf.argument, {
         newname = newname,
-        oldname = oldname,
+        oldname = tmpname,
         presets = presets,
     } )
+    if tmpname ~= oldname then
+        os.remove(tmpname)
+    end
 end
 
 epsconverter.default = epsconverter.pdf

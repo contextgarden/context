@@ -108,7 +108,8 @@ table.setmetatableindex(collectors, function(t,k)
     local dataname = joinname(rootname,"dirlist")
     local content  = caches.loadcontent(dataname,"files",dataname)
     if not content then
-        content  = resolvers.scanfiles(rootname)
+        -- path branch usecache onlyonce tolerant
+        content = resolvers.scanfiles(rootname,nil,nil,false,true) -- so we accept crap
         caches.savecontent(dataname,"files",content,dataname)
     end
     t[k] = content
@@ -134,6 +135,8 @@ local function checked(root,p,n)
     end
     return notfound()
 end
+
+-- no funny characters in path but in filename permitted .. sigh
 
 local function resolve(specification) -- can be called directly too
     local filename = specification.filename

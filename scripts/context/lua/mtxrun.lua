@@ -3644,7 +3644,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-url"] = package.loaded["l-url"] or true
 
--- original size: 12292, stripped down to: 5585
+-- original size: 12465, stripped down to: 5710
 
 if not modules then modules={} end modules ['l-url']={
   version=1.001,
@@ -3730,19 +3730,25 @@ local splitquery=Cf (Ct("")*P { "sequence",
   pair=Cg(key*equal*value),
 },rawset)
 local function hashed(str) 
-  if str=="" then
+  if not str or str=="" then
     return {
       scheme="invalid",
       original=str,
     }
   end
-  local s=split(str)
-  local rawscheme=s[1]
-  local rawquery=s[4]
-  local somescheme=rawscheme~=""
-  local somequery=rawquery~=""
+  local detailed=split(str)
+  local rawscheme=""
+  local rawquery=""
+  local somescheme=false
+  local somequery=false
+  if detailed then
+    rawscheme=detailed[1]
+    rawquery=detailed[4]
+    somescheme=rawscheme~=""
+    somequery=rawquery~=""
+  end
   if not somescheme and not somequery then
-    s={
+    return {
       scheme="file",
       authority="",
       path=str,
@@ -3752,28 +3758,28 @@ local function hashed(str)
       noscheme=true,
       filename=str,
     }
-  else 
-    local authority,path,filename=s[2],s[3]
-    if authority=="" then
-      filename=path
-    elseif path=="" then
-      filename=""
-    else
-      filename=authority.."/"..path
-    end
-    s={
-      scheme=rawscheme,
-      authority=authority,
-      path=path,
-      query=lpegmatch(unescaper,rawquery),
-      queries=lpegmatch(splitquery,rawquery),
-      fragment=s[5],
-      original=str,
-      noscheme=false,
-      filename=filename,
-    }
   end
-  return s
+  local authority=detailed[2]
+  local path=detailed[3]
+  local filename=nil
+  if authority=="" then
+    filename=path
+  elseif path=="" then
+    filename=""
+  else
+    filename=authority.."/"..path
+  end
+  return {
+    scheme=rawscheme,
+    authority=authority,
+    path=path,
+    query=lpegmatch(unescaper,rawquery),
+    queries=lpegmatch(splitquery,rawquery),
+    fragment=detailed[5],
+    original=str,
+    noscheme=false,
+    filename=filename,
+  }
 end
 url.split=split
 url.hasscheme=hasscheme
@@ -5058,7 +5064,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 34240, stripped down to: 18733
+-- original size: 34326, stripped down to: 18774
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5605,7 +5611,6 @@ local builder=Cs { "start",
 +V("j")+V("J") 
 +V("m")+V("M") 
 +V("z")
-+V("*") 
       )+V("*")
     )*(P(-1)+Carg(1))
   )^0,
@@ -5649,6 +5654,7 @@ local builder=Cs { "start",
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,
   ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_rest,
+  ["?"]=Cs(((1-P("%"))^1        )^1)/format_rest,
   ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
 }
 local direct=Cs (
@@ -12957,7 +12963,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 17039, stripped down to: 10493
+-- original size: 17216, stripped down to: 10657
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -13149,18 +13155,20 @@ function resolvers.joinpath(str)
 end
 local attributes,directory=lfs.attributes,lfs.dir
 local weird=P(".")^1+lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+local lessweird=P(".")^1+lpeg.anywhere(S("~`#$%^&*:;\"\'||<>,?\n\r\t"))
 local timer={}
 local scanned={}
 local nofscans=0
 local scancache={}
 local fullcache={}
 local nofsharedscans=0
-local function scan(files,remap,spec,path,n,m,r,onlyone)
+local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
   local full=path=="" and spec or (spec..path..'/')
   local dirs={}
   local nofdirs=0
+  local pattern=tolerant and lessweird or weird
   for name in directory(full) do
-    if not lpegmatch(weird,name) then
+    if not lpegmatch(pattern,name) then
       local mode=attributes(full..name,"mode")
       if mode=="file" then
         n=n+1
@@ -13210,13 +13218,13 @@ local function scan(files,remap,spec,path,n,m,r,onlyone)
   if nofdirs>0 then
     sort(dirs)
     for i=1,nofdirs do
-      files,remap,n,m,r=scan(files,remap,spec,dirs[i],n,m,r,onlyone)
+      files,remap,n,m,r=scan(files,remap,spec,dirs[i],n,m,r,onlyonce,tolerant)
     end
   end
   scancache[sub(full,1,-2)]=files
   return files,remap,n,m,r
 end
-function resolvers.scanfiles(path,branch,usecache,onlyonce)
+function resolvers.scanfiles(path,branch,usecache,onlyonce,tolerant)
   local realpath=resolveprefix(path)
   if usecache then
     local content=fullcache[realpath]
@@ -13234,7 +13242,7 @@ function resolvers.scanfiles(path,branch,usecache,onlyonce)
   end
   local content
   if isdir(realpath) then
-    local files,remap,n,m,r=scan({},{},realpath..'/',"",0,0,0,onlyonce)
+    local files,remap,n,m,r=scan({},{},realpath..'/',"",0,0,0,onlyonce,tolerant)
     content={
       metadata={
         path=path,
@@ -13272,7 +13280,7 @@ function resolvers.scanfiles(path,branch,usecache,onlyonce)
   return content
 end
 function resolvers.simplescanfiles(path,branch,usecache)
-  return resolvers.scanfiles(path,branch,usecache,true) 
+  return resolvers.scanfiles(path,branch,usecache,true,true) 
 end
 function resolvers.scandata()
   table.sort(scanned)
@@ -14115,7 +14123,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 64069, stripped down to: 44444
+-- original size: 64139, stripped down to: 44503
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -15221,6 +15229,9 @@ local function find_otherwise(filename,filetype,wantedfiles,allresults)
   end
 end
 collect_instance_files=function(filename,askedformat,allresults) 
+  if not filename or filename=="" then
+    return {}
+  end
   askedformat=askedformat or ""
   filename=collapsepath(filename,".")
   filename=gsub(filename,"^%./",getcurrentdir().."/") 
@@ -16326,7 +16337,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tre"] = package.loaded["data-tre"] or true
 
--- original size: 7832, stripped down to: 5289
+-- original size: 7987, stripped down to: 5309
 
 if not modules then modules={} end modules ['data-tre']={
   version=1.001,
@@ -16405,7 +16416,7 @@ table.setmetatableindex(collectors,function(t,k)
   local dataname=joinname(rootname,"dirlist")
   local content=caches.loadcontent(dataname,"files",dataname)
   if not content then
-    content=resolvers.scanfiles(rootname)
+    content=resolvers.scanfiles(rootname,nil,nil,false,true) 
     caches.savecontent(dataname,"files",content,dataname)
   end
   t[k]=content
@@ -17416,8 +17427,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 719718
--- stripped bytes    : 257186
+-- original bytes    : 720379
+-- stripped bytes    : 257438
 
 -- end library merge
 

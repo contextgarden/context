@@ -150,6 +150,25 @@
 
 \def\dofinishsomereference#kind{\executeifdefined{dofinish#{kind}reference}\gobbletwoarguments}
 
+% This is somewhat tricky: we want to keep the reference with the following word but
+% that word should also hyphenate. We need to find a better way.
+
+% 0 = nothing
+% 1 = bind to following word
+
+\setnewconstant\c_strc_references_bind_state\plusone
+
+\def\strc_references_inject_before
+  {}
+
+\def\strc_references_inject_after
+  {\ifcase\c_strc_references_bind_state
+     % nothing
+   \or
+     \prewordbreak % to be tested: \removeunwantedspaces\permithyphenation
+   \fi}
+
+
 \unexpanded\def\strc_references_set_named_reference
   {\ifreferencing
       \expandafter\strc_references_set_named_reference_indeed
@@ -231,10 +250,11 @@
    \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
    % will become an option:
    \ifnum\lastdestinationattribute>\zerocount
+     \strc_references_inject_before % new
      \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
        \strc_references_flush_destination_nodes
      \egroup
-     \prewordbreak % new
+     \strc_references_inject_after % new
    \fi}
 
 \def\strc_references_set_page_only_destination_attribute#labels% could in fact be fully expandable
@@ -302,10 +322,11 @@
    \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
    % will become an option:
    \ifnum\lastdestinationattribute>\zerocount
+     \strc_references_inject_before % new
      \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
        \strc_references_flush_destination_nodes
      \egroup
-     \prewordbreak % new
+     \strc_references_inject_after % new
    \fi}
 
 \unexpanded\def\strc_references_direct_full

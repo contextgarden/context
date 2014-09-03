@@ -52,7 +52,7 @@ function commands.pdfstartrotation(a)
         local s, c = sind(a), cosd(a)
         context(pdfsave())
         context(pdfsetmatrix(c,s,-s,c))
-        insert(stack,restore and { c, -s, s, c } or false)
+        insert(stack,restore and { c, -s, s, c } or true)
     end
 end
 
@@ -68,7 +68,7 @@ function commands.pdfstartscaling(sx,sy)
         end
         context(pdfsave())
         context(pdfsetmatrix(sx,0,0,sy))
-        insert(stack,restore and { 1/sx, 0, 0, 1/sy } or false)
+        insert(stack,restore and { 1/sx, 0, 0, 1/sy } or true)
     end
 end
 
@@ -78,13 +78,15 @@ function commands.pdfstartmatrix(sx,rx,ry,sy) -- tx, ty
     else
         context(pdfsave())
         context(pdfsetmatrix(sx,rx,ry,sy))
-        insert(stack,store and { -sx, -rx, -ry, -sy } or false)
+        insert(stack,store and { -sx, -rx, -ry, -sy } or true)
     end
 end
 
 local function pdfstopsomething()
     local top = remove(stack)
     if top == false then
+        -- not wrapped
+    elseif top == true then
         context(pdfrestore())
     elseif top then
         context(pdfsetmatrix(unpack(top)))

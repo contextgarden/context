@@ -842,7 +842,7 @@ local builder = Cs { "start",
               + V("m") + V("M") -- new
               + V("z") -- new
               --
-              + V("*") -- ignores probably messed up %
+           -- + V("?") -- ignores probably messed up %
             )
           + V("*")
         )
@@ -897,6 +897,7 @@ local builder = Cs { "start",
     ["A"] = (prefix_any * P("A")) / format_A, -- %A => "..." (forces tostring)
     --
     ["*"] = Cs(((1-P("%"))^1 + P("%%")/"%%")^1) / format_rest, -- rest (including %%)
+    ["?"] = Cs(((1-P("%"))^1               )^1) / format_rest, -- rest (including %%)
     --
     ["!"] = Carg(2) * prefix_any * P("!") * C((1-P("!"))^1) * P("!") / format_extension,
 }

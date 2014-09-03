@@ -325,6 +325,7 @@ end
 local attributes, directory = lfs.attributes, lfs.dir
 
 local weird          = P(".")^1 + lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+local lessweird      = P(".")^1 + lpeg.anywhere(S("~`#$%^&*:;\"\'||<>,?\n\r\t"))
 local timer          = { }
 local scanned        = { }
 local nofscans       = 0
@@ -336,12 +337,13 @@ local nofsharedscans = 0
 -- So, we assume either a lowercase name or a mixed case one but only one such case
 -- as having Foo fOo foo FoO FOo etc on the system is braindead in any sane project.
 
-local function scan(files,remap,spec,path,n,m,r,onlyone)
+local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
     local full    = path == "" and spec or (spec .. path .. '/')
     local dirs    = { }
     local nofdirs = 0
+    local pattern = tolerant and lessweird or weird
     for name in directory(full) do
-        if not lpegmatch(weird,name) then
+        if not lpegmatch(pattern,name) then
             local mode = attributes(full..name,"mode")
             if mode == "file" then
                 n = n + 1
@@ -392,14 +394,14 @@ local function scan(files,remap,spec,path,n,m,r,onlyone)
     if nofdirs > 0 then
         sort(dirs)
         for i=1,nofdirs do
-            files, remap, n, m, r = scan(files,remap,spec,dirs[i],n,m,r,onlyone)
+            files, remap, n, m, r = scan(files,remap,spec,dirs[i],n,m,r,onlyonce,tolerant)
         end
     end
     scancache[sub(full,1,-2)] = files
     return files, remap, n, m, r
 end
 
-function resolvers.scanfiles(path,branch,usecache,onlyonce)
+function resolvers.scanfiles(path,branch,usecache,onlyonce,tolerant)
     local realpath = resolveprefix(path)
     if usecache then
         local content = fullcache[realpath]
@@ -418,7 +420,7 @@ function resolvers.scanfiles(path,branch,usecache,onlyonce)
     end
     local content
     if isdir(realpath) then
-        local files, remap, n, m, r = scan({ },{ },realpath .. '/',"",0,0,0,onlyonce)
+        local files, remap, n, m, r = scan({ },{ },realpath .. '/',"",0,0,0,onlyonce,tolerant)
         content = {
             metadata = {
                 path        = path, -- can be selfautoparent:texmf-whatever
@@ -457,7 +459,7 @@ function resolvers.scanfiles(path,branch,usecache,onlyonce)
 end
 
 function resolvers.simplescanfiles(path,branch,usecache)
-    return resolvers.scanfiles(path,branch,usecache,true) -- onlyonce
+    return resolvers.scanfiles(path,branch,usecache,true,true) -- onlyonce
 end
 
 function resolvers.scandata()

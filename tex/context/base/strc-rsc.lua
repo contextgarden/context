@@ -12,7 +12,8 @@ if not modules then modules = { } end modules ['strc-rsc'] = {
 -- The scanner accepts nested outer, but we don't care too much, maybe
 -- some day we will have both but currently the innermost wins.
 
-local lpegmatch, lpegP, lpegS, lpegCs, lpegCt, lpegCf, lpegCc, lpegC, lpegCg = lpeg.match, lpeg.P, lpeg.S, lpeg.Cs, lpeg.Ct, lpeg.Cf, lpeg.Cc, lpeg.C, lpeg.Cg
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local lpegP, lpegS, lpegCs, lpegCt, lpegCf, lpegCc, lpegC, lpegCg = lpeg.P, lpeg.S, lpeg.Cs, lpeg.Ct, lpeg.Cf, lpeg.Cc, lpeg.C, lpeg.Cg
 local find = string.find
 
 local spaces     = lpegP(" ")^0
@@ -34,18 +35,28 @@ local backslash  = lpegP("\\")
 
 local endofall   = spaces * lpegP(-1)
 
-local o_token    = 1 - rparent - rbrace - lparent - lbrace  -- can be made more efficient
-local a_token    = 1 - rbrace
+----- o_token    = 1 - rparent - rbrace - lparent - lbrace  -- can be made more efficient
+----- a_token    = 1 - rbrace
 local s_token    = 1 - lparent - lbrace
 local i_token    = 1 - lparent - lbrace - endofall
 local f_token    = 1 - lparent - lbrace - dcolon
 local c_token    = 1 - lparent - lbrace - tcolon
 
+-- experimental
+
+local o_token    = lpegpatterns.nestedparents
+                 + (1 - rparent - lbrace)
+local a_token    = lpegpatterns.nestedbraces
+                 + (1 - rbrace)
+local q_token    = lpegpatterns.unsingle
+                 + lpegpatterns.undouble
+
 local hastexcode = lpegCg(lpegCc("has_tex")   * lpegCc(true)) -- cannot be made to work
 local component  = lpegCg(lpegCc("component") * lpegCs(c_token^1))
 local outer      = lpegCg(lpegCc("outer")     * lpegCs(f_token^1))
-local operation  = lpegCg(lpegCc("operation") * lpegCs(o_token^1))
-local arguments  = lpegCg(lpegCc("arguments") * lpegCs(a_token^0))
+----- operation  = lpegCg(lpegCc("operation") * lpegCs(o_token^1))
+local operation  = lpegCg(lpegCc("operation") * lpegCs(q_token + o_token^1))
+local arguments  = lpegCg(lpegCc("arguments") * lpegCs(q_token + a_token^0))
 local special    = lpegCg(lpegCc("special")   * lpegCs(s_token^1))
 local inner      = lpegCg(lpegCc("inner")     * lpegCs(i_token^1))
 
@@ -152,3 +163,14 @@ references.splitcomponent    = splitcomponent
 -- inspect(splitreference([[outer::special()]]))
 -- inspect(splitreference([[outer::inner{argument}]]))
 -- inspect(splitreference([[special(outer::operation)]]))
+
+-- inspect(splitreference([[special(operation)]]))
+-- inspect(splitreference([[special(operation(whatever))]]))
+-- inspect(splitreference([[special(operation{argument,argument{whatever}})]]))
+-- inspect(splitreference([[special(operation{argument{whatever}})]]))
+
+-- inspect(splitreference([[special("operation(")]]))
+-- inspect(splitreference([[special("operation(whatever")]]))
+-- inspect(splitreference([[special(operation{"argument,argument{whatever"})]]))
+-- inspect(splitreference([[special(operation{"argument{whatever"})]]))
+

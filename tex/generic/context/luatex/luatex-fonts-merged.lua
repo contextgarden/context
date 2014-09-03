@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/28/14 20:19:26
+-- merge date  : 09/03/14 22:05:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -3173,7 +3173,6 @@ local builder=Cs { "start",
 +V("j")+V("J") 
 +V("m")+V("M") 
 +V("z")
-+V("*") 
       )+V("*")
     )*(P(-1)+Carg(1))
   )^0,
@@ -3217,6 +3216,7 @@ local builder=Cs { "start",
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,
   ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_rest,
+  ["?"]=Cs(((1-P("%"))^1        )^1)/format_rest,
   ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
 }
 local direct=Cs (

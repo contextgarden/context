@@ -1368,6 +1368,9 @@ end
 -- always analyze .. todo: use url split
 
 collect_instance_files = function(filename,askedformat,allresults) -- uses nested
+    if not filename or filename == "" then
+        return { }
+    end
     askedformat = askedformat or ""
     filename = collapsepath(filename,".")
 
