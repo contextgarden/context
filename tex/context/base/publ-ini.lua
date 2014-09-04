@@ -1420,10 +1420,10 @@ function lists.flushentries(dataset)
         else
             -- nothing
         end
-        local u = li[4]
-        if u then
-            local l = u.btxltx
-            local r = u.btxrtx
+        local userdata = li[4]
+        if userdata then
+            local l = userdata.btxltx
+            local r = userdata.btxrtx
             if l then
                 ctx_btxsetlefttext (l)
             end
@@ -1431,8 +1431,39 @@ function lists.flushentries(dataset)
                 ctx_btxsetrighttext(r)
             end
         end
+        rendering.userdata = userdata
         ctx_btxhandlelistentry()
      end
+end
+
+local function getuserdata(dataset,key)
+    local rendering = renderings[dataset]
+    if rendering then
+        local userdata = rendering.userdata
+        if userdata then
+            local value = userdata[key]
+            if value and value ~= "" then
+                return value
+            end
+        end
+    end
+end
+
+lists.uservariable = getuserdata
+
+function commands.btxuservariable(dataset,key)
+    local value = getuserdata(dataset,key)
+    if value then
+        context(value)
+    end
+end
+
+function commands.btxdoifelseuservariable(dataset,key)
+    if getuserdata(dataset,key) then
+        ctx_firstoftwoarguments()
+    else
+        ctx_secondoftwoarguments()
+    end
 end
 
 function lists.filterall(dataset)
@@ -1652,8 +1683,8 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
             source[i] = data
         end
 
-        local function flush(i,n,entry,tag)
-            local tag = tag or entry.tag
+        local function flush(i,n,entry,last)
+            local tag = entry.tag
             local currentcitation = markcite(dataset,tag)
             ctx_btxstartcite()
             ctx_btxsettag(tag)
@@ -1670,7 +1701,7 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
             if language then
                 ctx_btxsetlanguage(language)
             end
-            if not setter(entry,entry.last) then
+            if not setter(entry,last) then
                 ctx_btxsetfirst(f_missing(tag))
             end
             ctx_btxsetconcat(concatstate(i,n))
@@ -1688,7 +1719,7 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
                     local entry = target[i]
                     local first = entry.first
                     if first then
-                        flush(i,nofcollected,first,list[1]) -- somewhat messy as we can be sorted so this needs checking! might be wrong
+                        flush(i,nofcollected,first,entry.last)
                     else
                         flush(i,nofcollected,entry)
                     end
@@ -1821,7 +1852,6 @@ local function setter(dataset,tag,entry,internal)
     local entries = entry.entries
     local text = entries and entries.text or "?"
     return {
-        dataset  = dataset,
         tag      = tag,
         internal = internal,
         num      = text,
@@ -1835,21 +1865,10 @@ end
 
 function citevariants.num(dataset,reference,mark,compress,variant,internal)
     processcite(dataset,reference,mark,compress,"num",internal,setter,getter)
+--     processcite(dataset,reference,mark,false,"num",internal,setter,getter)
 end
 
 -- year
-
--- local function setter(dataset,tag,entry,internal)
---     local year = getfield(dataset,tag,"year")
---     return {
---         dataset  = dataset,
---         tag      = tag,
---         internal = internal,
---         year     = year,
---         sortkey  = year,
---         sortfld  = "year",
---     }
--- end
 
 local function setter(dataset,tag,entry,internal)
     return {
@@ -2005,30 +2024,19 @@ local function authorconcat(target,key,setup)
             ctx_btxsetinternal(bl and bl.references.internal or "")
             if first then
                 ctx_btxsetfirst(first[key] or f_missing(first.tag))
--- third ? of gewoon getfield?
                 local suffix = entry.suffix
                 local value  = entry.last[key]
---                 if suffix then
---                     ctx_btxsetsecond(value .. converters.characters(suffix))
---                 else
---                     ctx_btxsetsecond(value)
---                 end
-ctx_btxsetsecond(value)
-if suffix then
-    ctx_btxsetthird(suffix)
-end
+                ctx_btxsetsecond(value)
+                if suffix then
+                    ctx_btxsetthird(suffix)
+                end
             else
                 local suffix = entry.suffix
                 local value  = entry[key] or f_missing(tag)
---                 if suffix then
---                     ctx_btxsetfirst(value .. converters.characters(suffix))
---                 else
---                     ctx_btxsetfirst(value)
---                 end
-ctx_btxsetfirst(value)
-if suffix then
-    ctx_btxsetthird(suffix)
-end
+                ctx_btxsetfirst(value)
+                if suffix then
+                    ctx_btxsetthird(suffix)
+                end
             end
             ctx_btxsetconcat(concatstate(i,nofcollected))
             ctx_btxcitesetup(setup)

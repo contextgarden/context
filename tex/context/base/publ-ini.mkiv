@@ -318,6 +318,11 @@
 % \let\btxsetdataset\setbtxdataset
 % \let\btxsetentry  \setbtxentry
 
+% todo: no need for the currents as we can keep them at the lua end so we will haqve
+%
+% \btxfield         : current
+% \btxspecificfield : dataset,tag,key
+
 \def\btxfield      #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
 \def\btxdetail     #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
 \def\btxauthorfield#1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
@@ -325,7 +330,6 @@
 \def\btxdoifelse   #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
 \def\btxdoif       #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
 \def\btxdoifnot    #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
-
 
 \let\btxsetup\fastsetup
 
@@ -509,7 +513,7 @@
    \fi
    \ifx\currentbtxrighttext\empty\else
      \fastsetup{\s!btx:\currentbtxalternative:righttext}%
-   \fi}%
+   \fi}
 
 \def\btx_entry_inject_nop
   {\tttf \getmessage\m!publications{12}{\currentbtxsetup}}
@@ -697,13 +701,17 @@
 
 \def\btx_cite_reference_inject_indeed
   {\btx_trace_list_cross\currentbtxbacklink\empty
-   \normalexpanded{\writedatatolist%
+   \normalexpanded{\writedatatolist
       [\s!btx]%
       [\s!btxset=\currentbtxdataset,%
        \s!btxref=\currentbtxtag,%
        \ifx\p_publ_cite_lefttext \empty\else\s!btxltx={\p_publ_cite_lefttext },\fi%
        \ifx\p_publ_cite_righttext\empty\else\s!btxrtx={\p_publ_cite_righttext},\fi%
-       \s!btxint=\number\currentbtxbacklink]}}%  % \c!location=\v!here
+       \s!btxint=\number\currentbtxbacklink
+       \ifx\currentbtxciteuservariables\empty\else,\currentbtxciteuservariables\fi]}}
+
+\def\currentbtxuservariable #1{\ctxcommand{btxuservariable("\currentbtxdataset","#1")}}
+\def\btxdoifelseuservariable#1{\ctxcommand{btxdoifelseuservariable("\currentbtxdataset","#1")}}
 
 \let\btxcitereference\btx_cite_reference_inject
 
@@ -878,8 +886,8 @@
 
 % these need to be sort of protected:
 
-\let\p_publ_cite_before   \empty
-\let\p_publ_cite_after    \empty
+%let\p_publ_cite_before   \empty
+%let\p_publ_cite_after    \empty
 \let\p_publ_cite_lefttext \empty
 \let\p_publ_cite_righttext\empty
 
@@ -898,23 +906,32 @@
 
 \let\publ_citation_tags_indeed\publ_cite_tags_indeed
 
+\let\currentbtxciteuservariables\empty
+
 \unexpanded\def\publ_cite_tags_options[#1]%
   {\strictdoifnextoptionalelse{\publ_cite_tags_options_indeed{#1}}{\publ_cite_tags_indeed{#1}}}
 
-\unexpanded\def\publ_cite_tags_options_indeed#1[#2]%
-  {\edef\currentbtxcitetag{#2}%
-   \doifassignmentelse{#1}\publ_cite_tags_settings_indeed\publ_cite_tags_variants_indeed{#1}}
+\unexpanded\def\publ_cite_tags_options_indeed#1%
+  {\doifassignmentelse{#1}\publ_cite_tags_settings_indeed\publ_cite_tags_variants_indeed{#1}}
 
-\def\publ_cite_tags_settings_indeed#1%
+\def\publ_cite_tags_settings_indeed#1[#2]%
   {\letinteractionparameter\c!style\empty
   %\letinteractionparameter\c!color\empty
-   \letdummyparameter\c!before     \empty
-   \letdummyparameter\c!after      \empty
+   \letdummyparameter\c!reference  \empty
    \letdummyparameter\c!extras     \empty
    \letdummyparameter\c!alternative\empty
+   %letdummyparameter\c!before     \empty
+   %letdummyparameter\c!after      \empty
    \letdummyparameter\c!lefttext   \empty
    \letdummyparameter\c!righttext  \empty
    \getdummyparameters[#1]%
+   \edef\p_reference{\dummyparameter\c!reference}%
+   \ifx\p_reference\empty
+      \edef\currentbtxcitetag{#2}%
+   \else
+      \let\currentbtxcitetag\p_reference
+      \edef\currentbtxciteuservariables{#2}%
+   \fi
    \edef\p_alternative{\dummyparameter\c!alternative}%
    \ifx\p_alternative\empty
      \edef\currentbtxcitevariant{\btxcitevariantparameter\c!alternative}%
@@ -929,25 +946,26 @@
        \setexpandedbtxcitevariantparameter\p_right{\p_extras\p_right}%
      \fi
    \fi
-   \edef\p_publ_cite_before   {\dummyparameter\c!before}%
-   \edef\p_publ_cite_after    {\dummyparameter\c!after}%
+   %edef\p_publ_cite_before   {\dummyparameter\c!before}%
+   %edef\p_publ_cite_after    {\dummyparameter\c!after}%
    \edef\p_publ_cite_lefttext {\dummyparameter\c!lefttext}%
    \edef\p_publ_cite_righttext{\dummyparameter\c!righttext}%
    \the\everysetupbtxciteplacement
-   \ifx\p_publ_cite_before\empty \else
-     \p_publ_cite_before
-     \space
-   \fi
+   %ifx\p_publ_cite_before\empty \else
+   % \p_publ_cite_before
+   % \space
+   %fi
    \publ_cite_variant
-   \ifx\p_publ_cite_after\empty \else
-     \optionalspace
-     \p_publ_cite_after
-   \fi
+   %ifx\p_publ_cite_after\empty \else
+   % \optionalspace
+   % \p_publ_cite_after
+   %fi
    \endgroup}
 
-\def\publ_cite_tags_variants_indeed#1%
+\def\publ_cite_tags_variants_indeed#1[#2]%
   {\letinteractionparameter\c!style\empty
    \edef\currentbtxcitevariant{#1}%
+   \edef\currentbtxcitetag{#2}%
    \the\everysetupbtxciteplacement
    \publ_cite_variant
    \endgroup}
