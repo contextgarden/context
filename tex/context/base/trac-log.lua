@@ -73,6 +73,8 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 local topattern = string.topattern
 local next, type, select = next, type, select
 local utfchar = utf.char
+local datetime = os.date
+local openfile = io.open
 
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
@@ -845,10 +847,12 @@ end
 --     logs.system(syslogname,"context","test","fonts","font %s recached due to newer version (%s)","blabla","123")
 -- end
 
-function logs.system(whereto,process,jobname,category,...)
-    local message = formatters["%s %s => %s => %s => %s\r"](os.date("%d/%m/%y %H:%m:%S"),process,jobname,category,format(...))
+local f_syslog = formatters["%s %s => %s => %s => %s\r"]
+
+function logs.system(whereto,process,jobname,category,fmt,arg,...)
+    local message = f_syslog(datetime("%d/%m/%y %H:%m:%S"),process,jobname,category,arg == nil and fmt or format(fmt,arg,...))
     for i=1,10 do
-        local f = io.open(whereto,"a") -- we can consider keeping the file open
+        local f = openfile(whereto,"a") -- we can consider keeping the file open
         if f then
             f:write(message)
             f:close()

@@ -302,9 +302,9 @@ function tags.stop()
     end
     local t = stack[nstack]
     if not t then
-        if trace_tags then
+     -- if trace_tags then
             report_tags("ignoring end tag, previous chain: %s",nstack > 0 and concat(chain[nstack],"",1,nstack) or "none")
-        end
+     -- end
         t = unsetvalue
     end
     texattribute[a_tagged] = t

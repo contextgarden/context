@@ -7408,7 +7408,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 25613, stripped down to: 16617
+-- original size: 25730, stripped down to: 16725
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -7423,6 +7423,8 @@ local concat,insert,remove=table.concat,table.insert,table.remove
 local topattern=string.topattern
 local next,type,select=next,type,select
 local utfchar=utf.char
+local datetime=os.date
+local openfile=io.open
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local texgetcount=tex and tex.getcount
@@ -7979,10 +7981,11 @@ function logs.application(t)
   end
   return t
 end
-function logs.system(whereto,process,jobname,category,...)
-  local message=formatters["%s %s => %s => %s => %s\r"](os.date("%d/%m/%y %H:%m:%S"),process,jobname,category,format(...))
+local f_syslog=formatters["%s %s => %s => %s => %s\r"]
+function logs.system(whereto,process,jobname,category,fmt,arg,...)
+  local message=f_syslog(datetime("%d/%m/%y %H:%m:%S"),process,jobname,category,arg==nil and fmt or format(fmt,arg,...))
   for i=1,10 do
-    local f=io.open(whereto,"a") 
+    local f=openfile(whereto,"a") 
     if f then
       f:write(message)
       f:close()
@@ -17427,8 +17430,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 720379
--- stripped bytes    : 257438
+-- original bytes    : 720496
+-- stripped bytes    : 257447
 
 -- end library merge
 

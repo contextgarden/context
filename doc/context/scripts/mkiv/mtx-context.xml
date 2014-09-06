@@ -142,7 +142,7 @@
                     <short>assume given file present elsewhere</short>
                 </flag>
                     <flag name="nofile">
-                <short>use dummy file as jobname</short>
+                    <short>use dummy file as jobname</short>
                 </flag>
             </subcategory>
         </category>
@@ -155,7 +155,7 @@
                     <short>omit runtime statistics at the end of the run</short>
                 </flag>
                     <flag name="update">
-                <short>update context from website (not to be confused with contextgarden)</short>
+                    <short>update context from website (not to be confused with contextgarden)</short>
                 </flag>
                 <flag name="profile">
                     <short>profile job (use: mtxrun <ref name="script"/> profile <ref name="analyze"/>)</short>
@@ -164,7 +164,10 @@
                     <short>generate timing and statistics overview</short>
                 </flag>
                 <flag name="keeptuc">
-                    <short>keep previous tuc files (numbered by run)</short>
+                    <short>keep previous tuc files (jobname-tuc-[run].tmp)</short>
+                </flag>
+                <flag name="keeplog">
+                    <short>keep previous log files (jobname-log-[run].tmp)</short>
                 </flag>
             </subcategory>
             <subcategory>

@@ -401,5 +401,31 @@
 %    \processcommalist[#1]\docommand
 %    \endgroup}
 
+\unexpanded\def\syst_log_indeed#1#2#3%
+  {\ctxcommand{systemlog("#1","#2",\!!bs#3\!!es)}}
+
+\let\systemlog\syst_log_indeed
+
+\unexpanded\def\systemlogfirst
+  {\ifcase\directsystemparameter\c!n\relax
+     \expandafter\syst_log_indeed
+   \or
+     \expandafter\syst_log_indeed
+   \else
+     \expandafter\gobblethreearguments
+   \fi}
+
+\unexpanded\def\systemloglast
+  {\ifcase\directsystemparameter\c!n\relax
+     \expandafter\syst_log_indeed
+   \or
+      \expandafter\gobblethreearguments
+   \or
+     \expandafter\gobblethreearguments
+   \or
+     \expandafter\gobblethreearguments
+   \or
+     \expandafter\syst_log_indeed
+   \fi}
 
 \protect \endinput

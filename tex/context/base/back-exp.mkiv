@@ -166,6 +166,9 @@
    \c!properties=\v!no, % no: ignore, yes: as attribute, otherwise: use as prefix
    \c!hyphen=\v!no]
 
+\setupbackend
+  [css=export-example.css]
+
 \def\dosynchronizeexport
   {\let\currentexport\empty
    \ctxcommand{setupexport{

@@ -1143,11 +1143,11 @@
  % \c!setups=btx:cite:initialize,
    \c!alternative=num,
    \c!authorconversion=\v!normal,
-   \c!andtext={ \btxlabeltext{and} },
-   \c!otherstext={ \btxlabeltext{others}},
+   \c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
+   \c!otherstext={ \btxlabeltext{\currentbtxalternative:others}},
    \c!pubsep={, },
-   \c!lastpubsep={ \btxlabeltext{and} },
-   \c!finalpubsep={ \btxlabeltext{and} },
+   \c!lastpubsep={ \btxlabeltext{\currentbtxalternative:and} },
+   \c!finalpubsep={ \btxlabeltext{\currentbtxalternative:and} },
    \c!compress=\v!no,
    \c!inbetween={ },
    \c!range=\endash,
@@ -1274,9 +1274,10 @@
 
 \setupbtxlistvariant
   [\c!namesep={, },
-   \c!lastnamesep={ \btxlabeltext{and} },
-   \c!finalnamesep={ \btxlabeltext{and} },
+   \c!lastnamesep={ \btxlabeltext{\currentbtxalternative:and} },
+   \c!finalnamesep={ \btxlabeltext{\currentbtxalternative:and} },
    \c!firstnamesep={ },
+   \c!otherstext={ \btxlabeltext{\currentbtxalternative:others}},
    \c!juniorsep={ },
    \c!vonsep={ },
    \c!initialsep={ },
@@ -1284,8 +1285,7 @@
    \c!surnameinitialsep={, },
    \c!surnamefirstnamesep={, },
    \c!etallimit=5,
-   \c!etaldisplay=5,
-   \c!etaltext={ \btxlabeltext{others}},
+   \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!number,
    \c!authorconversion=\v!normal]
@@ -1317,7 +1317,7 @@
    \c!surnamefirstnamesep=\btxlistvariantparameter\c!surnamefirstnamesep,
    \c!etallimit=\btxlistvariantparameter\c!etallimit,
    \c!etaldisplay=\btxlistvariantparameter\c!etaldisplay,
-   \c!etaltext=\btxlistvariantparameter\c!etaltext,
+   \c!otherstext=\btxlistvariantparameter\c!otherstext,
    \c!monthconversion=\btxlistvariantparameter\c!monthconversion,
    \c!authorconversion=\v!name]
 

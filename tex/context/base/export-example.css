@@ -120,26 +120,31 @@ sectioncontent, div.sectioncontent {
 
 section[detail="chapter"], section[detail="title"],
 		div.section.detail-chapter, div.section.detail-title {
-	margin-top    : 3em ;
-	margin-bottom : 2em ;
+	page-break-before : always ;
+	page-break-after  : avoid ;
+	margin-top        : 3em ;
+	margin-bottom     : 2em ;
 }
 
 section[detail="section"], section[detail="subject"],
 		div.section.detail-section, div.section.detail-subject {
-	margin-top    : 2.5em ;
-	margin-bottom : 2.5em ;
+	page-break-after : avoid ;
+	margin-top       : 2.5em ;
+	margin-bottom    : 2.5em ;
 }
 
 section[detail="subsection"], section[detail="subsubject"],
 		div.section.detail-subsection, div.section.detail-subsubject {
-	margin-top    : 2em ;
-	margin-bottom : 2em ;
+	page-break-after : avoid ;
+	margin-top       : 2em ;
+	margin-bottom    : 2em ;
 }
 
 section[detail="subsubsection"], section[detail="subsubsubject"],
 		div.section.detail-subsubsection, div.section.detail-subsubsubject {
-	margin-top    : 1em ;
-	margin-bottom : 0em ;
+	page-break-after : avoid ;
+	margin-top       : 1em ;
+	margin-bottom    : 0em ;
 }
 
 section[detail="summary"], section[detail="subsummary"],
@@ -293,6 +298,7 @@ descriptioncontent, div.descriptioncontent {
 }
 
 descriptionsymbol, div.descriptionsymbol {
+	display : inline ;
 }
 
 /* verbatimblock      : display */
@@ -725,16 +731,18 @@ quantity>number, div.quantity div.number {
 /* subsup : inline */
 
 sup, div.sup {
-	display        : inline ;
+	display        : inline-block ;
 	font-size      : xx-small ;
     line-height    : 0 ;
+    padding-top    : 0.5ex ;
 	vertical-align : top ;
 }
 
 sub, div.sub {
-	display        : inline ;
+	display        : inline-block ;
 	font-size      : xx-small ;
     line-height    : 0 ;
+    padding-bottom : 0.5ex ;
 	vertical-align : bottom ;
 }
 
@@ -748,16 +756,11 @@ subsup>sub, div.subsup div.sub {
 	vertical-align : bottom ;
 }
 
-/* xhtml */
+/* links */
 
-a[href] {
-	text-decoration : none ;
-	color           : inherit ;
-}
-
-a[href]:hover {
-	color           : rgb(50%,0%,0%) ;
-	text-decoration : underline ;
+div[href]:hover {
+	color            : rgb(50%,0%,0%) ;
+	background-color : rgb(85%,85%,85%) ;
 }
 
 /* setups */

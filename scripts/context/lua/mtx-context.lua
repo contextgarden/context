@@ -30,6 +30,7 @@ local removesuffix  = file.removesuffix
 local validfile     = lfs.isfile
 local removefile    = os.remove
 local renamefile    = os.rename
+local formatters    = string.formatters
 
 local application = logs.application {
     name     = "mtx-context",
@@ -281,31 +282,47 @@ local function multipass_changed(oldhash, newhash)
     return false
 end
 
+local f_tempfile = formatters["%s-%s-%02d.tmp"]
+
+local function backup(run,kind,filename)
+    if run == 1 then
+        for i=1,10 do
+            local tmpname = f_tempfile(jobname,kind,i)
+            if validfile(tmpname) then
+                removefile(tmpname)
+                report("removing %a",tmpname)
+            end
+        end
+    end
+    if validfile(filename) then
+        local tmpname = f_tempfile(jobname,kind,run or 1)
+        report("copying %a into %a",filename,tmpname)
+        file.copy(filename,tmpname)
+    else
+        report("no file %a, nothing kept",filename)
+    end
+end
+
 local function multipass_copyluafile(jobname,run)
     local tuaname, tucname = jobname..".tua", jobname..".tuc"
     if validfile(tuaname) then
         if run then
-            if run == 1 then
-                for i=1,10 do
-                    local tmpname = format("%s-tuc-%02d.tmp",jobname,i)
-                    if validfile(tmpname) then
-                        removefile(tmpname)
-                        report("removing %a",tmpname)
-                    end
-                end
-            end
-            if validfile(tucname) then
-                local tmpname = format("%s-tuc-%02d.tmp",jobname,run or 1)
-                report("copying %a into %a",tucname,tmpname)
-                file.copy(tucname,tmpname)
-            else
-                report("no file %a, nothing kept",filename)
-            end
+            backup(run,"tuc",tucname)
             report("copying %a into %a",tuaname,tucname)
             report()
         end
         removefile(tucname)
         renamefile(tuaname,tucname)
+    end
+end
+
+local function multipass_copylogfile(jobname,run)
+    local logname = jobname..".log"
+    if validfile(logname) then
+        if run then
+            backup(run,"log",logname)
+            report()
+        end
     end
 end
 
@@ -572,6 +589,7 @@ function scripts.context.run(ctxdata,filename)
     local a_jithash     = getargument("jithash")
     local a_texformat   = getargument("texformat")
     local a_keeptuc     = getargument("keeptuc")
+    local a_keeplog     = getargument("keeplog")
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or (a_scrollmode and "scrollmode") or nil
     a_synctex   = check_synctex(a_synctex)
@@ -739,6 +757,7 @@ function scripts.context.run(ctxdata,filename)
                         break
                     elseif returncode == 0 then
                         multipass_copyluafile(jobname,a_keeptuc and currentrun)
+                        multipass_copylogfile(jobname,a_keeplog and currentrun)
                         if not multipass_forcedruns then
                             newhash = multipass_hashfiles(jobname)
                             if multipass_changed(oldhash,newhash) then

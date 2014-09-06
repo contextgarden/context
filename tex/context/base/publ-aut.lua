@@ -317,6 +317,7 @@ function commands.btxauthor(dataset,tag,field,settings)
     end
     local max = split and #split or 0
     if max == 0 then
+        return
         -- error
     end
     local etallimit   = tonumber(settings.etallimit) or 1000
@@ -360,12 +361,14 @@ function commands.btxauthor(dataset,tag,field,settings)
         if juniors and #juniors > 0 then
             ctx_btxsetjuniors() -- (concat(juniors," "))
         end
+        if i == max then
+            local overflow = #split - max
+            if overflow > 0 then
+                ctx_btxsetoverflow(overflow)
+            end
+        end
         ctx_btxsetup(combiner)
         ctx_btxstopauthor()
-    end
-    local overflow = max - #split
-    if overflow > 0 then
-        ctx_btxsetoverflow(overflow)
     end
 end
 

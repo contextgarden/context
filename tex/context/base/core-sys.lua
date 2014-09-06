@@ -99,3 +99,7 @@ statistics.register("result saved in file", function()
         return format("%s.%s",outputfilename,"dvi") -- hard to imagine
     end
 end)
+
+function commands.systemlog(whereto,category,text)
+    logs.system(whereto,"context",tex.jobname,category,text)
+end

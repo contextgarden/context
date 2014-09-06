@@ -142,7 +142,10 @@ profile job (use: mtxrun --script profile --analyze)
 generate timing and statistics overview
 .TP
 .B --keeptuc
-keep previous tuc files (numbered by run)
+keep previous tuc files (jobname-tuc-[run].tmp)
+.TP
+.B --keeplog
+keep previous log files (jobname-log-[run].tmp)
 .TP
 .B --extra=name
 process extra (mtx-context-... in distribution)
