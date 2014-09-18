@@ -153,7 +153,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:aps:pages
-    \btxif {pages} {
+    \btxdoif {pages} {
         \btxcomma
         \btxoneorrange {pages} {
             \btxlabeltext{aps:p}
@@ -319,7 +319,7 @@
                                 \btxflush{series}
                             }
                         }
-                        \btxif {chapter} {
+                        \btxdoif {chapter} {
                             \btxcomma
                             \btxflush{chapter}
                         }
@@ -376,7 +376,7 @@
             \texdefinition{btx:aps:publisher}
             \btxflush{year}
             \btxrparent
-            \btxif {edition} {
+            \btxdoif {edition} {
                 \btxcomma
                 \btxflush{edition}
                 \btxspace
@@ -410,7 +410,7 @@
             }
         } {
             \btxdoifelse {crossref} {
-                \btxif {chapter} {
+                \btxdoif {chapter} {
                     \btxcomma
                     \btxflush{chapter}
                 }
@@ -432,7 +432,7 @@
                     \btxlabeltext{aps:volume}% vol.
                     \btxnbsp
                     \btxflush{volume}
-                    \btxif {series} {
+                    \btxdoif {series} {
                         \btxnbsp
                         \btxlabeltext{aps:of}
                         \btxnbsp
@@ -499,11 +499,11 @@
 \stopsetups
 
 \startsetups btx:aps:manual
-    \btxif {title} {
+    \btxdoif {title} {
         \texdefinition {btx:aps:italic} {
             \btxflush{title}
         }
-        \btxif {series} {
+        \btxdoif {series} {
             \btxlparent
             \btxflush{series}
             \btxrparent
@@ -512,18 +512,18 @@
     }
     \btxdoifelse {year} {
         \btxlparent
-        \btxif {organization} {
+        \btxdoif {organization} {
             \btxflush{organization}
             \btxcomma
         }
-        \btxif {city} {
+        \btxdoif {city} {
             \btxflush{organization}
             \btxcomma
         }
         \btxflush{year}
         \btxrparent
         % st\or nd\or rd\else th\fi
-        \btxif {edition} {
+        \btxdoif {edition} {
             \btxcomma
             \btxflush{edition}
             \btxspace
@@ -543,7 +543,7 @@
     \btxdoifelse {author} {
         \btxflushauthor {author}
     } {
-        \btxif {key} {
+        \btxdoif {key} {
             \btxsetup{ntx:format:key}
             \btxcomma
         }
@@ -573,17 +573,17 @@
                 \btxflush{series}
              }
         }
-        \btxif {chapter} {
+        \btxdoif {chapter} {
             \btxcomma
             \btxflush{chapter}
         }
         \btxspace
-        \btxif {year} {
+        \btxdoif {year} {
             \btxlparent
             \btxflush{year}
             \btxrparent
             \texdefinition{btx:aps:publisher}
-            \btxif {edition} {
+            \btxdoif {edition} {
                 \btxcomma
                 \btxflush{edition}
                 \btxlabeltext{aps:edition}% ed.
@@ -593,10 +593,10 @@
         \btxperiod
     } {
         \btxlabeltext{aps:In}
-        \btxif {crossref} {
+        \btxdoif {crossref} {
             \btxflush{crossref}
         }
-        \btxif {chapter} {
+        \btxdoif {chapter} {
             \btxcomma
             \btxflush{chapter}
             \btxspace
@@ -719,7 +719,7 @@
             \btxrparent
         }
         \texdefinition{btx:aps:pages}
-        \btxif {city} {
+        \btxdoif {city} {
             \btxcomma
             \btxflush{city}
         }
@@ -835,16 +835,16 @@
         \btxflush{year}
         \btxrparent
     } {
-        \btxif {published} {
+        \btxdoif {published} {
             \btxcomma
             \btxflush{published}
         }
     }
-    \btxif {pages} {
+    \btxdoif {pages} {
         \btxcomma
         \btxflush{pages}
     }
-    \btxif {print} {
+    \btxdoif {print} {
         % eprint
         \btxcomma
         \btxflush{print}

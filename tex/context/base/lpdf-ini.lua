@@ -12,6 +12,7 @@ local utfchar, utfvalues = utf.char, utf.values
 local sind, cosd, floor, max, min = math.sind, math.cosd, math.floor, math.max, math.min
 local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 local formatters = string.formatters
+local isboolean = string.is_boolean
 
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
@@ -941,39 +942,59 @@ function lpdf.id()
     return format("%s.%s",tex.jobname,timestamp)
 end
 
+-- return nil is nicer in test prints
+
 function lpdf.checkedkey(t,key,variant)
     local pn = t and t[key]
-    if pn then
+    if pn ~= nil then
         local tn = type(pn)
         if tn == variant then
             if variant == "string" then
-                return pn ~= "" and pn or nil
+                if pn ~= "" then
+                    return pn
+                end
             elseif variant == "table" then
-                return next(pn) and pn or nil
+                if next(pn) then
+                    return pn
+                end
             else
                 return pn
             end
-        elseif tn == "string" and variant == "number" then
-            return tonumber(pn)
+        elseif tn == "string" then
+            if variant == "number" then
+                return tonumber(pn)
+            elseif variant == "boolean" then
+                return isboolean(pn,nil,true)
+            end
         end
     end
+ -- return nil
 end
 
 function lpdf.checkedvalue(value,variant) -- code not shared
-    if value then
+    if value ~= nil then
         local tv = type(value)
         if tv == variant then
             if variant == "string" then
-                return value ~= "" and value
+                if value ~= "" then
+                    return value
+                end
             elseif variant == "table" then
-                return next(value) and value
+                if next(value) then
+                    return value
+                end
             else
                 return value
             end
-        elseif tv == "string" and variant == "number" then
-            return tonumber(value)
+        elseif tv == "string" then
+            if variant == "number" then
+                return tonumber(value)
+            elseif variant == "boolean" then
+                return isboolean(value,nil,true)
+            end
         end
     end
+ -- return nil
 end
 
 function lpdf.limited(n,min,max,default)

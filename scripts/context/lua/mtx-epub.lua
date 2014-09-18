@@ -248,18 +248,26 @@ local idmakers = {
 --     }
 -- }
 
-local function locateimages(oldname,newname,subpath)
+local function relocateimages(imagedata,oldname,newname,subpath)
     local data = io.loaddata(oldname)
     local images = { }
-    local done = gsub(data,"(background%-image *: * url%()(.-)(%))", function(before,name,after)
-        if subpath then
-            name = file.join(subpath,name)
+    local done = gsub(data,[[(id=")(.-)(".-background%-image *: * url%()(.-)(%))]], function(s1,id,s2,name,s3)
+        local newname = imagedata[id].newname
+        if newname then
+            if subpath then
+                name = file.join(subpath,file.basename(new  name))
+            else
+                name = file.basename(newname)
+            end
+         -- name = url.addscheme(name)
         end
         images[#images+1] = name
-        return before .. name .. after
+        if newname then
+            return s1 .. id .. s2 .. name .. s3
+        end
     end)
     if newname then
-        io.savedata(done,newname)
+        io.savedata(newname,done)
     end
     return images
 end
@@ -267,11 +275,13 @@ end
 local zippers = {
     {
         name         = "zip",
+        binary       = "zip",
         uncompressed = "zip %s -X -0 %s",
         compressed   = "zip %s -X -9 -r %s",
     },
     {
-        name         = "7zip (7z)",
+        name         = "7z (7zip)",
+        binary       = "7z",
         uncompressed = "7z a -tzip -mx0 %s %s",
         compressed   = "7z a -tzip %s %s",
     },
@@ -302,16 +312,25 @@ function scripts.epub.make()
         return
     end
 
+    -- images: { ... url = location ... }
+
     local name       = specification.name       or file.removesuffix(filename)
     local identifier = specification.identifier or ""
     local files      = specification.files      or { file.addsuffix(filename,"xhtml") }
     local images     = specification.images     or { }
     local root       = specification.root       or files[1]
     local language   = specification.language   or "en"
-    local creator    = specification.author     or "context"
+    local creator    = "context mkiv"
+    local author     = specification.author     or "anonymous"
     local title      = specification.title      or name
+    local subtitle   = specification.subtitle   or ""
     local firstpage  = specification.firstpage  or ""
     local lastpage   = specification.lastpage   or ""
+    local imagefile  = specification.imagefile  or ""
+
+    if subtitle ~= "" then
+        title = format("%s, %s",title,subtitle)
+    end
 
  -- identifier = gsub(identifier,"[^a-zA-z0-9]","")
 
@@ -413,15 +432,31 @@ function scripts.epub.make()
 
     copythem(files)
 
-    local theimages = { }
+    -- ["image-1"]={
+    --     ["height"]="7.056cm",
+    --     ["name"]="file:///t:/sources/cow.svg",
+    --     ["page"]="1",
+    --     ["width"]="9.701cm",
+    -- }
 
-    for k, v in table.sortedpairs(images) do
-        theimages[#theimages+1] = k
-        if not lfs.isfile(k) and file.suffix(k) == "svg" and file.suffix(v) == "pdf" then
-            local command = format("inkscape --export-plain-svg=%s %s",k,v)
+    local theimages = { }
+    local pdftosvg  = string.formatters[ [[mudraw -o "%s" "%s" %s]] ]
+
+    for id, data in table.sortedpairs(images) do
+        local name = url.filename(data.name)
+        local used = url.filename(data.used)
+        local base = file.basename(used)
+        local page = data.page or ""
+        if file.suffix(used) == "pdf" then
+            -- todo : check timestamp and prefix, rename to image-*
+            local command = pdftosvg(name,used,page)
             application.report("running command %a\n\n",command)
             os.execute(command)
+        else
+            name = used
         end
+        data.newname = name
+        theimages[#theimages+1] = name
     end
 
     used[#used+1] = replace(t_nav, {
@@ -474,41 +509,63 @@ function scripts.epub.make()
 
     end
 
+    if imagefile ~= "" then
+        local target = file.join(epubpath,"OEBPS",imagefile)
+        application.report("relocating images")
+        relocateimages(images,imagefile,target) -- ,file.join(epubpath,"OEBPS"))
+    end
+
     application.report("creating archive\n\n")
 
     lfs.chdir(epubpath)
     os.remove(epubfile)
 
-    local done = false
+    local usedzipper = false
 
-    for i=1,#zippers do
-        local zipper = zippers[i]
-        if os.execute(format(zipper.uncompressed,epubfile,"mimetype")) then
+    local function zipped(zipper)
+        local ok = os.execute(format(zipper.uncompressed,epubfile,"mimetype"))
+        if ok == 0 then
             os.execute(format(zipper.compressed,epubfile,"META-INF"))
             os.execute(format(zipper.compressed,epubfile,"OEBPS"))
-            done = zipper.name
+            usedzipper = zipper.name
+            return true
+        end
+    end
+
+    -- nice way
+
+    for i=1,#zippers do
+        if os.which(zippers[i].binary) and zipped(zippers[i]) then
             break
+        end
+    end
+
+    -- trial and error
+
+    if not usedzipper then
+        for i=1,#zippers do
+            if zipped(zippers[i]) then
+                break
+            end
         end
     end
 
     lfs.chdir("..")
 
-    local treefile = file.join(epubpath,epubfile)
-
-    os.remove(epubfile)
-    file.copy(treefile,epubfile)
-    if lfs.isfile(epubfile) then
-        os.remove(treefile)
-    end
-
-    if done then
-        application.report("epub archive made using %s: %s",done,epubfile)
+    if usedzipper then
+        local treefile = file.join(epubpath,epubfile)
+        os.remove(epubfile)
+        file.copy(treefile,epubfile)
+        if lfs.isfile(epubfile) then
+            os.remove(treefile)
+        end
+        application.report("epub archive made using %s: %s",usedzipper,epubfile)
     else
         local list = { }
         for i=1,#zippers do
-            list[#list+1] = zipper.name
+            list[#list+1] = zippers[i].name
         end
-        application.report("no epub archive made, install one of: %s",concat(list," "))
+        application.report("no epub archive made, install one of: % | t",list)
     end
 
 end

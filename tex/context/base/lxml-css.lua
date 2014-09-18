@@ -146,7 +146,19 @@ local pattern = Cf( Ct("") * (
           + (C("sansserif") + C("sans")) / "sans-serif" -- match before serif
           + C("serif")
         )
-    ) + P(1)
+    )
+--+ P("\\") * (
+--     P("bf") * ( Cg ( Cc("weight")  * Cc("bold") ) )
+--   + P("bi") * ( Cg ( Cc("weight")  * Cc("bold") )
+--               * Cg ( Cc("style")   * Cc("italic") ) )
+--   + P("bs") * ( Cg ( Cc("weight")  * Cc("bold") )
+--               * Cg ( Cc("style")   * Cc("oblique") ) )
+--   + P("it") * ( Cg ( Cc("style")   * Cc("italic") ) )
+--   + P("sl") * ( Cg ( Cc("style")   * Cc("oblique") ) )
+--   + P("sc") * ( Cg ( Cc("variant") * Cc("small-caps") ) )
+--   + P("tt") * ( Cg ( Cc("family")  * Cc("monospace") ) )
+--)
+  + P(1)
 )^0 , rawset)
 
 function css.fontspecification(str)

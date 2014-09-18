@@ -11,6 +11,10 @@ if not characters then
     dofile(resolvers.findfile("char-utf.lua"))
 end
 
+-- this tracker is only for real debugging and not for the average user
+
+local trace_match = false  trackers.register("publications.cite.match", function(v) trace_match = v end)
+
 if not publications then
     publications = { }
 end
@@ -23,7 +27,7 @@ local concat = table.concat
 local formatters = string.formatters
 local lowercase  = characters.lower
 
-local report  = logs.reporter("publications")
+local report  = logs.reporter("publications","match")
 
 local colon   = P(":")
 local dash    = P("-")
@@ -67,9 +71,9 @@ end
 ----- pattern = Cs(b_match * ((field + range + match + space + P(1))-e_match)^1 * e_match)
 
 local b_match = lparent
-local e_match = rparent * space^0 * (P(-1) + P(",")/" or ")
+local e_match = rparent * space^0 * (#P(-1) + P(",")/" or ") -- maybe also + -> and
 local p_match = b_match * ((field + range + match + space + P(1))-e_match)^1 * e_match
-local pattern = Cs(Cc("(") * (P("match")/"" * p_match)^1 * Cc(")"))
+local pattern = Cs(Cc("(") * (P("match")/"" * space^0 * p_match)^1 * Cc(")"))
 
 -- -- -- -- -- -- -- -- -- -- -- -- --
 -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -93,7 +97,7 @@ local find = string.find
 local lower = characters.lower
 return function(entry)
 %s
-return %s and true or false
+  return %s and true or false
 end
 ]] ]
 
@@ -102,14 +106,25 @@ local function compile(expr)
     local keys        = { }
  -- local expression  = lpegmatch(pattern,expr,start,keys)
     local expression  = lpegmatch(pattern,expr,1,keys)
- -- report("compiling expression: %s",expr)
+    if trace_match then
+        report("compiling expression: %s",expr)
+    end
     local definitions = { }
     for k, v in next, keys do
         definitions[#definitions+1] = v
     end
+    if #definitions == 0 then
+        report("invalid expression: %s",expr)
+    elseif trace_match then
+        for i=1,#definitions do
+            report("% 3i : %s",i,definitions[i])
+        end
+    end
     definitions = concat(definitions,"\n")
     local code = f_template(definitions,expression)
- -- report("generated code: %s",code)
+    if trace_match then
+        report("generated code: %s",code)
+    end
     code = loadstring(code)
     if type(code) == "function" then
         code = code()
@@ -120,6 +135,8 @@ local function compile(expr)
     report("invalid expression: %s",expr)
     return false
 end
+
+-- print(lpegmatch(pattern,"match ( author:cleveland and year:1993 ) "),1,{})
 
 -- compile([[match(key:"foo bar")]])
 -- compile([[match(key:'foo bar')]])

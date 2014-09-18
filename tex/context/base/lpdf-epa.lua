@@ -94,10 +94,17 @@ local function link_uri(x,y,w,h,document,annotation)
     end
 end
 
+-- The rules in PDF on what a 'file specification' is, is in fact quite elaborate
+-- (see section 3.10 in the 1.7 reference) so we need to test for string as well
+-- as a table. TH/20140916
+
 local function link_file(x,y,w,h,document,annotation)
     local a = annotation.A
     if a then
         local filename = a.F
+        if type(filename) == "table" then
+            filename = filename.F
+        end
         if filename then
             filename = escapetex(filename)
             local destination = a.D

@@ -1543,6 +1543,8 @@ function lxml.att(id,a,default)
                 end
             elseif str ~= "" then
                 contextsprint(notcatcodes,str)
+            else
+                -- explicit empty is valid
             end
         elseif default and default ~= "" then
             contextsprint(notcatcodes,default)

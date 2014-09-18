@@ -65,8 +65,10 @@ end
 local function getspecs(root, pattern, names, widths)
     -- here, but actually we need this in core-ntb.tex
     -- but ideally we need an mkiv enhanced core-ntb.tex
-    local ignore_widths = cals.ignore_widths
-    local shrink_widths = cals.shrink_widths
+    local ignore_widths  = cals.ignore_widths
+--     local shrink_widths  = at.option == "shrink"  or cals.shrink_widths
+--     local stretch_widths = at.option == "stretch" or cals.stretch_widths
+    local shrink_widths  = cals.shrink_widths
     local stretch_widths = cals.stretch_widths
     for e in xmlcollected(root,pattern) do
         local at = e.at

@@ -9,69 +9,11 @@ if not modules then modules = { } end modules ['trac-log'] = {
 -- In fact all writes could go through lua and we could write the console and
 -- terminal handler in lua then. Ok, maybe it's slower then, so a no-go.
 
--- if tex and (tex.jobname or tex.formatname) then
---
---     -- quick hack, awaiting speedup in engine (8 -> 6.4 sec for --make with console2)
---     -- still needed for luajittex
---
---     local texio_write_nl = texio.write_nl
---     local texio_write    = texio.write
---     local io_write       = io.write
---
---     local write_nl = function(target,...)
---         if not io_write then
---             io_write = io.write
---         end
---         if target == "term and log" then
---             texio_write_nl("log",...)
---             texio_write_nl("term","")
---             io_write(...)
---         elseif target == "log" then
---             texio_write_nl("log",...)
---         elseif target == "term" then
---             texio_write_nl("term","")
---             io_write(...)
---         else
---             texio_write_nl("log",target,...)
---             texio_write_nl("term","")
---             io_write(target,...)
---         end
---     end
---
---     local write = function(target,...)
---         if not io_write then
---             io_write = io.write
---         end
---         if target == "term and log" then
---             texio_write("log",...)
---             io_write(...)
---         elseif target == "log" then
---             texio_write("log",...)
---         elseif target == "term" then
---             io_write(...)
---         else
---             texio_write("log",target,...)
---             io_write(target,...)
---         end
---     end
---
---     texio.write    = write
---     texio.write_nl = write_nl
---
--- else
---
---     -- texlua or just lua
---
--- end
-
--- todo: less categories, more subcategories (e.g. nodes)
--- todo: split into basics and ctx specific
-
+local next, type, select, print = next, type, select, print
 local write_nl, write = texio and texio.write_nl or print, texio and texio.write or io.write
 local format, gmatch, find = string.format, string.gmatch, string.find
 local concat, insert, remove = table.concat, table.insert, table.remove
 local topattern = string.topattern
-local next, type, select = next, type, select
 local utfchar = utf.char
 local datetime = os.date
 local openfile = io.open
@@ -80,6 +22,14 @@ local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
 
 local texgetcount       = tex and tex.getcount
+
+-- variant is set now
+
+local variant = "default"
+-- local variant = "ansi"
+
+-- todo: less categories, more subcategories (e.g. nodes)
+-- todo: split into basics and ctx specific
 
 --[[ldx--
 <p>This is a prelude to a more extensive logging module. We no longer
@@ -114,12 +64,12 @@ wiki     : http://contextgarden.net
 --     [[local chruni = utilities.strings.chruni]]
 -- )
 
-utilities.strings.formatters.add (
+formatters.add (
     formatters, "unichr",
     [["U+" .. format("%%05X",%s) .. " (" .. utfchar(%s) .. ")"]]
 )
 
-utilities.strings.formatters.add (
+formatters.add (
     formatters, "chruni",
     [[utfchar(%s) .. " (U+" .. format("%%05X",%s) .. ")"]]
 )
@@ -154,18 +104,125 @@ local report, subreport, status, settarget, setformats, settranslations
 
 local direct, subdirect, writer, pushtarget, poptarget, setlogfile, settimedlog, setprocessor, setformatters
 
+-- we use formatters but best check for % then because for simple messages but
+-- we don't want this overhead for single messages (not that there are that
+-- many; we could have a special weak table)
+
 if tex and (tex.jobname or tex.formatname) then
+
+    local function useluawrites()
+
+        -- quick hack, awaiting speedup in engine (8 -> 6.4 sec for --make with console2)
+        -- still needed for luajittex .. luatex should not have that ^^ mess
+
+        local texio_write_nl = texio.write_nl
+        local texio_write    = texio.write
+        local io_write       = io.write
+
+        write_nl = function(target,...)
+            if not io_write then
+                io_write = io.write
+            end
+            if target == "term and log" then
+                texio_write_nl("log",...)
+                texio_write_nl("term","")
+                io_write(...)
+            elseif target == "log" then
+                texio_write_nl("log",...)
+            elseif target == "term" then
+                texio_write_nl("term","")
+                io_write(...)
+            elseif target ~= "none" then
+                texio_write_nl("log",target,...)
+                texio_write_nl("term","")
+                io_write(target,...)
+            end
+        end
+
+        write = function(target,...)
+            if not io_write then
+                io_write = io.write
+            end
+            if target == "term and log" then
+                texio_write("log",...)
+                io_write(...)
+            elseif target == "log" then
+                texio_write("log",...)
+            elseif target == "term" then
+                io_write(...)
+            elseif target ~= "none" then
+                texio_write("log",target,...)
+                io_write(target,...)
+            end
+        end
+
+        texio.write    = write
+        texio.write_nl = write_nl
+
+        useluawrites   = ignore
+
+    end
 
  -- local format = string.formatter
 
-    local valueiskey   = { __index = function(t,k) t[k] = k return k end } -- will be helper
+    local whereto      = "both"
+    local target       = nil
+    local targets      = nil
 
-    local target       = "term and log"
+    local formats      = table.setmetatableindex("self")
+    local translations = table.setmetatableindex("self")
 
-    logs.flush         = io.flush
+    local report_yes, subreport_yes, direct_yes, subdirect_yes, status_yes
+    local report_nop, subreport_nop, direct_nop, subdirect_nop, status_nop
 
-    local formats      = { } setmetatable(formats,     valueiskey)
-    local translations = { } setmetatable(translations,valueiskey)
+    local variants = {
+        default = {
+            formats = {
+                report_yes    = formatters["%-15s > %s\n"],
+                report_nop    = formatters["%-15s >\n"],
+                direct_yes    = formatters["%-15s > %s"],
+                direct_nop    = formatters["%-15s >"],
+                subreport_yes = formatters["%-15s > %s > %s\n"],
+                subreport_nop = formatters["%-15s > %s >\n"],
+                subdirect_yes = formatters["%-15s > %s > %s"],
+                subdirect_nop = formatters["%-15s > %s >"],
+                status_yes    = formatters["%-15s : %s\n"],
+                status_nop    = formatters["%-15s :\n"],
+            },
+            targets = {
+                logfile  = "log",
+                log      = "log",
+                file     = "log",
+                console  = "term",
+                terminal = "term",
+                both     = "term and log",
+            },
+        },
+        ansi = {
+            formats = {
+                report_yes    = formatters["[0;33m%-15s [0;1m>[0m %s\n"],
+                report_nop    = formatters["[0;33m%-15s [0;1m>[0m\n"],
+                direct_yes    = formatters["[0;33m%-15s [0;1m>[0m %s"],
+                direct_nop    = formatters["[0;33m%-15s [0;1m>[0m"],
+                subreport_yes = formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m %s\n"],
+                subreport_nop = formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m\n"],
+                subdirect_yes = formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m %s"],
+                subdirect_nop = formatters["[0;33m%-15s [0;1m>[0;35m %s [0;1m>[0m"],
+                status_yes    = formatters["[0;33m%-15s [0;1m:[0m %s\n"],
+                status_nop    = formatters["[0;33m%-15s [0;1m:[0m\n"],
+            },
+            targets = {
+                logfile  = "none",
+                log      = "none",
+                file     = "none",
+                console  = "term",
+                terminal = "term",
+                both     = "term",
+            },
+        }
+    }
+
+    logs.flush = io.flush
 
     writer = function(...)
         write_nl(target,...)
@@ -174,13 +231,6 @@ if tex and (tex.jobname or tex.formatname) then
     newline = function()
         write_nl(target,"\n")
     end
-
-    local report_yes = formatters["%-15s > %s\n"]
-    local report_nop = formatters["%-15s >\n"]
-
-    -- we can use formatters but best check for % then because for simple messages
-    -- we con't want this overhead for single messages (not that there are that
-    -- many; we could have a special weak table)
 
     report = function(a,b,c,...)
         if c then
@@ -194,9 +244,6 @@ if tex and (tex.jobname or tex.formatname) then
         end
     end
 
-    local direct_yes = formatters["%-15s > %s"]
-    local direct_nop = formatters["%-15s >"]
-
     direct = function(a,b,c,...)
         if c then
             return direct_yes(translations[a],formatters[formats[b]](c,...))
@@ -208,9 +255,6 @@ if tex and (tex.jobname or tex.formatname) then
             return ""
         end
     end
-
-    local subreport_yes = formatters["%-15s > %s > %s\n"]
-    local subreport_nop = formatters["%-15s > %s >\n"]
 
     subreport = function(a,s,b,c,...)
         if c then
@@ -224,9 +268,6 @@ if tex and (tex.jobname or tex.formatname) then
         end
     end
 
-    local subdirect_yes = formatters["%-15s > %s > %s"]
-    local subdirect_nop = formatters["%-15s > %s >"]
-
     subdirect = function(a,s,b,c,...)
         if c then
             return subdirect_yes(translations[a],translations[s],formatters[formats[b]](c,...))
@@ -238,9 +279,6 @@ if tex and (tex.jobname or tex.formatname) then
             return ""
         end
     end
-
-    local status_yes = formatters["%-15s : %s\n"]
-    local status_nop = formatters["%-15s :\n"]
 
     status = function(a,b,c,...)
         if c then
@@ -254,17 +292,13 @@ if tex and (tex.jobname or tex.formatname) then
         end
     end
 
-    local targets = {
-        logfile  = "log",
-        log      = "log",
-        file     = "log",
-        console  = "term",
-        terminal = "term",
-        both     = "term and log",
-    }
-
-    settarget = function(whereto)
-        target = targets[whereto or "both"] or targets.both
+    settarget = function(askedwhereto)
+        whereto = askedwhereto or whereto or "both"
+        target = targets[whereto]
+        if not target then
+            whereto   = "both"
+            target = targets[whereto]
+        end
         if target == "term" or target == "term and log" then
             logs.flush = io.flush
         else
@@ -300,23 +334,80 @@ if tex and (tex.jobname or tex.formatname) then
         end
     end
 
-    setformatters = function(f)
-        report_yes    = f.report_yes    or report_yes
-        report_nop    = f.report_nop    or report_nop
-        subreport_yes = f.subreport_yes or subreport_yes
-        subreport_nop = f.subreport_nop or subreport_nop
-        direct_yes    = f.direct_yes    or direct_yes
-        direct_nop    = f.direct_nop    or direct_nop
-        subdirect_yes = f.subdirect_yes or subdirect_yes
-        subdirect_nop = f.subdirect_nop or subdirect_nop
-        status_yes    = f.status_yes    or status_yes
-        status_nop    = f.status_nop    or status_nop
+    setformatters = function(specification)
+        local t = nil
+        local f = nil
+        local d = variants.default
+        if not specification then
+            --
+        elseif type(specification) == "table" then
+            t = specification.targets
+            f = specification.formats or specification
+        else
+            local v = variants[specification]
+            if v then
+                t = v.targets
+                f = v.formats
+                variant = specification
+            end
+        end
+        targets = t or d.targets
+        target = targets[whereto] or target
+        if f then
+            d = d.formats
+        else
+            f = d.formats
+            d = f
+        end
+        setmetatableindex(f,d)
+        report_yes    = f.report_yes
+        report_nop    = f.report_nop
+        subreport_yes = f.subreport_yes
+        subreport_nop = f.subreport_nop
+        direct_yes    = f.direct_yes
+        direct_nop    = f.direct_nop
+        subdirect_yes = f.subdirect_yes
+        subdirect_nop = f.subdirect_nop
+        status_yes    = f.status_yes
+        status_nop    = f.status_nop
+        if variant == "ansi" then
+            useluawrites() -- because tex escapes ^^
+        end
+        settarget(whereto)
     end
+
+    setformatters(variant)
 
     setlogfile  = ignore
     settimedlog = ignore
 
 else
+
+    local report_yes, subreport_yes, status_yes
+    local report_nop, subreport_nop, status_nop
+
+    local variants = {
+        default = {
+            formats = {
+                report_yes    = formatters["%-15s | %s"],
+                report_nop    = formatters["%-15s |"],
+                subreport_yes = formatters["%-15s | %s | %s"],
+                subreport_nop = formatters["%-15s | %s |"],
+                status_yes    = formatters["%-15s : %s\n"],
+                status_nop    = formatters["%-15s :\n"],
+            },
+        },
+        ansi = {
+            formats = {
+                report_yes    = formatters["[0;32m%-15s [0;1m|[0m %s"],
+                report_nop    = formatters["[0;32m%-15s [0;1m|[0m"],
+                subreport_yes = formatters["[0;32m%-15s [0;1m|[0;31m %s [0;1m|[0m %s"],
+                subreport_nop = formatters["[0;32m%-15s [0;1m|[0;31m %s [0;1m|[0m"],
+                status_yes    = formatters["[0;32m%-15s [0;1m:[0m %s\n"],
+                status_nop    = formatters["[0;32m%-15s [0;1m:[0m\n"],
+            },
+        },
+    }
 
     logs.flush = ignore
 
@@ -327,9 +418,6 @@ else
     newline = function()
         write_nl("\n")
     end
-
-    local report_yes = formatters["%-15s | %s"]
-    local report_nop = formatters["%-15s |"]
 
     report = function(a,b,c,...)
         if c then
@@ -343,9 +431,6 @@ else
         end
     end
 
-    local subreport_yes = formatters["%-15s | %s | %s"]
-    local subreport_nop = formatters["%-15s | %s |"]
-
     subreport = function(a,sub,b,c,...)
         if c then
             write_nl(subreport_yes(a,sub,formatters[b](c,...)))
@@ -357,9 +442,6 @@ else
             write_nl("")
         end
     end
-
-    local status_yes = formatters["%-15s : %s\n"]
-    local status_nop = formatters["%-15s :\n"]
 
     status = function(a,b,c,...) -- not to be used in lua anyway
         if c then
@@ -389,14 +471,35 @@ else
         end
     end
 
-    setformatters = function(f)
-        report_yes    = f.report_yes    or report_yes
-        report_nop    = f.report_nop    or report_nop
-        subreport_yes = f.subreport_yes or subreport_yes
-        subreport_nop = f.subreport_nop or subreport_nop
-        status_yes    = f.status_yes    or status_yes
-        status_nop    = f.status_nop    or status_nop
+    setformatters = function(specification)
+        local f = nil
+        local d = variants.default
+        if specification then
+            if type(specification) == "table" then
+                f = specification.formats or specification
+            else
+                local v = variants[specification]
+                if v then
+                    f = v.formats
+                end
+            end
+        end
+        if f then
+            d = d.formats
+        else
+            f = d.formats
+            d = f
+        end
+        setmetatableindex(f,d)
+        report_yes    = f.report_yes
+        report_nop    = f.report_nop
+        subreport_yes = f.subreport_yes
+        subreport_nop = f.subreport_nop
+        status_yes    = f.status_yes
+        status_nop    = f.status_nop
     end
+
+    setformatters(variant)
 
     setlogfile = function(name,keepopen)
         if name and name ~= "" then
@@ -728,13 +831,13 @@ logs.simpleline = simple
 
 -- obsolete
 
-function logs.setprogram  () end -- obsolete
-function logs.extendbanner() end -- obsolete
-function logs.reportlines () end -- obsolete
-function logs.reportbanner() end -- obsolete
-function logs.reportline  () end -- obsolete
-function logs.simplelines () end -- obsolete
-function logs.help        () end -- obsolete
+logs.setprogram   = ignore -- obsolete
+logs.extendbanner = ignore -- obsolete
+logs.reportlines  = ignore -- obsolete
+logs.reportbanner = ignore -- obsolete
+logs.reportline   = ignore -- obsolete
+logs.simplelines  = ignore -- obsolete
+logs.help         = ignore -- obsolete
 
 -- applications
 

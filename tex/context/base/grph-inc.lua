@@ -725,7 +725,7 @@ local function register(askedname,specification)
                     report_inclusion("format %a natively supported by backend",format)
                 end
             else
-                specification.found = false
+             -- specification.found = false -- needs checking
                 if trace_figures then
                     report_inclusion("format %a supported by output file format",format)
                 end

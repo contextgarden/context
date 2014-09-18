@@ -50,7 +50,7 @@ document, div.document {
 }
 
 document>metadata, div.document div.metadata {
-	font-family   : "Lucida Console", "DejaVu Sans Mono", monospace ;
+	font-family   : "DejaVu Sans Mono", "Lucida Console", monospace ;
 	margin-bottom : 2em ;
 }
 
@@ -312,7 +312,7 @@ verbatimblock, div.verbatimblock {
 	padding          : 1em ;
 	margin-bottom    : 1em ;
 	margin-top       : 1em ;
-	font-family      : "Lucida Console", "DejaVu Sans Mono", monospace ;
+	font-family      : "DejaVu Sans Mono", "Lucida Console", monospace ;
 }
 
 verbatimlines+verbatimlines, div.verbatimlines+div.verbatimlines {
@@ -329,7 +329,7 @@ verbatim, div.verbatim {
 	display     : inline ;
 	white-space : pre-wrap ;
 	color       : rgb(60%,60%,0%) ;
-	font-family : "Lucida Console", "DejaVu Sans Mono", monospace ;
+	font-family : "DejaVu Sans Mono", "Lucida Console", monospace ;
 }
 
 /* lines : display */
@@ -773,7 +773,17 @@ comment, div.comment {
 	background-color : rgb(50%,75%,100%) ;
 	display          : block ;
 	padding          : 1em ;
-	margin-bottom    : 1em ;
-	margin-top       : 1em ;
-	font-family      : "Lucida Console", "DejaVu Sans Mono", monospace ;
+	margin-bottom    : 2ex ;
+	margin-top       : 2ex ;
+	font-family      : "DejaVu Sans Mono", "Lucida Console", monospace ;
+}
+
+/* special */
+
+c, div.c {
+	display : inline ;
+}
+
+warning, div.warning {
+	display : none ;
 }

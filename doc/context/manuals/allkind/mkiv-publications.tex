@@ -46,6 +46,8 @@
 
 % todo: doi and url
 
+% do etallimit etaldisplay
+
 \enablemode[export]
 
 % criterium: all + sorttype=cite     => citex before rest
@@ -54,6 +56,8 @@
 % numbering: label, short, indexinlist, indexused
 
 % \enabletrackers[publications*]
+
+% \enabletrackers[publications.cite.match]
 
 \dontcomplain
 
@@ -75,6 +79,13 @@
        width=60em]
 
 \stopmode
+
+% todo: startdocument
+
+\setupinteraction
+  [title=BibTeX,
+   subtitle=The ConTeXt Way,
+   author=Hans Hagen]
 
 \loadsetups[publications-en.xml] \enablemode[interface:setup:defaults]
 
@@ -1443,6 +1454,80 @@ suffix, you can do this:
 \usebtxdataset[standard][myformat::myfile.txt]
 \stoptyping
 
+If you want to add information to an entry at runtime you can pass so called user
+variables with the \type {\cite} command. The following example demonstrates
+this. First we define a dataset:
+
+\startbuffer
+\startbuffer [knuth]
+@Book{knuth-texbook,
+    title     = {The TeXbook},
+    author    = {Knuth, Donald Ervin},
+    isbn      = {0-201-13447-0},
+    series    = {Computers {\&} Typesetting},
+    volume    = {A},
+    year      = {1986},
+    publisher = {Addison Wesley},
+    address   = {Reading, MA},
+}
+\stopbuffer
+
+\definebtxdataset[knuth]
+\usebtxdataset [knuth] [knuth.buffer]
+\definebtxrendering[knuth][dataset=knuth]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer[setup]
+\startsetups btx:apa:lefttext
+    \currentbtxlefttext
+    \btxspace
+    \btxdoifelseuservariable {notabene} {
+        {\bs \currentbtxuservariable{notabene}}
+    } {
+        % nothing
+    }
+    \btxspace
+\stopsetups
+\stopbuffer
+
+\getbuffer[setup]
+
+\startbuffer
+We all know the \TeX book by Don Knuth \citation [reference=knuth::knuth-texbook,
+lefttext={\bf >}] [notabene=Well known to \TEX\ users:].
+\stopbuffer
+
+We use this example where we use \type {\citation} instead of \type {\cite} because
+it is more tolerant with spaces. Because we pass user variables as second argument
+the first argument also has to be a key|/|value set.
+
+\typebuffer
+
+\blank \getbuffer \blank
+
+The list is typeset using:
+
+\startbuffer
+\placelistofpublications [knuth] [criterium=all]
+\stopbuffer
+
+\typebuffer
+
+and looks like this:
+
+\blank \getbuffer
+
+The injection of the user variables is up to you. Here we hooked it into an
+existing setup that we overload:
+
+\typebuffer[setup]
+
+The \type {lefttext} and \type {righttext} variables are also kept with the
+entry but these are checked for automatically. In this case it means that
+when no \type {lefttext} is specified, the \type {notabene} doesn't show up.
+
 \stopchapter
 
 \startchapter[title=Searching]
@@ -1612,6 +1697,9 @@ efficient.
 The advantage of the more verbose ones is that you can use manipulators to
 process them. This might come in handy when a database is inconsistent.
 
+The two parameters \type {etallimit} and \type {etaldisplay} control the
+maximum number of authors displayed ({\em these names can change}).
+
 \stopchapter
 
 \startchapter[title=Journals]
@@ -1727,19 +1815,19 @@ which shows the two entries pasted together:
 As demonstration we also specified the separator although that one is already
 set up by default.
 
-You can combine citations with additional text before and|/|or after it. This can
-be done per citation. This feature is of course not that useful, as one can
-put text before and after a citation anyway.
-
-\startbuffer
-foo bar \citation [before=<<,after=>>] [graph::Cleveland1993] foo bar
-\stopbuffer
-
-\typebuffer
-
-Gives:
-
-\blank \getbuffer \blank
+% You can combine citations with additional text before and|/|or after it. This can
+% be done per citation. This feature is of course not that useful, as one can
+% put text before and after a citation anyway.
+%
+% \startbuffer
+% foo bar \citation [before=<<,after=>>] [graph::Cleveland1993] foo bar
+% \stopbuffer
+%
+% \typebuffer
+%
+% Gives:
+%
+% \blank \getbuffer \blank
 
 \stopchapter
 
@@ -1832,7 +1920,7 @@ categrories are rendered with a setup we can do the following:
   \egroup
 \stopsetups
 
-\placebtxrendering[duane]
+\placebtxrendering[duane][criterium=all]
 \stopbuffer
 
 \typebuffer \getbuffer
@@ -1995,15 +2083,19 @@ some benefits but also some drawbacks.
 
 \startchapter[title=APA files]
 
-Here are the possible fields per category for APA:
+Here are the possible fields per category for APA: \footnote{Currently we show
+\type {publ-imp-test.bib} as we need to check things first.}
 
 \definebtxdataset[apadef]
-\usebtxdataset[apadef][publ-imp-apa.bib]
+% \usebtxdataset[apadef][publ-imp-apa.bib]
+\usebtxdataset[apadef][\cldcontext{resolvers.findfile("publ-imp-test.bib")}]
 \showbtxdatasetcompleteness[apadef]
 
 \stopchapter
 
 \stopbodymatter
+
+\writestatus{!!!!!!}{CHECK HYPHENS}
 
 \stoptext
 

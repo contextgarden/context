@@ -983,7 +983,7 @@ end
 
 local whitespace  = lpeg.patterns.whitespace
 local word        = lpeg.patterns.utf8uppercharacter^-1 * (1-whitespace)^1
-local pattern_one = Cs(whitespace^0 * word^-1 * P(1)^1)
+local pattern_one = Cs( whitespace^0 * word^-1 * P(1)^0)
 local pattern_all = Cs((whitespace^1 + word)^1)
 
 function converters.word (s) return s end -- dummies for typos

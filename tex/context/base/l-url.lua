@@ -256,7 +256,7 @@ function url.construct(hash) -- dodo: we need to escape !
     return lpegmatch(escaper,concat(fullurl))
 end
 
-local pattern = Cs(noslash * R("az","AZ") * (S(":|")/":") * noslash * P(1)^0)
+local pattern = Cs(slash^-1/"" * R("az","AZ") * ((S(":|")/":") + P(":")) * slash * P(1)^0)
 
 function url.filename(filename)
     local spec = hashed(filename)
@@ -266,6 +266,7 @@ end
 
 -- print(url.filename("/c|/test"))
 -- print(url.filename("/c/test"))
+-- print(url.filename("file:///t:/sources/cow.svg"))
 
 local function escapestring(str)
     return lpegmatch(escaper,str)

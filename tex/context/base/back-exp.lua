@@ -38,6 +38,7 @@ local fromunicode16 = fonts.mappings.fromunicode16
 local sortedhash = table.sortedhash
 local formatters = string.formatters
 local todimen = number.todimen
+local replacetemplate = utilities.templates.replace
 
 local trace_export  = false  trackers.register  ("export.trace",         function(v) trace_export  = v end)
 local trace_spacing = false  trackers.register  ("export.trace.spacing", function(v) trace_spacing = v end)
@@ -336,23 +337,24 @@ do
     -- /* padding      : ; */
     -- /* text-justify : inter-word ; */
 
-local f_document = formatters [ [[
+local documenttemplate = [[
 document {
-    font-size  : %s !important ;
-    max-width  : %s !important ;
-    text-align : %s !important ;
-    hyphens    : %s !important ;
+    font-size  : %size% !important ;
+    max-width  : %width% !important ;
+    text-width : %align% !important ;
+    hyphens    : %hyphens% !important ;
 }
-]] ]
+]]
 
-local f_style = formatters [ [[
-%s[detail="%s"] {
-    font-style   : %s ;
-    font-variant : %s ;
-    font-weight  : %s ;
-    font-family  : %s ;
-    color        : %s ;
-}]] ]
+local styletemplate = [[
+%element%[detail="%detail%"], div.%element%.detail-%detail% {
+    display      : inline ;
+    font-style   : %style% ;
+    font-variant : %variant% ;
+    font-weight  : %weight% ;
+    font-family  : %family% ;
+    color        : %color% ;
+}]]
 
     function wrapups.allusedstyles(xmlfile)
         local result = { formatters["/* %s for file %s */"]("styles",xmlfile) }
@@ -384,7 +386,12 @@ local f_style = formatters [ [[
             align = hyphens and "justify" or "inherited"
         end
         --
-        result[#result+1] = f_document(bodyfont,width,align,hyphen)
+        result[#result+1] = replacetemplate(documenttemplate,{
+            size    = bodyfont,
+            width   = width,
+            align   = align,
+            hyphens = hyphen
+        })
         --
         local colorspecification = xml.css.colorspecification
         local fontspecification = xml.css.fontspecification
@@ -392,12 +399,15 @@ local f_style = formatters [ [[
             for detail, data in sortedhash(details) do
                 local s = fontspecification(data.style)
                 local c = colorspecification(data.color)
-                result[#result+1] = f_style(element,detail,
-                    s.style   or "inherit",
-                    s.variant or "inherit",
-                    s.weight  or "inherit",
-                    s.family  or "inherit",
-                    c         or "inherit")
+                result[#result+1] = replacetemplate(styletemplate,{
+                    element = element,
+                    detail  = detail,
+                    style   = s.style   or "inherit",
+                    variant = s.variant or "inherit",
+                    weight  = s.weight  or "inherit",
+                    family  = s.family  or "inherit",
+                    color   = c         or "inherit",
+                })
             end
         end
         return concat(result,"\n\n")
@@ -409,44 +419,56 @@ local usedimages = { }
 
 do
 
-local f_image = formatters [ [[
-%s[id="%s"] {
+local imagetemplate = [[
+%element%[id="%detail%"], div.%element%[id="%detail%"] {
     display           : block ;
-    background-image  : url(%s) ;
+    background-image  : url(%name%) ;
     background-size   : 100%% auto ;
     background-repeat : no-repeat ;
-    width             : %s ;
-    height            : %s ;
-}]] ]
+    width             : %width% ;
+    height            : %height% ;
+}]]
+
+
+    local function substitute(name)
+        if file.suffix(name) == "pdf" then
+            -- temp hack .. we will have a remapper
+            return file.replacesuffix(name,"svg")
+        else
+            return name
+        end
+    end
+
+    local f_images  = formatters["/* %s for file %s */"]
+    local collected = { }
 
     function wrapups.allusedimages(xmlfile)
-        local result = { formatters["/* %s for file %s */"]("images",xmlfile) }
+        local result = { f_images("images",xmlfile) }
         for element, details in sortedhash(usedimages) do
             for detail, data in sortedhash(details) do
                 local name = data.name
-                if file.suffix(name) == "pdf" then
-                    -- temp hack .. we will have a remapper
-                    name = file.replacesuffix(name,"svg")
-                end
-                result[#result+1] = f_image(element,detail,name,data.width,data.height)
+                local full = url.addscheme(substitute(name))
+                result[#result+1] = replacetemplate(imagetemplate,{
+                    element = element,
+                    detail  = detail,
+                    name    = full,
+                    width   = data.width,
+                    height  = data.height,
+                })
+                collected[detail] = {
+                    name    = full,
+                    width   = data.width,
+                    height  = data.height,
+                    page    = data.page,
+                    used    = data.used,
+                }
             end
         end
         return concat(result,"\n\n")
     end
 
-    function wrapups.uniqueusedimages()
-        local unique = { }
-        for element, details in next, usedimages do
-            for detail, data in next, details do
-                local name = data.name
-                if file.suffix(name) == "pdf" then
-                    unique[file.replacesuffix(name,"svg")] = name
-                else
-                    unique[name] = name
-                end
-            end
-        end
-        return unique
+    function wrapups.uniqueusedimages() -- todo: combine these two
+        return collected
     end
 
 end
@@ -710,9 +732,10 @@ do
     local f_imagespec = formatters[' id="%s" width="%s" height="%s"']
     local f_imagepage = formatters[' page="%s"']
 
-    function structurestags.setfigure(name,page,width,height)
+    function structurestags.setfigure(name,used,page,width,height)
         image[detailedtag("image")] = {
             name   = name,
+            used   = used,
             page   = page,
             width  = todimen(width, "cm","%0.3Fcm"),
             height = todimen(height,"cm","%0.3Fcm"),
@@ -1026,6 +1049,12 @@ do
         return v
     end)
 
+    local dummy_nucleus = {
+        element   = "mtext",
+        data      = { content = "" },
+        nature    = "inline",
+    }
+
     local function checkmath(root) -- we can provide utf.toentities as an option
         local data = root.data
         if data then
@@ -1055,6 +1084,14 @@ do
                  -- sub.__o__, sup.__o__ = subscript, superscript
                     sub.__i__, sup.__i__ = superscript, subscript
                 end
+--             elseif roottg == "msup" or roottg == "msub" then
+--                 -- m$^2$
+--                 if ndata == 1 then
+--                     local d = data[1]
+--                     data[2] = d
+--                     d.__i__ = 2
+--                     data[1] = dummy_nucleus
+--                 end
             elseif roottg == "mfenced" then
                 local new, n = { }, 0
                 local attributes = { }
@@ -1272,7 +1309,8 @@ do
         }
         -- can be option if needed:
         if mode == "inline" then
-            di.nature = "mixed" -- else spacing problem (maybe inline)
+         -- di.nature = "mixed"  -- else spacing problem (maybe inline)
+            di.nature = "inline" -- we need to catch x$X$x and x $X$ x
         else
             di.nature = "display"
         end
@@ -1299,6 +1337,19 @@ do
             end
         end
     end
+
+    function extras.msub(result,element,detail,n,fulltag,di)
+        -- m$^2$
+        local data = di.data
+        if #data == 1 then
+            local d = data[1]
+            data[2] = d
+            d.__i__ = 2
+            data[1] = dummy_nucleus
+        end
+    end
+
+    extras.msup = extras.msub
 
 end
 
@@ -2545,15 +2596,15 @@ local f_cssheadlink = formatters [ [[
         return concat(result), concat(extras)
     end
 
-local f_e_template = formatters [ [[
-%s {
-    display: %s ;
-}]] ]
+local f_e_template = [[
+%element% {
+    display: %display% ;
+}]]
 
-local f_d_template = formatters [ [[
-%s[detail=%s] {
-    display: %s ;
-}]] ]
+local f_d_template = [[
+%element%[detail=%detail%], div.detail-%detail% {
+    display: %display% ;
+}]]
 
 local f_category = formatters["/* category: %s */"]
 
@@ -2575,6 +2626,8 @@ local htmltemplate = [[
     </head>
     <body>
 
+        <div class="warning">Rendering can be suboptimal because there is no default/fallback css loaded.</div>
+
 %body%
 
     </body>
@@ -2592,11 +2645,18 @@ local htmltemplate = [[
         for element, details in sortedhash(used) do
             result[#result+1] = f_category(element)
             for detail, nature in sortedhash(details) do
-                local d = displaymapping[nature or "display"] or "block"
+                local display = displaymapping[nature or "display"] or "block"
                 if detail == "" then
-                    result[#result+1] = f_e_template(element,d)
+                    result[#result+1] = replacetemplate(f_e_template, {
+                        element = element,
+                        display = display,
+                    })
                 else
-                    result[#result+1] = f_d_template(element,detail,d)
+                    result[#result+1] = replacetemplate(f_d_template, {
+                        element = element,
+                        detail  = detail,
+                        display = display,
+                    })
                 end
             end
         end
@@ -2685,6 +2745,8 @@ local htmltemplate = [[
         end
     end
 
+    -- maybe the reverse: be explicit about what is permitted
+
     local private = {
         destination = true,
         prefix      = true,
@@ -2700,6 +2762,13 @@ local htmltemplate = [[
         file        = true,
         internal    = true,
         location    = true,
+        --
+        name        = true, -- image name
+        used        = true, -- image name
+        page        = true, -- image name
+        width       = true,
+        height      = true,
+        --
     }
 
     local addclicks = true
@@ -2872,6 +2941,8 @@ local htmltemplate = [[
                 name       = file.removesuffix(v),
                 identifier = os.uuid(),
                 images     = wrapups.uniqueusedimages(),
+                imagefile  = imagefilename,
+                stylefile  = stylefilename,
                 root       = xhtmlfile,
                 files      = files,
                 language   = languagenames[texgetcount("mainlanguagenumber")],
@@ -2893,7 +2964,7 @@ local htmltemplate = [[
                 preamble = wholepreamble(false),
                 title    = specification.title,
             }
-            io.savedata(resultfile,utilities.templates.replace(htmltemplate,variables,"xml"))
+            io.savedata(resultfile,replacetemplate(htmltemplate,variables,"xml"))
             report_export("")
             report_export([[create epub with: mtxrun --script epub --make "%s"]],file.nameonly(resultfile))
             report_export("")
