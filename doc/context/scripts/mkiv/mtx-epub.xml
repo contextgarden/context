@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-epub</entry>
+  <entry name="detail">ConTeXt EPUB Helpers</entry>
+  <entry name="version">1.10</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="make"><short>create epub zip file</short></flag>
+    <flag name="purge"><short>remove obsolete files</short></flag>
+    <flag name="rename"><short>rename images to sane names</short></flag>
+    <flag name="svgmath"><short>convert mathml to svg</short></flag>
+    <flag name="svgstyle"><short>use given tex style for svg generation (overloads style in specification)</short></flag>
+    <flag name="all"><short>assume: --purge --rename --svgmath (for fast testing)</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Example</title>
+   <subcategory>
+    <example><command>mtxrun --script epub --make mydocument</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>

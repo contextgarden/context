@@ -14273,7 +14273,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 64139, stripped down to: 44503
+-- original size: 64209, stripped down to: 44562
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -15463,6 +15463,9 @@ collect_instance_files=function(filename,askedformat,allresults)
   end
 end
 local function findfiles(filename,filetype,allresults)
+  if not filename or filename=="" then
+    return {}
+  end
   local result,status=collect_instance_files(filename,filetype or "",allresults)
   if not result or #result==0 then
     local lowered=lower(filename)
@@ -16666,7 +16669,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 6213, stripped down to: 5160
+-- original size: 6567, stripped down to: 5302
 
 if not modules then modules={} end modules ['data-sch']={
   version=1.001,
@@ -16692,8 +16695,13 @@ directives.register("schemes.threshold",function(v) threshold=tonumber(v) or thr
 function cleaners.none(specification)
   return specification.original
 end
-function cleaners.strip(specification)
-  return (gsub(specification.original,"[^%a%d%.]+","-")) 
+function cleaners.strip(specification) 
+  local path,name=file.splitbase(specification.original)
+  if path=="" then
+    return (gsub(name,"[^%a%d%.]+","-"))
+  else
+    return (gsub((gsub(path,"%.","-").."-"..name),"[^%a%d%.]+","-"))
+  end
 end
 function cleaners.md5(specification)
   return file.addsuffix(md5.hex(specification.original),file.suffix(specification.path))
@@ -17577,8 +17585,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 724183
--- stripped bytes    : 257372
+-- original bytes    : 724607
+-- stripped bytes    : 257595
 
 -- end library merge
 

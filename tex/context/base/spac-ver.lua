@@ -134,11 +134,13 @@ local default = {
     strut     = true,
     hfraction = 1,
     dfraction = 1,
+    bfraction = 0.25,
 }
 
 local fractions = {
     minheight = "hfraction", maxheight = "hfraction",
     mindepth  = "dfraction", maxdepth  = "dfraction",
+    box       = "bfraction",
     top       = "tlines",    bottom    = "blines",
 }
 
@@ -332,12 +334,33 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
     end
     local h = height or getfield(current,"height")
     local d = depth or getfield(current,"depth")
-    local hr, dr, ch, cd = method.hfraction or 1, method.dfraction or 1, h, d
+    local hr, dr, ch, cd, br = method.hfraction or 1, method.dfraction or 1, h, d, method.bfraction or 0
     local tlines, blines = method.tlines or 1, method.blines or 1
     local done, plusht, plusdp = false, snapht, snapdp
     local snaphtdp = snapht + snapdp
 
-    if method.none then
+    if method.box then
+        local br = 1 - br
+        if br < 0 then
+            br = 0
+        elseif br > 1 then
+            br = 1
+        end
+        local n = ceiled((h+d-br*snapht-br*snapdp)/snaphtdp)
+        local x = n * snaphtdp - h - d
+        plusht = h + x / 2
+        plusdp = d + x / 2
+    elseif method.max then
+        local n = ceiled((h+d)/snaphtdp)
+        local x = n * snaphtdp - h - d
+        plusht = h + x / 2
+        plusdp = d + x / 2
+    elseif method.min then
+        local n = floored((h+d)/snaphtdp)
+        local x = n * snaphtdp - h - d
+        plusht = h + x / 2
+        plusdp = d + x / 2
+    elseif method.none then
         plusht, plusdp = 0, 0
         if t then
             t[#t+1] = "none: plusht 0pt plusdp 0pt"

@@ -1,4 +1,4 @@
-%D \modul
+%D \module
 %D   [       file=x-mathml,
 %D        version=2008.05.29,
 %D          title=\CONTEXT\ XML Modules,
@@ -23,6 +23,10 @@
 %
 % todo: more will be moved to lua (less hassle)
 % todo: move left/right to the lua end
+%
+% this implememation looks like a hack ... this is because we deal with all weird cases we
+% ran into, including abuse that was supposed to render ok (even if it didn't in other
+% renderers) .. it was simply expected to work that way.
 
 \writestatus{loading}{ConTeXt XML Macros / MathML Renderer}
 
@@ -2231,6 +2235,8 @@
     }
 \stopxmlsetups
 
+% helpers
+
 \unexpanded\def\mmlexecuteifdefined#1%
   {\ifx#1\empty
      \expandafter\secondoftwoarguments
@@ -2241,142 +2247,156 @@
    \fi\fi
    {\csname#1\endcsname}}
 
-% todo: combine topaccent/over/bottomaccent/under check
-
-\definemathextensible [\v!mathematics] [mml:overleftarrow]         ["2190] % ["27F5]
-\definemathextensible [\v!mathematics] [mml:overrightarrow]        ["2192] % ["27F6]
-\definemathextensible [\v!mathematics] [mml:overleftrightarrow]    ["27F7]
-\definemathextensible [\v!mathematics] [mml:overtwoheadrightarrow] ["27F9]
-\definemathextensible [\v!mathematics] [mml:overleftharpoondown]   ["21BD]
-\definemathextensible [\v!mathematics] [mml:overleftharpoonup]     ["21BC]
-\definemathextensible [\v!mathematics] [mml:overrightharpoondown]  ["21C1]
-\definemathextensible [\v!mathematics] [mml:overrightharpoonup]    ["21C0]
-
-\definemathextensible [\v!mathematics] [mml:underleftarrow]         ["2190] % ["27F5]
-\definemathextensible [\v!mathematics] [mml:underrightarrow]        ["2192] % ["27F6]
-\definemathextensible [\v!mathematics] [mml:underleftrightarrow]    ["27F7]
-\definemathextensible [\v!mathematics] [mml:undertwoheadrightarrow] ["27F9]
-\definemathextensible [\v!mathematics] [mml:underleftharpoondown]   ["21BD]
-\definemathextensible [\v!mathematics] [mml:underleftharpoonup]     ["21BC]
-\definemathextensible [\v!mathematics] [mml:underrightharpoondown]  ["21C1]
-\definemathextensible [\v!mathematics] [mml:underrightharpoonup]    ["21C0]
-
-\definemathtriplet   [\v!mathematics]  [mmlovertriplet]
-\definemathtriplet   [\v!mathematics]  [mmlundertriplet]
-\definemathtriplet   [\v!mathematics]  [mmldoubletriplet]
-
-% alternative:
-%
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x2190}] ["2190] % ["27F5]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x2192}] ["2192] % ["27F6]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F5}] ["2190] % ["27F5]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F6}] ["2192] % ["27F6]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F7}] ["27F7]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x27F9}] ["27F9]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21BD}] ["21BD]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21BC}] ["21BC]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21C1}] ["21C1]
-% \definemathextensible [\v!mathematics] [mml:\utfchar{0x21C0}] ["21C0]
-
-\unexpanded\def\mmloverof#1{\mmlexecuteifdefined\mmlovercommand\relax{\mmlunexpandedfirst {#1}}\relax}
-\unexpanded\def\mmloveros#1{\mmlexecuteifdefined\mmlovercommand      {\mmlunexpandedsecond{#1}}\relax}
-\unexpanded\def\mmloverbf#1{\mmlexecuteifdefined\mmlbasecommand      {\mmlunexpandedfirst {#1}}\relax}
-\unexpanded\def\mmloverbs#1{\mmlexecuteifdefined\mmlbasecommand\relax{\mmlunexpandedsecond{#1}}\relax}
-
-\startxmlsetups mml:mover
-    \edef\mmlovertoken{\mmlextensible{\xmlraw{#1}{/mml:*[2]}}}% /text()
-    \doifelseutfmathabove\mmlovertoken {
-        \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
-        \mmloverof{#1}
-    } {
-        \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}% /text()
-        \doifelseutfmathabove\mmlbasetoken {
-            \edef\mmlbasecommand{mml:\utfmathcommandabove\mmlbasetoken}
-            \mmloverbs{#1}
-        } {
-            \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
-            \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
-            \mmlundertriplet{\mmloverbf{#1}}{\mmloveros{#1}}{}%\relax
-        }
-    }
-  % \limits % spoils spacing
-\stopxmlsetups
-
-% alternative:
-%
-% \startxmlsetups mml:mover
-%     \edef\mmlovertoken{\xmlraw{#1}{/mml:*[2]}}% /text()
-%     \doifelseutfmathabove\mmlovertoken {
-%         \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
-%         \mmloverof{#1}
-%     } {
-%         \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]/text()}}
-%         \ifcsname mml:\mmlbasetoken\endcsname
-%             \csname mml:\mmlbasetoken\endcsname{\mmlunexpandedsecond{#1}}\relax
-%         \else
-%             \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
-%             \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
-%             \mmlovertriplet{\mmloveros{#1}}{\mmloverbf{#1}}\relax
-%         \fi
-%     }
-%   % \limits % spoils spacing
-% \stopxmlsetups
-
-% do this in lua
-
 \def\mmlextensible#1{\ctxmodulemathml{extensible(\!!bs#1\!!es)}}
 
-% \unexpanded\def\mmlunderuf#1{\mmlexecuteifdefined\mmlundercommand\relax  {\mmlunexpandedfirst {#1}}\relax}
-% \unexpanded\def\mmlunderus#1{\mmlexecuteifdefined\mmlundercommand        {\mmlunexpandedsecond{#1}}\relax}
-% \unexpanded\def\mmlunderbf#1{\mmlexecuteifdefined\mmlbasecommand         {\mmlunexpandedfirst {#1}}\relax}
-% %unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\mmlunexpandedsecond{#1}}\relax}
-% \unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax  {\mmlunexpandedsecond{#1}}\relax}
+\definemathtriplet   [\v!mathematics]  [mmlovertriplet]   % or will we use a special instance
+\definemathtriplet   [\v!mathematics]  [mmlundertriplet]  % or will we use a special instance
+\definemathtriplet   [\v!mathematics]  [mmldoubletriplet] % or will we use a special instance
 
-% \MMLhack
+% common to munder/mover/munderover
 
-\unexpanded\def\mmlunderuf#1{\mmlexecuteifdefined\mmlundercommand\relax  {\math_fences_checked_start\mmlunexpandedfirst {#1}\math_fences_checked_stop}\relax}
-\unexpanded\def\mmlunderus#1{\mmlexecuteifdefined\mmlundercommand        {\math_fences_checked_start\mmlunexpandedsecond{#1}\math_fences_checked_stop}\relax}
-\unexpanded\def\mmlunderbf#1{\mmlexecuteifdefined\mmlbasecommand         {\math_fences_checked_start\mmlunexpandedfirst {#1}\math_fences_checked_stop}\relax}
-%unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax{}{\math_fences_checked_start\mmlunexpandedsecond{#1}\math_fences_checked_stop}\relax}
-\unexpanded\def\mmlunderbs#1{\mmlexecuteifdefined\mmlbasecommand \relax  {\math_fences_checked_start\mmlunexpandedsecond{#1}\math_fences_checked_stop}\relax}
+\starttexdefinition unexpanded mmlfencedfirst #1
+    \math_fences_checked_start
+    \mmlunexpandedfirst{#1}
+    \math_fences_checked_stop
+\stoptexdefinition
+\starttexdefinition unexpanded mmlfencedsecond #1
+    \math_fences_checked_start
+    \mmlunexpandedsecond{#1}
+    \math_fences_checked_stop
+\stoptexdefinition
+\starttexdefinition unexpanded mmlfencedthird #1
+    \math_fences_checked_start
+    \mmlunexpandedthird{#1}
+    \math_fences_checked_stop
+\stoptexdefinition
 
-\startxmlsetups mml:munder
-    \edef\mmlundertoken{\mmlextensible{\xmlraw{#1}{/mml:*[2]}}}% /text()
-    \doifelseutfmathbelow\mmlundertoken {%
-        \edef\mmlundercommand{\utfmathcommandbelow\mmlundertoken}
-        \mmlunderuf{#1}
-    } {
-        \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}% /text()
-        \doifelseutfmathbelow\mmlbasetoken {
-            \edef\mmlbasecommand{mml:\utfmathcommandbelow\mmlbasetoken}
-            \mmlunderbs{#1}
-        } {
-            \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
-            \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
-            \mmlundertriplet{\mmlunderbf{#1}}{}{\mmlunderus{#1}}%\relax
-        }
-    }
-  % \limits % spoils spacing
+% mover
+
+\starttexdefinition unexpanded mmloverabove #1
+    \edef\mmlovercommand{\utfmathfiller\mmlovertoken}
+    \mmlexecuteifdefined\mmlovercommand {\mmlfencedsecond{#1}} \relax
+\stoptexdefinition
+\starttexdefinition unexpanded mmloverbase #1
+    \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
+    \mmlexecuteifdefined\mmlbasecommand {\mmlfencedfirst{#1}}
+    \relax
+\stoptexdefinition
+\starttexdefinition unexpanded mmloverbasefiller #1
+    \edef\mmlbasecommand{e\utfmathcommandfiller\mmlbasetoken}
+    \mmlexecuteifdefined\mmlbasecommand \relax {\mmlfencedsecond{#1}} {}
+\stoptexdefinition
+\starttexdefinition unexpanded mmloveraccent #1
+    \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
+    \mmlexecuteifdefined\mmlovercommand \relax {\mmlfencedfirst{#1}}
+\stoptexdefinition
+\starttexdefinition unexpanded mmlovertext #1
+    \mmlovertriplet {\mmloverbase{#1}} {\mmloverabove{#1}} {}
+\stoptexdefinition
+\starttexdefinition unexpanded mmloveraccentchecker #1
+    \edef\mmlovertoken{\mmlextensible{\xmlraw{#1}{/mml:*[2]}}}% /text()
+    \doifelseutfmathabove\mmlovertoken \mmloveraccent \mmlovertext {#1}
+\stoptexdefinition
+
+\startxmlsetups mml:mover
+    \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
+    \doifelseutfmathfiller\mmlbasetoken \mmloverbasefiller \mmloveraccentchecker {#1}
 \stopxmlsetups
 
-\unexpanded\def\mmlunderoverst#1{\mmlexecuteifdefined\mmlbasecommand \relax{\mmlunexpandedsecond{#1}}{\mmlunexpandedthird{#1}}\relax}
-\unexpanded\def\mmlunderoverbf#1{\mmlexecuteifdefined\mmlbasecommand       {\mmlunexpandedfirst {#1}}\relax}
-\unexpanded\def\mmlunderoverus#1{\mmlexecuteifdefined\mmlundercommand      {\mmlunexpandedsecond{#1}}\relax}
-\unexpanded\def\mmlunderoverot#1{\mmlexecuteifdefined\mmlovercommand       {\mmlunexpandedthird {#1}}\relax}
+% munder
+
+\starttexdefinition unexpanded mmlunderbelow #1
+    \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
+    \mmlexecuteifdefined\mmlundercommand {\mmlfencedsecond{#1}} \relax
+\stoptexdefinition
+\starttexdefinition unexpanded mmlunderbase #1
+    \edef\mmlbasecommand{\utfmathfiller\mmlbasetoken}
+    \mmlexecuteifdefined\mmlbasecommand {\mmlfencedfirst{#1}}
+    \relax
+\stoptexdefinition
+\starttexdefinition unexpanded mmlunderbasefiller #1
+    \edef\mmlbasecommand{e\utfmathcommandfiller\mmlbasetoken}%
+    \mmlexecuteifdefined\mmlbasecommand \relax {} {\mmlfencedsecond{#1}}
+\stoptexdefinition
+\starttexdefinition unexpanded mmlunderaccent #1
+    \edef\mmlundercommand{\utfmathcommandbelow\mmlundertoken}
+    \mmlexecuteifdefined\mmlundercommand \relax {\mmlfencedfirst{#1}}
+\stoptexdefinition
+\starttexdefinition unexpanded mmlundertext #1
+    \mmlundertriplet {\mmlunderbase{#1}} {} {\mmlunderbelow{#1}}
+\stoptexdefinition
+\starttexdefinition unexpanded mmlunderaccentchecker #1
+    \edef\mmlundertoken{\mmlextensible{\xmlraw{#1}{/mml:*[2]}}}% /text()
+    \doifelseutfmathbelow\mmlundertoken \mmlunderaccent \mmlundertext {#1}
+\stoptexdefinition
+
+\startxmlsetups mml:munder
+    \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
+    \doifelseutfmathfiller\mmlbasetoken \mmlunderbasefiller \mmlunderaccentchecker {#1}
+\stopxmlsetups
+
+% munderover
+
+\starttexdefinition unexpanded mmlunderoveraccentcheckerUO #1
+    \edef\mmlundercommand{\utfmathcommandbelow\mmlundertoken}
+    \edef\mmlovercommand {\utfmathcommandabove\mmlovertoken}
+    \edef\mmlbasecommand {\mmlovercommand\mmlundercommand}
+    \ifcsname\mmlbasecommand\endcsname
+        \csname\mmlbasecommand\endcsname {\mmlfencedfirst{#1}}
+    \else\ifcsname\mmlundercommand\endcsname
+        \ifcsname\mmlovercommand\endcsname
+            \csname\mmlovercommand\endcsname {\csname\mmlundercommand\endcsname{\mmlfencedfirst{#1}}}
+        \else
+            \mmldoubletriplet {\csname\mmlundercommand\endcsname{\mmlfencedfirst{#1}}} {\mmlfencedthird{#1}\mmlfencedthird{#1}} {}
+        \fi
+    \else\ifcsname\mmlovercommand\endcsname
+        \mmldoubletriplet {\csname\mmlovercommand\endcsname{\mmlfencedfirst{#1}}} {} {\mmlfencedsecond{#1}}
+    \else
+        \mmlunderoveraccentcheckerTT {#1}
+    \fi\fi\fi
+\stoptexdefinition
+\starttexdefinition unexpanded mmlunderoveraccentcheckerUT #1
+    \edef\mmlundercommand{\utfmathcommandbelow\mmlundertoken}
+    \edef\mmlbasecommand {\mmlundercommand text}
+    \ifcsname\mmlbasecommand\endcsname
+        \csname\mmlbasecommand\endcsname {\mmlfencedfirst{#1}} {\mmlfencedthird{#1}}
+    \else\ifcsname\mmlundercommand\endcsname
+        \mmldoubletriplet {\csname\mmlundercommand\endcsname{\mmlfencedfirst{#1}}} {\mmlfencedthird{#1}} {}
+    \else
+        \mmlunderoveraccentcheckerTT {#1}
+    \fi\fi
+\stoptexdefinition
+\starttexdefinition unexpanded mmlunderoveraccentcheckerOT #1
+    \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
+    \edef\mmlbasecommand{\mmlovercommand text}
+    \ifcsname\mmlbasecommand\endcsname
+        \csname\mmlbasecommand\endcsname {\mmlfencedfirst{#1}} {\mmlfencedsecond{#1}}
+    \else\ifcsname\mmlovercommand\endcsname
+        \mmldoubletriplet {\csname\mmlovercommand\endcsname{\mmlfencedfirst{#1}}} {} {\mmlfencedsecond{#1}}
+    \else
+        \mmlunderoveraccentcheckerTT {#1}
+    \fi\fi
+\stoptexdefinition
+\starttexdefinition unexpanded mmlunderoveraccentcheckerTT #1
+    \mmldoubletriplet {\mmlfencedfirst{#1}} {\mmlfencedthird{#1}} {\mmlfencedsecond{#1}} \relax
+\stoptexdefinition
+\starttexdefinition unexpanded mmlunderoveraccentchecker #1
+    \edef\mmlundertoken{\mmlextensible{\xmlraw{#1}{/mml:*[2]}}}% /text()
+    \edef\mmlovertoken {\mmlextensible{\xmlraw{#1}{/mml:*[3]}}}% /text()
+    \doifelseutfmathbelow\mmlundertoken {
+        \doifelseutfmathabove\mmlovertoken \mmlunderoveraccentcheckerUO \mmlunderoveraccentcheckerUT {#1}
+    } {
+        \doifelseutfmathabove\mmlovertoken \mmlunderoveraccentcheckerOT \mmlunderoveraccentcheckerTT {#1}
+    }
+\stoptexdefinition
+\starttexdefinition unexpanded mmlunderoverbasefiller #1
+    \edef\mmlbasecommand{e\utfmathcommandfiller\mmlbasetoken}%
+    \mmlexecuteifdefined\mmlbasecommand \relax {\mmlfencedthird{#1}} {\mmlfencedsecond{#1}}
+\stoptexdefinition
 
 \startxmlsetups mml:munderover
-    \edef\mmlbasetoken{\xmlraw{#1}{/mml:*[1]}}% /text()
-    \doifelseutfmathbelow\mmlbasetoken {
-        \edef\mmlbasecommand{mml:\utfmathcommandbelow\mmlbasetoken}
-        \mmlunderoverst{#1}
-    } {
-        \edef\mmlundertoken  {\xmlraw{#1}{/mml:*[2]}}% /text()
-        \edef\mmlovertoken   {\xmlraw{#1}{/mml:*[3]}}% /text()
-        \edef\mmlbasecommand {\utfmathfiller\mmlbasetoken}
-        \edef\mmlundercommand{\utfmathfiller\mmlundertoken}
-        \edef\mmlovercommand {\utfmathfiller\mmlovertoken}
-        \mmldoubletriplet{\mmlunderoverbf{#1}}{\mmlunderoverot{#1}}{\mmlunderoverus{#1}}\relax
-    }
+    \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
+    \doifelseutfmathfiller\mmlbasetoken \mmlunderoverbasefiller \mmlunderoveraccentchecker {#1}
 \stopxmlsetups
 
 % tables (mml:mtable, mml:mtr, mml:mlabledtr, mml:mtd)

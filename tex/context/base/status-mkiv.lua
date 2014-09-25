@@ -542,6 +542,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "lang-hyp",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    filename = "unic-ini",
    loading  = "always",
    status   = "okay",
@@ -3498,6 +3504,12 @@ return {
    category = "lua",
    filename = "lang-lab",
    loading  = "lang-lab",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "lang-hyp",
+   loading  = "lang-hyp",
    status   = "okay",
   },
   {

@@ -330,7 +330,7 @@ end
 
 -- we could move the defs from math-act here
 
-local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap,offset)
+local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap,offset,unicode)
     local characters = target.characters
     local olddata = characters[oldchr]
     -- brrr ... pagella has only next
@@ -346,10 +346,11 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
         end
         local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height + (offset or 0)}
         local newdata = {
-            commands = { correction, { "slot", 1, oldchr } },
-            width    = olddata.width,
-            height   = height,
-            depth    = depth,
+            commands  = { correction, { "slot", 1, oldchr } },
+            width     = olddata.width,
+            height    = height,
+            depth     = depth,
+            tounicode = tounicode16(unicode),
         }
         local glyphdata = newdata
         local nextglyph = olddata.next
@@ -400,6 +401,9 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
         end
         return glyphdata, true
     else
+--         if not olddata.tounicode then
+--             olddata.tounicode = tounicode16(unicode),
+--         end
         return olddata, false
     end
 end
@@ -415,7 +419,7 @@ virtualcharacters[0x203E] = function(data) -- could be FE33E instead
         height = target.parameters.xheight/4
         depth  = height
     end
-    return accent_to_extensible(target,0x203E,data.original,0x0305,height,depth)
+    return accent_to_extensible(target,0x203E,data.original,0x0305,height,depth,nil,nil,0x203E)
 end
 
 virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
@@ -426,37 +430,37 @@ local function smashed(data,unicode,swap,private)
     local original = data.original
     local chardata = target.characters[unicode]
     if chardata and chardata.height > target.parameters.xheight then
-        return accent_to_extensible(target,private,original,unicode,0,0,swap)
+        return accent_to_extensible(target,private,original,unicode,0,0,swap,nil,unicode)
     else
         return original.characters[unicode]
     end
 end
 
-addextra(0xFE3DE, { description="EXTENSIBLE OF 0x03DE", unicodeslot=0xFE3DE, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3DC, { description="EXTENSIBLE OF 0x03DC", unicodeslot=0xFE3DC, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3B4, { description="EXTENSIBLE OF 0x03B4", unicodeslot=0xFE3B4, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3DE, { description="EXTENSIBLE OF 0x03DE", unicodeslot=0xFE3DE, mathextensible = "r", mathstretch = "h", mathclass = "topaccent" } )
+addextra(0xFE3DC, { description="EXTENSIBLE OF 0x03DC", unicodeslot=0xFE3DC, mathextensible = "r", mathstretch = "h", mathclass = "topaccent" } )
+addextra(0xFE3B4, { description="EXTENSIBLE OF 0x03B4", unicodeslot=0xFE3B4, mathextensible = "r", mathstretch = "h", mathclass = "topaccent" } )
 
 virtualcharacters[0xFE3DE] = function(data) return smashed(data,0x23DE,0x23DF,0xFE3DE) end
 virtualcharacters[0xFE3DC] = function(data) return smashed(data,0x23DC,0x23DD,0xFE3DC) end
 virtualcharacters[0xFE3B4] = function(data) return smashed(data,0x23B4,0x23B5,0xFE3B4) end
 
-addextra(0xFE3DF, { description="EXTENSIBLE OF 0x03DF", unicodeslot=0xFE3DF, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3DD, { description="EXTENSIBLE OF 0x03DD", unicodeslot=0xFE3DD, mathextensible = "r", mathstretch = "h" } )
-addextra(0xFE3B5, { description="EXTENSIBLE OF 0x03B5", unicodeslot=0xFE3B5, mathextensible = "r", mathstretch = "h" } )
+addextra(0xFE3DF, { description="EXTENSIBLE OF 0x03DF", unicodeslot=0xFE3DF, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
+addextra(0xFE3DD, { description="EXTENSIBLE OF 0x03DD", unicodeslot=0xFE3DD, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
+addextra(0xFE3B5, { description="EXTENSIBLE OF 0x03B5", unicodeslot=0xFE3B5, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
 
-virtualcharacters[0xFE3DF] = function(data) return data.target.characters[0x23DF] end
-virtualcharacters[0xFE3DD] = function(data) return data.target.characters[0x23DD] end
-virtualcharacters[0xFE3B5] = function(data) return data.target.characters[0x23B5] end
+virtualcharacters[0xFE3DF] = function(data) local c = data.target.characters[0x23DF] if c then c.tounicode = tounicode16(0x23DF) return c end end
+virtualcharacters[0xFE3DD] = function(data) local c = data.target.characters[0x23DD] if c then c.tounicode = tounicode16(0x23DD) return c end end
+virtualcharacters[0xFE3B5] = function(data) local c = data.target.characters[0x23B5] if c then c.tounicode = tounicode16(0x23B5) return c end end
 
 -- todo: add some more .. numbers might change
 
-addextra(0xFE302, { description="EXTENSIBLE OF 0x0302", unicodeslot=0xFE302, mathstretch = "h" } )
-addextra(0xFE303, { description="EXTENSIBLE OF 0x0303", unicodeslot=0xFE303, mathstretch = "h" } )
+addextra(0xFE302, { description="EXTENSIBLE OF 0x0302", unicodeslot=0xFE302, mathstretch = "h", mathclass = "topaccent" } )
+addextra(0xFE303, { description="EXTENSIBLE OF 0x0303", unicodeslot=0xFE303, mathstretch = "h", mathclass = "topaccent" } )
 
 local function smashed(data,unicode,private)
     local target = data.target
     local height = target.parameters.xheight / 2
-    local c, done = accent_to_extensible(target,private,data.original,unicode,height,0,nil,-height)
+    local c, done = accent_to_extensible(target,private,data.original,unicode,height,0,nil,-height,unicode)
     if done then
         c.top_accent = nil -- or maybe also all the others
     end

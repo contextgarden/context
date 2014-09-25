@@ -2547,10 +2547,10 @@ function diagnostics.feasible_break(par, current, r, b, pi, d, artificial_demeri
             par.font_in_short_display = short_display("log",getnext(printed_node),par.font_in_short_display)
         else
             local save_link = getnext(current)
-            setfield(cur_p,"next",nil)
+            setfield(current,"next",nil)
             write_nl("log","")
             par.font_in_short_display = short_display("log",getnext(printed_node),par.font_in_short_display)
-            setfield(cur_p,"next",save_link)
+            setfield(current,"next",save_link)
         end
         par.printed_node = current
     end
@@ -3145,7 +3145,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                 end
                 diagnostics.overfull_hbox(hlist,line,-delta)
             end
-        elseif order == 0 and hlist.list and last_badness > tex.hbadness then
+        elseif order == 0 and getlist(hlist) and last_badness > tex.hbadness then
             diagnostics.bad_hbox(hlist,line,last_badness)
         end
     end

@@ -1,0 +1,42 @@
+.TH "mtx-epub" "1" "01-01-2014" "version 1.10" "ConTeXt EPUB Helpers"
+.SH NAME
+.B mtx-epub
+.SH SYNOPSIS
+.B mtxrun --script epub [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt EPUB Helpers
+.SH OPTIONS
+.TP
+.B --make
+create epub zip file
+.TP
+.B --purge
+remove obsolete files
+.TP
+.B --rename
+rename images to sane names
+.TP
+.B --svgmath
+convert mathml to svg
+.TP
+.B --svgstyle
+use given tex style for svg generation (overloads style in specification)
+.TP
+.B --all
+assume: --purge --rename --svgmath (for fast testing)
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

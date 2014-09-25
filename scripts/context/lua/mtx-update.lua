@@ -183,6 +183,8 @@ scripts.update.platforms = {
     ["linux-64"]       = "linux-64",
     ["linux64"]        = "linux-64",
     --
+    ["linux-armhf"]    = "linux-armhf",
+    --
     ["freebsd"]        = "freebsd",
     --
     ["freebsd-amd64"]  = "freebsd-amd64",

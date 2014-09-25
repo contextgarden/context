@@ -31,8 +31,18 @@ function cleaners.none(specification)
     return specification.original
 end
 
-function cleaners.strip(specification)
-    return (gsub(specification.original,"[^%a%d%.]+","-")) -- so we keep periods
+-- function cleaners.strip(specification)
+--     -- todo: only keep suffix periods, so after the last
+--     return (gsub(specification.original,"[^%a%d%.]+","-")) -- so we keep periods
+-- end
+
+function cleaners.strip(specification) -- keep suffixes
+    local path, name = file.splitbase(specification.original)
+    if path == "" then
+        return (gsub(name,"[^%a%d%.]+","-"))
+    else
+        return (gsub((gsub(path,"%.","-") .. "-" .. name),"[^%a%d%.]+","-"))
+    end
 end
 
 function cleaners.md5(specification)

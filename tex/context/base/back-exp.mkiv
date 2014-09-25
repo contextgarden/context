@@ -164,10 +164,11 @@
  % \c!lastpage=,  % imagename
    \c!alternative=, % html, div
    \c!properties=\v!no, % no: ignore, yes: as attribute, otherwise: use as prefix
-   \c!hyphen=\v!no]
+   \c!hyphen=\v!no,
+   \c!svgstyle=]
 
 \setupbackend
-  [css=export-example.css]
+  [css=] % ?
 
 \def\dosynchronizeexport
   {\let\currentexport\empty
@@ -182,6 +183,7 @@
        author     = \!!bs\exportparameter\c!author\!!es,
        firstpage  = "\exportparameter\c!firstpage",
        lastpage   = "\exportparameter\c!lastpage",
+       svgstyle   = "\exportparameter\c!svgstyle",
    }}}
 
 \appendtoks

@@ -28,9 +28,39 @@ if not modules then modules = { } end modules ['mtx-epub'] = {
 --     Text
 -- mimetype
 
+-- todo:
+--
+-- remove m_k_v_i prefixes
+-- remap fonts %mono% in css so that we can replace
+-- coverpage tests
+-- split up
+
 local format, gsub, find = string.format, string.gsub, string.find
-local concat = table.concat
-local replace = utilities.templates.replace
+local concat, sortedhash = table.concat, table.sortedhash
+
+local formatters      = string.formatters
+local replacetemplate = utilities.templates.replace
+
+local addsuffix       = file.addsuffix
+local nameonly        = file.nameonly
+local basename        = file.basename
+local joinfile        = file.join
+local suffix          = file.suffix
+local addsuffix       = file.addsuffix
+local removesuffix    = file.removesuffix
+local replacesuffix   = file.replacesuffix
+
+local copyfile        = file.copy
+local removefile      = os.remove
+
+local needsupdating   = file.needsupdating
+
+local isdir           = lfs.isdir
+local isfile          = lfs.isfile
+local mkdir           = lfs.mkdir
+
+local pushdir         = dir.push
+local popdir          = dir.pop
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -38,12 +68,17 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-epub</entry>
   <entry name="detail">ConTeXt EPUB Helpers</entry>
-  <entry name="version">1.00</entry>
+  <entry name="version">1.10</entry>
  </metadata>
  <flags>
   <category name="basic">
    <subcategory>
     <flag name="make"><short>create epub zip file</short></flag>
+    <flag name="purge"><short>remove obsolete files</short></flag>
+    <flag name="rename"><short>rename images to sane names</short></flag>
+    <flag name="svgmath"><short>convert mathml to svg</short></flag>
+    <flag name="svgstyle"><short>use given tex style for svg generation (overloads style in specification)</short></flag>
+    <flag name="all"><short>assume: --purge --rename --svgmath (for fast testing)</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -60,9 +95,11 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-epub",
-    banner   = "ConTeXt EPUB Helpers 1.00",
+    banner   = "ConTeXt EPUB Helpers 1.10",
     helpinfo = helpinfo,
 }
+
+local report = application.report
 
 -- script code
 
@@ -105,7 +142,7 @@ local t_package = [[
             <dc:coverage>%coverage%</dc:coverage>
             <dc:rights>%rights%</dc:rights>
         -->
-        <meta name="cover" content="%firstpage%" />
+        <meta name="cover" content="%coverpage%" />
         <meta name="generator" content="ConTeXt MkIV" />
         <meta property="dcterms:modified">%date%</meta>
     </metadata>
@@ -122,19 +159,20 @@ local t_package = [[
 </package>
 ]]
 
+
 local t_item = [[        <item id="%id%" href="%filename%" media-type="%mime%" />]]
-local t_nav  = [[        <item id="%id%" href="%filename%" media-type="%mime%" properties="%properties%" />]]
+local t_prop = [[        <item id="%id%" href="%filename%" media-type="%mime%" properties="%properties%" />]]
 
 -- <!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
 
 local t_toc = [[
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- this is no longer needed in epub 3.0+ -->
+
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
 
     <head>
-        <meta charset="utf-8" />
-
         <meta name="generator"         content="ConTeXt MkIV" />
         <meta name="dtb:uid"           content="%identifier%" />
         <meta name="dtb:depth"         content="2" />
@@ -215,7 +253,7 @@ local t_coverimg = [[
 
 local function dumbid(filename)
  -- return (string.gsub(os.uuid(),"%-%","")) -- to be tested
-    return file.nameonly(filename) .. "-" .. file.suffix(filename)
+    return nameonly(filename) .. "-" .. suffix(filename)
 end
 
 local mimetypes = {
@@ -237,40 +275,74 @@ local idmakers = {
     default = function(filename) return dumbid(filename) end,
 }
 
--- specification = {
---     name = "document",
---     identifier = "123",
---     root = "a.xhtml",
---     files = {
---         "a.xhtml",
---         "b.css",
---         "c.png",
---     }
--- }
-
-local function relocateimages(imagedata,oldname,newname,subpath)
+local function relocateimages(imagedata,oldname,newname,subpath,rename)
     local data = io.loaddata(oldname)
-    local images = { }
-    local done = gsub(data,[[(id=")(.-)(".-background%-image *: * url%()(.-)(%))]], function(s1,id,s2,name,s3)
-        local newname = imagedata[id].newname
-        if newname then
-            if subpath then
-                name = file.join(subpath,file.basename(new  name))
-            else
-                name = file.basename(newname)
+    if data then
+        subpath = joinfile("..",subpath)
+        report("relocating images")
+        local n = 0
+        local done = gsub(data,[[(id=")(.-)(".-background%-image *: *url%()(.-)(%))]], function(s1,id,s2,name,s3)
+            local newname = imagedata[id].newname
+            if newname then
+                if subpath then
+                    name = joinfile(subpath,basename(newname))
+                else
+                    name = basename(newname)
+                end
+             -- name = url.addscheme(name)
             end
-         -- name = url.addscheme(name)
-        end
-        images[#images+1] = name
+            if newname then
+                n = n + 1
+                if rename then
+                    name = joinfile(subpath,addsuffix(id,suffix(name)))
+                end
+                return s1 .. id .. s2 .. name .. s3
+            end
+        end)
+        report("%s images relocated in %a",n,newname)
         if newname then
-            return s1 .. id .. s2 .. name .. s3
+            io.savedata(newname,done)
         end
-    end)
-    if newname then
-        io.savedata(newname,done)
     end
     return images
 end
+
+function reportobsolete(oldfiles,newfiles,purge)
+
+    for i=1,#oldfiles do oldfiles[i] = gsub(oldfiles[i],"^[%./]+","") end
+    for i=1,#newfiles do newfiles[i] = gsub(newfiles[i],"^[%./]+","") end
+
+    local old  = table.tohash(oldfiles)
+    local new  = table.tohash(newfiles)
+    local done = false
+
+    for name in sortedhash(old) do
+        if not new[name] then
+            if not done then
+                report()
+                if purge then
+                    report("removing obsolete files:")
+                else
+                    report("obsolete files:")
+                end
+                report()
+                done = true
+            end
+            report("    %s",name)
+            if purge then
+                removefile(name)
+            end
+        end
+    end
+
+    if done then
+        report()
+    end
+
+    return done
+
+end
+
 
 local zippers = {
     {
@@ -287,246 +359,401 @@ local zippers = {
     },
 }
 
-function scripts.epub.make()
+function scripts.epub.make(purge,rename,svgmath,svgstyle)
+
+    -- one can enter a jobname or jobname-export but the simple jobname is
+    -- preferred
 
     local filename = environment.files[1]
 
     if not filename or filename == "" or type(filename) ~= "string" then
-        application.report("provide filename")
+        report("provide filename")
         return
     end
 
-    filename = file.basename(filename)
+    local specpath, specname, specfull
 
-    local specfile = file.replacesuffix(filename,"specification")
+    if isdir(filename) then
+        specpath = filename
+        specname = addsuffix(specpath,"lua")
+        specfull = joinfile(specpath,specname)
+    end
 
-    if not lfs.isfile(specfile) then
-        application.report("unknown specificaton file %a",specfile)
+    if not specfull or not isfile(specfull) then
+        specpath = filename .. "-export"
+        specname = addsuffix(filename .. "-pub","lua")
+        specfull = joinfile(specpath,specname)
+    end
+
+    if not specfull or not isfile(specfull) then
+        report("unknown specificaton file for %a",filename)
         return
     end
 
-    local specification = dofile(specfile)
+    local specification = dofile(specfull)
 
     if not specification or not next(specification) then
-        application.report("invalid specificaton file %a",specfile)
+        report("invalid specificaton file %a",specfile)
         return
     end
+
+    report("using specification file %a",specfull)
 
     -- images: { ... url = location ... }
 
-    local name       = specification.name       or file.removesuffix(filename)
+    local defaultcoverpage = "cover.xhtml"
+
+    local name       = specification.name       or nameonly(filename)
     local identifier = specification.identifier or ""
-    local files      = specification.files      or { file.addsuffix(filename,"xhtml") }
+    local htmlfiles  = specification.htmlfiles  or { }
+    local styles     = specification.styles     or { }
     local images     = specification.images     or { }
-    local root       = specification.root       or files[1]
+    local htmlroot   = specification.htmlroot   or htmlfiles[1] or ""
     local language   = specification.language   or "en"
-    local creator    = "context mkiv"
+    local creator    = specification.creator    or "context mkiv"
     local author     = specification.author     or "anonymous"
     local title      = specification.title      or name
     local subtitle   = specification.subtitle   or ""
-    local firstpage  = specification.firstpage  or ""
-    local lastpage   = specification.lastpage   or ""
     local imagefile  = specification.imagefile  or ""
+    local imagepath  = specification.imagepath  or "images"
+    local stylepath  = specification.stylepath  or "styles"
+    local coverpage  = specification.firstpage  or defaultcoverpage
+
+    if type(svgstyle) == "string" and not svgstyle then
+        svgstyle = specification.svgstyle or ""
+    end
+
+    local obsolete   = false
+
+    if #htmlfiles == 0 then
+        report("no html files specified")
+        return
+    end
+    if htmlroot == "" then
+        report("no html root file specified")
+        return
+    end
 
     if subtitle ~= "" then
         title = format("%s, %s",title,subtitle)
     end
 
- -- identifier = gsub(identifier,"[^a-zA-z0-9]","")
+    local htmlsource  = specpath
+    local imagesource = joinfile(specpath,imagepath)
+    local stylesource = joinfile(specpath,stylepath)
 
-    if firstpage == "" then
-     -- firstpage = "firstpage.jpg" -- dummy
-    else
-        images[firstpage] = firstpage
+    -- once we're here we can start moving files to the right spot; first we deal
+    -- with images
+
+    -- ["image-1"]={
+    --     height = "7.056cm",
+    --     name   = "file:///t:/sources/cow.svg",
+    --     page   = "1",
+    --     width  = "9.701cm",
+    -- }
+
+    -- end of todo
+
+    local pdftosvg   = os.which("mudraw") and formatters[ [[mudraw -o "%s" "%s" %s]] ]
+
+    local f_svgname  = formatters["%s-page-%s.svg"]
+
+    local notupdated = 0
+    local updated    = 0
+    local skipped    = 0
+    local oldfiles   = dir.glob(file.join(imagesource,"*"))
+    local newfiles   = { }
+
+    if not pdftosvg then
+        report("the %a binary is not present","mudraw")
     end
-    if lastpage == "" then
-     -- lastpage = "lastpage.jpg" -- dummy
+
+    -- a coverpage file has to be in the root of the export tree
+
+    if not coverpage then
+        report("no cover page (image) defined")
+    elseif suffix(coverpage) ~= "xhtml" then
+        report("using cover page %a",coverpage)
+        local source = coverpage
+        local target = joinfile(htmlsource,coverpage)
+        htmlfiles[#htmlfiles+1 ] = coverpage
+        report("copying coverpage %a to %a",source,target)
+        copyfile(source,target)
+    elseif isfile(coverpage) then
+        report("using cover page image %a",coverpage)
+        images.cover = {
+            height = "100%",
+            width  = "100%",
+            page   = "1",
+            name   = url.filename(coverpage),
+            used   = coverpage,
+        }
+        local data = replacetemplate(t_coverxhtml, {
+            content = replacetemplate(t_coverimg, {
+                image = coverpage,
+            })
+        })
+        coverpage = defaultcoverpage
+        local target = joinfile(htmlsource,coverpage)
+        report("saving coverpage to %a",target)
+        io.savedata(target,data)
+        htmlfiles[#htmlfiles+1 ] = coverpage
     else
-        images[lastpage] = lastpage
+        report("cover page image %a is not present",coverpage)
+        coverpage = false
     end
 
-    local uuid = format("urn:uuid:%s",os.uuid(true)) -- os.uuid()
+    if not coverpage then
+        local data = replacetemplate(t_coverxhtml, {
+            content = "no cover page"
+        })
+        coverpage = defaultcoverpage
+        local target = joinfile(htmlsource,coverpage)
+        report("saving dummy coverpage to %a",target)
+        io.savedata(target,data)
+        htmlfiles[#htmlfiles+1 ] = coverpage
+    end
 
-    identifier = "bookid" -- for now
+    for id, data in sortedhash(images) do
+        local name = url.filename(data.name)
+        local used = url.filename(data.used)
+        local base = basename(used)
+        local page = data.page or "1"
+        -- todo : check timestamp and prefix, rename to image-*
+        if suffix(used) == "pdf" then
+            name = f_svgname(nameonly(name),page)
+            local source  = used
+            local target  = joinfile(imagesource,name)
+            if needsupdating(source,target) then
+                if pdftosvg then
+                    local command = pdftosvg(target,source,page)
+                    report("running command %a",command)
+                    os.execute(command)
+                    updated = updated + 1
+                else
+                    skipped = skipped + 1
+                end
+            else
+                notupdated = notupdated + 1
+            end
+            newfiles[#newfiles+1] = target
+        else
+            name = basename(used)
+            local source = used
+            local target = joinfile(imagesource,name)
+            if needsupdating(source,target) then
+                report("copying %a to %a",source,target)
+                copyfile(source,target)
+                updated = updated + 1
+            else
+                notupdated = notupdated + 1
+                -- no message
+            end
+            newfiles[#newfiles+1] = target
+        end
+        local target = newfiles[#newfiles]
+        if suffix(target) == "svg" then
+            local data = io.loaddata(target)
+            data = gsub(data,"<!(DOCTYPE.-)>","<!-- %1 -->",1)
+            io.savedata(target,data)
+        end
+        data.newname = name -- without path
+    end
 
-    local epubname   = name
-    local epubpath   = file.replacesuffix(name,"tree")
-    local epubfile   = file.replacesuffix(name,"epub")
-    local epubroot   = file.replacesuffix(name,"opf")
-    local epubtoc    = "toc.ncx"
-    local epubcover  = "cover.xhtml"
+    report("%s images checked, %s updated, %s kept, %s skipped",updated + notupdated + skipped,updated,notupdated,skipped)
 
-    application.report("creating paths in tree %a",epubpath)
-    lfs.mkdir(epubpath)
-    lfs.mkdir(file.join(epubpath,"META-INF"))
-    lfs.mkdir(file.join(epubpath,"OEBPS"))
+    if reportobsolete(oldfiles,newfiles,purge) then
+        obsolete = true
+    end
 
-    local used = { }
+    -- here we can decide not to make an epub
 
-    local function registerone(filename)
-        local suffix = file.suffix(filename)
+    local uuid          = format("urn:uuid:%s",os.uuid(true)) -- os.uuid()
+    local identifier    = "bookid" -- for now
+
+    local epubname      = removesuffix(name)
+    local epubpath      = name .. "-epub"
+    local epubfile      = replacesuffix(name,"epub")
+    local epubroot      = replacesuffix(name,"opf")
+    local epubtoc       = "toc.ncx"
+    local epubmimetypes = "mimetype"
+    local epubcontainer = "container.xml"
+    local epubnavigator = "nav.xhtml"
+
+    local metapath      = "META-INF"
+    local datapath      = "OEBPS"
+
+    local oldfiles      = dir.glob(file.join(epubpath,"**/*"))
+    local newfiles      = { }
+
+    report("creating paths in tree %a",epubpath)
+
+    if not isdir(epubpath) then
+        mkdir(epubpath)
+    end
+    if not isdir(epubpath) then
+        report("unable to create path %a",epubpath)
+        return
+    end
+
+    local metatarget  = joinfile(epubpath,metapath)
+    local htmltarget  = joinfile(epubpath,datapath)
+    local styletarget = joinfile(epubpath,datapath,stylepath)
+    local imagetarget = joinfile(epubpath,datapath,imagepath)
+
+    mkdir(metatarget)
+    mkdir(htmltarget)
+    mkdir(styletarget)
+    mkdir(imagetarget)
+
+    local used       = { }
+    local notupdated = 0
+    local updated    = 0
+
+    local oldimagespecification = joinfile(htmlsource,imagefile)
+    local newimagespecification = joinfile(htmltarget,imagefile)
+
+    report("removing %a",newimagespecification)
+ -- removefile(newimagespecification) -- because we update that one
+
+    local function registerone(path,filename,mathml)
+        local suffix = suffix(filename)
         local mime = mimetypes[suffix]
         if mime then
-            local idmaker = idmakers[suffix] or idmakers.default
-            used[#used+1] = replace(t_item, {
-                id         = idmaker(filename),
-                filename   = filename,
-                mime       = mime,
-            } )
+            local idmaker  = idmakers[suffix] or idmakers.default
+            local fullname = path and joinfile(path,filename) or filename
+            if mathml then
+                used[#used+1] = replacetemplate(t_prop, {
+                    id         = idmaker(filename),
+                    filename   = fullname,
+                    mime       = mime,
+                    properties = "mathml",
+                } )
+            else
+                used[#used+1] = replacetemplate(t_item, {
+                    id       = idmaker(filename),
+                    filename = fullname,
+                    mime     = mime,
+                } )
+            end
             return true
         end
     end
 
-    local function copyone(filename,alternative)
-        if registerone(filename) then
-            local target = file.join(epubpath,"OEBPS",file.basename(filename))
-            local source = alternative or filename
-            file.copy(source,target)
-            application.report("copying %a to %a",source,target)
+    local function registerandcopyfile(check,path,name,sourcepath,targetpath,newname)
+        if newname then
+            newname = replacesuffix(newname,suffix(name))
+        else
+            newname = name
         end
-    end
-
-    if lfs.isfile(epubcover) then
-        copyone(epubcover)
-        epubcover = false
-    else
-        registerone(epubcover)
-    end
-
-    copyone("toc.ncx")
-
-    local function copythem(files)
-        for i=1,#files do
-            local filename = files[i]
-            if type(filename) == "string" then
-                local suffix = file.suffix(filename)
-                if suffix == "xhtml" then
-                    local alternative = file.replacesuffix(filename,"html")
-                    if lfs.isfile(alternative) then
-                        copyone(filename,alternative)
-                    else
-                        copyone(filename)
-                    end
-                elseif suffix == "css" then
-                    if filename == "export-example.css" then
-                        if lfs.isfile(filename) then
-                            os.remove(filename)
-                            local original = resolvers.findfile(filename)
-                            application.report("updating local copy of %a from %a",filename,original)
-                            file.copy(original,filename)
-                        else
-                            filename = resolvers.findfile(filename)
-                        end
-                    elseif not lfs.isfile(filename) then
-                        filename = resolvers.findfile(filename)
-                    else
-                        -- use specific local one
-                    end
-                    copyone(filename)
+        local source = joinfile(sourcepath,name)
+        local target = joinfile(targetpath,newname)
+        local mathml = false
+        if suffix(source) == "xhtml" then
+            if find(io.loaddata(source),"MathML") then
+                mathml = true -- inbelievable: the property is only valid when there is mathml
+            end
+        end
+        if registerone(path,newname,mathml) then
+            if not check or needsupdating(source,target) or mathml and svgmath then
+                report("copying %a to %a",source,target)
+                copyfile(source,target)
+                updated = updated + 1
+            else
+                notupdated = notupdated + 1
+            end
+            newfiles[#newfiles+1] = target
+            if mathml and svgmath then
+                report()
+                report("converting mathml into svg in %a",target)
+                report()
+                local status, total, unique = moduledata.svgmath.convert(target,svgstyle)
+                report()
+                if status then
+                    report("%s formulas converted, %s are unique",total,unique)
                 else
-                    copyone(filename)
+                    report("warning: %a in %a",total,target)
                 end
+                report()
             end
         end
     end
 
-    copythem(files)
-
-    -- ["image-1"]={
-    --     ["height"]="7.056cm",
-    --     ["name"]="file:///t:/sources/cow.svg",
-    --     ["page"]="1",
-    --     ["width"]="9.701cm",
-    -- }
-
-    local theimages = { }
-    local pdftosvg  = string.formatters[ [[mudraw -o "%s" "%s" %s]] ]
-
-    for id, data in table.sortedpairs(images) do
-        local name = url.filename(data.name)
-        local used = url.filename(data.used)
-        local base = file.basename(used)
-        local page = data.page or ""
-        if file.suffix(used) == "pdf" then
-            -- todo : check timestamp and prefix, rename to image-*
-            local command = pdftosvg(name,used,page)
-            application.report("running command %a\n\n",command)
-            os.execute(command)
-        else
-            name = used
-        end
-        data.newname = name
-        theimages[#theimages+1] = name
+    for image, data in sortedhash(images) do
+        registerandcopyfile(true,imagepath,data.newname,imagesource,imagetarget,rename and image)
+    end
+    for i=1,#styles do
+        registerandcopyfile(false,stylepath,styles[i],stylesource,styletarget)
+    end
+    for i=1,#htmlfiles do
+        registerandcopyfile(false,false,htmlfiles[i],htmlsource,htmltarget)
     end
 
-    used[#used+1] = replace(t_nav, {
+    relocateimages(images,oldimagespecification,newimagespecification,imagepath,rename)
+
+    report("%s files registered, %s updated, %s kept",updated + notupdated,updated,notupdated)
+
+    local function saveinfile(what,name,data)
+        report("saving %s in %a",what,name)
+        io.savedata(name,data)
+        newfiles[#newfiles+1] = name
+    end
+
+    used[#used+1] = replacetemplate(t_prop, {
         id         = "nav",
-        filename   = "nav.xhtml",
+        filename   = epubnavigator,
         properties = "nav",
         mime       = "application/xhtml+xml",
     })
 
-    io.savedata(file.join(epubpath,"OEBPS","nav.xhtml"),replace(t_navtoc, { -- version 3.0
-        root = root,
+    registerone(false,epubtoc)
+
+    saveinfile("navigation data",joinfile(htmltarget,epubnavigator),replacetemplate(t_navtoc, { -- version 3.0
+        root = htmlroot,
     } ) )
 
-    copythem(theimages)
+    saveinfile("used mimetypes",joinfile(epubpath,epubmimetypes),mimetype)
 
-    local idmaker = idmakers[file.suffix(root)] or idmakers.default
-
-    io.savedata(file.join(epubpath,"mimetype"),mimetype)
-
-    io.savedata(file.join(epubpath,"META-INF","container.xml"),replace(t_container, { -- version 2.0
+    saveinfile("version 2.0 container",joinfile(metatarget,epubcontainer),replacetemplate(t_container, {
         rootfile = epubroot
     } ) )
 
-    io.savedata(file.join(epubpath,"OEBPS",epubroot),replace(t_package, {
+    local idmaker = idmakers[suffix(htmlroot)] or idmakers.default
+
+    saveinfile("package specification",joinfile(htmltarget,epubroot),replacetemplate(t_package, {
         identifier = identifier,
         title      = title,
         language   = language,
         uuid       = uuid,
         creator    = creator,
         date       = os.date("!%Y-%m-%dT%H:%M:%SZ"),
-        firstpage  = idmaker(firstpage),
+        coverpage  = idmaker(coverpage),
         manifest   = concat(used,"\n"),
-        rootfile   = idmaker(root)
+        rootfile   = idmaker(htmlroot)
     } ) )
 
     -- t_toc is replaced by t_navtoc in >= 3
 
-    io.savedata(file.join(epubpath,"OEBPS",epubtoc), replace(t_toc, {
+    saveinfile("table of contents",joinfile(htmltarget,epubtoc), replacetemplate(t_toc, {
         identifier = uuid, -- identifier,
         title      = title,
         author     = author,
-        root       = root,
+        root       = htmlroot,
     } ) )
 
-    if epubcover then
+    report("creating archive\n\n")
 
-        io.savedata(file.join(epubpath,"OEBPS",epubcover), replace(t_coverxhtml, {
-            content = firstpage ~= "" and replace(t_coverimg, { image = firstpage }) or "no cover page defined",
-        } ) )
+    pushdir(epubpath)
 
-    end
-
-    if imagefile ~= "" then
-        local target = file.join(epubpath,"OEBPS",imagefile)
-        application.report("relocating images")
-        relocateimages(images,imagefile,target) -- ,file.join(epubpath,"OEBPS"))
-    end
-
-    application.report("creating archive\n\n")
-
-    lfs.chdir(epubpath)
-    os.remove(epubfile)
+    removefile(epubfile)
 
     local usedzipper = false
 
     local function zipped(zipper)
-        local ok = os.execute(format(zipper.uncompressed,epubfile,"mimetype"))
+        local ok = os.execute(format(zipper.uncompressed,epubfile,epubmimetypes))
         if ok == 0 then
-            os.execute(format(zipper.compressed,epubfile,"META-INF"))
-            os.execute(format(zipper.compressed,epubfile,"OEBPS"))
+            os.execute(format(zipper.compressed,epubfile,metapath))
+            os.execute(format(zipper.compressed,epubfile,datapath))
             usedzipper = zipper.name
             return true
         end
@@ -550,32 +777,52 @@ function scripts.epub.make()
         end
     end
 
-    lfs.chdir("..")
+    popdir()
 
     if usedzipper then
-        local treefile = file.join(epubpath,epubfile)
-        os.remove(epubfile)
-        file.copy(treefile,epubfile)
-        if lfs.isfile(epubfile) then
-            os.remove(treefile)
+        local treefile = joinfile(epubpath,epubfile)
+        removefile(epubfile)
+        copyfile(treefile,epubfile)
+        if isfile(epubfile) then
+            removefile(treefile)
         end
-        application.report("epub archive made using %s: %s",usedzipper,epubfile)
+        report("epub archive made using %s: %s",usedzipper,epubfile)
     else
         local list = { }
         for i=1,#zippers do
             list[#list+1] = zippers[i].name
         end
-        application.report("no epub archive made, install one of: % | t",list)
+        report("no epub archive made, install one of: % | t",list)
+    end
+
+    if reportobsolete(oldfiles,newfiles,purge) then
+        obsolete = true
+    end
+
+    if obsolete and not purge then
+        report("use --purge to remove obsolete files")
     end
 
 end
 
 --
 
-if environment.argument("make") then
-    scripts.epub.make()
-elseif environment.argument("exporthelp") then
-    application.export(environment.argument("exporthelp"),environment.files[1])
+local a_exporthelp = environment.argument("exporthelp")
+local a_make       = environment.argument("make")
+local a_all        = environment.argument("all")
+local a_purge      = a_all or environment.argument("purge")
+local a_rename     = a_all or environment.argument("rename")
+local a_svgmath    = a_all or environment.argument("svgmath")
+local a_svgstyle   = environment.argument("svgstyle")
+
+if a_make and a_svgmath then
+    require("x-math-svg")
+end
+
+if a_make then
+    scripts.epub.make(a_purge,a_rename,a_svgmath,a_svgstyle)
+elseif a_exporthelp then
+    application.export(a_exporthelp,environment.files[1])
 else
     application.help()
 end

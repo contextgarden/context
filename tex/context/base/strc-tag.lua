@@ -160,6 +160,11 @@ local properties     = allocate {
     mfenced               = { pdf = "Span",       nature = "display" },
     maction               = { pdf = "Span",       nature = "display" },
 
+    mstacker              = { pdf = "Span",       nature = "display" }, -- these are only internally used
+    mstackertop           = { pdf = "Span",       nature = "display" }, -- these are only internally used
+    mstackerbot           = { pdf = "Span",       nature = "display" }, -- these are only internally used
+    mstackermid           = { pdf = "Span",       nature = "display" }, -- these are only internally used
+
     mtable                = { pdf = "Table",      nature = "display" }, -- might change
     mtr                   = { pdf = "TR",         nature = "display" }, -- might change
     mtd                   = { pdf = "TD",         nature = "display" }, -- might change
@@ -241,7 +246,7 @@ end
 
 local nstack = 0
 
-function tags.start(tag,specification)
+function tags.start(tag,specification,props)
     local label, detail, user
     if specification then
         label  = specification.label
@@ -281,6 +286,9 @@ function tags.start(tag,specification)
     if metadata then
         tagmetadata[completetag] = metadata
         metadata = nil
+    end
+    if props then
+        properties[completetag] = props
     end
     texattribute[a_tagged] = t
     return t

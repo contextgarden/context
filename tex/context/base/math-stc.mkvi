@@ -16,6 +16,8 @@
 
 \unprotect
 
+%D WARNING: If the code here changes, the export needs to be checked!
+
 %D At some point the \MKII\ arrow mechanism has been converted to \MKIV, but we kept
 %D most of the logic. We now have a more generic variant dealing with extensibles.
 %D There are a few demands than we need to meet:
@@ -78,7 +80,7 @@
   {\mathstylehbox{\usemathstackerscolorparameter\c!color
                   \Umathaccent\fam\zerocount\scratchunicode{\hskip\hsize}}}
 
-% these delimiters are a unuseable as theu don't center for small arguments:
+% these delimiters are a unuseable as they don't center for small arguments:
 %
 % $\Umathaccent   0 0 "2190{x}$ \par $\Umathaccent   0 0 "27F8{x}$\par
 % $\Udelimiterunder 0 "2190{x}$ \par $\Udelimiterunder 0 "27F8{x}$\par
@@ -121,6 +123,18 @@
 \def\math_stackers_skip_indeed#amount%
   {\filledhboxk{\unsetteststrut\strut\hskip#amount}} % \dontshowstruts
 
+\let\math_stackers_start_tagged_mid\relax
+\let\math_stackers_start_tagged_top\relax
+\let\math_stackers_start_tagged_bot\relax
+\let\math_stackers_stop_tagged     \relax
+
+\appendtoks
+    \def\math_stackers_start_tagged_mid{\dostarttagged\t!mathstackermid\empty\hbox\bgroup}%
+    \def\math_stackers_start_tagged_top{\dostarttagged\t!mathstackertop\empty\hbox\bgroup}%
+    \def\math_stackers_start_tagged_bot{\dostarttagged\t!mathstackerbot\empty\hbox\bgroup}%
+    \def\math_stackers_stop_tagged     {\egroup\dostoptagged}%
+\to \everysetuptagging
+
 %D We define a full featured command handler.
 
 \installcorenamespace {mathstackers}
@@ -139,6 +153,7 @@
    \c!mpoffset=.25\exheight,
    \c!voffset=.25\exheight,
    \c!hoffset=.5\emwidth,
+   \c!distance=\mathstackersparameter\c!voffset, % distance between symbol and base (can be different from voffset)
    \c!minheight=\exheight,
    \c!mindepth=\zeropoint,
    \c!minwidth=\emwidth,
@@ -264,6 +279,7 @@
   {\begingroup
    \edef\currentmathstackers{#category}%
    \mathstackersparameter\c!left\relax
+   \dostarttagged\t!mathstacker\currentmathstackers
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\edef\p_offset     {\mathstackersparameter\c!offset}%
       \edef\p_location   {\mathstackersparameter\c!location}%
@@ -311,7 +327,11 @@
         \fi
         \scratchwidth\wd
           \ifdim\wd\scratchboxone>\wd\scratchboxtwo
-            \scratchboxone
+            \ifdim\wd\scratchboxone>\wd\scratchboxthree
+              \scratchboxone
+            \else
+              \scratchboxthree
+            \fi
           \else\ifdim\wd\scratchboxtwo>\wd\scratchboxthree
             \scratchboxtwo
           \else
@@ -327,7 +347,9 @@
       \advance\scratchwidth2\scratchhoffset
       %
       \ifcase#method\relax
+        \dostarttagged\t!mathstackermid\empty
         \setbox\scratchboxthree\csname\??mathstackersalternative\p_alternative\endcsname
+        \dostoptagged
       \fi
       %
       \ifdim\wd\scratchboxone<\scratchwidth
@@ -371,10 +393,13 @@
       %
       \math_stackers_normalize_three
       %
+      \math_stackers_start_tagged_mid
       \math_stackers_middle\bgroup
         \box\scratchboxthree
       \egroup
+      \math_stackers_stop_tagged
       %
+      \math_stackers_start_tagged_top
       \ifdim\htdp\scratchboxone>\zeropoint
         \scratchoffset\scratchvoffset
         \kern-\scratchwidth
@@ -383,7 +408,9 @@
           \box\scratchboxone
         \egroup
       \fi
+      \math_stackers_stop_tagged
       %
+      \math_stackers_start_tagged_bot
       \ifdim\htdp\scratchboxtwo>\zeropoint
         \scratchoffset\scratchvoffset
         \kern-\scratchwidth
@@ -391,7 +418,9 @@
           \lower\dimexpr\ht\scratchboxtwo+\scratchdepth+\scratchoffset+\scratchbottomoffset\relax
           \box\scratchboxtwo
         \egroup
-      \fi}%
+      \fi
+      \math_stackers_stop_tagged}%
+  \dostoptagged
   \mathstackersparameter\c!right\relax
   \endgroup}
 
@@ -453,6 +482,7 @@
   {\begingroup
    \edef\currentmathstackers{#category}%
    \mathstackersparameter\c!left\relax
+   \dostarttagged\t!mathstacker\currentmathstackers
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\edef\currentmathstackers{#category}%
       \edef\m_math_stackers_text_middle {#text}%
@@ -480,37 +510,51 @@
       \fi
       \advance\scratchwidth2\scratchhoffset
       %
-      \setbox\scratchboxtwo  \csname\??mathstackersalternative\p_alternative\endcsname
-      \setbox\scratchboxthree\hbox to \scratchwidth{\hss\box\scratchboxthree\hss}%
+      \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
+      \setbox\scratchboxthree\hbox
+        to \scratchwidth{\hss\box\scratchboxthree\hss}%
       %
       \math_stackers_normalize_three
       %
+      \math_stackers_start_tagged_mid
       \math_stackers_middle\bgroup
         \box\scratchboxthree
       \egroup
+      \math_stackers_stop_tagged
       %
       \ifdim\htdp\scratchboxtwo>\zeropoint
         \kern-\scratchwidth
+        \math_stackers_start_tagged_top
         \ifcase#top\else
           \math_stackers_top\bgroup
-          % \raise\dimexpr\scratchheight+\scratchtopoffset\relax
-            \raise\dimexpr\scratchheight+\mathstackersparameter\c!voffset\relax
+            \raise\dimexpr
+               \scratchheight
+              +\dp\scratchboxtwo % new
+              +\mathstackersparameter\c!distance % was \c!voffset
+            \relax
             \box\scratchboxtwo
           \egroup
         \fi
+        \math_stackers_stop_tagged
         \scratchunicode#codeextra\relax
+        \math_stackers_start_tagged_bot
         \ifcase\scratchunicode\else
           \kern-\scratchwidth
           \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
         \fi
         \ifcase#bottom\else
           \math_stackers_bottom\bgroup
-          % \lower\dimexpr\scratchdepth+\ht\scratchboxtwo+\scratchbottomoffset\relax
-            \lower\dimexpr\scratchdepth+\ht\scratchboxtwo+\mathstackersparameter\c!voffset\relax
+            \lower\dimexpr
+               \scratchdepth
+              +\ht\scratchboxtwo
+              +\mathstackersparameter\c!distance % was \c!voffset
+            \relax
             \box\scratchboxtwo
           \egroup
         \fi
+        \math_stackers_stop_tagged
       \fi}%
+  \dostoptagged
   \mathstackersparameter\c!right\relax
   \edef\p_limits{\mathstackersparameter\c!mathlimits}%
   \ifx\p_limits\v!yes
@@ -551,14 +595,176 @@
 \def\math_stackers_handle_over[#category]%
   {\math_stackers_direct_double\plusone\zerocount{\iffirstargument#category\else\v!top   \fi}} % will be defined later on
 
-\def\math_stackers_handle_under[#category]#codepoint#bottomtext%
+\def\math_stackers_handle_under[#category]%
   {\math_stackers_direct_double\zerocount\plusone{\iffirstargument#category\else\v!bottom\fi}} % will be defined later on
 
-\def\math_stackers_handle_double[#category]#codepoint#bottomtext%
+\def\math_stackers_handle_double[#category]%
   {\math_stackers_direct_double\plusone\plusone  {\iffirstargument#category\else\v!bottom\fi}} % will be defined later on
 
 \def\math_stackers_direct_double#top#bottom#category#codepoint#text%
-  {\math_stackers_make_double#top#bottom{#category}{#codepoint}{#text}%
+  {\math_stackers_make_double#top#bottom{#category}{#codepoint}{0}{#text}%
+   \endgroup}
+
+%D A relative new one is a combination of accents and text (as needed in mathml):
+
+\unexpanded\def\math_stackers_make_double_text#where#category#codepoint#text#extra%
+  {\begingroup
+   \edef\currentmathstackers{#category}%
+   \mathstackersparameter\c!left\relax
+   \dostarttagged\t!mathstacker\currentmathstackers
+   \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
+     {\edef\currentmathstackers{#category}%
+      %
+      \edef\p_offset     {\mathstackersparameter\c!offset}%
+      \edef\p_location   {\mathstackersparameter\c!location}%
+      \edef\p_strut      {\mathstackersparameter\c!strut}%
+      \edef\p_alternative{\mathstackersparameter\c!alternative}%
+      %
+      \scratchleftoffset \zeropoint
+      \scratchrightoffset\zeropoint
+      %
+      \edef\m_math_stackers_text_middle{#text}%
+      \math_stackers_check_unicode{#codepoint}%
+      \scratchunicode#codepoint\relax
+      %
+      \ifx\math_stackers_middle\empty
+        \setbox\scratchboxthree\emptyhbox
+      \else
+        \setmathtextbox\scratchboxthree\hbox{\math_stackers_middletext}%
+      \fi
+      %
+      \ifcase#where\relax
+        \edef\m_math_stackers_text_top{#extra}%
+        \ifx\math_stackers_top\empty
+          \setbox\scratchboxone\emptyhbox
+        \else
+          \setmathsmalltextbox\scratchboxone\hbox{\math_stackers_toptext}%
+        \fi
+      \else
+        \edef\m_math_stackers_text_bottom{#extra}%
+        \ifx\math_stackers_bottom\empty
+          \setbox\scratchboxone\emptyhbox
+        \else
+          \setmathsmalltextbox\scratchboxone\hbox{\math_stackers_bottomtext}%
+        \fi
+      \fi
+      %
+      \scratchwidth\wd
+        \ifdim\wd\scratchboxone>\wd\scratchboxthree
+          \scratchboxone
+        \else
+          \scratchboxthree
+        \fi
+      \relax
+      \scratchdimen\mathstackersparameter\c!minwidth\relax
+      \ifdim\scratchwidth<\scratchdimen
+         \scratchwidth\scratchdimen
+      \fi
+      \advance\scratchwidth2\scratchhoffset
+      %
+      \ifdim\wd\scratchboxone<\scratchwidth
+        \setbox\scratchboxone\hbox to \scratchwidth{\hss\unhbox\scratchboxone\hss}%
+      \fi
+      \ifdim\wd\scratchboxthree<\scratchwidth
+        \setbox\scratchboxthree\hbox to \scratchwidth{\hss\unhbox\scratchboxthree\hss}%
+      \fi
+      %
+      \math_stackers_normalize_three
+      %
+      \math_stackers_start_tagged_mid
+      \math_stackers_middle\bgroup
+        \box\scratchboxthree
+      \egroup
+      \math_stackers_stop_tagged
+      %
+      \kern-\scratchwidth
+      \ifcase#where\relax
+        \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
+        %
+        \math_stackers_start_tagged_top
+        \math_stackers_top\bgroup
+          \raise\dimexpr
+             \scratchheight
+            +\dp\scratchboxone
+            +\mathstackersparameter\c!voffset
+          \relax
+          \box\scratchboxone % toptext
+        \egroup
+        \math_stackers_stop_tagged
+        \kern-\scratchwidth
+        \math_stackers_start_tagged_bot
+        \math_stackers_bottom\bgroup
+          \lower\dimexpr
+            \scratchdepth
+           +\ht\scratchboxtwo
+           +\mathstackersparameter\c!distance
+          \relax
+          \box\scratchboxtwo % accent
+        \egroup
+        \math_stackers_stop_tagged
+      \else
+        \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
+        %
+        \math_stackers_start_tagged_top
+        \math_stackers_top\bgroup
+          \raise\dimexpr
+             \scratchheight
+            +\dp\scratchboxtwo % new
+            +\mathstackersparameter\c!distance
+          \relax
+          \box\scratchboxtwo % accent
+        \egroup
+        \math_stackers_stop_tagged
+        \kern-\scratchwidth
+        \math_stackers_start_tagged_bot
+        \math_stackers_bottom\bgroup
+          \lower\dimexpr
+             \scratchdepth
+            +\ht\scratchboxone
+            +\mathstackersparameter\c!voffset
+          \relax
+          \box\scratchboxone % bottext
+        \egroup
+        \math_stackers_stop_tagged
+      \fi
+      }%
+   \dostoptagged
+   \mathstackersparameter\c!right\relax
+   \edef\p_limits{\mathstackersparameter\c!mathlimits}%
+   \ifx\p_limits\v!yes
+     \expandafter\endgroup\expandafter\limits
+   \else
+     \expandafter\endgroup
+   \fi}
+
+\unexpanded\def\definemathovertextextensible {\dotripleempty\math_extensibles_define_over_text }
+\unexpanded\def\definemathundertextextensible{\dotripleempty\math_extensibles_define_under_text}
+
+\def\math_extensibles_define_over_text[#1][#2][#3]%
+  {\ifthirdargument
+     \setuevalue{#2}{\math_stackers_make_double_text\plusone  {#1}{\number#3}}%
+   \else
+     \setuevalue{#1}{\math_stackers_make_double_text\plusone  \noexpand\currentmathstackers{\number#2}}%
+   \fi}
+
+\def\math_extensibles_define_under_text[#1][#2][#3]%
+  {\ifthirdargument
+     \setuevalue{#2}{\math_stackers_make_double_text\zerocount{#1}{\number#3}}%
+   \else
+     \setuevalue{#1}{\math_stackers_make_double_text\zerocount\noexpand\currentmathstackers{\number#2}}%
+   \fi}
+
+\unexpanded\def\mathovertext {\begingroup\dosingleempty\math_stackers_handle_over_text  }
+\unexpanded\def\mathundertext{\begingroup\dosingleempty\math_stackers_handle_under_text }
+
+\def\math_stackers_handle_over_text[#category]%
+  {\math_stackers_direct_double_text\plusone  {\iffirstargument#category\else\v!top   \fi}} % will be defined later on
+
+\def\math_stackers_handle_under_text[#category]%
+  {\math_stackers_direct_double_text\zerocount{\iffirstargument#category\else\v!bottom\fi}} % will be defined later on
+
+\def\math_stackers_direct_double_text#where#category#codepoint#text#extra%%
+  {\math_stackers_make_double_text#where{#category}{#codepoint}{#text}{#extra}%
    \endgroup}
 
 %D Here is a bonus macro that takes three texts. It can be used to get consistent
@@ -654,10 +860,22 @@
   [\v!both]
 
 \definemathstackers
-  [vfenced]
+  [\v!vfenced]
   [\v!both]
   [\c!mathclass=\s!ord,
    \c!mathlimits=\v!yes]
+
+% these are needed for mathml:
+
+% \setupmathstackers
+%   [\v!both]
+%   [\c!hoffset=1pt,
+%    \c!voffset=1pt]
+
+\definemathstackers
+  [\v!bothtext]
+  [\v!both]
+  [\c!strut=\v!yes]
 
 % These are compatibity definitions, math only.
 
@@ -761,6 +979,15 @@
 \definemathextensible [\v!mathematics] [mrightleftharpoons]  ["21CC]
 \definemathextensible [\v!mathematics] [mtriplerel]          ["2261]
 
+\definemathextensible [\v!mathematics] [eleftarrowfill]         ["2190] % ["27F5]
+\definemathextensible [\v!mathematics] [erightarrowfill]        ["2192] % ["27F6]
+\definemathextensible [\v!mathematics] [eleftrightarrowfill]    ["27F7]
+\definemathextensible [\v!mathematics] [etwoheadrightarrowfill] ["27F9]
+\definemathextensible [\v!mathematics] [eleftharpoondownfill]   ["21BD]
+\definemathextensible [\v!mathematics] [eleftharpoonupfill]     ["21BC]
+\definemathextensible [\v!mathematics] [erightharpoondownfill]  ["21C1]
+\definemathextensible [\v!mathematics] [erightharpoonupfill]    ["21C0]
+
 \definemathextensible [\v!text] [trel]                ["002D]
 \definemathextensible [\v!text] [tequal]              ["003D]
 \definemathextensible [\v!text] [tmapsto]             ["21A6]
@@ -819,22 +1046,38 @@
 % alternatively we can move the original to FE*
 
 \definemathoverextensible   [vfenced] [overbar]       ["FE33E]          % ["203E]
-\definemathunderextensible  [vfenced] [underbar]      ["FE33F]          % ["203E]
+\definemathunderextensible  [vfenced] [underbar]               ["FE33F] % ["203E]
 \definemathdoubleextensible [vfenced] [doublebar]     ["FE33E] ["FE33F]
 
 \definemathoverextensible   [vfenced] [overbrace]     ["FE3DE]          % ["023DE]
-\definemathunderextensible  [vfenced] [underbrace]    ["FE3DF]          % ["023DF]
+\definemathunderextensible  [vfenced] [underbrace]             ["FE3DF] % ["023DF]
 \definemathdoubleextensible [vfenced] [doublebrace]   ["FE3DE] ["FE3DF]
 
 \definemathoverextensible   [vfenced] [overparent]    ["FE3DC]          % ["023DC]
-\definemathunderextensible  [vfenced] [underparent]   ["FE3DD]          % ["023DD]
+\definemathunderextensible  [vfenced] [underparent]            ["FE3DD] % ["023DD]
 \definemathdoubleextensible [vfenced] [doubleparent]  ["FE3DC] ["FE3DD]
 
 \definemathoverextensible   [vfenced] [overbracket]   ["FE3B4]          % ["023B4]
-\definemathunderextensible  [vfenced] [underbracket]  ["FE3B5]          % ["023B5]
+\definemathunderextensible  [vfenced] [underbracket]           ["FE3B5] % ["023B5]
 \definemathdoubleextensible [vfenced] [doublebracket] ["FE3B4] ["FE3B5]
 
 % \unexpanded\def\mathopwithlimits#1#2{\mathop{#1{#2}}\limits}
+
+%D For mathml:
+
+\definemathdoubleextensible     [both]     [overbarunderbar]         ["FE33E] ["FE33F]
+\definemathdoubleextensible     [both]     [overbraceunderbrace]     ["FE3DE] ["FE3DF]
+\definemathdoubleextensible     [both]     [overparentunderparent]   ["FE3DC] ["FE3DD]
+\definemathdoubleextensible     [both]     [overbracketunderbracket] ["FE3B4] ["FE3B5]
+
+\definemathovertextextensible   [bothtext] [overbartext]             ["FE33E]
+\definemathundertextextensible  [bothtext] [underbartext]                     ["FE33F]
+\definemathovertextextensible   [bothtext] [overbracetext]           ["FE3DE]
+\definemathundertextextensible  [bothtext] [underbracetext]                   ["FE3DF]
+\definemathovertextextensible   [bothtext] [overparenttext]          ["FE3DC]
+\definemathundertextextensible  [bothtext] [underparenttext]                  ["FE3DD]
+\definemathovertextextensible   [bothtext] [overbrackettext]         ["FE3B4]
+\definemathundertextextensible  [bothtext] [underbrackettext]                 ["FE3B5]
 
 %D Some bonus ones (for the moment here):
 

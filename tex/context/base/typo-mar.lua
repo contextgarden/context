@@ -165,9 +165,6 @@ local localpar_code      = whatsitcodes.localpar
 local nodepool           = nuts.pool
 
 local new_kern           = nodepool.kern
-local new_glue           = nodepool.glue
-local new_penalty        = nodepool.penalty
-local new_stretch        = nodepool.stretch
 local new_usernumber     = nodepool.usernumber
 local new_latelua        = nodepool.latelua
 
@@ -892,9 +889,9 @@ function margins.finalhandler(head)
      -- if trace_margindata then
      --     report_margindata("flushing stage two, instore: %s, delayed: %s",nofstored,nofdelayed)
      -- end
-head = tonut(head)
-local head, done = finalhandler(head)
-head = tonode(head)
+        head = tonut(head)
+        local head, done = finalhandler(head)
+        head = tonode(head)
         return head, done
     else
         return head, false

@@ -687,7 +687,19 @@ link, div.link {
 /* margintextblock : inline  */
 /* margintext      : inline  */
 
-/* math       : inline  */
+margintext, div.margintext {
+	display       : block ;
+	font-weight   : bold ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+}
+
+margintext:before, div.margintext:before {
+	content : "\25B6\00A0\00A0" ;
+	color   : rgb(40%,40%,40%) ;
+}
+
+/* math       : inline | display */
 /* mn         : mixed   */
 /* mi         : mixed   */
 /* mo         : mixed   */
@@ -709,6 +721,16 @@ link, div.link {
 /* mtable     : display */
 /* mtr        : display */
 /* mtd        : display */
+
+div.math-inline {
+	display        : inline ;
+	vertical-align : 0 ; /* this will be set directly */
+}
+
+div.math-display {
+	display : block ;
+	margin  : 1ex 0ex 1em 3em ;
+}
 
 /* quantity : inline */
 /* unit     : inline */

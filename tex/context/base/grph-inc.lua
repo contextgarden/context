@@ -1362,6 +1362,11 @@ end
 
 local function runprogram(binary,argument,variables)
     -- os.which remembers found programs
+--     if not variables and type(binary) == "table" and binary.command then
+--         variables = argument
+--         argument  = binary.argument
+--         binary    = binary.command
+--     end
     local found = nil
     if type(binary) == "table" then
         for i=1,#binary do
@@ -1402,6 +1407,8 @@ programs.run = runprogram
 local epsconverter = converters.eps or { }
 converters.eps     = epsconverter
 converters.ps      = epsconverter
+
+-- todo: colorspace
 
 local epstopdf = {
     resolutions = {
@@ -1483,22 +1490,22 @@ epsconverter.default = epsconverter.pdf
 local pdfconverter = converters.pdf or { }
 converters.pdf     = pdfconverter
 
-programs.pdftoeps = {
-    command  = "pdftops",
-    argument = [[-eps "%oldname%" "%newname%]],
-}
-
-pdfconverter.stripped = function(oldname,newname)
-    local pdftoeps = programs.pdftoeps -- can be changed
-    local epstopdf = programs.epstopdf -- can be changed
-    local presets = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
-    local tmpname = newname .. ".tmp"
-    runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets })
-    runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets })
-    os.remove(tmpname)
-end
-
-figures.registersuffix("stripped","pdf")
+-- programs.pdftoeps = {
+--     command  = "pdftops",
+--     argument = [[-eps "%oldname%" "%newname%"]],
+-- }
+--
+-- pdfconverter.stripped = function(oldname,newname)
+--     local pdftoeps = programs.pdftoeps -- can be changed
+--     local epstopdf = programs.epstopdf -- can be changed
+--     local presets = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
+--     local tmpname = newname .. ".tmp"
+--     runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets })
+--     runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets })
+--     os.remove(tmpname)
+-- end
+--
+-- figures.registersuffix("stripped","pdf")
 
 -- -- -- svg -- -- --
 
@@ -1574,6 +1581,70 @@ tifconverter.default = converter
 bmpconverter.default = converter
 
 -- todo: lowres
+
+-- cmyk conversion
+
+local rgbprofile  = "srgb.icc"
+local cmykprofile = "isocoated_v2_eci.icc"
+
+directives.register("graphics.conversion.rgbprofile", function(v) rgbprofile  = type(v) == "string" and v or rgbprofile  end)
+directives.register("graphics.conversion.cmykprofile",function(v) cmykprofile = type(v) == "string" and v or cmykprofile end)
+
+local function profiles()
+    if not lfs.isfile(rgbprofile) then
+        local found = resolvers.findfile(rgbprofile)
+        if found and found ~= "" then
+            rgbprofile = found
+        else
+            report_figures("unknown profile %a",rgbprofile)
+        end
+    end
+    if not lfs.isfile(cmykprofile) then
+        local found = resolvers.findfile(cmykprofile)
+        if found and found ~= "" then
+            cmykprofile = found
+        else
+            report_figures("unknown profile %a",cmykprofile)
+        end
+    end
+    return rgbprofile, cmykprofile
+end
+
+programs.pngtocmykpdf = {
+    command  = "gm",
+    argument = [[convert -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -colorspace cmyk -strip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+}
+
+programs.jpgtocmykpdf = {
+    command  = "gm",
+    argument = [[convert -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -colorspace cmyk -strip -sampling-factor 1x1 -compress JPEG "%oldname%" "%newname%"]],
+}
+
+figures.converters.png = {
+    ["cmyk.pdf"] = function(oldname,newname,resolution)
+        local rgbprofile, cmykprofile = profiles()
+        runprogram(programs.pngtocmykpdf.command, programs.pngtocmykpdf.argument, {
+-- new:        runprogram(programs.pngtocmykpdf, {
+            rgbprofile  = rgbprofile,
+            cmykprofile = cmykprofile,
+            oldname     = oldname,
+            newname     = newname,
+        } )
+    end,
+}
+
+figures.converters.jpg = {
+    ["cmyk.pdf"] = function(oldname,newname,resolution)
+        local rgbprofile, cmykprofile = profiles()
+        runprogram(programs.jpgtocmykpdf.command, programs.jpgtocmykpdf.argument, {
+-- new:        runprogram(programs.jpgtocmykpdf, {
+            rgbprofile  = rgbprofile,
+            cmykprofile = cmykprofile,
+            oldname     = oldname,
+            newname     = newname,
+        } )
+    end,
+}
 
 -- -- -- bases -- -- --
 

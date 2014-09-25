@@ -24,6 +24,7 @@ local commands          = commands
 
 local context_sprint    = context.sprint
 ----- context_fprint    = context.fprint -- a bit inefficient
+local ctx_doifelse      = commands.doifelse
 
 local trace_defining    = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
@@ -464,7 +465,7 @@ end
 
 local function utfmathfiller(chr, default)
     local cd = somechar[chr]
-    local cmd = cd and (cd.mathfiller or cd.mathname)
+    local cmd = cd and cd.mathfiller -- or cd.mathname
     return cmd or default or ""
 end
 
@@ -481,15 +482,46 @@ function commands.utfmathstretch(...) context(utfmathstretch(...)) end
 function commands.utfmathcommand(...) context(utfmathcommand(...)) end
 function commands.utfmathfiller (...) context(utfmathfiller (...)) end
 
-function commands.doifelseutfmathaccent(chr,asked)
-    commands.doifelse(utfmathaccent(chr,nil,asked))
+function commands.utfmathcommandabove(asked)
+    local c = utfmathcommand(asked,nil,"topaccent","over" )
+    if c ~= "" then
+        context(c)
+    end
 end
 
-function commands.utfmathcommandabove(asked) context(utfmathcommand(asked,nil,"topaccent","over" )) end
-function commands.utfmathcommandbelow(asked) context(utfmathcommand(asked,nil,"botaccent","under")) end
+function commands.utfmathcommandbelow (asked)
+    local c = utfmathcommand(asked,nil,"botaccent","under")
+    if c ~= "" then
+        context(c)
+    end
+end
 
-function commands.doifelseutfmathabove(chr) commands.doifelse(utfmathaccent(chr,nil,"topaccent","over" )) end
-function commands.doifelseutfmathbelow(chr) commands.doifelse(utfmathaccent(chr,nil,"botaccent","under")) end
+function commands.utfmathcommandfiller(asked)
+    local c = utfmathfiller(asked,nil)
+    if c ~= "" then
+        context(c)
+    end
+end
+
+function commands.doifelseutfmathabove(chr)
+    local c = utfmathaccent(chr,nil,"topaccent","over")
+    ctx_doifelse(c and c ~= "")
+end
+
+function commands.doifelseutfmathbelow(chr)
+    local c = utfmathaccent(chr,nil,"botaccent","under")
+    ctx_doifelse(c and c ~= "")
+end
+
+function commands.doifelseutfmathaccent(chr,asked)
+    local c = utfmathaccent(chr,nil,asked)
+    ctx_doifelse(c and c ~= "")
+end
+
+function commands.doifelseutfmathfiller(chr)
+    local c = utfmathfiller(chr,nil)
+    ctx_doifelse(c and c ~= "")
+end
 
 -- helpers
 --

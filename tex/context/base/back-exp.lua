@@ -28,6 +28,10 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- todo: move critital formatters out of functions
 -- todo: delay loading (apart from basic tag stuff)
 
+-- problem : too many local variables
+
+-- check setting __i__
+
 local next, type, tonumber = next, type, tonumber
 local format, concat, sub, gsub = string.format, table.concat, string.sub, string.gsub
 local validstring = string.valid
@@ -42,6 +46,7 @@ local replacetemplate = utilities.templates.replace
 
 local trace_export  = false  trackers.register  ("export.trace",         function(v) trace_export  = v end)
 local trace_spacing = false  trackers.register  ("export.trace.spacing", function(v) trace_spacing = v end)
+
 local less_state    = false  directives.register("export.lessstate",     function(v) less_state    = v end)
 local show_comment  = true   directives.register("export.comment",       function(v) show_comment  = v end)
 
@@ -233,30 +238,35 @@ local namespaced = {
 }
 
 local namespaces = {
-    msubsup    = "m",
-    msub       = "m",
-    msup       = "m",
-    mn         = "m",
-    mi         = "m",
-    ms         = "m",
-    mo         = "m",
-    mtext      = "m",
-    mrow       = "m",
-    mfrac      = "m",
-    mroot      = "m",
-    msqrt      = "m",
-    munderover = "m",
-    munder     = "m",
-    mover      = "m",
-    merror     = "m",
-    math       = "m",
-    mrow       = "m",
-    mtable     = "m",
-    mtr        = "m",
-    mtd        = "m",
-    mfenced    = "m",
-    maction    = "m",
-    mspace     = "m",
+    msubsup      = "m",
+    msub         = "m",
+    msup         = "m",
+    mn           = "m",
+    mi           = "m",
+    ms           = "m",
+    mo           = "m",
+    mtext        = "m",
+    mrow         = "m",
+    mfrac        = "m",
+    mroot        = "m",
+    msqrt        = "m",
+    munderover   = "m",
+    munder       = "m",
+    mover        = "m",
+    merror       = "m",
+    math         = "m",
+    mrow         = "m",
+    mtable       = "m",
+    mtr          = "m",
+    mtd          = "m",
+    mfenced      = "m",
+    maction      = "m",
+    mspace       = "m",
+    -- only when testing
+    mstacker     = "m",
+    mstackertop  = "m",
+    mstackermid  = "m",
+    mstackernbot = "m",
 }
 
 setmetatableindex(namespaced, function(t,k)
@@ -356,8 +366,8 @@ local styletemplate = [[
     color        : %color% ;
 }]]
 
-    function wrapups.allusedstyles(xmlfile)
-        local result = { formatters["/* %s for file %s */"]("styles",xmlfile) }
+    function wrapups.allusedstyles(basename)
+        local result = { formatters["/* %s for file %s */"]("styles",basename) }
         --
         local bodyfont = finetuning.bodyfont
         local width    = finetuning.width
@@ -439,11 +449,10 @@ local imagetemplate = [[
         end
     end
 
-    local f_images  = formatters["/* %s for file %s */"]
     local collected = { }
 
-    function wrapups.allusedimages(xmlfile)
-        local result = { f_images("images",xmlfile) }
+    function wrapups.allusedimages(basename)
+        local result = { formatters["/* %s for file %s */"]("images",basename) }
         for element, details in sortedhash(usedimages) do
             for detail, data in sortedhash(details) do
                 local name = data.name
@@ -1053,7 +1062,43 @@ do
         element   = "mtext",
         data      = { content = "" },
         nature    = "inline",
+        comment   = "dummy nucleus"
     }
+
+    local function accentchar(d)
+        for i=1,3 do
+            d = d.data
+            if not d then
+                return
+            end
+            d = d[1]
+            if not d then
+                return
+            end
+            local tg = d.tg
+            if tg == "mover" then
+                local p = properties[d.fulltag]
+                local t = p.top
+                if t then
+                    d = d.data[1]
+                    local d1 = d.data[1]
+                    d1.content = utfchar(t)
+                    d.data = { d1 }
+                    return d
+                end
+            elseif tg == "munder" then
+                local p = properties[d.fulltag]
+                local b = p.bottom
+                if b then
+                    d = d.data[1]
+                    local d1 = d.data[1]
+                    d1.content = utfchar(b)
+                    d.data = { d1 }
+                    return d
+                end
+            end
+        end
+    end
 
     local function checkmath(root) -- we can provide utf.toentities as an option
         local data = root.data
@@ -1093,33 +1138,13 @@ do
 --                     data[1] = dummy_nucleus
 --                 end
             elseif roottg == "mfenced" then
-                local new, n = { }, 0
-                local attributes = { }
-                root.attributes = attributes
-                for i=1,ndata do
-                    local di = data[i]
-                    if not di then
-                        -- weird
-                    elseif di.content then
-                        n = n + 1
-                        new[n] = di
-                    else
-                        local tg = di.tg
-                        if tg == "mleft" then
-                            attributes.left   = tostring(di.data[1].data[1].content)
-                        elseif tg == "mmiddle" then
-                            attributes.middle = tostring(di.data[1].data[1].content)
-                        elseif tg == "mright" then
-                            attributes.right  = tostring(di.data[1].data[1].content)
-                        else
-                            n = n + 1
-                            di.__i__ = n
-                            new[n] = di
-                        end
-                    end
-                end
-                root.data = new
-                ndata = n
+                local p = properties[root.fulltag]
+                local l, m, r = p.left, p.middle, p.right
+                root.attributes = {
+                    left   = l and utfchar(l),
+                    middle = m and utfchar(m),
+                    right  = r and utfchar(r),
+                }
             end
             if ndata == 0 then
                 return
@@ -1156,9 +1181,122 @@ do
                         di.skip = "comment"
                         checkmath(di)
                         i = i + 1
-                    elseif tg == "mover" or tg == "munder" or tg == "munderover" then
+                    elseif tg == "mover" then
                         if detail == "accent" then
-                            di.attributes = { accent = "true" }
+                            local p = properties[di.fulltag]
+                            local t = p.top
+                            local d = di.data
+                            -- todo: accent = "false" (for scripts like limits)
+                            di.attributes = {
+                                accent = "true",
+                            }
+                            -- todo: p.topfixed
+                            di.detail = nil
+                            if t then
+                                -- mover
+                                d[1].data[1].content = utfchar(t)
+                                di.data = { d[2], d[1] }
+                            end
+                        else
+                            -- can't happen
+                        end
+                        checkmath(di)
+                        i = i + 1
+                    elseif tg == "munder" then
+                        if detail == "accent" then
+                            local p = properties[di.fulltag]
+                            local b = p.bottom
+                            local d = di.data
+                            -- todo: accent = "false" (for scripts like limits)
+                            di.attributes = {
+                                accent = "true",
+                            }
+                         -- todo: p.bottomfixed
+                            di.detail = nil
+                            if b then
+                                -- munder
+                                d[2].data[1].content = utfchar(b)
+                            end
+                        else
+                            -- can't happen
+                        end
+                        checkmath(di)
+                        i = i + 1
+                    elseif tg == "munderover" then
+                        if detail == "accent" then
+                            local p = properties[di.fulltag]
+                            local t = p.top
+                            local b = p.bottom
+                            local d = di.data
+                            -- todo: accent      = "false" (for scripts like limits)
+                            -- todo: accentunder = "false" (for scripts like limits)
+                            di.attributes = {
+                                accent      = "true",
+                                accentunder = "true",
+                            }
+                         -- todo: p.topfixed
+                         -- todo: p.bottomfixed
+                            di.detail = nil
+                            if t and b then
+                                -- munderover
+                                d[1].data[1].content = utfchar(t)
+                                d[3].data[1].content = utfchar(b)
+                                di.data = { d[2], d[3], d[1] }
+                            else
+                                -- can't happen
+                            end
+                        else
+                            -- can't happen
+                        end
+                        checkmath(di)
+                        i = i + 1
+                    elseif tg == "mstacker" then
+                        local d = di.data
+                        local d1 = d[1]
+                        local d2 = d[2]
+                        local d3 = d[3]
+                        local t1 = d1 and d1.tg
+                        local t2 = d2 and d2.tg
+                        local t3 = d3 and d3.tg
+                        local m  = nil -- d1.data[1]
+                        local t  = nil
+                        local b  = nil
+                        -- only accent when top / bot have stretch
+                        if t1 == "mstackermid" then
+                            m = accentchar(d1) -- or m
+                            if t2 == "mstackertop" then
+                                if t3 == "mstackerbot" then
+                                    t = accentchar(d2)
+                                    b = accentchar(d3)
+                                    di.element = "munderover"
+                                    di.data    = { m or d1.data[1], b or d3.data[1], t or d2.data[1] }
+                                else
+                                    t = accentchar(d2)
+                                    di.element = "mover"
+                                    di.data    = { m or d1.data[1], t or d2.data[1] }
+                                end
+                            elseif t2 == "mstackerbot" then
+                                if t3 == "mstackertop" then
+                                    b = accentchar(d2)
+                                    t = accentchar(d3)
+                                    di.element = "munderover"
+                                    di.data    = { m or d1.data[1], t or d3.data[1], m, b or d2.data[1] }
+                                else
+                                    b = accentchar(d2)
+                                    di.element = "munder"
+                                    di.data    = { m or d1.data[1], b or d2.data[1] }
+                                end
+                            else
+                                -- can't happen
+                            end
+                        else
+                            -- can't happen
+                        end
+                        if t or b then
+                            di.attributes = {
+                                accent      = t and "true" or nil,
+                                accentunder = b and "true" or nil,
+                            }
                             di.detail = nil
                         end
                         checkmath(di)
@@ -1173,7 +1311,34 @@ do
                     elseif tg == "break" then
                         di.skip = "comment"
                         i = i + 1
-                    elseif tg == "mrow" and detail then
+                    elseif tg == "mtext" then
+                        -- this is only needed for unboxed mtexts ... all kind of special
+                        -- tex border cases and optimizations ... trial and error
+                        local data = di.data
+                        if #data > 1 then
+                            for i=1,#data do
+                                local di = data[i]
+                                local content = di.content
+                                if content then
+                                    data[i] = {
+                                        element = "mtext",
+                                        nature  = "inline",
+                                        data    = { di },
+                                        n       = 0,
+                                    }
+                                elseif di.tg == "math" then
+                                    local di = di.data[1]
+                                    data[i] = di
+                                    checkmath(di)
+                                end
+                            end
+                            di.element = "mrow"
+                         -- di.tg = "mrow"
+                         -- di.nature  = "inline"
+                        end
+                        checkmath(di)
+                        i = i + 1
+                    elseif tg == "mrow" and detail then -- hm, falls through
                         di.detail = nil
                         checkmath(di)
                         di = {
@@ -1272,21 +1437,47 @@ do
                 local ndata = #data
                 local n = 0
                 for i=1,ndata do
-                    local di = data[i]
-                    if di and not di.content then
-                        di = stripmath(di)
+                    local d = data[i]
+                    if d and not d.content then
+                        d = stripmath(d)
                     end
-                    if di then
-                        local content = di.content
+                    if d then
+                        local content = d.content
                         if not content then
                             n = n + 1
-                            di.__i__ = n
-                            data[n] = di
+                            d.__i__ = n
+                            data[n] = d
                         elseif content == " " or content == "" then
-                            -- skip
+                            if di.tg == "mspace" then
+                                -- we append or prepend a space to a preceding or following mtext
+                                local parent = di.__p__
+                                local index  = di.__i__ -- == i
+                                local data   = parent.data
+                                if index > 1 then
+                                    local d = data[index-1]
+                                    if d.tg == "mtext" then
+                                        local dd = d.data
+                                        local dn = dd[#dd]
+                                        local dc = dn.content
+                                        if dc then
+                                            dn.content = dc .. content
+                                        end
+                                    end
+                                elseif index < ndata then
+                                    local d = data[index+1]
+                                    if d.tg == "mtext" then
+                                        local dd = d.data
+                                        local dn = dd[1]
+                                        local dc = dn.content
+                                        if dc then
+                                            dn.content = content .. dc
+                                        end
+                                    end
+                                end
+                            end
                         else
                             n = n + 1
-                            data[n] = di
+                            data[n] = d
                         end
                     end
                 end
@@ -1296,7 +1487,16 @@ do
                 if #data > 0 then
                     return di
                 end
+-- end
             end
+            -- could be integrated but is messy then
+--             while roottg == "mrow" and #data == 1 do
+--                 data = data[1]
+--                 for k, v in next, data do
+--                     root[k] = v
+--                 end
+--                 roottg = data.tg
+--             end
         end
     end
 
@@ -1795,46 +1995,50 @@ do
             local di = data[i]
             if not di then -- hm, di can be string
                 -- whatever
-            elseif di.content then
-                -- already has breaks
-                local content = lpegmatch(p_entity,di.content)
-                if i == nofdata and sub(content,-1) == "\n" then -- move check
-                    -- can be an end of line in par but can also be the last line
-                    if trace_spacing then
-                        result[#result+1] = f_spacing(di.parnumber or 0,sub(content,1,-2))
+            else
+                local content = di.content
+-- also optimize for content == "" : trace that first
+                if content then
+                    -- already has breaks
+                    local content = lpegmatch(p_entity,content)
+                    if i == nofdata and sub(content,-1) == "\n" then -- move check
+                        -- can be an end of line in par but can also be the last line
+                        if trace_spacing then
+                            result[#result+1] = f_spacing(di.parnumber or 0,sub(content,1,-2))
+                        else
+                            result[#result+1] = sub(content,1,-2)
+                        end
+                        result[#result+1] = " "
                     else
-                        result[#result+1] = sub(content,1,-2)
+                        if trace_spacing then
+                            result[#result+1] = f_spacing(di.parnumber or 0,content)
+                        else
+                            result[#result+1] = content
+                        end
                     end
-                    result[#result+1] = " "
-                else
-                    if trace_spacing then
-                        result[#result+1] = f_spacing(di.parnumber or 0,content)
+                elseif not di.collapsed then -- ignore collapsed data (is appended, reconstructed par)
+                    local element = di.element
+                    if not element then
+                        -- skip
+                    elseif element == "break" then -- or element == "pagebreak"
+                        emptytag(result,element,nature,di)
+                    elseif element == "" or di.skip == "ignore" then
+                        -- skip
                     else
-                        result[#result+1] = content
-                    end
-                end
-            elseif not di.collapsed then -- ignore collapsed data (is appended, reconstructed par)
-                local element = di.element
-                if not element then
-                    -- skip
-                elseif element == "break" then -- or element == "pagebreak"
-                    emptytag(result,element,nature,di)
-                elseif element == "" or di.skip == "ignore" then
-                    -- skip
-                else
-                    if di.before then
-                        flushtree(result,di.before,nature)
-                    end
-                    local natu = di.nature
-                    local skip = di.skip
-                    if di.breaknode then
-                        emptytag(result,"break","display",di)
-                    end
-                    begintag(result,element,natu,di,skip)
-                    flushtree(result,di.data,natu)
-                    endtag(result,element,natu,di,skip)
-                    if di.after then
-                        flushtree(result,di.after,nature)
+                        if di.before then
+                            flushtree(result,di.before,nature)
+                        end
+                        local natu = di.nature
+                        local skip = di.skip
+                        if di.breaknode then
+                            emptytag(result,"break","display",di)
+                        end
+                        begintag(result,element,natu,di,skip)
+                        flushtree(result,di.data,natu)
+                        endtag(result,element,natu,di,skip)
+                        if di.after then
+                            flushtree(result,di.after,nature)
+                        end
                     end
                 end
             end
@@ -2222,12 +2426,13 @@ end
 
 -- whatsit_code localpar_code
 
-local function collectresults(head,list) -- is last used (we also have currentattribute)
+local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
     local p
     for n in traverse_nodes(head) do
         local id = getid(n) -- 14: image, 8: literal (mp)
         if id == glyph_code then
             local at = getattr(n,a_tagged)
+or pat
             if not at then
              -- we need to tag the pagebody stuff as being valid skippable
              --
@@ -2236,7 +2441,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 -- we could add tonunicodes for ligatures (todo)
                 local components =  getfield(n,"components")
                 if components then -- we loose data
-                    collectresults(components,nil)
+                    collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
                 else
                     local c = getchar(n)
                     if last ~= at then
@@ -2244,6 +2449,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                         pushcontent()
                         currentnesting = tl
                         currentparagraph = getattr(n,a_taggedpar)
+or pap
                         currentattribute = at
                         last = at
                         pushentry(currentnesting)
@@ -2262,6 +2468,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                         -- information unless we inject a special node (but even then we can run into nesting
                         -- issues)
                         local ap = getattr(n,a_taggedpar)
+or pap
                         if ap ~= currentparagraph then
                             pushcontent(currentparagraph,ap)
                             pushentry(currentnesting)
@@ -2338,6 +2545,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 -- skip this one ... already converted special character (node-acc)
             elseif ca then
                 local a = getattr(n,a_tagged)
+or pat
                 if a then
                     local c = specialspaces[ca]
                     if last ~= a then
@@ -2348,12 +2556,14 @@ local function collectresults(head,list) -- is last used (we also have currentat
                         pushcontent()
                         currentnesting = tl
                         currentparagraph = getattr(n,a_taggedpar)
+or pap
                         currentattribute = a
                         last = a
                         pushentry(currentnesting)
                         -- no reference check (see above)
                     elseif last then
                         local ap = getattr(n,a_taggedpar)
+or pap
                         if ap ~= currentparagraph then
                             pushcontent(currentparagraph,ap)
                             pushentry(currentnesting)
@@ -2376,9 +2586,11 @@ local function collectresults(head,list) -- is last used (we also have currentat
             else
                 local subtype = getsubtype(n)
                 if subtype == userskip_code then
-                    if getfield(getfield(n,"spec"),"width") > threshold then
+                    local spec = getfield(n,"spec")
+                    if getfield(spec,"width") > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
                             local a = getattr(n,a_tagged)
+or pat
                             if a == last then
                                 if trace_export then
                                     report_export("%w<!-- injecting spacing 5a -->",currentdepth)
@@ -2406,6 +2618,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 elseif subtype == spaceskip_code or subtype == xspaceskip_code then
                     if not somespace[currentcontent[nofcurrentcontent]] then
                         local a = getattr(n,a_tagged)
+or pat
                         if a == last then
                             if trace_export then
                                 report_export("%w<!-- injecting spacing 7 (stay in element) -->",currentdepth)
@@ -2435,6 +2648,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             end
                         elseif not somespace[r] then
                             local a = getattr(n,a_tagged)
+or pat
                             if a == last then
                                 if trace_export then
                                     report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
@@ -2465,6 +2679,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
             local ai = getattr(n,a_image)
             if ai then
                 local at = getattr(n,a_tagged)
+or pat
                 if nofcurrentcontent > 0 then
                     pushcontent()
                     pushentry(currentnesting) -- ??
@@ -2479,7 +2694,9 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 -- we need to determine an end-of-line
                 local list = getlist(n)
                 if list then
-                    collectresults(list,n)
+local at = getattr(n,a_tagged)
+or pat
+                    collectresults(list,n,at)
                 end
             end
         elseif id == kern_code then
@@ -2492,6 +2709,7 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 if kern > limit then
                     if last and not somespace[currentcontent[nofcurrentcontent]] then
                         local a = getattr(n,a_tagged)
+or pat
                         if a == last then
                             if not somespace[currentcontent[nofcurrentcontent]] then
                                 if trace_export then
@@ -2531,6 +2749,19 @@ function nodes.handlers.export(head) -- hooks into the page builder
     end
  -- continueexport()
     restart = true
+
+-- local function f(head,depth,pat)
+--     for n in node.traverse(head) do
+--         local a = n[a_tagged] or pat
+--         local t = taglist[a]
+--         print(depth,n,a,t and table.concat(t," "))
+--         if n.id == hlist_code or n.id == vlist_code and n.list then
+--             f(n.list,depth+1,a)
+--         end
+--     end
+-- end
+-- f(head,1)
+
     collectresults(tonut(head))
     if trace_export then
         report_export("%w<!-- stop flushing page -->",currentdepth)
@@ -2578,31 +2809,35 @@ local f_cssheadlink = formatters [ [[
 <link type="text/css" rel="stylesheet" href="%s"/>
 ]] ]
 
-    local function allusedstylesheets(xmlfile,cssfiles,files)
+    local function allusedstylesheets(cssfiles,files,path)
+        local done   = { }
         local result = { }
         local extras = { }
         for i=1,#cssfiles do
             local cssfile = cssfiles[i]
-            if type(cssfile) ~= "string" or cssfile == v_yes or cssfile == "" or cssfile == xmlfile then
-                cssfile = file.replacesuffix(xmlfile,"css")
-            else
-                cssfile = file.addsuffix(cssfile,"css")
+            if type(cssfile) ~= "string" then
+                -- error
+            elseif cssfile == "export-example.css" then
+                -- ignore
+            elseif not done[cssfile] then
+                cssfile = file.join(path,cssfile)
+                report_export("adding css reference '%s'",cssfile)
+                files[#files+1]   = cssfile
+                result[#result+1] = f_csspreamble(cssfile)
+                extras[#extras+1] = f_cssheadlink(cssfile)
+                done[cssfile]     = true
             end
-            files[#files+1] = cssfile
-            report_export("adding css reference '%s'",cssfile)
-            result[#result+1] = f_csspreamble(cssfile)
-            extras[#extras+1] = f_cssheadlink(cssfile)
         end
         return concat(result), concat(extras)
     end
 
 local f_e_template = [[
-%element% {
+%element%, div.%element% {
     display: %display% ;
 }]]
 
 local f_d_template = [[
-%element%[detail=%detail%], div.detail-%detail% {
+%element%[detail=%detail%], div.%element%.detail-%detail% {
     display: %display% ;
 }]]
 
@@ -2640,23 +2875,27 @@ local htmltemplate = [[
         mixed   = "inline",
     }
 
-    local function allusedelements(xmlfile)
-        local result = { formatters["/* %s for file %s */"]("template",xmlfile) }
+    local function allusedelements(basename)
+        local result = { formatters["/* %s for file %s */"]("template",basename) }
         for element, details in sortedhash(used) do
-            result[#result+1] = f_category(element)
-            for detail, nature in sortedhash(details) do
-                local display = displaymapping[nature or "display"] or "block"
-                if detail == "" then
-                    result[#result+1] = replacetemplate(f_e_template, {
-                        element = element,
-                        display = display,
-                    })
-                else
-                    result[#result+1] = replacetemplate(f_d_template, {
-                        element = element,
-                        detail  = detail,
-                        display = display,
-                    })
+            if namespaces[element] then
+                -- skip math
+            else
+                result[#result+1] = f_category(element)
+                for detail, nature in sortedhash(details) do
+                    local display = displaymapping[nature or "display"] or "block"
+                    if detail == "" then
+                        result[#result+1] = replacetemplate(f_e_template, {
+                            element = element,
+                            display = display,
+                        })
+                    else
+                        result[#result+1] = replacetemplate(f_d_template, {
+                            element = element,
+                            detail  = detail,
+                            display = display,
+                        })
+                    end
                 end
             end
         end
@@ -2771,8 +3010,11 @@ local htmltemplate = [[
         --
     }
 
-    local addclicks = true
-    local f_onclick = formatters[ [[location.href='%s']] ]
+    local addclicks   = true
+    local f_onclick   = formatters[ [[location.href='%s']] ]
+
+    local p_cleanid   = lpeg.replacer { [":"] = "-" }
+    local p_cleanhref = lpeg.Cs(lpeg.P("#") * p_cleanid)
 
     local function remap(specification,source,target)
         local comment = nil -- share comments
@@ -2781,8 +3023,10 @@ local htmltemplate = [[
                 local tg = c.tg
                 local ns = c.ns
                 if ns == "m" then
+if false then
                     c.ns = ""
                     c.at["xmlns:m"] = nil
+end
              --  elseif tg == "a" then
              --      c.ns = ""
                 else
@@ -2813,7 +3057,9 @@ local htmltemplate = [[
                     local href  = at.href
                     local class = concat(class," ")
                     if id then
+                        id   = lpegmatch(p_cleanid,  id)   or id
                         if href then
+                            href = lpegmatch(p_cleanhref,href) or href
                             c.at = {
                                 class   = class,
                                 id      = id,
@@ -2828,6 +3074,7 @@ local htmltemplate = [[
                         end
                     else
                         if href then
+                            href = lpegmatch(p_cleanhref,href) or href
                             c.at = {
                                 class   = class,
                                 href    = href,
@@ -2845,10 +3092,7 @@ local htmltemplate = [[
         end
     end
 
-    local cssfile, xhtmlfile = nil, nil
-
-    directives.register("backend.export.css",        function(v) cssfile     = v end)
-    directives.register("backend.export.xhtml",      function(v) xhtmlfile   = v end)
+    local cssfile = nil  directives.register("backend.export.css", function(v) cssfile = v end)
 
     local function stopexport(v)
         starttiming(treehash)
@@ -2856,11 +3100,7 @@ local htmltemplate = [[
         finishexport()
         --
         report_export("")
-        if xhtmlfile then
-            report_export("exporting xml, xhtml and html files")
-        else
-            report_export("exporting xml file")
-        end
+        report_export("exporting xml, xhtml and html files")
         report_export("")
         --
         wrapups.collapsetree(tree)
@@ -2874,101 +3114,190 @@ local htmltemplate = [[
         if type(v) ~= "string" or v == v_yes or v == "" then
             v = tex.jobname
         end
-        local basename = file.basename(v)
-        local xmlfile = file.addsuffix(basename,"export")
+
+        -- we use a dedicated subpath:
         --
-        local imagefilename         = file.addsuffix(file.removesuffix(xmlfile) .. "-images","css")
-        local stylefilename         = file.addsuffix(file.removesuffix(xmlfile) .. "-styles","css")
-        local templatefilename      = file.replacesuffix(xmlfile,"template")
-        local specificationfilename = file.replacesuffix(xmlfile,"specification")
-        --
-        if xhtml and not cssfile then
-            cssfile = true
-        end
-        local cssfiles = { }
-        if cssfile then
-            if cssfile == true then
-                cssfiles = { "export-example.css" }
-            else
-                cssfiles = settings_to_array(cssfile or "")
+        -- ./jobname-export
+        -- ./jobname-export/images
+        -- ./jobname-export/styles
+        -- ./jobname-export/styles
+        -- ./jobname-export/jobname-export.xml
+        -- ./jobname-export/jobname-export.xhtml
+        -- ./jobname-export/jobname-export.html
+        -- ./jobname-export/jobname-specification.lua
+        -- ./jobname-export/styles/jobname-defaults.css
+        -- ./jobname-export/styles/jobname-styles.css
+        -- ./jobname-export/styles/jobname-images.css
+        -- ./jobname-export/styles/jobname-templates.css
+
+        local basename  = file.basename(v)
+        local corename  = file.removesuffix(basename)
+        local basepath  = basename .. "-export"
+        local imagepath = file.join(basepath,"images")
+        local stylepath = file.join(basepath,"styles")
+
+        local function validpath(what,pathname)
+            if lfs.isdir(pathname) then
+                report_export("using exiting %s path %a",what,pathname)
+                return pathname
             end
-            insert(cssfiles,1,imagefilename)
-            insert(cssfiles,1,stylefilename)
+            lfs.mkdir(pathname)
+            if lfs.isdir(pathname) then
+                report_export("using cretated %s path %a",what,basepath)
+                return pathname
+            else
+                report_export("unable to create %s path %a",what,basepath)
+                return false
+            end
         end
-        cssfiles = table.unique(cssfiles)
+
+        if not (validpath("export",basepath) and validpath("images",imagepath) and validpath("styles",stylepath)) then
+            return
+        end
+
+        -- we're now on the dedicated export subpath so we can't clash names
+
+        local xmlfilebase           = file.addsuffix(basename .. "-raw","xml"  )
+        local xhtmlfilebase         = file.addsuffix(basename .. "-tag","xhtml")
+        local htmlfilebase          = file.addsuffix(basename .. "-div","xhtml")
+        local specificationfilebase = file.addsuffix(basename .. "-pub","lua"  )
+
+        local xmlfilename           = file.join(basepath, xmlfilebase          )
+        local xhtmlfilename         = file.join(basepath, xhtmlfilebase        )
+        local htmlfilename          = file.join(basepath, htmlfilebase         )
+        local specificationfilename = file.join(basepath, specificationfilebase)
         --
-        local result = allcontent(tree) -- also does some housekeeping and data collecting
+        local defaultfilebase       = file.addsuffix(basename .. "-defaults", "css")
+        local imagefilebase         = file.addsuffix(basename .. "-images",   "css")
+        local stylefilebase         = file.addsuffix(basename .. "-styles",   "css")
+        local templatefilebase      = file.addsuffix(basename .. "-templates","css")
         --
+        local defaultfilename       = file.join(stylepath,defaultfilebase )
+        local imagefilename         = file.join(stylepath,imagefilebase   )
+        local stylefilename         = file.join(stylepath,stylefilebase   )
+        local templatefilename      = file.join(stylepath,templatefilebase)
+
+        -- we keep track of all used files
+
         local files = {
         }
-        local x_styles, h_styles = allusedstylesheets(xmlfile,cssfiles,files)
+
+        -- we always load the defaults and optionally extra css files; we also copy the example
+        -- css file so that we always have the latest version
+
+        local cssfiles = {
+            defaultfilebase,
+            imagefilebase,
+            stylefilebase,
+        }
+
+        local examplefilename = resolvers.find_file("export-example.css")
+        if examplefilename then
+            file.copy(examplefilename,defaultfilename)
+        end
+
+        if type(cssfile) == "string" then
+            local list = table.unique(settings_to_array(cssfile))
+            for i=1,#list do
+                local source = file.addsuffix(list[i],"css")
+                local target = source
+                cssfiles[#cssfiles+1] = target
+                -- todo: warning if no file yet
+            end
+        end
+
+        local x_styles, h_styles = allusedstylesheets(cssfiles,files,"styles")
+
+        -- at this point we're ready for the content; the collector also does some
+        -- housekeeping and data collecting; at this point we still have an xml
+        -- representation that uses verbose element names and carries information in
+        -- attributes
+
+        local result = allcontent(tree)
+
         local results = concat {
             wholepreamble(true),
             x_styles, -- adds to files
             result,
         }
-        --
-        files = table.unique(files)
-        --
-        report_export("saving xml data in %a",xmlfile)
-        io.savedata(xmlfile,results)
-        --
+
+        cssfiles = table.unique(cssfiles)
+
+        -- we're now ready for saving the result in the xml file
+
+        report_export("saving xml data in %a",xmlfilename)
+        io.savedata(xmlfilename,results)
+
         report_export("saving css image definitions in %a",imagefilename)
-        io.savedata(imagefilename,wrapups.allusedimages(xmlfile))
-        --
+        io.savedata(imagefilename,wrapups.allusedimages(basename))
+
         report_export("saving css style definitions in %a",stylefilename)
-        io.savedata(stylefilename,wrapups.allusedstyles(xmlfile))
-        --
+        io.savedata(stylefilename,wrapups.allusedstyles(basename))
+
         report_export("saving css template in %a",templatefilename)
-        io.savedata(templatefilename,allusedelements(xmlfile))
-        --
-        local xmltree = nil
-        if xhtmlfile then
-            -- basic
-            if type(v) ~= "string" or xhtmlfile == true or xhtmlfile == v_yes or xhtmlfile == "" or xhtmlfile == xmlfile then
-                xhtmlfile = file.replacesuffix(xmlfile,"xhtml")
-            else
-                xhtmlfile = file.addsuffix(xhtmlfile,"xhtml")
-            end
-            files[#files+1] = xhtmlfile
-            report_export("saving xhtml variant in %a",xhtmlfile)
-            xmltree = cleanxhtmltree(xml.convert(results))
-            xml.save(xmltree,xhtmlfile)
-            -- looking at identity is somewhat redundant as we also inherit from interaction
-            -- at the tex end
-            local identity = interactions.general.getidentity()
-            local specification = {
-                name       = file.removesuffix(v),
-                identifier = os.uuid(),
-                images     = wrapups.uniqueusedimages(),
-                imagefile  = imagefilename,
-                stylefile  = stylefilename,
-                root       = xhtmlfile,
-                files      = files,
-                language   = languagenames[texgetcount("mainlanguagenumber")],
-                title      = validstring(finetuning.title) or validstring(identity.title),
-                subtitle   = validstring(finetuning.subtitle) or validstring(identity.subtitle),
-                author     = validstring(finetuning.author) or validstring(identity.author),
-                firstpage  = validstring(finetuning.firstpage),
-                lastpage   = validstring(finetuning.lastpage),
-            }
-            report_export("saving specification in %a",specificationfilename,specificationfilename)
-            io.savedata(specificationfilename,table.serialize(specification,true))
-            -- bonus
-            local resultfile = file.replacesuffix(xmlfile,"html")
-            report_export("saving div based alternative in %a",resultfile)
-            remap(specification,xmltree)
-            local variables = {
-                style    = h_styles,
-                body     = xml.tostring(xml.first(xmltree,"/div")),
-                preamble = wholepreamble(false),
-                title    = specification.title,
-            }
-            io.savedata(resultfile,replacetemplate(htmltemplate,variables,"xml"))
-            report_export("")
-            report_export([[create epub with: mtxrun --script epub --make "%s"]],file.nameonly(resultfile))
-            report_export("")
-        end
+        io.savedata(templatefilename,allusedelements(basename))
+
+        -- additionally we save an xhtml file; for that we load the file as xml tree
+
+        report_export("saving xhtml variant in %a",xhtmlfilename)
+
+        local xmltree = cleanxhtmltree(xml.convert(results))
+
+        xml.save(xmltree,xhtmlfilename)
+
+        -- now we save a specification file that can b eused for generating an epub file
+
+        -- looking at identity is somewhat redundant as we also inherit from interaction
+        -- at the tex end
+
+        local identity = interactions.general.getidentity()
+
+        local specification = {
+            name        = file.removesuffix(v),
+            identifier  = os.uuid(),
+            images      = wrapups.uniqueusedimages(),
+            imagefile   = file.join("styles",imagefilebase),
+            imagepath   = "images",
+            stylepath   = "styles",
+            xmlfiles    = { xmlfilebase },
+            xhtmlfiles  = { xhtmlfilebase },
+            htmlfiles   = { htmlfilebase },
+            styles      = cssfiles,
+            htmlroot    = htmlfilebase,
+            language    = languagenames[texgetcount("mainlanguagenumber")],
+            title       = validstring(finetuning.title) or validstring(identity.title),
+            subtitle    = validstring(finetuning.subtitle) or validstring(identity.subtitle),
+            author      = validstring(finetuning.author) or validstring(identity.author),
+            firstpage   = validstring(finetuning.firstpage),
+            lastpage    = validstring(finetuning.lastpage),
+        }
+
+        report_export("saving specification in %a",specificationfilename,specificationfilename)
+
+        io.savedata(specificationfilename,table.serialize(specification,true))
+
+        -- the html export for epub is different in the sense that it uses div's instead of
+        -- specific tags
+
+        report_export("saving div based alternative in %a",htmlfilename)
+
+        remap(specification,xmltree)
+
+        local variables = {
+            style    = h_styles,
+            body     = xml.tostring(xml.first(xmltree,"/div")),
+            preamble = wholepreamble(false),
+            title    = specification.title,
+        }
+
+        io.savedata(htmlfilename,replacetemplate(htmltemplate,variables,"xml"))
+
+        -- finally we report how an epub file can be made (using the specification)
+
+        report_export("")
+        report_export('create epub with: mtxrun --script epub --make "%s" [--purge --rename --svgmath]',file.nameonly(basename))
+        report_export("")
+
         stoptiming(treehash)
     end
 

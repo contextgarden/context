@@ -1459,6 +1459,9 @@ end
 -- -- -- end of main file search routing -- -- --
 
 local function findfiles(filename,filetype,allresults)
+    if not filename or filename == "" then
+        return { }
+    end
     local result, status = collect_instance_files(filename,filetype or "",allresults)
     if not result or #result == 0 then
         local lowered = lower(filename)
