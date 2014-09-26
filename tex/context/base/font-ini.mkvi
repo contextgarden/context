@@ -2175,6 +2175,23 @@
 \unexpanded\def\fontcharbyindex#index% unofficial command, for idris' font building
   {\ctxcommand{fontcharbyindex(\number#index)}}
 
+%D The \type {\tochar} commmand takes a specification:
+%D
+%D \starttabulate[|l|l|l|]
+%D \NC e \NC entity                   \NC e:eacute \NC \NR
+%D \NC x \NC hexadecimal unicode      \NC x:013D   \NC \NR
+%D \NC d \NC decimal unicode          \NC d:123    \NC \NR
+%D \NC s \NC hexadecimal index (slot) \NC s:210D   \NC \NR
+%D \NC i \NC decimal index            \NC i:456    \NC \NR
+%D \NC n \NC name                     \NC n:eight  \NC \NR
+%D \NC c \NC name                     \NC c:x      \NC \NR
+%D \stoptabulate
+%D
+%D This is an expandable command!
+
+\def\tochar#specifications%
+  {\ctxcommand{tochar("#specifications")}} % expanded (also used in edef)
+
 %D The next auxilliary macro is an alternative to \type
 %D {\fontname}.
 

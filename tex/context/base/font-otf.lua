@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.758 -- beware: also sync font-mis.lua
+otf.version              = 2.760 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -202,7 +202,6 @@ local valid_fields = table.tohash {
     "encodingchanged",
     "extrema_bound",
     "familyname",
-    "fontname",
     "fontname",
     "fontstyle_id",
     "fontstyle_name",
@@ -479,6 +478,8 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
                     },
                     lookuptypes = {
                     },
+                },
+                warnings    = {
                 },
                 metadata    = {
                     -- raw metadata, not to be used
@@ -1499,12 +1500,12 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                             local fore = glyphs.fore
                             if fore and fore ~= "" then
                                 fore = s_uncover(splitter,s_u_cache,fore)
-                                rule.before = s_hashed(fore,s_h_cache)
+                                rule.after = s_hashed(fore,s_h_cache)
                             end
                             local back = glyphs.back
                             if back then
                                 back = s_uncover(splitter,s_u_cache,back)
-                                rule.after = s_hashed(back,s_h_cache)
+                                rule.before = s_hashed(back,s_h_cache)
                             end
                             local names = glyphs.names
                             if names then
@@ -1789,6 +1790,12 @@ end
 
 -- future versions will remove _
 
+local valid = (lpeg.R("\x00\x7E") - lpeg.S("(){}[]<>%/ \n\r\f\v"))^0 * lpeg.P(-1)
+
+local function valid_ps_name(str)
+    return str and str ~= "" and #str < 64 and lpegmatch(valid,str) and true or false
+end
+
 actions["check metadata"] = function(data,filename,raw)
     local metadata = data.metadata
     for _, k in next, mainfields do
@@ -1808,9 +1815,38 @@ actions["check metadata"] = function(data,filename,raw)
     end
     --
     if metadata.validation_state and table.contains(metadata.validation_state,"bad_ps_fontname") then
-        local name = file.nameonly(filename)
-        metadata.fontname = "bad-fontname-" .. name
-        metadata.fullname = "bad-fullname-" .. name
+        -- the ff library does a bit too much (and wrong) checking ... so we need to catch this
+        -- at least for now
+        local function valid(what)
+            local names = raw.names
+            for i=1,#names do
+                local list = names[i]
+                local names = list.names
+                if names then
+                    local name = names[what]
+                    if name and valid_ps_name(name) then
+                        return name
+                    end
+                end
+            end
+        end
+        local function check(what)
+            local oldname = metadata[what]
+            if valid_ps_name(oldname) then
+                report_otf("ignoring warning %a because %s %a is proper ASCII","bad_ps_fontname",what,oldname)
+            else
+                local newname = valid(what)
+                if not newname then
+                    newname = formatters["bad-%s-%s"](what,file.nameonly(filename))
+                end
+                local warning = formatters["overloading %s from invalid ASCII name %a to %a"](what,oldname,newname)
+                data.warnings[#data.warnings+1] = warning
+                report_otf(warning)
+                metadata[what] = newname
+            end
+        end
+        check("fontname")
+        check("fullname")
     end
     --
 end
@@ -1964,6 +2000,7 @@ end
 local function copytotfm(data,cache_id)
     if data then
         local metadata       = data.metadata
+        local warnings       = data.warnings
         local resources      = data.resources
         local properties     = derivetable(data.properties)
         local descriptions   = derivetable(data.descriptions)
@@ -2058,6 +2095,7 @@ local function copytotfm(data,cache_id)
         local filename = constructors.checkedfilename(resources)
         local fontname = metadata.fontname
         local fullname = metadata.fullname or fontname
+        local psname   = fontname or fullname
         local units    = metadata.units_per_em or 1000
         --
         if units == 0 then -- catch bugs in fonts
@@ -2151,11 +2189,21 @@ local function copytotfm(data,cache_id)
         properties.filename      = filename
         properties.fontname      = fontname
         properties.fullname      = fullname
-        properties.psname        = fontname or fullname
+        properties.psname        = psname
         properties.name          = filename or fullname
         --
      -- properties.name          = specification.name
      -- properties.sub           = specification.sub
+        --
+        if warnings and #warnings > 0 then
+            report_otf("warnings for font: %s",filename)
+            report_otf()
+            for i=1,#warnings do
+                report_otf("  %s",warnings[i])
+            end
+            report_otf()
+        end
+        --
         return {
             characters     = characters,
             descriptions   = descriptions,
@@ -2164,6 +2212,7 @@ local function copytotfm(data,cache_id)
             resources      = resources,
             properties     = properties,
             goodies        = goodies,
+            warnings       = warnings,
         }
     end
 end

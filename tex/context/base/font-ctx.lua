@@ -1467,9 +1467,109 @@ local function indextoslot(index)
     end
 end
 
+do -- else too many locals
 
-helpers.nametoslot  = nametoslot
-helpers.indextoslot = indextoslot
+    local entities = characters.entities
+    local lowered  = { } -- delayed initialization
+
+    table.setmetatableindex(lowered,function(t,k)
+        for k, v in next, entities do
+            local l = lower(k)
+            if not entities[l] then
+                lowered[l] = v
+            end
+        end
+        table.setmetatableindex(lowered,nil)
+        return lowered[k]
+    end)
+
+    local methods = {
+        -- entity
+        e = function(name)
+                return entities[name] or lowered[name] or name
+            end,
+        -- hexadecimal unicode
+        x = function(name)
+                local n = tonumber(name,16)
+                return n and utfchar(n) or name
+            end,
+        -- decimal unicode
+        d = function(name)
+                local n = tonumber(name)
+                return n and utfchar(n) or name
+            end,
+        -- hexadecimal index (slot)
+        s = function(name)
+                local n = tonumber(name,16)
+                local n = n and indextoslot(n)
+                return n and utfchar(n) or name
+            end,
+        -- decimal index
+        i = function(name)
+                local n = tonumber(name)
+                local n = n and indextoslot(n)
+                return n and utfchar(n) or name
+            end,
+        -- name
+        n = function(name)
+                local n = nametoslot(name)
+                return n and utfchar(n) or name
+            end,
+        -- char
+        c = function(name)
+                return name
+            end,
+    }
+
+    -- -- nicer:
+    --
+    -- table.setmetatableindex(methods,function(t,k) return methods.c end)
+    --
+    -- local splitter = (C(1) * P(":") + Cc("c")) * C(P(1)^1) / function(method,name)
+    --     return methods[method](name)
+    -- end
+    --
+    -- -- more efficient:
+
+    local splitter = C(1) * P(":") * C(P(1)^1) / function(method,name)
+        local action = methods[method]
+        return action and action(name) or name
+    end
+
+    local function tochar(str)
+        local t = type(str)
+        if t == "number" then
+            return utfchar(str)
+        elseif t == "string" then
+            return lpegmatch(splitter,str) or str
+        end
+    end
+
+    helpers.nametoslot  = nametoslot
+    helpers.indextoslot = indextoslot
+    helpers.tochar      = tochar
+
+    -- interfaces:
+
+    function commands.fontchar(n)
+        n = nametoslot(n)
+        if n then
+            context_char(n)
+        end
+    end
+
+    function commands.fontcharbyindex(n)
+        n = indextoslot(n)
+        if n then
+            context_char(n)
+        end
+    end
+
+    function commands.tochar(str)
+        context(tochar(str))
+    end
+
+end
 
 -- this will change ...
 
@@ -1616,20 +1716,6 @@ local context_char      = context.char
 local context_getvalue  = context.getvalue
 
 local commands_doifelse = commands.doifelse
-
-function commands.fontchar(n)
-    n = nametoslot(n)
-    if n then
-        context_char(n)
-    end
-end
-
-function commands.fontcharbyindex(n)
-    n = indextoslot(n)
-    if n then
-        context_char(n)
-    end
-end
 
 function commands.doifelsecurrentfonthasfeature(name) -- can be made faster with a supportedfeatures hash
     local f = fontdata[currentfont()]
