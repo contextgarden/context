@@ -74,7 +74,7 @@ local function loadcidfile(filename)
             ordering   = ordering,
             filename   = filename,
             unicodes   = unicodes,
-            names      = names
+            names      = names,
         }
     end
 end
@@ -112,15 +112,28 @@ function cid.getmap(specification)
         report_otf("invalid cidinfo specification, table expected")
         return
     end
-    local registry = specification.registry
-    local ordering = specification.ordering
+    local registry   = specification.registry
+    local ordering   = specification.ordering
     local supplement = specification.supplement
-    -- check for already loaded file
-    local filename = format(registry,ordering,supplement)
-    local found = cidmap[lower(filename)]
+    local filename   = format(registry,ordering,supplement)
+    local lowername  = lower(filename)
+    local found      = cidmap[lowername]
     if found then
         return found
     end
+    if ordering == "Identity" then
+        local found = {
+            supplement = supplement,
+            registry   = registry,
+            ordering   = ordering,
+            filename   = filename,
+            unicodes   = { },
+            names      = { },
+        }
+        cidmap[lowername] = found
+        return found
+    end
+    -- check for already loaded file
     if trace_loading then
         report_otf("cidmap needed, registry %a, ordering %a, supplement %a",registry,ordering,supplement)
     end

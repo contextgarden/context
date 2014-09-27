@@ -639,25 +639,25 @@ else
  -- traditional.loadpatterns("nl","lang-nl")
  -- traditional.loadpatterns("de","lang-de")
 
-    traditional.registerpattern("nl","e1ë",      { start = 1, length = 2, before = "e",  after = "e"  } )
-    traditional.registerpattern("nl","oo1ë",     { start = 2, length = 3, before = "o",  after = "e"  } )
-    traditional.registerpattern("de","qqxc9xkqq",{ start = 3, length = 4, before = "ab", after = "cd" } )
+--     traditional.registerpattern("nl","e1ë",      { start = 1, length = 2, before = "e",  after = "e"  } )
+--     traditional.registerpattern("nl","oo1ë",     { start = 2, length = 3, before = "o",  after = "e"  } )
+--     traditional.registerpattern("de","qqxc9xkqq",{ start = 3, length = 4, before = "ab", after = "cd" } )
 
-    local specification = {
-        lefthyphenmin   = 2,
-        righthyphenmin  = 2,
-        lefthyphenchar  = "<",
-        righthyphenchar = ">",
-    }
+--     local specification = {
+--         lefthyphenmin   = 2,
+--         righthyphenmin  = 2,
+--         lefthyphenchar  = "<",
+--         righthyphenchar = ">",
+--     }
 
-    print("reëel",       traditional.injecthyphens(dictionaries.nl,"reëel",       specification),"r{e>}{<e}{eë}el")
-    print("reeëel",      traditional.injecthyphens(dictionaries.nl,"reeëel",      specification),"re{e>}{<e}{eë}el")
-    print("rooëel",      traditional.injecthyphens(dictionaries.nl,"rooëel",      specification),"r{o>}{<e}{ooë}el")
+--     print("reëel",       traditional.injecthyphens(dictionaries.nl,"reëel",       specification),"r{e>}{<e}{eë}el")
+--     print("reeëel",      traditional.injecthyphens(dictionaries.nl,"reeëel",      specification),"re{e>}{<e}{eë}el")
+--     print("rooëel",      traditional.injecthyphens(dictionaries.nl,"rooëel",      specification),"r{o>}{<e}{ooë}el")
 
-    print(   "qxcxkq",   traditional.injecthyphens(dictionaries.de,   "qxcxkq",   specification),"")
-    print(  "qqxcxkqq",  traditional.injecthyphens(dictionaries.de,  "qqxcxkqq",  specification),"")
-    print( "qqqxcxkqqq", traditional.injecthyphens(dictionaries.de, "qqqxcxkqqq", specification),"")
-    print("qqqqxcxkqqqq",traditional.injecthyphens(dictionaries.de,"qqqqxcxkqqqq",specification),"")
+--     print(   "qxcxkq",   traditional.injecthyphens(dictionaries.de,   "qxcxkq",   specification),"")
+--     print(  "qqxcxkqq",  traditional.injecthyphens(dictionaries.de,  "qqxcxkqq",  specification),"")
+--     print( "qqqxcxkqqq", traditional.injecthyphens(dictionaries.de, "qqqxcxkqqq", specification),"")
+--     print("qqqqxcxkqqqq",traditional.injecthyphens(dictionaries.de,"qqqqxcxkqqqq",specification),"")
 
 end
 

@@ -48,7 +48,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.760 -- beware: also sync font-mis.lua
+otf.version              = 2.762 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -255,7 +255,7 @@ local ordered_enhancers = {
     "analyze glyphs",
     "analyze math",
 
-    "prepare tounicode", -- maybe merge with prepare
+ -- "prepare tounicode",
 
     "reorganize lookups",
     "reorganize mark classes",
@@ -273,6 +273,8 @@ local ordered_enhancers = {
     "check glyphs",
     "check metadata",
     "check extra features", -- after metadata
+
+    "prepare tounicode",
 
     "check encoding", -- moved
     "add duplicates",
@@ -684,17 +686,18 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     if includesubfonts then
                         metadata.subfonts[cidindex] = somecopy(subfont)
                     end
+                    -- we have delayed loading so we cannot use next
                     for index=0,subfont.glyphcnt-1 do -- we could take the previous glyphcnt instead of 0
                         local glyph = cidglyphs[index]
                         if glyph then
                             local unicode = glyph.unicode
-if     unicode >= 0x00E000 and unicode <= 0x00F8FF then
+                            if     unicode >= 0x00E000 and unicode <= 0x00F8FF then
                                 unicode = -1
-elseif unicode >= 0x0F0000 and unicode <= 0x0FFFFD then
+                            elseif unicode >= 0x0F0000 and unicode <= 0x0FFFFD then
                                 unicode = -1
-elseif unicode >= 0x100000 and unicode <= 0x10FFFD then
+                            elseif unicode >= 0x100000 and unicode <= 0x10FFFD then
                                 unicode = -1
-end
+                            end
                             local name = glyph.name or cidnames[index]
                             if not unicode or unicode == -1 then -- or unicode >= criterium then
                                 unicode = cidunicodes[index]
@@ -736,7 +739,6 @@ end
                                 nofunicodes = nofunicodes + 1
                             end
                             indices[index] = unicode -- each index is unique (at least now)
-
                             local description = {
                              -- width       = glyph.width,
                                 boundingbox = glyph.boundingbox,
@@ -745,7 +747,6 @@ end
                                 index       = index,
                                 glyph       = glyph,
                             }
-
                             descriptions[unicode] = description
                         else
                          -- report_otf("potential problem: glyph %U is used but empty",index)

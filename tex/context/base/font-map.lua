@@ -163,6 +163,7 @@ function mappings.addtounicode(data,filename)
     local properties   = data.properties
     local descriptions = data.descriptions
     local unicodes     = resources.unicodes
+    local lookuptypes  = resources.lookuptypes
     if not unicodes then
         return
     end
@@ -175,8 +176,10 @@ function mappings.addtounicode(data,filename)
     local private       = fonts.constructors.privateoffset
     local unknown       = format("%04X",utfbyte("?"))
     local unicodevector = fonts.encodings.agl.unicodes -- loaded runtime in context
+    ----- namevector    = fonts.encodings.agl.names    -- loaded runtime in context
     local tounicode     = { }
     local originals     = { }
+    local missing       = { }
     resources.tounicode = tounicode
     resources.originals = originals
     local lumunic, uparser, oparser
@@ -311,10 +314,142 @@ function mappings.addtounicode(data,filename)
                     end
                 end
             end
+            -- check using substitutes and alternates
+            --
+            if not unicode then
+                missing[name] = true
+            end
          -- if not unicode then
          --     originals[index] = 0xFFFD
          --     tounicode[index] = "FFFD"
          -- end
+        end
+    end
+    if next(missing) then
+--         inspect(missing)
+        local guess  = { }
+        -- helper
+        local function check(gname,code,unicode)
+            local description = descriptions[code]
+            -- no need to add a self reference
+            local variant = description.name
+            if variant == gname then
+                return
+            end
+            -- the variant already has a unicode (normally that resultrs in a default tounicode to self)
+            local unic = unicodes[variant]
+            if unic == -1 or unic >= private or (unic >= 0xE000 and unic <= 0xF8FF) or unic == 0xFFFE or unic == 0xFFFF then
+                -- no default mapping and therefore maybe no tounicode yet
+            else
+                return
+            end
+            -- the variant already has a tounicode
+            local index = descriptions[code].index
+            if tounicode[index] then
+                return
+            end
+            -- add to the list
+            local g = guess[variant]
+            if g then
+                g[gname] = unicode
+            else
+                guess[variant] = { [gname] = unicode }
+            end
+        end
+        --
+        for unicode, description in next, descriptions do
+            local slookups = description.slookups
+            if slookups then
+                local gname = description.name
+                for tag, data in next, slookups do
+                    local lookuptype = lookuptypes[tag]
+                    if lookuptype == "alternate" then
+                        for i=1,#data do
+                            check(gname,data[i],unicode)
+                        end
+                    elseif lookuptype == "substitution" then
+                        check(gname,data,unicode)
+                    end
+                end
+            end
+            local mlookups = description.mlookups
+            if mlookups then
+                local gname = description.name
+                for tag, list in next, mlookups do
+                    local lookuptype = lookuptypes[tag]
+                    if lookuptype == "alternate" then
+                        for i=1,#list do
+                            local data = list[i]
+                            for i=1,#data do
+                                check(gname,data[i],unicode)
+                            end
+                        end
+                    elseif lookuptype == "substitution" then
+                        for i=1,#list do
+                            check(gname,list[i],unicode)
+                        end
+                    end
+                end
+            end
+        end
+        -- resolve references
+        local done = true
+        while done do
+            done = false
+            for k, v in next, guess do
+                if type(v) ~= "number" then
+                    for kk, vv in next, v do
+                        if vv == -1 or vv >= private or (vv >= 0xE000 and vv <= 0xF8FF) or vv == 0xFFFE or vv == 0xFFFF then
+                            local uu = guess[kk]
+                            if type(uu) == "number" then
+                                guess[k] = uu
+                                done = true
+                            end
+                        else
+                            guess[k] = vv
+                            done = true
+                        end
+                    end
+                end
+            end
+        end
+        -- generate tounicodes
+        for k, v in next, guess do
+            if type(v) == "number" then
+                guess[k] = tounicode16(v)
+            else
+                local t = nil
+                local l = lower(k)
+                local u = unicodes[l]
+                if not u then
+                    -- forget about it
+                elseif u == -1 or u >= private or (u >= 0xE000 and u <= 0xF8FF) or u == 0xFFFE or u == 0xFFFF then
+                    t = tounicode[descriptions[u].index]
+                else
+                 -- t = u
+                end
+                if t then
+                    guess[k] = t
+                else
+                    guess[k] = "FFFD"
+                end
+            end
+        end
+        local orphans = 0
+        local guessed = 0
+        for k, v in next, guess do
+            tounicode[descriptions[unicodes[k]].index] = v
+            if v == "FFFD" then
+                orphans = orphans + 1
+                guess[k] = false
+            else
+                guessed = guessed + 1
+                guess[k] = true
+            end
+        end
+     -- resources.nounicode = guess -- only when we test things
+        if trace_loading and orphans > 0 or guessed > 0 then
+            report_fonts("%s glyphs with no related unicode, %s guessed, %s orphans",guessed+orphans,guessed,orphans)
         end
     end
     if trace_mapping then

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/26/14 11:42:21
+-- merge date  : 09/27/14 14:46:07
 
 do -- begin closure to overcome local limits and interference
 
@@ -5045,7 +5045,7 @@ local function loadcidfile(filename)
       ordering=ordering,
       filename=filename,
       unicodes=unicodes,
-      names=names
+      names=names,
     }
   end
 end
@@ -5082,8 +5082,21 @@ function cid.getmap(specification)
   local ordering=specification.ordering
   local supplement=specification.supplement
   local filename=format(registry,ordering,supplement)
-  local found=cidmap[lower(filename)]
+  local lowername=lower(filename)
+  local found=cidmap[lowername]
   if found then
+    return found
+  end
+  if ordering=="Identity" then
+    local found={
+      supplement=supplement,
+      registry=registry,
+      ordering=ordering,
+      filename=filename,
+      unicodes={},
+      names={},
+    }
+    cidmap[lowername]=found
     return found
   end
   if trace_loading then
@@ -5224,6 +5237,7 @@ function mappings.addtounicode(data,filename)
   local properties=data.properties
   local descriptions=data.descriptions
   local unicodes=resources.unicodes
+  local lookuptypes=resources.lookuptypes
   if not unicodes then
     return
   end
@@ -5233,9 +5247,10 @@ function mappings.addtounicode(data,filename)
   unicodes['zwnj']=unicodes['zwnj']  or 0x200C
   local private=fonts.constructors.privateoffset
   local unknown=format("%04X",utfbyte("?"))
-  local unicodevector=fonts.encodings.agl.unicodes 
+  local unicodevector=fonts.encodings.agl.unicodes
   local tounicode={}
   local originals={}
+  local missing={}
   resources.tounicode=tounicode
   resources.originals=originals
   local lumunic,uparser,oparser
@@ -5354,6 +5369,123 @@ function mappings.addtounicode(data,filename)
           end
         end
       end
+      if not unicode then
+        missing[name]=true
+      end
+    end
+  end
+  if next(missing) then
+    local guess={}
+    local function check(gname,code,unicode)
+      local description=descriptions[code]
+      local variant=description.name
+      if variant==gname then
+        return
+      end
+      local unic=unicodes[variant]
+      if unic==-1 or unic>=private or (unic>=0xE000 and unic<=0xF8FF) or unic==0xFFFE or unic==0xFFFF then
+      else
+        return
+      end
+      local index=descriptions[code].index
+      if tounicode[index] then
+        return
+      end
+      local g=guess[variant]
+      if g then
+        g[gname]=unicode
+      else
+        guess[variant]={ [gname]=unicode }
+      end
+    end
+    for unicode,description in next,descriptions do
+      local slookups=description.slookups
+      if slookups then
+        local gname=description.name
+        for tag,data in next,slookups do
+          local lookuptype=lookuptypes[tag]
+          if lookuptype=="alternate" then
+            for i=1,#data do
+              check(gname,data[i],unicode)
+            end
+          elseif lookuptype=="substitution" then
+            check(gname,data,unicode)
+          end
+        end
+      end
+      local mlookups=description.mlookups
+      if mlookups then
+        local gname=description.name
+        for tag,list in next,mlookups do
+          local lookuptype=lookuptypes[tag]
+          if lookuptype=="alternate" then
+            for i=1,#list do
+              local data=list[i]
+              for i=1,#data do
+                check(gname,data[i],unicode)
+              end
+            end
+          elseif lookuptype=="substitution" then
+            for i=1,#list do
+              check(gname,list[i],unicode)
+            end
+          end
+        end
+      end
+    end
+    local done=true
+    while done do
+      done=false
+      for k,v in next,guess do
+        if type(v)~="number" then
+          for kk,vv in next,v do
+            if vv==-1 or vv>=private or (vv>=0xE000 and vv<=0xF8FF) or vv==0xFFFE or vv==0xFFFF then
+              local uu=guess[kk]
+              if type(uu)=="number" then
+                guess[k]=uu
+                done=true
+              end
+            else
+              guess[k]=vv
+              done=true
+            end
+          end
+        end
+      end
+    end
+    for k,v in next,guess do
+      if type(v)=="number" then
+        guess[k]=tounicode16(v)
+      else
+        local t=nil
+        local l=lower(k)
+        local u=unicodes[l]
+        if not u then
+        elseif u==-1 or u>=private or (u>=0xE000 and u<=0xF8FF) or u==0xFFFE or u==0xFFFF then
+          t=tounicode[descriptions[u].index]
+        else
+        end
+        if t then
+          guess[k]=t
+        else
+          guess[k]="FFFD"
+        end
+      end
+    end
+    local orphans=0
+    local guessed=0
+    for k,v in next,guess do
+      tounicode[descriptions[unicodes[k]].index]=v
+      if v=="FFFD" then
+        orphans=orphans+1
+        guess[k]=false
+      else
+        guessed=guessed+1
+        guess[k]=true
+      end
+    end
+    if trace_loading and orphans>0 or guessed>0 then
+      report_fonts("%s glyphs with no related unicode, %s guessed, %s orphans",guessed+orphans,guessed,orphans)
     end
   end
   if trace_mapping then
@@ -6706,7 +6838,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.760 
+otf.version=2.762 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local fontdata=fonts.hashes.identifiers
 local chardata=characters and characters.data 
@@ -6869,7 +7001,6 @@ local ordered_enhancers={
   "prepare lookups",
   "analyze glyphs",
   "analyze math",
-  "prepare tounicode",
   "reorganize lookups",
   "reorganize mark classes",
   "reorganize anchor classes",
@@ -6882,6 +7013,7 @@ local ordered_enhancers={
   "check glyphs",
   "check metadata",
   "check extra features",
+  "prepare tounicode",
   "check encoding",
   "add duplicates",
   "cleanup tables",
@@ -7249,13 +7381,13 @@ actions["prepare glyphs"]=function(data,filename,raw)
             local glyph=cidglyphs[index]
             if glyph then
               local unicode=glyph.unicode
-if   unicode>=0x00E000 and unicode<=0x00F8FF then
+              if   unicode>=0x00E000 and unicode<=0x00F8FF then
                 unicode=-1
-elseif unicode>=0x0F0000 and unicode<=0x0FFFFD then
+              elseif unicode>=0x0F0000 and unicode<=0x0FFFFD then
                 unicode=-1
-elseif unicode>=0x100000 and unicode<=0x10FFFD then
+              elseif unicode>=0x100000 and unicode<=0x10FFFD then
                 unicode=-1
-end
+              end
               local name=glyph.name or cidnames[index]
               if not unicode or unicode==-1 then 
                 unicode=cidunicodes[index]
