@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['font-otb'] = {
 }
 local concat = table.concat
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
-local type, next, tonumber, tostring = type, next, tonumber, tostring
+local type, next, tonumber, tostring, rawget = type, next, tonumber, tostring, rawget
 local lpegmatch = lpeg.match
 local utfchar = utf.char
 
@@ -63,40 +63,40 @@ local function gref(descriptions,n)
     end
 end
 
-local function cref(feature,lookupname)
+local function cref(feature,lookuptags,lookupname)
     if lookupname then
-        return formatters["feature %a, lookup %a"](feature,lookupname)
+        return formatters["feature %a, lookup %a"](feature,lookuptags[lookupname])
     else
         return formatters["feature %a"](feature)
     end
 end
 
-local function report_alternate(feature,lookupname,descriptions,unicode,replacement,value,comment)
+local function report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,comment)
     report_prepare("%s: base alternate %s => %s (%S => %S)",
-        cref(feature,lookupname),
+        cref(feature,lookuptags,lookupname),
         gref(descriptions,unicode),
         replacement and gref(descriptions,replacement),
         value,
         comment)
 end
 
-local function report_substitution(feature,lookupname,descriptions,unicode,substitution)
+local function report_substitution(feature,lookuptags,lookupname,descriptions,unicode,substitution)
     report_prepare("%s: base substitution %s => %S",
-        cref(feature,lookupname),
+        cref(feature,lookuptags,lookupname),
         gref(descriptions,unicode),
         gref(descriptions,substitution))
 end
 
-local function report_ligature(feature,lookupname,descriptions,unicode,ligature)
+local function report_ligature(feature,lookuptags,lookupname,descriptions,unicode,ligature)
     report_prepare("%s: base ligature %s => %S",
-        cref(feature,lookupname),
+        cref(feature,lookuptags,lookupname),
         gref(descriptions,ligature),
         gref(descriptions,unicode))
 end
 
-local function report_kern(feature,lookupname,descriptions,unicode,otherunicode,value)
+local function report_kern(feature,lookuptags,lookupname,descriptions,unicode,otherunicode,value)
     report_prepare("%s: base kern %s + %s => %S",
-        cref(feature,lookupname),
+        cref(feature,lookuptags,lookupname),
         gref(descriptions,unicode),
         gref(descriptions,otherunicode),
         value)
@@ -181,7 +181,7 @@ local function finalize_ligatures(tfmdata,ligatures)
         local characters   = tfmdata.characters
         local descriptions = tfmdata.descriptions
         local resources    = tfmdata.resources
-        local unicodes     = resources.unicodes
+        local unicodes     = resources.unicodes -- we use rawget in order to avoid bulding the table
         local private      = resources.private
         local alldone      = false
         while not alldone do
@@ -217,12 +217,12 @@ local function finalize_ligatures(tfmdata,ligatures)
                             local secondname = firstname .. "_" .. secondcode
                             if i == size - 1 then
                                 target = unicode
-                                if not unicodes[secondname] then
+                                if not rawget(unicodes,secondname) then
                                     unicodes[secondname] = unicode -- map final ligature onto intermediates
                                 end
                                 okay = true
                             else
-                                target = unicodes[secondname]
+                                target = rawget(unicodes,secondname)
                                 if not target then
                                     break
                                 end
@@ -258,6 +258,7 @@ local function finalize_ligatures(tfmdata,ligatures)
             end
         end
         resources.private = private
+        return true
     end
 end
 
@@ -265,10 +266,11 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     local characters   = tfmdata.characters
     local descriptions = tfmdata.descriptions
     local resources    = tfmdata.resources
+    local properties   = tfmdata.properties
     local changed      = tfmdata.changed
-    local unicodes     = resources.unicodes
     local lookuphash   = resources.lookuphash
     local lookuptypes  = resources.lookuptypes
+    local lookuptags   = resources.lookuptags
 
     local ligatures    = { }
     local alternate    = tonumber(value) or true and 1
@@ -279,39 +281,39 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     local trace_ligatures    = trace_baseinit and trace_ligatures
 
     local actions      = {
-        substitution = function(lookupdata,lookupname,description,unicode)
+        substitution = function(lookupdata,lookuptags,lookupname,description,unicode)
             if trace_singles then
-                report_substitution(feature,lookupname,descriptions,unicode,lookupdata)
+                report_substitution(feature,lookuptags,lookupname,descriptions,unicode,lookupdata)
             end
             changed[unicode] = lookupdata
         end,
-        alternate = function(lookupdata,lookupname,description,unicode)
+        alternate = function(lookupdata,lookuptags,lookupname,description,unicode)
             local replacement = lookupdata[alternate]
             if replacement then
                 changed[unicode] = replacement
                 if trace_alternatives then
-                    report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"normal")
+                    report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,"normal")
                 end
             elseif defaultalt == "first" then
                 replacement = lookupdata[1]
                 changed[unicode] = replacement
                 if trace_alternatives then
-                    report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+                    report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,defaultalt)
                 end
             elseif defaultalt == "last" then
                 replacement = lookupdata[#data]
                 if trace_alternatives then
-                    report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+                    report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,defaultalt)
                 end
             else
                 if trace_alternatives then
-                    report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"unknown")
+                    report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,"unknown")
                 end
             end
         end,
-        ligature = function(lookupdata,lookupname,description,unicode)
+        ligature = function(lookupdata,lookuptags,lookupname,description,unicode)
             if trace_ligatures then
-                report_ligature(feature,lookupname,descriptions,unicode,lookupdata)
+                report_ligature(feature,lookuptags,lookupname,descriptions,unicode,lookupdata)
             end
             ligatures[#ligatures+1] = { unicode, lookupdata }
         end,
@@ -328,7 +330,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
                     local lookuptype = lookuptypes[lookupname]
                     local action = actions[lookuptype]
                     if action then
-                        action(lookupdata,lookupname,description,unicode)
+                        action(lookupdata,lookuptags,lookupname,description,unicode)
                     end
                 end
             end
@@ -343,24 +345,25 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
                     local action = actions[lookuptype]
                     if action then
                         for i=1,#lookuplist do
-                            action(lookuplist[i],lookupname,description,unicode)
+                            action(lookuplist[i],lookuptags,lookupname,description,unicode)
                         end
                     end
                 end
             end
         end
     end
-
-    finalize_ligatures(tfmdata,ligatures)
+    properties.hasligatures = finalize_ligatures(tfmdata,ligatures)
 end
 
 local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist) -- todo what kind of kerns, currently all
     local characters   = tfmdata.characters
     local descriptions = tfmdata.descriptions
     local resources    = tfmdata.resources
-    local unicodes     = resources.unicodes
+    local properties   = tfmdata.properties
+    local lookuptags   = resources.lookuptags
     local sharedkerns  = { }
     local traceindeed  = trace_baseinit and trace_kerns
+    local haskerns     = false
     for unicode, character in next, characters do
         local description = descriptions[unicode]
         local rawkerns = description.kerns -- shared
@@ -384,13 +387,13 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
                                 newkerns = { [otherunicode] = value }
                                 done = true
                                 if traceindeed then
-                                    report_kern(feature,lookup,descriptions,unicode,otherunicode,value)
+                                    report_kern(feature,lookuptags,lookup,descriptions,unicode,otherunicode,value)
                                 end
                             elseif not newkerns[otherunicode] then -- first wins
                                 newkerns[otherunicode] = value
                                 done = true
                                 if traceindeed then
-                                    report_kern(feature,lookup,descriptions,unicode,otherunicode,value)
+                                    report_kern(feature,lookuptags,lookup,descriptions,unicode,otherunicode,value)
                                 end
                             end
                         end
@@ -399,12 +402,14 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
                 if done then
                     sharedkerns[rawkerns] = newkerns
                     character.kerns       = newkerns -- no empty assignments
+                    haskerns              = true
                 else
                     sharedkerns[rawkerns] = false
                 end
             end
         end
     end
+    properties.haskerns = haskerns
 end
 
 basemethods.independent = {
@@ -434,13 +439,13 @@ local function make_1(present,tree,name)
     end
 end
 
-local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,done,lookupname)
+local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,done,lookuptags,lookupname)
     for k, v in next, tree do
         if k == "ligature" then
             local character = characters[preceding]
             if not character then
                 if trace_baseinit then
-                    report_prepare("weird ligature in lookup %a, current %C, preceding %C",lookupname,v,preceding)
+                    report_prepare("weird ligature in lookup %a, current %C, preceding %C",lookuptags[lookupname],v,preceding)
                 end
                 character = makefake(tfmdata,name,present)
             end
@@ -461,7 +466,7 @@ local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,don
         else
             local code = present[name] or unicode
             local name = name .. "_" .. k
-            make_2(present,tfmdata,characters,v,name,code,k,done,lookupname)
+            make_2(present,tfmdata,characters,v,name,code,k,done,lookuptags,lookupname)
         end
     end
 end
@@ -473,6 +478,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     local changed      = tfmdata.changed
     local lookuphash   = resources.lookuphash
     local lookuptypes  = resources.lookuptypes
+    local lookuptags   = resources.lookuptags
 
     local ligatures    = { }
     local alternate    = tonumber(value) or true and 1
@@ -489,7 +495,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
         for unicode, data in next, lookupdata do
             if lookuptype == "substitution" then
                 if trace_singles then
-                    report_substitution(feature,lookupname,descriptions,unicode,data)
+                    report_substitution(feature,lookuptags,lookupname,descriptions,unicode,data)
                 end
                 changed[unicode] = data
             elseif lookuptype == "alternate" then
@@ -497,28 +503,28 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
                 if replacement then
                     changed[unicode] = replacement
                     if trace_alternatives then
-                        report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"normal")
+                        report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,"normal")
                     end
                 elseif defaultalt == "first" then
                     replacement = data[1]
                     changed[unicode] = replacement
                     if trace_alternatives then
-                        report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+                        report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,defaultalt)
                     end
                 elseif defaultalt == "last" then
                     replacement = data[#data]
                     if trace_alternatives then
-                        report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+                        report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,defaultalt)
                     end
                 else
                     if trace_alternatives then
-                        report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"unknown")
+                        report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,"unknown")
                     end
                 end
             elseif lookuptype == "ligature" then
                 ligatures[#ligatures+1] = { unicode, data, lookupname }
                 if trace_ligatures then
-                    report_ligature(feature,lookupname,descriptions,unicode,data)
+                    report_ligature(feature,lookuptags,lookupname,descriptions,unicode,data)
                 end
             end
         end
@@ -541,7 +547,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
         for i=1,nofligatures do
             local ligature = ligatures[i]
             local unicode, tree, lookupname = ligature[1], ligature[2], ligature[3]
-            make_2(present,tfmdata,characters,tree,"ctx_"..unicode,unicode,unicode,done,lookupname)
+            make_2(present,tfmdata,characters,tree,"ctx_"..unicode,unicode,unicode,done,lookuptags,lookupname)
         end
 
     end
@@ -552,11 +558,11 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
     local characters   = tfmdata.characters
     local descriptions = tfmdata.descriptions
     local resources    = tfmdata.resources
+    local properties   = tfmdata.properties
     local lookuphash   = resources.lookuphash
+    local lookuptags   = resources.lookuptags
     local traceindeed  = trace_baseinit and trace_kerns
-
     -- check out this sharedkerns trickery
-
     for l=1,#lookuplist do
         local lookupname = lookuplist[l]
         local lookupdata = lookuphash[lookupname]
@@ -571,7 +577,7 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
                 for otherunicode, kern in next, data do
                     if not kerns[otherunicode] and kern ~= 0 then
                         kerns[otherunicode] = kern
-                        report_kern(feature,lookup,descriptions,unicode,otherunicode,kern)
+                        report_kern(feature,lookuptags,lookup,descriptions,unicode,otherunicode,kern)
                     end
                 end
             else

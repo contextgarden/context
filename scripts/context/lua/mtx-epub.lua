@@ -23,9 +23,8 @@ if not modules then modules = { } end modules ['mtx-epub'] = {
 -- OEBPS
 --     content.opf
 --     toc.ncx
---     Images
---     Styles
---     Text
+--     images
+--     styles
 -- mimetype
 
 -- todo:

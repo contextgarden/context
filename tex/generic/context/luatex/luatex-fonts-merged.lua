@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/27/14 14:46:07
+-- merge date  : 09/29/14 22:58:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -3560,7 +3560,12 @@ function caches.compile(data,luaname,lucname)
   end
 end
 function table.setmetatableindex(t,f)
+  if type(t)~="table" then
+    f=f or t
+    t={}
+  end
   setmetatable(t,{ __index=f })
+  return t
 end
 arguments={}
 if arg then
@@ -4134,7 +4139,7 @@ function constructors.scale(tfmdata,specification)
   targetparameters.textsize=textsize  
   targetparameters.forcedsize=forcedsize 
   targetparameters.extrafactor=extrafactor
-  local tounicode=resources.tounicode
+  local tounicode=fonts.mappings.tounicode
   local defaultwidth=resources.defaultwidth or 0
   local defaultheight=resources.defaultheight or 0
   local defaultdepth=resources.defaultdepth or 0
@@ -4214,7 +4219,8 @@ function constructors.scale(tfmdata,specification)
   local autoitalicamount=properties.autoitalicamount
   local stackmath=not properties.nostackmath
   local nonames=properties.noglyphnames
-  local nodemode=properties.mode=="node"
+  local haskerns=properties.haskerns   or properties.mode=="base" 
+  local hasligatures=properties.hasligatures or properties.mode=="base"
   if changed and not next(changed) then
     changed=false
   end
@@ -4277,38 +4283,20 @@ function constructors.scale(tfmdata,specification)
   constructors.beforecopyingcharacters(target,tfmdata)
   local sharedkerns={}
   for unicode,character in next,characters do
-    local chr,description,index,touni
+    local chr,description,index
     if changed then
       local c=changed[unicode]
       if c then
-        local ligatures=character.ligatures 
         description=descriptions[c] or descriptions[unicode] or character
         character=characters[c] or character
         index=description.index or c
-        if tounicode then
-          touni=tounicode[index] 
-          if not touni then 
-            local d=descriptions[unicode] or characters[unicode]
-            local i=d.index or unicode
-            touni=tounicode[i] 
-          end
-        end
-        if ligatures and not character.ligatures then
-          character.ligatures=ligatures 
-        end
       else
         description=descriptions[unicode] or character
         index=description.index or unicode
-        if tounicode then
-          touni=tounicode[index] 
-        end
       end
     else
       description=descriptions[unicode] or character
       index=description.index or unicode
-      if tounicode then
-        touni=tounicode[index] 
-      end
     end
     local width=description.width
     local height=description.height
@@ -4349,8 +4337,10 @@ function constructors.scale(tfmdata,specification)
         }
       end
     end
-    if touni then
-      chr.tounicode=touni
+    local isunicode=description.unicode
+    if isunicode then
+      chr.unicode=isunicode
+      chr.tounicode=tounicode(isunicode)
     end
     if hasquality then
       local ve=character.expansion_factor
@@ -4443,7 +4433,7 @@ function constructors.scale(tfmdata,specification)
         end
       end
     end
-    if not nodemode then
+    if haskerns then
       local vk=character.kerns
       if vk then
         local s=sharedkerns[vk]
@@ -4454,6 +4444,8 @@ function constructors.scale(tfmdata,specification)
         end
         chr.kerns=s
       end
+    end
+    if hasligatures then
       local vl=character.ligatures
       if vl then
         if true then
@@ -4954,6 +4946,16 @@ function constructors.applymanipulators(what,tfmdata,features,trace,report)
     end
   end
 end
+function constructors.addcoreunicodes(unicodes) 
+  if not unicodes then
+    unicodes={}
+  end
+  unicodes.space=0x0020
+  unicodes.hyphen=0x002D
+  unicodes.zwj=0x200D
+  unicodes.zwnj=0x200C
+  return unicodes
+end
 
 end -- closure
 
@@ -5205,16 +5207,42 @@ end
 local function tounicode16sequence(unicodes,name)
   local t={}
   for l=1,#unicodes do
-    local unicode=unicodes[l]
-    if unicode<0x10000 then
-      t[l]=format("%04X",unicode)
+    local u=unicodes[l]
+    if u<0x10000 then
+      t[l]=format("%04X",u)
     elseif unicode<0x1FFFFFFFFF then
-      t[l]=format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
+      t[l]=format("%04X%04X",floor(u/1024),u%1024+0xDC00)
     else
-      report_fonts ("can't convert %a in %a into tounicode",unicode,name)
+      report_fonts ("can't convert %a in %a into tounicode",u,name)
+      return
     end
   end
   return concat(t)
+end
+local function tounicode(unicode,name)
+  if type(unicode)=="table" then
+    local t={}
+    for l=1,#unicode do
+      local u=unicode[l]
+      if u<0x10000 then
+        t[l]=format("%04X",u)
+      elseif u<0x1FFFFFFFFF then
+        t[l]=format("%04X%04X",floor(u/1024),u%1024+0xDC00)
+      else
+        report_fonts ("can't convert %a in %a into tounicode",u,name)
+        return
+      end
+    end
+    return concat(t)
+  else
+    if unicode<0x10000 then
+      return format("%04X",unicode)
+    elseif unicode<0x1FFFFFFFFF then
+      return format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
+    else
+      report_fonts("can't convert %a in %a into tounicode",unicode,name)
+    end
+  end
 end
 local function fromunicode16(str)
   if #str==4 then
@@ -5226,6 +5254,7 @@ local function fromunicode16(str)
 end
 mappings.loadlumtable=loadlumtable
 mappings.makenameparser=makenameparser
+mappings.tounicode=tounicode
 mappings.tounicode16=tounicode16
 mappings.tounicode16sequence=tounicode16sequence
 mappings.fromunicode16=fromunicode16
@@ -5248,17 +5277,9 @@ function mappings.addtounicode(data,filename)
   local private=fonts.constructors.privateoffset
   local unknown=format("%04X",utfbyte("?"))
   local unicodevector=fonts.encodings.agl.unicodes
-  local tounicode={}
-  local originals={}
   local missing={}
-  resources.tounicode=tounicode
-  resources.originals=originals
   local lumunic,uparser,oparser
   local cidinfo,cidnames,cidcodes,usedmap
-  if false then 
-    lumunic=loadlumtable(filename)
-    lumunic=lumunic and lumunic.tounicode
-  end
   cidinfo=properties.cidinfo
   usedmap=cidinfo and fonts.cid.getmap(cidinfo)
   if usedmap then
@@ -5274,8 +5295,7 @@ function mappings.addtounicode(data,filename)
     if unic==-1 or unic>=private or (unic>=0xE000 and unic<=0xF8FF) or unic==0xFFFE or unic==0xFFFF then
       local unicode=lumunic and lumunic[name] or unicodevector[name]
       if unicode then
-        originals[index]=unicode
-        tounicode[index]=tounicode16(unicode,name)
+        glyph.unicode=unicode
         ns=ns+1
       end
       if (not unicode) and usedmap then
@@ -5283,8 +5303,7 @@ function mappings.addtounicode(data,filename)
         if foundindex then
           unicode=cidcodes[foundindex] 
           if unicode then
-            originals[index]=unicode
-            tounicode[index]=tounicode16(unicode,name)
+            glyph.unicode=unicode
             ns=ns+1
           else
             local reference=cidnames[foundindex] 
@@ -5293,21 +5312,18 @@ function mappings.addtounicode(data,filename)
               if foundindex then
                 unicode=cidcodes[foundindex]
                 if unicode then
-                  originals[index]=unicode
-                  tounicode[index]=tounicode16(unicode,name)
+                  glyph.unicode=unicode
                   ns=ns+1
                 end
               end
               if not unicode or unicode=="" then
                 local foundcodes,multiple=lpegmatch(uparser,reference)
                 if foundcodes then
-                  originals[index]=foundcodes
+                  glyph.unicode=foundcodes
                   if multiple then
-                    tounicode[index]=tounicode16sequence(foundcodes)
                     nl=nl+1
                     unicode=true
                   else
-                    tounicode[index]=tounicode16(foundcodes,name)
                     ns=ns+1
                     unicode=foundcodes
                   end
@@ -5345,25 +5361,20 @@ function mappings.addtounicode(data,filename)
         end
         if n==0 then
         elseif n==1 then
-          originals[index]=t[1]
-          tounicode[index]=tounicode16(t[1],name)
+          glyph.unicode=t[1]
         else
-          originals[index]=t
-          tounicode[index]=tounicode16sequence(t)
+          glyph.unicode=t
         end
         nl=nl+1
       end
       if not unicode or unicode=="" then
         local foundcodes,multiple=lpegmatch(uparser,name)
         if foundcodes then
+          glyph.unicode=foundcodes
           if multiple then
-            originals[index]=foundcodes
-            tounicode[index]=tounicode16sequence(foundcodes,name)
             nl=nl+1
             unicode=true
           else
-            originals[index]=foundcodes
-            tounicode[index]=tounicode16(foundcodes,name)
             ns=ns+1
             unicode=foundcodes
           end
@@ -5387,8 +5398,7 @@ function mappings.addtounicode(data,filename)
       else
         return
       end
-      local index=descriptions[code].index
-      if tounicode[index] then
+      if descriptions[code].unicode then
         return
       end
       local g=guess[variant]
@@ -5453,35 +5463,29 @@ function mappings.addtounicode(data,filename)
         end
       end
     end
+    local orphans=0
+    local guessed=0
     for k,v in next,guess do
       if type(v)=="number" then
-        guess[k]=tounicode16(v)
+        descriptions[unicodes[k]].unicode=descriptions[v].unicode or v 
+        guessed=guessed+1
       else
         local t=nil
         local l=lower(k)
         local u=unicodes[l]
         if not u then
+          orphans=orphans+1
         elseif u==-1 or u>=private or (u>=0xE000 and u<=0xF8FF) or u==0xFFFE or u==0xFFFF then
-          t=tounicode[descriptions[u].index]
+          local unicode=descriptions[u].unicode
+          if unicode then
+            descriptions[unicodes[k]].unicode=unicode
+            guessed=guessed+1
+          else
+            orphans=orphans+1
+          end
         else
+          orphans=orphans+1
         end
-        if t then
-          guess[k]=t
-        else
-          guess[k]="FFFD"
-        end
-      end
-    end
-    local orphans=0
-    local guessed=0
-    for k,v in next,guess do
-      tounicode[descriptions[unicodes[k]].index]=v
-      if v=="FFFD" then
-        orphans=orphans+1
-        guess[k]=false
-      else
-        guessed=guessed+1
-        guess[k]=true
       end
     end
     if trace_loading and orphans>0 or guessed>0 then
@@ -5492,9 +5496,17 @@ function mappings.addtounicode(data,filename)
     for unic,glyph in table.sortedhash(descriptions) do
       local name=glyph.name
       local index=glyph.index
-      local toun=tounicode[index]
-      if toun then
-        report_fonts("internal slot %U, name %a, unicode %U, tounicode %a",index,name,unic,toun)
+      local unicode=glyph.unicode
+      if unicode then
+        if type(unicode)=="table" then
+          local unicodes={}
+          for i=1,#unicode do
+            unicodes[i]=formatters("%U",unicode[i])
+          end
+          report_fonts("internal slot %U, name %a, unicode %U, tounicode % t",index,name,unic,unicodes)
+        else
+          report_fonts("internal slot %U, name %a, unicode %U, tounicode %U",index,name,unic,unicode)
+        end
       else
         report_fonts("internal slot %U, name %a, unicode %U",index,name,unic)
       end
@@ -5675,6 +5687,10 @@ local function read_from_tfm(specification)
         features.encoding=encoding
       end
     end
+    properties.haskerns=true
+    properties.haslogatures=true
+    resources.unicodes={}
+    resources.lookuptags={}
     return tfmdata
   end
 end
@@ -5730,6 +5746,7 @@ local trace_indexing=false trackers.register("afm.indexing",function(v) trace_in
 local trace_loading=false trackers.register("afm.loading",function(v) trace_loading=v end)
 local trace_defining=false trackers.register("fonts.defining",function(v) trace_defining=v end)
 local report_afm=logs.reporter("fonts","afm loading")
+local setmetatableindex=table.setmetatableindex
 local findbinfile=resolvers.findbinfile
 local definers=fonts.definers
 local readers=fonts.readers
@@ -5738,7 +5755,7 @@ local afm=constructors.newhandler("afm")
 local pfb=constructors.newhandler("pfb")
 local afmfeatures=constructors.newfeatures("afm")
 local registerafmfeature=afmfeatures.register
-afm.version=1.410 
+afm.version=1.500 
 afm.cache=containers.define("fonts","afm",afm.version,true)
 afm.autoprefixed=true 
 afm.helpdata={} 
@@ -5759,6 +5776,15 @@ registerafmfeature {
     base=setmode,
     node=setmode,
   }
+}
+local remappednames={
+  ff={ name="f_f",unicode={ 0x66,0x66 } },
+  fi={ name="f_i",unicode={ 0x66,0x69 } },
+  fj={ name="f_j",unicode={ 0x66,0x6A } },
+  fk={ name="f_k",unicode={ 0x66,0x6B } },
+  fl={ name="f_l",unicode={ 0x66,0x6C } },
+  ffi={ name="f_f_i",unicode={ 0x66,0x66,0x69 } },
+  ffl={ name="f_f_l",unicode={ 0x66,0x66,0x6C } },
 }
 local comment=P("Comment")
 local spacing=patterns.spacer 
@@ -5933,7 +5959,7 @@ local function readafm(filename)
     return nil
   end
 end
-local addkerns,addligatures,addtexligatures,unify,normalize 
+local addkerns,addligatures,addtexligatures,unify,normalize,fixnames 
 function afm.load(filename)
   filename=resolvers.findfile(filename,'afm') or ""
   if filename~="" and not fonts.names.ignoredfile(filename) then
@@ -5976,6 +6002,7 @@ function afm.load(filename)
           addkerns(data)
         end
         normalize(data)
+        fixnames(data)
         report_afm("add tounicode data")
         fonts.mappings.addtounicode(data,filename)
         data.size=size
@@ -5983,6 +6010,7 @@ function afm.load(filename)
         data.pfbsize=pfbsize
         data.pfbtime=pfbtime
         report_afm("saving %a in cache",name)
+        data.resources.unicodes=nil 
         data=containers.write(afm.cache,name,data)
         data=containers.read(afm.cache,name)
       end
@@ -6042,18 +6070,29 @@ unify=function(data,filename)
   local filename=resources.filename or file.removesuffix(file.basename(filename))
   resources.filename=resolvers.unresolve(filename) 
   resources.unicodes=unicodes 
-  resources.marks={} 
-  resources.names=names 
+  resources.marks={}
   resources.private=private
 end
 normalize=function(data)
+end
+fixnames=function(data)
+  for k,v in next,data.descriptions do
+    local n=v.name
+    local r=remappednames[n]
+    if r then
+      if trace_indexing then
+        report_afm("renaming characters %a to %a",n,r.name)
+      end
+      v.name=r.name
+      v.unicode=r.unicode
+    end
+  end
 end
 local addthem=function(rawdata,ligatures)
   if ligatures then
     local descriptions=rawdata.descriptions
     local resources=rawdata.resources
     local unicodes=resources.unicodes
-    local names=resources.names
     for ligname,ligdata in next,ligatures do
       local one=descriptions[unicodes[ligname]]
       if one then
@@ -6186,8 +6225,8 @@ local function copytotfm(data)
     local filename=constructors.checkedfilename(resources)
     local fontname=metadata.fontname or metadata.fullname
     local fullname=metadata.fullname or metadata.fontname
-    local endash=unicodes['space']
-    local emdash=unicodes['emdash']
+    local endash=0x0020 
+    local emdash=0x2014
     local spacer="space"
     local spaceunits=500
     local monospaced=metadata.isfixedpitch
@@ -6241,7 +6280,7 @@ local function copytotfm(data)
     if charxheight then
       parameters.x_height=charxheight
     else
-      local x=unicodes['x']
+      local x=0x0078 
       if x then
         local x=descriptions[x]
         if x then
@@ -6288,7 +6327,34 @@ function afm.setfeatures(tfmdata,features)
     return {} 
   end
 end
-local function checkfeatures(specification)
+local function addtables(data)
+  local resources=data.resources
+  local lookuptags=resources.lookuptags
+  local unicodes=resources.unicodes
+  if not lookuptags then
+    lookuptags={}
+    resources.lookuptags=lookuptags
+  end
+  setmetatableindex(lookuptags,function(t,k)
+    local v=type(k)=="number" and ("lookup "..k) or k
+    t[k]=v
+    return v
+  end)
+  if not unicodes then
+    unicodes={}
+    resources.unicodes=unicodes
+    setmetatableindex(unicodes,function(t,k)
+      setmetatableindex(unicodes,nil)
+      for u,d in next,data.descriptions do
+        local n=d.name
+        if n then
+          t[n]=u
+        end
+      end
+      return rawget(t,k)
+    end)
+  end
+  constructors.addcoreunicodes(unicodes) 
 end
 local function afmtotfm(specification)
   local afmname=specification.filename or specification.name
@@ -6315,6 +6381,7 @@ local function afmtotfm(specification)
     if not tfmdata then
       local rawdata=afm.load(afmname)
       if rawdata and next(rawdata) then
+        addtables(rawdata)
         adddimensions(rawdata)
         tfmdata=copytotfm(rawdata)
         if tfmdata and next(tfmdata) then
@@ -6349,6 +6416,7 @@ end
 local function prepareligatures(tfmdata,ligatures,value)
   if value then
     local descriptions=tfmdata.descriptions
+    local hasligatures=false
     for unicode,character in next,tfmdata.characters do
       local description=descriptions[unicode]
       local dligatures=description.ligatures
@@ -6364,8 +6432,10 @@ local function prepareligatures(tfmdata,ligatures,value)
             type=0
           }
         end
+        hasligatures=true
       end
     end
+    tfmdata.properties.hasligatures=hasligatures
   end
 end
 local function preparekerns(tfmdata,kerns,value)
@@ -6374,6 +6444,7 @@ local function preparekerns(tfmdata,kerns,value)
     local resources=rawdata.resources
     local unicodes=resources.unicodes
     local descriptions=tfmdata.descriptions
+    local haskerns=false
     for u,chr in next,tfmdata.characters do
       local d=descriptions[u]
       local newkerns=d[kerns]
@@ -6389,8 +6460,10 @@ local function preparekerns(tfmdata,kerns,value)
             kerns[uk]=v
           end
         end
+        haskerns=true
       end
     end
+    tfmdata.properties.haskerns=haskerns
   end
 end
 local list={
@@ -6820,6 +6893,8 @@ local reversed,concat,remove,sortedkeys=table.reversed,table.concat,table.remove
 local ioflush=io.flush
 local fastcopy,tohash,derivetable=table.fastcopy,table.tohash,table.derive
 local formatters=string.formatters
+local P,R,S,C,Ct,lpegmatch=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Ct,lpeg.match
+local setmetatableindex=table.setmetatableindex
 local allocate=utilities.storage.allocate
 local registertracker=trackers.register
 local registerdirective=directives.register
@@ -6834,26 +6909,27 @@ local trace_dynamics=false registertracker("otf.dynamics",function(v) trace_dyna
 local trace_sequences=false registertracker("otf.sequences",function(v) trace_sequences=v end)
 local trace_markwidth=false registertracker("otf.markwidth",function(v) trace_markwidth=v end)
 local trace_defining=false registertracker("fonts.defining",function(v) trace_defining=v end)
+local compact_lookups=true  registertracker("otf.compactlookups",function(v) compact_lookups=v end)
+local purge_names=true  registertracker("otf.purgenames",function(v) purge_names=v end)
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.762 
+otf.version=2.801 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local fontdata=fonts.hashes.identifiers
 local chardata=characters and characters.data 
-local otffeatures=fonts.constructors.newfeatures("otf")
+local definers=fonts.definers
+local readers=fonts.readers
+local constructors=fonts.constructors
+local otffeatures=constructors.newfeatures("otf")
 local registerotffeature=otffeatures.register
 local enhancers=allocate()
 otf.enhancers=enhancers
 local patches={}
 enhancers.patches=patches
-local definers=fonts.definers
-local readers=fonts.readers
-local constructors=fonts.constructors
 local forceload=false
 local cleanup=0   
-local usemetatables=false 
 local packdata=true
 local syncspace=true
 local forcenotdef=false
@@ -6872,7 +6948,6 @@ formats.ttc="truetype"
 formats.dfont="truetype"
 registerdirective("fonts.otf.loader.cleanup",function(v) cleanup=tonumber(v) or (v and 1) or 0 end)
 registerdirective("fonts.otf.loader.force",function(v) forceload=v end)
-registerdirective("fonts.otf.loader.usemetatables",function(v) usemetatables=v end)
 registerdirective("fonts.otf.loader.pack",function(v) packdata=v end)
 registerdirective("fonts.otf.loader.syncspace",function(v) syncspace=v end)
 registerdirective("fonts.otf.loader.forcenotdef",function(v) forcenotdef=v end)
@@ -7017,6 +7092,8 @@ local ordered_enhancers={
   "check encoding",
   "add duplicates",
   "cleanup tables",
+  "compact lookups",
+  "purge names",
 }
 local actions=allocate()
 local before=allocate()
@@ -7207,7 +7284,7 @@ function otf.load(filename,sub,featurefile)
         goodies={},
         helpers={ 
           tounicodelist=splitter,
-          tounicodetable=lpeg.Ct(splitter),
+          tounicodetable=Ct(splitter),
         },
       }
       starttiming(data)
@@ -7250,6 +7327,34 @@ function otf.load(filename,sub,featurefile)
       report_otf("loading from cache using hash %a",hash)
     end
     enhance("unpack",data,filename,nil,false)
+    local resources=data.resources
+    local lookuptags=resources.lookuptags
+    local unicodes=resources.unicodes
+    if not lookuptags then
+      lookuptags={}
+      resources.lookuptags=lookuptags
+    end
+    setmetatableindex(lookuptags,function(t,k)
+      local v=type(k)=="number" and ("lookup "..k) or k
+      t[k]=v
+      return v
+    end)
+    if not unicodes then
+      unicodes={}
+      resources.unicodes=unicodes
+      setmetatableindex(unicodes,function(t,k)
+        setmetatableindex(unicodes,nil)
+        for u,d in next,data.descriptions do
+          local n=d.name
+          if n then
+            t[n]=u
+          else
+          end
+        end
+        return rawget(t,k)
+      end)
+    end
+    constructors.addcoreunicodes(unicodes)
     if applyruntimefixes then
       applyruntimefixes(filename,data)
     end
@@ -7286,34 +7391,22 @@ actions["add dimensions"]=function(data,filename)
     local defaultheight=resources.defaultheight or 0
     local defaultdepth=resources.defaultdepth or 0
     local basename=trace_markwidth and file.basename(filename)
-    if usemetatables then
-      for _,d in next,descriptions do
-        local wd=d.width
-        if not wd then
-          d.width=defaultwidth
-        elseif trace_markwidth and wd~=0 and d.class=="mark" then
-          report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
-        end
-        setmetatable(d,mt)
+    for _,d in next,descriptions do
+      local bb,wd=d.boundingbox,d.width
+      if not wd then
+        d.width=defaultwidth
+      elseif trace_markwidth and wd~=0 and d.class=="mark" then
+        report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
       end
-    else
-      for _,d in next,descriptions do
-        local bb,wd=d.boundingbox,d.width
-        if not wd then
-          d.width=defaultwidth
-        elseif trace_markwidth and wd~=0 and d.class=="mark" then
-          report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
+      if bb then
+        local ht,dp=bb[4],-bb[2]
+        if ht==0 or ht<0 then
+        else
+          d.height=ht
         end
-        if bb then
-          local ht,dp=bb[4],-bb[2]
-          if ht==0 or ht<0 then
-          else
-            d.height=ht
-          end
-          if dp==0 or dp<0 then
-          else
-            d.depth=dp
-          end
+        if dp==0 or dp<0 then
+        else
+          d.depth=dp
         end
       end
     end
@@ -7878,9 +7971,14 @@ local function t_hashed(t,cache)
       local ti=t[i]
       local tih=cache[ti]
       if not tih then
-        tih={}
-        for i=1,#ti do
-          tih[ti[i]]=true
+        local tn=#ti
+        if tn==1 then
+          tih={ [ti[1]]=true }
+        else
+          tih={}
+          for i=1,tn do
+            tih[ti[i]]=true
+          end
         end
         cache[ti]=tih
       end
@@ -7893,12 +7991,17 @@ local function t_hashed(t,cache)
 end
 local function s_hashed(t,cache)
   if t then
-    local ht={}
     local tf=t[1]
-    for i=1,#tf do
-      ht[i]={ [tf[i]]=true }
+    local nf=#tf
+    if nf==1 then
+      return { [tf[1]]=true }
+    else
+      local ht={}
+      for i=1,nf do
+        ht[i]={ [tf[i]]=true }
+      end
+      return ht
     end
-    return ht
   else
     return nil
   end
@@ -8326,7 +8429,7 @@ actions["check glyphs"]=function(data,filename,raw)
     description.glyph=nil
   end
 end
-local valid=(lpeg.R("\x00\x7E")-lpeg.S("(){}[]<>%/ \n\r\f\v"))^0*lpeg.P(-1)
+local valid=(R("\x00\x7E")-S("(){}[]<>%/ \n\r\f\v"))^0*P(-1)
 local function valid_ps_name(str)
   return str and str~="" and #str<64 and lpegmatch(valid,str) and true or false
 end
@@ -8380,8 +8483,17 @@ actions["check metadata"]=function(data,filename,raw)
   end
 end
 actions["cleanup tables"]=function(data,filename,raw)
+  local duplicates=data.resources.duplicates
+  if duplicates then
+    for k,v in next,duplicates do
+      if #v==1 then
+        duplicates[k]=v[1]
+      end
+    end
+  end
   data.resources.indices=nil 
-  data.helpers=nil
+  data.resources.unicodes=nil 
+  data.helpers=nil 
 end
 actions["reorganize glyph lookups"]=function(data,filename,raw)
   local resources=data.resources
@@ -8486,6 +8598,142 @@ actions["reorganize glyph anchors"]=function(data,filename,raw)
     end
   end
 end
+local bogusname=(P("uni")+P("u"))*R("AF","09")^4+(P("index")+P("glyph")+S("Ii")*P("dentity")*P(".")^0)*R("09")^1
+local uselessname=(1-bogusname)^0*bogusname
+actions["purge names"]=function(data,filename,raw) 
+  if purge_names then
+    local n=0
+    for u,d in next,data.descriptions do
+      if lpegmatch(uselessname,d.name) then
+        n=n+1
+        d.name=nil
+      end
+    end
+    if n>0 then
+      report_otf("%s bogus names removed",n)
+    end
+  end
+end
+actions["compact lookups"]=function(data,filename,raw)
+  if not compact_lookups then
+    report_otf("not compacting")
+    return
+  end
+  local last=0
+  local tags=table.setmetatableindex({},
+    function(t,k)
+      last=last+1
+      t[k]=last
+      return last
+    end
+  )
+  local descriptions=data.descriptions
+  local resources=data.resources
+  for u,d in next,descriptions do
+    local slookups=d.slookups
+    if type(slookups)=="table" then
+      local s={}
+      for k,v in next,slookups do
+        s[tags[k]]=v
+      end
+      d.slookups=s
+    end
+    local mlookups=d.mlookups
+    if type(mlookups)=="table" then
+      local m={}
+      for k,v in next,mlookups do
+        m[tags[k]]=v
+      end
+      d.mlookups=m
+    end
+    local kerns=d.kerns
+    if type(kerns)=="table" then
+      local t={}
+      for k,v in next,kerns do
+        t[tags[k]]=v
+      end
+      d.kerns=t
+    end
+  end
+  local lookups=data.lookups
+  if lookups then
+    local l={}
+    for k,v in next,lookups do
+      local rules=v.rules
+      if rules then
+        for i=1,#rules do
+          local l=rules[i].lookups
+          if type(l)=="table" then
+            for i=1,#l do
+              l[i]=tags[l[i]]
+            end
+          end
+        end
+      end
+      l[tags[k]]=v
+    end
+    data.lookups=l
+  end
+  local lookups=resources.lookups
+  if lookups then
+    local l={}
+    for k,v in next,lookups do
+      local s=v.subtables
+      if type(s)=="table" then
+        for i=1,#s do
+          s[i]=tags[s[i]]
+        end
+      end
+      l[tags[k]]=v
+    end
+    resources.lookups=l
+  end
+  local sequences=resources.sequences
+  if sequences then
+    for i=1,#sequences do
+      local s=sequences[i]
+      local n=s.name
+      if n then
+        s.name=tags[n]
+      end
+      local t=s.subtables
+      if type(t)=="table" then
+        for i=1,#t do
+          t[i]=tags[t[i]]
+        end
+      end
+    end
+  end
+  local lookuptypes=resources.lookuptypes
+  if lookuptypes then
+    local l={}
+    for k,v in next,lookuptypes do
+      l[tags[k]]=v
+    end
+    resources.lookuptypes=l
+  end
+  local anchor_to_lookup=resources.anchor_to_lookup
+  if anchor_to_lookup then
+    for anchor,lookups in next,anchor_to_lookup do
+      local l={}
+      for lookup,value in next,lookups do
+        l[tags[lookup]]=value
+      end
+      anchor_to_lookup[anchor]=l
+    end
+  end
+  local lookup_to_anchor=resources.lookup_to_anchor
+  if lookup_to_anchor then
+    local l={}
+    for lookup,value in next,lookup_to_anchor do
+      l[tags[lookup]]=value
+    end
+    resources.lookup_to_anchor=l
+  end
+  tags=table.swapped(tags)
+  report_otf("%s lookup tags compacted",#tags)
+  resources.lookuptags=tags
+end
 function otf.setfeatures(tfmdata,features)
   local okay=constructors.initializefeatures("otf",tfmdata,features,trace_features,report_otf)
   if okay then
@@ -8587,8 +8835,8 @@ local function copytotfm(data,cache_id)
     parameters.italicangle=italicangle
     parameters.charwidth=charwidth
     parameters.charxheight=charxheight
-    local space=0x0020 
-    local emdash=0x2014 
+    local space=0x0020
+    local emdash=0x2014
     if monospaced then
       if descriptions[space] then
         spaceunits,spacer=descriptions[space].width,"space"
@@ -8635,7 +8883,7 @@ local function copytotfm(data,cache_id)
     if charxheight then
       parameters.x_height=charxheight
     else
-      local x=0x78 
+      local x=0x0078
       if x then
         local x=descriptions[x]
         if x then
@@ -8691,14 +8939,23 @@ local function otftotfm(specification)
       if duplicates then
         local nofduplicates,nofduplicated=0,0
         for parent,list in next,duplicates do
-          for i=1,#list do
-            local unicode=list[i]
-            if not descriptions[unicode] then
-              descriptions[unicode]=descriptions[parent] 
+          if type(list)=="table" then
+            local n=#list
+            for i=1,n do
+              local unicode=list[i]
+              if not descriptions[unicode] then
+                descriptions[unicode]=descriptions[parent] 
+                nofduplicated=nofduplicated+1
+              end
+            end
+            nofduplicates=nofduplicates+n
+          else
+            if not descriptions[list] then
+              descriptions[list]=descriptions[parent] 
               nofduplicated=nofduplicated+1
             end
+            nofduplicates=nofduplicates+1
           end
-          nofduplicates=nofduplicates+#list
         end
         if trace_otf and nofduplicated~=nofduplicates then
           report_otf("%i extra duplicates copied out of %i",nofduplicated,nofduplicates)
@@ -8829,7 +9086,7 @@ if not modules then modules={} end modules ['font-otb']={
 }
 local concat=table.concat
 local format,gmatch,gsub,find,match,lower,strip=string.format,string.gmatch,string.gsub,string.find,string.match,string.lower,string.strip
-local type,next,tonumber,tostring=type,next,tonumber,tostring
+local type,next,tonumber,tostring,rawget=type,next,tonumber,tostring,rawget
 local lpegmatch=lpeg.match
 local utfchar=utf.char
 local trace_baseinit=false trackers.register("otf.baseinit",function(v) trace_baseinit=v end)
@@ -8876,36 +9133,36 @@ local function gref(descriptions,n)
     return "<error in base mode tracing>"
   end
 end
-local function cref(feature,lookupname)
+local function cref(feature,lookuptags,lookupname)
   if lookupname then
-    return formatters["feature %a, lookup %a"](feature,lookupname)
+    return formatters["feature %a, lookup %a"](feature,lookuptags[lookupname])
   else
     return formatters["feature %a"](feature)
   end
 end
-local function report_alternate(feature,lookupname,descriptions,unicode,replacement,value,comment)
+local function report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,comment)
   report_prepare("%s: base alternate %s => %s (%S => %S)",
-    cref(feature,lookupname),
+    cref(feature,lookuptags,lookupname),
     gref(descriptions,unicode),
     replacement and gref(descriptions,replacement),
     value,
     comment)
 end
-local function report_substitution(feature,lookupname,descriptions,unicode,substitution)
+local function report_substitution(feature,lookuptags,lookupname,descriptions,unicode,substitution)
   report_prepare("%s: base substitution %s => %S",
-    cref(feature,lookupname),
+    cref(feature,lookuptags,lookupname),
     gref(descriptions,unicode),
     gref(descriptions,substitution))
 end
-local function report_ligature(feature,lookupname,descriptions,unicode,ligature)
+local function report_ligature(feature,lookuptags,lookupname,descriptions,unicode,ligature)
   report_prepare("%s: base ligature %s => %S",
-    cref(feature,lookupname),
+    cref(feature,lookuptags,lookupname),
     gref(descriptions,ligature),
     gref(descriptions,unicode))
 end
-local function report_kern(feature,lookupname,descriptions,unicode,otherunicode,value)
+local function report_kern(feature,lookuptags,lookupname,descriptions,unicode,otherunicode,value)
   report_prepare("%s: base kern %s + %s => %S",
-    cref(feature,lookupname),
+    cref(feature,lookuptags,lookupname),
     gref(descriptions,unicode),
     gref(descriptions,otherunicode),
     value)
@@ -8942,7 +9199,7 @@ local function finalize_ligatures(tfmdata,ligatures)
     local characters=tfmdata.characters
     local descriptions=tfmdata.descriptions
     local resources=tfmdata.resources
-    local unicodes=resources.unicodes
+    local unicodes=resources.unicodes 
     local private=resources.private
     local alldone=false
     while not alldone do
@@ -8978,12 +9235,12 @@ local function finalize_ligatures(tfmdata,ligatures)
               local secondname=firstname.."_"..secondcode
               if i==size-1 then
                 target=unicode
-                if not unicodes[secondname] then
+                if not rawget(unicodes,secondname) then
                   unicodes[secondname]=unicode 
                 end
                 okay=true
               else
-                target=unicodes[secondname]
+                target=rawget(unicodes,secondname)
                 if not target then
                   break
                 end
@@ -9019,16 +9276,18 @@ local function finalize_ligatures(tfmdata,ligatures)
       end
     end
     resources.private=private
+    return true
   end
 end
 local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplist)
   local characters=tfmdata.characters
   local descriptions=tfmdata.descriptions
   local resources=tfmdata.resources
+  local properties=tfmdata.properties
   local changed=tfmdata.changed
-  local unicodes=resources.unicodes
   local lookuphash=resources.lookuphash
   local lookuptypes=resources.lookuptypes
+  local lookuptags=resources.lookuptags
   local ligatures={}
   local alternate=tonumber(value) or true and 1
   local defaultalt=otf.defaultbasealternate
@@ -9036,39 +9295,39 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
   local trace_alternatives=trace_baseinit and trace_alternatives
   local trace_ligatures=trace_baseinit and trace_ligatures
   local actions={
-    substitution=function(lookupdata,lookupname,description,unicode)
+    substitution=function(lookupdata,lookuptags,lookupname,description,unicode)
       if trace_singles then
-        report_substitution(feature,lookupname,descriptions,unicode,lookupdata)
+        report_substitution(feature,lookuptags,lookupname,descriptions,unicode,lookupdata)
       end
       changed[unicode]=lookupdata
     end,
-    alternate=function(lookupdata,lookupname,description,unicode)
+    alternate=function(lookupdata,lookuptags,lookupname,description,unicode)
       local replacement=lookupdata[alternate]
       if replacement then
         changed[unicode]=replacement
         if trace_alternatives then
-          report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"normal")
+          report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,"normal")
         end
       elseif defaultalt=="first" then
         replacement=lookupdata[1]
         changed[unicode]=replacement
         if trace_alternatives then
-          report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+          report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,defaultalt)
         end
       elseif defaultalt=="last" then
         replacement=lookupdata[#data]
         if trace_alternatives then
-          report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+          report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,defaultalt)
         end
       else
         if trace_alternatives then
-          report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"unknown")
+          report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,"unknown")
         end
       end
     end,
-    ligature=function(lookupdata,lookupname,description,unicode)
+    ligature=function(lookupdata,lookuptags,lookupname,description,unicode)
       if trace_ligatures then
-        report_ligature(feature,lookupname,descriptions,unicode,lookupdata)
+        report_ligature(feature,lookuptags,lookupname,descriptions,unicode,lookupdata)
       end
       ligatures[#ligatures+1]={ unicode,lookupdata }
     end,
@@ -9084,7 +9343,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
           local lookuptype=lookuptypes[lookupname]
           local action=actions[lookuptype]
           if action then
-            action(lookupdata,lookupname,description,unicode)
+            action(lookupdata,lookuptags,lookupname,description,unicode)
           end
         end
       end
@@ -9099,22 +9358,24 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
           local action=actions[lookuptype]
           if action then
             for i=1,#lookuplist do
-              action(lookuplist[i],lookupname,description,unicode)
+              action(lookuplist[i],lookuptags,lookupname,description,unicode)
             end
           end
         end
       end
     end
   end
-  finalize_ligatures(tfmdata,ligatures)
+  properties.hasligatures=finalize_ligatures(tfmdata,ligatures)
 end
 local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist) 
   local characters=tfmdata.characters
   local descriptions=tfmdata.descriptions
   local resources=tfmdata.resources
-  local unicodes=resources.unicodes
+  local properties=tfmdata.properties
+  local lookuptags=resources.lookuptags
   local sharedkerns={}
   local traceindeed=trace_baseinit and trace_kerns
+  local haskerns=false
   for unicode,character in next,characters do
     local description=descriptions[unicode]
     local rawkerns=description.kerns 
@@ -9136,13 +9397,13 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
                 newkerns={ [otherunicode]=value }
                 done=true
                 if traceindeed then
-                  report_kern(feature,lookup,descriptions,unicode,otherunicode,value)
+                  report_kern(feature,lookuptags,lookup,descriptions,unicode,otherunicode,value)
                 end
               elseif not newkerns[otherunicode] then 
                 newkerns[otherunicode]=value
                 done=true
                 if traceindeed then
-                  report_kern(feature,lookup,descriptions,unicode,otherunicode,value)
+                  report_kern(feature,lookuptags,lookup,descriptions,unicode,otherunicode,value)
                 end
               end
             end
@@ -9151,12 +9412,14 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
         if done then
           sharedkerns[rawkerns]=newkerns
           character.kerns=newkerns 
+          haskerns=true
         else
           sharedkerns[rawkerns]=false
         end
       end
     end
   end
+  properties.haskerns=haskerns
 end
 basemethods.independent={
   preparesubstitutions=preparesubstitutions,
@@ -9182,13 +9445,13 @@ local function make_1(present,tree,name)
     end
   end
 end
-local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,done,lookupname)
+local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,done,lookuptags,lookupname)
   for k,v in next,tree do
     if k=="ligature" then
       local character=characters[preceding]
       if not character then
         if trace_baseinit then
-          report_prepare("weird ligature in lookup %a, current %C, preceding %C",lookupname,v,preceding)
+          report_prepare("weird ligature in lookup %a, current %C, preceding %C",lookuptags[lookupname],v,preceding)
         end
         character=makefake(tfmdata,name,present)
       end
@@ -9209,7 +9472,7 @@ local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,don
     else
       local code=present[name] or unicode
       local name=name.."_"..k
-      make_2(present,tfmdata,characters,v,name,code,k,done,lookupname)
+      make_2(present,tfmdata,characters,v,name,code,k,done,lookuptags,lookupname)
     end
   end
 end
@@ -9220,6 +9483,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
   local changed=tfmdata.changed
   local lookuphash=resources.lookuphash
   local lookuptypes=resources.lookuptypes
+  local lookuptags=resources.lookuptags
   local ligatures={}
   local alternate=tonumber(value) or true and 1
   local defaultalt=otf.defaultbasealternate
@@ -9233,7 +9497,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     for unicode,data in next,lookupdata do
       if lookuptype=="substitution" then
         if trace_singles then
-          report_substitution(feature,lookupname,descriptions,unicode,data)
+          report_substitution(feature,lookuptags,lookupname,descriptions,unicode,data)
         end
         changed[unicode]=data
       elseif lookuptype=="alternate" then
@@ -9241,28 +9505,28 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
         if replacement then
           changed[unicode]=replacement
           if trace_alternatives then
-            report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"normal")
+            report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,"normal")
           end
         elseif defaultalt=="first" then
           replacement=data[1]
           changed[unicode]=replacement
           if trace_alternatives then
-            report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+            report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,defaultalt)
           end
         elseif defaultalt=="last" then
           replacement=data[#data]
           if trace_alternatives then
-            report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+            report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,defaultalt)
           end
         else
           if trace_alternatives then
-            report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"unknown")
+            report_alternate(feature,lookuptags,lookupname,descriptions,unicode,replacement,value,"unknown")
           end
         end
       elseif lookuptype=="ligature" then
         ligatures[#ligatures+1]={ unicode,data,lookupname }
         if trace_ligatures then
-          report_ligature(feature,lookupname,descriptions,unicode,data)
+          report_ligature(feature,lookuptags,lookupname,descriptions,unicode,data)
         end
       end
     end
@@ -9280,7 +9544,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     for i=1,nofligatures do
       local ligature=ligatures[i]
       local unicode,tree,lookupname=ligature[1],ligature[2],ligature[3]
-      make_2(present,tfmdata,characters,tree,"ctx_"..unicode,unicode,unicode,done,lookupname)
+      make_2(present,tfmdata,characters,tree,"ctx_"..unicode,unicode,unicode,done,lookuptags,lookupname)
     end
   end
 end
@@ -9288,7 +9552,9 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
   local characters=tfmdata.characters
   local descriptions=tfmdata.descriptions
   local resources=tfmdata.resources
+  local properties=tfmdata.properties
   local lookuphash=resources.lookuphash
+  local lookuptags=resources.lookuptags
   local traceindeed=trace_baseinit and trace_kerns
   for l=1,#lookuplist do
     local lookupname=lookuplist[l]
@@ -9304,7 +9570,7 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
         for otherunicode,kern in next,data do
           if not kerns[otherunicode] and kern~=0 then
             kerns[otherunicode]=kern
-            report_kern(feature,lookup,descriptions,unicode,otherunicode,kern)
+            report_kern(feature,lookuptags,lookup,descriptions,unicode,otherunicode,kern)
           end
         end
       else
@@ -10318,6 +10584,7 @@ local currentfont=false
 local lookuptable=false
 local anchorlookups=false
 local lookuptypes=false
+local lookuptags=false
 local handlers={}
 local rlmode=0
 local featurevalue=false
@@ -10362,19 +10629,19 @@ local function gref(n)
 end
 local function cref(kind,chainname,chainlookupname,lookupname,index) 
   if index then
-    return formatters["feature %a, chain %a, sub %a, lookup %a, index %a"](kind,chainname,chainlookupname,lookupname,index)
+    return formatters["feature %a, chain %a, sub %a, lookup %a, index %a"](kind,chainname,chainlookupname,lookuptags[lookupname],index)
   elseif lookupname then
-    return formatters["feature %a, chain %a, sub %a, lookup %a"](kind,chainname,chainlookupname,lookupname)
+    return formatters["feature %a, chain %a, sub %a, lookup %a"](kind,chainname,chainlookupname,lookuptags[lookupname])
   elseif chainlookupname then
-    return formatters["feature %a, chain %a, sub %a"](kind,chainname,chainlookupname)
+    return formatters["feature %a, chain %a, sub %a"](kind,lookuptags[chainname],lookuptags[chainlookupname])
   elseif chainname then
-    return formatters["feature %a, chain %a"](kind,chainname)
+    return formatters["feature %a, chain %a"](kind,lookuptags[chainname])
   else
     return formatters["feature %a"](kind)
   end
 end
 local function pref(kind,lookupname)
-  return formatters["feature %a, lookup %a"](kind,lookupname)
+  return formatters["feature %a, lookup %a"](kind,lookuptags[lookupname])
 end
 local function copy_glyph(g) 
   local components=g.components
@@ -11728,7 +11995,7 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
           end
          else
           local i=1
-          repeat
+          while true do
             if skipped then
               while true do
                 local char=start.char
@@ -11765,11 +12032,13 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                 end
               end
             end
-            if start then
+            if i>nofchainlookups then
+              break
+            elseif start then
               start=start.next
             else
             end
-          until i>nofchainlookups
+          end
         end
       else
         local replacements=ck[7]
@@ -11910,6 +12179,7 @@ local function featuresprocessor(head,font,attr)
   anchorlookups=resources.lookup_to_anchor
   lookuptable=resources.lookups
   lookuptypes=resources.lookuptypes
+  lookuptags=resources.lookuptags
   currentfont=font
   rlmode=0
   local sequences=resources.sequences
@@ -12441,6 +12711,7 @@ local function prepare_contextchains(tfmdata)
   local rawdata=tfmdata.shared.rawdata
   local resources=rawdata.resources
   local lookuphash=resources.lookuphash
+  local lookuptags=resources.lookuptags
   local lookups=rawdata.lookups
   if lookups then
     for lookupname,lookupdata in next,rawdata.lookups do
@@ -12453,7 +12724,7 @@ local function prepare_contextchains(tfmdata)
           if not validformat then
             report_prepare("unsupported format %a",format)
           elseif not validformat[lookuptype] then
-            report_prepare("unsupported format %a, lookuptype %a, lookupname %a",format,lookuptype,lookupname)
+            report_prepare("unsupported format %a, lookuptype %a, lookupname %a",format,lookuptype,lookuptags[lookupname])
           else
             local contexts=lookuphash[lookupname]
             if not contexts then
@@ -12502,7 +12773,7 @@ local function prepare_contextchains(tfmdata)
         else
         end
       else
-        report_prepare("missing lookuptype for lookupname %a",lookupname)
+        report_prepare("missing lookuptype for lookupname %a",lookuptags[lookupname])
       end
     end
   end
@@ -13374,6 +13645,7 @@ if otf.enhancers.register then
   otf.enhancers.register("unpack",unpackdata)
 end
 otf.enhancers.unpack=unpackdata 
+otf.enhancers.pack=packdata  
 
 end -- closure
 

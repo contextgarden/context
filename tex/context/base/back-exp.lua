@@ -38,7 +38,6 @@ local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfvalues = utf.char, utf.values
 local insert, remove = table.insert, table.remove
-local fromunicode16 = fonts.mappings.fromunicode16
 local sortedhash = table.sortedhash
 local formatters = string.formatters
 local todimen = number.todimen
@@ -2507,13 +2506,18 @@ or pap
                         if fc then
                             fc = fc and fc[c]
                             if fc then
-                                local u = fc.tounicode
-                                if u and u ~= "" then
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = utfchar(fromunicode16(u))
-                                else
+                                local u = fc.unicode
+                                if not u then
                                     nofcurrentcontent = nofcurrentcontent + 1
                                     currentcontent[nofcurrentcontent] = utfchar(c)
+                                elseif type(u) == "table" then
+                                    for i=1,#u do
+                                        nofcurrentcontent = nofcurrentcontent + 1
+                                        currentcontent[nofcurrentcontent] = utfchar(u[i])
+                                    end
+                                else
+                                    nofcurrentcontent = nofcurrentcontent + 1
+                                    currentcontent[nofcurrentcontent] = utfchar(u)
                                 end
                             else -- weird, happens in hz (we really need to get rid of the pseudo fonts)
                                 nofcurrentcontent = nofcurrentcontent + 1
@@ -3092,7 +3096,7 @@ end
         end
     end
 
-    local cssfile = nil  directives.register("backend.export.css", function(v) cssfile = v end)
+ -- local cssfile = nil  directives.register("backend.export.css", function(v) cssfile = v end)
 
     local function stopexport(v)
         starttiming(treehash)
@@ -3177,6 +3181,8 @@ end
         local stylefilename         = file.join(stylepath,stylefilebase   )
         local templatefilename      = file.join(stylepath,templatefilebase)
 
+        local cssfile               = finetuning.cssfile
+
         -- we keep track of all used files
 
         local files = {
@@ -3196,7 +3202,7 @@ end
             file.copy(examplefilename,defaultfilename)
         end
 
-        if type(cssfile) == "string" then
+        if cssfile then
             local list = table.unique(settings_to_array(cssfile))
             for i=1,#list do
                 local source = file.addsuffix(list[i],"css")

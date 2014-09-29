@@ -24,7 +24,9 @@ local reversed, concat, remove, sortedkeys = table.reversed, table.concat, table
 local ioflush = io.flush
 local fastcopy, tohash, derivetable = table.fastcopy, table.tohash, table.derive
 local formatters = string.formatters
+local P, R, S, C, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.match
 
+local setmetatableindex  = table.setmetatableindex
 local allocate           = utilities.storage.allocate
 local registertracker    = trackers.register
 local registerdirective  = directives.register
@@ -33,13 +35,16 @@ local stoptiming         = statistics.stoptiming
 local elapsedtime        = statistics.elapsedtime
 local findbinfile        = resolvers.findbinfile
 
-local trace_private      = false  registertracker("otf.private",    function(v) trace_private   = v end)
-local trace_loading      = false  registertracker("otf.loading",    function(v) trace_loading   = v end)
-local trace_features     = false  registertracker("otf.features",   function(v) trace_features  = v end)
-local trace_dynamics     = false  registertracker("otf.dynamics",   function(v) trace_dynamics  = v end)
-local trace_sequences    = false  registertracker("otf.sequences",  function(v) trace_sequences = v end)
-local trace_markwidth    = false  registertracker("otf.markwidth",  function(v) trace_markwidth = v end)
-local trace_defining     = false  registertracker("fonts.defining", function(v) trace_defining  = v end)
+local trace_private      = false  registertracker("otf.private",        function(v) trace_private   = v end)
+local trace_loading      = false  registertracker("otf.loading",        function(v) trace_loading   = v end)
+local trace_features     = false  registertracker("otf.features",       function(v) trace_features  = v end)
+local trace_dynamics     = false  registertracker("otf.dynamics",       function(v) trace_dynamics  = v end)
+local trace_sequences    = false  registertracker("otf.sequences",      function(v) trace_sequences = v end)
+local trace_markwidth    = false  registertracker("otf.markwidth",      function(v) trace_markwidth = v end)
+local trace_defining     = false  registertracker("fonts.defining",     function(v) trace_defining  = v end)
+
+local compact_lookups    = true   registertracker("otf.compactlookups", function(v) compact_lookups = v end)
+local purge_names        = true   registertracker("otf.purgenames",     function(v) purge_names     = v end)
 
 local report_otf         = logs.reporter("fonts","otf loading")
 
@@ -48,13 +53,17 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.762 -- beware: also sync font-mis.lua
+otf.version              = 2.801 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
 local chardata           = characters and characters.data -- not used
 
-local otffeatures        = fonts.constructors.newfeatures("otf")
+local definers           = fonts.definers
+local readers            = fonts.readers
+local constructors       = fonts.constructors
+
+local otffeatures        = constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
 local enhancers          = allocate()
@@ -62,13 +71,8 @@ otf.enhancers            = enhancers
 local patches            = { }
 enhancers.patches        = patches
 
-local definers           = fonts.definers
-local readers            = fonts.readers
-local constructors       = fonts.constructors
-
 local forceload          = false
 local cleanup            = 0     -- mk: 0=885M 1=765M 2=735M (regular run 730M)
-local usemetatables      = false -- .4 slower on mk but 30 M less mem so we might change the default -- will be directive
 local packdata           = true
 local syncspace          = true
 local forcenotdef        = false
@@ -93,7 +97,6 @@ formats.dfont            = "truetype"
 
 registerdirective("fonts.otf.loader.cleanup",       function(v) cleanup       = tonumber(v) or (v and 1) or 0 end)
 registerdirective("fonts.otf.loader.force",         function(v) forceload     = v end)
-registerdirective("fonts.otf.loader.usemetatables", function(v) usemetatables = v end)
 registerdirective("fonts.otf.loader.pack",          function(v) packdata      = v end)
 registerdirective("fonts.otf.loader.syncspace",     function(v) syncspace     = v end)
 registerdirective("fonts.otf.loader.forcenotdef",   function(v) forcenotdef   = v end)
@@ -280,6 +283,9 @@ local ordered_enhancers = {
     "add duplicates",
 
     "cleanup tables",
+
+    "compact lookups",
+    "purge names",
 }
 
 --[[ldx--
@@ -495,7 +501,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
                 },
                 helpers = { -- might go away
                     tounicodelist  = splitter,
-                    tounicodetable = lpeg.Ct(splitter),
+                    tounicodetable = Ct(splitter),
                 },
             }
             starttiming(data)
@@ -538,6 +544,39 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
             report_otf("loading from cache using hash %a",hash)
         end
         enhance("unpack",data,filename,nil,false)
+        --
+        local resources  = data.resources
+        local lookuptags = resources.lookuptags
+        local unicodes   = resources.unicodes
+        if not lookuptags then
+            lookuptags = { }
+            resources.lookuptags = lookuptags
+        end
+        setmetatableindex(lookuptags,function(t,k)
+            local v = type(k) == "number" and ("lookup " .. k) or k
+            t[k] = v
+            return v
+        end)
+        if not unicodes then
+            unicodes = { }
+            resources.unicodes = unicodes
+            setmetatableindex(unicodes,function(t,k)
+                -- use rawget when no table has to be built
+                setmetatableindex(unicodes,nil)
+                for u, d in next, data.descriptions do
+                    local n = d.name
+                    if n then
+                        t[n] = u
+                     -- report_otf("accessing known name %a",k)
+                    else
+                     -- report_otf("accessing unknown name %a",k)
+                    end
+                end
+                return rawget(t,k)
+            end)
+        end
+        constructors.addcoreunicodes(unicodes) -- do we really need this?
+        --
         if applyruntimefixes then
             applyruntimefixes(filename,data)
         end
@@ -579,41 +618,29 @@ actions["add dimensions"] = function(data,filename)
         local defaultheight = resources.defaultheight or 0
         local defaultdepth  = resources.defaultdepth  or 0
         local basename      = trace_markwidth and file.basename(filename)
-        if usemetatables then
-            for _, d in next, descriptions do
-                local wd = d.width
-                if not wd then
-                    d.width = defaultwidth
-                elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
-                    report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
-                 -- d.width  = -wd
-                end
-                setmetatable(d,mt)
+        for _, d in next, descriptions do
+            local bb, wd = d.boundingbox, d.width
+            if not wd then
+                -- or bb?
+                d.width = defaultwidth
+            elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
+                report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
+             -- d.width  = -wd
             end
-        else
-            for _, d in next, descriptions do
-                local bb, wd = d.boundingbox, d.width
-                if not wd then
-                    d.width = defaultwidth
-                elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
-                    report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
-                 -- d.width  = -wd
+         -- if forcenotdef and not d.name then
+         --     d.name = ".notdef"
+         -- end
+            if bb then
+                local ht, dp = bb[4], -bb[2]
+                if ht == 0 or ht < 0 then
+                    -- not set
+                else
+                    d.height = ht
                 end
-             -- if forcenotdef and not d.name then
-             --     d.name = ".notdef"
-             -- end
-                if bb then
-                    local ht, dp = bb[4], -bb[2]
-                    if ht == 0 or ht < 0 then
-                        -- not set
-                    else
-                        d.height = ht
-                    end
-                    if dp == 0 or dp < 0 then
-                        -- not set
-                    else
-                        d.depth  = dp
-                    end
+                if dp == 0 or dp < 0 then
+                    -- not set
+                else
+                    d.depth  = dp
                 end
             end
         end
@@ -1301,9 +1328,9 @@ local function s_uncover(splitter,cache,cover)
         local uncovered = cache[cover]
         if not uncovered then
             uncovered = lpegmatch(splitter,cover)
---             for i=1,#uncovered do
---                 uncovered[i] = { [uncovered[i]] = true }
---             end
+         -- for i=1,#uncovered do
+         --     uncovered[i] = { [uncovered[i]] = true }
+         -- end
             cache[cover] = uncovered
         end
         return { uncovered }
@@ -1317,9 +1344,14 @@ local function t_hashed(t,cache)
             local ti = t[i]
             local tih = cache[ti]
             if not tih then
-                tih = { }
-                for i=1,#ti do
-                    tih[ti[i]] = true
+                local tn = #ti
+                if tn == 1 then
+                    tih = { [ti[1]] = true }
+                else
+                    tih = { }
+                    for i=1,tn do
+                        tih[ti[i]] = true
+                    end
                 end
                 cache[ti] = tih
             end
@@ -1335,12 +1367,17 @@ end
 
 local function s_hashed(t,cache)
     if t then
-        local ht = { }
         local tf = t[1]
-        for i=1,#tf do
-            ht[i] = { [tf[i]] = true }
+        local nf = #tf
+        if nf == 1 then
+            return { [tf[1]] = true }
+        else
+            local ht = { }
+            for i=1,nf do
+                ht[i] = { [tf[i]] = true }
+            end
+            return ht
         end
-        return ht
     else
         return nil
     end
@@ -1791,7 +1828,7 @@ end
 
 -- future versions will remove _
 
-local valid = (lpeg.R("\x00\x7E") - lpeg.S("(){}[]<>%/ \n\r\f\v"))^0 * lpeg.P(-1)
+local valid = (R("\x00\x7E") - S("(){}[]<>%/ \n\r\f\v"))^0 * P(-1)
 
 local function valid_ps_name(str)
     return str and str ~= "" and #str < 64 and lpegmatch(valid,str) and true or false
@@ -1853,8 +1890,17 @@ actions["check metadata"] = function(data,filename,raw)
 end
 
 actions["cleanup tables"] = function(data,filename,raw)
-    data.resources.indices = nil -- not needed
-    data.helpers = nil
+    local duplicates = data.resources.duplicates
+    if duplicates then
+        for k, v in next, duplicates do
+            if #v == 1 then
+                duplicates[k] = v[1]
+            end
+        end
+    end
+    data.resources.indices  = nil -- not needed
+    data.resources.unicodes = nil -- delayed
+    data.helpers            = nil -- tricky as we have no unicodes any more
 end
 
 -- kern: ttf has a table with kerns
@@ -1974,6 +2020,164 @@ actions["reorganize glyph anchors"] = function(data,filename,raw) -- when we rep
             description.anchors = anchors
         end
     end
+end
+
+local bogusname   = (P("uni") + P("u")) * R("AF","09")^4
+                  + (P("index") + P("glyph") + S("Ii") * P("dentity") * P(".")^0) * R("09")^1
+local uselessname = (1-bogusname)^0 * bogusname
+
+actions["purge names"] = function(data,filename,raw) -- not used yet
+    if purge_names then
+        local n = 0
+        for u, d in next, data.descriptions do
+            if lpegmatch(uselessname,d.name) then
+                n = n + 1
+                d.name = nil
+            end
+         -- d.comment = nil
+        end
+        if n > 0 then
+            report_otf("%s bogus names removed",n)
+        end
+    end
+end
+
+actions["compact lookups"] = function(data,filename,raw)
+    if not compact_lookups then
+        report_otf("not compacting")
+        return
+    end
+    -- create keyhash
+    local last  = 0
+    local tags  = table.setmetatableindex({ },
+        function(t,k)
+            last = last + 1
+            t[k] = last
+            return last
+        end
+    )
+    --
+    local descriptions = data.descriptions
+    local resources    = data.resources
+    --
+    for u, d in next, descriptions do
+        --
+        -- -- we can also compact anchors and cursives (basechar basemark baselig mark)
+        --
+        local slookups = d.slookups
+        if type(slookups) == "table" then
+            local s = { }
+            for k, v in next, slookups do
+                s[tags[k]] = v
+            end
+            d.slookups = s
+        end
+        --
+        local mlookups = d.mlookups
+        if type(mlookups) == "table" then
+            local m = { }
+            for k, v in next, mlookups do
+                m[tags[k]] = v
+            end
+            d.mlookups = m
+        end
+        --
+        local kerns = d.kerns
+        if type(kerns) == "table" then
+            local t = { }
+            for k, v in next, kerns do
+                t[tags[k]] = v
+            end
+            d.kerns = t
+        end
+    end
+    --
+    local lookups = data.lookups
+    if lookups then
+        local l = { }
+        for k, v in next, lookups do
+            local rules = v.rules
+            if rules then
+                for i=1,#rules do
+                    local l = rules[i].lookups
+                    if type(l) == "table" then
+                        for i=1,#l do
+                            l[i] = tags[l[i]]
+                        end
+                    end
+                end
+            end
+            l[tags[k]] = v
+        end
+        data.lookups = l
+    end
+    --
+    local lookups = resources.lookups
+    if lookups then
+        local l = { }
+        for k, v in next, lookups do
+            local s = v.subtables
+            if type(s) == "table" then
+                for i=1,#s do
+                    s[i] = tags[s[i]]
+                end
+            end
+            l[tags[k]] = v
+        end
+        resources.lookups = l
+    end
+    --
+    local sequences = resources.sequences
+    if sequences then
+        for i=1,#sequences do
+            local s = sequences[i]
+            local n = s.name
+            if n then
+                s.name = tags[n]
+            end
+            local t = s.subtables
+            if type(t) == "table" then
+                for i=1,#t do
+                    t[i] = tags[t[i]]
+                end
+            end
+        end
+    end
+    --
+    local lookuptypes = resources.lookuptypes
+    if lookuptypes then
+        local l = { }
+        for k, v in next, lookuptypes do
+            l[tags[k]] = v
+        end
+        resources.lookuptypes = l
+    end
+    --
+    local anchor_to_lookup = resources.anchor_to_lookup
+    if anchor_to_lookup then
+        for anchor, lookups in next, anchor_to_lookup do
+            local l = { }
+            for lookup, value in next, lookups do
+                l[tags[lookup]] = value
+            end
+            anchor_to_lookup[anchor] = l
+        end
+    end
+    --
+    local lookup_to_anchor = resources.lookup_to_anchor
+    if lookup_to_anchor then
+        local l = { }
+        for lookup, value in next, lookup_to_anchor do
+            l[tags[lookup]] = value
+        end
+        resources.lookup_to_anchor = l
+    end
+    --
+    tags = table.swapped(tags)
+    --
+    report_otf("%s lookup tags compacted",#tags)
+    --
+    resources.lookuptags = tags
 end
 
 -- modes: node, base, none
@@ -2116,8 +2320,8 @@ local function copytotfm(data,cache_id)
         parameters.charwidth   = charwidth
         parameters.charxheight = charxheight
         --
-        local space  = 0x0020 -- unicodes['space'], unicodes['emdash']
-        local emdash = 0x2014 -- unicodes['space'], unicodes['emdash']
+        local space  = 0x0020
+        local emdash = 0x2014
         if monospaced then
             if descriptions[space] then
                 spaceunits, spacer = descriptions[space].width, "space"
@@ -2166,7 +2370,7 @@ local function copytotfm(data,cache_id)
         if charxheight then
             parameters.x_height = charxheight
         else
-            local x = 0x78 -- unicodes['x']
+            local x = 0x0078
             if x then
                 local x = descriptions[x]
                 if x then
@@ -2204,7 +2408,6 @@ local function copytotfm(data,cache_id)
             end
             report_otf()
         end
-        --
         return {
             characters     = characters,
             descriptions   = descriptions,
@@ -2234,14 +2437,23 @@ local function otftotfm(specification)
             if duplicates then
                 local nofduplicates, nofduplicated = 0, 0
                 for parent, list in next, duplicates do
-                    for i=1,#list do
-                        local unicode = list[i]
-                        if not descriptions[unicode] then
-                            descriptions[unicode] = descriptions[parent] -- or copy
+                    if type(list) == "table" then
+                        local n = #list
+                        for i=1,n do
+                            local unicode = list[i]
+                            if not descriptions[unicode] then
+                                descriptions[unicode] = descriptions[parent] -- or copy
+                                nofduplicated = nofduplicated + 1
+                            end
+                        end
+                        nofduplicates = nofduplicates + n
+                    else
+                        if not descriptions[list] then
+                            descriptions[list] = descriptions[parent] -- or copy
                             nofduplicated = nofduplicated + 1
                         end
+                        nofduplicates = nofduplicates + 1
                     end
-                    nofduplicates = nofduplicates + #list
                 end
                 if trace_otf and nofduplicated ~= nofduplicates then
                     report_otf("%i extra duplicates copied out of %i",nofduplicated,nofduplicates)

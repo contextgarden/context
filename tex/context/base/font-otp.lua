@@ -140,6 +140,11 @@ end
 --     return b
 -- end
 
+-- beware: we cannot unpack and repack the same table because then sharing
+-- interferes (we could catch this if needed) .. so for now: save, reload
+-- and repack in such cases (never needed anyway) .. a tricky aspect is that
+-- we then need to sort more thanks to random hashing
+
 local function packdata(data)
     if data then
      -- stripdata(data)
@@ -898,3 +903,4 @@ if otf.enhancers.register then
 end
 
 otf.enhancers.unpack = unpackdata -- used elsewhere
+otf.enhancers.pack   = packdata   -- used elsewhere

@@ -252,6 +252,7 @@ local currentfont         = false
 local lookuptable         = false
 local anchorlookups       = false
 local lookuptypes         = false
+local lookuptags          = false
 local handlers            = { }
 local rlmode              = 0
 local featurevalue        = false
@@ -306,20 +307,20 @@ end
 
 local function cref(kind,chainname,chainlookupname,lookupname,index) -- not in the mood to alias f_
     if index then
-        return formatters["feature %a, chain %a, sub %a, lookup %a, index %a"](kind,chainname,chainlookupname,lookupname,index)
+        return formatters["feature %a, chain %a, sub %a, lookup %a, index %a"](kind,chainname,chainlookupname,lookuptags[lookupname],index)
     elseif lookupname then
-        return formatters["feature %a, chain %a, sub %a, lookup %a"](kind,chainname,chainlookupname,lookupname)
+        return formatters["feature %a, chain %a, sub %a, lookup %a"](kind,chainname,chainlookupname,lookuptags[lookupname])
     elseif chainlookupname then
-        return formatters["feature %a, chain %a, sub %a"](kind,chainname,chainlookupname)
+        return formatters["feature %a, chain %a, sub %a"](kind,lookuptags[chainname],lookuptags[chainlookupname])
     elseif chainname then
-        return formatters["feature %a, chain %a"](kind,chainname)
+        return formatters["feature %a, chain %a"](kind,lookuptags[chainname])
     else
         return formatters["feature %a"](kind)
     end
 end
 
 local function pref(kind,lookupname)
-    return formatters["feature %a, lookup %a"](kind,lookupname)
+    return formatters["feature %a, lookup %a"](kind,lookuptags[lookupname])
 end
 
 -- We can assume that languages that use marks are not hyphenated. We can also assume
@@ -1896,7 +1897,7 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                     end
                  else
                     local i = 1
-                    repeat
+                    while true do
                         if skipped then
                             while true do
                                 local char = start.char
@@ -1937,12 +1938,14 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                 end
                             end
                         end
-                        if start then
+                        if i > nofchainlookups then
+                            break
+                        elseif start then
                             start = start.next
                         else
                             -- weird
                         end
-                    until i > nofchainlookups
+                    end
                 end
             else
                 local replacements = ck[7]
@@ -2139,6 +2142,7 @@ local function featuresprocessor(head,font,attr)
     anchorlookups   = resources.lookup_to_anchor
     lookuptable     = resources.lookups
     lookuptypes     = resources.lookuptypes
+    lookuptags      = resources.lookuptags
 
     currentfont     = font
     rlmode          = 0
@@ -2734,6 +2738,7 @@ local function prepare_contextchains(tfmdata)
     local rawdata    = tfmdata.shared.rawdata
     local resources  = rawdata.resources
     local lookuphash = resources.lookuphash
+    local lookuptags = resources.lookuptags
     local lookups    = rawdata.lookups
     if lookups then
         for lookupname, lookupdata in next, rawdata.lookups do
@@ -2747,7 +2752,7 @@ local function prepare_contextchains(tfmdata)
                         report_prepare("unsupported format %a",format)
                     elseif not validformat[lookuptype] then
                         -- todo: dejavu-serif has one (but i need to see what use it has)
-                        report_prepare("unsupported format %a, lookuptype %a, lookupname %a",format,lookuptype,lookupname)
+                        report_prepare("unsupported format %a, lookuptype %a, lookupname %a",format,lookuptype,lookuptags[lookupname])
                     else
                         local contexts = lookuphash[lookupname]
                         if not contexts then
@@ -2803,7 +2808,7 @@ local function prepare_contextchains(tfmdata)
                     -- no rules
                 end
             else
-                report_prepare("missing lookuptype for lookupname %a",lookupname)
+                report_prepare("missing lookuptype for lookupname %a",lookuptags[lookupname])
             end
         end
     end

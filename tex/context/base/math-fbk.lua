@@ -20,7 +20,6 @@ local virtualcharacters = { }
 
 local identifiers       = fonts.hashes.identifiers
 local lastmathids       = fonts.hashes.lastmathids
-local tounicode16       = fonts.mappings.tounicode16
 
 -- we need a trick (todo): if we define scriptscript, script and text in
 -- that order we could use their id's .. i.e. we could always add a font
@@ -346,11 +345,11 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
         end
         local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height + (offset or 0)}
         local newdata = {
-            commands  = { correction, { "slot", 1, oldchr } },
-            width     = olddata.width,
-            height    = height,
-            depth     = depth,
-            tounicode = tounicode16(unicode),
+            commands = { correction, { "slot", 1, oldchr } },
+            width    = olddata.width,
+            height   = height,
+            depth    = depth,
+            unicode  = unicode,
         }
         local glyphdata = newdata
         local nextglyph = olddata.next
@@ -401,9 +400,6 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
         end
         return glyphdata, true
     else
---         if not olddata.tounicode then
---             olddata.tounicode = tounicode16(unicode),
---         end
         return olddata, false
     end
 end
@@ -448,9 +444,9 @@ addextra(0xFE3DF, { description="EXTENSIBLE OF 0x03DF", unicodeslot=0xFE3DF, mat
 addextra(0xFE3DD, { description="EXTENSIBLE OF 0x03DD", unicodeslot=0xFE3DD, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
 addextra(0xFE3B5, { description="EXTENSIBLE OF 0x03B5", unicodeslot=0xFE3B5, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
 
-virtualcharacters[0xFE3DF] = function(data) local c = data.target.characters[0x23DF] if c then c.tounicode = tounicode16(0x23DF) return c end end
-virtualcharacters[0xFE3DD] = function(data) local c = data.target.characters[0x23DD] if c then c.tounicode = tounicode16(0x23DD) return c end end
-virtualcharacters[0xFE3B5] = function(data) local c = data.target.characters[0x23B5] if c then c.tounicode = tounicode16(0x23B5) return c end end
+virtualcharacters[0xFE3DF] = function(data) local c = data.target.characters[0x23DF] if c then c.unicode = 0x23DF return c end end
+virtualcharacters[0xFE3DD] = function(data) local c = data.target.characters[0x23DD] if c then c.unicode = 0x23DD return c end end
+virtualcharacters[0xFE3B5] = function(data) local c = data.target.characters[0x23B5] if c then c.unicode = 0x23B5 return c end end
 
 -- todo: add some more .. numbers might change
 
@@ -524,7 +520,7 @@ local function actuarian(data)
         -- todo: add alttext
         -- compromise: lm has large hooks e.g. \actuarial{a}
         width     = basewidth + 4 * linewidth,
-        tounicode = tounicode16(0x20E7),
+        unicode   = 0x20E7,
         commands  = {
             { "right", 2 * linewidth },
             { "down", - baseheight - 3 * linewidth },

@@ -40,6 +40,8 @@ local trace_defining     = false  trackers.register("fonts.defining", function(v
 
 local report_afm         = logs.reporter("fonts","afm loading")
 
+local setmetatableindex  = table.setmetatableindex
+
 local findbinfile        = resolvers.findbinfile
 
 local definers           = fonts.definers
@@ -52,7 +54,7 @@ local pfb                = constructors.newhandler("pfb")
 local afmfeatures        = constructors.newfeatures("afm")
 local registerafmfeature = afmfeatures.register
 
-afm.version              = 1.410 -- incrementing this number one up will force a re-cache
+afm.version              = 1.500 -- incrementing this number one up will force a re-cache
 afm.cache                = containers.define("fonts", "afm", afm.version, true)
 afm.autoprefixed         = true -- this will become false some day (catches texnansi-blabla.*)
 
@@ -77,6 +79,16 @@ registerafmfeature {
         base = setmode,
         node = setmode,
     }
+}
+
+local remappednames = {
+    ff  = { name = "f_f",   unicode = { 0x66, 0x66 } },
+    fi  = { name = "f_i",   unicode = { 0x66, 0x69 } },
+    fj  = { name = "f_j",   unicode = { 0x66, 0x6A } },
+    fk  = { name = "f_k",   unicode = { 0x66, 0x6B } },
+    fl  = { name = "f_l",   unicode = { 0x66, 0x6C } },
+    ffi = { name = "f_f_i", unicode = { 0x66, 0x66, 0x69 } },
+    ffl = { name = "f_f_l", unicode = { 0x66, 0x66, 0x6C } },
 }
 
 --[[ldx--
@@ -315,7 +327,7 @@ by adding ligatures and kern information to the afm derived data. That
 way we can set them faster when defining a font.</p>
 --ldx]]--
 
-local addkerns, addligatures, addtexligatures, unify, normalize -- we will implement these later
+local addkerns, addligatures, addtexligatures, unify, normalize, fixnames -- we will implement these later
 
 function afm.load(filename)
     -- hm, for some reasons not resolved yet
@@ -362,6 +374,7 @@ function afm.load(filename)
                     addkerns(data)
                 end
                 normalize(data)
+                fixnames(data)
                 report_afm("add tounicode data")
                 fonts.mappings.addtounicode(data,filename)
                 data.size = size
@@ -369,6 +382,7 @@ function afm.load(filename)
                 data.pfbsize = pfbsize
                 data.pfbtime = pfbtime
                 report_afm("saving %a in cache",name)
+                data.resources.unicodes = nil -- consistent with otf but here we save not much
                 data = containers.write(afm.cache, name, data)
                 data = containers.read(afm.cache,name)
             end
@@ -432,12 +446,27 @@ unify = function(data, filename)
     resources.filename = resolvers.unresolve(filename) -- no shortcut
     resources.unicodes = unicodes -- name to unicode
     resources.marks = { } -- todo
-    resources.names = names -- name to index
+ -- resources.names = names -- name to index
     resources.private = private
 end
 
 normalize = function(data)
 end
+
+fixnames = function(data)
+    for k, v in next, data.descriptions do
+        local n = v.name
+        local r = remappednames[n]
+        if r then
+            if trace_indexing then
+                report_afm("renaming characters %a to %a",n,r.name)
+            end
+            v.name = r.name
+            v.unicode = r.unicode
+        end
+    end
+end
+
 
 --[[ldx--
 <p>These helpers extend the basic table with extra ligatures, texligatures
@@ -449,7 +478,7 @@ local addthem = function(rawdata,ligatures)
         local descriptions = rawdata.descriptions
         local resources    = rawdata.resources
         local unicodes     = resources.unicodes
-        local names        = resources.names
+     -- local names        = resources.names
         for ligname, ligdata in next, ligatures do
             local one = descriptions[unicodes[ligname]]
             if one then
@@ -608,8 +637,8 @@ local function copytotfm(data)
         local filename   = constructors.checkedfilename(resources)
         local fontname   = metadata.fontname or metadata.fullname
         local fullname   = metadata.fullname or metadata.fontname
-        local endash     = unicodes['space']
-        local emdash     = unicodes['emdash']
+        local endash     = 0x0020 -- space
+        local emdash     = 0x2014
         local spacer     = "space"
         local spaceunits = 500
         --
@@ -669,7 +698,7 @@ local function copytotfm(data)
             parameters.x_height = charxheight
         else
             -- same as otf
-            local x = unicodes['x']
+            local x = 0x0078 -- x
             if x then
                 local x = descriptions[x]
                 if x then
@@ -729,7 +758,34 @@ function afm.setfeatures(tfmdata,features)
     end
 end
 
-local function checkfeatures(specification)
+local function addtables(data)
+    local resources  = data.resources
+    local lookuptags = resources.lookuptags
+    local unicodes   = resources.unicodes
+    if not lookuptags then
+        lookuptags = { }
+        resources.lookuptags = lookuptags
+    end
+    setmetatableindex(lookuptags,function(t,k)
+        local v = type(k) == "number" and ("lookup " .. k) or k
+        t[k] = v
+        return v
+    end)
+    if not unicodes then
+        unicodes = { }
+        resources.unicodes = unicodes
+        setmetatableindex(unicodes,function(t,k)
+            setmetatableindex(unicodes,nil)
+            for u, d in next, data.descriptions do
+                local n = d.name
+                if n then
+                    t[n] = u
+                end
+            end
+            return rawget(t,k)
+        end)
+    end
+    constructors.addcoreunicodes(unicodes) -- do we really need this?
 end
 
 local function afmtotfm(specification)
@@ -759,6 +815,7 @@ local function afmtotfm(specification)
         if not tfmdata then
             local rawdata = afm.load(afmname)
             if rawdata and next(rawdata) then
+                addtables(rawdata)
                 adddimensions(rawdata)
                 tfmdata = copytotfm(rawdata)
                 if tfmdata and next(tfmdata) then
@@ -808,6 +865,7 @@ those that make sense for this format.</p>
 local function prepareligatures(tfmdata,ligatures,value)
     if value then
         local descriptions = tfmdata.descriptions
+        local hasligatures = false
         for unicode, character in next, tfmdata.characters do
             local description = descriptions[unicode]
             local dligatures = description.ligatures
@@ -823,17 +881,20 @@ local function prepareligatures(tfmdata,ligatures,value)
                         type = 0
                     }
                 end
+                hasligatures = true
             end
         end
+        tfmdata.properties.hasligatures = hasligatures
     end
 end
 
 local function preparekerns(tfmdata,kerns,value)
     if value then
-        local rawdata = tfmdata.shared.rawdata
-        local resources = rawdata.resources
-        local unicodes = resources.unicodes
+        local rawdata      = tfmdata.shared.rawdata
+        local resources    = rawdata.resources
+        local unicodes     = resources.unicodes
         local descriptions = tfmdata.descriptions
+        local haskerns     = false
         for u, chr in next, tfmdata.characters do
             local d = descriptions[u]
             local newkerns = d[kerns]
@@ -849,8 +910,10 @@ local function preparekerns(tfmdata,kerns,value)
                         kerns[uk] = v
                     end
                 end
+                haskerns = true
             end
         end
+        tfmdata.properties.haskerns = haskerns
     end
 end
 

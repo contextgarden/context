@@ -659,7 +659,7 @@
 		<cd:constant name='coupling' value='تزویج'/>
 		<cd:constant name='couplingway' value='روش‌تزویج'/>
 		<cd:constant name='criterium' value='criterium'/>
-		<cd:constant name='css' value='css'/>
+		<cd:constant name='cssfile' value='cssfile'/>
 		<cd:constant name='current' value='جاری'/>
 		<cd:constant name='cutspace' value='فضای‌برش'/>
 		<cd:constant name='dash' value='دش'/>

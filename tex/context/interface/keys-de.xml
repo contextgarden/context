@@ -659,7 +659,7 @@
 		<cd:constant name='coupling' value='verknuepfung'/>
 		<cd:constant name='couplingway' value='verkopplungsart'/>
 		<cd:constant name='criterium' value='kriterium'/>
-		<cd:constant name='css' value='css'/>
+		<cd:constant name='cssfile' value='cssfile'/>
 		<cd:constant name='current' value='aktuell'/>
 		<cd:constant name='cutspace' value='cutspace'/>
 		<cd:constant name='dash' value='strich'/>

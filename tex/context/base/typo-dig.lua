@@ -103,15 +103,14 @@ end
 actions[1] = function(head,start,attr)
     local font = getfont(start)
     local char = getchar(start)
-    local unic = chardata[font][char].tounicode
-    local what = unic and tonumber(unic,16) or char
-    if charbase[what].category == "nd" then
+    local unic = chardata[font][char].unicode or char
+    if charbase[unic].category == "nd" then -- ignore unic tables
         local oldwidth = getfield(start,"width")
         local newwidth = getdigitwidth(font)
         if newwidth ~= oldwidth then
             if trace_digits then
                 report_digits("digit trigger %a, instance %a, char %C, unicode %U, delta %s",
-                    attr%100,div(attr,100),char,what,newwidth-oldwidth)
+                    attr%100,div(attr,100),char,unic,newwidth-oldwidth)
             end
             head, start = nodes.aligned(head,start,start,newwidth,"middle")
             return head, start, true

@@ -475,18 +475,19 @@ function scripts.injectors.handler(head)
                         normal_process = handler.injector
                     end
                     if normal_process then
+                        -- wrong: originals are indices !
                         local f = getfont(start)
                         if f ~= lastfont then
                             originals = fontdata[f].resources
                             if resources then
                                 originals = resources.originals
                             else
-                                -- can't happen
+                                originals = nil -- can't happen
                             end
                             lastfont = f
                         end
                         local c = getchar(start)
-                        if originals then
+                        if originals and type(originals) == "number" then
                             c = originals[c] or c
                         end
                         local h = hash[c]

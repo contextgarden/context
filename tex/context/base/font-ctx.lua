@@ -57,6 +57,8 @@ local helpers             = fonts.helpers
 local hashes              = fonts.hashes
 local currentfont         = font.current
 
+local aglunicodes         = fonts.encodings.agl.unicodes
+
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 
@@ -82,12 +84,16 @@ local characters          = hashes.characters
 local descriptions        = hashes.descriptions
 local properties          = hashes.properties
 local resources           = hashes.resources
+local unicodes            = hashes.unicodes
 local csnames             = hashes.csnames
 local lastmathids         = hashes.lastmathids
 local exheights           = hashes.exheights
 local emwidths            = hashes.emwidths
 
 local designsizefilename  = fontgoodies.designsizes.filename
+
+local context_char        = context.char
+local context_getvalue    = context.getvalue
 
 local otffeatures         = otf.features
 local otftables           = otf.tables
@@ -1439,12 +1445,27 @@ mappings.reset() -- resets the default file
 
 -- => commands
 
+
 local function nametoslot(name)
     local t = type(name)
+    local s = nil
     if t == "string" then
-        return resources[true].unicodes[name]
+        local slot = unicodes[true][name]
+        if slot then
+            return slot
+        end
+        slot = aglunicodes[name]
+        if characters[true][slot] then
+            return slot
+        else
+            -- not in font
+        end
     elseif t == "number" then
-        return n
+        if characters[true][name] then
+            return slot
+        else
+            -- not in font
+        end
     end
 end
 
@@ -1472,14 +1493,14 @@ do -- else too many locals
     local entities = characters.entities
     local lowered  = { } -- delayed initialization
 
-    table.setmetatableindex(lowered,function(t,k)
+    setmetatableindex(lowered,function(t,k)
         for k, v in next, entities do
             local l = lower(k)
             if not entities[l] then
                 lowered[l] = v
             end
         end
-        table.setmetatableindex(lowered,nil)
+        setmetatableindex(lowered,nil)
         return lowered[k]
     end)
 
@@ -1523,7 +1544,7 @@ do -- else too many locals
 
     -- -- nicer:
     --
-    -- table.setmetatableindex(methods,function(t,k) return methods.c end)
+    -- setmetatableindex(methods,function(t,k) return methods.c end)
     --
     -- local splitter = (C(1) * P(":") + Cc("c")) * C(P(1)^1) / function(method,name)
     --     return methods[method](name)
@@ -1711,9 +1732,6 @@ function fonts.currentid()
 end
 
 -- interfaces
-
-local context_char      = context.char
-local context_getvalue  = context.getvalue
 
 local commands_doifelse = commands.doifelse
 

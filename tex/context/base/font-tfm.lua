@@ -114,6 +114,11 @@ local function read_from_tfm(specification)
                 features.encoding = encoding
             end
         end
+        -- let's play safe:
+        properties.haskerns     = true
+        properties.haslogatures = true
+        resources.unicodes      = { }
+        resources.lookuptags    = { }
         --
         return tfmdata
     end

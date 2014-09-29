@@ -6508,8 +6508,8 @@ return {
   ["export"] = {
     ["en"]="export",
   },
-  ["css"] = {
-    ["en"]="css",
+  ["cssfile"] = {
+    ["en"]="cssfile",
   },
   ["xhtml"] = {
     ["en"]="xhtml",

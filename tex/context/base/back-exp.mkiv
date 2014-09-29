@@ -165,10 +165,8 @@
    \c!alternative=, % html, div
    \c!properties=\v!no, % no: ignore, yes: as attribute, otherwise: use as prefix
    \c!hyphen=\v!no,
-   \c!svgstyle=]
-
-\setupbackend
-  [css=] % ?
+   \c!svgstyle=,
+   \c!cssfile=]
 
 \def\dosynchronizeexport
   {\let\currentexport\empty
@@ -184,6 +182,7 @@
        firstpage  = "\exportparameter\c!firstpage",
        lastpage   = "\exportparameter\c!lastpage",
        svgstyle   = "\exportparameter\c!svgstyle",
+       cssfile    = "\exportparameter\c!cssfile",
    }}}
 
 \appendtoks
@@ -194,14 +193,14 @@
     \doifsomething{\backendparameter\c!export}\dosynchronizeexport % in case it is done inside \starttext
 \to \everysetupdocument
 
-\appendtoks
-    \doifsomething{\backendparameter\c!xhtml}
-      {\enabledirectives[backend.export.xhtml=\backendparameter\c!xhtml]}%
-    \doifsomething{\backendparameter\c!css}
-      {\enabledirectives[backend.export.css={\backendparameter\c!css}]}%
-    \doifsomething{\backendparameter\c!alternative}
-      {\enabledirectives[backend.export.alternative={\backendparameter\c!alternative}]}%
-\to \everysetupbackend
+% \appendtoks
+%     \doifsomething{\backendparameter\c!xhtml}
+%       {\enabledirectives[backend.export.xhtml=\backendparameter\c!xhtml]}%
+%     \doifsomething{\backendparameter\c!css}
+%       {\enabledirectives[backend.export.css={\backendparameter\c!css}]}%
+%     \doifsomething{\backendparameter\c!alternative}
+%       {\enabledirectives[backend.export.alternative={\backendparameter\c!alternative}]}%
+% \to \everysetupbackend
 
 \appendtoks
     \doifelsenothing{\backendparameter\c!export}

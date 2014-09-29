@@ -853,7 +853,7 @@ local function setkeepligatures(tfmdata,value)
                 if letterspacing then
                     local keptligatures = letterspacing.keptligatures
                     if keptligatures then
-                        local unicodes = tfmdata.resources.unicodes
+                        local unicodes = tfmdata.resources.unicodes -- so we accept names
                         local hash = { }
                         for k, v in next, keptligatures do
                             local u = unicodes[k]

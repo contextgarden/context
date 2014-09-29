@@ -141,8 +141,7 @@ local function getunicode(n) -- instead of getchar
     local char = getchar(n)
     local font = font_of_family(getfield(n,"fam")) -- font_of_family
     local data = fontcharacters[font][char]
-    local unic = data.tounicode
-    return unic and fromunicode16(unic) or char
+    return data.unicode or char
 end
 
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)

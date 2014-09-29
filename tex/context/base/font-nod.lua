@@ -407,16 +407,18 @@ local function toutf(list,result,nofresult,stopcriterium)
                     if fc then
                         local fcc = fc[c]
                         if fcc then
-                            -- == fromunicode
-                            local u = fcc.tounicode
-                            if u then
-                                for s in gmatch(u,"....") do
+                            local u = fcc.unicode
+                            if not u then
+                                nofresult = nofresult + 1
+                                result[nofresult] = utfchar(c)
+                            elseif type(u) == "table" then
+                                for i=1,#u do
                                     nofresult = nofresult + 1
-                                    result[nofresult] = utfchar(tonumber(s,16))
+                                    result[nofresult] = utfchar(u[i])
                                 end
                             else
                                 nofresult = nofresult + 1
-                                result[nofresult] = utfchar(c)
+                                result[nofresult] = utfchar(u)
                             end
                         else
                             nofresult = nofresult + 1

@@ -114,24 +114,24 @@ local registerotffeature = otffeatures.register
 --      unicodes = {
 --         a1   = 0x2701,
 
-local tosixteen = fonts.mappings.tounicode16
+----- tosixteen = fonts.mappings.tounicode16
 
 local function initializeunicoding(tfmdata)
     local goodies   = tfmdata.goodies
     local newcoding = nil
-    local tounicode = false
+ -- local tounicode = false
     for i=1,#goodies do
         local remapping = goodies[i].remapping
         if remapping and remapping.unicodes then
-            newcoding = remapping.unicodes -- names to unicodes
-            tounicode = remapping.tounicode
+            newcoding = remapping.unicodes  -- names to unicodes
+         -- tounicode = remapping.tounicode -- not used
         end
     end
     if newcoding then
         local characters   = tfmdata.characters
         local descriptions = tfmdata.descriptions
         local oldcoding    = tfmdata.resources.unicodes
-        local tounicodes   = tfmdata.resources.tounicode -- index to unicode
+     -- local tounicodes   = tfmdata.resources.tounicode -- index to unicode
         local originals    = { }
         for name, newcode in next, newcoding do
             local oldcode = oldcoding[name]
@@ -153,15 +153,15 @@ local function initializeunicoding(tfmdata)
             else
                 oldcoding[name] = newcode
             end
-            if tounicode then
-                local description = descriptions[newcode]
-                if description then
-                    local index = description.index
-                    if not tounicodes[index] then
-                        tounicodes[index] = tosixteen(newcode) -- shared (we could have a metatable)
-                    end
-                end
-            end
+         -- if tounicode then
+         --     local description = descriptions[newcode]
+         --     if description then
+         --         local index = description.index
+         --         if not tounicodes[index] then
+         --             tounicodes[index] = tosixteen(newcode) -- shared (we could have a metatable)
+         --         end
+         --     end
+         -- end
             if trace_unicoding then
                 if oldcode then
                     report_unicoding("aliasing glyph %a from %U to %U",name,oldcode,newcode)

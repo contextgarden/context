@@ -328,8 +328,10 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
     local characters   = tfmdata.characters
     local descriptions = tfmdata.descriptions
     local properties   = tfmdata.properties
+    local resources    = tfmdata.resources
     local rawdata      = tfmdata.shared.rawdata
     local lookuphash   = rawdata.lookuphash
+    local lookuptags   = resources.lookuptags
     local script       = properties.script
     local language     = properties.language
     local done, factor, left, right = false, 1, 1, 1
@@ -349,14 +351,14 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                 local data = lookuphash[lookup]
                 if data then
                     if trace_protrusion then
-                        report_protrusions("setting left using lfbd lookup %a",lookup)
+                        report_protrusions("setting left using lfbd lookup %a",lookuptags[lookup])
                     end
                     for k, v in next, data do
                     --  local p = - v[3] / descriptions[k].width-- or 1 ~= 0 too but the same
                         local p = - (v[1] / 1000) * factor * left
                         characters[k].left_protruding = p
                         if trace_protrusion then
-                            report_protrusions("lfbd -> %s -> %C -> %0.03f (% t)",lookup,k,p,v)
+                            report_protrusions("lfbd -> %s -> %C -> %0.03f (% t)",lookuptags[lookup],k,p,v)
                         end
                     end
                     done = true
@@ -372,14 +374,14 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                 local data = lookuphash[lookup]
                 if data then
                     if trace_protrusion then
-                        report_protrusions("setting right using rtbd lookup %a",lookup)
+                        report_protrusions("setting right using rtbd lookup %a",lookuptags[lookup])
                     end
                     for k, v in next, data do
                     --  local p = v[3] / descriptions[k].width -- or 3
                         local p = (v[1] / 1000) * factor * right
                         characters[k].right_protruding = p
                         if trace_protrusion then
-                            report_protrusions("rtbd -> %s -> %C -> %0.03f (% t)",lookup,k,p,v)
+                            report_protrusions("rtbd -> %s -> %C -> %0.03f (% t)",lookuptags[lookup],k,p,v)
                         end
                     end
                 end

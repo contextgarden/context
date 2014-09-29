@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['typo-tal'] = {
 -- Currently we have two methods: text and number with some downward compatible
 -- defaulting.
 
+-- We can speed up by saving the current fontcharacters[font] + lastfont.
+
 local next, type = next, type
 local div = math.div
 local utfbyte = utf.byte
@@ -23,7 +25,7 @@ local glyph_code           = nodecodes.glyph
 local glue_code            = nodecodes.glue
 
 local fontcharacters       = fonts.hashes.characters
-local unicodes             = fonts.hashes.unicodes
+----- unicodes             = fonts.hashes.unicodes
 local categories           = characters.categories -- nd
 
 local variables            = interfaces.variables
@@ -135,7 +137,8 @@ function characteralign.handler(originalhead,where)
             if id == glyph_code then
                 local char = getchar(current)
                 local font = getfont(current)
-                local unicode = unicodes[font][char]
+             -- local unicode = unicodes[font][char]
+                local unicode = fontcharacters[font][char].unicode or char -- ignore tables
                 if not unicode then
                     -- no unicode so forget about it
                 elseif unicode == separator then
@@ -213,7 +216,8 @@ function characteralign.handler(originalhead,where)
             if id == glyph_code then
                 local char = getchar(current)
                 local font = getfont(current)
-                local unicode = unicodes[font][char]
+             -- local unicode = unicodes[font][char]
+                local unicode = fontcharacters[font][char].unicode or char -- ignore tables
                 if not unicode then
                     -- no unicode so forget about it
                 elseif unicode == separator then
