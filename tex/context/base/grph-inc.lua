@@ -38,6 +38,8 @@ The TeX-Lua mix is suboptimal. This has to do with the fact that we cannot
 run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
+-- todo: store loaded pages per pdf file someplace
+
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
 local contains = table.contains
 local concat, insert, remove = table.concat, table.insert, table.remove
@@ -66,6 +68,8 @@ local texgetbox         = tex.getbox
 local texsetbox         = tex.setbox
 
 local hpack             = node.hpack
+
+local new_latelua      = nodes.pool.latelua
 
 local context           = context
 
@@ -1172,6 +1176,13 @@ function checkers.generic(data)
     return data
 end
 
+local nofimages = 0
+local pofimages = { }
+
+function figures.getrealpage(index)
+    return pofimages[index] or 0
+end
+
 function includers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     -- here we set the 'natural dimensions'
@@ -1195,7 +1206,18 @@ function includers.generic(data)
     if figure then
         local nr = figures.boxnumber
         -- it looks like we have a leak in attributes here .. todo
-        local box = hpack(images.node(figure)) -- images.node(figure) not longer valid
+
+        nofimages    = nofimages + 1
+        ds.pageindex = nofimages
+        local image  = images.node(figure)
+        local pager  = new_latelua(function()
+            pofimages[nofimages] = pofimages[nofimages] or tex.count.realpageno -- so when reused we register the first one only
+        end)
+        image.next = pager
+        pager.prev = image
+
+        local box = hpack(image) -- images.node(figure) not longer valid
+
         indexed[figure.index] = figure
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         texsetbox(nr,box)

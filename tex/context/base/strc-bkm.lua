@@ -13,7 +13,9 @@ if not modules then modules = { } end modules ['strc-bkm'] = {
 
 -- we should hook the placement into everystoptext ... needs checking
 
-local format, concat, gsub = string.format, table.concat, string.gsub
+-- todo: make an lpeg for stripped
+
+local format, concat, gsub, lower = string.format, table.concat, string.gsub, string.lower
 local utfvalues = utf.values
 local settings_to_hash = utilities.parsers.settings_to_hash
 
@@ -101,54 +103,6 @@ function bookmarks.setup(spec)
     end
 end
 
--- function bookmarks.place()
---     if next(names) then
---         local list = lists.filtercollected(names,"all",nil,lists.collected,forced)
---         if #list > 0 then
---             local levels, noflevels, lastlevel = { }, 0, 1
---             for i=1,#list do
---                 local li = list[i]
---                 local metadata = li.metadata
---                 local name = metadata.name
---                 if not metadata.nolist or forced[name] then -- and levelmap[name] then
---                     local titledata = li.titledata
---                     if titledata then
---                         local structural = levelmap[name]
---                         lastlevel = structural or lastlevel
---                         local title = titledata.bookmark
---                         if not title or title == "" then
---                             -- We could typeset the title and then convert it.
---                             if not structural then
---                                 -- placeholder, todo: bookmarklabel
---                                 title = name .. ": " .. (titledata.title or "?")
---                             else
---                                 title = titledata.title or "?"
---                             end
---                         end
---                         if numbered[name] then
---                             local sectiondata = sections.collected[li.references.section]
---                             local numberdata = li.numberdata
---                             if sectiondata and numberdata and not numberdata.hidenumber then
---                                 -- we could typeset the number and convert it
---                                 title = concat(sections.typesetnumber(sectiondata,"direct",numberspec,sectiondata)) .. " " .. title
---                             end
---                         end
---                         noflevels = noflevels + 1
---                         levels[noflevels] = {
---                             lastlevel,
---                             stripped(title), -- can be replaced by converter
---                             li.references, -- has internal and realpage
---                             allopen or opened[name]
---                         }
---                     end
---                 end
---             end
---             bookmarks.finalize(levels)
---         end
---         function bookmarks.place() end -- prevent second run
---     end
--- end
-
 function bookmarks.place()
     if next(names) then
         local levels    = { }
@@ -172,11 +126,14 @@ function bookmarks.place()
                                 -- add block entry
                                 local blockdata = sections.sectionblockdata[block]
                                 noflevels = noflevels + 1
+                                local references = li.references
                                 levels[noflevels] = {
-                                    1, -- toplevel
-                                    stripped(blockdata.bookmark ~= "" and blockdata.bookmark or block),
-                                    li.references,
-                                    allopen or opened[name] -- same as first entry
+                                    level     = 1, -- toplevel
+                                    title     = stripped(blockdata.bookmark ~= "" and blockdata.bookmark or block),
+                                    reference = references,
+                                    opened    = allopen or opened[name], -- same as first entry
+                                    realpage  = references and references.realpage or 0, -- handy for later
+                                    usedpage  = true,
                                 }
                             end
                             blockdone = true
@@ -206,11 +163,14 @@ function bookmarks.place()
                             end
                         end
                         noflevels = noflevels + 1
+                        local references = li.references
                         levels[noflevels] = {
-                            lastlevel,
-                            stripped(title), -- can be replaced by converter
-                            li.references, -- has internal and realpage
-                            allopen or opened[name]
+                            level     = lastlevel,
+                            title     = stripped(title), -- can be replaced by converter
+                            reference = references,   -- has internal and realpage
+                            opened    = allopen or opened[name],
+                            realpage  = references and references.realpage or 0, -- handy for later
+                            usedpage  = true,
                         }
                     end
                 end
@@ -222,43 +182,191 @@ function bookmarks.place()
 end
 
 function bookmarks.flatten(levels)
+    if not levels then
+        -- a plugin messed up
+        return { }
+    end
     -- This function promotes leading structurelements with a higher level
     -- to the next lower level. Such situations are the result of lack of
     -- structure: a subject preceding a chapter in a sectionblock. So, the
     -- following code runs over section blocks as well. (bookmarks-007.tex)
     local noflevels = #levels
     if noflevels > 1 then
-        local skip, start, one = false, 1, levels[1]
-        local first, block = one[1], one[3].block
+        local skip  = false
+        local start = 1
+        local one   = levels[1]
+        local first = one.level
+        local block = one.reference.block
         for i=2,noflevels do
-            local li = levels[i]
-            local new, newblock = li[1], li[3].block
+            local current   = levels[i]
+            local new       = current.level
+            local reference = current.reference
+            local newblock  = type(reference) == "table" and current.reference.block or block
             if newblock ~= block then
-                first, block, start, skip = new, newblock, i, false
+                first = new
+                block = newblock
+                start = i
+                skip  = false
             elseif skip then
                 -- go on
             elseif new > first then
                 skip = true
             elseif new < first then
                 for j=start,i-1 do
-                    local lj = levels[j]
-                    local old = lj[1]
-                    lj[1] = new
+                    local previous = levels[j]
+                    local old      = previous.level
+                    previous.level = new
                     if trace_bookmarks then
-                        report_bookmarks("promoting entry %a from level %a to %a: %s",j,old,new,lj[2])
+                        report_bookmarks("promoting entry %a from level %a to %a: %s",j,old,new,previous.title)
                     end
                 end
                 skip = true
             end
         end
     end
+    return levels
 end
 
+local extras = { }
+local names  = { }
+
+local function cleanname(name)
+    return lower(file.basename(name))
+end
+
+function bookmarks.registerextra(name,levels)
+    if name and levels then
+        name = cleanname(name)
+        local found = names[name]
+        if found then
+            extras[found].levels = levels
+        else
+            extras[#extras+1] = {
+                name   = name,
+                levels = levels,
+            }
+            names[name] = #extras
+        end
+    end
+end
+
+function bookmarks.getextra(name)
+    if name then
+        local found = names[cleanname(name)]
+        if found then
+            return extras[found].levels
+        end
+    else
+        return extras
+    end
+end
+
+local function checkextras()
+    for i=1,#extras do
+        local levels = extras[i].levels
+        for j=1,#levels do
+            local entry     = levels[j]
+            local pageindex = entry.pageindex
+            if pageindex then
+                entry.reference = figures.getrealpage(pageindex)
+                entry.pageindex = nil
+            end
+        end
+    end
+end
+
+function bookmarks.merge(levels,mode)
+    if not levels then
+        -- a plugin messed up
+        return { }
+    end
+    local extras    = bookmarks.getextra()
+    local sections  = { }
+    local merge     = { }
+    local nofextras = #extras
+    for i=1,nofextras do
+        local levels = extras[i].levels
+        local data   = { }
+        sections[i]  = data
+        for j=1,#levels do
+            local entry = levels[j]
+            if entry.usedpage then
+                local section = entry.section
+                local d = data[section]
+                if d then
+                    d[#d+1] = entry
+                else
+                    data[section] = { entry }
+                end
+            end
+        end
+    end
+    for j=1,#levels do
+        local entry     = levels[j]
+        merge[#merge+1] = entry
+        local section   = entry.reference.section
+        local level     = entry.level
+        entry.section   = section -- for tracing
+        for i=1,nofextras do
+            local entries = sections[i][section]
+            if entries then
+                for i=1,#entries do
+                    local entry = entries[i]
+                    merge[#merge+1] = entry
+                    entry.level = entry.level + level
+                end
+            end
+        end
+    end
+    return merge
+end
+
+local sequencers   = utilities.sequencers
+local appendgroup  = sequencers.appendgroup
+local appendaction = sequencers.appendaction
+
+local bookmarkactions = sequencers.new {
+    arguments    = "levels,method",
+    returnvalues = "levels",
+    results      = "levels",
+}
+
+appendgroup(bookmarkactions,"before") -- user
+appendgroup(bookmarkactions,"system") -- private
+appendgroup(bookmarkactions,"after" ) -- user
+
+appendaction(bookmarkactions,"system",bookmarks.flatten)
+appendaction(bookmarkactions,"system",bookmarks.merge)
+
 function bookmarks.finalize(levels)
-    -- This function can be overloaded by an optional converter
-    -- that uses nodes.toutf on a typeset stream. This is something
-    -- that we will support when the main loop has become a coroutine.
-    codeinjections.addbookmarks(levels,bookmarks.method)
+    local method = bookmarks.method or "internal"
+    checkextras() -- so that plugins have the adapted page number
+    levels = bookmarkactions.runner(levels,method)
+    if levels and #levels > 0 then
+        -- normally this is not needed
+        local purged = { }
+        for i=1,#levels do
+            local l = levels[i]
+            if l.usedpage ~= false then
+                purged[#purged+1] = l
+            end
+        end
+        --
+        codeinjections.addbookmarks(purged,method)
+    else
+        -- maybe a plugin messed up
+    end
+end
+
+function bookmarks.installhandler(what,where,func)
+    if not func then
+        where, func = "after", where
+    end
+    if where == "before" or where == "after" then
+        sequencers.appendaction(bookmarkactions,where,func)
+    else
+        report_tex("installing bookmark %a handlers in %a is not possible",what,tostring(where))
+    end
 end
 
 -- interface

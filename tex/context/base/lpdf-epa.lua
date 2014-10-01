@@ -10,17 +10,22 @@ if not modules then modules = { } end modules ['lpdf-epa'] = {
 -- change.
 
 local type, tonumber = type, tonumber
-local format, gsub = string.format, string.gsub
+local format, gsub, lower = string.format, string.gsub, string.lower
 local formatters = string.formatters
 
 ----- lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
-local trace_links    = false  trackers.register("figures.links", function(v) trace_links = v end)
-local report_link    = logs.reporter("backend","merging")
+local trace_links    = false  trackers.register("figures.links",     function(v) trace_links    = v end)
+local trace_outlines = false  trackers.register("figures.outliness", function(v) trace_outlines = v end)
+
+local report_link    = logs.reporter("backend","link")
+local report_outline = logs.reporter("backend","outline")
 
 local backends       = backends
 local lpdf           = lpdf
 local context        = context
+
+local nameonly       = file.nameonly
 
 local variables      = interfaces.variables
 local codeinjections = backends.pdf.codeinjections
@@ -28,12 +33,17 @@ local codeinjections = backends.pdf.codeinjections
 ----- utftohigh      = lpegpatterns.utftohigh
 local escapetex      = characters.filters.utf.private.escape
 
+local bookmarks      = structures.bookmarks
+
 local layerspec = { -- predefining saves time
     "epdflinks"
 }
 
+local f_namespace = formatters["lpdf-epa-%s-"]
+
 local function makenamespace(filename)
-    return format("lpdf-epa-%s-",file.removesuffix(file.basename(filename)))
+    filename = gsub(lower(nameonly(filename)),"[^%a%d]+","-")
+    return f_namespace(filename)
 end
 
 local function add_link(x,y,w,h,destination,what)
@@ -71,7 +81,7 @@ local function link_goto(x,y,w,h,document,annotation,pagedata,namespace)
         if type(destination) == "string" then
             local destinations = document.destinations
             local wanted = destinations[destination]
-            destination = wanted and wanted.D
+            destination = wanted and wanted.D -- is this ok? isn't it destination already a string?
             if destination then what = "named" end
         end
         local pagedata = destination and destination[1]
@@ -131,7 +141,7 @@ function codeinjections.mergereferences(specification)
     end
     if specification then
         local fullname = specification.fullname
-        local document = lpdf.epdf.load(fullname)
+        local document = lpdf.epdf.load(fullname) -- costs time
         if document then
             local pagenumber  = specification.page    or 1
             local xscale      = specification.yscale  or 1
@@ -139,22 +149,33 @@ function codeinjections.mergereferences(specification)
             local size        = specification.size    or "crop" -- todo
             local pagedata    = document.pages[pagenumber]
             local annotations = pagedata and pagedata.Annots
+local namespace = makenamespace(fullname)
+local reference = namespace .. pagenumber
             if annotations and annotations.n > 0 then
-                local namespace = format("lpdf-epa-%s-",file.removesuffix(file.basename(fullname)))
-                local reference = namespace .. pagenumber
-                local mediabox = pagedata.MediaBox
-                local llx, lly, urx, ury = mediabox[1], mediabox[2], mediabox[3], mediabox[4]
-                local width, height = xscale * (urx - llx), yscale * (ury - lly) -- \\overlaywidth, \\overlayheight
+--                 local namespace = makenamespace(fullname)
+--                 local reference = namespace .. pagenumber
+                local mediabox  = pagedata.MediaBox
+                local llx       = mediabox[1]
+                local lly       = mediabox[2]
+                local urx       = mediabox[3]
+                local ury       = mediabox[4]
+                local width     = xscale * (urx - llx) -- \\overlaywidth, \\overlayheight
+                local height    = yscale * (ury - lly) -- \\overlaywidth, \\overlayheight
                 context.definelayer( { "epdflinks" }, { height = height.."bp" , width = width.."bp" })
                 for i=1,annotations.n do
                     local annotation = annotations[i]
                     if annotation then
-                        local subtype = annotation.Subtype
+                        local subtype   = annotation.Subtype
                         local rectangle = annotation.Rect
-                        local a_llx, a_lly, a_urx, a_ury = rectangle[1], rectangle[2], rectangle[3], rectangle[4]
-                        local x, y = xscale * (a_llx -   llx), yscale * (a_lly -   lly)
-                        local w, h = xscale * (a_urx - a_llx), yscale * (a_ury - a_lly)
-                        if subtype  == "Link" then
+                        local a_llx     = rectangle[1]
+                        local a_lly     = rectangle[2]
+                        local a_urx     = rectangle[3]
+                        local a_ury     = rectangle[4]
+                        local x         = xscale * (a_llx -   llx)
+                        local y         = yscale * (a_lly -   lly)
+                        local w         = xscale * (a_urx - a_llx)
+                        local h         = yscale * (a_ury - a_lly)
+                        if subtype == "Link" then
                             local a = annotation.A
                             if a then
                                 local linktype = a.S
@@ -168,7 +189,7 @@ function codeinjections.mergereferences(specification)
                                     report_link("unsupported link annotation %a",linktype)
                                 end
                             else
-                                report_link("mising link annotation")
+                                report_link("missing link annotation")
                             end
                         elseif trace_links then
                             report_link("unsupported annotation %a",subtype)
@@ -178,21 +199,21 @@ function codeinjections.mergereferences(specification)
                     end
                 end
                 context.flushlayer { "epdflinks" }
-             -- context("\\gdef\\figurereference{%s}",reference) -- global
+end
                 context.setgvalue("figurereference",reference) -- global
                 if trace_links then
                     report_link("setting figure reference to %a",reference)
                 end
                 specification.reference = reference
                 return namespace
-            end
+--             end
         end
     end
     return ""-- no namespace, empty, not nil
 end
 
 function codeinjections.mergeviewerlayers(specification)
-    -- todo: parse included page for layers
+    -- todo: parse included page for layers .. or only for whole document inclusion
     if true then
         return
     end
@@ -204,7 +225,7 @@ function codeinjections.mergeviewerlayers(specification)
         local fullname = specification.fullname
         local document = lpdf.epdf.load(fullname)
         if document then
-            local namespace = format("lpdf:epa:%s:",file.removesuffix(file.basename(fullname)))
+            local namespace = makenamespace(fullname)
             local layers = document.layers
             if layers then
                 for i=1,layers.n do
@@ -232,3 +253,155 @@ function codeinjections.mergeviewerlayers(specification)
     end
 end
 
+-- new: for taco
+
+function codeinjections.getbookmarks(filename)
+
+    -- The first version built a nested tree and flattened that afterwards ... but I decided
+    -- to keep it simple and flat.
+
+    local list = bookmarks.getextra(filename)
+
+    if list then
+        return list
+    else
+        list = { }
+    end
+
+    local document = nil
+
+    if lfs.isfile(filename) then
+        document = lpdf.epdf.load(filename)
+    else
+        report_outline("unknown file %a",filename)
+        bookmarks.registerextra(filename,list)
+        return list
+    end
+
+    local outlines     = document.Catalog.Outlines
+    local pages        = document.pages
+    local nofpages     = pages.n -- we need to access once in order to initialize
+    local destinations = document.destinations
+
+    -- I need to check this destination analyzer with the one in annotations .. best share
+    -- code (and not it's inconsistent). On the todo list ...
+
+    local function setdestination(current,entry)
+        local destination = nil
+        local action      = current.A
+        if action then
+            local subtype = action.S
+            if subtype == "GoTo" then
+                destination = action.D
+                if type(destination) == "string" then
+                    entry.destination = destination
+                    destination = destinations[destination]
+                    local pagedata = destination and destination[1]
+                    if pagedata then
+                        entry.realpage = pagedata.number
+                    end
+                else
+                    -- maybe
+                end
+            else
+                -- maybe
+            end
+        else
+            local destination = current.Dest
+            if destination then
+                if type(destination) == "string" then
+                    local wanted = destinations[destination]
+                    destination = wanted and wanted.D
+                    if destination then
+                        entry.destination = destination
+                    end
+                else
+                    local pagedata = destination and destination[1]
+                    if pagedata and pagedata.Type == "Page" then
+                        entry.realpage =  pagedata.number
+                    end
+                end
+            end
+        end
+    end
+
+    local function traverse(current,depth)
+        while current do
+            local title = current.Title
+            if title then
+                local entry = {
+                    level = depth,
+                    title = title,
+                }
+                list[#list+1] = entry
+                setdestination(current,entry)
+                if trace_outlines then
+                    report_outline("%w%s",2*depth,title)
+                end
+            end
+            local first = current.First
+            if first then
+                local current = first
+                while current do
+                    local title = current.Title
+                    if title and trace_outlines then
+                        report_outline("%w%s",2*depth,title)
+                    end
+                    local entry = {
+                        level = depth,
+                        title = title,
+                    }
+                    setdestination(current,entry)
+                    list[#list+1] = entry
+                    traverse(current.First,depth+1)
+                    current = current.Next
+                end
+            end
+            current = current.Next
+        end
+    end
+
+    if outlines then
+        if trace_outlines then
+            report_outline("outline of %a:",document.filename)
+            report_outline()
+        end
+        traverse(outlines,0)
+        if trace_outlines then
+            report_outline()
+        end
+    elseif trace_outlines then
+        report_outline("no outline in %a",document.filename)
+    end
+
+    bookmarks.registerextra(filename,list)
+
+    return list
+
+end
+
+function codeinjections.mergebookmarks(specification)
+    -- codeinjections.getbookmarks(document)
+    if not specification then
+        specification = figures and figures.current()
+        specification = specification and specification.status
+    end
+    if specification then
+        local fullname  = specification.fullname
+        local bookmarks = backends.codeinjections.getbookmarks(fullname)
+        local realpage  = tonumber(specification.page) or 1
+        for i=1,#bookmarks do
+            local b = bookmarks[i]
+            if not b.usedpage then
+                if b.realpage == realpage then
+                    if trace_options then
+                        report_outline("using %a at page %a of file %a",b.title,realpage,fullname)
+                    end
+                    b.usedpage  = true
+                    b.section   = structures.sections.currentsectionindex()
+                    b.pageindex = specification.pageindex
+                end
+            end
+        end
+    end
+end

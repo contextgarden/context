@@ -136,20 +136,27 @@ function sections.currentid()
     return #tobesaved
 end
 
+local lastsaved = 0
+
 function sections.save(sectiondata)
 --  local sectionnumber = helpers.simplify(section.sectiondata) -- maybe done earlier
     local numberdata = sectiondata.numberdata
     local ntobesaved = #tobesaved
     if not numberdata or sectiondata.metadata.nolist then
-        return ntobesaved
+        -- stay
     else
         ntobesaved = ntobesaved + 1
         tobesaved[ntobesaved] = numberdata
         if not collected[ntobesaved] then
             collected[ntobesaved] = numberdata
         end
-        return ntobesaved
     end
+    lastsaved = ntobesaved
+    return ntobesaved
+end
+
+function sections.currentsectionindex()
+    return lastsaved -- only for special controlled situations
 end
 
 function sections.load()

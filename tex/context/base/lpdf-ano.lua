@@ -1032,52 +1032,103 @@ function specials.action(var)
 end
 
 local function build(levels,start,parent,method)
-    local startlevel = levels[start][1]
+    local startlevel = levels[start].level
     local i, n = start, 0
     local child, entry, m, prev, first, last, f, l
     while i and i <= #levels do
-        local li = levels[i]
-        local level, title, reference, open = li[1], li[2], li[3], li[4]
-        if level < startlevel then
-            pdfflushobject(child,entry)
-            return i, n, first, last
-        elseif level == startlevel then
-            if trace_bookmarks then
-                report_bookmark("%3i %w%s %s",reference.realpage,(level-1)*2,(open and "+") or "-",title)
-            end
-            local prev = child
-            child = pdfreserveobject()
-            if entry then
-                entry.Next = child and pdfreference(child)
-                pdfflushobject(prev,entry)
-            end
-            entry = pdfdictionary {
-                Title  = pdfunicode(title),
-                Parent = parent,
-                Prev   = prev and pdfreference(prev),
-                A      = somedestination(reference.internal,reference.internal,reference.realpage),
-            }
-         -- entry.Dest = somedestination(reference.internal,reference.internal,reference.realpage)
-            if not first then first, last = child, child end
-            prev = child
-            last = prev
-            n = n + 1
+        local current = levels[i]
+        if current.usedpage == false then
+            -- safeguard
             i = i + 1
-        elseif i < #levels and level > startlevel then
-            i, m, f, l = build(levels,i,pdfreference(child),method)
-            entry.Count = (open and m) or -m
-            if m > 0 then
-                entry.First, entry.Last = pdfreference(f), pdfreference(l)
-            end
         else
-            -- missing intermediate level but ok
-            i, m, f, l = build(levels,i,pdfreference(child),method)
-            entry.Count = (open and m) or -m
-            if m > 0 then
-                entry.First, entry.Last = pdfreference(f), pdfreference(l)
+            local level     = current.level
+            local title     = current.title
+            local reference = current.reference
+            local opened    = current.opened
+            local reftype   = type(reference)
+            local variant   = "unknown"
+            if reftype == "table" then
+                -- we're okay
+                variant  = "list"
+            elseif reftype == "string" then
+                local resolved = references.identify("",reference)
+                local realpage = resolved and structures.references.setreferencerealpage(resolved) or 0
+                if realpage > 0 then
+                    variant  = "realpage"
+                    realpage = realpage
+                end
+            elseif reftype == "number" then
+                if reference > 0 then
+                    variant  = "realpage"
+                    realpage = reference
+                end
+            else
+                -- error
             end
-            pdfflushobject(child,entry)
-            return i, n, first, last
+            if variant == "unknown" then
+                -- error, ignore
+                i = i + 1
+            elseif level < startlevel then
+                if entry then
+                    pdfflushobject(child,entry)
+                else
+                    -- some error
+                end
+                return i, n, first, last
+            elseif level == startlevel then
+                if trace_bookmarks then
+                    report_bookmark("%3i %w%s %s",reference.realpage,(level-1)*2,(opened and "+") or "-",title)
+                end
+                local prev = child
+                child = pdfreserveobject()
+                if entry then
+                    entry.Next = child and pdfreference(child)
+                    pdfflushobject(prev,entry)
+                end
+                local action = nil
+                if variant == "list" then
+                    action = somedestination(reference.internal,reference.internal,reference.realpage)
+                elseif variant == "realpage" then
+                    action = pagereferences[realpage]
+                end
+                entry = pdfdictionary {
+                    Title  = pdfunicode(title),
+                    Parent = parent,
+                    Prev   = prev and pdfreference(prev),
+                    A      = action,
+                }
+             -- entry.Dest = somedestination(reference.internal,reference.internal,reference.realpage)
+                if not first then first, last = child, child end
+                prev = child
+                last = prev
+                n = n + 1
+                i = i + 1
+            elseif i < #levels and level > startlevel then
+                i, m, f, l = build(levels,i,pdfreference(child),method)
+                if entry then
+                    entry.Count = (opened and m) or -m
+                    if m > 0 then
+                        entry.First = pdfreference(f)
+                        entry.Last  = pdfreference(l)
+                    end
+                else
+                    -- some error
+                end
+            else
+                -- missing intermediate level but ok
+                i, m, f, l = build(levels,i,pdfreference(child),method)
+                if entry then
+                    entry.Count = (opened and m) or -m
+                    if m > 0 then
+                        entry.First = pdfreference(f)
+                        entry.Last  = pdfreference(l)
+                    end
+                    pdfflushobject(child,entry)
+                else
+                    -- some error
+                end
+                return i, n, first, last
+            end
         end
     end
     pdfflushobject(child,entry)
@@ -1085,8 +1136,7 @@ local function build(levels,start,parent,method)
 end
 
 function codeinjections.addbookmarks(levels,method)
-    if #levels > 0 then
-        structures.bookmarks.flatten(levels) -- dirty trick for lack of structure
+    if levels and #levels > 0 then
         local parent = pdfreserveobject()
         local _, m, first, last = build(levels,1,pdfreference(parent),method or "internal")
         local dict = pdfdictionary {

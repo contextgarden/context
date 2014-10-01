@@ -61,7 +61,8 @@ local function prepare(document,d,t,n,k,mt)
     for i=1,n do
         local v = d:getVal(i)
         local r = d:getValNF(i)
-        if r:getTypeName() == "ref" then
+        local key = d:getKey(i)
+        if r and r:getTypeName() == "ref" then
             r = r:getRef().num
             local c = document.cache[r]
             if c then
@@ -73,13 +74,15 @@ local function prepare(document,d,t,n,k,mt)
                     document.xrefs[c] = r
                 end
             end
-            t[d:getKey(i)] = c
+            t[key] = c
+        elseif v then
+            t[key] = checked_access[v:getTypeName()](v,document)
         else
-            t[d:getKey(i)] = checked_access[v:getTypeName()](v,document)
+            report_epdf("fatal error: no data for key %s in dictionary",key)
         end
     end
     getmetatable(t).__index = nil -- ?? weird
-setmetatable(t,mt)
+    setmetatable(t,mt)
     return t[k]
 end
 
@@ -98,7 +101,8 @@ local function prepare(document,a,t,n,k)
     for i=1,n do
         local v = a:get(i)
         local r = a:getNF(i)
-        if v:getTypeName() == "null" then
+        local kind = v:getTypeName()
+        if kind == "null" then
             -- TH: weird, but appears possible
         elseif r:getTypeName() == "ref" then
             r = r:getRef().num
@@ -106,13 +110,13 @@ local function prepare(document,a,t,n,k)
             if c then
                 --
             else
-                c = checked_access[v:getTypeName()](v,document,r)
+                c = checked_access[kind](v,document,r)
                 document.cache[r] = c
                 document.xrefs[c] = r
             end
             t[i] = c
         else
-            t[i] = checked_access[v:getTypeName()](v,document)
+            t[i] = checked_access[kind](v,document)
         end
     end
     getmetatable(t).__index = nil
@@ -172,6 +176,9 @@ checked_access = {
     integer = function(v)
         return v:getNum()
     end,
+ -- integer64 = function(v)
+ --     return v:getNum()
+ -- end,
     string = function(v)
         return toutf(v:getString())
     end,
@@ -187,6 +194,22 @@ checked_access = {
     null = function()
         return nil
     end,
+    none = function()
+        -- why not null
+        return nil
+    end,
+ -- error = function()
+ --     -- shouldn't happen
+ --     return nil
+ -- end,
+ -- eof = function()
+ --     -- we don't care
+ --     return nil
+ -- end,
+ -- cmd = function()
+ --     -- shouldn't happen
+ --     return nil
+ -- end
 }
 
 -- checked_access.real    = epdf.real
@@ -365,7 +388,7 @@ function lpdf.epdf.load(filename)
         statistics.stoptiming(lpdf.epdf)
      -- print(statistics.elapsedtime(lpdf.epdf))
     end
-    return document
+    return document or nil
 end
 
 -- for k, v in next, expand(t) do

@@ -2179,6 +2179,8 @@ local function setreferencerealpage(actions)
     end
 end
 
+references.setreferencerealpage = setreferencerealpage
+
 -- we store some analysis data alongside the indexed array
 -- at this moment only the real reference page is analyzed
 -- normally such an analysis happens in the backend code

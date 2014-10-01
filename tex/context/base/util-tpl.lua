@@ -52,7 +52,7 @@ local sqlescape = lpeg.replacer {
  -- { "\t",   "\\t"  },
 }
 
-local sqlquoted = lpeg.Cs(lpeg.Cc("'") * sqlescape * lpeg.Cc("'"))
+local sqlquoted = Cs(Cc("'") * sqlescape * Cc("'"))
 
 lpegpatterns.sqlescape = sqlescape
 lpegpatterns.sqlquoted = sqlquoted
@@ -111,13 +111,21 @@ local luaescaper       = escapers.lua
 local quotedluaescaper = quotedescapers.lua
 
 local function replacekeyunquoted(s,t,how,recurse) -- ".. \" "
-    local escaper = how and escapers[how] or luaescaper
-    return escaper(replacekey(s,t,how,recurse))
+    if how == false then
+        return replacekey(s,t,how,recurse)
+    else
+        local escaper = how and escapers[how] or luaescaper
+        return escaper(replacekey(s,t,how,recurse))
+    end
 end
 
 local function replacekeyquoted(s,t,how,recurse) -- ".. \" "
-    local escaper = how and quotedescapers[how] or quotedluaescaper
-    return escaper(replacekey(s,t,how,recurse))
+    if how == false then
+        return replacekey(s,t,how,recurse)
+    else
+        local escaper = how and quotedescapers[how] or quotedluaescaper
+        return escaper(replacekey(s,t,how,recurse))
+    end
 end
 
 local single      = P("%")  -- test %test% test     : resolves test
@@ -188,3 +196,5 @@ end
 
 -- inspect(utilities.templates.replace("test %one% test", { one = "%two%", two = "two" }))
 -- inspect(utilities.templates.resolve({ one = "%two%", two = "two", three = "%three%" }))
+-- inspect(utilities.templates.replace("test %one% test", { one = "%two%", two = "two" },false,true))
+-- inspect(utilities.templates.replace("test %one% test", { one = "%two%", two = "two" },false))

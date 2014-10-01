@@ -961,16 +961,24 @@ luatex.registerstopactions(function()
     logsnewline()
     report_options("start commandline options")
     logsnewline()
-    for argument, value in sortedhash(arguments) do
-        report_option("%s=%A",argument,value)
+    if arguments and next(arguments) then
+        for argument, value in sortedhash(arguments) do
+            report_option("%s=%A",argument,value)
+        end
+    else
+        report_file("no arguments")
     end
     logsnewline()
     report_options("stop commandline options")
     logsnewline()
     report_options("start commandline files")
     logsnewline()
-    for i=1,#files do
-        report_file("% 4i: %s",i,files[i])
+    if files and #files > 0 then
+        for i=1,#files do
+            report_file("% 4i: %s",i,files[i])
+        end
+    else
+        report_file("no files")
     end
     logsnewline()
     report_options("stop commandline files")

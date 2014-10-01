@@ -32,7 +32,7 @@
    \c!offset=\v!overlay,
    \c!background={\v!foreground,system:graphics:epdf}]
 
-\def\grph_epdf_add_overlay
+\unexpanded\def\grph_epdf_add_overlay
   {\global\setbox\foundexternalfigure\vbox\bgroup
      \system_graphics_epdf{\box\foundexternalfigure}%
    \egroup}

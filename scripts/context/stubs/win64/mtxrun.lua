@@ -8942,7 +8942,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 6251, stripped down to: 3488
+-- original size: 6621, stripped down to: 3627
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -8984,7 +8984,7 @@ local sqlescape=lpeg.replacer {
   { "\r\n","\\n" },
   { "\r","\\n" },
 }
-local sqlquoted=lpeg.Cs(lpeg.Cc("'")*sqlescape*lpeg.Cc("'"))
+local sqlquoted=Cs(Cc("'")*sqlescape*Cc("'"))
 lpegpatterns.sqlescape=sqlescape
 lpegpatterns.sqlquoted=sqlquoted
 local luaescape=lpegpatterns.luaescape
@@ -9007,12 +9007,20 @@ local quotedescapers={
 local luaescaper=escapers.lua
 local quotedluaescaper=quotedescapers.lua
 local function replacekeyunquoted(s,t,how,recurse) 
-  local escaper=how and escapers[how] or luaescaper
-  return escaper(replacekey(s,t,how,recurse))
+  if how==false then
+    return replacekey(s,t,how,recurse)
+  else
+    local escaper=how and escapers[how] or luaescaper
+    return escaper(replacekey(s,t,how,recurse))
+  end
 end
 local function replacekeyquoted(s,t,how,recurse) 
-  local escaper=how and quotedescapers[how] or quotedluaescaper
-  return escaper(replacekey(s,t,how,recurse))
+  if how==false then
+    return replacekey(s,t,how,recurse)
+  else
+    local escaper=how and quotedescapers[how] or quotedluaescaper
+    return escaper(replacekey(s,t,how,recurse))
+  end
 end
 local single=P("%") 
 local double=P("%%") 
@@ -17585,8 +17593,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 724607
--- stripped bytes    : 257595
+-- original bytes    : 724977
+-- stripped bytes    : 257826
 
 -- end library merge
 
