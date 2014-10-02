@@ -134,7 +134,11 @@ statistics.register("publications load time", function()
     local nofbytes = publicationsstats.nofbytes
     if nofbytes > 0 then
         return string.format("%s seconds, %s bytes, %s definitions, %s shortcuts",
-            statistics.elapsedtime(publications),nofbytes,publicationsstats.nofdefinitions,publicationsstats.nofshortcuts)
+            statistics.elapsedtime(publications),
+            nofbytes,
+            publicationsstats.nofdefinitions or 0,
+            publicationsstats.nofshortcuts or 0
+        )
     else
         return nil
     end
@@ -562,7 +566,7 @@ function commands.oneorrange(dataset,tag,name)
     commands.doifelse(not d) -- so singular is default
 end
 
-function commands.firstinrange(dataset,tag,name)
+function commands.firstofrange(dataset,tag,name)
     local d = datasets[dataset].luadata[tag] -- details ?
     if d then
         d = d[name]

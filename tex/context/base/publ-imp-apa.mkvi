@@ -21,6 +21,20 @@
 
 \startbtxrenderingdefinitions[apa]
 
+%D Reference:
+%D \startTEX
+%D @Book{APA2010,
+%D     title    ={Publication Manual of the American Psychological Association},
+%D     year     ={2010},
+%D     edition  ={Sixth},
+%D     address  ={Washington, DC},
+%D     publisher={American Psychological Association},
+%D     pages    ={291},
+%D     url      ={http://www.apa.org/books/},
+%D }
+%D \stopTEX
+
+
 %D In order to get journals expanded (or normalized or abbreviated) you need to load
 %D a list:
 %D
@@ -35,22 +49,30 @@
   [en]
   [apa:mastersthesis={Master's thesis},
    apa:phdthesis={PhD thesis},
-   apa:technicalreport={Technical report},
+   apa:technicalreport={Tech. Rep.},  % Technical report
+   apa:supplement={Suppl.},           % Supplement
    apa:patent=patent,
-   apa:editor=editor,
-   apa:editors=editors,
-   apa:edition=edition,
+   apa:Translator={Trans.},           % Translator(s)
+   apa:editor={Ed.},                  % editor
+   apa:editors={Eds.},                % editors
+   apa:edition={ed.},                 % edition
    apa:volume=volume,
-   apa:Volume=Volume,
+   apa:Volume={Vol.},                 % Volume
+   apa:Volumes={Vols.},               % Volumes
    apa:number=number,
-   apa:Number=Number,
+   apa:Number={No.},                  % Number
+   apa:nd={n.d.},                     % no date
    apa:in=in,
    apa:of=of,
    apa:In=In,
+   apa:Part={Pt.},                    % Part
    apa:p=p,
    apa:pp=pp,
    apa:pages=pages,
    apa:and=and,
+   apa:Author=Author,                 % TODO, should be typeset in italic...
+   apa:Advanced={Advanced online publication},
+   apa:Retrieved={Retrieved from},
    apa:others={et al.}]
 
 \setupbtxlabeltext
@@ -59,8 +81,8 @@
    apa:phdthesis={Thèse de doctorat},
    apa:technicalreport={Rapport technique},
    apa:patent=brevet,
-   apa:editor=éditeur,
-   apa:editors=éditeurs,
+   apa:editor={Éd.},                  % éditeur
+   apa:editors={Éds.},                % éditeurs
    apa:edition=édition,
    apa:volume=volume,
    apa:Volume=Volume,
@@ -73,6 +95,9 @@
    apa:pp=pp,
    apa:pages=pages,
    apa:and=et,
+   apa:Author=Auteur,
+   apa:Advanced={Publication en ligne anticipée},
+   apa:Retrieved={Téléchargé de},
    apa:others={et al.}]
 
 \setupbtxlabeltext
@@ -95,6 +120,9 @@
    apa:pp=S,
    apa:pages=Seiten,
    apa:and=und,
+   apa:Author=Autor,
+   apa:Advanced={Erweiterte Online-Publikation},  % Check this German!
+   apa:Retrieved={aus abgerufen},                 % heruntergeladen? Check this German!
    apa:others={et al.}]
 
 %D The variables control the shared code for which we use a tex definition with
@@ -123,39 +151,35 @@
    otherwise=\btxperiod]
 
 \starttexdefinition btx:apa:wherefrom #field
+% TODO: for publisher, if =author use "Author"
     \btxdoifelse {address} {
-        \getvariable{btx:apa:\currentbtxcategory}{left}
-        \btxdoifelse {country} {
-            \btxflush{address}
+        \btxspace
+        \btxflush{address}
+        \btxdoif {country} {
             \btxcomma
             \btxflush{country}
-            \btxdoif {#field} {
-                \btxcolon
-                \btxflush{field}
-            }
-        } {
-            \btxflush{address}
-            \btxdoif {#field} {
-                \btxcomma
-                \btxflush{#field}
-            }
         }
-        \getvariable{btx:apa:\currentbtxcategory}{right}
+        \btxdoif {#field} {
+            \btxcolon
+            \btxflush{#field}
+        }
+        \btxperiod
     } {
         \btxdoifelse {country} {
-            \getvariable{btx:apa:\currentbtxcategory}{left}
+            \btxspace
             \btxflush{country}
             \btxdoif {#field} {
                 \btxcolon
                 \btxflush{#field}
             }
-            \getvariable{btx:apa:\currentbtxcategory}{right}
+            \btxperiod
         } {
             \btxdoifelse {#field} {
                 \getvariable{btx:apa:#field}{left}
                 \btxflush{#field}
                 \getvariable{btx:apa:#field}{right}
             } {
+                % check that this is needed!
                 \getvariable{btx:apa:#field}{otherwise}
             }
         }
@@ -172,25 +196,27 @@
 
 \starttexdefinition btx:apa:title-and-series
     \btxdoif {title} {
-        %btxflush{converters.Word -> title}
+        \btxspace
         \btxflush{Word -> title}
         \btxdoif {series} {
-            \btxlparent
+            \btxlparenthesis
             \btxflush{series}
-            \btxrparent
+            \btxrparenthesis
         }
         \btxperiod
     }
 \stoptexdefinition
 
+% can these two be elegantly collapsed somehow using #it, for example?
+
 \starttexdefinition btx:apa:title-it-and-series
     \btxdoif {title} {
-        %texdefinition{btx:apa:italic}{converters.Word -> title}
+        \btxspace
         \texdefinition{btx:apa:italic}{Word -> title}
         \btxdoif {series} {
-            \btxlparent
+            \btxlparenthesis
             \btxflush{series}
-            \btxrparent
+            \btxrparenthesis
         }
         \btxperiod
     }
@@ -198,19 +224,22 @@
 
 \disablemode[btx:apa:edited-book] % hm, ugly
 
-\starttexdefinition btx:apa:author-and-year
-    \btxdoif {author} {
-        \btxflushauthor{author}
-    }
+\starttexdefinition btx:apa:suffixedyear
     \btxdoif {year} {
-        \btxlparent
-      % \btxflush{suffixedyear}
+        \btxlparenthesis
         \btxflush{year}
         \btxdoif {suffix} {
             \btxflush{suffix}
         }
-        \btxrparent
+        \btxrparenthesis
     }
+\stoptexdefinition
+
+\starttexdefinition btx:apa:author-and-year
+    \btxdoif {author} {
+        \btxflushauthor{author}
+    }
+    \texdefinition{btx:apa:suffixedyear}
     \btxperiod
 \stoptexdefinition
 
@@ -224,22 +253,15 @@
             \btxrbracket
         }
     }
-    \btxdoif {year} {
-        \btxlparent
-      % \btxflush{suffixedyear}
-        \btxflush{year}
-        \btxdoif {suffix} {
-            \btxflush{suffix}
-        }
-        \btxrparent
-    }
+    \texdefinition{btx:apa:suffixedyear}
     \btxperiod
 \stoptexdefinition
 
 \starttexdefinition btx:apa:author-editors-crossref-year
-    \btxdoif {author} {
+    % TODO: if there is no author or editor, then use publisher...
+    \btxdoifelse {author} {
         \btxflushauthor{author}
-    } {
+    } { 
         \btxdoifelse {editor} {
             \setmode{btx:apa:edited-book}
             \btxflushauthor{editor}
@@ -259,15 +281,7 @@
             }
         }
     }
-    \btxdoif {year} {
-        \btxlparent
-      % \btxflush{suffixedyear}
-        \btxflush{year}
-        \btxdoif {suffix} {
-            \btxflush{suffix}
-        }
-        \btxrparent
-    }
+    \texdefinition{btx:apa:suffixedyear}
     \btxperiod
 \stoptexdefinition
 
@@ -288,21 +302,58 @@
             \btxrbracket
         }
     }
-    \btxspace
-    \btxdoif {year} {
-        \btxlparent
-      % \btxflush{suffixedyear}
-        \btxflush{year}
-        \btxdoif {suffix} {
-            \btxflush{suffix}
-        }
-        \btxrparent
-    }
+    \texdefinition{btx:apa:suffixedyear}
     \btxperiod
+\stoptexdefinition
+
+% No longer used (not conforming to APA style)
+\starttexdefinition btx:apa:title-it
+    \btxdoif {title} {
+        \btxspace
+        \texdefinition{btx:apa:italic}{Word -> title}
+        \btxflush{Word -> title}
+        \btxperiod
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:apa:journal-volume-issue
+    \btxdoifelse {journal} {
+        % expandedjournal abbreviatedjournal
+        \texdefinition{btx:apa:italic}{expandedjournal -> journal}
+    } {
+        \btxdoif {crossref} {
+            \btxlabeltext{apa:In}
+            \btxspace
+            \btxflush{crossref}
+        }
+    }
+    \btxdoifelse {volume} {
+        \btxspace
+        \texdefinition{btx:apa:italic}{volume}
+        \btxdoif {issue} {
+            \btxlparenthesis
+            \btxflush{issue}
+            \btxrparenthesis
+        }
+        \btxcomma
+    } {
+        \btxdoifelse {doi} {
+            \btxspace
+            \btxlabeltext{apa:Advanced}
+            \btxperiod
+        } {
+            \btxdoif {url} {
+                \btxspace
+                \btxlabeltext{apa:Advanced}
+                \btxperiod
+            }
+        }
+    }
 \stoptexdefinition
 
 \starttexdefinition btx:apa:note
     \btxdoif {note} {
+        % Note: no punctuation
         \btxspace
         \btxflush{note}
         \btxperiod
@@ -311,8 +362,33 @@
 
 \starttexdefinition btx:apa:comment
     \btxdoif {comment} {
+        % Note: no punctuation
         \btxspace
         \btxflush{comment}
+        \btxperiod
+    }
+\stoptexdefinition
+
+% if interaction, we should make these active hyperlinks!
+
+\starttexdefinition btx:apa:doi-or-url
+    \btxdoifelse {doi} {
+        \btxspace
+        \hyphenatedurl{doi:\btxflush{doi}}
+    } {
+        \btxdoif {url} {
+            \btxspace
+            \btxlabeltext{apa:Retrieved}
+            \btxspace
+            \hyphenatedurl{\btxflush{url}}
+        }
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:apa:pages
+    \btxdoif {pages} {
+        \btxspace
+        \btxflush{pages}
         \btxperiod
     }
 \stoptexdefinition
@@ -320,9 +396,14 @@
 \starttexdefinition btx:apa:pages:p
     \btxdoif {pages} {
         \btxspace
+        \btxoneorrange {pages} {
+            \btxlabeltext{apa:p}
+        } {
+            \btxlabeltext{apa:pp}
+        }
+        \btxperiod
+        \btxnbsp
         \btxflush{pages}
-        \btxspace
-        \btxlabeltext{apa:p}
         \btxperiod
     }
 \stoptexdefinition
@@ -331,11 +412,13 @@
     \btxdoif {pages} {
         \btxspace
         \btxflush{pages}
-        \btxspace
+        \btxnbsp
         \btxlabeltext{apa:pp}
         \btxperiod
     }
 \stoptexdefinition
+
+% this does not seem to comply with APA style - need to verify!
 
 \starttexdefinition btx:apa:pages:pages
     \btxdoif {pages} {
@@ -343,10 +426,11 @@
         \btxlabeltext{apa:pages}
         \btxnbsp
         \btxflush{pages}
+        \btxperiod
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:edition:sentense
+\starttexdefinition btx:apa:edition:sentence
     \btxdoif {edition} {
         \btxspace
         \btxflush{edition}
@@ -371,37 +455,10 @@
 
 \startsetups btx:apa:article
     \texdefinition{btx:apa:author-or-key-and-year}
-    \btxdoif {title} {
-        %btxflush{converters.Word -> title}
-        \btxflush{Word -> title}
-        \btxperiod
-    }
-    \btxdoifelse {journal} {
-        % expandedjournal abbreviatedjournal
-        \texdefinition{btx:apa:italic}{expandedjournal -> journal}
-    } {
-        \btxdoif {crossref} {
-            \btxlabeltext{apa:In}
-            \btxspace
-            \btxflush{crossref}
-        }
-    }
-    \btxdoifelse {volume} {
-        \btxspace
-        \texdefinition{btx:apa:italic}{volume}
-        \btxdoif {issue} {
-            \btxlparent
-            \btxflush{issue}
-            \btxrparent
-        }
-        \btxdoif {pages} {
-            \btxcomma
-            \btxflush{pages}
-        }
-        \btxperiod
-    } {
-        \texdefinition{btx:apa:pages:pp}
-    }
+    \texdefinition{btx:apa:title}
+    \texdefinition{btx:apa:journal-volume-issue}
+    \texdefinition{btx:apa:pages}
+    \texdefinition{btx:apa:doi-or-url}
     \texdefinition{btx:apa:note}
     \texdefinition{btx:apa:comment}
 \stopsetups
@@ -481,7 +538,8 @@
     }
     \texdefinition{btx:apa:edition:sentence}
     \texdefinition{btx:apa:wherefrom}{publisher}
-    \texdefinition{btx:apa:pages:p}% twice?
+    \texdefinition{btx:apa:pages:pp}% twice?
+    \texdefinition{btx:apa:doi-or-url}
     \texdefinition{btx:apa:note}
 \stopsetups
 
@@ -775,6 +833,7 @@
     \btxcomma
     \texdefinition{btx:apa:wherefrom}{institution}
     \texdefinition{btx:apa:pages:p}
+    \texdefinition{btx:apa:doi-or-url}
     \texdefinition{btx:apa:note}
 \stopsetups
 
@@ -812,7 +871,7 @@
     \texdefinition{btx:apa:title-and-series}
     \texdefinition{btx:apa:pages:p}
     \btxdoif {type} {
-        \btxlparent
+        \btxlparenthesis
         \btxflush{type}
         \btxrparent
     }

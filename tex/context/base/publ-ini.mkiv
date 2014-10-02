@@ -229,6 +229,7 @@
 
 \definebtxdataset
   [\v!standard]
+% [\c!language=] % nothing set so use current
 
 % \usebtxdataset
 %   [standard]
@@ -346,8 +347,10 @@
 \unexpanded\def\btxcomma       {\removeunwantedspaces,\space}
 \unexpanded\def\btxcolon       {\removeunwantedspaces:\space}
 \unexpanded\def\btxsemicolon   {\removeunwantedspaces;\space}
-\unexpanded\def\btxlparent     {\removeunwantedspaces\space(}
-\unexpanded\def\btxrparent     {\removeunwantedspaces)\space}
+\unexpanded\def\btxlparent     {\removeunwantedspaces\space(} % obsolete
+\unexpanded\def\btxrparent     {\removeunwantedspaces)\space} % obsolete
+\unexpanded\def\btxlparenthesis{\removeunwantedspaces\space(}
+\unexpanded\def\btxrparenthesis{\removeunwantedspaces)\space}
 \unexpanded\def\btxlbracket    {\removeunwantedspaces\space[}
 \unexpanded\def\btxrbracket    {\removeunwantedspaces]\space}
 
@@ -589,6 +592,7 @@
    % \determinelistcharacteristics[\currentbtxrendering]%
      \btx_set_rendering_alternative
      \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
+     \uselanguageparameter\btxdatasetparameter % new
      \let\currentlist\s!btx
      \let\currentbtxlist\currentbtxrendering
      \the\everysetupbtxlistplacement
@@ -984,6 +988,7 @@
 
 \def\publ_cite_handle_variant_indeed[#1]%
   {\usebtxcitevariantstyleandcolor\c!style\c!color
+   \uselanguageparameter\btxdatasetparameter % new
    \letbtxcitevariantparameter\c!alternative\currentbtxcitevariant
    \btxcitevariantparameter\v!left
    \ctxcommand{btxhandlecite{%
@@ -1060,8 +1065,8 @@
 %D Whatever helpers:
 
 \unexpanded\def\btxsingularplural#1{\ctxcommand{btxsingularorplural("\currentbtxdataset","\currentbtxtag","#1")}}
-\unexpanded\def\btxoneorrange    #1{\ctxcommand{btxoneorrange("\currentbtxdataset","\currentbtxtag","#1")}}
-\unexpanded\def\btxfirstofrange  #1{\ctxcommand{btxfirstofrange("\currentbtxdataset","\currentbtxtag","#1")}}
+\unexpanded\def\btxoneorrange    #1{\ctxcommand{oneorrange("\currentbtxdataset","\currentbtxtag","#1")}}
+\unexpanded\def\btxfirstofrange  #1{\ctxcommand{firstofrange("\currentbtxdataset","\currentbtxtag","#1")}}
 
 \let\btxsingularorplural\btxsingularplural
 

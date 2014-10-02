@@ -260,7 +260,7 @@ function codeinjections.getbookmarks(filename)
     -- The first version built a nested tree and flattened that afterwards ... but I decided
     -- to keep it simple and flat.
 
-    local list = bookmarks.getextra(filename)
+    local list = bookmarks.extras.get(filename)
 
     if list then
         return list
@@ -274,7 +274,7 @@ function codeinjections.getbookmarks(filename)
         document = lpdf.epdf.load(filename)
     else
         report_outline("unknown file %a",filename)
-        bookmarks.registerextra(filename,list)
+        bookmarks.extras.register(filename,list)
         return list
     end
 
@@ -374,7 +374,7 @@ function codeinjections.getbookmarks(filename)
         report_outline("no outline in %a",document.filename)
     end
 
-    bookmarks.registerextra(filename,list)
+    bookmarks.extras.register(filename,list)
 
     return list
 

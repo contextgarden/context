@@ -322,7 +322,7 @@ local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0
 local forget     = percent^1 * (1-lineending)^0
 local spacing    = spacing * forget^0 * spacing
 local assignment = spacing * key * spacing * equal * spacing * value * spacing
-local shortcut   = P("@") * (P("string") + P("STRING")) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
+local shortcut   = P("@") * (P("string") + P("STRING") + P("String")) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
 local definition = category * spacing * left * spacing * tag * spacing * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1) / do_definition
 local comment    = keyword * spacing * left * (1-right)^0 * spacing * right
 

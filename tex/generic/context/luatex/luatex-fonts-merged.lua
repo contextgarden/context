@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/29/14 22:58:12
+-- merge date  : 10/02/14 23:07:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -895,7 +895,7 @@ local function compare(a,b)
   if ta==tb then
     return a<b
   else
-    return tostring(a)<tostring(b)
+    return tostring(a)<tostring(b) 
   end
 end
 local function sortedkeys(tab)

@@ -54,7 +54,7 @@ local function compare(a,b)
     if ta == tb then
         return a < b
     else
-        return tostring(a) < tostring(b)
+        return tostring(a) < tostring(b) -- not that efficient
     end
 end
 

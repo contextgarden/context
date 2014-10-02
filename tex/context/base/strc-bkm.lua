@@ -228,42 +228,64 @@ function bookmarks.flatten(levels)
 end
 
 local extras = { }
+local lists  = { }
 local names  = { }
+
+bookmarks.extras = extras
 
 local function cleanname(name)
     return lower(file.basename(name))
 end
 
-function bookmarks.registerextra(name,levels)
+function extras.register(name,levels)
     if name and levels then
         name = cleanname(name)
         local found = names[name]
         if found then
-            extras[found].levels = levels
+            lists[found].levels = levels
         else
-            extras[#extras+1] = {
+            lists[#lists+1] = {
                 name   = name,
                 levels = levels,
             }
-            names[name] = #extras
+            names[name] = #lists
         end
     end
 end
 
-function bookmarks.getextra(name)
+function extras.get(name)
     if name then
         local found = names[cleanname(name)]
         if found then
-            return extras[found].levels
+            return lists[found].levels
         end
     else
-        return extras
+        return lists
     end
 end
 
-local function checkextras()
-    for i=1,#extras do
-        local levels = extras[i].levels
+function extras.reset(name)
+    local l, n = { }, { }
+    if name then
+        name = cleanname(name)
+        for i=1,#lists do
+            local li = lists[i]
+            local ln = li.name
+            if name == ln then
+                -- skip
+            else
+                local m = #l + 1
+                l[m]  = li
+                n[ln] = m
+            end
+        end
+    end
+    lists, names = l, n
+end
+
+local function checklists()
+    for i=1,#lists do
+        local levels = lists[i].levels
         for j=1,#levels do
             local entry     = levels[j]
             local pageindex = entry.pageindex
@@ -275,17 +297,11 @@ local function checkextras()
     end
 end
 
-function bookmarks.merge(levels,mode)
-    if not levels then
-        -- a plugin messed up
-        return { }
-    end
-    local extras    = bookmarks.getextra()
-    local sections  = { }
-    local merge     = { }
-    local nofextras = #extras
-    for i=1,nofextras do
-        local levels = extras[i].levels
+function extras.tosections(levels)
+    local sections = { }
+    local noflists = #lists
+    for i=1,noflists do
+        local levels = lists[i].levels
         local data   = { }
         sections[i]  = data
         for j=1,#levels do
@@ -301,24 +317,55 @@ function bookmarks.merge(levels,mode)
             end
         end
     end
-    for j=1,#levels do
-        local entry     = levels[j]
-        merge[#merge+1] = entry
-        local section   = entry.reference.section
-        local level     = entry.level
-        entry.section   = section -- for tracing
-        for i=1,nofextras do
-            local entries = sections[i][section]
-            if entries then
-                for i=1,#entries do
-                    local entry = entries[i]
-                    merge[#merge+1] = entry
-                    entry.level = entry.level + level
+    return sections
+end
+
+function extras.mergesections(levels,sections)
+    if not sections or #sections == 0 then
+        return levels
+    elseif not levels then
+        return { }
+    else
+        local merge    = { }
+        local noflists = #lists
+        if #levels == 0 then
+            local level   = 0
+            local section = 0
+            for i=1,noflists do
+                local entries = sections[i][0]
+                if entries then
+                    for i=1,#entries do
+                        local entry = entries[i]
+                        merge[#merge+1] = entry
+                        entry.level = entry.level + level
+                    end
+                end
+            end
+        else
+            for j=1,#levels do
+                local entry     = levels[j]
+                merge[#merge+1] = entry
+                local section   = entry.reference.section
+                local level     = entry.level
+                entry.section   = section -- for tracing
+                for i=1,noflists do
+                    local entries = sections[i][section]
+                    if entries then
+                        for i=1,#entries do
+                            local entry = entries[i]
+                            merge[#merge+1] = entry
+                            entry.level = entry.level + level
+                        end
+                    end
                 end
             end
         end
+        return merge
     end
-    return merge
+end
+
+function bookmarks.merge(levels,mode)
+    return extras.mergesections(levels,extras.tosections())
 end
 
 local sequencers   = utilities.sequencers
@@ -340,7 +387,7 @@ appendaction(bookmarkactions,"system",bookmarks.merge)
 
 function bookmarks.finalize(levels)
     local method = bookmarks.method or "internal"
-    checkextras() -- so that plugins have the adapted page number
+    checklists() -- so that plugins have the adapted page number
     levels = bookmarkactions.runner(levels,method)
     if levels and #levels > 0 then
         -- normally this is not needed
