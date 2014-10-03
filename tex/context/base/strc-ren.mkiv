@@ -516,6 +516,11 @@
      \fi
    \endgroup}
 
+\def\fakedheadnumber{\vphantom{0}} % needed for mathplus
+
+\unexpanded\def\fakeheadnumbercontent
+  {\hbox to \zeropoint{\let\getheadnumber\fakedheadnumber\headnumbercontent}}
+
 \unexpanded\def\strc_rendering_inject_number_and_text
   {\edef\p_command{\headparameter\c!command}% assumes \unexpanded definition
    \ifx\p_command\empty
@@ -608,6 +613,7 @@
                 \hsize\headtextwidth
             \fi
             \noindent
+            \fakeheadnumbercontent % will also be done in the other ones (force consistency with numbered)
         \fi
         \headtextcontent
     }
@@ -637,6 +643,8 @@
                     \hskip\dimexpr\d_strc_rendering_local_leftoffset+\scratchdistance\relax
                 }
             }
+        \else
+            \fakeheadnumbercontent % will also be done in the other ones (force consistency with numbered)
         \fi
         \headtextcontent
     }
@@ -665,6 +673,8 @@
             \strut
             \headnumbercontent
             \par
+        else
+            \fakeheadnumbercontent % will also be done in the other ones (force consistency with numbered)
         \fi
         \begstrut
         \headtextcontent

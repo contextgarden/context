@@ -683,7 +683,9 @@ if bytepairs then
     -- with a little bit more code we could include the linesplitter
 
     utf16_to_utf8_be = function(t)
-        if type(t) == "string" then
+        if not t then
+            return nil
+        elseif type(t) == "string" then
             t = lpegmatch(utf_16_be_linesplitter,t)
         end
         local result = { } -- we reuse result
@@ -711,7 +713,9 @@ if bytepairs then
     end
 
     utf16_to_utf8_le = function(t)
-        if type(t) == "string" then
+        if not t then
+            return nil
+        elseif type(t) == "string" then
             t = lpegmatch(utf_16_le_linesplitter,t)
         end
         local result = { } -- we reuse result
@@ -739,7 +743,9 @@ if bytepairs then
     end
 
     utf32_to_utf8_be = function(t)
-        if type(t) == "string" then
+        if not t then
+            return nil
+        elseif type(t) == "string" then
             t = lpegmatch(utflinesplitter,t)
         end
         local result = { } -- we reuse result
@@ -764,7 +770,9 @@ if bytepairs then
     end
 
     utf32_to_utf8_le = function(t)
-        if type(t) == "string" then
+        if not t then
+            return nil
+        elseif type(t) == "string" then
             t = lpegmatch(utflinesplitter,t)
         end
         local result = { } -- we reuse result
@@ -791,7 +799,9 @@ if bytepairs then
 else
 
     utf16_to_utf8_be = function(t)
-        if type(t) == "string" then
+        if not t then
+            return nil
+        elseif type(t) == "string" then
             t = lpegmatch(utf_16_be_linesplitter,t)
         end
         local result = { } -- we reuse result
@@ -822,7 +832,9 @@ else
     end
 
     utf16_to_utf8_le = function(t)
-        if type(t) == "string" then
+        if not t then
+            return nil
+        elseif type(t) == "string" then
             t = lpegmatch(utf_16_le_linesplitter,t)
         end
         local result = { } -- we reuse result

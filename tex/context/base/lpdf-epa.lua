@@ -149,11 +149,9 @@ function codeinjections.mergereferences(specification)
             local size        = specification.size    or "crop" -- todo
             local pagedata    = document.pages[pagenumber]
             local annotations = pagedata and pagedata.Annots
-local namespace = makenamespace(fullname)
-local reference = namespace .. pagenumber
+            local namespace = makenamespace(fullname)
+            local reference = namespace .. pagenumber
             if annotations and annotations.n > 0 then
---                 local namespace = makenamespace(fullname)
---                 local reference = namespace .. pagenumber
                 local mediabox  = pagedata.MediaBox
                 local llx       = mediabox[1]
                 local lly       = mediabox[2]
@@ -199,14 +197,14 @@ local reference = namespace .. pagenumber
                     end
                 end
                 context.flushlayer { "epdflinks" }
-end
-                context.setgvalue("figurereference",reference) -- global
-                if trace_links then
-                    report_link("setting figure reference to %a",reference)
-                end
-                specification.reference = reference
-                return namespace
---             end
+            end
+            -- moved outside previous test
+            context.setgvalue("figurereference",reference) -- global
+            if trace_links then
+                report_link("setting figure reference to %a",reference)
+            end
+            specification.reference = reference
+            return namespace
         end
     end
     return ""-- no namespace, empty, not nil

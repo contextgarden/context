@@ -10,34 +10,104 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 -- I want to be independent of the library (which implements a selection of what a file
 -- provides) and also because I want an interface closer to Lua's table model while the API
 -- stays close to the original xpdf library. Of course, after prototyping a solution, we can
--- optimize it using the low level epdf accessors.
-
+-- optimize it using the low level epdf accessors. However, not all are accessible (this will
+-- be fixed).
+--
 -- It will be handy when we have a __length and __next that can trigger the resolve till then
--- we will provide .n as #.
-
+-- we will provide .n as #; maybe in Lua 5.3 or later.
+--
 -- As there can be references to the parent we cannot expand a tree. I played with some
--- expansion variants but it does to pay off.
-
--- Maybe we need a close(). In fact, nilling the document root will result in a gc at some
--- point.
-
--- We cannot access all destinations in one run.
-
+-- expansion variants but it does not pay off; adding extra checks is nto worth the trouble.
+--
+-- The document stays over. In order to free memory one has to explicitly onload the loaded
+-- document.
+--
 -- We have much more checking then needed in the prepare functions because occasionally
 -- we run into bugs in poppler or the epdf interface. It took us a while to realize that
 -- there was a long standing gc issue the on long runs with including many pages could
 -- crash the analyzer.
+--
+-- - we cannot access all destinations in one run.
+-- - v:getTypeName(), versus types[v:getType()], the last variant is about twice as fast
+--
+-- A potential speedup is to use local function instead of colon accessors. This will be done
+-- in due time. Normally this code is not really speed sensitive but one never knows.
 
-local setmetatable, rawset, rawget, tostring, tonumber = setmetatable, rawset, rawget, tostring, tonumber
-local lower, match, char, find, sub = string.lower, string.match, string.char, string.find, string.sub
+-- __newindex = function(t,k,v)
+--     local tk = rawget(t,k)
+--     if not tk then
+--         local o = epdf.Object()
+--         o:initString(v)
+--         d:add(k,o)
+--     end
+--     rawset(t,k,v)
+-- end,
+
+local setmetatable, rawset, rawget, type = setmetatable, rawset, rawget, type
+local tostring, tonumber = tostring, tonumber
+local lower, match, char, utfchar = string.lower, string.match, string.char, utf.char
 local concat = table.concat
 local toutf = string.toutf
 
-local report_epdf = logs.reporter("epdf")
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local P, C, S, R, Ct, Cc, V = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cc, lpeg.V
 
--- v:getTypeName(), versus types[v:getType()], the last variant is about twice as fast
+local epdf           = epdf
+      lpdf           = lpdf or { }
+local lpdf           = lpdf
+lpdf.epdf            = { }
 
-local typenames = { [0] =
+local report_epdf    = logs.reporter("epdf")
+
+local getDict, getArray, getReal, getNum, getString, getBool, getName, getRef, getRefNum
+local getType, getTypeName
+local dictGetLength, dictGetVal, dictGetValNF, dictGetKey
+local arrayGetLength, arrayGetNF, arrayGet
+local streamReset, streamGetDict, streamGetChar
+
+do
+    local object     = epdf.Object()
+    --
+    getDict          = object.getDict
+    getArray         = object.getArray
+    getReal          = object.getReal
+    getNum           = object.getNum
+    getString        = object.getString
+    getBool          = object.getBool
+    getName          = object.getName
+    getRef           = object.getRef
+    getRefNum        = object.getRefNum
+    --
+    getType          = object.getType
+    getTypeName      = object.getTypeName
+    --
+    streamReset      = object.streamReset
+    streamGetDict    = object.streamGetDict
+    streamGetChar    = object.streamGetChar
+    --
+end
+
+local function initialize_methods(xref)
+    local dictionary = epdf.Dict(xref)
+    local array      = epdf.Array(xref)
+    --
+    dictGetLength    = dictionary.getLength
+    dictGetVal       = dictionary.getVal
+    dictGetValNF     = dictionary.getValNF
+    dictGetKey       = dictionary.getKey
+    --
+    arrayGetLength   = array.getLength
+    arrayGetNF       = array.getNF
+    arrayGet         = array.get
+    --
+ -- report_epdf("initializing lpdf.epdf library")
+    --
+    initialize_methods = function()
+        -- already done
+    end
+end
+
+local typenames      = { [0] =
   "boolean",
   "integer",
   "real",
@@ -55,19 +125,18 @@ local typenames = { [0] =
   "integer64",
 }
 
-local typenumbers = table.swapped(typenames)
+local typenumbers    = table.swapped(typenames)
 
-local null_code = typenumbers.null
-local ref_code  = typenumbers.ref
+local null_code      = typenumbers.null
+local ref_code       = typenumbers.ref
 
 local function fatal_error(...)
     report_epdf(...)
-    -- we exit as we will crash anyway
     report_epdf("aborting job in order to avoid crash")
     os.exit()
 end
 
-local limited = false -- abit of protection
+local limited = false -- a bit of protection
 
 directives.register("system.inputmode", function(v)
     if not limited then
@@ -79,77 +148,43 @@ directives.register("system.inputmode", function(v)
     end
 end)
 
---
+-- epdf is the built-in library
 
 function epdf.type(o)
     local t = lower(match(tostring(o),"[^ :]+"))
     return t or "?"
 end
 
-lpdf = lpdf or { }
-local lpdf = lpdf
-
-lpdf.epdf  = { }
-
 local checked_access
 
--- dictionaries
-
--- local function prepare(document,d,t,n,k,mt)
---     for i=1,n do
---         local v = d:getVal(i)
---         local r = d:getValNF(i)
---         local key = d:getKey(i)
---         if r and r:getTypeName() == "ref" then
---             r = r:getRef().num
---             local c = document.cache[r]
---             if c then
---                 --
---             else
---                 c = checked_access[v:getTypeName()](v,document,r)
---                 if c then
---                     document.cache[r] = c
---                     document.xrefs[c] = r
---                 end
---             end
---             t[key] = c
---         elseif v then
---             t[key] = checked_access[v:getTypeName()](v,document)
---         else
---             fatal_error("fatal error: no data for key %s in dictionary",key)
---         end
---     end
---     getmetatable(t).__index = nil -- ?? weird
---     setmetatable(t,mt)
---     return t[k]
--- end
+-- dictionaries (can be optimized: ... resolve and redefine when all locals set)
 
 local function prepare(document,d,t,n,k,mt)
---     print("start prepare dict, requesting key ",k,"out of",n)
     for i=1,n do
-        local v = d:getVal(i)
+        local v = dictGetVal(d,i)
         if v then
-            local r = d:getValNF(i)
-            local kind = v:getType()
---             print("checking",i,d:getKey(i),v:getTypeName())
+            local r = dictGetValNF(d,i)
+            local kind = getType(v)
             if kind == null_code then
-             -- report_epdf("warning: null value for key %a in dictionary",key)
+                -- ignore
             else
-                local key = d:getKey(i)
+                local key = dictGetKey(d,i)
                 if kind then
-                    if r and r:getType() == ref_code then
-                        local objnum = r:getRef().num
-                        local cached = document.cache[objnum]
+                    if r and getType(r) == ref_code then
+                        local objnum = getRefNum(r)
+                        local cached = document.__cache__[objnum]
                         if not cached then
                             cached = checked_access[kind](v,document,objnum)
                             if c then
-                                document.cache[objnum] = cached
-                                document.xrefs[cached] = objnum
+                                document.__cache__[objnum] = cached
+                                document.__xrefs__[cached] = objnum
                             end
                         end
                         t[key] = cached
+                     -- rawset(t,key,cached)
                     else
                         t[key] = checked_access[kind](v,document)
+                     -- rawset(t,key,checked_access[kind](v,document))
                     end
                 else
                     report_epdf("warning: nil value for key %a in dictionary",key)
@@ -159,67 +194,55 @@ local function prepare(document,d,t,n,k,mt)
             fatal_error("error: invalid value at index %a in dictionary of %a",i,document.filename)
         end
     end
---     print("done")
-    getmetatable(t).__index = nil -- ?? weird
     setmetatable(t,mt)
     return t[k]
 end
 
 local function some_dictionary(d,document,r,mt)
-    local n = d and d:getLength() or 0
+    local n = d and dictGetLength(d) or 0
     if n > 0 then
         local t = { }
-        setmetatable(t, { __index = function(t,k) return prepare(document,d,t,n,k,mt) end } )
+        setmetatable(t, {
+            __index = function(t,k)
+                return prepare(document,d,t,n,k,mt)
+            end
+        } )
         return t
     end
 end
 
--- arrays
+local function get_dictionary(object,document,r,mt)
+    local d = getDict(object)
+    local n = d and dictGetLength(d) or 0
+    if n > 0 then
+        local t = { }
+        setmetatable(t, {
+            __index = function(t,k)
+                return prepare(document,d,t,n,k,mt)
+            end,
+        } )
+        return t
+    end
+end
 
-local done = { }
-
--- local function prepare(document,a,t,n,k)
---     for i=1,n do
---         local v = a:get(i)
---         local r = a:getNF(i)
---         local kind = v:getTypeName()
---         if kind == "null" then
---             -- TH: weird, but appears possible
---         elseif r:getTypeName() == "ref" then
---             r = r:getRef().num
---             local c = document.cache[r]
---             if c then
---                 --
---             else
---                 c = checked_access[kind](v,document,r)
---                 document.cache[r] = c
---                 document.xrefs[c] = r
---             end
---             t[i] = c
---         else
---             t[i] = checked_access[kind](v,document)
---         end
---     end
---     getmetatable(t).__index = nil
---     return t[k]
--- end
+-- arrays (can be optimized: ... resolve and redefine when all locals set)
 
 local function prepare(document,a,t,n,k)
     for i=1,n do
-        local v = a:get(i)
+        local v = arrayGet(a,i)
         if v then
-            local kind = v:getType()
+            local kind = getType(v)
             if kind == null_code then
-             -- report_epdf("warning: null value for index %a in array",i)
+                -- ignore
             elseif kind then
-                local r = a:getNF(i)
-                if r and r:getType() == ref_code then
-                    local objnum = r:getRef().num
-                    local cached = document.cache[objnum]
+                local r = arrayGetNF(a,i)
+                if r and getType(r) == ref_code then
+                    local objnum = getRefNum(r)
+                    local cached = document.__cache__[objnum]
                     if not cached then
                         cached = checked_access[kind](v,document,objnum)
-                        document.cache[objnum] = cached
-                        document.xrefs[cached] = objnum
+                        document.__cache__[objnum] = cached
+                        document.__xrefs__[cached] = objnum
                     end
                     t[i] = cached
                 else
@@ -237,10 +260,28 @@ local function prepare(document,a,t,n,k)
 end
 
 local function some_array(a,document,r)
-    local n = a and a:getLength() or 0
+    local n = a and arrayGetLength(a) or 0
     if n > 0 then
         local t = { n = n }
-        setmetatable(t, { __index = function(t,k) return prepare(document,a,t,n,k) end } )
+        setmetatable(t, {
+            __index = function(t,k)
+                return prepare(document,a,t,n,k)
+            end
+        } )
+        return t
+    end
+end
+
+local function get_array(object,document,r)
+    local a = getArray(object)
+    local n = a and arrayGetLength(a) or 0
+    if n > 0 then
+        local t = { n = n }
+        setmetatable(t, {
+            __index = function(t,k)
+                return prepare(document,a,t,n,k)
+            end
+        } )
         return t
     end
 end
@@ -248,9 +289,9 @@ end
 local function streamaccess(s,_,what)
     if not what or what == "all" or what == "*all" then
         local t, n = { }, 0
-        s:streamReset()
+        streamReset(s)
         while true do
-            local c = s:streamGetChar()
+            local c = streamGetChar(s)
             if c < 0 then
                 break
             else
@@ -262,71 +303,22 @@ local function streamaccess(s,_,what)
     end
 end
 
-local function some_stream(d,document,r)
+local function get_stream(d,document,r)
     if d then
-        d:streamReset()
-        local s = some_dictionary(d:streamGetDict(),document,r)
+        streamReset(d)
+        local s = some_dictionary(streamGetDict(d),document,r)
         getmetatable(s).__call = function(...) return streamaccess(d,...) end
         return s
     end
 end
 
--- we need epdf.boolean(v) in addition to v:getBool() [dictionary, array, stream, real, integer, string, boolean, name, ref, null]
+local function get_string(v)
+    return toutf(getString(v))
+end
 
--- checked_access = {
---     dictionary = function(d,document,r)
---         return some_dictionary(d:getDict(),document,r)
---     end,
---     array = function(a,document,r)
---         return some_array(a:getArray(),document,r)
---     end,
---     stream = function(v,document,r)
---         return some_stream(v,document,r)
---     end,
---     real = function(v)
---         return v:getReal()
---     end,
---     integer = function(v)
---         return v:getNum()
---     end,
---  -- integer64 = function(v)
---  --     return v:getNum()
---  -- end,
---     string = function(v)
---         return toutf(v:getString())
---     end,
---     boolean = function(v)
---         return v:getBool()
---     end,
---     name = function(v)
---         return v:getName()
---     end,
---     ref = function(v)
---         return v:getRef()
---     end,
---     null = function()
---         return nil
---     end,
---     none = function()
---         -- why not null
---         return nil
---     end,
---  -- error = function()
---  --     -- shouldn't happen
---  --     return nil
---  -- end,
---  -- eof = function()
---  --     -- we don't care
---  --     return nil
---  -- end,
---  -- cmd = function()
---  --     -- shouldn't happen
---  --     return nil
---  -- end
--- }
-
--- a bit of a speedup in case we want to play with large pdf's and have millions
--- of access .. it might not be worth the trouble
+local function get_null()
+    return nil
+end
 
 -- we have dual access: by typenumber and by typename
 
@@ -345,102 +337,29 @@ checked_access = table.setmetatableindex(function(t,k)
     end
 end)
 
+checked_access[typenumbers.boolean]    = getBool
+checked_access[typenumbers.integer]    = getNum
+checked_access[typenumbers.real]       = getReal
+checked_access[typenumbers.string]     = get_string
+checked_access[typenumbers.name]       = getName
+checked_access[typenumbers.null]       = get_null
+checked_access[typenumbers.array]      = get_array      -- d,document,r
+checked_access[typenumbers.dictionary] = get_dictionary -- d,document,r
+checked_access[typenumbers.stream]     = get_stream
+checked_access[typenumbers.ref]        = getRef
+
 for i=0,#typenames do
-    checked_access[i] = function()
-        return function(v,document)
-            invalidaccess(i,document)
+    local checker = checked_access[i]
+    if not checker then
+        checker = function()
+            return function(v,document)
+                invalidaccess(i,document)
+            end
         end
+        checked_access[i] = checker
     end
+    checked_access[typenames[i]] = checker
 end
-
-checked_access[typenumbers.dictionary] = function(d,document,r)
-    local getDict = d.getDict
-    local getter  = function(d,document,r)
-        return some_dictionary(getDict(d),document,r)
-    end
-    checked_access.dictionary              = getter
-    checked_access[typenumbers.dictionary] = getter
-    return getter(d,document,r)
-end
-
-checked_access[typenumbers.array] = function(a,document,r)
-    local getArray = a.getArray
-    local getter = function(a,document,r)
-        return some_array(getArray(a),document,r)
-    end
-    checked_access.array              = getter
-    checked_access[typenumbers.array] = getter
-    return getter(a,document,r)
-end
-
-checked_access[typenumbers.stream] = function(v,document,r)
-    return some_stream(v,document,r) -- or just an equivalent
-end
-
-checked_access[typenumbers.real] = function(v)
-    local getReal = v.getReal
-    checked_access.real              = getReal
-    checked_access[typenumbers.real] = getReal
-    return getReal(v)
-end
-
-checked_access[typenumbers.integer] = function(v)
-    local getNum = v.getNum
-    checked_access.integer              = getNum
-    checked_access[typenumbers.integer] = getNum
-    return getNum(v)
-end
-
-checked_access[typenumbers.string] = function(v)
-    local getString = v.getString
-    local function getter(v)
-        return toutf(getString(v))
-    end
-    checked_access.string              = getter
-    checked_access[typenumbers.string] = getter
-    return toutf(getString(v))
-end
-
-checked_access[typenumbers.boolean] = function(v)
-    local getBool = v.getBool
-    checked_access.boolean              = getBool
-    checked_access[typenumbers.boolean] = getBool
-    return getBool(v)
-end
-
-checked_access[typenumbers.name] = function(v)
-    local getName = v.getName
-    checked_access.name              = getName
-    checked_access[typenumbers.name] = getName
-    return getName(v)
-end
-
-checked_access[typenumbers.ref] = function(v)
-    local getRef = v.getRef
-    checked_access.ref              = getRef
-    checked_access[typenumbers.ref] = getRef
-    return getRef(v)
-end
-
-checked_access[typenumbers.null] = function()
-    return nil
-end
-
-checked_access[typenumbers.none] = function()
-    -- is actually an error
-    return nil
-end
-
-for i=0,#typenames do
-    checked_access[typenames[i]] = checked_access[i]
-end
-
--- checked_access.real    = epdf.real
--- checked_access.integer = epdf.integer
--- checked_access.string  = epdf.string
--- checked_access.boolean = epdf.boolean
--- checked_access.name    = epdf.name
--- checked_access.ref     = epdf.ref
 
 local function getnames(document,n,target) -- direct
     if n then
@@ -498,7 +417,6 @@ local function getlayers(document)
             local n = layers.n
             for i=1,n do
                 local layer = layers[i]
-             -- print(document.xrefs[layer])
                 t[i] = layer.Name
             end
             t.n = n
@@ -513,50 +431,33 @@ local function getstructure(document)
 end
 
 local function getpages(document,Catalog)
-    local data  = document.data
-    local xrefs = document.xrefs
-    local cache = document.cache
-    local cata  = data:getCatalog()
-    local xref  = data:getXRef()
-    local pages = { }
-    local nofpages = cata:getNumPages()
---     local function getpagestuff(pagenumber,k)
---         if k == "MediaBox" then
---             local pageobj = cata:getPage(pagenumber)
---             local pagebox = pageobj:getMediaBox()
---             return { pagebox.x1, pagebox.y1, pagebox.x2, pagebox.y2 }
---         elseif k == "CropBox" then
---             local pageobj = cata:getPage(pagenumber)
---             local pagebox = pageobj:getMediaBox()
---             return { pagebox.x1, pagebox.y1, pagebox.x2, pagebox.y2 }
---         elseif k == "Resources" then
---             print("todo page resources from parent")
---          -- local pageobj = cata:getPage(pagenumber)
---          -- local resources = pageobj:getResources()
---         end
---     end
---     for pagenumber=1,nofpages do
---         local mt = { __index = function(t,k)
---             local v = getpagestuff(pagenumber,k)
---             if v then
---                 t[k] = v
---             end
---             return v
---         end }
-    local mt = { __index = Catalog.Pages }
+    local __data__  = document.__data__
+    local __xrefs__ = document.__xrefs__
+    local __cache__ = document.__cache__
+    local __xref__  = document.__xref__
+    --
+    local catalog   = __data__:getCatalog()
+    local pages     = { }
+    local nofpages  = catalog:getNumPages()
+    local metatable = { __index = Catalog.Pages }
+    --
     for pagenumber=1,nofpages do
-        local pagereference = cata:getPageRef(pagenumber).num
-        local pagedata = some_dictionary(xref:fetch(pagereference,0):getDict(),document,pagereference,mt)
+        local pagereference = catalog:getPageRef(pagenumber).num
+        local pageobject    = __xref__:fetch(pagereference,0)
+        local pagedata      = get_dictionary(pageobject,document,pagereference,metatable)
         if pagedata then
-            pagedata.number = pagenumber
-            pages[pagenumber] = pagedata
-            xrefs[pagedata] = pagereference
-            cache[pagereference] = pagedata
+         -- rawset(pagedata,"number",pagenumber)
+            pagedata.number          = pagenumber
+            pages[pagenumber]        = pagedata
+            __xrefs__[pagedata]      = pagereference
+            __cache__[pagereference] = pagedata
         else
             report_epdf("missing pagedata at slot %i",i)
         end
     end
+    --
     pages.n = nofpages
+    --
     return pages
 end
 
@@ -583,27 +484,25 @@ function lpdf.epdf.load(filename)
     local document = loaded[filename]
     if not document then
         statistics.starttiming(lpdf.epdf)
-        local data = epdf.open(filename) -- maybe resolvers.find_file
-        if data then
+        local __data__ = epdf.open(filename) -- maybe resolvers.find_file
+        if __data__ then
+            local __xref__ = __data__:getXRef()
             document = {
-                filename = filename,
-                cache    = { },
-                xrefs    = { },
-                data     = data,
+                filename  = filename,
+                __cache__ = { },
+                __xrefs__ = { },
+                __fonts__ = { },
+                __data__  = __data__,
+                __xref__  = __xref__,
             }
-         -- table.setmetatablenewindex(document.cache,function(t,k,v)
-         --     if rawget(t,k) then
-         --         report_epdf("updating object %a in cache",k)
-         --     else
-         --         report_epdf("storing object %a in cache",k)
-         --     end
-         --     rawset(t,k,v)
-         -- end)
-            local Catalog    = some_dictionary(data:getXRef():getCatalog():getDict(),document)
-            local Info       = some_dictionary(data:getXRef():getDocInfo():getDict(),document)
-            document.Catalog = Catalog
-            document.Info    = Info
-         -- document.catalog = Catalog
+            --
+            initialize_methods(__xref__)
+            --
+            local Catalog          = some_dictionary(__xref__:getCatalog():getDict(),document)
+            local Info             = some_dictionary(__xref__:getDocInfo():getDict(),document)
+			--
+            document.Catalog       = Catalog
+            document.Info          = Info
             -- a few handy helper tables
             document.pages         = delayed(document,"pages",        function() return getpages(document,Catalog) end)
             document.destinations  = delayed(document,"destinations", function() return getnames(document,Catalog.Names and Catalog.Names.Dests) end)
@@ -633,16 +532,199 @@ end
 
 -- for k, v in next, expand(t) do
 
-function lpdf.epdf.expand(t)
+local function expand(t)
     if type(t) == "table" then
         local dummy = t.dummy
     end
     return t
 end
 
+-- for k, v in expanded(t) do
+
+local function expanded(t)
+    if type(t) == "table" then
+        local dummy = t.dummy
+    end
+    return next, t
+end
+
+lpdf.epdf.expand   = expand
+lpdf.epdf.expanded = expanded
+
+-- experiment .. will be finished when there is a real need
+
+local hexdigit  = R("09","AF")
+local hexword   = hexdigit*hexdigit*hexdigit*hexdigit / function(s) return tonumber(s,16) end
+local numchar   = ( P("\\") * ( (R("09")^3/tonumber) + C(1) ) ) + C(1)
+local number    = lpegpatterns.number / tonumber
+local spaces    = lpegpatterns.whitespace^1
+local keyword   = P("/") * C(R("AZ","az","09")^1)
+local operator  = C((R("AZ","az")+P("'")+P('"'))^1)
+
+local grammar   = P { "start",
+    start      = (keyword + number + V("dictionary") + V("unicode") + V("string") + V("unicode")+ V("array") + spaces)^1,
+    array      = P("[")  * Ct(V("start")^1)            * P("]"),
+    dictionary = P("<<") * Ct(V("start")^1)            * P(">>"),
+    unicode    = P("<")  * Ct(hexword^1)               * P(">"),
+    string     = P("(")  * Ct((V("string")+numchar)^1) * P(")"), -- untested
+}
+
+local operation = Ct(grammar^1 * operator)
+local parser    = Ct((operation + P(1))^1)
+
+-- beginbfrange : <start> <stop> <firstcode>
+--                <start> <stop> [ <firstsequence> <firstsequence> <firstsequence> ]
+-- beginbfchar  : <code> <newcode>
+
+-- todo: utf16 -> 8
+-- we could make range more efficient but it's seldom seen anyway
+
+local optionals   = spaces^0
+local whatever    = optionals * P("<") * hexword       * P(">")
+local hexstring   = optionals * P("<") * C(hexdigit^1) * P(">")
+local bfchar      = Cc(1) * whatever * whatever
+local bfrange     = Cc(2) * whatever * whatever * whatever
+                  + Cc(3) * whatever * whatever * optionals * P("[") * hexstring^1 * optionals * P("]")
+local fromunicode = Ct ( (
+    P("beginbfchar" ) * Ct(bfchar )^1 * optionals * P("endbfchar" ) +
+    P("beginbfrange") * Ct(bfrange)^1 * optionals * P("endbfrange") +
+    spaces +
+    P(1)
+)^1 )
+
+local utf16_to_utf8_be = utf.utf16_to_utf8_be
+local utfchar           = utfchar
+
+local function analyzefonts(document,resources) -- unfinished
+    local fonts = document.__fonts__
+    if resources then
+        local fontlist = resources.Font
+        if fontlist then
+            for id, data in expanded(fontlist) do
+                if not fonts[id] then
+                    --  a quck hack ... I will look into it more detail if I find a real
+                    -- -application for it
+                    local tounicode = data.ToUnicode()
+                    if tounicode then
+                        tounicode = lpegmatch(fromunicode,tounicode)
+                    end
+                    if type(tounicode) == "table" then
+                        local t = { }
+                        for i=1,#tounicode do
+                            local u = tounicode[i]
+                            local w = u[1]
+                            if w == 1 then
+                                t[u[2]] = utfchar(u[3])
+                            elseif w == 2 then
+                                local m = u[4]
+                                for i=u[2],u[3] do
+                                    t[i] = utfchar(m)
+                                    m = m + 1
+                                end
+                            elseif w == 3 then
+                                local m = 4
+                                for i=u[2],u[3] do
+                                    t[i] = utf16_to_utf8_be(u[m])
+                                    m = m + 1
+                                end
+                            end
+                        end
+                        fonts[id] = {
+                            tounicode = t
+                        }
+                    else
+                        fonts[id] = {
+                            tounicode = { }
+                        }
+                    end
+                end
+            end
+        end
+    end
+    return fonts
+end
+
+function lpdf.epdf.getpagecontent(document,pagenumber)
+
+    local page = document.pages[pagenumber]
+
+    if not page then
+        return
+    end
+
+    local fonts   = analyzefonts(document,page.Resources)
+
+    local content = page.Contents() or ""
+    local list    = lpegmatch(parser,content)
+    local font    = nil
+    local unic    = nil
+
+    for i=1,#list do
+        local entry    = list[i]
+        local size     = #entry
+        local operator = entry[size]
+        if operator == "Tf" then
+            font = fonts[entry[1]]
+            unic = font.tounicode
+        elseif operator == "TJ" then -- { array,  TJ }
+            local list = entry[1]
+            for i=1,#list do
+                local li = list[i]
+                if type(li) == "table" then
+                    for i=1,#li do
+                        local c = li[i]
+                        local u = unic[c]
+                        li[i] = u or utfchar(c)
+                    end
+                    list[i] = concat(li)
+                end
+            end
+        elseif operator == "Tj" or operator == "'" or operator == '"' then -- { string,  Tj } { string, ' } { n, m, string, " }
+            local li = entry[size-1]
+            for i=1,#li do
+                local c = li[i]
+                local u = unic[c]
+                li[i] = utfchar(u or c)
+            end
+            entry[1] = concat(li)
+        end
+    end
+
+ -- for i=1,#list do
+ --     local entry    = list[i]
+ --     local size     = #entry
+ --     local operator = entry[size]
+ --     if operator == "TJ" then -- { array,  TJ }
+ --         local list = entry[1]
+ --         for i=1,#list do
+ --             local li = list[i]
+ --             if type(li) == "string" then
+ --                 --
+ --             elseif li < -50 then
+ --                 list[i] = " "
+ --             else
+ --                 list[i] = ""
+ --             end
+ --         end
+ --         entry[1] = concat(list)
+ --     elseif operator == "Tf" then
+ --         -- already concat
+ --     elseif operator == "cm" then
+ --         local e = entry[1]
+ --         local sx, rx, ry, sy, tx, ty = e[1], e[2], e[3], e[4], e[5], e[6]
+ --         -- if dy ... newline
+ --     end
+ -- end
+
+    return list
+
+end
+
+-- document.Catalog.StructTreeRoot.ParentTree.Nums[2][1].A.P[1])
+
 -- helpers
 
 -- function lpdf.epdf.getdestinationpage(document,name)
---     local destination = document.data:findDest(name)
+--     local destination = document.__data__:findDest(name)
 --     return destination and destination.number
 -- end

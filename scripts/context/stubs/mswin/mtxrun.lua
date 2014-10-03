@@ -4394,7 +4394,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 35080, stripped down to: 15712
+-- original size: 35374, stripped down to: 15946
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4705,7 +4705,9 @@ local utf_16_be_linesplitter=patterns.utfbom_16_be^-1*lpeg.tsplitat(patterns.utf
 local utf_16_le_linesplitter=patterns.utfbom_16_le^-1*lpeg.tsplitat(patterns.utf_16_le_nl)
 if bytepairs then
   utf16_to_utf8_be=function(t)
-    if type(t)=="string" then
+    if not t then
+      return nil
+    elseif type(t)=="string" then
       t=lpegmatch(utf_16_be_linesplitter,t)
     end
     local result={} 
@@ -4732,7 +4734,9 @@ if bytepairs then
     return t
   end
   utf16_to_utf8_le=function(t)
-    if type(t)=="string" then
+    if not t then
+      return nil
+    elseif type(t)=="string" then
       t=lpegmatch(utf_16_le_linesplitter,t)
     end
     local result={} 
@@ -4759,7 +4763,9 @@ if bytepairs then
     return t
   end
   utf32_to_utf8_be=function(t)
-    if type(t)=="string" then
+    if not t then
+      return nil
+    elseif type(t)=="string" then
       t=lpegmatch(utflinesplitter,t)
     end
     local result={} 
@@ -4783,7 +4789,9 @@ if bytepairs then
     return t
   end
   utf32_to_utf8_le=function(t)
-    if type(t)=="string" then
+    if not t then
+      return nil
+    elseif type(t)=="string" then
       t=lpegmatch(utflinesplitter,t)
     end
     local result={} 
@@ -4808,7 +4816,9 @@ if bytepairs then
   end
 else
   utf16_to_utf8_be=function(t)
-    if type(t)=="string" then
+    if not t then
+      return nil
+    elseif type(t)=="string" then
       t=lpegmatch(utf_16_be_linesplitter,t)
     end
     local result={} 
@@ -4838,7 +4848,9 @@ else
     return t
   end
   utf16_to_utf8_le=function(t)
-    if type(t)=="string" then
+    if not t then
+      return nil
+    elseif type(t)=="string" then
       t=lpegmatch(utf_16_le_linesplitter,t)
     end
     local result={} 
@@ -17593,8 +17605,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 724999
--- stripped bytes    : 257847
+-- original bytes    : 725293
+-- stripped bytes    : 257907
 
 -- end library merge
 

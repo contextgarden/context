@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
-local utfchar, utfvalues = utf.char, utf.values
+local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local sind, cosd, floor, max, min = math.sind, math.cosd, math.floor, math.max, math.min
 local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 local formatters = string.formatters
@@ -193,29 +193,51 @@ function lpdf.rectangle(width,height,depth)
     end
 end
 
---
+-- we could use a hash of predefined unicodes
+
+-- local function tosixteen(str) -- an lpeg might be faster (no table)
+--     if not str or str == "" then
+--         return "<feff>" -- not () as we want an indication that it's unicode
+--     else
+--         local r, n = { "<feff" }, 1
+--         for b in utfvalues(str) do
+--             n = n + 1
+--             if b < 0x10000 then
+--                 r[n] = format("%04x",b)
+--             else
+--              -- r[n] = format("%04x%04x",b/1024+0xD800,b%1024+0xDC00)
+--                 r[n] = format("%04x%04x",floor(b/1024),b%1024+0xDC00) --bit32.rshift(b,10)
+--             end
+--         end
+--         n = n + 1
+--         r[n] = ">"
+--         return concat(r)
+--     end
+-- end
+
+local cache = table.setmetatableindex(function(t,k) -- can be made weak
+    local v = utfbyte(k)
+    if v < 0x10000 then
+        v = format("%04x",v)
+    else
+     -- v = format("%04x%04x",v/1024+0xD800,v%1024+0xDC00)
+        v = format("%04x%04x",floor(v/1024),v%1024+0xDC00)
+    end
+    t[k] = v
+    return v
+end)
+
+local p = Cs(Cc("<feff") * (lpeg.patterns.utf8character/cache)^1 * Cc(">"))
 
 local function tosixteen(str) -- an lpeg might be faster (no table)
     if not str or str == "" then
         return "<feff>" -- not () as we want an indication that it's unicode
     else
-        local r, n = { "<feff" }, 1
-        for b in utfvalues(str) do
-            n = n + 1
-            if b < 0x10000 then
-                r[n] = format("%04x",b)
-            else
-             -- r[n] = format("%04x%04x",b/1024+0xD800,b%1024+0xDC00)
-                r[n] = format("%04x%04x",floor(b/1024),b%1024+0xDC00)
-            end
-        end
-        n = n + 1
-        r[n] = ">"
-        return concat(r)
+        return lpegmatch(p,str)
     end
 end
 
-lpdf.tosixteen   = tosixteen
+lpdf.tosixteen = tosixteen
 
 -- lpeg is some 5 times faster than gsub (in test) on escaping
 
@@ -432,7 +454,7 @@ local function pdfstring(str,default)
 end
 
 local function pdfunicode(str,default)
-    return setmetatable({ str or default or "" },mt_u)
+    return setmetatable({ str or default or "" },mt_u) -- could be a string
 end
 
 local cache = { } -- can be weak
