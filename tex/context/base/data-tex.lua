@@ -77,13 +77,13 @@ function helpers.textopener(tag,filename,filehandle,coding)
             report_tex("%a opener: %a opened using method %a",tag,filename,coding)
         end
         if coding == "utf-16-be" then
-            lines = utf.utf16_to_utf8_be(lines)
+            lines = utf.utf16_to_utf8_be_t(lines)
         elseif coding == "utf-16-le" then
-            lines = utf.utf16_to_utf8_le(lines)
+            lines = utf.utf16_to_utf8_le_t(lines)
         elseif coding == "utf-32-be" then
-            lines = utf.utf32_to_utf8_be(lines)
+            lines = utf.utf32_to_utf8_be_t(lines)
         elseif coding == "utf-32-le" then
-            lines = utf.utf32_to_utf8_le(lines)
+            lines = utf.utf32_to_utf8_le_t(lines)
         else -- utf8 or unknown (could be a mkvi file)
             local runner = textfileactions.runner
             if runner then

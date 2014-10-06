@@ -298,15 +298,15 @@
 \def\utfmathcommand#1{\ctxcommand{utfmathcommand(\!!bs#1\!!es)}}
 \def\utfmathfiller #1{\ctxcommand{utfmathfiller (\!!bs#1\!!es)}}
 
-\def\utfmathclassfiltered  #1#2{\ctxcommand{utfmathclass  (\!!bs#1\!!es,nil,"#2")}}
-\def\utfmathcommandfiltered#1#2{\ctxcommand{utfmathcommand(\!!bs#1\!!es,nil,"#2")}}
+\def\utfmathclassfiltered  #1#2{\ctxcommand{utfmathclass  (\!!bs#1\!!es,nil,\!!bs#2\!!es)}}
+\def\utfmathcommandfiltered#1#2{\ctxcommand{utfmathcommand(\!!bs#1\!!es,nil,\!!bs#2\!!es)}}
 
 \def\utfmathcommandabove #1{\ctxcommand{utfmathcommandabove (\!!bs#1\!!es)}}
 \def\utfmathcommandbelow #1{\ctxcommand{utfmathcommandbelow (\!!bs#1\!!es)}}
 \def\utfmathcommandfiller#1{\ctxcommand{utfmathcommandfiller(\!!bs#1\!!es)}}
 
 \unexpanded\def\doifelseutfmathaccent          #1{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es)}}
-\unexpanded\def\doifelseutfmathaccentfiltered#1#2{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es,"#2")}}
+\unexpanded\def\doifelseutfmathaccentfiltered#1#2{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es,\!!bs#2\!!es)}}
 
 \unexpanded\def\doifelseutfmathabove           #1{\ctxcommand{doifelseutfmathabove(\!!bs#1\!!es)}}
 \unexpanded\def\doifelseutfmathbelow           #1{\ctxcommand{doifelseutfmathbelow(\!!bs#1\!!es)}}

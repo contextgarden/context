@@ -138,3 +138,31 @@
 % \dorecurse{100}{\test{a} \test{ab} \test{abc} \test{abcd} \test{abcde} \test{abcdef}}
 
 \protect \endinput
+
+% \setuppapersize[A7]
+%
+% \unexpanded\def\WhateverA#1%
+%   {\dontleavehmode
+%    \begingroup
+%    \prehyphenchar"B7\relax
+%    \setbox\scratchbox\hbox{\tttf#1}%
+%    \prehyphenchar`-\relax
+%    \unhbox\scratchbox
+%    \endgroup}
+%
+% \unexpanded\def\WhateverB#1%
+%   {\dontleavehmode
+%    \begingroup
+%    \tttf
+%    \prehyphenchar\minusone
+%  % \localrightbox{\llap{_}}%
+%    \localrightbox{\llap{\smash{\lower1.5ex\hbox{\char"2192}}}}%
+%    \setbox\scratchbox\hbox{#1}%
+%    \prehyphenchar`-\relax
+%    \unhbox\scratchbox
+%    \endgroup}
+%
+% \begingroup \hsize1cm
+%   \WhateverA{thisisaboringandverylongcommand}\par
+%   \WhateverB{thisisaboringandverylongcommand}\par
+% \endgroup

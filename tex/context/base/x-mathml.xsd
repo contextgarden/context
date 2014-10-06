@@ -3,9 +3,9 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:xds="http://www.w3.org/?">
 
-<xsd:schema> 
+<xsd:schema>
 
-<xsd:element name="imath" type="mathml:math" /> 
-<xsd:element name="dmath" type="mathml:math" /> 
+<xsd:element name="imath" type="mathml:math" />
+<xsd:element name="dmath" type="mathml:math" />
 
 </xsd:schema>

@@ -2170,7 +2170,7 @@
 %D Handy for manuals:
 
 \unexpanded\def\fontchar#character%
-  {\ctxcommand{fontchar("#character")}}
+  {\ctxcommand{fontchar(\!!bs#character\!!es)}}
 
 \unexpanded\def\fontcharbyindex#index% unofficial command, for idris' font building
   {\ctxcommand{fontcharbyindex(\number#index)}}
@@ -2190,12 +2190,12 @@
 %D This is an expandable command!
 
 \def\tochar#specifications%
-  {\ctxcommand{tochar("#specifications")}} % expanded (also used in edef)
+  {\ctxcommand{tochar(\!!bs#specifications\!!es)}} % expanded (also used in edef)
 
 %D The next auxilliary macro is an alternative to \type
 %D {\fontname}.
 
-\def\purefontname#font{\ctxcommand{purefontname("\fontname#font")}}
+\def\purefontname#font{\ctxcommand{purefontname(\!!bs\fontname#font\!!es)}}
 %def\purefontname#font{\ctxcommand{purefontname(\number\fontid#font)}}
 
 %D \macros

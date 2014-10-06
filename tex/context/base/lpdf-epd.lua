@@ -27,30 +27,19 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 -- there was a long standing gc issue the on long runs with including many pages could
 -- crash the analyzer.
 --
--- - we cannot access all destinations in one run.
--- - v:getTypeName(), versus types[v:getType()], the last variant is about twice as fast
---
--- A potential speedup is to use local function instead of colon accessors. This will be done
--- in due time. Normally this code is not really speed sensitive but one never knows.
-
--- __newindex = function(t,k,v)
---     local tk = rawget(t,k)
---     if not tk then
---         local o = epdf.Object()
---         o:initString(v)
---         d:add(k,o)
---     end
---     rawset(t,k,v)
--- end,
+-- Normally a value is fetched by key, as in foo.Title but as it can be in pdfdoc encoding
+-- a safer bet is foo("Title") which will return a decoded string (or the original if it
+-- already was unicode).
 
 local setmetatable, rawset, rawget, type = setmetatable, rawset, rawget, type
 local tostring, tonumber = tostring, tonumber
-local lower, match, char, utfchar = string.lower, string.match, string.char, utf.char
+local lower, match, char, byte, find = string.lower, string.match, string.char, string.byte, string.find
+local abs = math.abs
 local concat = table.concat
-local toutf = string.toutf
+local toutf, toeight, utfchar = string.toutf, utf.toeight, utf.char
 
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-local P, C, S, R, Ct, Cc, V = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cc, lpeg.V
+local P, C, S, R, Ct, Cc, V, Carg, Cs = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cc, lpeg.V, lpeg.Carg, lpeg.Cs
 
 local epdf           = epdf
       lpdf           = lpdf or { }
@@ -159,7 +148,20 @@ local checked_access
 
 -- dictionaries (can be optimized: ... resolve and redefine when all locals set)
 
-local function prepare(document,d,t,n,k,mt)
+local frompdfdoc = lpdf.frompdfdoc
+
+local function get_flagged(t,f,k)
+    local fk = f[k]
+    if not fk then
+        return t[k]
+    elseif fk == "rawtext" then
+        return frompdfdoc(t[k])
+    else -- no other flags yet
+        return t[k]
+    end
+end
+
+local function prepare(document,d,t,n,k,mt,flags)
     for i=1,n do
         local v = dictGetVal(d,i)
         if v then
@@ -174,17 +176,19 @@ local function prepare(document,d,t,n,k,mt)
                         local objnum = getRefNum(r)
                         local cached = document.__cache__[objnum]
                         if not cached then
-                            cached = checked_access[kind](v,document,objnum)
+                            cached = checked_access[kind](v,document,objnum,mt)
                             if c then
                                 document.__cache__[objnum] = cached
                                 document.__xrefs__[cached] = objnum
                             end
                         end
                         t[key] = cached
-                     -- rawset(t,key,cached)
                     else
-                        t[key] = checked_access[kind](v,document)
-                     -- rawset(t,key,checked_access[kind](v,document))
+                        local v, flag = checked_access[kind](v,document)
+                        t[key] = v
+                        if flag then
+                            flags[key] = flag -- flags
+                        end
                     end
                 else
                     report_epdf("warning: nil value for key %a in dictionary",key)
@@ -194,18 +198,26 @@ local function prepare(document,d,t,n,k,mt)
             fatal_error("error: invalid value at index %a in dictionary of %a",i,document.filename)
         end
     end
-    setmetatable(t,mt)
+    if mt then
+        setmetatable(t,mt)
+    else
+        getmetatable(t).__index = nil
+    end
     return t[k]
 end
 
-local function some_dictionary(d,document,r,mt)
+local function some_dictionary(d,document)
     local n = d and dictGetLength(d) or 0
     if n > 0 then
         local t = { }
+        local f = { }
         setmetatable(t, {
             __index = function(t,k)
-                return prepare(document,d,t,n,k,mt)
-            end
+                return prepare(document,d,t,n,k,_,_,f)
+            end,
+            __call = function(t,k)
+                return get_flagged(t,f,k)
+            end,
         } )
         return t
     end
@@ -216,9 +228,13 @@ local function get_dictionary(object,document,r,mt)
     local n = d and dictGetLength(d) or 0
     if n > 0 then
         local t = { }
+        local f = { }
         setmetatable(t, {
             __index = function(t,k)
-                return prepare(document,d,t,n,k,mt)
+                return prepare(document,d,t,n,k,mt,f)
+            end,
+            __call = function(t,k)
+                return get_flagged(t,f,k)
             end,
         } )
         return t
@@ -259,7 +275,7 @@ local function prepare(document,a,t,n,k)
     return t[k]
 end
 
-local function some_array(a,document,r)
+local function some_array(a,document)
     local n = a and arrayGetLength(a) or 0
     if n > 0 then
         local t = { n = n }
@@ -272,7 +288,7 @@ local function some_array(a,document,r)
     end
 end
 
-local function get_array(object,document,r)
+local function get_array(object,document)
     local a = getArray(object)
     local n = a and arrayGetLength(a) or 0
     if n > 0 then
@@ -303,17 +319,49 @@ local function streamaccess(s,_,what)
     end
 end
 
-local function get_stream(d,document,r)
+local function get_stream(d,document)
     if d then
         streamReset(d)
-        local s = some_dictionary(streamGetDict(d),document,r)
+        local s = some_dictionary(streamGetDict(d),document)
         getmetatable(s).__call = function(...) return streamaccess(d,...) end
         return s
     end
 end
 
+-- We need to convert the string from utf16 although there is no way to
+-- check if we have a regular string starting with a bom. So, we have
+-- na dilemma here: a pdf doc encoded string can be invalid utf.
+
+-- <hex encoded>   : implicit 0 appended if odd
+-- (byte encoded)  : \( \) \\ escaped
+--
+-- <FE><FF> : utf16be
+--
+-- \r \r \t \b \f \( \) \\ \NNN and \<newline> : append next line
+--
+-- the getString function gives back bytes so we don't need to worry about
+-- the hex aspect.
+
+local u_pattern = lpeg.patterns.utfbom_16_be * lpeg.patterns.utf16_to_utf8_be
+local b_pattern = lpeg.patterns.hextobytes
+
 local function get_string(v)
-    return toutf(getString(v))
+    -- the toutf function only converts a utf16 string and leves the original
+    -- untouched otherwise; one might want to apply lpdf.frompdfdoc to a
+    -- non-unicode string
+    local s = getString(v)
+    if not s or s == "" then
+        return ""
+    end
+    local u = lpegmatch(u_pattern,s)
+    if u then
+        return u -- , "unicode"
+    end
+    local b = lpegmatch(b_pattern,s)
+    if b then
+        return b, "rawtext"
+    end
+    return s, "rawtext"
 end
 
 local function get_null()
@@ -340,7 +388,7 @@ end)
 checked_access[typenumbers.boolean]    = getBool
 checked_access[typenumbers.integer]    = getNum
 checked_access[typenumbers.real]       = getReal
-checked_access[typenumbers.string]     = get_string
+checked_access[typenumbers.string]     = get_string     -- getString
 checked_access[typenumbers.name]       = getName
 checked_access[typenumbers.null]       = get_null
 checked_access[typenumbers.array]      = get_array      -- d,document,r
@@ -551,10 +599,10 @@ end
 lpdf.epdf.expand   = expand
 lpdf.epdf.expanded = expanded
 
--- experiment .. will be finished when there is a real need
+-- we could resolve the text stream in one pass if we directly handle the
+-- font but why should we complicate things
 
 local hexdigit  = R("09","AF")
-local hexword   = hexdigit*hexdigit*hexdigit*hexdigit / function(s) return tonumber(s,16) end
 local numchar   = ( P("\\") * ( (R("09")^3/tonumber) + C(1) ) ) + C(1)
 local number    = lpegpatterns.number / tonumber
 local spaces    = lpegpatterns.whitespace^1
@@ -563,10 +611,10 @@ local operator  = C((R("AZ","az")+P("'")+P('"'))^1)
 
 local grammar   = P { "start",
     start      = (keyword + number + V("dictionary") + V("unicode") + V("string") + V("unicode")+ V("array") + spaces)^1,
-    array      = P("[")  * Ct(V("start")^1)            * P("]"),
-    dictionary = P("<<") * Ct(V("start")^1)            * P(">>"),
-    unicode    = P("<")  * Ct(hexword^1)               * P(">"),
-    string     = P("(")  * Ct((V("string")+numchar)^1) * P(")"), -- untested
+    array      = P("[")  * Ct(V("start")^1) * P("]"),
+    dictionary = P("<<") * Ct(V("start")^1) * P(">>"),
+    unicode    = P("<")  * Ct(Cc("hex") * C((1-P(">"))^1))            * P(">"),
+    string     = P("(")  * Ct(Cc("dec") * C((V("string")+numchar)^1)) * P(")"), -- untested
 }
 
 local operation = Ct(grammar^1 * operator)
@@ -574,26 +622,37 @@ local parser    = Ct((operation + P(1))^1)
 
 -- beginbfrange : <start> <stop> <firstcode>
 --                <start> <stop> [ <firstsequence> <firstsequence> <firstsequence> ]
--- beginbfchar  : <code> <newcode>
+-- beginbfchar  : <code> <newcodes>
 
--- todo: utf16 -> 8
--- we could make range more efficient but it's seldom seen anyway
+local fromsixteen = lpdf.fromsixteen -- maybe inline the lpeg ... but not worth it
+
+local function f_bfchar(t,a,b)
+    t[tonumber(a,16)] = fromsixteen(b)
+end
+
+local function f_bfrange_1(t,a,b,c)
+    print("todo 1",a,b,c)
+    -- c is string
+    -- todo t[tonumber(a,16)] = fromsixteen(b)
+end
+
+local function f_bfrange_2(t,a,b,c)
+    print("todo 2",a,b,c)
+    -- c is table
+    -- todo t[tonumber(a,16)] = fromsixteen(b)
+end
 
 local optionals   = spaces^0
-local whatever    = optionals * P("<") * hexword       * P(">")
-local hexstring   = optionals * P("<") * C(hexdigit^1) * P(">")
-local bfchar      = Cc(1) * whatever * whatever
-local bfrange     = Cc(2) * whatever * whatever * whatever
-                  + Cc(3) * whatever * whatever * optionals * P("[") * hexstring^1 * optionals * P("]")
-local fromunicode = Ct ( (
-    P("beginbfchar" ) * Ct(bfchar )^1 * optionals * P("endbfchar" ) +
-    P("beginbfrange") * Ct(bfrange)^1 * optionals * P("endbfrange") +
+local hexstring   = optionals * P("<") * C((1-P(">"))^1) * P(">")
+local bfchar      = Carg(1) * hexstring * hexstring / f_bfchar
+local bfrange     = Carg(1) * hexstring * hexstring * hexstring / f_bfrange_1
+                  + Carg(1) * hexstring * hexstring * optionals * P("[") * Ct(hexstring^1) * optionals * P("]") / f_bfrange_2
+local fromunicode = (
+    P("beginbfchar" ) * bfchar ^1 * optionals * P("endbfchar" ) +
+    P("beginbfrange") * bfrange^1 * optionals * P("endbfrange") +
     spaces +
     P(1)
-)^1 )
-
-local utf16_to_utf8_be = utf.utf16_to_utf8_be
-local utfchar           = utfchar
+)^1  * Carg(1)
 
 local function analyzefonts(document,resources) -- unfinished
     local fonts = document.__fonts__
@@ -606,43 +665,43 @@ local function analyzefonts(document,resources) -- unfinished
                     -- -application for it
                     local tounicode = data.ToUnicode()
                     if tounicode then
-                        tounicode = lpegmatch(fromunicode,tounicode)
+                        tounicode = lpegmatch(fromunicode,tounicode,1,{})
                     end
-                    if type(tounicode) == "table" then
-                        local t = { }
-                        for i=1,#tounicode do
-                            local u = tounicode[i]
-                            local w = u[1]
-                            if w == 1 then
-                                t[u[2]] = utfchar(u[3])
-                            elseif w == 2 then
-                                local m = u[4]
-                                for i=u[2],u[3] do
-                                    t[i] = utfchar(m)
-                                    m = m + 1
-                                end
-                            elseif w == 3 then
-                                local m = 4
-                                for i=u[2],u[3] do
-                                    t[i] = utf16_to_utf8_be(u[m])
-                                    m = m + 1
-                                end
-                            end
-                        end
-                        fonts[id] = {
-                            tounicode = t
-                        }
-                    else
-                        fonts[id] = {
-                            tounicode = { }
-                        }
-                    end
+                    fonts[id] = {
+                        tounicode = type(tounicode) == "table" and tounicode or { }
+                    }
+                    table.setmetatableindex(fonts[id],"self")
                 end
             end
         end
     end
     return fonts
 end
+
+local more = 0
+local unic = nil -- cheaper than passing each time as Carg(1)
+
+local p_hex_to_utf = C(4) / function(s) -- needs checking !
+    local now = tonumber(s,16)
+    if more > 0 then
+        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+        more = 0
+        return unic[now] or utfchar(now)
+    elseif now >= 0xD800 and now <= 0xDBFF then
+        more = now
+     -- return ""
+    else
+        return unic[now] or utfchar(now)
+    end
+end
+
+local p_dec_to_utf = C(1) / function(s) -- needs checking !
+    local now = byte(s)
+    return unic[now] or utfchar(now)
+end
+
+local p_hex_to_utf = P(true) / function() more = 0 end * Cs(p_hex_to_utf^1)
+local p_dec_to_utf = P(true) / function() more = 0 end * Cs(p_dec_to_utf^1)
 
 function lpdf.epdf.getpagecontent(document,pagenumber)
 
@@ -657,7 +716,7 @@ function lpdf.epdf.getpagecontent(document,pagenumber)
     local content = page.Contents() or ""
     local list    = lpegmatch(parser,content)
     local font    = nil
-    local unic    = nil
+ -- local unic    = nil
 
     for i=1,#list do
         local entry    = list[i]
@@ -671,53 +730,83 @@ function lpdf.epdf.getpagecontent(document,pagenumber)
             for i=1,#list do
                 local li = list[i]
                 if type(li) == "table" then
-                    for i=1,#li do
-                        local c = li[i]
-                        local u = unic[c]
-                        li[i] = u or utfchar(c)
+                    if li[1] == "hex" then
+                        list[i] = lpegmatch(p_hex_to_utf,li[2])
+                    else
+                        list[i] = lpegmatch(p_dec_to_utf,li[2])
                     end
-                    list[i] = concat(li)
+                else
+                    -- kern
                 end
             end
         elseif operator == "Tj" or operator == "'" or operator == '"' then -- { string,  Tj } { string, ' } { n, m, string, " }
-            local li = entry[size-1]
-            for i=1,#li do
-                local c = li[i]
-                local u = unic[c]
-                li[i] = utfchar(u or c)
+            local list = entry[size-1]
+            if list[1] == "hex" then
+                list[2] = lpegmatch(p_hex_to_utf,li[2],1,unic)
+            else
+                list[2] = lpegmatch(p_dec_to_utf,li[2],1,unic)
             end
-            entry[1] = concat(li)
         end
     end
 
- -- for i=1,#list do
- --     local entry    = list[i]
- --     local size     = #entry
- --     local operator = entry[size]
- --     if operator == "TJ" then -- { array,  TJ }
- --         local list = entry[1]
- --         for i=1,#list do
- --             local li = list[i]
- --             if type(li) == "string" then
- --                 --
- --             elseif li < -50 then
- --                 list[i] = " "
- --             else
- --                 list[i] = ""
- --             end
- --         end
- --         entry[1] = concat(list)
- --     elseif operator == "Tf" then
- --         -- already concat
- --     elseif operator == "cm" then
- --         local e = entry[1]
- --         local sx, rx, ry, sy, tx, ty = e[1], e[2], e[3], e[4], e[5], e[6]
- --         -- if dy ... newline
- --     end
- -- end
+    unic = nil -- can be collected
 
     return list
 
+end
+
+-- This is also an experiment. When I really neet it I can improve it, fo rinstance
+-- with proper position calculating. It might be usefull for some search or so.
+
+local softhyphen = utfchar(0xAD) .. "$"
+local linefactor = 1.3
+
+function lpdf.epdf.contenttotext(document,list) -- maybe signal fonts
+    local last_y = 0
+    local last_f = 0
+    local text   = { }
+    local last   = 0
+
+    for i=1,#list do
+        local entry    = list[i]
+        local size     = #entry
+        local operator = entry[size]
+        if operator == "Tf" then
+            last_f = entry[2]
+        elseif operator == "TJ" then
+            local list = entry[1]
+            for i=1,#list do
+                local li = list[i]
+                if type(li) == "string" then
+                    last = last + 1
+                    text[last] = li
+                elseif li < -50 then
+                    last = last + 1
+                    text[last] = " "
+                end
+            end
+            line = concat(list)
+        elseif operator == "Tj" then
+            last = last + 1
+            text[last] = entry[size-1]
+        elseif operator == "cm" or operator == "Tm" then
+            local ty = entry[6]
+            local dy = abs(last_y - ty)
+            if dy > linefactor*last_f then
+                if last > 0 then
+                    if find(text[last],softhyphen) then
+                        -- ignore
+                    else
+                        last = last + 1
+                        text[last] = "\n"
+                    end
+                end
+            end
+            last_y = ty
+        end
+    end
+
+    return concat(text)
 end
 
 -- document.Catalog.StructTreeRoot.ParentTree.Nums[2][1].A.P[1])

@@ -56,7 +56,6 @@ local p_utfbom        = patterns.utfbom
 local p_newline       = patterns.newline
 local p_whitespace    = patterns.whitespace
 
-
 if not unicode then
 
     unicode = { utf = utf } -- for a while
@@ -526,7 +525,8 @@ end
 -- end
 
 function utf.remapper(mapping,option) -- static also returns a pattern
-    if type(mapping) == "table" then
+    local variant = type(mapping)
+    if variant == "table" then
         if option == "dynamic" then
             local pattern = false
             table.setmetatablenewindex(mapping,function(t,k,v) rawset(t,k,v) pattern = false end)
@@ -545,6 +545,19 @@ function utf.remapper(mapping,option) -- static also returns a pattern
      -- elseif option == "static" then
         else
             local pattern = Cs((tabletopattern(mapping)/mapping + p_utf8char)^0)
+            return function(str)
+                if not str or str == "" then
+                    return ""
+                else
+                    return lpegmatch(pattern,str)
+                end
+            end, pattern
+        end
+    elseif variant == "function" then
+        if option == "pattern" then
+            return Cs((p_utf8char/mapping + p_utf8char)^0)
+        else
+            local pattern = Cs((p_utf8char/mapping + p_utf8char)^0)
             return function(str)
                 if not str or str == "" then
                     return ""
@@ -669,297 +682,359 @@ end
 local utf16_to_utf8_be, utf16_to_utf8_le
 local utf32_to_utf8_be, utf32_to_utf8_le
 
-local utf_16_be_linesplitter = patterns.utfbom_16_be^-1 * lpeg.tsplitat(patterns.utf_16_be_nl)
-local utf_16_le_linesplitter = patterns.utfbom_16_le^-1 * lpeg.tsplitat(patterns.utf_16_le_nl)
+local utf_16_be_getbom = patterns.utfbom_16_be^-1
+local utf_16_le_getbom = patterns.utfbom_16_le^-1
+local utf_32_be_getbom = patterns.utfbom_32_be^-1
+local utf_32_le_getbom = patterns.utfbom_32_le^-1
 
--- we have three possibilities:
+local utf_16_be_linesplitter = utf_16_be_getbom * lpeg.tsplitat(patterns.utf_16_be_nl)
+local utf_16_le_linesplitter = utf_16_le_getbom * lpeg.tsplitat(patterns.utf_16_le_nl)
+local utf_32_be_linesplitter = utf_32_be_getbom * lpeg.tsplitat(patterns.utf_32_be_nl)
+local utf_32_le_linesplitter = utf_32_le_getbom * lpeg.tsplitat(patterns.utf_32_le_nl)
 
--- bytepairs: 0.048
--- gmatch   : 0.069
--- lpeg     : 0.089 (match time captures)
+-- we have three possibilities: bytepairs (using tables), gmatch (using tables), gsub and
+-- lpeg. Bytepairs are the fastert but as soon as we need to remove bombs and so the gain
+-- is less due to more testing. Also, we seldom have to convert utf16 so we don't care to
+-- much about a few  milliseconds more runtime. The lpeg variant is upto 20% slower but
+-- still pretty fast.
+--
+-- for historic resone we keep the bytepairs variants around .. beware they don't grab the
+-- bom like the lpegs do so they're not dropins in the functions that follow
+--
+-- utf16_to_utf8_be = function(s)
+--     if not s then
+--         return nil
+--     elseif s == "" then
+--         return ""
+--     end
+--     local result, r, more = { }, 0, 0
+--     for left, right in bytepairs(s) do
+--         if right then
+--             local now = 256*left + right
+--             if more > 0 then
+--                 now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+--                 more = 0
+--                 r = r + 1
+--                 result[r] = utfchar(now)
+--             elseif now >= 0xD800 and now <= 0xDBFF then
+--                 more = now
+--             else
+--                 r = r + 1
+--                 result[r] = utfchar(now)
+--             end
+--         end
+--     end
+--     return concat(result)
+-- end
+--
+-- utf16_to_utf8_be_t = function(t)
+--     if not t then
+--         return nil
+--     elseif type(t) == "string" then
+--         t = lpegmatch(utf_16_be_linesplitter,t)
+--     end
+--     local result = { } -- we reuse result
+--     for i=1,#t do
+--         local s = t[i]
+--         if s ~= "" then
+--             local r, more = 0, 0
+--             for left, right in bytepairs(s) do
+--                 if right then
+--                     local now = 256*left + right
+--                     if more > 0 then
+--                         now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+--                         more = 0
+--                         r = r + 1
+--                         result[r] = utfchar(now)
+--                     elseif now >= 0xD800 and now <= 0xDBFF then
+--                         more = now
+--                     else
+--                         r = r + 1
+--                         result[r] = utfchar(now)
+--                     end
+--                 end
+--             end
+--             t[i] = concat(result,"",1,r) -- we reused tmp, hence t
+--         end
+--     end
+--     return t
+-- end
+--
+-- utf16_to_utf8_le = function(s)
+--     if not s then
+--         return nil
+--     elseif s == "" then
+--         return ""
+--     end
+--     local result, r, more = { }, 0, 0
+--     for left, right in bytepairs(s) do
+--         if right then
+--             local now = 256*right + left
+--             if more > 0 then
+--                 now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+--                 more = 0
+--                 r = r + 1
+--                 result[r] = utfchar(now)
+--             elseif now >= 0xD800 and now <= 0xDBFF then
+--                 more = now
+--             else
+--                 r = r + 1
+--                 result[r] = utfchar(now)
+--             end
+--         end
+--     end
+--     return concat(result)
+-- end
+--
+-- utf16_to_utf8_le_t = function(t)
+--     if not t then
+--         return nil
+--     elseif type(t) == "string" then
+--         t = lpegmatch(utf_16_le_linesplitter,t)
+--     end
+--     local result = { } -- we reuse result
+--     for i=1,#t do
+--         local s = t[i]
+--         if s ~= "" then
+--             local r, more = 0, 0
+--             for left, right in bytepairs(s) do
+--                 if right then
+--                     local now = 256*right + left
+--                     if more > 0 then
+--                         now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+--                         more = 0
+--                         r = r + 1
+--                         result[r] = utfchar(now)
+--                     elseif now >= 0xD800 and now <= 0xDBFF then
+--                         more = now
+--                     else
+--                         r = r + 1
+--                         result[r] = utfchar(now)
+--                     end
+--                 end
+--             end
+--             t[i] = concat(result,"",1,r) -- we reused tmp, hence t
+--         end
+--     end
+--     return t
+-- end
+--
+-- utf32_to_utf8_be_t = function(t)
+--     if not t then
+--         return nil
+--     elseif type(t) == "string" then
+--         t = lpegmatch(utflinesplitter,t)
+--     end
+--     local result = { } -- we reuse result
+--     for i=1,#t do
+--         local r, more = 0, -1
+--         for a,b in bytepairs(t[i]) do
+--             if a and b then
+--                 if more < 0 then
+--                     more = 256*256*256*a + 256*256*b
+--                 else
+--                     r = r + 1
+--                     result[t] = utfchar(more + 256*a + b)
+--                     more = -1
+--                 end
+--             else
+--                 break
+--             end
+--         end
+--         t[i] = concat(result,"",1,r)
+--     end
+--     return t
+-- end
+--
+-- utf32_to_utf8_le_t = function(t)
+--     if not t then
+--         return nil
+--     elseif type(t) == "string" then
+--         t = lpegmatch(utflinesplitter,t)
+--     end
+--     local result = { } -- we reuse result
+--     for i=1,#t do
+--         local r, more = 0, -1
+--         for a,b in bytepairs(t[i]) do
+--             if a and b then
+--                 if more < 0 then
+--                     more = 256*b + a
+--                 else
+--                     r = r + 1
+--                     result[t] = utfchar(more + 256*256*256*b + 256*256*a)
+--                     more = -1
+--                 end
+--             else
+--                 break
+--             end
+--         end
+--         t[i] = concat(result,"",1,r)
+--     end
+--     return t
+-- end
 
-if bytepairs then
+local more = 0
 
-    -- with a little bit more code we could include the linesplitter
-
-    utf16_to_utf8_be = function(t)
-        if not t then
-            return nil
-        elseif type(t) == "string" then
-            t = lpegmatch(utf_16_be_linesplitter,t)
-        end
-        local result = { } -- we reuse result
-        for i=1,#t do
-            local r, more = 0, 0
-            for left, right in bytepairs(t[i]) do
-                if right then
-                    local now = 256*left + right
-                    if more > 0 then
-                        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
-                        more = 0
-                        r = r + 1
-                        result[r] = utfchar(now)
-                    elseif now >= 0xD800 and now <= 0xDBFF then
-                        more = now
-                    else
-                        r = r + 1
-                        result[r] = utfchar(now)
-                    end
-                end
-            end
-            t[i] = concat(result,"",1,r) -- we reused tmp, hence t
-        end
-        return t
+local p_utf16_to_utf8_be = C(1) * C(1) /function(left,right)
+    local now = 256*byte(left) + byte(right)
+    if more > 0 then
+        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+        more = 0
+        return utfchar(now)
+    elseif now >= 0xD800 and now <= 0xDBFF then
+        more = now
+     -- return ""
+    else
+        return utfchar(now)
     end
-
-    utf16_to_utf8_le = function(t)
-        if not t then
-            return nil
-        elseif type(t) == "string" then
-            t = lpegmatch(utf_16_le_linesplitter,t)
-        end
-        local result = { } -- we reuse result
-        for i=1,#t do
-            local r, more = 0, 0
-            for left, right in bytepairs(t[i]) do
-                if right then
-                    local now = 256*right + left
-                    if more > 0 then
-                        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
-                        more = 0
-                        r = r + 1
-                        result[r] = utfchar(now)
-                    elseif now >= 0xD800 and now <= 0xDBFF then
-                        more = now
-                    else
-                        r = r + 1
-                        result[r] = utfchar(now)
-                    end
-                end
-            end
-            t[i] = concat(result,"",1,r) -- we reused tmp, hence t
-        end
-        return t
-    end
-
-    utf32_to_utf8_be = function(t)
-        if not t then
-            return nil
-        elseif type(t) == "string" then
-            t = lpegmatch(utflinesplitter,t)
-        end
-        local result = { } -- we reuse result
-        for i=1,#t do
-            local r, more = 0, -1
-            for a,b in bytepairs(t[i]) do
-                if a and b then
-                    if more < 0 then
-                        more = 256*256*256*a + 256*256*b
-                    else
-                        r = r + 1
-                        result[t] = utfchar(more + 256*a + b)
-                        more = -1
-                    end
-                else
-                    break
-                end
-            end
-            t[i] = concat(result,"",1,r)
-        end
-        return t
-    end
-
-    utf32_to_utf8_le = function(t)
-        if not t then
-            return nil
-        elseif type(t) == "string" then
-            t = lpegmatch(utflinesplitter,t)
-        end
-        local result = { } -- we reuse result
-        for i=1,#t do
-            local r, more = 0, -1
-            for a,b in bytepairs(t[i]) do
-                if a and b then
-                    if more < 0 then
-                        more = 256*b + a
-                    else
-                        r = r + 1
-                        result[t] = utfchar(more + 256*256*256*b + 256*256*a)
-                        more = -1
-                    end
-                else
-                    break
-                end
-            end
-            t[i] = concat(result,"",1,r)
-        end
-        return t
-    end
-
-else
-
-    utf16_to_utf8_be = function(t)
-        if not t then
-            return nil
-        elseif type(t) == "string" then
-            t = lpegmatch(utf_16_be_linesplitter,t)
-        end
-        local result = { } -- we reuse result
-        for i=1,#t do
-            local r, more = 0, 0
-            for left, right in gmatch(t[i],"(.)(.)") do
-                if left == "\000" then -- experiment
-                    r = r + 1
-                    result[r] = utfchar(byte(right))
-                elseif right then
-                    local now = 256*byte(left) + byte(right)
-                    if more > 0 then
-                        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
-                        more = 0
-                        r = r + 1
-                        result[r] = utfchar(now)
-                    elseif now >= 0xD800 and now <= 0xDBFF then
-                        more = now
-                    else
-                        r = r + 1
-                        result[r] = utfchar(now)
-                    end
-                end
-            end
-            t[i] = concat(result,"",1,r) -- we reused tmp, hence t
-        end
-        return t
-    end
-
-    utf16_to_utf8_le = function(t)
-        if not t then
-            return nil
-        elseif type(t) == "string" then
-            t = lpegmatch(utf_16_le_linesplitter,t)
-        end
-        local result = { } -- we reuse result
-        for i=1,#t do
-            local r, more = 0, 0
-            for left, right in gmatch(t[i],"(.)(.)") do
-                if right == "\000" then
-                    r = r + 1
-                    result[r] = utfchar(byte(left))
-                elseif right then
-                    local now = 256*byte(right) + byte(left)
-                    if more > 0 then
-                        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
-                        more = 0
-                        r = r + 1
-                        result[r] = utfchar(now)
-                    elseif now >= 0xD800 and now <= 0xDBFF then
-                        more = now
-                    else
-                        r = r + 1
-                        result[r] = utfchar(now)
-                    end
-                end
-            end
-            t[i] = concat(result,"",1,r) -- we reused tmp, hence t
-        end
-        return t
-    end
-
-    utf32_to_utf8_le = function() return { } end -- never used anyway
-    utf32_to_utf8_be = function() return { } end -- never used anyway
-
-    -- the next one is slighty slower
-
-    -- local result, lines, r, more = { }, { }, 0, 0
-    --
-    -- local simple = Cmt(
-    --     C(1) * C(1), function(str,p,left,right)
-    --         local now = 256*byte(left) + byte(right)
-    --         if more > 0 then
-    --             now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
-    --             more = 0
-    --             r = r + 1
-    --             result[r] = utfchar(now)
-    --         elseif now >= 0xD800 and now <= 0xDBFF then
-    --             more = now
-    --         else
-    --             r = r + 1
-    --             result[r] = utfchar(now)
-    --         end
-    --         return p
-    --    end
-    -- )
-    --
-    -- local complex = Cmt(
-    --     C(1) * C(1), function(str,p,left,right)
-    --         local now = 256*byte(left) + byte(right)
-    --         if more > 0 then
-    --             now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
-    --             more = 0
-    --             r = r + 1
-    --             result[r] = utfchar(now)
-    --         elseif now >= 0xD800 and now <= 0xDBFF then
-    --             more = now
-    --         else
-    --             r = r + 1
-    --             result[r] = utfchar(now)
-    --         end
-    --         return p
-    --    end
-    -- )
-    --
-    -- local lineend = Cmt (
-    --     patterns.utf_16_be_nl, function(str,p)
-    --         lines[#lines+1] = concat(result,"",1,r)
-    --         r, more = 0, 0
-    --         return p
-    --     end
-    -- )
-    --
-    -- local be_1 = patterns.utfbom_16_be^-1 * (simple + complex)^0
-    -- local be_2 = patterns.utfbom_16_be^-1 * (lineend + simple + complex)^0
-    --
-    -- utf16_to_utf8_be = function(t)
-    --     if type(t) == "string" then
-    --         local s = t
-    --         lines, r, more = { }, 0, 0
-    --         lpegmatch(be_2,s)
-    --         if r > 0 then
-    --             lines[#lines+1] = concat(result,"",1,r)
-    --         end
-    --         result = { }
-    --         return lines
-    --     else
-    --         for i=1,#t do
-    --             r, more = 0, 0
-    --             lpegmatch(be_1,t[i])
-    --             t[i] = concat(result,"",1,r)
-    --         end
-    --         result = { }
-    --         return t
-    --     end
-    -- end
-
 end
 
-utf.utf16_to_utf8_le = utf16_to_utf8_le
-utf.utf16_to_utf8_be = utf16_to_utf8_be
-utf.utf32_to_utf8_le = utf32_to_utf8_le
-utf.utf32_to_utf8_be = utf32_to_utf8_be
+local p_utf16_to_utf8_le = C(1) * C(1) /function(right,left)
+    local now = 256*byte(left) + byte(right)
+    if more > 0 then
+        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+        more = 0
+        return utfchar(now)
+    elseif now >= 0xD800 and now <= 0xDBFF then
+        more = now
+     -- return ""
+    else
+        return utfchar(now)
+    end
+end
+local p_utf32_to_utf8_be = C(1) * C(1) * C(1) * C(1) /function(a,b,c,d)
+    return utfchar(256*256*256*byte(a) + 256*256*byte(b) + 256*byte(c) + byte(d))
+end
 
-function utf.utf8_to_utf8(t)
+local p_utf32_to_utf8_le = C(1) * C(1) * C(1) * C(1) /function(a,b,c,d)
+    return utfchar(256*256*256*byte(d) + 256*256*byte(c) + 256*byte(b) + byte(a))
+end
+
+p_utf16_to_utf8_be = P(true) / function() more = 0 end * utf_16_be_getbom * Cs(p_utf16_to_utf8_be^0)
+p_utf16_to_utf8_le = P(true) / function() more = 0 end * utf_16_le_getbom * Cs(p_utf16_to_utf8_le^0)
+p_utf32_to_utf8_be = P(true) / function() more = 0 end * utf_32_be_getbom * Cs(p_utf32_to_utf8_be^0)
+p_utf32_to_utf8_le = P(true) / function() more = 0 end * utf_32_le_getbom * Cs(p_utf32_to_utf8_le^0)
+
+patterns.utf16_to_utf8_be = p_utf16_to_utf8_be
+patterns.utf16_to_utf8_le = p_utf16_to_utf8_le
+patterns.utf32_to_utf8_be = p_utf32_to_utf8_be
+patterns.utf32_to_utf8_le = p_utf32_to_utf8_le
+
+utf16_to_utf8_be = function(s)
+    if s and s ~= "" then
+        return lpegmatch(p_utf16_to_utf8_be,s)
+    else
+        return s
+    end
+end
+
+utf16_to_utf8_be_t = function(t)
+    if not t then
+        return nil
+    elseif type(t) == "string" then
+        t = lpegmatch(utf_16_be_linesplitter,t)
+    end
+    for i=1,#t do
+        local s = t[i]
+        if s ~= "" then
+            t[i] = lpegmatch(p_utf16_to_utf8_be,s)
+        end
+    end
+    return t
+end
+
+utf16_to_utf8_le = function(s)
+    if s and s ~= "" then
+        return lpegmatch(p_utf16_to_utf8_le,s)
+    else
+        return s
+    end
+end
+
+utf16_to_utf8_le_t = function(t)
+    if not t then
+        return nil
+    elseif type(t) == "string" then
+        t = lpegmatch(utf_16_le_linesplitter,t)
+    end
+    for i=1,#t do
+        local s = t[i]
+        if s ~= "" then
+            t[i] = lpegmatch(p_utf16_to_utf8_le,s)
+        end
+    end
+    return t
+end
+
+utf32_to_utf8_be = function(s)
+    if s and s ~= "" then
+        return lpegmatch(p_utf32_to_utf8_be,s)
+    else
+        return s
+    end
+end
+
+utf32_to_utf8_be_t = function(t)
+    if not t then
+        return nil
+    elseif type(t) == "string" then
+        t = lpegmatch(utf_32_be_linesplitter,t)
+    end
+    for i=1,#t do
+        local s = t[i]
+        if s ~= "" then
+            t[i] = lpegmatch(p_utf32_to_utf8_be,s)
+        end
+    end
+    return t
+end
+
+utf32_to_utf8_le = function(s)
+    if s and s ~= "" then
+        return lpegmatch(p_utf32_to_utf8_le,s)
+    else
+        return s
+    end
+end
+
+utf32_to_utf8_le_t = function(t)
+    if not t then
+        return nil
+    elseif type(t) == "string" then
+        t = lpegmatch(utf_32_le_linesplitter,t)
+    end
+    for i=1,#t do
+        local s = t[i]
+        if s ~= "" then
+            t[i] = lpegmatch(p_utf32_to_utf8_le,s)
+        end
+    end
+    return t
+end
+
+utf.utf16_to_utf8_le_t = utf16_to_utf8_le_t
+utf.utf16_to_utf8_be_t = utf16_to_utf8_be_t
+utf.utf32_to_utf8_le_t = utf32_to_utf8_le_t
+utf.utf32_to_utf8_be_t = utf32_to_utf8_be_t
+
+utf.utf16_to_utf8_le   = utf16_to_utf8_le
+utf.utf16_to_utf8_be   = utf16_to_utf8_be
+utf.utf32_to_utf8_le   = utf32_to_utf8_le
+utf.utf32_to_utf8_be   = utf32_to_utf8_be
+
+function utf.utf8_to_utf8_t(t)
     return type(t) == "string" and lpegmatch(utflinesplitter,t) or t
 end
 
-function utf.utf16_to_utf8(t,endian)
-    return endian and utf16_to_utf8_be(t) or utf16_to_utf8_le(t) or t
+function utf.utf16_to_utf8_t(t,endian)
+    return endian and utf16_to_utf8_be_t(t) or utf16_to_utf8_le_t(t) or t
 end
 
-function utf.utf32_to_utf8(t,endian)
-    return endian and utf32_to_utf8_be(t) or utf32_to_utf8_le(t) or t
+function utf.utf32_to_utf8_t(t,endian)
+    return endian and utf32_to_utf8_be_t(t) or utf32_to_utf8_le_t(t) or t
 end
 
-local function little(c)
-    local b = byte(c)
+local function little(b)
     if b < 0x10000 then
         return char(b%256,b/256)
     else
@@ -969,8 +1044,7 @@ local function little(c)
     end
 end
 
-local function big(c)
-    local b = byte(c)
+local function big(b)
     if b < 0x10000 then
         return char(b/256,b%256)
     else
@@ -980,18 +1054,10 @@ local function big(c)
     end
 end
 
--- function utf.utf8_to_utf16(str,littleendian)
---     if littleendian then
---         return char(255,254) .. utfgsub(str,".",little)
---     else
---         return char(254,255) .. utfgsub(str,".",big)
---     end
--- end
+local l_remap = Cs((p_utf8byte/little+P(1)/"")^0)
+local b_remap = Cs((p_utf8byte/big   +P(1)/"")^0)
 
-local l_remap = utf.remapper(little,"pattern")
-local b_remap = utf.remapper(big,"pattern")
-
-function utf.utf8_to_utf16_be(str,nobom)
+local function utf8_to_utf16_be(str,nobom)
     if nobom then
         return lpegmatch(b_remap,str)
     else
@@ -999,7 +1065,7 @@ function utf.utf8_to_utf16_be(str,nobom)
     end
 end
 
-function utf.utf8_to_utf16_le(str,nobom)
+local function utf8_to_utf16_le(str,nobom)
     if nobom then
         return lpegmatch(l_remap,str)
     else
@@ -1007,11 +1073,14 @@ function utf.utf8_to_utf16_le(str,nobom)
     end
 end
 
+utf.utf8_to_utf16_be = utf8_to_utf16_be
+utf.utf8_to_utf16_le = utf8_to_utf16_le
+
 function utf.utf8_to_utf16(str,littleendian,nobom)
     if littleendian then
-        return utf.utf8_to_utf16_le(str,nobom)
+        return utf8_to_utf16_le(str,nobom)
     else
-        return utf.utf8_to_utf16_be(str,nobom)
+        return utf8_to_utf16_be(str,nobom)
     end
 end
 
@@ -1042,16 +1111,16 @@ function utf.xstring(s)
 end
 
 function utf.toeight(str)
-    if not str then
+    if not str or str == "" then
         return nil
     end
     local utftype = lpegmatch(p_utfstricttype,str)
     if utftype == "utf-8" then
-        return sub(str,4)
-    elseif utftype == "utf-16-le" then
-        return utf16_to_utf8_le(str)
+        return sub(str,4)               -- remove the bom
     elseif utftype == "utf-16-be" then
-        return utf16_to_utf8_ne(str)
+        return utf16_to_utf8_be(str)    -- bom gets removed
+    elseif utftype == "utf-16-le" then
+        return utf16_to_utf8_le(str)    -- bom gets removed
     else
         return str
     end

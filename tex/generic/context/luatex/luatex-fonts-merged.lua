@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/03/14 19:27:20
+-- merge date  : 10/06/14 14:31:35
 
 do -- begin closure to overcome local limits and interference
 
@@ -149,6 +149,8 @@ patterns.utfbom_16_le=utfbom_16_le
 patterns.utfbom_8=utfbom_8
 patterns.utf_16_be_nl=P("\000\r\000\n")+P("\000\r")+P("\000\n") 
 patterns.utf_16_le_nl=P("\r\000\n\000")+P("\r\000")+P("\n\000") 
+patterns.utf_32_be_nl=P("\000\000\000\r\000\000\000\n")+P("\000\000\000\r")+P("\000\000\000\n")
+patterns.utf_32_le_nl=P("\r\000\000\000\n\000\000\000")+P("\r\000\000\000")+P("\n\000\000\000")
 patterns.utf8one=R("\000\127")
 patterns.utf8two=R("\194\223")*utf8next
 patterns.utf8three=R("\224\239")*utf8next*utf8next
@@ -731,6 +733,65 @@ local case_2=period*(digit-trailingzeros)^1*(trailingzeros/"")
 local number=digit^1*(case_1+case_2)
 local stripper=Cs((number+1)^0)
 lpeg.patterns.stripzeros=stripper
+local byte_to_HEX={}
+local byte_to_hex={}
+local byte_to_dec={} 
+local hex_to_byte={}
+for i=0,255 do
+  local H=format("%02X",i)
+  local h=format("%02x",i)
+  local d=format("%03i",i)
+  local c=char(i)
+  byte_to_HEX[c]=H
+  byte_to_hex[c]=h
+  byte_to_dec[c]=d
+  hex_to_byte[h]=c
+  hex_to_byte[H]=c
+end
+local hextobyte=P(2)/hex_to_byte
+local bytetoHEX=P(1)/byte_to_HEX
+local bytetohex=P(1)/byte_to_hex
+local bytetodec=P(1)/byte_to_dec
+local hextobytes=Cs(hextobyte^0)
+local bytestoHEX=Cs(bytetoHEX^0)
+local bytestohex=Cs(bytetohex^0)
+local bytestodec=Cs(bytetodec^0)
+patterns.hextobyte=hextobyte
+patterns.bytetoHEX=bytetoHEX
+patterns.bytetohex=bytetohex
+patterns.bytetodec=bytetodec
+patterns.hextobytes=hextobytes
+patterns.bytestoHEX=bytestoHEX
+patterns.bytestohex=bytestohex
+patterns.bytestodec=bytestodec
+function string.toHEX(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(bytestoHEX,s)
+  end
+end
+function string.tohex(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(bytestohex,s)
+  end
+end
+function string.todec(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(bytestodec,s)
+  end
+end
+function string.tobytes(s)
+  if not s or s=="" then
+    return s
+  else
+    return lpegmatch(hextobytes,s)
+  end
+end
 
 end -- closure
 
@@ -5151,11 +5212,12 @@ if not modules then modules={} end modules ['font-map']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local tonumber=tonumber
+local tonumber,next,type=tonumber,next,type
 local match,format,find,concat,gsub,lower=string.match,string.format,string.find,table.concat,string.gsub,string.lower
 local P,R,S,C,Ct,Cc,lpegmatch=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.match
 local utfbyte=utf.byte
 local floor=math.floor
+local formatters=string.formatters
 local trace_loading=false trackers.register("fonts.loading",function(v) trace_loading=v end)
 local trace_mapping=false trackers.register("fonts.mapping",function(v) trace_unimapping=v end)
 local report_fonts=logs.reporter("fonts","loading") 
@@ -5195,11 +5257,13 @@ local function makenameparser(str)
     return p
   end
 end
+local f_single=formatters["%04X"]
+local f_double=formatters["%04X%04X"]
 local function tounicode16(unicode,name)
   if unicode<0x10000 then
-    return format("%04X",unicode)
+    return f_single(unicode)
   elseif unicode<0x1FFFFFFFFF then
-    return format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
+    return f_double(floor(unicode/1024),unicode%1024+0xDC00)
   else
     report_fonts("can't convert %a in %a into tounicode",unicode,name)
   end
@@ -5209,9 +5273,9 @@ local function tounicode16sequence(unicodes,name)
   for l=1,#unicodes do
     local u=unicodes[l]
     if u<0x10000 then
-      t[l]=format("%04X",u)
+      t[l]=f_single(u)
     elseif unicode<0x1FFFFFFFFF then
-      t[l]=format("%04X%04X",floor(u/1024),u%1024+0xDC00)
+      t[l]=f_double(floor(u/1024),u%1024+0xDC00)
     else
       report_fonts ("can't convert %a in %a into tounicode",u,name)
       return
@@ -5225,9 +5289,9 @@ local function tounicode(unicode,name)
     for l=1,#unicode do
       local u=unicode[l]
       if u<0x10000 then
-        t[l]=format("%04X",u)
+        t[l]=f_single(u)
       elseif u<0x1FFFFFFFFF then
-        t[l]=format("%04X%04X",floor(u/1024),u%1024+0xDC00)
+        t[l]=f_double(floor(u/1024),u%1024+0xDC00)
       else
         report_fonts ("can't convert %a in %a into tounicode",u,name)
         return
@@ -5236,9 +5300,9 @@ local function tounicode(unicode,name)
     return concat(t)
   else
     if unicode<0x10000 then
-      return format("%04X",unicode)
+      return f_single(unicode)
     elseif unicode<0x1FFFFFFFFF then
-      return format("%04X%04X",floor(unicode/1024),unicode%1024+0xDC00)
+      return f_double(floor(unicode/1024),unicode%1024+0xDC00)
     else
       report_fonts("can't convert %a in %a into tounicode",unicode,name)
     end
@@ -5261,6 +5325,29 @@ mappings.fromunicode16=fromunicode16
 local ligseparator=P("_")
 local varseparator=P(".")
 local namesplitter=Ct(C((1-ligseparator-varseparator)^1)*(ligseparator*C((1-ligseparator-varseparator)^1))^0)
+local overloads={
+  IJ={ name="I_J",unicode={ 0x49,0x4A },mess=0x0132 },
+  ij={ name="i_j",unicode={ 0x69,0x6A },mess=0x0133 },
+  ff={ name="f_f",unicode={ 0x66,0x66 },mess=0xFB00 },
+  fi={ name="f_i",unicode={ 0x66,0x69 },mess=0xFB01 },
+  fl={ name="f_l",unicode={ 0x66,0x6C },mess=0xFB02 },
+  ffi={ name="f_f_i",unicode={ 0x66,0x66,0x69 },mess=0xFB03 },
+  ffl={ name="f_f_l",unicode={ 0x66,0x66,0x6C },mess=0xFB04 },
+  fj={ name="f_j",unicode={ 0x66,0x6A } },
+  fk={ name="f_k",unicode={ 0x66,0x6B } },
+}
+require("char-ini")
+for k,v in next,overloads do
+  local name=v.name
+  local mess=v.mess
+  if name then
+    overloads[name]=v
+  end
+  if mess then
+    overloads[mess]=v
+  end
+end
+mappings.overloads=overloads
 function mappings.addtounicode(data,filename)
   local resources=data.resources
   local properties=data.properties
@@ -5275,7 +5362,6 @@ function mappings.addtounicode(data,filename)
   unicodes['zwj']=unicodes['zwj']  or 0x200D
   unicodes['zwnj']=unicodes['zwnj']  or 0x200C
   local private=fonts.constructors.privateoffset
-  local unknown=format("%04X",utfbyte("?"))
   local unicodevector=fonts.encodings.agl.unicodes
   local missing={}
   local lumunic,uparser,oparser
@@ -5292,7 +5378,10 @@ function mappings.addtounicode(data,filename)
   for unic,glyph in next,descriptions do
     local index=glyph.index
     local name=glyph.name
-    if unic==-1 or unic>=private or (unic>=0xE000 and unic<=0xF8FF) or unic==0xFFFE or unic==0xFFFF then
+    local r=overloads[name]
+    if r then
+      glyph.unicode=r.unicode
+    elseif unic==-1 or unic>=private or (unic>=0xE000 and unic<=0xF8FF) or unic==0xFFFE or unic==0xFFFF then
       local unicode=lumunic and lumunic[name] or unicodevector[name]
       if unicode then
         glyph.unicode=unicode
@@ -5379,6 +5468,11 @@ function mappings.addtounicode(data,filename)
             unicode=foundcodes
           end
         end
+      end
+      local r=overloads[unicode]
+      if r then
+        unicode=r.unicode
+        glyph.unicode=unicode
       end
       if not unicode then
         missing[name]=true
@@ -5763,6 +5857,7 @@ afm.syncspace=true
 afm.addligatures=true 
 afm.addtexligatures=true 
 afm.addkerns=true 
+local overloads=fonts.mappings.overloads
 local applyruntimefixes=fonts.treatments and fonts.treatments.applyfixes
 local function setmode(tfmdata,value)
   if value then
@@ -5776,15 +5871,6 @@ registerafmfeature {
     base=setmode,
     node=setmode,
   }
-}
-local remappednames={
-  ff={ name="f_f",unicode={ 0x66,0x66 } },
-  fi={ name="f_i",unicode={ 0x66,0x69 } },
-  fj={ name="f_j",unicode={ 0x66,0x6A } },
-  fk={ name="f_k",unicode={ 0x66,0x6B } },
-  fl={ name="f_l",unicode={ 0x66,0x6C } },
-  ffi={ name="f_f_i",unicode={ 0x66,0x66,0x69 } },
-  ffl={ name="f_f_l",unicode={ 0x66,0x66,0x6C } },
 }
 local comment=P("Comment")
 local spacing=patterns.spacer 
@@ -6078,12 +6164,13 @@ end
 fixnames=function(data)
   for k,v in next,data.descriptions do
     local n=v.name
-    local r=remappednames[n]
+    local r=overloads[n]
     if r then
+      local name=r.name
       if trace_indexing then
-        report_afm("renaming characters %a to %a",n,r.name)
+        report_afm("renaming characters %a to %a",n,name)
       end
-      v.name=r.name
+      v.name=name
       v.unicode=r.unicode
     end
   end
@@ -6915,7 +7002,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.801 
+otf.version=2.802 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local fontdata=fonts.hashes.identifiers
 local chardata=characters and characters.data 

@@ -42,9 +42,11 @@ local setfield     = nuts.setfield
 local setbox       = nuts.setbox
 
 local free_node    = nuts.free
-local copy_list    = nuts.copy_list
+local flush_list   = nuts.flush_list
 local copy_node    = nuts.copy
+local copy_list    = nuts.copy_list
 local find_tail    = nuts.tail
+local traverse_id  = nuts.traverse_id
 
 local listtoutf    = nodes.listtoutf
 
@@ -83,6 +85,19 @@ local function hyphenatedlist(head)
 end
 
 commands.hyphenatedlist = hyphenatedlist
+
+-- local function hyphenatedhack(head,pre)
+--     pre = tonut(pre)
+--     for n in traverse_id(disc_code,tonut(head)) do
+--         local hyphen = getfield(n,"pre")
+--         if hyphen then
+--             flush_list(hyphen)
+--         end
+--         setfield(n,"pre",copy_list(pre))
+--     end
+-- end
+--
+-- commands.hyphenatedhack = hyphenatedhack
 
 function commands.showhyphenatedinlist(list)
     report_hyphenation("show: %s",listtoutf(tonut(list),false,true))

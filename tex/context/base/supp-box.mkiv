@@ -1063,7 +1063,7 @@
 %D \showhyphens{dohyphenatedword}
 %D \stoptyping
 
-\def\doshowhyphenatednextbox
+\unexpanded\def\doshowhyphenatednextbox
   {\ctxcommand{showhyphenatedinlist(tex.box[\number\nextbox].list)}}
 
 \unexpanded\def\showhyphens{\dowithnextboxcs\doshowhyphenatednextbox\hbox}
@@ -1076,13 +1076,27 @@
 %D \hyphenatedfile{tufte}
 %D \stoptyping
 
-\def\dohyphenatednextbox
+\unexpanded\def\dohyphenatednextbox
   {\ctxcommand{hyphenatedlist(tex.box[\number\nextbox].list)}%
    \unhbox\nextbox}
 
 \unexpanded\def\hyphenatedword  {\dowithnextboxcs\dohyphenatednextbox\hbox}
 \unexpanded\def\hyphenatedpar   {\dowithnextboxcs\dohyphenatednextbox\hbox}
 \unexpanded\def\hyphenatedfile#1{\dowithnextboxcs\dohyphenatednextbox\hbox{\readfile{#1}\donothing\donothing}}
+
+% D \starttyping
+% D \hyphenatedhack{\kern-.25em_}{alongword}
+% D \stoptyping
+%
+% \unexpanded\def\dohyphenatedhackbox
+%   {\ctxcommand{hyphenatedhack(tex.box[\number\nextbox].list,tex.box[\number\scratchbox].list)}%
+%    \unhbox\nextbox
+%    \endgroup}
+%
+% \unexpanded\def\hyphenatedhack#1% the result of a test, not that useful
+%   {\begingroup
+%    \setbox\scratchbox\hbox{#1}% only chars and kerns !
+%    \dowithnextboxcs\dohyphenatedhackbox\hbox}
 
 %D \macros
 %D   {processtokens}

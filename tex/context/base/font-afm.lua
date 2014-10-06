@@ -64,6 +64,8 @@ afm.addligatures         = true -- best leave this set to true
 afm.addtexligatures      = true -- best leave this set to true
 afm.addkerns             = true -- best leave this set to true
 
+local overloads          = fonts.mappings.overloads
+
 local applyruntimefixes  = fonts.treatments and fonts.treatments.applyfixes
 
 local function setmode(tfmdata,value)
@@ -79,16 +81,6 @@ registerafmfeature {
         base = setmode,
         node = setmode,
     }
-}
-
-local remappednames = {
-    ff  = { name = "f_f",   unicode = { 0x66, 0x66 } },
-    fi  = { name = "f_i",   unicode = { 0x66, 0x69 } },
-    fj  = { name = "f_j",   unicode = { 0x66, 0x6A } },
-    fk  = { name = "f_k",   unicode = { 0x66, 0x6B } },
-    fl  = { name = "f_l",   unicode = { 0x66, 0x6C } },
-    ffi = { name = "f_f_i", unicode = { 0x66, 0x66, 0x69 } },
-    ffl = { name = "f_f_l", unicode = { 0x66, 0x66, 0x6C } },
 }
 
 --[[ldx--
@@ -456,12 +448,13 @@ end
 fixnames = function(data)
     for k, v in next, data.descriptions do
         local n = v.name
-        local r = remappednames[n]
+        local r = overloads[n]
         if r then
+            local name = r.name
             if trace_indexing then
-                report_afm("renaming characters %a to %a",n,r.name)
+                report_afm("renaming characters %a to %a",n,name)
             end
-            v.name = r.name
+            v.name    = name
             v.unicode = r.unicode
         end
     end

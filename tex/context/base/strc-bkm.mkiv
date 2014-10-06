@@ -127,6 +127,38 @@
     }}%
 \to \everysetupbookmark
 
+%D There is a plugin mechanism but this is for experts only. The intermediate
+%D data structures are stable.
+%D
+%D \starttyping
+%D \startluacode
+%D     structures.bookmarks.installhandler("check before","before",function(levels)
+%D         logs.report("extra bookmarks","before (normal bookmarks)")
+%D         inspect(levels)
+%D         logs.report("extra bookmarks","before (extra bookmarks)")
+%D         inspect(structures.bookmarks.extras.get())
+%D         return levels
+%D     end)
+%D     structures.bookmarks.installhandler("check after", "after", function(levels)
+%D         logs.report("extra bookmarks","after (merged bookmarks)")
+%D         inspect(levels)
+%D         return levels
+%D     end)
+%D \stopluacode
+%D \starttyping
+%D
+%D This mechanism was added when bookmark inclusion became (optional) part of graphic
+%D inclusion (which is needed by Taco).
+%D
+%D \starttyping
+%D \getfiguredimensions[somefile.pdf]
+%D \dorecurse {\noffigurepages} {
+%D     \startTEXpage
+%D         \externalfigure[somefile.pdf][interaction=bookmark,page=\recurselevel]
+%D     \stopTEXpage
+%D }
+%D \starttyping
+
 \protect \endinput
 
 % \starttext

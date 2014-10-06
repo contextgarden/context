@@ -119,10 +119,24 @@
 %D
 %D In retrospect I sometimes wonder if the energy put into constantly adapting to
 %D the fashion of the day pays off. Probably not. It definitely doesn't pay of.
+%D
+%D More complex crap:
+%D
+%D 1: $x + \stackrel{comment}{\stackrel{\utfchar{"23DE}}{yyyyyyyy}} = y$ \blank
+%D 2: \asciimath{x + stackrel{\utfchar{"23DE}}{yyyyyyyy} = y} \blank
+%D 3: \asciimath{x + stackrel{yyyyyyyy}{\utfchar{"23DE}} = y} \blank
+%D 4: \asciimath{x + stackrel{"comment"}{stackrel{\utfchar{"23DE}}{yyyyyyyy}} = y} \blank
 
 \unprotect
 
 \writestatus{asciimath}{beware, this is an experimental (m4all only) module}
+
+%D Hacks:
+
+\unexpanded\def\asciimathoptext      #1{\ifmmode\mathop{\text{#1}}\else#1\fi}
+\unexpanded\def\asciimathoptexttraced#1{\ifmmode\mathop{\text{\color[darkgreen]{#1}}}\else\color[darkgreen]{#1}\fi}
+
+\unexpanded\def\asciimathstackrel  #1#2{\mathematics{\mathop{\let\limits\relax\mover{#2}{#1}}}}
 
 %D The core commands:
 
@@ -168,8 +182,7 @@
 
 \unexpanded\def\ShowAsciiMathStart
   {\begingroup
-   \let\normalmathoptext\mathoptext
-   \unexpanded\def\mathoptext##1{\normalmathoptext{\color[darkgreen]{##1}}}%
+   \let\asciimathoptext\asciimathoptexttraced
    \setuptyping[\v!buffer][\c!before=,\c!after=]
    \setupmargindata[\v!left][\c!style=]}
 

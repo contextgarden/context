@@ -108,10 +108,12 @@ local reserved = {
     ["sqrt"]      = "\\rootradical{}",
     ["root"]      = "\\rootradical",
     ["frac"]      = "\\frac",
-    ["stackrel"]  = "\\stackrel",
- -- ["text"]      = "\\mathoptext",
+ -- ["stackrel"]  = "\\stackrel",
+    ["stackrel"]  = "\\asciimathstackrel",
+ -- ["text"]      = "\\asciimathoptext",
  -- ["bb"]        = "\\bb",
     ["hat"]       = "\\widehat",
+    ["bar"]       = "\\overbar",
     ["overbar"]   = "\\overbar",
     ["underline"] = "\\underline",
     ["vec"]       = "\\overrightarrow",
@@ -660,10 +662,11 @@ local reserved = {
 }
 
 local isbinary = {
-    ["\\frac"]        = true,
-    ["\\root"]        = true,
-    ["\\rootradical"] = true,
-    ["\\stackrel"]    = true,
+    ["\\frac"]              = true,
+    ["\\root"]              = true,
+    ["\\rootradical"]       = true,
+    ["\\stackrel"]          = true,
+    ["\\asciimathstackrel"] = true,
 }
 
 local isunary = {
@@ -672,8 +675,10 @@ local isunary = {
  -- ["\\bb"]             = true,
     ["\\text"]           = true, --  mathoptext
     ["\\mathoptext"]     = true, --  mathoptext
+    ["\\asciimathoptext"]= true, --  mathoptext
     ["\\hat"]            = true, --  widehat
     ["\\widehat"]        = true, --  widehat
+    ["\\bar"]            = true, --
     ["\\overbar"]        = true, --
     ["\\underline"]      = true, --
     ["\\vec"]            = true, --  overrightarrow
@@ -785,12 +790,12 @@ local p_reserved =
 local p_text =
     P("text")
   * p_spaces^0
-  * Cc("\\mathoptext")
+  * Cc("\\asciimathoptext")
   * ( -- maybe balanced
         Cs( P("{")      * (1-P("}"))^0 *  P("}")     )
       + Cs((P("(")/"{") * (1-P(")"))^0 * (P(")")/"}"))
     )
-  + Cc("\\mathoptext") * Cs(Cc("{") * patterns.undouble * Cc("}"))
+  + Cc("\\asciimathoptext") * Cs(Cc("{") * patterns.undouble * Cc("}"))
 
 -- either map to \left<utf> or map to \left\name
 

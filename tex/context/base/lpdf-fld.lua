@@ -280,10 +280,8 @@ end
 
 local pdfdocencodingvector, pdfdocencodingcapsule
 
--- The pdf doc encoding vector is needed in order to
--- trigger propper unicode. Interesting is that when
--- a glyph is not in the vector, it is still visible
--- as it is taken from some other font. Messy.
+-- The pdf doc encoding vector is needed in order to trigger propper unicode. Interesting is that when
+-- a glyph is not in the vector, it is still visible as it is taken from some other font. Messy.
 
 -- To be checked: only when text/line fields.
 

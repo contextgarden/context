@@ -253,6 +253,10 @@ end
 
 -- new: for taco
 
+-- Beware, bookmarks can be in pdfdoc encoding or in unicode. However, in mkiv we
+-- write out the strings in unicode (hex). When we read them in, we check for a bom
+-- and convert to utf.
+
 function codeinjections.getbookmarks(filename)
 
     -- The first version built a nested tree and flattened that afterwards ... but I decided
@@ -325,7 +329,8 @@ function codeinjections.getbookmarks(filename)
 
     local function traverse(current,depth)
         while current do
-            local title = current.Title
+         -- local title = current.Title
+            local title = current("Title") -- can be pdfdoc or unicode
             if title then
                 local entry = {
                     level = depth,

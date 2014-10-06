@@ -15,7 +15,7 @@ runtime.</p>
 local commands, context = commands, context
 
 local utfchar = utf.char
-local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
+local P, Cs, Cc, lpegmatch = lpeg.P, lpeg.Cs, lpeg.Cc, lpeg.match
 local char, gsub, format, gmatch, byte, match = string.char, string.gsub, string.format, string.gmatch, string.byte, string.match
 local next = next
 local insert, remove, fastcopy = table.insert, table.remove, table.fastcopy
@@ -99,6 +99,8 @@ local synonyms = { -- backward compatibility list
 
     ["windows"]      = "cp1252",
 
+    ["pdf"]          = "pdfdoc",
+
 }
 
 local currentregime = "utf"
@@ -132,7 +134,7 @@ end
 setmetatableindex(mapping,    loadregime)
 setmetatableindex(backmapping,loadreverse)
 
-local function translate(line,regime)
+local function fromregime(regime,line)
     if line and #line > 0 then
         local map = mapping[regime and synonyms[regime] or regime or currentregime]
         if map then
@@ -178,12 +180,15 @@ local function toregime(vector,str,default) -- toregime('8859-1',"abcde Ä","?")
     local r = c[d]
     if not r then
         local t = fastcopy(backmapping[vector])
-        setmetatableindex(t, function(t,k)
-            local v = d
-            t[k] = v
-            return v
-        end)
-        r = utf.remapper(t)
+     -- r = utf.remapper(t) -- not good for defaults here
+        local pattern = Cs((lpeg.utfchartabletopattern(t)/t + lpeg.patterns.utf8character/d + P(1)/d)^0)
+        r = function(str)
+            if not str or str == "" then
+                return ""
+            else
+                return lpegmatch(pattern,str)
+            end
+        end
         c[d]  = r
     end
     return r(str)
@@ -204,10 +209,11 @@ local function enable(regime)
     end
 end
 
-regimes.toregime  = toregime
-regimes.translate = translate
-regimes.enable    = enable
-regimes.disable   = disable
+regimes.toregime   = toregime
+regimes.fromregime = fromregime
+regimes.translate  = function(str,regime) return fromregime(regime,str) end
+regimes.enable     = enable
+regimes.disable    = disable
 
 -- The following function can be used when we want to make sure that
 -- utf gets passed unharmed. This is needed for modules.
@@ -216,7 +222,7 @@ local level = 0
 
 function regimes.process(str,filename,currentline,noflines,coding)
     if level == 0 and coding ~= "utf-8" then
-        str = translate(str,currentregime)
+        str = fromregime(currentregime,str)
         if trace_translating then
             report_translating("utf: %s",str)
         end
@@ -403,5 +409,5 @@ end
 -- local new = regimes.cleanup("cp1252",old)
 -- report_translating("%s -> %s",old,new)
 -- local old = "Pozn" .. char(0xE1) .. "mky"
--- local new = translate(old,"cp1250")
+-- local new = fromregime("cp1250",old)
 -- report_translating("%s -> %s",old,new)
