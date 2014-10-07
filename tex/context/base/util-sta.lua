@@ -81,6 +81,8 @@ end
 
 function stacker.new(name)
 
+    local report = logs.reporter("stacker",name or nil)
+
     local s
 
     local stack = { }
@@ -126,8 +128,18 @@ function stacker.new(name)
         end
     end
 
-    local tops = { }
-    local top, switch
+    local tops   = { }
+    local top    = nil
+    local switch = nil
+
+    local function resolve_reset(mode)
+        if #tops > 0 then
+            report("resetting %s left-over states of %a",#tops,name)
+        end
+        tops   = { }
+        top    = nil
+        switch = nil
+    end
 
     local function resolve_begin(mode)
         if mode then
@@ -206,8 +218,7 @@ function stacker.new(name)
 
     local function resolve_end()
      -- resolve_step(s.unset)
-        local noftop = #top
-        if noftop > 0 then
+        if #tops > 0 then -- was #top brrr
             local result = s.stop(s,top,1,#top)
             remove(tops)
             top = tops[#tops]
@@ -224,8 +235,6 @@ function stacker.new(name)
         resolve_end()
     end
 
-    local report = logs.reporter("stacker",name or nil)
-
     s = {
         name          = name or "unknown",
         unset         = -1,
@@ -240,6 +249,7 @@ function stacker.new(name)
         resolve_begin = resolve_begin,
         resolve_step  = resolve_step,
         resolve_end   = resolve_end,
+        resolve_reset = resolve_reset,
     }
 
     return s -- we can overload functions

@@ -30,7 +30,7 @@
 
 \unexpanded\def\sqrt{\doifnextoptionalcselse\rootwithdegree\rootwithoutdegree}
 
-\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
+\unexpanded\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
   {\normalexpanded{\rootradical{\normalunexpanded{#1}}{\noexpand\triggermathstyle{\normalmathstyle}\normalunexpanded{#2}}}}
 
 \unexpanded\def\rootwithdegree[#1]{\rootradical{#1}}

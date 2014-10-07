@@ -15,21 +15,18 @@
 
 \unprotect
 
-% These macro deal with side floats. We started with Daniel
-% Comenetz macros as published in TUGBoat Volume 14 (1993),
-% No.\ 1: Anchored Figures at Either Margin. I extended and
-% patched the macros to suite our needs which results in a
-% messy module. Therefore, this module badly needs an update
-% because it's now a mixture of old and new macros.
+% These macro deal with side floats. We started with Daniel Comenetz macros as published
+% in TUGBoat Volume 14 (1993), No.\ 1: Anchored Figures at Either Margin. I extended and
+% patched the macros to suite our needs which results in a messy module. Therefore, this
+% module badly needs an update because it's now a mixture of old and new macros.
 
 % Interesting cases where it goes wrong:
 %
 % \placefigure[left]{}{} \dorecurse{3}{\input ward } {\par} \input ward
 %
-% Here we get an unwanted carried over hangindent and parindent. A
-% solution is to associate it with the local par node instead. This
-% is something to discuss with Taco as it could be a new luatex
-% feature: explicitly set par properties.
+% Here we get an unwanted carried over hangindent and parindent. A solution is to associate
+% it with the local par node instead. This is something to discuss with Taco as it could be
+% a new luatex/mkiv feature: explicitly set par properties.
 
 % Maybe I should just rewrite the lot.
 
@@ -223,10 +220,25 @@
    \endgroup
    \ifdim\parskip>\zeropoint % why this test ?
      \ifdim\d_page_sides_bottomskip>\parskip
-       \nowhitespace
-       \vskip\d_page_sides_bottomskip
+     % \nowhitespace
+     % \vskip\d_page_sides_bottomskip
+       \blank[\v!nowhite,\the\dimexpr\d_page_sides_bottomskip]
      \fi
+   \else
+      \blank[\the\d_page_sides_bottomskip]% new, so needs checking
    \fi}
+
+% alternative method (unsnapped)
+%
+% \def\page_sides_flush_floats_indeed
+%   {\scratchdimen\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax
+%    \ifdim\parskip>\zeropoint % why this test ?
+%      \ifdim\scratchdimen>\parskip
+%        \blank[\v!nowhite,\the\scratchdimen] % better in stages
+%      \fi
+%    \else
+%        \blank[\the\scratchdimen]
+%    \fi}
 
 \def\page_sides_check_floats_after_par
   {\page_sides_check_floats_indeed

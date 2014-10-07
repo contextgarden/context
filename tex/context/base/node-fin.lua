@@ -128,7 +128,7 @@ end
 
 local nsdata, nsnone, nslistwise, nsforced, nsselector, nstrigger
 local current, current_selector, done = 0, 0, false -- nb, stack has a local current !
-local nsbegin, nsend
+local nsbegin, nsend, nsreset
 
 function states.initialize(namespace,attribute,head)
     nsdata           = namespace.data
@@ -142,6 +142,7 @@ function states.initialize(namespace,attribute,head)
     done             = false -- todo: done cleanup
     nsstep           = namespace.resolve_step
     if nsstep then
+        nsreset      = namespace.resolve_reset
         nsbegin      = namespace.resolve_begin
         nsend        = namespace.resolve_end
         nspush       = namespace.push
@@ -483,14 +484,17 @@ end
 -- experimental
 
 local function stacker(namespace,attribute,head,default) -- no triggering, no inheritance, but list-wise
-    nsbegin()
+
+--     nsbegin()
+    local stacked  = false
+
     local current  = head
     local previous = head
     local done     = false
-    local okay     = false
     local attrib   = default or unsetvalue
     local check    = false
     local leader   = false
+
     while current do
         local id = getid(current)
         if id == glyph_code then
@@ -507,6 +511,10 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
             elseif nslistwise then
                 local a = getattr(current,attribute)
                 if a and attrib ~= a and nslistwise[a] then -- viewerlayer
+-- if not stacked then
+--     stacked = true
+--     nsbegin()
+-- end
                     head = insert_node_before(head,current,copied(nsdata[a]))
                     local list = stacker(namespace,attribute,content,a)
                     setfield(current,"list",list)
@@ -529,13 +537,15 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
         if check then
             local a = getattr(current,attribute) or unsetvalue
             if a ~= attrib then
+if not stacked then
+    stacked = true
+    nsbegin()
+end
                 local n = nsstep(a)
                 if n then
-                 -- !!!! TEST CODE !!!!
-                 -- head = insert_node_before(head,current,copied(nsdata[tonumber(n)])) -- a
                     head = insert_node_before(head,current,tonut(n)) -- a
                 end
-                attrib, done, okay = a, true, true
+                attrib, done = a, true
                 if leader then
                     -- tricky as a leader has to be a list so we cannot inject before
                     local list, ok = stacker(namespace,attribute,leader,attrib)
@@ -549,19 +559,23 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
         previous = current
         current = getnext(current)
     end
-    if okay then
-        local n = nsend()
-        if n then
-             -- !!!! TEST CODE !!!!
-         -- head = insert_node_after(head,previous,copied(nsdata[tostring(n)]))
-            head = insert_node_after(head,previous,tonut(n))
-        end
+
+if stacked then
+
+    local n = nsend()
+    while n do
+        head = insert_node_after(head,previous,tonut(n))
+        n = nsend()
     end
+
+end
+
     return head, done
 end
 
 states.stacker = function(namespace,attribute,head,default)
     local head, done = stacker(namespace,attribute,tonut(head),default)
+    nsreset()
     return tonode(head), done
 end
 

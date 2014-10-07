@@ -80,6 +80,7 @@ local layerstacker = utilities.stacker.new("layers") -- experiment
 layerstacker.mode  = "stack"
 layerstacker.unset = attributes.unsetvalue
 
+viewerlayers.resolve_reset = layerstacker.resolve_reset
 viewerlayers.resolve_begin = layerstacker.resolve_begin
 viewerlayers.resolve_step  = layerstacker.resolve_step
 viewerlayers.resolve_end   = layerstacker.resolve_end

@@ -201,24 +201,6 @@
       \expandafter\math_fraction_inner_margin
    \fi}
 
-\def\math_fraction_inner_normal#1#2%
-  {\Ustack{%
-     {\usemathstyleparameter\mathfractionparameter{#1}}% we should store this one
-     \math_frac_command
-     {\usemathstyleparameter\mathfractionparameter{#2}}% and reuse it here
-   }\endgroup}
-
-\def\math_fraction_inner_margin#1#2%
-  {\Ustack{%
-     {\kern\d_math_fraction_margin
-      \usemathstyleparameter\mathfractionparameter{#1}% we should store this one
-      \kern\d_math_fraction_margin}%
-     \math_frac_command
-     {\kern\d_math_fraction_margin
-      \usemathstyleparameter\mathfractionparameter{#2}% and reuse it here
-      \kern\d_math_fraction_margin}%
-   }\endgroup}
-
 \setvalue{\??mathfractionalternative\v!outer}%
   {\ifcase\d_math_fraction_margin
       \expandafter\math_fraction_outer_normal
@@ -226,21 +208,62 @@
       \expandafter\math_fraction_outer_margin
    \fi}
 
+\setvalue{\??mathfractionalternative\v!both}%
+  {\ifcase\d_math_fraction_margin
+      \expandafter\math_fraction_both_normal
+   \else
+      \expandafter\math_fraction_both_margin
+   \fi}
+
+% todo: store first state and reuse second time
+
+\def\math_fraction_inner_normal#1#2%
+  {\Ustack{%
+     {\usemathstyleparameter\mathfractionparameter{#1}}\math_frac_command{\usemathstyleparameter\mathfractionparameter{#2}}%
+   }\endgroup}
+
 \def\math_fraction_outer_normal#1#2%
   {\Ustack{%
      \usemathstyleparameter\mathfractionparameter
-     {{#1}\math_frac_command{#2}}%
+     {%
+      {#1}\math_frac_command{#2}%
+     }%
+   }\endgroup}
+
+\def\math_fraction_both_normal#1#2%
+  {\Ustack{%
+     \usemathstyleparameter\mathfractionparameter
+     {%
+      \usemathstyleparameter\mathfractionparameter{#1}\math_frac_command{\usemathstyleparameter\mathfractionparameter#2}%
+     }%
+   }\endgroup}
+
+\def\math_fraction_inner_margin#1#2%
+  {\Ustack{%
+     {\kern\d_math_fraction_margin\usemathstyleparameter\mathfractionparameter{#1}\kern\d_math_fraction_margin}%
+     \math_frac_command
+     {\kern\d_math_fraction_margin\usemathstyleparameter\mathfractionparameter{#2}\kern\d_math_fraction_margin}%
    }\endgroup}
 
 \def\math_fraction_outer_margin#1#2%
   {\Ustack{%
      \usemathstyleparameter\mathfractionparameter
-     {{\kern\d_math_fraction_margin#1\kern\d_math_fraction_margin}%
+     {%
+      {\kern\d_math_fraction_margin#1\kern\d_math_fraction_margin}%
       \math_frac_command
-      {\kern\d_math_fraction_margin#2\kern\d_math_fraction_margin}}%
+      {\kern\d_math_fraction_margin#2\kern\d_math_fraction_margin}%
+     }%
    }\endgroup}
 
-\definemathfraction[frac][\c!mathstyle=]
+\def\math_fraction_both_margin#1#2%
+  {\Ustack{%
+     \usemathstyleparameter\mathfractionparameter
+     {%
+     {\kern\d_math_fraction_margin\usemathstyleparameter\mathfractionparameter#1\kern\d_math_fraction_margin}%
+      \math_frac_command
+      {\kern\d_math_fraction_margin\usemathstyleparameter\mathfractionparameter#2\kern\d_math_fraction_margin}%
+     }%
+   }\endgroup}
 
 \unexpanded\def\xfrac {\begingroup\let\xfrac\xxfrac\math_frac_alternative\scriptstyle}
 \unexpanded\def\xxfrac{\begingroup                 \math_frac_alternative\scriptscriptstyle}
@@ -277,9 +300,30 @@
 % \unexpanded\def\dfrac #1#2{{\displaystyle     {{#1}\normalover                       {#2}}}}
 % \unexpanded\def\tfrac #1#2{{\textstyle        {{#1}\normalover                       {#2}}}}
 
-\definemathfraction[dfrac][\c!alternative=\v!outer,\c!mathstyle=\s!display]
-\definemathfraction[tfrac][\c!alternative=\v!outer,\c!mathstyle=\s!text]
-\definemathfraction[sfrac][\c!alternative=\v!outer,\c!mathstyle=\s!script]
+% \definemathfraction[frac] [\c!mathstyle=]
+% \definemathfraction[dfrac][\c!alternative=\v!outer,\c!mathstyle=\s!display]
+% \definemathfraction[tfrac][\c!alternative=\v!outer,\c!mathstyle=\s!text]
+% \definemathfraction[sfrac][\c!alternative=\v!outer,\c!mathstyle=\s!script]
+
+% \definemathfraction[frac] [\c!alternative=\v!inner,                           \c!mathstyle=\inlineordisplaymath\s!script      {\s!cramped,\s!text}]
+% \definemathfraction[tfrac][\c!alternative=\inlineordisplaymath\v!inner\v!both,\c!mathstyle=\inlineordisplaymath\s!script      {\s!cramped,\s!script}]
+% \definemathfraction[sfrac][\c!alternative=\inlineordisplaymath\v!inner\v!both,\c!mathstyle=\inlineordisplaymath\s!scriptscript{\s!cramped,\s!scriptscript}]
+% \definemathfraction[dfrac][\c!alternative=\v!inner,                           \c!mathstyle=\s!display]
+
+\definemathfraction[i:frac] [\c!alternative=\v!inner,\c!mathstyle=\s!script]
+\definemathfraction[i:tfrac][\c!alternative=\v!inner,\c!mathstyle=\s!script]
+\definemathfraction[i:sfrac][\c!alternative=\v!inner,\c!mathstyle=\s!scriptscript]
+\definemathfraction[i:dfrac][\c!alternative=\v!inner,\c!mathstyle=\s!display]
+
+\definemathfraction[d:frac] [\c!alternative=\v!inner,\c!mathstyle={\s!cramped,\s!text}]
+\definemathfraction[d:tfrac][\c!alternative=\v!both ,\c!mathstyle={\s!cramped,\s!script}]
+\definemathfraction[d:sfrac][\c!alternative=\v!both ,\c!mathstyle={\s!cramped,\s!scriptscript}]
+\definemathfraction[d:dfrac][\c!alternative=\v!inner,\c!mathstyle=\s!display]
+
+\unexpanded\def\frac {\csname\inlineordisplaymath id:frac\endcsname}
+\unexpanded\def\tfrac{\csname\inlineordisplaymath id:tfrac\endcsname}
+\unexpanded\def\sfrac{\csname\inlineordisplaymath id:sfrac\endcsname}
+\unexpanded\def\dfrac{\csname\inlineordisplaymath id:dfrac\endcsname}
 
 % \definemathfraction[ddfrac][\c!mathstyle=\s!display]
 % \definemathfraction[ttfrac][\c!mathstyle=\s!text]

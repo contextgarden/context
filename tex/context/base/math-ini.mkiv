@@ -91,6 +91,20 @@
 
 \unexpanded\def\resetmathattributes{\ctxcommand{resetmathattributes()}}
 
+% handy
+
+\newconditional\indisplaymath
+
+\appendtoks
+    \setfalse\indisplaymath
+\to \everymath
+
+\appendtoks
+    \settrue\indisplaymath
+\to \everydisplay
+
+\def\inlineordisplaymath{\ifconditional\indisplaymath\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
+
 % \unexpanded\def\rawmathcharacter#1% slow but only for tracing
 %   {\begingroup
 %    \ifmmode

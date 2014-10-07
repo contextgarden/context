@@ -25,13 +25,13 @@ table.setmetatableindex(resolved, function(t,k)
     return v
 end)
 
-local normalatop = context.normalatop
-local normalover = context.normalover
+local ctx_normalatop = context.normalatop
+local ctx_normalover = context.normalover
 
 function commands.math_frac(how,left,right,width)
     if how == v_no then
         if left == 0x002E and right == 0x002E then
-            normalatop()
+            ctx_normalatop()
         else
             context("\\atopwithdelims%s%s",resolved[left],resolved[right])
         end
@@ -43,7 +43,7 @@ function commands.math_frac(how,left,right,width)
         end
     else -- v_auto
         if left == 0x002E and right == 0x002E then
-            normalover()
+            ctx_normalover()
         else
             context("\\overwithdelims%s%s",resolved[left],resolved[right])
         end
