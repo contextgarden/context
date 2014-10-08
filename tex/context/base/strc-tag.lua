@@ -214,6 +214,7 @@ tags.properties = properties
 
 local lasttags = { }
 local userdata = { }
+local nstack   = 0
 
 tags.userdata  = userdata
 
@@ -224,6 +225,27 @@ function tags.setproperty(tag,key,value)
     else
         properties[tag] = { [key] = value }
     end
+end
+
+function tags.setaspect(key,value)
+    local tag = chain[nstack]
+    if tag then
+print("set",tag)
+        local p = properties[tag]
+        if p then
+            p[key] = value
+        else
+            properties[tag] = { [key] = value }
+        end
+    end
+end
+
+function tags.copyaspect(old,new)
+    local oldlst = taglist[old]
+    local newlst = taglist[new]
+    local oldtag = oldlst[#oldlst]
+    local newtag = newlst[#newlst]
+    properties[newtag] = properties[oldtag]
 end
 
 function tags.registerdata(data)
@@ -243,8 +265,6 @@ function tags.registermetadata(data)
         metadata = d
     end
 end
-
-local nstack = 0
 
 function tags.start(tag,specification,props)
     local label, detail, user
@@ -294,14 +314,42 @@ function tags.start(tag,specification,props)
     return t
 end
 
-function tags.restart(completetag)
-    local t = #taglist + 1
+-- function tags.restart(completetag)
+--     if type(completetag) == "number" then
+--         local attribute = completetag
+--         local listentry = taglist[attribute]
+--         local completetag = listentry[#listentry]
+--         nstack = nstack + 1
+--         chain[nstack] = completetag
+--         stack[nstack] = attribute
+--         texattribute[a_tagged] = attribute
+--         return attribute
+--     else
+--         local attribute = #taglist + 1
+--         nstack = nstack + 1
+--         chain[nstack] = completetag
+--         stack[nstack] = attribute
+--         taglist[attribute] = { unpack(chain,1,nstack) }
+--         texattribute[a_tagged] = attribute
+--         return attribute
+--     end
+-- end
+--
+-- more compact:
+
+function tags.restart(attribute)
     nstack = nstack + 1
-    chain[nstack] = completetag
-    stack[nstack] = t
-    taglist[t] = { unpack(chain,1,nstack) }
-    texattribute[a_tagged] = t
-    return t
+    if type(attribute) == "number" then
+        local listentry = taglist[attribute]
+        chain[nstack] = listentry[#listentry]
+    else
+        chain[nstack] = attribute -- a string
+        attribute = #taglist + 1
+        taglist[attribute] = { unpack(chain,1,nstack) }
+    end
+    stack[nstack] = attribute
+    texattribute[a_tagged] = attribute
+    return attribute
 end
 
 function tags.stop()
@@ -311,7 +359,7 @@ function tags.stop()
     local t = stack[nstack]
     if not t then
      -- if trace_tags then
-            report_tags("ignoring end tag, previous chain: %s",nstack > 0 and concat(chain[nstack],"",1,nstack) or "none")
+            report_tags("ignoring end tag, previous chain: %s",nstack > 0 and concat(chain[nstack]," ",1,nstack) or "none")
      -- end
         t = unsetvalue
     end
@@ -398,3 +446,4 @@ end)
 commands.starttag       = tags.start
 commands.stoptag        = tags.stop
 commands.settagproperty = tags.setproperty
+commands.settagaspect   = tags.setaspect

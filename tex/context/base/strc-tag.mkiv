@@ -92,6 +92,10 @@
 \def\t!mathstackermid        {mstackermid}
 \def\t!mathstackerbot        {mstackerbot}
 
+\def\t!munderover            {munderover}             % special cases
+\def\t!munder                {munder}                 % special cases
+\def\t!mover                 {mover}                  % special cases
+
 \def\t!list                  {list}                   % TOC
 \def\t!listitem              {listitem}               % TOCI
 \def\t!listtag               {listtag}                % Lbl
@@ -160,8 +164,11 @@
 \unexpanded\def\setelementbackendtag{\dodoubleargument\strc_tags_set_backend}
 \unexpanded\def\setelementnature    {\dodoubleargument\strc_tags_set_nature}
 
-\def\strc_tags_set_backend[#1][#2]{\ctxcommand{settagproperty("#1","backend","#2")}}
-\def\strc_tags_set_nature [#1][#2]{\ctxcommand{settagproperty("#1","nature", "#2")}}
+\def\strc_tags_set_backend[#1][#2]{\ctxcommand{settagproperty("#1","backend","#2")}} % todo: ignore when no export
+\def\strc_tags_set_nature [#1][#2]{\ctxcommand{settagproperty("#1","nature", "#2")}} % todo: ignore when no export
+
+\unexpanded\def\strc_tags_set_aspect_nop#1#2{}
+\unexpanded\def\strc_tags_set_aspect_yes#1#2{\ctxcommand{settagaspect("#1","#2")}} % todo: ignore when no export
 
 \installcorenamespace{tagging}
 
@@ -204,11 +211,13 @@
 \unexpanded\def\strc_tags_enable_elements
   {\setuplanguage[\s!default][\s!righthyphenchar="AD]% for the moment here
    \let\startelement\strc_tags_element_start_yes
-   \let\stopelement \strc_tags_element_stop_yes}
+   \let\stopelement \strc_tags_element_stop_yes
+   \let\dosetelementproperty\strc_tags_set_aspect_yes}
 
 \unexpanded\def\strc_tags_disable_elements
   {\let\startelement\strc_tags_element_start_nop
-   \let\stopelement \strc_tags_element_stop_nop}
+   \let\stopelement \strc_tags_element_stop_nop
+   \let\dosetelementproperty\strc_tags_set_aspect_nop}
 
 % beware: making these unexpanded spoils tables (noalign problem)
 

@@ -276,9 +276,9 @@ end
 -- when testing)
 
 local initialized  = false
-local usedentries  = { }
-local citetolist   = { }
-local listtocite   = { }
+local usedentries  = allocate { }
+local citetolist   = allocate { }
+local listtocite   = allocate { }
 local nofcitations = 0
 
 setmetatableindex(usedentries,function(t,k)
@@ -348,6 +348,10 @@ setmetatableindex(usedentries,function(t,k)
         return usedentries[k]
     end
 end)
+
+function publications.usedentries(dataset)
+    return usedentries[dataset]
+end
 
 -- match:
 --

@@ -16,7 +16,11 @@
 
 \unprotect
 
-%D WARNING: If the code here changes, the export needs to be checked!
+%D WARNING: If the code here changes, the export needs to be checked! Stackers are rather
+%D special because the order in mathml matters, so we flush in [base under over] order. We
+%D also do some analysis at the \TEX\ end (passing the right variant). It's easy in the
+%D export to deal with it but in the pdf stream less trivial as we don't actually analyze
+%D there.
 
 %D At some point the \MKII\ arrow mechanism has been converted to \MKIV, but we kept
 %D most of the logic. We now have a more generic variant dealing with extensibles.
@@ -392,34 +396,50 @@
       \fi
       %
       \math_stackers_normalize_three
-      %
-      \math_stackers_start_tagged_mid
-      \math_stackers_middle\bgroup
-        \box\scratchboxthree
-      \egroup
-      \math_stackers_stop_tagged
-      %
-      \math_stackers_start_tagged_top
-      \ifdim\htdp\scratchboxone>\zeropoint
-        \scratchoffset\scratchvoffset
-        \kern-\scratchwidth
-        \math_stackers_top\bgroup
-          \raise\dimexpr\dp\scratchboxone+\scratchheight+\scratchoffset+\scratchtopoffset\relax
-          \box\scratchboxone
-        \egroup
-      \fi
-      \math_stackers_stop_tagged
-      %
-      \math_stackers_start_tagged_bot
+      % analysis
       \ifdim\htdp\scratchboxtwo>\zeropoint
-        \scratchoffset\scratchvoffset
-        \kern-\scratchwidth
-        \math_stackers_bottom\bgroup
-          \lower\dimexpr\ht\scratchboxtwo+\scratchdepth+\scratchoffset+\scratchbottomoffset\relax
-          \box\scratchboxtwo
-        \egroup
+        \ifdim\htdp\scratchboxone>\zeropoint
+          \dosetelementproperty\s!subtype\t!munderover
+        \else
+          \dosetelementproperty\s!subtype\t!munder
+        \fi
+      \else
+        \ifdim\htdp\scratchboxone>\zeropoint
+          \dosetelementproperty\s!subtype\t!mover
+        \else
+          % brrr
+        \fi
       \fi
-      \math_stackers_stop_tagged}%
+      % base
+      \math_stackers_start_tagged_mid
+        \math_stackers_middle\bgroup
+          \box\scratchboxthree
+        \egroup
+      \math_stackers_stop_tagged
+      % under
+      \ifdim\htdp\scratchboxtwo>\zeropoint
+        \math_stackers_start_tagged_bot
+          \scratchoffset\scratchvoffset
+          \kern-\scratchwidth
+          \math_stackers_bottom\bgroup
+            \lower\dimexpr\ht\scratchboxtwo+\scratchdepth+\scratchoffset+\scratchbottomoffset\relax
+            \box\scratchboxtwo
+          \egroup
+        \math_stackers_stop_tagged
+      \fi
+      % over
+      \ifdim\htdp\scratchboxone>\zeropoint
+        \math_stackers_start_tagged_top
+          \scratchoffset\scratchvoffset
+          \kern-\scratchwidth
+          \math_stackers_top\bgroup
+            \raise\dimexpr\dp\scratchboxone+\scratchheight+\scratchoffset+\scratchtopoffset\relax
+            \box\scratchboxone
+          \egroup
+        \math_stackers_stop_tagged
+      \fi
+      %
+      }%
   \dostoptagged
   \mathstackersparameter\c!right\relax
   \endgroup}
@@ -478,6 +498,8 @@
 \def\math_class_by_parameter_indeed#1%
   {\csname\??mathclasses\ifcsname\??mathclasses#1\endcsname#1\fi\endcsname}
 
+% 1 0 name n 0 | 0 1 name n 0 | 1 1 name n n
+
 \unexpanded\def\math_stackers_make_double#top#bottom#category#codepoint#codeextra#text%
   {\begingroup
    \edef\currentmathstackers{#category}%
@@ -511,48 +533,98 @@
       \advance\scratchwidth2\scratchhoffset
       %
       \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
-      \setbox\scratchboxthree\hbox
-        to \scratchwidth{\hss\box\scratchboxthree\hss}%
+      \setbox\scratchboxthree\hbox to \scratchwidth{\hss\box\scratchboxthree\hss}%
       %
       \math_stackers_normalize_three
-      %
+      % analysis
+      \ifcase#bottom\relax
+        \ifcase#top\relax
+            \dosetelementproperty\s!subtype\t!munderover
+        \else
+            \dosetelementproperty\s!subtype\t!mover
+        \fi
+      \else
+        \ifcase#top\relax
+            \dosetelementproperty\s!subtype\t!munder
+        \else
+            % brrr
+        \fi
+      \fi
+      % base
       \math_stackers_start_tagged_mid
-      \math_stackers_middle\bgroup
-        \box\scratchboxthree
-      \egroup
+        \math_stackers_middle\bgroup
+          \box\scratchboxthree
+        \egroup
       \math_stackers_stop_tagged
       %
       \ifdim\htdp\scratchboxtwo>\zeropoint
-        \kern-\scratchwidth
-        \math_stackers_start_tagged_top
-        \ifcase#top\else
-          \math_stackers_top\bgroup
-            \raise\dimexpr
-               \scratchheight
-              +\dp\scratchboxtwo % new
-              +\mathstackersparameter\c!distance % was \c!voffset
-            \relax
-            \box\scratchboxtwo
-          \egroup
-        \fi
-        \math_stackers_stop_tagged
-        \scratchunicode#codeextra\relax
-        \math_stackers_start_tagged_bot
-        \ifcase\scratchunicode\else
-          \kern-\scratchwidth
-          \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
-        \fi
+%         %
+%         \kern-\scratchwidth
+%         \math_stackers_start_tagged_top
+%           \ifcase#top\else
+%             \math_stackers_top\bgroup
+%               \raise\dimexpr
+%                  \scratchheight
+%                 +\dp\scratchboxtwo % new
+%                 +\mathstackersparameter\c!distance % was \c!voffset
+%               \relax
+%               \box\scratchboxtwo
+%             \egroup
+%           \fi
+%         \math_stackers_stop_tagged
+%         %
+%         \scratchunicode#codeextra\relax
+%         \math_stackers_start_tagged_bot
+%           \ifcase\scratchunicode\else
+%             \kern-\scratchwidth
+%             \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
+%           \fi
+%           \ifcase#bottom\else
+%             \math_stackers_bottom\bgroup
+%               \lower\dimexpr
+%                  \scratchdepth
+%                 +\ht\scratchboxtwo
+%                 +\mathstackersparameter\c!distance % was \c!voffset
+%               \relax
+%               \box\scratchboxtwo
+%             \egroup
+%           \fi
+%         \math_stackers_stop_tagged
+%         %
+        %
         \ifcase#bottom\else
-          \math_stackers_bottom\bgroup
-            \lower\dimexpr
-               \scratchdepth
-              +\ht\scratchboxtwo
-              +\mathstackersparameter\c!distance % was \c!voffset
-            \relax
-            \box\scratchboxtwo
-          \egroup
+          \kern-\scratchwidth
+          % under
+          \math_stackers_start_tagged_bot
+            \scratchunicode#codeextra\relax
+            \ifcase\scratchunicode\else
+              \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
+            \fi
+            \math_stackers_bottom\bgroup
+              \lower\dimexpr
+                 \scratchdepth
+                +\ht\scratchboxtwo
+                +\mathstackersparameter\c!distance % was \c!voffset
+              \relax
+              \box\scratchboxtwo
+            \egroup
+          \math_stackers_stop_tagged
         \fi
-        \math_stackers_stop_tagged
+        \ifcase#top\else
+          \kern-\scratchwidth
+          % over
+          \math_stackers_start_tagged_top
+            \math_stackers_top\bgroup
+              \raise\dimexpr
+                 \scratchheight
+                +\dp\scratchboxtwo % new
+                +\mathstackersparameter\c!distance % was \c!voffset
+              \relax
+              \box\scratchboxtwo
+            \egroup
+          \math_stackers_stop_tagged
+        \fi
+        %
       \fi}%
   \dostoptagged
   \mathstackersparameter\c!right\relax
@@ -670,61 +742,64 @@
       \fi
       %
       \math_stackers_normalize_three
-      %
+      % analysis
+      \dosetelementproperty\s!subtype\t!munderover
+      % base
       \math_stackers_start_tagged_mid
-      \math_stackers_middle\bgroup
-        \box\scratchboxthree
-      \egroup
+        \math_stackers_middle\bgroup
+          \box\scratchboxthree
+        \egroup
       \math_stackers_stop_tagged
       %
+      \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
       \kern-\scratchwidth
       \ifcase#where\relax
-        \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
-        %
-        \math_stackers_start_tagged_top
-        \math_stackers_top\bgroup
-          \raise\dimexpr
-             \scratchheight
-            +\dp\scratchboxone
-            +\mathstackersparameter\c!voffset
-          \relax
-          \box\scratchboxone % toptext
-        \egroup
+        % under
+        \math_stackers_start_tagged_bot
+          \math_stackers_bottom\bgroup
+            \lower\dimexpr
+              \scratchdepth
+             +\ht\scratchboxtwo
+             +\mathstackersparameter\c!distance
+            \relax
+            \box\scratchboxtwo % accent
+          \egroup
         \math_stackers_stop_tagged
         \kern-\scratchwidth
-        \math_stackers_start_tagged_bot
-        \math_stackers_bottom\bgroup
-          \lower\dimexpr
-            \scratchdepth
-           +\ht\scratchboxtwo
-           +\mathstackersparameter\c!distance
-          \relax
-          \box\scratchboxtwo % accent
-        \egroup
+        % over
+        \math_stackers_start_tagged_top
+          \math_stackers_top\bgroup
+            \raise\dimexpr
+               \scratchheight
+              +\dp\scratchboxone
+              +\mathstackersparameter\c!voffset
+            \relax
+            \box\scratchboxone % toptext
+          \egroup
         \math_stackers_stop_tagged
       \else
-        \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
-        %
-        \math_stackers_start_tagged_top
-        \math_stackers_top\bgroup
-          \raise\dimexpr
-             \scratchheight
-            +\dp\scratchboxtwo % new
-            +\mathstackersparameter\c!distance
-          \relax
-          \box\scratchboxtwo % accent
-        \egroup
+        % under
+        \math_stackers_start_tagged_bot
+          \math_stackers_bottom\bgroup
+            \lower\dimexpr
+               \scratchdepth
+              +\ht\scratchboxone
+              +\mathstackersparameter\c!voffset
+            \relax
+            \box\scratchboxone % bottext
+          \egroup
         \math_stackers_stop_tagged
         \kern-\scratchwidth
-        \math_stackers_start_tagged_bot
-        \math_stackers_bottom\bgroup
-          \lower\dimexpr
-             \scratchdepth
-            +\ht\scratchboxone
-            +\mathstackersparameter\c!voffset
-          \relax
-          \box\scratchboxone % bottext
-        \egroup
+        % over
+        \math_stackers_start_tagged_top
+          \math_stackers_top\bgroup
+            \raise\dimexpr
+               \scratchheight
+              +\dp\scratchboxtwo % new
+              +\mathstackersparameter\c!distance
+            \relax
+            \box\scratchboxtwo % accent
+          \egroup
         \math_stackers_stop_tagged
       \fi
       }%

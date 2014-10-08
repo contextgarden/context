@@ -43,6 +43,7 @@ local replacetemplate = utilities.templates.replace
 local addsuffix       = file.addsuffix
 local nameonly        = file.nameonly
 local basename        = file.basename
+local pathpart        = file.pathpart
 local joinfile        = file.join
 local suffix          = file.suffix
 local addsuffix       = file.addsuffix
@@ -639,19 +640,29 @@ function scripts.epub.make(purge,rename,svgmath,svgstyle)
         end
     end
 
-    local function registerandcopyfile(check,path,name,sourcepath,targetpath,newname)
+    local function registerandcopyfile(check,path,name,sourcepath,targetpath,newname,image)
+
+        if name == "" then
+            report("ignoring unknown image")
+            return
+        end
+
         if newname then
             newname = replacesuffix(newname,suffix(name))
         else
             newname = name
         end
+
         local source = joinfile(sourcepath,name)
         local target = joinfile(targetpath,newname)
         local mathml = false
+
         if suffix(source) == "xhtml" then
             if find(io.loaddata(source),"MathML") then
                 mathml = true -- inbelievable: the property is only valid when there is mathml
             end
+        else
+            report("checking image %a -> %a",source,target)
         end
         if registerone(path,newname,mathml) then
             if not check or needsupdating(source,target) or mathml and svgmath then
@@ -678,8 +689,28 @@ function scripts.epub.make(purge,rename,svgmath,svgstyle)
         end
     end
 
+ -- local nofdummies = 0
+ -- local dummyname  = formatters["dummy-figure-%03i"]
+ -- local makedummy  = formatters["context --extra=dummies --noconsole --once --result=%s"]
+ --
+ -- local function registerandcopydummy(targetpath,name)
+ --     nofdummies = nofdummies + 1
+ --     local newname = dummyname(nofdummies)
+ --     local target  = joinfile(targetpath,newname)
+ --     if not isfile(target) then
+ --         pushdir(targetpath)
+ --         report("generating dummy %a for %a",newname,name or "unknown")
+ --         os.execute(makedummy(newname))
+ --         popdir()
+ --     end
+ --     return newname
+ -- end
+
     for image, data in sortedhash(images) do
-        registerandcopyfile(true,imagepath,data.newname,imagesource,imagetarget,rename and image)
+     -- if data.used == "" then
+     --     data.newname = registerandcopydummy(imagetarget,data.name)
+     -- end
+        registerandcopyfile(true,imagepath,data.newname,imagesource,imagetarget,rename and image,true)
     end
     for i=1,#styles do
         registerandcopyfile(false,stylepath,styles[i],stylesource,styletarget)
@@ -688,6 +719,7 @@ function scripts.epub.make(purge,rename,svgmath,svgstyle)
         registerandcopyfile(false,false,htmlfiles[i],htmlsource,htmltarget)
     end
 
+    relocateimages(images,oldimagespecification,oldimagespecification,imagepath,rename)
     relocateimages(images,oldimagespecification,newimagespecification,imagepath,rename)
 
     report("%s files registered, %s updated, %s kept",updated + notupdated,updated,notupdated)

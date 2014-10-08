@@ -254,7 +254,7 @@ local pattern = C(4) / function(s) -- needs checking !
         return utfchar(now)
     elseif now >= 0xD800 and now <= 0xDBFF then
         more = now
-     -- return ""
+        return "" -- else the c's end up in the stream
     else
         return utfchar(now)
     end

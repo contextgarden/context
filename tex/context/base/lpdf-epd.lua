@@ -39,7 +39,7 @@ local concat = table.concat
 local toutf, toeight, utfchar = string.toutf, utf.toeight, utf.char
 
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-local P, C, S, R, Ct, Cc, V, Carg, Cs = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cc, lpeg.V, lpeg.Carg, lpeg.Cs
+local P, C, S, R, Ct, Cc, V, Carg, Cs, Cf, Cg = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cc, lpeg.V, lpeg.Carg, lpeg.Cs, lpeg.Cf, lpeg.Cg
 
 local epdf           = epdf
       lpdf           = lpdf or { }
@@ -606,13 +606,16 @@ local hexdigit  = R("09","AF")
 local numchar   = ( P("\\") * ( (R("09")^3/tonumber) + C(1) ) ) + C(1)
 local number    = lpegpatterns.number / tonumber
 local spaces    = lpegpatterns.whitespace^1
+local optspaces = lpegpatterns.whitespace^0
 local keyword   = P("/") * C(R("AZ","az","09")^1)
 local operator  = C((R("AZ","az")+P("'")+P('"'))^1)
 
 local grammar   = P { "start",
     start      = (keyword + number + V("dictionary") + V("unicode") + V("string") + V("unicode")+ V("array") + spaces)^1,
+ -- keyvalue   = (keyword * spaces * V("start") + spaces)^1,
+    keyvalue   = optspaces * Cf(Ct("") * Cg(keyword * optspaces * V("start") * optspaces)^1,rawset),
     array      = P("[")  * Ct(V("start")^1) * P("]"),
-    dictionary = P("<<") * Ct(V("start")^1) * P(">>"),
+    dictionary = P("<<") *    V("keyvalue") * P(">>"),
     unicode    = P("<")  * Ct(Cc("hex") * C((1-P(">"))^1))            * P(">"),
     string     = P("(")  * Ct(Cc("dec") * C((V("string")+numchar)^1)) * P(")"), -- untested
 }
@@ -742,9 +745,9 @@ function lpdf.epdf.getpagecontent(document,pagenumber)
         elseif operator == "Tj" or operator == "'" or operator == '"' then -- { string,  Tj } { string, ' } { n, m, string, " }
             local list = entry[size-1]
             if list[1] == "hex" then
-                list[2] = lpegmatch(p_hex_to_utf,li[2],1,unic)
+                list[2] = lpegmatch(p_hex_to_utf,li[2])
             else
-                list[2] = lpegmatch(p_dec_to_utf,li[2],1,unic)
+                list[2] = lpegmatch(p_dec_to_utf,li[2])
             end
         end
     end
@@ -807,6 +810,33 @@ function lpdf.epdf.contenttotext(document,list) -- maybe signal fonts
     end
 
     return concat(text)
+end
+
+function lpdf.epdf.getstructure(document,list) -- just a test
+    local depth = 0
+    for i=1,#list do
+        local entry    = list[i]
+        local size     = #entry
+        local operator = entry[size]
+        if operator == "BDC" then
+            report_epdf("%w%s : %s",depth,entry[1] or "?",entry[2].MCID or "?")
+            depth = depth + 1
+        elseif operator == "EMC" then
+            depth = depth - 1
+        elseif operator == "TJ" then
+            local list = entry[1]
+            for i=1,#list do
+                local li = list[i]
+                if type(li) == "string" then
+                    report_epdf("%w > %s",depth,li)
+                elseif li < -50 then
+                    report_epdf("%w >",depth,li)
+                end
+            end
+        elseif operator == "Tj" then
+            report_epdf("%w > %s",depth,entry[size-1])
+        end
+    end
 end
 
 -- document.Catalog.StructTreeRoot.ParentTree.Nums[2][1].A.P[1])

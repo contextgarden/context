@@ -199,17 +199,62 @@
    \global\setfalse\c_page_sides_short
    \global\setfalse\c_page_sides_flag}
 
+% \def\page_sides_flush_floats_indeed
+%   {\global\advance\d_page_sides_vsize-\d_page_sides_bottomskip
+%    \begingroup
+%    \let\page_sides_flush_floats\relax
+%    \forgetall
+%    \doloop
+%      {\strut
+%       \iftracesidefloats
+%         \color[darkgray]{\ruledhbox{\strut\kern\d_page_sides_width}}%
+%       \fi
+%       \par
+%     % \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
+%       \ifdim\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax>\zeropoint
+%         \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
+%           \exitloop
+%         \fi
+%       \else
+%         \exitloop
+%       \fi}%
+%    \endgroup
+%    \ifdim\parskip>\zeropoint % why this test ?
+%      \ifdim\d_page_sides_bottomskip>\parskip
+%      % \nowhitespace
+%      % \vskip\d_page_sides_bottomskip
+%        \blank[\v!nowhite,\the\dimexpr\d_page_sides_bottomskip]
+%      \fi
+%    \else
+%       \blank[\the\d_page_sides_bottomskip]% new, so needs checking
+%    \fi}
+
+\installcorenamespace{sidefloatsteps}
+
+\setvalue{\??sidefloatsteps\v!line  }{\strut}
+\setvalue{\??sidefloatsteps\v!big   }{\strut}
+\setvalue{\??sidefloatsteps\v!medium}{\halfstrut}
+\setvalue{\??sidefloatsteps\v!small }{\quarterstrut}
+\setvalue{\??sidefloatsteps\v!depth }{\depthstrut}
+
+% we don't officially know what kind of float we flush
+
 \def\page_sides_flush_floats_indeed
   {\global\advance\d_page_sides_vsize-\d_page_sides_bottomskip
    \begingroup
    \let\page_sides_flush_floats\relax
+   \edef\m_pages_strut{\executeifdefined{\??sidefloatsteps\rootfloatparameter\c!step}\strut}%
    \forgetall
    \doloop
-     {\strut
-      \iftracesidefloats
-        \color[darkgray]{\ruledhbox{\strut\kern\d_page_sides_width}}%
+     {\iftracesidefloats
+        \dontleavehmode
+        \ruledhbox{\m_pages_strut\kern\d_page_sides_width}%
+      \else
+        \m_pages_strut
       \fi
       \par
+      \nointerlineskip
+    % \ifdim\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax>\zeropoint
       \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
         \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
           \exitloop
@@ -222,10 +267,12 @@
      \ifdim\d_page_sides_bottomskip>\parskip
      % \nowhitespace
      % \vskip\d_page_sides_bottomskip
-       \blank[\v!nowhite,\the\dimexpr\d_page_sides_bottomskip]
+%      \blank[\v!nowhite,\the\dimexpr\d_page_sides_bottomskip]
+       \blank[\v!nowhite,\rootfloatparameter\c!sidespaceafter]
      \fi
    \else
-      \blank[\the\d_page_sides_bottomskip]% new, so needs checking
+%     \blank[\the\d_page_sides_bottomskip]% new, so needs checking
+      \blank[\rootfloatparameter\c!sidespaceafter]% new, so needs checking
    \fi}
 
 % alternative method (unsnapped)

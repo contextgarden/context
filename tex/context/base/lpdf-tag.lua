@@ -11,6 +11,7 @@ local format, match, concat = string.format, string.match, table.concat
 local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
 local utfchar = utf.char
 local settings_to_hash = utilities.parsers.settings_to_hash
+local formatters = string.formatters
 
 local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
 
@@ -109,6 +110,7 @@ local function finishstructure()
             Nums = nums
         }
         -- we need to split names into smaller parts (e.g. alphabetic or so)
+        -- we already have code for that somewhere
         if add_ids then
             local kids = pdfdictionary {
                 Limits = pdfarray { names[1], names[#names-1] },
@@ -189,9 +191,18 @@ local function makeattribute(t)
     end
 end
 
-local function makeelement(fulltag,parent)
+local function makeelement(fulltag,parent,attr)
     local tag, n = lpegmatch(dashsplitter,fulltag)
     local tg, detail = lpegmatch(colonsplitter,tag)
+    if tg == "ignore" then
+        return false
+    elseif tg == "mstackertop" or tg == "mstackerbot" or tg == "mstackermid"then
+        return true
+    elseif tg == "mstacker" then
+print("get",fulltag)
+        local p = properties[fulltag]
+        tg = p and p.subtype or tg
+    end
     local k, r = pdfarray(), pdfreserveobject()
     local a = userproperties[fulltag]
     usedmapping[tg] = true
@@ -215,8 +226,12 @@ local function makeelement(fulltag,parent)
     end
     local kids = parent.kids
     kids[#kids+1] = s
-    elements[fulltag] = { tag = tag, pref = s, kids = k, knum = r, pnum = pagenum }
+    local e = { tag = tag, pref = s, kids = k, knum = r, pnum = pagenum }
+    elements[fulltag] = e
+    return e
 end
+
+local f_BDC = formatters["/%s <</MCID %s>>BDC"]
 
 local function makecontent(parent,start,stop,slist,id)
     local tag  = parent.tag
@@ -225,7 +240,7 @@ local function makecontent(parent,start,stop,slist,id)
     if id == "image" then
         local d = pdfdictionary {
             Type = pdf_mcr,
-            Pg   = pageref,
+         -- Pg   = pageref,
             MCID = last,
             Alt  = "image",
         }
@@ -235,15 +250,15 @@ local function makecontent(parent,start,stop,slist,id)
     else
         local d = pdfdictionary {
             Type = pdf_mcr,
-            Pg   = pageref,
+         -- Pg   = pageref,
             MCID = last,
         }
      -- kids[#kids+1] = pdfreference(pdfflushobject(d))
         kids[#kids+1] = d
     end
     --
-    local bliteral = pdfliteral(format("/%s <</MCID %s>>BDC",tag,last))
-    local eliteral = pdfliteral("EMC")
+    local bliteral = pdfliteral(f_BDC(tag,last))
+    local eliteral = pdfliteral("EMC") -- could be a copy
     -- use insert instead:
     local prev = getprev(start)
     if prev then
@@ -301,7 +316,7 @@ local function collectranges(head,list)
                 last = nil
             else
                 local nl = getlist(n)
-                slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
+             -- slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
                 collectranges(nl,n)
             end
         end
@@ -332,15 +347,25 @@ function nodeinjections.addtags(head)
         local noftags, tag = #tags, nil
         for j=1,noftags do
             local tag = tags[j]
-            if not elements[tag] then
-                makeelement(tag,prev)
+            local prv = elements[tag] or makeelement(tag,prev,attr)
+            if prv == false then
+                -- ignore this one
+                prev = false
+                break
+            elseif prv == true then
+                -- skip this one
+            else
+                prev = prv
             end
-            prev = elements[tag]
         end
-        local b, e = makecontent(prev,start,stop,list,id)
-        if start == head then
-            report_tags("this can't happen: parent list gets tagged")
-            head = b
+        if prev then
+            local b, e = makecontent(prev,start,stop,list,id)
+            if start == head then
+                report_tags("this can't happen: parent list gets tagged")
+                head = b
+            end
+        else
+            -- ignored content
         end
     end
     finishpage()

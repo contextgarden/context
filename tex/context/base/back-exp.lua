@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['back-exp'] = {
     license   = "see context related readme files"
 }
 
+-- Todo: share properties more with tagged pdf (or thge reverse)
+
 -- Because we run into the 200 local limit we quite some do .. end wrappers .. not always
 -- that nice but it has to be.
 
@@ -265,7 +267,7 @@ local namespaces = {
     mstacker     = "m",
     mstackertop  = "m",
     mstackermid  = "m",
-    mstackernbot = "m",
+    mstackerbot  = "m",
 }
 
 setmetatableindex(namespaced, function(t,k)
@@ -1261,6 +1263,7 @@ do
                         local t  = nil
                         local b  = nil
                         -- only accent when top / bot have stretch
+                        -- normally we flush [base under over] which is better for tagged pdf
                         if t1 == "mstackermid" then
                             m = accentchar(d1) -- or m
                             if t2 == "mstackertop" then
@@ -1301,9 +1304,13 @@ do
                         checkmath(di)
                         i = i + 1
                     elseif tg == "mroot" then
-                        if #di.data == 1 then
-                            -- else firefox complains
+                        local data = di.data
+                        local size = #data
+                        if size == 1 then
+                            -- else firefox complains ... code in math-tag (for pdf tagging)
                             di.element = "msqrt"
+                        elseif size == 2 then
+                            data[1], data[2] = data[2], data[1]
                         end
                         checkmath(di)
                         i = i + 1
@@ -3206,9 +3213,15 @@ end
             local list = table.unique(settings_to_array(cssfile))
             for i=1,#list do
                 local source = file.addsuffix(list[i],"css")
-                local target = source
-                cssfiles[#cssfiles+1] = target
-                -- todo: warning if no file yet
+                local target = file.join(stylepath,file.basename(source))
+                cssfiles[#cssfiles+1] = source
+                if not lfs.isfile(source) then
+                    source = file.join("../",source)
+                end
+                if lfs.isfile(source) then
+                    report_export("copying %s",source)
+                    file.copy(source,target)
+                end
             end
         end
 

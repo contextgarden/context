@@ -962,6 +962,35 @@
 
 \let\normalstrut\strut
 
+\unexpanded\def\halfstrut
+  {\relax
+   \dontleavehmode
+   \begingroup
+   \setbox\scratchbox\copy\strutbox
+   \ht\scratchbox\dimexpr\strutht/\plustwo\relax
+   \dp\scratchbox\dimexpr\strutdp/\plustwo\relax
+   \box\scratchbox
+   \endgroup}
+
+\unexpanded\def\quarterstrut
+  {\relax
+   \dontleavehmode
+   \begingroup
+   \setbox\scratchbox\copy\strutbox
+   \ht\scratchbox\dimexpr\strutht/\plusfour\relax
+   \dp\scratchbox\dimexpr\strutdp/\plusfour\relax
+   \box\scratchbox
+   \endgroup}
+
+\unexpanded\def\depthstrut
+  {\relax
+   \dontleavehmode
+   \begingroup
+   \setbox\scratchbox\copy\strutbox
+   \ht\scratchbox\dimexpr\strutht-\struthtdp/\plustwo\relax % assumes that ht > lineheight/2
+   \box\scratchbox
+   \endgroup}
+
 %D Sometimes a capstrut comes in handy
 %D
 %D \starttabulate[|Tl|l|l|]

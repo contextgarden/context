@@ -1119,6 +1119,21 @@
 % \btxexpandedjournal[fbj]
 % \btxabbreviatedjournal[foo journal of bars]
 
+%D Saving data:
+
+\unexpanded\def\savebtxdataset
+  {\dotripleargument\publ_save_dataset}
+
+\unexpanded\def\publ_save_dataset[#1][#2][#3]%
+  {\begingroup
+   \getdummyparameters[\c!criterium=\v!all,\c!alternative=,#3]% % all or used
+   \ctxcommand{btxsavedataset("#1","#2","\dummyparameter\c!alternative","\dummyparameter\c!criterium")}%
+   \endgroup}
+
+% \savebtxdataset[standard][e:/tmp/foo.bib]
+% \savebtxdataset[standard][e:/tmp/foo.lua]
+% \savebtxdataset[standard][e:/tmp/foo.xml]
+
 %D Defaults:
 
 \setbtxdataset

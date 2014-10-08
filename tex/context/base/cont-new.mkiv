@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2014.10.07 11:14}
+\newcontextversion{2014.10.08 23:31}
 
 %D This file is loaded at runtime, thereby providing an excellent place for
 %D hacks, patches, extensions and new features.
@@ -32,122 +32,59 @@
 %     \inheritmaintextcolor
 % \to \everymargindatacontent
 
-% This is experimental; if this changes we need to adapt the mb-mp
-% style too. It's not in the core yet.
-
-% \def\ActionY{\blank\analyzenofparlines{\inleftmargin{\analyzednofparlines}}}
-% \def\ActionN{\analyzenofparlines{\inleftmargin{\analyzednofparlines}}}
+% This is experimental; if this changes we need to adapt the mb-mp style too. It's
+% not in the core yet.
 %
-% \saveparnumber\ifnum\nofparlines<2 \ActionY\else\ActionN\fi 1.1 nop \crlf
-%                                                             1.2 nop \par
-% \saveparnumber\ifnum\nofparlines<2 \ActionY\else\ActionN\fi 2.1 nop \par
-% \saveparnumber\ifnum\nofparlines<2 \ActionY\else\ActionN\fi 3.1 yes \crlf
-%                                                             3.2 nop \crlf
-%                                                             3.3 nop \par
-% \saveparnumber\ifnum\nofparlines<2 \ActionY\else\ActionN\fi 4.1 nop \crlf
-%                                                             4.2 nop \par
-% \saveparnumber\ifnum\nofparlines<2 \ActionY\else\ActionN\fi 5.1 nop \par
-% \saveparnumber\ifnum\nofparlines<2 \ActionY\else\ActionN\fi 6.1 yes \par
+% \def\ActionY{\blank\inleftmargin{\shownofparlines}}
+% \def\ActionN{\inleftmargin{\shownofparlines}}
 %
-% \saveparnumber\doifelselessparlines {2}\ActionY\ActionN     1.1 nop \crlf
-%                                                             1.2 nop \par
-% \saveparnumber\doifelselessparlines {2}\ActionY\ActionN     2.1 nop \par
-% \saveparnumber\doifelselessparlines {2}\ActionY\ActionN     3.1 yes \crlf
-%                                                             3.2 nop \crlf
-%                                                             3.3 nop \par
-% \saveparnumber\doifelselessparlines {2}\ActionY\ActionN     4.1 nop \crlf
-%                                                             4.2 nop \par
-% \saveparnumber\doifelselessparlines {2}\ActionY\ActionN     5.1 nop \par
-% \saveparnumber\doifelselessparlines {2}\ActionY\ActionN     6.1 yes \par
+% \saveparnumber
+% ...
+% \checknofparlines
+% \ifnum\nofparlines<2
+%   \ActionY
+% \else
+%   \ActionN
+% \fi
+% ...
 
-\newcount   \c_typo_par_current
-\newcount   \c_typo_par_saved
-\newconstant\c_typo_par_state
-\newconstant\c_typo_par_lines
-\newconstant\c_typo_par_criterium
+\newcount\c_typo_par_current
+\newcount\c_typo_par_saved
+\newcount\c_typo_par_lines
+\newcount\c_typo_par_temp
 
 \appendtoks
     \advance\c_typo_par_current\plusone % local
+   %\llap{\infofont[\the\c_typo_par_saved:\the\c_typo_par_current]\quad}%
 \to \everypar
 
-\unexpanded\def\saveparnumber
-  {\c_typo_par_saved\tagparcounter} % local
+\unexpanded\def\saveparnumber % the upcoming number
+  {\c_typo_par_saved\c_typo_par_current} % local
 
 \def\savedparnumber  {\number\c_typo_par_saved}
 \def\currentparnumber{\number\c_typo_par_current}
-
-\unexpanded\def\nofparlines
-  {\numexpr
-     \ifhmode
-       \maxdimen
-     \else\ifnum\c_typo_par_current=\c_typo_par_current
-        % we have not yet started a new one
-       \prevgraf
-     \else\ifnum\c_typo_par_current>\c_typo_par_current
-        % we are somewhere in the future
-       \maxdimen
-     \else
-       \zerocount
-     \fi\fi\fi
-   \relax}
-
-\unexpanded\def\setnofparlinesstate
-  {\c_typo_par_state\numexpr
-     \ifhmode
-       \zerocount
-     \else\ifnum\c_typo_par_current=\c_typo_par_current
-        % we have not yet started a new one
-       \plusone
-     \else\ifnum\c_typo_par_current>\c_typo_par_current
-        % we are somewhere in the future
-       \plustwo
-     \else
-       \plusthree
-     \fi\fi\fi
-   \relax}
+\def\nofparlines     {\number\c_typo_par_lines}
 
 \unexpanded\def\shownofparlines
   {\dontleavehmode\hbox\bgroup
-   \infofont
-   [%
-   \number\c_typo_par_current:\number\c_typo_par_current:\space
-   \ifcase\c_typo_par_state
-     unknown%
-   \or
-     \ifnum\c_typo_par_lines<\c_typo_par_criterium
-       \darkred
-       \number\c_typo_par_lines<\number\c_typo_par_criterium
-     \else
-       \darkgreen
-       \number\c_typo_par_lines>=\number\c_typo_par_criterium
-     \fi
-   \or
-     ahead%
-   \else
-     behind%
-   \fi
-   ]%
+   \infofont[\savedparstate]%
    \egroup}
 
-\unexpanded\def\doifelselessparlines#1%
-  {\c_typo_par_criterium#1\relax
-   \c_typo_par_lines\prevgraf
-   \setnofparlinesstate
-   \ifnum\nofparlines<#1\relax
-     \expandafter\firstoftwoarguments
+\unexpanded\def\checknofparlines
+  {\c_typo_par_temp\numexpr\c_typo_par_saved+\plusone\relax
+   \ifhmode
+     \c_typo_par_lines\zerocount
+     \edef\savedparstate{\number\c_typo_par_temp:\number\c_typo_par_current\space-}%
+   \else\ifnum\c_typo_par_current=\c_typo_par_temp
+     \c_typo_par_lines\prevgraf
+     \edef\savedparstate{\number\c_typo_par_temp:\number\c_typo_par_current\space\number\prevgraf}%
+   \else\ifnum\c_typo_par_temp>\c_typo_par_current
+     \c_typo_par_lines\zerocount
+     \edef\savedparstate{\number\c_typo_par_temp:\number\c_typo_par_current\space-}%
    \else
-     \expandafter\secondoftwoarguments
-   \fi}
-
-\unexpanded\def\doiflessparlines#1%
-  {\c_typo_par_criterium#1\relax
-   \c_typo_par_lines\prevgraf
-   \setnofparlinesstate
-   \ifnum\nofparlines<#1\relax
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
+     \c_typo_par_lines\maxdimen
+     \edef\savedparstate{\number\c_typo_par_temp:\number\c_typo_par_current\space+}%
+   \fi\fi\fi}
 
 %D Maybe:
 

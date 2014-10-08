@@ -883,7 +883,7 @@ local p_utf16_to_utf8_be = C(1) * C(1) /function(left,right)
         return utfchar(now)
     elseif now >= 0xD800 and now <= 0xDBFF then
         more = now
-     -- return ""
+        return "" -- else the c's end up in the stream
     else
         return utfchar(now)
     end
@@ -897,7 +897,7 @@ local p_utf16_to_utf8_le = C(1) * C(1) /function(right,left)
         return utfchar(now)
     elseif now >= 0xD800 and now <= 0xDBFF then
         more = now
-     -- return ""
+        return "" -- else the c's end up in the stream
     else
         return utfchar(now)
     end

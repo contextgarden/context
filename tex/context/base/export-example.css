@@ -373,6 +373,19 @@ register, div.register {
 	display: none ;
 }
 
+registerlocation, div.registerlocation {
+	display: inline ;
+}
+
+registerlocation:after, div.registerlocation:after {
+	content        : "\25B6\00A0\00A0" ;
+	color          : rgb(40%,40%,40%) ;
+	font-size      : x-small ;
+    line-height    : 0 ;
+    padding-top    : 0.5ex ;
+	vertical-align : top ;
+}
+
 /* table     : display */
 /* tablerow  : display */
 /* tablecell : mixed   */
@@ -463,7 +476,7 @@ combination, div.combination {
 	margin-bottom : 0em ;
 }
 
-combinationpair, div.combinaitonpair {
+combinationpair, div.combinationpair {
 	display       : table-cell ;
 	padding-right : 1em ;
 }
@@ -740,11 +753,11 @@ quantity, div.quantity {
 	display : inline ;
 }
 
-quantity>unit, div.quantity div.unit {
+quantity>unit, div.quantity>div.unit {
 	display : inline ;
 }
 
-quantity>number, div.quantity div.number {
+quantity>number, div.quantity>div.number {
 	display : inline ;
 }
 
@@ -755,25 +768,21 @@ quantity>number, div.quantity div.number {
 sup, div.sup {
 	display        : inline-block ;
 	font-size      : xx-small ;
-    line-height    : 0 ;
-    padding-top    : 0.5ex ;
-	vertical-align : top ;
+	vertical-align : super ;
 }
 
 sub, div.sub {
 	display        : inline-block ;
 	font-size      : xx-small ;
-    line-height    : 0 ;
-    padding-bottom : 0.5ex ;
-	vertical-align : bottom ;
+	vertical-align : sub ;
 }
 
-subsup>sup, div.subsup div.sup {
+subsup>sup, div.subsup>div.sup {
 	display        : inline ;
 	vertical-align : top ;
 }
 
-subsup>sub, div.subsup div.sub {
+subsup>sub, div.subsup>div.sub {
 	display        : inline ;
 	vertical-align : bottom ;
 }

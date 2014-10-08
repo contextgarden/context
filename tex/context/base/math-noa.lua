@@ -170,10 +170,10 @@ local function process(start,what,n,parent)
         elseif id == math_char or id == math_textchar or id == math_delim then
             break
         elseif id == math_noad then
-if prev then
-    -- we have no proper prev in math nodes yet
-    setfield(start,"prev",prev)
-end
+-- if prev then
+--     -- we have no proper prev in math nodes yet
+--     setfield(start,"prev",prev)
+-- end
 
             local noad = getfield(start,"nucleus")      if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"sup")          if noad then process(noad,what,n,start) end -- list

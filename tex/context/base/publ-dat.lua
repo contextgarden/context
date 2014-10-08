@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['publ-dat'] = {
 
 -- todo: strip the @ in the lpeg instead of on do_definition and do_shortcut
 -- todo: store bibroot and bibrootdt
+-- todo: dataset = datasets[dataset] => current = datasets[dataset]
 
 --[[ldx--
 <p>This is a prelude to integrated bibliography support. This file just loads
@@ -58,6 +59,14 @@ publicationsstats.nofbytes       = 0
 publicationsstats.nofdefinitions = 0
 publicationsstats.nofshortcuts   = 0
 publicationsstats.nofdatasets    = 0
+
+if not publications.usedentries then
+    function publications.usedentries()
+        return { }
+    end
+end
+
+local v_all = interfaces and interfaces.variables.all or "all"
 
 local xmlplaceholder = "<?xml version='1.0' standalone='yes'?>\n<bibtex></bibtex>"
 
@@ -374,53 +383,59 @@ local cleaner_2 = Cs ( (
 
 local compact = false -- can be a directive but then we also need to deal with newlines ... not now
 
-function publications.converttoxml(dataset,nice) -- we have fields !
-    dataset = datasets[dataset]
-    local luadata = dataset and dataset.luadata
+function publications.converttoxml(dataset,nice,dontstore,usedonly) -- we have fields !
+    current = datasets[dataset]
+    local luadata = current and current.luadata
     if luadata then
         statistics.starttiming(publications)
-        statistics.starttiming(xml)
         --
-        local result, r = { }, 0
+        local result, r, n = { }, 0, 0
+        local usedonly = usedonly and publications.usedentries(dataset)
         --
         r = r + 1 ; result[r] = "<?xml version='1.0' standalone='yes'?>"
         r = r + 1 ; result[r] = "<bibtex>"
         --
         if nice then
             local f_entry_start = formatters[" <entry tag='%s' category='%s' index='%s'>"]
-            local f_entry_stop  = " </entry>"
+            local s_entry_stop  = " </entry>"
             local f_field       = formatters["  <field name='%s'>%s</field>"]
             for tag, entry in sortedhash(luadata) do
-                r = r + 1 ; result[r] = f_entry_start(tag,entry.category,entry.index)
-                for key, value in sortedhash(entry) do
-                    if key ~= "tag" and key ~= "category" and key ~= "index" then
-                        if lpegmatch(cleaner_1,value) then
-                            value = lpegmatch(cleaner_2,value)
-                        end
-                        if value ~= "" then
-                            r = r + 1 ; result[r] = f_field(key,value)
+                if not usedonly or usedonly[tag] then
+                    r = r + 1 ; result[r] = f_entry_start(tag,entry.category,entry.index)
+                    for key, value in sortedhash(entry) do
+                        if key ~= "tag" and key ~= "category" and key ~= "index" then
+                            if lpegmatch(cleaner_1,value) then
+                                value = lpegmatch(cleaner_2,value)
+                            end
+                            if value ~= "" then
+                                r = r + 1 ; result[r] = f_field(key,value)
+                            end
                         end
                     end
+                    r = r + 1 ; result[r] = s_entry_stop
+                    n = n + 1
                 end
-                r = r + 1 ; result[r] = f_entry_stop
             end
         else
             local f_entry_start = formatters["<entry tag='%s' category='%s' index='%s'>"]
-            local f_entry_stop  = "</entry>"
+            local s_entry_stop  = "</entry>"
             local f_field       = formatters["<field name='%s'>%s</field>"]
             for tag, entry in next, luadata do
-                r = r + 1 ; result[r] = f_entry_start(entry.tag,entry.category,entry.index)
-                for key, value in next, entry do
-                    if key ~= "tag" and key ~= "category" and key ~= "index" then
-                        if lpegmatch(cleaner_1,value) then
-                            value = lpegmatch(cleaner_2,value)
-                        end
-                        if value ~= "" then
-                            r = r + 1 ; result[r] = f_field(key,value)
+                if not usedonly or usedonly[tag] then
+                    r = r + 1 ; result[r] = f_entry_start(entry.tag,entry.category,entry.index)
+                    for key, value in next, entry do
+                        if key ~= "tag" and key ~= "category" and key ~= "index" then
+                            if lpegmatch(cleaner_1,value) then
+                                value = lpegmatch(cleaner_2,value)
+                            end
+                            if value ~= "" then
+                                r = r + 1 ; result[r] = f_field(key,value)
+                            end
                         end
                     end
+                    r = r + 1 ; result[r] = s_entry_stop
+                    n = n + 1
                 end
-                r = r + 1 ; result[r] = f_entry_stop
             end
         end
         --
@@ -428,18 +443,23 @@ function publications.converttoxml(dataset,nice) -- we have fields !
         --
         result = concat(result,nice and "\n" or nil)
         --
-        dataset.xmldata = xmlconvert(result, {
-            resolve_entities            = true,
-            resolve_predefined_entities = true, -- in case we have escaped entities
-         -- unify_predefined_entities   = true, -- &#038; -> &amp;
-            utfize_entities             = true,
-        } )
-        --
-        statistics.stoptiming(xml)
-        statistics.stoptiming(publications)
-        if lxml then
-            lxml.register(formatters["btx:%s"](dataset.name),dataset.xmldata)
+        if dontstore then
+            -- indeed
+        else
+            statistics.starttiming(xml)
+            current.xmldata = xmlconvert(result, {
+                resolve_entities            = true,
+                resolve_predefined_entities = true, -- in case we have escaped entities
+             -- unify_predefined_entities   = true, -- &#038; -> &amp;
+                utfize_entities             = true,
+            } )
+            statistics.stoptiming(xml)
+            if lxml then
+                lxml.register(formatters["btx:%s"](current.name),current.xmldata)
+            end
         end
+        statistics.stoptiming(publications)
+        return result, n
     end
 end
 
@@ -657,3 +677,90 @@ function publications.concatstate(i,n)
         return 2
     end
 end
+
+-- savers
+
+local savers = { }
+
+local s_preamble = [[
+% this is an export from context mkiv
+
+@preamble {
+    \ifdefined\btxcmd
+        % we're probably in context
+    \else
+        \def\btxcmd#1{\csname#1\endcsname}
+    \fi
+}
+
+]]
+
+function savers.bib(dataset,filename,usedonly)
+    local current  = datasets[dataset]
+    local luadata  = current.luadata or { }
+    local usedonly = usedonly and publications.usedentries(dataset)
+    local f_start  = formatters["@%s{%s,\n"]
+    local f_field  = formatters["  %s = {%s},\n"]
+    local s_stop   = "}\n\n"
+    local result   = { s_preamble }
+    local n, r = 0, 1
+    for tag, data in sortedhash(luadata) do
+        if not usedonly or usedonly[tag] then
+            r = r + 1 ; result[r] = f_start(data.category or "article",tag)
+            for key, value in sortedhash(data) do
+                r = r + 1 ; result[r] = f_field(key,value)
+            end
+            r = r + 1 ; result[r] = s_stop
+            n = n + 1
+        end
+    end
+    report("%s entries from dataset %a saved in %a",n,dataset,filename)
+    io.savedata(filename,concat(result))
+end
+
+function savers.lua(dataset,filename,usedonly)
+    local current  = datasets[dataset]
+    local luadata  = current.luadata or { }
+    local usedonly = usedonly and publications.usedentries(dataset)
+    if usedonly then
+        local list = { }
+        for k, v in next, luadata do
+            if usedonly[k] then
+                list[k] = v
+            end
+        end
+        luadata = list
+    end
+    report("%s entries from dataset %a saved in %a",table.count(luadata),dataset,filename)
+    table.save(filename,luadata)
+end
+
+function savers.xml(dataset,filename,usedonly)
+    local result, n = publications.converttoxml(dataset,true,true,usedonly)
+    report("%s entries from dataset %a saved in %a",n,dataset,filename)
+    io.savedata(filename,result)
+end
+
+function publications.save(dataset,filename,kind,usedonly)
+    statistics.starttiming(publications)
+    if not kind or kind == "" then
+        kind = file.suffix(filename)
+    end
+    local saver = savers[kind]
+    if saver then
+        usedonly = usedonly ~= v_all
+        saver(dataset,filename,usedonly)
+    else
+        report("unknown format %a for saving %a",kind,dataset)
+    end
+    statistics.stoptiming(publications)
+    return dataset
+end
+
+commands.btxsavedataset = publications.save
+
+-- loaders.bib("test",resolvers.findfile("mkiv-publications.bib","bibtex"))
+--
+-- publications.save("test","e:/tmp/foo.bib")
+-- publications.save("test","e:/tmp/foo.lua")
+-- publications.save("test","e:/tmp/foo.xml")
