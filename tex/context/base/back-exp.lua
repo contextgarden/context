@@ -1561,7 +1561,16 @@ end
 
 do
 
+    local registered = structures.sections.registered
+    local f_level    = formatters[' level="%s"']
+
     local function section(result,element,detail,n,fulltag,di)
+
+        local r = registered[detail]
+        if r then
+            result[#result+1] = f_level(r.level)
+        end
+
         local data = listdata[fulltag]
         if data then
             extras.addreference(result,data.references)
@@ -2852,6 +2861,11 @@ local f_d_template = [[
     display: %display% ;
 }]]
 
+-- local f_d_template = [[
+-- %element%.%detail%, div.%element%.%detail% {
+--     display: %display% ;
+-- }]]
+
 local f_category = formatters["/* category: %s */"]
 
 -- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN" "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd" >
@@ -3034,12 +3048,12 @@ local htmltemplate = [[
                 local tg = c.tg
                 local ns = c.ns
                 if ns == "m" then
-if false then
-                    c.ns = ""
-                    c.at["xmlns:m"] = nil
-end
-             --  elseif tg == "a" then
-             --      c.ns = ""
+                    if false then -- yes or no
+                        c.ns = ""
+                        c.at["xmlns:m"] = nil
+                    end
+             -- elseif tg == "a" then
+             --     c.ns = ""
                 else
                  -- if tg == "tabulatecell" or tg == "tablecell" then
                         local dt = c.dt
@@ -3356,6 +3370,7 @@ end
 
 -- These are called at the tex end:
 
+commands.settagsectionlevel      = structurestags.setsectionlevel
 commands.settagitemgroup         = structurestags.setitemgroup
 commands.settagsynonym           = structurestags.setsynonym
 commands.settagsorting           = structurestags.setsorting

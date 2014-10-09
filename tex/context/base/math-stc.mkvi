@@ -399,13 +399,13 @@
       % analysis
       \ifdim\htdp\scratchboxtwo>\zeropoint
         \ifdim\htdp\scratchboxone>\zeropoint
-          \dosetelementproperty\s!subtype\t!munderover
+          \dosettagproperty\s!subtype\t!munderover
         \else
-          \dosetelementproperty\s!subtype\t!munder
+          \dosettagproperty\s!subtype\t!munder
         \fi
       \else
         \ifdim\htdp\scratchboxone>\zeropoint
-          \dosetelementproperty\s!subtype\t!mover
+          \dosettagproperty\s!subtype\t!mover
         \else
           % brrr
         \fi
@@ -539,13 +539,13 @@
       % analysis
       \ifcase#bottom\relax
         \ifcase#top\relax
-            \dosetelementproperty\s!subtype\t!munderover
+            \dosettagproperty\s!subtype\t!munderover
         \else
-            \dosetelementproperty\s!subtype\t!mover
+            \dosettagproperty\s!subtype\t!mover
         \fi
       \else
         \ifcase#top\relax
-            \dosetelementproperty\s!subtype\t!munder
+            \dosettagproperty\s!subtype\t!munder
         \else
             % brrr
         \fi
@@ -743,7 +743,7 @@
       %
       \math_stackers_normalize_three
       % analysis
-      \dosetelementproperty\s!subtype\t!munderover
+      \dosettagproperty\s!subtype\t!munderover
       % base
       \math_stackers_start_tagged_mid
         \math_stackers_middle\bgroup

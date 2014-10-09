@@ -199,11 +199,11 @@ local function makeelement(fulltag,parent,attr)
     elseif tg == "mstackertop" or tg == "mstackerbot" or tg == "mstackermid"then
         return true
     elseif tg == "mstacker" then
-print("get",fulltag)
         local p = properties[fulltag]
         tg = p and p.subtype or tg
     end
-    local k, r = pdfarray(), pdfreserveobject()
+    local k = pdfarray()
+    local r = pdfreserveobject()
     local a = userproperties[fulltag]
     usedmapping[tg] = true
     tg = usedlabels[tg] or tg

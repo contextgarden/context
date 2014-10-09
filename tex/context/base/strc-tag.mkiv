@@ -212,12 +212,12 @@
   {\setuplanguage[\s!default][\s!righthyphenchar="AD]% for the moment here
    \let\startelement\strc_tags_element_start_yes
    \let\stopelement \strc_tags_element_stop_yes
-   \let\dosetelementproperty\strc_tags_set_aspect_yes}
+   \let\dosettagproperty\strc_tags_set_aspect_yes}
 
 \unexpanded\def\strc_tags_disable_elements
   {\let\startelement\strc_tags_element_start_nop
    \let\stopelement \strc_tags_element_stop_nop
-   \let\dosetelementproperty\strc_tags_set_aspect_nop}
+   \let\dosettagproperty\strc_tags_set_aspect_nop}
 
 % beware: making these unexpanded spoils tables (noalign problem)
 

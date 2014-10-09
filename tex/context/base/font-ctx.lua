@@ -57,7 +57,9 @@ local helpers             = fonts.helpers
 local hashes              = fonts.hashes
 local currentfont         = font.current
 
-local aglunicodes         = fonts.encodings.agl.unicodes
+local encodings           = fonts.encodings
+----- aglunicodes         = encodings.agl.unicodes
+local aglunicodes         = nil -- delayed loading
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
@@ -1445,7 +1447,6 @@ mappings.reset() -- resets the default file
 
 -- => commands
 
-
 local function nametoslot(name)
     local t = type(name)
     local s = nil
@@ -1453,6 +1454,9 @@ local function nametoslot(name)
         local slot = unicodes[true][name]
         if slot then
             return slot
+        end
+        if not aglunicodes then
+            aglunicodes = encodings.agl.unicodes
         end
         slot = aglunicodes[name]
         if characters[true][slot] then

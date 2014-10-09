@@ -990,10 +990,14 @@
      \hskip\s_strc_sectioniong_continuous_signal\relax
    \fi}
 
+% \let\dotagsectionlevel\relax
+
 \def\strc_sectioning_before_yes
   {\strc_sectioning_check_before\strc_sectioning_handle_page_yes
    \headparameter\c!inbetween
-   \dostarttagged\t!section\currenthead}
+   \dostarttagged\t!section\currenthead
+%    \dotagsectionlevel
+   }
 
 \def\strc_sectioning_before_nop
   {\strc_sectioning_check_before\strc_sectioning_handle_page_nop

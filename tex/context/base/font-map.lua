@@ -206,8 +206,6 @@ local overloads = {
     fk  = { name = "f_k",   unicode = { 0x66, 0x6B } },
 }
 
-require("char-ini")
-
 for k, v in next, overloads do
     local name = v.name
     local mess = v.mess

@@ -230,7 +230,6 @@ end
 function tags.setaspect(key,value)
     local tag = chain[nstack]
     if tag then
-print("set",tag)
         local p = properties[tag]
         if p then
             p[key] = value

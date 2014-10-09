@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/07/14 11:14:05
+-- merge date  : 10/09/14 15:22:01
 
 do -- begin closure to overcome local limits and interference
 
@@ -5336,7 +5336,6 @@ local overloads={
   fj={ name="f_j",unicode={ 0x66,0x6A } },
   fk={ name="f_k",unicode={ 0x66,0x6B } },
 }
-require("char-ini")
 for k,v in next,overloads do
   local name=v.name
   local mess=v.mess
