@@ -313,6 +313,7 @@ local function merge_t(a,b)
     return setmetatable(t,getmetatable(a))
 end
 
+local f_key_null       = formatters["/%s null"]
 local f_key_value      = formatters["/%s %s"]
 local f_key_dictionary = formatters["/%s << % t >>"]
 local f_dictionary     = formatters["<< % t >>"]
@@ -344,7 +345,12 @@ tostring_d = function(t,contentonly,key)
             elseif tv == "table" then
                 local mv = getmetatable(v)
                 if mv and mv.__lpdftype then
-                    r[rn] = f_key_value(k,tostring(v))
+                 -- if v == t then
+                 --     report_objects("ignoring circular reference in dirctionary")
+                 --     r[rn] = f_key_null(k)
+                 -- else
+                        r[rn] = f_key_value(k,tostring(v))
+                 -- end
                 elseif v[1] then
                     r[rn] = f_key_value(k,tostring_a(v))
                 else
@@ -385,7 +391,12 @@ tostring_a = function(t,contentonly,key)
                 local mv = getmetatable(v)
                 local mt = mv and mv.__lpdftype
                 if mt then
-                    r[k] = tostring(v)
+                 -- if v == t then
+                 --     report_objects("ignoring circular reference in array")
+                 --     r[k] = "null"
+                 -- else
+                        r[k] = tostring(v)
+                 -- end
                 elseif v[1] then
                     r[k] = tostring_a(v)
                 else
@@ -413,7 +424,7 @@ local tostring_x = function(t) return concat(t," ")       end
 local tostring_s = function(t) return toeight(t[1])       end
 local tostring_p = function(t) return topdfdoc(t[1],t[2]) end
 local tostring_u = function(t) return tosixteen(t[1])     end
-local tostring_n = function(t) return tostring(t[1])      end -- tostring not needed
+----- tostring_n = function(t) return tostring(t[1])      end -- tostring not needed
 local tostring_n = function(t) return f_tonumber(t[1])    end -- tostring not needed
 local tostring_c = function(t) return t[1]                end -- already prefixed (hashed)
 local tostring_z = function()  return "null"              end

@@ -34,9 +34,30 @@
 %D }
 %D \stopTEX
 
+% First of all, the APA style defines authoryear bibliography lists.
 
-%D In order to get journals expanded (or normalized or abbreviated) you need to load
-%D a list:
+\setupbtxrendering [standard] [numbering=no,sorttype=authoryear]
+
+% does not work here: \setupbtxcitevariant [alternative=authoryear,sorttype=authoryear]
+
+\setupbtxlistvariant [lastnamesep={ \& },finalnamesep={ \& }]
+
+\definebtxlistvariant
+  [author]
+  [author=invertedshort]
+
+\definebtxlistvariant
+  [editor]
+  [author]
+
+\definebtxlistvariant
+  [artauthor]
+  [author]
+
+% Should the following be loaded by default?
+
+%D In order to be able to get journals expanded (or normalized or abbreviated) you need
+%D to load a list:
 %D
 %D \starttyping
 %D \btxloadjournallist[journals.txt] % the jabref list
@@ -70,7 +91,8 @@
    apa:pp=pp,
    apa:pages=pages,
    apa:and=and,
-   apa:Author=Author,                 % TODO, should be typeset in italic...
+   apa:period={. },
+   apa:Author=Author,                 %TODO, should be typeset in italic...
    apa:Advanced={Advanced online publication},
    apa:Retrieved={Retrieved from},
    apa:others={et al.}]
@@ -81,8 +103,8 @@
    apa:phdthesis={Thèse de doctorat},
    apa:technicalreport={Rapport technique},
    apa:patent=brevet,
-   apa:editor={Éd.},                  % éditeur
-   apa:editors={Éds.},                % éditeurs
+   apa:editor={Éd.},                  % éditeur,
+   apa:editors={Éds.},                % éditeurs,
    apa:edition=édition,
    apa:volume=volume,
    apa:Volume=Volume,
@@ -95,6 +117,7 @@
    apa:pp=pp,
    apa:pages=pages,
    apa:and=et,
+   apa:period={. },
    apa:Author=Auteur,
    apa:Advanced={Publication en ligne anticipée},
    apa:Retrieved={Téléchargé de},
@@ -120,6 +143,7 @@
    apa:pp=S,
    apa:pages=Seiten,
    apa:and=und,
+   apa:period={. },
    apa:Author=Autor,
    apa:Advanced={Erweiterte Online-Publikation},  % Check this German!
    apa:Retrieved={aus abgerufen},                 % heruntergeladen? Check this German!
@@ -150,8 +174,16 @@
    right=\btxperiod,
    otherwise=\btxperiod]
 
+\starttexdefinition btx:apa:author-editor-other #field
+    \doifelse {#field} {publisher}
+        {\doifelse {\btxflush{#field}} {\btxflush{author}}
+            {\btxlabeltext{apa:Author}}
+            {\btxflush{#field}}
+        }
+        {\btxflush{#field}}
+\stoptexdefinition
+
 \starttexdefinition btx:apa:wherefrom #field
-% TODO: for publisher, if =author use "Author"
     \btxdoifelse {address} {
         \btxspace
         \btxflush{address}
@@ -161,7 +193,7 @@
         }
         \btxdoif {#field} {
             \btxcolon
-            \btxflush{#field}
+            \texdefinition{btx:apa:author-editor-other}{#field}
         }
         \btxperiod
     } {
@@ -170,13 +202,13 @@
             \btxflush{country}
             \btxdoif {#field} {
                 \btxcolon
-                \btxflush{#field}
+                \texdefinition{btx:apa:author-editor-other}{#field}
             }
             \btxperiod
         } {
             \btxdoifelse {#field} {
                 \getvariable{btx:apa:#field}{left}
-                \btxflush{#field}
+                \texdefinition{btx:apa:author-editor-other}{#field}
                 \getvariable{btx:apa:#field}{right}
             } {
                 % check that this is needed!
@@ -261,7 +293,7 @@
     % TODO: if there is no author or editor, then use publisher...
     \btxdoifelse {author} {
         \btxflushauthor{author}
-    } { 
+    } {
         \btxdoifelse {editor} {
             \setmode{btx:apa:edited-book}
             \btxflushauthor{editor}
@@ -304,6 +336,14 @@
     }
     \texdefinition{btx:apa:suffixedyear}
     \btxperiod
+\stoptexdefinition
+
+\starttexdefinition btx:apa:title
+    \btxdoif {title} {
+        \btxspace
+        \btxflush{Word -> title}
+        \btxperiod
+    }
 \stoptexdefinition
 
 % No longer used (not conforming to APA style)
@@ -369,18 +409,34 @@
     }
 \stoptexdefinition
 
-% if interaction, we should make these active hyperlinks!
+% We should create a lua function that prepends "doi:" if not already there...
 
 \starttexdefinition btx:apa:doi-or-url
     \btxdoifelse {doi} {
         \btxspace
-        \hyphenatedurl{doi:\btxflush{doi}}
+        \ifconditional\btxinteractive
+            \goto {
+                \hyphenatedurl{doi:\btxflush{doi}}
+            } [
+                url(http://dx.doi.org/\btxflush{doi})
+            ]
+        \else
+            \hyphenatedurl{doi:\btxflush{doi}}
+        \fi
     } {
         \btxdoif {url} {
             \btxspace
             \btxlabeltext{apa:Retrieved}
             \btxspace
-            \hyphenatedurl{\btxflush{url}}
+            \ifconditional\btxinteractive
+                \goto {
+                    \hyphenatedurl{\btxflush{url}}
+                } [
+                    url(\btxflush{url})
+                ]
+            \else
+                \hyphenatedurl{\btxflush{url}}
+            \fi
         }
     }
 \stoptexdefinition
@@ -873,7 +929,7 @@
     \btxdoif {type} {
         \btxlparenthesis
         \btxflush{type}
-        \btxrparent
+        \btxrparenthesis
     }
     \texdefinition{btx:apa:note}
 \stopsetups

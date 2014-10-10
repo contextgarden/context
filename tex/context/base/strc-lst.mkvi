@@ -854,6 +854,7 @@
         \listalternativeparameter\c!before
         \vbox {
             \forgetall
+            \noindent % otherwise annotations are mirrored up
             \hbox \strc_lists_get_reference_attribute\v!all {
                 \ifconditional\c_lists_show_number
                   % \ifconditional\c_lists_has_page
@@ -881,6 +882,7 @@
         }
         \listalternativeparameter\c!after
    \else
+        \noindent % otherwise annotations are mirrored up
         \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
             \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
         }
@@ -911,7 +913,7 @@
             \scratchwidth\p_width
         \fi
     \fi\fi
-    \noindent
+    \noindent % otherwise annotations are mirrored up
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \setlocalhsize
         \hsize\localhsize
@@ -1092,7 +1094,7 @@
 \stopsetups
 
 \startsetups[\??listrenderings:e]
-    \noindent
+    \noindent % otherwise annotations are mirrored up
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \letlistparameter\c!depth\zeropoint
         \letlistparameter\c!color\empty
@@ -1112,7 +1114,7 @@
 \stopsetups
 
 \startsetups[\??listrenderings:f]
-    \noindent
+    \noindent % otherwise annotations are mirrored up
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \dosetraggedhbox{\listparameter\c!align}%
         \raggedbox {
@@ -1130,7 +1132,7 @@
 \stopsetups
 
 \startsetups[\??listrenderings:g]
-    \noindent
+    \noindent % otherwise annotations are mirrored up
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \midaligned {
             \strc_lists_set_style_color\c!style\c!color\v!all
@@ -1159,6 +1161,7 @@
        [\currentlist: \currentlistentrynumber\space -- \currentlistentrytitle\space -- \currentlistentrypagenumber]%
    \else
        \listparameter\c!before
+       \noindent % otherwise annotations are mirrored up
        \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
            \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
        }

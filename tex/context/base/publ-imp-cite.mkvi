@@ -237,17 +237,34 @@
 \startsetups \s!btx:\s!cite:num
     \fastsetup{\s!btx:\s!cite:render:range}
 \stopsetups
+\startsetups \s!btx:\s!cite:title
+    \fastsetup{\s!btx:\s!cite:render:normal}
+\stopsetups
+\startsetups \s!btx:\s!cite:pages
+    \fastsetup{\s!btx:\s!cite:render:range}
+\stopsetups
+
 \startsetups \s!btx:\s!cite:page
     \fastsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 
+% We should create a lua function that prepends "doi:" if not already there...
+% then we can combine with :url
+
 \startsetups \s!btx:\s!cite:render:doi
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!unknown}
+    \else\ifconditional\btxinteractive
+        \goto {
+            \btxcitereference
+            \hyphenatedurl{doi:\currentbtxfirst}
+        } [
+            url(http://dx.doi.org/\currentbtxfirst)
+        ]
     \else
         \btxcitereference
-        \hyphenatedurl{\currentbtxfirst}
-    \fi
+        \hyphenatedurl{doi:\currentbtxfirst}
+    \fi\fi
 \stopsetups
 
 \startsetups \s!btx:\s!cite:url

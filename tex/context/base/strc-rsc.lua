@@ -67,9 +67,16 @@ local inner      = lpegCg(lpegCc("inner")     * lpegCs(i_token^1))
       inner      = inner * arguments
       special    = special * lparent * (operation * arguments)^-1 * rparent
 
-local referencesplitter = spaces * lpegCf (lpegCt("") * (component + outer)^-1 * (special + inner)^-1 * endofall, rawset)
-local prefixsplitter    = lpegCs(lpegP((1-scolon)^1 * scolon)) * #-scolon * lpegCs(lpegP(1)^1)
-local componentsplitter = lpegCs(lpegP((1-scolon)^1)) * scolon * #-scolon * lpegCs(lpegP(1)^1)
+local referencesplitter = spaces
+                        * lpegCf (lpegCt("") * (component + outer)^-1 * (special + inner)^-1 * endofall, rawset)
+
+local prefixsplitter    = lpegCs(lpegP((1-scolon)^1 * scolon))
+                        * #-scolon
+                        * lpegCs(lpegP(1)^1)
+
+local componentsplitter = lpegCs(lpegP((1-scolon)^1))
+                        * scolon * #-scolon
+                        * lpegCs(lpegP(1)^1)
 
 prefixsplitter = componentsplitter
 
@@ -145,6 +152,8 @@ references.splitcomponent    = splitcomponent
 -- inspect(splitreference([[ outer :: special ( ) ]]))
 -- inspect(splitreference([[ outer :: inner { argument } ]]))
 -- inspect(splitreference([[ special ( outer :: operation ) ]]))
+
+-- inspect(splitreference([[inner(foo,bar)]]))
 
 -- inspect(splitreference([[]]))
 -- inspect(splitreference([[inner]]))

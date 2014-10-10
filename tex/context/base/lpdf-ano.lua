@@ -546,7 +546,9 @@ local function pdfaction(actions)
                 if what then
                     what = what(a,actions)
                 end
-                if what then
+                if action == what then
+                    -- ignore this one, else we get a loop
+                elseif what then
                     action.Next = what
                     action = what
                 else
