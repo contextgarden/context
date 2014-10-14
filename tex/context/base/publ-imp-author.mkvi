@@ -137,13 +137,17 @@
 \stopsetups
 
 \startsetups \s!btx:\s!cite:\s!author:name
-    \fastsetup{\s!btx:\s!cite:\s!author:concat}
-    \ifx\currentbtxvons\empty \else
-        \currentbtxvons
-        \btxcitevariantparameter\c!vonsep
+    \ifcase\currentbtxauthorstate
+        \fastsetup{\s!btx:\s!cite:\s!author:concat}
+        \ifx\currentbtxvons\empty \else
+            \currentbtxvons
+            \btxcitevariantparameter\c!vonsep
+        \fi
+        \currentbtxsurnames
+        \fastsetup{\s!btx:\s!cite:\s!author:others}
+    \else
+       \fastsetup{\s!btx:\s!list:\s!author:normal}
     \fi
-    \currentbtxsurnames
-    \fastsetup{\s!btx:\s!cite:\s!author:others}
 \stopsetups
 
 % list (mostly the same)

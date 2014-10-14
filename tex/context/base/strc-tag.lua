@@ -446,3 +446,8 @@ commands.starttag       = tags.start
 commands.stoptag        = tags.stop
 commands.settagproperty = tags.setproperty
 commands.settagaspect   = tags.setaspect
+
+-- function commands.tagindex(tag)
+--     context(lasttags[tag] or 0)
+-- end
+

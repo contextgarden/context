@@ -250,7 +250,7 @@ local function pdfnametree(destinations)
         for j=i,amount do
             local destination = sorted[j]
             local pagenumber  = destinations[destination]
-            names[#names+1] = destination
+            names[#names+1] = tostring(destination) -- tostring is a safeguard
             names[#names+1] = pdfreference(pagenumber)
         end
         local first = sorted[i]
@@ -426,6 +426,9 @@ function nodeinjections.destination(width,height,depth,names,view)
                     usedviews[name] = view
                     names[n] = autoprefix .. name
                     doview = true
+                else
+                 -- names[n] = autoprefix .. name
+                    names[n] = false
                 end
             end
         elseif method == v_page then

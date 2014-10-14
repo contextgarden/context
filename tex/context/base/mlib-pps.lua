@@ -934,12 +934,12 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
             data.texslots[tx_trial]  = tx_last
             data.texorder[tx_number] = tx_last
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, new %a, hash %a",tx_stage,tx_trial,tx_number,tx_last,h)
+                report_textexts("stage %a, usage %a, number %a, new %a, hash %a, text %a",tx_stage,tx_trial,tx_number,tx_last,h,s)
             end
         else
             data.texslots[tx_trial] = n
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, old %a, hash %a",tx_stage,tx_trial,tx_number,n,h)
+                report_textexts("stage %a, usage %a, number %a, old %a, hash %a, text %a",tx_stage,tx_trial,tx_number,n,h,s)
             end
         end
     elseif tx_stage == "extra" then
@@ -955,7 +955,7 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
             data.texslots[tx_trial] = tx_last
             data.texorder[tx_number] = tx_last
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, extra %a",tx_stage,tx_trial,tx_number,tx_last)
+                report_textexts("stage %a, usage %a, number %a, extra %a, text %a",tx_stage,tx_trial,tx_number,tx_last,s)
             end
         end
     end

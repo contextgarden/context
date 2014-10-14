@@ -84,13 +84,15 @@ end
 function xml.each(root,pattern,handle,reverse)
     local collected = xmlapplylpath(root,pattern)
     if collected then
-        if reverse then
-            for c=#collected,1,-1 do
-                handle(collected[c])
-            end
-        else
-            for c=1,#collected do
-                handle(collected[c])
+        if handle then
+            if reverse then
+                for c=#collected,1,-1 do
+                    handle(collected[c])
+                end
+            else
+                for c=1,#collected do
+                    handle(collected[c])
+                end
             end
         end
         return collected

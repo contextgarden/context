@@ -658,6 +658,30 @@
 %     \directsetup{\??headrenderings:\v!vertical:\v!inmargin}
 % \stopsetups
 
+%D This one is for head based numbering usage: foo 1.2 and so:
+
+\defineheadalternative
+  [\v!reverse]
+  [\c!alternative=\v!vertical,
+   \c!renderingsetup=\??headrenderings:\v!reverse]
+
+\startsetups[\??headrenderings:\v!reverse]
+    \vbox {
+        \headsetupspacing
+        \noindent
+        \begstrut
+        \setfalse\headisdisplay % so a kind of mix
+        \headtextcontent
+        \ifconditional\headshownumber
+            \kern\headnumberdistance
+            \headnumbercontent
+        \else
+            \fakeheadnumbercontent
+        \fi
+        \endstrut
+    }
+\stopsetups
+
 \defineheadalternative
   [\v!middle]
   [\c!alternative=\v!vertical,

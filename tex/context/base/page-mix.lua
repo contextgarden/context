@@ -14,6 +14,7 @@ if not modules then modules = { } end modules ["page-mix"] = {
 -- local number, table = number, table
 
 local concat = table.concat
+local ceil, floor = math.ceil, math.floor
 
 local trace_state  = false  trackers.register("mixedcolumns.trace",  function(v) trace_state  = v end)
 local trace_detail = false  trackers.register("mixedcolumns.detail", function(v) trace_detail = v end)
@@ -81,6 +82,7 @@ local v_auto              = variables.auto
 local v_none              = variables.none
 local v_more              = variables.more
 local v_less              = variables.less
+local v_halfline          = variables.halfline
 
 pagebuilders              = pagebuilders or { }
 pagebuilders.mixedcolumns = pagebuilders.mixedcolumns or { }
@@ -718,8 +720,10 @@ end
 
 function mixedcolumns.finalize(result)
     if result then
-        local results = result.results
-        for i=1,result.nofcolumns do
+        local results  = result.results
+        local columns  = result.nofcolumns
+        local maxtotal = 0
+        for i=1,columns do
             local r = results[i]
             local h = r.head
             if h then
@@ -747,6 +751,16 @@ function mixedcolumns.finalize(result)
                     r.inserts[c] = t
                 end
             end
+            local total = r.height + r.depth
+            if total > maxtotal then
+                maxtotal = total
+            end
+            r.total = total
+        end
+        result.maxtotal = maxtotal
+        for i=1,columns do
+            local r = results[i]
+            r.extra = maxtotal - r.total
         end
     end
 end
@@ -819,13 +833,14 @@ function mixedcolumns.getsplit(result,n)
     local strutht    = result.strutht
     local strutdp    = result.strutdp
     local lineheight = strutht + strutdp
+    local isglobal   = result.alternative == v_global
 
     local v = new_vlist()
     setfield(v,"list",h)
 
  -- local v = vpack(h,"exactly",height)
 
-    if result.alternative == v_global then -- option
+    if isglobal then -- option
         result.height = result.maxheight
     end
 
@@ -833,11 +848,55 @@ function mixedcolumns.getsplit(result,n)
     local dp = 0
     local wd = result.originalwidth
 
-    local grid = result.grid
+    local grid         = result.grid
+    local internalgrid = result.internalgrid
+    local httolerance  = .25
+    local dptolerance  = .50
+    local lineheight   = internalgrid == v_halfline and lineheight/2 or lineheight
+
+    local function amount(r,s,t)
+        local l = ceil((r-t)/lineheight)
+        local a = lineheight * l
+        if a > s then
+            return a - s
+        else
+            return s
+        end
+    end
 
     if grid then
-        ht = lineheight * math.ceil(result.height/lineheight) - strutdp
-        dp = strutdp
+        -- print(n,result.maxtotal,r.total,r.extra)
+        if isglobal then
+         -- ht = (lineheight * ceil(result.height/lineheight) - strutdp
+            ht = amount(rh,strutdp,0)
+            dp = strutdp
+        else
+            -- natural dimensions
+            local rh = r.height
+            local rd = r.depth
+            if rh > ht then
+                ht = amount(rh,strutdp,httolerance*strutht)
+            end
+            if rd > dp then
+                dp = amount(rd,strutht,dptolerance*strutdp)
+            end
+            -- forced dimensions
+            local rh = result.height or 0
+            local rd = result.depth or 0
+            if rh > ht then
+                ht = amount(rh,strutdp,httolerance*strutht)
+            end
+            if rd > dp then
+                dp = amount(rd,strutht,dptolerance*strutdp)
+            end
+            -- always one line at least
+            if ht < strutht then
+                ht = strutht
+            end
+            if dp < strutdp then
+                dp = strutdp
+            end
+        end
     else
         ht = result.height
         dp = result.depth

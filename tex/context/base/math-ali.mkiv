@@ -608,13 +608,24 @@
  % \emptyhbox % noted at 25-05-2014: what was that one doing here? it messed up spacing
    \math_matrix_align_method_analyze
    \mathmatrixleft
+   % new per 13-10-2014
+   \edef\p_strut{\mathmatrixparameter\c!strut}%
+   \ifx\p_strut\v!no
+     \let\m_matrix_strut\relax
+   \else
+     \let\m_matrix_strut\strut
+     \ifx\p_strut\v!yes\else
+       \spacing\p_strut
+     \fi
+   \fi
+   %
    \mathmatrixbox\bgroup
    \pushmacro\math_matrix_NC
    \let\endmath\relax
    \def\NC{\math_matrix_NC}%
    \def\MC{\math_matrix_NC\ifmmode\else\startimath\let\endmath\stopimath\fi}%
    \global\let\math_matrix_NC\math_matrix_NC_indeed
-   \def\NR{\endmath\global\let\math_matrix_NC\math_matrix_NC_indeed\crcr}%
+   \def\NR{\endmath\global\let\math_matrix_NC\math_matrix_NC_indeed\m_matrix_strut  \crcr}%
    \normalbaselines
    \mathsurround\zeropoint
    \everycr\emptytoks
@@ -700,7 +711,7 @@
 %D
 %D \typebuffer \getbuffer
 %D
-%D \definemathmatrix[bmatrix][left={\left[\mskip\thinmuskip},right={\mskip\thinmuskip\right]}]
+%D \definemathmatrix[bmatrix][left={\left[\mskip\thinmuskip},right={\mskip\thinmuskip\right]},strut=1.25]
 %D
 %D \startbuffer
 %D \placeformula \startformula[-] \startbmatrix

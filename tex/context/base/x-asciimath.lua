@@ -37,6 +37,7 @@ end
 local type, rawget = type, rawget
 local concat, insert, remove = table.concat, table.insert, table.remove
 local rep, gmatch, gsub, find = string.rep, string.gmatch, string.gsub, string.find
+local utfchar = utf.char
 
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local S, P, R, C, V, Cc, Ct, Cs = lpeg.S, lpeg.P, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Ct, lpeg.Cs
@@ -51,643 +52,630 @@ local xmltext      = xml.text
 local xmlinclusion = xml.inclusion
 local xmlcollected = xml.collected
 
+-- todo: use private unicodes as temporary slots ... easier to compare
+
+local s_lparent  = "\\left\\lparent"
+local s_lbrace   = "\\left\\lbrace"
+local s_lbracket = "\\left\\lbracket"
+local s_langle   = "\\left\\langle"
+local s_lfloor   = "\\left\\lfloor"
+local s_lceil    = "\\left\\lceil"
+local s_left     = "\\left."
+
+local s_rparent  = "\\right\\rparent"
+local s_rbrace   = "\\right\\rbrace"
+local s_rbracket = "\\right\\rbracket"
+local s_rangle   = "\\right\\rangle"
+local s_rfloor   = "\\right\\rfloor"
+local s_rceil    = "\\right\\rceil"
+local s_right    = "\\right."
+
+local s_mslash   = "\\middle/"
+
+local s_lbar     = "\\left\\|"
+local s_mbar     = "\\middle\\|"
+local s_rbar     = "\\right\\|"
+
+local s_lnothing = "\\left ."  -- space fools checker
+local s_rnothing = "\\right ." -- space fools checker
+
 local reserved = {
- -- ["aleph"]     = "\\aleph",
- -- ["vdots"]     = "\\vdots",
- -- ["ddots"]     = "\\ddots",
- -- ["oint"]      = "\\oint",
- -- ["grad"]      = "\\nabla",
-    ["prod"]      = "\\prod",
- -- ["prop"]      = "\\propto",
- -- ["sube"]      = "\\subseteq",
- -- ["supe"]      = "\\supseteq",
-    ["sinh"]      = "\\sinh",
-    ["cosh"]      = "\\cosh",
-    ["tanh"]      = "\\tanh",
-    ["sum"]       = "\\sum",
- -- ["vvv"]       = "\\vee",
- -- ["nnn"]       = "\\cap",
- -- ["uuu"]       = "\\cup",
- -- ["sub"]       = "\\subset",
- -- ["sup"]       = "\\supset",
- -- ["iff"]       = "\\Leftrightarrow",
-    ["int"]       = "\\int",
- -- ["del"]       = "\\partial",
-    ["sin"]       = "\\sin",
-    ["cos"]       = "\\cos",
-    ["tan"]       = "\\tan",
-    ["csc"]       = "\\csc",
-    ["sec"]       = "\\sec",
-    ["cot"]       = "\\cot",
-    ["log"]       = "\\log",
-    ["det"]       = "\\det",
-    ["lim"]       = "\\lim",
-    ["mod"]       = "\\mod",
-    ["gcd"]       = "\\gcd",
- -- ["lcm"]       = "\\lcm", -- undefined in context
-    ["min"]       = "\\min",
-    ["max"]       = "\\max",
- -- ["xx"]        = "\\times",
-    ["in"]        = "\\in",
- -- ["ox"]        = "\\otimes",
- -- ["vv"]        = "\\vee",
- -- ["nn"]        = "\\cap",
- -- ["uu"]        = "\\cup",
- -- ["oo"]        = "\\infty",
-    ["ln"]        = "\\ln",
 
- -- ["not"]       = "\\not",
-    ["and"]       = "\\text{and}",
-    ["or"]        = "\\text{or}",
-    ["if"]        = "\\text{if}",
+    ["prod"]      = { false, "\\prod" },
+    ["sinh"]      = { false, "\\sinh" },
+    ["cosh"]      = { false, "\\cosh" },
+    ["tanh"]      = { false, "\\tanh" },
+    ["sum"]       = { false, "\\sum" },
+    ["int"]       = { false, "\\int" },
+    ["sin"]       = { false, "\\sin" },
+    ["cos"]       = { false, "\\cos" },
+    ["tan"]       = { false, "\\tan" },
+    ["csc"]       = { false, "\\csc" },
+    ["sec"]       = { false, "\\sec" },
+    ["cot"]       = { false, "\\cot" },
+    ["log"]       = { false, "\\log" },
+    ["det"]       = { false, "\\det" },
+    ["lim"]       = { false, "\\lim" },
+    ["mod"]       = { false, "\\mod" },
+    ["gcd"]       = { false, "\\gcd" },
+    ["min"]       = { false, "\\min" },
+    ["max"]       = { false, "\\max" },
+    ["in"]        = { false, "\\in" },
+    ["ln"]        = { false, "\\ln" },
 
- -- ["AA"]        = "\\forall",
- -- ["EE"]        = "\\exists",
- -- ["TT"]        = "\\top",
+    ["atan"]      = { false, "\\atan" },         -- extra
+    ["acos"]      = { false, "\\acos" },         -- extra
+    ["asin"]      = { false, "\\asin" },         -- extra
+                                                 -- extra
+    ["arctan"]    = { false, "\\arctan" },       -- extra
+    ["arccos"]    = { false, "\\arccos" },       -- extra
+    ["arcsin"]    = { false, "\\arcsin" },       -- extra
 
-    ["sqrt"]      = "\\rootradical{}",
-    ["root"]      = "\\rootradical",
-    ["frac"]      = "\\frac",
- -- ["stackrel"]  = "\\stackrel",
-    ["stackrel"]  = "\\asciimathstackrel",
- -- ["text"]      = "\\asciimathoptext",
- -- ["bb"]        = "\\bb",
-    ["hat"]       = "\\widehat",
-    ["bar"]       = "\\overbar",
-    ["overbar"]   = "\\overbar",
-    ["underline"] = "\\underline",
-    ["vec"]       = "\\overrightarrow",
-    ["dot"]       = "\\dot",
-    ["ddot"]      = "\\ddot",
+    ["and"]       = { false, "\\text{and}" },
+    ["or"]        = { false, "\\text{or}" },
+    ["if"]        = { false, "\\text{if}" },
+
+    ["sqrt"]      = { false, "\\rootradical{}",     "unary" },
+    ["root"]      = { false, "\\rootradical",       "binary" },
+    ["frac"]      = { false, "\\frac",              "binary" },
+    ["stackrel"]  = { false, "\\asciimathstackrel", "binary" },
+    ["hat"]       = { false, "\\widehat",           "unary" },
+    ["bar"]       = { false, "\\overbar",           "unary" },
+    ["overbar"]   = { false, "\\overbar",           "unary" },
+    ["underline"] = { false, "\\underline",         "unary" },
+    ["vec"]       = { false, "\\overrightarrow",    "unary" },
+    ["dot"]       = { false, "\\dot",               "unary" }, -- 0x2D9
+    ["ddot"]      = { false, "\\ddot",              "unary" }, -- 0xA8
 
     -- binary operators
 
- -- ["+"]     = "+",
- -- ["-"]     = "-",
-    ["*"]     = "⋅",
-    ["**"]    = "⋆",
-    ["//"]    = "\\slash",
-    ["\\"]    = "\\",
-    ["xx"]    = "×",
-    ["times"] = "×",
-    ["-:"]    = "÷",
-    ["@"]     = "∘",
-    ["o+"]    = "⊕",
-    ["ox"]    = "⊗",
-    ["o."]    = "⊙",
-    ["^^"]    = "∧",
-    ["vv"]    = "∨",
-    ["nn"]    = "∩",
-    ["uu"]    = "∪",
+    ["+"]         = { true,  "+" },
+    ["-"]         = { true,  "-" },
+    ["*"]         = { true,  "⋅" },
+    ["**"]        = { true,  "⋆" },
+    ["//"]        = { true,  "⁄" }, -- \slash
+    ["\\"]        = { true,  "\\" },
+    ["xx"]        = { true,  "×" },
+    ["times"]     = { true,  "×" },
+    ["-:"]        = { true,  "÷" },
+    ["@"]         = { true,  "∘" },
+    ["o+"]        = { true,  "⊕" },
+    ["ox"]        = { true,  "⊗" },
+    ["o."]        = { true,  "⊙" },
+    ["^^"]        = { true,  "∧" },
+    ["vv"]        = { true,  "∨" },
+    ["nn"]        = { true,  "∩" },
+    ["uu"]        = { true,  "∪" },
 
     -- big operators
 
- -- ["sum"]  = "∑",
- -- ["prod"] = "∏",
-    ["^^^"]  = "⋀",
-    ["vvv"]  = "⋁",
-    ["nnn"]  = "⋂",
-    ["uuu"]  = "⋃",
-    ["int"]  = "∫",
-    ["oint"] = "∮",
+    ["^^^"]       = { true,  "⋀" },
+    ["vvv"]       = { true,  "⋁" },
+    ["nnn"]       = { true,  "⋂" },
+    ["uuu"]       = { true,  "⋃" },
+    ["int"]       = { true,  "∫" },
+    ["oint"]      = { true,  "∮" },
 
     -- brackets
 
- -- ["("]  = "(,
- -- [")"]  = "),
- -- ["["]  = "[,
- -- ["]"]  = "],
- -- ["{"]  = "{,
- -- ["}"]  = "},
- -- ["(:"] = "〈",
- -- [":)"] = "〉",
+    ["("]         = { true, "(" },
+    [")"]         = { true, ")" },
+    ["["]         = { true, "[" },
+    ["]"]         = { true, "]" },
+    ["{"]         = { true, "{" },
+    ["}"]         = { true, "}" },
 
     -- binary relations
 
-    ["="]    = "=",
-    ["eq"]   = "=",
-    ["!="]   = "≠",
-    ["ne"]   = "≠",
-    ["neq"]  = "≠",
-    ["<"]    = "<",
-    ["lt"]   = "<",
-    [">"]    = ">",
-    ["gt"]   = ">",
-    ["<="]   = "≤",
-    ["le"]   = "≤",
-    ["leq"]  = "≤",
-    [">="]   = "≥",
-    ["ge"]   = "≥",
-    ["geq"]  = "≥",
-    ["-<"]   = "≺",
-    [">-"]   = "≻",
-    ["in"]   = "∈",
-    ["!in"]  = "∉",
-    ["sub"]  = "⊂",
-    ["sup"]  = "⊃",
-    ["sube"] = "⊆",
-    ["supe"] = "⊇",
-    ["-="]   = "≡",
-    ["~="]   = "≅",
-    ["~~"]   = "≈",
-    ["prop"] = "∝",
+    ["="]         = { true,  "=" },
+    ["eq"]        = { true,  "=" },
+    ["!="]        = { true,  "≠" },
+    ["ne"]        = { true,  "≠" },
+    ["neq"]       = { true,  "≠" },
+    ["<"]         = { true,  "<" },
+    ["lt"]        = { true,  "<" },
+    [">"]         = { true,  ">" },
+    ["gt"]        = { true,  ">" },
+    ["<="]        = { true,  "≤" },
+    ["le"]        = { true,  "≤" },
+    ["leq"]       = { true,  "≤" },
+    [">="]        = { true,  "≥" },
+    ["ge"]        = { true,  "≥" },
+    ["geq"]       = { true,  "≥" },
+    ["-<"]        = { true,  "≺" },
+    [">-"]        = { true,  "≻" },
+    ["in"]        = { true,  "∈" },
+    ["!in"]       = { true,  "∉" },
+    ["sub"]       = { true,  "⊂" },
+    ["sup"]       = { true,  "⊃" },
+    ["sube"]      = { true,  "⊆" },
+    ["supe"]      = { true,  "⊇" },
+    ["-="]        = { true,  "≡" },
+    ["~="]        = { true,  "≅" },
+    ["~~"]        = { true,  "≈" },
+    ["prop"]      = { true,  "∝" },
 
     -- arrows
 
-    ["rarr"] = "→",
-    ["->"]   = "→",
-    ["larr"] = "←",
-    ["harr"] = "↔",
-    ["uarr"] = "↑",
-    ["darr"] = "↓",
-    ["rArr"] = "⇒",
-    ["lArr"] = "⇐",
-    ["hArr"] = "⇔",
-    ["|->"]  = "↦",
+    ["rarr"]      = { true,  "→" },
+    ["->"]        = { true,  "→" },
+    ["larr"]      = { true,  "←" },
+    ["harr"]      = { true,  "↔" },
+    ["uarr"]      = { true,  "↑" },
+    ["darr"]      = { true,  "↓" },
+    ["rArr"]      = { true,  "⇒" },
+    ["lArr"]      = { true,  "⇐" },
+    ["hArr"]      = { true,  "⇔" },
+    ["|->"]       = { true,  "↦" },
 
     -- logical
 
- -- ["and"] = "and",
- -- ["or"]  = "or",
- -- ["if"]  = "if",
-    ["not"] = "¬",
-    ["=>"]  = "⇒",
-    ["iff"] = "⇔",
-    ["AA"]  = "∀",
-    ["EE"]  = "∃",
-    ["_|_"] = "⊥",
-    ["TT"]  = "⊤",
-    ["|--"] = "⊢",
-    ["|=="] = "⊨",
+    ["not"]       = { true,  "¬" },
+    ["=>"]        = { true,  "⇒" },
+    ["iff"]       = { true,  "⇔" },
+    ["AA"]        = { true,  "∀" },
+    ["EE"]        = { true,  "∃" },
+    ["_|_"]       = { true,  "⊥" },
+    ["TT"]        = { true,  "⊤" },
+    ["|--"]       = { true,  "⊢" },
+    ["|=="]       = { true,  "⊨" },
 
     -- miscellaneous
 
-    ["del"]     = "∂",
-    ["grad"]    = "∇",
-    ["+-"]      = "±",
-    ["O/"]      = "∅",
-    ["oo"]      = "∞",
-    ["aleph"]   = "ℵ",
-    ["angle"]   = "∠",
-    ["/_"]      = "∠",
-    [":."]      = "∴",
-    ["..."]     = "...", -- ldots
-    ["ldots"]   = "...", -- ldots
-    ["cdots"]   = "⋯",
-    ["vdots"]   = "⋮",
-    ["ddots"]   = "⋱",
-    ["diamond"] = "⋄",
-    ["square"]  = "□",
-    ["|__"]     = "⌊",
-    ["__|"]     = "⌋",
-    ["|~"]      = "⌈",
-    ["~|"]      = "⌉",
+    ["del"]       = { true,  "∂" },
+    ["grad"]      = { true,  "∇" },
+    ["+-"]        = { true,  "±" },
+    ["O/"]        = { true,  "∅" },
+    ["oo"]        = { true,  "∞" },
+    ["aleph"]     = { true,  "ℵ" },
+    ["angle"]     = { true,  "∠" },
+    ["/_"]        = { true,  "∠" },
+    [":."]        = { true,  "∴" },
+    ["..."]       = { true,  "..." }, -- ldots
+    ["ldots"]     = { true,  "..." }, -- ldots
+    ["cdots"]     = { true,  "⋯" },
+    ["vdots"]     = { true,  "⋮" },
+    ["ddots"]     = { true,  "⋱" },
+    ["diamond"]   = { true,  "⋄" },
+    ["square"]    = { true,  "□" },
+    ["|__"]       = { true,  "⌊" },
+    ["__|"]       = { true,  "⌋" },
+    ["|~"]        = { true,  "⌈" },
+    ["~|"]        = { true,  "⌉" },
+
+    -- more
+
+    ["_="]        = { true, "≡" },
+
+    -- bonus
+
+    ["prime"]     = { true,  "′" }, -- bonus
+    ["'"]         = { true,  "′" }, -- bonus
+    ["''"]        = { true,  "″" }, -- bonus
+    ["'''"]       = { true,  "‴" }, -- bonus
 
     -- special
 
-    ["%"] = "\\mathpercent",
-    ["&"] = "\\mathampersand",
-    ["#"] = "\\mathhash",
-    ["$"] = "\\mathdollar",
-
-    -- more
-    ["_="]      = "≡",
+    ["%"]         = { false, "\\mathpercent" },
+    ["&"]         = { false, "\\mathampersand" },
+    ["#"]         = { false, "\\mathhash" },
+    ["$"]         = { false, "\\mathdollar" },
 
     -- blackboard
 
-    ["CC"] = "ℂ",
-    ["NN"] = "ℕ",
-    ["QQ"] = "ℚ",
-    ["RR"] = "ℝ",
-    ["ZZ"] = "ℤ",
+    ["CC"]        = { true, "ℂ" },
+    ["NN"]        = { true, "ℕ" },
+    ["QQ"]        = { true, "ℚ" },
+    ["RR"]        = { true, "ℝ" },
+    ["ZZ"]        = { true, "ℤ" },
 
     -- greek lowercase
 
-    alpha      = "α",
-    beta       = "β",
-    gamma      = "γ",
-    delta      = "δ",
-    epsilon    = "ε",
-    varepsilon = "ɛ",
-    zeta       = "ζ",
-    eta        = "η",
-    theta      = "θ",
-    vartheta   = "ϑ",
-    iota       = "ι",
-    kappa      = "κ",
-    lambda     = "λ",
-    mu         = "μ",
-    nu         = "ν",
-    xi         = "ξ",
-    pi         = "π",
-    rho        = "ρ",
-    sigma      = "σ",
-    tau        = "τ",
-    upsilon    = "υ",
-    phi        = "φ",
-    varphi     = "ϕ",
-    chi        = "χ",
-    psi        = "ψ",
-    omega      = "ω",
+    ["alpha"]      = { true, "α" },
+    ["beta"]       = { true, "β" },
+    ["gamma"]      = { true, "γ" },
+    ["delta"]      = { true, "δ" },
+    ["epsilon"]    = { true, "ε" },
+    ["varepsilon"] = { true, "ɛ" },
+    ["zeta"]       = { true, "ζ" },
+    ["eta"]        = { true, "η" },
+    ["theta"]      = { true, "θ" },
+    ["vartheta"]   = { true, "ϑ" },
+    ["iota"]       = { true, "ι" },
+    ["kappa"]      = { true, "κ" },
+    ["lambda"]     = { true, "λ" },
+    ["mu"]         = { true, "μ" },
+    ["nu"]         = { true, "ν" },
+    ["xi"]         = { true, "ξ" },
+    ["pi"]         = { true, "π" },
+    ["rho"]        = { true, "ρ" },
+    ["sigma"]      = { true, "σ" },
+    ["tau"]        = { true, "τ" },
+    ["upsilon"]    = { true, "υ" },
+    ["phi"]        = { true, "φ" },
+    ["varphi"]     = { true, "ϕ" },
+    ["chi"]        = { true, "χ" },
+    ["psi"]        = { true, "ψ" },
+    ["omega"]      = { true, "ω" },
 
     -- greek uppercase
 
-    Gamma  = "Γ",
-    Delta  = "Δ",
-    Theta  = "Θ",
-    Lambda = "Λ",
-    Xi     = "Ξ",
-    Pi     = "Π",
-    Sigma  = "Σ",
-    Phi    = "Φ",
-    Psi    = "Ψ",
-    Omega  = "Ω",
-
-    -- alternatively we could just inject a style switch + following character
+    ["Gamma"]  = { true, "Γ" },
+    ["Delta"]  = { true, "Δ" },
+    ["Theta"]  = { true, "Θ" },
+    ["Lambda"] = { true, "Λ" },
+    ["Xi"]     = { true, "Ξ" },
+    ["Pi"]     = { true, "Π" },
+    ["Sigma"]  = { true, "Σ" },
+    ["Phi"]    = { true, "Φ" },
+    ["Psi"]    = { true, "Ψ" },
+    ["Omega"]  = { true, "Ω" },
 
     -- blackboard
 
-    ["bbb a"] = "𝕒",
-    ["bbb b"] = "𝕓",
-    ["bbb c"] = "𝕔",
-    ["bbb d"] = "𝕕",
-    ["bbb e"] = "𝕖",
-    ["bbb f"] = "𝕗",
-    ["bbb g"] = "𝕘",
-    ["bbb h"] = "𝕙",
-    ["bbb i"] = "𝕚",
-    ["bbb j"] = "𝕛",
-    ["bbb k"] = "𝕜",
-    ["bbb l"] = "𝕝",
-    ["bbb m"] = "𝕞",
-    ["bbb n"] = "𝕟",
-    ["bbb o"] = "𝕠",
-    ["bbb p"] = "𝕡",
-    ["bbb q"] = "𝕢",
-    ["bbb r"] = "𝕣",
-    ["bbb s"] = "𝕤",
-    ["bbb t"] = "𝕥",
-    ["bbb u"] = "𝕦",
-    ["bbb v"] = "𝕧",
-    ["bbb w"] = "𝕨",
-    ["bbb x"] = "𝕩",
-    ["bbb y"] = "𝕪",
-    ["bbb z"] = "𝕫",
+    ["bbb a"] = { true, "𝕒" },
+    ["bbb b"] = { true, "𝕓" },
+    ["bbb c"] = { true, "𝕔" },
+    ["bbb d"] = { true, "𝕕" },
+    ["bbb e"] = { true, "𝕖" },
+    ["bbb f"] = { true, "𝕗" },
+    ["bbb g"] = { true, "𝕘" },
+    ["bbb h"] = { true, "𝕙" },
+    ["bbb i"] = { true, "𝕚" },
+    ["bbb j"] = { true, "𝕛" },
+    ["bbb k"] = { true, "𝕜" },
+    ["bbb l"] = { true, "𝕝" },
+    ["bbb m"] = { true, "𝕞" },
+    ["bbb n"] = { true, "𝕟" },
+    ["bbb o"] = { true, "𝕠" },
+    ["bbb p"] = { true, "𝕡" },
+    ["bbb q"] = { true, "𝕢" },
+    ["bbb r"] = { true, "𝕣" },
+    ["bbb s"] = { true, "𝕤" },
+    ["bbb t"] = { true, "𝕥" },
+    ["bbb u"] = { true, "𝕦" },
+    ["bbb v"] = { true, "𝕧" },
+    ["bbb w"] = { true, "𝕨" },
+    ["bbb x"] = { true, "𝕩" },
+    ["bbb y"] = { true, "𝕪" },
+    ["bbb z"] = { true, "𝕫" },
 
-    ["bbb A"] = "𝔸",
-    ["bbb B"] = "𝔹",
-    ["bbb C"] = "ℂ",
-    ["bbb D"] = "𝔻",
-    ["bbb E"] = "𝔼",
-    ["bbb F"] = "𝔽",
-    ["bbb G"] = "𝔾",
-    ["bbb H"] = "ℍ",
-    ["bbb I"] = "𝕀",
-    ["bbb J"] = "𝕁",
-    ["bbb K"] = "𝕂",
-    ["bbb L"] = "𝕃",
-    ["bbb M"] = "𝕄",
-    ["bbb N"] = "ℕ",
-    ["bbb O"] = "𝕆",
-    ["bbb P"] = "ℙ",
-    ["bbb Q"] = "ℚ",
-    ["bbb R"] = "ℝ",
-    ["bbb S"] = "𝕊",
-    ["bbb T"] = "𝕋",
-    ["bbb U"] = "𝕌",
-    ["bbb V"] = "𝕍",
-    ["bbb W"] = "𝕎",
-    ["bbb X"] = "𝕏",
-    ["bbb Y"] = "𝕐",
-    ["bbb Z"] = "ℤ",
+    ["bbb A"] = { true, "𝔸" },
+    ["bbb B"] = { true, "𝔹" },
+    ["bbb C"] = { true, "ℂ" },
+    ["bbb D"] = { true, "𝔻" },
+    ["bbb E"] = { true, "𝔼" },
+    ["bbb F"] = { true, "𝔽" },
+    ["bbb G"] = { true, "𝔾" },
+    ["bbb H"] = { true, "ℍ" },
+    ["bbb I"] = { true, "𝕀" },
+    ["bbb J"] = { true, "𝕁" },
+    ["bbb K"] = { true, "𝕂" },
+    ["bbb L"] = { true, "𝕃" },
+    ["bbb M"] = { true, "𝕄" },
+    ["bbb N"] = { true, "ℕ" },
+    ["bbb O"] = { true, "𝕆" },
+    ["bbb P"] = { true, "ℙ" },
+    ["bbb Q"] = { true, "ℚ" },
+    ["bbb R"] = { true, "ℝ" },
+    ["bbb S"] = { true, "𝕊" },
+    ["bbb T"] = { true, "𝕋" },
+    ["bbb U"] = { true, "𝕌" },
+    ["bbb V"] = { true, "𝕍" },
+    ["bbb W"] = { true, "𝕎" },
+    ["bbb X"] = { true, "𝕏" },
+    ["bbb Y"] = { true, "𝕐" },
+    ["bbb Z"] = { true, "ℤ" },
 
     -- fraktur
 
-    ["fr a"] = "𝔞",
-    ["fr b"] = "𝔟",
-    ["fr c"] = "𝔠",
-    ["fr d"] = "𝔡",
-    ["fr e"] = "𝔢",
-    ["fr f"] = "𝔣",
-    ["fr g"] = "𝔤",
-    ["fr h"] = "𝔥",
-    ["fr i"] = "𝔦",
-    ["fr j"] = "𝔧",
-    ["fr k"] = "𝔨",
-    ["fr l"] = "𝔩",
-    ["fr m"] = "𝔪",
-    ["fr n"] = "𝔫",
-    ["fr o"] = "𝔬",
-    ["fr p"] = "𝔭",
-    ["fr q"] = "𝔮",
-    ["fr r"] = "𝔯",
-    ["fr s"] = "𝔰",
-    ["fr t"] = "𝔱",
-    ["fr u"] = "𝔲",
-    ["fr v"] = "𝔳",
-    ["fr w"] = "𝔴",
-    ["fr x"] = "𝔵",
-    ["fr y"] = "𝔶",
-    ["fr z"] = "𝔷",
+    ["fr a"] = { true, "𝔞" },
+    ["fr b"] = { true, "𝔟" },
+    ["fr c"] = { true, "𝔠" },
+    ["fr d"] = { true, "𝔡" },
+    ["fr e"] = { true, "𝔢" },
+    ["fr f"] = { true, "𝔣" },
+    ["fr g"] = { true, "𝔤" },
+    ["fr h"] = { true, "𝔥" },
+    ["fr i"] = { true, "𝔦" },
+    ["fr j"] = { true, "𝔧" },
+    ["fr k"] = { true, "𝔨" },
+    ["fr l"] = { true, "𝔩" },
+    ["fr m"] = { true, "𝔪" },
+    ["fr n"] = { true, "𝔫" },
+    ["fr o"] = { true, "𝔬" },
+    ["fr p"] = { true, "𝔭" },
+    ["fr q"] = { true, "𝔮" },
+    ["fr r"] = { true, "𝔯" },
+    ["fr s"] = { true, "𝔰" },
+    ["fr t"] = { true, "𝔱" },
+    ["fr u"] = { true, "𝔲" },
+    ["fr v"] = { true, "𝔳" },
+    ["fr w"] = { true, "𝔴" },
+    ["fr x"] = { true, "𝔵" },
+    ["fr y"] = { true, "𝔶" },
+    ["fr z"] = { true, "𝔷" },
 
-    ["fr A"] = "𝔄",
-    ["fr B"] = "𝔅",
-    ["fr C"] = "ℭ",
-    ["fr D"] = "𝔇",
-    ["fr E"] = "𝔈",
-    ["fr F"] = "𝔉",
-    ["fr G"] = "𝔊",
-    ["fr H"] = "ℌ",
-    ["fr I"] = "ℑ",
-    ["fr J"] = "𝔍",
-    ["fr K"] = "𝔎",
-    ["fr L"] = "𝔏",
-    ["fr M"] = "𝔐",
-    ["fr N"] = "𝔑",
-    ["fr O"] = "𝔒",
-    ["fr P"] = "𝔓",
-    ["fr Q"] = "𝔔",
-    ["fr R"] = "ℜ",
-    ["fr S"] = "𝔖",
-    ["fr T"] = "𝔗",
-    ["fr U"] = "𝔘",
-    ["fr V"] = "𝔙",
-    ["fr W"] = "𝔚",
-    ["fr X"] = "𝔛",
-    ["fr Y"] = "𝔜",
-    ["fr Z"] = "ℨ",
+    ["fr A"] = { true, "𝔄" },
+    ["fr B"] = { true, "𝔅" },
+    ["fr C"] = { true, "ℭ" },
+    ["fr D"] = { true, "𝔇" },
+    ["fr E"] = { true, "𝔈" },
+    ["fr F"] = { true, "𝔉" },
+    ["fr G"] = { true, "𝔊" },
+    ["fr H"] = { true, "ℌ" },
+    ["fr I"] = { true, "ℑ" },
+    ["fr J"] = { true, "𝔍" },
+    ["fr K"] = { true, "𝔎" },
+    ["fr L"] = { true, "𝔏" },
+    ["fr M"] = { true, "𝔐" },
+    ["fr N"] = { true, "𝔑" },
+    ["fr O"] = { true, "𝔒" },
+    ["fr P"] = { true, "𝔓" },
+    ["fr Q"] = { true, "𝔔" },
+    ["fr R"] = { true, "ℜ" },
+    ["fr S"] = { true, "𝔖" },
+    ["fr T"] = { true, "𝔗" },
+    ["fr U"] = { true, "𝔘" },
+    ["fr V"] = { true, "𝔙" },
+    ["fr W"] = { true, "𝔚" },
+    ["fr X"] = { true, "𝔛" },
+    ["fr Y"] = { true, "𝔜" },
+    ["fr Z"] = { true, "ℨ" },
 
     -- script
 
-    ["cc a"] = "𝒶",
-    ["cc b"] = "𝒷",
-    ["cc c"] = "𝒸",
-    ["cc d"] = "𝒹",
-    ["cc e"] = "ℯ",
-    ["cc f"] = "𝒻",
-    ["cc g"] = "ℊ",
-    ["cc h"] = "𝒽",
-    ["cc i"] = "𝒾",
-    ["cc j"] = "𝒿",
-    ["cc k"] = "𝓀",
-    ["cc l"] = "𝓁",
-    ["cc m"] = "𝓂",
-    ["cc n"] = "𝓃",
-    ["cc o"] = "ℴ",
-    ["cc p"] = "𝓅",
-    ["cc q"] = "𝓆",
-    ["cc r"] = "𝓇",
-    ["cc s"] = "𝓈",
-    ["cc t"] = "𝓉",
-    ["cc u"] = "𝓊",
-    ["cc v"] = "𝓋",
-    ["cc w"] = "𝓌",
-    ["cc x"] = "𝓍",
-    ["cc y"] = "𝓎",
-    ["cc z"] = "𝓏",
+    ["cc a"] = { true, "𝒶" },
+    ["cc b"] = { true, "𝒷" },
+    ["cc c"] = { true, "𝒸" },
+    ["cc d"] = { true, "𝒹" },
+    ["cc e"] = { true, "ℯ" },
+    ["cc f"] = { true, "𝒻" },
+    ["cc g"] = { true, "ℊ" },
+    ["cc h"] = { true, "𝒽" },
+    ["cc i"] = { true, "𝒾" },
+    ["cc j"] = { true, "𝒿" },
+    ["cc k"] = { true, "𝓀" },
+    ["cc l"] = { true, "𝓁" },
+    ["cc m"] = { true, "𝓂" },
+    ["cc n"] = { true, "𝓃" },
+    ["cc o"] = { true, "ℴ" },
+    ["cc p"] = { true, "𝓅" },
+    ["cc q"] = { true, "𝓆" },
+    ["cc r"] = { true, "𝓇" },
+    ["cc s"] = { true, "𝓈" },
+    ["cc t"] = { true, "𝓉" },
+    ["cc u"] = { true, "𝓊" },
+    ["cc v"] = { true, "𝓋" },
+    ["cc w"] = { true, "𝓌" },
+    ["cc x"] = { true, "𝓍" },
+    ["cc y"] = { true, "𝓎" },
+    ["cc z"] = { true, "𝓏" },
 
-    ["cc A"] = "𝒜",
-    ["cc B"] = "ℬ",
-    ["cc C"] = "𝒞",
-    ["cc D"] = "𝒟",
-    ["cc E"] = "ℰ",
-    ["cc F"] = "ℱ",
-    ["cc G"] = "𝒢",
-    ["cc H"] = "ℋ",
-    ["cc I"] = "ℐ",
-    ["cc J"] = "𝒥",
-    ["cc K"] = "𝒦",
-    ["cc L"] = "ℒ",
-    ["cc M"] = "ℳ",
-    ["cc N"] = "𝒩",
-    ["cc O"] = "𝒪",
-    ["cc P"] = "𝒫",
-    ["cc Q"] = "𝒬",
-    ["cc R"] = "ℛ",
-    ["cc S"] = "𝒮",
-    ["cc T"] = "𝒯",
-    ["cc U"] = "𝒰",
-    ["cc V"] = "𝒱",
-    ["cc W"] = "𝒲",
-    ["cc X"] = "𝒳",
-    ["cc Y"] = "𝒴",
-    ["cc Z"] = "𝒵",
+    ["cc A"] = { true, "𝒜" },
+    ["cc B"] = { true, "ℬ" },
+    ["cc C"] = { true, "𝒞" },
+    ["cc D"] = { true, "𝒟" },
+    ["cc E"] = { true, "ℰ" },
+    ["cc F"] = { true, "ℱ" },
+    ["cc G"] = { true, "𝒢" },
+    ["cc H"] = { true, "ℋ" },
+    ["cc I"] = { true, "ℐ" },
+    ["cc J"] = { true, "𝒥" },
+    ["cc K"] = { true, "𝒦" },
+    ["cc L"] = { true, "ℒ" },
+    ["cc M"] = { true, "ℳ" },
+    ["cc N"] = { true, "𝒩" },
+    ["cc O"] = { true, "𝒪" },
+    ["cc P"] = { true, "𝒫" },
+    ["cc Q"] = { true, "𝒬" },
+    ["cc R"] = { true, "ℛ" },
+    ["cc S"] = { true, "𝒮" },
+    ["cc T"] = { true, "𝒯" },
+    ["cc U"] = { true, "𝒰" },
+    ["cc V"] = { true, "𝒱" },
+    ["cc W"] = { true, "𝒲" },
+    ["cc X"] = { true, "𝒳" },
+    ["cc Y"] = { true, "𝒴" },
+    ["cc Z"] = { true, "𝒵" },
 
     -- bold
 
-    ["bb a"] = "𝒂",
-    ["bb b"] = "𝒃",
-    ["bb c"] = "𝒄",
-    ["bb d"] = "𝒅",
-    ["bb e"] = "𝒆",
-    ["bb f"] = "𝒇",
-    ["bb g"] = "𝒈",
-    ["bb h"] = "𝒉",
-    ["bb i"] = "𝒊",
-    ["bb j"] = "𝒋",
-    ["bb k"] = "𝒌",
-    ["bb l"] = "𝒍",
-    ["bb m"] = "𝒎",
-    ["bb n"] = "𝒏",
-    ["bb o"] = "𝒐",
-    ["bb p"] = "𝒑",
-    ["bb q"] = "𝒒",
-    ["bb r"] = "𝒓",
-    ["bb s"] = "𝒔",
-    ["bb t"] = "𝒕",
-    ["bb u"] = "𝒖",
-    ["bb v"] = "𝒗",
-    ["bb w"] = "𝒘",
-    ["bb x"] = "𝒙",
-    ["bb y"] = "𝒚",
-    ["bb z"] = "𝒛",
+    ["bb a"] = { true, "𝒂" },
+    ["bb b"] = { true, "𝒃" },
+    ["bb c"] = { true, "𝒄" },
+    ["bb d"] = { true, "𝒅" },
+    ["bb e"] = { true, "𝒆" },
+    ["bb f"] = { true, "𝒇" },
+    ["bb g"] = { true, "𝒈" },
+    ["bb h"] = { true, "𝒉" },
+    ["bb i"] = { true, "𝒊" },
+    ["bb j"] = { true, "𝒋" },
+    ["bb k"] = { true, "𝒌" },
+    ["bb l"] = { true, "𝒍" },
+    ["bb m"] = { true, "𝒎" },
+    ["bb n"] = { true, "𝒏" },
+    ["bb o"] = { true, "𝒐" },
+    ["bb p"] = { true, "𝒑" },
+    ["bb q"] = { true, "𝒒" },
+    ["bb r"] = { true, "𝒓" },
+    ["bb s"] = { true, "𝒔" },
+    ["bb t"] = { true, "𝒕" },
+    ["bb u"] = { true, "𝒖" },
+    ["bb v"] = { true, "𝒗" },
+    ["bb w"] = { true, "𝒘" },
+    ["bb x"] = { true, "𝒙" },
+    ["bb y"] = { true, "𝒚" },
+    ["bb z"] = { true, "𝒛" },
 
-    ["bb A"] = "𝑨",
-    ["bb B"] = "𝑩",
-    ["bb C"] = "𝑪",
-    ["bb D"] = "𝑫",
-    ["bb E"] = "𝑬",
-    ["bb F"] = "𝑭",
-    ["bb G"] = "𝑮",
-    ["bb H"] = "𝑯",
-    ["bb I"] = "𝑰",
-    ["bb J"] = "𝑱",
-    ["bb K"] = "𝑲",
-    ["bb L"] = "𝑳",
-    ["bb M"] = "𝑴",
-    ["bb N"] = "𝑵",
-    ["bb O"] = "𝑶",
-    ["bb P"] = "𝑷",
-    ["bb Q"] = "𝑸",
-    ["bb R"] = "𝑹",
-    ["bb S"] = "𝑺",
-    ["bb T"] = "𝑻",
-    ["bb U"] = "𝑼",
-    ["bb V"] = "𝑽",
-    ["bb W"] = "𝑾",
-    ["bb X"] = "𝑿",
-    ["bb Y"] = "𝒀",
-    ["bb Z"] = "𝒁",
+    ["bb A"] = { true, "𝑨" },
+    ["bb B"] = { true, "𝑩" },
+    ["bb C"] = { true, "𝑪" },
+    ["bb D"] = { true, "𝑫" },
+    ["bb E"] = { true, "𝑬" },
+    ["bb F"] = { true, "𝑭" },
+    ["bb G"] = { true, "𝑮" },
+    ["bb H"] = { true, "𝑯" },
+    ["bb I"] = { true, "𝑰" },
+    ["bb J"] = { true, "𝑱" },
+    ["bb K"] = { true, "𝑲" },
+    ["bb L"] = { true, "𝑳" },
+    ["bb M"] = { true, "𝑴" },
+    ["bb N"] = { true, "𝑵" },
+    ["bb O"] = { true, "𝑶" },
+    ["bb P"] = { true, "𝑷" },
+    ["bb Q"] = { true, "𝑸" },
+    ["bb R"] = { true, "𝑹" },
+    ["bb S"] = { true, "𝑺" },
+    ["bb T"] = { true, "𝑻" },
+    ["bb U"] = { true, "𝑼" },
+    ["bb V"] = { true, "𝑽" },
+    ["bb W"] = { true, "𝑾" },
+    ["bb X"] = { true, "𝑿" },
+    ["bb Y"] = { true, "𝒀" },
+    ["bb Z"] = { true, "𝒁" },
 
     -- sans
 
-    ["sf a"] = "𝖺",
-    ["sf b"] = "𝖻",
-    ["sf c"] = "𝖼",
-    ["sf d"] = "𝖽",
-    ["sf e"] = "𝖾",
-    ["sf f"] = "𝖿",
-    ["sf g"] = "𝗀",
-    ["sf h"] = "𝗁",
-    ["sf i"] = "𝗂",
-    ["sf j"] = "𝗃",
-    ["sf k"] = "𝗄",
-    ["sf l"] = "𝗅",
-    ["sf m"] = "𝗆",
-    ["sf n"] = "𝗇",
-    ["sf o"] = "𝗈",
-    ["sf p"] = "𝗉",
-    ["sf q"] = "𝗊",
-    ["sf r"] = "𝗋",
-    ["sf s"] = "𝗌",
-    ["sf t"] = "𝗍",
-    ["sf u"] = "𝗎",
-    ["sf v"] = "𝗏",
-    ["sf w"] = "𝗐",
-    ["sf x"] = "𝗑",
-    ["sf y"] = "𝗒",
-    ["sf z"] = "𝗓",
+    ["sf a"] = { true, "𝖺" },
+    ["sf b"] = { true, "𝖻" },
+    ["sf c"] = { true, "𝖼" },
+    ["sf d"] = { true, "𝖽" },
+    ["sf e"] = { true, "𝖾" },
+    ["sf f"] = { true, "𝖿" },
+    ["sf g"] = { true, "𝗀" },
+    ["sf h"] = { true, "𝗁" },
+    ["sf i"] = { true, "𝗂" },
+    ["sf j"] = { true, "𝗃" },
+    ["sf k"] = { true, "𝗄" },
+    ["sf l"] = { true, "𝗅" },
+    ["sf m"] = { true, "𝗆" },
+    ["sf n"] = { true, "𝗇" },
+    ["sf o"] = { true, "𝗈" },
+    ["sf p"] = { true, "𝗉" },
+    ["sf q"] = { true, "𝗊" },
+    ["sf r"] = { true, "𝗋" },
+    ["sf s"] = { true, "𝗌" },
+    ["sf t"] = { true, "𝗍" },
+    ["sf u"] = { true, "𝗎" },
+    ["sf v"] = { true, "𝗏" },
+    ["sf w"] = { true, "𝗐" },
+    ["sf x"] = { true, "𝗑" },
+    ["sf y"] = { true, "𝗒" },
+    ["sf z"] = { true, "𝗓" },
 
-    ["sf A"] = "𝖠",
-    ["sf B"] = "𝖡",
-    ["sf C"] = "𝖢",
-    ["sf D"] = "𝖣",
-    ["sf E"] = "𝖤",
-    ["sf F"] = "𝖥",
-    ["sf G"] = "𝖦",
-    ["sf H"] = "𝖧",
-    ["sf I"] = "𝖨",
-    ["sf J"] = "𝖩",
-    ["sf K"] = "𝖪",
-    ["sf L"] = "𝖫",
-    ["sf M"] = "𝖬",
-    ["sf N"] = "𝖭",
-    ["sf O"] = "𝖮",
-    ["sf P"] = "𝖯",
-    ["sf Q"] = "𝖰",
-    ["sf R"] = "𝖱",
-    ["sf S"] = "𝖲",
-    ["sf T"] = "𝖳",
-    ["sf U"] = "𝖴",
-    ["sf V"] = "𝖵",
-    ["sf W"] = "𝖶",
-    ["sf X"] = "𝖷",
-    ["sf Y"] = "𝖸",
-    ["sf Z"] = "𝖹",
+    ["sf A"] = { true, "𝖠" },
+    ["sf B"] = { true, "𝖡" },
+    ["sf C"] = { true, "𝖢" },
+    ["sf D"] = { true, "𝖣" },
+    ["sf E"] = { true, "𝖤" },
+    ["sf F"] = { true, "𝖥" },
+    ["sf G"] = { true, "𝖦" },
+    ["sf H"] = { true, "𝖧" },
+    ["sf I"] = { true, "𝖨" },
+    ["sf J"] = { true, "𝖩" },
+    ["sf K"] = { true, "𝖪" },
+    ["sf L"] = { true, "𝖫" },
+    ["sf M"] = { true, "𝖬" },
+    ["sf N"] = { true, "𝖭" },
+    ["sf O"] = { true, "𝖮" },
+    ["sf P"] = { true, "𝖯" },
+    ["sf Q"] = { true, "𝖰" },
+    ["sf R"] = { true, "𝖱" },
+    ["sf S"] = { true, "𝖲" },
+    ["sf T"] = { true, "𝖳" },
+    ["sf U"] = { true, "𝖴" },
+    ["sf V"] = { true, "𝖵" },
+    ["sf W"] = { true, "𝖶" },
+    ["sf X"] = { true, "𝖷" },
+    ["sf Y"] = { true, "𝖸" },
+    ["sf Z"] = { true, "𝖹" },
 
     -- monospace
 
-    ["tt a"] = "𝚊",
-    ["tt b"] = "𝚋",
-    ["tt c"] = "𝚌",
-    ["tt d"] = "𝚍",
-    ["tt e"] = "𝚎",
-    ["tt f"] = "𝚏",
-    ["tt g"] = "𝚐",
-    ["tt h"] = "𝚑",
-    ["tt i"] = "𝚒",
-    ["tt j"] = "𝚓",
-    ["tt k"] = "𝚔",
-    ["tt l"] = "𝚕",
-    ["tt m"] = "𝚖",
-    ["tt n"] = "𝚗",
-    ["tt o"] = "𝚘",
-    ["tt p"] = "𝚙",
-    ["tt q"] = "𝚚",
-    ["tt r"] = "𝚛",
-    ["tt s"] = "𝚜",
-    ["tt t"] = "𝚝",
-    ["tt u"] = "𝚞",
-    ["tt v"] = "𝚟",
-    ["tt w"] = "𝚠",
-    ["tt x"] = "𝚡",
-    ["tt y"] = "𝚢",
-    ["tt z"] = "𝚣",
+    ["tt a"] = { true, "𝚊" },
+    ["tt b"] = { true, "𝚋" },
+    ["tt c"] = { true, "𝚌" },
+    ["tt d"] = { true, "𝚍" },
+    ["tt e"] = { true, "𝚎" },
+    ["tt f"] = { true, "𝚏" },
+    ["tt g"] = { true, "𝚐" },
+    ["tt h"] = { true, "𝚑" },
+    ["tt i"] = { true, "𝚒" },
+    ["tt j"] = { true, "𝚓" },
+    ["tt k"] = { true, "𝚔" },
+    ["tt l"] = { true, "𝚕" },
+    ["tt m"] = { true, "𝚖" },
+    ["tt n"] = { true, "𝚗" },
+    ["tt o"] = { true, "𝚘" },
+    ["tt p"] = { true, "𝚙" },
+    ["tt q"] = { true, "𝚚" },
+    ["tt r"] = { true, "𝚛" },
+    ["tt s"] = { true, "𝚜" },
+    ["tt t"] = { true, "𝚝" },
+    ["tt u"] = { true, "𝚞" },
+    ["tt v"] = { true, "𝚟" },
+    ["tt w"] = { true, "𝚠" },
+    ["tt x"] = { true, "𝚡" },
+    ["tt y"] = { true, "𝚢" },
+    ["tt z"] = { true, "𝚣" },
 
-    ["tt A"] = "𝙰",
-    ["tt B"] = "𝙱",
-    ["tt C"] = "𝙲",
-    ["tt D"] = "𝙳",
-    ["tt E"] = "𝙴",
-    ["tt F"] = "𝙵",
-    ["tt G"] = "𝙶",
-    ["tt H"] = "𝙷",
-    ["tt I"] = "𝙸",
-    ["tt J"] = "𝙹",
-    ["tt K"] = "𝙺",
-    ["tt L"] = "𝙻",
-    ["tt M"] = "𝙼",
-    ["tt N"] = "𝙽",
-    ["tt O"] = "𝙾",
-    ["tt P"] = "𝙿",
-    ["tt Q"] = "𝚀",
-    ["tt R"] = "𝚁",
-    ["tt S"] = "𝚂",
-    ["tt T"] = "𝚃",
-    ["tt U"] = "𝚄",
-    ["tt V"] = "𝚅",
-    ["tt W"] = "𝚆",
-    ["tt X"] = "𝚇",
-    ["tt Y"] = "𝚈",
-    ["tt Z"] = "𝚉",
+    ["tt A"] = { true, "𝙰" },
+    ["tt B"] = { true, "𝙱" },
+    ["tt C"] = { true, "𝙲" },
+    ["tt D"] = { true, "𝙳" },
+    ["tt E"] = { true, "𝙴" },
+    ["tt F"] = { true, "𝙵" },
+    ["tt G"] = { true, "𝙶" },
+    ["tt H"] = { true, "𝙷" },
+    ["tt I"] = { true, "𝙸" },
+    ["tt J"] = { true, "𝙹" },
+    ["tt K"] = { true, "𝙺" },
+    ["tt L"] = { true, "𝙻" },
+    ["tt M"] = { true, "𝙼" },
+    ["tt N"] = { true, "𝙽" },
+    ["tt O"] = { true, "𝙾" },
+    ["tt P"] = { true, "𝙿" },
+    ["tt Q"] = { true, "𝚀" },
+    ["tt R"] = { true, "𝚁" },
+    ["tt S"] = { true, "𝚂" },
+    ["tt T"] = { true, "𝚃" },
+    ["tt U"] = { true, "𝚄" },
+    ["tt V"] = { true, "𝚅" },
+    ["tt W"] = { true, "𝚆" },
+    ["tt X"] = { true, "𝚇" },
+    ["tt Y"] = { true, "𝚈" },
+    ["tt Z"] = { true, "𝚉" },
 
     -- some more undocumented
 
-    ["dx"]     = { "d", "x" }, -- "{dx}" "\\left(dx\\right)"
-    ["dy"]     = { "d", "y" }, -- "{dy}" "\\left(dy\\right)"
-    ["dz"]     = { "d", "z" }, -- "{dz}" "\\left(dz\\right)"
+    ["dx"] = { false, { "d", "x" } }, -- "{dx}" "\\left(dx\\right)"
+    ["dy"] = { false, { "d", "y" } }, -- "{dy}" "\\left(dy\\right)"
+    ["dz"] = { false, { "d", "z" } }, -- "{dz}" "\\left(dz\\right)"
 
-    ["atan"]   = "\\atan",
-    ["acos"]   = "\\acos",
-    ["asin"]   = "\\asin",
-
-    ["arctan"] = "\\arctan",
-    ["arccos"] = "\\arccos",
-    ["arcsin"] = "\\arcsin",
-
-    ["prime"]  = "′",
-    ["'"]      = "′",
-    ["''"]     = "″",
-    ["'''"]    = "‴",
 }
 
 local isbinary = {
     ["\\frac"]              = true,
-    ["\\root"]              = true,
     ["\\rootradical"]       = true,
-    ["\\stackrel"]          = true,
     ["\\asciimathstackrel"] = true,
 }
 
 local isunary = {
-    ["\\sqrt"]           = true,
-    ["\\rootradical{}"]  = true,
- -- ["\\bb"]             = true,
-    ["\\text"]           = true, --  mathoptext
-    ["\\mathoptext"]     = true, --  mathoptext
-    ["\\asciimathoptext"]= true, --  mathoptext
-    ["\\hat"]            = true, --  widehat
-    ["\\widehat"]        = true, --  widehat
-    ["\\bar"]            = true, --
-    ["\\overbar"]        = true, --
-    ["\\underline"]      = true, --
-    ["\\vec"]            = true, --  overrightarrow
-    ["\\overrightarrow"] = true, --  overrightarrow
-    ["\\dot"]            = true, --
-    ["\\ddot"]           = true, --
-
---     ["^"]                = true,
---     ["_"]                = true,
+    ["\\sqrt"]            = true,
+    ["\\rootradical{}"]   = true,
+    ["\\text"]            = true, --  mathoptext
+    ["\\mathoptext"]      = true, --  mathoptext
+    ["\\asciimathoptext"] = true, --  mathoptext
+    ["\\hat"]             = true, --  widehat
+    ["\\widehat"]         = true, --  widehat
+    ["\\bar"]             = true, --
+    ["\\overbar"]         = true, --
+    ["\\underline"]       = true, --
+    ["\\vec"]             = true, --  overrightarrow
+    ["\\overrightarrow"]  = true, --  overrightarrow
+    ["\\dot"]             = true, --
+    ["\\ddot"]            = true, --
 
 }
 
@@ -701,18 +689,23 @@ local isinfix = {
 }
 
 local isleft = {
-    ["\\left\\lparent"]  = true,
-    ["\\left\\lbrace"]   = true,
-    ["\\left\\lbracket"] = true,
-    ["\\left\\langle"]   = true,
-    ["\\left."]          = true,
+    [s_lparent]  = true,
+    [s_lbrace]   = true,
+    [s_lbracket] = true,
+    [s_langle]   = true,
+    [s_lfloor]   = true,
+    [s_lceil]    = true,
+    [s_left]     = true,
 }
+
 local isright = {
-    ["\\right\\rparent"]  = true,
-    ["\\right\\rbrace"]   = true,
-    ["\\right\\rbracket"] = true,
-    ["\\right\\rangle"]   = true,
-    ["\\right."]          = true,
+    [s_rparent]  = true,
+    [s_rbrace]   = true,
+    [s_rbracket] = true,
+    [s_rangle]   = true,
+    [s_rfloor]   = true,
+    [s_rceil]    = true,
+    [s_right]    = true,
 }
 
 local issimplified = {
@@ -721,6 +714,11 @@ local issimplified = {
 local p_number_base = patterns.cpnumber or patterns.cnumber or patterns.number
 local p_number      = C(p_number_base)
 local p_spaces      = patterns.whitespace
+
+local p_utf_base    = patterns.utf8character
+local p_utf         = C(p_utf_base)
+local p_entity_base = P("&") * ((1-P(";"))^2) * P(";")
+local p_entity      = P("&") * (((1-P(";"))^2) / entities) * P(";")
 
 ----- p_number = Cs((patterns.cpnumber or patterns.cnumber or patterns.number)/function(s) return (gsub(s,",","{,}")) end)
 
@@ -734,29 +732,9 @@ local float   = real * (P("E") * integer)^-1
 -- local number  = C(float + integer)
 local p_number  = C(float)
 
-local p_utf_base =
-    patterns.utf8character
-local p_utf =
-    C(p_utf_base)
-
-local p_entity_base =
-    P("&") * ((1-P(";"))^2) * P(";")
-local p_entity =
-    P("&") * (((1-P(";"))^2) / entities) * P(";")
-
--- This is (given the large match):
---
--- local s = sortedkeys(reserved)
--- local p = P(false)
--- for i=#s,1,-1 do
---     local k = s[i]
---     p = p + P(k)
--- end
--- local p_reserved = p / reserved
---
--- twice as slow as:
-
 local k_reserved = sortedkeys(reserved)
+local k_commands = { }
+local k_unicode  = { }
 
 asciimath.keys = {
     reserved = k_reserved
@@ -766,26 +744,25 @@ local k_reserved_different = { }
 local k_reserved_words     = { }
 
 for k, v in sortedhash(reserved) do
-    if k ~= v then
-        k_reserved_different[#k_reserved_different+1] = k
+    local replacement = v[2]
+    if v[1] then
+        k_unicode[k] = replacement
+    else
+        if k ~= replacement then
+            k_reserved_different[#k_reserved_different+1] = k
+        end
     end
     if not find(k,"[^a-zA-Z]") then
         k_reserved_words[#k_reserved_words+1] = k
     end
+    k_commands[k] = replacement
 end
 
 local p_reserved =
-    lpeg.utfchartabletopattern(k_reserved_different) / reserved
+    lpeg.utfchartabletopattern(k_reserved_different) / k_commands
 
--- local p_text =
---     P("text")
---   * p_spaces^0
---   * Cc("\\mathoptext")
---   * ( -- maybe balanced
---         Cs((P("{")    ) * (1-P("}"))^0 *  P("}")     )
---       + Cs((P("(")/"{") * (1-P(")"))^0 * (P(")")/"}"))
---     )
---   + Cc("\\mathoptext") * Cs(Cc("{") * patterns.undouble * Cc("}"))
+local p_unicode =
+    lpeg.utfchartabletopattern(table.keys(k_unicode)) / k_unicode
 
 local p_text =
     P("text")
@@ -797,91 +774,55 @@ local p_text =
     )
   + Cc("\\asciimathoptext") * Cs(Cc("{") * patterns.undouble * Cc("}"))
 
--- either map to \left<utf> or map to \left\name
-
--- local p_open   = S("{[") * P(":")
--- local p_close  = P(":") * S("]}")
-
--- local p_open_left   = (S("{[") * P(":")) / "\\left."
--- local p_close_right = (P(":") * S("]}")) / "\\right."
-
--- local p_left   =
---     P("(:") / "\\left\\langle"
---   + P("{:") / "\\left."
---   + P("[:") / "\\left."
---   + P("(")  / "\\left\\lparent"
---   + P("[")  / "\\left\\lbracket"
---   + P("{")  / "\\left\\lbrace"
---   + P("<<") / "\\left\\langle"     -- why not <:
---   + P("|_") / "\\left\\lfloor"
---   + P("|~") / "\\left\\lceil"
---   + P("⟨")  / "\\left\\langle"
---   + P("〈")  / "\\left\\langle"
---   + P("〈")  / "\\left\\langle"
-
--- local p_right  =
---     P(")")  / "\\right\\rparent"
---   + P(":)") / "\\right\\rangle"
---   + P(":}") / "\\right."
---   + P(":]") / "\\right."
---   + P("]")  / "\\right\\rbracket"
---   + P("}")  / "\\right\\rbrace"
---   + P(">>") / "\\right\\rangle"    -- why not :>
---   + P("~|") / "\\right\\rceil"
---   + P("_|") / "\\right\\rfloor"
---   + P("⟩")  / "\\right\\rangle"
---   + P("〉")  / "\\right\\rangle"
---   + P("〉")  / "\\right\\rangle"
-
 local m_left = {
-    ["(:"] = "\\left\\langle",
-    ["{:"] = "\\left.",
-    ["[:"] = "\\left.",
-    ["("]  = "\\left\\lparent",
-    ["["]  = "\\left\\lbracket",
-    ["{"]  = "\\left\\lbrace",
-    ["<<"] = "\\left\\langle",     -- why not <:
-    ["|_"] = "\\left\\lfloor",
-    ["|~"] = "\\left\\lceil",
-    ["⟨"]  = "\\left\\langle",
-    ["〈"]  = "\\left\\langle",
-    ["〈"]  = "\\left\\langle",
+    ["(:"] = s_langle,
+    ["{:"] = s_left,
+    ["[:"] = s_left,
+    ["("]  = s_lparent,
+    ["["]  = s_lbracket,
+    ["{"]  = s_lbrace,
+    ["<<"] = s_langle,     -- why not <:
+    ["|_"] = s_lfloor,
+    ["|~"] = s_lceil,
+    ["⟨"]  = s_langle,
+    ["〈"]  = s_langle,
+    ["〈"]  = s_langle,
     --
-    ["lparent"]  = "\\left\\lparent",
-    ["lbracket"] = "\\left\\lbracket",
-    ["lbrace"]   = "\\left\\lbrace",
-    ["langle"]   = "\\left\\langle",
-    ["lfloor"]   = "\\left\\lfloor",
-    ["lceil"]    = "\\left\\lceil",
+    ["lparent"]  = s_lparent,
+    ["lbracket"] = s_lbracket,
+    ["lbrace"]   = s_lbrace,
+    ["langle"]   = s_langle,
+    ["lfloor"]   = s_lfloor,
+    ["lceil"]    = s_lceil,
 }
 
 local m_right = {
-    [")"]  = "\\right\\rparent",
-    [":)"] = "\\right\\rangle",
-    [":}"] = "\\right.",
-    [":]"] = "\\right.",
-    ["]"]  = "\\right\\rbracket",
-    ["}"]  = "\\right\\rbrace",
-    [">>"] = "\\right\\rangle",   -- why not :>
-    ["~|"] = "\\right\\rceil",
-    ["_|"] = "\\right\\rfloor",
-    ["⟩"]  = "\\right\\rangle",
-    ["〉"]  = "\\right\\rangle",
-    ["〉"]  = "\\right\\rangle",
+    [")"]  = s_rparent,
+    [":)"] = s_rangle,
+    [":}"] = s_right,
+    [":]"] = s_right,
+    ["]"]  = s_rbracket,
+    ["}"]  = s_rbrace,
+    [">>"] = s_rangle,   -- why not :>
+    ["~|"] = s_rceil,
+    ["_|"] = s_rfloor,
+    ["⟩"]  = s_rangle,
+    ["〉"]  = s_rangle,
+    ["〉"]  = s_rangle,
     --
-    ["rparent"]  = "\\right\\rparent",
-    ["rbracket"] = "\\right\\rbracket",
-    ["rbrace"]   = "\\right\\rbrace",
-    ["rangle"]   = "\\right\\rangle",
-    ["rfloor"]   = "\\right\\rfloor",
-    ["rceil"]    = "\\right\\rceil",
+    ["rparent"]  = s_rparent,
+    ["rbracket"] = s_rbracket,
+    ["rbrace"]   = s_rbrace,
+    ["rangle"]   = s_rangle,
+    ["rfloor"]   = s_rfloor,
+    ["rceil"]    = s_rceil,
 }
 
 local islimits = {
     ["\\sum"]  = true,
-    ["∑"]      = true,
+ -- ["∑"]      = true,
     ["\\prod"] = true,
-    ["∏"]      = true,
+ -- ["∏"]      = true,
     ["\\lim"]  = true,
 }
 
@@ -898,12 +839,12 @@ local p_right =
 --   + P("\\ ")  * Cc("\\space")
 --   + P("\\\\") * Cc("\\backslash")
 --   + P("\\")   * (R("az","AZ")^1/entities)
---   + P("|")    * Cc("\\|") -- "\\middle\\|" -- maybe always add left / right as in mml ?
+--   + P("|")    * Cc("\\|")
 --
 -- faster bug also uglier:
 
 local p_special =
-    P("|")  * Cc("\\|") -- "\\middle\\|" -- maybe always add left / right as in mml ?
+    P("|")  * Cc("\\|") -- s_mbar -- maybe always add left / right as in mml ?
   + P("\\") * (
         (
             P(" ") * (
@@ -917,7 +858,14 @@ local p_special =
 
 -- open | close :: {: | :}
 
-local parser = Ct { "tokenizer",
+local u_parser = Cs ( (
+    patterns.doublequoted +
+    P("text") * p_spaces^0 * P("(") * (1-P(")"))^0 * P(")") + -- -- todo: balanced
+    p_unicode +
+    p_utf_base
+)^0 )
+
+local a_parser = Ct { "tokenizer",
     tokenizer = (
         p_spaces
       + p_number
@@ -977,7 +925,7 @@ local function collapse_matrices(t)
                         end
                     end
                     if valid then
-                        local omit = l1 == "\\left." and r1 == "\\right."
+                        local omit = l1 == s_left and r1 == s_right
                         if omit then
                             t[1] = "\\startmatrix"
                         else
@@ -1017,8 +965,8 @@ local function collapse_bars(t)
         if current == "\\|" then
             if l then
                 m = m + 1
-                t[l] = "\\left\\|"
-                t[i] = "\\right\\|"
+                t[l] = s_lbar
+                t[i] = s_rbar
                 t[m] = { unpack(t,l,i) }
                 l = false
             else
@@ -1031,20 +979,20 @@ local function collapse_bars(t)
         i = i + 1
     end
     if l then
-        local tt = { "\\left ." } -- space fools final checker
+        local tt = { s_lnothing } -- space fools final checker
         local tm  = 1
         for i=1,m do
             tm = tm + 1
             tt[tm] = t[i]
         end
         tm = tm + 1
-        tt[tm] = "\\middle\\|"
+        tt[tm] = s_mbar
         for i=l+1,n do
             tm = tm + 1
             tt[tm] = t[i]
         end
         tm = tm + 1
-        tt[tm] = "\\right ." -- space fools final checker
+        tt[tm] = s_rnothing -- space fools final checker
         m = tm
         t = tt
     elseif m < n then
@@ -1413,8 +1361,8 @@ local function collapse_fractions_2(t)
     local n, m, i = #t, 0, 1
     while i < n do
         local current = t[i]
-        if current == "\\slash" and i > 1 then
-            t[m] = "{\\left." .. t[i-1] .. "\\middle/" .. t[i+1] .. "\\right.}"
+        if current == "⁄" and i > 1 then -- \slash
+            t[m] = "{" .. s_left .. t[i-1] .. s_mslash .. t[i+1] .. s_right .. "}"
             i = i + 2
         else
             m = m + 1
@@ -1436,7 +1384,7 @@ end
 
 local function collapse_result(t)
     local n = #t
-    if t[1] == "\\left." and t[n] == "\\right." then -- see bar .. space needed there
+    if t[1] == s_left and t[n] == s_right then -- see bar .. space needed there
         return concat(t," ",2,n-1)
     else
         return concat(t," ")
@@ -1482,14 +1430,15 @@ local ctx_type        = context and context.type        or function() end
 local ctx_inleft      = context and context.inleft      or function() end
 
 local function convert(str,totex)
-    local texcode = collapse(lpegmatch(parser,str))
+    local unicoded = lpegmatch(u_parser,str)
+    local texcoded = collapse(lpegmatch(a_parser,unicoded))
     if trace_mapping then
-        show_result(str,texcode)
+        show_result(str,texcoded)
     end
     if totex then
-        ctx_mathematics(texcode)
+        ctx_mathematics(texcoded)
     else
-        return texcode
+        return texcoded
     end
 end
 
@@ -1497,7 +1446,7 @@ local n = 0
 local p = (
     (S("{[(") + P("\\left" )) / function() n = n + 1 end
   + (S("}])") + P("\\right")) / function() n = n - 1 end
-  + P(1)
+  + p_utf_base
 )^0
 
 local function invalidtex(str)
@@ -1636,7 +1585,8 @@ local function convert(str)
     if #str == 1 then
         ctx_mathematics(str)
     else
-        local texcode = collapse(lpegmatch(parser,str))
+        local unicode = lpegmatch(u_parser,str)
+        local texcode = collapse(lpegmatch(a_parser,unicode))
         if trace_mapping then
             show_result(str,texcode)
         end
@@ -1872,102 +1822,3 @@ end
 function show.save(name)
     table.save(name ~= "" and name or "dummy.lua",collected)
 end
-
--- maybe:
-
--- \backslash \
--- \times     ×
--- \divide    ÷
--- \circ      ∘
--- \oplus     ⊕
--- \otimes    ⊗
--- \sum       ∑
--- \prod      ∏
--- \wedge     ∧
--- \bigwedge  ⋀
--- \vee       ∨
--- \bigvee    ⋁
--- \cup       ∪
--- \bigcup    ⋃
--- \cap       ∩
--- \bigcap    ⋂
-
--- \ne        ≠
--- \le        ≤
--- \leq       ≤
--- \ge        ≥
--- \geq       ≥
--- \prec      ≺
--- \succ      ≻
--- \in        ∈
--- \notin     ∉
--- \subset    ⊂
--- \supset    ⊃
--- \subseteq  ⊆
--- \supseteq  ⊇
--- \equiv     ≡
--- \cong      ≅
--- \approx    ≈
--- \propto    ∝
---
--- \neg       ¬
--- \implies   ⇒
--- \iff       ⇔
--- \forall    ∀
--- \exists    ∃
--- \bot       ⊥
--- \top       ⊤
--- \vdash     ⊢
--- \models    ⊨
---
--- \int       ∫
--- \oint      ∮
--- \partial   ∂
--- \nabla     ∇
--- \pm        ±
--- \emptyset  ∅
--- \infty     ∞
--- \aleph     ℵ
--- \ldots     ...
--- \cdots     ⋯
--- \quad
--- \diamond   ⋄
--- \square    □
--- \lfloor    ⌊
--- \rfloor    ⌋
--- \lceiling  ⌈
--- \rceiling  ⌉
---
--- \sin       sin
--- \cos       cos
--- \tan       tan
--- \csc       csc
--- \sec       sec
--- \cot       cot
--- \sinh      sinh
--- \cosh      cosh
--- \tanh      tanh
--- \log       log
--- \ln        ln
--- \det       det
--- \dim       dim
--- \lim       lim
--- \mod       mod
--- \gcd       gcd
--- \lcm       lcm
---
--- \uparrow        ↑
--- \downarrow      ↓
--- \rightarrow     →
--- \to             →
--- \leftarrow      ←
--- \leftrightarrow ↔
--- \Rightarrow     ⇒
--- \Leftarrow      ⇐
--- \Leftrightarrow ⇔
---
--- \mathbf
--- \mathbb
--- \mathcal
--- \mathtt
--- \mathfrak

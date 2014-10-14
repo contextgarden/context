@@ -69,6 +69,7 @@
    \c!maxheight=\textheight,
    \c!maxwidth=\makeupwidth,
    \c!grid=\v!tolerant,
+   \c!internalgrid=\v!line,
    \c!step=.25\lineheight, % needs some experimenting
   %\c!splitmethod=\v!fixed, % will be default
    \c!method=\ifinner\s!box\else\s!otr\fi] % automatic as suggested by WS
@@ -167,6 +168,8 @@
   [\c!n=\itemgroupparameter\c!n,
    \c!separator=\v!none,
    \c!splitmethod=\v!none,
+   \c!grid=\v!tolerant,
+   \c!internalgrid=\v!halfline, % new, we may still revert to \v!line
    \c!balance=\v!yes]
 
 \unexpanded\def\strc_itemgroups_start_columns
@@ -522,20 +525,21 @@
 \unexpanded\def\page_mix_routine_construct#1%
   {\d_page_mix_max_height\mixedcolumnsparameter\c!maxheight % can have changed due to header=high
    \ctxcommand{mixsetsplit {
-       box         = \number\b_page_mix_collected,
-       nofcolumns  = \number\c_page_mix_n_of_columns,
-       maxheight   = \number\d_page_mix_max_height,
-       step        = \number\d_page_mix_balance_step,
-       cycles      = \number\c_page_mix_balance_cycles,
-       preheight   = \number\d_page_mix_preceding_height,
-       prebox      = \number\b_page_mix_preceding,
-       strutht     = \number\strutht,
-       strutdp     = \number\strutdp,
-       threshold   = \number\d_page_mix_threshold,
-       splitmethod = "\mixedcolumnsparameter\c!splitmethod",
-       balance     = "#1",
-       alternative = "\mixedcolumnsparameter\c!alternative",
-       grid        = \ifgridsnapping true\else false\fi,
+       box          = \number\b_page_mix_collected,
+       nofcolumns   = \number\c_page_mix_n_of_columns,
+       maxheight    = \number\d_page_mix_max_height,
+       step         = \number\d_page_mix_balance_step,
+       cycles       = \number\c_page_mix_balance_cycles,
+       preheight    = \number\d_page_mix_preceding_height,
+       prebox       = \number\b_page_mix_preceding,
+       strutht      = \number\strutht,
+       strutdp      = \number\strutdp,
+       threshold    = \number\d_page_mix_threshold,
+       splitmethod  = "\mixedcolumnsparameter\c!splitmethod",
+       balance      = "#1",
+       alternative  = "\mixedcolumnsparameter\c!alternative",
+       grid         = \ifgridsnapping true\else false\fi,
+       internalgrid = "\mixedcolumnsparameter\c!internalgrid",
    }}%
    \deadcycles\zerocount}
 

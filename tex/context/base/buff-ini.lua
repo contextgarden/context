@@ -170,12 +170,14 @@ commands.assignbuffer = assign
 
 local anything      = patterns.anything
 local alwaysmatched = patterns.alwaysmatched
+local utf8character = patterns.utf8character
 
 local function countnesting(b,e)
     local n
     local g = P(b) / function() n = n + 1 end
             + P(e) / function() n = n - 1 end
-            + anything
+         -- + anything
+            + utf8character
     local p = alwaysmatched / function() n = 0 end
             * g^0
             * alwaysmatched / function() return n end
@@ -232,7 +234,7 @@ local continue   = false
 
 -- how about tabs
 
-local getmargin = (Cs(P(" ")^1)*P(-1)+1)^1
+local getmargin = (Cs(P(" ")^1)*P(-1)+1)^1 -- 1 or utf8character
 local eol       = patterns.eol
 local whatever  = (P(1)-eol)^0 * eol^1
 

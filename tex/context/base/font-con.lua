@@ -45,6 +45,8 @@ constructors.cache           = containers.define("fonts", "constructors", constr
 
 constructors.privateoffset   = 0xF0000 -- 0x10FFFF
 
+constructors.cacheintex      = true -- so we see the original table in fonts.font
+
 -- Some experimental helpers (handy for tracing):
 --
 -- todo: extra:
@@ -437,6 +439,7 @@ function constructors.scale(tfmdata,specification)
     target.tounicode     = 1
     target.cidinfo       = properties.cidinfo
     target.format        = properties.format
+    target.cache         = constructors.cacheintex and "yes" or "renew"
     --
     local fontname = properties.fontname or tfmdata.fontname -- for the moment we fall back on
     local fullname = properties.fullname or tfmdata.fullname -- names in the tfmdata although
@@ -453,6 +456,7 @@ function constructors.scale(tfmdata,specification)
     target.filename = filename
     target.psname   = psname
     target.name     = name
+    --
     --
     properties.fontname = fontname
     properties.fullname = fullname
@@ -951,6 +955,8 @@ function constructors.finalize(tfmdata)
     tfmdata.extend         = nil
     tfmdata.slant          = nil
     tfmdata.units_per_em   = nil
+    --
+    tfmdata.cache          = nil
     --
     properties.finalized   = true
     --

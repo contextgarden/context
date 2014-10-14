@@ -337,10 +337,11 @@ function commands.btxauthor(dataset,tag,field,settings)
     currentauthordata   = split
     currentauthorsymbol = symbol
     for i=1,max do
-        ctx_btxstartauthor(i,max)
+        local author = split[i]
+        local state = author.state or 0
+        ctx_btxstartauthor(i,max,state)
         ctx_btxsetconcat(concatstate(i,max))
         ctx_btxsetauthorvariant(combiner)
-        local author = split[i]
         local initials = author.initials
         if initials and #initials > 0 then
             ctx_btxsetinitials() -- (concat(the_initials(initials,symbol)," "))

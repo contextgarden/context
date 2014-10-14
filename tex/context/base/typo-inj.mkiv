@@ -1,0 +1,72 @@
+%D \module
+%D   [       file=typo-inj,
+%D        version=2014.10.13,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Triggering Actions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Triggering Actions}
+
+%D This is a sort of escape from too automatic typesetting of lists. I have
+%D been thinking fo a more generic injector for instance based on tags (as we
+%D already index each element) but thi sis sort of fuzzy because the number of a
+%D tag is not always incremented before we check for it. Also, registers and lists
+%D are among the few candidates that cannot be controlled directly by putting
+%D something in the input. So,m for the moment I stick to this mechanism but
+%D future versions of \CONTEXT\ might do it differently. Compatibility is not much
+%D of an issue here as this mechanism is only to be used in final production runs.
+
+\unprotect
+
+\registerctxluafile{typo-inj}{1.001}
+
+% todo: no need in trialmode
+
+%D \showinjector
+%D
+%D \setinjector[register][3][\column]
+%D \setinjector[list]    [2][{\blank[3*big]}]
+%D
+%D \starttext
+%D     \placelist[section][criterium=text]
+%D     \blank[3*big]
+%D     \placeregister[index][criterium=text]
+%D     \page
+%D     \startsection[title=Alpha] first  \index{first}  \stopsection
+%D     \startsection[title=Beta]  second \index{second} \stopsection
+%D     \startsection[title=Gamma] third  \index{third}  \stopsection
+%D     \startsection[title=Delta] fourth \index{fourth} \stopsection
+%D \stoptext
+
+\unexpanded\def\resetinjector              [#1]{\ctxcommand{resetinjector("#1")}}
+\unexpanded\def\markinjector               [#1]{\dontleavehmode\ctxcommand{markinjector("#1")}}
+\unexpanded\def\checkinjector              [#1]{\ctxcommand{checkinjector("#1")}}
+\unexpanded\def\checknextinjector              {\ctxcommand{checkinjector()}}
+\unexpanded\def\checkpreviousinjector          {\ctxcommand{checkinjector(true)}}
+\unexpanded\def\dosetinjector      [#1][#2][#3]{\ctxcommand{setinjector("#1","#2",\!!bs#3\!!es)}}
+\unexpanded\def\doshowinjector             [#1]{\ctxcommand{showinjector("#1")}}
+
+\unexpanded\def\setinjector {\dotripleargument\dosetinjector}
+\unexpanded\def\showinjector{\dosingleempty\doshowinjector}
+
+\unexpanded\def\domarkinjector#1#2% called at the lua end
+  {\dontleavehmode\llap{\infofont\ifcase#1\else\red\fi<#2>\quad}}
+
+% low level definers
+
+\unexpanded\def\doinstallinjector#1%
+  {\letvalue{typo_injectors_mark_#1}\donothing
+   \letvalue{typo_injectors_check_#1}\donothing}
+
+\unexpanded\def\doactivateinjector#1% used at lua end
+  {\setuxvalue{typo_injectors_mark_#1}{\dontleavehmode\noexpand\ctxcommand{markinjector("#1")}}%
+   \setuxvalue{typo_injectors_check_#1}{\noexpand\ctxcommand{checkinjector("#1")}}}
+
+\protect \endinput
+

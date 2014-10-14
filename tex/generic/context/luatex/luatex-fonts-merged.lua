@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/10/14 13:44:48
+-- merge date  : 10/14/14 18:52:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -3947,7 +3947,8 @@ constructors.autocleanup=true
 constructors.namemode="fullpath" 
 constructors.version=1.01
 constructors.cache=containers.define("fonts","constructors",constructors.version,false)
-constructors.privateoffset=0xF0000
+constructors.privateoffset=0xF0000 
+constructors.cacheintex=true
 constructors.keys={
   properties={
     encodingbytes="number",
@@ -4226,6 +4227,7 @@ function constructors.scale(tfmdata,specification)
   target.tounicode=1
   target.cidinfo=properties.cidinfo
   target.format=properties.format
+  target.cache=constructors.cacheintex and "yes" or "renew"
   local fontname=properties.fontname or tfmdata.fontname 
   local fullname=properties.fullname or tfmdata.fullname 
   local filename=properties.filename or tfmdata.filename 
@@ -4663,6 +4665,7 @@ function constructors.finalize(tfmdata)
   tfmdata.extend=nil
   tfmdata.slant=nil
   tfmdata.units_per_em=nil
+  tfmdata.cache=nil
   properties.finalized=true
   return tfmdata
 end

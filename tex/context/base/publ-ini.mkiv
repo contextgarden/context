@@ -401,6 +401,7 @@
 \newconstant\currentbtxcount       \unexpanded\def\btxsetcount      #1{\currentbtxcount      #1\relax}
 \newconstant\currentbtxauthorindex %unexpanded\def\btxsetauthorindex#1{\currentbtxauthorindex#1\relax} % passed directly
 \newconstant\currentbtxauthorcount %unexpanded\def\btxsetauthorcount#1{\currentbtxauthorcount#1\relax} % passed directly
+\newconstant\currentbtxauthorstate \unexpanded\def\btxsetauthorstate#1{\currentbtxauthorstate#1\relax}
 
 \def\currentbtxauthorvariant{normal}
 
@@ -774,10 +775,11 @@
    })}%
    \endgroup}
 
-\unexpanded\def\btxstartauthor#1#2%
+\unexpanded\def\btxstartauthor#1#2#3%
   {\begingroup
    \currentbtxauthorindex#1\relax
-   \currentbtxauthorcount#2\relax}
+   \currentbtxauthorcount#2\relax
+   \currentbtxauthorstate#3\relax}
 
 \unexpanded\def\btxstopauthor
   {\endgroup}
@@ -1297,6 +1299,7 @@
    \c!lastnamesep={ \btxlabeltext{\currentbtxalternative:and} },
    \c!finalnamesep={ \btxlabeltext{\currentbtxalternative:and} },
    \c!firstnamesep={ },
+   \c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
    \c!otherstext={ \btxlabeltext{\currentbtxalternative:others}},
    \c!juniorsep={ },
    \c!vonsep={ },

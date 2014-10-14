@@ -199,6 +199,14 @@
    \global\setfalse\c_page_sides_short
    \global\setfalse\c_page_sides_flag}
 
+\unexpanded\def\doifelsesidefloat
+  {\par
+   \ifnum\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
 % \def\page_sides_flush_floats_indeed
 %   {\global\advance\d_page_sides_vsize-\d_page_sides_bottomskip
 %    \begingroup

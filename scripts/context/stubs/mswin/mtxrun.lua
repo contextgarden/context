@@ -11595,7 +11595,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 26026, stripped down to: 18535
+-- original size: 26097, stripped down to: 18580
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -11670,13 +11670,15 @@ end
 function xml.each(root,pattern,handle,reverse)
   local collected=xmlapplylpath(root,pattern)
   if collected then
-    if reverse then
-      for c=#collected,1,-1 do
-        handle(collected[c])
-      end
-    else
-      for c=1,#collected do
-        handle(collected[c])
+    if handle then
+      if reverse then
+        for c=#collected,1,-1 do
+          handle(collected[c])
+        end
+      else
+        for c=1,#collected do
+          handle(collected[c])
+        end
       end
     end
     return collected
@@ -17642,8 +17644,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 728394
--- stripped bytes    : 259660
+-- original bytes    : 728465
+-- stripped bytes    : 259686
 
 -- end library merge
 
