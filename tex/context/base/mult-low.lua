@@ -170,6 +170,8 @@ return {
         --
         "donetrue", "donefalse",
         --
+        "inlineordisplaymath","indisplaymath","forcedisplaymath","startforceddisplaymath","stopforceddisplaymath","reqno",
+        --
         "htdp",
         "unvoidbox",
         "hfilll", "vfilll",

@@ -105,6 +105,20 @@
 
 \def\inlineordisplaymath{\ifconditional\indisplaymath\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
 
+\unexpanded\def\forcedisplaymath
+  {\ifmmode
+     \displaystyle
+     \settrue\indisplaymath
+   \fi}
+
+\unexpanded\def\startforceddisplaymath
+  {\startimath
+   \displaystyle
+   \settrue\indisplaymath}
+
+\unexpanded\def\stopforceddisplaymath
+  {\stopimath}
+
 % \unexpanded\def\rawmathcharacter#1% slow but only for tracing
 %   {\begingroup
 %    \ifmmode
@@ -1852,7 +1866,14 @@
 
 \ifdefined\text\else \let\text\hbox \fi
 
-\unexpanded\def\mathoptext#1{\mathop{\text{#1}}}
+% \unexpanded\def\mathoptext#1{\mathop{\text{#1}}}
+
+\unexpanded\def\mathoptext
+  {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+  %\showmathstyle
+   \dowithnextbox
+     {\mathop{\box\nextbox}}%
+     \hbox\bgroup\font_basics_switchtobodyfont\m_math_text_choice_face\let\next}
 
 % new:
 
@@ -1882,6 +1903,105 @@
 
 \def\mathextensiblecode#1#2{\ctxcommand{extensiblecode(\number#1,\number#2)}}
 \def\mathhorizontalcode#1#2{\ctxcommand{horizontalcode(\number#1,\number#2)}}
+
+% experimental:
+
+%D \starttyping
+%D \enabletrackers[math.openedup]
+%D
+%D \dorecurse{10}{\dorecurse{#1}{whatever }}
+%D
+%D \startitemize[packed]
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D \stopitemize
+%D \startitemize[packed,columns]
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D \stopitemize
+%D
+%D \dorecurse{5}{\dorecurse{#1}{whatever }\openedupimath{\frac{1}{2}} }
+%D
+%D \startitemize[packed,columns]
+%D     \startitem whatever \openedupimath{1+2} whatever
+%D     \startitem whatever \openedupimath{1+2} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{1+2} whatever
+%D     \startitem whatever \openedupimath{1+2} whatever
+%D \stopitemize
+%D
+%D \dorecurse{5}{\dorecurse{#1}{whatever }\openedupimath{1+2} }
+%D
+%D \startitemize[packed]
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D     \startitem whatever \openedupimath{\frac{1}{2}} whatever
+%D \stopitemize
+%D
+%D \dorecurse{10}{whatever }
+%D \dorecurse {5}{\dorecurse{#1}{whatever }\openedupimath{\frac{1}{2}} }
+%D \dorecurse{10}{whatever }
+%D \stoptyping
+
+\def\m_math_inline_openup_ht{\dimexpr\ifinsidecolumns\strutdp\else\lineheight\fi/\plusfour\relax}
+\def\m_math_inline_openup_dp{\dimexpr\ifinsidecolumns\strutdp\else\lineheight\fi/\plusfour\relax}
+
+% \def\m_math_inline_openup_ht{\dimexpr\lineheight/\ifinsidecolumns\pluseight\else\plusfour\fi\relax}
+% \def\m_math_inline_openup_dp{\dimexpr\lineheight/\ifinsidecolumns\pluseight\else\plusfour\fi\relax}
+
+\installtextracker
+  {math.openedup}
+  {\let\math_inline_openup_yes\math_inline_openup_traced}
+  {\let\math_inline_openup_yes\math_inline_openup_normal}
+
+\unexpanded\def\math_inline_openup_normal
+  {\scratchheight\dimexpr\ht\scratchbox+\m_math_inline_openup_ht\relax
+   \scratchdepth \dimexpr\dp\scratchbox+\m_math_inline_openup_dp\relax
+   \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax
+   \unhbox\scratchbox
+   \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax}
+
+\unexpanded\def\math_inline_openup_traced
+  {\scratchtopoffset   \ht\scratchbox
+   \scratchbottomoffset\dp\scratchbox
+   \scratchheight      \dimexpr\scratchtopoffset   +\m_math_inline_openup_ht\relax
+   \scratchdepth       \dimexpr\scratchbottomoffset+\m_math_inline_openup_dp\relax
+   \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax
+   \begingroup
+     \dofastcoloractivation{darkred}%
+     \vrule\s!width\emwidth\s!height\scratchheight\s!depth-\scratchtopoffset\relax
+   \endgroup
+   \kern-\emwidth
+   \unhbox\scratchbox
+   \kern-\emwidth
+   \begingroup
+     \dofastcoloractivation{darkblue}%
+     \vrule\s!width\emwidth\s!height-\scratchbottomoffset\s!depth\scratchdepth\relax
+   \endgroup
+   \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax}
+
+\let\math_inline_openup_yes\math_inline_openup_normal
+
+\unexpanded\def\math_inline_openup_nop
+  {\unhbox\scratchbox}
+
+\unexpanded\def\openedupimath#1%
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\ifmmode\mathstylehbox\else\hbox\fi{\startimath#1\stopimath}%
+   \ifdim\ht\scratchbox>\strutht
+     \math_inline_openup_yes
+   \else\ifdim\dp\scratchbox>\strutdp
+     \math_inline_openup_yes
+   \else
+     \math_inline_openup_nop
+   \fi\fi
+   \endgroup}
 
 \protect \endinput
 

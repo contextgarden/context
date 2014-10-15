@@ -115,8 +115,8 @@ local reserved = {
     ["or"]        = { false, "\\text{or}" },
     ["if"]        = { false, "\\text{if}" },
 
-    ["sqrt"]      = { false, "\\rootradical{}",     "unary" },
-    ["root"]      = { false, "\\rootradical",       "binary" },
+    ["sqrt"]      = { false, "\\asciimathsqrt",     "unary" },
+    ["root"]      = { false, "\\asciimathroot",     "binary" },
     ["frac"]      = { false, "\\frac",              "binary" },
     ["stackrel"]  = { false, "\\asciimathstackrel", "binary" },
     ["hat"]       = { false, "\\widehat",           "unary" },
@@ -657,13 +657,14 @@ local reserved = {
 
 local isbinary = {
     ["\\frac"]              = true,
-    ["\\rootradical"]       = true,
+    ["\\root"]              = true,
+    ["\\asciimathroot"]     = true,
     ["\\asciimathstackrel"] = true,
 }
 
 local isunary = {
     ["\\sqrt"]            = true,
-    ["\\rootradical{}"]   = true,
+    ["\\asciimathsqrt"]   = true,
     ["\\text"]            = true, --  mathoptext
     ["\\mathoptext"]      = true, --  mathoptext
     ["\\asciimathoptext"] = true, --  mathoptext

@@ -17,6 +17,31 @@
 
 %D todo: struts ... depends on demand
 
+
+    \installcorenamespace {partialmathtopstrut}
+    \installcorenamespace {partialmathbotstrut}
+
+    \unexpanded\def\topstrut{\vrule\s!width\zeropoint\s!height\strutht\s!depth\zeropoint\relax}
+    \unexpanded\def\botstrut{\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp\relax}
+
+    \unexpanded\def\mathtopstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\ht\scratchbox\s!depth\zeropoint\relax}
+    \unexpanded\def\mathbotstrut{\setbox\scratchbox\mathstylehbox{(}\vrule\s!width\zeropoint\s!height\zeropoint\s!depth\dp\scratchbox\relax}
+
+    \letvalue{\??partialmathtopstrut\v!line     }\topstrut
+    \letvalue{\??partialmathbotstrut\v!line     }\botstrut
+
+    \letvalue{\??partialmathtopstrut\v!yes      }\topstrut
+    \letvalue{\??partialmathbotstrut\v!yes      }\botstrut
+
+    \letvalue{\??partialmathtopstrut\v!character}\mathtopstrut
+    \letvalue{\??partialmathbotstrut\v!character}\mathbotstrut
+
+    \letvalue{\??partialmathtopstrut            }\donothing
+    \letvalue{\??partialmathbotstrut            }\donothing
+
+    \unexpanded\def\math_partial_strut_top#1{\csname\??partialmathtopstrut\ifcsname\??partialmathtopstrut#1\endcsname#1\fi\endcsname}
+    \unexpanded\def\math_partial_strut_bot#1{\csname\??partialmathbotstrut\ifcsname\??partialmathbotstrut#1\endcsname#1\fi\endcsname}
+
 %D This module is reimplemented in \MKIV\ style.
 
 \registerctxluafile{math-frc}{1.001}
@@ -106,6 +131,7 @@
    \c!rulethickness=.25\exheight,
    \c!left=0x2E,
    \c!right=0x2E,
+   \c!strut=,
    \c!topdistance=,
    \c!bottomdistance=,
    \c!rule=\v!auto]
@@ -159,11 +185,26 @@
 
 \newdimen\d_math_fraction_margin
 
+\unexpanded\def\m_fractions_strut_top_indeed{\math_partial_strut_top\p_math_fractions_strut}
+\unexpanded\def\m_fractions_strut_bot_indeed{\math_partial_strut_bot\p_math_fractions_strut}
+
 \unexpanded\def\math_frac#1%
   {\begingroup
    \edef\currentmathfraction{#1}%
+   %
    \d_math_fraction_margin\mathfractionparameter\c!margin
+   %
    \edef\p_math_fractions_color{\mathfractionparameter\c!color}%
+   %
+   \edef\p_math_fractions_strut{\mathfractionparameter\c!strut}%
+   \ifx\p_math_fractions_strut\empty
+     \let\m_fractions_strut_top\relax
+     \let\m_fractions_strut_bot\relax
+   \else
+     \let\m_fractions_strut_top\m_fractions_strut_top_indeed
+     \let\m_fractions_strut_bot\m_fractions_strut_bot_indeed
+   \fi
+   %
    \ifx\p_math_fractions_color\empty
      \expandafter\math_frac_normal
    \else
@@ -219,14 +260,18 @@
 
 \def\math_fraction_inner_normal#1#2%
   {\Ustack{%
-     {\usemathstyleparameter\mathfractionparameter{#1}}\math_frac_command{\usemathstyleparameter\mathfractionparameter{#2}}%
+     {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}}
+     \math_frac_command
+     {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}}%
    }\endgroup}
 
 \def\math_fraction_outer_normal#1#2%
   {\Ustack{%
      \usemathstyleparameter\mathfractionparameter
      {%
-      {#1}\math_frac_command{#2}%
+      {\m_fractions_strut_top#1}%
+      \math_frac_command
+      {\m_fractions_strut_bot#2}%
      }%
    }\endgroup}
 
@@ -234,24 +279,34 @@
   {\Ustack{%
      \usemathstyleparameter\mathfractionparameter
      {%
-      \usemathstyleparameter\mathfractionparameter{#1}\math_frac_command{\usemathstyleparameter\mathfractionparameter#2}%
+      {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1}%
+      \math_frac_command
+      {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2}%
      }%
    }\endgroup}
 
 \def\math_fraction_inner_margin#1#2%
   {\Ustack{%
-     {\kern\d_math_fraction_margin\usemathstyleparameter\mathfractionparameter{#1}\kern\d_math_fraction_margin}%
+     {\kern\d_math_fraction_margin
+      \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_top#1}%
+      \kern\d_math_fraction_margin}%
      \math_frac_command
-     {\kern\d_math_fraction_margin\usemathstyleparameter\mathfractionparameter{#2}\kern\d_math_fraction_margin}%
+     {\kern\d_math_fraction_margin
+      \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}%
+      \kern\d_math_fraction_margin}%
    }\endgroup}
 
 \def\math_fraction_outer_margin#1#2%
   {\Ustack{%
      \usemathstyleparameter\mathfractionparameter
      {%
-      {\kern\d_math_fraction_margin#1\kern\d_math_fraction_margin}%
+      {\kern\d_math_fraction_margin
+       \m_fractions_strut_top#1%
+       \kern\d_math_fraction_margin}%
       \math_frac_command
-      {\kern\d_math_fraction_margin#2\kern\d_math_fraction_margin}%
+      {\kern\d_math_fraction_margin
+       \m_fractions_strut_bot#2%
+       \kern\d_math_fraction_margin}%
      }%
    }\endgroup}
 
@@ -259,9 +314,13 @@
   {\Ustack{%
      \usemathstyleparameter\mathfractionparameter
      {%
-     {\kern\d_math_fraction_margin\usemathstyleparameter\mathfractionparameter#1\kern\d_math_fraction_margin}%
+      {\kern\d_math_fraction_margin
+       \usemathstyleparameter\mathfractionparameter\m_fractions_strut_top#1%
+       \kern\d_math_fraction_margin}%
       \math_frac_command
-      {\kern\d_math_fraction_margin\usemathstyleparameter\mathfractionparameter#2\kern\d_math_fraction_margin}%
+      {\kern\d_math_fraction_margin
+       \usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2%
+       \kern\d_math_fraction_margin}%
      }%
    }\endgroup}
 

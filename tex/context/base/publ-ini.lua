@@ -1386,7 +1386,6 @@ function lists.prepareentries(dataset)
                 li[3] = number
             else
                 -- weird, this shouldn't happen
-                li[3] = 0
             end
         end
     end

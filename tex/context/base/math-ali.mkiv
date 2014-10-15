@@ -1035,8 +1035,7 @@
    \strc_formulas_place_number
    \setbox\scratchbox\math_hbox to \displaywidth\bgroup
      \mathinnerstrut
-     $%
-     \displaystyle
+     \startforceddisplaymath
      \ifcase\mathraggedstatus\or\hfill\or\hfill\fi}
 
 \def\math_box_llapped_math_no
@@ -1058,7 +1057,7 @@
    \fi}
 
 \unexpanded\def\stopmathbox
-  {$%
+  {\stopforceddisplaymath
    \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
    \egroup
    \setbox0\hbox{\unhcopy\scratchbox}%

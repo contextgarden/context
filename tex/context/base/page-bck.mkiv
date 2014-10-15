@@ -55,7 +55,7 @@
 %D This is the only spot where we hav ea low level dependency on the way
 %D parent chains are defined but we want the speed.
 
-\def\page_backgrounds_check_background
+\unexpanded\def\page_backgrounds_check_background
   {\ifcsname\??framed\currentotrbackground:\c!background\endcsname
      \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!background\endcsname}%
      \ifx\page_background_temp\empty
@@ -606,6 +606,48 @@
 %D switch to false.
 
 \setfalse\c_page_backgrounds_some
+
+%D Sometimes you have a document wide (page) background but need to overload it
+%D locally. In such case (at least in my experience) the only values that get set
+%D are the background and backgroundcolor (if set at all). A full inheritance chain
+%D would complicate things because then we need to use named backgrounds which in
+%D turn will make this mechanism slower. I considered independent local backgrounds
+%D but that also complicates the code (not that much) but isolation means that we
+%D need to set more parameters each time. The following simple approach proabbly
+%D suits most usage.
+%D
+%D \starttyping
+%D \starttext
+%D     \setupbackgrounds[page][background=color,backgroundcolor=red]
+%D     \input tufte \page
+%D     \setupbackgrounds[page][background=,backgroundcolor=]
+%D     \input tufte \page
+%D     \setupbackgrounds[page][background=color,backgroundcolor=red]
+%D     \input tufte \page
+%D     \pushbackground[page]
+%D         \setupbackgrounds[page][background=color,backgroundcolor=green]
+%D         \input tufte \page
+%D     \popbackground
+%D     \input tufte \page
+%D \stoptext
+%D \stoptyping
+
+\unexpanded\def\pushbackground[#1]%
+  {\pushmacro\popbackground
+   \edef\currentotrbackground{\??layoutbackgrounds#1}%
+   \unexpanded\edef\popbackground
+     {\setupframed
+        [\currentotrbackground]
+        [\c!background=\namedframedparameter{\currentotrbackground}\c!background,
+         \c!backgroundcolor=\namedframedparameter{\currentotrbackground}\c!backgroundcolor]%
+      \page_backgrounds_check_background
+      \popmacro\popbackground}%
+   \setupframed
+     [\currentotrbackground]
+     [\c!background=,\c!backgroundcolor=]%
+   \page_backgrounds_check_background}
+
+\let\popbackground\relax
 
 \protect \endinput
 
