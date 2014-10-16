@@ -501,7 +501,7 @@
    \fi}
 
 \def\typo_delimited_left_symbol#1%
-  {\setbox\scratchbox\hbox{#1}%
+  {\setbox\scratchbox\hbox{\usedelimitedtextstyleandcolor\c!symstyle\c!symcolor#1}%
    \dontleavehmode
    \edef\p_delimited_margin{\delimitedtextparameter\c!location}%
    \ifx\p_delimited_margin\v!margin
@@ -510,7 +510,7 @@
    \box\scratchbox}
 
 \def\typo_delimited_right_symbol#1%
-  {\hsmash{#1}}
+  {\hsmash{\usedelimitedtextstyleandcolor\c!symstyle\c!symcolor#1}}
 
 \def\typo_delimited_nextleft_symbol#1%
   {\localleftbox\bgroup
@@ -541,6 +541,7 @@
 
 \def\typo_delimited_handle_middle#1%
   {\begingroup
+   \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
    \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
    \ifdim\wd\scratchbox>\zeropoint
      \ifdim\lastkern=\d_typo_delimited_signal
@@ -560,6 +561,7 @@
 
 \def\typo_delimited_handle_left#1%
   {\begingroup
+   \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
    \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
    \ifdim\wd\scratchbox>\zeropoint
      \ifdim\lastkern=\d_typo_delimited_signal
@@ -583,6 +585,7 @@
 
 \def\typo_delimited_handle_right#1%
   {\begingroup
+   \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
    \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
    \ifdim\wd\scratchbox>\zeropoint
      \ifdim\lastkern=\d_typo_delimited_signal
@@ -613,14 +616,50 @@
       \dostoptagged
       \typo_delimited_pop}}
 
+% \unexpanded\def\typo_delimited_txt
+%   {\doifelse{\delimitedtextparameter\c!style}\v!normal
+%      \typo_delimited_quoted
+%      \typo_delimited_attributed}
+%
+% \def\typo_delimited_quoted_b
+%   {\dostarttagged\t!delimited\currentdelimitedtext
+%    \typo_delimited_handle_left\c!left}
+%
+% \def\typo_delimited_quoted_e
+%   {\typo_delimited_handle_right\c!right
+%    \removelastskip
+%    \dostoptagged
+%    \typo_delimited_pop}
+%
+% \def\typo_delimited_attributed_b
+%   {\dostarttagged\t!delimited\currentdelimitedtext
+%    \usedelimitedtextstyleandcolor\c!style\c!color}
+%
+% \def\typo_delimited_attributed_e
+%   {\dostoptagged
+%    \typo_delimited_pop}
+%
+% \def\typo_delimited_fontdriven_b
+%   {\dostarttagged\t!delimited\currentdelimitedtext
+%    \languageparameter{\c!left\currentparentdelimitedtext}}% was: \currentdelimitedtext
+%
+% \def\typo_delimited_fontdriven_e
+%   {\languageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
+%    \dostoptagged
+%    \typo_delimited_pop}
+
 \unexpanded\def\typo_delimited_txt
-  {\doifelse{\delimitedtextparameter\c!style}\v!normal
-     \typo_delimited_quoted
-     \typo_delimited_attributed}
+  {\edef\p_left_right{\delimitedtextparameter\c!left\delimitedtextparameter\c!right}%
+   \ifx\p_left_right\empty
+     \expandafter\typo_delimited_attributed
+   \else
+     \expandafter\typo_delimited_quoted
+   \fi}
 
 \def\typo_delimited_quoted_b
   {\dostarttagged\t!delimited\currentdelimitedtext
-   \typo_delimited_handle_left\c!left}
+   \typo_delimited_handle_left\c!left
+   \usedelimitedtextstyleandcolor\c!style\c!color}
 
 \def\typo_delimited_quoted_e
   {\typo_delimited_handle_right\c!right
@@ -638,7 +677,8 @@
 
 \def\typo_delimited_fontdriven_b
   {\dostarttagged\t!delimited\currentdelimitedtext
-   \languageparameter{\c!left\currentparentdelimitedtext}}% was: \currentdelimitedtext
+   \languageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
+   \usedelimitedtextstyleandcolor\c!style\c!color}
 
 \def\typo_delimited_fontdriven_e
   {\languageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext

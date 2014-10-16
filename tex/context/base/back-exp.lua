@@ -67,6 +67,7 @@ local attributes        = attributes
 
 local variables         = interfaces.variables
 local v_yes             = variables.yes
+local v_no              = variables.no
 local v_normal          = variables.normal
 local v_flushright      = variables.flushright
 local v_middle          = variables.middle
@@ -3340,7 +3341,10 @@ local htmltemplate = [[
     function commands.setupexport(t)
         table.merge(finetuning,t)
         keephyphens      = finetuning.hyphen == v_yes
-        exportproperties = finetuning.properties == v_no and false or finetuning.properties
+        exportproperties = finetuning.properties
+        if exportproperties == v_no then
+            exportproperties = false
+        end
     end
 
     local function startexport(v)

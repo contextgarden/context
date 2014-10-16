@@ -788,6 +788,7 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
             end
         end
     end
+    dataset.enhanced = true
     statistics.stoptiming(publications)
 end
 
@@ -1362,8 +1363,9 @@ function lists.prepareentries(dataset)
     local repeated  = rendering.repeated == v_yes
     local sorttype  = rendering.sorttype or v_default
     local sorter    = lists.sorters[sorttype] or lists.sorters[v_default]
-    local luadata   = datasets[dataset].luadata
-    local details   = datasets[dataset].details
+    local current   = datasets[dataset]
+    local luadata   = current.luadata
+    local details   = current.details
     local newlist   = { }
     for i=1,#list do
         local li    = list[i]
@@ -1385,7 +1387,11 @@ function lists.prepareentries(dataset)
                 end
                 li[3] = number
             else
-                -- weird, this shouldn't happen
+                report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
+                -- weird, this shouldn't happen .. all have a detail
+                lastnumber   = lastnumber + 1
+                details[tag] = { number = lastnumber }
+                li[3] = lastnumber
             end
         end
     end

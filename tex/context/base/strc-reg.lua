@@ -823,7 +823,7 @@ end
 
 registers.analyze = analyzeregister
 
-function registers.analyze(class,options)
+function commands.analyzeregister(class,options)
     context(analyzeregister(class,options))
 end
 

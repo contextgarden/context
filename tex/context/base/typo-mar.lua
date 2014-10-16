@@ -622,7 +622,7 @@ local function inject(parent,head,candidate)
         if trace_margindata then
             report_margindata("top aligned by %p",delta)
         end
-        if delta < candidate.threshold then
+        if delta < candidate.threshold then -- often we need a negative threshold here
             shift = shift + voffset + delta
         end
     elseif method == v_first then

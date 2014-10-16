@@ -100,7 +100,6 @@ local reserved = {
     ["gcd"]       = { false, "\\gcd" },
     ["min"]       = { false, "\\min" },
     ["max"]       = { false, "\\max" },
-    ["in"]        = { false, "\\in" },
     ["ln"]        = { false, "\\ln" },
 
     ["atan"]      = { false, "\\atan" },         -- extra
@@ -749,6 +748,7 @@ for k, v in sortedhash(reserved) do
     if v[1] then
         k_unicode[k] = replacement
     else
+        k_unicode[k] = k -- keep them ... later we remap these
         if k ~= replacement then
             k_reserved_different[#k_reserved_different+1] = k
         end
@@ -891,9 +891,10 @@ local function show_state(t,level,state)
     report_asciimath(serialize(t,f_state(level,state)))
 end
 
-local function show_result(str,result)
-    report_asciimath("input  > %s",str)
-    report_asciimath("result > %s",result)
+local function show_result(original,unicoded,texcoded)
+    report_asciimath("original > %s",original)
+    report_asciimath("unicoded > %s",unicoded)
+    report_asciimath("texcoded > %s",texcoded)
 end
 
 local function collapse_matrices(t)
@@ -1326,20 +1327,13 @@ local function collapse_fractions_1(t)
         if current == "/" and i > 1 then
             local tl = t[i-1]
             local tr = t[i+1]
-         -- if type(tl) == "table" then
-         --     if isleft[tl[1]] and isright[tl[#tl]] then
-         --         tl[1]   = ""
-         --         tl[#tl] = ""
-         --     end
-         -- end
-         -- if type(tr) == "table" then
-         --     if isleft[tr[1]] and isright[tr[#tr]] then
-         --         tr[1]   = ""
-         --         tr[#tr] = ""
-         --     end
-         -- end
             t[m] = "\\frac{" .. tl .. "}{" .. tr .. "}"
             i = i + 2
+            if i < n then
+                m = m + 1
+                t[m] = t[i]
+                i = i + 1
+            end
         else
             m = m + 1
             t[m] = current
@@ -1365,6 +1359,11 @@ local function collapse_fractions_2(t)
         if current == "⁄" and i > 1 then -- \slash
             t[m] = "{" .. s_left .. t[i-1] .. s_mslash .. t[i+1] .. s_right .. "}"
             i = i + 2
+            if i < n then
+                m = m + 1
+                t[m] = t[i]
+                i = i + 1
+            end
         else
             m = m + 1
             t[m] = current
@@ -1434,7 +1433,7 @@ local function convert(str,totex)
     local unicoded = lpegmatch(u_parser,str)
     local texcoded = collapse(lpegmatch(a_parser,unicoded))
     if trace_mapping then
-        show_result(str,texcoded)
+        show_result(str,unicoded,texcoded)
     end
     if totex then
         ctx_mathematics(texcoded)
@@ -1499,15 +1498,15 @@ local function register(s,cleanedup,collected,shortname)
         end
         f.dirty[s] = (f.dirty[s] or 0) + 1
     else
-        local texcode = convert(s)
-        local message = invalidtex(texcode)
+        local texcoded = convert(s)
+        local message  = invalidtex(texcoded)
         if message then
             report_asciimath("%s: %s",message,s)
         end
         collected[c] = {
             count     = 1,
             files     = { [shortname] = 1 },
-            texcode   = texcode,
+            texcoded  = texcoded,
             message   = message,
             cleanedup = s ~= c and 1 or 0,
             dirty     = { [s] = 1 }
@@ -1586,20 +1585,20 @@ local function convert(str)
     if #str == 1 then
         ctx_mathematics(str)
     else
-        local unicode = lpegmatch(u_parser,str)
-        local texcode = collapse(lpegmatch(a_parser,unicode))
+        local unicoded = lpegmatch(u_parser,str)
+        local texcoded = collapse(lpegmatch(a_parser,unicoded))
         if trace_mapping then
-            show_result(str,texcode)
+            show_result(str,unicoded,texcoded)
         end
-        if #texcode == 0 then
+        if #texcoded == 0 then
             report_asciimath("error in asciimath: %s",str)
         else
-            local message = invalidtex(texcode)
+            local message = invalidtex(texcoded)
             if message then
                 report_asciimath("%s: %s",message,str)
                 ctx_type(formatters["<%s>"](message))
             else
-                ctx_mathematics(texcode)
+                ctx_mathematics(texcoded)
             end
         end
     end
@@ -1765,7 +1764,7 @@ function show.result(n)
     elseif v.message then
         ctx_color(color, v.message)
     else
-        ctx_mathematics(v.texcode)
+        ctx_mathematics(v.texcoded)
     end
 end
 

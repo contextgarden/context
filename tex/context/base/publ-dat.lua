@@ -174,10 +174,10 @@ function publications.new(name)
 end
 
 function publications.markasupdated(name)
-    if name == "string" then
-        datasets[name].details = nil
+    if type(name) == "string" then
+        rawset(datasets[name],"details",nil)
     else
-        datasets.details = nil
+        rawset(name,"details",nil)
     end
 end
 

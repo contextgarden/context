@@ -31,6 +31,8 @@
 \newtoks\c_math_align_b
 \newtoks\c_math_align_c
 
+\def\displayopenupvalue{.25\bodyfontsize}
+
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
    \dorecurse{\mathalignmentparameter\c!m}\math_build_eqalign_step
@@ -38,19 +40,25 @@
 
 \def\math_build_eqalign_step
   {\ifnum\recurselevel>\plusone
-    %\appendtoks
-    %  \tabskip\mathalignmentparameter\c!distance\aligntab\tabskip\zeropoint
-    %\to\scratchtoks
      \scratchtoks\expandafter{\the\scratchtoks\tabskip\mathalignmentparameter\c!distance\aligntab\tabskip\zeropoint}%
    \fi
    \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_a}}%
    \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
      {\normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_b}}}}
 
-\def\math_math_in_eqalign#1{$\tabskip\zeropoint\everycr\emptytoks\displaystyle{{}#1{}}$}
-\def\math_text_in_eqalign#1{$\tabskip\zeropoint\everycr\emptytoks#1$}
+\def\math_math_in_eqalign#1%
+  {\startforceddisplaymath
+   \tabskip\zeropoint
+   \everycr\emptytoks
+   {{}#1{}}%
+   \stopforceddisplaymath}
 
-\def\displayopenupvalue{.25\bodyfontsize}
+\def\math_text_in_eqalign#1%
+  {\startimath
+   \tabskip\zeropoint
+   \everycr\emptytoks
+   #1%
+   \stopimath}
 
 \def\eqalign#1% why no halign here, probably because of displaywidth
   {\emptyhbox
@@ -58,7 +66,15 @@
    \vcenter
      {\math_openup\displayopenupvalue % was: \openup\jot
       \mathsurround\zeropoint
-      \ialign{\strut\hfil$\displaystyle{\alignmark\alignmark}$\aligntab$\displaystyle{{}\alignmark\alignmark{}}$\hfil\crcr#1\crcr}}%
+      \ialign{%
+        \strut
+        \hfil
+        \startforceddisplaymath{\alignmark\alignmark}\stopforceddisplaymath
+        \aligntab
+        \startforceddisplaymath{{}\alignmark\alignmark{}}\stopforceddisplaymath
+        \hfil\crcr
+        #1\crcr}%
+     }%
    \mskip\thinmuskip}
 
 % preamble is scanned for tabskips so we need the span to prevent an error message

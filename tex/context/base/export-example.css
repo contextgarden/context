@@ -21,6 +21,10 @@ ignore, div.ignore {
 	display : none ;
 }
 
+ignore, div.private {
+	display : none ;
+}
+
 xmetadata, div.xmetadata {
 	display : none ;
 }

@@ -238,10 +238,10 @@ local function preparetables(data)
                             end
                         end
                     else
-                     -- -- we probably never enter this branch
-                     -- -- fschars returns a single char
-                     --
-                     -- s = fschars[k]
+                        -- this is a kind of last resort branch that we might want to revise
+                        -- one day
+                        --
+                     -- s = fschars[k] -- returns a single char
                      -- if s and s ~= k then
                      --     if trace_orders then
                      --         report_sorters(" 6 split: %s",s)
@@ -256,7 +256,11 @@ local function preparetables(data)
                      --         end
                      --     end
                      -- end
-                        local b = utfbyte(k)
+                        --
+                        -- we need to move way above valid order (new per 2014-10-16) .. maybe we
+                        -- need to move it even more up to get numbers right (not all have orders)
+                        --
+                        local b = 2 * #orders + utfbyte(k)
                         n = decomposed[b] or { b }
                         if trace_orders then
                             report_sorters(" 6 split: %s",utf.tostring(b)) -- todo
@@ -313,8 +317,8 @@ end
 local function setlanguage(l,m,d,u)
     language = (l ~= "" and l) or constants.defaultlanguage
     data     = definitions[language or constants.defaultlanguage] or definitions[constants.defaultlanguage]
-    method   = (m ~= "" and m) or data.method or constants.defaultmethod
-    digits   = (d ~= "" and d) or data.digits or constants.defaultdigits
+    method   = (m ~= "" and m) or (data.method ~= "" and data.method) or constants.defaultmethod
+    digits   = (d ~= "" and d) or (data.digits ~= "" and data.digits) or constants.defaultdigits
     if trace_tests then
         report_sorters("setting language %a, method %a, digits %a",language,method,digits)
     end
@@ -517,15 +521,15 @@ end
 --     end
 -- end
 
-local function numify(s)
+local function numify(old)
     if digits == v_numbers then
-        return s
+        return old
     else
-        s = digitsoffset + tonumber(s) -- alternatively we can create range
-        if s > digitsmaximum then
-            s = digitsmaximum
+        local new = digitsoffset + tonumber(old) -- alternatively we can create range
+        if new > digitsmaximum then
+            new = digitsmaximum
         end
-        return utfchar(s)
+        return utfchar(new)
     end
 end
 

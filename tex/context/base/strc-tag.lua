@@ -169,7 +169,8 @@ local properties     = allocate {
     mtr                   = { pdf = "TR",         nature = "display" }, -- might change
     mtd                   = { pdf = "TD",         nature = "display" }, -- might change
 
-    ignore                = { pdf = "Span",       nature = "mixed"   },
+    ignore                = { pdf = "Span",       nature = "mixed"   }, -- used internally
+    private               = { pdf = "Span",       nature = "mixed"   }, -- for users (like LS) when they need it
     metadata              = { pdf = "Div",        nature = "display" },
     metavariable          = { pdf = "Span",       nature = "mixed"   },
 
