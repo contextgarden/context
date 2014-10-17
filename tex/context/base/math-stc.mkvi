@@ -280,6 +280,7 @@
    \fi}
 
 \unexpanded\def\math_stackers_triplet#method#category#codepoint#toptext#bottomtext%
+ %{\math_stackers_start_group{#category}%
   {\begingroup
    \edef\currentmathstackers{#category}%
    \mathstackersparameter\c!left\relax
@@ -443,6 +444,7 @@
   \dostoptagged
   \mathstackersparameter\c!right\relax
   \endgroup}
+ %\math_stackers_start_group}
 
 \unexpanded\def\definemathextensible
   {\dotripleempty\math_stackers_define_normal}
@@ -500,14 +502,23 @@
 
 % 1 0 name n 0 | 0 1 name n 0 | 1 1 name n n
 
-\unexpanded\def\math_stackers_make_double#top#bottom#category#codepoint#codeextra#text%
+\unexpanded\def\math_stackers_start_group#category%
   {\begingroup
    \edef\currentmathstackers{#category}%
+   \edef\p_limits{\mathstackersparameter\c!mathlimits}%
+   \ifx\p_limits\v!yes
+     \def\math_stackers_stop_group{\egroup\endgroup\limits}%
+     \mathop\bgroup
+   \else
+     \let\math_stackers_stop_group\endgroup
+   \fi}
+
+\unexpanded\def\math_stackers_make_double#top#bottom#category#codepoint#codeextra#text%
+  {\math_stackers_start_group{#category}%
    \mathstackersparameter\c!left\relax
    \dostarttagged\t!mathstacker\currentmathstackers
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
-     {\edef\currentmathstackers{#category}%
-      \edef\m_math_stackers_text_middle {#text}%
+     {\edef\m_math_stackers_text_middle {#text}%
       %
       \edef\p_offset     {\mathstackersparameter\c!offset}%
       \edef\p_location   {\mathstackersparameter\c!location}%
@@ -558,40 +569,6 @@
       \math_stackers_stop_tagged
       %
       \ifdim\htdp\scratchboxtwo>\zeropoint
-%         %
-%         \kern-\scratchwidth
-%         \math_stackers_start_tagged_top
-%           \ifcase#top\else
-%             \math_stackers_top\bgroup
-%               \raise\dimexpr
-%                  \scratchheight
-%                 +\dp\scratchboxtwo % new
-%                 +\mathstackersparameter\c!distance % was \c!voffset
-%               \relax
-%               \box\scratchboxtwo
-%             \egroup
-%           \fi
-%         \math_stackers_stop_tagged
-%         %
-%         \scratchunicode#codeextra\relax
-%         \math_stackers_start_tagged_bot
-%           \ifcase\scratchunicode\else
-%             \kern-\scratchwidth
-%             \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
-%           \fi
-%           \ifcase#bottom\else
-%             \math_stackers_bottom\bgroup
-%               \lower\dimexpr
-%                  \scratchdepth
-%                 +\ht\scratchboxtwo
-%                 +\mathstackersparameter\c!distance % was \c!voffset
-%               \relax
-%               \box\scratchboxtwo
-%             \egroup
-%           \fi
-%         \math_stackers_stop_tagged
-%         %
-        %
         \ifcase#bottom\else
           \kern-\scratchwidth
           % under
@@ -628,12 +605,7 @@
       \fi}%
   \dostoptagged
   \mathstackersparameter\c!right\relax
-  \edef\p_limits{\mathstackersparameter\c!mathlimits}%
-  \ifx\p_limits\v!yes
-    \expandafter\endgroup\expandafter\limits
-  \else
-    \expandafter\endgroup
-  \fi}
+  \math_stackers_stop_group}
 
 \unexpanded\def\definemathoverextensible  {\dotripleempty   \math_extensibles_define_over }
 \unexpanded\def\definemathunderextensible {\dotripleempty   \math_extensibles_define_under}
@@ -680,8 +652,7 @@
 %D A relative new one is a combination of accents and text (as needed in mathml):
 
 \unexpanded\def\math_stackers_make_double_text#where#category#codepoint#text#extra%
-  {\begingroup
-   \edef\currentmathstackers{#category}%
+  {\math_stackers_start_group{#category}%
    \mathstackersparameter\c!left\relax
    \dostarttagged\t!mathstacker\currentmathstackers
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
@@ -805,12 +776,7 @@
       }%
    \dostoptagged
    \mathstackersparameter\c!right\relax
-   \edef\p_limits{\mathstackersparameter\c!mathlimits}%
-   \ifx\p_limits\v!yes
-     \expandafter\endgroup\expandafter\limits
-   \else
-     \expandafter\endgroup
-   \fi}
+   \math_stackers_stop_group}
 
 \unexpanded\def\definemathovertextextensible {\dotripleempty\math_extensibles_define_over_text }
 \unexpanded\def\definemathundertextextensible{\dotripleempty\math_extensibles_define_under_text}

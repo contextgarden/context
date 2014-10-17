@@ -720,6 +720,8 @@ local p_utf         = C(p_utf_base)
 local p_entity_base = P("&") * ((1-P(";"))^2) * P(";")
 local p_entity      = P("&") * (((1-P(";"))^2) / entities) * P(";")
 
+local p_onechar     = p_utf_base * P(-1)
+
 ----- p_number = Cs((patterns.cpnumber or patterns.cnumber or patterns.number)/function(s) return (gsub(s,",","{,}")) end)
 
 local sign    = P("-")^-1
@@ -1026,7 +1028,7 @@ local function collapse_pairs(t)
             end
             i = i + 2
         elseif current == "," or current == ";" then
-            t[i] = current .. "\\thinspace"
+         -- t[i] = current .. "\\thinspace" -- look sbad in (a,b)
             i = i + 1
         else
             i = i + 1
@@ -1582,23 +1584,25 @@ asciimath.cleanedup  = cleanedup
 -- sin(x) = 1 : 3.3 uncached 1.2 cached , so no real gain (better optimize the converter then)
 
 local function convert(str)
-    if #str == 1 then
-        ctx_mathematics(str)
-    else
+    if #str > 0 then
         local unicoded = lpegmatch(u_parser,str)
-        local texcoded = collapse(lpegmatch(a_parser,unicoded))
-        if trace_mapping then
-            show_result(str,unicoded,texcoded)
-        end
-        if #texcoded == 0 then
-            report_asciimath("error in asciimath: %s",str)
+        if lpegmatch(p_onechar,unicoded) then
+            ctx_mathematics(unicoded)
         else
-            local message = invalidtex(texcoded)
-            if message then
-                report_asciimath("%s: %s",message,str)
-                ctx_type(formatters["<%s>"](message))
+            local texcoded = collapse(lpegmatch(a_parser,unicoded))
+            if trace_mapping then
+                show_result(str,unicoded,texcoded)
+            end
+            if #texcoded == 0 then
+                report_asciimath("error in asciimath: %s",str)
             else
-                ctx_mathematics(texcoded)
+                local message = invalidtex(texcoded)
+                if message then
+                    report_asciimath("%s: %s",message,str)
+                    ctx_type(formatters["<%s>"](message))
+                else
+                    ctx_mathematics(texcoded)
+                end
             end
         end
     end

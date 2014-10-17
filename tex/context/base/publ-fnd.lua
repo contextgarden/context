@@ -20,6 +20,8 @@ if not publications then
 end
 
 local tonumber, next, type = tonumber, next, type
+local find = string.find
+local lower = characters.lower
 local P, R, C, Cs, Cp, Cc, Carg = lpeg.P, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc, lpeg.Carg
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local concat = table.concat
@@ -29,16 +31,19 @@ local lowercase  = characters.lower
 
 local report  = logs.reporter("publications","match")
 
-local colon   = P(":")
-local dash    = P("-")
-local lparent = P("(")
-local rparent = P(")")
-local space   = lpegpatterns.whitespace
-local valid   = 1 - colon - space - lparent - rparent
------ key     = C(valid^1)
-local key     = C(R("az","AZ")^1)
-local word    = Cs(lpegpatterns.unquoted + lpegpatterns.argument + valid^1)
-local number  = C(valid^1)
+local colon    = P(":")
+local dash     = P("-")
+local lparent  = P("(")
+local rparent  = P(")")
+local space    = lpegpatterns.whitespace
+local utf8char = lpegpatterns.utf8character
+local valid    = 1 - colon - space - lparent - rparent
+----- key      = C(valid^1)
+local key      = C(R("az","AZ")^1)
+local wildcard = C("*")
+local word     = Cs(lpegpatterns.unquoted + lpegpatterns.argument + valid^1)
+local simple   = C(valid^1)
+local number   = C(valid^1)
 
 ----- f_string_key = formatters["  local s_%s = entry[%q]"]
 local f_string_key = formatters["  local s_%s = entry[%q] if s_%s then s_%s = lower(s_%s) end "]
@@ -50,10 +55,21 @@ local f_string_match = formatters["(s_%s and find(s_%s,%q))"]
 local f_number_match = formatters["(n_%s and n_%s >= %s and n_%s <= %s)"]
 local f_field_match  = formatters["f_%s"]
 
-local match  = key * (colon/"") * word * Carg(1) / function(key,_,word,keys)
- -- keys[key] = f_string_key(key,key)
-    keys[key] = f_string_key(key,key,key,key,key)
-    return f_string_match(key,key,lowercase(word))
+local f_all_match = formatters["anywhere(entry,%q)"]
+
+local match  = ( (key + wildcard) * (colon/"") ) * word * Carg(1) / function(key,_,word,keys)
+    if key == "*" or key == "any" then
+        keys.anywhere = true
+        return f_all_match(lowercase(word))
+    else
+        keys[key] = f_string_key(key,key,key,key,key)
+        return f_string_match(key,key,lowercase(word))
+    end
+end
+
+local default = simple * Carg(1) / function(word,keys)
+    keys.anywhere = true
+    return f_all_match(lowercase(word))
 end
 
 local range  = key * (colon/"") * number * (dash/"") * number * Carg(1)  / function(key,_,first,_,last,keys)
@@ -72,7 +88,10 @@ end
 
 local b_match = lparent
 local e_match = rparent * space^0 * (#P(-1) + P(",")/" or ") -- maybe also + -> and
-local p_match = b_match * ((field + range + match + space + P(1))-e_match)^1 * e_match
+local f_match = ((field + range + match + space + P(1))-e_match)^1
+local p_match = b_match * default * e_match +
+b_match * f_match * e_match
+
 local pattern = Cs(Cc("(") * (P("match")/"" * space^0 * p_match)^1 * Cc(")"))
 
 -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -92,9 +111,18 @@ local pattern = Cs(Cc("(") * (P("match")/"" * space^0 * p_match)^1 * Cc(")"))
 -- -- -- -- -- -- -- -- -- -- -- -- --
 -- -- -- -- -- -- -- -- -- -- -- -- --
 
+function publications.anywhere(entry,str) -- helpers
+    for k, v in next, entry do
+        if find(lower(v),str) then
+            return true
+        end
+    end
+end
+
 local f_template = string.formatters[ [[
 local find = string.find
 local lower = characters.lower
+local anywhere = publications.anywhere
 return function(entry)
 %s
   return %s and true or false
@@ -110,10 +138,15 @@ local function compile(expr)
         report("compiling expression: %s",expr)
     end
     local definitions = { }
+    local anywhere    = false
     for k, v in next, keys do
-        definitions[#definitions+1] = v
+        if k == "anywhere" then
+            anywhere = true
+        else
+            definitions[#definitions+1] = v
+        end
     end
-    if #definitions == 0 then
+    if not anywhere and #definitions == 0 then
         report("invalid expression: %s",expr)
     elseif trace_match then
         for i=1,#definitions do
@@ -184,7 +217,7 @@ function publications.search(dataset,expression)
         end
         return target
     else
-        return { source[expression] }
+        return { } -- { dataset.luadata[expression] } -- ?
     end
 end
 

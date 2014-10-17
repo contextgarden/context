@@ -13,10 +13,9 @@
 
 \writestatus{loading}{ConTeXt TeX Logos}
 
-%D The system that is used to typeset this text is called \TEX,
-%D typeset with an lowered~E. From te beginning of \TEX,
-%D authors of macro packages adapted this raising and lowering
-%D style. In this module we define some of those logos.
+%D The system that is used to typeset this text is called \TEX, typeset with an
+%D lowered~E. From te beginning of \TEX, authors of macro packages adapted this
+%D raising and lowering style. In this module we define some of those logos.
 
 \unprotect
 
@@ -26,7 +25,7 @@
    \setbox\scratchbox\hbox{M}%
    T%
    \kern-.1667\wd\scratchbox
-   \lower.5ex\hbox{E}%
+   \lower.5\exheight\hbox{E}%
    \kern-.125\wd\scratchbox
    X%
    \endgroup}
@@ -48,39 +47,39 @@
 
 \unexpanded\def\TaBlE
   {T%
-   \kern-.27em\lower.5ex\hbox{A}%
-   \kern-.18emB%
-   \kern-.1em\lower.5ex\hbox{L}%
-   \kern-.075emE}
+   \kern-.27\emwidth\lower.5\exheight\hbox{A}%
+   \kern-.18\emwidth B%
+   \kern-.1\emwidth\lower.5\exheight\hbox{L}%
+   \kern-.075\emwidth E}
 
 \unexpanded\def\PiCTeX
   {P%
-   \kern-.12em\lower.5ex\hbox{I}%
-   \kern-.075em C%
-   \kern-.11em\TeX}
+   \kern-.12\emwidth\lower.5\exheight\hbox{I}%
+   \kern-.075\emwidth C%
+   \kern-.11\emwidth\TeX}
 
 \def\syst_logos_ams_script#1%
-  {$\cal\ifdim\bodyfontsize>1.1em\scriptstyle\fi#1$}
+  {$\cal\ifdim\bodyfontsize>1.1\emwidth\scriptstyle\fi#1$}
 
 \unexpanded\def\AmSTeX
   {\dontleavehmode
    \syst_logos_ams_script A%
-   \kern-.1667em\lower.5ex\hbox{\syst_logos_ams_script M}%
-   \kern-.125em\syst_logos_ams_script S%
+   \kern-.1667\emwidth\lower.5\exheight\hbox{\syst_logos_ams_script M}%
+   \kern-.125\emwidth\syst_logos_ams_script S%
    -\TeX}
 
 \unexpanded\def\LamSTeX
   {L%
-   \kern-.4em\raise.3ex\hbox{\syst_logos_ams_script A}%
-   \kern-.25em\lower.4ex\hbox{\syst_logos_ams_script M}%
-   \kern-.1em{\syst_logos_ams_script S}%
+   \kern-.4\emwidth\raise.3\exheight\hbox{\syst_logos_ams_script A}%
+   \kern-.25\emwidth\lower.4\exheight\hbox{\syst_logos_ams_script M}%
+   \kern-.1\emwidth{\syst_logos_ams_script S}%
    -\TeX}
 
 \unexpanded\def\AmSLaTeX
   {\dontleavehmode
    \syst_logos_ams_script A%
-   \kern-.1667em\lower.5ex\hbox{\syst_logos_ams_script M}%
-   \kern-.125em\AMSswitch S%
+   \kern-.1667\emwidth\lower.5\exheight\hbox{\syst_logos_ams_script M}%
+   \kern-.125\emwidth{\syst_logos_ams_script S}%
    -\LaTeX}
 
 %D Alternative \CONTEXT\ logo, first Idris S.~Hamid's version:
@@ -94,13 +93,13 @@
 \unexpanded\def\Context % wrong usage of \getscaledglyph
   {\dontleavehmode
    \begingroup
-   C\kern -.0667em\getscaledglyph{.8}\empty{O\kern -.0667emN\kern
-   -.0549emT\doifitalicelse{\kern-.1em}{\kern-.1667em}\lower.5ex\hbox
-   {E}\doifitalicelse\empty{\kern-.11em}X\kern-.055emT}%
+   C\kern -.0667\emwidth{.8}\empty{O\kern -.0667\emwidth N\kern
+   -.0549\emwidth T\doifitalicelse{\kern-.1\emwidth}{\kern-.1667\emwidth}\lower.5\exheight\hbox
+   {E}\doifitalicelse\empty{\kern-.11em}X\kern-.055\emwidth T}%
    \endgroup}
 
-%D The \METAFONT\ and \METAPOST\ logos adapt themselves to the
-%D current fontsize, an ugly but usefull hack.
+%D The \METAFONT\ and \METAPOST\ logos adapt themselves to the current fontsize, an
+%D ugly but usefull hack.
 
 \let\logofont\nullfont
 
@@ -118,7 +117,7 @@
    \logofont}
 
 \def\syst_logos_meta_hyphen % there is no hyphenchar in this font
-  {\discretionary{\vrule\s!height.33em\s!depth-.27em\s!width.33em}{}{}}
+  {\discretionary{\vrule\s!height.33\emwidth\s!depth-.27\emwidth\s!width.33\emwidth}{}{}}
 
 \unexpanded\def\MetaFont
   {\dontleavehmode
@@ -146,9 +145,8 @@
 %D   CONTEXT, PPCHTEX,
 %D   AMSTEX, LATEX, LAMSTEX}
 %D
-%D We define the funny written ones as well as the less
-%D error prone upper case names (in \CONTEXT\ we tend to
-%D write all user defined commands, like abbreviations, in
+%D We define the funny written ones as well as the less error prone upper case names
+%D (in \CONTEXT\ we tend to write all user defined commands, like abbreviations, in
 %D uppercase.)
 
 \unexpanded\def\METAFONT {\MetaFont}
@@ -165,18 +163,18 @@
 \unexpanded\def\LAMSTEX  {\LamSTeX}
 \unexpanded\def\INRSTEX  {inrs\TeX}
 
-%D And this is how they show up: \TeX, \MetaFont, \MetaPost,
-%D \PiCTeX, \TaBlE, \ConTeXt, \PPCHTeX, \AmSTeX, \LaTeX,
-%D \LamSTeX.
+%D And this is how they show up: \TeX, \MetaFont, \MetaPost, \PiCTeX, \TaBlE, \ConTeXt,
+%D \PPCHTeX, \AmSTeX, \LaTeX, \LamSTeX.
 
 %D Some placeholders:
 
-\unexpanded\def\eTeX   {\mathematics{\varepsilon}-\TeX}
-\unexpanded\def\pdfTeX {pdf\TeX}
-\unexpanded\def\pdfeTeX{pdfe-\TeX}
-\unexpanded\def\luaTeX {lua\TeX}
-\unexpanded\def\metaTeX{meta\TeX}
-\unexpanded\def\XeTeX  {X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
+\unexpanded\def\eTeX     {\mathematics{\varepsilon}-\TeX}
+\unexpanded\def\pdfTeX   {pdf\TeX}
+\unexpanded\def\pdfeTeX  {pdfe-\TeX}
+\unexpanded\def\luaTeX   {lua\TeX}
+\unexpanded\def\luajitTeX{luajit\TeX}
+\unexpanded\def\metaTeX  {meta\TeX}
+\unexpanded\def\XeTeX    {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
 
 % Adapted from a patch by Mojca:
 
@@ -185,9 +183,9 @@
    \raise\dimexpr\ht\scratchbox+\dp\scratchbox\relax\hbox{\rotate[\c!rotation=180]{\box\scratchbox}}}
 
 \unexpanded\def\XeTeX
-  {X\lower.5ex
+  {X\lower.5\exheight
    \hbox
-     {\kern-.15em
+     {\kern-.15\emwidth
       \iffontchar\font"018E\relax
         \char"018E%
       \else
@@ -198,14 +196,15 @@
         \ifx\fontalternative\s!bs\syst_logos_xetex_e\else
                                           \mirror{E}\fi\fi\fi\fi\fi
       \fi}%
-   \kern-.1667em\TeX}
+   \kern-.1667\emwidth\TeX}
 
-\let\ETEX   \eTeX
-\let\PDFTEX \pdfTeX
-\let\PDFETEX\pdfeTeX
-\let\LUATEX \luaTeX
-\let\LuaTeX \luaTeX
-\let\XETEX  \XeTeX
+\let\ETEX     \eTeX
+\let\PDFTEX   \pdfTeX
+\let\PDFETEX  \pdfeTeX
+\let\LUATEX   \luaTeX
+\let\LUAJITTEX\luajitTeX
+\let\LuaTeX   \luaTeX
+\let\XETEX    \XeTeX
 
 % \unexpanded\def\MkApproved % joke, not used so it might move
 %   {\dontleavehmode\rotate
@@ -265,22 +264,36 @@
      \TeX
    \endgroup}
 
-\let\luaTeX \LuaTeX
-\let\LUATEX \LuaTeX
+\unexpanded\def\LuajitTeX
+  {\dontleavehmode
+   \begingroup
+     % at this moment there is no real need for kerning tT
+     Luajit\kern\zeropoint\TeX
+   \endgroup}
+
+\let\luaTeX   \LuaTeX
+\let\luajitTeX\LuajitTeX
+\let\LUATEX   \LuaTeX
+\let\LUAJITTEX\LuajitTeX
 
 \unexpanded\def\MKII{MkII}
 \unexpanded\def\MKIV{MkIV}
 \unexpanded\def\MKVI{MkVI}
+\unexpanded\def\MKIX{MkIX}
+\unexpanded\def\MKXI{MkXI}
 
 \unexpanded\def\MPII{MpII}
 \unexpanded\def\MPIV{MpIV}
+\unexpanded\def\MPVI{MpVI}
 
 \appendtoks
-    \def\ConTeXt {ConTeXt}%
-    \def\MetaPost{MetaPost}%
-    \def\MetaFont{MetaFont}%
-    \def\MetaFun {MetaFun}%
-    \def\TeX     {TeX}%
+    \def\ConTeXt  {ConTeXt}%
+    \def\MetaPost {MetaPost}%
+    \def\MetaFont {MetaFont}%
+    \def\MetaFun  {MetaFun}%
+    \def\TeX      {TeX}%
+    \def\LuaTeX   {LuaTeX}%
+    \def\LuajitTeX{LuajitTeX}%
 \to \everysimplifycommands
 
 \protect \endinput

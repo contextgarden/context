@@ -1,0 +1,199 @@
+% macros=mkvi
+
+% makes sense (but rel vs op ...):
+
+% \unexpanded\def\stackrel#1#2{\mathematics{\mathop{\let\limits\relax\mover{#2}{#1}}}}
+
+% this can become a core helper
+
+\unexpanded\def\mexecuteifdefined#1%
+  {\ifx#1\empty
+     \expandafter\secondoftwoarguments
+   \else\ifcsname#1\endcsname
+     \doubleexpandafter\firstoftwoarguments
+   \else
+     \doubleexpandafter\secondoftwoarguments
+   \fi\fi
+   {\csname#1\endcsname}}
+
+% mrow
+
+\let\mrow\mathematics
+
+% msub msup  msubsup
+
+\starttexdefinition msub #1#2
+    \mathematics {
+        #1_{#2}
+    }
+\stoptexdefinition
+
+\starttexdefinition msup #1#2
+    \mathematics {
+        #1^{#2}
+    }
+\stoptexdefinition
+
+\starttexdefinition msubsup #1#2#3
+    \mathematics {
+        #1_{#2}^{#3}
+    }
+\stoptexdefinition
+
+% mn mo mi
+
+\let\mn\mathematics
+\let\mo\mathematics
+\let\mi\mathematics
+
+% ms  mtext
+
+\starttexdefinition ms #1
+    \text {
+        "#1"
+    }
+\stoptexdefinition
+
+\starttexdefinition mtext #1
+    \text {
+        #1
+    }
+\stoptexdefinition
+
+% mover
+
+\starttexdefinition unexpanded moverabove #1
+    \edef\movercommand{\utfmathfiller\movertoken}
+    \mexecuteifdefined\movercommand {#1} \relax
+\stoptexdefinition
+\starttexdefinition unexpanded moverbase #1
+    \edef\mbasecommand{\utfmathfiller\mbasetoken}
+    \mexecuteifdefined\mbasecommand {#1}
+    \relax
+\stoptexdefinition
+\starttexdefinition unexpanded moverbasefiller #1#2
+    \edef\mbasecommand{e\utfmathcommandfiller\mbasetoken}
+    \mexecuteifdefined\mbasecommand \relax {#2} {}
+\stoptexdefinition
+\starttexdefinition unexpanded moveraccent #1#2
+    \edef\movercommand{\utfmathcommandabove\movertoken}
+    \mexecuteifdefined\movercommand \relax {#1}
+\stoptexdefinition
+\starttexdefinition unexpanded movertext #1#2
+  % \mathtriplet {\mathstylehbox{#1}} {#2} {}
+    \mathtriplet {\mathematics{#1}} {#2} {}
+\stoptexdefinition
+\stoptexdefinition
+\starttexdefinition unexpanded moveraccentchecker #1#2
+    \edef\movertoken{\tochar{#2}}
+    \doifelseutfmathabove\movertoken \moveraccent \movertext {#1}{#2}
+\stoptexdefinition
+
+\starttexdefinition unexpanded mover #1#2
+    \mathematics {
+        \edef\mbasetoken{\tochar{#1}}
+        \doifelseutfmathfiller\mbasetoken \moverbasefiller \moveraccentchecker {#1}{#2}
+    }
+\stoptexdefinition
+
+% munder
+
+\starttexdefinition unexpanded munderbelow #1
+    \edef\mundercommand{\utfmathfiller\mundertoken}
+    \mexecuteifdefined\mundercommand {#1} \relax
+\stoptexdefinition
+\starttexdefinition unexpanded munderbase #1
+    \edef\mbasecommand{\utfmathfiller\mbasetoken}
+    \mexecuteifdefined\mbasecommand {#1}
+    \relax
+\stoptexdefinition
+\starttexdefinition unexpanded munderbasefiller #1#2
+    \edef\mbasecommand{e\utfmathcommandfiller\mbasetoken}
+    \mexecuteifdefined\mbasecommand \relax {#2} {}
+\stoptexdefinition
+\starttexdefinition unexpanded munderaccent #1#2
+    \edef\mundercommand{\utfmathcommandbelow\mundertoken}
+    \mexecuteifdefined\mundercommand \relax {#1}
+\stoptexdefinition
+\starttexdefinition unexpanded mundertext #1#2
+  % \mathtriplet {\mathstylehbox{#1}} {} {#2}
+    \mathtriplet {\mathematics{#1}} {} {#2}
+\stoptexdefinition
+\starttexdefinition unexpanded munderaccentchecker #1#2
+    \edef\mundertoken{\tochar{#2}}
+    \doifelseutfmathbelow\mundertoken \munderaccent \mundertext {#1}{#2}
+\stoptexdefinition
+
+\starttexdefinition unexpanded munder #1#2
+    \mathematics {
+        \edef\mbasetoken{\tochar{#1}}
+        \doifelseutfmathfiller\mbasetoken \munderbasefiller \munderaccentchecker {#1}{#2}
+    }
+\stoptexdefinition
+
+% munderover
+
+% mfenced
+
+% mfrac
+
+% mroot msqrt
+
+% menclose
+
+% merror
+
+% mglyph
+
+% mmultiscripts
+
+% mpadded
+
+% mphantom
+
+% mspace
+
+% mstyle
+
+% mtable mtr mlabeledtr mtd
+
+% maction
+
+% semantics
+
+\continueifinputfile{x-mathml-basics.mkiv}
+
+\starttext
+
+% $\mover{←}{test}$\par
+% $\mover{\utfchar{"2190}}{test}$\par
+% $\mover{e:leftarrow}{test}$\par
+% $\mover{x:2190}{test}$\par
+
+% $\mover{test}{⏞}$\par
+% $\mover{test}{\utfchar{"23DE}}$\par
+% $\mover{test}{e:overbrace}$\par
+% $\mover{test}{x:23DE}$\par
+% $\mover{test}{over}$\par
+
+\mover{test}{⏞}\par
+% \mover{test}{\utfchar{"23DE}}\par
+% \mover{test}{e:overbrace}\par
+% \mover{test}{x:23DE}\par
+
+% $\munder{←}{test}$\par
+% $\munder{\utfchar{"2190}}{test}$\par
+% $\munder{e:leftarrow}{test}$\par
+% $\munder{x:2190}{test}$\par
+
+% $\munder{test}{⏟}$\par
+% $\munder{test}{\utfchar{"23DF}}$\par
+% $\munder{test}{e:underbrace}$\par
+% $\munder{test}{x:23DF}$\par
+% $\munder{test}{under}$\par
+
+% \math{{\msup{x}{2}\mo{+}\mn{2}\mi{x}\mo{+}\mi{b}}}
+
+% \mrow{\msup{x}{2}\mo{+}\mn{2}\mi{x}\mo{+}\mi{b}}
+
+\stoptext
