@@ -115,6 +115,7 @@ local v_continue         = variables.continue
 local v_first            = variables.first
 local v_text             = variables.text
 local v_column           = variables.column
+local v_line             = variables.line
 
 local nuts               = nodes.nuts
 local nodepool           = nuts.pool
@@ -624,6 +625,16 @@ local function inject(parent,head,candidate)
         end
         if delta < candidate.threshold then -- often we need a negative threshold here
             shift = shift + voffset + delta
+        end
+    elseif method == v_line then
+        if getfield(parent,"depth") == 0 then
+            local delta = height - getfield(parent,"height")
+            if trace_margindata then
+                report_margindata("top aligned by %p (no depth)",delta)
+            end
+            if delta < candidate.threshold then -- often we need a negative threshold here
+                shift = shift + voffset + delta
+            end
         end
     elseif method == v_first then
         if baseline then

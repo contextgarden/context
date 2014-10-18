@@ -104,5 +104,7 @@ return {
         --
         "passvariable", "passarrayvariable", "tostring", "format", "formatted",
         "startpassingvariable", "stoppassingvariable",
+        --
+        "eofill", "eoclip",
     },
 }

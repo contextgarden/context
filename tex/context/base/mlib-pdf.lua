@@ -439,9 +439,10 @@ function metapost.flush(result,flusher,askedfig)
                                         processspecial(object.prescript)
                                     end
                                 elseif objecttype == "start_clip" then
+                                    local evenodd = not object.istext and object.postscript == "evenodd"
                                     result[#result+1] = "q"
                                     flushnormalpath(object.path,result,false)
-                                    result[#result+1] = "W n"
+                                    result[#result+1] = evenodd and "W* n" or "W n"
                                 elseif objecttype == "stop_clip" then
                                     result[#result+1] = "Q"
                                     miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
@@ -514,6 +515,7 @@ function metapost.flush(result,flusher,askedfig)
                                     if transformed then
                                         result[#result+1] = "q"
                                     end
+                                    local evenodd = not object.istext and object.postscript == "evenodd"
                                     if path then
                                         if transformed then
                                             flushconcatpath(path,result,open)
@@ -521,11 +523,11 @@ function metapost.flush(result,flusher,askedfig)
                                             flushnormalpath(path,result,open)
                                         end
                                         if objecttype == "fill" then
-                                            result[#result+1] = "h f"
+                                            result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
                                         elseif objecttype == "outline" then
                                             result[#result+1] = open and "S" or "h S"
                                         elseif objecttype == "both" then
-                                            result[#result+1] = "h B"
+                                            result[#result+1] = evenodd and "h B*" or "h B"-- B* = eo -- b includes closepath
                                         end
                                     end
                                     if transformed then
@@ -542,11 +544,11 @@ function metapost.flush(result,flusher,askedfig)
                                             flushnormalpath(path,result,open)
                                         end
                                         if objecttype == "fill" then
-                                            result[#result+1] = "h f"
+                                            result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
                                         elseif objecttype == "outline" then
                                             result[#result+1] = open and "S" or "h S"
                                         elseif objecttype == "both" then
-                                            result[#result+1] = "h B"
+                                            result[#result+1] = evenodd and "h B*" or "h B"-- B* = eo -- b includes closepath
                                         end
                                         if transformed then
                                             result[#result+1] = "Q"

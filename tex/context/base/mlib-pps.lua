@@ -997,6 +997,7 @@ local function tx_process(object,prescript,before,after)
             end
             object.color   = false
             object.grouped = true
+            object.istext  = true
         end
     end
 end

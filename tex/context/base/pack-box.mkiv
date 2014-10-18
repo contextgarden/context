@@ -977,22 +977,43 @@
    \box\scratchbox
    \egroup}
 
-%  \backgroundimage{1}{\hsize}{\vsize}{\externalfigure[cow][\c!width=3cm]}
+% \backgroundimage{1}{\hsize}{\vsize}{\externalfigure[cow][\c!width=3cm]}
+
+% \framed[offset=overlay,width=6cm,height=3cm]{\backgroundimage {1}{\hsize}{\vsize}{\externalfigure[cow][width=1cm]}}
+% \framed[offset=overlay,width=6cm,height=3cm]{\backgroundimage {2}{\hsize}{\vsize}{\externalfigure[cow][width=1cm]}}
+% \framed[offset=overlay,width=6cm,height=3cm]{\backgroundimage {3}{\hsize}{\vsize}{\externalfigure[cow][width=1cm]}}
+
+% \framed[offset=overlay,width=4cm,height=2cm]{\backgroundimagefill{1}{\hsize}{\vsize}{\externalfigure[cow][width=1cm]}}
+% \framed[offset=overlay,width=4cm,height=2cm]{\backgroundimagefill{2}{\hsize}{\vsize}{\externalfigure[cow][width=1cm]}}
+% \framed[offset=overlay,width=4cm,height=2cm]{\backgroundimagefill{3}{\hsize}{\vsize}{\externalfigure[cow][width=1cm]}}
+% \framed[offset=overlay,width=2cm,height=4cm]{\backgroundimagefill{1}{\hsize}{\vsize}{\externalfigure[cow][width=1cm]}}
+% \framed[offset=overlay,width=2cm,height=4cm]{\backgroundimagefill{2}{\hsize}{\vsize}{\externalfigure[cow][width=1cm]}}
+% \framed[offset=overlay,width=2cm,height=4cm]{\backgroundimagefill{3}{\hsize}{\vsize}{\externalfigure[cow][width=1cm]}}
+%
+% \framed[offset=overlay,width=4cm,height=2cm]{\backgroundimagefill{1}{\hsize}{\vsize}{\externalfigure[mill]}}
+% \framed[offset=overlay,width=4cm,height=2cm]{\backgroundimagefill{2}{\hsize}{\vsize}{\externalfigure[mill]}}
+% \framed[offset=overlay,width=4cm,height=2cm]{\backgroundimagefill{3}{\hsize}{\vsize}{\externalfigure[mill]}}
+% \framed[offset=overlay,width=2cm,height=4cm]{\backgroundimagefill{1}{\hsize}{\vsize}{\externalfigure[mill]}}
+% \framed[offset=overlay,width=2cm,height=4cm]{\backgroundimagefill{2}{\hsize}{\vsize}{\externalfigure[mill]}}
+% \framed[offset=overlay,width=2cm,height=4cm]{\backgroundimagefill{3}{\hsize}{\vsize}{\externalfigure[mill]}}
 
 \unexpanded\def\backgroundimage#1#2#3% repeat hsize vsize
   {\bgroup
    \forgetall
-   \dowithnextbox{\pack_boxes_background_image{#1}{#2}{#3}}\hbox}
+   \scratchcounter#1\relax
+   \scratchwidth  #2\relax
+   \scratchheight #3\relax
+   \dowithnextboxcs\pack_boxes_background_image\hbox}
 
-\def\pack_boxes_background_image#1#2#3%
+\def\pack_boxes_background_image
   {\offinterlineskip
-   \ifcase#1\relax
+   \ifcase\scratchcounter
      % just one
    \else
-     \scratchdimen#2\divide\scratchdimen\wd\nextbox\scratchnx\scratchdimen\advance\scratchnx\plusone\relax
-     \scratchdimen#3\divide\scratchdimen\ht\nextbox\scratchny\scratchdimen\advance\scratchny\plusone\relax
+     \scratchdimen\scratchwidth \divide\scratchdimen\wd\nextbox\scratchnx\scratchdimen\advance\scratchnx\plusone\relax
+     \scratchdimen\scratchheight\divide\scratchdimen\ht\nextbox\scratchny\scratchdimen\advance\scratchny\plusone\relax
      % to be considered: methods
-     \ifcase#1%
+     \ifcase\scratchcounter
      \or % x and y
        \setbox\nextbox\hbox{\dorecurse\scratchnx{\copy\nextbox}}%
        \setbox\nextbox\vbox{\dorecurse\scratchny{\copy\nextbox\endgraf}}%
@@ -1002,13 +1023,59 @@
        \setbox\nextbox\vbox{\dorecurse\scratchny{\copy\nextbox\endgraf}}%
      \fi
    \fi
-   \ifdim\wd\nextbox>#2\relax
-     \setbox\nextbox\hbox to #2{\hss\box\nextbox\hss}%
-     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=#2,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
+   \ifdim\wd\nextbox>\scratchwidth
+     \setbox\nextbox\hbox to \scratchwidth{\hss\box\nextbox\hss}%
+     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=\the\scratchwidth,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
    \fi
-   \ifdim\ht\nextbox>#3\relax
-     \setbox\nextbox\vbox to #3{\vss\box\nextbox\vss}%
-     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=\the\wd\nextbox,\c!height=#3]{\box\nextbox}}}%
+   \ifdim\ht\nextbox>\scratchheight
+     \setbox\nextbox\vbox to \scratchheight{\vss\box\nextbox\vss}%
+     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=\the\wd\nextbox,\c!height=\the\scratchheight]{\box\nextbox}}}%
+   \fi
+   \box\nextbox
+   \egroup}
+
+\unexpanded\def\backgroundimagefill#1#2#3% repeat hsize vsize
+  {\bgroup
+   \forgetall
+   \scratchcounter#1\relax
+   \scratchwidth  #2\relax
+   \scratchheight #3\relax
+   \dowithnextboxcs\pack_boxes_background_image_fill\hbox}
+
+\def\pack_boxes_background_image_fill
+  {\offinterlineskip
+   \setbox\nextbox\hbox\bgroup
+     \ifdim\scratchwidth>\scratchheight
+       \scale[\c!width=\the\scratchwidth]{\box\nextbox}%
+     \else
+       \scale[\c!height=\the\scratchheight]{\box\nextbox}%
+     \fi
+   \egroup
+   \ifdim\wd\nextbox>\scratchwidth
+     \setbox\nextbox\hbox to \scratchwidth
+       {\ifcase\scratchcounter
+          \hss\box\nextbox\hss
+        \or
+          \box\nextbox\hss
+        \or
+          \hss\box\nextbox
+        \else
+          \hss\box\nextbox\hss
+        \fi}%
+     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=\the\scratchwidth,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
+   \fi
+   \ifdim\ht\nextbox>\scratchheight
+     \setbox\nextbox\vbox to \scratchheight
+       {\ifcase\scratchcounter
+          \vss\box\nextbox\vss
+        \or
+          \box\nextbox\vss
+        \or
+          \vss\box\nextbox
+        \else
+          \vss\box\nextbox\vss
+        \fi}%
+     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=\the\wd\nextbox,\c!height=\the\scratchheight]{\box\nextbox}}}%
    \fi
    \box\nextbox
    \egroup}
