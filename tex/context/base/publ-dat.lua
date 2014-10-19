@@ -333,11 +333,12 @@ local spacing    = spacing * forget^0 * spacing
 local assignment = spacing * key * spacing * equal * spacing * value * spacing
 local shortcut   = P("@") * (P("string") + P("STRING") + P("String")) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
 local definition = category * spacing * left * spacing * tag * spacing * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1) / do_definition
-local comment    = keyword * spacing * left * (1-right)^0 * spacing * right
+----- comment    = keyword * spacing * left * (1-right)^0 * spacing * right
+local comment    = P("@") * (P("comment") + P("COMMENT") + P("Comment")) * spacing * lpeg.patterns.nestedbraces
 
 -- todo \%
 
-local bibtotable = (space + forget + shortcut + definition + comment + 1)^0
+local bibtotable = (space + forget + shortcut + comment + definition + 1)^0
 
 -- loadbibdata  -> dataset.luadata
 -- loadtexdata  -> dataset.luadata
@@ -583,9 +584,17 @@ function publications.load(dataset,filename,kind)
             filename = filetype
             filetype = file.suffix(filename)
         end
-        loaders[filetype](dataset,filename)
-        if kind then
-            dataset.loaded[dataset.fullname or filename] = kind
+        if filename then
+            if not filetype or filetype == "" then
+                filetype = "bib"
+            end
+            if file.suffix(filename) == "" then
+                file.addsuffix(filename,filetype)
+            end
+            loaders[filetype](dataset,filename)
+            if kind then
+                dataset.loaded[dataset.fullname or filename] = kind
+            end
         end
     end
     statistics.stoptiming(publications)

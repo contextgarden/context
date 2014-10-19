@@ -529,13 +529,15 @@ You can see all (currently known) fields with:
 \showbtxfields[rotation=...]
 \stoptyping
 
-The result is shown \in {table} [tab:fields]. Here we also added a few extra fields:
+The result is shown \in {table} [tab:fields].
 
-\startbuffer
-\btxaddfields[one,two][extra one, extra two]
-\stopbuffer
+% Here we also added a few extra fields:
 
-\typebuffer \getbuffer
+% \startbuffer
+% \btxaddfields[one,two][extra one, extra two]
+% \stopbuffer
+
+% \typebuffer \getbuffer
 
 \startplacefigure[title={\type{\showbtxfields[rotation=90]}},reference=tab:fields]
     \showbtxfields[rotation=90]
@@ -547,21 +549,23 @@ The result is shown \in {table} [tab:fields]. Here we also added a few extra fie
 
 A list of publications can be rendered at any place in the document. A database
 can be much larger than needed for a document. The same is true for the fields
-that make up an entry. Here is the list of fields that are currently handled, but
-of course there can be additional ones:
+that make up an entry.
 
-\startalignment[flushleft,verytolerant,nothyphenated]
-\startluacode
-local fields = publications.tracers.fields
-
-for i=1,#fields do
-    if i > 1 then
-        context(", ")
-    end
-    context.type(fields[i])
-end
-\stopluacode
-\stopalignment
+% Here is the list of fields that are currently handled, but
+% of course there can be additional ones:
+%
+% \startalignment[flushleft,verytolerant,nothyphenated]
+% \startluacode
+% local fields = publications.tracers.fields
+%
+% for i=1,#fields do
+%     if i > 1 then
+%         context(", ")
+%     end
+%     context.type(fields[i])
+% end
+% \stopluacode
+% \stopalignment
 
 If you want to see what publications are in the database, the easiest way is to
 ask for a complete list:
@@ -625,10 +629,8 @@ settings in a setup and hook that into the specific rendering.
 Examples of list variants are:
 
 \startluacode
-    local variants = publications.tracers.listvariants
-
-    for i=1,#variants do
-        context.showinstancevalues( { "btxlistvariant" }, { variants[i] })
+    for variant in table.sortedhash(publications.tracers.listvariants) do
+        context.showinstancevalues( { "btxlistvariant" }, { variant })
     end
 \stopluacode
 
@@ -890,14 +892,11 @@ spacing of its arguments:
 There is a whole bunch of cite options and more can be easily defined.
 
 \startluacode
-local variants = publications.tracers.citevariants
-
 context.starttabulate { "|l|p|" }
     context.NC() context.bold("key")
     context.NC() context.bold("rendering")
     context.NC() context.NR() context.FL()
-    for i=1,#variants do
-        local variant = variants[i]
+    for variant in table.sortedhash(publications.tracers.citevariants) do
         context.NC() context.type(variant)
         context.NC() context.citation( { variant }, { "example::demo-005" })
         context.NC() context.NR()
@@ -929,10 +928,8 @@ But, specific variants can have them overloaded:
 % \showinstancevalues[setupbtxcitevariant][authornum]
 
 \startluacode
-    local variants = publications.tracers.citevariants
-
-    for i=1,#variants do
-        context.showinstancevalues( { "btxcitevariant" }, { variants[i] })
+    for variant in table.sortedhash(publications.tracers.citevariants) do
+        context.showinstancevalues( { "btxcitevariant" }, { variant })
     end
 \stopluacode
 

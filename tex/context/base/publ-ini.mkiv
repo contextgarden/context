@@ -217,6 +217,18 @@
 \installcommandhandler \??btxcitevariant {btxcitevariant} \??btxcitevariant
 \installcommandhandler \??btxrendering   {btxrendering}   \??btxrendering
 
+\appendtoks
+    \ifx\currentbtxlistvariant\empty \else
+        \ctxcommand{registerbtxlistvariant("\currentbtxlistvariant","\currentbtxlistvariantparent")}%
+    \fi
+\to \everydefinebtxlistvariant
+
+\appendtoks
+    \ifx\currentbtxcitevariant\empty \else
+        \ctxcommand{registerbtxcitevariant("\currentbtxcitevariant","\currentbtxcitevariantparent")}%
+    \fi
+\to \everydefinebtxcitevariant
+
 \unexpanded\def\usebtxdataset
   {\dodoubleargument\publ_use_dataset}
 

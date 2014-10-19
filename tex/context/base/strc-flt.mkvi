@@ -17,6 +17,23 @@
 
 \unprotect
 
+% todo: a keyword for this (and then a settings->hash for speed)
+%
+% \setuplayout[width=middle,backspace=3cm]
+%
+% \appendtoks
+%     \settrue\inhibitmargindata
+% \to \everyinsidefloat
+%
+% \starttext
+%     \dorecurse{20}{
+%         \par \inleft{\red\infofont<#1>} \par
+%         \placefigure[leftmargin]{}{\framed[height=1cm,width=2cm]{}}
+%       % \placefigure{#1}{\framed[height=1cm,width=2cm]{}}
+%         \par line #1.1 \par line #1.2 \par
+%     }
+% \stoptext
+
 % todo: delay caption creation and make setups for each method instead
 %       so that we can have a list of methods and redo them as we can
 %       keep the list or even better: recreate it

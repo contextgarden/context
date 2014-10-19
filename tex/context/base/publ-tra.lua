@@ -12,9 +12,8 @@ local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local settings_to_array = utilities.parsers.settings_to_array
 local formatters = string.formatters
 
-local tracers        = { }
-publications.tracers = tracers
-local datasets       = publications.datasets
+local tracers  = publications.tracers or { }
+local datasets = publications.datasets
 
 local context = context
 
@@ -23,150 +22,54 @@ local ctx_bold, ctx_rotate, ctx_llap = context.bold, context.rotate, context.lla
 local ctx_darkgreen, ctx_darkred, ctx_darkblue = context.darkgreen, context.darkred, context.darkblue
 local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
 
--- TEXT hyperlink author number date
+local categories = table.setmetatableindex(function(t,name)
+    local filename      = resolvers.findfile(formatters["publ-imp-%s.lua"](name))
+    local fields        = { }
+    local specification = filename and filename ~= "" and table.load(filename) or {
+        name       = name,
+        version    = "1.00",
+        comment    = "unknown specification.",
+        author     = "anonymous",
+        copyright  = "no one",
+        categories = { },
+    }
+    --
+    specification.fields = fields
+    for category, data in next, specification.categories do
+        local list = { }
+        fields[category]  = list
+        local required = data.required
+        local optional = data.optional
+        for i=1,#required do
+            list[required[i]] = "required"
+        end
+        for i=1,#optional do
+            list[optional[i]] = "optional"
+        end
+    end
+    t[name] = specification
+    return specification
+end)
 
-local fields = table.sorted {
-    "abstract",
-    "address",
-    "annotate",
-    "author",
-    "booktitle",
-    "chapter",
-    "comment",
-    "country",
-    "doi",
-    "edition",
-    "editor",
-    "eprint",
-    "howpublished",
-    "institution",
-    "isbn",
-    "issn",
-    "journal",
-    "key",
-    "keyword",
-    "keywords",
-    "language",
-    "lastchecked",
-    "month",
-    "names",
-    "note",
-    "notes",
-    "number",
-    "organization",
-    "pages",
-    "publisher",
-    "school",
-    "series",
-    "size",
-    "title",
-    "type",
-    "url",
-    "volume",
-    "year",
-    "nationality",
-    "assignee",
-    "bibnumber",
-    "day",
-    "dayfiled",
-    "monthfiled",
-    "yearfiled",
-    "revision",
-}
-
-local citevariants = table.sorted {
-    "author",
-    "authoryear",
-    "authoryears",
-    "authornum",
-    "year",
-    "short",
-    "serial",
-    "key",
-    "doi",
-    "url",
-    "type",
-    "page",
-    "none",
-    "num",
-}
-
-local listvariants = table.sorted {
-    "author",
-    "editor",
-    "artauthor",
-}
-
-local categories = {
-    article = {
-        required = { "author", "title", "journal", "year" },
-        optional = { "volume", "number", "pages", "month", "note" },
-    },
-    book = {
-        required = { { "author", "editor" }, "title", "publisher", "year" },
-        optional = { { "volume", "number" }, "series", "address", "edition", "month","note" },
-    },
-    booklet = {
-        required = { "title" },
-        optional = { "author", "howpublished", "address", "month", "year", "note" },
-    },
-    inbook = {
-        required = { { "author", "editor" }, "title", { "chapter", "pages" }, "publisher","year" },
-        optional = { { "volume", "number" }, "series", "type", "address", "edition", "month", "note" },
-    },
-    incollection = {
-        required = { "author", "title", "booktitle", "publisher", "year" },
-        optional = { "editor", { "volume", "number" }, "series", "type", "chapter", "pages", "address", "edition", "month", "note" },
-    },
-    inproceedings = {
-        required = { "author", "title", "booktitle", "year" },
-        optional = { "editor", { "volume", "number" }, "series", "pages", "address", "month","organization", "publisher", "note" },
-    },
-    manual = {
-        required = { "title" },
-        optional = { "author", "organization", "address", "edition", "month", "year", "note" },
-    },
-    mastersthesis = {
-        required = { "author", "title", "school", "year" },
-        optional = { "type", "address", "month", "note" },
-    },
-    misc = {
-        required = { "author", "title", "howpublished", "month", "year", "note" },
-        optional = { "author", "title", "howpublished", "month", "year", "note" },
-    },
-    phdthesis = {
-        required = { "author", "title", "school", "year" },
-        optional = { "type", "address", "month", "note" },
-    },
-    proceedings = {
-        required = { "title", "year" },
-        optional = { "editor", { "volume", "number" }, "series", "address", "month", "organization", "publisher", "note" },
-    },
-    techreport = {
-        required = { "author", "title", "institution", "year" },
-        optional = { "type", "number", "address", "month", "note" },
-    },
-    patent = {
-        required = { "nationality", "number", "year", "yearfiled" },
-        optional = { "author", "title", "language", "assignee", "address", "type", "day", "dayfiled", "month", "monthfiled", "note", },
-    },
-    unpublished = {
-        required = { "author", "title", "note" },
-        optional = { "month", "year" },
-    },
-}
-
-
-publications.tracers.fields       = fields
-publications.tracers.categories   = categories
-publications.tracers.citevariants = citevariants
-publications.tracers.listvariants = listvariants
+publications.tracers.categories = categories
 
 -- -- --
 
-function tracers.showdatasetfields(dataset)
-    local luadata = datasets[dataset].luadata
+local private = {
+    category = true,
+    tag      = true,
+    index    = true,
+}
+
+function tracers.showdatasetfields(settings)
+    local dataset = settings.dataset
+    local current = datasets[dataset]
+    local luadata = current.luadata
     if next(luadata) then
+        local kind       = settings.kind
+        local fielddata  = kind and categories[kind] or categories.apa
+        local categories = fielddata.categories
+        local fieldspecs = fielddata.fields
         ctx_starttabulate { "|lT|lT|pT|" }
             ctx_NC() ctx_bold("tag")
             ctx_NC() ctx_bold("category")
@@ -174,12 +77,22 @@ function tracers.showdatasetfields(dataset)
             ctx_NC() ctx_NR()
             ctx_FL()
             for k, v in sortedhash(luadata) do
+                local category = v.category
+                local fields   = fieldspecs[category] or { }
                 ctx_NC() context(k)
-                ctx_NC() context(v.category)
+                ctx_NC() context(category)
                 ctx_NC()
                 for k, v in sortedhash(v) do
-                    if k ~= "details" and k ~= "tag" and k ~= "category" then
-                        context("%s ",k)
+                    if not private[k] then
+                        local f = fields[k]
+                        if f == "required" then
+                            ctx_darkgreen(k)
+                        elseif not f then
+                            ctx_darkred(k)
+                        else
+                            context(k)
+                        end
+                        context(" ")
                     end
                 end
                 ctx_NC() ctx_NR()
@@ -188,9 +101,14 @@ function tracers.showdatasetfields(dataset)
     end
 end
 
-function tracers.showdatasetcompleteness(dataset)
-
-    dataset = datasets[dataset]
+function tracers.showdatasetcompleteness(settings)
+    local dataset    = settings.dataset
+    local current    = datasets[dataset]
+    local luadata    = current.luadata
+    local kind       = settings.kind
+    local fielddata  = kind and categories[kind] or categories.apa
+    local categories = fielddata.categories
+    local fieldspecs = fielddata.fields
 
     local preamble = { "|lBTw(10em)|p|" }
 
@@ -234,20 +152,18 @@ function tracers.showdatasetcompleteness(dataset)
         ctx_NC() ctx_NR()
     end
 
-    local luadata = datasets[dataset].luadata
-
     if next(luadata) then
         for tag, entry in sortedhash(luadata) do
-            local category = entry.category
-            local fields = categories[category]
+            local category    = entry.category
+            local fields      = categories[category]
+            local foundfields = { }
+            for k, v in next, entry do
+                foundfields[k] = true
+            end
+            ctx_starttabulate(preamble)
+            identified(tag,category,entry.crossref)
+            ctx_FL()
             if fields then
-                local foundfields = { }
-                for k, v in next, entry do
-                    foundfields[k] = true
-                end
-                ctx_starttabulate(preamble)
-                identified(tag,category,entry.crossref)
-                ctx_FL()
                 local requiredfields = fields.required
                 local optionalfields = fields.optional
                 if requiredfields then
@@ -296,15 +212,13 @@ function tracers.showdatasetcompleteness(dataset)
                         end
                     end
                 end
-                foundfields.category = nil
-                foundfields.tag = nil
-                for k, v in sortedhash(foundfields) do
+            end
+            for k, v in sortedhash(foundfields) do
+                if not private[k] then
                     extra(k,entry[k])
                 end
-                ctx_stoptabulate()
-            else
-                -- error
             end
+            ctx_stoptabulate()
         end
     end
 
@@ -312,6 +226,10 @@ end
 
 function tracers.showfields(settings)
     local rotation    = settings.rotation
+    local kind        = settings.kind
+    local fielddata   = kind and categories[kind] or categories.apa
+    local categories  = fielddata.categories
+    local fieldspecs  = fielddata.fields
     local swapped     = { }
     local validfields = { }
     for category, fields in next, categories do
@@ -367,41 +285,6 @@ function tracers.showfields(settings)
     ctx_stoptabulate()
 end
 
-function tracers.addfield(f,c)
-    -- no checking now
-    if type(f) == "string" then
-        f = settings_to_array(f)
-    end
-    for i=1,#f do
-        local field = f[i]
-        if not table.contains(fields,field) then
-            fields[#fields+1] = field
-        end
-    end
-    if #f == 1 then
-        f = f[1]
-    end
-    if type(c) == "string" then
-        c = settings_to_array(c)
-    end
-    for i=1,#c do
-        local ci = c[i]
-        local category = categories[ci]
-        if category then
-            local optional = category.optional
-            if optional then
-                optional[#optional+1] = f
-            else
-                categories[ci] = { optional = { f } }
-            end
-        else
-            categories[ci] = { optional = { f } }
-        end
-    end
-end
-
-
 commands.showbtxdatasetfields       = tracers.showdatasetfields
 commands.showbtxdatasetcompleteness = tracers.showdatasetcompleteness
 commands.showbtxfields              = tracers.showfields
-commands.btxaddfield                = tracers.addfield

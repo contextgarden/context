@@ -652,6 +652,48 @@ local reserved = {
     ["dy"] = { false, { "d", "y" } }, -- "{dy}" "\\left(dy\\right)"
     ["dz"] = { false, { "d", "z" } }, -- "{dz}" "\\left(dz\\right)"
 
+    -- fences
+
+    ["(:"] = { true, "(:" },
+    ["{:"] = { true, "{:" },
+    ["[:"] = { true, "[:" },
+    ["("]  = { true, "(" },
+    ["["]  = { true, "[" },
+    ["{"]  = { true, "{" },
+    ["<<"] = { true, "⟨" },     -- why not <:
+    ["|_"] = { true, "⌊" },
+    ["|~"] = { true, "⌈" },
+    ["⟨"]  = { true, "⟨" },
+    ["〈"]  = { true, "⟨" },
+    ["〈"]  = { true, "⟨" },
+
+    [":)"] = { true, ":)" },
+    [":}"] = { true, ":}" },
+    [":]"] = { true, ":]" },
+    [")"]  = { true, ")" },
+    ["]"]  = { true, "]" },
+    ["}"]  = { true, "}" },
+    [">>"] = { true, "⟩" },   -- why not :>
+    ["~|"] = { true, "⌉" },
+    ["_|"] = { true, "⌋" },
+    ["⟩"]  = { true, "⟩" },
+    ["〉"]  = { true, "⟩" },
+    ["〉"]  = { true, "⟩" },
+
+    ["lparent"]  = { true, "(" },
+    ["lbracket"] = { true, "[" },
+    ["lbrace"]   = { true, "{" },
+    ["langle"]   = { true, "⟨" },
+    ["lfloor"]   = { true, "⌊" },
+    ["lceil"]    = { true, "⌈" },
+
+    ["rparent"]  = { true, ")" },
+    ["rbracket"] = { true, "]" },
+    ["rbrace"]   = { true, "}" },
+    ["rangle"]   = { true, "⟩" },
+    ["rfloor"]   = { true, "⌋" },
+    ["rceil"]    = { true, "⌉" },
+
 }
 
 local isbinary = {
@@ -755,6 +797,11 @@ for k, v in sortedhash(reserved) do
             k_reserved_different[#k_reserved_different+1] = k
         end
     end
+
+for k, v in next, entities do
+    k_unicode["\\"..k] = v
+end
+
     if not find(k,"[^a-zA-Z]") then
         k_reserved_words[#k_reserved_words+1] = k
     end
@@ -784,41 +831,47 @@ local m_left = {
     ["("]  = s_lparent,
     ["["]  = s_lbracket,
     ["{"]  = s_lbrace,
-    ["<<"] = s_langle,     -- why not <:
-    ["|_"] = s_lfloor,
-    ["|~"] = s_lceil,
     ["⟨"]  = s_langle,
-    ["〈"]  = s_langle,
-    ["〈"]  = s_langle,
-    --
-    ["lparent"]  = s_lparent,
-    ["lbracket"] = s_lbracket,
-    ["lbrace"]   = s_lbrace,
-    ["langle"]   = s_langle,
-    ["lfloor"]   = s_lfloor,
-    ["lceil"]    = s_lceil,
+    ["⌈"] = s_lceil,
+    ["⌊"] = s_lfloor,
+
+ -- ["<<"] = s_langle,     -- why not <:
+ -- ["|_"] = s_lfloor,
+ -- ["|~"] = s_lceil,
+ -- ["〈"]  = s_langle,
+ -- ["〈"]  = s_langle,
+
+ -- ["lparent"]  = s_lparent,
+ -- ["lbracket"] = s_lbracket,
+ -- ["lbrace"]   = s_lbrace,
+ -- ["langle"]   = s_langle,
+ -- ["lfloor"]   = s_lfloor,
+ -- ["lceil"]    = s_lceil,
 }
 
 local m_right = {
-    [")"]  = s_rparent,
     [":)"] = s_rangle,
     [":}"] = s_right,
     [":]"] = s_right,
+    [")"]  = s_rparent,
     ["]"]  = s_rbracket,
     ["}"]  = s_rbrace,
-    [">>"] = s_rangle,   -- why not :>
-    ["~|"] = s_rceil,
-    ["_|"] = s_rfloor,
     ["⟩"]  = s_rangle,
-    ["〉"]  = s_rangle,
-    ["〉"]  = s_rangle,
-    --
-    ["rparent"]  = s_rparent,
-    ["rbracket"] = s_rbracket,
-    ["rbrace"]   = s_rbrace,
-    ["rangle"]   = s_rangle,
-    ["rfloor"]   = s_rfloor,
-    ["rceil"]    = s_rceil,
+    ["⌉"] = s_rceil,
+    ["⌋"] = s_rfloor,
+
+ -- [">>"] = s_rangle,   -- why not :>
+ -- ["~|"] = s_rceil,
+ -- ["_|"] = s_rfloor,
+ -- ["〉"]  = s_rangle,
+ -- ["〉"]  = s_rangle,
+
+ -- ["rparent"]  = s_rparent,
+ -- ["rbracket"] = s_rbracket,
+ -- ["rbrace"]   = s_rbrace,
+ -- ["rangle"]   = s_rangle,
+ -- ["rfloor"]   = s_rfloor,
+ -- ["rceil"]    = s_rceil,
 }
 
 local islimits = {
@@ -856,7 +909,8 @@ local p_special =
             )
         )
       + P("\\") * Cc("\\backslash")
-      + (R("az","AZ")^1/entities)
+   -- + (R("az","AZ")^1/entities)
+      + C(R("az","AZ")^1)
     )
 
 -- open | close :: {: | :}

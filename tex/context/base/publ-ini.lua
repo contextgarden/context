@@ -38,6 +38,9 @@ publications             = publications or { }
 local datasets           = publications.datasets
 local writers            = publications.writers
 
+local tracers            = publications.tracers or { }
+publications.tracers     = tracers
+
 local variables          = interfaces.variables
 
 local v_local            = variables["local"]
@@ -2283,4 +2286,20 @@ function listvariants.page(dataset,block,tag,variant,listindex)
             end
         end
     end
+end
+
+-- tracers
+
+local citevariants = tracers.citevariants or allocate()
+local listvariants = tracers.listvariants or allocate()
+
+storage.register("publications/tracers/citevariants", citevariants,"publications.tracers.citevariants")
+storage.register("publications/tracers/listvariants", listvariants,"publications.tracers.listvariants")
+
+function commands.registerbtxcitevariant(name,parent)
+    citevariants[name] = parent or ""
+end
+
+function commands.registerbtxlistvariant(name,parent)
+    listvariants[name] = parent or ""
 end
