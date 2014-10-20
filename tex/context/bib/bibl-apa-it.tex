@@ -160,8 +160,7 @@
 \newif\ifeditedbook
 
 \setuppublicationlayout[book]{%
-   \insertauthors{}{ }{\inserteditors{}{, A c. di%
-                         \ifnum\getvalue{editor@num}> 1 s\fi
+   \insertauthors{}{ }{\inserteditors{}{, a c. di%
                              \ \global\editedbooktrue
                      }{\insertthekey{}{. }{}}}%
    \insertpubyear{(}{). }{\unskip.}%
@@ -181,13 +180,13 @@
        \insertcrossref
         {\insertchap{, }{}{}%
          \insertpages{\unskip, pp. }{. }{. }%
-         \insertvolume{Vol.~}{ of~}{}%
+         \insertvolume{Vol.~}{ di~}{}%
          }%
         {}%
         {\insertvolume
                    {, vol.~}%
                    {\insertseries
-                      { of~\bgroup\it}%
+                      { di~\bgroup\it}%
                       {\egroup}
                       {}}
                    {}%
@@ -203,7 +202,7 @@
 }
 
 \setuppublicationlayout[inbook]{%
-   \insertauthors{}{ }{\inserteditors{}{, A c. di%
+   \insertauthors{}{ }{\inserteditors{}{, a c. di%
                              \ \global\editedbooktrue
                      }{\insertthekey{}{. }{}}}%
    \insertpubyear{(}{). }{\unskip.}%
@@ -223,13 +222,13 @@
         \insertcrossref
           {\insertchap{, }{}{}%
            \insertpages{\unskip, pp. }{. }{. }%
-           \insertvolume{Volume~}{ of~}{}%
+           \insertvolume{Volume~}{ di~}{}%
            }%
           {}%
           {\insertvolume
               {, volume~}%
               {\insertseries
-                 { of~\bgroup\it}%
+                 { di~\bgroup\it}%
                  {\egroup}
                  {}}
               {}%
@@ -269,7 +268,7 @@
    \insertarttitle{\bgroup }{\egroup. }{}%
    \inserttitle
     {In \inserteditors{}%
-        {, A c. di, }%
+        {, a c. di, }%
         {}%
     \bgroup\it}%
     {\egroup
@@ -295,7 +294,7 @@
    \insertarttitle{\bgroup }{\egroup. }{}%%
    \inserttitle
     {In \inserteditors{}%
-        {, A c. di, }%
+        {, a c. di, }%
         {}%
     \bgroup\it}%
     {\egroup
@@ -315,7 +314,7 @@
 }
 
 \setuppublicationlayout[proceedings]{%
-   \inserteditors{}{, A c. di%
+   \inserteditors{}{, a c. di%
                              \ \global\editedbooktrue
                      }{\insertthekey{}{ }{}}%
    \insertpubyear{(}{). }{}%

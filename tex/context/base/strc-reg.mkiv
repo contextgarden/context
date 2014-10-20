@@ -308,6 +308,24 @@
    \dostoptagged
    \endgroup}
 
+\unexpanded\def\dosetfastregisterentry#1#2#3% register entry key
+  {\begingroup
+   \edef\currentregister{#1}%
+   \setnextinternalreference
+   \xdef\currentregisternumber{\ctxcommand{storeregister{
+        metadata   = { name = "\currentregister" },
+        entries    = { { \!!bs#2\!!es }, { \!!bs#3\!!es } },
+     }
+   }}%
+   % overlap with the above
+   \xdef\currentregistersynchronize{\ctxlatecommand{enhanceregister("\currentregister",\currentregisternumber)}}%
+   \currentregistersynchronize % here?
+   \dostarttagged\t!registerlocation\currentregister
+   \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
+   \dotagregisterlocation
+   \dostoptagged
+   \endgroup}
+
 \let\dotagregisterlocation\relax % experiment
 
 \unexpanded\def\strc_registers_insert_entry[#1][#2]%

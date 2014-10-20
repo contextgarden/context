@@ -38,7 +38,9 @@ local setmetatableindex = table.setmetatableindex
 
 -- todo: more allocate
 
-local P, R, S, V, C, Cc, Cs, Ct, Carg = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg
+local P, R, S, V, C, Cc, Cs, Ct, Carg, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg, lpeg.Cmt
+
+local p_whitespace      = lpegpatterns.whitespace
 
 local trace             = false  trackers.register("publications", function(v) trace = v end)
 local report            = logs.reporter("publications")
@@ -85,7 +87,7 @@ local defaultshortcuts = {
     dec = "12",
 }
 
-local space      = lpeg.patterns.whitespace^0
+local space      = p_whitespace^0
 local separator  = space * "+" * space
 local l_splitter = lpeg.tsplitat(separator)
 local d_splitter = lpeg.splitat (separator)
@@ -281,6 +283,22 @@ local function resolve(s,dataset)
     return dataset.shortcuts[s] or defaultshortcuts[s] or s -- can be number
 end
 
+local pattern = p_whitespace^0
+              * C(P("message") + P("warning") + P("error") + P("comment")) * p_whitespace^0 * P(":")
+              * p_whitespace^0
+              * C(P(1)^1)
+
+local function do_comment(s,dataset)
+    local how, what = lpegmatch(pattern,s)
+    if how and what then
+        local t = string.splitlines(utilities.strings.striplines(what))
+        local b = file.basename(dataset.fullname or dataset.name or "unset")
+        for i=1,#t do
+            report("%s > %s : %s",b,how,t[i])
+        end
+    end
+end
+
 local percent    = P("%")
 local start      = P("@")
 local comma      = P(",")
@@ -296,7 +314,7 @@ local space      = S(" \t\n\r\f") -- / " "
 local spacing    = space^0
 local equal      = P("=")
 ----- collapsed  = (space^1)/ " "
-local collapsed  = (lpegpatterns.whitespace^1)/" "
+local collapsed  = (p_whitespace^1)/" "
 
 ----- balanced   = lpegpatterns.balanced
 
@@ -315,7 +333,7 @@ local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
 local key        = C((1-space-equal)^1)
 local tag        = C((1-space-comma)^1)
 local reference  = keyword
-local category   = P("@") * C((1-space-left)^1)
+local category   = C((1-space-left)^1)
 local s_quoted   = ((escape*single) + collapsed + (1-single))^0
 local d_quoted   = ((escape*double) + collapsed + (1-double))^0
 
@@ -331,14 +349,17 @@ local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0
 local forget     = percent^1 * (1-lineending)^0
 local spacing    = spacing * forget^0 * spacing
 local assignment = spacing * key * spacing * equal * spacing * value * spacing
-local shortcut   = P("@") * (P("string") + P("STRING") + P("String")) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
 local definition = category * spacing * left * spacing * tag * spacing * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1) / do_definition
------ comment    = keyword * spacing * left * (1-right)^0 * spacing * right
-local comment    = P("@") * (P("comment") + P("COMMENT") + P("Comment")) * spacing * lpeg.patterns.nestedbraces
+
+local crapword   = C((1-space-left)^1)
+local shortcut   = Cmt(crapword,function(_,p,s) return lower(s) == "string"  and p end) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
+local comment    = Cmt(crapword,function(_,p,s) return lower(s) == "comment" and p end) * spacing * lpegpatterns.argument * Carg(1) / do_comment
+
+local casecrap   = #S("sScC") * (shortcut + comment)
+
+local bibtotable = (space + forget + P("@") * (casecrap + definition) + 1)^0
 
 -- todo \%
-
-local bibtotable = (space + forget + shortcut + comment + definition + 1)^0
 
 -- loadbibdata  -> dataset.luadata
 -- loadtexdata  -> dataset.luadata

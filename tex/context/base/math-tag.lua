@@ -98,27 +98,41 @@ local process
 local function processsubsup(start)
     -- At some point we might need to add an attribute signaling the
     -- super- and subscripts because TeX and MathML use a different
-    -- order.
+    -- order. The mrows are needed to keep mn's separated.
     local nucleus = getfield(start,"nucleus")
     local sup     = getfield(start,"sup")
     local sub     = getfield(start,"sub")
     if sub then
         if sup then
             setattr(start,a_tagged,start_tagged("msubsup"))
+         -- start_tagged("mrow")
             process(nucleus)
+         -- stop_tagged()
+            start_tagged("mrow")
             process(sub)
+            stop_tagged()
+            start_tagged("mrow")
             process(sup)
+            stop_tagged()
             stop_tagged()
         else
             setattr(start,a_tagged,start_tagged("msub"))
+         -- start_tagged("mrow")
             process(nucleus)
+         -- stop_tagged()
+            start_tagged("mrow")
             process(sub)
+            stop_tagged()
             stop_tagged()
         end
     elseif sup then
         setattr(start,a_tagged,start_tagged("msup"))
+     -- start_tagged("mrow")
         process(nucleus)
+     -- stop_tagged()
+        start_tagged("mrow")
         process(sup)
+        stop_tagged()
         stop_tagged()
     else
         process(nucleus)
@@ -405,18 +419,33 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     setattr(start,a_tagged,start_tagged("mfenced",nil,properties)) -- needs checking
                     if delim then
                         start_tagged("ignore")
-                        properties.left = getfield(delim,"small_char")
+                        local chr = getfield(delim,"small_char")
+                        if chr ~= 0 then
+                            properties.left = chr
+                        end
                         process(delim)
                         stop_tagged()
                     end
+                    start_tagged("mrow") -- begin of subsequence
                 elseif subtype == 2 then
                     -- middle
                     if delim then
                         start_tagged("ignore")
-                        fencesstack[#fencesstack].middle = getfield(delim,"small_char")
+                        local top = fencesstack[#fencesstack]
+                        local chr = getfield(delim,"small_char")
+                        if chr ~= 0 then
+                            local mid = top.middle
+                            if mid then
+                                mid[#mid+1] = chr
+                            else
+                                top.middle = { chr }
+                            end
+                        end
                         process(delim)
                         stop_tagged()
                     end
+                    stop_tagged()        -- end of subsequence
+                    start_tagged("mrow") -- begin of subsequence
                 elseif subtype == 3 then
                     local properties = remove(fencesstack)
                     if not properties then
@@ -425,10 +454,14 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     end
                     if delim then
                         start_tagged("ignore")
-                        properties.right = getfield(delim,"small_char")
+                        local chr = getfield(delim,"small_char")
+                        if chr ~= 0 then
+                            properties.right = chr
+                        end
                         process(delim)
                         stop_tagged()
                     end
+                    stop_tagged() -- end of subsequence
                     stop_tagged()
                 else
                     -- can't happen

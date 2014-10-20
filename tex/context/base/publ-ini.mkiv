@@ -909,10 +909,15 @@
 \let\p_publ_cite_lefttext \empty
 \let\p_publ_cite_righttext\empty
 
-\unexpanded\def\btxcite
-  {\dontleavehmode
-   \begingroup
-   \strictdoifnextoptionalelse\publ_cite_tags_options\publ_cite_tags_indeed}
+\let\currentbtxciteuservariables\empty
+
+% \unexpanded\def\btxcite
+%   {\dontleavehmode
+%    \begingroup
+%    \strictdoifnextoptionalelse\publ_cite_tags_options\publ_cite_tags_indeed}
+%
+% \unexpanded\def\publ_cite_tags_options[#1]%
+%   {\strictdoifnextoptionalelse{\publ_cite_tags_options_indeed{#1}}{\publ_cite_tags_indeed{#1}}}
 
 \unexpanded\def\publ_cite_tags_indeed#1%
   {\letinteractionparameter\c!style\empty
@@ -921,13 +926,6 @@
    \the\everysetupbtxciteplacement
    \publ_cite_variant
    \endgroup}
-
-\let\publ_citation_tags_indeed\publ_cite_tags_indeed
-
-\let\currentbtxciteuservariables\empty
-
-\unexpanded\def\publ_cite_tags_options[#1]%
-  {\strictdoifnextoptionalelse{\publ_cite_tags_options_indeed{#1}}{\publ_cite_tags_indeed{#1}}}
 
 \unexpanded\def\publ_cite_tags_options_indeed#1%
   {\doifassignmentelse{#1}\publ_cite_tags_settings_indeed\publ_cite_tags_variants_indeed{#1}}
@@ -1030,7 +1028,7 @@
      \publ_cite_tags_indeed{#1}%
    \fi}
 
-\unexpanded\def\btxnocite
+\unexpanded\def\btxnocitation
   {\dosingleempty\publ_cite_no}
 
 \unexpanded\def\publ_cite_no[#1]%
@@ -1044,15 +1042,15 @@
    \fi}
 
 \unexpanded\def\btxmissing#1%
-  {{\tttf<#1>}}
+  {\dontleavehmode{\tttf<#1>}}
 
 %D Compatibility:
 
-\let\cite          \btxcite
+\let\cite          \btxcitation
 \let\citation      \btxcitation
-\let\nocite        \btxnocite
-\let\nocitation    \btxnocite
-\let\usepublication\btxnocite
+\let\nocite        \btxnocitation
+\let\nocitation    \btxnocitation
+%let\usepublication\btxnocitation
 
 %D Cite helpers:
 
@@ -1147,6 +1145,89 @@
 % \savebtxdataset[standard][e:/tmp/foo.bib]
 % \savebtxdataset[standard][e:/tmp/foo.lua]
 % \savebtxdataset[standard][e:/tmp/foo.xml]
+
+%D In-text entries:
+
+\unexpanded\def\placecitation
+  {\dodoubleempty\publ_place_citation}
+
+\unexpanded\def\publ_place_citation
+  {\ifsecondargument
+     \expandafter\publ_place_citation_two
+   \else\iffirstargument
+     \doubleexpandafter\publ_place_citation_one
+   \else
+     \doubleexpandafter\publ_place_citation_zero
+   \fi\fi}
+
+\unexpanded\def\publ_place_citation_one[#1][#2]%
+  {\publ_place_citation_two[\currentbtxrendering][#1]}
+
+\unexpanded\def\publ_place_citation_two[#1][#2]%
+  {\dontleavehmode
+   \begingroup
+     \startbtxrendering[#1]%
+     \btx_set_rendering_alternative
+     \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
+     \uselanguageparameter\btxdatasetparameter % new
+     \ctxcommand{btxflushlistentry{ dataset = "\currentbtxdataset", reference = \!!bs#2\!!es }}%
+   \stopbtxrendering
+   \endgroup}
+
+\unexpanded\def\publ_place_citation_zero[#1][#2]%
+  {\btxmissing{??}}
+
+\let\btxhandlelisttextentry\btx_entry_inject
+
+%D Registers
+
+\def\btx_cite_reference_inject_indeed
+  {\btx_trace_list_cross\currentbtxbacklink\empty
+   %
+   \edef\p_register{\btxcitevariantparameter\c!register}%
+   \ifx\p_register\empty\else
+     \ctxcommand{btxauthortoregister("\p_register","\currentbtxdataset","\currentbtxtag")}%
+   \fi
+   %
+   \normalexpanded{\writedatatolist
+      [\s!btx]%
+      [\s!btxset=\currentbtxdataset,%
+       \s!btxref=\currentbtxtag,%
+       \ifx\p_publ_cite_lefttext \empty\else\s!btxltx={\p_publ_cite_lefttext },\fi%
+       \ifx\p_publ_cite_righttext\empty\else\s!btxrtx={\p_publ_cite_righttext},\fi%
+       \s!btxint=\number\currentbtxbacklink
+       \ifx\currentbtxciteuservariables\empty\else,\currentbtxciteuservariables\fi]}}
+
+\unexpanded\def\dosetfastregisterentry#1#2#3% register entry key
+  {\begingroup
+   \edef\currentregister{#1}%
+   \setnextinternalreference
+   \xdef\currentregisternumber{\ctxcommand{storeregister{
+        metadata   = { name = "\currentregister" },
+        entries    = { { \!!bs#2\!!es }, { \!!bs#3\!!es } },
+     }
+   }}%
+   \xdef\currentregistersynchronize{\ctxlatecommand{enhanceregister("\currentregister",\currentregisternumber)}}%
+   \currentregistersynchronize % here?
+   \dostarttagged\t!registerlocation\currentregister
+   \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
+   \dotagregisterlocation
+   \dostoptagged
+   \endgroup}
+
+\unexpanded\def\btx_flush_specific_author#1#2#3#4% dataset tag field index
+  {\begingroup
+   \edef\currentbtxdataset{#1}%
+   \edef\currentbtxtag    {#2}%
+   \edef\currentbtxfield  {#3}%
+   \let\currentbtxlistvariant\currentbtxfield
+   \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\currentbtxfield",{
+        kind  = "list",
+        index = \number#4,
+   })}%
+   \endgroup}
+
+\let\dobtxindexedauthor\btx_flush_specific_author
 
 %D Defaults:
 

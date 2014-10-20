@@ -1013,6 +1013,8 @@ do
     end
 
     local function collapse_mn(di,i,data,ndata)
+        -- this is tricky ... we need to make sure that we wrap in mrows if we want
+        -- to bypass this one
         local collapsing = di.data
         if data then
             i = i + 1
@@ -1102,6 +1104,17 @@ do
         end
     end
 
+    local no_mrow = {
+        mrow     = true,
+        mfenced  = true,
+        mfrac    = true,
+        mroot    = true,
+        msqrt    = true,
+        mi       = true,
+        mo       = true,
+        mn       = true,
+    }
+
     local function checkmath(root) -- we can provide utf.toentities as an option
         local data = root.data
         if data then
@@ -1142,10 +1155,23 @@ do
             elseif roottg == "mfenced" then
                 local p = properties[root.fulltag]
                 local l, m, r = p.left, p.middle, p.right
+                if l then
+                    l = utfchar(l)
+                end
+                if m then
+                    local t = { }
+                    for i=1,#m do
+                        t[i] = utfchar(m[i])
+                    end
+                    m = concat(t)
+                end
+                if r then
+                    r = utfchar(r)
+                end
                 root.attributes = {
-                    left   = l and utfchar(l),
-                    middle = m and utfchar(m),
-                    right  = r and utfchar(r),
+                    open       = l,
+                    separators = m,
+                    close      = r,
                 }
             end
             if ndata == 0 then
@@ -1160,9 +1186,7 @@ do
                     local tg = d.tg
                     if automathrows and roottg == "mrow" then
                         -- maybe just always ! check spec first
-                        if tg == "mrow" or tg == "mfenced" or tg == "mfrac" or tg == "mroot" or tg == "msqrt"then
-                            root.skip = "comment"
-                        elseif tg == "mo" then
+                        if no_mrow[tg] then
                             root.skip = "comment"
                         end
                     elseif roottg == "mo" then

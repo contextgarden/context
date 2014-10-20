@@ -101,6 +101,7 @@ local ctx_btxcitevariantparameter = context.btxcitevariantparameter
 local ctx_btxlistvariantparameter = context.btxlistvariantparameter
 local ctx_btxdirectlink           = context.btxdirectlink
 local ctx_btxhandlelistentry      = context.btxhandlelistentry
+local ctx_btxhandlelisttextentry  = context.btxhandlelisttextentry
 local ctx_btxchecklistentry       = context.btxchecklistentry
 local ctx_btxchecklistcombi       = context.btxchecklistcombi
 local ctx_btxsetcitereference     = context.btxsetcitereference
@@ -132,6 +133,9 @@ local ctx_btxstopciteauthor       = context.btxstopciteauthor
 local ctx_btxstartsubcite         = context.btxstartsubcite
 local ctx_btxstopsubcite          = context.btxstopsubcite
 local ctx_btxlistsetup            = context.btxlistsetup
+
+local optionalspace  = lpeg.patterns.whitespace^0
+local prefixsplitter = optionalspace * lpeg.splitat(optionalspace * P("::") * optionalspace)
 
 statistics.register("publications load time", function()
     local publicationsstats = publications.statistics
@@ -1356,7 +1360,7 @@ lists.sorters = {
 
 -- for determining width
 
-local lastnumber = 0 -- document wide
+local lastreferencenumber = 0 -- document wide
 
 function lists.prepareentries(dataset)
     local rendering = renderings[dataset]
@@ -1382,19 +1386,19 @@ function lists.prepareentries(dataset)
             end
             local detail = details[tag]
             if detail then
-                local number = detail.number
-                if not number then
-                    lastnumber    = lastnumber + 1
-                    number        = lastnumber
-                    detail.number = lastnumber
+                local referencenumber = detail.referencenumber
+                if not referencenumber then
+                    lastreferencenumber    = lastreferencenumber + 1
+                    referencenumber        = lastreferencenumber
+                    detail.referencenumber = lastreferencenumber
                 end
-                li[3] = number
+                li[3] = referencenumber
             else
                 report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
                 -- weird, this shouldn't happen .. all have a detail
-                lastnumber   = lastnumber + 1
-                details[tag] = { number = lastnumber }
-                li[3] = lastnumber
+                lastreferencenumber = lastreferencenumber + 1
+                details[tag] = { referencenumber = lastreferencenumber }
+                li[3] = lastreferencenumber
             end
         end
     end
@@ -1414,7 +1418,7 @@ end
 
 -- for rendering
 
-function lists.flushentries(dataset)
+function lists.flushentries(dataset,textmode)
     local rendering = renderings[dataset]
     local list      = rendering.list
     local luadata   = datasets[dataset].luadata
@@ -1457,8 +1461,54 @@ function lists.flushentries(dataset)
             end
         end
         rendering.userdata = userdata
-        ctx_btxhandlelistentry()
+        if textmode then
+            ctx_btxhandlelisttextentry()
+        else
+            ctx_btxhandlelistentry()
+        end
      end
+end
+
+function lists.flushentry(specification)
+    local tag = specification.reference
+    if not tag or tag == "" then
+        return
+    end
+    --
+    local dataset  = specification.dataset or "" -- standard
+ -- local mark     = specification.markentry ~= false
+ -- local internal = specification.internal or ""
+    --
+    local prefix, rest = lpegmatch(prefixsplitter,tag)
+    if rest then
+        dataset = prefix
+    else
+        rest = tag
+    end
+    --
+ -- if trace_cite then
+ --     report_cite("mark, dataset: %s, tags: %s",dataset or "-",rest)
+ -- end
+    --
+    local reference = publications.parenttag(dataset,rest)
+    local found, todo, list = findallused(dataset,reference,internal)
+    local valid = { }
+    if list and #list > 0 then
+        local luadata = datasets[dataset].luadata
+        for i=1,#list do
+            local tag = list[i]
+            if luadata[tag] then
+                valid[#valid+1] = { tag, 0, 0 } -- datasets[dataset].details.number
+            end
+        end
+    end
+    if #valid > 0 then
+        local rendering = renderings[dataset]
+        rendering.list = valid
+        lists.flushentries(dataset,true)
+    else
+        ctx_btxmissing(tag)
+    end
 end
 
 local function getuserdata(dataset,key)
@@ -1506,12 +1556,10 @@ commands.btxcollectlistentries   = lists.collectentries
 commands.btxpreparelistentries   = lists.prepareentries
 commands.btxfetchlistentries     = lists.fetchentries
 commands.btxflushlistentries     = lists.flushentries
+commands.btxflushlistentry       = lists.flushentry
 
 local citevariants        = { }
 publications.citevariants = citevariants
-
-local optionalspace  = lpeg.patterns.whitespace^0
-local prefixsplitter = optionalspace * lpeg.splitat(optionalspace * P("::") * optionalspace)
 
 function commands.btxhandlecite(specification)
     local tag = specification.reference

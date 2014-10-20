@@ -6,6 +6,39 @@
 
 % this can become a core helper
 
+% bwe could do all of them in lua
+
+\startluacode
+local find = string.find
+local lpegmatch = lpeg.match
+
+local splitter = lpeg.Ct(lpeg.C(lpeg.patterns.nestedbraces + lpeg.patterns.utf8character)^1)
+
+function commands.xmfenced(left,middle,right,content)
+    local l = left   ~= "" and left   or "("
+    local r = right  ~= "" and right  or ")"
+    local m = middle ~= "" and middle and lpegmatch(splitter,middle) or { "," }
+    local c = find(content,"{") and lpegmatch(splitter,content) or { content }
+    local n = #c
+    if n > 1 then
+        context("\\left%s",l)
+        for i=1,n do
+            if i > 1 then
+                context("%s %s",m[i] or m[#m],c[i])
+            else
+                context(c[i])
+            end
+        end
+        context("\\right%s",r)
+    else
+        context("\\left%s %s \\right%s",l,content,r)
+    end
+end
+
+\stopluacode
+
+\unprotect
+
 \unexpanded\def\mexecuteifdefined#1%
   {\ifx#1\empty
      \expandafter\secondoftwoarguments
@@ -83,7 +116,6 @@
   % \mathtriplet {\mathstylehbox{#1}} {#2} {}
     \mathtriplet {\mathematics{#1}} {#2} {}
 \stoptexdefinition
-\stoptexdefinition
 \starttexdefinition unexpanded moveraccentchecker #1#2
     \edef\movertoken{\tochar{#2}}
     \doifelseutfmathabove\movertoken \moveraccent \movertext {#1}{#2}
@@ -135,9 +167,48 @@
 
 % mfenced
 
+% \mfenced{x,y}
+% \mfenced{{x}{y}}
+% \mfenced[separators]{{x}{y}}
+% \mfenced[left][right]{{x}{y}}
+% \mfenced[left][separators][right]{{x}{y}}
+
+\starttexdefinition unexpanded mfenced
+    \dotripleempty\do_mfenced
+\stoptexdefinition
+
+\starttexdefinition unexpanded do_mfenced [#1][#2][#3]#4
+    \mathematics {
+        \ctxcommand{xmfenced(
+            \ifthirdargument  "#1","#2","#3"\else
+            \ifsecondargument  "#1",",","#2"\else
+            \iffirstargument    "(","#1",")"\else
+                                 "(",",",")"\fi\fi\fi
+        ,"#4")}
+    }
+\stoptexdefinition
+
 % mfrac
 
+\starttexdefinition unexpanded mfrac #1#2
+    \mathematics {
+        \frac{#1}{#2}
+    }
+\stoptexdefinition
+
 % mroot msqrt
+
+\starttexdefinition unexpanded mroot #1#2
+    \mathematics {
+        \sqrt[#1]{#2}
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded msqrt #1
+    \mathematics {
+        \sqrt{#1}
+    }
+\stoptexdefinition
 
 % menclose
 
@@ -161,9 +232,15 @@
 
 % semantics
 
+\protect
+
 \continueifinputfile{x-mathml-basics.mkiv}
 
 \starttext
+
+$\mfenced{1+a}$\par
+$\mfenced[,]{1+a}$\par
+$\mfenced[,]{{1+a}{1+b}}$\par
 
 % $\mover{←}{test}$\par
 % $\mover{\utfchar{"2190}}{test}$\par
@@ -176,7 +253,7 @@
 % $\mover{test}{x:23DE}$\par
 % $\mover{test}{over}$\par
 
-\mover{test}{⏞}\par
+% \mover{test}{⏞}\par
 % \mover{test}{\utfchar{"23DE}}\par
 % \mover{test}{e:overbrace}\par
 % \mover{test}{x:23DE}\par

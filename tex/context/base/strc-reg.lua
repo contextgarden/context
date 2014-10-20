@@ -478,6 +478,10 @@ local function storeregister(rawdata) -- metadata, references, entries
     local name     = metadata.name
     local notsaved = tobesaved[name].metadata.notsaved
     --
+    if not references then
+        references         = { }
+        rawdata.references = references
+    end
     local internal = references.internal
     if not internal then
         internal = texgetcount("locationcount") -- we assume that it has been set

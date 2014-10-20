@@ -110,14 +110,17 @@ function tracers.showdatasetcompleteness(settings)
     local categories = fielddata.categories
     local fieldspecs = fielddata.fields
 
+    local lpegmatch  = lpeg.match
+    local texescape  = lpeg.patterns.texescape
+
     local preamble = { "|lBTw(10em)|p|" }
 
     local function required(foundfields,key,value,indirect)
         ctx_NC() ctx_darkgreen(key)
         ctx_NC() if indirect then
-                ctx_darkblue(value)
+                ctx_darkblue(lpegmatch(texescape,value))
              elseif value then
-                context(value)
+                context(lpegmatch(texescape,value))
              else
                 ctx_darkred("\\tttf [missing]")
              end
@@ -128,9 +131,9 @@ function tracers.showdatasetcompleteness(settings)
     local function optional(foundfields,key,value,indirect)
         ctx_NC() context(key)
         ctx_NC() if indirect then
-                ctx_darkblue(value)
+                ctx_darkblue(lpegmatch(texescape,value))
              elseif value then
-                context(value)
+                context(lpegmatch(texescape,value))
              end
         ctx_NC() ctx_NR()
         foundfields[key] = nil
@@ -148,7 +151,7 @@ function tracers.showdatasetcompleteness(settings)
 
     local function extra(key,value)
         ctx_NC() ctx_llap("+") context(key)
-        ctx_NC() context(value)
+        ctx_NC() context(lpegmatch(texescape,value))
         ctx_NC() ctx_NR()
     end
 

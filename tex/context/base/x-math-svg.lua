@@ -70,6 +70,13 @@ function svgmath.process(filename)
         end
     end
     context(function()
+        -- for tracing purposes:
+        for mathdata, pagenumber in next, blobs do
+            local p  = pagedata[pagenumber]
+            p.mathml = mathdata
+            p.number = pagenumber
+        end
+        --
         savetable(statusname, {
             pagedata = pagedata,
             namedata = namedata,
@@ -133,7 +140,7 @@ function svgmath.convert(filename,svgstyle)
             local mode    = info.mode
             local svgname = addsuffix(f_math_tmp(page),"svg")
             local action  = mode == "inline" and f_inline or f_display
-            local x_div  = xmlfirst(xmlconvert(action(-depth)),"/div")
+            local x_div   = xmlfirst(xmlconvert(action(-depth)),"/div")
             local svgdata = io.loaddata(svgname)
             if not svgdata or svgdata == "" then
                 print("error in:",svgname,tostring(mth))

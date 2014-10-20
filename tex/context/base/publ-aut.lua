@@ -324,6 +324,7 @@ function commands.btxauthor(dataset,tag,field,settings)
     local etaldisplay = tonumber(settings.etaldisplay) or etallimit
     local combiner    = settings.combiner
     local symbol      = settings.symbol
+    local index       = settings.index
     if not combiner or combiner == "" then
         combiner = "normal"
     end
@@ -336,12 +337,17 @@ function commands.btxauthor(dataset,tag,field,settings)
     end
     currentauthordata   = split
     currentauthorsymbol = symbol
-    for i=1,max do
+
+    local function oneauthor(i)
         local author = split[i]
-        local state = author.state or 0
-        ctx_btxstartauthor(i,max,state)
-        ctx_btxsetconcat(concatstate(i,max))
-        ctx_btxsetauthorvariant(combiner)
+        if index then
+            ctx_btxstartauthor(i,1,0)
+        else
+            local state = author.state or 0
+            ctx_btxstartauthor(i,max,state)
+            ctx_btxsetconcat(concatstate(i,max))
+            ctx_btxsetauthorvariant(combiner)
+        end
         local initials = author.initials
         if initials and #initials > 0 then
             ctx_btxsetinitials() -- (concat(the_initials(initials,symbol)," "))
@@ -362,7 +368,7 @@ function commands.btxauthor(dataset,tag,field,settings)
         if juniors and #juniors > 0 then
             ctx_btxsetjuniors() -- (concat(juniors," "))
         end
-        if i == max then
+        if not index and i == max then
             local overflow = #split - max
             if overflow > 0 then
                 ctx_btxsetoverflow(overflow)
@@ -370,6 +376,14 @@ function commands.btxauthor(dataset,tag,field,settings)
         end
         ctx_btxsetup(combiner)
         ctx_btxstopauthor()
+    end
+
+    if index then
+        oneauthor(index)
+    else
+        for i=1,max do
+            oneauthor(i)
+        end
     end
 end
 
@@ -418,6 +432,8 @@ end
 
 writers.author = writer
 writers.editor = editor
+
+publications.serializeauthor = writer -- helper
 
 local function newsplitter(splitter)
     return table.setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
@@ -485,6 +501,34 @@ function authors.sorted(dataset,list,sorttype) -- experimental
         return valid
     end
 end
+
+local f_author = formatters[ [[\dobtxindexedauthor{%s}{%s}{%s}{%s}]] ]
+local writer   = publications.serializeauthor
+
+function commands.btxauthortoregister(register,dataset,tag)
+    local current = datasets[dataset]
+    local details = current.details
+    local detail  = details[tag]
+    if detail then
+        local author = detail.author
+        if author then
+            for i=1,#author do
+                local a = author[i]
+                local k = writer {a}
+                local e = f_author(dataset,tag,"author",i)
+                context.dosetfastregisterentry(register,e,k)
+             -- context.setregisterentry(
+             --     { register },
+             --     {
+             --         ["entries:1"] = e,
+             --         ["keys:1"]    = k,
+             --     }
+             -- )
+            end
+        end
+    end
+end
+
 
 -- local dataset = publications.datasets.test
 --
