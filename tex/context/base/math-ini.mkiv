@@ -1956,17 +1956,21 @@
 
 \installtextracker
   {math.openedup}
-  {\let\math_inline_openup_yes\math_inline_openup_traced}
-  {\let\math_inline_openup_yes\math_inline_openup_normal}
+  {\let\math_inline_openup_start_yes\math_inline_openup_traced_start}
+  {\let\math_inline_openup_start_yes\math_inline_openup_normal_start}
 
-\unexpanded\def\math_inline_openup_normal
+\unexpanded\def\math_inline_openup_normal_start
   {\scratchheight\dimexpr\ht\scratchbox+\m_math_inline_openup_ht\relax
    \scratchdepth \dimexpr\dp\scratchbox+\m_math_inline_openup_dp\relax
    \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax
-   \unhbox\scratchbox
-   \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax}
+   \begingroup
+   \let\math_inline_openup_stop\math_inline_openup_normal_stop}
 
-\unexpanded\def\math_inline_openup_traced
+\unexpanded\def\math_inline_openup_normal_stop
+   {\endgroup
+    \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax}
+
+\unexpanded\def\math_inline_openup_traced_start
   {\scratchtopoffset   \ht\scratchbox
    \scratchbottomoffset\dp\scratchbox
    \scratchheight      \dimexpr\scratchtopoffset   +\m_math_inline_openup_ht\relax
@@ -1977,7 +1981,11 @@
      \vrule\s!width\emwidth\s!height\scratchheight\s!depth-\scratchtopoffset\relax
    \endgroup
    \kern-\emwidth
-   \unhbox\scratchbox
+   \begingroup
+   \let\math_inline_openup_stop\math_inline_openup_traced_stop}
+
+\unexpanded\def\math_inline_openup_traced_stop
+  {\endgroup
    \kern-\emwidth
    \begingroup
      \dofastcoloractivation{darkblue}%
@@ -1985,22 +1993,47 @@
    \endgroup
    \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax}
 
-\let\math_inline_openup_yes\math_inline_openup_normal
+\let\math_inline_openup_start_yes\math_inline_openup_normal_start
+\let\math_inline_openup_stop     \relax
 
-\unexpanded\def\math_inline_openup_nop
-  {\unhbox\scratchbox}
+\def\math_inline_openup_start_nop
+  {\let\math_inline_openup_stop\relax}
 
-\unexpanded\def\openedupimath#1%
+\unexpanded\def\openedupimath
   {\dontleavehmode
    \begingroup
-   \setbox\scratchbox\ifmmode\mathstylehbox\else\hbox\fi{\startimath#1\stopimath}%
-   \ifdim\ht\scratchbox>\strutht
-     \math_inline_openup_yes
-   \else\ifdim\dp\scratchbox>\strutdp
-     \math_inline_openup_yes
+   \ifmmode
+     \expandafter\openedupimath_math
    \else
-     \math_inline_openup_nop
+     \expandafter\openedupimath_text
+   \fi}
+
+\unexpanded\def\openedupimath_math#1%
+  {\setbox\scratchbox\mathstylehbox{#1}%
+   \ifdim\ht\scratchbox>\strutht
+     \math_inline_openup_start_yes
+   \else\ifdim\dp\scratchbox>\strutdp
+     \math_inline_openup_start_yes
+   \else
+     \math_inline_openup_start_nop
    \fi\fi
+   #1%
+   \math_inline_openup_stop
+   \endgroup}
+
+\unexpanded\def\openedupimath_text#1%
+  {\setbox\scratchbox\hbox{\startimath#1\stopimath}%
+   \ifdim\ht\scratchbox>\strutht
+     \math_inline_openup_start_yes
+   \else\ifdim\dp\scratchbox>\strutdp
+     \math_inline_openup_start_yes
+   \else
+     \math_inline_openup_start_nop
+   \fi\fi
+   \startimath
+   #1%
+   \stopimath
+   \math_inline_openup_stop
    \endgroup}
 
 \protect \endinput
