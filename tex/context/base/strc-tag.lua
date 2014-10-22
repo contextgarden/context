@@ -11,10 +11,11 @@ if not modules then modules = { } end modules ['strc-tag'] = {
 local type = type
 local insert, remove, unpack, concat = table.insert, table.remove, table.unpack, table.concat
 local gsub, find, topattern, format = string.gsub, string.find, string.topattern, string.format
-local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
+local lpegmatch, P, S, C, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 local texattribute = tex.attribute
 local allocate = utilities.storage.allocate
 local settings_to_hash = utilities.parsers.settings_to_hash
+local setmetatableindex = table.setmetatableindex
 
 local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
 
@@ -38,13 +39,26 @@ local enabled        = false
 local tagdata        = { } -- used in export
 local tagmetadata    = { } -- used in export
 local tagcontext     = { }
+local tagpatterns    = { }
 
 local tags           = structures.tags
 tags.taglist         = taglist -- can best be hidden
 tags.labels          = labels
 tags.data            = tagdata
 tags.metadata        = tagmetadata
+tags.patterns        = tagpatterns
 tags.userproperties  = userproperties -- used in backend
+
+-- Tags are internally stored as:
+--
+-- tag<detail>number>
+-- tag<detail>number>
+
+local p_splitter     = C((1-S("<>"))^1)
+                     * ( P("<")^-1 * C((1-P(">"))^1) + Cc(false))
+                     * P(">")
+                     * C(P(1)^1)
+tagpatterns.splitter = p_splitter
 
 local properties     = allocate {
 
@@ -185,6 +199,22 @@ local properties     = allocate {
     combinationcaption    = { pdf = "Span",       nature = "mixed"   },
 }
 
+local patterns_nop = setmetatableindex(function(t,tag)
+    local v = "^" .. tag .. ">"
+    t[tag] = v
+    return v
+end)
+
+local patterns_yes = setmetatableindex(function(t,tag)
+    local v = setmetatableindex(function(t,detail)
+        local v = "^" .. tag .. "<" .. detail .. ">"
+        t[detail] = v
+        return v
+    end)
+    t[tag] = v
+    return v
+end)
+
 function tags.detailedtag(tag,detail,attribute)
     if not attribute then
         attribute = texattribute[a_tagged]
@@ -194,9 +224,13 @@ function tags.detailedtag(tag,detail,attribute)
         if tl then
             local pattern
             if detail and detail ~= "" then
-                pattern = "^" .. tag .. ":".. detail .. "%-"
+             -- pattern = "^" .. tag .. ":" .. detail .. "%-"
+             -- pattern = "^" .. tag .. "<" .. detail .. ">"
+                pattern = patterns_yes[tag][detail]
             else
-                pattern = "^" .. tag .. "%-"
+             -- pattern = "^" .. tag .. "%-"
+             -- pattern = "^" .. tag .. ">"
+                pattern = patterns_nop[tag]
             end
             for i=#tl,1,-1 do
                 local tli = tl[i]
@@ -281,14 +315,16 @@ function tags.start(tag,specification,props)
     local fulltag = label ~= "" and label or tag
     labels[tag] = fulltag
     if detail and detail ~= "" then
-        fulltag = fulltag .. ":" .. detail
+     -- fulltag = fulltag .. ":" .. detail
+        fulltag = fulltag .. "<" .. detail
     end
     --
     local t = #taglist + 1
     local n = (ids[fulltag] or 0) + 1
     ids[fulltag] = n
     lasttags[tag] = n
-    local completetag = fulltag .. "-" .. n
+--  local completetag = fulltag .. "-" .. n
+    local completetag = fulltag .. ">" .. n
     nstack = nstack + 1
     chain[nstack] = completetag
     stack[nstack] = t
@@ -369,7 +405,8 @@ end
 
 function tags.getid(tag,detail)
     if detail and detail ~= "" then
-        return ids[tag .. ":" .. detail] or "?"
+     -- return ids[tag .. ":" .. detail] or "?"
+        return ids[tag .. "<" .. detail] or "?"
     else
         return ids[tag] or "?"
     end

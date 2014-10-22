@@ -717,15 +717,23 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
                     report("internal error, no detail for tag %s",tag)
                 end
                 --
-                local pages = entry.pages
+                local pages = entry.pages or entry.page
                 if pages then
                     local first, last = lpegmatch(pagessplitter,pages)
-                    details[tag].pages = first and last and { first, last } or pages
+                    detail.pages = first and last and { first, last } or pages
                 end
                 --
                 local keyword = entry.keyword
                 if keyword then
-                    details[tag].keyword = settings_to_set(keyword)
+                    detail.keyword = settings_to_set(keyword)
+                end
+                --
+                if category == "inbook" then
+                    detail.maintitle = entry.chapter or entry.title
+                elseif category == "incollection" then
+                    detail.maintitle = entry.title or entry.booktitle
+                else
+                    detail.maintitle = entry.title or entry.chapter or entry.booktitle
                 end
             else
                 report("internal error, no tag at index %s",i)
@@ -1469,47 +1477,53 @@ function lists.flushentries(dataset,textmode)
      end
 end
 
-function lists.flushentry(specification)
-    local tag = specification.reference
-    if not tag or tag == "" then
-        return
-    end
-    --
-    local dataset  = specification.dataset or "" -- standard
- -- local mark     = specification.markentry ~= false
- -- local internal = specification.internal or ""
-    --
-    local prefix, rest = lpegmatch(prefixsplitter,tag)
-    if rest then
-        dataset = prefix
-    else
-        rest = tag
-    end
-    --
- -- if trace_cite then
- --     report_cite("mark, dataset: %s, tags: %s",dataset or "-",rest)
- -- end
-    --
-    local reference = publications.parenttag(dataset,rest)
-    local found, todo, list = findallused(dataset,reference,internal)
-    local valid = { }
-    if list and #list > 0 then
-        local luadata = datasets[dataset].luadata
-        for i=1,#list do
-            local tag = list[i]
-            if luadata[tag] then
-                valid[#valid+1] = { tag, 0, 0 } -- datasets[dataset].details.number
-            end
-        end
-    end
-    if #valid > 0 then
-        local rendering = renderings[dataset]
-        rendering.list = valid
-        lists.flushentries(dataset,true)
-    else
-        ctx_btxmissing(tag)
-    end
-end
+-- function lists.flushentry(specification)
+--     local tag = specification.reference
+--     if not tag or tag == "" then
+--         return
+--     end
+--     --
+--     local dataset  = specification.dataset or "" -- standard
+--  -- local mark     = specification.markentry ~= false
+--  -- local internal = specification.internal or ""
+--     --
+--     local prefix, rest = lpegmatch(prefixsplitter,tag)
+--     if rest then
+--         dataset = prefix
+--     else
+--         rest = tag
+--     end
+--     --
+--  -- if trace_cite then
+--  --     report_cite("mark, dataset: %s, tags: %s",dataset or "-",rest)
+--  -- end
+--     --
+--     local reference = publications.parenttag(dataset,rest)
+--     local found, todo, list = findallused(dataset,reference,internal)
+--     local valid = { }
+--     if list and #list > 0 then
+--         local luadata = datasets[dataset].luadata
+--         for i=1,#list do
+--             local tag = list[i]
+--             if luadata[tag] then
+--                 valid[#valid+1] = { tag, 0, 0 } -- datasets[dataset].details.number
+--             end
+--         end
+--     end
+--     if #valid > 0 then
+--         local rendering = renderings[dataset]
+--         rendering.list = valid
+--         lists.flushentries(dataset,true)
+--     else
+--         ctx_btxmissing(tag)
+--     end
+-- local mark = true
+--     tobemarked = mark and todo
+--     if found and tobemarked then
+--         flushmarked(dataset,list)
+--         commands.flushmarked() -- here (could also be done in caller)
+--     end
+-- end
 
 local function getuserdata(dataset,key)
     local rendering = renderings[dataset]
@@ -1861,6 +1875,27 @@ end)
 
 function citevariants.default(dataset,reference,mark,compress,variant,internal)
     processcite(dataset,reference,mark,compress,variant,internal,setters[variant],getters[variant])
+end
+
+-- entry
+
+do
+
+    local function setter(dataset,tag,entry,internal)
+        return {
+            tag      = tag,
+            internal = internal,
+        }
+    end
+
+    local function getter(first,last) -- last not used
+        ctx_btxsetfirst(first.tag)
+    end
+
+    function citevariants.entry(dataset,reference,mark,compress,variant,internal)
+        processcite(dataset,reference,mark,false,"entry",internal,setter,getter)
+    end
+
 end
 
 -- short

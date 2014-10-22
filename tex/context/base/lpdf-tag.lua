@@ -90,8 +90,9 @@ local lasttaginchain      = structurestags.lastinchain
 
 local usedmapping         = { }
 
-local colonsplitter       = lpeg.splitat(":")
-local dashsplitter        = lpeg.splitat("-")
+local tagsplitter         = structurestags.patterns.splitter
+----- colonsplitter       = lpeg.splitat(":")
+----- dashsplitter        = lpeg.splitat("-")
 
 local add_ids             = false -- true
 
@@ -192,8 +193,9 @@ local function makeattribute(t)
 end
 
 local function makeelement(fulltag,parent,attr)
-    local tag, n = lpegmatch(dashsplitter,fulltag)
-    local tg, detail = lpegmatch(colonsplitter,tag)
+    local tg, detail, n = lpegmatch(tagsplitter,fulltag)
+ -- local tag, n = lpegmatch(dashsplitter,fulltag)
+ -- local tg, detail = lpegmatch(colonsplitter,tag)
     if tg == "ignore" then
         return false
     elseif tg == "mstackertop" or tg == "mstackerbot" or tg == "mstackermid"then
@@ -226,7 +228,8 @@ local function makeelement(fulltag,parent,attr)
     end
     local kids = parent.kids
     kids[#kids+1] = s
-    local e = { tag = tag, pref = s, kids = k, knum = r, pnum = pagenum }
+--  local e = { tag = tag, pref = s, kids = k, knum = r, pnum = pagenum }
+    local e = { tag = detail and (tg .. "<" .. detail) or tg, pref = s, kids = k, knum = r, pnum = pagenum }
     elements[fulltag] = e
     return e
 end

@@ -163,8 +163,9 @@ local noftextblocks     = 0
 local attributehash     = { } -- to be considered: set the values at the tex end
 local hyphencode        = 0xAD
 local hyphen            = utfchar(0xAD) -- todo: also emdash etc
-local colonsplitter     = lpeg.splitat(":")
-local dashsplitter      = lpeg.splitat("-")
+local tagsplitter       = structurestags.patterns.splitter
+----- colonsplitter     = lpeg.splitat(":")
+----- dashsplitter      = lpeg.splitat("-")
 local threshold         = 65536
 local indexing          = false
 local keephyphens       = false
@@ -295,15 +296,6 @@ local function attribute(key,value)
         return ""
     end
 end
-
--- local P, C, Cc = lpeg.P, lpeg.C, lpeg.Cc
---
--- local dash, colon = P("-"), P(":")
---
--- local precolon, predash, rest = P((1-colon)^1), P((1-dash )^1), P(1)^1
---
--- local tagsplitter = C(precolon) * colon * C(predash) * dash * C(rest) +
---                     C(predash)  * dash  * Cc(nil)           * C(rest)
 
 local listdata = { } -- maybe do this otherwise
 
@@ -1589,13 +1581,7 @@ do
     local registered = structures.sections.registered
     local f_level    = formatters[' level="%s"']
 
-    local function section(result,element,detail,n,fulltag,di)
-
-        local r = registered[detail]
-        if r then
-            result[#result+1] = f_level(r.level)
-        end
-
+    local function resolve(result,element,detail,n,fulltag,di)
         local data = listdata[fulltag]
         if data then
             extras.addreference(result,data.references)
@@ -1607,7 +1593,7 @@ do
                     local di = data[i]
                     if di then
                         local ft = di.fulltag
-                        if ft and section(result,element,detail,n,ft,di) then
+                        if ft and resolve(result,element,detail,n,ft,di) then
                             return true
                         end
                     end
@@ -1616,25 +1602,15 @@ do
         end
     end
 
-    extras.section = section
-
-    function extras.float(result,element,detail,n,fulltag,di)
-        local data = listdata[fulltag]
-        if data then
-            extras.addreference(result,data.references)
-            return true
-        else
-            local data = di.data
-            if data then
-                for i=1,#data do
-                    local di = data[i]
-                    if di and section(result,element,detail,n,di.fulltag,di) then
-                        return true
-                    end
-                end
-            end
+    function extras.section(result,element,detail,n,fulltag,di)
+        local r = registered[detail]
+        if r then
+            result[#result+1] = f_level(r.level)
         end
+        resolve(result,element,detail,n,fulltag,di)
     end
+
+    extras.float = resolve
 
     -- todo: internal is already hashed
 
@@ -1892,7 +1868,8 @@ do
             local r = { } -- delay this
             if detail then
                 n = n + 1
-                r[n] = f_detail(detail)
+             -- r[n] = f_detail(detail)
+                r[n] = f_detail(gsub(detail,"[^A-Za-z0-9]+","-"))
             end
             if indexing and index then
                 n = n + 1
@@ -2270,11 +2247,13 @@ end
 -- collector code
 
 local function push(fulltag,depth)
-    local tag, n = lpegmatch(dashsplitter,fulltag)
-    local tg, detail = lpegmatch(colonsplitter,tag)
+ -- local tag, n = lpegmatch(dashsplitter,fulltag)
+ -- local tg, detail = lpegmatch(colonsplitter,tag)
+    local tg, detail, n = lpegmatch(tagsplitter,fulltag)
     local element, nature
     if detail then
-        local pd = properties[tag]
+     -- local pd = properties[tag] -- does this really happen?  element-detail
+        local pd = properties[tg.."<"..detail]
         local pt = properties[tg]
         element = pd and pd.export or pt and pt.export or tg
         nature  = pd and pd.nature or pt and pt.nature or defaultnature
@@ -2471,8 +2450,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
     for n in traverse_nodes(head) do
         local id = getid(n) -- 14: image, 8: literal (mp)
         if id == glyph_code then
-            local at = getattr(n,a_tagged)
-or pat
+            local at = getattr(n,a_tagged) or pat
             if not at then
              -- we need to tag the pagebody stuff as being valid skippable
              --
@@ -2488,8 +2466,7 @@ or pat
                         local tl = taglist[at]
                         pushcontent()
                         currentnesting = tl
-                        currentparagraph = getattr(n,a_taggedpar)
-or pap
+                        currentparagraph = getattr(n,a_taggedpar) or pap
                         currentattribute = at
                         last = at
                         pushentry(currentnesting)
@@ -2507,8 +2484,7 @@ or pap
                         -- we can consider tagging the pars (lines) in the parbuilder but then we loose some
                         -- information unless we inject a special node (but even then we can run into nesting
                         -- issues)
-                        local ap = getattr(n,a_taggedpar)
-or pap
+                        local ap = getattr(n,a_taggedpar) or pap
                         if ap ~= currentparagraph then
                             pushcontent(currentparagraph,ap)
                             pushentry(currentnesting)
@@ -2589,8 +2565,7 @@ or pap
             if ca == 0 then
                 -- skip this one ... already converted special character (node-acc)
             elseif ca then
-                local a = getattr(n,a_tagged)
-or pat
+                local a = getattr(n,a_tagged) or pat
                 if a then
                     local c = specialspaces[ca]
                     if last ~= a then
@@ -2600,15 +2575,13 @@ or pat
                         end
                         pushcontent()
                         currentnesting = tl
-                        currentparagraph = getattr(n,a_taggedpar)
-or pap
+                        currentparagraph = getattr(n,a_taggedpar) or pap
                         currentattribute = a
                         last = a
                         pushentry(currentnesting)
                         -- no reference check (see above)
                     elseif last then
-                        local ap = getattr(n,a_taggedpar)
-or pap
+                        local ap = getattr(n,a_taggedpar) or pap
                         if ap ~= currentparagraph then
                             pushcontent(currentparagraph,ap)
                             pushentry(currentnesting)
@@ -2634,8 +2607,7 @@ or pap
                     local spec = getfield(n,"spec")
                     if getfield(spec,"width") > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
-                            local a = getattr(n,a_tagged)
-or pat
+                            local a = getattr(n,a_tagged) or pat
                             if a == last then
                                 if trace_export then
                                     report_export("%w<!-- injecting spacing 5a -->",currentdepth)
@@ -2662,8 +2634,7 @@ or pat
                     end
                 elseif subtype == spaceskip_code or subtype == xspaceskip_code then
                     if not somespace[currentcontent[nofcurrentcontent]] then
-                        local a = getattr(n,a_tagged)
-or pat
+                        local a = getattr(n,a_tagged) or pat
                         if a == last then
                             if trace_export then
                                 report_export("%w<!-- injecting spacing 7 (stay in element) -->",currentdepth)
@@ -2692,8 +2663,7 @@ or pat
                                 nofcurrentcontent = nofcurrentcontent - 1
                             end
                         elseif not somespace[r] then
-                            local a = getattr(n,a_tagged)
-or pat
+                            local a = getattr(n,a_tagged) or pat
                             if a == last then
                                 if trace_export then
                                     report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
@@ -2723,8 +2693,7 @@ or pat
         elseif id == hlist_code or id == vlist_code then
             local ai = getattr(n,a_image)
             if ai then
-                local at = getattr(n,a_tagged)
-or pat
+                local at = getattr(n,a_tagged) or pat
                 if nofcurrentcontent > 0 then
                     pushcontent()
                     pushentry(currentnesting) -- ??
@@ -2739,8 +2708,7 @@ or pat
                 -- we need to determine an end-of-line
                 local list = getlist(n)
                 if list then
-local at = getattr(n,a_tagged)
-or pat
+                    local at = getattr(n,a_tagged) or pat
                     collectresults(list,n,at)
                 end
             end
@@ -2753,8 +2721,7 @@ or pat
                 end
                 if kern > limit then
                     if last and not somespace[currentcontent[nofcurrentcontent]] then
-                        local a = getattr(n,a_tagged)
-or pat
+                        local a = getattr(n,a_tagged) or pat
                         if a == last then
                             if not somespace[currentcontent[nofcurrentcontent]] then
                                 if trace_export then

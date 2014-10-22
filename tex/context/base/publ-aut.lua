@@ -16,7 +16,7 @@ local lpeg = lpeg
 local context  = context
 local chardata = characters.data
 
-local tostring = tostring
+local type, next, tostring = type, next, tostring
 local concat = table.concat
 local utfchar = utf.char
 local formatters = string.formatters
@@ -404,6 +404,9 @@ local function writer(key,snippets)
     if not key then
         return ""
     end
+    if type(key) == "string" then
+        return key
+    end
     local n = #key
     if n == 0 then
         return ""
@@ -443,6 +446,28 @@ local function newsplitter(splitter)
     end)
 end
 
+
+-- First sorting key:
+-- A. key= if present takes precedence
+-- B. author= if present takes second precedence (when key= is absent)
+-- C. editor= if present takes third precedence (when key= and author= are absent)
+-- D. publisher= if present (in absence of key=, author= and editor=)
+-- E. title= if present (but only in absence of key=, author=, editor= and publisher=)
+-- F. journal= if present
+-- G. volume= if present
+-- H. number= if present
+-- I. pages= if present
+-- K. if all else fails, ? (APA specifies using "Anonymous" ONLY when specifically listed as such in the publication!)
+
+-- Second sorting key:
+-- A. year= if present, takes precedence, otherwise treat "n.d." as most recent.
+-- B. suffix (same first key and same year)
+--    What about "n.d."? Here, it would be reasonable to second sort by
+--    title=  (lower precedence than the first key above)
+-- C. month=
+-- D. day=
+-- E. journal=, followed by volume=, followed by number=
+
 local function byauthor(dataset,list,method)
     local luadata  = datasets[dataset].luadata
     local details  = datasets[dataset].details
@@ -455,30 +480,43 @@ local function byauthor(dataset,list,method)
         local tag    = type(li) == "string" and li or li[1]
         local entry  = luadata[tag]
         local detail = details[tag]
+        local index  = tostring(i)
         if entry and detail then
+            local mainkey = writer(detail.author or detail.editor or entry.publisher or entry.title or "",snippets)
+            -- we could store the mainkey in details for tracing
             result[i] = {
                 index  = i,
                 split  = {
-                    splitted[strip(writer(detail.author or detail.editor or "",snippets))],
-                    splitted[entry.year or "9998"],
-                    splitted[detail.suffix or " "],
-                    splitted[strip(entry.journal or "")],
-                    splitted[strip(entry.title or "")],
-                    splitted[entry.pages or ""],
-                    splitted[tostring(i)],
+                    splitted[entry.key           or ""    ],
+                    splitted[strip(mainkey)               ],
+                    splitted[entry.year          or "9998"],
+                    splitted[detail.suffix       or " "   ],
+                    splitted[entry.month         or "13"  ],
+                    splitted[entry.day           or "32"  ],
+                    splitted[strip(entry.journal or ""   )],
+                    splitted[strip(entry.volume  or ""   )],
+                    splitted[strip(entry.number  or ""   )],
+                    splitted[strip(entry.title   or ""   )],
+                    splitted[entry.pages         or ""    ],
+                    splitted[index],
                 },
             }
         else
             result[i] = {
                 index  = i,
                 split  = {
-                    splitted[""],
-                    splitted["9999"],
-                    splitted[" "],
-                    splitted[""],
-                    splitted[""],
-                    splitted[""],
-                    splitted[tostring(i)],
+                    splitted[""],         -- key
+                    splitted[""],         -- mainkey
+                    splitted["9999"],     -- year
+                    splitted[" "],        -- suffix
+                    splitted["14"],       -- month
+                    splitted["33"],       -- day
+                    splitted[""],         -- journal
+                    splitted[""],         -- volume
+                    splitted[""],         -- number
+                    splitted[""],         -- title
+                    splitted[""],         -- pages
+                    splitted[index],      -- index
                 },
             }
         end

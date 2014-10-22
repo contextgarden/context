@@ -332,11 +332,19 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
             t[#t+1] = formatters["auto: snapht %p snapdp %p"](snapht,snapdp)
         end
     end
-    local h = height or getfield(current,"height")
-    local d = depth or getfield(current,"depth")
-    local hr, dr, ch, cd, br = method.hfraction or 1, method.dfraction or 1, h, d, method.bfraction or 0
-    local tlines, blines = method.tlines or 1, method.blines or 1
-    local done, plusht, plusdp = false, snapht, snapdp
+
+    local h        = (method.noheight and 0) or height or getfield(current,"height")
+    local d        = (method.nodepth  and 0) or depth  or getfield(current,"depth")
+    local hr       = method.hfraction or 1
+    local dr       = method.dfraction or 1
+    local br       = method.bfraction or 0
+    local ch       = h
+    local cd       = d
+    local tlines   = method.tlines or 1
+    local blines   = method.blines or 1
+    local done     = false
+    local plusht   = snapht
+    local plusdp   = snapdp
     local snaphtdp = snapht + snapdp
 
     if method.box then
@@ -367,13 +375,15 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
         end
     end
     if method.halfline then -- extra halfline
-        plusht, plusdp = plusht + snaphtdp/2, plusdp + snaphtdp/2
+        plusht = plusht + snaphtdp/2
+        plusdp = plusdp + snaphtdp/2
         if t then
             t[#t+1] = formatters["halfline: plusht %p plusdp %p"](plusht,plusdp)
         end
     end
     if method.line then -- extra line
-        plusht, plusdp = plusht + snaphtdp, plusdp + snaphtdp
+        plusht = plusht + snaphtdp
+        plusdp = plusdp + snaphtdp
         if t then
             t[#t+1] = formatters["line: plusht %p plusdp %p"](plusht,plusdp)
         end
@@ -535,6 +545,12 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
         t[#t+1] = formatters["final height: %p -> %p"](h,ch)
         t[#t+1] = formatters["final depth: %p -> %p"](d,cd)
     end
+-- todo:
+--
+--     if h < 0 or d < 0 then
+--         h = 0
+--         d = 0
+--     end
     if t then
         report_snapper("trace: %s type %s\n\t%\n\tt",where,nodecodes[getid(current)],t)
     end
