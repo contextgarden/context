@@ -2172,7 +2172,7 @@
      \global\setbox\b_tabl_tabulate\vbox \bgroup
    \fi
    %
-   \dostarttagged\t!tabulate\empty
+   \dostarttaggedchained\t!tabulate\empty\??tabulate
    \dostarttagged\t!tabulaterow\empty
    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
    \everycr\expandafter{\the\everycr\dostoptagged\dostarttagged\t!tabulaterow\empty}%

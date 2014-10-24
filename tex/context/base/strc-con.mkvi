@@ -159,6 +159,7 @@
 
 \unexpanded\def\strc_constructions_initialize#1% class instance
   {\edef\currentconstruction{#1}%
+   \let\currentconstructionhash\??construction
    \let\currentconstructionlistentry\!!zerocount
    \expandafter\let\expandafter\currentconstructionmain   \csname\??constructionmain \currentconstruction\endcsname
    \expandafter\let\expandafter\currentconstructionlevel  \csname\??constructionlevel\currentconstruction\endcsname
@@ -264,8 +265,10 @@
   {\constructionsheaddistance\zeropoint
    \constructionsheadwidth   \zeropoint}
 
+\let\currentconstructionhash\??construction
+
 \unexpanded\setvalue{\??constructionstarthandler\v!construction}% this will be redone (reorganized) .. too much boxing
-  {\dostarttagged\t!construction\currentconstruction
+  {\dostarttaggedchained\t!construction\currentconstruction\currentconstructionhash
    \dotagsetconstruction
    \constructionparameter\c!before
    \begingroup

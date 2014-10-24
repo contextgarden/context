@@ -36,8 +36,6 @@
 
 % First of all, the APA style defines authoryear bibliography lists.
 
-% Question: is the field "key=" (->sortkey, not the \cite [key]) used if present?
-
 % does not work here: \setupbtxrendering [standard] [numbering=no,sorttype=authoryear]
 
 % does not work here: \setupbtxcitevariant [alternative=authoryear,sorttype=authoryear]
@@ -232,7 +230,6 @@
                 \btxcomma
                 % language issue here?
                 \btxflush{month}
-                \btxspace
                 \btxdoif {day} {
                     \btxspace
                     \btxflush{day}
@@ -247,6 +244,7 @@
 
 \starttexdefinition btx:apa:title-subtitle #before #type
     \btxdoif {title} {
+        \setmode{btx:apa:title-placed}
         #before
         \btxflush{Word -> title}
         \btxdoif {subtitle} {
@@ -271,7 +269,6 @@
     \btxdoifelse {author} {
         \btxflushauthor[invertedshort]{author}
     } {
-        \setmode{btx:apa:title-placed}
         \texdefinition{btx:apa:title-subtitle}{}{#type}
     }
 \stoptexdefinition
@@ -298,7 +295,6 @@
                 \btxflush{publisher}
             } {
                 \doif {#title} {title} {
-                    \setmode{btx:apa:title-placed}
                     \texdefinition{btx:apa:title-subtitle}{}{type}
                 }
             }
@@ -315,7 +311,6 @@
             \btxflush{organization}
         } {
             \doif {#title} {title} {
-                \setmode{btx:apa:title-placed}
                 \texdefinition{btx:apa:title-subtitle}{}{type}
             }
         }
@@ -470,7 +465,7 @@
                     \btxcomma
                 }
             }
-            % APA rule for newspaper, ...
+            % APA rule for newspaper
             \doif {#pp} {pp} {
                 \btxoneorrange {pages} {
                     \btxlabeltext{apa:p}
@@ -483,17 +478,17 @@
             \btxperiod
         }
         \doifnot {#pp} {pp} {
-            % not a newspaper...
+            % not a newspaper
             \btxdoifnot {volume} {
                 \btxdoifnot {number} {
                     \btxdoifnot {pages} {
                         \btxdoifelse {doi} {
-                            \btxspace
+                            \btxperiod
                             \btxlabeltext{apa:Advanced}
                             \btxperiod
                         } {
                             \btxdoif {url} {
-                                \btxspace
+                                \btxperiod
                                 \btxlabeltext{apa:Advanced}
                                 \btxperiod
                             }
@@ -527,23 +522,23 @@
         \btxspace
         \ifconditional\btxinteractive
             \goto {
-                \hyphenatedurl{doi:\btxflush{doi}}
+                doi:\btxflush{doi}
             } [
                 url(http://dx.doi.org/\btxflush{doi})
             ]
         \else
-            \hyphenatedurl{doi:\btxflush{doi}}
+            doi:\btxflush{doi}
         \fi
     }
 \stoptexdefinition
 
 \starttexdefinition btx:apa:note
-    % grouping could indeed be useful...
+    % grouping could indeed be useful for note.
     \btxdoif {note} {
         \btxleftparenthesis
         {\btxflush{note}}
         \btxrightparenthesis\removeunwantedspaces
-        % nospace if last item...
+        % no space if last item!
     }
 \stoptexdefinition
 
@@ -556,10 +551,10 @@
 \starttexdefinition btx:apa:author-editor-other #field
     \btxdoif {#field} {
         \doifelse {#field} {publisher} {
-            \doifelse {\btxflush{#field}} {\btxflush{author}} {
+            \doifelse {\btxflush{publisher}} {\btxflush{author}} {
                 \btxlabeltext{apa:Author}
             } {
-                \btxflush{#field}
+                \btxflush{publisher}
             }
         } {
             \btxflush{#field}

@@ -402,7 +402,7 @@
 % TODO: pass extra tag name (contents, figures, bibliography ...)
 
 \unexpanded\def\strc_lists_place_current#list#criterium#number#extras#order% beware, not a user command
-  {\dostarttagged\t!list\empty
+  {\dostarttaggedchained\t!list\empty\??list
    \ctxcommand{processlist{
         names     = "#list",
         criterium = "#criterium",

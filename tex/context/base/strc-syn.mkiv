@@ -100,6 +100,7 @@
 \setuvalue{\??constructioninitializer\v!simplelist}%
   {\let\currentsimplelist               \currentconstruction
    \let\constructionparameter           \simplelistparameter
+   \let\constructionnamespace           \??simplelist
    \let\detokenizedconstructionparameter\detokenizedsimplelistparameter
    \let\letconstructionparameter        \letsimplelistparameter
    \let\useconstructionstyleandcolor    \usesimpleliststyleandcolor
@@ -231,7 +232,7 @@
    \edef\currentsimplelist{#1}%
    \let\currentsynonym\currentsimplelist % for a while
    \def\currentsynonymtag{#2}%
-   \dostarttagged\t!synonym\currentsynonym
+   \dostarttaggedchained\t!synonym\currentsynonym\??simplelist
    \dotagsynonym
    \usesimpleliststyleandcolor\c!synonymstyle\c!synonymcolor
    \simplelistparameter\c!synonymcommand{\ctxcommand{synonymname("#1","#2")}}%
@@ -359,7 +360,7 @@
    \edef\currentsorting{#1}%
    \def\currentsortingtag{#2}%
    \let\currentsimplelist\currentsorting
-   \dostarttagged\t!sorting\currentsorting
+   \dostarttaggedchained\t!sorting\currentsorting\??simplelist
    \dotagsorting
    \usesimpleliststyleandcolor\c!style\c!color
    \ctxcommand{synonymname("#1","#2")}%

@@ -9,8 +9,24 @@
 
 /*
 
-	Because empty div elements are not seen we put a comment in them
-	so that empty table cells etc work ok.
+	Because empty div elements are not seen we put a comment in them so that empty
+	table cells etc work ok.
+
+	We can style individual elements in several ways and we support in this css file
+	meaningful elements as well as divs. If needed you can use the chain field as well
+	as chain elements in the div class for styling groups.
+
+	\definefloat[myfloata]
+	\definefloat[myfloatb][myfloatbs][figure]
+
+	div.float.myfloata { }           float[detail='myfloata'] { }
+	div.float.myfloatb { }           float[detail='myfloatb'] { }
+	div.float.figure { }             float[detail='figure']   { }
+	div.float.figure.myfloatb { }    float[chain~='figure'][detail='myfloata'] { }
+	div.myfloata { }                 *[detail='myfloata'] { }
+	div.myfloatb { }                 *[detail='myfloatb'] { }
+	div.figure { }                   *[chain~='figure'] { }
+	div.figure.myfloatb { }          *[chain~='figure'][detail='myfloatb'] { }
 
 */
 
@@ -45,6 +61,7 @@ document:before, div.document:before {
 document, div.document {
 	font-family  : "DejaVu Serif", "Lucida Bright", serif ;
 	font-size    : 12pt ;
+	line-height  : 120%;
 	max-width    : 50em ;
 	padding      : 1em ;
  /* text-align   : justify ;    */
@@ -100,7 +117,7 @@ break, div.break {
 construct, div.construct {
 }
 
-construct[detail="important"], div.construct.detail-important {
+construct[detail="important"], div.construct.important {
 	font-weight : bold ;
 }
 
@@ -123,7 +140,7 @@ sectioncontent, div.sectioncontent {
 }
 
 section[detail="chapter"], section[detail="title"],
-		div.section.detail-chapter, div.section.detail-title {
+		div.section.chapter, div.section.title {
 	page-break-before : always ;
 	page-break-after  : avoid ;
 	margin-top        : 3em ;
@@ -131,34 +148,34 @@ section[detail="chapter"], section[detail="title"],
 }
 
 section[detail="section"], section[detail="subject"],
-		div.section.detail-section, div.section.detail-subject {
+		div.section.section, div.section.subject {
 	page-break-after : avoid ;
 	margin-top       : 2.5em ;
 	margin-bottom    : 2.5em ;
 }
 
 section[detail="subsection"], section[detail="subsubject"],
-		div.section.detail-subsection, div.section.detail-subsubject {
+		div.section.subsection, div.section.subsubject {
 	page-break-after : avoid ;
 	margin-top       : 2em ;
 	margin-bottom    : 2em ;
 }
 
 section[detail="subsubsection"], section[detail="subsubsubject"],
-		div.section.detail-subsubsection, div.section.detail-subsubsubject {
+		div.section.subsubsection, div.section.subsubsubject {
 	page-break-after : avoid ;
 	margin-top       : 1em ;
 	margin-bottom    : 0em ;
 }
 
 section[detail="summary"], section[detail="subsummary"],
-		div.section.detail-summary, div.section.detail-subsummary {
+		div.section.summary, div.section.subsummary {
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 }
 
 section[detail="chapter"]>sectionnumber,
-		div.section.detail-chapter div.sectionnumber {
+		div.section.chapter div.sectionnumber {
 	display      : inline-block ;
 	margin-right : 1em ;
 	font-size    : 3em ;
@@ -166,41 +183,41 @@ section[detail="chapter"]>sectionnumber,
 }
 
 section[detail="chapter"]>sectiontitle, section[detail="title"]>sectiontitle,
-		div.section.detail-chapter div.sectiontitle, div.section.detail-title div.sectiontitle {
+		div.section.chapter div.sectiontitle, div.section.title div.sectiontitle {
 	display     : inline-block ;
 	font-size   : 3em ;
 	font-weight : bold ;
 }
 
 section[detail="section"]>sectiontitle, section[detail="subject"]>sectiontitle,
-		div.section.detail-section div.sectiontitle, div.section.detail-subject div.sectiontitle {
+		div.section.section div.sectiontitle, div.section.subject div.sectiontitle {
 	display     : inline-block ;
 	font-size   : 2.5em ;
 	font-weight : bold ;
 }
 
 section[detail="subsection"]>sectiontitle, section[detail="subsubject"]>sectiontitle,
-		div.section.detail-subsection div.sectiontitle, div.section.detail-subsubject div.sectiontitle {
+		div.section.subsection div.sectiontitle, div.section.subsubject div.sectiontitle {
 	display     : inline-block ;
 	font-size   : 2em ;
 	font-weight : bold ;
 }
 
 section[detail="subsubsection"]>sectiontitle, section[detail="subsubsubject"]>sectiontitle,
-		div.section.detail-subsubsection div.sectiontitle, div.section.detail-subsubsubject div.sectiontitle {
+		div.section.subsubsection div.sectiontitle, div.section.subsubsubject div.sectiontitle {
 	display     : inline-block ;
 	font-size   : 1em ;
 	font-weight : bold ;
 }
 
-section[detail="section"]>sectionnumber, div.section.detail-section div.sectionnumber {
+section[detail="section"]>sectionnumber, div.section.section div.sectionnumber {
 	display      : inline-block ;
 	margin-right : 1em ;
 	font-size    : 2.5em ;
 	font-weight  : bold ;
 }
 
-section[detail="summary"]>sectiontitle, div.section.detail-summary div.sectiontitle {
+section[detail="summary"]>sectiontitle, div.section.summary div.sectiontitle {
 	display             : block ;
 	margin-top          : 1em ;
 	margin-bottom       : 1em ;
@@ -210,14 +227,14 @@ section[detail="summary"]>sectiontitle, div.section.detail-summary div.sectionti
 	border-width        : .15em;
 }
 
-section[detail="subsection"]>sectionnumber, div.section.detail-subsection div.sectionnumber {
+section[detail="subsection"]>sectionnumber, div.section.subsection div.sectionnumber {
 	display      : inline-block ;
 	margin-right : 1em ;
 	font-size    : 1em ;
 	font-weight  : bold ;
 }
 
-section[detail="subsummary"]>sectiontitle, div.section.detail-subsummary div.sectiontitle {
+section[detail="subsummary"]>sectiontitle, div.section.subsummary div.sectiontitle {
 	display             : block ;
 	margin-top          : 1em ;
 	margin-bottom       : 1em ;
@@ -508,17 +525,17 @@ list, div.list {
 	display : block ;
 }
 
-listitem[detail="chapter"], div.listitem.detail-chapter {
+listitem[detail="chapter"], div.listitem.chapter {
 	display     : block ;
 	margin-top  : 1em ;
 	font-weight : bold ;
 }
 
-listitem[detail="section"], div.listitem.detail-section {
+listitem[detail="section"], div.listitem.section {
 	display : block ;
 }
 
-listitem[detail="subsection"], div.listitem.detail-subsection {
+listitem[detail="subsection"], div.listitem.subsection {
 	display : block ;
 	display : inline-block ;
 }
@@ -547,25 +564,25 @@ listpage, div.listpage {
 /* :lang(en) */
 
 delimited[detail="quotation"]:before, delimitedblock[detail="quotation"]:before,
-	div.delimited.detail-quotation:before, div.delimitedblock.detail-quotation:before {
+	div.delimited.quotation:before, div.delimitedblock.quotation:before {
 	/* content : "\201C" ; */
 	font-style : italic ;
 }
 
 delimited[detail="quotation"]:after, delimitedblock[detail="quotation"]:after,
-	div.delimited.detail-quotation:after, div.delimitedblock.detail-quotation:after {
+	div.delimited.quotation:after, div.delimitedblock.quotation:after {
 	/* content : "\201D" ; */
 	font-style : italic ;
 }
 
 delimited[detail="quote"]:before, delimitedblock[detail="quote"]:before,
-	div.delimited.detail-quote:before, div.delimitedblock.detail-quote:before {
+	div.delimited.quote:before, div.delimitedblock.quote:before {
 	/* content : "\2018" ; */
 	font-style : italic ;
 }
 
 delimited[detail="quote"]:after, delimitedblock[detail="quote"]:after,
-	div.delimited.detail-quote:after, div.delimitedblock.detail-quote:after {
+	div.delimited.quote:after, div.delimitedblock.quote:after {
 	/* content : "\2019" ; */
 	font-style : italic ;
 }

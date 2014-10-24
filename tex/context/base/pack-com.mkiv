@@ -227,7 +227,7 @@
    \pack_combinations_location_reset
    \rawprocesscommacommand[\p_location]\pack_combinations_location_step
    %
-   \dostarttagged\t!combination\currentcombination
+   \dostarttaggedchained\t!combination\currentcombination\??combination
    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
    \let\combination\empty % permits \combination{}{} handy for cld
    \normalexpanded{\pack_combinations_start_indeed[\currentcombinationspec]}}

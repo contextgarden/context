@@ -148,7 +148,7 @@
    \ifnum\c_typo_subsentence_nesting=\plusone
      \dontleavehmode % was \leaveoutervmode
    \fi
-   \dostarttagged\t!subsentence\empty
+   \dostarttagged\t!subsentence\empty % no chain
    \symbol[\ifodd\c_typo_subsentence_nesting\c!leftsentence\else\c!leftsubsentence\fi]%
   }%  \ignorespaces}
 
@@ -305,7 +305,7 @@
 \unexpanded\def\startdelimitedtext[#1]%
   {\begingroup
    \typo_delimited_push{#1}%
-   \dostarttagged\t!delimitedblock\currentdelimitedtext
+   \dostarttaggedchained\t!delimitedblock\currentdelimitedtext\??delimitedtext
    \edef\p_delimited_method{\delimitedtextparameter\c!method}%
    \ifx\p_delimited_method\s!font
      \expandafter\typo_delimited_start_font
@@ -609,7 +609,7 @@
 
 \unexpanded\def\typo_delimited_par
   {\groupedcommand
-     {\dostarttagged\t!delimited\currentdelimitedtext % block?
+     {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext % block?
       \typo_delimited_handle_left\c!left}
      {\typo_delimited_handle_right\c!right
       \removelastskip
@@ -622,7 +622,7 @@
 %      \typo_delimited_attributed}
 %
 % \def\typo_delimited_quoted_b
-%   {\dostarttagged\t!delimited\currentdelimitedtext
+%   {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
 %    \typo_delimited_handle_left\c!left}
 %
 % \def\typo_delimited_quoted_e
@@ -632,7 +632,7 @@
 %    \typo_delimited_pop}
 %
 % \def\typo_delimited_attributed_b
-%   {\dostarttagged\t!delimited\currentdelimitedtext
+%   {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
 %    \usedelimitedtextstyleandcolor\c!style\c!color}
 %
 % \def\typo_delimited_attributed_e
@@ -640,7 +640,7 @@
 %    \typo_delimited_pop}
 %
 % \def\typo_delimited_fontdriven_b
-%   {\dostarttagged\t!delimited\currentdelimitedtext
+%   {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
 %    \languageparameter{\c!left\currentparentdelimitedtext}}% was: \currentdelimitedtext
 %
 % \def\typo_delimited_fontdriven_e
@@ -657,7 +657,7 @@
    \fi}
 
 \def\typo_delimited_quoted_b
-  {\dostarttagged\t!delimited\currentdelimitedtext
+  {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \typo_delimited_handle_left\c!left
    \usedelimitedtextstyleandcolor\c!style\c!color}
 
@@ -668,7 +668,7 @@
    \typo_delimited_pop}
 
 \def\typo_delimited_attributed_b
-  {\dostarttagged\t!delimited\currentdelimitedtext
+  {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color}
 
 \def\typo_delimited_attributed_e
@@ -676,7 +676,7 @@
    \typo_delimited_pop}
 
 \def\typo_delimited_fontdriven_b
-  {\dostarttagged\t!delimited\currentdelimitedtext
+  {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \languageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color}
 

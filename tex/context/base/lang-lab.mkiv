@@ -84,6 +84,7 @@
 \unexpanded\def\lang_labels_define_class_indeed#1#2#3#4#5#6#7#8#9%
   {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
    \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
+   \setuvalue{copy#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_copy}%
    \setuvalue{start#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dotripleempty\lang_labels_text_prefix_start[#1]}%
    \letvalue{stop#1text}\relax
    \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
@@ -237,6 +238,26 @@
 
 \unexpanded\def\setlabeltextpair#1#2#3#4#5% a fast one for usage at the Lua end
   {\expandafter\def\csname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
+
+\def\lang_labels_text_prefix_copy[#1][#2]%
+  {\ifsecondargument
+     \edef\currenttextprefixtag{\reallanguagetag{#1}}%
+     \processcommalist[#2]\lang_labels_text_prefix_copy_indeed
+   \else
+     \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
+     \processcommalist[#1]\lang_labels_text_prefix_copy_indeed
+   \fi}
+
+\def\lang_labels_text_prefix_copy_indeed#1%
+  {\lang_labels_text_prefix_copy_pair[#1]}
+
+\def\lang_labels_text_prefix_copy_pair[#1=#2]%
+  {\lang_labels_text_prefix_copy_pair_indeed{#1}[#2,,]}
+
+\def\lang_labels_text_prefix_copy_pair_indeed#1[#2,#3]%
+  {\expandafter\let
+     \csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\expandafter\endcsname
+     \csname\??label\currenttextprefixclass:\currenttextprefixtag:#2\endcsname}
 
 \definelabelclass [head]      [0] % titles
 \definelabelclass [label]     [0] % texts

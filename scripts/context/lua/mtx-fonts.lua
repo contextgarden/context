@@ -38,7 +38,7 @@ local helpinfo = [[
     <flag name="filter" value="list"><short>key-value pairs</short></flag>
     <flag name="all"><short>show all found instances (combined with other flags)</short></flag>
     <flag name="info"><short>give more details</short></flag>
-    <flag name="track" value="list"><short>enable trackers</short></flag>
+    <flag name="trackers" value="list"><short>enable trackers</short></flag>
     <flag name="statistics"><short>some info about the database</short></flag>
    </subcategory>
   </category>

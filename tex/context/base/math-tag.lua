@@ -146,12 +146,7 @@ end
 local actionstack = { }
 local fencesstack = { }
 
-local P, S, C, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.match
-local splittag = C(P(1-S(":-"))^1) * (P(":") * C((1-P("-"))^1) + Cc(""))
-
 -- glyph nodes and such can happen in under and over stuff
-
-local detail_accent = { detail = "accent" }
 
 local function getunicode(n) -- instead of getchar
     local char = getchar(n)
@@ -193,11 +188,6 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             end
             if id == math_char_code then
                 local char = getchar(start)
-                -- check for code
-                local a = getattr(start,a_mathcategory)
-                if a then
-                    a = { detail = a }
-                end
                 local code = getmathcode(char)
                 if code then
                     code = code[1]
@@ -216,14 +206,19 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 else
                     tag = "mo"
                 end
-                setattr(start,a_tagged,start_tagged(tag,a))
+                local a = getattr(start,a_mathcategory)
+                if a then
+                    setattr(start,a_tagged,start_tagged(tag,{ mathcategory = a }))
+                else
+                    setattr(start,a_tagged,start_tagged(tag)) -- todo: a_mathcategory
+                end
                 stop_tagged()
                 break -- okay?
             elseif id == math_textchar_code then -- or id == glyph_code
                 -- check for code
                 local a = getattr(start,a_mathcategory)
                 if a then
-                    setattr(start,a_tagged,start_tagged("ms",{ detail = a })) -- mtext
+                    setattr(start,a_tagged,start_tagged("ms",{ mathcategory = a })) -- mtext
                 else
                     setattr(start,a_tagged,start_tagged("ms")) -- mtext
                 end
@@ -241,12 +236,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             elseif id == math_box_code or id == hlist_code or id == vlist_code then
                 -- keep an eye on math_box_code and see what ends up in there
                 local attr = getattr(start,a_tagged)
-                local last = attr and taglist[attr]
-                local tag, detail
-                if last then
-                    local fulltag = last[#last]
-                    tag, detail = lpegmatch(splittag,fulltag)
-                end
+                local specification = taglist[attr]
+                local tag = specification.tagname
                 if tag == "formulacaption" then
                     -- skip
                 elseif tag == "mstacker" then
@@ -274,7 +265,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         --
                         -- todo: have a local list with local tags that then get appended
                         --
-                        local tagdata = taglist[attr] or { }
+                        local tagdata = specification.taglist
                         local common = #tagdata + 1
                         local function runner(list,depth) -- quite inefficient
                             local cache = { } -- we can have nested unboxed mess so best local to runner
@@ -293,7 +284,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                 if aa then
                                     local ac = cache[aa]
                                     if not ac then
-                                        local tagdata = taglist[aa]
+                                        local tagdata = taglist[aa].taglist
                                         local extra = #tagdata
                                         if common <= extra then
                                             for i=common,extra do
@@ -339,8 +330,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     local attr = getattr(start,a_tagged)
                     local last = attr and taglist[attr]
                     if last then
-                        local fulltag = last[#last]
-                        local tag, detail = lpegmatch(splittag,fulltag)
+                        local tag    = last.tag
+                        local detail = last.detail
                         if tag == "maction" then
                             if detail == "" then
                                 setattr(start,a_tagged,start_tagged("mrow"))
@@ -416,7 +407,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     -- left
                     local properties = { }
                     insert(fencesstack,properties)
-                    setattr(start,a_tagged,start_tagged("mfenced",nil,properties)) -- needs checking
+                    setattr(start,a_tagged,start_tagged("mfenced",{ properties = properties })) -- needs checking
                     if delim then
                         start_tagged("ignore")
                         local chr = getfield(delim,"small_char")
@@ -490,7 +481,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 local subtype    = getsubtype(start)
                 if bot_accent then
                     if accent then
-                        setattr(start,a_tagged,start_tagged("munderover", detail_accent, {
+                        setattr(start,a_tagged,start_tagged("munderover", {
+                            accent      = true,
                             top         = getunicode(accent),
                             bottom      = getunicode(bot_accent),
                             topfixed    = subtype == math_fixed_top or subtype == math_fixed_both,
@@ -501,7 +493,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         process(accent)
                         stop_tagged()
                     else
-                        setattr(start,a_tagged,start_tagged("munder", detail_accent, {
+                        setattr(start,a_tagged,start_tagged("munder", {
+                            accent      = true,
                             bottom      = getunicode(bot_accent),
                             bottomfixed = subtype == math_fixed_bottom or subtype == math_fixed_both,
                         }))
@@ -510,7 +503,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         stop_tagged()
                     end
                 elseif accent then
-                    setattr(start,a_tagged,start_tagged("mover", detail_accent, {
+                    setattr(start,a_tagged,start_tagged("mover", {
+                        accent   = true,
                         top      = getunicode(accent),
                         topfixed = subtype == math_fixed_top or subtype == math_fixed_both,
                     }))
@@ -522,7 +516,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 end
             elseif id == glue_code then
              -- local spec = getfield(start,"spec")
-             -- setattr(start,a_tagged,start_tagged("mspace",nil,spec and { width = getfield(spec,"width") }))
+             -- setattr(start,a_tagged,start_tagged("mspace",{ width = getfield(spec,"width") }))
                 setattr(start,a_tagged,start_tagged("mspace"))
                 stop_tagged()
             else
@@ -539,12 +533,9 @@ end
 
 function noads.handlers.tags(head,style,penalties)
     head = tonut(head)
-    local v_math = start_tagged("math")
-    local v_mrow = start_tagged("mrow")
     local v_mode = getattr(head,a_mathmode)
- -- setattr(head,a_tagged,v_math)
-    setattr(head,a_tagged,v_mrow)
-    tags.setattributehash(v_math,"mode",v_mode == 1 and "display" or "inline")
+    local v_math = start_tagged("math", { mode = v_mode == 1 and "display" or "inline" })
+    setattr(head,a_tagged,start_tagged("mrow"))
     process(head)
     stop_tagged()
     stop_tagged()

@@ -11,6 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% todo: tagging
 % todo: we cannot use 'default' as this wipes metadata names (maybe no longer do that)
 % todo: \v!cite => \s!cite
 % todo: interface with (ml)bibtex (export -> call -> import)
@@ -76,6 +77,7 @@
 \unexpanded\setvalue{\??constructioninitializer\v!btxlist}%
   {\let\currentbtxlist                  \currentconstruction
    \let\constructionparameter           \btxlistparameter
+   \let\constructionnamespace           \??btxlist
    \let\detokenizedconstructionparameter\detokenizedbtxlistparameter
    \let\letconstructionparameter        \letbtxlistparameter
    \let\useconstructionstyleandcolor    \usebtxliststyleandcolor
@@ -209,12 +211,14 @@
 \installcorenamespace {btxlistvariant}
 \installcorenamespace {btxcitevariant}
 \installcorenamespace {btxrendering}
+\installcorenamespace {btxregister}
 \installcorenamespace {btxcommand}
 \installcorenamespace {btxrenderingdefinition}
 
 \installcommandhandler \??btxdataset     {btxdataset}     \??btxdataset
 \installcommandhandler \??btxlistvariant {btxlistvariant} \??btxlistvariant
 \installcommandhandler \??btxcitevariant {btxcitevariant} \??btxcitevariant
+\installcommandhandler \??btxregister    {btxregister}    \??btxregister
 \installcommandhandler \??btxrendering   {btxrendering}   \??btxrendering
 
 \appendtoks

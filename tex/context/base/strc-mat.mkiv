@@ -528,7 +528,7 @@
 \unexpanded\def\strc_formulas_start_formula_indeed[#1][#2]% setting leftskip adaption is slow !
   {\bgroup % HERE
    \def\currentformula{#1}%
-   \dostarttagged\t!formula\currentformula
+   \dostarttaggedchained\t!formula\currentformula\??formula
    \the\everybeforedisplayformula
    \d_strc_formulas_display_skip_par\parskip\relax
   %\formulastrutdp\strutdepth
@@ -564,7 +564,7 @@
 \unexpanded\def\strc_formulas_start_formula_nested#1%
   {\bgroup
    \let\strc_formulas_stop_formula\strc_formulas_stop_formula_nested
-   \dostarttagged\t!subformula}
+   \dostarttagged\t!subformula\empty}
 
 \unexpanded\def\strc_formulas_stop_formula_nested
   {\dostoptagged

@@ -94,11 +94,15 @@
 % \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsynonym{\taggedctxcommand{settagsynonym("\currentsynonym","\currentsynonymtag")}}%
+    \unexpanded\def\dotagsynonym{\taggedctxcommand{settagsynonym("\currentsynonymtag")}}%
+\to \everyenableelements
+
+\appendtoks
+    \unexpanded\def\dotagsorting{\taggedctxcommand{settagsorting("\currentsortingtag")}}%
 \to \everyenableelements
 
 \appendtoks % frozen and assumed global per highlight class
-    \unexpanded\def\dotaghighlight{\taggedctxcommand{settaghighlight("\currenthighlight",\!!bs\highlightparameter\c!style\!!es,\number\attribute\colorattribute)}}%
+    \unexpanded\def\dotaghighlight{\taggedctxcommand{settaghighlight(\!!bs\highlightparameter\c!style\!!es,\number\attribute\colorattribute)}}%
 \to \everyenableelements
 
 \appendtoks % we can have differently scaled images
@@ -111,16 +115,12 @@
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsorting{\taggedctxcommand{settagsorting("\currentsorting","\currentsortingtag")}}%
-\to \everyenableelements
-
-\appendtoks
     \unexpanded\def\dotagsetparcounter{\global\advance\tagparcounter\plusone\attribute\taggedparattribute\tagparcounter}%
     \unexpanded\def\doresetparcounter {\attribute\taggedparattribute\attributeunsetvalue}%
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsetitemgroup{\taggedctxcommand{settagitemgroup("\currentitemgroup",\ifconditional\c_strc_itemgroups_pack true\else false\fi,"\currentitemgroupsymbol")}}%
+    \unexpanded\def\dotagsetitemgroup{\taggedctxcommand{settagitemgroup(\ifconditional\c_strc_itemgroups_pack true\else false\fi,"\currentitemgroupsymbol")}}%
 \to \everyenableelements
 
 \appendtoks
@@ -136,7 +136,7 @@
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotaglistlocation{\taggedctxcommand{settaglist("\currentlist",\currentlistindex)}}%
+    \unexpanded\def\dotaglistlocation{\taggedctxcommand{settaglist(\currentlistindex)}}%
 \to \everyenableelements
 
 \appendtoks

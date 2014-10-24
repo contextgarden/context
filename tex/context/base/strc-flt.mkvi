@@ -204,8 +204,8 @@
   {\definefloatcaption[#1][#3]%
    \definecounter[#1][#3]%
    \definelist[#1][#3]%
-   \presetlabeltext[#1=\Word{#3}~]%
-   \presetheadtext[#2=\Word{#2}]%
+   \copylabeltext[#1=#3]%
+  %\presetheadtext[#2=\Word{#2}]%
    \strc_floats_define_saved[#1][#3]%
    \strc_floats_define_commands{#1}{#2}}
 
@@ -661,7 +661,7 @@
    \fi
    \page_margin_strc_floats_before % todo: each float handler gets a before
    \global\insidefloattrue
-   \dostarttagged\t!float\currentfloat
+   \dostarttaggedchained\t!float\currentfloat\??float
    \page_margin_strc_floats_set_hsize % todo: each float handler gets a set_hsize
    \the\everyinsidefloat
    \strc_floats_analyze_variables_one
@@ -853,7 +853,7 @@
        \relax
        \relax
        \relax
-       [\c!name=\currentfloat,%
+       [\s!name=\currentfloat,% was c!name
         \s!counter=\currentfloatcounter,%
         \s!hascaption=\ifnofloatcaption \v!no\else\v!yes\fi,%
         \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%

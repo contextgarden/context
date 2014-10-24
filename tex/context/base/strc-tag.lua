@@ -6,7 +6,10 @@ if not modules then modules = { } end modules ['strc-tag'] = {
     license   = "see context related readme files"
 }
 
--- This is rather experimental code.
+-- This is rather experimental code. Tagging happens on the fly and there are two analysers
+-- involved: the pdf backend tagger and the exporter. They share data but there are subtle
+-- differences. Each tag carries a specification and these can be accessed by attribute (the
+-- end of the chain tag) or by so called fullname which is a tagname combined with a number.
 
 local type = type
 local insert, remove, unpack, concat = table.insert, table.remove, table.unpack, table.concat
@@ -28,36 +31,30 @@ local a_tagged       = attributes.private('tagged')
 local unsetvalue     = attributes.unsetvalue
 local codeinjections = backends.codeinjections
 
-local taglist        = allocate()
-local properties     = allocate()
-local userproperties = allocate()
+local taglist        = allocate() -- access by attribute
+local specifications = allocate() -- access by fulltag
 local labels         = allocate()
 local stack          = { }
 local chain          = { }
 local ids            = { }
 local enabled        = false
-local tagdata        = { } -- used in export
-local tagmetadata    = { } -- used in export
 local tagcontext     = { }
 local tagpatterns    = { }
+local lasttags       = { }
+local stacksize      = 0
+local metadata       = nil -- applied to the next element
 
 local tags           = structures.tags
 tags.taglist         = taglist -- can best be hidden
 tags.labels          = labels
-tags.data            = tagdata
-tags.metadata        = tagmetadata
 tags.patterns        = tagpatterns
-tags.userproperties  = userproperties -- used in backend
+tags.specifications  = specifications
 
 -- Tags are internally stored as:
 --
--- tag<detail>number>
--- tag<detail>number>
+-- tag>number tag>number tag>number
 
-local p_splitter     = C((1-S("<>"))^1)
-                     * ( P("<")^-1 * C((1-P(">"))^1) + Cc(false))
-                     * P(">")
-                     * C(P(1)^1)
+local p_splitter     = C((1-S(">"))^1) * P(">") * C(P(1)^1)
 tagpatterns.splitter = p_splitter
 
 local properties     = allocate {
@@ -199,43 +196,25 @@ local properties     = allocate {
     combinationcaption    = { pdf = "Span",       nature = "mixed"   },
 }
 
-local patterns_nop = setmetatableindex(function(t,tag)
-    local v = "^" .. tag .. ">"
+tags.properties = properties
+
+local patterns = setmetatableindex(function(t,tag)
+    local v = topattern("^" .. tag .. ">")
     t[tag] = v
     return v
 end)
 
-local patterns_yes = setmetatableindex(function(t,tag)
-    local v = setmetatableindex(function(t,detail)
-        local v = "^" .. tag .. "<" .. detail .. ">"
-        t[detail] = v
-        return v
-    end)
-    t[tag] = v
-    return v
-end)
-
-function tags.detailedtag(tag,detail,attribute)
-    if not attribute then
-        attribute = texattribute[a_tagged]
-    end
+function tags.locatedtag(tag)
+    local attribute = texattribute[a_tagged]
     if attribute >= 0 then
-        local tl = taglist[attribute]
-        if tl then
-            local pattern
-            if detail and detail ~= "" then
-             -- pattern = "^" .. tag .. ":" .. detail .. "%-"
-             -- pattern = "^" .. tag .. "<" .. detail .. ">"
-                pattern = patterns_yes[tag][detail]
-            else
-             -- pattern = "^" .. tag .. "%-"
-             -- pattern = "^" .. tag .. ">"
-                pattern = patterns_nop[tag]
-            end
-            for i=#tl,1,-1 do
-                local tli = tl[i]
-                if find(tli,pattern) then
-                    return tli
+        local specification = taglist[attribute]
+        if specification then
+            local taglist = specification.taglist
+            local pattern = patterns[tag]
+            for i=#taglist,1,-1 do
+                local t = taglist[i]
+                if find(t,pattern) then
+                    return t
                 end
             end
         end
@@ -245,13 +224,20 @@ function tags.detailedtag(tag,detail,attribute)
     return false -- handy as bogus index
 end
 
-tags.properties = properties
-
-local lasttags = { }
-local userdata = { }
-local nstack   = 0
-
-tags.userdata  = userdata
+function structures.atlocation(str)
+    local specification = taglist[texattribute[a_tagged]]
+    if specification then
+        if list then
+            local taglist = specification.taglist
+            local pattern = patterns[str]
+            for i=#list,1,-1 do
+                if find(list[i],pattern) then
+                    return true
+                end
+            end
+        end
+    end
+end
 
 function tags.setproperty(tag,key,value)
     local p = properties[tag]
@@ -263,7 +249,7 @@ function tags.setproperty(tag,key,value)
 end
 
 function tags.setaspect(key,value)
-    local tag = chain[nstack]
+    local tag = chain[stacksize]
     if tag then
         local p = properties[tag]
         if p then
@@ -274,23 +260,6 @@ function tags.setaspect(key,value)
     end
 end
 
-function tags.copyaspect(old,new)
-    local oldlst = taglist[old]
-    local newlst = taglist[new]
-    local oldtag = oldlst[#oldlst]
-    local newtag = newlst[#newlst]
-    properties[newtag] = properties[oldtag]
-end
-
-function tags.registerdata(data)
-    local fulltag = chain[nstack]
-    if fulltag then
-        tagdata[fulltag] = data
-    end
-end
-
-local metadata
-
 function tags.registermetadata(data)
     local d = settings_to_hash(data)
     if metadata then
@@ -300,102 +269,93 @@ function tags.registermetadata(data)
     end
 end
 
-function tags.start(tag,specification,props)
-    local label, detail, user
-    if specification then
-        label  = specification.label
-        detail = specification.detail
-        user   = specification.userdata
-    end
+function tags.start(tag,specification)
     if not enabled then
         codeinjections.enabletags()
         enabled = true
     end
     --
-    local fulltag = label ~= "" and label or tag
-    labels[tag] = fulltag
-    if detail and detail ~= "" then
-     -- fulltag = fulltag .. ":" .. detail
-        fulltag = fulltag .. "<" .. detail
-    end
+    labels[tag] = tag -- can go away
     --
-    local t = #taglist + 1
-    local n = (ids[fulltag] or 0) + 1
-    ids[fulltag] = n
-    lasttags[tag] = n
---  local completetag = fulltag .. "-" .. n
-    local completetag = fulltag .. ">" .. n
-    nstack = nstack + 1
-    chain[nstack] = completetag
-    stack[nstack] = t
+    local attribute = #taglist + 1
+    local tagindex  = (ids[tag] or 0) + 1
     --
-    tagcontext[tag] = completetag
+    local completetag = tag .. ">" .. tagindex
     --
-    -- a copy as we can add key values for alt and actualtext if needed:
-    taglist[t] = { unpack(chain,1,nstack) }
+    ids[tag]      = tagindex
+    lasttags[tag] = tagindex
+    stacksize     = stacksize + 1
     --
-    if user and user ~= "" then
-        -- maybe we should merge this into taglist or whatever ... anyway there is room to optimize
-        -- taglist.userdata = settings_to_hash(user)
-        userdata[completetag] = settings_to_hash(user)
-    end
-    if metadata then
-        tagmetadata[completetag] = metadata
+    chain[stacksize] = completetag
+    stack[stacksize] = attribute
+    tagcontext[tag]  = completetag
+    --
+    local tagnesting = { unpack(chain,1,stacksize) } -- a copy so we can add actualtext
+    --
+    if specification then
+        specification.attribute = attribute
+        specification.tagindex  = tagindex
+        specification.taglist   = tagnesting
+        specification.tagname   = tag
+        if metadata then
+            specification.metadata = metadata
+            metadata = nil
+        end
+        local userdata = specification.userdata
+        if user ~= "" and type(userdata) == "string"  then
+            specification.userdata = settings_to_hash(userdata)
+        end
+        local detail = specification.detail
+        if detail == "" then
+            specification.detail = nil
+        end
+        local parents = specification.parents
+        if parents == "" then
+            specification.parents = nil
+        end
+    else
+        specification = {
+            attribute = attribute,
+            tagindex  = tagindex,
+            taglist   = tagnesting,
+            tagname   = tag,
+            metadata  = metadata,
+        }
         metadata = nil
     end
-    if props then
-        properties[completetag] = props
-    end
-    texattribute[a_tagged] = t
-    return t
+    --
+    taglist[attribute]          = specification
+    specifications[completetag] = specification
+    --
+    texattribute[a_tagged] = attribute
+    return attribute
 end
 
--- function tags.restart(completetag)
---     if type(completetag) == "number" then
---         local attribute = completetag
---         local listentry = taglist[attribute]
---         local completetag = listentry[#listentry]
---         nstack = nstack + 1
---         chain[nstack] = completetag
---         stack[nstack] = attribute
---         texattribute[a_tagged] = attribute
---         return attribute
---     else
---         local attribute = #taglist + 1
---         nstack = nstack + 1
---         chain[nstack] = completetag
---         stack[nstack] = attribute
---         taglist[attribute] = { unpack(chain,1,nstack) }
---         texattribute[a_tagged] = attribute
---         return attribute
---     end
--- end
---
--- more compact:
-
 function tags.restart(attribute)
-    nstack = nstack + 1
+    stacksize = stacksize + 1
     if type(attribute) == "number" then
-        local listentry = taglist[attribute]
-        chain[nstack] = listentry[#listentry]
+        local taglist = taglist[attribute].taglist
+        chain[stacksize] = taglist[#taglist]
     else
-        chain[nstack] = attribute -- a string
+        chain[stacksize] = attribute -- a string
         attribute = #taglist + 1
-        taglist[attribute] = { unpack(chain,1,nstack) }
+--         taglist[attribute] = { unpack(chain,1,stacksize) }
+        taglist[attribute] = { taglist = { unpack(chain,1,stacksize) } }
     end
-    stack[nstack] = attribute
+    stack[stacksize] = attribute
     texattribute[a_tagged] = attribute
     return attribute
 end
 
 function tags.stop()
-    if nstack > 0 then
-        nstack = nstack -1
+    if stacksize > 0 then
+        stacksize = stacksize - 1
     end
-    local t = stack[nstack]
+    local t = stack[stacksize]
     if not t then
      -- if trace_tags then
-            report_tags("ignoring end tag, previous chain: %s",nstack > 0 and concat(chain[nstack]," ",1,nstack) or "none")
+         -- report_tags("ignoring end tag, previous chain: %s",stacksize > 0 and concat(chain[stacksize]," ",1,stacksize) or "none")
+            report_tags("ignoring end tag, previous chain: %s",stacksize > 0 and concat(chain," ",1,stacksize) or "none")
      -- end
         t = unsetvalue
     end
@@ -404,12 +364,7 @@ function tags.stop()
 end
 
 function tags.getid(tag,detail)
-    if detail and detail ~= "" then
-     -- return ids[tag .. ":" .. detail] or "?"
-        return ids[tag .. "<" .. detail] or "?"
-    else
-        return ids[tag] or "?"
-    end
+    return ids[tag] or "?"
 end
 
 function tags.last(tag)
@@ -420,14 +375,14 @@ function tags.lastinchain(tag)
     if tag and tag ~= "" then
         return tagcontext[tag]
     else
-        return chain[nstack]
+        return chain[stacksize]
     end
 end
 
-local strip = C((1-S(":-"))^1)
+local strip = C((1-S(">"))^1)
 
 commands.getelementtag = function()
-    local fulltag = chain[nstack]
+    local fulltag = chain[stacksize]
     if fulltag then
         context(lpegmatch(strip,fulltag))
     end
@@ -437,27 +392,27 @@ function tags.setuserproperties(tag,list)
     if list then
         tag = tagcontext[tag]
     else
-        tag, list = chain[nstack], tag
+        tag, list = chain[stacksize], tag
     end
-    if tag then
+    if tag then -- an attribute now
         local l = settings_to_hash(list)
-        local p = userproperties[tag]
-        if p then
-            for k, v in next, l do
-                p[k] = v
+        local s = specifications[tag]
+        if s then
+            local u = s.userdata
+            if u then
+                for k, v in next, l do
+                    u[k] = v
+                end
+            else
+                s.userdata = l
             end
         else
-           userproperties[tag] = l
+           -- error
         end
     end
 end
 
 commands.setelementuserproperties = tags.setuserproperties
-
-function structures.atlocation(str)
-    local location = gsub(concat(taglist[texattribute[a_tagged]],"-"),"%-%d+","")
-    return find(location,topattern(str)) ~= nil
-end
 
 function tags.handler(head)  -- we need a dummy
     return head, false
@@ -465,8 +420,8 @@ end
 
 statistics.register("structure elements", function()
     if enabled then
-        if nstack > 0 then
-            return format("%s element chains identified, open chain: %s ",#taglist,concat(chain," => ",1,nstack))
+        if stacksize > 0 then
+            return format("%s element chains identified, open chain: %s ",#taglist,concat(chain," => ",1,stacksize))
         else
             return format("%s element chains identified",#taglist)
         end
@@ -484,8 +439,3 @@ commands.starttag       = tags.start
 commands.stoptag        = tags.stop
 commands.settagproperty = tags.setproperty
 commands.settagaspect   = tags.setaspect
-
--- function commands.tagindex(tag)
---     context(lasttags[tag] or 0)
--- end
-

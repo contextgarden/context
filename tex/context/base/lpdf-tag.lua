@@ -83,16 +83,14 @@ local names               = pdfarray()
 
 local structurestags      = structures.tags
 local taglist             = structurestags.taglist
+local specifications      = structurestags.specifications
 local usedlabels          = structurestags.labels
 local properties          = structurestags.properties
-local userdata            = structurestags.userdata
 local lasttaginchain      = structurestags.lastinchain
 
 local usedmapping         = { }
 
-local tagsplitter         = structurestags.patterns.splitter
------ colonsplitter       = lpeg.splitat(":")
------ dashsplitter        = lpeg.splitat("-")
+-- local tagsplitter         = structurestags.patterns.splitter
 
 local add_ids             = false -- true
 
@@ -173,7 +171,6 @@ end
 
 -- here we can flush and free elements that are finished
 
-local userproperties     = structurestags.userproperties
 local pdf_userproperties = pdfconstant("UserProperties")
 
 local function makeattribute(t)
@@ -192,26 +189,27 @@ local function makeattribute(t)
     end
 end
 
-local function makeelement(fulltag,parent,attr)
-    local tg, detail, n = lpegmatch(tagsplitter,fulltag)
- -- local tag, n = lpegmatch(dashsplitter,fulltag)
- -- local tg, detail = lpegmatch(colonsplitter,tag)
-    if tg == "ignore" then
+local function makeelement(fulltag,parent)
+    local specification = specifications[fulltag]
+    local tag = specification.tagname
+    if tag == "ignore" then
         return false
-    elseif tg == "mstackertop" or tg == "mstackerbot" or tg == "mstackermid"then
+    elseif tag == "mstackertop" or tag == "mstackerbot" or tag == "mstackermid"then
+        -- TODO
         return true
-    elseif tg == "mstacker" then
-        local p = properties[fulltag]
-        tg = p and p.subtype or tg
     end
+    --
+    local detail   = specification.detail
+    local userdata = specification.userdata
+    --
+    usedmapping[tag] = true
+    --
     local k = pdfarray()
     local r = pdfreserveobject()
-    local a = userproperties[fulltag]
-    usedmapping[tg] = true
-    tg = usedlabels[tg] or tg
+    local t = usedlabels[tag] or tag
     local d = pdfdictionary {
         Type       = pdf_struct_element,
-        S          = pdfconstant(tg),
+        S          = pdfconstant(t),
         ID         = (add_ids and fulltag) or nil,
         T          = detail and detail or nil,
         P          = parent.pref,
@@ -228,8 +226,7 @@ local function makeelement(fulltag,parent,attr)
     end
     local kids = parent.kids
     kids[#kids+1] = s
---  local e = { tag = tag, pref = s, kids = k, knum = r, pnum = pagenum }
-    local e = { tag = detail and (tg .. "<" .. detail) or tg, pref = s, kids = k, knum = r, pnum = pagenum }
+    local e = { tag = t, pref = s, kids = k, knum = r, pnum = pagenum }
     elements[fulltag] = e
     return e
 end
@@ -345,12 +342,13 @@ function nodeinjections.addtags(head)
     for i=1,#ranges do
         local range = ranges[i]
         local attr, id, start, stop, list = range[1], range[2], range[3], range[4], range[5]
-        local tags = taglist[attr]
+        local specification = taglist[attr]
+        local list = specification.taglist
         local prev = root
-        local noftags, tag = #tags, nil
+        local noftags, tag = #list, nil
         for j=1,noftags do
-            local tag = tags[j]
-            local prv = elements[tag] or makeelement(tag,prev,attr)
+            local tag = list[j]
+            local prv = elements[tag] or makeelement(tag,prev)
             if prv == false then
                 -- ignore this one
                 prev = false

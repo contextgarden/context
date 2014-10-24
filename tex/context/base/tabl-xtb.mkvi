@@ -216,7 +216,7 @@
 
 \unexpanded\def\tabl_x_start_named_indeed[#settings]%
   {\advance\c_tabl_x_nesting\plusone
-   \dostarttagged\t!table\empty
+   \dostarttaggedchained\t!table\empty\??xtable
    \iffirstargument
      \setupcurrentxtable[#settings]%
    \fi
@@ -240,7 +240,7 @@
 
 \unexpanded\def\tabl_x_prepare#settings% assumes \iffirstargument to be set
   {\advance\c_tabl_x_nesting\plusone
-   \dostarttagged\t!table\empty
+   \dostarttaggedchained\t!table\empty\??xtable
    \iffirstargument
      \tabl_x_set_checked{#settings}%
    \fi

@@ -58,7 +58,8 @@
         }}%
         \letcounterparameter\s!name\currentcounter
     \else
-        \letcounterparameter\s!name\currentcounterparent
+      % \letcounterparameter\s!name\currentcounterparent % we need a chained clone
+        \setexpandedcounterparameter\s!name{\namedcounterparameter\currentcounterparent\s!name}%
     \fi
     \strc_counters_check_setup
 \to \everydefinecounter
@@ -577,10 +578,10 @@
        \xdef\currentstructurecomponentmarking {#2\c!marking}%
        \xdef\currentstructurecomponentlist    {#2\c!list}%
      \else
-       \xdef\currentstructurecomponenttitle   {#4\c!title}%
-       \xdef\currentstructurecomponentbookmark{#4\c!bookmark}%
-       \xdef\currentstructurecomponentmarking {#4\c!marking}%
-       \xdef\currentstructurecomponentlist    {#4\c!list}%
+       \xdef\currentstructurecomponenttitle   {#3\c!title}%
+       \xdef\currentstructurecomponentbookmark{#3\c!bookmark}%
+       \xdef\currentstructurecomponentmarking {#3\c!marking}%
+       \xdef\currentstructurecomponentlist    {#3\c!list}%
        \iflocation \ifx\currentstructurecomponentbookmark\empty
          \begingroup
          \simplifycommands

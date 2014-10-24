@@ -44,7 +44,7 @@ show all found instances (combined with other flags)
 .B --info
 give more details
 .TP
-.B --track=list
+.B --trackers=list
 enable trackers
 .TP
 .B --statistics

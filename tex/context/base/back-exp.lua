@@ -35,7 +35,7 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- check setting __i__
 
 local next, type, tonumber = next, type, tonumber
-local format, concat, sub, gsub = string.format, table.concat, string.sub, string.gsub
+local concat, sub, gsub = table.concat, string.sub, string.gsub
 local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfvalues = utf.char, utf.values
@@ -136,19 +136,16 @@ local traverse_nodes    = nuts.traverse
 local references        = structures.references
 local structurestags    = structures.tags
 local taglist           = structurestags.taglist
+local specifications    = structurestags.specifications
 local properties        = structurestags.properties
-local userdata          = structurestags.userdata -- might be combines with taglist
-local tagdata           = structurestags.data
-local tagmetadata       = structurestags.metadata
-local detailedtag       = structurestags.detailedtag
-local userproperties    = structurestags.userproperties
+local locatedtag        = structurestags.locatedtag
 
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
 
 -- todo: more locals (and optimize)
 
-local exportversion     = "0.32"
+local exportversion     = "0.33"
 local mathmlns          = "http://www.w3.org/1998/Math/MathML"
 
 local nofcurrentcontent = 0 -- so we don't free (less garbage collection)
@@ -160,7 +157,6 @@ local currentparagraph  = nil
 
 local noftextblocks     = 0
 
-local attributehash     = { } -- to be considered: set the values at the tex end
 local hyphencode        = 0xAD
 local hyphen            = utfchar(0xAD) -- todo: also emdash etc
 local tagsplitter       = structurestags.patterns.splitter
@@ -281,19 +277,25 @@ setmetatableindex(namespaced, function(t,k)
     end
 end)
 
--- local function attribute(key,value)
---     if value and value ~= "" then
---         return f_attribute(key,gsub(value,".",attribentities))
---     else
---         return ""
---     end
--- end
-
 local function attribute(key,value)
     if value and value ~= "" then
         return f_attribute(key,lpegmatch(p_attribute,value))
     else
         return ""
+    end
+end
+
+local function setattribute(di,key,value,escaped)
+    if value and value ~= "" then
+        local a = di.attributes
+        if escaped then
+            value = lpegmatch(p_escaped,value)
+        end
+        if not a then
+            di.attributes = { [key] = value }
+        else
+            a[key] = value
+        end
     end
 end
 
@@ -313,20 +315,12 @@ end
 
 local spaces = utilities.strings.newrepeater("  ",-1)
 
-function structurestags.setattributehash(fulltag,key,value) -- public hash
-    if type(fulltag) == "number" then
-        fulltag = taglist[fulltag]
-        if fulltag then
-            fulltag = fulltag[#fulltag]
-        end
-    end
-    if fulltag then
-        local ah = attributehash[fulltag] -- could be metatable magic
-        if not ah then
-            ah = { }
-            attributehash[fulltag] = ah
-        end
-        ah[key] = value
+function structurestags.setattributehash(attr,key,value) -- public hash
+    local specification = taglist[attr]
+    if specification then
+        specification[key] = value
+    else
+        -- some kind of error
     end
 end
 
@@ -484,13 +478,14 @@ properties.vspace = { export = "break",     nature = "display" }
 local function makebreaklist(list)
     nofbreaks = nofbreaks + 1
     local t = { }
-    if list then
+    local l = list and list.taglist
+    if l then
         for i=1,#list do
-            t[i] = list[i]
+            t[i] = l[i]
         end
     end
-    t[#t+1] = "break-" .. nofbreaks -- maybe no number
-    return t
+    t[#t+1] = "break>" .. nofbreaks -- maybe no number
+    return { taglist = t }
 end
 
 local breakattributes = {
@@ -501,7 +496,7 @@ local function makebreaknode(attributes) -- maybe no fulltag
     nofbreaks = nofbreaks + 1
     return {
         tg         = "break",
-        fulltag    = "break-" .. nofbreaks,
+        fulltag    = "break>" .. nofbreaks,
         n          = nofbreaks,
         element    = "break",
         nature     = "display",
@@ -512,7 +507,7 @@ local function makebreaknode(attributes) -- maybe no fulltag
     }
 end
 
-local function ignorebreaks(result,element,detail,n,fulltag,di)
+local function ignorebreaks(result,element,n,fulltag,di)
     local data = di.data
     for i=1,#data do
         local d = data[i]
@@ -522,7 +517,7 @@ local function ignorebreaks(result,element,detail,n,fulltag,di)
     end
 end
 
-local function ignorespaces(result,element,detail,n,fulltag,di)
+local function ignorespaces(result,element,n,fulltag,di)
     local data = di.data
     for i=1,#data do
         local d = data[i]
@@ -544,13 +539,14 @@ do
                 local di = data[i]
                 local tg = di.tg
                 if tg == "noexport" then
-                    local ud = userdata[di.fulltag]
-                    if ud then
-                        local comment = ud.comment
+                    local s = specifications[di.fulltag]
+                    local u = s and s.userdata
+                    if u then
+                        local comment = u.comment
                         if comment then
                             di.element = "comment"
                             di.data = { { content = comment } }
-                            ud.comment = nil
+                            u.comment = nil
                         else
                             data[i] = false
                         end
@@ -569,20 +565,20 @@ do
         end
     end
 
-    function extras.document(result,element,detail,n,fulltag,di)
-        result[#result+1] = f_attribute("language",languagenames[texgetcount("mainlanguagenumber")])
+    function extras.document(result,element,n,fulltag,di)
+        setattribute(di,"language",languagenames[texgetcount("mainlanguagenumber")])
         if not less_state then
-            result[#result+1] = f_attribute("file",tex.jobname)
-            result[#result+1] = f_attribute("date",os.date())
-            result[#result+1] = f_attribute("context",environment.version)
-            result[#result+1] = f_attribute("version",exportversion)
-            result[#result+1] = f_attribute("xmlns:m",mathmlns)
+            setattribute(di,"file",tex.jobname)
+            setattribute(di,"date",os.date())
+            setattribute(di,"context",environment.version)
+            setattribute(di,"version",exportversion)
+            setattribute(di,"xmlns:m",mathmlns)
             local identity = interactions.general.getidentity()
             for i=1,#fields do
                 local key   = fields[i]
                 local value = identity[key]
                 if value and value ~= "" then
-                    result[#result+1] = f_attribute(key,value)
+                    setattribute(di,key,value)
                 end
             end
         end
@@ -595,27 +591,18 @@ do
 
     local itemgroups = { }
 
-    local f_symbol = formatters[' symbol="%s"']
-    local s_packed = ' packed="yes"'
-
-    function structurestags.setitemgroup(current,packed,symbol)
-        itemgroups[detailedtag("itemgroup",current)] = {
+    function structurestags.setitemgroup(packed,symbol)
+        itemgroups[locatedtag("itemgroup")] = {
             packed = packed,
             symbol = symbol,
         }
     end
 
-    function extras.itemgroup(result,element,detail,n,fulltag,di)
+    function extras.itemgroup(result,element,n,fulltag,di)
         local hash = itemgroups[fulltag]
         if hash then
-            local packed = hash.packed
-            if packed then
-                result[#result+1] = s_packed
-            end
-            local symbol = hash.symbol
-            if symbol then
-                result[#result+1] = f_symbol(symbol)
-            end
+            setattribute(di,"packed",hash.packed and "yes" or nil)
+            setattribute(di,"symbol",hash.symbol)
         end
     end
 
@@ -626,27 +613,25 @@ do
     local synonyms = { }
     local sortings = { }
 
-    local f_tag    = formatters[' tag="%s"']
-
-    function structurestags.setsynonym(current,tag)
-        synonyms[detailedtag("synonym",current)] = tag
+    function structurestags.setsynonym(tag)
+        synonyms[locatedtag("synonym")] = tag
     end
 
-    function extras.synonym(result,element,detail,n,fulltag,di)
+    function extras.synonym(result,element,n,fulltag,di)
         local tag = synonyms[fulltag]
         if tag then
-            result[#result+1] = f_tag(tag)
+            setattribute(di,"tag",tag)
         end
     end
 
-    function structurestags.setsorting(current,tag)
-        sortings[detailedtag("sorting",current)] = tag
+    function structurestags.setsorting(tag)
+        sortings[locatedtag("sorting")] = tag
     end
 
-    function extras.sorting(result,element,detail,n,fulltag,di)
+    function extras.sorting(result,element,n,fulltag,di)
         local tag = sortings[fulltag]
         if tag then
-            result[#result+1] = f_tag(tag)
+            setattribute(di,"tag",tag)
         end
     end
 
@@ -657,8 +642,8 @@ do
     local highlight      = { }
     usedstyles.highlight = highlight
 
-    function structurestags.sethighlight(current,style,color) -- we assume global styles
-        highlight[current] = {
+    function structurestags.sethighlight(style,color) -- we assume global styles
+        highlight[locatedtag("highlight")] = {
             style = style, -- xml.css.fontspecification(style),
             color = color, -- xml.css.colorspec(color),
         }
@@ -674,22 +659,20 @@ do
     local symbols      = { }
     local linked       = { }
 
-    local f_insert     = formatters[' insert="%s"']
-
-    function structurestags.setdescription(tag,n)
+    function structurestags.setdescription(tag,n) -- needs checking (is tag needed)
         -- we can also use the internals hash or list
         local nd = structures.notes.get(tag,n)
         if nd then
             local references = nd.references
-            descriptions[references and references.internal] = detailedtag("description",tag)
+            descriptions[references and references.internal] = locatedtag("description")
         end
     end
 
-    function structurestags.setdescriptionsymbol(tag,n)
+    function structurestags.setdescriptionsymbol(tag,n) -- needs checking (is tag needed)
         local nd = structures.notes.get(tag,n) -- todo: use listdata instead
         if nd then
             local references = nd.references
-            symbols[references and references.internal] = detailedtag("descriptionsymbol",tag)
+            symbols[references and references.internal] = locatedtag("descriptionsymbol")
         end
     end
 
@@ -705,17 +688,17 @@ do
         end
     end
 
-    function extras.description(result,element,detail,n,fulltag,di)
+    function extras.description(result,element,n,fulltag,di)
         local id = linked[fulltag]
         if id then
-            result[#result+1] = f_insert(id) -- maybe just fulltag
+            setattribute(di,"insert",id)
         end
     end
 
-    function extras.descriptionsymbol(result,element,detail,n,fulltag,di)
+    function extras.descriptionsymbol(result,element,n,fulltag,di)
         local id = linked[fulltag]
         if id then
-            result[#result+1] = f_insert(id)
+            setattribute(di,"insert",id)
         end
     end
 
@@ -723,7 +706,7 @@ end
 
 -- -- todo: ignore breaks
 --
--- function extras.verbatimline(result,element,detail,n,fulltag,di)
+-- function extras.verbatimline(result,element,n,fulltag,di)
 --     inspect(di)
 -- end
 
@@ -732,11 +715,8 @@ do
     local image       = { }
     usedimages.image  = image
 
-    local f_imagespec = formatters[' id="%s" width="%s" height="%s"']
-    local f_imagepage = formatters[' page="%s"']
-
     function structurestags.setfigure(name,used,page,width,height)
-        image[detailedtag("image")] = {
+        image[locatedtag("image")] = {
             name   = name,
             used   = used,
             page   = page,
@@ -745,15 +725,17 @@ do
         }
     end
 
-    function extras.image(result,element,detail,n,fulltag,di)
+    function extras.image(result,element,n,fulltag,di)
         local data = image[fulltag]
         if data then
-            result[#result+1] = attribute("name",data.name)
+            setattribute(di,"name",data.name)
             local page = tonumber(data.page)
             if page and page > 1 then
-                result[#result+1] = f_imagepage(page)
+                setattribute(di,"page",page)
             end
-            result[#result+1] = f_imagespec(fulltag,data.width,data.height)
+            setattribute(di,"id",fulltag)
+            setattribute(di,"width",data.width)
+            setattribute(di,"height",data.height)
         end
     end
 
@@ -763,19 +745,18 @@ do
 
     local combinations = { }
 
-    local f_combispec  = formatters[' nx="%s" ny="%s"']
-
     function structurestags.setcombination(nx,ny)
-        combinations[detailedtag("combination")] = {
+        combinations[locatedtag("combination")] = {
             nx = nx,
             ny = ny,
         }
     end
 
-    function extras.combination(result,element,detail,n,fulltag,di)
+    function extras.combination(result,element,n,fulltag,di)
         local data = combinations[fulltag]
         if data then
-            result[#result+1] = f_combispec(data.nx,data.ny)
+            setattribute(di,"nx",data.nx)
+            setattribute(di,"ny",data.ny)
         end
     end
 
@@ -799,37 +780,37 @@ local evaluators = { }
 local specials   = { }
 local explicits  = { }
 
-evaluators.inner = function(result,var)
+evaluators.inner = function(di,var)
     local inner = var.inner
     if inner then
-        result[#result+1] = attribute("location",inner)
+        setattribute(di,"location",inner,true)
     end
 end
 
-evaluators.outer = function(result,var)
+evaluators.outer = function(di,var)
     local file, url = references.checkedfileorurl(var.outer,var.outer)
     if url then
-        result[#result+1] = attribute("url",url)
+        setattribute(di,"url",url,true)
     elseif file then
-        result[#result+1] = attribute("file",file)
+        setattribute(di,"file",file,true)
     end
 end
 
-evaluators["outer with inner"] = function(result,var)
+evaluators["outer with inner"] = function(di,var)
     local file = references.checkedfile(var.f)
     if file then
-        result[#result+1] = attribute("file",file)
+        setattribute(di,"file",file,true)
     end
     local inner = var.inner
     if inner then
-        result[#result+1] = attribute("location",inner)
+        setattribute(di,"inner",inner,true)
     end
 end
 
-evaluators.special = function(result,var)
+evaluators.special = function(di,var)
     local handler = specials[var.special]
     if handler then
-        handler(result,var)
+        handler(di,var)
     end
 end
 
@@ -841,57 +822,45 @@ do
     evaluators["special operation"]                = evaluators.special
     evaluators["special operation with arguments"] = evaluators.special
 
-    local f_prefix      = formatters[' prefix="%s"']
-    local f_reference   = formatters[' reference="%s"']
-    local f_destination = formatters[' destination="%s"']
-
-    local f_implicit    = formatters[' implicit="%s"']   -- automatic (internal) reference
-    local f_explicit    = formatters[' explicit="%s"']   -- user given reference
-
-    local f_internal    = formatters[' internal="%s"']   -- links to implicit
-    local f_location    = formatters[' location="%s"']   -- links to explicit
-    local f_url         = formatters[' url="%s"']
-    local f_file        = formatters[' file="%s"']
-
-    function specials.url(result,var)
+    function specials.url(di,var)
         local url = references.checkedurl(var.operation)
         if url and url ~= "" then
-            result[#result+1] = f_url(lpegmatch(p_escaped,url))
+            setattribute(di,"url",url,true)
         end
     end
 
-    function specials.file(result,var)
+    function specials.file(di,var)
         local file = references.checkedfile(var.operation)
         if file and file ~= "" then
-            result[#result+1] = f_file(lpegmatch(p_escaped,file))
+            setattribute(di,"file",file,true)
         end
     end
 
-    function specials.fileorurl(result,var)
+    function specials.fileorurl(di,var)
         local file, url = references.checkedfileorurl(var.operation,var.operation)
         if url and url ~= "" then
-            result[#result+1] = f_url(lpegmatch(p_escaped,url))
+            setattribute(di,"url",url,true)
         elseif file and file ~= "" then
-            result[#result+1] = f_file(lpegmatch(p_escaped,file))
+            setattribute(di,"file",file,true)
         end
     end
 
-    function specials.internal(result,var)
+    function specials.internal(di,var)
         local internal = references.checkedurl(var.operation)
         if internal then
-            result[#result+1] = f_location(internal)
+            setattribute(di,"location",internal)
         end
     end
 
-    local function adddestination(result,references) -- todo: specials -> exporters and then concat
+    local function adddestination(di,references) -- todo: specials -> exporters and then concat
         if references then
             local reference = references.reference
             if reference and reference ~= "" then
                 local prefix = references.prefix
                 if prefix and prefix ~= "" then
-                    result[#result+1] = f_prefix(prefix)
+                    setattribute(di,"prefix",prefix,true)
                 end
-                result[#result+1] = f_destination(lpegmatch(p_escaped,reference))
+                setattribute(di,"destination",reference,true)
                 for i=1,#references do
                     local r = references[i]
                     local e = evaluators[r.kind]
@@ -903,49 +872,49 @@ do
         end
     end
 
-    local function addimplicit(result,references)
+    function extras.addimplicit(di,references)
         if references then
             local internal = references.internal
             if internal then
-                result[#result+1] = f_implicit(internal)
+                setattribute(di,"implicit",internal)
             end
         end
     end
 
-    local function addinternal(result,references)
+    function extras.addinternal(di,references)
         if references then
             local internal = references.internal
             if internal then
-                result[#result+1] = f_internal(internal)
+                setattribute(di,"internal",internal)
             end
         end
     end
 
     local p_firstpart = lpeg.Cs((1-lpeg.P(","))^0)
 
-    local function addreference(result,references)
+    local function addreference(di,references)
         if references then
             local reference = references.reference
             if reference and reference ~= "" then
                 local prefix = references.prefix
                 if prefix and prefix ~= "" then
-                    result[#result+1] = f_prefix(prefix)
+                    setattribute(di,"prefix",prefix)
                 end
-                result[#result+1] = f_reference(lpegmatch(p_escaped,reference))
-                result[#result+1] = f_explicit(lpegmatch(p_escaped,lpegmatch(p_firstpart,reference)))
+                setattribute(di,"reference",reference,true)
+                setattribute(di,"explicit",lpegmatch(p_firstpart,reference),true)
             end
             local internal = references.internal
             if internal and internal ~= "" then
-                result[#result+1] = f_implicit(internal)
+                setattribute(di,"implicit",internal)
             end
         end
     end
 
-    local function link(result,element,detail,n,fulltag,di)
+    local function link(di,element,n,fulltag,di)
         -- for instance in lists a link has nested elements and no own text
         local reference = referencehash[fulltag]
         if reference then
-            adddestination(result,structures.references.get(reference))
+            adddestination(di,structures.references.get(reference))
             return true
         else
             local data = di.data
@@ -954,7 +923,7 @@ do
                     local di = data[i]
                     if di then
                         local fulltag = di.fulltag
-                        if fulltag and link(result,element,detail,n,fulltag,di) then
+                        if fulltag and link(di,element,n,fulltag,di) then
                             return true
                         end
                     end
@@ -962,9 +931,6 @@ do
             end
         end
     end
-
-    extras.addimplicit    = addimplicit
-    extras.addinternal    = addinternal
 
     extras.adddestination = adddestination
     extras.addreference   = addreference
@@ -1073,8 +1039,8 @@ do
             end
             local tg = d.tg
             if tg == "mover" then
-                local p = properties[d.fulltag]
-                local t = p.top
+                local s = specifications[d.fulltag]
+                local t = s.top
                 if t then
                     d = d.data[1]
                     local d1 = d.data[1]
@@ -1083,8 +1049,8 @@ do
                     return d
                 end
             elseif tg == "munder" then
-                local p = properties[d.fulltag]
-                local b = p.bottom
+                local s = specifications[d.fulltag]
+                local b = s.bottom
                 if b then
                     d = d.data[1]
                     local d1 = d.data[1]
@@ -1145,8 +1111,8 @@ do
 --                     data[1] = dummy_nucleus
 --                 end
             elseif roottg == "mfenced" then
-                local p = properties[root.fulltag]
-                local l, m, r = p.left, p.middle, p.right
+                local s = specifications[root.fulltag]
+                local l, m, r = s.left, s.middle, s.right
                 if l then
                     l = utfchar(l)
                 end
@@ -1193,23 +1159,21 @@ do
                 local di = data[i]
                 if di and not di.content then
                     local tg = di.tg
-                    local detail = di.detail
                     if tg == "math" then
                      -- di.element = "mrow" -- when properties
                         di.skip = "comment"
                         checkmath(di)
                         i = i + 1
                     elseif tg == "mover" then
-                        if detail == "accent" then
-                            local p = properties[di.fulltag]
-                            local t = p.top
+                        local s = specifications[di.fulltag]
+                        if s.accent then
+                            local t = s.top
                             local d = di.data
                             -- todo: accent = "false" (for scripts like limits)
                             di.attributes = {
                                 accent = "true",
                             }
                             -- todo: p.topfixed
-                            di.detail = nil
                             if t then
                                 -- mover
                                 d[1].data[1].content = utfchar(t)
@@ -1221,16 +1185,15 @@ do
                         checkmath(di)
                         i = i + 1
                     elseif tg == "munder" then
-                        if detail == "accent" then
-                            local p = properties[di.fulltag]
-                            local b = p.bottom
+                        local s = specifications[di.fulltag]
+                        if s.accent then
+                            local b = s.bottom
                             local d = di.data
                             -- todo: accent = "false" (for scripts like limits)
                             di.attributes = {
                                 accent = "true",
                             }
                          -- todo: p.bottomfixed
-                            di.detail = nil
                             if b then
                                 -- munder
                                 d[2].data[1].content = utfchar(b)
@@ -1241,10 +1204,10 @@ do
                         checkmath(di)
                         i = i + 1
                     elseif tg == "munderover" then
-                        if detail == "accent" then
-                            local p = properties[di.fulltag]
-                            local t = p.top
-                            local b = p.bottom
+                        local s = specifications[di.fulltag]
+                        if s.accent then
+                            local t = s.top
+                            local b = s.bottom
                             local d = di.data
                             -- todo: accent      = "false" (for scripts like limits)
                             -- todo: accentunder = "false" (for scripts like limits)
@@ -1254,7 +1217,6 @@ do
                             }
                          -- todo: p.topfixed
                          -- todo: p.bottomfixed
-                            di.detail = nil
                             if t and b then
                                 -- munderover
                                 d[1].data[1].content = utfchar(t)
@@ -1373,68 +1335,70 @@ do
                         }
                         data[i] = di
                         i = i + 1
-                    elseif detail then
-                     -- no checkmath(di) here
-                        local category = tonumber(detail) or 0
-                        if category == 1 then -- mo
-                            i = collapse(di,i,data,ndata,detail,"mo")
-                        elseif category == 2 then -- mi
-                            i = collapse(di,i,data,ndata,detail,"mi")
-                        elseif category == 3 then -- mn
-                            i = collapse(di,i,data,ndata,detail,"mn")
-                        elseif category == 4 then -- ms
-                            i = collapse(di,i,data,ndata,detail,"ms")
-                        elseif category >= 1000 then
-                            local apply = category >= 2000
-                            if apply then
-                                category = category - 1000
-                            end
-                            if tg == "mi" then -- function
-                                if roottg == "mrow" then
-                                    root.skip = "comment"
-                                    root.element = "function"
-                                end
+                    else
+                        local category = di.mathcategory
+                        if category then
+                         -- no checkmath(di) here
+                            if category == 1 then -- mo
+                                i = collapse(di,i,data,ndata,detail,"mo")
+                            elseif category == 2 then -- mi
                                 i = collapse(di,i,data,ndata,detail,"mi")
-                                local tag = functions[category]
-                                if tag then
-                                    di.data = functioncontent[tag]
-                                end
+                            elseif category == 3 then -- mn
+                                i = collapse(di,i,data,ndata,detail,"mn")
+                            elseif category == 4 then -- ms
+                                i = collapse(di,i,data,ndata,detail,"ms")
+                            elseif category >= 1000 then
+                                local apply = category >= 2000
                                 if apply then
-                                    di.after = apply_function
-                                elseif automathapply then -- make function
-                                    local following
-                                    if i <= ndata then
-                                        -- normally not the case
-                                        following = data[i]
-                                    else
-                                        local parent = di.__p__ -- == root
-                                        if parent.tg == "mrow" then
-                                            parent = parent.__p__
-                                        end
-                                        local index = parent.__i__
-                                        following = parent.data[index+1]
-                                    end
-                                    if following then
-                                        local tg = following.tg
-                                        if tg == "mrow" or tg == "mfenced" then -- we need to figure out the right condition
-                                            di.after = apply_function
-                                        end
-                                    end
+                                    category = category - 1000
                                 end
-                            else -- some problem
+                                if tg == "mi" then -- function
+                                    if roottg == "mrow" then
+                                        root.skip = "comment"
+                                        root.element = "function"
+                                    end
+                                    i = collapse(di,i,data,ndata,detail,"mi")
+                                    local tag = functions[category]
+                                    if tag then
+                                        di.data = functioncontent[tag]
+                                    end
+                                    if apply then
+                                        di.after = apply_function
+                                    elseif automathapply then -- make function
+                                        local following
+                                        if i <= ndata then
+                                            -- normally not the case
+                                            following = data[i]
+                                        else
+                                            local parent = di.__p__ -- == root
+                                            if parent.tg == "mrow" then
+                                                parent = parent.__p__
+                                            end
+                                            local index = parent.__i__
+                                            following = parent.data[index+1]
+                                        end
+                                        if following then
+                                            local tg = following.tg
+                                            if tg == "mrow" or tg == "mfenced" then -- we need to figure out the right condition
+                                                di.after = apply_function
+                                            end
+                                        end
+                                    end
+                                else -- some problem
+                                    checkmath(di)
+                                    i = i + 1
+                                end
+                            else
                                 checkmath(di)
                                 i = i + 1
                             end
+                        elseif automathnumber and tg == "mn" then
+                            checkmath(di)
+                            i = collapse_mn(di,i,data,ndata)
                         else
                             checkmath(di)
                             i = i + 1
                         end
-                    elseif automathnumber and tg == "mn" then
-                        checkmath(di)
-                        i = collapse_mn(di,i,data,ndata)
-                    else
-                        checkmath(di)
-                        i = i + 1
                     end
                 else -- can be string or boolean
                     if parenttg ~= "mtext" and di == " " then
@@ -1524,8 +1488,8 @@ do
     end
 
     function checks.math(di)
-        local hash = attributehash[di.fulltag]
-        local mode = (hash and hash.mode) == "display" and "block" or "inline"
+        local specification = specifications[di.fulltag]
+        local mode = specification and specification.mode == "display" and "block" or "inline"
         di.attributes = {
             ["display"] = mode,
             ["xmlns:m"] = mathmlns,
@@ -1545,7 +1509,7 @@ do
 
     local a, z, A, Z = 0x61, 0x7A, 0x41, 0x5A
 
-    function extras.mi(result,element,detail,n,fulltag,di) -- check with content
+    function extras.mi(di,element,n,fulltag,di) -- check with content
         local str = di.data[1].content
         if str and sub(str,1,1) ~= "&" then -- hack but good enough (maybe gsub op eerste)
             for v in utfvalues(str) do
@@ -1561,7 +1525,7 @@ do
         end
     end
 
-    function extras.msub(result,element,detail,n,fulltag,di)
+    function extras.msub(di,element,n,fulltag,di)
         -- m$^2$
         local data = di.data
         if #data == 1 then
@@ -1579,12 +1543,11 @@ end
 do
 
     local registered = structures.sections.registered
-    local f_level    = formatters[' level="%s"']
 
-    local function resolve(result,element,detail,n,fulltag,di)
+    local function resolve(di,element,n,fulltag,di)
         local data = listdata[fulltag]
         if data then
-            extras.addreference(result,data.references)
+            extras.addreference(di,data.references)
             return true
         else
             local data = di.data
@@ -1593,7 +1556,7 @@ do
                     local di = data[i]
                     if di then
                         local ft = di.fulltag
-                        if ft and resolve(result,element,detail,n,ft,di) then
+                        if ft and resolve(di,element,n,ft,di) then
                             return true
                         end
                     end
@@ -1602,29 +1565,29 @@ do
         end
     end
 
-    function extras.section(result,element,detail,n,fulltag,di)
-        local r = registered[detail]
+    function extras.section(di,element,n,fulltag,di)
+        local r = registered[specifications[fulltag].detail]
         if r then
-            result[#result+1] = f_level(r.level)
+            setattribute(di,"level",r.level)
         end
-        resolve(result,element,detail,n,fulltag,di)
+        resolve(di,element,n,fulltag,di)
     end
 
     extras.float = resolve
 
     -- todo: internal is already hashed
 
-    function structurestags.setlist(tag,n)
+    function structurestags.setlist(n)
         local data = structures.lists.getresult(n)
         if data then
-            referencehash[detailedtag("listitem",tag)] = data
+            referencehash[locatedtag("listitem")] = data
         end
     end
 
-    function extras.listitem(result,element,detail,n,fulltag,di)
+    function extras.listitem(di,element,n,fulltag,di)
         local data = referencehash[fulltag]
         if data then
-            extras.addinternal(result,data.references)
+            extras.addinternal(di,data.references)
             return true
         end
     end
@@ -1635,17 +1598,17 @@ do
 
     -- todo: internal is already hashed
 
-    function structurestags.setregister(tag,n)
+    function structurestags.setregister(tag,n) -- check if tag is needed
         local data = structures.registers.get(tag,n)
         if data then
-            referencehash[detailedtag("registerlocation",tag)] = data
+            referencehash[locatedtag("registerlocation")] = data
         end
     end
 
-    function extras.registerlocation(result,element,detail,n,fulltag,di)
+    function extras.registerlocation(di,element,n,fulltag,di)
         local data = referencehash[fulltag]
         if data then
-            extras.addinternal(result,data.references)
+            extras.addinternal(di,data.references)
             return true
         end
     end
@@ -1657,14 +1620,7 @@ end
 
 do
 
-    local tabledata    = { }
-
-    local f_columns    = formatters[' columns="%s"']
-    local f_rows       = formatters[' rows="%s"']
-
-    local s_flushright = ' align="flushright"'
-    local s_middle     = ' align="middle"'
-    local s_flushleft  = ' align="flushleft"'
+    local tabledata = { }
 
     local function hascontent(data)
         for i=1,#data do
@@ -1684,7 +1640,7 @@ do
 
     function structurestags.settablecell(rows,columns,align)
         if align > 0 or rows > 1 or columns > 1 then
-            tabledata[detailedtag("tablecell")] = {
+            tabledata[locatedtag("tablecell")] = {
                 rows    = rows,
                 columns = columns,
                 align   = align,
@@ -1692,26 +1648,26 @@ do
         end
     end
 
-    function extras.tablecell(result,element,detail,n,fulltag,di)
+    function extras.tablecell(di,element,n,fulltag,di)
         local hash = tabledata[fulltag]
         if hash then
             local columns = hash.columns
             if columns and columns > 1 then
-                result[#result+1] = f_columns(columns)
+                setattribute(di,"columns",columns)
             end
             local rows = hash.rows
             if rows and rows > 1 then
-                result[#result+1] = f_rows(rows)
+                setattribute(di,"rows",rows)
             end
             local align = hash.align
             if not align or align == 0 then
                 -- normal
             elseif align == 1 then -- use numbertoalign here
-                result[#result+1] = s_flushright
+                setattribute(di,"align","flushright")
             elseif align == 2 then
-                result[#result+1] = s_middle
+                setattribute(di,"align","middle")
             elseif align == 3 then
-                result[#result+1] = s_flushleft
+                setattribute(di,"align","flushleft")
             end
         end
     end
@@ -1720,13 +1676,13 @@ do
 
     function structurestags.settabulatecell(align)
         if align > 0 then
-            tabulatedata[detailedtag("tabulatecell")] = {
+            tabulatedata[locatedtag("tabulatecell")] = {
                 align = align,
             }
         end
     end
 
-    function extras.tabulate(result,element,detail,n,fulltag,di)
+    function extras.tabulate(di,element,n,fulltag,di)
         local data = di.data
         for i=1,#data do
             local di = data[i]
@@ -1736,18 +1692,18 @@ do
         end
     end
 
-    function extras.tabulatecell(result,element,detail,n,fulltag,di)
+    function extras.tabulatecell(di,element,n,fulltag,di)
         local hash = tabulatedata[fulltag]
         if hash then
             local align = hash.align
             if not align or align == 0 then
                 -- normal
             elseif align == 1 then
-                result[#result+1] = s_flushleft
+                setattribute(di,"align","flushleft")
             elseif align == 2 then
-                result[#result+1] = s_flushright
+                setattribute(di,"align","flushright")
             elseif align == 3 then
-                result[#result+1] = s_middle
+                setattribute(di,"align","middle")
             end
         end
     end
@@ -1759,6 +1715,7 @@ end
 do
 
     local f_detail                     = formatters[' detail="%s"']
+    local f_chain                      = formatters[' chain="%s"']
     local f_index                      = formatters[' n="%s"']
     local f_spacing                    = formatters['<c n="%s">%s</c>']
 
@@ -1843,10 +1800,11 @@ do
     end
 
     local function begintag(result,element,nature,di,skip)
-        local detail  = di.detail
-        local index   = di.n
-        local fulltag = di.fulltag
-        local comment = di.comment
+        local index         = di.n
+        local fulltag       = di.fulltag
+        local specification = specifications[fulltag]
+        local comment       = di.comment
+        local detail        = specification.detail
         if skip == "comment" then
             if show_comment then
                 if nature == "inline" or inline > 0 then
@@ -1867,9 +1825,17 @@ do
             local n = 0
             local r = { } -- delay this
             if detail then
+                detail = gsub(detail,"[^A-Za-z0-9]+","-")
+                specification.detail = detail -- we use it later in for the div
                 n = n + 1
-             -- r[n] = f_detail(detail)
-                r[n] = f_detail(gsub(detail,"[^A-Za-z0-9]+","-"))
+                r[n] = f_detail(detail)
+            end
+            local parents = specification.parents
+            if parents then
+                parents = gsub(parents,"[^A-Za-z0-9 ]+","-")
+                specification.parents = parents -- we use it later in for the div
+                n = n + 1
+                r[n] = f_chain(parents)
             end
             if indexing and index then
                 n = n + 1
@@ -1877,18 +1843,10 @@ do
             end
             local extra = extras[element]
             if extra then
-                extra(r,element,detail,index,fulltag,di)
-                n = #r
-            end
-            local u = userdata[fulltag]
-            if u then
-                for k, v in next, u do
-                    n = n + 1
-                    r[n] = f_attribute(k,v)
-                end
+                extra(di,element,index,fulltag,di)
             end
             if exportproperties then
-                local p = userproperties[fulltag]
+                local p = specification.userdata
                 if not p then
                     -- skip
                 elseif exportproperties == v_yes then
@@ -1961,8 +1919,9 @@ do
                 end
             end
         end
-        used[element][detail or ""] = nature -- for template css
-        local metadata = tagmetadata[fulltag]
+        used[element][detail or ""] = { nature, specification.parents }  -- for template css
+        -- also in last else ?
+        local metadata = specification.metadata
         if metadata then
             result[#result+1] = f_metadata_begin(depth)
             for k, v in table.sortedpairs(metadata) do
@@ -2247,27 +2206,26 @@ end
 -- collector code
 
 local function push(fulltag,depth)
- -- local tag, n = lpegmatch(dashsplitter,fulltag)
- -- local tg, detail = lpegmatch(colonsplitter,tag)
-    local tg, detail, n = lpegmatch(tagsplitter,fulltag)
-    local element, nature
-    if detail then
-     -- local pd = properties[tag] -- does this really happen?  element-detail
-        local pd = properties[tg.."<"..detail]
-        local pt = properties[tg]
-        element = pd and pd.export or pt and pt.export or tg
-        nature  = pd and pd.nature or pt and pt.nature or defaultnature
+    local tg, n, detail
+    local specification = specifications[fulltag]
+    if specification then
+        tg     = specification.tagname
+        n      = specification.tagindex
+        detail = specification.detail
     else
-        local p = properties[tg]
-        element = p and p.export or tg
-        nature  = p and p.nature or "inline"
+        -- a break (more efficient if we don't store those in specifications)
+        tg, n = lpegmatch(tagsplitter,fulltag)
+        n = tonumber(n) -- to tonumber in tagsplitter
     end
+    local p        = properties[tg]
+    local element  = p and p.export or tg
+    local nature   = p and p.nature or "inline" -- defaultnature
     local treedata = tree.data
-    local t = {
+    local t = { -- maybe we can use the tag table
         tg         = tg,
         fulltag    = fulltag,
         detail     = detail,
-        n          = tonumber(n), -- more efficient
+        n          = n, -- already a number
         element    = element,
         nature     = nature,
         data       = { },
@@ -2299,15 +2257,19 @@ local function push(fulltag,depth)
 end
 
 local function pop()
-    local top = nesting[currentdepth]
-    tree = treestack[currentdepth]
-    currentdepth = currentdepth - 1
-    if trace_export then
-        if top then
-            report_export("%w</%s>",currentdepth,top)
-        else
-            report_export("</%s>",top)
+    if currentdepth > 0 then
+        local top = nesting[currentdepth]
+        tree = treestack[currentdepth]
+        currentdepth = currentdepth - 1
+        if trace_export then
+            if top then
+                report_export("%w</%s>",currentdepth,top)
+            else
+                report_export("</%s>",top)
+            end
         end
+    else
+        report_export("%w<!-- too many pops -->",currentdepth)
     end
 end
 
@@ -2322,58 +2284,65 @@ local function continueexport()
 end
 
 local function pushentry(current)
-    if current then
-        if restart then
-            continueexport()
-            restart = false
+    if not current then
+        -- bad news
+        return
+    end
+    current = current.taglist
+    if not current then
+        -- even worse news
+        return
+    end
+    if restart then
+        continueexport()
+        restart = false
+    end
+    local newdepth = #current
+    local olddepth = currentdepth
+    if trace_export then
+        report_export("%w<!-- moving from depth %s to %s (%s) -->",currentdepth,olddepth,newdepth,current[newdepth])
+    end
+    if olddepth <= 0 then
+        for i=1,newdepth do
+            push(current[i],i)
         end
-        local newdepth = #current
-        local olddepth = currentdepth
-        if trace_export then
-            report_export("%w<!-- moving from depth %s to %s (%s) -->",currentdepth,olddepth,newdepth,current[newdepth])
-        end
-        if olddepth <= 0 then
-            for i=1,newdepth do
-                push(current[i],i)
+    else
+        local difference
+        if olddepth < newdepth then
+            for i=1,olddepth do
+                if current[i] ~= nesting[i] then
+                    difference = i
+                    break
+                end
             end
         else
-            local difference
-            if olddepth < newdepth then
-                for i=1,olddepth do
-                    if current[i] ~= nesting[i] then
-                        difference = i
-                        break
-                    end
+            for i=1,newdepth do
+                if current[i] ~= nesting[i] then
+                    difference = i
+                    break
                 end
-            else
-                for i=1,newdepth do
-                    if current[i] ~= nesting[i] then
-                        difference = i
-                        break
-                    end
-                end
-            end
-            if difference then
-                for i=olddepth,difference,-1 do
-                    pop()
-                end
-                for i=difference,newdepth do
-                    push(current[i],i)
-                end
-            elseif newdepth > olddepth then
-                for i=olddepth+1,newdepth do
-                    push(current[i],i)
-                end
-            elseif newdepth < olddepth then
-                for i=olddepth,newdepth,-1 do
-                    pop()
-                end
-            elseif trace_export then
-                report_export("%w<!-- staying at depth %s (%s) -->",currentdepth,newdepth,nesting[newdepth] or "?")
             end
         end
-        return olddepth, newdepth
+        if difference then
+            for i=olddepth,difference,-1 do
+                pop()
+            end
+            for i=difference,newdepth do
+                push(current[i],i)
+            end
+        elseif newdepth > olddepth then
+            for i=olddepth+1,newdepth do
+                push(current[i],i)
+            end
+        elseif newdepth < olddepth then
+            for i=olddepth,newdepth,-1 do
+                pop()
+            end
+        elseif trace_export then
+            report_export("%w<!-- staying at depth %s (%s) -->",currentdepth,newdepth,nesting[newdepth] or "?")
+        end
     end
+    return olddepth, newdepth
 end
 
 local function pushcontent(oldparagraph,newparagraph)
@@ -2397,17 +2366,19 @@ local function pushcontent(oldparagraph,newparagraph)
             if list then
                 olddepth, newdepth = pushentry(list)
             end
-            local td = tree.data
-            local nd = #td
-            td[nd+1] = { parnumber = oldparagraph or currentparagraph, content = content }
-            if trace_export then
-                report_export("%w<!-- start content with length %s -->",currentdepth,#content)
-                report_export("%w%s",currentdepth,(gsub(content,"\n","\\n")))
-                report_export("%w<!-- stop content -->",currentdepth)
-            end
-            if olddepth then
-                for i=newdepth-1,olddepth,-1 do
-                    pop()
+            if tree then
+                local td = tree.data
+                local nd = #td
+                td[nd+1] = { parnumber = oldparagraph or currentparagraph, content = content }
+                if trace_export then
+                    report_export("%w<!-- start content with length %s -->",currentdepth,#content)
+                    report_export("%w%s",currentdepth,(gsub(content,"\n","\\n")))
+                    report_export("%w<!-- stop content -->",currentdepth)
+                end
+                if olddepth then
+                    for i=newdepth-1,olddepth,-1 do
+                        pop()
+                    end
                 end
             end
         end
@@ -2810,7 +2781,7 @@ local xmlpreamble = [[
     local flushtree = wrapups.flushtree
 
     local function wholepreamble(standalone)
-        return format(xmlpreamble,standalone and "yes" or "no",tex.jobname,os.date(),environment.version,exportversion)
+        return string.format(xmlpreamble,standalone and "yes" or "no",tex.jobname,os.date(),environment.version,exportversion)
     end
 
 
@@ -2844,21 +2815,18 @@ local f_cssheadlink = formatters [ [[
     end
 
 local f_e_template = [[
+/* element="%element%" detail="%detail%" chain="%chain%" */
+
 %element%, div.%element% {
     display: %display% ;
 }]]
 
 local f_d_template = [[
-%element%[detail=%detail%], div.%element%.detail-%detail% {
+/* element="%element%" detail="%detail%" chain="%chain%" */
+
+%element%[detail=%detail%], div.%element%.%detail% {
     display: %display% ;
 }]]
-
--- local f_d_template = [[
--- %element%.%detail%, div.%element%.%detail% {
---     display: %display% ;
--- }]]
-
-local f_category = formatters["/* category: %s */"]
 
 -- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN" "http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd" >
 
@@ -2898,19 +2866,22 @@ local htmltemplate = [[
             if namespaces[element] then
                 -- skip math
             else
-                result[#result+1] = f_category(element)
-                for detail, nature in sortedhash(details) do
-                    local display = displaymapping[nature or "display"] or "block"
+                for detail, what in sortedhash(details) do
+                    local nature  = what[1] or "display"
+                    local chain   = what[2]
+                    local display = displaymapping[nature] or "block"
                     if detail == "" then
                         result[#result+1] = replacetemplate(f_e_template, {
                             element = element,
                             display = display,
+                            chain   = chain,
                         })
                     else
                         result[#result+1] = replacetemplate(f_d_template, {
                             element = element,
-                            detail  = detail,
                             display = display,
+                            detail  = detail,
+                            chain   = chain,
                         })
                     end
                 end
@@ -3033,6 +3004,58 @@ local htmltemplate = [[
     local p_cleanid   = lpeg.replacer { [":"] = "-" }
     local p_cleanhref = lpeg.Cs(lpeg.P("#") * p_cleanid)
 
+--     local p_splitter  = lpeg.tsplitat(" ")
+
+--     local classes = table.setmetatableindex(function(t,k)
+--         local l = lpegmatch(p_splitter,k)
+--         local d = { }
+--         local t = { }
+--         for i=1,l do
+--             local li = l[i]
+--             if not d[li] then
+--                 t[#t+1] = li
+--                 d[li] = true
+--             end
+--         end
+--         local v = concat(t," ")
+--         t[k] = v
+--         return v
+--     end)
+
+    local p_splitter  = lpeg.Ct ( (
+        lpeg.Carg(1) * lpeg.C((1-lpeg.P(" "))^1) / function(d,s) if not d[s] then d[s] = true return s end end
+      * lpeg.P(" ")^0 )^1 )
+
+
+    local classes = table.setmetatableindex(function(t,k)
+        local v = concat(lpegmatch(p_splitter,k,1,{})," ")
+        t[k] = v
+        return v
+    end)
+
+    local function makeclass(tg,at)
+        local detail = at.detail
+        local chain  = at.chain
+        at.detail = nil
+        at.chain  = nil
+        if detail and detail ~= "" then
+            if chain and chain ~= "" then
+                if chain ~= detail then
+                    return classes[tg .. " " .. chain .. " " .. detail] -- we need to remove duplicates
+                elseif tg ~= detail then
+                    return tg .. " " .. detail
+                end
+            elseif tg ~= detail then
+                return tg .. " " .. detail
+            end
+        elseif chain and chain ~= "" then
+            if tg ~= chain then
+                return tg .. " " .. chain
+            end
+        end
+        return tg
+    end
+
     local function remap(specification,source,target)
         local comment = nil -- share comments
         for c in xml.collected(source,"*") do
@@ -3059,20 +3082,17 @@ local htmltemplate = [[
                             end
                         end
                  -- end
-                    local at = c.at
-                    local class = { tg }
-                    if tg ~= "document" then
-                        for k, v in next, at do
-                            if not private[k] then
-                                class[#class+1] = k .. "-" .. v
-                            end
-                        end
+                    local at    = c.at
+                    local class = nil
+                    if tg == "document" then
+                        at.href   = nil
+                        at.detail = nil
+                        at.chain  = nil
                     else
-                        at.href = nil
+                        class = makeclass(tg,at)
                     end
                     local id    = at.id
                     local href  = at.href
-                    local class = concat(class," ")
                     if id then
                         id   = lpegmatch(p_cleanid,  id)   or id
                         if href then
@@ -3357,7 +3377,7 @@ local htmltemplate = [[
 
     statistics.register("xml exporting time", function()
         if exporting then
-            return format("%s seconds, version %s", statistics.elapsedtime(treehash),exportversion)
+            return string.format("%s seconds, version %s", statistics.elapsedtime(treehash),exportversion)
         end
     end)
 

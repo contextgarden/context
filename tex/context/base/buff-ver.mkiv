@@ -325,7 +325,7 @@
 
 \def\buff_verbatim_type_normal#1%
   {\buff_verbatim_initialize_type_two
-   \dostarttagged\t!verbatim\currenttype
+   \dostarttaggedchained\t!verbatim\currenttype\??type
    \ctxcommand{typestring{
      data    = \!!bs\detokenize{#1}\!!es,
      tab     = "\typeparameter\c!tab",
@@ -339,7 +339,7 @@
 
 \def\buff_verbatim_type_nested#1%
   {\buff_verbatim_initialize_type_two
-   \dostarttagged\t!verbatim\currenttype
+   \dostarttaggedchained\t!verbatim\currenttype\??type
    \ctxcommand{typestring{
      data   = \!!bs\detokenize{#1}\!!es,
      tab    = "\typeparameter\c!tab",
@@ -499,7 +499,7 @@
 
 \def\buff_verbatim_type_block_verbatim_indeed#1#2%
   {\buff_verbatim_initialize_typing_two
-   \dostarttagged\t!verbatimblock\currenttyping
+   \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
    \beginofverbatimlines
    \dostarttagged\t!verbatimlines\empty
    \ctxcommand{typebuffer {
@@ -618,7 +618,7 @@
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_initialize_typing_two
-   \dostarttagged\t!verbatimblock\currenttyping
+   \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
    \beginofverbatimlines
    \dostarttagged\t!verbatimlines\empty
    \ctxcommand{typefile {
@@ -791,7 +791,7 @@
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_initialize_typing_two
-   \dostarttagged\t!verbatimblock{#1}%
+   \dostarttaggedchained\t!verbatimblock{#1}\??typing
    \beginofverbatimlines
    \dostarttagged\t!verbatimlines\empty
    \ctxcommand{typebuffer {

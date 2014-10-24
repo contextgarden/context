@@ -197,8 +197,14 @@
 % \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
 %   {\ctxcommand{starttag("#1",{label="#1",userdata=\!!bs#2\!!es})}}
 
+% \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
+%   {\ctxcommand{starttag("#1",{label="\dogetupsometaglabeltext{#1}",userdata=\!!bs#2\!!es})}}
+%
+% it makes no sense to have labels ... maybe some day as a last 'replace' in the export
+% which might be more efficient then ... okay, we now cannot overload but who cares
+
 \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
-  {\ctxcommand{starttag("#1",{label="\dogetupsometaglabeltext{#1}",userdata=\!!bs#2\!!es})}}
+  {\ctxcommand{starttag("#1",{userdata=\!!bs#2\!!es})}}
 
 \unexpanded\def\strc_tags_element_stop_yes
   {\ctxcommand{stoptag()}}
@@ -222,11 +228,25 @@
 
 % beware: making these unexpanded spoils tables (noalign problem)
 
-\def\strc_tags_enabled_start
+\def\strc_tags_enabled_start_no_detail
   {\iftrialtypesetting
-     \expandafter\strc_tags_start_nop
+     \expandafter\strc_tags_start_nop_no_detail
    \else
-     \expandafter\strc_tags_start_yes
+     \expandafter\strc_tags_start_yes_no_detail
+   \fi}
+
+\def\strc_tags_enabled_start_detail
+  {\iftrialtypesetting
+     \expandafter\strc_tags_start_nop_detail
+   \else
+     \expandafter\strc_tags_start_yes_detail
+   \fi}
+
+\def\strc_tags_enabled_start_chained
+  {\iftrialtypesetting
+     \expandafter\strc_tags_start_nop_chained
+   \else
+     \expandafter\strc_tags_start_yes_chained
    \fi}
 
 \def\strc_tags_enabled_stop
@@ -236,25 +256,37 @@
      \expandafter\strc_tags_stop_yes
   \fi}
 
-\def\strc_tags_start_yes#1#2% we could have a fast labeltext resolver
-  {\ctxcommand{starttag("#1",{label="\dogetupsometaglabeltext{#1}",detail="#2"})}}
+\def\strc_tags_start_yes_no_detail    #1{\ctxcommand{starttag("#1")}}
+\def\strc_tags_start_yes_detail     #1#2{\ctxcommand{starttag("#1",{detail="#2"})}}
+\def\strc_tags_start_yes_chained  #1#2#3{\ctxcommand{starttag("#1",{detail="#2",parents="\getcurrentparentchain#3{#2}"})}}
+\def\strc_tags_stop_yes                 {\ctxcommand{stoptag()}}
 
-\def\strc_tags_stop_yes
-  {\ctxcommand{stoptag()}}
+\let\strc_tags_start_nop_no_detail\gobbleoneargument
+\let\strc_tags_start_nop_detail   \gobbletwoarguments
+\let\strc_tags_start_nop_chained  \gobblethreearguments
+\let\strc_tags_stop_nop           \donothing
 
-\def\strc_tags_start_nop#1#2%
-  {}
+% more efficient:
 
-\def\strc_tags_stop_nop
-  {}
+% \dostarttagged         % {tag} {detail}
+% \dostarttaggedchained  % {tag} {detail} \??hash
+% \dostarttaggednodetail % {tag}
+
+% \unexpanded\def\strc_tags_enable
+%   {\let\dostarttagged\strc_tags_start_yes
+%    \let\dostoptagged \strc_tags_stop_yes}
 
 \unexpanded\def\strc_tags_enable
-  {\let\dostarttagged\strc_tags_start_yes
-   \let\dostoptagged \strc_tags_stop_yes}
+  {\let\dostarttagged        \strc_tags_enabled_start_detail
+   \let\dostarttaggednodetail\strc_tags_enabled_start_no_detail
+   \let\dostarttaggedchained \strc_tags_enabled_start_chained
+   \let\dostoptagged         \strc_tags_enabled_stop}
 
 \unexpanded\def\strc_tags_disable
-  {\let\dostarttagged\strc_tags_start_nop
-   \let\dostoptagged \strc_tags_stop_nop}
+  {\let\dostarttagged        \strc_tags_start_nop_detail
+   \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
+   \let\dostarttaggedchained \strc_tags_start_nop_chained
+   \let\dostoptagged         \strc_tags_stop_nop}
 
 % for luigi (beware: fully expandable):
 
@@ -334,7 +366,7 @@
 \installcorenamespace               {paragraph}
 \installcommandhandler \??paragraph {paragraph} \??paragraph
 
-\setupparagraph % someday maybe also strut (beg/end)
+\setupparagraph % someday maybe also strut (beg/end) and align
   [\c!color=,
    \c!style=]
 

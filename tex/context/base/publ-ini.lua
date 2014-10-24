@@ -2129,7 +2129,7 @@ do
         for i=1,#found do
             local entry    = found[i]
             local author   = entry.author
-            local aentries = entries[author]
+            local aentries = author and entries[author]
             if not aentries then
                 result[#result+1] = entry
             elseif aentries == true then

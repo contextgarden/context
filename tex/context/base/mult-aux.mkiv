@@ -339,6 +339,11 @@
      \expandafter\edef\csname#1#4:\s!parent\endcsname{#2}%
    \fi \fi}
 
+\def\mult_interfaces_chain#1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\space\fi}
+\def\getparentchain       #1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\fi}
+\def\getcurrentparentchain#1#2{\csname#1#2:\s!chain\endcsname} % for the moment test:
+\def\getcurrentparentchain#1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\fi}
+
 \unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9% why is \expanded still needed in clones
   {\ifx#4\relax\let#4\empty\fi                                          % see \defineregister
    \unexpanded\def#2{\dotripleempty#5}%
@@ -351,6 +356,7 @@
         \the#6% predefine
         \edef#8{##2}%
         \mult_check_for_parent{#1}{#3}#4#8%
+        \expandafter\edef\csname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
         \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
         \mult_interfaces_get_parameters{#1#4:}[##3]%
       \else\ifsecondargument
@@ -358,16 +364,19 @@
         \expandafter\mult_check_for_assignment_indeed\detokenize{##2}=@@\_end_
         \ifassignment
           \let#8\empty
+          \expandafter\edef\csname#1#4:\s!chain\endcsname{##1}%
           \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
           \mult_interfaces_get_parameters{#1#4:}[##2]%
         \else
           \edef#8{##2}%
           \mult_check_for_parent{#1}{#3}#4#8%
+          \expandafter\edef\csname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
           \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
         \fi
       \else
         \the#6% predefine
         \let#8\empty
+        \expandafter\edef\csname#1#4:\s!chain\endcsname{##1}%
         \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
       \fi\fi
       \the#7%
