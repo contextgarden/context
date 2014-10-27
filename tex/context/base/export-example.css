@@ -61,7 +61,7 @@ document:before, div.document:before {
 document, div.document {
 	font-family  : "DejaVu Serif", "Lucida Bright", serif ;
 	font-size    : 12pt ;
-	line-height  : 120%;
+	line-height  : 14.4pt;
 	max-width    : 50em ;
 	padding      : 1em ;
  /* text-align   : justify ;    */

@@ -507,7 +507,7 @@ local function makebreaknode(attributes) -- maybe no fulltag
     }
 end
 
-local function ignorebreaks(result,element,n,fulltag,di)
+local function ignorebreaks(di,element,n,fulltag)
     local data = di.data
     for i=1,#data do
         local d = data[i]
@@ -517,7 +517,7 @@ local function ignorebreaks(result,element,n,fulltag,di)
     end
 end
 
-local function ignorespaces(result,element,n,fulltag,di)
+local function ignorespaces(di,element,n,fulltag)
     local data = di.data
     for i=1,#data do
         local d = data[i]
@@ -565,7 +565,7 @@ do
         end
     end
 
-    function extras.document(result,element,n,fulltag,di)
+    function extras.document(di,element,n,fulltag)
         setattribute(di,"language",languagenames[texgetcount("mainlanguagenumber")])
         if not less_state then
             setattribute(di,"file",tex.jobname)
@@ -591,18 +591,20 @@ do
 
     local itemgroups = { }
 
-    function structurestags.setitemgroup(packed,symbol)
+    function structurestags.setitemgroup(packed,level,symbol)
         itemgroups[locatedtag("itemgroup")] = {
             packed = packed,
             symbol = symbol,
+            level  = level,
         }
     end
 
-    function extras.itemgroup(result,element,n,fulltag,di)
+    function extras.itemgroup(di,element,n,fulltag)
         local hash = itemgroups[fulltag]
         if hash then
             setattribute(di,"packed",hash.packed and "yes" or nil)
             setattribute(di,"symbol",hash.symbol)
+            setattribute(di,"level",hash.level)
         end
     end
 
@@ -617,7 +619,7 @@ do
         synonyms[locatedtag("synonym")] = tag
     end
 
-    function extras.synonym(result,element,n,fulltag,di)
+    function extras.synonym(di,element,n,fulltag)
         local tag = synonyms[fulltag]
         if tag then
             setattribute(di,"tag",tag)
@@ -628,7 +630,7 @@ do
         sortings[locatedtag("sorting")] = tag
     end
 
-    function extras.sorting(result,element,n,fulltag,di)
+    function extras.sorting(di,element,n,fulltag)
         local tag = sortings[fulltag]
         if tag then
             setattribute(di,"tag",tag)
@@ -688,14 +690,14 @@ do
         end
     end
 
-    function extras.description(result,element,n,fulltag,di)
+    function extras.description(di,element,n,fulltag)
         local id = linked[fulltag]
         if id then
             setattribute(di,"insert",id)
         end
     end
 
-    function extras.descriptionsymbol(result,element,n,fulltag,di)
+    function extras.descriptionsymbol(di,element,n,fulltag)
         local id = linked[fulltag]
         if id then
             setattribute(di,"insert",id)
@@ -706,7 +708,7 @@ end
 
 -- -- todo: ignore breaks
 --
--- function extras.verbatimline(result,element,n,fulltag,di)
+-- function extras.verbatimline(di,element,n,fulltag)
 --     inspect(di)
 -- end
 
@@ -725,7 +727,7 @@ do
         }
     end
 
-    function extras.image(result,element,n,fulltag,di)
+    function extras.image(di,element,n,fulltag)
         local data = image[fulltag]
         if data then
             setattribute(di,"name",data.name)
@@ -752,7 +754,7 @@ do
         }
     end
 
-    function extras.combination(result,element,n,fulltag,di)
+    function extras.combination(di,element,n,fulltag)
         local data = combinations[fulltag]
         if data then
             setattribute(di,"nx",data.nx)
@@ -865,7 +867,7 @@ do
                     local r = references[i]
                     local e = evaluators[r.kind]
                     if e then
-                        e(result,r)
+                        e(di,r)
                     end
                 end
             end
@@ -910,7 +912,7 @@ do
         end
     end
 
-    local function link(di,element,n,fulltag,di)
+    local function link(di,element,n,fulltag)
         -- for instance in lists a link has nested elements and no own text
         local reference = referencehash[fulltag]
         if reference then
@@ -923,7 +925,7 @@ do
                     local di = data[i]
                     if di then
                         local fulltag = di.fulltag
-                        if fulltag and link(di,element,n,fulltag,di) then
+                        if fulltag and link(di,element,n,fulltag) then
                             return true
                         end
                     end
@@ -1509,7 +1511,7 @@ do
 
     local a, z, A, Z = 0x61, 0x7A, 0x41, 0x5A
 
-    function extras.mi(di,element,n,fulltag,di) -- check with content
+    function extras.mi(di,element,n,fulltag) -- check with content
         local str = di.data[1].content
         if str and sub(str,1,1) ~= "&" then -- hack but good enough (maybe gsub op eerste)
             for v in utfvalues(str) do
@@ -1525,7 +1527,7 @@ do
         end
     end
 
-    function extras.msub(di,element,n,fulltag,di)
+    function extras.msub(di,element,n,fulltag)
         -- m$^2$
         local data = di.data
         if #data == 1 then
@@ -1544,7 +1546,7 @@ do
 
     local registered = structures.sections.registered
 
-    local function resolve(di,element,n,fulltag,di)
+    local function resolve(di,element,n,fulltag)
         local data = listdata[fulltag]
         if data then
             extras.addreference(di,data.references)
@@ -1556,7 +1558,7 @@ do
                     local di = data[i]
                     if di then
                         local ft = di.fulltag
-                        if ft and resolve(di,element,n,ft,di) then
+                        if ft and resolve(di,element,n,ft) then
                             return true
                         end
                     end
@@ -1565,12 +1567,12 @@ do
         end
     end
 
-    function extras.section(di,element,n,fulltag,di)
+    function extras.section(di,element,n,fulltag)
         local r = registered[specifications[fulltag].detail]
         if r then
             setattribute(di,"level",r.level)
         end
-        resolve(di,element,n,fulltag,di)
+        resolve(di,element,n,fulltag)
     end
 
     extras.float = resolve
@@ -1584,7 +1586,7 @@ do
         end
     end
 
-    function extras.listitem(di,element,n,fulltag,di)
+    function extras.listitem(di,element,n,fulltag)
         local data = referencehash[fulltag]
         if data then
             extras.addinternal(di,data.references)
@@ -1605,7 +1607,7 @@ do
         end
     end
 
-    function extras.registerlocation(di,element,n,fulltag,di)
+    function extras.registerlocation(di,element,n,fulltag)
         local data = referencehash[fulltag]
         if data then
             extras.addinternal(di,data.references)
@@ -1648,7 +1650,7 @@ do
         end
     end
 
-    function extras.tablecell(di,element,n,fulltag,di)
+    function extras.tablecell(di,element,n,fulltag)
         local hash = tabledata[fulltag]
         if hash then
             local columns = hash.columns
@@ -1682,7 +1684,7 @@ do
         end
     end
 
-    function extras.tabulate(di,element,n,fulltag,di)
+    function extras.tabulate(di,element,n,fulltag)
         local data = di.data
         for i=1,#data do
             local di = data[i]
@@ -1692,7 +1694,7 @@ do
         end
     end
 
-    function extras.tabulatecell(di,element,n,fulltag,di)
+    function extras.tabulatecell(di,element,n,fulltag)
         local hash = tabulatedata[fulltag]
         if hash then
             local align = hash.align
@@ -1843,7 +1845,7 @@ do
             end
             local extra = extras[element]
             if extra then
-                extra(di,element,index,fulltag,di)
+                extra(di,element,index,fulltag)
             end
             if exportproperties then
                 local p = specification.userdata
@@ -2448,7 +2450,8 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                         -- to a regular setter at the tex end.
                         local r = getattr(n,a_reference)
                         if r then
-                            referencehash[tl[#tl]] = r -- fulltag
+                            local t = tl.taglist
+                            referencehash[t[#t]] = r -- fulltag
                         end
                         --
                     elseif last then
@@ -2769,28 +2772,38 @@ end
 do
 
 local xmlpreamble = [[
-<?xml version="1.0" encoding="UTF-8" standalone="%s" ?>
+<?xml version="1.0" encoding="UTF-8" standalone="%standalone%" ?>
 
-<!-- input filename   : %- 17s -->
-<!-- processing date  : %- 17s -->
-<!-- context version  : %- 17s -->
-<!-- exporter version : %- 17s -->
+<!--
 
+    input filename   : %filename%
+    processing date  : %date%
+    context version  : %contextversion%
+    exporter version : %exportversion%
+
+-->
 ]]
 
     local flushtree = wrapups.flushtree
 
     local function wholepreamble(standalone)
-        return string.format(xmlpreamble,standalone and "yes" or "no",tex.jobname,os.date(),environment.version,exportversion)
+        return replacetemplate(xmlpreamble, {
+            standalone     = standalone and "yes" or "no",
+            filename       = tex.jobname,
+            date           = os.date(),
+            contextversion = environment.version,
+            exportversion  = exportversion,
+        })
     end
 
 
-local f_csspreamble = formatters [ [[
-<?xml-stylesheet type="text/css" href="%s"?>
-]] ]
-local f_cssheadlink = formatters [ [[
-<link type="text/css" rel="stylesheet" href="%s"/>
-]] ]
+local csspreamble = [[
+<?xml-stylesheet type="text/css" href="%filename%" ?>
+]]
+
+local cssheadlink = [[
+<link type="text/css" rel="stylesheet" href="%filename%" />
+]]
 
     local function allusedstylesheets(cssfiles,files,path)
         local done   = { }
@@ -2806,22 +2819,22 @@ local f_cssheadlink = formatters [ [[
                 cssfile = file.join(path,cssfile)
                 report_export("adding css reference '%s'",cssfile)
                 files[#files+1]   = cssfile
-                result[#result+1] = f_csspreamble(cssfile)
-                extras[#extras+1] = f_cssheadlink(cssfile)
+                result[#result+1] = replacetemplate(csspreamble, { filename = cssfile })
+                extras[#extras+1] = replacetemplate(cssheadlink, { filename = cssfile })
                 done[cssfile]     = true
             end
         end
         return concat(result), concat(extras)
     end
 
-local f_e_template = [[
+local elementtemplate = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
 %element%, div.%element% {
     display: %display% ;
 }]]
 
-local f_d_template = [[
+local detailtemplate = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
 %element%[detail=%detail%], div.%element%.%detail% {
@@ -2871,13 +2884,13 @@ local htmltemplate = [[
                     local chain   = what[2]
                     local display = displaymapping[nature] or "block"
                     if detail == "" then
-                        result[#result+1] = replacetemplate(f_e_template, {
+                        result[#result+1] = replacetemplate(elementtemplate, {
                             element = element,
                             display = display,
                             chain   = chain,
                         })
                     else
-                        result[#result+1] = replacetemplate(f_d_template, {
+                        result[#result+1] = replacetemplate(detailtemplate, {
                             element = element,
                             display = display,
                             detail  = detail,
@@ -3004,24 +3017,6 @@ local htmltemplate = [[
     local p_cleanid   = lpeg.replacer { [":"] = "-" }
     local p_cleanhref = lpeg.Cs(lpeg.P("#") * p_cleanid)
 
---     local p_splitter  = lpeg.tsplitat(" ")
-
---     local classes = table.setmetatableindex(function(t,k)
---         local l = lpegmatch(p_splitter,k)
---         local d = { }
---         local t = { }
---         for i=1,l do
---             local li = l[i]
---             if not d[li] then
---                 t[#t+1] = li
---                 d[li] = true
---             end
---         end
---         local v = concat(t," ")
---         t[k] = v
---         return v
---     end)
-
     local p_splitter  = lpeg.Ct ( (
         lpeg.Carg(1) * lpeg.C((1-lpeg.P(" "))^1) / function(d,s) if not d[s] then d[s] = true return s end end
       * lpeg.P(" ")^0 )^1 )
@@ -3036,24 +3031,36 @@ local htmltemplate = [[
     local function makeclass(tg,at)
         local detail = at.detail
         local chain  = at.chain
+        local result
         at.detail = nil
         at.chain  = nil
         if detail and detail ~= "" then
             if chain and chain ~= "" then
                 if chain ~= detail then
-                    return classes[tg .. " " .. chain .. " " .. detail] -- we need to remove duplicates
+                    result = { classes[tg .. " " .. chain .. " " .. detail] } -- we need to remove duplicates
                 elseif tg ~= detail then
-                    return tg .. " " .. detail
+                    result = { tg, detail }
+                else
+                    result = { tg }
                 end
             elseif tg ~= detail then
-                return tg .. " " .. detail
+                result = { tg, detail }
+            else
+                result = { tg }
             end
         elseif chain and chain ~= "" then
             if tg ~= chain then
-                return tg .. " " .. chain
+                result = { tg, chain }
+            else
+                result = { tg }
             end
+        else
+            result = { tg }
         end
-        return tg
+        for k, v in next, at do
+            result[#result+1] = k .. "-" .. v
+        end
+        return concat(result, " ")
     end
 
     local function remap(specification,source,target)
@@ -3131,7 +3138,11 @@ local htmltemplate = [[
 
  -- local cssfile = nil  directives.register("backend.export.css", function(v) cssfile = v end)
 
+    local addsuffix = file.addsuffix
+    local joinfile  = file.join
+
     local function stopexport(v)
+
         starttiming(treehash)
         --
         finishexport()
@@ -3170,8 +3181,8 @@ local htmltemplate = [[
         local basename  = file.basename(v)
         local corename  = file.removesuffix(basename)
         local basepath  = basename .. "-export"
-        local imagepath = file.join(basepath,"images")
-        local stylepath = file.join(basepath,"styles")
+        local imagepath = joinfile(basepath,"images")
+        local stylepath = joinfile(basepath,"styles")
 
         local function validpath(what,pathname)
             if lfs.isdir(pathname) then
@@ -3194,25 +3205,25 @@ local htmltemplate = [[
 
         -- we're now on the dedicated export subpath so we can't clash names
 
-        local xmlfilebase           = file.addsuffix(basename .. "-raw","xml"  )
-        local xhtmlfilebase         = file.addsuffix(basename .. "-tag","xhtml")
-        local htmlfilebase          = file.addsuffix(basename .. "-div","xhtml")
-        local specificationfilebase = file.addsuffix(basename .. "-pub","lua"  )
+        local xmlfilebase           = addsuffix(basename .. "-raw","xml"  )
+        local xhtmlfilebase         = addsuffix(basename .. "-tag","xhtml")
+        local htmlfilebase          = addsuffix(basename .. "-div","xhtml")
+        local specificationfilebase = addsuffix(basename .. "-pub","lua"  )
 
-        local xmlfilename           = file.join(basepath, xmlfilebase          )
-        local xhtmlfilename         = file.join(basepath, xhtmlfilebase        )
-        local htmlfilename          = file.join(basepath, htmlfilebase         )
-        local specificationfilename = file.join(basepath, specificationfilebase)
+        local xmlfilename           = joinfile(basepath, xmlfilebase          )
+        local xhtmlfilename         = joinfile(basepath, xhtmlfilebase        )
+        local htmlfilename          = joinfile(basepath, htmlfilebase         )
+        local specificationfilename = joinfile(basepath, specificationfilebase)
         --
-        local defaultfilebase       = file.addsuffix(basename .. "-defaults", "css")
-        local imagefilebase         = file.addsuffix(basename .. "-images",   "css")
-        local stylefilebase         = file.addsuffix(basename .. "-styles",   "css")
-        local templatefilebase      = file.addsuffix(basename .. "-templates","css")
+        local defaultfilebase       = addsuffix(basename .. "-defaults", "css")
+        local imagefilebase         = addsuffix(basename .. "-images",   "css")
+        local stylefilebase         = addsuffix(basename .. "-styles",   "css")
+        local templatefilebase      = addsuffix(basename .. "-templates","css")
         --
-        local defaultfilename       = file.join(stylepath,defaultfilebase )
-        local imagefilename         = file.join(stylepath,imagefilebase   )
-        local stylefilename         = file.join(stylepath,stylefilebase   )
-        local templatefilename      = file.join(stylepath,templatefilebase)
+        local defaultfilename       = joinfile(stylepath,defaultfilebase )
+        local imagefilename         = joinfile(stylepath,imagefilebase   )
+        local stylefilename         = joinfile(stylepath,stylefilebase   )
+        local templatefilename      = joinfile(stylepath,templatefilebase)
 
         local cssfile               = finetuning.cssfile
 
@@ -3238,11 +3249,11 @@ local htmltemplate = [[
         if cssfile then
             local list = table.unique(settings_to_array(cssfile))
             for i=1,#list do
-                local source = file.addsuffix(list[i],"css")
-                local target = file.join(stylepath,file.basename(source))
+                local source = addsuffix(list[i],"css")
+                local target = joinfile(stylepath,file.basename(source))
                 cssfiles[#cssfiles+1] = source
                 if not lfs.isfile(source) then
-                    source = file.join("../",source)
+                    source = joinfile("../",source)
                 end
                 if lfs.isfile(source) then
                     report_export("copying %s",source)
@@ -3301,7 +3312,7 @@ local htmltemplate = [[
             name        = file.removesuffix(v),
             identifier  = os.uuid(),
             images      = wrapups.uniqueusedimages(),
-            imagefile   = file.join("styles",imagefilebase),
+            imagefile   = joinfile("styles",imagefilebase),
             imagepath   = "images",
             stylepath   = "styles",
             xmlfiles    = { xmlfilebase },

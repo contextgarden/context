@@ -120,7 +120,7 @@
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsetitemgroup{\taggedctxcommand{settagitemgroup(\ifconditional\c_strc_itemgroups_pack true\else false\fi,"\currentitemgroupsymbol")}}%
+    \unexpanded\def\dotagsetitemgroup{\taggedctxcommand{settagitemgroup(\ifconditional\c_strc_itemgroups_pack true\else false\fi,\number\currentitemlevel,"\currentitemgroupsymbol")}}%
 \to \everyenableelements
 
 \appendtoks

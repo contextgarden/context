@@ -5,6 +5,8 @@ if not modules then modules = { } end modules ['publ-ini'] = {
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
+-- todo: delay details till alternative is known so that potential author
+-- fields are known
 
 -- If we define two datasets with the same bib file we can consider
 -- sharing the data but that means that we need to have a parent which
@@ -89,6 +91,7 @@ manipulatormethods.Words = converters.Words
 manipulatormethods.WORDS = converters.WORDS
 
 local context                     = context
+local commands                    = commands
 
 local ctx_setvalue                = context.setvalue
 local ctx_firstoftwoarguments     = context.firstoftwoarguments
@@ -133,6 +136,20 @@ local ctx_btxstopciteauthor       = context.btxstopciteauthor
 local ctx_btxstartsubcite         = context.btxstartsubcite
 local ctx_btxstopsubcite          = context.btxstopsubcite
 local ctx_btxlistsetup            = context.btxlistsetup
+
+local specifications                 = publications.specifications
+local currentspecification           = specifications[false]
+local currentspecificationfields     = currentspecification.fields
+local currentspecificationcategories = currentspecification.categories
+
+local function setspecification(name)
+    currentspecification           = specifications[name]
+    currentspecificationfields     = currentspecification.fields
+    currentspecificationcategories = currentspecification.categories
+end
+
+publications.setspecification = setspecification
+commands.setbtxspecification  = setspecification
 
 local optionalspace  = lpeg.patterns.whitespace^0
 local prefixsplitter = optionalspace * lpeg.splitat(optionalspace * P("::") * optionalspace)
@@ -846,21 +863,24 @@ function commands.btxflush(name,tag,field)
     if dataset then
         local fields = dataset.luadata[tag]
         if fields then
-            local manipulator, field = splitmanipulation(field)
-            local value = fields[field]
-            if type(value) == "string" then
-                context(manipulator and applymanipulation(manipulator,value) or value)
-                return
-            end
-            local details = dataset.details[tag]
-            if details then
-                local value = details[field]
+            local category = fields.category
+            if currentspecificationfields[category][field] then
+                local manipulator, field = splitmanipulation(field)
+                local value = fields[field]
                 if type(value) == "string" then
                     context(manipulator and applymanipulation(manipulator,value) or value)
                     return
                 end
+                local details = dataset.details[tag]
+                if details then
+                    local value = details[field]
+                    if type(value) == "string" then
+                        context(manipulator and applymanipulation(manipulator,value) or value)
+                        return
+                    end
+                end
+                report("unknown field %a of tag %a in dataset %a",field,tag,name)
             end
-            report("unknown field %a of tag %a in dataset %a",field,tag,name)
         else
             report("unknown tag %a in dataset %a",tag,name)
         end
@@ -874,12 +894,15 @@ function commands.btxdetail(name,tag,field)
     if dataset then
         local details = dataset.details[tag]
         if details then
-            local manipulator, field = splitmanipulation(field)
-            local value = details[field]
-            if type(value) == "string" then
-                context(manipulator and applymanipulation(manipulator,value) or value)
-            else
-                report("unknown detail %a of tag %a in dataset %a",field,tag,name)
+            local category = fields.category
+            if currentspecificationfields[category][field] then
+                local manipulator, field = splitmanipulation(field)
+                local value = details[field]
+                if type(value) == "string" then
+                    context(manipulator and applymanipulation(manipulator,value) or value)
+                else
+                    report("unknown detail %a of tag %a in dataset %a",field,tag,name)
+                end
             end
         else
             report("unknown tag %a in dataset %a",tag,name)
@@ -894,12 +917,15 @@ function commands.btxfield(name,tag,field)
     if dataset then
         local fields = dataset.luadata[tag]
         if fields then
-            local manipulator, field = splitmanipulation(field)
-            local value = fields[field]
-            if type(value) == "string" then
-                context(manipulator and applymanipulation(manipulator,value) or value)
-            else
-                report("unknown field %a of tag %a in dataset %a",field,tag,name)
+            local category = fields.category
+            if currentspecificationfields[category][field] then
+                local manipulator, field = splitmanipulation(field)
+                local value = fields[field]
+                if type(value) == "string" then
+                    context(manipulator and applymanipulation(manipulator,value) or value)
+                else
+                    report("unknown field %a of tag %a in dataset %a",field,tag,name)
+                end
             end
         else
             report("unknown tag %a in dataset %a",tag,name)
@@ -916,18 +942,21 @@ local function found(name,tag,field,yes)
     if dataset then
         local data  = dataset.luadata[tag]
         if data then
-            local value = data[field]
-            if value then
-                if value ~= "" then
-                    return true
-                end
-            else
-                local data = dataset.details[tag]
-                if data then
-                    local value = data[field]
-                    if value then
-                        if value ~= "" then
-                            return true
+            local category = data.category
+            if currentspecificationfields[category][field] then
+                local value = data[field]
+                if value then
+                    if value ~= "" then
+                        return true
+                    end
+                else
+                    local data = dataset.details[tag]
+                    if data then
+                        local value = data[field]
+                        if value then
+                            if value ~= "" then
+                                return true
+                            end
                         end
                     end
                 end
@@ -1197,9 +1226,9 @@ function lists.collectentries(specification)
     rendering.method        = method
     rendering.list          = { }
     rendering.done          = { }
-    rendering.sorttype      = specification.sorttype  or v_default
+    rendering.sorttype      = specification.sorttype or v_default
     rendering.criterium     = specification.criterium or v_none
-    rendering.repeated      = specification.repeated  or v_no
+    rendering.repeated      = specification.repeated or v_no
     rendering.specification = specification
     local filtermethod      = methods[method]
     if not filtermethod then
@@ -1426,10 +1455,13 @@ end
 
 -- for rendering
 
+-- setspecification
+
 function lists.flushentries(dataset,textmode)
     local rendering = renderings[dataset]
     local list      = rendering.list
     local luadata   = datasets[dataset].luadata
+    -- maybe a startflushing here
     for i=1,#list do
         local li       = list[i]
         local tag      = li[1]
@@ -1474,7 +1506,8 @@ function lists.flushentries(dataset,textmode)
         else
             ctx_btxhandlelistentry()
         end
-     end
+    end
+    setspecification(false)
 end
 
 -- function lists.flushentry(specification)
@@ -1739,19 +1772,24 @@ local f_missing  = formatters["<%s>"]
 
 -- maybe also sparse (e.g. pages)
 
+-- a bit redundant sccess to datasets
+
 local function processcite(dataset,reference,mark,compress,setup,internal,getter,setter,compressor)
     reference = publications.parenttag(dataset,reference)
     local found, todo, list = findallused(dataset,reference,internal)
     tobemarked = mark and todo
---     if type(tobemarked) ~= "table" then
---         tobemarked = { }
---     end
     if found and setup then
         local source = { }
         local badkey = false
         for i=1,#found do
             local entry    = found[i]
             local tag      = entry.userdata.btxref
+
+-- we can probably move the test into the flush
+
+local category = datasets[dataset].luadata[tag].category
+if currentspecificationfields[category][setup] then
+
             local internal = entry.references.internal
             local data     = getter(dataset,tag,entry,internal)
             if compress and not compressor then
@@ -1767,7 +1805,12 @@ local function processcite(dataset,reference,mark,compress,setup,internal,getter
                     badkey = true
                 end
             end
-            source[i] = data
+            source[#source+1] = data
+
+else
+    report("cite rendering %a is not available for %a",setup,category)
+end
+
         end
 
         local function flush(i,n,entry,last)
@@ -2108,6 +2151,8 @@ end
 
 do
 
+    local getauthor = publications.authors.getauthor
+
     local currentbtxciteauthor = function()
         context.currentbtxciteauthor()
         return true -- needed?
@@ -2117,27 +2162,31 @@ do
         local result  = { }
         local entries = { }
         for i=1,#found do
-            local entry    = found[i]
-            local author   = entry.author
-            local aentries = entries[author]
-            if aentries then
-                aentries[#aentries+1] = entry
-            else
-                entries[author] = { entry }
+            local entry  = found[i]
+            local author = entry.author
+            if author then
+                local aentries = entries[author]
+                if aentries then
+                    aentries[#aentries+1] = entry
+                else
+                    entries[author] = { entry }
+                end
             end
         end
         for i=1,#found do
-            local entry    = found[i]
-            local author   = entry.author
-            local aentries = author and entries[author]
-            if not aentries then
-                result[#result+1] = entry
-            elseif aentries == true then
-                -- already done
-            else
-                result[#result+1] = entry
-                entry.entries = aentries
-                entries[author] = true
+            local entry  = found[i]
+            local author = entry.author
+            if author then
+                local aentries = entries[author]
+                if not aentries then
+                    result[#result+1] = entry
+                elseif aentries == true then
+                    -- already done
+                else
+                    result[#result+1] = entry
+                    entry.entries = aentries
+                    entries[author] = true
+                end
             end
         end
         -- todo: add letters (should we then tag all?)
@@ -2164,7 +2213,9 @@ do
                     ctx_btxsetfirst(first[key] or f_missing(first.tag))
                     local suffix = entry.suffix
                     local value  = entry.last[key]
-                    ctx_btxsetsecond(value)
+                    if value then
+                        ctx_btxsetsecond(value)
+                    end
                     if suffix then
                         ctx_btxsetthird(suffix)
                     end
@@ -2231,7 +2282,7 @@ do
             dataset  = dataset,
             tag      = tag,
             internal = internal,
-            author   = getfield(dataset,tag,"author"),
+            author   = getauthor(dataset,tag,currentspecificationcategories), -- todo: list
         }
     end
 
@@ -2253,7 +2304,7 @@ do
             dataset  = dataset,
             tag      = tag,
             internal = internal,
-            author   = getfield(dataset,tag,"author"),
+            author   = getauthor(dataset,tag,currentspecificationcategories), -- todo: list
             num      = text,
             sortkey  = text and lpegmatch(numberonly,text),
         }
@@ -2279,7 +2330,7 @@ do
             dataset  = dataset,
             tag      = tag,
             internal = internal,
-            author   = getfield(dataset,tag,"author"),
+            author   = getauthor(dataset,tag,currentspecificationcategories), -- todo: list
             year     = getfield(dataset,tag,"year"),
             suffix   = getdetail(dataset,tag,"suffix"),
             sortkey  = getdetail(dataset,tag,"suffixedyear"),

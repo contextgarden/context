@@ -485,7 +485,7 @@
 \ifdefined\dotagsetitemgroup \else \let\dotagsetitemgroup\relax \fi
 
 \def\strc_itemgroups_tag_start_group
-  {\dostarttaggedchained\t!itemgroup\currentitemgroup\??itemgroup
+  {\dostarttaggedchained\t!itemgroup\currentparentitemgroup\??itemgroup
    \dotagsetitemgroup}
 
 \def\strc_itemgroups_tag_stop_group

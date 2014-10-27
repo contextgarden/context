@@ -92,6 +92,81 @@ local separator  = space * "+" * space
 local l_splitter = lpeg.tsplitat(separator)
 local d_splitter = lpeg.splitat (separator)
 
+local extrafields = {
+    category = "implicit",
+    tag      = "implicit",
+    key      = "implicit",
+}
+
+local default = {
+    name       = name,
+    version    = "1.00",
+    comment    = "unknown specification.",
+    author     = "anonymous",
+    copyright  = "no one",
+    categories = setmetatableindex(function(t,k)
+        local v = {
+            required = { },
+            optional = { },
+        }
+        t[k] = v
+        return v
+    end),
+    fields = setmetatableindex(function(t,k)
+        local v = setmetatableindex(function(t,k) local v = "optional" t[k] = v return v end)
+        t[k] = v
+        return v
+    end),
+}
+
+local types = { "optional", "required", "virtual" }
+
+local specifications = setmetatableindex(function(t,name)
+    if not name then
+        return default -- initializer
+    end
+    local filename = formatters["publ-imp-%s.lua"](name)
+    local fullname = resolvers.findfile(filename) or ""
+    if fullname == "" then
+        report("no data definition file %a for %a",filename,name)
+        return default
+    end
+    local specification = table.load(fullname)
+    if not specification then
+        report("invalid data definition file %a for %a",fullname,name)
+        return default
+    end
+    -- goodie for alan ...
+    local categories = specification.categories
+    for k, v in next, categories do
+        if type(v) == "string" then
+            categories[k] = categories[v]
+        end
+    end
+    --
+    local fields         = { }
+    specification.fields = fields
+    for category, data in next, categories do
+        local list       = setmetatableindex({},extrafields)
+        fields[category] = list
+        for i=1,#types do
+            local t = types[i]
+            local d = data[t]
+            if d then
+                for i=1,#d do
+                    list[d[i]] = t
+                end
+            else
+                data[t] = { }
+            end
+        end
+    end
+    t[name] = specification
+    return specification
+end)
+
+publications.specifications = specifications
+
 function publications.parenttag(dataset,tag)
     if not dataset or not tag then
         report("error in specification, dataset %a, tag %a",dataset,tag)

@@ -69,7 +69,7 @@
    apa:phdthesis={PhD thesis},
    apa:technicalreport={Tech. Rep.},  % Technical report
    apa:supplement={Suppl.},           % Supplement
-   apa:patent=patent,
+   apa:patent=Patent,
    apa:Translator={Trans.},           % Translator(s)
    apa:Editor={Ed.},                  % Editor
    apa:Editors={Eds.},                % Editors
@@ -89,7 +89,7 @@
    apa:pages=pages,
    apa:and=and,
    apa:period={. },
-   apa:Author=Author,                 %TODO, should be typeset in italic...
+   apa:Author=Author,
    apa:Advanced={Advanced online publication},
    apa:Retrieved={Retrieved from},
    apa:others={et al.}]
@@ -100,7 +100,7 @@
    apa:phdthesis={Thèse de doctorat},
    apa:technicalreport={Rapport technique},
    apa:supplement=Supplément,
-   apa:patent=brevet,
+   apa:patent=Brevet,
    apa:Translator=Traducteur,
    apa:Editor=Éditeur,
    apa:Editors=Éditeurs,
@@ -164,7 +164,7 @@
    apa:phdthesis={Tesi di dottorato},
    apa:technicalreport={Relazione tecnica},
    apa:supplement={Supplemento},
-   apa:patent=brevetto,
+   apa:patent=Brevetto,
    apa:Translator={Trad.},                        % Translator(s)
    apa:Editor={A cura di},
    apa:Editors={A cura di},
@@ -192,27 +192,27 @@
 %D The variables control the shared code for which we use a tex definition with
 %D one argument, specifying the field name.
 
-\setvariables
-  [btx:apa:publisher]
-  [left=\btxspace,
-   right=\btxperiod]
-
-\setvariables
-  [btx:apa:organization]
-  [left=\btxspace,
-   right=\btxperiod]
-
-\setvariables
-  [btx:apa:school]
-  [left=\btxcomma,
-   right=\btxperiod,
-   otherwise=\btxperiod]
-
-\setvariables
-  [btx:apa:institution]
-  [left=\btxcomma,
-   right=\btxperiod,
-   otherwise=\btxperiod]
+%\setvariables
+%  [btx:apa:publisher]
+%  [left=\btxspace,
+%   right=\btxperiod]
+%
+%\setvariables
+%  [btx:apa:organization]
+%  [left=\btxspace,
+%   right=\btxperiod]
+%
+%\setvariables
+%  [btx:apa:school]
+%  [left=\btxcomma,
+%   right=\btxperiod,
+%   otherwise=\btxperiod]
+%
+%\setvariables
+%  [btx:apa:institution]
+%  [left=\btxcomma,
+%   right=\btxperiod,
+%   otherwise=\btxperiod]
 
 % First some helpers:
 
@@ -238,14 +238,17 @@
         }
     } {
         \btxlabeltext{apa:nd}
+        \btxdoif {suffix} {
+            \btxspace
+            \btxflush{suffix}
+        }
     }
     \btxrightparenthesisperiod
 \stoptexdefinition
 
-\starttexdefinition btx:apa:title-subtitle #before #type
+\starttexdefinition btx:apa:title-subtitle-including- #type
     \btxdoif {title} {
         \setmode{btx:apa:title-placed}
-        #before
         \btxflush{Word -> title}
         \btxdoif {subtitle} {
             \btxcolon
@@ -265,11 +268,11 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:author-or-title #type
+\starttexdefinition btx:apa:author-or-title-including- #type
     \btxdoifelse {author} {
         \btxflushauthor[invertedshort]{author}
     } {
-        \texdefinition{btx:apa:title-subtitle}{}{#type}
+        \texdefinition{btx:apa:title-subtitle-including-}{#type}
     }
 \stoptexdefinition
 
@@ -283,7 +286,7 @@
     \btxrightparenthesisperiod
 \stoptexdefinition
 
-\starttexdefinition btx:apa:author-or-editor-or-publisher #title
+\starttexdefinition btx:apa:author-or-editor-or-publisher-or- #title #publisher
     \btxdoifelse {author} {
         \btxflushauthor[invertedshort]{author}
     } {
@@ -291,11 +294,14 @@
             \btxflushauthor[invertedshort]{editor}
             \texdefinition{btx:apa:editor-or-editors}
         } {
-            \btxdoifelse {publisher} {
-                \btxflush{publisher}
+            \btxdoifelse {#publisher} {
+%                \setmode{btx:apa:publisher-as-author}
+                \btxflush{#publisher}
             } {
                 \doif {#title} {title} {
-                    \texdefinition{btx:apa:title-subtitle}{}{type}
+                    \texdefinition{btx:apa:title-subtitle-including-}
+                        \doifelse {#publisher} {institution}%->techreport
+                            {type} {}
                 }
             }
         }
@@ -311,22 +317,25 @@
             \btxflush{organization}
         } {
             \doif {#title} {title} {
-                \texdefinition{btx:apa:title-subtitle}{}{type}
+                \texdefinition{btx:apa:title-subtitle-including-}{type}
             }
         }
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:title-if-not-placed #it
+\starttexdefinition btx:apa:title-if-not-placed-including- #type #it
     \doifnotmode {btx:apa:title-placed} {
-        \doifelse {#it} {it} {
-            \begingroup
-                \it
-                \texdefinition{btx:apa:title-subtitle}{\btxspace}{type}
-                \italiccorrection
-            \endgroup
-        } {
-            \texdefinition{btx:apa:title-subtitle}{\btxspace}{type}
+        \btxdoif {title} {
+            \btxspace
+            \doifelse {#it} {it} {
+                \begingroup
+                    \it
+                    \texdefinition{btx:apa:title-subtitle-including-}{#type}
+                    \italiccorrection
+                \endgroup
+            } {
+                \texdefinition{btx:apa:title-subtitle-including-}{#type}
+            }
         }
     }
 \stoptexdefinition
@@ -359,8 +368,8 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:doif-edition-or-volume-or-number-or-pages #if
-    \btxdoifelse {edition} {
+\starttexdefinition btx:apa:doif-edition-or-volume-or-number-or-pages #edition #if
+    \btxdoifelse {#edition} {
         #if
     }{
         \btxdoifelse {volume} {
@@ -377,16 +386,24 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:edition-volume-number-pages
-    \texdefinition{btx:apa:doif-edition-or-volume-or-number-or-pages}{\btxleftparenthesis}
-    \btxdoif {edition} {
-        \btxflush{edition}
-        \btxspace
-        \btxlabeltext{apa:edition}
+\starttexdefinition btx:apa:edition-volume-number-pages #edition
+    \texdefinition{btx:apa:doif-edition-or-volume-or-number-or-pages}{#edition}{\btxleftparenthesis}
+    \btxdoifelse {#edition} {
+        \btxflush{#edition}
+        \doif {#edition} {edition} {
+            \btxspace
+            \btxlabeltext{apa:edition}
+        }
+    } {
+        \doif {#edition} {type} {
+            \btxspace
+            \btxlabeltext{apa:technicalreport}
+        }
     }
     \btxdoif {volume} {
-        \btxdoif {edition} {
-            \btxcomma
+        \btxdoif {#edition} {
+            \doif {#edition} {edition}
+                {\btxcomma} {\btxspace}
         }
         \btxoneorrange {volume} {
             \btxlabeltext{apa:Volume}
@@ -400,11 +417,13 @@
         \btxdoifelse {volume} {
             \btxcomma
         } {
-            \btxdoif {edition} {
-                \btxcomma
+            \btxdoifelse {#edition} {
+                \doif {#edition} {edition}
+                {\btxcomma} {\btxspace}
+            } {
+                \btxspace
             }
         }
-        \btxspace
         \btxlabeltext{apa:Number}
         \btxspace
         \btxflush{number}
@@ -413,8 +432,9 @@
         \btxdoifelse {volume} {
             \btxcomma
         } {
-            \btxdoifelse {edition} {
-                \btxcomma
+            \btxdoifelse {#edition} {
+                \doif {#edition} {edition}
+                {\btxcomma} {\btxspace}
             } {
                 \btxdoif {number} {
                     \btxcomma
@@ -429,7 +449,7 @@
         \btxspace
         \btxflush{pages}
     }
-    \texdefinition{btx:apa:doif-edition-or-volume-or-number-or-pages}{\btxrightparenthesisperiod}
+    \texdefinition{btx:apa:doif-edition-or-volume-or-number-or-pages}{#edition}{\btxrightparenthesisperiod}
 \stoptexdefinition
 
 \starttexdefinition btx:apa:journal-volume-number-pages #pp
@@ -548,19 +568,19 @@
     \texdefinition{btx:apa:doi}
 \stoptexdefinition
 
-\starttexdefinition btx:apa:author-editor-other #field
-    \btxdoif {#field} {
-        \doifelse {#field} {publisher} {
-            \doifelse {\btxflush{publisher}} {\btxflush{author}} {
-                \btxlabeltext{apa:Author}
-            } {
-                \btxflush{publisher}
-            }
-        } {
-            \btxflush{#field}
-        }
-    }
-\stoptexdefinition
+%\starttexdefinition btx:apa:author-editor-other #field
+%    \btxdoif {#field} {
+%        \doifelse {#field} {publisher} {
+%            \doifmodeelse {btx:apa:publisher-as-author} {
+%                \btxlabeltext{apa:Author}
+%            } {
+%                \btxflush{publisher}
+%            }
+%        } {
+%            \btxflush{#field}
+%        }
+%    }
+%\stoptexdefinition
 
 \starttexdefinition btx:apa:doifelse-publisher-or-author-or-editor #author #if #else
     \btxdoifelse {publisher} {
@@ -586,7 +606,8 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:wherefrom-publisher #author
+% #author is author, editor, organization, howpublished or assignee
+\starttexdefinition btx:apa:wherefrom-publisher-author-is- #author
     \btxdoifelse {country} {
         \btxspace
         \btxdoif {address} {
@@ -594,37 +615,50 @@
             \btxcomma
         }
         \btxflush{country}
-        \texdefinition{btx:apa:doifelse-publisher-or-author-or-editor}{#author}
-            {\btxcolon} {\btxperiod}
+        \doifelse {#author} {howpublished}
+            {\btxdoifelse {howpublished}}
+            {\texdefinition{btx:apa:doifelse-publisher-or-author-or-editor}{#author}}
+                {\btxcolon} {\btxperiod}
     } {
         \btxdoifelse {address} {
             \btxspace
             \btxflush{address}
-            \texdefinition{btx:apa:doifelse-publisher-or-author-or-editor}{#author}
-                {\btxcolon} {\btxperiod}
+            \doifelse {#author} {howpublished}
+                {\btxdoifelse {howpublished}}
+                {\texdefinition{btx:apa:doifelse-publisher-or-author-or-editor}{#author}}
+                    {\btxcolon} {\btxperiod}
         } {
-            \texdefinition{btx:apa:doifelse-publisher-or-author-or-editor}{#author}
+            \doifelse {#author} {howpublished}
+                {\btxdoifelse {howpublished}}
+                {\texdefinition{btx:apa:doifelse-publisher-or-author-or-editor}{#author}}
                 {\btxspace} {}
         }
     }
-    \btxdoifelse {publisher} {
-         \btxdoifelse {#author} {
-             \btxflush{publisher}
-             \btxperiod
-         } {
-             \btxdoif {editor} {
+    \doifelse {#author} {howpublished} {
+        \btxdoif {howpublished} {
+            \btxflush{howpublished}
+            \btxperiod
+        }
+    } {
+        \btxdoifelse {publisher} {
+             \btxdoifelse {#author} {
                  \btxflush{publisher}
                  \btxperiod
+             } {
+                 \btxdoif {editor} {
+                     \btxflush{publisher}
+                     \btxperiod
+                 }
              }
-         }
-    } {
-        \btxdoifelse {#author} {
-            \btxlabeltext{apa:Author}
-            \btxperiod
         } {
-            \btxdoif {editor} {
+            \btxdoifelse {#author} {
                 \btxlabeltext{apa:Author}
                 \btxperiod
+            } {
+                \btxdoif {editor} {
+                    \btxlabeltext{apa:Author}
+                    \btxperiod
+                }
             }
         }
     }
@@ -637,9 +671,9 @@
 % Optional fields: volume, number, pages, type, doi, url, note.
 
 \startsetups btx:apa:article
-    \texdefinition{btx:apa:author-or-title}{type}
+    \texdefinition{btx:apa:author-or-title-including-}{type}
     \texdefinition{btx:apa:suffixedyear}{}
-    \texdefinition{btx:apa:title-if-not-placed}{}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
     \texdefinition{btx:apa:journal-volume-number-pages}{}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -649,9 +683,9 @@
 % Optional fields: volume, number, pages, type, month, day, doi, url, note.
 
 \startsetups btx:apa:magazine
-    \texdefinition{btx:apa:author-or-title}{type}
+    \texdefinition{btx:apa:author-or-title-including-}{type}
     \texdefinition{btx:apa:suffixedyear}{date}
-    \texdefinition{btx:apa:title-if-not-placed}{}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
     \texdefinition{btx:apa:journal-volume-number-pages}{}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -661,9 +695,9 @@
 % Optional fields: volume, number, pages, type, month, day, doi, url, note.
 
 \startsetups btx:apa:newspaper
-    \texdefinition{btx:apa:author-or-title}{type}
+    \texdefinition{btx:apa:author-or-title-including-}{type}
     \texdefinition{btx:apa:suffixedyear}{date}
-    \texdefinition{btx:apa:title-if-not-placed}{}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
     \texdefinition{btx:apa:journal-volume-number-pages}{pp}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -676,11 +710,11 @@
 % todo: series?
 
 \startsetups btx:apa:book
-    \texdefinition{btx:apa:author-or-editor-or-publisher}{title}
+    \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{publisher}
     \texdefinition{btx:apa:suffixedyear}{}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
-    \texdefinition{btx:apa:edition-volume-number-pages}
-    \texdefinition{btx:apa:wherefrom-publisher}{author}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
+    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
 
@@ -692,15 +726,15 @@
 % todo: series?
 
 \startsetups btx:apa:inbook
-    \texdefinition{btx:apa:author-or-editor-or-publisher}{}
+    \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{}{publisher}
     \texdefinition{btx:apa:suffixedyear}{}
     \btxdoif {chapter} {
         \btxflush{Word -> chapter}
         \btxspace
     }
     \texdefinition{btx:apa:editor}{title}
-    \texdefinition{btx:apa:edition-volume-number-pages}
-    \texdefinition{btx:apa:wherefrom-publisher}{author}
+    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
+    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
 
@@ -712,12 +746,12 @@
 % todo: series?
 
 \startsetups btx:apa:incollection
-    \texdefinition{btx:apa:author-or-editor-or-publisher}{title}
+    \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{publisher}
     \texdefinition{btx:apa:suffixedyear}{}
-    \texdefinition{btx:apa:title-if-not-placed}{}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
     \texdefinition{btx:apa:editor}{booktitle}
-    \texdefinition{btx:apa:edition-volume-number-pages}
-    \texdefinition{btx:apa:wherefrom-publisher}{author}
+    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
+    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
 
@@ -729,17 +763,17 @@
 \startsetups btx:apa:proceedings
     \texdefinition{btx:apa:editor-or-organization}{title}
     \texdefinition{btx:apa:suffixedyear}{date}
-    \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:edition-volume-number-pages}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
+    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
     \btxdoifelse {editor} {
         \btxdoif {organization} {
             \btxspace
             \btxflush{organization}
             \btxcomma
         }
-        \texdefinition{btx:apa:wherefrom-publisher} {editor}
+        \texdefinition{btx:apa:wherefrom-publisher-author-is-}{editor}
     } {
-        \texdefinition{btx:apa:wherefrom-publisher} {organization}
+        \texdefinition{btx:apa:wherefrom-publisher-author-is-}{organization}
     }
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -750,17 +784,17 @@
 % todo: series?
 
 \startsetups btx:apa:inproceedings
-    \texdefinition{btx:apa:author-or-editor-or-publisher}{title}
+    \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{publisher}
     \texdefinition{btx:apa:suffixedyear}{date}
-    \texdefinition{btx:apa:title-if-not-placed}{}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
     \texdefinition{btx:apa:editor}{booktitle}
-    \texdefinition{btx:apa:edition-volume-number-pages}
+    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
     \btxdoif {organization} {
         \btxspace
         \btxflush{organization}
         \btxcomma
     }
-    \texdefinition{btx:apa:wherefrom-publisher}{author}
+    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
 
@@ -774,9 +808,9 @@
 
 \startsetups btx:apa:thesis
     % unlikely not to have author!
-    \texdefinition{btx:apa:author-or-title}{}
+    \texdefinition{btx:apa:author-or-title-including-}{}
     \texdefinition{btx:apa:suffixedyear}{date}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
     \btxleftparenthesis
     \btxdoifelse {type} {
         \btxflush{type}
@@ -811,7 +845,186 @@
     \fastsetup{btx:apa:thesis}
 \stopsetups
 
-% Alan's current revision stops here..
+% A work that is printed and bound, but without a named publisher or sponsoring institution.
+% Required field: title.
+% Optional fields: author, howpublished, address, month, year, note.
+
+\startsetups btx:apa:booklet
+    \texdefinition{btx:apa:author-or-title-including-}{}
+    \texdefinition{btx:apa:suffixedyear}{date}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{howpublished}
+    \texdefinition{btx:apa:url-note-doi}
+\stopsetups
+
+% Technical documentation.
+% Required field: title.
+% Optional fields: author, organization, address, edition, month, year, note.
+
+\startsetups btx:apa:manual
+    \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{organization}
+    \texdefinition{btx:apa:suffixedyear}{date}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
+    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{organization}
+    \texdefinition{btx:apa:url-note-doi}
+\stopsetups
+
+% A report published by a school or other institution, usually numbered within a series.
+% Required fields: author, title, institution, year.
+% Optional fields: type, number, address, month, note.
+
+\startsetups btx:apa:techreport
+    \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{institution}
+    \texdefinition{btx:apa:suffixedyear}{date}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{}{it}
+    \texdefinition{btx:apa:edition-volume-number-pages}{type}
+    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{institution}
+    \texdefinition{btx:apa:url-note-doi}
+\stopsetups
+
+% A document having an author and title, but not formally published.
+% Required fields: author, title, note.
+% Optional fields: month, year.
+
+\startsetups btx:apa:unpublished
+    \texdefinition{btx:apa:author-or-title-including-}{}
+    \texdefinition{btx:apa:suffixedyear}{date}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{}{it}
+    \texdefinition{btx:apa:url-note-doi}
+\stopsetups
+
+% A patent. Note that this category was not defined with BIBTEX. Below from JabRef:
+% Required fields: nationality, number, year, yearfiled
+% Optional fields: author, title, assignee, address, type, number, day, dayfiled, month, monthfiled, note, url
+% Also optional: publisher
+
+% todo: yearfiled, monthfiled, dayfiled
+
+\startsetups btx:apa:patent
+    \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{assignee}
+    \texdefinition{btx:apa:suffixedyear}{date}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \begingroup
+        \it
+        \btxdoif {nationality} {
+            \btxspace
+            \btxflush{nationality}
+        }
+        \btxspace
+        \btxlabeltext{apa:patent}
+        \btxdoif {number} {
+            \btxspace
+            \btxlabeltext{apa:Number}
+            \btxspace
+            \btxflush{number}
+        }
+        \btxperiod
+        \italiccorrection
+    \endgroup
+    \btxdoifelse {author} {
+        \btxdoifelse {country} {
+            \btxspace
+            \btxdoif {address} {
+                \btxflush{address}
+                \btxcomma
+            }
+            \btxflush{country}
+            \btxdoifelse {assignee}
+                {\btxcolon} {\btxperiod}
+        } {
+            \btxdoifelse {address} {
+                \btxspace
+                \btxflush{address}
+                \btxdoifelse {assignee}
+                    {\btxcolon} {\btxperiod}
+            } {
+                \btxdoifelse {assignee}
+                    {\btxspace} {}
+            }
+        }
+        \btxdoif {assignee} {
+            \btxflush{assignee}
+            \btxperiod
+        }
+    } {
+        \texdefinition{btx:apa:wherefrom-publisher-author-is-}{assignee}
+    }
+    \texdefinition{btx:apa:url}
+    \texdefinition{btx:apa:note}
+\stopsetups
+
+% Electronic. Note that this category was not defined with BIBTEX. Below from JabRef:
+% Required fields: title
+% Optional fields: address, author, howpublished, month, note, organization, url, year, doi
+% Also optional: type
+
+% Like Misc below but includes organization.
+
+\startsetups btx:apa:electronic
+    \texdefinition{btx:apa:author-or-title-including-}{type}
+    \texdefinition{btx:apa:suffixedyear}{date}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \btxdoif {organization} {
+        \btxspace
+        \btxflush{organization}
+        \btxperiod
+    }
+    \btxdoif {howpublished} {
+        \btxspace
+        \btxflush{howpublished}
+        \btxperiod
+    }
+    \texdefinition{btx:apa:url-note-doi}
+\stopsetups
+
+% Other. Note that this category was not defined with BIBTEX. Below from JabRef:
+% Required fields: author or title, year
+% Optional fields: note, doi, url
+
+\startsetups btx:apa:other
+    \texdefinition{btx:apa:author-or-title-including-}{}
+    \texdefinition{btx:apa:suffixedyear}{}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{}{it}
+    \texdefinition{btx:apa:url-note-doi}
+\stopsetups
+
+% Use this type when nothing else fits.
+% Required fields: none.
+% Optional fields: author, title, howpublished, month, year, note.
+
+\startsetups btx:apa:misc
+    \texdefinition{btx:apa:author-or-title-including-}{}
+    \texdefinition{btx:apa:suffixedyear}{date}
+    \texdefinition{btx:apa:title-if-not-placed-including-}{}{it}
+    \btxdoif {howpublished} {
+        \btxspace
+        \btxflush{howpublished}
+        \btxperiod
+    }
+    \texdefinition{btx:apa:url-note-doi}
+\stopsetups
+
+% If all else fails to match:
+
+\startsetups btx:apa:literal
+    \btxdoif {text} {
+        \btxflush{text}
+    }
+\stopsetups
+
+%D Experiment:
+
+\startsetups btx:apa:lefttext
+    \currentbtxlefttext
+\stopsetups
+
+\startsetups btx:apa:righttext
+    \currentbtxrighttext
+\stopsetups
+
+\stopbtxrenderingdefinitions
+
 
 %\starttexdefinition btx:apa:wherefrom #field
 %    \btxdoifelse {address} {
@@ -847,163 +1060,163 @@
 %        }
 %    }
 %\stoptexdefinition
-
-\starttexdefinition btx:apa:title-and-series
-    \btxdoif {title} {
-        \btxspace
-        \btxflush{Word -> title}
-        \btxdoif {series} {
-            \btxleftparenthesis
-            \btxflush{series}
-            \btxrightparenthesis
-        }
-        \btxperiod
-    }
-\stoptexdefinition
-
-\starttexdefinition btx:apa:title-and-series-it
-    \btxdoif {title} {
-        \btxspace
-        \texdefinition{btx:apa:italic}{Word -> title}
-        \btxdoif {series} {
-            \btxleftparenthesis
-            \btxflush{series}
-            \btxrightparenthesis
-        }
-        \btxperiod
-    }
-\stoptexdefinition
-
-\disablemode[btx:apa:edited-book] % hm, ugly
-
-\starttexdefinition btx:apa:author-and-year
-    \btxdoif {author} {
-        \btxflushauthor{author}
-    }
-    \texdefinition{btx:apa:suffixedyear}{}
-    \btxperiod
-\stoptexdefinition
-
-\starttexdefinition btx:apa:author-or-key-and-year
-    \btxdoifelse {author} {
-        \btxflushauthor{author}
-    } {
-        \btxdoif {key} {
-            \btxleftbracket
-            \btxsetup{btx:format:key}
-            \btxrightbracket
-        }
-    }
-    \texdefinition{btx:apa:suffixedyear}{}
-    \btxperiod
-\stoptexdefinition
-
-\starttexdefinition btx:apa:author-editors-crossref-year
-    % TODO: if there is no author or editor, then use publisher...
-    \btxdoifelse {author} {
-        \btxflushauthor{author}
-    } {
-        \btxdoifelse {editor} {
-            \setmode{btx:apa:edited-book}
-            \btxflushauthor{editor}
-            \btxcomma
-            \btxsingularplural {editor} {
-                \btxlabeltext{apa:Editor}
-            } {
-                \btxlabeltext{apa:Editors}
-            }
-        } {
-            % weird period
-            \btxdoif {crossref} {
-                \btxleftbracket
-                \btxsetup{btx:format:crossref}
-                \btxrightbracket
-                \btxperiod
-            }
-        }
-    }
-    \texdefinition{btx:apa:suffixedyear}{}
-    \btxperiod
-\stoptexdefinition
-
-\starttexdefinition btx:apa:editor-or-key-and-year
-    \btxdoifelse {editor} {
-        \setmode{btx:apa:edited-book}
-        \btxflushauthor{editor}
-        \btxcomma
-        \btxsingularplural {editor} {
-            \btxlabeltext{apa:Editor}
-        } {
-            \btxlabeltext{apa:Editors}
-        }
-    } {
-        \btxdoif {key} {
-            \btxleftbracket
-            \btxsetup{btx:format:key}
-            \btxrightbracket
-        }
-    }
-    \texdefinition{btx:apa:suffixedyear}{}
-    \btxperiod
-\stoptexdefinition
-
-\starttexdefinition btx:apa:pages
-    \btxdoif {pages} {
-        \btxspace
-        \btxflush{pages}
-        \btxperiod
-    }
-\stoptexdefinition
-
-\starttexdefinition btx:apa:pages:p
-    \btxdoif {pages} {
-        \btxspace
-        \btxoneorrange {pages} {
-            \btxlabeltext{apa:p}
-        } {
-            \btxlabeltext{apa:pp}
-        }
-        \btxperiod
-        \btxnbsp
-        \btxflush{pages}
-        \btxperiod
-    }
-\stoptexdefinition
-
-\starttexdefinition btx:apa:pages:pp
-    \btxdoif {pages} {
-        \btxspace
-        \btxflush{pages}
-        \btxnbsp
-        \btxlabeltext{apa:pp}
-        \btxperiod
-    }
-\stoptexdefinition
-
+%
+%\starttexdefinition btx:apa:title-and-series
+%    \btxdoif {title} {
+%        \btxspace
+%        \btxflush{Word -> title}
+%        \btxdoif {series} {
+%            \btxleftparenthesis
+%            \btxflush{series}
+%            \btxrightparenthesis
+%        }
+%        \btxperiod
+%    }
+%\stoptexdefinition
+%
+%\starttexdefinition btx:apa:title-and-series-it
+%    \btxdoif {title} {
+%        \btxspace
+%        \texdefinition{btx:apa:italic}{Word -> title}
+%        \btxdoif {series} {
+%            \btxleftparenthesis
+%            \btxflush{series}
+%            \btxrightparenthesis
+%        }
+%        \btxperiod
+%    }
+%\stoptexdefinition
+%
+%\disablemode[btx:apa:edited-book] % hm, ugly
+%
+%\starttexdefinition btx:apa:author-and-year
+%    \btxdoif {author} {
+%        \btxflushauthor{author}
+%    }
+%    \texdefinition{btx:apa:suffixedyear}{}
+%    \btxperiod
+%\stoptexdefinition
+%
+%\starttexdefinition btx:apa:author-or-key-and-year
+%    \btxdoifelse {author} {
+%        \btxflushauthor{author}
+%    } {
+%        \btxdoif {key} {
+%            \btxleftbracket
+%            \btxsetup{btx:format:key}
+%            \btxrightbracket
+%        }
+%    }
+%    \texdefinition{btx:apa:suffixedyear}{}
+%    \btxperiod
+%\stoptexdefinition
+%
+%\starttexdefinition btx:apa:author-editors-crossref-year
+%    % TODO: if there is no author or editor, then use publisher...
+%    \btxdoifelse {author} {
+%        \btxflushauthor{author}
+%    } {
+%        \btxdoifelse {editor} {
+%            \setmode{btx:apa:edited-book}
+%            \btxflushauthor{editor}
+%            \btxcomma
+%            \btxsingularplural {editor} {
+%                \btxlabeltext{apa:Editor}
+%            } {
+%                \btxlabeltext{apa:Editors}
+%            }
+%        } {
+%            % weird period
+%            \btxdoif {crossref} {
+%                \btxleftbracket
+%                \btxsetup{btx:format:crossref}
+%                \btxrightbracket
+%                \btxperiod
+%            }
+%        }
+%    }
+%    \texdefinition{btx:apa:suffixedyear}{}
+%    \btxperiod
+%\stoptexdefinition
+%
+%\starttexdefinition btx:apa:editor-or-key-and-year
+%    \btxdoifelse {editor} {
+%        \setmode{btx:apa:edited-book}
+%        \btxflushauthor{editor}
+%        \btxcomma
+%        \btxsingularplural {editor} {
+%            \btxlabeltext{apa:Editor}
+%        } {
+%            \btxlabeltext{apa:Editors}
+%        }
+%    } {
+%        \btxdoif {key} {
+%            \btxleftbracket
+%            \btxsetup{btx:format:key}
+%            \btxrightbracket
+%        }
+%    }
+%    \texdefinition{btx:apa:suffixedyear}{}
+%    \btxperiod
+%\stoptexdefinition
+%
+%\starttexdefinition btx:apa:pages
+%    \btxdoif {pages} {
+%        \btxspace
+%        \btxflush{pages}
+%        \btxperiod
+%    }
+%\stoptexdefinition
+%
+%\starttexdefinition btx:apa:pages:p
+%    \btxdoif {pages} {
+%        \btxspace
+%        \btxoneorrange {pages} {
+%            \btxlabeltext{apa:p}
+%        } {
+%            \btxlabeltext{apa:pp}
+%        }
+%        \btxperiod
+%        \btxnbsp
+%        \btxflush{pages}
+%        \btxperiod
+%    }
+%\stoptexdefinition
+%
+%\starttexdefinition btx:apa:pages:pp
+%    \btxdoif {pages} {
+%        \btxspace
+%        \btxflush{pages}
+%        \btxnbsp
+%        \btxlabeltext{apa:pp}
+%        \btxperiod
+%    }
+%\stoptexdefinition
+%
 % this does not seem to comply with APA style - need to verify!
-
-\starttexdefinition btx:apa:pages:pages
-    \btxdoif {pages} {
-        \btxcomma
-        \btxlabeltext{apa:pages}
-        \btxnbsp
-        \btxflush{pages}
-        \btxperiod
-    }
-\stoptexdefinition
-
-\starttexdefinition btx:apa:edition:sentence
-    \btxdoif {edition} {
-        \btxspace
-        \btxflush{edition}
-        \btxspace
-        \btxlabeltext{apa:edition}
-        \btxperiod
-    }
-\stoptexdefinition
-
+%
+%\starttexdefinition btx:apa:pages:pages
+%    \btxdoif {pages} {
+%        \btxcomma
+%        \btxlabeltext{apa:pages}
+%        \btxnbsp
+%        \btxflush{pages}
+%        \btxperiod
+%    }
+%\stoptexdefinition
+%
+%\starttexdefinition btx:apa:edition:sentence
+%    \btxdoif {edition} {
+%        \btxspace
+%        \btxflush{edition}
+%        \btxspace
+%        \btxlabeltext{apa:edition}
+%        \btxperiod
+%    }
+%\stoptexdefinition
+%
 % check when the next is used (no period)
-
+%
 % \starttexdefinition btx:apa:edition
 %     \btxdoif {edition} {
 %         \btxspace
@@ -1012,9 +1225,9 @@
 %         \btxlabeltext{apa:edition}
 %     }
 % \stoptexdefinition
-
+%
 % specific
-
+%
 %\startsetups btx:apa:book
 %    \texdefinition{btx:apa:author-editors-crossref-year}
 %    \btxdoif {title} {
@@ -1093,7 +1306,7 @@
 %    \texdefinition{btx:apa:pages:pp}% twice?
 %    \texdefinition{btx:apa:url-note-doi}
 %\stopsetups
-
+%
 %\startsetups btx:apa:inbook
 %    \texdefinition{btx:apa:author-editors-crossref-year}
 %    \btxdoifelse {title} {
@@ -1177,33 +1390,25 @@
 %    \texdefinition{btx:apa:wherefrom}{publisher}
 %    \texdefinition{btx:apa:note}
 %\stopsetups
-
-% A work that is printed and bound, but without a named publisher or sponsoring institution.
-% Required field: title.
-% Optional fields: author, howpublished, address, month, year, note.
-
-\startsetups btx:apa:booklet
-    \texdefinition{btx:apa:author-or-key-and-year}
-    \texdefinition{btx:apa:title-it-and-series}
-    \texdefinition{btx:apa:edition:sentence}
-    \texdefinition{btx:apa:publication:sentence}
-    \texdefinition{btx:apa:pages:p}
-    \texdefinition{btx:apa:note}
-\stopsetups
-
-% Technical documentation.
-% Required field: title.
-% Optional fields: author, organization, address, edition, month, year, note.
-
-\startsetups btx:apa:manual
-    \texdefinition{btx:apa:author-or-key-and-year}
-    \texdefinition{btx:apa:title-it-and-series}
-    \texdefinition{btx:apa:edition:sentence}
-    \texdefinition{btx:apa:wherefrom}{organization}
-    \texdefinition{btx:apa:pages:p}
-    \texdefinition{btx:apa:note}
-\stopsetups
-
+%
+%\startsetups btx:apa:booklet
+%    \texdefinition{btx:apa:author-or-key-and-year}
+%    \texdefinition{btx:apa:title-it-and-series}
+%    \texdefinition{btx:apa:edition:sentence}
+%    \texdefinition{btx:apa:publication:sentence}
+%    \texdefinition{btx:apa:pages:p}
+%    \texdefinition{btx:apa:note}
+%\stopsetups
+%
+%\startsetups btx:apa:manual
+%    \texdefinition{btx:apa:author-or-key-and-year}
+%    \texdefinition{btx:apa:title-it-and-series}
+%    \texdefinition{btx:apa:edition:sentence}
+%    \texdefinition{btx:apa:wherefrom}{organization}
+%    \texdefinition{btx:apa:pages:p}
+%    \texdefinition{btx:apa:note}
+%\stopsetups
+%
 %\startsetups btx:apa:incollection
 %    \texdefinition{btx:apa:author-and-year}
 %    \btxdoifelse {arttitle} {
@@ -1268,7 +1473,7 @@
 %    }
 %    \texdefinition{btx:apa:note}
 %\stopsetups
-
+%
 %\startsetups btx:apa:inproceedings
 %    \texdefinition{btx:apa:author-and-year}
 %    \btxdoif {arttitle} {
@@ -1328,7 +1533,7 @@
 %    }
 %    \texdefinition{btx:apa:note}
 %\stopsetups
-
+%
 %\startsetups btx:apa:proceedings
 %    \texdefinition{btx:apa:editor-or-key-and-year}
 %    \btxdoif {title} {
@@ -1354,7 +1559,7 @@
 %    }
 %    \texdefinition{btx:apa:note}
 %\stopsetups
-
+%
 %\starttexdefinition btx:apa:thesis
 %    \texdefinition{btx:apa:author-and-year}
 %    \texdefinition{btx:apa:title-it-and-series}
@@ -1375,95 +1580,42 @@
 %\startsetups btx:apa:phdthesis
 %    \texdefinition{btx:apa:thesis}
 %\stopsetups
-
-% A report published by a school or other institution, usually numbered within a series.
-% Required fields: author, title, institution, year.
-% Optional fields: type, number, address, month, note.
-
-\startsetups btx:apa:techreport
-    \texdefinition{btx:apa:author-and-year}
-    \texdefinition{btx:apa:title-and-series}
-    \btxdoifelse {type} {
-        \btxflush{type}
-        \btxdoif {volume} {
-            \btxspace
-            \btxflush{volume}
-        }
-    } {
-        \btxspace
-        \btxlabeltext{apa:technicalreport}
-    }
-    \btxcomma
-    \texdefinition{btx:apa:wherefrom}{institution}
-    \texdefinition{btx:apa:pages:p}
-    \texdefinition{btx:apa:url-note-doi}
-\stopsetups
-
-\startsetups btx:apa:patent
-    \texdefinition{btx:apa:author-and-year}
-    \btxdoif {title} {
-      \btxspace
-      %texdefinition{btx:apa:italic}{converters.Word -> title}
-      \texdefinition{btx:apa:italic}{Word -> title}
-    }
-    \btxdoif {nationality} {
-      \btxspace
-      \btxflush{nationality}
-    }
-    \btxspace
-    \btxlabeltext{apa:patent}
-    \btxdoif {number} {
-      \btxspace
-      \btxflush{number}
-    }
-    \texdefinition{btx:apa:wherefrom}{publisher}
-    \texdefinition{btx:apa:note}
-\stopsetups
-
-% Use this type when nothing else fits.
-% Required fields: none.
-% Optional fields: author, title, howpublished, month, year, note.
-
-\startsetups btx:apa:misc
-    \texdefinition{btx:apa:author-and-year}
-    \texdefinition{btx:apa:title-and-series}
-    \texdefinition{btx:apa:wherefrom}{publisher}
-    \texdefinition{btx:apa:pages:p}
-    \texdefinition{btx:apa:note}
-\stopsetups
-
-% A document having an author and title, but not formally published.
-% Required fields: author, title, note.
-% Optional fields: month, year.
-
-\startsetups btx:apa:unpublished
-    \texdefinition{btx:apa:author-and-year}
-    \texdefinition{btx:apa:title-and-series}
-    \texdefinition{btx:apa:pages:p}
-    \btxdoif {type} {
-        \btxleftparenthesis
-        \btxflush{type}
-        \btxrightparenthesis
-    }
-    \texdefinition{btx:apa:note}
-\stopsetups
-
-% If all else fails to match:
-
-\startsetups btx:apa:literal
-    \btxdoif {text} {
-        \btxflush{text}
-    }
-\stopsetups
-
-%D Experiment:
-
-\startsetups btx:apa:lefttext
-    \currentbtxlefttext
-\stopsetups
-
-\startsetups btx:apa:righttext
-    \currentbtxrighttext
-\stopsetups
-
-\stopbtxrenderingdefinitions
+%
+%\startsetups btx:apa:techreport
+%    \texdefinition{btx:apa:author-and-year}
+%    \texdefinition{btx:apa:title-and-series}
+%    \btxdoifelse {type} {
+%        \btxflush{type}
+%        \btxdoif {volume} {
+%            \btxspace
+%            \btxflush{volume}
+%        }
+%    } {
+%        \btxspace
+%        \btxlabeltext{apa:technicalreport}
+%    }
+%    \btxcomma
+%    \texdefinition{btx:apa:wherefrom}{institution}
+%    \texdefinition{btx:apa:pages:p}
+%    \texdefinition{btx:apa:url-note-doi}
+%\stopsetups
+%
+%\startsetups btx:apa:misc
+%    \texdefinition{btx:apa:author-and-year}
+%    \texdefinition{btx:apa:title-and-series}
+%    \texdefinition{btx:apa:wherefrom}{publisher}
+%    \texdefinition{btx:apa:pages:p}
+%    \texdefinition{btx:apa:note}
+%\stopsetups
+%
+%\startsetups btx:apa:unpublished
+%    \texdefinition{btx:apa:author-and-year}
+%    \texdefinition{btx:apa:title-and-series}
+%    \texdefinition{btx:apa:pages:p}
+%    \btxdoif {type} {
+%        \btxleftparenthesis
+%        \btxflush{type}
+%        \btxrightparenthesis
+%    }
+%    \texdefinition{btx:apa:note}
+%\stopsetups

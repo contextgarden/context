@@ -510,6 +510,10 @@
        {\c_page_mix_routine\c_page_mix_routine_balance}%
        {\penalty-\plustenthousand}% weird hack, we need to trigger the otr sometimes (new per 20140306, see balancing-001.tex)
      \page_otr_trigger_output_routine
+     \ifvoid\b_page_mix_preceding \else
+        % empty columns so we need to make sure pending content is flushed
+        \unvbox\b_page_mix_preceding % new per 2014.10.25
+     \fi
    \fi}
 
 \setvalue{\??mixedcolumnsafter\s!otr}%
@@ -561,7 +565,7 @@
          \setbox\scratchbox\page_mix_command_package_column
          \page_marks_synchronize_column\plusone\c_page_mix_n_of_columns\recurselevel\scratchbox
          % backgrounds
-\anch_mark_column_box\scratchbox
+         \anch_mark_column_box\scratchbox
          % for the moment a quick and dirty patch .. we need to go into the box (hence the \plusone) .. a slowdowner
          \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_mix_n_of_columns\plusone
          % the framed needs a reset of strut, align, setups etc

@@ -46,14 +46,9 @@ publications.authors  = authors
 local space          = P(" ")
 local comma          = P(",")
 local firstcharacter = lpegpatterns.utf8byte
-
--- local andsplitter    = lpeg.tsplitat(space^1 * "and" * space^1)
--- local commasplitter  = lpeg.tsplitat(space^0 * comma * space^0)
--- local spacesplitter  = lpeg.tsplitat(space^1)
-
-local p_and         = space^1 * "and" * space^1
-local p_comma       = space^0 * comma * space^0
-local p_space       = space^1
+local p_and          = space^1 * "and" * space^1
+local p_comma        = space^0 * comma * space^0
+local p_space        = space^1
 
 local andsplitter   = Ct { "start",
     start = (Cs((V("inner") + (1-p_and))^1) + p_and)^1,
@@ -104,7 +99,6 @@ local function splitauthorstring(str)
         if not detail then
             local firstnames, vons, surnames, initials, juniors
             local split = lpegmatch(commasplitter,author)
--- inspect(split)
             local n = #split
             if n == 1 then
                 -- First von Last
@@ -209,19 +203,6 @@ local function splitauthorstring(str)
 end
 
 authors.splitstring = splitauthorstring
-
--- local function splitauthors(dataset,tag,field)
---     local entries = datasets[dataset]
---     local luadata = entries.luadata
---     if not luadata then
---         return { }
---     end
---     local entry = luadata[tag]
---     if not entry then
---         return { }
---     end
---     return splitauthorstring(entry[field])
--- end
 
 local function the_initials(initials,symbol)
     if not symbol or symbol == "" then
@@ -387,11 +368,11 @@ function commands.btxauthor(dataset,tag,field,settings)
     end
 end
 
--- We can consider creating a hashtable key -> entry but I wonder if
+-- We can consider creating a hashtable key -> entry but I wonder if it ever
 -- pays off.
 
 local compare  = sorters.comparers.basic -- (a,b)
--- local compare  = sorters.basicsorter -- (a,b)
+----- compare  = sorters.basicsorter -- (a,b)
 local strip    = sorters.strip
 local splitter = sorters.splitters.utf
 
@@ -436,6 +417,39 @@ end
 writers.author = writer
 writers.editor = editor
 
+-- how to deal with publisher?
+
+local default = { "author", "editor" }
+
+function authors.getauthor(dataset,tag,categories)
+    local current = datasets[dataset]
+    local entry = current.luadata[tag]
+    if entry then
+        local category = entry.category
+        local detail = current.details[tag]
+        if detail then
+            local list
+            if categories then
+                local c = categories[category]
+                if c then
+                    list = c.author or default
+                else
+                    list = default
+                end
+            else
+                list = default
+            end
+            for i=1,#list do
+                local l = list[i]
+                local d = detail[l]
+                if d then
+                    return d, l
+                end
+            end
+        end
+    end
+end
+
 publications.serializeauthor = writer -- helper
 
 local function newsplitter(splitter)
@@ -446,27 +460,10 @@ local function newsplitter(splitter)
     end)
 end
 
-
--- First sorting key:
--- A. key= if present takes precedence
--- B. author= if present takes second precedence (when key= is absent)
--- C. editor= if present takes third precedence (when key= and author= are absent)
--- D. publisher= if present (in absence of key=, author= and editor=)
--- E. title= if present (but only in absence of key=, author=, editor= and publisher=)
--- F. journal= if present
--- G. volume= if present
--- H. number= if present
--- I. pages= if present
--- K. if all else fails, ? (APA specifies using "Anonymous" ONLY when specifically listed as such in the publication!)
-
--- Second sorting key:
--- A. year= if present, takes precedence, otherwise treat "n.d." as most recent.
--- B. suffix (same first key and same year)
---    What about "n.d."? Here, it would be reasonable to second sort by
---    title=  (lower precedence than the first key above)
--- C. month=
--- D. day=
--- E. journal=, followed by volume=, followed by number=
+-- Analysis of the APA by Alan:
+--
+-- first : key author editor publisher title           journal volume number pages
+-- second: year suffix                 title month day journal volume number
 
 local function byauthor(dataset,list,method)
     local luadata  = datasets[dataset].luadata
@@ -482,6 +479,7 @@ local function byauthor(dataset,list,method)
         local detail = details[tag]
         local index  = tostring(i)
         if entry and detail then
+-- todo pluggable
             local mainkey = writer(detail.author or detail.editor or entry.publisher or entry.title or "",snippets)
             -- we could store the mainkey in details for tracing
             result[i] = {
@@ -539,34 +537,6 @@ function authors.sorted(dataset,list,sorttype) -- experimental
         return valid
     end
 end
-
-local f_author = formatters[ [[\dobtxindexedauthor{%s}{%s}{%s}{%s}]] ]
-local writer   = publications.serializeauthor
-
-function commands.btxauthortoregister(register,dataset,tag)
-    local current = datasets[dataset]
-    local details = current.details
-    local detail  = details[tag]
-    if detail then
-        local author = detail.author
-        if author then
-            for i=1,#author do
-                local a = author[i]
-                local k = writer {a}
-                local e = f_author(dataset,tag,"author",i)
-                context.dosetfastregisterentry(register,e,k)
-             -- context.setregisterentry(
-             --     { register },
-             --     {
-             --         ["entries:1"] = e,
-             --         ["keys:1"]    = k,
-             --     }
-             -- )
-            end
-        end
-    end
-end
-
 
 -- local dataset = publications.datasets.test
 --

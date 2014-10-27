@@ -12,8 +12,9 @@ local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local settings_to_array = utilities.parsers.settings_to_array
 local formatters = string.formatters
 
-local tracers  = publications.tracers or { }
-local datasets = publications.datasets
+local tracers        = publications.tracers or { }
+local datasets       = publications.datasets
+local specifications = publications.specifications
 
 local context = context
 
@@ -21,39 +22,6 @@ local ctx_NC, ctx_NR, ctx_HL, ctx_FL, ctx_ML, ctx_LL = context.NC, context.NR, c
 local ctx_bold, ctx_rotate, ctx_llap = context.bold, context.rotate, context.llap
 local ctx_darkgreen, ctx_darkred, ctx_darkblue = context.darkgreen, context.darkred, context.darkblue
 local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
-
-local categories = table.setmetatableindex(function(t,name)
-    local filename      = resolvers.findfile(formatters["publ-imp-%s.lua"](name))
-    local fields        = { }
-    local specification = filename and filename ~= "" and table.load(filename) or {
-        name       = name,
-        version    = "1.00",
-        comment    = "unknown specification.",
-        author     = "anonymous",
-        copyright  = "no one",
-        categories = { },
-    }
-    --
-    specification.fields = fields
-    for category, data in next, specification.categories do
-        local list = { }
-        fields[category]  = list
-        local required = data.required
-        local optional = data.optional
-        for i=1,#required do
-            list[required[i]] = "required"
-        end
-        for i=1,#optional do
-            list[optional[i]] = "optional"
-        end
-    end
-    t[name] = specification
-    return specification
-end)
-
-publications.tracers.categories = categories
-
--- -- --
 
 local private = {
     category = true,
@@ -67,7 +35,7 @@ function tracers.showdatasetfields(settings)
     local luadata = current.luadata
     if next(luadata) then
         local kind       = settings.kind
-        local fielddata  = kind and categories[kind] or categories.apa
+        local fielddata  = kind and specifications[kind] or specifications.apa
         local categories = fielddata.categories
         local fieldspecs = fielddata.fields
         ctx_starttabulate { "|lT|lT|pT|" }
@@ -106,10 +74,9 @@ function tracers.showdatasetcompleteness(settings)
     local current    = datasets[dataset]
     local luadata    = current.luadata
     local kind       = settings.kind
-    local fielddata  = kind and categories[kind] or categories.apa
+    local fielddata  = kind and specifications[kind] or specifications.apa
     local categories = fielddata.categories
     local fieldspecs = fielddata.fields
-
     local lpegmatch  = lpeg.match
     local texescape  = lpeg.patterns.texescape
 
@@ -173,6 +140,7 @@ function tracers.showdatasetcompleteness(settings)
                     for i=1,#requiredfields do
                         local r = requiredfields[i]
                         if type(r) == "table" then
+                            -- this has to be done differently now
                             local okay = true
                             for i=1,#r do
                                 local ri = r[i]
@@ -200,6 +168,7 @@ function tracers.showdatasetcompleteness(settings)
                     for i=1,#optionalfields do
                         local o = optionalfields[i]
                         if type(o) == "table" then
+                            -- this has to be done differently now
                             for i=1,#o do
                                 local oi = o[i]
                                 if rawget(entry,oi) then
@@ -230,7 +199,7 @@ end
 function tracers.showfields(settings)
     local rotation    = settings.rotation
     local kind        = settings.kind
-    local fielddata   = kind and categories[kind] or categories.apa
+    local fielddata   = kind and specifications[kind] or specifications.apa
     local categories  = fielddata.categories
     local fieldspecs  = fielddata.fields
     local swapped     = { }

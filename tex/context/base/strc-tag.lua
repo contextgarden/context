@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['strc-tag'] = {
 -- differences. Each tag carries a specification and these can be accessed by attribute (the
 -- end of the chain tag) or by so called fullname which is a tagname combined with a number.
 
-local type = type
+local type, next = type, next
 local insert, remove, unpack, concat = table.insert, table.remove, table.unpack, table.concat
 local gsub, find, topattern, format = string.gsub, string.find, string.topattern, string.format
 local lpegmatch, P, S, C, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
@@ -339,7 +339,6 @@ function tags.restart(attribute)
     else
         chain[stacksize] = attribute -- a string
         attribute = #taglist + 1
---         taglist[attribute] = { unpack(chain,1,stacksize) }
         taglist[attribute] = { taglist = { unpack(chain,1,stacksize) } }
     end
     stack[stacksize] = attribute
@@ -354,7 +353,6 @@ function tags.stop()
     local t = stack[stacksize]
     if not t then
      -- if trace_tags then
-         -- report_tags("ignoring end tag, previous chain: %s",stacksize > 0 and concat(chain[stacksize]," ",1,stacksize) or "none")
             report_tags("ignoring end tag, previous chain: %s",stacksize > 0 and concat(chain," ",1,stacksize) or "none")
      -- end
         t = unsetvalue
