@@ -70,6 +70,7 @@ local function read_from_tfm(specification)
         properties.fontname = tfmdata.fontname
         properties.psname   = tfmdata.psname
         properties.filename = specification.filename
+        properties.format   = fonts.formats.tfm -- better than nothing
         parameters.size     = size
         shared.rawdata      = { }
         shared.features     = features

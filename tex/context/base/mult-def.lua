@@ -14398,6 +14398,16 @@ return {
    ["pe"]="مونو",
    ["ro"]="mono",
   },
+  ["monobold"]={
+   ["cs"]="monotucne",
+   ["de"]="monofett",
+   ["en"]="monobold",
+   ["fr"]="monogras",
+   ["it"]="monograssetto",
+   ["nl"]="monovet",
+   ["pe"]="monobold",
+   ["ro"]="monoaldin",
+  },
   ["month"]={
    ["cs"]="mesic",
    ["de"]="monat",

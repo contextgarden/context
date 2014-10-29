@@ -466,6 +466,7 @@ end
 local function storeregister(rawdata) -- metadata, references, entries
     local references = rawdata.references
     local metadata   = rawdata.metadata
+    local processors = rawdata.processors
     -- checking
     if not metadata.kind then
         metadata.kind = "entry"
@@ -475,6 +476,10 @@ local function storeregister(rawdata) -- metadata, references, entries
         metadata.catcodes = tex.catcodetable -- get
     end
     --
+    if processors and processors[1] == "" and processors[2] == "" then
+        rawdata.processors = nil
+    end
+    --
     local name     = metadata.name
     local notsaved = tobesaved[name].metadata.notsaved
     --
@@ -482,6 +487,7 @@ local function storeregister(rawdata) -- metadata, references, entries
         references         = { }
         rawdata.references = references
     end
+    --
     local internal = references.internal
     if not internal then
         internal = texgetcount("locationcount") -- we assume that it has been set

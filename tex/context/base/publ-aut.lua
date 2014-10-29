@@ -381,6 +381,20 @@ local splitter = sorters.splitters.utf
 local pubsorters = { }
 authors.sorters  = pubsorters
 
+local function components(snippet)
+    local vons       = snippet.vons
+    local surnames   = snippet.surnames
+    local initials   = snippet.initials
+    local firstnames = snippet.firstnames
+    local juniors    = snippet.juniors
+    return
+        vons       and #vons       > 0 and concat(vons,      " ") or "",
+        surnames   and #surnames   > 0 and concat(surnames,  " ") or "",
+        initials   and #initials   > 0 and concat(initials,  " ") or "",
+        firstnames and #firstnames > 0 and concat(firstnames," ") or "",
+        juniors    and #juniors    > 0 and concat(juniors,   " ") or ""
+end
+
 local function writer(key,snippets)
     if not key then
         return ""
@@ -401,6 +415,7 @@ local function writer(key,snippets)
         local vons     = k.vons
         local surnames = k.surnames
         local initials = k.initials
+        local juniors  = k.juniors
         if vons and #vons > 0 then
             s = s + 1 ; snippets[s] = concat(vons," ")
         end
@@ -410,12 +425,15 @@ local function writer(key,snippets)
         if initials and #initials > 0 then
             s = s + 1 ; snippets[s] = concat(initials," ")
         end
+        if juniors and #juniors > 0 then
+            s = s + 1 ; snippets[s] = concat(juniors," ")
+        end
     end
     return concat(snippets," ",1,s)
 end
 
-writers.author = writer
-writers.editor = editor
+writers.author     = writer
+writers.editor     = editor
 
 -- how to deal with publisher?
 
@@ -450,7 +468,8 @@ function authors.getauthor(dataset,tag,categories)
     end
 end
 
-publications.serializeauthor = writer -- helper
+publications.serializeauthor  = function(a) return writer { a } end
+publications.authorcomponents = components
 
 local function newsplitter(splitter)
     return table.setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared

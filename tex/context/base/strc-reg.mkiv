@@ -308,13 +308,14 @@
    \dostoptagged
    \endgroup}
 
-\unexpanded\def\dosetfastregisterentry#1#2#3% register entry key
+\unexpanded\def\dosetfastregisterentry#1#2#3#4#5% register entry key processor processor
   {\begingroup
    \edef\currentregister{#1}%
    \setnextinternalreference
    \xdef\currentregisternumber{\ctxcommand{storeregister{
         metadata   = { name = "\currentregister" },
         entries    = { { \!!bs#2\!!es }, { \!!bs#3\!!es } },
+        processors = { \!!bs#4\!!es, \!!bs#5\!!es },
      }
    }}%
    % overlap with the above

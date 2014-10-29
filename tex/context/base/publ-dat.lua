@@ -42,8 +42,11 @@ local P, R, S, V, C, Cc, Cs, Ct, Carg, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpe
 
 local p_whitespace      = lpegpatterns.whitespace
 
-local trace             = false  trackers.register("publications", function(v) trace = v end)
+local trace             = false  trackers.register("publications",            function(v) trace = v end)
+local trace_duplicates  = true   trackers.register("publications.duplicates", function(v) trace = v end)
+
 local report            = logs.reporter("publications")
+local report_duplicates = logs.reporter("publications","duplicates")
 
 publications            = publications or { }
 local publications      = publications
@@ -96,6 +99,9 @@ local extrafields = {
     category = "implicit",
     tag      = "implicit",
     key      = "implicit",
+    keywords = "implicit",
+    language = "implicit",
+    crossref = "implicit",
 }
 
 local default = {
@@ -154,7 +160,14 @@ local specifications = setmetatableindex(function(t,name)
             local d = data[t]
             if d then
                 for i=1,#d do
-                    list[d[i]] = t
+                    local di = d[i]
+                    if type(di) == "table" then
+                        for i=1,#di do
+                            list[di] = di[i]
+                        end
+                    else
+                        list[di] = t
+                    end
                 end
             else
                 data[t] = { }
@@ -318,40 +331,63 @@ publications.getindex = getindex
 -- todo: categories : metatable that lowers and also counts
 -- todo: fields     : metatable that lowers
 
+local tags = table.setmetatableindex("table")
+
 local function do_definition(category,tag,tab,dataset)
     publicationsstats.nofdefinitions = publicationsstats.nofdefinitions + 1
     local fields  = dataset.fields
     local luadata = dataset.luadata
-    local found   = luadata[tag]
-    local index   = getindex(dataset,luadata,tag)
-    local entries = {
-        category = lower(category),
-        tag      = tag,
-        index    = index,
-    }
-    for i=1,#tab,2 do
-        local original   = tab[i]
-        local normalized = fields[original]
-        if not normalized then
-            normalized = lower(original) -- we assume ascii fields
-            fields[original] = normalized
+    if luadata[tag] then
+        local t = tags[tag]
+        local d = dataset.name
+        local n = (t[n] or 0) + 1
+        t[d] = n
+        if trace_duplicates then
+            local p = { }
+            for k, v in sortedhash(t) do
+                p[#p+1] = formatters["%s:%s"](k,v)
+            end
+            report_duplicates("tag %a is present multiple times: % t",tag,p)
         end
-        local value = tab[i+1]
-        value = textoutf(value)
-        if lpegmatch(filter_1,value) then
-            value = lpegmatch(filter_2,value,1,dataset.commands) -- we need to start at 1 for { }
-        end
-        if normalized == "crossref" then
-            local parent = luadata[value]
-            if parent then
-                setmetatableindex(entries,parent)
+    else
+        local found   = luadata[tag]
+        local index   = getindex(dataset,luadata,tag)
+        local entries = {
+            category = lower(category),
+            tag      = tag,
+            index    = index,
+        }
+        for i=1,#tab,2 do
+            local original   = tab[i]
+            local normalized = fields[original]
+            if not normalized then
+                normalized = lower(original) -- we assume ascii fields
+                fields[original] = normalized
+            end
+         -- if entries[normalized] then
+            if rawget(entries,normalized) then
+                if trace_duplicates then
+                    report_duplicates("redundant field %a is ignored for tag %a in dataset %a",normalized,tag,dataset.name)
+                end
             else
-                -- warning
+                local value = tab[i+1]
+                value = textoutf(value)
+                if lpegmatch(filter_1,value) then
+                    value = lpegmatch(filter_2,value,1,dataset.commands) -- we need to start at 1 for { }
+                end
+                if normalized == "crossref" then
+                    local parent = luadata[value]
+                    if parent then
+                        setmetatableindex(entries,parent)
+                    else
+                        -- warning
+                    end
+                end
+                entries[normalized] = value
             end
         end
-        entries[normalized] = value
+        luadata[tag] = entries
     end
-    luadata[tag] = entries
 end
 
 local function resolve(s,dataset)

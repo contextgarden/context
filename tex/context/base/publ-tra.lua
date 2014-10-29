@@ -19,14 +19,22 @@ local specifications = publications.specifications
 local context = context
 
 local ctx_NC, ctx_NR, ctx_HL, ctx_FL, ctx_ML, ctx_LL = context.NC, context.NR, context.HL, context.FL, context.ML, context.LL
-local ctx_bold, ctx_rotate, ctx_llap = context.bold, context.rotate, context.llap
+local ctx_bold, ctx_monobold, ctx_rotate, ctx_llap = context.bold, context.formatted.monobold, context.rotate, context.llap
 local ctx_darkgreen, ctx_darkred, ctx_darkblue = context.darkgreen, context.darkred, context.darkblue
 local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
 
-local private = {
+local privates = {
     category = true,
     tag      = true,
     index    = true,
+}
+
+local specials = {
+    key      = true,
+    crossref = true,
+    keywords = true,
+    language = true,
+    comment  = true,
 }
 
 function tracers.showdatasetfields(settings)
@@ -51,7 +59,11 @@ function tracers.showdatasetfields(settings)
                 ctx_NC() context(category)
                 ctx_NC()
                 for k, v in sortedhash(v) do
-                    if not private[k] then
+                    if privates[k] then
+                        -- skip
+                    elseif specials[k] then
+                        ctx_darkblue(k)
+                    else
                         local f = fields[k]
                         if f == "required" then
                             ctx_darkgreen(k)
@@ -80,46 +92,67 @@ function tracers.showdatasetcompleteness(settings)
     local lpegmatch  = lpeg.match
     local texescape  = lpeg.patterns.texescape
 
-    local preamble = { "|lBTw(10em)|p|" }
-
-    local function required(foundfields,key,value,indirect)
-        ctx_NC() ctx_darkgreen(key)
-        ctx_NC() if indirect then
-                ctx_darkblue(lpegmatch(texescape,value))
-             elseif value then
-                context(lpegmatch(texescape,value))
-             else
-                ctx_darkred("\\tttf [missing]")
-             end
-        ctx_NC() ctx_NR()
-        foundfields[key] = nil
-    end
-
-    local function optional(foundfields,key,value,indirect)
-        ctx_NC() context(key)
-        ctx_NC() if indirect then
-                ctx_darkblue(lpegmatch(texescape,value))
-             elseif value then
-                context(lpegmatch(texescape,value))
-             end
-        ctx_NC() ctx_NR()
-        foundfields[key] = nil
-    end
+    local preamble = { "|lTBw(5em)|lBTp(10em)|p|" }
 
     local function identified(tag,category,crossref)
-        ctx_NC() context(category)
+        ctx_NC()
+        ctx_NC() ctx_monobold(category)
         ctx_NC() if crossref then
-                context("\\tttf %s\\hfill\\darkblue => %s",tag,crossref)
+                ctx_monobold("%s\\hfill\\darkblue => %s",tag,crossref)
              else
-                context("\\tttf %s",tag)
+                ctx_monobold(tag)
              end
         ctx_NC() ctx_NR()
     end
 
-    local function extra(key,value)
-        ctx_NC() ctx_llap("+") context(key)
+    local function required(done,foundfields,key,value,indirect)
+        ctx_NC() if not done then context("required") end
+        ctx_NC() context(key)
+        ctx_NC()
+            if indirect then
+                if value then
+                    ctx_darkblue(lpegmatch(texescape,value))
+                else
+                    ctx_darkred("\\tttf [missing crossref]")
+                end
+            elseif value then
+                context(lpegmatch(texescape,value))
+            else
+                ctx_darkred("\\tttf [missing value]")
+            end
+        ctx_NC() ctx_NR()
+        foundfields[key] = nil
+        return done or true
+    end
+
+    local function optional(done,foundfields,key,value,indirect)
+        ctx_NC() if not done then context("optional") end
+        ctx_NC() context(key)
+        ctx_NC()
+            if indirect then
+                ctx_darkblue(lpegmatch(texescape,value))
+            elseif value then
+                context(lpegmatch(texescape,value))
+            end
+        ctx_NC() ctx_NR()
+        foundfields[key] = nil
+        return done or true
+    end
+
+    local function special(done,key,value)
+        ctx_NC() if not done then context("special") end
+        ctx_NC() context(key)
         ctx_NC() context(lpegmatch(texescape,value))
         ctx_NC() ctx_NR()
+        return done or true
+    end
+
+    local function extra(done,key,value)
+        ctx_NC() if not done then context("extra") end
+        ctx_NC() context(key)
+        ctx_NC() context(lpegmatch(texescape,value))
+        ctx_NC() ctx_NR()
+        return done or true
     end
 
     if next(luadata) then
@@ -135,35 +168,37 @@ function tracers.showdatasetcompleteness(settings)
             ctx_FL()
             if fields then
                 local requiredfields = fields.required
-                local optionalfields = fields.optional
+                local done = false
                 if requiredfields then
                     for i=1,#requiredfields do
                         local r = requiredfields[i]
                         if type(r) == "table" then
                             -- this has to be done differently now
-                            local okay = true
+                            local okay = false
                             for i=1,#r do
                                 local ri = r[i]
                                 if rawget(entry,ri) then
-                                    required(foundfields,ri,entry[ri])
+                                    done = required(done,foundfields,ri,entry[ri])
                                     okay = true
                                 elseif entry[ri] then
-                                    required(foundfields,ri,entry[ri],true)
+                                    done = required(done,foundfields,ri,entry[ri],true)
                                     okay = true
                                 end
                             end
                             if not okay then
-                                required(foundfields,table.concat(r,"\\letterbar "))
+                                done = required(done,foundfields,table.concat(r," {\\letterbar} "))
                             end
                         elseif rawget(entry,r) then
-                            required(foundfields,r,entry[r])
+                            done = required(done,foundfields,r,entry[r])
                         elseif entry[r] then
-                            required(foundfields,r,entry[r],true)
+                            done = required(done,foundfields,r,entry[r],true)
                         else
-                            required(foundfields,r)
+                            done = required(done,foundfields,r)
                         end
                     end
                 end
+                local optionalfields = fields.optional
+                local done = false
                 if optionalfields then
                     for i=1,#optionalfields do
                         local o = optionalfields[i]
@@ -172,22 +207,33 @@ function tracers.showdatasetcompleteness(settings)
                             for i=1,#o do
                                 local oi = o[i]
                                 if rawget(entry,oi) then
-                                    optional(foundfields,oi,entry[oi])
+                                    done = optional(done,foundfields,oi,entry[oi])
                                 elseif entry[oi] then
-                                    optional(foundfields,oi,entry[oi],true)
+                                    done = optional(done,foundfields,oi,entry[oi],true)
                                 end
                             end
                         elseif rawget(entry,o) then
-                            optional(foundfields,o,entry[o])
+                            done = optional(done,foundfields,o,entry[o])
                         elseif entry[o] then
-                            optional(foundfields,o,entry[o],true)
+                            done = optional(done,foundfields,o,entry[o],true)
                         end
                     end
                 end
             end
+            local done = false
             for k, v in sortedhash(foundfields) do
-                if not private[k] then
-                    extra(k,entry[k])
+                if privates[k] then
+                    -- skip
+                elseif specials[k] then
+                    done = special(done,k,entry[k])
+                end
+            end
+            local done = false
+            for k, v in sortedhash(foundfields) do
+                if privates[k] then
+                    -- skip
+                elseif not specials[k] then
+                    done = extra(done,k,entry[k])
                 end
             end
             ctx_stoptabulate()
@@ -202,21 +248,17 @@ function tracers.showfields(settings)
     local fielddata   = kind and specifications[kind] or specifications.apa
     local categories  = fielddata.categories
     local fieldspecs  = fielddata.fields
-    local swapped     = { }
     local validfields = { }
     for category, fields in next, categories do
-        local categoryfields = { }
         for name, list in next, fields do
             for i=1,#list do
-                local field = list[i]
-                if type(field) == "table" then
-                    field = table.concat(field," + ")
-                end
-                validfields[field] = true
-                if swapped[field] then
-                    swapped[field][category] = true
+                local li = list[i]
+                if type(li) == "table" then
+                    for i=1,#li do
+                        validfields[li[i]] = true
+                    end
                 else
-                    swapped[field] = { [category] = true }
+                    validfields[li] = true
                 end
             end
         end
@@ -242,12 +284,14 @@ function tracers.showfields(settings)
     ctx_FL()
     for i=1,#s_fields do
         local field  = s_fields[i]
-        local fields = swapped[field]
         ctx_NC()
         ctx_bold(field)
         for j=1,#s_categories do
             ctx_NC()
-            if fields[s_categories[j]] then
+            local kind = fieldspecs[s_categories[j]][field]
+            if kind == "required" then
+                ctx_darkgreen("*")
+            elseif kind == "optional" then
                 context("*")
             end
         end

@@ -305,6 +305,7 @@
 		<cd:variable name='mirrored' value='reflete'/>
 		<cd:variable name='monday' value='lundi'/>
 		<cd:variable name='mono' value='mono'/>
+		<cd:variable name='monobold' value='monogras'/>
 		<cd:variable name='month' value='mois'/>
 		<cd:variable name='more' value='more'/>
 		<cd:variable name='morehyphenation' value='morehyphenation'/>

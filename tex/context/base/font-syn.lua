@@ -330,7 +330,7 @@ filters.dfont = fontloader.info
 -- function fontloader.fullinfo(name)
 --     local ff = fontloader.open(name)
 --     if ff then
---         local fields = table.tohash(fontloader.fields(ff),true)
+--         local fields = table.tohash(fontloader.fields(ff),true) -- isn't that one stable
 --         local d   = {
 --             names               = fields.names               and ff.names,
 --             familyname          = fields.familyname          and ff.familyname,
@@ -356,19 +356,57 @@ filters.dfont = fontloader.info
 --     end
 -- end
 
--- As we have lazy loading anyway, this one still is full and with less code than
--- the previous one. But this depends on the garbage collector to kick in.
+-- more efficient:
 
-function fontloader.fullinfo(...)
-    local ff = fontloader.open(...)
+local fields = nil
+
+function fontloader.fullinfo(name)
+    local ff = fontloader.open(name)
     if ff then
-        local d = { } -- ff is userdata so [1] or # fails on it
-        setmetatableindex(d,ff)
+        if not fields then
+            fields = table.tohash(fontloader.fields(ff),true)
+        end
+        --  unfortunately luatex aborts when a field is not available
+        local d   = {
+            names               = fields.names               and ff.names,
+            familyname          = fields.familyname          and ff.familyname,
+            fullname            = fields.fullname            and ff.fullname,
+            fontname            = fields.fontname            and ff.fontname,
+            weight              = fields.weight              and ff.weight,
+            italicangle         = fields.italicangle         and ff.italicangle,
+            units_per_em        = fields.units_per_em        and ff.units_per_em,
+            design_range_bottom = fields.design_range_bottom and ff.design_range_bottom,
+            design_range_top    = fields.design_range_top    and ff.design_range_top,
+            design_size         = fields.design_size         and ff.design_size,
+            italicangle         = fields.italicangle         and ff.italicangle,
+            pfminfo             = fields.pfminfo             and ff.pfminfo,
+            top_side_bearing    = fields.top_side_bearing    and ff.top_side_bearing, -- not there
+        }
+        setmetatableindex(d,function(t,k)
+            report_names("warning, trying to access field %a in font table of %a",k,name)
+        end)
+        fontloader.close(ff)
         return d
     else
         return nil, "error in loading font"
     end
 end
+
+-- As we have lazy loading anyway, this one still is full and with less code than
+-- the previous one. But this depends on the garbage collector to kick in and in the
+-- current version that somehow happens not that often (on my machine I end up with
+-- soem 3 GB extra before that happens).
+
+-- function fontloader.fullinfo(...)
+--     local ff = fontloader.open(...)
+--     if ff then
+--         local d = { } -- ff is userdata so [1] or # fails on it
+--         setmetatableindex(d,ff)
+--         return d -- garbage collection will do the fontloader.close(ff)
+--     else
+--         return nil, "error in loading font"
+--     end
+-- end
 
 -- We don't get the design_* values here as for that the fontloader has to load feature
 -- info and therefore we're not much better off than using 'open'.

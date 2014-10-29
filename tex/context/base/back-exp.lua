@@ -195,6 +195,8 @@ local p_attribute       = lpeg.replacer(attribentities)
 local p_stripper        = lpeg.patterns.stripper
 local p_escaped         = lpeg.patterns.xml.escaped
 
+local f_id              = formatters["%s-%s"]
+
 local alignmapping = {
     flushright = "right",
     middle     = "center",
@@ -418,9 +420,9 @@ local usedimages = { }
 do
 
 local imagetemplate = [[
-%element%[id="%detail%"], div.%element%[id="%detail%"] {
+%element%[id="%id%"], div.%element%[id="%id%"] {
     display           : block ;
-    background-image  : url(%name%) ;
+    background-image  : url(%url%) ;
     background-size   : 100%% auto ;
     background-repeat : no-repeat ;
     width             : %width% ;
@@ -444,21 +446,18 @@ local imagetemplate = [[
         for element, details in sortedhash(usedimages) do
             for detail, data in sortedhash(details) do
                 local name = data.name
-                local full = url.addscheme(substitute(name))
-                result[#result+1] = replacetemplate(imagetemplate,{
+                local spec = {
                     element = element,
-                    detail  = detail,
-                    name    = full,
+                    id      = data.id,
+                    name    = name,
+                    url     = url.addscheme(substitute(name)),
                     width   = data.width,
                     height  = data.height,
-                })
-                collected[detail] = {
-                    name    = full,
-                    width   = data.width,
-                    height  = data.height,
-                    page    = data.page,
                     used    = data.used,
+                    page    = data.page,
                 }
+                result[#result+1] = replacetemplate(imagetemplate,spec)
+                collected[detail] = spec
             end
         end
         return concat(result,"\n\n")
@@ -718,10 +717,14 @@ do
     usedimages.image  = image
 
     function structurestags.setfigure(name,used,page,width,height)
-        image[locatedtag("image")] = {
+        local fulltag = locatedtag("image")
+        local spec    = specifications[fulltag]
+        local page    = tonumber(page)
+        image[fulltag] = {
+            id     = f_id(spec.tagname,spec.tagindex),
             name   = name,
             used   = used,
-            page   = page,
+            page   = page and page > 1 and page or nil,
             width  = todimen(width, "cm","%0.3Fcm"),
             height = todimen(height,"cm","%0.3Fcm"),
         }
@@ -731,11 +734,8 @@ do
         local data = image[fulltag]
         if data then
             setattribute(di,"name",data.name)
-            local page = tonumber(data.page)
-            if page and page > 1 then
-                setattribute(di,"page",page)
-            end
-            setattribute(di,"id",fulltag)
+            setattribute(di,"page",data.page)
+            setattribute(di,"id",data.id)
             setattribute(di,"width",data.width)
             setattribute(di,"height",data.height)
         end
@@ -3058,7 +3058,9 @@ local htmltemplate = [[
             result = { tg }
         end
         for k, v in next, at do
-            result[#result+1] = k .. "-" .. v
+            if not private[k] then
+                result[#result+1] = k .. "-" .. v
+            end
         end
         return concat(result, " ")
     end

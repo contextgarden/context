@@ -1265,7 +1265,7 @@
         field       = "\btxregisterparameter\c!field",
         register    = "\btxregisterparameter\c!register",
         method      = "\btxregisterparameter\c!method",
-        alternative = "\btxregisterparameter\c!alternative",
+     %  alternative = "\btxregisterparameter\c!alternative",
     }}%
   \fi}
 
@@ -1278,54 +1278,32 @@
 \to \everysetupbtxregister
 
 \appendtoks
+    \normalexpanded{%
+      \defineprocessor
+        [\s!btx:r:\currentbtxregister]%
+        [\c!style=\noexpand\namedbtxregisterparameter{\currentbtxregister}\noexpand\c!style,
+         \c!color=\noexpand\namedbtxregisterparameter{\currentbtxregister}\noexpand\c!color]}%
+\to \everydefinebtxregister
+
+\appendtoks
     \ctxcommand{btxtoregister("\currentbtxdataset","\currentbtxtag")}%
 \to \t_btx_reference_inject
 
-\unexpanded\def\dosetfastregisterentry#1#2#3% register entry key
+\unexpanded\def\btxindexedauthor#1#2#3#4#5#6% alternative von last first junior
   {\begingroup
-   \edef\currentregister{#1}%
-   \setnextinternalreference
-   \xdef\currentregisternumber{\ctxcommand{storeregister{
-        metadata   = { name = "\currentregister" },
-        entries    = { { \!!bs#2\!!es }, { \!!bs#3\!!es } },
-     }
-   }}%
-   \xdef\currentregistersynchronize{\ctxlatecommand{enhanceregister("\currentregister",\currentregisternumber)}}%
-   \currentregistersynchronize % here?
-   \dostarttagged\t!registerlocation\currentregister
-   \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
-   \dotagregisterlocation
-   \dostoptagged
+   \def\currentbtxcitevariant{#1}%
+   \ifx\currentbtxcitevariant\empty
+      \edef\currentbtxcitevariant{invertedshort}%
+   \fi
+   \let\currentbtxlistvariant\currentbtxcitevariant % we inherit
+   \the\everysetupbtxciteplacement
+   \def\currentbtxvons       {#2}%
+   \def\currentbtxsurnames   {#3}%
+   \def\currentbtxinitials   {#4}%
+   \def\currentbtxfirstnames {#5}%
+   \def\currentbtxjuniors    {#6}%
+   \fastsetup{\s!btx:\s!cite:\s!author:\currentbtxcitevariant}%
    \endgroup}
-
-\unexpanded\def\btx_flush_specific_field#1#2#3#4#5% dataset tag field variant value
-  {\begingroup
-   \edef\currentbtxdataset{#1}%
-   \edef\currentbtxtag    {#2}%
-   \edef\currentbtxfield  {#3}%
-   \let\currentbtxlistvariant\currentbtxfield
-   \edef\currentbtxcitevariant{#4}%
-   \usebtxregisterstyleandcolor\c!style\c!color
-   \edef\tempstring{\currentbtxalternative:register:\currentbtxcitevariant}%
-   \doifsetupselse\tempstring{\fastsetup\tempstring}{#5}%
-   \endgroup}
-
-\unexpanded\def\btx_flush_specific_author#1#2#3#4#5% dataset tag field variantindex
-  {\begingroup
-   \edef\currentbtxdataset{#1}%
-   \edef\currentbtxtag    {#2}%
-   \edef\currentbtxfield  {#3}%
-   \let\currentbtxlistvariant\currentbtxfield
-   \edef\currentbtxcitevariant{#4}%
-   \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\currentbtxfield",{
-        kind     = "list",
-        index    = \number#5,
-        combiner = "\currentbtxcitevariant",
-   })}%
-   \endgroup}
-
-\let\dobtxindexedfield \btx_flush_specific_field  % used at lua end
-\let\dobtxindexedauthor\btx_flush_specific_author % used at lua end
 
 %D Defaults:
 
@@ -1453,6 +1431,9 @@
    [page]
 
 \definebtxcitevariant
+   [invertedshort]
+
+\definebtxcitevariant
    [short]
    [\c!left={[},
     \c!middle={, },
@@ -1522,6 +1503,9 @@
 \definebtxlistvariant
   [artauthor]
   [author]
+
+\definebtxlistvariant
+  [invertedshort]
 
 % Not that efficient but ...
 

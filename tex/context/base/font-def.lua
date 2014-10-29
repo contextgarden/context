@@ -433,8 +433,8 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     elseif trace_defining and type(tfmdata) == "table" then
         local properties = tfmdata.properties or { }
         local parameters = tfmdata.parameters or { }
-        report_defining("using %s font with id %a, name %a, size %a, bytes %a, encoding %a, fullname %a, filename %a",
-            properties.format, id, properties.name, parameters.size, properties.encodingbytes,
+        report_defining("using %a font with id %a, name %a, size %a, bytes %a, encoding %a, fullname %a, filename %a",
+            properties.format or "unknown", id, properties.name, parameters.size, properties.encodingbytes,
             properties.encodingname, properties.fullname, file.basename(properties.filename))
     end
     statistics.stoptiming(fonts)

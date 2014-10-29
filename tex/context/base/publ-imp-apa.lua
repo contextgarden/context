@@ -11,26 +11,26 @@ return {
     copyright = "ConTeXt development team",
     categories = {
         article = {
-            required = { "author", "editor", "title"},
+            required = { { "author", "editor" }, "title"},
             optional = { "year", "type", "journal", "volume", "number", "pages", "url", "note", "doi" },
             virtual  = virtual,
             author   = authors,
         },
         magazine = {
-            required = { "author", "editor", "title", "journal", "year" },
+            required = { { "author", "editor" }, "title", "journal", "year" },
             optional = { "volume", "number", "pages", "month", "day", "note", "url", "doi" },
             virtual  = virtual,
             author   = authors,
         },
         newspaper = {
-            required = { "author", "editor", "title", "journal", "year" },
+            required = { { "author", "editor" }, "title", "journal", "year" },
             optional = { "volume", "number", "pages", "month", "day", "note", "url", "doi" },
             virtual  = virtual,
             author   = authors,
         },
         book = {
             virtual  = { "authoryear" },
-            required = { "author", "editor", "publisher", "title"},
+            required = { { "author", "editor", "publisher" }, "title"},
             optional = { "year", "month", "day", "title", "type", "edition", "series", "volume", "number", "pages", "address", "publisher", "url", "note", "ISBN" },
             virtual  = virtual,
             author   = authors,
@@ -42,7 +42,7 @@ return {
             author   = authors,
         },
         inbook = {
-            required = { "author", "editor", "title", "chapter", "pages", "publisher","year" },
+            required = { { "author", "editor", "publisher" }, "title", "chapter", "pages","year" },
             optional = { "volume", "number", "series", "type", "address", "edition", "month", "note", "ISBN" },
             virtual  = virtual,
             author   = authors,
