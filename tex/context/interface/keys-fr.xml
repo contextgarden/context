@@ -1457,7 +1457,6 @@
 		<cd:command name='paperheight' value='hauteurpapier'/>
 		<cd:command name='paperwidth' value='largeurpapier'/>
 		<cd:command name='periods' value='periodes'/>
-		<cd:command name='plaatsruwelijst' value='placerawlist'/>
 		<cd:command name='placebookmarks' value='placemarquespages'/>
 		<cd:command name='placecombinedlist' value='placelisteinmbriquee'/>
 		<cd:command name='placefloat' value='placeflottant'/>
@@ -1472,6 +1471,7 @@
 		<cd:command name='placeongrid' value='placesurgrille'/>
 		<cd:command name='placeontopofeachother' value='placelesunsaudessusdesautres'/>
 		<cd:command name='placepagenumber' value='placenumeropage'/>
+		<cd:command name='placerawlist' value='placerawlist'/>
 		<cd:command name='placereferencelist' value='placelistereference'/>
 		<cd:command name='placeregister' value='placeregistre'/>
 		<cd:command name='placerule' value='placeregle'/>

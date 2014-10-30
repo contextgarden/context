@@ -1457,7 +1457,6 @@
 		<cd:command name='paperheight' value='altezzacarta'/>
 		<cd:command name='paperwidth' value='ampiezzacarta'/>
 		<cd:command name='periods' value='punti'/>
-		<cd:command name='plaatsruwelijst' value='placerawlist'/>
 		<cd:command name='placebookmarks' value='mettisegnalibro'/>
 		<cd:command name='placecombinedlist' value='mettielencocombinato'/>
 		<cd:command name='placefloat' value='placefloat'/>
@@ -1472,6 +1471,7 @@
 		<cd:command name='placeongrid' value='mettiingriglia'/>
 		<cd:command name='placeontopofeachother' value='mettiunosullaltro'/>
 		<cd:command name='placepagenumber' value='mettinumeropagina'/>
+		<cd:command name='placerawlist' value='placerawlist'/>
 		<cd:command name='placereferencelist' value='placereferencelist'/>
 		<cd:command name='placeregister' value='mettiregistro'/>
 		<cd:command name='placerule' value='mettilinea'/>

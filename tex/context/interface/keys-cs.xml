@@ -1457,7 +1457,6 @@
 		<cd:command name='paperheight' value='vyskapapiru'/>
 		<cd:command name='paperwidth' value='sirkapapiru'/>
 		<cd:command name='periods' value='tecky'/>
-		<cd:command name='plaatsruwelijst' value='placerawlist'/>
 		<cd:command name='placebookmarks' value='umistizalozky'/>
 		<cd:command name='placecombinedlist' value='umistikombinovanyseznam'/>
 		<cd:command name='placefloat' value='placefloat'/>
@@ -1472,6 +1471,7 @@
 		<cd:command name='placeongrid' value='umistinamrizku'/>
 		<cd:command name='placeontopofeachother' value='umistinadsebe'/>
 		<cd:command name='placepagenumber' value='placepagenumber'/>
+		<cd:command name='placerawlist' value='placerawlist'/>
 		<cd:command name='placereferencelist' value='placereferencelist'/>
 		<cd:command name='placeregister' value='umistirejstrik'/>
 		<cd:command name='placerule' value='placerule'/>

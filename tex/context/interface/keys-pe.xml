@@ -1457,7 +1457,6 @@
 		<cd:command name='paperheight' value='ارتفاع‌برگ'/>
 		<cd:command name='paperwidth' value='عرض‌برگ'/>
 		<cd:command name='periods' value='نقطه‌ها'/>
-		<cd:command name='plaatsruwelijst' value='درج‌لیست‌خام'/>
 		<cd:command name='placebookmarks' value='درج‌چوب‌خط'/>
 		<cd:command name='placecombinedlist' value='درج‌لیست‌مختلط'/>
 		<cd:command name='placefloat' value='درج‌شناور'/>
@@ -1472,6 +1471,7 @@
 		<cd:command name='placeongrid' value='درج‌در‌توری'/>
 		<cd:command name='placeontopofeachother' value='درج‌در‌بالای‌یکدیگر'/>
 		<cd:command name='placepagenumber' value='درج‌شماره‌صفحه'/>
+		<cd:command name='placerawlist' value='درج‌لیست‌خام'/>
 		<cd:command name='placereferencelist' value='درج‌لیست‌مرجع'/>
 		<cd:command name='placeregister' value='درج‌ثبت'/>
 		<cd:command name='placerule' value='درج‌خط'/>

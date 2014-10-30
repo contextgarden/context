@@ -57,6 +57,9 @@ publications.datasets   = datasets
 local writers           = publications.writers or { }
 publications.writers    = writers
 
+local tables            = publications.tables or { }
+publications.tables     = tables
+
 publications.statistics = publications.statistics or { }
 local publicationsstats = publications.statistics
 
@@ -64,6 +67,23 @@ publicationsstats.nofbytes       = 0
 publicationsstats.nofdefinitions = 0
 publicationsstats.nofshortcuts   = 0
 publicationsstats.nofdatasets    = 0
+
+local privates = {
+    category = true,
+    tag      = true,
+    index    = true,
+}
+
+local specials = {
+    key      = true,
+    crossref = true,
+    keywords = true,
+    language = true,
+    comment  = true,
+}
+
+tables.privates = privates
+tables.specials = specials
 
 if not publications.usedentries then
     function publications.usedentries()
@@ -826,7 +846,7 @@ local savers = { }
 local s_preamble = [[
 % this is an export from context mkiv
 
-@preamble {
+@preamble{
     \ifdefined\btxcmd
         % we're probably in context
     \else
@@ -849,7 +869,11 @@ function savers.bib(dataset,filename,usedonly)
         if not usedonly or usedonly[tag] then
             r = r + 1 ; result[r] = f_start(data.category or "article",tag)
             for key, value in sortedhash(data) do
-                r = r + 1 ; result[r] = f_field(key,value)
+                if privates[key] then
+                    -- skip
+                else
+                    r = r + 1 ; result[r] = f_field(key,value)
+                end
             end
             r = r + 1 ; result[r] = s_stop
             n = n + 1

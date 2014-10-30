@@ -109,7 +109,7 @@ local ctx_btxchecklistentry       = context.btxchecklistentry
 local ctx_btxchecklistcombi       = context.btxchecklistcombi
 local ctx_btxsetcitereference     = context.btxsetcitereference
 local ctx_btxsetlistreference     = context.btxsetlistreference
-local ctx_btxmissing              = context.btxmissing
+----- ctx_btxmissing              = context.btxmissing
 
 local ctx_btxsetdataset           = context.btxsetdataset
 local ctx_btxsettag               = context.btxsettag
@@ -124,6 +124,8 @@ local ctx_btxsetthird             = context.btxsetthird
 local ctx_btxsetinternal          = context.btxsetinternal
 local ctx_btxsetlefttext          = context.btxsetlefttext
 local ctx_btxsetrighttext         = context.btxsetrighttext
+local ctx_btxsetbefore            = context.btxsetbefore
+local ctx_btxsetafter             = context.btxsetafter
 local ctx_btxsetbacklink          = context.btxsetbacklink
 local ctx_btxsetbacktrace         = context.btxsetbacktrace
 local ctx_btxsetcount             = context.btxsetcount
@@ -315,7 +317,7 @@ setmetatableindex(usedentries,function(t,k)
         usedentries = allocate { }
         citetolist  = allocate { }
         listtocite  = allocate { }
-local names = { }
+        local names = { }
         local internals = structures.references.internals
         local p_collect = (C(R("09")^1) * Carg(1) / function(s,entry) listtocite[tonumber(s)] = entry end + P(1))^0
         for i=1,#internals do
@@ -352,26 +354,26 @@ local names = { }
                                         listtocite[int] = entry
                                     end
                                 end
-local detail = datasets[set].details[tag]
-if detail then
-    local author = detail.author
-    if author then
-        for i=1,#author do
-            local a = author[i]
-            local s = a.surnames
-            if s then
-                local c = concat(s,"+")
-                local n = names[c]
-                if n then
-                    n[#n+1] = a
-                    break
-                else
-                    names[c] = { a }
-                end
-            end
-        end
-    end
-end
+                                local detail = datasets[set].details[tag]
+                                if detail then
+                                    local author = detail.author
+                                    if author then
+                                        for i=1,#author do
+                                            local a = author[i]
+                                            local s = a.surnames
+                                            if s then
+                                                local c = concat(s,"+")
+                                                local n = names[c]
+                                                if n then
+                                                    n[#n+1] = a
+                                                    break
+                                                else
+                                                    names[c] = { a }
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
                             end
                         end
                     elseif kind == "userdata" then
@@ -389,18 +391,13 @@ end
                 -- weird
             end
         end
-        -- to be sure
---         setmetatableindex(usedentries,"table")
---         setmetatableindex(citetolist,"table")
---         setmetatableindex(listtocite,"table")
-        --
-for k, v in next, names do
-    if #v > 1 then
-        for i=1,#v do
-            v[i].state = 1
+        for k, v in next, names do
+            if #v > 1 then
+                for i=1,#v do
+                    v[i].state = 1
+                end
+            end
         end
-    end
-end
         return usedentries[k]
     end
 end)
@@ -1491,13 +1488,13 @@ function lists.flushentries(dataset,textmode)
         end
         local userdata = li[4]
         if userdata then
-            local l = userdata.btxltx
-            local r = userdata.btxrtx
-            if l then
-                ctx_btxsetlefttext (l)
+            local b = userdata.btxbtx
+            local a = userdata.btxatx
+            if b then
+                ctx_btxsetbefore(b)
             end
-            if r then
-                ctx_btxsetrighttext(r)
+            if a then
+                ctx_btxsetafter(a)
             end
         end
         rendering.userdata = userdata
@@ -1509,54 +1506,6 @@ function lists.flushentries(dataset,textmode)
     end
     setspecification(false)
 end
-
--- function lists.flushentry(specification)
---     local tag = specification.reference
---     if not tag or tag == "" then
---         return
---     end
---     --
---     local dataset  = specification.dataset or "" -- standard
---  -- local mark     = specification.markentry ~= false
---  -- local internal = specification.internal or ""
---     --
---     local prefix, rest = lpegmatch(prefixsplitter,tag)
---     if rest then
---         dataset = prefix
---     else
---         rest = tag
---     end
---     --
---  -- if trace_cite then
---  --     report_cite("mark, dataset: %s, tags: %s",dataset or "-",rest)
---  -- end
---     --
---     local reference = publications.parenttag(dataset,rest)
---     local found, todo, list = findallused(dataset,reference,internal)
---     local valid = { }
---     if list and #list > 0 then
---         local luadata = datasets[dataset].luadata
---         for i=1,#list do
---             local tag = list[i]
---             if luadata[tag] then
---                 valid[#valid+1] = { tag, 0, 0 } -- datasets[dataset].details.number
---             end
---         end
---     end
---     if #valid > 0 then
---         local rendering = renderings[dataset]
---         rendering.list = valid
---         lists.flushentries(dataset,true)
---     else
---         ctx_btxmissing(tag)
---     end
--- local mark = true
---     tobemarked = mark and todo
---     if found and tobemarked then
---         flushmarked(dataset,list)
---         commands.flushmarked() -- here (could also be done in caller)
---     end
--- end
 
 local function getuserdata(dataset,key)
     local rendering = renderings[dataset]
@@ -1609,57 +1558,63 @@ local citevariants        = { }
 publications.citevariants = citevariants
 
 function commands.btxhandlecite(specification)
-    local tag = specification.reference
-    if not tag or tag == "" then
+    local dataset   = specification.dataset or "" -- standard
+    local reference = specification.reference
+    local variant   = specification.variant or "num"
+    if not reference or reference == "" then
         return
     end
     --
-    local dataset  = specification.dataset or "" -- standard
-    local mark     = specification.markentry ~= false
-    local variant  = specification.variant or "num"
-    local sorttype = specification.sorttype
-    local compress = specification.compress == v_yes
-    local internal = specification.internal
+    specification.variant   = variant
+    specification.compress  = specification.compress == v_yes
+    specification.markentry = specification.markentry ~= false
     --
-    local prefix, rest = lpegmatch(prefixsplitter,tag)
-    if rest then
-        dataset = prefix
-    else
-        rest = tag
+    local prefix, rest = lpegmatch(prefixsplitter,reference)
+    if prefix and rest then
+        specification.dataset   = prefix
+        specification.reference = rest
     end
-    local action = citevariants[variant] -- there is always fallback on default
+    --
+    --
     if trace_cite then
-        report_cite("inject, dataset: %s, tag: %s, variant: %s, compressed",dataset or "-",rest,variant)
+        report_cite("inject, dataset: %s, tag: %s, variant: %s, compressed",
+            specification.dataset or "-",
+            specification.reference,
+            specification.variant
+        )
     end
+    --
     ctx_setvalue("currentbtxdataset",dataset)
-    action(dataset,rest,mark,compress,variant,internal) -- maybe pass a table
+    --
+    citevariants[variant](specification) -- we always fall back on default
 end
 
 
 function commands.btxhandlenocite(specification)
-    local tag = specification.reference
-    if not tag or tag == "" then
+    local dataset   = specification.dataset or "" -- standard
+    local reference = specification.reference
+    if not reference or reference == "" then
         return
     end
     --
-    local dataset  = specification.dataset or "" -- standard
-    local mark     = specification.markentry ~= false
-    local internal = specification.internal or ""
+    local markentry = specification.markentry ~= false
+    local internal  = specification.internal or ""
     --
     local prefix, rest = lpegmatch(prefixsplitter,tag)
     if rest then
-        dataset = prefix
-    else
-        rest = tag
+        dataset   = prefix
+        reference = rest
     end
     --
     if trace_cite then
-        report_cite("mark, dataset: %s, tags: %s",dataset or "-",rest)
+        report_cite("mark, dataset: %s, tags: %s",dataset or "-",reference)
     end
     --
-    local reference = publications.parenttag(dataset,rest)
+    local reference = publications.parenttag(dataset,reference)
+    --
     local found, todo, list = findallused(dataset,reference,internal)
-    tobemarked = mark and todo
+    --
+    tobemarked = markentry and todo
     if found and tobemarked then
         flushmarked(dataset,list)
         commands.flushmarked() -- here (could also be done in caller)
@@ -1677,17 +1632,6 @@ end
 
 local keysorter = function(a,b) return a.sortkey < b.sortkey end
 
-local function compresslist(source)
-    for i=1,#source do
-        if type(source[i].sortkey) ~= "number" then
-            return source
-        end
-    end
-    local first, last, firstr, lastr
-    local target, noftarget, tags = { }, 0, { }
-    sort(source,keysorter)
-    -- suffixes
-    local oldvalue = nil
 --     local suffix   = 0
 --     local function setsuffix(entry,suffix,sortfld)
 --         entry.suffix  = suffix
@@ -1722,7 +1666,17 @@ local function compresslist(source)
 --             break
 --         end
 --     end
-    --
+
+local function compresslist(source)
+    for i=1,#source do
+        if type(source[i].sortkey) ~= "number" then
+            return source
+        end
+    end
+    local first, last, firstr, lastr
+    local target, noftarget, tags = { }, 0, { }
+    sort(source,keysorter)
+    local oldvalue = nil
     local function flushrange()
         noftarget = noftarget + 1
         if last > first + 1 then
@@ -1772,52 +1726,87 @@ local f_missing  = formatters["<%s>"]
 
 -- maybe also sparse (e.g. pages)
 
--- a bit redundant sccess to datasets
+-- a bit redundant access to datasets
 
-local function processcite(dataset,reference,mark,compress,setup,internal,getter,setter,compressor)
-    reference = publications.parenttag(dataset,reference)
+local function processcite(presets,specification)
+    --
+    if specification then
+        setmetatableindex(specification,presets)
+    else
+        specification = presets
+    end
+    --
+    local dataset    = specification.dataset
+    local reference  = specification.reference
+    local internal   = specification.internal
+    local setup      = specification.variant
+    local compress   = specification.compress
+    local getter     = specification.getter
+    local setter     = specification.setter
+    local compressor = specification.compressor
+    --
+    local reference  = publications.parenttag(dataset,reference)
+    --
     local found, todo, list = findallused(dataset,reference,internal)
-    tobemarked = mark and todo
+    tobemarked = specification.markentry and todo
+    --
     if found and setup then
-        local source = { }
-        local badkey = false
+        local source  = { }
+        local badkey  = false
+        local luadata = datasets[dataset].luadata
         for i=1,#found do
             local entry    = found[i]
             local tag      = entry.userdata.btxref
-
--- we can probably move the test into the flush
-
-local category = datasets[dataset].luadata[tag].category
-if currentspecificationfields[category][setup] then
-
-            local internal = entry.references.internal
-            local data     = getter(dataset,tag,entry,internal)
-            if compress and not compressor then
-                local sortkey = data.sortkey
-                if sortkey then
-                    local key = lpegmatch(numberonly,sortkey)
-                    if key then
-                        data.sortkey = key
+            -- we can probably move the test into the flush
+            local category = luadata[tag].category
+            if currentspecificationfields[category][setup] then
+                local internal = entry.references.internal
+                local data     = setter(dataset,tag,entry,internal)
+                if compress and not compressor then
+                    local sortkey = data.sortkey
+                    if sortkey then
+                        local key = lpegmatch(numberonly,sortkey)
+                        if key then
+                            data.sortkey = key
+                        else
+                            badkey = true
+                        end
                     else
                         badkey = true
                     end
-                else
-                    badkey = true
                 end
+                if type(data) == "table" then
+                    source[#source+1] = data
+                else
+                    report("error in cite rendering %a",setup or "?")
+                end
+            else
+                report("cite rendering %a is not available for %a",setup,category)
             end
-            source[#source+1] = data
-
-else
-    report("cite rendering %a is not available for %a",setup,category)
-end
-
         end
+
+        local lefttext  = specification.lefttext
+        local righttext = specification.righttext
+        local before    = specification.before
+        local after     = specification.after
+
+        if lefttext  and lefttext  ~= "" then lefttext  = settings_to_array(lefttext)  end
+        if righttext and righttext ~= "" then righttext = settings_to_array(righttext) end
+        if before    and before    ~= "" then before    = settings_to_array(before)    end
+        if after     and after     ~= "" then after     = settings_to_array(after)     end
 
         local function flush(i,n,entry,last)
             local tag = entry.tag
             local currentcitation = markcite(dataset,tag)
+            --
             ctx_btxstartcite()
             ctx_btxsettag(tag)
+            --
+            if lefttext  then ctx_btxsetlefttext (lefttext [i] or #lefttext   == 1 and lefttext [1] or "")  end
+            if righttext then ctx_btxsetrighttext(righttext[i] or #righttext  == 1 and righttext[1] or "")  end
+            if before    then ctx_btxsetbefore   (before   [i] or #before     == 1 and before   [1] or "")  end
+            if after     then ctx_btxsetafter    (after    [i] or #after      == 1 and after    [1] or "")  end
+            --
             ctx_btxsetbacklink(currentcitation)
             local bl = listtocite[currentcitation]
             if bl then
@@ -1831,7 +1820,7 @@ end
             if language then
                 ctx_btxsetlanguage(language)
             end
-            if not setter(entry,last) then
+            if not getter(entry,last) then
                 ctx_btxsetfirst(f_missing(tag))
             end
             ctx_btxsetconcat(concatstate(i,n))
@@ -1916,8 +1905,12 @@ setmetatableindex(citevariants,function(t,k)
     return v
 end)
 
-function citevariants.default(dataset,reference,mark,compress,variant,internal)
-    processcite(dataset,reference,mark,compress,variant,internal,setters[variant],getters[variant])
+function citevariants.default(presets)
+    local variant = presets.variant
+    processcite(presets,{
+        setter = setters[variant],
+        getter = getters[variant],
+    })
 end
 
 -- entry
@@ -1935,8 +1928,13 @@ do
         ctx_btxsetfirst(first.tag)
     end
 
-    function citevariants.entry(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,false,"entry",internal,setter,getter)
+    function citevariants.entry(presets)
+        processcite(presets,{
+            compress = false,
+            variant  = "entry",
+            setter   = setter,
+            getter   = getter,
+        })
     end
 
 end
@@ -1967,8 +1965,13 @@ do
         end
     end
 
-    function citevariants.short(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,false,"short",internal,setter,getter)
+    function citevariants.short(presets)
+        processcite(presets,{
+            compress = false,
+            variant  = "short",
+            setter   = setter,
+            getter   = getter,
+        })
     end
 
 end
@@ -1999,8 +2002,12 @@ do
         end
     end
 
-    function citevariants.page(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,compress,"page",internal,setter,getter)
+    function citevariants.page(presets)
+        processcite(presets,{
+            variant = "page",
+            setter  = setter,
+            getter  = getter,
+        })
     end
 
 end
@@ -2024,9 +2031,12 @@ do
         return simplegetter(first,last,"num")
     end
 
-    function citevariants.num(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,compress,"num",internal,setter,getter)
-    --     processcite(dataset,reference,mark,false,"num",internal,setter,getter)
+    function citevariants.num(presets)
+        processcite(presets,{
+            variant = "num",
+            setter  = setter,
+            getter  = getter,
+        })
     end
 
 end
@@ -2050,8 +2060,12 @@ do
         return simplegetter(first,last,"year")
     end
 
-    function citevariants.year(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,compress,"year",internal,setter,getter)
+    function citevariants.year(presets)
+        processcite(presets,{
+            variant = "year",
+            setter  = setter,
+            getter  = getter,
+        })
     end
 
 end
@@ -2075,12 +2089,20 @@ do
         return simplegetter(first,last,"index")
     end
 
-    function citevariants.index(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,compress,"index",internal,setter,getter)
+    function citevariants.index(presets)
+        processcite(presets,{
+            variant = "index",
+            setter  = setter,
+            getter  = getter,
+        })
     end
 
-    function citevariants.serial(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,compress,"serial",internal,setter,getter)
+    function citevariants.serial(presets)
+        processcite(presets,{
+            variant = "serial",
+            setter  = setter,
+            getter  = getter,
+        })
     end
 
 end
@@ -2102,12 +2124,20 @@ do
         return simplegetter(first,last,"category")
     end
 
-    function citevariants.category(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,compress,"category",internal,setter,getter)
+    function citevariants.category(presets)
+        processcite(presets,{
+            variant = "serial",
+            setter  = setter,
+            getter  = getter,
+        })
     end
 
-    function citevariants.type(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,compress,"type",internal,setter,getter)
+    function citevariants.type(presets)
+        processcite(presets,{
+            variant = "type",
+            setter  = setter,
+            getter  = getter,
+        })
     end
 
 end
@@ -2129,12 +2159,20 @@ do
         return true
     end
 
-    function citevariants.key(dataset,reference,mark,compress,variant,internal)
-        return processcite(dataset,reference,mark,compress,"key",internal,setter,getter)
+    function citevariants.key(presets)
+        return processcite(presets,{
+            variant = "key",
+            setter  = setter,
+            getter  = getter,
+        })
     end
 
-    function citevariants.tag(dataset,reference,mark,compress,variant,internal)
-        return processcite(dataset,reference,mark,compress,"tag",internal,setter,getter)
+    function citevariants.tag(presets)
+        return processcite(presets,{
+            variant = "tag",
+            setter  = setter,
+            getter  = getter,
+        })
     end
 
 end
@@ -2292,8 +2330,13 @@ do
         return true
     end
 
-    function citevariants.author(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,false,"author",internal,setter,getter)
+    function citevariants.author(presets)
+        processcite(presets,{
+            compress = false,
+            variant  = "author",
+            setter   = setter,
+            getter   = getter,
+        })
     end
 
     -- authornum
@@ -2315,12 +2358,13 @@ do
         return true
     end
 
-    local function compressor(found)
-        return authorcompressor(found) -- can be just an alias
-    end
-
-    function citevariants.authornum(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,compress,"authornum",internal,setter,getter,compressor)
+    function citevariants.authornum(presets)
+        processcite(presets,{
+            variant    = "authornum",
+            setter     = setter,
+            getter     = getter,
+            compressor = authorcompressor,
+        })
     end
 
     -- authoryear | authoryears
@@ -2342,12 +2386,13 @@ do
         return true
     end
 
-    local function compressor(found)
-        return authorcompressor(found)
-    end
-
-    function citevariants.authoryear(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,compress,"authoryear",internal,setter,getter,compressor)
+    function citevariants.authoryear(presets)
+        processcite(presets,{
+            variant    = "authoryear",
+            setter     = setter,
+            getter     = getter,
+            compressor = authorcompressor,
+        })
     end
 
     local function getter(first,last)
@@ -2355,8 +2400,13 @@ do
         return true
     end
 
-    function citevariants.authoryears(dataset,reference,mark,compress,variant,internal)
-        processcite(dataset,reference,mark,compress,"authoryears",internal,setter,getter,compressor)
+    function citevariants.authoryears(presets)
+        processcite(presets,{
+            variant    = "authoryears",
+            setter     = setter,
+            getter     = getter,
+            compressor = authorcompressor,
+        })
     end
 
 end

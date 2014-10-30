@@ -20,22 +20,10 @@ local context = context
 
 local ctx_NC, ctx_NR, ctx_HL, ctx_FL, ctx_ML, ctx_LL = context.NC, context.NR, context.HL, context.FL, context.ML, context.LL
 local ctx_bold, ctx_monobold, ctx_rotate, ctx_llap = context.bold, context.formatted.monobold, context.rotate, context.llap
-local ctx_darkgreen, ctx_darkred, ctx_darkblue = context.darkgreen, context.darkred, context.darkblue
 local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
 
-local privates = {
-    category = true,
-    tag      = true,
-    index    = true,
-}
-
-local specials = {
-    key      = true,
-    crossref = true,
-    keywords = true,
-    language = true,
-    comment  = true,
-}
+local privates = publications.tables.privates
+local specials = publications.tables.specials
 
 function tracers.showdatasetfields(settings)
     local dataset = settings.dataset
@@ -57,22 +45,21 @@ function tracers.showdatasetfields(settings)
                 local fields   = fieldspecs[category] or { }
                 ctx_NC() context(k)
                 ctx_NC() context(category)
-                ctx_NC()
+                ctx_NC() -- grouping around colors needed
                 for k, v in sortedhash(v) do
                     if privates[k] then
                         -- skip
                     elseif specials[k] then
-                        ctx_darkblue(k)
+                        context("{\\darkblue %s} ",k)
                     else
                         local f = fields[k]
                         if f == "required" then
-                            ctx_darkgreen(k)
-                        elseif not f then
-                            ctx_darkred(k)
+                            context("{\\darkgreen %s} ",k)
+                        elseif f == "optional" then
+                            context("{\\darkyellow %s} ",k)
                         else
-                            context(k)
+                            context("%s ",k)
                         end
-                        context(" ")
                     end
                 end
                 ctx_NC() ctx_NR()
@@ -111,14 +98,14 @@ function tracers.showdatasetcompleteness(settings)
         ctx_NC()
             if indirect then
                 if value then
-                    ctx_darkblue(lpegmatch(texescape,value))
+                    context("\\darkblue %s",lpegmatch(texescape,value))
                 else
-                    ctx_darkred("\\tttf [missing crossref]")
+                    context("\\darkred\\tttf [missing crossref]")
                 end
             elseif value then
                 context(lpegmatch(texescape,value))
             else
-                ctx_darkred("\\tttf [missing value]")
+                context("\\darkred\\tttf [missing value]")
             end
         ctx_NC() ctx_NR()
         foundfields[key] = nil
@@ -130,7 +117,7 @@ function tracers.showdatasetcompleteness(settings)
         ctx_NC() context(key)
         ctx_NC()
             if indirect then
-                ctx_darkblue(lpegmatch(texescape,value))
+                context("\\darkblue %s",lpegmatch(texescape,value))
             elseif value then
                 context(lpegmatch(texescape,value))
             end
@@ -290,7 +277,7 @@ function tracers.showfields(settings)
             ctx_NC()
             local kind = fieldspecs[s_categories[j]][field]
             if kind == "required" then
-                ctx_darkgreen("*")
+                context("\\darkgreen*")
             elseif kind == "optional" then
                 context("*")
             end

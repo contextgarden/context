@@ -34,6 +34,8 @@ publications.writers  = writers
 local authors         = publications.authors or { }
 publications.authors  = authors
 
+local report          = logs.reporter("publications","authors")
+
 -- local function makesplitter(separator)
 --     return Ct { "start",
 --         start = (Cs((V("outer") + (1-separator))^1) + separator^1)^1,
@@ -381,11 +383,11 @@ local splitter = sorters.splitters.utf
 local pubsorters = { }
 authors.sorters  = pubsorters
 
-local function components(snippet)
+local function components(snippet,short)
     local vons       = snippet.vons
     local surnames   = snippet.surnames
     local initials   = snippet.initials
-    local firstnames = snippet.firstnames
+    local firstnames = not short and snippet.firstnames
     local juniors    = snippet.juniors
     return
         vons       and #vons       > 0 and concat(vons,      " ") or "",
@@ -441,7 +443,11 @@ local default = { "author", "editor" }
 
 function authors.getauthor(dataset,tag,categories)
     local current = datasets[dataset]
-    local entry = current.luadata[tag]
+    local luadata = current.luadata
+    if not luadata then
+        report("invalid dataset %a",dataset)
+    end
+    local entry   = luadata[tag]
     if entry then
         local category = entry.category
         local detail = current.details[tag]

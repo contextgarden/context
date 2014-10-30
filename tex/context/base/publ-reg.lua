@@ -24,7 +24,7 @@ local v_all          = variables.all
 local datasets       = publications.datasets
 local specifications = { }
 local sequence       = { }
-local flushers       = { }
+local flushers       = table.setmetatableindex(function(t,k) t[k] = default return default end)
 
 function commands.setbtxregister(specification)
     local name     = specification.name
@@ -80,21 +80,18 @@ function commands.btxtoregister(dataset,tag)
                 local current = datasets[dataset]
                 local entry   = current.luadata[tag]
                 if entry then
-                    local register    = step.register
-                    local field       = step.field
-                    local processor   = step.processor
-                    local alternative = step.alternative
-                    local flusher     = flushers[field] or flushers.default
+                    local processor = step.processor
                     if processor and processor ~= "" then
-                        processor = "btx:r:" .. processor
+                        step.processor = "btx:r:" .. processor
                     end
-                    flusher(register,dataset,tag,field,processor,alternative,current,entry,current.details[tag])
+                    flushers[step.field or "default"](step,dataset,tag,current,entry,current.details[tag])
                 end
                 done[tag] = true
             end
         end
     end
 end
+
 -- context.setregisterentry (
 --     { register },
 --     {
@@ -105,42 +102,53 @@ end
 
 local ctx_dosetfastregisterentry = context.dosetfastregisterentry -- register entry key
 
-local p_keywords = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
-local serialize  = publications.serializeauthor
-local components = publications.authorcomponents
-local f_author   = formatters[ [[\btxindexedauthor{%s}{%s}{%s}{%s}{%s}{%s}]] ]
+local p_keywords  = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
+local serialize   = publications.serializeauthor
+local components  = publications.authorcomponents
+local f_author    = formatters[ [[\btxindexedauthor{%s}{%s}{%s}{%s}{%s}{%s}]] ]
 
-function flushers.default(register,dataset,tag,field,processor,alternative,current,entry,detail)
+function flushers.default(specification,dataset,tag,current,entry,detail)
+    local field = specification.field
     local k = detail[field] or entry[field]
     if k then
-        ctx_dosetfastregisterentry(register,k,"",processor,"")
+        ctx_dosetfastregisterentry(specification.register,k,"",specification.processor,"")
     end
 end
 
-function flushers.author(register,dataset,tag,field,processor,alternative,current,entry,detail)
+local shorts = {
+    normalshort   = true,
+    invertedshort = true,
+}
+
+function flushers.author(specification,dataset,tag,current,entry,detail)
     if detail then
+        local field  = specification.field
         local author = detail[field]
         if author then
+            local alternative = specification.alternative or "invertedshort"
+            local short       = shorts[alternative]
+            local register    = specification.register
+            local processor   = specification.processor
             for i=1,#author do
                 local a = author[i]
                 local k = serialize(a)
-                local e = f_author(alternative or "invertedshort",components(a))
-                ctx_dosetfastregisterentry(register,e,k,processor,"") -- todo .. sort key
+                local e = f_author(alternative,components(a,short))
+                ctx_dosetfastregisterentry(register,e,k,processor,"")
             end
         end
     end
 end
 
-function flushers.keywords(register,dataset,tag,field,processor,alternative,current,entry,detail)
+function flushers.keywords(specification,dataset,tag,current,entry,detail)
     if entry then
-        local keywords = entry[field]
-        if keywords then
-            keywords = lpegmatch(p_keywords,keywords)
+        local value = entry[specification.field]
+        if value then
+            local keywords  = lpegmatch(p_keywords,value)
+            local register  = specification.register
+            local processor = specification.processor
             for i=1,#keywords do
-                local k = keywords[i]
-                ctx_dosetfastregisterentry(register,k,"",processor,"")
+                ctx_dosetfastregisterentry(register,keywords[i],"",processor,"")
             end
         end
     end
 end
-

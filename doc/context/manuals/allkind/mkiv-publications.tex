@@ -1,4 +1,7 @@
-% language=uk
+% language=en % uk - Is behaviour really better than behavior, defence than defense?
+
+% NOTE: I have purposely not reformated the source text linebreaks in order to facilitate
+% comparaison of my editing using diff & co.
 
 % \usebtxdataset[alan-1.bib]
 % \setupbtxrendering[standard][repeat=yes,continue=yes,method=global]
@@ -44,14 +47,12 @@
 %    %\placebtxrendering[example][method=dataset,sorttype={entry:title,{entry:year,3000},{detail:author,detail:editor}}]
 % \stoptext
 
-% todo: doi and url
-
 % do etallimit etaldisplay
 
 \enablemode[export]
 
-% criterium: all + sorttype=cite     => citex before rest
-% criterium: all + sorttype=database => database order
+% criterium: all + sorttype=cite    => citex before rest
+% criterium: all + sorttype=dataset => dataset order
 % criterium: used
 % numbering: label, short, indexinlist, indexused
 
@@ -80,12 +81,16 @@
 
 \stopmode
 
-% todo: startdocument
+\startdocument
+    [title={\BIBTEX},
+     subtitle={The \CONTEXT\ way},
+     author={Hans Hagen and Alan Braslau}]
 
+% We need some (\expandafter,\unexpanded,...?) \TEX\ magic here (or above?):
 \setupinteraction
-  [title=BibTeX,
-   subtitle=The ConTeXt Way,
-   author=Hans Hagen]
+  [title={\getvariable{document}{title}},
+   subtitle={\getvariable{document}{subtitle}},
+   author={\getvariable{document}{author}}]
 
 \loadsetups[publications-en.xml] \enablemode[interface:setup:defaults]
 
@@ -117,7 +122,8 @@
   [keeptogether=yes]
 
 \setuptype
-  [color=darkcyan]
+  [color=darkmagenta]%darkcyan]
+% How to get: option=TEX ?
 
 \setupfootertexts
   [pagenumber]
@@ -133,7 +139,43 @@
 \setupalign
   [verytolerant]
 
-\starttext
+% The details of the following are a question of style
+% to be used for notes or asides (but more important than footnotes)
+\setupframedtexts
+  [width=\textwidth,
+   background=color,backgroundcolor=lightgray,
+   % (may lead to some confusion with \showsetups?)
+   offset=0.5cm,
+   %before={\blank[small]},
+   %after={\blank[small]},
+   frame=off,
+  ]
+\automigrateinserts % needed to handle footnotes within a box...
+% BUT, footnotes within framedtext still disappear! ?
+
+\setupnote [footnote] [next={ }] % Why should this be necessary?
+
+% Since this is a manual about bibliographies, let us use citations...
+\startbuffer [bibliography]
+@Book{Ierusalimschy2006,
+    author   ={Ierusalimschy, R.},
+    title    ={Programming in Lua},
+    year     ={2006},
+    publisher={Lua.org},
+    isbn     ={8590379817},
+    url      ={http://www.lua.org/pil/contents.html},
+}
+@Book{APA2010,
+    title    ={Publication Manual of the American Psychological Association},
+    year     ={2010},
+    edition  ={Sixth},
+    address  ={Washington, DC},
+    publisher={American Psychological Association},
+    note     ={291 pages},
+    url      ={http://www.apa.org/books/},
+}
+\stopbuffer
+\usebtxdataset [standard] [bibliography.buffer]
 
 \startMPpage
 
@@ -146,27 +188,33 @@
             for i=0 upto 9 : draw pth shifted (0,2*i) ; endfor ;
         ) ;
 
-        % picture btx ; btx := textext("\ssbf BIBTEX") ;
-        % picture ctx ; ctx := textext("\ssbf THE CONTEXT WAY") ;
-        picture btx ; btx := image(graphictext("\ssbf BIBTEX") withfillcolor white) ;
-        picture ctx ; ctx := image(graphictext("\ssbf THE CONTEXT WAY") withfillcolor white) ;
+        picture btx ; btx := textext("\ssbf\WORDS{\getvariable{document}{title}}") ;
+        picture ctx ; ctx := textext("\ssbf\WORDS{\getvariable{document}{subtitle}}") ;
+        picture dtx ; dtx := textext("\ssbf       \getvariable{document}{author}") ;
+        % why do you use outline fonts here? (and why does it not work for me?)
+        %picture btx ; btx := image(graphictext("\ssbf BIBTEX") withfillcolor white) ;
+        %picture ctx ; ctx := image(graphictext("\ssbf THE CONTEXT WAY") withfillcolor white) ;
 
         pic := pic shifted - llcorner pic ;
         btx := btx shifted - llcorner btx ;
         ctx := ctx shifted - llcorner ctx ;
+        dtx := dtx shifted - llcorner dtx ;
 
         pic := pic xysized (PaperWidth,PaperHeight) ;
-        btx := btx xsized (2PaperWidth/3) shifted (.25PaperWidth,.15PaperHeight) ;
-        ctx := ctx xsized (2PaperWidth/3) shifted (.25PaperWidth,.075PaperHeight) ;
+        btx := btx xsized (2PaperWidth/3) shifted (.25PaperWidth,.225PaperHeight) ;
+        ctx := ctx xsized (2PaperWidth/3) shifted (.25PaperWidth,.150PaperHeight) ;
+        dtx := dtx xsized (2PaperWidth/3) shifted (.25PaperWidth,.075PaperHeight) ;
 
         fill Page withcolor \MPcolor{darkcyan} ;
 
         draw pic withcolor \MPcolor{darkmagenta} ;
         draw btx withcolor \MPcolor{lightgray} ;
         draw ctx withcolor \MPcolor{lightgray} ;
+        draw dtx withcolor \MPcolor{lightgray} ;
 
         % draw boundingbox btx ;
         % draw boundingbox ctx ;
+        % draw boundingbox dtx ;
 
     StopPage ;
 
@@ -182,7 +230,7 @@
 \startchapter[title=Introduction]
 
 This manual describes how \MKIV\ handles bibliographies. Support in \CONTEXT\
-started in \MKII for \BIBTEX, using a module written by Taco Hoekwater. Later his
+started in \MKII\ for \BIBTEX, using a module written by Taco Hoekwater. Later his
 code was adapted to \MKIV, but because users demanded more, I decided that
 reimplementing made more sense than patching. In particular, through the use of
 \LUA, the \BIBTEX\ data files can be easily directly parsed, thus liberating
@@ -193,18 +241,18 @@ up with ideas about extensions. Not all of them are (yet) honored, but the
 rewrite makes more functionality possible.
 
 This manual is dedicated to Taco Hoekwater who in a previous century implemented
-the first \BIBTEX\ module and saw it morf into a \TEX||\LUA\ hybrid in this
+the first \BIBTEX\ module and saw it morph into a \TEX||\LUA\ hybrid in this
 century. The fact that there was support for bibliographies made it possible for
 users to use \CONTEXT\ in an academic environment, dominated by bibliographic
 databases encoded in the \BIBTEX\ format.
 
-The subsystem descibed here is one of the most complex and messy of all
+The subsystem described here is one of the most complex and messy of all \CONTEXT\
 subsystems. This has to do with the fact that it combines (multiple) lists and
 (multiple) forward and backward references, all kind of rendering of the citation
 as well as the entry in the list, rather complex interactivity, multiple
-databases, datasets and renderings an dof course combinations of this. The
+databases, datasets and renderings and of course combinations of this. The
 implementation uses a mix of \TEX\ and \LUA\ code with so called setups as
-rendering specifications. At the cots of complexity (and abit runtime) this
+rendering specifications. At the cost of complexity (and some runtime penalty) this
 provides a lot of freedom and flexibility.
 
 \startlines
@@ -221,10 +269,24 @@ Hasselt NL
 
 \startchapter[title=The database]
 
+The bibliography subsystem uses a database or a set of databases to construct
+a list of citations to be used in a scholarly work. However, it will be seen
+later that the database system can be used (and abused) to many ends having
+little or nothing to do with citations and bibliographies. Nevertheless, we
+will remain focused on the use of bibliography databases.
+
+\startsection[title=\BIBTEX]
+
 The \BIBTEX\ format is rather popular in the \TEX\ community and even with its
 shortcomings it will stay around for a while. Many publication websites can
 export and many tools are available to work with this database format. It is
-rather simple and looks a bit like \LUA\ tables. Unfortunately the content can be
+rather simple and looks a bit like \LUA\ tables.%
+\startfootnote
+Indeed, it is said that the \BIBTEX\ format was one of the inspirations for the
+constructor syntax in \LUA. \cite[extras={ Chapter 12.}][standard::Ierusalimschy2006]
+\stopfootnote
+
+Unfortunately the content can be
 polluted with non|-|standardized \TEX\ commands which complicates pre- or
 postprocessing outside \TEX. In that sense a \BIBTEX\ database is often not coded
 neutrally. Some limitations, like the use of commands to encode accented
@@ -238,13 +300,14 @@ linking purposes. The typeset list can be processed and sorted using the \type
 \type {.bbl} file). I never used the program myself (nor bibliographies) so I
 will not go into too much detail here, if only because all I say can be wrong.
 
-In \CONTEXT\ we no longer use the \type {bibtex} program: we just use
+In \CONTEXT\ we no longer use the (external) \type {bibtex} program at all: we
+simply parse the
 database files and deal with the necessary manipulations directly in \CONTEXT.
 One or more such databases can be used and combined with additional entries
 defined within the document. We can have several such datasets active at the same
 time.
 
-A \BIBTEX\ file looks like this:
+A \BIBTEX\ file entry looks like this:
 
 \starttyping
 @Article{sometag,
@@ -260,24 +323,105 @@ A \BIBTEX\ file looks like this:
 }
 \stoptyping
 
+Entries are of the form: \type{@category{…}}%
+\startfootnote
+Anything outside of a valid \type{@category{…}} construction is ignored and is
+taken to be a comment. Within an entry, there are to be no comments but one can
+prefix field names, for example, to have them ignored.
+
+\quotation{There is a special entry type named \type {@comment{…}}. The main use of
+such an entry type is to comment a large part of the bibliography easily,
+since anything outside an entry is already a comment, and commenting out
+one entry may be achieved by just removing its initial~\type {@}.} — This is perhaps
+of some use, although not very elegant! As one can input multiple bibliography data
+files, as will be seen below, it is much better practice to split datafiles for
+optional loading.
+
+Furthermore, many \BIBTEX\ data management tools such as \type {jabref} (see below) will
+ignore and then throw-away all such handily-crafted comments and data entries turned
+into comments. So one must beware!
+\stopfootnote
+The field names are all cast to lowercase so capitalization is irrelevant;
+%\startfootnote
+%But, whereas \BIBTEX\ is indifferent to the capitalization of the category names,
+%we are a bit more picky here in order to gain performance in the loading of huge data
+%files. This may be relaxed in the future.
+%\stopfootnote
+Spacing is not important and should be used advantageously for readability. The
+leading tag (\type {sometag}) cannot contain spaces and must be followed by a comma.%
+\startfootnote
+The tag is, in fact, optional, as will be seen later.
+\stopfootnote
+
 Normally a value is given between quotes (or curly brackets) but single words are
-also OK (there is no real benefit in not using quotes, so we advise to always use
-them). There can be many more fields and instead of strings one can use
-predefined shortcuts. The title for example quite often contains \TEX\ macros.
+also OK (as there is no real benefit in not using quotes or curly brackets, we advise to always use
+them). The order of the fields in an entry is inconsequential and there can be many more fields than those shown above. Instead of string values one can also use
+predefined shortcuts. The title for example might quite often contain \TEX\ macros.
 Some fields, like \type {pages} have funny characters such as the endash
-(typically as \type {--}) so we have a mixture of data and typesetting
+(typically entered as \type {--}) so we have a mixture of data and typesetting
 directives. If you are covering non||english references, you often need
-characters that are not in the \ASCII\ subset but \CONTEXT\ is quite happy with
-\UTF. If your database file uses old|-|fashioned \TEX\ accent commands then these
-will be internally converted automatically to \UTF. Commands (macros) are
+characters that are not in the \ASCII\ subset (but \CONTEXT\ is quite happy with
+\UTF). If your database file uses old|-|fashioned \TEX\ accent combinations then these
+will be internally converted automatically to \UTF. Commands (macros) found in a database file are
 converted to an indirect call, which is quite robust.
+
+\startframedtext
+{\sl A note on strings:} the \type {author} (and \type {editor}) fields are parsed
+separating multiple authors identified by the conjunction \quote{and}. Each name
+is assumed to be in the form: Firstname(s) Lastname (where Lastname may include an
+optional \quote{von}: lower-case word(s) such as \quotation{von}, \quotation{de},
+\quotation{de la}, etc.) {\em unless} specifically in the form: Lastname(s),
+Firstname(s) or Lastnames(s), Suffix(es), Firstname(s) (separated explicitly using
+comma(s)).
+
+Other string values such as \type {title} are kept literally (except for an
+internal automatic conversion to \UTF\ of certain \TEX\ strings such as accent
+combinations, endash, quotations, etc.). Note that the bibliography rendering
+style (see below) might specify a capitalization (using the \CONTEXT\ command
+\type {\Words}, for example). Capitalized Names and acronyms are respected,
+removing a need for the \BIBTEX\ practice of \quote{protecting} such words or
+letters with surrounding curly brackets (which are simply stripped off).%
+\startfootnote
+Since \CONTEXT\ uses \UTF, it suffers neither from all of the complicated
+sorting issues that plague \BIBTEX/\LATEX.
+\stopfootnote
+{\red (WHERE DID THE FOOTNOTE GO?)}
+As some styles might not specify the capitalization of words in the title whereas
+other styles might, it is recommended that strings be written in lower case
+except where upper case is explicitly required so as to be compatible with all
+such capitalization styles.%
+\startfootnote
+Some bibliographic database sources can be quite sloppy and return strings
+(titles and even authors) in all capitals, for example. We have made the
+design choice {\em not} to follow the \BIBTEX\ practice/feature of managing
+strings as we did not want to require the protection through enclosing curly
+brackets that would have been a necessary consequence. Thus, some cleaning
+of these database files might be needed.
+\stopfootnote
+{\red (WHERE DID THE FOOTNOTE GO?)}
+
+String values can be enclosed indifferently between matching curly brackets:
+\type {{}} or pairs of quotation marks: \type{""}. Multiple string values can
+be concatenated using the operator \type {#}.%
+\startfootnote
+The \BIBTEX\ string concatenation operator \type {\#} is not to be confused
+with the \LUA\ operator \type {..}, nor with the \METAPOST\ operator \type {\&}!
+\stopfootnote
+{\red (WHERE DID THIS FOOTNOTE GO?)}
+\stopframedtext
+
+Everything outside of a valid entry is ignored and treated as a comment.
 
 The \BIBTEX\ files are loaded in memory as \LUA\ table but can be converted to
 \XML\ so that we can access them in a more flexible way, but that is a subject
-for specialists.
+for specialists. % to be discussed later?
+
+\stopsection
+
+\startsection[title=\MKII\ definitions]
 
 In the old \MKII\ setup we have two kinds of entries: the ones that come from the
-\BIBTEX\ run and user supplied ones. We no longer rely on \BIBTEX\ output but we
+\BIBTEX\ run and additional user supplied ones. We no longer rely on \BIBTEX\ output but we
 do still support the user supplied definitions. These were in fact prepared in a
 way that suits the processing of \BIBTEX\ generated entries. The next variant
 reflects the \CONTEXT\ recoding of the old \BIBTEX\ output.
@@ -297,11 +441,11 @@ reflects the \CONTEXT\ recoding of the old \BIBTEX\ output.
 \stoptyping
 
 The split \type {\artauthor} fields are collapsed into a single \type {author}
-field as we deal with the splitting later when it gets parsed in \LUA. The \type
+field as we handle the splitting later when it gets parsed in \LUA. The \type
 {\artauthor} syntax is only kept around for backward compatibility with the
 previous use of \BIBTEX.
 
-In the new setup we support these variants as well:
+In the new setup we support these variants:
 
 \starttyping
 \startpublication[k=Hagen:Third,t=article]
@@ -311,7 +455,7 @@ In the new setup we support these variants as well:
 \stoppublication
 \stoptyping
 
-and
+as well as
 
 \starttyping
 \startpublication[tag=Hagen:Third,category=article]
@@ -333,7 +477,11 @@ and
 \stoppublication
 \stoptyping
 
-Because internally the entries are \LUA\ tables, we also support loading of \LUA\
+\stopsection
+
+\startsection[title=\LUA\ tables]
+
+Because internally the entries are \LUA\ tables, we also support the loading of \LUA\
 based definitions:
 
 \starttyping
@@ -354,8 +502,12 @@ return {
 }
 \stoptyping
 
-Files set up like this can be loaded too. The following \XML\ input is rather
-close to this, and is also accepted as input.
+\stopsection
+
+\startsection[title=\XML]
+
+The following \XML\ input is rather
+close in structure, and is also accepted as input.
 
 \starttyping
 <?xml version="2.0" standalone="yes" ?>
@@ -376,53 +528,99 @@ close to this, and is also accepted as input.
 </bibtex>
 \stoptyping
 
-{\em Todo: Add some remarks about loading EndNote and RIS formats, but first we
-need to complete the tag mapping (on Alan's plate).}
+\stopsection
 
-So the user has a rather wide choice of formatting style for bibliography
-database files.
+\startsection[title=Other formats]
 
-You can load more data than you actually need. Only entries that are referred to
-explicitly through the \type {\cite} and \type {\nocite} commands will be shown
+Many various bibliographic data file formats are available, such as:
+\starttabulate [|lT|p|]
+\NC savedrecs.txt     \NC Institute of Scientific Information (ISI) tagged format
+                          (e.g. Thomson Reuters™ Web of Science™), \NC \NR
+\NC filename.enw      \NC Thomson Reuters™ Endnote™ export format
+                          (there is also an Endnote \type {.xml} export), \NC \NR
+\NC filename.ris      \NC Research Information Systems, Incorporated, now
+                          Thomson Reuters™ Reference Manager™, and \NC \NR
+\NC pubmed_result.txt \NC The National Library of Medicine® (NLM®)
+                          MEDLINE®/PubMed® data format \NC \NR
+\stoptabulate
+just to name a few. Filters can be easily written in \LUA\ to also read these
+and other bibliography data formats. However, the user has a choice of
+bibliography database management programs that can easily convert these
+to the \BIBTEX\ format. Notable, open source examples are
+\goto {jabref} [url(http://jabref.sourceforge.net)] and
+\goto {zotero} [url(http://www.zotero.org)].
+Indeed, it is not the vocation of the present \CONTEXT\ bibliography subsystem
+to fully manage the bibliography data sources, only to be able to use such data
+in the production of documents.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Dataset coverage]
+
+You can load much more data than you actually need. Only entries that are referred to
+explicitly (through the \type {\cite} and \type {\nocite} commands) will be shown
 in lists. We will cover these details later.
+
+\stopsection
 
 \stopchapter
 
 \startchapter[title=Commands in entries]
 
-One unfortunate aspect commonly found in \BIBTEX\ files is that they often
+One unfortunate aspect commonly found in \BIBTEX\ files is that they may
 contain \TEX\ commands. Even worse is that there is no standard on what these
 commands can be and what they mean, at least not formally, as \BIBTEX\ is a
 program intended to be used with many variants of \TEX\ style: plain, \LATEX, and
-others. This means that we need to define our use of these typesetting commands.
+others. This means that we need to define our use of these typesetting commands.%
+\startfootnote
+In particular, one might need to redefine those that are too \LATEX-centric.
+\stopfootnote
 However, in most cases, they are just abbreviations or font switches and these
-are often known. Therefore, \CONTEXT\ will try to resolve them before reporting
-an issue. In the log file there is a list of commands that has been seen in the
-loaded databases. For instance, loading \type {tugboat.bib} gives a long list of
-commands of which we show a small set here:
+are often well known. Therefore, \CONTEXT\ will try to resolve them before reporting
+an issue. The log file will announce the commands that have been seen in the
+loaded databases. For instance, loading \type {tugboat.bib}%
+\startfootnote
+\type {tugboat.bib} is distributed with \TeX{}Live.
+\stopfootnote
+gives a long list of
+commands of which we show a small set of the five most frequently encountered ones here:
+\startbuffer[tugboat]
+%\definebtxdataset[tugboat]
+\usebtxdataset[tugboat][tugboat.bib]
+\stopbuffer
+\getbuffer[tugboat]
 
 \starttyping
 publications > start used btx commands
 
-publications > standard CONTEXT 1 known
-publications > standard ConTeXt 4 known
-publications > standard TeXLive 3 KNOWN
-publications > standard eTeX    1 known
-publications > standard hbox    6 known
-publications > standard sltt    1 unknown
+publications    > tugboat              tt                     134 known
+publications    > tugboat              Dash                   136 unknown
+publications    > tugboat              acro                   137 known
+publications    > tugboat              LaTeX                  209 known
+publications    > tugboat              TeX                    856 known
 
-publications > stop used btxcommands
+publications > stop used btx commands
 \stoptyping
+%    publications > stop used btx commands
+%-> "publications > stop used dataset commands"?
 
+Some are flagged as known and others as unknown.
 You can define unknown commands, or overload existing definitions in the
+standard way ({\it e.g.} \type {\def\Dash{—}}) or, alternatively, in the
 following way:
 
-\starttyping
+\startTEX
 \definebtxcommand\TUB {TUGboat}
+\definebtxcommand\MP  {METAPOST}
 \definebtxcommand\sltt{\tt}
 \definebtxcommand\<#1>{\type{#1}}
-\stoptyping
+\stopTEX
+\definebtxcommand\MP  {METAPOST} % to be used silently below
 
+Custom commands created using \type {\definebtxcommand} have the advantage of
+using a separate name space thus allowing isolation from other \CONTEXT\ commands.
 Unknown commands do not stall processing, but their names are then typeset in a
 mono|-|spaced font so they probably stand out for proofreading. You can
 access the commands with \type {\btxcommand {...}}, as in:
@@ -431,11 +629,27 @@ access the commands with \type {\btxcommand {...}}, as in:
 commands like \btxcommand{MySpecialCommand} are handled in an indirect way
 \stopbuffer
 
-\typebuffer
+\typebuffer[option=TEX]
 
 As this is an undefined command we get: \quotation {\inlinebuffer}.
 
-??
+\blank
+
+Finally, the \BIBTEX\ entry \type{@String{}} is preprocessed as expected.%
+\startfootnote
+Notice that \type {tugboat.bib} also contains:
+
+\type {@Preamble{"\input tugboat.def"}}
+
+\type {@Preamble{"\input path.sty"}}
+
+These are silently ignored as many such commands are most likely not to be
+compatible with \CONTEXT, indeed, these ones are not!
+\stopfootnote
+
+\starttyping
+@String{j-TUGboat               = "TUGboat"}
+\stoptyping
 
 \stopchapter
 
@@ -443,25 +657,57 @@ As this is an undefined command we get: \quotation {\inlinebuffer}.
 
 Normally in a document you will use only one bibliographic database, whether or
 not distributed over multiple files. Nevertheless we support multiple databases as well
-which is why we talk of datasets instead. A dataset is loaded with the \type
-{\usebtxdataset} command. Although currently it is not necessary to define a
-(default) dataset you can best do this because in the future we might provide more
-options. Here are some examples:
+which is why we talk of datasets instead. The use of multiple datasets allows the
+isolation of different bibliographies (a single bibliography can nevertheless be
+isolated by structure element: section, chapter, part, etc. as we shall see later).
 
-\starttyping
+A dataset is initiated with the \type
+{\definebtxdataset} command.
+
+\startTEX
 \definebtxdataset[standard]
+\stopTEX
 
+Although currently a new dataset will be implicitly defined%
+\startfootnote
+\type {standard} is the predefined default database name.
+\stopfootnote
+it is best do this explicitly because in the future we may provide more options.
+And like other commands in \CONTEXT, the dataset options can be setup using the
+command \type{\setupbtxdataset}.
+
+A dataset is loaded with the \type {\usebtxdataset} command.
+Here are some examples:
+
+\startTEX
 \usebtxdataset[standard][tugboat.bib]
 \usebtxdataset[standard][mtx-bibtex-output.xml]
 \usebtxdataset[standard][test-001-btx-standard.lua]
-\stoptyping
+\usebtxdataset[standard][named.buffer]
+\stopTEX
 
 These three suffixes are understood by the loader. Here the dataset has the name
 \type {standard} and the three database files are merged, where later entries having the
-same tag overload previous ones. Definitions in the document source (coded in \TEX\
+same tag overload previous ones.%
+\startfootnote
+\red
+Question: should entries having the same tag overload previous entries, or should
+they rather be treated as if they had no tag? Are warnings produced in the log file?
+
+Second question: are the suffixes important (or is the data format itself recognized)?
+\stopfootnote
+\startfootnote
+The fourth example shows that a \type {named} buffer can also be employed to add dataset
+entries. This may be useful for small additions or examples, but it is generally a good
+idea (for convenience of management of data) to place them in files separate from the
+document source code.
+\stopfootnote
+Definitions in the document source (coded in \TEX\
 speak) are also added, and they are saved for successive runs. This means that if
 you load and define entries, they will be known at a next run beforehand, so that
 references to them are independent of when loading and definitions take place.
+This is convenient to eventually break-up the dataset loading calls to relevant
+sections of the document structure.
 
 \showsetup{setupbtxdataset}
 
@@ -469,61 +715,95 @@ references to them are independent of when loading and definitions take place.
 
 \showsetup{usebtxdataset}
 
+\startplacetable[reference=tab:test.bib,
+                 title=The example database file {\type {test.bib}},
+                 location=right]
+    \small\small
+    \startframed[align=text]%height=.4\textheight]
+        %\typefile[file][range={5,33},before=,after=]{test.bib} % range??
+        \executesystemcommand{head -n 33 test.bib | tail -n 29 > testhead.bib} % ugh!
+        \typefile[file][before=,after=]{testhead.bib}
+    \stopframed
+\stopplacetable
+
 In this document we use some example databases, so let's load one of them now:
 
 \startbuffer
 \definebtxdataset[example]
 
-\usebtxdataset[example][mkiv-publications.bib]
+\usebtxdataset[example][test.bib]
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer[option=TEX] \getbuffer
 
-You can ask for an overview of entries in a dataset with:
+The beginning of the file \type {test.bib} is shown in \in {table} [tab:test.bib].
 
-\startbuffer
-\showbtxdatasetfields[example]
-\stopbuffer
-
-\typebuffer
-
-this gives:
-
-\getbuffer
+(This bibliography database test file contains one entry of each type or category,
+with the key set to the entry type name.)
 
 You can set the current active dataset with
 
-\starttyping
-\setbtxdataset[standard]
-\stoptyping
+\startbuffer
+\setbtxdataset[example]
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
 
 but most publication|-|related commands accept optional arguments that denote the
 dataset and references to entries can be prefixed with a dataset identifier.. More
 about that later.
 
-Sometimes you want to check a database. One way of doing that is the following:
+You can ask for an overview of entries present in a dataset with:
 
 \startbuffer
-\definebtxdataset[check]
-
-\usebtxdataset[check][mkiv-publications-check.bib]
-
-\showbtxdatasetcompleteness[check]
+\showbtxdatasetfields[example]
 \stopbuffer
 
-\typebuffer
+\typebuffer[option=TEX]
 
-The database like like this:
-
-\typefile{mkiv-publications-check.bib}
-
-The completeness check shows (with green field names) the required fields and
-when one is missing this is indicated in red. In blue we show what gets
-inherited.
+which gives:
 
 \getbuffer
 
-You can see all (currently known) fields with:
+\page [yes]
+
+The \quote{required} field names are colored in green and when one such field
+is missing from the dataset entry this is indicated in red. Required means that
+if this field is missing, one is probably not using the correct entry type or category.
+Some fields might be mutually exclusive for some categories. For example, a
+\type {@book} would not normally have both an \type {author} and an \type {editor}
+or both a \type {volume} and a \type {number}. {\red Such cases are indicated in orange.}
+Fields that normally would be ignored are colored in {\red xxxx}. The notions of
+required, optional and ignored fields depends in fact on the bibliography rendering
+style. Some, for example, might not use the \type {title} field whereas others
+certainly will. More on this later.
+
+Sometimes you might want to check a database, listing all of its entries. One way of doing that is the following:
+
+\startbuffer
+\showbtxdatasetcompleteness[example]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The completeness check colors the field names as indicated above. In addition,
+in blue we show what gets inherited. The listing can be rather long.
+
+\getbuffer
+
+\startsection[title=Dataset fields]
+
+Filling a dataset defines a certain number of entries, each having a type or category
+and containing a number of fields. These fields (and entry types) can be anything going
+far beyond the standard (predefined) ones used in \BIBTEX\ bibliography databases.
+How these fields (and categories) will be used depends on the rendering style, discussed
+later.
+
+You can see all (currently known) categories and fields with:%
+\startfootnote
+\red
+The required fields should get red {\ast}...
+\stopfootnote
 
 \starttyping
 \showbtxfields[rotation=...]
@@ -531,78 +811,774 @@ You can see all (currently known) fields with:
 
 The result is shown \in {table} [tab:fields].
 
-% Here we also added a few extra fields:
+Just as a database can be much larger than needed for a document, the same is true
+for the fields that make up an entry; not all entry fields will be necessarily used.
+This idea will be developed in the next section describing the rendering of bibliography
+lists.
 
-% \startbuffer
-% \btxaddfields[one,two][extra one, extra two]
-% \stopbuffer
-
-% \typebuffer \getbuffer
-
-\startplacefigure[title={\type{\showbtxfields[rotation=90]}},reference=tab:fields]
+\startplacetable[title={\type{\showbtxfields[rotation=90]}},reference=tab:fields]
     \showbtxfields[rotation=90]
-\stopplacefigure
+\stopplacetable
+
+\stopsection
 
 \stopchapter
 
 \startchapter[title=Renderings]
 
-A list of publications can be rendered at any place in the document. A database
-can be much larger than needed for a document. The same is true for the fields
-that make up an entry.
-
-% Here is the list of fields that are currently handled, but
-% of course there can be additional ones:
-%
-% \startalignment[flushleft,verytolerant,nothyphenated]
-% \startluacode
-% local fields = publications.tracers.fields
-%
-% for i=1,#fields do
-%     if i > 1 then
-%         context(", ")
-%     end
-%     context.type(fields[i])
-% end
-% \stopluacode
-% \stopalignment
+A list of publications can be rendered at any place in the document, and multiple
+renderings can appear under certain limitations (according to scope).
 
 If you want to see what publications are in the database, the easiest way is to
-ask for a complete list:
+ask for a complete list:%
+\startfootnote
+\red
+\type {sorttype=dataset} gives a \LUA\ error.
+\stopfootnote
 
 \startbuffer
 \definebtxrendering
   [example]
   [dataset=example,
-   method=local,
-   alternative=apa]
+   %sorttype=dataset,
+   method=dataset]
+
 \placelistofpublications % \placebtxrendering
   [example]
   [criterium=all]
 \stopbuffer
 
-\typebuffer
+\typebuffer[option=TEX]
 
-This gives:
+This gives:%
+\startfootnote
+\red
+There are several issues here with respect to numbering:
+As the default \type{alternative} is \type {apa}, to be coherent by default
+\type {numbering} should be \type {off} and the citation style should be
+\type {authoryears}. Furthermore, numbering should be local to a dataset
+unless one explicitly asks for global numbering. This is not the case as one
+can see here!
+
+There is also a problem with the year suffixes. The present rendering
+(numbered) should not get suffixes which only makes sense when using
+\type {authoryear} variants. 
+\stopfootnote
+\startfootnote
+\red
+Why \type {\blank} before and after when, by default, the list is not packed?
+(Defaults could be: \type {before=\blank,after=\blank,inbetween=\blank})
+We should make this coherent with enumerations (and what about handling options
+such as \type {joinedup}, \type {packed}?)
+\stopfootnote
 
 \blank \getbuffer \blank
 
+Let's try another example (taken from the \goto {TUG bibliography archive}
+[url(http://ftp.math.utah.edu/pub/tex/bib/index.html)]):
+
+\startbuffer
+\definebtxdataset[template]
+\usebtxdataset[template][template.bib]
+
+\definebtxrendering
+  [template]
+  [dataset=template,
+   %?repeat=no,
+   %?continue=no,
+   method=dataset]
+
+\placelistofpublications
+  [template]
+  [criterium=all]
+\stopbuffer
+
+\typebuffer[option=TEX]
+\blank % Grr!
+\getbuffer
+
+Notice that the example above contains a reference to an unknown entry
+(\type {Chen:SPE-19-9-897}) as well as an unknown command (\type {\path}).
+
+\blank
+
+The default rendering style is that described in \cite[title][standard::APA2010].
+\cite[standard::APA2010] Often there is a prescribed style to render bibliographic
+descriptions that can be programmed as a standard alternative, for example
+(the default) \type {alternative=apa}. Other styles commonly used in the physical
+sciences and in the biological sciences might be \type{aps} and \type{vancouver}.
+More style schemes will be added in the future.
+The rendering style usually also implies a particular bibliography list sorting
+scheme as well as the use of a citation style. Indeed, the rendering of bibliography
+lists and references to it are intimately coupled. This question will be explained
+a bit later.
+
 The rendering itself is somewhat complex to set up because we have not only many
 different standards but also many fields that can be set up. This means that
-there are several commands involved. Often there is a prescribed style to render
-bibliographic descriptions, for example \type {apa}. A rendering is setup and
-defined with:
+there are several commands involved. A rendering is setup and defined with:
 
 \showsetup[setupbtxrendering]
-%showrootvalues[btxrendering]
+
 \showsetup[definebtxrendering]
 
-And a list of such descriptions is generated with:
+And a list of such descriptions is generated with:%
+\startfootnote
+\red
+This \type {\showsetup} is missing options?
+\stopfootnote
 
 \showsetup[placebtxrendering]
 
-A dataset can have all kind of entries:
+For example, the APA style specifies that the bibliography list be sorted by
+author and then by year, then by title. The list is not numbered (and references
+are made by author and year). This can be achieved as follows:%
+\startfootnote
+\red
+The year suffixes are incorrect; I cannot figure out in what order they
+are generated here!
+\stopfootnote
 
+\startbuffer
+\definebtxrendering
+  [altexample]
+  [dataset=example,
+   sorttype=authoryear,
+   numbering=no,
+   method=dataset]
+
+\placebtxrendering
+  [altexample]
+  [criterium=all]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\blank \getbuffer \blank
+
+So a dataset can by used with multiple renderings. The most obvious use of
+this feature is the placement of bibliography lists localized by structure
+elements: parts, chapters in a book, sections, etc. through the option
+\type {criterium=chapter}, for example.
+
+Only the default rendering definition (\type {alternative=apa}) is loaded
+automatically. Other schemes are made available either by defining them
+(as described in the following section) or by loading a predefined set of
+definitions:
+
+\startbuffer
+\loadbtxdefinitionfile[aps]
+
+\definebtxrendering
+  [anotherexample]
+  [dataset=example,
+   method=dataset,
+   alternative=aps]
+
+% aps is presently broken :(
+%\placebtxrendering
+%  [anotherexample]
+%  [criterium=all]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\blank \getbuffer \blank
+
+The standard rendering alternatives have a small number of global options
+(such as \type {numbering=yes}) that can be used to modify the output.
+New and custom renderings can be written, to be described in detail in a
+later chapter.
+
+The dataset contains entries and each entry is assigned to a category.
+It must be stressed that these \quote{categories} can be of any sort,
+the meaning of which resides in the rendering style that is chosen. The
+entries contain fields, and these too can be of any sort; their use also
+depends on the rendering style and the category in which they belong.
+\BIBTEX\ has conventionally defined a number of standard categories, each
+making use of a number of fields considered either required, optional or
+ignored. However, different traditional \BIBTEX\ rendering styles can make
+inconsistant use of the standard categories and fields. To make matters
+worse, different \type {.bib} database handling programs might use (and
+impose) differing \quote{standards} as well.%
+\startfootnote
+For example, \type {jabref}, in addition to discarding all comments contained
+in the database file, will convert all unrecognized, preciously named categories
+to \type {@Other}!
+\stopfootnote
+This situation arises from the complexity of handling bibliographic data of
+all sorts.
+
+\startsection[title=Language]
+
+Bibliography lists (and citations in the text, see below) are rendered
+in the language of the document (\type {\mainlanguage}). However, a
+bibliography entry can contain a \type {language=} field and this will
+be used (if present) in the rendering and hyphenation of the \type {title},
+for example.
+
+\type{\setupbtxdataset[language=]} ...
+
+\stopsection
+
+\stopchapter
+
+\startchapter[title=Citations]
+
+The rendering of bibliographic lists was described in the previous chapter.
+The APA Style Guide as well as good practice demand that {\em all}
+bibliographical references be cited at least once in the text%
+\startfootnote
+Other publishing styles, textbooks in particular, might also include lists
+of general references for \quote{further reading}.
+\stopfootnote
+(and, of course, all citations must have a corresponding bibliographical reference).
+
+The examples of bibliography listing of the previous chapter were all fairly easy
+since the entire bibliographical dataset was rendered. In practice, the same dataset
+could be used over many documents and it might contain many more references than
+are used in any one document. That is, the data source might be more complete than
+the final rendered bibliography list or lists. The mechanism of citation allows you
+to select references from the dataset(s) to build the list rendering as well as to
+place a rendering of the reference in the text of the document to the corresponding
+list rendering. These renderings can be of many forms.
+
+A citation is normally pretty short as its main purpose is to refer uniquely to a more
+detailed description. But, there are several ways to refer, which is why the citation
+subsystem is configurable and extensible. Just look at the following commands:
+
+\startbuffer
+\cite[num][example::article]
+\cite[year][example::article]
+\cite[title][example::article]
+\cite[author][example::article]
+\cite[authoryear][example::article]
+\stopbuffer
+
+\typebuffer[option=TEX]
+\startlines \getbuffer \stoplines
+
+\startbuffer
+\cite[num][example::article,book]
+\cite[year][example::article,book]
+\cite[title][example::article,book]
+\cite[author][example::article,book]
+\cite[authoryear][example::article,book]
+\stopbuffer
+
+\typebuffer[option=TEX]
+\startlines \getbuffer \stoplines
+
+\startbuffer
+\cite[num][example::book,article]
+\cite[year][example::book,article]
+\cite[title][example::book,article]
+\cite[author][example::book,article]
+\cite[authoryear][example::book,article]
+\stopbuffer
+
+\typebuffer[option=TEX]
+\startlines \getbuffer \stoplines
+
+The citation rendering and the bibliographic list rendering are thus intimately
+coupled reciprocally and cannot be dissociated. The coupling could be through the
+reference number for example, but unnumbered reference lists also contain interacting
+hyperlinks. A failure to take into account this interdependence can lead to fundamental
+misunderstandings in use.%
+\startfootnote
+Both the citation and the list must be rendered. For example, omitting or
+commenting-out the list rendering during the writing stage of a document will cause
+the citations to fail to render properly.
+\stopfootnote
+
+\showsetup[cite]
+
+The first argument is optional and if omitted, the default citation rendering
+(\type {alternative=num}) will be selected.%
+\startfootnote
+The cite variant \type {num} refers to a counter that is usually sequential
+in the order in which citations are called in the running text, with the rendered
+bibliography list sorted in the same order. It is not to be confused with
+\type {number} which corresponds to the bibliographic data field that is also
+available (see below).
+\stopfootnote
+For example, to follow the APA specifications, one would change this default:
+
+\startbuffer
+\setupbtxcitevariant [alternative=authoryear]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Another common citation setup will enable interaction (disabled by default):
+
+\startbuffer
+\setupbtxcitevariant [interaction=start]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\showsetup[setupbtxcitevariant]
+
+\startplacetable [reference=tab:citevariants,
+    title=Predefined \type {\cite} variants.]
+\startluacode
+local variants = publications.tracers.citevariants
+
+context.starttabulate { "|l|p|" }
+    context.NC() context.bold("variant")
+    context.NC() context.bold("rendering")
+    context.NC() context.NR() context.FL()
+    for i=1,#variants do
+        local variant = variants[i]
+        context.NC() context.type(variant)
+        context.NC() context.citation( { variant }, { "example::article" })
+        context.NC() context.NR()
+    end
+context.stoptabulate()
+\stopluacode
+
+{\red Why are the variants listed here hard-coded in lua when the list is
+in fact dynamic? New variants can be defined, either based on known variants
+or else flushing a field with the same name name (if found).}
+
+Answer:
+
+\startluacode
+context.starttabulate { "|l|p|" }
+     context.NC() context.bold("key")
+     context.NC() context.bold("rendering")
+     context.NC() context.NR() context.FL()
+     for variant in table.sortedhash(publications.tracers.citevariants) do
+         context.NC() context.type(variant)
+         context.NC() context.citation( { variant }, { "example::demo-005" })
+         context.NC() context.NR()
+     end
+context.stoptabulate()
+\stopluacode
+
+But, specific variants can have them overloaded:
+
+\startTEX
+% \showinstancevalues[setupbtxcitevariant][author]
+% \showinstancevalues[setupbtxcitevariant][authornum]
+\stopTEX
+
+\startluacode
+     for variant in table.sortedhash(publications.tracers.citevariants) do
+         context.showinstancevalues( { "btxcitevariant" }, { variant })
+     end
+\stopluacode
+
+\stopplacetable
+
+A certain number of citation variants (or alternatives) have been predefined
+(see \in{table} [tab:citevariants]).
+The most commonly used are \type {num} and \type {authoryear} introduced above.
+The first is typically used in conjunction with a numbered bibliography list,
+usually sorted in the citation order in the text; The second is typically used
+in conjunction with a bibliography list sorted by author and year of publication.
+Other variants may be quite useful, even when used in conjunction with the above
+standard schemes. One such example would be \type {\cite[title][key]} that can be
+used to include the title of the work in the running text, another one is
+\type {\cite[year][key]} that can be used to include the publication date or
+\type {\cite[author][key]} that can be used to extract the authors' names. The
+rendering of the variants can be somewhat adjusted through
+\type {\setupbtxcitevariant}, for example modifying (or suppressing) parenthesis
+or activating or deactivating interaction hyperlinks. 
+Here we sort by author and color the citation:%
+\startfootnote
+Note that the hyperlinks activated through \type {interaction=start} are colored
+according to their own scheme.
+\stopfootnote
+\startfootnote
+\red
+The sorting does not appear to work here!
+\stopfootnote
+
+\startbuffer
+\setupbtxcitevariant[num]        [sorttype=author,color=darkyellow]
+\setupbtxcitevariant[authoryear] [sorttype=author,color=darkyellow]
+
+\citation[num]        [example::article,book]
+\citation[authoryear] [example::article,book]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines \getbuffer \stoplines
+
+\setupbtxcitevariant[num]       [color=]
+\setupbtxcitevariant[authoryear][color=]
+
+New cite variants can also be defined, either based on an existing variant or
+referring to a bibliography field of the same name (if found). For example, 
+\startbuffer
+\definebtxcitevariant
+    [refnum]
+    [num]
+    [left={Ref.\nbsp},
+    right=]
+\cite[refnum][example::book]
+\stopbuffer
+
+\typebuffer [option=TEX]
+
+will yield%
+\startfootnote
+\red
+Why does this not work?? There is something that I do not understand!
+\stopfootnote
+\inlinebuffer.
+
+\showsetup[definebtxcitevariant]
+
+The details behind these cite variants will be described later.
+
+The \type {\citation} command is synonymous to \type {\cite}.%
+\startfootnote
+Note that the \MKII\ module based on \type {bibtex} allowed the use of curly
+brackets enclosing the key (for reasons of backward compatibility with traditional
+\LATEX\ practice). As a consequence, this made it a bit picky about spaces between
+its arguments, the first of which is optional. We have chosen to remove this
+restriction through the use of standard \CONTEXT\ syntax using square brackets,
+reserving curly brackets to be used to enclose text that is to be typeset.
+\stopfootnote
+
+Unless you use \type {criterium=all} {\red (with \type {method=dataset}?)} only publications that are explicitly cited will end up
+in the lists. You can force a citation into a list using \type {\usecitation}, for
+example:%
+\startfootnote
+\red
+How does this differ from \type {\cite[none][example::patent]}?
+\stopfootnote
+
+\startTEX
+\usecitation[example::patent]
+\stopTEX
+
+This command has two synonyms: \type {\nocite} and \type {\nocitation} so you can
+choose whatever fits you best.
+
+\showsetup[usecitation]
+
+\showsetup[nocite]
+
+\showsetup[nocitation]
+
+\startsection[title=Additional text]
+
+Sometimes one would like to include additional text a bibliography list entry,
+for example a specific commentary or page number reference.
+
+left, right, extra, before, after 
+
+\startbuffer
+\citation[reference=example::article,lefttext={This is an article:}][foo=bar]
+
+\citation[reference=example::book,righttext={(p. xx)}][foo=bar]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\getbuffer
+
+\startframed [align=text,framecolor=red,foreground=color,foregroundcolor=red]
+This does not work correctly here as \type {example} is typeset as \type {method=dataset}.
+There is also a question of syntax, since it will not work without including here
+\type {[foo=bar]}. Also, which rendering does this affect (example and/or altexample)?
+
+\blank
+
+Note that the following does work:
+
+\startbuffer
+\citation[reference=tugboat::Hagen:TB32-1-9,
+          lefttext={ConTeXt's evolution and milestones in its history: }]
+         [foo=bar]
+
+\definebtxrendering[tugboat][dataset=tugboat]
+\placebtxrendering [tugboat][criterium=section]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\getbuffer
+
+\stopframed
+
+Note that the injection of left and/or right text only makes sense
+when referring to a single list entry.
+
+\stopsection
+
+\startsection[title=Combining citations]
+
+\startbuffer
+\cite[example::article,book,booklet]
+\stopbuffer
+
+A single citation might refer to several sources, obtained through the use of a
+comma separated list of keys, for example: \getbuffer
+
+\typebuffer[option=TEX]
+
+Notice that the comma separated list of three (or more) consecutive numbers gets
+collapsed or compressed into a range of numbers.
+
+Some bibliography styles admit the combination of several bibliographical sources
+into a single list item having a unique reference number.%
+\startfootnote
+The combination of multiple bibliographic entries into as single bibliography list
+item is more compact and this practice is often encountered in short \quote{letter}
+type journal articles.
+\stopfootnote
+To achieve this, one combines keys using the addition operator symbol (+),
+best illustrated though an example:
+
+\startbuffer
+\METAFUN\ began as an expression of love for \METAPOST. \citation
+[tugboat::Berdnikov:TB21-2-129+Hobby:TB21-2-131]
+
+\definebtxrendering[tugboat][dataset=tugboat]
+\placebtxrendering [tugboat][criterium=section]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\getbuffer
+
+\startframed [align=text,framecolor=red,foreground=color,foregroundcolor=red]
+There are several issues here:
+\startitemize[joinedup,packed]
+\startitem What is with the color darkyellow? \stopitem
+\startitem The separator (;) should suppress the period (.). \stopitem
+\startitem Numbering? \stopitem
+\startitem Automatic handling of tradition \TEX\ quotations (``''). \stopitem
+\startitem The second entry should not appear (see below). \stopitem
+\stopitemize
+\stopframed
+
+Combined entries are joined using a separator that can be specified, as in:
+
+\startbuffer
+\setupbtxrendering[tugboat][separator={ {\emdash} }]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+or suppressed (using \type {separator=,}); By default \type {separator={; }}.
+
+Beware that dataset entries that are combined cannot also appear apart
+(nor does this really make any logical sense). The following:
+\startbuffer
+\cite[tugboat::Berdnikov:TB21-2-129]
+\cite[tugboat::Berdnikov:TB21-2-129,Hobby:TB21-2-131]
+\cite[tugboat::Hobby:TB21-2-131]
+\stopbuffer
+\typebuffer[option=TEX]
+will yield.%
+\startfootnote
+\red
+I would expect the system to handle this better. All instances of any key that
+appears in a combined reference should refer to this combined reference. Here,
+all three \type{\cite} should give a single (same) number.
+\stopfootnote
+\getbuffer
+This is another instance showing that citations and the rendered bibliography
+list interact and cannot be separated; There are indeed many others.
+
+
+% test:
+
+%\savebtxdataset [tugboat] [tugboat-export.bib] [criterium=section]
+
+\stopsection
+
+\startsection[title=Searching]
+
+Finding the right key in a database can be a pain. On the other hand, asking for
+a wildcard also makes no sense. Nevertheless we provide a mechanism for matching
+a query. For this we load a small bibliographic database:
+
+\startbuffer
+\usebtxdataset[graph][mkiv-publications-graph.bib]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We could switch to this base using:
+
+\starttyping
+\setbtxdataset[graph]
+\stoptyping
+
+but instead we will use a prefix. For instance, if we have this in our source:
+
+\startbuffer
+searching gives a few hits, so we get: \cite [ graph :: match (
+author:cleveland and year:1993 ) ].
+\stopbuffer
+
+\typebuffer
+
+We will get: \quotation {\inlinebuffer}. Of course this assumes that we also
+typeset a list of referred to references, so let's do that:
+
+\startbuffer
+\definebtxrendering[graph][dataset=graph]
+\placebtxrendering[graph][criterium=chapter]
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\blank \getbuffer \blank
+
+
+Let's look in more detail at the \type {\cite} command. In order to distinguish
+efficiently between a normal reference and a more clever one, we use the \type
+{match} keyword:
+
+\startbuffer
+dataset::match(query)
+dataset :: match ( query )
+\stopbuffer
+
+The handler is rather tolerant for spaces:
+
+\startbuffer
+dataset :: match ( query )
+\stopbuffer
+
+Which is handy if you have long queries that wrap around in the source code.. Of
+course the \type {dataset::} prefix is optional in which case the current dataset
+is taken.
+
+A query eventually becomes a \LUA\ expression so you can use helpers to achieve
+your goal. As a convenience there are some shortcuts to access fields. The
+following examples demonstrate this:
+
+\starttyping
+match(author:hagen)
+match(author:hagen and author:hoekwater and year:1990-2010)
+match(author:"Bogusław Jackowski")
+match(author:"Bogusław Jackowski" and (tonumber(field:year) or 0) > 2000)
+\stoptyping
+
+You can use quotes when spaces are involved. Of course you can use other
+characters that the basic alphabet. Ranges (of numbers) are recognized. String
+lookups are partial and case insensitive. \footnote {At the time of this
+writing, may 2014, this mechanism is still somewhat experimental.}
+
+\startbuffer
+Wildcards: \cite [graph::match(author:cleve)].
+\stopbuffer
+
+\typebuffer
+
+We get three entries: \quotation {\inlinebuffer}.
+
+% To be checked: are indeed three entries found?
+
+% Match : \cite [match(author:cleveland and year:1993)]      \par
+
+\stopsection
+
+\startsection[title=Placing a single citation]
+
+Sometimes, one would like to place a single citation somewhere in the text
+without necessarily adding it to a bibliography list. Take, for example,%
+\startfootnote
+The default rendering style is given by \placecitation[APA2010]
+
+{\red How is this to be controlled?}
+\stopfootnote
+\startbuffer
+\placecitation[tugboat::Mahajan:TB31-1-88]
+\stopbuffer
+\getbuffer
+obtained by using
+\typebuffer[option=TEX]
+
+\stopsection
+
+\stopchapter
+
+\startchapter[title=Custom renderings]
+
+The rendering of citations and bibliography lists is highly configurable and
+custom rendering schemes can be added. The details can get quite complicated
+so we will begin with a description of how citation variations can be used in
+the running text, followed by a description on how to control the rending of
+the associated bibliography list.
+
+\startsection[title=Custom citation renderings]
+
+\startframed [align=text,framecolor=red,foreground=color,foregroundcolor=red]
+This section needs to be developed…
+\stopframed
+
+Because we are dealing with database input and because we generally need to
+manipulate entries, much of the work is delegated to \LUA. This makes it easier
+to maintain and extend the code. Of course \TEX\ still does the rendering. The
+typographic details are controlled by parameters but not all are used in all
+variants. As with most \CONTEXT\ commands, it starts out with a general setup
+command \type {\setupbtxcitevariant}.
+On top of that we can define instances that inherit either from a given parent or
+from the topmost setup using \type {\definebtxcitevariant}.
+
+But, specific variants can have them overloaded:
+
+% \showinstancevalues[setupbtxcitevariant][author]
+% \showinstancevalues[setupbtxcitevariant][authornum]
+
+\startcolumns[n=2]
+\startluacode
+    local variants = publications.tracers.citevariants
+
+    for i=1,#variants do
+        context.showinstancevalues( { "btxcitevariant" }, { variants[i] })
+    end
+\stopluacode
+\stopcolumns
+
+A citation variant is defined in several steps and if you really want to know
+the dirty details, you should look into the source code. Here
+we stick to the concept.
+
+\starttyping
+\startsetups btx:cite:author
+    \btxcitevariant{author}
+\stopsetups
+\stoptyping
+
+You can overload such setups if needed, but that only makes sense when you cannot
+configure the rendering with parameters. The \type {\btxcitevariant} command is
+one of the build in accessors and it calls out to \LUA\ where more complex
+manipulation takes place if needed. If no manipulation is known, the field with
+the same name (if found) will be flushed. A command like \type {\btxcitevariant}
+assumes that a dataset and specific tag has been set. This is normally done in
+the wrapper macros, like \type {\cite}. For special purposes you can use these
+commands
+
+\starttyping
+\setbtxdataset[example]
+\setbtxentry[hh2013]
+\stoptyping
+
+But don't expect too much support for such low level rendering control.
+
+\stopsection
+
+\startsection[title=Custom list renderings]
+
+\startframed [align=text,framecolor=red,foreground=color,foregroundcolor=red]
+This entire section is complicated and a bit confusing between renderings
+and lists; It needs to be rewritten.
+\stopframed
+
+A dataset can have all kind or categories of entries:
 \startalignment[flushleft,verytolerant,nothyphenated]
 \startluacode
     local categories = publications.tracers.categories
@@ -611,27 +1587,39 @@ A dataset can have all kind of entries:
         if i > 1 then
             context(", ")
         end
-        context.type(categories[i])
+        context.type(categories[i]) -- needs to be cast to a string...
     end
 \stopluacode
 \stopalignment
-
-Each has its own rendering variant. To keep things simple we have their settings
-separated. However, these settings are shared for all rendering alternatives. In
-practice this is seldom a problem in a publication as only one rendering
+each having its own rendering variant. To keep things simple we have their settings
+separated. However, these settings are shared for all rendering alternatives.%
+\startfootnote
+In practice this is seldom a problem in a publication as only one rendering
 alternative will be active. If this be not sufficient, you can always group local
 settings in a setup and hook that into the specific rendering.
+\stopfootnote
 
 \showsetup[setupbtxlistvariant]
-%showrootvalues[btxlistvariant]
 \showsetup[definebtxlistvariant]
 
-Examples of list variants are:
+Examples of list variants are:%
+\startfootnote
+\red
+I do not understand the use of \type {\setupbtxlistvariant}!
+\stopfootnote
 
 \startluacode
-    for variant in table.sortedhash(publications.tracers.listvariants) do
-        context.showinstancevalues( { "btxlistvariant" }, { variant })
+    local variants = publications.tracers.listvariants
+
+    for i=1,#variants do
+        context.showinstancevalues( { "btxlistvariant" }, { variants[i] })
     end
+\stopluacode
+
+\startluacode
+     for variant in table.sortedhash(publications.tracers.listvariants) do
+         context.showinstancevalues( { "btxlistvariant" }, { variant })
+     end
 \stopluacode
 
 The exact rendering of list entries is determined by the \type {alternative} key
@@ -724,8 +1712,26 @@ that inject symbols but also take care of leading and trailing spaces:
 \NC \type {\btxcomma   } \NC before \btxcomma    after \NC \NR
 \NC \type {\btxlparent } \NC before \btxlparent  after \NC \NR
 \NC \type {\btxrparent } \NC before \btxrparent  after \NC \NR
-\NC \type {\btxlbracket} \NC before \btxlbracket after \NC \NR
-\NC \type {\btxrbracket} \NC before \btxrbracket after \NC \NR
+\NC \type {\btxleftparenthesis}
+\NC before \btxleftparenthesis  after \NC \NR
+\NC \type {\btxrightparenthesis}
+\NC before \btxrightparenthesis after \NC \NR
+\NC \type {\btxrightparenthesiscomma}
+\NC before \btxrightparenthesiscomma after \NC \NR
+\NC \type {\btxrightparenthesisperiod}
+\NC before \btxrightparenthesisperiod after \NC \NR
+\NC \type {\btxrightparenthesiscomma}
+\NC before \btxrightparenthesiscomma after \NC \NR
+\NC \type {\btxrightparenthesisperiod}
+\NC before \btxrightparenthesisperiod after \NC \NR
+\NC \type {\btxleftbracket}
+\NC before \btxleftbracket  after \NC \NR
+\NC \type {\btxrightbracket}
+\NC before \btxrightbracket after \NC \NR
+\NC \type {\btxrightbracketcomma}
+\NC before \btxrightbracketcomma after \NC \NR
+\NC \type {\btxrightbracketperiod}
+\NC before \btxrightbracketperiod after \NC \NR
 \stoptabulate
 
 So, the previous example setup can be rewritten as:
@@ -820,157 +1826,11 @@ of in each list:
 \setupbtxrendering[repeat=yes]
 \stoptyping
 
+\stopsection
+
 \stopchapter
 
-\startchapter[title=Citations]
-
-Citations are references to bibliographic entries that normally show up in lists
-someplace in the document: at the end of a chapter, in an appendix, at the end of
-an article, etc. We discussed the rendering of these lists  in the previous chapter.
-A citation is normally pretty short as its main purpose is to refer uniquely to a more
-detailed description. But, there are several ways to refer, which is why the citation
-subsystem is configurable and extensible. Just look at the following commands:
-
-\startbuffer
-\cite[author][example::demo-003]
-\cite[authoryear][example::demo-003]
-\cite[authoryears][example::demo-003]
-\cite[author][example::demo-003,demo-004]
-\cite[authoryear][example::demo-003,demo-004]
-\cite[authoryears][example::demo-003,demo-004]
-\cite[author][example::demo-004,demo-003]
-\cite[authoryear][example::demo-004,demo-003]
-\cite[authoryears][example::demo-004,demo-003]
-\stopbuffer
-
-\typebuffer
-
-\startlines \getbuffer \stoplines
-
-The first argument is optional.
-% What is the default? How can one set this up?
-
-\showsetup[cite]
-
-You can tune the way a citation shows up:
-
-\startbuffer
-\setupbtxcitevariant[author]     [sorttype=author,color=darkyellow]
-\setupbtxcitevariant[authoryear] [sorttype=author,color=darkyellow]
-\setupbtxcitevariant[authoryears][sorttype=author,color=darkyellow]
-
-\cite[author][example::demo-004,demo-003]
-\cite[authoryear][example::demo-004,demo-003]
-\cite[authoryears][example::demo-004,demo-003]
-\stopbuffer
-
-\typebuffer
-
-Here we sort the authors and color the citation:
-
-\startlines \getbuffer \stoplines
-
-For reasons of backward compatibility the \type {\cite} command is a bit picky
-about spaces between the two arguments, of which the first is optional. This is
-a consequence of allowing its use with the key specified between curly brackets
-as is the traditional practice. (We do encourage users to adopt the more
-coherent \CONTEXT\ syntax by using square brackets for keywords and reserving
-curly brackets to regroup text to be typeset.)
-% Just how is it picky?
-
-The \type {\citation} command is synonymous but is more flexible with respect to
-spacing of its arguments:
-
-\starttyping
-\citation[author]     [example::demo-004,demo-003]
-\citation[authoryear] [example::demo-004,demo-003]
-\citation[authoryears][example::demo-004,demo-003]
-\stoptyping
-
-% The first argument of cite and citation is optional. What is the default and how does one set it?
-
-There is a whole bunch of cite options and more can be easily defined.
-
-\startluacode
-context.starttabulate { "|l|p|" }
-    context.NC() context.bold("key")
-    context.NC() context.bold("rendering")
-    context.NC() context.NR() context.FL()
-    for variant in table.sortedhash(publications.tracers.citevariants) do
-        context.NC() context.type(variant)
-        context.NC() context.citation( { variant }, { "example::demo-005" })
-        context.NC() context.NR()
-    end
-context.stoptabulate()
-\stopluacode
-
-Because we are dealing with database input and because we generally need to
-manipulate entries, much of the work is delegated to \LUA. This makes it easier
-to maintain and extend the code. Of course \TEX\ still does the rendering. The
-typographic details are controlled by parameters but not all are used in all
-variants. As with most \CONTEXT\ commands, it starts out with a general setup
-command:
-
-\showsetup[setupbtxcitevariant]
-
-On top of that we can define instances that inherit either from a given parent or
-from the topmost setup.
-
-\showsetup[definebtxcitevariant]
-
-% The default values are:
-
-% \showrootvalues[btxcitevariant]
-
-But, specific variants can have them overloaded:
-
-% \showinstancevalues[setupbtxcitevariant][author]
-% \showinstancevalues[setupbtxcitevariant][authornum]
-
-\startluacode
-    for variant in table.sortedhash(publications.tracers.citevariants) do
-        context.showinstancevalues( { "btxcitevariant" }, { variant })
-    end
-\stopluacode
-
-A citation variant is defined in several steps and if you really want to know
-the dirty details, you should look into the \type {publ-imp-*.mkiv} files. Here
-we stick to the concept.
-
-\starttyping
-\startsetups btx:cite:author
-    \btxcitevariant{author}
-\stopsetups
-\stoptyping
-
-You can overload such setups if needed, but that only makes sense when you cannot
-configure the rendering with parameters. The \type {\btxcitevariant} command is
-one of the build in accessors and it calls out to \LUA\ where more complex
-manipulation takes place if needed. If no manipulation is known, the field with
-the same name (if found) will be flushed. A command like \type {\btxcitevariant}
-assumes that a dataset and specific tag has been set. This is normally done in
-the wrapper macros, like \type {\cite}. For special purposes you can use these
-commands
-
-\starttyping
-\setbtxdataset[example]
-\setbtxentry[hh2013]
-\stoptyping
-
-But don't expect too much support for such low level rendering control.
-
-Unless you use \type {criterium=all} only publications that are cited will end up
-in the lists. You can force a citation into a list using \type {\usecitation}, for
-example:
-
-\starttyping
-\usecitation[example::demo-004,demo-003]
-\stoptyping
-
-This command has two synonyms: \type {\nocite} and \type {\nocitation} so you can
-choose whatever fits you best.
-
-\showsetup[nocite]
+\startchapter[title=Exporting datasets]
 
 \stopchapter
 
@@ -1146,11 +2006,11 @@ to stick to a \LUA\ approach and provide some simple \XML\ support in addition.
 Once a dataset is accessible as \XML\ tree, you can use the regular \type {\xml...}
 commands. We start with loading a dataset, in this case from just one file.
 
-\startbuffer
-\usebtxdataset[tugboat][tugboat.bib]
-\stopbuffer
-
-\typebuffer \getbuffer
+%\startbuffer
+%\usebtxdataset[tugboat][tugboat.bib]
+%\stopbuffer
+%
+%\typebuffer %\getbuffer
 
 The dataset has to be converted to \XML:
 
@@ -1158,7 +2018,7 @@ The dataset has to be converted to \XML:
 \convertbtxdatasettoxml[tugboat]
 \stopbuffer
 
-\typebuffer \getbuffer
+broken...%\typebuffer \getbuffer
 
 The tree is now accessible by its root reference \type {btx:tugboat}. If we want simple
 field access we can use a few setups:
@@ -1527,97 +2387,6 @@ when no \type {lefttext} is specified, the \type {notabene} doesn't show up.
 
 \stopchapter
 
-\startchapter[title=Searching]
-
-Finding the right key in a database can be a pain. On the other hand, asking for
-a wildcard also makes no sense. Nevertheless we provide a mechanism for matching
-a query. For this we load a small bibliographic database:
-
-\startbuffer
-\usebtxdataset[graph][mkiv-publications-graph.bib]
-\stopbuffer
-
-\typebuffer \getbuffer
-
-We could switch to this base using:
-
-\starttyping
-\setbtxdataset[graph]
-\stoptyping
-
-but instead we will use a prefix. For instance, if we have this in our source:
-
-\startbuffer
-searching gives a few hits, so we get: \cite [ graph :: match (
-author:cleveland and year:1993 ) ].
-\stopbuffer
-
-\typebuffer
-
-We will get: \quotation {\inlinebuffer}. Of course this assumes that we also
-typeset a list of referred to references, so let's do that:
-
-\startbuffer
-\definebtxrendering[graph][dataset=graph]
-\placebtxrendering[graph][criterium=chapter]
-\stopbuffer
-
-\typebuffer
-
-We get:
-
-\blank \getbuffer \blank
-
-
-Let's look in more detail at the \type {\cite} command. In order to distinguish
-efficiently between a normal reference and a more clever one, we use the \type
-{match} keyword:
-
-\startbuffer
-dataset::match(query)
-dataset :: match ( query )
-\stopbuffer
-
-The handler is rather tolerant for spaces:
-
-\startbuffer
-dataset :: match ( query )
-\stopbuffer
-
-Which is handy if you have long queries that wrap around in the source code. Of
-course the \type {dataset::} prefix is optional in which case the current dataset
-is taken.
-
-A query eventually becomes a \LUA\ expression so you can use helpers to achieve
-your goal. As a convenience there are some shortcuts to access fields. The
-following examples demonstrate this:
-
-\starttyping
-match(author:hagen)
-match(author:hagen and author:hoekwater and year:1990-2010)
-match(author:"Bogusław Jackowski")
-match(author:"Bogusław Jackowski" and (tonumber(field:year) or 0) > 2000)
-\stoptyping
-
-You can use quotes when spaces are involved. Of course you can use other
-characters that the basic alphabet. Ranges (of numbers) are recognized. String
-lookups are partial and case insensitive. \footnote {At the time of this
-writing, may 2014, this mechanism is still somewhat experimental.}
-
-\startbuffer
-Wildcards: \cite [graph::match(author:cleve)].
-\stopbuffer
-
-\typebuffer
-
-We get three entries: \quotation {\inlinebuffer}.
-
-% To be checked: are indeed three entries found?
-
-% Match : \cite [match(author:cleveland and year:1993)]      \par
-
-\stopchapter
-
 \startchapter[title=Authors]
 
 The most complicated part of the rendering is authors. The way names are made up
@@ -1718,7 +2487,7 @@ In this case the text file looks like:
 
 \starttyping
 Zeitschrift für Ökologie und Naturschutz = Z. Ökol. Nat.schutz
-...
+....
 \stoptyping
 
 Instead you can have a \LUA\ file that looks like:
@@ -1777,54 +2546,6 @@ ignored with a lookup.
 
 There are also two manipulators for journals: \type {expandedjournal} and
 \type {abbreviatedjournal}.
-
-\stopchapter
-
-\startchapter[title=Combining]
-
-It is possible to refer to two sources in one go. In that case the list will have one
-entry for two bibliographic entries.
-
-\startbuffer
-Let's save numbers and refer to Bentley and Tufte with one: \cite [graph ::
-Bentley1990 + Tufte1983]!
-\stopbuffer
-
-\typebuffer
-
-Indeed we get one number only: \quotation {\inlinebuffer}.
-
-\startbuffer
-\setupbtxrendering[graph][continue=yes,separator={; }]
-\placebtxrendering[graph][criterium=chapter]
-\stopbuffer
-
-We produce the (local) list with:
-
-\typebuffer
-
-which shows the two entries pasted together:
-
-\setupbtxrendering[separator=]
-
-\blank \getbuffer \blank
-
-As demonstration we also specified the separator although that one is already
-set up by default.
-
-% You can combine citations with additional text before and|/|or after it. This can
-% be done per citation. This feature is of course not that useful, as one can
-% put text before and after a citation anyway.
-%
-% \startbuffer
-% foo bar \citation [before=<<,after=>>] [graph::Cleveland1993] foo bar
-% \stopbuffer
-%
-% \typebuffer
-%
-% Gives:
-%
-% \blank \getbuffer \blank
 
 \stopchapter
 
@@ -2092,9 +2813,19 @@ Here are the possible fields per category for APA: \footnote{Currently we show
 
 \stopbodymatter
 
+\startbackmatter
+
+\startchapter[title=Bibliography]
+
+\placelistofpublications [standard] %[criterium=all]
+
+\stopchapter
+
+\stopbackmatter
+
 \writestatus{!!!!!!}{CHECK HYPHENS}
 
-\stoptext
+\stopdocument
 
 Todo:
 

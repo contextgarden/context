@@ -2905,7 +2905,7 @@ return {
    ["pe"]="نقطه‌ها",
    ["ro"]="puncte",
   },
-  ["plaatsruwelijst"]={
+  ["placerawlist"]={
    ["cs"]="placerawlist",
    ["de"]="placerawlist",
    ["en"]="placerawlist",

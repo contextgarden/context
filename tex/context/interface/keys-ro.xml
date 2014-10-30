@@ -1457,7 +1457,6 @@
 		<cd:command name='paperheight' value='inaltimehartie'/>
 		<cd:command name='paperwidth' value='latimehartie'/>
 		<cd:command name='periods' value='puncte'/>
-		<cd:command name='plaatsruwelijst' value='placerawlist'/>
 		<cd:command name='placebookmarks' value='plaseazasemnecarte'/>
 		<cd:command name='placecombinedlist' value='punelistacombinata'/>
 		<cd:command name='placefloat' value='placefloat'/>
@@ -1472,6 +1471,7 @@
 		<cd:command name='placeongrid' value='plaseazapegrid'/>
 		<cd:command name='placeontopofeachother' value='punedeasuprafiecareia'/>
 		<cd:command name='placepagenumber' value='punenumarpagina'/>
+		<cd:command name='placerawlist' value='placerawlist'/>
 		<cd:command name='placereferencelist' value='placereferencelist'/>
 		<cd:command name='placeregister' value='puneregistru'/>
 		<cd:command name='placerule' value='punerigla'/>
