@@ -1346,16 +1346,47 @@
 \definebtxrendering
   [\v!standard]
 
+\setupbtxlistvariant
+  [\c!namesep={, },
+   \c!lastnamesep={ \btxlabeltext{\currentbtxalternative:and} },
+   \c!finalnamesep={ \btxlabeltext{\currentbtxalternative:and} },
+   \c!firstnamesep={ },
+ % \c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
+   \c!otherstext={ \btxlabeltext{\currentbtxalternative:others}},
+   \c!juniorsep={ },
+   \c!vonsep={ },
+   \c!initialsep={ },
+   \c!surnamesep={, },
+   \c!surnameinitialsep={, },
+   \c!surnamefirstnamesep={, },
+   \c!etallimit=5,
+   \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
+   %c!journalconversion=\v!normal,
+   \c!monthconversion=\v!number,
+   \c!authorconversion=\v!normal]
+
+\definebtxlistvariant
+  [author]
+
+\definebtxlistvariant
+  [editor]
+  [author]
+
+\definebtxlistvariant
+  [artauthor]
+  [author]
+
+\definebtxlistvariant
+  [invertedshort]
+
 \setupbtxcitevariant
   [\c!interaction=\v!start,
  % \c!setups=btx:cite:initialize,
    \c!alternative=num,
-   \c!authorconversion=\v!normal,
- % \c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
-   \c!otherstext={ \btxlabeltext{\currentbtxalternative:others}},
-   \c!pubsep={, },
-   \c!lastpubsep={ \btxlabeltext{\currentbtxalternative:and} },
-   \c!finalpubsep={ \btxlabeltext{\currentbtxalternative:and} },
+   % APA 2013 section 6.16 (p. 177)
+   \c!pubsep={; },      % {, },
+   \c!lastpubsep={; },  % { \btxlabeltext{\currentbtxalternative:and} },
+   \c!finalpubsep={; }, % { \btxlabeltext{\currentbtxalternative:and} },
    \c!compress=\v!no,
    \c!inbetween={ },
    \c!range=\endash,
@@ -1415,6 +1446,9 @@
    [year]
    [\c!left={(},
     \c!middle={, }, % is middle used?
+    \c!pubsep={, },
+    \c!lastpubsep={, },
+    \c!finalpubsep={, },
     \c!right={)}]
 
 \definebtxcitevariant
@@ -1491,10 +1525,10 @@
     \c!middle={, },
     \c!right={]}]
 
-\setupbtxlistvariant
+\setupbtxcitevariant
   [\c!namesep={, },
-   \c!lastnamesep={ \btxlabeltext{\currentbtxalternative:and} },
-   \c!finalnamesep={ \btxlabeltext{\currentbtxalternative:and} },
+   \c!lastnamesep={\nobreakspace\textampersand\space},
+   \c!finalnamesep={\nobreakspace\textampersand\space},
    \c!firstnamesep={ },
  % \c!andtext={ \btxlabeltext{\currentbtxalternative:and} },
    \c!otherstext={ \btxlabeltext{\currentbtxalternative:others}},
@@ -1504,43 +1538,9 @@
    \c!surnamesep={, },
    \c!surnameinitialsep={, },
    \c!surnamefirstnamesep={, },
-   \c!etallimit=5,
-   \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
-   %c!journalconversion=\v!normal,
+   \c!etallimit=5, % when 2-4, show all first time, etaldisplay subsequently...
+   \c!etaldisplay=1,
    \c!monthconversion=\v!number,
-   \c!authorconversion=\v!normal]
-
-\definebtxlistvariant
-  [author]
-
-\definebtxlistvariant
-  [editor]
-  [author]
-
-\definebtxlistvariant
-  [artauthor]
-  [author]
-
-\definebtxlistvariant
-  [invertedshort]
-
-% Not that efficient but ...
-
-\setupbtxcitevariant
-  [\c!namesep=\btxlistvariantparameter\c!namesep,
-   \c!lastnamesep=\btxlistvariantparameter\c!lastnamesep,
-   \c!finalnamesep=\btxlistvariantparameter\c!finalnamesep,
-   \c!firstnamesep=\btxlistvariantparameter\c!firstnamesep,
-   \c!juniorsep=\btxlistvariantparameter\c!juniorsep,
-   \c!vonsep=\btxlistvariantparameter\c!vonsep,
-   \c!initialsep=\btxlistvariantparameter\c!initialsep,
-   \c!surnamesep=\btxlistvariantparameter\c!surnamesep,
-   \c!surnameinitialsep=\btxlistvariantparameter\c!surnameinitialsep,
-   \c!surnamefirstnamesep=\btxlistvariantparameter\c!surnamefirstnamesep,
-   \c!etallimit=\btxlistvariantparameter\c!etallimit,
-   \c!etaldisplay=\btxlistvariantparameter\c!etaldisplay,
-   \c!otherstext=\btxlistvariantparameter\c!otherstext,
-   \c!monthconversion=\btxlistvariantparameter\c!monthconversion,
    \c!authorconversion=\v!name]
 
 % Do we want these in the format? Loading them delayed is somewhat messy.

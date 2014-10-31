@@ -224,6 +224,7 @@
 \defineMPinstance[decimalfun][\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!decimal]
 \defineMPinstance[mprun]     [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
 \defineMPinstance[metapost]  [\s!format=mpost]
+\defineMPinstance[megapost]  [\s!format=mpost,\c!method=\s!double]
 \defineMPinstance[nofun]     [\s!format=mpost]
 
 \newconditional\c_meta_include_initializations
@@ -1221,6 +1222,18 @@
 \startMPinitializations
     PageFraction := if \lastpage>1: (\realfolio-1)/(\lastpage-1) else: 1 fi ;
 \stopMPinitializations
+
+\startMPdefinitions {metapost}
+    if unknown context_bare : input mp-bare.mpiv ; fi ;
+\stopMPdefinitions
+
+\startMPdefinitions {megapost}
+    if unknown context_bare : input mp-bare.mpiv ; fi ;
+\stopMPdefinitions
+
+% \startMPdefinitions {nofun}
+%     if unknown context_bare : input mp-bare.mpiv ; fi ;
+% \stopMPdefinitions
 
 %D And some more. These are not really needed since we
 %D don't use the normal figure inclusion macros any longer.

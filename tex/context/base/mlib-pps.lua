@@ -505,10 +505,12 @@ local function sxsy(wd,ht,dp) -- helper for text
     return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
 end
 
-local no_first_run = "mfun_first_run := false ;"
-local do_first_run = "mfun_first_run := true ;"
-local no_trial_run = "mfun_trial_run := false ;"
-local do_trial_run = "mfun_trial_run := true ;"
+-- for stock mp we need to declare the booleans first
+
+local no_first_run = "boolean mfun_first_run ; mfun_first_run := false ;"
+local do_first_run = "boolean mfun_first_run ; mfun_first_run := true ;"
+local no_trial_run = "boolean mfun_trial_run ; mfun_trial_run := false ;"
+local do_trial_run = "boolean mfun_trial_run ; mfun_trial_run := true ;"
 local do_begin_fig = "; beginfig(1) ; "
 local do_end_fig   = "; endfig ;"
 local do_safeguard = ";"

@@ -142,73 +142,7 @@ extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
 % flush twice: once in location in order to pick up e.g. color properties,
 % and once at the end because we need to flush missing ones.
 
-% vardef rawtextext(expr str) =
-%     if str = "" :
-%         nullpicture
-%     elseif mfun_trial_run :
-%         mfun_tt_n := mfun_tt_n + 1 ;
-%         mfun_tt_o := image(draw origin) ; % save drawoptions
-%         addto mfun_tt_p doublepath unitsquare
-%             withprescript "tx_number=" & decimal mfun_tt_n
-%             withprescript "tx_stage=extra"
-%             withpostscript str ;
-%         image (
-%             addto currentpicture doublepath unitsquare
-%                 withprescript "tx_number=" & decimal mfun_tt_n
-%                 withprescript "tx_stage=trial"
-%                 withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
-%                 withpostscript str
-%         ; )
-%     else :
-%         mfun_tt_n := mfun_tt_n + 1 ;
-%         if known mfun_tt_d[mfun_tt_n] :
-%             image (
-%                 addto currentpicture doublepath unitsquare
-%                     xscaled mfun_tt_w[mfun_tt_n]
-%                     yscaled (mfun_tt_h[mfun_tt_n] + mfun_tt_d[mfun_tt_n])
-%                     withprescript "tx_number=" & decimal mfun_tt_n
-%                     withprescript "tx_stage=final"
-%                   % withpostscript str ; % for tracing
-%             ; ) shifted (0,-mfun_tt_d[mfun_tt_n])
-%         else :
-%             image (
-%                 addto currentpicture doublepath unitsquare
-%             ; )
-%         fi
-%     fi
-% enddef ;
-
-% vardef rawtextext(expr str) = % todo: avoid currentpicture
-%     if str = "" :
-%         nullpicture
-%     else :
-%         mfun_tt_n := mfun_tt_n + 1 ;
-%         mfun_tt_c := nullpicture ;
-%         if mfun_trial_run :
-%             mfun_tt_o := nullpicture ;
-%             addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-%             addto mfun_tt_p doublepath unitsquare
-%                 withprescript "tx_number=" & decimal mfun_tt_n
-%                 withprescript "tx_stage=extra"
-%                 withpostscript str ;
-%             addto mfun_tt_c doublepath unitsquare
-%                 withprescript "tx_number=" & decimal mfun_tt_n
-%                 withprescript "tx_stage=trial"
-%                 withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
-%                 withpostscript str ;
-%         elseif known mfun_tt_d[mfun_tt_n] :
-%             addto mfun_tt_c doublepath unitsquare
-%                 xscaled mfun_tt_w[mfun_tt_n]
-%                 yscaled (mfun_tt_h[mfun_tt_n] + mfun_tt_d[mfun_tt_n])
-%                 shifted (0,-mfun_tt_d[mfun_tt_n])
-%                 withprescript "tx_number=" & decimal mfun_tt_n
-%                 withprescript "tx_stage=final" ;
-%         else :
-%             addto mfun_tt_c doublepath unitsquare ; % unitpicture
-%         fi ;
-%         mfun_tt_c
-%     fi
-% enddef ;
+% see mp-keep.mpiv for older code
 
 vardef rawtextext(expr str) = % todo: avoid currentpicture
     if str = "" :

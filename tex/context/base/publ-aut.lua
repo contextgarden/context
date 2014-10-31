@@ -47,10 +47,15 @@ local report          = logs.reporter("publications","authors")
 
 local space          = P(" ")
 local comma          = P(",")
+local period         = P(".")
+local dash           = P("-")
 local firstcharacter = lpegpatterns.utf8byte
+local utf8character  = lpegpatterns.utf8character
 local p_and          = space^1 * "and" * space^1
 local p_comma        = space^0 * comma * space^0
 local p_space        = space^1
+local p_shortone     = C((utf8character      -dash-period)^1)
+local p_longone      = C( utf8character) * (1-dash-period)^0
 
 local andsplitter   = Ct { "start",
     start = (Cs((V("inner") + (1-p_and))^1) + p_and)^1,
@@ -68,6 +73,10 @@ local spacesplitter = Ct { "start",
     outer = (P("{")/"") * ((V("inner") + P(1-P("}")))^1) * (P("}")/""),
     inner = P("{") * ((V("inner") + P(1-P("}")))^1) * P("}"),
 }
+
+local p_initial       = p_shortone * period * dash^0
+                      + p_longone * (period + dash + P(-1))
+local initialsplitter = p_initial * P(-1) + Ct((p_initial)^1)
 
 local function is_upper(str)
     local first = lpegmatch(firstcharacter,str)
@@ -185,7 +194,7 @@ local function splitauthorstring(str)
             if firstnames then
                 initials = { }
                 for i=1,#firstnames do
-                    initials[i] = utfchar(lpegmatch(firstcharacter,firstnames[i]))
+                    initials[i] = lpegmatch(initialsplitter,firstnames[i])
                 end
             end
             detail = {
@@ -206,16 +215,32 @@ end
 
 authors.splitstring = splitauthorstring
 
-local function the_initials(initials,symbol)
-    if not symbol or symbol == "" then
-        return initials
-    else
-        local result = { }
-        for i=1,#initials do
-            result[i] = initials[i] .. symbol
-        end
-        return result
+local function the_initials(initials,symbol,connector)
+    if not symbol then
+        symbol = "."
     end
+    if not connector then
+        connector = "-"
+    end
+    local result, r = { }, 0
+    for i=1,#initials do
+        local initial = initials[i]
+        if type(initial) == "table" then
+            local set, s = { }, 0
+            for i=1,#initial do
+                if i > 1 then
+                    s = s + 1 ; set[s] = connector
+                end
+                s = s + 1 ; set[s] = initial[i]
+                s = s + 1 ; set[s] = symbol
+            end
+            r = r + 1 ; result[r] = concat(set)
+        else
+            r = r + 1 ; result[r] = initial
+            r = r + 1 ; result[r] = symbol
+        end
+    end
+    return result
 end
 
 local ctx_btxsetconcat        = context.btxsetconcat
@@ -255,7 +280,7 @@ local function value(i,field)
     end
 end
 
-function commands.btx_a_i(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol or "."))) end end
+function commands.btx_a_i(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol))) end end
 function commands.btx_a_f(i) local v = value(i,"firstnames") if v then context(concat(v," ")) end end
 function commands.btx_a_j(i) local v = value(i,"juniors")    if v then context(concat(v," ")) end end
 function commands.btx_a_s(i) local v = value(i,"surnames")   if v then context(concat(v," ")) end end
@@ -277,7 +302,7 @@ function commands.btxauthorfield(i,field)
                     context(applymanipulation(manipulator,value) or value)
                 end
             elseif field == "initials" then
-                context(concat(the_initials(value,currentauthorsymbol or ".")))
+                context(concat(the_initials(value,currentauthorsymbol)))
             else
                 context(concat(value," "))
             end
@@ -389,10 +414,11 @@ local function components(snippet,short)
     local initials   = snippet.initials
     local firstnames = not short and snippet.firstnames
     local juniors    = snippet.juniors
+-- inspect(initials)
     return
         vons       and #vons       > 0 and concat(vons,      " ") or "",
         surnames   and #surnames   > 0 and concat(surnames,  " ") or "",
-        initials   and #initials   > 0 and concat(initials,  " ") or "",
+        initials   and #initials   > 0 and concat(the_initials(initials)," ") or "",
         firstnames and #firstnames > 0 and concat(firstnames," ") or "",
         juniors    and #juniors    > 0 and concat(juniors,   " ") or ""
 end
@@ -425,7 +451,7 @@ local function writer(key,snippets)
             s = s + 1 ; snippets[s] = concat(surnames," ")
         end
         if initials and #initials > 0 then
-            s = s + 1 ; snippets[s] = concat(initials," ")
+            s = s + 1 ; snippets[s] = concat(the_initials(initials," ","")," ") -- todo: configure . and -
         end
         if juniors and #juniors > 0 then
             s = s + 1 ; snippets[s] = concat(juniors," ")
