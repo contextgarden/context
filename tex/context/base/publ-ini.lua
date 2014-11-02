@@ -144,6 +144,8 @@ local currentspecification           = specifications[false]
 local currentspecificationfields     = currentspecification.fields
 local currentspecificationcategories = currentspecification.categories
 
+local ignoredfields                  = { }
+
 local function setspecification(name)
     currentspecification           = specifications[name]
     currentspecificationfields     = currentspecification.fields
@@ -392,9 +394,17 @@ setmetatableindex(usedentries,function(t,k)
             end
         end
         for k, v in next, names do
-            if #v > 1 then
-                for i=1,#v do
-                    v[i].state = 1
+            local n = #v
+            if n > 1 then
+                local original = v[1].original
+                for i=2,n do
+                    if original ~= v[i].original then
+                        report("potential clash in name %a",k)
+                        for i=1,n do
+                            v[i].state = 1
+                        end
+                        break
+                    end
                 end
             end
         end
@@ -855,13 +865,22 @@ end
 
 -- rendering of fields
 
+local function found(category,field)
+    local fieldspec = currentspecificationfields[category][field]
+    if ignoredfields and fieldspec == "optional" and ignoredfields[field] then
+        return false
+    else
+        return true
+    end
+end
+
 function commands.btxflush(name,tag,field)
     local dataset = rawget(datasets,name)
     if dataset then
         local fields = dataset.luadata[tag]
         if fields then
             local category = fields.category
-            if currentspecificationfields[category][field] then
+            if found(category,field) then
                 local manipulator, field = splitmanipulation(field)
                 local value = fields[field]
                 if type(value) == "string" then
@@ -892,7 +911,7 @@ function commands.btxdetail(name,tag,field)
         local details = dataset.details[tag]
         if details then
             local category = fields.category
-            if currentspecificationfields[category][field] then
+            if found(category,field) then
                 local manipulator, field = splitmanipulation(field)
                 local value = details[field]
                 if type(value) == "string" then
@@ -915,7 +934,7 @@ function commands.btxfield(name,tag,field)
         local fields = dataset.luadata[tag]
         if fields then
             local category = fields.category
-            if currentspecificationfields[category][field] then
+            if found(category,field) then
                 local manipulator, field = splitmanipulation(field)
                 local value = fields[field]
                 if type(value) == "string" then
@@ -939,8 +958,12 @@ local function found(name,tag,field,yes)
     if dataset then
         local data  = dataset.luadata[tag]
         if data then
-            local category = data.category
-            if currentspecificationfields[category][field] then
+            local category  = data.category
+            local fieldspec = currentspecificationfields[category][field]
+            if ignoredfields and fieldspec == "optional" and ignoredfields[field] then
+                fieldspec = false
+            end
+            if fieldspec then
                 local value = data[field]
                 if value then
                     if value ~= "" then
@@ -1220,7 +1243,9 @@ function lists.collectentries(specification)
         return
     end
     local method            = specification.method or v_none
+    local ignored           = specification.ignored or ""
     rendering.method        = method
+    rendering.ignored       = ignored ~= "" and settings_to_set(ignored) or nil
     rendering.list          = { }
     rendering.done          = { }
     rendering.sorttype      = specification.sorttype or v_default
@@ -1459,6 +1484,8 @@ function lists.flushentries(dataset,textmode)
     local list      = rendering.list
     local luadata   = datasets[dataset].luadata
     -- maybe a startflushing here
+    ignoredfields   = rendering.ignored or { }
+    --
     for i=1,#list do
         local li       = list[i]
         local tag      = li[1]
@@ -1504,7 +1531,11 @@ function lists.flushentries(dataset,textmode)
             ctx_btxhandlelistentry()
         end
     end
-    setspecification(false)
+    context(function()
+        -- wrapup
+        ignoredfields = nil
+        setspecification(false)
+    end)
 end
 
 local function getuserdata(dataset,key)

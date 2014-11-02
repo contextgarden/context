@@ -181,6 +181,7 @@
     \fi
 \to \everydefinetyping
 
+
 \appendtoks
    \buff_verbatim_initialize_visualizer{\typingparameter\c!option}% we can check at the tex end
 \to \everysetuptyping
@@ -391,7 +392,7 @@
 \unexpanded\def\obeyhyphens
   {\let\obeyedspace \specialobeyedspace % maybe \specialstretchedspace
    \let\controlspace\specialcontrolspace
-   \spaceskip.25em\relax} % hm a bit of stretch !
+   \spaceskip.25\emwidth\relax} % hm a bit of stretch !
 
 \unexpanded\def\obeybreakpoints
   {\ignorehyphens
@@ -444,9 +445,15 @@
 \let\normaltextmat\mat
 \let\normaltextdis\dis
 
-\unexpanded\def\astype{\bgroup\usetypestyleandcolor\c!style\c!color\let\nexttoken}
+\unexpanded\def\astype
+  {\bgroup\usetypestyleandcolor\c!style\c!color\let\nexttoken}
 
-\unexpanded\def\asciistr#1{\dontleavehmode{\verbatimfont\detokenize{#1}}} % use in some old styles
+\unexpanded\def\asciistr#1% used in some old styles
+  {\dontleavehmode\begingroup
+   \dostarttagged\t!verbatim\empty
+   \usetypestyleandcolor\c!style\c!color\detokenize{#1}%
+   \dostoptagged
+   \endgroup}
 
 %D The basic display verbatim commands are defined in an indirect way. As we
 %D will see, they are a specific case of a more general mechanism.

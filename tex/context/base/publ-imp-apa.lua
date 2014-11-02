@@ -11,7 +11,7 @@ return {
     copyright = "ConTeXt development team",
     categories = {
         article = {
-            required = { { "author", "editor" }, "title"},
+            required = { { "author", "editor" }, "title" },
             optional = { "year", "type", "journal", "volume", "number", "pages", "url", "note", "doi" },
             virtual  = virtual,
             author   = authors,
@@ -30,7 +30,7 @@ return {
         },
         book = {
             virtual  = { "authoryear" },
-            required = { { "author", "editor", "publisher" }, "title"},
+            required = { { "author", "editor", "publisher" }, "title" },
             optional = { "year", "month", "day", "title", "type", "edition", "series", "volume", "number", "pages", "address", "publisher", "url", "note", "ISBN" },
             virtual  = virtual,
             author   = authors,

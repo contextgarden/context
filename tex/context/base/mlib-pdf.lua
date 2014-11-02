@@ -445,7 +445,7 @@ function metapost.flush(result,flusher,askedfig)
                                     result[#result+1] = evenodd and "W* n" or "W n"
                                 elseif objecttype == "stop_clip" then
                                     result[#result+1] = "Q"
-                                    miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
+                                    miterlimit, linecap, linejoin, dashed = -1, -1, -1, "" -- was false
                                 elseif objecttype == "text" then
                                     result[#result+1] = "q"
                                     local ot = object.transform -- 3,4,5,6,1,2
@@ -491,9 +491,9 @@ function metapost.flush(result,flusher,askedfig)
                                         local d = f_d(concat(dl.dashes or {}," "),dl.offset)
                                         if d ~= dashed then
                                             dashed = d
-                                            result[#result+1] = dashed
+                                            result[#result+1] = d
                                         end
-                                    elseif dashed then
+                                    elseif dashed ~= false then -- was just dashed test
                                        result[#result+1] = "[] 0 d"
                                        dashed = false
                                     end
@@ -559,7 +559,7 @@ function metapost.flush(result,flusher,askedfig)
                                     end
                                     if object.grouped then
                                         -- can be qQ'd so changes can end up in groups
-                                        miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
+                                        miterlimit, linecap, linejoin, dashed = -1, -1, -1, "" -- was false
                                     end
                                 end
                             end

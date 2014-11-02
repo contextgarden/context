@@ -168,6 +168,7 @@ local mte = { -- todo: assign to t
 }
 
 local noorder = false
+local nothing = { 0 }
 
 local function preparetables(data)
     local orders, lower, m_mappings, z_mappings, p_mappings = data.orders, data.lower, { }, { }, { }
@@ -241,29 +242,26 @@ local function preparetables(data)
                         -- this is a kind of last resort branch that we might want to revise
                         -- one day
                         --
-                     -- s = fschars[k] -- returns a single char
-                     -- if s and s ~= k then
-                     --     if trace_orders then
-                     --         report_sorters(" 6 split: %s",s)
-                     --     end
-                     --     local ml = rawget(t,s)
-                     --     if ml then
-                     --         n = { }
-                     --         nn = 0
-                     --         for i=1,#ml do
-                     --             nn = nn + 1
-                     --             n[nn] = ml[i]
-                     --         end
-                     --     end
-                     -- end
+                        -- local b = utfbyte(k)
+                        -- n = decomposed[b] or { b }
+                        -- if trace_tests then
+                        --     report_sorters(" 6 split: %s",utf.tostring(b)) -- todo
+                        -- end
                         --
                         -- we need to move way above valid order (new per 2014-10-16) .. maybe we
                         -- need to move it even more up to get numbers right (not all have orders)
                         --
-                        local b = 2 * #orders + utfbyte(k)
-                        n = decomposed[b] or { b }
-                        if trace_orders then
-                            report_sorters(" 6 split: %s",utf.tostring(b)) -- todo
+                        if k == "\000" then
+                            n = nothing -- shared
+                            if trace_orders then
+                                report_sorters(" 6 split: space") -- todo
+                            end
+                        else
+                            local b = 2 * #orders + utfbyte(k)
+                            n = decomposed[b] or { b } -- could be shared tables
+                            if trace_orders then
+                                report_sorters(" 6 split: %s",utf.tostring(b)) -- todo
+                            end
                         end
                     end
                     if n then
