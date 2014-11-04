@@ -78,13 +78,19 @@ end
 
 function blocks.select(state,name,tag,criterium)
     criterium = criterium or "text"
-    if find(tag,"=",1,true) then tag = "" end
-    local names = settings_to_set(name)
-    local all = tag == ""
-    local tags = not all and settings_to_set(tag)
-    local hide = state == "process"
-    local n = sections.numberatdepth(criterium)
-    local result = lists.filtercollected("all", criterium, n, collected, { })
+    if find(tag,"=",1,true) then
+        tag = ""
+    end
+    local names  = settings_to_set(name)
+    local all    = tag == ""
+    local tags   = not all and settings_to_set(tag)
+    local hide   = state == "process"
+    local result = lists.filter {
+        names     = "all",
+        criterium = criterium,
+        number    = sections.numberatdepth(criterium), -- not needed
+        collected = collected,
+    }
     for i=1,#result do
         local ri = result[i]
         local metadata = ri.metadata

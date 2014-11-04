@@ -47,7 +47,7 @@
    \c!state=\v!start,
    \c!coupling=\v!off,
    \c!criterium=\v!local,
-   \c!number=\zerocount,
+   \c!reference=,% was number which was sort of obsolete
    \c!width=3\emwidth,
   %\c!maxwidth=,
    \c!distance=\zeropoint,
@@ -244,7 +244,7 @@
    \strc_lists_place_current % maybe inline
      {#list}%
      {\listparameter\c!criterium}%
-     {\listparameter\c!number}%
+     {\listparameter\c!reference}%
      {\listparameter\c!extras}%
      {\listparameter\c!order}%
  % \stoplistreferences
@@ -288,7 +288,7 @@
   {\dotripleempty\strc_lists_combined_define}
 
 \def\strc_lists_combined_define[#tag][#list][#settings]%
-  {\definelist[#tag][\c!criterium=\v!local,\c!number=0,\c!alternative=,\c!list={#list},#settings]% inherits from root
+  {\definelist[#tag][\c!criterium=\v!local,\c!reference=,\c!alternative=,\c!list={#list},#settings]% inherits from root
    \setvalue{\e!setup   #tag\e!endsetup}{\dodoubleempty\strc_lists_combined_setup   [#tag]}%
    \setvalue{\e!place              #tag}{\dodoubleempty\strc_lists_combined_place   [#tag]}%
    \setvalue{\e!complete           #tag}{\dodoubleempty\strc_lists_combined_complete[#tag]}}
@@ -401,22 +401,22 @@
 
 % TODO: pass extra tag name (contents, figures, bibliography ...)
 
-\unexpanded\def\strc_lists_place_current#list#criterium#number#extras#order% beware, not a user command
+\unexpanded\def\strc_lists_place_current#list#criterium#reference#extras#order% beware, not a user command
   {\dostarttaggedchained\t!list\empty\??list
    \ctxcommand{processlist{
         names     = "#list",
         criterium = "#criterium",
-        number    = "#number",
+        reference = "#reference",
         extras    = "#extras",
         order     = "#order"
    }}%
    \dostoptagged}
 
-\unexpanded\def\strc_lists_analyze#list#criterium#number%
+\unexpanded\def\strc_lists_analyze#list#criterium#reference%
   {\ctxcommand{analyzelist{
         names     = "#list",
         criterium = "#criterium",
-        number    = "#number"
+        reference = "#reference",
    }}}
 
 \def\firststructureelementinlist#list%
@@ -1324,7 +1324,7 @@
      \let\listlength\!!zerocount
    \else
      \setupcurrentlist[#settings]%
-     \strc_lists_analyze{#list}{\listparameter\c!criterium}{\listparameter\c!number}%
+     \strc_lists_analyze{#list}{\listparameter\c!criterium}{\listparameter\c!reference}%
      \normalexpanded{\endgroup\noexpand\edef\noexpand\listlength{\structurelistsize}}%
    \fi
    \strc_lists_set_mode}

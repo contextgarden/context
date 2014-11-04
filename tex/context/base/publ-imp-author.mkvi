@@ -150,8 +150,10 @@
     \currentbtxsurnames
     \ifcase\currentbtxauthorstate \else
         % potential clash of names so we force initials
-        \btxcitevariantparameter\c!surnameinitialsep
-        \currentbtxinitials
+        \ifx\currentbtxinitials\empty \else
+            \btxcitevariantparameter\c!surnameinitialsep
+            \currentbtxinitials
+        \fi
     \fi
     \fastsetup{\s!btx:\s!cite:\s!author:others}
 \stopsetups

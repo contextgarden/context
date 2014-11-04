@@ -155,10 +155,12 @@ function tracers.showdatasetcompleteness(settings)
             ctx_FL()
             if fields then
                 local requiredfields = fields.required
+                local sets = fields.sets or { }
                 local done = false
                 if requiredfields then
                     for i=1,#requiredfields do
                         local r = requiredfields[i]
+                        local r = sets[r] or r
                         if type(r) == "table" then
                             -- this has to be done differently now
                             local okay = false
@@ -189,6 +191,7 @@ function tracers.showdatasetcompleteness(settings)
                 if optionalfields then
                     for i=1,#optionalfields do
                         local o = optionalfields[i]
+                        local o = sets[o] or o
                         if type(o) == "table" then
                             -- this has to be done differently now
                             for i=1,#o do
@@ -236,17 +239,29 @@ function tracers.showfields(settings)
     local categories  = fielddata.categories
     local fieldspecs  = fielddata.fields
     local validfields = { }
-    for category, fields in next, categories do
-        for name, list in next, fields do
-            for i=1,#list do
-                local li = list[i]
-                if type(li) == "table" then
-                    for i=1,#li do
-                        validfields[li[i]] = true
-                    end
-                else
-                    validfields[li] = true
+    local function makevalid(list,sets)
+        for i=1,#list do
+            local li = list[i]
+            if sets and sets[li] then
+                -- ignore
+            elseif type(li) == "table" then
+                for i=1,#li do
+                    validfields[li[i]] = true
                 end
+            else
+                validfields[li] = true
+            end
+        end
+    end
+    for category, fields in next, categories do
+        local sets = fields.sets
+        for name, list in next, fields do
+            if list == sets then
+                for k, v in next, list do
+                    makevalid(v,sets)
+                end
+            else
+                makevalid(list,sets)
             end
         end
     end

@@ -217,15 +217,21 @@
 \def\currentMPinstance   {\defaultMPinstance}
 \def\currentMPformat     {\currentMPinstance}
 
-\defineMPinstance[metafun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
-\defineMPinstance[extrafun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
-\defineMPinstance[doublefun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!double]
-\defineMPinstance[binaryfun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!binary]
-\defineMPinstance[decimalfun][\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!decimal]
-\defineMPinstance[mprun]     [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
-\defineMPinstance[metapost]  [\s!format=mpost]
-\defineMPinstance[megapost]  [\s!format=mpost,\c!method=\s!decimal]
-\defineMPinstance[nofun]     [\s!format=mpost]
+\defineMPinstance[metafun]    [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[extrafun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[doublefun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!double]
+\defineMPinstance[binaryfun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!binary]
+\defineMPinstance[decimalfun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!decimal]
+
+\defineMPinstance[mprun]      [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+
+\defineMPinstance[metapost]   [\s!format=mpost]
+\defineMPinstance[nofun]      [\s!format=mpost]
+\defineMPinstance[doublepost] [\s!format=mpost,\c!method=\s!double]
+\defineMPinstance[binarypost] [\s!format=mpost,\c!method=\s!binary]
+\defineMPinstance[decimalpost][\s!format=mpost,\c!method=\s!decimal]
+
+%defineMPinstance[megapost]   [\s!format=mpost,\c!method=\s!decimal]
 
 \newconditional\c_meta_include_initializations
 
@@ -1226,8 +1232,13 @@
 \startMPdefinitions {metapost}
     if unknown context_bare : input mp-bare.mpiv ; fi ;
 \stopMPdefinitions
-
-\startMPdefinitions {megapost}
+\startMPdefinitions {binarypost}
+    if unknown context_bare : input mp-bare.mpiv ; fi ;
+\stopMPdefinitions
+\startMPdefinitions {decimalpost}
+    if unknown context_bare : input mp-bare.mpiv ; fi ;
+\stopMPdefinitions
+\startMPdefinitions {doublepost}
     if unknown context_bare : input mp-bare.mpiv ; fi ;
 \stopMPdefinitions
 

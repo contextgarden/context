@@ -124,28 +124,33 @@ local extrafields = {
     crossref = "implicit",
 }
 
+local unknowncategory = function(t,k)
+    local v = {
+        required = { },
+        optional = { },
+    }
+    t[k] = v
+    return v
+end
+
+local unknownfield = function(t,k)
+    local v = setmetatableindex(function(t,k) local v = "optional" t[k] = v return v end)
+    t[k] = v
+    return v
+end
+
 local default = {
     name       = name,
     version    = "1.00",
     comment    = "unknown specification.",
     author     = "anonymous",
     copyright  = "no one",
-    categories = setmetatableindex(function(t,k)
-        local v = {
-            required = { },
-            optional = { },
-        }
-        t[k] = v
-        return v
-    end),
-    fields = setmetatableindex(function(t,k)
-        local v = setmetatableindex(function(t,k) local v = "optional" t[k] = v return v end)
-        t[k] = v
-        return v
-    end),
+    categories = setmetatableindex(unknowncategory),
+    fields     = setmetatableindex(unknownfield),
 }
 
-local types = { "optional", "required", "virtual" }
+local types    = { "optional", "required", "virtual" }
+local virtuals = { "authoryear", "authoryears", "authornum", "num", "suffix" } -- defaults
 
 local specifications = setmetatableindex(function(t,name)
     if not name then
@@ -162,25 +167,43 @@ local specifications = setmetatableindex(function(t,name)
         report("invalid data definition file %a for %a",fullname,name)
         return default
     end
-    -- goodie for alan ...
+    --
     local categories = specification.categories
+    if not categories then
+        categories = { }
+        specification.categories = categories
+    end
     for k, v in next, categories do
         if type(v) == "string" then
             categories[k] = categories[v]
         end
     end
+    setmetatableindex(categories,unknowncategory)
     --
-    local fields         = { }
+    local fields         = setmetatableindex(unknownfield)
     specification.fields = fields
+    --
+    local virtual         = specification.virtual
+    if virtual == nil then -- so false is valid
+        virtual = virtuals
+        specification.virtual = virtual
+    end
+    --
     for category, data in next, categories do
         local list       = setmetatableindex({},extrafields)
         fields[category] = list
+        data.fields      = list
+        local sets       = data.sets or { }
+        if data.virtual == nil then -- so false is valid
+            data.virtual = virtual
+        end
         for i=1,#types do
             local t = types[i]
             local d = data[t]
             if d then
                 for i=1,#d do
                     local di = d[i]
+                    di = sets[di] or di
                     if type(di) == "table" then
                         for i=1,#di do
                             list[di[i]] = t

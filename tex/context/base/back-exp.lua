@@ -483,7 +483,7 @@ local function makebreaklist(list)
             t[i] = l[i]
         end
     end
-    t[#t+1] = "break>" .. nofbreaks -- maybe no number
+    t[#t+1] = "break>" .. nofbreaks -- maybe no number or 0
     return { taglist = t }
 end
 
@@ -1026,7 +1026,8 @@ do
         element   = "mtext",
         data      = { content = "" },
         nature    = "inline",
-        comment   = "dummy nucleus"
+        comment   = "dummy nucleus",
+        fulltag   = "mtext>0"
     }
 
     local function accentchar(d)
@@ -1804,7 +1805,7 @@ do
     local function begintag(result,element,nature,di,skip)
         local index         = di.n
         local fulltag       = di.fulltag
-        local specification = specifications[fulltag]
+        local specification = specifications[fulltag] or { } -- we can have a dummy
         local comment       = di.comment
         local detail        = specification.detail
         if skip == "comment" then

@@ -907,11 +907,11 @@ local separator  = S(";,")
 local equal      = P("=")
 local spaces     = space^0
 local sometext   = C((1-equal-space-separator)^1)
-local truevalue  = P("+") * spaces * sometext                           * Cc(true)  -- "yes"
-local falsevalue = P("-") * spaces * sometext                           * Cc(false) -- "no"
+local truevalue  = P("+") * spaces * sometext                           * Cc(true)
+local falsevalue = P("-") * spaces * sometext                           * Cc(false)
+local somevalue  =                   sometext * spaces                  * Cc(true)
 local keyvalue   =                   sometext * spaces * equal * spaces * sometext
-local somevalue  =                   sometext * spaces                  * Cc(true)  -- "yes"
-local pattern    = Cf(Ct("") * (space + separator + Cg(keyvalue + falsevalue + truevalue + somevalue))^0, rawset)
+local pattern    = Cf(Ct("") * (space + separator + Cg(falsevalue + truevalue + keyvalue + somevalue))^0, rawset)
 
 local function colonized(specification)
     specification.features.normal = normalize_features(lpegmatch(pattern,specification.detail))

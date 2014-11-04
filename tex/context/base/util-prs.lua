@@ -275,14 +275,24 @@ function parsers.array_to_string(a,separator)
     end
 end
 
-function parsers.settings_to_set(str,t) -- tohash? -- todo: lpeg -- duplicate anyway
-    t = t or { }
---  for s in gmatch(str,"%s*([^, ]+)") do -- space added
-    for s in gmatch(str,"[^, ]+") do -- space added
-        t[s] = true
-    end
-    return t
+-- function parsers.settings_to_set(str,t) -- tohash? -- todo: lpeg -- duplicate anyway
+--     if str then
+--         t = t or { }
+--         for s in gmatch(str,"[^, ]+") do -- space added
+--             t[s] = true
+--         end
+--         return t
+--     else
+--         return { }
+--     end
+-- end
+
+local pattern = Cf(Ct("") * Cg(C((1-S(", "))^1) * S(", ")^0 * Cc(true))^1,rawset)
+
+function utilities.parsers.settings_to_set(str,t)
+    return str and lpegmatch(pattern,str) or { }
 end
+
 
 function parsers.simple_hash_to_string(h, separator)
     local t, tn = { }, 0

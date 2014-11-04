@@ -300,6 +300,7 @@ local function filtercollected(names,criterium,number,collected,prevmode)
         end
     else -- sectionname, number
         -- beware, this works ok for registers
+        -- to be redone with reference instead
         local depth = sections.getlevel(criterium)
         local number = tonumber(number) or numberatdepth(depth) or 0
         if trace_registers then

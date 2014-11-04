@@ -463,9 +463,7 @@ end
 writers.author     = writer
 writers.editor     = editor
 
--- how to deal with publisher?
-
-local default = { "author", "editor" }
+local default = { "author" }
 
 function authors.getauthor(dataset,tag,categories)
     local current = datasets[dataset]
@@ -482,7 +480,8 @@ function authors.getauthor(dataset,tag,categories)
             if categories then
                 local c = categories[category]
                 if c then
-                    list = c.author or default
+                    local sets = c.sets
+                    list = sets and sets.author and sets.authors or default
                 else
                     list = default
                 end

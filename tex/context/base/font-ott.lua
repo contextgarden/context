@@ -869,7 +869,7 @@ function otf.features.normalize(features)
                             uv = b
                         end
                     else
-                        uv = v
+                        uv = value
                     end
                     if not rawget(features,k) then
                         k = rawget(verbosefeatures,k) or k

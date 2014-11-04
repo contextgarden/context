@@ -111,9 +111,13 @@ function bookmarks.place()
         local nofblocks = #lists.sectionblocks -- always >= 1
         local showblocktitle = toboolean(numberspec.showblocktitle,true)
         for i=1,nofblocks do
-            local block = lists.sectionblocks[i]
+            local block     = lists.sectionblocks[i]
             local blockdone = nofblocks == 1
-            local list = lists.filtercollected(names,block..":all",nil,lists.collected,forced)
+            local list      = lists.filter {
+                names     = names,
+                criterium = block .. ":all",
+                forced    = forced,
+            }
             for i=1,#list do
                 local li = list[i]
                 local metadata = li.metadata
