@@ -658,10 +658,10 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             criterium = 0
         end
         --
-        local firstprefix, lastprefix = 0, 16
+        local firstprefix, lastprefix = 0, 16 -- too much, could max found level
         if segments then
             local f, l = match(tostring(segments),"^(.-):(.+)$")
-            if l == "*" then
+            if l == "*" or l == v_all then
                 l = 100 -- new
             end
             if f and l then
@@ -695,7 +695,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                     applyprocessor(starter)
                 end
             end
-            if prefixlist and (kind == 'section' or kind == 'prefix' or kind == 'direct') then
+            if prefixlist and (kind == "section" or kind == "prefix" or kind == "direct") then
                 -- find valid set (problem: for sectionnumber we should pass the level)
                 -- no holes
                 local b, e, bb, ee = 1, #prefixlist, 0, 0
@@ -763,7 +763,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                         if result then
                             result[#result+1] = strippedprocessor(groupsuffix)
                         else
-                            applyprocessor(groupsuffix)
+                           applyprocessor(groupsuffix)
                         end
                     end
                     if stopper then

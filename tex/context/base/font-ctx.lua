@@ -1313,7 +1313,7 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
             end
         end
     end
-    scaledpoints, delta = calculatescale(tfmdata,scaledpoints)
+    local scaledpoints, delta = calculatescale(tfmdata,scaledpoints)
  -- if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific (we need to hash rscale then)
  --     local relativedata = fontdata[relativeid]
  --     local rfmdata = relativedata and relativedata.unscaled and relativedata.unscaled

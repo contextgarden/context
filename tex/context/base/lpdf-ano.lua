@@ -116,7 +116,7 @@ local pdf_border_style        = pdfarray { 0, 0, 0 } -- radius radius linewidth
 local pdf_border_color        = nil
 local set_border              = false
 
-function pdfborder()
+local function pdfborder()
     border_set = true
     return pdf_border_style, pdf_border_color
 end
@@ -1036,7 +1036,7 @@ function specials.action(var)
     end
 end
 
-local function build(levels,start,parent,method)
+local function build(levels,start,parent,method,nested)
     local startlevel = levels[start].level
     local i, n = start, 0
     local child, entry, m, prev, first, last, f, l
@@ -1073,14 +1073,19 @@ local function build(levels,start,parent,method)
             if variant == "unknown" then
                 -- error, ignore
                 i = i + 1
-            elseif level < startlevel then
-                if entry then
-                    pdfflushobject(child,entry)
-                else
-                    -- some error
+            elseif level <= startlevel then
+                if level < startlevel then
+                    if nested then -- could be an option but otherwise we quit too soon
+                        if entry then
+                            pdfflushobject(child,entry)
+                        else
+                            report_bookmark("error 1")
+                        end
+                        return i, n, first, last
+                    else
+                        report_bookmark("confusing level change at level %a around %a",level,title)
+                    end
                 end
-                return i, n, first, last
-            elseif level == startlevel then
                 if trace_bookmarks then
                     report_bookmark("%3i %w%s %s",reference.realpage,(level-1)*2,(opened and "+") or "-",title)
                 end
@@ -1109,7 +1114,7 @@ local function build(levels,start,parent,method)
                 n = n + 1
                 i = i + 1
             elseif i < #levels and level > startlevel then
-                i, m, f, l = build(levels,i,pdfreference(child),method)
+                i, m, f, l = build(levels,i,pdfreference(child),method,true)
                 if entry then
                     entry.Count = (opened and m) or -m
                     if m > 0 then
@@ -1117,11 +1122,11 @@ local function build(levels,start,parent,method)
                         entry.Last  = pdfreference(l)
                     end
                 else
-                    -- some error
+                    report_bookmark("error 2")
                 end
             else
                 -- missing intermediate level but ok
-                i, m, f, l = build(levels,i,pdfreference(child),method)
+                i, m, f, l = build(levels,i,pdfreference(child),method,true)
                 if entry then
                     entry.Count = (opened and m) or -m
                     if m > 0 then
@@ -1130,7 +1135,7 @@ local function build(levels,start,parent,method)
                     end
                     pdfflushobject(child,entry)
                 else
-                    -- some error
+                    report_bookmark("error 3")
                 end
                 return i, n, first, last
             end
@@ -1143,7 +1148,7 @@ end
 function codeinjections.addbookmarks(levels,method)
     if levels and #levels > 0 then
         local parent = pdfreserveobject()
-        local _, m, first, last = build(levels,1,pdfreference(parent),method or "internal")
+        local _, m, first, last = build(levels,1,pdfreference(parent),method or "internal",false)
         local dict = pdfdictionary {
             Type  = pdfconstant("Outlines"),
             First = pdfreference(first),

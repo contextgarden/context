@@ -20,6 +20,12 @@ local mathml      = { }
 moduledata.mathml = mathml
 lxml.mathml       = mathml -- for the moment
 
+local context     = context
+
+local ctx_enabledelimiter  = context.enabledelimiter
+local ctx_disabledelimiter = context.disabledelimiter
+local ctx_xmlflush         = context.xmlflush -- better xmlsprint
+
 -- an alternative is to remap to private codes, where we can have
 -- different properties .. to be done; this will move and become
 -- generic; we can then make the private ones active in math mode
@@ -502,13 +508,13 @@ function mathml.mi(id)
                 context(rep)
              -- context.mi(rep)
             else
-                context.xmlflush(id) -- xmlsprint or so
+                ctx_xmlflush(id) -- xmlsprint or so
             end
         else
-            context.xmlflush(id) -- xmlsprint or so
+            ctx_xmlflush(id) -- xmlsprint or so
         end
     else
-        context.xmlflush(id) -- xmlsprint or so
+        ctx_xmlflush(id) -- xmlsprint or so
     end
 end
 
@@ -516,14 +522,14 @@ function mathml.mfenced(id) -- multiple separators
     id = getid(id)
     local left, right, separators = id.at.open or "(", id.at.close or ")", id.at.separators or ","
     local l, r = l_replacements[left], r_replacements[right]
-    context.enabledelimiter()
+    ctx_enabledelimiter()
     if l then
         context(l_replacements[left] or o_replacements[left] or "")
     else
         context(o_replacements["@l"])
         context(left)
     end
-    context.disabledelimiter()
+    ctx_disabledelimiter()
     local collected = lxml.filter(id,"/*") -- check the *
     if collected then
         local n = #collected
@@ -551,14 +557,14 @@ function mathml.mfenced(id) -- multiple separators
             end
         end
     end
-    context.enabledelimiter()
+    ctx_enabledelimiter()
     if r then
         context(r_replacements[right] or o_replacements[right] or "")
     else
         context(right)
         context(o_replacements["@r"])
     end
-    context.disabledelimiter()
+    ctx_disabledelimiter()
 end
 
 --~ local function flush(e,tag,toggle)
@@ -616,7 +622,7 @@ function mathml.mmultiscripts(id)
         elseif done then
             toggle = flush(e,tag,toggle)
         else
-            xmlsprint(e.dt)
+            xmlsprint(e)
             done = true
         end
     end

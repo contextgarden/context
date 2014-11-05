@@ -530,7 +530,7 @@ do_nested_include = function(data) -- also used in include
     return lpegmatch(pattern_1,data)
 end
 
-function lmxnew(data,defaults,nocache,path) -- todo: use defaults in calling routines
+local function lmxnew(data,defaults,nocache,path) -- todo: use defaults in calling routines
     data = data or ""
     local known = cache[data]
     if not known then
@@ -608,7 +608,7 @@ function lmx.convertfile(templatefile,variables,nocache)
     return lmxresult(converter,variables)
 end
 
-function lmxconvert(templatefile,resultfile,variables,nocache) -- or (templatefile,variables)
+local function lmxconvert(templatefile,resultfile,variables,nocache) -- or (templatefile,variables)
     if trace_variables then -- will become templates
         report_lmx("converting file %a",templatefile)
     end

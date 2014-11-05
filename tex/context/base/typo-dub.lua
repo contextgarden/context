@@ -326,7 +326,7 @@ end
 -- ש ( ל ( א ) כ ) 2-8,4-6
 -- ש ( ל [ א ] כ ) 2-8,4-6
 
-function resolve_fences(list,size,start,limit)
+local function resolve_fences(list,size,start,limit)
     -- N0: funny effects, not always better, so it's an options
     local stack = { }
     local top   = 0

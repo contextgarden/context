@@ -727,7 +727,7 @@ local utf_32_le_linesplitter = utf_32_le_getbom * lpeg.tsplitat(patterns.utf_32_
 --     return concat(result)
 -- end
 --
--- utf16_to_utf8_be_t = function(t)
+-- local utf16_to_utf8_be_t = function(t)
 --     if not t then
 --         return nil
 --     elseif type(t) == "string" then
@@ -786,7 +786,7 @@ local utf_32_le_linesplitter = utf_32_le_getbom * lpeg.tsplitat(patterns.utf_32_
 --     return concat(result)
 -- end
 --
--- utf16_to_utf8_le_t = function(t)
+-- local utf16_to_utf8_le_t = function(t)
 --     if not t then
 --         return nil
 --     elseif type(t) == "string" then
@@ -819,7 +819,7 @@ local utf_32_le_linesplitter = utf_32_le_getbom * lpeg.tsplitat(patterns.utf_32_
 --     return t
 -- end
 --
--- utf32_to_utf8_be_t = function(t)
+-- local utf32_to_utf8_be_t = function(t)
 --     if not t then
 --         return nil
 --     elseif type(t) == "string" then
@@ -846,7 +846,7 @@ local utf_32_le_linesplitter = utf_32_le_getbom * lpeg.tsplitat(patterns.utf_32_
 --     return t
 -- end
 --
--- utf32_to_utf8_le_t = function(t)
+-- local utf32_to_utf8_le_t = function(t)
 --     if not t then
 --         return nil
 --     elseif type(t) == "string" then
@@ -928,7 +928,7 @@ utf16_to_utf8_be = function(s)
     end
 end
 
-utf16_to_utf8_be_t = function(t)
+local utf16_to_utf8_be_t = function(t)
     if not t then
         return nil
     elseif type(t) == "string" then
@@ -951,7 +951,7 @@ utf16_to_utf8_le = function(s)
     end
 end
 
-utf16_to_utf8_le_t = function(t)
+local utf16_to_utf8_le_t = function(t)
     if not t then
         return nil
     elseif type(t) == "string" then
@@ -974,7 +974,7 @@ utf32_to_utf8_be = function(s)
     end
 end
 
-utf32_to_utf8_be_t = function(t)
+local utf32_to_utf8_be_t = function(t)
     if not t then
         return nil
     elseif type(t) == "string" then
@@ -997,7 +997,7 @@ utf32_to_utf8_le = function(s)
     end
 end
 
-utf32_to_utf8_le_t = function(t)
+local utf32_to_utf8_le_t = function(t)
     if not t then
         return nil
     elseif type(t) == "string" then

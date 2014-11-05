@@ -161,9 +161,14 @@ function bookmarks.place()
                         if numbered[name] then
                             local sectiondata = sections.collected[li.references.section]
                             local numberdata = li.numberdata
-                            if sectiondata and numberdata and not numberdata.hidenumber then
+                            if sectiondata and numberdata then
+                                if not numberdata.hidenumber then
                                 -- we could typeset the number and convert it
-                                title = concat(sections.typesetnumber(sectiondata,"direct",numberspec,sectiondata)) .. " " .. title
+                                    local number = sections.typesetnumber(sectiondata,"direct",numberspec,sectiondata)
+                                    if number and #number > 0 then
+                                        title = concat(number) .. " " .. title
+                                    end
+                                end
                             end
                         end
                         noflevels = noflevels + 1
@@ -196,7 +201,18 @@ function bookmarks.flatten(levels)
     -- following code runs over section blocks as well. (bookmarks-007.tex)
     local noflevels = #levels
     if noflevels > 1 then
+        local function showthem()
+            for i=1,noflevels do
+                local level = levels[i]
+                report_bookmarks("%i > %s > %s",level.level,level.reference.block,level.title)
+            end
+        end
+        if trace_bookmarks then
+            report_bookmarks("checking structure")
+            showthem()
+        end
         local skip  = false
+        local done  = 0
         local start = 1
         local one   = levels[1]
         local first = one.level
@@ -223,8 +239,17 @@ function bookmarks.flatten(levels)
                     if trace_bookmarks then
                         report_bookmarks("promoting entry %a from level %a to %a: %s",j,old,new,previous.title)
                     end
+                    done = done + 1
                 end
                 skip = true
+            end
+        end
+        if trace_bookmarks then
+            if done > 0 then
+                report_bookmarks("%a entries promoted")
+                showthem()
+            else
+                report_bookmarks("nothing promoted")
             end
         end
     end

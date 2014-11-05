@@ -156,7 +156,7 @@ end
 
 local function globpattern(path,patt,recurse,method)
     local kind = type(method)
-    if pattern and sub(patt,1,-3) == path then
+    if patt and sub(patt,1,-3) == path then
         patt = false
     end
     if kind == "function" then
@@ -209,7 +209,7 @@ end
 
 dir.collectpattern = collectpattern
 
-local separator
+local separator, pattern
 
 if onwindows then -- we could sanitize here
 

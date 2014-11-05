@@ -541,7 +541,7 @@ local concatstate = publications.concatstate
 
 local tobemarked = nil
 
-function marknocite(dataset,tag,nofcitations) -- or just: ctx_btxdomarkcitation
+local function marknocite(dataset,tag,nofcitations) -- or just: ctx_btxdomarkcitation
     ctx_btxstartcite()
     ctx_btxsetdataset(dataset)
     ctx_btxsettag(tag)

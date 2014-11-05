@@ -92,6 +92,58 @@ local validsigns = {
     [0x2213] = 0x2213, -- minusplus
 }
 
+-- If needed we can have more modes which then also means a faster simple handler
+-- for non numbers.
+
+local function setcharacteralign(column,separator)
+    if not enabled then
+        nodes.tasks.enableaction("processors","typesetters.characteralign.handler")
+        enabled = true
+    end
+    if not datasets then
+        datasets = { }
+    end
+    local dataset = datasets[column] -- we can use a metatable
+    if not dataset then
+        local method, token
+        if separator then
+            method, token = splitmethod(separator)
+            if method and token then
+                separator = utfbyte(token) or comma
+            else
+                separator = utfbyte(separator) or comma
+                method    = validseparators[separator] and v_number or v_text
+            end
+        else
+            separator = comma
+            method    = v_number
+        end
+        dataset = {
+            separator  = separator,
+            list       = { },
+            maxafter   = 0,
+            maxbefore  = 0,
+            collected  = false,
+            method     = method,
+            separators = validseparators,
+            signs      = validsigns,
+        }
+        datasets[column] = dataset
+        used = true
+    end
+    return dataset
+end
+
+local function resetcharacteralign()
+    datasets = false
+end
+
+characteralign.setcharacteralign   = setcharacteralign
+characteralign.resetcharacteralign = resetcharacteralign
+
+commands.setcharacteralign         = setcharacteralign
+commands.resetcharacteralign       = resetcharacteralign
+
 local function traced_kern(w)
     return tracedrule(w,nil,nil,"darkgray")
 end
@@ -327,56 +379,3 @@ function characteralign.handler(originalhead,where)
     end
     return tonode(head), true
 end
-
--- If needed we can have more modes which then also means a faster simple handler
--- for non numbers.
-
-function setcharacteralign(column,separator)
-    if not enabled then
-        nodes.tasks.enableaction("processors","typesetters.characteralign.handler")
-        enabled = true
-    end
-    if not datasets then
-        datasets = { }
-    end
-    local dataset = datasets[column] -- we can use a metatable
-    if not dataset then
-        local method, token
-        if separator then
-            method, token = splitmethod(separator)
-            if method and token then
-                separator = utfbyte(token) or comma
-            else
-                separator = utfbyte(separator) or comma
-                method    = validseparators[separator] and v_number or v_text
-            end
-        else
-            separator = comma
-            method    = v_number
-        end
-        dataset = {
-            separator  = separator,
-            list       = { },
-            maxafter   = 0,
-            maxbefore  = 0,
-            collected  = false,
-            method     = method,
-            separators = validseparators,
-            signs      = validsigns,
-        }
-        datasets[column] = dataset
-        used = true
-    end
-    return dataset
-end
-
-local function resetcharacteralign()
-    datasets = false
-end
-
-characteralign.setcharacteralign   = setcharacteralign
-characteralign.resetcharacteralign = resetcharacteralign
-
-commands.setcharacteralign         = setcharacteralign
-commands.resetcharacteralign       = resetcharacteralign
-

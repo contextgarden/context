@@ -18,9 +18,9 @@ local byte, lower = string.byte, string.lower
 
 local next = next
 
-trace_characters = false  trackers.register("typesetters.characters", function(v) trace_characters = v end)
+local trace_characters = false  trackers.register("typesetters.characters", function(v) trace_characters = v end)
 
-report_characters = logs.reporter("typesetting","characters")
+local report_characters = logs.reporter("typesetting","characters")
 
 local nodes, node = nodes, node
 

@@ -3928,7 +3928,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 16182, stripped down to: 10810
+-- original size: 16188, stripped down to: 10815
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -4058,7 +4058,7 @@ local function glob_pattern_table(path,patt,recurse,result)
 end
 local function globpattern(path,patt,recurse,method)
   local kind=type(method)
-  if pattern and sub(patt,1,-3)==path then
+  if patt and sub(patt,1,-3)==path then
     patt=false
   end
   if kind=="function" then
@@ -4103,7 +4103,7 @@ local function collectpattern(path,patt,recurse,result)
   return result
 end
 dir.collectpattern=collectpattern
-local separator
+local separator,pattern
 if onwindows then 
   local slash=S("/\\")/"/"
   pattern={
@@ -4461,7 +4461,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 37185, stripped down to: 15660
+-- original size: 37233, stripped down to: 15684
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4838,7 +4838,7 @@ utf16_to_utf8_be=function(s)
     return s
   end
 end
-utf16_to_utf8_be_t=function(t)
+local utf16_to_utf8_be_t=function(t)
   if not t then
     return nil
   elseif type(t)=="string" then
@@ -4859,7 +4859,7 @@ utf16_to_utf8_le=function(s)
     return s
   end
 end
-utf16_to_utf8_le_t=function(t)
+local utf16_to_utf8_le_t=function(t)
   if not t then
     return nil
   elseif type(t)=="string" then
@@ -4880,7 +4880,7 @@ utf32_to_utf8_be=function(s)
     return s
   end
 end
-utf32_to_utf8_be_t=function(t)
+local utf32_to_utf8_be_t=function(t)
   if not t then
     return nil
   elseif type(t)=="string" then
@@ -4901,7 +4901,7 @@ utf32_to_utf8_le=function(s)
     return s
   end
 end
-utf32_to_utf8_le_t=function(t)
+local utf32_to_utf8_le_t=function(t)
   if not t then
     return nil
   elseif type(t)=="string" then
@@ -7454,7 +7454,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 29350, stripped down to: 20475
+-- original size: 29359, stripped down to: 20483
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -7495,7 +7495,7 @@ formatters.add (
 local function ignore() end
 setmetatableindex(logs,function(t,k) t[k]=ignore;return ignore end)
 local report,subreport,status,settarget,setformats,settranslations
-local direct,subdirect,writer,pushtarget,poptarget,setlogfile,settimedlog,setprocessor,setformatters
+local direct,subdirect,writer,pushtarget,poptarget,setlogfile,settimedlog,setprocessor,setformatters,newline
 if tex and (tex.jobname or tex.formatname) then
   local function useluawrites()
     local texio_write_nl=texio.write_nl
@@ -9464,7 +9464,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 43799, stripped down to: 26806
+-- original size: 43805, stripped down to: 26812
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -10009,7 +10009,7 @@ local function _xmlconvert_(data,settings)
   reported_attribute_errors,mt,errorhandler=nil,nil,nil
   return result
 end
-function xmlconvert(data,settings)
+local function xmlconvert(data,settings)
   local ok,result=pcall(function() return _xmlconvert_(data,settings) end)
   if ok then
     return result
@@ -10452,7 +10452,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 48133, stripped down to: 30595
+-- original size: 48150, stripped down to: 30607
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -10837,8 +10837,8 @@ local lp_builtin=P (
     P("ns")/"ll.ns"
   )*((spaces*P("(")*spaces*P(")"))/"")
 local lp_attribute=(P("@")+P("attribute::"))/""*Cc("(ll.at and ll.at['")*((R("az","AZ")+S("-_:"))^1)*Cc("'])")
-lp_fastpos_p=P("+")^0*R("09")^1*P(-1)/"l==%0"
-lp_fastpos_n=P("-")*R("09")^1*P(-1)/"(%0<0 and (#list+%0==l))"
+local lp_fastpos_p=P("+")^0*R("09")^1*P(-1)/"l==%0"
+local lp_fastpos_n=P("-")*R("09")^1*P(-1)/"(%0<0 and (#list+%0==l))"
 local lp_fastpos=lp_fastpos_n+lp_fastpos_p
 local lp_reserved=C("and")+C("or")+C("not")+C("div")+C("mod")+C("true")+C("false")
 local lp_lua_function=Cs((R("az","AZ","__")^1*(P(".")*R("az","AZ","__")^1)^1)*("("))/"%0"
@@ -17641,8 +17641,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 728701
--- stripped bytes    : 259872
+-- original bytes    : 728787
+-- stripped bytes    : 259903
 
 -- end library merge
 

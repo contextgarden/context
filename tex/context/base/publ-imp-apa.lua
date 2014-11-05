@@ -29,32 +29,32 @@ return {
     categories = {
         article = {
             sets     = {
-                author = { "author", "editor" },
+                authors = { "author", "editor" },
+                links   = { "doi", "url" },
             },
-            required = { "author", "title" },
-            optional = { "year", "type", "journal", "volume", "number", "pages", "url", "note", "doi" },
+            required = { "authors", "title" },
+            optional = { "year", "subtitle", "type", "journal", "volume", "number", "pages", "note", "links" },
         },
         magazine = {
             sets     = {
-                author = { "author", "editor" },
+                authors = { "author", "editor" },
             },
-            required = { "author", "editor", "title", "journal", "year" },
+            required = { "authors", "title", "journal", "year" },
             optional = { "volume", "number", "pages", "month", "day", "note", "url", "doi" },
         },
         newspaper = {
             sets     = {
-                author = { "author", "editor" },
+                authors = { "author", "editor" },
             },
-            required = { "author", "title", "journal", "year" },
+            required = { "authors", "title", "journal", "year" },
             optional = { "volume", "number", "pages", "month", "day", "note", "url", "doi" },
         },
         book = {
             sets     = {
-                author = { "author", "editor", "publisher" },
+                authors = { "author", "editor", "publisher" },
             },
-            virtual  = { "authoryear" },
-            required = { "author", "title" },
-            optional = { "year", "month", "day", "title", "type", "edition", "series", "volume", "number", "pages", "address", "publisher", "url", "note", "ISBN" },
+            required = { "authors", "title" },
+            optional = { "year", "month", "day", "title", "type", "edition", "series", "volume", "number", "pages", "address", "url", "note", "ISBN" },
         },
         booklet = {
             required = { "title" },
@@ -62,28 +62,27 @@ return {
         },
         inbook = {
             sets     = {
-                author = { "author", "editor", "publisher" },
+                authors = { "author", "editor", "publisher" },
             },
-            required = { "author", "title", "chapter", "pages", "year" },
+            required = { "authors", "title", "chapter", "pages", "year" },
             optional = { "volume", "number", "series", "type", "address", "edition", "month", "note", "ISBN" },
-            author   = { "author", "editor", "publisher" },
         },
         incollection = {
             sets     = {
-                author = { "author", "editor", "publisher" },
+                authors = { "author", "editor", "publisher" },
             },
-            required = { "author", "title", "booktitle", "publisher", "year" },
-            optional = { "editor", "volume", "number", "series", "type", "chapter", "pages", "address", "edition", "month", "note", "ISBN" },
+            required = { "authors", "title", "booktitle", "year" },
+            optional = { "volume", "number", "series", "type", "chapter", "pages", "address", "edition", "month", "note", "ISBN" },
         },
         inproceedings = {
             sets     = {
-                author = { "author", "editor", "publisher" },
+                authors = { "author", "editor", "publisher" },
             },
-            required = { "author", "title", "booktitle", "year" },
-            optional = { "editor", "volume", "number", "series", "pages", "address", "month", "organization", "publisher", "note", "ISBN" },
+            required = { "authors", "title", "booktitle", "year" },
+            optional = { "volume", "number", "series", "pages", "address", "month", "organization", "note", "ISBN" },
         },
         conference =
-            "inproceedings", -- Alan: does this work? Hans: I just made it work.
+            "inproceedings",
         manual = {
             required = { "title" },
             optional = { "author", "organization", "address", "edition", "month", "year", "note" },
@@ -104,14 +103,12 @@ return {
             required = { },
             optional = { "author", "title", "howpublished", "month", "year", "note" },
         },
-        -- Not sure yet how "periodical" is used... but "jabref" includes it as standard.
-        -- strangely, "jabref" does not include "author" as required nor optional..
         periodical = {
             sets     = {
-                author = { "editor", "publisher" },
+                authors = { "editor", "publisher" },
             },
             required = { "title", "year" },
-            optional = { "author", "editor", "month", "note", "number", "organization", "series", "volume" },
+            optional = { "authors", "month", "note", "number", "organization", "series", "volume" },
         },
         proceedings = {
             required = { "title", "year" },
@@ -136,9 +133,9 @@ return {
         -- check this!
         standard = {
             sets     = {
-                author = { "author", "institution", "organization" },
+                authors = { "author", "institution", "organization" },
             },
-            required = { "author", "title", "year", "note", "url" },
+            required = { "authors", "title", "year", "note", "url" },
             optional = { "doi", },
         },
         unpublished = {
@@ -150,7 +147,9 @@ return {
             optional = { },
             virtual  = false,
         },
-        --
+        -- 
+        -- the following fields are for documentation and testing purposes
+        -- 
         ["demo-a"] = {
             sets     = {
                 author  = { "author", "institution", "organization" },

@@ -102,7 +102,7 @@ setmetatableindex(logs, function(t,k) t[k] = ignore ; return ignore end)
 
 local report, subreport, status, settarget, setformats, settranslations
 
-local direct, subdirect, writer, pushtarget, poptarget, setlogfile, settimedlog, setprocessor, setformatters
+local direct, subdirect, writer, pushtarget, poptarget, setlogfile, settimedlog, setprocessor, setformatters, newline
 
 -- we use formatters but best check for % then because for simple messages but
 -- we don't want this overhead for single messages (not that there are that

@@ -108,10 +108,6 @@ local enumber = number * S("eE") * number
 
 local cleaner = Cs((P("@@")/"@" + P("@")/"%%" + P(1))^0)
 
-function format_n(fmt,...)
-    return
-end
-
 context = context or { exponent = function(...) print(...) end }
 
 function metapost.format_string(fmt,...)

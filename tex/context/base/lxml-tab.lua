@@ -800,7 +800,7 @@ end
 -- Because we can have a crash (stack issues) with faulty xml, we wrap this one
 -- in a protector:
 
-function xmlconvert(data,settings)
+local function xmlconvert(data,settings)
     local ok, result = pcall(function() return _xmlconvert_(data,settings) end)
     if ok then
         return result

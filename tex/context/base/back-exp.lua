@@ -1413,7 +1413,7 @@ do
         end
     end
 
-    function stripmath(di)
+    local function stripmath(di)
         if not di then
             --
         elseif di.content then

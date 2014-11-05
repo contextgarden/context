@@ -744,7 +744,7 @@ end
 -- needed in e.g. tabulate (manuals)
 
 local compact_all      = Cs((P("\\") * ((1-S("\\ "))^1) * (P(" ")/"") * (P(-1) + S("[{")) + 1)^0)
-local compact_absolute = Cs((P("\\") * ((1-S("\\ [{"))^1) * (P(" ")/"" * (S("[{\\"))) + 1) ^0)
+local compact_absolute = Cs((P("\\") * ((1-S("\\ [{.,-_"))^1) * (P(" ")/"" * (S("[{\\.,-_"))) + 1) ^0)
 local compact_last     = Cs((P(" ")^1 * P(-1)/"" + 1)^0)
 
 function commands.typestring(settings)
