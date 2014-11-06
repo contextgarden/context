@@ -115,14 +115,18 @@
         \texdefinition {btx:cite:inject} {
             \btxcitereference
             \currentbtxfirst
-            \ifx\currentbtxsecond\empty \else
-                \btxcitevariantparameter\v!inbetween
-                \currentbtxsecond
-            \fi
-            \ifx\currentbtxthird\empty \else
-                \currentbtxthird
-            \fi
         }
+        \ifx\currentbtxsecond\empty \else
+            \btxcitevariantparameter\v!inbetween
+            \texdefinition {btx:cite:inject} {
+                \currentbtxsecond
+            }
+        \fi
+        \ifx\currentbtxthird\empty \else
+            \texdefinition {btx:cite:inject} {
+                \currentbtxthird
+            }
+        \fi
     \fi
 \stopsetups
 
@@ -147,29 +151,34 @@
 
 \startsetups \s!btx:\s!cite:render:variant
     \fastsetup{\s!btx:\s!cite:concat}
-    \texdefinition {btx:cite:inject} {
-        \fastsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
-    }
+    \fastsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
 \stopsetups
 
 \startsetups \s!btx:\s!cite:common:author
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!unknown}
     \else
-        \btxcitereference
-        \currentbtxfirst
+        \texdefinition {btx:cite:inject} {
+            \btxcitereference
+            \currentbtxfirst
+         }
     \fi
     \ifx\currentbtxsecond\empty \else
         \relax % keeps a following space
         \btxcitevariantparameter\v!inbetween
-        \currentbtxsecond
+        \texdefinition {btx:cite:inject} {
+            \currentbtxsecond
+        }
     \fi
     \ifx\currentbtxthird\empty \else
-        \currentbtxthird
+        \texdefinition {btx:cite:inject} {
+            \currentbtxthird
+        }
     \fi
 \stopsetups
 
 % one level will be removed
+% yes, isn't there one too many?
 
 \startsetups \s!btx:\s!cite:render:author
     \fastsetup{\s!btx:\s!cite:common:author}
@@ -248,18 +257,15 @@
     \fastsetup{\s!btx:\s!cite:render:normal}
 \stopsetups
 
-% We should create a lua function that prepends "doi:" if not already there...
-% then we can combine with :url
-
-\startsetups \s!btx:\s!cite:render:doi
+\startsetups \s!btx:\s!cite:doi
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!unknown}
     \else\ifconditional\btxinteractive
         \goto {
             \btxcitereference
-            \hyphenatedurl{doi:\currentbtxfirst}
+            \hyphenatedurl{\doif{\currentbtxcitevariant}{doi}{doi:}\currentbtxfirst}
         } [
-            url(http://dx.doi.org/\currentbtxfirst)
+            url(\doif{\currentbtxcitevariant}{doi}{http://dx.doi.org/}\currentbtxfirst)
         ]
     \else
         \btxcitereference
@@ -268,19 +274,7 @@
 \stopsetups
 
 \startsetups \s!btx:\s!cite:url
-    \ifx\currentbtxfirst\empty
-        \fastsetup{\s!btx:\s!cite:\s!unknown}
-    \else\ifconditional\btxinteractive
-        \goto {
-            \btxcitereference
-            \hyphenatedurl{\currentbtxfirst}
-        } [
-            url(\currentbtxfirst)
-        ]
-    \else
-        \btxcitereference
-        \hyphenatedurl{\currentbtxfirst}
-    \fi\fi
+    \fastsetup{\s!btx:\s!cite:\s!doi}
 \stopsetups
 
 \protect

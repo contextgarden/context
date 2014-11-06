@@ -24,8 +24,8 @@ end
 local chardata  = characters.data
 local lowercase = characters.lower
 
-local lower, gsub, find = string.lower, string.gsub, string.find
-local concat = table.concat
+local lower, find = string.lower, string.find
+local concat, copy = table.concat, table.copy
 local next, type, rawget = next, type, rawget
 local utfchar = utf.char
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
@@ -33,7 +33,7 @@ local textoutf = characters and characters.tex.toutf
 local settings_to_hash, settings_to_array = utilities.parsers.settings_to_hash, utilities.parsers.settings_to_array
 local formatters = string.formatters
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
-local xmlcollected, xmltext, xmlconvert = xml.collected, xml.text, xmlconvert
+local xmlcollected, xmltext, xmlconvert = xml.collected, xml.text, xml.convert
 local setmetatableindex = table.setmetatableindex
 
 -- todo: more allocate
@@ -152,6 +152,38 @@ local default = {
 local types    = { "optional", "required", "virtual" }
 local virtuals = { "authoryear", "authoryears", "authornum", "num", "suffix" } -- defaults
 
+local function checkfield(specification,category,data)
+    local fields     = specification.fields
+    local list       = setmetatableindex({},extrafields)
+    fields[category] = list
+    data.fields      = list
+    data.category    = category
+    local sets       = data.sets or { }
+    if data.virtual == nil then -- so false is valid
+        data.virtual = specification.virtual
+    end
+    for i=1,#types do
+        local t = types[i]
+        local d = data[t]
+        if d then
+            for i=1,#d do
+                local di = d[i]
+                di = sets[di] or di
+                if type(di) == "table" then
+                    for i=1,#di do
+                        list[di[i]] = t
+                    end
+                else
+                    list[di] = t
+                end
+            end
+        else
+            data[t] = { }
+        end
+    end
+    return data
+end
+
 local specifications = setmetatableindex(function(t,name)
     if not name then
         return default -- initializer
@@ -173,11 +205,6 @@ local specifications = setmetatableindex(function(t,name)
         categories = { }
         specification.categories = categories
     end
-    for k, v in next, categories do
-        if type(v) == "string" then
-            categories[k] = categories[v]
-        end
-    end
     setmetatableindex(categories,unknowncategory)
     --
     local fields         = setmetatableindex(unknownfield)
@@ -190,38 +217,20 @@ local specifications = setmetatableindex(function(t,name)
     end
     --
     for category, data in next, categories do
-        local list       = setmetatableindex({},extrafields)
-        fields[category] = list
-        data.fields      = list
-        local sets       = data.sets or { }
-        if data.virtual == nil then -- so false is valid
-            data.virtual = virtual
-        end
-        for i=1,#types do
-            local t = types[i]
-            local d = data[t]
-            if d then
-                for i=1,#d do
-                    local di = d[i]
-                    di = sets[di] or di
-                    if type(di) == "table" then
-                        for i=1,#di do
-                            list[di[i]] = t
-                        end
-                    else
-                        list[di] = t
-                    end
-                end
-            else
-                data[t] = { }
-            end
-        end
+        categories[category] = checkfield(specification,category,copy(data)) -- we make sure we have no clones
     end
+    --
     t[name] = specification
+    --
     return specification
 end)
 
 publications.specifications = specifications
+
+function publications.setcategory(target,category,data)
+    local specification = specifications[target]
+    specification.categories[category] = checkfield(specification,category,data)
+end
 
 function publications.parenttag(dataset,tag)
     if not dataset or not tag then

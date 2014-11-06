@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=publ-imp-apa,
-%D        version=2013.12.12, % based on bibl-apa.tex and later xml variant
+%D        version=2013.12.12,
 %D          title=APA bibliography style,
 %D       subtitle=Publications,
 %D         author=Alan Braslau and Hans Hagen,
@@ -10,6 +10,7 @@
 %C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
 %D by \PRAGMA. See mreadme.pdf for details.
 
+% Hans: what does the below mean? Just some wrapper (possible tracing and so) 
 % \loadbtxdefinitionfile[def]
 
 %D Instead of texdefinitions without arguments, we could have used setups but in my
@@ -40,14 +41,100 @@
 
 % does not work here: \setupbtxcitevariant [alternative=authoryear,sorttype=authoryear]
 
-% moved to publ-ini.mkiv for now...
-%\setupbtxlistvariant
-%  [lastnamesep={\nobreakspace\textampersand\space},
-%   finalnamesep={\nobreakspace\textampersand\space}]
-%
-%\setupbtxlistvariant
-%  [author]
-%  [author=invertedshort]
+% set all APA compliant values (may be redundant but we do not count on defaults.)
+
+\setupbtxlistvariant
+  [\c!namesep={,\space},
+   \c!lastnamesep={,\nobreakspace\textampersand\space},
+   \c!finalnamesep={,\nobreakspace\textampersand\space},
+   \c!firstnamesep=\space,
+   \c!otherstext={\space\btxlabeltext{\currentbtxalternative:others}},
+   \c!juniorsep=\space,
+   \c!vonsep=\space,
+   \c!initialsep=\space,  % between initials and lastname
+  %\c!initialssep=\space, % between multiple initials  % todo
+  %\c!initialsterminator={.},                          % todo
+   \c!surnamesep={,\space},
+   \c!surnameinitialsep={,\space},
+   \c!surnamefirstnamesep={,\space},
+   \c!etallimit=5,
+   \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
+  %\c!journalconversion=\v!normal,
+   \c!monthconversion=\v!number,
+   \c!authorconversion=\v!invertedshort]
+
+\definebtxlistvariant
+  [author]
+
+\definebtxlistvariant
+  [editor]
+  [author]
+
+% like \setupbtxlistvariant above but not exactly...
+
+\setupbtxcitevariant
+  [\c!alternative=authoryear,
+   \c!namesep={,\space},
+   \c!lastnamesep={,\nobreakspace\textampersand\space},
+   \c!finalnamesep={\nobreakspace\textampersand\space}, % no comma!
+   \c!firstnamesep=\space,
+   \c!otherstext={\space\btxlabeltext{\currentbtxalternative:others}},
+   \c!juniorsep=\space,
+   \c!vonsep=\space,
+   \c!initialsep=\space,
+  %\c!initialssep=\space,
+  %\c!initialsterminator={.},
+   \c!surnamesep={,\space},
+   \c!surnameinitialsep={,\space},
+   \c!surnamefirstnamesep={,\space},
+   \c!etallimit=5, % when 2-4, show all first time, etaldisplay subsequently...
+   \c!etaldisplay=1,
+   \c!monthconversion=\v!number,
+   \c!authorconversion=\v!name,
+   \c!interaction=\v!start,
+ % \c!setups=btx:cite:initialize,
+   \c!alternative=num,
+   \c!pubsep={,\space},
+   \c!lastpubsep={\space\btxlabeltext{\currentbtxalternative:and}\space},
+   \c!finalpubsep={\space\btxlabeltext{\currentbtxalternative:and}\space},
+   \c!sorttype=,
+   \c!compress=\v!no,
+   \c!inbetween=\space,
+   \c!range=\endash,
+   \c!left=,
+   \c!middle=,
+   \c!right=]
+
+\definebtxcitevariant
+   [author]
+   [\c!lastnamesep={,\nobreakspace\textampersand\space},
+    \c!finalnamesep={\nobreakspace\textampersand\space}, % no comma!
+    \c!authorconversion=\v!name]
+
+\definebtxcitevariant
+   [authoryear]
+   [\c!compress=\v!yes,
+    \c!inbetween={,\space},
+    \c!left={(},
+    \c!right={)},
+    \c!pubsep={;\space},
+    \c!lastpubsep={;\space},
+    \c!finalpubsep={;\space},
+    \c!lastnamesep={,\space\btxlabeltext{\currentbtxalternative:and}\space},
+    \c!finalnamesep={\space\btxlabeltext{\currentbtxalternative:and}\space}, % no comma!
+    \c!authorconversion=\v!name]
+
+\definebtxcitevariant
+   [authoryears]
+   [authoryear]
+   [\c!left=,
+    \c!inbetween={\space(},
+    \c!pubsep={);\space},
+    \c!lastpubsep={);\space},
+    \c!finalpubsep={);\space},
+    \c!lastnamesep={,\space\btxlabeltext{\currentbtxalternative:and}\space},
+    \c!finalnamesep={\space\btxlabeltext{\currentbtxalternative:and}\space}, % no comma!
+    \c!authorconversion=\v!name]
 
 % Should the following be loaded by default?
 
@@ -157,7 +244,7 @@
    apa:Retrieved={heruntergeladen von},
    apa:others={et al.}]
 
-% Thanks: Andrea Valle
+% thanks: Andrea Valle
 
 \setupbtxlabeltext
   [it]
@@ -195,6 +282,22 @@
 
 % First some helpers:
 
+\starttexdefinition btx:apa:inject #link #content
+    \ifconditional\btxinteractive
+        \ifx\currentbtxinternal\empty
+            #content
+        \else
+            \goto {
+                #content
+            } [
+                #link
+            ]
+        \fi
+    \else
+        #content
+    \fi
+\stoptexdefinition
+
 \starttexdefinition btx:apa:suffixeddate
     \btxleftparenthesis
     \btxdoifelse {year} {
@@ -222,21 +325,23 @@
 \starttexdefinition btx:apa:title-subtitle-type
     \btxdoif {title} {
         \setmode{btx:apa:title-placed}
-        \btxflush{Word -> title}
-        % subtitle is not bibtex and currently is ignored.
-        \btxdoif {subtitle} {
-            \btxcolon
-            \btxflush{Word -> subtitle}
+        \btxdoif {file} {
+             % we make the title active opening file
+             \texdefinition{btx:apa:inject} {url(file:\btxflush{file})}
         }
-        \doifnotmode {btx:apa:thesis} {
-            \btxdoifelse{type} {
-                \btxleftbracket
-                \btxflush{Word -> type}
-                \btxrightbracketperiod
-            } {
-                \btxperiod
+        {
+            \btxflush{Word -> title}
+            \btxdoif {subtitle} {
+                \btxcolon
+                \btxflush{Word -> subtitle}
             }
-        } {
+            \doifnotmode {btx:apa:thesis} {
+                \btxdoif{type} {
+                    \btxleftbracket
+                    \btxflush{Word -> type}
+                    \btxrightbracket
+                }
+            }
             \btxperiod
         }
     }
@@ -295,7 +400,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:title-if-not-placed-including- #type #it
+\starttexdefinition btx:apa:title-if-not-placed #it
     \doifnotmode {btx:apa:title-placed} {
         \btxdoif {title} {
             \btxspace
@@ -535,24 +640,12 @@
 \stoptexdefinition
 
 \starttexdefinition btx:apa:url-note-doi
-    \texdefinition{btx:apa:url}
+    \btxdoifnot {doi} {
+        \texdefinition{btx:apa:url}
+    }
     \texdefinition{btx:apa:note}
     \texdefinition{btx:apa:doi}
 \stoptexdefinition
-
-%\starttexdefinition btx:apa:author-editor-other #field
-%    \btxdoif {#field} {
-%        \doifelse {#field} {publisher} {
-%            \doifmodeelse {btx:apa:publisher-as-author} {
-%                \btxlabeltext{apa:Author}
-%            } {
-%                \btxflush{publisher}
-%            }
-%        } {
-%            \btxflush{#field}
-%        }
-%    }
-%\stoptexdefinition
 
 \starttexdefinition btx:apa:doifelse-publisher-or-author-or-editor #author #if #else
     \btxdoifelse {publisher} {
@@ -646,7 +739,7 @@
 \startsetups btx:apa:article
     \texdefinition{btx:apa:author-or-title}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
+    \texdefinition{btx:apa:title-if-not-placed}{}
     \texdefinition{btx:apa:journal-volume-number-pages}{}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -658,7 +751,7 @@
 \startsetups btx:apa:magazine
     \texdefinition{btx:apa:author-or-title}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
+    \texdefinition{btx:apa:title-if-not-placed}{}
     \texdefinition{btx:apa:journal-volume-number-pages}{}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -670,7 +763,7 @@
 \startsetups btx:apa:newspaper
     \texdefinition{btx:apa:author-or-title}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
+    \texdefinition{btx:apa:title-if-not-placed}{}
     \texdefinition{btx:apa:journal-volume-number-pages}{pp}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -685,7 +778,7 @@
 \startsetups btx:apa:book
     \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{publisher}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \texdefinition{btx:apa:title-if-not-placed}{it}
     \texdefinition{btx:apa:edition-volume-number-pages}{edition}
     \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
     \texdefinition{btx:apa:url-note-doi}
@@ -721,7 +814,7 @@
 \startsetups btx:apa:incollection
     \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{publisher}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
+    \texdefinition{btx:apa:title-if-not-placed}{}
     \texdefinition{btx:apa:editor}{booktitle}
     \texdefinition{btx:apa:edition-volume-number-pages}{edition}
     \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
@@ -736,7 +829,7 @@
 \startsetups btx:apa:proceedings
     \texdefinition{btx:apa:editor-or-organization}{title}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
+    \texdefinition{btx:apa:title-if-not-placed}{}
     \texdefinition{btx:apa:edition-volume-number-pages}{edition}
     \btxdoifelse {editor} {
         \btxdoif {organization} {
@@ -759,7 +852,7 @@
 \startsetups btx:apa:inproceedings
     \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{publisher}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{}
+    \texdefinition{btx:apa:title-if-not-placed}{}
     \texdefinition{btx:apa:editor}{booktitle}
     \texdefinition{btx:apa:edition-volume-number-pages}{edition}
     \btxdoif {organization} {
@@ -784,7 +877,7 @@
     % unlikely not to have author!
     \texdefinition{btx:apa:author-or-title}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \texdefinition{btx:apa:title-if-not-placed}{it}
     \btxleftparenthesis
     \btxdoifelse {type} {
         \btxflush{type}
@@ -827,7 +920,7 @@
 \startsetups btx:apa:booklet
     \texdefinition{btx:apa:author-or-title}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \texdefinition{btx:apa:title-if-not-placed}{it}
     \texdefinition{btx:apa:wherefrom-publisher-author-is-}{howpublished}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -839,7 +932,7 @@
 \startsetups btx:apa:manual
     \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{organization}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \texdefinition{btx:apa:title-if-not-placed}{it}
     \texdefinition{btx:apa:edition-volume-number-pages}{edition}
     \texdefinition{btx:apa:wherefrom-publisher-author-is-}{organization}
     \texdefinition{btx:apa:url-note-doi}
@@ -852,7 +945,7 @@
 \startsetups btx:apa:techreport
     \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{institution}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{}{it}
+    \texdefinition{btx:apa:title-if-not-placed}{it}
     \texdefinition{btx:apa:edition-volume-number-pages}{type}
     \texdefinition{btx:apa:wherefrom-publisher-author-is-}{institution}
     \texdefinition{btx:apa:url-note-doi}
@@ -865,7 +958,7 @@
 \startsetups btx:apa:unpublished
     \texdefinition{btx:apa:author-or-title}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{}{it}
+    \texdefinition{btx:apa:title-if-not-placed}{it}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
 
@@ -879,7 +972,7 @@
 \startsetups btx:apa:patent
     \texdefinition{btx:apa:author-or-editor-or-publisher-or-}{title}{assignee}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \texdefinition{btx:apa:title-if-not-placed}{it}
     \begingroup
         \it
         \btxdoif {nationality} {
@@ -939,7 +1032,7 @@
 \startsetups btx:apa:electronic
     \texdefinition{btx:apa:author-or-title}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{type}{it}
+    \texdefinition{btx:apa:title-if-not-placed}{it}
     \btxdoif {organization} {
         \btxspace
         \btxflush{organization}
@@ -960,7 +1053,7 @@
 \startsetups btx:apa:other
     \texdefinition{btx:apa:author-or-title}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{}{it}
+    \texdefinition{btx:apa:title-if-not-placed}{it}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
 
@@ -971,7 +1064,7 @@
 \startsetups btx:apa:misc
     \texdefinition{btx:apa:author-or-title}
     \texdefinition{btx:apa:suffixeddate}
-    \texdefinition{btx:apa:title-if-not-placed-including-}{}{it}
+    \texdefinition{btx:apa:title-if-not-placed}{it}
     \btxdoif {howpublished} {
         \btxspace
         \btxflush{howpublished}

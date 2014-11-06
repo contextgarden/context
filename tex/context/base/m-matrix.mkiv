@@ -99,18 +99,20 @@ end
 -- replace i-th row with factor * (i-th row)
 
 function matrix.multiply(m,i,factor)
-    if m then
+    local mi = m[i]
+    for k=1,#mi do
+        mi[k] = factor * mi[k]
+    end
+    return m
+end
+
+-- scalar product "factor * m"
+
+function matrix.scalar(m, factor)
+    for i=1,#m do
         local mi = m[i]
-        for k=1,#mi do
-            mi[k] = factor * mi[k]
-        end
-    elseif i then
-        factor = i
-        for i=1,#m do
-            local mi = m[i]
-            for j=1,#mi do
-                mi[j] = factor * mi[j]
-            end
+        for j=1,#mi do
+            mi[j] = factor * mi[j]
         end
     end
     return m
@@ -179,17 +181,6 @@ function matrix.product(m1,m2)
     return product
 end
 
-function matrix.search(m,i)
-    for k=i+1,#m do -- searches from the next row
-        if m[k][i] == 0 then
-            k = k + 1
-        else
-            return k
-        end
-    end
-    return 0
-end
-
 local function uppertri(m,sign)
     local temp = copy(m)
     for i=1,#temp-1 do
@@ -248,9 +239,6 @@ local function rowechelon(m,r)
             local i = pRow
             local n = #temp
             while temp[i][pCol] == 0 do
-             -- context("search non zero element\\crlf current value is ")
-             -- context(i, pCol)
-             -- context("\\crlf")
                 i = i + 1
                 if i > n then
                     -- no nonzero number in a column
@@ -263,20 +251,13 @@ local function rowechelon(m,r)
                 end
             end
             temp[pRow], temp[i] = temp[i], temp[pRow]
-         -- context("check the row value\\crlf")
-         -- matrix.typeset(temp)
-         -- context("\\crlf")
         end
         local row = temp[pRow]
         pivot = row[pCol]
         for l=pCol,#row do
             row[l] = row[l]/pivot
         end
-    -- context("divide row %d by pivot element\\ ", pRow)
-    -- context(pRow, pCol)
-    -- context("\\crlf")
-    -- matrix.typeset(temp)
-    -- context("\\crlf")
+
         if r == 1 then
             -- make the "reduced row echelon form"
             local row = temp[pRow]
@@ -289,7 +270,7 @@ local function rowechelon(m,r)
                 end
             end
         end
-        -- just row echelon form
+        -- just make the row echelon form
         local row = temp[pRow]
         for k=pRow+1, #temp do
             local current = temp[k]
@@ -301,9 +282,7 @@ local function rowechelon(m,r)
         end
         pRow = pRow + 1
         pCol = pCol + 1
-     -- context("make zeros\\crlf")
-     -- matrix.typeset(temp)
-     -- context("\\par")
+
         if pRow > #temp or pCol > #temp[1] then
             pRow = #temp + 1
         end
@@ -314,7 +293,9 @@ end
 matrix.rowechelon = rowechelon
 matrix.rowEchelon = rowechelon
 
-local function solve(m,c) --  solve the linear equation m X = c
+--  solve the linear equation m X = c
+
+local function solve(m,c) 
     local n = #m
     if n ~= #c then
         return copy(m)
@@ -328,6 +309,8 @@ local function solve(m,c) --  solve the linear equation m X = c
 end
 
 matrix.solve = solve
+
+-- find the inverse matrix of m
 
 local function inverse(m)
     local n = #m

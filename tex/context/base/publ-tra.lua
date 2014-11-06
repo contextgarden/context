@@ -25,6 +25,8 @@ local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stopt
 local privates = publications.tables.privates
 local specials = publications.tables.specials
 
+local report   = logs.reporter("publications","tracers")
+
 function tracers.showdatasetfields(settings)
     local dataset = settings.dataset
     local current = datasets[dataset]
@@ -248,8 +250,10 @@ function tracers.showfields(settings)
                 for i=1,#li do
                     validfields[li[i]] = true
                 end
-            else
+            elseif li then
                 validfields[li] = true
+            else
+             -- report("fatal error in showfields")
             end
         end
     end
@@ -260,8 +264,10 @@ function tracers.showfields(settings)
                 for k, v in next, list do
                     makevalid(v,sets)
                 end
-            else
+            elseif list then
                 makevalid(list,sets)
+            else
+                -- can be false
             end
         end
     end

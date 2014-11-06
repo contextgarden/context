@@ -1,0 +1,51 @@
+%D \module
+%D   [       file=typo-sus,
+%D        version=2014.11.06,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Checking Suspects,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Checking Suspects}
+
+%D This is a rather special module, mostly needed by ourselves for
+%D projects where copy||editing is not that precise.
+
+\registerctxluafile{typo-sus}{1.001}
+
+\unexpanded\def\showsuspects{\enabletrackers[typesetters.suspects]}
+
+%D The suspicious spacing will be colored in the text. There can be false
+%D positives but this features is mostly used when proofreading. So, we
+%D don't worry too much about interference (and efficiency).
+%D
+%D \unexpanded\def\showsample#1%
+%D   {\NC \type{#1}%
+%D    \NC \enabletrackers[typesetters.suspects]#1\disabletrackers[typesetters.spacing]%
+%D    \NC \NR}
+%D
+%D \starttabulate[|||][before=,after=]
+%D     \showsample{foo$x$}
+%D     \showsample{$x$bar}
+%D     \showsample{foo$x$bar}
+%D     \showsample{$f+o+o$:}
+%D     \showsample{;$f+o+o$}
+%D     \showsample{; bar}
+%D     \showsample{foo:bar}
+%D     \showsample{\quote{ foo }}
+%D     \showsample{\quote{bar }}
+%D     \showsample{\quote{ bar}}
+%D     \showsample{(foo )}
+%D     \showsample{\{foo \}}
+%D     \showsample{foo{\bf gnu}bar}
+%D     \showsample{foo$x^2$bar}
+%D     \showsample{foo\nobreakspace bar}
+%D \stoptabulate
+
+\endinput
+

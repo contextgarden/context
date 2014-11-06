@@ -28,31 +28,36 @@ local otf                 = fonts.handlers.otf
 local otffeatures         = fonts.constructors.newfeatures("otf")
 local registerotffeature  = otffeatures.register
 
-local trace_remapping     = false  trackers.register("math.remapping",   function(v) trace_remapping   = v end)
-local trace_processing    = false  trackers.register("math.processing",  function(v) trace_processing  = v end)
-local trace_analyzing     = false  trackers.register("math.analyzing",   function(v) trace_analyzing   = v end)
-local trace_normalizing   = false  trackers.register("math.normalizing", function(v) trace_normalizing = v end)
-local trace_collapsing    = false  trackers.register("math.collapsing",  function(v) trace_collapsing  = v end)
-local trace_goodies       = false  trackers.register("math.goodies",     function(v) trace_goodies     = v end)
-local trace_variants      = false  trackers.register("math.variants",    function(v) trace_variants    = v end)
-local trace_alternates    = false  trackers.register("math.alternates",  function(v) trace_alternates  = v end)
-local trace_italics       = false  trackers.register("math.italics",     function(v) trace_italics     = v end)
-local trace_families      = false  trackers.register("math.families",    function(v) trace_families    = v end)
+local privateattribute    = attributes.private
+local registertracker     = trackers.register
+local registerdirective   = directives.register
+local logreporter         = logs.reporter
 
-local check_coverage      = true   directives.register("math.checkcoverage", function(v) check_coverage = v end)
+local trace_remapping     = false  registertracker("math.remapping",   function(v) trace_remapping   = v end)
+local trace_processing    = false  registertracker("math.processing",  function(v) trace_processing  = v end)
+local trace_analyzing     = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
+local trace_normalizing   = false  registertracker("math.normalizing", function(v) trace_normalizing = v end)
+local trace_collapsing    = false  registertracker("math.collapsing",  function(v) trace_collapsing  = v end)
+local trace_goodies       = false  registertracker("math.goodies",     function(v) trace_goodies     = v end)
+local trace_variants      = false  registertracker("math.variants",    function(v) trace_variants    = v end)
+local trace_alternates    = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
+local trace_italics       = false  registertracker("math.italics",     function(v) trace_italics     = v end)
+local trace_families      = false  registertracker("math.families",    function(v) trace_families    = v end)
 
-local report_processing   = logs.reporter("mathematics","processing")
-local report_remapping    = logs.reporter("mathematics","remapping")
-local report_normalizing  = logs.reporter("mathematics","normalizing")
-local report_collapsing   = logs.reporter("mathematics","collapsing")
-local report_goodies      = logs.reporter("mathematics","goodies")
-local report_variants     = logs.reporter("mathematics","variants")
-local report_alternates   = logs.reporter("mathematics","alternates")
-local report_italics      = logs.reporter("mathematics","italics")
-local report_families     = logs.reporter("mathematics","families")
+local check_coverage      = true   registerdirective("math.checkcoverage", function(v) check_coverage = v end)
 
-local a_mathrendering     = attributes.private("mathrendering")
-local a_exportstatus      = attributes.private("exportstatus")
+local report_processing   = logreporter("mathematics","processing")
+local report_remapping    = logreporter("mathematics","remapping")
+local report_normalizing  = logreporter("mathematics","normalizing")
+local report_collapsing   = logreporter("mathematics","collapsing")
+local report_goodies      = logreporter("mathematics","goodies")
+local report_variants     = logreporter("mathematics","variants")
+local report_alternates   = logreporter("mathematics","alternates")
+local report_italics      = logreporter("mathematics","italics")
+local report_families     = logreporter("mathematics","families")
+
+local a_mathrendering     = privateattribute("mathrendering")
+local a_exportstatus      = privateattribute("exportstatus")
 
 local nuts                = nodes.nuts
 local nodepool            = nuts.pool
@@ -236,7 +241,7 @@ noads.process = processnoads
 -- might as well do this
 
 local families     = { }
-local a_mathfamily = attributes.private("mathfamily")
+local a_mathfamily = privateattribute("mathfamily")
 local boldmap      = mathematics.boldmap
 
 local familymap = { [0] =
@@ -336,8 +341,8 @@ end
 
 -- character remapping
 
-local a_mathalphabet = attributes.private("mathalphabet")
-local a_mathgreek    = attributes.private("mathgreek")
+local a_mathalphabet = privateattribute("mathalphabet")
+local a_mathgreek    = privateattribute("mathgreek")
 
 processors.relocate = { }
 
@@ -488,7 +493,7 @@ end
 -- todo: just replace the character by an ord noad
 -- and remove the right delimiter as well
 
-local mathsize = attributes.private("mathsize")
+local mathsize = privateattribute("mathsize")
 
 local resize = { } processors.resize = resize
 
@@ -787,7 +792,7 @@ registerotffeature {
 
 local getalternate = otf.getalternate
 
-local a_mathalternate = attributes.private("mathalternate")
+local a_mathalternate = privateattribute("mathalternate")
 
 local alternate = { } -- processors.alternate = alternate
 
@@ -831,7 +836,7 @@ end
 -- = we check for correction first because accessing nodes is slower
 -- = the actual glyph is not that important (we can control it with numbers)
 
-local a_mathitalics = attributes.private("mathitalics")
+local a_mathitalics = privateattribute("mathitalics")
 
 local italics        = { }
 local default_factor = 1/20
@@ -914,7 +919,7 @@ local italic_kern  = new_kern
 local c_positive_d = "trace:db"
 local c_negative_d = "trace:dr"
 
-trackers.register("math.italics", function(v)
+registertracker("math.italics", function(v)
     if v then
         italic_kern = function(k,font)
             local ex = 1.5 * fontexheights[font]
@@ -1139,7 +1144,7 @@ function handlers.classes(head,style,penalties)
     return true
 end
 
-trackers.register("math.classes",function(v) tasks.setaction("math","noads.handlers.classes",v) end)
+registertracker("math.classes",function(v) tasks.setaction("math","noads.handlers.classes",v) end)
 
 -- just for me
 
@@ -1147,7 +1152,7 @@ function handlers.showtree(head,style,penalties)
     inspect(nodes.totree(head))
 end
 
-trackers.register("math.showtree",function(v) tasks.setaction("math","noads.handlers.showtree",v) end)
+registertracker("math.showtree",function(v) tasks.setaction("math","noads.handlers.showtree",v) end)
 
 -- the normal builder
 

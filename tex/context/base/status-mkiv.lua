@@ -394,6 +394,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "typo-sus",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    filename = "node-pag",
    loading  = "never",
    status   = "okay",
@@ -4829,6 +4835,11 @@ return {
    category = "lua",
    filename = "typo-bld",
    status   = "todo",
+  },
+  {
+   category = "lua",
+   filename = "typo-sus",
+   status   = "okay",
   },
   {
    category = "lua",
