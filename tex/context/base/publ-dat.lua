@@ -115,7 +115,7 @@ local separator  = space * "+" * space
 local l_splitter = lpeg.tsplitat(separator)
 local d_splitter = lpeg.splitat (separator)
 
-local extrafields = {
+local implicitfields = {
     category = "implicit",
     tag      = "implicit",
     key      = "implicit",
@@ -124,17 +124,34 @@ local extrafields = {
     crossref = "implicit",
 }
 
-local unknowncategory = function(t,k)
-    local v = {
-        required = { },
-        optional = { },
-    }
+local types = {
+    "optional",
+    "extra",
+    "required",
+    "virtual",
+}
+
+local virtuals = {
+    "authoryear",
+    "authoryears",
+    "authornum",
+    "num",
+    "suffix",
+}
+
+local unknownfield = function(t,k)
+    local v = "extra"
     t[k] = v
     return v
 end
 
-local unknownfield = function(t,k)
-    local v = setmetatableindex(function(t,k) local v = "optional" t[k] = v return v end)
+local unknowncategory = function(t,k)
+    local v = {
+        required = false,
+        optional = false,
+        virtual  = false,
+        fields   = setmetatableindex(unknownfield),
+    }
     t[k] = v
     return v
 end
@@ -146,19 +163,13 @@ local default = {
     author     = "anonymous",
     copyright  = "no one",
     categories = setmetatableindex(unknowncategory),
-    fields     = setmetatableindex(unknownfield),
 }
 
-local types    = { "optional", "required", "virtual" }
-local virtuals = { "authoryear", "authoryears", "authornum", "num", "suffix" } -- defaults
-
 local function checkfield(specification,category,data)
-    local fields     = specification.fields
-    local list       = setmetatableindex({},extrafields)
-    fields[category] = list
-    data.fields      = list
-    data.category    = category
-    local sets       = data.sets or { }
+    local list    = setmetatableindex({},implicitfields)
+    data.fields   = list
+    data.category = category
+    local sets    = data.sets or { }
     if data.virtual == nil then -- so false is valid
         data.virtual = specification.virtual
     end

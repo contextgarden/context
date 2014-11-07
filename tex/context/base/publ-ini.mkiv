@@ -95,9 +95,6 @@
 
 \installsimplecommandhandler \??btx {btx} \??btx
 
-% \setupbtx
-%   [\c!alternative=apa]
-
 % \newconstant\btxmode
 % \newconstant\btxnonemode
 % \newconstant\btxcitemode
@@ -106,7 +103,7 @@
 %D Loading variants:
 
 \let\currentbtxrenderingdefinition\empty
-\let\currentbtxalternative        \empty
+\let\currentbtxspecification      \empty
 
 \unexpanded\def\startbtxrenderingdefinitions[#1]%
   {\pushmacro\currentbtxrenderingdefinition
@@ -120,18 +117,14 @@
   {\ctxcommand{loadbtxdefinitionfile("#1")}}
 
 \appendtoks
-    \edef\currentbtxalternative{\btxparameter\c!alternative}%
-    \ifcsname\??btxrenderingdefinition\currentbtxalternative\endcsname
+    \edef\currentbtxspecification{\btxparameter\c!specification}%
+    \ifcsname\??btxrenderingdefinition\currentbtxspecification\endcsname
         % maybe fall back on apa ?
     \else
-        \loadbtxdefinitionfile[\currentbtxalternative]%
-        \showmessage\m!publications{14}{\currentbtxalternative}%
+        \loadbtxdefinitionfile[\currentbtxspecification]%
+        \showmessage\m!publications{14}{\currentbtxspecification}%
     \fi
 \to \everysetupbtx
-
-\def\btx_set_rendering_alternative
-  {\edef\currentbtxalternative{\btxparameter\c!alternative}%
-   \ctxcommand{setbtxspecification("\currentbtxalternative")}}
 
 % a dedicated construction mechanism
 
@@ -637,7 +630,7 @@
   {\begingroup
    \edef\currentbtxcategory{\btxfield{category}}%
    \ignorespaces
-   \edef\currentbtxsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
+   \edef\currentbtxsetup{\s!btx:\currentbtxspecification:\currentbtxcategory}%
    \doifsetupselse\currentbtxsetup
      \btx_entry_inject_yes
      \btx_entry_inject_nop
@@ -667,7 +660,7 @@
   {\begingroup
    \def\currentbtxtag{#1}%
    \ignorespaces
-   \fastsetup{\s!btx:\currentbtxalternative:\currentbtxcategory}%
+   \fastsetup{\s!btx:\currentbtxspecification:\currentbtxcategory}%
    \removeunwantedspaces
    \endgroup}
 
@@ -734,7 +727,8 @@
   {\startbtxrendering[\currentbtxrendering]%
    % \fastsetup{\btxrenderingparameter\c!setups}% specific initializations
    % \determinelistcharacteristics[\currentbtxrendering]%
-     \btx_set_rendering_alternative
+     \edef\currentbtxspecification{\btxrenderingparameter\c!specification}%
+     \ctxcommand{setbtxspecification("\currentbtxspecification")}%
      \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
      \uselanguageparameter\btxdatasetparameter % new
      \let\currentlist\s!btx
@@ -1262,44 +1256,13 @@
 
 %D In-text entries:
 
-% \unexpanded\def\placecitation
-%   {\dodoubleempty\publ_place_citation}
-%
-% \unexpanded\def\publ_place_citation
-%   {\ifsecondargument
-%      \expandafter\publ_place_citation_two
-%    \else\iffirstargument
-%      \doubleexpandafter\publ_place_citation_one
-%    \else
-%      \doubleexpandafter\publ_place_citation_zero
-%    \fi\fi}
-%
-% \unexpanded\def\publ_place_citation_one[#1][#2]%
-%   {\publ_place_citation_two[\currentbtxrendering][#1]}
-%
-% \unexpanded\def\publ_place_citation_two[#1][#2]%
-%   {\dontleavehmode
-%    \begingroup
-%      \startbtxrendering[#1]%
-%      \btx_set_rendering_alternative
-%      \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
-%      \uselanguageparameter\btxdatasetparameter % new
-%      \ctxcommand{btxflushlistentry{ dataset = "\currentbtxdataset", reference = \!!bs#2\!!es }}%
-%      \btxcitereference % we need a proper setup
-%      \stopbtxrendering
-%    \endgroup}
-%
-% \unexpanded\def\publ_place_citation_zero[#1][#2]%
-%   {\btxmissing{??}}
-%
-% \let\btxhandlelisttextentry\btx_entry_inject
-
 \unexpanded\def\placecitation{\citation[entry]} % [#1]
 
 \unexpanded\def\btxhandleciteentry
   {\dontleavehmode
    \begingroup
-   \btx_set_rendering_alternative
+   \edef\currentbtxspecification{\btxcitevariantparameter\c!specification}%
+   \ctxcommand{setbtxspecification("\currentbtxspecification")}%
    \btxcitereference
    \btx_entry_inject
    \endgroup}
@@ -1374,7 +1337,8 @@
   [\v!standard]
 
 \setupbtxrendering
-  [\c!dataset=\v!standard,
+  [\c!specification=\btxparameter\c!specification,
+   \c!dataset=\v!standard,
    \c!repeat=\v!no,
    \c!continue=\v!no,
    \c!method=\v!global,
@@ -1397,10 +1361,10 @@
 
 \setupbtxlistvariant
   [\c!namesep={,\space},
-   \c!lastnamesep={,\space\btxlabeltext{\currentbtxalternative:and}\space},
-   \c!finalnamesep={,\space\btxlabeltext{\currentbtxalternative:and}\space},
+   \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
+   \c!finalnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
    \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{\currentbtxalternative:others}},
+   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
    \c!juniorsep=\space,
    \c!vonsep=\space,
    \c!initialsep=\space,  % between initials and lastname
@@ -1423,11 +1387,12 @@
   [author]
 
 \setupbtxcitevariant
-  [\c!namesep={,\space},
-   \c!lastnamesep={,\space\btxlabeltext{\currentbtxalternative:and}\space},
-   \c!finalnamesep={,\space\btxlabeltext{\currentbtxalternative:and}\space},
+  [\c!specification=\btxparameter\c!specification,
+   \c!namesep={,\space},
+   \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
+   \c!finalnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
    \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{\currentbtxalternative:others}},
+   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
    \c!juniorsep=\space,
    \c!vonsep=\space,
    \c!initialsep=\space,
@@ -1444,8 +1409,8 @@
  % \c!setups=btx:cite:initialize,
    \c!alternative=num,
    \c!pubsep={,\space},
-   \c!lastpubsep={\space\btxlabeltext{\currentbtxalternative:and}\space},
-   \c!finalpubsep={\space\btxlabeltext{\currentbtxalternative:and}\space},
+   \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
+   \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
    \c!sorttype=,
    \c!compress=\v!no,
    \c!inbetween=\space,
@@ -1584,7 +1549,7 @@
 \loadbtxdefinitionfile[author]
 
 \setupbtx
-  [\c!alternative=apa]
+  [\c!specification=apa]
 
 % \letvalue{\??btxrenderingdefinition apa}\undefined % we will reload at runtime
 

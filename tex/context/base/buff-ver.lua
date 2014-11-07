@@ -739,24 +739,30 @@ end
 -- match but slower when there is no match. But anyway, we need a more clever
 -- parser so we use lpeg.
 --
--- [[\text ]]  [[\text{}]]  [[\text \text ]]  [[\text \\ \text ]]
+-- [[\text ]]  [[\text{}]]  [[\foo\bar .tex]] [[\text \text ]]  [[\text \\ \text ]]
 --
 -- needed in e.g. tabulate (manuals)
 
-local compact_all      = Cs((P("\\") * ((1-S("\\ "))^1) * (P(" ")/"") * (P(-1) + S("[{")) + 1)^0)
-local compact_absolute = Cs((P("\\") * ((1-S("\\ [{.,-_"))^1) * (P(" ")/"" * (S("[{\\.,-_"))) + 1) ^0)
-local compact_last     = Cs((P(" ")^1 * P(-1)/"" + 1)^0)
+local fences    = S([[[{]])
+local symbols   = S([[!#"$%&'*()+,-./:;<=>?@[]^_`{|}~]])
+local space     = S([[ ]])
+local backslash = S([[\]])
+local nospace   = space^1/""
+local endstring = P(-1)
+
+local compactors = {
+    [v_all]      = Cs((backslash * (1-backslash-space)^1 * nospace * (endstring + fences) + 1)^0),
+    [v_absolute] = Cs((backslash * (1-symbols  -space)^1 * nospace * (symbols+backslash) + 1) ^0),
+    [v_last]     = Cs((space^1   * endstring/"" + 1)^0),
+}
 
 function commands.typestring(settings)
     local content = settings.data
     if content and content ~= "" then
-        local compact = settings.compact
-        if compact == v_all then
-            content = lpegmatch(compact_all,content)
-        elseif compact == v_absolute then
-            content = lpegmatch(compact_absolute,content)
-        elseif compact == v_last then
-            content = lpegmatch(compact_last,content)
+        local compact   = settings.compact
+        local compactor = compact and compactors[compact]
+        if compactor then
+            content = lpegmatch(compactor,content)
         end
      -- content = decodecomment(content)
      -- content = dotabs(content,settings)

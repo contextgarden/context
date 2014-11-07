@@ -377,6 +377,7 @@ local function filtercollected(specification)
     specification.numbers   = numbers
     specification.depth     = depth
     specification.block     = block
+    specification.all       = all
     --
     if trace_lists then
         report_lists("filtering names %,t, criterium %a, block %a",sortedkeys(names), criterium, block or "*")
@@ -640,10 +641,14 @@ filters[v_local] = function(specification)
     elseif autosectiondepth(numbers) == 0 then
         specification.nested    = false
         specification.criterium = v_all
+     -- return filtercollected(specification) -- rechecks, so better
+        specification.all       = true
+        specification.block     = false
         return filters[v_all](specification)
     else
         specification.nested    = false
         specification.criterium = v_current
+     -- return filtercollected(specification) -- rechecks, so better
         return filters[v_current](specification)
     end
 end

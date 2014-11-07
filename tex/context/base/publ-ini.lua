@@ -883,6 +883,15 @@ end
 
 do
 
+    -- if there is no specification then we're in trouble but there is
+    -- always a default anyway
+    --
+    -- there's also always a fields table but it can be empty due to
+    -- lack of specifications
+    --
+    -- then there can be cases where we have no specification for instance
+    -- when we have a special kind of database
+
     local function permitted(category,field)
         local catspec = currentspecificationcategories[category]
         if not catspec then
@@ -895,7 +904,8 @@ do
             return false
         end
         local kind = fields[field]
-        if ignoredfields and kind == "optional" and ignoredfields[field] then
+     -- if ignoredfields and kind == "optional" and ignoredfields[field] then
+        if ignoredfields and ignoredfields[field] then
             return false
         else
             local sets = catspec.sets
@@ -973,6 +983,31 @@ do
         end
     end
 
+    function commands.btxfield(name,tag,field)
+        local dataset = rawget(datasets,name)
+        if dataset then
+            local fields = dataset.luadata[tag]
+            if fields then
+                local category = fields.category
+                if permitted(category,field) then
+                    local manipulator, field = splitmanipulation(field)
+                    local value = fields[field]
+                    if type(value) == "string" then
+                        context(manipulator and applymanipulation(manipulator,value) or value)
+                    else
+                        report("%s %s %a in category %a for tag %a in dataset %a","unknown","field",field,category,tag,name)
+                    end
+                else
+                    report("%s %s %a in category %a for tag %a in dataset %a","invalid","field",field,category,tag,name)
+                end
+            else
+                report("unknown tag %a in dataset %a",tag,name)
+            end
+        else
+            report("unknown dataset %a",name)
+        end
+    end
+
     function commands.btxdetail(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
@@ -1003,31 +1038,6 @@ do
         end
     end
 
-    function commands.btxfield(name,tag,field)
-        local dataset = rawget(datasets,name)
-        if dataset then
-            local fields = dataset.luadata[tag]
-            if fields then
-                local category = fields.category
-                if permitted(category,field) then
-                    local manipulator, field = splitmanipulation(field)
-                    local value = fields[field]
-                    if type(value) == "string" then
-                        context(manipulator and applymanipulation(manipulator,value) or value)
-                    else
-                        report("%s %s %a in category %a for tag %a in dataset %a","unknown","field",field,category,tag,name)
-                    end
-                else
-                    report("%s %s %a in category %a for tag %a in dataset %a","invalid","field",field,category,tag,name)
-                end
-            else
-                report("unknown tag %a in dataset %a",tag,name)
-            end
-        else
-            report("unknown dataset %a",name)
-        end
-    end
-
     local function okay(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
@@ -1036,7 +1046,6 @@ do
                 local category = fields.category
                 local valid    = permitted(category,field)
                 if valid then
---         print("!!!!!!",found(dataset,tag,field,valid,fields))
                     return found(dataset,tag,field,valid,fields)
                 end
             end

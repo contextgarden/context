@@ -24,30 +24,36 @@
 \unexpanded\def\showbtxdatasetcompleteness{\dosingleempty\publ_show_dataset_completeness}
 \unexpanded\def\showbtxfields             {\dosingleempty\publ_show_fields}
 
-\def\publ_show_dataset_fields[#1]%
+\def\publ_show_dataset_whatever#1[#2]%
   {\begingroup
-   \getdummyparameters[\c!type=apa,\c!dataset=\currentbtxdataset,#1]%
-   \ctxcommand{showbtxdatasetfields{
+   \setdummyparameter\c!specification{\btxparameter\c!specification}%
+   \setdummyparameter\c!dataset      {\currentbtxdataset}%
+   \iffirstargument
+     \doifassignmentelse{#2}
+       {\getdummyparameters[#2]}%
+       {\setdummyparameter\c!dataset{#2}}%
+   \else
+     \getdummyparameters[#2]%
+   \fi
+   \ctxcommand{#1{
       dataset = "\dummyparameter\c!dataset",
-      kind    = "\dummyparameter\c!type"
+      kind    = "\dummyparameter\c!specification"
    }}%
    \endgroup}
 
-\def\publ_show_dataset_completeness[#1]%
-  {\begingroup
-   \getdummyparameters[\c!type=apa,\c!dataset=\currentbtxdataset,#1]%
-   \ctxcommand{showbtxdatasetcompleteness{
-      dataset = "\dummyparameter\c!dataset",
-      kind    = "\dummyparameter\c!type"
-   }}%
-   \endgroup}
+\def\publ_show_dataset_fields      {\publ_show_dataset_whatever{showbtxdatasetfields}}
+\def\publ_show_dataset_completeness{\publ_show_dataset_whatever{showbtxdatasetcompleteness}}
 
 \def\publ_show_fields[#1]%
   {\begingroup
-   \getdummyparameters[\c!type=apa,#1]%
+   \setdummyparameter\c!rotation{90}%
+   \doifassignmentelse{#1}
+     {\setdummyparameter\c!specification{\btxparameter\c!specification}%
+      \getdummyparameters[#1]}%
+     {\setdummyparameter\c!specification{#1}}%
    \ctxcommand{showbtxfields{
       rotation = "\dummyparameter\c!rotation",
-      kind     = "\dummyparameter\c!type"
+      kind     = "\dummyparameter\c!specification"
    }}%
    \endgroup}
 
