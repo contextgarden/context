@@ -850,7 +850,7 @@
 % \stopsetups
 
 \startsetups[\??listrenderings:generic]
-\typo_injectors_check_list
+    \typo_injectors_check_list
     \listparameter\c!before % can be \hskip
     \edef\p_command{\listalternativeparameter\c!command}
     \ifx\p_command\empty
@@ -858,7 +858,7 @@
         \vbox {
             \forgetall
             \noindent % otherwise annotations are mirrored up
-\typo_injectors_mark_list
+            \typo_injectors_mark_list
             \hbox \strc_lists_get_reference_attribute\v!all {
                 \ifconditional\c_lists_show_number
                   % \ifconditional\c_lists_has_page
@@ -899,8 +899,8 @@
 
 \startsetups[\??listrenderings:abc]
     \endgraf % are we grouped?
-% \advance % yes or no ... \rightskip is also honored
-\typo_injectors_check_list
+    \typo_injectors_check_list
+  % \advance % yes or no ... \rightskip is also honored
     \leftskip\listparameter\c!margin % after \endgraf !
     \listparameter\c!before
     \endgraf
@@ -920,7 +920,7 @@
         \fi
     \fi\fi
     \noindent % otherwise annotations are mirrored up
-\typo_injectors_mark_list
+    \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \setlocalhsize
         \hsize\localhsize
@@ -1101,9 +1101,9 @@
 \stopsetups
 
 \startsetups[\??listrenderings:e]
-\typo_injectors_check_list
+    \typo_injectors_check_list
     \noindent % otherwise annotations are mirrored up
-\typo_injectors_mark_list
+    \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \letlistparameter\c!depth\zeropoint
         \letlistparameter\c!color\empty
@@ -1123,9 +1123,9 @@
 \stopsetups
 
 \startsetups[\??listrenderings:f]
-\typo_injectors_check_list
+    \typo_injectors_check_list
     \noindent % otherwise annotations are mirrored up
-\typo_injectors_mark_list
+    \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \dosetraggedhbox{\listparameter\c!align}%
         \raggedbox {
@@ -1143,9 +1143,9 @@
 \stopsetups
 
 \startsetups[\??listrenderings:g]
-\typo_injectors_check_list
+    \typo_injectors_check_list
     \noindent % otherwise annotations are mirrored up
-\typo_injectors_mark_list
+    \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \midaligned {
             \strc_lists_set_style_color\c!style\c!color\v!all
@@ -1166,22 +1166,31 @@
 
 \definelistalternative
   [\v!interactive]
-  [\c!renderingsetup=\??listrenderings:interactive]
+  [\c!renderingsetup=\??listrenderings:interactive,
+   \c!before=\endgraf, % new per 2014-11-08
+   \c!after=\endgraf]  % new per 2014-11-08
 
 \startsetups[\??listrenderings:interactive]
-   \edef\p_command{\listalternativeparameter\c!command}%
-   \ifx\p_command\empty
-       [\currentlist: \currentlistentrynumber\space -- \currentlistentrytitle\space -- \currentlistentrypagenumber]%
-   \else
-\typo_injectors_check_list
-       \listparameter\c!before
-       \noindent % otherwise annotations are mirrored up
-\typo_injectors_mark_list
-       \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
-           \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
-       }
-       \listparameter\c!after
-   \fi
+    \edef\p_command{\listalternativeparameter\c!command}%
+    \typo_injectors_check_list
+    \listparameter\c!before
+    \noindent % otherwise annotations are mirrored up
+    \typo_injectors_mark_list
+    \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
+        \ifx\p_command\empty
+            [
+                \currentlist:\space
+                \currentlistentrynumber
+                \space\emdash\space
+                \currentlistentrytitle
+                \space\emdash\space
+                \currentlistentrypagenumber
+            ]
+        \else
+            \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
+        \fi
+   }
+   \listparameter\c!after
 \stopsetups
 
 %D List elements are packaged in such a way that we can click on them

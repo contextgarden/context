@@ -908,6 +908,7 @@ do
         if ignoredfields and ignoredfields[field] then
             return false
         else
+            --- just "return true" as it's already in fields
             local sets = catspec.sets
             return sets and sets[field] or true
         end
@@ -955,6 +956,36 @@ do
                 end
             end
         end
+    end
+
+    local function get(name,tag,field,what)
+        local dataset = rawget(datasets,name)
+        if dataset then
+            local fields = dataset.luadata[tag]
+            if fields then
+                local category = fields.category
+                local catspec = currentspecificationcategories[category]
+                if not catspec then
+                    return false
+                end
+                local fields = catspec.fields
+                if fields then
+                    local kind = fields[field]
+                    if kind then
+                        return what and kind or field
+                    end
+                end
+            end
+        end
+        return ""
+    end
+
+    function commands.btxfieldname(name,tag,field)
+        return context(get(name,tag,field))
+    end
+
+    function commands.btxfieldtype(name,tag,field)
+        return context(get(name,tag,field,true))
     end
 
     function commands.btxflush(name,tag,field)

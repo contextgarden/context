@@ -400,8 +400,10 @@
 
 \def\btxfield      #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
 \def\btxdetail     #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxauthorfield#1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
 \def\btxflush      #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfieldname  #1{\ctxcommand{btxfieldname("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfieldtype  #1{\ctxcommand{btxfieldtype("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxauthorfield#1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
 \def\btxdoifelse   #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
 \def\btxdoif       #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
 \def\btxdoifnot    #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}

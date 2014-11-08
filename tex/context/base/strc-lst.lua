@@ -407,12 +407,17 @@ filters[v_intro] = function(specification)
     local collected = specification.collected
     local result    = { }
     local nofresult = #result
+    local all       = specification.all
+    local names     = specification.names
     for i=1,#collected do
         local v = collected[i]
-        local r = v.references
-        if r and r.section == 0 then
-            nofresult = nofresult + 1
-            result[nofresult] = v
+        local metadata = v.metadata
+        if metadata and (all or names[metadata.name or false]) then
+            local r = v.references
+            if r and r.section == 0 then
+                nofresult = nofresult + 1
+                result[nofresult] = v
+            end
         end
     end
     return result
@@ -437,14 +442,12 @@ filters[v_reference] = function(specification)
                 local r = v.references
                 if r and (not block or not r.block or block == r.block) then
                     local metadata = v.metadata
-                    if metadata then
-                        if names[metadata.name or false] then
-                            local sectionnumber = (r.section == 0) or sections[r.section]
-                            if sectionnumber then
-                                if matchingtilldepth(depth,numbers,sectionnumber.numbers) then
-                                    nofresult = nofresult + 1
-                                    result[nofresult] = v
-                                end
+                    if metadata and names[metadata.name or false] then
+                        local sectionnumber = (r.section == 0) or sections[r.section]
+                        if sectionnumber then
+                            if matchingtilldepth(depth,numbers,sectionnumber.numbers) then
+                                nofresult = nofresult + 1
+                                result[nofresult] = v
                             end
                         end
                     end
@@ -625,10 +628,33 @@ filters[v_previous] = function(specification)
 end
 
 filters[v_local] = function(specification)
+    local nested    = nesting[#nesting]
+    local criterium = nested and nested.name
+    if nested and criterium then
+     -- nested    = nested
+     -- criterium = nested.name
+    elseif autosectiondepth(specification.numbers) == 0 then
+        nested    = false
+        criterium = v_all
+    else
+        nested    = false
+        criterium = v_current
+    end
+    return filtercollected {
+        names     = specification.names,
+        criterium = criterium,
+        reference = nested.number,
+        collected = specification.collected,
+        forced    = specification.forced,
+        nested    = nested,
+        sortorder = specification.sortorder,
+    }
+end
+
+filters[v_local] = function(specification)
     local numbers = specification.numbers
     local nested  = nesting[#nesting]
     if nested then
-        -- filtercollected(names,nested.name,nested.number,collected,forced,nested,sortorder)
         return filtercollected {
             names     = specification.names,
             criterium = nested.name,
@@ -638,20 +664,13 @@ filters[v_local] = function(specification)
             nested    = nested,
             sortorder = specification.sortorder,
         }
-    elseif autosectiondepth(numbers) == 0 then
-        specification.nested    = false
-        specification.criterium = v_all
-     -- return filtercollected(specification) -- rechecks, so better
-        specification.all       = true
-        specification.block     = false
-        return filters[v_all](specification)
     else
+        specification.criterium = autosectiondepth(numbers) == 0 and v_all or v_current
         specification.nested    = false
-        specification.criterium = v_current
-     -- return filtercollected(specification) -- rechecks, so better
-        return filters[v_current](specification)
+        return filtercollected(specification) -- rechecks, so better (for determining all)
     end
 end
+
 
 filters[v_component] = function(specification)
     -- special case, no structure yet
