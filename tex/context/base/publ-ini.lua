@@ -147,6 +147,20 @@ local ctx_btxstartsubcite         = context.btxstartsubcite
 local ctx_btxstopsubcite          = context.btxstopsubcite
 local ctx_btxlistsetup            = context.btxlistsetup
 
+local registeredcitevariants = publications.registeredcitevariants or allocate()
+local registeredlistvariants = publications.registeredlistvariants or allocate()
+
+storage.register("publications/registeredcitevariants", registeredcitevariants,"publications.registeredcitevariants")
+storage.register("publications/registeredlistvariants", registeredlistvariants,"publications.registeredlistvariants")
+
+function commands.registerbtxcitevariant(name,parent)
+    registeredcitevariants[name] = parent or ""
+end
+
+function commands.registerbtxlistvariant(name,parent)
+    registeredlistvariants[name] = parent or ""
+end
+
 local specifications                 = publications.specifications
 local currentspecification           = specifications[false]
 local currentspecificationfields     = currentspecification.fields
@@ -158,6 +172,9 @@ local function setspecification(name)
     currentspecification           = specifications[name]
     currentspecificationfields     = currentspecification.fields
     currentspecificationcategories = currentspecification.categories
+    if trace then
+        report("setting specification %a",type(name) == "string" and name or "anything")
+    end
 end
 
 publications.setspecification = setspecification
@@ -1752,7 +1769,7 @@ publications.citevariants = citevariants
 function commands.btxhandlecite(specification)
     local dataset   = specification.dataset or "" -- standard
     local reference = specification.reference
-    local variant   = specification.variant or "num"
+    local variant   = specification.variant or defaultvariant
     if not reference or reference == "" then
         return
     end
@@ -1937,6 +1954,7 @@ local function processcite(presets,specification)
     local setter     = specification.setter
     local compressor = specification.compressor
     --
+
     local reference  = publications.parenttag(dataset,reference)
     --
     local found, todo, list = findallused(dataset,reference,internal)
@@ -1950,8 +1968,8 @@ local function processcite(presets,specification)
             local entry    = found[i]
             local tag      = entry.userdata.btxref
             -- we can probably move the test into the flush
-            local category = luadata[tag].category
-            if currentspecificationfields[category][setup] then
+         -- local category = luadata[tag].category
+         -- if currentspecificationfields[category][setup] then
                 local internal = entry.references.internal
                 local data     = setter(dataset,tag,entry,internal)
                 if compress and not compressor then
@@ -1972,9 +1990,9 @@ local function processcite(presets,specification)
                 else
                     report("error in cite rendering %a",setup or "?")
                 end
-            else
-                report("cite rendering %a is not available for %a",setup,category)
-            end
+         -- else
+         --     report("cite rendering %a is not available for %a",setup,category)
+         -- end
         end
 
         local lefttext  = specification.lefttext
@@ -2089,15 +2107,29 @@ end)
 
 -- todo: just a sort key and then fetch normal by fieldname
 
--- default
+-- setmetatableindex(citevariants,function(t,k)
+--     local p = registeredcitevariants[k]
+--     local v = p and p ~= k and rawget(t,p) or defaultvariant
+--     t[k] = v
+--     return v
+-- end)
 
 setmetatableindex(citevariants,function(t,k)
-    local v = t.default
+    local p = registeredcitevariants[k]
+    local v = nil
+    if p and p ~= "" then
+        v = rawget(t,p)
+    end
+    if not v then
+        p = defaultvariant or "default"
+        v = rawget(t,p)
+    end
+    report_cite("variant %a falls back on %a",k,p)
     t[k] = v
     return v
 end)
 
-function citevariants.default(presets)
+function citevariants.default(presets) -- no longer used
     local variant = presets.variant
     processcite(presets,{
         setter = setters[variant],
@@ -2123,7 +2155,7 @@ do
     function citevariants.entry(presets)
         processcite(presets,{
             compress = false,
-            variant  = "entry",
+         -- variant  = presets.variant or "entry",
             setter   = setter,
             getter   = getter,
         })
@@ -2160,7 +2192,7 @@ do
     function citevariants.short(presets)
         processcite(presets,{
             compress = false,
-            variant  = "short",
+         -- variant  = presets.variant or "short",
             setter   = setter,
             getter   = getter,
         })
@@ -2196,7 +2228,7 @@ do
 
     function citevariants.page(presets)
         processcite(presets,{
-            variant = "page",
+         -- variant = presets.variant or "page",
             setter  = setter,
             getter  = getter,
         })
@@ -2225,7 +2257,7 @@ do
 
     function citevariants.num(presets)
         processcite(presets,{
-            variant = "num",
+         -- variant = presets.variant or "num",
             setter  = setter,
             getter  = getter,
         })
@@ -2254,7 +2286,7 @@ do
 
     function citevariants.year(presets)
         processcite(presets,{
-            variant = "year",
+         -- variant  = presets.variant or "year",
             setter  = setter,
             getter  = getter,
         })
@@ -2283,7 +2315,7 @@ do
 
     function citevariants.index(presets)
         processcite(presets,{
-            variant = "index",
+         -- variant  = presets.variant or "index",
             setter  = setter,
             getter  = getter,
         })
@@ -2291,7 +2323,7 @@ do
 
     function citevariants.serial(presets)
         processcite(presets,{
-            variant = "serial",
+         -- variant  = presets.variant or "serial",
             setter  = setter,
             getter  = getter,
         })
@@ -2318,7 +2350,7 @@ do
 
     function citevariants.category(presets)
         processcite(presets,{
-            variant = "serial",
+         -- variant  = presets.variant or "serial",
             setter  = setter,
             getter  = getter,
         })
@@ -2326,7 +2358,7 @@ do
 
     function citevariants.type(presets)
         processcite(presets,{
-            variant = "type",
+         -- variant  = presets.variant or "type",
             setter  = setter,
             getter  = getter,
         })
@@ -2662,20 +2694,4 @@ function listvariants.page(dataset,block,tag,variant,listindex)
             end
         end
     end
-end
-
--- tracers
-
-local citevariants = tracers.citevariants or allocate()
-local listvariants = tracers.listvariants or allocate()
-
-storage.register("publications/tracers/citevariants", citevariants,"publications.tracers.citevariants")
-storage.register("publications/tracers/listvariants", listvariants,"publications.tracers.listvariants")
-
-function commands.registerbtxcitevariant(name,parent)
-    citevariants[name] = parent or ""
-end
-
-function commands.registerbtxlistvariant(name,parent)
-    listvariants[name] = parent or ""
 end

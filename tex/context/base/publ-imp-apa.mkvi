@@ -10,7 +10,7 @@
 %C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
 %D by \PRAGMA. See mreadme.pdf for details.
 
-% Hans: what does the below mean? Just some wrapper (possible tracing and so) 
+% Hans: what does the below mean? Just some wrapper (possible tracing and so)
 % \loadbtxdefinitionfile[def]
 
 %D Instead of texdefinitions without arguments, we could have used setups but in my
@@ -48,7 +48,7 @@
    \c!lastnamesep={,\nobreakspace\textampersand\space},
    \c!finalnamesep={,\nobreakspace\textampersand\space},
    \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{\currentbtxalternative:others}},
+   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
    \c!juniorsep=\space,
    \c!vonsep=\space,
    \c!initialsep=\space,  % between initials and lastname
@@ -78,7 +78,7 @@
    \c!lastnamesep={,\nobreakspace\textampersand\space},
    \c!finalnamesep={\nobreakspace\textampersand\space}, % no comma!
    \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{\currentbtxalternative:others}},
+   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
    \c!juniorsep=\space,
    \c!vonsep=\space,
    \c!initialsep=\space,
@@ -95,8 +95,8 @@
  % \c!setups=btx:cite:initialize,
    \c!alternative=num,
    \c!pubsep={,\space},
-   \c!lastpubsep={\space\btxlabeltext{\currentbtxalternative:and}\space},
-   \c!finalpubsep={\space\btxlabeltext{\currentbtxalternative:and}\space},
+   \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
+   \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
    \c!sorttype=,
    \c!compress=\v!no,
    \c!inbetween=\space,
@@ -120,8 +120,8 @@
     \c!pubsep={;\space},
     \c!lastpubsep={;\space},
     \c!finalpubsep={;\space},
-    \c!lastnamesep={,\space\btxlabeltext{\currentbtxalternative:and}\space},
-    \c!finalnamesep={\space\btxlabeltext{\currentbtxalternative:and}\space}, % no comma!
+    \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
+    \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
     \c!authorconversion=\v!name]
 
 \definebtxcitevariant
@@ -132,8 +132,8 @@
     \c!pubsep={);\space},
     \c!lastpubsep={);\space},
     \c!finalpubsep={);\space},
-    \c!lastnamesep={,\space\btxlabeltext{\currentbtxalternative:and}\space},
-    \c!finalnamesep={\space\btxlabeltext{\currentbtxalternative:and}\space}, % no comma!
+    \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
+    \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
     \c!authorconversion=\v!name]
 
 % Should the following be loaded by default?

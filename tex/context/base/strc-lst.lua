@@ -628,37 +628,12 @@ filters[v_previous] = function(specification)
 end
 
 filters[v_local] = function(specification)
-    local nested    = nesting[#nesting]
-    local criterium = nested and nested.name
-    if nested and criterium then
-     -- nested    = nested
-     -- criterium = nested.name
-    elseif autosectiondepth(specification.numbers) == 0 then
-        nested    = false
-        criterium = v_all
-    else
-        nested    = false
-        criterium = v_current
-    end
-    return filtercollected {
-        names     = specification.names,
-        criterium = criterium,
-        reference = nested.number,
-        collected = specification.collected,
-        forced    = specification.forced,
-        nested    = nested,
-        sortorder = specification.sortorder,
-    }
-end
-
-filters[v_local] = function(specification)
     local numbers = specification.numbers
     local nested  = nesting[#nesting]
     if nested then
         return filtercollected {
             names     = specification.names,
             criterium = nested.name,
-            reference = nested.number,
             collected = specification.collected,
             forced    = specification.forced,
             nested    = nested,
@@ -711,6 +686,7 @@ filters[v_default] = function(specification) -- is named
     local numbers   = specification.numbers
     local sections  = sections.collected
     local reference = specification.reference
+    local nested    = specification.nested
     --
     if reference then
         reference = tonumber(reference)
@@ -724,7 +700,9 @@ filters[v_default] = function(specification) -- is named
     if parent then
         pnumbers = parent.numberdata.numbers or pnumbers -- so local as well as nested
         pblock   = parent.references.block or pblock
-        report_lists("filtering by block %a and section %a",pblock,criterium)
+        if trace_lists then
+            report_lists("filtering by block %a and section %a",pblock,criterium)
+        end
     end
     --
     for i=1,#collected do

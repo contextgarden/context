@@ -11,7 +11,11 @@ local specification = {
     -- derived (combinations of) fields (all share the same default set)
     --
     virtual = {
-        "authoryear", "authoryears", "authornum", "num", "suffix",
+        "authoryear",
+        "authoryears",
+        "authornum",
+        "num",
+        "suffix",
     },
     --
     -- special datatypes

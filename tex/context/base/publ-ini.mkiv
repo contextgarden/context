@@ -126,6 +126,32 @@
     \fi
 \to \everysetupbtx
 
+\unexpanded\def\publ_specification_push#1% local, don't override
+  {\pushmacro\currentbtxspecification
+   \edef\currentbtxspecification{#1}%
+   \ctxcommand{setbtxspecification("\currentbtxspecification")}}
+
+\unexpanded\def\publ_specification_pop
+  {\popmacro\currentbtxspecification
+   \ctxcommand{setbtxspecification("\currentbtxspecification")}}
+
+\unexpanded\def\publ_specification_set#1% beware: is global
+  {\edef\currentbtxspecification{#1}%
+   \ctxcommand{setbtxspecification("\currentbtxspecification")}}
+
+\appendtoks
+    \publ_specification_set{\btxparameter\c!specification}%
+\to \everysetupbtx
+
+\appendtoks
+    \publ_specification_set{\btxparameter\c!specification}%
+\to \everyjob
+
+\unexpanded\def\startusingbtxspecification[#1]%
+  {\publ_specification_push{#1}}
+
+\let\stopusingbtxspecification\publ_specification_pop
+
 % a dedicated construction mechanism
 
 \installcorenamespace {btxlist}
@@ -729,8 +755,7 @@
   {\startbtxrendering[\currentbtxrendering]%
    % \fastsetup{\btxrenderingparameter\c!setups}% specific initializations
    % \determinelistcharacteristics[\currentbtxrendering]%
-     \edef\currentbtxspecification{\btxrenderingparameter\c!specification}%
-     \ctxcommand{setbtxspecification("\currentbtxspecification")}%
+     \publ_specification_push{\btxrenderingparameter\c!specification}%
      \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
      \uselanguageparameter\btxdatasetparameter % new
      \let\currentlist\s!btx
@@ -768,6 +793,7 @@
        % this actually typesets them
        \ctxcommand{btxflushlistentries("\currentbtxdataset")}%
      \stoppacked
+     \publ_specification_pop
    \stopbtxrendering
    \global\advance\btxblock\plusone}
 
@@ -1130,6 +1156,7 @@
 \def\publ_cite_handle_variant_indeed[#1]%
   {\usebtxcitevariantstyleandcolor\c!style\c!color
    \uselanguageparameter\btxdatasetparameter % new
+   \publ_specification_push{\btxcitevariantparameter\c!specification}%
    \letbtxcitevariantparameter\c!alternative\currentbtxcitevariant
    \btxcitevariantparameter\v!left
    \ctxcommand{btxhandlecite{%
@@ -1147,6 +1174,7 @@
    }}%
    \btxcitevariantparameter\v!right
    \ctxcommand{flushmarked()}%
+   \publ_specification_pop
    \endgroup}
 
 \unexpanded\def\btxcitation
@@ -1263,10 +1291,10 @@
 \unexpanded\def\btxhandleciteentry
   {\dontleavehmode
    \begingroup
-   \edef\currentbtxspecification{\btxcitevariantparameter\c!specification}%
-   \ctxcommand{setbtxspecification("\currentbtxspecification")}%
+   \publ_specification_push{\btxcitevariantparameter\c!specification}%
    \btxcitereference
    \btx_entry_inject
+   \publ_specification_pop
    \endgroup}
 
 \startsetups \s!btx:\s!cite:entry

@@ -35,32 +35,32 @@ function tracers.showdatasetfields(settings)
         local kind       = settings.kind
         local fielddata  = kind and specifications[kind] or specifications.apa
         local categories = fielddata.categories
-        local fieldspecs = fielddata.fields
         ctx_starttabulate { "|lT|lT|pT|" }
             ctx_NC() ctx_bold("tag")
             ctx_NC() ctx_bold("category")
             ctx_NC() ctx_bold("fields")
             ctx_NC() ctx_NR()
             ctx_FL()
-            for k, v in sortedhash(luadata) do
-                local category = v.category
-                local fields   = fieldspecs[category] or { }
-                ctx_NC() context(k)
+            for tag, entry in sortedhash(luadata) do
+                local category = entry.category
+                local catedata = categories[category]
+                local fields   = catedata and catedata.fields or { }
+                ctx_NC() context(tag)
                 ctx_NC() context(category)
                 ctx_NC() -- grouping around colors needed
-                for k, v in sortedhash(v) do
-                    if privates[k] then
+                for key, value in sortedhash(entry) do
+                    if privates[key] then
                         -- skip
-                    elseif specials[k] then
-                        context("{\\darkblue %s} ",k)
+                    elseif specials[key] then
+                        context("{\\darkblue %s} ",key)
                     else
-                        local f = fields[k]
-                        if f == "required" then
-                            context("{\\darkgreen %s} ",k)
-                        elseif f == "optional" then
-                            context("{\\darkyellow %s} ",k)
+                        local kind = fields[key]
+                        if kind == "required" then
+                            context("{\\darkgreen %s} ",key)
+                        elseif kind == "optional" then
+                            context("{\\darkyellow %s} ",key)
                         else
-                            context("%s ",k)
+                            context("%s ",key)
                         end
                     end
                 end
@@ -77,7 +77,6 @@ function tracers.showdatasetcompleteness(settings)
     local kind       = settings.kind
     local fielddata  = kind and specifications[kind] or specifications.apa
     local categories = fielddata.categories
-    local fieldspecs = fielddata.fields
     local lpegmatch  = lpeg.match
     local texescape  = lpeg.patterns.texescape
 
@@ -164,7 +163,6 @@ function tracers.showdatasetcompleteness(settings)
                         local r = requiredfields[i]
                         local r = sets[r] or r
                         if type(r) == "table" then
-                            -- this has to be done differently now
                             local okay = false
                             for i=1,#r do
                                 local ri = r[i]
@@ -195,7 +193,6 @@ function tracers.showdatasetcompleteness(settings)
                         local o = optionalfields[i]
                         local o = sets[o] or o
                         if type(o) == "table" then
-                            -- this has to be done differently now
                             for i=1,#o do
                                 local oi = o[i]
                                 if rawget(entry,oi) then
@@ -239,36 +236,12 @@ function tracers.showfields(settings)
     local kind        = settings.kind
     local fielddata   = kind and specifications[kind] or specifications.apa
     local categories  = fielddata.categories
-    local fieldspecs  = fielddata.fields
     local validfields = { }
-    local function makevalid(list,sets)
-        for i=1,#list do
-            local li = list[i]
-            if sets and sets[li] then
-                -- ignore
-            elseif type(li) == "table" then
-                for i=1,#li do
-                    validfields[li[i]] = true
-                end
-            elseif li then
-                validfields[li] = true
-            else
-             -- report("fatal error in showfields")
-            end
-        end
-    end
-    for category, fields in next, categories do
-        local sets = fields.sets
+    for category, data in next, categories do
+        local sets   = data.sets
+        local fields = data.fields
         for name, list in next, fields do
-            if list == sets then
-                for k, v in next, list do
-                    makevalid(v,sets)
-                end
-            elseif list then
-                makevalid(list,sets)
-            else
-                -- can be false
-            end
+            validfields[name] = true
         end
     end
     local s_categories = sortedkeys(categories)
@@ -296,7 +269,7 @@ function tracers.showfields(settings)
         ctx_bold(field)
         for j=1,#s_categories do
             ctx_NC()
-            local kind = fieldspecs[s_categories[j]][field]
+            local kind = categories[s_categories[j]].fields[field]
             if kind == "required" then
                 context("\\darkgreen*")
             elseif kind == "optional" then
