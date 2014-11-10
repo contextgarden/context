@@ -38,6 +38,7 @@ local trace_processing    = false  registertracker("math.processing",  function(
 local trace_analyzing     = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
 local trace_normalizing   = false  registertracker("math.normalizing", function(v) trace_normalizing = v end)
 local trace_collapsing    = false  registertracker("math.collapsing",  function(v) trace_collapsing  = v end)
+local trace_patching      = false  registertracker("math.patching",    function(v) trace_patching    = v end)
 local trace_goodies       = false  registertracker("math.goodies",     function(v) trace_goodies     = v end)
 local trace_variants      = false  registertracker("math.variants",    function(v) trace_variants    = v end)
 local trace_alternates    = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
@@ -50,6 +51,7 @@ local report_processing   = logreporter("mathematics","processing")
 local report_remapping    = logreporter("mathematics","remapping")
 local report_normalizing  = logreporter("mathematics","normalizing")
 local report_collapsing   = logreporter("mathematics","collapsing")
+local report_patching     = logreporter("mathematics","patching")
 local report_goodies      = logreporter("mathematics","goodies")
 local report_variants     = logreporter("mathematics","variants")
 local report_alternates   = logreporter("mathematics","alternates")
@@ -175,10 +177,10 @@ local function process(start,what,n,parent)
         elseif id == math_char or id == math_textchar or id == math_delim then
             break
         elseif id == math_noad then
--- if prev then
---     -- we have no proper prev in math nodes yet
---     setfield(start,"prev",prev)
--- end
+if prev then
+    -- we have no proper prev in math nodes yet
+    setfield(start,"prev",prev)
+end
 
             local noad = getfield(start,"nucleus")      if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"sup")          if noad then process(noad,what,n,start) end -- list
@@ -522,129 +524,6 @@ function handlers.resize(head,style,penalties)
     return true
 end
 
-local collapse = { } processors.collapse = collapse
-
-local mathpairs = characters.mathpairs
-
-mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034, [0x2034] = 0x2057 } -- (prime,prime) (prime,doubleprime) (prime,tripleprime)
-mathpairs[0x2033] = { [0x2032] = 0x2034, [0x2033] = 0x2057 }                    -- (doubleprime,prime) (doubleprime,doubleprime)
-mathpairs[0x2034] = { [0x2032] = 0x2057 }                                       -- (tripleprime,prime)
-
-mathpairs[0x2035] = { [0x2035] = 0x2036, [0x2036] = 0x2037 }                    -- (reversedprime,reversedprime) (reversedprime,doublereversedprime)
-mathpairs[0x2036] = { [0x2035] = 0x2037 }                                       -- (doublereversedprime,reversedprime)
-
-mathpairs[0x222B] = { [0x222B] = 0x222C, [0x222C] = 0x222D }
-mathpairs[0x222C] = { [0x222B] = 0x222D }
-
-mathpairs[0x007C] = { [0x007C] = 0x2016, [0x2016] = 0x2980 } -- bar+bar=double bar+double=triple
-mathpairs[0x2016] = { [0x007C] = 0x2980 }                    -- double+bar=triple
-
-local movesub = {
-    -- primes
-    [0x2032] = 0xFE932,
-    [0x2033] = 0xFE933,
-    [0x2034] = 0xFE934,
-    [0x2057] = 0xFE957,
-    -- reverse primes
-    [0x2035] = 0xFE935,
-    [0x2036] = 0xFE936,
-    [0x2037] = 0xFE937,
-}
-
-local validpair = {
-    [noad_rel]             = true,
-    [noad_ord]             = true,
-    [noad_opdisplaylimits] = true,
-    [noad_oplimits]        = true,
-    [noad_opnolimits]      = true,
-}
-
-local function movesubscript(parent,current_nucleus,current_char)
-    local prev = getfield(parent,"prev")
-    if prev and getid(prev) == math_noad then
-        if not getfield(prev,"sup") and not getfield(prev,"sub") then
-            setfield(current_nucleus,"char",movesub[current_char or getchar(current_nucleus)])
-            -- {f} {'}_n => f_n^'
-            local nucleus = getfield(parent,"nucleus")
-            local sub     = getfield(parent,"sub")
-            local sup     = getfield(parent,"sup")
-            setfield(prev,"sup",nucleus)
-            setfield(prev,"sub",sub)
-            local dummy = copy_node(nucleus)
-            setfield(dummy,"char",0)
-            setfield(parent,"nucleus",dummy)
-            setfield(parent,"sub",nil)
-            if trace_collapsing then
-                report_collapsing("fixing subscript")
-            end
-        end
-    end
-end
-
-local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
-    if parent then
-        if validpair[getsubtype(parent)] then
-            local current_nucleus = getfield(parent,"nucleus")
-            if getid(current_nucleus) == math_char then
-                local current_char = getchar(current_nucleus)
-                if not getfield(parent,"sub") and not getfield(parent,"sup") then
-                    local mathpair = mathpairs[current_char]
-                    if mathpair then
-                        local next_noad = getnext(parent)
-                        if next_noad and getid(next_noad) == math_noad then
-                            if validpair[getsubtype(next_noad)] then
-                                local next_nucleus = getfield(next_noad,"nucleus")
-                                if getid(next_nucleus) == math_char then
-                                    local next_char = getchar(next_nucleus)
-                                    local newchar = mathpair[next_char]
-                                    if newchar then
-                                        local fam = getfield(current_nucleus,"fam")
-                                        local id = font_of_family(fam)
-                                        local characters = fontcharacters[id]
-                                        if characters and characters[newchar] then
-                                            if trace_collapsing then
-                                                report_collapsing("%U + %U => %U",current_char,next_char,newchar)
-                                            end
-                                            setfield(current_nucleus,"char",newchar)
-                                            local next_next_noad = getnext(next_noad)
-                                            if next_next_noad then
-                                                setfield(parent,"next",next_next_noad)
-                                                setfield(next_next_noad,"prev",parent)
-                                            else
-                                                setfield(parent,"next",nil)
-                                            end
-                                            setfield(parent,"sup",getfield(next_noad,"sup"))
-                                            setfield(parent,"sub",getfield(next_noad,"sub"))
-                                            setfield(next_noad,"sup",nil)
-                                            setfield(next_noad,"sub",nil)
-                                            free_node(next_noad)
-                                            collapsepair(pointer,what,n,parent,true)
-                                            if not nested and movesub[current_char] then
-                                                movesubscript(parent,current_nucleus)
-                                            end
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    elseif not nested and movesub[current_char] then
-                        movesubscript(parent,current_nucleus,current_char)
-                    end
-                elseif not nested and movesub[current_char] then
-                    movesubscript(parent,current_nucleus,current_char)
-                end
-            end
-        end
-    end
-end
-
-collapse[math_char] = collapsepair
-
-function noads.handlers.collapse(head,style,penalties)
-    processnoads(head,collapse,"collapse")
-    return true
-end
-
 -- normalize scripts
 
 local unscript = { }  noads.processors.unscript = unscript
@@ -904,6 +783,12 @@ local function getcorrection(method,font,char) -- -- or character.italic -- (thi
 
 end
 
+local setcolor     = nodes.tracers.colors.set
+local resetcolor   = nodes.tracers.colors.reset
+local italic_kern  = new_kern
+local c_positive_d = "trace:db"
+local c_negative_d = "trace:dr"
+
 local function insert_kern(current,kern)
     local sub  = new_node(math_sub) -- todo: pool
     local noad = new_node(math_noad) -- todo: pool
@@ -912,12 +797,6 @@ local function insert_kern(current,kern)
     setfield(noad,"nucleus",current)
     return sub
 end
-
-local setcolor     = nodes.tracers.colors.set
-local resetcolor   = nodes.tracers.colors.reset
-local italic_kern  = new_kern
-local c_positive_d = "trace:db"
-local c_negative_d = "trace:dr"
 
 registertracker("math.italics", function(v)
     if v then
@@ -1047,6 +926,133 @@ end
 
 function mathematics.resetitalics()
     texsetattribute(a_mathitalics,unsetvalue)
+end
+
+-- primes and such
+
+local collapse = { } processors.collapse = collapse
+
+local mathpairs = characters.mathpairs
+
+mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034, [0x2034] = 0x2057 } -- (prime,prime) (prime,doubleprime) (prime,tripleprime)
+mathpairs[0x2033] = { [0x2032] = 0x2034, [0x2033] = 0x2057 }                    -- (doubleprime,prime) (doubleprime,doubleprime)
+mathpairs[0x2034] = { [0x2032] = 0x2057 }                                       -- (tripleprime,prime)
+
+mathpairs[0x2035] = { [0x2035] = 0x2036, [0x2036] = 0x2037 }                    -- (reversedprime,reversedprime) (reversedprime,doublereversedprime)
+mathpairs[0x2036] = { [0x2035] = 0x2037 }                                       -- (doublereversedprime,reversedprime)
+
+mathpairs[0x222B] = { [0x222B] = 0x222C, [0x222C] = 0x222D }
+mathpairs[0x222C] = { [0x222B] = 0x222D }
+
+mathpairs[0x007C] = { [0x007C] = 0x2016, [0x2016] = 0x2980 } -- bar+bar=double bar+double=triple
+mathpairs[0x2016] = { [0x007C] = 0x2980 }                    -- double+bar=triple
+
+local movesub = {
+    -- primes
+    [0x2032] = 0xFE932,
+    [0x2033] = 0xFE933,
+    [0x2034] = 0xFE934,
+    [0x2057] = 0xFE957,
+    -- reverse primes
+    [0x2035] = 0xFE935,
+    [0x2036] = 0xFE936,
+    [0x2037] = 0xFE937,
+}
+
+local validpair = {
+    [noad_rel]             = true,
+    [noad_ord]             = true,
+    [noad_opdisplaylimits] = true,
+    [noad_oplimits]        = true,
+    [noad_opnolimits]      = true,
+}
+
+local function movesubscript(parent,current_nucleus,current_char)
+    local prev = getfield(parent,"prev")
+    if prev and getid(prev) == math_noad then
+        if not getfield(prev,"sup") and not getfield(prev,"sub") then
+            setfield(current_nucleus,"char",movesub[current_char or getchar(current_nucleus)])
+            -- {f} {'}_n => f_n^'
+            local nucleus = getfield(parent,"nucleus")
+            local sub     = getfield(parent,"sub")
+            local sup     = getfield(parent,"sup")
+            setfield(prev,"sup",nucleus)
+            setfield(prev,"sub",sub)
+            local dummy = copy_node(nucleus)
+            setfield(dummy,"char",0)
+            setfield(parent,"nucleus",dummy)
+            setfield(parent,"sub",nil)
+            if trace_collapsing then
+                report_collapsing("fixing subscript")
+            end
+        end
+    end
+end
+
+local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
+    if parent then
+        if validpair[getsubtype(parent)] then
+            local current_nucleus = getfield(parent,"nucleus")
+            if getid(current_nucleus) == math_char then
+                local current_char = getchar(current_nucleus)
+                if not getfield(parent,"sub") and not getfield(parent,"sup") then
+                    local mathpair = mathpairs[current_char]
+                    if mathpair then
+                        local next_noad = getnext(parent)
+                        if next_noad and getid(next_noad) == math_noad then
+                            if validpair[getsubtype(next_noad)] then
+                                local next_nucleus = getfield(next_noad,"nucleus")
+                                local next_char    = getchar(next_nucleus)
+                                if getid(next_nucleus) == math_char then
+                                    local newchar = mathpair[next_char]
+                                    if newchar then
+                                        local fam        = getfield(current_nucleus,"fam")
+                                        local id         = font_of_family(fam)
+                                        local characters = fontcharacters[id]
+                                        if characters and characters[newchar] then
+                                            if trace_collapsing then
+                                                report_collapsing("%U + %U => %U",current_char,next_char,newchar)
+                                            end
+                                            setfield(current_nucleus,"char",newchar)
+                                            local next_next_noad = getnext(next_noad)
+                                            if next_next_noad then
+                                                setfield(parent,"next",next_next_noad)
+                                                setfield(next_next_noad,"prev",parent)
+                                            else
+                                                setfield(parent,"next",nil)
+                                            end
+                                            setfield(parent,"sup",getfield(next_noad,"sup"))
+                                            setfield(parent,"sub",getfield(next_noad,"sub"))
+                                            setfield(next_noad,"sup",nil)
+                                            setfield(next_noad,"sub",nil)
+                                            free_node(next_noad)
+                                            collapsepair(pointer,what,n,parent,true)
+                                            if not nested and movesub[current_char] then
+                                                movesubscript(parent,current_nucleus,current_char)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        elseif not nested and movesub[current_char] then
+                            movesubscript(parent,current_nucleus,current_char)
+                        end
+                    elseif not nested and movesub[current_char] then
+                        movesubscript(parent,current_nucleus,current_char)
+                    end
+                elseif not nested and movesub[current_char] then
+                    movesubscript(parent,current_nucleus,current_char)
+                end
+            end
+        end
+    end
+end
+
+collapse[math_char] = collapsepair
+
+function noads.handlers.collapse(head,style,penalties)
+    processnoads(head,collapse,"collapse")
+    return true
 end
 
 -- variants

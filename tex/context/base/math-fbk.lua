@@ -467,15 +467,21 @@ virtualcharacters[0xFE302] = function(data) return smashed(data,0x0302,0xFE302) 
 virtualcharacters[0xFE303] = function(data) return smashed(data,0x0303,0xFE303) end
 
 -- another crazy hack .. doesn't work as we define scrscr first .. we now have smaller
--- primes so we have smaller primes for the moment, big ones will become an option
+-- primes so we have smaller primes for the moment, big ones will become an option ..
+-- these primes in fonts are a real mess .. kind of a dead end, so don't wonder about
+-- the values below
+
+-- todo: check tounicodes
 
 local function smashed(data,unicode,optional)
     local oldchar = data.characters[unicode]
     if oldchar then
-        local height  = 1.2 * data.target.parameters.xheight
+        local xheight = data.target.parameters.xheight
+        local height  = 1.2 * xheight
+        local shift   = oldchar.height - height
         local newchar = {
             commands = {
-                { "down", oldchar.height - height },
+                { "down", shift },
                 { "char", unicode },
             },
             height = height,
@@ -486,6 +492,30 @@ local function smashed(data,unicode,optional)
         report_fallbacks("missing %U prime in font %a",unicode,data.target.properties.fullname)
     end
 end
+
+-- -- relocate all but less flexible so not used .. instead some noad hackery plus
+-- -- the above
+--
+-- local function smashed(data,unicode,optional)
+--     local oldchar = data.characters[unicode]
+--     if oldchar then
+--         local xheight = data.target.parameters.xheight
+--         local height  = oldchar.height
+--         local shift   = oldchar.height < 1.5*xheight and -(1.8*xheight-height) or 0
+--         local newchar = {
+--             commands = {
+--                 { "down", shift },
+--                 { "char", unicode },
+--             },
+--             unicode = unicode,
+--             height  = height,
+--             width   = oldchar.width,
+--         }
+--         return newchar
+--     elseif not optional then
+--         report_fallbacks("missing %U prime in font %a",unicode,data.target.properties.fullname)
+--     end
+-- end
 
 addextra(0xFE932, { description="SMASHED PRIME 0x02032", unicodeslot=0xFE932 } )
 addextra(0xFE933, { description="SMASHED PRIME 0x02033", unicodeslot=0xFE933 } )

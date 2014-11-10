@@ -28,13 +28,13 @@ local specials = publications.tables.specials
 local report   = logs.reporter("publications","tracers")
 
 function tracers.showdatasetfields(settings)
-    local dataset = settings.dataset
-    local current = datasets[dataset]
-    local luadata = current.luadata
+    local dataset       = settings.dataset
+    local current       = datasets[dataset]
+    local luadata       = current.luadata
+    local specification = settings.specification
+    local fielddata     = specification and specifications[specification] or specifications.apa
+    local categories    = fielddata.categories
     if next(luadata) then
-        local kind       = settings.kind
-        local fielddata  = kind and specifications[kind] or specifications.apa
-        local categories = fielddata.categories
         ctx_starttabulate { "|lT|lT|pT|" }
             ctx_NC() ctx_bold("tag")
             ctx_NC() ctx_bold("category")
@@ -71,14 +71,15 @@ function tracers.showdatasetfields(settings)
 end
 
 function tracers.showdatasetcompleteness(settings)
-    local dataset    = settings.dataset
-    local current    = datasets[dataset]
-    local luadata    = current.luadata
-    local kind       = settings.kind
-    local fielddata  = kind and specifications[kind] or specifications.apa
-    local categories = fielddata.categories
-    local lpegmatch  = lpeg.match
-    local texescape  = lpeg.patterns.texescape
+    local dataset       = settings.dataset
+    local current       = datasets[dataset]
+    local luadata       = current.luadata
+    local specification = settings.specification
+    local fielddata     = specification and specifications[specification] or specifications.apa
+    local categories    = fielddata.categories
+
+    local lpegmatch     = lpeg.match
+    local texescape     = lpeg.patterns.texescape
 
     local preamble = { "|lTBw(5em)|lBTp(10em)|p|" }
 
@@ -232,11 +233,11 @@ function tracers.showdatasetcompleteness(settings)
 end
 
 function tracers.showfields(settings)
-    local rotation    = settings.rotation
-    local kind        = settings.kind
-    local fielddata   = kind and specifications[kind] or specifications.apa
-    local categories  = fielddata.categories
-    local validfields = { }
+    local rotation      = settings.rotation
+    local specification = settings.specification
+    local fielddata     = specification and specifications[specification] or specifications.apa
+    local categories    = fielddata.categories
+    local validfields   = { }
     for category, data in next, categories do
         local sets   = data.sets
         local fields = data.fields

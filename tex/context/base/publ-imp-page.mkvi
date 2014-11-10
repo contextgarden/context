@@ -24,6 +24,9 @@
 \setupbtxrendering
   [\c!pagestate=\v!stop]
 
+\definebtxlistvariant
+  [\v!page]
+
 \startsetups \s!btx:\s!list:\s!page:concat
     \ifcase\currentbtxoverflow
         \ifcase\currentbtxconcat
@@ -40,19 +43,27 @@
 
 \startsetups \s!btx:\s!list:\s!page:normal
     \fastsetup{\s!btx:\s!list:\s!page:concat}
-    \goto {
-        \currentbtxfirstpage
-    } [
-        internal(\currentbtxfirstinternal)
-    ]
-    \ifx\currentbtxlastpage\empty \else
-        \btxlistparameter\c!pageconnector
+    \btxdoifelseinteractive {page} {
         \goto {
+            \currentbtxfirstpage
+        } [
+            internal(\currentbtxfirstinternal)
+        ]
+        \ifx\currentbtxlastpage\empty \else
+            \btxlistvariantparameter\c!pageconnector
+            \goto {
+                \currentbtxlastpage
+            } [
+                internal(\currentbtxlastinternal)
+            ]
+        \fi
+    } {
+        \currentbtxfirstpage
+        \ifx\currentbtxlastpage\empty \else
+            \btxlistvariantparameter\c!pageconnector
             \currentbtxlastpage
-    } [
-        internal(\currentbtxlastinternal)
-    ]
-    \fi
+        \fi
+    }
 \stopsetups
 
 \protect

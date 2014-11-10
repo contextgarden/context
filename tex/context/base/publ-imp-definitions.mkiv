@@ -49,6 +49,13 @@
     \fi\fi
 \stopxmlsetups
 
+\startxmlsetups btx:format:year
+    \edef\currentbtxfieldyear{\btxfield{year}}
+    \ifx\currentbtxfieldyear\empty
+        \btxlabeltext{\currentbtxspecification:nd}
+    \fi
+\stopxmlsetups
+
 \startxmlsetups btx:format:month
     \edef\currentbtxfieldmonth{\btxfield{month}}
     \ifx\currentbtxfieldmonth\empty

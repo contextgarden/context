@@ -35,10 +35,12 @@
    \else
      \getdummyparameters[#2]%
    \fi
+ % \publ_specification_push{"\dummyparameter\c!specification}%
    \ctxcommand{#1{
-      dataset = "\dummyparameter\c!dataset",
-      kind    = "\dummyparameter\c!specification"
+      dataset       = "\dummyparameter\c!dataset",
+      specification = "\dummyparameter\c!specification"
    }}%
+ % \publ_specification_pop
    \endgroup}
 
 \def\publ_show_dataset_fields      {\publ_show_dataset_whatever{showbtxdatasetfields}}
@@ -51,10 +53,12 @@
      {\setdummyparameter\c!specification{\btxparameter\c!specification}%
       \getdummyparameters[#1]}%
      {\setdummyparameter\c!specification{#1}}%
+ % \publ_specification_push{"\dummyparameter\c!specification}%
    \ctxcommand{showbtxfields{
-      rotation = "\dummyparameter\c!rotation",
-      kind     = "\dummyparameter\c!specification"
+      rotation      = "\dummyparameter\c!rotation",
+      specification = "\dummyparameter\c!specification"
    }}%
+ % \publ_specification_pop
    \endgroup}
 
 \protect

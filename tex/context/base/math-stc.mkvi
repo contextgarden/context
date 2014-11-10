@@ -546,6 +546,11 @@
       \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
       \setbox\scratchboxthree\hbox to \scratchwidth{\hss\box\scratchboxthree\hss}%
       %
+      \scratchunicode#codeextra\relax
+      \ifcase\scratchunicode\else
+        \setbox\scratchboxone\csname\??mathstackersalternative\p_alternative\endcsname
+      \fi
+      %
       \math_stackers_normalize_three
       % analysis
       \ifcase#bottom\relax
@@ -573,17 +578,17 @@
           \kern-\scratchwidth
           % under
           \math_stackers_start_tagged_bot
-            \scratchunicode#codeextra\relax
-            \ifcase\scratchunicode\else
-              \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
-            \fi
             \math_stackers_bottom\bgroup
               \lower\dimexpr
                  \scratchdepth
                 +\ht\scratchboxtwo
                 +\mathstackersparameter\c!distance % was \c!voffset
               \relax
-              \box\scratchboxtwo
+              \ifcase#top\relax
+                \box\scratchboxtwo
+              \else
+                \box\scratchboxone
+              \fi
             \egroup
           \math_stackers_stop_tagged
         \fi

@@ -312,7 +312,7 @@ local function update() -- prepare parent chains, needed when new languages are 
     end
 end
 
-local function setlanguage(l,m,d,u)
+local function setlanguage(l,m,d,u) -- this will become a specification table
     language = (l ~= "" and l) or constants.defaultlanguage
     data     = definitions[language or constants.defaultlanguage] or definitions[constants.defaultlanguage]
     method   = (m ~= "" and m) or (data.method ~= "" and data.method) or constants.defaultmethod
@@ -495,39 +495,15 @@ function sorters.basicsorter(a,b)
     return basic(a,b) == -1
 end
 
--- local function numify(s)
---     s = digitsoffset + tonumber(s) -- alternatively we can create range or maybe just hex numbers
---     if s > digitsmaximum then
---         s = digitsmaximum
---     end
---     return utfchar(s)
--- end
---
--- function sorters.strip(str) -- todo: only letters and such
---     if str and str ~= "" then
---         -- todo: make a decent lpeg
---         str = gsub(str,"\\[\"\'~^`]*","") -- \"e -- hm, too greedy
---         str = gsub(str,"\\%S*","") -- the rest
---         str = gsub(str,"%s","\001") -- can be option
---         str = gsub(str,"[%s%[%](){}%$\"\']*","") -- %s already done
---         if digits == v_numbers then
---             str = gsub(str,"(%d+)",numify) -- sort numbers properly
---         end
---         return str
---     else
---         return ""
---     end
--- end
-
 local function numify(old)
-    if digits == v_numbers then
-        return old
-    else
+    if digits == v_numbers then -- was swapped, fixed 2014-11-10
         local new = digitsoffset + tonumber(old) -- alternatively we can create range
         if new > digitsmaximum then
             new = digitsmaximum
         end
         return utfchar(new)
+    else
+        return old
     end
 end
 

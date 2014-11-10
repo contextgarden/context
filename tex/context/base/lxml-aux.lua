@@ -463,9 +463,16 @@ function xml.inclusions(e,sorted)
     end
 end
 
+local stripper     = lpeg.patterns.stripper
+local fullstripper = lpeg.patterns.fullstripper
+local collapser    = lpeg.patterns.collapser
+
+local lpegmatch    = lpeg.match
+
 local function stripelement(e,nolines,anywhere)
     local edt = e.dt
     if edt then
+        local strip = nolines and fullstripper or stripper
         if anywhere then
             local t, n = { }, 0
             for e=1,#edt do
@@ -474,11 +481,7 @@ local function stripelement(e,nolines,anywhere)
                     n = n + 1
                     t[n] = str
                 elseif str ~= "" then
-                    -- todo: lpeg for each case
-                    if nolines then
-                        str = gsub(str,"%s+"," ")
-                    end
-                    str = gsub(str,"^%s*(.-)%s*$","%1")
+                    str = lpegmatch(strip,str)
                     if str ~= "" then
                         n = n + 1
                         t[n] = str
@@ -497,10 +500,7 @@ local function stripelement(e,nolines,anywhere)
                 elseif str == "" then
                     remove(edt,1)
                 else
-                    if nolines then
-                        str = gsub(str,"%s+"," ")
-                    end
-                    str = gsub(str,"^%s+","")
+                    str = lpegmatch(strip,str)
                     if str == "" then
                         remove(edt,1)
                     else
@@ -517,10 +517,7 @@ local function stripelement(e,nolines,anywhere)
                 elseif str == "" then
                     remove(edt)
                 else
-                    if nolines then
-                        str = gsub(str,"%s+"," ")
-                    end
-                    str = gsub(str,"%s+$","")
+                    str = lpegmatch(strip,str)
                     if str == "" then
                         remove(edt)
                     else

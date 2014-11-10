@@ -206,7 +206,7 @@ nodes.whatcodes    = whatcodes     nodes.whatsitcodes = whatcodes -- more offici
 nodes.listcodes    = listcodes
 nodes.glyphcodes   = glyphcodes
 nodes.kerncodes    = kerncodes
-nodes.penaltycodes = kerncodes
+nodes.penaltycodes = penaltycodes
 nodes.mathcodes    = mathcodes
 nodes.fillcodes    = fillcodes
 nodes.margincodes  = margincodes

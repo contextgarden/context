@@ -163,14 +163,14 @@ end
 
 local specifications                 = publications.specifications
 local currentspecification           = specifications[false]
-local currentspecificationfields     = currentspecification.fields
+----- currentspecificationfields     = currentspecification.fields
 local currentspecificationcategories = currentspecification.categories
 
 local ignoredfields                  = { }
 
 local function setspecification(name)
     currentspecification           = specifications[name]
-    currentspecificationfields     = currentspecification.fields
+ -- currentspecificationfields     = currentspecification.fields
     currentspecificationcategories = currentspecification.categories
     if trace then
         report("setting specification %a",type(name) == "string" and name or "anything")
@@ -975,21 +975,44 @@ do
         end
     end
 
-    local function get(name,tag,field,what)
+    local function get(name,tag,field,what,check)
         local dataset = rawget(datasets,name)
         if dataset then
-            local fields = dataset.luadata[tag]
-            if fields then
-                local category = fields.category
-                local catspec = currentspecificationcategories[category]
+            local data = dataset.luadata[tag]
+            if data then
+                local category = data.category
+                local catspec  = currentspecificationcategories[category]
                 if not catspec then
                     return false
                 end
                 local fields = catspec.fields
                 if fields then
-                    local kind = fields[field]
+                    local kind = (not check or data[field]) and fields[field]
                     if kind then
                         return what and kind or field
+                    end
+                    local sets = catspec.sets
+                    if sets then
+                        local set = sets[field]
+                        if set then
+                            if check then
+                                for i=1,#set do
+                                    local field = set[i]
+                                    local kind  = (not check or data[field]) and fields[field]
+                                    if kind then
+                                        return what and kind or field
+                                    end
+                                end
+                            elseif what then
+                                local t = { }
+                                for i=1,#set do
+                                    t[i] = fields[set[i]] or "unknown"
+                                end
+                                return concat(t,",")
+                            else
+                                return concat(set,",")
+                            end
+                        end
                     end
                 end
             end
@@ -997,13 +1020,10 @@ do
         return ""
     end
 
-    function commands.btxfieldname(name,tag,field)
-        return context(get(name,tag,field))
-    end
-
-    function commands.btxfieldtype(name,tag,field)
-        return context(get(name,tag,field,true))
-    end
+    function commands.btxfieldname(name,tag,field) context(get(name,tag,field,false,false)) end
+    function commands.btxfieldtype(name,tag,field) context(get(name,tag,field,true, false)) end
+    function commands.btxfoundname(name,tag,field) context(get(name,tag,field,false,true )) end
+    function commands.btxfoundtype(name,tag,field) context(get(name,tag,field,true, true )) end
 
     function commands.btxflush(name,tag,field)
         local dataset = rawget(datasets,name)

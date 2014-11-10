@@ -343,7 +343,7 @@ end
 -- the hex aspect.
 
 local u_pattern = lpeg.patterns.utfbom_16_be * lpeg.patterns.utf16_to_utf8_be
-local b_pattern = lpeg.patterns.hextobytes
+----- b_pattern = lpeg.patterns.hextobytes
 
 local function get_string(v)
     -- the toutf function only converts a utf16 string and leves the original
@@ -357,10 +357,11 @@ local function get_string(v)
     if u then
         return u -- , "unicode"
     end
-    local b = lpegmatch(b_pattern,s)
-    if b then
-        return b, "rawtext"
-    end
+    -- this is too tricky and fails on e.g. reload of url www.pragma-ade.com)
+ -- local b = lpegmatch(b_pattern,s)
+ -- if b then
+ --     return b, "rawtext"
+ -- end
     return s, "rawtext"
 end
 

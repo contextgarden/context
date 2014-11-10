@@ -583,6 +583,12 @@ local function register(askedname,specification)
         specification = { askedname = askedname, comment = "invalid specification" }
     elseif forbiddenname(specification.fullname) then
         specification = { askedname = askedname, comment = "forbidden name" }
+    elseif specification.internal then
+        -- no filecheck needed
+        specification.found = true
+        if trace_figures then
+            report_inclusion("format %a internally supported by engine",specification.format)
+        end
     else
         local format = specification.format
         if format then
@@ -729,7 +735,7 @@ local function register(askedname,specification)
                     report_inclusion("format %a natively supported by backend",format)
                 end
             else
-             -- specification.found = false -- needs checking
+                specification.found = true -- else no foo.1 mps conversion
                 if trace_figures then
                     report_inclusion("format %a supported by output file format",format)
                 end
@@ -820,7 +826,7 @@ local function locate(request) -- name, format, cache
         end
     end
     -- we could use the hashed data instead
-    local askedpath= file.is_rootbased_path(askedname)
+    local askedpath = file.is_rootbased_path(askedname)
     local askedbase = file.basename(askedname)
     if askedformat ~= "" then
         askedformat = lower(askedformat)
@@ -841,7 +847,7 @@ local function locate(request) -- name, format, cache
             end
         end
         if format then
-            local foundname, quitscanning, forcedformat = figures.exists(askedname,format,resolve_too) -- not askedformat
+            local foundname, quitscanning, forcedformat, internal = figures.exists(askedname,format,resolve_too) -- not askedformat
             if foundname then
                 return register(askedname, {
                     askedname  = askedname,
@@ -851,6 +857,7 @@ local function locate(request) -- name, format, cache
                  -- foundname  = foundname, -- no
                     conversion = askedconversion,
                     resolution = askedresolution,
+                    internal   = internal,
                 })
             elseif quitscanning then
                 return register(askedname)
@@ -1291,6 +1298,8 @@ includers.mov = includers.nongeneric
 
 internalschemes.mprun = true
 
+-- mprun.foo.1 mprun.6 mprun:foo.2
+
 local function internal(askedname)
     local spec, mprun, mpnum = match(lower(askedname),"mprun([:%.]?)(.-)%.(%d+)")
     if spec ~= "" then
@@ -1303,7 +1312,7 @@ end
 function existers.mps(askedname)
     local mprun, mpnum = internal(askedname)
     if mpnum then
-        return askedname
+        return askedname, true, "mps", true
     else
         return existers.generic(askedname)
     end
@@ -1324,7 +1333,7 @@ includers.mps = includers.nongeneric
 
 function existers.tex(askedname)
     askedname = resolvers.findfile(askedname)
-    return askedname ~= "" and askedname or false
+    return askedname ~= "" and askedname or false, true, "tex", true
 end
 
 function checkers.tex(data)
@@ -1338,7 +1347,7 @@ includers.tex = includers.nongeneric
 function existers.buffer(askedname)
     local name = file.nameonly(askedname)
     local okay = buffers.exists(name)
-    return okay and name, true -- always quit scanning
+    return okay and name, true, "buffer", true -- always quit scanning
 end
 
 function checkers.buffer(data)
@@ -1365,7 +1374,10 @@ includers.auto = includers.generic
 
 -- -- -- cld -- -- --
 
-existers.cld = existers.tex
+function existers.cld(askedname)
+    askedname = resolvers.findfile(askedname)
+    return askedname ~= "" and askedname or false, true, "cld", true
+end
 
 function checkers.cld(data)
     return checkers_nongeneric(data,function() context.docheckfigurecld(data.used.fullname) end)

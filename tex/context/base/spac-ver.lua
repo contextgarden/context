@@ -1098,7 +1098,9 @@ end
 -- This will be replaces after 0.79 when we have a more robust look-back and
 -- can look at the bigger picture.
 
--- todo: look back and when a special is there before a list is seen penaltym keep ut
+-- todo: look back and when a special is there before a list is seen penalty keep ut
+
+-- we now look back a lot, way too often
 
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then
@@ -1194,11 +1196,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
     while current do
         local id = getid(current)
         if id == hlist_code or id == vlist_code then
-
 -- if nobreakfound == nil then
 --     nobreakfound = false
 -- end
-
             -- needs checking, why so many calls
             if snap then
                 local list = getlist(current)

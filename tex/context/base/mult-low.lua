@@ -282,6 +282,8 @@ return {
         "firstofsixarguments", "secondofsixarguments", "thirdofsixarguments", "fourthofsixarguments", "fifthofsixarguments", "sixthofsixarguments",
         --
         "firstofoneunexpanded",
+        "firstoftwounexpanded", "secondoftwounexpanded",
+        "firstofthreeunexpanded", "secondofthreeunexpanded", "thirdofthreeunexpanded",
         --
         "gobbleoneargument", "gobbletwoarguments", "gobblethreearguments", "gobblefourarguments", "gobblefivearguments", "gobblesixarguments", "gobblesevenarguments", "gobbleeightarguments", "gobbleninearguments", "gobbletenarguments",
         "gobbleoneoptional", "gobbletwooptionals", "gobblethreeoptionals", "gobblefouroptionals", "gobblefiveoptionals",

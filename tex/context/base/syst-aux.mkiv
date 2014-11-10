@@ -2948,7 +2948,14 @@
 \def\fifthofsixarguments #1#2#3#4#5#6{#5}
 \def\sixthofsixarguments #1#2#3#4#5#6{#6}
 
-\unexpanded\def\firstofoneunexpanded#1{#1}
+\unexpanded\def\firstofoneunexpanded       #1{#1}
+
+\unexpanded\def\firstoftwounexpanded     #1#2{#1}
+\unexpanded\def\secondoftwounexpanded    #1#2{#2}
+
+\unexpanded\def\firstofthreeunexpanded #1#2#3{#1}
+\unexpanded\def\secondofthreeunexpanded#1#2#3{#2}
+\unexpanded\def\thirdofthreeunexpanded #1#2#3{#3}
 
 %D \macros
 %D   {globalletempty,letempty,

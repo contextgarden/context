@@ -867,6 +867,7 @@ function mixedcolumns.getsplit(result,n)
     if grid then
         -- print(n,result.maxtotal,r.total,r.extra)
         if isglobal then
+            local rh = r.height
          -- ht = (lineheight * ceil(result.height/lineheight) - strutdp
             ht = amount(rh,strutdp,0)
             dp = strutdp

@@ -11592,7 +11592,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 26097, stripped down to: 18580
+-- original size: 25942, stripped down to: 18549
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -12002,9 +12002,14 @@ function xml.inclusions(e,sorted)
     end
   end
 end
+local stripper=lpeg.patterns.stripper
+local fullstripper=lpeg.patterns.fullstripper
+local collapser=lpeg.patterns.collapser
+local lpegmatch=lpeg.match
 local function stripelement(e,nolines,anywhere)
   local edt=e.dt
   if edt then
+    local strip=nolines and fullstripper or stripper
     if anywhere then
       local t,n={},0
       for e=1,#edt do
@@ -12013,10 +12018,7 @@ local function stripelement(e,nolines,anywhere)
           n=n+1
           t[n]=str
         elseif str~="" then
-          if nolines then
-            str=gsub(str,"%s+"," ")
-          end
-          str=gsub(str,"^%s*(.-)%s*$","%1")
+          str=lpegmatch(strip,str)
           if str~="" then
             n=n+1
             t[n]=str
@@ -12031,10 +12033,7 @@ local function stripelement(e,nolines,anywhere)
         elseif str=="" then
           remove(edt,1)
         else
-          if nolines then
-            str=gsub(str,"%s+"," ")
-          end
-          str=gsub(str,"^%s+","")
+          str=lpegmatch(strip,str)
           if str=="" then
             remove(edt,1)
           else
@@ -12049,10 +12048,7 @@ local function stripelement(e,nolines,anywhere)
         elseif str=="" then
           remove(edt)
         else
-          if nolines then
-            str=gsub(str,"%s+"," ")
-          end
-          str=gsub(str,"%s+$","")
+          str=lpegmatch(strip,str)
           if str=="" then
             remove(edt)
           else
@@ -17641,8 +17637,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 728787
--- stripped bytes    : 259903
+-- original bytes    : 728632
+-- stripped bytes    : 259779
 
 -- end library merge
 

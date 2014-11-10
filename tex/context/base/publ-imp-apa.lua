@@ -76,17 +76,18 @@ local categories = specification.categories
 
 categories.article = {
     sets = {
-        authors = { "author", "editor", "title" },
-        links   = { "doi", "url" },
+        author = { "author", "editor", "title" },
+        links  = { "doi", "url" },
+        isbn   = { "issn" },
     },
     required = {
-        "authors"
+        "author"
     },
     optional = {
         "year",
         "subtitle", "type", "file",
         "journal", "volume", "number", "pages",
-        "note", "links",
+        "note", "links", "isbn",
     },
 }
 
@@ -95,7 +96,7 @@ categories.article = {
 categories.magazine = {
     sets = categories.article.sets,
     required = {
-        "authors",
+        "author",
         "year",
         "journal",
     },
@@ -103,7 +104,7 @@ categories.magazine = {
         "subtitle", "type", "file",
         "volume", "number", "pages",
         "month", "day",
-        "note", "links",
+        "note", "links", "isbn",
     },
 }
 
@@ -113,18 +114,20 @@ categories.newspaper = categories.magazine
 
 categories.periodical = {
     sets = {
-        authors = { "editor", "publisher" },
+        author = { "editor", "publisher" },
+        links  = { "doi", "url" },
+        isbn   = { "issn" },
     },
     required = {
         "title",
         "year",
     },
     optional = {
-        "authors",
+        "author",
         "subtitle", "file",
         "series", "volume", "number", "month",
         "organization",
-        "note",
+        "note", "links", "isbn",
     },
 }
 
@@ -132,10 +135,10 @@ categories.periodical = {
 
 categories.standard = {
     sets = {
-        authors = { "author", "institution", "organization" },
+        author = { "author", "institution", "organization" },
     },
     required = {
-        "authors",
+        "author",
         "year",
         "title", "subtitle",
         "note",
@@ -150,16 +153,16 @@ categories.standard = {
 
 categories.book = {
     sets = {
-        authors = { "author", "editor", "publisher", "title" },
+        author = { "author", "editor", "publisher", "title" },
     },
-    required = { "authors" },
+    required = { "author" },
     optional = {
         "year", "month", "day",
         "subtitle", "type",  "file",
         "edition", "series", "volume", "number", "pages",
         "address",
         "url",
-        "note", "ISBN"
+        "note", "isbn"
     },
 }
 
@@ -167,10 +170,10 @@ categories.book = {
 
 categories.inbook = {
     sets = {
-        authors = { "author", "editor", "publisher", "title", "chapter", "pages" },
+        author = { "author", "editor", "publisher", "title", "chapter", "pages" },
     },
     required = {
-        "authors",
+        "author",
         "year" ,
     },
     optional = {
@@ -178,7 +181,7 @@ categories.inbook = {
         "volume", "number", "series",
         "edition", "month",
         "address",
-        "note", "ISBN",
+        "note", "isbn",
     },
 }
 
@@ -186,10 +189,10 @@ categories.inbook = {
 
 categories.booklet = {
     sets = {
-        authors = { "author", "title" },
+        author = { "author", "title" },
     },
     required = {
-        "authors"
+        "author"
     },
     optional = {
         "year", "month",
@@ -204,10 +207,10 @@ categories.booklet = {
 
 categories.incollection = {
     sets = {
-        authors = { "author", "editor", "publisher" },
+        author = { "author", "editor", "publisher" },
     },
     required = {
-        "authors",
+        "author",
         "title", "booktitle",
         "year",
     },
@@ -217,7 +220,7 @@ categories.incollection = {
         "volume", "number", "series",
         "chapter", "pages",
         "address",
-        "note", "ISBN",
+        "note", "isbn",
     },
 }
 
@@ -234,7 +237,7 @@ categories.proceedings = {
         "volume", "number", "series", "pages",
         "month",
         "address", "publisher", "organization",
-        "note", "ISBN"
+        "note", "isbn"
     },
 }
 
@@ -249,7 +252,7 @@ categories.inproceedings = {
         "volume", "number", "series",
         "pages",
         "address", "organization",
-        "note", "ISBN"
+        "note", "isbn"
     },
 }
 
@@ -289,7 +292,7 @@ categories.techreport = {
         "subtitle", "type", "file",
         "number", "month",
         "address",
-        "note"
+        "note", --"isbn",
     },
 }
 
@@ -303,7 +306,7 @@ categories.manual = {
         "subtitle", "file",
         "author", "address", "organization",
         "edition", "month", "year",
-        "note",
+        "note", "isbn",
     },
 }
 
@@ -361,6 +364,9 @@ categories.electronic = {
 -- use this type when nothing else fits.
 
 categories.misc = {
+    sets = {
+        isbn   = { "isbn", "issn" },
+    },
     required = {
         -- nothing is really important here
     },
@@ -369,13 +375,16 @@ categories.misc = {
         "title", "subtitle", "file",
         "year", "month",
         "howpublished",
-        "note"
+        "note", "isbn",
     },
 }
 
 -- other (whatever jabref does not know!)
 
 categories.other = {
+    sets = {
+        isbn   = { "isbn", "issn" },
+    },
     required = {
         "author",
         "title",
@@ -384,7 +393,7 @@ categories.other = {
     optional = {
         "subtitle", "file",
         "note",
-        "doi"
+        "doi", "isbn",
     },
 }
 

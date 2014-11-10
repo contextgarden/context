@@ -195,16 +195,20 @@
 
 \unexpanded\setvalue{\??constructionstarthandler\v!btxlist}%
   {\csname\??constructionstarthandler\v!construction\endcsname
-   \ifx\currentbtxnumbering\v!no\else
-     \ifx\currentbtxinternal\empty \else
-       \startgoto[\s!internal(\currentbtxinternal)]%
+   \ifconditional\btx_interactive
+     \ifx\currentbtxnumbering\v!no\else
+       \ifx\currentbtxinternal\empty \else
+         \startgoto[\s!internal(\currentbtxinternal)]%
+       \fi
      \fi
    \fi}
 
 \unexpanded\setvalue{\??constructionstophandler\v!btxlist}%
-  {\ifx\currentbtxnumbering\v!no\else
-     \ifx\currentbtxinternal\empty \else
-       \stopgoto
+  {\ifconditional\btx_interactive
+     \ifx\currentbtxnumbering\v!no\else
+       \ifx\currentbtxinternal\empty \else
+         \stopgoto
+       \fi
      \fi
    \fi
    \csname\??constructionstophandler\v!construction\endcsname
@@ -424,15 +428,17 @@
 % \btxfield         : current
 % \btxspecificfield : dataset,tag,key
 
-\def\btxfield      #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdetail     #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxflush      #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxfieldname  #1{\ctxcommand{btxfieldname("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxfieldtype  #1{\ctxcommand{btxfieldtype("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxauthorfield#1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
-\def\btxdoifelse   #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoif       #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoifnot    #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfield        #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdetail       #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxflush        #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfieldname    #1{\ctxcommand{btxfieldname("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfieldtype    #1{\ctxcommand{btxfieldtype("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfoundname    #1{\ctxcommand{btxfoundname("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfoundtype    #1{\ctxcommand{btxfoundtype("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxauthorfield  #1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
+\def\btxdoifelse     #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdoif         #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdoifnot      #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
 
 \let\btxsetup\fastsetup
 
@@ -981,22 +987,49 @@
 % Interaction: only list
 
 \newconditional\btxinteractive
+\newconditional\btx_interactive
 
+\unexpanded\def\btxdoifelseinteractive{\thirdofthreearguments}
 \unexpanded\def\btxdoifelseinteraction{\secondoftwoarguments}
+
+\unexpanded\def\publ_doifelse_interactive_list_yes#1%
+  {\edef\p_interaction{\namedbtxlistvariantparameter{#1}\c!interaction}%
+   \ifx\p_interaction\v!start
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\unexpanded\def\publ_doifelse_interactive_cite_yes#1%
+  {\edef\p_interaction{\namedbtxcitevariantparameter{#1}\c!interaction}%
+   \ifx\p_interaction\v!start
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 \appendtoks
     \iflocation
-        \edef\p_interaction{\btxlistvariantparameter\c!interaction}%
+        \edef\p_interaction{\btxrenderingparameter\c!interaction}%
         \ifx\p_interaction\v!stop
-            \let\btxdoifelseinteraction\secondoftwoarguments
+            \let\btxdoifelseinteraction\secondoftwounexpanded
+            \let\btxdoifelseinteractive\thirdofthreeunexpanded
             \setfalse\btxinteractive
         \else
-            \let\btxdoifelseinteraction\firstoftwoarguments
+            \let\btxdoifelseinteraction\firstoftwounexpanded
+            \let\btxdoifelseinteractive\publ_doifelse_interactive_list_yes
             \settrue\btxinteractive
+            \ifx\p_interaction\v!all
+                \settrue\btx_interactive
+            \else
+                \setfalse\btx_interactive
+            \fi
         \fi
     \else
-        \let\btxdoifelseinteraction\secondoftwoarguments
+        \let\btxdoifelseinteraction\secondoftwounexpanded
+        \let\btxdoifelseinteractive\thirdofthreeunexpanded
         \setfalse\btxinteractive
+        \setfalse\btx_interactive
     \fi
 \to \everysetupbtxlistplacement
 
@@ -1004,14 +1037,17 @@
     \iflocation
         \edef\p_interaction{\btxcitevariantparameter\c!interaction}%
         \ifx\p_interaction\v!stop
-            \let\btxdoifelseinteraction\secondoftwoarguments
+            \let\btxdoifelseinteraction\secondoftwounexpanded
+            \let\btxdoifelseinteractive\thirdofthreeunexpanded
             \setfalse\btxinteractive
         \else
-            \let\btxdoifelseinteraction\firstoftwoarguments
+            \let\btxdoifelseinteraction\firstoftwounexpanded
+            \let\btxdoifelseinteractive\publ_doifelse_interactive_cite_yes
             \settrue\btxinteractive
         \fi
     \else
-        \let\btxdoifelseinteraction\secondoftwoarguments
+        \let\btxdoifelseinteraction\secondoftwounexpanded
+        \let\btxdoifelseinteractive\thirdofthreeunexpanded
         \setfalse\btxinteractive
     \fi
 \to \everysetupbtxciteplacement
@@ -1367,7 +1403,8 @@
   [\v!standard]
 
 \setupbtxrendering
-  [\c!specification=\btxparameter\c!specification,
+  [\c!interaction=\v!start, % \v!all
+   \c!specification=\btxparameter\c!specification,
    \c!dataset=\v!standard,
    \c!repeat=\v!no,
    \c!continue=\v!no,
@@ -1407,7 +1444,8 @@
    \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
   %\c!journalconversion=\v!normal,
    \c!monthconversion=\v!number,
-   \c!authorconversion=\v!inverted]
+   \c!authorconversion=\v!inverted,
+   \c!interaction=\c!start]
 
 \definebtxlistvariant
   [author]
@@ -1416,28 +1454,33 @@
   [editor]
   [author]
 
+\definebtxlistvariant
+  [url]
+
+\definebtxlistvariant
+  [doi]
+
 \setupbtxcitevariant
   [\c!specification=\btxparameter\c!specification,
-   \c!namesep={,\space},
-   \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!finalnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
-   \c!juniorsep=\space,
-   \c!vonsep=\space,
-   \c!initialsep=\space,
-  %\c!initialssep=\space,
-  %\c!initialsterminator={.},
-   \c!surnamesep={,\space},
-   \c!surnameinitialsep={,\space},
-   \c!surnamefirstnamesep={,\space},
-   \c!etallimit=5, % when 2-4, show all first time, etaldisplay subsequently...
-   \c!etaldisplay=1,
-   \c!monthconversion=\v!number,
-   \c!authorconversion=\v!name,
-   \c!interaction=\v!start,
- % \c!setups=btx:cite:initialize,
    \c!alternative=num,
+   \c!namesep=\btxlistvariantparameter\c!namesep,
+   \c!lastnamesep=\btxlistvariantparameter\c!lastnamesep,
+   \c!finalnamesep=\btxlistvariantparameter\c!finalnamesep,
+   \c!firstnamesep=\btxlistvariantparameter\c!firstnamesep,
+   \c!otherstext=\btxlistvariantparameter\c!otherstext,
+   \c!juniorsep=\btxlistvariantparameter\c!juniorsep,
+   \c!vonsep=\btxlistvariantparameter\c!vonsep,
+   \c!initialsep=\btxlistvariantparameter\c!initialsep,
+  %\c!initialssep=\btxlistvariantparameter\c!initialssep,
+  %\c!initialsterminator=\btxlistvariantparameter\c!initialsterminator,
+   \c!surnamesep=\btxlistvariantparameter\c!surnamesep,
+   \c!surnameinitialsep=\btxlistvariantparameter\c!surnameinitialsep,
+   \c!surnamefirstnamesep=\btxlistvariantparameter\c!surnamefirstnamesep,
+   \c!etallimit=\btxlistvariantparameter\c!etallimit,
+   \c!etaldisplay=\btxlistvariantparameter\c!etaldisplay,
+   \c!monthconversion=\btxlistvariantparameter\c!monthconversion,
+   \c!authorconversion=\v!name,
+ % \c!setups=btx:cite:initialize,
    \c!pubsep={,\space},
    \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
    \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
@@ -1447,7 +1490,8 @@
    \c!range=\endash,
    \c!left=,
    \c!middle=,
-   \c!right=]
+   \c!right=,
+   \c!interaction=\v!start]
 
 \definebtxcitevariant
    [author]
@@ -1567,6 +1611,16 @@
     \c!pubsep={,},
     \c!lastpubsep={,},
     \c!finalpubsep={,}]
+
+\definebtxcitevariant
+   [textnum]
+   [num]
+   [\c!left={Ref.\nbsp}, % {Refs.\nbsp}, if multiple?
+    %yuck! ={\btxlabeltext{\currentbtxspecification:Reference\btxsingularplural{num}{}{s}}\nbsp}
+    \c!right=,
+    \c!pubsep={,},
+    \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
+    \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space}]
 
 % Do we want these in the format? Loading them delayed is somewhat messy.
 
