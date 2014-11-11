@@ -363,7 +363,6 @@
     % we make the authoryear active, pointing to the citation
     \texdefinition{btx:apa:inject} {\s!internal(\currentbtxinternal)}
     {
-<\btxfoundname{author},\btxfoundtype{author}>
         \doifelse {\btxfoundname{author}} {editor} {
             \texdefinition{btx:apa:editor-or-editors}
         } {
@@ -661,6 +660,7 @@
 \stoptexdefinition
 
 % #author is author, editor, organization, howpublished or assignee
+
 \starttexdefinition btx:apa:wherefrom-publisher-author-is- #author
     \btxdoifelse {country} {
         \btxspace

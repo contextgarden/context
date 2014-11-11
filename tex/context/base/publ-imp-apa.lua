@@ -199,7 +199,7 @@ categories.booklet = {
          "subtitle", "type", "file",
          "address",
          "howpublished",
-         "note",
+         "note", "isbn",
      },
 }
 
@@ -207,11 +207,11 @@ categories.booklet = {
 
 categories.incollection = {
     sets = {
-        author = { "author", "editor", "publisher" },
+        author = { "author", "editor", "publisher", "title" },
     },
     required = {
         "author",
-        "title", "booktitle",
+        "booktitle",
         "year",
     },
     optional = {
@@ -220,23 +220,25 @@ categories.incollection = {
         "volume", "number", "series",
         "chapter", "pages",
         "address",
-        "note", "isbn",
+        "note", "isbn"
     },
 }
 
 -- the proceedings of a conference.
 
 categories.proceedings = {
+    sets = {
+        author = { "editor", "publisher", "title" },
+    },
     required = {
-        "title",
+        "author",
         "year"
     },
     optional = {
-        "editor",
         "subtitle", "file",
         "volume", "number", "series", "pages",
         "month",
-        "address", "publisher", "organization",
+        "address", "organization",
         "note", "isbn"
     },
 }
@@ -400,13 +402,16 @@ categories.other = {
 -- if all else fails to match:
 
 categories.literal = {
+    sets = {
+        author = { "key" },
+    },
     required = {
-        "key",
+        "author",
         "text"
     },
-    optional = {
-        -- whatever comes up
-    },
+ -- optional = {
+ --  -- whatever comes up
+ -- },
     virtual = false,
 }
 

@@ -48,6 +48,8 @@ local trace_duplicates  = true   trackers.register("publications.duplicates", fu
 local report            = logs.reporter("publications")
 local report_duplicates = logs.reporter("publications","duplicates")
 
+local allocate          = utilities.storage.allocate
+
 publications            = publications or { }
 local publications      = publications
 
@@ -56,6 +58,9 @@ publications.datasets   = datasets
 
 local writers           = publications.writers or { }
 publications.writers    = writers
+
+local authors           = publications.authors or { }
+publications.authors    = authors
 
 local tables            = publications.tables or { }
 publications.tables     = tables
@@ -68,13 +73,13 @@ publicationsstats.nofdefinitions = 0
 publicationsstats.nofshortcuts   = 0
 publicationsstats.nofdatasets    = 0
 
-local privates = {
+local privates = allocate {
     category = true,
     tag      = true,
     index    = true,
 }
 
-local specials = {
+local specials = allocate {
     key      = true,
     crossref = true,
     keywords = true,
@@ -95,7 +100,7 @@ local v_all = interfaces and interfaces.variables.all or "all"
 
 local xmlplaceholder = "<?xml version='1.0' standalone='yes'?>\n<bibtex></bibtex>"
 
-local defaultshortcuts = {
+local defaultshortcuts = allocate {
     jan =  "1",
     feb =  "2",
     mar =  "3",
@@ -115,7 +120,7 @@ local separator  = space * "+" * space
 local l_splitter = lpeg.tsplitat(separator)
 local d_splitter = lpeg.splitat (separator)
 
-local implicitfields = {
+local implicits = allocate {
     category = "implicit",
     tag      = "implicit",
     key      = "implicit",
@@ -124,20 +129,31 @@ local implicitfields = {
     crossref = "implicit",
 }
 
-local types = {
+local origins = allocate {
     "optional",
     "extra",
     "required",
     "virtual",
 }
 
-local virtuals = {
+local virtuals = allocate {
     "authoryear",
     "authoryears",
     "authornum",
     "num",
     "suffix",
 }
+
+local defaulttypes = allocate {
+    author    = "author",
+    editor    = "author",
+    publisher = "author",
+}
+
+tables.implicits = implicits
+tables.origins   = origins
+tables.virtuals  = virtuals
+tables.types     = defaulttypes
 
 local unknownfield = function(t,k)
     local v = "extra"
@@ -151,7 +167,14 @@ local unknowncategory = function(t,k)
         optional = false,
         virtual  = false,
         fields   = setmetatableindex(unknownfield),
+        types    = defaulttypes,
     }
+    t[k] = v
+    return v
+end
+
+local unknowntype = function(t,k)
+    local v = "string"
     t[k] = v
     return v
 end
@@ -163,18 +186,19 @@ local default = {
     author     = "anonymous",
     copyright  = "no one",
     categories = setmetatableindex(unknowncategory),
+    types      = setmetatableindex(defaulttypes,unknowntype),
 }
 
+-- maybe at some point we can han da handlers table with per field
+-- a found, fetch, ... method
+
 local function checkfield(specification,category,data)
-    local list    = setmetatableindex({},implicitfields)
+    local list    = setmetatableindex({},implicits)
     data.fields   = list
     data.category = category
     local sets    = data.sets or { }
-    if data.virtual == nil then -- so false is valid
-        data.virtual = specification.virtual
-    end
-    for i=1,#types do
-        local t = types[i]
+    for i=1,#origins do
+        local t = origins[i]
         local d = data[t]
         if d then
             for i=1,#d do
@@ -217,6 +241,13 @@ local specifications = setmetatableindex(function(t,name)
         specification.categories = categories
     end
     setmetatableindex(categories,unknowncategory)
+    --
+    local types = specification.types
+    if not types then
+        types = defaulttypes
+        specification.types = types
+    end
+    setmetatableindex(types,unknowntype)
     --
     local fields         = setmetatableindex(unknownfield)
     specification.fields = fields

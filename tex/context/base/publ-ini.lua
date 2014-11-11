@@ -146,6 +146,7 @@ local ctx_btxstopciteauthor       = context.btxstopciteauthor
 local ctx_btxstartsubcite         = context.btxstartsubcite
 local ctx_btxstopsubcite          = context.btxstopsubcite
 local ctx_btxlistsetup            = context.btxlistsetup
+local ctx_btxflushauthor          = context.btxflushauthor
 
 local registeredcitevariants = publications.registeredcitevariants or allocate()
 local registeredlistvariants = publications.registeredlistvariants or allocate()
@@ -698,11 +699,6 @@ local function shortsorter(a,b)
     return a[4] < b[4]
 end
 
-local authorkeys = {
-    "author",
-    "editor",
-}
-
 function publications.enhance(dataset) -- for the moment split runs (maybe publications.enhancers)
     statistics.starttiming(publications)
     if type(dataset) == "string" then
@@ -714,12 +710,20 @@ function publications.enhance(dataset) -- for the moment split runs (maybe publi
     local luadata = dataset.luadata
     local details = dataset.details
     local ordered = dataset.ordered
-    -- authors: todo, get authorkeys from current specification (so we need to redo when that spec changes)
+    local types   = currentspecification.types -- or { author = "author", editor = "author" }
+    local authors = { }
+    --
+    for k, v in next, types do
+        if v == "author" then
+            authors[#authors+1] = k
+        end
+    end
+    --
     for tag, entry in next, luadata do
         local detail = { }
         details[tag] = detail
-        for i=1,#authorkeys do
-            local key   = authorkeys[i]
+        for i=1,#authors do
+            local key   = authors[i]
             local value = entry[key]
             if value then
                 detail[key] = splitauthorstring(value)
@@ -900,6 +904,32 @@ end
 
 do
 
+    local typesetters        = { }
+    publications.typesetters = typesetters
+
+    local function defaulttypesetter(field,value,manipulator)
+        if value and value ~= "" then
+            value = tostring(value)
+            context(manipulator and applymanipulation(manipulator,value) or value)
+        end
+    end
+
+    setmetatableindex(typesetters,function(t,k)
+        local v = defaulttypesetter
+        t[k] = v
+        return v
+    end)
+
+    function typesetters.string(field,value,manipulator)
+        if value and value ~= "" then
+            context(manipulator and applymanipulation(manipulator,value) or value)
+        end
+    end
+
+    function typesetters.author(field,value,manipulator)
+        ctx_btxflushauthor(field)
+    end
+
     -- if there is no specification then we're in trouble but there is
     -- always a default anyway
     --
@@ -921,7 +951,6 @@ do
             return false
         end
         local kind = fields[field]
-     -- if ignoredfields and kind == "optional" and ignoredfields[field] then
         if ignoredfields and ignoredfields[field] then
             return false
         else
@@ -932,44 +961,31 @@ do
     end
 
     local function found(dataset,tag,field,valid,fields)
-        local details = nil
-        local function check_f(field)
-            local value = fields[field]
-            if type(value) == "string" then
-                return value
-            end
-        end
-        local function check_d(field)
-            local value = details[field]
-            if type(value) == "string" then
-                return value
-            end
-        end
         if valid == true then
          -- local fields = dataset.luadata[tag]
-            local okay = check_f(field)
+            local okay = fields[field]
             if okay then
-                return okay
+                return field, okay
             end
-            details = dataset.details[tag]
-            local okay = check_d(field)
+            local details = dataset.details[tag]
+            local okay = details[field]
             if okay then
-                return okay
+                return field, okay
             end
         elseif valid then
          -- local fields = dataset.luadata[tag]
             for i=1,#valid do
                 local field = valid[i]
-                local okay = check_f(field)
+                local okay = fields[field]
                 if okay then
-                    return okay
+                    return field, okay
                 end
             end
-            details = dataset.details[tag]
+            local details = dataset.details[tag]
             for i=1,#valid do
-                local okay = check_d(field)
+                local okay = details[field]
                 if okay then
-                    return okay
+                    return field, okay
                 end
             end
         end
@@ -987,10 +1003,6 @@ do
                 end
                 local fields = catspec.fields
                 if fields then
-                    local kind = (not check or data[field]) and fields[field]
-                    if kind then
-                        return what and kind or field
-                    end
                     local sets = catspec.sets
                     if sets then
                         local set = sets[field]
@@ -1014,6 +1026,10 @@ do
                             end
                         end
                     end
+                    local kind = (not check or data[field]) and fields[field]
+                    if kind then
+                        return what and kind or field
+                    end
                 end
             end
         end
@@ -1034,9 +1050,9 @@ do
                 local category = fields.category
                 local valid    = permitted(category,field)
                 if valid then
-                    local okay = found(dataset,tag,field,valid,fields)
-                    if okay then
-                        context(manipulator and applymanipulation(manipulator,okay) or okay)
+                    local name, value = found(dataset,tag,field,valid,fields)
+                    if value then
+                        typesetters[currentspecification.types[name]](field,value,manipulator)
                     else
                         report("%s %s %a in category %a for tag %a in dataset %a","unknown","entry",field,category,tag,name)
                     end
@@ -1060,8 +1076,8 @@ do
                 if permitted(category,field) then
                     local manipulator, field = splitmanipulation(field)
                     local value = fields[field]
-                    if type(value) == "string" then
-                        context(manipulator and applymanipulation(manipulator,value) or value)
+                    if value then
+                        typesetters[currentspecification.types[field]](field,value,manipulator)
                     else
                         report("%s %s %a in category %a for tag %a in dataset %a","unknown","field",field,category,tag,name)
                     end
@@ -1087,8 +1103,8 @@ do
                     if permitted(category,field) then
                         local manipulator, field = splitmanipulation(field)
                         local value = details[field]
-                        if type(value) == "string" then
-                            context(manipulator and applymanipulation(manipulator,value) or value)
+                        if value then
+                            typesetters[currentspecification.types[field]](field,value,manipulator)
                         else
                             report("%s %s %a in category %a for tag %a in dataset %a","unknown","detail",field,category,tag,name)
                         end
@@ -1114,7 +1130,8 @@ do
                 local category = fields.category
                 local valid    = permitted(category,field)
                 if valid then
-                    return found(dataset,tag,field,valid,fields)
+                    local value, field = found(dataset,tag,field,valid,fields)
+                    return value and value ~= ""
                 end
             end
         end
@@ -1444,10 +1461,10 @@ local function byspec(dataset,list,method) -- todo: yearsuffix
             local a, b = lpegmatch(splitspec,f[i])
             if b then
                 if a == "detail" or a == "entry" then
-                    local w = writers[b]
+                    local t = currentspecification.types[b]
+                    local w = t and writers[t]
                     if w then
-                     -- r[#r+1] = formatters["(%s.%s and writers[%q](%s.%s,snippets))"](a,b,b,a,b)
-                        r[#r+1] = formatters["(%s.%s and writers[%q](%s.%s))"](a,b,b,a,b)
+                        r[#r+1] = formatters["(%s.%s and writers[%q](%s.%s))"](a,b,t,a,b)
                     else
                         r[#r+1] = formatters["%s.%s"](a,b,a,b)
                     end

@@ -19,7 +19,7 @@ local specifications = publications.specifications
 local context = context
 
 local ctx_NC, ctx_NR, ctx_HL, ctx_FL, ctx_ML, ctx_LL = context.NC, context.NR, context.HL, context.FL, context.ML, context.LL
-local ctx_bold, ctx_monobold, ctx_rotate, ctx_llap = context.bold, context.formatted.monobold, context.rotate, context.llap
+local ctx_bold, ctx_monobold, ctx_rotate, ctx_llap, ctx_rlap = context.bold, context.formatted.monobold, context.rotate, context.llap, context.rlap
 local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
 
 local privates = publications.tables.privates
@@ -283,6 +283,30 @@ function tracers.showfields(settings)
     ctx_stoptabulate()
 end
 
+function tracers.showtables(settings)
+    for name, list in sortedhash(publications.tables) do
+        ctx_starttabulate { "|Tl|Tl|" }
+        ctx_FL()
+        ctx_NC()
+        ctx_rlap(function() ctx_bold(name) end)
+        ctx_NC()
+        ctx_NC()
+        ctx_NR()
+        ctx_FL()
+        for k, v in sortedhash(list) do
+            ctx_NC()
+            context(k)
+            ctx_NC()
+            context(tostring(v))
+            ctx_NC()
+            ctx_NR()
+        end
+        ctx_LL()
+        ctx_stoptabulate()
+    end
+end
+
 commands.showbtxdatasetfields       = tracers.showdatasetfields
 commands.showbtxdatasetcompleteness = tracers.showdatasetcompleteness
 commands.showbtxfields              = tracers.showfields
+commands.showbtxtables              = tracers.showtables

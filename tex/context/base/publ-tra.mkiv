@@ -23,6 +23,7 @@
 \unexpanded\def\showbtxdatasetfields      {\dosingleempty\publ_show_dataset_fields}
 \unexpanded\def\showbtxdatasetcompleteness{\dosingleempty\publ_show_dataset_completeness}
 \unexpanded\def\showbtxfields             {\dosingleempty\publ_show_fields}
+\unexpanded\def\showbtxtables             {\dosingleempty\publ_show_tables}
 
 \def\publ_show_dataset_whatever#1[#2]%
   {\begingroup
@@ -59,6 +60,11 @@
       specification = "\dummyparameter\c!specification"
    }}%
  % \publ_specification_pop
+   \endgroup}
+
+\def\publ_show_tables[#1]%
+  {\begingroup
+   \ctxcommand{showbtxtables{}}%
    \endgroup}
 
 \protect

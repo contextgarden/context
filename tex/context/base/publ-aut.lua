@@ -13,9 +13,6 @@ end
 
 local lpeg = lpeg
 
-local context  = context
-local chardata = characters.data
-
 local type, next, tostring = type, next, tostring
 local concat = table.concat
 local utfchar = utf.char
@@ -23,16 +20,15 @@ local formatters = string.formatters
 
 local P, C, V, Cs, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.match, lpeg.patterns
 
-local publications    = publications or { }
+local context         = context
+local commands        = commands
+local publications    = publications
 
-local datasets        = publications.datasets or { }
-publications.datasets = datasets
+local datasets        = publications.datasets
+local writers         = publications.writers
+local authors         = publications.authors
 
-local writers         = publications.writers or { }
-publications.writers  = writers
-
-local authors         = publications.authors or { }
-publications.authors  = authors
+local chardata        = characters.data
 
 local report          = logs.reporter("publications","authors")
 
@@ -460,8 +456,7 @@ local function writer(key,snippets)
     return concat(snippets," ",1,s)
 end
 
-writers.author     = writer
-writers.editor     = editor
+writers.author = writer
 
 local default = { "author" }
 
