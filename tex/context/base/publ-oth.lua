@@ -11,8 +11,10 @@ local lpegmatch = lpeg.match
 
 local p_endofline = lpeg.patterns.newline
 
-local loaders  = publications.loaders
-local getindex = publications.getindex
+local publications = publications
+
+local loaders      = publications.loaders
+local getindex     = publications.getindex
 
 local function addfield(t,k,v,fields)
     k = fields[k]

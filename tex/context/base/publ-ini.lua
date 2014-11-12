@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['publ-ini'] = {
     license   = "see context related readme files"
 }
 
+-- bah .. this 200 locals limit again ... so we need to split it as adding more
+-- do ... ends makes it messier
+
 -- plug the list sorted in the list mechanism (specification.sortorder)
 
 -- todo: delay details till alternative is known so that potential author
@@ -18,7 +21,7 @@ if not modules then modules = { } end modules ['publ-ini'] = {
 -- load big bib files many times and even then ... fonts are larger.
 
 local next, rawget, type, tostring, tonumber = next, rawget, type, tostring, tonumber
-local match, gmatch, format, gsub, find = string.match, string.gmatch, string.format, string.gsub, string.find
+local match, find = string.match, string.find
 local concat, sort, tohash = table.concat, table.sort, table.tohash
 local utfsub = utf.sub
 local mod = math.mod
@@ -38,10 +41,15 @@ local trace              = false  trackers.register("publications",             
 local trace_cite         = false  trackers.register("publications.cite",            function(v) trace_cite       = v end)
 local trace_missing      = false  trackers.register("publications.cite.missing",    function(v) trace_missing    = v end)
 local trace_references   = false  trackers.register("publications.cite.references", function(v) trace_references = v end)
+local trace_detail       = false  trackers.register("publications.detail",          function(v) trace_detail     = v end)
 
 publications             = publications or { }
 local datasets           = publications.datasets
 local writers            = publications.writers
+local casters            = publications.casters
+local detailed           = publications.detailed
+local enhancer           = publications.enhancer
+local enhancers          = publications.enhancers
 
 local tracers            = publications.tracers or { }
 publications.tracers     = tracers
@@ -162,17 +170,12 @@ function commands.registerbtxlistvariant(name,parent)
     registeredlistvariants[name] = parent or ""
 end
 
-local specifications                 = publications.specifications
-local currentspecification           = specifications[false]
------ currentspecificationfields     = currentspecification.fields
-local currentspecificationcategories = currentspecification.categories
-
-local ignoredfields                  = { }
+local specifications       = publications.specifications
+local currentspecification = specifications[false]
+local ignoredfields        = { }
 
 local function setspecification(name)
-    currentspecification           = specifications[name]
- -- currentspecificationfields     = currentspecification.fields
-    currentspecificationcategories = currentspecification.categories
+    currentspecification = specifications[name]
     if trace then
         report("setting specification %a",type(name) == "string" and name or "anything")
     end
@@ -237,9 +240,6 @@ end)
 
 local collected = allocate()
 local tobesaved = allocate()
-
--- we use a a dedicated (and efficient as it know what it deals with) serializer,
--- also because we need to ignore the 'details' field
 
 do
 
@@ -312,7 +312,11 @@ do
             if datasources then
                 for i=1,#datasources do
                     local filename = datasources[i].filename
-                    publications.load(dataset,filename,"previous")
+                    publications.load {
+                        dataset  = dataset,
+                        filename = filename,
+                        kind     = "previous"
+                    }
                 end
             end
             if usersource then
@@ -327,21 +331,19 @@ do
 
 end
 
-if not publications.authors then
-    initializer() -- for now, runtime loaded
-end
-
 -- we want to minimize references as there can be many (at least
 -- when testing)
 
-local initialized  = false
-local usedentries  = allocate { }
-local citetolist   = allocate { }
-local listtocite   = allocate { }
 local nofcitations = 0
+local usedentries  = nil
+local citetolist   = nil
+local listtocite   = nil
 
-setmetatableindex(usedentries,function(t,k)
-    if not initialized then
+do
+
+    local initialize = nil
+
+    initialize = function(t)
         usedentries = allocate { }
         citetolist  = allocate { }
         listtocite  = allocate { }
@@ -434,12 +436,20 @@ setmetatableindex(usedentries,function(t,k)
                 end
             end
         end
-        return usedentries[k]
+        initialize = nil
     end
-end)
 
-function publications.usedentries(dataset)
-    return usedentries[dataset]
+    usedentries = setmetatableindex(function(_,k) if initialize then initialize() end return usedentries[k] end)
+    citetolist  = setmetatableindex(function(_,k) if initialize then initialize() end return citetolist [k] end)
+    listtocite  = setmetatableindex(function(_,k) if initialize then initialize() end return listtocite [k] end)
+
+    function publications.usedentries()
+        if initialize then
+            initialize()
+        end
+        return usedentries
+    end
+
 end
 
 -- match:
@@ -451,103 +461,108 @@ end
 -- by prefix
 -- by dataset
 
-local reported = { }
-local finder   = publications.finder
+local findallused do
 
-local function findallused(dataset,reference,internal)
-    local finder  = publications.finder -- for the moment, not yet in all betas
-    local find    = finder and finder(reference)
-    local tags    = not find and settings_to_array(reference)
-    local todo    = { }
-    local okay    = { } -- only if mark
-    local set     = usedentries[dataset]
-    local valid   = datasets[dataset].luadata
-    local ordered = datasets[dataset].ordered
-    if set then
-        local function register(tag)
-            local entry = set[tag]
-            if entry then
-                -- only once in a list but at some point we can have more (if we
-                -- decide to duplicate)
-                if #entry == 1 then
-                    entry = entry[1]
-                else
-                    -- same block and section
-                    local done = false
-                    if internal and internal > 0 then
-                        -- first following in list
-                        for i=1,#entry do
-                            local e = entry[i]
-                            if e.references.internal > internal then
-                                done = e
-                                break
-                            end
-                        end
-                        if not done then
-                            -- last preceding in list
+    local reported = { }
+    local finder   = publications.finder
+
+    findallused = function(dataset,reference,internal)
+        local finder  = publications.finder -- for the moment, not yet in all betas
+        local find    = finder and finder(reference)
+        local tags    = not find and settings_to_array(reference)
+        local todo    = { }
+        local okay    = { } -- only if mark
+        local set     = usedentries[dataset]
+        local current = datasets[dataset]
+        local valid   = current.luadata
+        local ordered = current.ordered
+        if set then
+            local function register(tag)
+                local entry = set[tag]
+                if entry then
+                    -- only once in a list but at some point we can have more (if we
+                    -- decide to duplicate)
+                    if #entry == 1 then
+                        entry = entry[1]
+                    else
+                        -- same block and section
+                        local done = false
+                        if internal and internal > 0 then
+                            -- first following in list
                             for i=1,#entry do
                                 local e = entry[i]
-                                if e.references.internal < internal then
+                                if e.references.internal > internal then
                                     done = e
-                                else
                                     break
                                 end
                             end
+                            if not done then
+                                -- last preceding in list
+                                for i=1,#entry do
+                                    local e = entry[i]
+                                    if e.references.internal < internal then
+                                        done = e
+                                    else
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                        if done then
+                            entry = done
+                        else
+                            entry = entry[1]
                         end
                     end
-                    if done then
-                        entry = done
-                    else
-                        entry = entry[1]
+                    okay[#okay+1] = entry
+                end
+                todo[tag] = true
+            end
+            if find then
+                tags = { }
+                for i=1,#ordered do
+                    local entry = ordered[i]
+                    if find(entry) then
+                        local tag = entry.tag
+                        register(tag)
+                        tags[#tags+1] = tag
                     end
                 end
-                okay[#okay+1] = entry
-            end
-            todo[tag] = true
-        end
-        if find then
-            tags = { }
-            for i=1,#ordered do
-                local entry = ordered[i]
-                if find(entry) then
-                    local tag = entry.tag
-                    register(tag)
-                    tags[#tags+1] = tag
+            else
+                for i=1,#tags do
+                    local tag  = tags[i]
+                    if valid[tag] then
+                        register(tag)
+                    elseif not reported[tag] then
+                        reported[tag] = true
+                        report_cite("non-existent entry %a in %a",tag,dataset)
+                    end
                 end
             end
         else
-            for i=1,#tags do
-                local tag  = tags[i]
-                if valid[tag] then
-                    register(tag)
-                elseif not reported[tag] then
-                    reported[tag] = true
-                    report_cite("non-existent entry %a in %a",tag,dataset)
+            if find then
+                tags = { }
+                for i=1,#ordered do
+                    local entry = ordered[i]
+                    if find(entry) then
+                        tags[#tags+1] = entry.tag
+                    end
+                end
+            else
+                for i=1,#tags do
+                    local tag = tags[i]
+                    if valid[tag] then
+                        todo[tag] = true
+                    elseif not reported[tag] then
+                        reported[tag] = true
+                        report_cite("non-existent entry %a in %a",tag,dataset)
+                    end
                 end
             end
         end
-    else
-        if find then
-            tags = { }
-            for i=1,#ordered do
-                local entry = ordered[i]
-                if find(entry) then
-                    tags[#tags+1] = entry.tag
-                end
-            end
-        else
-            for i=1,#tags do
-                local tag = tags[i]
-                if valid[tag] then
-                    todo[tag] = true
-                elseif not reported[tag] then
-                    reported[tag] = true
-                    report_cite("non-existent entry %a in %a",tag,dataset)
-                end
-            end
-        end
+        return okay, todo, tags
     end
-    return okay, todo, tags
+
 end
 
 local function unknowncite(reference)
@@ -671,201 +686,147 @@ end
 
 -- basic loading
 
-function commands.usebtxdataset(name,filename)
-    publications.load(datasets[name],filename,"current")
+function commands.usebtxdataset(specification)
+    specification.kind = "current"
+    publications.load(specification)
 end
 
 function commands.convertbtxdatasettoxml(name,nice)
-    publications.converttoxml(datasets[name],nice)
+    publications.converttoxml(name,nice)
 end
 
 -- enhancing
 
-local splitauthorstring = publications.authors.splitstring
+do
 
-local pagessplitter = lpeg.splitat(P("-")^1)
+    -- maybe not redo when already done
 
--- maybe not redo when already done
-
-local function shortsorter(a,b)
-    local ay, by = a[2], b[2]
-    if ay ~= by then
-        return ay < by
-    end
-    local ay, by = a[3], b[3]
-    if ay ~= by then
-        return ay < by
-    end
-    return a[4] < b[4]
-end
-
-function publications.enhance(dataset) -- for the moment split runs (maybe publications.enhancers)
-    statistics.starttiming(publications)
-    if type(dataset) == "string" then
-        dataset = datasets[dataset]
-    else
-        -- assume table, otherwise maybe issue an error
-    end
-    local used    = usedentries[dataset.name] or { }
-    local luadata = dataset.luadata
-    local details = dataset.details
-    local ordered = dataset.ordered
-    local types   = currentspecification.types -- or { author = "author", editor = "author" }
-    local authors = { }
-    --
-    for k, v in next, types do
-        if v == "author" then
-            authors[#authors+1] = k
+    local function shortsorter(a,b)
+        local ay, by = a[2], b[2]
+        if ay ~= by then
+            return ay < by
         end
-    end
-    --
-    for tag, entry in next, luadata do
-        local detail = { }
-        details[tag] = detail
-        for i=1,#authors do
-            local key   = authors[i]
-            local value = entry[key]
-            if value then
-                detail[key] = splitauthorstring(value)
-            end
+        local ay, by = a[3], b[3]
+        if ay ~= by then
+            return ay < by
         end
+        return a[4] < b[4]
     end
-    -- short
-    local shorts = { }
-    for i=1,#ordered do
-        local entry = ordered[i]
-        if entry then
-            local tag = entry.tag
-            if tag then
-                local detail = details[tag]
-                if detail then
-                    local author = detail.author
-                    if author then
-                        -- number depends on sort order
-                        local t = { }
-                        if #author == 0 then
-                            -- what
-                        else
-                            local n = #author == 1 and 3 or 1
-                            for i=1,#author do
-                                local surnames = author[i].surnames
-                                if not surnames or #surnames == 0 then
-                                    -- error
+
+    -- We could avoid loops by combining enhancers but that makes it only
+    -- more messy and for documents that use publications the few extra milli
+    -- seconds are irrelevant (there is for sure more to gain by proper coding
+    -- of the source and or style).
+
+    function publications.enhancers.suffixes(dataset)
+
+        if not dataset then
+            -- bad news
+            return
+        else
+            report("analyzing previous publication run for %a",dataset.name)
+        end
+        local used = usedentries[dataset.name]
+        if not used then
+            -- probably a first run
+            return
+        end
+        local luadata = dataset.luadata
+        local details = dataset.details
+        local ordered = dataset.ordered
+        local caster  = casters.author
+        local getter  = publications.directget
+        local shorts  = { }
+        if not luadata or not detailr or not ordered then
+            return
+            -- also bad news
+        end
+        for i=1,#ordered do
+            local entry = ordered[i]
+            if entry then
+                local tag = entry.tag
+                if tag  then
+                    local use = used[tag]
+                    if use then
+                        -- use is a table of used list entries (so there can be more) and we just look at
+                        -- the first one for btx properties
+                        local listentry = use[1]
+                        local userdata  = listentry.userdata
+                        local btxspc    = userdata and userdata.btxspc
+                        if btxspc then
+                            local author = getter(dataset,entry,"author",specifications[btxspc])
+                            if author then
+                                author = caster(author)
+                                -- number depends on sort order
+                                local t = { }
+                                if #author > 0 then
+                                    local n = #author == 1 and 3 or 1
+                                    for i=1,#author do
+                                        local surnames = author[i].surnames
+                                        if not surnames or #surnames == 0 then
+                                            -- error
+                                        else
+                                            t[#t+1] = utfsub(surnames[1],1,n)
+                                        end
+                                    end
+                                end
+                                local year  = tonumber(entry.year) or 0
+                                local short = formatters["%t%02i"](t,mod(year,100))
+                                local s = shorts[short]
+                                -- we could also sort on reference i.e. entries.text
+                                if u then
+                                    u = listentry.entries.text -- hm
                                 else
-                                    t[#t+1] = utfsub(surnames[1],1,n)
+                                    u = "0"
+                                end
+                                if not s then
+                                    shorts[short] = { { tag, year, u, i } }
+                                else
+                                    s[#s+1] = { tag, year, u, i }
                                 end
                             end
-                        end
-                        local year = tonumber(entry.year) or 0
-                        local short = formatters["%t%02i"](t,mod(year,100))
-                        local s = shorts[short]
-                        -- we could also sort on reference i.e. entries.text
-                        local u = used[tag]
-                        if u then
-                            u = u[1].entries.text -- hm
                         else
-                            u = "0"
+                            --- no spec so let's forget about it
                         end
-                        if not s then
-                            shorts[short] = { { tag, year, u, i } }
-                        else
-                            s[#s+1] = { tag, year, u, i }
-                        end
-                    else
-                        --
                     end
-                else
-                    report("internal error, no detail for tag %s",tag)
                 end
-                --
-                local pages = entry.pages or entry.page
-                if pages then
-                    local first, last = lpegmatch(pagessplitter,pages)
-                    detail.pages = first and last and { first, last } or pages
-                end
-                --
-                local keyword = entry.keyword
-                if keyword then
-                    detail.keyword = settings_to_set(keyword)
-                end
-                --
-                if category == "inbook" then
-                    detail.maintitle = entry.chapter or entry.title
-                elseif category == "incollection" then
-                    detail.maintitle = entry.title or entry.booktitle
-                else
-                    detail.maintitle = entry.title or entry.chapter or entry.booktitle
+            end
+        end
+        for short, tags in next, shorts do -- ordered ?
+            local done = #tags > 0
+            -- now we assign the suffixes, unless we have only one reference
+            if done then
+                sort(tags,shortsorter)
+                local n = #tags
+                if n > 1 then
+                    for i=1,n do
+                        local tag     = tags[i][1]
+                        local detail  = details[tag]
+                        local suffix  = numbertochar(i)
+                        local entry   = luadata[tag]
+                        local year    = entry.year
+                        detail.short  = short
+                        detail.suffix = suffix
+                        if year then
+                            detail.suffixedyear = year .. suffix
+                        end
+                    end
                 end
             else
-                report("internal error, no tag at index %s",i)
-            end
-        else
-            report("internal error, no entry at index %s",i)
-        end
-    end
-    for short, tags in next, shorts do -- ordered ?
-        local done = #tags > 0
-        -- we only use suffixes when there are multiple references to same years
-        -- so we check for used first
-        if done then
-            local n = 0
-            for i=1,#tags do
-                local tag = tags[i][1]
-                if used[tag] then
-                    n = n + 1
-                    if n > 1 then
-                        break
-                    end
-                end
-            end
-            done = n > 1
-        end
-        -- now we assign the suffixes, unless we have only one reference
-        if done then
-            sort(tags,shortsorter)
-            local n = 0
-            for i=1,#tags do
-                local tag = tags[i][1]
+                local tag    = tags[1][1]
                 local detail = details[tag]
+                local entry  = luadata[tag]
+                local year   = entry.year
                 detail.short = short
-                if used[tag] then
-                    n = n + 1
-                    local suffix  = numbertochar(n)
-                    detail.suffix = suffix
-                    local entry   = luadata[tag]
-                    local year    = entry.year
-                    if year then
-                        detail.suffixedyear = year .. suffix
-                    end
+                if year then
+                    detail.suffixedyear = year
                 end
-            end
-         -- for i=1,#tags do
-         --     local tag = tags[i][1]
-         --     local detail = details[tag]
-         --     if not detail.suffix then
-         --         n = n + 1
-         --         local suffix  = numbertochar(n)
-         --         detail.suffix = suffix
-         --         local entry   = luadata[tag]
-         --         local year    = entry.year
-         --         if year then
-         --             detail.suffixedyear = year .. suffix
-         --         end
-         --     end
-         -- end
-        else
-            local tag = tags[1][1]
-            local detail = details[tag]
-            detail.short = short
-            local entry  = luadata[tag]
-            local year   = entry.year
-            if year then
-                detail.suffixedyear = year
             end
         end
     end
-    dataset.enhanced = true
-    statistics.stoptiming(publications)
+
+    utilities.sequencers.appendaction(enhancer,"system","publications.enhancers.suffixes")
+
 end
 
 function commands.addbtxentry(name,settings,content)
@@ -940,23 +901,28 @@ do
     -- when we have a special kind of database
 
     local function permitted(category,field)
-        local catspec = currentspecificationcategories[category]
+        local catspec = currentspecification.categories[category]
         if not catspec then
-            report("invalid category %a, %s",category,"no specification")
+            report("invalid category %a, %s",category,"no specification") -- can't happen
             return false
         end
         local fields = catspec.fields
         if not fields then
-            report("invalid category %a, %s",category,"no fields")
+            report("invalid category %a, %s",category,"no fields") -- can't happen
             return false
         end
-        local kind = fields[field]
         if ignoredfields and ignoredfields[field] then
             return false
-        else
-            --- just "return true" as it's already in fields
-            local sets = catspec.sets
-            return sets and sets[field] or true
+        end
+        local sets = catspec.sets
+        if sets then
+            local set = sets[field]
+            if set then
+                return set
+            end
+        end
+        if fields[field] then
+            return true
         end
     end
 
@@ -968,36 +934,36 @@ do
                 return field, okay
             end
             local details = dataset.details[tag]
-            local okay = details[field]
-            if okay then
-                return field, okay
+            local value = details[field]
+            if value then
+                return field, value
             end
         elseif valid then
          -- local fields = dataset.luadata[tag]
             for i=1,#valid do
                 local field = valid[i]
-                local okay = fields[field]
-                if okay then
-                    return field, okay
+                local value = fields[field]
+                if value then
+                    return field, value
                 end
             end
             local details = dataset.details[tag]
             for i=1,#valid do
-                local okay = details[field]
-                if okay then
-                    return field, okay
+                local value = details[field]
+                if value then
+                    return field, value
                 end
             end
         end
     end
 
-    local function get(name,tag,field,what,check)
-        local dataset = rawget(datasets,name)
-        if dataset then
-            local data = dataset.luadata[tag]
+    local function get(dataset,tag,field,what,check,catspec)
+        local current = rawget(datasets,dataset)
+        if current then
+            local data = current.luadata[tag]
             if data then
                 local category = data.category
-                local catspec  = currentspecificationcategories[category]
+                local catspec  = (catspec or currentspecification).categories[category]
                 if not catspec then
                     return false
                 end
@@ -1036,6 +1002,32 @@ do
         return ""
     end
 
+    publications.get = get
+
+    function publications.directget(dataset,data,field,catspec)
+        local catspec = (catspec or currentspecification).categories[data.category]
+        if not catspec then
+            return false
+        end
+        local fields = catspec.fields
+        if fields then
+            local sets = catspec.sets
+            if sets then
+                local set = sets[field]
+                if set then
+                    for i=1,#set do
+                        local field = set[i]
+                        local value = fields[field] and data[field] -- redundant check
+                        if value then
+                            return value
+                        end
+                    end
+                end
+            end
+            return fields[field] and data[field] or nil -- redundant check
+        end
+    end
+
     function commands.btxfieldname(name,tag,field) context(get(name,tag,field,false,false)) end
     function commands.btxfieldtype(name,tag,field) context(get(name,tag,field,true, false)) end
     function commands.btxfoundname(name,tag,field) context(get(name,tag,field,false,true )) end
@@ -1053,10 +1045,10 @@ do
                     local name, value = found(dataset,tag,field,valid,fields)
                     if value then
                         typesetters[currentspecification.types[name]](field,value,manipulator)
-                    else
+                    elseif trace_detail then
                         report("%s %s %a in category %a for tag %a in dataset %a","unknown","entry",field,category,tag,name)
                     end
-                else
+                elseif trace_detail then
                     report("%s %s %a in category %a for tag %a in dataset %a","invalid","entry",field,category,tag,name)
                 end
             else
@@ -1078,10 +1070,10 @@ do
                     local value = fields[field]
                     if value then
                         typesetters[currentspecification.types[field]](field,value,manipulator)
-                    else
+                    elseif trace_detail then
                         report("%s %s %a in category %a for tag %a in dataset %a","unknown","field",field,category,tag,name)
                     end
-                else
+                elseif trace_detail then
                     report("%s %s %a in category %a for tag %a in dataset %a","invalid","field",field,category,tag,name)
                 end
             else
@@ -1105,10 +1097,10 @@ do
                         local value = details[field]
                         if value then
                             typesetters[currentspecification.types[field]](field,value,manipulator)
-                        else
+                        elseif trace_detail then
                             report("%s %s %a in category %a for tag %a in dataset %a","unknown","detail",field,category,tag,name)
                         end
-                    else
+                    elseif trace_detail then
                         report("%s %s %a in category %a for tag %a in dataset %a","invalid","detail",field,category,tag,name)
                     end
                 else
@@ -1157,392 +1149,410 @@ function publications.singularorplural(singular,plural)
     end
 end
 
-local patterns = { "publ-imp-%s.mkvi", "publ-imp-%s.mkiv", "publ-imp-%s.tex" }
+-- loading
 
-local function failure(name)
-    report("unknown library %a",name)
+do
+
+    local patterns = { "publ-imp-%s.mkvi", "publ-imp-%s.mkiv", "publ-imp-%s.tex" }
+
+    local function failure(name)
+        report("unknown library %a",name)
+    end
+
+    local function action(name,foundname)
+        context.input(foundname)
+    end
+
+    function commands.loadbtxdefinitionfile(name) -- a more specific name
+        commands.uselibrary {
+            name     = string.gsub(name,"^publ%-",""),
+            patterns = patterns,
+            action   = action,
+            failure  = failure,
+            onlyonce = true,
+        }
+    end
+
 end
 
-local function action(name,foundname)
-    context.input(foundname)
-end
+-- lists
 
-function commands.loadbtxdefinitionfile(name) -- a more specific name
-    commands.uselibrary {
-        name     = gsub(name,"^publ%-",""),
-        patterns = patterns,
-        action   = action,
-        failure  = failure,
-        onlyonce = true,
-    }
-end
+do
 
--- lists:
+    publications.lists = publications.lists or { }
+    local lists        = publications.lists
 
-publications.lists = publications.lists or { }
-local lists        = publications.lists
+    local context     = context
+    local structures  = structures
 
-local context     = context
-local structures  = structures
+    local references  = structures.references
+    local sections    = structures.sections
 
-local references  = structures.references
-local sections    = structures.sections
+    -- per rendering
 
--- per rendering
+    local renderings = { } --- per dataset
 
-local renderings = { } --- per dataset
-
-setmetatableindex(renderings,function(t,k)
-    local v = {
-        list         = { },
-        done         = { },
-        alldone      = { },
-        used         = { },
-        registered   = { },
-        ordered      = { },
-        shorts       = { },
-        method       = v_none,
-        texts        = setmetatableindex("table"),
-        currentindex = 0,
-    }
-    t[k] = v
-    return v
-end)
-
--- helper
-
--- local function sortedtags(dataset,list,sorttype)
---     local luadata = datasets[dataset].luadata
---     local valid = { }
---     for i=1,#list do
---         local tag = list[i]
---         local entry = luadata[tag]
---         if entry then
---             local key = entry[sorttype]
---             if key then
---                 valid[#valid+1] = {
---                     tag   = tag,
---                     split = sortsplitter(sortstripper(key))
---                 }
---             end
---         end
---     end
---     if #valid == 0 or #valid ~= #list then
---         return list
---     else
---         sorters.sort(valid,basicsorter)
---         for i=1,#valid do
---             valid[i] = valid[i].tag
---         end
---         return valid
---     end
--- end
---
---     if sorttype and sorttype ~= "" then
---         tags = sortedtags(dataset,tags,sorttype)
---     end
-
--- why shorts vs tags: only for sorting
-
-function lists.register(dataset,tag,short) -- needs checking now that we split
-    local r = renderings[dataset]
-    if not short or short == "" then
-        short = tag
-    end
-    if trace then
-        report("registering publication entry %a with shortcut %a",tag,short)
-    end
-    local top = #r.registered + 1
-    -- do we really need these
-    r.registered[top] = tag
-    r.ordered   [tag] = top
-    r.shorts    [tag] = short
-end
-
-function lists.nofregistered(dataset)
-    return #renderings[dataset].registered
-end
-
-local function validkeyword(dataset,tag,keyword)
-    local ds = datasets[dataset]
-    if not ds then
-        report("unknown dataset %a",dataset)
-        return
-    end
-    local dt = ds.details[tag]
-    if not dt then
-        report("no details for tag %a",tag)
-        return
-    end
-    local kw = dt.keyword
-    if kw then
-        for k in next, keyword do
-            if kw[k] then
-                return true
-            end
-        end
-    end
-end
-
-local function registerpage(pages,tag,result,listindex)
-    local p = pages[tag]
-    local r = result[listindex].references
-    if p then
-        local last = p[#p][2]
-        local real = last.realpage
-        if real ~= r.realpage then
-            p[#p+1] = { listindex, r }
-        end
-    else
-        pages[tag] = { { listindex, r } }
-    end
-end
-
-local methods = { }
-lists.methods = methods
-
-methods[v_dataset] = function(dataset,rendering,keyword)
-    -- why only once unless criterium=all?
-    local luadata = datasets[dataset].luadata
-    local list    = rendering.list
-    for tag, data in sortedhash(luadata) do
-        if not keyword or validkeyword(dataset,tag,keyword) then
-            list[#list+1] = { tag, false, 0, false, false }
-        end
-    end
-end
-
-methods[v_force] = function (dataset,rendering,keyword)
-    -- only for checking, can have duplicates, todo: collapse page numbers, although
-    -- we then also needs deferred writes
-    local result = structures.lists.filter(rendering.specification) or { }
-    local list   = rendering.list
-    for listindex=1,#result do
-        local r = result[listindex]
-        local u = r.userdata
-        if u and u.btxset == dataset then
-            local tag = u.btxref
-            if tag and (not keyword or validkeyword(dataset,tag,keyword)) then
-                list[#list+1] = { tag, listindex, 0, u, u.btxint }
-            end
-        end
-    end
-    lists.result = result
-end
-
--- local  : if tag and                      done[tag] ~= section then ...
--- global : if tag and not alldone[tag] and done[tag] ~= section then ...
-
-methods[v_local] = function(dataset,rendering,keyword)
-    local result    = structures.lists.filter(rendering.specification) or { }
-    local section   = sections.currentid()
-    local list      = rendering.list
-    local repeated  = rendering.repeated == v_yes
-    local r_done    = rendering.done
-    local r_alldone = rendering.alldone
-    local done      = repeated and { } or r_done
-    local alldone   = repeated and { } or r_alldone
-    local doglobal  = rendering.method == v_global
-    local traced    = { } -- todo: only if interactive (backlinks) or when tracing
-    local pages     = { }
-    for listindex=1,#result do
-        local r = result[listindex]
-        local u = r.userdata
-        if u and u.btxset == dataset then
-            local tag = u.btxref
-            if not tag then
-                -- problem
-            elseif done[tag] == section then -- a bit messy for global and all and so
-                -- skip
-            elseif doglobal and alldone[tag] then
-                -- skip
-            elseif not keyword or validkeyword(dataset,tag,keyword) then
-                if traced then
-                    local l = traced[tag]
-                    if l then
-                        l[#l+1] = u.btxint
-                    else
-                        local l = { tag, listindex, 0, u, u.btxint }
-                        list[#list+1] = l
-                        traced[tag] = l
-                    end
-                else
-                    done[tag]    = section
-                    alldone[tag] = true
-                    list[#list+1] = { tag, listindex, 0, u, u.btxint }
-                end
-            end
-            registerpage(pages,tag,result,listindex)
-        end
-    end
-    if traced then
-        for tag in next, traced do
-            done[tag]    = section
-            alldone[tag] = true
-        end
-    end
-    lists.result = result
-    structures.lists.result = result
-    rendering.pages = pages -- or list.pages
- -- inspect(pages)
-end
-
-methods[v_global] = methods[v_local]
-
-function lists.collectentries(specification)
-    local dataset = specification.btxdataset
-    if not dataset then
-        return
-    end
-    local rendering  = renderings[dataset]
-    if not rendering then
-        return
-    end
-    local method            = specification.method or v_none
-    local ignored           = specification.ignored or ""
-    rendering.method        = method
-    rendering.ignored       = ignored ~= "" and settings_to_set(ignored) or nil
-    rendering.list          = { }
-    rendering.done          = { }
-    rendering.sorttype      = specification.sorttype or v_default
-    rendering.criterium     = specification.criterium or v_none
-    rendering.repeated      = specification.repeated or v_no
-    rendering.specification = specification
-    local filtermethod      = methods[method]
-    if not filtermethod then
-        return
-    end
-    lists.result  = { } -- kind of reset
-    local keyword = specification.keyword
-    if keyword and keyword ~= "" then
-        keyword = settings_to_set(keyword)
-    else
-        keyword = nil
-    end
-    filtermethod(dataset,rendering,keyword)
-end
-
--- experiment
-
-local splitspec = lpeg.splitat(S(":."))
-local splitter  = sorters.splitters.utf
-local strip     = sorters.strip
-
-local function newsplitter(splitter)
-    return setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
-        local v = splitter(k,true)                  -- in other cases
+    setmetatableindex(renderings,function(t,k)
+        local v = {
+            list         = { },
+            done         = { },
+            alldone      = { },
+            used         = { },
+            registered   = { },
+            ordered      = { },
+            shorts       = { },
+            method       = v_none,
+            texts        = setmetatableindex("table"),
+            currentindex = 0,
+        }
         t[k] = v
         return v
     end)
-end
 
-local template = [[
-    local strip   = sorters.strip
-    local writers = publications.writers
-    return function(entry,detail,splitted,i) -- snippets
-        return {
-            index = i,
-            split = { %s, splitted[tostring(i)] }
-        }
+    -- helper
+
+    -- local function sortedtags(dataset,list,sorttype)
+    --     local luadata = datasets[dataset].luadata
+    --     local valid = { }
+    --     for i=1,#list do
+    --         local tag = list[i]
+    --         local entry = luadata[tag]
+    --         if entry then
+    --             local key = entry[sorttype]
+    --             if key then
+    --                 valid[#valid+1] = {
+    --                     tag   = tag,
+    --                     split = sortsplitter(sortstripper(key))
+    --                 }
+    --             end
+    --         end
+    --     end
+    --     if #valid == 0 or #valid ~= #list then
+    --         return list
+    --     else
+    --         sorters.sort(valid,basicsorter)
+    --         for i=1,#valid do
+    --             valid[i] = valid[i].tag
+    --         end
+    --         return valid
+    --     end
+    -- end
+    --
+    --     if sorttype and sorttype ~= "" then
+    --         tags = sortedtags(dataset,tags,sorttype)
+    --     end
+
+    -- why shorts vs tags: only for sorting
+
+    function lists.register(dataset,tag,short) -- needs checking now that we split
+        local r = renderings[dataset]
+        if not short or short == "" then
+            short = tag
+        end
+        if trace then
+            report("registering publication entry %a with shortcut %a",tag,short)
+        end
+        local top = #r.registered + 1
+        -- do we really need these
+        r.registered[top] = tag
+        r.ordered   [tag] = top
+        r.shorts    [tag] = short
     end
-]]
 
-local function byspec(dataset,list,method) -- todo: yearsuffix
-    local luadata  = datasets[dataset].luadata
-    local details  = datasets[dataset].details
-    local result   = { }
-    local splitted = newsplitter(splitter) -- saves mem
- -- local snippets = { } -- saves mem
-    local fields   = settings_to_array(method)
-    for i=1,#fields do
-        local f = settings_to_array(fields[i])
-        local r = { }
-        for i=1,#f do
-            local a, b = lpegmatch(splitspec,f[i])
-            if b then
-                if a == "detail" or a == "entry" then
-                    local t = currentspecification.types[b]
-                    local w = t and writers[t]
-                    if w then
-                        r[#r+1] = formatters["(%s.%s and writers[%q](%s.%s))"](a,b,t,a,b)
+    function lists.nofregistered(dataset)
+        return #renderings[dataset].registered
+    end
+
+    local function validkeyword(dataset,entry,keyword)
+        local kw = fastget(dataset,entry,"keywords") -- hard coded for the moment
+        if kw then
+            for k in next, keyword do
+                if kw[k] then
+                    return true
+                end
+            end
+        end
+    end
+
+    local function registerpage(pages,tag,result,listindex)
+        local p = pages[tag]
+        local r = result[listindex].references
+        if p then
+            local last = p[#p][2]
+            local real = last.realpage
+            if real ~= r.realpage then
+                p[#p+1] = { listindex, r }
+            end
+        else
+            pages[tag] = { { listindex, r } }
+        end
+    end
+
+    local methods = { }
+    lists.methods = methods
+
+    methods[v_dataset] = function(dataset,rendering,keyword)
+        -- why only once unless criterium=all?
+        local current   = datasets[dataset]
+        local luadata   = current.luadata
+        local list    = rendering.list
+        for tag, data in sortedhash(luadata) do
+            if not keyword or validkeyword(dataset,data,keyword) then
+                list[#list+1] = { tag, false, 0, false, false }
+            end
+        end
+    end
+
+    methods[v_force] = function (dataset,rendering,keyword)
+        -- only for checking, can have duplicates, todo: collapse page numbers, although
+        -- we then also needs deferred writes
+        local result  = structures.lists.filter(rendering.specification) or { }
+        local list    = rendering.list
+        local current = datasets[dataset]
+        local luadata = current.luadata
+        for listindex=1,#result do
+            local r = result[listindex]
+            local u = r.userdata
+            if u and u.btxset == dataset then
+                local tag = u.btxref
+                if tag and (not keyword or validkeyword(dataset,luadata[tag],keyword)) then
+                    list[#list+1] = { tag, listindex, 0, u, u.btxint }
+                end
+            end
+        end
+        lists.result = result
+    end
+
+    -- local  : if tag and                      done[tag] ~= section then ...
+    -- global : if tag and not alldone[tag] and done[tag] ~= section then ...
+
+    methods[v_local] = function(dataset,rendering,keyword)
+        local result    = structures.lists.filter(rendering.specification) or { }
+        local section   = sections.currentid()
+        local list      = rendering.list
+        local repeated  = rendering.repeated == v_yes
+        local r_done    = rendering.done
+        local r_alldone = rendering.alldone
+        local done      = repeated and { } or r_done
+        local alldone   = repeated and { } or r_alldone
+        local doglobal  = rendering.method == v_global
+        local traced    = { } -- todo: only if interactive (backlinks) or when tracing
+        local pages     = { }
+        local current   = datasets[dataset]
+        local luadata   = current.luadata
+        for listindex=1,#result do
+            local r = result[listindex]
+            local u = r.userdata
+            if u and u.btxset == dataset then
+                local tag = u.btxref
+                if not tag then
+                    -- problem
+                elseif done[tag] == section then -- a bit messy for global and all and so
+                    -- skip
+                elseif doglobal and alldone[tag] then
+                    -- skip
+                elseif not keyword or validkeyword(dataset,luadata[tag],keyword) then
+                    if traced then
+                        local l = traced[tag]
+                        if l then
+                            l[#l+1] = u.btxint
+                        else
+                            local l = { tag, listindex, 0, u, u.btxint }
+                            list[#list+1] = l
+                            traced[tag] = l
+                        end
                     else
-                        r[#r+1] = formatters["%s.%s"](a,b,a,b)
+                        done[tag]    = section
+                        alldone[tag] = true
+                        list[#list+1] = { tag, listindex, 0, u, u.btxint }
                     end
                 end
-            elseif a then
-                r[#r+1] = formatters["%s"](a)
+                registerpage(pages,tag,result,listindex)
             end
         end
-        r[#r+1] = '""'
-        fields[i] = "splitted[strip(" .. concat(r," or ") .. ")]"
-    end
-    local action  = formatters[template](concat(fields,", "))
-    local prepare = loadstring(action)
-    if prepare then
-        prepare = prepare()
-        local dummy = { }
-        for i=1,#list do
-            -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
-            local li     = list[i]
-            local tag    = type(li) == "string" and li or li[1]
-            local entry  = luadata[tag]
-            local detail = details[tag]
-            if entry and detail then
-                result[i] = prepare(entry,detail,splitted,i) -- ,snippets)
-            else
-                result[i] = prepare(dummy,dummy,splitted,i) -- ,snippets)
+        if traced then
+            for tag in next, traced do
+                done[tag]    = section
+                alldone[tag] = true
             end
         end
+        lists.result = result
+        structures.lists.result = result
+        rendering.pages = pages -- or list.pages
+     -- inspect(pages)
     end
-    return result
-end
 
-lists.sorters = {
-    [v_short] = function(dataset,rendering,list)
-        local shorts = rendering.shorts
-        local function compare(a,b)
-            local aa, bb = a and a[1], b and b[1]
-            if aa and bb then
-                aa, bb = shorts[aa], shorts[bb]
-                return aa and bb and aa < bb
-            end
-            return false
+    methods[v_global] = methods[v_local]
+
+    function lists.collectentries(specification)
+        local dataset = specification.btxdataset
+        if not dataset then
+            return
         end
-        sort(list,compare)
-    end,
-    [v_reference] = function(dataset,rendering,list)
-        local function compare(a,b)
-            local aa, bb = a and a[1], b and b[1]
-            if aa and bb then
-                return aa and bb and aa < bb
-            end
-            return false
+        local rendering  = renderings[dataset]
+        if not rendering then
+            return
         end
-        sort(list,compare)
-    end,
-    [v_dataset] = function(dataset,rendering,list)
-        local function compare(a,b)
-            local aa, bb = a and a[1], b and b[1]
-            if aa and bb then
-                aa, bb = list[aa].index or 0, list[bb].index or 0
-                return aa and bb and aa < bb
-            end
-            return false
+        local method            = specification.method or v_none
+        local ignored           = specification.ignored or ""
+        rendering.method        = method
+        rendering.ignored       = ignored ~= "" and settings_to_set(ignored) or nil
+        rendering.list          = { }
+        rendering.done          = { }
+        rendering.sorttype      = specification.sorttype or v_default
+        rendering.criterium     = specification.criterium or v_none
+        rendering.repeated      = specification.repeated or v_no
+        rendering.specification = specification
+        local filtermethod      = methods[method]
+        if not filtermethod then
+            return
         end
-        sort(list,compare)
-    end,
-    [v_default] = function(dataset,rendering,list,sorttype) -- experimental
-        if sorttype == "" or sorttype == v_default then
+        lists.result  = { } -- kind of reset
+        local keyword = specification.keyword
+        if keyword and keyword ~= "" then
+            keyword = settings_to_set(keyword)
+        else
+            keyword = nil
+        end
+        filtermethod(dataset,rendering,keyword)
+    end
+
+    -- experiment
+
+    local splitspec = lpeg.splitat(S(":."))
+    local splitter  = sorters.splitters.utf
+    local strip     = sorters.strip
+
+    local function newsplitter(splitter)
+        return setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
+            local v = splitter(k,true)                  -- in other cases
+            t[k] = v
+            return v
+        end)
+    end
+
+    local template = [[
+        local strip   = sorters.strip
+        local writers = publications.writers
+        return function(entry,detail,splitted,i) -- snippets
+            return {
+                index = i,
+                split = { %s, splitted[tostring(i)] }
+            }
+        end
+    ]]
+
+    local function byspec(dataset,list,method) -- todo: yearsuffix
+        local luadata  = datasets[dataset].luadata
+        local details  = datasets[dataset].details
+        local result   = { }
+        local splitted = newsplitter(splitter) -- saves mem
+     -- local snippets = { } -- saves mem
+        local fields   = settings_to_array(method)
+        for i=1,#fields do
+            local f = settings_to_array(fields[i])
+            local r = { }
+            for i=1,#f do
+                local a, b = lpegmatch(splitspec,f[i])
+                if b then
+                    if a == "detail" or a == "entry" then
+                        local t = currentspecification.types[b]
+                        local w = t and writers[t]
+                        if w then
+                            r[#r+1] = formatters["(%s.%s and writers[%q](%s.%s))"](a,b,t,a,b)
+                        else
+                            r[#r+1] = formatters["%s.%s"](a,b,a,b)
+                        end
+                    end
+                elseif a then
+                    r[#r+1] = formatters["%s"](a)
+                end
+            end
+            r[#r+1] = '""'
+            fields[i] = "splitted[strip(" .. concat(r," or ") .. ")]"
+        end
+        local action  = formatters[template](concat(fields,", "))
+        local prepare = loadstring(action)
+        if prepare then
+            prepare = prepare()
+            local dummy = { }
+            for i=1,#list do
+                -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
+                local li     = list[i]
+                local tag    = type(li) == "string" and li or li[1]
+                local entry  = luadata[tag]
+                local detail = details[tag]
+                if entry and detail then
+                    result[i] = prepare(entry,detail,splitted,i) -- ,snippets)
+                else
+                    result[i] = prepare(dummy,dummy,splitted,i) -- ,snippets)
+                end
+            end
+        end
+        return result
+    end
+
+    lists.sorters = {
+        [v_short] = function(dataset,rendering,list)
+            local shorts = rendering.shorts
             local function compare(a,b)
-                local aa, bb = a and a[3], b and b[3]
+                local aa, bb = a and a[1], b and b[1]
+                if aa and bb then
+                    aa, bb = shorts[aa], shorts[bb]
+                    return aa and bb and aa < bb
+                end
+                return false
+            end
+            sort(list,compare)
+        end,
+        [v_reference] = function(dataset,rendering,list)
+            local function compare(a,b)
+                local aa, bb = a and a[1], b and b[1]
                 if aa and bb then
                     return aa and bb and aa < bb
                 end
                 return false
             end
             sort(list,compare)
-        else
-            local valid = byspec(dataset,list,sorttype)
+        end,
+        [v_dataset] = function(dataset,rendering,list)
+            local function compare(a,b)
+                local aa, bb = a and a[1], b and b[1]
+                if aa and bb then
+                    aa, bb = list[aa].index or 0, list[bb].index or 0
+                    return aa and bb and aa < bb
+                end
+                return false
+            end
+            sort(list,compare)
+        end,
+        [v_default] = function(dataset,rendering,list,sorttype) -- experimental
+            if sorttype == "" or sorttype == v_default then
+                local function compare(a,b)
+                    local aa, bb = a and a[3], b and b[3]
+                    if aa and bb then
+                        return aa and bb and aa < bb
+                    end
+                    return false
+                end
+                sort(list,compare)
+            else
+                local valid = byspec(dataset,list,sorttype)
+                if #valid == 0 or #valid ~= #list then
+                    -- nothing to sort
+                else
+                    -- if needed we can wrap compare and use the list directly but this is cleaner
+                    sorters.sort(valid,sortcomparer)
+                    for i=1,#valid do
+                        local v = valid[i]
+                        valid[i] = list[v.index]
+                    end
+                    return valid
+                end
+            end
+        end,
+        [v_author] = function(dataset,rendering,list)
+            local valid = publications.authors.sorters.author(dataset,list)
             if #valid == 0 or #valid ~= #list then
                 -- nothing to sort
             else
@@ -1554,1181 +1564,1176 @@ lists.sorters = {
                 end
                 return valid
             end
-        end
-    end,
-    [v_author] = function(dataset,rendering,list)
-        local valid = publications.authors.sorters.author(dataset,list)
-        if #valid == 0 or #valid ~= #list then
-            -- nothing to sort
-        else
-            -- if needed we can wrap compare and use the list directly but this is cleaner
-            sorters.sort(valid,sortcomparer)
-            for i=1,#valid do
-                local v = valid[i]
-                valid[i] = list[v.index]
-            end
-            return valid
-        end
-    end,
-}
+        end,
+    }
 
--- for determining width
+    -- for determining width
 
-local lastreferencenumber = 0 -- document wide
+    local lastreferencenumber = 0 -- document wide
 
-function lists.prepareentries(dataset)
-    local rendering = renderings[dataset]
-    local list      = rendering.list
-    local used      = rendering.used
-    local forceall  = rendering.criterium == v_all
-    local repeated  = rendering.repeated == v_yes
-    local sorttype  = rendering.sorttype or v_default
-    local sorter    = lists.sorters[sorttype] or lists.sorters[v_default]
-    local current   = datasets[dataset]
-    local luadata   = current.luadata
-    local details   = current.details
-    local newlist   = { }
-    for i=1,#list do
-        local li    = list[i]
-        local tag   = li[1]
-        local entry = luadata[tag]
-        if entry then
-            if forceall or repeated or not used[tag] then
-                newlist[#newlist+1] = li
-                -- already here:
-                if not repeated then
-                    used[tag] = true -- beware we keep the old state (one can always use criterium=all)
-                end
-                local detail = details[tag]
-                if detail then
-                    local referencenumber = detail.referencenumber
-                    if not referencenumber then
-                        lastreferencenumber    = lastreferencenumber + 1
-                        referencenumber        = lastreferencenumber
-                        detail.referencenumber = lastreferencenumber
+    function lists.prepareentries(dataset)
+        local rendering = renderings[dataset]
+        local list      = rendering.list
+        local used      = rendering.used
+        local forceall  = rendering.criterium == v_all
+        local repeated  = rendering.repeated == v_yes
+        local sorttype  = rendering.sorttype or v_default
+        local sorter    = lists.sorters[sorttype] or lists.sorters[v_default]
+        local current   = datasets[dataset]
+        local luadata   = current.luadata
+        local details   = current.details
+        local newlist   = { }
+        for i=1,#list do
+            local li    = list[i]
+            local tag   = li[1]
+            local entry = luadata[tag]
+            if entry then
+                if forceall or repeated or not used[tag] then
+                    newlist[#newlist+1] = li
+                    -- already here:
+                    if not repeated then
+                        used[tag] = true -- beware we keep the old state (one can always use criterium=all)
                     end
-                    li[3] = referencenumber
-                else
-                    report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
-                    -- weird, this shouldn't happen .. all have a detail
-                    lastreferencenumber = lastreferencenumber + 1
-                    details[tag] = { referencenumber = lastreferencenumber }
-                    li[3] = lastreferencenumber
-                end
-            end
-        end
-    end
-    rendering.list  = type(sorter) == "function" and sorter(dataset,rendering,newlist,sorttype) or newlist
-end
-
-function lists.fetchentries(dataset)
-    local rendering = renderings[dataset]
-    local list      = rendering.list
-    for i=1,#list do
-        local li = list[i]
-        ctx_btxsettag(li[1])
-        ctx_btxsetnumber(li[3])
-        ctx_btxchecklistentry()
-    end
-end
-
--- for rendering
-
--- setspecification
-
-function commands.btxflushpages(dataset,tag)
-    -- todo: interaction
-    local rendering = renderings[dataset]
-    local pages     = rendering.pages[tag]
-    if not pages then
-        return
-    end
-    local nofpages = #pages
-    if nofpages == 0 then
-        return
-    end
-    local first_p = nil
-    local first_r = nil
-    local last_p  = nil
-    local last_r  = nil
-    local ranges  = { }
-    local nofdone = 0
-    local function flush()
-        if last_r and first_r ~= last_r then
-            ranges[#ranges+1] = { first_p, last_p }
-        else
-            ranges[#ranges+1] = { first_p }
-        end
-    end
-    for i=1,nofpages do
-        local next_p = pages[i]
-        local next_r = next_p[2].realpage
-        if not first_r then
-            first_p = next_p
-            first_r = next_r
-        elseif last_r + 1 == next_r then
-            -- continue
-        elseif first_r then
-            flush()
-            first_p = next_p
-            first_r = next_r
-        end
-        last_p = next_p
-        last_r = next_r
-    end
-    if first_r then
-        flush()
-    end
-    local nofranges = #ranges
-    for i=1,nofranges do
-        local r = ranges[i]
-        ctx_btxsetconcat(concatstate(i,nofranges))
-        local first, last = r[1], r[2]
-        ctx_btxsetfirstinternal(first[2].internal)
-        ctx_btxsetfirstpage(first[1])
-        if last then
-            ctx_btxsetlastinternal(last[2].internal)
-            ctx_btxsetlastpage(last[1])
-        end
-        ctx_btxpagesetup()
-    end
-end
-
-function lists.flushentries(dataset,textmode)
-    local rendering = renderings[dataset]
-    local list      = rendering.list
-    local luadata   = datasets[dataset].luadata
-    -- maybe a startflushing here
-    ignoredfields   = rendering.ignored or { }
-    --
-    for i=1,#list do
-        local li       = list[i]
-        local tag      = li[1]
-        local n        = li[3]
-        local entry    = luadata[tag]
-        local combined = entry.combined
-        local language = entry.language
-        if combined then
-            ctx_btxsetcombis(concat(combined,","))
-        end
-        ctx_btxsetcategory(entry.category or "unknown")
-        ctx_btxsettag(tag)
-        ctx_btxsetnumber(n)
-        if language then
-            ctx_btxsetlanguage(language)
-        end
-        local bl = li[5]
-        if bl and bl ~= "" then
-            ctx_btxsetbacklink(bl)
-            ctx_btxsetbacktrace(concat(li," ",5))
-            local uc = citetolist[tonumber(bl)]
-            if uc then
-                ctx_btxsetinternal(uc.references.internal or "")
-            end
-        else
-            -- nothing
-        end
-        local userdata = li[4]
-        if userdata then
-            local b = userdata.btxbtx
-            local a = userdata.btxatx
-            if b then
-                ctx_btxsetbefore(b)
-            end
-            if a then
-                ctx_btxsetafter(a)
-            end
-        end
-        rendering.userdata = userdata
-        if textmode then
-            ctx_btxhandlelisttextentry()
-        else
-            ctx_btxhandlelistentry()
-        end
-    end
-    context(function()
-        -- wrapup
-        ignoredfields = nil
-        setspecification(false)
-    end)
-end
-
-local function getuserdata(dataset,key)
-    local rendering = renderings[dataset]
-    if rendering then
-        local userdata = rendering.userdata
-        if userdata then
-            local value = userdata[key]
-            if value and value ~= "" then
-                return value
-            end
-        end
-    end
-end
-
-lists.uservariable = getuserdata
-
-function commands.btxuservariable(dataset,key)
-    local value = getuserdata(dataset,key)
-    if value then
-        context(value)
-    end
-end
-
-function commands.btxdoifelseuservariable(dataset,key)
-    if getuserdata(dataset,key) then
-        ctx_firstoftwoarguments()
-    else
-        ctx_secondoftwoarguments()
-    end
-end
-
-function lists.filterall(dataset)
-    local r = renderings[dataset]
-    local list = r.list
-    local registered = r.registered
-    for i=1,#registered do
-        list[i] = { registered[i], i, 0, false, false }
-    end
-end
-
-commands.btxresolvelistreference = lists.resolve
-commands.btxaddtolist            = lists.addentry
-commands.btxcollectlistentries   = lists.collectentries
-commands.btxpreparelistentries   = lists.prepareentries
-commands.btxfetchlistentries     = lists.fetchentries
-commands.btxflushlistentries     = lists.flushentries
-commands.btxflushlistentry       = lists.flushentry
-
-local citevariants        = { }
-publications.citevariants = citevariants
-
-function commands.btxhandlecite(specification)
-    local dataset   = specification.dataset or "" -- standard
-    local reference = specification.reference
-    local variant   = specification.variant or defaultvariant
-    if not reference or reference == "" then
-        return
-    end
-    --
-    specification.variant   = variant
-    specification.compress  = specification.compress == v_yes
-    specification.markentry = specification.markentry ~= false
-    --
-    local prefix, rest = lpegmatch(prefixsplitter,reference)
-    if prefix and rest then
-        specification.dataset   = prefix
-        specification.reference = rest
-    end
-    --
-    --
-    if trace_cite then
-        report_cite("inject, dataset: %s, tag: %s, variant: %s, compressed",
-            specification.dataset or "-",
-            specification.reference,
-            specification.variant
-        )
-    end
-    --
-    ctx_setvalue("currentbtxdataset",dataset)
-    --
-    citevariants[variant](specification) -- we always fall back on default
-end
-
-
-function commands.btxhandlenocite(specification)
-    local dataset   = specification.dataset or "" -- standard
-    local reference = specification.reference
-    if not reference or reference == "" then
-        return
-    end
-    --
-    local markentry = specification.markentry ~= false
-    local internal  = specification.internal or ""
-    --
-    local prefix, rest = lpegmatch(prefixsplitter,reference)
-    if rest then
-        dataset   = prefix
-        reference = rest
-    end
-    --
-    if trace_cite then
-        report_cite("mark, dataset: %s, tags: %s",dataset or "-",reference)
-    end
-    --
-    local reference = publications.parenttag(dataset,reference)
-    --
-    local found, todo, list = findallused(dataset,reference,internal)
-    --
-    tobemarked = markentry and todo
-    if found and tobemarked then
-        flushmarked(dataset,list)
-        commands.flushmarked() -- here (could also be done in caller)
-    end
-end
-
--- function commands.btxcitevariant(dataset,block,tags,variant) -- uses? specification ?
---     local action = citevariants[variant]
---     if action then
---         action(dataset,tags,variant)
---     end
--- end
-
--- sorter
-
-local keysorter = function(a,b) return a.sortkey < b.sortkey end
-
---     local suffix   = 0
---     local function setsuffix(entry,suffix,sortfld)
---         entry.suffix  = suffix
---         local dataset = datasets[entry.dataset]
---         if dataset then
---             local suffixes = dataset.suffixes[entry.tag]
---             if suffixes then
---                 suffixes[sortfld] = suffix
---             else
---                 dataset.suffixes[entry.tag] = { [sortfld] = suffix }
---             end
---         end
---     end
---     for i=1,#source do
---         local entry   = source[i]
---         local sortfld = entry.sortfld
---         if sortfld then
---             local value = entry.sortkey
---             if value == oldvalue then
---                 if suffix == 0 then
---                     suffix = 1
---                     local entry = source[i-1]
---                     setsuffix(entry,suffix,sortfld)
---                 end
---                 suffix = suffix + 1
---                 setsuffix(entry,suffix,sortfld)
---             else
---                 oldvalue = value
---                 suffix   = 0
---             end
---         else
---             break
---         end
---     end
-
-local function compresslist(source)
-    for i=1,#source do
-        if type(source[i].sortkey) ~= "number" then
-            return source
-        end
-    end
-    local first, last, firstr, lastr
-    local target, noftarget, tags = { }, 0, { }
-    sort(source,keysorter)
-    local oldvalue = nil
-    local function flushrange()
-        noftarget = noftarget + 1
-        if last > first + 1 then
-            target[noftarget] = {
-                first = firstr,
-                last  = lastr,
-                tags  = tags,
-            }
-        else
-            target[noftarget] = firstr
-            if last > first then
-                noftarget = noftarget + 1
-                target[noftarget] = lastr
-            end
-        end
-        tags = { }
-    end
-    for i=1,#source do
-        local entry = source[i]
-        local current = entry.sortkey
-        if not first then
-            first, last, firstr, lastr = current, current, entry, entry
-        elseif current == last + 1 then
-            last, lastr = current, entry
-        else
-            flushrange()
-            first, last, firstr, lastr = current, current, entry, entry
-        end
-        tags[#tags+1] = entry.tag
-    end
-    if first and last then
-        flushrange()
-    end
-    return target
-end
-
--- local source = {
---     { tag = "one",   internal = 1, value = "foo", page = 1 },
---     { tag = "two",   internal = 2, value = "bar", page = 2 },
---     { tag = "three", internal = 3, value = "gnu", page = 3 },
--- }
---
--- local target = compresslist(source)
-
-local numberonly = R("09")^1 / tonumber + P(1)^0
-local f_missing  = formatters["<%s>"]
-
--- maybe also sparse (e.g. pages)
-
--- a bit redundant access to datasets
-
-local function processcite(presets,specification)
-    --
-    if specification then
-        setmetatableindex(specification,presets)
-    else
-        specification = presets
-    end
-    --
-    local dataset    = specification.dataset
-    local reference  = specification.reference
-    local internal   = specification.internal
-    local setup      = specification.variant
-    local compress   = specification.compress
-    local getter     = specification.getter
-    local setter     = specification.setter
-    local compressor = specification.compressor
-    --
-
-    local reference  = publications.parenttag(dataset,reference)
-    --
-    local found, todo, list = findallused(dataset,reference,internal)
-    tobemarked = specification.markentry and todo
-    --
-    if found and setup then
-        local source  = { }
-        local badkey  = false
-        local luadata = datasets[dataset].luadata
-        for i=1,#found do
-            local entry    = found[i]
-            local tag      = entry.userdata.btxref
-            -- we can probably move the test into the flush
-         -- local category = luadata[tag].category
-         -- if currentspecificationfields[category][setup] then
-                local internal = entry.references.internal
-                local data     = setter(dataset,tag,entry,internal)
-                if compress and not compressor then
-                    local sortkey = data.sortkey
-                    if sortkey then
-                        local key = lpegmatch(numberonly,sortkey)
-                        if key then
-                            data.sortkey = key
-                        else
-                            badkey = true
+                    local detail = details[tag]
+                    if detail then
+                        local referencenumber = detail.referencenumber
+                        if not referencenumber then
+                            lastreferencenumber    = lastreferencenumber + 1
+                            referencenumber        = lastreferencenumber
+                            detail.referencenumber = lastreferencenumber
                         end
+                        li[3] = referencenumber
                     else
-                        badkey = true
+                        report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
+                        -- weird, this shouldn't happen .. all have a detail
+                        lastreferencenumber = lastreferencenumber + 1
+                        details[tag] = { referencenumber = lastreferencenumber }
+                        li[3] = lastreferencenumber
                     end
                 end
-                if type(data) == "table" then
-                    source[#source+1] = data
-                else
-                    report("error in cite rendering %a",setup or "?")
-                end
-         -- else
-         --     report("cite rendering %a is not available for %a",setup,category)
-         -- end
-        end
-
-        local lefttext  = specification.lefttext
-        local righttext = specification.righttext
-        local before    = specification.before
-        local after     = specification.after
-
-        if lefttext  and lefttext  ~= "" then lefttext  = settings_to_array(lefttext)  end
-        if righttext and righttext ~= "" then righttext = settings_to_array(righttext) end
-        if before    and before    ~= "" then before    = settings_to_array(before)    end
-        if after     and after     ~= "" then after     = settings_to_array(after)     end
-
-        local function flush(i,n,entry,last)
-            local tag = entry.tag
-            local currentcitation = markcite(dataset,tag)
-            --
-            ctx_btxstartcite()
-            ctx_btxsettag(tag)
-            --
-            if lefttext  then ctx_btxsetlefttext (lefttext [i] or #lefttext   == 1 and lefttext [1] or "")  end
-            if righttext then ctx_btxsetrighttext(righttext[i] or #righttext  == 1 and righttext[1] or "")  end
-            if before    then ctx_btxsetbefore   (before   [i] or #before     == 1 and before   [1] or "")  end
-            if after     then ctx_btxsetafter    (after    [i] or #after      == 1 and after    [1] or "")  end
-            --
-            ctx_btxsetbacklink(currentcitation)
-            local bl = listtocite[currentcitation]
-            if bl then
-                -- we refer to a coming list entry
-                ctx_btxsetinternal(bl.references.internal or "")
-            else
-                -- we refer to a previous list entry
-                ctx_btxsetinternal(entry.internal or "")
             end
+        end
+        rendering.list  = type(sorter) == "function" and sorter(dataset,rendering,newlist,sorttype) or newlist
+    end
+
+    function lists.fetchentries(dataset)
+        local rendering = renderings[dataset]
+        local list      = rendering.list
+        for i=1,#list do
+            local li = list[i]
+            ctx_btxsettag(li[1])
+            ctx_btxsetnumber(li[3])
+            ctx_btxchecklistentry()
+        end
+    end
+
+    -- for rendering
+
+    -- setspecification
+
+    function commands.btxflushpages(dataset,tag)
+        -- todo: interaction
+        local rendering = renderings[dataset]
+        local pages     = rendering.pages[tag]
+        if not pages then
+            return
+        end
+        local nofpages = #pages
+        if nofpages == 0 then
+            return
+        end
+        local first_p = nil
+        local first_r = nil
+        local last_p  = nil
+        local last_r  = nil
+        local ranges  = { }
+        local nofdone = 0
+        local function flush()
+            if last_r and first_r ~= last_r then
+                ranges[#ranges+1] = { first_p, last_p }
+            else
+                ranges[#ranges+1] = { first_p }
+            end
+        end
+        for i=1,nofpages do
+            local next_p = pages[i]
+            local next_r = next_p[2].realpage
+            if not first_r then
+                first_p = next_p
+                first_r = next_r
+            elseif last_r + 1 == next_r then
+                -- continue
+            elseif first_r then
+                flush()
+                first_p = next_p
+                first_r = next_r
+            end
+            last_p = next_p
+            last_r = next_r
+        end
+        if first_r then
+            flush()
+        end
+        local nofranges = #ranges
+        for i=1,nofranges do
+            local r = ranges[i]
+            ctx_btxsetconcat(concatstate(i,nofranges))
+            local first, last = r[1], r[2]
+            ctx_btxsetfirstinternal(first[2].internal)
+            ctx_btxsetfirstpage(first[1])
+            if last then
+                ctx_btxsetlastinternal(last[2].internal)
+                ctx_btxsetlastpage(last[1])
+            end
+            ctx_btxpagesetup()
+        end
+    end
+
+    function lists.flushentries(dataset,textmode)
+        local rendering = renderings[dataset]
+        local list      = rendering.list
+        local luadata   = datasets[dataset].luadata
+        -- maybe a startflushing here
+        ignoredfields   = rendering.ignored or { }
+        --
+        for i=1,#list do
+            local li       = list[i]
+            local tag      = li[1]
+            local n        = li[3]
+            local entry    = luadata[tag]
+            local combined = entry.combined
             local language = entry.language
+            if combined then
+                ctx_btxsetcombis(concat(combined,","))
+            end
+            ctx_btxsetcategory(entry.category or "unknown")
+            ctx_btxsettag(tag)
+            ctx_btxsetnumber(n)
             if language then
                 ctx_btxsetlanguage(language)
             end
-            if not getter(entry,last) then
-                ctx_btxsetfirst(f_missing(tag))
+            local bl = li[5]
+            if bl and bl ~= "" then
+                ctx_btxsetbacklink(bl)
+                ctx_btxsetbacktrace(concat(li," ",5))
+                local uc = citetolist[tonumber(bl)]
+                if uc then
+                    ctx_btxsetinternal(uc.references.internal or "")
+                end
+            else
+                -- nothing
             end
-            ctx_btxsetconcat(concatstate(i,n))
-            ctx_btxcitesetup(setup)
-            ctx_btxstopcite()
+            local userdata = li[4]
+            if userdata then
+                local b = userdata.btxbtx
+                local a = userdata.btxatx
+                if b then
+                    ctx_btxsetbefore(b)
+                end
+                if a then
+                    ctx_btxsetafter(a)
+                end
+            end
+            rendering.userdata = userdata
+            if textmode then
+                ctx_btxhandlelisttextentry()
+            else
+                ctx_btxhandlelistentry()
+            end
+        end
+        context(function()
+            -- wrapup
+            ignoredfields = nil
+            setspecification(false)
+        end)
+    end
+
+    local function getuserdata(dataset,key)
+        local rendering = renderings[dataset]
+        if rendering then
+            local userdata = rendering.userdata
+            if userdata then
+                local value = userdata[key]
+                if value and value ~= "" then
+                    return value
+                end
+            end
+        end
+    end
+
+    lists.uservariable = getuserdata
+
+    function commands.btxuservariable(dataset,key)
+        local value = getuserdata(dataset,key)
+        if value then
+            context(value)
+        end
+    end
+
+    function commands.btxdoifelseuservariable(dataset,key)
+        if getuserdata(dataset,key) then
+            ctx_firstoftwoarguments()
+        else
+            ctx_secondoftwoarguments()
+        end
+    end
+
+    function lists.filterall(dataset)
+        local r = renderings[dataset]
+        local list = r.list
+        local registered = r.registered
+        for i=1,#registered do
+            list[i] = { registered[i], i, 0, false, false }
+        end
+    end
+
+    commands.btxresolvelistreference = lists.resolve
+    commands.btxaddtolist            = lists.addentry
+    commands.btxcollectlistentries   = lists.collectentries
+    commands.btxpreparelistentries   = lists.prepareentries
+    commands.btxfetchlistentries     = lists.fetchentries
+    commands.btxflushlistentries     = lists.flushentries
+    commands.btxflushlistentry       = lists.flushentry
+
+end
+
+do
+
+    local citevariants        = { }
+    publications.citevariants = citevariants
+
+    function commands.btxhandlecite(specification)
+        local dataset   = specification.dataset or "" -- standard
+        local reference = specification.reference
+        local variant   = specification.variant or defaultvariant
+        if not reference or reference == "" then
+            return
+        end
+        --
+        specification.variant   = variant
+        specification.compress  = specification.compress == v_yes
+        specification.markentry = specification.markentry ~= false
+        --
+        local prefix, rest = lpegmatch(prefixsplitter,reference)
+        if prefix and rest then
+            specification.dataset   = prefix
+            specification.reference = rest
+        end
+        --
+        --
+        if trace_cite then
+            report_cite("inject, dataset: %s, tag: %s, variant: %s, compressed",
+                specification.dataset or "-",
+                specification.reference,
+                specification.variant
+            )
+        end
+        --
+        ctx_setvalue("currentbtxdataset",dataset)
+        --
+        citevariants[variant](specification) -- we always fall back on default
+    end
+
+
+    function commands.btxhandlenocite(specification)
+        local dataset   = specification.dataset or "" -- standard
+        local reference = specification.reference
+        if not reference or reference == "" then
+            return
+        end
+        --
+        local markentry = specification.markentry ~= false
+        local internal  = specification.internal or ""
+        --
+        local prefix, rest = lpegmatch(prefixsplitter,reference)
+        if rest then
+            dataset   = prefix
+            reference = rest
+        end
+        --
+        if trace_cite then
+            report_cite("mark, dataset: %s, tags: %s",dataset or "-",reference)
+        end
+        --
+        local reference = publications.parenttag(dataset,reference)
+        --
+        local found, todo, list = findallused(dataset,reference,internal)
+        --
+        tobemarked = markentry and todo
+        if found and tobemarked then
+            flushmarked(dataset,list)
+            commands.flushmarked() -- here (could also be done in caller)
+        end
+    end
+
+    -- function commands.btxcitevariant(dataset,block,tags,variant) -- uses? specification ?
+    --     local action = citevariants[variant]
+    --     if action then
+    --         action(dataset,tags,variant)
+    --     end
+    -- end
+
+    -- sorter
+
+    local keysorter = function(a,b) return a.sortkey < b.sortkey end
+
+    --     local suffix   = 0
+    --     local function setsuffix(entry,suffix,sortfld)
+    --         entry.suffix  = suffix
+    --         local dataset = datasets[entry.dataset]
+    --         if dataset then
+    --             local suffixes = dataset.suffixes[entry.tag]
+    --             if suffixes then
+    --                 suffixes[sortfld] = suffix
+    --             else
+    --                 dataset.suffixes[entry.tag] = { [sortfld] = suffix }
+    --             end
+    --         end
+    --     end
+    --     for i=1,#source do
+    --         local entry   = source[i]
+    --         local sortfld = entry.sortfld
+    --         if sortfld then
+    --             local value = entry.sortkey
+    --             if value == oldvalue then
+    --                 if suffix == 0 then
+    --                     suffix = 1
+    --                     local entry = source[i-1]
+    --                     setsuffix(entry,suffix,sortfld)
+    --                 end
+    --                 suffix = suffix + 1
+    --                 setsuffix(entry,suffix,sortfld)
+    --             else
+    --                 oldvalue = value
+    --                 suffix   = 0
+    --             end
+    --         else
+    --             break
+    --         end
+    --     end
+
+    local function compresslist(source)
+        for i=1,#source do
+            if type(source[i].sortkey) ~= "number" then
+                return source
+            end
+        end
+        local first, last, firstr, lastr
+        local target, noftarget, tags = { }, 0, { }
+        sort(source,keysorter)
+        local oldvalue = nil
+        local function flushrange()
+            noftarget = noftarget + 1
+            if last > first + 1 then
+                target[noftarget] = {
+                    first = firstr,
+                    last  = lastr,
+                    tags  = tags,
+                }
+            else
+                target[noftarget] = firstr
+                if last > first then
+                    noftarget = noftarget + 1
+                    target[noftarget] = lastr
+                end
+            end
+            tags = { }
+        end
+        for i=1,#source do
+            local entry = source[i]
+            local current = entry.sortkey
+            if not first then
+                first, last, firstr, lastr = current, current, entry, entry
+            elseif current == last + 1 then
+                last, lastr = current, entry
+            else
+                flushrange()
+                first, last, firstr, lastr = current, current, entry, entry
+            end
+            tags[#tags+1] = entry.tag
+        end
+        if first and last then
+            flushrange()
+        end
+        return target
+    end
+
+    -- local source = {
+    --     { tag = "one",   internal = 1, value = "foo", page = 1 },
+    --     { tag = "two",   internal = 2, value = "bar", page = 2 },
+    --     { tag = "three", internal = 3, value = "gnu", page = 3 },
+    -- }
+    --
+    -- local target = compresslist(source)
+
+    local numberonly = R("09")^1 / tonumber + P(1)^0
+    local f_missing  = formatters["<%s>"]
+
+    -- maybe also sparse (e.g. pages)
+
+    -- a bit redundant access to datasets
+
+    local function processcite(presets,specification)
+        --
+        if specification then
+            setmetatableindex(specification,presets)
+        else
+            specification = presets
+        end
+        --
+        local dataset    = specification.dataset
+        local reference  = specification.reference
+        local internal   = specification.internal
+        local setup      = specification.variant
+        local compress   = specification.compress
+        local getter     = specification.getter
+        local setter     = specification.setter
+        local compressor = specification.compressor
+        --
+
+        local reference  = publications.parenttag(dataset,reference)
+        --
+        local found, todo, list = findallused(dataset,reference,internal)
+        tobemarked = specification.markentry and todo
+        --
+        if found and setup then
+            local source  = { }
+            local badkey  = false
+            local luadata = datasets[dataset].luadata
+            for i=1,#found do
+                local entry    = found[i]
+                local tag      = entry.userdata.btxref
+                -- we can probably move the test into the flush
+             -- local category = luadata[tag].category
+             -- if currentspecificationfields[category][setup] then
+                    local internal = entry.references.internal
+                    local data     = setter(dataset,tag,entry,internal)
+                    if compress and not compressor then
+                        local sortkey = data.sortkey
+                        if sortkey then
+                            local key = lpegmatch(numberonly,sortkey)
+                            if key then
+                                data.sortkey = key
+                            else
+                                badkey = true
+                            end
+                        else
+                            badkey = true
+                        end
+                    end
+                    if type(data) == "table" then
+                        source[#source+1] = data
+                    else
+                        report("error in cite rendering %a",setup or "?")
+                    end
+             -- else
+             --     report("cite rendering %a is not available for %a",setup,category)
+             -- end
+            end
+
+            local lefttext  = specification.lefttext
+            local righttext = specification.righttext
+            local before    = specification.before
+            local after     = specification.after
+
+            if lefttext  and lefttext  ~= "" then lefttext  = settings_to_array(lefttext)  end
+            if righttext and righttext ~= "" then righttext = settings_to_array(righttext) end
+            if before    and before    ~= "" then before    = settings_to_array(before)    end
+            if after     and after     ~= "" then after     = settings_to_array(after)     end
+
+            local function flush(i,n,entry,last)
+                local tag = entry.tag
+                local currentcitation = markcite(dataset,tag)
+                --
+                ctx_btxstartcite()
+                ctx_btxsettag(tag)
+                --
+                if lefttext  then ctx_btxsetlefttext (lefttext [i] or #lefttext   == 1 and lefttext [1] or "")  end
+                if righttext then ctx_btxsetrighttext(righttext[i] or #righttext  == 1 and righttext[1] or "")  end
+                if before    then ctx_btxsetbefore   (before   [i] or #before     == 1 and before   [1] or "")  end
+                if after     then ctx_btxsetafter    (after    [i] or #after      == 1 and after    [1] or "")  end
+                --
+                ctx_btxsetbacklink(currentcitation)
+                local bl = listtocite[currentcitation]
+                if bl then
+                    -- we refer to a coming list entry
+                    ctx_btxsetinternal(bl.references.internal or "")
+                else
+                    -- we refer to a previous list entry
+                    ctx_btxsetinternal(entry.internal or "")
+                end
+                local language = entry.language
+                if language then
+                    ctx_btxsetlanguage(language)
+                end
+                if not getter(entry,last) then
+                    ctx_btxsetfirst(f_missing(tag))
+                end
+                ctx_btxsetconcat(concatstate(i,n))
+                ctx_btxcitesetup(setup)
+                ctx_btxstopcite()
+            end
+
+            if compress and not badkey then
+                local target = (compressor or compresslist)(source)
+                local nofcollected = #target
+                if nofcollected == 0 then
+                    unknowncite(reference)
+                else
+                    for i=1,nofcollected do
+                        local entry = target[i]
+                        local first = entry.first
+                        if first then
+                            flush(i,nofcollected,first,entry.last)
+                        else
+                            flush(i,nofcollected,entry)
+                        end
+                    end
+                end
+            else
+                local nofcollected = #source
+                if nofcollected == 0 then
+                    unknowncite(reference)
+                else
+                    for i=1,nofcollected do
+                        flush(i,nofcollected,source[i])
+                    end
+                end
+            end
+        end
+        if tobemarked then
+            flushmarked(dataset,list)
+            commands.flushmarked() -- here (could also be done in caller)
+        end
+    end
+
+    local function simplegetter(first,last,field)
+        local value = first[field]
+        if value then
+            ctx_btxsetfirst(value)
+            if last then
+                ctx_btxsetsecond(last[field])
+            end
+            return true
+        end
+    end
+
+    local setters = setmetatableindex({},function(t,k)
+        local v = function(dataset,tag,entry,internal)
+            local value = getfield(dataset,tag,k)
+            return {
+                tag      = tag,
+                internal = internal,
+                [k]      = value,
+                sortkey  = value,
+                sortfld  = k,
+            }
+        end
+        t[k] = v
+        return v
+    end)
+
+    local getters = setmetatableindex({},function(t,k)
+        local v = function(first,last)
+            return simplegetter(first,last,k)
+        end
+        t[k] = v
+        return v
+    end)
+
+    -- todo: just a sort key and then fetch normal by fieldname
+
+    -- setmetatableindex(citevariants,function(t,k)
+    --     local p = registeredcitevariants[k]
+    --     local v = p and p ~= k and rawget(t,p) or defaultvariant
+    --     t[k] = v
+    --     return v
+    -- end)
+
+    setmetatableindex(citevariants,function(t,k)
+        local p = registeredcitevariants[k]
+        local v = nil
+        if p and p ~= "" then
+            v = rawget(t,p)
+        end
+        if not v then
+            p = defaultvariant or "default"
+            v = rawget(t,p)
+        end
+        report_cite("variant %a falls back on %a",k,p)
+        t[k] = v
+        return v
+    end)
+
+    function citevariants.default(presets) -- no longer used
+        local variant = presets.variant
+        processcite(presets,{
+            setter = setters[variant],
+            getter = getters[variant],
+        })
+    end
+
+    -- entry
+
+    do
+
+        local function setter(dataset,tag,entry,internal)
+            return {
+                tag      = tag,
+                internal = internal,
+            }
         end
 
-        if compress and not badkey then
-            local target = (compressor or compresslist)(source)
+        local function getter(first,last) -- last not used
+            ctx_btxsetfirst(first.tag)
+        end
+
+        function citevariants.entry(presets)
+            processcite(presets,{
+                compress = false,
+             -- variant  = presets.variant or "entry",
+                setter   = setter,
+                getter   = getter,
+            })
+        end
+
+    end
+
+    -- short
+
+    do
+
+        local function setter(dataset,tag,entry,internal)
+            return {
+                tag      = tag,
+                internal = internal,
+                short    = getdetail(dataset,tag,"short"),
+                suffix   = getdetail(dataset,tag,"suffix"),
+            }
+        end
+
+        local function getter(first,last) -- last not used
+            local short = first.short
+            if short then
+                local suffix = first.suffix
+                if suffix then
+                    ctx_btxsetfirst(short .. suffix)
+                else
+                    ctx_btxsetfirst(short)
+                end
+                return true
+            end
+        end
+
+        function citevariants.short(presets)
+            processcite(presets,{
+                compress = false,
+             -- variant  = presets.variant or "short",
+                setter   = setter,
+                getter   = getter,
+            })
+        end
+
+    end
+
+    -- pages (no compress)
+
+    do
+
+        local function setter(dataset,tag,entry,internal)
+            return {
+                dataset  = dataset,
+                tag      = tag,
+                internal = internal,
+                pages    = getdetail(dataset,tag,"pages"),
+            }
+        end
+
+        local function getter(first,last)
+            local pages = first.pages
+            if pages then
+                if type(pages) == "table" then
+                    ctx_btxsetfirst(pages[1])
+                    ctx_btxsetsecond(pages[2])
+                else
+                    ctx_btxsetfirst(pages)
+                end
+                return true
+            end
+        end
+
+        function citevariants.page(presets)
+            processcite(presets,{
+             -- variant = presets.variant or "page",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+    end
+
+    -- num
+
+    do
+
+        local function setter(dataset,tag,entry,internal)
+            local entries = entry.entries
+            local text = entries and entries.text or "?"
+            return {
+                tag      = tag,
+                internal = internal,
+                num      = text,
+                sortkey  = text,
+            }
+        end
+
+        local function getter(first,last)
+            return simplegetter(first,last,"num")
+        end
+
+        function citevariants.num(presets)
+            processcite(presets,{
+             -- variant = presets.variant or "num",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+    end
+
+    -- year
+
+    do
+
+        local function setter(dataset,tag,entry,internal)
+            return {
+                dataset  = dataset,
+                tag      = tag,
+                internal = internal,
+                year     = getfield(dataset,tag,"year"),
+                suffix   = getdetail(dataset,tag,"suffix"),
+                sortkey  = getdetail(dataset,tag,"suffixedyear"),
+            }
+        end
+
+        local function getter(first,last)
+            return simplegetter(first,last,"year")
+        end
+
+        function citevariants.year(presets)
+            processcite(presets,{
+             -- variant  = presets.variant or "year",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+    end
+
+    -- index | serial
+
+    do
+
+        local function setter(dataset,tag,entry,internal)
+            local index = getfield(dataset,tag,"index")
+            return {
+                dataset  = dataset,
+                tag      = tag,
+                internal = internal,
+                index    = index,
+                sortkey  = index,
+            }
+        end
+
+        local function getter(first,last)
+            return simplegetter(first,last,"index")
+        end
+
+        function citevariants.index(presets)
+            processcite(presets,{
+             -- variant  = presets.variant or "index",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+        function citevariants.serial(presets)
+            processcite(presets,{
+             -- variant  = presets.variant or "serial",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+    end
+
+    -- category | type
+
+    do
+
+        local function setter(dataset,tag,entry,internal)
+            return {
+                dataset  = dataset,
+                tag      = tag,
+                internal = internal,
+                category = getfield(dataset,tag,"category"),
+            }
+        end
+
+        local function getter(first,last)
+            return simplegetter(first,last,"category")
+        end
+
+        function citevariants.category(presets)
+            processcite(presets,{
+             -- variant  = presets.variant or "serial",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+        function citevariants.type(presets)
+            processcite(presets,{
+             -- variant  = presets.variant or "type",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+    end
+
+    -- key | tag
+
+    do
+
+        local function setter(dataset,tag,entry,internal)
+            return {
+                dataset  = dataset,
+                tag      = tag,
+                internal = internal,
+            }
+        end
+
+        local function getter(first,last)
+            ctx_btxsetfirst(first.tag)
+            return true
+        end
+
+        function citevariants.key(presets)
+            return processcite(presets,{
+                variant = "key",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+        function citevariants.tag(presets)
+            return processcite(presets,{
+                variant = "tag",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+    end
+
+    -- todo : sort
+    -- todo : choose between publications or commands namespace
+    -- todo : use details.author
+    -- todo : sort details.author
+    -- (name, name and name) .. how names? how sorted?
+    -- todo: we loop at the tex end .. why not here
+    -- \cite[{hh,afo},kvm]
+
+    -- common
+
+    do
+
+        local getauthor = publications.authors.getauthor
+
+        local currentbtxciteauthor = function()
+            context.currentbtxciteauthor()
+            return true -- needed?
+        end
+
+        local function authorcompressor(found)
+            local result  = { }
+            local entries = { }
+            for i=1,#found do
+                local entry  = found[i]
+                local author = entry.author
+                if author then
+                    local aentries = entries[author]
+                    if aentries then
+                        aentries[#aentries+1] = entry
+                    else
+                        entries[author] = { entry }
+                    end
+                end
+            end
+            for i=1,#found do
+                local entry  = found[i]
+                local author = entry.author
+                if author then
+                    local aentries = entries[author]
+                    if not aentries then
+                        result[#result+1] = entry
+                    elseif aentries == true then
+                        -- already done
+                    else
+                        result[#result+1] = entry
+                        entry.entries = aentries
+                        entries[author] = true
+                    end
+                end
+            end
+            -- todo: add letters (should we then tag all?)
+            return result
+        end
+
+        local function authorconcat(target,key,setup)
+            ctx_btxstartsubcite(setup)
             local nofcollected = #target
             if nofcollected == 0 then
-                unknowncite(reference)
+                unknowncite(tag)
             else
                 for i=1,nofcollected do
                     local entry = target[i]
                     local first = entry.first
+                    local tag   = entry.tag
+                    local currentcitation = markcite(entry.dataset,tag)
+                    ctx_btxstartciteauthor()
+                    ctx_btxsettag(tag)
+                    ctx_btxsetbacklink(currentcitation)
+                    local bl = listtocite[currentcitation]
+                    ctx_btxsetinternal(bl and bl.references.internal or "")
                     if first then
-                        flush(i,nofcollected,first,entry.last)
+                        ctx_btxsetfirst(first[key] or f_missing(first.tag))
+                        local suffix = entry.suffix
+                        local value  = entry.last[key]
+                        if value then
+                            ctx_btxsetsecond(value)
+                        end
+                        if suffix then
+                            ctx_btxsetthird(suffix)
+                        end
                     else
-                        flush(i,nofcollected,entry)
+                        local suffix = entry.suffix
+                        local value  = entry[key] or f_missing(tag)
+                        ctx_btxsetfirst(value)
+                        if suffix then
+                            ctx_btxsetthird(suffix)
+                        end
                     end
+                    ctx_btxsetconcat(concatstate(i,nofcollected))
+                    ctx_btxcitesetup(setup)
+                    ctx_btxstopciteauthor()
                 end
             end
-        else
-            local nofcollected = #source
-            if nofcollected == 0 then
-                unknowncite(reference)
-            else
-                for i=1,nofcollected do
-                    flush(i,nofcollected,source[i])
-                end
+            ctx_btxstopsubcite()
+        end
+
+        local function authorsingle(entry,key,setup)
+            ctx_btxstartsubcite(setup)
+            ctx_btxstartciteauthor()
+            local tag = entry.tag
+            ctx_btxsettag(tag)
+         -- local currentcitation = markcite(entry.dataset,tag)
+         -- ctx_btxsetbacklink(currentcitation)
+         -- local bl = listtocite[currentcitation]
+         -- ctx_btxsetinternal(bl and bl.references.internal or "")
+            ctx_btxsetfirst(entry[key] or f_missing(tag))
+            ctx_btxsetthird(entry.suffix)
+            ctx_btxcitesetup(setup)
+            ctx_btxstopciteauthor()
+            ctx_btxstopsubcite()
+        end
+
+        local partialinteractive = false
+
+        local function authorgetter(first,last,key,setup) -- only first
+         -- ctx_btxsetfirst(first.author)         -- unformatted
+            ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
+            local entries = first.entries
+            -- alternatively we can use a concat with one ... so that we can only make the
+            -- year interactive, as with the concat
+            if partialinteractive and not entries then
+                entries = { first }
             end
-        end
-    end
-    if tobemarked then
-        flushmarked(dataset,list)
-        commands.flushmarked() -- here (could also be done in caller)
-    end
-end
-
-local function simplegetter(first,last,field)
-    local value = first[field]
-    if value then
-        ctx_btxsetfirst(value)
-        if last then
-            ctx_btxsetsecond(last[field])
-        end
-        return true
-    end
-end
-
-local setters = setmetatableindex({},function(t,k)
-    local v = function(dataset,tag,entry,internal)
-        local value = getfield(dataset,tag,k)
-        return {
-            tag      = tag,
-            internal = internal,
-            [k]      = value,
-            sortkey  = value,
-            sortfld  = k,
-        }
-    end
-    t[k] = v
-    return v
-end)
-
-local getters = setmetatableindex({},function(t,k)
-    local v = function(first,last)
-        return simplegetter(first,last,k)
-    end
-    t[k] = v
-    return v
-end)
-
--- todo: just a sort key and then fetch normal by fieldname
-
--- setmetatableindex(citevariants,function(t,k)
---     local p = registeredcitevariants[k]
---     local v = p and p ~= k and rawget(t,p) or defaultvariant
---     t[k] = v
---     return v
--- end)
-
-setmetatableindex(citevariants,function(t,k)
-    local p = registeredcitevariants[k]
-    local v = nil
-    if p and p ~= "" then
-        v = rawget(t,p)
-    end
-    if not v then
-        p = defaultvariant or "default"
-        v = rawget(t,p)
-    end
-    report_cite("variant %a falls back on %a",k,p)
-    t[k] = v
-    return v
-end)
-
-function citevariants.default(presets) -- no longer used
-    local variant = presets.variant
-    processcite(presets,{
-        setter = setters[variant],
-        getter = getters[variant],
-    })
-end
-
--- entry
-
-do
-
-    local function setter(dataset,tag,entry,internal)
-        return {
-            tag      = tag,
-            internal = internal,
-        }
-    end
-
-    local function getter(first,last) -- last not used
-        ctx_btxsetfirst(first.tag)
-    end
-
-    function citevariants.entry(presets)
-        processcite(presets,{
-            compress = false,
-         -- variant  = presets.variant or "entry",
-            setter   = setter,
-            getter   = getter,
-        })
-    end
-
-end
-
--- short
-
-do
-
-    local function setter(dataset,tag,entry,internal)
-        return {
-            tag      = tag,
-            internal = internal,
-            short    = getdetail(dataset,tag,"short"),
-            suffix   = getdetail(dataset,tag,"suffix"),
-        }
-    end
-
-    local function getter(first,last) -- last not used
-        local short = first.short
-        if short then
-            local suffix = first.suffix
-            if suffix then
-                ctx_btxsetfirst(short .. suffix)
+            if entries then
+                local c = compresslist(entries)
+                local f = function() authorconcat(c,key,setup) return true end -- indeed return true?
+                ctx_btxsetcount(#c)
+                ctx_btxsetsecond(f)
             else
-                ctx_btxsetfirst(short)
+                local f = function() authorsingle(first,key,setup) return true end -- indeed return true?
+                ctx_btxsetcount(0)
+                ctx_btxsetsecond(f)
             end
             return true
         end
-    end
 
-    function citevariants.short(presets)
-        processcite(presets,{
-            compress = false,
-         -- variant  = presets.variant or "short",
-            setter   = setter,
-            getter   = getter,
-        })
-    end
+        -- author
 
-end
+        local function setter(dataset,tag,entry,internal)
+            return {
+                dataset  = dataset,
+                tag      = tag,
+                internal = internal,
+                author   = getauthor(dataset,tag,currentspecification.categories), -- todo: list
+            }
+        end
 
--- pages (no compress)
-
-do
-
-    local function setter(dataset,tag,entry,internal)
-        return {
-            dataset  = dataset,
-            tag      = tag,
-            internal = internal,
-            pages    = getdetail(dataset,tag,"pages"),
-        }
-    end
-
-    local function getter(first,last)
-        local pages = first.pages
-        if pages then
-            if type(pages) == "table" then
-                ctx_btxsetfirst(pages[1])
-                ctx_btxsetsecond(pages[2])
-            else
-                ctx_btxsetfirst(pages)
-            end
+        local function getter(first,last,_,setup)
+         -- ctx_btxsetfirst(first.author)         -- unformatted
+            ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
             return true
         end
-    end
 
-    function citevariants.page(presets)
-        processcite(presets,{
-         -- variant = presets.variant or "page",
-            setter  = setter,
-            getter  = getter,
-        })
-    end
-
-end
-
--- num
-
-do
-
-    local function setter(dataset,tag,entry,internal)
-        local entries = entry.entries
-        local text = entries and entries.text or "?"
-        return {
-            tag      = tag,
-            internal = internal,
-            num      = text,
-            sortkey  = text,
-        }
-    end
-
-    local function getter(first,last)
-        return simplegetter(first,last,"num")
-    end
-
-    function citevariants.num(presets)
-        processcite(presets,{
-         -- variant = presets.variant or "num",
-            setter  = setter,
-            getter  = getter,
-        })
-    end
-
-end
-
--- year
-
-do
-
-    local function setter(dataset,tag,entry,internal)
-        return {
-            dataset  = dataset,
-            tag      = tag,
-            internal = internal,
-            year     = getfield(dataset,tag,"year"),
-            suffix   = getdetail(dataset,tag,"suffix"),
-            sortkey  = getdetail(dataset,tag,"suffixedyear"),
-        }
-    end
-
-    local function getter(first,last)
-        return simplegetter(first,last,"year")
-    end
-
-    function citevariants.year(presets)
-        processcite(presets,{
-         -- variant  = presets.variant or "year",
-            setter  = setter,
-            getter  = getter,
-        })
-    end
-
-end
-
--- index | serial
-
-do
-
-    local function setter(dataset,tag,entry,internal)
-        local index = getfield(dataset,tag,"index")
-        return {
-            dataset  = dataset,
-            tag      = tag,
-            internal = internal,
-            index    = index,
-            sortkey  = index,
-        }
-    end
-
-    local function getter(first,last)
-        return simplegetter(first,last,"index")
-    end
-
-    function citevariants.index(presets)
-        processcite(presets,{
-         -- variant  = presets.variant or "index",
-            setter  = setter,
-            getter  = getter,
-        })
-    end
-
-    function citevariants.serial(presets)
-        processcite(presets,{
-         -- variant  = presets.variant or "serial",
-            setter  = setter,
-            getter  = getter,
-        })
-    end
-
-end
-
--- category | type
-
-do
-
-    local function setter(dataset,tag,entry,internal)
-        return {
-            dataset  = dataset,
-            tag      = tag,
-            internal = internal,
-            category = getfield(dataset,tag,"category"),
-        }
-    end
-
-    local function getter(first,last)
-        return simplegetter(first,last,"category")
-    end
-
-    function citevariants.category(presets)
-        processcite(presets,{
-         -- variant  = presets.variant or "serial",
-            setter  = setter,
-            getter  = getter,
-        })
-    end
-
-    function citevariants.type(presets)
-        processcite(presets,{
-         -- variant  = presets.variant or "type",
-            setter  = setter,
-            getter  = getter,
-        })
-    end
-
-end
-
--- key | tag
-
-do
-
-    local function setter(dataset,tag,entry,internal)
-        return {
-            dataset  = dataset,
-            tag      = tag,
-            internal = internal,
-        }
-    end
-
-    local function getter(first,last)
-        ctx_btxsetfirst(first.tag)
-        return true
-    end
-
-    function citevariants.key(presets)
-        return processcite(presets,{
-            variant = "key",
-            setter  = setter,
-            getter  = getter,
-        })
-    end
-
-    function citevariants.tag(presets)
-        return processcite(presets,{
-            variant = "tag",
-            setter  = setter,
-            getter  = getter,
-        })
-    end
-
-end
-
--- todo : sort
--- todo : choose between publications or commands namespace
--- todo : use details.author
--- todo : sort details.author
--- (name, name and name) .. how names? how sorted?
--- todo: we loop at the tex end .. why not here
--- \cite[{hh,afo},kvm]
-
--- common
-
-do
-
-    local getauthor = publications.authors.getauthor
-
-    local currentbtxciteauthor = function()
-        context.currentbtxciteauthor()
-        return true -- needed?
-    end
-
-    local function authorcompressor(found)
-        local result  = { }
-        local entries = { }
-        for i=1,#found do
-            local entry  = found[i]
-            local author = entry.author
-            if author then
-                local aentries = entries[author]
-                if aentries then
-                    aentries[#aentries+1] = entry
-                else
-                    entries[author] = { entry }
-                end
-            end
+        function citevariants.author(presets)
+            processcite(presets,{
+                compress = false,
+                variant  = "author",
+                setter   = setter,
+                getter   = getter,
+            })
         end
-        for i=1,#found do
-            local entry  = found[i]
-            local author = entry.author
-            if author then
-                local aentries = entries[author]
-                if not aentries then
-                    result[#result+1] = entry
-                elseif aentries == true then
-                    -- already done
-                else
-                    result[#result+1] = entry
-                    entry.entries = aentries
-                    entries[author] = true
-                end
-            end
+
+        -- authornum
+
+        local function setter(dataset,tag,entry,internal)
+            local text = entry.entries.text
+            return {
+                dataset  = dataset,
+                tag      = tag,
+                internal = internal,
+                author   = getauthor(dataset,tag,currentspecification.categories), -- todo: list
+                num      = text,
+                sortkey  = text and lpegmatch(numberonly,text),
+            }
         end
-        -- todo: add letters (should we then tag all?)
-        return result
-    end
 
-    local function authorconcat(target,key,setup)
-        ctx_btxstartsubcite(setup)
-        local nofcollected = #target
-        if nofcollected == 0 then
-            unknowncite(tag)
-        else
-            for i=1,nofcollected do
-                local entry = target[i]
-                local first = entry.first
-                local tag   = entry.tag
-                local currentcitation = markcite(entry.dataset,tag)
-                ctx_btxstartciteauthor()
-                ctx_btxsettag(tag)
-                ctx_btxsetbacklink(currentcitation)
-                local bl = listtocite[currentcitation]
-                ctx_btxsetinternal(bl and bl.references.internal or "")
-                if first then
-                    ctx_btxsetfirst(first[key] or f_missing(first.tag))
-                    local suffix = entry.suffix
-                    local value  = entry.last[key]
-                    if value then
-                        ctx_btxsetsecond(value)
-                    end
-                    if suffix then
-                        ctx_btxsetthird(suffix)
-                    end
-                else
-                    local suffix = entry.suffix
-                    local value  = entry[key] or f_missing(tag)
-                    ctx_btxsetfirst(value)
-                    if suffix then
-                        ctx_btxsetthird(suffix)
-                    end
-                end
-                ctx_btxsetconcat(concatstate(i,nofcollected))
-                ctx_btxcitesetup(setup)
-                ctx_btxstopciteauthor()
-            end
+        local function getter(first,last)
+            authorgetter(first,last,"num","author:num")
+            return true
         end
-        ctx_btxstopsubcite()
-    end
 
-    local function authorsingle(entry,key,setup)
-        ctx_btxstartsubcite(setup)
-        ctx_btxstartciteauthor()
-        local tag = entry.tag
-        ctx_btxsettag(tag)
-     -- local currentcitation = markcite(entry.dataset,tag)
-     -- ctx_btxsetbacklink(currentcitation)
-     -- local bl = listtocite[currentcitation]
-     -- ctx_btxsetinternal(bl and bl.references.internal or "")
-        ctx_btxsetfirst(entry[key] or f_missing(tag))
-        ctx_btxsetthird(entry.suffix)
-        ctx_btxcitesetup(setup)
-        ctx_btxstopciteauthor()
-        ctx_btxstopsubcite()
-    end
-
-    local partialinteractive = false
-
-    local function authorgetter(first,last,key,setup) -- only first
-     -- ctx_btxsetfirst(first.author)         -- unformatted
-        ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
-        local entries = first.entries
-        -- alternatively we can use a concat with one ... so that we can only make the
-        -- year interactive, as with the concat
-        if partialinteractive and not entries then
-            entries = { first }
+        function citevariants.authornum(presets)
+            processcite(presets,{
+                variant    = "authornum",
+                setter     = setter,
+                getter     = getter,
+                compressor = authorcompressor,
+            })
         end
-        if entries then
-            local c = compresslist(entries)
-            local f = function() authorconcat(c,key,setup) return true end -- indeed return true?
-            ctx_btxsetcount(#c)
-            ctx_btxsetsecond(f)
-        else
-            local f = function() authorsingle(first,key,setup) return true end -- indeed return true?
-            ctx_btxsetcount(0)
-            ctx_btxsetsecond(f)
+
+        -- authoryear | authoryears
+
+        local function setter(dataset,tag,entry,internal)
+            return {
+                dataset  = dataset,
+                tag      = tag,
+                internal = internal,
+                author   = getauthor(dataset,tag,currentspecification.categories), -- todo: list
+                year     = getfield(dataset,tag,"year"),
+                suffix   = getdetail(dataset,tag,"suffix"),
+                sortkey  = getdetail(dataset,tag,"suffixedyear"),
+            }
         end
-        return true
-    end
 
-    -- author
+        local function getter(first,last)
+            authorgetter(first,last,"year","author:year")
+            return true
+        end
 
-    local function setter(dataset,tag,entry,internal)
-        return {
-            dataset  = dataset,
-            tag      = tag,
-            internal = internal,
-            author   = getauthor(dataset,tag,currentspecificationcategories), -- todo: list
-        }
-    end
+        function citevariants.authoryear(presets)
+            processcite(presets,{
+                variant    = "authoryear",
+                setter     = setter,
+                getter     = getter,
+                compressor = authorcompressor,
+            })
+        end
 
-    local function getter(first,last,_,setup)
-     -- ctx_btxsetfirst(first.author)         -- unformatted
-        ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
-        return true
-    end
+        local function getter(first,last)
+            authorgetter(first,last,"year","author:years")
+            return true
+        end
 
-    function citevariants.author(presets)
-        processcite(presets,{
-            compress = false,
-            variant  = "author",
-            setter   = setter,
-            getter   = getter,
-        })
-    end
+        function citevariants.authoryears(presets)
+            processcite(presets,{
+                variant    = "authoryears",
+                setter     = setter,
+                getter     = getter,
+                compressor = authorcompressor,
+            })
+        end
 
-    -- authornum
-
-    local function setter(dataset,tag,entry,internal)
-        local text = entry.entries.text
-        return {
-            dataset  = dataset,
-            tag      = tag,
-            internal = internal,
-            author   = getauthor(dataset,tag,currentspecificationcategories), -- todo: list
-            num      = text,
-            sortkey  = text and lpegmatch(numberonly,text),
-        }
-    end
-
-    local function getter(first,last)
-        authorgetter(first,last,"num","author:num")
-        return true
-    end
-
-    function citevariants.authornum(presets)
-        processcite(presets,{
-            variant    = "authornum",
-            setter     = setter,
-            getter     = getter,
-            compressor = authorcompressor,
-        })
-    end
-
-    -- authoryear | authoryears
-
-    local function setter(dataset,tag,entry,internal)
-        return {
-            dataset  = dataset,
-            tag      = tag,
-            internal = internal,
-            author   = getauthor(dataset,tag,currentspecificationcategories), -- todo: list
-            year     = getfield(dataset,tag,"year"),
-            suffix   = getdetail(dataset,tag,"suffix"),
-            sortkey  = getdetail(dataset,tag,"suffixedyear"),
-        }
-    end
-
-    local function getter(first,last)
-        authorgetter(first,last,"year","author:year")
-        return true
-    end
-
-    function citevariants.authoryear(presets)
-        processcite(presets,{
-            variant    = "authoryear",
-            setter     = setter,
-            getter     = getter,
-            compressor = authorcompressor,
-        })
-    end
-
-    local function getter(first,last)
-        authorgetter(first,last,"year","author:years")
-        return true
-    end
-
-    function citevariants.authoryears(presets)
-        processcite(presets,{
-            variant    = "authoryears",
-            setter     = setter,
-            getter     = getter,
-            compressor = authorcompressor,
-        })
     end
 
 end
 
 -- List variants
 
-local listvariants        = { }
-publications.listvariants = listvariants
+do
 
-function commands.btxlistvariant(dataset,block,tag,variant,listindex)
-    local action = listvariants[variant] or listvariants.default
-    if action then
-        action(dataset,block,tag,variant,tonumber(listindex) or 0)
+    local listvariants        = { }
+    publications.listvariants = listvariants
+
+    function commands.btxlistvariant(dataset,block,tag,variant,listindex)
+        local action = listvariants[variant] or listvariants.default
+        if action then
+            action(dataset,block,tag,variant,tonumber(listindex) or 0)
+        end
     end
-end
 
-function listvariants.default(dataset,block,tag,variant)
-    ctx_btxsetfirst("?")
-    ctx_btxlistsetup(variant)
-end
-
-function listvariants.num(dataset,block,tag,variant,listindex)
-    ctx_btxsetfirst(listindex)
-    ctx_btxlistsetup(variant)
-end
-
-listvariants[v_yes] = listvariants.num
-listvariants.bib    = listvariants.num
-
-function listvariants.short(dataset,block,tag,variant,listindex)
-    local short  = getdetail(dataset,tag,"short","short")
-    local suffix = getdetail(dataset,tag,"suffix","suffix")
-    if short then
-        ctx_btxsetfirst(short)
+    function listvariants.default(dataset,block,tag,variant)
+        ctx_btxsetfirst("?")
+        ctx_btxlistsetup(variant)
     end
-    if suffix then
-        ctx_btxsetthird(suffix)
-    end
-    ctx_btxlistsetup(variant)
-end
 
-function listvariants.page(dataset,block,tag,variant,listindex)
-    local rendering     = renderings[dataset]
-    local specification = rendering.list[listindex]
-    for i=3,#specification do
-        local backlink = tonumber(specification[i])
-        if backlink then
-            local citation = citetolist[backlink]
-            if citation then
-                local references = citation.references
-                if references then
-                    local internal = references.internal
-                    local realpage = references.realpage
-                    if internal and realpage then
-                        ctx_btxsetconcat(i-2)
-                        ctx_btxsetfirst(realpage)
-                        ctx_btxsetsecond(backlink)
-                        ctx_btxlistsetup(variant)
+    function listvariants.num(dataset,block,tag,variant,listindex)
+        ctx_btxsetfirst(listindex)
+        ctx_btxlistsetup(variant)
+    end
+
+    listvariants[v_yes] = listvariants.num
+    listvariants.bib    = listvariants.num
+
+    function listvariants.short(dataset,block,tag,variant,listindex)
+        local short  = getdetail(dataset,tag,"short","short")
+        local suffix = getdetail(dataset,tag,"suffix","suffix")
+        if short then
+            ctx_btxsetfirst(short)
+        end
+        if suffix then
+            ctx_btxsetthird(suffix)
+        end
+        ctx_btxlistsetup(variant)
+    end
+
+    function listvariants.page(dataset,block,tag,variant,listindex)
+        local rendering     = renderings[dataset]
+        local specification = rendering.list[listindex]
+        for i=3,#specification do
+            local backlink = tonumber(specification[i])
+            if backlink then
+                local citation = citetolist[backlink]
+                if citation then
+                    local references = citation.references
+                    if references then
+                        local internal = references.internal
+                        local realpage = references.realpage
+                        if internal and realpage then
+                            ctx_btxsetconcat(i-2)
+                            ctx_btxsetfirst(realpage)
+                            ctx_btxsetsecond(backlink)
+                            ctx_btxlistsetup(variant)
+                        end
                     end
                 end
             end
         end
     end
+
 end

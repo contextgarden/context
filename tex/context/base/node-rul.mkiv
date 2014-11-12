@@ -132,12 +132,12 @@
 \unexpanded\def\node_rules_direct#1%
   {\groupedcommand{\node_rules_set{#1}}\relax}
 
-\def\node_rules_set
+\unexpanded\def\node_rules_set
   {\ctxlua{nodes.rules.enable()}% will be moved to lua
    \glet\node_rules_set\node_rules_set_indeed
    \node_rules_set}
 
-\def\node_rules_set_indeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
+\unexpanded\def\node_rules_set_indeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
   {\edef\currentbar{#1}%
    \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
    \advance\c_node_rules_index\plusone
@@ -156,6 +156,8 @@
 
 \unexpanded\def\setbar[#1]%
   {\node_rules_set{#1}}
+
+\let\directsetbar\node_rules_set
 
 % ungrouped
 

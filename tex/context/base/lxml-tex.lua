@@ -1670,16 +1670,20 @@ function lxml.doifelsetext (id,pattern) doifelse(not empty(getid(id),pattern)) e
 
 -- special case: "*" and "" -> self else lpath lookup
 
-function lxml.doifelseempty(id,pattern)
+local function checkedempty(id,pattern)
     local e = getid(id)
     if not pattern or pattern == "" then
         local dt = e.dt
         local nt = #dt
-        doifelse((nt == 0) or (nt == 1 and dt[1] == ""))
+        return (nt == 0) or (nt == 1 and dt[1] == "")
     else
-        doifelse(isempty(getid(id),pattern))
+        return isempty(getid(id),pattern)
     end
 end
+
+function lxml.doifempty    (id,pattern) doif    (checkedempty(id,pattern)) end
+function lxml.doifnotempty (id,pattern) doifnot (checkedempty(id,pattern)) end
+function lxml.doifelseempty(id,pattern) doifelse(checkedempty(id,pattern)) end
 
 -- status info
 

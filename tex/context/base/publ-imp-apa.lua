@@ -181,7 +181,7 @@ categories.inbook = {
         "volume", "number", "series",
         "edition", "month",
         "address",
-        "note", "isbn",
+        "note", "isbn"
     },
 }
 
@@ -199,7 +199,7 @@ categories.booklet = {
          "subtitle", "type", "file",
          "address",
          "howpublished",
-         "note", "isbn",
+         "note", "isbn"
      },
 }
 
@@ -278,8 +278,22 @@ categories.thesis = {
     },
 }
 
-categories.mastersthesis = categories.thesis
-categories.phdthesis     = categories.thesis
+categories.mastersthesis = {
+    required = {
+        "author",
+        "title",
+        "school",
+        "year"
+    },
+    optional = {
+        "type",
+        "subtitle", "file",
+        "month",
+        "address",
+        "note"
+    },
+}
+categories.phdthesis = categories.mastersthesis
 
 -- a report published by a school or other institution, usually numbered within a series.
 

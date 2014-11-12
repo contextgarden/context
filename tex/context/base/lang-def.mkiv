@@ -271,37 +271,6 @@
 \installlanguage [\s!slovenian] [\s!sl]
 \installlanguage [slovene]      [\s!sl] % both possible (mojca: still needed?)
 
-\def\doconvertsloveniancharacters{\dodoconvertcharacters{25}}
-
-\def\sloveniancharacters{\doconvertsloveniancharacters\sloveniancharacter}
-\def\slovenianCharacters{\doconvertsloveniancharacters\slovenianCharacter}
-
-%D Define general-purpose macros for Slovenian character enumerations:
-
-\defineconversion [sloveniancharacter]  [\sloveniancharacter]
-\defineconversion [slovenianCharacter]  [\slovenianCharacter]
-
-\defineconversion [sloveniancharacters] [\sloveniancharacters]
-\defineconversion [slovenianCharacters] [\slovenianCharacters]
-
-%D Define these as the general character enumeration when
-%D language is Slovenian. If you feel uncomfortable with this,
-%D mail Mojca, since she promised to to take the heat.
-
-\defineconversion [\s!sl] [character]  [\sloveniancharacter]
-\defineconversion [\s!sl] [Character]  [\slovenianCharacter]
-
-\defineconversion [\s!sl] [characters] [\sloveniancharacters]
-\defineconversion [\s!sl] [Characters] [\slovenianCharacters]
-
-\defineconversion [\s!sl] [a]          [\sloveniancharacters]
-\defineconversion [\s!sl] [A]          [\slovenianCharacters]
-\defineconversion [\s!sl] [AK]         [\smallcapped\sloveniancharacters]
-\defineconversion [\s!sl] [KA]         [\smallcapped\sloveniancharacters]
-
-\def\sloveniancharacters#1{\ctxcommand{alphabetic(\number#1,"sl")}}
-\def\slovenianCharacters#1{\ctxcommand{Alphabetic(\number#1,"sl")}}
-
 % Cyrillic Languages
 
 \installlanguage

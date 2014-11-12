@@ -186,9 +186,25 @@ local fullstripper     = whitespace^0 * C((whitespace^0 * nonwhitespace^1)^0)
 ----- collapser        = Cs(spacer^0/"" * ((spacer^1 * endofstring / "") + (spacer^1/" ") + P(1))^0)
 local collapser        = Cs(spacer^0/"" * nonspacer^0 * ((spacer^0/" " * nonspacer^1)^0))
 
+local b_collapser      = Cs( whitespace^0        /"" * (nonwhitespace^1 + whitespace^1/" ")^0)
+local e_collapser      = Cs((whitespace^1 * P(-1)/"" +  nonwhitespace^1 + whitespace^1/" ")^0)
+local m_collapser      = Cs(                           (nonwhitespace^1 + whitespace^1/" ")^0)
+
+local b_stripper      = Cs( spacer^0        /"" * (nonspacer^1 + spacer^1/" ")^0)
+local e_stripper      = Cs((spacer^1 * P(-1)/"" +  nonspacer^1 + spacer^1/" ")^0)
+local m_stripper      = Cs(                       (nonspacer^1 + spacer^1/" ")^0)
+
 patterns.stripper      = stripper
 patterns.fullstripper  = fullstripper
 patterns.collapser     = collapser
+
+patterns.b_collapser   = b_collapser
+patterns.m_collapser   = m_collapser
+patterns.e_collapser   = e_collapser
+
+patterns.b_stripper    = b_stripper
+patterns.m_stripper    = m_stripper
+patterns.e_stripper    = e_stripper
 
 patterns.lowercase     = lowercase
 patterns.uppercase     = uppercase

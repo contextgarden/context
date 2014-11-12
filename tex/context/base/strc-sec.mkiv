@@ -235,6 +235,7 @@
                 set           = "\structureparameter\c!sectionset",
                 segments      = "\structureparameter\c!sectionsegments",
                 ownnumber     = "\currentstructureownnumber",
+                language      = "\currentlanguage", % for the moment, needed for bookmarks conversion
             },
             userdata = \!!bs\detokenize{#3}\!!es % will be converted to table at the lua end
         }

@@ -2572,6 +2572,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "publ-jrn",
+   loading  = "always",
+   status   = "pending",
+  },
+  {
+   category = "mkiv",
    filename = "publ-xml",
    loading  = "always",
    status   = "pending",

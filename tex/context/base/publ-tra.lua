@@ -12,18 +12,21 @@ local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local settings_to_array = utilities.parsers.settings_to_array
 local formatters = string.formatters
 
-local tracers        = publications.tracers or { }
+local context        = context
+local commands       = commands
+
+local publications   = publications
+local tracers        = publications.tracers
+local tables         = publications.tables
 local datasets       = publications.datasets
 local specifications = publications.specifications
-
-local context = context
 
 local ctx_NC, ctx_NR, ctx_HL, ctx_FL, ctx_ML, ctx_LL = context.NC, context.NR, context.HL, context.FL, context.ML, context.LL
 local ctx_bold, ctx_monobold, ctx_rotate, ctx_llap, ctx_rlap = context.bold, context.formatted.monobold, context.rotate, context.llap, context.rlap
 local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
 
-local privates = publications.tables.privates
-local specials = publications.tables.specials
+local privates = tables.privates
+local specials = tables.specials
 
 local report   = logs.reporter("publications","tracers")
 
@@ -35,7 +38,7 @@ function tracers.showdatasetfields(settings)
     local fielddata     = specification and specifications[specification] or specifications.apa
     local categories    = fielddata.categories
     if next(luadata) then
-        ctx_starttabulate { "|lT|lT|pT|" }
+        ctx_starttabulate { "|lT|lT|pTl|" }
             ctx_NC() ctx_bold("tag")
             ctx_NC() ctx_bold("category")
             ctx_NC() ctx_bold("fields")
@@ -58,9 +61,9 @@ function tracers.showdatasetfields(settings)
                         if kind == "required" then
                             context("{\\darkgreen %s} ",key)
                         elseif kind == "optional" then
-                            context("{\\darkyellow %s} ",key)
-                        else
                             context("%s ",key)
+                        else
+                            context("{\\darkyellow %s} ",key)
                         end
                     end
                 end
@@ -81,7 +84,7 @@ function tracers.showdatasetcompleteness(settings)
     local lpegmatch     = lpeg.match
     local texescape     = lpeg.patterns.texescape
 
-    local preamble = { "|lTBw(5em)|lBTp(10em)|p|" }
+    local preamble = { "|lTBw(5em)|lBTp(10em)|pl|" }
 
     local function identified(tag,category,crossref)
         ctx_NC()
@@ -284,7 +287,7 @@ function tracers.showfields(settings)
 end
 
 function tracers.showtables(settings)
-    for name, list in sortedhash(publications.tables) do
+    for name, list in sortedhash(tables) do
         ctx_starttabulate { "|Tl|Tl|" }
         ctx_FL()
         ctx_NC()

@@ -463,65 +463,68 @@ function xml.inclusions(e,sorted)
     end
 end
 
-local stripper     = lpeg.patterns.stripper
-local fullstripper = lpeg.patterns.fullstripper
-local collapser    = lpeg.patterns.collapser
+local b_collapser  = lpeg.patterns.b_collapser
+local m_collapser  = lpeg.patterns.m_collapser
+local e_collapser  = lpeg.patterns.e_collapser
+
+local b_stripper   = lpeg.patterns.b_stripper
+local m_stripper   = lpeg.patterns.m_stripper
+local e_stripper   = lpeg.patterns.e_stripper
 
 local lpegmatch    = lpeg.match
 
 local function stripelement(e,nolines,anywhere)
     local edt = e.dt
     if edt then
-        local strip = nolines and fullstripper or stripper
-        if anywhere then
-            local t, n = { }, 0
-            for e=1,#edt do
+        local n = #edt
+        if n == 0 then
+            return e -- convenient
+        elseif anywhere then
+            local t = { }
+            local m = 0
+            for e=1,n do
                 local str = edt[e]
                 if type(str) ~= "string" then
-                    n = n + 1
-                    t[n] = str
+                    m = m + 1
+                    t[m] = str
                 elseif str ~= "" then
-                    str = lpegmatch(strip,str)
+                    if nolines then
+                        str = lpegmatch((n == 1 and b_collapser) or (n == m and e_collapser) or m_collapser,str)
+                    else
+                        str = lpegmatch((n == 1 and b_stripper) or (n == m and e_stripper) or m_stripper,str)
+                    end
                     if str ~= "" then
-                        n = n + 1
-                        t[n] = str
+                        m = m + 1
+                        t[m] = str
                     end
                 end
             end
             e.dt = t
         else
-            -- we can assume a regular sparse xml table with no successive strings
-            -- otherwise we should use a while loop
-            if #edt > 0 then
-                -- strip front
-                local str = edt[1]
-                if type(str) ~= "string" then
-                    -- nothing
-                elseif str == "" then
+            local str = edt[1]
+            if type(str) == "string" then
+                if str ~= "" then
+                    str = lpegmatch(nolines and b_collapser or b_stripper,str)
+                end
+                if str == "" then
                     remove(edt,1)
+                    n = n - 1
                 else
-                    str = lpegmatch(strip,str)
-                    if str == "" then
-                        remove(edt,1)
-                    else
-                        edt[1] = str
-                    end
+                    edt[1] = str
                 end
             end
-            local nedt = #edt
-            if nedt > 0 then
-                -- strip end
-                local str = edt[nedt]
-                if type(str) ~= "string" then
-                    -- nothing
-                elseif str == "" then
-                    remove(edt)
-                else
-                    str = lpegmatch(strip,str)
+            if n > 0 then
+                str = edt[n]
+                if type(str) == "string" then
                     if str == "" then
                         remove(edt)
                     else
-                        edt[nedt] = str
+                        str = lpegmatch(nolines and e_collapser or e_stripper,str)
+                        if str == "" then
+                            remove(edt)
+                        else
+                            edt[n] = str
+                        end
                     end
                 end
             end

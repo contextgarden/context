@@ -437,7 +437,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 33805, stripped down to: 18228
+-- original size: 34559, stripped down to: 18815
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -529,9 +529,21 @@ patterns.nonwhitespace=nonwhitespace
 local stripper=spacer^0*C((spacer^0*nonspacer^1)^0)   
 local fullstripper=whitespace^0*C((whitespace^0*nonwhitespace^1)^0)
 local collapser=Cs(spacer^0/""*nonspacer^0*((spacer^0/" "*nonspacer^1)^0))
+local b_collapser=Cs(whitespace^0/""*(nonwhitespace^1+whitespace^1/" ")^0)
+local e_collapser=Cs((whitespace^1*P(-1)/""+nonwhitespace^1+whitespace^1/" ")^0)
+local m_collapser=Cs((nonwhitespace^1+whitespace^1/" ")^0)
+local b_stripper=Cs(spacer^0/""*(nonspacer^1+spacer^1/" ")^0)
+local e_stripper=Cs((spacer^1*P(-1)/""+nonspacer^1+spacer^1/" ")^0)
+local m_stripper=Cs((nonspacer^1+spacer^1/" ")^0)
 patterns.stripper=stripper
 patterns.fullstripper=fullstripper
 patterns.collapser=collapser
+patterns.b_collapser=b_collapser
+patterns.m_collapser=m_collapser
+patterns.e_collapser=e_collapser
+patterns.b_stripper=b_stripper
+patterns.m_stripper=m_stripper
+patterns.e_stripper=e_stripper
 patterns.lowercase=lowercase
 patterns.uppercase=uppercase
 patterns.letter=patterns.lowercase+patterns.uppercase
@@ -11592,7 +11604,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 25942, stripped down to: 18549
+-- original size: 26119, stripped down to: 18895
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -12002,57 +12014,65 @@ function xml.inclusions(e,sorted)
     end
   end
 end
-local stripper=lpeg.patterns.stripper
-local fullstripper=lpeg.patterns.fullstripper
-local collapser=lpeg.patterns.collapser
+local b_collapser=lpeg.patterns.b_collapser
+local m_collapser=lpeg.patterns.m_collapser
+local e_collapser=lpeg.patterns.e_collapser
+local b_stripper=lpeg.patterns.b_stripper
+local m_stripper=lpeg.patterns.m_stripper
+local e_stripper=lpeg.patterns.e_stripper
 local lpegmatch=lpeg.match
 local function stripelement(e,nolines,anywhere)
   local edt=e.dt
   if edt then
-    local strip=nolines and fullstripper or stripper
-    if anywhere then
-      local t,n={},0
-      for e=1,#edt do
+    local n=#edt
+    if n==0 then
+      return e 
+    elseif anywhere then
+      local t={}
+      local m=0
+      for e=1,n do
         local str=edt[e]
         if type(str)~="string" then
-          n=n+1
-          t[n]=str
+          m=m+1
+          t[m]=str
         elseif str~="" then
-          str=lpegmatch(strip,str)
+          if nolines then
+            str=lpegmatch((n==1 and b_collapser) or (n==m and e_collapser) or m_collapser,str)
+          else
+            str=lpegmatch((n==1 and b_stripper) or (n==m and e_stripper) or m_stripper,str)
+          end
           if str~="" then
-            n=n+1
-            t[n]=str
+            m=m+1
+            t[m]=str
           end
         end
       end
       e.dt=t
     else
-      if #edt>0 then
-        local str=edt[1]
-        if type(str)~="string" then
-        elseif str=="" then
+      local str=edt[1]
+      if type(str)=="string" then
+        if str~="" then
+          str=lpegmatch(nolines and b_collapser or b_stripper,str)
+        end
+        if str=="" then
           remove(edt,1)
+          n=n-1
         else
-          str=lpegmatch(strip,str)
-          if str=="" then
-            remove(edt,1)
-          else
-            edt[1]=str
-          end
+          edt[1]=str
         end
       end
-      local nedt=#edt
-      if nedt>0 then
-        local str=edt[nedt]
-        if type(str)~="string" then
-        elseif str=="" then
-          remove(edt)
-        else
-          str=lpegmatch(strip,str)
+      if n>0 then
+        str=edt[n]
+        if type(str)=="string" then
           if str=="" then
             remove(edt)
           else
-            edt[nedt]=str
+            str=lpegmatch(nolines and e_collapser or e_stripper,str)
+            if str=="" then
+              remove(edt)
+            else
+              edt[n]=str
+            end
           end
         end
       end
@@ -17637,8 +17657,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 728632
--- stripped bytes    : 259779
+-- original bytes    : 729563
+-- stripped bytes    : 259777
 
 -- end library merge
 

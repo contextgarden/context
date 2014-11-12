@@ -13,11 +13,9 @@ end
 
 -- this tracker is only for real debugging and not for the average user
 
-local trace_match = false  trackers.register("publications.cite.match", function(v) trace_match = v end)
+local trace_match = false  trackers.register("publications.match", function(v) trace_match = v end)
 
-if not publications then
-    publications = { }
-end
+local publications = publications
 
 local tonumber, next, type = tonumber, next, type
 local find = string.find
@@ -29,7 +27,7 @@ local concat = table.concat
 local formatters = string.formatters
 local lowercase  = characters.lower
 
-local report  = logs.reporter("publications","match")
+local report     = logs.reporter("publications","match")
 
 local colon    = P(":")
 local dash     = P("-")

@@ -65,6 +65,7 @@
 \def\s!btxrtx       {btxrtx}
 \def\s!btxatx       {btxatx}
 \def\s!btxbtx       {btxbtx}
+\def\s!btxspc       {btxspc}
 
 \definelabelclass[btxlabel][2]
 
@@ -309,6 +310,58 @@
 \installcommandhandler \??btxregister    {btxregister}    \??btxregister
 \installcommandhandler \??btxrendering   {btxrendering}   \??btxrendering
 
+%D The following two helpers permits us to use prefixes (if we want):
+%D
+%D \startbuffer
+%D \let\btxciteparameter\btxspecificationciteparameter
+%D \let\btxlistparameter\btxspecificationlistparameter
+%D
+%D \edef\currentbtxspecification  {apa}
+%D \edef\currentbtxcitealternative{author}
+%D
+%D \setupbtxcitevariant                             [crap=crap]
+%D \definebtxcitevariant [author]                   [check=author,extra=author]
+%D \definebtxcitevariant [authoryear]  [author]     [check=authoryear]
+%D \definebtxcitevariant [authoryears] [authoryear] [check=authoryears]
+%D \setupbtxcitevariant  [author]                   [apa:check=apa-author]
+%D \setupbtxcitevariant  [authoryear]               [apa:check=apa-authoryear]
+%D
+%D \starttabulate[|lT|lT|]
+%D     \NC \bf check \EQ \btxciteparameter{check} \NC\NR
+%D     \NC \bf extra \EQ \btxciteparameter{extra} \NC\NR
+%D     \NC \bf crap  \EQ \btxciteparameter{crap}  \NC\NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
+
+\def\btxspecificationciteparameter#1%
+  {\csname
+     \??btxcitevariant
+     \ifcsname\??btxcitevariant\currentbtxcitealternative:\currentbtxspecification:#1\endcsname
+       \currentbtxcitealternative:\currentbtxspecification:#1%
+     \else\ifcsname\??btxcitevariant\currentbtxcitealternative:#1\endcsname
+       \currentbtxcitealternative:#1%
+     \else
+       :#1% we assume defined variants
+     \fi\fi
+   \endcsname}
+
+\def\btxspecificationlistparameter#1%
+  {\csname
+     \??btxlistvariant
+     \ifcsname\??btxlistvariant\currentbtxlistalternative:\currentbtxspecification:#1\endcsname
+       \currentbtxlistalternative:\currentbtxspecification:#1%
+     \else\ifcsname\??btxlistvariant\currentbtxlistalternative:#1\endcsname
+       \currentbtxlistalternative:#1%
+     \else
+       :#1% we assume defined variants
+     \fi\fi
+   \endcsname}
+
+% \let\btxciteparameter\btxspecificationciteparameter
+% \let\btxlistparameter\btxspecificationlistparameter
+
 \appendtoks
     \ifx\currentbtxlistvariant\empty \else
         \ctxcommand{registerbtxlistvariant("\currentbtxlistvariant","\currentbtxlistvariantparent")}%
@@ -322,14 +375,25 @@
 \to \everydefinebtxcitevariant
 
 \unexpanded\def\usebtxdataset
-  {\dodoubleargument\publ_use_dataset}
+  {\begingroup
+   \dotripleempty\publ_use_dataset}
 
-\def\publ_use_dataset[#1][#2]%
-  {\ifsecondargument
-     \ctxcommand{usebtxdataset("#1","#2")}%
-   \else
-     \ctxcommand{usebtxdataset("\v!standard","#1")}%
-   \fi}
+\def\publ_use_dataset[#1][#2][#3]%
+  {\getdummyparameters[\c!specification=\currentbtxspecification,#3]%
+   \ifsecondargument
+     \ctxcommand{usebtxdataset{
+        specification = "\dummyparameter\c!specification",
+        dataset       = "#1",
+        filename      = "#2",
+     }}%
+   \else\iffirstargument
+     \ctxcommand{usebtxdataset{
+        specification = "\dummyparameter\c!specification",
+        dataset       = "\v!standard",
+        filename      = "#1",
+     }}%
+   \fi\fi
+   \endgroup}
 
 \definebtxdataset
   [\v!standard]
@@ -862,6 +926,7 @@
    \strc_references_direct_full_user
       {\s!btxset="\currentbtxdataset",%
        \s!btxref="\currentbtxtag",%
+       \s!btxspc="\currentbtxspecification",%
        \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
        \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
        \ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint="\currentbtxbacklink"\else\s!btxbck="\currentbtxbacktrace"\fi}%
@@ -1351,13 +1416,14 @@
 \unexpanded\def\publ_registers_set
   {\ifx\currentbtxregister\empty \else
      \ctxcommand{setbtxregister {
-        name        = "\currentbtxregister",
-        state       = "\btxregisterparameter\c!state",
-        dataset     = "\btxregisterparameter\c!dataset",
-        field       = "\btxregisterparameter\c!field",
-        register    = "\btxregisterparameter\c!register",
-        method      = "\btxregisterparameter\c!method",
-        alternative = "\btxregisterparameter\c!alternative",
+        specification = "\currentbtxspecification",
+        name          = "\currentbtxregister",
+        state         = "\btxregisterparameter\c!state",
+        dataset       = "\btxregisterparameter\c!dataset",
+        field         = "\btxregisterparameter\c!field",
+        register      = "\btxregisterparameter\c!register",
+        method        = "\btxregisterparameter\c!method",
+        alternative   = "\btxregisterparameter\c!alternative",
     }}%
   \fi}
 

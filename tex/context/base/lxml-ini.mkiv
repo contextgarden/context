@@ -74,8 +74,8 @@
 \def\xmlflushcontext        #1{\ctxlxml{context("#1")}}
 \def\xmlsnippet           #1#2{\ctxlxml{snippet("#1",#2)}}
 \def\xmlelement           #1#2{\ctxlxml{element("#1",#2)}}
-\def\xmlregisterns        #1#2{\ctxlua{xml.registerns("#1","#2")}}                    % document
-\def\xmlremapname     #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}}  % element
+\def\xmlregisterns        #1#2{\ctxlua{xml.registerns("#1","#2")}}                   % document
+\def\xmlremapname     #1#2#3#4{\ctxlua{xml.remapname(lxml.id("#1"),"#2","#3","#4")}} % element
 \def\xmlremapnamespace  #1#2#3{\ctxlua{xml.renamespace(lxml.id("#1"),"#2","#3")}}    % document
 \def\xmlchecknamespace  #1#2#3{\ctxlua{xml.checknamespace(lxml.id("#1"),"#2","#3")}} % element
 \def\xmlsetfunction     #1#2#3{\ctxlxml{setaction("#1",\!!bs#2\!!es,#3)}}
@@ -116,7 +116,11 @@
 \def\xmldoifnottext       #1#2{\ctxlxml{doifnottext (\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
 \def\xmldoifelsetext      #1#2{\ctxlxml{doifelsetext(\!!bs#1\!!es,\!!bs#2\!!es)}} % expandable
 
-\def\xmldoifelseempty    #1#2{\ctxlxml{doifelseempty("#1","#2")}} % #2, "*" or "" == self not yet implemented
+\def\xmldoifempty        #1#2{\ctxlxml{doifempty    ("#1","#2")}}
+\def\xmldoifnotempty     #1#2{\ctxlxml{doifnotempty ("#1","#2")}}
+\def\xmldoifelseempty    #1#2{\ctxlxml{doifelseempty("#1","#2")}}
+\def\xmldoifselfempty      #1{\ctxlxml{doifempty    ("#1")}}
+\def\xmldoifnotselfempty   #1{\ctxlxml{doifnotempty ("#1")}}
 \def\xmldoifelseselfempty  #1{\ctxlxml{doifelseempty("#1")}}
 
 % \startxmlsetups xml:include

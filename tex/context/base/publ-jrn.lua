@@ -16,30 +16,31 @@ if not modules then modules = { } end modules ['publ-jrn'] = {
 -- Abhandlungen der Naturforschenden Gesellschaft in Zürich = Abh. Nat.forsch. Ges. Zür.
 -- Abhandlungen des Naturwissenschaftlichen Vereins zu Bremen = Abh. Nat.wiss. Ver. Bremen
 
-if not characters then require("char-utf") end
+local context  = context
+local commands = commands
 
 local find = string.find
 local P, C, S, Cs, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.S, lpeg.Cs, lpeg.match, lpeg.patterns
 
-local lower            = characters.lower
-
 local report_journals  = logs.reporter("publications","journals")
 
-publications           = publications or { }
+local publications     = publications
 local journals         = { }
 publications.journals  = journals
+
+local lowercase        = characters.lower
 
 local expansions       = { }
 local abbreviations    = { }
 local nofexpansions    = 0
 local nofabbreviations = 0
 
-local valid      = 1 - S([[ ."':;,-]])
-local pattern    = Cs((valid^1 + P(1)/"")^1)
+local valid   = 1 - S([[ ."':;,-]])
+local pattern = Cs((valid^1 + P(1)/"")^1)
 
 local function simplify(name)
     -- we have utf but it doesn't matter much if we lower the bytes
-    return name and lower(lpegmatch(pattern,name)) or name
+    return name and lowercase(lpegmatch(pattern,name)) or name
 end
 
 local function add(expansion,abbreviation)

@@ -19,6 +19,7 @@ local helpinfo = [[
    <subcategory>
     <flag name="toxml"><short>convert bibtex database(s) to xml</short></flag>
     <flag name="tolua"><short>convert bibtex database(s) to lua</short></flag>
+    <flag name="search"><short>seatch bibtex database(s)</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -29,6 +30,7 @@ local helpinfo = [[
     <example><command>mtxrun --script bibtex --tolua bibl-001.bib</command></example>
     <example><command>mtxrun --script bibtex --tolua --simple bibl-001.bib</command></example>
     <example><command>mtxrun --script bibtex --toxml bibl-001.bib bibl-002.bib bibl-003.bib biblio.xml</command></example>
+    <example><command>mtxrun --script bibtex --search --list --pattern=match(author:foo) bar.bib</command></example>
    </subcategory>
   </category>
  </examples>
@@ -43,7 +45,9 @@ local application = logs.application {
 
 local report = application.report
 
+require("util-seq")
 require("publ-dat")
+require("publ-fnd")
 
 scripts        = scripts        or { }
 scripts.bibtex = scripts.bibtex or { }
@@ -57,7 +61,7 @@ function scripts.bibtex.toxml(files)
         if filetype == "xml" then
             target = filename
         elseif filetype == "bib" then
-            bibtex.load(instance,filename)
+            bibtex.load { dataset = instance, filename = filename }
         else
             -- not supported
         end
@@ -77,7 +81,8 @@ function scripts.bibtex.tolua(files)
         if filetype == "lua" then
             target = filename
         elseif filetype == "bib" then
-            bibtex.load(instance,filename)
+            bibtex.load { dataset = instance, filename = filename }
+
         else
             -- not supported
         end
@@ -92,7 +97,48 @@ function scripts.bibtex.tolua(files)
     end
 end
 
-if environment.arguments.toxml then
+function scripts.bibtex.search(files,pattern,list)
+    if pattern then
+        local dataset = publications.datasets["whatever"]
+        for i=1,#files do
+            local filename = resolvers.findfile(files[i])
+            if filename and filename ~= "" then
+                publications.load { dataset = "whatever", filename = filename }
+            end
+        end
+        local found = publications.search(dataset,pattern)
+        local tags  = table.sortedkeys(found)
+        if #tags == 0 then
+            report("no match")
+        elseif list then
+            report("%s matches:",#tags)
+            local result  = { }
+            local luadata = dataset.luadata
+            for i=1,#tags do
+                local tag   = tags[i]
+                local entry = luadata[tag]
+                result[i] = {
+                    tag,
+                    entry.year,
+                    entry.author,
+                    entry.title,
+                }
+            end
+            utilities.formatters.formatcolumns(result)
+            logs.newline()
+            for i=1,#result do
+                texio.write_nl(result[i])
+            end
+            logs.newline()
+        else
+            report("%s matches: % t",#tags,tags)
+        end
+    end
+end
+
+if environment.arguments.search then
+    scripts.bibtex.search(environment.files,environment.arguments.pattern,environment.arguments.list)
+elseif environment.arguments.toxml then
     scripts.bibtex.toxml(environment.files)
 elseif environment.arguments.tolua then
     scripts.bibtex.tolua(environment.files)

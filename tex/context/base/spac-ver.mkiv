@@ -1063,12 +1063,17 @@
 
 \newbox\nostrutbox \setbox\nostrutbox\emptyhbox
 
+\newtoks\everysetnostrut
+
 \unexpanded\def\setnostrut
-  {\setbox\strutbox\copy\nostrutbox
-   \let\strut\empty
-   \let\endstrut\empty
-   \let\begstrut\empty
-   \let\crlfplaceholder\empty}
+  {\the\everysetnostrut}
+
+\appendtoks
+    \setbox\strutbox\copy\nostrutbox
+    \let\strut\empty
+    \let\endstrut\empty
+    \let\begstrut\empty
+\to \everysetnostrut
 
 % when enabled, sigstruts will remove themselves if nothing
 % goes inbetween

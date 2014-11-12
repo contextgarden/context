@@ -42,6 +42,8 @@ converters.numbers = tonumber
 commands.number  = context
 commands.numbers = context
 
+ctx_doifelse     = commands.doifelse
+
 -- to be reconsidered ... languages namespace here, might become local plus a register command
 
 local counters = allocate {
@@ -59,6 +61,14 @@ local counters = allocate {
         0x006A, 0x006B, 0x006C, 0x006D, 0x006E,
         0x006F, 0x0070, 0x0072, 0x0073, 0x0161,
         0x0074, 0x0075, 0x0076, 0x007A, 0x017E
+    },
+    ['spanish'] = {
+        0x0061, 0x0062, 0x0063, 0x0064, 0x0065,
+        0x0066, 0x0067, 0x0068, 0x0069, 0x006A,
+        0x006B, 0x006C, 0x006D, 0x006E, 0x00F1,
+        0x006F, 0x0070, 0x0071, 0x0072, 0x0073,
+        0x0074, 0x0075, 0x0076, 0x0077, 0x0078,
+        0x0079, 0x007A
     },
     ['greek'] = { -- this should be the lowercase table
      -- 0x0391, 0x0392, 0x0393, 0x0394, 0x0395,
@@ -131,6 +141,7 @@ counters['ar']                   = counters['arabic']
 counters['gr']                   = counters['greek']
 counters['g']                    = counters['greek']
 counters['sl']                   = counters['slovenian']
+counters['es']                   = counters['spanish']
 counters['kr']                   = counters['korean']
 counters['kr-p']                 = counters['korean-parent']
 counters['kr-c']                 = counters['korean-circle']
@@ -147,6 +158,9 @@ counters['arabicexnumerals']     = counters['persian']
 counters['koreannumerals']       = counters['korean']
 counters['koreanparentnumerals'] = counters['korean-parent']
 counters['koreancirclenumerals'] = counters['korean-circle']
+
+counters['sloveniannumerals']    = counters['slovenian']
+counters['spanishnumerals']      = counters['spanish']
 
 local fallback = utfbyte('0')
 
@@ -191,6 +205,8 @@ converters.maxchrs = maxchrs
 local lowercharacter = characters.lcchars
 local uppercharacter = characters.ucchars
 
+local defaultcounter = counters.default
+
 local function do_alphabetic(n,mapping,mapper,t) -- todo: make zero based variant (initial n + 1)
     if not t then
         t = { }
@@ -207,13 +223,11 @@ local function do_alphabetic(n,mapping,mapper,t) -- todo: make zero based varian
     end
 end
 
-function converters.alphabetic(n,code)
-    return do_alphabetic(n,counters[code] or counters.default,lowercharacter)
-end
+local function alphabetic(n,code) return do_alphabetic(n,code and counters[code] or defaultcounter,lowercharacter) end
+local function Alphabetic(n,code) return do_alphabetic(n,code and counters[code] or defaultcounter,uppercharacter) end
 
-function converters.Alphabetic(n,code)
-    return do_alphabetic(n,counters[code] or counters.default,uppercharacter)
-end
+converters.alphabetic = alphabetic
+converters.Alphabetic = Alphabetic
 
 local lower_offset = 96
 local upper_offset = 64
@@ -228,8 +242,8 @@ converters['A']  = converters.Characters
 converters['AK'] = converters.Characters
 converters['KA'] = converters.Characters
 
-function commands.alphabetic(n,c) context(do_alphabetic(n,counters[c],lowercharacter)) end
-function commands.Alphabetic(n,c) context(do_alphabetic(n,counters[c],uppercharacter)) end
+function commands.alphabetic(n,c) context(do_alphabetic(n,c and counters[c] or defaultcounter,lowercharacter)) end
+function commands.Alphabetic(n,c) context(do_alphabetic(n,c and counters[c] or defaultcounter,uppercharacter)) end
 function commands.character (n)   context(chr (n,lower_offset)) end
 function commands.Character (n)   context(chr (n,upper_offset)) end
 function commands.characters(n)   context(chrs(n,lower_offset)) end
@@ -271,7 +285,7 @@ function commands.second () context(date("%S")) end
 function commands.textime() context(textime()) end
 
 function commands.doifleapyearelse(year)
-    commands.doifelse(isleapyear(year))
+    ctx_doifelse(isleapyear(year))
 end
 
 local roman = {
@@ -504,6 +518,20 @@ converters['cn']   = converters.chinesenumerals
 converters['cn-c'] = converters.chinesecapnumerals
 converters['cn-a'] = converters.chineseallnumerals
 
+-- this is a temporary solution: we need a better solution when we have
+-- more languages
+
+function converters.spanishnumerals(n) return alphabetic(n,"es") end
+function converters.Spanishnumerals(n) return Alphabetic(n,"es") end
+function converters.sloviannumerals(n) return alphabetic(n,"sl") end
+function converters.Sloviannumerals(n) return Alphabetic(n,"sl") end
+
+converters['characters:es'] = converters.spanishnumerals
+converters['characters:sl'] = converters.sloveniannumerals
+
+converters['Characters:es'] = converters.Spanishnumerals
+converters['Characters:sl'] = converters.Sloveniannumerals
+
 function commands.chinesenumerals   (n) context(tochinese(n,"normal")) end
 function commands.chinesecapnumerals(n) context(tochinese(n,"cap"   )) end
 function commands.chineseallnumerals(n) context(tochinese(n,"all"   )) end
@@ -513,40 +541,49 @@ local sequences      = converters.sequences
 
 storage.register("converters/sequences", sequences, "converters.sequences")
 
-function converters.define(name,set)
+function converters.define(name,set) -- ,language)
+ -- if language then
+ --     name = name .. ":" .. language
+ -- end
     sequences[name] = settings_to_array(set)
 end
 
 commands.defineconversion = converters.define
 
-local function convert(method,n) -- todo: language
-    local converter = converters[method]
+local function convert(method,n,language)
+    local converter = language and converters[method..":"..language] or converters[method]
     if converter then
         return converter(n)
     else
         local lowermethod = lower(method)
-        local linguistic = counters[lowermethod]
+        local linguistic  = counters[lowermethod]
         if linguistic then
             return do_alphabetic(n,linguistic,lowermethod == method and lowercharacter or uppercharacter)
         end
         local sequence = sequences[method]
         if sequence then
-            local max = #sequence
-            if n > max then
-                return sequence[(n-1) % max + 1]
-            else
-                return sequence[n]
+            local set = sequences.set
+            if set then
+                local max = #set
+                if n > max then
+                    return set[(n-1) % max + 1]
+                else
+                    return set[n]
+                end
             end
-        else
-            return n
         end
+        return n
     end
 end
 
 converters.convert = convert
 
-function commands.checkedconversion(method,n)
-    context(convert(method,n))
+function commands.doifelseconverter(method,language)
+    ctx_doifelse(converters[method..":"..language] or converters[method] or sequences[method])
+end
+
+function commands.checkedconversion(method,n,language)
+    context(convert(method,n,language))
 end
 
 -- Well, since the one asking for this didn't test it the following code is not
@@ -893,7 +930,7 @@ local words = {
       [900] = "novecientos",
      [1000] = "mil",
    [1000^2] = "millón",
-   [1000^3] = "mil millónes",
+   [1000^3] = "mil millones",
    [1000^4] = "billón",
 }
 

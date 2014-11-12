@@ -850,31 +850,6 @@
 %D In \CONTEXT\ however we save some processing time by putting
 %D an extra \type{\hbox} around the \type{\strutbox}.
 
-% moved from page-lin.tex to here (due to visualization added
-% in august 2003)
-%
-% \unexpanded \def\crlf
-%   {\ifhmode\unskip\else\strut\fi\ifcase\raggedstatus\hfil\fi\break}
-
-\unexpanded\def\crlf
-  {\ifhmode
-     \unskip
-     \prewordbreak\crlfplaceholder
-     \ifcase\raggedstatus\hfil\or\or\or\hfil\fi
-     \break
-   \else
-     \crlfplaceholder
-     \endgraf
-   \fi}
-
-\unexpanded\def\crlfplaceholder
-  {\strut}
-
-\unexpanded\def\settestcrlf
-  {\unexpanded\def\crlfplaceholder
-     {\hbox to \zeropoint
-        {\strut{\infofont\kern.25em}\lohi{\infofont CR}{\infofont LF}\hss}}}
-
 %D \starttyping
 %D % \setuplayout[gridgrid=yes] \showgrid
 %D

@@ -256,6 +256,11 @@
       \dotaghighlight}
      {\dostoptagged}}
 
+\unexpanded\def\highlight[#1]%
+  {\typo_highlights_indeed{#1}}
+
+\let\directhighlight\typo_highlights_indeed
+
 \unexpanded\def\defineexpandable
   {\doifnextoptionalelse
      {\syst_basics_define_yes\def}%

@@ -24,6 +24,7 @@ local disableaction   = tasks.disableaction
 local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
 
+appendaction("processors",   "normalizers", "typesetters.wrappers.handler")                      -- disabled
 appendaction("processors",   "normalizers", "typesetters.characters.handler")                    -- always on
 appendaction("processors",   "normalizers", "fonts.collections.process")                         -- disabled
 appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
@@ -129,6 +130,7 @@ appendaction ("shipouts",    "normalizers", "nodes.properties.delayed") -- enabl
 
 -- speedup: only kick in when used
 
+disableaction("processors",  "typesetters.wrappers.handler")
 disableaction("processors",  "languages.replacements.handler")
 disableaction("processors",  "typesetters.characteralign.handler")
 disableaction("processors",  "scripts.autofontfeature.handler")

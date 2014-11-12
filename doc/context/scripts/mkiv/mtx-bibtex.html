@@ -41,12 +41,14 @@
         <tr><th/><td/><td/></tr>
         <tr><th>--toxml</th><td></td><td>convert bibtex database(s) to xml</td></tr>
         <tr><th>--tolua</th><td></td><td>convert bibtex database(s) to lua</td></tr>
+        <tr><th>--search</th><td></td><td>seatch bibtex database(s)</td></tr>
     </table>
 <br/>
 <h1>Example</h1>
 <tt>mtxrun --script bibtex --tolua bibl-001.bib</tt>
 <br/><tt>mtxrun --script bibtex --tolua --simple bibl-001.bib</tt>
 <br/><tt>mtxrun --script bibtex --toxml bibl-001.bib bibl-002.bib bibl-003.bib biblio.xml</tt>
+<br/><tt>mtxrun --script bibtex --search --list --pattern=match(author:foo) bar.bib</tt>
 <br/><br/>            </div>
         </div>
     </body>

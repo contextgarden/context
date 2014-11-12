@@ -7,9 +7,11 @@ if not modules then modules = { } end modules ['publ-usr'] = {
 }
 
 local P, Cs, R, Cc, Carg = lpeg.P, lpeg.Cs, lpeg.R, lpeg.Cc, lpeg.Carg
-
+local lpegmatch = lpeg.match
 local settings_to_hash = utilities.parsers.settings_to_hash
--- local chardata = characters.data
+
+local publications = publications
+local datasets     = publications.datasets
 
 -- local str = [[
 --     \startpublication[k=Berdnikov:TB21-2-129,t=article,a={{Berdnikov},{}},y=2000,n=2257,s=BHHJ00]
@@ -70,8 +72,10 @@ local leftbrace    = P("{")
 local rightbrace   = P("}")
 local leftbracket  = P("[")
 local rightbracket = P("]")
+local backslash    = P("\\")
+local letter       = R("az","AZ")
 
-local key          = P("\\") * Cs(R("az","AZ")^1) * lpeg.patterns.space^0
+local key          = backslash * Cs(letter^1) * lpeg.patterns.space^0
 local mandate      = leftbrace * Cs(lpeg.patterns.balanced) * rightbrace + Cc(false)
 local optional     = leftbracket * Cs((1-rightbracket)^0) * rightbracket + Cc(false)
 local value        = optional^-1 * mandate^-1 * optional^-1 * mandate^-2
@@ -79,14 +83,17 @@ local value        = optional^-1 * mandate^-1 * optional^-1 * mandate^-2
 local pattern      = ((Carg(1) * key * value) / register + P(1))^0
 
 function publications.addtexentry(dataset,settings,content)
-    settings = settings_to_hash(settings)
+    local current  = datasets[dataset]
+    local settings = settings_to_hash(settings)
     local data = {
         tag      = settings.tag      or settings.k or "no tag",
         category = settings.category or settings.t or "article",
     }
-    lpeg.match(pattern,content,1,data) -- can set tag too
-    dataset.userdata[data.tag] = data
-    dataset.luadata[data.tag] = data
-    publications.markasupdated(dataset)
+    lpegmatch(pattern,content,1,data) -- can set tag too
+    current.userdata[data.tag] = data
+    current.luadata[data.tag] = data
+    publications.markasupdated(current)
     return data
 end
+
+commands.addbtxentry = publications.addtexentry

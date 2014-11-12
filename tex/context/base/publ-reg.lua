@@ -21,10 +21,14 @@ local v_standard     = variables.standard
 local v_stop         = variables.stop
 local v_all          = variables.all
 
+local publications   = publications
 local datasets       = publications.datasets
-local specifications = { }
+local specifications = publications.specifications
+local detailed       = publications.detailed
+
+local registrations  = { }
 local sequence       = { }
-local flushers       = table.setmetatableindex(function(t,k) t[k] = default return default end)
+local flushers       = table.setmetatableindex(function(t,k) local v = t.default t[k] = v return v end)
 
 function commands.setbtxregister(specification)
     local name     = specification.name
@@ -38,10 +42,10 @@ function commands.setbtxregister(specification)
         dataset = v_all
     end
     -- could be metatable magic
-    local s = specifications[register]
+    local s = registrations[register]
     if not s then
         s = { }
-        specifications[register] = s
+        registrations[register] = s
     end
     local d = s[dataset]
     if not d then
@@ -51,17 +55,24 @@ function commands.setbtxregister(specification)
     --
     -- check all
     --
+    local processors = name ~= register and name or ""
+    if processor == "" then
+        processor = nil
+    elseif processor then
+        processor = "btx:r:" .. processor
+    end
+    --
     d.active      = specification.state ~= v_stop
     d.once        = specification.method == v_once or false
     d.field       = field
-    d.processor   = name ~= register and name or ""
+    d.processor   = processor
     d.alternative = d.alternative or specification.alternative
     d.register    = register
     d.dataset     = dataset
     d.done        = d.done or { }
     --
     sequence   = { }
-    for register, s in sortedhash(specifications) do
+    for register, s in sortedhash(registrations) do
         for dataset, d in sortedhash(s) do
             if d.active then
                 sequence[#sequence+1] = d
@@ -70,21 +81,50 @@ function commands.setbtxregister(specification)
     end
 end
 
+----- getter = publications.directget
+
+local function getter(current,tag,step) -- todo: detail
+    local data = current.luadata[tag]
+    if data then
+        local catspec = specifications[step.specification].categories[data.category]
+        if catspec then
+            local fields = catspec.fields
+            if fields then
+                local field = step.field
+                local sets  = catspec.sets
+                if sets then
+                    local set = sets[field]
+                    if set then
+                        for i=1,#set do
+                            local field = set[i]
+                            local value = fields[field] and data[field] -- redundant check
+                            if value then
+                                return field, value, catspec.types[field] or "string"
+                            end
+                        end
+                    end
+                end
+                local value = fields[field] and data[field]
+                if value then
+                    return field, value, catspec.types[field] or "string"
+                end
+            end
+        end
+    end
+end
+
 function commands.btxtoregister(dataset,tag)
+    local current = datasets[dataset]
     for i=1,#sequence do
         local step = sequence[i]
         local dset = step.dataset
         if dset == v_all or dset == dataset then
             local done = step.done
             if not done[tag] then
-                local current = datasets[dataset]
-                local entry   = current.luadata[tag]
-                if entry then
-                    local processor = step.processor
-                    if processor and processor ~= "" then
-                        step.processor = "btx:r:" .. processor
-                    end
-                    flushers[step.field or "default"](step,dataset,tag,current,entry,current.details[tag])
+                local field, value, kind = getter(current,tag,step)
+                if value then
+                    local cast = detailed[kind][value] or value
+                    flushers[kind](step,field,value,cast)
                 end
                 done[tag] = true
             end
@@ -102,53 +142,44 @@ end
 
 local ctx_dosetfastregisterentry = context.dosetfastregisterentry -- register entry key
 
-local p_keywords  = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
-local serialize   = publications.serializeauthor
-local components  = publications.authorcomponents
-local f_author    = formatters[ [[\btxindexedauthor{%s}{%s}{%s}{%s}{%s}{%s}]] ]
+local p_keywords = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
+local serialize  = publications.serializeauthor
+local components = publications.authorcomponents
+local f_author   = formatters[ [[\btxindexedauthor{%s}{%s}{%s}{%s}{%s}{%s}]] ]
 
-function flushers.default(specification,dataset,tag,current,entry,detail)
-    local field = specification.field
-    local k = detail[field] or entry[field]
-    if k then
-        ctx_dosetfastregisterentry(specification.register,k,"",specification.processor,"")
+function flushers.string(step,field,value,cast)
+    if value and value ~= "" then
+        ctx_dosetfastregisterentry(step.register,type(cast) == "string" and cast or value,"",step.processor or "","")
     end
 end
 
+flushers.default = flushers.string
+
 local shorts = {
-    normalshort   = true,
-    invertedshort = true,
+    normalshort   = "normalshort",
+    invertedshort = "invertedshort",
 }
 
-function flushers.author(specification,dataset,tag,current,entry,detail)
-    if detail then
-        local field  = specification.field
-        local author = detail[field]
-        if author then
-            local alternative = specification.alternative or "invertedshort"
-            local short       = shorts[alternative]
-            local register    = specification.register
-            local processor   = specification.processor
-            for i=1,#author do
-                local a = author[i]
-                local k = serialize(a)
-                local e = f_author(alternative,components(a,short))
-                ctx_dosetfastregisterentry(register,e,k,processor,"")
-            end
+function flushers.author(step,field,value,cast)
+    if cast and #cast > 0 then
+        local register    = step.register
+        local processor   = step.processor
+        local alternative = shorts[step.alternative or "invertedshort"] or "invertedshort"
+        for i=1,#cast do
+            local a = cast[i]
+            local k = serialize(a)
+            local e = f_author(alternative,components(a,short))
+            ctx_dosetfastregisterentry(register,e,k,processor or "","")
         end
     end
 end
 
-function flushers.keywords(specification,dataset,tag,current,entry,detail)
-    if entry then
-        local value = entry[specification.field]
-        if value then
-            local keywords  = lpegmatch(p_keywords,value)
-            local register  = specification.register
-            local processor = specification.processor
-            for i=1,#keywords do
-                ctx_dosetfastregisterentry(register,keywords[i],"",processor,"")
-            end
+function flushers.keywords(step,field,value,cast)
+    if cast and #cast > 0 then
+        local register  = step.register
+        local processor = step.processor
+        for i=1,#cast do
+            ctx_dosetfastregisterentry(register,cast[i],"",processor or "","")
         end
     end
 end

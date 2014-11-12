@@ -79,6 +79,9 @@
 \def\languagecharacters#1{\ctxcommand{alphabetic(\number#1,"\currentlanguage")}} % new
 \def\languageCharacters#1{\ctxcommand{Alphabetic(\number#1,"\currentlanguage")}} % new
 
+\def\alphabeticnumerals#1{\ctxcommand{alphabetic(\number#1)}}
+\def\Alphabeticnumerals#1{\ctxcommand{Alphabetic(\number#1)}}
+
 % we could use an auxiliary macro to save some bytes in the format
 %
 % \def\dolanguagecharacters#1#2{\ctxcommand{alphabetic(\number#2,"#1")}}
@@ -520,6 +523,13 @@
 \installcorenamespace {conversionarguments}
 \installcorenamespace {conversionwords}
 
+%D It might be better to move more to lua as we also need conversion there
+%D and doublicating logic doesn't make things cleaner. It means that all
+%D conversions will get a language argument too. However, we permit definitions
+%D at the \TEX\ end so we have to provide some hybrid method.
+
+% checkedconversion(method,n,language)
+
 \unexpanded\def\defineconversion
   {\dotripleempty\syst_converters_define_conversion}
 
@@ -532,7 +542,7 @@
 
 \def\syst_converters_define_conversion_indeed#1#2#3%
   {\doifinstringelse{,}{\detokenize{#3}}
-     {\ctxcommand{defineconversion("#2",\!!bs\detokenize{#3}\!!es)}%
+     {\ctxcommand{defineconversion("#2",\!!bs\detokenize{#3}\!!es)}% a set e.g. of symbols
       \setgvalue{\??conversion#1}{\syst_converters_checked_conversion{#2}}}
      {\setgvalue{\??conversion#1}{#3}}}
 
@@ -556,6 +566,10 @@
 \setvalue{\??conversionarguments1}#1{\csname\??conversion\currentlanguage#1\endcsname}
 \setvalue{\??conversionarguments2}#1{\csname\??conversion                #1\endcsname}
 \letvalue{\??conversionarguments3}\syst_converters_checked_conversion
+
+% we can also add a \ctxcommand{doifelseconversion("#1","\currentlanguage")} to check
+% if we have definitions that are not matched at the lua end .. eventually we might do
+% that when more shows up
 
 \def\doifconversiondefinedelse#1%
   {\ifcsname\??conversion\currentlanguage#1\endcsname
@@ -627,6 +641,9 @@
 \defineconversion [AK]                   [\smallcappedcharacters]
 \defineconversion [KA]                   [\smallcappedcharacters]
 
+\defineconversion [\v!alphabetic]        [\alphabeticnumerals]
+\defineconversion [\v!Alphabetic]        [\Alphabeticnumerals]
+
 \defineconversion [\v!number]            [\numbers]
 \defineconversion [\v!numbers]           [\numbers]
 \defineconversion [\v!Numbers]           [\Numbers]
@@ -662,6 +679,9 @@
 \defineconversion [g]                    [\greeknumerals]
 \defineconversion [G]                    [\Greeknumerals]
 
+%defineconversion [ñ]                    [\spanishnumerals]
+%defineconversion [Ñ]                    [\Spanishnumerals]
+
 \defineconversion [abjadnumerals]        [\abjadnumerals]
 \defineconversion [abjadnodotnumerals]   [\adjadnodotnumerals]
 \defineconversion [abjadnaivenumerals]   [\adjadnaivenumerals]
@@ -692,6 +712,46 @@
 \defineconversion [cn]                   [\chinesenumerals]
 \defineconversion [cn-c]                 [\chinesecapnumerals]
 \defineconversion [cn-a]                 [\chineseallnumerals]
+
+%D Moved from lang-def.mkiv:
+%D
+%D Define these as the general character enumeration when language is Slovenian. If
+%D you feel uncomfortable with this, mail Mojca, since she promised to to take the
+%D heat. Pablo was next to request this. We changed characters to numerals for this
+%D feature. We do need these definitions for mechanisms like itemize that check
+%D for converters.
+
+\def\sloveniannumerals#1{\ctxcommand{alphabetic(\number#1,"sl")}}
+\def\slovenianNumerals#1{\ctxcommand{Alphabetic(\number#1,"sl")}}
+
+\def\spanishnumerals  #1{\ctxcommand{alphabetic(\number#1,"es")}}
+\def\spanishNumerals  #1{\ctxcommand{Alphabetic(\number#1,"es")}}
+
+\defineconversion [\s!sl] [character]  [\sloveniannumerals]
+\defineconversion [\s!sl] [Character]  [\slovenianNumerals]
+\defineconversion [\s!sl] [characters] [\sloveniannumerals]
+\defineconversion [\s!sl] [Characters] [\slovenianNumerals]
+
+\defineconversion [\s!sl] [a]          [\sloveniannumerals]
+\defineconversion [\s!sl] [A]          [\slovenianNumerals]
+\defineconversion [\s!sl] [AK]         [\smallcapped\sloveniannumerals]
+\defineconversion [\s!sl] [KA]         [\smallcapped\sloveniannumerals]
+
+\defineconversion [\s!es] [character]  [\spanishnumerals]
+\defineconversion [\s!es] [Character]  [\spanishNumerals]
+\defineconversion [\s!es] [characters] [\spanishnumerals]
+\defineconversion [\s!es] [Characters] [\spanishNumerals]
+
+\defineconversion [\s!es] [a]          [\spanishnumerals]
+\defineconversion [\s!es] [A]          [\spanishNumerals]
+\defineconversion [\s!es] [AK]         [\smallcapped\spanishnumerals]
+\defineconversion [\s!es] [KA]         [\smallcapped\spanishnumerals]
+
+\defineconversion [sloveniannumerals]  [\sloveniannumerals]
+\defineconversion [slovenianNumerals]  [\slovenianNumerals]
+
+\defineconversion [spanishnumerals]    [\spanishnumerals]
+\defineconversion [spanishNumerals]    [\spanishNumerals]
 
 %D In case a font has no greek (WS):
 

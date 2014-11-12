@@ -564,10 +564,9 @@ end
 -- sign=positive => also zero
 -- sign=hang     => llap sign
 
---~ todo: test this
---~
+-- this can be a local function
 
-local function process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,result,preceding,done)
+local function process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,entry,result,preceding,done,language)
     -- todo: too much (100 steps)
     local number = numbers and (numbers[index] or 0)
     local ownnumber = ownnumbers and ownnumbers[index] or ""
@@ -588,10 +587,10 @@ local function process(index,numbers,ownnumbers,criterium,separatorset,conversio
             if ownnumber ~= "" then
                 result[#result+1] = ownnumber
             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups) .. inherited!
-                result[#result+1] = converters.convert(conversion,number)
+                result[#result+1] = converters.convert(conversion,number,language)
             else
                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
-                result[#result+1] = converters.convert(theconversion,number)
+                result[#result+1] = converters.convert(theconversion,number,language)
             end
         else
             if ownnumber ~= "" then
@@ -623,6 +622,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         local set           = ""
         local segments      = ""
         local criterium     = ""
+        local language      = ""
         for d=1,select("#",...) do
             local data = select(d,...) -- can be multiple parametersets
             if data then
@@ -636,6 +636,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 if set           == "" then set           = data.set           or "" end
                 if segments      == "" then segments      = data.segments      or "" end
                 if criterium     == "" then criterium     = data.criterium     or "" end
+                if language      == "" then language      = data.language      or "" end
             end
         end
         if separatorset  == "" then separatorset  = "default"  end
@@ -647,6 +648,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         if connector     == "" then connector     = nil        end
         if set           == "" then set           = "default"  end
         if segments      == "" then segments      = nil        end
+        if language      == "" then language      = nil        end
         --
         if criterium == v_strict then
             criterium = 0
@@ -739,15 +741,13 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                     local prefix = prefixlist[k]
                     local index = sections.getlevel(prefix) or k
                     if index >= firstprefix and index <= lastprefix then
-                     -- process(index,result)
-                        preceding, done = process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,result,preceding,done)
+                        preceding, done = process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,entry,result,preceding,done,language)
                     end
                 end
             else
                 -- also holes check
                 for index=firstprefix,lastprefix do
-                 -- process(index,result)
-                    preceding, done = process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,index,entry,result,preceding,done)
+                    preceding, done = process(index,numbers,ownnumbers,criterium,separatorset,conversion,conversionset,entry,result,preceding,done,language)
                 end
             end
             --

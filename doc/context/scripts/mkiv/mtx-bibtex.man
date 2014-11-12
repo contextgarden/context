@@ -16,6 +16,9 @@ convert bibtex database(s) to xml
 .TP
 .B --tolua
 convert bibtex database(s) to lua
+.TP
+.B --search
+seatch bibtex database(s)
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

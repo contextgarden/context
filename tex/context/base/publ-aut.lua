@@ -27,6 +27,8 @@ local publications    = publications
 local datasets        = publications.datasets
 local writers         = publications.writers
 local authors         = publications.authors
+local detailed        = publications.detailed
+local casters         = publications.casters
 
 local chardata        = characters.data
 
@@ -210,6 +212,7 @@ local function splitauthorstring(str)
 end
 
 authors.splitstring = splitauthorstring
+casters.author      = splitauthorstring
 
 local function the_initials(initials,symbol,connector)
     if not symbol then
@@ -307,17 +310,21 @@ function commands.btxauthorfield(i,field)
 end
 
 function commands.btxauthor(dataset,tag,field,settings)
-    local ds = datasets[dataset]
-    if not ds then
+    local current = datasets[dataset]
+    if not current then
         return f_invalid("dataset",dataset)
     end
-    local dt = ds.details[tag]
-    if not dt then
-        return f_invalid("details",tag)
+    local entry = current.luadata[tag]
+    if not entry then
+        return f_invalid("entry",tag)
     end
-    local split = dt[field]
-    if not split then
+    local value = entry[field]
+    if not value then
         return f_invalid("field",field)
+    end
+    local split = detailed.author[value]
+    if type(split) ~= "table" then
+        return f_invalid("cast",value)
     end
     local max = split and #split or 0
     if max == 0 then
@@ -410,7 +417,6 @@ local function components(snippet,short)
     local initials   = snippet.initials
     local firstnames = not short and snippet.firstnames
     local juniors    = snippet.juniors
--- inspect(initials)
     return
         vons       and #vons       > 0 and concat(vons,      " ") or "",
         surnames   and #surnames   > 0 and concat(surnames,  " ") or "",
@@ -463,32 +469,26 @@ local default = { "author" }
 function authors.getauthor(dataset,tag,categories)
     local current = datasets[dataset]
     local luadata = current.luadata
-    if not luadata then
-        report("invalid dataset %a",dataset)
-    end
-    local entry   = luadata[tag]
+    local entry   = luadata and luadata[tag]
     if entry then
         local category = entry.category
-        local detail = current.details[tag]
-        if detail then
-            local list
-            if categories then
-                local c = categories[category]
-                if c then
-                    local sets = c.sets
-                    list = sets and sets.author and sets.authors or default
-                else
-                    list = default
-                end
+        local list
+        if categories then
+            local c = categories[category]
+            if c then
+                local sets = c.sets
+                list = sets and sets.author and sets.authors or default
             else
                 list = default
             end
-            for i=1,#list do
-                local l = list[i]
-                local d = detail[l]
-                if d then
-                    return d, l
-                end
+        else
+            list = default
+        end
+        for i=1,#list do
+            local l = list[i]
+            local v = entry[l]
+            if v then
+                return detailed.author[v], l
             end
         end
     end
@@ -510,23 +510,30 @@ end
 -- first : key author editor publisher title           journal volume number pages
 -- second: year suffix                 title month day journal volume number
 
+local function directget(dataset,entry,field)
+    local value = entry[field]
+    if value then
+        return detailed.author[value]
+    end
+end
+
 local function byauthor(dataset,list,method)
-    local luadata  = datasets[dataset].luadata
-    local details  = datasets[dataset].details
+    local current  = datasets[dataset]
+    local luadata  = current.luadata
     local result   = { }
     local splitted = newsplitter(splitter) -- saves mem
     local snippets = { } -- saves mem
+    local get      = publications.directget or directget
+    local field    = "author" -- todo
     for i=1,#list do
         -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
         local li     = list[i]
         local tag    = type(li) == "string" and li or li[1]
-        local entry  = luadata[tag]
-        local detail = details[tag]
         local index  = tostring(i)
-        if entry and detail then
--- todo pluggable
-            local mainkey = writer(detail.author or detail.editor or entry.publisher or entry.title or "",snippets)
-            -- we could store the mainkey in details for tracing
+        local entry  = luadata[tag]
+        if entry then
+            local value   = get(current,entry,field) or ""
+            local mainkey = writer(value,snippets)
             result[i] = {
                 index  = i,
                 split  = {
@@ -582,18 +589,3 @@ function authors.sorted(dataset,list,sorttype) -- experimental
         return valid
     end
 end
-
--- local dataset = publications.datasets.test
---
--- local function add(str)
---     dataset.details[str] = { author = publications.authors.splitstring(str) }
--- end
---
--- add("Hagen, Hans and Hoekwater, Taco Whoever T. Ex. and Henkel Hut, Hartmut Harald von der")
--- add("Hans Hagen and Taco Whoever T. Ex. Hoekwater  and Hartmut Harald von der Henkel Hut")
--- add("de Gennes, P. and Gennes, P. de")
--- add("van't Hoff, J. H. and {van't Hoff}, J. H.")
---
--- local list = table.keys(dataset.details)
--- local sort = publications.authors.sorted("test",list,"author")
--- local test = { } for i=1,#sort do test[i] = dataset.details[list[sort[i]]] end
