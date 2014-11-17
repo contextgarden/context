@@ -1915,6 +1915,13 @@
      \fi\fi
    \relax}
 
+%     \startitemize[n]
+%         \item \input zapf
+%         \item \startitemize[a]
+%             \item \input knuth
+%         \stopitemize
+%     \stopitemize
+
 % \strut \hfill first line \blank[overlay] second line \hfill \strut
 %
 % \ruledvbox {
@@ -1932,7 +1939,7 @@
 \definevspacing[\v!back]      [category:7]
 %               together      [category:8]
 \definevspacing[\v!overlay]   [category:9]
-\definevspacing[\v!always]    [category:0]
+\definevspacing[\v!always]    [category:0] % hm, internally it's discard
 \definevspacing[\v!weak]      [order:0]
 \definevspacing[\v!strong]    [order:100]
 

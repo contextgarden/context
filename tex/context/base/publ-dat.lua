@@ -60,9 +60,6 @@ publications.datasets   = datasets
 local writers           = publications.writers or { }
 publications.writers    = writers
 
-local authors           = publications.authors or { }
-publications.authors    = authors
-
 local tables            = publications.tables or { }
 publications.tables     = tables
 
@@ -74,6 +71,15 @@ publications.loaders    = loaders
 
 local casters           = { }
 publications.casters    = casters
+
+local sorters           = { }
+publications.sorters    = sorters
+
+local indexers          = { }
+publications.indexers   = indexers
+
+local components        = { }
+publications.components = components -- register components
 
 local enhancers         = publications.enhancers or { }
 publications.enhancers  = enhancers
@@ -135,6 +141,8 @@ local defaulttypes = allocate {
     page      = "pagenumber",
     pages     = "pagenumber",
     keywords  = "keyword",
+    doi       = "url",
+    url       = "url",
 }
 
 tables.implicits = implicits
@@ -948,9 +956,7 @@ do
             if not usedonly or usedonly[tag] then
                 r = r + 1 ; result[r] = f_start(data.category or "article",tag)
                 for key, value in sortedhash(data) do
-                    if privates[key] then
-                        -- skip
-                    else
+                    if not privates[key] then
                         r = r + 1 ; result[r] = f_field(key,value)
                     end
                 end
@@ -968,9 +974,17 @@ do
         local usedonly = usedonly and publications.usedentries()
         if usedonly then
             local list = { }
-            for k, v in next, luadata do
-                if usedonly[k] then
-                    list[k] = v
+            if usedonly then
+                for key, value in next, luadata do
+                    if not privates[key] and usedonly[key] then
+                        list[key] = value
+                    end
+                end
+            else
+                for key, value in next, luadata do
+                    if not privates[key] then
+                        list[key] = value
+                    end
                 end
             end
             luadata = list
@@ -980,7 +994,7 @@ do
     end
 
     function savers.xml(dataset,filename,usedonly)
-        local result, n = publications.converttoxml(dataset,true,true,usedonly)
+        local result, n = publications.converttoxml(dataset,true,true,usedonly) -- maybe also private? but then we need to have tag as attr
         report("%s entries from dataset %a saved in %a",n,dataset,filename)
         io.savedata(filename,result)
     end

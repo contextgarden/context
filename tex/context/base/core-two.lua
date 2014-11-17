@@ -42,9 +42,13 @@ end
 
 jobpasses.define = allocate
 
-function jobpasses.save(id,str)
+function jobpasses.save(id,str,index)
     local jti = allocate(id)
-    jti[#jti+1] = str
+    if index then
+        jti[index] = str
+    else
+        jti[#jti+1] = str
+    end
 end
 
 function jobpasses.savetagged(id,tag,str)

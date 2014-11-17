@@ -644,19 +644,22 @@ local function register(askedname,specification)
                 --
                 local fc = specification.cache or figures.cachepaths.path
                 if fc and fc ~= "" and fc ~= "." then
-                    newpath = fc
+                    newpath = gsub(fc,"%*",newpath) -- so cachedir can be "/data/cache/*"
                 else
                     newbase = defaultprefix .. newbase
-                end
-                if not file.is_writable(newpath) then
-                    if trace_conversion then
-                        report_inclusion("path %a is not writable, forcing conversion path %a",newpath,".")
-                    end
-                    newpath = "."
                 end
                 local subpath = specification.subpath or figures.cachepaths.subpath
                 if subpath and subpath ~= "" and subpath ~= "."  then
                     newpath = newpath .. "/" .. subpath
+                end
+                if not lfs.isdir(newpath) then
+                    dir.makedirs(newpath)
+                    if not file.is_writable(newpath) then
+                        if trace_conversion then
+                            report_inclusion("path %a is not writable, forcing conversion path %a",newpath,".")
+                        end
+                        newpath = "."
+                    end
                 end
                 local prefix = specification.prefix or figures.cachepaths.prefix
                 if prefix and prefix ~= "" then
@@ -679,7 +682,6 @@ local function register(askedname,specification)
                 local newbase = newbase .. "." .. newformat
                 --
                 local newname = file.join(newpath,newbase)
-                dir.makedirs(newpath)
                 oldname = collapsepath(oldname)
                 newname = collapsepath(newname)
                 local oldtime = lfs.attributes(oldname,'modification') or 0

@@ -39,9 +39,9 @@
 \writestatus{loading}{ConTeXt Publication Support / Initialization}
 
 \registerctxluafile{publ-dat}{1.001}
+\registerctxluafile{publ-ini}{1.001}
 \registerctxluafile{publ-aut}{1.001}
 \registerctxluafile{publ-usr}{1.001}
-\registerctxluafile{publ-ini}{1.001}
 \registerctxluafile{publ-oth}{1.001} % this could become an option
 \registerctxluafile{publ-fnd}{1.001} % new method (for the moment only local)
 \registerctxluafile{publ-jrn}{1.001}
@@ -550,18 +550,6 @@
 \let\currentbtxnumber       \empty    \unexpanded\def\btxsetnumber       {\def\currentbtxnumber}
 \let\currentbtxauthorvariant\v!normal \unexpanded\def\btxsetauthorvariant{\def\currentbtxauthorvariant}
 
-%let\currentbtxfirstnames   \empty    \unexpanded\def\btxsetfirstnames   {\def\currentbtxfirstnames}
-%let\currentbtxinitials     \empty    \unexpanded\def\btxsetinitials     {\def\currentbtxinitials}
-%let\currentbtxjuniors      \empty    \unexpanded\def\btxsetjuniors      {\def\currentbtxjuniors}
-%let\currentbtxsurnames     \empty    \unexpanded\def\btxsetsurnames     {\def\currentbtxsurnames}
-%let\currentbtxvons         \empty    \unexpanded\def\btxsetvons         {\def\currentbtxvons}
-
-%unexpanded\def\getcurrentbtxfirstnames{\ctxcommand{btxauthorfield("firstnames")}
-%unexpanded\def\getcurrentbtxinitials  {\ctxcommand{btxauthorfield("initials")}
-%unexpanded\def\getcurrentbtxjuniors   {\ctxcommand{btxauthorfield("juniors")}
-%unexpanded\def\getcurrentbtxsurnames  {\ctxcommand{btxauthorfield("surnames")}
-%unexpanded\def\getcurrentbtxvons      {\ctxcommand{btxauthorfield("vons")}
-
 \unexpanded\def\currentbtxfirstnames_indeed{\ctxcommand{btx_a_f(\number\currentbtxauthorindex)}}
 \unexpanded\def\currentbtxinitials_indeed  {\ctxcommand{btx_a_i(\number\currentbtxauthorindex)}}
 \unexpanded\def\currentbtxjuniors_indeed   {\ctxcommand{btx_a_j(\number\currentbtxauthorindex)}}
@@ -985,7 +973,7 @@
   {\doifnextoptionalcselse\btx_flush_author_yes\btx_flush_author_nop}
 
 \def\btx_flush_author_yes[#1]{\btx_flush_author{#1}}
-\def\btx_flush_author_nop    {\btx_flush_author{\btxlistvariantparameter\c!author}}
+\def\btx_flush_author_nop    {\btx_flush_author{\btxlistvariantparameter\c!authorconversion}}
 
 \unexpanded\def\btx_flush_author#1#2%
   {\begingroup

@@ -24,7 +24,8 @@ local v_all          = variables.all
 local publications   = publications
 local datasets       = publications.datasets
 local specifications = publications.specifications
-local detailed       = publications.detailed
+local writers        = publications.writers
+local getcasted      = publications.getcasted
 
 local registrations  = { }
 local sequence       = { }
@@ -81,38 +82,6 @@ function commands.setbtxregister(specification)
     end
 end
 
------ getter = publications.directget
-
-local function getter(current,tag,step) -- todo: detail
-    local data = current.luadata[tag]
-    if data then
-        local catspec = specifications[step.specification].categories[data.category]
-        if catspec then
-            local fields = catspec.fields
-            if fields then
-                local field = step.field
-                local sets  = catspec.sets
-                if sets then
-                    local set = sets[field]
-                    if set then
-                        for i=1,#set do
-                            local field = set[i]
-                            local value = fields[field] and data[field] -- redundant check
-                            if value then
-                                return field, value, catspec.types[field] or "string"
-                            end
-                        end
-                    end
-                end
-                local value = fields[field] and data[field]
-                if value then
-                    return field, value, catspec.types[field] or "string"
-                end
-            end
-        end
-    end
-end
-
 function commands.btxtoregister(dataset,tag)
     local current = datasets[dataset]
     for i=1,#sequence do
@@ -121,10 +90,9 @@ function commands.btxtoregister(dataset,tag)
         if dset == v_all or dset == dataset then
             local done = step.done
             if not done[tag] then
-                local field, value, kind = getter(current,tag,step)
+                local value, field, kind = getcasted(current,tag,step.field,specifications[step.specification])
                 if value then
-                    local cast = detailed[kind][value] or value
-                    flushers[kind](step,field,value,cast)
+                    flushers[kind](step,field,value)
                 end
                 done[tag] = true
             end
@@ -143,13 +111,12 @@ end
 local ctx_dosetfastregisterentry = context.dosetfastregisterentry -- register entry key
 
 local p_keywords = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
-local serialize  = publications.serializeauthor
-local components = publications.authorcomponents
+local components = publications.components.author
 local f_author   = formatters[ [[\btxindexedauthor{%s}{%s}{%s}{%s}{%s}{%s}]] ]
 
-function flushers.string(step,field,value,cast)
-    if value and value ~= "" then
-        ctx_dosetfastregisterentry(step.register,type(cast) == "string" and cast or value,"",step.processor or "","")
+function flushers.string(step,field,value)
+    if type(value) == "string" and value ~= "" then
+        ctx_dosetfastregisterentry(step.register,value or "","",step.processor or "","")
     end
 end
 
@@ -160,26 +127,26 @@ local shorts = {
     invertedshort = "invertedshort",
 }
 
-function flushers.author(step,field,value,cast)
-    if cast and #cast > 0 then
+function flushers.author(step,field,value)
+    if type(value) == "table" and #value > 0 then
         local register    = step.register
         local processor   = step.processor
         local alternative = shorts[step.alternative or "invertedshort"] or "invertedshort"
-        for i=1,#cast do
-            local a = cast[i]
-            local k = serialize(a)
+        for i=1,#value do
+            local a = value[i]
+            local k = writers[field] { a }
             local e = f_author(alternative,components(a,short))
             ctx_dosetfastregisterentry(register,e,k,processor or "","")
         end
     end
 end
 
-function flushers.keywords(step,field,value,cast)
-    if cast and #cast > 0 then
+function flushers.keywords(step,field,value)
+    if type(value) == "table" and #value > 0 then
         local register  = step.register
         local processor = step.processor
-        for i=1,#cast do
-            ctx_dosetfastregisterentry(register,cast[i],"",processor or "","")
+        for i=1,#value do
+            ctx_dosetfastregisterentry(register,value[i],"",processor or "","")
         end
     end
 end

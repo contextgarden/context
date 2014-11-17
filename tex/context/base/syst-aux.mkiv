@@ -7011,6 +7011,59 @@
 
 % \def\converteddimen#1#2{\ctxcommand{converteddimen(\number\dimexpr#1,"#2")}}
 
+%D Maybe (looks ugly):
+%D
+%D \starttyping
+%D \doifcase {foo}
+%D     {bar}     {BAR}
+%D     {foo}     {FOO}
+%D     {default} {DEFAULT}
+%D
+%D \doifcase {foo}
+%D     {bar}     {BAR}
+%D     {foo}     {\doifcase {bar}
+%D                     {bar}     {BAR}
+%D                     {foo}     {FOO}
+%D                     {default} {DEFAULT}
+%D               }
+%D     {default} {DEFAULT}
+%D \stoptyping
+
+% \doifcase {\btxfoundname{author}}
+%     {author}  {\btxflush{author}}
+%     {editor}  {\texdefinition{btx:apa:editor-or-editors}}
+%     {title}   {\texdefinition{btx:apa:title-subtitle-type}}
+%     {default} {\btxflush{author}}
+
+% \unexpanded\def\doifcase#1%
+%   {\edef\m_case_asked{#1}%
+%    \syst_aux_case}
+%
+% \def\syst_aux_case#1%
+%   {\edef\m_case_temp{#1}%
+%    \ifx\m_case_temp\m_case_asked
+%       \expandafter\syst_aux_case_yes
+%    \else\ifx\m_case_temp\s!default
+%       \doubleexpandafter\firstofoneargument
+%    \else
+%       \doubleexpandafter\syst_aux_case_nop
+%    \fi\fi}
+%
+% \def\syst_aux_skip#1#2%
+%   {\edef\m_case_temp{#1}%
+%    \ifx\m_case_temp\s!default
+%      \expandafter\syst_aux_done
+%    \else
+%      \expandafter\syst_aux_skip
+%    \fi}
+%
+% \def\syst_aux_case_yes#1%
+%   {\def\syst_aux_done{#1}%
+%    \syst_aux_skip}
+%
+% \def\syst_aux_case_nop#1%
+%   {\syst_aux_case}
+
 \protect \endinput
 
 % \edef\choicetokenyes{+}

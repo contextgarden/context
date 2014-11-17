@@ -8,11 +8,16 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 
 -- we also need to call the spacer for inserts!
 
+-- somehow lists still don't always have proper prev nodes so i need to
+-- check all of the luatex code some day .. maybe i should replece the
+-- whole mvl handler by lua code .. why not
+
 -- todo: use lua nodes with lua data (>0.79)
 -- see ** can go when 0.79
 
 -- this code dates from the beginning and is kind of experimental; it
--- will be optimized and improved soon
+-- will be optimized and improved soon .. it's way too complex now but
+-- dates from less possibilities
 --
 -- the collapser will be redone with user nodes; also, we might get make
 -- parskip into an attribute and appy it explicitly thereby getting rid
@@ -992,30 +997,24 @@ specialmethods[1] = function(pagehead,pagetail,start,penalty)
 end
 
 -- specialmethods[2] : always put something before and use that as to-be-changed
+--
+-- we could inject a vadjust to force a recalculation .. a mess
+--
+-- so, the next is far from robust and okay but for the moment this overlaying
+-- has to do
 
 local function check_experimental_overlay(head,current) -- todo
     local p = nil
     local c = current
     local n = nil
 
-setfield(head,"prev",nil) -- till we have 0.79 **
+ -- setfield(head,"prev",nil) -- till we have 0.79 **
 
-    local function overlay(p, n, s, mvl)
-        local c = getprev(n)
-        while c and c ~= p do
-            local p = getprev(c)
-            free_node(c)
-            c = p
-        end
-        setfield(n,"prev",nil)
-        if not mvl then
-            setfield(p,"next",n)
-        end
-        local p_ht = getfield(p,"height")
-        local p_dp = getfield(p,"depth")
-        local n_ht = getfield(n,"height")
+    local function overlay(p,n,s,mvl)
+        local p_ht  = getfield(p,"height")
+        local p_dp  = getfield(p,"depth")
+        local n_ht  = getfield(n,"height")
         local delta = n_ht + s + p_dp
-        local k = new_kern(-delta)
         if trace_vspacing then
             report_vspacing("overlaying, prev height: %p, prev depth: %p, next height: %p, skips: %p, move up: %p",p_ht,p_dp,n_ht,s,delta)
         end
@@ -1023,9 +1022,31 @@ setfield(head,"prev",nil) -- till we have 0.79 **
             -- we should adapt pagetotal ! (need a hook for that)
             setfield(p,"height",n_ht)
         end
-        return k
+        -- make kern
+        local k = new_kern(-delta)
+        if head == current then
+            head = k -- as it will get appended, else we loose the kern
+        end
+        -- remove rubish
+        local c = getnext(p)
+        while c and c ~= n do
+            local nc = getnext(c)
+            if c == head then
+                head = nc
+            end
+            free_node(c)
+            c = nc
+        end
+        -- insert kern .. brr the kern is somehow not seen unless we also inject a penalty
+        setfield(p,"next",k)
+        setfield(k,"prev",p)
+        setfield(k,"next",n)
+        setfield(n,"prev",k)
+        -- done
+        return head, n
     end
 
+    -- goto next line
     while c do
         local id = getid(c)
         if id == glue_code or id == penalty_code or id == kern_code then
@@ -1039,7 +1060,7 @@ setfield(head,"prev",nil) -- till we have 0.79 **
         end
     end
     if n then
-        -- we have a next line
+        -- we have a next line, goto prev line
         c = current
         while c do
             local id = getid(c)
@@ -1081,21 +1102,17 @@ setfield(head,"prev",nil) -- till we have 0.79 **
                     c = getnext(c)
                 end
                 if p and p ~= n then
-                    local k = overlay(p,n,s,true)
-                    insert_node_before(n,n,k)
-                    return k, getnext(n)
+                    return overlay(p,n,s,true)
                 end
             end
         elseif p ~= n then
-            local k = overlay(p,n,0,false   )
-            insert_node_after(p,p,k)
-            return head, getnext(n)
+            return overlay(p,n,0,false)
         end
     end
     return remove_node(head, current, true)
 end
 
--- This will be replaces after 0.79 when we have a more robust look-back and
+-- This will be replaced after 0.80+ when we have a more robust look-back and
 -- can look at the bigger picture.
 
 -- todo: look back and when a special is there before a list is seen penalty keep ut
@@ -1192,6 +1209,8 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         )
     end
     if trace then trace_info("start analyzing",where,what) end
+
+-- local headprev = getprev(head)
 
     while current do
         local id = getid(current)
@@ -1360,6 +1379,8 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 elseif sc == overlay then
                     -- todo (overlay following line over previous
                     if trace then trace_skip("overlay",sc,so,sp,current) end
+                        -- beware: head can actually be after the affected nodes as
+                        -- we look back ... some day head will the real head
                     head, current = check_experimental_overlay(head,current,a_snapmethod)
                 elseif ignore_following then
                     if trace then trace_skip("disabled",sc,so,sp,current) end
@@ -1557,9 +1578,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         local p = new_penalty(penalty_data)
         if trace then trace_done("result",p) end
         head, tail = insert_node_after(head,tail,p)
--- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
-    properties[p] = { special_penalty = special_penalty or penalty_data }
--- end
+     -- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
+            properties[p] = { special_penalty = special_penalty or penalty_data }
+     -- end
     end
     if glue_data then
         if not tail then tail = find_node_tail(head) end
@@ -1571,7 +1592,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         else
             head, tail = insert_node_after(head,tail,glue_data)
         end
-texnest[texnest.ptr].prevdepth = 0 -- appending to the list bypasses tex's prevdepth handler
+        texnest[texnest.ptr].prevdepth = 0 -- appending to the list bypasses tex's prevdepth handler
     end
     if trace then
         if glue_data or penalty_data then
@@ -1582,6 +1603,13 @@ texnest[texnest.ptr].prevdepth = 0 -- appending to the list bypasses tex's prevd
             trace_info("head has been changed from %a to %a",nodecodes[getid(oldhead)],nodecodes[getid(head)])
         end
     end
+
+-- if headprev then
+--     setprev(head,headprev)
+--     setnext(headprev,head)
+-- end
+-- print("C HEAD",tonode(head))
+
     return head, true
 end
 

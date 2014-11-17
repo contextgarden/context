@@ -235,11 +235,6 @@
 % \xmlsetfunction{main}{verbatim}{lxml.displayverbatim}
 % \xmlsetfunction{main}{verb}    {lxml.inlineverbatim}
 
-% \unexpanded\def\startxmldisplayverbatim[#1]{}
-% \unexpanded\def\stopxmldisplayverbatim     {}
-% \unexpanded\def\startxmlinlineverbatim [#1]{}
-% \unexpanded\def\stopxmlinlineverbatim      {}
-
 % we use an xml: namespace so one has to define a suitable verbatim, say
 %
 % \definetyping[xml:verbatim][typing]
@@ -258,7 +253,7 @@
 \unexpanded\def\startxmlinlineverbatim[#1]%
   {\begingroup
    \edef\currenttype{xml:#1}%
-   \let\stopxmldisplayverbatim\endgroup
+   \let\stopxmlinlineverbatim\endgroup
    \doinitializeverbatim}
 
 % will move but is developed for xml

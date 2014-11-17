@@ -15,6 +15,9 @@
 
 \registerctxluafile{strc-itm}{1.001}
 
+%D As we analyze/register widths and such we could as well push and pop the
+%D numbers at the \LUA\ end (which saves a few calls).
+
 %D Cleaning up this module happened around the time when Kate Bush came up
 %D with the nicest numbered list of words: 50 Words For Snow. It's therefore
 %D no surprise that I had that cd running several times when updating this
@@ -203,7 +206,6 @@
 \newdimen      \d_strc_itemgroups_max_width         % multipass
 \newcount      \c_strc_itemgroups_max_items         % multipass
 
-\newcount      \c_strc_itemgroups_n_of_lists
 \newcount      \c_strc_itemgroups_n_of_items
 \newcount      \c_strc_itemgroups_nesting
 \newcount      \c_strc_itemgroups_column_depth
@@ -227,13 +229,10 @@
 \let           \currentitemgroupsegments       \empty
 
 \def\strc_itemgroups_register_status
-  {\iftrialtypesetting \else
-     \ctxcommand{registeritemgroup("\currentitemgroup",\number\c_strc_itemgroups_n_of_items,"\itemgroupparameter\c!maxwidth")}%
-   \fi}
+  {\ctxcommand{registeritemgroup("\currentparentitemgroup",\number\c_strc_itemgroups_nesting,\number\c_strc_itemgroups_n_of_items,\number\dimexpr\itemgroupparameter\c!maxwidth)}}
 
 \def\strc_itemgroups_check_n_of_items % we could do this at the lua end and save a call (i.e. will be dimen and counter)
-  {\c_strc_itemgroups_max_items\ctxcommand{nofitems("\currentitemgroup",\number\c_strc_itemgroups_n_of_lists)}\relax
-   \d_strc_itemgroups_max_width\ctxcommand{maxitemwidth("\currentitemgroup",\number\c_strc_itemgroups_n_of_lists)}\scaledpoint
+  {\ctxcommand{analyzeitemgroup("\currentparentitemgroup",\number\c_strc_itemgroups_nesting)}\relax
    \edef\currentnofitems{\the\c_strc_itemgroups_max_items}}
 
 % todo: \dodosetreference -> \strc_counters_register_component (to be checked)
@@ -467,7 +466,7 @@
    \let\strc_itemgroups_margin_symbol\empty
    \let\strc_itemgroups_extra_symbol\empty
    %
-   \global\letitemgroupparameter\c!maxwidth\!!zerocount
+   \global\letitemgroupparameter\c!maxwidth\!!zeropoint
    }
 
 \setvalue{\??itemgroupfirst\v!intro   }{\settrue\c_strc_itemgroups_intro    }
@@ -745,7 +744,6 @@
    \iftrialtypesetting
      \strc_counters_save\v_strc_itemgroups_counter
    \fi
-   \global\advance\c_strc_itemgroups_n_of_lists\plusone
    \c_strc_itemgroups_n_of_items\zerocount
    \strc_itemgroups_check_n_of_items
    \ifx\itemgroupoptions\empty
@@ -941,8 +939,7 @@
    \fi\fi
    % new test, needed in sidefloats (surfaced in volker's proceedings)
    \iftrialtypesetting
-     \strc_counters_restore\v_strc_itemgroups_counter
-     \global\advance\c_strc_itemgroups_n_of_lists\minusone
+     \strc_counters_restore\v_strc_itemgroups_counter % could happen in LUA
    \fi
    \global\advance\c_strc_itemgroups_nesting\minusone
    \xdef\currentitemlevel{\number\c_strc_itemgroups_nesting}%
@@ -1039,11 +1036,22 @@
      \strc_itemgroups_start_item_next
    \fi
    \ifconditional\c_strc_itemgroups_concat
+     % % not good enough:
+     %
      % \vskip-\lastskip   % we cannot use a \dimexpr here  because
      % \vskip-\lineheight % then we loose the stretch and shrink
      % \nobreak
      %
-     \blank[\v!overlay]% new per 2014-03-27
+     % % new per 2014-11-16
+     %
+     % \blank[\v!overlay]% new per 2014-03-27
+     %
+     % % changed per 2014-11-16 as somehow we need a penalty to prevent the kern from disappearing
+     % % .. .kind of fight with default tex append-to-mvl behaviour .. so still not good enough
+     %
+    %\blank[\v!back]%
+     \nobreak
+     \blank[\v!overlay]%
      %
      \setfalse\c_strc_itemgroups_concat
    \fi
@@ -1285,8 +1293,8 @@
    \setfalse\c_strc_itemgroups_symbol}
 
 \def\strc_itemgroups_make_fitting_box
-  {\ifdim\wd\b_strc_itemgroups>\itemgroupparameter\c!maxwidth\scaledpoint\relax % brr, sp
-     \normalexpanded{\global\setitemgroupparameter{\c!maxwidth}{\number\wd\b_strc_itemgroups}}%
+  {\ifdim\wd\b_strc_itemgroups>\itemgroupparameter\c!maxwidth\relax
+     \normalexpanded{\global\setitemgroupparameter{\c!maxwidth}{\the\wd\b_strc_itemgroups}}%
    \fi
    \ifdim\d_strc_itemgroups_max_width>\zeropoint
      \setbox\b_strc_itemgroups\simplealignedbox

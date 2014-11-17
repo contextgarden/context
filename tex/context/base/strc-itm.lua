@@ -6,33 +6,43 @@ if not modules then modules = { } end modules ['strc-itm'] = {
     license   = "see context related readme files"
 }
 
-local structures = structures
-local itemgroups = structures.itemgroups
-local jobpasses  = job.passes
+local structures  = structures
+local itemgroups  = structures.itemgroups
+local jobpasses   = job.passes
 
-local setvariable   = jobpasses.save
-local getvariable   = jobpasses.getfield
+local setvariable = jobpasses.save
+local getvariable = jobpasses.getfield
 
-function itemgroups.register(name,nofitems,maxwidth)
-    setvariable("itemgroup", { nofitems, maxwidth })
+local texsetcount = tex.setcount
+local texsetdimen = tex.setdimen
+local texgetcount = tex.getcount
+
+local f_stamp     = string.formatters["itemgroup:%s:%s"]
+local counts      = table.setmetatableindex("number")
+
+-- We keep the counter at the Lua end so we can group the items within
+-- an itemgroup which in turn makes for less passes when one itemgroup
+-- entry is added or removed.
+
+function commands.analyzeitemgroup(name,level)
+    local n = counts[name]
+    if level == 1 then
+        n = n + 1
+        counts[name] = n
+    end
+    local stamp = f_stamp(name,n)
+    local n = getvariable(stamp,level,1,0)
+    local w = getvariable(stamp,level,2,0)
+    texsetcount("local","c_strc_itemgroups_max_items",n)
+    texsetdimen("local","d_strc_itemgroups_max_width",w)
 end
 
-function itemgroups.nofitems(name,index)
-    return getvariable("itemgroup", index, 1, 0)
-end
-
-function itemgroups.maxwidth(name,index)
-    return getvariable("itemgroup", index, 2, 0)
-end
-
--- interface (might become counter/dimension)
-
-commands.registeritemgroup = itemgroups.register
-
-function commands.nofitems(name,index)
-    context(getvariable("itemgroup", index, 1, 0))
-end
-
-function commands.maxitemwidth(name,index)
-    context(getvariable("itemgroup", index, 2, 0))
+function commands.registeritemgroup(name,level,nofitems,maxwidth)
+    local n = counts[name]
+    if texgetcount("@@trialtypesetting") == 0 then
+        -- no trialtypsetting
+        setvariable(f_stamp(name,n), { nofitems, maxwidth }, level)
+    elseif level == 1 then
+        counts[name] = n - 1
+    end
 end

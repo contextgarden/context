@@ -312,7 +312,13 @@ if context then
                         lpegmatch(word,extra,1,dictionary.patterns,dictionary.specials)
                     end
                 end
-                local usedchars  = lpegmatch(split,patterns.characters)
+                local permitted  = patterns.characters
+--                 local additional = "[]()"
+--                 local additional = specification.additional
+--                 if additional then
+--                     permitted = permitted .. additional -- has to be attribute driven
+--                 end
+                local usedchars  = lpegmatch(split,permitted)
                 local characters = { }
                 local unicodes   = { }
                 for i=1,#usedchars do
@@ -636,8 +642,9 @@ if context then
 
 else
 
- -- traditional.loadpatterns("nl","lang-nl")
- -- traditional.loadpatterns("de","lang-de")
+--     traditional.loadpatterns("nl","lang-nl")
+--     traditional.loadpatterns("de","lang-de")
+--     traditional.loadpatterns("us","lang-us")
 
 --     traditional.registerpattern("nl","e1ë",      { start = 1, length = 2, before = "e",  after = "e"  } )
 --     traditional.registerpattern("nl","oo1ë",     { start = 2, length = 3, before = "o",  after = "e"  } )
@@ -658,6 +665,10 @@ else
 --     print(  "qqxcxkqq",  traditional.injecthyphens(dictionaries.de,  "qqxcxkqq",  specification),"")
 --     print( "qqqxcxkqqq", traditional.injecthyphens(dictionaries.de, "qqqxcxkqqq", specification),"")
 --     print("qqqqxcxkqqqq",traditional.injecthyphens(dictionaries.de,"qqqqxcxkqqqq",specification),"")
+
+--     print("kunstmatig",       traditional.injecthyphens(dictionaries.nl,"kunstmatig",       specification),"")
+--     print("kunststofmatig",   traditional.injecthyphens(dictionaries.nl,"kunststofmatig",   specification),"")
+--     print("kunst[stof]matig", traditional.injecthyphens(dictionaries.nl,"kunst[stof]matig", specification),"")
 
 end
 

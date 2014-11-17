@@ -104,6 +104,10 @@ manipulatormethods.WORDS = converters.WORDS
 local context                     = context
 local commands                    = commands
 
+local ctx_doifelse                = commands.doifelse
+local ctx_doif                    = commands.doif
+local ctx_doifnot                 = commands.doifnot
+
 local ctx_setvalue                = context.setvalue
 local ctx_firstoftwoarguments     = context.firstoftwoarguments
 local ctx_secondoftwoarguments    = context.secondoftwoarguments
@@ -637,15 +641,86 @@ end
 
 -- basic access
 
-local function getfield(dataset,tag,name)
+local function getfield(dataset,tag,name) -- for the moment quick and dirty
     local d = datasets[dataset].luadata[tag]
     return d and d[name]
 end
 
-local function getdetail(dataset,tag,name)
+local function getdetail(dataset,tag,name) -- for the moment quick and dirty
     local d = datasets[dataset].details[tag]
     return d and d[name]
 end
+
+local function getcasted(dataset,tag,field,specification)
+    local current = datasets[dataset]
+    if current then
+        local data = current.luadata[tag]
+        if data then
+            local category = data.category
+            if not specification then
+                specification = currentspecification
+            end
+            local catspec = specification.categories[category]
+            if not catspec then
+                return false
+            end
+            local fields = catspec.fields
+            if fields then
+                local sets = catspec.sets
+                if sets then
+                    local set = sets[field]
+                    if set then
+                        for i=1,#set do
+                            local field = set[i]
+                            local value = fields[field] and data[field] -- redundant check
+                            if value then
+                                local kind = specification.types[field]
+                                return detailed[kind][value], field, kind
+                            end
+                        end
+                    end
+                end
+                local value = fields[field] and data[field] -- redundant check
+                if value then
+                    local kind = specification.types[field]
+                    return detailed[kind][value], field, kind
+                end
+            end
+            local data = current.details[tag]
+            if data then
+                local kind = specification.types[field]
+                return data[field], field, kind -- no check
+            end
+        end
+    end
+end
+
+local function getdirect(dataset,data,field,catspec) -- no field check, no dataset check
+    local catspec = (catspec or currentspecification).categories[data.category]
+    if not catspec then
+        return false
+    end
+    local fields = catspec.fields
+    if fields then
+        local sets = catspec.sets
+        if sets then
+            local set = sets[field]
+            if set then
+                for i=1,#set do
+                    local field = set[i]
+                    local value = fields[field] and data[field] -- redundant check
+                    if value then
+                        return value
+                    end
+                end
+            end
+        end
+        return fields[field] and data[field] or nil -- redundant check
+    end
+end
+
+publications.getcasted = getcasted
+publications.getdirect = getdirect
 
 function commands.btxsingularorplural(dataset,tag,name)
     local d = datasets[dataset].details[tag]
@@ -657,7 +732,7 @@ function commands.btxsingularorplural(dataset,tag,name)
     else
         d = false
     end
-    commands.doifelse(d)
+    ctx_doifelse(d)
 end
 
 function commands.oneorrange(dataset,tag,name)
@@ -671,7 +746,7 @@ function commands.oneorrange(dataset,tag,name)
         d = false
 
     end
-    commands.doifelse(not d) -- so singular is default
+    ctx_doifelse(not d) -- so singular is default
 end
 
 function commands.firstofrange(dataset,tag,name)
@@ -719,27 +794,22 @@ do
     -- of the source and or style).
 
     function publications.enhancers.suffixes(dataset)
-
         if not dataset then
-            -- bad news
-            return
+            return -- bad news
         else
             report("analyzing previous publication run for %a",dataset.name)
         end
         local used = usedentries[dataset.name]
         if not used then
-            -- probably a first run
-            return
+            return -- probably a first run
         end
-        local luadata = dataset.luadata
-        local details = dataset.details
-        local ordered = dataset.ordered
-        local caster  = casters.author
-        local getter  = publications.directget
-        local shorts  = { }
-        if not luadata or not detailr or not ordered then
-            return
-            -- also bad news
+        local luadata  = dataset.luadata
+        local details  = dataset.details
+        local ordered  = dataset.ordered
+        local field    = "author"  -- currently only author
+        local shorts   = { }
+        if not luadata or not details or not ordered then
+            return -- also bad news
         end
         for i=1,#ordered do
             local entry = ordered[i]
@@ -754,9 +824,8 @@ do
                         local userdata  = listentry.userdata
                         local btxspc    = userdata and userdata.btxspc
                         if btxspc then
-                            local author = getter(dataset,entry,"author",specifications[btxspc])
-                            if author then
-                                author = caster(author)
+                            local author = getcasted(dataset,tag,field,specifications[btxspc])
+                            if type(author) == "table" then
                                 -- number depends on sort order
                                 local t = { }
                                 if #author > 0 then
@@ -784,6 +853,8 @@ do
                                 else
                                     s[#s+1] = { tag, year, u, i }
                                 end
+                            else
+                                report("author typecast expected for fiel %a",field)
                             end
                         else
                             --- no spec so let's forget about it
@@ -891,6 +962,10 @@ do
         ctx_btxflushauthor(field)
     end
 
+ -- function typesetters.url(field,value,manipulator)
+ --     ....
+ -- end
+
     -- if there is no specification then we're in trouble but there is
     -- always a default anyway
     --
@@ -957,7 +1032,7 @@ do
         end
     end
 
-    local function get(dataset,tag,field,what,check,catspec)
+    local function get(dataset,tag,field,what,check,catspec) -- somewhat more extensive
         local current = rawget(datasets,dataset)
         if current then
             local data = current.luadata[tag]
@@ -1002,31 +1077,9 @@ do
         return ""
     end
 
-    publications.get = get
-
-    function publications.directget(dataset,data,field,catspec)
-        local catspec = (catspec or currentspecification).categories[data.category]
-        if not catspec then
-            return false
-        end
-        local fields = catspec.fields
-        if fields then
-            local sets = catspec.sets
-            if sets then
-                local set = sets[field]
-                if set then
-                    for i=1,#set do
-                        local field = set[i]
-                        local value = fields[field] and data[field] -- redundant check
-                        if value then
-                            return value
-                        end
-                    end
-                end
-            end
-            return fields[field] and data[field] or nil -- redundant check
-        end
-    end
+    publications.permitted = permitted
+    publications.found     = found
+    publications.get       = get
 
     function commands.btxfieldname(name,tag,field) context(get(name,tag,field,false,false)) end
     function commands.btxfieldtype(name,tag,field) context(get(name,tag,field,true, false)) end
@@ -1129,9 +1182,6 @@ do
         end
     end
 
-    local ctx_doifelse = commands.doifelse
-    local ctx_doif     = commands.doif
-    local ctx_doifnot  = commands.doifnot
 
     function commands.btxdoifelse(name,tag,field) ctx_doifelse(okay(name,tag,field)) end
     function commands.btxdoif    (name,tag,field) ctx_doif    (okay(name,tag,field)) end
@@ -1379,7 +1429,6 @@ do
         lists.result = result
         structures.lists.result = result
         rendering.pages = pages -- or list.pages
-     -- inspect(pages)
     end
 
     methods[v_global] = methods[v_local]
@@ -1552,7 +1601,7 @@ do
             end
         end,
         [v_author] = function(dataset,rendering,list)
-            local valid = publications.authors.sorters.author(dataset,list)
+            local valid = publications.indexers.author(dataset,list)
             if #valid == 0 or #valid ~= #list then
                 -- nothing to sort
             else
@@ -2107,6 +2156,8 @@ do
         end
     end
 
+    --
+
     local function simplegetter(first,last,field)
         local value = first[field]
         if value then
@@ -2141,15 +2192,6 @@ do
         return v
     end)
 
-    -- todo: just a sort key and then fetch normal by fieldname
-
-    -- setmetatableindex(citevariants,function(t,k)
-    --     local p = registeredcitevariants[k]
-    --     local v = p and p ~= k and rawget(t,p) or defaultvariant
-    --     t[k] = v
-    --     return v
-    -- end)
-
     setmetatableindex(citevariants,function(t,k)
         local p = registeredcitevariants[k]
         local v = nil
@@ -2172,6 +2214,69 @@ do
             getter = getters[variant],
         })
     end
+
+    --
+
+ -- -- what to do with sort .. todo: sorters by type
+
+ -- function citevariants.handler(key)
+ --     local function setter(dataset,tag,entry,internal)
+ --         return {
+ --             dataset  = dataset,
+ --             tag      = tag,
+ --             internal = internal,
+ --             category = getfield(dataset,tag,key),
+ --         }
+ --     end
+ --     local function getter(first,last)
+ --         return simplegetter(first,last,key)
+ --     end
+ --     return function(presets)
+ --         processcite(presets,{
+ --             setter  = setter,
+ --             getter  = getter,
+ --         })
+ --     end
+ -- end
+ --
+ -- citevariants.category = citevariants.handler("category")
+ -- citevariants.type     = citevariants.handler("type")
+
+    -- category | type
+
+    do
+
+        local function setter(dataset,tag,entry,internal)
+            return {
+                dataset  = dataset,
+                tag      = tag,
+                internal = internal,
+                category = getfield(dataset,tag,"category"),
+            }
+        end
+
+        local function getter(first,last)
+            return simplegetter(first,last,"category")
+        end
+
+        function citevariants.category(presets)
+            processcite(presets,{
+             -- variant  = presets.variant or "serial",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+        function citevariants.type(presets)
+            processcite(presets,{
+             -- variant  = presets.variant or "type",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+    end
+
 
     -- entry
 
@@ -2245,7 +2350,7 @@ do
                 dataset  = dataset,
                 tag      = tag,
                 internal = internal,
-                pages    = getdetail(dataset,tag,"pages"),
+                pages    = getcasted(dataset,tag,"pages"),
             }
         end
 
@@ -2367,41 +2472,6 @@ do
 
     end
 
-    -- category | type
-
-    do
-
-        local function setter(dataset,tag,entry,internal)
-            return {
-                dataset  = dataset,
-                tag      = tag,
-                internal = internal,
-                category = getfield(dataset,tag,"category"),
-            }
-        end
-
-        local function getter(first,last)
-            return simplegetter(first,last,"category")
-        end
-
-        function citevariants.category(presets)
-            processcite(presets,{
-             -- variant  = presets.variant or "serial",
-                setter  = setter,
-                getter  = getter,
-            })
-        end
-
-        function citevariants.type(presets)
-            processcite(presets,{
-             -- variant  = presets.variant or "type",
-                setter  = setter,
-                getter  = getter,
-            })
-        end
-
-    end
-
     -- key | tag
 
     do
@@ -2437,19 +2507,9 @@ do
 
     end
 
-    -- todo : sort
-    -- todo : choose between publications or commands namespace
-    -- todo : use details.author
-    -- todo : sort details.author
-    -- (name, name and name) .. how names? how sorted?
-    -- todo: we loop at the tex end .. why not here
-    -- \cite[{hh,afo},kvm]
-
-    -- common
+    -- authors
 
     do
-
-        local getauthor = publications.authors.getauthor
 
         local currentbtxciteauthor = function()
             context.currentbtxciteauthor()
@@ -2580,7 +2640,7 @@ do
                 dataset  = dataset,
                 tag      = tag,
                 internal = internal,
-                author   = getauthor(dataset,tag,currentspecification.categories), -- todo: list
+                author   = getcasted(dataset,tag,"author"),
             }
         end
 
@@ -2607,7 +2667,7 @@ do
                 dataset  = dataset,
                 tag      = tag,
                 internal = internal,
-                author   = getauthor(dataset,tag,currentspecification.categories), -- todo: list
+                author   = getcasted(dataset,tag,"author"),
                 num      = text,
                 sortkey  = text and lpegmatch(numberonly,text),
             }
@@ -2634,7 +2694,7 @@ do
                 dataset  = dataset,
                 tag      = tag,
                 internal = internal,
-                author   = getauthor(dataset,tag,currentspecification.categories), -- todo: list
+                author   = getcasted(dataset,tag,"author"),
                 year     = getfield(dataset,tag,"year"),
                 suffix   = getdetail(dataset,tag,"suffix"),
                 sortkey  = getdetail(dataset,tag,"suffixedyear"),

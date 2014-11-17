@@ -25,10 +25,7 @@ local commands        = commands
 local publications    = publications
 
 local datasets        = publications.datasets
-local writers         = publications.writers
-local authors         = publications.authors
-local detailed        = publications.detailed
-local casters         = publications.casters
+local getcasted       = publications.getcasted
 
 local chardata        = characters.data
 
@@ -211,9 +208,6 @@ local function splitauthorstring(str)
     return authors
 end
 
-authors.splitstring = splitauthorstring
-casters.author      = splitauthorstring
-
 local function the_initials(initials,symbol,connector)
     if not symbol then
         symbol = "."
@@ -309,92 +303,85 @@ function commands.btxauthorfield(i,field)
     end
 end
 
-function commands.btxauthor(dataset,tag,field,settings)
-    local current = datasets[dataset]
-    if not current then
-        return f_invalid("dataset",dataset)
-    end
-    local entry = current.luadata[tag]
-    if not entry then
-        return f_invalid("entry",tag)
-    end
-    local value = entry[field]
-    if not value then
-        return f_invalid("field",field)
-    end
-    local split = detailed.author[value]
-    if type(split) ~= "table" then
-        return f_invalid("cast",value)
-    end
-    local max = split and #split or 0
-    if max == 0 then
-        return
-        -- error
-    end
-    local etallimit   = tonumber(settings.etallimit) or 1000
-    local etaldisplay = tonumber(settings.etaldisplay) or etallimit
-    local combiner    = settings.combiner
-    local symbol      = settings.symbol
-    local index       = settings.index
-    if not combiner or combiner == "" then
-        combiner = "normal"
-    end
-    if not symbol then
-        symbol = "."
-    end
-    local ctx_btxsetup = settings.kind == "cite" and ctx_btxciteauthorsetup or ctx_btxlistauthorsetup
-    if max > etallimit and etaldisplay < max then
-        max = etaldisplay
-    end
-    currentauthordata   = split
-    currentauthorsymbol = symbol
+-- This is somewhat tricky: an author is not always an author but
+-- can also be a title or key, depending on the (optional) set it's
+-- in. Also, authors can be combined with years and so and they
+-- might be called upon mixed with other calls.
 
-    local function oneauthor(i)
-        local author = split[i]
+function commands.btxauthor(dataset,tag,field,settings)
+    local split, usedfield, kind = getcasted(dataset,tag,field)
+    if kind == "author" then
+        local max   = split and #split or 0
+        if max == 0 then
+            return
+            -- error
+        end
+        local etallimit   = tonumber(settings.etallimit) or 1000
+        local etaldisplay = tonumber(settings.etaldisplay) or etallimit
+        local combiner    = settings.combiner
+        local symbol      = settings.symbol
+        local index       = settings.index
+        if not combiner or combiner == "" then
+            combiner = "normal"
+        end
+        if not symbol then
+            symbol = "."
+        end
+        local ctx_btxsetup = settings.kind == "cite" and ctx_btxciteauthorsetup or ctx_btxlistauthorsetup
+        if max > etallimit and etaldisplay < max then
+            max = etaldisplay
+        end
+        currentauthordata   = split
+        currentauthorsymbol = symbol
+
+        local function oneauthor(i)
+            local author = split[i]
+            if index then
+                ctx_btxstartauthor(i,1,0)
+            else
+                local state = author.state or 0
+                ctx_btxstartauthor(i,max,state)
+                ctx_btxsetconcat(concatstate(i,max))
+                ctx_btxsetauthorvariant(combiner)
+            end
+            local initials = author.initials
+            if initials and #initials > 0 then
+                ctx_btxsetinitials() -- (concat(the_initials(initials,symbol)," "))
+            end
+            local firstnames = author.firstnames
+            if firstnames and #firstnames > 0 then
+                ctx_btxsetfirstnames() -- (concat(firstnames," "))
+            end
+            local vons = author.vons
+            if vons and #vons > 0 then
+                ctx_btxsetvons() -- (concat(vons," "))
+            end
+            local surnames = author.surnames
+            if surnames and #surnames > 0 then
+                ctx_btxsetsurnames() -- (concat(surnames," "))
+            end
+            local juniors = author.juniors
+            if juniors and #juniors > 0 then
+                ctx_btxsetjuniors() -- (concat(juniors," "))
+            end
+            if not index and i == max then
+                local overflow = #split - max
+                if overflow > 0 then
+                    ctx_btxsetoverflow(overflow)
+                end
+            end
+            ctx_btxsetup(combiner)
+            ctx_btxstopauthor()
+        end
         if index then
-            ctx_btxstartauthor(i,1,0)
+            oneauthor(index)
         else
-            local state = author.state or 0
-            ctx_btxstartauthor(i,max,state)
-            ctx_btxsetconcat(concatstate(i,max))
-            ctx_btxsetauthorvariant(combiner)
-        end
-        local initials = author.initials
-        if initials and #initials > 0 then
-            ctx_btxsetinitials() -- (concat(the_initials(initials,symbol)," "))
-        end
-        local firstnames = author.firstnames
-        if firstnames and #firstnames > 0 then
-            ctx_btxsetfirstnames() -- (concat(firstnames," "))
-        end
-        local vons = author.vons
-        if vons and #vons > 0 then
-            ctx_btxsetvons() -- (concat(vons," "))
-        end
-        local surnames = author.surnames
-        if surnames and #surnames > 0 then
-            ctx_btxsetsurnames() -- (concat(surnames," "))
-        end
-        local juniors = author.juniors
-        if juniors and #juniors > 0 then
-            ctx_btxsetjuniors() -- (concat(juniors," "))
-        end
-        if not index and i == max then
-            local overflow = #split - max
-            if overflow > 0 then
-                ctx_btxsetoverflow(overflow)
+            for i=1,max do
+                oneauthor(i)
             end
         end
-        ctx_btxsetup(combiner)
-        ctx_btxstopauthor()
-    end
-
-    if index then
-        oneauthor(index)
     else
-        for i=1,max do
-            oneauthor(i)
-        end
+        report("ignored field %a of tag %a, used field %a is no author",field,tag,usedfield)
     end
 end
 
@@ -407,9 +394,6 @@ local strip    = sorters.strip
 local splitter = sorters.splitters.utf
 
 -- authors(s) | year | journal | title | pages
-
-local pubsorters = { }
-authors.sorters  = pubsorters
 
 local function components(snippet,short)
     local vons       = snippet.vons
@@ -462,41 +446,6 @@ local function writer(key,snippets)
     return concat(snippets," ",1,s)
 end
 
-writers.author = writer
-
-local default = { "author" }
-
-function authors.getauthor(dataset,tag,categories)
-    local current = datasets[dataset]
-    local luadata = current.luadata
-    local entry   = luadata and luadata[tag]
-    if entry then
-        local category = entry.category
-        local list
-        if categories then
-            local c = categories[category]
-            if c then
-                local sets = c.sets
-                list = sets and sets.author and sets.authors or default
-            else
-                list = default
-            end
-        else
-            list = default
-        end
-        for i=1,#list do
-            local l = list[i]
-            local v = entry[l]
-            if v then
-                return detailed.author[v], l
-            end
-        end
-    end
-end
-
-publications.serializeauthor  = function(a) return writer { a } end
-publications.authorcomponents = components
-
 local function newsplitter(splitter)
     return table.setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
         local v = splitter(k,true)                  -- in other cases
@@ -510,29 +459,21 @@ end
 -- first : key author editor publisher title           journal volume number pages
 -- second: year suffix                 title month day journal volume number
 
-local function directget(dataset,entry,field)
-    local value = entry[field]
-    if value then
-        return detailed.author[value]
-    end
-end
-
-local function byauthor(dataset,list,method)
+local function indexer(dataset,list,method)
     local current  = datasets[dataset]
     local luadata  = current.luadata
     local result   = { }
     local splitted = newsplitter(splitter) -- saves mem
     local snippets = { } -- saves mem
-    local get      = publications.directget or directget
     local field    = "author" -- todo
     for i=1,#list do
         -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
-        local li     = list[i]
-        local tag    = type(li) == "string" and li or li[1]
-        local index  = tostring(i)
-        local entry  = luadata[tag]
+        local li    = list[i]
+        local tag   = type(li) == "string" and li or li[1]
+        local index = tostring(i)
+        local entry = luadata[tag]
         if entry then
-            local value   = get(current,entry,field) or ""
+            local value   = getcasted(current,entry,field) or ""
             local mainkey = writer(value,snippets)
             result[i] = {
                 index  = i,
@@ -555,18 +496,18 @@ local function byauthor(dataset,list,method)
             result[i] = {
                 index  = i,
                 split  = {
-                    splitted[""],         -- key
-                    splitted[""],         -- mainkey
-                    splitted["9999"],     -- year
-                    splitted[" "],        -- suffix
-                    splitted["14"],       -- month
-                    splitted["33"],       -- day
-                    splitted[""],         -- journal
-                    splitted[""],         -- volume
-                    splitted[""],         -- number
-                    splitted[""],         -- title
-                    splitted[""],         -- pages
-                    splitted[index],      -- index
+                    splitted[""],     -- key
+                    splitted[""],     -- mainkey
+                    splitted["9999"], -- year
+                    splitted[" "],    -- suffix
+                    splitted["14"],   -- month
+                    splitted["33"],   -- day
+                    splitted[""],     -- journal
+                    splitted[""],     -- volume
+                    splitted[""],     -- number
+                    splitted[""],     -- title
+                    splitted[""],     -- pages
+                    splitted[index],  -- index
                 },
             }
         end
@@ -574,11 +515,8 @@ local function byauthor(dataset,list,method)
     return result
 end
 
-authors.sorters.writer = writer
-authors.sorters.author = byauthor
-
-function authors.sorted(dataset,list,sorttype) -- experimental
-    local valid = byauthor(dataset,list,sorttype)
+local function sorted(dataset,list,sorttype) -- experimental
+    local valid = indexer(dataset,list,sorttype)
     if #valid == 0 or #valid ~= #list then
         return list
     else
@@ -589,3 +527,11 @@ function authors.sorted(dataset,list,sorttype) -- experimental
         return valid
     end
 end
+
+-- made public
+
+publications.indexers  .author = indexer
+publications.writers   .author = writer
+publications.sorters   .author = sorted
+publications.casters   .author = splitauthorstring
+publications.components.author = components
