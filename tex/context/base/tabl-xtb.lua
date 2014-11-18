@@ -818,7 +818,8 @@ function xtables.construct()
                 end
                 nofr = nofr + 1
                 result[nofr] = {
-                    hpack_node_list(list),
+                 -- hpack_node_list(list),
+                    hpack_node_list(list,0,"exactly","TLT"), -- otherwise weird lap
                     size,
                     i < nofrange and rowdistance > 0 and rowdistance or false, -- might move
                     false

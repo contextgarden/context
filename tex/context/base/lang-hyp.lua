@@ -96,13 +96,30 @@ end
 local word  = ((Carg(1) * Carg(2) * C((1 - P(" "))^1)) / register + 1)^1
 local split = Ct(C(character)^1)
 
+-- todo .XXX and XXX. and .XXX.
+-- better have the exceptions in a separate list (more efficient)
+
+----- hard  = ((Carg(1) * Carg(2) * Cs(Cc(".9") * (C(1) * (P("-")/"8") + (C(1 - P(" ")) * Cc("9")))^1 * Cc("."))) / register + 1)^1
+local hard  = ((Carg(1) * Carg(2) * Cs(C(1-P(" ")) * ((P("-")/"9" * C(1)) + Cc("8") * (C(1 - P(" "))))^1)) / register + 1)^1
+
 function traditional.loadpatterns(language,filename)
     local specification = require(filename)
     local dictionary    = dictionaries[language]
     if specification then
         local patterns = specification.patterns
         if patterns then
-            lpegmatch(word,patterns.data,1,dictionary.patterns,dictionary.specials)
+            local data = patterns.data
+            if data and data ~= "" then
+--                 lpegmatch(word,data,1,dictionary.patterns,dictionary.specials)
+            end
+        end
+        local exceptions = specification.exceptions
+        if exceptions then
+            local data = exceptions.data
+            if data and data ~= "" then
+                lpegmatch(hard,data,1,dictionary.patterns,dictionary.specials)
+            end
+-- inspect(dictionary)
         end
     end
     return dictionary
@@ -194,8 +211,10 @@ local function hyphenate(dictionary,word)
     return done
 end
 
-local f_detail_1 = string.formatters["{%s}{%s}{}"]
-local f_detail_2 = string.formatters["{%s%s}{%s%s}{%s}"]
+local s_detail_1 = "-"
+local f_detail_2 = string.formatters["%s-%s"]
+local f_detail_3 = string.formatters["{%s}{%s}{}"]
+local f_detail_4 = string.formatters["{%s%s}{%s%s}{%s}"]
 
 function traditional.injecthyphens(dictionary,word,specification)
     local h = hyphenate(dictionary,word)
@@ -220,7 +239,11 @@ function traditional.injecthyphens(dictionary,word,specification)
                 i = i + 1
             elseif hi == true then
                 n = n + 1
-                r[n] = f_detail_1(rightchar,leftchar)
+                if leftchar and rightchar then
+                    r[n] = f_detail_3(rightchar,leftchar)
+                else
+                    r[n] = s_detail_1
+                end
                 n = n + 1
                 r[n] = w[i]
                 i = i + 1
@@ -228,7 +251,11 @@ function traditional.injecthyphens(dictionary,word,specification)
                 local b = i - hi.start
                 local e = b + hi.length - 1
                 n = b
-                r[n] = f_detail_2(hi.before,rightchar,leftchar,hi.after,concat(w,"",b,e))
+                if leftchar and rightchar then
+                    r[n] = f_detail_4(hi.before,rightchar,leftchar,hi.after,concat(w,"",b,e))
+                else
+                    r[n] = f_detail_2(hi.before,hi.after)
+                end
                 if e + 1 == i then
                     i = i + 1
                 else
@@ -669,6 +696,19 @@ else
 --     print("kunstmatig",       traditional.injecthyphens(dictionaries.nl,"kunstmatig",       specification),"")
 --     print("kunststofmatig",   traditional.injecthyphens(dictionaries.nl,"kunststofmatig",   specification),"")
 --     print("kunst[stof]matig", traditional.injecthyphens(dictionaries.nl,"kunst[stof]matig", specification),"")
+
+--     traditional.loadpatterns("us","lang-us")
+
+--     local specification = {
+--         lefthyphenmin   = 2,
+--         righthyphenmin  = 2,
+--         lefthyphenchar  = false,
+--         righthyphenchar = false,
+--     }
+
+--     print("associate",     traditional.injecthyphens(dictionaries.us,"associate",     specification),"as-so-ciate")
+--     print("philanthropic", traditional.injecthyphens(dictionaries.us,"philanthropic", specification),"phil-an-thropic")
+--     print("projects",      traditional.injecthyphens(dictionaries.us,"projects",      specification),"projects")
 
 end
 

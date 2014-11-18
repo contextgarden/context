@@ -39,6 +39,7 @@
 \unprotect
 
 \installcorenamespace{parallel}
+\installcorenamespace{parallelhandler}
 
 \installcommandhandler \??parallel {parallel} \??parallel
 
@@ -46,21 +47,40 @@
   [\c!setups=parallel:place:default]
 
 \let\buff_parallel_define_saved\defineparallel
+\let\buff_parallel_setup_saved \setupparallel
 
-\unexpanded\def\defineparallel
-  {\dodoubleargument\buff_parallel_define}
+\unexpanded\def\defineparallel{\dodoubleargument\buff_parallel_define}
+\unexpanded\def\setupparallel {\dotripleargument\buff_parallel_setup}
 
 \def\buff_parallel_define[#name][#instances]%
-  {\buff_parallel_define_saved[#name]
+  {\buff_parallel_define_saved[#name][\c!list={#instances}]% list is internal
    \ctxcommand{defineparallel("#name","#instances")}%
-   \processcommalist[#instances]\buff_parallel_define_instance
+   \expandafter\newtoks\csname\??parallelhandler#name\endcsname
+   \processcommacommand[#instances]{\buff_parallel_define_instance{#name}}%
    \setuevalue{\e!start#name}{\buff_parallel_start{#name}}%
    \setuevalue{\e!stop #name}{\buff_parallel_stop}}
 
-\def\buff_parallel_define_instance#instance%
-  {\normalexpanded{\buff_parallel_define_saved[#instance][\currentparallel]}%
+\let\buff_process_parallel_instance\relax
+
+\def\buff_process_parallel_instances
+  {\the\csname\??parallelhandler\currentparallel\endcsname}
+
+\def\buff_parallel_define_instance#name#instance%
+  {\normalexpanded{\buff_parallel_define_saved[#instance][#name]}%
    \definebuffer[#instance]%
+  %\edef\t_buff_parallel{\csname\??parallelhandler#name\endcsname}%
+   \expandafter\let\expandafter\t_buff_parallel\csname\??parallelhandler#name\endcsname
+   \appendtoks
+      \edef\currentparallelinstance{#instance}%
+      \buff_process_parallel_instance\relax
+   \to \t_buff_parallel
    \setuevalue{\e!stop#instance}{\buff_parallel_save{#instance}}}
+
+\def\buff_parallel_setup[#name][#instances][#setups]%
+  {\processcommalist[#instances]{\buff_parallel_setup_instance{#name}{#setups}}}
+
+\def\buff_parallel_setup_instance#name#setups#instance%
+  {\buff_parallel_setup_saved[#name:#instance][#setups]}
 
 \unexpanded\def\buff_parallel_start#name%
   {\pushmacro\currentparallel
@@ -79,7 +99,13 @@
 \def\buff_parallel_place[#name][#instance][#settings]%
   {\begingroup
    \edef\currentparallel{#name}%
-   \ctxcommand{placeparallel("\currentparallel","#instance","#settings")}% -- todo: pass options as k/v
+   \setupcurrentparallel[#settings]%
+   \ctxcommand{placeparallel("\currentparallel","#instance",{
+    % setups    = "\parallelparameter\c!setups",
+      start     = "\parallelparameter\c!start",
+      n         = "\parallelparameter\c!n",
+      criterium = "\parallelparameter\c!criterium",
+   })}%
    \endgroup}
 
 \def\doflushparallel#instance#status#line#label#content% called at lua end
@@ -88,7 +114,7 @@
    \def\currentparallelnumber  {#status}%
    \def\currentparallelline    {#line}%
    \def\currentparallellabel   {#label}%
-   \def\currentparallelcontent {#content}%
+   \def\currentparallelcontent {#content}% can be kep at the lua end .. no need to use a virtual file
    \ifcase#status\relax
      \expandafter\buff_parallel_flush_nop
    \or
@@ -100,7 +126,7 @@
   {}
 
 \def\buff_parallel_flush_yes
-  {\directsetup{\namedparallelparameter\currentparallelinstance\c!setups}}
+  {\directsetup{\namedparallelparameter{\currentparallel:\currentparallelinstance}\c!setups}}
 
 \unexpanded\def\doifelseparallel#name#instance%
   {\ctxcommand{doifelseparallel("#name","#instance")}}
@@ -113,9 +139,9 @@
 
 \startsetups parallel:place:default
     \hangafter\plusone
-    \hangindent4em
+    \hangindent4\emwidth
     \dontleavehmode
-    \hbox to 3em \bgroup
+    \hbox to 3\emwidth \bgroup
         \hss
         \bf
         \doifsomething \currentparallellabel {
