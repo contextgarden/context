@@ -145,7 +145,8 @@
 %D \showsetup{hl}
 
 \unexpanded\def\pack_rule_vl_indeed#1#2#3%
-  {\bgroup
+  {\dontleavehmode
+   \begingroup
    \setbox\scratchbox\hbox
      {\vrule
         \s!width #1\linewidth
@@ -154,13 +155,14 @@
    \dp\scratchbox\strutdp
    \ht\scratchbox\strutht
    \box\scratchbox
-   \egroup}
+   \endgroup}
 
 \def\pack_rule_vl[#1]%
   {\pack_rule_vl_indeed{#1}{#1}{#1}}
 
 \def\pack_rule_hl[#1]%
-  {\hbox
+  {\dontleavehmode
+   \hbox
      {\vrule
         \s!width #1\emwidth
         \s!height\linewidth

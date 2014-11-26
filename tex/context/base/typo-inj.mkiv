@@ -58,7 +58,8 @@
 \unexpanded\def\domarkinjector#1#2% called at the lua end
   {\dontleavehmode\llap{\infofont\ifcase#1\else\red\fi<#2>\quad}}
 
-% low level definers
+% low level definers .. we could have \injectors_mark and \injectors_check and then
+% use \v!list instead of \s!list
 
 \unexpanded\def\doinstallinjector#1%
   {\letvalue{typo_injectors_mark_#1}\donothing

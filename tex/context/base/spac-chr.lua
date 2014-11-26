@@ -19,6 +19,7 @@ local byte, lower = string.byte, string.lower
 local next = next
 
 local trace_characters = false  trackers.register("typesetters.characters", function(v) trace_characters = v end)
+local trace_nbsp       = false  trackers.register("typesetters.nbsp",       function(v) trace_nbsp       = v end)
 
 local report_characters = logs.reporter("typesetting","characters")
 
@@ -39,6 +40,8 @@ local setattr            = nuts.setattr
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 
+local setcolor           = nodes.tracers.colors.set
+
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
@@ -50,6 +53,8 @@ local tasks              = nodes.tasks
 local nodepool           = nuts.pool
 local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
+local new_kern           = nodepool.kern
+local new_rule           = nodepool.rule
 
 local nodecodes          = nodes.nodecodes
 local skipcodes          = nodes.skipcodes
@@ -114,6 +119,15 @@ local function inject_nobreak_space(unicode,head,current,space,spacestretch,spac
     setfield(current,"attr",nil)
     setattr(glue,a_character,unicode)
     head, current = insert_node_after(head,current,penalty)
+    if trace_nbsp then
+        local rule    = new_rule(space)
+        local kern    = new_kern(-space)
+        local penalty = new_penalty(10000)
+        setcolor(rule,"orange")
+        head, current = insert_node_after(head,current,rule)
+        head, current = insert_node_after(head,current,kern)
+        head, current = insert_node_after(head,current,penalty)
+    end
     head, current = insert_node_after(head,current,glue)
     return head, current
 end

@@ -29,12 +29,13 @@
 
 \startluacode
 
-local context           = context
-local ctx_NC            = context.NC
-local ctx_NR            = context.NR
-local ctx_red           = context.red
-local ctx_starttabulate = context.starttabulate
-local ctx_stoptabulate  = context.stoptabulate
+local context            = context
+local ctx_NC             = context.NC
+local ctx_NR             = context.NR
+local ctx_red            = context.red
+local ctx_starttabulate  = context.starttabulate
+local ctx_stoptabulate   = context.stoptabulate
+local ctx_hyphenatedname = context.hyphenatedfilename
 
 trackers.enable("graphics.lognames")
 
@@ -42,7 +43,7 @@ context.start()
 
     context.switchtobodyfont { "tt,small" }
 
-    local template = { "|Bl|l|" }
+    local template = { "|Bl|p|" }
 
     for _, data in table.sortedhash(figures.found) do
         ctx_starttabulate(template)
@@ -65,12 +66,14 @@ context.start()
                 ctx_NC()
                     context("found file")
                 ctx_NC()
-                    context(data.foundname)
+                    ctx_hyphenatedname(data.foundname)
+                 -- context(data.foundname)
                 ctx_NC() ctx_NR()
                 ctx_NC()
                     context("used file")
                 ctx_NC()
-                    context(data.fullname)
+                    ctx_hyphenatedname(data.fullname)
+                 -- context(data.fullname)
                 ctx_NC() ctx_NR()
                 if badname then
                     ctx_NC()

@@ -814,15 +814,21 @@ local p_reserved =
 local p_unicode =
     lpeg.utfchartabletopattern(table.keys(k_unicode)) / k_unicode
 
+local p_texescape = patterns.texescape
+
+local function texescaped(s)
+    return lpegmatch(p_texescape,s)
+end
+
 local p_text =
     P("text")
   * p_spaces^0
   * Cc("\\asciimathoptext")
   * ( -- maybe balanced
-        Cs( P("{")      * (1-P("}"))^0 *  P("}")     )
-      + Cs((P("(")/"{") * (1-P(")"))^0 * (P(")")/"}"))
+        Cs( P("{")      * ((1-P("}"))^0/texescaped) *  P("}")     )
+      + Cs((P("(")/"{") * ((1-P(")"))^0/texescaped) * (P(")")/"}"))
     )
-  + Cc("\\asciimathoptext") * Cs(Cc("{") * patterns.undouble * Cc("}"))
+  + Cc("\\asciimathoptext") * Cs(Cc("{") * (patterns.undouble/texescaped) * Cc("}"))
 
 local m_left = {
     ["(:"] = s_langle,
@@ -1675,6 +1681,8 @@ if not context then
 --     report_asciimath(cleanedup([[a "αsinsqrtx" b]]))
 --     report_asciimath(cleanedup([[a "α" b]]))
 --     report_asciimath(cleanedup([[//4]]))
+
+convert("4/18*100text(%)~~22,2")
 
 --     convert([[sum x]])
 --     convert([[sum^(1)_(2) x]])

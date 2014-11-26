@@ -45,8 +45,8 @@ setmetatableindex(tex.modes, function(t,k)
         if csname_id(n) == undefined then
             return false
         else
-            modes[k] = function() return texgetcount(n) >= 1 end
-            return texgetcount(n) >= 1
+            modes[k] = function() return texgetcount(n) == 1 end
+            return texgetcount(n) == 1 -- 2 is prevented
         end
     end
 end)
@@ -60,8 +60,8 @@ setmetatableindex(tex.systemmodes, function(t,k)
         if csname_id(n) == undefined then
             return false
         else
-            systemmodes[k] = function() return texgetcount(n) >= 1 end
-            return texgetcount(n) >= 1
+            systemmodes[k] = function() return texgetcount(n) == 1 end
+            return texgetcount(n) == 1 -- 2 is prevented
         end
     end
 end)

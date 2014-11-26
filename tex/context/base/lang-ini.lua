@@ -21,6 +21,9 @@ local utfbyte = utf.byte
 local format, gsub = string.format, string.gsub
 local concat, sortedkeys, sortedpairs = table.concat, table.sortedkeys, table.sortedpairs
 
+local context  = context
+local commands = commands
+
 local settings_to_array = utilities.parsers.settings_to_array
 
 local trace_patterns = false  trackers.register("languages.patterns", function(v) trace_patterns = v end)
@@ -152,7 +155,7 @@ local function loaddefinitions(tag,specification)
                      -- instance:hyphenation(resources.exceptions and resources.exceptions.data or "")
                         instance:patterns   (validdata(resources.patterns,  "patterns",  tag) or "")
                         instance:hyphenation(validdata(resources.exceptions,"exceptions",tag) or "")
-data.resources = resources -- so we can use them otherwise
+                        data.resources = resources -- so we can use them otherwise
                     else
                         report_initialization("invalid definition %a for language %a in %a",definition,tag,filename)
                     end
@@ -360,7 +363,7 @@ languages.associate('fr','latn','fra')
 statistics.register("loaded patterns", function()
     local result = languages.logger.report()
     if result ~= "none" then
---         return result
+     -- return result
         return format("%s, load time: %s",result,statistics.elapsedtime(languages))
     end
 end)

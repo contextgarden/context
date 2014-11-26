@@ -242,8 +242,14 @@
 
 \installcommandhandler \??highlight {highlight} \??highlight % we could do with less
 
+\setuphighlight
+  [\c!command=\v!yes]
+
 \appendtoks
-    \setuevalue\currenthighlight{\typo_highlights_indeed{\currenthighlight}}%
+    \edef\p_command{\highlightparameter\c!command}%
+    \ifx\p_command\v!yes
+        \setuevalue\currenthighlight{\typo_highlights_indeed{\currenthighlight}}%
+    \fi
 \to \everydefinehighlight
 
 \ifdefined\dotaghighlight \else \let\dotaghighlight\relax \fi

@@ -46,8 +46,6 @@
 
 \installcorenamespace{modestack}
 
-% todo: check prevent mode, also at the lua end
-
 \setnewconstant\disabledmode \zerocount
 \setnewconstant\enabledmode  \plusone
 \setnewconstant\preventedmode\plustwo
@@ -163,7 +161,17 @@
 % handy for mp
 
 \def\booleanmodevalue#1%
-  {\ifcsname\??mode#1\endcsname\ifcase\csname\??mode#1\endcsname\s!false\else\s!true\fi\else\s!false\fi}
+  {\ifcsname\??mode#1\endcsname
+     \ifcase\csname\??mode#1\endcsname
+       \s!false
+     \or
+       \s!true
+     \else
+       \s!false
+     \fi
+   \else
+     \s!false
+   \fi}
 
 % check macros
 
@@ -213,8 +221,10 @@
 \def\syst_modes_check_yes#1#2#3%
   {\ifcase\csname\??mode#3\endcsname
      \expandafter#2%
-   \else
+   \or
      \expandafter#1%
+   \else
+     \expandafter#2%
    \fi}
 
 \def\syst_modes_check#1#2#3%
@@ -229,6 +239,10 @@
 \def\syst_modes_check_all_indeed#1%
   {\ifcsname\??mode#1\endcsname
      \ifcase\csname\??mode#1\endcsname
+       \let\syst_modes_check_all_step\gobbleoneargument
+     \or
+       % enabled
+     \else
        \let\syst_modes_check_all_step\gobbleoneargument
      \fi
    \else

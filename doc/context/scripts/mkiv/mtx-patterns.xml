@@ -15,6 +15,7 @@
     <flag name="specification"><short>additional patterns: e.g.: =cy,hyph-cy,welsh</short></flag>
     <flag name="compress"><short>compress data</short></flag>
     <flag name="words"><short>update words in given file</short></flag>
+    <flag name="hyphenate"><short>show hypephenated words</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -26,6 +27,7 @@
     <example><command>mtxrun --script pattern --check   --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns</command></example>
     <example><command>mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns</command></example>
     <example><command>mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns</command></example>
+    <example><command>mtxrun --script pattern --hyphenate --language=nl --left=3 nogalwiedes inderdaad</command></example>
    </subcategory>
   </category>
  </examples>

@@ -12,8 +12,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D [This code is hooked into the core macros and saves some
-%D format space. It needs a cleanup.]
+%D [This code is hooked into the core macros and saves some format
+%D space. It needs a cleanup.]
 
 \unprotect
 
@@ -100,8 +100,8 @@
          &&\tttf\tx\s!text&&\tttf\tx\s!script&&\tttf\tx\s!scriptscript
          &&\tttf\tx\s!x&&\tttf\tx\s!xx&&\tttf\tx\v!small&&\tttf\tx\v!big
          &&\tttf\tx\c!interlinespace&\cr
-         \noalign{\hrule}
-         \@EA\globalprocesscommalist\@EA[\bodyfontenvironmentlist]\next}}
+         \noalign{\hrule}%
+         \processbodyfontenvironmentlist\next}}
    \ifinsidefloat\else\stopbaselinecorrection\fi}
 
 \unexpanded\gdef\showfont

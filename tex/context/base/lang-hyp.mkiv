@@ -32,21 +32,173 @@
 
 \registerctxluafile{lang-hyp}{1.001}
 
+\unprotect
+
+\definesystemattribute[hyphenation][public]
+
 %D This command can change! At some point we will keep the setting with the
 %D paragraph and then the \type {\par} can go.
 
-\unexpanded\def\atleastoneword#1%
+% \unexpanded\def\atleastoneword#1%
+%   {\begingroup
+%    \enabledirectives[hyphenators.method=traditional]%
+%    \enabledirectives[hyphenators.rightwordsmin=1]%
+%    \lefthyphenmin \plusfour
+%    \righthyphenmin\plusfour
+%    #1\par
+%    \disabledirectives[hyphenators.rightwordsmin]%
+%    \enabledirectives[hyphenators.method]%
+%    \endgroup}
+
+%D Here is the real way:
+
+\installcorenamespace{hyphenation}
+\installcorenamespace{hyphenationfeatures}
+
+\installparameterhandler \??hyphenation {hyphenation}
+\installsetuphandler     \??hyphenation {hyphenation}
+
+\setuphyphenation
+  [\c!method=\s!default]
+
+\appendtoks
+    \ctxcommand{setuphyphenation{method="\hyphenationparameter\c!method"}}%
+\to \everysetuphyphenation
+
+%D These are mostly meant for manuals:
+
+\unexpanded\def\starthyphenation[#1]%
   {\begingroup
-   \enabledirectives[hyphenators.method=traditional]%
-   \enabledirectives[hyphenators.rightwordsmin=1]%
-   \lefthyphenmin \plusfour
-   \righthyphenmin\plusfour
-   #1\par
-   \disabledirectives[hyphenators.rightwordsmin]%
-   \enabledirectives[hyphenators.method]%
+   \ctxcommand{pushhyphenation("#1")}}
+
+\unexpanded\def\stophyphenation
+  {\ifhmode\par\fi
+   \ctxcommand{pophyphenation()}%
    \endgroup}
 
-\endinput
+% This is a global setting, so we need to disable it when needed. However, as
+% we are (hopefully) compatible and attribute driven one can also just keep it
+% enabled.
+%
+% \setuphyphenation
+%   [\c!method=\s!traditional] % no translations
+
+\unexpanded\def\definehyphenationfeatures
+  {\dodoubleargument\lang_hyphenation_define_features}
+
+\unexpanded\def\lang_hyphenation_define_features[#1][#2]%
+  {\begingroup
+   \letdummyparameter\c!characters\empty             % maybe \s!
+   \letdummyparameter\c!hyphens\empty                % maybe \s!
+   \letdummyparameter\c!joiners\empty                % maybe \s!
+   \letdummyparameter\c!rightwords\!!zerocount       % maybe \s!
+   \letdummyparameter\s!lefthyphenmin\!!zerocount
+   \letdummyparameter\s!righthyphenmin\!!zerocount
+   \letdummyparameter\c!alternative\empty
+   \letdummyparameter\c!rightedge\empty
+   \getdummyparameters[#2]%
+   \ctxcommand{definehyphenationfeatures("#1",{
+      characters   = \!!bs\dummyparameter\c!characters\!!es,
+      hyphens      = \!!bs\dummyparameter\c!hyphens\!!es,
+      joiners      = \!!bs\dummyparameter\c!joiners\!!es,
+      rightwordmin = \number\dummyparameter\c!rightwords,
+      leftcharmin  = \number\dummyparameter\s!lefthyphenmin,
+      rightcharmin = \number\dummyparameter\s!righthyphenmin,
+      alternative  = "\dummyparameter\c!alternative",
+      rightedge    = "\dummyparameter\c!rightedge",
+    })}%
+   \endgroup}
+
+\unexpanded\def\sethyphenationfeatures[#1]%
+  {\ctxcommand{sethyphenationfeatures("#1")}}
+
+% todo: \start ... \stop too
+
+\unexpanded\def\registerhyphenationpattern
+  {\dodoubleempty\lang_hyphenation_register_pattern}
+
+\def\lang_hyphenation_register_pattern[#1][#2]%
+  {\ctxcommand{registerhyphenationpattern(
+     \ifsecondargument
+       \!!bs#1\!!es,
+       \!!bs#2\!!es
+     \else
+       \!!bs\currentlanguage\!!es,
+       \!!bs#1\!!es
+     \fi
+    )}}
+
+\unexpanded\def\unregisterhyphenationpattern
+  {\dodoubleempty\lang_hyphenation_unregister_pattern}
+
+\def\lang_hyphenation_unregister_pattern[#1][#2]%
+  {\ctxcommand{registerhyphenationpattern(
+     \ifsecondargument
+       \!!bs#1\!!es,
+       \!!bs#2\!!es,
+     \else
+       \!!bs\currentlanguage\!!es,
+       \!!bs#1\!!es,
+     \fi
+     false
+    )}}
+
+\unexpanded\def\showhyphenationtrace
+  {\dodoubleempty\lang_hyphenation_show_trace}
+
+\def\lang_hyphenation_show_trace[#1][#2]%
+  {\begingroup
+   \tt
+   \ctxcommand{showhyphenationtrace(
+    \ifsecondargument
+       \!!bs#1\!!es,
+       \!!bs#2\!!es
+     \else
+       \!!bs\currentlanguage\!!es,
+       \!!bs#1\!!es
+     \fi
+    )}%
+   \endgroup}
+
+% For old times sake:
+
+\unexpanded\def\atleastoneword#1%
+  {\begingroup
+   \starthyphenation[\c!method=traditional]% this might become default or a faster switch
+   \sethyphenationfeatures[words]%
+   #1\par
+   \stopthyphenation
+   \endgroup}
+
+%D These are (at least now) not cummulative:
+
+\definehyphenationfeatures % just an example
+  [fences]
+  [\c!characters={[]()}]
+
+\definehyphenationfeatures
+  [words]
+  [\c!rightwords=1,
+   \s!lefthyphenmin=4,
+   \s!righthyphenmin=4]
+
+\definehyphenationfeatures
+  [default]
+  [%c!rightedge=\v!tex,
+   \c!hyphens=\v!yes,
+   \c!joiners=\v!yes]
+
+\definehyphenationfeatures
+  [strict]
+  [\c!rightedge=\s!tex]
+
+% \sethyphenationfeatures
+%   [fences]
+
+% \sethyphenationfeatures
+%   [default,fences]
+
+\protect \endinput
 
 % \starttext
 %

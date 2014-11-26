@@ -52,6 +52,7 @@ local nodepool      = nuts.pool
 
 local new_rule      = nodepool.rule
 local new_kern      = nodepool.kern
+local new_penalty   = nodepool.penalty
 
 local a_characters  = attributes.private("characters")
 
@@ -99,6 +100,8 @@ end
 
 local function mark(head,current,id,color)
     if id == glue_code then
+        -- the glue can have stretch and/or shrink so the rule can overlap with the
+        -- following glyph .. no big deal as that one then sits on top of the rule
         local width = getfield(getfield(current,"spec"),"width")
         local rule  = new_rule(width)
         local kern  = new_kern(-width)
@@ -194,7 +197,14 @@ function typesetters.showsuspects(head)
         elseif id == glue_code then
             local a = getattr(current,a_characters)
             if a then
-                head = mark(head,current,id,"orange")
+                local prev = getprev(current)
+                local prid = prev and getid(prev)
+                if prid == penalty_code and getfield(prev,"penalty") == 10000 then
+                    head = mark(head,current,id,"orange")
+                    head = insert_before(head,current,new_penalty(10000))
+                else
+                    head = mark(head,current,id,"darkmagenta")
+                end
             end
             current = getnext(current)
         else

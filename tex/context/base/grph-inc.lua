@@ -247,12 +247,14 @@ figures.order   = figures_order   -- frozen
 
 -- name checker
 
-local pattern = (R("az","AZ") * P(":"))^-1 * (                -- a-z : | A-Z :
-    (R("az","09") + S("_/") - P("_")^2)^1 * P(".") * R("az")^1 + -- a-z | single _ | /
-    (R("az","09") + S("-/") - P("-")^2)^1 * P(".") * R("az")^1 + -- a-z | single - | /
-    (R("AZ","09") + S("_/") - P("_")^2)^1 * P(".") * R("AZ")^1 + -- A-Z | single _ | /
-    (R("AZ","09") + S("-/") - P("-")^2)^1 * P(".") * R("AZ")^1   -- A-Z | single - | /
-) * P(-1) * Cc(false) + Cc(true)
+local okay = P("m_k_i_v_")
+
+local pattern = (R("az","AZ") * P(":"))^-1 * (                                      -- a-z : | A-Z :
+    (okay + R("az","09") + S("_/") - P("_")^2)^1 * (P(".") * R("az")^1)^0 * P(-1) + -- a-z | single _ | /
+    (okay + R("az","09") + S("-/") - P("-")^2)^1 * (P(".") * R("az")^1)^0 * P(-1) + -- a-z | single - | /
+    (okay + R("AZ","09") + S("_/") - P("_")^2)^1 * (P(".") * R("AZ")^1)^0 * P(-1) + -- A-Z | single _ | /
+    (okay + R("AZ","09") + S("-/") - P("-")^2)^1 * (P(".") * R("AZ")^1)^0 * P(-1)   -- A-Z | single - | /
+) * Cc(false) + Cc(true)
 
 function figures.badname(name)
     if not name then

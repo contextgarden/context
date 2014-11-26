@@ -47,6 +47,7 @@ local copy_node    = nuts.copy
 local copy_list    = nuts.copy_list
 local find_tail    = nuts.tail
 local traverse_id  = nuts.traverse_id
+local link_nodes   = nuts.linked
 
 local listtoutf    = nodes.listtoutf
 
@@ -54,29 +55,64 @@ local nodepool     = nuts.pool
 local new_penalty  = nodepool.penalty
 local new_hlist    = nodepool.hlist
 local new_glue     = nodepool.glue
+local new_rule     = nodepool.rule
+local new_kern     = nodepool.kern
+
+local setlistcolor = nodes.tracers.colors.setlist
 
 local texget       = tex.get
+local texgetbox    = tex.getbox
 
-local function hyphenatedlist(head)
+local function hyphenatedlist(head,usecolor)
     local current = head and tonut(head)
     while current do
         local id   = getid(current)
         local next = getnext(current)
         local prev = getprev(current)
         if id == disc_code then
-            local hyphen = getfield(current,"pre")
-            if hyphen then
-                local penalty = new_penalty(-500)
-                -- insert_after etc
-                setfield(hyphen,"next",penalty)
-                setfield(penalty,"prev",hyphen)
-                setfield(prev,"next",hyphen)
-                setfield(next,"prev", penalty)
-                setfield(penalty,"next",next)
-                setfield(hyphen,"prev",prev)
+            local pre     = getfield(current,"pre")
+            local post    = getfield(current,"post")
+            local replace = getfield(current,"replace")
+            if pre then
                 setfield(current,"pre",nil)
-                free_node(current)
             end
+            if post then
+                setfield(current,"post",nil)
+            end
+            if not usecolor then
+                -- nothing fancy done
+            elseif pre and post then
+                setlistcolor(pre,"darkmagenta")
+                setlistcolor(post,"darkcyan")
+            elseif pre then
+                setlistcolor(pre,"darkyellow")
+            elseif post then
+                setlistcolor(post,"darkyellow")
+            end
+            if replace then
+                flush_list(replace)
+                setfield(current,"replace",nil)
+            end
+         -- setfield(current,"replace",new_rule(65536)) -- new_kern(65536*2))
+            setfield(current,"next",nil)
+            setfield(current,"prev",nil)
+            local list = link_nodes (
+                pre and new_penalty(10000),
+                pre,
+                current,
+                post,
+                post and new_penalty(10000)
+            )
+            local tail = find_tail(list)
+            if prev then
+                setfield(prev,"next",list)
+                setfield(list,"prev",prev)
+            end
+            if next then
+                setfield(tail,"next",next)
+                setfield(next,"prev",tail)
+            end
+         -- free_node(current)
         elseif id == vlist_code or id == hlist_code then
             hyphenatedlist(getlist(current))
         end
@@ -84,7 +120,12 @@ local function hyphenatedlist(head)
     end
 end
 
-commands.hyphenatedlist = hyphenatedlist
+function commands.hyphenatedlist(n,color)
+    local b = texgetbox(n)
+    if b then
+        hyphenatedlist(b.list,color)
+    end
+end
 
 -- local function hyphenatedhack(head,pre)
 --     pre = tonut(pre)
@@ -263,5 +304,5 @@ function commands.hboxtovbox(original)
 end
 
 function commands.boxtostring(n)
-    context.puretext(nodes.toutf(tex.box[n].list)) -- helper is defined later
+    context.puretext(nodes.toutf(texgetbox(n).list)) -- helper is defined later
 end

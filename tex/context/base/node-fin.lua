@@ -168,7 +168,6 @@ function states.finalize(namespace,attribute,head) -- is this one ok?
     return head, false, false
 end
 
--- disc nodes can be ignored
 -- we need to deal with literals too (reset as well as oval)
 -- if id == glyph_code or (id == whatsit_code and getsubtype(stack) == pdfliteral_code) or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then
 
@@ -181,6 +180,8 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
         local id = getid(stack)
         if id == glyph_code then
             check = true
+        elseif id == disc_code then
+            check = true -- indeed
         elseif id == glue_code then
             leader = getleader(stack)
             if leader then
@@ -294,6 +295,8 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
         local id = getid(stack)
         if id == glyph_code then
             check = true
+        elseif id == disc_code then
+            check = true -- indeed
         elseif id == glue_code then
             leader = getleader(stack)
             if leader then

@@ -162,7 +162,6 @@
 %D implementations support run time addition of patterns to a
 %D preloaded format).
 
-
 %D \macros
 %D   {preloadlanguages}
 %D
@@ -354,13 +353,48 @@
 
 \newtoks \everylanguage
 
+% \def\lang_basics_synchronize% assumes that \currentlanguage is set                   % % % use different name as complex
+%   {\normallanguage\ctxcommand{languagenumber(%
+%      "\currentlanguage",%
+%      "\defaultlanguage\currentlanguage",%
+%      "\languageparameter\s!patterns"%
+%    )}\relax
+%    \the\everylanguage\relax}
+
+% (some 20%) faster but code jungle (the publication code can have excessive
+% switching
+
+\installcorenamespace{languagenumbers}
+
+\def\lang_basics_synchronize_yes
+  {\zerocount % see below
+   \global\expandafter\chardef\csname\??languagenumbers\currentlanguage\endcsname
+      \ctxcommand{languagenumber(%
+        "\currentlanguage",%
+        "\defaultlanguage\currentlanguage",%
+        "\languageparameter\s!patterns"%
+      )}\relax
+   \normallanguage\csname\??languagenumbers\currentlanguage\endcsname}
+
+\let\lang_basics_synchronize_nop\zerocount % not loaded anyway
+
+\letvalue{\??languagenumbers}\lang_basics_synchronize_nop % initime
+
+\appendtoks
+    \letvalue{\??languagenumbers}\lang_basics_synchronize_yes % runtime
+\to \everydump
+
 \def\lang_basics_synchronize% assumes that \currentlanguage is set                   % % % use different name as complex
-  {\normallanguage\ctxcommand{languagenumber(%
-     "\currentlanguage",%
-     "\defaultlanguage\currentlanguage",%
-     "\languageparameter\s!patterns"%
-   )}\relax
-   \the\everylanguage\relax}
+  {\normallanguage\csname\??languagenumbers
+     \ifcsname\??languagenumbers\currentlanguage\endcsname
+       \currentlanguage
+     \fi
+   \endcsname
+   \relax
+   \the\everylanguage
+   \relax}
+
+% so far
 
 \newcount\hyphenminoffset
 
@@ -480,6 +514,10 @@
 
 \unexpanded\def\language
   {\doifnextoptionalcselse\lang_basics_set_current\normallanguage}
+
+\let\setlanguage\language % we make these synonyms
+
+\let\patterns\gobbleoneargument
 
 \newcount\mainlanguagenumber
 

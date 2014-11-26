@@ -82,10 +82,10 @@
   {\spaceskip.5\emwidth\relax
    \let\obeyedspace\specialobeyedspace
    \let\controlspace\specialcontrolspace
- % \edef\p_buff_lines{\typeparameter\c!lines}%
- % \ifcsname\??typinglines\p_buff_lines\endcsname
- %   \csname\??typinglines\p_buff_lines\endcsname
- % \fi
+   \edef\p_buff_lines{\typeparameter\c!lines}%
+   \ifcsname\??typinglines\p_buff_lines\endcsname
+     \csname\??typinglines\p_buff_lines\endcsname
+   \fi
    \edef\p_buff_space{\typeparameter\c!space}%
    \ifcsname\??typingspace\p_buff_space\endcsname
      \csname\??typingspace\p_buff_space\endcsname

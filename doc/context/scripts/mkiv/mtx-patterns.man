@@ -31,6 +31,9 @@ compress data
 .TP
 .B --words
 update words in given file
+.TP
+.B --hyphenate
+show hypephenated words
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

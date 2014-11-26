@@ -2091,11 +2091,11 @@ end)
 
 directives.register("nodes.injections.fontkern", function(v) setfield(kern,"subtype",v and 0 or 1) end)
 
--- here
+-- here (todo: closure)
 
 local trace_analyzing    = false  trackers.register("otf.analyzing", function(v) trace_analyzing = v end)
 
-local otffeatures        = constructors.newfeatures("otf")
+----- otffeatures        = constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
 local analyzers          = fonts.analyzers
@@ -2196,5 +2196,28 @@ function commands.purefontname(name)
     end
     if type(name) == "string" then
         context(file.basename(name))
+    end
+end
+
+local list = storage.shared.bodyfontsizes or { }
+storage.shared.bodyfontsizes = list
+
+function commands.registerbodyfontsize(size)
+    list[size] = true
+end
+
+function commands.getbodyfontsizes(separator)
+    context(concat(sortedkeys(list),separator))
+end
+
+function commands.processbodyfontsizes(command)
+    local keys = sortedkeys(list)
+    if command then
+        local action = context[command]
+        for i=1,#keys do
+            action(keys[i])
+        end
+    else
+        context(concat(keys,","))
     end
 end

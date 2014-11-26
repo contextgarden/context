@@ -971,8 +971,8 @@ local function movesubscript(parent,current_nucleus,current_char)
     local prev = getfield(parent,"prev")
     if prev and getid(prev) == math_noad then
         if not getfield(prev,"sup") and not getfield(prev,"sub") then
-            setfield(current_nucleus,"char",movesub[current_char or getchar(current_nucleus)])
             -- {f} {'}_n => f_n^'
+            setfield(current_nucleus,"char",movesub[current_char or getchar(current_nucleus)])
             local nucleus = getfield(parent,"nucleus")
             local sub     = getfield(parent,"sub")
             local sup     = getfield(parent,"sup")
@@ -982,6 +982,18 @@ local function movesubscript(parent,current_nucleus,current_char)
             setfield(dummy,"char",0)
             setfield(parent,"nucleus",dummy)
             setfield(parent,"sub",nil)
+            if trace_collapsing then
+                report_collapsing("fixing subscript")
+            end
+        elseif not getfield(prev,"sup") then
+            -- {f} {'}_n => f_n^'
+            setfield(current_nucleus,"char",movesub[current_char or getchar(current_nucleus)])
+            local nucleus = getfield(parent,"nucleus")
+            local sup     = getfield(parent,"sup")
+            setfield(prev,"sup",nucleus)
+            local dummy = copy_node(nucleus)
+            setfield(dummy,"char",0)
+            setfield(parent,"nucleus",dummy)
             if trace_collapsing then
                 report_collapsing("fixing subscript")
             end
@@ -1031,6 +1043,8 @@ local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to tur
                                                 movesubscript(parent,current_nucleus,current_char)
                                             end
                                         end
+                                    elseif not nested and movesub[current_char] then
+                                        movesubscript(parent,current_nucleus,current_char)
                                     end
                                 end
                             end

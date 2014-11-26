@@ -1158,7 +1158,9 @@
 
 \installcorenamespace{fontenvironmentknown}
 
-\let\bodyfontenvironmentlist\empty % used in font-run (might change)
+% \let\bodyfontenvironmentlist\empty % used in font-run (might change)
+
+\newtoks\bodyfontenvironmentlist
 
 \def\font_helpers_register_environment#class#body%
   {\expandafter\let\csname\??fontenvironmentknown#class#body\endcsname\empty}
@@ -1179,6 +1181,12 @@
 %D a bodyfont is loaded but changing them afterwards can be sort of tricky as
 %D values are not consulted afterwards.
 
+\def\processbodyfontenvironmentlist#1% no \unexpanded as then we cannot use it in alignments
+  {\ctxcommand{processbodyfontsizes("\strippedcsname#1")}}
+
+\def\bodyfontenvironmentlist
+  {\ctxcommand{getbodyfontsizes()}}
+
 \def\font_basics_define_body_font_environment_class[#class][#body][#settings]%
   {\edef\m_font_body{#body}%
    \ifx\m_font_body\s!default
@@ -1187,7 +1195,8 @@
    \else
      \normalizebodyfontsize\m_font_body_normalized\m_font_body
      \font_basics_define_body_font_environment_size[#class][\m_font_body_normalized][#settings]%
-     \addtocommalist\m_font_body_normalized\bodyfontenvironmentlist
+    %\addtocommalist\m_font_body_normalized\bodyfontenvironmentlist
+     \ctxcommand{registerbodyfontsize("\m_font_body_normalized")}%
    \fi}
 
 %D The empty case uses the same code but needs to ignore the current class

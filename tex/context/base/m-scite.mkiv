@@ -66,6 +66,8 @@ local f_mapping   = [[
 \let\string\slxR\string\letterrightbrace
 \let\string\slxM\string\letterdollar
 \let\string\slxV\string\letterbar
+\let\string\slxU\string\letterhat
+\let\string\slxD\string\letterunderscore
 \let\string\slxH\string\letterhash
 \let\string\slxB\string\letterbackslash
 \let\string\slxP\string\letterpercent
@@ -76,6 +78,8 @@ local replacer = lpeg.replacer {
     ["{"]  = "\\slxL ",
     ["}"]  = "\\slxR ",
     ["$"]  = "\\slxM ",
+    ["^"]  = "\\slxU ",
+    ["_"]  = "\\slxD ",
     ["|"]  = "\\slxV ",
     ["#"]  = "\\slxH ",
     ["\\"] = "\\slxB ",

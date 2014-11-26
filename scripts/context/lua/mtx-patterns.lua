@@ -29,6 +29,7 @@ local helpinfo = [[
     <flag name="specification"><short>additional patterns: e.g.: =cy,hyph-cy,welsh</short></flag>
     <flag name="compress"><short>compress data</short></flag>
     <flag name="words"><short>update words in given file</short></flag>
+    <flag name="hyphenate"><short>show hypephenated words</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -40,6 +41,7 @@ local helpinfo = [[
     <example><command>mtxrun --script pattern --check   --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns</command></example>
     <example><command>mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns</command></example>
     <example><command>mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns</command></example>
+    <example><command>mtxrun --script pattern --hyphenate --language=nl --left=3 nogalwiedes inderdaad</command></example>
    </subcategory>
   </category>
  </examples>
@@ -625,6 +627,49 @@ function scripts.patterns.words()
     end
 end
 
+-- mtxrun --script patterns --hyphenate --language=nl nogalwiedes --left=3
+--
+-- hyphenator      |
+-- hyphenator      | . n o g a l w i e d e s .         . n o g a l w i e d e s .
+-- hyphenator      | .0n4                               0 4 0 0 0 0 0 0 0 0 0 0
+-- hyphenator      |    0o0g0a4l0                       0 4 0 0 4 0 0 0 0 0 0 0
+-- hyphenator      |      1g0a0                         0 4 1 0 4 0 0 0 0 0 0 0
+-- hyphenator      |          0l1w0                     0 4 1 0 4 1 0 0 0 0 0 0
+-- hyphenator      |              4i0e0                 0 4 1 0 4 1 4 0 0 0 0 0
+-- hyphenator      |              0i0e3d0e0             0 4 1 0 4 1 4 0 3 0 0 0
+-- hyphenator      |                0e1d0               0 4 1 0 4 1 4 0 3 0 0 0
+-- hyphenator      |                  1d0e0             0 4 1 0 4 1 4 0 3 0 0 0
+-- hyphenator      |                  0d0e2s0           0 4 1 0 4 1 4 0 3 0 2 0
+-- hyphenator      |                      4s0.          0 4 1 0 4 1 4 0 3 0 4 0
+-- hyphenator      | .0n4o1g0a4l1w4i0e3d0e4s0.         . n o-g a l-w i e-d e s .
+-- hyphenator      |
+-- mtx-patterns    | nl 3 3 : nogalwiedes : nogal-wie-des
+
+function scripts.patterns.hyphenate()
+    require("lang-hyp")
+    local traditional   = languages.hyphenators.traditional
+    local left          = tonumber(environment.arguments.left)  or 3
+    local right         = tonumber(environment.arguments.right) or 3
+    local language      = environment.arguments.language or "us"
+    local dictionary    = traditional.loadpatterns(language)
+    local words         = environment.files
+    local specification = {
+        leftcharmin     = left,
+        rightcharmin    = right,
+        leftchar        = false,
+        rightchar       = false,
+    }
+    trackers.enable("hyphenator.steps")
+    for i=1,#words do
+        local word = words[i]
+        report("%s %s %s : %s : %s",
+            language, left, right,
+            word,
+            traditional.injecthyphens(dictionary,word,specification)
+        )
+    end
+end
+
 if environment.argument("check") then
     scripts.patterns.prepare()
     scripts.patterns.check()
@@ -633,6 +678,8 @@ elseif environment.argument("convert") then
     scripts.patterns.convert()
 elseif environment.argument("words") then
     scripts.patterns.words() -- for the moment here
+elseif environment.argument("hyphenate") then
+    scripts.patterns.hyphenate() -- for the moment here
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else

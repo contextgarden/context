@@ -1077,12 +1077,18 @@
 %D \stoptyping
 
 \unexpanded\def\dohyphenatednextbox
-  {\ctxcommand{hyphenatedlist(tex.box[\number\nextbox].list)}%
+  {\ctxcommand{hyphenatedlist(\number\nextbox)}%
    \unhbox\nextbox}
 
 \unexpanded\def\hyphenatedword  {\dowithnextboxcs\dohyphenatednextbox\hbox}
 \unexpanded\def\hyphenatedpar   {\dowithnextboxcs\dohyphenatednextbox\hbox}
 \unexpanded\def\hyphenatedfile#1{\dowithnextboxcs\dohyphenatednextbox\hbox{\readfile{#1}\donothing\donothing}}
+
+\unexpanded\def\dohyphenatednextboxcolor
+  {\ctxcommand{hyphenatedlist(\number\nextbox,true)}%
+   \unhbox\nextbox}
+
+\unexpanded\def\hyphenatedcoloredword{\dowithnextboxcs\dohyphenatednextboxcolor\hbox}
 
 % D \starttyping
 % D \hyphenatedhack{\kern-.25em_}{alongword}
