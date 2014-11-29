@@ -231,6 +231,13 @@
 \installcorenamespace{naturaltableref}
 \installcorenamespace{naturaltableset}
 \installcorenamespace{naturaltablecell}
+\installcorenamespace{naturaltablesqueeze}
+
+\letvalue{\??naturaltablesqueeze        }\donefalse
+\letvalue{\??naturaltablesqueeze\v!fit  }\donetrue
+\letvalue{\??naturaltablesqueeze\v!fixed}\donetrue
+\letvalue{\??naturaltablesqueeze\v!broad}\donetrue
+\letvalue{\??naturaltablesqueeze\v!local}\donetrue
 
 \def\tabl_ntb_let_gal{\global\expandafter\let\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
 \def\tabl_ntb_get_gal{\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
@@ -294,15 +301,22 @@
 % \def\tabl_ntb_row_state#1#2{\ifcsname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname\zerocount\else\plusone\fi}
 % \def\tabl_ntb_col_state#1#2{\ifcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname\zerocount\else\plusone\fi}
 
+%def\tabl_ntb_set_spn     #1{\expandafter\let\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname \!!plusone}
+%def\tabl_ntb_spn_doifelse#1{\doifelse      {\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname}\!!plusone}
+
+%def\tabl_ntb_set_spn     #1{\setvalue     {\??naturaltablespn\m_tabl_tbl_level:\number#1}{1}}
+%def\tabl_ntb_spn_doifelse#1{\doifelsevalue{\??naturaltablespn\m_tabl_tbl_level:\number#1}{1}}
+
+\def\tabl_ntb_let_ref   #1#2{\expandafter\glet\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_set_ref   #1#2{\expandafter\xdef\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_get_ref   #1#2{\ifcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\fi}
+
 \def\tabl_ntb_set_spn     #1{\expandafter\let\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname \!!plusone}
-\def\tabl_ntb_spn_doifelse#1{\doifelse      {\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname}\!!plusone}
-
-\def\tabl_ntb_set_spn     #1{\setvalue     {\??naturaltablespn\m_tabl_tbl_level:\number#1}{1}}
-\def\tabl_ntb_spn_doifelse#1{\doifelsevalue{\??naturaltablespn\m_tabl_tbl_level:\number#1}{1}}
-
-\def\tabl_ntb_let_ref#1#2{\expandafter\glet\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_set_ref#1#2{\expandafter\xdef\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_get_ref#1#2{\ifcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\fi}
+\def\tabl_ntb_spn_doifelse#1{\ifcase0\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname\relax % could be inlined
+                               \expandafter\secondoftwoarguments
+                             \else
+                               \expandafter\firstoftwoarguments
+                             \fi}
 
 % keep for a while:
 %
@@ -562,7 +576,9 @@
    % local
    \ifcsname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname\fi
    % done
-   \xdef\m_tabl_ntb_after_split{\naturaltablelocalparameter\c!after}% to be checked
+   \xdef\m_tabl_ntb_before_split{\naturaltablelocalparameter\c!before}% to be checked
+   \xdef\m_tabl_ntb_after_split {\naturaltablelocalparameter\c!after }% to be checked
+   \xdef\m_tabl_ntb_same_page   {\naturaltablelocalparameter\c!samepage}%
    \relax}
 
 % we cannot use +n (checking on number/last/first would slow down too much)
@@ -578,7 +594,9 @@
 % \dorecurse{10}{\bTR \dorecurse{6}{\bTD xxx \eTD} \eTR}
 % \eTABLE
 
-\let\m_tabl_ntb_after_split\relax
+\let\m_tabl_ntb_before_split\empty
+\let\m_tabl_ntb_after_split \empty
+\let\m_tabl_ntb_same_page   \empty
 
 % split + page:
 %
@@ -1106,7 +1124,18 @@
 \let\m_tabl_ntb_saved_col\!!zerocount
 
 \def\tabl_ntb_row_align_start
-  {\noalign{\tabl_ntb_row_align_reset}%
+  {\noalign
+     {\tabl_ntb_row_align_reset
+      \bgroup % protect local vars
+        \m_tabl_ntb_before_split
+      \egroup
+      \ifx\m_tabl_ntb_same_page\v!before
+        \unpenalty
+        \nobreak
+      \else\ifx\m_tabl_ntb_same_page\v!both
+        \unpenalty
+        \nobreak
+      \fi\fi}%
    \tabl_ntb_column_next
    \kern\dimexpr\naturaltablelocalparameter\c!leftmargindistance-\naturaltablelocalparameter\c!columndistance\relax}
 
@@ -1122,7 +1151,14 @@
      {\nointerlineskip
       \ifnum\c_tabl_ntb_row>\c_tabl_ntb_n_of_head_lines
         \ifnum\tabl_ntb_get_nob\c_tabl_ntb_row=\zerocount
-          \allowbreak
+          \unpenalty
+          \ifx\m_tabl_ntb_same_page\v!after
+            \nobreak
+          \else\ifx\m_tabl_ntb_same_page\v!both
+            \nobreak
+          \else
+            \allowbreak
+          \fi\fi
         \fi
       \else
         \allowbreak % else no proper head split off
@@ -1134,8 +1170,10 @@
         \scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
         \ifnum\scratchcounter>\c_tabl_ntb_n_of_hdnx_lines\relax
           \ifnum\scratchcounter<\c_tabl_ntb_maximum_row\relax
-            \doifsomething{\naturaltablelocalparameter\c!spaceinbetween}
-               {\blank[\naturaltablelocalparameter\c!spaceinbetween]}%
+            \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
+            \ifx\p_spaceinbetween\empty\else
+              \blank[\p_spaceinbetween]%
+            \fi
           \fi
         \fi
       \egroup}}
@@ -1425,6 +1463,7 @@
    \def\tsplitbeforeresult    {\beforeTABLEsplitbox}%
    \def\tsplitafterresult     {\afterTABLEsplitbox}%
    \def\tsplitafter           {\m_tabl_ntb_after_split}%
+   \def\tsplitbefore          {\m_tabl_ntb_before_split}% supported ?
    \setbox\tsplitcontent\vbox{#1}%
    \ifmultipleTBLheads
      \dorecurse\c_tabl_ntb_n_of_head_lines
@@ -1434,8 +1473,10 @@
        {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
         \setbox\tsplitnext\vbox{\unvcopy\tsplitnext\unvcopy\scratchbox}}%
    \fi
-   \doifsomething{\naturaltablelocalparameter\c!spaceinbetween}
-     {\def\tsplitinbetween{\blank[\naturaltablelocalparameter\c!spaceinbetween]}}%
+   \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
+   \ifx\p_spaceinbetween\empty\else
+     \blank[\p_spaceinbetween]%
+   \fi
    \def\postprocesstsplit{\postprocessTABLEsplitbox{\box\tsplitresult}}%
    \handletsplit}
 
@@ -1625,8 +1666,8 @@
    \ifdim\wd\scratchbox>\scratchdimen
      \ifsqueezeTBLspan
        \ifautosqueezeTBLspan
-         \doifinsetelse{\naturaltablelocalparameter\c!width}{\v!fit,\v!fixed,\v!broad,\v!local}
-           \donetrue \donefalse
+         \edef\p_width{\naturaltablelocalparameter\c!width}%
+         \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
        \else
          \donetrue
        \fi

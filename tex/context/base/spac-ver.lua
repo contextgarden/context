@@ -42,6 +42,7 @@ local nodes, node, trackers, attributes, context, commands, tex =  nodes, node, 
 
 local texlists    = tex.lists
 local texgetdimen = tex.getdimen
+local texsetdimen = tex.setdimen
 local texnest     = tex.nest
 
 local variables   = interfaces.variables
@@ -109,6 +110,7 @@ local nodepool            = nuts.pool
 local new_penalty         = nodepool.penalty
 local new_kern            = nodepool.kern
 local new_rule            = nodepool.rule
+local new_glue            = nodepool.glue
 local new_gluespec        = nodepool.gluespec
 
 local nodecodes           = nodes.nodecodes
@@ -1000,50 +1002,51 @@ end
 --
 -- we could inject a vadjust to force a recalculation .. a mess
 --
--- so, the next is far from robust and okay but for the moment this overlaying
--- has to do
+-- So, the next is far from robust and okay but for the moment this overlaying
+-- has to do. Always test this with the examples in spec-ver.mkvi!
 
-local function check_experimental_overlay(head,current) -- todo
+local function check_experimental_overlay(head,current)
     local p = nil
     local c = current
     local n = nil
 
  -- setfield(head,"prev",nil) -- till we have 0.79 **
 
-    local function overlay(p,n,s,mvl)
+    local function overlay(p,n,mvl)
         local p_ht  = getfield(p,"height")
         local p_dp  = getfield(p,"depth")
         local n_ht  = getfield(n,"height")
-        local delta = n_ht + s + p_dp
-        if trace_vspacing then
-            report_vspacing("overlaying, prev height: %p, prev depth: %p, next height: %p, skips: %p, move up: %p",p_ht,p_dp,n_ht,s,delta)
-        end
-        if n_ht > p_ht then
-            -- we should adapt pagetotal ! (need a hook for that)
-            setfield(p,"height",n_ht)
-        end
-        -- make kern
-        local k = new_kern(-delta)
-        if head == current then
-            head = k -- as it will get appended, else we loose the kern
-        end
-        -- remove rubish
+        local skips = 0
+        --
+        -- We deal with this at the tex end .. we don't see spacing .. enabling this code
+        -- is probably harmless btu then we need to test it.
+        --
         local c = getnext(p)
         while c and c ~= n do
-            local nc = getnext(c)
-            if c == head then
-                head = nc
+            local id = getid(c)
+            if id == glue_code then
+                skips = skips + getfield(getfield(c,"glue_spec"),"width")
+            elseif id == kern_code then
+                skips = skips + getfield(c,"kern")
             end
-            free_node(c)
-            c = nc
+            c = getnext(c)
         end
-        -- insert kern .. brr the kern is somehow not seen unless we also inject a penalty
-        setfield(p,"next",k)
-        setfield(k,"prev",p)
-        setfield(k,"next",n)
-        setfield(n,"prev",k)
-        -- done
-        return head, n
+        --
+        local delta = n_ht + skips + p_dp
+        texsetdimen("global","d_spac_overlay",-delta) -- for tracing
+        local k = new_kern(-delta)
+        if n_ht > p_ht then
+            -- we should adapt pagetotal ! (need a hook for that) .. now we have the wrong pagebreak
+            setfield(p,"height",n_ht)
+        end
+        insert_node_before(head,n,k)
+        if p == head then
+            head = k
+        end
+        if trace_vspacing then
+            report_vspacing("overlaying, prev height: %p, prev depth: %p, next height: %p, skips: %p, move up: %p",p_ht,p_dp,n_ht,skips,delta)
+        end
+        return remove_node(head,current,true)
     end
 
     -- goto next line
@@ -1077,38 +1080,23 @@ local function check_experimental_overlay(head,current) -- todo
             if a_snapmethod == a_snapvbox then
                 -- quit, we're not on the mvl
             else
-                -- messy
                 local c = tonut(texlists.page_head)
-                local s = 0
-                while c do
+                while c and c ~= n do
                     local id = getid(c)
-                    if id == glue_code then
-                        if p then
-                            s = s + getfield(getfield(c,"glue_spec"),"width")
-                        end
-                    elseif id == kern_code then
-                        if p then
-                            s = s + getfield(c,"kern")
-                        end
-                    elseif id == penalty_code then
-                        -- skip (actually, remove)
-                    elseif id == hlist_code then
+                    if id == hlist_code then
                         p = c
-                        s = 0
-                    else
-                        p = nil
-                        s = 0
                     end
                     c = getnext(c)
                 end
                 if p and p ~= n then
-                    return overlay(p,n,s,true)
+                    return overlay(p,n,true)
                 end
             end
         elseif p ~= n then
-            return overlay(p,n,0,false)
+            return overlay(p,n,false)
         end
     end
+    -- in fact, we could try again later ... so then no remove (a few tries)
     return remove_node(head, current, true)
 end
 

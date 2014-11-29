@@ -259,6 +259,7 @@
 
 \unexpanded\def\tabl_x_process
   {\begingroup % *
+   \dontcomplain % for the moment here till we figure out where we get the overflow
    \doifsomething{\xtableparameter\c!bodyfont}
      {\setupbodyfont[\xtableparameter\c!bodyfont]}%
    \setbox\scratchbox\vbox
@@ -421,7 +422,9 @@
 \unexpanded\def\tabl_x_start_row_construct_yes[#settings]%
   {\setupcurrentxtable[#settings]%
    \dostarttagged\t!tablerow\empty
-   \ctxcommand{x_table_next_row()}}
+   \ctxcommand{x_table_next_row{
+      samepage = "\xtableparameter\c!samepage",
+   }}}
 
 \unexpanded\def\tabl_x_start_row_construct_nop
   {\dostarttagged\t!tablerow\empty

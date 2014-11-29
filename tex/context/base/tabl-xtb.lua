@@ -41,6 +41,8 @@ local format                  = string.format
 local concat                  = table.concat
 local points                  = number.points
 
+local todimen                 = string.todimen
+
 local context_beginvbox       = context.beginvbox
 local context_endvbox         = context.endvbox
 local context_blank           = context.blank
@@ -83,6 +85,10 @@ local v_repeat                = variables["repeat"]
 local v_max                   = variables.max
 local v_fixed                 = variables.fixed
 local v_auto                  = variables.auto
+local v_before                = variables.before
+local v_after                 = variables.after
+local v_both                  = variables.both
+local v_samepage              = variables.samepage
 
 local xtables                 = { }
 typesetters.xtables           = xtables
@@ -122,6 +128,7 @@ function xtables.create(settings)
     local fixedcolumns   = { }
     local frozencolumns  = { }
     local options        = { }
+    local rowproperties  = { }
     data = {
         rows           = rows,
         widths         = widths,
@@ -140,6 +147,7 @@ function xtables.create(settings)
         currentrow     = 0,
         currentcolumn  = 0,
         settings       = settings or { },
+        rowproperties  = rowproperties,
     }
     local function add_zero(t,k)
         t[k] = 0
@@ -200,7 +208,7 @@ function xtables.create(settings)
 
 end
 
-function xtables.initialize_reflow_width(option)
+function xtables.initialize_reflow_width(option,width)
     local r = data.currentrow
     local c = data.currentcolumn + 1
     local drc = data.rows[r][c]
@@ -365,6 +373,8 @@ function xtables.initialize_reflow_height()
     elseif data.autowidths[c] then
         -- width has changed so we need to recalculate the height
         texsetcount("c_tabl_x_skip_mode",0)
+    elseif data.fixedcolumns[c] then
+        texsetcount("c_tabl_x_skip_mode",0) -- new
     else
         texsetcount("c_tabl_x_skip_mode",1)
     end
@@ -725,6 +735,7 @@ function xtables.construct()
     local rowdistance = settings.rowdistance
     local leftmargindistance = settings.leftmargindistance
     local rightmargindistance = settings.rightmargindistance
+    local rowproperties = data.rowproperties
     -- ranges can be mixes so we collect
 
     if trace_xtable then
@@ -817,13 +828,28 @@ function xtables.construct()
                     result[nofr][4] = true
                 end
                 nofr = nofr + 1
+                local rp = rowproperties[r]
                 result[nofr] = {
                  -- hpack_node_list(list),
                     hpack_node_list(list,0,"exactly","TLT"), -- otherwise weird lap
                     size,
                     i < nofrange and rowdistance > 0 and rowdistance or false, -- might move
-                    false
+                    false,
+                    rp and rp.samepage or false,
                 }
+            end
+        end
+        if nofr > 0 then
+            -- the [5] slot gets the after break
+            result[1]   [5] = false
+            result[nofr][5] = false
+            for i=2,nofr-1 do
+                local r = result[i]
+                if r == v_both or r == v_before then
+                    result[i-1][5] = true
+                elseif r == v_after then
+                    result[i][5] = true
+                end
             end
         end
         return result
@@ -859,6 +885,12 @@ local function inject(row,copy,package)
         context_nointerlineskip() -- figure out a better way
         if row[4] then
             -- nothing as we have a span
+        elseif row[5] then
+            if row[3] then
+                context_blank { v_samepage, row[3] .. "sp" }
+            else
+                context_blank { v_samepage }
+            end
         elseif row[3] then
             context_blank { row[3] .. "sp" } -- why blank ?
         else
@@ -1104,11 +1136,13 @@ function xtables.cleanup()
     data = table.remove(stack)
 end
 
-function xtables.next_row()
+function xtables.next_row(specification)
     local r = data.currentrow + 1
     data.modes[r] = texgetcount("c_tabl_x_mode")
     data.currentrow = r
     data.currentcolumn = 0
+    data.rowproperties[r] = specification
+
 end
 
 -- eventually we might only have commands

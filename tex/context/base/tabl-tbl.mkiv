@@ -1100,20 +1100,20 @@
 %   {\bgroup
 %    \edef\currenttabulationparent{#1}%
 %    \let\currenttabulation\currenttabulationparent
-%    \doifnextoptionalcselse\tabl_start_defined_yes\tabl_start_defined_nop}
-%
-% \def\tabl_start_defined_yes[#1]%
-%   {\edef\currenttabulation{\currenttabulation:#1}%
-%    \tabl_tabulate_start_building}
-%
-% \def\tabl_start_defined_nop
-%   {\tabl_tabulate_start_building}
+%    \dodoubleargument\tabl_start_defined_indeed}
 
 \unexpanded\def\tabl_start_defined[#1]%
   {\bgroup
    \edef\currenttabulationparent{#1}%
    \let\currenttabulation\currenttabulationparent
-   \dodoubleargument\tabl_start_defined_indeed}
+   \edef\p_format{\tabulationparameter\c!format}%
+   \ifx\p_format\v!none
+     % this is special case: we need to define the generic english
+     % \starttabulate in other interfaces as well
+     \expandafter\dodoubleempty   \expandafter\tabl_start_regular
+   \else
+     \expandafter\dodoubleargument\expandafter\tabl_start_defined_indeed
+   \fi}
 
 \def\tabl_start_defined_indeed
   {\iffirstargument
@@ -1144,26 +1144,11 @@
 
 \unexpanded\setuvalue{\e!start\v!tabulate}%
   {\bgroup % whole thing
+   \let\currenttabulationparent\empty
    \dodoubleempty\tabl_start_regular}
 
-% \def\tabl_start_regular[#1][#2]%
-%   {%\let\currenttabulationparent\v!tabulate
-%    \let\currenttabulationparent\empty
-%    \let\currenttabulation\currenttabulationparent
-%    \def\p_format{#1}%
-%    \ifx\p_format\empty
-%      \def\p_format{|l|p|}%
-%    \fi
-%    \lettabulationparameter\c!format\p_format
-%    \ifsecondargument
-%      \setupcurrenttabulation[#2]%
-%    \fi
-%    \tabl_tabulate_start_building}
-
 \def\tabl_start_regular
-  {%\let\currenttabulationparent\v!tabulate
-   \let\currenttabulationparent\empty
-   \let\currenttabulation\currenttabulationparent
+  {\let\currenttabulation\currenttabulationparent
    \ifsecondargument
      \expandafter\tabl_start_regular_two
    \else
@@ -2451,5 +2436,11 @@
 %D \NC left \NC middle \NC middle \NC right \NC \NR
 %D \stopwhatever
 %D \stoptyping
+
+%D This is needed because we soemtimes use the english command in
+%D tracing macros. In fact, most detailed tracing macros that
+%D are done with \LUA\ only work in the english interface anyway.
+
+\definetabulate[tabulate] \setuptabulate[tabulate][\c!format=\v!none] % so no \v! here
 
 \protect \endinput

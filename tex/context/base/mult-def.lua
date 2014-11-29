@@ -1275,6 +1275,10 @@ return {
    ["pe"]="تعریف‌مترادفها",
    ["ro"]="definestesinonim",
   },
+  ["placelistofsynonyms"]={
+    ["en"]="placelistofsynonyms",
+    ["nl"]="plaatslijstmetsynoniemen",
+  },
   ["definetabletemplate"]={
    ["cs"]="definujsablonutabulky",
    ["de"]="definieretabellenvorlage",
@@ -4509,16 +4513,6 @@ return {
    ["pe"]="بارگذاری‌خط",
    ["ro"]="seteazarigla",
   },
-  ["setups"]={
-   ["cs"]="nastaveni",
-   ["de"]="einstellungen",
-   ["en"]="setups",
-   ["fr"]="reglages",
-   ["it"]="impostazioni",
-   ["nl"]="instellingen",
-   ["pe"]="بارگذاریها",
-   ["ro"]="setari",
-  },
   ["setupscreens"]={
    ["cs"]="nastavrastr",
    ["de"]="stellerasterein",
@@ -5038,6 +5032,30 @@ return {
    ["nl"]="startuitlijnen",
    ["pe"]="شروع‌تنظیم",
    ["ro"]="startaliniere",
+  },
+  ["starttextbackground"]={
+   ["en"]="starttextbackground",
+   ["nl"]="starttekstachtergrond",
+  },
+  ["stoptextbackground"]={
+   ["en"]="stoptextbackground",
+   ["nl"]="stoptekstachtergrond",
+  },
+  ["setuptextbackground"]={
+   ["en"]="setuptextbackground",
+   ["nl"]="steltekstachtergrondin",
+  },
+  ["definetextbackground"]={
+   ["en"]="definetextbackground",
+   ["nl"]="definieertekstachtergrond",
+  },
+  ["startframed"]={
+   ["en"]="startframed",
+   ["nl"]="startomlijnd",
+  },
+  ["stopframed"]={
+   ["en"]="stopframed",
+   ["nl"]="stopomlijnd",
   },
   ["startbackground"]={
    ["cs"]="startpozadi",
@@ -6454,6 +6472,10 @@ return {
   },
  },
  ["constants"]={
+  ["setups"]={
+   ["comment"]="no translations",
+   ["en"]="setups",
+  },
   -- select/simplefonts
   ["regularfont"]        ={ ["en"]="regularfont" },
   ["boldfont"]           ={ ["en"]="boldfont" },
@@ -10136,16 +10158,6 @@ return {
    ["pe"]="قراربده",
    ["ro"]="set",
   },
-  ["setups"]={
-   ["cs"]="setups",
-   ["de"]="setups",
-   ["en"]="setups",
-   ["fr"]="reglages",
-   ["it"]="setups",
-   ["nl"]="setups",
-   ["pe"]="بارگذاریها",
-   ["ro"]="setups",
-  },
   ["shrink"]={
    ["en"]="shrink",
    ["nl"]="krimp",
@@ -11405,6 +11417,10 @@ return {
   },
  },
  ["variables"]={
+  ["setups"]={
+   ["comment"]="no translations",
+   ["en"]="setups",
+  },
   ["followingpage"]={
    ["en"]="followingpage",
    ["nl"]="opvolgendepagina",
@@ -15504,16 +15520,6 @@ return {
    ["nl"]="aanelkaar",
    ["pe"]="تنگ‌هم",
    ["ro"]="serried",
-  },
-  ["setups"]={
-   ["cs"]="einstellungen",
-   ["de"]="impostazioni",
-   ["en"]="setups",
-   ["fr"]="reglages",
-   ["it"]="nastaveni",
-   ["nl"]="instellingen",
-   ["pe"]="بارگذاریها",
-   ["ro"]="setari",
   },
   ["sheet"]={
    ["cs"]="sheet",

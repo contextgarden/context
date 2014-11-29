@@ -1915,13 +1915,21 @@
      \fi\fi
    \relax}
 
-%     \startitemize[n]
-%         \item \input zapf
-%         \item \startitemize[a]
-%             \item \input knuth
-%         \stopitemize
-%     \stopitemize
+% used in itemize ... always test this
 
+\newdimen\d_spac_overlay
+
+\def\spac_overlay_lines
+  {\blank[\v!back,\v!overlay]%
+   \nointerlineskip}
+
+% \startitemize[n]
+%     \item \input zapf
+%     \item \startitemize[a]
+%         \item \input knuth
+%     \stopitemize
+% \stopitemize
+%
 % \strut \hfill first line \blank[overlay] second line \hfill \strut
 %
 % \ruledvbox {
@@ -1929,6 +1937,9 @@
 %     line 2 \hfill \strut \blank[overlay]
 %     \strut \hfill line 3 \hfill \strut
 % }
+%
+% \dorecurse{50}
+%   {\startitemize[n] \startitem \startitemize[a] \item #1 \stopitemize \stopitem \stopitemize}
 
 \definevspacing[\v!preference][penalty:-500]  % goodbreak
 \definevspacing[\v!samepage]  [penalty:10000] % nobreak

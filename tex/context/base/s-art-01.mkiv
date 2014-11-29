@@ -2,7 +2,7 @@
 
 \startmodule[art-01]
 
-\definemeasure [article:margin]  [\paperheight/15]
+\definemeasure [article:margin]  [\paperheight/20] % was 15, see xtables-mkiv for results
 \definemeasure [overview:margin] [\paperheight/30]
 
 \definelayout
@@ -10,7 +10,7 @@
   [\c!topspace=\measure{article:margin},
    \c!bottomspace=\measure{article:margin},
    \c!backspace=\measure{article:margin},
-   \c!header=\measure{overview:margin},
+   \c!header=\measure{article:margin},
    \c!footer=0pt,
    \c!width=\v!middle,
    \c!height=\v!middle]

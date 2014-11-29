@@ -292,18 +292,28 @@
 
 \installcorenamespace{mixedcolumnsseparator}
 
-\setvalue{\??mixedcolumnsseparator\v!rule}%
-  {\starttextproperties
-   \usemixedcolumnscolorparameter\c!rulecolor
-   \vrule\s!width\mixedcolumnsparameter\c!rulethickness
-   \stoptextproperties}
+\unexpanded\def\installmixedcolumnseparator#1#2%
+  {\setvalue{\??mixedcolumnsseparator#1}{#2}}
+
+\installmixedcolumnseparator\v!rule
+  {\vrule\mixedcolumnsparameter\c!rulethickness\relax}
 
 \unexpanded\def\page_mix_command_inject_separator
-  {\bgroup
+  {\begingroup
+   \setbox\scratchbox\hbox to \zeropoint \bgroup
+     \hss
+     \starttextproperties
+     \usemixedcolumnscolorparameter\c!rulecolor
+     \csname\??mixedcolumnsseparator\p_separator\endcsname % was \c!rule
+     \stoptextproperties
+     \hss
+   \egroup
+   \ht\scratchbox\zeropoint
+   \dp\scratchbox\zeropoint
    \hss
-   \csname\??mixedcolumnsseparator\mixedcolumnsparameter\c!separator\endcsname % was \c!rule
+   \box\scratchbox
    \hss
-   \egroup}
+   \endgroup}
 
 %D We've now arrived at the real code. The start command mostly sets up the
 %D environment and variables that are used in the splitter. One of the last
@@ -549,6 +559,31 @@
    }}%
    \deadcycles\zerocount}
 
+\newdimen\mixedcolumnseparatorheight
+\newdimen\mixedcolumnseparatordepth
+\newdimen\mixedcolumnseparatorwidth
+
+\def\page_mix_routine_package_step
+  {% needs packaging anyway
+   \setbox\scratchbox\page_mix_command_package_column
+   \page_marks_synchronize_column\plusone\c_page_mix_n_of_columns\recurselevel\scratchbox
+   % backgrounds
+   \anch_mark_column_box\scratchbox
+   % for the moment a quick and dirty patch .. we need to go into the box (hence the \plusone) .. a slowdowner
+   \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_mix_n_of_columns\plusone
+   % the framed needs a reset of strut, align, setups etc
+   \mixedcolumnseparatorheight\ht\scratchbox
+   \mixedcolumnseparatordepth \dp\scratchbox
+   \inheritedmixedcolumnsframedbox\currentmixedcolumns\scratchbox
+   % optional
+   \ifnum\recurselevel<\c_page_mix_n_of_columns
+     \ifcsname\??mixedcolumnsseparator\p_separator\endcsname
+       \page_mix_command_inject_separator
+     \else
+       \hss
+     \fi
+   \fi}
+
 \unexpanded\def\page_mix_routine_package
   {\ctxcommand{mixfinalize()}%
    \setbox\b_page_mix_collected\vbox \bgroup
@@ -560,21 +595,9 @@
      \fi
      \hskip\d_page_mix_leftskip
      \page_mix_hbox to \d_page_mix_max_width \bgroup
-       \dorecurse\c_page_mix_n_of_columns{%
-         % needs packaging anyway
-         \setbox\scratchbox\page_mix_command_package_column
-         \page_marks_synchronize_column\plusone\c_page_mix_n_of_columns\recurselevel\scratchbox
-         % backgrounds
-         \anch_mark_column_box\scratchbox
-         % for the moment a quick and dirty patch .. we need to go into the box (hence the \plusone) .. a slowdowner
-         \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_mix_n_of_columns\plusone
-         % the framed needs a reset of strut, align, setups etc
-         \inheritedmixedcolumnsframedbox\currentmixedcolumns\scratchbox
-         % optional
-         \ifnum\recurselevel<\c_page_mix_n_of_columns
-           \page_mix_command_inject_separator
-         \fi
-       }%
+       \edef\p_separator{\mixedcolumnsparameter\c!separator}%
+       \mixedcolumnseparatorwidth\d_page_mix_distance % \mixedcolumnsparameter\c!rulethickness\relax
+       \dorecurse\c_page_mix_n_of_columns\page_mix_routine_package_step
      \egroup
    \egroup}
 

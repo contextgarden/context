@@ -425,7 +425,7 @@
 		<cd:variable name='september' value='سپتامبر'/>
 		<cd:variable name='serif' value='سریف'/>
 		<cd:variable name='serried' value='تنگ‌هم'/>
-		<cd:variable name='setups' value='بارگذاریها'/>
+		<cd:variable name='setups' value='setups'/>
 		<cd:variable name='sheet' value='ورقه'/>
 		<cd:variable name='short' value='short'/>
 		<cd:variable name='simplefonts' value='simplefonts'/>
@@ -1012,7 +1012,7 @@
 		<cd:constant name='separatorcolor' value='separatorcolor'/>
 		<cd:constant name='separatorstyle' value='separatorstyle'/>
 		<cd:constant name='set' value='قراربده'/>
-		<cd:constant name='setups' value='بارگذاریها'/>
+		<cd:constant name='setups' value='setups'/>
 		<cd:constant name='shrink' value='shrink'/>
 		<cd:constant name='side' value='کنار'/>
 		<cd:constant name='sidealign' value='تنظیم‌کنار'/>
@@ -1297,6 +1297,7 @@
 		<cd:command name='definetabletemplate' value='تعریف‌الگوی‌جدول'/>
 		<cd:command name='definetabulate' value='تعریف‌جدول‌بندی'/>
 		<cd:command name='definetext' value='تعریف‌متن'/>
+		<cd:command name='definetextbackground' value='definetextbackground'/>
 		<cd:command name='definetextposition' value='تعریف‌مکان‌متن'/>
 		<cd:command name='definetextvariable' value='تعریف‌متغیرمتن'/>
 		<cd:command name='definetype' value='تعریف‌تایپ'/>
@@ -1466,6 +1467,7 @@
 		<cd:command name='placeheadtext' value='درج‌متن‌سر'/>
 		<cd:command name='placelegend' value='درج‌راهنما'/>
 		<cd:command name='placelist' value='درج‌لیست'/>
+		<cd:command name='placelistofsynonyms' value='placelistofsynonyms'/>
 		<cd:command name='placelocalfootnotes' value='درج‌پانوشتهای‌موضعی'/>
 		<cd:command name='placelogos' value='درج‌آرمها'/>
 		<cd:command name='placeongrid' value='درج‌در‌توری'/>
@@ -1618,7 +1620,6 @@
 		<cd:command name='setupregister' value='بارگذاری‌ثبت'/>
 		<cd:command name='setuprotate' value='بارگذاری‌دوران'/>
 		<cd:command name='setuprule' value='بارگذاری‌خط'/>
-		<cd:command name='setups' value='بارگذاریها'/>
 		<cd:command name='setupscreens' value='بارگذاری‌پرده‌ها'/>
 		<cd:command name='setupsection' value='بارگذاری‌بخش'/>
 		<cd:command name='setupsectionblock' value='بارگذاری‌بلوک‌بخش'/>
@@ -1636,6 +1637,7 @@
 		<cd:command name='setuptables' value='بارگذاری‌جدولها'/>
 		<cd:command name='setuptabulate' value='بارگذاری‌جدول‌بندی'/>
 		<cd:command name='setuptext' value='بارگذاری‌متن'/>
+		<cd:command name='setuptextbackground' value='setuptextbackground'/>
 		<cd:command name='setuptextposition' value='بارگذاری‌مکان‌متن'/>
 		<cd:command name='setuptextrules' value='بارگذاری‌خطهای‌متن'/>
 		<cd:command name='setuptexttexts' value='بارگذاری‌متن‌متنها'/>
@@ -1682,6 +1684,7 @@
 		<cd:command name='startdocument' value='شروع‌نوشتار'/>
 		<cd:command name='startenvironment' value='شروع‌محیط'/>
 		<cd:command name='startfigure' value='شروع‌شکل'/>
+		<cd:command name='startframed' value='startframed'/>
 		<cd:command name='startglobal' value='شروع‌سراسری'/>
 		<cd:command name='startline' value='شروع‌خط'/>
 		<cd:command name='startlinecorrection' value='شروع‌تصحیح‌خط'/>
@@ -1708,6 +1711,7 @@
 		<cd:command name='starttable' value='شروع‌جدول'/>
 		<cd:command name='starttables' value='شروع‌جدولها'/>
 		<cd:command name='starttext' value='شروع‌متن'/>
+		<cd:command name='starttextbackground' value='starttextbackground'/>
 		<cd:command name='starttextrule' value='شروع‌خط‌متن'/>
 		<cd:command name='startunpacked' value='شروع‌غیر‌فشرده'/>
 		<cd:command name='startversion' value='شروع‌نسخه'/>
@@ -1722,6 +1726,7 @@
 		<cd:command name='stopcomponent' value='پایان‌مولفه'/>
 		<cd:command name='stopdocument' value='پایان‌نوشتار'/>
 		<cd:command name='stopenvironment' value='پایان‌محیط'/>
+		<cd:command name='stopframed' value='stopframed'/>
 		<cd:command name='stopglobal' value='پایان‌سراسری'/>
 		<cd:command name='stopline' value='پایان‌خط'/>
 		<cd:command name='stoplinecorrection' value='پایان‌تصحیح‌خط'/>
@@ -1747,6 +1752,7 @@
 		<cd:command name='stoptable' value='پایان‌جدول'/>
 		<cd:command name='stoptables' value='پایان‌جدولها'/>
 		<cd:command name='stoptext' value='پایان‌متن'/>
+		<cd:command name='stoptextbackground' value='stoptextbackground'/>
 		<cd:command name='stoptextrule' value='پایان‌خط‌متن'/>
 		<cd:command name='stopunpacked' value='پایان‌غیرفشرده'/>
 		<cd:command name='stopversion' value='پایان‌نسخه'/>

@@ -425,7 +425,7 @@
 		<cd:variable name='september' value='zari'/>
 		<cd:variable name='serif' value='serif'/>
 		<cd:variable name='serried' value='semknuto'/>
-		<cd:variable name='setups' value='einstellungen'/>
+		<cd:variable name='setups' value='setups'/>
 		<cd:variable name='sheet' value='sheet'/>
 		<cd:variable name='short' value='short'/>
 		<cd:variable name='simplefonts' value='simplefonts'/>
@@ -1297,6 +1297,7 @@
 		<cd:command name='definetabletemplate' value='definujsablonutabulky'/>
 		<cd:command name='definetabulate' value='definujtabelaci'/>
 		<cd:command name='definetext' value='definujtext'/>
+		<cd:command name='definetextbackground' value='definetextbackground'/>
 		<cd:command name='definetextposition' value='definetextposition'/>
 		<cd:command name='definetextvariable' value='definetextvariable'/>
 		<cd:command name='definetype' value='definetype'/>
@@ -1466,6 +1467,7 @@
 		<cd:command name='placeheadtext' value='placeheadtext'/>
 		<cd:command name='placelegend' value='umistilegendu'/>
 		<cd:command name='placelist' value='umistiseznam'/>
+		<cd:command name='placelistofsynonyms' value='placelistofsynonyms'/>
 		<cd:command name='placelocalfootnotes' value='umistilokalnipoznamkypodcarou'/>
 		<cd:command name='placelogos' value='umistiloga'/>
 		<cd:command name='placeongrid' value='umistinamrizku'/>
@@ -1618,7 +1620,6 @@
 		<cd:command name='setupregister' value='nastavrejstrik'/>
 		<cd:command name='setuprotate' value='nastavotoceni'/>
 		<cd:command name='setuprule' value='setuprule'/>
-		<cd:command name='setups' value='nastaveni'/>
 		<cd:command name='setupscreens' value='nastavrastr'/>
 		<cd:command name='setupsection' value='nastavsekci'/>
 		<cd:command name='setupsectionblock' value='nastavbloksekce'/>
@@ -1636,6 +1637,7 @@
 		<cd:command name='setuptables' value='nastavtabulky'/>
 		<cd:command name='setuptabulate' value='nastavtabelaci'/>
 		<cd:command name='setuptext' value='nastavtext'/>
+		<cd:command name='setuptextbackground' value='setuptextbackground'/>
 		<cd:command name='setuptextposition' value='setuptextposition'/>
 		<cd:command name='setuptextrules' value='nastavtextovelinky'/>
 		<cd:command name='setuptexttexts' value='nastavtexttexty'/>
@@ -1682,6 +1684,7 @@
 		<cd:command name='startdocument' value='startdokument'/>
 		<cd:command name='startenvironment' value='startprostredi'/>
 		<cd:command name='startfigure' value='startobraz'/>
+		<cd:command name='startframed' value='startframed'/>
 		<cd:command name='startglobal' value='startglobalni'/>
 		<cd:command name='startline' value='startradek'/>
 		<cd:command name='startlinecorrection' value='startkorekceradku'/>
@@ -1708,6 +1711,7 @@
 		<cd:command name='starttable' value='starttabulka'/>
 		<cd:command name='starttables' value='starttabulky'/>
 		<cd:command name='starttext' value='starttext'/>
+		<cd:command name='starttextbackground' value='starttextbackground'/>
 		<cd:command name='starttextrule' value='starttextovalinka'/>
 		<cd:command name='startunpacked' value='startnezhustene'/>
 		<cd:command name='startversion' value='startverze'/>
@@ -1722,6 +1726,7 @@
 		<cd:command name='stopcomponent' value='stopkomponenta'/>
 		<cd:command name='stopdocument' value='stopdokument'/>
 		<cd:command name='stopenvironment' value='stopprostredi'/>
+		<cd:command name='stopframed' value='stopframed'/>
 		<cd:command name='stopglobal' value='stopglobalni'/>
 		<cd:command name='stopline' value='stopradek'/>
 		<cd:command name='stoplinecorrection' value='stopkorekceradku'/>
@@ -1747,6 +1752,7 @@
 		<cd:command name='stoptable' value='stoptabulka'/>
 		<cd:command name='stoptables' value='stoptabulky'/>
 		<cd:command name='stoptext' value='stoptext'/>
+		<cd:command name='stoptextbackground' value='stoptextbackground'/>
 		<cd:command name='stoptextrule' value='stoptextovalinka'/>
 		<cd:command name='stopunpacked' value='stopnezhustene'/>
 		<cd:command name='stopversion' value='stopverze'/>

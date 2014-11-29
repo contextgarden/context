@@ -423,7 +423,9 @@
    \ifcsname\@@tblprefix\c!x\positivecol\c!y\positiverow\endcsname\csname\@@tblprefix\c!x\positivecol\c!y\positiverow\endcsname\fi
    \ifcsname\@@tblprefix\c!x\negativecol\c!y\negativerow\endcsname\csname\@@tblprefix\c!x\negativecol\c!y\negativerow\endcsname\fi
    % done
-   \global\letcscsname\@@tblsplitafter\csname\@@tbl\@@tbl\c!after\endcsname
+   \global\letcscsname\@@tblsplitafter   \csname\@@tbl\@@tbl\c!after   \endcsname
+   \global\letcscsname\@@tblsplitbefore  \csname\@@tbl\@@tbl\c!before  \endcsname
+   \global\letcscsname\@@tblsplitsamepage\csname\@@tbl\@@tbl\c!samepage\endcsname
    \relax}
 
 % we cannot use +n (checking on number/last/first would slow down too much)
@@ -439,7 +441,9 @@
 % \dorecurse{10}{\bTR \dorecurse{6}{\bTD xxx \eTD} \eTR}
 % \eTABLE
 
-\globallet\@@tblsplitafter\relax
+\globallet\@@tblsplitafter   \relax
+\globallet\@@tblsplitbefore  \relax
+\globallet\@@tblsplitsamepage\relax
 
 % split + page:
 %
@@ -851,7 +855,17 @@
   {\noalign
      {\global\advance\tblrow\plusone
       \global\tblcol\zerocount
-      \global\tblspn\zerocount}%
+      \global\tblspn\zerocount
+      \bgroup % protect local vars
+        \@@tblsplitbefore
+      \egroup
+      \ifx\@@tblsplitsamepage\v!before
+        \unpenalty
+        \nobreak
+      \else\ifx\@@tblsplitsamepage\v!both
+        \unpenalty
+        \nobreak
+      \fi\fi}%
    \nexttblcol
    \kern\dimexpr\tbltblleftmargindistance-\tbltblcolumndistance\relax}
 
@@ -862,7 +876,14 @@
      {\nointerlineskip
       \ifnum\tblrow>\noftblheadlines
         \ifnum\gettblnob\tblrow=\zerocount
-          \allowbreak
+          \unpenalty
+          \ifx\@@tblsplitsamepage\v!after
+            \nobreak
+          \else\ifx\@@tblsplitsamepage\v!both
+            \nobreak
+          \else
+            \allowbreak
+          \fi\fi
         \fi
       \else
         \allowbreak % else no proper head split off

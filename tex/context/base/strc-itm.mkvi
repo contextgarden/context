@@ -1036,23 +1036,7 @@
      \strc_itemgroups_start_item_next
    \fi
    \ifconditional\c_strc_itemgroups_concat
-     % % not good enough:
-     %
-     % \vskip-\lastskip   % we cannot use a \dimexpr here  because
-     % \vskip-\lineheight % then we loose the stretch and shrink
-     % \nobreak
-     %
-     % % new per 2014-11-16
-     %
-     % \blank[\v!overlay]% new per 2014-03-27
-     %
-     % % changed per 2014-11-16 as somehow we need a penalty to prevent the kern from disappearing
-     % % .. .kind of fight with default tex append-to-mvl behaviour .. so still not good enough
-     %
-    %\blank[\v!back]%
-     \nobreak
-     \blank[\v!overlay]%
-     %
+     \spac_overlay_lines % see spac-ver.mkvi ... a typical potential problem
      \setfalse\c_strc_itemgroups_concat
    \fi
    \dostarttagged\t!item\empty

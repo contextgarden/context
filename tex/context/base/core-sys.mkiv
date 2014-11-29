@@ -265,6 +265,17 @@
 \unexpanded\def\highlight[#1]%
   {\typo_highlights_indeed{#1}}
 
+\unexpanded\def\starthighlight[#1]%
+  {\begingroup
+   \def\currenthighlight{#1}%
+   \dostarttagged\t!highlight\currenthighlight
+   \usehighlightstyleandcolor\c!style\c!color
+   \dotaghighlight}
+
+\unexpanded\def\stophighlight
+  {\dostoptagged
+   \endgroup}
+
 \let\directhighlight\typo_highlights_indeed
 
 \unexpanded\def\defineexpandable

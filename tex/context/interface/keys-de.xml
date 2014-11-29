@@ -425,7 +425,7 @@
 		<cd:variable name='september' value='september'/>
 		<cd:variable name='serif' value='serif'/>
 		<cd:variable name='serried' value='kleinerabstand'/>
-		<cd:variable name='setups' value='impostazioni'/>
+		<cd:variable name='setups' value='setups'/>
 		<cd:variable name='sheet' value='sheet'/>
 		<cd:variable name='short' value='kurz'/>
 		<cd:variable name='simplefonts' value='simplefonts'/>
@@ -1297,6 +1297,7 @@
 		<cd:command name='definetabletemplate' value='definieretabellenvorlage'/>
 		<cd:command name='definetabulate' value='definieretabulator'/>
 		<cd:command name='definetext' value='definieretext'/>
+		<cd:command name='definetextbackground' value='definetextbackground'/>
 		<cd:command name='definetextposition' value='definetextposition'/>
 		<cd:command name='definetextvariable' value='definetextvariable'/>
 		<cd:command name='definetype' value='definetype'/>
@@ -1466,6 +1467,7 @@
 		<cd:command name='placeheadtext' value='placeheadtext'/>
 		<cd:command name='placelegend' value='platzierelegende'/>
 		<cd:command name='placelist' value='platziereliste'/>
+		<cd:command name='placelistofsynonyms' value='placelistofsynonyms'/>
 		<cd:command name='placelocalfootnotes' value='platzierelokalefussnoten'/>
 		<cd:command name='placelogos' value='platzierelogo'/>
 		<cd:command name='placeongrid' value='amgitterausrichten'/>
@@ -1618,7 +1620,6 @@
 		<cd:command name='setupregister' value='stelleregisterein'/>
 		<cd:command name='setuprotate' value='stelledrehenein'/>
 		<cd:command name='setuprule' value='setuprule'/>
-		<cd:command name='setups' value='einstellungen'/>
 		<cd:command name='setupscreens' value='stellerasterein'/>
 		<cd:command name='setupsection' value='stelleabschnittein'/>
 		<cd:command name='setupsectionblock' value='stelleabschnittsblockein'/>
@@ -1636,6 +1637,7 @@
 		<cd:command name='setuptables' value='stelletabellenein'/>
 		<cd:command name='setuptabulate' value='stelletabulatorein'/>
 		<cd:command name='setuptext' value='stelletextein'/>
+		<cd:command name='setuptextbackground' value='setuptextbackground'/>
 		<cd:command name='setuptextposition' value='setuptextposition'/>
 		<cd:command name='setuptextrules' value='stelletextumrissein'/>
 		<cd:command name='setuptexttexts' value='stelletexttexteein'/>
@@ -1682,6 +1684,7 @@
 		<cd:command name='startdocument' value='startdokument'/>
 		<cd:command name='startenvironment' value='startumgebung'/>
 		<cd:command name='startfigure' value='startabbildung'/>
+		<cd:command name='startframed' value='startframed'/>
 		<cd:command name='startglobal' value='startglobal'/>
 		<cd:command name='startline' value='startzeile'/>
 		<cd:command name='startlinecorrection' value='startzeilenkorrektur'/>
@@ -1708,6 +1711,7 @@
 		<cd:command name='starttable' value='starttabelle'/>
 		<cd:command name='starttables' value='starttabellen'/>
 		<cd:command name='starttext' value='starttext'/>
+		<cd:command name='starttextbackground' value='starttextbackground'/>
 		<cd:command name='starttextrule' value='starttextlinie'/>
 		<cd:command name='startunpacked' value='startgrosserdurchschuss'/>
 		<cd:command name='startversion' value='startversion'/>
@@ -1722,6 +1726,7 @@
 		<cd:command name='stopcomponent' value='stopkomponente'/>
 		<cd:command name='stopdocument' value='stopdokument'/>
 		<cd:command name='stopenvironment' value='stopumgebung'/>
+		<cd:command name='stopframed' value='stopframed'/>
 		<cd:command name='stopglobal' value='stopglobal'/>
 		<cd:command name='stopline' value='stopzeile'/>
 		<cd:command name='stoplinecorrection' value='stopzeilenkorrektur'/>
@@ -1747,6 +1752,7 @@
 		<cd:command name='stoptable' value='stoptabelle'/>
 		<cd:command name='stoptables' value='stoptabellen'/>
 		<cd:command name='stoptext' value='stoptext'/>
+		<cd:command name='stoptextbackground' value='stoptextbackground'/>
 		<cd:command name='stoptextrule' value='stoptextlinie'/>
 		<cd:command name='stopunpacked' value='stopgrosserdurchschuss'/>
 		<cd:command name='stopversion' value='stopversion'/>

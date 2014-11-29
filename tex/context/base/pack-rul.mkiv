@@ -804,6 +804,8 @@
 % \def\pack_framed_start_framed_indeed
 %   {\pack_framed_process_indeed
 %    \bgroup}
+%
+% no longer .. we also accept \startframed[tag]
 
 \unexpanded\def\pack_framed_process_framed[#1]%
   {\bgroup
@@ -820,17 +822,55 @@
    \pack_framed_initialize
    \dosingleempty\pack_framed_process_framed}
 
+% \unexpanded\def\startframed
+%   {\dosingleempty\pack_framed_start_framed}
+%
+% \def\pack_framed_start_framed[#1]%
+%   {\bgroup
+%    \advance\c_pack_framed_nesting\plusone
+%    \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
+%    \edef\currentframed{>\the\c_pack_framed_nesting}%
+%    \pack_framed_initialize
+%    \bgroup
+%    \iffirstargument
+%      \secondargumenttrue % dirty trick
+%      \setupcurrentframed[#1]% here !
+%    \fi
+%    \pack_framed_process_indeed
+%    \bgroup
+%    \ignorespaces}
+
 \unexpanded\def\startframed
   {\dosingleempty\pack_framed_start_framed}
 
 \def\pack_framed_start_framed[#1]%
   {\bgroup
-   \advance\c_pack_framed_nesting\plusone
+   \doifassignmentelse{#1}\pack_framed_start_framed_yes\pack_framed_start_framed_nop{#1}}
+
+\def\pack_framed_start_framed_yes#1%
+  {\advance\c_pack_framed_nesting\plusone
    \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
    \iffirstargument\secondargumenttrue\fi % dirty trick
    \edef\currentframed{>\the\c_pack_framed_nesting}%
    \pack_framed_initialize
-   \pack_framed_process_framed[#1]% can be inlined
+   \bgroup
+   \iffirstargument
+     \secondargumenttrue % dirty trick
+     \setupcurrentframed[#1]% here !
+   \fi
+   \pack_framed_process_indeed
+   \bgroup
+   \ignorespaces}
+
+\def\pack_framed_start_framed_nop#1%
+  {\edef\currentframed{#1}%
+   \dosingleempty\pack_framed_start_framed_nop_indeed}
+
+\def\pack_framed_start_framed_nop_indeed[#1]%
+  {\pack_framed_initialize
+   \bgroup
+   \setupcurrentframed[#1]% here !
+   \pack_framed_process_indeed
    \bgroup
    \ignorespaces}
 
@@ -1943,10 +1983,10 @@
 %D \stoplinecorrection
 %D
 %D \startbuffer
-%D \framed[strut=nee,offset=.5cm]   {rule based learning}
-%D \framed[strut=nee,offset=0cm]    {rule based learning}
-%D \framed[strut=nee,offset=none]   {rule based learning}
-%D \framed[strut=nee,offset=overlay]{rule based learning}
+%D \framed[strut=no,offset=.5cm]   {rule based learning}
+%D \framed[strut=no,offset=0cm]    {rule based learning}
+%D \framed[strut=no,offset=none]   {rule based learning}
+%D \framed[strut=no,offset=overlay]{rule based learning}
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -1956,9 +1996,9 @@
 %D \stoplinecorrection
 %D
 %D \startbuffer
-%D \framed[width=3cm,align=left]      {rule\\based\\learning}
-%D \framed[width=3cm,align=middle]     {rule\\based\\learning}
-%D \framed[width=3cm,align=right]     {rule\\based\\learning}
+%D \framed[width=3cm,align=left]   {rule\\based\\learning}
+%D \framed[width=3cm,align=middle] {rule\\based\\learning}
+%D \framed[width=3cm,align=right]  {rule\\based\\learning}
 %D \framed[width=fit,align=middle] {rule\\based\\learning}
 %D \stopbuffer
 %D
@@ -2024,7 +2064,6 @@
 % \startTEXpage[offset=0.5ex,align={lohi,middle}]
 %     \vbox{\hbox{x}}
 % \stopTEXpage
-
 
 % \def\pack_framed_forgetall{\forgetall}
 

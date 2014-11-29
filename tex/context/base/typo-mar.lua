@@ -753,19 +753,23 @@ local function flushed(scope,parent) -- current is hlist
         for l=1,#locations do
             local location = locations[l]
             local store = displaystore[category][location][scope]
-            while true do
-                local candidate = remove(store,1) -- brr, local stores are sparse
-                if candidate then -- no vpack, as we want to realign
-                    head, room, con = inject(parent,head,candidate)
-                    done = true
-                    continue = continue or con
-                    nofstored = nofstored - 1
-                    if room then
-                        registertogether(tonode(parent),room) -- !! tonode
+            if store then
+                while true do
+                    local candidate = remove(store,1) -- brr, local stores are sparse
+                    if candidate then -- no vpack, as we want to realign
+                        head, room, con = inject(parent,head,candidate)
+                        done = true
+                        continue = continue or con
+                        nofstored = nofstored - 1
+                        if room then
+                            registertogether(tonode(parent),room) -- !! tonode
+                        end
+                    else
+                        break
                     end
-                else
-                    break
                 end
+            else
+             -- report_margindata("fatal error: invalid category %a",category or "?")
             end
         end
     end
@@ -851,15 +855,15 @@ function margins.globalhandler(head,group) -- check group
         end
         return head, false
     elseif group == "hmode_par" then
-        return handler("global",head,group)
+        return handler(v_global,head,group)
     elseif group == "vmode_par" then              -- experiment (for alignments)
-        return handler("global",head,group)
+        return handler(v_global,head,group)
      -- this needs checking as we then get quite some one liners to process and
      -- we cannot look ahead then:
     elseif group == "box" then                    -- experiment (for alignments)
-        return handler("global",head,group)
+        return handler(v_global,head,group)
     elseif group == "alignment" then              -- experiment (for alignments)
-        return handler("global",head,group)
+        return handler(v_global,head,group)
     else
         if trace_margingroup then
             report_margindata("ignored 2, group %a, stored %s, inhibit %a",group,nofstored,inhibit)

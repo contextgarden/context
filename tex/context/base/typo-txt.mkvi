@@ -194,4 +194,51 @@
 %D \HL
 %D \stoptabulate
 
+%D This is used in the beginners manual. One needs to set the font size to an
+%D acceptable value for this to work.
+
+\unexpanded\def\startnicelyfilledbox
+  {\vbox\bgroup
+   \forgetall
+   \dosingleempty\dostartnicelyfilledbox}
+
+\def\dostartnicelyfilledbox[#1]%
+  {\letdummyparameter\c!width \hsize
+   \letdummyparameter\c!height\vsize
+   \letdummyparameter\c!offset\exheight % we obey to the outer exheight
+   \letdummyparameter\c!strut \v!yes    % we obey to the inner strut !
+   \getdummyparameters[#1]%
+   \scratchoffset\dummyparameter\c!offset\relax
+   \setbox\scratchbox\vbox to \dummyparameter\c!height \bgroup
+   \hsize\dummyparameter\c!width\relax
+   \emergencystretch10\scratchoffset
+   \parfillskip\zeropoint
+   \baselineskip\zeropoint plus \onepoint minus \onepoint
+   \beginofshapebox
+   \leftskip \scratchoffset
+   \rightskip\scratchoffset}
+
+\unexpanded\def\stopnicelyfilledbox
+  {\doifelse{\dummyparameter\c!strut}\v!yes
+     {\xdef\doflushnicelyfilledbox
+        {\ht\shapebox\the\strutht
+         \dp\shapebox\the\strutdp
+         \box\shapebox}}%
+     {\gdef\doflushnicelyfilledbox
+        {\box\shapebox}}%
+   \endofshapebox
+   \doreshapebox
+     {\doflushnicelyfilledbox}
+     {\penalty\shapepenalty}
+     {\kern\shapekern}
+     {\vfil}%
+   \kern\scratchoffset
+   \vfilneg
+   \flushshapebox
+   \vfilneg
+   \kern\scratchoffset
+   \egroup
+   \box\scratchbox
+   \egroup}
+
 \protect \endinput

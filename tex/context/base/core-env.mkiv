@@ -390,13 +390,13 @@
 \unexpanded\def\startsetups{} % to please dep checker
 \unexpanded\def\stopsetups {} % to please dep checker
 
-\expanded % will become obsolete
-  {\def\expandafter\noexpand\csname\e!start\v!setups\endcsname
-     {\begingroup\noexpand\doifnextoptionalcselse
-        {\noexpand\dostartsetupsA\expandafter\noexpand\csname\e!stop\v!setups\endcsname}
-        {\noexpand\dostartsetupsB\expandafter\noexpand\csname\e!stop\v!setups\endcsname}}}
-
-\letvalue{\e!stop\v!setups}\relax
+% \expanded % will become obsolete
+%   {\def\expandafter\noexpand\csname\e!start\v!setups\endcsname
+%      {\begingroup\noexpand\doifnextoptionalcselse
+%         {\noexpand\dostartsetupsA\expandafter\noexpand\csname\e!stop\v!setups\endcsname}
+%         {\noexpand\dostartsetupsB\expandafter\noexpand\csname\e!stop\v!setups\endcsname}}}
+%
+% \letvalue{\e!stop\v!setups}\relax
 
 \unexpanded\def\setups{\doifnextbgroupelse\syst_setups_a\syst_setups_b} % {..} or [..]
 \unexpanded\def\setup {\doifnextbgroupelse\syst_setups  \syst_setups_c} % {..} or [..]

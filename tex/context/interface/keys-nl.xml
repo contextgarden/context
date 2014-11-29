@@ -425,7 +425,7 @@
 		<cd:variable name='september' value='september'/>
 		<cd:variable name='serif' value='serif'/>
 		<cd:variable name='serried' value='aanelkaar'/>
-		<cd:variable name='setups' value='instellingen'/>
+		<cd:variable name='setups' value='setups'/>
 		<cd:variable name='sheet' value='sheet'/>
 		<cd:variable name='short' value='kort'/>
 		<cd:variable name='simplefonts' value='simplefonts'/>
@@ -1297,6 +1297,7 @@
 		<cd:command name='definetabletemplate' value='definieertabelvorm'/>
 		<cd:command name='definetabulate' value='definieertabulatie'/>
 		<cd:command name='definetext' value='definieertekst'/>
+		<cd:command name='definetextbackground' value='definieertekstachtergrond'/>
 		<cd:command name='definetextposition' value='definieertekstpositie'/>
 		<cd:command name='definetextvariable' value='definieertekstvariabele'/>
 		<cd:command name='definetype' value='definieertype'/>
@@ -1466,6 +1467,7 @@
 		<cd:command name='placeheadtext' value='plaatskoptekst'/>
 		<cd:command name='placelegend' value='plaatslegenda'/>
 		<cd:command name='placelist' value='plaatslijst'/>
+		<cd:command name='placelistofsynonyms' value='plaatslijstmetsynoniemen'/>
 		<cd:command name='placelocalfootnotes' value='plaatslokalevoetnoten'/>
 		<cd:command name='placelogos' value='plaatsbeeldmerken'/>
 		<cd:command name='placeongrid' value='plaatsopgrid'/>
@@ -1618,7 +1620,6 @@
 		<cd:command name='setupregister' value='stelregisterin'/>
 		<cd:command name='setuprotate' value='stelroterenin'/>
 		<cd:command name='setuprule' value='stellijnin'/>
-		<cd:command name='setups' value='instellingen'/>
 		<cd:command name='setupscreens' value='stelrastersin'/>
 		<cd:command name='setupsection' value='stelsectiein'/>
 		<cd:command name='setupsectionblock' value='stelsectieblokin'/>
@@ -1636,6 +1637,7 @@
 		<cd:command name='setuptables' value='steltabellenin'/>
 		<cd:command name='setuptabulate' value='steltabulatiein'/>
 		<cd:command name='setuptext' value='steltekstin'/>
+		<cd:command name='setuptextbackground' value='steltekstachtergrondin'/>
 		<cd:command name='setuptextposition' value='steltekstpositiein'/>
 		<cd:command name='setuptextrules' value='steltekstlijnenin'/>
 		<cd:command name='setuptexttexts' value='stelteksttekstenin'/>
@@ -1682,6 +1684,7 @@
 		<cd:command name='startdocument' value='startdocument'/>
 		<cd:command name='startenvironment' value='startomgeving'/>
 		<cd:command name='startfigure' value='startfiguur'/>
+		<cd:command name='startframed' value='startomlijnd'/>
 		<cd:command name='startglobal' value='startglobaal'/>
 		<cd:command name='startline' value='startregel'/>
 		<cd:command name='startlinecorrection' value='startregelcorrectie'/>
@@ -1708,6 +1711,7 @@
 		<cd:command name='starttable' value='starttabel'/>
 		<cd:command name='starttables' value='starttabellen'/>
 		<cd:command name='starttext' value='starttekst'/>
+		<cd:command name='starttextbackground' value='starttekstachtergrond'/>
 		<cd:command name='starttextrule' value='starttekstlijn'/>
 		<cd:command name='startunpacked' value='startvanelkaar'/>
 		<cd:command name='startversion' value='startversie'/>
@@ -1722,6 +1726,7 @@
 		<cd:command name='stopcomponent' value='stoponderdeel'/>
 		<cd:command name='stopdocument' value='stopdocument'/>
 		<cd:command name='stopenvironment' value='stopomgeving'/>
+		<cd:command name='stopframed' value='stopomlijnd'/>
 		<cd:command name='stopglobal' value='stopglobaal'/>
 		<cd:command name='stopline' value='stopregel'/>
 		<cd:command name='stoplinecorrection' value='stopregelcorrectie'/>
@@ -1747,6 +1752,7 @@
 		<cd:command name='stoptable' value='stoptabel'/>
 		<cd:command name='stoptables' value='stoptabellen'/>
 		<cd:command name='stoptext' value='stoptekst'/>
+		<cd:command name='stoptextbackground' value='stoptekstachtergrond'/>
 		<cd:command name='stoptextrule' value='stoptekstlijn'/>
 		<cd:command name='stopunpacked' value='stopvanelkaar'/>
 		<cd:command name='stopversion' value='stopversie'/>
