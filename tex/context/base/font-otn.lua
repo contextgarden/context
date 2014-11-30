@@ -615,7 +615,7 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
                 else
                     head, start = markstoligature(kind,lookupname,head,start,stop,lig)
                 end
-                return head, start, true
+                return head, start, true, discfound
             else
                 -- ok, goto next lookup
             end
@@ -667,12 +667,12 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
                     logprocess("%s: replacing %s by (no real) ligature %s case 3",pref(kind,lookupname),gref(startchar),gref(lig))
                 end
             end
-            return head, start, true
+            return head, start, true, discfound
         else
             -- weird but happens
         end
     end
-    return head, start, false
+    return head, start, false, discfound
 end
 
 --[[ldx--
@@ -1297,7 +1297,7 @@ function chainprocs.gsub_ligature(head,start,stop,kind,chainname,currentcontext,
                     end
                 end
                 head, start = toligature(kind,lookupname,head,start,stop,l2,currentlookup.flags[1],discfound)
-                return head, start, true, nofreplacements
+                return head, start, true, discfound
             elseif trace_bugs then
                 if start == stop then
                     logwarning("%s: replacing character %s by ligature fails",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(startchar))
@@ -1307,7 +1307,7 @@ function chainprocs.gsub_ligature(head,start,stop,kind,chainname,currentcontext,
             end
         end
     end
-    return head, start, false, 0
+    return head, start, false, discfound
 end
 
 chainmores.gsub_ligature = chainprocs.gsub_ligature
