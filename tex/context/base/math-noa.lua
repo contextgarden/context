@@ -1039,9 +1039,9 @@ local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to tur
                                             setfield(next_noad,"sub",nil)
                                             free_node(next_noad)
                                             collapsepair(pointer,what,n,parent,true)
-                                            if not nested and movesub[current_char] then
-                                                movesubscript(parent,current_nucleus,current_char)
-                                            end
+                                         -- if not nested and movesub[current_char] then
+                                         --     movesubscript(parent,current_nucleus,current_char)
+                                         -- end
                                         end
                                     elseif not nested and movesub[current_char] then
                                         movesubscript(parent,current_nucleus,current_char)

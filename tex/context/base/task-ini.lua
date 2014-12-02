@@ -48,8 +48,8 @@ appendaction("processors",   "fonts",       "builders.paragraphs.solutions.split
 appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
 appendaction("processors",   "fonts",       "nodes.injections.handler")                          -- maybe todo
 appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs", nil, "nohead")       -- maybe todo
-appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on (could be selective: if only node mode)
-appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on (could be selective: if only node mode)
+------------("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on (could be selective: if only node mode)
+------------("processors",   "fonts",       "builders.kernel.kerning")                           -- always on (could be selective: if only node mode)
 appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
 ------------("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 

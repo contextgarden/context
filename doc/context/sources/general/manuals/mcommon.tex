@@ -1,0 +1,210 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startenvironment mcommon
+
+% modules
+
+\usemodule[abr-02]
+
+% layout
+
+% \startmode[screen]
+%     \setuppapersize[S6][S6]
+%     \setupinteractionscreen[options=max]
+% \stopmode
+
+\setuplayout
+  [topspace=15mm,
+   header=15mm,
+   headerdistance=0mm,
+   footer=0cm,
+   width=middle,
+   height=middle]
+
+\setupinteraction
+  [state=start,
+   color=,
+   contrastcolor=,
+   style=]
+
+% fonts
+
+\definetypeface [mainface] [rm] [serif] [pagella] [default]
+\definetypeface [mainface] [ss] [sans]  [heros]   [default] % [rscale=1.1]
+\definetypeface [mainface] [tt] [mono]  [heros]   [default] % [rscale=1.1]
+\definetypeface [mainface] [mm] [math]  [pagella] [default]
+
+\setupbodyfont[mainface,12pt]
+
+\definefont [BigFont] [SansBold*default at 60pt]
+\definefont [MedFont] [SansBold*default at 30pt]
+
+% colors (historically)
+
+\definecolor [NopColor] [r=.6,g=.4,b=.5]
+\definecolor [AltColor] [r=.4,g=.6,b=.5]
+\definecolor [TheColor] [r=.4,g=.5,b=.6]
+\definecolor [TmpColor] [r=.6,g=.5,b=.4]
+
+\definecolor [NopColor] [r=.40,g=.20,b=.20]
+\definecolor [AltColor] [r=.20,g=.40,b=.20]
+\definecolor [TheColor] [r=.20,g=.20,b=.40]
+\definecolor [TmpColor] [r=.40,g=.40,b=.20]
+
+\definecolor [red]   [NopColor]
+\definecolor [green] [AltColor]
+\definecolor [blue]  [TheColor]
+\definecolor [yellow][TmpColor]
+
+% spacing
+
+\setupwhitespace
+  [big]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+% verbatim
+
+\setuptype
+  [color=AltColor]
+
+\setuptyping
+  [color=AltColor]
+
+% structure
+
+\setupitemize
+  [each]
+  [color=TheColor]
+
+\definedescription
+  [switch]
+  [headstyle=type,
+   headcolor=TheColor,
+   location=serried,
+   width=broad]
+
+\defineenumeration
+  [topic]
+  [location=serried,
+   width=broad,
+   headstyle=,
+   headcolor=TheColor,
+   text=,
+   left={[},
+   right={]}]
+
+\setuphead
+  [section]
+  [style=\bfb,
+   color=TheColor]
+
+\setuplist
+  [section]
+  [alternative=c,
+   color=TheColor,
+   textcolor=black,
+   pagecolor=black]
+
+% whatever
+
+\setupsystem
+  [random=medium]
+
+\setupfloats
+  [ntop=100]
+
+\setupinteraction
+  [style=,
+   color=NopColor,
+   contrastcolor=NopColor]
+
+% tables and frames
+
+\setuptabulate
+  [rulethickness=.5pt,
+   rulecolor=AltColor]
+
+\setuptables
+  [rulethickness=.5pt,
+   rulecolor=AltColor]
+
+\setupframedtexts
+  [rulethickness=.5pt,
+   framecolor=TheColor,
+   width=\textwidth]
+
+% quick reference things
+
+\usemodule[set-11] \loadsetups
+
+\setupframedtexts
+  [setuptext]
+  [rulethickness=.5pt,
+   framecolor=AltColor]
+
+% titlepage
+
+\startsetups titlepage
+    \defineoverlay
+        [logo]
+        [\useMPgraphic{titlepage}{width=\overlaywidth,height=\overlayheight}]
+    \setupbackgrounds
+        [page]
+        [background=logo]
+    \startstandardmakeup
+        \dontcomplain
+        \BigFont
+        \setupinterlinespace
+        \vfill
+        \setupalign[left]
+        \let\\=\par
+        \dontleavehmode
+        \rotate
+            [rotation=90]
+            {\color
+                [lightgray]
+                {\getvariable{document}{title}}}
+        \par
+   \stopstandardmakeup
+   \setupbackgrounds
+     [page]
+     [background=]
+\stopsetups
+
+\startsetups colofon
+    \blank[2*big]
+    \testpage[3]
+    \startpacked
+        \getvariable{document}{author}\par
+        \getvariable{document}{affiliation}\par
+        \getvariable{document}{location}\par
+    \stoppacked
+\stopsetups
+
+\setupdocument
+  [title=No Title,
+   before=\setups{titlepage},
+   after=\setups{colofon}]
+
+% urls
+
+\useurl[gpl-simple]   [http://creativecommons.org/licenses/GPL/2.0/]
+\useurl[gpl-legal]    [http://creativecommons.org/licenses/GPL/2.0/legalcode]
+\useurl[byncsa-simple][http://creativecommons.org/licenses/by-nc-sa/2.5/]
+\useurl[byncsa-legal] [http://creativecommons.org/licenses/by-nc-sa/2.5/legalcode]
+
+\useurl[garden]       [http://contextgarden.net]
+\useurl[install]      [http://wiki.contextgarden.net/ConTeXt_Standalone]
+\useurl[texlive]      [http://www.tug.org/texlive/]
+\useurl[group]        [http://group.contextgarden.net]
+\useurl[list]         [http://www.ntg.nl/mailman/listinfo/ntg-context]
+\useurl[development]  [http://www.ntg.nl/mailman/listinfo/dev-context]
+\useurl[announce]     [http://www.ntg.nl/mailman/listinfo/ann-context]
+\useurl[collector]    [http://tracker.luatex.org]
+\useurl[pragma]       [http://www.pragma-ade.com]
+
+\stopenvironment

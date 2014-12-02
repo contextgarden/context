@@ -36,6 +36,7 @@ local lastmathids   = hashes.lastmathids  or allocate()
 local dynamics      = hashes.dynamics     or allocate()
 local unicodes      = hashes.unicodes     or allocate()
 local originals     = hashes.originals    or allocate()
+local modes         = hashes.modes        or allocate()
 
 hashes.characters   = characters
 hashes.descriptions = descriptions
@@ -54,6 +55,7 @@ hashes.lastmathids  = lastmathids
 hashes.dynamics     = dynamics
 hashes.unicodes     = unicodes
 hashes.originals    = originals
+hashes.modes        = modes
 
 local nodepool      = nodes.pool
 local dummyglyph    = nodepool.register(nodepool.glyph())
@@ -288,6 +290,16 @@ setmetatableindex(originals, function(t,k) -- always a unicode
         end)
         t[k] = resolved
         return resolved
+    end
+end)
+
+setmetatableindex(modes, function(t,k)
+    if k == true then
+        return modes[currentfont()]
+    else
+        local mode = properties[k].mode or "base"
+        t[k] = mode
+        return mode
     end
 end)
 

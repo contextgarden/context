@@ -31,6 +31,7 @@ local handlers          = nodes.handlers
 
 local nuts              = nodes.nuts
 local tonut             = nuts.tonut
+local tonode            = nuts.tonode
 
 local getattr           = nuts.getattr
 local getid             = nuts.getid
@@ -38,6 +39,8 @@ local getfont           = nuts.getfont
 local getsubtype        = nuts.getsubtype
 local getchar           = nuts.getchar
 local getnext           = nuts.getnext
+local getprev           = nuts.getprev
+local getfield          = nuts.getfield
 
 local traverse_id       = nuts.traverse_id
 
@@ -111,11 +114,17 @@ fonts.hashes.processes   = fontprocesses
 -- inside a run which means that we need to keep track of this which in turn complicates matters
 -- in a way i don't like
 
+-- we need to deal with the basemode fonts here and can only run over ranges as we
+-- otherwise get luatex craches due to all kind of asserts in the disc/lig builder
+
+local ligaturing = builders.kernel.ligaturing
+local kerning    = builders.kernel.kerning
+
 function handlers.characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)
-    local usedfonts, attrfonts = { }, { }
-    local a, u, prevfont, prevattr, done = 0, 0, nil, 0, false
+    local usedfonts, attrfonts, basefonts = { }, { }, { }
+    local a, u, b, prevfont, prevattr, done, basefont = 0, 0, 0, nil, 0, false, nil
     if trace_fontrun then
         run = run + 1
         report_fonts()
@@ -141,6 +150,9 @@ function handlers.characters(head)
         local font = getfont(n)
         local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
         if font ~= prevfont or attr ~= prevattr then
+            if basefont then
+                basefont[2] = tonode(getprev(n)) -- todo, save p
+            end
             if attr > 0 then
                 local used = attrfonts[font]
                 if not used then
@@ -152,6 +164,10 @@ function handlers.characters(head)
                     if fd then
                         used[attr] = fd[attr]
                         a = a + 1
+                    else
+                        b = b + 1
+                        basefont = { tonode(n), nil }
+                        basefonts[b] = basefont
                     end
                 end
             else
@@ -161,7 +177,11 @@ function handlers.characters(head)
                     if fp then
                         usedfonts[font] = fp
                         u = u + 1
-                   end
+                    else
+                        b = b + 1
+                        basefont = { tonode(n), nil }
+                        basefonts[b] = basefont
+                    end
                 end
             end
             prevfont = font
@@ -171,8 +191,9 @@ function handlers.characters(head)
     end
     if trace_fontrun then
         report_fonts()
-        report_fonts("statics : %s",(u > 0 and concat(keys(usedfonts)," ")) or "none")
-        report_fonts("dynamics: %s",(a > 0 and concat(keys(attrfonts)," ")) or "none")
+        report_fonts("statics : %s",u > 0 and concat(keys(usedfonts)," ") or "none")
+        report_fonts("dynamics: %s",a > 0 and concat(keys(attrfonts)," ") or "none")
+        report_fonts("built-in: %s",b > 0 and b                           or "none")
         report_fonts()
     end
     -- in context we always have at least 2 processors
@@ -222,6 +243,21 @@ function handlers.characters(head)
                     end
                 end
             end
+        end
+    end
+    if b == 0 then
+        -- skip
+    elseif b == 1 then
+        local range = basefonts[1]
+        local start, stop = range[1], range[2]
+        ligaturing(start,stop)
+        kerning(start,stop)
+    else
+        for i=1,b do
+            local range = basefonts[i]
+            local start, stop = range[1], range[2]
+            ligaturing(start,stop)
+            kerning(start,stop)
         end
     end
     stoptiming(nodes)
@@ -292,7 +328,9 @@ end
 --             return false
 --         end
 --     end)
-
+--
+--     -- TODO: basepasses!
+--
 --     function handlers.characters(head)
 --         -- either next or not, but definitely no already processed list
 --         starttiming(nodes)
@@ -408,3 +446,13 @@ local d_unprotect_glyphs = nuts.unprotect_glyphs
 
 handlers.protectglyphs   = function(n) return d_protect_glyphs  (tonut(n)) end
 handlers.unprotectglyphs = function(n) return d_unprotect_glyphs(tonut(n)) end
+
+-- function handlers.protectglyphs(h)
+--     local h = tonut(h)
+--     for n in traverse_id(disc_code,h) do
+--         local d = getfield(n,"pre")     if d then d_protect_glyphs(d) end
+--         local d = getfield(n,"post")    if d then d_protect_glyphs(d) end
+--         local d = getfield(n,"replace") if d then d_protect_glyphs(d) end
+--     end
+--     return d_protect_glyphs(h)
+-- end

@@ -740,7 +740,7 @@ local function ruledpenalty(head,current,vertical)
     return head, getnext(current)
 end
 
-local function visualize(head,vertical)
+local function visualize(head,vertical,forced)
     local trace_hbox     = false
     local trace_vbox     = false
     local trace_vtop     = false
@@ -760,7 +760,7 @@ local function visualize(head,vertical)
     local prev_trace_fontkern = nil
     while current do
         local id = getid(current)
-        local a = getattr(current,a_visual) or unsetvalue
+        local a = forced or getattr(current,a_visual) or unsetvalue
         if a ~= attr then
             prev_trace_fontkern = trace_fontkern
             if a == unsetvalue then
@@ -801,19 +801,17 @@ local function visualize(head,vertical)
                 head, current = ruledglyph(head,current,previous)
             end
         elseif id == disc_code then
-            if trace_glyph then
-                local pre = getfield(current,"pre")
-                if pre then
-                    setfield(current,"pre",ruledglyph(pre,pre))
-                end
-                local post = getfield(current,"post")
-                if post then
-                    setfield(current,"post",ruledglyph(post,post))
-                end
-                local replace = getfield(current,"replace")
-                if replace then
-                    setfield(current,"replace",ruledglyph(replace,replace))
-                end
+            local pre = getfield(current,"pre")
+            if pre then
+                setfield(current,"pre",visualize(pre,false,a))
+            end
+            local post = getfield(current,"post")
+            if post then
+                setfield(current,"post",visualize(post,false,a))
+            end
+            local replace = getfield(current,"replace")
+            if replace then
+                setfield(current,"replace",visualize(replace,false,a))
             end
         elseif id == kern_code then
             local subtype = getsubtype(current)
@@ -838,10 +836,6 @@ local function visualize(head,vertical)
             if trace_penalty then
                 head, current = ruledpenalty(head,current,vertical)
             end
-        elseif id == disc_code then
-            setfield(current,"pre",visualize(getfield(current,"pre")))
-            setfield(current,"post",isualize(getfield(current,"post")))
-            setfield(current,"replace",visualize(getfield(current,"replace")))
         elseif id == hlist_code then
             local content = getlist(current)
             if content then

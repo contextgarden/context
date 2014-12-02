@@ -1177,6 +1177,8 @@ if context then
                             word[1] = char
                             size    = 1
                             start   = current
+                        else
+                            size = 0
                         end
                     else
                         size = 0

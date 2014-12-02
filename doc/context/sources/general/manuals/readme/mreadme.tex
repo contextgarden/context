@@ -1,0 +1,372 @@
+% interface=en engine=luatex language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment mcommon
+
+% copied from cont-log: readme_logo
+
+\startuseMPgraphic{titlepage}{width,height}
+    numeric width ; width = \MPvar{width} ;
+    numeric height ; height = \MPvar{height} ;
+    numeric delta ; delta := width/10 ;
+    numeric circle ; circle := 2.5delta ;
+    color c ; c := (.2,.4,.6) ;
+    path p, q, r ;
+    p := unitsquare xscaled width yscaled height ;
+    z1 = (delta,height-2delta) ;
+    z2 = (width-delta,height-delta) ;
+    z3 = (width/2-delta,2delta+circle) ;
+    z4 = (x3,delta+circle/2) ;
+    q := z1 { dir  -15 } .. z2 & z2 { dir -105 } .. z3 & z3 { dir  135 } .. z1 & cycle ;
+    r := fullcircle xscaled circle yscaled (.85circle) rotated 15 shifted z4 ;
+    pickup pencircle scaled (delta/1.5) ;
+    fill p withcolor .50c ;
+    fill q withcolor .75c ;
+    fill r withcolor .75c ;
+    draw p withcolor    c ;
+    draw q withcolor    c ;
+    pickup pencircle scaled (delta/2) ;
+    draw r withcolor    c ;
+    setbounds currentpicture to p ;
+\stopuseMPgraphic
+
+\startdocument
+  [title={Read Me First},
+   author={Hans Hagen},
+   affiliation={PRAGMA ADE},
+   location={Hasselt NL}]
+
+\startsubject[title={Introduction}]
+
+What licence suits best for a \TEX\ like system is a matter of taste. Personally
+we dislike any licence that needs more than a few pages of dense legal code to
+get the message across. A \TEX\ related system like \CONTEXT\ is a hybrid of
+programs, scripts and|/|or macro code as well as documentation and sample code,
+including graphics. \TEX\ related systems also have a long standing tradition of
+providing support structures for users. In order to make support feasible, a
+\TEX\ based system like \CONTEXT\ assumes a certain logic and structure in the
+way the related files are named and organized in a tree structure. Even a small
+change in one of the elements may let such a system behave differently than
+manuals suggest. Swap a font, change some style defaults, leave out some pieces,
+and users may end up in confusion. A licence does not give a user any guarantees!
+
+In order to satisfy those responsible for distributing \CONTEXT, we need to
+choose a licence that makes them feel comfortable. Unfortunately we don't feel
+that comfortable with a licence that does not provide the guarantees that a
+system will not be adapted in such ways that the advertised behaviour changes. On
+the other hand, it is the responsibility of those distributing and extending the
+system to make sure that this does not happen. However, users should not
+automatically assume that what they get shipped is the same as the original,
+which is why we stress that support (from our side) will only be given on
+unaltered systems.
+
+First of all, what is \CONTEXT ? It's just a bunch of macros, written in \TEX\
+and \METAPOST, meant for typesetting documents. The macros are accompanied by
+some scripts, written in \PERL\ (mainly the older scripts) \RUBY\ (also older
+ones) and \LUA\ (the current fashion). The \CONTEXT\ distribution comes with a
+few fonts, files that help manage resources (e.g.\ map files needed for \MKII),
+as well as patterns (based on official ones, so this is a derived work).
+
+The \CONTEXT\ distribution is packaged in a zip file organized in the \TDS\
+structure.
+
+\starttabulate[|lT|p|]
+\NC \type {cont-tmf.zip} \NC the main distribution that has all relevant files \NC \NR
+\NC \type {cont-tst.7z}  \NC a bunch of test files that can also serve as examples \NC \NR
+\NC \type {cont-mpd.zip} \NC a \METAPOST\ to \PDF\ converter (not needed in \CONTEXT) \NC \NR
+\NC \type {cont-ppc.zip} \NC a macro package for typesetting chemistry (not needed in \CONTEXT) \NC \NR
+\NC \type {cont-sci.zip} \NC configuration files for using \CONTEXT\ in the \SCITE\ editor \NC \NR
+\stoptabulate
+
+There are two flavours of \CONTEXT: \MKII\ and \MKIV. The first one is frozen and
+will not be extended. It runs on top of \PDFTEX\ or \XETEX. The \MKIV\ version is
+actively developed and runs on top of \LUATEX\ (an engine that is developed
+alongside \CONTEXT\ but that can also be used for other macro packages).
+
+The documentation can be downloaded from our website or the Wiki. Some manuals
+ship with source code. We might ship more source code but only when the source is
+stable and clean and can serve as an example.
+
+That said, what licence does apply? We need to distinguish between things that
+resemble a program on the one hand and documentation on the other hand. We
+(currently) use a different licence for either of them.
+
+\stopsubject
+
+\startsubject[title={The Code}]
+
+The program code (i.e. anything not under the \type {/doc} subtree) is
+distributed under the
+
+\startnarrower
+\goto{Creative Commons GNU GPL}[url(gpl-simple)]
+\stopnarrower
+
+For practical purposes distributers may also choose the \LATEX\ project licence,
+which is considered to be a bit more \TEX\ friendly. (BSD alike licences, the
+Ruby Licence and the Apache are all licences that apply well for \CONTEXT.)
+
+In practice, users may forget about the legal part, if only because I haven't
+even read (and understood) it completely myself, so let's stick to what Creative
+Commons makes of it:
+
+\startcolor[blue]
+The GNU General Public License is a Free Software license. Like any Free Software
+license, it grants to you the four following freedoms:
+
+\startitemize
+    \startitem
+        The freedom to run the program for any purpose.
+    \stopitem
+    \startitem
+        The freedom to study how the program works and adapt it to your needs.
+    \stopitem
+    \startitem
+        The freedom to redistribute copies so you can help your neighbour.
+    \stopitem
+    \startitem
+        The freedom to improve the program and release your improvements to the
+        public, so that the whole community benefits.
+    \stopitem
+\stopitemize
+
+You may exercise the freedoms specified here provided that you comply with the
+express conditions of this license. The principal conditions are:
+
+You must conspicuously and appropriately publish on each copy distributed an
+appropriate copyright notice and disclaimer of warranty and keep intact all the
+notices that refer to this License and to the absence of any warranty; and give
+any other recipients of the Program a copy of the GNU General Public License
+along with the Program. Any translation of the GNU General Public License must be
+accompanied by the GNU General Public License.
+
+If you modify your copy or copies of the program or any portion of it, or develop
+a program based upon it, you may distribute the resulting work provided you do so
+under the GNU General Public License. Any translation of the GNU General Public
+License must be accompanied by the GNU General Public License.
+
+If you copy or distribute the program, you must accompany it with the complete
+corresponding machine-readable source code or with a written offer, valid for at
+least three years, to furnish the complete corresponding machine-readable source
+code.
+
+Any of these conditions can be waived if you get permission from the copyright
+holder.
+
+Your fair use and other rights are in no way affected by the above.
+\stopcolor
+
+\stopsubject
+
+\startsubject[title={Recommendations}]
+
+Here are a few recommendations in case you want to distribute, extend of embed
+\CONTEXT\ in applications:
+
+\startitemize
+
+\startitem
+    You can best leave the code base untouched. Most of \CONTEXT\ provides hooks
+    and it's relatively easy to overload code. Leave the lower level system code
+    untouched: changes may backfire when you update. Asking for more hooks is the
+    best way to go.
+\stopitem
+
+\startitem
+    Put your own code in the right subpaths, i.e.\ modules approved by the
+    development team under \type {.../third}, and styles and whatever else under
+    \type {.../user}. This way your code will not interfere with existing code
+    and updating will give less problems. Keep in mind that \TEX\ systems have
+    their own way and order in locating files, and the load order often matters.
+\stopitem
+
+\startitem
+    Don't copy styles and change a few lines, but load the base one and
+    built|/|patch on top of that. In the end you may benefit from improvements to
+    the base style.
+\stopitem
+
+\startitem
+    Be original. The whole idea behind \CONTEXT\ is that you can write your own
+    styles. On the \CONTEXT\ mailing list as well as on the Wiki there are enough
+    advanced users to help you make a start.
+\stopitem
+
+\startitem
+    Don't hesitate to submit bugs reports and ask for extensions. It may even be
+    that what you want is already present but yet undocumented.
+\stopitem
+
+\startitem
+    If things don't work as expected, check to what extend your system matches
+    the (more or less) standard. We provide so called minimal \CONTEXT\ trees
+    that can serve as a reference. Because \CONTEXT\ evolves, make sure your
+    system is up to date. The \CONTEXT\ garden provides ways to install and
+    update the standard distribution.
+\stopitem
+
+\startitem
+    The scripts can best be called using \type {mtxrun}. This lessens dependencies
+    on the location in the tree and ensures upward compatibility. It also prevents
+    clashes with similar scripts.
+\stopitem
+
+\startitem
+    Some scripts depend on each other. Don't mess around with the existing
+    functionality and names of the scripts and then feed them back into the
+    standard distributions.
+\stopitem
+
+\stopitemize
+
+\stopsubject
+
+\startsubject[title={Documents}]
+
+The documentation is provided under another Creative Commons licence
+
+\startnarrower
+    \goto{Attribution NonCommercial ShareAlike}[url(byncsa-simple)]
+\stopnarrower
+
+This one says:
+
+\startcolor[blue]
+You are free:
+
+\startitemize
+    \startitem to copy, distribute, display, and perform the work \stopitem
+    \startitem to make derivative works \stopitem
+\stopitemize
+
+{\sc Attribution:} You must attribute the work in the manner specified by the
+author or licensor.
+
+{\sc NonCommercial:} You may not use this work for commercial purposes.
+
+{\sc Share Alike:} If you alter, transform, or build upon this work, you may
+distribute the resulting work only under a license identical to this one.
+
+\startitemize
+    \startitem
+        For any reuse or distribution, you must make clear to others the license
+        terms of this work.
+    \stopitem
+    \startitem
+        Any of these conditions can be waived if you get permission from the
+        copyright holder.
+    \stopitem
+\stopitemize
+
+Your fair use and other rights are in no way affected by the above.
+\stopcolor
+
+The non||commercial part is mostly a safeguard. We don't mind if user groups
+distribute printed copies, publish (parts of) manuals and|/|or if authors use
+example code in manuals and books about \CONTEXT.
+
+If you distribute \CONTEXT\ and related software on electronic media as part of
+\TEX\ distributions (either or not for money), you may also distribute the
+manuals and their sources in electronic form, preferable as provided by the
+maintainers of \CONTEXT.
+
+Keep in mind that logos and cover designs are not meant to be copied. We provide
+the source code for some manuals, but we don't always provide all graphics and
+other resources. For instance, in some manuals we use commercial fonts and you
+have to buy those yourself.
+
+We provide the typeset manuals at our website. Those are the official ones. We
+appreciate it if you do not to distribute manuals compiled on your own system as
+substitutes. The manuals are a showcase for what \CONTEXT\ provides. Help us to
+assure the quality.
+
+\stopsubject
+
+\startsubject[title={More information}]
+
+We're not going to fill \mathematics{n}~pages with legal stuff, so if you want to
+know more, you have to consult the web for the legalities mentioned. Here are a
+few starting points:
+
+\startlines
+\goto{\url[gpl-simple]}[url(gpl-simple)]
+\goto{\url[gpl-legal]}[url(gpl-legal)]
+\stoplines
+
+\startlines
+\goto{\url[byncsa-simple]}[url(byncsa-simple)]
+\goto{\url[byncsa-legal]}[url(byncsa-legal)]
+\stoplines
+
+\CONTEXT\ itself can be fetched from the main site or the garden:
+
+\startlines
+\goto{\url[pragma]}[url(pragma)]
+\goto{\url[install]}[url(install)]
+\stoplines
+
+These always ship the latest versions. Alternatively you can install the whole
+\TEX\ distribution, which is a yearly snapshot:
+
+\startlines
+\goto{\url[texlive]}[url(texlive)]
+\stoplines
+
+A starting point for support can be found at:
+
+\startlines
+\goto{\url[list]}[url(list)]
+\goto{\url[garden]}[url(garden)]
+\stoplines
+
+And of course there is the \CONTEXT\ group:
+
+\startlines
+\goto{\url[group]}[url(group)]
+\stoplines
+
+Bugs and feature requests can be registered at the collector:
+
+\startlines
+\goto{\url[collector]}[url(collector)]
+\stoplines
+
+Releases are announced at:
+
+\startlines
+\goto{\url[announce]}[url(announce)]
+\stoplines
+
+The developers can be met at:
+
+\startlines
+\goto{\url[development]}[url(development)]
+\stoplines
+
+\stopsubject
+
+\startsubject[title={Disclaimer}]
+
+To play safe we include a disclaimer here, taken from the BSD style licence. For
+some reason such a text is always in unreadable capitals, so \unknown
+
+\start \txx \blue
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR \quotation {AS IS} AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+\stop
+
+\unknown\ and don't bother discussing licence issues and related things with us
+for the mere sake of discussing licence stuff.
+
+\stopsubject
+
+\stopdocument
