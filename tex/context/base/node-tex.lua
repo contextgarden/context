@@ -12,28 +12,31 @@ builders        = builders        or { }
 builders.kernel = builders.kernel or { }
 local kernel    = builders.kernel
 
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 local hyphenate, ligaturing, kerning = lang.hyphenate, node.ligaturing, node.kerning
 
 function kernel.hyphenation(head)
-    --  starttiming(kernel)
     local done = hyphenate(head)
-    --  stoptiming(kernel)
     return head, done
 end
 
-function kernel.ligaturing(head)
-    --  starttiming(kernel)
-    local head, tail, done = ligaturing(head) -- todo: check what is returned
-    --  stoptiming(kernel)
-    return head, done
+function kernel.ligaturing(head,tail)
+    if tail then
+        local head, tail, done = ligaturing(head,tail)
+        return head, done
+    else -- sensitive for second arg nil
+        local head, tail, done = ligaturing(head)
+        return head, done
+    end
 end
 
-function kernel.kerning(head)
-    --  starttiming(kernel)
-    local head, tail, done = kerning(head) -- todo: check what is returned
-    --  stoptiming(kernel)
-    return head, done
+function kernel.kerning(head,tail)
+    if tail then
+        local head, tail, done = kerning(head,tail)
+        return head, done
+    else -- sensitive for second arg nil
+        local head, tail, done = kerning(head)
+        return head, done
+    end
 end
 
 callbacks.register('hyphenate' , false, "normal hyphenation routine, called elsewhere")

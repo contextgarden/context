@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/02/14 23:29:05
+-- merge date  : 12/03/14 18:26:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -3849,21 +3849,12 @@ function nodes.pool.kern(k)
   n.kern=k
   return n
 end
-local getfield=node.getfield or function(n,tag)    return n[tag] end
-local setfield=node.setfield or function(n,tag,value) n[tag]=value end
+local getfield=node.getfield
+local setfield=node.setfield
 nodes.getfield=getfield
 nodes.setfield=setfield
 nodes.getattr=getfield
 nodes.setattr=setfield
-if node.getid   then nodes.getid=node.getid   else function nodes.getid   (n) return getfield(n,"id")   end end
-if node.getsubtype then nodes.getsubtype=node.getsubtype else function nodes.getsubtype(n) return getfield(n,"subtype") end end
-if node.getnext  then nodes.getnext=node.getnext  else function nodes.getnext  (n) return getfield(n,"next")  end end
-if node.getprev  then nodes.getprev=node.getprev  else function nodes.getprev  (n) return getfield(n,"prev")  end end
-if node.getchar  then nodes.getchar=node.getchar  else function nodes.getchar  (n) return getfield(n,"char")  end end
-if node.getfont  then nodes.getfont=node.getfont  else function nodes.getfont  (n) return getfield(n,"font")  end end
-if node.getlist  then nodes.getlist=node.getlist  else function nodes.getlist  (n) return getfield(n,"list")  end end
-function nodes.tonut (n) return n end
-function nodes.tonode(n) return n end
 nodes.tostring=node.tostring or tostring
 nodes.copy=node.copy
 nodes.copy_list=node.copy_list
@@ -3900,7 +3891,68 @@ nodes.unprotect_glyphs=node.unprotect_glyphs
 nodes.kerning=node.kerning
 nodes.ligaturing=node.ligaturing
 nodes.mlist_to_hlist=node.mlist_to_hlist
-nodes.nuts=nodes
+local direct=node.direct
+local nuts={}
+nodes.nuts=nuts
+local tonode=direct.tonode
+local tonut=direct.todirect
+nodes.tonode=tonode
+nodes.tonut=tonut
+nuts.tonode=tonode
+nuts.tonut=tonut
+local getfield=direct.getfield
+local setfield=direct.setfield
+nuts.getfield=getfield
+nuts.setfield=setfield
+nuts.getnext=direct.getnext
+nuts.getprev=direct.getprev
+nuts.getid=direct.getid
+nuts.getattr=getfield
+nuts.setattr=setfield
+nuts.getfont=direct.getfont
+nuts.getsubtype=direct.getsubtype
+nuts.getchar=direct.getchar
+nuts.insert_before=direct.insert_before
+nuts.insert_after=direct.insert_after
+nuts.delete=direct.delete
+nuts.copy=direct.copy
+nuts.tail=direct.tail
+nuts.flush_list=direct.flush_list
+nuts.end_of_math=direct.end_of_math
+nuts.traverse=direct.traverse
+nuts.traverse_id=direct.traverse_id
+nuts.getprop=nuts.getattr
+nuts.setprop=nuts.setattr
+local new_nut=direct.new
+nuts.new=new_nut
+nuts.pool={}
+function nuts.pool.kern(k)
+  local n=new_nut("kern",1)
+  setfield(n,"kern",k)
+  return n
+end
+local propertydata=direct.get_properties_table()
+nodes.properties={ data=propertydata }
+direct.set_properties_mode(true,true)   
+function direct.set_properties_mode() end 
+nuts.getprop=function(n,k)
+  local p=propertydata[n]
+  if p then
+    return p[k]
+  end
+end
+nuts.setprop=function(n,k,v)
+  if v then
+    local p=propertydata[n]
+    if p then
+      p[k]=v
+    else
+      propertydata[n]={ [k]=v }
+    end
+  end
+end
+nodes.setprop=nodes.setproperty
+nodes.getprop=nodes.getproperty
 
 end -- closure
 
@@ -9785,11 +9837,24 @@ local injections=nodes.injections
 local nodecodes=nodes.nodecodes
 local glyph_code=nodecodes.glyph
 local kern_code=nodecodes.kern
-local nodepool=nodes.pool
+local nuts=nodes.nuts
+local nodepool=nuts.pool
 local newkern=nodepool.kern
-local traverse_id=node.traverse_id
-local insert_node_before=node.insert_before
-local insert_node_after=node.insert_after
+local tonode=nuts.tonode
+local tonut=nuts.tonut
+local getfield=nuts.getfield
+local getnext=nuts.getnext
+local getprev=nuts.getprev
+local getid=nuts.getid
+local getattr=nuts.getattr
+local getfont=nuts.getfont
+local getsubtype=nuts.getsubtype
+local getchar=nuts.getchar
+local setfield=nuts.setfield
+local setattr=nuts.setattr
+local traverse_id=nuts.traverse_id
+local insert_node_before=nuts.insert_before
+local insert_node_after=nuts.insert_after
 local a_kernpair=attributes.private('kernpair')
 local a_ligacomp=attributes.private('ligacomp')
 local a_markbase=attributes.private('markbase')
@@ -9798,31 +9863,40 @@ local a_markdone=attributes.private('markdone')
 local a_cursbase=attributes.private('cursbase')
 local a_curscurs=attributes.private('curscurs')
 local a_cursdone=attributes.private('cursdone')
+local unsetvalue=attributes.unsetvalue
 function injections.installnewkern(nk)
   newkern=nk or newkern
 end
 local cursives={}
 local marks={}
 local kerns={}
+function injections.reset(n)
+end
+function injections.setligaindex(n,index)
+  setattr(n,a_ligacomp,index)
+end
+function injections.getligaindex(n,default)
+  return getattr(n,a_ligacomp) or default
+end
 function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext)
   local dx,dy=factor*(exit[1]-entry[1]),factor*(exit[2]-entry[2])
   local ws,wn=tfmstart.width,tfmnext.width
   local bound=#cursives+1
-  start[a_cursbase]=bound
-  nxt[a_curscurs]=bound
+  setattr(start,a_cursbase,bound)
+  setattr(nxt,a_curscurs,bound)
   cursives[bound]={ rlmode,dx,dy,ws,wn }
   return dx,dy,bound
 end
 function injections.setpair(current,factor,rlmode,r2lflag,spec,tfmchr)
   local x,y,w,h=factor*spec[1],factor*spec[2],factor*spec[3],factor*spec[4]
   if x~=0 or w~=0 or y~=0 or h~=0 then
-    local bound=current[a_kernpair]
+    local bound=getattr(current,a_kernpair)
     if bound then
       local kb=kerns[bound]
       kb[2],kb[3],kb[4],kb[5]=(kb[2] or 0)+x,(kb[3] or 0)+y,(kb[4] or 0)+w,(kb[5] or 0)+h
     else
       bound=#kerns+1
-      current[a_kernpair]=bound
+      setattr(current,a_kernpair,bound)
       kerns[bound]={ rlmode,x,y,w,h,r2lflag,tfmchr.width }
     end
     return x,y,w,h,bound
@@ -9833,7 +9907,7 @@ function injections.setkern(current,factor,rlmode,x,tfmchr)
   local dx=factor*x
   if dx~=0 then
     local bound=#kerns+1
-    current[a_kernpair]=bound
+    setattr(current,a_kernpair,bound)
     kerns[bound]={ rlmode,dx }
     return dx,bound
   else
@@ -9842,25 +9916,25 @@ function injections.setkern(current,factor,rlmode,x,tfmchr)
 end
 function injections.setmark(start,base,factor,rlmode,ba,ma) 
   local dx,dy=factor*(ba[1]-ma[1]),factor*(ba[2]-ma[2])
-  local bound=base[a_markbase]
+  local bound=getattr(base,a_markbase)
   local index=1
   if bound then
     local mb=marks[bound]
     if mb then
       index=#mb+1
       mb[index]={ dx,dy,rlmode }
-      start[a_markmark]=bound
-      start[a_markdone]=index
+      setattr(start,a_markmark,bound)
+      setattr(start,a_markdone,index)
       return dx,dy,bound
     else
-      report_injections("possible problem, %U is base mark without data (id %a)",base.char,bound)
+      report_injections("possible problem, %U is base mark without data (id %a)",getchar(base),bound)
     end
   end
   index=index or 1
   bound=#marks+1
-  base[a_markbase]=bound
-  start[a_markmark]=bound
-  start[a_markdone]=index
+  setattr(base,a_markbase,bound)
+  setattr(start,a_markmark,bound)
+  setattr(start,a_markdone,index)
   marks[bound]={ [index]={ dx,dy,rlmode } }
   return dx,dy,bound
 end
@@ -9870,15 +9944,15 @@ end
 local function trace(head)
   report_injections("begin run")
   for n in traverse_id(glyph_code,head) do
-    if n.subtype<256 then
-      local kp=n[a_kernpair]
-      local mb=n[a_markbase]
-      local mm=n[a_markmark]
-      local md=n[a_markdone]
-      local cb=n[a_cursbase]
-      local cc=n[a_curscurs]
-      local char=n.char
-      report_injections("font %s, char %U, glyph %c",n.font,char,char)
+    if getsubtype(n)<256 then
+      local kp=getattr(n,a_kernpair)
+      local mb=getattr(n,a_markbase)
+      local mm=getattr(n,a_markmark)
+      local md=getattr(n,a_markdone)
+      local cb=getattr(n,a_cursbase)
+      local cc=getattr(n,a_curscurs)
+      local char=getchar(n)
+      report_injections("font %s, char %U, glyph %c",getfont(n),char,char)
       if kp then
         local k=kerns[kp]
         if k[3] then
@@ -9919,21 +9993,23 @@ local function show_result(head)
   local current=head
   local skipping=false
   while current do
-    local id=current.id
+    local id=getid(current)
     if id==glyph_code then
-      report_injections("char: %C, width %p, xoffset %p, yoffset %p",current.char,current.width,current.xoffset,current.yoffset)
+      report_injections("char: %C, width %p, xoffset %p, yoffset %p",
+        getchar(current),getfield(current,"width"),getfield(current,"xoffset"),getfield(current,"yoffset"))
       skipping=false
     elseif id==kern_code then
-      report_injections("kern: %p",current.kern)
+      report_injections("kern: %p",getfield(current,"kern"))
       skipping=false
     elseif not skipping then
       report_injections()
       skipping=true
     end
-    current=current.next
+    current=getnext(current)
   end
 end
 function injections.handler(head,where,keep)
+  head=tonut(head)
   local has_marks,has_cursives,has_kerns=next(marks),next(cursives),next(kerns)
   if has_marks or has_cursives then
     if trace_injections then
@@ -9943,17 +10019,18 @@ function injections.handler(head,where,keep)
     if has_kerns then 
       local nf,tm=nil,nil
       for n in traverse_id(glyph_code,head) do 
-        if n.subtype<256 then
+        if getsubtype(n)<256 then
           nofvalid=nofvalid+1
           valid[nofvalid]=n
-          if n.font~=nf then
-            nf=n.font
-            tm=fontdata[nf].resources.marks
+          local f=getfont(n)
+          if f~=nf then
+            nf=f
+            tm=fontdata[nf].resources.marks 
           end
           if tm then
-            mk[n]=tm[n.char]
+            mk[n]=tm[getchar(n)]
           end
-          local k=n[a_kernpair]
+          local k=getattr(n,a_kernpair)
           if k then
             local kk=kerns[k]
             if kk then
@@ -9973,15 +10050,16 @@ function injections.handler(head,where,keep)
     else
       local nf,tm=nil,nil
       for n in traverse_id(glyph_code,head) do
-        if n.subtype<256 then
+        if getsubtype(n)<256 then
           nofvalid=nofvalid+1
           valid[nofvalid]=n
-          if n.font~=nf then
-            nf=n.font
-            tm=fontdata[nf].resources.marks
+          local f=getfont(n)
+          if f~=nf then
+            nf=f
+            tm=fontdata[nf].resources.marks 
           end
           if tm then
-            mk[n]=tm[n.char]
+            mk[n]=tm[getchar(n)]
           end
         end
       end
@@ -9990,7 +10068,7 @@ function injections.handler(head,where,keep)
       local cx={}
       if has_kerns and next(ky) then
         for n,k in next,ky do
-          n.yoffset=k
+          setfield(n,"yoffset",k)
         end
       end
       if has_cursives then
@@ -9999,9 +10077,9 @@ function injections.handler(head,where,keep)
         for i=1,nofvalid do 
           local n=valid[i]
           if not mk[n] then
-            local n_cursbase=n[a_cursbase]
+            local n_cursbase=getattr(n,a_cursbase)
             if p_cursbase then
-              local n_curscurs=n[a_curscurs]
+              local n_curscurs=getattr(n,a_curscurs)
               if p_cursbase==n_curscurs then
                 local c=cursives[n_curscurs]
                 if c then
@@ -10024,20 +10102,20 @@ function injections.handler(head,where,keep)
                 end
               end
             elseif maxt>0 then
-              local ny=n.yoffset
+              local ny=getfield(n,"yoffset")
               for i=maxt,1,-1 do
                 ny=ny+d[i]
                 local ti=t[i]
-                ti.yoffset=ti.yoffset+ny
+                setfield(ti,"yoffset",getfield(ti,"yoffset")+ny)
               end
               maxt=0
             end
             if not n_cursbase and maxt>0 then
-              local ny=n.yoffset
+              local ny=getfield(n,"yoffset")
               for i=maxt,1,-1 do
                 ny=ny+d[i]
                 local ti=t[i]
-                ti.yoffset=ny
+                setfield(ti,"yoffset",ny) 
               end
               maxt=0
             end
@@ -10045,11 +10123,11 @@ function injections.handler(head,where,keep)
           end
         end
         if maxt>0 then
-          local ny=n.yoffset
+          local ny=getfield(n,"yoffset") 
           for i=maxt,1,-1 do
             ny=ny+d[i]
             local ti=t[i]
-            ti.yoffset=ny
+            setfield(ti,"yoffset",ny)
           end
           maxt=0
         end
@@ -10060,57 +10138,66 @@ function injections.handler(head,where,keep)
       if has_marks then
         for i=1,nofvalid do
           local p=valid[i]
-          local p_markbase=p[a_markbase]
+          local p_markbase=getattr(p,a_markbase)
           if p_markbase then
             local mrks=marks[p_markbase]
             local nofmarks=#mrks
-            for n in traverse_id(glyph_code,p.next) do
-              local n_markmark=n[a_markmark]
+            for n in traverse_id(glyph_code,getnext(p)) do
+              local n_markmark=getattr(n,a_markmark)
               if p_markbase==n_markmark then
-                local index=n[a_markdone] or 1
+                local index=getattr(n,a_markdone) or 1
                 local d=mrks[index]
                 if d then
                   local rlmode=d[3]
                   local k=wx[p]
+                  local px=getfield(p,"xoffset")
+                  local ox=0
                   if k then
                     local x=k[2]
                     local w=k[4]
                     if w then
                       if rlmode and rlmode>=0 then
-                        n.xoffset=p.xoffset-p.width+d[1]-(w-x)
+                        ox=px-getfield(p,"width")+d[1]-(w-x)
                       else
-                        n.xoffset=p.xoffset-d[1]-x
+                        ox=px-d[1]-x
                       end
                     else
                       if rlmode and rlmode>=0 then
-                        n.xoffset=p.xoffset-p.width+d[1]
+                        ox=px-getfield(p,"width")+d[1]
                       else
-                        n.xoffset=p.xoffset-d[1]-x
+                        ox=px-d[1]-x
                       end
                     end
                   else
+                    local wp=getfield(p,"width")
+                    local wn=getfield(n,"width") 
                     if rlmode and rlmode>=0 then
-                      n.xoffset=p.xoffset-p.width+d[1]
+                      ox=px-wp+d[1]
                     else
-                      n.xoffset=p.xoffset-d[1]
+                      ox=px-d[1]
                     end
-                    local w=n.width
-                    if w~=0 then
-                      insert_node_before(head,n,newkern(-w/2))
-                      insert_node_after(head,n,newkern(-w/2))
+                    if wn~=0 then
+                      insert_node_before(head,n,newkern(-wn/2))
+                      insert_node_after(head,n,newkern(-wn/2))
                     end
                   end
+                  setfield(n,"xoffset",ox)
+                  local py=getfield(p,"yoffset")
+                  local oy=0
                   if mk[p] then
-                    n.yoffset=p.yoffset+d[2]
+                    oy=py+d[2]
                   else
-                    n.yoffset=n.yoffset+p.yoffset+d[2]
+                    oy=getfield(n,"yoffset")+py+d[2]
                   end
+                  setfield(n,"yoffset",oy)
                   if nofmarks==1 then
                     break
                   else
                     nofmarks=nofmarks-1
                   end
                 end
+              elseif not n_markmark then
+                break 
               else
               end
             end
@@ -10162,7 +10249,7 @@ function injections.handler(head,where,keep)
       if not keep then
         kerns={}
       end
-      return head,true
+      return tonode(head),true
     elseif not keep then
       kerns,cursives,marks={},{},{}
     end
@@ -10171,14 +10258,14 @@ function injections.handler(head,where,keep)
       trace(head)
     end
     for n in traverse_id(glyph_code,head) do
-      if n.subtype<256 then
-        local k=n[a_kernpair]
+      if getsubtype(n)<256 then
+        local k=getattr(n,a_kernpair)
         if k then
           local kk=kerns[k]
           if kk then
             local rl,x,y,w=kk[1],kk[2] or 0,kk[3],kk[4]
             if y and y~=0 then
-              n.yoffset=y 
+              setfield(n,"yoffset",y) 
             end
             if w then
               local wx=w-x
@@ -10209,17 +10296,17 @@ function injections.handler(head,where,keep)
     if not keep then
       kerns={}
     end
-    return head,true
+    return tonode(head),true
   else
   end
-  return head,false
+  return tonode(head),false
 end
 
 end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['font-ota']={
+if not modules then modules={} end modules ['font-otx']={
   version=1.001,
   comment="companion to font-otf.lua (analysing)",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -10238,13 +10325,24 @@ analyzers.initializers=initializers
 analyzers.methods=methods
 analyzers.useunicodemarks=false
 local a_state=attributes.private('state')
+local nuts=nodes.nuts
+local tonut=nuts.tonut
+local getfield=nuts.getfield
+local getnext=nuts.getnext
+local getprev=nuts.getprev
+local getid=nuts.getid
+local getprop=nuts.getprop
+local setprop=nuts.setprop
+local getfont=nuts.getfont
+local getsubtype=nuts.getsubtype
+local getchar=nuts.getchar
+local traverse_id=nuts.traverse_id
+local traverse_node_list=nuts.traverse
+local end_of_math=nuts.end_of_math
 local nodecodes=nodes.nodecodes
 local glyph_code=nodecodes.glyph
 local disc_code=nodecodes.disc
 local math_code=nodecodes.math
-local traverse_id=node.traverse_id
-local traverse_node_list=node.traverse
-local end_of_math=node.end_of_math
 local fontdata=fonts.hashes.identifiers
 local categories=characters and characters.categories or {} 
 local otffeatures=fonts.constructors.newfeatures("otf")
@@ -10286,51 +10384,52 @@ function analyzers.setstate(head,font)
   local tfmdata=fontdata[font]
   local descriptions=tfmdata.descriptions
   local first,last,current,n,done=nil,nil,head,0,false 
+  current=tonut(current)
   while current do
-    local id=current.id
-    if id==glyph_code and current.font==font then
+    local id=getid(current)
+    if id==glyph_code and getfont(current)==font then
       done=true
-      local char=current.char
+      local char=getchar(current)
       local d=descriptions[char]
       if d then
         if d.class=="mark" or (useunicodemarks and categories[char]=="mn") then
           done=true
-          current[a_state]=s_mark
+          setprop(current,a_state,s_mark)
         elseif n==0 then
           first,last,n=current,current,1
-          current[a_state]=s_init
+          setprop(current,a_state,s_init)
         else
           last,n=current,n+1
-          current[a_state]=s_medi
+          setprop(current,a_state,s_medi)
         end
       else 
         if first and first==last then
-          last[a_state]=s_isol
+          setprop(last,a_state,s_isol)
         elseif last then
-          last[a_state]=s_fina
+          setprop(last,a_state,s_fina)
         end
         first,last,n=nil,nil,0
       end
     elseif id==disc_code then
-      current[a_state]=s_medi
+      setprop(current,a_state,s_medi)
       last=current
     else 
       if first and first==last then
-        last[a_state]=s_isol
+        setprop(last,a_state,s_isol)
       elseif last then
-        last[a_state]=s_fina
+        setprop(last,a_state,s_fina)
       end
       first,last,n=nil,nil,0
       if id==math_code then
         current=end_of_math(current)
       end
     end
-    current=current.next
+    current=getnext(current)
   end
   if first and first==last then
-    last[a_state]=s_isol
+    setprop(last,a_state,s_isol)
   elseif last then
-    last[a_state]=s_fina
+    setprop(last,a_state,s_fina)
   end
   return head,done
 end
@@ -10478,7 +10577,7 @@ local medial={
 }
 local arab_warned={}
 local function warning(current,what)
-  local char=current.char
+  local char=getchar(current)
   if not arab_warned[char] then
     log.report("analyze","arab: character %C has no %a class",char,what)
     arab_warned[char]=true
@@ -10487,30 +10586,30 @@ end
 local function finish(first,last)
   if last then
     if first==last then
-      local fc=first.char
+      local fc=getchar(first)
       if medial[fc] or final[fc] then
-        first[a_state]=s_isol
+        setprop(first,a_state,s_isol)
       else
         warning(first,"isol")
-        first[a_state]=s_error
+        setprop(first,a_state,s_error)
       end
     else
-      local lc=last.char
+      local lc=getchar(last)
       if medial[lc] or final[lc] then
-        last[a_state]=s_fina
+        setprop(last,a_state,s_fina)
       else
         warning(last,"fina")
-        last[a_state]=s_error
+        setprop(last,a_state,s_error)
       end
     end
     first,last=nil,nil
   elseif first then
-    local fc=first.char
+    local fc=getchar(first)
     if medial[fc] or final[fc] then
-      first[a_state]=s_isol
+      setprop(first,a_state,s_isol)
     else
       warning(first,"isol")
-      first[a_state]=s_error
+      setprop(first,a_state,s_error)
     end
     first=nil
   end
@@ -10521,38 +10620,39 @@ function methods.arab(head,font,attr)
   local tfmdata=fontdata[font]
   local marks=tfmdata.resources.marks
   local first,last,current,done=nil,nil,head,false
+  current=tonut(current)
   while current do
-    local id=current.id
-    if id==glyph_code and current.font==font and current.subtype<256 and not current[a_state] then
+    local id=getid(current)
+    if id==glyph_code and getfont(current)==font and getsubtype(current)<256 and not getprop(current,a_state) then
       done=true
-      local char=current.char
+      local char=getchar(current)
       if marks[char] or (useunicodemarks and categories[char]=="mn") then
-        current[a_state]=s_mark
+        setprop(current,a_state,s_mark)
       elseif isolated[char] then 
         first,last=finish(first,last)
-        current[a_state]=s_isol
+        setprop(current,a_state,s_isol)
         first,last=nil,nil
       elseif not first then
         if medial[char] then
-          current[a_state]=s_init
+          setprop(current,a_state,s_init)
           first,last=first or current,current
         elseif final[char] then
-          current[a_state]=s_isol
+          setprop(current,a_state,s_isol)
           first,last=nil,nil
         else 
           first,last=finish(first,last)
         end
       elseif medial[char] then
         first,last=first or current,current
-        current[a_state]=s_medi
+        setprop(current,a_state,s_medi)
       elseif final[char] then
-        if not last[a_state]==s_init then
-          last[a_state]=s_medi
+        if getprop(last,a_state)~=s_init then
+          setprop(last,a_state,s_medi)
         end
-        current[a_state]=s_fina
+        setprop(current,a_state,s_fina)
         first,last=nil,nil
       elseif char>=0x0600 and char<=0x06FF then 
-        current[a_state]=s_rest
+        setprop(current,a_state,s_rest)
         first,last=finish(first,last)
       else 
         first,last=finish(first,last)
@@ -10565,7 +10665,7 @@ function methods.arab(head,font,attr)
         current=end_of_math(current)
       end
     end
-    current=current.next
+    current=getnext(current)
   end
   if first or last then
     finish(first,last)
@@ -10629,9 +10729,9 @@ registertracker("otf.positions","otf.marks,otf.kerns,otf.cursive")
 registertracker("otf.actions","otf.replacements,otf.positions")
 registertracker("otf.injections","nodes.injections")
 registertracker("*otf.sample","otf.steps,otf.actions,otf.analyzing")
-local nuts=nodes.nuts    or node.direct          
-local tonode=nuts.tonode   or nuts.tonode  or node.tonode  
-local tonut=nuts.tonut    or nuts.todirect or node.todirect 
+local nuts=nodes.nuts
+local tonode=nuts.tonode
+local tonut=nuts.tonut
 local getfield=nuts.getfield
 local setfield=nuts.setfield
 local getnext=nuts.getnext
@@ -10639,8 +10739,8 @@ local getprev=nuts.getprev
 local getid=nuts.getid
 local getattr=nuts.getattr
 local setattr=nuts.setattr
-local getprop=nuts.getprop   or nuts.getattr 
-local setprop=nuts.setprop   or nuts.setattr 
+local getprop=nuts.getprop
+local setprop=nuts.setprop
 local getfont=nuts.getfont
 local getsubtype=nuts.getsubtype
 local getchar=nuts.getchar
@@ -14504,8 +14604,13 @@ function nodes.handlers.characters(head)
       for i=1,#basefonts do
         local range=basefonts[i]
         local start,stop=range[1],range[2]
-        ligaturing(start,stop)
-        kerning(start,stop)
+        if stop then
+          ligaturing(start,stop)
+          kerning(start,stop)
+        else
+          ligaturing(start)
+          kerning(start)
+        end
       end
     end
     return head,true

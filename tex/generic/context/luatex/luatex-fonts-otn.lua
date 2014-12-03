@@ -177,9 +177,9 @@ registertracker("otf.injections","nodes.injections")
 
 registertracker("*otf.sample","otf.steps,otf.actions,otf.analyzing")
 
-local nuts               = nodes.nuts       or node.direct                    -- generic
-local tonode             = nuts.tonode      or nuts.tonode   or node.tonode   -- generic
-local tonut              = nuts.tonut       or nuts.todirect or node.todirect -- generic
+local nuts               = nodes.nuts
+local tonode             = nuts.tonode
+local tonut              = nuts.tonut
 
 local getfield           = nuts.getfield
 local setfield           = nuts.setfield
@@ -188,8 +188,8 @@ local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
-local getprop            = nuts.getprop     or nuts.getattr -- generic
-local setprop            = nuts.setprop     or nuts.setattr -- generic
+local getprop            = nuts.getprop
+local setprop            = nuts.setprop
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar

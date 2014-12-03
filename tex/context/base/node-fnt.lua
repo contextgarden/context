@@ -256,8 +256,13 @@ function handlers.characters(head)
         for i=1,b do
             local range = basefonts[i]
             local start, stop = range[1], range[2]
-            ligaturing(start,stop)
-            kerning(start,stop)
+            if stop then
+                ligaturing(start,stop)
+                kerning(start,stop)
+            else
+                ligaturing(start)
+                kerning(start)
+            end
         end
     end
     stoptiming(nodes)

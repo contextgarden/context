@@ -129,10 +129,7 @@ results in different tables.</p>
 
 -- Todo: make plugin feature that operates on char/glyphnode arrays
 
-local concat, insert, remove = table.concat, table.insert, table.remove
-local gmatch, gsub, find, match, lower, strip = string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
-local type, next, tonumber, tostring = type, next, tonumber, tostring
-local lpegmatch = lpeg.match
+local type, next, tonumber = type, next, tonumber
 local random = math.random
 local formatters = string.formatters
 
@@ -183,9 +180,9 @@ registertracker("otf.injections","nodes.injections")
 
 registertracker("*otf.sample","otf.steps,otf.actions,otf.analyzing")
 
-local nuts               = nodes.nuts       or node.direct                    -- generic
-local tonode             = nuts.tonode      or nuts.tonode   or node.tonode   -- generic
-local tonut              = nuts.tonut       or nuts.todirect or node.todirect -- generic
+local nuts               = nodes.nuts
+local tonode             = nuts.tonode
+local tonut              = nuts.tonut
 
 local getfield           = nuts.getfield
 local setfield           = nuts.setfield
@@ -194,8 +191,8 @@ local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
-local getprop            = nuts.getprop     or nuts.getattr -- generic
-local setprop            = nuts.setprop     or nuts.setattr -- generic
+local getprop            = nuts.getprop
+local setprop            = nuts.setprop
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
@@ -731,7 +728,7 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
                 end
             elseif id == disc_code then
                 discfound = s
-stop = s
+                stop = s
                 s = getnext(s)
             else
                 break
@@ -1195,7 +1192,7 @@ function chainprocs.gsub_single(head,start,stop,kind,chainname,currentcontext,lo
     local current = start
     local subtables = currentlookup.subtables
     if #subtables > 1 then
-        logwarning("todo: check if we need to loop over the replacements: %s",concat(subtables," "))
+        logwarning("todo: check if we need to loop over the replacements: % t",subtables)
     end
     while current do
         if getid(current) == glyph_code then
@@ -1772,11 +1769,11 @@ local function show_skip(kind,chainname,char,ck,class)
     end
 end
 
-local quit_on_no_replacement = true
+local quit_on_no_replacement = true  -- maybe per font
+local quit_on_discretionary  = false -- only for experiments
 
-registerdirective("otf.chain.quitonnoreplacement",function(value) -- maybe per font
-    quit_on_no_replacement = value
-end)
+registerdirective("otf.chain.quitonnoreplacement",function(value) quit_on_no_replacement = value end)
+registerdirective("otf.chain.quitondiscretionary",function(value) quit_on_discretionary  = value end)
 
 local function normal_handle_contextchain(head,start,kind,chainname,contexts,sequence,lookuphash)
     --  local rule, lookuptype, sequence, f, l, lookups = ck[1], ck[2] ,ck[3], ck[4], ck[5], ck[6]
@@ -1847,7 +1844,12 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                     break
                                 end
                             elseif id == disc_code then
-                                last = getnext(last)
+                                if quit_on_discretionary then
+                                    match = false
+                                    break
+                                else
+                                    last = getnext(last)
+                                end
                             else
                                 match = false
                                 break
@@ -1893,7 +1895,12 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                     break
                                 end
                             elseif id == disc_code then
-                                -- skip 'm
+                                if quit_on_discretionary then
+                                    match = false
+                                    break
+                                else
+                                    -- skip 'm
+                                end
                             elseif seq[n][32] then
                                 n = n -1
                             else
@@ -1954,7 +1961,12 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                     break
                                 end
                             elseif id == disc_code then
-                                -- skip 'm
+                                if quit_on_discretionary then
+                                    match = false
+                                    break
+                                else
+                                    -- skip 'm
+                                end
                             elseif seq[n][32] then -- brrr
                                 n = n + 1
                             else
@@ -2247,25 +2259,6 @@ end
 
 -- optimization comes later ...
 
-    local function check(txt,h)
-        if h then
-            local p = nil
-            local i = 0
-            print(txt)
-            for n in traverse_nodes(h) do
-                i = i + 1
-                local g = getprev(n)
-                if g == p then
-                    print(txt,i,"!",tonode(n))
-                else
-                    print(txt,i,"?",tonode(n))
-                end
-                p = n
-            end
-            print(txt)
-        end
-    end
-
 local function kernrun(disc,run) -- we can assume that prev and next are glyphs
     if kernruns then
         --
@@ -2369,10 +2362,10 @@ local function discrun(disc,run)
         local prev = getprev(disc)
         if prev then
             setfield(prev,"next",next)
---     setfield(next,"prev",prev)
+         -- setfield(next,"prev",prev)
             run(disc)
             setfield(prev,"next",disc)
---     setfield(next,"prev",disc)
+         -- setfield(next,"prev",disc)
         end
     end
     return next
@@ -2426,21 +2419,21 @@ local function featuresprocessor(head,font,attr)
     -- the pre, post and replace. It's abit of a hack but works out ok for most cases.
 
     for s=1,#datasets do
-        local dataset = datasets[s]
-        featurevalue = dataset[1] -- todo: pass to function instead of using a global
-
-        local sequence  = dataset[5] -- sequences[s] -- also dataset[5]
-        local rlparmode = 0
-        local topstack  = 0
-        local success   = false
-        local attribute = dataset[2]
-        local chain     = dataset[3] -- sequence.chain or 0
-        local typ       = sequence.type
-        local gpossing  = typ == "gpos_single" or typ == "gpos_pair"
-        local subtables = sequence.subtables
+        local dataset      = datasets[s]
+              featurevalue = dataset[1] -- todo: pass to function instead of using a global
+        local attribute    = dataset[2]
+        local chain        = dataset[3] -- sequence.chain or 0
+        local kind         = dataset[4]
+        local sequence     = dataset[5] -- sequences[s] -- also dataset[5]
+        local rlparmode    = 0
+        local topstack     = 0
+        local success      = false
+        local typ          = sequence.type
+        local gpossing     = typ == "gpos_single" or typ == "gpos_pair"
+        local subtables    = sequence.subtables
+        local handler      = handlers[typ]
         if chain < 0 then
             -- this is a limited case, no special treatments like 'init' etc
-            local handler = handlers[typ]
             -- we need to get rid of this slide! probably no longer needed in latest luatex
             local start = find_node_tail(head) -- slow (we can store tail because there's always a skip at the end): todo
             while start do
@@ -2461,7 +2454,7 @@ local function featuresprocessor(head,font,attr)
                                     local lookupmatch = lookupcache[getchar(start)]
                                     if lookupmatch then
                                         -- todo: disc?
-                                        head, start, success = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
+                                        head, start, success = handler(head,start,kind,lookupname,lookupmatch,sequence,lookuphash,i)
                                         if success then
                                             break
                                         end
@@ -2482,7 +2475,6 @@ local function featuresprocessor(head,font,attr)
                 end
             end
         else
-            local handler = handlers[typ]
             local ns = #subtables
             local start = head -- local ?
             rlmode = 0 -- to be checked ?
@@ -2510,7 +2502,7 @@ local function featuresprocessor(head,font,attr)
                                     if lookupmatch then
                                         -- sequence kan weg
                                         local ok
-                                        head, start, ok = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,1)
+                                        head, start, ok = handler(head,start,kind,lookupname,lookupmatch,sequence,lookuphash,1)
                                         if ok then
                                             done = true
                                         end
@@ -2540,7 +2532,7 @@ local function featuresprocessor(head,font,attr)
                             local lookupmatch = lookupcache[getchar(prev)]
                             if lookupmatch then
                                 -- sequence kan weg
-                                local h, d, ok = handler(head,prev,dataset[4],lookupname,lookupmatch,sequence,lookuphash,1)
+                                local h, d, ok = handler(head,prev,kind,lookupname,lookupmatch,sequence,lookuphash,1)
                                 if ok then
                                     done = true
                                     success = true
@@ -2563,7 +2555,7 @@ local function featuresprocessor(head,font,attr)
                                 if id == glyph_code then
                                     local lookupmatch = lookupcache[getchar(n)]
                                     if lookupmatch then
-                                        local h, d, ok = handler(sub,n,dataset[4],lookupname,lookupmatch,sequence,lookuphash,1,injection)
+                                        local h, d, ok = handler(sub,n,kind,lookupname,lookupmatch,sequence,lookuphash,1,injection)
                                         if ok then
                                             done = true
                                             success = true
@@ -2595,7 +2587,7 @@ local function featuresprocessor(head,font,attr)
                                     if lookupmatch then
                                         -- sequence kan weg
                                         local ok
-                                        head, start, ok = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,1)
+                                        head, start, ok = handler(head,start,kind,lookupname,lookupmatch,sequence,lookuphash,1)
                                         if ok then
                                             success = true
                                         elseif gpossing and zwnjruns and char == zwnj then
@@ -2691,7 +2683,7 @@ local function featuresprocessor(head,font,attr)
                                         if lookupmatch then
                                             -- we could move all code inline but that makes things even more unreadable
                                             local ok
-                                            head, start, ok = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
+                                            head, start, ok = handler(head,start,kind,lookupname,lookupmatch,sequence,lookuphash,i)
                                             if ok then
                                                 done = true
                                                 break
@@ -2734,7 +2726,7 @@ local function featuresprocessor(head,font,attr)
                                 local lookupmatch = lookupcache[char]
                                 if lookupmatch then
                                     -- we could move all code inline but that makes things even more unreadable
-                                    local h, d, ok = handler(head,prev,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
+                                    local h, d, ok = handler(head,prev,kind,lookupname,lookupmatch,sequence,lookuphash,i)
                                     if ok then
                                         done = true
                                         break
@@ -2765,7 +2757,7 @@ local function featuresprocessor(head,font,attr)
                                     if lookupcache then
                                         local lookupmatch = lookupcache[char]
                                         if lookupmatch then
-                                            local h, d, ok = handler(head,n,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i,injection)
+                                            local h, d, ok = handler(head,n,kind,lookupname,lookupmatch,sequence,lookuphash,i,injection)
                                             if ok then
                                                 done = true
                                                 break
@@ -2805,7 +2797,7 @@ local function featuresprocessor(head,font,attr)
                                         if lookupmatch then
                                             -- we could move all code inline but that makes things even more unreadable
                                             local ok
-                                            head, start, ok = handler(head,start,dataset[4],lookupname,lookupmatch,sequence,lookuphash,i)
+                                            head, start, ok = handler(head,start,kind,lookupname,lookupmatch,sequence,lookuphash,i)
                                             if ok then
                                                 success = true
                                                 break

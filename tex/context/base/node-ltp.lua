@@ -1243,6 +1243,7 @@ local function post_line_break(par)
                         setfield(prevlast,"post",nil)
                     end
                 elseif subtype == first_disc_code then
+                    -- what is v ... next probably
                     if not (getid(v) == disc_code and getsubtype(v) == second_disc_code) then
                         report_parbuilders('unsupported disc at location %a',4)
                     end
