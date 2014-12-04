@@ -253,12 +253,12 @@
 \unexpanded\def\mathfrak#1{{\mathfraktur   #1}}  % for AMS compatibility
 \unexpanded\def\mathbb  #1{{\mathblackboard#1}}  % for AMS compatibility
 
-\let\normaltf\tf \unexpanded\def\tf{\ifmmode\mathtf\else\normaltf\fi}
-\let\normalbf\bf \unexpanded\def\bf{\ifmmode\mathbf\else\normalbf\fi}
-\let\normalit\it \unexpanded\def\it{\ifmmode\mathit\else\normalit\fi}
-\let\normalsl\sl \unexpanded\def\sl{\ifmmode\mathsl\else\normalsl\fi}
-\let\normalbi\bi \unexpanded\def\bi{\ifmmode\mathbi\else\normalbi\fi}
-\let\normalbs\bs \unexpanded\def\bs{\ifmmode\mathbs\else\normalbs\fi}
+\ifdefined\normaltf\else\let\normaltf\tf\fi \unexpanded\def\tf{\ifmmode\mathtf\else\normaltf\fi}
+\ifdefined\normalbf\else\let\normalbf\bf\fi \unexpanded\def\bf{\ifmmode\mathbf\else\normalbf\fi}
+\ifdefined\normalit\else\let\normalit\it\fi \unexpanded\def\it{\ifmmode\mathit\else\normalit\fi}
+\ifdefined\normalsl\else\let\normalsl\sl\fi \unexpanded\def\sl{\ifmmode\mathsl\else\normalsl\fi}
+\ifdefined\normalbi\else\let\normalbi\bi\fi \unexpanded\def\bi{\ifmmode\mathbi\else\normalbi\fi}
+\ifdefined\normalbs\else\let\normalbs\bs\fi \unexpanded\def\bs{\ifmmode\mathbs\else\normalbs\fi}
 
 \let\normalrm\rm \unexpanded\def\rm{\ifmmode\mathrm\else\normalrm\fi}
 \let\normalss\ss \unexpanded\def\ss{\ifmmode\mathss\else\normalss\fi}

@@ -1997,8 +1997,29 @@
 %D takes a bit more time. Keep in mind that the fontsize is
 %D represented by a character or empty.
 
-\unexpanded\def\tx {\font_helpers_set_current_font_x_alternative \fontalternative}
-\unexpanded\def\txx{\font_helpers_set_current_font_xx_alternative\fontalternative}
+% \unexpanded\def\tx {\font_helpers_set_current_font_x_alternative \fontalternative}
+% \unexpanded\def\txx{\font_helpers_set_current_font_xx_alternative\fontalternative}
+
+\unexpanded\def\tx
+  {\ifmmode
+     \scriptstyle
+   \else
+     \let\fontface\!!plusfour
+     \let\fontalternative\fontalternative
+     \font_helpers_synchronize_font
+   \fi
+   \currentxfontsize\plusone
+   \let\tx\txx}
+
+\unexpanded\def\txx
+  {\ifmmode
+     \scriptscriptstyle
+   \else
+     \let\fontface\!!plusfive
+     \let\fontalternative\fontalternative
+     \font_helpers_synchronize_font
+   \fi
+   \currentxfontsize\plustwo}
 
 \let\normaltx \tx
 \let\normaltxx\txx

@@ -43,6 +43,7 @@
 \definecapitals[\v!WORD]            % all lower
 \definecapitals[\v!Word]            % one upper + font
 \definecapitals[\v!Words]           % some upper
+\definecapitals[\v!camel]           % lowers first
 \definecapitals[\v!word][\c!style=] % nothing
 
 %D \macros
@@ -84,6 +85,7 @@
 \unexpanded\def\word {\groupedcommand{\setcharactercasing[\v!word ]}{}}
 \unexpanded\def\Word {\groupedcommand{\setcharactercasing[\v!Word ]}{}}
 \unexpanded\def\Words{\groupedcommand{\setcharactercasing[\v!Words]}{}}
+\unexpanded\def\camel{\groupedcommand{\setcharactercasing[\v!camel]}{}}
 
 % This might become:
 %

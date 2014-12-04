@@ -247,7 +247,7 @@ end
 
 local function fcd_find()
     found = { }
-    pattern = environment.files[1] or ""
+    pattern = lower(environment.files[1] or "")
     if pattern ~= "" then
         pattern = string.escapedpattern(pattern)
         local paths = hash.paths
@@ -255,7 +255,7 @@ local function fcd_find()
             local paths = paths[i][2]
             for i=1,#paths do
                 local path = paths[i]
-                if find(path,pattern) then
+                if find(lower(path),pattern) then
                     found[#found+1] = path
                 end
             end

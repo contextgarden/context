@@ -550,13 +550,30 @@ function traditional.injecthyphens(dictionary,word,specification)
     return concat(result)
 end
 
-function traditional.registerpattern(language,str,specification)
-    local dictionary = dictionaries[language]
-    if specification == false then
-        unregister_pattern(dictionary.patterns,dictionary.specials,str)
-    else
-        register_pattern(dictionary.patterns,dictionary.specials,str,specification)
+do
+
+    local word      = C((1-space)^1)
+    local spaces    = space^1
+
+    local u_pattern = (Carg(1) * Carg(2) * word           / unregister_pattern + spaces)^1
+    local r_pattern = (Carg(1) * Carg(2) * word * Carg(3) /   register_pattern + spaces)^1
+    local e_pattern = (Carg(1)           * word           / register_exception + spaces)^1
+
+    function traditional.registerpattern(language,str,specification)
+        local dictionary = dictionaries[language]
+        if specification == false then
+            lpegmatch(u_pattern,str,1,dictionary.patterns,dictionary.specials)
+         -- unregister_pattern(dictionary.patterns,dictionary.specials,str)
+        else
+            lpegmatch(r_pattern,str,1,dictionary.patterns,dictionary.specials,specification or false)
+         -- register_pattern(dictionary.patterns,dictionary.specials,str,specification)
+        end
     end
+
+    function traditional.registerexception(language,str)
+        lpegmatch(e_pattern,str,1,dictionaries[language].exceptions)
+    end
+
 end
 
 -- todo: unicodes or utfhash ?
@@ -811,7 +828,8 @@ if context then
         texsetattribute(a_hyphenation,n or unsetvalue)
     end
 
-    commands.registerhyphenationpattern = traditional.registerpattern
+    commands.registerhyphenationpattern   = traditional.registerpattern
+    commands.registerhyphenationexception = traditional.registerexception
 
     -- This is a relative large function with local variables and local
     -- functions. A previous implementation had the functions outside but
@@ -874,7 +892,10 @@ if context then
         local rightmin     = 0
         local leftcharmin  = nil
         local rightcharmin = nil
+        ----- leftwordmin  = nil
         local rightwordmin = nil
+        local leftchar     = nil
+        local rightchar    = nil
         local attr         = nil
         local lastwordlast = nil
         local hyphenated   = hyphenate
@@ -892,6 +913,10 @@ if context then
 
         starttiming(traditional)
 
+        local function somehyphenchar(c)
+            return type(c) == "string" and utfbyte(c) or tonumber(c)
+        end
+
         local function synchronizefeatureset(a)
             local f = a and featuresets[a]
             if f then
@@ -901,6 +926,8 @@ if context then
                 rightwordmin = f.rightwordmin
                 leftcharmin  = f.leftcharmin
                 rightcharmin = f.rightcharmin
+                leftchar     = somehyphenchar(f.leftchar)
+                rightchar    = somehyphenchar(f.rightchar)
                 strict       = f.strict and strictids
                 if rightwordmin and rightwordmin > 0 and lastwordlast ~= rightwordmin then
                     -- so we can change mid paragraph but it's kind of unpredictable then
@@ -931,6 +958,8 @@ if context then
                 rightwordmin = false
                 leftcharmin  = false
                 rightcharmin = false
+                leftchar     = false
+                rightchar    = false
                 strict       = false
             end
             return a
@@ -1156,9 +1185,9 @@ if context then
                         instance   = dictionary.instance
                         characters = dictionary.characters
                         unicodes   = dictionary.unicodes
-                        leftchar   = instance and posthyphenchar(instance)
-                        rightchar  = instance and prehyphenchar (instance)
-                        leftmin    = leftcharmin  or getfield(current,"left")
+                        leftchar   = leftchar or (instance and posthyphenchar(instance))
+                        rightchar  = rightchar or (instance and prehyphenchar (instance))
+                        leftmin    = leftcharmin or getfield(current,"left")
                         rightmin   = rightcharmin or getfield(current,"right")
                         if not leftchar or leftchar < 0 then
                             leftchar = false

@@ -59,7 +59,9 @@
 \installsetuphandler     \??hyphenation {hyphenation}
 
 \setuphyphenation
-  [\c!method=\s!default]
+  [\c!method=\s!default,
+   \s!righthyphenchar=0,
+   \s!lefthyphenchar=0]
 
 \appendtoks
     \ctxcommand{setuphyphenation{method="\hyphenationparameter\c!method"}}%
@@ -94,6 +96,8 @@
    \letdummyparameter\c!rightwords\!!zerocount       % maybe \s!
    \letdummyparameter\s!lefthyphenmin\!!zerocount
    \letdummyparameter\s!righthyphenmin\!!zerocount
+   \letdummyparameter\s!lefthyphenchar\!!zerocount
+   \letdummyparameter\s!righthyphenchar\!!zerocount
    \letdummyparameter\c!alternative\empty
    \letdummyparameter\c!rightedge\empty
    \getdummyparameters[#2]%
@@ -104,6 +108,8 @@
       rightwordmin = \number\dummyparameter\c!rightwords,
       leftcharmin  = \number\dummyparameter\s!lefthyphenmin,
       rightcharmin = \number\dummyparameter\s!righthyphenmin,
+      leftchar     = "\dummyparameter\s!lefthyphenchar",
+      rightchar    = "\dummyparameter\s!righthyphenchar",
       alternative  = "\dummyparameter\c!alternative",
       rightedge    = "\dummyparameter\c!rightedge",
     })}%
@@ -141,6 +147,21 @@
        \!!bs#1\!!es,
      \fi
      false
+    )}}
+
+\unexpanded\def\registerhyphenationexception
+  {\dodoubleempty\lang_hyphenation_register_exception}
+
+
+\def\lang_hyphenation_register_exception[#1][#2]%
+  {\ctxcommand{registerhyphenationexception(
+     \ifsecondargument
+       \!!bs#1\!!es,
+       \!!bs#2\!!es
+     \else
+       \!!bs\currentlanguage\!!es,
+       \!!bs#1\!!es
+     \fi
     )}}
 
 \unexpanded\def\showhyphenationtrace

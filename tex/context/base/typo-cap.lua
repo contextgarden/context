@@ -314,15 +314,22 @@ local function random(start,attr,lastfont,n)
     return start, false
 end
 
-register(variables.WORD,    WORD)              --  1
-register(variables.word,    word)              --  2
-register(variables.Word,    Word)              --  3
-register(variables.Words,   Words)             --  4
-register(variables.capital, capital)           --  5
-register(variables.Capital, Capital)           --  6
-register(variables.none,    none)              --  7 (dummy)
-register(variables.random,  random)            --  8
-register(variables.mixed,   mixed)             --  9
+local function camel(start,attr,lastfont,n)
+    local start, done_1 = word(start,attr,lastfont,n)
+    local start, done_2 = Words(start,attr,lastfont,n)
+    return start, done_1 or done_2
+end
+
+register(variables.WORD,    WORD)              --   1
+register(variables.word,    word)              --   2
+register(variables.Word,    Word)              --   3
+register(variables.Words,   Words)             --   4
+register(variables.capital, capital)           --   5
+register(variables.Capital, Capital)           --   6
+register(variables.none,    none)              --   7 (dummy)
+register(variables.random,  random)            --   8
+register(variables.mixed,   mixed)             --   9
+register(variables.camel,   camel)             --  10
 
 register(variables.cap,     variables.capital) -- clone
 register(variables.Cap,     variables.Capital) -- clone

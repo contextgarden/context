@@ -618,6 +618,22 @@
 
 \definefont[infofont][dejavusansmono at 6pt] % todo \the\everybodyfont
 
+%D Optimization (later we overload in math):
+
+\unexpanded\def\normaltf{\let\fontalternative\s!tf\font_helpers_synchronize_font}
+\unexpanded\def\normalbf{\let\fontalternative\s!bf\font_helpers_synchronize_font}
+\unexpanded\def\normalit{\let\fontalternative\s!it\font_helpers_synchronize_font}
+\unexpanded\def\normalsl{\let\fontalternative\s!sl\font_helpers_synchronize_font}
+\unexpanded\def\normalbi{\let\fontalternative\s!bi\font_helpers_synchronize_font}
+\unexpanded\def\normalbs{\let\fontalternative\s!bs\font_helpers_synchronize_font}
+
+\let\tf\normaltf
+\let\bf\normalbf
+\let\it\normalit
+\let\sl\normalsl
+\let\bi\normalbi
+\let\bs\normalbs
+
 \protect \endinput
 
 % LM math vs CM math (analysis by Taco):
