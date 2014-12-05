@@ -16,6 +16,7 @@
 \registerctxluafile{s-languages-system}{}
 
 \installmodulecommandluasingle \showinstalledlanguages {moduledata.languages.system.showinstalled}
+\installmodulecommandluasingle \loadinstalledlanguages {moduledata.languages.system.loadinstalled}
 
 \stopmodule
 
@@ -25,6 +26,7 @@
 
 \starttext
 
+    \loadinstalledlanguages
     \showinstalledlanguages
 
 \stoptext

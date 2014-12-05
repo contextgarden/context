@@ -158,9 +158,10 @@ local trace_steps        = false  registertracker("otf.steps",        function(v
 local trace_skips        = false  registertracker("otf.skips",        function(v) trace_skips        = v end)
 local trace_directions   = false  registertracker("otf.directions",   function(v) trace_directions   = v end)
 
-local kernruns = true  registerdirective("otf.kernruns", function(v) kernruns = v end)
-local discruns = true  registerdirective("otf.discruns", function(v) discruns = v end)
-local compruns = true  registerdirective("otf.compruns", function(v) compruns = v end)
+local trace_kernruns     = false  registertracker("otf.kernruns",     function(v) trace_kernruns     = v end)
+local trace_discruns     = false  registertracker("otf.discruns",     function(v) trace_discruns     = v end)
+local trace_compruns     = false  registertracker("otf.compruns",     function(v) trace_compruns     = v end)
+
 local zwnjruns = true  registerdirective("otf.zwnjruns", function(v) zwnjruns = v end)
 
 local report_direct   = logs.reporter("fonts","otf direct")
@@ -169,6 +170,7 @@ local report_chain    = logs.reporter("fonts","otf chain")
 local report_process  = logs.reporter("fonts","otf process")
 local report_prepare  = logs.reporter("fonts","otf prepare")
 local report_warning  = logs.reporter("fonts","otf warning")
+local report_run      = logs.reporter("fonts","otf run")
 
 registertracker("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
 registertracker("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
@@ -516,8 +518,6 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
             end
             start = getnext(start)
         end
-    elseif not kernruns or not discruns or not compruns then
-        -- disabled
     elseif getsubtype(discfound) == discretionary_code then
         -- maybe some day
     else
@@ -2260,113 +2260,127 @@ end
 -- optimization comes later ...
 
 local function kernrun(disc,run) -- we can assume that prev and next are glyphs
-    if kernruns then
+    if trace_kernruns then
+        report_run("kern") -- will be more detailed
+    end
         --
-        local prev = getprev(disc) -- todo, keep these in the main loop
-        local next = getnext(disc) -- todo, keep these in the main loop
-        --
-        local pre = getfield(disc,"pre")
-        if not pre then
-            -- go on
-        elseif prev then
-            setfield(pre,"prev",prev)
-            setfield(prev,"next",pre)
-            run(prev,"preinjections")
-            setfield(pre,"prev",nil)
-            setfield(prev,"next",disc)
-        else
-            run(pre,"preinjections")
-        end
-        --
-        local post = getfield(disc,"post")
-        if not post then
-            -- go on
-        elseif next then
-            local tail = find_node_tail(post)
-            setfield(tail,"next",next)
-            setfield(next,"prev",tail)
-            run(post,"postinjections",tail)
-            setfield(tail,"next",nil)
-            setfield(next,"prev",disc)
-        else
-            run(post,"postinjections")
-        end
-        --
-        local replace = getfield(disc,"replace")
-        if not replace then
-            -- this should be already done by discfound
-        elseif prev and next then
-            local tail = find_node_tail(replace)
-            setfield(replace,"prev",prev)
-            setfield(prev,"next",replace)
-            setfield(tail,"next",next)
-            setfield(next,"prev",tail)
-            run(prev,"replaceinjections",tail)
-            setfield(replace,"prev",nil)
-            setfield(prev,"next",disc)
-            setfield(tail,"next",nil)
-            setfield(next,"prev",disc)
-        elseif prev then
-            setfield(replace,"prev",prev)
-            setfield(prev,"next",replace)
-            run(prev,"replaceinjections")
-            setfield(replace,"prev",nil)
-            setfield(prev,"next",disc)
-        elseif next then
-            local tail = find_node_tail(replace)
-            setfield(tail,"next",next)
-            setfield(next,"prev",tail)
-            run(replace,"replaceinjections",tail)
-            setfield(tail,"next",nil)
-            setfield(next,"prev",disc)
-        else
-            run(replace,"replaceinjections")
-        end
-        --
+    local prev = getprev(disc) -- todo, keep these in the main loop
+    local next = getnext(disc) -- todo, keep these in the main loop
+    --
+    local pre = getfield(disc,"pre")
+    if not pre then
+        -- go on
+    elseif prev then
+        setfield(pre,"prev",prev)
+        setfield(prev,"next",pre)
+        run(prev,"preinjections")
+        setfield(pre,"prev",nil)
+        setfield(prev,"next",disc)
+    else
+        run(pre,"preinjections")
+    end
+    --
+    local post = getfield(disc,"post")
+    if not post then
+        -- go on
+    elseif next then
+        local tail = find_node_tail(post)
+        setfield(tail,"next",next)
+        setfield(next,"prev",tail)
+        run(post,"postinjections",tail)
+        setfield(tail,"next",nil)
+        setfield(next,"prev",disc)
+    else
+        run(post,"postinjections")
+    end
+    --
+    local replace = getfield(disc,"replace")
+    if not replace then
+        -- this should be already done by discfound
+    elseif prev and next then
+        local tail = find_node_tail(replace)
+        setfield(replace,"prev",prev)
+        setfield(prev,"next",replace)
+        setfield(tail,"next",next)
+        setfield(next,"prev",tail)
+        run(prev,"replaceinjections",tail)
+        setfield(replace,"prev",nil)
+        setfield(prev,"next",disc)
+        setfield(tail,"next",nil)
+        setfield(next,"prev",disc)
+    elseif prev then
+        setfield(replace,"prev",prev)
+        setfield(prev,"next",replace)
+        run(prev,"replaceinjections")
+        setfield(replace,"prev",nil)
+        setfield(prev,"next",disc)
+    elseif next then
+        local tail = find_node_tail(replace)
+        setfield(tail,"next",next)
+        setfield(next,"prev",tail)
+        run(replace,"replaceinjections",tail)
+        setfield(tail,"next",nil)
+        setfield(next,"prev",disc)
+    else
+        run(replace,"replaceinjections")
     end
 end
 
 local function comprun(disc,run)
-    if compruns then
-        --
-        local pre = getfield(disc,"pre")
-        if pre then
-            local new = run(pre)
-            if new ~= pre then
-                setfield(disc,"pre",new)
-            end
+    if trace_compruns then
+        report_run("comp") -- will be more detailed
+    end
+    --
+    local pre = getfield(disc,"pre")
+    if pre then
+        local new = run(pre)
+        if new ~= pre then
+            setfield(disc,"pre",new)
         end
-        --
-        local post = getfield(disc,"post")
-        if post then
-            local new = run(post)
-            if new ~= post then
-                setfield(disc,"post",new)
-            end
+    end
+    --
+    local post = getfield(disc,"post")
+    if post then
+        local new = run(post)
+        if new ~= post then
+            setfield(disc,"post",new)
         end
-        --
-        local replace = getfield(disc,"replace")
-        if replace then
-            local new = run(replace)
-            if new ~= replace then
-                setfield(disc,"replace",new)
-            end
+    end
+    --
+    local replace = getfield(disc,"replace")
+    if replace then
+        local new = run(replace)
+        if new ~= replace then
+            setfield(disc,"replace",new)
         end
-        --
     end
 end
 
-local function discrun(disc,run)
+local function discrun(disc,drun,krun)
     local next = getnext(disc)
-    if discruns and next then
-        local prev = getprev(disc)
-        if prev then
-            setfield(prev,"next",next)
-         -- setfield(next,"prev",prev)
-            run(disc)
-            setfield(prev,"next",disc)
-         -- setfield(next,"prev",disc)
-        end
+    local prev = getprev(disc)
+    if trace_discruns then
+        report_run("disc") -- will be more detailed
+    end
+    if next and prev then
+        setfield(prev,"next",next)
+     -- setfield(next,"prev",prev)
+        drun(prev)
+        setfield(prev,"next",disc)
+     -- setfield(next,"prev",disc)
+    end
+    --
+    local pre = getfield(disc,"pre")
+    if not pre then
+        -- go on
+    elseif prev then
+        setfield(pre,"prev",prev)
+        setfield(prev,"next",pre)
+        krun(prev,"preinjections")
+        setfield(pre,"prev",nil)
+        setfield(prev,"next",disc)
+    else
+        run(pre,"preinjections")
     end
     return next
 end
@@ -2551,6 +2565,9 @@ local function featuresprocessor(head,font,attr)
                         if a then
                             -- sequence kan weg
                             for n in traverse_nodes(sub) do -- only gpos
+                                if n == last then
+                                    break
+                                end
                                 local id = getid(n)
                                 if id == glyph_code then
                                     local lookupmatch = lookupcache[getchar(n)]
@@ -2563,9 +2580,6 @@ local function featuresprocessor(head,font,attr)
                                     end
                                 else
                                     -- message
-                                end
-                                if n == last then
-                                    break
                                 end
                             end
                         end
@@ -2609,7 +2623,7 @@ local function featuresprocessor(head,font,attr)
                                 if discretionary then
                                     kernrun(start,k_run)
                                 else
-                                    discrun(start,d_run)
+                                    discrun(start,d_run,k_run)
                                 end
                             elseif discretionary then
                                 comprun(start,c_run)
@@ -2718,6 +2732,7 @@ local function featuresprocessor(head,font,attr)
                         a = not attribute or getprop(prev,a_state) == attribute
                     end
                     if a then
+                        -- brr prev can be disc
                         local char = getchar(prev)
                         for i=1,ns do
                             local lookupname = subtables[i]
@@ -2748,6 +2763,9 @@ local function featuresprocessor(head,font,attr)
                     end
                     if a then
                         for n in traverse_nodes(sub) do -- only gpos
+                            if n == last then
+                                break
+                            end
                             local id = getid(n)
                             if id == glyph_code then
                                 local char = getchar(n)
@@ -2769,9 +2787,6 @@ local function featuresprocessor(head,font,attr)
                                 end
                             else
                                 -- message
-                            end
-                            if n == last then
-                                break
                             end
                         end
                     end
@@ -2827,7 +2842,7 @@ local function featuresprocessor(head,font,attr)
                             if discretionary then
                                 kernrun(start,k_run)
                             else
-                                discrun(start,d_run)
+                                discrun(start,d_run,k_run)
                             end
                         elseif discretionary then
                             comprun(start,c_run)

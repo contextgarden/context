@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/03/14 18:26:33
+-- merge date  : 12/05/14 11:11:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -7830,8 +7830,8 @@ actions["add duplicates"]=function(data,filename,raw)
           local description=descriptions[unicode]
           local n=0
           for _,description in next,descriptions do
+            local kerns=description.kerns
             if kerns then
-              local kerns=description.kerns
               for _,k in next,kerns do
                 local ku=k[unicode]
                 if ku then

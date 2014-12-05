@@ -10,26 +10,53 @@ moduledata.languages        = moduledata.languages        or { }
 moduledata.languages.system = moduledata.languages.system or { }
 
 local NC, NR, HL = context.NC, context.NR, context.HL
+local sortedhash = table.sortedhash
+local registered = languages.registered
+local context    = context
+local ctx_NC     = context.NC
+local ctx_NR     = context.NR
+local ctx_bold   = context.bold
+
+function moduledata.languages.system.loadinstalled()
+    context.start()
+    for k, v in table.sortedhash(registered) do
+        context.language{ k }
+    end
+    context.stop()
+end
 
 function moduledata.languages.system.showinstalled()
-    local numbers    = languages.numbers
-    local registered = languages.registered
-    context.starttabulate { "|r|l|l|l|l|" }
-        NC() context("id")
-        NC() context("tag")
-        NC() context("synonyms")
-        NC() context("parent")
-        NC() context("loaded")
-        NC() NR() HL()
-        for i=1,#numbers do
-            local tag  = numbers[i]
-            local data = registered[tag]
-            NC() context(data.number)
-            NC() context(tag)
-            NC() context("% t",table.sortedkeys(data.synonyms))
-            NC() context(data.parent)
-            NC() context("%+t",table.sortedkeys(data.used))
-            NC() NR()
+    --
+    context.starttabulate { "|l|r|l|l|p(7em)|r|p|" }
+        context.FL()
+        ctx_NC() ctx_bold("tag")
+        ctx_NC() ctx_bold("n")
+        ctx_NC() ctx_bold("parent")
+        ctx_NC() ctx_bold("file")
+        ctx_NC() ctx_bold("synonyms")
+        ctx_NC() ctx_bold("patterns")
+        ctx_NC() ctx_bold("characters")
+        ctx_NC() ctx_NR()
+        context.FL()
+        for k, v in sortedhash(registered) do
+            local parent    = v.parent
+            local resources = v.resources
+            local patterns  = resources and resources.patterns
+            ctx_NC() context(k)
+            ctx_NC() context(v.number)
+            ctx_NC() context(v.parent)
+            ctx_NC() context(v.patterns)
+            ctx_NC() for k, v in sortedhash(v.synonyms) do context("%s\\par",k) end
+            if patterns then
+                ctx_NC() context(patterns.n)
+                ctx_NC() context("% t",utf.split(patterns.characters))
+            else
+                ctx_NC()
+                ctx_NC()
+            end
+            ctx_NC() ctx_NR()
         end
+        context.LL()
     context.stoptabulate()
+    --
 end
