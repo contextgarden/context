@@ -146,46 +146,47 @@ function handlers.characters(head)
         end
     end
     for n in traverse_id(glyph_code,tonut(head)) do
-     -- if getsubtype(n) <256 then -- all are 1
-        local font = getfont(n)
-        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-        if font ~= prevfont or attr ~= prevattr then
-            if basefont then
-                basefont[2] = tonode(getprev(n)) -- todo, save p
-            end
-            if attr > 0 then
-                local used = attrfonts[font]
-                if not used then
-                    used = { }
-                    attrfonts[font] = used
+        if getsubtype(n) < 256 then -- all are 1
+            local font = getfont(n)
+            local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+            if font ~= prevfont or attr ~= prevattr then
+                if basefont then
+                    basefont[2] = tonode(getprev(n)) -- todo, save p
                 end
-                if not used[attr] then
-                    local fd = setfontdynamics[font]
-                    if fd then
-                        used[attr] = fd[attr]
-                        a = a + 1
-                    else
-                        b = b + 1
-                        basefont = { tonode(n), nil }
-                        basefonts[b] = basefont
+                if attr > 0 then
+                    local used = attrfonts[font]
+                    if not used then
+                        used = { }
+                        attrfonts[font] = used
+                    end
+                    if not used[attr] then
+                        local fd = setfontdynamics[font]
+                        if fd then
+                            used[attr] = fd[attr]
+                            a = a + 1
+                        else
+                            b = b + 1
+                            basefont = { tonode(n), nil }
+                            basefonts[b] = basefont
+                        end
+                    end
+                else
+                    local used = usedfonts[font]
+                    if not used then
+                        local fp = fontprocesses[font]
+                        if fp then
+                            usedfonts[font] = fp
+                            u = u + 1
+                        else
+                            b = b + 1
+                            basefont = { tonode(n), nil }
+                            basefonts[b] = basefont
+                        end
                     end
                 end
-            else
-                local used = usedfonts[font]
-                if not used then
-                    local fp = fontprocesses[font]
-                    if fp then
-                        usedfonts[font] = fp
-                        u = u + 1
-                    else
-                        b = b + 1
-                        basefont = { tonode(n), nil }
-                        basefonts[b] = basefont
-                    end
-                end
+                prevfont = font
+                prevattr = attr
             end
-            prevfont = font
-            prevattr = attr
         end
     -- end
     end

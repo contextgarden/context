@@ -219,6 +219,7 @@ registerotffeature {
 -- latin
 
 methods.latn = analyzers.setstate
+-------.dflt = analyzers.setstate % can be an option or just the default
 
 local arab_warned = { }
 

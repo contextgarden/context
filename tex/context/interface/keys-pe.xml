@@ -695,7 +695,7 @@
 		<cd:constant name='equalwidth' value='عرض‌یکسان'/>
 		<cd:constant name='escape' value='فرار'/>
 		<cd:constant name='evenmargin' value='حاشیه‌زوج'/>
-		<cd:constant name='exitoffset' value='labeloffset'/>
+		<cd:constant name='exitoffset' value='exitoffset'/>
 		<cd:constant name='expansion' value='گسترش'/>
 		<cd:constant name='export' value='export'/>
 		<cd:constant name='extras' value='extras'/>

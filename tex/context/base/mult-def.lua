@@ -6544,7 +6544,7 @@ return {
    ["en"]="labeloffset",
   },
   ["exitoffset"]={
-   ["en"]="labeloffset",
+   ["en"]="exitoffset",
   },
   ["commentoffset"]={
    ["en"]="commentoffset",

@@ -776,6 +776,14 @@ if context then
         [0x200D] = true, -- zwj
     }
 
+    local function somehyphenchar(c)
+        if c == "" or c == "0" then
+            return nil
+        else
+            return type(c) == "string" and utfbyte(c) or tonumber(c)
+        end
+    end
+
     local function definefeatures(name,featureset)
         local extrachars   = featureset.characters -- "[]()"
         local hyphenchars  = featureset.hyphens
@@ -785,6 +793,8 @@ if context then
         local leftcharmin  = tonumber(featureset.leftcharmin)
         local rightcharmin = tonumber(featureset.rightcharmin)
         local rightedge    = featureset.rightedge
+        local leftchar     = somehyphenchar(featureset.leftchar)
+        local rightchar    = somehyphenchar(featureset.rightchar)
         --
         joinerchars = joinerchars == v_yes and defaultjoiners or joinerchars
         hyphenchars = hyphenchars == v_yes and defaulthyphens or hyphenchars
@@ -795,6 +805,8 @@ if context then
         featureset.rightwordmin = rightwordmin and rightwordmin > 0 and rightwordmin or nil
         featureset.leftcharmin  = leftcharmin  and leftcharmin  > 0 and leftcharmin  or nil
         featureset.rightcharmin = rightcharmin and rightcharmin > 0 and rightcharmin or nil
+        featureset.leftchar     = leftchar
+        featureset.rightchar    = rightchar
         featureset.strict       = rightedge == 'tex'
         --
         return register(name,featureset)
@@ -913,10 +925,6 @@ if context then
 
         starttiming(traditional)
 
-        local function somehyphenchar(c)
-            return type(c) == "string" and utfbyte(c) or tonumber(c)
-        end
-
         local function synchronizefeatureset(a)
             local f = a and featuresets[a]
             if f then
@@ -926,8 +934,8 @@ if context then
                 rightwordmin = f.rightwordmin
                 leftcharmin  = f.leftcharmin
                 rightcharmin = f.rightcharmin
-                leftchar     = somehyphenchar(f.leftchar)
-                rightchar    = somehyphenchar(f.rightchar)
+                leftchar     = f.leftchar
+                rightchar    = f.rightchar
                 strict       = f.strict and strictids
                 if rightwordmin and rightwordmin > 0 and lastwordlast ~= rightwordmin then
                     -- so we can change mid paragraph but it's kind of unpredictable then
