@@ -160,9 +160,12 @@ local function unregister_pattern(patterns,specials,str)
     specials[k] = nil
 end
 
+local p_lower = lpeg.patterns.utf8lower
+
 local function register_exception(exceptions,str,specification)
-    local k = lpegmatch(make_hashkey_e,str)
-    local v = lpegmatch(make_pattern_e,str)
+    local l = lpegmatch(p_lower,str)
+    local k = lpegmatch(make_hashkey_e,l)
+    local v = lpegmatch(make_pattern_e,l)
     exceptions[k] = v
 end
 
@@ -777,11 +780,8 @@ if context then
     }
 
     local function somehyphenchar(c)
-        if c == "" or c == "0" then
-            return nil
-        else
-            return type(c) == "string" and utfbyte(c) or tonumber(c)
-        end
+        c = tonumber(c)
+        return c ~= 0 and c or nil
     end
 
     local function definefeatures(name,featureset)

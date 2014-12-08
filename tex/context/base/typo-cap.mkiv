@@ -166,17 +166,20 @@
 %
 % here we keep the \groupedcommand
 
+% \def\typo_capitals_set_fake#1%
+%   {\edef\currentcapitals{#1}%
+%    \scratchcounter\fontid\font
+%    \usecapitalsstyleparameter\c!style
+%    \ctxcommand{setcharactercasing("\currentcapitals",\number\scratchcounter,\number\fontid\font)}}
+
 \def\typo_capitals_set_fake#1%
   {\edef\currentcapitals{#1}%
-  %\setcharactercasing[\currentcapitals]%
    \ctxcommand{setcharactercasing("\currentcapitals",\number\fontid\font)}%
-   \signalcharacter % retain current style
    \usecapitalsstyleparameter\c!style}
 
 \def\typo_capitals_set_real#1%
   {\edef\currentcapitals{#1}%
    \sc
-  %\setcharactercasing[\currentcapitals]}
    \ctxcommand{setcharactercasing("\currentcapitals",\number\fontid\font)}}
 
 \unexpanded\def\pseudosmallcapped{\groupedcommand{\typo_capitals_set_fake\v!WORD   }\donothing} % all upper

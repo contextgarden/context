@@ -13,8 +13,11 @@ local concat, keys = table.concat, table.keys
 
 local nodes, node, fonts = nodes, node, fonts
 
-local trace_characters  = false  trackers.register("nodes.characters", function(v) trace_characters = v end)
-local trace_fontrun     = false  trackers.register("nodes.fontrun",    function(v) trace_fontrun    = v end)
+local trace_characters  = false  trackers  .register("nodes.characters", function(v) trace_characters = v end)
+local trace_fontrun     = false  trackers  .register("nodes.fontrun",    function(v) trace_fontrun    = v end)
+
+local force_discrun     = true   directives.register("nodes.discrun",    function(v) force_discrun    = v end)
+local force_basepass    = true   directives.register("nodes.basepass",   function(v) force_basepass   = v end)
 
 local report_fonts      = logs.reporter("fonts","processing")
 
@@ -117,14 +120,22 @@ fonts.hashes.processes   = fontprocesses
 -- we need to deal with the basemode fonts here and can only run over ranges as we
 -- otherwise get luatex craches due to all kind of asserts in the disc/lig builder
 
-local ligaturing = builders.kernel.ligaturing
-local kerning    = builders.kernel.kerning
+local ligaturing = node.ligaturing
+local kerning    = node.kerning
 
 function handlers.characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)
-    local usedfonts, attrfonts, basefonts = { }, { }, { }
-    local a, u, b, prevfont, prevattr, done, basefont = 0, 0, 0, nil, 0, false, nil
+
+    local usedfonts = { }
+    local attrfonts = { }
+    local basefonts = { }
+    local a, u, b   = 0, 0, 0
+    local basefont  = nil
+    local prevfont  = nil
+    local prevattr  = 0
+    local done      = false
+
     if trace_fontrun then
         run = run + 1
         report_fonts()
@@ -145,7 +156,10 @@ function handlers.characters(head)
             n = getnext(n)
         end
     end
-    for n in traverse_id(glyph_code,tonut(head)) do
+
+    local nuthead = tonut(head)
+
+    for n in traverse_id(glyph_code,nuthead) do
         if getsubtype(n) < 256 then -- all are 1
             local font = getfont(n)
             local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
@@ -164,7 +178,7 @@ function handlers.characters(head)
                         if fd then
                             used[attr] = fd[attr]
                             a = a + 1
-                        else
+                        elseif force_basepass then
                             b = b + 1
                             basefont = { tonode(n), nil }
                             basefonts[b] = basefont
@@ -177,7 +191,7 @@ function handlers.characters(head)
                         if fp then
                             usedfonts[font] = fp
                             u = u + 1
-                        else
+                        elseif force_basepass then
                             b = b + 1
                             basefont = { tonode(n), nil }
                             basefonts[b] = basefont
@@ -188,8 +202,63 @@ function handlers.characters(head)
                 prevattr = attr
             end
         end
-    -- end
     end
+
+    -- could be an optional pass : seldom needed, only for documentation as a discretionary
+    -- with pre/post/replace will normally not occur on it's own
+
+    if force_discrun then
+
+        -- basefont is not supported in disc only runs ... it would mean a lot of
+        -- ranges .. we could try to run basemode as a separate processor run but
+        -- not for now (we can consider it when the new node code is tested
+
+     -- local prevfont  = nil
+     -- local prevattr  = 0
+
+        for d in traverse_id(disc_code,nuthead) do
+            -- we could use first_glyph
+            local r = getfield(n,"replace") -- good enough
+            if r then
+                for n in traverse_id(glyph_code,r) do
+                    if getsubtype(n) < 256 then -- all are 1
+                        local font = getfont(n)
+                        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+                        if font ~= prevfont or attr ~= prevattr then
+                            if attr > 0 then
+                                local used = attrfonts[font]
+                                if not used then
+                                    used = { }
+                                    attrfonts[font] = used
+                                end
+                                if not used[attr] then
+                                    local fd = setfontdynamics[font]
+                                    if fd then
+                                        used[attr] = fd[attr]
+                                        a = a + 1
+                                    end
+                                end
+                            else
+                                local used = usedfonts[font]
+                                if not used then
+                                    local fp = fontprocesses[font]
+                                    if fp then
+                                        usedfonts[font] = fp
+                                        u = u + 1
+                                    end
+                                end
+                            end
+                            prevfont = font
+                            prevattr = attr
+                        end
+                    end
+                    break
+                end
+            end
+        end
+
+    end
+
     if trace_fontrun then
         report_fonts()
         report_fonts("statics : %s",u > 0 and concat(keys(usedfonts)," ") or "none")
@@ -249,11 +318,18 @@ function handlers.characters(head)
     if b == 0 then
         -- skip
     elseif b == 1 then
+        -- only one font
         local range = basefonts[1]
         local start, stop = range[1], range[2]
-        ligaturing(start,stop)
-        kerning(start,stop)
+        if stop then
+            ligaturing(start,stop)
+            kerning(start,stop)
+        else
+            ligaturing(start)
+            kerning(start)
+        end
     else
+        -- multiple fonts
         for i=1,b do
             local range = basefonts[i]
             local start, stop = range[1], range[2]

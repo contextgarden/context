@@ -143,7 +143,9 @@ function analyzers.setstate(head,font) -- we can skip math
                 first, last, n = nil, nil, 0
             end
         elseif id == disc_code then
-            -- always in the middle
+            -- always in the middle .. it doesn't make much sense to assign a property
+            -- here ... we might at some point decide to flag the components when present
+            -- but even then it's kind of bogus
             setprop(current,a_state,s_medi)
             last = current
         else -- finish

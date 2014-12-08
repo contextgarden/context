@@ -206,10 +206,12 @@ end
 -- needs checking ... base mode / node mode -- also use insert_before/after etc
 
 local function do_process(head,force) -- todo: glue so that we can fully stretch
-    local start, done, lastfont = head, false, nil
+    local start        = head
+    local done         = false
+    local lastfont     = nil
     local keepligature = kerns.keepligature
     local keeptogether = kerns.keeptogether
-    local fillup = false
+    local fillup       = false
     while start do
         -- faster to test for attr first
         local attr = force or getattr(start,a_kerns)
@@ -217,7 +219,7 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
             setattr(start,a_kerns,unsetvalue)
             local krn = mapping[attr]
             if krn == v_max then
-                krn = .25
+                krn    = .25
                 fillup = true
             else
                 fillup = false
@@ -233,8 +235,9 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                         -- keep 'm
                     else
                         c = do_process(c,attr)
-                        local s = start
-                        local p, n = getprev(s), getnext(s)
+                        local s    = start
+                        local p    = getprev(s)
+                        local n    = getnext(s)
                         local tail = find_node_tail(c)
                         if p then
                             setfield(p,"next",c)
@@ -293,11 +296,14 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                             -- a bit too complicated, we can best not copy and just calculate
                             -- but we could have multiple glyphs involved so ...
                             local disc = prev -- disc
-                            local prv, nxt = getprev(disc), getnext(disc)
+                            local prv  = getprev(disc)
+                            local nxt  = getnext(disc)
                             if getsubtype(disc) == discretionary_code then
                                 -- maybe we should forget about this variant as there is no glue
-                                -- possible
-                                local pre, post, replace = getfield(disc,"pre"), getfield(disc,"post"), getfield(disc,"replace")
+                                -- possible .. hardly used so a copy doesn't hurt much
+                                local pre     = getfield(disc,"pre")
+                                local post    = getfield(disc,"post")
+                                local replace = getfield(disc,"replace")
                                 if pre and prv then -- must pair with getprev(start)
                                     local before = copy_node(prv)
                                     setfield(pre,"prev",before)
@@ -311,7 +317,7 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                                 end
                                 if post and nxt then  -- must pair with start
                                     local after = copy_node(nxt)
-                                    local tail = find_node_tail(post)
+                                    local tail  = find_node_tail(post)
                                     setfield(tail,"next",after)
                                     setfield(after,"prev",tail)
                                     setfield(after,"next",nil)
@@ -322,8 +328,8 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                                 end
                                 if replace and prv and nxt then -- must pair with start and start.prev
                                     local before = copy_node(prv)
-                                    local after = copy_node(nxt)
-                                    local tail = find_node_tail(replace)
+                                    local after  = copy_node(nxt)
+                                    local tail   = find_node_tail(replace)
                                     setfield(replace,"prev",before)
                                     setfield(before,"next",replace)
                                     setfield(before,"prev",nil)
@@ -338,9 +344,10 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                                     free_node(after)
                                     free_node(before)
                                 elseif prv and getid(prv) == glyph_code and getfont(prv) == lastfont then
-                                    local prevchar, lastchar = getchar(prv), getchar(start)
-                                    local kerns = chardata[lastfont][prevchar].kerns
-                                    local kern = kerns and kerns[lastchar] or 0
+                                    local prevchar = getchar(prv)
+                                    local lastchar = getchar(start)
+                                    local kerns    = chardata[lastfont][prevchar].kerns
+                                    local kern     = kerns and kerns[lastchar] or 0
                                     krn = kern + quaddata[lastfont]*krn -- here
                                     setfield(disc,"replace",kern_injector(false,krn)) -- only kerns permitted, no glue
                                 else
@@ -351,9 +358,10 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                                 -- this one happens in most cases: automatic (-), explicit (\-), regular (patterns)
                                 if prv and getid(prv) == glyph_code and getfont(prv) == lastfont then
                                     -- the normal case
-                                    local prevchar, lastchar = getchar(prv), getchar(start)
-                                    local kerns = chardata[lastfont][prevchar].kerns
-                                    local kern = kerns and kerns[lastchar] or 0
+                                    local prevchar = getchar(prv)
+                                    local lastchar = getchar(start)
+                                    local kerns    = chardata[lastfont][prevchar].kerns
+                                    local kern     = kerns and kerns[lastchar] or 0
                                     krn = kern + quaddata[lastfont]*krn
                                 else
                                     krn = quaddata[lastfont]*krn
@@ -368,7 +376,9 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                         local s = getfield(start,"spec")
                         local w = getfield(s,"width")
                         if w > 0 then
-                            local width, stretch, shrink = w+gluefactor*w*krn, getfield(s,"stretch"), getfield(s,"shrink")
+                            local width   = w+gluefactor*w*krn
+                            local stretch = getfield(s,"stretch")
+                            local shrink  = getfield(s,"shrink")
                             setfield(start,"spec",spec_injector(fillup,width,stretch*width/w,shrink*width/w))
                             done = true
                         end

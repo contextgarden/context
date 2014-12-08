@@ -60,8 +60,8 @@
 
 \setuphyphenation
   [\c!method=\s!default,
-   \s!righthyphenchar=0,
-   \s!lefthyphenchar=0]
+   \s!righthyphenchar=0, % number tzt g: etc
+   \s!lefthyphenchar=0]  % number
 
 \appendtoks
     \ctxcommand{setuphyphenation{method="\hyphenationparameter\c!method"}}%
@@ -108,8 +108,8 @@
       rightwordmin = \number\dummyparameter\c!rightwords,
       leftcharmin  = \number\dummyparameter\s!lefthyphenmin,
       rightcharmin = \number\dummyparameter\s!righthyphenmin,
-      leftchar     = "\dummyparameter\s!lefthyphenchar",
-      rightchar    = "\dummyparameter\s!righthyphenchar",
+      leftchar     = \number\dummyparameter\s!lefthyphenchar,
+      rightchar    = \number\dummyparameter\s!righthyphenchar,
       alternative  = "\dummyparameter\c!alternative",
       rightedge    = "\dummyparameter\c!rightedge",
     })}%

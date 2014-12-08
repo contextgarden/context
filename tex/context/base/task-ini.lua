@@ -21,6 +21,7 @@ local tasks           = nodes.tasks
 local prependaction   = tasks.prependaction
 local appendaction    = tasks.appendaction
 local disableaction   = tasks.disableaction
+local enableaction    = tasks.enableaction
 local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
 
@@ -48,8 +49,8 @@ appendaction("processors",   "fonts",       "builders.paragraphs.solutions.split
 appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
 appendaction("processors",   "fonts",       "nodes.injections.handler")                          -- maybe todo
 appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs", nil, "nohead")       -- maybe todo
-------------("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on (could be selective: if only node mode)
-------------("processors",   "fonts",       "builders.kernel.kerning")                           -- always on (could be selective: if only node mode)
+appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on (could be selective: if only node mode)
+appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on (could be selective: if only node mode)
 appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
 ------------("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 
@@ -219,3 +220,18 @@ freezegroup("vboxbuilders", "normalizers")
 
 freezegroup("math",         "normalizers")
 freezegroup("math",         "builders")
+
+-- new: disabled here
+
+disableaction("processors", "builders.kernel.ligaturing")
+disableaction("processors", "builders.kernel.kerning")
+
+directives.register("nodes.basepass", function(v)
+    if v then
+         disableaction("processors", "builders.kernel.ligaturing")
+         disableaction("processors", "builders.kernel.kerning")
+    else
+         enableaction("processors", "builders.kernel.ligaturing")
+         enableaction("processors", "builders.kernel.kerning")
+    end
+end)

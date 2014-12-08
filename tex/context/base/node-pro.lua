@@ -55,7 +55,7 @@ do
         return concat(t)
     end
 
-    local function tracer(what,state,head,groupcode,before,after,show)
+    function processors.tracer(what,state,head,groupcode,before,after,show)
         if not groupcode then
             groupcode = "unknown"
         elseif groupcode == "" then
@@ -69,9 +69,9 @@ do
         end
     end
 
-    processors.tracer = tracer
-
 end
+
+local tracer = processors.tracer
 
 processors.enabled = true -- this will become a proper state (like trackers)
 

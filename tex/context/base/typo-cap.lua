@@ -33,6 +33,9 @@ local getchar         = nuts.getchar
 
 local copy_node       = nuts.copy
 local end_of_math     = nuts.end_of_math
+local traverse_nodes  = nuts.traverse
+local traverse_id     = nuts.traverse_id
+local insert_after    = nuts.insert_after
 
 local nodecodes       = nodes.nodecodes
 local skipcodes       = nodes.skipcodes
@@ -72,6 +75,8 @@ local a_cases         = attributes.private("case")
 local extract         = bit32.extract
 local run             = 0 -- a trick to make neighbouring ranges work
 
+local blocked         = { }
+
 local function set(tag,font)
     if run == 2^6 then
         run = 1
@@ -104,87 +109,39 @@ end
 --
 -- \WORD {far too \Word{many \WORD{more \word{pushed} in between} useless} words}
 
-local uccodes = characters.uccodes
-local lccodes = characters.lccodes
+local uccodes    = characters.uccodes
+local lccodes    = characters.lccodes
+local categories = characters.categories
 
 -- true false true == mixed
 
-local function helper(start,attr,lastfont,n,codes,special,once,keepother)
+local function replacer(start,codes)
     local char = getchar(start)
     local dc   = codes[char]
     if dc then
         local fnt = getfont(start)
-        if keepother and dc == char then
-            local lfa = lastfont[n]
-            if lfa then
-                setfield(start,"font",lfa)
-                return start, true
-            else
-                return start, false
-            end
-        else
-            if special then
-                local lfa = lastfont[n]
-                if lfa then
-                    local previd = getid(getprev(start))
-                    if previd ~= glyph_code and previd ~= disc_code then
-                        fnt = lfa
-                        setfield(start,"font",lfa)
-                    end
+        local ifc = fontchar[fnt]
+        if type(dc) == "table" then
+            for i=1,#dc do
+                if not ifc[dc[i]] then
+                    return start, false
                 end
             end
-            local ifc = fontchar[fnt]
-            if type(dc) == "table" then
-                local ok = true
-                for i=1,#dc do
-                    -- could be cached in font
-                    if not ifc[dc[i]] then
-                        ok = false
-                        break
-                    end
+            for i=#dc,1,-1 do
+                local chr = dc[i]
+                if i == 1 then
+                    setfield(start,"char",chr)
+                else
+                    local g = copy_node(start)
+                    setfield(g,"char",chr)
+                    insert_after(start,start,g)
                 end
-                if ok then
-                    -- todo: use generic injector
-                    local prev     = start
-                    local original = start
-                    for i=1,#dc do
-                        local chr = dc[i]
-                        prev = start
-                        if i == 1 then
-                            setfield(start,"char",chr)
-                        else
-                            local g = copy_node(original)
-                            setfield(g,"char",chr)
-                            local next = getnext(start)
-                            setfield(g,"prev",start)
-                            if next then
-                                setfield(g,"next",next)
-                                setfield(start,"next",g)
-                                setfield(next,"prev",g)
-                            end
-                            start = g
-                        end
-                    end
-                    if once then
-                        lastfont[n] = false
-                    end
-                    return prev, true
-                end
-                if once then
-                    lastfont[n] = false
-                end
-                return start, false
-            elseif ifc[dc] then
-                setfield(start,"char",dc)
-                if once then
-                    lastfont[n] = false
-                end
-                return start, true
             end
+            return start, true
+        elseif ifc[dc] then
+            setfield(start,"char",dc)
+            return start, true
         end
-    end
-    if once then
-        lastfont[n] = false
     end
     return start, false
 end
@@ -206,147 +163,147 @@ end
 
 cases.register = register
 
-local function WORD(start,attr,lastfont,n)
+local function WORD(start,attr,lastfont,n,count,where,first)
     lastfont[n] = false
-    return helper(start,attr,lastfont,n,uccodes)
+    return replacer(first or start,uccodes)
 end
 
-local function word(start,attr,lastfont,n)
+local function word(start,attr,lastfont,n,count,where,first)
     lastfont[n] = false
-    return helper(start,attr,lastfont,n,lccodes)
+    return replacer(first or start,lccodes)
 end
 
-local function blockrest(start)
-    local n = getnext(start)
-    while n do
-        local id = getid(n)
-        if id == glyph_code or id == disc_node and getattr(n,a_cases) == attr then
-            setattr(n,a_cases,unsetvalue)
+local function Words(start,attr,lastfont,n,count,where,first) -- looks quite complex
+    if where == "post" then
+        return
+    end
+    if count == 1 and where ~= "post" then
+        replacer(first or start,uccodes)
+        return start, true, true
+    else
+        return start, false, true
+    end
+end
+
+local function Word(start,attr,lastfont,n,count,where,first)
+    blocked[attr] = true
+    return Words(start,attr,lastfont,n,count,where,first)
+end
+
+local function camel(start,attr,lastfont,n,count,where,first)
+    local _, done_1 = word(start,attr,lastfont,n,count,where,first)
+    local _, done_2 = Words(start,attr,lastfont,n,count,where,first)
+    return start, done_1 or done_2, true
+end
+
+local function mixed(start,attr,lastfont,n,count,where,first)
+    if where == "post" then
+        return
+    end
+    local used = first or start
+    local char = getchar(first)
+    local dc   = uccodes[char]
+    if not dc then
+        return start, false, true
+    elseif dc == char then
+        local lfa = lastfont[n]
+        if lfa then
+            setfield(first,"font",lfa)
+            return start, true, true
         else
-         -- break -- we can have nested mess
+            return start, false, true
         end
-        n = getnext(n)
-    end
-end
-
-local function Word(start,attr,lastfont,n) -- looks quite complex
-    lastfont[n] = false
-    local prev = getprev(start)
-    if prev and getid(prev) == kern_code and getsubtype(prev) == kerning_code then
-        prev = getprev(prev)
-    end
-    if not prev then
-        blockrest(start)
-        return helper(start,attr,lastfont,n,uccodes)
-    end
-    local previd = getid(prev)
-    if previd ~= glyph_code and previd ~= disc_code then
-        -- only the first character is treated
-        blockrest(start)
-        -- we could return the last in the range and save some scanning
-        -- but why bother
-        return helper(start,attr,lastfont,n,uccodes)
     else
-        return start, false
+        replacer(first or start,uccodes)
+        return start, true, true
     end
 end
 
-local function Words(start,attr,lastfont,n)
-    lastfont[n] = false
-    local prev = getprev(start)
-    if prev and getid(prev) == kern_code and getsubtype(prev) == kerning_code then
-        prev = getprev(prev)
-    end
-    if not prev then
-        return helper(start,attr,lastfont,n,uccodes)
-    end
-    local previd = getid(prev)
-    if previd ~= glyph_code and previd ~= disc_code then
-        return helper(start,attr,lastfont,n,uccodes)
-    else
-        return start, false
-    end
-end
-
-local function capital(start,attr,lastfont,n) -- 3
-    return helper(start,attr,lastfont,n,uccodes,true,true)
-end
-
-local function Capital(start,attr,lastfont,n) -- 4
-    return helper(start,attr,lastfont,n,uccodes,true,false)
-end
-
-local function mixed(start,attr,lastfont,n)
-    return helper(start,attr,lastfont,n,uccodes,false,false,true)
-end
-
-local function none(start,attr,lastfont,n)
-    return start, false
-end
-
-local function random(start,attr,lastfont,n)
-    lastfont[n] = false
-    local ch  = getchar(start)
-    local tfm = fontchar[getfont(start)]
-    if lccodes[ch] then
-        while true do
-            local d = chardata[randomnumber(1,0xFFFF)]
-            if d then
-                local uc = uccodes[d]
-                if uc and tfm[uc] then -- this also intercepts tables
-                    setfield(start,"char",uc)
-                    return start, true
-                end
+local function Capital(start,attr,lastfont,n,count,where,first,once) -- 3
+    local used = first or start
+    if count == 1 and where ~= "post" then
+        local lfa = lastfont[n]
+        if lfa then
+            local dc = uccodes[getchar(used)]
+            if dc then
+                setfield(used,"font",lfa)
             end
         end
-    elseif uccodes[ch] then
+    end
+    local s, d, c = replacer(first or start,uccodes)
+    if once then
+        lastfont[n] = false -- here
+    end
+    return start, d, c
+end
+
+local function capital(start,attr,lastfont,n,where,count,first,count) -- 4
+    return Capital(start,attr,lastfont,n,where,count,first,true)
+end
+
+local function none(start,attr,lastfont,n,count,where,first)
+    return start, false, true
+end
+
+local function random(start,attr,lastfont,n,count,where,first)
+    local used  = first or start
+    local char  = getchar(used)
+    local font  = getfont(used)
+    local tfm   = fontchar[font]
+    lastfont[n] = false
+    local kind  = categories[char]
+    if kind == "lu" then
         while true do
-            local d = chardata[randomnumber(1,0xFFFF)]
-            if d then
-                local lc = lccodes[d]
-                if lc and tfm[lc] then -- this also intercepts tables
-                    setfield(start,"char",lc)
-                    return start, true
-                end
+            local n = randomnumber(0x41,0x5A)
+            if tfm[n] then -- this also intercepts tables
+                setfield(used,"char",n)
+                return start, true
+            end
+        end
+    elseif kind == "ll" then
+        while true do
+            local n = randomnumber(0x61,0x7A)
+            if tfm[n] then -- this also intercepts tables
+                setfield(used,"char",n)
+                return start, true
             end
         end
     end
     return start, false
 end
 
-local function camel(start,attr,lastfont,n)
-    local start, done_1 = word(start,attr,lastfont,n)
-    local start, done_2 = Words(start,attr,lastfont,n)
-    return start, done_1 or done_2
-end
+register(variables.WORD,   WORD)              --   1
+register(variables.word,   word)              --   2
+register(variables.Word,   Word)              --   3
+register(variables.Words,  Words)             --   4
+register(variables.capital,capital)           --   5
+register(variables.Capital,Capital)           --   6
+register(variables.none,   none)              --   7 (dummy)
+register(variables.random, random)            --   8
+register(variables.mixed,  mixed)             --   9
+register(variables.camel,  camel)             --  10
 
-register(variables.WORD,    WORD)              --   1
-register(variables.word,    word)              --   2
-register(variables.Word,    Word)              --   3
-register(variables.Words,   Words)             --   4
-register(variables.capital, capital)           --   5
-register(variables.Capital, Capital)           --   6
-register(variables.none,    none)              --   7 (dummy)
-register(variables.random,  random)            --   8
-register(variables.mixed,   mixed)             --   9
-register(variables.camel,   camel)             --  10
-
-register(variables.cap,     variables.capital) -- clone
-register(variables.Cap,     variables.Capital) -- clone
+register(variables.cap,    variables.capital) -- clone
+register(variables.Cap,    variables.Capital) -- clone
 
 function cases.handler(head) -- not real fast but also not used on much data
-    head           = tonut(head)
     local lastfont = { }
     local lastattr = nil
     local done     = false
-    local start    = head
+    local start    = tonut(head)
+    local count    = 0
+    local previd   = nil
+    local prev     = nil
     while start do -- while because start can jump ahead
         local id = getid(start)
         if id == glyph_code then
             local attr = getattr(start,a_cases)
-            if attr and attr > 0 then
+            if attr and attr > 0 and not blocked[attr] then
                 if attr ~= lastattr then
                     lastattr = attr
+                    count    = 1
+                else
+                    count    = count + 1
                 end
                 setattr(start,a_cases,unsetvalue)
                 local n, id, m = get(attr)
@@ -355,7 +312,7 @@ function cases.handler(head) -- not real fast but also not used on much data
                 end
                 local action = actions[n] -- map back to low number
                 if action then
-                    start, ok = action(start,attr,lastfont,n)
+                    start, ok = action(start,attr,lastfont,n,count)
                     if ok then
                         done = true
                     end
@@ -368,9 +325,10 @@ function cases.handler(head) -- not real fast but also not used on much data
             end
         elseif id == disc_code then
             local attr = getattr(start,a_cases)
-            if attr and attr > 0 then
+            if attr and attr > 0 and not blocked[attr] then
                 if attr ~= lastattr then
                     lastattr = attr
+                    count    = 0
                 end
                 setattr(start,a_cases,unsetvalue)
                 local n, id, m = get(attr)
@@ -381,27 +339,72 @@ function cases.handler(head) -- not real fast but also not used on much data
                 if action then
                     local replace = getfield(start,"replace")
                     if replace then
-                        action(replace,attr,lastfont,n)
+                        local cnt = count
+                        for g in traverse_id(glyph_code,replace) do
+                            cnt = cnt + 1
+                         -- setattr(g,a_cases,unsetvalue)
+                            local _, _, quit = action(start,attr,lastfont,n,cnt,"replace",g)
+                            if quit then break end
+                        end
                     end
                     local pre = getfield(start,"pre")
                     if pre then
-                        action(pre,attr,lastfont,n)
+                        local cnt = count
+                        for g in traverse_id(glyph_code,pre) do
+                            cnt = cnt + 1
+                         -- setattr(g,a_cases,unsetvalue)
+                            local _,  _, quit = action(start,attr,lastfont,n,cnt,"pre",g)
+                            if quit then break end
+                        end
                     end
                     local post = getfield(start,"post")
                     if post then
-                        action(post,attr,lastfont,n)
+                        local cnt = count
+                        for g in traverse_id(glyph_code,post) do
+                            cnt = cnt + 1
+                         -- setattr(g,a_cases,unsetvalue)
+                            local _,  _, quit = action(start,attr,lastfont,n,cnt,"post",g)
+                            if quit then break end
+                        end
                     end
                 end
+                count = count + 1
             end
         elseif id == math_code then
             start = end_of_math(start)
+            count = 0
+        elseif prev_id == kern_code and getsubtype(prev) == kerning_code then
+            -- still inside a word ...nomally kerns are added later
+        else
+            count = 0
         end
-        if start then -- why test
-            start = getnext(start)
+        if start then
+            prev   = start
+            previd = id
+            start  = getnext(start)
         end
     end
-    return tonode(head), done
+    return head, done
 end
+
+-- function cases.handler(head) -- let's assume head doesn't change ... no reason
+--     local done     = false
+--     local lastfont = { }
+--     for first, last, size, attr in nuts.words(tonut(head),a_cases) do
+--         local n, id, m = get(attr)
+--         if lastfont[n] == nil then
+--             lastfont[n] = id
+--         end
+--         local action = actions[n]
+--         if action then
+--             local _, ok = action(first,attr,lastfont,n)
+--             if ok then
+--                 done = true
+--             end
+--         end
+--     end
+--     return head, done
+-- end
 
 local enabled = false
 
