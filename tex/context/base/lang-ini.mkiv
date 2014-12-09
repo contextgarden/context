@@ -693,4 +693,16 @@
 \uchyph        1 % also treat uppercase
 \exhyphenchar 45 % to permit breaking at explicit hyphens
 
+%D New:
+
+\unexpanded\def\traceddiscretionary#1#2#3%
+  {\dontleavehmode
+   \discretionary{\darkred#1}{\darkgreen#2}{\darkblue#3}}
+
+\unexpanded\def\samplediscretionary
+  {\traceddiscretionary
+     {pre\ctxcommand{prehyphenchar()}}%
+     {\ctxcommand{posthyphenchar()}post}%
+     {replace}}
+
 \protect \endinput

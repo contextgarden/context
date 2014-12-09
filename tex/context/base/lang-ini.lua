@@ -76,6 +76,9 @@ local function resolve(tag)
 end
 
 local function tolang(what) -- returns lang object
+    if not what then
+        what = tex.language
+    end
     local tag = numbers[what]
     local data = tag and registered[tag] or registered[what]
     if data then
@@ -389,3 +392,17 @@ commands.definelanguage        = languages.define
 commands.setlanguagesynonym    = languages.setsynonym
 commands.unloadlanguage        = languages.unload
 commands.setlanguageexceptions = languages.setexceptions
+
+function commands.prehyphenchar(l)
+    local c = prehyphenchar(tolang(l))
+    if c and c > 0 then
+        context.char(c)
+    end
+end
+
+function commands.posthyphenchar(l)
+    local c = posthyphenchar(tolang(l))
+    if c and c > 0 then
+        context.char(c)
+    end
+end

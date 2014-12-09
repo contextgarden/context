@@ -62,8 +62,8 @@ appendaction("processors",   "lists",       "typesetters.italics.handler")      
 
 -- appendaction("processors",   "lists",       "typesetters.initials.handler")                      -- disabled
 
-appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
+appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
 appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
 appendaction("shipouts",     "normalizers", "nodes.references.handler")                          -- disabled
 appendaction("shipouts",     "normalizers", "nodes.destinations.handler")                        -- disabled
@@ -168,7 +168,6 @@ disableaction("shipouts",    "nodes.visualizers.handler")
 disableaction("shipouts",    "nodes.handlers.accessibility")
 disableaction("shipouts",    "nodes.handlers.backgrounds")
 disableaction("shipouts",    "nodes.handlers.alignbackgrounds")
-disableaction("shipouts",    "nodes.handlers.cleanuppage")
 
 disableaction("shipouts",    "nodes.references.handler")
 disableaction("shipouts",    "nodes.destinations.handler")

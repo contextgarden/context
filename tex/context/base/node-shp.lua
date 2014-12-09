@@ -15,6 +15,8 @@ local setmetatableindex = table.setmetatableindex
 
 local nodecodes      = nodes.nodecodes
 local whatsitcodes   = nodes.whatsitcodes
+local disccodes      = nodes.disccodes
+
 local tasks          = nodes.tasks
 local handlers       = nodes.handlers
 
@@ -26,11 +28,25 @@ local kern_code      = nodecodes.kern
 local glue_code      = nodecodes.glue
 local whatsit_code   = nodecodes.whatsit
 
+local fulldisc_code  = disccodes.discretionary
+
 local texgetbox      = tex.getbox
 
-local free_node      = node.free
-local remove_node    = node.remove
-local traverse_nodes = node.traverse
+local nuts           = nodes.nuts
+local tonut          = nuts.tonut
+local tonode         = nuts.tonode
+local free_node      = nuts.free
+local remove_node    = nuts.remove
+local traverse_nodes = nuts.traverse
+local find_tail      = nuts.tail
+
+local getfield       = nuts.getfield
+local setfield       = nuts.setfield
+local getid          = nuts.getid
+local getnext        = nuts.getnext
+local getprev        = nuts.getprev
+local getlist        = nuts.getlist
+local getsubtype     = nuts.getsubtype
 
 local removables     = {
     [whatsitcodes.open]       = true,
@@ -41,38 +57,50 @@ local removables     = {
     [whatsitcodes.latelua]    = true,
 }
 
-local function cleanup_redundant(head)
+-- About 10% of the nodes make no sense for the backend. By (at least)
+-- removing the replace disc nodes, we can omit extensive checking in
+-- the finalizer code (e.g. colors in disc nodes). Removing more nodes
+-- (like marks) is not saving much and removing empty boxes is even
+-- dangerous because we can rely on dimensions (e.g. in references).
+
+local wipedisc = false -- we can use them in the export ... can be option
+
+local function cleanup_redundant(head) -- better name is: flatten_page
     local start = head
     while start do
-        local id = start.id
+        local id = getid(start)
         if id == disc_code then
-            head, start = remove_node(head,start,true)
-     -- elseif id == glue_code then
-     --     if start.writable then
-     --         start = start.next
-     --     elseif some_complex_check_on_glue_spec then
-     --         head, start = remove_node(head,start,true)
-     --     else
-     --         start = start.next
-     --     end
-        elseif id == kern_code then
-            if start.kern == 0 then
-                head, start = remove_node(head,start,true)
+            if getsubtype(start) == fulldisc_code then
+                local replace = getfield(start,"replace")
+                if replace then
+                    setfield(start,"replace",nil)
+                    head, start = remove_node(head,start,true)
+                    local tail = find_tail(replace)
+                    local prev = getprev(start)
+                    setfield(tail,"next",start)
+                    setfield(start,"prev",tail)
+                    setfield(prev,"next",replace)
+                    setfield(replace,"prev",prev)
+                elseif wipedisc then
+                    -- pre and post can have values
+                    head, start = remove_node(head,start,true)
+                else
+                    start = getnext(start)
+                end
             else
-                start = start.next
+                start = getnext(start)
             end
-        elseif id == mark_code then
-            head, start = remove_node(head,start,true)
         elseif id == hlist_code or id == vlist_code then
-            local sl = start.list
+            local sl = getlist(start)
             if sl then
-                start.list = cleanup_redundant(sl)
-                start = start.next
-            else
-                head, start = remove_node(head,start,true)
+                local rl = cleanup_redundant(sl)
+                if rl ~= sl then
+                    setfield(start,"list",rl)
+                end
             end
+            start = getnext(start)
         else
-            start = start.next
+            start = getnext(start)
         end
     end
     return head
@@ -81,36 +109,36 @@ end
 local function cleanup_flushed(head) -- rough
     local start = head
     while start do
-        local id = start.id
-        if id == whatsit_code and removables[start.subtype] then
-            head, start = remove_node(head,start,true)
-        elseif id == hlist_code or id == vlist_code then
-            local sl = start.list
-            if sl then
-                start.list = cleanup_flushed(sl)
-                start = start.next
-            else
+        local id = getid(start)
+        if id == whatsit_code then
+            if removables[getsubtype(start)] then
                 head, start = remove_node(head,start,true)
+            else
+                start = getnext(start)
             end
+        elseif id == hlist_code or id == vlist_code then
+            local sl = getlist(start)
+            if sl then
+                local rl = cleanup_flushed(sl)
+                if rl ~= sl then
+                    setfield(start,"list",rl)
+                end
+            end
+            start = getnext(start)
         else
-            start = start.next
+            start = getnext(start)
         end
     end
     return head
 end
 
 function handlers.cleanuppage(head)
-    -- about 10% of the nodes make no sense for the backend
-    return cleanup_redundant(head), true
+    return tonode(cleanup_redundant(tonut(head))), true
 end
 
 function handlers.cleanupbox(head)
-    return cleanup_flushed(head), true
+    return tonode(cleanup_flushed(tonut(head))), true
 end
-
-directives.register("backend.cleanup", function()
-    tasks.enableaction("shipouts","nodes.handlers.cleanuppage")
-end)
 
 local actions = tasks.actions("shipouts")  -- no extra arguments
 
@@ -158,12 +186,12 @@ local function count(head,data,subcategory)
     -- no components, pre, post, replace .. can maybe an option .. but
     -- we use this for optimization so it makes sense to look the the
     -- main node only
-    for n in traverse_nodes(head) do
-        local id = n.id
-        local dn = data[nodecodes[n.id]]
+    for n in traverse_nodes(tonut(head)) do
+        local id = getid(n)
+        local dn = data[nodecodes[id]] -- we could use id and then later convert to nodecodes
         dn[subcategory] = dn[subcategory] + 1
         if id == hlist_code or id == vlist_code then
-            count(n.list,data,subcategory)
+            count(getfield(n,"list"),data,subcategory)
         end
     end
 end

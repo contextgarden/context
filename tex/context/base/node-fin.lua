@@ -180,8 +180,8 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
         local id = getid(stack)
         if id == glyph_code then
             check = true
-        elseif id == disc_code then
-            check = true -- indeed
+     -- elseif id == disc_code then
+     --     check = true -- no longer needed as we flatten replace
         elseif id == glue_code then
             leader = getleader(stack)
             if leader then
@@ -295,8 +295,8 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
         local id = getid(stack)
         if id == glyph_code then
             check = true
-        elseif id == disc_code then
-            check = true -- indeed
+     -- elseif id == disc_code then
+     --     check = true -- no longer needed as we flatten replace
         elseif id == glue_code then
             leader = getleader(stack)
             if leader then
