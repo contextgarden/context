@@ -2642,9 +2642,9 @@
          \else
             \bgroup
          \fi
-\vskip-\strutdp % brrr why is this needed ... needs to be sorted out, see testcase 1
+         \vskip-\strutdp % brrr why is this needed ... needs to be sorted out, see testcase 1
          \doinhibitblank
-         \setupindenting[\framedtextparameter\c!indenting]%
+         \useindentingparameter\framedtextparameter
          \useframedtextstyleandcolor\c!style\c!color
          \ignorespaces}
 

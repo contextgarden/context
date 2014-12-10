@@ -64,6 +64,12 @@
 \def\spac_indentation_set_everypar
   {\everypar{\checkindentation}}
 
+\unexpanded\def\useindentingparameter#1% faster local variant
+  {\edef\m_spac_indentation_options{#1\c!indenting}%
+   \ifx\m_spac_indentation_options\empty \else
+     \spac_indentation_setup_indeed
+   \fi}
+
 % \def\spac_indentation_apply_step_one#1%
 %   {\ifcsname\??indentingmethod#1\endcsname
 %      % case two

@@ -17,7 +17,7 @@ local tonumber = tonumber
 local settings_to_array = utilities.parsers.settings_to_array
 local format = string.format
 local utfsub = utf.sub
-local P, S, C, Cc, Cs, Carg, lpegmatch, utf8character = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match, lpeg.patterns.utf8character
+local P, S, R, C, Cc, Cs, Carg, lpegmatch, utf8character = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match, lpeg.patterns.utf8character
 local todimen = number.todimen
 
 local setvalue = context.setvalue
@@ -90,7 +90,14 @@ end
 -- \gdef\setpercentdimen#1#2%
 --   {#1=\ctxcommand{percentageof("#2",\number#1)}\relax}
 
-local spaces = P(" ")^0/""
+local spaces    = P(" ")^0 / ""
+local nohash    = 1 - P("#")
+local digit     = R("09")
+local double    = P("##") / "#"
+local single    = P("#")
+local sentinel  = spaces * (nohash^1 / "\\%0")
+local sargument = (single * digit)^1
+local dargument = (double * digit)^1
 
 local pattern = Cs(
     ( P("global") / "\\global" )^0
@@ -103,10 +110,18 @@ local pattern = Cs(
   * spaces
   * ( P((1-S(" #"))^1) / "def\\csname %0\\endcsname" )
   * spaces
-  * Cs( (P("##")/"#" + P(1))^0 )
+  * (
+   --   (double * digit)^1 * sentinel^-1 * double^-1
+   -- + (single * digit)^1 * sentinel^-1 * single^-1
+        ( P("[") * dargument * P("]") + dargument)^1 * sentinel^-1 * double^-1
+      + ( P("[") * sargument * P("]") + sargument)^1 * sentinel^-1 * single^-1
+      + sentinel^-1 * (double+single)^-1
+    )
 )
 
 function commands.thetexdefinition(str)
+-- print(str)
+-- print(lpegmatch(pattern,str))
     context(lpegmatch(pattern,str))
 end
 

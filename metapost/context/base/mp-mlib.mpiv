@@ -90,9 +90,26 @@ enddef ;
 
 let transparency = pair ;
 
-def withtransparency expr t =
-    withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
-    withprescript "tr_transparency=" & decimal ypart t
+% def withtransparency expr t =
+%     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
+%     withprescript "tr_transparency=" & decimal ypart t
+% enddef ;
+%
+% withtransparency (1,.5)
+% withtransparency ("normal",.5)
+
+def withtransparency (expr t) (text rest) =
+    if pair t :
+        withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
+        withprescript "tr_transparency=" & decimal ypart t
+    else :
+        mfun_with_transparency (transparency_alternative_to_number(t))
+    fi rest
+enddef ;
+
+def mfun_with_transparency (expr a) expr t =
+    withprescript "tr_alternative="  & decimal a
+    withprescript "tr_transparency=" & decimal t
 enddef ;
 
 def cmyk(expr c, m, y, k) = % provided for downward compability

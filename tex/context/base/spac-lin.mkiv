@@ -91,10 +91,10 @@
    \dostarttaggedchained\t!lines\currentlines\??lines
    \begingroup
    \uselinesstyleandcolor\c!style\c!color
-   \setupindenting[\linesparameter\c!indenting]%
-   \setupalign[\linesparameter\c!align]%
+   \useindentingparameter\linesparameter
+   \usealignparameter\linesparameter
    \typesettinglinestrue
-   \setupwhitespace[\v!none]%
+   \setupwhitespace[\v!none]% todo use fast variant
    %\obeylines % move upwards to keep spaces in the first line due to optional argument
    \ignorespaces
    \glet\spac_after_first_obeyed_line\spac_lines_after_first_obeyed_line_a

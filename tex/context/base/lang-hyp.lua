@@ -1188,25 +1188,23 @@ if context then
                     end
                     language = lang
                     if language > 0 then
+                        --
                         dictionary = dictionaries[language]
-                        -- we could postpone these
                         instance   = dictionary.instance
                         characters = dictionary.characters
                         unicodes   = dictionary.unicodes
-                        leftchar   = leftchar or (instance and posthyphenchar(instance))
-                        rightchar  = rightchar or (instance and prehyphenchar (instance))
-                        leftmin    = leftcharmin or getfield(current,"left")
+                        --
+                        local a = getattr(current,a_hyphenation)
+                        attr       = synchronizefeatureset(a)
+                        leftchar   = leftchar     or (instance and posthyphenchar(instance))
+                        rightchar  = rightchar    or (instance and prehyphenchar (instance))
+                        leftmin    = leftcharmin  or getfield(current,"left")
                         rightmin   = rightcharmin or getfield(current,"right")
                         if not leftchar or leftchar < 0 then
                             leftchar = false
                         end
                         if not rightchar or rightchar < 0 then
                             rightchar = false
-                        end
-                        --
-                        local a = getattr(current,a_hyphenation)
-                        if a ~= attr then
-                            attr = synchronizefeatureset(a) -- influences extrachars
                         end
                         --
                         local char = unicodes[code] or (extrachars and extrachars[code])
@@ -1246,7 +1244,17 @@ if context then
                 else
                     local a = getattr(current,a_hyphenation)
                     if a ~= attr then
-                        attr = synchronizefeatureset(a) -- influences extrachars
+                        attr      = synchronizefeatureset(a) -- influences extrachars
+                        leftchar  = leftchar     or (instance and posthyphenchar(instance))
+                        rightchar = rightchar    or (instance and prehyphenchar (instance))
+                        leftmin   = leftcharmin  or getfield(current,"left")
+                        rightmin  = rightcharmin or getfield(current,"right")
+                        if not leftchar or leftchar < 0 then
+                            leftchar = false
+                        end
+                        if not rightchar or rightchar < 0 then
+                            rightchar = false
+                        end
                     end
                     --
                     local char = unicodes[code] or (extrachars and extrachars[code])

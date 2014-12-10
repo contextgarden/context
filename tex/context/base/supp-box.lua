@@ -157,7 +157,7 @@ local function applytochars(current,doaction,noaction,nested)
         local id = getid(current)
         if nested and (id == hlist_code or id == vlist_code) then
             context.beginhbox()
-            applytochars(getlist(current),what,nested)
+            applytochars(getlist(current),doaction,noaction,nested)
             context.endhbox()
         elseif id ~= glyph_code then
             noaction(tonode(copy_node(current)))
@@ -180,7 +180,7 @@ local function applytowords(current,doaction,noaction,nested)
             noaction(tonode(copy_node(current)))
         elseif nested and (id == hlist_code or id == vlist_code) then
             context.beginhbox()
-            applytowords(getlist(current),what,nested)
+            applytowords(getlist(current),doaction,noaction,nested)
             context.egroup()
         elseif not start then
             start = current

@@ -47,6 +47,9 @@
    \c!command=\meta_process_graphic_instance{\fittingpageparameter\c!instance},
    \c!instance=]
 
+\unexpanded\def\setupMPpage
+  {\setupfittingpage[MPpage]}
+
 %D \macros
 %D  {MPfigure}
 %D
@@ -56,7 +59,7 @@
   {\bgroup
    \getfiguredimensions[#1]% [\c!object=\v!no] already set
    \startMPcode
-     externalfigure "#1"
+     draw externalfigure "#1"
        xscaled \the\dimexpr\figurewidth \relax\space % must be points
        yscaled \the\dimexpr\figureheight\relax\space % must be points
        #2 ;

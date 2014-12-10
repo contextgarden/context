@@ -26,7 +26,7 @@ function metafun.topath(t,connector)
             if type(ti) == "string" then
                 context(ti)
             else
-                context("(%s,%s)",ti.x or ti[1] or 0,ti.y or ti[2] or 0)
+                context("(%F,%F)",ti.x or ti[1] or 0,ti.y or ti[2] or 0)
             end
         end
     else
@@ -47,7 +47,7 @@ function metafun.interpolate(f,b,e,s,c)
             else
                 done = true
             end
-            context("(%s,%s)",i,d(i))
+            context("(%F,%F)",i,d(i))
         end
     end
     if not done then

@@ -32,6 +32,7 @@ local tonode              = nuts.tonode
 local tonut               = nuts.tonut
 
 local getfield            = nuts.getfield
+local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getid               = nuts.getid
 local getfont             = nuts.getfont
@@ -230,29 +231,36 @@ function italics.handler(head)
             replace = getfield(current,"replace")
             if replace then
                 local current = find_tail(replace)
-                local font = getfont(current)
-                local char = getchar(current)
-                local data = italicsdata[font]
-                if data then
-                    local attr = forcedvariant or getattr(current,a_italics)
-                    if attr and attr > 0 then
-                        local cd = data[char]
-                        if not cd then
-                            -- this really can happen
-                            replaceitalic = 0
+                if getid(current) ~= glyph_code then
+                    current = getprev(current)
+                end
+                if current and getid(current) == glyph_code then
+                    local font = getfont(current)
+                    local char = getchar(current)
+                    local data = italicsdata[font]
+                    if data then
+                        local attr = forcedvariant or getattr(current,a_italics)
+                        if attr and attr > 0 then
+                            local cd = data[char]
+                            if not cd then
+                                -- this really can happen
+                                replaceitalic = 0
+                            else
+                                replaceitalic = cd.italic or cd.italic_correction
+                                if not replaceitalic then
+                                    replaceitalic = setitalicinfont(font,char) -- calculated once
+                                 -- replaceitalic = 0
+                                end
+                                if replaceitalic ~= 0 then
+                                    lastfont    = font
+                                    lastattr    = attr
+                                    replacechar = char
+                                    replacehead = replace
+                                    replace     = current
+                                end
+                            end
                         else
-                            replaceitalic = cd.italic or cd.italic_correction
-                            if not replaceitalic then
-                                replaceitalic = setitalicinfont(font,char) -- calculated once
-                             -- replaceitalic = 0
-                            end
-                            if replaceitalic ~= 0 then
-                                lastfont    = font
-                                lastattr    = attr
-                                replacechar = char
-                                replacehead = replace
-                                replace     = current
-                            end
+                            replaceitalic = 0
                         end
                     else
                         replaceitalic = 0
@@ -265,29 +273,36 @@ function italics.handler(head)
             local post = getfield(current,"post")
             if post then
                 local current = find_tail(post)
-                local font = getfont(current)
-                local char = getchar(current)
-                local data = italicsdata[font]
-                if data then
-                    local attr = forcedvariant or getattr(current,a_italics)
-                    if attr and attr > 0 then
-                        local cd = data[char]
-                        if not cd then
-                            -- this really can happen
-                            postitalic = 0
+                if getid(current) ~= glyph_code then
+                    current = getprev(current)
+                end
+                if current and getid(current) == glyph_code then
+                    local font = getfont(current)
+                    local char = getchar(current)
+                    local data = italicsdata[font]
+                    if data then
+                        local attr = forcedvariant or getattr(current,a_italics)
+                        if attr and attr > 0 then
+                            local cd = data[char]
+                            if not cd then
+                                -- this really can happen
+                                postitalic = 0
+                            else
+                                postitalic = cd.italic or cd.italic_correction
+                                if not postitalic then
+                                    postitalic = setitalicinfont(font,char) -- calculated once
+                                 -- postitalic = 0
+                                end
+                                if postitalic ~= 0 then
+                                    lastfont = font
+                                    lastattr = attr
+                                    postchar = char
+                                    posthead = post
+                                    post     = current
+                                end
+                            end
                         else
-                            postitalic = cd.italic or cd.italic_correction
-                            if not postitalic then
-                                postitalic = setitalicinfont(font,char) -- calculated once
-                             -- postitalic = 0
-                            end
-                            if postitalic ~= 0 then
-                                lastfont = font
-                                lastattr = attr
-                                postchar = char
-                                posthead = post
-                                post     = current
-                            end
+                            postitalic = 0
                         end
                     else
                         postitalic = 0

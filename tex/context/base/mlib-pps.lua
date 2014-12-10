@@ -272,18 +272,26 @@ end
 -- end of new
 
 function metapost.settext(box,slot)
-    top.textexts[slot] = copy_list(texgetbox(box))
-    texsetbox(box,nil)
-    -- this can become
-    -- top.textexts[slot] = textakebox(box)
+    if top then
+        top.textexts[slot] = copy_list(texgetbox(box))
+        texsetbox(box,nil)
+        -- this can become
+        -- top.textexts[slot] = textakebox(box)
+    else
+        -- weird error
+    end
 end
 
 function metapost.gettext(box,slot)
-    texsetbox(box,copy_list(top.textexts[slot]))
-    if trace_textexts then
-        report_textexts("putting text %s in box %s",slot,box)
+    if top then
+        texsetbox(box,copy_list(top.textexts[slot]))
+        if trace_textexts then
+            report_textexts("putting text %s in box %s",slot,box)
+        end
+     -- top.textexts[slot] = nil -- no, pictures can be placed several times
+    else
+        -- weird error
     end
- -- top.textexts[slot] = nil -- no, pictures can be placed several times
 end
 
 -- rather generic pdf, so use this elsewhere too it no longer pays
