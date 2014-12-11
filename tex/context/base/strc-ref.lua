@@ -85,6 +85,7 @@ references.defined       = references.defined or allocate()
 local defined            = references.defined
 local derived            = allocate()
 local specials           = allocate()
+local functions          = allocate()
 local runners            = allocate()
 local internals          = allocate()
 local filters            = allocate()
@@ -100,6 +101,7 @@ local usedviews          = allocate()
 
 references.derived       = derived
 references.specials      = specials
+references.functions     = functions
 references.runners       = runners
 references.internals     = internals
 references.filters       = filters
@@ -1668,7 +1670,11 @@ local function identify(prefix,reference)
     set.n = nofidentified
     for i=1,#set do
         local var = set[i]
-        if var.special then
+        local spe = var.special
+        local fnc = functions[spe]
+        if fnc then
+            var = fnc(var) or { error = "invalid special function" }
+        elseif spe then
             var = identify_special(set,var,i)
         elseif var.outer then
             var = identify_outer(set,var,i)
@@ -2379,6 +2385,102 @@ function specials.section(var,actions)
         var.operation = internal
         var.arguments = nil
         specials.internal(var,actions)
+    end
+end
+
+-- experimental:
+
+local p_splitter = lpeg.splitat(":")
+local p_lower    = lpeg.patterns.utf8lower
+
+-- We can cache lowercased titles which saves a lot of time, but then
+-- we can better have a global cache with weak keys.
+
+-- local lowercache = table.setmetatableindex(function(t,k)
+--     local v = lpegmatch(p_lower,k)
+--     t[k] = v
+--     return v
+-- end)
+
+local lowercache = false
+
+local function locate(list,askedkind,askedname,pattern)
+    local kinds = lists.kinds
+    local names = lists.names
+    if askedkind and not kinds[askedkind] then
+        return false
+    end
+    if askedname and not names[askedname] then
+        return false
+    end
+    for i=1,#list do
+        local entry    = list[i]
+        local metadata = entry.metadata
+        if metadata then
+            local found = false
+            if askedname then
+                local name = metadata.name
+                if name then
+                    found = name == askedname
+                end
+            elseif askedkind then
+                local kind = metadata.kind
+                if kind then
+                    found = kind == askedkind
+                end
+            end
+            if found then
+                local titledata = entry.titledata
+                if titledata then
+                    local title = titledata.title
+                    if title then
+                        if lowercache then
+                            found = lpegmatch(pattern,lowercache[title])
+                        else
+                            found = lpegmatch(pattern,lpegmatch(p_lower,title))
+                        end
+                        if found then
+                            return {
+                                inner     = pattern,
+                                kind      = "inner",
+                                reference = pattern,
+                                i         = entry,
+                                p         = "",
+                                r         = entry.references.realpage,
+                            }
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function functions.match(var,actions)
+    if not var.outer then
+        local operation   = var.operation
+        if operation and operation ~= "" then
+            local operation   = lpegmatch(p_lower,operation)
+            local list        = lists.collected
+            local names       = false
+            local kinds       = false
+            local where, what = lpegmatch(p_splitter,operation)
+            if where and what then
+                local pattern = lpeg.finder(what)
+                return
+                    locate(list,false,where,pattern)
+                 or locate(list,where,false,pattern)
+                 or { error = "no match" }
+            else
+                local pattern = lpeg.finder(operation)
+                -- todo: don't look at section and float in last pass
+                return
+                    locate(list,"section",false,pattern)
+                 or locate(list,"float",false,pattern)
+                 or locate(list,false,false,pattern)
+                 or { error = "no match" }
+            end
+        end
     end
 end
 

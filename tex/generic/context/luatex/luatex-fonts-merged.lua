@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/08/14 23:47:31
+-- merge date  : 12/11/14 12:02:53
 
 do -- begin closure to overcome local limits and interference
 
@@ -2831,9 +2831,10 @@ local striplinepatterns={
   ["retain and no empty"]=p_retain_noempty,
   ["collapse"]=patterns.collapser,
 }
+setmetatable(striplinepatterns,{ __index=function(t,k) return p_prune_collapse end })
 strings.striplinepatterns=striplinepatterns
 function strings.striplines(str,how)
-  return str and lpegmatch(how and striplinepatterns[how] or p_prune_collapse,str) or str
+  return str and lpegmatch(striplinepatterns[how],str) or str
 end
 strings.striplong=strings.striplines
 function strings.nice(str)

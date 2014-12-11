@@ -45,6 +45,8 @@ local collected         = allocate()
 local tobesaved         = allocate()
 local cached            = allocate()
 local pushed            = allocate()
+local kinds             = allocate()
+local names             = allocate()
 
 lists.collected         = collected
 lists.tobesaved         = tobesaved
@@ -54,6 +56,8 @@ lists.enhancers         = lists.enhancers or { }
 lists.ordered           = allocate(lists.ordered   or { }) -- to be checked
 lists.cached            = cached
 lists.pushed            = pushed
+lists.kinds             = kinds
+lists.names             = names
 
 local sectionblocks     = allocate()
 lists.sectionblocks     = sectionblocks
@@ -129,7 +133,8 @@ local function initializer()
                 end
             end
             -- access by order in list
-            local kind, name = m.kind, m.name
+            local kind = m.kind
+            local name = m.name
             if kind and name then
                 local ok = ordered[kind]
                 if ok then
@@ -142,6 +147,12 @@ local function initializer()
                 else
                     ordered[kind] = { [name] = { c } }
                 end
+                kinds[kind] = true
+                names[name] = true
+            elseif kind then
+                kinds[kind] = true
+            elseif name then
+                names[name] = true
             end
         end
         if r then

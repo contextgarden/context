@@ -152,7 +152,7 @@
 
 %%%%%%% rotfont nog definieren
 
-\doifundefined{RotFont}{\definefont[RotFont][RegularBold]}
+\doifundefined{RotFont}{\definefont[RotFont][RegularBold*default]}
 
 \unexpanded\def\processfollowingtoken#1% strut toegevoegd
   {\appendtoks#1\to\MPtoks
@@ -174,9 +174,7 @@
   {\vbox\bgroup
    \forgetall
    \dontcomplain
-   \startMPenvironment
-     \doifundefined{RotFont}{\definefont[RotFont][RegularBold]}%
-   \stopMPenvironment
+   \doifundefined{RotFont}{\definefont[RotFont][RegularBold*default]}%
    \MPtoks\emptytoks
    \resetMPdrawing
    \startMPdrawing
@@ -225,6 +223,7 @@
             withpen pencircle scaled .50pt withcolor green ;
        fi ;
      endfor ;
+%      fill boundingbox currentpicture ;
    \stopMPdrawing
    \MPdrawingdonetrue
    \getMPdrawing

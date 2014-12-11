@@ -19,7 +19,6 @@ local publications = publications
 
 local tonumber, next, type = tonumber, next, type
 local find = string.find
-local lower = characters.lower
 local P, R, C, Cs, Cp, Cc, Carg = lpeg.P, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc, lpeg.Carg
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local concat = table.concat
@@ -111,7 +110,7 @@ local pattern = Cs(Cc("(") * (P("match")/"" * space^0 * p_match)^1 * Cc(")"))
 
 function publications.anywhere(entry,str) -- helpers
     for k, v in next, entry do
-        if find(lower(v),str) then
+        if find(lowercase(v),str) then
             return true
         end
     end

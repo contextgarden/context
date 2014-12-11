@@ -21,10 +21,12 @@ local xmlinheritedconvert = xml.inheritedconvert
 local xmlapplylpath = xml.applylpath
 local xmlfilter = xml.filter
 
-local type, setmetatable, getmetatable = type, setmetatable, getmetatable
+local type, next, setmetatable, getmetatable = type, next, setmetatable, getmetatable
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
 local gmatch, gsub, format, find, strip = string.gmatch, string.gsub, string.format, string.find, string.strip
 local utfbyte = utf.byte
+local lpegmatch = lpeg.match
+local striplinepatterns = utilities.strings.striplinepatterns
 
 local function report(what,pattern,c,e)
     report_xml("%s element %a, root %a, position %a, index %a, pattern %a",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
@@ -891,3 +893,91 @@ function helpers.recursetext(collected,action,recursive)
         end
     end
 end
+
+-- on request ... undocumented ...
+--
+-- _tag       : element name
+-- _type      : node type (_element can be an option)
+-- _namespace : only if given
+--
+-- [1..n]     : text or table
+-- key        : value or attribite 'key'
+--
+-- local str = [[
+-- <?xml version="1.0" ?>
+-- <a one="1">
+--     <!-- rubish -->
+--   <b two="1"/>
+--   <b two="2">
+--     c &gt; d
+--   </b>
+-- </a>
+-- ]]
+--
+-- inspect(xml.totable(xml.convert(str)))
+-- inspect(xml.totable(xml.convert(str),true))
+-- inspect(xml.totable(xml.convert(str),true,true))
+
+local specials = {
+    ["@rt@"] = "root",
+    ["@pi@"] = "instruction",
+    ["@cm@"] = "comment",
+    ["@dt@"] = "declaration",
+    ["@cd@"] = "cdata",
+}
+
+local function convert(x,strip,flat)
+    local ns = x.ns
+    local tg = x.tg
+    local at = x.at
+    local dt = x.dt
+    local node = flat and {
+        [0] = (not x.special and (ns ~= "" and ns .. ":" .. tg or tg)) or nil,
+    } or {
+        _namespace = ns ~= "" and ns or nil,
+        _tag       = not x.special and tg or nil,
+        _type      = specials[tg] or "_element",
+    }
+    if at then
+        for k, v in next, at do
+            node[k] = v
+        end
+    end
+    local n = 0
+    for i=1,#dt do
+        local di = dt[i]
+        if type(di) == "table" then
+            if flat and di.special then
+                -- ignore
+            else
+                di = convert(di,strip,flat)
+                if di then
+                    n = n + 1
+                    node[n] = di
+                end
+            end
+        elseif strip then
+            di = lpegmatch(strip,di)
+            if di ~= "" then
+                n = n + 1
+                node[n] = di
+            end
+        else
+            n = n + 1
+            node[n] = di
+        end
+    end
+    if next(node) then
+        return node
+    end
+end
+
+function xml.totable(x,strip,flat)
+    if type(x) == "table" then
+        if strip then
+            strip = striplinepatterns[strip]
+        end
+        return convert(x,strip,flat)
+    end
+end
+

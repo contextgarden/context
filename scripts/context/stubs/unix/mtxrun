@@ -1180,7 +1180,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 5671, stripped down to: 2827
+-- original size: 5694, stripped down to: 2827
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -5125,7 +5125,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 34327, stripped down to: 18775
+-- original size: 34388, stripped down to: 18833
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5257,9 +5257,10 @@ local striplinepatterns={
   ["retain and no empty"]=p_retain_noempty,
   ["collapse"]=patterns.collapser,
 }
+setmetatable(striplinepatterns,{ __index=function(t,k) return p_prune_collapse end })
 strings.striplinepatterns=striplinepatterns
 function strings.striplines(str,how)
-  return str and lpegmatch(how and striplinepatterns[how] or p_prune_collapse,str) or str
+  return str and lpegmatch(striplinepatterns[how],str) or str
 end
 strings.striplong=strings.striplines
 function strings.nice(str)
@@ -11604,7 +11605,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 26119, stripped down to: 18895
+-- original size: 28227, stripped down to: 20128
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -11621,10 +11622,12 @@ local xmlconvert,xmlcopy,xmlname=xml.convert,xml.copy,xml.name
 local xmlinheritedconvert=xml.inheritedconvert
 local xmlapplylpath=xml.applylpath
 local xmlfilter=xml.filter
-local type,setmetatable,getmetatable=type,setmetatable,getmetatable
+local type,next,setmetatable,getmetatable=type,next,setmetatable,getmetatable
 local insert,remove,fastcopy,concat=table.insert,table.remove,table.fastcopy,table.concat
 local gmatch,gsub,format,find,strip=string.gmatch,string.gsub,string.format,string.find,string.strip
 local utfbyte=utf.byte
+local lpegmatch=lpeg.match
+local striplinepatterns=utilities.strings.striplinepatterns
 local function report(what,pattern,c,e)
   report_xml("%s element %a, root %a, position %a, index %a, pattern %a",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
 end
@@ -12371,6 +12374,65 @@ function helpers.recursetext(collected,action,recursive)
     for i=1,#collected do
       normal(collected[i],action)
     end
+  end
+end
+local specials={
+  ["@rt@"]="root",
+  ["@pi@"]="instruction",
+  ["@cm@"]="comment",
+  ["@dt@"]="declaration",
+  ["@cd@"]="cdata",
+}
+local function convert(x,strip,flat)
+  local ns=x.ns
+  local tg=x.tg
+  local at=x.at
+  local dt=x.dt
+  local node=flat and {
+    [0]=(not x.special and (ns~="" and ns..":"..tg or tg)) or nil,
+  } or {
+    _namespace=ns~="" and ns or nil,
+    _tag=not x.special and tg or nil,
+    _type=specials[tg] or "_element",
+  }
+  if at then
+    for k,v in next,at do
+      node[k]=v
+    end
+  end
+  local n=0
+  for i=1,#dt do
+    local di=dt[i]
+    if type(di)=="table" then
+      if flat and di.special then
+      else
+        di=convert(di,strip,flat)
+        if di then
+          n=n+1
+          node[n]=di
+        end
+      end
+    elseif strip then
+      di=lpegmatch(strip,di)
+      if di~="" then
+        n=n+1
+        node[n]=di
+      end
+    else
+      n=n+1
+      node[n]=di
+    end
+  end
+  if next(node) then
+    return node
+  end
+end
+function xml.totable(x,strip,flat)
+  if type(x)=="table" then
+    if strip then
+      strip=striplinepatterns[strip]
+    end
+    return convert(x,strip,flat)
   end
 end
 
@@ -17657,8 +17719,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 729563
--- stripped bytes    : 259777
+-- original bytes    : 731755
+-- stripped bytes    : 260678
 
 -- end library merge
 

@@ -2103,6 +2103,34 @@
 %D \stopinteractionmenu
 %D \stoptyping
 
+%D Relatively new:
+%D
+%D \starttyping
+%D \chapter{The never ending story}
+%D
+%D \section{An ending story}
+%D
+%D \in{chapter}[match(complex bibliographies)]
+%D \in{chapter}[match(never ending)]
+%D \in{chapter}[match(ending)]
+%D \in{chapter}[match(chapter:never ending)]
+%D \in{chapter}[match(chapter:ending)]
+%D \in{section}[match(section:ending)]
+%D \in{figure}[match(float:mess)]
+%D \in{figure}[match(figure:mess)]
+%D \in{figure (not found)}[match(section:mess)]
+%D \in{figure (not found)}[match(section:xxxx)]
+%D \in{figure}[match(mess)]
+%D
+%D \placefigure{What a mess}{}
+%D
+%D \chapter{About complex bibliographies}
+%D
+%D \in{chapter}[match(complex bibliographies)]
+%D \in{chapter}[match(never ending)]
+%D \in{figure}[match(mess)]
+%D \stoptyping
+
 %D Tracing:
 
 \unexpanded\def\strc_references_tracer#1#2% \csleft csright
