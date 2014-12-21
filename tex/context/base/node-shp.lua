@@ -73,14 +73,27 @@ local function cleanup_redundant(head) -- better name is: flatten_page
             if getsubtype(start) == fulldisc_code then
                 local replace = getfield(start,"replace")
                 if replace then
-                    setfield(start,"replace",nil)
-                    head, start = remove_node(head,start,true)
-                    local tail = find_tail(replace)
                     local prev = getprev(start)
-                    setfield(tail,"next",start)
-                    setfield(start,"prev",tail)
-                    setfield(prev,"next",replace)
-                    setfield(replace,"prev",prev)
+                    local next = getnext(start)
+                    local tail = find_tail(replace)
+                    setfield(start,"replace",nil)
+                    if start == head then
+                        remove_node(head,start,true)
+                        head = replace
+                    else
+                        remove_node(head,start,true)
+                    end
+                    if next then
+                        setfield(tail,"next",next)
+                        setfield(next,"prev",tail)
+                    end
+                    if prev then
+                        setfield(prev,"next",replace)
+                        setfield(replace,"prev",prev)
+                    else
+                        setfield(replace,"prev",nil) -- to be sure
+                    end
+                    start = next
                 elseif wipedisc then
                     -- pre and post can have values
                     head, start = remove_node(head,start,true)

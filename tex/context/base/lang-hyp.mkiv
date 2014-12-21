@@ -30,6 +30,7 @@
 
 \writestatus{loading}{ConTeXt Language Macros / Initialization}
 
+\registerctxluafile{lang-dis}{1.001}
 \registerctxluafile{lang-hyp}{1.001}
 
 \unprotect
@@ -49,6 +50,11 @@
 %    \disabledirectives[hyphenators.rightwordsmin]%
 %    \enabledirectives[hyphenators.method]%
 %    \endgroup}
+
+
+% \exhyphenchar    \hyphenasciicode
+% \preexhyphenchar \lessthanasciicode
+% \postexhyphenchar\morethanasciicode
 
 %D Here is the real way:
 
@@ -152,7 +158,6 @@
 \unexpanded\def\registerhyphenationexception
   {\dodoubleempty\lang_hyphenation_register_exception}
 
-
 \def\lang_hyphenation_register_exception[#1][#2]%
   {\ctxcommand{registerhyphenationexception(
      \ifsecondargument
@@ -190,6 +195,11 @@
    #1\par
    \stopthyphenation
    \endgroup}
+
+%D For me:
+
+\unexpanded\def\showdiscretionaries
+  {\ctxcommand{showdiscretionaries()}}
 
 %D These are (at least now) not cummulative:
 

@@ -81,7 +81,9 @@
    \expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
    \expandafter\newconstant \csname\??attributeid#2\endcsname
    \csname\??attributeid#2\endcsname\scratchcounter
+   % some attributes are always global
    \doifnotinset\s!global{#3}{\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\attributesresetlist}%
+   % here public means 'visible' so it's not to be confused with 'public' at the lua end
    \doifinset   \s!public{#3}{\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}}
 
 \unexpanded\def\newattribute#1{\attr_basics_define_indeed{public}[\strippedcsname#1][]}

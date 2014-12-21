@@ -52,7 +52,6 @@ local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
 
 local traverse_id        = nuts.traverse_id
-local traverse           = nuts.traverse
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local find_tail          = nuts.tail
@@ -68,6 +67,19 @@ local nofregisteredpairs    = 0
 local nofregisteredmarks    = 0
 local nofregisteredcursives = 0
 ----- markanchors           = { } -- one base can have more marks
+local keepregisteredcounts  = false
+
+function injections.keepcounts()
+    keepregisteredcounts = true
+end
+
+function injections.resetcounts()
+    nofregisteredkerns    = 0
+    nofregisteredpairs    = 0
+    nofregisteredmarks    = 0
+    nofregisteredcursives = 0
+    keepregisteredcounts  = false
+end
 
 function injections.reset(n)
     local p = rawget(properties,start)
@@ -81,10 +93,14 @@ end
 function injections.setligaindex(n,index)
     local p = rawget(properties,n)
     if p then
-        p = p.injections
-    end
-    if p then
-        p.ligaindex = index
+        local i = p.injections
+        if i then
+            i.ligaindex = index
+        else
+            p.injections = {
+                ligaindex = index
+            }
+        end
     else
         properties[n] = {
             injections = {
@@ -118,10 +134,14 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
     --
     local p = rawget(properties,start)
     if p then
-        p = p.injections
-    end
-    if p then
-        p.cursiveanchor = true
+        local i = p.injections
+        if i then
+            i.cursiveanchor = true
+        else
+            p.injections = {
+                cursiveanchor = true,
+            }
+        end
     else
         properties[start] = {
             injections = {
@@ -131,11 +151,16 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
     end
     local p = rawget(properties,nxt)
     if p then
-        p = p.injections
-    end
-    if p then
-        p.cursivex = dx
-        p.cursivey = dy
+        local i = p.injections
+        if i then
+            i.cursivex = dx
+            i.cursivey = dy
+        else
+            p.injections = {
+                cursivex = dx,
+                cursivey = dy,
+            }
+        end
     else
         properties[nxt] = {
             injections = {
@@ -151,8 +176,8 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2l
     local x, y, w, h = factor*spec[1], factor*spec[2], factor*spec[3], factor*spec[4]
     if x ~= 0 or w ~= 0 or y ~= 0 or h ~= 0 then -- okay?
         local yoffset   = y - h
-        local leftkern  = x
-        local rightkern = w - x
+        local leftkern  = x      -- both kerns are set in a pair kern compared
+        local rightkern = w - x  -- to normal kerns where we set only leftkern
         if leftkern ~= 0 or rightkern ~= 0 or yoffset ~= 0 then
             nofregisteredpairs = nofregisteredpairs + 1
             if rlmode and rlmode < 0 then
@@ -160,15 +185,25 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2l
             end
             local p = rawget(properties,current)
             if p then
-                p = p.injections
-            end
-            if p then
-                if leftkern ~= 0 or rightkern ~= 0 then
-                    p.leftkern  = (p.leftkern  or 0) + leftkern
-                    p.rightkern = (p.rightkern or 0) + rightkern
-                end
-                if yoffset ~= 0 then
-                    p.yoffset = (p.yoffset or 0) + yoffset
+                local i = p.injections
+                if i then
+                    if leftkern ~= 0 or rightkern ~= 0 then
+                        i.leftkern  = i.leftkern  or 0 + leftkern
+                        i.rightkern = i.rightkern or 0 + rightkern
+                    end
+                    if yoffset ~= 0 then
+                        i.yoffset = i.yoffset or 0 + yoffset
+                    end
+                elseif leftkern ~= 0 or rightkern ~= 0 then
+                    p.injections = {
+                        leftkern  = leftkern,
+                        rightkern = rightkern,
+                        yoffset   = yoffset,
+                    }
+                else
+                    p.injections = {
+                        yoffset = yoffset,
+                    }
                 end
             elseif leftkern ~= 0 or rightkern ~= 0 then
                 properties[current] = {
@@ -205,10 +240,14 @@ function injections.setkern(current,factor,rlmode,x,injection)
             injection = "injections"
         end
         if p then
-            p = p[injection]
-        end
-        if p then
-            p.leftkern = dx + (p.leftkern or 0)
+            local i = p[injection]
+            if i then
+                i.leftkern = dx + i.leftkern or 0
+            else
+                p[injection] = {
+                    leftkern = dx,
+                }
+            end
         else
             properties[current] = {
                 [injection] = {
@@ -231,14 +270,22 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase) -- ba=basean
     end
     local p = rawget(properties,start)
     if p then
-        p = p.injections
-    end
-    if p then
-        p.markx    = dx
-        p.marky    = dy
-        p.markdir  = rlmode or 0
-        p.markbase = nofregisteredmarks
-        p.markbasenode = base
+        local i = p.injections
+        if i then
+            i.markx        = dx
+            i.marky        = dy
+            i.markdir      = rlmode or 0
+            i.markbase     = nofregisteredmarks
+            i.markbasenode = base
+        else
+            p.injections = {
+                markx        = dx,
+                marky        = dy,
+                markdir      = rlmode or 0,
+                markbase     = nofregisteredmarks,
+                markbasenode = base,
+            }
+        end
     else
         properties[start] = {
             injections = {
@@ -395,46 +442,6 @@ local function collect_glyphs_1(head)
     return glyphs, nofglyphs, marks, nofmarks
 end
 
---     local function run(n)
---         local pn = rawget(properties,n)
---         if pn then
---             pn = pn.injections
---         end
---         local f = getfont(n)
---         if f ~= nf then
---             nf = f
---             tm = fontdata[nf].resources.marks -- other hash in ctx
---         end
---         if tm and tm[getchar(n)] then -- also in disc?
---             nofmarks = nofmarks + 1
---             marks[nofmarks] = n
---         else
---             nofglyphs = nofglyphs + 1
---             glyphs[nofglyphs] = n
---         end
---         -- yoffsets can influence curs steps
---         if pn then
---             local yoffset = pn.yoffset
---             if yoffset and yoffset ~= 0 then
---                 setfield(n,"yoffset",yoffset)
---             end
---         end
---     end
---     local n = head
---     while n do
---         if getsubtype(n) < 256 then
---             local id = getid(n)
---             if id == glyph_code then
---                 run(n)
---             elseif id == disc_code then
---                 local d = getfield(n,"pre")     if d then for n in traverse(d) do run(d) end end
---                 local d = getfield(n,"post")    if d then for n in traverse(d) do run(d) end end
---                 local d = getfield(n,"replace") if d then for n in traverse(d) do run(d) end end
---             end
---         end
---         n = getnext(n)
---     end
-
 local function collect_glyphs_2(head)
     local glyphs, nofglyphs = { }, 0
     local marks, nofmarks = { }, 0
@@ -457,36 +464,6 @@ local function collect_glyphs_2(head)
     end
     return glyphs, nofglyphs, marks, nofmarks
 end
-
---     local function run(n)
---         local f = getfont(n)
---         if f ~= nf then
---             nf = f
---             tm = fontdata[nf].resources.marks -- other hash in ctx
---         end
---         if tm and tm[getchar(n)] then
---             nofmarks = nofmarks + 1
---             marks[nofmarks] = n
---         else
---             nofglyphs = nofglyphs + 1
---             glyphs[nofglyphs] = n
---         end
---     end
---     --
---     local n = head
---     while n do
---         if getsubtype(n) < 256 then
---             local id = getid(n)
---             if id == glyph_code then
---                 run(n)
---             elseif id == disc_code then
---                 local d = getfield(n,"pre")     if d then for n in traverse(d) do run(d) end end
---                 local d = getfield(n,"post")    if d then for n in traverse(d) do run(d) end end
---                 local d = getfield(n,"replace") if d then for n in traverse(d) do run(d) end end
---             end
---         end
---         n = getnext(n)
---     end
 
 local function inject_marks(marks,nofmarks)
     for i=1,nofmarks do
@@ -570,7 +547,7 @@ local function inject_cursives(glyphs,nofglyphs)
             if cursivex then
                 if cursiveanchor then
                     if cursivex ~= 0 then
-                        pn.leftkern = (pn.leftkern or 0) + cursivex
+                        pn.leftkern = pn.leftkern or 0 + cursivex
                     end
                     if lastanchor then
                         if maxc == 0 then
@@ -653,14 +630,14 @@ local function inject_kerns(head,glyphs,nofglyphs)
                 insert_node_before(head,n,newkern(leftkern)) -- type 0/2
             end
             local rightkern = pn.rightkern
-            if rightkern ~= 0 then
+            if rightkern and rightkern ~= 0 then
                 insert_node_after(head,n,newkern(rightkern)) -- type 0/2
             end
         end
     end
 end
 
-local function inject_everything(head,where,keep)
+local function inject_everything(head,where)
     head = tonut(head)
     if trace_injections then
         trace(head)
@@ -680,7 +657,9 @@ local function inject_everything(head,where,keep)
         end
         inject_kerns(head,glyphs,nofglyphs)
     end
-    if not keep then
+    if keepregisteredcounts then
+        keepregisteredcounts  = false
+    else
         nofregisteredkerns    = 0
         nofregisteredpairs    = 0
         nofregisteredmarks    = 0
@@ -689,7 +668,7 @@ local function inject_everything(head,where,keep)
     return tonode(head), true
 end
 
-local function inject_kerns_only(head,where,keep)
+local function inject_kerns_only(head,where)
     head = tonut(head)
     if trace_injections then
         trace(head)
@@ -751,23 +730,20 @@ local function inject_kerns_only(head,where,keep)
             local d = getfield(n,"pre")
             if d then
                 local h = d
-                for n in traverse(d) do
-                    local id = getid(n)
-                    if id == glyph_code then
-                        if getsubtype(n) < 256 then
-                            local pn = rawget(properties,n)
-                            if pn then
-                                pn = pn.preinjections
-                            end
-                            if pn then
-                                local leftkern = pn.leftkern
-                                if leftkern ~= 0 then
-                                    h = insert_node_before(h,n,newkern(leftkern))
-                                end
-                            end
-                        else
-                            break
+                for n in traverse_id(glyph_code,d) do
+                    if getsubtype(n) < 256 then
+                        local pn = rawget(properties,n)
+                        if pn then
+                            pn = pn.preinjections
                         end
+                        if pn then
+                            local leftkern = pn.leftkern
+                            if leftkern ~= 0 then
+                                h = insert_node_before(h,n,newkern(leftkern))
+                            end
+                        end
+                    else
+                        break
                     end
                 end
                 if h ~= d then
@@ -777,23 +753,20 @@ local function inject_kerns_only(head,where,keep)
             local d = getfield(n,"post")
             if d then
                 local h = d
-                for n in traverse(d) do
-                    local id = getid(n)
-                    if id == glyph_code then
-                        if getsubtype(n) < 256 then
-                            local pn = rawget(properties,n)
-                            if pn then
-                                pn = pn.postinjections
-                            end
-                            if pn then
-                                local leftkern = pn.leftkern
-                                if leftkern ~= 0 then
-                                    h = insert_node_before(h,n,newkern(leftkern))
-                                end
-                            end
-                        else
-                            break
+                for n in traverse_id(glyph_code,d) do
+                    if getsubtype(n) < 256 then
+                        local pn = rawget(properties,n)
+                        if pn then
+                            pn = pn.postinjections
                         end
+                        if pn then
+                            local leftkern = pn.leftkern
+                            if leftkern ~= 0 then
+                                h = insert_node_before(h,n,newkern(leftkern))
+                            end
+                        end
+                    else
+                        break
                     end
                 end
                 if h ~= d then
@@ -803,24 +776,20 @@ local function inject_kerns_only(head,where,keep)
             local d = getfield(n,"replace")
             if d then
                 local h = d
-                for n in traverse(d) do
-                    local id = getid(n)
-                    if id == glyph_code then
-                        if getsubtype(n) < 256 then
-                            local pn = rawget(properties,n) -- why can it be empty { }
-                            if pn then
-                                pn = pn.replaceinjections
-                            end
-                            if pn then
-                                local leftkern = pn.leftkern
-                                if leftkern ~= 0 then
-                                    h = insert_node_before(h,n,newkern(leftkern))
-        --                             h = insert_node_after(h,n,newkern(leftkern))
-                                end
-                            end
-                        else
-                            break
+                for n in traverse_id(glyph_code,d) do
+                    if getsubtype(n) < 256 then
+                        local pn = rawget(properties,n) -- why can it be empty { }
+                        if pn then
+                            pn = pn.replaceinjections
                         end
+                        if pn then
+                            local leftkern = pn.leftkern
+                            if leftkern ~= 0 then
+                                h = insert_node_before(h,n,newkern(leftkern))
+                            end
+                        end
+                    else
+                        break
                     end
                 end
                 if h ~= d then
@@ -834,13 +803,15 @@ local function inject_kerns_only(head,where,keep)
         n = getnext(n)
     end
     --
-    if not keep then
-        nofregisteredkerns = 0
+    if keepregisteredcounts then
+        keepregisteredcounts = false
+    else
+        nofregisteredkerns   = 0
     end
     return tonode(head), true
 end
 
-local function inject_pairs_only(head,where,keep)
+local function inject_pairs_only(head,where)
     head = tonut(head)
     if trace_injections then
         trace(head)
@@ -928,32 +899,29 @@ local function inject_pairs_only(head,where,keep)
             local d = getfield(n,"pre")
             if d then
                 local h = d
-                for n in traverse(d) do
-                    local id = getid(n)
-                    if id == glyph_code then
-                        if getsubtype(n) < 256 then
-                            local pn = rawget(properties,n)
-                            if pn then
-                                pn = pn.preinjections
-                            end
-                            if pn then
-                                local yoffset = pn.yoffset
-                                if yoffset and yoffset ~= 0 then
-                                    setfield(n,"yoffset",yoffset)
-                                end
-                                local leftkern = pn.leftkern
-                                if leftkern ~= 0 then
-                                    h = insert_node_before(h,n,newkern(leftkern))
-                                end
-                                local rightkern = pn.rightkern
-                                if rightkern and rightkern ~= 0 then
-                                    insert_node_after(head,n,newkern(rightkern))
-                                    n = getnext(n) -- to be checked
-                                end
-                            end
-                        else
-                            break
+                for n in traverse_id(glyph_code,d) do
+                    if getsubtype(n) < 256 then
+                        local pn = rawget(properties,n)
+                        if pn then
+                            pn = pn.preinjections
                         end
+                        if pn then
+                            local yoffset = pn.yoffset
+                            if yoffset and yoffset ~= 0 then
+                                setfield(n,"yoffset",yoffset)
+                            end
+                            local leftkern = pn.leftkern
+                            if leftkern ~= 0 then
+                                h = insert_node_before(h,n,newkern(leftkern))
+                            end
+                            local rightkern = pn.rightkern
+                            if rightkern and rightkern ~= 0 then
+                                insert_node_after(head,n,newkern(rightkern))
+                                n = getnext(n) -- to be checked
+                            end
+                        end
+                    else
+                        break
                     end
                 end
                 if h ~= d then
@@ -963,32 +931,29 @@ local function inject_pairs_only(head,where,keep)
             local d = getfield(n,"post")
             if d then
                 local h = d
-                for n in traverse(d) do
-                    local id = getid(n)
-                    if id == glyph_code then
-                        if getsubtype(n) < 256 then
-                            local pn = rawget(properties,n)
-                            if pn then
-                                pn = pn.postinjections
-                            end
-                            if pn then
-                                local yoffset = pn.yoffset
-                                if yoffset and yoffset ~= 0 then
-                                    setfield(n,"yoffset",yoffset)
-                                end
-                                local leftkern = pn.leftkern
-                                if leftkern ~= 0 then
-                                    h = insert_node_before(h,n,newkern(leftkern))
-                                end
-                                local rightkern = pn.rightkern
-                                if rightkern and rightkern ~= 0 then
-                                    insert_node_after(head,n,newkern(rightkern))
-                                    n = getnext(n) -- to be checked
-                                end
-                            end
-                        else
-                            break
+                for n in traverse_id(glyph_code,d) do
+                    if getsubtype(n) < 256 then
+                        local pn = rawget(properties,n)
+                        if pn then
+                            pn = pn.postinjections
                         end
+                        if pn then
+                            local yoffset = pn.yoffset
+                            if yoffset and yoffset ~= 0 then
+                                setfield(n,"yoffset",yoffset)
+                            end
+                            local leftkern = pn.leftkern
+                            if leftkern ~= 0 then
+                                h = insert_node_before(h,n,newkern(leftkern))
+                            end
+                            local rightkern = pn.rightkern
+                            if rightkern and rightkern ~= 0 then
+                                insert_node_after(head,n,newkern(rightkern))
+                                n = getnext(n) -- to be checked
+                            end
+                        end
+                    else
+                        break
                     end
                 end
                 if h ~= d then
@@ -998,32 +963,29 @@ local function inject_pairs_only(head,where,keep)
             local d = getfield(n,"replace")
             if d then
                 local h = d
-                for n in traverse(d) do
-                    local id = getid(n)
-                    if id == glyph_code then
-                        if getsubtype(n) < 256 then
-                            local pn = rawget(properties,n)
-                            if pn then
-                                pn = pn.replaceinjections
-                            end
-                            if pn then
-                                local yoffset = pn.yoffset
-                                if yoffset and yoffset ~= 0 then
-                                    setfield(n,"yoffset",yoffset)
-                                end
-                                local leftkern = pn.leftkern
-                                if leftkern ~= 0 then
-                                    h = insert_node_before(h,n,newkern(leftkern))
-                                end
-                                local rightkern = pn.rightkern
-                                if rightkern and rightkern ~= 0 then
-                                    insert_node_after(head,n,newkern(rightkern))
-                                    n = getnext(n) -- to be checked
-                                end
-                            end
-                        else
-                            break
+                for n in traverse_id(glyph_code,d) do
+                    if getsubtype(n) < 256 then
+                        local pn = rawget(properties,n)
+                        if pn then
+                            pn = pn.replaceinjections
                         end
+                        if pn then
+                            local yoffset = pn.yoffset
+                            if yoffset and yoffset ~= 0 then
+                                setfield(n,"yoffset",yoffset)
+                            end
+                            local leftkern = pn.leftkern
+                            if leftkern ~= 0 then
+                                h = insert_node_before(h,n,newkern(leftkern))
+                            end
+                            local rightkern = pn.rightkern
+                            if rightkern and rightkern ~= 0 then
+                                insert_node_after(head,n,newkern(rightkern))
+                                n = getnext(n) -- to be checked
+                            end
+                        end
+                    else
+                        break
                     end
                 end
                 if h ~= d then
@@ -1037,20 +999,22 @@ local function inject_pairs_only(head,where,keep)
         n = getnext(n)
     end
     --
-    if not keep then
+    if keepregisteredcounts then
+        keepregisteredcounts = false
+    else
         nofregisteredpairs = 0
         nofregisteredkerns = 0
     end
     return tonode(head), true
 end
 
-function injections.handler(head,where,keep) -- optimize for n=1 ?
+function injections.handler(head,where) -- optimize for n=1 ?
     if nofregisteredmarks > 0 or nofregisteredcursives > 0 then
-        return inject_everything(head,where,keep)
+        return inject_everything(head,where)
     elseif nofregisteredpairs > 0 then
-        return inject_pairs_only(head,where,keep)
+        return inject_pairs_only(head,where)
     elseif nofregisteredkerns > 0 then
-        return inject_kerns_only(head,where,keep)
+        return inject_kerns_only(head,where)
     else
         return head, false
     end

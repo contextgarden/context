@@ -30,10 +30,12 @@ local trace_patterns = false  trackers.register("languages.patterns", function(v
 
 local report_initialization = logs.reporter("languages","initialization")
 
-local prehyphenchar  = lang.prehyphenchar  -- global per language
-local posthyphenchar = lang.posthyphenchar -- global per language
-local lefthyphenmin  = lang.lefthyphenmin
-local righthyphenmin = lang.righthyphenmin
+local prehyphenchar    = lang.prehyphenchar    -- global per language
+local posthyphenchar   = lang.posthyphenchar   -- global per language
+local preexhyphenchar  = lang.preexhyphenchar  -- global per language
+local postexhyphenchar = lang.postexhyphenchar -- global per language
+local lefthyphenmin    = lang.lefthyphenmin
+local righthyphenmin   = lang.righthyphenmin
 
 local lang           = lang
 lang.exceptions      = lang.hyphenation
@@ -301,10 +303,12 @@ end
 
 -- not that usefull, global values
 
-function languages.prehyphenchar (what) return prehyphenchar (tolang(what)) end
-function languages.posthyphenchar(what) return posthyphenchar(tolang(what)) end
-function languages.lefthyphenmin (what) return lefthyphenmin (tolang(what)) end
-function languages.righthyphenmin(what) return righthyphenmin(tolang(what)) end
+function languages.prehyphenchar   (what) return prehyphenchar   (tolang(what)) end
+function languages.posthyphenchar  (what) return posthyphenchar  (tolang(what)) end
+function languages.preexhyphenchar (what) return preexhyphenchar (tolang(what)) end
+function languages.postexhyphenchar(what) return postexhyphenchar(tolang(what)) end
+function languages.lefthyphenmin   (what) return lefthyphenmin   (tolang(what)) end
+function languages.righthyphenmin  (what) return righthyphenmin  (tolang(what)) end
 
 -- e['implementer']= 'imple{m}{-}{-}menter'
 -- e['manual'] = 'man{}{}{}'

@@ -5295,7 +5295,7 @@
 \let\popmacro \localpopmacro
 
 %D \macros
-%D   {setlocalhsize}
+%D   {setlocalhsize,distributedhsize}
 %D
 %D Sometimes we need to work with the \type{\hsize} that is
 %D corrected for indentation and left and right skips. The
@@ -5332,6 +5332,9 @@
        \ifdim\hangindent>\zeropoint-\else+\fi\hangindent
      \fi
    \relax}
+
+\def\distributedhsize#1#2#3%
+  {\dimexpr(#1-\numexpr#3-1\relax\dimexpr#2\relax)/#3\relax}
 
 %D \macros
 %D   {doifvalue,doifnotvalue,doifelsevalue,

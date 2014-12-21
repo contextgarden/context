@@ -53,13 +53,13 @@ storage.register("attributes/list",    list,    "attributes.list")
 names[0], numbers["fontdynamic"] = "fontdynamic", 0
 
 --[[ldx--
-<p>We can use the attributes in the range 127-255 (outside user space). These
-are only used when no attribute is set at the \TEX\ end which normally
-happens in <l n='context'/>.</p>
+<p>private attributes are used by the system and public ones are for users. We use dedicated
+ranges of numbers for them. Of course a the <l n='context'/> end a private attribute can be
+accessible too, so a private attribute can have a public appearance.</p>
 --ldx]]--
 
-sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or  127
-sharedstorage.attributes_last_public  = sharedstorage.attributes_last_public  or 1024
+sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or  127 -- very private
+sharedstorage.attributes_last_public  = sharedstorage.attributes_last_public  or 1024 -- less private
 
 function attributes.private(name) -- at the lua end (hidden from user)
     local number = numbers[name]
@@ -97,8 +97,8 @@ end
 
 attributes.system = attributes.private
 
-function attributes.define(name,number,category)
-    return (attributes[category or "public"] or attributes["public"])(name,number)
+function attributes.define(name,category)
+    return (attributes[category or "public"] or attributes["public"])(name)
 end
 
 -- tracers

@@ -319,8 +319,12 @@ local function listtoutf(h,joiner,textonly,last)
 end
 
 function nodes.listtoutf(h,joiner,textonly,last)
-    local joiner = joiner == true and utfchar(0x200C) or joiner -- zwnj
-    return listtoutf(tonut(h),joiner,textonly,last and tonut(last))
+    if h then
+        local joiner = joiner == true and utfchar(0x200C) or joiner -- zwnj
+        return listtoutf(tonut(h),joiner,textonly,last and tonut(last))
+    else
+        return ""
+    end
 end
 
 local what = { [0] = "unknown", "line", "box", "indent", "row", "cell" }

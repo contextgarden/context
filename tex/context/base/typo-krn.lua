@@ -11,7 +11,8 @@ if not modules then modules = { } end modules ['typo-krn'] = {
 local next, type, tonumber = next, type, tonumber
 local utfchar = utf.char
 
-local nodes, node, fonts = nodes, node, fonts
+local nodes              = nodes
+local fonts              = fonts
 
 local tasks              = nodes.tasks
 local nuts               = nodes.nuts
@@ -20,11 +21,10 @@ local nodepool           = nuts.pool
 local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
+-- check what is used
+
 local find_node_tail     = nuts.tail
 local free_node          = nuts.free
-local free_nodelist      = nuts.flush_list
-local copy_node          = nuts.copy
-local copy_nodelist      = nuts.copy_list
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local end_of_math        = nuts.end_of_math
@@ -51,6 +51,7 @@ local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
 local skipcodes          = nodes.skipcodes
 local disccodes          = nodes.disccodes
+local listcodes          = nodes.listcodes
 
 local glyph_code         = nodecodes.glyph
 local kern_code          = nodecodes.kern
@@ -60,7 +61,12 @@ local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local math_code          = nodecodes.math
 
+local box_list_code      = listcodes.box
+local user_list_code     = listcodes.unknown
+
 local discretionary_code = disccodes.discretionary
+local automatic_code     = disccodes.automatic
+
 local kerning_code       = kerncodes.kerning
 local userkern_code      = kerncodes.userkern
 local userskip_code      = skipcodes.userskip
@@ -203,20 +209,178 @@ local function spec_injector(fillup,width,stretch,shrink)
     end
 end
 
--- needs checking ... base mode / node mode -- also use insert_before/after etc
+-- a simple list injector, no components and such .. just disable ligatures in
+-- kern mode .. maybe not even hyphenate ... anyway, the next one is for simple
+-- sublists .. beware: we can have char -1
 
-local function do_process(head,force) -- todo: glue so that we can fully stretch
+local function inject_begin(boundary,prev,keeptogether,krn,ok) -- prev is a glyph
+    local id = getid(boundary)
+    if id == kern_code then
+        if getsubtype(boundary) == kerning_code or getattr(boundary,a_fontkern) then
+            local inject = true
+            if keeptogether then
+                local next = getnext(boundary)
+                if not next or (getid(next) == glyph_code and keeptogether(prev,next)) then
+                    inject = false
+                end
+            end
+            if inject then
+                -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
+                setfield(boundary,"subtype",userkern_code)
+                setfield(boundary,"kern",getfield(boundary,"kern") + quaddata[getfont(prev)]*krn)
+                return boundary, true
+            end
+        end
+    elseif id == glyph_code then
+        if keeptogether and keeptogether(boundary,prev) then
+            -- keep 'm
+        else
+            local charone = getchar(prev)
+            if charone > 0 then
+                local font    = getfont(boundary)
+                local chartwo = getchar(boundary)
+                local kerns   = chardata[font][charone].kerns
+                local kern    = new_kern((kerns and kerns[chartwo] or 0) + quaddata[font]*krn)
+                setfield(boundary,"prev",kern)
+                setfield(kern,"next",boundary)
+                return kern, true
+            end
+        end
+    end
+    return boundary, ok
+end
+
+local function inject_end(boundary,next,keeptogether,krn,ok)
+    local tail = find_node_tail(boundary)
+    local id   = getid(tail)
+    if id == kern_code then
+        if getsubtype(tail) == kerning_code or getattr(tail,a_fontkern) then
+            local inject = true
+            if keeptogether then
+                local prev = getprev(tail)
+                if getid(prev) == glyph_code and keeptogether(prev,two) then
+                    inject = false
+                end
+            end
+            if inject then
+                -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
+                setfield(tail,"subtype",userkern_code)
+                setfield(tail,"kern",getfield(tail,"kern") + quaddata[getfont(next)]*krn)
+                return boundary, true
+            end
+        end
+    elseif id == glyph_code then
+        if keeptogether and keeptogether(tail,two) then
+            -- keep 'm
+        else
+            local charone = getchar(tail)
+            if charone > 0 then
+                local font    = getfont(tail)
+                local chartwo = getchar(next)
+                local kerns   = chardata[font][charone].kerns
+                local kern    = (kerns and kerns[chartwo] or 0) + quaddata[font]*krn
+                insert_node_after(boundary,tail,new_kern(kern))
+                return boundary, true
+            end
+        end
+    end
+    return boundary, ok
+end
+
+local function process_list(head,keeptogether,krn,font,okay)
+    local start = head
+    local prev  = nil
+    local pid   = nil
+    local kern  = 0
+    local mark  = font and markdata[font]
+    while start  do
+        local id = getid(start)
+        if id == glyph_code then
+            if not font then
+                font = getfont(start)
+                mark = markdata[font]
+                kern = quaddata[font]*krn
+            end
+            if prev then
+                local char = getchar(start)
+                if mark[char] then
+                    -- skip
+                elseif pid == kern_code then
+                    if getsubtype(prev) == kerning_code or getattr(prev,a_fontkern) then
+                        local inject = true
+                        if keeptogether then
+                            local prevprev = getprev(prev)
+                            if getid(prevprev) == glyph_code and keeptogether(prevprev,start) then
+                                inject = false
+                            end
+                        end
+                        if inject then
+                            -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
+                            setfield(prev,"subtype",userkern_code)
+                            setfield(prev,"kern",getfield(prev,"kern") + kern)
+                            okay = true
+                        end
+                    end
+                elseif pid == glyph_code then
+                    if keeptogether and keeptogether(prev,start) then
+                        -- keep 'm
+                    else
+                        local prevchar = getchar(prev)
+                        local kerns    = chardata[font][prevchar].kerns
+                     -- if kerns then
+                     --     print("it happens indeed, basemode kerns not yet injected")
+                     -- end
+                        insert_node_before(head,start,new_kern((kerns and kerns[char] or 0) + kern))
+                        okay = true
+                    end
+                end
+            end
+        end
+        if start then
+            prev  = start
+            pid   = id
+            start = getnext(start)
+        end
+    end
+    return head, okay, prev
+end
+
+local function closest_bound(b,get)
+    b = get(b)
+    if b and getid(b) ~= glue_code then
+        while b do
+            if not getattr(b,a_kerns) then
+                break
+            elseif getid(b) == glyph_code then
+                return b, getfont(b)
+            else
+                b = get(b)
+            end
+        end
+    end
+end
+
+function kerns.handler(head)
+    local head         = tonut(head)
     local start        = head
     local done         = false
     local lastfont     = nil
     local keepligature = kerns.keepligature
     local keeptogether = kerns.keeptogether
     local fillup       = false
+    local bound        = false
+    local prev         = nil
+    local previd       = nil
+    local prevchar     = nil
+    local prevfont     = nil
+    local prevmark     = nil
     while start do
-        -- faster to test for attr first
-        local attr = force or getattr(start,a_kerns)
+        -- fontkerns don't get the attribute but they always sit between glyphs so
+        -- are always valid bound .. disc nodes also somtimes don't get them
+        local id   = getid(start)
+        local attr = getattr(start,a_kerns)
         if attr and attr > 0 then
-            setattr(start,a_kerns,unsetvalue)
+            setattr(start,a_kerns,0) -- unsetvalue)
             local krn = mapping[attr]
             if krn == v_max then
                 krn    = .25
@@ -224,21 +388,21 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
             else
                 fillup = false
             end
-            if krn and krn ~= 0 then
-                local id = getid(start)
-                if id == glyph_code then -- we could use the subtype ligature
-                    lastfont = getfont(start)
-                    local c = getfield(start,"components")
-                    if not c then
-                        -- fine
-                    elseif keepligature and keepligature(start) then
-                        -- keep 'm
-                    else
-                        c = do_process(c,attr)
-                        local s    = start
-                        local p    = getprev(s)
-                        local n    = getnext(s)
-                        local tail = find_node_tail(c)
+            if not krn or krn == 0 then
+                bound = false
+            elseif id == glyph_code then -- we could use the subtype ligature
+                local c = getfield(start,"components")
+                if not c then
+                    -- fine
+                elseif keepligature and keepligature(start) then
+                    -- keep 'm
+                    c = nil
+                else
+                    while c do
+                        local s = start
+                        local t = find_node_tail(c)
+                        local p = getprev(s)
+                        local n = getnext(s)
                         if p then
                             setfield(p,"next",c)
                             setfield(c,"prev",p)
@@ -246,172 +410,190 @@ local function do_process(head,force) -- todo: glue so that we can fully stretch
                             head = c
                         end
                         if n then
-                            setfield(n,"prev",tail)
+                            setfield(n,"prev",t)
+                            setfield(t,"next",n)
                         end
-                        setfield(tail,"next",n)
                         start = c
                         setfield(s,"components",nil)
-                        -- we now leak nodes !
-                    --  free_node(s)
-                        done = true
+                        free_node(s)
+                        c = getfield(start,"components")
                     end
-                    local prev = getprev(start)
-                    if not prev then
-                        -- skip
-                    elseif markdata[lastfont][getchar(start)] then
-                            -- skip
-                    else
-                        local pid = getid(prev)
-                        if not pid then
-                            -- nothing
-                        elseif pid == kern_code then
-                            if getsubtype(prev) == kerning_code or getattr(prev,a_fontkern) then
-                                if keeptogether and getid(getprev(prev)) == glyph_code and keeptogether(getprev(prev),start) then -- we could also pass start
-                                    -- keep 'm
-                                else
-                                    -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                                    setfield(prev,"subtype",userkern_code)
-                                    setfield(prev,"kern",getfield(prev,"kern") + quaddata[lastfont]*krn) -- here
-                                    done = true
-                                end
-                            end
-                        elseif pid == glyph_code then
-                            if getfont(prev) == lastfont then
-                                local prevchar, lastchar = getchar(prev), getchar(start)
-                                if keeptogether and keeptogether(prev,start) then
-                                    -- keep 'm
-                                else
-                                    local kerns = chardata[lastfont][prevchar].kerns
-                                    local kern = kerns and kerns[lastchar] or 0
-                                    krn = kern + quaddata[lastfont]*krn -- here
-                                    insert_node_before(head,start,kern_injector(fillup,krn))
-                                    done = true
-                                end
-                            else
-                                krn = quaddata[lastfont]*krn -- here
-                                insert_node_before(head,start,kern_injector(fillup,krn))
-                                done = true
-                            end
-                        elseif pid == disc_code then
-                            -- a bit too complicated, we can best not copy and just calculate
-                            -- but we could have multiple glyphs involved so ...
-                            local disc = prev -- disc
-                            local prv  = getprev(disc)
-                            local nxt  = getnext(disc)
-                            if getsubtype(disc) == discretionary_code then
-                                -- maybe we should forget about this variant as there is no glue
-                                -- possible .. hardly used so a copy doesn't hurt much
-                                local pre     = getfield(disc,"pre")
-                                local post    = getfield(disc,"post")
-                                local replace = getfield(disc,"replace")
-                                if pre and prv then -- must pair with getprev(start)
-                                    local before = copy_node(prv)
-                                    setfield(pre,"prev",before)
-                                    setfield(before,"next",pre)
-                                    setfield(before,"prev",nil)
-                                    pre = do_process(before,attr)
-                                    pre = getnext(pre)
-                                    setfield(pre,"prev",nil)
-                                    setfield(disc,"pre",pre)
-                                    free_node(before)
-                                end
-                                if post and nxt then  -- must pair with start
-                                    local after = copy_node(nxt)
-                                    local tail  = find_node_tail(post)
-                                    setfield(tail,"next",after)
-                                    setfield(after,"prev",tail)
-                                    setfield(after,"next",nil)
-                                    post = do_process(post,attr)
-                                    setfield(tail,"next",nil)
-                                    setfield(disc,"post",post)
-                                    free_node(after)
-                                end
-                                if replace and prv and nxt then -- must pair with start and start.prev
-                                    local before = copy_node(prv)
-                                    local after  = copy_node(nxt)
-                                    local tail   = find_node_tail(replace)
-                                    setfield(replace,"prev",before)
-                                    setfield(before,"next",replace)
-                                    setfield(before,"prev",nil)
-                                    setfield(tail,"next",after)
-                                    setfield(after,"prev",tail)
-                                    setfield(after,"next",nil)
-                                    replace = do_process(before,attr)
-                                    replace = getnext(replace)
-                                    setfield(replace,"prev",nil)
-                                    setfield(getfield(after,"prev"),"next",nil)
-                                    setfield(disc,"replace",replace)
-                                    free_node(after)
-                                    free_node(before)
-                                elseif prv and getid(prv) == glyph_code and getfont(prv) == lastfont then
-                                    local prevchar = getchar(prv)
-                                    local lastchar = getchar(start)
-                                    local kerns    = chardata[lastfont][prevchar].kerns
-                                    local kern     = kerns and kerns[lastchar] or 0
-                                    krn = kern + quaddata[lastfont]*krn -- here
-                                    setfield(disc,"replace",kern_injector(false,krn)) -- only kerns permitted, no glue
-                                else
-                                    krn = quaddata[lastfont]*krn -- here
-                                    setfield(disc,"replace",kern_injector(false,krn)) -- only kerns permitted, no glue
-                                end
-                            else
-                                -- this one happens in most cases: automatic (-), explicit (\-), regular (patterns)
-                                if prv and getid(prv) == glyph_code and getfont(prv) == lastfont then
-                                    -- the normal case
-                                    local prevchar = getchar(prv)
-                                    local lastchar = getchar(start)
-                                    local kerns    = chardata[lastfont][prevchar].kerns
-                                    local kern     = kerns and kerns[lastchar] or 0
-                                    krn = kern + quaddata[lastfont]*krn
-                                else
-                                    krn = quaddata[lastfont]*krn
-                                end
-                                insert_node_before(head,start,kern_injector(fillup,krn))
+                end
+                local char = getchar(start)
+                local font = getfont(start)
+                local mark = markdata[font]
+                if not bound then
+                    -- yet
+                elseif mark[char] then
+                    -- skip
+                elseif previd == kern_code then
+                    if getsubtype(prev) == kerning_code or getattr(prev,a_fontkern) then
+                        local inject = true
+                        if keeptogether then
+                            if previd == glyph_code and keeptogether(prev,start) then
+                                inject = false
                             end
                         end
-                    end
-                elseif id == glue_code then
-                    local subtype = getsubtype(start)
-                    if subtype == userskip_code or subtype == xspaceskip_code or subtype == spaceskip_code then
-                        local s = getfield(start,"spec")
-                        local w = getfield(s,"width")
-                        if w > 0 then
-                            local width   = w+gluefactor*w*krn
-                            local stretch = getfield(s,"stretch")
-                            local shrink  = getfield(s,"shrink")
-                            setfield(start,"spec",spec_injector(fillup,width,stretch*width/w,shrink*width/w))
+                        if inject then
+                            -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
+                            setfield(prev,"subtype",userkern_code)
+                            setfield(prev,"kern",getfield(prev,"kern") + quaddata[font]*krn)
                             done = true
                         end
                     end
-                elseif id == kern_code then
-                 -- if getsubtype(start) == kerning_code then -- handle with glyphs
-                 --     local sk = getfield(start,"kern")
-                 --     if sk > 0 then
-                 --         setfield(start,"kern",sk*krn)
-                 --         done = true
-                 --     end
-                 -- end
-                elseif lastfont and (id == hlist_code or id == vlist_code) then -- todo: lookahead
-                    local p = getprev(start)
-                    if p and getid(p) ~= glue_code then
-                        insert_node_before(head,start,kern_injector(fillup,quaddata[lastfont]*krn))
+                elseif previd == glyph_code then
+                    if prevfont == font then
+                        if keeptogether and keeptogether(prev,start) then
+                            -- keep 'm
+                        else
+                            local kerns = chardata[font][prevchar].kerns
+                            local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
+                            insert_node_before(head,start,kern_injector(fillup,kern))
+                            done = true
+                        end
+                    else
+                        insert_node_before(head,start,kern_injector(fillup,quaddata[font]*krn))
                         done = true
                     end
-                    local n = getnext(start)
-                    if n and getid(n) ~= glue_code then
-                        insert_node_after(head,start,kern_injector(fillup,quaddata[lastfont]*krn))
-                        done = true
-                    end
-                elseif id == math_code then
-                    start = end_of_math(start)
                 end
+                prev     = start
+                prevchar = char
+                prevfont = font
+                prevmark = mark
+                previd   = id
+                bound    = true
+            elseif id == disc_code then
+                local prev, next, pglyph, nglyph -- delayed till needed
+                local subtype = getsubtype(start)
+                if subtype == automatic_code then
+                    -- this is kind of special, as we have already injected the
+                    -- previous kern
+                    local prev   = getprev(start)
+                    local pglyph = prev and getid(prev) == glyph_code
+                    languages.expand(start,pglyph and prev)
+                    -- we can have a different start now
+                elseif subtype ~= discretionary_code then
+                    prev    = getprev(start)
+                    pglyph  = prev and getid(prev) == glyph_code
+                    languages.expand(start,pglyph and prev)
+                end
+                local pre     = getfield(start,"pre")
+                local post    = getfield(start,"post")
+                local replace = getfield(start,"replace")
+                -- we really need to reasign the fields as luatex keeps track of
+                -- the tail in a temp preceding head .. kind of messy so we might
+                -- want to come up with a better solution some day like a real
+                -- pretail etc fields in a disc node
+                --
+                -- maybe i'll merge the now split functions
+                if pre then
+                    local okay = false
+                    if not prev then
+                        prev   = prev or getprev(start)
+                        pglyph = prev and getid(prev) == glyph_code
+                    end
+                    if pglyph then
+                        pre, okay = inject_begin(pre,prev,keeptogether,krn,okay)
+                    end
+                    pre, okay = process_list(pre,keeptogether,krn,false,okay)
+                    if okay then
+                        setfield(start,"pre",pre)
+                        done = true
+                    end
+                end
+                if post then
+                    local okay = false
+                    if not next then
+                        next   = getnext(start)
+                        nglyph = next and getid(next) == glyph_code
+                    end
+                    if nglyph then
+                        post, okay = inject_end(post,next,keeptogether,krn,okay)
+                    end
+                    post, okay = process_list(post,keeptogether,krn,false,okay)
+                    if okay then
+                        setfield(start,"post",post)
+                        done = true
+                    end
+                end
+                if replace then
+                    local okay = false
+                    if not prev then
+                        prev    = prev or getprev(start)
+                        pglyph  = prev and getid(prev) == glyph_code
+                    end
+                    if pglyph then
+                        replace, okay = inject_begin(replace,prev,keeptogether,krn,okay)
+                    end
+                    if not next then
+                        next   = getnext(start)
+                        nglyph = next and getid(next) == glyph_code
+                    end
+                    if nglyph then
+                        replace, okay = inject_end(replace,next,keeptogether,krn,okay)
+                    end
+                    replace, okay = process_list(replace,keeptogether,krn,false,okay)
+                    if okay then
+                        setfield(start,"replace",replace)
+                        done = true
+                    end
+                elseif prevfont then
+                    setfield(start,"replace",new_kern(quaddata[prevfont]*krn))
+                    done = true
+                end
+                bound = false
+            elseif id == kern_code then
+                bound  = getsubtype(start) == kerning_code or getattr(start,a_fontkern)
+                prev   = start
+                previd = id
+            elseif id == glue_code then
+                local subtype = getsubtype(start)
+                if subtype == userskip_code or subtype == xspaceskip_code or subtype == spaceskip_code then
+                    local s = getfield(start,"spec")
+                    local w = getfield(s,"width")
+                    if w > 0 then
+                        local width   = w+gluefactor*w*krn
+                        local stretch = getfield(s,"stretch")
+                        local shrink  = getfield(s,"shrink")
+                        setfield(start,"spec",spec_injector(fillup,width,stretch*width/w,shrink*width/w))
+                        done = true
+                    end
+                end
+                bound = false
+            elseif id == hlist_code or id == vlist_code then
+                local subtype = getsubtype(start)
+                if subtype == user_list_code or subtype == box_list_code then
+                    -- special case
+                    local b, f = closest_bound(start,getprev)
+                    if b then
+                        insert_node_before(head,start,kern_injector(fillup,quaddata[f]*krn))
+                        done = true
+                    end
+                    local b, f = closest_bound(start,getnext)
+                    if b then
+                        insert_node_after(head,start,kern_injector(fillup,quaddata[f]*krn))
+                        done = true
+                    end
+                end
+                bound = false
+            elseif id == math_code then
+                start = end_of_math(start)
+                bound = false
             end
-        end
-        if start then
+            if start then
+                start = getnext(start)
+            end
+        elseif id == kern_code then
+            bound  = getsubtype(start) == kerning_code or getattr(start,a_fontkern)
+            prev   = start
+            previd = id
+            start  = getnext(start)
+        else
+            bound = false
             start = getnext(start)
         end
     end
-    return head, done
+    return tonode(head), done
 end
 
 local enabled = false
@@ -436,11 +618,6 @@ function kerns.set(factor)
     end
     texsetattribute(a_kerns,factor)
     return factor
-end
-
-function kerns.handler(head)
-    local head, done = do_process(tonut(head))  -- no direct map, because else fourth argument is tail == true
-    return tonode(head), done
 end
 
 -- interface

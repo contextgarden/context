@@ -136,6 +136,20 @@ nuts.getsubtype           = direct.getsubtype
 nuts.getlist              = direct.getlist -- only hlist and vlist !
 nuts.getleader            = direct.getleader
 
+-- local function track(name)
+--     local n = 0
+--     local f = nuts[name]
+--     function nuts[name](...)
+--         n = n + 1
+--         if n % 1000 == 0 then
+--             print(name,n)
+--         end
+--         return f(...)
+--     end
+-- end
+
+-- track("getsubtype")
+
 -- local dgf = direct.getfield  function nuts.getlist(n) return dgf(n,"list") end
 
 -- setters

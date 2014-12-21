@@ -39,7 +39,9 @@ appendaction("processors",   "characters",  "typesetters.breakpoints.handler")  
 appendaction("processors",   "characters",  "scripts.injectors.handler")                         -- disabled
 
 appendaction("processors",   "words",       "languages.replacements.handler")                    -- disabled
-appendaction("processors",   "words",       "builders.kernel.hyphenation")                       -- always on
+
+appendaction("processors",   "words",       "languages.hyphenators.handler")                     -- always on
+
 appendaction("processors",   "words",       "languages.words.check")                             -- disabled  -- might move up, no disc check needed then
 
 appendaction("processors",   "words",       "typesetters.initials.handler")                      -- disabled  -- might move up
@@ -59,8 +61,9 @@ appendaction("processors",   "lists",       "typesetters.spacings.handler")     
 appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
 appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
+appendaction("processors",   "lists",       "languages.visualizediscretionaries")                -- disabled
 
--- appendaction("processors",   "lists",       "typesetters.initials.handler")                      -- disabled
+-- appendaction("processors",   "lists",       "typesetters.initials.handler")                   -- disabled
 
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
@@ -151,6 +154,7 @@ disableaction("processors",  "typesetters.firstlines.handler")
 disableaction("processors",  "typesetters.spacings.handler")
 disableaction("processors",  "typesetters.kerns.handler")
 disableaction("processors",  "typesetters.italics.handler")
+disableaction("processors",  "languages.visualizediscretionaries")
 disableaction("processors",  "nodes.handlers.stripping")
 
 disableaction("shipouts",    "builders.paragraphs.expansion.trace")

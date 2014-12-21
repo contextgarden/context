@@ -1,0 +1,284 @@
+%D \module
+%D   [      file=s-fonts-ligatures,
+%D        version=2014.12.14,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Fonts Ligatures,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin info
+%
+% title   : show some ligature building in fonts
+%
+% comment : we trace some ligatures that have rather different implementations in fontss
+% status  : experimental, used for luatex testing
+%
+% end info
+
+\definefontfeature
+  [otfligaturetest]
+  [analyze=off,
+   ccmp=yes, % brill uses that .. not really ligatures !
+  %clig=yes,
+   script=latn,
+   language=dflt]
+
+\hyphenation{xf-fi-a}
+\hyphenation{xff-i-b}
+\hyphenation{xffi-c}
+\hyphenation{xffid}
+
+\registerhyphenationexception[xf-fi-a]
+\registerhyphenationexception[xff-i-b]
+\registerhyphenationexception[xffi-c]
+\registerhyphenationexception[xffid]
+
+\starttexdefinition showotfligaturescaption #1
+    \bTD [width=18em,align={flushleft,lohi},nx=3]
+        \nohyphens
+        \ttbf
+        #1
+    \eTD
+\stoptexdefinition
+
+\starttexdefinition showotfligatureslegend #1
+    \bTD [width=6em,align={flushleft,lohi}]
+        \nohyphens \ttxx original
+    \eTD
+    \bTD [width=6em,align={flushleft,lohi}]
+        \nohyphens \ttxx expanded
+    \eTD
+    \bTD [width=6em,align={flushleft,lohi}]
+        \nohyphens \ttxx traditional
+    \eTD
+\stoptexdefinition
+
+\starttexdefinition showotfligaturesline #1#2
+    \bTD[toffset=.5ex,frame=off]
+        \starthyphenation[#1]
+            \LigatureFont
+            \showfontkerns
+            \showdiscretionaries
+            \begstrut#2\endstrut
+            \par
+        \stophyphenation
+    \eTD
+\stoptexdefinition
+
+\starttexdefinition showotfligaturesbanner #1
+    \bTR[frame=off]
+        \bTD [nx=12,align={middle,lohi},height=4ex]
+            \tttf #1
+        \eTD
+    \eTR
+\stoptexdefinition
+
+\starttexdefinition showotfligaturescaptions #1
+    \bTR[height=3ex,align={middle,lohi},nx=3,bottomframe=off]
+        \processcommalist[#1]\showotfligaturescaption
+    \eTR
+    \bTR[height=3ex,align={middle,lohi},nx=3,topframe=off]
+        \processcommalist[#1]\showotfligatureslegend
+    \eTR
+\stoptexdefinition
+
+\starttexdefinition showotfligatureslineset #1
+    \showotfligaturesline{original}   {#1}
+    \showotfligaturesline{expanded}   {#1}
+    \showotfligaturesline{traditional}{#1}
+\stoptexdefinition
+
+
+\starttexdefinition showotfligaturesparagraphset #1
+    \showotfligatureslineset {
+        \hsize         \zeropoint
+        \lefthyphenmin \plustwo
+        \righthyphenmin\plustwo
+        #1
+    }
+\stoptexdefinition
+
+\starttexdefinition showotfligaturesextremeset #1
+    \showotfligatureslineset {
+        \hsize         \zeropoint
+        \lefthyphenmin \plusone
+        \righthyphenmin\plusone
+        #1
+    }
+\stoptexdefinition
+
+\starttexdefinition showotfligatureslines #1
+    \bTR[height=4ex,bottomframe=off]
+        \processcommalist[#1]\showotfligatureslineset
+    \eTR
+\stoptexdefinition
+
+\starttexdefinition showotfligaturesparagraphs #1
+    \bTR[cheight=12ex,topframe=off]
+        \processcommalist[#1]\showotfligaturesparagraphset
+    \eTR
+\stoptexdefinition
+
+\starttexdefinition showotfligaturesextremes #1
+    \bTR[cheight=12ex,topframe=off]
+        \processcommalist[#1]\showotfligaturesextremeset
+    \eTR
+\stoptexdefinition
+
+\starttexdefinition showotfligaturesdefaults
+    \bTR
+        \bTD [nx=12,align=middle,height=4ex,frame=off]
+            \start \LigatureFont fb  \stop \quad
+            \start \LigatureFont ff  \stop \quad
+            \start \LigatureFont fi  \stop \quad
+            \start \LigatureFont fk  \stop \quad
+            \start \LigatureFont fl  \stop \quad
+            \start \LigatureFont ft  \stop \quad
+            \start \LigatureFont ffb \stop \quad
+            \start \LigatureFont fff \stop \quad
+            \start \LigatureFont ffi \stop \quad
+            \start \LigatureFont ffl \stop \quad
+            \start \LigatureFont ffk \stop \quad
+            \start \LigatureFont fft \stop
+        \eTD
+    \eTR
+\stoptexdefinition
+
+\starttexdefinition showotfligaturesexample #1#2
+    \showotfligaturescaptions  {#1}
+    \showotfligatureslines     {#2}
+    \showotfligaturesparagraphs{#2}
+    \showotfligaturesextremes  {#2}
+\stoptexdefinition
+
+\starttexdefinition showotfligaturesexamples
+    \showotfligaturesexample
+        {leafing,baffling,efficient,shifffahrt}
+        {leafing,baffling,efficient,shifffahrt}
+    \showotfligaturesexample
+        {offbeat,effect,ef-fective,ef\-fective}
+        {offbeat,effect,ef-fective,ef\-fective}
+    \showotfligaturesexample
+        {xf+fi+a,xff+i+b,xffi+c,xffid}
+        {xffia,  xffib,  xffic, xffid}
+\stoptexdefinition
+
+\starttexdefinition showotfligatures [#1]
+    \begingroup
+        \getdummyparameters[font=Regular,features=default,#1]
+        \definefont[LigatureFont][\dummyparameter{font}*\dummyparameter{features},otfligaturetest ht 2ex]
+        \bTABLE[leftframe=off,rightframe=off]
+            \showotfligaturesbanner{\dummyparameter{font} * \dummyparameter{features}}
+            \showotfligaturesdefaults
+            \showotfligaturesexamples
+        \eTABLE
+    \endgroup
+\stoptexdefinition
+
+\continueifinputfile{s-fonts-ligatures.mkiv}
+
+\starttext
+
+    \startTEXpage \showotfligatures[font=lmroman10-regular.otf, features=default]   \stopTEXpage
+    \startTEXpage \showotfligatures[font=dejavu-serif.ttf,      features=default]   \stopTEXpage
+    \startTEXpage \showotfligatures[font=minionpro.otf,         features=default]   \stopTEXpage
+    \startTEXpage \showotfligatures[font=minionpro.otf,         features=smallcaps] \stopTEXpage
+    \startTEXpage \showotfligatures[font=brill.otf,             features=default]   \stopTEXpage
+    \startTEXpage \showotfligatures[font=gentiumplus-r.ttf,     features=default]   \stopTEXpage
+    \startTEXpage \showotfligatures[font=cambria,               features=default]   \stopTEXpage
+
+\stoptext
+
+% \startluacode
+%
+%     local f = fonts.hashes.identifiers[true]
+%
+%     local sequences    = f.resources.sequences
+%     local descriptions = f.shared.rawdata.descriptions
+%     local lookuptypes  = f.resources.lookuptypes
+%     local lookups      = f.resources.lookups
+%
+%     local ligatures = { "liga", "dlig", "rlig", "clig", "tlig", "ccmp" }
+%     local found     = { }
+%
+%     for i=1,#sequences do
+%         local sequence = sequences[i]
+%         local features = sequence.features
+%         for i=1,#ligatures do
+%             local l = ligatures[i]
+%             if features[l] then
+%                 local subtables = sequence.subtables
+%                 if subtables then
+%                     for i=1,#subtables do
+%                         local subtable = subtables[i]
+%                         local lookup   = found[subtable]
+%                         if lookup then
+%                             lookup[l] = true
+%                         else
+%                             found[subtable] = { [l] = true }
+%                         end
+%                     end
+%                 end
+%             end
+%         end
+%     end
+%
+%     context.starttabulate { "|||T|T|T|" }
+%
+%     local function flush(l,v,start,unicode,data,done)
+%         local features = found[l]
+%         if features then
+%             local lookuptype = lookuptypes[l]
+%             if lookuptype == "ligature" then
+%                 local t = { }
+%                 for i=1,#v do
+%                     t[i] = utf.char(v[i])
+%                 end
+%                 t = table.concat(t," ")
+%                 if not done[t] then
+%                     context.NC()
+%                         context(t)
+%                     context.NC()
+%                         context(utf.char(unicode))
+%                     context.NC()
+%                         context(" %t",table.sortedkeys(features))
+%                     context.NC()
+%                         local name = data.name
+%                         if name then
+%                             context(name)
+%                         end
+%                     context.NC()
+%                         context("%U",unicode)
+%                     context.NC()
+%                     context.NR()
+%                     done[t] = true
+%                 end
+%             end
+%         end
+%     end
+%
+%     for unicode, data in table.sortedhash(descriptions) do
+%         local slookups = data.slookups
+%         local mlookups = data.mlookups
+%         local done     = { }
+%         if slookups then
+%             for l, v in next, slookups do
+%                 flush(l,v,1,unicode,data,done)
+%             end
+%         end
+%         if mlookups then
+%             for i=1,#mlookups do
+%                 local v = mlookups[i]
+%                 flush(v[1],v,2,unicode,data,done)
+%             end
+%         end
+%     end
+%
+%     context.stoptabulate()
+%
+% \stopluacode

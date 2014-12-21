@@ -60,7 +60,7 @@ return {
         "lessthanasciicode", "morethanasciicode", "doublecommentsignal",
         "atsignasciicode", "exclamationmarkasciicode", "questionmarkasciicode",
         "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",
-        "primeasciicode",
+        "primeasciicode", "hyphenasciicode",
         --
         "activemathcharcode",
         --
@@ -203,7 +203,7 @@ return {
         --
         "normalbaselineskip", "normallineskip", "normallineskiplimit",
         --
-        "availablehsize", "localhsize", "setlocalhsize",
+        "availablehsize", "localhsize", "setlocalhsize", "distributedhsize",
         --
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs",
         --

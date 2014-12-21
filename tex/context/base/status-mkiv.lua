@@ -627,6 +627,12 @@ return {
   },
   {
    category = "mkiv",
+   filename = "lang-hyp",
+   loading  = "always",
+   status   = "okay",
+  },
+  {
+   category = "mkiv",
    filename = "lang-frq",
    loading  = "on demand",
    status   = "okay",
@@ -3504,6 +3510,18 @@ return {
    category = "lua",
    filename = "lang-def",
    loading  = "lang-def",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "lang-dis",
+   loading  = "lang-ini",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "lang-hyp",
+   loading  = "lang-hyp",
    status   = "okay",
   },
   {

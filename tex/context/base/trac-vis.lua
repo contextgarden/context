@@ -820,7 +820,7 @@ local function visualize(head,vertical,forced)
                 if trace_fontkern or prev_trace_fontkern then
                     head, current = fontkern(head,current)
                 end
-            elseif subtype == user_kern_code then
+            else -- if subtype == user_kern_code then
                 if trace_kern then
                     head, current = ruledkern(head,current,vertical)
                 end

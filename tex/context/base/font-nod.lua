@@ -75,6 +75,7 @@ local copy_node_list   = nuts.copy_list
 local hpack_node_list  = nuts.hpack
 local free_node_list   = nuts.flush_list
 local traverse_nodes   = nuts.traverse
+local traverse_id      = nuts.traverse_id
 local protect_glyphs   = nuts.protect_glyphs
 
 local nodepool         = nuts.pool
@@ -115,6 +116,24 @@ function char_tracers.collect(head,list,tag,n)
             l[#l+1] = { c, f }
         elseif id == disc_code then
             -- skip
+--             local replace = getfield(head,"replace")
+--             if replace then
+--                 for n in traverse_id(glyph_code,replace) do
+--                     l[#l+1] = { c, f }
+--                 end
+--             end
+--             local pre = getfield(head,"pre")
+--             if pre then
+--                 for n in traverse_id(glyph_code,pre) do
+--                     l[#l+1] = { c, f }
+--                 end
+--             end
+--             local post = getfield(head,"post")
+--             if post then
+--                 for n in traverse_id(glyph_code,post) do
+--                     l[#l+1] = { c, f }
+--                 end
+--             end
         else
             ok = false
         end
@@ -313,21 +332,59 @@ function step_tracers.font(command)
     end
 end
 
-function step_tracers.codes(i,command)
+local colors = {
+    pre     = { "darkred" },
+    post    = { "darkgreen" },
+    replace = { "darkblue" },
+}
+
+function step_tracers.codes(i,command,space)
     local c = collection[i]
+
+    local function showchar(c)
+        if command then
+            local f, c = getfont(c), getchar(c)
+            local d = fontdescriptions[f]
+            local d = d and d[c]
+            context[command](f,c,d and d.class or "")
+        else
+            context("[%s:U+%04X]",getfont(c),getchar(c))
+        end
+    end
+
+    local function showdisc(d,w,what)
+        if w then
+            context.startcolor(colors[what])
+            context("%s:",what)
+            for c in traverse_id(glyph_code,w) do
+                showchar(c)
+            end
+            context[space]()
+            context.stopcolor()
+        end
+    end
+
     while c do
         local id = getid(c)
         if id == glyph_code then
-            if command then
-                local f, c = getfont(c), getchar(c)
-                local d = fontdescriptions[f]
-                local d = d and d[c]
-                context[command](f,c,d and d.class or "")
-            else
-                context("[%s:U+%04X]",getfont(c),getchar(c))
-            end
+            showchar(c)
         elseif id == whatsit_code and (getsubtype(c) == localpar_code or getsubtype(c) == dir_code) then
             context("[%s]",getfield(c,"dir"))
+        elseif id == disc_code then
+            local pre     = getfield(c,"pre")
+            local post    = getfield(c,"post")
+            local replace = getfield(c,"replace")
+            if pre or post or replace then
+                context("[")
+                context[space]()
+                showdisc(c,pre,"pre")
+                showdisc(c,post,"post")
+                showdisc(c,replace,"replace")
+                context[space]()
+                context("]")
+            else
+                context("[disc]")
+            end
         else
             context("[%s]",nodecodes[id])
         end
@@ -358,7 +415,8 @@ function step_tracers.check(head)
     if collecting then
         step_tracers.reset()
         local n = copy_node_list(tonut(head))
-        injections.handler(n,nil,"trace",true)
+        injections.keepcounts(n) -- one-time
+        injections.handler(n,"trace")
      -- handlers.protectglyphs(n) -- can be option
         protect_glyphs(n)
         collection[1] = n
@@ -370,8 +428,9 @@ function step_tracers.register(head)
         local nc = #collection+1
         if messages[nc] then
             local n = copy_node_list(tonut(head))
-            injections.handler(n,nil,"trace",true)
-         -- handlers.protectglyphs(n) -- can be option
+            injections.keepcounts(n) -- one-time
+            injections.handler(n,"trace")
+         -- handlers.protectglyph   s(n) -- can be option
             protect_glyphs(n)
             collection[nc] = n
         end

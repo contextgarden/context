@@ -114,11 +114,14 @@
   {\ctxlua{nodes.tracers.steppers.glyphs(\number\otfcollector,#1)}%
    \unhbox\otfcollector}
 
-\unexpanded\def\otfstepcharcommand#1#2#3% font char class
+\unexpanded\def\otfstepspace
   {\removeunwantedspaces
-   \hskip.5\emwidth \s!plus .125\emwidth\relax
-   \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
-   \hskip.5\emwidth \s!plus .125\emwidth\relax}
+   \hskip.5\emwidth \s!plus .125\emwidth \s!minus .125\emwidth\relax}
+
+\unexpanded\def\otfstepcharcommand#1#2#3% font char class
+  {\otfstepspace
+  \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
+   \otfstepspace}
 
 \unexpanded\def\otfstepfontcommand#1#2#3% id font size
   {\begingroup
@@ -142,7 +145,7 @@
   {\ctxlua{nodes.tracers.steppers.font("otfstepfontcommand")}}
 
 \unexpanded\def\showotfstepchars#1%
-  {\ctxlua{nodes.tracers.steppers.codes(#1,"otfstepcharcommand")}}
+  {\ctxlua{nodes.tracers.steppers.codes(#1,"otfstepcharcommand","otfstepspace")}}
 
 \unexpanded\def\showotfstepmessages#1%
   {\ctxlua{nodes.tracers.steppers.messages(#1,"otfstepmessagecommand",true)}}

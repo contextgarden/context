@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
     license   = "see context related readme files"
 }
 
+-- todo: hyphenate over range if needed
+
 -- to be considered: reset dictionary.hyphenated when a pattern is added
 -- or maybe an explicit reset of the cache
 
@@ -583,48 +585,63 @@ end
 
 if context then
 
-    local nodecodes         = nodes.nodecodes
-    local glyph_code        = nodecodes.glyph
-    local math_code         = nodecodes.math
+    local nodecodes          = nodes.nodecodes
+    local disccodes          = nodes.disccodes
 
-    local nuts              = nodes.nuts
-    local tonut             = nodes.tonut
-    local nodepool          = nuts.pool
+    local glyph_code         = nodecodes.glyph
+    local disc_code          = nodecodes.disc
+    local math_code          = nodecodes.math
 
-    local new_disc          = nodepool.disc
+    local discretionary_code = disccodes.discretionary
+    local explicit_code      = disccodes.explicit
+    local regular_code       = disccodes.regular
+    local automatic_code     = disccodes.automatic
 
-    local setfield          = nuts.setfield
-    local getfield          = nuts.getfield
-    local getchar           = nuts.getchar
-    local getid             = nuts.getid
-    local getattr           = nuts.getattr
-    local getnext           = nuts.getnext
-    local getprev           = nuts.getprev
-    local insert_before     = nuts.insert_before
-    local insert_after      = nuts.insert_after
-    local copy_node         = nuts.copy
-    local remove_node       = nuts.remove
-    local end_of_math       = nuts.end_of_math
-    local node_tail         = nuts.tail
+    local nuts               = nodes.nuts
+    local tonut              = nodes.tonut
+    local tonode             = nodes.tonode
+    local nodepool           = nuts.pool
 
-    local setcolor          = nodes.tracers.colors.set
+    local new_disc           = nodepool.disc
+    local new_glyph          = nodepool.glyph
 
-    local variables         = interfaces.variables
-    local v_reset           = variables.reset
-    local v_yes             = variables.yes
-    local v_all             = variables.all
+    local setfield           = nuts.setfield
+    local getfield           = nuts.getfield
+    local getfont            = nuts.getfont
+    local getchar            = nuts.getchar
+    local getid              = nuts.getid
+    local getattr            = nuts.getattr
+    local getnext            = nuts.getnext
+    local getprev            = nuts.getprev
+    local getsubtype         = nuts.getsubtype
+    local insert_before      = nuts.insert_before
+    local insert_after       = nuts.insert_after
+    local copy_node          = nuts.copy
+    local remove_node        = nuts.remove
+    local end_of_math        = nuts.end_of_math
+    local node_tail          = nuts.tail
+    local traverse_id        = nuts.traverse_id
 
-    local settings_to_array = utilities.parsers.settings_to_array
+    local setcolor           = nodes.tracers.colors.set
 
-    local unsetvalue        = attributes.unsetvalue
-    local texsetattribute   = tex.setattribute
+    local variables          = interfaces.variables
+    local v_reset            = variables.reset
+    local v_yes              = variables.yes
+    local v_all              = variables.all
 
-    local prehyphenchar     = lang.prehyphenchar
-    local posthyphenchar    = lang.posthyphenchar
+    local settings_to_array  = utilities.parsers.settings_to_array
 
-    local lccodes           = characters.lccodes
+    local unsetvalue         = attributes.unsetvalue
+    local texsetattribute    = tex.setattribute
 
-    local a_hyphenation     = attributes.private("hyphenation")
+    local prehyphenchar      = lang.prehyphenchar
+    local posthyphenchar     = lang.posthyphenchar
+    local preexhyphenchar    = lang.preexhyphenchar
+    local postexhyphenchar   = lang.postexhyphenchar
+
+    local lccodes            = characters.lccodes
+
+    local a_hyphenation      = attributes.private("hyphenation")
 
     function traditional.loadpatterns(language)
         return dictionaries[language]
@@ -891,6 +908,7 @@ if context then
         local instance     = nil
         local characters   = nil
         local unicodes     = nil
+        local exhyphenchar = tex.exhyphenchar
         local extrachars   = nil
         local hyphenchars  = nil
         local language     = nil
@@ -900,6 +918,8 @@ if context then
         local size         = 0
         local leftchar     = false
         local rightchar    = false -- utfbyte("-")
+        local leftexchar   = false
+        local rightexchar  = false -- utfbyte("-")
         local leftmin      = 0
         local rightmin     = 0
         local leftcharmin  = nil
@@ -1089,6 +1109,8 @@ if context then
 
             local current = start
 
+            local attributes = getfield(start,"attr") -- todo: just copy the last disc .. faster
+
             for i=1,rsize do
                 local r = result[i]
                 if r == true then
@@ -1098,6 +1120,9 @@ if context then
                     end
                     if leftchar then
                         setfield(disc,"post",serialize(true,leftchar))
+                    end
+                    if attributes then
+                        setfield(disc,"attr",attributes)
                     end
                     -- could be a replace as well
                     insert_before(first,current,disc)
@@ -1117,6 +1142,9 @@ if context then
                     if replace and replace ~= "" then
                         setfield(disc,"replace",serialize(replace))
                     end
+                    if attributes then
+                        setfield(disc,"attr",attributes)
+                    end
                     insert_before(first,current,disc)
                 else
                     setfield(current,"char",characters[r])
@@ -1135,16 +1163,19 @@ if context then
 
         end
 
-        local function inject()
+        local function inject(leftchar,rightchar,code,attributes)
             if first ~= current then
                 local disc = new_disc()
                 first, current, glyph = remove_node(first,current)
                 first, current = insert_before(first,current,disc)
                 if trace_visualize then
-                    setcolor(glyph,"darkred")  -- these get checked in the colorizer
-                    setcolor(disc,"darkgreen") -- these get checked in the colorizer
+                    setcolor(glyph,"darkred")  -- these get checked
+                    setcolor(disc,"darkgreen") -- in the colorizer
                 end
                 setfield(disc,"replace",glyph)
+                if not leftchar then
+                    leftchar = code
+                end
                 if rightchar then
                     local glyph = copy_node(glyph)
                     setfield(glyph,"char",rightchar)
@@ -1152,8 +1183,11 @@ if context then
                 end
                 if leftchar then
                     local glyph = copy_node(glyph)
-                    setfield(glyph,"char",rightchar)
+                    setfield(glyph,"char",leftchar)
                     setfield(disc,"post",glyph)
+                end
+                if attributes then
+                    setfield(disc,"attr",attributes)
                 end
             end
             return current
@@ -1195,11 +1229,13 @@ if context then
                         unicodes   = dictionary.unicodes
                         --
                         local a = getattr(current,a_hyphenation)
-                        attr       = synchronizefeatureset(a)
-                        leftchar   = leftchar     or (instance and posthyphenchar(instance))
-                        rightchar  = rightchar    or (instance and prehyphenchar (instance))
-                        leftmin    = leftcharmin  or getfield(current,"left")
-                        rightmin   = rightcharmin or getfield(current,"right")
+                        attr        = synchronizefeatureset(a)
+                        leftchar    = leftchar     or (instance and posthyphenchar  (instance)) -- we can make this more
+                        rightchar   = rightchar    or (instance and prehyphenchar   (instance)) -- efficient if needed
+                        leftexchar  =                 (instance and preexhyphenchar (instance))
+                        rightexchar =                 (instance and postexhyphenchar(instance))
+                        leftmin     = leftcharmin  or getfield(current,"left")
+                        rightmin    = rightcharmin or getfield(current,"right")
                         if not leftchar or leftchar < 0 then
                             leftchar = false
                         end
@@ -1237,18 +1273,24 @@ if context then
                             end
                         end
                         size = 0
-                        if hyphenchars and hyphenchars[code] then
-                            current = inject()
+                        -- maybe also a strict mode here: no hyphenation before hyphenchars and skip
+                        -- the next set (but then, strict is an option)
+                        if code == exhyphenchar then
+                            current = inject(leftexchar,rightexchar,code,getfield(current,"attr"))
+                        elseif hyphenchars and hyphenchars[code] then
+                            current = inject(leftchar,rightchar,code,getfield(current,"attr"))
                         end
                     end
                 else
                     local a = getattr(current,a_hyphenation)
                     if a ~= attr then
-                        attr      = synchronizefeatureset(a) -- influences extrachars
-                        leftchar  = leftchar     or (instance and posthyphenchar(instance))
-                        rightchar = rightchar    or (instance and prehyphenchar (instance))
-                        leftmin   = leftcharmin  or getfield(current,"left")
-                        rightmin  = rightcharmin or getfield(current,"right")
+                        attr        = synchronizefeatureset(a) -- influences extrachars
+                        leftchar    = leftchar     or (instance and posthyphenchar  (instance)) -- we can make this more
+                        rightchar   = rightchar    or (instance and prehyphenchar   (instance)) -- efficient if needed
+                        leftexchar  =                 (instance and preexhyphenchar (instance))
+                        rightexchar =                 (instance and postexhyphenchar(instance))
+                        leftmin     = leftcharmin  or getfield(current,"left")
+                        rightmin    = rightcharmin or getfield(current,"right")
                         if not leftchar or leftchar < 0 then
                             leftchar = false
                         end
@@ -1266,11 +1308,38 @@ if context then
                 end
                 stop    = current
                 current = getnext(current)
-            elseif strict and strict[id] then
-                current = id == math_code and getnext(end_of_math(current)) or getnext(current)
-                size = 0
             else
-                current = id == math_code and getnext(end_of_math(current)) or getnext(current)
+                if id == disc_code then
+                    local subtype = getsubtype(current)
+                    if subtype == discretionary_code then -- \discretionary
+                        size = 0
+                        current = getnext(current)
+                    elseif subtype == explicit_code then -- \- => only here
+                        size = 0
+                        current = getnext(current)
+                        while current do
+                            local id = getid(current)
+                            if id == glyph_code or id == disc_code then
+                                current = getnext(current)
+                            else
+                                break
+                            end
+                        end
+                        -- todo: change to discretionary_code
+                    else
+                        -- automatic (-) : the hyphenator turns an exhyphen into glyph+disc
+                        -- first         : done by the hyphenator
+                        -- second        : done by the hyphenator
+                        -- regular       : done by the hyphenator
+                        size = 0
+                        current = getnext(current)
+                    end
+                elseif strict and strict[id] then
+                    current = id == math_code and getnext(end_of_math(current)) or getnext(current)
+                    size = 0
+                else
+                    current = id == math_code and getnext(end_of_math(current)) or getnext(current)
+                end
                 if size > 0 then
                     if dictionary and leftmin + rightmin <= size then
                         if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
@@ -1286,7 +1355,8 @@ if context then
                 end
             end
         end
-        -- we can have quit due to last so we need to flush the last seen word
+        -- we can have quit due to last so we need to flush the last seen word, we could move this in
+        -- the loop and test for current but ... messy
         if size > 0 and dictionary and leftmin + rightmin <= size then
             if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
                 -- skip
@@ -1324,41 +1394,63 @@ if context then
  -- \enabledirectives[hyphenators.method=traditional]
  -- \enabledirectives[hyphenators.method=builtin]
 
-    -- this avoids a wrapper
-
     -- push / pop ? check first attribute
 
-    local replaceaction = nodes.tasks.replaceaction
+    -- local replaceaction = nodes.tasks.replaceaction -- no longer overload this way (too many local switches)
 
-    local function setmethod(method)
-        if type(method) == "string" then
-            local valid = hyphenators[method]
-            if valid and valid.hyphenate then
-                newmethod = "languages.hyphenators." .. method .. ".hyphenate"
-            else
-                newmethod = texmethod
-            end
-        else
-            newmethod = texmethod
-        end
-        if oldmethod ~= newmethod then
-            replaceaction("processors","words",oldmethod,newmethod)
-        end
-        oldmethod = newmethod
+    local hyphenate  = lang.hyphenate
+    local expanders  = languages.expanders
+    local methods    = { }
+    local usedmethod = false
+    local stack      = { }
+
+    local function original(head)
+        local done = hyphenate(head)
+        return head, done
     end
 
-    hyphenators.setmethod = setmethod
+    local function expanded(head)
+        local done = hyphenate(head)
+        if done then
+            for d in traverse_id(disc_code,tonut(head)) do
+                local s = getsubtype(d)
+                if s ~= discretionary_code then
+                    expanders[s](d,template)
+                    done = true
+                end
+            end
+        end
+        return head, done
+    end
 
-    local stack = { }
+    function hyphenators.handler(head)
+        if usedmethod then
+            return usedmethod(head)
+        else
+            return head, done
+        end
+    end
 
+    methods.tex         = original
+    methods.original    = original
+    methods.expanded    = expanded
+    methods.traditional = languages.hyphenators.traditional.hyphenate
+    methods.none        = function(head) return head, false end
+
+    usedmethod          = original
+
+    local function setmethod(method)
+        usedmethod = type(method) == "string" and methods[method] or methods.tex
+    end
     local function pushmethod(method)
-        insert(stack,oldmethod)
+        insert(stack,usedmethod)
         setmethod(method)
     end
     local function popmethod()
-        setmethod(remove(stack))
+        usedmethod = remove(stack) or methods.tex
     end
 
+    hyphenators.setmethod  = setmethod
     hyphenators.pushmethod = pushmethod
     hyphenators.popmethod  = popmethod
 

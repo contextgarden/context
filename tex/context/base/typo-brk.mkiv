@@ -25,7 +25,7 @@
 
 \definesystemattribute[breakpoint][public,global]
 
-\exhyphenchar\minusone % we use a different order then base tex, so we really need this
+% see below: \exhyphenchar \minusone % we use a different order tha   n base tex, so we really need this
 
 \unexpanded\def\definebreakpoints
   {\dosingleargument\typo_breakpoints_define}
@@ -50,7 +50,8 @@
    \endgroup}
 
 \unexpanded\def\setbreakpoints[#1]%
-  {\ctxcommand{setbreakpoints("#1")}}
+  {\exhyphenchar\minusone % we use a different order tha   n base tex, so we really need this
+   \ctxcommand{setbreakpoints("#1")}}
 
 \unexpanded\def\resetbreakpoints
   {\attribute\breakpointattribute\attributeunsetvalue}

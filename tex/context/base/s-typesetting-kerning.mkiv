@@ -1,0 +1,127 @@
+%D \module
+%D   [      file=s-typesetting-kerning,
+%D        version=2014.12.14,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Character Kerning,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\definecharacterkerning
+  [typesetting-kerning-demo]
+  [factor=.5]
+
+\startbuffer[showcharacterkerning:boxes]
+    \starttextrule{boxes}
+        \showfontkerns
+        \dontcomplain
+        \startlines
+            test \hbox{!} test
+            test\hbox{!} test
+            test \hbox{!}test
+            test:$x$ test
+            \setcharacterkerning[typesetting-kerning-demo]
+            test \hbox{!} test
+            test\hbox{!} test
+            test \hbox{!}test
+            test:$x$ test
+        \stoplines
+    \stoptextrule
+\stopbuffer
+
+\startbuffer[showcharacterkerning:ligatures]
+    \starttextrule{ligatures}
+        \dontcomplain
+        \startlines
+            effe flink effectief efficient fietsen
+            \blank
+            \setcharacterkerning[typesetting-kerning-demo]
+            effe flink effectief efficient fietsen
+            \blank \hsize\zeropoint
+            effe
+            flink
+            effectief
+            efficient
+            fietsen
+        \stoplines
+    \stoptextrule
+\stopbuffer
+
+\startbuffer[showcharacterkerning:discretionaries]
+    \starttextrule{discretionary}
+        \dontcomplain
+        \startlines
+            \hbox{\samplediscretionary}
+            \hbox{xxx\samplediscretionary}
+            \hbox{\samplediscretionary xxx}
+            \hbox{xxx\samplediscretionary xxx}
+            \blank
+            \setcharacterkerning[typesetting-kerning-demo]
+            \hbox{\samplediscretionary}
+            \hbox{xxx\samplediscretionary}
+            \hbox{\samplediscretionary xxx}
+            \hbox{xxx\samplediscretionary xxx}
+            \blank \hsize\zeropoint
+            \samplediscretionary
+            xxx\samplediscretionary
+            \samplediscretionary xxx
+            xxx\samplediscretionary xxx
+        \stoplines
+    \stoptextrule
+\stopbuffer
+
+\startbuffer[showcharacterkerning:explicits]
+    \starttextrule{explicits}
+        \exhyphenchar    \hyphenasciicode
+        \preexhyphenchar \lessthanasciicode
+        \postexhyphenchar\morethanasciicode
+        \def\TestDisc
+          {\discretionary
+             {\kern\emwidth<}%
+             {>\kern\emwidth}%
+             {\kern\emwidth=\kern\emwidth}%
+          }
+        \dontcomplain
+        \startlines
+            \hbox{super-charged}
+            \hbox{super\-charged}
+            \hbox{super\TestDisc charged}
+            \hbox{super\discretionary{[}{]}{[]}charged}
+            \blank
+            \setcharacterkerning[typesetting-kerning-demo]
+            \hbox{super-charged}
+            \hbox{super\-charged}
+            \hbox{super\TestDisc charged}
+            \hbox{super\discretionary{[}{]}{[]}charged}
+            \blank \hsize\zeropoint
+            super-charged
+            super\-charged
+            super\TestDisc charged
+            super\discretionary{[}{]}{[]}charged
+        \stoplines
+    \stoptextrule
+\stopbuffer
+
+\starttexdefinition unexpanded showcharacterkerning
+    \getbuffer[showcharacterkerning:boxes]
+    \getbuffer[showcharacterkerning:ligatures]
+    \getbuffer[showcharacterkerning:discretionaries]
+    \getbuffer[showcharacterkerning:explicits]
+\stoptexdefinition
+
+\continueifinputfile{s-typesetting-kerning.mkiv}
+
+\starttext
+
+    \showcharacterkerning
+
+\stoptext
+
+
+% {\hsize1mm efficient\discretionary{\kern1pt!\kern1pt}{\kern1pt!\kern1pt}{\kern1pt!\kern1pt}efficient\par}
+% {\hsize1mm\definedfont[Regular]\setcharacterkerning[typesetting-kerning-demo]efficient\-efficient\par}
+
