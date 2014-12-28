@@ -229,8 +229,7 @@ local function the_initials(initials,symbol,connector)
             end
             r = r + 1 ; result[r] = concat(set)
         else
-            r = r + 1 ; result[r] = initial
-            r = r + 1 ; result[r] = symbol
+            r = r + 1 ; result[r] = initial .. symbol
         end
     end
     return result
@@ -462,6 +461,7 @@ end
 local function indexer(dataset,list,method)
     local current  = datasets[dataset]
     local luadata  = current.luadata
+    local details  = current.details
     local result   = { }
     local splitted = newsplitter(splitter) -- saves mem
     local snippets = { } -- saves mem
@@ -473,8 +473,9 @@ local function indexer(dataset,list,method)
         local index = tostring(i)
         local entry = luadata[tag]
         if entry then
-            local value   = getcasted(current,entry,field) or ""
+            local value   = getcasted(current,tag,field) or ""
             local mainkey = writer(value,snippets)
+            local detail  = details[tag]
             result[i] = {
                 index  = i,
                 split  = {
@@ -515,17 +516,22 @@ local function indexer(dataset,list,method)
     return result
 end
 
-local function sorted(dataset,list,sorttype) -- experimental
-    local valid = indexer(dataset,list,sorttype)
-    if #valid == 0 or #valid ~= #list then
-        return list
-    else
-        sorters.sort(valid,function(a,b) return a ~= b and compare(a,b) == -1 end)
-        for i=1,#valid do
-            valid[i] = valid[i].index
-        end
-        return valid
-    end
+-- local function sorted(dataset,list) -- experimental
+--     local valid = indexer(dataset,list,sorttype)
+--     if #valid == 0 or #valid ~= #list then
+--         return list
+--     else
+--         sorters.sort(valid,function(a,b) return a ~= b and compare(a,b) == -1 end)
+--         for i=1,#valid do
+--             valid[i] = valid[i].index
+--         end
+--         return valid
+--     end
+-- end
+
+local function sorted(dataset,valid) -- experimental
+    sorters.sort(valid,compare)
+    return valid
 end
 
 -- made public

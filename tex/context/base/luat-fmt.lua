@@ -95,7 +95,7 @@ function environment.make_format(name)
     -- generate format
     local command = format("%s --ini %s --lua=%s %s %sdump",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
     report_format("running command: %s\n",command)
-    os.spawn(command)
+    os.execute(command)
     -- remove related mem files
     local pattern = file.removesuffix(file.basename(usedluastub)).."-*.mem"
  -- report_format("removing related mplib format with pattern %a", pattern)
@@ -133,7 +133,7 @@ function environment.run_format(name,data,more)
             else
                 local command = format("%s %s --fmt=%s --lua=%s %s %s",engine,primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
                 report_format("running command: %s",command)
-                os.spawn(command)
+                os.execute(command)
             end
         end
     end

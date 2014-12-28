@@ -196,6 +196,11 @@
                     <short>do not check for file and enter scroll mode (<ref name="dummyfile"/>=whatever.tmp)</short>
                 </flag>
             </subcategory>
+            <subcategory>
+                <flag name="sandbox">
+                    <short>process file in a limited environment</short>
+                </flag>
+            </subcategory>
         </category>
     </flags>
 </application>

@@ -35,6 +35,13 @@ local findfile             = resolvers.findfile
 local cleanpath            = resolvers.cleanpath
 local resolveprefix        = resolvers.resolve
 
+local fontloader           = fontloader
+local font_to_table        = fontloader.to_table
+local open_font            = fontloader.open
+local get_font_info        = fontloader.info
+local close_font           = fontloader.close
+local font_fields          = fontloader.fields
+
 local settings_to_hash     = utilities.parsers.settings_to_hash_tolerant
 
 local trace_names          = false  trackers.register("fonts.names",          function(v) trace_names          = v end)
@@ -50,7 +57,7 @@ using a table that has keys filtered from the font related files.</p>
 
 fonts                      = fonts or { } -- also used elsewhere
 
-local names                = font.names or allocate { }
+local names                = fonts.names or allocate { }
 fonts.names                = names
 
 local filters              = names.filters or { }
@@ -298,10 +305,10 @@ end
 but to keep the overview, we define them here.</p>
 --ldx]]--
 
-filters.otf   = fontloader.info
-filters.ttf   = fontloader.info
-filters.ttc   = fontloader.info
-filters.dfont = fontloader.info
+filters.otf   = get_font_info
+filters.ttf   = get_font_info
+filters.ttc   = get_font_info
+filters.dfont = get_font_info
 
 -- We had this as temporary solution because we needed a bit more info but in the
 -- meantime it got an interesting side effect: currently luatex delays loading of e.g.
@@ -311,12 +318,12 @@ filters.dfont = fontloader.info
 -- missing: names, units_per_em, design_range_bottom, design_range_top, design_size,
 -- pfminfo, top_side_bearing
 
--- function fontloader.fullinfo(...) -- check with taco what we get / could get
---     local ff = fontloader.open(...)
+-- local function get_full_info(...) -- check with taco what we get / could get
+--     local ff = open_font(...)
 --     if ff then
---         local d = ff -- and fontloader.to_table(ff)
+--         local d = ff -- and font_to_table(ff)
 --         d.glyphs, d.subfonts, d.gpos, d.gsub, d.lookups = nil, nil, nil, nil, nil
---         fontloader.close(ff)
+--         close_font(ff)
 --         return d
 --     else
 --         return nil, "error in loading font"
@@ -327,10 +334,10 @@ filters.dfont = fontloader.info
 -- return these keys/values (and maybe some more) but at least we close the loader which
 -- might save some memory in the end.
 
--- function fontloader.fullinfo(name)
---     local ff = fontloader.open(name)
+-- local function get_full_info(name)
+--     local ff = open_font(name)
 --     if ff then
---         local fields = table.tohash(fontloader.fields(ff),true) -- isn't that one stable
+--         local fields = table.tohash(font_fields(ff),true) -- isn't that one stable
 --         local d   = {
 --             names               = fields.names               and ff.names,
 --             familyname          = fields.familyname          and ff.familyname,
@@ -349,7 +356,7 @@ filters.dfont = fontloader.info
 --         setmetatableindex(d,function(t,k)
 --             report_names("warning, trying to access field %a in font table of %a",k,name)
 --         end)
---         fontloader.close(ff)
+--         close_font(ff)
 --         return d
 --     else
 --         return nil, "error in loading font"
@@ -360,11 +367,11 @@ filters.dfont = fontloader.info
 
 local fields = nil
 
-function fontloader.fullinfo(name)
-    local ff = fontloader.open(name)
+local function get_full_info(name)
+    local ff = open_font(name)
     if ff then
         if not fields then
-            fields = table.tohash(fontloader.fields(ff),true)
+            fields = table.tohash(font_fields(ff),true)
         end
         --  unfortunately luatex aborts when a field is not available
         local d   = {
@@ -385,7 +392,7 @@ function fontloader.fullinfo(name)
         setmetatableindex(d,function(t,k)
             report_names("warning, trying to access field %a in font table of %a",k,name)
         end)
-        fontloader.close(ff)
+        close_font(ff)
         return d
     else
         return nil, "error in loading font"
@@ -397,26 +404,20 @@ end
 -- current version that somehow happens not that often (on my machine I end up with
 -- soem 3 GB extra before that happens).
 
--- function fontloader.fullinfo(...)
---     local ff = fontloader.open(...)
+-- local function get_full_info(...)
+--     local ff = open_font(...)
 --     if ff then
 --         local d = { } -- ff is userdata so [1] or # fails on it
 --         setmetatableindex(d,ff)
---         return d -- garbage collection will do the fontloader.close(ff)
+--         return d -- garbage collection will do the close_font(ff)
 --     else
 --         return nil, "error in loading font"
 --     end
 -- end
 
--- We don't get the design_* values here as for that the fontloader has to load feature
--- info and therefore we're not much better off than using 'open'.
---
--- if tonumber(status.luatex_version) > 78 or (tonumber(status.luatex_version) == 78 and tonumber(status.luatex_revision) > 0) then
---     fontloader.fullinfo = fontloader.info
--- end
-
-filters.otf = fontloader.fullinfo
-filters.ttf = fontloader.fullinfo
+fontloader.fullinfo = get_full_info
+filters   .otf      = get_full_info
+filters   .ttf      = get_full_info
 
 function filters.afm(name)
     -- we could parse the afm file as well, and then report an error but
@@ -446,7 +447,7 @@ function filters.afm(name)
 end
 
 function filters.pfb(name)
-    return fontloader.info(name)
+    return get_font_info(name)
 end
 
 --[[ldx--

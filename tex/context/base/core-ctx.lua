@@ -254,7 +254,7 @@ function ctxrunner.load(ctxname)
                 for i=1,#runners do
                     local command = runners[i]
                     report_prepfiles("command: %s",command)
-                    local result = os.spawn(command) or 0
+                    local result = os.execute(command) or 0
                  -- if result > 0 then
                  --     report_prepfiles("error, return code: %s",result)
                  -- end

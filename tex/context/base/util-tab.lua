@@ -623,7 +623,7 @@ function table.serialize(root,name,specification)
             depth = depth + 1
         end
         -- we could check for k (index) being number (cardinal)
-        if root and next(root) then
+        if root and next(root) ~= nil then
             local first = nil
             local last  = 0
             last = #root
@@ -648,7 +648,7 @@ function table.serialize(root,name,specification)
                     elseif tv == "string" then
                         n = n + 1 t[n] = f_val_str(depth,v)
                     elseif tv == "table" then
-                        if not next(v) then
+                        if next(v) == nil then
                             n = n + 1 t[n] = f_val_not(depth)
                         else
                             local st = simple_table(v)
@@ -678,7 +678,7 @@ function table.serialize(root,name,specification)
                         n = n + 1 t[n] = f_key_boo_value_str(depth,k,v)
                     end
                 elseif tv == "table" then
-                    if not next(v) then
+                    if next(v) == nil then
                         if tk == "number" then
                             n = n + 1 t[n] = f_key_num_value_not(depth,k,v)
                         elseif tk == "string" then
@@ -742,7 +742,7 @@ function table.serialize(root,name,specification)
             root._w_h_a_t_e_v_e_r_ = nil
         end
         -- Let's forget about empty tables.
-        if next(root) then
+        if next(root) ~= nil then
             do_serialize(root,name,1,0)
         end
     end

@@ -6,121 +6,68 @@ if not modules then modules = { } end modules ['luat-exe'] = {
     license   = "see context related readme files"
 }
 
--- this module needs checking (very old and never really used, not even enabled)
+if not sandbox then require("l-sandbox") require("util-sbx") end -- for testing
 
-local match, find, gmatch = string.match, string.find, string.gmatch
-local concat = table.concat
-local select = select
+local type = type
 
-local report_executers = logs.reporter("system","executers")
+local executers      = resolvers.executers or { }
+resolvers.executers  = executers
 
-resolvers.executers = resolvers.executers or { }
-local executers     = resolvers.executers
+local disablerunners = sandbox.disablerunners
+local registerbinary = sandbox.registerbinary
+local registerroot   = sandbox.registerroot
 
-local permitted     = { }
+local lpegmatch      = lpeg.match
 
-local osexecute     = os.execute
-local osexec        = os.exec
-local osspawn       = os.spawn
-local iopopen       = io.popen
-
-local execute       = osexecute
-local exec          = osexec
-local spawn         = osspawn
-local popen         = iopopen
-
-local function register(...)
-    for k=1,select("#",...) do
-        local v = select(k,...)
-        permitted[#permitted+1] = v == "*" and ".*" or v
-    end
-end
-
-local function prepare(...)
-    -- todo: make more clever first split
-    local t = { ... }
-    local n = #n
-    local one = t[1]
-    if n == 1 then
-        if type(one) == 'table' then
-            return one, concat(t," ",2,n)
-        else
-            local name, arguments = match(one,"^(.-)%s+(.+)$")
-            if name and arguments then
-                return name, arguments
-            else
-                return one, ""
-            end
-        end
-    else
-        return one, concat(t," ",2,n)
-    end
-end
-
-local function executer(action)
-    return function(...)
-        local name, arguments = prepare(...)
-        for k=1,#permitted do
-            local v = permitted[k]
-            if find(name,v) then
-                return action(name .. " " .. arguments)
-            else
-                report_executers("not permitted: %s %s",name,arguments)
-            end
-        end
-        return action("")
-    end
-end
-
-local function finalize() -- todo: os.exec, todo: report ipv print
-    execute = executer(osexecute)
-    exec    = executer(osexec)
-    spawn   = executer(osspawn)
-    popen   = executer(iopopen)
-    finalize = function()
-        report_executers("already finalized")
-    end
-    register = function()
-        report_executers("already finalized, no registration permitted")
-    end
-    os.execute = execute
-    os.exec    = exec
-    os.spawn   = spawn
-    io.popen   = popen
-end
-
-executers.finalize = function(...) return finalize(...) end
-executers.register = function(...) return register(...) end
-executers.execute  = function(...) return execute (...) end
-executers.exec     = function(...) return exec    (...) end
-executers.spawn    = function(...) return spawn   (...) end
-executers.popen    = function(...) return popen   (...) end
+local sc_splitter    = lpeg.tsplitat(";")
+local cm_splitter    = lpeg.tsplitat(",")
 
 local execution_mode  directives.register("system.executionmode", function(v) execution_mode = v end)
 local execution_list  directives.register("system.executionlist", function(v) execution_list = v end)
+local root_list       directives.register("system.rootlist",      function(v) root_list      = v end)
 
-function executers.check()
+sandbox.initializer(function()
     if execution_mode == "none" then
-        finalize()
-    elseif execution_mode == "list" and execution_list ~= "" then
-        for s in gmatch("[^%s,]",execution_list) do
-            register(s)
+        -- will be done later
+    elseif execution_mode == "list" then
+        if type(execution_list) == "string" then
+            execution_list = lpegmatch(cm_splitter,execution_list)
         end
-        finalize()
+        if type(execution_list) == "table" then
+            for i=1,#execution_list do
+                registerbinary(execution_list[i])
+            end
+        end
     else
-        -- all
+        -- whatever else we have configured
     end
-end
+end)
 
---~ resolvers.executers.register('.*')
---~ resolvers.executers.register('*')
---~ resolvers.executers.register('dir','ls')
---~ resolvers.executers.register('dir')
+sandbox.initializer(function()
+    if type(root_list) == "string" then
+        root_list = lpegmatch(sc_splitter,root_list)
+    end
+    if type(root_list) == "table" then
+        for i=1,#root_list do
+            local entry = root_list[i]
+            if entry ~= "" then
+                registerroot(entry)
+            end
+        end
+    end
+end)
 
---~ resolvers.executers.finalize()
---~ resolvers.executers.execute('dir',"*.tex")
---~ resolvers.executers.execute("dir *.tex")
---~ resolvers.executers.execute("ls *.tex")
---~ os.execute('ls')
+sandbox.finalizer(function()
+    if execution_mode == "none" then
+        disablerunners()
+    end
+end)
 
---~ resolvers.executers.check()
+-- Let's prevent abuse of these libraries (built-in support still works).
+
+sandbox.finalizer(function()
+    mplib      = nil
+    epdf       = nil
+    zip        = nil
+    fontloader = nil
+end)

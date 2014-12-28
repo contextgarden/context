@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 3409, stripped down to: 1763
+-- original size: 3888, stripped down to: 2197
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -138,6 +138,13 @@ function optionalrequire(...)
 end
 if lua then
   lua.mask=load([[τεχ = 1]]) and "utf" or "ascii"
+end
+local flush=io.flush
+if flush then
+  local execute=os.execute if execute then function os.execute(...) flush() return execute(...) end end
+  local exec=os.exec  if exec  then function os.exec  (...) flush() return exec  (...) end end
+  local spawn=os.spawn  if spawn  then function os.spawn (...) flush() return spawn (...) end end
+  local popen=io.popen  if popen  then function io.popen (...) flush() return popen (...) end end
 end
 
 
@@ -1285,7 +1292,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 33499, stripped down to: 21844
+-- original size: 33830, stripped down to: 21894
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1328,8 +1335,9 @@ function table.keys(t)
   end
 end
 local function compare(a,b)
-  local ta,tb=type(a),type(b) 
-  if ta==tb then
+  local ta=type(a) 
+  local tb=type(b) 
+  if ta==tb and ta=="number" then
     return a<b
   else
     return tostring(a)<tostring(b) 
@@ -1652,7 +1660,7 @@ local function do_serialize(root,name,depth,level,indexed)
       end
     end
   end
-  if root and next(root) then
+  if root and next(root)~=nil then
     local first,last=nil,0
     if compact then
       last=#root
@@ -1685,7 +1693,7 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s %q,",depth,v))
           end
         elseif tv=="table" then
-          if not next(v) then
+          if next(v)==nil then
             handle(format("%s {},",depth))
           elseif inline then 
             local st=simple_table(v)
@@ -1769,7 +1777,7 @@ local function do_serialize(root,name,depth,level,indexed)
           end
         end
       elseif tv=="table" then
-        if not next(v) then
+        if next(v)==nil then
           if tk=="number" then
             if hexify then
               handle(format("%s [0x%X]={},",depth,k))
@@ -1911,7 +1919,7 @@ local function serialize(_handle,root,name,specification)
       local dummy=root._w_h_a_t_e_v_e_r_
       root._w_h_a_t_e_v_e_r_=nil
     end
-    if next(root) then
+    if next(root)~=nil then
       do_serialize(root,name,"",0)
     end
   end
@@ -2046,7 +2054,7 @@ local function sparse(old,nest,keeptables)
     if not (v=="" or v==false) then
       if nest and type(v)=="table" then
         v=sparse(v,nest)
-        if keeptables or next(v) then
+        if keeptables or next(v)~=nil then
           new[k]=v
         end
       else
@@ -2163,10 +2171,10 @@ function table.sub(t,i,j)
   return { unpack(t,i,j) }
 end
 function table.is_empty(t)
-  return not t or not next(t)
+  return not t or next(t)==nil
 end
 function table.has_one_entry(t)
-  return t and not next(t,next(t))
+  return t and next(t,next(t))==nil
 end
 function table.loweredkeys(t) 
   local l={}
@@ -2235,7 +2243,7 @@ function table.filtered(t,pattern,sort,cmp)
     else
       local n=next(t)
       local function iterator()
-        while n do
+        while n~=nil do
           local k=n
           n=next(t,k)
           if find(k,pattern) then
@@ -2257,7 +2265,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 8824, stripped down to: 6347
+-- original size: 8643, stripped down to: 6232
 
 if not modules then modules={} end modules ['l-io']={
   version=1.001,
@@ -2564,8 +2572,6 @@ function io.readstring(f,n,m)
   local str=gsub(f:read(n),"\000","")
   return str
 end
-if not io.i_limiter then function io.i_limiter() end end 
-if not io.o_limiter then function io.o_limiter() end end
 
 
 end -- of closure
@@ -2792,7 +2798,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16093, stripped down to: 9704
+-- original size: 15761, stripped down to: 9403
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -2866,13 +2872,10 @@ if not os.__getenv__ then
     setmetatable(os.env,{ __index=__index,__newindex=__newindex } )
   end
 end
-local execute,spawn,exec,iopopen,ioflush=os.execute,os.spawn or os.execute,os.exec or os.execute,io.popen,io.flush
-function os.execute(...) ioflush() return execute(...) end
-function os.spawn (...) ioflush() return spawn (...) end
-function os.exec  (...) ioflush() return exec  (...) end
-function io.popen (...) ioflush() return iopopen(...) end
+local execute=os.execute
+local iopopen=io.popen
 function os.resultof(command)
-  local handle=io.popen(command,"r")
+  local handle=iopopen(command,"r") 
   if handle then
     local result=handle:read("*all") or ""
     handle:close()
@@ -2901,7 +2904,7 @@ local launchers={
   unix="$BROWSER %s &> /dev/null &",
 }
 function os.launch(str)
-  os.execute(format(launchers[os.name] or launchers.unix,str))
+  execute(format(launchers[os.name] or launchers.unix,str))
 end
 if not os.times then
   function os.times()
@@ -3176,7 +3179,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 20687, stripped down to: 10417
+-- original size: 20945, stripped down to: 9945
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -3190,41 +3193,28 @@ local file=file
 if not lfs then
   lfs=optionalrequire("lfs")
 end
-if not lfs then
-  lfs={
-    getcurrentdir=function()
-      return "."
-    end,
-    attributes=function()
-      return nil
-    end,
-    isfile=function(name)
-      local f=io.open(name,'rb')
-      if f then
-        f:close()
-        return true
-      end
-    end,
-    isdir=function(name)
-      print("you need to load lfs")
-      return false
-    end
-  }
-elseif not lfs.isfile then
-  local attributes=lfs.attributes
-  function lfs.isdir(name)
-    return attributes(name,"mode")=="directory"
-  end
-  function lfs.isfile(name)
-    return attributes(name,"mode")=="file"
-  end
-end
 local insert,concat=table.insert,table.concat
 local match,find,gmatch=string.match,string.find,string.gmatch
 local lpegmatch=lpeg.match
 local getcurrentdir,attributes=lfs.currentdir,lfs.attributes
 local checkedsplit=string.checkedsplit
 local P,R,S,C,Cs,Cp,Cc,Ct=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cp,lpeg.Cc,lpeg.Ct
+local tricky=S("/\\")*P(-1)
+local attributes=lfs.attributes
+if sandbox then
+  sandbox.redefine(lfs.isfile,"lfs.isfile")
+  sandbox.redefine(lfs.isdir,"lfs.isdir")
+end
+function lfs.isdir(name)
+  if lpegmatch(tricky,name) then
+    return attributes(name,"mode")=="directory"
+  else
+    return attributes(name.."/.","mode")=="directory"
+  end
+end
+function lfs.isfile(name)
+  return attributes(name,"mode")=="file"
+end
 local colon=P(":")
 local period=P(".")
 local periods=P("..")
@@ -3510,18 +3500,6 @@ function file.collapsepath(str,anchor)
       return newelements
     end
   end
-end
-local tricky=S("/\\")*P(-1)
-local attributes=lfs.attributes
-function lfs.isdir(name)
-  if lpegmatch(tricky,name) then
-    return attributes(name,"mode")=="directory"
-  else
-    return attributes(name.."/.","mode")=="directory"
-  end
-end
-function lfs.isfile(name)
-  return attributes(name,"mode")=="file"
 end
 local validchars=R("az","09","AZ","--","..")
 local pattern_a=lpeg.replacer(1-validchars)
@@ -3940,7 +3918,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 16188, stripped down to: 10815
+-- original size: 16765, stripped down to: 11003
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -4318,47 +4296,51 @@ else
   end
 end
 dir.makedirs=dir.mkdirs
-if onwindows then
-  function dir.expandname(str) 
-    local first,nothing,last=match(str,"^(//)(//*)(.*)$")
-    if first then
-      first=dir.current().."/" 
-    end
-    if not first then
-      first,last=match(str,"^(//)/*(.*)$")
-    end
-    if not first then
-      first,last=match(str,"^([a-zA-Z]:)(.*)$")
-      if first and not find(last,"^/") then
-        local d=currentdir()
-        if chdir(first) then
-          first=dir.current()
+do
+  local chdir=sandbox and sandbox.original(chdir) or chdir
+  if onwindows then
+    local xcurrentdir=dir.current
+    function dir.expandname(str) 
+      local first,nothing,last=match(str,"^(//)(//*)(.*)$")
+      if first then
+        first=xcurrentdir().."/" 
+      end
+      if not first then
+        first,last=match(str,"^(//)/*(.*)$")
+      end
+      if not first then
+        first,last=match(str,"^([a-zA-Z]:)(.*)$")
+        if first and not find(last,"^/") then
+          local d=currentdir() 
+          if chdir(first) then
+            first=xcurrentdir() 
+          end
+          chdir(d)
         end
-        chdir(d)
+      end
+      if not first then
+        first,last=xcurrentdir(),str
+      end
+      last=gsub(last,"//","/")
+      last=gsub(last,"/%./","/")
+      last=gsub(last,"^/*","")
+      first=gsub(first,"/*$","")
+      if last=="" or last=="." then
+        return first
+      else
+        return first.."/"..last
       end
     end
-    if not first then
-      first,last=dir.current(),str
+  else
+    function dir.expandname(str) 
+      if not find(str,"^/") then
+        str=currentdir().."/"..str
+      end
+      str=gsub(str,"//","/")
+      str=gsub(str,"/%./","/")
+      str=gsub(str,"(.)/%.$","%1")
+      return str
     end
-    last=gsub(last,"//","/")
-    last=gsub(last,"/%./","/")
-    last=gsub(last,"^/*","")
-    first=gsub(first,"/*$","")
-    if last=="" or last=="." then
-      return first
-    else
-      return first.."/"..last
-    end
-  end
-else
-  function dir.expandname(str) 
-    if not find(str,"^/") then
-      str=currentdir().."/"..str
-    end
-    str=gsub(str,"//","/")
-    str=gsub(str,"/%./","/")
-    str=gsub(str,"(.)/%.$","%1")
-    return str
   end
 end
 file.expandname=dir.expandname 
@@ -5125,7 +5107,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 34388, stripped down to: 18833
+-- original size: 34407, stripped down to: 18852
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5300,10 +5282,10 @@ string.tracedchars=tracedchars
 strings.tracers=tracedchars
 function string.tracedchar(b)
   if type(b)=="number" then
-    return tracedchars[b] or (utfchar(b).." (U+"..format('%05X',b)..")")
+    return tracedchars[b] or (utfchar(b).." (U+"..format("%05X",b)..")")
   else
     local c=utfbyte(b)
-    return tracedchars[c] or (b.." (U+"..format('%05X',c)..")")
+    return tracedchars[c] or (b.." (U+"..(c and format("%05X",c) or "?????")..")")
   end
 end
 function number.signed(i)
@@ -5808,7 +5790,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 24247, stripped down to: 16248
+-- original size: 24267, stripped down to: 16260
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6300,7 +6282,7 @@ function table.serialize(root,name,specification)
       end
       depth=depth+1
     end
-    if root and next(root) then
+    if root and next(root)~=nil then
       local first=nil
       local last=0
       last=#root
@@ -6325,7 +6307,7 @@ function table.serialize(root,name,specification)
           elseif tv=="string" then
             n=n+1 t[n]=f_val_str(depth,v)
           elseif tv=="table" then
-            if not next(v) then
+            if next(v)==nil then
               n=n+1 t[n]=f_val_not(depth)
             else
               local st=simple_table(v)
@@ -6355,7 +6337,7 @@ function table.serialize(root,name,specification)
             n=n+1 t[n]=f_key_boo_value_str(depth,k,v)
           end
         elseif tv=="table" then
-          if not next(v) then
+          if next(v)==nil then
             if tk=="number" then
               n=n+1 t[n]=f_key_num_value_not(depth,k,v)
             elseif tk=="string" then
@@ -6413,7 +6395,7 @@ function table.serialize(root,name,specification)
       local dummy=root._w_h_a_t_e_v_e_r_
       root._w_h_a_t_e_v_e_r_=nil
     end
-    if next(root) then
+    if next(root)~=nil then
       do_serialize(root,name,1,0)
     end
   end
@@ -14407,7 +14389,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 64209, stripped down to: 44562
+-- original size: 74767, stripped down to: 45661
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -15081,7 +15063,7 @@ end
 function resolvers.expandedpathlist(str,extra_too)
   if not str then
     return {}
-  elseif instance.savelists then
+  elseif instance.savelists then 
     str=lpegmatch(dollarstripper,str)
     local lists=instance.lists
     local lst=lists[str]
@@ -15103,6 +15085,13 @@ function resolvers.expandedpathlistfromvariable(str)
 end
 function resolvers.expandpathfromvariable(str)
   return joinpath(resolvers.expandedpathlistfromvariable(str))
+end
+function resolvers.cleanedpathlist(v)
+  local t=resolvers.expandedpathlist(v)
+  for i=1,#t do
+    t[i]=resolvers.resolve(resolvers.cleanpath(t[i]))
+  end
+  return t
 end
 function resolvers.expandbraces(str)
     local ori=str
@@ -15346,13 +15335,46 @@ local function check_subpath(fname)
     return fname
   end
 end
-local function find_intree(filename,filetype,wantedfiles,allresults)
+local pathlists=setmetatableindex(function(list,filetype)
   local typespec=resolvers.variableofformat(filetype)
   local pathlist=resolvers.expandedpathlist(typespec,filetype and usertypes[filetype]) 
-  local method="intree"
+  local entry={}
   if pathlist and #pathlist>0 then
+    for k=1,#pathlist do
+      local path=pathlist[k]
+      local pathname=lpegmatch(inhibitstripper,path)
+      local expression=makepathexpression(pathname)
+      local barename=gsub(pathname,"/+$","")
+      barename=resolveprefix(barename)
+      local scheme=url.hasscheme(barename)
+      local schemename=gsub(barename,"%.%*$",'') 
+      local prescanned=path~=pathname 
+      local resursive=find(pathname,'//$')
+      entry[k]={
+        path=path,
+        pathname=pathname,
+        prescanned=prescanned,
+        recursive=recursive,
+        expression=expression,
+        barename=barename,
+        scheme=scheme,
+        schemename=schemename,
+      }
+    end
+    entry.typespec=typespec
+    list[filetype]=entry
+  else
+    list[filetype]=false
+  end
+  return entry
+end)
+local function find_intree(filename,filetype,wantedfiles,allresults)
+  local pathlist=pathlists[filetype]
+  if pathlist then
+    local method="intree"
     local filelist=collect_files(wantedfiles) 
     local dirlist={}
+    local result={}
     if filelist then
       for i=1,#filelist do
         dirlist[i]=filedirname(filelist[i][3]).."/" 
@@ -15361,17 +15383,13 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
     if trace_detail then
       report_resolving("checking filename %a in tree",filename)
     end
-    local result={}
     for k=1,#pathlist do
-      local path=pathlist[k]
-      local pathname=lpegmatch(inhibitstripper,path)
-      local doscan=path==pathname 
-      if not find (pathname,'//$') then
-        doscan=false 
-      end
+      local entry=pathlist[k]
+      local path=entry.path
+      local pathname=entry.pathname
       local done=false
       if filelist then
-        local expression=makepathexpression(pathname)
+        local expression=entry.expression
         if trace_detail then
           report_resolving("using pattern %a for path %a",expression,pathname)
         end
@@ -15401,62 +15419,62 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
         method="database"
       else
         method="filesystem" 
-        pathname=gsub(pathname,"/+$","")
-        pathname=resolveprefix(pathname)
-        local scheme=url.hasscheme(pathname)
+        local scheme=entry.scheme
         if not scheme or scheme=="file" then
-          local pname=gsub(pathname,"%.%*$",'')
+          local pname=entry.schemename
           if not find(pname,"*",1,true) then
             if can_be_dir(pname) then
-              if trace_detail then
-                report_resolving("quick root scan for %a",pname)
-              end
-              for k=1,#wantedfiles do
-                local w=wantedfiles[k]
-                local fname=check_subpath(filejoin(pname,w))
-                if fname then
-                  result[#result+1]=fname
-                  done=true
-                  if not allresults then
-                    break
-                  end
-                end
-              end
-              if not done and doscan then
+              if not done and not entry.prescanned then
                 if trace_detail then
-                  report_resolving("scanning filesystem for %a",pname)
+                  report_resolving("quick root scan for %a",pname)
                 end
-                local files=resolvers.simplescanfiles(pname,false,true)
                 for k=1,#wantedfiles do
                   local w=wantedfiles[k]
-                  local subpath=files[w]
-                  if not subpath or subpath=="" then
-                  elseif type(subpath)=="string" then
-                    local fname=check_subpath(filejoin(pname,subpath,w))
-                    if fname then
-                      result[#result+1]=fname
-                      done=true
-                      if not allresults then
-                        break
-                      end
+                  local fname=check_subpath(filejoin(pname,w))
+                  if fname then
+                    result[#result+1]=fname
+                    done=true
+                    if not allresults then
+                      break
                     end
-                  else
-                    for i=1,#subpath do
-                      local sp=subpath[i]
-                      if sp=="" then
-                      else
-                        local fname=check_subpath(filejoin(pname,sp,w))
-                        if fname then
-                          result[#result+1]=fname
-                          done=true
-                          if not allresults then
-                            break
+                  end
+                end
+                if not done and entry.recursive then
+                  if trace_detail then
+                    report_resolving("scanning filesystem for %a",pname)
+                  end
+                  local files=resolvers.simplescanfiles(pname,false,true)
+                  for k=1,#wantedfiles do
+                    local w=wantedfiles[k]
+                    local subpath=files[w]
+                    if not subpath or subpath=="" then
+                    elseif type(subpath)=="string" then
+                      local fname=check_subpath(filejoin(pname,subpath,w))
+                      if fname then
+                        result[#result+1]=fname
+                        done=true
+                        if not allresults then
+                          break
+                        end
+                      end
+                    else
+                      for i=1,#subpath do
+                        local sp=subpath[i]
+                        if sp=="" then
+                        else
+                          local fname=check_subpath(filejoin(pname,sp,w))
+                          if fname then
+                            result[#result+1]=fname
+                            done=true
+                            if not allresults then
+                              break
+                            end
                           end
                         end
                       end
-                    end
-                    if done and not allresults then
-                      break
+                      if done and not allresults then
+                        break
+                      end
                     end
                   end
                 end
@@ -15466,10 +15484,11 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
           end
         else
           for k=1,#wantedfiles do
-            local fname=methodhandler('finders',pathname.."/"..wantedfiles[k])
+            local pname=entry.barename
+            local fname=methodhandler('finders',pname.."/"..wantedfiles[k])
             if fname then
               result[#result+1]=fname
-              doen=true
+              done=true
               if not allresults then
                 break
               end
@@ -16377,7 +16396,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-zip"] = package.loaded["data-zip"] or true
 
--- original size: 9043, stripped down to: 7073
+-- original size: 8772, stripped down to: 6841
 
 if not modules then modules={} end modules ['data-zip']={
   version=1.001,
@@ -16396,16 +16415,6 @@ zip.archives=zip.archives or {}
 local archives=zip.archives
 zip.registeredfiles=zip.registeredfiles or {}
 local registeredfiles=zip.registeredfiles
-local limited=false
-directives.register("system.inputmode",function(v)
-  if not limited then
-    local i_limiter=io.i_limiter(v)
-    if i_limiter then
-      zip.open=i_limiter.protect(zip.open)
-      limited=true
-    end
-  end
-end)
 local function validzip(str) 
   if not find(str,"^zip://") then
     return "zip:///"..str
@@ -16803,7 +16812,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 6567, stripped down to: 5302
+-- original size: 6569, stripped down to: 5304
 
 if not modules then modules={} end modules ['data-sch']={
   version=1.001,
@@ -16852,7 +16861,7 @@ end
 local cached,loaded,reused,thresholds,handlers={},{},{},{},{}
 local function runcurl(name,cachename) 
   local command="curl --silent --insecure --create-dirs --output "..cachename.." "..name
-  os.spawn(command)
+  os.execute(command)
 end
 local function fetch(specification)
   local original=specification.original
@@ -17585,7 +17594,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 5951, stripped down to: 4922
+-- original size: 5955, stripped down to: 4926
 
 if not modules then modules={} end modules ['luat-fmt']={
   version=1.001,
@@ -17673,7 +17682,7 @@ function environment.make_format(name)
   end
   local command=format("%s --ini %s --lua=%s %s %sdump",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform=="unix" and "\\\\" or "\\")
   report_format("running command: %s\n",command)
-  os.spawn(command)
+  os.execute(command)
   local pattern=file.removesuffix(file.basename(usedluastub)).."-*.mem"
   local mp=dir.glob(pattern)
   if mp then
@@ -17708,7 +17717,7 @@ function environment.run_format(name,data,more)
       else
         local command=format("%s %s --fmt=%s --lua=%s %s %s",engine,primaryflags(),quoted(barename),quoted(luaname),quoted(data),more~="" and quoted(more) or "")
         report_format("running command: %s",command)
-        os.spawn(command)
+        os.execute(command)
       end
     end
   end
@@ -17719,8 +17728,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 731755
--- stripped bytes    : 260678
+-- original bytes    : 743219
+-- stripped bytes    : 271454
 
 -- end library merge
 

@@ -37,18 +37,6 @@ local archives        = zip.archives
 zip.registeredfiles   = zip.registeredfiles or { }
 local registeredfiles = zip.registeredfiles
 
-local limited = false
-
-directives.register("system.inputmode", function(v)
-    if not limited then
-        local i_limiter = io.i_limiter(v)
-        if i_limiter then
-            zip.open = i_limiter.protect(zip.open)
-            limited = true
-        end
-    end
-end)
-
 local function validzip(str) -- todo: use url splitter
     if not find(str,"^zip://") then
         return "zip:///" .. str

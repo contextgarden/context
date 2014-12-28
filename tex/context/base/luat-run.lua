@@ -230,3 +230,12 @@ directives.register("system.reportfiles", function(v)
         register("stop_file", report_none)
     end
 end)
+
+-- start_run doesn't work
+
+-- luatex.registerstartactions(function()
+--     if environment.arguments.sandbox then
+--         sandbox.enable()
+--     end
+-- end)
+

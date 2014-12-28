@@ -28,7 +28,7 @@ local function runcurl(specification)
         if not io.exists(cachename) then
             cached[original] = cachename
             local command = "curl --silent --create-dirs --output " .. cachename .. " " .. original
-            os.spawn(command)
+            os.execute(command)
         end
         if io.exists(cachename) then
             cached[original] = cachename

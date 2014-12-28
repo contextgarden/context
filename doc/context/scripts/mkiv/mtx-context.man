@@ -165,6 +165,9 @@ process file with texexec
 .TP
 .B --pipe
 do not check for file and enter scroll mode (--dummyfile=whatever.tmp)
+.TP
+.B --sandbox
+process file in a limited environment
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

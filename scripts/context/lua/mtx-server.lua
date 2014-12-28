@@ -278,6 +278,20 @@ handlers.html = handlers.htm
 local indices    = { "index.htm", "index.html" }
 local portnumber = 31415 -- pi suits tex
 
+local newline    = lpeg.patterns.newline
+local spacer     = lpeg.patterns.spacer
+local whitespace = lpeg.patterns.whitespace
+local method     = lpeg.P("GET")
+                 + lpeg.P("POST")
+local identify   = (1-method)^0
+                 * lpeg.C(method)
+                 * spacer^1
+                 * lpeg.C((1-spacer)^1)
+                 * spacer^1
+                 * lpeg.P("HTTP/")
+                 * (1-whitespace)^0
+                 * lpeg.C(lpeg.P(1)^0)
+
 function scripts.webserver.run(configuration)
     -- check configuration
     configuration.port = tonumber(configuration.port or os.getenv("MTX_SERVER_PORT") or portnumber) or portnumber
@@ -329,17 +343,24 @@ function scripts.webserver.run(configuration)
             local from = client:getpeername()
             report("request from: %s",tostring(from))
             report("request data: %s",tostring(request))
-            local fullurl = string.match(request,"GET (.+) HTTP/.*$") or "" -- todo: more clever / post
-            if fullurl == "" then
+         -- local fullurl = string.match(request,"(GET) (.+) HTTP/.*$") or "" -- todo: more clever / post
+         -- if fullurl == "" then
+-- print("!!!!",request)
+            local method, fullurl, body = lpeg.match(identify,request)
+            if method == "" or fullurl == "" then
                 report("no url")
                 errormessage(client,configuration,404)
             else
+
+                -- todo: method: POST
+
                 fullurl = url.unescapeget(fullurl)
                 report("requested url: %s",fullurl)
              -- fullurl = socket.url.unescape(fullurl) -- happens later
                 local hashed = url.hashed(fullurl)
                 local query = url.query(hashed.query)
                 local filename = hashed.path -- hm, not query?
+                hashed.body = body
                 if script then
                     filename = script
                     report("forced script: %s",filename)

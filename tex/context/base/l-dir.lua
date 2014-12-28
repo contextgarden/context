@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['l-dir'] = {
     license   = "see context related readme files"
 }
 
--- dir.expandname will be merged with cleanpath and collapsepath
+-- todo: dir.expandname will be sped up and merged with cleanpath and collapsepath
+-- todo: keep track of currentdir (chdir, pushdir, popdir)
 
 local type, select = type, select
 local find, gmatch, match, gsub, sub = string.find, string.gmatch, string.match, string.gsub, string.sub
@@ -490,52 +491,63 @@ end
 
 dir.makedirs = dir.mkdirs
 
--- we can only define it here as it uses dir.current
 
-if onwindows then
+do
 
-    function dir.expandname(str) -- will be merged with cleanpath and collapsepath\
-        local first, nothing, last = match(str,"^(//)(//*)(.*)$")
-        if first then
-            first = dir.current() .. "/" -- dir.current sanitizes
-        end
-        if not first then
-            first, last = match(str,"^(//)/*(.*)$")
-        end
-        if not first then
-            first, last = match(str,"^([a-zA-Z]:)(.*)$")
-            if first and not find(last,"^/") then
-                local d = currentdir()
-                if chdir(first) then
-                    first = dir.current()
+    -- we can only define it here as it uses dir.chdir and we also need to
+    -- make sure we use the non sandboxed variant because otherwise we get
+    -- into a recursive loop due to usage of expandname in the file resolver
+
+    local chdir = sandbox and sandbox.original(chdir) or chdir
+
+    if onwindows then
+
+        local xcurrentdir = dir.current
+
+        function dir.expandname(str) -- will be merged with cleanpath and collapsepath\
+            local first, nothing, last = match(str,"^(//)(//*)(.*)$")
+            if first then
+                first = xcurrentdir() .. "/" -- xcurrentdir sanitizes
+            end
+            if not first then
+                first, last = match(str,"^(//)/*(.*)$")
+            end
+            if not first then
+                first, last = match(str,"^([a-zA-Z]:)(.*)$")
+                if first and not find(last,"^/") then
+                    local d = currentdir() -- push / pop
+                    if chdir(first) then
+                        first = xcurrentdir() -- xcurrentdir sanitizes
+                    end
+                    chdir(d)
                 end
-                chdir(d)
+            end
+            if not first then
+                first, last = xcurrentdir(), str
+            end
+            last = gsub(last,"//","/")
+            last = gsub(last,"/%./","/")
+            last = gsub(last,"^/*","")
+            first = gsub(first,"/*$","")
+            if last == "" or last == "." then
+                return first
+            else
+                return first .. "/" .. last
             end
         end
-        if not first then
-            first, last = dir.current(), str
-        end
-        last = gsub(last,"//","/")
-        last = gsub(last,"/%./","/")
-        last = gsub(last,"^/*","")
-        first = gsub(first,"/*$","")
-        if last == "" or last == "." then
-            return first
-        else
-            return first .. "/" .. last
-        end
-    end
 
-else
+    else
 
-    function dir.expandname(str) -- will be merged with cleanpath and collapsepath
-        if not find(str,"^/") then
-            str = currentdir() .. "/" .. str
+        function dir.expandname(str) -- will be merged with cleanpath and collapsepath
+            if not find(str,"^/") then
+                str = currentdir() .. "/" .. str
+            end
+            str = gsub(str,"//","/")
+            str = gsub(str,"/%./","/")
+            str = gsub(str,"(.)/%.$","%1")
+            return str
         end
-        str = gsub(str,"//","/")
-        str = gsub(str,"/%./","/")
-        str = gsub(str,"(.)/%.$","%1")
-        return str
+
     end
 
 end

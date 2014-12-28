@@ -21,9 +21,12 @@ local trace_outlines = false  trackers.register("figures.outliness", function(v)
 local report_link    = logs.reporter("backend","link")
 local report_outline = logs.reporter("backend","outline")
 
+local epdf           = epdf
 local backends       = backends
 local lpdf           = lpdf
 local context        = context
+
+local loadpdffile    = lpdf.epdf.load
 
 local nameonly       = file.nameonly
 
@@ -141,7 +144,7 @@ function codeinjections.mergereferences(specification)
     end
     if specification then
         local fullname = specification.fullname
-        local document = lpdf.epdf.load(fullname) -- costs time
+        local document = loadpdffile(fullname) -- costs time
         if document then
             local pagenumber  = specification.page    or 1
             local xscale      = specification.yscale  or 1
@@ -221,7 +224,7 @@ function codeinjections.mergeviewerlayers(specification)
     end
     if specification then
         local fullname = specification.fullname
-        local document = lpdf.epdf.load(fullname)
+        local document = loadpdffile(fullname)
         if document then
             local namespace = makenamespace(fullname)
             local layers = document.layers
@@ -273,7 +276,7 @@ function codeinjections.getbookmarks(filename)
     local document = nil
 
     if lfs.isfile(filename) then
-        document = lpdf.epdf.load(filename)
+        document = loadpdffile(filename)
     else
         report_outline("unknown file %a",filename)
         bookmarks.extras.register(filename,list)

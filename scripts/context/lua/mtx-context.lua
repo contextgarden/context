@@ -590,6 +590,17 @@ function scripts.context.run(ctxdata,filename)
     local a_texformat   = getargument("texformat")
     local a_keeptuc     = getargument("keeptuc")
     local a_keeplog     = getargument("keeplog")
+
+    -- the following flag is not officially supported because i cannot forsee
+    -- side effects (so no bug reports please) .. we provide --sandbox that
+    -- does similar things but tries to ensure that context works as expected
+
+    local a_safer       = getargument("safer")
+
+    if a_safer then
+        report("warning: using the luatex safer options, processing is not guaranteed")
+    end
+
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or (a_scrollmode and "scrollmode") or nil
     a_synctex   = check_synctex(a_synctex)
@@ -703,6 +714,7 @@ function scripts.context.run(ctxdata,filename)
                     ["interaction"]           = a_batchmode,
                     ["synctex"]               = a_synctex,
                     ["no-parse-first-line"]   = true,
+                    ["safer"]                 = a_safer,
                  -- ["no-mktex"]              = true,
                  -- ["file-line-error-style"] = true,
                     ["fmt"]                   = formatfile,

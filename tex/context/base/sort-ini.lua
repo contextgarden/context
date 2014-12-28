@@ -753,7 +753,9 @@ function sorters.sort(entries,cmp)
                 first = "  "
             else
                 s = first
-                report_sorters(">> %C (%C)",first,letter)
+                if first and letter then
+                    report_sorters(">> %C (%C)",first,letter)
+                end
             end
             report_sorters("   %s | %s",packch(entry),packuc(entry))
         end

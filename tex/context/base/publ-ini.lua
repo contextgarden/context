@@ -1601,12 +1601,14 @@ do
             end
         end,
         [v_author] = function(dataset,rendering,list)
+            -- there is no real need to go vi aindex as the list itself can be sorted ... todo
             local valid = publications.indexers.author(dataset,list)
             if #valid == 0 or #valid ~= #list then
                 -- nothing to sort
             else
                 -- if needed we can wrap compare and use the list directly but this is cleaner
-                sorters.sort(valid,sortcomparer)
+--                 sorters.sort(valid,publications.sorters.author)
+                local valid = publications.sorters.author(dataset,valid)
                 for i=1,#valid do
                     local v = valid[i]
                     valid[i] = list[v.index]
@@ -1662,17 +1664,23 @@ do
                 end
             end
         end
-        rendering.list  = type(sorter) == "function" and sorter(dataset,rendering,newlist,sorttype) or newlist
+        if type(sorter) == "function" then
+            rendering.list = sorter(dataset,rendering,newlist,sorttype)
+        else
+            rendering.list = newlist
+        end
     end
 
     function lists.fetchentries(dataset)
         local rendering = renderings[dataset]
         local list      = rendering.list
-        for i=1,#list do
-            local li = list[i]
-            ctx_btxsettag(li[1])
-            ctx_btxsetnumber(li[3])
-            ctx_btxchecklistentry()
+        if list then
+            for i=1,#list do
+                local li = list[i]
+                ctx_btxsettag(li[1])
+                ctx_btxsetnumber(li[3])
+                ctx_btxchecklistentry()
+            end
         end
     end
 
@@ -1745,49 +1753,51 @@ do
         -- maybe a startflushing here
         ignoredfields   = rendering.ignored or { }
         --
-        for i=1,#list do
-            local li       = list[i]
-            local tag      = li[1]
-            local n        = li[3]
-            local entry    = luadata[tag]
-            local combined = entry.combined
-            local language = entry.language
-            if combined then
-                ctx_btxsetcombis(concat(combined,","))
-            end
-            ctx_btxsetcategory(entry.category or "unknown")
-            ctx_btxsettag(tag)
-            ctx_btxsetnumber(n)
-            if language then
-                ctx_btxsetlanguage(language)
-            end
-            local bl = li[5]
-            if bl and bl ~= "" then
-                ctx_btxsetbacklink(bl)
-                ctx_btxsetbacktrace(concat(li," ",5))
-                local uc = citetolist[tonumber(bl)]
-                if uc then
-                    ctx_btxsetinternal(uc.references.internal or "")
+        if list then
+            for i=1,#list do
+                local li       = list[i]
+                local tag      = li[1]
+                local n        = li[3]
+                local entry    = luadata[tag]
+                local combined = entry.combined
+                local language = entry.language
+                if combined then
+                    ctx_btxsetcombis(concat(combined,","))
                 end
-            else
-                -- nothing
-            end
-            local userdata = li[4]
-            if userdata then
-                local b = userdata.btxbtx
-                local a = userdata.btxatx
-                if b then
-                    ctx_btxsetbefore(b)
+                ctx_btxsetcategory(entry.category or "unknown")
+                ctx_btxsettag(tag)
+                ctx_btxsetnumber(n)
+                if language then
+                    ctx_btxsetlanguage(language)
                 end
-                if a then
-                    ctx_btxsetafter(a)
+                local bl = li[5]
+                if bl and bl ~= "" then
+                    ctx_btxsetbacklink(bl)
+                    ctx_btxsetbacktrace(concat(li," ",5))
+                    local uc = citetolist[tonumber(bl)]
+                    if uc then
+                        ctx_btxsetinternal(uc.references.internal or "")
+                    end
+                else
+                    -- nothing
                 end
-            end
-            rendering.userdata = userdata
-            if textmode then
-                ctx_btxhandlelisttextentry()
-            else
-                ctx_btxhandlelistentry()
+                local userdata = li[4]
+                if userdata then
+                    local b = userdata.btxbtx
+                    local a = userdata.btxatx
+                    if b then
+                        ctx_btxsetbefore(b)
+                    end
+                    if a then
+                        ctx_btxsetafter(a)
+                    end
+                end
+                rendering.userdata = userdata
+                if textmode then
+                    ctx_btxhandlelisttextentry()
+                else
+                    ctx_btxhandlelistentry()
+                end
             end
         end
         context(function()

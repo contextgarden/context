@@ -858,7 +858,7 @@ end
 function resolvers.expandedpathlist(str,extra_too)
     if not str then
         return { }
-    elseif instance.savelists then
+    elseif instance.savelists then -- hm, what if two cases, with and without extra_too
         str = lpegmatch(dollarstripper,str)
         local lists = instance.lists
         local lst = lists[str]
@@ -882,6 +882,14 @@ end
 
 function resolvers.expandpathfromvariable(str)
     return joinpath(resolvers.expandedpathlistfromvariable(str))
+end
+
+function resolvers.cleanedpathlist(v)
+    local t = resolvers.expandedpathlist(v)
+    for i=1,#t do
+        t[i] = resolvers.resolve(resolvers.cleanpath(t[i]))
+    end
+    return t
 end
 
 function resolvers.expandbraces(str) -- output variable and brace expansion of STRING
@@ -1175,14 +1183,220 @@ local function check_subpath(fname)
     end
 end
 
-local function find_intree(filename,filetype,wantedfiles,allresults)
+-- old one / keep as reference
+
+-- local function find_intree(filename,filetype,wantedfiles,allresults)
+--     local typespec = resolvers.variableofformat(filetype)
+--     local pathspec = pathspecs[filetype]
+--     local pathlist = resolvers.expandedpathlist(typespec,filetype and usertypes[filetype]) -- only extra path with user files
+--     local method = "intree"
+--     if pathlist and #pathlist > 0 then
+--         -- list search
+--         local filelist = collect_files(wantedfiles) -- okay, a bit over the top when we just look relative to the current path
+--         local dirlist = { }
+--         if filelist then
+--             for i=1,#filelist do
+--                 dirlist[i] = filedirname(filelist[i][3]) .. "/" -- was [2] .. gamble
+--             end
+--         end
+--         if trace_detail then
+--             report_resolving("checking filename %a in tree",filename)
+--         end
+--         local result = { }
+--         -- pathlist : resolved
+--         -- dirlist  : unresolved or resolved
+--         -- filelist : unresolved
+--         for k=1,#pathlist do
+--             local path = pathlist[k]
+--             local pathname = lpegmatch(inhibitstripper,path)
+--             local doscan = path == pathname -- no ^!!
+--             if not find (pathname,'//$') then
+--                 doscan = false -- we check directly on the path
+--             end
+--             local done = false
+--             -- using file list
+--             if filelist then -- database
+--                 -- compare list entries with permitted pattern -- /xx /xx//
+--                 local expression = makepathexpression(pathname)
+--                 if trace_detail then
+--                     report_resolving("using pattern %a for path %a",expression,pathname)
+--                 end
+--                 for k=1,#filelist do
+--                     local fl = filelist[k]
+--                     local f = fl[2]
+--                     local d = dirlist[k]
+--                     -- resolve is new:
+--                     if find(d,expression) or find(resolveprefix(d),expression) then
+--                         -- todo, test for readable
+--                         result[#result+1] = resolveprefix(fl[3]) -- no shortcut
+--                         done = true
+--                         if allresults then
+--                             if trace_detail then
+--                                 report_resolving("match to %a in hash for file %a and path %a, continue scanning",expression,f,d)
+--                             end
+--                         else
+--                             if trace_detail then
+--                                 report_resolving("match to %a in hash for file %a and path %a, quit scanning",expression,f,d)
+--                             end
+--                             break
+--                         end
+--                     elseif trace_detail then
+--                         report_resolving("no match to %a in hash for file %a and path %a",expression,f,d)
+--                     end
+--                 end
+--             end
+--             if done then
+--                 method = "database"
+--             else
+--                 method = "filesystem" -- bonus, even when !! is specified
+--                 pathname = gsub(pathname,"/+$","")
+--                 pathname = resolveprefix(pathname)
+--                 local scheme = url.hasscheme(pathname)
+--                 if not scheme or scheme == "file" then
+--                     local pname = gsub(pathname,"%.%*$",'')
+--                     if not find(pname,"*",1,true) then
+--                         if can_be_dir(pname) then
+--                             -- hm, rather useless as we don't go deeper and if we would we could also
+--                             -- auto generate the file database .. however, we need this for extra paths
+--                             -- that are not hashed (like sources on my machine) .. so, this is slightly
+--                             -- out of order but at least fast (and we seldom end up here, only when a file
+--                             -- is not already found
+--                             if trace_detail then
+--                                 report_resolving("quick root scan for %a",pname)
+--                             end
+--                             for k=1,#wantedfiles do
+--                                 local w = wantedfiles[k]
+--                                 local fname = check_subpath(filejoin(pname,w))
+--                                 if fname then
+--                                     result[#result+1] = fname
+--                                     done = true
+--                                     if not allresults then
+--                                         break
+--                                     end
+--                                 end
+--                             end
+--                             if not done and doscan then
+--                                 -- collect files in path (and cache the result)
+--                                 if trace_detail then
+--                                     report_resolving("scanning filesystem for %a",pname)
+--                                 end
+--                                 local files = resolvers.simplescanfiles(pname,false,true)
+--                                 for k=1,#wantedfiles do
+--                                     local w = wantedfiles[k]
+--                                     local subpath = files[w]
+--                                     if not subpath or subpath == "" then
+--                                         -- rootscan already done
+--                                     elseif type(subpath) == "string" then
+--                                         local fname = check_subpath(filejoin(pname,subpath,w))
+--                                         if fname then
+--                                             result[#result+1] = fname
+--                                             done = true
+--                                             if not allresults then
+--                                                 break
+--                                             end
+--                                         end
+--                                     else
+--                                         for i=1,#subpath do
+--                                             local sp = subpath[i]
+--                                             if sp == "" then
+--                                                 -- roottest already done
+--                                             else
+--                                                 local fname = check_subpath(filejoin(pname,sp,w))
+--                                                 if fname then
+--                                                     result[#result+1] = fname
+--                                                     done = true
+--                                                     if not allresults then
+--                                                         break
+--                                                     end
+--                                                 end
+--                                             end
+--                                         end
+--                                         if done and not allresults then
+--                                             break
+--                                         end
+--                                     end
+--                                 end
+--                             end
+--                         end
+--                     else
+--                         -- no access needed for non existing path, speedup (esp in large tree with lots of fake)
+--                     end
+--                 else
+--                     -- we can have extra_paths that are urls
+--                     for k=1,#wantedfiles do
+--                         -- independent url scanner
+--                         local fname = methodhandler('finders',pathname .. "/" .. wantedfiles[k])
+--                         if fname then
+--                             result[#result+1] = fname
+--                             done = true
+--                             if not allresults then
+--                                 break
+--                             end
+--                         end
+--                     end
+--                 end
+--             end
+--             -- todo recursive scanning
+--             if done and not allresults then
+--                 break
+--             end
+--         end
+--         if #result > 0 then
+--             return method, result
+--         end
+--     end
+-- end
+
+-- this caching is not really needed (seldom accessed) but more readable
+-- we could probably move some to a higher level but then we need to adapt
+-- more code ... maybe some day
+
+local pathlists = setmetatableindex(function(list,filetype)
     local typespec = resolvers.variableofformat(filetype)
     local pathlist = resolvers.expandedpathlist(typespec,filetype and usertypes[filetype]) -- only extra path with user files
-    local method = "intree"
+    local entry    = { }
     if pathlist and #pathlist > 0 then
+        for k=1,#pathlist do
+            local path       = pathlist[k]
+            local pathname   = lpegmatch(inhibitstripper,path)
+            local expression = makepathexpression(pathname)
+            local barename   = gsub(pathname,"/+$","")
+            barename         = resolveprefix(barename)
+            local scheme     = url.hasscheme(barename)
+            local schemename = gsub(barename,"%.%*$",'') -- after scheme
+            local prescanned = path ~= pathname -- ^!!
+            local resursive  = find(pathname,'//$')
+            entry[k] = {
+                path       = path,
+                pathname   = pathname,
+                prescanned = prescanned,
+                recursive  = recursive,
+                expression = expression,
+                barename   = barename,
+                scheme     = scheme,
+                schemename = schemename,
+            }
+        end
+        entry.typespec = typespec
+        list[filetype] = entry
+    else
+        list[filetype] = false
+    end
+    return entry
+end)
+
+-- pathlist : resolved
+-- dirlist  : unresolved or resolved
+-- filelist : unresolved
+
+local function find_intree(filename,filetype,wantedfiles,allresults)
+    local pathlist = pathlists[filetype]
+    if pathlist then
         -- list search
+        local method   = "intree"
         local filelist = collect_files(wantedfiles) -- okay, a bit over the top when we just look relative to the current path
-        local dirlist = { }
+        local dirlist  = { }
+        local result   = { }
         if filelist then
             for i=1,#filelist do
                 dirlist[i] = filedirname(filelist[i][3]) .. "/" -- was [2] .. gamble
@@ -1191,29 +1405,22 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
         if trace_detail then
             report_resolving("checking filename %a in tree",filename)
         end
-        local result = { }
-        -- pathlist : resolved
-        -- dirlist  : unresolved or resolved
-        -- filelist : unresolved
         for k=1,#pathlist do
-            local path = pathlist[k]
-            local pathname = lpegmatch(inhibitstripper,path)
-            local doscan = path == pathname -- no ^!!
-            if not find (pathname,'//$') then
-                doscan = false -- we check directly on the path
-            end
-            local done = false
+            local entry    = pathlist[k]
+            local path     = entry.path
+            local pathname = entry.pathname
+            local done     = false
             -- using file list
             if filelist then -- database
                 -- compare list entries with permitted pattern -- /xx /xx//
-                local expression = makepathexpression(pathname)
+                local expression = entry.expression
                 if trace_detail then
                     report_resolving("using pattern %a for path %a",expression,pathname)
                 end
                 for k=1,#filelist do
                     local fl = filelist[k]
-                    local f = fl[2]
-                    local d = dirlist[k]
+                    local f  = fl[2]
+                    local d  = dirlist[k]
                     -- resolve is new:
                     if find(d,expression) or find(resolveprefix(d),expression) then
                         -- todo, test for readable
@@ -1237,71 +1444,74 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
             if done then
                 method = "database"
             else
-                method = "filesystem" -- bonus, even when !! is specified
-                pathname = gsub(pathname,"/+$","")
-                pathname = resolveprefix(pathname)
-                local scheme = url.hasscheme(pathname)
+                -- beware: we don't honor allresults here in a next attempt (done false)
+                -- but that is kind of special anyway
+                method       = "filesystem" -- bonus, even when !! is specified
+                local scheme = entry.scheme
                 if not scheme or scheme == "file" then
-                    local pname = gsub(pathname,"%.%*$",'')
+                    local pname = entry.schemename
                     if not find(pname,"*",1,true) then
                         if can_be_dir(pname) then
                             -- hm, rather useless as we don't go deeper and if we would we could also
                             -- auto generate the file database .. however, we need this for extra paths
                             -- that are not hashed (like sources on my machine) .. so, this is slightly
-                            -- out of order but at least fast (anbd we seldom end up here, only when a file
+                            -- out of order but at least fast (and we seldom end up here, only when a file
                             -- is not already found
-                            if trace_detail then
-                                report_resolving("quick root scan for %a",pname)
-                            end
-                            for k=1,#wantedfiles do
-                                local w = wantedfiles[k]
-                                local fname = check_subpath(filejoin(pname,w))
-                                if fname then
-                                    result[#result+1] = fname
-                                    done = true
-                                    if not allresults then
-                                        break
-                                    end
-                                end
-                            end
-                            if not done and doscan then
-                                -- collect files in path (and cache the result)
+-- inspect(entry)
+                            if not done and not entry.prescanned then
                                 if trace_detail then
-                                    report_resolving("scanning filesystem for %a",pname)
+                                    report_resolving("quick root scan for %a",pname)
                                 end
-                                local files = resolvers.simplescanfiles(pname,false,true)
                                 for k=1,#wantedfiles do
                                     local w = wantedfiles[k]
-                                    local subpath = files[w]
-                                    if not subpath or subpath == "" then
-                                        -- rootscan already done
-                                    elseif type(subpath) == "string" then
-                                        local fname = check_subpath(filejoin(pname,subpath,w))
-                                        if fname then
-                                            result[#result+1] = fname
-                                            done = true
-                                            if not allresults then
-                                                break
-                                            end
+                                    local fname = check_subpath(filejoin(pname,w))
+                                    if fname then
+                                        result[#result+1] = fname
+                                        done = true
+                                        if not allresults then
+                                            break
                                         end
-                                    else
-                                        for i=1,#subpath do
-                                            local sp = subpath[i]
-                                            if sp == "" then
-                                                -- roottest already done
-                                            else
-                                                local fname = check_subpath(filejoin(pname,sp,w))
-                                                if fname then
-                                                    result[#result+1] = fname
-                                                    done = true
-                                                    if not allresults then
-                                                        break
+                                    end
+                                end
+                                if not done and entry.recursive then -- maybe also when allresults
+                                    -- collect files in path (and cache the result)
+                                    if trace_detail then
+                                        report_resolving("scanning filesystem for %a",pname)
+                                    end
+                                    local files = resolvers.simplescanfiles(pname,false,true)
+                                    for k=1,#wantedfiles do
+                                        local w = wantedfiles[k]
+                                        local subpath = files[w]
+                                        if not subpath or subpath == "" then
+                                            -- rootscan already done
+                                        elseif type(subpath) == "string" then
+                                            local fname = check_subpath(filejoin(pname,subpath,w))
+                                            if fname then
+                                                result[#result+1] = fname
+                                                done = true
+                                                if not allresults then
+                                                    break
+                                                end
+                                            end
+                                        else
+                                            for i=1,#subpath do
+                                                local sp = subpath[i]
+                                                if sp == "" then
+                                                    -- roottest already done
+                                                else
+                                                    local fname = check_subpath(filejoin(pname,sp,w))
+                                                    if fname then
+                                                        result[#result+1] = fname
+                                                        done = true
+                                                        if not allresults then
+                                                            break
+                                                        end
                                                     end
                                                 end
                                             end
-                                        end
-                                        if done and not allresults then
-                                            break
+                                            if done and not allresults then
+                                                break
+                                            end
                                         end
                                     end
                                 end
@@ -1314,10 +1524,11 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                     -- we can have extra_paths that are urls
                     for k=1,#wantedfiles do
                         -- independent url scanner
-                        local fname = methodhandler('finders',pathname .. "/" .. wantedfiles[k])
+                        local pname = entry.barename
+                        local fname = methodhandler('finders',pname .. "/" .. wantedfiles[k])
                         if fname then
                             result[#result+1] = fname
-                            doen = true
+                            done = true
                             if not allresults then
                                 break
                             end

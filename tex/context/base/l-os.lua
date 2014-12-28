@@ -25,8 +25,6 @@ if not modules then modules = { } end modules ['l-os'] = {
 -- os.sleep() => socket.sleep()
 -- math.randomseed(tonumber(string.sub(string.reverse(tostring(math.floor(socket.gettime()*10000))),1,6)))
 
--- maybe build io.flush in os.execute
-
 local os = os
 local date, time = os.date, os.time
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
@@ -118,15 +116,11 @@ end
 
 -- end of environment hack
 
-local execute, spawn, exec, iopopen, ioflush = os.execute, os.spawn or os.execute, os.exec or os.execute, io.popen, io.flush
-
-function os.execute(...) ioflush() return execute(...) end
-function os.spawn  (...) ioflush() return spawn  (...) end
-function os.exec   (...) ioflush() return exec   (...) end
-function io.popen  (...) ioflush() return iopopen(...) end
+local execute = os.execute
+local iopopen = io.popen
 
 function os.resultof(command)
-    local handle = io.popen(command,"r")
+    local handle = iopopen(command,"r") -- already has flush
     if handle then
         local result = handle:read("*all") or ""
         handle:close()
@@ -160,7 +154,7 @@ local launchers = {
 }
 
 function os.launch(str)
-    os.execute(format(launchers[os.name] or launchers.unix,str))
+    execute(format(launchers[os.name] or launchers.unix,str))
 end
 
 if not os.times then -- ?

@@ -44,7 +44,8 @@ local P, C, S, R, Ct, Cc, V, Carg, Cs, Cf, Cg = lpeg.P, lpeg.C, lpeg.S, lpeg.R, 
 local epdf           = epdf
       lpdf           = lpdf or { }
 local lpdf           = lpdf
-lpdf.epdf            = { }
+local lpdf_epdf      = { }
+lpdf.epdf            = lpdf_epdf
 
 local report_epdf    = logs.reporter("epdf")
 
@@ -89,8 +90,6 @@ local function initialize_methods(xref)
     arrayGetNF       = array.getNF
     arrayGet         = array.get
     --
- -- report_epdf("initializing lpdf.epdf library")
-    --
     initialize_methods = function()
         -- already done
     end
@@ -124,18 +123,6 @@ local function fatal_error(...)
     report_epdf("aborting job in order to avoid crash")
     os.exit()
 end
-
-local limited = false -- a bit of protection
-
-directives.register("system.inputmode", function(v)
-    if not limited then
-        local i_limiter = io.i_limiter(v)
-        if i_limiter then
-            epdf.open = i_limiter.protect(epdf.open)
-            limited = true
-        end
-    end
-end)
 
 -- epdf is the built-in library
 
@@ -529,11 +516,11 @@ end
 
 local loaded = { }
 
-function lpdf.epdf.load(filename)
+function lpdf_epdf.load(filename)
     local document = loaded[filename]
     if not document then
-        statistics.starttiming(lpdf.epdf)
-        local __data__ = epdf.open(filename) -- maybe resolvers.find_file
+        statistics.starttiming(lpdf_epdf)
+        local __data__ = pdf_open(filename) -- maybe resolvers.find_file
         if __data__ then
             local __xref__ = __data__:getXRef()
             document = {
@@ -565,13 +552,13 @@ function lpdf.epdf.load(filename)
         end
         loaded[filename] = document
         loaded[document] = document
-        statistics.stoptiming(lpdf.epdf)
-     -- print(statistics.elapsedtime(lpdf.epdf))
+        statistics.stoptiming(lpdf_epdf)
+     -- print(statistics.elapsedtime(lpdf_epdf))
     end
     return document or nil
 end
 
-function lpdf.epdf.unload(filename)
+function lpdf_epdf.unload(filename)
     local document = loaded[filename]
     if document then
         loaded[document] = nil
@@ -597,8 +584,8 @@ local function expanded(t)
     return next, t
 end
 
-lpdf.epdf.expand   = expand
-lpdf.epdf.expanded = expanded
+lpdf_epdf.expand   = expand
+lpdf_epdf.expanded = expanded
 
 -- we could resolve the text stream in one pass if we directly handle the
 -- font but why should we complicate things
@@ -707,7 +694,7 @@ end
 local p_hex_to_utf = P(true) / function() more = 0 end * Cs(p_hex_to_utf^1)
 local p_dec_to_utf = P(true) / function() more = 0 end * Cs(p_dec_to_utf^1)
 
-function lpdf.epdf.getpagecontent(document,pagenumber)
+function lpdf_epdf.getpagecontent(document,pagenumber)
 
     local page = document.pages[pagenumber]
 
@@ -765,7 +752,7 @@ end
 local softhyphen = utfchar(0xAD) .. "$"
 local linefactor = 1.3
 
-function lpdf.epdf.contenttotext(document,list) -- maybe signal fonts
+function lpdf_epdf.contenttotext(document,list) -- maybe signal fonts
     local last_y = 0
     local last_f = 0
     local text   = { }
@@ -813,7 +800,7 @@ function lpdf.epdf.contenttotext(document,list) -- maybe signal fonts
     return concat(text)
 end
 
-function lpdf.epdf.getstructure(document,list) -- just a test
+function lpdf_epdf.getstructure(document,list) -- just a test
     local depth = 0
     for i=1,#list do
         local entry    = list[i]
@@ -844,7 +831,7 @@ end
 
 -- helpers
 
--- function lpdf.epdf.getdestinationpage(document,name)
+-- function lpdf_epdf.getdestinationpage(document,name)
 --     local destination = document.__data__:findDest(name)
 --     return destination and destination.number
 -- end

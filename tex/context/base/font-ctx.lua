@@ -220,25 +220,11 @@ function constructors.trytosharefont(target,tfmdata)
     end
 end
 
-
 directives.register("fonts.checksharing",function(v)
     if not v then
         report_defining("font sharing in backend is disabled")
     end
     constructors.sharefonts = v
-end)
-
-local limited = false
-
-directives.register("system.inputmode", function(v)
-    if not limited then
-        local i_limiter = io.i_limiter(v)
-        if i_limiter then
-            fontloader.open = i_limiter.protect(fontloader.open)
-            fontloader.info = i_limiter.protect(fontloader.info)
-            limited = true
-        end
-    end
 end)
 
 function definers.resetnullfont()

@@ -19,8 +19,6 @@ local trace_injections = false  trackers.register("fonts.injections", function(v
 
 local report_injections = logs.reporter("fonts","injections")
 
-report_injections("using experimental injector")
-
 local attributes, nodes, node = attributes, nodes, node
 
 fonts                    = fonts

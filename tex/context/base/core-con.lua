@@ -562,14 +562,11 @@ local function convert(method,n,language)
         end
         local sequence = sequences[method]
         if sequence then
-            local set = sequences.set
-            if set then
-                local max = #set
-                if n > max then
-                    return set[(n-1) % max + 1]
-                else
-                    return set[n]
-                end
+            local max = #sequence
+            if n > max then
+                return sequence[(n-1) % max + 1]
+            else
+                return sequence[n]
             end
         end
         return n

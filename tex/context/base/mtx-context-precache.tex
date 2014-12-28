@@ -1,0 +1,161 @@
+%D \module
+%D   [       file=mtx-context-precache,
+%D        version=2014.12.24,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Precaching Fonts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin help
+%
+% usage: context --extra=precache [no options yet]
+%
+% example: context --extra=precache
+%
+% end help
+
+\startluacode
+
+local lower      = string.lower
+local filesuffix = file.suffix
+local findfile   = resolvers.find_file
+
+local report     = logs.reporter("fonts","precache")
+
+function fonts.names.precache()
+    local handlers = fonts.handlers
+    if not handlers then
+        report("no handlers available")
+        return
+    end
+    local otfloader = handlers.otf and handlers.otf.load
+    local afmloader = handlers.afm and handlers.afm.load
+    if not (otfloader or afmloader) then
+        report("no otf or afm handler available")
+        return
+    end
+    fonts.names.load()
+    local data = fonts.names.data
+    if not data then
+        report("no font data available")
+        return
+    end
+    local specifications = data.specifications
+    if not specifications then
+        report("no font specifications available")
+        return
+    end
+    local n = 0
+    for i=1,#specifications do
+        local specification = specifications[i]
+        local filename      = specification.filename
+        local cleanfilename = specification.cleanfilename
+        local foundfile     = findfile(filename)
+        if foundfile and foundfile ~= "" then
+            local suffix = lower(filesuffix(foundfile))
+            if suffix == "otf" or suffix == "ttf" then
+                if otfloader then
+                    report("caching otf file: %s",foundfile)
+                    otfloader(foundfile) -- todo: ttc/sub
+                    n = n + 1
+                end
+            elseif suffix == "afm" then
+                if afmloader then
+                    report("caching afm file: %s",foundfile)
+                    afmloader(foundfile)
+                    n = n + 1
+                end
+            end
+        end
+    end
+    report("%s files out of %s cached",n,#specifications)
+end
+
+\stopluacode
+
+\starttext
+
+\setuppapersize
+  [A4,landscape]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   footer=0pt,
+   header=1cm,
+   headerdistance=0cm,
+   backspace=5mm,
+   topspace=5mm]
+
+\setupbodyfont
+  [dejavu,6pt,tt]
+
+\startmode[*first]
+    \startluacode
+        fonts.names.precache()
+    \stopluacode
+\stopmode
+
+\startluacode
+    fonts.names.load()
+
+    local specifications = fonts.names.data.specifications
+
+    local sorted = { }
+    local hashed = { }
+
+    for i=1,#specifications do
+        local filename = specifications[i].cleanfilename
+        sorted[i] = filename
+        hashed[filename] = i
+    end
+
+    table.sort(sorted)
+
+    local context  = context
+    local basename = file.basename
+
+    local NC   = context.NC
+    local NR   = context.NR
+    local HL   = context.HL
+    local bold = context.bold
+
+    context.starttabulate { "||||||||||" }
+    HL()
+    NC() bold("format")
+    NC() bold("cleanfilename")
+    NC() bold("filename")
+ -- NC() bold("familyname")
+ -- NC() bold("fontname")
+    NC() bold("fullname")
+    NC() bold("rawname")
+    NC() bold("style")
+    NC() bold("variant")
+    NC() bold("weight")
+    NC() bold("width")
+    NC() NR()
+    HL()
+    for i=1,#sorted do
+        local specification = specifications[hashed[sorted[i]]]
+        NC() context(specification.format)
+        NC() context(specification.cleanfilename)
+        NC() context(basename(specification.filename))
+     -- NC() context(specification.familyname)
+     -- NC() context(specification.fontname)
+        NC() context(specification.fullname)
+        NC() context(specification.rawname)
+        NC() context(specification.style)
+        NC() context(specification.variant)
+        NC() context(specification.weight)
+        NC() context(specification.width)
+        NC() NR()
+    end
+    context.stoptabulate()
+\stopluacode
+
+\stoptext

@@ -77,11 +77,13 @@ local variables         = interfaces.variables
 local codeinjections    = backends.codeinjections
 local nodeinjections    = backends.nodeinjections
 
-local trace_figures     = false  trackers.register("graphics.locating",   function(v) trace_figures    = v end)
-local trace_bases       = false  trackers.register("graphics.bases",      function(v) trace_bases      = v end)
-local trace_programs    = false  trackers.register("graphics.programs",   function(v) trace_programs   = v end)
-local trace_conversion  = false  trackers.register("graphics.conversion", function(v) trace_conversion = v end)
-local trace_inclusion   = false  trackers.register("graphics.inclusion",  function(v) trace_inclusion  = v end)
+local trace_figures     = false  trackers.register  ("graphics.locating",   function(v) trace_figures    = v end)
+local trace_bases       = false  trackers.register  ("graphics.bases",      function(v) trace_bases      = v end)
+local trace_programs    = false  trackers.register  ("graphics.programs",   function(v) trace_programs   = v end)
+local trace_conversion  = false  trackers.register  ("graphics.conversion", function(v) trace_conversion = v end)
+local trace_inclusion   = false  trackers.register  ("graphics.inclusion",  function(v) trace_inclusion  = v end)
+
+local extra_check       = false  directives.register("graphics.extracheck", function(v) extra_check      = v end)
 
 local report_inclusion  = logs.reporter("graphics","inclusion")
 local report_figures    = logs.reporter("system","graphics")
@@ -239,6 +241,13 @@ local figures_magics = allocate {
     { format = "jp2", pattern = P("\000\000\000\012\106\080\032\032\013\010"), }, -- 00 00 00 0C 6A 50 20 20 0D 0A },
     { format = "gif", pattern = P("GIF") },
     { format = "pdf", pattern = (1 - P("%PDF"))^0 * P("%PDF") },
+}
+
+local figures_native = allocate {
+    pdf = true,
+    jpg = true,
+    jp2 = true,
+    png = true,
 }
 
 figures.formats = figures_formats -- frozen
@@ -580,6 +589,18 @@ local function forbiddenname(filename)
     end
 end
 
+local function rejected(specification)
+    if extra_check then
+        local fullname = specification.fullname
+        if fullname and figures_native[file.suffix(fullname)] and not figures.guess(fullname) then
+            specification.comment = "probably a bade file"
+            specification.found   = false
+            report_inclusion("file %a looks bad",fullname)
+            return true
+        end
+    end
+end
+
 local function register(askedname,specification)
     if not specification then
         specification = { askedname = askedname, comment = "invalid specification" }
@@ -591,7 +612,7 @@ local function register(askedname,specification)
         if trace_figures then
             report_inclusion("format %a internally supported by engine",specification.format)
         end
-    else
+    elseif not rejected(specification) then
         local format = specification.format
         if format then
             local conversion = specification.conversion
@@ -749,7 +770,11 @@ local function register(askedname,specification)
             specification.found     = false
         end
     end
-    specification.foundname = specification.foundname or specification.fullname
+    if specification.found then
+        specification.foundname = specification.foundname or specification.fullname
+    else
+        specification.foundname = nil
+    end
     specification.badname   = figures.badname(askedname)
     local askedhash = f_hash_part(askedname,specification.conversion or "default",specification.resolution or "default")
     figures_found[askedhash] = specification
@@ -1044,7 +1069,7 @@ function identifiers.default(data)
         du.fullname = fullname -- can be cached
         ds.fullname = foundname -- original
         ds.format   = l.format
-        ds.status   = (l.found and 10) or 0
+        ds.status   = (l.bugged and 0) or (l.found and 10) or 0
     end
     return data
 end
@@ -1159,7 +1184,9 @@ function checkers.generic(data)
         }
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
-        figure = figure and images.check(images.scan(figure)) or false
+        if figure then
+            figure = images.check(images.scan(figure)) or false
+        end
         local f, d = codeinjections.setfigurealternative(data,figure)
         figure, data = f or figure, d or data
         figures_loaded[hash] = figure
@@ -1226,7 +1253,6 @@ function includers.generic(data)
         end)
         image.next = pager
         pager.prev = image
-
         local box = hpack(image) -- images.node(figure) not longer valid
 
         indexed[figure.index] = figure
@@ -1431,7 +1457,7 @@ local function runprogram(binary,argument,variables)
         if trace_conversion or trace_programs then
             report_inclusion("running command: %s",command)
         end
-        os.spawn(command)
+        os.execute(command)
     end
 end
 

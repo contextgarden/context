@@ -19,12 +19,16 @@ local report_metapost = logs.reporter("metapost")
 
 local trace_variables = false  trackers.register("metapost.variables",function(v) trace_variables = v end)
 
-local mplib, context  = mplib, context
+local mplib           = mplib
+local context         = context
 
 local allocate        = utilities.storage.allocate
 
 local copy_node       = node.copy
 local write_node      = node.write
+
+local pen_info        = mplib.pen_info
+local object_fields   = mplib.fields
 
 metapost              = metapost or { }
 local metapost        = metapost
@@ -166,8 +170,6 @@ end
 local bend_tolerance = 131/65536
 
 local rx, sx, sy, ry, tx, ty, divider = 1, 0, 0, 1, 0, 0, 1
-
-local pen_info = mplib.pen_info
 
 local function pen_characteristics(object)
     local t = pen_info(object)
@@ -640,7 +642,7 @@ function metapost.totable(result)
         for o=1,#objects do
             local object = objects[o]
             local result = { }
-            local fields = mplib.fields(object) -- hm, is this the whole list, if so, we can get it once
+            local fields = object_fields(object) -- hm, is this the whole list, if so, we can get it once
             for f=1,#fields do
                 local field = fields[f]
                 result[field] = object[field]

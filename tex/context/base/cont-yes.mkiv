@@ -15,79 +15,83 @@
 % wraping as we can assume proper styling. It's a left-over from
 % mkii that we need to get rid of.
 
-\startluacode
+% now moved to cont-run.lua
+%
+% \startluacode
+%
+%     -- When a style is loaded there is a good change that we never enter
+%     -- this code.
+%
+%     local report = logs.reporter("system")
+%
+%     environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
+%
+%     local arguments = environment.arguments
+%     local suffix    = environment.suffix
+%     local filename  = environment.filename -- hm, not inputfilename !
+%
+%     if suffix == "xml" or arguments.forcexml then
+%
+%         -- Maybe we should move the preamble parsing here as it
+%         -- can be part of (any) loaded (sub) file. The \starttext
+%         -- wrapping might go away.
+%
+%         report("processing as xml: %s",filename)
+%
+%         context.starttext()
+%         context.xmlprocess("main",filename,"")
+%         context.stoptext()
+%
+%     elseif suffix == "cld" or arguments.forcecld then
+%
+%         report("processing as cld: %s",filename)
+%
+%         context.runfile(filename)
+%
+%     elseif suffix == "lua" or arguments.forcelua then
+%
+%         -- The wrapping might go away. Why is is it there in the
+%         -- first place.
+%
+%         report("processing as lua: %s",filename)
+%
+%         context.starttext()
+%         context.ctxlua(string.format('dofile("%s")',filename))
+%         context.stoptext()
+%
+%     elseif suffix == "mp" or arguments.forcemp then
+%
+%         report("processing as metapost: %s",filename)
+%
+%         context.starttext()
+%             context.processMPfigurefile(filename)
+%         context.stoptext()
+%
+%  -- elseif suffix == "prep" then
+%  --
+%  --     -- Why do we wrap here. Because it can be xml? Let's get rid
+%  --     -- of prepping in general.
+%  --
+%  --     context.starttext()
+%  --     context.input(filename)
+%  --     context.stoptext()
+%
+%     else
+%
+%      -- \writestatus{system}{processing as tex}
+%         -- We have a regular tex file so no \starttext yet as we can
+%         -- load fonts.
+%
+%      -- context.enabletrackers { "resolvers.*" }
+%         context.input(filename)
+%      -- context.disabletrackers { "resolvers.*" }
+%
+%     end
+%
+%     context.finishjob()
+%
+% \stopluacode
 
-    -- When a style is loaded there is a good change that we never enter
-    -- this code.
-
-    local report = logs.reporter("system")
-
-    environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
-
-    local arguments = environment.arguments
-    local suffix    = environment.suffix
-    local filename  = environment.filename -- hm, not inputfilename !
-
-    if suffix == "xml" or arguments.forcexml then
-
-        -- Maybe we should move the preamble parsing here as it
-        -- can be part of (any) loaded (sub) file. The \starttext
-        -- wrapping might go away.
-
-        report("processing as xml: %s",filename)
-
-        context.starttext()
-        context.xmlprocess("main",filename,"")
-        context.stoptext()
-
-    elseif suffix == "cld" or arguments.forcecld then
-
-        report("processing as cld: %s",filename)
-
-        context.runfile(filename)
-
-    elseif suffix == "lua" or arguments.forcelua then
-
-        -- The wrapping might go away. Why is is it there in the
-        -- first place.
-
-        report("processing as lua: %s",filename)
-
-        context.starttext()
-        context.ctxlua(string.format('dofile("%s")',filename))
-        context.stoptext()
-
-    elseif suffix == "mp" or arguments.forcemp then
-
-        report("processing as metapost: %s",filename)
-
-        context.starttext()
-            context.processMPfigurefile(filename)
-        context.stoptext()
-
- -- elseif suffix == "prep" then
- --
- --     -- Why do we wrap here. Because it can be xml? Let's get rid
- --     -- of prepping in general.
- --
- --     context.starttext()
- --     context.input(filename)
- --     context.stoptext()
-
-    else
-
-     -- \writestatus{system}{processing as tex}
-        -- We have a regular tex file so no \starttext yet as we can
-        -- load fonts.
-
-     -- context.enabletrackers { "resolvers.*" }
-        context.input(filename)
-     -- context.disabletrackers { "resolvers.*" }
-
-    end
-
-    context.finishjob()
-
-\stopluacode
+\ctxcommand{processjob()} % from cont-run.lua
 
 \endinput
