@@ -110,7 +110,7 @@ end
 
 local ctx_dosetfastregisterentry = context.dosetfastregisterentry -- register entry key
 
-local p_keywords = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
+----- p_keywords = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
 local components = publications.components.author
 local f_author   = formatters[ [[\btxindexedauthor{%s}{%s}{%s}{%s}{%s}{%s}]] ]
 
@@ -141,7 +141,7 @@ function flushers.author(step,field,value)
     end
 end
 
-function flushers.keywords(step,field,value)
+function flushers.keyword(step,field,value)
     if type(value) == "table" and #value > 0 then
         local register  = step.register
         local processor = step.processor

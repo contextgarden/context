@@ -1034,7 +1034,7 @@ do
         return values
     end)
 
-    casters.keyword         = utilities.parsers.settings_to_set
+    casters.keyword         = utilities.parsers.settings_to_array
 
     local pagessplitter     = lpeg.splitat(P("-")^1)
 
