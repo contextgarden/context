@@ -14389,7 +14389,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 74767, stripped down to: 45661
+-- original size: 75084, stripped down to: 45905
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -14515,6 +14515,7 @@ function resolvers.newinstance()
     foundintrees=allocate(),
     hashes=allocate(),
     hashed=allocate(),
+    pathlists=false,
     specification=allocate(),
     lists=allocate(),
     data=allocate(),
@@ -14527,7 +14528,6 @@ function resolvers.newinstance()
     savelists=true,
     pattern=nil,
     force_suffixes=true,
-    pathstack={},
   }
   setmetatableindex(variables,function(t,k)
     local v
@@ -14577,7 +14577,12 @@ function resolvers.reset()
 end
 local function reset_hashes()
   instance.lists={}
+  instance.pathlists=false
   instance.found={}
+end
+local function reset_caches()
+  instance.lists={}
+  instance.pathlists=false
 end
 local slash=P("/")
 local pathexpressionpattern=Cs (
@@ -14946,10 +14951,11 @@ local done={}
 function resolvers.resetextrapath()
   local ep=instance.extra_paths
   if not ep then
-    ep,done={},{}
-    instance.extra_paths=ep
+    done={}
+    instance.extra_paths={}
   elseif #ep>0 then
-    instance.lists,done={},{}
+    done={}
+    reset_caches()
   end
 end
 function resolvers.registerextrapath(paths,subpaths)
@@ -15008,7 +15014,7 @@ function resolvers.registerextrapath(paths,subpaths)
     instance.extra_paths=ep 
   end
   if newn>oldn then
-    instance.lists={} 
+    reset_caches()
   end
 end
 local function made_list(instance,list,extra_too)
@@ -15086,7 +15092,7 @@ end
 function resolvers.expandpathfromvariable(str)
   return joinpath(resolvers.expandedpathlistfromvariable(str))
 end
-function resolvers.cleanedpathlist(v)
+function resolvers.cleanedpathlist(v) 
   local t=resolvers.expandedpathlist(v)
   for i=1,#t do
     t[i]=resolvers.resolve(resolvers.cleanpath(t[i]))
@@ -15335,7 +15341,7 @@ local function check_subpath(fname)
     return fname
   end
 end
-local pathlists=setmetatableindex(function(list,filetype)
+local function makepathlist(list,filetype)
   local typespec=resolvers.variableofformat(filetype)
   local pathlist=resolvers.expandedpathlist(typespec,filetype and usertypes[filetype]) 
   local entry={}
@@ -15367,8 +15373,13 @@ local pathlists=setmetatableindex(function(list,filetype)
     list[filetype]=false
   end
   return entry
-end)
+end
 local function find_intree(filename,filetype,wantedfiles,allresults)
+  local pathlists=instance.pathlists
+  if not pathlists then
+    pathlists=setmetatableindex(allocate(),makepathlist)
+    instance.pathlists=pathlists
+  end
   local pathlist=pathlists[filetype]
   if pathlist then
     local method="intree"
@@ -17728,8 +17739,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 743219
--- stripped bytes    : 271454
+-- original bytes    : 743536
+-- stripped bytes    : 271527
 
 -- end library merge
 

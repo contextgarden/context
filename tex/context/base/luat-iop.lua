@@ -6,32 +6,6 @@ if not modules then modules = { } end modules ['luat-iop'] = {
     license   = "see context related readme files"
 }
 
--- local input_mode  directives.register("system.inputmode", function(v) input_mode  = v end)
--- local output_mode directives.register("system.outputmode",function(v) output_mode = v end)
-
--- limiters = {
---     input = {
---         paranoid = {
---             { "permit", "^[^/]+$"    },
---             { "permit", "^./"        },
---             { "forbid", ".."         },
---             { "tree"  , "TEXMF"      },
---             { "tree"  , "MPINPUTS"   },
---             { "tree"  , "TEXINPUTS"  },
---             { "forbid", "^/.."       },
---             { "forbid", "^[a-c]:/.." },
---         },
---     },
---     output = {
---         paranoid = {
---             { "permit", "^[^/]+$"    },
---             { "permit", "^./"        },
---         },
---     }
--- }
-
---         sandbox.registerroot(".","write") -- always ok
-
 local cleanedpathlist = resolvers.cleanedpathlist
 local registerroot    = sandbox.registerroot
 

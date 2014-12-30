@@ -101,8 +101,13 @@ return {
             PERLINPUTS      = ".;$TEXMF/scripts/context/perl",
             PYTHONINPUTS    = ".;$TEXMF/scripts/context/python",
             RUBYINPUTS      = ".;$TEXMF/scripts/context/ruby",
-            LUAINPUTS       = ".;$TEXINPUTS;$TEXMF/scripts/context/lua//",
+            LUAINPUTS       = ".;$TEXINPUTS;$TEXMF/scripts/context/lua//;$TEXMF",
             CLUAINPUTS      = ".;$SELFAUTOLOC/lib/{context,$engine,luatex}/lua//",
+
+            -- texmf-local/tex/generic/example/foo :
+            --
+            -- package.helpers.trace = true
+            -- require("example.foo.bar")
 
             -- Not really used by MkIV so they might go away.
 
@@ -118,38 +123,7 @@ return {
             FONTCONFIG_FILE = "fonts.conf",
             FONTCONFIG_PATH = "$TEXMFSYSTEM/fonts/conf",
 
-            limiters = {
-                input = {
-                 -- any = {
-                 --     { "permit", "*"          },
-                 -- },
-                 -- restricted = {
-                 --     { "permit", "*"          },
-                 -- },
-                    paranoid = {
-                        { "permit", "^[^/]+$"    },
-                        { "permit", "^./"        },
-                        { "forbid", ".."         },
-                        { "tree"  , "TEXMF"      },
-                     -- { "tree"  , "MPINPUTS"   },
-                     -- { "tree"  , "TEXINPUTS"  },
-                        { "forbid", "^/.."       },
-                        { "forbid", "^[a-c]:/.." },
-                    },
-                },
-                output = {
-                 -- any = {
-                 --     { "permit", "*"          },
-                 -- },
-                 -- restricted = {
-                 --     { "permit", "*"          },
-                 -- },
-                    paranoid = {
-                        { "permit", "^[^/]+$"    },
-                        { "permit", "^./"        },
-                    },
-                }
-            },
+            -- we now have a different subsystem for this,
 
         },
 

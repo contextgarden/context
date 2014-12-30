@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\unprotect
+
 \definecharacterkerning
   [typesetting-kerning-demo]
   [factor=.5]
@@ -113,14 +115,54 @@
     \getbuffer[showcharacterkerning:explicits]
 \stoptexdefinition
 
+\starttexdefinition showcharacterkerningsteps [#1]
+
+    \startTEXpage[\c!offset=1ex]
+
+        \showfontkerns \showglyphs
+
+        \getdummyparameters
+          [\s!font=Regular,
+           \c!sample={Wat een bende, rommelen met het font design!},
+           #1]
+
+        \definedfont[\dummyparameter\s!font*default sa 1]
+
+        \begingroup
+            \tttf \dummyparameter\s!font\space @ default
+        \endgroup
+
+        \blank
+
+        \dostepwiserecurse {00} {95} {05} {
+            \definecharacterkerning[crap][factor=.0\twodigits{##1}]%
+            \begingroup
+                \tttf .0\twodigits{##1}:\space
+            \endgroup
+            \begingroup
+                \setcharacterkerning[crap]\dummyparameter\c!sample\par
+            \endgroup
+        }
+        \removeunwantedspaces
+
+    \stopTEXpage
+
+\stoptexdefinition
+
+\protect
+
 \continueifinputfile{s-typesetting-kerning.mkiv}
 
 \starttext
 
-    \showcharacterkerning
+  % \showcharacterkerning
+
+    \showcharacterkerningsteps[font=file:FuturaStd-Book.otf]
+    \showcharacterkerningsteps[font=file:FuturaStd-Medium.otf]
+    \showcharacterkerningsteps[font=file:FuturaStd-Bold.otf]
+    \showcharacterkerningsteps[font=file:FuturaStd-heavy.otf]
 
 \stoptext
-
 
 % {\hsize1mm efficient\discretionary{\kern1pt!\kern1pt}{\kern1pt!\kern1pt}{\kern1pt!\kern1pt}efficient\par}
 % {\hsize1mm\definedfont[Regular]\setcharacterkerning[typesetting-kerning-demo]efficient\-efficient\par}

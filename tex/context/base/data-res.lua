@@ -240,6 +240,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         foundintrees    = allocate(),
         hashes          = allocate(),
         hashed          = allocate(),
+        pathlists       = false,-- delayed
         specification   = allocate(),
         lists           = allocate(),
         data            = allocate(), -- only for loading
@@ -252,7 +253,6 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         savelists       = true,
         pattern         = nil, -- lists
         force_suffixes  = true,
-        pathstack       = { },
     }
 
     setmetatableindex(variables,function(t,k)
@@ -309,8 +309,14 @@ function resolvers.reset()
 end
 
 local function reset_hashes()
-    instance.lists = { }
-    instance.found = { }
+    instance.lists     = { }
+    instance.pathlists = false
+    instance.found     = { }
+end
+
+local function reset_caches()
+    instance.lists     = { }
+    instance.pathlists = false
 end
 
 local slash = P("/")
@@ -733,10 +739,11 @@ local done = { }
 function resolvers.resetextrapath()
     local ep = instance.extra_paths
     if not ep then
-        ep, done = { }, { }
-        instance.extra_paths = ep
+        done                 = { }
+        instance.extra_paths = { }
     elseif #ep > 0 then
-        instance.lists, done = { }, { }
+        done = { }
+        reset_caches()
     end
 end
 
@@ -796,7 +803,7 @@ function resolvers.registerextrapath(paths,subpaths)
         instance.extra_paths = ep -- register paths
     end
     if newn > oldn then
-        instance.lists = { } -- erase the cache
+        reset_caches()
     end
 end
 
@@ -884,7 +891,7 @@ function resolvers.expandpathfromvariable(str)
     return joinpath(resolvers.expandedpathlistfromvariable(str))
 end
 
-function resolvers.cleanedpathlist(v)
+function resolvers.cleanedpathlist(v) -- can be cached if needed
     local t = resolvers.expandedpathlist(v)
     for i=1,#t do
         t[i] = resolvers.resolve(resolvers.cleanpath(t[i]))
@@ -1351,7 +1358,7 @@ end
 -- we could probably move some to a higher level but then we need to adapt
 -- more code ... maybe some day
 
-local pathlists = setmetatableindex(function(list,filetype)
+local function makepathlist(list,filetype)
     local typespec = resolvers.variableofformat(filetype)
     local pathlist = resolvers.expandedpathlist(typespec,filetype and usertypes[filetype]) -- only extra path with user files
     local entry    = { }
@@ -1383,13 +1390,18 @@ local pathlists = setmetatableindex(function(list,filetype)
         list[filetype] = false
     end
     return entry
-end)
+end
 
 -- pathlist : resolved
 -- dirlist  : unresolved or resolved
 -- filelist : unresolved
 
 local function find_intree(filename,filetype,wantedfiles,allresults)
+    local pathlists = instance.pathlists
+    if not pathlists then
+        pathlists = setmetatableindex(allocate(),makepathlist)
+        instance.pathlists = pathlists
+    end
     local pathlist = pathlists[filetype]
     if pathlist then
         -- list search

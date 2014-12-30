@@ -178,7 +178,9 @@ function commands.processjob()
     local suffix    = environment.suffix
     local filename  = environment.filename -- hm, not inputfilename !
 
-    if suffix == "xml" or arguments.forcexml then
+    if not filename or filename == "" then
+        -- skip
+    elseif suffix == "xml" or arguments.forcexml then
 
         -- Maybe we should move the preamble parsing here as it
         -- can be part of (any) loaded (sub) file. The \starttext
