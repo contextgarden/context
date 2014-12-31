@@ -3179,7 +3179,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 20945, stripped down to: 9945
+-- original size: 20949, stripped down to: 9945
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -6558,7 +6558,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 20589, stripped down to: 14439
+-- original size: 21550, stripped down to: 14916
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -6714,11 +6714,30 @@ function parsers.settings_to_array(str,strict)
     return { str }
   end
 end
-local separator=space^0*comma*space^0
-local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-(space^0*(comma+P(-1)))))^0)
-local withvalue=Carg(1)*value/function(f,s) return f(s) end
-local pattern_a=spaces*Ct(value*(separator*value)^0)
-local pattern_b=spaces*withvalue*(separator*withvalue)^0
+local cache_a={}
+local cache_b={}
+function parsers.groupedsplitat(symbol,withaction)
+  if not symbol then
+    symbol=","
+  end
+  local pattern=(withaction and cache_b or cache_a)[symbol]
+  if not pattern then
+    local symbols=S(symbol)
+    local separator=space^0*symbols*space^0
+    local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-(space^0*(symbols+P(-1)))))^0)
+    if withaction then
+      local withvalue=Carg(1)*value/function(f,s) return f(s) end
+      pattern=spaces*withvalue*(separator*withvalue)^0
+      cache_b[symbol]=pattern
+    else
+      pattern=spaces*Ct(value*(separator*value)^0)
+      cache_a[symbol]=pattern
+    end
+  end
+  return pattern
+end
+local pattern_a=parsers.groupedsplitat(",",false)
+local pattern_b=parsers.groupedsplitat(",",true)
 function parsers.stripped_settings_to_array(str)
   if not str or str=="" then
     return {}
@@ -14389,7 +14408,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 75084, stripped down to: 45905
+-- original size: 75211, stripped down to: 45919
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -14528,6 +14547,7 @@ function resolvers.newinstance()
     savelists=true,
     pattern=nil,
     force_suffixes=true,
+    pathstack={},
   }
   setmetatableindex(variables,function(t,k)
     local v
@@ -15348,14 +15368,14 @@ local function makepathlist(list,filetype)
   if pathlist and #pathlist>0 then
     for k=1,#pathlist do
       local path=pathlist[k]
+      local prescanned=find(path,'^!!')
+      local resursive=find(path,'//$')
       local pathname=lpegmatch(inhibitstripper,path)
       local expression=makepathexpression(pathname)
       local barename=gsub(pathname,"/+$","")
       barename=resolveprefix(barename)
       local scheme=url.hasscheme(barename)
-      local schemename=gsub(barename,"%.%*$",'') 
-      local prescanned=path~=pathname 
-      local resursive=find(pathname,'//$')
+      local schemename=gsub(barename,"%.%*$",'')
       entry[k]={
         path=path,
         pathname=pathname,
@@ -17739,8 +17759,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 743536
--- stripped bytes    : 271527
+-- original bytes    : 744628
+-- stripped bytes    : 272128
 
 -- end library merge
 

@@ -167,7 +167,7 @@ local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
                 + C((nestedbraces + (1-comma))^0)
 local pattern   = spaces * Ct(value*(separator*value)^0)
 
--- "aap, {noot}, mies" : outer {} removes, leading spaces ignored
+-- "aap, {noot}, mies" : outer {} removed, leading spaces ignored
 
 patterns.settings_to_array = pattern
 
@@ -195,12 +195,40 @@ end
 --
 -- "{123} , 456  " -> "123" "456"
 
-local separator = space^0 * comma * space^0
-local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
-                + C((nestedbraces + (1-(space^0*(comma+P(-1)))))^0)
-local withvalue = Carg(1) * value / function(f,s) return f(s) end
-local pattern_a = spaces * Ct(value*(separator*value)^0)
-local pattern_b = spaces * withvalue * (separator*withvalue)^0
+-- local separator = space^0 * comma * space^0
+-- local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+--                 + C((nestedbraces + (1-(space^0*(comma+P(-1)))))^0)
+-- local withvalue = Carg(1) * value / function(f,s) return f(s) end
+-- local pattern_a = spaces * Ct(value*(separator*value)^0)
+-- local pattern_b = spaces * withvalue * (separator*withvalue)^0
+
+local cache_a = { }
+local cache_b = { }
+
+function parsers.groupedsplitat(symbol,withaction)
+    if not symbol then
+        symbol = ","
+    end
+    local pattern = (withaction and cache_b or cache_a)[symbol]
+    if not pattern then
+        local symbols   = S(symbol)
+        local separator = space^0 * symbols * space^0
+        local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+                        + C((nestedbraces + (1-(space^0*(symbols+P(-1)))))^0)
+        if withaction then
+            local withvalue = Carg(1) * value / function(f,s) return f(s) end
+            pattern = spaces * withvalue * (separator*withvalue)^0
+            cache_b[symbol] = pattern
+        else
+            pattern = spaces * Ct(value*(separator*value)^0)
+            cache_a[symbol] = pattern
+        end
+    end
+    return pattern
+end
+
+local pattern_a = parsers.groupedsplitat(",",false)
+local pattern_b = parsers.groupedsplitat(",",true)
 
 function parsers.stripped_settings_to_array(str)
     if not str or str == "" then
@@ -220,8 +248,6 @@ end
 
 -- parsers.process_stripped_settings("{123} , 456  ",function(s) print("["..s.."]") end)
 -- parsers.process_stripped_settings("123 , 456  ",function(s) print("["..s.."]") end)
-
---
 
 local function set(t,v)
     t[#t+1] = v

@@ -665,14 +665,13 @@ function lmx.color(r,g,b,a)
     end
 end
 
-
 -- these can be overloaded
 
 lmx.lmxfile   = string.itself
 lmx.htmfile   = string.itself
 lmx.popupfile = os.launch
 
-function lmxmake(name,variables)
+local function lmxmake(name,variables)
     local lmxfile = lmx.lmxfile(name)
     local htmfile = lmx.htmfile(name)
     if lmxfile == htmfile then
@@ -682,7 +681,7 @@ function lmxmake(name,variables)
     return htmfile
 end
 
-lmxmake = lmx.make
+lmx.make = lmxmake
 
 function lmx.show(name,variables)
     local htmfile = lmxmake(name,variables)

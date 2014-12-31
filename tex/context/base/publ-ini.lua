@@ -174,15 +174,17 @@ function commands.registerbtxlistvariant(name,parent)
     registeredlistvariants[name] = parent or ""
 end
 
-local specifications       = publications.specifications
-local currentspecification = specifications[false]
-local ignoredfields        = { }
+local specifications              = publications.specifications
+local currentspecification        = specifications[false]
+local ignoredfields               = { }
+publications.currentspecification = currentspecification
 
 local function setspecification(name)
     currentspecification = specifications[name]
     if trace then
         report("setting specification %a",type(name) == "string" and name or "anything")
     end
+    publications.currentspecification = currentspecification
 end
 
 publications.setspecification = setspecification
@@ -695,6 +697,40 @@ local function getcasted(dataset,tag,field,specification)
     end
 end
 
+local function getfaster(current,data,details,field,categories,types)
+    local category = data.category
+    local catspec  = categories[category]
+    if not catspec then
+        return false
+    end
+    local fields = catspec.fields
+    if fields then
+        local sets = catspec.sets
+        if sets then
+            local set = sets[field]
+            if set then
+                for i=1,#set do
+                    local field = set[i]
+                    local value = fields[field] and data[field] -- redundant check
+                    if value then
+                        local kind = types[field]
+                        return detailed[kind][value], field, kind
+                    end
+                end
+            end
+        end
+        local value = fields[field] and data[field] -- redundant check
+        if value then
+            local kind = types[field]
+            return detailed[kind][value]
+        end
+    end
+    if details then
+        local kind = types[field]
+        return details[field]
+    end
+end
+
 local function getdirect(dataset,data,field,catspec) -- no field check, no dataset check
     local catspec = (catspec or currentspecification).categories[data.category]
     if not catspec then
@@ -720,6 +756,7 @@ local function getdirect(dataset,data,field,catspec) -- no field check, no datas
 end
 
 publications.getcasted = getcasted
+publications.getfaster = getfaster
 publications.getdirect = getdirect
 
 function commands.btxsingularorplural(dataset,tag,name)

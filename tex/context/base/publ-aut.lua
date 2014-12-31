@@ -458,14 +458,97 @@ end
 -- first : key author editor publisher title           journal volume number pages
 -- second: year suffix                 title month day journal volume number
 
-local function indexer(dataset,list,method)
-    local current  = datasets[dataset]
-    local luadata  = current.luadata
-    local details  = current.details
-    local result   = { }
-    local splitted = newsplitter(splitter) -- saves mem
-    local snippets = { } -- saves mem
-    local field    = "author" -- todo
+-- local function indexer(dataset,list,method)
+--     local current  = datasets[dataset]
+--     local luadata  = current.luadata
+--     local details  = current.details
+--     local result   = { }
+--     local splitted = newsplitter(splitter) -- saves mem
+--     local snippets = { } -- saves mem
+--     local field    = "author" -- todo
+--     for i=1,#list do
+--         -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
+--         local li    = list[i]
+--         local tag   = type(li) == "string" and li or li[1]
+--         local index = tostring(i)
+--         local entry = luadata[tag]
+--         if entry then
+--             local value   = getcasted(current,tag,field) or ""
+--             local mainkey = writer(value,snippets)
+--             local detail  = details[tag]
+--             result[i] = {
+--                 index  = i,
+--                 split  = {
+--                     splitted[entry.key           or ""    ],
+--                     splitted[strip(mainkey)               ],
+--                     splitted[entry.year          or "9998"],
+--                     splitted[detail.suffix       or " "   ],
+--                     splitted[entry.month         or "13"  ],
+--                     splitted[entry.day           or "32"  ],
+--                     splitted[strip(entry.journal or ""   )],
+--                     splitted[strip(entry.volume  or ""   )],
+--                     splitted[strip(entry.number  or ""   )],
+--                     splitted[strip(entry.title   or ""   )],
+--                     splitted[entry.pages         or ""    ],
+--                     splitted[index],
+--                 },
+--             }
+--         else
+--             result[i] = {
+--                 index  = i,
+--                 split  = {
+--                     splitted[""],     -- key
+--                     splitted[""],     -- mainkey
+--                     splitted["9999"], -- year
+--                     splitted[" "],    -- suffix
+--                     splitted["14"],   -- month
+--                     splitted["33"],   -- day
+--                     splitted[""],     -- journal
+--                     splitted[""],     -- volume
+--                     splitted[""],     -- number
+--                     splitted[""],     -- title
+--                     splitted[""],     -- pages
+--                     splitted[index],  -- index
+--                 },
+--             }
+--         end
+--     end
+--     return result
+-- end
+
+-- if needed we can optimize this one: chekc if it's detail or something else
+-- and use direct access, but in practice it's fast enough
+
+local template = [[
+local type, tostring = type, tostring
+
+local writers  = publications.writers
+local datasets = publications.datasets
+local getter   = publications.getfaster -- (current,data,details,field,categories,types)
+local strip    = sorters.strip
+local splitter = sorters.splitters.utf
+
+local function newsplitter(splitter)
+    return table.setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
+        local v = splitter(k,true)                  -- in other cases
+        t[k] = v
+        return v
+    end)
+end
+
+return function(dataset,list,method) -- indexer
+    local current       = datasets[dataset]
+    local luadata       = current.luadata
+    local details       = current.details
+    local specification = publications.currentspecification
+    local categories    = specification.categories
+    local types         = specification.types
+    local splitted      = newsplitter(splitter) -- saves mem
+    local snippets      = { } -- saves mem
+    local result        = { }
+
+%helpers%
+
     for i=1,#list do
         -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
         local li    = list[i]
@@ -473,23 +556,14 @@ local function indexer(dataset,list,method)
         local index = tostring(i)
         local entry = luadata[tag]
         if entry then
-            local value   = getcasted(current,tag,field) or ""
-            local mainkey = writer(value,snippets)
             local detail  = details[tag]
             result[i] = {
                 index  = i,
                 split  = {
-                    splitted[entry.key           or ""    ],
-                    splitted[strip(mainkey)               ],
-                    splitted[entry.year          or "9998"],
-                    splitted[detail.suffix       or " "   ],
-                    splitted[entry.month         or "13"  ],
-                    splitted[entry.day           or "32"  ],
-                    splitted[strip(entry.journal or ""   )],
-                    splitted[strip(entry.volume  or ""   )],
-                    splitted[strip(entry.number  or ""   )],
-                    splitted[strip(entry.title   or ""   )],
-                    splitted[entry.pages         or ""    ],
+                    splitted[entry.key or ""],
+
+%getters%
+
                     splitted[index],
                 },
             }
@@ -497,23 +571,84 @@ local function indexer(dataset,list,method)
             result[i] = {
                 index  = i,
                 split  = {
-                    splitted[""],     -- key
-                    splitted[""],     -- mainkey
-                    splitted["9999"], -- year
-                    splitted[" "],    -- suffix
-                    splitted["14"],   -- month
-                    splitted["33"],   -- day
-                    splitted[""],     -- journal
-                    splitted[""],     -- volume
-                    splitted[""],     -- number
-                    splitted[""],     -- title
-                    splitted[""],     -- pages
-                    splitted[index],  -- index
+                    splitted[""],
+
+%unknowns%
+
+                    splitted[index],
                 },
             }
         end
     end
     return result
+end
+]]
+
+local f_getter = formatters["splitted[strip(getter(current,entry,detail,%q,categories,types) or %q)], -- %s"]
+local f_writer = formatters["splitted[strip(writer_%s(getter(current,entry,detail,%q,categories,types) or %q,snippets))], -- %s"]
+local f_helper = formatters["local writer_%s = writers[%q] -- %s: %s"]
+local f_value  = formatters["splitted[%q], -- %s"]
+
+local function indexer(dataset,list,method)
+    local writers       = publications.writers
+    local specification = publications.currentspecification
+    ----- categories    = specification.categories
+    local types         = specification.types
+
+    local getters  = { }
+    local unknowns = { }
+    local helpers  = { }
+
+    local sequence = {
+        -- always key first (or should that be made explicit)
+        { field = "author",  default = "",     unknown = "" },
+        { field = "year",    default = "9998", unknown = "9999" },
+        { field = "suffix",  default = " ",    unknown = " " },
+        { field = "month",   default = "13",   unknown = "14" },
+        { field = "day",     default = "32",   unknown = "33" },
+        { field = "journal", default = "",     unknown = "" },
+        { field = "volume",  default = "",     unknown = "" },
+        { field = "number",  default = "",     unknown = "" },
+        { field = "title",   default = "",     unknown = "" },
+        { field = "pages",   default = "",     unknown = "" },
+        -- always index last (to catch duplicates)
+    }
+
+    for i=1,#sequence do
+        local step    = sequence[i]
+        local field   = step.field   or "?"
+        local default = step.default or ""
+        local unknown = step.unknown or ""
+        local fldtype = types[field]
+        local writer  = fldtype and writers[fldtype]
+        if writer then
+            local h = #helpers + 1
+            getters[i] = f_writer(h,field,default,field)
+            helpers[h] = f_helper(h,fldtype,field,fldtype)
+        else
+            getters[i] = f_getter(field,default,field)
+        end
+        unknowns[i] = f_value(unknown,field)
+    end
+
+    local code = utilities.templates.replace(template, {
+        helpers  = concat(helpers, "\n"),
+        getters  = concat(getters, "\n"),
+        unknowns = concat(unknowns,"\n"),
+    })
+
+ -- print(code)
+
+    local action, error = loadstring(code)
+    if type(action) == "function" then
+        action = action()
+    end
+    if type(action) == "function" then
+        return action(dataset,list,method) or { }
+    else
+        return { }
+    end
+
 end
 
 -- local function sorted(dataset,list) -- experimental

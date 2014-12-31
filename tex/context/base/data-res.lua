@@ -253,6 +253,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         savelists       = true,
         pattern         = nil, -- lists
         force_suffixes  = true,
+        pathstack       = { },
     }
 
     setmetatableindex(variables,function(t,k)
@@ -1365,14 +1366,16 @@ local function makepathlist(list,filetype)
     if pathlist and #pathlist > 0 then
         for k=1,#pathlist do
             local path       = pathlist[k]
+            local prescanned = find(path,'^!!')
+            local resursive  = find(path,'//$')
             local pathname   = lpegmatch(inhibitstripper,path)
             local expression = makepathexpression(pathname)
             local barename   = gsub(pathname,"/+$","")
             barename         = resolveprefix(barename)
             local scheme     = url.hasscheme(barename)
             local schemename = gsub(barename,"%.%*$",'') -- after scheme
-            local prescanned = path ~= pathname -- ^!!
-            local resursive  = find(pathname,'//$')
+         -- local prescanned = path ~= pathname -- ^!!
+         -- local resursive  = find(pathname,'//$')
             entry[k] = {
                 path       = path,
                 pathname   = pathname,
