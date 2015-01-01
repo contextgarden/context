@@ -1,4 +1,4 @@
-.TH "mtx-epub" "1" "01-01-2014" "version 1.10" "ConTeXt EPUB Helpers"
+.TH "mtx-epub" "1" "01-01-2015" "version 1.10" "ConTeXt EPUB Helpers"
 .SH NAME
 .B mtx-epub
 .SH SYNOPSIS

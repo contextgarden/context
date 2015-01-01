@@ -1,4 +1,4 @@
-.TH "mtx-plain" "1" "01-01-2014" "version 1.00" "Plain TeX Runner"
+.TH "mtx-plain" "1" "01-01-2015" "version 1.00" "Plain TeX Runner"
 .SH NAME
 .B mtx-plain
 .SH SYNOPSIS

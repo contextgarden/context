@@ -1,4 +1,4 @@
-.TH "mtx-pdf" "1" "01-01-2014" "version 0.10" "ConTeXt PDF Helpers"
+.TH "mtx-pdf" "1" "01-01-2015" "version 0.10" "ConTeXt PDF Helpers"
 .SH NAME
 .B mtx-pdf
 .SH SYNOPSIS

@@ -72,11 +72,11 @@ publications.loaders    = loaders
 local casters           = { }
 publications.casters    = casters
 
-local sorters           = { }
-publications.sorters    = sorters
-
-local indexers          = { }
-publications.indexers   = indexers
+-- local sorters           = { }
+-- publications.sorters    = sorters
+--
+-- local indexers          = { }
+-- publications.indexers   = indexers
 
 local components        = { }
 publications.components = components -- register components

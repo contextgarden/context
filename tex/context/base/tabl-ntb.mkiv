@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module as a more modern variant in xtables but as we follow a bit
+%D This module has a more modern variant in xtables but as we follow a bit
 %D different approach with settings there, this mechanism will stay. In fact
 %D each of them has its advantages. This module could be sped up a bit and made
 %D more efficient by delegating some housekeeping to \LUA\ but it's not worth
@@ -344,6 +344,7 @@
 \newif\ifenableTBLbreak     \enableTBLbreakfalse
 \newif\ifmultipleTBLheads   \multipleTBLheadsfalse
 \newif\iftightTBLrowspan    \tightTBLrowspantrue
+\newif\iftightTBLcolspan    \tightTBLcolspantrue
 
 \newif\iftraceTABLE         \traceTABLEfalse
 
@@ -1514,7 +1515,7 @@
             % eigenlijk moet dit alleen als de kolom wordt overspannen door een
             % vorige, maw extra dubbele loop en status var
             \ifnum\c_tabl_ntb_encountered_max=\c_tabl_ntb_maximum_col % *nx* bah
-              \advance\!!counta \plusone % settign maxwidth to a large value also works
+              \advance\!!counta \plusone % setting maxwidth to a large value also works
             \fi
           \fi
         \fi
@@ -1652,6 +1653,10 @@
 \unexpanded\def\tabl_ntb_cell_process_x#1#2[#3]#4%
   {}
 
+% problem: when span doesn't break we can have a span that is the sum of
+% cells but still to small .. chicken egg problem ... for that we should
+% also have a smallest width run
+
 \unexpanded\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
   {\bgroup
    \tabl_ntb_setup_cell{#1}{#2}%
@@ -1676,10 +1681,13 @@
        \fi
      \fi
      \tabl_ntb_spn_doifelse\c_tabl_ntb_col
-       \donothing
-       {\ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
+       {\iftightTBLcolspan\donefalse\else\donetrue\fi}%
+       \donetrue
+     \ifdone
+       \ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
           \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
-        \fi}% auto set
+        \fi
+     \fi
    \fi
    \scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
    \scratchdimen\tabl_ntb_get_hei\scratchcounter\relax

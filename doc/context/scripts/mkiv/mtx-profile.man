@@ -1,4 +1,4 @@
-.TH "mtx-profile" "1" "01-01-2014" "version 1.00" "ConTeXt MkIV LuaTeX Profiler"
+.TH "mtx-profile" "1" "01-01-2015" "version 1.00" "ConTeXt MkIV LuaTeX Profiler"
 .SH NAME
 .B mtx-profile
 .SH SYNOPSIS

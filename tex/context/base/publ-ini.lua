@@ -69,13 +69,9 @@ local v_middle           = variables.middle
 local v_inbetween        = variables.inbetween
 local v_yes              = variables.yes
 local v_all              = variables.all
-local v_short            = variables.short
 local v_cite             = variables.cite
 local v_default          = variables.default
-local v_reference        = variables.reference
 local v_dataset          = variables.dataset
-local v_author           = variables.author or "author"
-local v_editor           = variables.editor or "editor"
 
 local numbertochar       = converters.characters
 
@@ -84,10 +80,9 @@ local logspushtarget     = logs.pushtarget
 local logspoptarget      = logs.poptarget
 local csname_id          = token.csname_id
 
-local basicsorter        = sorters.basicsorter -- (a,b)
-local sortcomparer       = sorters.comparers.basic -- (a,b)
-local sortstripper       = sorters.strip
-local sortsplitter       = sorters.splitters.utf
+----- basicsorter        = sorters.basicsorter -- (a,b)
+----- sortstripper       = sorters.strip
+----- sortsplitter       = sorters.splitters.utf
 
 local manipulators       = typesetters.manipulators
 local splitmanipulation  = manipulators.splitspecification
@@ -891,7 +886,7 @@ do
                                     s[#s+1] = { tag, year, u, i }
                                 end
                             else
-                                report("author typecast expected for fiel %a",field)
+                                report("author typecast expected for field %a",field)
                             end
                         else
                             --- no spec so let's forget about it
@@ -1503,158 +1498,6 @@ do
         filtermethod(dataset,rendering,keyword)
     end
 
-    -- experiment
-
-    local splitspec = lpeg.splitat(S(":."))
-    local splitter  = sorters.splitters.utf
-    local strip     = sorters.strip
-
-    local function newsplitter(splitter)
-        return setmetatableindex({},function(t,k) -- could be done in the sorter but seldom that many shared
-            local v = splitter(k,true)                  -- in other cases
-            t[k] = v
-            return v
-        end)
-    end
-
-    local template = [[
-        local strip   = sorters.strip
-        local writers = publications.writers
-        return function(entry,detail,splitted,i) -- snippets
-            return {
-                index = i,
-                split = { %s, splitted[tostring(i)] }
-            }
-        end
-    ]]
-
-    local function byspec(dataset,list,method) -- todo: yearsuffix
-        local luadata  = datasets[dataset].luadata
-        local details  = datasets[dataset].details
-        local result   = { }
-        local splitted = newsplitter(splitter) -- saves mem
-     -- local snippets = { } -- saves mem
-        local fields   = settings_to_array(method)
-        for i=1,#fields do
-            local f = settings_to_array(fields[i])
-            local r = { }
-            for i=1,#f do
-                local a, b = lpegmatch(splitspec,f[i])
-                if b then
-                    if a == "detail" or a == "entry" then
-                        local t = currentspecification.types[b]
-                        local w = t and writers[t]
-                        if w then
-                            r[#r+1] = formatters["(%s.%s and writers[%q](%s.%s))"](a,b,t,a,b)
-                        else
-                            r[#r+1] = formatters["%s.%s"](a,b,a,b)
-                        end
-                    end
-                elseif a then
-                    r[#r+1] = formatters["%s"](a)
-                end
-            end
-            r[#r+1] = '""'
-            fields[i] = "splitted[strip(" .. concat(r," or ") .. ")]"
-        end
-        local action  = formatters[template](concat(fields,", "))
-        local prepare = loadstring(action)
-        if prepare then
-            prepare = prepare()
-            local dummy = { }
-            for i=1,#list do
-                -- either { tag, tag, ... } or { { tag, index }, { tag, index } }
-                local li     = list[i]
-                local tag    = type(li) == "string" and li or li[1]
-                local entry  = luadata[tag]
-                local detail = details[tag]
-                if entry and detail then
-                    result[i] = prepare(entry,detail,splitted,i) -- ,snippets)
-                else
-                    result[i] = prepare(dummy,dummy,splitted,i) -- ,snippets)
-                end
-            end
-        end
-        return result
-    end
-
-    lists.sorters = {
-        [v_short] = function(dataset,rendering,list)
-            local shorts = rendering.shorts
-            local function compare(a,b)
-                local aa, bb = a and a[1], b and b[1]
-                if aa and bb then
-                    aa, bb = shorts[aa], shorts[bb]
-                    return aa and bb and aa < bb
-                end
-                return false
-            end
-            sort(list,compare)
-        end,
-        [v_reference] = function(dataset,rendering,list)
-            local function compare(a,b)
-                local aa, bb = a and a[1], b and b[1]
-                if aa and bb then
-                    return aa and bb and aa < bb
-                end
-                return false
-            end
-            sort(list,compare)
-        end,
-        [v_dataset] = function(dataset,rendering,list)
-            local function compare(a,b)
-                local aa, bb = a and a[1], b and b[1]
-                if aa and bb then
-                    aa, bb = list[aa].index or 0, list[bb].index or 0
-                    return aa and bb and aa < bb
-                end
-                return false
-            end
-            sort(list,compare)
-        end,
-        [v_default] = function(dataset,rendering,list,sorttype) -- experimental
-            if sorttype == "" or sorttype == v_default then
-                local function compare(a,b)
-                    local aa, bb = a and a[3], b and b[3]
-                    if aa and bb then
-                        return aa and bb and aa < bb
-                    end
-                    return false
-                end
-                sort(list,compare)
-            else
-                local valid = byspec(dataset,list,sorttype)
-                if #valid == 0 or #valid ~= #list then
-                    -- nothing to sort
-                else
-                    -- if needed we can wrap compare and use the list directly but this is cleaner
-                    sorters.sort(valid,sortcomparer)
-                    for i=1,#valid do
-                        local v = valid[i]
-                        valid[i] = list[v.index]
-                    end
-                    return valid
-                end
-            end
-        end,
-        [v_author] = function(dataset,rendering,list)
-            -- there is no real need to go vi aindex as the list itself can be sorted ... todo
-            local valid = publications.indexers.author(dataset,list)
-            if #valid == 0 or #valid ~= #list then
-                -- nothing to sort
-            else
-                -- if needed we can wrap compare and use the list directly but this is cleaner
---                 sorters.sort(valid,publications.sorters.author)
-                local valid = publications.sorters.author(dataset,valid)
-                for i=1,#valid do
-                    local v = valid[i]
-                    valid[i] = list[v.index]
-                end
-                return valid
-            end
-        end,
-    }
-
     -- for determining width
 
     local lastreferencenumber = 0 -- document wide
@@ -1666,7 +1509,7 @@ do
         local forceall  = rendering.criterium == v_all
         local repeated  = rendering.repeated == v_yes
         local sorttype  = rendering.sorttype or v_default
-        local sorter    = lists.sorters[sorttype] or lists.sorters[v_default]
+        local sorter    = lists.sorters[sorttype]
         local current   = datasets[dataset]
         local luadata   = current.luadata
         local details   = current.details
