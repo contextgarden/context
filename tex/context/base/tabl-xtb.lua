@@ -89,6 +89,7 @@ local v_before                = variables.before
 local v_after                 = variables.after
 local v_both                  = variables.both
 local v_samepage              = variables.samepage
+local v_tight                 = variables.tight
 
 local xtables                 = { }
 typesetters.xtables           = xtables
@@ -126,6 +127,7 @@ function xtables.create(settings)
     local modes          = { }
     local fixedrows      = { }
     local fixedcolumns   = { }
+    local fixedcspans    = { }
     local frozencolumns  = { }
     local options        = { }
     local rowproperties  = { }
@@ -140,6 +142,7 @@ function xtables.create(settings)
         autowidths     = autowidths,
         fixedrows      = fixedrows,
         fixedcolumns   = fixedcolumns,
+        fixedcspans    = fixedcspans,
         frozencolumns  = frozencolumns,
         options        = options,
         nofrows        = 0,
@@ -191,6 +194,7 @@ function xtables.create(settings)
     setmetatableindex(fixedrows,add_zero)
     setmetatableindex(fixedcolumns,add_zero)
     setmetatableindex(options,add_table)
+    setmetatableindex(fixedcspans,add_table)
     --
     settings.columndistance = tonumber(settings.columndistance) or 0
     settings.rowdistance = tonumber(settings.rowdistance) or 0
@@ -221,7 +225,7 @@ function xtables.initialize_reflow_width(option,width)
     end
     if option and option ~= "" then
         local options = settings_to_hash(option)
-     -- data.options[r][c] = options -- not yet used (commented elsewhere)
+        data.options[r][c] = options
         if options[v_fixed] then
             data.frozencolumns[c] = true
         end
@@ -251,9 +255,30 @@ function xtables.set_reflow_width()
     local widths  = data.widths
     local heights = data.heights
     local depths  = data.depths
-    if width > widths[c] then
-        widths[c] = width
+    local cspan   = drc.nx
+    if cspan < 2 then
+        if width > widths[c] then
+            widths[c] = width
+        end
+    else
+        local options = data.options[r][c]
+        if not options then
+            if width > widths[c] then
+                widths[c] = width
+            end
+        elseif not options[v_tight] then
+            if width > widths[c] then
+                widths[c] = width
+            end
+        end
     end
+--     if cspan > 1 then
+--         local f = data.fixedcspans[c]
+--         local w = f[cspan] or 0
+--         if width > w then
+--             f[cspan] = width -- maybe some day a solution for autospanmax and so
+--         end
+--     end
     if drc.ny < 2 then
         if height > heights[r] then
             heights[r] = height
@@ -514,6 +539,9 @@ function xtables.reflow_width()
         showwidths("stage 1",widths,autowidths)
     end
     local noffrozen = 0
+
+--     inspect(data.fixedcspans)
+
     if options[v_max] then
         for c=1,nofcolumns do
             width = width + widths[c]

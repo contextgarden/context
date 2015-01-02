@@ -1038,4 +1038,62 @@ in the distribution.
 
 \typebuffer \start \getbuffer \stop
 
+\page
+
+\startbuffer[demo]
+\startxtable
+\startxrow
+    \startxcell[demo][nx=4] 1 / 2 / 3 / 4 \stopxcell
+\stopxrow
+\startxrow
+    \startxcell[demo][nx=3] 1 / 2 / 3 \stopxcell
+    \startxcell 4 \stopxcell
+\stopxrow
+\startxrow
+    \startxcell 1 \stopxcell
+    \startxcell[demo][nx=3] 2 / 3 / 4 \stopxcell
+\stopxrow
+\startxrow
+    \startxcell[demo][nx=2] 1 / 2 \stopxcell
+    \startxcell 3 \stopxcell
+    \startxcell 4 \stopxcell
+\stopxrow
+\startxrow
+    \startxcell 1 \stopxcell
+    \startxcell[demo][nx=2] 2 / 3 \stopxcell
+    \startxcell 4 \stopxcell
+\stopxrow
+\startxrow
+    \startxcell 1 \stopxcell
+    \startxcell 2 \stopxcell
+    \startxcell[demo][nx=2] 3 / 4 \stopxcell
+\stopxrow
+\startxrow
+    \startxcell[demo][nx=2] 1 / 2 \stopxcell
+    \startxcell[demo][nx=2] 3 / 4 \stopxcell
+\stopxrow
+\startxrow
+    \startxcell 1 \stopxcell
+    \startxcell 2 \stopxcell
+    \startxcell 3 \stopxcell
+    \startxcell 4 \stopxcell
+\stopxrow
+\stopxtable
+\stopbuffer
+
+\startbuffer[tight]
+\setupxtable[demo][option=tight]
+\stopbuffer
+
+\startbuffer[normal]
+\setupxtable[demo][option=]
+\stopbuffer
+
+\typebuffer[demo]
+
+\page
+
+\typebuffer[tight]  \start \getbuffer[tight,demo]  \stop
+\typebuffer[normal] \start \getbuffer[normal,demo] \stop
+
 \stopdocument

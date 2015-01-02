@@ -13,6 +13,10 @@ local type         = type
 local concat       = table.concat
 local formatters   = string.formatters
 local compare      = sorters.comparers.basic -- (a,b)
+local sort         = table.sort
+
+local toarray      = utilities.parsers.settings_to_array
+local utfchar      = utf.char
 
 local publications = publications
 local writers      = publications.writers
@@ -108,12 +112,26 @@ local function sortsequence(dataset,list,sorttype)
     local method        = sortmethods and sortmethods[sorttype] or sharedmethods[sorttype]
     local sequence      = method and method.sequence
 
+    local s_default     = "<before end>"
+    local s_unknown     = "<at the end>"
+
+    local c_default     = utfchar(0xFFFE)
+    local c_unknown     = utfchar(0xFFFF)
+
     if not sequence and type(sorttype) == "string" then
-        local list = utilities.parsers.settings_to_array(sorttype)
+        local list = toarray(sorttype)
         if #list > 0 then
             sequence = { }
             for i=1,#list do
-                sequence[i] = { field = list[i] }
+                local entry   = toarray(list[i])
+                local field   = entry[1]
+                local default = entry[2]
+                local unknown = entry[3] or default
+                sequence[i] = {
+                    field   = field,
+                    default = default == s_default and c_default or default or c_default,
+                    unknown = unknown == s_unknown and c_unknown or unknown or c_unknown,
+                }
             end
         end
         if trace_sorters then
@@ -134,13 +152,16 @@ local function sortsequence(dataset,list,sorttype)
         for i=1,#sequence do
             local step    = sequence[i]
             local field   = step.field   or "?"
-            local default = step.default or ""
-            local unknown = step.unknown or ""
+            local default = step.default or c_default
+            local unknown = step.unknown or c_unknown
             local fldtype = types[field]
             local writer  = fldtype and writers[fldtype]
 
             if trace_sorters then
-                report("% 3i : field %a, type %a, default %a, unknown %a",i,field,fldtype,default,unknown)
+                report("% 3i : field %a, type %a, default %a, unknown %a",i,field,fldtype,
+                    default == c_default and s_default or default,
+                    unknown == c_unknown and s_unknown or unknown
+                )
             end
 
             if writer then
