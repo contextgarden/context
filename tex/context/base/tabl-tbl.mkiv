@@ -1049,17 +1049,25 @@
 
 \def\tabl_tabulate_insert_foot_content
   {\tabulatenoalign{\global\settrue\c_tabl_tabulate_someamble}%
-   \csname\??tabulatehead\currenttabulation\endcsname
+   \csname\??tabulatefoot\currenttabulation\endcsname
    \tabulatenoalign{\global\setfalse\c_tabl_tabulate_someamble}}%
 
 \def\tabl_tabulate_check_full_content % - needed, else confusion with \c!header
   {\ifcsname\??tabulatehead\currenttabulation\endcsname
-     \let\tabl_tabulate_insert_head\tabl_tabulate_insert_head_content
+     \expandafter\ifx\csname\??tabulatehead\currenttabulation\endcsname\empty
+       \let\tabl_tabulate_insert_head\empty
+     \else
+       \let\tabl_tabulate_insert_head\tabl_tabulate_insert_head_content
+     \fi
    \else
      \let\tabl_tabulate_insert_head\empty
    \fi
    \ifcsname\??tabulatefoot\currenttabulation\endcsname
-     \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_foot_content
+     \expandafter\ifx\csname\??tabulatefoot\currenttabulation\endcsname\empty
+       \let\tabl_tabulate_insert_foot\empty
+     \else
+       \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_head_content
+     \fi
    \else
      \let\tabl_tabulate_insert_foot\empty
    \fi}
@@ -1090,11 +1098,11 @@
 \def\tabl_tabulate_start_foot_yes[#1]%
   {\processcontent{\e!stop\v!tabulatetail}\m_tabl_tabulate_data{\letvalue{\??tabulatefoot#1}\m_tabl_tabulate_data}}
 
-% \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
-% \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
+\def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
+\def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
 
-\def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[]}
-\def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[]}
+% \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[]}
+% \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[]}
 
 % \unexpanded\def\tabl_start_defined[#1]%
 %   {\bgroup

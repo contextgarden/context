@@ -203,7 +203,7 @@ return {
         --
         "normalbaselineskip", "normallineskip", "normallineskiplimit",
         --
-        "availablehsize", "localhsize", "setlocalhsize", "distributedhsize",
+        "availablehsize", "localhsize", "setlocalhsize", "distributedhsize", "hsizefraction",
         --
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs",
         --

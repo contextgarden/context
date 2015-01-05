@@ -108,8 +108,9 @@
  % \c!stopper=\@@kostopper,
    \c!suffixseparator=, % currently rather hard coded
    \c!suffix=\floatcaptionsuffix,
-   \c!distance=1em,
+   \c!distance=\emwidth,
    \c!conversion=\v!numbers,
+   \c!maxwidth=\hsize,
    \c!command=]
 
 % we can comment some of these
@@ -1395,17 +1396,82 @@
       \fi
       \strc_floats_make_complete_caption}}
 
+% \def\strc_floats_prepare_stack_caption_auto
+%   {\ifx\p_strc_floats_caption_align\empty \else
+%      \doifnotinset\v!middle\p_strc_floats_caption_align{\let\captionovershoot\!!zeropoint}%
+%    \fi
+%    \edef\captionhsize{\the\wd\b_strc_floats_content}%
+%    \ifdim\captionhsize>\hsize
+%      % float is wider than \hsize
+%      \setbox\b_strc_floats_caption\vbox
+%        {\settrialtypesetting
+%         \strc_floats_caption_set_align
+%         \hsize\captionhsize
+%         \notesenabledfalse
+%         \strc_floats_make_complete_caption}%
+%      \ifdim\ht\scratchbox>\lineheight % more lines
+%        \setbox\b_strc_floats_caption\vbox
+%          {\strc_floats_caption_set_align
+%           \hsize\dimexpr\captionhsize-\captionovershoot\relax
+%           \ifdim\hsize<\captionminwidth\relax
+%             \hsize\captionhsize
+%           \fi
+%           \strc_floats_make_complete_caption}%
+%      \else
+%        \setbox\b_strc_floats_caption\vbox
+%          {\strc_floats_caption_set_align
+%           \hsize\captionhsize
+%           \strc_floats_make_complete_caption}%
+%      \fi
+%    \else
+%      % float is smaller of equal to \hsize
+%      \ifdim\captionhsize<\captionminwidth\relax
+%        \scratchdimen\captionminwidth % float smaller than min width
+%        \edef\captionhsize{\the\scratchdimen}%
+%      \fi
+%      \setbox\scratchbox\vbox     % test with overshoot
+%        {\settrialtypesetting
+%         \scratchdimen\dimexpr\captionhsize+\captionovershoot+3\emwidth\relax % 3em is an average word length
+%         \ifdim\scratchdimen<\hsize
+%           \hsize\scratchdimen
+%         \fi
+%         \notesenabledfalse
+%         \strc_floats_make_complete_caption}%
+%      \ifdim\ht\scratchbox>\lineheight
+%        % at least an average word longer than a line
+%        \setbox\b_strc_floats_caption\vbox
+%          {\strc_floats_caption_set_align
+%           \scratchdimen\dimexpr\captionhsize+\captionovershoot\relax
+%           \ifdim\scratchdimen<\hsize
+%             \hsize\scratchdimen
+%           \fi
+%           \strc_floats_make_complete_caption}%
+%      \else\ifx\p_strc_floats_caption_align\empty
+%        \setbox\b_strc_floats_caption\vbox
+%          {\strc_floats_caption_set_align
+%           \hsize\captionhsize
+%           \raggedcenter % overloads
+%           \strc_floats_make_complete_caption}%
+%      \else
+%        \setbox\b_strc_floats_caption\vbox
+%          {\strc_floats_caption_set_align
+%           \hsize\captionhsize
+%           \strc_floats_make_complete_caption}%
+%      \fi\fi
+%    \fi}
+
 \def\strc_floats_prepare_stack_caption_auto
   {\ifx\p_strc_floats_caption_align\empty \else
      \doifnotinset\v!middle\p_strc_floats_caption_align{\let\captionovershoot\!!zeropoint}%
    \fi
    \edef\captionhsize{\the\wd\b_strc_floats_content}%
-   \ifdim\captionhsize>\hsize
+   \scratchwidth\floatcaptionparameter\c!maxwidth\relax
+   \ifdim\captionhsize>\scratchwidth
      % float is wider than \hsize
      \setbox\b_strc_floats_caption\vbox
        {\settrialtypesetting
         \strc_floats_caption_set_align
-        \hsize\captionhsize
+        \hsize\scratchwidth
         \notesenabledfalse
         \strc_floats_make_complete_caption}%
      \ifdim\ht\scratchbox>\lineheight % more lines
@@ -1413,13 +1479,13 @@
          {\strc_floats_caption_set_align
           \hsize\dimexpr\captionhsize-\captionovershoot\relax
           \ifdim\hsize<\captionminwidth\relax
-            \hsize\captionhsize
+            \hsize\scratchwidth
           \fi
           \strc_floats_make_complete_caption}%
      \else
        \setbox\b_strc_floats_caption\vbox
          {\strc_floats_caption_set_align
-          \hsize\captionhsize
+          \hsize\scratchwidth
           \strc_floats_make_complete_caption}%
      \fi
    \else

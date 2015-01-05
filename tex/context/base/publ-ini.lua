@@ -1545,7 +1545,7 @@ do
             end
         end
         if type(sorter) == "function" then
-            rendering.list = sorter(dataset,rendering,newlist,sorttype)
+            rendering.list = sorter(dataset,rendering,newlist,sorttype) or newlist
         else
             rendering.list = newlist
         end

@@ -5336,6 +5336,9 @@
 \def\distributedhsize#1#2#3%
   {\dimexpr(#1-\numexpr#3-1\relax\dimexpr#2\relax)/#3\relax}
 
+\def\hsizefraction#1#2%
+  {\dimexpr#1/#2\relax}
+
 %D \macros
 %D   {doifvalue,doifnotvalue,doifelsevalue,
 %D    doifnothing,doifsomething,doifelsenothing,
@@ -6142,16 +6145,12 @@
 %D \macros
 %D   {processcontent}
 %D
-%D This is the first occasion where \TEX\ and \ETEX\ are no
-%D longer compatible, although in many cases things go ok.
-%D Beware of verbatim, i.e. catcode changes.
+%D This macro is first used in the tabulation macros.
 %D
 %D \starttyping
 %D \unexpanded\def\starthans%
 %D   {\processcontent{stophans}\test{\message{\test}\wait}}
 %D \stoptyping
-%D
-%D This macro is first used in the tabulation macros.
 
 \unexpanded\def\processcontent#1%
   {\begingroup\expandafter\syst_helpers_process_content\csname#1\endcsname}

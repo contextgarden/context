@@ -110,10 +110,12 @@
 \unexpanded\def\startbtxrenderingdefinitions[#1]%
   {\pushmacro\currentbtxrenderingdefinition
    \edef\currentbtxrenderingdefinition{#1}%
-   \letvalue{\??btxrenderingdefinition\currentbtxrenderingdefinition}\currentbtxrenderingdefinition}
+   \letvalue{\??btxrenderingdefinition\currentbtxrenderingdefinition}\currentbtxrenderingdefinition
+   \unprotect}
 
 \unexpanded\def\stopbtxrenderingdefinitions
-  {\popmacro\currentbtxrenderingdefinition}
+  {\protect
+   \popmacro\currentbtxrenderingdefinition}
 
 \unexpanded\def\loadbtxdefinitionfile[#1]%
   {\ctxcommand{loadbtxdefinitionfile("#1")}}
@@ -1465,7 +1467,7 @@
    \c!continue=\v!no,
    \c!method=\v!global,
  % \c!setups=btx:\btxrenderingparameter\c!alternative:initialize, % not the same usage as cite !
-   \c!sorttype=,
+%    \c!sorttype=authoryear,
    \c!criterium=\v!text,
    \c!refcommand=authoryears,  % todo
    \c!numbering=\v!yes,

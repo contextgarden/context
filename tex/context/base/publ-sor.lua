@@ -106,6 +106,11 @@ local sharedmethods      = { }
 publications.sortmethods = sharedmethods
 
 local function sortsequence(dataset,list,sorttype)
+
+    if not list or #list == 0 then
+        return
+    end
+
     local specification = publications.currentspecification
     local types         = specification.types
     local sortmethods   = specification.sortmethods
@@ -188,13 +193,19 @@ local function sortsequence(dataset,list,sorttype)
         local action, error = loadstring(code)
         if type(action) == "function" then
             action = action()
+        else
+            report("error when compiling sort method %a: %s",sorttype,error or "unknown")
         end
         if type(action) == "function" then
             local valid = action(dataset,list,method)
             if valid and #valid > 0 then
                 sorters.sort(valid,compare)
                 return valid
+            else
+                report("error when applying sort method %a",sorttype)
             end
+        else
+            report("error in sort method %a",sorttype)
         end
     else
         report("invalid sort method %a",sorttype)
@@ -248,7 +259,7 @@ local sorters = {
             sort(list,compare)
         else
             local valid = sortsequence(dataset,list,sorttype)
-            if #valid > 0 then
+            if valid and #valid > 0 then
                 for i=1,#valid do
                     local v = valid[i]
                     valid[i] = list[v.index]

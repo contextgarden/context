@@ -36,7 +36,7 @@ local specification = {
         interpreter = "author",
         composer    = "author",
         producer    = "author",
-	    doi         = "url",
+        doi         = "url",
         url         = "url", 
         page        = "pagenumber",
         pages       = "pagenumber",
@@ -98,6 +98,7 @@ local categories = specification.categories
 categories.article = {
     sets = {
         author = { "author", "editor", "title" },
+	    volume = { "volume", "number", "pages" },
         doi    = generic.doi,
         isbn   = { "issn" },
     },
@@ -107,7 +108,7 @@ categories.article = {
     optional = {
         "year",
         "subtitle", "type", "file",
-        "journal", "volume", "number", "pages",
+        "journal", "volume",
         "doi", "note", "isbn"
     },
 }
@@ -123,7 +124,7 @@ categories.magazine = {
     },
     optional = {
         "subtitle", "type", "file",
-        "volume", "number", "pages",
+        "volume",
         "month", "day",
         "doi", "note", "isbn"
     },

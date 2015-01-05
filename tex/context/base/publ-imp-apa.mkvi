@@ -34,7 +34,7 @@
    \c!lastnamesep={,\nobreakspace\textampersand\space},
    \c!finalnamesep={,\nobreakspace\textampersand\space},
    \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
+   \c!otherstext={,\space\btxlabeltext{\currentbtxspecification:others}},
    \c!juniorsep=\space,
    \c!vonsep=\space,
    \c!initialsep=\space,  % between initials and lastname
@@ -122,6 +122,13 @@
     \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
     \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
     \c!authorconversion=\v!name]
+
+% The APA style also sorts the rendered list by authoryear
+
+\setupbtxrendering
+    [sorttype=authoryear,
+     numbering=no,
+     hang=20] % how to get hanging to work? ... answer: it's descriptions ...
 
 % Should the following be loaded by default?
 
@@ -302,7 +309,7 @@
     \fi
 \stoptexdefinition
 
-\starttexdefinition btx:apa:title-subtitle-type
+\starttexdefinition btx:apa:title
     \setmode{btx:apa:title-placed}
     \btxdoif {file} {
          % we make the title active, opening file
@@ -314,11 +321,13 @@
             \btxcolon
             \btxflush{Word -> subtitle}
         }
-        \doifnotmode {btx:apa:thesis} {
-            \btxdoif{type} {
-                \btxleftbracket
-                \btxflush{Word -> type}
-                \btxrightbracket
+        \doifnot {\currentbtxcategory} {techreport} {
+            \doifnotmode {btx:apa:thesis} {
+                \btxdoif{type} {
+                    \btxleftbracket
+                    \btxflush{Word -> type}
+                    \btxrightbracket
+                }
             }
         }
         \btxperiod
@@ -332,20 +341,17 @@
             \doifelse {#it} {it} {
                 \begingroup
                     \it
-                    \texdefinition{btx:apa:title-subtitle-type}
+                    \texdefinition{btx:apa:title}
                     \italiccorrection
                 \endgroup
             } {
-                \texdefinition{btx:apa:title-subtitle-type}
+                \texdefinition{btx:apa:title}
             }
         }
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:editor-or-editors
-   % \btxflushauthor[invertedshort] {editor}
-   % driven by authorconversion=invertedshort
-   %\btxflushauthor{editor}
+\starttexdefinition btx:apa:editor
     \btxflush{editor}
     \btxleftparenthesis
     \btxsingularorplural {editor} {
@@ -356,43 +362,24 @@
     \btxrightparenthesisperiod
 \stoptexdefinition
 
-% \starttexdefinition btx:apa:flush:author
-%     \btxflush{author}
-% \stoptexdefinition
-% \starttexdefinition btx:apa:flush:editor
-%     \texdefinition{btx:apa:editor-or-editors}% just put the code here
-% \stoptexdefinition
-% \starttexdefinition btx:apa:flush:title
-%     \texdefinition{btx:apa:title-subtitle-type}% just put the code here
-% \stoptexdefinition
-%
-% \texdefinition{btx:apa:flush:\btxfoundname{author}}
-%
-% can be used in:
+\starttexdefinition btx:apa:author
+    \btxflush{author}
+\stoptexdefinition
 
 \starttexdefinition btx:apa:authoryear
     % we make the authoryear active, pointing to the citation
     \texdefinition{btx:apa:inject} {internal(\currentbtxinternal)}
     {
-        \doifelse {\btxfoundname{author}} {author} {
-           % \btxflushauthor[invertedshort] {author}
-           % driven by authorconversion=invertedshort
-            \btxflush{author}
-        } {
-            \doifelse {\btxfoundname{author}} {title} {
-                \texdefinition{btx:apa:title-subtitle-type}
-            } {
-                \doifelse {\btxfoundname{author}} {editor} {
-                    \texdefinition{btx:apa:editor-or-editors}
-                } {
-                    \btxflush{author}
-                }
-            }
-        }
+        % author is a set, e.g.
+        % author  = { "author", "editor", "publisher", "title" },
+        \executeifdefined
+            {btx:apa:\btxfoundname{author}}
+            {\texdefinition{btx:apa:author}}
         \btxleftparenthesis
         \btxdoifelse {year} {
             \btxflush{year}
-            \btxflush{suffix}
+            %\btxflush{suffix}
+            \btxflush{suffixedyear}
             \btxdoif {month} {
                 \btxcomma
                 \btxflush{month}
@@ -403,7 +390,7 @@
             }
         } {
             \btxlabeltext{apa:nd}
-            \btxdoif {suffix} {
+            \btxdoif {suffix} {% check this!
                 \btxspace
                 \btxflush{suffix}
             }
@@ -425,7 +412,7 @@
     \btxdoifelse {editor} {
         \btxlabeltext{apa:In}
         \btxspace
-        \texdefinition{btx:apa:editor-or-editors}
+        \texdefinition{btx:apa:editor}
         \btxdoif {#title} {
             \texdefinition{btx:apa:italic}{Word -> #title}
         }
@@ -438,91 +425,67 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:doif-edition-or-volume-or-number-or-pages #edition #if
-    \btxdoifelse {#edition} {
-        #if
-    }{
-        \btxdoifelse {volume} {
-            #if
-        } {
-            \btxdoifelse {number} {
-                #if
+\starttexdefinition btx:apa:editionset
+    \btxdoifelse {edition} {
+        \btxleftparenthesis
+        \doif {\currentbtxcategory} {techreport} {
+            \btxdoifelse {type} {
+                \btxflush{Word -> type}
             } {
-                \btxdoif {pages} {
-                    #if
-                }
+                \btxlabeltext{apa:technicalreport}
             }
+            \setmode{btx:apa:comma}
         }
-    }
-\stoptexdefinition
-
-\starttexdefinition btx:apa:edition-volume-number-pages #edition
-    \texdefinition{btx:apa:doif-edition-or-volume-or-number-or-pages}{#edition}{\btxleftparenthesis}
-    \btxdoifelse {#edition} {
-        \btxflush{#edition}
-        \doif {#edition} {edition} {
+        \doif {\btxfoundname{edition}} {edition} {
+            \doifmode {btx:apa:comma}
+                {\btxcomma}
+            \btxflush{edition}
             \btxspace
             \btxlabeltext{apa:edition}
+            \setmode{btx:apa:comma}
         }
+        \btxdoif {volume} {
+            \doifmode {btx:apa:comma}
+                {\btxcomma}
+            \btxoneorrange {volume} {
+                \btxlabeltext{apa:Volume}
+            } {
+                \btxlabeltext{apa:Volumes}
+            }
+            \btxspace
+            \btxflush{volume}
+            \setmode{btx:apa:comma}
+        }
+        \btxdoif {number} {
+            \doifmode {btx:apa:comma}
+                {\btxcomma}
+            \btxlabeltext{apa:Number}
+            \btxspace
+            \btxflush{number}
+            \setmode{btx:apa:comma}
+        }
+        \btxdoif {pages} {
+            \doifmode {btx:apa:comma}
+                {\btxcomma}
+            \btxoneorrange {pages} {
+                \btxlabeltext{apa:p}
+            } {
+                \btxlabeltext{apa:pp}
+            }
+            \btxspace
+            \btxflush{pages}
+        }
+        \btxrightparenthesisperiod
     } {
         \doif {\currentbtxcategory} {techreport} {
-            \btxspace
+            \btxleftparenthesis
             \btxlabeltext{apa:technicalreport}
+            \btxrightparenthesisperiod
         }
     }
-    \btxdoif {volume} {
-        \btxdoif {#edition} {
-            \doifelse {#edition} {edition}
-                {\btxcomma} {\btxspace}
-        }
-        \btxoneorrange {volume} {
-            \btxlabeltext{apa:Volume}
-        } {
-            \btxlabeltext{apa:Volumes}
-        }
-        \btxspace
-        \btxflush{volume}
-    }
-    \btxdoif {number} {
-        \btxdoifelse {volume} {
-            \btxcomma
-        } {
-            \btxdoifelse {#edition} {
-                \doifelse {#edition} {edition}
-                {\btxcomma} {\btxspace}
-            } {
-                \btxspace
-            }
-        }
-        \btxlabeltext{apa:Number}
-        \btxspace
-        \btxflush{number}
-    }
-    \btxdoif {pages} {
-        \btxdoifelse {volume} {
-            \btxcomma
-        } {
-            \btxdoifelse {#edition} {
-                \doifelse {#edition} {edition}
-                {\btxcomma} {\btxspace}
-            } {
-                \btxdoif {number} {
-                    \btxcomma
-                }
-            }
-        }
-        \btxoneorrange {pages} {
-            \btxlabeltext{apa:p}
-        } {
-            \btxlabeltext{apa:pp}
-        }
-        \btxspace
-        \btxflush{pages}
-    }
-    \texdefinition{btx:apa:doif-edition-or-volume-or-number-or-pages}{#edition}{\btxrightparenthesisperiod}
 \stoptexdefinition
 
-\starttexdefinition btx:apa:journal-volume-number-pages
+\starttexdefinition btx:apa:journal-volumeset
     \btxdoif {journal} {
         \btxspace
         % expandedjournal abbreviatedjournal
@@ -530,7 +493,9 @@
         % A newspaper may not have a volume but may have a number!
         \btxdoif {volume} {
             \btxcomma
-            \texdefinition{btx:apa:italic}{volume}
+            \doif {\btxfoundname{volume}} {volume} {
+                \texdefinition{btx:apa:italic}{volume}
+            }
             \btxdoifnot {number} {
                 \btxdoifelse {pages}
                     {\btxcomma}
@@ -617,16 +582,16 @@
     % use \btxentry here?
     \btxspace
     \begingroup
-    \setbreakpoints[doi]
-    \btxdoifelseinteractive {doi} {
-        \goto {
+        \setbreakpoints[doi]
+        \btxdoifelseinteractive {doi} {
+            \goto {
+                doi:\btxflush{doi}
+            } [
+                url(http://dx.doi.org/\btxflush{doi})
+            ]
+        } {
             doi:\btxflush{doi}
-        } [
-            url(http://dx.doi.org/\btxflush{doi})
-        ]
-    } {
-        doi:\btxflush{doi}
-    }
+        }
     \endgroup
 \stoptexdefinition
 
@@ -634,8 +599,7 @@
     % also issn - see publ-imp-apa.lua
     \btxdoif {isbn} {
         \btxleftparenthesis
-        %broken: \btxfoundname{WORD -> isbn}:\btxspace
-        \btxfoundname{isbn}:\btxspace
+        \WORD{\btxfoundname{isbn}}:\btxspace
         \btxflush{isbn}
         \btxrightparenthesis
     }
@@ -754,7 +718,7 @@
 \startsetups btx:apa:article
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:journal-volume-number-pages}
+    \texdefinition{btx:apa:journal-volumeset}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
 
@@ -765,7 +729,7 @@
 \startsetups btx:apa:magazine
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:journal-volume-number-pages}
+    \texdefinition{btx:apa:journal-volumeset}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
 
@@ -776,7 +740,7 @@
 \startsetups btx:apa:newspaper
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:journal-volume-number-pages}
+    \texdefinition{btx:apa:journal-volumeset}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
 
@@ -790,7 +754,7 @@
 \startsetups btx:apa:book
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}{it}
-    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
+    \texdefinition{btx:apa:editionset}
     \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -809,7 +773,7 @@
         \btxspace
     }
     \texdefinition{btx:apa:editor-in-}{title}
-    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
+    \texdefinition{btx:apa:editionset}
     \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -825,7 +789,7 @@
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}{}
     \texdefinition{btx:apa:editor-in-}{booktitle}
-    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
+    \texdefinition{btx:apa:editionset}
     \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -838,7 +802,7 @@
 \startsetups btx:apa:proceedings
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
+    \texdefinition{btx:apa:editionset}
     \btxdoifelse {editor} {
         \btxdoif {organization} {
             \btxspace
@@ -861,7 +825,7 @@
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}{}
     \texdefinition{btx:apa:editor-in-}{booktitle}
-    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
+    \texdefinition{btx:apa:editionset}
     \btxdoif {organization} {
         \btxspace
         \btxflush{organization}
@@ -885,9 +849,9 @@
     \texdefinition{btx:apa:title-if-not-placed}{it}
     \btxleftparenthesis
     \btxdoifelse {type} {
-        \btxflush{type}
+        \btxflush{Word -> type}
     } {
-        \btxlabeltext{apa:\currentbtxcategory}
+        \Word{\btxlabeltext{apa:\currentbtxcategory}}
     }
     \btxrightparenthesis
     \btxdoif {school} {
@@ -936,7 +900,7 @@
 \startsetups btx:apa:manual
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}{it}
-    \texdefinition{btx:apa:edition-volume-number-pages}{edition}
+    \texdefinition{btx:apa:editionset}
     \texdefinition{btx:apa:wherefrom-publisher-author-is-}{organization}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -948,7 +912,7 @@
 \startsetups btx:apa:techreport
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}{it}
-    \texdefinition{btx:apa:edition-volume-number-pages}{type}
+    \texdefinition{btx:apa:editionset}
     \texdefinition{btx:apa:wherefrom-publisher-author-is-}{institution}
     \texdefinition{btx:apa:url-note-doi}
 \stopsetups
@@ -1073,6 +1037,10 @@
 % If all else fails to match:
 
 \startsetups btx:apa:literal
+    %\btxleftparenthesis
+    \removeunwantedspaces(
+    \btxflush{key}
+    \btxrightparenthesis
     \btxdoif {text} {
         \btxflush{text}
     }

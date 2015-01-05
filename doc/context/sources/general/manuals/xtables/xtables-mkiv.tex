@@ -651,7 +651,131 @@ parameter can get the values \type {before}, \type {after} and \type {both}.
 
 \stopsection
 
-\startsection[title={nesting}]
+\startsection[title={Options}]
+
+On the average a table will come out okay but you need to keep in mind that when
+(complex) spans are used the results can be less that optimal. However, as
+normally one pays attention to creating tables, the amount of control provided
+often makes it possible to get what you want.
+
+In the following situations, the first cell width is determined by the span. It
+is possible to make a more clever analyzer but we need to keep in mind that in
+the same column there can be entries that span a different amount of columns. Not
+only would that be inefficient but it would also be rather unpredictable unless
+you know exactly what happens deep down. The following two examples demonstrate
+default behaviour.
+
+\startbuffer
+\startxtable
+  \startxrow
+    \startxcell[nx=3]
+        1/2/3
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell 1 \stopxcell
+    \startxcell 2 \stopxcell
+    \startxcell 3 \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startxtable
+  \startxrow
+    \startxcell[nx=3]
+        1 / 2 / 3
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell 1 \stopxcell
+    \startxcell 2 \stopxcell
+    \startxcell 3 \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In practice you will set the width of the columns, as in:
+
+\startbuffer
+\startxtable
+  \startxrow
+    \startxcell[nx=3]
+        1/2/3
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell[width=\dimexpr\textwidth/3] 1 \stopxcell
+    \startxcell[width=\dimexpr\textwidth/3] 2 \stopxcell
+    \startxcell[width=\dimexpr\textwidth/3] 3 \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+But, if you want you can control the enforced width by setting an option:
+
+\startbuffer
+\startxtable
+  \startxrow
+    \startxcell[nx=3,option=tight]
+        1/2/3
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell 1 \stopxcell
+    \startxcell 2 \stopxcell
+    \startxcell 3 \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startxtable
+  \startxrow
+    \startxcell[nx=3,option=tight]
+        1 / 2 / 3
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell 1 \stopxcell
+    \startxcell 2 \stopxcell
+    \startxcell 3 \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+There is also a global setting:
+
+\startbuffer
+\startxtable[option=tight]
+  \startxrow
+    \startxcell[nx=3]
+      1/2/3
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell 1 \stopxcell
+    \startxcell 2 \stopxcell
+    \startxcell 3 \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsection
+
+\startsection[title={Nesting}]
 
 Extreme tables can be nested but you need to keep an eye on inheritance here as
 the inner table uses the settings from the encapsulating cell. The widths and
@@ -1095,5 +1219,7 @@ in the distribution.
 
 \typebuffer[tight]  \start \getbuffer[tight,demo]  \stop
 \typebuffer[normal] \start \getbuffer[normal,demo] \stop
+
+% \ruledhbox{\getbuffer[normal,demo]}
 
 \stopdocument

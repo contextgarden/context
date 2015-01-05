@@ -24,6 +24,7 @@ this mechamism will be improved so that it can replace its older cousin.
 ]]--
 
 -- todo: use linked list instead of r/c array
+-- todo: we can use the sum of previously forced widths for column spans
 
 local tonumber, next = tonumber, next
 
@@ -47,6 +48,7 @@ local context_beginvbox       = context.beginvbox
 local context_endvbox         = context.endvbox
 local context_blank           = context.blank
 local context_nointerlineskip = context.nointerlineskip
+local context_dummyxcell      = context.dummyxcell
 
 local variables               = interfaces.variables
 
@@ -127,7 +129,7 @@ function xtables.create(settings)
     local modes          = { }
     local fixedrows      = { }
     local fixedcolumns   = { }
-    local fixedcspans    = { }
+ -- local fixedcspans    = { }
     local frozencolumns  = { }
     local options        = { }
     local rowproperties  = { }
@@ -142,7 +144,7 @@ function xtables.create(settings)
         autowidths     = autowidths,
         fixedrows      = fixedrows,
         fixedcolumns   = fixedcolumns,
-        fixedcspans    = fixedcspans,
+     -- fixedcspans    = fixedcspans,
         frozencolumns  = frozencolumns,
         options        = options,
         nofrows        = 0,
@@ -194,22 +196,25 @@ function xtables.create(settings)
     setmetatableindex(fixedrows,add_zero)
     setmetatableindex(fixedcolumns,add_zero)
     setmetatableindex(options,add_table)
-    setmetatableindex(fixedcspans,add_table)
+ -- setmetatableindex(fixedcspans,add_table)
     --
-    settings.columndistance = tonumber(settings.columndistance) or 0
-    settings.rowdistance = tonumber(settings.rowdistance) or 0
-    settings.leftmargindistance = tonumber(settings.leftmargindistance) or 0
+    local globaloptions = settings_to_hash(settings.option)
+    --
+    settings.columndistance      = tonumber(settings.columndistance) or 0
+    settings.rowdistance         = tonumber(settings.rowdistance) or 0
+    settings.leftmargindistance  = tonumber(settings.leftmargindistance) or 0
     settings.rightmargindistance = tonumber(settings.rightmargindistance) or 0
-    settings.options = settings_to_hash(settings.option)
-    settings.textwidth = tonumber(settings.textwidth) or texget("hsize")
-    settings.lineheight = tonumber(settings.lineheight) or texgetdimen("lineheight")
-    settings.maxwidth = tonumber(settings.maxwidth) or settings.textwidth/8
+    settings.options             = globaloptions
+    settings.textwidth           = tonumber(settings.textwidth) or texget("hsize")
+    settings.lineheight          = tonumber(settings.lineheight) or texgetdimen("lineheight")
+    settings.maxwidth            = tonumber(settings.maxwidth) or settings.textwidth/8
  -- if #stack > 0 then
  --     settings.textwidth = texget("hsize")
  -- end
     data.criterium_v =   2 * data.settings.lineheight
     data.criterium_h = .75 * data.settings.textwidth
-
+    --
+    data.tight = globaloptions[v_tight] and true or false
 end
 
 function xtables.initialize_reflow_width(option,width)
@@ -262,7 +267,9 @@ function xtables.set_reflow_width()
         end
     else
         local options = data.options[r][c]
-        if not options then
+        if data.tight then
+            -- no check
+        elseif not options then
             if width > widths[c] then
                 widths[c] = width
             end
@@ -272,13 +279,13 @@ function xtables.set_reflow_width()
             end
         end
     end
---     if cspan > 1 then
---         local f = data.fixedcspans[c]
---         local w = f[cspan] or 0
---         if width > w then
---             f[cspan] = width -- maybe some day a solution for autospanmax and so
---         end
---     end
+ -- if cspan > 1 then
+ --     local f = data.fixedcspans[c]
+ --     local w = f[cspan] or 0
+ --     if width > w then
+ --         f[cspan] = width -- maybe some day a solution for autospanmax and so
+ --     end
+ -- end
     if drc.ny < 2 then
         if height > heights[r] then
             heights[r] = height
@@ -296,9 +303,11 @@ function xtables.set_reflow_width()
     local fixedcolumns = data.fixedcolumns
     local fixedrows = data.fixedrows
     if dimensionstate == 1 then
-        if width > fixedcolumns[c] then -- how about a span here?
-            fixedcolumns[c] = width
-        end
+    if cspan > 1 then
+        -- ignore width
+    elseif width > fixedcolumns[c] then -- how about a span here?
+        fixedcolumns[c] = width
+    end
     elseif dimensionstate == 2 then
         fixedrows[r]    = height
     elseif dimensionstate == 3 then
@@ -539,9 +548,7 @@ function xtables.reflow_width()
         showwidths("stage 1",widths,autowidths)
     end
     local noffrozen = 0
-
---     inspect(data.fixedcspans)
-
+ -- inspect(data.fixedcspans)
     if options[v_max] then
         for c=1,nofcolumns do
             width = width + widths[c]
@@ -857,9 +864,12 @@ function xtables.construct()
                 end
                 nofr = nofr + 1
                 local rp = rowproperties[r]
+                -- we have a direction issue here but hpack_node_list(list,0,"exactly","TLT") cannot be used
+                -- due to the fact that we need the width
+                local hbox = hpack_node_list(list)
+                setfield(hbox,"dir","TLT")
                 result[nofr] = {
-                 -- hpack_node_list(list),
-                    hpack_node_list(list,0,"exactly","TLT"), -- otherwise weird lap
+                    hbox,
                     size,
                     i < nofrange and rowdistance > 0 and rowdistance or false, -- might move
                     false,
@@ -1170,7 +1180,16 @@ function xtables.next_row(specification)
     data.currentrow = r
     data.currentcolumn = 0
     data.rowproperties[r] = specification
+end
 
+function xtables.finish_row()
+    local n = data.nofcolumns - data.currentcolumn
+    if n > 0 then
+        -- message
+        for i=1,n do
+            context_dummyxcell()
+        end
+    end
 end
 
 -- eventually we might only have commands
@@ -1182,6 +1201,7 @@ commands.x_table_construct          = xtables.construct
 commands.x_table_flush              = xtables.flush
 commands.x_table_cleanup            = xtables.cleanup
 commands.x_table_next_row           = xtables.next_row
+commands.x_table_finish_row         = xtables.finish_row
 commands.x_table_init_reflow_width  = xtables.initialize_reflow_width
 commands.x_table_init_reflow_height = xtables.initialize_reflow_height
 commands.x_table_init_construct     = xtables.initialize_construct

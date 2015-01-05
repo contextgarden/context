@@ -1,7 +1,7 @@
 %D \module
 %D   [       file=publ-imp-aps,
-%D        version=2014.05.25,
-%D          title=APA bibliography style,
+%D        version=2013.12.12,
+%D          title=APS bibliography style,
 %D       subtitle=Publications,
 %D         author=Alan Braslau and Hans Hagen,
 %D           date=\currentdate,
@@ -10,159 +10,366 @@
 %C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
 %D by \PRAGMA. See mreadme.pdf for details.
 
+% \loadbtxdefinitionfile[def]
+
 \startbtxrenderingdefinitions[aps]
+
+%D Reference:
+%D \startTEX
+%D @Book{APS2011,
+%D     title    ={Physical Review Style and Notation Guide}
+%D     year     ={2011},
+%D     month    ={June}
+%D     edition  ={Revised},
+%D     editor   ={Waldron, A and Judd, P. and Miller, V.},
+%D     address  ={Ridge, NY},
+%D     publisher={American Physical Society},
+%D     pages    ={26},
+%D     url      ={http://journals.aps.org/files/styleguide-pr.pdf}
+%D }
+%D \stopTEX
+
+% set all APS compliant values (may be redundant but we do not count on defaults.)
+
+\setupbtxlistvariant
+  [\c!namesep={,\space},
+   \c!lastnamesep={,\space and\space},
+   \c!finalnamesep={,\space and\space},
+   \c!firstnamesep=\space,
+   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
+   \c!juniorsep=\space,
+   \c!vonsep=\space,
+   \c!initialsep=\space,  % between initials and lastname
+  %\c!initialssep=\space, % between multiple initials  % todo
+  %\c!initialsterminator={.},                          % todo
+   \c!surnamesep={,\space},
+   \c!surnameinitialsep={,\space},
+   \c!surnamefirstnamesep={,\space},
+   \c!etallimit=10,
+   \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
+  %\c!journalconversion=\v!normal,
+   \c!monthconversion=\v!month,
+   \c!authorconversion=normalshort]
+
+\definebtxlistvariant
+  [author]
+
+\definebtxlistvariant
+  [editor]
+  [author]
+
+% like \setupbtxlistvariant above but not exactly...
+
+\setupbtxcitevariant
+  [\c!alternative=num,
+   \c!namesep=\btxlistvariantparameter\c!namesep,
+   \c!lastnamesep=\btxlistvariantparameter\c!lastnamesep,
+   \c!finalnamesep={\nobreakspace\textampersand\space}, % no comma!
+   \c!firstnamesep=\btxlistvariantparameter\c!firstnamesep,
+   \c!otherstext=\btxlistvariantparameter\c!otherstext,
+   \c!juniorsep=\btxlistvariantparameter\c!juniorsep,
+   \c!vonsep=\btxlistvariantparameter\c!vonsep,
+   \c!initialsep=\btxlistvariantparameter\c!initialsep,
+  %\c!initialssep=\btxlistvariantparameter\c!initialssep,
+  %\c!initialsterminator=\btxlistvariantparameter\c!initialsterminator,
+   \c!surnamesep=\btxlistvariantparameter\c!surnamesep,
+   \c!surnameinitialsep=\btxlistvariantparameter\c!surnameinitialsep,
+   \c!surnamefirstnamesep=\btxlistvariantparameter\c!surnamefirstnamesep,
+   \c!etallimit=\btxlistvariantparameter\c!etallimit,
+   \c!etaldisplay=\btxlistvariantparameter\c!etaldisplay,
+ % \c!monthconversion=\btxlistvariantparameter\c!monthconversion,
+   \c!authorconversion=\btxlistvariantparameter\c!authorconversion,
+   \c!interaction=\v!start,
+ % \c!setups=btx:cite:initialize,
+   \c!pubsep={,\space},
+   \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
+   \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
+   \c!sorttype=,
+   \c!compress=\v!no,
+   \c!inbetween=\space,
+   \c!range=\endash,
+   \c!left={[},
+   \c!middle=,
+   \c!right={]}]
+
+\definebtxcitevariant
+   [author]
+   [\c!lastnamesep={,\nobreakspace\textampersand\space},
+    \c!finalnamesep={\nobreakspace\textampersand\space}, % no comma!
+    \c!authorconversion=\v!name]
+
+\definebtxcitevariant
+   [authoryear]
+   [\c!compress=\v!yes,
+    \c!inbetween={,\space},
+    \c!left={(},
+    \c!right={)},
+    \c!pubsep={;\space},
+    \c!lastpubsep={;\space},
+    \c!finalpubsep={;\space},
+    \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
+    \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
+    \c!authorconversion=\v!name]
+
+\definebtxcitevariant
+   [authoryears]
+   [authoryear]
+   [\c!left=,
+    \c!inbetween={\space(},
+    \c!pubsep={);\space},
+    \c!lastpubsep={);\space},
+    \c!finalpubsep={);\space},
+    \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
+    \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
+    \c!authorconversion=\v!name]
+
+\setupbtxrendering
+    [sorttype=, % num ?
+     numbering=yes]
+
+% Should the following be loaded by default?
+
+%D In order to be able to get journals expanded (or normalized or abbreviated) you need
+%D to load a list:
+%D
+%D \starttyping
+%D \btxloadjournallist[journals.txt] % the jabref list
+%D \stoptyping
+
+%D Sometimes we have verbose injections in an entry and these can be language
+%D dependent, so we use labels.
+%D
+%D Because we want to mix rendering (in the manual) we need a namespace in label
+%D texts:
 
 \setupbtxlabeltext
   [en]
   [aps:mastersthesis={Master's thesis},
    aps:phdthesis={PhD thesis},
-   aps:technicalreport={Technical report},
-   aps:editor=editor,
-   aps:editors=editors,
-   aps:edition=edition,
-   aps:volume=volume,
-   aps:Volume=Volume,
+   aps:technicalreport={Tech. Rep.},  % Technical report
+   aps:supplement={Suppl.},           % Supplement
+   aps:patent=Patent,
+   aps:Translator={Trans.},           % Translator(s)
+   aps:Editor={Ed.},                  % Editor
+   aps:Editors={Eds.},                % Editors
+   aps:edition={ed.},                 % edition
+   aps:volume=volume, % used?
+   aps:Volume={Vol.},                 % Volume
+   aps:Volumes={Vols.},               % Volumes
    aps:number=number,
-   aps:Number=Number,
+   aps:Number={No.},                  % Number
+   aps:nd={n.d.},                     % no date
    aps:in=in,
    aps:of=of,
    aps:In=In,
-   aps:p=p,
-   aps:pp=pp,
+   aps:Part={Pt.},                    % Part
+   aps:p={p.},
+   aps:pp={pp.},
    aps:pages=pages,
    aps:and=and,
-   aps:others={et al.}]
+   aps:period={. },
+   aps:Author=Author,
+   aps:Reference={Ref.},
+   aps:References={Refs.},
+   aps:Advanced={to be published},
+   aps:Retrieved={Available from},    % {Retrieved from},
+   aps:others={\it et al.}]
 
 \setupbtxlabeltext
   [fr]
   [aps:mastersthesis={Thèse de master (DEA, DESS, master)},
    aps:phdthesis={Thèse de doctorat},
    aps:technicalreport={Rapport technique},
-   aps:editor=éditeur,
-   aps:editors=éditeurs,
+   aps:supplement=Supplément,
+   aps:patent=Brevet,
+   aps:Translator=Traducteur,
+   aps:Editor=Éditeur,
+   aps:Editors=Éditeurs,
    aps:edition=édition,
    aps:volume=volume,
    aps:Volume=Volume,
+   aps:Volumes=Volumes,
    aps:number=numéro,
    aps:Number=Numéro,
+   aps:nd={s.d.}                      % sans date
    aps:in=dans,
    aps:of=de,
    aps:In=Dans,
-   aps:p=p,
-   aps:pp=pp,
+   aps:Part=Partie,
+   aps:p={p.},
+   aps:pp={pp.},
    aps:pages=pages,
    aps:and=et,
-   aps:others={et al.}]
+   aps:period={. },
+   aps:Author=Auteur,
+   aps:Reference={Réf.},
+   aps:References={Réfs.},
+   aps:Advanced={à être publié},
+   aps:Retrieved={Disponible à},      % {Téléchargé de},
+   aps:others={\it et al.}]
 
 \setupbtxlabeltext
   [de]
   [aps:mastersthesis={Masterarbeit},
    aps:phdthesis={Dissertation},
    aps:technicalreport={Technischer Bericht},
-   aps:editor=Herausgeber,
-   aps:editors=Herausgeber,
-   aps:edition=Auflage,
-   aps:volume=Band,
+   aps:supplement={Beilage},          % Supplement
+   aps:patent=Patent,
+   aps:Translator={Übersetzer},       % Übers.
+   aps:Editor=Herausgeber,            % Hrsg./Hg.
+   aps:Editors=Herausgeber,
+   aps:edition=Auf\/lage,
+   aps:volume=Band,                   % Bd.
    aps:Volume=Band,
-   aps:number=Numer,
-   aps:Number=Numer,
+   aps:Volumes={Bände},
+   aps:number=Nummer,
+   aps:Number={Nr.},
+   aps:nd={o.D.},                     % ohne Datum (mostly: o.J. / ohne Jahr)
    aps:in=in,
    aps:of=von,
    aps:In=In,
-   aps:p=S,
-   aps:pp=S,
+   aps:Part=Teil,
+   aps:p={S.},
+   aps:pp={S.},
    aps:pages=Seiten,
    aps:and=und,
-   aps:others={et al.}]
+   aps:period={. },
+   aps:Author=Autor,
+   aps:Reference={Ref.},
+   aps:References={Ref.},
+   aps:Advanced={veröffentlicht werden},
+   aps:Retrieved={heruntergeladen von},
+   aps:others={\it et al.}]
 
-%     \c!authoretallimit=4,
-%     \c!editoretallimit=4,
-%     \c!artauthoretallimit=4,
-%     \c!authoretaldisplay=1,
-%     \c!editoretaldisplay=1,
-%     \c!artauthoretaldisplay=1,
-%     \c!authoretaltext={ {\it et al.\/}},
-%     \c!editoretaltext={ {\it  et al.\/}},
-%     \c!artauthoretaltext={ {\it et al.\/}}]
+% thanks: Andrea Valle
 
-\setvariables
-  [btx:aps:publisher]
-  [left=\btxspace,
-   right=\btxperiod]
+\setupbtxlabeltext
+  [it]
+  [aps:mastersthesis={Tesi di laurea},
+   aps:phdthesis={Tesi di dottorato},
+   aps:technicalreport={Relazione tecnica},
+   aps:supplement={Supplemento},
+   aps:patent=Brevetto,
+   aps:Translator={Trad.},                        % Translator(s)
+   aps:Editor={A cura di},
+   aps:Editors={A cura di},
+   aps:edition={ed.},
+   aps:volume=volume,
+   aps:Volume={Vol.},
+   aps:Volumes={Vol.},
+   aps:number=numero,
+   aps:Number=Numero,
+   aps:nd={s.d.},
+   aps:in=in,
+   aps:of=di,
+   aps:In=In,
+   aps:Part=Parte,
+   aps:p={p.},
+   aps:pp={pp.},
+   aps:pages=pagine,
+   aps:and=e,
+   aps:period={. },
+   aps:Author=Autore,
+   aps:Reference={Rif.},
+   aps:References={Rif.},
+   aps:Advanced={da pubblicare},
+   aps:Retrieved={Accessible online},
+   aps:others={\it et al.}]
 
-\setvariables
-  [btx:aps:organization]
-  [left=\btxspace,
-   right=\btxperiod]
+%D Instead of texdefinitions without arguments, we could have used setups but in my
+%D editor (hh, scite) the commands stand out better. It also saves an additional
+%D component in the name (e.g. common:) because commands and setups have a different
+%D namespace, so similar calls don't clash. Performance of definitions is somewhat
+%D better.
 
-\setvariables
-  [btx:aps:school]
-  [left=\btxcomma,
-   right=\btxperiod,
-   otherwise=\btxperiod]
+%D \btxdoif... and \btxflush rely on the definitions in publ-imp-aps.lua:
+%D fields that are not listed as required nor optional are IGNORED.
 
-\setvariables
-  [btx:aps:institution]
-  [left=\btxcomma,
-   right=\btxperiod,
-   otherwise=\btxperiod]
+% First some helpers:
 
-% \def\insertEdition#1#2#3{%
-% 	\begingroup
-% 	\insertedition{#1}{\doifnumberelse{\csname @@pb@edition\endcsname}{%
-%          \ifcase \csname @@pb@edition\endcsname \or st\or nd\or rd\else th\fi
-%        }{}#2}{#3}%
-% 	\endgroup
-% }
+\starttexdefinition btx:aps:inject #link #content
+    \ifconditional\btxinteractive
+        \ifx\currentbtxinternal\empty
+            #content
+        \else
+            \goto {
+                #content
+            } [
+                #link
+            ]
+        \fi
+    \else
+        #content
+    \fi
+\stoptexdefinition
 
-\starttexdefinition btx:aps:chapter
-    \btxdoif {chapter} {
-        \btxcomma
-        \btxdoifelse {type} {
-            \btxflush{type}
-            \btxspace
-        } {
-            \btxlabeltext{aps:chapter}
+\starttexdefinition btx:aps:title
+    \btxdoif {file} {
+         % we make the title active, opening file
+         \texdefinition{btx:aps:inject} {url(file:\btxflush{file})}
+    }
+    {
+        \begingroup
+            \it
+            \btxflush{Word -> title}
+            \btxdoif {subtitle} {
+                \btxcolon
+                \btxflush{Word -> subtitle}
+            }
+            \italiccorrection
+        \endgroup
+        \doifnot {\currentbtxcategory} {techreport} {
+            \doifnotmode {btx:aps:thesis} {
+                \btxdoif{type} {
+                    \btxleftbracket
+                    \btxflush{Word -> type}
+                    \btxrightbracket
+                }
+            }
         }
-        \btxspace
-        \btxflush{chapter}
     }
 \stoptexdefinition
 
-\starttexdefinition btx:aps:publisher
-    \btxdoif {publisher} {
-        \btxflush{publisher}
+% need for a global option to activate or inhibit....
+
+\starttexdefinition btx:aps:optional-title
+    \btxdoif {title} {
+        \btxdoif {file} {
+             % we make the title active, opening file
+             \texdefinition{btx:aps:inject} {url(file:\btxflush{file})}
+        }
+        {
+            \quotation{%
+                \btxflush{Word -> title}
+                \btxdoif {subtitle} {
+                    \btxcolon
+                    \btxflush{Word -> subtitle}
+                }
+            }
+            \btxcomma
+        }
     }
-    \btxdoif {city} {
-        \btxcomma
-        \btxflush{city}
-    }
-    \btxdoif {country} {
-        \btxcomma
-        \btxflush{country}
-    }
-    \btxperiod
 \stoptexdefinition
 
-\starttexdefinition btx:aps:pages-p-or-pp
-    \btxoneorrange {pages} {
-        \btxlabeltext{aps:p}
+\starttexdefinition btx:aps:editor
+    \btxflush{editor}
+    \btxleftparenthesis
+    \btxsingularorplural {editor} {
+        \btxlabeltext{aps:Editor}
     } {
-        \btxlabeltext{aps:pp}
+        \btxlabeltext{aps:Editors}
     }
+    \btxrightparenthesisperiod
 \stoptexdefinition
 
-\starttexdefinition btx:aps:pages
-    \btxdoif {pages} {
+\starttexdefinition btx:aps:author
+    \btxflush{author}
+    \btxdoifelse {collaboration} {
+        \btxleftparenthesis
+        \btxflush{collaboration}
+        \btxrightparenthesiscomma
+    } {
         \btxcomma
-        \btxoneorrange {pages} {
-            \btxlabeltext{aps:p}
-        } {
-            \btxlabeltext{aps:pp}
-        }
-        \btxperiod
-        \btxnbsp
-        \btxflush{pages}
     }
 \stoptexdefinition
 
@@ -181,710 +388,553 @@
     \endgroup
 \stoptexdefinition
 
-\disablemode[btx:aps:edited-book] % hm, ugly
-
-\starttexdefinition btx:aps:note
-    \btxdoif {note} {
+\starttexdefinition btx:aps:editor-in- #title
+    \btxdoifelse {editor} {
+        \btxlabeltext{aps:In}
         \btxspace
-        \btxflush{note}
-        \btxperiod
+        \texdefinition{btx:aps:editor}
+        \btxdoif {#title} {
+            \texdefinition{btx:aps:italic}{Word -> #title}
+        }
+    } {
+        \btxdoif {#title} {
+            \btxlabeltext{aps:In}
+            \btxspace
+            \texdefinition{btx:aps:italic}{Word -> #title}
+        }
     }
 \stoptexdefinition
 
-\starttexdefinition btx:aps:comment
-    \btxdoif {comment} {
+\starttexdefinition btx:aps:editionset
+    \btxdoifelse {edition} {
         \btxspace
-        \btxflush{comment}
-        \btxperiod
-    }
-\stoptexdefinition
-
-\startsetups btx:aps:article
-    \btxdoif {author} {
-        \btxflushauthor {author}
-        \btxspace
-        \btxdoif {key} {
-            \btxsetup{btx:format:key}
-            \btxspace
-        }
-    }
-    \btxdoif {title} {
-        \btxflush{title}
-        \btxperiod
-    }
-    \btxdoifelse {journal} {
-        \btxcomma
-        \btxflush{journal}
-    }
-    \btxdoifelse {volume} {
-        \texdefinition{btx:aps:bold}{volume}
-        \btxdoif {pages} {
-            \btxcomma
-            \btxfirstofrange{pages}
-        }
-    } {
-        \btxdoif {pages} {
-            \btxspace
-            \btxfirstofrange{pages}
-        }
-    }
-    \btxdoif {year} {
-        \btxlparent
-        \btxflush{year}
-        \btxrparent
-    }
-    \btxperiod
-    \texdefinition{btx:aps:note}
-    \texdefinition{btx:aps:comment}
-\stopsetups
-
-\disablemode[btx:apa:edited-book] % hm, ugly
-
-\startsetups btx:aps:book
-    \btxdoif {author} {
-        \btxflushauthor {author}
-        \btxspace
-    } {
-        \btxdoifelse {editor} {
-            \btxflush{editor}
-            \btxcomma
-            \btxsingularorplural {editor} {
-                \btxlabeltext{aps:editor}
+        \doif {\currentbtxcategory} {techreport} {
+            \btxdoifelse {type} {
+                \btxflush{Word -> type}
             } {
-                \btxlabeltext{aps:editors}
+                \btxlabeltext{aps:technicalreport}
             }
-            \btxspace
-            \setmode{btx:apa:edited-book}
-        } {
-            \btxdoif {key} {
-                \btxflush{key}
-                \btxperiod
-            }
+            \setmode{btx:aps:comma}
         }
-    }
-    \btxdoifelse {title} {
-        \btxcomma
-        \texdefinition {btx:apa:italic} {
-            \doifmode {btx:apa:edited-book} {
-                \resetmode{editedbook}
-                \btxdoifelse {volume} {
-                    \btxlabeltext{aps:Number}
-                    \btxnbsp
-                    \btxflush{number}
-                    \btxdoifelse {series} {
-                        \btxlabeltext{aps:in}
-                        \btxnbsp
-                        \btxflush{series}
-                        \btxperiod
-                    } {
-                        \btxdoif {crossref} {
-                            \btxlabeltext{aps:in}
-                            \btxnbsp
-                            \btxflush{crossref}
-                            \btxperiod
-                        }
-                    }
-                } {
-                    \insertseries{ }{.}{}
-                }
-            } {
-                   \btxdoif {crossref} {
-                        \texdefinition {btx:aps:chapter}
-                        \btxdoif {pages} {
-                            \btxcomma
-                            \btxflush{pages}
-                            \texdefinition{btx:aps:pages-p-or-pp}
-                        }
-                        \btxperiod
-                        \btxdoif {volume} {
-                            \btxlabeltext{aps:Volume}
-                            \btxnbsp
-                            \btxflush{volume}
-                            \btxspace
-                            \btxlabeltext{aps:of}
-                            \btxnbsp
-                        }%
-                        \btxflush{crossref}
-                } {
-                    \btxdoif {volume} {
-                        \btxcomma
-                        \btxlabeltext{aps:volume}
-                        \btxnbsp
-                        \btxflush{volume}
-                        \btxdoif {series} {
-                            \btxspace
-                            \btxlabeltext{aps:of}
-                            \btxnbsp
-                            \texdefinition {btx:aps:italic} {
-                                \btxflush{series}
-                            }
-                        }
-                        \btxdoif {chapter} {
-                            \btxcomma
-                            \btxflush{chapter}
-                        }
-                        \texdefinition{btx:aps:pages}
-                        \btxperiod
-                    }
-                }
-            }
-        }
-    } {
-        \btxspace
-    }
-    \btxdoif {year} {
-        \btxlparent
-        \texdefinition{btx:aps:publisher}
-        \btxflush{year}
-        \btxrparent
-        \btxdoif {edition} {
-            \btxcomma
-            \btxflush{edition}
-            \btxspace
-            \btxlabeltext{aps:edition}% ed
-        }
-    }
-    \btxperiod
-    \texdefinition{btx:aps:note}
-\stopsetups
-
-\startsetups btx:aps:inbook
-   \btxdoifelse {authors} {
-        \btxflushauthor {author}
-    } {
-        \btxdoifelse {editor} {
-            \btxflush{editor}
-            \btxcomma
-            \btxsingularorplural {
-                \btxlabeltext{aps:editor}
-            } {
-                \btxlabeltext{aps:editors}
-            }
-            \setmode{btx:aps:edited-book}
-        } {
-            \btxdoif {key} {
-                \btxsetup{btx:format:key}
-                \btxperiod
-            }
-        }
-    }
-    \btxdoif {title} {
-        \btxcomma
-        \texdefinition{btx:aps:italic}{title}
-        \btxdoif {year} {
-            \btxlparent
-            \texdefinition{btx:aps:publisher}
-            \btxflush{year}
-            \btxrparent
-            \btxdoif {edition} {
-                \btxcomma
-                \btxflush{edition}
-                \btxspace
-                \btxlabeltext{aps:edition}
-                \btxperiod
-            }
-        }
-        \doifmodeelse {btx:aps:edited-book} {
-            \resetmode{btx:aps:edited-book}
-            \btxdoifelse {volume} {
-                \btxspace
-                \btxlabeltext{aps:volume}% vol. (todo: add period to abbreviation)
-                \btxnbsp
-                \btxflush{volume}
-                \btxdoifelse {series} {
-                    \btxspace
-                    \btxlabeltext{aps:in}
-                    \btxnbsp
-                    \btxflush{series}
-                } {
-                    \btxdoifelse {crossref} {
-                        \btxspace
-                        \btxlabeltext{aps:in}
-                        \btxnbsp
-                        \btxflush{crossref}
-                    }
-                }
-                \btxperiod
-            } {
-                {\insertseries{ }{.}{} }%
-            }
-        } {
-            \btxdoifelse {crossref} {
-                \btxdoif {chapter} {
-                    \btxcomma
-                    \btxflush{chapter}
-                }
-                \texdefinition{btx:aps:pages}
-                \btxperiod
-                \btxdoif {volume} {
-                    \btxlabeltext{aps:Volume}
-                    \btxnbsp
-                    \btxflush{volume}
-                    \btxspace
-                    \btxlabeltext{aps:of}
-                    \btxnbsp
-                }
-                % weird:
-                \btxflush{crossref}
-            } {
-                \btxdoif {volume} {
-                    \btxcomma
-                    \btxlabeltext{aps:volume}% vol.
-                    \btxnbsp
-                    \btxflush{volume}
-                    \btxdoif {series} {
-                        \btxnbsp
-                        \btxlabeltext{aps:of}
-                        \btxnbsp
-                        \texdefinition{btx:aps:italic}{
-                            \btxflush{series}
-                        }
-                    }
-                }
-                \btxdoif {chapter} {
-                    \btxcomma
-                    \btxflush{chapter}
-                }
-                \btxdoif {pages} {
-                    \btxcomma
-                    \btxflush{pages}
-                    \texdefinition{btx:aps:pages-p-or-pp}
-                }
-                \btxperiod
-            }
-        }
-    }
-    \texdefinition{btx:aps:note}
-\stopsetups
-
-\startsetups btx:aps:booklet
-    \btxdoif {author} {
-        \btxflushauthor {author}
-        \btxspace
-    } {
-        \btxdoif {key} {
-            \btxsetup{btx:format:key}
-            \btxperiod
-        }
-    }
-    \btxdoif {title} {
-        \btxflush{title}
-        \btxdoif {series} {
-            \btxlparent
-            \btxflush{series}
-            \btxrparent
-        }
-        \btxperiod
-    }
-    \btxdoif {year} {
-        \btxlparent
-        \texdefinition{btx:aps:publisher}
-        \btxflush{year}
-        \btxrparent
-        \btxdoif {edition} {
-            \btxcomma
-            % todo: st nd rd th
+        \doif {\btxfoundname{edition}} {edition} {
+            \doifmode {btx:aps:comma}
+                {\btxcomma}
             \btxflush{edition}
             \btxspace
             \btxlabeltext{aps:edition}
+            \setmode{btx:aps:comma}
         }
-        \btxperiod
-    }
-    \btxdoif {pages} {
-        \btxflush{pages}
-        \texdefinition{btx:aps:pages-p-or-pp}
-        \btxperiod
-    }
-    \texdefinition{btx:aps:note}
-\stopsetups
-
-\startsetups btx:aps:manual
-    \btxdoif {title} {
-        \texdefinition {btx:aps:italic} {
-            \btxflush{title}
-        }
-        \btxdoif {series} {
-            \btxlparent
-            \btxflush{series}
-            \btxrparent
-        }
-        \btxperiod
-    }
-    \btxdoifelse {year} {
-        \btxlparent
-        \btxdoif {organization} {
-            \btxflush{organization}
-            \btxcomma
-        }
-        \btxdoif {city} {
-            \btxflush{organization}
-            \btxcomma
-        }
-        \btxflush{year}
-        \btxrparent
-        % st\or nd\or rd\else th\fi
-        \btxdoif {edition} {
-            \btxcomma
-            \btxflush{edition}
-            \btxspace
-            \btxlabeltext{aps:edition}% ed
-        }
-        \btxperiod
-    }
-    \btxdoif {pages} {
-        \btxflush{pages}
-        \texdefinition{btx:aps:pages-p-or-pp}
-        \btxperiod
-    }
-    \texdefinition{btx:aps:note}
-\stopsetups
-
-\startsetups btx:aps:incollection
-    \btxdoifelse {author} {
-        \btxflushauthor {author}
-    } {
-        \btxdoif {key} {
-            \btxsetup{ntx:format:key}
-            \btxcomma
-        }
-    }
-    \btxdoifelse {title} {
-        \btxcomma
-        \btxlabeltext{aps:in}
-        \btxspace
-        \texdefinition{btx:aps:italic} {title}
-        \btxdoifelse {editor} {
-            \btxcomma
-            \btxlabeltext{aps:edited} % edited by
-            \btxspace
-            \btxflush{edited}
-        } {
-            \btxdoif {series} {
-                \btxdoifelse {volume} {
-                    \btxcomma
-                    \btxlabeltext{aps:number}
-                    \btxspace
-                    \btxflush{volume}
-                    \btxnbsp
-                    \btxlabeltext{aps:in}
-                } {
-                    \btxspace
-                }
-                \btxflush{series}
-             }
-        }
-        \btxdoif {chapter} {
-            \btxcomma
-            \btxflush{chapter}
-        }
-        \btxspace
-        \btxdoif {year} {
-            \btxlparent
-            \btxflush{year}
-            \btxrparent
-            \texdefinition{btx:aps:publisher}
-            \btxdoif {edition} {
-                \btxcomma
-                \btxflush{edition}
-                \btxlabeltext{aps:edition}% ed.
+        \btxdoif {volume} {
+            \doifmode {btx:aps:comma}
+                {\btxcomma}
+            \btxoneorrange {volume} {
+                \btxlabeltext{aps:Volume}
+            } {
+                \btxlabeltext{aps:Volumes}
             }
-            \texdefinition{btx:aps:pages}
+            \btxspace
+            \btxflush{volume}
+            \setmode{btx:aps:comma}
+        }
+        \btxdoif {number} {
+            \doifmode {btx:aps:comma}
+                {\btxcomma}
+            \btxlabeltext{aps:Number}
+            \btxspace
+            \btxflush{number}
+            \setmode{btx:aps:comma}
+        }
+        \btxdoif {pages} {
+            \doifmode {btx:aps:comma}
+                {\btxcomma}
+            \btxoneorrange {pages} {
+                \btxlabeltext{aps:p}
+            } {
+                \btxlabeltext{aps:pp}
+            }
+            \btxspace
+            \btxflush{pages}
         }
         \btxperiod
     } {
-        \btxlabeltext{aps:In}
-        \btxdoif {crossref} {
-            \btxflush{crossref}
-        }
-        \btxdoif {chapter} {
-            \btxcomma
-            \btxflush{chapter}
-            \btxspace
-        }
-        \texdefinition{btx:aps:pages}
-        \btxperiod
-    }
-    \texdefinition{btx:aps:note}
-\stopsetups
-
-\startsetups btx:aps:inproceedings
-    \btxdoif {author} {
-        \btxflushauthor{author}
-        \btxspace
-    }
-    \btxdoifelse {title} {
-        \texdefinition {btx:aps:italic} {
-            \btxflush{ title}
-        }
-        \btxdoif {editor} {
-            \btxcomma
-            \btxlabeltext{aps:edited}% edited by
-            \btxspace
-            \btxflush{editor}
-        }
-        \btxdoif {chapter} {
-            \btxcomma
-            \btxflush{chapter}
-        }
-        \btxdoif {year} {
-            \btxlparent
-            \btxflush{year}
-            \btxdoifelse {organization} {
-                \btxcomma
-                \btxflush{organization}
-            }
-            \texdefinition{btx:aps:publisher}
-            \btxdoif {city} {
-                \btxcomma
-                \btxflush{city}
-            }
-            \btxrparent
-        }
-        \btxdoif {series} {
-            \btxcomma
-            \btxdoif {volume} {
-                \btxlabeltext{aps:volume}% vol.
-                \btxspace
-                \btxflush{volume}
-                \btxspace
-                \btxlabeltext{aps:of}
-            }
-            \texdefinition {btx:aps:italic} {
-                \btxflush{series}
-            }
-        }
-        \texdefinition{btx:aps:pages}
-        \btxperiod
-    } {
-        \btxspace
-        \btxlabeltext{aps:In}
-        \btxdoif {crossref} {
-            \btxflush{crossref}
-        }
-        \btxdoif {chapter} {
-            \btxcomma
-            \btxflush{chapter}
-        }
-        \texdefinition{btx:aps:pages}
-        \btxperiod
-    }
-    \texdefinition{btx:aps:note}
-\stopsetups
-
-\startsetups btx:aps:proceedings
-    \btxdoifelse {editor} {
-        \btxflush{editor}
-        \btxcomma
-        \btxsingularorplural {editor} {
-            \btxlabeltext{aps:editor}% ed
-        } {
-            \btxlabeltext{aps:editors}% eds
-        }
-        \setmode{btx:aps:edited-book}
-    } {
-        \btxdoif {key} {
-            \btxsetup{btx:format:key}
-            \btxspace
+        \doif {\currentbtxcategory} {techreport} {
+            \btxleftparenthesis
+            \btxlabeltext{aps:technicalreport}
+            \btxrightparenthesisperiod
         }
     }
-    \btxdoif {title} {
-        \texdefinition {btx:aps:italic} {
-            \btxflush{title}
-        }
-        \btxdoif {series} {
-            \bxtif {volume} {
-                \btxcomma
-                \btxlabeltext{aps:number}
-                \btxspace
-                \btxflush{volume}
-                \btxnbsp
-                \btxlabeltext{aps:in}
-            }
-            \btxspace
-            \btxflush{series}
-        }
-        \btxdoif {chapter} {
-            \btxcomma
-            \btxflush{chapter}
-            \btxspace
-        }
-        \btxdoif {year} {
-            \btxlparent
-            \btxdoif {organization} {
-                \btxflush{organization}
-                \btxcomma
-            }
-            \texdefinition{btx:aps:publisher}
-            \btxflush{year}
-            \btxrparent
-        }
-        \texdefinition{btx:aps:pages}
-        \btxdoif {city} {
-            \btxcomma
-            \btxflush{city}
-        }
-    }
-    \texdefinition{btx:aps:note}
-\stopsetups
-
-\starttexdefinition btx:aps:thesis #field
-    \btxdoif {author} {
-        \btxflushauthor {author}
-        \btxcomma
-    }
-    \btxdoifelse {type} {
-        \btxflush{type}
-        \btxcomma
-    } {
-        \btxlabeltext{aps:#field}
-    }
-    \texdefinition{btx:aps:publisher}
-    \btxdoifelse {year} {
-        \btxlparent
-        \btxflush{year}
-        \btxrparent
-    }
-    \btxdoifelse {pages} {
-        \btxcomma
-        \btxflush{pages}
-    }
-    \texdefinition{btx:aps:note}
 \stoptexdefinition
 
-\startsetups btx:aps:mastersthesis
-    \texdefinition{btx:aps:thesis}{mastersthesis}
+\starttexdefinition btx:aps:journal-volumeset-year
+    \btxdoif {journal} {
+        % expandedjournal abbreviatedjournal
+        \btxflush{expandedjournal -> journal}
+        % A newspaper may not have a volume but may have a number!
+        \btxdoifelse {volume} {
+            \btxspace
+            \texdefinition{btx:aps:bold}{volume}
+            \btxdoif {number} {
+                \removeunwantedspaces(
+                \btxflush{number}
+                \btxrightparenthesiscomma
+            }
+        } {
+            \btxdoif {number} {
+                \btxspace
+                \btxflush{number}
+                \btxcomma
+            }
+        }
+        \btxdoif {number} {
+            \btxspace
+            \btxflush{pages}
+        }
+        \btxleftparenthesis
+        \btxdoifelse {year} {
+            \btxflush{year}
+        } {
+            \btxlabeltext{aps:Advanced}
+        }
+        \btxrightparenthesis
+        \btxperiod
+    }
+\stoptexdefinition
+
+\definebreakpoints[doi]
+\definebreakpoint [doi][:][nleft=3,type=1]
+\definebreakpoint [doi][/][nleft=3,type=1]
+\definebreakpoint [doi][-][nleft=3,type=1]
+\definebreakpoint [doi][.][nleft=3,type=1]
+
+\starttexdefinition btx:aps:url
+    % use \btxentry here?
+    \btxspace
+    \btxlabeltext{aps:Retrieved}
+    \btxspace
+    \begingroup
+        \setbreakpoints[doi]
+        \btxdoifelseinteractive {url} {
+            \goto {
+                \btxflush{url}
+            } [
+                url(\btxflush{url})
+            ]
+        } {
+            \btxflush{url}
+        }
+    \endgroup
+\stoptexdefinition
+
+\starttexdefinition btx:aps:doi
+    % use \btxentry here?
+    \btxspace
+    \begingroup
+        \setbreakpoints[doi]
+        \btxdoifelseinteractive {doi} {
+            \goto {
+                doi:\btxflush{doi}
+            } [
+                url(http://dx.doi.org/\btxflush{doi})
+            ]
+        } {
+            doi:\btxflush{doi}
+        }
+    \endgroup
+\stoptexdefinition
+
+\starttexdefinition btx:aps:isbn
+    % also issn - see publ-imp-aps.lua
+    \btxdoif {isbn} {
+        \btxleftparenthesis
+        \WORD{\btxfoundname{isbn}}:\btxspace
+        \btxflush{isbn}
+        \btxrightparenthesis
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:aps:note
+    % grouping could indeed be useful for note.
+    \btxdoif {note} {
+        \btxspace
+        {\btxflush{note}}
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:aps:url-note-doi
+    \doif {\btxfoundname{doi}} {url} {
+        \texdefinition{btx:aps:url}
+    }
+    \texdefinition{btx:aps:isbn}
+    \texdefinition{btx:aps:note}
+    \doif {\btxfoundname{doi}} {doi} {
+        \texdefinition{btx:aps:doi}
+    }
+    \removeunwantedspaces
+\stoptexdefinition
+
+\starttexdefinition btx:aps:publisher-wherefrom-year
+    \btxleftparenthesis
+    \btxflush{publisher}
+    \btxdoifelse {address} {
+        \btxdoif {publisher} {
+            \btxcomma
+        }
+        \btxflush{address}
+        \btxdoif {country} {
+            \btxcomma
+            \btxflush{country}
+        }
+        \btxcomma
+    } {
+        \btxdoif {publisher} {
+            \btxcomma
+        }
+    }
+    \btxdoifelse {year} {
+        \btxflush{year}
+    } {
+        \btxlabeltext{aps:Advanced}
+    }
+    \btxrightparenthesis
+\stoptexdefinition
+
+% Then by category
+
+% An article from a journal
+% Required fields: author or editor or title, journal, (year).
+% Optional fields: volume, number, pages, type, doi, url, note.
+% Note that bibtex (and tools) do not include editor (e.g. special issue or section)
+
+\startsetups btx:aps:article
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:optional-title}
+    \texdefinition{btx:aps:journal-volumeset-year}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% An article from a magazine.
+% Required fields: author or title, journal, (year).
+% Optional fields: volume, number, pages, type, month, day, doi, url, note.
+
+\startsetups btx:aps:magazine
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:optional-title}
+    \texdefinition{btx:aps:journal-volumeset-year}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% An article from a newspaper.
+% Required fields: author or title, journal, (year).
+% Optional fields: volume, number, pages, type, month, day, doi, url, note.
+
+\startsetups btx:aps:newspaper
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:optional-title}
+    \texdefinition{btx:aps:journal-volumeset-year}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% A book with an explicit publisher.
+% Required fields: author or editor or publisher, title, (year).
+% Optional fields: volume or number, series, address, edition, month, day, note.
+
+% todo: series?
+
+\startsetups btx:aps:book
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% A part of a book, which may be a chapter (or section or whatever) and/or a range of pages.
+% Required fields: author or editor, title, chapter and/or pages, publisher, year.
+% Optional fields: volume or number, series, type, address, edition, month, note.
+
+% todo: series?
+
+\startsetups btx:aps:inbook
+    \texdefinition{btx:aps:author}
+    \btxdoif {chapter} {
+        \btxflush{Word -> chapter}
+        \btxspace
+    }
+    \texdefinition{btx:aps:editor-in-}{title}
+    \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% A part of a book having its own title.
+% Required fields: author, title, booktitle, publisher, year.
+% Optional fields: editor, volume or number, series, type, chapter, pages, address, edition, month, note.
+
+% todo: series?
+
+\startsetups btx:aps:incollection
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \texdefinition{btx:aps:editor-in-}{booktitle}
+    \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% The proceedings of a conference.
+% Required fields: title, year.
+% Optional fields: editor, volume or number, series, address, month, organization, publisher, note.
+% todo: series?
+
+\startsetups btx:aps:proceedings
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \btxdoif {editor} {
+        \btxdoif {organization} {
+            \btxspace
+            \btxflush{organization}
+            \btxcomma
+        }
+    }
+    \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% An article in a conference proceedings.
+% Required fields: author, title, booktitle, year.
+% Optional fields: editor, volume or number, series, pages, address, month, organization, publisher, note.
+% todo: series?
+
+\startsetups btx:aps:inproceedings
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \texdefinition{btx:aps:editor-in-}{booktitle}
+    \btxdoif {organization} {
+        \btxspace
+        \btxflush{organization}
+        \btxcomma
+    }
+    \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+\startsetups btx:aps:conference
+    \fastsetup{btx:aps:inproceedings}
+\stopsetups
+
+% A thesis.
+% Required fields: author, title, school, year.
+% Optional fields: type, address, month, note.
+
+\startsetups btx:aps:thesis
+    \setmode{btx:aps:thesis}
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \btxleftparenthesis
+    \btxdoifelse {type} {
+        \btxflush{Word -> type}
+    } {
+        \Word{\btxlabeltext{aps:\currentbtxcategory}}
+    }
+    \btxrightparenthesis
+    \btxdoif {school} {
+        \btxperiod
+        \btxflush{school}
+    }
+    \btxdoif {address} {
+        \btxdoifelse {school} {
+            \btxcomma
+        } {
+            \btxperiod
+        }
+        \btxflush{address}
+        \btxdoif {country} {
+            \btxcomma
+            \btxflush{country}
+        }
+    }
+    \btxperiod
+    \texdefinition{btx:aps:url-note-doi}
 \stopsetups
 
 \startsetups btx:aps:phdthesis
-    \texdefinition{btx:aps:thesis}{phdthesis}
+    \fastsetup{btx:aps:thesis}
 \stopsetups
+
+\startsetups btx:aps:mastersthesis
+    \fastsetup{btx:aps:thesis}
+\stopsetups
+
+% A work that is printed and bound, but without a named publisher or sponsoring institution.
+% Required field: title.
+% Optional fields: author, howpublished, address, month, year, note.
+
+\startsetups btx:aps:booklet
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% Technical documentation.
+% Required field: title.
+% Optional fields: author, organization, address, edition, month, year, note.
+
+\startsetups btx:aps:manual
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% A report published by a school or other institution, usually numbered within a series.
+% Required fields: author, title, institution, year.
+% Optional fields: type, number, address, month, note.
 
 \startsetups btx:aps:techreport
-    \btxdoif {author} {
-        \btxflushauthor{author}
-        \btxcomma
-    }
-    \btxdoif {title} {
-        \texdefinition {btx:apa:italic} {
-            \btxflush{title}
-            \btxdoifelse {series} {
-                \btxcomma
-                \btxlparent
-                \btxflush{series}
-                \btxrparent
-            } {
-                \btxspace
-            }
-        }
-    }
-    \btxdoifelse {type} {
-        \btxflush{type}
-    } {
-        \btxlabeltext{aps:techreport}
-    }
-    \btxdoif {volume} {
-        \btxspace
-        \btxflush{volume}
-    }
-    \btxcomma
-    \texdefinition{btx:aps:publisher}
-    \btxdoif {year} {
-        \btxlparent
-        \btxflush{year}
-        \btxrparent
-    }
-    \btxdoif {pages} {
-        \btxlcomma
-        \btxflush{pages}
-    }
-    \texdefinition{btx:aps:note}
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:editionset}
+    \texdefinition{btx:aps:url-note-doi}
 \stopsetups
 
-\startsetups btx:aps:misc
-    \btxdoifelse {author} {
-        \btxflushauthor{author}
-        \btxdoif {title} {
-            \btxcomma
-            \texdefinition {btx:aps:italic} {
-                \btxflush{title}
-            }
-        }
-    } {
-        \btxdoifelse {title} {
-            \btxdoifelse {key} {
-                \btxsetup{btx:format:key}
-                \btxcomma
-            }
-            \texdefinition {btx:aps:italic} {
-                \btxflush{title}
-            }
-        } {
-            \btxdoifelse {key} {
-                \btxsetup{btx:format:key}
-            }
-        }
-    }
-    \btxdoif {series} {
-        \btxlparent
-        \btxflush{series}
-        \btxrparent
-    }
-    \btxdoifelse {year} {
-        \btxlparent
-        \texdefinition{btx:aps:publisher}
-        \btxflush{year}
-        \btxrparent
-    } {
-        \btxdoif {published} {
-            \btxcomma
-            \btxflush{published}
-        }
-    }
-    \btxdoif {pages} {
-        \btxcomma
-        \btxflush{pages}
-    }
-    \btxdoif {print} {
-        % eprint
-        \btxcomma
-        \btxflush{print}
-    }
-   \texdefinition{btx:aps:note}
-\stopsetups
+% A document having an author and title, but not formally published.
+% Required fields: author, title, note.
+% Optional fields: month, year.
 
 \startsetups btx:aps:unpublished
-    \btxdoif {author} {
-        \btxflushauthor{author}
-    }
-    \btxdoif {title} {
-        \texdefinition {btx:aps:italic} {
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% A patent. Note that this category was not defined with BIBTEX. Below from JabRef:
+% Required fields: nationality, number, year, yearfiled
+% Optional fields: author, title, assignee, address, type, number, day, dayfiled, month, monthfiled, note, url
+% Also optional: publisher
+
+% todo: yearfiled, monthfiled, dayfiled
+
+\startsetups btx:aps:patent
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \begingroup
+        \it
+        \btxdoif {nationality} {
             \btxspace
-            \btxflush{title}
-            \btxdoif {series} {
-                \btxlparent
-                \btxflush{series}
-                \btxrparent
+            \btxflush{nationality}
+        }
+        \btxspace
+        \btxlabeltext{aps:patent}
+        \btxdoif {number} {
+            \btxspace
+            \btxlabeltext{aps:Number}
+            \btxspace
+            \btxflush{number}
+        }
+        \btxperiod
+        \italiccorrection
+    \endgroup
+    \btxdoifelse {author} {
+        \btxdoifelse {country} {
+            \btxspace
+            \btxdoif {address} {
+                \btxflush{address}
+                \btxcomma
+            }
+            \btxflush{country}
+            \btxdoifelse {assignee}
+                {\btxcolon} {\btxperiod}
+        } {
+            \btxdoifelse {address} {
+                \btxspace
+                \btxflush{address}
+                \btxdoifelse {assignee}
+                    {\btxcolon} {\btxperiod}
+            } {
+                \btxdoifelse {assignee}
+                    {\btxspace} {}
             }
         }
+        \btxdoif {assignee} {
+            \btxflush{assignee}
+            \btxperiod
+        }
+    } {
+        \texdefinition{btx:aps:publisher-wherefrom-year}
     }
-    \btxdoif {type} {
-        \btxlparent
-        \btxflush{type}
-        \btxrparent
-    }
-    \btxlparent
-    \btxlabeltext{aps:unpublished}% new label
-    \btxdoifelse {year} {
-        \btxcomma
-        \btxflush{year}
-    }
-    \btxrparent
-    \btxdoif {pages} {
-        \btxcomma
-        \btxflush{pages}
-        \btxspace
-    }
+    \texdefinition{btx:aps:url}
     \texdefinition{btx:aps:note}
+\stopsetups
+
+% Electronic. Note that this category was not defined with BIBTEX. Below from JabRef:
+% Required fields: title
+% Optional fields: address, author, howpublished, month, note, organization, url, year, doi
+% Also optional: type
+
+% Like Misc below but includes organization.
+
+\startsetups btx:aps:electronic
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \btxdoif {organization} {
+        \btxspace
+        \btxflush{organization}
+        \btxperiod
+    }
+    \btxdoif {howpublished} {
+        \btxspace
+        \btxflush{howpublished}
+        \btxperiod
+    }
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% Other. Note that this category was not defined with BIBTEX. Below from JabRef:
+% Required fields: author or title, year
+% Optional fields: note, doi, url
+
+\startsetups btx:aps:other
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% Use this type when nothing else fits.
+% Required fields: none.
+% Optional fields: author, title, howpublished, month, year, note.
+
+\startsetups btx:aps:misc
+    \texdefinition{btx:aps:author}
+    \texdefinition{btx:aps:title}
+    \btxdoif {howpublished} {
+        \btxspace
+        \btxflush{howpublished}
+        \btxperiod
+    }
+    \texdefinition{btx:aps:url-note-doi}
+\stopsetups
+
+% If all else fails to match:
+
+\startsetups btx:aps:literal
+    \btxdoif {text} {
+        \btxflush{text}
+    }
+\stopsetups
+
+%D Experiment:
+
+\startsetups btx:aps:lefttext
+    \currentbtxlefttext
+\stopsetups
+
+\startsetups btx:aps:righttext
+    \currentbtxrighttext
 \stopsetups
 
 \stopbtxrenderingdefinitions

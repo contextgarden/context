@@ -47,6 +47,8 @@ local lpdf           = lpdf
 local lpdf_epdf      = { }
 lpdf.epdf            = lpdf_epdf
 
+local pdf_open       = epdf.open
+
 local report_epdf    = logs.reporter("epdf")
 
 local getDict, getArray, getReal, getNum, getString, getBool, getName, getRef, getRefNum
