@@ -809,7 +809,7 @@
      \ifinsidecolumns\else\ifcase\c_strc_itemgroups_column_depth
        \global\c_strc_itemgroups_column_depth\c_strc_itemgroups_nesting % global ?
        \strc_itemgroups_before_command
-       \strc_itemgroups_tag_start_group
+      %\strc_itemgroups_tag_start_group
        \strc_itemgroups_start_columns
      \fi\fi
    \fi
@@ -962,7 +962,7 @@
   {\setfalse\c_strc_itemgroups_first
  % \begingroup % (3)
    \ifcase\c_strc_itemgroups_nesting
-                                      % 0
+                                           % 0
    \or
      \strc_itemgroups_start_item_first_one % 1
    \else

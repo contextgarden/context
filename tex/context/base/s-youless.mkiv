@@ -59,9 +59,10 @@
 
         for y=year,year do
 
-            local year  = years[y]
-            local scale = 20
-            local mark  = 3
+            local year    = years[y]
+            local scale   = 20
+            local mark    = 3
+            local maxwatt = specification.maxwatt or year.maxwatt
 
             for m=1,12 do
                 local month = year.months[m]
@@ -69,7 +70,7 @@
                     context.startMPpage { offset = "10pt" }
                     context("linecap := butt; pickup pencircle scaled .5")
 
-                    for i=0,(math.div(year.maxwatt,1000)+1)*1000,100 do
+                    for i=0,(math.div(maxwatt,1000)+1)*1000,100 do
                         context("draw (%s,%s) -- (%s,%s) withcolor .6white ;",0,i/scale,31 * 24,i/scale)
                     end
 
@@ -123,7 +124,7 @@
                         context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset,0,xoffset,-10)
                     end
 
-                    local max = (math.div(year.maxwatt,1000)+1)
+                    local max = (math.div(maxwatt,1000)+1)
 
                     for i=0,max*1000,1000 do
                         context([[draw textext.lft("%s") shifted (%s,%s) ; ]],i,-10,i/scale)

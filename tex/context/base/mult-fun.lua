@@ -120,5 +120,6 @@ return {
         "startpassingvariable", "stoppassingvariable",
         --
         "eofill", "eoclip",
+        "area"
     },
 }

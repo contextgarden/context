@@ -2289,6 +2289,15 @@ primarydef p snapped s =
     p
 enddef ;
 
+%D Newer:
+
+vardef area expr p =
+    % we could calculate the boundingbox once
+    (xpart llcorner boundingbox p,0) -- p --
+    (xpart lrcorner boundingbox p,0) -- cycle
+enddef ;
+
+
 % vardef somecolor = (1,1,0,0) enddef ;
 
 % fill OverlayBox withcolor (rcomponent somecolor,gcomponent somecolor,bcomponent somecolor) ;
@@ -2334,7 +2343,6 @@ vardef undecorated (text imagedata) text decoration =
     imagedata ;
     currentpicture
 enddef ;
-
 
 if metapostversion < 1.770  :
 

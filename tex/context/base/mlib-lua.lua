@@ -11,10 +11,13 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
 -- maybe we need mplib.model, but how with instances
 
 local type, tostring, select, loadstring = type, tostring, select, loadstring
-local formatters = string.formatters
 local find, gsub = string.find, string.gsub
-local concat = table.concat
-local lpegmatch = lpeg.match
+
+local formatters = string.formatters
+local concat     = table.concat
+local lpegmatch  = lpeg.match
+
+local P, S, Ct = lpeg.P, lpeg.S, lpeg.Ct
 
 local report_luarun = logs.reporter("metapost","lua")
 
@@ -55,6 +58,8 @@ function mp._f_()
     end
 end
 
+local f_code      = formatters["%s return mp._f_()"]
+
 local f_numeric   = formatters["%.16f"]
 local f_pair      = formatters["(%.16f,%.16f)"]
 local f_triplet   = formatters["(%.16f,%.16f,%.16f)"]
@@ -70,11 +75,18 @@ function mp.print(...)
                 buffer[n] = f_numeric(value)
             elseif t == "string" then
                 buffer[n] = value
-            else
+            elseif t == "table" then
+                buffer[n] = "(" .. concat(value,",") .. ")"
+            else -- boolean or whatever
                 buffer[n] = tostring(value)
             end
         end
     end
+end
+
+function mp.numeric(n)
+    n = n + 1
+    buffer[n] = n and f_numeric(n) or "0"
 end
 
 function mp.pair(x,y)
@@ -104,6 +116,55 @@ function mp.quadruple(w,x,y,z)
     end
 end
 
+function mp.path(t,connector,cycle)
+    if type(t) == "table" then
+        local tn = #t
+        if tn > 0 then
+            if connector == true then
+                connector = "--"
+                cycle     = true
+            elseif not connector then
+                connector = "--"
+            end
+            local ti = t[1]
+            n = n + 1 ; buffer[n] = f_pair(ti[1],ti[2])
+            for i=2,tn do
+                local ti = t[i]
+                n = n + 1 ; buffer[n] = connector
+                n = n + 1 ; buffer[n] = f_pair(ti[1],ti[2])
+            end
+            if cycle then
+                n = n + 1 ; buffer[n] = connector
+                n = n + 1 ; buffer[n] = "cycle"
+            end
+        end
+    end
+end
+
+function mp.size(t)
+    n = n + 1
+    buffer[n] = type(t) == "table" and f_numeric(#t) or "0"
+end
+
+-- experiment: names can change
+
+local datasets = { }
+mp.datasets    = datasets
+
+function datasets.load(tag,filename)
+    if not filename then
+        tag, filename = file.basename(tag), tag
+    end
+    local data = mp.dataset(io.loaddata(filename) or "")
+    datasets[tag] = {
+        Data = data,
+        Line = function(n) mp.path(data[n or 1]) end,
+        Size = function()  mp.size(data)         end,
+    }
+end
+
+--
+
 local replacer = lpeg.replacer("@","%%")
 
 function mp.format(fmt,...)
@@ -126,7 +187,53 @@ function mp.quoted(fmt,s,...)
     end
 end
 
-local f_code = formatters["%s return mp._f_()"]
+function mp.n(t)
+    return type(t) == "table" and #t or 0
+end
+
+local whitespace = lpeg.patterns.whitespace
+local newline    = lpeg.patterns.newline
+local setsep     = newline^2
+local comment    = (S("#%") + P("--")) * (1-newline)^0 * (whitespace - setsep)^0
+local value      = (1-whitespace)^1 / tonumber
+local entry      = Ct( value * whitespace * value)
+local set        = Ct((entry * (whitespace-setsep)^0 * comment^0)^1)
+local series     = Ct((set * whitespace^0)^1)
+
+local pattern    = whitespace^0 * series
+
+function mp.dataset(str)
+    return lpegmatch(pattern,str)
+end
+
+-- \startluacode
+--     local str = [[
+--         10 20 20 20
+--         30 40 40 60
+--         50 10
+--
+--         10 10 20 30
+--         30 50 40 50
+--         50 20 -- the last one
+--
+--         10 20 % comment
+--         20 10
+--         30 40 # comment
+--         40 20
+--         50 10
+--     ]]
+--
+--     MP.myset = mp.dataset(str)
+--
+--     inspect(MP.myset)
+-- \stopluacode
+--
+-- \startMPpage
+--     color c[] ; c[1] := red ; c[2] := green ; c[3] := blue ;
+--     for i=1 upto lua("mp.print(mp.n(MP.myset))") :
+--         draw lua("mp.path(MP.myset[" & decimal i & "])") withcolor c[i] ;
+--     endfor ;
+-- \stopMPpage
 
 -- function metapost.runscript(code)
 --     local f = loadstring(f_code(code))
@@ -147,40 +254,6 @@ local f_code = formatters["%s return mp._f_()"]
 -- end
 
 local cache, n = { }, 0 -- todo: when > n then reset cache or make weak
-
--- function metapost.runscript(code)
---     if trace_enabled and trace_luarun then
---         report_luarun("code: %s",code)
---     end
---     local f
---     if n > 100 then
---         cache = nil -- forget about caching
---         f = loadstring(f_code(code))
---     else
---         f = cache[code]
---         if not f then
---             f = loadstring(f_code(code))
---             if f then
---                 n = n + 1
---                 cache[code] = f
---             end
---         end
---     end
---     if f then
---         local result = f()
---         if result then
---             local t = type(result)
---             if t == "number" then
---                 return f_numeric(result)
---             elseif t == "string" then
---                 return result
---             else
---                 return tostring(result)
---             end
---         end
---     end
---     return ""
--- end
 
 function metapost.runscript(code)
     local trace = trace_enabled and trace_luarun
@@ -255,10 +328,13 @@ local get_number  = get_numeric
 
 local currentmpx = nil
 
-mp.numeric = function(s) return get_numeric(currentmpx,s) end
-mp.string  = function(s) return get_string (currentmpx,s) end
-mp.boolean = function(s) return get_boolean(currentmpx,s) end
-mp.number  = mp.numeric
+local get = { }
+mp.get    = get
+
+get.numeric = function(s) return get_numeric(currentmpx,s) end
+get.string  = function(s) return get_string (currentmpx,s) end
+get.boolean = function(s) return get_boolean(currentmpx,s) end
+get.number  = mp.numeric
 
 function metapost.initializescriptrunner(mpx,trialrun)
     currentmpx = mpx
