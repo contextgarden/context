@@ -19,18 +19,20 @@ local trace_combining_define    = false  trackers.register("fonts.composing.defi
 trackers.register("fonts.combining",     "fonts.composing.define") -- for old times sake (and manuals)
 trackers.register("fonts.combining.all", "fonts.composing.*")      -- for old times sake (and manuals)
 
-local report_combining = logs.reporter("fonts","combining")
+local report_combining   = logs.reporter("fonts","combining")
 
-local force_combining  = false -- just for demo purposes (see mk)
+local force_combining    = false -- just for demo purposes (see mk)
 
-local allocate         = utilities.storage.allocate
+local allocate           = utilities.storage.allocate
 
 local fonts              = fonts
 local handlers           = fonts.handlers
 local constructors       = fonts.constructors
 
-local registerotffeature = handlers.otf.features.register
-local registerafmfeature = handlers.afm.features.register
+local otf                = handlers.otf
+local afm                = handlers.afm
+local registerotffeature = otf.features.register
+local registerafmfeature = afm.features.register
 
 local unicodecharacters  = characters.data
 local unicodefallbacks   = characters.fallbacks
@@ -302,3 +304,32 @@ end
 -- {'special', 'pdf: /Fm\XX\space Do'},
 -- {'special', 'pdf: Q'},
 -- {'special', 'pdf: Q'},
+
+-- new and experimental
+
+local everywhere = { ["*"] = { ["*"] = true } } -- or: { ["*"] = { "*" } }
+local noflags    = { }
+
+local char_specification = {
+    type     = "ligature",
+    features = everywhere,
+    data     = characters.splits.char,
+    order    = { "char-ligatures" },
+    flags    = noflags,
+    prepend  = true,
+}
+
+local compat_specification = {
+    type     = "ligature",
+    features = everywhere,
+    data     = characters.splits.compat,
+    order    = { "compat-ligatures" },
+    flags    = noflags,
+    prepend  = true,
+}
+
+otf.addfeature("char-ligatures",  char_specification)
+otf.addfeature("compat-ligatures",compat_specification)
+
+registerotffeature { name = 'char-ligatures',   description = 'unicode char specials to ligatures' }
+registerotffeature { name = 'compat-ligatures', description = 'unicode compat specials to ligatures' }

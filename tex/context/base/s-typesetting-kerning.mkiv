@@ -115,15 +115,31 @@
     \getbuffer[showcharacterkerning:explicits]
 \stoptexdefinition
 
+
+\starttexdefinition showcharacterkerningstepscompared #1
+    \definecharacterkerning[crap][factor=\KerningStepFactor]%
+    \setbox0=\ruledhbox{\color[color-1]{#1}\hss}
+    \setbox2=\ruledhbox{\setcharacterkerning[crap]\color[color-2]{#1}}
+    \setbox4=\ruledhbox{\setcharacterkerning[crap]\showfontkerns\showglyphs#1}
+    \xdef\KerningStepPercentage{\ctxlua{context("\letterpercent 0.2f",(1-\number\wd0/\number\wd2)*100)}}
+    \scratchwidth\wd0
+    \hbox{\box0\hskip-\scratchwidth\box2}
+    \par
+    \box4
+\stoptexdefinition
+
 \starttexdefinition showcharacterkerningsteps [#1]
 
     \startTEXpage[\c!offset=1ex]
 
-        \showfontkerns \showglyphs
+        \definecolor[color-1][r=1,t=.5,a=1]
+        \definecolor[color-2][b=1,t=.5,a=1]
 
         \getdummyparameters
           [\s!font=Regular,
            \c!sample={Wat een bende, rommelen met het font design!},
+%            \c!text={een},
+           \c!text={rommelen},
            #1]
 
         \definedfont[\dummyparameter\s!font*default sa 1]
@@ -134,16 +150,25 @@
 
         \blank
 
+        \starttabulate[|cT|p|cT|p|cT|]
+
+        \NC \tt\bf factor \NC \tt\bf sample \NC \tt\bf \letterpercent \NC \tt\bf text \NC \tt\bf \letterpercent \NC \NR \HL
+
         \dostepwiserecurse {00} {95} {05} {
-            \definecharacterkerning[crap][factor=.0\twodigits{##1}]%
-            \begingroup
-                \tttf .0\twodigits{##1}:\space
-            \endgroup
-            \begingroup
-                \setcharacterkerning[crap]\dummyparameter\c!sample\par
-            \endgroup
+            \NC
+                \xdef\KerningStepFactor{\ctxlua{context("\letterpercent 0.3f",####1/1000)}}
+                \KerningStepFactor
+            \NC
+                \showcharacterkerningstepscompared{\dummyparameter\c!sample}
+            \NC
+                \KerningStepPercentage
+            \NC
+                \showcharacterkerningstepscompared{\dummyparameter\c!text}
+            \NC
+                \KerningStepPercentage
+            \NC \NR
         }
-        \removeunwantedspaces
+        \stoptabulate
 
     \stopTEXpage
 

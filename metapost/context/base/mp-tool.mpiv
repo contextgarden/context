@@ -2297,6 +2297,18 @@ vardef area expr p =
     (xpart lrcorner boundingbox p,0) -- cycle
 enddef ;
 
+vardef basiccolors[] =
+    save n ; n := @ mod 7 ;
+    if     n = 1 : red
+    elseif n = 2 : green
+    elseif n = 3 : blue
+    elseif n = 4 : cyan
+    elseif n = 5 : magenta
+    elseif n = 6 : yellow
+    else         : black
+    fi
+enddef ;
+
 
 % vardef somecolor = (1,1,0,0) enddef ;
 

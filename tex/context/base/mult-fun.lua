@@ -99,7 +99,7 @@ return {
      -- "remapcolors", "normalcolors", "resetcolormap", "remapcolor", "remappedcolor",
      -- "recolor", "refill", "redraw", "retext", "untext", "restroke", "reprocess", "repathed",
         "tensecircle", "roundedsquare",
-        "colortype", "whitecolor", "blackcolor",
+        "colortype", "whitecolor", "blackcolor", "basiccolors",
         --
      -- "swappointlabels",
         "normalfill", "normaldraw", "visualizepaths", "naturalizepaths",
@@ -120,6 +120,6 @@ return {
         "startpassingvariable", "stoppassingvariable",
         --
         "eofill", "eoclip",
-        "area"
+        "area",
     },
 }

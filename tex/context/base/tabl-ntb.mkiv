@@ -20,6 +20,8 @@
 %D runtime.
 
 % columndistance 'optimized' ... needs checking
+%
+% we don't need the alignment mechanism .. we can just pack the row in a box
 
 \writestatus{loading}{ConTeXt Table Macros / Natural Tables}
 
@@ -584,9 +586,9 @@
    % local
    \ifcsname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname\fi
    % done
-   \xdef\m_tabl_ntb_before_split{\naturaltablelocalparameter\c!before}% to be checked
-   \xdef\m_tabl_ntb_after_split {\naturaltablelocalparameter\c!after }% to be checked
-   \xdef\m_tabl_ntb_same_page   {\naturaltablelocalparameter\c!samepage}%
+%    \xdef\m_tabl_ntb_before_split{\naturaltablelocalparameter\c!before}% to be checked
+%    \xdef\m_tabl_ntb_after_split {\naturaltablelocalparameter\c!after }% to be checked
+%    \xdef\m_tabl_ntb_same_page   {\naturaltablelocalparameter\c!samepage}%
    \relax}
 
 % we cannot use +n (checking on number/last/first would slow down too much)
@@ -1103,8 +1105,74 @@
 
 \newcount\c_tabl_prelocated_rows % \prelocateTBLrows{1000} may speed up large tables
 
-\def\tabl_ntb_row_start{\t_tabl_ntb_row\emptytoks}
-\def\tabl_ntb_row_stop {\normalexpanded{\t_tabl_ntb{\the\t_tabl_ntb\noexpand\tabl_ntb_row_align_start\the\t_tabl_ntb_row\tabl_ntb_row_align_stop}}}
+% \def\tabl_ntb_row_start{\t_tabl_ntb_row\emptytoks}
+% \def\tabl_ntb_row_stop {\normalexpanded{\t_tabl_ntb{\the\t_tabl_ntb\noexpand\tabl_ntb_row_align_start\the\t_tabl_ntb_row\tabl_ntb_row_align_stop}}}
+
+\def\tabl_ntb_row_start
+  {\t_tabl_ntb_row\emptytoks}
+
+\def\tabl_ntb_row_stop
+  {\ifenableTBLbreak
+     \tabl_ntb_row_stop_split
+   \else
+     \tabl_ntb_row_stop_boxed
+   \fi}
+
+\def\tabl_ntb_row_stop_boxed
+  {\normalexpanded
+     {\t_tabl_ntb
+        {\the\t_tabl_ntb
+         % no need for init
+         \noexpand\tabl_ntb_row_align_start
+         \the\t_tabl_ntb_row
+         \noexpand\tabl_ntb_row_align_stop}}}
+
+\def\tabl_ntb_row_stop_split
+  {\ifcsname\??naturaltableset\m_tabl_tbl_level:\c!y++\the\c_tabl_ntb_current_row\endcsname
+     \tabl_ntb_row_stop_split_yes
+   \else
+     \tabl_ntb_row_stop_split_nop
+   \fi}
+
+\def\tabl_ntb_row_stop_split_nop
+  {\normalexpanded
+     {\t_tabl_ntb
+        {\the\t_tabl_ntb
+         \noexpand\tabl_ntb_row_align_reset
+         \noexpand\tabl_ntb_row_align_start
+         \the\t_tabl_ntb_row
+         \noexpand\tabl_ntb_row_align_stop}}}
+
+\def\tabl_ntb_row_stop_split_yes
+  {\begingroup
+   \csname\??naturaltableset\m_tabl_tbl_level:\c!y++\the\c_tabl_ntb_current_row\endcsname
+   \xdef\m_tabl_ntb_before_split{\naturaltablelocalparameter\c!before}% to be checked
+   \xdef\m_tabl_ntb_after_split {\naturaltablelocalparameter\c!after}% to be checked
+   \xdef\m_tabl_ntb_same_page   {\naturaltablelocalparameter\c!samepage}%
+   \endgroup
+   \normalexpanded
+     {\t_tabl_ntb
+        {\the\t_tabl_ntb
+         \noexpand\tabl_ntb_row_align_set{\m_tabl_ntb_before_split}{\m_tabl_ntb_after_split}{\m_tabl_ntb_same_page}%
+         \noexpand\tabl_ntb_row_align_start
+         \the\t_tabl_ntb_row
+         \noexpand\tabl_ntb_row_align_stop}}}
+
+\def\tabl_ntb_row_align_set#1#2#3%
+  {\noalign{\tabl_ntb_row_align_set_indeed{#1}{#2}{#3}}}
+
+\def\tabl_ntb_row_align_reset
+  {\noalign{\tabl_ntb_row_align_reset_indeed}}
+
+\unexpanded\def\tabl_ntb_row_align_set_indeed#1#2#3%
+  {\xdef\m_tabl_ntb_before_split{#1}%
+   \xdef\m_tabl_ntb_after_split {#2}%
+   \xdef\m_tabl_ntb_same_page   {#3}}
+
+\unexpanded\def\tabl_ntb_row_align_reset_indeed
+  {\global\let\m_tabl_ntb_before_split\empty
+   \global\let\m_tabl_ntb_after_split \empty
+   \global\let\m_tabl_ntb_same_page   \empty}
 
 \def\tabl_ntb_prelocate_error
   {\writestatus\m!system{fatal error: use \string\prelocateTBLrows\space to increase table memory (now: \the\c_tabl_prelocated_rows)}}
@@ -1142,66 +1210,143 @@
 \let\m_tabl_ntb_saved_row\!!zerocount
 \let\m_tabl_ntb_saved_col\!!zerocount
 
-\def\tabl_ntb_row_align_start
-  {\noalign
-     {\tabl_ntb_row_align_reset
-      \bgroup % protect local vars
-        \m_tabl_ntb_before_split
-      \egroup
-      \ifx\m_tabl_ntb_same_page\v!before
-        \unpenalty
-        \nobreak
-      \else\ifx\m_tabl_ntb_same_page\v!both
-        \unpenalty
-        \nobreak
-      \fi\fi}%
-   \tabl_ntb_column_next
-   \kern\dimexpr
-     \d_tabl_ntb_leftmargindistance
-    -\d_tabl_ntb_columndistance
-   \relax}
+% \unexpanded\def\tabl_ntb_row_align_reset
+%   {\global\advance\c_tabl_ntb_row\plusone
+%    \global\c_tabl_ntb_col\zerocount
+%    \global\c_tabl_ntb_spn\zerocount}
+%
+% \def\tabl_ntb_row_align_start % not \unexpanded
+%   {\noalign
+%      {\tabl_ntb_row_align_reset
+%       \bgroup % protect local vars
+%         \m_tabl_ntb_before_split
+%       \egroup
+%       \ifx\m_tabl_ntb_same_page\v!before
+%         \unpenalty
+%         \nobreak
+%       \else\ifx\m_tabl_ntb_same_page\v!both
+%         \unpenalty
+%         \nobreak
+%       \fi\fi}%
+%    \tabl_ntb_column_next
+%    \kern\dimexpr
+%      \d_tabl_ntb_leftmargindistance
+%     -\d_tabl_ntb_columndistance
+%    \relax}
+%
+% \unexpanded\def\tabl_ntb_row_align_stop
+%   {\kern\dimexpr
+%      \d_tabl_ntb_rightmargindistance
+%     -\d_tabl_ntb_columndistance
+%    \relax
+%    \crcr
+%    \noalign
+%      {\nointerlineskip
+%       \ifnum\c_tabl_ntb_row>\c_tabl_ntb_n_of_head_lines
+%         \ifnum\tabl_ntb_get_nob\c_tabl_ntb_row=\zerocount
+%           \unpenalty
+%           \ifx\m_tabl_ntb_same_page\v!after
+%             \nobreak
+%           \else\ifx\m_tabl_ntb_same_page\v!both
+%             \nobreak
+%           \else
+%             \allowbreak
+%           \fi\fi
+%         \fi
+%       \else
+%         \allowbreak % else no proper head split off
+%       \fi
+%       \bgroup % protect local vars
+%         \m_tabl_ntb_after_split
+%       \egroup
+%       \bgroup % protect local vars
+%         \scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
+%         \ifnum\scratchcounter>\c_tabl_ntb_n_of_hdnx_lines\relax
+%           \ifnum\scratchcounter<\c_tabl_ntb_maximum_row\relax
+%             \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
+%             \ifx\p_spaceinbetween\empty\else
+%               \blank[\p_spaceinbetween]%
+%             \fi
+%           \fi
+%         \fi
+%       \egroup}}
 
-\unexpanded\def\tabl_ntb_row_align_reset
+\unexpanded\def\tabl_ntb_row_initialize
   {\global\advance\c_tabl_ntb_row\plusone
    \global\c_tabl_ntb_col\zerocount
    \global\c_tabl_ntb_spn\zerocount}
 
-\unexpanded\def\tabl_ntb_row_align_stop
-  {\kern\dimexpr
-     \d_tabl_ntb_rightmargindistance
-    -\d_tabl_ntb_columndistance
-   \relax
+\def\tabl_ntb_row_align_start
+  {\noalign{\tabl_ntb_row_initialize\tabl_ntb_row_align_start_inject}%
+   \tabl_ntb_column_next
+   \kern\dimexpr\d_tabl_ntb_leftmargindistance-\d_tabl_ntb_columndistance\relax}
+
+\def\tabl_ntb_row_align_stop
+  {\kern\dimexpr\d_tabl_ntb_rightmargindistance-\d_tabl_ntb_columndistance\relax
    \crcr
-   \noalign
-     {\nointerlineskip
-      \ifnum\c_tabl_ntb_row>\c_tabl_ntb_n_of_head_lines
-        \ifnum\tabl_ntb_get_nob\c_tabl_ntb_row=\zerocount
-          \unpenalty
-          \ifx\m_tabl_ntb_same_page\v!after
-            \nobreak
-          \else\ifx\m_tabl_ntb_same_page\v!both
-            \nobreak
-          \else
-            \allowbreak
-          \fi\fi
-        \fi
-      \else
-        \allowbreak % else no proper head split off
-      \fi
-      \bgroup % protect local vars
-        \m_tabl_ntb_after_split
-      \egroup
-      \bgroup % protect local vars
-        \scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
-        \ifnum\scratchcounter>\c_tabl_ntb_n_of_hdnx_lines\relax
-          \ifnum\scratchcounter<\c_tabl_ntb_maximum_row\relax
-            \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
-            \ifx\p_spaceinbetween\empty\else
-              \blank[\p_spaceinbetween]%
-            \fi
-          \fi
-        \fi
-      \egroup}}
+   \noalign{\tabl_ntb_row_align_stop_inject}}
+
+\unexpanded\def\tabl_ntb_before_page
+  {\ifx\m_tabl_ntb_same_page\v!before
+   % \blank[\v!samepage,\v!strong]%
+     \unpenalty
+     \nobreak
+   \else\ifx\m_tabl_ntb_same_page\v!both
+   % \blank[\v!samepage,\v!strong]%
+     \unpenalty
+     \nobreak
+   \fi\fi}
+
+\unexpanded\def\tabl_ntb_after_page
+  {\ifnum\c_tabl_ntb_row>\c_tabl_ntb_n_of_head_lines
+     \ifnum\tabl_ntb_get_nob\c_tabl_ntb_row=\zerocount
+       \unpenalty
+       \ifx\m_tabl_ntb_same_page\v!after
+       % \blank[\v!samepage,\v!strong]%
+         \nobreak
+       \else\ifx\m_tabl_ntb_same_page\v!both
+       % \blank[\v!samepage,\v!strong]%
+         \nobreak
+       \else
+       % \blank[\v!preference,\v!weak]%
+         \allowbreak
+       \fi\fi
+     \fi
+   \else
+   % \blank[\v!preference,\v!weak]%
+     \allowbreak % else no proper head split off
+   \fi}
+
+\unexpanded\def\tabl_ntb_inbetween
+  {\scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
+   \ifnum\scratchcounter>\c_tabl_ntb_n_of_hdnx_lines\relax
+     \ifnum\scratchcounter<\c_tabl_ntb_maximum_row\relax
+       \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
+       \ifx\p_spaceinbetween\empty\else
+         \blank[\p_spaceinbetween]%
+       \fi
+     \fi
+   \fi}
+
+\unexpanded\def\tabl_ntb_row_align_start_inject
+  {\bgroup % protect local vars
+     \m_tabl_ntb_before_split
+   \egroup
+   \ifenableTBLbreak
+     \tabl_ntb_before_page
+   \fi}
+
+\unexpanded\def\tabl_ntb_row_align_stop_inject
+  {\nointerlineskip
+   \ifenableTBLbreak
+     \tabl_ntb_after_page
+   \fi
+   \bgroup % protect local vars
+     \m_tabl_ntb_after_split
+   \egroup
+   \bgroup % protect local vars
+     \tabl_ntb_inbetween
+   \egroup}
 
 \def\tabl_ntb_flush_content
   {\the\everyTABLEpass

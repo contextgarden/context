@@ -891,45 +891,103 @@ lpegpatterns.toshape = toshape -- old ones ... will be overloaded
 -- function characters.upper (str) return lpegmatch(toupper,str) end
 -- function characters.shaped(str) return lpegmatch(toshape,str) end
 
-local lhash = { }
-local uhash = { }
-local shash = { }
 
-for k, v in next, characters.data do
- -- if k < 0x11000 then
-        local l = v.lccode
-        if l then
-            if type(l) == "number" then
-                lhash[utfchar(k)] = utfchar(l)
-            elseif #l == 2 then
-                lhash[utfchar(k)] = utfchar(l[1]) .. utfchar(l[2])
-            else
-                inspect(v)
+--     local superscripts = allocate()   characters.superscripts = superscripts
+--     local subscripts   = allocate()   characters.subscripts   = subscripts
+
+--     if storage then
+--         storage.register("characters/superscripts", superscripts, "characters.superscripts")
+--         storage.register("characters/subscripts",   subscripts,   "characters.subscripts")
+--     end
+
+-- end
+
+if not characters.splits then
+
+    local char   = allocate()
+    local compat = allocate()
+
+    local splits = {
+        char   = char,
+        compat = compat,
+    }
+
+    characters.splits = splits
+
+    -- [0x013F] = { 0x004C, 0x00B7 }
+    -- [0x0140] = { 0x006C, 0x00B7 }
+
+    for unicode, data in next, characters.data do
+        local specials = data.specials
+        if specials and #specials > 2 then
+            local kind = specials[1]
+            if kind == "compat" then
+                compat[unicode] = { unpack(specials,2) }
+            elseif kind == "char" then
+                char  [unicode] = { unpack(specials,2) }
             end
-        else
-            local u = v.uccode
-            if u then
-                if type(u) == "number" then
-                    uhash[utfchar(k)] = utfchar(u)
-                elseif #u == 2 then
-                    uhash[utfchar(k)] = utfchar(u[1]) .. utfchar(u[2])
+        end
+    end
+
+    if storage then
+        storage.register("characters/splits", splits, "characters.splits")
+    end
+
+end
+
+if not characters.lhash then
+
+    local lhash = allocate()   characters.lhash = lhash -- nil if no conversion
+    local uhash = allocate()   characters.uhash = uhash -- nil if no conversion
+    local shash = allocate()   characters.shash = shash -- nil if no conversion
+
+    for k, v in next, characters.data do
+     -- if k < 0x11000 then
+            local l = v.lccode
+            if l then
+                if type(l) == "number" then
+                    lhash[utfchar(k)] = utfchar(l)
+                elseif #l == 2 then
+                    lhash[utfchar(k)] = utfchar(l[1]) .. utfchar(l[2])
+                else
+                    inspect(v)
+                end
+            else
+                local u = v.uccode
+                if u then
+                    if type(u) == "number" then
+                        uhash[utfchar(k)] = utfchar(u)
+                    elseif #u == 2 then
+                        uhash[utfchar(k)] = utfchar(u[1]) .. utfchar(u[2])
+                    else
+                        inspect(v)
+                    end
+                end
+            end
+            local s = v.shcode
+            if s then
+                if type(s) == "number" then
+                    shash[utfchar(k)] = utfchar(s)
+                elseif #s == 2 then
+                    shash[utfchar(k)] = utfchar(s[1]) .. utfchar(s[2])
                 else
                     inspect(v)
                 end
             end
-        end
-        local s = v.shcode
-        if s then
-            if type(s) == "number" then
-                shash[utfchar(k)] = utfchar(s)
-            elseif #s == 2 then
-                shash[utfchar(k)] = utfchar(s[1]) .. utfchar(s[2])
-            else
-                inspect(v)
-            end
-        end
- -- end
+     -- end
+    end
+
+    if storage then
+        storage.register("characters/lhash", lhash, "characters.lhash")
+        storage.register("characters/uhash", lhash, "characters.uhash")
+        storage.register("characters/shash", lhash, "characters.shash")
+    end
+
 end
+
+local lhash = characters.lhash
+local uhash = characters.uhash
+local shash = characters.shash
 
 local utf8lowercharacter = utfchartabletopattern(lhash) / lhash
 local utf8uppercharacter = utfchartabletopattern(uhash) / uhash
@@ -946,10 +1004,6 @@ lpegpatterns.utf8shapecharacter = utf8shapecharacter -- one character
 lpegpatterns.utf8lower = utf8lower -- string
 lpegpatterns.utf8upper = utf8upper -- string
 lpegpatterns.utf8shape = utf8shape -- string
-
-characters.lhash = lhash -- nil if no conversion
-characters.uhash = uhash -- nil if no conversion
-characters.shash = shash -- nil if no conversion
 
 function characters.lower (str) return lpegmatch(utf8lower,str) end
 function characters.upper (str) return lpegmatch(utf8upper,str) end

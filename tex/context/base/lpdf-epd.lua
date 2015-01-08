@@ -175,7 +175,7 @@ local function prepare(document,d,t,n,k,mt,flags)
                     else
                         local v, flag = checked_access[kind](v,document)
                         t[key] = v
-                        if flag then
+                        if flag and flags then
                             flags[key] = flag -- flags
                         end
                     end

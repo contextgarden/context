@@ -174,40 +174,37 @@ local function initialize()
     end
     for unicode, v in next, data do
         local vs = v.specials
-        if vs and #vs == 3 then
-            if vs[1] == "char" then
-                --
-                local one, two = vs[2], vs[3]
-                local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
-                --
-                collapsed[first..second] = combination
-                backtrack(data[one],second,combination)
-                -- sort of obsolete:
-                local cgf = graphemes[first]
-                if not cgf then
-                    cgf = { [second] = combination }
-                    graphemes[first] = cgf
+        if vs and #vs == 3 and vs[1] == "char" then
+            --
+            local one, two = vs[2], vs[3]
+            local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
+            --
+            collapsed[first..second] = combination
+            backtrack(data[one],second,combination)
+            -- sort of obsolete:
+            local cgf = graphemes[first]
+            if not cgf then
+                cgf = { [second] = combination }
+                graphemes[first] = cgf
+            else
+                cgf[second] = combination
+            end
+            --
+            if v.mathclass or v.mathspec then
+                local mps = mathpairs[two]
+                if not mps then
+                    mps = { [one] = unicode }
+                    mathpairs[two] = mps
                 else
-                    cgf[second] = combination
+                    mps[one] = unicode -- here unicode
                 end
-                --
-                if v.mathclass or v.mathspec then
-                    local mps = mathpairs[two]
-                    if not mps then
-                        mps = { [one] = unicode }
-                        mathpairs[two] = mps
-                    else
-                        mps[one] = unicode -- here unicode
-                    end
-                    local mps = mathpairs[second]
-                    if not mps then
-                        mps = { [first] = combination }
-                        mathpairs[second] = mps
-                    else
-                        mps[first] = combination
-                    end
+                local mps = mathpairs[second]
+                if not mps then
+                    mps = { [first] = combination }
+                    mathpairs[second] = mps
+                else
+                    mps[first] = combination
                 end
-                --
             end
         end
     end

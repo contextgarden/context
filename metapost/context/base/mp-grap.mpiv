@@ -17,7 +17,10 @@ boolean context_grap ; context_grap := true ;
 
 % Below is a modified graph.mp
 
-if epsilon/4 = 0 : % numbersystem="scaled" : (not reliable...)
+show numbersystem, numberprecision ;
+
+%if epsilon/4 = 0 :
+if numbersystem <> "double" :
     errmessage "The graph macros require the double precision number system." ;
     endinput ;
 fi
@@ -75,7 +78,7 @@ newinternal mlogten ;         mlogten         := mlog(10) ;
 newinternal largestmantissa ; largestmantissa := 2**52 ; % internal double warningcheck
 newinternal singleinfinity ;  singleinfinity  := 2**128 ;
 newinternal doubleinfinity ;  doubleinfinity  := 2**1024 ;
-Mzero := -largestmantissa ; % Note that we get arithmetic overflows if we set to -doubleinfinity
+%Mzero := -largestmantissa ; % Note that we get arithmetic overflows if we set to -doubleinfinity
 
 % Safely convert a number to mlog form, trapping zero.
 
@@ -428,13 +431,15 @@ vardef graph_pair_adjust(expr p)(suffix tx, ty) = (tx xpart p, ty ypart p) endde
 
 vardef graph_convert_user_path_to_internal primary p =
   interim warningcheck :=0 ;
-  graph_scan_path(p,
-    (abs X_.graph_coordinate_type<>linear) or (abs Y_.graph_coordinate_type<>linear),
-    if abs X_.graph_coordinate_type=log : graph_mlog fi,
-    if abs Y_.graph_coordinate_type=log : graph_mlog fi)
-    transformed  (identity
-      if X_.graph_coordinate_type<0 : xscaled -1 fi
-      if Y_.graph_coordinate_type<0 : yscaled -1 fi)
+  if known p :
+    graph_scan_path(p,
+      (abs X_.graph_coordinate_type<>linear) or (abs Y_.graph_coordinate_type<>linear),
+      if abs X_.graph_coordinate_type=log : graph_mlog fi,
+      if abs Y_.graph_coordinate_type=log : graph_mlog fi)
+      transformed  (identity
+        if X_.graph_coordinate_type<0 : xscaled -1 fi
+        if Y_.graph_coordinate_type<0 : yscaled -1 fi)
+  fi
 enddef ;
 
 % Convert label location t_ from user graph coords to internal graph coords.
@@ -520,10 +525,11 @@ enddef ;
 
 % Execute c for each line of data read from file f, and stop at the first
 % line with no data.  Commands c can use line number i and tokens $1, $2, ...
+% and j is the number of fields.
 
 def gdata(expr f)(suffix $)(text c) =
-  boolean flag ;
-  for i=1 upto infinity :
+  %boolean flag ; % not used?
+  for i=1 upto largestmantissa :
     exitunless graph_read_line$(f) ;
     c
   endfor

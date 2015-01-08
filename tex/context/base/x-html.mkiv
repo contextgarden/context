@@ -1,0 +1,369 @@
+%D \module
+%D   [       file=x-html,
+%D        version=2011.02.03, % adapted 2014.11.08
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=HTML,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[html]
+
+%D Usage:
+%D
+%D \starttyping
+%D \xmlregistersetup{xml:html:basics}
+%D \xmlregistersetup{xml:html:tables}
+%D \stoptyping
+
+% \xmlsetsetup{#1}{(p|span)[@lang]}{xml:html:lang}
+%
+% \startxmlsetups xml:html:lang
+%     \begingroup
+%         \language[\xmlatt{#1}{lang}]
+%         \xmlsetup{#1}{xml:html:\xmltag{#1}}
+%     \endgroup
+% \stopxmlsetups
+
+\unprotect
+
+\definehighlight[b]     [\c!command=\v!no,\c!style=\v!bold]
+\definehighlight[i]     [\c!command=\v!no,\c!style=\v!italic]
+\definehighlight[bi]    [\c!command=\v!no,\c!style=\v!bolditalic]
+\definehighlight[em]    [\c!command=\v!no,\c!style=\em]
+\definehighlight[tt]    [\c!command=\v!no,\c!style=\v!mono]
+\definehighlight[strong][\c!command=\v!no,\c!style=\v!bold]
+\definehighlight[u]     [\c!command=\v!no,\c!style=\directsetbar{\v!underbar}]
+
+\protect
+
+% todo: pre
+
+\startxmlsetups xml:html:basics
+    \xmlsetsetup{#1}{p|br|b|i|u|em|tt|strong|ul|ol|li|table|thead|tbody|tfoot|tr|td|th|span|img}{xml:html:*}
+    \xmlsetsetup{#1}{b/i}{xml:html:bi}
+    \xmlsetsetup{#1}{i/b}{xml:html:bi}
+    \xmlstripanywhere{#1}{!pre}
+\stopxmlsetups
+
+\startxmlsetups xml:html:tables
+    \xmlsetsetup{#1}{table|thead|tbody|tfoot|tr|td|th}{xml:html:*}
+\stopxmlsetups
+
+\startxmlsetups xml:html:p
+    \xmldoifnotselfempty {#1} {
+        \dontleavehmode
+        \ignorespaces
+        \xmlflush{#1}
+        \removeunwantedspaces
+    }
+    \par
+\stopxmlsetups
+
+\startxmlsetups xml:html:br
+    \crlf
+\stopxmlsetups
+
+\startxmlsetups xml:html:b
+    \directhighlight{b}{\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:html:i
+    \directhighlight{i}{\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:html:bi
+    \directhighlight{bi}{\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:html:em
+    \directhighlight{em}{\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:html:tt
+    \directhighlight{tt}{\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:html:strong
+    \directhighlight{strong}{\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:html:u
+    \directhighlight{u}{\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:html:ul
+    \startitemize[packed]
+        \xmlflush{#1}
+    \stopitemize
+\stopxmlsetups
+
+\startxmlsetups xml:html:ol
+    \startitemize[packed,n]
+        \xmlflush{#1}
+    \stopitemize
+\stopxmlsetups
+
+\startxmlsetups xml:html:li
+    \startitem
+        \xmlflush{#1}
+    \stopitem
+\stopxmlsetups
+
+\startxmlsetups xml:html:span
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:html:img
+    \ifhmode
+        \dontleavehmode
+        \externalfigure[\xmlatt{#1}{src}]
+    \else
+        \startlinecorrection
+            \externalfigure[\xmlatt{#1}{src}]
+        \stoplinecorrection
+    \fi
+\stopxmlsetups
+
+% tables, maybe we need a generic html table module
+%
+% todo: align
+
+% beware, the padding code is somewhat experimental, eventually the
+% table will be done in cdl code
+%
+% we can also use \xmlmap for border etc
+
+\starttexdefinition cssgetsinglepadding #1
+   \ctxlua {
+     context((moduledata.css.padding(
+         "#1",
+         \number\dimexpr0.1ex,
+         \number\dimexpr0.01\hsize,
+         \number\dimexpr1ex,
+         \number\dimexpr1em
+     ))) % returns 4 values therefore ()
+   }sp
+\stoptexdefinition
+
+\startxmlsetups xml:html:table
+    \edef\CellPadding{\xmlatt{#1}{cellpadding}}
+    \ifx\CellPadding\empty
+      \edef\CellPadding{.25ex}
+    \else
+      \edef\CellPadding{\cssgetsinglepadding\CellPadding}
+    \fi
+    \startlinecorrection[blank]
+    \doifelse {\xmlatt{#1}{border}} {0} {
+        \bTABLE[frame=off,offset=\CellPadding]
+            \xmlflush{#1}
+        \eTABLE
+    } {
+        \bTABLE[offset=\CellPadding]
+            \xmlflush{#1}
+        \eTABLE
+    }
+    \stoplinecorrection
+\stopxmlsetups
+
+\startxmlsetups xml:html:thead
+    \bTABLEhead
+        \xmlflush{#1}
+    \eTABLEhead
+\stopxmlsetups
+
+\startxmlsetups xml:html:tbody
+    \bTABLEbody
+        \xmlflush{#1}
+    \eTABLEbody
+\stopxmlsetups
+
+\startxmlsetups xml:html:tfoot
+    \bTABLEfoot
+        \xmlflush{#1}
+    \eTABLEfoot
+\stopxmlsetups
+
+\startxmlsetups xml:html:tr
+    \bTR[ny=\xmlattdef{#1}{rowspan}{1}]
+        \xmlflush{#1}
+    \eTR
+\stopxmlsetups
+
+\startxmlsetups xml:html:td
+    \bTD[nx=\xmlattdef{#1}{colspan}{1}]
+        \xmlflush{#1}
+    \eTD
+\stopxmlsetups
+
+\startxmlsetups xml:html:th
+    \bTH[nx=\xmlattdef{#1}{colspan}{1}]
+        \xmlflush{#1}
+    \eTH
+\stopxmlsetups
+
+% \xmlregistersetup{xml:html:basics}
+
+%D For old times sake:
+
+\startxmlsetups xml:setups:common
+    \xmlsetup{#1}{xml:html:basics}
+    \xmlsetup{#1}{xml:html:tables}
+%     \ifconditional\qmlcleanuptwo
+%         \xmlsetsetup{#1}{html/br[index() == 1]}{xml:noppes:1}
+%         \xmlsetsetup{#1}{html/p[index() == lastindex()]/br[index() == lastindex()]}{xml:noppes:2}
+%         \xmlsetsetup{#1}{html/br[index() == lastindex()]}{xml:noppes:3}
+%         \xmlsetsetup{#1}{br[name(1) == 'img']}{xml:noppes}
+%         \xmlsetsetup{#1}{br[name(1) == 'br' and name(2) == 'img']}{xml:noppes}
+%     %   \xmlsetsetup{#1}{br/following-sibling::img[position()==1]}{xml:noppes}
+%     \fi
+\stopxmlsetups
+
+\stopmodule
+
+\continueifinputfile{x-html.mkiv}
+
+\xmlregistersetup{xml:html:basics}
+\xmlregistersetup{xml:html:tables}
+
+\startxmlsetups xml:whatever
+    \xmlsetsetup {#1} {
+        html|body
+    } {xml:html:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{main}{xml:whatever}
+
+\startxmlsetups xml:html:html
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:html:body
+    \xmlflush{#1}
+\stopxmlsetups
+
+\setuphead[subject][page=yes,style=\bfa]
+
+\starttexdefinition ShowExample#1
+    \startsubject[title=#1]
+        \typebuffer[#1]
+        \starttextrule{result}
+            \xmlprocessbuffer{main}{#1}{}
+        \stoptextrule
+    \stopsubject
+\stoptexdefinition
+
+\starttext
+
+\startbuffer[test 1]
+<html><body>
+<p>test</p>
+<p/>
+<p>test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 2]
+<html><body>
+<p>test (hierna een lf)
+test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 3]
+<html><body>
+<p>test (hierna een lf met lege regel)
+
+test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 4]
+<html><body>
+<p>test (hierna een lf met twee lege regels)
+
+
+test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 5]
+<html><body>
+<p>test (hierna br geen lf)<br/> test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 6]
+<html><body>
+<p>test (hierna br met lf)<br/>
+test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 7]
+<html><body>
+<p>test (hierna br met lf en lege regel)<br/>
+
+test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 8]
+<html><body>
+<p>test (hierna br met lf en twee lege regels)<br/>
+
+
+test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 9]
+<html><body>
+<p>test (hierna bold) <b>bold</b> test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 10]
+<html><body>
+<p>test (hierna lf met bold)
+<b>bold <u>underlined</u></b> test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 11]
+<html><body>
+<p>test (hierna lf met lege regel en bold)
+
+<b>bold</b> test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 12]
+<html><body>
+<p>test (hierna lf met lege regel en lf in bold)
+
+<b>
+bold
+</b> test</p>
+</body></html>
+\stopbuffer
+
+\startbuffer[test 13]
+<html><body>
+<p>test (hierna lf met lege regel en lf en lege regel in bold)
+
+<b>
+
+bold
+
+</b> test</p>
+</body></html>
+\stopbuffer
+
+\dorecurse{13}{\ShowExample{test #1}}
+
+\stoptext
