@@ -1,0 +1,88 @@
+% language=uk
+
+\environment workflows-style
+
+\startcomponent workflows-graphics
+
+\startchapter[title=Graphics]
+
+\startsection[title=Bad names]
+
+After many years of using \CONTEXT\ in workflows where large amounts of source files
+as well as graphics were involved we can safely say that it's hard for publishers to
+control the way these are named. This is probably due to the fact that in a
+click|-|and|-|point based desktop publishing workflow names don't matter as one stays on
+one machine, and names are only entered once (after that these names become abstractions and
+get cut and pasted). Proper consistent resource managament is simply not part of the flow.
+
+This means that you get names like:
+
+\starttyping
+foo_Bar_01_03-a.EPS
+foo__Bar-01a_03.eps
+foo__Bar-01a_03.eps
+foo BarA  01-03.eps
+\stoptyping
+
+Especially when a non proportional screen font is used multiple spaces can look
+like one. In fancy screen fonts upper and lowercase usage might get obscured. It
+really makes one wonder if copy|-|editing or adding labels to graphics isn't
+suffering from the same problem.
+
+Anyhow, as in an automated rendering workflow the rendering is often the last step you
+can imagine that when names get messed up it's that last step that gets blamed. It's not
+that hard to sanitize names of files on disk as well as in the files that refer to them,
+and we normally do that we have complete control. This is no option when all the resources
+are synchronzied from elsewhere. In that case the only way out is signaling potential
+issues. Say that in the source file there is a reference:
+
+\starttyping
+foo_Bar_01_03-a.EPS
+\stoptyping
+
+and that the graphic on disk has the same name, but for some reason after an update
+has become:
+
+\starttyping
+foo-Bar_01_03-a.EPS
+\stoptyping
+
+The old image is probably still there so the update is not reflected in the final
+product. This is not that uncommon when you deal with tens of thousands of files,
+many editors and graphic designers, and no strict filename policy.
+
+For this we provide the following tracing option:
+
+\starttyping
+\enabletrackers[graphics.lognames]
+\stoptyping
+
+This will put information in the log file about included graphics, like:
+
+\starttyping
+system          > graphics > start names
+
+used graphic    > asked   : cow.pdf
+used graphic    > comment : not found
+used graphic    > asked   : t:/sources/cow.pdf
+used graphic    > format  : pdf
+used graphic    > found   : t:/sources/cow.pdf
+used graphic    > used    : t:/sources/cow.pdf
+
+system          > graphics > stop names
+\stoptyping
+
+You can also information to the file itself:
+
+\starttyping
+\usemodule[s-figures-names]
+\stoptyping
+
+Of course that has to be done at the end of the document. Bad names are reported
+and suitable action can be taken.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

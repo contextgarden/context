@@ -10466,7 +10466,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 48150, stripped down to: 30607
+-- original size: 48226, stripped down to: 30681
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -11297,7 +11297,6 @@ expressions.print=function(...)
   print(...)
   return true
 end
-expressions.contains=find
 expressions.find=find
 expressions.upper=upper
 expressions.lower=lower
@@ -11318,6 +11317,9 @@ function expressions.contains(str,pattern)
     end
   end
   return false
+end
+function xml.expressions.idstring(str)
+  return type(str)=="string" and gsub(str,"^#","") or ""
 end
 local function traverse(root,pattern,handle)
   local collected=applylpath(root,pattern)
@@ -17759,8 +17761,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 744628
--- stripped bytes    : 272128
+-- original bytes    : 744704
+-- stripped bytes    : 272130
 
 -- end library merge
 

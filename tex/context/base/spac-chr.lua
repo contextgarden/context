@@ -112,8 +112,8 @@ local function inject_char_space(unicode,head,current,parent)
 end
 
 local function inject_nobreak_space(unicode,head,current,space,spacestretch,spaceshrink)
-    local attr = getfield(current,"attr")
-    local glue = new_glue(space,spacestretch,spaceshrink)
+    local attr    = getfield(current,"attr")
+    local glue    = new_glue(space,spacestretch,spaceshrink)
     local penalty = new_penalty(10000)
     setfield(glue,"attr",attr)
     setfield(current,"attr",nil)

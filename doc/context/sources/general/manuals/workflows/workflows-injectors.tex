@@ -1,0 +1,86 @@
+% language=uk
+
+\environment workflows-style
+
+\startcomponent workflows-injectors
+
+\startchapter[title={Injectors}]
+
+When you have no control over the source but need to manually tweak some aspects
+of the typesetting, like an occasional page break of column switch, you can use
+the injector mechanism. This mechanism is part of list and register building but
+can also be used elsewhere.
+
+\startbuffer[one]
+\startmixedcolumns[balance=yes]
+  \dotestinjector{test}line 1 \par
+  \dotestinjector{test}line 2 \par
+  \dotestinjector{test}line 3 \par
+  \dotestinjector{test}line 4 \par
+  \dotestinjector{test}line 5
+\stopmixedcolumns
+\stopbuffer
+
+\startbuffer[two]
+\startmixedcolumns[balance=yes]
+  \dotestinjector{test}line 1 \par
+  \dotestinjector{test}line 2 \par
+  \dotestinjector{test}line 3 \par
+  \dotestinjector{test}line 4 \par
+  \dotestinjector{test}line 5
+\stopmixedcolumns
+\stopbuffer
+
+We have two buffers:
+
+\typebuffer[one]
+
+and
+
+\typebuffer[two]
+
+When typeset these come out as:
+
+\blank \startpacked \bf \getbuffer[one] \stoppacked \blank
+
+and
+
+\blank \startpacked \bf \getbuffer[two] \stoppacked \blank
+
+We can enable (and show) the injectors with:
+
+\startbuffer
+\doactivateinjector{test} \showinjector
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Now we get:
+
+\blank \startpacked \bf \getbuffer[one] \stoppacked \blank
+
+and
+
+\blank \startpacked \bf \getbuffer[two] \stoppacked \blank
+
+The small numbers are injector points. These will of course change when we add
+more in|-|between. Let's add actions to some of the injection points:
+
+\startbuffer
+\setinjector[test][13][{\column}]
+\setinjector[test][17][{\column}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+As expected we now get column breaks:
+
+\blank \startpacked \bf \getbuffer[one] \stoppacked \blank
+
+and
+
+\blank \startpacked \bf \getbuffer[two] \stoppacked \blank
+
+\stopchapter
+
+\stopcomponent

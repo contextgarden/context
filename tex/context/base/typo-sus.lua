@@ -20,43 +20,53 @@ local closequote = {
     pf = true,
 }
 
-local categories    = characters.categories
+local categories      = characters.categories
 
-local nodecodes     = nodes.nodecodes
+local nodecodes       = nodes.nodecodes
 
-local glyph_code    = nodecodes.glyph
-local kern_code     = nodecodes.kern
-local penalty_code  = nodecodes.penalty
-local glue_code     = nodecodes.glue
-local math_code     = nodecodes.math
-local hlist_code    = nodecodes.hlist
+local glyph_code      = nodecodes.glyph
+local kern_code       = nodecodes.kern
+local penalty_code    = nodecodes.penalty
+local glue_code       = nodecodes.glue
+local math_code       = nodecodes.math
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
 
-local nuts          = nodes.nuts
-local tonut         = nodes.tonut
-local tonode        = nodes.tonode
+local nuts            = nodes.nuts
+local tonut           = nodes.tonut
+local tonode          = nodes.tonode
 
-local getid         = nuts.getid
-local getchar       = nuts.getchar
-local getprev       = nuts.getprev
-local getnext       = nuts.getnext
-local getfield      = nuts.getfield
-local getattr       = nuts.getattr
-local getfont       = nuts.getfont
+local getid           = nuts.getid
+local getchar         = nuts.getchar
+local getprev         = nuts.getprev
+local getnext         = nuts.getnext
+local getfield        = nuts.getfield
+local getattr         = nuts.getattr
+local getfont         = nuts.getfont
+local getlist         = nuts.getlist
 
-local setcolor      = nodes.tracers.colors.set
-local insert_before = nuts.insert_before
-local insert_after  = nuts.insert_after
-local end_of_math   = nuts.end_of_math
+local setfield        = nuts.setfield
+local setattr         = nuts.setattr
 
-local nodepool      = nuts.pool
+local setcolor        = nodes.tracers.colors.set
+local insert_before   = nuts.insert_before
+local insert_after    = nuts.insert_after
+local end_of_math     = nuts.end_of_math
 
-local new_rule      = nodepool.rule
-local new_kern      = nodepool.kern
-local new_penalty   = nodepool.penalty
+local nodepool        = nuts.pool
 
-local a_characters  = attributes.private("characters")
+local new_rule        = nodepool.rule
+local new_kern        = nodepool.kern
+local new_hlist       = nodepool.hlist
+----- new_penalty     = nodepool.penalty
 
-local threshold     = 65536 / 4
+local a_characters    = attributes.private("characters")
+local a_suspecting    = attributes.private('suspecting')
+local a_suspect       = attributes.private('suspect')
+local texsetattribute = tex.setattribute
+local enabled         = false
+
+local threshold       = 65536 / 4
 
 local function special(n)
     if n then
@@ -108,19 +118,19 @@ local function mark(head,current,id,color)
         head = insert_before(head,current,rule)
         head = insert_before(head,current,kern)
         setcolor(rule,color)
-    elseif id == kern_code then
-        local width = getfield(current,"kern")
-        local rule  = new_rule(width)
-        local kern  = new_kern(-width)
-        head = insert_before(head,current,rule)
-        head = insert_before(head,current,kern)
-        setcolor(rule,color)
+ -- elseif id == kern_code then
+ --     local width = getfield(current,"kern")
+ --     local rule  = new_rule(width)
+ --     local kern  = new_kern(-width)
+ --     head = insert_before(head,current,rule)
+ --     head = insert_before(head,current,kern)
+ --     setcolor(rule,color)
     else
         local width = getfield(current,"width")
-        local rule  = new_rule(width,getfield(current,"height"),getfield(current,"depth"))
-        local kern  = new_kern(-width)
-        head = insert_before(head,current,rule)
-        head = insert_before(head,current,kern)
+        local extra = fonts.hashes.xheights[getfont(current)] / 2
+        local rule  = new_rule(width,getfield(current,"height")+extra,getfield(current,"depth")+extra)
+        local hlist = new_hlist(rule)
+        head = insert_before(head,current,hlist)
         setcolor(rule,color)
         setcolor(current,"white")
     end
@@ -131,95 +141,164 @@ end
 -- save enough time and it makes the code looks bad too ... after
 -- all, we seldom use this
 
-function typesetters.showsuspects(head)
+local colors = {
+    "darkred",
+    "darkgreen",
+    "darkblue",
+    "darkcyan",
+    "darkmagenta",
+    "darkyellow",
+    "darkgray",
+    "orange",
+}
+
+local found = 0
+
+function typesetters.marksuspects(head)
     local head     = tonut(head)
     local current  = head
     local lastdone = nil
     while current do
-        local id = getid(current)
-        if id == glyph_code then
-            local char = getchar(current)
-            local code = categories[char]
-            local done = false
-            if punctuation[code] then
-                local prev, pid = goback(current)
-                if prev and pid == glue_code then
-                    done = "darkblue"
-                elseif prev and pid == math_code then
-                    done = "darkgray"
-                else
-                    local next, nid = goforward(current)
-                    if next and nid ~= glue_code then
-                        done = "darkblue"
-                    end
-                end
-            elseif openquote[code] then
-                local next, nid = goforward(current)
-                if next and nid == glue_code then
-                    done = "darkred"
-                end
-            elseif closequote[code] then
-                local prev, pid = goback(current)
-                if prev and pid == glue_code then
-                    done = "darkred"
-                end
-            else
-                local prev, pid = goback(current)
-                if prev then
-                    if pid == math_code then
-                        done = "darkgray"
-                    elseif pid == glyph_code and getfont(current) ~= getfont(prev) then
-                        if lastdone ~= prev then
-                            done = "darkgreen"
+        if getattr(current,a_suspecting) then
+            local id = getid(current)
+            if id == glyph_code then
+                local char = getchar(current)
+                local code = categories[char]
+                local done = false
+                if punctuation[code] then
+                    local prev, pid = goback(current)
+                    if prev and pid == glue_code then
+                        done = 3 -- darkblue
+                    elseif prev and pid == math_code then
+                        done = 3 -- darkblue
+                    else
+                        local next, nid = goforward(current)
+                        if next and nid ~= glue_code then
+                            done = 3 -- darkblue
                         end
                     end
-                end
-                if not done then
+                elseif openquote[code] then
                     local next, nid = goforward(current)
-                    if next then
-                        if nid == math_code then
-                            done = "darkgray"
-                        elseif nid == glyph_code and getfont(current) ~= getfont(next) then
+                    if next and nid == glue_code then
+                        done = 1 -- darkred
+                    end
+                elseif closequote[code] then
+                    local prev, pid = goback(current)
+                    if prev and pid == glue_code then
+                        done = 1 -- darkred
+                    end
+                else
+                    local prev, pid = goback(current)
+                    if prev then
+                        if pid == math_code then
+                            done = 7-- darkgray
+                        elseif pid == glyph_code and getfont(current) ~= getfont(prev) then
                             if lastdone ~= prev then
-                                done = "darkgreen"
+                                done = 2 -- darkgreen
+                            end
+                        end
+                    end
+                    if not done then
+                        local next, nid = goforward(current)
+                        if next then
+                            if nid == math_code then
+                                done = 7 -- darkgray
+                            elseif nid == glyph_code and getfont(current) ~= getfont(next) then
+                                if lastdone ~= prev then
+                                    done = 2 -- darkgreen
+                                end
                             end
                         end
                     end
                 end
-            end
-            if done then
-                head     = mark(head,current,id,done)
-                lastdone = current
-            end
-            current = getnext(current)
-        elseif id == math_code then
-            current = getnext(end_of_math(current))
-        elseif id == glue_code then
-            local a = getattr(current,a_characters)
-            if a then
-                local prev = getprev(current)
-                local prid = prev and getid(prev)
-                if prid == penalty_code and getfield(prev,"penalty") == 10000 then
-                    head = mark(head,current,id,"orange")
-                    head = insert_before(head,current,new_penalty(10000))
-                else
-                    head = mark(head,current,id,"darkmagenta")
+                if done then
+                    setattr(current,a_suspect,done)
+                    lastdone = current
+                    found = found + 1
                 end
+                current = getnext(current)
+            elseif id == math_code then
+                current = getnext(end_of_math(current))
+            elseif id == glue_code then
+                local a = getattr(current,a_characters)
+                if a then
+                    local prev = getprev(current)
+                    local prid = prev and getid(prev)
+                    local done = false
+                    if prid == penalty_code and getfield(prev,"penalty") == 10000 then
+                        done = 8 -- orange
+                    else
+                        done = 5 -- darkmagenta
+                    end
+                    if done then
+                        setattr(current,a_suspect,done)
+                     -- lastdone = current
+                        found = found + 1
+                    end
+                end
+                current = getnext(current)
+            else
+                current = getnext(current)
             end
-            current = getnext(current)
         else
             current = getnext(current)
         end
     end
-    return tonode(head), false
+    return tonode(head), found > 0
 end
 
-nodes.tasks.appendaction("processors","after","typesetters.showsuspects")
-nodes.tasks.disableaction("processors","typesetters.showsuspects")
+local function showsuspects(head)
+    local current = head
+    while current do
+        local id = getid(current)
+        if id == glyph_code then
+            local a = getattr(current,a_suspect)
+            if a then
+                head, current = mark(head,current,id,colors[a])
+            end
+        elseif id == glue_code then
+            local a = getattr(current,a_suspect)
+            if a then
+                head, current = mark(head,current,id,colors[a])
+            end
+        elseif id == math_code then
+            current = end_of_math(current)
+        elseif id == hlist_code or id == vlist_code then
+            local list = getlist(current)
+            if list then
+                local l = showsuspects(list)
+                if l ~= list then
+                    setfield(current,"list",l)
+                end
+            end
+        end
+        current = getnext(current)
+    end
+    return head
+end
+
+function typesetters.showsuspects(head)
+    if found > 0 then
+        return tonode(showsuspects(tonut(head))), true
+    else
+        return head, false
+    end
+end
+
+nodes.tasks.appendaction ("processors","after",      "typesetters.marksuspects")
+nodes.tasks.prependaction("shipouts",  "normalizers","typesetters.showsuspects")
+
+nodes.tasks.disableaction("processors","typesetters.marksuspects")
+nodes.tasks.disableaction("shipouts",  "typesetters.showsuspects")
 
 -- or maybe a directive
 
 trackers.register("typesetters.suspects",function(v)
-    nodes.tasks.setaction("processors","typesetters.showsuspects",v)
+    texsetattribute(a_suspecting,v and 1 or unsetvalue)
+    if v and not enabled then
+        nodes.tasks.enableaction("processors","typesetters.marksuspects")
+        nodes.tasks.enableaction("shipouts",  "typesetters.showsuspects")
+        enabled = true
+    end
 end)
 

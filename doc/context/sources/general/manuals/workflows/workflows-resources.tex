@@ -1,0 +1,156 @@
+% language=uk
+
+\environment workflows-style
+
+\startcomponent workflows-resources
+
+\startchapter[title=Accessing resources]
+
+One of the benefits of \TEX\ is that you can use it in automated workflows
+where large quantities of data is involved. A document can consist of
+several files and normally also includes images. Of course there are styles
+involved too. At \PRAGMA\ normally put styles and fonts in:
+
+\starttyping
+/data/site/context/tex/texmf-project/tex/context/user/<project>/...
+/data/site/context/tex/texmf-fonts/data/<foundry>/<collection>/...
+\stoptyping
+
+alongside
+
+\starttyping
+/data/framework/...
+\stoptyping
+
+where the job management services are put, while we put resources in:
+
+\starttyping
+/data/resources/...
+\stoptyping
+
+The processing happens in:
+
+\starttyping
+/data/work/<uuid user space>/
+\stoptyping
+
+Putting styles (and resources like logos and common images) and fonts (if the
+project has specific ones not present in the distribution) in the \TEX\ tree
+makes sense because that is where such files are normally searched. Of course you
+need to keep the distributions file database upto|-|date after adding files there.
+
+Processing has to happen isolated from other runs so there we use unique
+locations. The services responsible for running also deal with regular cleanup
+of these temporary files.
+
+Resources are somewhat special. They can be stable, i.e.\ change seldom, but more
+often they are updated or extended periodically (or even daily). We're not
+talking of a few files here but of thousands. In one project we have 20 thousand
+resources, that can be combined into arbitrary books, and in another one, each
+chapter alone is about 400 \XML\ and image files. That means we can have 5000
+files per book and as we have at least 20 books, we end up with 100K files. In
+the first case accessing the resources is easy because there is a well defined
+structure (under our control) so we know exactly where each file sits in the
+resource tree. In the 100K case there is a deeper structure which is in itself
+predictable but because many authors are involved the references to these files
+are somewhat instable (and undefined). It is surprising to notice that publishers
+don't care about filenames (read: cannot control all the parties involved) which
+means that we have inconsist use of mixed case in filenames, and spaces,
+underscores and dashes creeping in. Because typesetting for paper is always at
+the end of the pipeline (which nowadays is mostly driven by (limitations) of web
+products) we need to have a robust and flexible lookup mechanism. It's a side
+effect of the click and point culture: if objects are associated (filename in
+source file with file on the system) anything you key in will work, and
+consistency completely depends on the user. And bad things then happen when files
+are copied, renamed, etc. In that stadium we can better be tolerant than try to
+get it fixed. \footnote {From what we normally receive we often conclude that
+copy|-|editing and image production companies don't impose any discipline or
+probably simply lack the tools and methods to control this. Some of our workflows
+had checkers and fixers, so that when we got 5000 new resources while only a few
+needed to be replaced we could filter the right ones.  It was not uncommon to find
+duplicates for thousands of pictures: similar or older variants.}
+
+\starttyping
+foo.jpg
+bar/foo.jpg
+images/bar/foo.jpg
+images/foo.jpg
+\stoptyping
+
+The xml files have names like:
+
+\starttyping
+b-c.xml
+a/b-c.jpg
+a/b/b-c.jpg
+a/b/c/b-c.jpg
+\stoptyping
+
+So it's sort of a mess, especially if you add arbitrary casing to this. Of course
+one can argue that a wrong (relative) location is asking for problems, it's less
+an issue here because each image has a unique name. We could flatten the resource
+tree but having tens of thousands of files on one directory is asking for
+problems when you want to manage them.
+
+The typesetting (and related services) run on virtual machines. The three
+directories:
+
+\starttyping
+/data/site
+/data/resources
+/data/work
+\stoptyping
+
+are all mounted as nfs shares on a network storage. For the styles (and binaries)
+this is no big deal as normally these files are cached, but the resources are
+another story. Scanning the complete (mounted) resource tree each run is no
+option so there we use a special mechanism in \CONTEXT\ for locating files.
+
+Already early in the development of \MKIV\ one of the locating mechanisms was
+the following:
+
+\starttyping
+tree:////data/resources/foo/**/drawing.jpg
+tree:////data/resources/foo/**/Drawing.jpg
+\stoptyping
+
+Here the tree is scanned once per run, which is normally quite okay when there
+are not that many files and when the files reside on the machine itself. For a
+more high performance approach using network shares we have a different
+mechanism. This time it looks like this:
+
+\starttyping
+dirlist:/data/resources/**/drawing.jpg
+dirlist:/data/resources/**/Drawing.jpg
+dirlist:/data/resources/**/just/some/place/drawing.jpg
+dirlist:/data/resources/**/images/drawing.jpg
+dirlist:/data/resources/**/images/drawing.jpg?option=fileonly
+dirfile:/data/resources/**/images/drawing.jpg
+\stoptyping
+
+The first two lookups are wildcard. If there is a file with that name, it will be
+found. If there are more, the first hit is used. The second and third examples
+are more selective. Here the part after the \type {**} has to match too. So here
+we can deal with multiple files named \type {drawing.jpg}. The last two
+equivalent examples are more tolerant. If no explicit match is found, a lookup
+happens without being selective. The case of a name is ignored but when found, a
+name with the right case is used.
+
+You can hook a path into the resolver for source files, for example:
+
+\starttyping
+\usepath                       [dirfile://./resources/**]
+\setupexternalfigures[directory=dirfile://./resources/**]
+\stoptyping
+
+You need to make sure that file(name)s in that location don't override ones in
+the regular \TEX\ tree. These extra paths are only used for source file lookups
+so for instance font lookups are not affected.
+
+When you add, remove or move files the tree, you need to remove the \type
+{dirlist.*} files in the root because these are used for locating files. A new
+file will be generated automatically. Don't forget this!
+
+\stopchapter
+
+\stopcomponent

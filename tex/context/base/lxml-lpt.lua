@@ -1134,7 +1134,6 @@ expressions.print = function(...)
     return true
 end
 
-expressions.contains  = find
 expressions.find      = find
 expressions.upper     = upper
 expressions.lower     = lower
@@ -1156,6 +1155,10 @@ function expressions.contains(str,pattern)
         end
     end
     return false
+end
+
+function xml.expressions.idstring(str)
+    return type(str) == "string" and gsub(str,"^#","") or ""
 end
 
 -- user interface

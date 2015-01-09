@@ -328,8 +328,8 @@ local compat_specification = {
     prepend  = true,
 }
 
-otf.addfeature("char-ligatures",  char_specification)
-otf.addfeature("compat-ligatures",compat_specification)
+otf.addfeature("char-ligatures",  char_specification)   -- xlig (extra)
+otf.addfeature("compat-ligatures",compat_specification) -- plig (pseudo)
 
 registerotffeature { name = 'char-ligatures',   description = 'unicode char specials to ligatures' }
 registerotffeature { name = 'compat-ligatures', description = 'unicode compat specials to ligatures' }

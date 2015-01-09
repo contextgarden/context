@@ -69,5 +69,9 @@
   {\setuxvalue{typo_injectors_mark_#1}{\dontleavehmode\noexpand\ctxcommand{markinjector("#1")}}%
    \setuxvalue{typo_injectors_check_#1}{\noexpand\ctxcommand{checkinjector("#1")}}}
 
+\unexpanded\def\dotestinjector#1%  only for testing outside unprotect
+  {\csname typo_injectors_check_#1\endcsname
+   \csname typo_injectors_mark_#1\endcsname}
+
 \protect \endinput
 
