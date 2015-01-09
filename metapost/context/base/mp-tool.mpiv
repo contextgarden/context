@@ -2299,7 +2299,8 @@ enddef ;
 
 vardef basiccolors[] =
     save n ; n := @ mod 7 ;
-    if     n = 1 : red
+    if     n = 0 : white
+    elseif n = 1 : red
     elseif n = 2 : green
     elseif n = 3 : blue
     elseif n = 4 : cyan
