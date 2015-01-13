@@ -31,16 +31,17 @@ vardef mfun_function (expr f) (expr u, t, b, e, s) =
     for xx := b step s until e :
         hide (x := xx ;)
         if xx > b :
-            scantokens(mfun_pathconnectors[f])
+          scantokens(mfun_pathconnectors[f])
         fi
         (scantokens(u),scantokens(t))
     endfor
 enddef ;
 
-def function       = mfun_function     enddef ; % let doesn't work here
-def punkedfunction = mfun_function (1) enddef ;
-def curvedfunction = mfun_function (2) enddef ;
-def tightfunction  = mfun_function (3) enddef ;
+def function         = mfun_function     enddef ; % let doesn't work here
+def straightfunction = mfun_function (1) enddef ;
+def punkedfunction   = mfun_function (1) enddef ;
+def curvedfunction   = mfun_function (2) enddef ;
+def tightfunction    = mfun_function (3) enddef ;
 
 vardef mfun_constructedpath (expr f) (text t) =
     save ok ; boolean ok ; ok := false ;
@@ -55,6 +56,7 @@ vardef mfun_constructedpath (expr f) (text t) =
 enddef ;
 
 def constructedpath = mfun_constructedpath     enddef ; % let doesn't work here
+def straightpath    = mfun_constructedpath (1) enddef ;
 def punkedpath      = mfun_constructedpath (1) enddef ;
 def curvedpath      = mfun_constructedpath (2) enddef ;
 def tightpath       = mfun_constructedpath (3) enddef ;
@@ -71,8 +73,7 @@ vardef mfun_constructedpairs (expr f) (text p) =
 enddef ;
 
 def constructedpairs = mfun_constructedpairs     enddef ; % let doesn't work here
+def straightpairs    = mfun_constructedpairs (1) enddef ;
 def punkedpairs      = mfun_constructedpairs (1) enddef ;
 def curvedpairs      = mfun_constructedpairs (2) enddef ;
 def tightpairs       = mfun_constructedpairs (3) enddef ;
-
-

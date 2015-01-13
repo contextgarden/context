@@ -195,7 +195,8 @@ yellow     := (1,1,0) ;
 background := white ; % obsolete
 
 let graypart  = greypart  ;
-let graycolor = greycolor ;
+let greycolor = numeric ;
+let graycolor = numeric ;
 
 % color part (will be overloaded)
 
@@ -881,17 +882,19 @@ vardef penlabels@#(text t) =
     endfor
 enddef ;
 
+% range 4 thru 10
+
 def range expr x =
-    numtok[x]
+    _numtok_[x]
 enddef ;
 
-def numtok suffix x =
+def _numtok_ suffix x =
     x
 enddef ;
 
 tertiarydef m thru n =
     m for x=m+1 step 1 until n :
-        , numtok[x]
+        , _numtok_[x]
     endfor
 enddef ;
 

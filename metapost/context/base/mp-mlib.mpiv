@@ -1028,8 +1028,8 @@ vardef formatted(expr f, x) = textext(varfmt(f, x)) enddef ;
 
 % new
 
-def eofill expr p = fill p withpostscript "evenodd" enddef ;
-def eoclip expr p = clip p withpostscript "evenodd" enddef ;
+def eofill text t = fill t withpostscript "evenodd" enddef ;
+%%% eoclip text t = clip t withpostscript "evenodd" enddef ; % no postscripts yet
 
 % def withrule expr r =
 %     if (t = "even-odd") or (t = "evenodd") : withpostscript "evenodd" fi

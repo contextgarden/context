@@ -1531,6 +1531,16 @@
      \crampedscriptstyle  \or
     \fi}
 
+\newcount\c_math_saved_style
+
+\unexpanded\def\pushmathstyle % assumes begingroup .. endgroup
+  {\c_math_saved_style\mathstyle}
+
+\unexpanded\def\popmathstyle
+  {\ifnum\mathstyle=\c_math_saved_style\else
+     \triggermathstyle\c_math_saved_style
+   \fi}
+
 \installcorenamespace{mathstylecommand}
 \installcorenamespace{mathstylecache}
 

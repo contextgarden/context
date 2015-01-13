@@ -1829,25 +1829,29 @@
 
 % helpers: maybe we can need a setting for the uprights
 
-\xmlmapvalue {mml} {normal}                 {\mathupright} % {\mathtf}
-\xmlmapvalue {mml} {double-struck}          {\mathblackboard}
-\xmlmapvalue {mml} {italic}                 {\mathit}
-\xmlmapvalue {mml} {fraktur}                {\mathfraktur}
-\xmlmapvalue {mml} {script}                 {\mathscript}
-\xmlmapvalue {mml} {bold}                   {\mb}          % {\mathbf}
-\xmlmapvalue {mml} {bold-italic}            {\mathbi}
-\xmlmapvalue {mml} {bold-fraktur}           {\mathfraktur\mathbf}
-\xmlmapvalue {mml} {bold-script}            {\mathscript\mathbf}
-\xmlmapvalue {mml} {sans-serif}             {\mathss}
-\xmlmapvalue {mml} {bold-sans-serif}        {\mathss\mathbf}
-\xmlmapvalue {mml} {sans-serif-italic}      {\mathss\mathit}
-\xmlmapvalue {mml} {sans-serif-bold-italic} {\mathss\mathbi}
-\xmlmapvalue {mml} {monospace}              {\mathtt}
+\xmlmapvalue {mml:s} {normal}                 {\mathupright} % {\mathtf}
+\xmlmapvalue {mml:s} {double-struck}          {\mathblackboard}
+\xmlmapvalue {mml:s} {italic}                 {\mathit}
+\xmlmapvalue {mml:s} {fraktur}                {\mathfraktur}
+\xmlmapvalue {mml:s} {script}                 {\mathscript}
+\xmlmapvalue {mml:s} {bold}                   {\mb}          % {\mathbf}
+\xmlmapvalue {mml:s} {bold-italic}            {\mathbi}
+\xmlmapvalue {mml:s} {bold-fraktur}           {\mathfraktur\mathbf}
+\xmlmapvalue {mml:s} {bold-script}            {\mathscript\mathbf}
+\xmlmapvalue {mml:s} {sans-serif}             {\mathss}
+\xmlmapvalue {mml:s} {bold-sans-serif}        {\mathss\mathbf}
+\xmlmapvalue {mml:s} {sans-serif-italic}      {\mathss\mathit}
+\xmlmapvalue {mml:s} {sans-serif-bold-italic} {\mathss\mathbi}
+\xmlmapvalue {mml:s} {monospace}              {\mathtt}
+
+\xmlmapvalue {mml:l} {-}                      {\triggersmallstyle}
+\xmlmapvalue {mml:l} {+}                      {\triggerbigstyle}
 
 % todo: displaystyle=true/false (or whatever else shows up)
 
 \starttexdefinition setmmlmathstyle #1
-    \xmlval {mml} {\xmlatt{#1}{mathvariant}} \empty % was: \mmmr
+    \xmlval {mml:s} {\xmlatt{#1}{mathvariant}} \empty % was: \mmmr
+    \xmlval {mml:l} {\xmlatt{#1}{scriptlevel}} \empty % was: \mmmr
 \stoptexdefinition
 
 \starttexdefinition applymmlmathcolor #1#2
@@ -1904,8 +1908,10 @@
 
 \startxmlsetups mml:mi % todo: mathsize (unlikely) mathcolor (easy) mathbackground (easy)
     \begingroup
+        \pushmathstyle
         \setmmlmathstyle{#1}
         \ctxmodulemathml{mi("#1")}
+        \popmathstyle
     \endgroup
 \stopxmlsetups
 
@@ -2079,8 +2085,10 @@
 
 \startxmlsetups mml:mstyle
     \begingroup
+        \pushmathstyle
         \setmmlmathstyle{#1}
         \xmlflush{#1}
+        \popmathstyle
     \endgroup
 \stopxmlsetups
 

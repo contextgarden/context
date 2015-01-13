@@ -282,21 +282,24 @@ local function relocateimages(imagedata,oldname,newname,subpath,rename)
         report("relocating images")
         local n = 0
         local done = gsub(data,[[(id=")(.-)(".-background%-image *: *url%()(.-)(%))]], function(s1,id,s2,name,s3)
-            local newname = imagedata[id].newname
-            if newname then
-                if subpath then
-                    name = joinfile(subpath,basename(newname))
-                else
-                    name = basename(newname)
+            local data = imagedata[id]
+            if data then
+                local newname = data[id].newname
+                if newname then
+                    if subpath then
+                        name = joinfile(subpath,basename(newname))
+                    else
+                        name = basename(newname)
+                    end
+                 -- name = url.addscheme(name)
                 end
-             -- name = url.addscheme(name)
-            end
-            if newname then
-                n = n + 1
-                if rename then
-                    name = joinfile(subpath,addsuffix(id,suffix(name)))
+                if newname then
+                    n = n + 1
+                    if rename then
+                        name = joinfile(subpath,addsuffix(id,suffix(name)))
+                    end
+                    return s1 .. id .. s2 .. name .. s3
                 end
-                return s1 .. id .. s2 .. name .. s3
             end
         end)
         report("%s images relocated in %a",n,newname)

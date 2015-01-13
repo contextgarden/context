@@ -57,8 +57,13 @@ mpprocset    := 1 ;
 %
 % protect ;
 
-string space ; space := char 32 ;
-string CRLF  ; CRLF  := char 10 & char 13 ;
+string space  ; space  := char 32 ;
+string crlf   ; crlf   := char 10 & char 13 ;
+string dquote ; dquote := char 34 ;
+
+let SPACE  = space ;
+let CRLF   = crlf ;
+let DQUOTE = dquote ;
 
 vardef ddecimal primary p =
     decimal xpart p & " " & decimal ypart p
@@ -90,8 +95,8 @@ newinternal graycolormodel ; graycolormodel := 3 ;
 newinternal rgbcolormodel  ; rgbcolormodel  := 5 ;
 newinternal cmykcolormodel ; cmykcolormodel := 7 ;
 
-let grayscale = numeric ;
-let greyscale = numeric ;
+let grayscale = graycolor ;
+let greyscale = greycolor ;
 
 vardef colorpart expr c =
     if not picture c :
@@ -774,8 +779,8 @@ vardef whitecolor(expr c) =
     if cmykcolor c : (0,0,0,0) elseif rgbcolor c : (1,1,1)  else : 1         fi
 enddef ;
 
-vardef blackcolor(expr c) =
-    if cmykcolor c : (0,0,0,1) elseif rgbcolor c : (0,0,0)  else : 0         fi
+vardef blackcolor expr c =
+    if cmykcolor c : (0,0,0,1) elseif rgbcolor c : (0,0,0)  else : 0 fi
 enddef ;
 
 %D Well, this is the dangerous and naive version:
@@ -1569,6 +1574,8 @@ vardef grayed primary p =
   fi
 enddef ;
 
+let greyed = grayed ;
+
 % yes or no: "text" infont "cmr12" at 24pt ;
 
 % let normalinfont = infont ;
@@ -2036,7 +2043,7 @@ enddef ;
 % handy
 
 def withgray primary g =
-    withcolor (g,g,g)
+    withcolor g
 enddef ;
 
 % for metafun
@@ -2272,23 +2279,6 @@ primarydef p ystretched h = (
     p if (bbheight(p)>0) and (h>0) : yscaled (h/bbheight(p)) fi
 ) enddef ;
 
-primarydef p snapped s =
-    hide (
-        if path p :
-            forever :
-                exitif (bbheight(p) <= s) and (bbwidth(p) <= s) ;
-                p := p scaled (1/2) ;
-            endfor ;
-        elseif numeric p :
-            forever :
-                exitif p <= s ;
-                p := p scaled (1/2) ;
-            endfor ;
-        fi ;
-    )
-    p
-enddef ;
-
 %D Newer:
 
 vardef area expr p =
@@ -2298,15 +2288,18 @@ vardef area expr p =
 enddef ;
 
 vardef basiccolors[] =
-    save n ; n := @ mod 7 ;
-    if     n = 0 : white
-    elseif n = 1 : red
-    elseif n = 2 : green
-    elseif n = 3 : blue
-    elseif n = 4 : cyan
-    elseif n = 5 : magenta
-    elseif n = 6 : yellow
-    else         : black
+    if @ = 0 :
+        white
+    else :
+        save n ; n := @ mod 7 ;
+        if     n = 1 : red
+        elseif n = 2 : green
+        elseif n = 3 : blue
+        elseif n = 4 : cyan
+        elseif n = 5 : magenta
+        elseif n = 6 : yellow
+        else         : black
+        fi
     fi
 enddef ;
 
@@ -2494,7 +2487,7 @@ def endglyph =
     endfig ;
 enddef ;
 
-%D Dimensions have bever been an issue as traditional MP can't make that large
+%D Dimensions have never been an issue as traditional MP can't make that large
 %D pictures, but with double mode we need a catch:
 
 newinternal maxdimensions ; maxdimensions := 14000 ;

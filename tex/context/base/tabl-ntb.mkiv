@@ -1287,14 +1287,30 @@
    \the\t_tabl_ntb
    \dostoptagged}
 
+\unexpanded\def\tabl_ntb_span#1%
+  {\dorecurse{#1}
+     {\hskip\tabl_ntb_get_wid\c_tabl_ntb_col\relax
+      \global\advance\c_tabl_ntb_col\plusone}}
+
+\unexpanded\def\tabl_ntb_skip#1%
+  {\global\advance\c_tabl_ntb_col#1\relax}
+
+\unexpanded\def\tabl_ntb_plus
+  {\global\advance\c_tabl_ntb_col\plusone
+   \kern\d_tabl_ntb_columndistance}
+
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_none}#1#2%
   {\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
    \ifnum\scratchcounter>\zerocount
      \normalexpanded
        {\t_tabl_ntb_row
           {\the\t_tabl_ntb_row
-           \global\advance\c_tabl_ntb_col\ifnum\scratchcounter=\plusone\plusone\else\the\scratchcounter\relax\fi
-           \kern\d_tabl_ntb_columndistance}}%
+           \ifnum\scratchcounter=\plusone
+             \tabl_ntb_plus
+           \else
+             % span
+             \tabl_ntb_span{\the\scratchcounter}%
+           \fi}}%
    \fi}
 
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_cell}#1#2%
@@ -1304,8 +1320,11 @@
      \normalexpanded
        {\t_tabl_ntb_row
           {\the\t_tabl_ntb_row
-           \global\advance\c_tabl_ntb_col\ifnum\scratchcounter=\plusone\plusone\else\the\scratchcounter\relax\fi
-           \kern\d_tabl_ntb_columndistance}}%
+           \ifnum\scratchcounter=\plusone
+             \tabl_ntb_plus
+           \else
+             \tabl_ntb_skip{\the\scratchcounter}%
+           \fi}}%
    \fi}
 
 \unexpanded\def\tabl_ntb_cell#1#2%

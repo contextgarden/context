@@ -349,6 +349,7 @@ return {
         "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathsmallstylefont", "mathstyleface", "mathsmallstyleface", "mathstylecommand", "mathpalette",
         "mathstylehbox", "mathstylevbox", "mathstylevcenter", "mathstylevcenteredhbox", "mathstylevcenteredvbox",
         "mathtext", "setmathsmalltextbox", "setmathtextbox",
+        "pushmathstyle", "popmathstyle",
         --
         "triggerdisplaystyle", "triggertextstyle", "triggerscriptstyle", "triggerscriptscriptstyle",
         "triggeruncrampedstyle", "triggercrampedstyle",
