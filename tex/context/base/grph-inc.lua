@@ -1425,12 +1425,7 @@ end
 -- programs.makeoptions = makeoptions
 
 local function runprogram(binary,argument,variables)
-    -- os.which remembers found programs
---     if not variables and type(binary) == "table" and binary.command then
---         variables = argument
---         argument  = binary.argument
---         binary    = binary.command
---     end
+    -- move this check to the runner code
     local found = nil
     if type(binary) == "table" then
         for i=1,#binary do
@@ -1453,7 +1448,9 @@ local function runprogram(binary,argument,variables)
     elseif not argument or argument == "" then
         report_inclusion("nothing to run, no arguments for program %a",binary)
     else
-        local command = format([["%s" %s]],found,replacetemplate(longtostring(argument),variables))
+        -- no need to use the full found filename (found) .. we also don't quote the program
+        -- name any longer as in luatex there is too much messing with these names
+        local command = format([[%s %s]],binary,replacetemplate(longtostring(argument),variables))
         if trace_conversion or trace_programs then
             report_inclusion("running command: %s",command)
         end
@@ -1648,8 +1645,15 @@ bmpconverter.default = converter
 
 -- cmyk conversion
 
-local rgbprofile  = "srgb.icc"
-local cmykprofile = "isocoated_v2_eci.icc"
+-- ecirgb_v2.icc
+-- ecirgb_v2_iccv4.icc
+-- isocoated_v2_300_eci.icc
+-- isocoated_v2_eci.icc
+-- srgb.icc
+-- srgb_v4_icc_preference.icc
+
+local rgbprofile  = "srgb_v4_icc_preference.icc" -- srgb.icc
+local cmykprofile = "isocoated_v2_300_eci.icc"   -- isocoated_v2_eci.icc
 
 directives.register("graphics.conversion.rgbprofile", function(v) rgbprofile  = type(v) == "string" and v or rgbprofile  end)
 directives.register("graphics.conversion.cmykprofile",function(v) cmykprofile = type(v) == "string" and v or cmykprofile end)
@@ -1676,12 +1680,14 @@ end
 
 programs.pngtocmykpdf = {
     command  = "gm",
-    argument = [[convert -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -colorspace cmyk -strip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+    argument = [[convert -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -colorspace cmyk -sampling-factor 1x1 "%oldname%" "%newname%"]],
+ -- argument = [[convert -strip +profile "*" -colorspace cmyk -sampling-factor 1x1 "%oldname%" "%newname%"]],
 }
 
 programs.jpgtocmykpdf = {
     command  = "gm",
-    argument = [[convert -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -colorspace cmyk -strip -sampling-factor 1x1 -compress JPEG "%oldname%" "%newname%"]],
+    argument = [[convert -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -colorspace cmyk -sampling-factor 1x1 -compress JPEG "%oldname%" "%newname%"]],
+ -- argument = [[convert -strip +profile "*" -colorspace cmyk -sampling-factor 1x1 -compress JPEG "%oldname%" "%newname%"]],
 }
 
 figures.converters.png = {

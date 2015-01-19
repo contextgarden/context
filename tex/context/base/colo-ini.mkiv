@@ -1055,7 +1055,7 @@
 
 \let\colorformatseparator\space
 
-\def\MPcolor                 #1{\ctxcommand{mpcolor(\number\attribute\colormodelattribute,\number\colo_helpers_inherited_current_ca{#1},\number\colo_helpers_inherited_current_ta{#1})}}
+\def\MPcolor                 #1{\ctxcommand  {mpcolor(\number\attribute\colormodelattribute,\number\colo_helpers_inherited_current_ca{#1},\number\colo_helpers_inherited_current_ta{#1})}}
 \def\MPoptions               #1{\ctxcommand{mpoptions(\number\attribute\colormodelattribute,\number\colo_helpers_inherited_current_ca{#1},\number\colo_helpers_inherited_current_ta{#1})}}
 
 \def\thecolorattribute       #1{\number\csname\??colorattribute       \ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??colorattribute       #1\endcsname#1\fi\fi\endcsname}

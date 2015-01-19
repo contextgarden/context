@@ -866,7 +866,7 @@ vardef labels@#(text t) =
     endfor
 enddef ;
 
-% til lhere
+% till lhere
 
 vardef dotlabels@#(text t) =
     forsuffixes $=t:

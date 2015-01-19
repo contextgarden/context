@@ -1071,7 +1071,7 @@
    \ifautoTBLemptycell
       \normalexpanded
          {\tabl_ntb_set_txt_process\c_tabl_ntb_current_row\c_tabl_ntb_current_col{\the\c_tabl_ntb_current_row}{\the\c_tabl_ntb_current_col}}%
-         {\c!option=\v!tight}{\strut}%
+         {\c!option=\v!tight}{\strut\kern\scaledpoint}% the kern forces the tight
    \fi}
 
 \def\tabl_ntb_loop_two
@@ -1299,19 +1299,26 @@
   {\global\advance\c_tabl_ntb_col\plusone
    \kern\d_tabl_ntb_columndistance}
 
+% \setvalue{\??naturaltablecell\the\c_tabl_ntb_none}#1#2%
+%   {\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
+%    \ifnum\scratchcounter>\zerocount
+%      \normalexpanded
+%        {\t_tabl_ntb_row
+%           {\the\t_tabl_ntb_row
+%            \tabl_ntb_span{\the\scratchcounter}%
+%            \tabl_ntb_plus}}%
+%    \fi}
+
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_none}#1#2%
   {\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
-   \ifnum\scratchcounter>\zerocount
-     \normalexpanded
-       {\t_tabl_ntb_row
-          {\the\t_tabl_ntb_row
-           \ifnum\scratchcounter=\plusone
-             \tabl_ntb_plus
-           \else
-             % span
-             \tabl_ntb_span{\the\scratchcounter}%
-           \fi}}%
-   \fi}
+   \normalexpanded
+     {\t_tabl_ntb_row
+        {\the\t_tabl_ntb_row
+         \ifnum\scratchcounter>\zerocount
+           \tabl_ntb_span{\the\scratchcounter}%
+         \else
+           \tabl_ntb_plus
+         \fi}}}
 
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_cell}#1#2%
   {\t_tabl_ntb_row\expandafter{\the\t_tabl_ntb_row\tabl_ntb_pass #1 #2 }% space delimited -> less tokens

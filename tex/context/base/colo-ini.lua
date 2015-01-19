@@ -248,12 +248,14 @@ end
 
 local registered = { }
 
-local function do_registerspotcolor(parent,name,parentnumber,e,f,d,p)
+local function do_registerspotcolor(parent,parentnumber,e,f,d,p)
     if not registered[parent] then
         local v = colorvalues[parentnumber]
         if v then
             local model = colors.default -- else problems with shading etc
-            if model == 1 then model = v[1] end
+            if model == 1 then
+                model = v[1]
+            end
             if e and e ~= "" then
                 registrations.spotcolorname(parent,e) -- before registration of the color
             end
@@ -269,23 +271,25 @@ local function do_registerspotcolor(parent,name,parentnumber,e,f,d,p)
     end
 end
 
-local function do_registermultitonecolor(parent,name,parentnumber,e,f,d,p) -- same as spot but different template
-    if not registered[parent] then
-        local v = colorvalues[parentnumber]
-        if v then
-            local model = colors.default -- else problems with shading etc
-            if model == 1 then model = v[1] end
-            if     model == 2 then
-                registrations.grayindexcolor(parent,f,d,p,v[2])
-            elseif model == 3 then
-                registrations.rgbindexcolor (parent,f,d,p,v[3],v[4],v[5])
-            elseif model == 4 then
-                registrations.cmykindexcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
-            end
-        end
-        registered[parent] = true
-    end
-end
+-- local function do_registermultitonecolor(parent,name,parentnumber,e,f,d,p) -- same as spot but different template
+--     if not registered[parent] then
+--         local v = colorvalues[parentnumber]
+--         if v then
+--             local model = colors.default -- else problems with shading etc
+--             if model == 1 then
+--                 model = v[1]
+--             end
+--             if     model == 2 then
+--                 registrations.grayindexcolor(parent,f,d,p,v[2])
+--             elseif model == 3 then
+--                 registrations.rgbindexcolor (parent,f,d,p,v[3],v[4],v[5])
+--             elseif model == 4 then
+--                 registrations.cmykindexcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
+--             end
+--         end
+--         registered[parent] = true
+--     end
+-- end
 
 function colors.definesimplegray(name,s)
     return register_color(name,'gray',s) -- we still need to get rid of 'color'
@@ -396,16 +400,16 @@ end
 
 function colors.definespotcolor(name,parent,str,global)
     if parent == "" or find(parent,"=",1,true) then
-        colors.registerspotcolor(name, parent)
+        colors.registerspotcolor(name, parent) -- does that work? no attr
     elseif name ~= parent then
         local cp = attributes_list[a_color][parent]
         if cp then
             local t = settings_to_hash_strict(str)
             if t then
                 local tp = tonumber(t.p) or 1
-                do_registerspotcolor(parent, name, cp, t.e, 1, "", tp) -- p not really needed, only diagnostics
+                do_registerspotcolor(parent,cp,t.e,1,"",tp) -- p not really needed, only diagnostics
                 if name and name ~= "" then
-                    definecolor(name, register_color(name,'spot', parent, 1, "", tp), true)
+                    definecolor(name,register_color(name,'spot',parent,1,"",tp),true)
                     local ta, tt = t.a, t.t
                     if ta and tt then
                         definetransparent(name, transparencies.register(name,transparent[ta] or tonumber(ta) or 1,tonumber(tt) or 1), global)
@@ -428,13 +432,56 @@ function colors.registerspotcolor(parent, str)
             local t = settings_to_hash_strict(str)
             e = (t and t.e) or ""
         end
-        do_registerspotcolor(parent, "dummy", cp, e, 1, "", 1) -- p not really needed, only diagnostics
+        do_registerspotcolor(parent, cp, e, 1, "", 1) -- p not really needed, only diagnostics
+    end
+end
+
+local function f(i,colors,fraction)
+    local otf = 0
+    for c=1,#colors do
+        otf = otf + (tonumber(fraction[c]) or 1) * colors[c][i]
+    end
+    if otf > 1 then
+        otf = 1
+    end
+    return otf
+end
+
+local function definemixcolor(makename,name,fractions,cs,global,freeze)
+    local values = { }
+    for i=1,#cs do -- do fraction in here
+        local v = colorvalues[cs[i]]
+        if not v then
+            return
+        end
+        values[i] = v
+    end
+    if #values > 0 then
+        csone = values[1][1]
+        local ca
+        if csone == 2 then
+            ca = register_color(name,'gray',f(2,values,fractions))
+        elseif csone == 3 then
+            ca = register_color(name,'rgb', f(3,values,fractions),
+                                            f(4,values,fractions),
+                                            f(5,values,fractions))
+        elseif csone == 4 then
+            ca = register_color(name,'cmyk',f(6,values,fractions),
+                                            f(7,values,fractions),
+                                            f(8,values,fractions),
+                                            f(9,values,fractions))
+        else
+            ca = register_color(name,'gray',f(2,values,fractions))
+        end
+        definecolor(name,ca,global,freeze)
+    else
+        report_colors("invalid specification of components for color %a",makename)
     end
 end
 
 function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
     local dd, pp, nn, max = { }, { }, { }, 0
-    for k,v in gmatch(multispec,"(%a+)=([^%,]*)") do -- use settings_to_array
+    for k,v in gmatch(multispec,"([^=,]+)=([^%,]*)") do -- use settings_to_array
         max = max + 1
         dd[max] = k
         pp[max] = v
@@ -445,7 +492,7 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
         local parent = gsub(lower(nn),"[^%d%a%.]+","_")
         if not colorspec or colorspec == "" then
             local cc = { } for i=1,max do cc[i] = l_color[dd[i]] end
-            colors.definemixcolor(parent,pp,cc,global,freeze) -- can become local
+            definemixcolor(name,parent,pp,cc,global,freeze) -- can become local
         else
             if selfspec ~= "" then
                 colorspec = colorspec .. "," .. selfspec
@@ -455,7 +502,7 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
         local cp = attributes_list[a_color][parent]
         dd, pp = concat(dd,','), concat(pp,',')
         if cp then
-            do_registerspotcolor(parent, name, cp, "", max, dd, pp)
+            do_registerspotcolor(parent, cp, "", max, dd, pp)
             definecolor(name, register_color(name, 'spot', parent, max, dd, pp), true)
             local t = settings_to_hash_strict(selfspec)
             if t and t.a and t.t then
@@ -469,8 +516,9 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
     colorset[name] = true-- maybe we can store more
 end
 
--- will move to mlib-col as colors in m,p are somewhat messy due to the fact
--- that we cannot cast
+-- will move to mlib-col as colors in mp are somewhat messy due to the fact
+-- that we cannot cast .. so we really need to use (s,s,s) for gray in order
+-- to be able to map onto 'color'
 
 local function mpcolor(model,ca,ta,default)
     local cv = colorvalues[ca]
@@ -488,7 +536,8 @@ local function mpcolor(model,ca,ta,default)
             elseif model == 4 then
                 return formatters["transparent(%s,%s,cmyk(%s,%s,%s,%s))"](tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
             elseif model == 5 then
-                return formatters['transparent(%s,%s,multitonecolor("%s",%s,"%s","%s"))'](tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
+             -- return formatters['transparent(%s,%s,multitonecolor("%s",%s,"%s","%s"))'](tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
+                return formatters['transparent(%s,%s,namedcolor("%s"))'](tv[1],tv[2],cv[10])
             else -- see ** in meta-ini.mkiv: return formatters["transparent(%s,%s,(%s))"](tv[1],tv[2],cv[2])
                 return formatters["transparent(%s,%s,(%s,%s,%s))"](tv[1],tv[2],cv[3],cv[4],cv[5])
             end
@@ -500,7 +549,8 @@ local function mpcolor(model,ca,ta,default)
             elseif model == 4 then
                 return formatters["cmyk(%s,%s,%s,%s)"](cv[6],cv[7],cv[8],cv[9])
             elseif model == 5 then
-                return formatters['multitonecolor("%s",%s,"%s","%s")'](cv[10],cv[11],cv[12],cv[13])
+             -- return formatters['multitonecolor("%s",%s,"%s","%s")'](cv[10],cv[11],cv[12],cv[13])
+                return formatters['namedcolor("%s")'](cv[10])
             else -- see ** in meta-ini.mkiv: return formatters["%s"]((cv[2]))
                 return formatters["(%s,%s,%s)"](cv[3],cv[4],cv[5])
             end
@@ -736,45 +786,6 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
     if ta and tt then
         definetransparent(name,transparencies.register(name,ta,tt),global)
     end
-end
-
-local function f(i,colors,fraction)
-    local otf = 0
-    for c=1,#colors do
-        otf = otf + (tonumber(fraction[c]) or 1) * colors[c][i]
-    end
-    if otf > 1 then
-        otf = 1
-    end
-    return otf
-end
-
-function colors.definemixcolor(name,fractions,cs,global,freeze)
-    local values = { }
-    for i=1,#cs do -- do fraction in here
-        local v = colorvalues[cs[i]]
-        if not v then
-            return
-        end
-        values[i] = v
-    end
-    local csone = values[1][1]
-    local ca
-    if csone == 2 then
-        ca = register_color(name,'gray',f(2,values,fractions))
-    elseif csone == 3 then
-        ca = register_color(name,'rgb', f(3,values,fractions),
-                                        f(4,values,fractions),
-                                        f(5,values,fractions))
-    elseif csone == 4 then
-        ca = register_color(name,'cmyk',f(6,values,fractions),
-                                        f(7,values,fractions),
-                                        f(8,values,fractions),
-                                        f(9,values,fractions))
-    else
-        ca = register_color(name,'gray',f(2,values,fractions))
-    end
-    definecolor(name,ca,global,freeze)
 end
 
 -- for the moment downward compatible

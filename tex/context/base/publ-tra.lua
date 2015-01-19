@@ -98,7 +98,7 @@ function tracers.showdatasetcompleteness(settings)
     end
 
     local function required(done,foundfields,key,value,indirect)
-        ctx_NC() if not done then context("required") end
+        ctx_NC() if not done then ctx_monobold("required") end
         ctx_NC() context(key)
         ctx_NC()
             if indirect then
@@ -118,7 +118,7 @@ function tracers.showdatasetcompleteness(settings)
     end
 
     local function optional(done,foundfields,key,value,indirect)
-        ctx_NC() if not done then context("optional") end
+        ctx_NC() if not done then ctx_monobold("optional") end
         ctx_NC() context(key)
         ctx_NC()
             if indirect then
@@ -132,7 +132,7 @@ function tracers.showdatasetcompleteness(settings)
     end
 
     local function special(done,key,value)
-        ctx_NC() if not done then context("special") end
+        ctx_NC() if not done then ctx_monobold("special") end
         ctx_NC() context(key)
         ctx_NC() context(lpegmatch(texescape,value))
         ctx_NC() ctx_NR()
@@ -140,7 +140,7 @@ function tracers.showdatasetcompleteness(settings)
     end
 
     local function extra(done,key,value)
-        ctx_NC() if not done then context("extra") end
+        ctx_NC() if not done then ctx_monobold("extra") end
         ctx_NC() context(key)
         ctx_NC() context(lpegmatch(texescape,value))
         ctx_NC() ctx_NR()

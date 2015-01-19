@@ -29,6 +29,10 @@
 
 % set all APA compliant values (may be redundant but we do not count on defaults.)
 
+\setupbtxlist
+  [alternative=hanging,
+   margin=3em]
+
 \setupbtxlistvariant
   [\c!namesep={,\space},
    \c!lastnamesep={,\nobreakspace\textampersand\space},
@@ -127,8 +131,7 @@
 
 \setupbtxrendering
     [sorttype=authoryear,
-     numbering=no,
-     hang=20] % how to get hanging to work? ... answer: it's descriptions ...
+     numbering=no]
 
 % Should the following be loaded by default?
 

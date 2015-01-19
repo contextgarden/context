@@ -130,4 +130,32 @@ return {
         --
         "pen_lft", "pen_rt", "pen_top", "pen_bot", -- "pen_count_",
     },
+    metafont = {
+         -- :: =: =:| =:|> |=: |=:> |=:| |=:|> |=:|>> ||:
+        "autorounding", "beginchar", "blacker", "boundarychar", "capsule_def",
+        "capsule_end", "change_width", "chardp", "chardx", "chardy", "charexists",
+        "charext", "charht", "charic", "charlist", "charwd", "cull", "cullit",
+        "currenttransform", "define_blacker_pixels", "define_corrected_pixels",
+        "define_good_x_pixels", "define_good_y_pixels",
+        "define_horizontal_corrected_pixels", "define_pixels",
+        "define_whole_blacker_pixels", "define_whole_pixels",
+        "define_whole_vertical_blacker_pixels", "define_whole_vertical_pixels",
+        "designsize", "display", "endchar", "extensible", "extra_beginchar",
+        "extra_endchar", "extra_setup", "fillin", "font_coding_scheme",
+        "font_extra_space", "font_identifier", "font_normal_shrink",
+        "font_normal_space", "font_normal_stretch", "font_quad", "font_size",
+        "font_slant", "font_x_height", "fontdimen", "fontmaking", "gfcorners",
+        "granularity", "grayfont", "headerbyte", "hppp", "hround", "imagerules",
+        "italcorr", "kern", "labelfont", "ligtable", "lowres_fix", "makebox",
+        "makegrid", "maketicks", "mode_def", "mode_setup", "nodisplays",
+        "notransforms", "numspecial", "o_correction", "openit", "openwindow",
+        "proofing", "proofoffset", "proofrule", "proofrulethickness", "rulepen",
+        "screenchars", "screenrule", "screenstrokes", "showit", "slantfont",
+        "smode", "smoothing", "titlefont", "totalweight", "tracingedges",
+        "tracingpens", "turningcheck", "unitpixel", "vppp", "vround", "xoffset",
+        "yoffset",
+    },
+    disabled = {
+        "verbatimtex"
+    }
 }

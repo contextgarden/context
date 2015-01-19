@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
 }
 
 local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
-local tonumber, type = tonumber, type
+local tonumber, type, unpack = tonumber, type, unpack
 local round = math.round
 local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
@@ -39,11 +39,19 @@ local report_textexts      = logs.reporter("metapost","textexts")
 local report_scripts       = logs.reporter("metapost","scripts")
 
 local colors               = attributes.colors
+local defineprocesscolor   = colors.defineprocesscolor
+local definespotcolor      = colors.definespotcolor
+local definemultitonecolor = colors.definemultitonecolor
+local colorvalue           = colors.value
 
-local rgbtocmyk            = colors.rgbtocmyk  or function() return 0,0,0,1 end
-local cmyktorgb            = colors.cmyktorgb  or function() return 0,0,0   end
-local rgbtogray            = colors.rgbtogray  or function() return 0       end
-local cmyktogray           = colors.cmyktogray or function() return 0       end
+local transparencies       = attributes.transparencies
+local registertransparency = transparencies.register
+local transparencyvalue    = transparencies.value
+
+local rgbtocmyk            = colors.rgbtocmyk  -- or function() return 0,0,0,1 end
+local cmyktorgb            = colors.cmyktorgb  -- or function() return 0,0,0   end
+local rgbtogray            = colors.rgbtogray  -- or function() return 0       end
+local cmyktogray           = colors.cmyktogray -- or function() return 0       end
 
 metapost.makempy           = metapost.makempy or { nofconverted = 0 }
 local makempy              = metapost.makempy
@@ -58,11 +66,6 @@ local innertransparency    = nooutertransparency
 
 local pdfcolor             = lpdf.color
 local pdftransparency      = lpdf.transparency
-local registercolor        = colors.register
-local registerspotcolor    = colors.registerspotcolor
-
-local transparencies       = attributes.transparencies
-local registertransparency = transparencies.register
 
 function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattribute)
     -- has always to be called before conversion
@@ -84,6 +87,8 @@ function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattri
     innertransparency = outertransparency -- not yet used
 end
 
+-- todo: get this from the lpdf module
+
 local f_f     = formatters["%F"]
 local f_f3    = formatters["%.3F"]
 
@@ -92,6 +97,8 @@ local f_rgb   = formatters["%.3F %.3F %.3F rg %.3F %.3F %.3F RG"]
 local f_cmyk  = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
 local f_cm    = formatters["q %F %F %F %F %F %F cm"]
 local f_shade = formatters["MpSh%s"]
+
+local f_spot  = formatters["/%s cs /%s CS %s SCN %s scn"]
 
 local function checked_color_pair(color,...)
     if not color then
@@ -142,15 +149,6 @@ local function normalize(ca,cb)
     end
 end
 
--- todo: check for the same colorspace (actually a backend issue), now we can
--- have several similar resources
---
--- normalize(ca,cb) fails for spotcolors
-
-local function spotcolorconverter(parent, n, d, p)
-    registerspotcolor(parent)
-    return pdfcolor(colors.model,registercolor(nil,'spot',parent,n,d,p)), outercolor
-end
 
 local commasplitter = tsplitat(",")
 
@@ -1045,9 +1043,9 @@ local function sh_process(object,prescript,before,after)
     local sh_type = prescript.sh_type
     if sh_type then
         nofshades = nofshades + 1
-        local domain  = lpegmatch(domainsplitter,prescript.sh_domain)
-        local centera = lpegmatch(centersplitter,prescript.sh_center_a)
-        local centerb = lpegmatch(centersplitter,prescript.sh_center_b)
+        local domain  = lpegmatch(domainsplitter,prescript.sh_domain   or "0 1")
+        local centera = lpegmatch(centersplitter,prescript.sh_center_a or "0 0")
+        local centerb = lpegmatch(centersplitter,prescript.sh_center_b or "0 0")
         --
         local sh_color_a = prescript.sh_color_a or "1"
         local sh_color_b = prescript.sh_color_b or "1"
@@ -1096,8 +1094,9 @@ local function sh_process(object,prescript,before,after)
             local coordinates = { centera[1], centera[2], centerb[1], centerb[2] }
             lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates,separation) -- backend specific (will be renamed)
         elseif sh_type == "circular" then
-            local radiusa = tonumber(prescript.sh_radius_a)
-            local radiusb = tonumber(prescript.sh_radius_b)
+            local factor  = tonumber(prescript.sh_factor) or 1
+            local radiusa = factor * tonumber(prescript.sh_radius_a)
+            local radiusb = factor * tonumber(prescript.sh_radius_b)
             local coordinates = { centera[1], centera[2], radiusa, centerb[1], centerb[2], radiusb }
             lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates,separation) -- backend specific (will be renamed)
         else
@@ -1179,6 +1178,12 @@ local value = Cs ( (
 local t_list = attributes.list[attributes.private('transparency')]
 local c_list = attributes.list[attributes.private('color')]
 
+local remappers = {
+    [1] = formatters["s=%s"],
+    [3] = formatters["r=%s,g=%s,b=%s"],
+    [4] = formatters["c=%s,m=%s,y=%s,k=%s"],
+}
+
 local function tr_process(object,prescript,before,after)
     -- before can be shortcut to t
     local tr_alternative = prescript.tr_alternative
@@ -1194,56 +1199,83 @@ local function tr_process(object,prescript,before,after)
         local sp_type = prescript.sp_type
         if not sp_type then
             c_b, c_a = colorconverter(cs)
-        elseif sp_type == "spot" or sp_type == "multitone" then
-            local sp_name       = prescript.sp_name       or "black"
-            local sp_fractions  = prescript.sp_fractions  or 1
-            local sp_components = prescript.sp_components or ""
-            local sp_value      = prescript.sp_value      or "1"
-            local cf = cs[1]
-            if cf ~= 1 then
-                -- beware, we do scale the spotcolors but not the alternative representation
-                sp_value = lpegmatch(value,sp_value,1,cf) or sp_value
-            end
-            c_b, c_a = spotcolorconverter(sp_name,sp_fractions,sp_components,sp_value)
-        elseif sp_type == "named" then
-            -- we might move this to another namespace .. also, named can be a spotcolor
-            -- so we need to check for that too ... also we need to resolve indirect
-            -- colors so we might need the second pass for this (draw dots with \MPcolor)
+        else
             local sp_name = prescript.sp_name or "black"
-            if not tr_alternative then
-                -- todo: sp_name is not yet registered at this time
-                local t = t_list[sp_name] -- string or attribute
-                local v = t and attributes.transparencies.value(t)
+            if sp_type == "spot" then
+                local sp_value = prescript.sp_value or "s:1"
+                local sp_temp  = formatters["mp:%s"](sp_value)
+                local s = split(sp_value,":")
+                local r = remappers[#s]
+                defineprocesscolor(sp_temp,r and r(unpack(s)) or "s=0",true,true)
+                definespotcolor(sp_name,sp_temp,"p=1",true)
+                sp_type = "named"
+            elseif sp_type == "multitone" then
+                local sp_value = prescript.sp_value or "s:1"
+                local sp_spec  = { }
+                local sp_list  = split(sp_value," ")
+                for i=1,#sp_list do
+                    local v = sp_list[i]
+                    local t = formatters["mp:%s"](v)
+                    local s = split(v,":")
+                    local r = remappers[#s]
+                    defineprocesscolor(t,r and r(unpack(s)) or "s=0",true,true)
+                    local tt = formatters["ms:%s"](v)
+                    definespotcolor(tt,t,"p=1",true)
+                    sp_spec[#sp_spec+1] = formatters["%s=1"](t)
+                end
+                sp_spec = concat(sp_spec,",")
+                definemultitonecolor(sp_name,sp_spec,"","",true)
+                sp_type = "named"
+            end
+            if sp_type == "named" then
+                -- we might move this to another namespace .. also, named can be a spotcolor
+                -- so we need to check for that too ... also we need to resolve indirect
+                -- colors so we might need the second pass for this (draw dots with \MPcolor)
+                if not tr_alternative then
+                    -- todo: sp_name is not yet registered at this time
+                    local t = t_list[sp_name] -- string or attribute
+                    local v = t and transparencyvalue(t)
+                    if v then
+                        before[#before+1] = formatters["/Tr%s gs"](registertransparency(nil,v[1],v[2],true))
+                        after[#after+1] = "/Tr0 gs" -- outertransparency
+                    end
+                end
+                local c = c_list[sp_name] -- string or attribute
+                local v = c and colorvalue(c)
                 if v then
-                    before[#before+1] = formatters["/Tr%s gs"](registertransparency(nil,v[1],v[2],true))
-                    after[#after+1] = "/Tr0 gs" -- outertransparency
+                    -- all=1 gray=2 rgb=3 cmyk=4
+                    local colorspace = v[1]
+                    local f = cs[1]
+                    if colorspace == 2 then
+                        local s = f*v[2]
+                        c_b, c_a = checked_color_pair(f_gray,s,s)
+                    elseif colorspace == 3 then
+                        local r, g, b = f*v[3], f*v[4], f*v[5]
+                        c_b, c_a = checked_color_pair(f_rgb,r,g,b,r,g,b)
+                    elseif colorspace == 4 or colorspace == 1 then
+                        local c, m, y, k = f*v[6], f*v[7], f*v[8], f*v[9]
+                        c_b, c_a = checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
+                    elseif colorspace == 5 then
+                        -- not all viewers show the fractions ok
+                        local name  = v[10]
+                        local value = split(v[13],",")
+                        if f ~= 1 then
+                            for i=1,#value do
+                                value[i] = f * (tonumber(value[i]) or 1)
+                            end
+                        end
+                        value = concat(value," ")
+                        c_b, c_a = checked_color_pair(f_spot,name,name,value,value)
+                    else
+                        local s = f*v[2]
+                        c_b, c_a = checked_color_pair(f_gray,s,s)
+                    end
                 end
             end
-            local c = c_list[sp_name] -- string or attribute
-            local v = c and attributes.colors.value(c)
-            if v then
-                -- all=1 gray=2 rgb=3 cmyk=4
-                local colorspace = v[1]
-                local f = cs[1]
-                if colorspace == 2 then
-                    local s = f*v[2]
-                    c_b, c_a = checked_color_pair(f_gray,s,s)
-                elseif colorspace == 3 then
-                    local r, g, b = f*v[3], f*v[4], f*v[5]
-                    c_b, c_a = checked_color_pair(f_rgb,r,g,b,r,g,b)
-                elseif colorspace == 4 or colorspace == 1 then
-                    local c, m, y, k = f*v[6], f*v[7], f*v[8], f*v[9]
-                    c_b, c_a = checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
-                else
-                    local s = f*v[2]
-                    c_b, c_a = checked_color_pair(f_gray,s,s)
-                end
-            end
-            --
         end
         if c_a and c_b then
             before[#before+1] = c_b
-            after[#after+1] = c_a
+            after [#after +1] = c_a
         end
     end
 end

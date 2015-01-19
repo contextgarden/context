@@ -60,23 +60,37 @@ def namedcolor (expr n) =
     withprescript "sp_name=" & n
 enddef ;
 
+% def spotcolor(expr n, v) =
+%     1
+%     withprescript "sp_type=spot"
+%     withprescript "sp_name="  & n
+%     withprescript "sp_value=" & (if numeric v : decimal v else : v fi)
+% enddef ;
+%
+% def multitonecolor(expr name, fractions, components, value) =
+%     1
+%     withprescript "sp_type=multitone"
+%     withprescript "sp_name="       & name
+%     withprescript "sp_fractions="  & decimal fractions
+%     withprescript "sp_components=" & components
+%     withprescript "sp_value="      & value
+% enddef ;
+
 def spotcolor(expr n, v) =
     1
     withprescript "sp_type=spot"
     withprescript "sp_name="  & n
-    withprescript "sp_value=" & v
+    withprescript "sp_value=" & colordecimals v
 enddef ;
 
-def multitonecolor(expr name, fractions, components, value) =
+def multitonecolor(expr name)(text t) =
     1
     withprescript "sp_type=multitone"
-    withprescript "sp_name="       & name
-    withprescript "sp_fractions="  & decimal fractions
-    withprescript "sp_components=" & components
-    withprescript "sp_value="      & value
+    withprescript "sp_name=" & name
+    withprescript "sp_value=" & colordecimalslist(t)
 enddef ;
 
-def transparent(expr a, t)(text c) =
+def transparent(expr a, t)(text c) = % use withtransparency instead
     1 % this permits withcolor x intoshade y
     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(a)
     withprescript "tr_transparency=" & decimal t
@@ -369,11 +383,163 @@ primarydef str infont name = % nasty hack
     fi
 enddef ;
 
+% Helper
+
+string mfun_prescript_separator ; mfun_prescript_separator := char(13) ;
+
 % Shades
 
-newinternal shadefactor  ; shadefactor  := 1 ;
-pair        shadeoffset  ; shadeoffset  := origin ;
-boolean     trace_shades ; trace_shades := false ;
+% for while we had this:
+%
+% newinternal shadefactor  ; shadefactor  := 1 ;
+% pair        shadeoffset  ; shadeoffset  := origin ;
+% boolean     trace_shades ; trace_shades := false ;
+%
+% def withlinearshading (expr a, b) =
+%     withprescript "sh_type=linear"
+%     withprescript "sh_domain=0 1"
+%     withprescript "sh_factor="   & decimal shadefactor
+%     withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
+%     withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
+% enddef ;
+%
+% def withcircularshading (expr a, b, ra, rb) =
+%     withprescript "sh_type=circular"
+%     withprescript "sh_domain=0 1"
+%     withprescript "sh_factor="   & decimal shadefactor
+%     withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
+%     withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
+%     withprescript "sh_radius_a=" & decimal ra
+%     withprescript "sh_radius_b=" & decimal rb
+% enddef ;
+%
+% def withshading (expr how)(text rest) =
+%     if how = "linear" :
+%         withlinearshading(rest)
+%     elseif how = "circular" :
+%         withcircularshading(rest)
+%     else :
+%         % nothing
+%     fi
+% enddef ;
+%
+% def withfromshadecolor expr t =
+%     withprescript "sh_color=into"
+%     withprescript "sh_color_a=" & colordecimals t
+% enddef ;
+
+% def withtoshadecolor expr t =
+%     withprescript "sh_color=into"
+%     withprescript "sh_color_b=" & colordecimals t
+% enddef ;
+
+% but this is nicer
+
+path mfun_shade_path ;
+
+primarydef p withshademethod m =
+    hide(mfun_shade_path := p ;)
+    p
+    withprescript "sh_domain=0 1"
+    withprescript "sh_color=into"
+    withprescript "sh_color_a=" & colordecimals white
+    withprescript "sh_color_b=" & colordecimals black
+    if m = "linear" :
+        withprescript "sh_type=linear"
+        withprescript "sh_factor=1"
+        withprescript "sh_center_a=" & ddecimal llcorner p
+        withprescript "sh_center_b=" & ddecimal urcorner p
+    else :
+        withprescript "sh_type=circular"
+        withprescript "sh_factor=1.2"
+        withprescript "sh_center_a=" & ddecimal center p
+        withprescript "sh_center_b=" & ddecimal center p
+        withprescript "sh_radius_a=" & decimal 0
+        withprescript "sh_radius_b=" & decimal ( max (
+            (xpart center p - xpart llcorner p) ++ (ypart center p - ypart llcorner p),
+            (xpart center p - xpart ulcorner p) ++ (ypart ulcorner p - ypart center p),
+            (xpart lrcorner p - xpart center p) ++ (ypart center p - ypart lrcorner p),
+            (xpart urcorner p - xpart center p) ++ (ypart urcorner p - ypart center p)
+        ) )
+    fi
+enddef ;
+
+def withshadevector expr a =
+    withprescript "sh_center_a=" & ddecimal (point xpart a of mfun_shade_path)
+    withprescript "sh_center_b=" & ddecimal (point ypart a of mfun_shade_path)
+enddef ;
+
+def withshadecenter expr a =
+    withprescript "sh_center_a=" & ddecimal (
+        center mfun_shade_path shifted (
+            xpart a * bbwidth (mfun_shade_path)/2,
+            ypart a * bbheight(mfun_shade_path)/2
+        )
+    )
+enddef ;
+
+def withshadedomain expr d =
+    withprescript "sh_domain=" & ddecimal d
+enddef ;
+
+def withshadefactor expr f =
+    withprescript "sh_factor=" & decimal f
+enddef ;
+
+def withshadecolors (expr a, b) =
+    withprescript "sh_color=into"
+    withprescript "sh_color_a=" & colordecimals a
+    withprescript "sh_color_b=" & colordecimals b
+enddef ;
+
+primarydef a shadedinto b = % withcolor red shadedinto green
+    1 % does not work with transparency
+    withprescript "sh_color=into"
+    withprescript "sh_color_a=" & colordecimals a
+    withprescript "sh_color_b=" & colordecimals b
+enddef ;
+
+primarydef p withshade sc =
+    p withprescript mfun_defined_cs_pre[sc]
+enddef ;
+
+def defineshade suffix s =
+    mfun_defineshade(str s)
+enddef ;
+
+def mfun_defineshade (expr s) text t =
+    expandafter def scantokens s = t enddef ;
+enddef ;
+
+def shaded text s =
+    s
+enddef ;
+
+% Old macros:
+
+def withcircularshade (expr a, b, ra, rb, ca, cb) =
+    withprescript "sh_type=circular"
+    withprescript "sh_domain=0 1"
+    withprescript "sh_factor=1"
+    withprescript "sh_color_a="  & colordecimals ca
+    withprescript "sh_color_b="  & colordecimals cb
+    withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
+    withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
+    withprescript "sh_radius_a=" & decimal ra
+    withprescript "sh_radius_b=" & decimal rb
+enddef ;
+
+def withlinearshade (expr a, b, ca, cb) =
+    withprescript "sh_type=linear"
+    withprescript "sh_domain=0 1"
+    withprescript "sh_factor=1"
+    withprescript "sh_color_a="  & colordecimals ca
+    withprescript "sh_color_b="  & colordecimals cb
+    withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
+    withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
+enddef ;
+
+% replaced (obsolete):
 
 def set_linear_vector (suffix a,b)(expr p,n) =
     if     (n=1) : a := llcorner p ; b := urcorner p ;
@@ -388,7 +554,7 @@ def set_linear_vector (suffix a,b)(expr p,n) =
     fi ;
 enddef ;
 
-def set_circular_vector (suffix ab, r)(expr p,n) =
+def set_circular_vector (suffix ab,r)(expr p,n) =
     if     (n=1) : ab := llcorner p ;
     elseif (n=2) : ab := lrcorner p ;
     elseif (n=3) : ab := urcorner p ;
@@ -411,7 +577,7 @@ enddef ;
 
 def linear_shade (expr p, n, ca, cb) =
     begingroup ;
-        save a, b, sh ; pair a, b ;
+        save a, b ; pair a, b ;
         set_linear_vector(a,b)(p,n) ;
         fill p withlinearshade(a,b,ca,cb) ;
         if trace_shades :
@@ -420,43 +586,19 @@ def linear_shade (expr p, n, ca, cb) =
     endgroup ;
 enddef ;
 
-def withcircularshade (expr a, b, ra, rb, ca, cb) =
-    withprescript "sh_type=circular"
-    withprescript "sh_domain=0 1"
-    withprescript "sh_factor="   & decimal shadefactor
-    withprescript "sh_color_a="  & colordecimals ca
-    withprescript "sh_color_b="  & colordecimals cb
-    withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
-    withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
-    withprescript "sh_radius_a=" & decimal ra
-    withprescript "sh_radius_b=" & decimal rb
-enddef ;
-
-def withlinearshade (expr a, b, ca, cb) =
-    withprescript "sh_type=linear"
-    withprescript "sh_domain=0 1"
-    withprescript "sh_factor="   & decimal shadefactor
-    withprescript "sh_color_a="  & colordecimals ca
-    withprescript "sh_color_b="  & colordecimals cb
-    withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
-    withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
-enddef ;
-
 string mfun_defined_cs_pre[] ; numeric mfun_defined_cs ; mfun_defined_cs := 0 ;
-
-string mfun_prescript_separator ; mfun_prescript_separator := char(13) ;
 
 vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
     mfun_defined_cs := mfun_defined_cs + 1 ;
     mfun_defined_cs_pre[mfun_defined_cs] := "sh_type=circular"
-      & mfun_prescript_separator & "sh_domain=0 1"
-      & mfun_prescript_separator & "sh_factor="   & decimal shadefactor
-      & mfun_prescript_separator & "sh_color_a="  & colordecimals ca
-      & mfun_prescript_separator & "sh_color_b="  & colordecimals cb
-      & mfun_prescript_separator & "sh_center_a=" & ddecimal (a shifted shadeoffset)
-      & mfun_prescript_separator & "sh_center_b=" & ddecimal (b shifted shadeoffset)
-      & mfun_prescript_separator & "sh_radius_a=" & decimal ra
-      & mfun_prescript_separator & "sh_radius_b=" & decimal rb
+    & mfun_prescript_separator & "sh_domain=0 1"
+    & mfun_prescript_separator & "sh_factor=1"
+    & mfun_prescript_separator & "sh_color_a="  & colordecimals ca
+    & mfun_prescript_separator & "sh_color_b="  & colordecimals cb
+    & mfun_prescript_separator & "sh_center_a=" & ddecimal (a shifted shadeoffset)
+    & mfun_prescript_separator & "sh_center_b=" & ddecimal (b shifted shadeoffset)
+    & mfun_prescript_separator & "sh_radius_a=" & decimal ra
+    & mfun_prescript_separator & "sh_radius_b=" & decimal rb
     ;
     mfun_defined_cs
 enddef ;
@@ -464,52 +606,49 @@ enddef ;
 vardef define_linear_shade (expr a, b, ca, cb) =
     mfun_defined_cs := mfun_defined_cs + 1 ;
     mfun_defined_cs_pre[mfun_defined_cs] := "sh_type=linear"
-      & mfun_prescript_separator & "sh_domain=0 1"
-      & mfun_prescript_separator & "sh_factor=" & decimal shadefactor
-      & mfun_prescript_separator & "sh_color_a=" & colordecimals ca
-      & mfun_prescript_separator & "sh_color_b=" & colordecimals cb
-      & mfun_prescript_separator & "sh_center_a=" & ddecimal (a shifted shadeoffset)
-      & mfun_prescript_separator & "sh_center_b=" & ddecimal (b shifted shadeoffset)
+    & mfun_prescript_separator & "sh_domain=0 1"
+    & mfun_prescript_separator & "sh_factor=1"
+    & mfun_prescript_separator & "sh_color_a=" & colordecimals ca
+    & mfun_prescript_separator & "sh_color_b=" & colordecimals cb
+    & mfun_prescript_separator & "sh_center_a=" & ddecimal (a shifted shadeoffset)
+    & mfun_prescript_separator & "sh_center_b=" & ddecimal (b shifted shadeoffset)
     ;
     mfun_defined_cs
 enddef ;
 
-primarydef p withshade sc =
-    p withprescript mfun_defined_cs_pre[sc]
-enddef ;
-
-
-vardef define_sampled_linear_shade(expr a,b,n)(text t) =
-    mfun_defined_cs := mfun_defined_cs + 1 ;
-    mfun_defined_cs_pre[mfun_defined_cs] := "ssh_type=linear"
-      & mfun_prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
-      & mfun_prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
-      & mfun_prescript_separator & "ssh_nofcolors=" & decimal n
-      & mfun_prescript_separator & "ssh_domain=" & domstr
-      & mfun_prescript_separator & "ssh_extend=" & extstr
-      & mfun_prescript_separator & "ssh_colors=" & colstr
-      & mfun_prescript_separator & "ssh_bounds=" & bndstr
-      & mfun_prescript_separator & "ssh_ranges=" & ranstr
-    ;
-    mfun_defined_cs
-enddef ;
-
-vardef define_sampled_circular_shade(expr a,b,ra,rb,n)(text t) =
-    mfun_defined_cs := mfun_defined_cs + 1 ;
-    mfun_defined_cs_pre[mfun_defined_cs] := "ssh_type=circular"
-      & mfun_prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
-      & mfun_prescript_separator & "ssh_radius_a=" & decimal ra
-      & mfun_prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
-      & mfun_prescript_separator & "ssh_radius_b=" & decimal rb
-      & mfun_prescript_separator & "ssh_nofcolors=" & decimal n
-      & mfun_prescript_separator & "ssh_domain=" & domstr
-      & mfun_prescript_separator & "ssh_extend=" & extstr
-      & mfun_prescript_separator & "ssh_colors=" & colstr
-      & mfun_prescript_separator & "ssh_bounds=" & bndstr
-      & mfun_prescript_separator & "ssh_ranges=" & ranstr
-    ;
-    mfun_defined_cs
-enddef ;
+% I lost the example code that uses this:
+%
+% vardef define_sampled_linear_shade(expr a,b,n)(text t) =
+%     mfun_defined_cs := mfun_defined_cs + 1 ;
+%     mfun_defined_cs_pre[mfun_defined_cs] := "ssh_type=linear"
+%     & mfun_prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
+%     & mfun_prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
+%     & mfun_prescript_separator & "ssh_nofcolors=" & decimal n
+%     & mfun_prescript_separator & "ssh_domain=" & domstr
+%     & mfun_prescript_separator & "ssh_extend=" & extstr
+%     & mfun_prescript_separator & "ssh_colors=" & colstr
+%     & mfun_prescript_separator & "ssh_bounds=" & bndstr
+%     & mfun_prescript_separator & "ssh_ranges=" & ranstr
+%     ;
+%     mfun_defined_cs
+% enddef ;
+%
+% vardef define_sampled_circular_shade(expr a,b,ra,rb,n)(text t) =
+%     mfun_defined_cs := mfun_defined_cs + 1 ;
+%     mfun_defined_cs_pre[mfun_defined_cs] := "ssh_type=circular"
+%     & mfun_prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
+%     & mfun_prescript_separator & "ssh_radius_a=" & decimal ra
+%     & mfun_prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
+%     & mfun_prescript_separator & "ssh_radius_b=" & decimal rb
+%     & mfun_prescript_separator & "ssh_nofcolors=" & decimal n
+%     & mfun_prescript_separator & "ssh_domain=" & domstr
+%     & mfun_prescript_separator & "ssh_extend=" & extstr
+%     & mfun_prescript_separator & "ssh_colors=" & colstr
+%     & mfun_prescript_separator & "ssh_bounds=" & bndstr
+%     & mfun_prescript_separator & "ssh_ranges=" & ranstr
+%     ;
+%     mfun_defined_cs
+% enddef ;
 
 % vardef predefined_linear_shade (expr p, n, ca, cb) =
 %     save a, b, sh ; pair a, b ;
@@ -523,53 +662,6 @@ enddef ;
 %     set_circular_vector(ab,r)(p,n) ;
 %     define_circular_shade(ab,ab,0,r,ca,cb)
 % enddef ;
-
-% NEW EXPERIMENTAL CODE
-
-def withlinearshading (expr a, b) =
-    withprescript "sh_type=linear"
-    withprescript "sh_domain=0 1"
-    withprescript "sh_factor="   & decimal shadefactor
-    withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
-    withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
-enddef ;
-
-def withcircularshading (expr a, b, ra, rb) =
-    withprescript "sh_type=circular"
-    withprescript "sh_domain=0 1"
-    withprescript "sh_factor="   & decimal shadefactor
-    withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
-    withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
-    withprescript "sh_radius_a=" & decimal ra
-    withprescript "sh_radius_b=" & decimal rb
-enddef ;
-
-def withfromshadecolor expr t =
-    withprescript "sh_color=into"
-    withprescript "sh_color_a=" & colordecimals t
-enddef ;
-
-def withtoshadecolor expr t =
-    withprescript "sh_color=into"
-    withprescript "sh_color_b=" & colordecimals t
-enddef ;
-
-def withshading (expr how)(text rest) =
-    if how = "linear" :
-        withlinearshading(rest)
-    elseif how = "circular" :
-        withcircularshading(rest)
-    else :
-        % nothing
-    fi
-enddef ;
-
-primarydef a shadedinto b =
-    1 % does not work with transparency
-    withprescript "sh_color=into"
-    withprescript "sh_color_a=" & colordecimals a
-    withprescript "sh_color_b=" & colordecimals b
-enddef ;
 
 % Layers
 
@@ -784,6 +876,10 @@ vardef mfun_cmykcolor_to_string(expr c) =
     decimal blackpart   c
 enddef ;
 
+vardef mfun_greycolor_to_string(expr n) =
+    decimal n
+enddef ;
+
 vardef mfun_path_to_string(expr p) =
     mfun_point_to_string(p,0) for i=1 upto length(p) : & " " & mfun_point_to_string(p,i) endfor
 enddef ;
@@ -810,6 +906,7 @@ vardef tostring(expr value) =
     elseif pair      value : mfun_pair_to_string(value)
     elseif rgbcolor  value : mfun_rgbcolor_to_string(value)
     elseif cmykcolor value : mfun_cmykcolor_to_string(value)
+    elseif greycolor value : mfun_greycolor_to_string(value)
     elseif boolean   value : mfun_boolean_to_string(value)
     elseif path      value : mfun_path_to_string(value)
     elseif transform value : mfun_transform_to_string(value)

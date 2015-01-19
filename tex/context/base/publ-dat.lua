@@ -602,7 +602,14 @@ do
             current.loaded[source] = kind or true
         end
         current.newtags = #current.luadata > 0 and { } or current.newtags
+        local before = #current.luadata
         lpegmatch(bibtotable,content or "",1,current)
+        local after = #current.luadata
+        if before == after then
+            report("no entries added")
+        else
+            report("%s entries added",after-before)
+        end
         statistics.stoptiming(publications)
     end
 
@@ -739,7 +746,7 @@ do
             return
         end
         if trace then
-            report("loading file",fullname)
+            report("loading file %a",fullname)
         end
         publications.loadbibdata(dataset,data,fullname,kind)
     end

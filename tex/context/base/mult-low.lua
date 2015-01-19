@@ -85,6 +85,7 @@ return {
         "fontexheight", "fontemwidth", "fontextraspace", "slantperpoint",
         "interwordspace", "interwordstretch", "interwordshrink", "exheight", "emwidth", "extraspace",
         "mathsupdisplay", "mathsupnormal", "mathsupcramped", "mathsubnormal", "mathsubcombined",  "mathaxisheight",
+        "muquad",
         --
         -- maybe a different class
         --

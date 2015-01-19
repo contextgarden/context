@@ -39,9 +39,10 @@ return {
         "xsized", "ysized", "xysized", "sized", "xyscaled",
         "intersection_point", "intersection_found", "penpoint",
         "bbwidth", "bbheight",
-        "withshading", "withlinearshading", "withcircularshading",
-        "withfromshadecolor", "withtoshadecolor", "shadedinto",
-        "withshade", "withcircularshade", "withlinearshade",
+        "withshade", "withcircularshade", "withlinearshade", -- old but kept
+        "defineshade", "shaded",
+     -- "withshading", "withlinearshading", "withcircularshading", "withfromshadecolor", "withtoshadecolor",
+        "shadedinto", "withshadecolors", "withshadedomain", "withshademethod", "withshadefactor", "withshadevector", "withshadecenter",
         "cmyk", "spotcolor", "multitonecolor", "namedcolor",
         "drawfill", "undrawfill",
         "inverted", "uncolored", "softened", "grayed", "greyed",
@@ -57,13 +58,12 @@ return {
         "transparent", "withtransparency",
         "property", "properties", "withproperties",
         "asgroup",
-        "infont", -- redefined usign textext
-     -- "property", "withproperties", "properties", -- not yet
-        "set_linear_vector", "set_circular_vector",
-        "linear_shade", "circular_shade",
-        "define_linear_shade", "define_circular_shade",
-        "define_circular_linear_shade", "define_circular_linear_shade",
-        "define_sampled_linear_shade", "define_sampled_circular_shade",
+        "infont", -- redefined using textext
+     -- "set_linear_vector", "set_circular_vector",
+     -- "linear_shade", "circular_shade",
+     -- "define_linear_shade", "define_circular_shade",
+     -- "define_circular_linear_shade", "define_circular_linear_shade",
+     -- "define_sampled_linear_shade", "define_sampled_circular_shade",
         "space", "crlf", "dquote", "SPACE", "CRLF", "DQUOTE",
         "grayscale", "greyscale", "withgray", "withgrey",
         "colorpart",

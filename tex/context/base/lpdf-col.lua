@@ -184,7 +184,7 @@ local f_gray_function = formatters["%s mul"]
 
 local documentcolorspaces = pdfdictionary()
 
-local spotcolorhash      = { } -- not needed
+local spotcolorhash       = { } -- not needed
 local spotcolornames      = { }
 local indexcolorhash      = { }
 local delayedindexcolors  = { }
@@ -202,7 +202,7 @@ end
 -- This should become delayed i.e. only flush when used; in that case we need
 -- need to store the specification and then flush them when accesssomespotcolor
 -- is called. At this moment we assume that splotcolors that get defined are
--- also used which keeps the overhad small anyway.
+-- also used which keeps the overhad small anyway. Tricky for mp ...
 
 local processcolors
 
@@ -240,6 +240,7 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
         local colorants = pdfdictionary()
         for n in gmatch(names,"[^,]+") do
             local name = spotcolornames[n] or n
+            -- the cmyk names assume that they are indeed these colors
             if n == "cyan" then
                 name = "Cyan"
             elseif n == "magenta" then
@@ -250,9 +251,15 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
                 name = "Black"
             else
                 local sn = spotcolorhash[name] or spotcolorhash[n]
+                if not sn then
+                    report_color("defining %a as colorant",name)
+                    colors.definespotcolor("",name,"p=1",true)
+                    sn = spotcolorhash[name] or spotcolorhash[n]
+                end
                 if sn then
                     colorants[name] = pdfreference(sn)
                 else
+                    -- maybe some day generate colorants (spot colors for multi) automatically
                     report_color("unknown colorant %a, using black instead",name or n)
                     name = "Black"
                 end

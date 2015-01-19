@@ -146,6 +146,39 @@ vardef colordecimals primary c =
     fi
 enddef ;
 
+vardef colordecimalslist(text t) =
+    save b ; boolean b ; b := false ;
+    for s=t :
+        if b : & " " & fi
+        colordecimals(s)
+        hide(b := true ;)
+    endfor
+enddef ;
+
+% vardef _ctx_color_spec_ primary c =
+%     if cmykcolor c  :
+%          "c=" & decimal cyanpart    c &
+%         ",m=" & decimal magentapart c &
+%         ",y=" & decimal yellowpart  c &
+%         ",k=" & decimal blackpart   c
+%     elseif rgbcolor c :
+%          "r=" & decimal redpart   c &
+%         ",g=" & decimal greenpart c &
+%         ",b=" & decimal bluepart  c
+%     else :
+%          "s=" & decimal c
+%     fi
+% enddef ;
+%
+% vardef _ctx_color_spec_list_(text t) =
+%     save b ; boolean b ; b := false ;
+%     for s=t :
+%         if b : & " " & fi
+%         _ctx_color_spec_(s)
+%         hide(b := true ;)
+%     endfor
+% enddef ;
+
 %D We have standardized data file names:
 
 def job_name =
@@ -1550,9 +1583,13 @@ primarydef p softened c =
 enddef ;
 
 vardef grayed primary p =
-    if color p :
+    if rgbcolor p :
         tripled(.30redpart p+.59greenpart p+.11bluepart p)
-    else :
+    elseif cmykcolor p :
+        tripled(.30*(1-cyanpart i)+.59*(1-magentapart i)+.11*(1-yellowpart i)+blackpart i)
+    elseif greycolor p :
+        p
+    elseif picture p :
         image (
             for i within p :
                 addto currentpicture
@@ -1568,10 +1605,20 @@ vardef grayed primary p =
                     else :
                         also i
                     fi
-                withcolor tripled(.30redpart i+.59greenpart i+.11bluepart i) ;
+                if unknown colorpart i :
+                    % nothing
+                elseif rgbcolor colorpart i :
+                    withcolor tripled(.30redpart i+.59greenpart i+.11bluepart i) ;
+                elseif cmykcolor colorpart i :
+                    withcolor tripled(.30*(1-cyanpart i)+.59*(1-magentapart i)+.11*(1-yellowpart i)+blackpart i) ;
+                else :
+                    withcolor colorpart i ;
+                fi
             endfor ;
         )
-  fi
+    else :
+        p
+    fi
 enddef ;
 
 let greyed = grayed ;

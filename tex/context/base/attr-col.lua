@@ -246,7 +246,11 @@ end
 --~     return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
 --~ end
 
+local p_split   = lpeg.tsplitat(",")
+local lpegmatch = lpeg.match
+
 function colors.spot(parent,f,d,p)
+ -- inspect(parent) inspect(f) inspect(d) inspect(p)
     if type(p) == "number" then
         local n = list[numbers.color][parent] -- hard coded ref to color number
         if n then
@@ -261,6 +265,33 @@ function colors.spot(parent,f,d,p)
         end
     else
         -- todo, multitone (maybe p should be a table)
+        local ps = lpegmatch(p_split,p)
+        local ds = lpegmatch(p_split,d)
+        local c, m, y, k = 0, 0, 0, 0
+        local done = false
+        for i=1,#ps do
+            local p = tonumber(ps[i])
+            local d = ds[i]
+            if p and d then
+                local n = list[numbers.color][d] -- hard coded ref to color number
+                if n then
+                    local v = values[n]
+                    if v then
+                        c = c + p*v[6]
+                        m = m + p*v[7]
+                        y = y + p*v[8]
+                        k = k + p*v[8]
+                        done = true
+                    end
+                end
+            end
+        end
+        if done then
+            local r, g, b = cmyktorgb(c,m,y,k)
+            local s = cmyktogray(c,m,y,k)
+            local f = tonumber(f)
+            return { 5, s, r, g, b, c, m, y, k, parent, f, d, p }
+        end
     end
     return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
 end

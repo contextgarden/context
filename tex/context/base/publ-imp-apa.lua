@@ -37,7 +37,7 @@ local specification = {
         composer    = "author",
         producer    = "author",
         doi         = "url",
-        url         = "url", 
+        url         = "url",
         page        = "pagenumber",
         pages       = "pagenumber",
         keywords    = "keyword",
@@ -86,7 +86,7 @@ local generic = {
 -- all other fields will be ignored.
 
 -- Sets contain either/or in order of precedence.
--- 
+--
 -- For a category *not* defined here yet present in the dataset, *all* fields
 -- are taken as optional. This allows for flexibility in the addition of new
 -- categories.

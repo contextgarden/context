@@ -348,9 +348,11 @@ do
         usedentries = allocate { }
         citetolist  = allocate { }
         listtocite  = allocate { }
-        local names = { }
+        local names     = { }
         local internals = structures.references.internals
         local p_collect = (C(R("09")^1) * Carg(1) / function(s,entry) listtocite[tonumber(s)] = entry end + P(1))^0
+        local nofunique = 0
+        local nofreused = 0
         for i=1,#internals do
             local entry = internals[i]
             if entry then
@@ -372,8 +374,10 @@ do
                                     else
                                         s[tag] = { entry }
                                     end
+                                    nofreused = nofreused + 1
                                 else
                                     usedentries[set] = { [tag] = { entry } }
+                                    nofunique = nofunique + 1
                                 end
                                 -- alternative: collect prev in group
                                 local bck = userdata.btxbck
@@ -386,6 +390,7 @@ do
                                     end
                                 end
                                 local detail = datasets[set].details[tag]
+-- todo: these have to be pluggable
                                 if detail then
                                     local author = detail.author
                                     if author then
@@ -436,6 +441,9 @@ do
                     end
                 end
             end
+        end
+        if trace_detail then
+            report("%s unique bibentries: %s reused entries",nofunique,nofreused)
         end
         initialize = nil
     end
@@ -568,6 +576,9 @@ end
 
 local function unknowncite(reference)
     ctx_btxsettag(reference)
+    if trace_detail then
+        report("expanding %a cite setup %a","unknown","unknown")
+    end
     ctx_btxcitesetup("unknown")
 end
 
@@ -580,6 +591,9 @@ local function marknocite(dataset,tag,nofcitations) -- or just: ctx_btxdomarkcit
     ctx_btxsetdataset(dataset)
     ctx_btxsettag(tag)
     ctx_btxsetbacklink(nofcitations)
+    if trace_detail then
+        report("expanding %a cite setup %a","nocite","nocite")
+    end
     ctx_btxcitesetup("nocite")
     ctx_btxstopcite()
 end
@@ -1622,6 +1636,9 @@ do
                 ctx_btxsetlastinternal(last[2].internal)
                 ctx_btxsetlastpage(last[1])
             end
+            if trace_detail then
+                report("expanding page setup")
+            end
             ctx_btxpagesetup()
         end
     end
@@ -1935,7 +1952,11 @@ do
         local found, todo, list = findallused(dataset,reference,internal)
         tobemarked = specification.markentry and todo
         --
-        if found and setup then
+        if not found then
+            report("nothing found for %a",reference)
+        elseif not setup then
+            report("invalid reference for %a",reference)
+        else
             local source  = { }
             local badkey  = false
             local luadata = datasets[dataset].luadata
@@ -2009,6 +2030,9 @@ do
                     ctx_btxsetfirst(f_missing(tag))
                 end
                 ctx_btxsetconcat(concatstate(i,n))
+                if trace_detail then
+                    report("expanding cite setup %a",setup)
+                end
                 ctx_btxcitesetup(setup)
                 ctx_btxstopcite()
             end
@@ -2017,6 +2041,7 @@ do
                 local target = (compressor or compresslist)(source)
                 local nofcollected = #target
                 if nofcollected == 0 then
+                    report("nothing found for %a",reference)
                     unknowncite(reference)
                 else
                     for i=1,nofcollected do
@@ -2476,6 +2501,9 @@ do
                         end
                     end
                     ctx_btxsetconcat(concatstate(i,nofcollected))
+                    if trace_detail then
+                        report("expanding %a cite setup %a","single author",setup)
+                    end
                     ctx_btxcitesetup(setup)
                     ctx_btxstopciteauthor()
                 end
@@ -2494,6 +2522,9 @@ do
          -- ctx_btxsetinternal(bl and bl.references.internal or "")
             ctx_btxsetfirst(entry[key] or f_missing(tag))
             ctx_btxsetthird(entry.suffix)
+            if trace_detail then
+                report("expanding %a cite setup %a","multiple author",setup)
+            end
             ctx_btxcitesetup(setup)
             ctx_btxstopciteauthor()
             ctx_btxstopsubcite()
@@ -2639,11 +2670,17 @@ do
 
     function listvariants.default(dataset,block,tag,variant)
         ctx_btxsetfirst("?")
+        if trace_detail then
+            report("expanding %a list setup %a","default",variant)
+        end
         ctx_btxlistsetup(variant)
     end
 
     function listvariants.num(dataset,block,tag,variant,listindex)
         ctx_btxsetfirst(listindex)
+        if trace_detail then
+            report("expanding %a list setup %a","num",variant)
+        end
         ctx_btxlistsetup(variant)
     end
 
@@ -2658,6 +2695,9 @@ do
         end
         if suffix then
             ctx_btxsetthird(suffix)
+        end
+        if trace_detail then
+            report("expanding %a list setup %a","short",variant)
         end
         ctx_btxlistsetup(variant)
     end
@@ -2678,6 +2718,9 @@ do
                             ctx_btxsetconcat(i-2)
                             ctx_btxsetfirst(realpage)
                             ctx_btxsetsecond(backlink)
+                            if trace_detail then
+                                report("expanding %a list setup %a","page",variant)
+                            end
                             ctx_btxlistsetup(variant)
                         end
                     end
