@@ -13,6 +13,18 @@
 
 \writestatus{loading}{ConTeXt Math Macros / Initializations}
 
+% Todo in luatex maincontrol.w: also accept a number here:
+%
+%    case set_math_param_cmd:
+%        p = cur_chr;
+%        get_token();
+%        if (cur_cmd != math_style_cmd) {
+%
+% plus two new math styles: larger/smaller
+%
+% \unexpanded\def\Umathshow#1%
+%   {\hbox{\infofont(\string#1:\the#1\textstyle,\the#1\scriptstyle,\the#1\scriptscriptstyle)}}
+
 %D This module provides namespaces for math fonts, thereby permitting mixed usage of
 %D math fonts. Although not strictly needed, we also provide a family name mapping
 %D mechanism as used in the (original) AMS math definition files, but here these
@@ -436,7 +448,7 @@
    \relax
    \hskip-.01\emwidth}
 
-\unexpanded\def\showmathstruts % let's not overload \nath_strut_normal
+\unexpanded\def\showmathstruts % let's not overload \math_strut_normal
   {\let\math_strut\math_strut_visual}
 
 \let\math_strut\math_strut_normal

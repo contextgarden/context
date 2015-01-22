@@ -221,7 +221,7 @@
      \setupcurrentxtable[#settings]%
    \fi
    \tabl_x_check_textwidth
-   \forgetall
+  %\forgetall % else whitespace mess
    \edef\tabl_x_current_buffer{\tabl_x_default_buffer}%
    \normalexpanded{\buff_pickup{\tabl_x_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\tabl_x_process\zerocount}}
 
@@ -245,7 +245,7 @@
      \tabl_x_set_checked{#settings}%
    \fi
    \tabl_x_check_textwidth
-   \forgetall}
+   }% else whitespace mess
 
 \def\tabl_x_get_buffer
   {\ctxcommand{gettexbuffer("\tabl_x_current_buffer")}}
@@ -259,6 +259,7 @@
 
 \unexpanded\def\tabl_x_process
   {\begingroup % *
+   \forgetall % moved here
    \dontcomplain % for the moment here till we figure out where we get the overflow
    \doifsomething{\xtableparameter\c!bodyfont}
      {\setupbodyfont[\xtableparameter\c!bodyfont]}%
@@ -342,7 +343,7 @@
 % in text flow: headers and footers only once
 
 \setvalue{\??xtableflushsplit\v!no}%
-  {\dontleavehmode % else no leftskip etc
+  {\noindent % \dontleavehmode % else no leftskip etc
    \ctxcommand{x_table_flush{ method = "\v!normal" }}%
    \removeunwantedspaces}
 

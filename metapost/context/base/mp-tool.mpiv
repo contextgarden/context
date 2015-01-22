@@ -2516,7 +2516,57 @@ enddef ;
 %     )
 % enddef ;
 
+vardef mfun_snapped(expr p, s) =
+    if p < 0 : - ( - else : ( fi p div s) * s % the less tokens the better
+enddef ;
+
+vardef mfun_applied(expr p, s)(suffix a) =
+    if path p :
+        if pair s :
+            for i=0 upto length(p)-1 :
+                (a(xpart point i of p,xpart s),a(ypart point i of p,ypart s)) --
+            endfor
+            if cycle p :
+                cycle
+            else :
+                (a(xpart point length(p) of p,xpart s),a(ypart point length(p) of p,ypart s))
+            fi
+        else :
+            for i=0 upto length(p)-1 :
+                (a(xpart point i of p,s),a(ypart point i of p,s)) --
+            endfor
+            if cycle p :
+                cycle
+            else :
+                (a(xpart point length(p) of p,s),a(ypart point length(p) of p,s))
+            fi
+        fi
+    elseif pair p :
+        if pair s :
+            (a(xpart p,xpart s),a(ypart p,ypart s))
+        else :
+            (a(xpart p,s),a(ypart p,s))
+        fi
+    elseif cmykcolor p :
+       (a(cyanpart p,s),a(magentapart p,s),a(yellowpart p,s),a(blackpart p,s))
+    elseif rgbcolor p :
+       (a(redpart p,s),a(greenpart p,s),a(bluepart p,s))
+    elseif graycolor p :
+        a(p,s)
+    elseif numeric p :
+        a(p,s)
+    else
+        p
+    fi
+enddef ;
+
+primarydef p snapped s =
+    mfun_applied(p,s)(mfun_snapped) % so we can play with variants
+enddef ;
+
 %D New helpers:
+
+newinternal charscale ; charscale := 1 ; % persistent so one needs to 'reset' it to 0 or 1
 
 def beginglyph(expr unicode, width, height, depth) =
     beginfig(unicode) ; % the number is irrelevant
@@ -2524,13 +2574,14 @@ def beginglyph(expr unicode, width, height, depth) =
     charwd   := width ;
     charht   := height ;
     chardp   := depth ;
+  % charscale := 1 ; % can be set for a whole font, so no reset here
 enddef ;
 
 def endglyph =
     setbounds currentpicture to (boundingbox unitsquare xscaled charwd yscaled (charht + chardp) shifted (0,-chardp)) ;
-    if known charscale :
+    if known charscale : if (charscale > 0) and (charscale <> 1) :
         currentpicture := currentpicture scaled charscale ;
-    fi ;
+    fi ; fi ;
     endfig ;
 enddef ;
 

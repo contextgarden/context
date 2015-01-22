@@ -310,7 +310,7 @@ end
 function commands.btxauthor(dataset,tag,field,settings)
     local split, usedfield, kind = getcasted(dataset,tag,field)
     if kind == "author" then
-        local max   = split and #split or 0
+        local max = split and #split or 0
         if max == 0 then
             return
             -- error

@@ -768,40 +768,108 @@ publications.getcasted = getcasted
 publications.getfaster = getfaster
 publications.getdirect = getdirect
 
+-- this needs to be checked: a specific type should have a checker
+
+-- author pagenumber keyword url
+
+-- function commands.btxsingularorplural(dataset,tag,name)
+--     local d = getcasted(dataset,tag,name)
+--     if type(d) == "table" then
+--         d = #d <= 1
+--     else
+--         d = true
+--     end
+--     ctx_doifelse(d)
+-- end
+
+-- function commands.oneorrange(dataset,tag,name)
+--     local d = datasets[dataset].luadata[tag] -- details ?
+--     if d then
+--         d = d[name]
+--     end
+--     if type(d) == "string" then
+--         d = find(d,"%-")
+--     else
+--         d = false
+--     end
+--     ctx_doifelse(not d) -- so singular is default
+-- end
+
+-- function commands.firstofrange(dataset,tag,name)
+--     local d = datasets[dataset].luadata[tag] -- details ?
+--     if d then
+--         d = d[name]
+--     end
+--     if type(d) == "string" then
+--         context(match(d,"([^%-]+)"))
+--     end
+-- end
+
+local inspectors   = allocate()
+local nofmultiple  = allocate()
+local firstandlast = allocate()
+
+publications.inspectors = inspectors
+inspectors.nofmultiple  = nofmultiple
+inspectors.firstandlast = firstandlast
+
+function nofmultiple.author(d)
+    return type(d) == "table" and #d or 0
+end
+
 function commands.btxsingularorplural(dataset,tag,name)
-    local d = datasets[dataset].details[tag]
-    if d then
-        d = d[name]
+    local data, field, kind = getcasted(dataset,tag,name)
+    if data then
+        local test = nofmultiple[kind]
+        if test then
+            local n = test(data)
+            ctx_doifelse(not n or n < 2)
+            return
+        end
     end
+    ctx_doifelse(true)
+end
+
+function firstandlast.pagenumber(d)
     if type(d) == "table" then
-        d = #d <= 1
-    else
-        d = false
+        return d[1], d[2]
     end
-    ctx_doifelse(d)
 end
 
 function commands.oneorrange(dataset,tag,name)
-    local d = datasets[dataset].luadata[tag] -- details ?
-    if d then
-        d = d[name]
+    local data, field, kind = getcasted(dataset,tag,name)
+    if data then
+        local test = firstandlast[kind]
+        if test then
+            local first, last = test(data)
+            ctx_doifelse(not (first and last))
+        end
     end
-    if type(d) == "string" then
-        d = find(d,"%-")
-    else
-        d = false
-
-    end
-    ctx_doifelse(not d) -- so singular is default
 end
 
 function commands.firstofrange(dataset,tag,name)
-    local d = datasets[dataset].luadata[tag] -- details ?
-    if d then
-        d = d[name]
+    local data, field, kind = getcasted(dataset,tag,name)
+    if data then
+        local test = firstandlast[kind]
+        if test then
+            local first = test(data)
+            if first then
+                context(first)
+            end
+        end
     end
-    if type(d) == "string" then
-        context(match(d,"([^%-]+)"))
+end
+
+function commands.lastofrange(dataset,tag,name)
+    local data, field, kind = getcasted(dataset,tag,name)
+    if data then
+        local test = firstandlast[kind]
+        if test then
+            local first, last = test(data)
+            if last then
+                context(last)
+            end
+        end
     end
 end
 

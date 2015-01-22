@@ -47,6 +47,7 @@ let normalend = end ;
 
 if known mplib :
     def end = ; message "" ; message metafunversion ; message "" ; endinput  ; enddef ;
+    def bye = ; message "" ; message metafunversion ; message "" ; endinput  ; enddef ;
 else :
     def end = ; message "" ; message metafunversion ; message "" ; normalend ; enddef ;
 fi ;

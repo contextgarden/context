@@ -175,8 +175,8 @@ extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
 
 % see mp-keep.mpiv for older code
 
-vardef rawtextext(expr str) = % todo: avoid currentpicture
-    if str = "" :
+vardef rawtextext(expr s) = % todo: avoid currentpicture
+    if s = "" :
         nullpicture
     else :
         mfun_tt_n := mfun_tt_n + 1 ;
@@ -188,7 +188,7 @@ vardef rawtextext(expr str) = % todo: avoid currentpicture
                 withprescript "tx_number=" & decimal mfun_tt_n
                 withprescript "tx_stage=trial"
                 withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
-                withpostscript str ;
+                withpostscript s ;
             addto mfun_tt_p also mfun_tt_c ;
         elseif known mfun_tt_d[mfun_tt_n] :
             addto mfun_tt_c doublepath unitsquare
@@ -375,11 +375,11 @@ enddef ;
 
 let normalinfont = infont ;
 
-primarydef str infont name = % nasty hack
+primarydef s infont name = % nasty hack
     if name = "" :
-        textext(str)
+        textext(s)
     else :
-        textext("\definedfont[" & name & "]" & str)
+        textext("\definedfont[" & name & "]" & s)
     fi
 enddef ;
 
@@ -722,8 +722,8 @@ extra_endfig   := extra_endfig   & "mfun_reset_tex_texts ; " ;
 
 % Bonus
 
-vardef verbatim(expr str) =
-    ditto & "\detokenize{" & str & "}" & ditto
+vardef verbatim(expr s) =
+    ditto & "\detokenize{" & s & "}" & ditto
 enddef ;
 
 % New

@@ -725,7 +725,7 @@
 
 \startxmlsetups mml:cn:rational
     \xmldoifelse {#1} {/mml:sep} {
-        \frac
+        \mmlfrac
             {\xmlsnippet{#1}{1}}
             {\xmlsnippet{#1}{3}}
     } {
@@ -910,7 +910,7 @@
             \mmlsecond{#1}/\mmlthird{#1}
         \else
             \MMLcreset
-            \frac{\MMLcreset\mmlsecond{#1}}{\MMLcreset\mmlthird{#1}}
+            \mmlfrac{\MMLcreset\mmlsecond{#1}}{\MMLcreset\mmlthird{#1}}
         \fi
     }
     \advance\mmldividelevel\minusone
@@ -1308,7 +1308,7 @@
    \doifelse \MMLdiffalternative \v!a {
         \xmldoifelse {#1} {/mml:lambda} {
             % a special case (mathadore/openmath)
-            \frac {
+            \mmlfrac {
                 d
                 \normalsuperscript
                 {\xmlfirst{#1}{/mml:bvar}\xmlfirst{#1}{/mml:cn}}
@@ -1321,7 +1321,7 @@
             }
         } {
             \xmldoifelse {#1} {/mml:bvar} {
-                \frac {
+                \mmlfrac {
                     {\mr d}{
                         \xmldoifelse {#1} {/mml:degree} {
                             \normalsuperscript{\xmlconcat{#1}{/mml:degree}\empty}
@@ -1392,7 +1392,7 @@
         \xmlfirst{#1}{/(mml:apply\string|mml:reln\string|mml:ci\string|mml:cn)}
     } {
         \xmldoifelse {#1} {/mml:bvar} {
-            \frac {
+            \mmlfrac {
                 {\mr d}\normalsuperscript{
                     \xmldoifelse {#1} {/mml:degree} {
                         \xmlconcat{#1}{/mml:degree}\empty
@@ -1844,14 +1844,18 @@
 \xmlmapvalue {mml:s} {sans-serif-bold-italic} {\mathss\mathbi}
 \xmlmapvalue {mml:s} {monospace}              {\mathtt}
 
-\xmlmapvalue {mml:l} {-}                      {\triggersmallstyle}
-\xmlmapvalue {mml:l} {+}                      {\triggerbigstyle}
+\xmlmapvalue {mml:l} {-}                      {\let\mmlfrac\tfrac}
+                                               \let\mmlfrac\frac
+\xmlmapvalue {mml:l} {+}                      {\let\mmlfrac\sfrac}
 
 % todo: displaystyle=true/false (or whatever else shows up)
 
 \starttexdefinition setmmlmathstyle #1
-    \xmlval {mml:s} {\xmlatt{#1}{mathvariant}} \empty % was: \mmmr
-    \xmlval {mml:l} {\xmlatt{#1}{scriptlevel}} \empty % was: \mmmr
+    \xmlval{mml:s}{\xmlatt{#1}{mathvariant}}\empty % was: \mmmr
+\stoptexdefinition
+
+\starttexdefinition setmmlscriptlevel #1
+    \xmlval{mml:l}{\xmlatt{#1}{scriptlevel}}{\let\mmlfrac\frac}
 \stoptexdefinition
 
 \starttexdefinition applymmlmathcolor #1#2
@@ -1910,6 +1914,7 @@
     \begingroup
         \pushmathstyle
         \setmmlmathstyle{#1}
+        \setmmlscriptlevel{#1}
         \ctxmodulemathml{mi("#1")}
         \popmathstyle
     \endgroup
@@ -2054,7 +2059,7 @@
         \doifelse{\xmlatt{#1}{bevelled}}{true} {
             \left.\mmlfirst{#1}\middle/\mmlsecond{#1}\right.% \thinspace\middle/\thinspace
         } {
-            \frac{\mmlfirst{#1}}{\mmlsecond{#1}}
+            \mmlfrac{\mmlfirst{#1}}{\mmlsecond{#1}}
         }
     \else
         \doifelse {\xmlval{mml:mfrac:linethickness}{\mmlfraclinethickness}{}} {} {
@@ -2087,6 +2092,7 @@
     \begingroup
         \pushmathstyle
         \setmmlmathstyle{#1}
+        \setmmlscriptlevel{#1}
         \xmlflush{#1}
         \popmathstyle
     \endgroup

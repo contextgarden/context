@@ -3,7 +3,7 @@ return {
         "btex", "etex", "verbatimtex",
     },
     shortcuts = {
-        "..", "...", "--", "---", "&",
+        "..", "...", "--", "---", "&", "\\",
     },
     primitives = { -- to be checked
         "charcode", "day", "linecap", "linejoin", "miterlimit", "month", "pausing",
@@ -71,7 +71,7 @@ return {
     commands = {
         "upto", "downto",
         "beginfig", "endfig",
-        "beginglyph", "endglyph", "charscale",
+        "beginglyph", "endglyph", -- actually a mult-fun one
         "rotatedaround", "reflectedabout",
         "arrowhead",
         "currentpen", "currentpicture", "cuttings",
@@ -127,6 +127,7 @@ return {
         "labeloffset", "dotlabeldiam",
         "defaultpen", "defaultscale",
         "join_radius",
+        "charscale", -- actually a mult-fun one
         --
         "pen_lft", "pen_rt", "pen_top", "pen_bot", -- "pen_count_",
     },
@@ -135,12 +136,12 @@ return {
         "autorounding", "beginchar", "blacker", "boundarychar", "capsule_def",
         "capsule_end", "change_width", "chardp", "chardx", "chardy", "charexists",
         "charext", "charht", "charic", "charlist", "charwd", "cull", "cullit",
-        "currenttransform", "define_blacker_pixels", "define_corrected_pixels",
-        "define_good_x_pixels", "define_good_y_pixels",
+        "currenttransform", "currentwindow", "define_blacker_pixels",
+        "define_corrected_pixels", "define_good_x_pixels", "define_good_y_pixels",
         "define_horizontal_corrected_pixels", "define_pixels",
         "define_whole_blacker_pixels", "define_whole_pixels",
         "define_whole_vertical_blacker_pixels", "define_whole_vertical_pixels",
-        "designsize", "display", "endchar", "extensible", "extra_beginchar",
+        "designsize", "display", "displaying", "endchar", "extensible", "extra_beginchar",
         "extra_endchar", "extra_setup", "fillin", "font_coding_scheme",
         "font_extra_space", "font_identifier", "font_normal_shrink",
         "font_normal_space", "font_normal_stretch", "font_quad", "font_size",
@@ -150,12 +151,12 @@ return {
         "makegrid", "maketicks", "mode_def", "mode_setup", "nodisplays",
         "notransforms", "numspecial", "o_correction", "openit", "openwindow",
         "proofing", "proofoffset", "proofrule", "proofrulethickness", "rulepen",
-        "screenchars", "screenrule", "screenstrokes", "showit", "slantfont",
-        "smode", "smoothing", "titlefont", "totalweight", "tracingedges",
-        "tracingpens", "turningcheck", "unitpixel", "vppp", "vround", "xoffset",
-        "yoffset",
+        "screenchars", "screenrule", "screenstrokes", "screen_cols", "screen_rows",
+        "showit", "slantfont", "smode", "smoothing", "titlefont", "totalweight",
+        "tracingedges", "tracingpens", "turningcheck", "unitpixel", "vppp", "vround",
+        "xoffset", "yoffset",
     },
     disabled = {
-        "verbatimtex"
+        "verbatimtex", "troffmode"
     }
 }

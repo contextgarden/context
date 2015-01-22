@@ -1117,7 +1117,8 @@
    \fi}
 
 \def\tabl_ntb_row_stop_boxed
-  {\normalexpanded
+  {\noindent % \dontleavehmode
+   \normalexpanded
      {\t_tabl_ntb
         {\the\t_tabl_ntb
          % no need for init
@@ -1460,7 +1461,8 @@
    \fi}
 
 \def\tabl_ntb_table_stop
-  {\setbox\scratchbox\hbox
+  {\forgetall % new, here see narrower-004.tex
+   \setbox\scratchbox\hbox
      {\letnaturaltablelocalparameter\c!frame\v!off
       \letnaturaltablelocalparameter\c!background\empty
       \letnaturaltablelocalparameter\c!align\v!no
@@ -1483,12 +1485,12 @@
    \c_tabl_tbl_pass\plusone
    \let\tabl_ntb_pass\tabl_ntb_pass_one
    \let\tabl_ntb_cell_process\tabl_ntb_cell_process_a
-   \setbox0\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
+   \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
    \ifcase\tabl_ntb_get_gal\or
     % \c_tabl_tbl_pass\plusone
     % \let\tabl_ntb_pass\tabl_ntb_pass_one
       \let\tabl_ntb_cell_process\tabl_ntb_cell_process_a_extra
-      \setbox0\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
+      \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
    \fi
    \tabl_ntb_let_dis\c_tabl_ntb_maximum_col\zeropoint
    \ifautoTBLspread
@@ -1498,7 +1500,7 @@
      \tabl_ntb_stretch_widths
      \let\tabl_ntb_cell_process\tabl_ntb_cell_process_b
      \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
-   \else\ifdim\wd0>\hsize
+   \else\ifdim\wd\scratchbox>\hsize
      \ifautoTBLhsize
        \tabl_ntb_check_widths_one % trial run
        \tabl_ntb_check_widths_two % real run
@@ -1512,7 +1514,7 @@
        \writestatus\m!TABLE{missing\space\number\numexpr\c_tabl_ntb_maximum_col-\c_tabl_ntb_encountered_max\relax\space column(s), guessing widths}%
      \fi
      \edef\savedhsize{\the\hsize}%
-     \hsize\wd0\relax % new per 17/04/2006
+     \hsize\wd\scratchbox\relax % new per 17/04/2006
      \tabl_ntb_check_widths_one % trial run
      \tabl_ntb_check_widths_two % real run
      \hsize\savedhsize
@@ -1746,7 +1748,9 @@
 
 \def\tabl_ntb_show_widths#1%
   {\vbox
-     {\forgetall\tttf[#1]\dorecurse\c_tabl_ntb_maximum_col
+     {\forgetall
+      \tttf[#1]%
+      \dorecurse\c_tabl_ntb_maximum_col
         {\scratchdimen\tabl_ntb_get_wid\recurselevel\relax
          [\recurselevel:\the\scratchdimen]}}}
 
@@ -1798,15 +1802,15 @@
 
 \unexpanded\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
   {\bgroup
-\letnaturaltablelocalparameter\c!option\empty
+   \letnaturaltablelocalparameter\c!option\empty
    \tabl_ntb_setup_cell{#1}{#2}%
-\setupcurrentnaturaltablelocal[#3]%
-\letnaturaltablelocalparameter\c!background\empty
-\letnaturaltablelocalparameter\c!frame\v!off
-\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
-\ifnum\scratchcounter>\plusone
-  \letnaturaltablelocalparameter\c!width\v!fit % compatible with extreme tables
-\fi
+   \setupcurrentnaturaltablelocal[#3]%
+   \letnaturaltablelocalparameter\c!background\empty
+   \letnaturaltablelocalparameter\c!frame\v!off
+   \scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
+   \ifnum\scratchcounter>\plusone
+     \letnaturaltablelocalparameter\c!width\v!fit % compatible with extreme tables
+   \fi
    \setbox\scratchbox\hbox
      {\scratchdimen\naturaltablelocalparameter\c!distance\relax
       \ifdim\scratchdimen>\tabl_ntb_get_dis{#2}\relax
