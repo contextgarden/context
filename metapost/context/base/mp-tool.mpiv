@@ -57,13 +57,15 @@ mpprocset    := 1 ;
 %
 % protect ;
 
-string space  ; space  := char 32 ;
-string crlf   ; crlf   := char 10 & char 13 ;
-string dquote ; dquote := char 34 ;
+string space   ; space   := char 32 ;
+string percent ; percent := char 37 ;
+string crlf    ; crlf    := char 10 & char 13 ;
+string dquote  ; dquote  := char 34 ;
 
-let SPACE  = space ;
-let CRLF   = crlf ;
-let DQUOTE = dquote ;
+let SPACE   = space ;
+let CRLF    = crlf ;
+let DQUOTE  = dquote ;
+let PERCENT = percent ;
 
 vardef ddecimal primary p =
     decimal xpart p & " " & decimal ypart p

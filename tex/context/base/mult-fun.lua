@@ -64,7 +64,7 @@ return {
      -- "define_linear_shade", "define_circular_shade",
      -- "define_circular_linear_shade", "define_circular_linear_shade",
      -- "define_sampled_linear_shade", "define_sampled_circular_shade",
-        "space", "crlf", "dquote", "SPACE", "CRLF", "DQUOTE",
+        "space", "crlf", "dquote", "percent", "SPACE", "CRLF", "DQUOTE", "PERCENT",
         "grayscale", "greyscale", "withgray", "withgrey",
         "colorpart",
         "readfile",
@@ -74,10 +74,12 @@ return {
         "break",
         "xstretched", "ystretched", "snapped",
         --
-        "pathconnectors", "function", "constructedpath", "constructedpairs",
-        "punkedfunction", "straightfunction", "curvedfunction", "tightfunction",
-        "punkedpath", "straightpath", "curvedpath", "tightpath",
-        "punkedpairs", "straightpairs", "curvedpairs", "tightpairs",
+        "pathconnectors", "function",
+        "constructedfunction", "constructedpath", "constructedpairs",
+     -- "punkedfunction", "punkedpath", "punkedpairs",
+        "straightfunction", "straightpath", "straightpairs",
+        "curvedfunction", "curvedpath", "curvedpairs",
+     -- "tightfunction", "tightpath", "tightpairs",
         --
         "evenly", "oddly",
         --

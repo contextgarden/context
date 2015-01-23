@@ -2241,9 +2241,9 @@ local function push(fulltag,depth)
     treestack[currentdepth] = tree
     if trace_export then
         if detail and detail ~= "" then
-            report_export("%w<%s trigger=%a paragraph=%a index=%a detail=%a>",currentdepth-1,fulltag,currentattribute or 0,currentparagraph or 0,#treedata,detail)
+            report_export("%w<%s trigger=%q n=%q paragraph=%q index=%q detail=%q>",currentdepth-1,tg,n,currentattribute or 0,currentparagraph or 0,#treedata,detail)
         else
-            report_export("%w<%s trigger=%a paragraph=%a index=%a>",currentdepth-1,fulltag,currentattribute or 0,currentparagraph or 0,#treedata)
+            report_export("%w<%s trigger=%q n=%q paragraph=%q index=%q>",currentdepth-1,tg,n,currentattribute or 0,currentparagraph or 0,#treedata)
         end
     end
     tree = t

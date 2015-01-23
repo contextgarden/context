@@ -538,7 +538,8 @@ function figures.push(request)
 end
 
 function figures.pop()
-    lastfiguredata = remove(callstack) or lastfiguredata
+    remove(callstack)
+    lastfiguredata = callstack[#callstack] or lastfiguredata
     statistics.stoptiming(figures)
 end
 
@@ -1102,6 +1103,7 @@ function figures.include(data)
 end
 
 function figures.scale(data) -- will become lua code
+    data = data or callstack[#callstack] or lastfiguredata
     context.doscalefigure()
     return data
 end

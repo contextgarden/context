@@ -707,10 +707,10 @@ enddef ;
 
 % Positions
 
-def register (expr label, width, height, offset) =
+def register (expr tag, width, height, offset) =
 %     draw image (
         addto currentpicture doublepath unitsquare xscaled width yscaled height shifted offset
-            withprescript "ps_label=" & label ;
+            withprescript "ps_label=" & tag ;
 %     ) ; % no transformations
 enddef ;
 
@@ -799,7 +799,7 @@ primarydef t asgroup s = % s = isolated|knockout
     endgroup
 enddef ;
 
-% Also experimental
+% Also experimental ... needs to be made better ... so it can change!
 
 string mfun_auto_align[] ;
 

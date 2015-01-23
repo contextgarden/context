@@ -1117,7 +1117,7 @@
    \fi}
 
 \def\tabl_ntb_row_stop_boxed
-  {\noindent % \dontleavehmode
+  {% \noindent % no, else double leftskip in narrower
    \normalexpanded
      {\t_tabl_ntb
         {\the\t_tabl_ntb
@@ -1462,12 +1462,12 @@
 
 \def\tabl_ntb_table_stop
   {\forgetall % new, here see narrower-004.tex
-   \setbox\scratchbox\hbox
-     {\letnaturaltablelocalparameter\c!frame\v!off
-      \letnaturaltablelocalparameter\c!background\empty
-      \letnaturaltablelocalparameter\c!align\v!no
-      \inheritednaturaltablelocalframed{\strut}}%
-   \edef\minimalcellheight{\the\ht\scratchbox}% not used
+  %\setbox\scratchbox\hbox
+  %  {\letnaturaltablelocalparameter\c!frame\v!off
+  %   \letnaturaltablelocalparameter\c!background\empty
+  %   \letnaturaltablelocalparameter\c!align\v!no
+  %   \inheritednaturaltablelocalframed{\strut}}%
+  %\edef\minimalcellheight{\the\ht\scratchbox}% not used
    \dorecurse\c_tabl_ntb_maximum_col
      {\tabl_ntb_let_aut\recurselevel\zeropoint
       % new

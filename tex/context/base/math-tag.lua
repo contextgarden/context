@@ -170,10 +170,18 @@ end
 
 --------------------
 
+local function showtag(n,id)
+    local attr = getattr(n,a_tagged)
+    report_tags("%s = %s",nodecodes[id or getid(n)],attr and taglist[attr].tagname or "?")
+end
+
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     local mtexttag = nil
     while start do
         local id = getid(start)
+
+-- showtag(start,id)
+
         if id == glyph_code or id == disc_code then
             if not mtexttag then
                 mtexttag = start_tagged("mtext")
@@ -330,7 +338,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     local attr = getattr(start,a_tagged)
                     local last = attr and taglist[attr]
                     if last then
-                        local tag    = last.tag
+                        local tag    = last.tagname
                         local detail = last.detail
                         if tag == "maction" then
                             if detail == "" then
@@ -350,6 +358,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                             end
                         elseif tag == "mstacker" then -- or tag == "mstackertop" or tag == "mstackermid" or tag == "mstackerbot" then
                             -- looks like it gets processed twice
+-- do we still end up here ?
                             setattr(start,a_tagged,restart_tagged(attr)) -- so we just reuse the attribute
                             process(list)
                             stop_tagged()
