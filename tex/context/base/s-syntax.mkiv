@@ -11,15 +11,20 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This is needed for the \METAFUN\ manual.
+%D This is needed for the \METAFUN\ manual: quite old code that I would do
+%D differently nowadays.
 
 \unprotect
 
 \unexpanded\def\module_syntax_Indent          #1{\ifvmode\noindent\hbox to 2em{\hss#1}\else#1\fi}
-\unexpanded\def\module_syntax_Sugar           #1{\ifhmode\unskip\unskip\unskip\fi\kern.25em{#1}\kern.25em\ignorespaces}
+\unexpanded\def\module_syntax_Sugar           #1{\removeunwantedspaces\kern.25em{#1}\kern.25em\ignorespaces}
 \unexpanded\def\module_syntax_Something       #1{\Sugar{\mathematics{\langle\hbox{#1}\rangle}}}
 \unexpanded\def\module_syntax_Lbrace            {\Sugar{\tttf\leftargument}}
 \unexpanded\def\module_syntax_Rbrace            {\Sugar{\tttf\rightargument}}
+\unexpanded\def\module_syntax_Lparent           {\Sugar{\tttf(}}
+\unexpanded\def\module_syntax_Rparent           {\Sugar{\tttf)}}
+\unexpanded\def\module_syntax_Lbracket          {\Sugar{\tttf[}}
+\unexpanded\def\module_syntax_Rbracket          {\Sugar{\tttf]}}
 \unexpanded\def\module_syntax_Or                {\Sugar{\mathematics{\vert}}}
 \unexpanded\def\module_syntax_Optional        #1{\Sugar{\mathematics{[\hbox{#1}]}}}
 \unexpanded\def\module_syntax_Means             {\Sugar{\mathematics{\rightarrow}}}
@@ -35,14 +40,17 @@
 \unexpanded\def\module_syntax_FlaggedSomething#1{\module_syntax_Something{\color[darkred]{#1}}}
 
 \unexpanded\def\StartSyntax
-  {\goodbreak % to be reconsidered
-   \startlines
+  {\startlines
    % formatters
    \let\Indent          \module_syntax_Indent
    \let\Sugar           \module_syntax_Sugar
    \let\Something       \module_syntax_Something
    \let\Lbrace          \module_syntax_Lbrace
    \let\Rbrace          \module_syntax_Rbrace
+   \let\Lparent         \module_syntax_Lparent
+   \let\Rparent         \module_syntax_Rparent
+   \let\Lbracket        \module_syntax_Lbracket
+   \let\Rbracket        \module_syntax_Rbracket
    \let\Or              \module_syntax_Or
    \let\Optional        \module_syntax_Optional
    \let\Means           \module_syntax_Means
@@ -66,6 +74,16 @@
    \let\Q               \module_syntax_Quote
    \let\LB              \module_syntax_Lbrace
    \let\RB              \module_syntax_Rbrace
+   \let\LP              \module_syntax_Lparent
+   \let\RP              \module_syntax_Rparent
+   \let\LS              \module_syntax_Lbracket
+   \let\RS              \module_syntax_Rbracket
+   \let\{               \module_syntax_Lbrace
+   \let\}               \module_syntax_Rbrace
+   \let\(               \module_syntax_Lparent
+   \let\)               \module_syntax_Rparent
+   \let\[               \module_syntax_Lbracket
+   \let\]               \module_syntax_Rbracket
    % precaution
    \catcode`\#\othercatcode}
 

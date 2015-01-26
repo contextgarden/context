@@ -1427,11 +1427,11 @@ do
         return #renderings[dataset].registered
     end
 
-    local function validkeyword(dataset,entry,keyword)
-        local kw = fastget(dataset,entry,"keywords") -- hard coded for the moment
+    local function validkeyword(dataset,tag,keyword,specification) -- todo: pass specification
+        local kw = getcasted(dataset,tag,"keywords",specification)
         if kw then
-            for k in next, keyword do
-                if kw[k] then
+            for i=1,#kw do
+                if keyword[kw[i]] then
                     return true
                 end
             end
@@ -1457,11 +1457,11 @@ do
 
     methods[v_dataset] = function(dataset,rendering,keyword)
         -- why only once unless criterium=all?
-        local current   = datasets[dataset]
-        local luadata   = current.luadata
+        local current = datasets[dataset]
+        local luadata = current.luadata
         local list    = rendering.list
         for tag, data in sortedhash(luadata) do
-            if not keyword or validkeyword(dataset,data,keyword) then
+            if not keyword or validkeyword(dataset,tag,keyword) then
                 list[#list+1] = { tag, false, 0, false, false }
             end
         end
@@ -1479,7 +1479,7 @@ do
             local u = r.userdata
             if u and u.btxset == dataset then
                 local tag = u.btxref
-                if tag and (not keyword or validkeyword(dataset,luadata[tag],keyword)) then
+                if tag and (not keyword or validkeyword(dataset,tag,keyword)) then
                     list[#list+1] = { tag, listindex, 0, u, u.btxint }
                 end
             end
@@ -1515,7 +1515,7 @@ do
                     -- skip
                 elseif doglobal and alldone[tag] then
                     -- skip
-                elseif not keyword or validkeyword(dataset,luadata[tag],keyword) then
+                elseif not keyword or validkeyword(dataset,tag,keyword) then
                     if traced then
                         local l = traced[tag]
                         if l then
