@@ -39,7 +39,7 @@
 \registerhyphenationexception[xffid]
 
 \starttexdefinition showotfligaturescaption #1
-    \bTD [width=18em,align={flushleft,lohi},nx=3]
+    \bTD [align={flushleft,lohi},nx=3]
         \nohyphens
         \ttbf
         #1
@@ -72,17 +72,17 @@
 
 \starttexdefinition showotfligaturesbanner #1
     \bTR[frame=off]
-        \bTD [nx=12,align={middle,lohi},height=4ex]
+        \bTD [nx=12,width=18em,align={middle,lohi},height=4ex]
             \tttf #1
         \eTD
     \eTR
 \stoptexdefinition
 
 \starttexdefinition showotfligaturescaptions #1
-    \bTR[height=3ex,align={middle,lohi},nx=3,bottomframe=off]
+    \bTR[height=3ex,align={middle,lohi},bottomframe=off]
         \processcommalist[#1]\showotfligaturescaption
     \eTR
-    \bTR[height=3ex,align={middle,lohi},nx=3,topframe=off]
+    \bTR[height=3ex,align={middle,lohi},topframe=off]
         \processcommalist[#1]\showotfligatureslegend
     \eTR
 \stoptexdefinition
@@ -119,20 +119,20 @@
 \stoptexdefinition
 
 \starttexdefinition showotfligaturesparagraphs #1
-    \bTR[cheight=12ex,topframe=off]
+    \bTR[topframe=off]
         \processcommalist[#1]\showotfligaturesparagraphset
     \eTR
 \stoptexdefinition
 
 \starttexdefinition showotfligaturesextremes #1
-    \bTR[cheight=12ex,topframe=off]
+    \bTR[topframe=off]
         \processcommalist[#1]\showotfligaturesextremeset
     \eTR
 \stoptexdefinition
 
 \starttexdefinition showotfligaturesdefaults
     \bTR
-        \bTD [nx=12,align=middle,height=4ex,frame=off]
+        \bTD [nx=12,width=18em,align=middle,height=4ex,frame=off]
             \start \LigatureFont fb  \stop \quad
             \start \LigatureFont ff  \stop \quad
             \start \LigatureFont fi  \stop \quad
@@ -184,13 +184,13 @@
 
 \starttext
 
-    \startTEXpage \showotfligatures[font=lmroman10-regular.otf, features=default]   \stopTEXpage
-    \startTEXpage \showotfligatures[font=dejavu-serif.ttf,      features=default]   \stopTEXpage
-    \startTEXpage \showotfligatures[font=minionpro.otf,         features=default]   \stopTEXpage
-    \startTEXpage \showotfligatures[font=minionpro.otf,         features=smallcaps] \stopTEXpage
-    \startTEXpage \showotfligatures[font=brill.otf,             features=default]   \stopTEXpage
-    \startTEXpage \showotfligatures[font=gentiumplus-r.ttf,     features=default]   \stopTEXpage
-    \startTEXpage \showotfligatures[font=cambria,               features=default]   \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=lmroman10-regular.otf, features=default]   \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=dejavu-serif.ttf,      features=default]   \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=minionpro.otf,         features=default]   \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=minionpro.otf,         features=smallcaps] \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=brill.otf,             features=default]   \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=gentiumplus-r.ttf,     features=default]   \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=cambria,               features=default]   \stopTEXpage
 
 \stoptext
 

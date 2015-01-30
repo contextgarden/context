@@ -120,7 +120,7 @@
    \catcode\commentasciicode  \othercatcode
    \catcode\delasciicode      \othercatcode}
 
-\long\normalprotected\def\startcatcodetable#1#2\stopcatcodetable
+\normalprotected\def\startcatcodetable#1#2\stopcatcodetable
   {\begingroup
    \catcodetable\inicatcodes
    \the\everysetdefaultcatcodes
@@ -130,7 +130,7 @@
 
 \let\stopcatcodetable\relax
 
-\long\normalprotected\def\startextendcatcodetable#1#2\stopextendcatcodetable
+\normalprotected\def\startextendcatcodetable#1#2\stopextendcatcodetable
   {\begingroup
    \catcodetable#1\relax
    \globaldefs\plusone
@@ -147,7 +147,7 @@
 
 % ==
 %
-% \long\normalprotected\def\startextendcatcodetable#1#2\stopextendcatcodetable
+% \normalprotected\def\startextendcatcodetable#1#2\stopextendcatcodetable
 %   {\bgroup
 %    \scratchcounter\the\catcodetable
 %    \catcodetable #1 #2

@@ -479,6 +479,9 @@ local function inject_marks(marks,nofmarks)
                     local px = getfield(p,"xoffset")
                     local ox = 0
                     local pp = rawget(properties,p)
+                    if pp then
+                        pp = pp.injections
+                    end
                     local rightkern = pp and pp.rightkern
                     if rightkern then -- x and w ~= 0
                         if pn.markdir < 0 then

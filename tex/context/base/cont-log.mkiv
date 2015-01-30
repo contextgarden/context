@@ -103,15 +103,15 @@
 
 \let\logofont\nullfont
 
-\loadmapfile[original-base.map] % stil needed?
+\loadmapfile[original-base.map] % stil needed? not if we assume afm
 
 \unexpanded\def\setMFPfont% more sensitive for low level changes
   {\font\logofont=logo%
-     \ifx\fontalternative\s!bf\else
-     \ifx\fontalternative\s!it\else
-     \ifx\fontalternative\s!sl\else
-     \ifx\fontalternative\s!bi\else
-     \ifx\fontalternative\s!bs\else
+     \ifx\fontalternative\s!bf\s!bf\else
+     \ifx\fontalternative\s!it\s!sl\else
+     \ifx\fontalternative\s!sl\s!sl\else
+     \ifx\fontalternative\s!bi\s!bf\else
+     \ifx\fontalternative\s!bs\s!bf\else
      \fi\fi\fi\fi\fi
      10 at \currentfontscale\bodyfontsize % there is no afm in the minimals yet
    \logofont}

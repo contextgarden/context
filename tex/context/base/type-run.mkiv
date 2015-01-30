@@ -30,7 +30,7 @@
       \obeylines % else we loose the first line due to lookahead
       \dotripleempty\dostarttypescript}
    \def\dostarttypescript[##1][##2][##3]%
-     {\long\def\next####1\stoptypescript{\egroup}
+     {\def\next####1\stoptypescript{\egroup}
       \dochecktypescript{##1}\typescriptone  \ifdone
       \dochecktypescript{##2}\typescripttwo  \ifdone
       \dochecktypescript{##3}\typescriptthree\ifdone

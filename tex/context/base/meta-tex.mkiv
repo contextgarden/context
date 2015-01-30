@@ -116,8 +116,8 @@
 %
 % \unexpanded\def\definetextext[#1]#2{\setvalue{@@st@@#1}{#2}}
 %
-%       \long\def\sometxt         #1#{\dosometxt{#1}}  % grab optional [args]
-%       \long\def\dosometxt      #1#2{\ctxlua{metapost.sometxt(\!!bs#1\!!es,\!!bs#2\!!es)}}
+%       \def\sometxt         #1#{\dosometxt{#1}}  % grab optional [args]
+%       \def\dosometxt      #1#2{\ctxlua{metapost.sometxt(\!!bs#1\!!es,\!!bs#2\!!es)}}
 %
 %            \def\sometxta         #1{textext.drt("#1")}
 %            \def\sometxtb       #1#2{textext.drt("\getvalue{@@st@@#1}{#2}")}

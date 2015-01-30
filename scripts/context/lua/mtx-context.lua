@@ -760,6 +760,7 @@ function scripts.context.run(ctxdata,filename)
                     report("run %s: %s",currentrun,command)
                     print("") -- cleaner, else continuation on same line
                     local returncode, errorstring = os.spawn(command)
+                    -- todo: remake format when no proper format is found
                     if not returncode then
                         report("fatal error: no return code, message: %s",errorstring or "?")
                         if resultname then

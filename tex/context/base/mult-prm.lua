@@ -253,6 +253,7 @@ return {
   "suppressifcsnameerror",
   "suppresslongerror",
   "suppressoutererror",
+  "suppressmathparerror",
   "synctex",
  },
  ["omega"]={

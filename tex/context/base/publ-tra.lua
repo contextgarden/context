@@ -6,24 +6,35 @@ if not modules then modules = { } end modules ['publ-tra'] = {
     license   = "see context related readme files"
 }
 
+-- todo: use context.tt .. more efficient, less code
+
 local next, type = next, type
 
-local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
+local sortedhash        = table.sortedhash
+local sortedkeys        = table.sortedkeys
 local settings_to_array = utilities.parsers.settings_to_array
-local formatters = string.formatters
+local formatters        = string.formatters
+local concat            = table.concat
 
-local context        = context
-local commands       = commands
+local context           = context
+local commands          = commands
 
-local publications   = publications
-local tracers        = publications.tracers
-local tables         = publications.tables
-local datasets       = publications.datasets
-local specifications = publications.specifications
+local publications      = publications
+local tracers           = publications.tracers
+local tables            = publications.tables
+local datasets          = publications.datasets
+local specifications    = publications.specifications
 
-local ctx_NC, ctx_NR, ctx_HL, ctx_FL, ctx_ML, ctx_LL = context.NC, context.NR, context.HL, context.FL, context.ML, context.LL
+local getfield          = publications.getfield
+local getcasted         = publications.getcasted
+
+local ctx_NC, ctx_NR, ctx_HL, ctx_FL, ctx_ML, ctx_LL, ctx_EQ = context.NC, context.NR, context.HL, context.FL, context.ML, context.LL, context.EQ
 local ctx_bold, ctx_monobold, ctx_rotate, ctx_llap, ctx_rlap = context.bold, context.formatted.monobold, context.rotate, context.llap, context.rlap
-local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
+
+local ctx_starttabulate = context.starttabulate
+local ctx_stoptabulate  = context.stoptabulate
+
+local ctx_verbatim      = context.verbatim
 
 local privates = tables.privates
 local specials = tables.specials
@@ -309,7 +320,77 @@ function tracers.showtables(settings)
     end
 end
 
+function tracers.showdatasetauthors(settings)
+
+    local dataset = settings.dataset
+    local field   = settings.field
+
+    if not dataset or dataset == "" then dataset = "standard" end
+    if not field   or field   == "" then field   = "author"   end
+
+    local function flush(ai,k,i)
+        local v = ai[k]
+        if v then
+            ctx_NC()
+            if i then
+                ctx_verbatim(i)
+            end
+            ctx_NC()
+            ctx_verbatim(k)
+            ctx_EQ()
+            if type(v) == "table" then
+                ctx_verbatim(concat(v, " | "))
+            else
+                ctx_verbatim(v)
+            end
+            ctx_NC()
+            ctx_NR()
+        end
+    end
+
+    local function row(key,value)
+        ctx_NC() ctx_rlap(function() ctx_verbatim(key) end)
+        ctx_NC()
+        ctx_EQ() ctx_verbatim(value)
+        ctx_NC() ctx_NR()
+    end
+
+    local d = datasets[dataset].luadata
+
+    for tag, entry in sortedhash(d) do
+
+        local a = getcasted(dataset,tag,field)
+
+        if a then
+            context.start()
+            context.tt()
+            context.starttabulate { "|B|Bl|p|" }
+                ctx_FL()
+                row("tag",tag)
+                row("field",field)
+                row("content",getfield(dataset,tag,field))
+                for i=1,#a do
+                    ctx_ML()
+                    local ai = a[i]
+                    flush(ai,"original",i)
+                    flush(ai,"snippets")
+                    flush(ai,"initials")
+                    flush(ai,"firstnames")
+                    flush(ai,"vons")
+                    flush(ai,"surnames")
+                    flush(ai,"juniors")
+                end
+                ctx_LL()
+            context.stoptabulate()
+            context.stop()
+        end
+
+    end
+
+end
+
 commands.showbtxdatasetfields       = tracers.showdatasetfields
 commands.showbtxdatasetcompleteness = tracers.showdatasetcompleteness
 commands.showbtxfields              = tracers.showfields
 commands.showbtxtables              = tracers.showtables
+commands.showbtxdatasetauthors      = tracers.showdatasetauthors

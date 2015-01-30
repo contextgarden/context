@@ -387,7 +387,7 @@
         {\advance\scratchcounter\plusone}}%
    \popmacro\columnmaxcells}
 
-\long\def\OTRSETrecurseRL#1%
+\def\OTRSETrecurseRL#1%
   {\dostepwiserecurse\nofcolumns\plusone\minusone
      {#1\hskip\namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance}}
 
@@ -2379,7 +2379,7 @@
 \unexpanded\def\setupcolumntextareatext
   {\dotripleempty\dosetupcolumntextareatext}
 
-\long\def\dosetupcolumntextareatext[#1][#2][#3]%
+\def\dosetupcolumntextareatext[#1][#2][#3]%
   {\ifthirdargument
      \doifelse{#2}\v!both
        {\setvalue{\??mt#1\v!left }{#3}%

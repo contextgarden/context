@@ -658,8 +658,8 @@
 %D A slower but more versatile implementation is:
 %D
 %D \starttyping
-%D \long\def\dowithnextbox#1#2%
-%D   {\long\def\syst_boxes_with_next_box{#1}%
+%D \unexpanded\def\dowithnextbox#1#2%
+%D   {\def\syst_boxes_with_next_box{#1}%
 %D    \ifx#2\hbox
 %D      \afterassignment\syst_boxes_with_next_box_indeed
 %D    \else\ifx#2\vbox

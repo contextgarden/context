@@ -40,6 +40,13 @@ local report          = logs.reporter("publications","authors")
 --     }
 -- end
 
+-- authorlist = { authorspec and authorspec and authorspec }
+-- authorspec = composedname
+-- authorspec = surnames, firstnames
+-- authorspec = von, surnames, firstnames
+-- authorspec = von, surnames, jr, firstnames
+-- authorspec = von, surnames, jr, firstnames, initials
+
 local space          = P(" ")
 local comma          = P(",")
 local period         = P(".")
@@ -52,13 +59,15 @@ local p_space        = space^1
 local p_shortone     = C((utf8character      -dash-period)^1)
 local p_longone      = C( utf8character) * (1-dash-period)^0
 
+local p_empty        = P("{}")/"" * #(p_space^0 * (P(-1) + P(",")))
+
 local andsplitter   = Ct { "start",
     start = (Cs((V("inner") + (1-p_and))^1) + p_and)^1,
     inner = P("{") * ((V("inner") + P(1-P("}")))^1) * P("}"),
 }
 
 local commasplitter = Ct { "start",
-    start = Cs(V("outer")) + (Cs((V("inner") + (1-p_comma))^1) + p_comma)^1,
+    start = Cs(V("outer")) + (p_empty + Cs((V("inner") + (1-p_comma))^1) + p_comma)^1,
     outer = (P("{")/"") * ((V("inner") + P(1-P("}")))^1) * (P("}")/""),
     inner = P("{") * ((V("inner") + P(1-P("}")))^1) * P("}"),
 }
@@ -83,6 +92,16 @@ local cache   = { } -- 33% reuse on tugboat.bib
 local nofhits = 0
 local nofused = 0
 
+local function makeinitials(firstnames)
+    if firstnames and #firstnames > 0 then
+        local initials = { }
+        for i=1,#firstnames do
+            initials[i] = lpegmatch(initialsplitter,firstnames[i])
+        end
+        return initials
+    end
+end
+
 local function splitauthorstring(str)
     if not str then
         return
@@ -106,6 +125,10 @@ local function splitauthorstring(str)
             local firstnames, vons, surnames, initials, juniors
             local split = lpegmatch(commasplitter,author)
             local n = #split
+            detail = {
+                original = author,
+                snippets = n,
+            }
             if n == 1 then
                 -- First von Last
                 local words = lpegmatch(spacesplitter,author)
@@ -137,11 +160,13 @@ local function splitauthorstring(str)
                 else
                     -- mess
                 end
-                -- safeguard
                 if #surnames == 0 then
+                    -- safeguard
                     firstnames = { }
                     vons       = { }
                     surnames   = { author }
+                else
+                    initials = makeinitials(firstnames)
                 end
             elseif n == 2 then
                 -- von Last, First
@@ -173,33 +198,38 @@ local function splitauthorstring(str)
                 while i <= n do
                     vons[#vons+1], i = words[i], i + 1
                 end
-            else
+                if surnames and firstnames and #surnames == 0 then
+                    -- safeguard
+                    surnames[1] = firstnames[#firstnames]
+                    firstnames[#firstnames] = nil
+                end
+                initials = makeinitials(firstnames)
+            elseif n == 3 then
                 -- von Last, Jr ,First
-                firstnames = lpegmatch(spacesplitter,split[1])
+                surnames   = lpegmatch(spacesplitter,split[1])
                 juniors    = lpegmatch(spacesplitter,split[2])
-                surnames   = lpegmatch(spacesplitter,split[3])
-                if n > 3 then
-                    -- error
-                end
+                firstnames = lpegmatch(spacesplitter,split[3])
+                initials   = makeinitials(firstnames)
+            elseif n == 4 then
+                -- von, Last, Jr, First
+                vons       = lpegmatch(spacesplitter,split[1])
+                surnames   = lpegmatch(spacesplitter,split[2])
+                juniors    = lpegmatch(spacesplitter,split[3])
+                firstnames = lpegmatch(spacesplitter,split[4])
+                initials   = makeinitials(firstnames)
+            elseif n >= 5 then
+                -- von, Last, Jr, First, Initials
+                vons       = lpegmatch(spacesplitter,split[1])
+                surnames   = lpegmatch(spacesplitter,split[2])
+                juniors    = lpegmatch(spacesplitter,split[3])
+                firstnames = lpegmatch(spacesplitter,split[4])
+                initials   = lpegmatch(spacesplitter,split[5])
             end
-            if #surnames == 0 then
-                surnames[1] = firstnames[#firstnames]
-                firstnames[#firstnames] = nil
-            end
-            if firstnames then
-                initials = { }
-                for i=1,#firstnames do
-                    initials[i] = lpegmatch(initialsplitter,firstnames[i])
-                end
-            end
-            detail = {
-                original   = author,
-                firstnames = firstnames,
-                vons       = vons,
-                surnames   = surnames,
-                initials   = initials,
-                juniors    = juniors,
-            }
+            if firstnames and #firstnames > 0 then detail.firstnames = firstnames end
+            if vons       and #vons       > 0 then detail.vons       = vons       end
+            if surnames   and #surnames   > 0 then detail.surnames   = surnames   end
+            if initials   and #initials   > 0 then detail.initials   = initials   end
+            if juniors    and #juniors    > 0 then detail.juniors    = juniors    end
             cache[author] = detail
             nofhits = nofhits + 1
         end

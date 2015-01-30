@@ -126,6 +126,8 @@
         return max, what, function(n) return (max == 0 and 0) or (n == 0 and 0) or n/max end
     end
 
+    local f_norm = string.formatters["%0.3f"]
+
     function document.context_state_1(what)
         local max, what, norm = prepare(what)
         context.starttabulate { "|Tl|T|T|T|T|T|" }
@@ -154,9 +156,15 @@
                 (used.mkvi[k] and "vi") or "~~",
                 k
             )
+         -- context("%s\\enspace %s\\quad %s\\quad %s",
+         --     (used.mkii[k] and "ii") or "\\quad",
+         --     (used.mkiv[k] and "iv") or "\\quad",
+         --     (used.mkvi[k] and "vi") or "\\quad",
+         --     k
+         -- )
             context.NC()
             for i=1,#types do
-                context.Bar(types[i],v[i],c[i],norm(v[i]))
+                context.Bar(types[i],v[i],c[i],f_norm(norm(v[i])))
                 context.NC()
             end
             context.NR()
@@ -170,7 +178,7 @@
             local c = (what == size and comp[k]) or nope
             context.StartUp(k)
             for i=1,#types do
-                context.Up(types[i],norm(v[i]))
+                context.Up(types[i],f_norm(norm(v[i])))
             end
             context.StopUp()
         end

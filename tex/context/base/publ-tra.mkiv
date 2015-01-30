@@ -22,6 +22,7 @@
 
 \unexpanded\def\showbtxdatasetfields      {\dosingleempty\publ_show_dataset_fields}
 \unexpanded\def\showbtxdatasetcompleteness{\dosingleempty\publ_show_dataset_completeness}
+\unexpanded\def\showbtxdatasetauthors     {\dosingleempty\publ_show_dataset_authors}
 \unexpanded\def\showbtxfields             {\dosingleempty\publ_show_fields}
 \unexpanded\def\showbtxtables             {\dosingleempty\publ_show_tables}
 
@@ -29,6 +30,7 @@
   {\begingroup
    \setdummyparameter\c!specification{\btxparameter\c!specification}%
    \setdummyparameter\c!dataset      {\currentbtxdataset}%
+   \letdummyparameter\c!field        \empty
    \iffirstargument
      \doifassignmentelse{#2}
        {\getdummyparameters[#2]}%
@@ -39,13 +41,15 @@
  % \publ_specification_push{"\dummyparameter\c!specification}%
    \ctxcommand{#1{
       dataset       = "\dummyparameter\c!dataset",
-      specification = "\dummyparameter\c!specification"
+      specification = "\dummyparameter\c!specification",
+      field         = "\dummyparameter\c!field",
    }}%
  % \publ_specification_pop
    \endgroup}
 
 \def\publ_show_dataset_fields      {\publ_show_dataset_whatever{showbtxdatasetfields}}
 \def\publ_show_dataset_completeness{\publ_show_dataset_whatever{showbtxdatasetcompleteness}}
+\def\publ_show_dataset_authors     {\publ_show_dataset_whatever{showbtxdatasetauthors}}
 
 \def\publ_show_fields[#1]%
   {\begingroup

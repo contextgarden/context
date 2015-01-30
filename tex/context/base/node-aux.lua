@@ -352,7 +352,8 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-
             n = new_glyph(fnt,s)
         end
         if attr then -- normally false when template
-            setfield(n,"attr",copy_node_list(attr))
+--             setfield(n,"attr",copy_node_list(attr))
+            setfield(n,"attr",attr)
         end
         if head then
             insert_node_after(head,tail,n)

@@ -1431,8 +1431,10 @@ local function runprogram(binary,argument,variables)
     local found = nil
     if type(binary) == "table" then
         for i=1,#binary do
-            found = os.which(binary[i])
+            local b = binary[i]
+            found = os.which(b)
             if found then
+                binary = b
                 break
             end
         end

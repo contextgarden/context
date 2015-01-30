@@ -20,35 +20,28 @@
 
 \unprotect
 
-%D One of \TEX's strong points in building paragraphs is the way
-%D hyphenations are handled. Although for real good hyphenation
-%D of non||english languages some extensions to the program are
-%D needed, fairly good results can be reached with the standard
-%D mechanisms and an additional macro, at least in Dutch.
-
-%D \CONTEXT\ originates in the wish to typeset educational
-%D materials, especially in a technical environment. In
-%D production oriented environments, a lot of compound words
-%D are used. Because the Dutch language poses no limits on
-%D combining words, we often favor putting dashes between those
-%D words, because it facilitates reading, at least for those
-%D who are not that accustomed to it.
+%D One of \TEX's strong points in building paragraphs is the way hyphenations are
+%D handled. Although for real good hyphenation of non||english languages some
+%D extensions to the program are needed, fairly good results can be reached with the
+%D standard mechanisms and an additional macro, at least in Dutch.
 %D
-%D In \TEX\ compound words, separated by a hyphen, are not
-%D hyphenated at all. In spite of the multiple pass paragraph
-%D typesetting this can lead to parts of words sticking into
-%D the margin. The solution lays in saying \type
-%D {spoelwater||terugwinunit} instead of \type
-%D {spoelwater-terugwinunit}. By using a one character command
-%D like \type {|}, delimited by the same character \type {|},
-%D we get ourselves both a decent visualization (in \TEXEDIT\
-%D and colored verbatim we color these commands yellow) and an
-%D efficient way of combining words.
+%D \CONTEXT\ originates in the wish to typeset educational materials, especially in
+%D a technical environment. In production oriented environments, a lot of compound
+%D words are used. Because the Dutch language poses no limits on combining words, we
+%D often favor putting dashes between those words, because it facilitates reading,
+%D at least for those who are not that accustomed to it.
 %D
-%D The sequence \type{||} simply leads to two words connected by
-%D a hyphen. Because we want to distinguish such a hyphen from
-%D the one inserted when \TEX\ hyphenates a word, we use a bit
-%D longer one.
+%D In \TEX\ compound words, separated by a hyphen, are not hyphenated at all. In
+%D spite of the multiple pass paragraph typesetting this can lead to parts of words
+%D sticking into the margin. The solution lays in saying \type
+%D {spoelwater||terugwinunit} instead of \type {spoelwater-terugwinunit}. By using a
+%D one character command like \type {|}, delimited by the same character \type {|},
+%D we get ourselves both a decent visualization (in \TEXEDIT\ and colored verbatim
+%D we color these commands yellow) and an efficient way of combining words.
+%D
+%D The sequence \type{||} simply leads to two words connected by a hyphen. Because
+%D we want to distinguish such a hyphen from the one inserted when \TEX\ hyphenates
+%D a word, we use a bit longer one.
 %D
 %D \hyphenation {spoel-wa-ter te-rug-win-unit}
 %D
@@ -56,9 +49,8 @@
 %D \test {spoelwater||terugwinunit}
 %D \stoptest
 %D
-%D As we already said, the \type{|} is a command. This commands
-%D accepts an optional argument before it's delimiter, which is
-%D also a \type{|}.
+%D As we already said, the \type{|} is a command. This commands accepts an optional
+%D argument before it's delimiter, which is also a \type{|}.
 %D
 %D \hyphenation {po-ly-meer che-mie}
 %D
@@ -66,8 +58,8 @@
 %D \test {polymeer|*|chemie}
 %D \stoptest
 %D
-%D Arguments like \type{*} are not interpreted and inserted
-%D directly, in contrary to arguments like:
+%D Arguments like \type{*} are not interpreted and inserted directly, in contrary to
+%D arguments like:
 %D
 %D \starttest
 %D \test {polymeer|~|chemie}
@@ -75,22 +67,21 @@
 %D \test {polymeer|(|chemie|)| }
 %D \stoptest
 %D
-%D Although such situations seldom occur |<|we typeset thousands
-%D of pages before we encountered one that forced us to enhance
-%D this mechanism|>| we also have to take care of comma's.
+%D Although such situations seldom occur |<|we typeset thousands of pages before we
+%D encountered one that forced us to enhance this mechanism|>| we also have to take
+%D care of comma's.
 %D
-%D \hyphenation {uit-stel-len}
+%D  \hyphenation {uit-stel-len}
 %D
-%D \starttest
-%D \test {op||, in|| en uitstellen}
-%D \stoptest
+%D  \starttest
+%D  \test {op||, in|| en uitstellen}
+%D  \stoptest
 %D
-%D The next special case (concerning quotes) was brought to my
-%D attention by Piet Tutelaers, one of the driving forces
-%D behind rebuilding hyphenation patterns for the dutch
-%D language.\footnote{In 1996 the spelling of the dutch
-%D language has been slightly reformed which made this topic
-%D actual again.} We'll also take care of this case.
+%D The next special case (concerning quotes) was brought to my attention by Piet
+%D Tutelaers, one of the driving forces behind rebuilding hyphenation patterns for
+%D the dutch language.\footnote{In 1996 the spelling of the dutch language has been
+%D slightly reformed which made this topic actual again.} We'll also take care of
+%D this case.
 %D
 %D \starttest
 %D \test {AOW|'|er}
@@ -99,8 +90,7 @@
 %D \test {rock|-|'n|-|roller}
 %D \stoptest
 %D
-%D Tobias Burnus pointed out that I should also support
-%D something like
+%D Tobias Burnus pointed out that I should also support something like
 %D
 %D \starttest
 %D \test {well|_|known}
@@ -117,11 +107,10 @@
 %D \macros
 %D   {installdiscretionaries}
 %D
-%D The mechanism described here is one of the older inner parts
-%D of \CONTEXT. The most recent extensions concerns some
-%D special cases as well as the possibility to install other
-%D characters as delimiters. The prefered way of specifying
-%D compound words is using \type{||}, which is installed by:
+%D The mechanism described here is one of the older inner parts of \CONTEXT. The
+%D most recent extensions concerns some special cases as well as the possibility to
+%D install other characters as delimiters. The prefered way of specifying compound
+%D words is using \type{||}, which is installed by:
 %D
 %D \starttyping
 %D \installdiscretionary | -
@@ -153,20 +142,18 @@
 %D   {compoundhyphen,
 %D    beginofsubsentence,endofsubsentence}
 %D
-%D Now let's go to the macros. First we define some variables.
-%D In the main \CONTEXT\ modules these can be tuned by a setup
-%D command. Watch the (maybe) better looking compound hyphen.
+%D Now let's go to the macros. First we define some variables. In the main \CONTEXT\
+%D modules these can be tuned by a setup command. Watch the (maybe) better looking
+%D compound hyphen.
 
 \ifx\compoundhyphen    \undefined \unexpanded\def\compoundhyphen    {\hbox{-\kern-.25ex-}} \fi
 \ifx\beginofsubsentence\undefined \unexpanded\def\beginofsubsentence{\hbox{\emdash}}       \fi
 \ifx\endofsubsentence  \undefined \unexpanded\def\endofsubsentence  {\hbox{\emdash}}       \fi
 
-%D The last two variables are needed for subsentences
-%D |<|like this one|>| which we did not yet mention.
-%D
-%D We want to enable breaking but at the same time don't want
-%D compound characters like |-| or || to be separated from the
-%D words. \TEX\ hackers will recognise the next two macro's:
+%D The last two variables are needed for subsentences |<|like this one|>| which we
+%D did not yet mention. We want to enable breaking but at the same time don't want
+%D compound characters like |-| or || to be separated from the words. \TEX\ hackers
+%D will recognise the next two macro's:
 
 \ifx\prewordbreak \undefined \unexpanded\def\prewordbreak    {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
 \ifx\postwordbreak\undefined \unexpanded\def\postwordbreak   {\penalty\zerocount      \hskip\zeropoint\relax} \fi
@@ -177,19 +164,17 @@
 %D \macros
 %D   {beginofsubsentencespacing,endofsubsentencespacing}
 %D
-%D In the previous macros we provided two hooks which can be
-%D used to support nested sub||sentences. In \CONTEXT\ these
-%D hooks are used to insert a small space when needed.
+%D In the previous macros we provided two hooks which can be used to support nested
+%D sub||sentences. In \CONTEXT\ these hooks are used to insert a small space when
+%D needed.
 
 \ifx\beginofsubsentencespacing\undefined \let\beginofsubsentencespacing\relax \fi
 \ifx\endofsubsentencespacing  \undefined \let\endofsubsentencespacing  \relax \fi
 
-%D The following piece of code is a torture test compound
-%D hndling. The \type {\relax} before the \type {\ifmmode} is
-%D needed because of the alignment scanner (in \ETEX\ this
-%D problem is not present because there a protected macro is
-%D not expanded. Thanks to Tobias Burnus for providing this
-%D example.
+%D The following piece of code is a torture test compound handling. The \type
+%D {\relax} before the \type {\ifmmode} is needed because of the alignment scanner
+%D (in \ETEX\ this problem is not present because there a protected macro is not
+%D expanded. Thanks to Tobias Burnus for providing this example.
 %D
 %D \startformula
 %D   \left|f(x_n)-{1\over2}\right| =
@@ -234,10 +219,9 @@
 \def\lang_discretionaries_process_none#1%
   {\detokenize{#1}}
 
-%D The macro \type{\lang_discretionaries_check_before} takes care
-%D of loners like \type{||word}, while it counterpart \type
-%D {\lang_discretionaries_check_after} is responsible for handling
-%D the comma.
+%D The macro \type{\lang_discretionaries_check_before} takes care of loners like
+%D \type{||word}, while it counterpart \type {\lang_discretionaries_check_after} is
+%D responsible for handling the comma.
 
 \newsignal\compoundbreakpoint
 
@@ -327,8 +311,8 @@
 %D \macros
 %D   {directdiscretionary}
 %D
-%D In those situations where the nature of characters is
-%D less predictable, we can use the more direct approach:
+%D In those situations where the nature of characters is less predictable, we can
+%D use the more direct approach:
 
 \unexpanded\def\directdiscretionary
   {\csname
@@ -450,10 +434,9 @@
 %D \macros
 %D   {fakecompoundhyphen}
 %D
-%D In headers and footers as well as in active pieces of text
-%D we need a dirty hack. Try to imagine what is needed to
-%D savely break the next text across a line and at the same
-%D time make the words interactive.
+%D In headers and footers as well as in active pieces of text we need a dirty hack.
+%D Try to imagine what is needed to savely break the next text across a line and at
+%D the same time make the words interactive.
 %D
 %D \starttyping
 %D \goto{Some||Long||Word}
@@ -471,10 +454,9 @@
 %D   {midworddiscretionary}
 %D
 %D If needed, one can add a discretionary hyphen using \type
-%D {\midworddiscretionary}. This macro does the same as
-%D \PLAIN\ \TEX's \type {\-}, but, like the ones implemented
-%D earlier, this one also looks ahead for spaces and grouping
-%D tokens.
+%D {\midworddiscretionary}. This macro does the same as \PLAIN\ \TEX's \type {\-},
+%D but, like the ones implemented earlier, this one also looks ahead for spaces and
+%D grouping tokens.
 
 \unexpanded\def\midworddiscretionary
   {\futurelet\nexttoken\lang_discretionaries_mid_word}
@@ -489,15 +471,13 @@
 %D \macros
 %D   {installcompoundcharacter}
 %D
-%D When Tobias Burnus started translating the dutch manual of
-%D \PPCHTEX\ into german, he suggested to let \CONTEXT\ support
-%D the \type{german.sty} method of handling compound
-%D characters, especially the umlaut. This package is meant for
-%D use with \PLAIN\ \TEX\ as well as \LATEX.
+%D When Tobias Burnus started translating the dutch manual of \PPCHTEX\ into german,
+%D he suggested to let \CONTEXT\ support the \type{german.sty} method of handling
+%D compound characters, especially the umlaut. This package is meant for use with
+%D \PLAIN\ \TEX\ as well as \LATEX.
 %D
-%D I decided to implement compound character support as
-%D versatile as possible. As a result one can define his own
-%D compound character support, like:
+%D I decided to implement compound character support as versatile as possible. As a
+%D result one can define his own compound character support, like:
 %D
 %D \starttyping
 %D \installcompoundcharacter "a {\"a}
@@ -515,25 +495,24 @@
 %D \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
 %D \stoptyping
 %D
-%D The support is not limited to alphabetic characters, so the
-%D next definition is also valid.
+%D The support is not limited to alphabetic characters, so the next definition is
+%D also valid.
 %D
 %D \starttyping
 %D \installcompoundcharacter ". {.\doifnextcharelse{\spacetoken}{}{\kern.125em}}
 %D \stoptyping
 %D
-%D The implementation looks familiar and uses the same tricks as
-%D mentioned earlier in this module. We take care of two
-%D arguments, which complicates things a bit.
+%D The implementation looks familiar and uses the same tricks as mentioned earlier
+%D in this module. We take care of two arguments, which complicates things a bit.
 
 \installcorenamespace{compoundnormal}
 \installcorenamespace{compoundsingle}
 \installcorenamespace{compoundmultiple}
 \installcorenamespace{compounddefinition}
 
-%D When we started working on MK IV code, we needed a different
-%D approach for defining the active character itself. In MK II as
-%D well as in MK IV we now use the catcode vectors.
+%D When I started working on \MKIV\ code, we needed a different approach for
+%D defining the active character itself. In \MKII\ as well as in \MKIV\ we now use
+%D the catcode vectors.
 
 \setnewconstant\compoundcharactermode\plusone
 
@@ -551,22 +530,19 @@
      \expandafter\letcatcodecommand\expandafter\ctxcatcodes\expandafter\c_lang_compounds_character\csname\??compounddefinition\detokenize{#1}\endcsname
    \fi}
 
-%D We can also ignore definitions (needed in for instance \XML). Beware,
-%D this macro is supposed to be used grouped!
+%D We can also ignore definitions (needed in for instance \XML). Beware, this macro
+%D is supposed to be used grouped!
 
 \def\ignorecompoundcharacter
   {\compoundcharactermode\zerocount}
 
-%D In handling the compound characters we have to take care of
-%D \type{\bgroup} and \type{\egroup} tokens, so we end up with
-%D a multi||step interpretation macro. We look ahead for a
-%D \type{\bgroup}, \type{\egroup} or \type{\blankspace}. Being
-%D no user of this mechanism, the credits for testing them goes
-%D to Tobias Burnus, the first german user of \CONTEXT.
+%D In handling the compound characters we have to take care of \type {\bgroup} and
+%D \type {\egroup} tokens, so we end up with a multi||step interpretation macro. We
+%D look ahead for a \type {\bgroup}, \type {\egroup} or \type {\blankspace}. Being
+%D no user of this mechanism, the credits for testing them goes to Tobias Burnus,
+%D the first german user of \CONTEXT.
 %D
-%D We define these macros as \type{\long} because we can
-%D expect \type{\par} tokens. We need to look into the future
-%D with \type{\futurelet} to prevent spaces from
+%D We need to look into the future with \type{\futurelet} to prevent spaces from
 %D disappearing.
 
 \def\lang_compounds_handle_character#1%
@@ -604,12 +580,11 @@
      \tripleexpandafter\lang_compounds_handle_character_two
    \fi\fi\fi}
 
-%D Besides taken care of the grouping and space tokens, we have
-%D to deal with three situations. First we look if the next
-%D character equals the first one, if so, then we just insert
-%D the original. Next we look if indeed a compound character is
-%D defined. We either execute the compound character or just
-%D insert the first. So we have
+%D Besides taken care of the grouping and space tokens, we have to deal with three
+%D situations. First we look if the next character equals the first one, if so, then
+%D we just insert the original. Next we look if indeed a compound character is
+%D defined. We either execute the compound character or just insert the first. So we
+%D have
 %D
 %D \starttyping
 %D <key><key>  <key><known>  <key><unknown>
@@ -639,8 +614,8 @@
    \fi\fi\fi
    \next}
 
-%D For very obscure applications (see for an application \type
-%D {lang-sla.tex}) we provide:
+%D For very obscure applications (see for an application \type {lang-sla.tex}) we
+%D provide:
 
 \def\simplifiedcompoundcharacter#1#2%
   {\ifcsname\??compoundsingle\string#1\string#2\endcsname
@@ -652,8 +627,8 @@
 %D \macros
 %D   {disablediscretionaries,disablecompoundcharacter}
 %D
-%D Occasionally we need to disable this mechanism. For the
-%D moment we assume that \type {|} is used.
+%D Occasionally we need to disable this mechanism. For the moment we assume that
+%D \type {|} is used.
 
 \let\disablediscretionaries   \ignorediscretionaries
 \let\disablecompoundcharacters\ignorecompoundcharacter
@@ -668,9 +643,8 @@
 %D \macros
 %D   {compound}
 %D
-%D We will overload the already active \type {|} so we have
-%D to save its meaning in order to be able to use this handy
-%D macro.
+%D We will overload the already active \type {|} so we have to save its meaning in
+%D order to be able to use this handy macro.
 %D
 %D \starttyping
 %D so test\compound{}test can be used instead of test||test
@@ -688,8 +662,7 @@
 
 \egroup
 
-%D Here we hook some code into the clean up mechanism needed
-%D for verbatim data.
+%D Here we hook some code into the clean up mechanism needed for verbatim data.
 
 \appendtoks
     \disablecompoundcharacters

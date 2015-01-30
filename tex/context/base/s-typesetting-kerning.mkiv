@@ -123,38 +123,48 @@
     \setbox4=\ruledhbox{\setcharacterkerning[crap]\showfontkerns\showglyphs#1}
     \xdef\KerningStepPercentage{\ctxlua{context("\letterpercent 0.2f",(1-\number\wd0/\number\wd2)*100)}}
     \scratchwidth\wd0
-    \hbox{\box0\hskip-\scratchwidth\box2}
-    \par
-    \box4
+    \vtop\bgroup
+        \hbox{\box0\hskip-\scratchwidth\box2}
+        \par
+        \box4
+    \egroup
 \stoptexdefinition
 
 \starttexdefinition showcharacterkerningsteps [#1]
 
-    \startTEXpage[\c!offset=1ex]
+    \start
+
+    \getdummyparameters
+      [\s!font=Regular,
+       \c!sample={Wat een bende, rommelen met het font design!},
+       \c!text={rommelen},
+       \c!first=00,
+       \c!last=95,
+       \c!step=05,
+       \c!option=, % \v!page
+       #1]
+
+    \doif{\dummyparameter\c!option}\v!page {
+        \startTEXpage[\c!offset=1ex]
+    }
 
         \definecolor[color-1][r=1,t=.5,a=1]
         \definecolor[color-2][b=1,t=.5,a=1]
 
-        \getdummyparameters
-          [\s!font=Regular,
-           \c!sample={Wat een bende, rommelen met het font design!},
-%            \c!text={een},
-           \c!text={rommelen},
-           #1]
-
         \definedfont[\dummyparameter\s!font*default sa 1]
 
-        \begingroup
-            \tttf \dummyparameter\s!font\space @ default
-        \endgroup
+        \doif {\dummyparameter\c!option}\v!page {
+            \begingroup
+                \tttf \dummyparameter\s!font\space @ default
+            \endgroup
+            \blank
+        }
 
-        \blank
-
-        \starttabulate[|cT|p|cT|p|cT|]
+        \starttabulate[|cT|l|cT|l|cT|]
 
         \NC \tt\bf factor \NC \tt\bf sample \NC \tt\bf \letterpercent \NC \tt\bf text \NC \tt\bf \letterpercent \NC \NR \HL
 
-        \dostepwiserecurse {00} {95} {05} {
+        \dostepwiserecurse {\dummyparameter\c!first} {\dummyparameter\c!last} {\dummyparameter\c!step} {
             \NC
                 \xdef\KerningStepFactor{\ctxlua{context("\letterpercent 0.3f",####1/1000)}}
                 \KerningStepFactor
@@ -168,9 +178,14 @@
                 \KerningStepPercentage
             \NC \NR
         }
+
         \stoptabulate
 
-    \stopTEXpage
+    \doif{\dummyparameter\c!option}\v!page {
+        \stopTEXpage
+    }
+
+    \stop
 
 \stoptexdefinition
 
@@ -182,10 +197,10 @@
 
   % \showcharacterkerning
 
-    \showcharacterkerningsteps[font=file:FuturaStd-Book.otf]
-    \showcharacterkerningsteps[font=file:FuturaStd-Medium.otf]
-    \showcharacterkerningsteps[font=file:FuturaStd-Bold.otf]
-    \showcharacterkerningsteps[font=file:FuturaStd-heavy.otf]
+    \showcharacterkerningsteps[font=file:FuturaStd-Book.otf,option=page]
+    \showcharacterkerningsteps[font=file:FuturaStd-Medium.otf,option=page]
+    \showcharacterkerningsteps[font=file:FuturaStd-Bold.otf,option=page]
+    \showcharacterkerningsteps[font=file:FuturaStd-heavy.otf,option=page]
 
 \stoptext
 

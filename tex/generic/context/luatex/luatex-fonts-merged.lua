@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 01/26/15 11:39:16
+-- merge date  : 01/30/15 15:28:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -10257,6 +10257,9 @@ local function inject_marks(marks,nofmarks)
           local px=getfield(p,"xoffset")
           local ox=0
           local pp=rawget(properties,p)
+          if pp then
+            pp=pp.injections
+          end
           local rightkern=pp and pp.rightkern
           if rightkern then 
             if pn.markdir<0 then

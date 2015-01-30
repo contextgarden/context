@@ -25,7 +25,7 @@ end
 local chardata  = characters.data
 local lowercase = characters.lower
 
-local lower, find = string.lower, string.find
+local lower, find, sub = string.lower, string.find, string.sub
 local concat, copy = table.concat, table.copy
 local next, type, rawget = next, type, rawget
 local utfchar = utf.char
@@ -39,7 +39,7 @@ local setmetatableindex = table.setmetatableindex
 
 -- todo: more allocate
 
-local P, R, S, V, C, Cc, Cs, Ct, Carg, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg, lpeg.Cmt
+local P, R, S, V, C, Cc, Cs, Ct, Carg, Cmt, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg, lpeg.Cmt, lpeg.Cp
 
 local p_whitespace      = lpegpatterns.whitespace
 
@@ -529,12 +529,13 @@ do
     local spacing    = space^0
     local equal      = P("=")
     ----- collapsed  = (space^1)/ " "
-    local collapsed  = (p_whitespace^1)/" "
+    local collapsed  = p_whitespace^1/" "
+    local nospaces   = p_whitespace^1/""
 
-    ----- balanced   = lpegpatterns.balanced
+    local p_left     = (p_whitespace^0 * left  * p_whitespace^0) / ""
+    local p_right    = (p_whitespace^0 * right * p_whitespace^0) / ""
 
     local balanced   = P {
-    --     [1] = ((escape * (left+right)) + (collapsed + 1 - (left+right)) + V(2))^0,
         [1] = ((escape * (left+right)) + collapsed + (1 - (left+right))^1 + V(2))^0,
         [2] = left * V(1) * right,
     }
@@ -552,8 +553,21 @@ do
     local s_quoted   = ((escape*single) + collapsed + (1-single))^0
     local d_quoted   = ((escape*double) + collapsed + (1-double))^0
 
-    local b_value    = (left  /"") * balanced * (right /"")
-    local u_value    = (left  /"") * unbalanced * (right /"") -- get rid of outer { }
+ -- local p_strip    = C((1-(p_whitespace * P(-1)))^1)
+ --
+ -- local function stripendspace(s)
+ --     return lpegmatch(p_strip,s) or s
+ -- end
+
+    local p_strip    = (Cp() * p_whitespace^1 * P(-1) + 1)^1
+
+    local function stripendspace(s)
+        local p = lpegmatch(p_strip,s)
+        return p and sub(s,1,p-1) or s
+    end
+
+    local b_value    = p_left * (Cs(balanced)/stripendspace) * p_right
+    local u_value    = p_left * unbalanced * p_right -- get rid of outer { }
     local s_value    = (single/"") * (u_value + s_quoted) * (single/"")
     local d_value    = (double/"") * (u_value + d_quoted) * (double/"")
     local r_value    = reference * Carg(1) /resolve

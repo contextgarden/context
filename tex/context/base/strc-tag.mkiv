@@ -371,36 +371,36 @@
    \c!style=]
 
 \unexpanded\def\startparagraph
-   {\dodoubleempty\paragraph_start}
+  {\dodoubleempty\paragraph_start}
 
 \def\paragraph_start
-   {\endgraf % we end before the group
-    \begingroup
-    \iffirstargument
-      \ifsecondargument
-        \doubleexpandafter\paragraph_start_two
-      \else
-        \doubleexpandafter\paragraph_start_one
-      \fi
-    \else
-      \expandafter\paragraph_start_zero
-    \fi}
+  {\endgraf % we end before the group
+   \begingroup
+   \iffirstargument
+     \ifsecondargument
+       \doubleexpandafter\paragraph_start_two
+     \else
+       \doubleexpandafter\paragraph_start_one
+     \fi
+   \else
+     \expandafter\paragraph_start_zero
+   \fi}
 
 \def\paragraph_start_two[#1][#2]%
-   {\edef\currentparagraph{#1}%
-    \setupcurrentparagraph[#2]%
-    \paragraph_start_indeed}
+  {\edef\currentparagraph{#1}%
+   \setupcurrentparagraph[#2]%
+   \paragraph_start_indeed}
 
 \def\paragraph_start_one[#1][#2]%
-   {\doifassignmentelse{#1}
-      {\let\currentparagraph\empty
-       \setupcurrentparagraph[#1]}
-      {\edef\currentparagraph{#1}}%
-    \paragraph_start_indeed}
+  {\doifassignmentelse{#1}
+     {\let\currentparagraph\empty
+      \setupcurrentparagraph[#1]}
+     {\edef\currentparagraph{#1}}%
+   \paragraph_start_indeed}
 
 \def\paragraph_start_zero[#1][#2]%
-   {\let\currentparagraph\empty
-    \paragraph_start_indeed}
+  {\let\currentparagraph\empty
+   \paragraph_start_indeed}
 
 \def\paragraph_start_indeed
   {\useparagraphstyleandcolor\c!style\c!color
@@ -409,9 +409,9 @@
    \dostarttagged\t!paragraph\currentparagraph}
 
 \unexpanded\def\stopparagraph
-   {\dostoptagged
-    \endgraf % we end inside the group
-    \endgroup}
+  {\dostoptagged
+   \endgraf % we end inside the group
+   \endgroup}
 
 \let\startpar\startparagraph
 \let\stoppar \stopparagraph

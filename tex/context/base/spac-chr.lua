@@ -117,7 +117,7 @@ local function inject_nobreak_space(unicode,head,current,space,spacestretch,spac
     local penalty = new_penalty(10000)
     setfield(glue,"attr",attr)
     setfield(current,"attr",nil)
-    setattr(glue,a_character,unicode)
+    setattr(glue,a_character,unicode) -- bombs
     head, current = insert_node_after(head,current,penalty)
     if trace_nbsp then
         local rule    = new_rule(space)

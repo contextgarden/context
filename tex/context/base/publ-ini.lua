@@ -764,6 +764,8 @@ local function getdirect(dataset,data,field,catspec) -- no field check, no datas
     end
 end
 
+publications.getfield  = getfield
+publications.getdetail = getdetail
 publications.getcasted = getcasted
 publications.getfaster = getfaster
 publications.getdirect = getdirect

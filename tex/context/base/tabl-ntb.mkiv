@@ -235,6 +235,7 @@
 \installcorenamespace{naturaltablehei}
 \installcorenamespace{naturaltabledis}
 \installcorenamespace{naturaltableaut}
+\installcorenamespace{naturaltablefwd} % forcedwidth
 \installcorenamespace{naturaltabletxt}
 \installcorenamespace{naturaltablespn}
 \installcorenamespace{naturaltableref}
@@ -1284,7 +1285,7 @@
    \global\c_tabl_ntb_row\zerocount
    \global\advance\c_tabl_ntb_row\minusone
    \dostarttaggedchained\t!table\empty\??naturaltable
-   \registerparoptions
+  %\registerparoptions % (*) triggers max hsize
    \the\t_tabl_ntb
    \dostoptagged}
 
@@ -1312,14 +1313,12 @@
 
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_none}#1#2%
   {\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
-   \normalexpanded
-     {\t_tabl_ntb_row
-        {\the\t_tabl_ntb_row
-         \ifnum\scratchcounter>\zerocount
-           \tabl_ntb_span{\the\scratchcounter}%
-         \else
-           \tabl_ntb_plus
-         \fi}}}
+   \ifnum\scratchcounter>\zerocount
+     \normalexpanded
+       {\t_tabl_ntb_row
+          {\the\t_tabl_ntb_row
+           \tabl_ntb_span{\the\scratchcounter}}}%
+   \fi}
 
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_cell}#1#2%
   {\t_tabl_ntb_row\expandafter{\the\t_tabl_ntb_row\tabl_ntb_pass #1 #2 }% space delimited -> less tokens
@@ -1569,6 +1568,14 @@
   {\setbox\b_tabl_ntb_final\vbox{\tabl_ntb_flush_content}%
    \postprocessTABLEbox\b_tabl_ntb_final
    \beforeTABLEbox
+ % packaging prevents max hsized box
+ % \hbox{\registerparoptions\box\b_tabl_ntb_final}% (*) better here
+ % better :
+   \ifinsidefloat
+     % nothing, else we get a \hsized box
+   \else
+     \registerparoptions % (*) better here
+   \fi
    \box\b_tabl_ntb_final
    \afterTABLEbox}
 
@@ -1799,6 +1806,55 @@
 % problem: when span doesn't break we can have a span that is the sum of
 % cells but still to small .. chicken egg problem ... for that we should
 % also have a smallest width run
+%
+% nilling the background makes a run upto 25% faster
+
+\def\tabl_ntb_cell_process_a_check_span_one
+  {\ifautosqueezeTBLspan
+     \edef\p_width{\naturaltablelocalparameter\c!width}%
+     \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
+   \else
+     \donetrue
+   \fi
+   \ifdone % brr, 0
+     \ifnum\scratchcounter>\plusone
+       \tabl_ntb_set_spn\c_tabl_ntb_col
+     \fi
+   \fi}
+
+\def\tabl_ntb_cell_process_a_check_span_two_yes
+  {\iftightTBLcolspan
+     \donefalse
+   \else
+     \ifnum\scratchcounter>\plusone
+       \begingroup
+       \edef\p_width{\naturaltablelocalparameter\c!width}%
+       \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
+       \ifdone
+         \endgroup
+         \edef\p_option{\naturaltablelocalparameter\c!option}%
+         \ifx\p_option\v!tight\donefalse\else\donetrue\fi
+       \else
+         % a dimension
+         \endgroup
+         \donefalse
+       \fi
+     \else
+       \edef\p_option{\naturaltablelocalparameter\c!option}%
+       \ifx\p_option\v!tight\donefalse\else\donetrue\fi
+     \fi
+   \fi}
+
+
+% \let\tabl_ntb_cell_process_a_check_span_two_nop\donetrue
+
+\def\tabl_ntb_cell_process_a_check_span_two_nop
+  {\ifnum\scratchcounter>\plusone
+     \edef\p_width{\naturaltablelocalparameter\c!width}%
+     \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
+   \else
+     \donetrue
+   \fi}
 
 \unexpanded\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
   {\bgroup
@@ -1808,41 +1864,20 @@
    \letnaturaltablelocalparameter\c!background\empty
    \letnaturaltablelocalparameter\c!frame\v!off
    \scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
-   \ifnum\scratchcounter>\plusone
-     \letnaturaltablelocalparameter\c!width\v!fit % compatible with extreme tables
-   \fi
    \setbox\scratchbox\hbox
      {\scratchdimen\naturaltablelocalparameter\c!distance\relax
       \ifdim\scratchdimen>\tabl_ntb_get_dis{#2}\relax
         \tabl_ntb_set_dis{#2}{\the\scratchdimen}%
       \fi
-      % nilling the background is some 25% faster
-    % % \setupcurrentnaturaltablelocal[#3,\c!background=,\c!frame=\v!off]%
-    % \setupcurrentnaturaltablelocal[#3]% 25% faster
-    % \letnaturaltablelocalparameter\c!background\empty
-    % \letnaturaltablelocalparameter\c!frame\v!off
       \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop\tabl_ntb_cell_finalize}}%
    \scratchdimen\tabl_ntb_get_wid\c_tabl_ntb_col\relax
    \ifdim\wd\scratchbox>\scratchdimen
      \ifsqueezeTBLspan
-       \ifautosqueezeTBLspan
-         \edef\p_width{\naturaltablelocalparameter\c!width}%
-         \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
-       \else
-         \donetrue
-       \fi
-       \ifdone % brr, 0
-         \ifnum\scratchcounter>\plusone \tabl_ntb_set_spn\c_tabl_ntb_col\fi
-       \fi
+       \tabl_ntb_cell_process_a_check_span_one
      \fi
      \tabl_ntb_spn_doifelse\c_tabl_ntb_col
-       {\iftightTBLcolspan
-          \donefalse
-        \else
-          \edef\p_option{\naturaltablelocalparameter\c!option}%
-          \ifx\p_option\v!tight\donefalse\else\donetrue\fi
-        \fi}%
-       \donetrue
+       \tabl_ntb_cell_process_a_check_span_two_yes
+       \tabl_ntb_cell_process_a_check_span_two_nop
      \ifdone
        \ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
           \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%

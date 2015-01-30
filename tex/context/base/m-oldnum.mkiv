@@ -73,8 +73,8 @@
 \chardef\digitoutputmode=1 % 0..6
 \chardef\digitsignmode  =0 % 0..3
 
-\def\setdigitmode{\chardef\digitoutputmode}
-\def\setdigitsign{\chardef\digitsignmode}
+\unexpanded\def\setdigitmode{\chardef\digitoutputmode}
+\unexpanded\def\setdigitsign{\chardef\digitsignmode}
 
 %D The digit modes are:
 %D
@@ -118,7 +118,7 @@
 
 \ifx\normalmathshift\undefined \let\normalmathshift=$ \fi
 
-\def\scandigit
+\unexpanded\def\scandigit
   {\ifx\next\blankspace
      \let\next\handledigits
    \else\ifx\next\nextobeyedline % the indirect one
@@ -139,10 +139,10 @@
 %D typeset it in superscript. The space placeholders are
 %D replaced by a \type {@}.
 
-\def\savedigit#1#2%
+\unexpanded\def\savedigit#1#2%
   {\edef#1{#1\saveddigits#2}\let\saveddigits\empty}
 
-\long\def\collectdigit#1%
+\unexpanded\def\collectdigit#1%
   {\ifx#1~%
      \savedigit\collecteddigits @%
    \else\if#1_% tricky as can be several catcodes ... will become lua code anyway
@@ -173,7 +173,7 @@
 \let\handlemathdigits\firstofoneargument
 \let\handletextdigits\mathematics
 
-\def\handledigits
+\unexpanded\def\handledigits
   {%\ifcase\powerdigits
    %  \edef\collecteddigits{\collecteddigits\saveddigits}%
    %\else
@@ -235,7 +235,7 @@
 % 0,-   is invalid, should be =
 % 0,--  is invalid, should be ==
 
-\def\digitzeroamount
+\unexpanded\def\digitzeroamount
   {\digitsgn\zeroamount
    \def\digitzeroamount
      {\hphantom
@@ -243,7 +243,7 @@
          \hskip-\wd\scratchbox}%
       \let\digitzeroamount\empty}}
 
-\def\scandigits#1%
+\unexpanded\def\scandigits#1%
   {\if#1.\digitsep1\else
    \if#1,\digitsep2\else
    \if#1@\digitnop \else
@@ -261,7 +261,7 @@
 
 \newbox\digitsepbox \chardef\autodigitmode=1
 
-\def\digitsep#1%
+\unexpanded\def\digitsep#1%
   {\ifcase\autodigitmode
      \doscandigit#1%
    \else
@@ -277,7 +277,7 @@
 %
 % while this works
 
-\def\digitnop
+\unexpanded\def\digitnop
   {\hbox{\hphantom{\box\digitsepbox}}%
    \hphantom{0}\chardef\skipdigit1\relax}
 
@@ -287,7 +287,7 @@
 %   {\hphantom{\box\digitsepbox0}%
 %    \chardef\skipdigit1\relax}
 
-\def\digitsgn#1%
+\unexpanded\def\digitsgn#1%
   {\ifcase\digitsignmode#1\else
      \hbox
        {\setbox\scratchbox\hbox{0}%
@@ -404,11 +404,11 @@
 %D \digittemplate 12.000.000,00 % \digittemplate .,
 %D \stoptyping
 
-\def\digittemplate #1 %
+\unexpanded\def\digittemplate #1 %
   {\chardef\digitinputmode\zerocount
    \handletokens#1\with\scandigittemplate}
 
-\def\scandigittemplate#1%
+\unexpanded\def\scandigittemplate#1%
   {\if     #1.\ifcase\digitinputmode\chardef\digitinputmode\plusone \fi% period
    \else\if#1,\ifcase\digitinputmode\chardef\digitinputmode\plustwo \fi% comma
    \fi\fi}

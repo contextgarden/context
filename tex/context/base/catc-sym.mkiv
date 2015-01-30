@@ -177,12 +177,12 @@
 %D
 %D \getbuffer[c]
 
-\long\def\rescan#1{\scantokens{#1\ignorespaces}}
-\long\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantokens{#2\ignorespaces}\endgroup}
+\def\rescan           #1{\scantokens{#1\ignorespaces}}
+\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantokens{#2\ignorespaces}\endgroup}
 
 \ifx\scantextokens\undefined \else
-    \long\def\rescan#1{\scantextokens{#1}}
-    \long\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantextokens{#2}\endgroup}
+    \def\rescan           #1{\scantextokens{#1}}
+    \def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantextokens{#2}\endgroup}
 \fi
 
 \endinput

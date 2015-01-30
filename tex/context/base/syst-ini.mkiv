@@ -116,8 +116,12 @@
 
 %D Handy.
 
-\suppresslongerror  = 1
-\suppressoutererror = 1
+
+\suppresslongerror    = 1
+\suppressoutererror   = 1
+%suppressmathparerror = 1
+
+\ifdefined\suppressmathparerror \suppressmathparerror = 1 \fi
 
 %D \ETEX\ has a not so handy way of telling you the version number, i.e. the revision
 %D number has a period in it:
@@ -198,7 +202,7 @@
 \countdef   \c_syst_last_allocated_language  =    41 \c_syst_last_allocated_language  = \c_syst_min_allocated_language    % not used in context
 \countdef   \c_syst_last_allocated_insertion =    42 \c_syst_last_allocated_insertion = \c_syst_min_allocated_insert
 \countdef   \c_syst_last_allocated_family    =    43 \c_syst_last_allocated_family    = \c_syst_min_allocated_family      % not used in context
-\countdef   \c_syst_last_allocated_attribute =    44 \c_syst_last_allocated_attribute = \c_syst_min_allocated_attribute
+\countdef   \c_syst_last_allocated_attribute =    44 \c_syst_last_allocated_attribute = \c_syst_min_allocated_attribute   % not used in context
 
 \countdef   \c_syst_min_counter_value =   125 \c_syst_min_counter_value = -"7FFFFFFF % beware, we use index 125 at the lua end
 \countdef   \c_syst_max_counter_value =   126 \c_syst_max_counter_value =  "7FFFFFFF % beware, we use index 126 at the lua end
@@ -328,7 +332,7 @@
 \newcount\scratchcounterone  \newcount\scratchcountertwo  \newcount\scratchcounterthree
 \newdimen  \scratchdimenone  \newdimen  \scratchdimentwo  \newdimen  \scratchdimenthree
 \newskip    \scratchskipone  \newskip    \scratchskiptwo  \newskip    \scratchskipthree
-\newbox   \scratchmuskipone  \newbox   \scratchmuskiptwo  \newbox   \scratchmuskipthree
+\newmuskip\scratchmuskipone  \newmuskip\scratchmuskiptwo  \newmuskip\scratchmuskipthree
 \newtoks    \scratchtoksone  \newtoks    \scratchtokstwo  \newtoks    \scratchtoksthree
 \newbox      \scratchboxone  \newbox      \scratchboxtwo  \newbox      \scratchboxthree
 
