@@ -70,9 +70,15 @@
     \eTD
 \stoptexdefinition
 
+\def\showotfligaturescells{3}
+%def\showotfligaturesnx   {12}
+%def\showotfligatureswidth{18em}
+\def\showotfligaturesnx   {\the\numexpr  3*\showotfligaturescells}
+\def\showotfligatureswidth{\the\dimexpr6em*\showotfligaturescells}
+
 \starttexdefinition showotfligaturesbanner #1
     \bTR[frame=off]
-        \bTD [nx=12,width=18em,align={middle,lohi},height=4ex]
+        \bTD [nx=\showotfligaturesnx,width=\showotfligatureswidth,align={middle,lohi},height=4ex]
             \tttf #1
         \eTD
     \eTR
@@ -132,7 +138,7 @@
 
 \starttexdefinition showotfligaturesdefaults
     \bTR
-        \bTD [nx=12,width=18em,align=middle,height=4ex,frame=off]
+        \bTD [nx=\showotfligaturesnx,width=\showotfligatureswidth,align=middle,height=4ex,frame=off]
             \start \LigatureFont fb  \stop \quad
             \start \LigatureFont ff  \stop \quad
             \start \LigatureFont fi  \stop \quad
@@ -155,6 +161,8 @@
     \showotfligaturesparagraphs{#2}
     \showotfligaturesextremes  {#2}
 \stoptexdefinition
+
+% todo: n -> and split in lua
 
 \starttexdefinition showotfligaturesexamples
     \showotfligaturesexample

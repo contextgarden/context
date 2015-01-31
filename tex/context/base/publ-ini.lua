@@ -2263,7 +2263,7 @@ do
     end
 
 
-    -- entry
+    -- entry (we could provide a generic one)
 
     do
 

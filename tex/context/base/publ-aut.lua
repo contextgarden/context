@@ -47,7 +47,7 @@ local report          = logs.reporter("publications","authors")
 -- authorspec = von, surnames, jr, firstnames
 -- authorspec = von, surnames, jr, firstnames, initials
 
-local space          = P(" ")
+local space          = lpegpatterns.whitespace
 local comma          = P(",")
 local period         = P(".")
 local dash           = P("-")

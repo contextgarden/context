@@ -400,27 +400,29 @@ do
 
     -- we apply some normalization
 
-    local space    = S(" \t\n\r\f") -- / " "
+    local space     = S(" \t\n\r\f") -- / " "
+    local collapsed = space^1/" "
 
-    ----- command  = P("\\") * Cc("btxcmd{") * (R("az","AZ")^1) * Cc("}")
-    ----- command  = P("\\") * (Carg(1) * C(R("az","AZ")^1) / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
-    local command  = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
-    local somemath = P("$") * ((1-P("$"))^1) * P("$") -- let's not assume nested math
-    local any      = P(1)
-    local done     = P(-1)
-    local one_l    = P("{")  / ""
-    local one_r    = P("}")  / ""
-    local two_l    = P("{{") / ""
-    local two_r    = P("}}") / ""
-    local special  = P("#")  / "\\letterhash"
+    ----- command   = P("\\") * Cc("btxcmd{") * (R("az","AZ")^1) * Cc("}")
+    ----- command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
+    local command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
+    local somemath  = P("$") * ((1-P("$"))^1) * P("$") -- let's not assume nested math
+    ----- character = lpegpatterns.utf8character
+    local any       = P(1)
+    local done      = P(-1)
+    local one_l     = P("{")  / ""
+    local one_r     = P("}")  / ""
+    local two_l     = P("{{") / ""
+    local two_r     = P("}}") / ""
+    local special   = P("#")  / "\\letterhash"
 
-    local filter_0 = S('\\{}')
-    local filter_1 = (1-filter_0)^0 * filter_0
-    local filter_2 = Cs(
+    local filter_0  = S('\\{}')
+    local filter_1  = (1-filter_0)^0 * filter_0
+    local filter_2  = Cs(
     -- {{...}} ... {{...}}
     --     two_l * (command + special + any - two_r - done)^0 * two_r * done +
     --     one_l * (command + special + any - one_r - done)^0 * one_r * done +
-                (somemath + command + special + any               )^0
+                (somemath + command + special + collapsed + any)^0
     )
 
     -- Currently we expand shortcuts and for large ones (like the acknowledgements

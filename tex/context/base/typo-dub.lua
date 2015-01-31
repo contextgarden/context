@@ -819,7 +819,7 @@ local function apply_to_list(list,size,head,pardir)
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
                 local d = new_textdir(enddir)
--- setfield(d,"attr",copy_node(getfield(current,"attr")))
+             -- setfield(d,"attr",getfield(current,"attr"))
                 head = insert_node_before(head,current,d)
                 enddir = false
                 done = true
@@ -828,7 +828,7 @@ local function apply_to_list(list,size,head,pardir)
             if begindir and getsubtype(current) == localpar_code then
                 -- local_par should always be the 1st node
                 local d = new_textdir(begindir)
--- setfield(d,"attr",copy_node(getfield(current,"attr")))
+             -- setfield(d,"attr",getfield(current,"attr"))
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
                 done = true
@@ -836,7 +836,7 @@ local function apply_to_list(list,size,head,pardir)
         end
         if begindir then
             local d = new_textdir(begindir)
--- setfield(d,"attr",copy_node(getfield(current,"attr")))
+         -- setfield(d,"attr",getfield(current,"attr"))
             head = insert_node_before(head,current,d)
             done = true
         end
@@ -848,7 +848,7 @@ local function apply_to_list(list,size,head,pardir)
         end
         if enddir then
             local d = new_textdir(enddir)
--- setfield(d,"attr",copy_node(getfield(current,"attr")))
+         -- setfield(d,"attr",getfield(current,"attr"))
             head, current = insert_node_after(head,current,d)
             done = true
         end
