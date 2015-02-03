@@ -689,7 +689,7 @@
    \doifassignmentelse{#1}%
      {\getparameters[\??pb][k=\s!unknown,t=article,n=,s=,a=,y=,o=,u=,#1]}%
      {\getparameters[\??pb][k=#1,t=article,n=,s=,a=,y=,o=,u=]}%
-   \ctxlua{bibtex.hacks.register("\@@pbk","\@@pbs")}%
+   \ctxlua{bibtex.hacks.register(\!!bs\@@pbk\!!es,\!!bs\@@pbs\!!es)}%
    \catcode\commentasciicode\othercatcode
    \dodostartpublication}
 

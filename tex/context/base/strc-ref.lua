@@ -1716,7 +1716,9 @@ function references.valid(prefix,reference,highlight,newwindow,layer)
             unknowns[str] = u + 1
         end
     else
-        set.highlight, set.newwindow, set.layer = highlight, newwindow, layer
+        set.highlight    = highlight
+        set.newwindow    = newwindow
+        set.layer        = layer
         currentreference = set[1]
     end
     -- we can do the expansion here which saves a call

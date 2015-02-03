@@ -128,8 +128,21 @@ local registered    = sections.registered
 
 storage.register("structures/sections/registered", registered, "structures.sections.registered")
 
+local function update(name,level,section)
+    for k, v in next, registered do
+        if k ~= name and v.coupling == name then
+            report_structure("updating section level %a to level of %a",k,name)
+            context.doredefinehead(k,name)
+            update(k,level,section)
+        end
+    end
+end
+
 function sections.register(name,specification)
     registered[name] = specification
+    local level   = specification.level
+    local section = specification.section
+    update(name,level,section)
 end
 
 function sections.currentid()

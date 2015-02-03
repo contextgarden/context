@@ -296,7 +296,11 @@
   {\setvalue{\??mixedcolumnsseparator#1}{#2}}
 
 \installmixedcolumnseparator\v!rule
-  {\vrule\mixedcolumnsparameter\c!rulethickness\relax}
+  {\vrule
+     \s!width \mixedcolumnsparameter\c!rulethickness
+     \s!height\mixedcolumnseparatorheight
+     \s!depth \mixedcolumnseparatordepth
+   \relax}
 
 \unexpanded\def\page_mix_command_inject_separator
   {\begingroup

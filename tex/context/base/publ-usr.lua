@@ -6,12 +6,15 @@ if not modules then modules = { } end modules ['publ-usr'] = {
     license   = "see context related readme files"
 }
 
-local P, Cs, R, Cc, Carg = lpeg.P, lpeg.Cs, lpeg.R, lpeg.Cc, lpeg.Carg
+local P, Cs, R, Cc, C, Carg = lpeg.P, lpeg.Cs, lpeg.R, lpeg.Cc, lpeg.C, lpeg.Carg
 local lpegmatch = lpeg.match
 local settings_to_hash = utilities.parsers.settings_to_hash
 
 local publications = publications
 local datasets     = publications.datasets
+
+local report       = logs.reporter("publications")
+local trace        = false  trackers.register("publications",function(v) trace = v end)
 
 -- local str = [[
 --     \startpublication[k=Berdnikov:TB21-2-129,t=article,a={{Berdnikov},{}},y=2000,n=2257,s=BHHJ00]
@@ -30,42 +33,27 @@ local datasets     = publications.datasets
 --     \stoppublication
 -- ]]
 
-local remapped = {
-    artauthor = "author",
-    arttitle  = "title",
+local lists = {
+    author    = true,
+    editor    = true,
+ -- artauthor = true,
+ -- arteditor = true,
 }
 
-local function register(target,key,a,b,c,d,e)
-    key = remapped[key] or key
-    if b and d and e then
-        local s = nil
-        if b ~= "" and b then
-            s = s and s .. " " .. b or b
-        end
-        if d ~= "" and d then
-            s = s and s .. " " .. d or d
-        end
-        if e ~= "" and e then
-            s = s and s .. " " .. e or e
-        end
-        if a ~= "" and a then
-            s = s and s .. " " .. a or a
-        end
-        local value = target[key]
-        if s then
-            if value then
-                target[key] = value .. " and " .. s
-            else
-                target[key] = s
-            end
-        else
-            if not value then
-                target[key] = s
-            end
-        end
-    else
-        target[key] = b
-    end
+local function registervalue(target,key,value)
+    target[key] = value
+end
+
+-- Instead of being generic we just hardcode the old stuff:
+
+local function registerauthor(target,key,juniors,firstnames,initials,vons,surnames)
+    local value = target[key]
+    target[key]= ((value and value .. " and {") or "{") ..
+        vons       .. "},{" ..
+        surnames   .. "},{" ..
+        juniors    .. "},{" ..
+        firstnames .. "},{" ..
+        initials   .. "}"
 end
 
 local leftbrace    = P("{")
@@ -75,14 +63,25 @@ local rightbracket = P("]")
 local backslash    = P("\\")
 local letter       = R("az","AZ")
 
-local key          = backslash * Cs(letter^1) * lpeg.patterns.space^0
-local mandate      = leftbrace * Cs(lpeg.patterns.balanced) * rightbrace + Cc(false)
-local optional     = leftbracket * Cs((1-rightbracket)^0) * rightbracket + Cc(false)
-local value        = optional^-1 * mandate^-1 * optional^-1 * mandate^-2
+local skipspaces   = lpeg.patterns.whitespace^0
+local key          = Cs(letter^1)
+local value        = leftbrace   * Cs(lpeg.patterns.balanced) * rightbrace
+local optional     = leftbracket * Cs((1-rightbracket)^0)     * rightbracket
 
-local pattern      = ((Carg(1) * key * value) / register + P(1))^0
+local authorkey    = (P("artauthor") + P("author")) / "author"
+                   + (P("arteditor") + P("editor")) / "editor"
+local authorvalue  = (optional + Cc("{}")) * skipspaces -- [juniors]
+                   * (value    + Cc("{}")) * skipspaces -- {firstnames}
+                   * (optional + Cc("{}")) * skipspaces -- [initials]
+                   * (value    + Cc("{}")) * skipspaces -- {vons}
+                   * (value    + Cc("{}")) * skipspaces -- {surnames}
 
-function publications.addtexentry(dataset,settings,content)
+local keyvalue     = Carg(1) * authorkey * skipspaces * authorvalue / registerauthor
+                   + Carg(1) * key       * skipspaces * value       / registervalue
+
+local pattern      = (backslash * keyvalue + P(1))^0
+
+local function addtexentry(dataset,settings,content)
     local current  = datasets[dataset]
     local settings = settings_to_hash(settings)
     local data = {
@@ -90,10 +89,38 @@ function publications.addtexentry(dataset,settings,content)
         category = settings.category or settings.t or "article",
     }
     lpegmatch(pattern,content,1,data) -- can set tag too
-    current.userdata[data.tag] = data
-    current.luadata[data.tag] = data
-    publications.markasupdated(current)
+    local tag = data.tag
+    current.userdata[tag] = data
+    current.luadata[tag]  = data
+    current.details[tag]  = nil
     return data
 end
 
-commands.addbtxentry = publications.addtexentry
+local pattern = ( Carg(1)
+      * P("\\startpublication")
+      * skipspaces
+      * optional
+      * C((1 - P("\\stoppublication"))^1)
+      * P("\\stoppublication") / addtexentry
+      + P("%") * (1-lpeg.patterns.newline)^0
+      + P(1)
+)^0
+
+function publications.loaders.bbl(dataset,filename)
+    local dataset, fullname = publications.resolvedname(dataset,filename)
+    if not fullname then
+        return
+    end
+    local data = io.loaddata(filename) or ""
+    if data == "" then
+        report("empty file %a, nothing loaded",fullname)
+        return
+    end
+    if trace then
+        report("loading file %a",fullname)
+    end
+    lpegmatch(pattern,data,1,dataset)
+end
+
+publications.addtexentry = addtexentry
+commands.addbtxentry     = addtexentry

@@ -92,10 +92,10 @@ function tracers.showdatasetcompleteness(settings)
     local fielddata     = specification and specifications[specification] or specifications.apa
     local categories    = fielddata.categories
 
-    local lpegmatch     = lpeg.match
-    local texescape     = lpeg.patterns.texescape
+ -- local lpegmatch     = lpeg.match
+ -- local texescape     = lpeg.patterns.texescape
 
-    local preamble = { "|lTBw(5em)|lBTp(10em)|pl|" }
+    local preamble = { "|lTBw(5em)|lBTp(10em)|plT|" }
 
     local function identified(tag,category,crossref)
         ctx_NC()
@@ -114,12 +114,13 @@ function tracers.showdatasetcompleteness(settings)
         ctx_NC()
             if indirect then
                 if value then
-                    context("\\darkblue %s",lpegmatch(texescape,value))
+                    context("\\darkblue")
+                    ctx_verbatim(value)
                 else
                     context("\\darkred\\tttf [missing crossref]")
                 end
             elseif value then
-                context(lpegmatch(texescape,value))
+                ctx_verbatim(value)
             else
                 context("\\darkred\\tttf [missing value]")
             end
@@ -133,9 +134,10 @@ function tracers.showdatasetcompleteness(settings)
         ctx_NC() context(key)
         ctx_NC()
             if indirect then
-                context("\\darkblue %s",lpegmatch(texescape,value))
+                context("\\darkblue")
+                ctx_verbatim(value)
             elseif value then
-                context(lpegmatch(texescape,value))
+                ctx_verbatim(value)
             end
         ctx_NC() ctx_NR()
         foundfields[key] = nil
@@ -145,7 +147,7 @@ function tracers.showdatasetcompleteness(settings)
     local function special(done,key,value)
         ctx_NC() if not done then ctx_monobold("special") end
         ctx_NC() context(key)
-        ctx_NC() context(lpegmatch(texescape,value))
+        ctx_NC() ctx_verbatim(value)
         ctx_NC() ctx_NR()
         return done or true
     end
@@ -153,7 +155,7 @@ function tracers.showdatasetcompleteness(settings)
     local function extra(done,key,value)
         ctx_NC() if not done then ctx_monobold("extra") end
         ctx_NC() context(key)
-        ctx_NC() context(lpegmatch(texescape,value))
+        ctx_NC() ctx_verbatim(value)
         ctx_NC() ctx_NR()
         return done or true
     end
@@ -325,30 +327,45 @@ function tracers.showdatasetauthors(settings)
     local dataset = settings.dataset
     local field   = settings.field
 
+    local sortkey = publications.writers.author
+
     if not dataset or dataset == "" then dataset = "standard" end
     if not field   or field   == "" then field   = "author"   end
 
-    local function flush(ai,k,i)
+    local function row(i,k,v)
+        ctx_NC()
+        if i then
+            ctx_verbatim(i)
+        end
+        ctx_NC()
+        ctx_verbatim(k)
+        ctx_EQ()
+        if type(v) == "table" then
+            local t = { }
+            for i=1,#v do
+                local vi = v[i]
+                if type(vi) == "table" then
+                    t[i] = concat(vi,"-")
+                else
+                    t[i] = vi
+                end
+            end
+            ctx_verbatim(concat(t, " | "))
+        else
+            ctx_verbatim(v)
+        end
+        ctx_NC()
+        ctx_NR()
+    end
+
+    local function authorrow(ai,k,i)
         local v = ai[k]
         if v then
-            ctx_NC()
-            if i then
-                ctx_verbatim(i)
-            end
-            ctx_NC()
-            ctx_verbatim(k)
-            ctx_EQ()
-            if type(v) == "table" then
-                ctx_verbatim(concat(v, " | "))
-            else
-                ctx_verbatim(v)
-            end
-            ctx_NC()
-            ctx_NR()
+            row(i,k,v)
         end
     end
 
-    local function row(key,value)
+    local function commonrow(key,value)
         ctx_NC() ctx_rlap(function() ctx_verbatim(key) end)
         ctx_NC()
         ctx_EQ() ctx_verbatim(value)
@@ -366,19 +383,24 @@ function tracers.showdatasetauthors(settings)
             context.tt()
             context.starttabulate { "|B|Bl|p|" }
                 ctx_FL()
-                row("tag",tag)
-                row("field",field)
-                row("content",getfield(dataset,tag,field))
+                commonrow("tag",tag)
+                commonrow("field",field)
+                commonrow("content",getfield(dataset,tag,field))
+                commonrow("sortkey",sortkey(a))
                 for i=1,#a do
                     ctx_ML()
                     local ai = a[i]
-                    flush(ai,"original",i)
-                    flush(ai,"snippets")
-                    flush(ai,"initials")
-                    flush(ai,"firstnames")
-                    flush(ai,"vons")
-                    flush(ai,"surnames")
-                    flush(ai,"juniors")
+                    authorrow(ai,"original",i)
+                    authorrow(ai,"snippets")
+                    authorrow(ai,"initials")
+                    authorrow(ai,"firstnames")
+                    authorrow(ai,"vons")
+                    authorrow(ai,"surnames")
+                    authorrow(ai,"juniors")
+                    local options = ai.options
+                    if options then
+                        row(false,"options",sortedkeys(options))
+                    end
                 end
                 ctx_LL()
             context.stoptabulate()

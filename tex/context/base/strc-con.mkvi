@@ -263,7 +263,9 @@
 
 \def\strc_constructions_ignore_head
   {\constructionsheaddistance\zeropoint
-   \constructionsheadwidth   \zeropoint}
+   \constructionsheadwidth   \zeropoint
+   % we also need to make sure that no stretch creeps in (new per 2015-02-02, for Alan)
+   \settrue\c_strc_constructions_distance_none}
 
 \let\currentconstructionhash\??construction
 
@@ -325,7 +327,7 @@
      \else
        \strc_constructions_preroll_head\currentconstructionsample
        \ifzeropt\wd\constructionheadbox
-     \strc_constructions_ignore_head
+         \strc_constructions_ignore_head
        \else
          \strc_constructions_set_width_and_distance
        \fi
@@ -529,6 +531,11 @@
 
 % The setups. These only deal with placement of the descriptor and initializing the
 % environment. The wrapping happens elsewhere.
+
+% todo: optimize the setups with
+%
+% \ifconditional\c_strc_constructions_distance_none : no need for skip
+% \ifzeropt\wd\constructionheadbox : no need for box and skips
 
 \startsetups[\??constructionrenderings:\v!left]
     \edef\p_strc_constructions_hang{\constructionparameter\c!hang}%

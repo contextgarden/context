@@ -835,7 +835,7 @@ do
         local v = function(dataset,filename)
             report("no loader for file %a with filetype %a",filename,filetype)
         end
-        t[k] = v
+        t[filetype] = v
         return v
     end)
 

@@ -18,7 +18,8 @@ local concat = table.concat
 local utfchar = utf.char
 local formatters = string.formatters
 
-local P, C, V, Cs, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.match, lpeg.patterns
+local P, C, V, Cs, Ct, Cg, Cf, Cc = lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Cc
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local context         = context
 local commands        = commands
@@ -26,6 +27,8 @@ local publications    = publications
 
 local datasets        = publications.datasets
 local getcasted       = publications.getcasted
+
+local allocate        = utilities.storage.allocate
 
 local chardata        = characters.data
 
@@ -82,6 +85,8 @@ local p_initial       = p_shortone * period * dash^0
                       + p_longone * (period + dash + P(-1))
 local initialsplitter = p_initial * P(-1) + Ct((p_initial)^1)
 
+local optionsplitter  = Cf(Ct("") * Cg(C((1-space)^1) * space^0 * Cc(true))^1,rawset)
+
 local function is_upper(str)
     local first = lpegmatch(firstcharacter,str)
     local okay = chardata[first]
@@ -122,7 +127,7 @@ local function splitauthorstring(str)
             -- print("hit 2",author,nofhits,nofused,math.round(100*nofhits/nofused))
         end
         if not detail then
-            local firstnames, vons, surnames, initials, juniors
+            local firstnames, vons, surnames, initials, juniors, options
             local split = lpegmatch(commasplitter,author)
             local n = #split
             detail = {
@@ -130,7 +135,7 @@ local function splitauthorstring(str)
                 snippets = n,
             }
             if n == 1 then
-                -- First von Last
+                -- {First Middle von Last}
                 local words = lpegmatch(spacesplitter,author)
                 firstnames, vons, surnames = { }, { }, { }
                 local i, n = 1, #words
@@ -169,7 +174,8 @@ local function splitauthorstring(str)
                     initials = makeinitials(firstnames)
                 end
             elseif n == 2 then
-                -- von Last, First
+                -- {Last, First}
+                -- {von Last, First}
                 firstnames, vons, surnames = { }, { }, { }
                 local words = lpegmatch(spacesplitter,split[1])
                 local i, n = 1, #words
@@ -205,31 +211,37 @@ local function splitauthorstring(str)
                 end
                 initials = makeinitials(firstnames)
             elseif n == 3 then
-                -- von Last, Jr ,First
+                -- {von Last, First, Jr}
                 surnames   = lpegmatch(spacesplitter,split[1])
                 juniors    = lpegmatch(spacesplitter,split[2])
                 firstnames = lpegmatch(spacesplitter,split[3])
                 initials   = makeinitials(firstnames)
             elseif n == 4 then
-                -- von, Last, Jr, First
+                -- {Von, Last, First, Jr}
                 vons       = lpegmatch(spacesplitter,split[1])
                 surnames   = lpegmatch(spacesplitter,split[2])
                 juniors    = lpegmatch(spacesplitter,split[3])
                 firstnames = lpegmatch(spacesplitter,split[4])
                 initials   = makeinitials(firstnames)
             elseif n >= 5 then
-                -- von, Last, Jr, First, Initials
+                -- {Von, Last, First, Jr, F.}
+                -- {Von, Last, First, Jr, Fr., options}
                 vons       = lpegmatch(spacesplitter,split[1])
                 surnames   = lpegmatch(spacesplitter,split[2])
                 juniors    = lpegmatch(spacesplitter,split[3])
                 firstnames = lpegmatch(spacesplitter,split[4])
                 initials   = lpegmatch(spacesplitter,split[5])
+                options    = split[6]
+                if options then
+                    options = lpegmatch(optionsplitter,options)
+                end
             end
             if firstnames and #firstnames > 0 then detail.firstnames = firstnames end
             if vons       and #vons       > 0 then detail.vons       = vons       end
             if surnames   and #surnames   > 0 then detail.surnames   = surnames   end
             if initials   and #initials   > 0 then detail.initials   = initials   end
             if juniors    and #juniors    > 0 then detail.juniors    = juniors    end
+            if options    and next(options)   then detail.options    = options    end
             cache[author] = detail
             nofhits = nofhits + 1
         end
@@ -421,12 +433,44 @@ local function components(snippet,short)
     local firstnames = not short and snippet.firstnames
     local juniors    = snippet.juniors
     return
-        vons       and #vons       > 0 and concat(vons,      " ") or "",
-        surnames   and #surnames   > 0 and concat(surnames,  " ") or "",
+        vons       and #vons       > 0 and concat(vons," ") or "",
+        surnames   and #surnames   > 0 and concat(surnames," ") or "",
         initials   and #initials   > 0 and concat(the_initials(initials)," ") or "",
         firstnames and #firstnames > 0 and concat(firstnames," ") or "",
-        juniors    and #juniors    > 0 and concat(juniors,   " ") or ""
+        juniors    and #juniors    > 0 and concat(juniors, " ") or ""
 end
+
+local collapsers = allocate { }
+
+publications.authorcollapsers = collapsers
+
+local function default(author)
+    local vons       = author.vons
+    local surnames   = author.surnames
+    local initials   = author.initials
+    local firstnames = author.firstnames
+    local juniors    = author.juniors
+    local result     = { }
+    local nofresult  = 0
+    if vons and #vons > 0 then
+        nofresult = nofresult + 1 ; result[nofresult] = concat(vons," ")
+    end
+    if surnames and #surnames > 0 then
+        nofresult = nofresult + 1 ; result[nofresult] = concat(surnames," ")
+    end
+    if initials and #initials > 0 then
+        nofresult = nofresult + 1 ; result[nofresult] = concat(the_initials(initials)," ")
+    end
+    if firstnames and #firstnames > 0 then
+        nofresult = nofresult + 1 ; result[nofresult] = concat(firstnames," ")
+    end
+    if juniors and #juniors > 0 then
+        nofresult = nofresult + 1 ; result[nofresult] = concat(juniors," ")
+    end
+    return concat(result," ")
+end
+
+collapsers.default = default
 
 local function writer(key,snippets)
     if not key then
@@ -438,33 +482,44 @@ local function writer(key,snippets)
     local n = #key
     if n == 0 then
         return ""
+    elseif n == 1 then
+        local author  = key[1]
+        local options = author.options
+        if options then
+            for option in next, options do
+                local collapse = collapsers[option]
+                if collapse then
+                    return collapse(author)
+                end
+            end
+        end
+        return default(author)
+    else
+        local t = { }
+        local s = 0
+        for i=1,n do
+            local author  = key[i]
+            local options = author.options
+            s = s + 1
+            if options then
+                local done = false
+                for option in next, options do
+                    local collapse = collapsers[option]
+                    if collapse then
+                        t[s] = collapse(author)
+                        done = true
+                    end
+                end
+                if not done then
+                    t[s] = default(author)
+                end
+            else
+                t[s] = default(author)
+            end
+        end
+        return concat(t," & ")
     end
-    if not snippets then
-        snippets = { }
-    end
-    local s = 0
-    for i=1,n do
-        local k = key[i]
-        local vons     = k.vons
-        local surnames = k.surnames
-        local initials = k.initials
-        local juniors  = k.juniors
-        if vons and #vons > 0 then
-            s = s + 1 ; snippets[s] = concat(vons," ")
-        end
-        if surnames and #surnames > 0 then
-            s = s + 1 ; snippets[s] = concat(surnames," ")
-        end
-        if initials and #initials > 0 then
-            s = s + 1 ; snippets[s] = concat(the_initials(initials," ","")," ") -- todo: configure . and -
-        end
-        if juniors and #juniors > 0 then
-            s = s + 1 ; snippets[s] = concat(juniors," ")
-        end
-    end
-    return concat(snippets," ",1,s)
 end
-
 
 publications.writers   .author = writer
 publications.casters   .author = splitauthorstring

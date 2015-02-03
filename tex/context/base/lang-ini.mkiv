@@ -366,6 +366,12 @@
 
 \installcorenamespace{languagenumbers}
 
+\appendtoks
+    % we need to reassign the number because new patterns can be defined later on
+    % so let's hope not that many \setups happen during a run
+    \global\expandafter\let\csname\??languagenumbers\currentlanguage\endcsname\undefined
+\to \everysetuplanguage
+
 \def\lang_basics_synchronize_yes
   {\zerocount % see below
    \global\expandafter\chardef\csname\??languagenumbers\currentlanguage\endcsname

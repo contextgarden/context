@@ -431,9 +431,15 @@
     \the\everysetuphead
 \to \everydefinehead
 
+\newtoks\everyredefinehead
+
+\appendtoks
+    \the\everyredefinehead
+\to \everydefinehead
+
 \appendtoks
    \setstructurelevel\currenthead{\thenamedheadlevel\currenthead}%
-\to \everydefinehead
+\to \everyredefinehead
 
 \appendtoks
     % beware, this is a global register
@@ -445,9 +451,11 @@
         coupling = "\currentsectionheadcoupling",
         section  = "\currentsectionheadsection",
         level    = \currentsectionlevel,
+        % for statistical purposes:
+        parent   = "\currentheadparent"
     })}%
     \endgroup
-\to \everydefinehead
+\to \everyredefinehead
 
 \appendtoks
  % \setevalue{\e!next \currenthead}{\donexthead [\currenthead]}%
@@ -460,6 +468,15 @@
      {\setuevalue\currenthead{\strc_sectioning_handle_own[\currenthead]}}
      {\setuevalue\currenthead{\strc_sectioning_handle_nop[\currenthead]}}%
 \to \everysetuphead
+
+\unexpanded\def\doredefinehead#1#2% called at lua end
+  {\pushmacro\currenthead
+   \pushmacro\currentheadparent
+   \edef\currenthead{#1}%
+   \edef\currentheadparent{#2}%
+   \the\everyredefinehead\relax
+   \popmacro\currentheadparent
+   \popmacro\currenthead}
 
 \let\currentnamedsection\empty
 
