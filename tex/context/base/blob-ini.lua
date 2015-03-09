@@ -199,14 +199,3 @@ function commands.strwd(str) context(strwd(str)) end
 function commands.strht(str) context(strht(str)) end
 function commands.strdp(str) context(strdp(str)) end
 function commands.strhd(str) context(strhd(str)) end
-
--- less efficient:
---
--- function commands.widthof(str)
---     local b = blobs.new()
---     blobs.append(b,str)
---     blobs.pack(b)
---     local w = blobs.dimensions(b)
---     context(number.todimen(w))
---     blobs.dispose(b)
--- end

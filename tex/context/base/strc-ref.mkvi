@@ -2046,15 +2046,36 @@
 
 \installcorenamespace{referencingprefix}
 
+% \def\getreferencestructureprefix#kind#name#category% name will change
+%   {{
+%         prefix        =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefix",
+%         separatorset  =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixseparatorset",
+%         conversion    =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversion",
+%         conversionset =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversionset",
+%         set           =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixset",
+%         segments      =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixsegments",
+%         connector     = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconnector\!!es,
+%   }}
+
 \def\getreferencestructureprefix#kind#name#category% name will change
   {{
         prefix        =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefix",
         separatorset  =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixseparatorset",
         conversion    =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversion",
         conversionset =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversionset",
+        starter       = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixstarter\!!es,
+        stopper       = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixstopper\!!es,
         set           =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixset",
         segments      =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixsegments",
         connector     = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconnector\!!es,
+  },
+  {
+        separatorset  =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberseparatorset",
+        conversion    =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberconversion",
+        conversionset =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberconversionset",
+        starter       = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberstarter\!!es,
+        stopper       = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberstopper\!!es,
+        segments      =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!numbersegments",
   }}
 
 \unexpanded\def\setupreferencestructureprefix

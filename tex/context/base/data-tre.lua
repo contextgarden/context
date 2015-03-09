@@ -64,6 +64,20 @@ function resolvers.finders.tree(specification) -- to be adapted to new formats
                     return fullname
                 end
             end
+            -- let's be nice:
+            local pattern = lower(pattern)
+            for i=1,#names do
+                local fullname = lower(names[i])
+                if find(fullname,pattern) then
+                    if isfile(fullname) then
+                        found[spec] = fullname
+                        return fullname
+                    else
+                        -- no os name mapping
+                        break
+                    end
+                end
+            end
         end
         okay = notfound() -- false
         found[spec] = okay
@@ -86,9 +100,9 @@ end
 
 function resolvers.hashers.tree(specification)
     local name = specification.filename
-    if trace_locating then
-        report_trees("analysing %a",name)
-    end
+ -- if trace_locating then
+        report_trees("analyzing %a",name)
+ -- end
     resolvers.methodhandler("hashers",name)
 
     resolvers.generators.file(specification)

@@ -1955,12 +1955,12 @@ function genericfilters.text(data)
     end
 end
 
-function genericfilters.number(data,what,prefixspec) -- todo: spec and then no stopper
+function genericfilters.number(data,what,prefixspec,numberspec)
     if data then
         numberdata = lists.reordered(data) -- data.numberdata
         if numberdata then
             helpers.prefix(data,prefixspec)
-            sections.typesetnumber(numberdata,"number",numberdata)
+            sections.typesetnumber(numberdata,"number",numberspec,numberdata)
         else
             local useddata = data.useddata
             if useddata and useddata.number then

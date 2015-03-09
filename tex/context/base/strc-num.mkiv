@@ -27,7 +27,9 @@
 
 \installcommandhandler \??counter {counter} \??counter
 
-\let\setupstructurecounting\setupcounter
+\let\setupcounters\setupcounter
+
+\let\setupstructurecounting\setupcounter % will disappear
 
 \setupcounter
   [\c!way=\v!by\v!chapter,

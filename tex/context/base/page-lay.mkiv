@@ -1,4 +1,4 @@
-    %D \module
+%D \module
 %D   [       file=page-lay,
 %D        version=2000.10.20, % copied from main-001
 %D          title=\CONTEXT\ Page Macros,
@@ -1377,6 +1377,9 @@
 \definepapersize [A9]  [\c!width=37mm,\c!height=52mm]
 \definepapersize [A10] [\c!width=26mm,\c!height=37mm]
 
+\definepapersize [A4/2][\c!width=\dimexpr297mm/2\relax,\c!height=210mm] % 148.5mm
+%definepapersize [2A5] [\c!width=296mm,\c!height=210mm] % doublewide
+
 \definepapersize [B0]  [\c!width=1000mm,\c!height=1414mm]
 \definepapersize [B1]  [\c!width=707mm,\c!height=1000mm]
 \definepapersize [B2]  [\c!width=500mm,\c!height=707mm]
@@ -1533,6 +1536,11 @@
   [doubleoversized]
   [ \c!width=\dimexpr \paperheight+\layouttargetparameter\c!distance\relax,
    \c!height=\dimexpr2\paperwidth +\layouttargetparameter\c!distance\relax]
+
+\definepapersize
+  [doublewide]
+  [ \c!width=\dimexpr2\paperwidth \relax,
+   \c!height=\dimexpr \paperheight\relax]
 
 % \setuppapersize
 %   [A4][A4]

@@ -1830,4 +1830,24 @@
 %   [ownnote]
 %   [\ownnotesymbol]
 
+% tricky:
+%
+% \enabletrackers[nodes.areas]
+% \enabletrackers[nodes.references]
+% \enabletrackers[nodes.destinations]
+%
+% \setupnotes[interaction=all,rule=no]
+% \setupinteraction[state=start,focus=standard]
+%
+% \starttext
+%     \goto{\input tufte\relax}[page(2)] \par
+%     \ruledhbox{\gotobox{\vtop{\input tufte\relax}}[page(2)]} \par
+%     \ruledhbox{\gotobox{\vbox{\input tufte\relax}}[page(2)]} \par
+%     % \completecontent
+%     % \chapter{Chapter}
+%     % \dorecurse{5}{\input knuth}
+%     a\footnote{\input tufte\par\input ward\relax}
+% \stoptext
+
 \protect \endinput
+

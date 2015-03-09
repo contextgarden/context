@@ -1125,6 +1125,85 @@
 %   % \syst_helpers_do_do_process_comma_item##1,]\relax
 % \global\advance\commalevel \minusone
 
+% The next one is experimental (and used in publications):
+
+\let\c_mult_set\relax
+
+\unexpanded\def\mult_interfaces_install_definition_set#1#2#3#4#5#6#7%
+  {\newcount#3%
+   \let#6\empty
+   \unexpanded\def#2%
+     {\expandafter\let\expandafter\c_mult_set\csname #1_t_#6\endcsname
+      \ifx\c_mult_set\relax
+        \expandafter\newtoks\c_mult_set
+        \expandafter\let\csname #1_t_#6\endcsname\c_mult_set
+      \fi}
+   \unexpanded\def#4##1%
+     {\pushmacro#6%
+      \advance#3\plusone
+      \edef#6{##1}%
+      \unprotect}%
+   \unexpanded\def#5%
+     {\protect
+      \advance#3\minusone
+      \popmacro#6}%
+   \unexpanded\def#7##1%
+     {\edef#6{##1}%
+      #2%
+      \the\c_mult_set\relax}}
+
+\unexpanded\def\installdefinitionset#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_definition_set
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname set_#2_toks\endcsname
+        \expandafter\noexpand\csname #2_nesting_depth\endcsname
+        \expandafter\noexpand\csname push#2\endcsname
+        \expandafter\noexpand\csname pop#2\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname use#2\endcsname}}
+
+\unexpanded\def\mult_interfaces_install_definition_set_member#1#2#3#4#5#6#7#8#9% no everysetups etc
+  {\let#5#2%
+   \unexpanded\def#2%
+     {\ifcase#4\relax\expandafter#5\else\expandafter#6\fi}%
+   \unexpanded\def#6%
+     {\dodoubleempty#7}%
+   \unexpanded\def#7[##1][##2]%
+     {\ifsecondargument
+        #3\c_mult_set\expandafter{\the\c_mult_set#9[##1][##2]}%
+      \else\iffirstargument
+        #3\c_mult_set\expandafter{\the\c_mult_set#8[##1]}%
+      \fi\fi}}
+
+\unexpanded\def\installdefinitionsetmember#1#2#3#4%
+  {\normalexpanded
+     {\mult_interfaces_install_definition_set_member
+        {\noexpand#3}% \??aa
+        \expandafter\noexpand\csname setup#4\endcsname
+        \expandafter\noexpand\csname set_#2_toks\endcsname
+        \expandafter\noexpand\csname #2_nesting_depth\endcsname
+        \expandafter\noexpand\csname normal_setup_#4\endcsname
+        \expandafter\noexpand\csname delayed_setup_#4\endcsname
+        \expandafter\noexpand\csname do_delayed_setup_#4\endcsname
+        \expandafter\noexpand\csname setup#4_\s!single\endcsname
+        \expandafter\noexpand\csname setup#4_\s!double\endcsname}}
+
+%D Another experiment:
+
+\unexpanded\def\mult_interfaces_install_parent_injector#1#2#3#4%
+  {\unexpanded\def#4##1%
+     {\ifx#3\empty
+        \expandafter\def\csname#1#2:\s!parent\endcsname{#1##1}%
+      \fi}}
+
+\unexpanded\def\installparentinjector#1#2%
+  {\normalexpanded{\mult_interfaces_install_parent_injector
+     {\noexpand#1}%
+     \expandafter\noexpand\csname current#2\endcsname
+     \expandafter\noexpand\csname current#2parent\endcsname
+     \expandafter\noexpand\csname inject#2parent\endcsname}}
+
 \protect
 
 %\unprotect

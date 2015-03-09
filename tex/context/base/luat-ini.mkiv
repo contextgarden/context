@@ -204,6 +204,7 @@
 \def\setdocumentargumentdefault#1#2{\ctxlua{document.setdefaultargument("#1","#2")}}
 \def\getdocumentfilename         #1{\ctxlua{document.getfilename("#1")}}
 \def\getdocumentargument         #1{\ctxlua{document.getargument("#1")}}
+\def\setdocumentargument       #1#2{\ctxlua{document.setargument("#1","#2")}}
 \def\getdocumentargumentdefault#1#2{\ctxlua{document.getargument("#1","#2")}}
 \def\doifdocumentargumentelse    #1{\doifsomethingelse{\getdocumentargument{#1}}}
 \def\doifdocumentargument        #1{\doifsomething    {\getdocumentargument{#1}}}
@@ -322,5 +323,22 @@
 
 \def\ctxfunction#1%
   {\csname\??ctxfunction#1\endcsname}
+
+% In theory this is faster due to the call not being wrapped in a function but in
+% practice the speedup can't be noticed. The actions called for often have lots of
+% lookups so an extra one doesn't matter much. The kind of calls differs a lot per
+% document and often there are other ways to optimize a style. For instance we can
+% gain a lot when defining a font, but when a frozen definition is used that gain
+% gets completely lost. For some calls (take list writers) it can get worse if only
+% because readability gets worse and passing is already efficient due to selective
+% flushing, while with the token scanners one has to scan all of them.
+
+% \startctxfunctiondefinition foo commands.foo() \stopctxfunctiondefinition
+%
+% \installctxfunction\foo{commands.foo}
+
+\normalprotected\def\installctxfunction#1#2%
+  {\expandafter\chardef\csname\??luafunction\checkedstrippedcsname#1\endcsname\ctxcommand{ctxfunction("#2",true)}\relax
+   \expandafter\edef\csname\checkedstrippedcsname#1\endcsname{\noexpand\luafunction\csname\??luafunction\checkedstrippedcsname#1\endcsname}}
 
 \protect \endinput

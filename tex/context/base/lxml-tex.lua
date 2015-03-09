@@ -39,6 +39,7 @@ local xmlapplylpath = xml.applylpath
 local xmlunprivatized, xmlprivatetoken, xmlprivatecodes = xml.unprivatized, xml.privatetoken, xml.privatecodes
 local xmlstripelement = xml.stripelement
 local xmlinclusion, xmlinclusions = xml.inclusion, xml.inclusions
+local xmlcontent = xml.content
 
 local variables         = interfaces and interfaces.variables or { }
 
@@ -1811,3 +1812,17 @@ end
 
 texfinalizers.upperall = xmlfinalizers.upperall
 texfinalizers.lowerall = xmlfinalizers.lowerall
+
+function lxml.tobuffer(id,pattern,name,unescaped)
+    local collected = xmlapplylpath(getid(id),pattern)
+    if collected then
+        if unescaped then
+            collected = xmlcontent(collected[1]) -- expanded entities !
+        else
+            collected = tostring(collected[1])
+        end
+        buffers.assign(name,collected)
+    else
+        buffers.erase(name)
+    end
+end

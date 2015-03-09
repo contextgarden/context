@@ -177,7 +177,7 @@
             corner          = "\FLOWlineparameter\c!corner",
             dash            = "\FLOWlineparameter\c!dash",
             arrow           = "\FLOWlineparameter\c!arrow",
-            offset          = "\FLOWlineparameter\c!offset",
+            offset          = \number\dimexpr\FLOWlineparameter\c!offset,
         },
   } }%
   \endgroup}
@@ -259,8 +259,9 @@
 
 \def\FLOW_charts[#name][#settings]
   {\begingroup
-   \setupFLOWsplit[\c!state=\v!start,#settings]%
-   \FLOW_chart[#name][]%
+   \setupFLOWchart[\c!split=\v!yes]%
+   \setupFLOWsplit[#settings]%
+   \module_charts_process[#name][]% \FLOWchart...
    \endgroup}
 
 \appendtoks

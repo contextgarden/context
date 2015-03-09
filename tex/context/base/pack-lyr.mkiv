@@ -101,9 +101,6 @@
 
 \def\layeranchor{\currentlayer:\the\realpageno}
 
-\unexpanded\def\anch_mark_anchor_box#1%
-  {\ctxcommand{markregionbox(\number#1,"\layeranchor")}} % needs an hbox
-
 \let\p_pack_layers_doublesided\empty
 \let\p_pack_layers_state      \empty
 \let\p_pack_layers_option     \empty
@@ -687,7 +684,7 @@
    \ifx\p_pack_layers_position\v!yes
      \edef\p_pack_layers_region{\layerparameter\c!region}%
      \ifx\p_pack_layers_region\empty \else
-       \anch_mark_anchor_box\nextbox
+       \anch_mark_tagged_box\nextbox\layeranchor
      \fi
    \fi
    \box\nextbox

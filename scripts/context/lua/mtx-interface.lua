@@ -248,7 +248,7 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
             local mappings     = { }
             local environments = { }
             local x = xml.load(keyfile)
-            for e, d, k in xml.elements(x,"cd:command") do
+            for e, d, k in xml.elements(x,"/cd:interface/cd:commands/cd:command") do -- somehow this was variable
                 local at = d[k].at
                 local name, value = at.name, at.value
                 if name and value then
@@ -256,7 +256,7 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
                 end
             end
             local x = xml.load(xmlfile)
-            for e, d, k in xml.elements(x,"cd:command") do
+            for e, d, k in xml.elements(x,"/cd:interface/cd:command") do
                 local at = d[k].at
                 local name, type = at.name, at["type"]
                 if name and name ~= "" then
@@ -322,7 +322,7 @@ function scripts.interface.check()
         if f then
             f:write("\\starttext\n")
             local x = xml.load(xmlfile)
-            for e, d, k in xml.elements(x,"cd:command") do
+            for e, d, k in xml.elements(x,"/cd:interface/cd:command") do
                 local dk = d[k]
                 local at = dk.at
                 if at then
@@ -384,6 +384,7 @@ function scripts.interface.interfaces()
                     return a .. b .. c .. b
                 end)
             end
+            -- we could just replace attributes
             for language, _ in next, commands.setuplayout do
                 local texresult, xmlresult = { }, { }
                 texresult[#texresult+1] = format("%% this file is auto-generated, don't edit this file\n%%")
@@ -403,6 +404,7 @@ function scripts.interface.interfaces()
                 report("saving interface translations '%s'",xmlfilename)
                 if language ~= "en" and xmldata ~= "" then
                     local newdata = xmldata:gsub("(<cd:interface.*language=.)en(.)","%1"..language.."%2",1)
+-- newdata = replace(newdata, 'cd:command', 'name', interface.commands, interface.elements, language)
                     newdata = replace(newdata, 'cd:string', 'value', interface.commands, interface.elements, language)
                     newdata = replace(newdata, 'cd:variable' , 'value', interface.variables, nil, language)
                     newdata = replace(newdata, 'cd:parameter', 'name', interface.constants, nil, language)

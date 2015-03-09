@@ -67,7 +67,7 @@
   [\s!format=metafun,
   %\s!extensions=\v!yes,      % Should we add extensions and initializations?
   %\s!initializations=\v!yes, % Would this give EmWidth, etc.?
-  ]
+   \c!method=\s!double]
 
 \startMPdefinitions{chemistry}
     input mp-chem.mpiv ;
@@ -720,7 +720,7 @@
    \c!rotation=0,    % unitless number (interpreted as degrees)
    \c!symalign=\v!auto,
    \c!location=,     % not yet used (was interaction related in mkii)
-   \c!offset=.25em,
+   \c!offset=.25\emwidth,
    \c!unit=\emwidth,
    \c!factor=3,
    \c!color=,

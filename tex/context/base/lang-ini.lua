@@ -58,9 +58,9 @@ local numbers        = languages.numbers
 languages.data       = languages.data       or { }
 local data           = languages.data
 
-storage.register("languages/numbers",   numbers,   "languages.numbers")
 storage.register("languages/registered",registered,"languages.registered")
 storage.register("languages/associated",associated,"languages.associated")
+storage.register("languages/numbers",   numbers,   "languages.numbers")
 storage.register("languages/data",      data,      "languages.data")
 
 local nofloaded  = 0

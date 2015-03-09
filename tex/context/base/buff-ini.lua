@@ -257,6 +257,8 @@ local function undent(str) -- new version, needs testing: todo: not always neede
     return lpegmatch(stripper,str) or str
 end
 
+buffers.undent = undent
+
 function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes,doundent) -- maybe move \\ to call
     local dn = getcontent(name)
     if dn == "" then

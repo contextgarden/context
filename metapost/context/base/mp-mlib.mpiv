@@ -390,11 +390,11 @@ string mfun_prescript_separator ; mfun_prescript_separator := char(13) ;
 % Shades
 
 % for while we had this:
-%
-% newinternal shadefactor  ; shadefactor  := 1 ;
-% pair        shadeoffset  ; shadeoffset  := origin ;
-% boolean     trace_shades ; trace_shades := false ;
-%
+
+newinternal shadefactor  ; shadefactor  := 1 ;      % currently obsolete
+pair        shadeoffset  ; shadeoffset  := origin ; % currently obsolete
+boolean     trace_shades ; trace_shades := false ;  % still there
+
 % def withlinearshading (expr a, b) =
 %     withprescript "sh_type=linear"
 %     withprescript "sh_domain=0 1"
@@ -523,8 +523,8 @@ def withcircularshade (expr a, b, ra, rb, ca, cb) =
     withprescript "sh_factor=1"
     withprescript "sh_color_a="  & colordecimals ca
     withprescript "sh_color_b="  & colordecimals cb
-    withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
-    withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
+    withprescript "sh_center_a=" & ddecimal a % (a shifted shadeoffset)
+    withprescript "sh_center_b=" & ddecimal b % (b shifted shadeoffset)
     withprescript "sh_radius_a=" & decimal ra
     withprescript "sh_radius_b=" & decimal rb
 enddef ;
@@ -535,8 +535,8 @@ def withlinearshade (expr a, b, ca, cb) =
     withprescript "sh_factor=1"
     withprescript "sh_color_a="  & colordecimals ca
     withprescript "sh_color_b="  & colordecimals cb
-    withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
-    withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
+    withprescript "sh_center_a=" & ddecimal a % (a shifted shadeoffset)
+    withprescript "sh_center_b=" & ddecimal b % (b shifted shadeoffset)
 enddef ;
 
 % replaced (obsolete):
@@ -595,8 +595,8 @@ vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
     & mfun_prescript_separator & "sh_factor=1"
     & mfun_prescript_separator & "sh_color_a="  & colordecimals ca
     & mfun_prescript_separator & "sh_color_b="  & colordecimals cb
-    & mfun_prescript_separator & "sh_center_a=" & ddecimal (a shifted shadeoffset)
-    & mfun_prescript_separator & "sh_center_b=" & ddecimal (b shifted shadeoffset)
+    & mfun_prescript_separator & "sh_center_a=" & ddecimal a % (a shifted shadeoffset)
+    & mfun_prescript_separator & "sh_center_b=" & ddecimal b % (b shifted shadeoffset)
     & mfun_prescript_separator & "sh_radius_a=" & decimal ra
     & mfun_prescript_separator & "sh_radius_b=" & decimal rb
     ;
@@ -610,8 +610,8 @@ vardef define_linear_shade (expr a, b, ca, cb) =
     & mfun_prescript_separator & "sh_factor=1"
     & mfun_prescript_separator & "sh_color_a=" & colordecimals ca
     & mfun_prescript_separator & "sh_color_b=" & colordecimals cb
-    & mfun_prescript_separator & "sh_center_a=" & ddecimal (a shifted shadeoffset)
-    & mfun_prescript_separator & "sh_center_b=" & ddecimal (b shifted shadeoffset)
+    & mfun_prescript_separator & "sh_center_a=" & ddecimal a % (a shifted shadeoffset)
+    & mfun_prescript_separator & "sh_center_b=" & ddecimal b % (b shifted shadeoffset)
     ;
     mfun_defined_cs
 enddef ;

@@ -11,14 +11,15 @@ if not modules then modules = { } end modules ['publ-ini'] = {
 
 -- plug the list sorted in the list mechanism (specification.sortorder)
 
--- todo: delay details till alternative is known so that potential author
--- fields are known
-
 -- If we define two datasets with the same bib file we can consider
 -- sharing the data but that means that we need to have a parent which
 -- in turn makes things messy if we start manipulating entries in
 -- different ways (future) .. not worth the trouble as we will seldom
 -- load big bib files many times and even then ... fonts are larger.
+
+-- A potential optimization is to work with current_dataset, current_tag when
+-- fetching fields but the code become real messy that way (many currents). The
+-- gain is not that large anyway because not much publication stuff is flushed.
 
 local next, rawget, type, tostring, tonumber = next, rawget, type, tostring, tonumber
 local match, find = string.match, string.find
@@ -32,9 +33,11 @@ local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local lpegmatch = lpeg.match
 local P, S, C, Ct, R, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.R, lpeg.Carg
+local upper = utf.upper
 
 local report             = logs.reporter("publications")
 local report_cite        = logs.reporter("publications","cite")
+local report_list        = logs.reporter("publications","list")
 local report_reference   = logs.reporter("publications","reference")
 
 local trace              = false  trackers.register("publications",                 function(v) trace            = v end)
@@ -60,16 +63,9 @@ local v_local            = variables["local"]
 local v_global           = variables["global"]
 
 local v_force            = variables.force
-local v_standard         = variables.standard
-local v_start            = variables.start
 local v_none             = variables.none
-local v_left             = variables.left
-local v_right            = variables.right
-local v_middle           = variables.middle
-local v_inbetween        = variables.inbetween
 local v_yes              = variables.yes
 local v_all              = variables.all
-local v_cite             = variables.cite
 local v_default          = variables.default
 local v_dataset          = variables.dataset
 
@@ -78,7 +74,8 @@ local numbertochar       = converters.characters
 local logsnewline        = logs.newline
 local logspushtarget     = logs.pushtarget
 local logspoptarget      = logs.poptarget
-local csname_id          = token.csname_id
+
+local isdefined          = tex.isdefined
 
 ----- basicsorter        = sorters.basicsorter -- (a,b)
 ----- sortstripper       = sorters.strip
@@ -96,78 +93,85 @@ manipulatormethods.WORD  = converters.WORD
 manipulatormethods.Words = converters.Words
 manipulatormethods.WORDS = converters.WORDS
 
-local context                     = context
-local commands                    = commands
+local context                    = context
+local commands                   = commands
 
-local ctx_doifelse                = commands.doifelse
-local ctx_doif                    = commands.doif
-local ctx_doifnot                 = commands.doifnot
+local ctx_doifelse               = commands.doifelse
+local ctx_doif                   = commands.doif
+local ctx_doifnot                = commands.doifnot
 
-local ctx_setvalue                = context.setvalue
-local ctx_firstoftwoarguments     = context.firstoftwoarguments
-local ctx_secondoftwoarguments    = context.secondoftwoarguments
-local ctx_firstofoneargument      = context.firstofoneargument
-local ctx_gobbleoneargument       = context.gobbleoneargument
+local ctx_firstoftwoarguments    = context.firstoftwoarguments
+local ctx_secondoftwoarguments   = context.secondoftwoarguments
+local ctx_firstofoneargument     = context.firstofoneargument
 
-local ctx_btxlistparameter        = context.btxlistparameter
-local ctx_btxcitevariantparameter = context.btxcitevariantparameter
-local ctx_btxlistvariantparameter = context.btxlistvariantparameter
-local ctx_btxdirectlink           = context.btxdirectlink
-local ctx_btxhandlelistentry      = context.btxhandlelistentry
-local ctx_btxhandlelisttextentry  = context.btxhandlelisttextentry
-local ctx_btxchecklistentry       = context.btxchecklistentry
-local ctx_btxchecklistcombi       = context.btxchecklistcombi
-local ctx_btxsetcitereference     = context.btxsetcitereference
-local ctx_btxsetlistreference     = context.btxsetlistreference
------ ctx_btxmissing              = context.btxmissing
+local ctx_gobbleoneargument      = context.gobbleoneargument
+local ctx_gobbletwoarguments     = context.gobbletwoarguments
 
-local ctx_btxsetdataset           = context.btxsetdataset
-local ctx_btxsettag               = context.btxsettag
-local ctx_btxsetnumber            = context.btxsetnumber
-local ctx_btxsetlanguage          = context.btxsetlanguage
-local ctx_btxsetcombis            = context.btxsetcombis
-local ctx_btxsetcategory          = context.btxsetcategory
-local ctx_btxcitesetup            = context.btxcitesetup
-local ctx_btxpagesetup            = context.btxpagesetup
-local ctx_btxsetfirst             = context.btxsetfirst
-local ctx_btxsetsecond            = context.btxsetsecond
-local ctx_btxsetthird             = context.btxsetthird
-local ctx_btxsetinternal          = context.btxsetinternal
-local ctx_btxsetlefttext          = context.btxsetlefttext
-local ctx_btxsetrighttext         = context.btxsetrighttext
-local ctx_btxsetbefore            = context.btxsetbefore
-local ctx_btxsetafter             = context.btxsetafter
-local ctx_btxsetbacklink          = context.btxsetbacklink
-local ctx_btxsetbacktrace         = context.btxsetbacktrace
-local ctx_btxsetcount             = context.btxsetcount
-local ctx_btxsetconcat            = context.btxsetconcat
-local ctx_btxsetoveflow           = context.btxsetoverflow
-local ctx_btxsetfirstpage         = context.btxsetfirstpage
-local ctx_btxsetlastpage          = context.btxsetlastpage
-local ctx_btxsetfirstinternal     = context.btxsetfirstinternal
-local ctx_btxsetlastinternal      = context.btxsetlastinternal
-local ctx_btxstartcite            = context.btxstartcite
-local ctx_btxstopcite             = context.btxstopcite
-local ctx_btxstartciteauthor      = context.btxstartciteauthor
-local ctx_btxstopciteauthor       = context.btxstopciteauthor
-local ctx_btxstartsubcite         = context.btxstartsubcite
-local ctx_btxstopsubcite          = context.btxstopsubcite
-local ctx_btxlistsetup            = context.btxlistsetup
-local ctx_btxflushauthor          = context.btxflushauthor
+local ctx_btxdirectlink          = context.btxdirectlink
+local ctx_btxhandlelistentry     = context.btxhandlelistentry
+local ctx_btxhandlelisttextentry = context.btxhandlelisttextentry
+local ctx_btxchecklistentry      = context.btxchecklistentry
+local ctx_btxchecklistcombi      = context.btxchecklistcombi
+----- ctx_btxsetcitereference    = context.btxsetcitereference
+----- ctx_btxsetlistreference    = context.btxsetlistreference
 
-local registeredcitevariants = publications.registeredcitevariants or allocate()
-local registeredlistvariants = publications.registeredlistvariants or allocate()
+local ctx_btxsetdataset          = context.btxsetdataset
+local ctx_btxsettag              = context.btxsettag
+local ctx_btxsetnumber           = context.btxsetnumber
+local ctx_btxsetlanguage         = context.btxsetlanguage
+local ctx_btxsetcombis           = context.btxsetcombis
+local ctx_btxsetcategory         = context.btxsetcategory
+local ctx_btxcitesetup           = context.btxcitesetup
+local ctx_btxpagesetup           = context.btxpagesetup
+local ctx_btxsetfirst            = context.btxsetfirst
+local ctx_btxsetsecond           = context.btxsetsecond
+local ctx_btxsetthird            = context.btxsetthird
+local ctx_btxsetinternal         = context.btxsetinternal
+local ctx_btxsetlefttext         = context.btxsetlefttext
+local ctx_btxsetrighttext        = context.btxsetrighttext
+local ctx_btxsetbefore           = context.btxsetbefore
+local ctx_btxsetafter            = context.btxsetafter
+local ctx_btxsetbacklink         = context.btxsetbacklink
+local ctx_btxsetbacktrace        = context.btxsetbacktrace
+local ctx_btxsetcount            = context.btxsetcount
+local ctx_btxsetconcat           = context.btxsetconcat
+local ctx_btxsetoveflow          = context.btxsetoverflow
+local ctx_btxsetfirstpage        = context.btxsetfirstpage
+local ctx_btxsetlastpage         = context.btxsetlastpage
+local ctx_btxsetfirstinternal    = context.btxsetfirstinternal
+local ctx_btxsetlastinternal     = context.btxsetlastinternal
+local ctx_btxstartcite           = context.btxstartcite
+local ctx_btxstopcite            = context.btxstopcite
+local ctx_btxstartciteauthor     = context.btxstartciteauthor
+local ctx_btxstopciteauthor      = context.btxstopciteauthor
+local ctx_btxstartsubcite        = context.btxstartsubcite
+local ctx_btxstopsubcite         = context.btxstopsubcite
+local ctx_btxstartlistentry      = context.btxstartlistentry
+local ctx_btxstoplistentry       = context.btxstoplistentry
+local ctx_btxlistsetup           = context.btxlistsetup
+local ctx_btxflushauthor         = context.btxflushauthor
+local ctx_btxsetnoflistentries   = context.btxsetnoflistentries
+local ctx_btxsetcurrentlistentry = context.btxsetcurrentlistentry
+local ctx_btxsetcurrentlistindex = context.btxsetcurrentlistindex
 
-storage.register("publications/registeredcitevariants", registeredcitevariants,"publications.registeredcitevariants")
-storage.register("publications/registeredlistvariants", registeredlistvariants,"publications.registeredlistvariants")
+local ctx_setmacro = tokens.setters and tokens.setters.macro
 
-function commands.registerbtxcitevariant(name,parent)
-    registeredcitevariants[name] = parent or ""
-end
+languages.data       = languages.data       or { }
+local data           = languages.data
 
-function commands.registerbtxlistvariant(name,parent)
-    registeredlistvariants[name] = parent or ""
-end
+-- local registeredcitevariants = publications.registeredcitevariants or { }
+-- local registeredlistvariants = publications.registeredlistvariants or { }
+--
+-- storage.register("publications/registeredcitevariants", registeredcitevariants,"publications.registeredcitevariants")
+-- storage.register("publications/registeredlistvariants", registeredlistvariants,"publications.registeredlistvariants")
+--
+-- function commands.registerbtxcitevariant(name,parent)
+--     registeredcitevariants[name] = parent or ""
+-- end
+--
+-- function commands.registerbtxlistvariant(name,parent)
+--     registeredlistvariants[name] = parent or ""
+-- end
 
 local specifications              = publications.specifications
 local currentspecification        = specifications[false]
@@ -205,7 +209,6 @@ end)
 
 luatex.registerstopactions(function()
     local done = false
-    local undefined = csname_id("undefined*crap")
     for name, dataset in sortedhash(datasets) do
         for command, n in sortedhash(dataset.commands) do
             if not done then
@@ -215,16 +218,12 @@ luatex.registerstopactions(function()
                 logsnewline()
                 done = true
             end
-            local c = csname_id(command)
-            if c and c ~= undefined then
+            if isdefined[command] then
                 report("%-20s %-20s % 5i %s",name,command,n,"known")
+            elseif isdefined[upper(command)] then
+                report("%-20s %-20s % 5i %s",name,command,n,"KNOWN")
             else
-                local u = csname_id(utf.upper(command))
-                if u and u ~= undefined then
-                    report("%-20s %-20s % 5i %s",name,command,n,"KNOWN")
-                else
-                    report("%-20s %-20s % 5i %s",name,command,n,"unknown")
-                end
+                report("%-20s %-20s % 5i %s",name,command,n,"unknown")
             end
         end
     end
@@ -363,9 +362,9 @@ do
                         -- reference (in list)
                         local userdata = entry.userdata
                         if userdata then
-                            local set = userdata.btxset
-                            if set then
-                                local tag = userdata.btxref
+                            local tag = userdata.btxref
+                            if tag then
+                                local set = userdata.btxset or v_default
                                 local s = usedentries[set]
                                 if s then
                                     local u = s[tag]
@@ -476,17 +475,23 @@ local findallused do
     local finder   = publications.finder
 
     findallused = function(dataset,reference,internal)
+        local current = datasets[dataset]
         local finder  = publications.finder -- for the moment, not yet in all betas
-        local find    = finder and finder(reference)
+        local find    = finder and finder(current,reference)
         local tags    = not find and settings_to_array(reference)
         local todo    = { }
         local okay    = { } -- only if mark
         local set     = usedentries[dataset]
-        local current = datasets[dataset]
         local valid   = current.luadata
         local ordered = current.ordered
         if set then
+            local registered = { }
             local function register(tag)
+                if registered[tag] then
+                    return
+                else
+                    registered[tag] = true
+                end
                 local entry = set[tag]
                 if entry then
                     -- only once in a list but at some point we can have more (if we
@@ -527,7 +532,14 @@ local findallused do
                 end
                 todo[tag] = true
             end
-            if find then
+            if reference == "*" then
+                tags = { }
+                for i=1,#ordered do
+                    local tag = ordered[i].tag
+                    register(tag)
+                    tags[#tags+1] = tag
+                end
+            elseif find then
                 tags = { }
                 for i=1,#ordered do
                     local entry = ordered[i]
@@ -554,7 +566,9 @@ local findallused do
                 for i=1,#ordered do
                     local entry = ordered[i]
                     if find(entry) then
-                        tags[#tags+1] = entry.tag
+                        local tag = entry.tag
+                        tags[#tags+1] = tag
+                        todo[tag] = true
                     end
                 end
             else
@@ -586,15 +600,15 @@ local concatstate = publications.concatstate
 
 local tobemarked = nil
 
-local function marknocite(dataset,tag,nofcitations) -- or just: ctx_btxdomarkcitation
+local function marknocite(dataset,tag,nofcitations,setup)
     ctx_btxstartcite()
     ctx_btxsetdataset(dataset)
     ctx_btxsettag(tag)
     ctx_btxsetbacklink(nofcitations)
     if trace_detail then
-        report("expanding %a cite setup %a","nocite","nocite")
+        report("expanding cite setup %a",setup)
     end
-    ctx_btxcitesetup("nocite")
+    ctx_btxcitesetup(setup)
     ctx_btxstopcite()
 end
 
@@ -612,7 +626,7 @@ local function markcite(dataset,tag,flush)
             report_cite("mark, dataset: %s, tag: %s, number: %s, state: %s",dataset,tag,nofcitations,"cited")
         end
         if flush then
-            marknocite(dataset,tag,nofcitations)
+            marknocite(dataset,tag,nofcitations,"nocite")
         end
         tobemarked[tag] = nofcitations
         return nofcitations
@@ -635,13 +649,12 @@ function commands.flushmarked()
             -- keep order
             local tag = marked_list[i]
             local tbm = tobemarked[tag]
-            if not tbm or tbm == true then
+            if tbm == true or not tbm then
                 nofcitations = nofcitations + 1
-                marknocite(marked_dataset,tag,nofcitations)
+                marknocite(marked_dataset,tag,nofcitations,tbm and "nocite" or "invalid")
                 if trace_cite then
-                    report_cite("mark, dataset: %s, tag: %s, number: %s, state: %s",marked_dataset,tag,nofcitations,"unset")
+                    report_cite("mark, dataset: %s, tag: %s, number: %s, state: %s",marked_dataset,tag,nofcitations,tbm and "unset" or "invalid")
                 end
-            else
             end
         end
     end
@@ -764,11 +777,44 @@ local function getdirect(dataset,data,field,catspec) -- no field check, no datas
     end
 end
 
+local function getfuzzy(data,field,categories) -- no field check, no dataset check
+    local catspec
+    if categories then
+        local category = data.category
+        if category then
+            catspec = categories[data.category]
+        end
+    end
+    if not field then
+        return
+    elseif not catspec then
+        return data[field]
+    end
+    local fields = catspec.fields
+    if fields then
+        local sets = catspec.sets
+        if sets then
+            local set = sets[field]
+            if set then
+                for i=1,#set do
+                    local field = set[i]
+                    local value = fields[field] and data[field] -- redundant check
+                    if value then
+                        return value
+                    end
+                end
+            end
+        end
+        return fields[field] and data[field] or nil -- redundant check
+    end
+end
+
 publications.getfield  = getfield
 publications.getdetail = getdetail
 publications.getcasted = getcasted
 publications.getfaster = getfaster
 publications.getdirect = getdirect
+publications.getfuzzy  = getfuzzy
 
 -- this needs to be checked: a specific type should have a checker
 
@@ -832,24 +878,28 @@ function commands.btxsingularorplural(dataset,tag,name)
     ctx_doifelse(true)
 end
 
-function firstandlast.pagenumber(d)
+function firstandlast.range(d)
     if type(d) == "table" then
         return d[1], d[2]
     end
 end
 
-function commands.oneorrange(dataset,tag,name)
+firstandlast.pagenumber = firstandlast.range
+
+function commands.btxoneorrange(dataset,tag,name)
     local data, field, kind = getcasted(dataset,tag,name)
     if data then
         local test = firstandlast[kind]
         if test then
             local first, last = test(data)
             ctx_doifelse(not (first and last))
+            return
         end
     end
+    ctx_gobbletwoarguments()
 end
 
-function commands.firstofrange(dataset,tag,name)
+function commands.btxfirstofrange(dataset,tag,name)
     local data, field, kind = getcasted(dataset,tag,name)
     if data then
         local test = firstandlast[kind]
@@ -909,6 +959,8 @@ do
     -- seconds are irrelevant (there is for sure more to gain by proper coding
     -- of the source and or style).
 
+    local f_short = formatters["%t%02i"]
+
     function publications.enhancers.suffixes(dataset)
         if not dataset then
             return -- bad news
@@ -922,11 +974,12 @@ do
         local luadata  = dataset.luadata
         local details  = dataset.details
         local ordered  = dataset.ordered
-        local field    = "author"  -- currently only author
-        local shorts   = { }
         if not luadata or not details or not ordered then
+            report("nothing to be analyzed in %a",dataset.name)
             return -- also bad news
         end
+        local field  = "author"  -- currently only author
+        local shorts = { }
         for i=1,#ordered do
             local entry = ordered[i]
             if entry then
@@ -940,6 +993,7 @@ do
                         local userdata  = listentry.userdata
                         local btxspc    = userdata and userdata.btxspc
                         if btxspc then
+                            -- this will become a specification entry
                             local author = getcasted(dataset,tag,field,specifications[btxspc])
                             if type(author) == "table" then
                                 -- number depends on sort order
@@ -956,7 +1010,7 @@ do
                                     end
                                 end
                                 local year  = tonumber(entry.year) or 0
-                                local short = formatters["%t%02i"](t,mod(year,100))
+                                local short = f_short(t,mod(year,100))
                                 local s = shorts[short]
                                 -- we could also sort on reference i.e. entries.text
                                 if u then
@@ -1030,8 +1084,8 @@ function commands.setbtxdataset(name,default)
     elseif default and default ~= "" then
         context(default)
     else
-        context(v_standard)
-        report("unknown dataset %a, forcing %a",name,standard)
+        context(v_default)
+        report("unknown dataset %a, forcing %a",name,v_default)
     end
 end
 
@@ -1091,6 +1145,8 @@ do
     -- then there can be cases where we have no specification for instance
     -- when we have a special kind of database
 
+    local splitter = lpeg.splitat(":")
+
     local function permitted(category,field)
         local catspec = currentspecification.categories[category]
         if not catspec then
@@ -1105,6 +1161,10 @@ do
         if ignoredfields and ignoredfields[field] then
             return false
         end
+        local virtual = catspec.virtual
+        if virtual and virtual[field] then
+            return true
+        end
         local sets = catspec.sets
         if sets then
             local set = sets[field]
@@ -1114,6 +1174,10 @@ do
         end
         if fields[field] then
             return true
+        end
+        local f, l = lpegmatch(splitter,field)
+        if f and l and fields[f] then
+            return true -- language specific one
         end
     end
 
@@ -1234,8 +1298,8 @@ do
             local fields = dataset.luadata[tag]
             if fields then
                 local category = fields.category
+                local manipulator, field = splitmanipulation(field)
                 if permitted(category,field) then
-                    local manipulator, field = splitmanipulation(field)
                     local value = fields[field]
                     if value then
                         typesetters[currentspecification.types[field]](field,value,manipulator)
@@ -1261,8 +1325,8 @@ do
                 local details = dataset.details[tag]
                 if details then
                     local category = fields.category
+                    local manipulator, field = splitmanipulation(field)
                     if permitted(category,field) then
-                        local manipulator, field = splitmanipulation(field)
                         local value = details[field]
                         if value then
                             typesetters[currentspecification.types[field]](field,value,manipulator)
@@ -1298,6 +1362,7 @@ do
         end
     end
 
+    publications.okay = okay
 
     function commands.btxdoifelse(name,tag,field) ctx_doifelse(okay(name,tag,field)) end
     function commands.btxdoif    (name,tag,field) ctx_doif    (okay(name,tag,field)) end
@@ -1319,7 +1384,11 @@ end
 
 do
 
-    local patterns = { "publ-imp-%s.mkvi", "publ-imp-%s.mkiv", "publ-imp-%s.tex" }
+    local patterns = {
+        "publ-imp-%s.mkvi",
+        "publ-imp-%s.mkiv",
+        "publ-imp-%s.tex",
+    }
 
     local function failure(name)
         report("unknown library %a",name)
@@ -1334,6 +1403,20 @@ do
             name     = string.gsub(name,"^publ%-",""),
             patterns = patterns,
             action   = action,
+            failure  = failure,
+            onlyonce = true,
+        }
+    end
+
+    local patterns = {
+        "publ-imp-%s.lua",
+    }
+
+    function commands.loadbtxreplacementfile(name) -- a more specific name
+        commands.uselibrary {
+            name     = string.gsub(name,"^publ%-",""),
+            patterns = patterns,
+            action   = publications.loaders.registercleaner,
             failure  = failure,
             onlyonce = true,
         }
@@ -1464,7 +1547,7 @@ do
         local list    = rendering.list
         for tag, data in sortedhash(luadata) do
             if not keyword or validkeyword(dataset,tag,keyword) then
-                list[#list+1] = { tag, false, 0, false, false }
+                list[#list+1] = { tag, false, 0, false, false, data.index or 0}
             end
         end
     end
@@ -1472,17 +1555,21 @@ do
     methods[v_force] = function (dataset,rendering,keyword)
         -- only for checking, can have duplicates, todo: collapse page numbers, although
         -- we then also needs deferred writes
-        local result  = structures.lists.filter(rendering.specification) or { }
+        local result  = structures.lists.filter(rendering.specifications) or { }
         local list    = rendering.list
         local current = datasets[dataset]
         local luadata = current.luadata
         for listindex=1,#result do
             local r = result[listindex]
             local u = r.userdata
-            if u and u.btxset == dataset then
-                local tag = u.btxref
-                if tag and (not keyword or validkeyword(dataset,tag,keyword)) then
-                    list[#list+1] = { tag, listindex, 0, u, u.btxint }
+            if u then
+                local set = u.btxset or v_default
+                if set == dataset then
+                    local tag = u.btxref
+                    if tag and (not keyword or validkeyword(dataset,tag,keyword)) then
+                        local data = luadata[tag]
+                        list[#list+1] = { tag, listindex, 0, u, u.btxint, data and data.index or 0 }
+                    end
                 end
             end
         end
@@ -1493,7 +1580,7 @@ do
     -- global : if tag and not alldone[tag] and done[tag] ~= section then ...
 
     methods[v_local] = function(dataset,rendering,keyword)
-        local result    = structures.lists.filter(rendering.specification) or { }
+        local result    = structures.lists.filter(rendering.specifications) or { }
         local section   = sections.currentid()
         local list      = rendering.list
         local repeated  = rendering.repeated == v_yes
@@ -1506,34 +1593,40 @@ do
         local pages     = { }
         local current   = datasets[dataset]
         local luadata   = current.luadata
+rendering.result = result
         for listindex=1,#result do
             local r = result[listindex]
             local u = r.userdata
-            if u and u.btxset == dataset then
-                local tag = u.btxref
-                if not tag then
-                    -- problem
-                elseif done[tag] == section then -- a bit messy for global and all and so
-                    -- skip
-                elseif doglobal and alldone[tag] then
-                    -- skip
-                elseif not keyword or validkeyword(dataset,tag,keyword) then
-                    if traced then
-                        local l = traced[tag]
-                        if l then
-                            l[#l+1] = u.btxint
+            if u then
+                local set = u.btxset or v_default
+                if set == dataset then
+                    local tag = u.btxref
+                    if not tag then
+                        -- problem
+                    elseif done[tag] == section then -- a bit messy for global and all and so
+                        -- skip
+                    elseif doglobal and alldone[tag] then
+                        -- skip
+                    elseif not keyword or validkeyword(dataset,tag,keyword) then
+                        if traced then
+                            local l = traced[tag]
+                            if l then
+                                l[#l+1] = u.btxint
+                            else
+                                local data = luadata[tag]
+                                local l = { tag, listindex, 0, u, u.btxint, data and data.index or 0 }
+                                list[#list+1] = l
+                                traced[tag] = l
+                            end
                         else
-                            local l = { tag, listindex, 0, u, u.btxint }
-                            list[#list+1] = l
-                            traced[tag] = l
+                            done[tag]    = section
+                            alldone[tag] = true
+                            local data = luadata[tag]
+                            list[#list+1] = { tag, listindex, 0, u, u.btxint, data and data.index or 0 }
                         end
-                    else
-                        done[tag]    = section
-                        alldone[tag] = true
-                        list[#list+1] = { tag, listindex, 0, u, u.btxint }
                     end
+                    registerpage(pages,tag,result,listindex)
                 end
-                registerpage(pages,tag,result,listindex)
             end
         end
         if traced then
@@ -1558,18 +1651,20 @@ do
         if not rendering then
             return
         end
-        local method            = specification.method or v_none
-        local ignored           = specification.ignored or ""
-        rendering.method        = method
-        rendering.ignored       = ignored ~= "" and settings_to_set(ignored) or nil
-        rendering.list          = { }
-        rendering.done          = { }
-        rendering.sorttype      = specification.sorttype or v_default
-        rendering.criterium     = specification.criterium or v_none
-        rendering.repeated      = specification.repeated or v_no
-        rendering.specification = specification
-        local filtermethod      = methods[method]
+        local method             = specification.method or v_none
+        local ignored            = specification.ignored or ""
+        rendering.method         = method
+        rendering.ignored        = ignored ~= "" and settings_to_set(ignored) or nil
+        rendering.list           = { }
+        rendering.done           = { }
+        rendering.sorttype       = specification.sorttype or v_default
+        rendering.criterium      = specification.criterium or v_none
+        rendering.repeated       = specification.repeated or v_no
+        rendering.group          = specification.group or ""
+        rendering.specifications = specification
+        local filtermethod       = methods[method]
         if not filtermethod then
+            report_list("invalid method %a",method or "")
             return
         end
         lists.result  = { } -- kind of reset
@@ -1580,11 +1675,12 @@ do
             keyword = nil
         end
         filtermethod(dataset,rendering,keyword)
+        ctx_btxsetnoflistentries(#rendering.list)
     end
 
     -- for determining width
 
-    local lastreferencenumber = 0 -- document wide
+    local groups = setmetatableindex("number")
 
     function lists.prepareentries(dataset)
         local rendering = renderings[dataset]
@@ -1593,11 +1689,13 @@ do
         local forceall  = rendering.criterium == v_all
         local repeated  = rendering.repeated == v_yes
         local sorttype  = rendering.sorttype or v_default
+        local group     = rendering.group or ""
         local sorter    = lists.sorters[sorttype]
         local current   = datasets[dataset]
         local luadata   = current.luadata
         local details   = current.details
         local newlist   = { }
+        local lastreferencenumber = groups[group] -- current.lastreferencenumber or 0
         for i=1,#list do
             local li    = list[i]
             local tag   = li[1]
@@ -1628,6 +1726,7 @@ do
                 end
             end
         end
+        groups[group] = lastreferencenumber
         if type(sorter) == "function" then
             rendering.list = sorter(dataset,rendering,newlist,sorttype) or newlist
         else
@@ -1655,7 +1754,12 @@ do
     function commands.btxflushpages(dataset,tag)
         -- todo: interaction
         local rendering = renderings[dataset]
-        local pages     = rendering.pages[tag]
+        local pages     = rendering.pages
+        if not pages then
+            return
+        else
+            pages = pages[tag]
+        end
         if not pages then
             return
         end
@@ -1713,66 +1817,152 @@ do
         end
     end
 
-    function lists.flushentries(dataset,textmode)
+    function lists.sameasprevious(dataset,i,name)
+        local rendering = renderings[dataset]
+        local list      = rendering.list
+        local n         = tonumber(i)
+        if n and n > 1 and n <= #list then
+            local luadata  = datasets[dataset].luadata
+            local current  = getdirect(dataset,luadata[list[n  ][1]],name)
+            local previous = getdirect(dataset,luadata[list[n-1][1]],name)
+            if trace_detail then
+                report("previous %a, current %a",tostring(previous),tostring(current))
+            end
+            return current and current == previous
+        else
+            return false
+        end
+    end
+
+    function lists.flushentry(dataset,i,textmode)
+        local rendering = renderings[dataset]
+        local list      = rendering.list
+--         local result    = rendering.result
+        local luadata   = datasets[dataset].luadata
+        local li        = list[i]
+        if li then
+            local tag       = li[1]
+            local listindex = li[2]
+            local n         = li[3]
+            local entry     = luadata[tag]
+            --
+            ctx_btxstartlistentry()
+            ctx_btxsetcurrentlistentry(i) -- redundant
+            ctx_btxsetcurrentlistindex(listindex)
+            local combined = entry.combined
+            local language = entry.language
+            if combined then
+                ctx_btxsetcombis(concat(combined,","))
+            end
+            ctx_btxsetcategory(entry.category or "unknown")
+            ctx_btxsettag(tag)
+            ctx_btxsetnumber(n)
+            if language then
+                ctx_btxsetlanguage(language)
+            end
+            local bl = li[5]
+            if bl and bl ~= "" then
+                ctx_btxsetbacklink(bl)
+                ctx_btxsetbacktrace(concat(li," ",5))
+                local uc = citetolist[tonumber(bl)]
+                if uc then
+                    ctx_btxsetinternal(uc.references.internal or "")
+                end
+            else
+                -- nothing
+            end
+            local userdata = li[4]
+            if userdata then
+                local b = userdata.btxbtx
+                local a = userdata.btxatx
+                if b then
+                    ctx_btxsetbefore(b)
+                end
+                if a then
+                    ctx_btxsetafter(a)
+                end
+            end
+            rendering.userdata = userdata
+            if textmode then
+                ctx_btxhandlelisttextentry()
+            else
+                ctx_btxhandlelistentry()
+            end
+            ctx_btxstoplistentry()
+            --
+         -- context(function()
+         --     -- wrapup
+         --     rendering.ignoredfields = nil
+         -- end)
+        end
+    end
+
+
+if ctx_setmacro then -- no real gain, but nice as test
+
+    function lists.flushentry(dataset,i,textmode)
         local rendering = renderings[dataset]
         local list      = rendering.list
         local luadata   = datasets[dataset].luadata
-        -- maybe a startflushing here
-        ignoredfields   = rendering.ignored or { }
-        --
-        if list then
-            for i=1,#list do
-                local li       = list[i]
-                local tag      = li[1]
-                local n        = li[3]
-                local entry    = luadata[tag]
-                local combined = entry.combined
-                local language = entry.language
-                if combined then
-                    ctx_btxsetcombis(concat(combined,","))
+        local li        = list[i]
+        if li then
+            local tag       = li[1]
+            local listindex = li[2]
+            local n         = li[3]
+            local entry     = luadata[tag]
+            --
+            ctx_btxstartlistentry()
+            ctx_setmacro("currentbtxlistentry",i) -- redundant
+            ctx_setmacro("currentbtxlistindex",listindex)
+            local combined = entry.combined
+            local language = entry.language
+            if combined then
+                ctx_setmacro("currentbtxcombis",concat(combined,","))
+            end
+            ctx_setmacro("currentbtxcategory",entry.category or "unknown")
+            ctx_setmacro("currentbtxtag",tag)
+            ctx_setmacro("currentbtxnumber",n)
+            if language then
+                ctx_setmacro("currentbtxlanguage",language)
+            end
+            local bl = li[5]
+            if bl and bl ~= "" then
+                ctx_setmacro("currentbtxbacklink",bl)
+                ctx_setmacro("currentbtxbacktrace",concat(li," ",5))
+                local uc = citetolist[tonumber(bl)]
+                if uc then
+                    ctx_setmacro("currentbtxinternal",uc.references.internal or "")
                 end
-                ctx_btxsetcategory(entry.category or "unknown")
-                ctx_btxsettag(tag)
-                ctx_btxsetnumber(n)
-                if language then
-                    ctx_btxsetlanguage(language)
+            else
+                -- nothing
+            end
+            local userdata = li[4]
+            if userdata then
+                local b = userdata.btxbtx
+                local a = userdata.btxatx
+                if b then
+                    ctx_setmacro("currentbtxbefore",b)
                 end
-                local bl = li[5]
-                if bl and bl ~= "" then
-                    ctx_btxsetbacklink(bl)
-                    ctx_btxsetbacktrace(concat(li," ",5))
-                    local uc = citetolist[tonumber(bl)]
-                    if uc then
-                        ctx_btxsetinternal(uc.references.internal or "")
-                    end
-                else
-                    -- nothing
-                end
-                local userdata = li[4]
-                if userdata then
-                    local b = userdata.btxbtx
-                    local a = userdata.btxatx
-                    if b then
-                        ctx_btxsetbefore(b)
-                    end
-                    if a then
-                        ctx_btxsetafter(a)
-                    end
-                end
-                rendering.userdata = userdata
-                if textmode then
-                    ctx_btxhandlelisttextentry()
-                else
-                    ctx_btxhandlelistentry()
+                if a then
+                    ctx_setmacro("currentbtxafter",a)
                 end
             end
+            rendering.userdata = userdata
+            if textmode then
+                ctx_btxhandlelisttextentry()
+            else
+                ctx_btxhandlelistentry()
+            end
+            ctx_btxstoplistentry()
+            --
+         -- context(function()
+         --     -- wrapup
+         --     rendering.ignoredfields = nil
+         -- end)
         end
-        context(function()
-            -- wrapup
-            ignoredfields = nil
-            setspecification(false)
-        end)
     end
+
+end
 
     local function getuserdata(dataset,key)
         local rendering = renderings[dataset]
@@ -1813,13 +2003,14 @@ do
         end
     end
 
-    commands.btxresolvelistreference = lists.resolve
-    commands.btxaddtolist            = lists.addentry
-    commands.btxcollectlistentries   = lists.collectentries
-    commands.btxpreparelistentries   = lists.prepareentries
-    commands.btxfetchlistentries     = lists.fetchentries
-    commands.btxflushlistentries     = lists.flushentries
-    commands.btxflushlistentry       = lists.flushentry
+    commands.btxresolvelistreference   = lists.resolve
+    commands.btxaddtolist              = lists.addentry
+    commands.btxcollectlistentries     = lists.collectentries
+    commands.btxpreparelistentries     = lists.prepareentries
+    commands.btxfetchlistentries       = lists.fetchentries
+    commands.btxflushlistentry         = lists.flushentry
+
+    commands.btxdoifelsesameasprevious = function(...) ctx_doifelse(lists.sameasprevious(...)) end
 
 end
 
@@ -1829,9 +2020,12 @@ do
     publications.citevariants = citevariants
 
     function commands.btxhandlecite(specification)
-        local dataset   = specification.dataset or "" -- standard
+        local dataset   = specification.dataset or v_default
         local reference = specification.reference
-        local variant   = specification.variant or defaultvariant
+        local variant   = specification.variant
+        if not variant or variant == "" then
+            variant = "default"
+        end
         if not reference or reference == "" then
             return
         end
@@ -1842,10 +2036,10 @@ do
         --
         local prefix, rest = lpegmatch(prefixsplitter,reference)
         if prefix and rest then
+            dataset = prefix
             specification.dataset   = prefix
             specification.reference = rest
         end
-        --
         --
         if trace_cite then
             report_cite("inject, dataset: %s, tag: %s, variant: %s, compressed",
@@ -1855,14 +2049,14 @@ do
             )
         end
         --
-        ctx_setvalue("currentbtxdataset",dataset)
+        ctx_btxsetdataset(dataset)
         --
         citevariants[variant](specification) -- we always fall back on default
     end
 
 
     function commands.btxhandlenocite(specification)
-        local dataset   = specification.dataset or "" -- standard
+        local dataset   = specification.dataset or v_default
         local reference = specification.reference
         if not reference or reference == "" then
             return
@@ -1901,7 +2095,21 @@ do
 
     -- sorter
 
-    local keysorter = function(a,b) return a.sortkey < b.sortkey end
+    local keysorter = function(a,b)
+        local ak = a.sortkey
+        local bk = b.sortkey
+        if ak == bk then
+            local as = a.suffix -- alphabetic
+            local bs = b.suffix -- alphabetic
+            if as and bs then
+                return (as or "") < (bs or "")
+            else
+                return false
+            end
+        else
+            return ak < bk
+        end
+    end
 
     --     local suffix   = 0
     --     local function setsuffix(entry,suffix,sortfld)
@@ -1940,7 +2148,12 @@ do
 
     local function compresslist(source)
         for i=1,#source do
-            if type(source[i].sortkey) ~= "number" then
+            local t = type(source[i].sortkey)
+            if t == "number" then
+                -- okay
+         -- elseif t == "string" then
+         --     -- okay
+            else
                 return source
             end
         end
@@ -1968,6 +2181,7 @@ do
         for i=1,#source do
             local entry = source[i]
             local current = entry.sortkey
+            local suffix  = entry.suffix -- todo but what
             if not first then
                 first, last, firstr, lastr = current, current, entry, entry
             elseif current == last + 1 then
@@ -2016,49 +2230,52 @@ do
         local setter     = specification.setter
         local compressor = specification.compressor
         --
-
         local reference  = publications.parenttag(dataset,reference)
         --
         local found, todo, list = findallused(dataset,reference,internal)
         tobemarked = specification.markentry and todo
         --
-        if not found then
+        if not found or #found == 0 then
             report("nothing found for %a",reference)
         elseif not setup then
             report("invalid reference for %a",reference)
         else
+            if trace_cite then
+                report("processing reference %a",reference)
+            end
             local source  = { }
             local badkey  = false
             local luadata = datasets[dataset].luadata
             for i=1,#found do
-                local entry    = found[i]
-                local tag      = entry.userdata.btxref
-                -- we can probably move the test into the flush
-             -- local category = luadata[tag].category
-             -- if currentspecificationfields[category][setup] then
-                    local internal = entry.references.internal
-                    local data     = setter(dataset,tag,entry,internal)
-                    if compress and not compressor then
-                        local sortkey = data.sortkey
-                        if sortkey then
-                            local key = lpegmatch(numberonly,sortkey)
-                            if key then
-                                data.sortkey = key
-                            else
-                                badkey = true
-                            end
+                local entry = found[i]
+                local tag   = entry.userdata.btxref
+                local ldata = luadata[tag]
+                local data  = {
+                    internal  = entry.references.internal,
+                    language  = ldata.language,
+                    dataset   = dataset,
+                    tag       = tag,
+                 -- luadata   = ldata,
+                }
+                setter(data,dataset,tag,entry)
+                if compress and not compressor then
+                    local sortkey = data.sortkey
+                    if sortkey then
+                        local key = lpegmatch(numberonly,sortkey)
+                        if key then
+                            data.sortkey = key
                         else
                             badkey = true
                         end
-                    end
-                    if type(data) == "table" then
-                        source[#source+1] = data
                     else
-                        report("error in cite rendering %a",setup or "?")
+                        badkey = true
                     end
-             -- else
-             --     report("cite rendering %a is not available for %a",setup,category)
-             -- end
+                end
+                if type(data) == "table" then
+                    source[#source+1] = data
+                else
+                    report("error in cite rendering %a",setup or "?")
+                end
             end
 
             local lefttext  = specification.lefttext
@@ -2071,6 +2288,9 @@ do
             if before    and before    ~= "" then before    = settings_to_array(before)    end
             if after     and after     ~= "" then after     = settings_to_array(after)     end
 
+            local oneleft  = lefttext  and #lefttext  == 1 and lefttext [1]
+            local oneright = righttext and #righttext == 1 and righttext[1]
+
             local function flush(i,n,entry,last)
                 local tag = entry.tag
                 local currentcitation = markcite(dataset,tag)
@@ -2078,10 +2298,26 @@ do
                 ctx_btxstartcite()
                 ctx_btxsettag(tag)
                 --
-                if lefttext  then ctx_btxsetlefttext (lefttext [i] or #lefttext   == 1 and lefttext [1] or "")  end
-                if righttext then ctx_btxsetrighttext(righttext[i] or #righttext  == 1 and righttext[1] or "")  end
-                if before    then ctx_btxsetbefore   (before   [i] or #before     == 1 and before   [1] or "")  end
-                if after     then ctx_btxsetafter    (after    [i] or #after      == 1 and after    [1] or "")  end
+                if oneleft then
+                    if i == 1 then
+                        ctx_btxsetlefttext(oneleft)
+                    end
+                elseif lefttext then
+                    ctx_btxsetlefttext(lefttext[i] or "")
+                end
+                if oneright then
+                    if i == n then
+                        ctx_btxsetrighttext(oneright)
+                    end
+                elseif righttext then
+                    ctx_btxsetrighttext(righttext[i] or "")
+                end
+                if before then
+                    ctx_btxsetbefore(before[i] or #before == 1 and before[1] or "")
+                end
+                if after then
+                    ctx_btxsetafter(after[i] or #after == 1 and after[1] or "")
+                end
                 --
                 ctx_btxsetbacklink(currentcitation)
                 local bl = listtocite[currentcitation]
@@ -2097,7 +2333,7 @@ do
                     ctx_btxsetlanguage(language)
                 end
                 if not getter(entry,last) then
-                    ctx_btxsetfirst(f_missing(tag))
+                    ctx_btxsetfirst("") -- (f_missing(tag))
                 end
                 ctx_btxsetconcat(concatstate(i,n))
                 if trace_detail then
@@ -2155,15 +2391,12 @@ do
     end
 
     local setters = setmetatableindex({},function(t,k)
-        local v = function(dataset,tag,entry,internal)
-            local value = getfield(dataset,tag,k)
-            return {
-                tag      = tag,
-                internal = internal,
-                [k]      = value,
-                sortkey  = value,
-                sortfld  = k,
-            }
+        local v = function(data,dataset,tag,entry)
+            local value = getcasted(dataset,tag,k)
+            data.value   = value -- not really needed
+            data[k]      = value
+            data.sortkey = value
+            data.sortfld = k
         end
         t[k] = v
         return v
@@ -2178,66 +2411,28 @@ do
     end)
 
     setmetatableindex(citevariants,function(t,k)
-        local p = registeredcitevariants[k]
-        local v = nil
-        if p and p ~= "" then
-            v = rawget(t,p)
-        end
-        if not v then
-            p = defaultvariant or "default"
-            v = rawget(t,p)
-        end
-        report_cite("variant %a falls back on %a",k,p)
+        local p = defaultvariant or "default"
+        local v = rawget(t,p)
+        report_cite("variant %a falls back on %a setter and getter with setup %a",k,p,k)
         t[k] = v
         return v
     end)
 
-    function citevariants.default(presets) -- no longer used
+    function citevariants.default(presets)
         local variant = presets.variant
         processcite(presets,{
-            setter = setters[variant],
-            getter = getters[variant],
+            setup   = variant,
+            setter  = setters[variant],
+            getter  = getters[variant],
         })
     end
-
-    --
-
- -- -- what to do with sort .. todo: sorters by type
-
- -- function citevariants.handler(key)
- --     local function setter(dataset,tag,entry,internal)
- --         return {
- --             dataset  = dataset,
- --             tag      = tag,
- --             internal = internal,
- --             category = getfield(dataset,tag,key),
- --         }
- --     end
- --     local function getter(first,last)
- --         return simplegetter(first,last,key)
- --     end
- --     return function(presets)
- --         processcite(presets,{
- --             setter  = setter,
- --             getter  = getter,
- --         })
- --     end
- -- end
- --
- -- citevariants.category = citevariants.handler("category")
- -- citevariants.type     = citevariants.handler("type")
 
     -- category | type
 
     do
 
-        local function setter(dataset,tag,entry,internal)
-            return {
-                dataset  = dataset,
-                tag      = tag,
-                internal = internal,
-                category = getfield(dataset,tag,"category"),
-            }
+        local function setter(data,dataset,tag,entry)
+            data.category = getfield(dataset,tag,"category")
         end
 
         local function getter(first,last)
@@ -2267,11 +2462,8 @@ do
 
     do
 
-        local function setter(dataset,tag,entry,internal)
-            return {
-                tag      = tag,
-                internal = internal,
-            }
+        local function setter(data,dataset,tag,entry)
+            -- nothing
         end
 
         local function getter(first,last) -- last not used
@@ -2293,13 +2485,9 @@ do
 
     do
 
-        local function setter(dataset,tag,entry,internal)
-            return {
-                tag      = tag,
-                internal = internal,
-                short    = getdetail(dataset,tag,"short"),
-                suffix   = getdetail(dataset,tag,"suffix"),
-            }
+        local function setter(data,dataset,tag,entry)
+            data.short  = getdetail(dataset,tag,"short")
+            data.suffix = getdetail(dataset,tag,"suffix")
         end
 
         local function getter(first,last) -- last not used
@@ -2330,13 +2518,8 @@ do
 
     do
 
-        local function setter(dataset,tag,entry,internal)
-            return {
-                dataset  = dataset,
-                tag      = tag,
-                internal = internal,
-                pages    = getcasted(dataset,tag,"pages"),
-            }
+        local function setter(data,dataset,tag,entry)
+            data.pages = getcasted(dataset,tag,"pages")
         end
 
         local function getter(first,last)
@@ -2366,15 +2549,11 @@ do
 
     do
 
-        local function setter(dataset,tag,entry,internal)
+        local function setter(data,dataset,tag,entry)
             local entries = entry.entries
-            local text = entries and entries.text or "?"
-            return {
-                tag      = tag,
-                internal = internal,
-                num      = text,
-                sortkey  = text,
-            }
+            local text    = entries and entries.text or "?"
+            data.num      = text
+            data.sortkey  = text
         end
 
         local function getter(first,last)
@@ -2395,15 +2574,12 @@ do
 
     do
 
-        local function setter(dataset,tag,entry,internal)
-            return {
-                dataset  = dataset,
-                tag      = tag,
-                internal = internal,
-                year     = getfield(dataset,tag,"year"),
-                suffix   = getdetail(dataset,tag,"suffix"),
-                sortkey  = getdetail(dataset,tag,"suffixedyear"),
-            }
+        local function setter(data,dataset,tag,entry)
+            local year   = getfield (dataset,tag,"year")
+            local suffix = getdetail(dataset,tag,"suffix")
+            data.year    = year
+            data.suffix  = suffix
+            data.sortkey = tonumber(year) or 0
         end
 
         local function getter(first,last)
@@ -2424,15 +2600,10 @@ do
 
     do
 
-        local function setter(dataset,tag,entry,internal)
+        local function setter(data,dataset,tag,entry)
             local index = getfield(dataset,tag,"index")
-            return {
-                dataset  = dataset,
-                tag      = tag,
-                internal = internal,
-                index    = index,
-                sortkey  = index,
-            }
+            data.index   = index
+            data.sortkey = index
         end
 
         local function getter(first,last)
@@ -2461,12 +2632,8 @@ do
 
     do
 
-        local function setter(dataset,tag,entry,internal)
-            return {
-                dataset  = dataset,
-                tag      = tag,
-                internal = internal,
-            }
+        local function setter(data,dataset,tag,entry)
+            -- nothing
         end
 
         local function getter(first,last)
@@ -2485,6 +2652,44 @@ do
         function citevariants.tag(presets)
             return processcite(presets,{
                 variant = "tag",
+                setter  = setter,
+                getter  = getter,
+            })
+        end
+
+    end
+
+    -- keyword
+
+    do
+
+        local function listof(list)
+            local size = type(list) == "table" and #list or 0
+            if size > 0 then
+                return function()
+                    for i=1,size do
+                        ctx_btxsetfirst(list[i])
+                        ctx_btxsetconcat(concatstate(i,size))
+                        ctx_btxcitesetup("listelement")
+                    end
+                    return true
+                end
+            else
+                return "?" -- unknown
+            end
+        end
+
+        local function setter(data,dataset,tag,entry)
+            data.keywords = getcasted(dataset,tag,"keywords")
+        end
+
+        local function getter(first,last)
+            context(listof(first.keywords))
+        end
+
+        function citevariants.keywords(presets)
+            return processcite(presets,{
+                variant = "keywords",
                 setter  = setter,
                 getter  = getter,
             })
@@ -2516,6 +2721,8 @@ do
                     end
                 end
             end
+            -- beware: we usetables as hash so we get a cycle when inspecting (unless we start
+            -- hashing with strings)
             for i=1,#found do
                 local entry  = found[i]
                 local author = entry.author
@@ -2553,7 +2760,7 @@ do
                     local bl = listtocite[currentcitation]
                     ctx_btxsetinternal(bl and bl.references.internal or "")
                     if first then
-                        ctx_btxsetfirst(first[key] or f_missing(first.tag))
+                        ctx_btxsetfirst(first[key] or "") -- f_missing(first.tag))
                         local suffix = entry.suffix
                         local value  = entry.last[key]
                         if value then
@@ -2564,7 +2771,7 @@ do
                         end
                     else
                         local suffix = entry.suffix
-                        local value  = entry[key] or f_missing(tag)
+                        local value  = entry[key] or "" -- f_missing(tag)
                         ctx_btxsetfirst(value)
                         if suffix then
                             ctx_btxsetthird(suffix)
@@ -2572,7 +2779,7 @@ do
                     end
                     ctx_btxsetconcat(concatstate(i,nofcollected))
                     if trace_detail then
-                        report("expanding %a cite setup %a","single author",setup)
+                        report("expanding %a cite setup %a","multiple author",setup)
                     end
                     ctx_btxcitesetup(setup)
                     ctx_btxstopciteauthor()
@@ -2590,10 +2797,12 @@ do
          -- ctx_btxsetbacklink(currentcitation)
          -- local bl = listtocite[currentcitation]
          -- ctx_btxsetinternal(bl and bl.references.internal or "")
-            ctx_btxsetfirst(entry[key] or f_missing(tag))
-            ctx_btxsetthird(entry.suffix)
+            ctx_btxsetfirst(entry[key] or "") -- f_missing(tag)
+            if suffix then
+                ctx_btxsetthird(entry.suffix)
+            end
             if trace_detail then
-                report("expanding %a cite setup %a","multiple author",setup)
+                report("expanding %a cite setup %a","single author",setup)
             end
             ctx_btxcitesetup(setup)
             ctx_btxstopciteauthor()
@@ -2604,7 +2813,12 @@ do
 
         local function authorgetter(first,last,key,setup) -- only first
          -- ctx_btxsetfirst(first.author)         -- unformatted
-            ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
+         -- ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
+            if first.type == "author" then
+                ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
+            else
+                ctx_btxsetfirst(first.author)         -- unformatted
+            end
             local entries = first.entries
             -- alternatively we can use a concat with one ... so that we can only make the
             -- year interactive, as with the concat
@@ -2612,11 +2826,13 @@ do
                 entries = { first }
             end
             if entries then
+                -- happens with year
                 local c = compresslist(entries)
                 local f = function() authorconcat(c,key,setup) return true end -- indeed return true?
                 ctx_btxsetcount(#c)
                 ctx_btxsetsecond(f)
-            else
+            elseif first then
+                -- happens with num
                 local f = function() authorsingle(first,key,setup) return true end -- indeed return true?
                 ctx_btxsetcount(0)
                 ctx_btxsetsecond(f)
@@ -2626,18 +2842,16 @@ do
 
         -- author
 
-        local function setter(dataset,tag,entry,internal)
-            return {
-                dataset  = dataset,
-                tag      = tag,
-                internal = internal,
-                author   = getcasted(dataset,tag,"author"),
-            }
+        local function setter(data,dataset,tag,entry)
+            data.author, data.field, data.type = getcasted(dataset,tag,"author")
         end
 
         local function getter(first,last,_,setup)
-         -- ctx_btxsetfirst(first.author)         -- unformatted
-            ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
+            if first.type == "author" then
+                ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
+            else
+                ctx_btxsetfirst(first.author)         -- unformatted
+            end
             return true
         end
 
@@ -2652,16 +2866,12 @@ do
 
         -- authornum
 
-        local function setter(dataset,tag,entry,internal)
-            local text = entry.entries.text
-            return {
-                dataset  = dataset,
-                tag      = tag,
-                internal = internal,
-                author   = getcasted(dataset,tag,"author"),
-                num      = text,
-                sortkey  = text and lpegmatch(numberonly,text),
-            }
+        local function setter(data,dataset,tag,entry)
+            local entries = entry.entries
+            local text    = entries and entries.text or "?"
+            data.author, data.field, data.type = getcasted(dataset,tag,"author")
+            data.num     = text
+            data.sortkey = text and lpegmatch(numberonly,text)
         end
 
         local function getter(first,last)
@@ -2680,16 +2890,13 @@ do
 
         -- authoryear | authoryears
 
-        local function setter(dataset,tag,entry,internal)
-            return {
-                dataset  = dataset,
-                tag      = tag,
-                internal = internal,
-                author   = getcasted(dataset,tag,"author"),
-                year     = getfield(dataset,tag,"year"),
-                suffix   = getdetail(dataset,tag,"suffix"),
-                sortkey  = getdetail(dataset,tag,"suffixedyear"),
-            }
+        local function setter(data,dataset,tag,entry)
+            data.author, data.field, data.type = getcasted(dataset,tag,"author")
+            local year   = getfield (dataset,tag,"year")
+            local suffix = getdetail(dataset,tag,"suffix")
+            data.year    = year
+            data.suffix  = suffix
+            data.sortkey = tonumber(year) or 0
         end
 
         local function getter(first,last)

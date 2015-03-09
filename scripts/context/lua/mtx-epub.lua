@@ -34,6 +34,46 @@ if not modules then modules = { } end modules ['mtx-epub'] = {
 -- coverpage tests
 -- split up
 
+-- todo: automated cover page:
+--
+-- \startMPpage
+--     StartPage ;
+--         fill Page withcolor .5red ;
+--         numeric n ;
+--         for i=10 downto 1 :
+--             n := i * PaperWidth/40  ;
+--             draw
+--                 lrcorner Page shifted (0,n)
+--               % -- lrcorner Page
+--                 -- lrcorner Page shifted (-n,0)
+--               % -- cycle
+--                 withpen pencircle scaled 1mm
+--                 withcolor white ;
+--         endfor ;
+--         picture p ; p := image (
+--             draw
+--                 anchored.top(
+--                     textext.bot("\tttf Some Title")
+--                         xsized .8PaperWidth
+--                    ,center topboundary Page
+--                 )
+--                     withcolor white ;
+--         ) ;
+--         picture q ; q := image (
+--             draw
+--                 anchored.top(
+--                     textext.bot("\tttf An Author")
+--                         xsized .4PaperWidth
+--                         shifted (0,-PaperHeight/40)
+--                    ,center bottomboundary p
+--                 )
+--                     withcolor white ;
+--         ) ;
+--         draw p ;
+--         draw q ;
+--     StopPage ;
+-- \stopMPpage
+
 local format, gsub, find = string.format, string.gsub, string.find
 local concat, sortedhash = table.concat, table.sortedhash
 
@@ -389,7 +429,7 @@ function scripts.epub.make(purge,rename,svgmath,svgstyle)
     end
 
     if not specfull or not isfile(specfull) then
-        report("unknown specificaton file for %a",filename)
+        report("unknown specificaton file %a for %a",specfull or "?",filename)
         return
     end
 
@@ -459,7 +499,8 @@ function scripts.epub.make(purge,rename,svgmath,svgstyle)
 
     local pdftosvg   = os.which("mudraw") and formatters[ [[mudraw -o "%s" "%s" %s]] ]
 
-    local f_svgname  = formatters["%s-page-%s.svg"]
+    local f_svgpage  = formatters["%s-page-%s.svg"]
+    local f_svgname  = formatters["%s.svg"]
 
     local notupdated = 0
     local updated    = 0
@@ -521,10 +562,15 @@ function scripts.epub.make(purge,rename,svgmath,svgstyle)
         local name = url.filename(data.name)
         local used = url.filename(data.used)
         local base = basename(used)
-        local page = data.page or "1"
+        local page = tonumber(data.page) or 1
         -- todo : check timestamp and prefix, rename to image-*
         if suffix(used) == "pdf" then
-            name = f_svgname(nameonly(name),page)
+            -- todo: pass svg name
+            if page > 1 then
+                name = f_svgpage(nameonly(name),page)
+            else
+                name = f_svgname(nameonly(name))
+            end
             local source  = used
             local target  = joinfile(imagesource,name)
             if needsupdating(source,target) then

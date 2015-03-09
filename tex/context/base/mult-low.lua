@@ -156,7 +156,7 @@ return {
         "then",
         "begcsname",
         --
-        "strippedcsname",
+        "strippedcsname","checkedstrippedcsname",
         --
         "firstargumentfalse", "firstargumenttrue",
         "secondargumentfalse", "secondargumenttrue",
@@ -369,7 +369,7 @@ return {
         "obeylualines", "obeyluatokens",
         "startluacode", "stopluacode", "startlua", "stoplua",
         "startctxfunction","stopctxfunction","ctxfunction",
-        "startctxfunctiondefinition","stopctxfunctiondefinition",
+        "startctxfunctiondefinition","stopctxfunctiondefinition", "installctxfunction",
         --
         "carryoverpar",
         --

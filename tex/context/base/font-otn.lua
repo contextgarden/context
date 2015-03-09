@@ -42,7 +42,7 @@ if not modules then modules = { } end modules ['font-otn'] = {
 --
 -- beware:
 --
--- we do some disc juglling where we need to keep in mind that the
+-- we do some disc jugling where we need to keep in mind that the
 -- pre, post and replace fields can have prev pointers to a nesting
 -- node ... i wonder if that is still needed
 --
@@ -274,6 +274,7 @@ local setcursive         = injections.setcursive
 local setkern            = injections.setkern
 local setpair            = injections.setpair
 local resetinjection     = injections.reset
+local copyinjection      = injections.copy
 local setligaindex       = injections.setligaindex
 local getligaindex       = injections.getligaindex
 
@@ -385,10 +386,13 @@ local function copy_glyph(g) -- next and prev are untouched !
     if components then
         setfield(g,"components",nil)
         local n = copy_node(g)
+        copyinjection(n,g) -- we need to preserve the lig indices
         setfield(g,"components",components)
         return n
     else
-        return copy_node(g)
+        local n = copy_node(g)
+        copyinjection(n,g) -- we need to preserve the lig indices
+        return n
     end
 end
 
@@ -613,7 +617,9 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
                 if trace_marks then
                     logwarning("%s: keep mark %s, gets index %s",pref(kind,lookupname),gref(char),getligaindex(start))
                 end
-                head, current = insert_node_after(head,current,copy_node(start)) -- unlikely that mark has components
+                local n = copy_node(start)
+                copyinjection(n,start)
+                head, current = insert_node_after(head,current,n) -- unlikely that mark has components
             elseif trace_marks then
                 logwarning("%s: delete mark %s",pref(kind,lookupname),gref(char))
             end

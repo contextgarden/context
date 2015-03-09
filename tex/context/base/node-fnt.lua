@@ -319,27 +319,43 @@ function handlers.characters(head)
         -- skip
     elseif b == 1 then
         -- only one font
+        local front = head == start
         local range = basefonts[1]
-        local start, stop = range[1], range[2]
+        local start = range[1]
+        local stop  = range[2]
         if stop then
-            ligaturing(start,stop)
-            kerning(start,stop)
+            start, stop = ligaturing(start,stop)
+            start, stop = kerning(start,stop)
+        elseif start then -- safeguard
+            start = ligaturing(start)
+            start = kerning(start)
         else
-            ligaturing(start)
-            kerning(start)
+            -- something bad happened
+        end
+        if front then
+            -- shouldn't happen
+            head = start
         end
     else
         -- multiple fonts
+        local front = head == start
         for i=1,b do
             local range = basefonts[i]
-            local start, stop = range[1], range[2]
+            local start = range[1]
+            local stop  = range[2]
             if stop then
-                ligaturing(start,stop)
-                kerning(start,stop)
+                start, stop = ligaturing(start,stop)
+                start, stop = kerning(start,stop)
+            elseif start then -- safeguard
+                start = ligaturing(start)
+                start = kerning(start)
             else
-                ligaturing(start)
-                kerning(start)
+                -- something bad happened
             end
+        end
+        if front then
+            -- shouldn't happen
+            head = start
         end
     end
     stoptiming(nodes)

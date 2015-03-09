@@ -42,6 +42,8 @@
 \def\dosetpositionbox       #1#2{\ctxcommand{poswhd("#1",\number\wd#2,\number\ht#2,\number\dp#2)}}
 \def\dosetpositionstrut       #1{\ctxcommand{posstrut("#1")}}
 
+\unexpanded\def\doifelsepositionsused{\ctxcommand{doifelsepositionsused()}}
+
 \newbox\b_anch_position
 \newif \ifpositioning   % sort of public
 
@@ -280,6 +282,9 @@
 
 \unexpanded\def\anch_mark_text_box#1%
   {\ctxcommand{markregionbox(\number#1,"\textanchor")}} % needs an hbox
+
+\unexpanded\def\anch_mark_tagged_box#1#2%
+  {\ctxcommand{markregionbox(\number#1,"#2")}} % needs an hbox
 
 %D We can copy a position with:
 %D

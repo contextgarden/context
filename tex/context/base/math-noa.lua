@@ -715,6 +715,11 @@ end
 -- = we check for correction first because accessing nodes is slower
 -- = the actual glyph is not that important (we can control it with numbers)
 
+-- Italic correction in luatex math is a mess. There are all kind of assumptions based on
+-- old fonts and new font. Eventually there should be a flag that can signal to ignore all
+-- those heuristics. We want to deal with it ourselves also in the perspective of mxed math
+-- and text.
+
 local a_mathitalics = privateattribute("mathitalics")
 
 local italics        = { }
@@ -798,7 +803,7 @@ local function insert_kern(current,kern)
     return sub
 end
 
-registertracker("math.italics", function(v)
+registertracker("math.italics.visualize", function(v)
     if v then
         italic_kern = function(k,font)
             local ex = 1.5 * fontexheights[font]
@@ -843,12 +848,14 @@ italics[math_char] = function(pointer,what,n,parent)
                             report_italics("method %a, adding %p italic correction for lower limit of %C",method,correction,char)
                         end
                     end
-                else
-                    if sup then
+                elseif sup then
+                    if pointer ~= sub then
                         setfield(parent,"sup",insert_kern(sup,italic_kern(correction,font)))
                         if trace_italics then
                             report_italics("method %a, adding %p italic correction before superscript after %C",method,correction,char)
                         end
+                    else
+                        -- otherwise we inject twice
                     end
                 end
             else

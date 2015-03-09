@@ -60,6 +60,8 @@ local mpnamedcolor = attributes.colors.mpnamedcolor
 local topoints     = number.topoints
 local todimen      = string.todimen
 
+local trialtypesetting = context.trialtypesetting
+
 chemistry = chemistry or { }
 local chemistry = chemistry
 
@@ -422,7 +424,11 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                 insert(sstack,variant)
                 m = m + 1 ; metacode[m] = syntax.save.direct
             elseif operation == "restore" then
-                variant = remove(sstack)
+                if #sstack > 0 then
+                    variant = remove(sstack)
+                else
+                    report_chemistry("restore without save")
+                end
                 local ss = syntax[variant]
                 keys, max = ss.keys, ss.max
                 m = m + 1 ; metacode[m] = syntax.restore.direct
@@ -721,7 +727,7 @@ function chemistry.start(settings)
     width,  left,   right, sp_width  = calculated(width, left,  right,bondlength,unit,scale)
     height, bottom, top,   sp_height = calculated(height,bottom,top,  bondlength,unit,scale)
     --
-    if width ~= "true" and height ~= "true" and texgetcount("@@trialtypesetting") ~= 0 then
+    if width ~= "true" and height ~= "true" and trialtypesetting() then
         if trace_structure then
             report_chemistry("skipping trial run")
         end

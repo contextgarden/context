@@ -6558,7 +6558,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 21550, stripped down to: 14916
+-- original size: 21610, stripped down to: 14974
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -6813,7 +6813,7 @@ function parsers.simple_hash_to_string(h,separator)
   end
   return concat(t,separator or ",")
 end
-local str=C((1-whitespace-equal)^1)
+local str=Cs(lpegpatterns.unquoted)+C((1-whitespace-equal)^1)
 local setting=Cf(Carg(1)*(whitespace^0*Cg(str*whitespace^0*(equal*whitespace^0*str+Cc(""))))^1,rawset)
 local splitter=setting^1
 function utilities.parsers.options_to_hash(str,target)
@@ -6940,7 +6940,7 @@ function parsers.rfc4180splitter(specification)
   local field=escaped+non_escaped+Cc("")
   local record=Ct(field*(separator*field)^1)
   local headerline=record*Cp()
-  local wholeblob=Ct((newline^-1*record)^0)
+  local wholeblob=Ct((newline^(specification.strict and -1 or 1)*record)^0)
   return function(data,getheader)
     if getheader then
       local header,position=lpegmatch(headerline,data)
@@ -9478,7 +9478,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 43805, stripped down to: 26812
+-- original size: 43882, stripped down to: 26870
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -10115,14 +10115,17 @@ function xml.checkbom(root)
     insert(dt,2,"\n" )
   end
 end
-local function verbose_element(e,handlers) 
+local f_attribute=formatters['%s=%q']
+local function verbose_element(e,handlers,escape) 
   local handle=handlers.handle
   local serialize=handlers.serialize
   local ens,etg,eat,edt,ern=e.ns,e.tg,e.at,e.dt,e.rn
   local ats=eat and next(eat) and {}
   if ats then
+    local n=0
     for k,v in next,eat do
-      ats[#ats+1]=formatters['%s=%q'](k,escaped(v))
+      n=n+1
+      ats[n]=f_attribute(k,escaped(v))
     end
   end
   if ern and trace_entities and ern~=ens then
@@ -16666,7 +16669,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tre"] = package.loaded["data-tre"] or true
 
--- original size: 7987, stripped down to: 5309
+-- original size: 8479, stripped down to: 5580
 
 if not modules then modules={} end modules ['data-tre']={
   version=1.001,
@@ -16711,6 +16714,18 @@ function resolvers.finders.tree(specification)
           return fullname
         end
       end
+      local pattern=lower(pattern)
+      for i=1,#names do
+        local fullname=lower(names[i])
+        if find(fullname,pattern) then
+          if isfile(fullname) then
+            found[spec]=fullname
+            return fullname
+          else
+            break
+          end
+        end
+      end
     end
     okay=notfound() 
     found[spec]=okay
@@ -16731,9 +16746,7 @@ function resolvers.locators.tree(specification)
 end
 function resolvers.hashers.tree(specification)
   local name=specification.filename
-  if trace_locating then
-    report_trees("analysing %a",name)
-  end
+    report_trees("analyzing %a",name)
   resolvers.methodhandler("hashers",name)
   resolvers.generators.file(specification)
 end
@@ -17761,8 +17774,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 744704
--- stripped bytes    : 272130
+-- original bytes    : 745333
+-- stripped bytes    : 272372
 
 -- end library merge
 
@@ -17988,6 +18001,7 @@ local helpinfo = [[
   <category name="basic">
    <subcategory>
     <flag name="script"><short>run an mtx script (lua prefered method) (<ref name="noquotes"/>), no script gives list</short></flag>
+    <flag name="evaluate"><short>run code passed on the commandline (between quotes)</short></flag>
     <flag name="execute"><short>run a script or program (texmfstart method) (<ref name="noquotes"/>)</short></flag>
     <flag name="resolve"><short>resolve prefixed arguments</short></flag>
     <flag name="ctxlua"><short>run internally (using preloaded libs)</short></flag>
@@ -18643,6 +18657,39 @@ function runners.associate(filename)
     os.launch(filename)
 end
 
+function runners.evaluate(code,filename) -- for Luigi
+    if code == "loop" then
+        while true do
+            io.write("> ")
+            local code = io.read()
+            if code ~= "" then
+                local temp = string.match(code,"^= (.*)$")
+                if temp then
+                    code = "print("..temp..")"
+                end
+                local compiled, message = loadstring(code)
+                if type(compiled) ~= "function" then
+                    io.write("! " .. (message or code).."\n")
+                else
+                    io.write(compiled())
+                end
+            end
+        end
+    else
+        if type(code) ~= "string" or code == "" then
+            code = filename
+        end
+        if code ~= "" then
+            local compiled, message = loadstring(code)
+            if type(compiled) ~= "function" then
+                io.write("invalid lua code: " .. (message or code))
+                return
+            end
+            io.write(compiled())
+        end
+    end
+end
+
 function runners.gethelp(filename)
     local url = environment.argument("url")
     if url and url ~= "" then
@@ -18802,6 +18849,10 @@ if e_argument("script") or e_argument("scripts") then
     else
         ok = runners.execute_ctx_script(filename)
     end
+
+elseif e_argument("evaluate") then
+
+    runners.evaluate(e_argument("evaluate"),filename)
 
 elseif e_argument("selfmerge") then
 

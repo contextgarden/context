@@ -983,22 +983,18 @@ function registers.flush(data,options,prefixspec,pagespec)
         local data = sublist.data
         local d, n = 0, 0
         ctx_startregistersection(sublist.tag)
-
--- -- no: we lost the see word
---
---         for d=1,#data do
---             local entry = data[d]
---             if entry.metadata.kind == "see" then
---                 local list = entry.list
---                 if #list > 1 then
---                     list[#list] = nil
---                 else
---                     -- we have an \seeindex{Foo}{Bar} without Foo being defined anywhere
---                     report_registers("invalid see entry in register %a, reference %a",entry.metadata.name,list[1][1])
---                 end
---             end
---         end
-
+        for d=1,#data do
+            local entry = data[d]
+            if entry.metadata.kind == "see" then
+                local list = entry.list
+                if #list > 1 then
+                    list[#list] = nil
+                else
+                    -- we have an \seeindex{Foo}{Bar} without Foo being defined anywhere
+                    report_registers("invalid see entry in register %a, reference %a",entry.metadata.name,list[1][1])
+                end
+            end
+        end
         -- ok, this is tricky: we use e[i] delayed so we need it to be local
         -- but we don't want to allocate too many entries so there we go
         while d < #data do

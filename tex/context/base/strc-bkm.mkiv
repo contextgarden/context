@@ -74,7 +74,11 @@
 \def\strc_bookmarks_bookmark_yes[#1]#2%
   {\begingroup
    \simplifycommands
-   \ctxcommand{overloadbookmark("#1",\!!bs\detokenize\expandafter{\normalexpanded{#2}}\!!es)}%
+   \ifnum\thenamedheadlevel{#1}>\zerocount
+     \ctxcommand{overloadbookmark("#1",\!!bs\detokenize\expandafter{\normalexpanded{#2}}\!!es)}%
+   \else
+     \strc_lists_write_to[#1][]{#2}{}% todo: a dedicated bookmark writer
+   \fi
    \endgroup}
 
 \def\strc_bookmarks_bookmark_nop[#1]#2%

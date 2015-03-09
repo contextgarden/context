@@ -19,6 +19,10 @@ local lpegmatch = lpeg.match
 local jobpositions = job.positions
 local formatters   = string.formatters
 
+local scanstring   = tokens.scanstring
+local scannumber   = tokens.scannumber
+local scandimen    = tokens.scandimen
+
 local report_graphics = logs.reporter("graphics")
 
 local f_b_tag   = formatters["b:%s"]
@@ -552,7 +556,7 @@ f_template_b = formatters[f_template_b]
 f_template_c = formatters[f_template_c]
 f_template_d = formatters[f_template_d]
 
-function backgrounds.fetchmultipar(n,anchor,page,obeyhang)
+local function fetchmultipar(n,anchor,page,obeyhang)
     local data = pbg[n]
     if not data then
         data = calculatemultipar(n,obeyhang)
@@ -596,16 +600,18 @@ function backgrounds.fetchmultipar(n,anchor,page,obeyhang)
     return f_template_a(0,"origin",0,0,0)
 end
 
+backgrounds.fetchmultipar = fetchmultipar
+
 backgrounds.point = f_point
 backgrounds.pair  = f_pair
 backgrounds.path  = f_path
 
 function commands.fetchmultipar(n,anchor,page)
-    context(backgrounds.fetchmultipar(n,anchor,page))
+    context(fetchmultipar(n,anchor,page))
 end
 
 function commands.fetchmultishape(n,anchor,page)
-    context(backgrounds.fetchmultipar(n,anchor,page,true))
+    context(fetchmultipar(n,anchor,page,true))
 end
 
 local f_template_a = [[

@@ -314,7 +314,6 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 -- see dimensions: this is tricky with split off boxes like inserts
                 -- where we can end up with a first and last spanning lines
 
-
                 local r = getattr(current,attribute)
                 -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
                 -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]

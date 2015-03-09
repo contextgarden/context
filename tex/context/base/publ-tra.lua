@@ -19,22 +19,32 @@ local concat            = table.concat
 local context           = context
 local commands          = commands
 
+local v_default         = interfaces.variables.default
+
 local publications      = publications
 local tracers           = publications.tracers
 local tables            = publications.tables
 local datasets          = publications.datasets
 local specifications    = publications.specifications
+local citevariants      = publications.citevariants
 
 local getfield          = publications.getfield
 local getcasted         = publications.getcasted
 
 local ctx_NC, ctx_NR, ctx_HL, ctx_FL, ctx_ML, ctx_LL, ctx_EQ = context.NC, context.NR, context.HL, context.FL, context.ML, context.LL, context.EQ
-local ctx_bold, ctx_monobold, ctx_rotate, ctx_llap, ctx_rlap = context.bold, context.formatted.monobold, context.rotate, context.llap, context.rlap
 
 local ctx_starttabulate = context.starttabulate
 local ctx_stoptabulate  = context.stoptabulate
 
-local ctx_verbatim      = context.verbatim
+local ctx_formatted     = context.formatted
+local ctx_bold          = ctx_formatted.monobold
+local ctx_monobold      = ctx_formatted.monobold
+local ctx_verbatim      = ctx_formatted.verbatim
+
+local ctx_rotate        = context.rotate
+local ctx_llap          = context.llap
+local ctx_rlap          = context.rlap
+local ctx_page          = context.page
 
 local privates = tables.privates
 local specials = tables.specials
@@ -313,7 +323,11 @@ function tracers.showtables(settings)
             ctx_NC()
             context(k)
             ctx_NC()
-            context(tostring(v))
+            if type(v) == "table" then
+                context("% t",v)
+            else
+                context(tostring(v))
+            end
             ctx_NC()
             ctx_NR()
         end
@@ -329,8 +343,8 @@ function tracers.showdatasetauthors(settings)
 
     local sortkey = publications.writers.author
 
-    if not dataset or dataset == "" then dataset = "standard" end
-    if not field   or field   == "" then field   = "author"   end
+    if not dataset or dataset == "" then dataset = v_default end
+    if not field   or field   == "" then field   = "author"  end
 
     local function row(i,k,v)
         ctx_NC()
@@ -374,36 +388,43 @@ function tracers.showdatasetauthors(settings)
 
     local d = datasets[dataset].luadata
 
+    local trialtypesetting = context.trialtypesetting()
+
     for tag, entry in sortedhash(d) do
 
-        local a = getcasted(dataset,tag,field)
+        local a, f, k = getcasted(dataset,tag,field)
 
-        if a then
+        if type(a) == "table" and #a > 0 and k == "author" then
             context.start()
             context.tt()
-            context.starttabulate { "|B|Bl|p|" }
+            ctx_starttabulate { "|B|Bl|p|" }
                 ctx_FL()
+                local original = getfield(dataset,tag,field)
                 commonrow("tag",tag)
                 commonrow("field",field)
-                commonrow("content",getfield(dataset,tag,field))
+                commonrow("original",original)
                 commonrow("sortkey",sortkey(a))
                 for i=1,#a do
                     ctx_ML()
                     local ai = a[i]
-                    authorrow(ai,"original",i)
-                    authorrow(ai,"snippets")
-                    authorrow(ai,"initials")
-                    authorrow(ai,"firstnames")
-                    authorrow(ai,"vons")
-                    authorrow(ai,"surnames")
-                    authorrow(ai,"juniors")
-                    local options = ai.options
-                    if options then
-                        row(false,"options",sortedkeys(options))
+                    if ai then
+                        authorrow(ai,"original",i)
+                        authorrow(ai,"snippets")
+                        authorrow(ai,"initials")
+                        authorrow(ai,"firstnames")
+                        authorrow(ai,"vons")
+                        authorrow(ai,"surnames")
+                        authorrow(ai,"juniors")
+                        local options = ai.options
+                        if options then
+                            row(false,"options",sortedkeys(options))
+                        end
+                    elseif not trialtypesetting then
+                        report("bad author name: %s",original or "?")
                     end
                 end
                 ctx_LL()
-            context.stoptabulate()
+            ctx_stoptabulate()
             context.stop()
         end
 
@@ -411,8 +432,49 @@ function tracers.showdatasetauthors(settings)
 
 end
 
+function tracers.showentry(dataset,tag)
+    local dataset = datasets[dataset]
+    if dataset then
+        local entry = dataset.luadata[tag]
+        local done  = false
+        for k, v in sortedhash(entry) do
+            if not privates[k] then
+                ctx_verbatim("%w[%s: %s]",done and 1 or 0,k,v)
+                done = true
+            end
+        end
+    end
+end
+
+local skipped = { index = true, default = true }
+
+function tracers.showvariants(dataset,pages)
+    local variants = sortedkeys(citevariants)
+    for tag in publications.sortedentries(dataset or v_default) do
+        if pages then
+            ctx_page()
+        end
+        ctx_starttabulate { "|T||" }
+        for i=1,#variants do
+            local variant = variants[i]
+            if not skipped[variant] then
+                ctx_NC() context(variant)
+             -- ctx_EQ() citevariants[variant] { dataset = v_default, reference = tag, variant = variant }
+                ctx_EQ() context.cite({variant},{dataset .. "::" .. tag})
+                ctx_NC() ctx_NR()
+            end
+        end
+        ctx_stoptabulate()
+        if pages then
+            ctx_page()
+        end
+    end
+end
+
 commands.showbtxdatasetfields       = tracers.showdatasetfields
 commands.showbtxdatasetcompleteness = tracers.showdatasetcompleteness
 commands.showbtxfields              = tracers.showfields
 commands.showbtxtables              = tracers.showtables
 commands.showbtxdatasetauthors      = tracers.showdatasetauthors
+commands.showbtxentry               = tracers.showentry
+commands.showbtxvariants            = tracers.showvariants

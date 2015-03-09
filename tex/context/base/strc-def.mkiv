@@ -32,6 +32,7 @@
 \defineresetset      [\s!default] [] [1] % each level
 \defineprefixset     [\s!default] [section-1,section-2,section-3] []
 
+\defineconversionset [\v!number]     [] [numbers]
 \defineconversionset [\v!pagenumber] [] [numbers]
 
 \defineprefixset     [\v!all]  [section-1,section-2,section-3,section-4,section-5,section-6,section-7,section-8] []
@@ -46,6 +47,9 @@
 
 \setupuserpagenumber
   [\c!numberconversionset=\v!pagenumber]
+
+\setupcounters
+  [\c!numberconversionset=\v!number]
 
 % \startsetups defaults:frontpart:pagenumbers:roman
 %     \defineconversionset[\c!frontpart:\c!pagenumber][][romannumerals]

@@ -23,7 +23,7 @@ local writers      = publications.writers
 
 local variables    = interfaces.variables
 local v_short      = variables.short
-local v_default    = variables.reference
+local v_default    = variables.default
 local v_reference  = variables.reference
 local v_dataset    = variables.dataset
 
@@ -238,9 +238,10 @@ local sorters = {
     end,
     [v_dataset] = function(dataset,rendering,list)
         local function compare(a,b)
-            local aa, bb = a and a[1], b and b[1]
+-- inspect(a,b)
+            local aa, bb = a and a[6], b and b[6]
             if aa and bb then
-                aa, bb = list[aa].index or 0, list[bb].index or 0
+             -- aa, bb = list[aa].index or 0, list[bb].index or 0
                 return aa and bb and aa < bb
             end
             return false

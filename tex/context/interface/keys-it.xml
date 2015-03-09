@@ -844,7 +844,7 @@
 		<cd:constant name='middletext' value='testocentro'/>
 		<cd:constant name='midsentence' value='midsentence'/>
 		<cd:constant name='min' value='min'/>
-		<cd:constant name='mindepth' value='mindeoth'/>
+		<cd:constant name='mindepth' value='mindepth'/>
 		<cd:constant name='minheight' value='altezzamin'/>
 		<cd:constant name='minwidth' value='ampiezzamin'/>
 		<cd:constant name='moffset' value='moffset'/>

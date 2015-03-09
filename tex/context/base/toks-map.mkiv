@@ -1,0 +1,63 @@
+%D \module
+%D   [       file=toks-map, % experimental moved from toks-ini
+%D        version=2007.03.03,
+%D          title=\CONTEXT\ Token Support,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \writestatus{loading}{ConTeXt Token Support / Remapping}
+%
+% \registerctxluafile{toks-map}{1.001}
+%
+% \unprotect
+%
+% %D Inspired by a prototype by Taco for Thomas cum suis.
+% %D
+% %D \starttyping
+% %D \defineremapper[babelgreek]
+% %D
+% %D \remapcharacter[babelgreek][`a]{\alpha}
+% %D \remapcharacter[babelgreek][`b]{\beta}
+% %D \remapcharacter[babelgreek][`c]{\gamma}
+% %D \remapcharacter[babelgreek][`d]{OEPS}
+% %D
+% %D \starttext
+% %D
+% %D [\startbabelgreek
+% %D a b c some stuff here \blank[big] oeps b d
+% %D \stopbabelgreek]
+% %D
+% %D [\babelgreek{some stuff here}]
+% %D
+% %D \stoptext
+% %D \stoptyping
+%
+% \unexpanded\def\defineremapper[#1]%
+%   {\setuevalue{\e!start#1}{\toks_start_remapper{#1}}%
+%    \setuevalue{\e!stop #1}{\toks_stop_remapper {#1}}%
+%    \letvalue{#1}\relax
+%    \normalexpanded{\expandafter\def\csname#1\endcsname##1{\csname\e!start#1\endcsname##1\csname\e!stop#1\endcsname}}}
+%
+% \unexpanded\def\toks_start_remapper#1%
+%   {\ctxlua{tokens.collectors.install("#1", "\e!stop#1")}}
+%
+% \unexpanded\def\toks_stop_remapper#1%
+%   {\ctxlua{tokens.collectors.handle("#1",function(str) return tokens.collectors.remapper.convert("#1",str) end, true)}}
+%
+% \unexpanded\def\remaptokens#1%
+%   {\ctxlua{tokens.collectors.handle("#1",function(str) return tokens.collectors.remapper.convert("#1",str) end)}}
+%
+% \unexpanded\def\remapcharacter
+%   {\dodoubleempty\toks_remap_character}
+%
+% \def\toks_remap_character[#1][#2]#3%
+%   {\ctxlua{tokens.collectors.install("store", "ctxlua")}#3%
+%    \ctxlua{tokens.collectors.remapper.store("store","#1",\number#2)}}
+%
+% \protect \endinput

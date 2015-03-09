@@ -945,6 +945,7 @@ if not characters.lhash then
      -- if k < 0x11000 then
             local l = v.lccode
             if l then
+                -- we have an uppercase
                 if type(l) == "number" then
                     lhash[utfchar(k)] = utfchar(l)
                 elseif #l == 2 then
@@ -955,6 +956,7 @@ if not characters.lhash then
             else
                 local u = v.uccode
                 if u then
+                    -- we have an lowercase
                     if type(u) == "number" then
                         uhash[utfchar(k)] = utfchar(u)
                     elseif #u == 2 then
@@ -979,8 +981,8 @@ if not characters.lhash then
 
     if storage then
         storage.register("characters/lhash", lhash, "characters.lhash")
-        storage.register("characters/uhash", lhash, "characters.uhash")
-        storage.register("characters/shash", lhash, "characters.shash")
+        storage.register("characters/uhash", uhash, "characters.uhash")
+        storage.register("characters/shash", shash, "characters.shash")
     end
 
 end

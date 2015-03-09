@@ -1,0 +1,31 @@
+%D \module
+%D   [       file=toks-tra, % was toks-ini
+%D        version=2007.03.03,
+%D          title=\CONTEXT\ Token Support,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Token Support / Tracing}
+
+\registerctxluafile{toks-tra}{1.001}
+
+\unprotect
+
+%D Handy for manuals \unknown\ but not really used in practice, so it might
+%D become a runtime loaded module instead.
+
+\unexpanded\def\starttokens  [#1]{\ctxcommand{collecttokens("#1","stoptokens")}}
+           \let\stoptokens        \relax
+           \def\flushtokens  [#1]{\ctxcommand{flushtokens("#1")}}
+           \def\showtokens   [#1]{\ctxcommand{showtokens("#1")}}
+           \def\testtokens   [#1]{\ctxcommand{testtokens("#1")}}
+           \def\registertoken  #1{\ctxcommand{registertoken("#1")}}
+
+
+\protect \endinput

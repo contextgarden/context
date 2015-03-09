@@ -229,6 +229,8 @@ function commands.flow_start_cell(settings)
         settings    = settings,
         x           = 1,
         y           = 1,
+        realx       = 1,
+        realy       = 1,
         name        = "",
     }
 end
@@ -325,9 +327,13 @@ local function inject(includedata,data,hash)
         if si.include then
             inject(si,data,hash)
         else
+            local x = si.x + xoffset
+            local y = si.y + yoffset
             local t = {
-                x        = si.x + xoffset,
-                y        = si.y + yoffset,
+                x        = x,
+                y        = y,
+                realx    = x,
+                realy    = y,
                 settings = settings,
             }
             setmetatableindex(t,si)
@@ -451,10 +457,12 @@ function commands.flow_set_location(x,y)
     else
         y = tonumber(y)
     end
-    temp.x = x or 1
-    temp.y = y or 1
-    last_x = x or last_x
-    last_y = y or last_y
+    temp.x     = x or 1
+    temp.y     = y or 1
+    temp.realx = x or 1
+    temp.realy = y or 1
+    last_x     = x or last_x
+    last_y     = y or last_y
 end
 
 function commands.flow_set_connection(location,displacement,name)
@@ -686,6 +694,7 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
         print("no such chart",chartname)
         return
     end
+-- chart = table.copy(chart)
     chart = expanded(chart,settings)
     local chartsettings = chart.settings.chart
     local autofocus = chart.settings.chart.autofocus
@@ -746,8 +755,8 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
     -- relocate cells
     for i=1,#data do
         local cell = data[i]
-        cell.x = cell.x - minx + 1
-        cell.y = cell.y - miny + 1
+        cell.x = cell.realx - minx + 1
+        cell.y = cell.realy - miny + 1
     end
     chart.from_x = 1
     chart.from_y = 1
@@ -756,7 +765,9 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
     chart.nx     = nx
     chart.ny     = ny
     --
- -- inspect(chart)
+    chart.shift_x = minx + 1
+    chart.shift_y = miny + 1
+    --
     return chart
 end
 
@@ -854,7 +865,7 @@ local function splitchart(chart)
     local delta_x = splitsettings.dx or 0
     local delta_y = splitsettings.dy or 0
     --
-    report_chart("spliting %a from (%s,%s) upto (%s,%s) into (%s,%s) with overlap (%s,%s)",
+    report_chart("spliting %a from (%s,%s) upto (%s,%s) with steps (%s,%s) and overlap (%s,%s)",
         name,from_x,from_y,to_x,to_y,step_x,step_y,delta_x,delta_y)
     --
     local part_x = 0
@@ -866,6 +877,9 @@ local function splitchart(chart)
         if done then
             last_x = to_x
         end
+-- if first_x >= to_x then
+--     break
+-- end
         local part_y = 0
         local first_y = from_y
         while true do
@@ -875,14 +889,31 @@ local function splitchart(chart)
             if done then
                 last_y = to_y
             end
+-- if first_y >= to_y then
+--     break
+-- end
             --
+local data = chart.data
+for i=1,#data do
+    local cell = data[i]
+--     inspect(cell)
+    local cx, cy = cell.x, cell.y
+    if cx >= first_x and cx <= last_x then
+        if cy >= first_y and cy <= last_y then
             report_chart("part (%s,%s) of %a is split from (%s,%s) -> (%s,%s)",part_x,part_y,name,first_x,first_y,last_x,last_y)
-            local x, y, nx, ny = first_x, first_y, last_x - first_x + 1,last_y - first_y + 1
+            local x  = first_x
+            local y  = first_y
+            local nx = last_x - first_x + 1
+            local ny = last_y - first_y + 1
             context.beforeFLOWsplit()
             context.handleFLOWsplit(function()
                 makechart(getchart(settings,x,y,nx,ny)) -- we need to pass frozen settings !
             end)
             context.afterFLOWsplit()
+            break
+        end
+    end
+end
             --
             if done then
                 break

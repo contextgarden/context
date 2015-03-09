@@ -199,7 +199,7 @@
 
 \installcorenamespace{mathstylealternate} % might become a setuphandler
 
-\unexpanded\def\math_set_font_style_alterternate#1%
+\unexpanded\def\math_set_font_style_alternate#1%
   {\ifcsname\??mathstylealternate\fontclass:#1\endcsname
      \expandafter\math_set_font_alternate\csname\??mathstylealternate\fontclass:#1\endcsname
    \else\ifcsname\??mathstylealternate#1\endcsname
@@ -222,27 +222,27 @@
 \let\setmathalphabet             \math_set_alphabet
 \let\setmathfontstyle            \math_set_font_style
 \let\setmathfontalternate        \math_set_font_alternate
-\let\setmathfontstylealterternate\math_set_font_style_alterternate
+\let\setmathfontstylealternate\math_set_font_style_alternate
 
 \let\mathalternate               \math_set_font_alternate % obsolete
 
-\unexpanded\def\mathupright   {\math_set_attribute\s!regular\s!tf\math_set_font_style_alterternate\s!tf}
-\unexpanded\def\mathdefault   {\math_set_attribute\s!regular\s!it\math_set_font_style_alterternate\s!it}
-\unexpanded\def\mathscript    {\math_set_alphabet \s!script      \math_set_font_style_alterternate\s!script}
-\unexpanded\def\mathfraktur   {\math_set_alphabet \s!fraktur     \math_set_font_style_alterternate\s!fraktur}
-\unexpanded\def\mathblackboard{\math_set_alphabet \s!blackboard  \math_set_font_style_alterternate\s!blackboard}
+\unexpanded\def\mathupright   {\math_set_attribute\s!regular\s!tf\math_set_font_style_alternate\s!tf}
+\unexpanded\def\mathdefault   {\math_set_attribute\s!regular\s!it\math_set_font_style_alternate\s!it}
+\unexpanded\def\mathscript    {\math_set_alphabet \s!script      \math_set_font_style_alternate\s!script}
+\unexpanded\def\mathfraktur   {\math_set_alphabet \s!fraktur     \math_set_font_style_alternate\s!fraktur}
+\unexpanded\def\mathblackboard{\math_set_alphabet \s!blackboard  \math_set_font_style_alternate\s!blackboard}
 
-\unexpanded\def\mathrm        {\math_set_attribute\s!rm\s!tf     \math_set_font_style_alterternate\s!tf}
-\unexpanded\def\mathss        {\math_set_attribute\s!ss\s!tf     \math_set_font_style_alterternate\s!tf}
-\unexpanded\def\mathtt        {\math_set_attribute\s!tt\s!tf     \math_set_font_style_alterternate\s!tf}
+\unexpanded\def\mathrm        {\math_set_attribute\s!rm\s!tf     \math_set_font_style_alternate\s!tf}
+\unexpanded\def\mathss        {\math_set_attribute\s!ss\s!tf     \math_set_font_style_alternate\s!tf}
+\unexpanded\def\mathtt        {\math_set_attribute\s!tt\s!tf     \math_set_font_style_alternate\s!tf}
 
-\unexpanded\def\mathtf        {\math_set_font_style\s!tf         \math_set_font_style_alterternate\s!tf}
-\unexpanded\def\mathsl        {\math_set_font_style\s!it         \math_set_font_style_alterternate\s!it} % no sl
-\unexpanded\def\mathit        {\math_set_font_style\s!it         \math_set_font_style_alterternate\s!it}
+\unexpanded\def\mathtf        {\math_set_font_style\s!tf         \math_set_font_style_alternate\s!tf}
+\unexpanded\def\mathsl        {\math_set_font_style\s!it         \math_set_font_style_alternate\s!it} % no sl
+\unexpanded\def\mathit        {\math_set_font_style\s!it         \math_set_font_style_alternate\s!it}
 
-\unexpanded\def\mathbf        {\math_set_font_style\s!bf         \math_set_font_style_alterternate\s!bf}
-\unexpanded\def\mathbs        {\math_set_font_style\s!bi         \math_set_font_style_alterternate\s!bi} % no sl
-\unexpanded\def\mathbi        {\math_set_font_style\s!bi         \math_set_font_style_alterternate\s!bi}
+\unexpanded\def\mathbf        {\math_set_font_style\s!bf         \math_set_font_style_alternate\s!bf}
+\unexpanded\def\mathbs        {\math_set_font_style\s!bi         \math_set_font_style_alternate\s!bi} % no sl
+\unexpanded\def\mathbi        {\math_set_font_style\s!bi         \math_set_font_style_alternate\s!bi}
 
 \let\tfmath\mathtf % maybe a grouped command
 \let\slmath\mathsl
@@ -280,9 +280,9 @@
 \ifdefined\mb \else \let\mb\relax \fi
 
 % 1: $\setmathattribute{ss}{bf}3$
-% 2: $\setmathattribute{ss}{bf}\setmathfontstylealterternate{bf}3$
+% 2: $\setmathattribute{ss}{bf}\setmathfontstylealternate{bf}3$
 % 3: $\setmathattribute{ss}{bf}\setmathfontstyle{bf}3$
-% 4: $\setmathattribute{ss}{bf}\setmathfontstyle{bf}\setmathfontstylealterternate{bf}3$
+% 4: $\setmathattribute{ss}{bf}\setmathfontstyle{bf}\setmathfontstylealternate{bf}3$
 % 5: $e=mc^2 \quad \mb e=mc^2$
 
 \prependtoks

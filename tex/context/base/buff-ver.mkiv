@@ -332,8 +332,9 @@
      tab     = "\typeparameter\c!tab",
      method  = "\typeparameter\c!option",
      nature  = "inline",
-     compact = "\typeparameter\c!compact", % none | all | last (all needed in tabulate etc for manuals)
-    }}%
+     compact = "\typeparameter\c!compact",        % none | all | last (all needed in tabulate etc for manuals)
+     escape  = \!!bs\typeparameter\c!escape\!!es, % new but rather useless imo (escaping in general is not used much)
+   }}%
    \dostoptagged
    \buff_verbatim_right_of_type
    \egroup}

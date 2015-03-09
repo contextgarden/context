@@ -291,15 +291,15 @@
 		<cd:variable name='mathematics' value='wiskunde'/>
 		<cd:variable name='mathmatrix' value='wiskundematrix'/>
 		<cd:variable name='max' value='max'/>
-		<cd:variable name='maxdepth' value='maxdepth'/>
-		<cd:variable name='maxheight' value='maxheight'/>
-		<cd:variable name='maxwidth' value='maxwidth'/>
+		<cd:variable name='maxdepth' value='maxdiepte'/>
+		<cd:variable name='maxheight' value='maxhoogte'/>
+		<cd:variable name='maxwidth' value='maxbreedte'/>
 		<cd:variable name='may' value='mei'/>
 		<cd:variable name='mediaeval' value='mediaeval'/>
 		<cd:variable name='medium' value='middel'/>
 		<cd:variable name='middle' value='midden'/>
 		<cd:variable name='min' value='min'/>
-		<cd:variable name='mindepth' value='mindepth'/>
+		<cd:variable name='mindepth' value='mindiepte'/>
 		<cd:variable name='minheight' value='minhoogte'/>
 		<cd:variable name='minwidth' value='minbreedte'/>
 		<cd:variable name='mirrored' value='gespiegeld'/>

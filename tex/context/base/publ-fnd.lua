@@ -19,12 +19,15 @@ local publications = publications
 
 local tonumber, next, type = tonumber, next, type
 local find = string.find
-local P, R, C, Cs, Cp, Cc, Carg = lpeg.P, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc, lpeg.Carg
+local P, R, S, C, Cs, Cp, Cc, Carg, V = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc, lpeg.Carg, lpeg.V
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local concat = table.concat
 
 local formatters = string.formatters
 local lowercase  = characters.lower
+local topattern  = string.topattern
+
+publications = publications or { } -- for testing
 
 local report     = logs.reporter("publications","match")
 
@@ -42,68 +45,182 @@ local word     = Cs(lpegpatterns.unquoted + lpegpatterns.argument + valid^1)
 local simple   = C(valid^1)
 local number   = C(valid^1)
 
------ f_string_key = formatters["  local s_%s = entry[%q]"]
-local f_string_key = formatters["  local s_%s = entry[%q] if s_%s then s_%s = lower(s_%s) end "]
-local f_number_key = formatters["  local n_%s = tonumber(entry[%q]) or 0"]
-local f_field_key  = formatters["  local f_%s = entry[%q] or ''"]
+----- f_string_key = formatters["  local s_%s = entry[%q] if s_%s then s_%s = lower(s_%s) end "]
+----- f_number_key = formatters["  local n_%s = tonumber(entry[%q]) or 0"]
+----- f_field_key  = formatters["  local f_%s = entry[%q] or ''"]
 
------ f_string_match = formatters["(s_%s and find(lower(s_%s),%q))"]
-local f_string_match = formatters["(s_%s and find(s_%s,%q))"]
-local f_number_match = formatters["(n_%s and n_%s >= %s and n_%s <= %s)"]
-local f_field_match  = formatters["f_%s"]
+-- getfuzzy(entry,%q,categories)
 
-local f_all_match = formatters["anywhere(entry,%q)"]
+-- local f_string_key    = formatters["  local s_%s = get(entry,%q)\n  if s_%s then s_%s = lower(s_%s) end"]
+-- local f_field_key     = formatters["  local f_%s = get(entry,%q) or ''"]
+-- local f_field_key_c   = formatters["  local c_%s = get(entry,%q,categories) or ''"]
+-- local f_number_key    = formatters["  local n_%s = tonumber(get(entry,%q)) or 0"]
+--
+-- local f_string_match  = formatters["(s_%s and find(s_%s,%q))"]
+-- local f_number_match  = formatters["(n_%s and n_%s >= %s and n_%s <= %s)"]
+-- local f_field_match   = formatters["f_%s"]
+-- local f_field_match_c = formatters["c_%s"]
+--
+-- local f_all_match     = formatters["anywhere(entry,%q)"]
 
-local match  = ( (key + wildcard) * (colon/"") ) * word * Carg(1) / function(key,_,word,keys)
-    if key == "*" or key == "any" then
-        keys.anywhere = true
-        return f_all_match(lowercase(word))
+-- topattern(lowercase(word)) : utflowercase + only *?
+
+-- local match = ( (key + wildcard) * (colon/"") ) * word * Carg(1) / function(key,_,word,keys)
+--     if key == "*" or key == "any" then
+--         keys.anywhere = true
+--         if word == "" or word == "*" then
+--             return "true"
+--         else
+--             return f_all_match(topattern(lowercase(word)))
+--         end
+--     else
+--         keys[key] = f_string_key(key,key,key,key,key)
+--         return f_string_match(key,key,topattern(lowercase(word)))
+--     end
+-- end
+--
+-- local default = simple * Carg(1) / function(word,keys)
+--     keys.anywhere = true
+--     if word == "" or word == "*" then
+--         return "true"
+--     else
+--         return f_all_match(topattern(lowercase(word)))
+--     end
+-- end
+--
+-- local range  = key * (colon/"") * number * (dash/"") * number * Carg(1) / function(key,_,first,_,last,keys)
+--     keys[key] = f_number_key(key,key)
+--     return f_number_match(key,key,tonumber(first) or 0,key,tonumber(last) or 0)
+-- end
+--
+-- local field  = (P("field:")/"") * key * Carg(1) / function(_,key,keys)
+--     keys[key] = f_field_key(key,key)
+--     return f_field_match(key)
+-- end
+--
+-- local cast  = (P("cast:")/"") * key * Carg(1) / function(_,key,keys)
+--     keys[key] = f_field_key_c(key,key)
+--     return f_field_match_c(key)
+-- end
+--
+-- local compare = C("==") + P("=")/"==" + P("!=")/"~=" + P("<>")/"~="
+--
+-- local b_match = lparent
+-- local e_match = rparent * space^0 * (#P(-1) + P(",")/" or ") -- maybe also + -> and
+-- local f_match = ((field + cast + range + match + space + compare + P(1))-e_match)^1
+-- local p_match = b_match * default * e_match
+--               + b_match * f_match * e_match
+--
+-- local pattern = Cs(Cc("(") * (P("match")/"" * space^0 * p_match)^1 * Cc(")"))
+
+-- field contains   fieldname:nonspaces|"whatever"|'whatever'|{whatever}
+-- field exact      fieldname=nonspaces|"whatever"|'whatever'|{whatever}
+-- set   contains   [fieldname]:nonspaces|"whatever"|'whatever'|{whatever}
+-- set   exact      [fieldname]=nonspaces|"whatever"|'whatever'|{whatever}
+--
+-- with * : any sequence
+--      ? : one character
+--
+-- and match(),match() ... equivalent to () and ()
+--
+-- <123 444> : range
+--
+-- unquoted = field
+-- [..]     = set
+--
+-- () and or not
+--
+-- spaces are mandate (at least for now)
+
+local key      = C(R("az","AZ")^1)
+local contains = S(":~")
+local exact    = P("=")
+local valid    = (1 - space - lparent -rparent)^1
+local wildcard = P("*") / ".*"
+local single   = P("?") / "."
+local dash     = P("-") / "%."
+local percent  = P("-") / "%%"
+local word     = Cs(lpegpatterns.unquoted + lpegpatterns.argument + valid)
+local range    = P("<") * space^0 * C((1-space)^1) * space^1 * C((1-space- P(">"))^1) * space^0 * P(">")
+
+local f_key_fld     = formatters["  local kf_%s = get(entry,%q)           \n  if kf_%s then kf_%s = lower(kf_%s) end"]
+local f_key_set     = formatters["  local ks_%s = get(entry,%q,categories)\n  if ks_%s then ks_%s = lower(ks_%s) end"]
+local f_number_fld  = formatters["  local nf_%s = tonumber(get(entry,%q))"]
+local f_number_set  = formatters["  local ns_%s = tonumber(get(entry,%q,categories))"]
+
+local f_fld_exact    = formatters["(kf_%s == %q)"]
+local f_set_exact    = formatters["(ks_%s == %q)"]
+local f_fld_contains = formatters["(kf_%s and find(kf_%s,%q))"]
+local f_set_contains = formatters["(ks_%s and find(ks_%s,%q))"]
+local f_fld_between  = formatters["(nf_%s and nf_%s >= %s and nf_%s <= %s)"]
+local f_set_between  = formatters["(ns_%s and ns_%s >= %s and ns_%s <= %s)"]
+
+local f_all_match    = formatters["anywhere(entry,%q)"]
+
+local function test_key_value(keys,where,key,first,last)
+    if not key or key == "" then
+        return "(false)"
+    elseif key == "*" then
+        last = "^.*" .. topattern(lowercase(last)) .. ".*$"
+        return f_all_match(last)
+    elseif first == false then
+        -- exact
+        last = lowercase(last)
+        if where == "set" then
+            keys[key] = f_key_set(key,key,key,key,key)
+            return f_set_exact(key,last)
+        else
+            keys[key] = f_key_fld(key,key,key,key,key)
+            return f_fld_exact(key,last)
+        end
+    elseif first == true then
+        -- contains
+        last = "^.*" .. topattern(lowercase(last)) .. ".*$"
+        if where == "set" then
+            keys[key] = f_key_set(key,key,key,key,key)
+            return f_set_contains(key,key,last)
+        else
+            keys[key] = f_key_fld(key,key,key,key,key)
+            return f_fld_contains(key,key,last)
+        end
     else
-        keys[key] = f_string_key(key,key,key,key,key)
-        return f_string_match(key,key,lowercase(word))
+        -- range
+        if where == "set" then
+            keys[key] = f_number_set(key,key)
+            return f_set_between(key,key,tonumber(first),key,tonumber(last))
+        else
+            keys[key] = f_number_fld(key,key)
+            return f_fld_between(key,key,tonumber(first),key,tonumber(last))
+        end
     end
 end
 
-local default = simple * Carg(1) / function(word,keys)
-    keys.anywhere = true
-    return f_all_match(lowercase(word))
-end
+local p_compare = P { "all",
+    all      = (V("one") + V("operator") + V("nested") + C(" "))^1,
+    nested   = C("(") * V("all") * C(")"),
+    operator = C("and")
+             + C("or")
+             + C("not"),
+    one      = Carg(1)
+             * V("where")
+             * V("key")
+             * (V("how") * V("word") + V("range"))
+             / test_key_value,
+    key      = key
+             + C("*"),
+    where    = C("set") * P(":")
+             + Cc(""),
+    how      = contains * Cc(true)
+             + exact * Cc(false),
+    word     = word,
+    range    = range,
+}
 
-local range  = key * (colon/"") * number * (dash/"") * number * Carg(1)  / function(key,_,first,_,last,keys)
-    keys[key] = f_number_key(key,key)
-    return f_number_match(key,key,tonumber(first) or 0,key,tonumber(last) or 0)
-end
+local p_combine = space^0
+                * (P(",")/" or ")
+                * space^0
 
-local field  = (P("field:")/"") * key * Carg(1) / function(_,key,keys)
-    keys[key] = f_field_key(key,key)
-    return f_field_match(key)
-end
-
------ b_match = lparent
------ e_match = rparent * space^0 * P(-1)
------ pattern = Cs(b_match * ((field + range + match + space + P(1))-e_match)^1 * e_match)
-
-local b_match = lparent
-local e_match = rparent * space^0 * (#P(-1) + P(",")/" or ") -- maybe also + -> and
-local f_match = ((field + range + match + space + P(1))-e_match)^1
-local p_match = b_match * default * e_match +
-b_match * f_match * e_match
-
-local pattern = Cs(Cc("(") * (P("match")/"" * space^0 * p_match)^1 * Cc(")"))
-
--- -- -- -- -- -- -- -- -- -- -- -- --
--- -- -- -- -- -- -- -- -- -- -- -- --
-
--- no longer faster
---
--- local tolower  = lpegpatterns.tolower
--- local lower    = string.lower
---
--- local allascii = R("\000\127")^1 * P(-1)
---
--- function characters.checkedlower(str)
---     return lpegmatch(allascii,str) and lower(str) or lpegmatch(tolower,str) or str
--- end
+local pattern = Cs((P("match")/"" * space^0 * p_compare + p_combine)^1)
 
 -- -- -- -- -- -- -- -- -- -- -- -- --
 -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -120,6 +237,9 @@ local f_template = string.formatters[ [[
 local find = string.find
 local lower = characters.lower
 local anywhere = publications.anywhere
+local get = publications.getfuzzy
+local specification = publications.currentspecification
+local categories = specification and specification.categories
 return function(entry)
 %s
   return %s and true or false
@@ -127,7 +247,46 @@ end
 ]] ]
 
 ----- function compile(expr,start)
-local function compile(expr)
+-- local function compile(dataset,expr)
+--     local keys        = { }
+--  -- local expression  = lpegmatch(pattern,expr,start,keys)
+--     local expression  = lpegmatch(pattern,expr,1,keys)
+--     if trace_match then
+--         report("compiling expression: %s",expr)
+--     end
+--     local definitions = { }
+--     local anywhere    = false
+--     for k, v in next, keys do
+--         if k == "anywhere" then
+--             anywhere = true
+--         else
+--             definitions[#definitions+1] = v
+--         end
+--     end
+--     if not anywhere or #definitions == 0 then
+--         report("invalid expression: %s",expr)
+--     elseif trace_match then
+--         for i=1,#definitions do
+--             report("% 3i : %s",i,definitions[i])
+--         end
+--     end
+--     definitions = concat(definitions,"\n")
+--     local code = f_template(definitions,expression)
+--     if trace_match then
+--         report("generated code: %s",code)
+--     end
+--     code = loadstring(code)
+--     if type(code) == "function" then
+--         code = code()
+--         if type(code) == "function" then
+--             return code
+--         end
+--     end
+--     report("invalid expression: %s",expr)
+--     return false
+-- end
+
+local function compile(dataset,expr)
     local keys        = { }
  -- local expression  = lpegmatch(pattern,expr,start,keys)
     local expression  = lpegmatch(pattern,expr,1,keys)
@@ -135,15 +294,10 @@ local function compile(expr)
         report("compiling expression: %s",expr)
     end
     local definitions = { }
-    local anywhere    = false
     for k, v in next, keys do
-        if k == "anywhere" then
-            anywhere = true
-        else
-            definitions[#definitions+1] = v
-        end
+        definitions[#definitions+1] = v
     end
-    if not anywhere and #definitions == 0 then
+    if #definitions == 0 then
         report("invalid expression: %s",expr)
     elseif trace_match then
         for i=1,#definitions do
@@ -166,30 +320,40 @@ local function compile(expr)
     return false
 end
 
--- print(lpegmatch(pattern,"match ( author:cleveland and year:1993 ) "),1,{})
+-- local function test(str)
+--     local keys        = { }
+--     local definitions = { }
+--     local expression  = lpegmatch(pattern,str,1,keys)
+--     for k, v in next, keys do
+--         definitions[#definitions+1] = v
+--     end
+--     definitions = concat(definitions,"\n")
+--     print(f_template(definitions,expression))
+-- end
 
--- compile([[match(key:"foo bar")]])
--- compile([[match(key:'foo bar')]])
--- compile([[match(key:{foo bar})]])
-
-local cache = { } -- todo: make weak, or just remember the last one (trial typesetting)
+-- test("match(foo:bar and (foo:bar or foo:bar))")
+-- test("match(foo=bar and (foo=bar or foo=bar))")
+-- test("match(set:foo:bar),match(set:foo:bar)")
+-- test("match(set:foo=bar)")
+-- test("match(foo:{bar bar})")
+-- test("match(foo={bar bar})")
+-- test("match(set:foo:'bar bar')")
+-- test("match(set:foo='bar bar')")
+-- test("match(set:foo<1000 2000>)")
+-- test("match(set:foo<1000 2000>)")
+-- test("match(*:foo)")
+-- test("match(*:*)")
 
 local check = P("match") -- * space^0 * Cp()
 
-local function finder(expression)
-    local found = cache[expression]
-    if found == nil then
-     -- local e = lpegmatch(check,expression)
-     -- found = e and compile(expression,e) or false
-        found = lpegmatch(check,expression) and compile(expression) or false
-        if found then
-            local okay, message = pcall(found,{})
-            if not okay then
-                found = false
-                report("error in match: %s",message)
-            end
+local function finder(dataset,expression)
+    local found = lpegmatch(check,expression) and compile(dataset,expression) or false
+    if found then
+        local okay, message = pcall(found,{})
+        if not okay then
+            found = false
+            report("error in match: %s",message)
         end
-        cache[expression] = found
     end
     return found
 end
@@ -202,7 +366,7 @@ end
 publications.finder = finder
 
 function publications.search(dataset,expression)
-    local find = finder(expression)
+    local find = finder(dataset,expression)
     if find then
         local ordered = dataset.ordered
         local target  = { }
@@ -218,37 +382,15 @@ function publications.search(dataset,expression)
     end
 end
 
--- local dataset = publications.new()
--- publications.load(dataset,"t:/manuals/hybrid/tugboat.bib")
+-- local d = publications.datasets.default
 --
--- local n = 500
+-- local d = publications.load {
+--     dataset   = "default",
+--     filename = "t:/manuals/mkiv/hybrid/tugboat.bib"
+-- }
 --
--- local function test(dataset,str)
---     local found
---     local start = os.clock()
---     for i=1,n do
---         found = search(dataset,str)
---     end
---     local elapsed = os.clock() - start
---     print(elapsed,elapsed/500,#table.keys(dataset.luadata),str)
---     print(table.concat(table.sortedkeys(found)," "))
---     return found
--- end
---
--- local found = test(dataset,[[match(author:hagen)]])
--- local found = test(dataset,[[match(author:hagen and author:hoekwater and year:1990-2010)]])
--- local found = test(dataset,[[match(author:"Bogusław Jackowski")]])
--- local found = test(dataset,[[match(author:"Bogusław Jackowski" and (tonumber(field:year) or 0) > 2000)]])
--- local found = test(dataset,[[Hagen:TB19-3-304]])
-
--- 1.328	0.002656	2710	author:hagen
--- Berdnikov:TB21-2-129 Guenther:TB5-1-24 Hagen:TB17-1-54 Hagen:TB19-3-304 Hagen:TB19-3-311 Hagen:TB19-3-317 Hagen:TB22-1-58 Hagen:TB22-3-118 Hagen:TB22-3-136 Hagen:TB22-3-160 Hagen:TB23-1-49 Hagen:TB25-1-108 Hagen:TB25-1-48 Hagen:TB26-2-152
-
--- 1.812	0.003624	2710	author:hagen and author:hoekwater and year:1990-2010
--- Berdnikov:TB21-2-129
-
--- 1.344	0.002688	2710	author:"Bogusław Jackowski"
--- Berdnikov:TB21-2-129 Jackowski:TB16-4-388 Jackowski:TB19-3-267 Jackowski:TB19-3-272 Jackowski:TB20-2-104 Jackowski:TB24-1-64 Jackowski:TB24-3-575 Nowacki:TB19-3-242 Rycko:TB14-3-171
-
--- 1.391	0.002782	2710	author:"Bogusław Jackowski" and (tonumber(field:year) or 0) > 2000
--- Jackowski:TB24-1-64 Jackowski:TB24-3-575
+-- inspect(publications.search(d,[[match(author:hagen)]]))
+-- inspect(publications.search(d,[[match(author:hagen and author:hoekwater and year:1990-2010)]]))
+-- inspect(publications.search(d,[[match(author:"Bogusław Jackowski")]]))
+-- inspect(publications.search(d,[[match(author:"Bogusław Jackowski" and (tonumber(field:year) or 0) > 2000)]]))
+-- inspect(publications.search(d,[[Hagen:TB19-3-304]]))

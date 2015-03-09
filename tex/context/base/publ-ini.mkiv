@@ -93,58 +93,67 @@
 
 % The main rendering style (standard driven).
 
-\installcorenamespace {btx}
+%D We assume that a specification is global or used grouped. It doesn't make much sense
+%D to split between cite and list here as it only complicates matters (timing) and is
+%D not clear either.
 
-\installsimplecommandhandler \??btx {btx} \??btx
-
-% \newconstant\btxmode
-% \newconstant\btxnonemode
-% \newconstant\btxcitemode
-% \newconstant\btxlistmode
-
-%D Loading variants:
-
-\let\currentbtxrenderingdefinition\empty
-\let\currentbtxspecification      \empty
+\let\currentbtxspecification\empty
 
 \unexpanded\def\startbtxrenderingdefinitions[#1]%
-  {\pushmacro\currentbtxrenderingdefinition
-   \edef\currentbtxrenderingdefinition{#1}%
-   \letvalue{\??btxrenderingdefinition\currentbtxrenderingdefinition}\currentbtxrenderingdefinition
-   \unprotect}
+  {\unprotect
+   \pushmacro\currentbtxspecification
+   \edef\currentbtxspecification{#1}}
 
 \unexpanded\def\stopbtxrenderingdefinitions
-  {\protect
-   \popmacro\currentbtxrenderingdefinition}
+  {\popmacro\currentbtxspecification
+   \protect}
 
 \unexpanded\def\loadbtxdefinitionfile[#1]%
   {\ctxcommand{loadbtxdefinitionfile("#1")}}
 
-\appendtoks
-    \edef\currentbtxspecification{\btxparameter\c!specification}%
-    \ifcsname\??btxrenderingdefinition\currentbtxspecification\endcsname
-        % maybe fall back on 4 ?
-    \else
-        \loadbtxdefinitionfile[\currentbtxspecification]%
-        \showmessage\m!publications{14}{\currentbtxspecification}%
-    \fi
-\to \everysetupbtx
+\unexpanded\def\loadbtxreplacementfile[#1]%
+  {\ctxcommand{loadbtxreplacementfile("#1")}}
 
-\unexpanded\def\publ_specification_push#1% local, don't override
+\unexpanded\def\publ_specification_push#1%
   {\pushmacro\currentbtxspecification
+   \pushmacro\currentbtxspecificationfallback
    \edef\currentbtxspecification{#1}%
+   \edef\currentbtxspecificationfallback{\namedbtxparameter\currentbtxspecification\c!default}%
+   \ifx\currentbtxspecificationfallback\currentbtxspecification
+     \let\currentbtxspecificationfallback\empty
+   \fi
    \ctxcommand{setbtxspecification("\currentbtxspecification")}}
 
 \unexpanded\def\publ_specification_pop
-  {\popmacro\currentbtxspecification
+  {\popmacro\currentbtxspecificationfallback
+   \popmacro\currentbtxspecification
    \ctxcommand{setbtxspecification("\currentbtxspecification")}}
 
 \unexpanded\def\publ_specification_set#1% beware: is global
   {\edef\currentbtxspecification{#1}%
-   \ctxcommand{setbtxspecification("\currentbtxspecification")}}
+   \edef\currentbtxspecificationfallback{\namedbtxparameter\currentbtxspecification\c!default}%
+   \ifx\currentbtxspecificationfallback\currentbtxspecification
+     \let\currentbtxspecificationfallback\empty
+   \fi
+  % has to be done explicitly: \loadbtxdefinitionfile[\currentbtxspecification]%
+   \ctxcommand{setbtxspecification("\currentbtxspecification")}}% todo: ,true == also load
+
+\installcorenamespace {btx}
+
+\installswitchcommandhandler \??btx {btx} \??btx
 
 \appendtoks
-    \publ_specification_set{\btxparameter\c!specification}%
+    \ifnum\btxsetupmode=\doingrootsetuproot
+        \publ_specification_set{\btxparameter\c!specification}%
+    \else\ifnum\btxsetupmode=\doingrootsetupnamed
+        \publ_specification_set{\btxparameter\c!specification}%
+    \fi\fi
+\to \everysetupbtx
+
+\appendtoks
+    \ifnum\btxsetupmode=\doingrootsetuproot
+        \edef\currentbtxdataset{\ctxcommand{setbtxdataset("\btxparameter\c!dataset","\currentbtxdataset")}}%
+    \fi
 \to \everysetupbtx
 
 \appendtoks
@@ -156,226 +165,68 @@
 
 \let\stopusingbtxspecification\publ_specification_pop
 
-% a dedicated construction mechanism
-
-\installcorenamespace {btxlist}
-
-\installcommandhandler \??btxlist {btxlist} \??btxlist
-
-\unexpanded\setvalue{\??constructioninitializer\v!btxlist}%
-  {\let\currentbtxlist                  \currentconstruction
-   \let\constructionparameter           \btxlistparameter
-   \let\constructionnamespace           \??btxlist
-   \let\detokenizedconstructionparameter\detokenizedbtxlistparameter
-   \let\letconstructionparameter        \letbtxlistparameter
-   \let\useconstructionstyleandcolor    \usebtxliststyleandcolor
-   \let\setupcurrentconstruction        \setupcurrentbtxlist}
-
-\expandafter\let\csname\??constructionmainhandler   \v!btxlist\expandafter\endcsname\csname\??constructionmainhandler   \v!construction\endcsname
-\expandafter\let\csname\??constructioncommandhandler\v!btxlist\expandafter\endcsname\csname\??constructioncommandhandler\v!construction\endcsname
-\expandafter\let\csname\??constructiontexthandler   \v!btxlist\expandafter\endcsname\csname\??constructiontexthandler   \v!construction\endcsname
-
-\unexpanded\setvalue{\??constructioncommandhandler\v!btxlist}%
-  {\csname\??constructionstarthandler\v!construction\endcsname
-   \csname\??constructionstophandler \v!construction\endcsname
-   \endgroup}
-
-\unexpanded\def\startbtxlistentry#1%
-  {\begingroup
-   \strc_constructions_initialize{#1}%
-   \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
-
-\unexpanded\def\stopbtxlistentry
-  {\csname\??constructionstophandler\currentconstructionhandler\endcsname}
-
-% interactivity is handled in setups
-
-\unexpanded\setvalue{\??constructiontexthandler\v!btxlist}%
-  {\begingroup
-   \fastsetup{\v!btxrendering:\v!number:\constructionparameter\c!number}%
-   \endgroup}
-
-% the whole entry can be interactive
-
-\unexpanded\setvalue{\??constructionstarthandler\v!btxlist}%
-  {\csname\??constructionstarthandler\v!construction\endcsname
-   \ifconditional\btx_interactive
-     \ifx\currentbtxnumbering\v!no\else
-       \ifx\currentbtxinternal\empty \else
-         \startgoto[\s!internal(\currentbtxinternal)]%
-       \fi
-     \fi
-   \fi}
-
-\unexpanded\setvalue{\??constructionstophandler\v!btxlist}%
-  {\ifconditional\btx_interactive
-     \ifx\currentbtxnumbering\v!no\else
-       \ifx\currentbtxinternal\empty \else
-         \stopgoto
-       \fi
-     \fi
-   \fi
-   \csname\??constructionstophandler\v!construction\endcsname
-   \endgroup}
-
-\startsetups[\v!btxrendering:\v!number:\v!no]
-    % \btx_reference_checked % needs testing
-\stopsetups
-
-\startsetups[\v!btxrendering:\v!number:\v!yes]
-   \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
-   \the\everyconstruction
-   \relax
-   \strut
-   \constructionparameter\c!text
-   \btx_list_reference_inject
-   \relax
-\stopsetups
-
-% construction (todo:low level builder commands without using the constructor)
-
-\unexpanded\def\strc_constructions_initialize#1% class instance
-  {\edef\currentconstruction{#1}%
-   \let\currentconstructionlistentry\!!zerocount
-   \expandafter\let\expandafter\currentconstructionmain   \csname\??constructionmain \currentconstruction\endcsname
-   \expandafter\let\expandafter\currentconstructionlevel  \csname\??constructionlevel\currentconstruction\endcsname
-   \expandafter\let\expandafter\currentconstructionhandler\csname\??constructionclass\currentconstruction\endcsname
-   \csname\??constructioninitializer\currentconstructionhandler\endcsname}
-
-\appendtoks
-  % \ifx\currentbtxlistparent\empty
-  %     \defineconstruction[\currentbtxlist][\currentbtxlistparent][\s!handler=\v!btxlist,\c!level=1]%
-  % \else
-  %     \defineconstruction[\currentbtxlist][\s!handler=\v!btxlist,\c!level=1]%
-  % \fi
-    \ifx\currentbtxlistparent\empty
-        \letvalue{\??constructionmain\currentbtxlist}\currentbtxlist
-    \else
-        \letvalue{\??constructionmain\currentbtxlist}\currentbtxlistparent
-    \fi
-    \setevalue{\??constructionlevel\currentbtxlist}{\number\btxlistparameter\c!level}%
-    \setevalue{\??constructionclass\currentbtxlist}{\btxlistparameter\s!handler}%
-\to \everydefinebtxlist
-
-\setupbtxlist
-  [\s!handler=\v!btxlist,
-   \c!level=1]
-
-\setupbtxlist
-  [\c!alternative=\v!left,
-   \c!headstyle=,
-   \c!titlestyle=,
-  %\c!style=,
-  %\c!color=,
-  %\c!headcolor=,
-  %\c!titlecolor=,
-   \c!width=4\emwidth,
-   \c!distance=\emwidth,
-  %\c!titledistance=.5\emwidth,
-  %\c!hang=,
-  %\c!sample=,
-  %\c!align=,
-  %\c!headalign=,
-   \c!margin=\v!no,
-   \c!before=\blank,
-   \c!inbetween=\blank,
-   \c!after=\blank,
-  %\c!indentnext=\v!yes,
-  %\c!indenting=\v!never,
-  %\c!titleleft=(,
-  %\c!titleright=),
-  %\c!closesymbol=,
-  %\c!closecommand=\wordright,
-   \c!display=\v!yes,
-   \c!command=,
-  %\c!titlecommand=,
-  %\c!expansion=\v!no,
-  %\c!xmlsetup=,
-  %\s!catcodes=,
-  %\c!title=\v!yes,
-  %\c!text=,
-  \c!number=\v!yes,
-  ]
+% \setupbtxlist[alternative=paragraph,width=auto,distance=\emwidth]
+% \setupbtxlist[alternative=paragraph,width=auto,distance=\emwidth,margin=2em] % useless
+% \setupbtxlist[alternative=paragraph,width=fit,distance=\emwidth]
+% \setupbtxlist[alternative=paragraph,width=fit,distance=\emwidth,margin=2em]
 
 % here starts the bib stuff
 
 \installcorenamespace {btxdataset}
-\installcorenamespace {btxlistvariant}
-\installcorenamespace {btxcitevariant}
 \installcorenamespace {btxrendering}
 \installcorenamespace {btxregister}
 \installcorenamespace {btxcommand}
 \installcorenamespace {btxrenderingdefinition}
 
-\installcommandhandler \??btxdataset     {btxdataset}     \??btxdataset
-\installcommandhandler \??btxlistvariant {btxlistvariant} \??btxlistvariant
-\installcommandhandler \??btxcitevariant {btxcitevariant} \??btxcitevariant
-\installcommandhandler \??btxregister    {btxregister}    \??btxregister
-\installcommandhandler \??btxrendering   {btxrendering}   \??btxrendering
+\installcommandhandler \??btxdataset   {btxdataset}   \??btxdataset
+\installcommandhandler \??btxregister  {btxregister}  \??btxregister
+\installcommandhandler \??btxrendering {btxrendering} \??btxrendering
 
-%D The following two helpers permits us to use prefixes (if we want):
-%D
-%D \startbuffer
-%D \let\btxciteparameter\btxspecificationciteparameter
-%D \let\btxlistparameter\btxspecificationlistparameter
-%D
-%D \edef\currentbtxspecification  {apa}
-%D \edef\currentbtxcitealternative{author}
-%D
-%D \setupbtxcitevariant                             [crap=crap]
-%D \definebtxcitevariant [author]                   [check=author,extra=author]
-%D \definebtxcitevariant [authoryear]  [author]     [check=authoryear]
-%D \definebtxcitevariant [authoryears] [authoryear] [check=authoryears]
-%D \setupbtxcitevariant  [author]                   [apa:check=apa-author]
-%D \setupbtxcitevariant  [authoryear]               [apa:check=apa-authoryear]
-%D
-%D \starttabulate[|lT|lT|]
-%D     \NC \bf check \EQ \btxciteparameter{check} \NC\NR
-%D     \NC \bf extra \EQ \btxciteparameter{extra} \NC\NR
-%D     \NC \bf crap  \EQ \btxciteparameter{crap}  \NC\NR
-%D \stoptabulate
-%D \stopbuffer
-%D
-%D \typebuffer \start \getbuffer \stop
+% named: check all listvariant and citevariant
 
-\def\btxspecificationciteparameter#1%
-  {\csname
-     \??btxcitevariant
-     \ifcsname\??btxcitevariant\currentbtxcitealternative:\currentbtxspecification:#1\endcsname
-       \currentbtxcitealternative:\currentbtxspecification:#1%
-     \else\ifcsname\??btxcitevariant\currentbtxcitealternative:#1\endcsname
-       \currentbtxcitealternative:#1%
-     \else
-       :#1% we assume defined variants
-     \fi\fi
-   \endcsname}
+\let\currentbtxcitevariant\empty
+\let\currentbtxlistvariant\empty
 
-\def\btxspecificationlistparameter#1%
-  {\csname
-     \??btxlistvariant
-     \ifcsname\??btxlistvariant\currentbtxlistalternative:\currentbtxspecification:#1\endcsname
-       \currentbtxlistalternative:\currentbtxspecification:#1%
-     \else\ifcsname\??btxlistvariant\currentbtxlistalternative:#1\endcsname
-       \currentbtxlistalternative:#1%
-     \else
-       :#1% we assume defined variants
-     \fi\fi
-   \endcsname}
+\let\currentbtxspecificationfallback\empty
 
-% \let\btxciteparameter\btxspecificationciteparameter
-% \let\btxlistparameter\btxspecificationlistparameter
+\unexpanded\def\setbtxparameterset#1#2%
+  {\edef\currentbtx
+     {\ifcsname\??btx\currentbtxspecification:#1:#2:\s!parent\endcsname
+        \currentbtxspecification:%
+      \else\ifx\currentbtxspecificationfallback\empty
+      \else\ifcsname\??btx\currentbtxspecificationfallback:#1:#2:\s!parent\endcsname
+        \currentbtxspecificationfallback:%
+      \fi\fi\fi#1:#2}}
 
-\appendtoks
-    \ifx\currentbtxlistvariant\empty \else
-        \ctxcommand{registerbtxlistvariant("\currentbtxlistvariant","\currentbtxlistvariantparent")}%
-    \fi
-\to \everydefinebtxlistvariant
+\unexpanded\def\setbtxparametersetroot#1%
+  {\edef\currentbtx
+     {\ifcsname\??btx\currentbtxspecification:#1:\s!parent\endcsname
+        \currentbtxspecification:#1%
+      \else\ifx\currentbtxspecificationfallback\empty
+      \else\ifcsname\??btx\currentbtxspecificationfallback:#1:\s!parent\endcsname
+        \currentbtxspecificationfallback:#1%
+      \fi\fi\fi}}
 
-\appendtoks
-    \ifx\currentbtxcitevariant\empty \else
-        \ctxcommand{registerbtxcitevariant("\currentbtxcitevariant","\currentbtxcitevariantparent")}%
-    \fi
-\to \everydefinebtxcitevariant
+\unexpanded\def\setbtxrendering
+  {\edef\currentbtxrendering
+     {\ifcsname\??btx\currentbtxspecification:\s!parent\endcsname
+        \currentbtxspecification
+      \else\ifx\currentbtxspecificationfallback\empty
+      \else\ifcsname\??btx\currentbtxspecificationfallback:\s!parent\endcsname
+        \currentbtxspecificationfallback
+      \fi\fi\fi}}
+
+\unexpanded\def\setbtxlist % maybe simplify this one, always list=rendering?
+  {\edef\currentbtxlist
+     {\ifcsname\??btx\currentbtxrendering:\s!parent\endcsname
+        \currentbtxrendering
+      \else\ifcsname\??btx\currentbtxspecification:\s!parent\endcsname
+        \currentbtxspecification
+      \else\ifx\currentbtxspecificationfallback\empty
+      \else\ifcsname\??btx\currentbtxspecificationfallback:\s!parent\endcsname
+        \currentbtxspecificationfallback
+      \fi\fi\fi\fi}%
+   \edef\currentlist{\s!btx:\currentbtxlist}}
 
 \unexpanded\def\usebtxdataset
   {\begingroup
@@ -392,18 +243,18 @@
    \else\iffirstargument
      \ctxcommand{usebtxdataset{
         specification = "\dummyparameter\c!specification",
-        dataset       = "\v!standard",
+        dataset       = "\v!default",
         filename      = "#1",
      }}%
    \fi\fi
    \endgroup}
 
 \definebtxdataset
-  [\v!standard]
+  [\v!default]
 % [\c!language=] % nothing set so use current
 
 % \usebtxdataset
-%   [standard]
+%   [default]
 %   [mybibs.bib]
 
 \unexpanded\def\startpublication
@@ -423,11 +274,11 @@
    \fi\fi{#1}{#2}}
 
 \def\publ_set_publication_default#1#2%
-  {\publ_set_publication_indeed\v!standard{#1}}
+  {\publ_set_publication_indeed\v!default{#1}}
 
 \def\publ_set_publication_checked#1#2%
   {\doifassignmentelse{#1}
-     {\publ_set_publication_indeed\v!standard{#1}}
+     {\publ_set_publication_indeed\v!default{#1}}
      {\publ_set_publication_indeed{#1}{}}}
 
 \def\publ_set_publication_indeed#1#2#3\stoppublication
@@ -479,10 +330,7 @@
 % access
 
 \let\currentbtxtag    \empty
-\let\currentbtxdataset\v!standard
-
-\unexpanded\def\setbtxdataset[#1]%
-  {\edef\currentbtxdataset{\ctxcommand{setbtxdataset("#1","\currentbtxdataset")}}}
+\let\currentbtxdataset\v!default
 
 \unexpanded\def\setbtxentry[#1]%
   {\edef\currentbtxtag{\ctxcommand{setbtxentry("\currentbtxdataset","#1")}}}
@@ -495,17 +343,17 @@
 % \btxfield         : current
 % \btxspecificfield : dataset,tag,key
 
-\def\btxfield        #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdetail       #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxflush        #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxfieldname    #1{\ctxcommand{btxfieldname("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxfieldtype    #1{\ctxcommand{btxfieldtype("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxfoundname    #1{\ctxcommand{btxfoundname("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxfoundtype    #1{\ctxcommand{btxfoundtype("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxauthorfield  #1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
-\def\btxdoifelse     #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoif         #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoifnot      #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfield      #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdetail     #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxflush      #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfieldname  #1{\ctxcommand{btxfieldname("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfieldtype  #1{\ctxcommand{btxfieldtype("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfoundname  #1{\ctxcommand{btxfoundname("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxfoundtype  #1{\ctxcommand{btxfoundtype("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxauthorfield#1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
+\def\btxdoifelse   #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdoif       #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
+\def\btxdoifnot    #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
 
 \let\btxsetup\fastsetup
 
@@ -607,6 +455,26 @@
    \setconstant\currentbtxconcat     \zerocount
    \setconstant\currentbtxcount      \zerocount}
 
+%D Language:
+
+\def\mainbtxlanguage{\currentmainlanguage}
+
+\unexpanded\def\btx_check_language
+  {\let\mainbtxlanguage\currentlanguage
+   \ifx\currentbtxlanguage\empty
+     \let\currentbtxlanguage\currentlanguage
+   \else
+     \btx_check_language_indeed
+   \fi}
+
+\unexpanded\def\btx_check_language_indeed
+  {\edef\currentbtxlanguage{\reallanguagetag\currentbtxlanguage}%
+   \ifx\currentbtxlanguage\empty
+     \let\currentbtxlanguage\currentlanguage
+   \else\ifx\currentbtxlanguage\currentlanguage\else
+     \setcurrentlanguage\currentmainlanguage\currentbtxlanguage
+   \fi\fi}
+
 %D Tracing
 
 \newconditional\c_btx_trace
@@ -617,18 +485,6 @@
   {\setfalse\c_btx_trace}
 
 %D Rendering lists and citations.
-
-\unexpanded\def\startbtxrendering
-  {\begingroup
-   \dosingleempty\btx_start_rendering}
-
-\def\btx_start_rendering[#1]%
-  {\edef\currentbtxrendering{#1}%
-   \btxrenderingparameter\c!before}
-
-\unexpanded\def\stopbtxrendering
-  {\btxrenderingparameter\c!after
-   \endgroup}
 
 \unexpanded\def\btxtodo#1%
   {[#1]}
@@ -652,17 +508,38 @@
 
 \setuplist
   [\s!btx]
-  [\c!state=\v!start]
+  [\c!prefixstopper=:,
+   \c!state=\v!start,
+   \c!alternative=\v!paragraph,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!width=\v!auto,
+   \c!distance=\emwidth]
+
+\unexpanded\def\setupbtxlist
+  {\dodoubleempty\publ_setup_list}
+
+\unexpanded\def\publ_setup_list[#1][#2]%
+  {\ifsecondargument
+     \setuplist[\s!btx:#1][#2]%
+   \else\iffirstargument
+     \setuplist[\s!btx][#1]%
+   \fi\fi}
 
 \appendtoks
     \ifx\currentbtxrenderingparent\empty
-        \definebtxlist
-          [\currentbtxrendering]%
+        \definelist
+          [\s!btx:\currentbtxrendering]%
+          [\s!btx]%
+    \else\ifx\currentbtxrenderingparent\s!btx
+        \definelist
+          [\s!btx:\currentbtxrendering]%
+          [\s!btx]%
     \else
-        \definebtxlist
-          [\currentbtxrendering]%
-          [\currentbtxrenderingparent]%
-    \fi
+        \definelist
+          [\s!btx:\currentbtxrendering]%
+          [\s!btx:\currentbtxrenderingparent]%
+    \fi\fi
 \to \everydefinebtxrendering
 
 \newconditional\c_btx_list_texts
@@ -699,18 +576,21 @@
       \settrue\setfalse\c_btx_list_pages
 \to \everysetupbtxlistplacement
 
-\unexpanded\def\btx_entry_inject_pages
+\unexpanded\def\btx_entry_inject_pages % for the moment only normal
   {\dontleavehmode
    \begingroup
-   \let\currentlist\s!btx
+   \setbtxlist % probably already set
    \btxpagereset
-   \btxlistparameter\c!pageleft
-   \ctxcommand{btxflushpages("\currentbtxdataset","\currentbtxtag")}%
-   \btxlistparameter\c!pageright
+   \setbtxparameterset\s!page\s!list
+   \btxparameter\c!command
+     {\usebtxstyleandcolor\c!style\c!color
+      \btxparameter\c!pageleft
+      \ctxcommand{btxflushpages("\currentbtxdataset","\currentbtxtag")}%
+      \btxparameter\c!pageright}%
    \endgroup}
 
 \unexpanded\def\btxpagesetup
-  {\fastsetup{\s!btx:\s!list:\s!page:normal}%
+  {\fastbtxsetup\s!page\s!list
    \btxpagereset}
 
 % end of page stuff
@@ -719,17 +599,13 @@
   {\begingroup
    \edef\currentbtxcategory{\btxfield{category}}%
    \ignorespaces
-   \edef\currentbtxsetup{\s!btx:\currentbtxspecification:\currentbtxcategory}%
-   \doifsetupselse\currentbtxsetup
-     \btx_entry_inject_yes
-     \btx_entry_inject_nop
-   \endgroup}
-
-\unexpanded\def\btx_entry_inject_yes
-  {\ifconditional\c_btx_list_texts
+   \ifconditional\c_btx_list_texts
      \currentbtxbefore
    \fi
-   \fastsetup\currentbtxsetup
+   \begingroup
+   \usebtxstyleandcolor\c!style\c!color
+   \fastbtxsetup\s!list\currentbtxcategory
+   \endgroup
    \removeunwantedspaces
    \ifconditional\c_btx_list_pages
      \btx_entry_inject_pages
@@ -740,16 +616,26 @@
    \fi
    \ifconditional\c_btx_list_texts
      \currentbtxafter
-   \fi}
+   \fi
+   \endgroup}
 
-\def\btx_entry_inject_nop
-  {\tttf \getmessage\m!publications{12}{\currentbtxsetup}}
+\unexpanded\def\btxshowentryinline
+  {\dodoubleempty\btx_entry_show_inline}
+
+\unexpanded\def\btx_entry_show_inline[#1][#2]%
+  {\ifsecondargument
+     \ctxcommand{showbtxentry("#1","#2")}
+   \else\iffirstargument
+     \ctxcommand{showbtxentry("\currentbtxdataset","#1")}
+   \else
+     \ctxcommand{showbtxentry("\currentbtxdataset","\currentbtxtag")}
+   \fi\fi}
 
 \def\btx_entry_inject_combi#1%
   {\begingroup
    \def\currentbtxtag{#1}%
    \ignorespaces
-   \fastsetup{\s!btx:\currentbtxspecification:\currentbtxcategory}%
+   \fastbtxsetup\s!list\currentbtxcategory
    \removeunwantedspaces
    \endgroup}
 
@@ -762,8 +648,7 @@
 \newtoks\everybtxlistrendering
 
 \appendtoks
-    \let\currentlist\s!btx
-    \let\currentbtxlist\currentbtxrendering
+    \setbtxlist
     %
     \edef\currentbtxcriterium{\btxrenderingparameter\c!criterium}% \v!cite will become \s!cite
     \ifx\currentbtxcriterium\empty
@@ -777,94 +662,116 @@
     \fi
 \to \everybtxlistrendering
 
-\def\publ_place_list_complete[#1][#2]% title might become obsolete, just headtext
+\def\nofbtxlistentries  {0}
+\def\currentbtxlistentry{0}
+\def\currentbtxlistindex{0} % only for internal use (points back to big list)
+
+\newconditional\c_publ_prefixed
+
+\unexpanded\def\btxsetnoflistentries  #1{\edef\nofbtxlistentries  {#1}}
+\unexpanded\def\btxsetcurrentlistentry#1{\edef\currentbtxlistentry{#1}}
+\unexpanded\def\btxsetcurrentlistindex#1{\edef\currentbtxlistindex{#1}}
+
+\unexpanded\def\btxdoifsameaspreviouselse#1%
+  {\ctxcommand{btxdoifelsesameasprevious("\currentbtxdataset",\number\currentbtxlistentry,"#1")}}
+
+\def\publ_place_list_indeed#1[#2][#3]%
   {\begingroup
    \ifsecondargument
-     \edef\currentbtxrendering{#1}%
-     \setupcurrentbtxrendering[#2]%
+     % [rendering] [settings]
+     \edef\currentbtxrendering{#2}%
+     \setupcurrentbtxrendering[#3]%
+     \edef\p_specification{\btxrenderingparameter\c!specification}%
+     \ifx\p_specification\empty\else
+       \let\currentbtxspecification\p_specification
+     \fi
    \else\iffirstargument
-     \let\currentbtxrendering\currentbtxdataset
-     \setupcurrentbtxrendering[#1]%
-   \fi\fi
-   \the\everybtxlistrendering
-   \edef\currentbtxrenderingtitle{\btxrenderingparameter\c!title}%
-   \ifx\currentbtxrenderingtitle\empty
-     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbtxrendering,\c!title={\headtext{\currentbtxrendering}}]}%
+     \doifassignmentelse{#2}
+       {% [settings]
+        \let\currentbtxrendering\currentbtxspecification
+        \setupcurrentbtxrendering[#2]%
+        \edef\p_specification{\btxrenderingparameter\c!specification}%
+        \ifx\p_specification\empty\else
+           \let\currentbtxspecification\p_specification
+           \let\currentbtxrendering\currentbtxspecification % tricky
+        \fi}
+       {\edef\currentbtxrendering{#2}%
+        \edef\p_specification{\btxrenderingparameter\c!specification}%
+        \ifx\p_specification\empty\else
+          \let\currentbtxspecification\p_specification
+        \fi}%
    \else
-     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbtxrendering,\c!title={\currentbtxrenderingtitle}]}%
+     \let\currentbtxrendering\currentbtxspecification
+   \fi\fi
+   \setbtxparameterset\s!list\currentbtxspecification
+   \the\everybtxlistrendering
+   \ifconditional#1\relax
+     \edef\currentbtxrenderingtitle{\btxrenderingparameter\c!title}%
+     \ifx\currentbtxrenderingtitle\empty
+       \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbtxrendering,\c!title={\headtext{\currentbtxrendering}}]}%
+     \else
+       \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbtxrendering,\c!title={\currentbtxrenderingtitle}]}%
+     \fi
    \fi
-   \publ_place_list_indeed
-   \stopnamedsection
-   \endgroup}
-
-\def\publ_place_list_standard[#1][#2]%
-  {\begingroup
-   \ifsecondargument
-     \edef\currentbtxrendering{#1}%
-     \setupcurrentbtxrendering[#2]%
-   \else\iffirstargument
-     \let\currentbtxrendering\currentbtxdataset
-     \setupcurrentbtxrendering[#1]%
-   \else
-     \let\currentbtxrendering\currentbtxdataset
-   \fi\fi
-   \the\everybtxlistrendering
-   \publ_place_list_indeed
-   \endgroup}
-
-\def\publ_place_list_indeed
-  {\startbtxrendering[\currentbtxrendering]%
-   % \fastsetup{\btxrenderingparameter\c!setups}% specific initializations
-   % \determinelistcharacteristics[\currentbtxrendering]%
-     \publ_specification_push{\btxrenderingparameter\c!specification}%
-     \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
-     \uselanguageparameter\btxdatasetparameter % new
-     \let\currentlist\s!btx
-     \let\currentbtxlist\currentbtxrendering
-     \the\everysetupbtxlistplacement
-     \forgetall
-     % why not pass this with collect .. todo
+   \ifx\currentbtxrendering\empty
+     \setbtxrendering % hm
+   \fi
+   \btxrenderingparameter\c!before
+   \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
+   \uselanguageparameter\btxdatasetparameter % new
+   \setbtxlist
+   \the\everystructurelist
+   \the\everysetupbtxlistplacement
+   \forgetall
+   % why not pass this with collect .. todo
+   % here we just collect items
+   \ctxcommand{btxcollectlistentries {
+       names      = "btx",
+       criterium  = "\currentbtxcriterium",
+       reference  = "\btxrenderingparameter\c!reference",
+       method     = "\btxrenderingparameter\c!method",
+       btxdataset = "\currentbtxdataset",
+       keyword    = "\btxrenderingparameter\c!keyword",
+       sorttype   = "\btxrenderingparameter\c!sorttype",
+       repeated   = "\btxrenderingparameter\c!repeat",
+       ignored    = "\btxrenderingparameter\c!ignore",
+       group      = "\btxrenderingparameter\c!group",
+   }}%
+   \ifnum\nofbtxlistentries>\zerocount
      \startpacked[\v!blank]%
-       % here we just collect items
-       \ctxcommand{btxcollectlistentries {
-           names      = "btx",
-           criterium  = "\currentbtxcriterium",
-           reference  = "\btxrenderingparameter\c!reference",
-           method     = "\btxrenderingparameter\c!method",
-           btxdataset = "\currentbtxdataset",
-           keyword    = "\btxrenderingparameter\c!keyword",
-           sorttype   = "\btxrenderingparameter\c!sorttype",
-           repeated   = "\btxrenderingparameter\c!repeat",
-           ignored    = "\btxrenderingparameter\c!ignore",
-       }}%
-       % sorting and so
-       \ctxcommand{btxpreparelistentries("\currentbtxdataset")}%
-       % next we analyze the width
-       \ifx\currentbtxnumbering\empty \else
-         \edef\p_width{\btxrenderingparameter\c!width}%
-         \ifx\p_width\v!auto
-           \setbox\scratchbox\vbox \bgroup
-             \settrialtypesetting
-             \ctxcommand{btxfetchlistentries("\currentbtxdataset")}%
-           \egroup
-           \d_publ_number_width\wd\scratchbox
-           \letbtxlistparameter\c!width\d_publ_number_width
-         \fi
+     % sorting and so
+     \ctxcommand{btxpreparelistentries("\currentbtxdataset")}% could be put in collect
+     % next we analyze the width
+     \ifx\currentbtxnumbering\empty \else
+       \edef\p_width{\listparameter\c!width}%
+       \ifx\p_width\v!auto
+         \setbox\scratchbox\vbox \bgroup
+           \settrialtypesetting
+           \ctxcommand{btxfetchlistentries("\currentbtxdataset")}%
+         \egroup
+         \d_publ_number_width\wd\scratchbox
+         \letlistparameter\c!width\d_publ_number_width
        \fi
-       % this actually typesets them
-       \ctxcommand{btxflushlistentries("\currentbtxdataset")}%
+     \fi
+     \doifelse{\listparameter\c!prefix}\v!yes\settrue\setfalse\c_publ_prefixed
+     % this actually typesets them, we loop here as otherwise the whole
+     % bunch gets flushed at once
+     \dorecurse\nofbtxlistentries
+        {\let\currentbtxlistentry\recurselevel
+         \ctxcommand{btxflushlistentry("\currentbtxdataset",\currentbtxlistentry)}}%
      \stoppacked
-     \publ_specification_pop
-   \stopbtxrendering
-   \global\advance\btxblock\plusone}
+   \fi
+   \btxrenderingparameter\c!after
+   \global\advance\btxblock\plusone
+   \ifconditional#1\relax
+     \stopnamedsection
+   \fi
+   \endgroup}
+
+\def\publ_place_list_complete{\publ_place_list_indeed\conditionaltrue}
+\def\publ_place_list_standard{\publ_place_list_indeed\conditionalfalse}
 
 \def\currentbtxblock{\number\btxblock}
-
-\unexpanded\def\btxsetlanguage#1%
-  {\def\currentbtxlanguage{#1}%
-   \ifx\currentbtxlanguage\currentlanguage \else
-      \setcurrentlanguage\currentmainlanguage\currentbtxlanguage
-   \fi}
 
 % called at the lua end, for determining the width
 
@@ -877,24 +784,68 @@
 
 % called at the lua end, the real rendering
 
-\unexpanded\def\btxhandlelistentry
-  {\begingroup
-   \let\currentlist\s!btx % probably obsolete here
-   \startbtxlistentry\currentbtxrendering
-     \btx_entry_inject
-   \stopbtxlistentry
-   \endgroup}
+% we could have a yes and no where o nils the btx_reference_indeed ... saves a check there
 
-\unexpanded\def\btxlistsetup#1%
-  {\fastsetup{\s!btx:\s!list:#1}}
+\installstructurelistprocessor{\s!btx}
+  {\let\currentlistentrynumber    \btx_reference_indeed
+   \let\currentlistentrytitle     \btx_entry_indeed
+   \let\currentlistentrypagenumber\btx_page_indeed
+   \strc_lists_apply_renderingsetup}
+
+\def\btx_entry_indeed
+  {\btx_list_reference_inject
+   \btx_entry_inject}
+
+\def\btx_page_indeed
+  {}
+
+\unexpanded\def\btxhandlelistentry
+  {\strc_lists_entry_process}
+
+\unexpanded\def\btxstartlistentry % maybe pass i
+  {\begingroup}
+
+\unexpanded\def\btxstoplistentry
+  {\endgroup}
+
+\newtoks\everybtxlistentry
+
+\unexpanded\def\btxlistsetup#1% used for the reference in the list
+  {\the\everybtxlistentry
+   \everybtxlistentry\emptytoks % so only once per entry to be sure
+   \fastbtxsetup\s!list{#1}}
+
+\appendtoks
+    \btx_check_language
+\to \everybtxlistentry
 
 \unexpanded\def\btx_reference_indeed
   {\begingroup
    \let\currentbtxlistvariant\currentbtxnumbering
-   \btxlistvariantparameter\c!left
-   \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","\currentbtxnumbering","\currentbtxnumber")}% some can go
-   \btxlistvariantparameter\c!right
+   \setbtxparameterset\c!list\currentbtxnumbering
+   \ifx\currentbtxnumbering\empty
+     % nothing
+   \else\ifx\currentbtxnumbering\v!no
+     % nothing
+   \else
+     \btxparameter\c!left
+     \ifconditional\c_publ_prefixed\btxlistprefixednumber\fi
+     \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","\currentbtxnumbering","\currentbtxnumber")}% some can go
+     \btxparameter\c!right
+   \fi\fi
    \endgroup}
+
+\unexpanded\def\btxlistprefixednumber % hack but alan needs it
+  {\ctxcommand{listprefixednumber("\currentlist",\currentbtxlistindex, {
+        prefix        = "\listparameter\c!prefix",
+        separatorset  = "\listparameter\c!prefixseparatorset",
+        conversionset = "\listparameter\c!prefixconversionset",
+        starter       = \!!bs\listparameter\c!prefixstarter\!!es,
+        stopper       = \!!bs\listparameter\c!prefixstopper\!!es,
+        set           = "\listparameter\c!prefixset",
+        segments      = "\listparameter\c!prefixsegments",
+        connector     = \!!bs\listparameter\c!prefixconnector\!!es,
+    })}}
 
 \unexpanded\def\btx_reference_checked
   {\dontleavehmode\hbox\bgroup
@@ -908,14 +859,14 @@
      \iftrialtypesetting\else
        \btx_list_reference_inject_now
      \fi
-     \btx_reference_indeed
+   % \btx_reference_indeed % else double entry in list
    \endgroup}
 
 \def\btx_list_reference_inject_now
   {\btx_trace_list_cross\empty\currentbtxbacktrace
    \global\advance\c_btx_list_reference\plusone
    \strc_references_direct_full_user
-      {\s!btxset="\currentbtxdataset",%
+      {\ifx\currentbtxdataset\v!default\else\s!btxset="\currentbtxdataset",\fi%
        \s!btxref="\currentbtxtag",%
        \s!btxspc="\currentbtxspecification",%
        \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
@@ -941,7 +892,7 @@
    \the\t_btx_reference_inject
    \normalexpanded{\writedatatolist
       [\s!btx]%
-      [\s!btxset=\currentbtxdataset,%
+      [\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
        \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
        \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
@@ -956,16 +907,19 @@
 \let\currentbtxnumbering\empty
 
 \appendtoks
-   \edef\currentbtxnumbering{\btxrenderingparameter\c!numbering}%
-   \letlistparameter\c!numbercommand\firstofoneargument % for the moment, no doubling needed
-   \ifx\currentbtxnumbering\v!no
-     \letlistparameter\c!textcommand\outdented % needed? we can use titlealign
-     \letlistparameter\c!symbol     \v!none
-     \letlistparameter\c!aligntitle \v!yes
-     \let\currentbtxnumbering\empty
-   \else
-     \letlistparameter\c!headnumber\v!always
-   \fi
+    \edef\currentbtxnumbering{\btxrenderingparameter\c!numbering}%
+    \edef\p_numbering{\btxrenderingparameter\c!numbering}% link to headnumber
+    \ifx\p_numbering\v!no
+        \letlistparameter\c!headnumber\v!no
+        \let\currentbtxnumbering\empty
+      % \letlistparameter\c!textcommand\outdented % needed? we can use titlealign
+        \letlistparameter\c!symbol     \v!none
+        \letlistparameter\c!aligntitle \v!yes
+        \letlistparameter\c!numbercommand\firstofoneargument % for the moment, no doubling needed
+    \else
+        \letlistparameter\c!headnumber\v!always
+    \fi
+    \let\currentlistmethod\s!btx
 \to \everysetupbtxlistplacement
 
 % \appendtoks
@@ -976,21 +930,22 @@
   {\doifnextoptionalcselse\btx_flush_author_yes\btx_flush_author_nop}
 
 \def\btx_flush_author_yes[#1]{\btx_flush_author{#1}}
-\def\btx_flush_author_nop    {\btx_flush_author{\btxlistvariantparameter\c!authorconversion}}
+\def\btx_flush_author_nop    {\btx_flush_author{\btxparameter\c!authorconversion}}
 
 \unexpanded\def\btx_flush_author#1#2%
   {\begingroup
    \edef\currentbtxfield{#2}%
+   \setbtxparameterset\s!list\currentbtxfield
    \let\currentbtxlistvariant\currentbtxfield
    \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\currentbtxfield",{
         combiner    = "#1",
         kind        = "list",
-       %symbol      = \btxlistvariantparameter\c!initialsterminator,
-       %connector   = \btxlistvariantparameter\c!initialssep,
-        etallimit   = \number\btxlistvariantparameter\c!etallimit,
-        etaldisplay = \number\btxlistvariantparameter\c!etaldisplay,
+        etallimit   = "\btxparameter\c!etallimit",
+        etaldisplay = "\btxparameter\c!etaldisplay",
    })}%
    \endgroup}
+
+% yes or no: maybe just \flushauthor{...}{...}
 
 \unexpanded\def\btxflushauthorname         {\btx_flush_author{name}}          % #1
 \unexpanded\def\btxflushauthornormal       {\btx_flush_author{normal}}        % #1
@@ -1000,13 +955,12 @@
 
 \unexpanded\def\currentbtxciteauthor % always author
   {\begingroup
-   \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","author",{
-        combiner    = "\btxcitevariantparameter\c!authorconversion",
+   \setbtxparameterset\s!cite\s!author
+   \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\s!author",{
+        combiner    = "\btxparameter\c!authorconversion",
         kind        = "cite",
-       %symbol      = \btxcitevariantparameter\c!initialsterminator,
-       %connector   = \btxcitevariantparameter\c!initialssep,
-        etallimit   = \number\btxcitevariantparameter\c!etallimit,
-        etaldisplay = \number\btxcitevariantparameter\c!etaldisplay,
+        etallimit   = "\btxparameter\c!etallimit",
+        etaldisplay = "\btxparameter\c!etaldisplay",
    })}%
    \endgroup}
 
@@ -1040,40 +994,19 @@
 % \btxflushauthor[inverted]{author}
 % \btxflushauthor[invertedshort]{author}
 
-% Interaction: only list
+% Interaction
 
 \newconditional\btxinteractive
 \newconditional\btx_interactive
 
-\unexpanded\def\btxdoifelseinteractive{\thirdofthreearguments}
-\unexpanded\def\btxdoifelseinteraction{\secondoftwoarguments}
-
-\unexpanded\def\publ_doifelse_interactive_list_yes#1%
-  {\edef\p_interaction{\namedbtxlistvariantparameter{#1}\c!interaction}%
-   \ifx\p_interaction\v!start
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
-
-\unexpanded\def\publ_doifelse_interactive_cite_yes#1%
-  {\edef\p_interaction{\namedbtxcitevariantparameter{#1}\c!interaction}%
-   \ifx\p_interaction\v!start
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+% of maybe modes?
 
 \appendtoks
     \iflocation
-        \edef\p_interaction{\btxrenderingparameter\c!interaction}%
+        \edef\p_interaction{\btxparameter\c!interaction}%
         \ifx\p_interaction\v!stop
-            \let\btxdoifelseinteraction\secondoftwounexpanded
-            \let\btxdoifelseinteractive\thirdofthreeunexpanded
             \setfalse\btxinteractive
         \else
-            \let\btxdoifelseinteraction\firstoftwounexpanded
-            \let\btxdoifelseinteractive\publ_doifelse_interactive_list_yes
             \settrue\btxinteractive
             \ifx\p_interaction\v!all
                 \settrue\btx_interactive
@@ -1082,8 +1015,6 @@
             \fi
         \fi
     \else
-        \let\btxdoifelseinteraction\secondoftwounexpanded
-        \let\btxdoifelseinteractive\thirdofthreeunexpanded
         \setfalse\btxinteractive
         \setfalse\btx_interactive
     \fi
@@ -1091,33 +1022,15 @@
 
 \appendtoks
     \iflocation
-        \edef\p_interaction{\btxcitevariantparameter\c!interaction}%
+        \edef\p_interaction{\btxparameter\c!interaction}%
         \ifx\p_interaction\v!stop
-            \let\btxdoifelseinteraction\secondoftwounexpanded
-            \let\btxdoifelseinteractive\thirdofthreeunexpanded
             \setfalse\btxinteractive
         \else
-            \let\btxdoifelseinteraction\firstoftwounexpanded
-            \let\btxdoifelseinteractive\publ_doifelse_interactive_cite_yes
             \settrue\btxinteractive
         \fi
     \else
-        \let\btxdoifelseinteraction\secondoftwounexpanded
-        \let\btxdoifelseinteractive\thirdofthreeunexpanded
         \setfalse\btxinteractive
     \fi
-\to \everysetupbtxciteplacement
-
-\appendtoks
-    % for old times sake, for a while at least
-    \let\maybeyear\gobbleoneargument
-    \let\noopsort \gobbleoneargument
-\to \everysetupbtxlistplacement
-
-\appendtoks
-    % for old times sake, for a while at least
-    \let\maybeyear\gobbleoneargument
-    \let\noopsort \gobbleoneargument
 \to \everysetupbtxciteplacement
 
 % till here
@@ -1125,10 +1038,10 @@
 \unexpanded\def\btxnumberedreference[#1]% \bibtexnumref (replaced by \cite[num])
   {\dontleavehmode
    \begingroup
-   \btxcitevariantparameter\v!left
+   \btxparameter\v!left
    \penalty\plustenthousand % todo
    \ctxcommand{btxresolvelistreference("\currentbtxdataset","#1")}% todo: split dataset from #1, so another call
-   \btxcitevariantparameter\v!right
+   \btxparameter\v!right
    \endgroup}
 
 %D When a publication is cited, we need to signal that somehow. This is done with the
@@ -1172,7 +1085,9 @@
 
 \unexpanded\def\publ_cite_tags_indeed#1%
   {\letinteractionparameter\c!style\empty
-   \edef\currentbtxcitevariant{\btxcitevariantparameter\c!alternative}%
+   \setbtxparametersetroot\s!cite % we need to get the default
+   \edef\currentbtxcitevariant{\btxparameter\c!alternative}%
+   \setbtxparameterset\s!cite\currentbtxcitevariant
    \edef\currentbtxcitetag{#1}%
    \the\everysetupbtxciteplacement
    \publ_cite_variant
@@ -1185,7 +1100,6 @@
   {\letinteractionparameter\c!style\empty
   %\letinteractionparameter\c!color\empty
    \letdummyparameter\c!reference  \empty
-   \letdummyparameter\c!extras     \empty
    \letdummyparameter\c!alternative\empty
    \letdummyparameter\c!before     \empty
    \letdummyparameter\c!after      \empty
@@ -1201,25 +1115,18 @@
    \fi
    \edef\p_alternative{\dummyparameter\c!alternative}%
    \ifx\p_alternative\empty
-     \edef\currentbtxcitevariant{\btxcitevariantparameter\c!alternative}%
+     \setbtxparametersetroot\s!cite
+     \edef\currentbtxcitevariant{\btxparameter\c!alternative}%
    \else
      \let\currentbtxcitevariant\p_alternative
    \fi
-   \setupcurrentbtxcitevariant[#1]%
+   \setbtxparameterset\s!cite\currentbtxcitevariant
+   \setupcurrentbtx[#1]%
    %
    \edef\p_publ_cite_before   {\dummyparameter\c!before}%
    \edef\p_publ_cite_after    {\dummyparameter\c!after}%
    \edef\p_publ_cite_lefttext {\dummyparameter\c!lefttext}%
    \edef\p_publ_cite_righttext{\dummyparameter\c!righttext}%
-   %
-   \edef\p_extras             {\dummyparameter\c!extras}%
-   \ifx\p_extras\empty \else
-     \ifx\p_publ_cite_righttext\empty
-       \let\p_publ_cite_righttex\p_extras
-     \else
-       % ignored: righttext wins over extras
-     \fi
-   \fi
    %
    \the\everysetupbtxciteplacement
    \publ_cite_variant
@@ -1229,11 +1136,14 @@
   {\letinteractionparameter\c!style\empty
    \edef\currentbtxcitevariant{#1}%
    \edef\currentbtxcitetag{#2}%
+   \setbtxparameterset\s!cite\currentbtxcitevariant
    \the\everysetupbtxciteplacement
    \publ_cite_variant
    \endgroup}
 
 \newconditional\btxcitecompress
+
+\let\currentbtxreference\empty
 
 \def\publ_cite_variant
   {\begingroup
@@ -1242,31 +1152,31 @@
 \unexpanded\def\publ_cite_handle_variant#1%
   {\begingroup
    \edef\currentbtxcitevariant{#1}%
+   \setbtxparameterset\s!cite\currentbtxcitevariant
    \the\everysetupbtxciteplacement
    \dosingleargument\publ_cite_handle_variant_indeed}
 
 \def\publ_cite_handle_variant_indeed[#1]%
-  {\usebtxcitevariantstyleandcolor\c!style\c!color
+  {\letbtxparameter\c!alternative\currentbtxcitevariant
+   \usebtxstyleandcolor\c!style\c!color
    \uselanguageparameter\btxdatasetparameter % new
-   \publ_specification_push{\btxcitevariantparameter\c!specification}%
-   \letbtxcitevariantparameter\c!alternative\currentbtxcitevariant
-   \btxcitevariantparameter\v!left
+   \btxparameter\v!left
+   \edef\currentbtxreference{#1}%
    \ctxcommand{btxhandlecite{%
      dataset   = "\currentbtxdataset",%
-     reference = "#1",%
+     reference = \!!bs\currentbtxreference\!!es,%
      markentry = \iftrialtypesetting false\else true\fi,%
      variant   = "\currentbtxcitevariant",%
-     sorttype  = "\btxcitevariantparameter\c!sorttype",%
-     compress  = "\btxcitevariantparameter\c!compress",%
-     author    = "\btxcitevariantparameter\c!author",%
+     sorttype  = "\btxparameter\c!sorttype",%
+     compress  = "\btxparameter\c!compress",%
+     author    = "\btxparameter\c!author",%
      lefttext  = \!!bs\p_publ_cite_lefttext\!!es,%
      righttext = \!!bs\p_publ_cite_righttext\!!es,%
      before    = \!!bs\p_publ_cite_before\!!es,%
      after     = \!!bs\p_publ_cite_after\!!es,%
    }}%
-   \btxcitevariantparameter\v!right
+   \btxparameter\v!right
    \ctxcommand{flushmarked()}%
-   \publ_specification_pop
    \endgroup}
 
 \unexpanded\def\btxcitation
@@ -1286,12 +1196,15 @@
 
 \unexpanded\def\publ_cite_no[#1]%
   {\iftrialtypesetting \else
+     \begingroup
+     \edef\currentbtxreference{#1}%
      \ctxcommand{btxhandlenocite{%
        dataset   = "\currentbtxdataset",%
-       reference = "#1",%
+       reference = \!!bs\currentbtxreference#1\!!es,%
        markentry = true,%
      }}%
    % \ctxcommand{flushmarked()}%
+     \endgroup
    \fi}
 
 \unexpanded\def\btxmissing#1%
@@ -1305,23 +1218,151 @@
 \let\nocitation    \btxnocitation
 %let\usepublication\btxnocitation
 
+%D Setup helpers, beware, we need to wrap this .. now we need to know
+%D how setups are implemented.
+
+\setvalue{\??setup:\s!btx:\s!unknown}#1{\inframed{\tttf#1}}
+
+\def\fastbtxsetup_yes#1#2%
+  {\csname\??setup:\s!btx:%
+     \ifcsname\??setup:\s!btx:\currentbtxspecification:#1:#2\endcsname
+        \currentbtxspecification:#1:#2%
+     \else\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:#2\endcsname
+        \currentbtxspecificationfallback:#1:#2%
+     \else\ifcsname\??setup:\s!btx:#1:#2\endcsname
+        #1:#2%
+     \else\ifcsname\??setup:\s!btx:\currentbtxspecification:#1:\s!unknown\endcsname
+        \currentbtxspecification:#1:\s!unknown
+     \else\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:\s!unknown\endcsname
+        \currentbtxspecificationfallback:#1:\s!unknown
+     \else
+        #1:\s!unknown
+     \fi\fi\fi\fi\fi
+   \endcsname{#2}}
+
+\def\fastbtxsetup_nop#1#2%
+  {\csname\??setup:\s!btx:%
+     \ifcsname\??setup:\s!btx:\currentbtxspecification:#1:#2\endcsname
+        \currentbtxspecification:#1:#2%
+     \else\ifcsname\??setup:\s!btx:#1:#2\endcsname
+        #1:#2%
+     \else\ifcsname\??setup:\s!btx:\currentbtxspecification:#1:\s!unknown\endcsname
+        \currentbtxspecification:#1:\s!unknown
+     \else
+        #1:\s!unknown
+     \fi\fi\fi
+   \endcsname{#2}}
+
+\def\fastbtxsetup
+  {\ifx\currentbtxspecificationfallback\empty
+     \expandafter\fastbtxsetup_nop
+   \else
+     \expandafter\fastbtxsetup_yes
+   \fi}
+
+\let\publ_fastbtxsetup_normal\fastbtxsetup
+
+% \unexpanded\def\publ_fastbtxsetup_chain_yes#1#2%
+%   {\inframed[\c!foregroundstyle=\infofont]{%
+%      \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else->%
+%      \currentbtxspecificationfallback:#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback                :#1:#2\endcsname\else->%
+%                                       #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else->%
+%      \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else->%
+%      \currentbtxspecificationfallback:#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:\s!unknown\endcsname\else->%
+%      ?\fi\fi\fi\fi\fi}}
+
+% \unexpanded\def\publ_fastbtxsetup_chain_nop#1#2%
+%   {\inframed[\c!foregroundstyle=\infofont]{%
+%      \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else->%
+%                                       #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else->%
+%      \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else->%
+%      ?\fi\fi\fi}}
+
+\unexpanded\def\publ_fastbtxsetup_chain_inbetween
+  {\allowbreak->\allowbreak}
+
+\unexpanded\def\publ_fastbtxsetup_chain_yes#1#2%
+  {\dontleavehmode\begingroup\infofont\darkblue[%
+   \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else
+   \publ_fastbtxsetup_chain_inbetween
+   \currentbtxspecificationfallback:#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback                :#1:#2\endcsname\else
+   \publ_fastbtxsetup_chain_inbetween
+                                    #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else
+   \publ_fastbtxsetup_chain_inbetween
+   \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else
+   \publ_fastbtxsetup_chain_inbetween
+   \currentbtxspecificationfallback:#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:\s!unknown\endcsname\else
+   \publ_fastbtxsetup_chain_inbetween
+   unset\fi\fi\fi\fi\fi
+   ]\endgroup}
+
+\unexpanded\def\publ_fastbtxsetup_chain_nop#1#2%
+  {\dontleavehmode\begingroup\infofont\darkred[%
+   \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else
+   \publ_fastbtxsetup_chain_inbetween
+                                    #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else
+   \publ_fastbtxsetup_chain_inbetween
+   \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else
+   \publ_fastbtxsetup_chain_inbetween
+   unset\fi\fi\fi
+   ]\endgroup}
+
+\unexpanded\def\publ_fastbtxsetup_chain
+  {\ifx\currentbtxspecificationfallback\empty
+     \expandafter\publ_fastbtxsetup_chain_nop
+   \else
+     \expandafter\publ_fastbtxsetup_chain_yes
+   \fi}
+
+\unexpanded\def\publ_fastbtxsetup_visual#1#2%
+  {\publ_fastbtxsetup_chain{#1}{#2}%
+   \publ_fastbtxsetup_normal{#1}{#2}}
+
+\installtextracker
+  {publications.setups}
+  {\let\fastbtxsetup\publ_fastbtxsetup_visual}
+  {\let\fastbtxsetup\publ_fastbtxsetup_normal}
+
 %D Cite helpers:
 
+\newtoks\everybtxciteentry
+
 \unexpanded\def\btxcitesetup#1%
-  {\currentbtxlefttext
-   \fastsetup{\s!btx:\s!cite:#1}%
+  {\the\everybtxciteentry
+   \everybtxciteentry\emptytoks % tricky maybe not when subcites
+   \currentbtxlefttext
+   \fastbtxsetup\s!cite{#1}%
    \currentbtxrighttext} % no \btxcitereset as we loose dataset and such
 
-\unexpanded\def\btxstartsubcite#1% #1 can go
+\appendtoks
+    \btx_check_language
+\to \everybtxciteentry
+
+\unexpanded\def\btxstartsubcite#1%
   {\begingroup
    \btxcitereset % todo: limited set
    \def\currentbtxcitevariant{#1}%
-   \btxcitevariantparameter\c!left
+   \setbtxparameterset\s!cite\currentbtxcitevariant
+   \usebtxstyleandcolor\c!style\c!color
+   \btxparameter\c!left
    \relax}
 
 \unexpanded\def\btxstopsubcite
   {\relax
-   \btxcitevariantparameter\c!right
+   \btxparameter\c!right
+   \endgroup}
+
+\unexpanded\def\btxstartciterendering[#1]%
+  {\begingroup
+   \edef\currentbtxcitevariant{#1}%
+   \setbtxparameterset\s!cite\currentbtxcitevariant
+   \usebtxstyleandcolor\c!style\c!color
+   \btxparameter\c!left
+   \relax}
+
+\unexpanded\def\btxstopciterendering
+  {\relax
+   \btxparameter\c!right
    \endgroup}
 
 \let\btxstartcite      \begingroup
@@ -1332,8 +1373,8 @@
 %D Whatever helpers:
 
 \unexpanded\def\btxsingularplural#1{\ctxcommand{btxsingularorplural("\currentbtxdataset","\currentbtxtag","#1")}}
-\unexpanded\def\btxoneorrange    #1{\ctxcommand{oneorrange("\currentbtxdataset","\currentbtxtag","#1")}}
-\unexpanded\def\btxfirstofrange  #1{\ctxcommand{firstofrange("\currentbtxdataset","\currentbtxtag","#1")}}
+\unexpanded\def\btxoneorrange    #1{\ctxcommand{btxoneorrange("\currentbtxdataset","\currentbtxtag","#1")}}
+\unexpanded\def\btxfirstofrange  #1{\ctxcommand{btxfirstofrange("\currentbtxdataset","\currentbtxtag","#1")}}
 
 \let\btxsingularorplural\btxsingularplural
 
@@ -1372,29 +1413,29 @@
    \ctxcommand{btxsavedataset("#1","#2","\dummyparameter\c!alternative","\dummyparameter\c!criterium")}%
    \endgroup}
 
-% \savebtxdataset[standard][e:/tmp/foo.bib]
-% \savebtxdataset[standard][e:/tmp/foo.lua]
-% \savebtxdataset[standard][e:/tmp/foo.xml]
+% \savebtxdataset[default][e:/tmp/foo.bib]
+% \savebtxdataset[default][e:/tmp/foo.lua]
+% \savebtxdataset[default][e:/tmp/foo.xml]
 
 %D In-text entries:
 
-\definebtxcitevariant
-  [entry]
+% \definebtxcitevariant
+%   [entry]
 
 \unexpanded\def\placecitation{\citation[entry]} % [#1]
 
 \unexpanded\def\btxhandleciteentry
   {\dontleavehmode
    \begingroup
-   \publ_specification_push{\btxcitevariantparameter\c!specification}%
+   \def\currentbtxcitevariant{entry}%
+   \setbtxparameterset\s!cite\currentbtxcitevariant % needs checking
    \btxcitereference
    \btx_entry_inject
-   \publ_specification_pop
    \endgroup}
 
 \startsetups \s!btx:\s!cite:entry
     \ifx\currentbtxfirst\empty
-        \fastsetup{\s!btx:\s!cite:\s!unknown}
+        \fastbtxsetup\s!cite\s!unknown
     \else
         \btxhandleciteentry
     \fi
@@ -1454,239 +1495,82 @@
    \def\currentbtxinitials   {#4}%
    \def\currentbtxfirstnames {#5}%
    \def\currentbtxjuniors    {#6}%
+   \setbtxparameterset\s!cite\currentbtxcitevariant
    \fastsetup{\s!btx:\s!cite:\s!author:\currentbtxcitevariant}%
    \endgroup}
 
-%D Defaults:
+%D We hook some setters in the definition sets:
 
-\setbtxdataset
-  [\v!standard]
+% \installdefinitionsetmember \??btx {btxspecification} \??btxcitevariant {btxcitevariant}
+% \installdefinitionsetmember \??btx {btxspecification} \??btxlistvariant {btxlistvariant}
+% \installdefinitionsetmember \??btx {btxspecification} \??btxlist        {btxlist}
+% \installdefinitionsetmember \??btx {btxspecification} \??btxrendering   {btxrendering}
+% \installdefinitionsetmember \??btx {btxspecification} \??btx            {btx}
+
+%D And more helpers ... a never ending story these publications:
+
+% \definebtx
+%   [btx:apa:list:article:title]
+%   [style=bolditalic,
+%    command=\WORD]
+%
+% \btxstartstyle[btx:apa:list:article:title]
+%     \btxusecommand[btx:apa:list:article:title]{foo}
+% \btxstopstyle
+
+\unexpanded\def\btxstartstyle[#1]%
+  {\begingroup
+   \def\currentbtx{#1}%
+   \usebtxstyle\c!style}
+
+\unexpanded\def\btxstartcolor[#1]%
+  {\begingroup
+   \def\currentbtx{#1}%
+   \usebtxcolor\c!color}
+
+\unexpanded\def\btxstartstyleandcolor[#1]%
+  {\begingroup
+   \def\currentbtx{#1}%
+   \usebtxstyleandcolor\c!style\c!color}
+
+\let\btxstopstyle        \endgroup
+\let\btxstopcolor        \endgroup
+\let\btxstopstyleandcolor\endgroup
+
+\unexpanded\def\btxusecommand[#1]%
+  {\namedbtxparameter{#1}\c!command}
+
+%D Defaults:
 
 \setupbtxrendering
   [\c!interaction=\v!start, % \v!all
    \c!specification=\btxparameter\c!specification,
-   \c!dataset=\v!standard,
+   \c!dataset=\v!default,
    \c!repeat=\v!no,
    \c!continue=\v!no,
    \c!method=\v!global,
  % \c!setups=btx:\btxrenderingparameter\c!alternative:initialize, % not the same usage as cite !
-%    \c!sorttype=authoryear,
+ % \c!sorttype=authoryear,
    \c!criterium=\v!text,
    \c!refcommand=authoryears,  % todo
    \c!numbering=\v!yes,
- % \c!autohang=\v!no, % not used
   %\c!saveinlist=\v!no, % maybe for before/after
    \c!textstate=\v!start,
    \c!width=\v!auto,
+  %\c!pageright=,
+  %\c!pageleft=,
    \c!separator={;\space},
    \c!distance=1.5\emwidth]
 
-\definebtxrendering
-  [\v!standard]
+% Quite some interpunction and labels are the same of at least consistent witin
+% a standard when citations and list entries are involved. We assume that each
+% standard defines its own set but it can fall back on the defaults.
 
-% reasonable defaults; may be redefined by style.
-
-\setupbtxlistvariant
-  [\c!namesep={,\space},
-   \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!finalnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
-   \c!juniorsep=\space,
-   \c!vonsep=\space,
-   \c!initialsep=\space,  % between initials and lastname
-  %\c!initialssep=\space, % between multiple initials  % todo
-  %\c!initialsterminator={.},                          % todo
-   \c!surnamesep={,\space},
-   \c!surnameinitialsep={,\space},
-   \c!surnamefirstnamesep={,\space},
+\setupbtx
+  [\c!alternative=\v!num, % default cite
+   \c!interaction=\v!start,
    \c!etallimit=3,
-   \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
-  %\c!journalconversion=\v!normal,
-   \c!monthconversion=\v!number,
-   \c!authorconversion=\v!inverted,
-   \c!interaction=\c!start]
-
-\definebtxlistvariant
-  [author]
-
-\definebtxlistvariant
-  [editor]
-  [author]
-
-\definebtxlistvariant
-  [url]
-
-\definebtxlistvariant
-  [doi]
-
-\definebtxlistvariant % because we inherit
-  [invertedshort]
-
-\definebtxlistvariant % because we inherit
-  [short]
-
-\setupbtxcitevariant
-  [\c!specification=\btxparameter\c!specification,
-   \c!alternative=num,
-   \c!namesep=\btxlistvariantparameter\c!namesep,
-   \c!lastnamesep=\btxlistvariantparameter\c!lastnamesep,
-   \c!finalnamesep=\btxlistvariantparameter\c!finalnamesep,
-   \c!firstnamesep=\btxlistvariantparameter\c!firstnamesep,
-   \c!otherstext=\btxlistvariantparameter\c!otherstext,
-   \c!juniorsep=\btxlistvariantparameter\c!juniorsep,
-   \c!vonsep=\btxlistvariantparameter\c!vonsep,
-   \c!initialsep=\btxlistvariantparameter\c!initialsep,
-  %\c!initialssep=\btxlistvariantparameter\c!initialssep,
-  %\c!initialsterminator=\btxlistvariantparameter\c!initialsterminator,
-   \c!surnamesep=\btxlistvariantparameter\c!surnamesep,
-   \c!surnameinitialsep=\btxlistvariantparameter\c!surnameinitialsep,
-   \c!surnamefirstnamesep=\btxlistvariantparameter\c!surnamefirstnamesep,
-   \c!etallimit=\btxlistvariantparameter\c!etallimit,
-   \c!etaldisplay=\btxlistvariantparameter\c!etaldisplay,
-   \c!monthconversion=\btxlistvariantparameter\c!monthconversion,
-   \c!authorconversion=\v!name,
- % \c!setups=btx:cite:initialize,
-   \c!pubsep={,\space},
-   \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!sorttype=,
-   \c!compress=\v!no,
-   \c!inbetween=\space,
-   \c!range=\endash,
-   \c!left=,
-   \c!middle=,
-   \c!right=,
-   \c!interaction=\v!start]
-
-\definebtxcitevariant
-   [author]
-
-\definebtxcitevariant
-   [authornum]
-   [author]
-   [\c!left={(},
-    \c!right={)}]
-
-\definebtxcitevariant
-   [authoryear]
-   [\c!compress=\v!yes,
-    \c!inbetween={,\space},
-    \c!left={(},
-    \c!right={)},
-    \c!pubsep={;\space},
-    \c!lastpubsep={;\space},
-    \c!finalpubsep={;\space}]
-
-\definebtxcitevariant
-   [authoryears]
-   [authoryear]
-   [\c!left=,
-    \c!inbetween={\space(},
-    \c!pubsep={);\space},
-    \c!lastpubsep={);\space},
-    \c!finalpubsep={);\space}]
-
-\definebtxcitevariant
-   [author:num]
-   [authornum]
-   [\c!left={[},
-    \c!right={]}]
-
-\definebtxcitevariant
-   [author:year]
-   [authoryear]
-   [\c!left=,
-    \c!right=]
-
-\definebtxcitevariant
-   [author:years]
-   [author:year]
-
-\definebtxcitevariant
-   [year]
-   [\c!left={(},
-    \c!pubsep={,\space},
-    \c!lastpubsep={,\space},
-    \c!finalpubsep={,\space},
-    \c!right={)}]
-
-\definebtxcitevariant
-   [title]
-
-\definebtxcitevariant
-   [tag]
-   [\c!left={[},
-    \c!right={]}]
-
-\definebtxcitevariant
-   [key]
-   [tag]
-
-\definebtxcitevariant
-   [serial]
-   [\c!left={[},
-    \c!right={]}]
-
-\definebtxcitevariant
-   [page]
-   [\c!left={[},
-    \c!right={]}]
-
-\definebtxcitevariant
-   [pages]
-   [page]
-
-\definebtxcitevariant
-   [invertedshort]
-
-\definebtxcitevariant
-   [short]
-   [\c!left={[},
-    \c!right={]}]
-
-\definebtxcitevariant
-   [category]
-   [\c!left={[},
-    \c!right={]}]
-
-\definebtxcitevariant
-   [type]
-   [category]
-
-\definebtxcitevariant
-   [doi]
-   [\c!left={[},
-    \c!right={]}]
-
-\definebtxcitevariant
-   [url]
-   [\c!left={[},
-    \c!right={]}]
-
-\definebtxcitevariant
-   [page]
-   [\c!left=,
-    \c!right=]
-
-\definebtxcitevariant
-   [num]
-   [\c!compress=\v!yes,
-    \c!left={[},
-    \c!right={]},
-    \c!pubsep={,},
-    \c!lastpubsep={,},
-    \c!finalpubsep={,}]
-
-\definebtxcitevariant
-   [textnum]
-   [num]
-   [\c!left={Ref.\nbsp}, % {Refs.\nbsp}, if multiple?
-    %yuck! ={\btxlabeltext{\currentbtxspecification:Reference\btxsingularplural{num}{}{s}}\nbsp}
-    \c!right=,
-    \c!pubsep={,},
-    \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
-    \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space}]
+   \c!etaldisplay=\btxparameter\c!etallimit]
 
 % Do we want these in the format? Loading them delayed is somewhat messy.
 
@@ -1698,9 +1582,19 @@
 \loadbtxdefinitionfile[page]
 \loadbtxdefinitionfile[author]
 
-\setupbtx
-  [\c!specification=apa]
+% we assume that the users sets up the right specification and if not ... well,
+% hope for the best that something shows up and consult the manual otherwise
 
-% \letvalue{\??btxrenderingdefinition apa}\undefined % we will reload at runtime
+\unexpanded\def\usebtxdefinitions[#1]%
+  {\loadbtxdefinitionfile[#1]%     % for hh
+   \setupbtx[\c!specification=#1]} % for ab
+
+\setupbtx
+  [\c!specification=\s!default,
+   \c!dataset=\v!default,
+   \c!default=]
+
+\loadbtxdefinitionfile
+  [\s!default]
 
 \protect

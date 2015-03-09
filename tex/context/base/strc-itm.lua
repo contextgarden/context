@@ -15,7 +15,6 @@ local getvariable = jobpasses.getfield
 
 local texsetcount = tex.setcount
 local texsetdimen = tex.setdimen
-local texgetcount = tex.getcount
 
 local f_stamp     = string.formatters["itemgroup:%s:%s"]
 local counts      = table.setmetatableindex("number")
@@ -23,6 +22,8 @@ local counts      = table.setmetatableindex("number")
 -- We keep the counter at the Lua end so we can group the items within
 -- an itemgroup which in turn makes for less passes when one itemgroup
 -- entry is added or removed.
+
+local trialtypesetting = context.trialtypesetting
 
 function commands.analyzeitemgroup(name,level)
     local n = counts[name]
@@ -39,7 +40,7 @@ end
 
 function commands.registeritemgroup(name,level,nofitems,maxwidth)
     local n = counts[name]
-    if texgetcount("@@trialtypesetting") == 0 then
+    if not trialtypesetting() then
         -- no trialtypsetting
         setvariable(f_stamp(name,n), { nofitems, maxwidth }, level)
     elseif level == 1 then

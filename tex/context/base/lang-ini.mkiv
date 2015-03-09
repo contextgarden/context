@@ -111,6 +111,44 @@
      \csname\??language\s!default#2\endcsname
    \fi\fi\fi}
 
+\def\mainlanguageparameter#1%
+  {\ifcsname\??language\currentmainlanguage#1\endcsname
+     \csname\??language\currentmainlanguage#1\endcsname
+   \else\ifcsname\??language\currentmainlanguage\s!default\endcsname
+     \expandafter\specificlanguageparameter\csname\??language\currentmainlanguage\s!default\endcsname{#1}%
+   \else\ifcsname\??language\s!default#1\endcsname
+     \csname\??language\s!default#1\endcsname
+   \fi\fi\fi}
+
+\def\currentusedlanguage{\currentlanguage}
+
+\let\usedlanguageparameter\languageparameter
+
+\def\askedlanguageparameter#1% assumes \currentusedlanguage being set
+  {\ifcsname\??language\currentusedlanguage#1\endcsname
+     \csname\??language\currentusedlanguage#1\endcsname
+   \else\ifcsname\??language\currentusedlanguage\s!default\endcsname
+     \expandafter\specificlanguageparameter\csname\??language\currentusedlanguage\s!default\endcsname{#1}%
+   \else\ifcsname\??language\s!default#1\endcsname
+     \csname\??language\s!default#1\endcsname
+   \fi\fi\fi}
+
+\unexpanded\def\setlanguageparameter#1%
+  {\edef\currentusedlanguage{\reallanguagetag{#1\c!language}}%
+  %\let\setlanguageparameter\gobbleoneargument
+   \ifx\currentusedlanguage\empty
+     \let\currentusedlanguage  \currentlanguage
+     \let\usedlanguageparameter\languageparameter
+   \else\ifx\currentusedlanguage\v!global
+     \let\currentusedlanguage  \currentmainlanguage
+     \let\usedlanguageparameter\mainlanguageparameter
+   \else\ifx\currentusedlanguage\v!local
+     \let\currentusedlanguage  \currentlanguage
+     \let\usedlanguageparameter\languageparameter
+   \else
+     \let\usedlanguageparameter\askedlanguageparameter
+   \fi\fi\fi}
+
 \unexpanded\def\setupcurrentlanguage[#1]%
   {\setcurrentlanguage\currentmainlanguage{#1}}
 

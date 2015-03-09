@@ -237,7 +237,8 @@
   {\expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
 
 \unexpanded\def\setlabeltextpair#1#2#3#4#5% a fast one for usage at the Lua end
-  {\expandafter\def\csname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
+  {%\writestatus{!!!!}{#1:\reallanguagetag{#2}:#3}%
+   \expandafter\def\csname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
 
 \def\lang_labels_text_prefix_copy[#1][#2]%
   {\ifsecondargument
@@ -319,7 +320,7 @@
 %D \assigntranslation[en=something,nl=iets]\to\command
 %D \stoptyping
 
-\def\assigntranslation[#1]\to#2%
+\unexpanded\def\assigntranslation[#1]\to#2% bad, this \to
   {\getparameters[\??translation][#1]%
    \edef#2{\csname\??translation\currentlanguage\endcsname}}
 

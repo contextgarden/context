@@ -1,0 +1,27 @@
+
+%D \module
+%D   [       file=typo-cap,
+%D        version=2009.03.27, % code moved from core-spa.mkiv
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Capping,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Characters}
+
+\unprotect
+
+%D Maybe we need a more clever system: either command or style mode etc. so
+%D that we can avoid the grouped mess in a simple style switch.
+
+\registerctxluafile{typo-chr}{1.001}
+
+%unexpanded\def\removepunctuation{\ctxcommand{signal("removepunctuation")}}
+\unexpanded\def\removepunctuation{\ctxcommand{removepunctuation()}}
+
+\protect

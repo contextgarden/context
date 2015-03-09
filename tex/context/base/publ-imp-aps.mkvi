@@ -1,3 +1,7 @@
+\endinput
+
+% todo
+
 %D \module
 %D   [       file=publ-imp-aps,
 %D        version=2013.12.12,
@@ -9,8 +13,6 @@
 %C
 %C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
 %D by \PRAGMA. See mreadme.pdf for details.
-
-% \loadbtxdefinitionfile[def]
 
 \startbtxrenderingdefinitions[aps]
 
@@ -31,7 +33,12 @@
 
 % set all APS compliant values (may be redundant but we do not count on defaults.)
 
-\setupbtxlistvariant
+\setupbtxrendering
+  [sorttype=, % num ?
+   numbering=yes]
+
+\definebtxlistvariant
+  [aps]
   [\c!namesep={,\space},
    \c!lastnamesep={,\space and\space},
    \c!finalnamesep={,\space and\space},
@@ -123,11 +130,6 @@
     \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
     \c!authorconversion=\v!name]
 
-\setupbtxrendering
-    [sorttype=, % num ?
-     numbering=yes]
-
-% Should the following be loaded by default?
 
 %D In order to be able to get journals expanded (or normalized or abbreviated) you need
 %D to load a list:
@@ -513,15 +515,15 @@
     \btxspace
     \begingroup
         \setbreakpoints[doi]
-        \btxdoifelseinteractive {url} {
+        \ifconditional\btxinteractive
             \goto {
                 \btxflush{url}
             } [
                 url(\btxflush{url})
             ]
-        } {
+        \else
             \btxflush{url}
-        }
+        \fi
     \endgroup
 \stoptexdefinition
 
@@ -530,15 +532,15 @@
     \btxspace
     \begingroup
         \setbreakpoints[doi]
-        \btxdoifelseinteractive {doi} {
+        \ifconditional\btxinteractive
             \goto {
                 doi:\btxflush{doi}
             } [
                 url(http://dx.doi.org/\btxflush{doi})
             ]
-        } {
+        \else
             doi:\btxflush{doi}
-        }
+        \fi
     \endgroup
 \stoptexdefinition
 

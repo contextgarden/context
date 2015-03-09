@@ -30,43 +30,27 @@ local specification = {
         -- vons Last, Jrs, First
         -- Vons, Last, Jrs, First
         --
-        author      = "author",
+        author      = "author", -- interpreted as name(s)
         editor      = "author",
         artist      = "author",
         interpreter = "author",
         composer    = "author",
         producer    = "author",
-        doi         = "url",
+        doi         = "url",        -- an external link
         url         = "url",
-        page        = "pagenumber",
+        page        = "pagenumber", -- number or range: f--t
         pages       = "pagenumber",
-        keywords    = "keyword",
+        volume      = "range",
+        number      = "range",
+        keywords    = "keyword",    -- comma|-|separated list
+        year        = "number",
     },
     --
     -- categories with their specific fields
     --
     categories = {
         --
-        -- the following fields are for documentation and testing purposes
-        --
-        ["demo-a"] = {
-            sets     = {
-                author  = { "author", "institution", "organization" },
-                doi     = { "doi", "url" },
-            },
-            required = { "author", "title", "year", "note", "doi" },
-            optional = { "subtitle", "file" },
-        },
-        ["demo-b"] = {
-            sets     = {
-                authors = { "author", "institution", "organization" },
-                doi     = { "doi", "url" },
-            },
-            required = { "authors", "title", "year", "note", "doi" },
-            optional = { "subtitle", "file" },
-        },
-        --
-        -- more categories are added below
+        -- categories are added below
         --
     },
 }
@@ -78,7 +62,8 @@ local generic = {
     -- allows the substitution of an alternate field.
     --
     -- note that anything can get assigned a doi or be available online.
-    doi = { "doi", "url" },
+    doi        = { "doi", "url" },
+    editionset = { "edition", "volume", "number", "pages" },
 }
 
 -- Definition of recognized categories and the fields that they contain.
@@ -98,7 +83,6 @@ local categories = specification.categories
 categories.article = {
     sets = {
         author = { "author", "editor", "title" },
-	    volume = { "volume", "number", "pages" },
         doi    = generic.doi,
         isbn   = { "issn" },
     },
@@ -108,7 +92,7 @@ categories.article = {
     optional = {
         "year",
         "subtitle", "type", "file",
-        "journal", "volume",
+        "journal", "volume", "number", "pages",
         "doi", "note", "isbn"
     },
 }
@@ -124,7 +108,7 @@ categories.magazine = {
     },
     optional = {
         "subtitle", "type", "file",
-        "volume",
+        "number",
         "month", "day",
         "doi", "note", "isbn"
     },
@@ -174,15 +158,15 @@ categories.standard = {
 
 categories.book = {
     sets = {
-        author  = { "author", "editor", "publisher", "title" },
-        edition = { "edition", "volume", "number", "pages" },
-        doi     = generic.doi,
+        author     = { "author", "editor", "publisher", "title" },
+        editionset = generic.editionset,
+        doi        = generic.doi,
     },
     required = { "author" },
     optional = {
         "year", "month", "day",
         "subtitle", "type",  "file",
-        "edition", "series",
+        "editionset", "series",
         "address",
         "doi", "note", "isbn"
     },
@@ -192,9 +176,9 @@ categories.book = {
 
 categories.inbook = {
     sets = {
-        author  = { "author", "editor", "publisher", "title", "chapter" },
-        edition = { "edition", "volume", "number", "pages" },
-        doi     = generic.doi,
+        author     = { "author", "editor", "publisher", "title", },
+        editionset = generic.editionset,
+        doi        = generic.doi,
     },
     required = {
         "author",
@@ -202,7 +186,33 @@ categories.inbook = {
     },
     optional = {
         "subtitle", "type", "file",
-        "edition", "series",
+        "booktitle",
+        -- APA ignores this: "chapter",
+        "editionset", "series",
+        "month",
+        "address",
+        "doi", "note", "isbn"
+    },
+}
+
+-- a book having its own title as part of a collection.
+-- (like inbook, but we here make booktitle required)
+
+categories.incollection = {
+    sets = {
+        author     = { "author", "editor", "publisher", "title", },
+        editionset = generic.editionset,
+        doi        = generic.doi,
+    },
+    required = {
+        "author",
+        "booktitle",
+        "year",
+    },
+    optional = {
+        "subtitle", "type", "file",
+        "editionset", "series",
+        -- APA ignores this: "chapter",
         "month",
         "address",
         "doi", "note", "isbn"
@@ -213,61 +223,41 @@ categories.inbook = {
 
 categories.booklet = {
     sets = {
-        author = { "author", "title" },
+        author = { "author", "title", },
+        publisher = { "howpublished" }, -- no "publisher"!
         doi    = generic.doi,
     },
     required = {
         "author"
     },
     optional = {
+        "publisher",
         "year", "month",
         "subtitle", "type", "file",
         "address",
-        "howpublished",
         "doi", "note", "isbn"
      },
-}
-
--- a part of a book having its own title.
-
-categories.incollection = {
-    sets = {
-        author  = { "author", "editor", "publisher", "title" },
-        edition = { "edition", "volume", "number", "pages" },
-        doi     = generic.doi,
-    },
-    required = {
-        "author",
-        "booktitle",
-        "year",
-    },
-    optional = {
-        "subtitle", "type", "file",
-        "month",
-        "edition", "series",
-        "chapter",
-        "address",
-        "doi", "note", "isbn"
-    },
 }
 
 -- the proceedings of a conference.
 
 categories.proceedings = {
     sets = {
-        author  = { "editor", "publisher", "title" },
-        edition = { "edition", "volume", "number", "pages" },
-        doi     = generic.doi,
+        author     = { "editor", "organization", "publisher", "title" }, -- no "author"!
+        publisher  = { "publisher", "organization" },
+        editionset = generic.editionset,
+        doi        = generic.doi,
     },
     required = {
         "author",
         "year"
     },
     optional = {
+        "publisher",
         "subtitle", "file",
-        "edition", "series",
+        "editionset", "series",
         "month",
-        "address", "organization",
+        "address",
         "doi", "note", "isbn"
     },
 }
@@ -331,9 +321,10 @@ categories.phdthesis = categories.mastersthesis
 
 categories.techreport = {
     sets = {
-        -- no "edition"!
-        edition = { "type", "volume", "number", "pages" },
-        doi     = generic.doi,
+        author     = { "author", "institution", "publisher", "title" },
+        publisher  = { "publisher", "institution", },
+        editionset = { "type", "volume", "number", "pages" }, -- no "edition"!
+        doi        = generic.doi,
     },
     required = {
         "author",
@@ -342,10 +333,11 @@ categories.techreport = {
         "year"
     },
     optional = {
-        "subtitle", "file",
-        "edition", -- set, not field!
-        "month",
+        "publisher",
         "address",
+        "subtitle", "file",
+        "editionset",
+        "month",
         "doi", "note", "isbn"
     },
 }
@@ -354,16 +346,19 @@ categories.techreport = {
 
 categories.manual = {
     sets = {
-        edition = { "edition", "volume", "number", "pages" },
-        doi     = generic.doi,
+        author     = { "author", "organization", "publisher", "title" },
+        publisher  = { "publisher", "organization", },
+        editionset = generic.editionset,
+        doi        = generic.doi,
     },
     required = {
         "title"
     },
     optional = {
+        "author", "publisher",
+        "address",
         "subtitle", "file",
-        "author", "address", "organization",
-        "edition", "month", "year",
+        "editionset", "month", "year",
         "doi", "note", "isbn"
     },
 }
@@ -372,20 +367,25 @@ categories.manual = {
 
 categories.patent = {
     sets = {
+        author = { "author", "assignee", },
+        publisher = { "publisher", "assignee", },
+        year = { "year", "yearfiled", },
+        month = { "month", "monthfiled", },
+        day = { "day", "dayfiled", },
         doi = generic.doi,
     },
     required = {
         "nationality",
         "number",
-        "year", "yearfiled"
+        "year",
     },
     optional = {
         "type",
         --check this: "language",
-        "author", "assignee",
+        "author", "publisher",
         "title", "subtitle", "file",
         "address",
-        "day", "dayfiled", "month", "monthfiled",
+        "day", "month",
         "doi", "note"
     },
 }

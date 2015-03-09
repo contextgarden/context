@@ -56,7 +56,7 @@
 %def\xmlcontent             #1{\ctxlxml{content("#1")}}
 %def\xmlflushstripped       #1{\ctxlxml{strip("#1",true)}}
 \def\xmldirect              #1{\ctxlxml{direct("#1")}} % in loops, not dt but root
-\def\xmlidx             #1#2#3{\ctxlxml{idx("#1","#2",\number#3)}}
+\def\xmlidx             #1#2#3{\ctxlxml{idx("#1","#2",\number#3)}} % not ok
 \def\xmlinclude         #1#2#3{\ctxlxml{include("#1","#2","#3",true)}}
 \def\xmlincludeoptions#1#2#3#4{\ctxlxml{include("#1","#2","#3","#4")}}
 \def\xmlinclusion           #1{\ctxlxml{inclusion("#1")}}
@@ -100,7 +100,19 @@
 
 \def\xmltoparameters        #1{\ctxlxml{toparameters("#1")}}
 
-\def\xmltofile          #1#2#3{\ctxlxml{tofile("#1","#2","#3")}} % id pattern filename
+\def\xmltofile          #1#2#3{\ctxlxml{tofile("#1","#2","#3")}}        % id pattern filename
+\def\xmltobuffer        #1#2#3{\ctxlxml{tobuffer("#1","#2","#3")}}      % id pattern name
+\def\xmltobufferverbose #1#2#3{\ctxlxml{tobuffer("#1","#2","#3",true)}} % id pattern name
+
+% goodie:
+
+\unexpanded\def\xmlprettyprint#1#2%
+  {\xmltobufferverbose{#1}{.}{xml-temp}%
+   \ifdefined\scitebuffer
+     \scitebuffer[#2][xml-temp]%
+   \else
+     \typebuffer[xml-temp][\c!option=#2]%
+   \fi}
 
 % kind of special:
 
@@ -135,8 +147,8 @@
 %\ef\xmlsetup#1#2{\setupwithargument{#2}{#1}}
 \let\xmlsetup\setupwithargumentswapped
 
-\let\xmls\setupwithargumentswapped
-\let\xmlw\setupwithargument
+\let\xmls\setupwithargumentswapped % hardly any faster
+\let\xmlw\setupwithargument        % hardly any faster
 
 \newtoks \registeredxmlsetups
 

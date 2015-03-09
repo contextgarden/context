@@ -14,6 +14,7 @@ if not nodes.properties then return end
 
 local next, rawget = next, rawget
 local utfchar = utf.char
+local fastcopy = table.fastcopy
 
 local trace_injections = false  trackers.register("fonts.injections", function(v) trace_injections = v end)
 
@@ -89,6 +90,28 @@ function injections.reset(n)
     end
 end
 
+function injections.copy(target,source)
+    local sp = rawget(properties,source)
+    if sp then
+        local tp = rawget(properties,target)
+        local si = rawget(sp,"injections")
+        if si then
+            si = fastcopy(si)
+            if tp then
+                tp.injections = si
+            else
+                propertydata[target] = {
+                    injections = si,
+                }
+            end
+        else
+            if tp then
+                tp.injections = nil
+            end
+        end
+    end
+end
+
 function injections.setligaindex(n,index)
     local p = rawget(properties,n)
     if p then
@@ -114,7 +137,7 @@ function injections.getligaindex(n,default)
     if p then
         local i = rawget(p,"injections")
         if i then
-            return p.ligaindex or default
+            return i.ligaindex or default
         end
     end
     return default
@@ -186,12 +209,14 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2l
             if p then
                 local i = rawget(p,"injections")
                 if i then
-                    if leftkern ~= 0 or rightkern ~= 0 then
-                        i.leftkern  = i.leftkern  or 0 + leftkern
-                        i.rightkern = i.rightkern or 0 + rightkern
+                    if leftkern ~= 0 then
+                        i.leftkern  = (i.leftkern  or 0) + leftkern
+                    end
+                    if rightkern ~= 0 then
+                        i.rightkern = (i.rightkern or 0) + rightkern
                     end
                     if yoffset ~= 0 then
-                        i.yoffset = i.yoffset or 0 + yoffset
+                        i.yoffset = (i.yoffset or 0) + yoffset
                     end
                 elseif leftkern ~= 0 or rightkern ~= 0 then
                     p.injections = {
@@ -241,7 +266,7 @@ function injections.setkern(current,factor,rlmode,x,injection)
         if p then
             local i = rawget(p,injection)
             if i then
-                i.leftkern = dx + i.leftkern or 0
+                i.leftkern = dx + (i.leftkern or 0)
             else
                 p[injection] = {
                     leftkern = dx,
@@ -312,7 +337,7 @@ local function show(n,what,nested,symbol)
     if n then
         local p = rawget(properties,n)
         if p then
-            local i = p[what]
+            local i = rawget(p,what)
             if i then
                 local leftkern  = i.leftkern  or 0
                 local rightkern = i.rightkern or 0
@@ -354,9 +379,9 @@ local function showsub(n,what,where)
     report_injections("end subrun")
 end
 
-local function trace(head)
-    report_injections("begin run: %s kerns, %s pairs, %s marks and %s cursives registered",
-        nofregisteredkerns,nofregisteredpairs,nofregisteredmarks,nofregisteredcursives)
+local function trace(head,where)
+    report_injections("begin run %s: %s kerns, %s pairs, %s marks and %s cursives registered",
+        where or "",nofregisteredkerns,nofregisteredpairs,nofregisteredmarks,nofregisteredcursives)
     local n = head
     while n do
         local id = getid(n)
@@ -479,7 +504,9 @@ local function inject_marks(marks,nofmarks)
                     local pp = rawget(properties,p)
                     if pp then
                         pp = rawget(pp,"injections")
-                        rightkern = pp.rightkern
+                        if pp then
+                            rightkern = pp.rightkern
+                        end
                     end
                     if rightkern then -- x and w ~= 0
                         if pn.markdir < 0 then
@@ -495,7 +522,7 @@ local function inject_marks(marks,nofmarks)
                             else
                                 ox = px - pn.markx - leftkern
                             end
-                         -- report_injections("l2r case 1: %p",ox)
+-- report_injections("l2r case 1: %p",ox)
                         end
                     else
                         -- we need to deal with fonts that have marks with width
@@ -529,7 +556,7 @@ local function inject_marks(marks,nofmarks)
                     end
                     setfield(n,"yoffset",oy)
                 else
-                 -- normally this can't happen (only when in trace mode which is a special case anyway)
+                    -- normally this can't happen (only when in trace mode which is a special case anyway)
                  -- report_injections("missing mark anchor %i",pn.markbase or 0)
                 end
             end
@@ -551,7 +578,7 @@ local function inject_cursives(glyphs,nofglyphs)
             if cursivex then
                 if cursiveanchor then
                     if cursivex ~= 0 then
-                        pn.leftkern = pn.leftkern or 0 + cursivex
+                        pn.leftkern = (pn.leftkern or 0) + cursivex
                     end
                     if lastanchor then
                         if maxc == 0 then
@@ -644,7 +671,7 @@ end
 local function inject_everything(head,where)
     head = tonut(head)
     if trace_injections then
-        trace(head)
+        trace(head,"everything")
     end
     local glyphs, nofglyphs, marks, nofmarks
     if nofregisteredpairs > 0 then
@@ -656,7 +683,7 @@ local function inject_everything(head,where)
         if nofregisteredcursives > 0 then
             inject_cursives(glyphs,nofglyphs)
         end
-        if nofregisteredmarks > 0 then
+        if nofregisteredmarks > 0 then -- and nofmarks > 0
             inject_marks(marks,nofmarks)
         end
         inject_kerns(head,glyphs,nofglyphs)
@@ -675,7 +702,7 @@ end
 local function inject_kerns_only(head,where)
     head = tonut(head)
     if trace_injections then
-        trace(head)
+        trace(head,"kerns")
     end
     local n = head
     local p = nil
@@ -818,7 +845,7 @@ end
 local function inject_pairs_only(head,where)
     head = tonut(head)
     if trace_injections then
-        trace(head)
+        trace(head,"pairs")
     end
     --
     local n = head

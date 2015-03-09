@@ -160,7 +160,7 @@ local function simplify(d,nodefault)
                     t[k] = simplify(v)
                 end
             elseif tv == "string" then
-                if v ~= "" and v ~= "default" then
+                if v ~= "" then
                     t[k] = v
                 end
             elseif tv == "boolean" then
@@ -336,7 +336,8 @@ function sets.getall(namespace,block,name)
     end
 end
 
--- messy (will be another keyword, fixedconversion)
+-- messy (will be another keyword, fixedconversion) .. needs to be documented too
+-- maybe we should cache
 
 local splitter = lpeg.splitat("::")
 

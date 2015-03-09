@@ -32,19 +32,23 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- context(string.formatters["%!tex!"]("${}"))
 -- context("%!tex!","${}")
 
-local tex = tex
-
-context       = context or { }
-local context = context
-
-local format, gsub, validstring, stripstring = string.format, string.gsub, string.valid, string.strip
-local next, type, tostring, tonumber, setmetatable, unpack, select = next, type, tostring, tonumber, setmetatable, unpack, select
+local format, validstring, stripstring = string.format, string.valid, string.strip
+local next, type, tostring, tonumber, setmetatable, unpack, select, rawset = next, type, tostring, tonumber, setmetatable, unpack, select, rawset
 local insert, remove, concat = table.insert, table.remove, table.concat
 local lpegmatch, lpegC, lpegS, lpegP, lpegV, lpegCc, lpegCs, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.V, lpeg.Cc, lpeg.Cs, lpeg.patterns
-local formatters = string.formatters -- using formatteds is slower in this case
+local formatters = string.formatters -- using formatters is slower in this case
+
+context                 = context    or { }
+commands                = commands   or { }
+interfaces              = interfaces or { }
+
+local context           = context
+local commands          = commands
+local interfaces        = interfaces
 
 local loaddata          = io.loaddata
 
+local tex               = tex
 local texsprint         = tex.sprint
 local texprint          = tex.print
 local texwrite          = tex.write
@@ -87,7 +91,7 @@ local storefunction, flushfunction
 local storenode, flushnode
 local registerfunction, unregisterfunction, reservefunction, knownfunctions, callfunctiononce
 
-if luafunctions then
+-- if luafunctions then
 
     local freed, nofused, noffreed = { }, 0, 0 -- maybe use the number of @@trialtypesetting
 
@@ -148,25 +152,122 @@ if luafunctions then
         end
     end
 
-    registerfunction = function(f)
-        if type(f) == "string" then
-            f = loadstring(f)
+ -- registerfunction = function(f)
+ --     if type(f) == "string" then
+ --         f = loadstring(f)
+ --     end
+ --     if type(f) ~= "function" then
+ --         f = function() report_cld("invalid function %A",f) end
+ --     end
+ --     if noffreed > 0 then
+ --         local n = freed[noffreed]
+ --         freed[noffreed] = nil
+ --         noffreed = noffreed - 1
+ --         luafunctions[n] = f
+ --         return n
+ --     else
+ --         nofused = nofused + 1
+ --         luafunctions[nofused] = f
+ --         return nofused
+ --     end
+ -- end
+
+    storage.storedfunctions = storage.storedfunctions or { }
+    local storedfunctions   = storage.storedfunctions
+    local initex            = environment.initex
+
+    storage.register("storage/storedfunctions", storedfunctions, "storage.storedfunctions")
+
+    local f_resolve = nil
+    local p_resolve  = ((1-lpegP("."))^1 / function(s) f_resolve = f_resolve[s] end * lpegP(".")^0)^1
+
+    function resolvestoredfunction(str)
+        f_resolve = global
+        lpegmatch(p_resolve,str)
+        return f_resolve
+    end
+
+    local function expose(slot,f,...) -- so we can register yet undefined functions
+        local func = resolvestoredfunction(f)
+        if not func then
+            func = function() report_cld("beware: unknown function %i called: %s",slot,f) end
         end
-        if type(f) ~= "function" then
-            f = function() report_cld("invalid function %A",f) end
-        end
-        if noffreed > 0 then
-            local n = freed[noffreed]
-            freed[noffreed] = nil
-            noffreed = noffreed - 1
-            luafunctions[n] = f
-            return n
-        else
-            nofused = nofused + 1
-            luafunctions[nofused] = f
-            return nofused
+        luafunctions[slot] = func
+        return func(...)
+    end
+
+    if initex then
+        -- todo: log stored functions
+    else
+        local slots = table.sortedkeys(storedfunctions)
+        local last  = #slots
+        if last > 0 then
+            -- we restore the references
+            for i=1,last do
+                local slot = slots[i]
+                local data = storedfunctions[slot]
+                luafunctions[slot] = function(...)
+                    return expose(slot,data,...)
+                end
+            end
+            -- we now know how many are defined
+            nofused = slots[last]
+            -- normally there are no holes in the list yet
+            for i=1,nofused do
+                if not luafunctions[i] then
+                    noffreed = noffreed + 1
+                    freed[noffreed] = i
+                end
+            end
+         -- report_cld("%s registered functions, %s freed slots",last,noffreed)
         end
     end
+
+    registerfunction = function(f,direct) -- either f=code or f=namespace,direct=name
+        local slot, func
+        if noffreed > 0 then
+            slot = freed[noffreed]
+            freed[noffreed] = nil
+            noffreed = noffreed - 1
+        else
+            nofused = nofused + 1
+            slot = nofused
+        end
+        if direct then
+            if initex then
+                func = function(...)
+                    expose(slot,f,...)
+                end
+                if initex then
+                    storedfunctions[slot] = f
+                end
+            else
+                func = resolvestoredfunction(f)
+            end
+            if type(func) ~= "function" then
+                func = function() report_cld("invalid resolve %A",f) end
+            end
+        elseif type(f) == "string" then
+            func = loadstring(f)
+            if type(func) ~= "function" then
+                func = function() report_cld("invalid code %A",f) end
+            end
+        elseif type(f) == "function" then
+            func = f
+        else
+            func = function() report_cld("invalid function %A",f) end
+        end
+        luafunctions[slot] = func
+        return slot
+    end
+
+ -- do
+ --     commands.test = function(str) report_cld("test function: %s", str) end
+ --     if initex then
+ --         registerfunction("commands.test") -- number 1
+ --     end
+ --     luafunctions[1]("okay")
+ -- end
 
     unregisterfunction = function(slot)
         if luafunctions[slot] then
@@ -201,92 +302,116 @@ if luafunctions then
 
     knownfunctions = luafunctions
 
-else
+    -- The next hack is a convenient way to define scanners at the Lua end and
+    -- get them available at the TeX end. There is some dirty magic needed to
+    -- prevent overload during format loading.
 
-    local luafunctions, noffunctions = { }, 0
-    local luanodes, nofnodes = { }, 0
+    -- interfaces.scanners.foo = function() context("[%s]",tokens.scanners.string()) end : \scan_foo
 
-    usedstack = function()
-        return noffunctions + nofnodes, 0
-    end
+    interfaces.storedscanners = interfaces.storedscanners or { }
+    local storedscanners      = interfaces.storedscanners
 
-    flushfunction = function(n)
-        local sn = luafunctions[n]
-        if not sn then
-            report_cld("data with id %a cannot be found on stack",n)
-        elseif not sn() and texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
-            luafunctions[n] = nil
-        end
-    end
+    storage.register("interfaces/storedscanners", storedscanners, "interfaces.storedscanners")
 
-    storefunction = function(ti)
-        noffunctions = noffunctions + 1
-        luafunctions[noffunctions] = ti
-        return noffunctions
-    end
-
- -- freefunction = function(n)
- --     luafunctions[n] = nil
- -- end
-
-    flushnode = function(n)
-        local sn = luanodes[n]
-        if not sn then
-            report_cld("data with id %a cannot be found on stack",n)
-        elseif texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
-            writenode(sn)
-            luanodes[n] = nil
+    interfaces.scanners = table.setmetatablenewindex(function(t,k,v)
+        if storedscanners[k] then
+            -- \scan_<k> is already in the format
+         -- report_cld("using interface scanner: %s",k)
         else
-            writenode(copynodelist(sn))
+            -- todo: allocate slot here and pass it
+            storedscanners[k] = true
+         -- report_cld("installing interface scanner: %s",k)
+            context("\\installctxfunction{scan_%s}{interfaces.scanners.%s}",k,k)
         end
-    end
+        rawset(t,k,v)
+    end)
 
-    storenode = function(ti)
-        nofnodes = nofnodes + 1
-        luanodes[nofnodes] = ti
-        return nofnodes
-    end
-
-    _cldf_ = flushfunction -- global
-    _cldn_ = flushnode     -- global
- -- _cldl_ = function(n) return luafunctions[n]() end -- luafunctions(n)
-    _cldl_ = luafunctions
-
-    registerfunction = function(f)
-        if type(f) == "string" then
-            f = loadstring(f)
-        end
-        if type(f) ~= "function" then
-            f = function() report_cld("invalid function %A",f) end
-        end
-        noffunctions = noffunctions + 1
-        luafunctions[noffunctions] = f
-        return noffunctions
-    end
-
-    unregisterfunction = function(slot)
-        if luafunctions[slot] then
-            luafunctions[slot] = nil
-        else
-            report_cld("invalid function slot %A",slot)
-        end
-    end
-
-    reservefunction = function()
-        noffunctions = noffunctions + 1
-        return noffunctions
-    end
-
-    callfunctiononce = function(slot)
-        luafunctions[slot](slot)
-        luafunctions[slot] = nil
-    end
-
-    table.setmetatablecall(luafunctions,function(t,n) return luafunctions[n](n) end)
-
-    knownfunctions = luafunctions
-
-end
+-- else -- by now this is obsolete
+--
+--     local luafunctions, noffunctions = { }, 0
+--     local luanodes, nofnodes = { }, 0
+--
+--     usedstack = function()
+--         return noffunctions + nofnodes, 0
+--     end
+--
+--     flushfunction = function(n)
+--         local sn = luafunctions[n]
+--         if not sn then
+--             report_cld("data with id %a cannot be found on stack",n)
+--         elseif not sn() and texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
+--             luafunctions[n] = nil
+--         end
+--     end
+--
+--     storefunction = function(ti)
+--         noffunctions = noffunctions + 1
+--         luafunctions[noffunctions] = ti
+--         return noffunctions
+--     end
+--
+--  -- freefunction = function(n)
+--  --     luafunctions[n] = nil
+--  -- end
+--
+--     flushnode = function(n)
+--         local sn = luanodes[n]
+--         if not sn then
+--             report_cld("data with id %a cannot be found on stack",n)
+--         elseif texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
+--             writenode(sn)
+--             luanodes[n] = nil
+--         else
+--             writenode(copynodelist(sn))
+--         end
+--     end
+--
+--     storenode = function(ti)
+--         nofnodes = nofnodes + 1
+--         luanodes[nofnodes] = ti
+--         return nofnodes
+--     end
+--
+--     _cldf_ = flushfunction -- global
+--     _cldn_ = flushnode     -- global
+--  -- _cldl_ = function(n) return luafunctions[n]() end -- luafunctions(n)
+--     _cldl_ = luafunctions
+--
+--     registerfunction = function(f)
+--         if type(f) == "string" then
+--             f = loadstring(f)
+--         end
+--         if type(f) ~= "function" then
+--             f = function() report_cld("invalid function %A",f) end
+--         end
+--         noffunctions = noffunctions + 1
+--         luafunctions[noffunctions] = f
+--         return noffunctions
+--     end
+--
+--     unregisterfunction = function(slot)
+--         if luafunctions[slot] then
+--             luafunctions[slot] = nil
+--         else
+--             report_cld("invalid function slot %A",slot)
+--         end
+--     end
+--
+--     reservefunction = function()
+--         noffunctions = noffunctions + 1
+--         return noffunctions
+--     end
+--
+--     callfunctiononce = function(slot)
+--         luafunctions[slot](slot)
+--         luafunctions[slot] = nil
+--     end
+--
+--     table.setmetatablecall(luafunctions,function(t,n) return luafunctions[n](n) end)
+--
+--     knownfunctions = luafunctions
+--
+-- end
 
 context.registerfunction   = registerfunction
 context.unregisterfunction = unregisterfunction
@@ -295,8 +420,12 @@ context.knownfunctions     = knownfunctions
 context.callfunctiononce   = callfunctiononce   _cldo_ = callfunctiononce
 context.storenode          = storenode -- private helper
 
-function commands.ctxfunction(code)
-    context(registerfunction(code))
+function commands.ctxfunction(code,namespace)
+    context(registerfunction(code,namespace))
+end
+
+function context.trialtypesetting()
+    return texgetcount("@@trialtypesetting") ~= 0
 end
 
 -- local f_cldo       = formatters["_cldo_(%i)"]

@@ -72,15 +72,28 @@
 % which in fact we can do by defining write18 as macro instead of
 % primitive ... todo.
 
+% \unexpanded\def\write#1#%
+%   {\syst_write{#1}}
+%
+% \def\syst_write#1#2%
+%   {\ctxcommand{write(\number#1,\!!bs\normalunexpanded{#2}\!!es)}}
+%
+% \unexpanded\def\writeviatex#1#2%
+%   {\ifx\normalwrite\relax\else
+%      \normalwrite#1{#2}%
+%    \fi}
+
+% we have no way yet to pickup \immediate unless we redefine it
+% we assume immediate execution
+
+\def\syst_write_execute#1%
+  {\ctxcommand{execute(\!!bs#1\!!es)}}
+
 \unexpanded\def\write#1#%
-  {\syst_write{#1}}
-
-\def\syst_write#1#2%
-  {\ctxcommand{write(\number#1,\!!bs#2\!!es)}}
-
-\unexpanded\def\writeviatex#1#2%
-  {\ifx\normalwrite\relax\else
-     \normalwrite#1{#2}%
+  {\ifnum#1=18
+     \expandafter\syst_write_execute
+   \else
+     \normalwrite#1%
    \fi}
 
 \protect \endinput

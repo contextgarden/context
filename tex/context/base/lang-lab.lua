@@ -63,6 +63,7 @@ function labels.define(class,name,prefixed)
     if list then
         report_labels("defining label set %a",name)
         for tag, data in next, list do
+            tag = variables[tag] or tag
             if data.hidden then
                 -- skip
             elseif prefixed then

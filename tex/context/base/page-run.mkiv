@@ -74,9 +74,11 @@
 
 \startluacode
 local format, concat = string.format, table.concat
+local todimen = number.todimen
+local texdimen = tex.dimen
 
-local function todimen(name,unit,fmt)
-    return number.todimen(tex.dimen[name],unit,fmt)
+local function asdimen(name,unit)
+    return todimen(texdimen[name],unit,"%0.4f") -- 4 is more than enough, even 3 would be okay
 end
 
 local function checkedoptions(options)
@@ -122,7 +124,7 @@ function commands.showlayoutvariables(options)
         for i=1,#dimensions do
             local d = dimensions[i]
             if options[d] then
-                context("%s%s",todimen(name,d,"%0.4f"),d)
+                context("%s%s",asdimen(name,d),d)
                 context.NC()
             end
         end
@@ -143,7 +145,7 @@ function commands.showlayoutvariables(options)
         for i=1,#dimensions do
             local d = dimensions[i]
             if options[d] then
-                result[#result+1] = format("%12s%s",todimen(name,d,"%0.4f"),d)
+                result[#result+1] = format("%12s%s",asdimen(name,d),d)
             end
         end
         commands.writestatus("layout",format("%-24s %s",interfaces.interfacedcommand(name),concat(result," ")))

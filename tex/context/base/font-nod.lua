@@ -11,10 +11,10 @@ if not modules then modules = { } end modules ['font-nod'] = {
 might become a runtime module instead. This module will be cleaned up!</p>
 --ldx]]--
 
-local tonumber, tostring = tonumber, tostring
+local tonumber, tostring, rawget = tonumber, tostring, rawget
 local utfchar = utf.char
-local concat = table.concat
-local match, gmatch, concat, rep = string.match, string.gmatch, table.concat, string.rep
+local concat, fastcopy = table.concat, table.fastcopy
+local match, rep = string.match, string.rep
 
 local report_nodes = logs.reporter("fonts","tracing")
 
@@ -91,6 +91,25 @@ local fontdescriptions = hashes.descriptions
 local fontcharacters   = hashes.characters
 local fontproperties   = hashes.properties
 local fontparameters   = hashes.parameters
+
+local properties = nodes.properties.data
+
+-- direct.set_properties_mode(true,false)
+-- direct.set_properties_mode(true,true)  -- default
+
+local function freeze(h,where)
+ -- report_nodes("freezing %s",where)
+    for n in traverse_nodes(tonut(h)) do -- todo: disc but not traced anyway
+        local p = properties[n]
+        if p then
+            local i = p.injections         if i then p.injections        = fastcopy(i) end
+         -- local i = r.preinjections      if i then p.preinjections     = fastcopy(i) end
+         -- local i = r.postinjections     if i then p.postinjections    = fastcopy(i) end
+         -- local i = r.replaceinjections  if i then p.replaceinjections = fastcopy(i) end
+            -- only injections
+        end
+    end
+end
 
 function char_tracers.collect(head,list,tag,n)
     head = tonut(head)
@@ -269,7 +288,8 @@ end
 function step_tracers.glyphs(n,i)
     local c = collection[i]
     if c then
-        local b = hpack_node_list(copy_node_list(c)) -- multiple arguments
+        local c = copy_node_list(c)
+        local b = hpack_node_list(c) -- multiple arguments
         setbox(n,b)
     end
 end
@@ -414,10 +434,11 @@ end
 function step_tracers.check(head)
     if collecting then
         step_tracers.reset()
-        local n = copy_node_list(tonut(head))
+        local h = tonut(head)
+        local n = copy_node_list(h)
+        freeze(n,"check")
         injections.keepcounts(n) -- one-time
         injections.handler(n,"trace")
-     -- handlers.protectglyphs(n) -- can be option
         protect_glyphs(n)
         collection[1] = n
     end
@@ -427,10 +448,11 @@ function step_tracers.register(head)
     if collecting then
         local nc = #collection+1
         if messages[nc] then
-            local n = copy_node_list(tonut(head))
+            local h = tonut(head)
+            local n = copy_node_list(h)
+            freeze(n,"register")
             injections.keepcounts(n) -- one-time
             injections.handler(n,"trace")
-         -- handlers.protectglyph   s(n) -- can be option
             protect_glyphs(n)
             collection[nc] = n
         end

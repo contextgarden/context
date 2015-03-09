@@ -11,12 +11,16 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D There are some references to \LUA\ variants here but these concern
-%D (often old) experiments, moved from local test modules to here,
-%D cleaned up, but not really used. After all it's not that urgent
-%D and replacing helpers is a delicate process. Don't depend on it.
+%D There are some references to \LUA\ variants here but these concern (often old)
+%D experiments, moved from local test modules to here, cleaned up, but not really
+%D used. After all it's not that urgent and replacing helpers is a delicate process.
+%D Don't depend on it.
 
 \registerctxluafile{syst-aux}{1.001}
+
+% A dedicated primitive \ifvoidmacro\cs == \ifx\cs\empty is some 10% faster but
+% probably not that noticeable in practice. An \ifvoidtoks might make sense but we
+% don't test that often for it (and it's more work to implement in the engine).
 
 %D This is a stripped down combination of:
 %D
@@ -26,20 +30,18 @@
 %D \item \type {syst-new.tex}
 %D \stopitemize
 %D
-%D We keep them around (for \MKII) so you can find comments,
-%D experiences, intermediate versions and cleaner variants
-%D there (and also non-\ETEX\ variants).
+%D We keep them around (for \MKII) so you can find comments, experiences,
+%D intermediate versions and cleaner variants there (and also non-\ETEX\ variants).
 %D
-%D Contrary to the older files, we now assume that this one
-%D is used in \CONTEXT\ and therefore we might also assume that
-%D some basic functionality is available.
+%D Contrary to the older files, we now assume that this one is used in \CONTEXT\ and
+%D therefore we might also assume that some basic functionality is available.
 %D
-%D The original files contain previous implementations and notes about
-%D performance. This file will be stripped down in due time.
-
-%D Some of the macros here were only used in the bibliography module. They
-%D have been be moved to a separate syst module since the bib module is no
-%D longer using them. Some more will go away.
+%D The original files contain previous implementations and notes about performance.
+%D This file will be stripped down in due time.
+%D
+%D Some of the macros here were only used in the bibliography module. They have been
+%D be moved to a separate syst module since the bib module is no longer using them.
+%D Some more will go away.
 
 \unprotect
 
@@ -3403,6 +3405,7 @@
   {\expandafter\syst_helpers_checked_stripped_csname\string#1}
 
 \def\syst_helpers_checked_stripped_csname#1%
+ %{\ifx#1\letterbackslash\else#1\fi}
   {\if\noexpand#1\letterbackslash\else#1\fi}
 
 %D \macros

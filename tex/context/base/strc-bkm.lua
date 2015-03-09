@@ -80,8 +80,13 @@ function bookmarks.overload(name,text)
         end
     end
     if ls then
-        ls.titledata.bookmark = text
+        local titledata = ls.titledata
+        if titledata then
+            titledata.bookmark = text
+        end
     end
+    -- last resort
+ -- context.writetolist({name},text,"")
 end
 
 local function stripped(str) -- kind of generic
@@ -124,6 +129,24 @@ function bookmarks.place()
                 local name = metadata.name
                 if not metadata.nolist or forced[name] then -- and levelmap[name] then
                     local titledata = li.titledata
+                    --
+                    if not titledata then
+                        local userdata = li.userdata
+                        if userdata then
+                            local first  = userdata.first
+                            local second = userdata.second
+                            if first then
+                                if second then
+                                    titledata = { title = first .. " " .. second }
+                                else
+                                    titledata = { title = first }
+                                end
+                            else
+                                titledata = { title = second }
+                            end
+                        end
+                    end
+                    --
                     if titledata then
                         if not blockdone then
                             if showblocktitle then
@@ -151,12 +174,11 @@ function bookmarks.place()
                         local title = titledata.bookmark
                         if not title or title == "" then
                             -- We could typeset the title and then convert it.
-                            if not structural then
-                                -- placeholder, todo: bookmarklabel
-                                title = name .. ": " .. (titledata.title or "?")
-                            else
+                         -- if not structural then
+                         --     title = titledata.title or "?")
+                         -- else
                                 title = titledata.title or "?"
-                            end
+                         -- end
                         end
                         if numbered[name] then
                             local sectiondata = sections.collected[li.references.section]
@@ -174,12 +196,14 @@ function bookmarks.place()
                         noflevels = noflevels + 1
                         local references = li.references
                         levels[noflevels] = {
-                            level     = lastlevel,
-                            title     = stripped(title), -- can be replaced by converter
-                            reference = references,   -- has internal and realpage
-                            opened    = allopen or opened[name],
-                            realpage  = references and references.realpage or 0, -- handy for later
-                            usedpage  = true,
+                            level      = lastlevel,
+                            title      = stripped(title), -- can be replaced by converter
+                            reference  = references,   -- has internal and realpage
+                            opened     = allopen or opened[name],
+                            realpage   = references and references.realpage or 0, -- handy for later
+                            usedpage   = true,
+                            structural = structural,
+                            name       = name,
                         }
                     end
                 end
@@ -204,7 +228,11 @@ function bookmarks.flatten(levels)
         local function showthem()
             for i=1,noflevels do
                 local level = levels[i]
-                report_bookmarks("%i > %s > %s",level.level,level.reference.block,level.title)
+             -- if level.structural then
+             --     report_bookmarks("%i > %s > %s",level.level,level.reference.block,level.title)
+             -- else
+                    report_bookmarks("%i > %s > %s > %s",level.level,level.reference.block,level.name,level.title)
+             -- end
             end
         end
         if trace_bookmarks then

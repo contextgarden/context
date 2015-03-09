@@ -1004,8 +1004,34 @@ do  -- else too many locals
         return (gsub(cs,".->", ""))
     end
 
+--     local scan_string  = newtoken.scan_string
+--     local scan_dimen   = newtoken.scan_dimen
+--     local scan_number  = newtoken.scan_number
+--     local scan_boolean = newtoken.scan_boolean
+
+--     function commands.definefont_two()
+
+--         local global          = scan_boolean()
+--         local cs              = scan_string()
+--         local str             = scan_string()
+--         local size            = scan_number()
+--         local inheritancemode = scan_number()
+--         local classfeatures   = scan_string()
+--         local fontfeatures    = scan_string()
+--         local classfallbacks  = scan_string()
+--         local fontfallbacks   = scan_string()
+--         local mathsize        = scan_number()
+--         local textsize        = scan_number()
+--         local relativeid      = scan_string()
+--         local classgoodies    = scan_string()
+--         local goodies         = scan_string()
+--         local classdesignsize = scan_string()
+--         local fontdesignsize  = scan_string()
+--         local scaledfontmode  = scan_number()
+
     function commands.definefont_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
             mathsize,textsize,relativeid,classgoodies,goodies,classdesignsize,fontdesignsize,scaledfontmode)
+
         if trace_defining then
             report_defining("start stage two: %s (size %s)",str,size)
         end
@@ -1242,9 +1268,12 @@ do
     function definers.internal(specification,cs)
         specification = specification or { }
         local name    = specification.name
-        local size    = specification.size and number.todimen(specification.size) or texgetdimen("bodyfontsize")
+        local size    = tonumber(specification.size)
         local number  = tonumber(specification.number)
         local id      = nil
+        if not size then
+            size = texgetdimen("bodyfontsize")
+        end
         if number then
             id = number
         elseif name and name ~= "" then

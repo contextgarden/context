@@ -413,7 +413,7 @@
             \definemarking[\currenthead]         [\currentheadsection]%
             \definemarking[\currenthead\v!number][\currentheadsection]%
             \setupmarking [\currenthead]         [\c!filtercommand=\noexpand\sectionheadmarkingtitle {\currenthead}]%
-            \setupmarking [\currenthead\c!number][\c!filtercommand=\noexpand\sectionheadmarkingnumber{\currenthead}]%
+            \setupmarking [\currenthead\v!number][\c!filtercommand=\noexpand\sectionheadmarkingnumber{\currenthead}]%
         }%
         \doifelselist\currenthead\donothing
           {\definelist[\currenthead][\c!prefix=\v!no]}%

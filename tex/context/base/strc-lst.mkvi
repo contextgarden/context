@@ -453,13 +453,8 @@
 
 \let\dotaglistlocation\relax
 
-\unexpanded\def\strclistsentryprocess#tag#method#index#extra% This one is called at the lua end!
-  {\ctxcommand{pushlist(#index)}%
-   \edef\currentlist      {#tag}%
-   \edef\currentlistmethod{#method}%
-   \edef\currentlistindex {#index}%
-   \edef\currentlistextra {#extra}%
-   \listextraparameter\c!before
+\def\strc_lists_entry_process % assume things to be set up
+  {\listextraparameter\c!before
    \dostarttagged\t!listitem\currentlist
    \dotaglistlocation
    \csname\??structurelistprocessor
@@ -469,7 +464,15 @@
                                                                                 \s!default                     \fi\fi\fi
    \endcsname
    \dostoptagged
-   \listextraparameter\c!after
+   \listextraparameter\c!after}
+
+\unexpanded\def\strclistsentryprocess#tag#method#index#extra% This one is called at the lua end!
+  {\ctxcommand{pushlist(#index)}%
+   \edef\currentlist      {#tag}%
+   \edef\currentlistmethod{#method}%
+   \edef\currentlistindex {#index}%
+   \edef\currentlistextra {#extra}%
+   \strc_lists_entry_process
    \ctxcommand{poplist()}}
 
 % lists that have a number/title are kind of generic and can share code
@@ -964,6 +967,8 @@
                 \hsize\scratchhsize
                 \usealignparameter\listparameter
                 \ifdim\scratchwidth<\hsize
+                    % we have leftskip so we'd better just skip back instead of messing
+                    % with hang*
                     \edef\p_hang{\listparameter\c!hang}
                     \hangindent\dimexpr\wd\b_strc_lists_number+\scratchdistance\relax
                     \hangafter\ifx\p_hang\v!no\zerocount\else\plusone\fi
@@ -976,7 +981,7 @@
                     \scratchdistance\zeropoint
                 \fi
                 \parindent\zeropoint
-                \dontleavehmode
+                \dontleavehmode % this nils hang: i need to figure out why
                 % % topaligned
                 %
                 % \scratchdimen\wd\b_strc_lists_number
@@ -1191,6 +1196,90 @@
         \fi
    }
    \listparameter\c!after
+\stopsetups
+
+%D One special for publications (as Alan loves to hangindent). No fonts and
+%D such (for now). No interaction either as that is dealt with elsewhere.
+%D
+%D \currentlistsymbol
+%D \currentlistentry
+%D \currentlistentrypagenumber % not really used
+
+\definelistalternative
+  [\v!paragraph]
+  [\c!filler=\hskip.25\emwidth,
+   \c!renderingsetup=\??listrenderings:\v!paragraph]
+
+\startsetups[\??listrenderings:\v!paragraph]
+    \endgraf % are we grouped?
+    \typo_injectors_check_list % ?
+    \listparameter\c!before
+    \endgraf
+    \begingroup
+    \forgetall
+    \noindent
+    \parindent\zeropoint
+    \edef\p_width{\listparameter\c!width}%
+    \edef\p_distance{\listparameter\c!distance}% we are nice for bib users
+    \edef\p_margin{\listparameter\c!margin}% we are nice for bib users
+    \ifx\p_distance\v!none
+        \scratchdistance\zeropoint
+    \else
+        \scratchdistance\p_distance
+    \fi
+    \ifx\p_margin\v!none
+        \scratchoffset\zeropoint
+    \else
+        \scratchoffset\p_margin
+    \fi
+    \ifx\p_width\v!fit
+        \scratchwidth\zeropoint
+        \leftskip\scratchoffset
+    \else
+        \scratchwidth\p_width
+        \ifdim\scratchoffset=\zeropoint
+            \leftskip\dimexpr\scratchwidth+\scratchdistance\relax
+        \else
+            \leftskip\scratchoffset
+        \fi
+    \fi
+    \usealignparameter\listparameter
+    \hskip-\leftskip
+    \ifconditional\c_lists_has_number
+        \ifconditional\c_lists_show_number
+            \setbox\scratchbox\hbox\ifdim\scratchwidth>\zeropoint to \scratchwidth\fi
+                \bgroup
+                    \useliststyleandcolor\c!numberstyle\c!numbercolor
+                    \currentlistsymbol
+                    \hss
+                \egroup
+            \ifdim\wd\scratchbox>\zeropoint
+                \box\scratchbox
+                \hskip\scratchdistance\relax
+            \fi
+        \fi
+    \fi
+    \begingroup
+        \useliststyleandcolor\c!textstyle\c!textcolor
+        \setstrut
+        \begstrut
+        \currentlistentrytitle
+        \endstrut
+    \endgroup
+    \ifconditional\c_lists_has_page
+        \ifconditional\c_lists_show_page
+            \nobreak
+            \listalternativeparameter\c!filler\relax
+            \begingroup
+                \useliststyleandcolor\c!pagestyle\c!pagecolor
+                \currentlistentrypagenumber
+            \endgroup
+        \fi
+    \fi
+    \endgraf
+    \endgroup
+    \allowbreak
+    \listparameter\c!after
 \stopsetups
 
 %D List elements are packaged in such a way that we can click on them

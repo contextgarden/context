@@ -11,7 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-%D This module is incomplete and experimental.
+%D This module is incomplete and experimental. Okay, it's not that bad but we do need
+%D some disclaimer.
 
 % either consistent setting or not
 
@@ -300,7 +301,6 @@ enddef ;
 
 chem_init_all ; % WHY does this not work unless defined and then called?
 
-
 % Like most often in ConTeXt, we will trap but then silently ignore mistaken use,
 % unless of course the error be too harmful...
 
@@ -529,6 +529,17 @@ vardef chem_set (suffix $) =
     % This is a fairly complicated optimization and ajustement. It took some
     % thinking to get right, so beware!
 
+    % And then even more time fixing a bug of a rotation +- half the symmetry
+    % angle of a structure depending on the scale and/or the font size
+    % (through chem_b_length).
+
+    % first save the symmetry angle of the structure (as in chem_rot):
+    chem_num0 := if chem_stacked[$] : 3 else : 0 fi ;
+    chem_num9 := if chem_tetra[$] : 360 else :
+                 abs(angle(point 0+chem_num0 of chem_b_path[$]) -
+                     angle(point 1+chem_num0 of chem_b_path[$]))
+                 fi ;
+
     if (chem_adjacent<>0) and chem_star[P] and chem_star[$] :
         % nop
         chem_adjacent := 0 ;
@@ -581,7 +592,8 @@ vardef chem_set (suffix $) =
                           -((point (chem_adjacent-1) of chem_b_path[P]) chem_transformed(P)) ;
         fi
         % adjust the bond angles
-        chem_rotation := (chem_rotation + angle(chem_pair1)-angle(chem_pair3)) mod 360 ;
+        chem_num4 := (angle(chem_pair1)-angle(chem_pair3)) zmod chem_num9 ;
+        chem_rotation := chem_rotation + chem_num4 ;
         if not chem_star[$] :
             chem_pair4 :=
                 if chem_star[P] :
@@ -666,13 +678,17 @@ vardef chem_set (suffix $) =
                 fi
             endfor
             if not chem_front[$] : % adjust rotation
-                chem_rotation := (chem_rotation + angle(chem_pair1)-angle(chem_pair3)) mod 360 ;
+                chem_num4 := angle(chem_pair1)-angle(chem_pair3) ;
+                chem_rotation := (chem_rotation + chem_num4) mod 360 ;
             fi ;
             chem_t := identity chem_transformed($) ;
             chem_pair4 := (point chem_num3 of chem_b_path[$]) transformed chem_t ;
             if not chem_star[$] :
                 currentpicture := currentpicture shifted chem_pair4 ;
                 chem_origin    := chem_origin    shifted chem_pair4 ;
+            fi
+            if not chem_front[$] : % adjust rotation
+                chem_rotation := chem_rotation zmod chem_num9 ;
             fi
         fi
         chem_substituent := 0 ;
@@ -1571,9 +1587,9 @@ vardef chem_rot (suffix $) (expr d, s) = % ROT
             chem_rotation := 0
         else :
             chem_num0 := if chem_stacked[$] : 3 else : 0 fi ;
-            chem_num1 := .5(angle(point d+chem_num0 of chem_b_path[$]) -
+            chem_num1 := .5(angle(point d+chem_num0   of chem_b_path[$]) -
                             angle(point d+chem_num0-1 of chem_b_path[$])) ;
-            chem_rotation := (chem_rotation + s*chem_num1) mod 360 ;
+            chem_rotation := (chem_rotation + s*chem_num1) zmod 360 ;
         fi
     fi
 enddef ;
@@ -1584,7 +1600,7 @@ vardef chem_mir (suffix $) (expr d, s)  = % MIR
     if not chem_front[$] :
         if d=0 : % inversion
             if chem_mirror=origin :
-                chem_rotation := (chem_rotation + 180*s) mod 360 ;
+                chem_rotation := (chem_rotation + 180*s) zmod 360 ;
             else :
                 chem_mirror := chem_mirror rotated 90 ;
             fi
@@ -1600,7 +1616,7 @@ vardef chem_mir (suffix $) (expr d, s)  = % MIR
                     chem_num0 := -360 - chem_num0 ;
                 fi
                 chem_num0 := chem_num0 * s ;
-                chem_rotation := (chem_rotation + 2chem_num0) mod 360 ;
+                chem_rotation := (chem_rotation + 2chem_num0) zmod 360 ;
                 chem_mirror := origin ;
             fi
         fi

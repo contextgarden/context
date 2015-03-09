@@ -8969,7 +8969,7 @@ return {
    ["de"]="mindepth",
    ["en"]="mindepth",
    ["fr"]="profondeurmin",
-   ["it"]="mindeoth",
+   ["it"]="mindepth",
    ["nl"]="mindiepte",
    ["pe"]="کمترین‌عمق",
    ["ro"]="mindepth",
@@ -11545,21 +11545,27 @@ return {
   },
   ["maxheight"]={
    ["en"]="maxheight",
+   ["nl"]="maxhoogte",
   },
   ["maxdepth"]={
    ["en"]="maxdepth",
+   ["nl"]="maxdiepte",
   },
   ["maxwidth"]={
    ["en"]="maxwidth",
+   ["nl"]="maxbreedte",
   },
   ["minheight"]={
    ["en"]="minheight",
+   ["nl"]="minhoogte",
   },
   ["mindepth"]={
    ["en"]="mindepth",
+   ["nl"]="mindiepte",
   },
   ["minwidth"]={
    ["en"]="minwidth",
+   ["nl"]="minbreedte",
   },
   ["short"]={
    ["nl"]="kort",

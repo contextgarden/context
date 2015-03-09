@@ -131,4 +131,4 @@ function commands.upper(s) context(upper(s)) end
 function commands.lower(s) context(lower(s)) end
 function commands.strip(s) context(strip(s)) end
 
-function commands.converteddimen(dimen,unit) context(todimen(dimen,unit or "pt","%0.5f")) end -- no unit appended
+function commands.converteddimen(dimen,unit) context(todimen(dimen,unit or "pt","%0.5f")) end -- no unit appended (%F)

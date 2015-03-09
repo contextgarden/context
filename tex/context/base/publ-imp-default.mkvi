@@ -1,0 +1,597 @@
+%D \module
+%D   [       file=publ-imp-default,
+%D        version=2014.02.06,
+%D          title=Default bibliography style,
+%D       subtitle=Publications,
+%D         author=Alan Braslau and Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
+%D by \PRAGMA. See mreadme.pdf for details.
+
+%D This default style defines only a few categories: book and article.
+%D If you want more, you need to load a more complete style such as \type {apa},
+%D \type {aps}, etc. The default style is used in the manuals that ship with
+%D \CONTEXT. This file is always loaded.
+
+\startbtxrenderingdefinitions[\s!default]
+
+% \definebtx [\s!default:\s!page  ] [\s!page]
+% \definebtx [\s!default:\s!cite  ] [\s!cite]
+% \definebtx [\s!default:\s!list  ] [\s!list]
+% \definebtx [\s!default:\s!author] [\s!author]
+
+\definebtxrendering % no need to set \c!default ! ... also confusing 
+  [\s!default]
+  [\c!specification=\s!default]
+
+\definebtx
+  [\s!default]
+  [\c!namesep={,\space},
+   \c!lastnamesep={\space\btxlabeltext{default:and}\space},
+   \c!finalnamesep={\space\btxlabeltext{default:and}\space},
+   \c!firstnamesep=\space,
+   \c!otherstext={\space\btxlabeltext{default:others}},
+   \c!juniorsep=\space,
+   \c!vonsep=\space,
+   \c!initialsep=\space,
+   \c!surnamesep={,\space},
+   \c!surnameinitialsep={,\space},
+   \c!surnamefirstnamesep={,\space},
+   \c!pubsep={,\space},
+   \c!lastpubsep={,\space\btxlabeltext{default:and}\space},
+   \c!finalpubsep={\space\btxlabeltext{default:and}\space}]
+
+\definebtx
+  [\s!default:\s!list]
+  [\s!default]
+  [%c!journalconversion=\v!normal,
+   \c!monthconversion=\v!number,
+   \c!authorconversion=normalshort]
+
+\definebtx
+  [\s!default:\s!cite]
+  [\s!default:\s!list]
+  [\c!alternative=num,
+   \c!authorconversion=\v!name,
+   \c!sorttype=,
+   \c!compress=\v!no,
+   \c!inbetween=\space,
+   \c!range=\endash,
+   \c!left=,
+   \c!middle=,
+   \c!right=]
+
+% We define [page] settings in the default namespace, inheriting the root
+% settings, in order to eventually allow for modifications without touching
+% root.
+
+\definebtx
+  [\s!default:\s!page]
+  [\s!page]
+
+% List variants, some having specific settings:
+
+\definebtx
+  [\s!default:\s!list:author]
+  [\s!default:\s!list]
+
+\definebtx
+  [\s!default:\s!list:editor]
+  [\s!default:\s!list:author]
+
+\definebtx
+  [\s!default:\s!list:url]
+  [\s!default:\s!list]
+
+\definebtx
+  [\s!default:\s!list:doi]
+  [\s!default:\s!list]
+
+\definebtx
+  [\s!default:\s!list:invertedshort]
+  [\s!default:\s!list]
+
+% normalshort?
+
+\definebtx
+  [\s!default:\s!list:short]
+  [\s!default:\s!list]
+
+\definebtx
+  [\s!default:\s!list:journal]
+  [\s!default:\s!list]
+  [\c!style=\v!italic]
+
+\definebtx
+  [\s!default:\s!list:title]
+  [\s!default:\s!list]
+  [\c!style=\v!italic,
+   \c!command=\Word]
+
+\definebtx
+  [\s!default:\s!list:title:article]
+  [\s!default:\s!list:title]
+  [\c!style=, % journal is set in italics
+   \c!command={\quotation\Word}]
+
+\definebtx
+  [\s!default:\s!list:title:book]
+  [\s!default:\s!list:title]
+
+% Citation variants, some having specific settings :
+
+\definebtx
+  [\s!default:\s!cite:author]
+  [\s!default:\s!cite]
+
+\definebtx
+  [\s!default:\s!cite:authornum]
+  [\s!default:\s!cite:author]
+  [\c!left={(},
+   \c!right={)},
+   \c!pubsep={;\space},
+   \c!lastpubsep={;\space},
+   \c!finalpubsep={;\space}]
+
+\definebtx
+  [\s!default:\s!cite:authoryear]
+  [\s!default:\s!cite:author]
+  [\c!compress=\v!yes,
+   \c!left={(},
+   \c!right={)},
+   \c!inbetween={,\space},
+   \c!pubsep={;\space},
+   \c!lastpubsep={;\space},
+   \c!finalpubsep={;\space}]
+
+\definebtx
+  [\s!default:\s!cite:authorref]
+  [\s!default:\s!cite:authornum]
+
+\definebtx
+  [\s!default:\s!cite:authoryears]
+  [\s!default:\s!cite:author]
+
+\definebtx
+  [\s!default:\s!cite:author:num] % todo
+  [\s!default:\s!cite:authornum]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [\s!default:\s!cite:author:year] % todo
+  [\s!default:\s!cite:authoryear]
+  [\c!left=,
+   \c!right=]
+
+\definebtx
+  [\s!default:\s!cite:author:years] % todo
+  [\s!default:\s!cite:authoryears]
+  [\c!inbetween=,
+   \c!left=(,
+   \c!right=)]
+
+\definebtx
+  [\s!default:\s!cite:year]
+  [\s!default:\s!cite]
+  [\c!compress=\v!yes,
+   \c!sorttype=year]
+
+\definebtx
+  [\s!default:\s!cite:title]
+  [\s!default:\s!cite]
+  [command={\language[\currentbtxlanguage]}, % BAH
+   \c!style=\v!italic]
+
+\definebtx
+  [\s!default:\s!cite:tag]
+  [\s!default:\s!cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [\s!default:\s!cite:key]
+  [\s!default:\s!cite:tag]
+
+\definebtx
+  [\s!default:\s!cite:serial]
+  [\s!default:\s!cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [\s!default:\s!cite:page]
+  [\s!default:\s!cite]
+  [\c!left=,
+   \c!right=]
+
+\definebtx
+  [\s!default:\s!cite:pages]
+  [\s!default:\s!cite:page]
+
+\definebtx
+  [\s!default:\s!cite:keywords]
+  [\s!default:\s!cite]
+  [\c!left={(},
+   \c!right={)}]
+
+\definebtx
+  [\s!default:\s!cite:invertedshort]
+  [\s!default:\s!cite]
+
+\definebtx
+  [\s!default:\s!cite:short]
+  [\s!default:\s!cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [\s!default:\s!cite:category]
+  [\s!default:\s!cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [\s!default:\s!cite:type]
+  [\s!default:\s!cite:category]
+
+\definebtx
+  [\s!default:\s!cite:url]
+  [\s!default:\s!cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [\s!default:\s!cite:doi]
+  [\s!default:\s!cite:url]
+
+\definebtx
+  [\s!default:\s!cite:num]
+  [\s!default:\s!cite]
+  [\c!compress=\v!yes,
+   \c!left={[},
+   \c!right={]},
+   \c!pubsep={,},
+   \c!lastpubsep={,},
+   \c!finalpubsep={,}]
+
+\definebtx
+  [\s!default:\s!cite:textnum]
+  [\s!default:\s!cite:num]
+  [\c!left=, % in apa: {Ref.\nbsp} or so
+   \c!right=,
+   \c!pubsep={,},
+   \c!lastpubsep={,\space\btxlabeltext{default:and}\space},
+   \c!finalpubsep={\space\btxlabeltext{default:and}\space}]
+
+% Multilingual text strings
+
+\setupbtxlabeltext
+  [en]
+  [\s!default:and=and,
+   \s!default:number={no.},
+   \s!default:edition={ed.},
+   \s!default:Editor=Editor, % Ed./Eds.
+   \s!default:Editors=Editors,
+   \s!default:Volume={Vol.},
+   \s!default:Volumes={Vols.},
+   \s!default:others={et al.}]
+
+\setupbtxlabeltext
+  [nl]
+  [\s!default:and=en,
+   \s!default:number={nr.},
+   \s!default:edition={ed.}, % editie
+   \s!default:Editor=Editor, % Ed./Eds.
+   \s!default:Editors=Editors,
+   \s!default:Volume={Vol.},
+   \s!default:Volumes={Vols.},
+   \s!default:others={et al.}]
+
+\setupbtxlabeltext
+  [fr]
+  [\s!default:and=et,
+   \s!default:others={et al.},
+   \s!default:number={n\high{o}},
+   \s!default:edition={édition},
+   \s!default:Editor=Éditeur,
+   \s!default:Editors=Éditeurs,
+   \s!default:Volume=Volume,
+   \s!default:Volumes=Volumes,
+   \s!default:others={et al.}]
+
+\setupbtxlabeltext
+  [de]
+  [\s!default:and=und,
+   \s!default:number={nr.},
+   \s!default:edition=Auf\/lage,
+   \s!default:Editor=Herausgeber, % Hrsg./Hg.
+   \s!default:Editors=Herausgeber,
+   \s!default:Volume=Band,        % Bd.
+   \s!default:Volumes={Bände},
+   \s!default:others={et al.}]
+
+\setupbtxlabeltext
+  [it]
+  [\s!default:and=e,
+   \s!default:number={nº},
+   \s!default:edition={ed.}, % edizione
+   \s!default:Editor={A cura di},
+   \s!default:Editors={A cura di},
+   \s!default:Volume={Vol.},  % Volume
+   \s!default:Volumes={Vol.}, % Volumi
+   \s!default:others={et al.}]
+
+\setupbtxlabeltext
+  [es]
+  [\s!default:and=y,
+   \s!default:number={nº},
+   \s!default:edition={ed.}, % edición
+   \s!default:Editor=Editor, % Ed./Eds.
+   \s!default:Editors=Editores,
+   \s!default:Volume={Vol.},   % Volumen
+   \s!default:Volumes={Vols.}, % Volúmenes
+   \s!default:others={et al.}]
+
+% First some helpers:
+
+\starttexdefinition btx:default:composed-title
+    \begingroup
+        \language[\currentbtxlanguage]
+        \btxflush{title}
+        \btxdoif {subtitle} {
+            \btxcolon
+            \btxflush{subtitle}
+        }
+    \endgroup
+\stoptexdefinition
+
+\starttexdefinition btx:default:title
+    \btxdoif {title} {
+        \btxspace
+        \btxstartstyleandcolor [default:list:title:\currentbtxcategory]
+            \btxusecommand[default:list:title:\currentbtxcategory] {
+                \texdefinition{btx:default:composed-title}
+            }
+        \btxstopstyleandcolor
+        \btxcomma
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:default:author
+    \btxdoif {author} {
+        \btxflush{author}
+        \doif {\btxfoundname{author}} {editor} {
+            \btxcomma
+            \btxsingularorplural {editor} {
+                \btxlabeltext{default:Editor}
+            } {
+                \btxlabeltext{default:Editors}
+            }
+        }
+        \btxcomma
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:default:year
+    \btxflush{year}
+    \btxflush{suffix}
+\stoptexdefinition
+
+\starttexdefinition btx:default:journal
+    \btxdoif {journal} {
+        \btxspace
+        \btxstartstyleandcolor [default:list:journal]
+            \btxusecommand[default:list:journal] {
+                \btxflush{journal}
+            }
+        \btxstopstyleandcolor
+        \btxdoifelse {volume} {
+            \btxspace
+            \btxflush{volume}
+            \btxdoif {number} {
+                \ignorespaces % brrr
+                \btxleftparenthesis
+                \btxflush{number}
+                \btxrightparenthesis
+            }
+
+        } {
+            \btxdoif {number} {
+                \btxlabeltext{default:number}
+                \btxspace
+                \btxflush{number}
+            }
+        }
+        \btxdoif {pages} {
+            \btxcomma
+            \btxflush{pages}
+        }
+        \btxcomma
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:default:editionset
+    \btxdoif {editionset} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxleftparenthesis
+        \doif {\btxfoundname{editionset}} {edition} {
+            \btxflush{edition}
+            \btxspace
+            \btxlabeltext{default:edition}
+            \btxcomma
+        }
+        \btxdoif {volume} {
+            \btxoneorrange {volume} {
+                \btxlabeltext{default:Volume}
+            } {
+                \btxlabeltext{default:Volumes}
+            }
+            \btxspace
+            \btxflush{volume}
+            \btxcomma
+        }
+        \btxdoifelse {number} {
+            \btxlabeltext{default:number}
+            \btxspace
+            \btxflush{number}
+        } {
+            \removeunwantedspaces
+            \removepunctuation
+        }
+        \btxrightparenthesiscomma
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:default:publisher
+    \btxdoif {publisher} {
+        \btxflush{publisher}
+        \btxcomma
+    }
+    \btxdoif {address} {
+        \btxflush{address}
+        \btxcomma
+    }
+\stoptexdefinition
+
+% Then a minimal number of setups:
+
+\startsetups btx:default:list:article
+    \texdefinition{btx:default:author}
+    \texdefinition{btx:default:title}
+    \texdefinition{btx:default:journal}
+    \texdefinition{btx:default:year}
+    \removeunwantedspaces
+    \removepunctuation
+    \btxperiod
+\stopsetups
+
+\startsetups btx:default:list:book
+    \texdefinition{btx:default:author}
+    \texdefinition{btx:default:title}
+    \texdefinition{btx:default:editionset}
+    \texdefinition{btx:default:publisher}
+    \texdefinition{btx:default:year}
+    \removeunwantedspaces
+    \removepunctuation
+    \btxperiod
+\stopsetups
+
+\startsetups btx:default:list:unknown
+    \currentbtxcategory\btxcolon
+    \btxshowentryinline
+\stopsetups
+
+%D Experiment:
+
+\startsetups btx:default:lefttext
+    \currentbtxlefttext
+\stopsetups
+
+\startsetups btx:default:righttext
+    \currentbtxrighttext
+\stopsetups
+
+%D Citations:
+
+\startsetups \s!btx:\s!default:\s!cite:author
+    \fastsetup{\s!btx:\s!cite:author}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:authoryear
+    \fastsetup{\s!btx:\s!cite:author}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:authoryears
+    \fastsetup{\s!btx:\s!cite:author}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:authornum
+    \fastsetup{\s!btx:\s!cite:author}
+\stopsetups
+
+\startsetups \s!btx:\s!default:\s!cite:author:num
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:author:year
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:author:years
+    \fastsetup{\s!btx:\s!cite:concat}
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+
+\startsetups \s!btx:\s!default:\s!cite:keywords
+    \fastsetup{\s!btx:\s!cite:list}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:year
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:short
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:serial
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:tag
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:key
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:category
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:type
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:num
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:textnum
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:title
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:pages
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:page
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:doi
+    \fastsetup{\s!btx:\s!cite:url}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:url
+    \fastsetup{\s!btx:\s!cite:url}
+\stopsetups
+
+\startsetups \s!btx:\s!default:\s!cite:unknown
+    \fastsetup{\s!btx:\s!cite:unknown}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!cite:none
+    \fastsetup{\s!btx:\s!cite:none}
+\stopsetups
+
+\startsetups \s!btx:\s!default:\s!cite:nocite
+    \fastsetup{\s!btx:\s!cite:nocite}
+\stopsetups
+
+\startsetups \s!btx:\s!default:\s!list:page
+    \fastsetup{\s!btx:\s!list:page}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!list:yes
+    \fastsetup{\s!btx:\s!list:yes}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!list:num
+    \fastsetup{\s!btx:\s!list:num}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!list:bib
+    \fastsetup{\s!btx:\s!list:bib}
+\stopsetups
+\startsetups \s!btx:\s!default:\s!list:short
+    \fastsetup{\s!btx:\s!list:short}
+\stopsetups
+
+\stopbtxrenderingdefinitions

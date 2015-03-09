@@ -38,6 +38,8 @@
 \definehighlight[tt]    [\c!command=\v!no,\c!style=\v!mono]
 \definehighlight[strong][\c!command=\v!no,\c!style=\v!bold]
 \definehighlight[u]     [\c!command=\v!no,\c!style=\directsetbar{\v!underbar}]
+\definehighlight[code]  [\c!command=\v!no,\c!style=\v!mono]
+\definehighlight[pre]   [\c!command=\v!no]
 
 \protect
 
@@ -114,6 +116,14 @@
     \stopitem
 \stopxmlsetups
 
+\startxmlsetups xml:html:code
+    \directhighlight{code}{\xmlflushspacewise{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:html:pre
+    \directhighlight{pre}{\xmlflushspacewise{#1}}
+\stopxmlsetups
+
 \startxmlsetups xml:html:span
     \xmlflush{#1}
 \stopxmlsetups
@@ -134,7 +144,7 @@
 % todo: align
 
 % beware, the padding code is somewhat experimental, eventually the
-% table will be done in cdl code
+% table will be done in cld code
 %
 % we can also use \xmlmap for border etc
 

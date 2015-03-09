@@ -92,9 +92,9 @@ format (string) is implemented using this table.</p>
 --ldx]]--
 
 local f_none = formatters["%s%s"]
-local f_true = formatters["%0.5f%s"]
+local f_true = formatters["%0.5F%s"]
 
-local function numbertodimen(n,unit,fmt)
+local function numbertodimen(n,unit,fmt) -- will be redefined later !
     if type(n) == 'string' then
         return n
     else

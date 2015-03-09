@@ -21,6 +21,7 @@ ugly and unsatisfying code mess down here. Don't take this as an example.</p>
 
 local trace_mapping    = false  if trackers then trackers.register("modules.asciimath.mapping", function(v) trace_mapping = v end) end
 local trace_detail     = false  if trackers then trackers.register("modules.asciimath.detail",  function(v) trace_detail  = v end) end
+local trace_digits     = false  if trackers then trackers.register("modules.asciimath.digits",  function(v) trace_digits  = v end) end
 
 local report_asciimath = logs.reporter("mathematics","asciimath")
 
@@ -40,7 +41,7 @@ local rep, gmatch, gsub, find = string.rep, string.gmatch, string.gsub, string.f
 local utfchar = utf.char
 
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
-local S, P, R, C, V, Cc, Ct, Cs = lpeg.S, lpeg.P, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Ct, lpeg.Cs
+local S, P, R, C, V, Cc, Ct, Cs, Carg = lpeg.S, lpeg.P, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Ct, lpeg.Cs, lpeg.Carg
 
 local sortedhash   = table.sortedhash
 local sortedkeys   = table.sortedkeys
@@ -753,8 +754,83 @@ local isright = {
 local issimplified = {
 }
 
+--
+
+-- special mess
+
+local d_one    = lpeg.R("09")
+local d_two    = d_one * d_one
+local d_three  = d_two * d_one
+local d_spaced = (Carg(1) * d_three)^1
+local d_split  = P(-1) + P(",")
+
+local digitized = Cs((
+        d_three * d_spaced * d_split +
+        d_two   * d_spaced * d_split +
+        d_one   * d_spaced * d_split +
+        P(1)
+    )^1)
+
+-- print(lpeg.match(digitized,"1"))
+-- print(lpeg.match(digitized,"12"))
+-- print(lpeg.match(digitized,"123"))
+-- print(lpeg.match(digitized,"1234"))
+-- print(lpeg.match(digitized,"12345"))
+-- print(lpeg.match(digitized,"123456"))
+-- print(lpeg.match(digitized,"1234567"))
+-- print(lpeg.match(digitized,"12345678"))
+-- print(lpeg.match(digitized,"123456789"))
+
+-- print(lpeg.match(digitized,"1,1"))
+-- print(lpeg.match(digitized,"12,12"))
+-- print(lpeg.match(digitized,"123,123"))
+-- print(lpeg.match(digitized,"1234,1234"))
+-- print(lpeg.match(digitized,"12345,12345"))
+-- print(lpeg.match(digitized,"123456,123456"))
+-- print(lpeg.match(digitized,"1234567,1234567"))
+-- print(lpeg.match(digitized,"12345678,12345678"))
+-- print(lpeg.match(digitized,"123456789,123456789"))
+
+function asciimath.setup(settings)
+    local separator = settings.separator
+    if separator == interfaces.variables.yes then
+        digitseparator = utfchar(0x2008)
+    elseif separator and separator ~= "" then
+        digitseparator = separator
+    end
+end
+
+local collected_digits   = { }
+local collected_filename = "asciimath-digits.lua"
+
+function numbermess(s)
+    if digitseparator then
+        local d = lpegmatch(digitized,s,1,digitseparator)
+        if d then
+            if trace_digits and s ~= d then
+                collected_digits[s] = d
+            end
+            return d
+        end
+    end
+    return s
+end
+
+statistics.register("asciimath",function()
+    if trace_digits then
+        local n = table.count(collected_digits)
+        if n > 0 then
+            table.save(collected_filename,collected_digits)
+            return string.format("%s digit conversions saved in %s",n,collected_filename)
+        else
+            os.remove(collected_filename)
+        end
+    end
+end)
+
 local p_number_base = patterns.cpnumber or patterns.cnumber or patterns.number
 local p_number      = C(p_number_base)
+----- p_number      = p_number_base
 local p_spaces      = patterns.whitespace
 
 local p_utf_base    = patterns.utf8character
@@ -774,7 +850,8 @@ local real    = digits * (S(".,") * digits)^-1
 local float   = real * (P("E") * integer)^-1
 
 -- local number  = C(float + integer)
-local p_number  = C(float)
+-- local p_number  = C(float)
+local p_number  = float / numbermess
 
 local k_reserved = sortedkeys(reserved)
 local k_commands = { }
@@ -1682,7 +1759,8 @@ if not context then
 --     report_asciimath(cleanedup([[a "α" b]]))
 --     report_asciimath(cleanedup([[//4]]))
 
-convert("4/18*100text(%)~~22,2")
+-- convert("10000,00001")
+-- convert("4/18*100text(%)~~22,2")
 
 --     convert([[sum x]])
 --     convert([[sum^(1)_(2) x]])
@@ -1876,12 +1954,15 @@ function show.statistics()
             end
         end
     end
+    local NC = context.NC
+    local NR = context.NR
+    local EQ = context.EQ
     context.starttabulate { "|B||" }
-        context.NC() context("files")     context.EQ() context(noffiles)       context.NC() context.NR()
-        context.NC() context("formulas")  context.EQ() context(nofokay+nofbad) context.NC() context.NR()
-        context.NC() context("uniques")   context.EQ() context(#indexed)       context.NC() context.NR()
-        context.NC() context("cleanedup") context.EQ() context(nofcleanedup)   context.NC() context.NR()
-        context.NC() context("errors")    context.EQ() context(nofbad)         context.NC() context.NR()
+        NC() context("files")     EQ() context(noffiles)       NC() NR()
+        NC() context("formulas")  EQ() context(nofokay+nofbad) NC() NR()
+        NC() context("uniques")   EQ() context(#indexed)       NC() NR()
+        NC() context("cleanedup") EQ() context(nofcleanedup)   NC() NR()
+        NC() context("errors")    EQ() context(nofbad)         NC() NR()
     context.stoptabulate()
 end
 

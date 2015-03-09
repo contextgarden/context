@@ -56,7 +56,7 @@ local period         = P(".")
 local dash           = P("-")
 local firstcharacter = lpegpatterns.utf8byte
 local utf8character  = lpegpatterns.utf8character
-local p_and          = space^1 * "and" * space^1
+local p_and          = space^1 * (P("and") + P("&&") + P("++")) * space^1
 local p_comma        = space^0 * comma * space^0
 local p_space        = space^1
 local p_shortone     = C((utf8character      -dash-period)^1)
@@ -93,9 +93,13 @@ local function is_upper(str)
     return okay and okay.category == "lu"
 end
 
+-- local cleaner = Cs( ( P("{}")/"" + P(1) )^1 )
+
 local cache   = { } -- 33% reuse on tugboat.bib
 local nofhits = 0
 local nofused = 0
+
+publications.authorcache = cache
 
 local function makeinitials(firstnames)
     if firstnames and #firstnames > 0 then
@@ -108,7 +112,9 @@ local function makeinitials(firstnames)
 end
 
 local function splitauthorstring(str)
-    if not str then
+    if str then
+     -- str = lpegmatch(cleaner,str)
+    else
         return
     end
     nofused = nofused + 1

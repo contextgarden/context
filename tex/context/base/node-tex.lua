@@ -26,12 +26,12 @@ function kernel.hyphenation(head)
 end
 
 function kernel.ligaturing(head)
-    local head, tail, done = ligaturing(head)
+    local head, tail, done = ligaturing(head) -- we return 3 values indeed
     return head, done
 end
 
 function kernel.kerning(head)
-    local head, tail, done = kerning(head)
+    local head, tail, done = kerning(head) -- we return 3 values indeed
     return head, done
 end
 

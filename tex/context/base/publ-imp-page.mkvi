@@ -13,57 +13,66 @@
 
 \unprotect
 
-\setupbtxlist
-  [\c!pageleft={\space (p.\nobreakspace},
-   \c!pageright={)},
+\definebtx
+  [\s!page] % or just outer level
+  [\c!pagestate=\v!stop,
+   \c!pageleft=\btxleftparenthesis, % see below!!
+   \c!pageright=\btxrightparenthesis,
    \c!pagesep={,\space},
-   \c!lastpagesep={\space and\space},
-   \c!finalpagesep={,\space and\space},
+   \c!lastpagesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
+   \c!finalpagesep={\space\btxlabeltext{\currentbtxspecification:and}\space},
    \c!pageconnector=\endash]
 
-\setupbtxrendering
-  [\c!pagestate=\v!stop]
+\definebtx
+  [\s!page:\s!list]
+  [\s!page]
+  [\c!command={\wordright}]
 
-\definebtxlistvariant
-  [\v!page]
-
-\startsetups \s!btx:\s!list:\s!page:concat
+\startsetups \s!btx:\s!page:concat
     \ifcase\currentbtxoverflow
         \ifcase\currentbtxconcat
         \or % first
         \or % second
-            \btxlistparameter\c!pagesep
+            \btxparameter\c!pagesep
         \or % second of two
-            \btxlistparameter\c!lastpagesep
+            \btxparameter\c!lastpagesep
         \or % last
-            \btxlistparameter\c!finalpagesep
+            \btxparameter\c!finalpagesep
         \fi
     \fi
 \stopsetups
 
-\startsetups \s!btx:\s!list:\s!page:normal
-    \fastsetup{\s!btx:\s!list:\s!page:concat}
-    \btxdoifelseinteractive {page} {
+% for the moment we have only one variant
+
+\startsetups [\s!btx:\s!page:\s!list]
+    \fastsetup{\s!btx:\s!page:concat}
+  % \ifx\currentbtxlastpage\empty
+  %     p.
+  % \else
+  %     pp.
+  % \fi
+  % \btxnbsp
+    \ifconditional\btxinteractive
         \goto {
             \currentbtxfirstpage
         } [
             internal(\currentbtxfirstinternal)
         ]
         \ifx\currentbtxlastpage\empty \else
-            \btxlistvariantparameter\c!pageconnector
+            \btxparameter\c!pageconnector
             \goto {
                 \currentbtxlastpage
             } [
                 internal(\currentbtxlastinternal)
             ]
         \fi
-    } {
+    \else
         \currentbtxfirstpage
         \ifx\currentbtxlastpage\empty \else
-            \btxlistvariantparameter\c!pageconnector
+            \btxparameter\c!pageconnector
             \currentbtxlastpage
         \fi
-    }
+    \fi
 \stopsetups
 
 \protect

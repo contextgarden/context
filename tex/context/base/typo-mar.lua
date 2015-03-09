@@ -603,10 +603,10 @@ local function inject(parent,head,candidate)
 --         offset = offset + height
     end
     if stack == v_yes then
-        offset = offset + candidate.dy
+        offset = offset + candidate.dy -- always
         shift = shift + offset
     elseif stack == v_continue then
-        offset = offset + candidate.dy
+        offset = offset + candidate.dy -- always
         if firstonstack then
             offset = offset + getovershoot(location)
         end

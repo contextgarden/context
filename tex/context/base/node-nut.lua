@@ -86,9 +86,13 @@ if not modules then modules = { } end modules ['node-met'] = {
 -- luatex    3.9 sec / 54 pps
 -- luajittex 2.3 sec / 93 pps
 
+local type, rawget = type, rawget
+
 local nodes               = nodes
 local gonuts              = nodes.gonuts
 local direct              = node.direct
+
+local fastcopy            = table.fastcopy
 
 if type(direct) ~= "table" then
     return
@@ -719,4 +723,32 @@ else
     nodes.setprop = getattr
     nodes.getprop = setattr
 
+end
+
+function nuts.copy_properties(source,target,what)
+    local newprops = propertydata[source]
+    if not newprops then
+        -- nothing to copy
+        return
+    end
+    if what then
+        -- copy one category
+        newprops = rawget(source,what)
+        if newprops then
+            newprops = fastcopy(newprops)
+            local p = rawget(propertydata,target)
+            if p then
+                p[what] = newprops
+            else
+                propertydata[target] = {
+                    [what] = newprops,
+                }
+            end
+        end
+    else
+        -- copy all properties
+        newprops = fastcopy(newprops)
+        propertydata[target] = newprops
+    end
+    return newprops -- for checking
 end

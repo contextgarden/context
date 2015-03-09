@@ -225,6 +225,16 @@ local accentmapping = allocate {
         O = "Õ", o = "õ",
         U = "Ũ", u = "ũ",
     },
+    ["o"] = { [""] = "ø",
+    },
+    ["O"] = { [""] = "Ø",
+    },
+    ["a"] = {
+        ["a"] = "å",
+    },
+    ["A"] = {
+        ["A"] = "Å",
+    },
 }
 
 texcharacters.accentmapping = accentmapping

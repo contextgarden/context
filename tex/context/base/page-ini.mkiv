@@ -143,9 +143,15 @@
 
 \newconstant\pageornamentstate % 0=on 1=one-off 2=always-off
 
+% \appendtoks
+%     \ifcase\pageornamentstate \or
+%         \pageornamentstate\zerocount
+%     \fi
+% \to \everyaftershipout
+
 \appendtoks
     \ifcase\pageornamentstate \or
-        \pageornamentstate\zerocount
+        \global\pageornamentstate\zerocount
     \fi
 \to \everyaftershipout
 

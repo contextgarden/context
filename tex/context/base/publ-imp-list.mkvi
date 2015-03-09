@@ -29,20 +29,20 @@
     \fi
 \stoptexdefinition
 
-\startsetups \s!btx:\s!list:concat
-%     \ifcase\currentbtxconcat \or \or
-%         \btxcitevariantparameter\c!pubsep
-%     \or
-%         \btxcitevariantparameter\c!finalpubsep
-%     \or
-%         \btxcitevariantparameter\c!lastpubsep
-%     \fi
+\starttexdefinition btx:list:helpers:concat
+  % \ifcase\currentbtxconcat \or \or
+  %     \btxparameter\c!pubsep
+  % \or
+  %     \btxparameter\c!finalpubsep
+  % \or
+  %     \btxparameter\c!lastpubsep
+  % \fi
     \space
-\stopsetups
+\stoptexdefinition
 
 \startsetups \s!btx:\s!list:page
-    \directsetup{\s!btx:\s!list:concat}
-    \texdefinition {\s!btx:\s!list:inject} {
+    \texdefinition{\s!btx:\s!list:concat}
+    \texdefinition{\s!btx:\s!list:inject} {
         % real pagenumber: todo, userpage
         \currentbtxfirst
         % order

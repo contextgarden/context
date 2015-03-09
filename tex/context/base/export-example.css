@@ -122,6 +122,7 @@ construct[detail="important"], div.construct.important {
 }
 
 highlight, div.highlight { /* todo: style and color */
+	display : inline ;
 }
 
 /* section        : display */

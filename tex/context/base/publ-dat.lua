@@ -33,7 +33,7 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local textoutf = characters and characters.tex.toutf
 local settings_to_hash, settings_to_array = utilities.parsers.settings_to_hash, utilities.parsers.settings_to_array
 local formatters = string.formatters
-local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
+local sortedkeys, sortedhash, keys = table.sortedkeys, table.sortedhash, table.keys
 local xmlcollected, xmltext, xmlconvert = xml.collected, xml.text, xml.convert
 local setmetatableindex = table.setmetatableindex
 
@@ -42,6 +42,7 @@ local setmetatableindex = table.setmetatableindex
 local P, R, S, V, C, Cc, Cs, Ct, Carg, Cmt, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg, lpeg.Cmt, lpeg.Cp
 
 local p_whitespace      = lpegpatterns.whitespace
+local p_utf8character   = lpegpatterns.utf8character
 
 local trace             = false  trackers.register("publications",            function(v) trace = v end)
 local trace_duplicates  = true   trackers.register("publications.duplicates", function(v) trace = v end)
@@ -145,17 +146,22 @@ local defaulttypes = allocate {
     url       = "url",
 }
 
+local defaultsets = allocate {
+    page = { "page", "pages" },
+}
+
 tables.implicits = implicits
 tables.origins   = origins
 tables.virtuals  = virtuals
 tables.types     = defaulttypes
+tables.sets      = defaultsets
 tables.privates  = privates
 tables.specials  = specials
 
 local variables  = interfaces and interfaces.variables or setmetatableindex("self")
 
 local v_all      = variables.all
-local v_standard = variables.standard
+local v_default  = variables.default
 
 if not publications.usedentries then
     function publications.usedentries()
@@ -196,8 +202,9 @@ local unknowncategory = function(t,k)
         required = false,
         optional = false,
         virtual  = false,
-        fields   = setmetatableindex(unknownfield),
-        types    = defaulttypes,
+        fields   = setmetatableindex(unknownfield), -- this will remember them
+        types    = unknowntypes,
+        sets     = setmetatableindex(defaultsets),  -- new, but rather small
     }
     t[k] = v
     return v
@@ -219,7 +226,7 @@ local default = {
     types      = setmetatableindex(defaulttypes,unknowntype),
 }
 
--- maybe at some point we can han da handlers table with per field
+-- maybe at some point we can have a handlers table with per field
 -- a found, fetch, ... method
 
 local function checkfield(specification,category,data)
@@ -279,10 +286,10 @@ local specifications = setmetatableindex(function(t,name)
     end
     setmetatableindex(types,unknowntype)
     --
-    local fields         = setmetatableindex(unknownfield)
+    local fields = setmetatableindex(unknownfield)
     specification.fields = fields
     --
-    local virtual         = specification.virtual
+    local virtual = specification.virtual
     if virtual == nil then -- so false is valid
         virtual = virtuals
         specification.virtual = virtual
@@ -405,7 +412,10 @@ do
 
     ----- command   = P("\\") * Cc("btxcmd{") * (R("az","AZ")^1) * Cc("}")
     ----- command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
+    ----- command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
     local command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
+    local whatever  = P("\\") * P(" ")^1 / " "
+                    + P("\\") * ( P("hbox") + P("raise") ) -- bah
     local somemath  = P("$") * ((1-P("$"))^1) * P("$") -- let's not assume nested math
     ----- character = lpegpatterns.utf8character
     local any       = P(1)
@@ -414,15 +424,24 @@ do
     local one_r     = P("}")  / ""
     local two_l     = P("{{") / ""
     local two_r     = P("}}") / ""
-    local special   = P("#")  / "\\letterhash"
+    local zero_l_r  = P("{}") / "" * #P(1)
+    local special   = P("#")  / "\\letterhash "
 
-    local filter_0  = S('\\{}')
+    local filter_0  = S('\\{}#')
     local filter_1  = (1-filter_0)^0 * filter_0
     local filter_2  = Cs(
     -- {{...}} ... {{...}}
     --     two_l * (command + special + any - two_r - done)^0 * two_r * done +
     --     one_l * (command + special + any - one_r - done)^0 * one_r * done +
-                (somemath + command + special + collapsed + any)^0
+                (
+                    somemath +
+                    whatever +
+                    command +
+                    special +
+                    collapsed +
+                    zero_l_r +
+                    any
+                )^0
     )
 
     -- Currently we expand shortcuts and for large ones (like the acknowledgements
@@ -443,57 +462,57 @@ do
         publicationsstats.nofdefinitions = publicationsstats.nofdefinitions + 1
         local fields  = dataset.fields
         local luadata = dataset.luadata
+        local hashtag = tag
         if luadata[tag] then
             local t = tags[tag]
             local d = dataset.name
             local n = (t[n] or 0) + 1
             t[d] = n
+            hashtag = tag .. "-" .. n
             if trace_duplicates then
                 local p = { }
                 for k, v in sortedhash(t) do
                     p[#p+1] = formatters["%s:%s"](k,v)
                 end
-                report_duplicates("tag %a is present multiple times: % t",tag,p)
+                report_duplicates("tag %a is present multiple times: % t, assigning hashtag %a",tag,p,hashtag)
             end
-        else
-            local found   = luadata[tag]
-            local index   = getindex(dataset,luadata,tag)
-            local entries = {
-                category = lower(category),
-                tag      = tag,
-                index    = index,
-            }
-            for i=1,#tab,2 do
-                local original   = tab[i]
-                local normalized = fields[original]
-                if not normalized then
-                    normalized = lower(original) -- we assume ascii fields
-                    fields[original] = normalized
-                end
-             -- if entries[normalized] then
-                if rawget(entries,normalized) then
-                    if trace_duplicates then
-                        report_duplicates("redundant field %a is ignored for tag %a in dataset %a",normalized,tag,dataset.name)
-                    end
-                else
-                    local value = tab[i+1]
-                    value = textoutf(value)
-                    if lpegmatch(filter_1,value) then
-                        value = lpegmatch(filter_2,value,1,dataset.commands) -- we need to start at 1 for { }
-                    end
-                    if normalized == "crossref" then
-                        local parent = luadata[value]
-                        if parent then
-                            setmetatableindex(entries,parent)
-                        else
-                            -- warning
-                        end
-                    end
-                    entries[normalized] = value
-                end
-            end
-            luadata[tag] = entries
         end
+        local index  = getindex(dataset,luadata,hashtag)
+        local entries = {
+            category = lower(category),
+            tag      = tag,
+            index    = index,
+        }
+        for i=1,#tab,2 do
+            local original   = tab[i]
+            local normalized = fields[original]
+            if not normalized then
+                normalized = lower(original) -- we assume ascii fields
+                fields[original] = normalized
+            end
+         -- if entries[normalized] then
+            if rawget(entries,normalized) then
+                if trace_duplicates then
+                    report_duplicates("redundant field %a is ignored for tag %a in dataset %a",normalized,tag,dataset.name)
+                end
+            else
+                local value = tab[i+1]
+                value = textoutf(value)
+                if lpegmatch(filter_1,value) then
+                    value = lpegmatch(filter_2,value,1,dataset.commands) -- we need to start at 1 for { }
+                end
+                if normalized == "crossref" then
+                    local parent = luadata[value]
+                    if parent then
+                        setmetatableindex(entries,parent)
+                    else
+                        -- warning
+                    end
+                end
+                entries[normalized] = value
+            end
+        end
+        luadata[hashtag] = entries
     end
 
     local function resolve(s,dataset)
@@ -534,17 +553,17 @@ do
     local collapsed  = p_whitespace^1/" "
     local nospaces   = p_whitespace^1/""
 
-    local p_left     = (p_whitespace^0 * left  * p_whitespace^0) / ""
-    local p_right    = (p_whitespace^0 * right * p_whitespace^0) / ""
+    local p_left     = (p_whitespace^0 * left) / ""
+    local p_right    = (right * p_whitespace^0) / ""
 
     local balanced   = P {
-        [1] = ((escape * (left+right)) + collapsed + (1 - (left+right))^1 + V(2))^0,
+        [1] = ((escape * (left+right)) + (collapsed + 1 - (left+right))^1 + V(2))^0,
         [2] = left * V(1) * right,
     }
 
     local unbalanced = P {
         [1] = left * V(2) * right,
-        [2] = ((escape * (left+right)) + collapsed + (1 - (left+right))^1 + V(1))^0,
+        [2] = ((escape * (left+right)) + (collapsed + 1 - (left+right))^1 + V(1))^0,
     }
 
     local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
@@ -555,20 +574,7 @@ do
     local s_quoted   = ((escape*single) + collapsed + (1-single))^0
     local d_quoted   = ((escape*double) + collapsed + (1-double))^0
 
- -- local p_strip    = C((1-(p_whitespace * P(-1)))^1)
- --
- -- local function stripendspace(s)
- --     return lpegmatch(p_strip,s) or s
- -- end
-
-    local p_strip    = (Cp() * p_whitespace^1 * P(-1) + 1)^1
-
-    local function stripendspace(s)
-        local p = lpegmatch(p_strip,s)
-        return p and sub(s,1,p-1) or s
-    end
-
-    local b_value    = p_left * (Cs(balanced)/stripendspace) * p_right
+    local b_value    = p_left * balanced * p_right
     local u_value    = p_left * unbalanced * p_right -- get rid of outer { }
     local s_value    = (single/"") * (u_value + s_quoted) * (single/"")
     local d_value    = (double/"") * (u_value + d_quoted) * (double/"")
@@ -576,6 +582,8 @@ do
 
     local somevalue  = d_value + b_value + s_value + r_value
     local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0))
+
+    value = value / function(s) return lpegmatch(lpegpatterns.stripper,s) end
 
     local forget     = percent^1 * (1-lineending)^0
     local spacing    = spacing * forget^0 * spacing
@@ -618,14 +626,7 @@ do
             current.loaded[source] = kind or true
         end
         current.newtags = #current.luadata > 0 and { } or current.newtags
-        local before = #current.luadata
         lpegmatch(bibtotable,content or "",1,current)
-        local after = #current.luadata
-        if before == after then
-            report("no entries added")
-        else
-            report("%s entries added",after-before)
-        end
         statistics.stoptiming(publications)
     end
 
@@ -751,6 +752,36 @@ do
 
     publications.resolvedname = resolvedname
 
+    local cleaner = false
+    local cleaned = false
+
+    function loaders.registercleaner(what,fullname)
+        if not fullname or fullname == "" then
+            report("no %s file %a",what,fullname)
+            return
+        end
+        local list = table.load(fullname)
+        if not list then
+            report("invalid %s file %a",what,fullname)
+            return
+        end
+        list = list.replacements
+        if not list then
+            report("no replacement table in %a",fullname)
+            return
+        end
+        if cleaned then
+            report("adding replacements from %a",fullname)
+            for k, v in next, list do
+                cleaned[k] = v
+            end
+        else
+            report("using replacements from %a",fullname)
+            cleaned = list
+        end
+        cleaner = true
+    end
+
     function loaders.bib(dataset,filename,kind)
         local dataset, fullname = resolvedname(dataset,filename)
         if not fullname then
@@ -760,6 +791,12 @@ do
         if data == "" then
             report("empty file %a, nothing loaded",fullname)
             return
+        end
+        if cleaner == true then
+            cleaner = Cs((lpeg.utfchartabletopattern(keys(cleaned)) / cleaned + p_utf8character)^1)
+        end
+        if cleaner ~= false then
+            data = lpegmatch(cleaner,data)
         end
         if trace then
             report("loading file %a",fullname)
@@ -840,7 +877,7 @@ do
     end)
 
     function publications.load(specification)
-        local current  = datasets[specification.dataset or v_standard]
+        local current  = datasets[specification.dataset or v_default]
         local files    = settings_to_array(specification.filename)
         local kind     = specification.kind
         local dataspec = specification.specification
@@ -931,6 +968,14 @@ do
 
 end
 
+function publications.tags(dataset)
+    return sortedkeys(datasets[dataset].luadata)
+end
+
+function publications.sortedentries(dataset)
+    return sortedhash(datasets[dataset].luadata)
+end
+
 -- a helper:
 
 function publications.concatstate(i,n)
@@ -954,17 +999,17 @@ do
     local savers = { }
 
     local s_preamble = [[
-    % this is an export from context mkiv
+% this is an export from context mkiv
 
-    @preamble{
-        \ifdefined\btxcmd
-            % we're probably in context
-        \else
-            \def\btxcmd#1{\csname#1\endcsname}
-        \fi
-    }
+@preamble{
+    \ifdefined\btxcmd
+        % we're probably in context
+    \else
+        \def\btxcmd#1{\csname#1\endcsname}
+    \fi
+}
 
-    ]]
+]]
 
     function savers.bib(dataset,filename,usedonly)
         local current  = datasets[dataset]
@@ -1074,17 +1119,20 @@ do
 
     local pagessplitter = lpeg.splitat(P("-")^1)
 
-    casters.pagenumber = function(str)
+    casters.range = function(str)
         local first, last = lpegmatch(pagessplitter,str)
         return first and last and { first, last } or str
     end
 
-    writers.pagenumber = function(p)
+    writers.range = function(p)
         if type(p) == "table" then
             return concat(p,"-")
         else
             return p
         end
     end
+
+    casters.pagenumber = casters.range
+    writers.pagenumber = writers.range
 
 end

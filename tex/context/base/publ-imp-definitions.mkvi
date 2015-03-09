@@ -27,6 +27,16 @@
     \btxfield{short}
 \stopxmlsetups
 
+\starttexdefinition btx:format:inject #link #content
+    \ifx\currentbtxinternal\empty
+        #content
+    \else\ifconditional\btxinteractive
+        \goto {#content} [#link]
+    \else
+        #content
+    \fi\fi
+\stoptexdefinition
+
 \startxmlsetups btx:format:doi
     \edef\currentbtxfielddoi{\btxfield{doi}}
     \ifx\currentbtxfielddoi\empty
@@ -61,7 +71,7 @@
     \ifx\currentbtxfieldmonth\empty
         {\tttf no-month}
     \else
-        \edef\p_monthconversion{\btxlistvariantparameter\c!monthconversion}
+        \edef\p_monthconversion{\btxparameter\c!monthconversion}
         \ifx\p_monthconversion\empty % month month:mnem
             \currentbtxfieldmonth
         \else
@@ -73,5 +83,41 @@
         \fi
     \fi
 \stopxmlsetups
+
+% macros:
+
+\starttexdefinition btx:style:italic #content
+    \dontleavehmode
+    \begingroup
+        \it
+        #content
+        \italiccorrection
+    \endgroup
+\stoptexdefinition
+
+\starttexdefinition btx:style:bold #content
+    \dontleavehmode
+    \begingroup
+        \bf
+        #content
+    \endgroup
+\stoptexdefinition
+
+\starttexdefinition btx:style:quote #content
+    \dontleavehmode
+    \startquote
+        #content
+    \stopquote
+\stoptexdefinition
+
+\starttexdefinition btx:style #style #content
+    \doifdefinedelse {btx:style:#style} {
+        \texdefinition{btx:style:#style} {
+            #content
+        }
+    } {
+        #content
+    }
+\stoptexdefinition
 
 \protect

@@ -369,7 +369,8 @@
     } {
         \let\currentSETUPprefix\empty
     }
-    \edef\currentSETUPname{\xmlatt{#1}{name}}
+  % \edef\currentSETUPname{\xmlatt{#1}{name}}
+    \edef\currentSETUPname{\xmlattribute{#1}{/sequence/string[1]}{value}}%
     \doifelse {\xmlatt{#1}{generated}} {yes} {
         \def\currentSETUPgenerated{*}
     } {
@@ -457,7 +458,7 @@
 \def\showsetupindeed#1%
   {\startelement[setup][name=#1]%
      \startelement[noexport][comment={setup definition #1}]
-       \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}%
+       \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and '\e!start' or '') .. @name]/command(xml:setups:typeset)}%
      \stopelement
    \stopelement}
 
@@ -469,7 +470,7 @@
 %D Typesetting:
 
 \setupxml
-  [\c!method=mkiv,       % mixed mode
+  [%\c!method=mkiv,       % mixed mode
    \c!default=\v!hidden, % ignore elements that are not defined
    \c!compress=\v!yes,   % strip comment
    \c!entities=\v!yes]   % replace entities
@@ -499,37 +500,41 @@
             \xmlfilter{#1}{/sequence/first()}
             \ignorespaces
         \egroup
-        \xmldoif{#1}{/arguments} {
-            \bgroup
-                \enablemode[setups-pass-one]
-                \doglobal\newcounter\currentSETUPargument
-                \ignorespaces
-                \xmlfilter{#1}{/arguments/text()}
-            \egroup
-        }
-        \doif {\xmlatt{#1}{type}} {environment} {
-            \bgroup
-                \enablemode[setups-pass-one]%
-                \hskip.5em\unknown\hskip.5em
-                \doif {\xmlatt{#1}{generated}} {yes} {
-                    \ttsl
-                }
-                \tex{\e!stop}
-                \xmlfilter{#1}{/sequence/first()}
-                \ignorespaces
-            \egroup
-        }
-        \endgraf
-        \xmldoif{#1}{/arguments} {
-            \bgroup
-                \enablemode[setups-pass-two]
-                \doglobal\newcounter\currentSETUPargument
-               %\blank[\v!line] % packed mode (we could do \startunpacked ...)
-                \godown[.75\lineheight]
-                \switchtobodyfont[\v!small]
-                \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
-            \egroup
-        }
+        \ifshortsetup
+            % nothing
+        \else
+            \xmldoif{#1}{/arguments} {
+                \bgroup
+                    \enablemode[setups-pass-one]
+                    \doglobal\newcounter\currentSETUPargument
+                    \ignorespaces
+                    \xmlfilter{#1}{/arguments/text()}
+                \egroup
+            }
+            \doif {\xmlatt{#1}{type}} {environment} {
+                \bgroup
+                    \enablemode[setups-pass-one]%
+                    \hskip.5em\unknown\hskip.5em
+                    \doif {\xmlatt{#1}{generated}} {yes} {
+                        \ttsl
+                    }
+                    \tex{\e!stop}
+                    \xmlfilter{#1}{/sequence/first()}
+                    \ignorespaces
+                \egroup
+            }
+            \endgraf
+            \xmldoif{#1}{/arguments} {
+                \bgroup
+                    \enablemode[setups-pass-two]
+                    \doglobal\newcounter\currentSETUPargument
+                   %\blank[\v!line] % packed mode (we could do \startunpacked ...)
+                    \godown[.75\lineheight]
+                    \switchtobodyfont[\v!small]
+                    \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
+                \egroup
+            }
+        \fi
     \getvalue{\e!stop setuptext}
 \stopxmlsetups
 

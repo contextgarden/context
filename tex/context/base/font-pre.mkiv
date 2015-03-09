@@ -585,6 +585,7 @@
 \definefontfeature[f:smallcaps][smcp=yes]
 \definefontfeature[f:oldstyle] [onum=yes]
 \definefontfeature[f:tabular]  [tnum=yes]
+\definefontfeature[f:superiors][sups=yes]
 
 \definealternativestyle [\v!smallcaps] [\setsmallcaps] [\setsmallcaps]
 \definealternativestyle [\v!oldstyle]  [\setoldstyle ] [\setoldstyle ]
@@ -592,6 +593,7 @@
 \unexpanded\def\setsmallcaps{\doaddfeature{f:smallcaps}}
 \unexpanded\def\setoldstyle {\doaddfeature{f:oldstyle}}
 \unexpanded\def\settabular  {\doaddfeature{f:tabular}}
+\unexpanded\def\setsuperiors{\doaddfeature{f:superiors}}
 
 %D \macros
 %D   {tinyfont}
@@ -669,3 +671,30 @@
 %
 %   /lessorequalslant
 %   /greaterorequalslant
+
+% \unprotect
+%
+% \definehighlight[\v!italic    ][\c!command=\v!no,\c!style=\v!italic]
+% \definehighlight[\v!bold      ][\c!command=\v!no,\c!style=\v!bold]
+% \definehighlight[\v!bolditalic][\c!command=\v!no,\c!style=\v!bolditalic]
+% \definehighlight[\v!mono]      [\c!command=\v!no,\c!style=\v!mono]
+% \definehighlight[\v!monobold]  [\c!command=\v!no,\c!style=\v!monobold]
+%
+% \definehighlight[important]    [\c!command=\v!no,\c!style=\v!bold]
+% \definehighlight[unimportant]  [\c!command=\v!no,\c!color=darkgray]
+% \definehighlight[warning]      [\c!command=\v!no,\c!style=\v!bold,\c!color=darkblue]
+% \definehighlight[error]        [\c!command=\v!no,\c!style=\v!bold,\c!color=darkred]
+%
+% \protect
+%
+% \starttext
+%     \highlight[italic]     {italic}
+%     \highlight[bolditalic] {bolditalic}
+%     \highlight[bold]       {bold}
+%     \highlight[mono]       {mono}
+%     \highlight[monobold]   {monobold}
+%     \highlight[important]  {important}
+%     \highlight[unimportant]{unimportant}
+%     \highlight[warning]    {warning}
+%     \highlight[error]      {error}
+% \stoptext

@@ -123,13 +123,18 @@ function commands.ntimes(str,n)
     context(rep(str,n or 1))
 end
 
-function commands.write(n,str)
-    if n == 18 then
-        os.execute(str)
-    elseif n == 16 then
-        logs.report(str)
-    else
-        -- at the tex end we can still drop the write
-        context.writeviatex(n,str)
-    end
+function commands.execute(str)
+    os.execute(str) -- wrapped in sandbox
 end
+
+-- function commands.write(n,str)
+--     if n == 18 then
+--         os.execute(str)
+--     elseif n == 16 then
+--         -- immediate
+--         logs.report(str)
+--     else
+--         -- at the tex end we can still drop the write / also delayed vs immediate
+--         context.writeviatex(n,str)
+--     end
+-- end

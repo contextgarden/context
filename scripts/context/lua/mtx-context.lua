@@ -644,6 +644,22 @@ function scripts.context.run(ctxdata,filename)
                 scripts.context.make(formatname,a_engine)
                 formatfile, scriptfile = resolvers.locateformat(formatname)
             end
+            --
+            local function combine(key)
+                local flag = validstring(environment[key])
+                local plus = analysis[key]
+                if flag and plus then
+                    return plus .. "," .. flag -- flag wins
+                else
+                    return flag or plus -- flag wins
+                end
+            end
+            local a_trackers    = analysis.trackers
+            local a_experiments = analysis.experiments
+            local directives    = combine("directives")
+            local trackers      = combine("trackers")
+            local experiments   = combine("experiments")
+            --
             if formatfile and scriptfile then
                 local suffix     = validstring(getargument("suffix"))
                 local resultname = validstring(getargument("result"))
@@ -691,9 +707,9 @@ function scripts.context.run(ctxdata,filename)
                 local maxnofruns = once and 1 or multipass_nofruns
                 --
                 local c_flags = {
-                    directives  = validstring(environment.directives),   -- gets passed via mtxrun
-                    trackers    = validstring(environment.trackers),     -- gets passed via mtxrun
-                    experiments = validstring(environment.experiments),  -- gets passed via mtxrun
+                    directives  = directives,   -- gets passed via mtxrun
+                    trackers    = trackers,     -- gets passed via mtxrun
+                    experiments = experiments,  -- gets passed via mtxrun
                     --
                     result      = validstring(resultname),
                     input       = validstring(getargument("input") or filename), -- alternative input

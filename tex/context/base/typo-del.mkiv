@@ -70,23 +70,23 @@
   {\ifcase\boundarycharactermode
    \or
      %\nobreak
-     \hskip\hspaceamount\currentlanguage{#2}%
-     \languageparameter#1%
+     \hskip\hspaceamount\currentusedlanguage{#2}%
+     \usedlanguageparameter#1%
      %\nobreak
-      \hskip\hspaceamount\currentlanguage{#2}%
+     \hskip\hspaceamount\currentusedlanguage{#2}%
    \or
-     \languageparameter#1%
+     \usedlanguageparameter#1%
    \fi
    \boundarycharactermode\plusone}
 
 \unexpanded\def\leftboundarycharacter#1#2%
   {\ifcase\boundarycharactermode
    \or
-     \languageparameter#1%
+     \usedlanguageparameter#1%
      \nobreak
-     \hskip\hspaceamount\currentlanguage{#2}%
+     \hskip\hspaceamount\currentusedlanguage{#2}%
    \or
-     \languageparameter#1%
+     \usedlanguageparameter#1%
    \fi
    \boundarycharactermode\plusone}
 
@@ -94,10 +94,10 @@
   {\ifcase\boundarycharactermode
    \or
      \prewordbreak %\nobreak
-     \hskip\hspaceamount\currentlanguage{#2}%
-     \languageparameter#1%
+     \hskip\hspaceamount\currentusedlanguage{#2}%
+     \usedlanguageparameter#1%
    \or
-     \languageparameter#1%
+     \usedlanguageparameter#1%
    \fi
    \boundarycharactermode\plusone}
 
@@ -142,7 +142,7 @@
   {\beforesubsentence
    \ifdim\lastkern=\d_typo_subsentence_signal
      \unskip
-     \kern\hspaceamount\currentlanguage{intersentence}%
+     \kern\hspaceamount\currentusedlanguage{intersentence}%
    \fi
    \global\advance\c_typo_subsentence_nesting\plusone
    \ifnum\c_typo_subsentence_nesting=\plusone
@@ -166,7 +166,7 @@
 \unexpanded\def\endofsubsentencespacing
   {\ifdim\lastkern=\d_typo_subsentence_signal
      \unskip
-     \hskip\hspaceamount\currentlanguage{intersentence}%
+     \hskip\hspaceamount\currentusedlanguage{intersentence}%
      % no good, actually language dependent:
 %     \ignorespaces
    \else
@@ -193,8 +193,8 @@
 %definehspace [quote]  [\zeropoint]
 %definehspace [speech] [\zeropoint]
 
-\definehspace [quote]  [\hspaceamount\currentlanguage{quotation}]
-\definehspace [speech] [\hspaceamount\currentlanguage{quotation}]
+\definehspace [quote]  [\hspaceamount\currentusedlanguage{quotation}]
+\definehspace [speech] [\hspaceamount\currentusedlanguage{quotation}]
 
 \definesymbol
   [\c!leftquotation]
@@ -256,6 +256,7 @@
 \def\typo_delimited_push#1%
   {\globalpushmacro\currentdelimitedtext
    \def\currentdelimitedtext{#1}%
+   \setlanguageparameter\delimitedtextparameter
    \let\currentparentdelimitedtext\currentdelimitedtext
    \global\advance\c_typo_delimited_nesting\plusone
    \edef\delimitedtextlevel{\number\c_typo_delimited_nesting}%
@@ -543,7 +544,7 @@
    \ifdim\wd\scratchbox>\zeropoint
      \ifdim\lastkern=\d_typo_delimited_signal
        \unkern
-       \hskip\hspaceamount\currentlanguage{interquotation}%
+       \hskip\hspaceamount\currentusedlanguage{interquotation}%
      \fi
      \ifhmode % else funny pagebeaks
        \penalty\plustenthousand
@@ -563,10 +564,10 @@
    \ifdim\wd\scratchbox>\zeropoint
      \ifdim\lastkern=\d_typo_delimited_signal
        \unkern
-       \hskip\hspaceamount\currentlanguage{interquotation}%
+       \hskip\hspaceamount\currentusedlanguage{interquotation}%
      \else\ifdim\lastskip=\d_typo_delimited_signal
        \unskip
-       \hskip\hspaceamount\currentlanguage{interquotation}%
+       \hskip\hspaceamount\currentusedlanguage{interquotation}%
      \fi\fi
      \strut % new, needed below
      \ifhmode % else funny pagebeaks
@@ -588,11 +589,11 @@
      \ifdim\lastkern=\d_typo_delimited_signal
        \unkern
        \penalty\plustenthousand
-       \hskip\hspaceamount\currentlanguage{interquotation}%
+       \hskip\hspaceamount\currentusedlanguage{interquotation}%
      \else\ifdim\lastskip=\d_typo_delimited_signal
        \unskip
        \penalty\plustenthousand
-       \hskip\hspaceamount\currentlanguage{interquotation}%
+       \hskip\hspaceamount\currentusedlanguage{interquotation}%
      \fi\fi
      \ifhmode % else funny pagebeaks
        \penalty\plustenthousand
@@ -674,11 +675,11 @@
 
 \def\typo_delimited_fontdriven_b
   {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
-   \languageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
+   \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color}
 
 \def\typo_delimited_fontdriven_e
-  {\languageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
+  {\usedlanguageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
    \dostoptagged
    \typo_delimited_pop}
 

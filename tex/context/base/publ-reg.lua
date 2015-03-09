@@ -17,7 +17,6 @@ local commands       = commands
 local variables      = interfaces.variables
 
 local v_once         = variables.once
-local v_standard     = variables.standard
 local v_stop         = variables.stop
 local v_all          = variables.all
 

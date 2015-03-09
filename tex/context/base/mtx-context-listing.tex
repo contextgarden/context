@@ -24,10 +24,17 @@
 % --scite               : pretty print comform suffix using scite lexer
 % --bodyfont=list       : additional bodyfont settings
 % --paperformat=spec    : paper*print or paperxprint
+% --compact             : small margins, small font
 %
 % end help
 
 \input mtx-context-common.tex
+
+\doifdocumentargument {compact} {
+    \setdocumentargument{topspace} {5mm}
+    \setdocumentargument{backspace}{5mm}
+    \setdocumentargument{bodyfont} {8pt}
+}
 
 \setupbodyfont
   [dejavu,11pt,tt,\getdocumentargument{bodyfont}] % dejavu is more complete

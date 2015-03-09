@@ -10,9 +10,9 @@
 %C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
 %D by \PRAGMA. See mreadme.pdf for details.
 
-% \loadbtxdefinitionfile[def]
-
 \startbtxrenderingdefinitions[apa]
+
+\ifdefined\c!translate \else \def\c!translate{translate} \fi
 
 %D Reference:
 %D \startTEX
@@ -27,113 +27,116 @@
 %D }
 %D \stopTEX
 
-% set all APA compliant values (may be redundant but we do not count on defaults.)
+% The APA style sorts the unnumbered rendered list by authoryear
+
+% Hans: should we be using or not using \c!, \s! and \v! ??
+
+% Sure: not using \c! and v! would mean that only the english interface is
+% supported and \s! saves some bytes (only within the setups). I'll deal with
+% that in the end.
+
+\definebtxrendering
+  [apa]
+  [\c!specification=apa,
+   \c!sorttype=authoryear,
+   \c!numbering=\v!no]
 
 \setupbtxlist
-  [alternative=hanging,
-   margin=3em]
+  [apa]
+  [\c!alternative=\v!paragraph,
+   \c!width=\v!fit,
+   \c!distance=.5\emwidth,
+   \c!margin=3\emwidth]
 
-\setupbtxlistvariant
-  [\c!namesep={,\space},
-   \c!lastnamesep={,\nobreakspace\textampersand\space},
-   \c!finalnamesep={,\nobreakspace\textampersand\space},
+% The sameauthor feature may not be APA compliant
+% (there is nothing in the manual cited above).
+% It can be removed using the command:
+% \resetsetups [apa:list:sameauthor]
+
+% Or texdefinition?
+
+\startsetups [apa:list:sameauthor]
+    \fastsetup{apa:list:sameauthor:rule}
+\stopsetups
+
+\startsetups [apa:list:sameauthor:rule]
+    \blackrule
+      [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
+       \c!height=1.5\linewidth]% are you sure you want to inconsistent with the rest? happens nowhere!
+\stopsetups
+
+\startsetups [apa:list:sameauthor:\v!empty]% it's not a space
+    \kern\dimexpr\listparameter\c!margin-\interwordspace\relax
+\stopsetups
+
+\startsetups [apa:list:sameauthor:ditto] % horrible !
+    \inframed
+      [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
+       \c!frame=\v!off,
+       \c!align=\v!middle]
+      {\doubleprime}
+\stopsetups
+
+% set ALL specific APA compliant values
+% Note that fallback is apa, default, then root
+
+\definebtx
+  [apa]
+  [\c!default=, % no fallback on default rendering
+   \c!namesep={,\space},
+   \c!lastnamesep={,\nobreakspace\textampersand\space}, % comma separated list
+   \c!finalnamesep={\nobreakspace\textampersand\space}, % last of two, no comma!
    \c!firstnamesep=\space,
-   \c!otherstext={,\space\btxlabeltext{\currentbtxspecification:others}},
-   \c!juniorsep=\space,
-   \c!vonsep=\space,
-   \c!initialsep=\space,  % between initials and lastname
-  %\c!initialssep=\space, % between multiple initials  % todo
-  %\c!initialsterminator={.},                          % todo
+   \c!otherstext={\space\btxlabeltext{apa:others}},
+   \c!juniorsep={\space},
+   \c!vonsep={\space},
+   \c!initialsep={\space},
    \c!surnamesep={,\space},
    \c!surnameinitialsep={,\space},
    \c!surnamefirstnamesep={,\space},
-   \c!etallimit=5,
-   \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
-  %\c!journalconversion=\v!normal,
+   \c!pubsep={,\space},
+   \c!lastpubsep={,\space\btxlabeltext{apa:and}\space},% not btxcomma?
+   \c!finalpubsep={\space\btxlabeltext{apa:and}\space}]
+
+\definebtx
+  [apa:list]
+  [apa]
+  [\c!otherstext={,\nobreakspace\textellipsis\space},
+   \c!etallimit=7,
+   \c!etaldisplay=6,
+   %c!journalconversion=\v!normal,
    \c!monthconversion=\v!month,
    \c!authorconversion=invertedshort]
 
-\definebtxlistvariant
-  [author]
+% The following are similar to default, but inherit from apa:list
 
-\definebtxlistvariant
-  [editor]
-  [author]
+\definebtx
+  [apa:list:author]
+  [apa:list]
 
-% like \setupbtxlistvariant above but not exactly...
+\definebtx
+  [apa:list:editor]
+  [apa:list:author]
 
-% The APA style defines authoryear citations.
+\definebtx
+  [apa:list:suffix]
+  [apa:list]
 
-\setupbtxcitevariant
-  [\c!alternative=authoryear,
-   \c!namesep=\btxlistvariantparameter\c!namesep,
-   \c!lastnamesep=\btxlistvariantparameter\c!lastnamesep,
-   \c!finalnamesep={\nobreakspace\textampersand\space}, % no comma!
-   \c!firstnamesep=\btxlistvariantparameter\c!firstnamesep,
-   \c!otherstext=\btxlistvariantparameter\c!otherstext,
-   \c!juniorsep=\btxlistvariantparameter\c!juniorsep,
-   \c!vonsep=\btxlistvariantparameter\c!vonsep,
-   \c!initialsep=\btxlistvariantparameter\c!initialsep,
-  %\c!initialssep=\btxlistvariantparameter\c!initialssep,
-  %\c!initialsterminator=\btxlistvariantparameter\c!initialsterminator,
-   \c!surnamesep=\btxlistvariantparameter\c!surnamesep,
-   \c!surnameinitialsep=\btxlistvariantparameter\c!surnameinitialsep,
-   \c!surnamefirstnamesep=\btxlistvariantparameter\c!surnamefirstnamesep,
-   \c!etallimit=5, % when 2-4, show all first time, etaldisplay subsequently...
-   \c!etaldisplay=1,
- % \c!monthconversion=\btxlistvariantparameter\c!monthconversion,
-   \c!authorconversion=\v!name,
-   \c!interaction=\v!start,
- % \c!setups=btx:cite:initialize,
-   \c!pubsep={,\space},
-   \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!sorttype=,
-   \c!compress=\v!no,
-   \c!inbetween=\space,
-   \c!range=\endash,
-   \c!left=,
-   \c!middle=,
-   \c!right=]
+\definebtx
+  [apa:list:url]
+  [apa:list]
 
-\definebtxcitevariant
-   [author]
-   [\c!lastnamesep={,\nobreakspace\textampersand\space},
-    \c!finalnamesep={\nobreakspace\textampersand\space}, % no comma!
-    \c!authorconversion=\v!name]
+\definebtx
+  [apa:list:doi]
+  [apa:list]
 
-\definebtxcitevariant
-   [authoryear]
-   [\c!compress=\v!yes,
-    \c!inbetween={,\space},
-    \c!left={(},
-    \c!right={)},
-    \c!pubsep={;\space},
-    \c!lastpubsep={;\space},
-    \c!finalpubsep={;\space},
-    \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
-    \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
-    \c!authorconversion=\v!name]
+\definebtx
+  [apa:list:invertedshort]
+  [apa:list]
 
-\definebtxcitevariant
-   [authoryears]
-   [authoryear]
-   [\c!left=,
-    \c!inbetween={\space(},
-    \c!pubsep={);\space},
-    \c!lastpubsep={);\space},
-    \c!finalpubsep={);\space},
-    \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
-    \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
-    \c!authorconversion=\v!name]
-
-% The APA style also sorts the rendered list by authoryear
-
-\setupbtxrendering
-    [sorttype=authoryear,
-     numbering=no]
-
-% Should the following be loaded by default?
+\definebtx
+  [apa:list:short]
+  [apa:list]
 
 %D In order to be able to get journals expanded (or normalized or abbreviated) you need
 %D to load a list:
@@ -142,148 +145,569 @@
 %D \btxloadjournallist[journals.txt] % the jabref list
 %D \stoptyping
 
+% TODO
+
+\definebtx
+  [apa:list:journal]
+  [\c!style=\v!italic]
+  %command=\btxexpandedjournal] % btxabbreviatedjournal
+
+\definebtx
+  [apa:list:title]
+  [\c!style=\v!italic,
+   \c!command=\Word,
+   \c!translate=\v!yes]
+
+\definebtx
+  [apa:list:title:article]
+  [apa:list:title]
+  [\c!style=] % journal is set in italics
+
+\definebtx
+  [apa:list:title:magazine]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:newspaper]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:periodical]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:standard]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:book]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:inbook]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:incollection]
+  [apa:list:title]
+  [\c!style=] % booktitle is set in italics
+
+\definebtx
+  [apa:list:title:proceedings]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:inproceedings]
+  [apa:list:title]
+  [\c!style=] % booktitle is set in italics
+
+\definebtx
+  [apa:list:title:conference]
+  [apa:list:title]
+  [\c!style=] % booktitle is set in italics
+
+\definebtx
+  [apa:list:title:thesis]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:phdthesis]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:mastersthesis]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:booklet]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:manual]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:techreport]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:unpublished]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:patent]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:electronic]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:other]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:misc]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:literal]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:type]
+  [\c!command=\Word]
+
+% We define [page] settings in the apa namespace, inheriting the root
+% settings, in order to eventually allow for modifications without touching
+% root.
+
+\definebtx
+  [apa:page]
+  [\s!page]
+
+\definebtx
+  [apa:page:list]
+  [apa:page]
+  [\c!command={\wordright}]
+
+% The APA style defines authoryear citations.
+
+\definebtx
+  [apa:cite]
+  [apa:list]
+  [\c!alternative=authoryear,
+   \c!otherstext={,\space\btxlabeltext{apa:others}},
+   \c!etallimit=5,
+   \c!etaldisplay=1, % TODO: when 2-4, show all first time, etaldisplay subsequently...
+   \c!authorconversion=\v!name,
+   \c!sorttype=authoryear,
+   \c!compress=\v!no,
+   \c!inbetween=\space,
+   \c!range=\endash,
+   \c!left=,
+   \c!middle=,
+   \c!right=]
+
+\definebtx
+  [apa:cite:author]
+  [apa:cite]
+  [\c!lastnamesep={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!finalnamesep={\space\btxlabeltext{apa:and}\space}] % not \textampersand
+
+% The following are similar to default, but inherit from apa:cite
+
+\definebtx
+  [apa:cite:authoryear]
+  [apa:cite:author]
+  [\c!compress=\v!yes,
+   \c!left={(},
+   \c!right={)},
+   \c!inbetween={,\space},
+   \c!pubsep={;\space},
+   \c!lastpubsep={;\space},
+   \c!finalpubsep={;\space}]
+
+\definebtx
+  [apa:cite:authoryears]
+  [apa:cite:authoryear]
+  [\c!left=,
+   \c!right=,
+   \c!inbetween={\space},
+   \c!pubsep={;\space},
+   \c!lastpubsep={;\space},
+   \c!finalpubsep={;\space}]
+
+\definebtx
+  [apa:cite:authornum]
+  [apa:cite:author]
+  [\c!left={(},
+   \c!right={)},
+   \c!sorttype=authornum]
+
+\definebtx
+  [apa:cite:authorref]
+  [apa:cite:authornum]
+
+\definebtx
+  [apa:cite:author:num] % todo
+  [apa:cite:authornum]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [apa:cite:author:year] % todo
+  [apa:cite:authoryear]
+  [\c!left=,
+   \c!right=]
+
+\definebtx
+  [apa:cite:author:years] % todo
+  [apa:cite:authoryears]
+  [\c!inbetween=,
+   \c!left=(,
+   \c!right=)]
+
+\definebtx
+  [apa:cite:year]
+  [apa:cite]
+  [\c!pubsep={,\space},
+   \c!lastpubsep={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!finalpubsep={\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!compress=\v!yes,
+   \c!sorttype=\v!default]
+
+\definebtx
+  [apa:cite:title]
+  [apa:cite]
+  [\c!pubsep={,\space},
+   \c!lastpubsep={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!finalpubsep={\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!command={\language[\currentbtxlanguage]}, % BAH
+   \c!style=\v!italic]
+
+\definebtx
+  [apa:cite:booktitle]
+  [apa:cite:title]
+
+\definebtx
+  [apa:cite:tag]
+  [apa:cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [apa:cite:key]
+  [apa:cite:tag]
+
+\definebtx
+  [apa:cite:serial]
+  [apa:cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [apa:cite:page]
+  [apa:cite]
+  [\c!left=,
+   \c!right=,
+   \c!pubsep={,\space},
+   \c!lastpubsep={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!finalpubsep={\space\btxlabeltext{apa:and}\space}] % not \textampersand
+
+\definebtx
+  [apa:cite:pages]
+  [apa:cite:page]
+
+\definebtx
+  [apa:cite:keywords]
+  [apa:cite]
+  [\c!left={(},
+   \c!right={)}]
+
+\definebtx
+  [apa:cite:invertedshort]
+  [apa:cite]
+
+\definebtx
+  [apa:cite:short]
+  [apa:cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [apa:cite:category]
+  [apa:cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [apa:cite:type]
+  [apa:cite:category]
+
+\definebtx
+  [apa:cite:url]
+  [apa:cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [apa:cite:doi]
+  [apa:cite:url]
+
+\definebtx
+  [apa:cite:num]
+  [apa:cite]
+  [\c!compress=\v!yes,
+   \c!left={[},
+   \c!right={]},
+   \c!pubsep={,},
+   \c!lastpubsep={,},
+   \c!finalpubsep={,}]
+
+\definebtx
+  [apa:cite:textnum]
+  [apa:cite:num]
+  [\c!left={Ref.\nbsp},
+   \c!right=,
+   \c!pubsep={,},
+   \c!lastpubsep={\space\btxlabeltext{apa:and}\space},
+   \c!finalpubsep={\space\btxlabeltext{apa:and}\space}]
+
 %D Sometimes we have verbose injections in an entry and these can be language
 %D dependent, so we use labels.
 %D
 %D Because we want to mix rendering (in the manual) we need a namespace in label
 %D texts:
 
-% TODO: The APA guide calls for abbreviations, but this should be a tunable option.
-% We need then to define both and create a mechanism to select.
-
 \setupbtxlabeltext
   [en]
-  [apa:mastersthesis={Master's thesis},
-   apa:phdthesis={PhD thesis},
+  [apa:and=and,
+   apa:number={no.},
+   apa:edition={ed.},
+   apa:Editor={Ed.},
+   apa:Editors={Eds.},
+   apa:Volume={Vol.},
+   apa:Volumes={Vols.},
+   apa:others={et al.},
+   apa:page={p.},
+   apa:pages={pp.},
+   apa:nd={n.d.},     % no date
+   apa:mastersthesis={Master's thesis},
+   apa:phdthesis={Doctoral dissertation},
    apa:technicalreport={Tech. Rep.},  % Technical report
    apa:supplement={Suppl.},           % Supplement
    apa:patent=Patent,
-   apa:Translator={Trans.},           % Translator(s)
-   apa:Editor={Ed.},                  % Editor
-   apa:Editors={Eds.},                % Editors
-   apa:edition={ed.},                 % edition
-   apa:volume=volume, % used?
-   apa:Volume={Vol.},                 % Volume
-   apa:Volumes={Vols.},               % Volumes
-   apa:number=number,
-   apa:Number={No.},                  % Number
-   apa:nd={n.d.},                     % no date
-   apa:in=in,
-   apa:of=of,
-   apa:In=In,
-   apa:Part={Pt.},                    % Part
-   apa:p={p.},
-   apa:pp={pp.},
-   apa:pages=pages,
-   apa:and=and,
-   apa:period={. },
    apa:Author=Author,
-   apa:Reference={Ref.},
-   apa:References={Refs.},
+   apa:Translator={Trans.},           % Translator(s)
    apa:Advanced={Advanced online publication},
    apa:Retrieved={Available from},    % {Retrieved from},
-   apa:others={et al.}]
+   apa:In=In]
+
+% Check this (google translate!!):
+
+\setupbtxlabeltext
+  [nl]
+  [apa:and=en,
+   apa:number={nr.},
+   apa:edition={ed.}, % editie
+   apa:Editor=Editor, % Ed./Eds.
+   apa:Editors=Editors,
+   apa:Volume={Vol.},
+   apa:Volumes={Vols.},
+   apa:others={et al.},
+   apa:page={p.},
+   apa:pages={pp.},
+   apa:nd={g.d.}      % geen datum
+   apa:mastersthesis=Masterproef,
+   apa:phdthesis=Proefschrift,
+   apa:technicalreport={Technisch rapport},  % Technical report
+   apa:supplement=Supplement,
+   apa:patent=Octrooi,
+   apa:Author=Auteur,
+   apa:Translator=Vertaler,
+   apa:Advanced={Geavanceerde online publicatie},
+   apa:Retrieved={Beschikbaar vanaf},    % {Ontvangen van},
+   apa:In=In]
 
 \setupbtxlabeltext
   [fr]
-  [apa:mastersthesis={Thèse de master (DEA, DESS, master)},
+  [apa:and=et,
+   apa:others={et al.},
+   apa:number={n\high{o}},
+   apa:edition={édition},
+   apa:Editor=Éditeur,
+   apa:Editors=Éditeurs,
+   apa:Volume=Volume,
+   apa:Volumes=Volumes,
+   apa:others={et al.},
+   apa:page={p.},
+   apa:pages={pp.},
+   apa:nd={s.d.}      % sans date
+   apa:mastersthesis={Thèse de master (DEA, DESS, master)},
    apa:phdthesis={Thèse de doctorat},
    apa:technicalreport={Rapport technique},
    apa:supplement=Supplément,
    apa:patent=Brevet,
-   apa:Translator=Traducteur,
-   apa:Editor=Éditeur,
-   apa:Editors=Éditeurs,
-   apa:edition=édition,
-   apa:volume=volume,
-   apa:Volume=Volume,
-   apa:Volumes=Volumes,
-   apa:number=numéro,
-   apa:Number=Numéro,
-   apa:nd={s.d.}                      % sans date
-   apa:in=dans,
-   apa:of=de,
-   apa:In=Dans,
-   apa:Part=Partie,
-   apa:p={p.},
-   apa:pp={pp.},
-   apa:pages=pages,
-   apa:and=et,
-   apa:period={. },
    apa:Author=Auteur,
-   apa:Reference={Réf.},
-   apa:References={Réfs.},
+   apa:Translator=Traducteur,
    apa:Advanced={Publication en ligne anticipée},
    apa:Retrieved={Disponible à},      % {Téléchargé de},
-   apa:others={et al.}]
+   apa:In=Dans]
 
 \setupbtxlabeltext
   [de]
-  [apa:mastersthesis={Masterarbeit},
+  [apa:and=und,
+   apa:number={nr.},
+   apa:edition=Auf\/lage,
+   apa:Editor=Herausgeber, % Hrsg./Hg.
+   apa:Editors=Herausgeber,
+   apa:Volume=Band,        % Bd.
+   apa:Volumes={Bände},
+   apa:others={et al.},
+   apa:page={S.},
+   apa:pages={S.},
+   apa:nd={o.D.},          % ohne Datum (mostly: o.J. / ohne Jahr)
+   apa:mastersthesis={Masterarbeit},
    apa:phdthesis={Dissertation},
    apa:technicalreport={Technischer Bericht},
    apa:supplement={Beilage},          % Supplement
    apa:patent=Patent,
-   apa:Translator={Übersetzer},       % Übers.
-   apa:Editor=Herausgeber,            % Hrsg./Hg.
-   apa:Editors=Herausgeber,
-   apa:edition=Auf\/lage,
-   apa:volume=Band,                   % Bd.
-   apa:Volume=Band,
-   apa:Volumes={Bände},
-   apa:number=Nummer,
-   apa:Number={Nr.},
-   apa:nd={o.D.},                     % ohne Datum (mostly: o.J. / ohne Jahr)
-   apa:in=in,
-   apa:of=von,
-   apa:In=In,
-   apa:Part=Teil,
-   apa:p={S.},
-   apa:pp={S.},
-   apa:pages=Seiten,
-   apa:and=und,
-   apa:period={. },
    apa:Author=Autor,
-   apa:Reference={Ref.},
-   apa:References={Ref.},
+   apa:Translator={Übersetzer},       % Übers.
    apa:Advanced={Erweiterte Online-Publikation},
    apa:Retrieved={heruntergeladen von},
-   apa:others={et al.}]
+   apa:In=In]
 
 % thanks: Andrea Valle
 
 \setupbtxlabeltext
   [it]
-  [apa:mastersthesis={Tesi di laurea},
+  [apa:and=e,
+   apa:number={nº},
+   apa:edition={ed.}, % edizione
+   apa:Editor={A cura di},
+   apa:Editors={A cura di},
+   apa:Volume={Vol.},  % Volume
+   apa:Volumes={Vol.}, % Volumi
+   apa:others={et al.},
+   apa:page={p.},
+   apa:pages={pp.},
+   apa:nd={s.d.},     % senza data
+   apa:mastersthesis={Tesi di laurea},
    apa:phdthesis={Tesi di dottorato},
    apa:technicalreport={Relazione tecnica},
    apa:supplement={Supplemento},
    apa:patent=Brevetto,
-   apa:Translator={Trad.},                        % Translator(s)
-   apa:Editor={A cura di},
-   apa:Editors={A cura di},
-   apa:edition={ed.},
-   apa:volume=volume,
-   apa:Volume={Vol.},
-   apa:Volumes={Vol.},
-   apa:number=numero,
-   apa:Number=Numero,
-   apa:nd={s.d.},
-   apa:in=in,
-   apa:of=di,
-   apa:In=In,
-   apa:Part=Parte,
-   apa:p={p.},
-   apa:pp={pp.},
-   apa:pages=pagine,
-   apa:and=e,
-   apa:period={. },
    apa:Author=Autore,
-   apa:Reference={Rif.},
-   apa:References={Rif.},
+   apa:Translator={Trad.},                        % Translator(s)
    apa:Advanced={Pre-pubblicazione on line},
    apa:Retrieved={Accessible online},
-   apa:others={et al.}]
+   apa:In=In]
+
+\setupbtxlabeltext
+  [es]
+  [apa:and=y,
+   apa:number={nº},
+   apa:edition={ed.}, % edición
+   apa:Editor=Editor, % Ed./Eds.
+   apa:Editors=Editores,
+   apa:Volume={Vol.},   % Volumen
+   apa:Volumes={Vols.}, % Volúmenes
+   apa:others={et al.},
+   apa:page={p.},
+   apa:pages={pp.},
+   apa:nd={s.f.},     % sin fecha
+   apa:mastersthesis={Tesis de maestría},
+   apa:phdthesis={Tesis doctoral},
+   apa:technicalreport={Informe técnico},
+   apa:supplement=Suplemento,
+   apa:patent=Patente,
+   apa:Author=Autor,
+   apa:Translator=Traductor,
+   apa:Advanced={Publicación en línea avanzada},
+   apa:Retrieved={Disponible desde},    % {Obtenido de},
+   apa:In=En]
+
+% cite setups
+
+% as we don't fallback on default (no sane person will render the titles
+% differently so it's a bit over the top):
+
+\startsetups btx:apa:cite:empty
+    \fastsetup{\s!btx:\s!cite:\s!empty}
+\stopsetups
+\startsetups btx:apa:cite:unknown
+    \fastsetup{\s!btx:\s!cite:\s!unknown}
+\stopsetups
+\startsetups btx:apa:cite:author
+    \fastsetup{\s!btx:\s!cite:author}
+\stopsetups
+\startsetups btx:apa:cite:authoryear
+    \fastsetup{\s!btx:\s!cite:author}
+\stopsetups
+\startsetups btx:apa:cite:authoryears
+    \fastsetup{\s!btx:\s!cite:author}
+\stopsetups
+\startsetups btx:apa:cite:authornum
+    \fastsetup{\s!btx:\s!cite:author}
+\stopsetups
+\startsetups btx:apa:cite:title
+    \fastsetup{\s!btx:\s!cite:\s!normal}
+\stopsetups
+\startsetups btx:apa:cite:booktitle
+    \fastsetup{btx:apa:cite:title}
+\stopsetups
+\startsetups btx:apa:cite:entry
+    \fastsetup{\s!btx:\s!cite:\s!normal}
+\stopsetups
+\startsetups btx:apa:cite:num
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups btx:apa:cite:textnum
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups btx:apa:cite:year
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+
+\startsetups btx:apa:cite:author:year
+    \texdefinition{\s!btx:\s!cite:concat}
+    \ifx\currentbtxfirst\empty
+        \btxlabeltext{apa:nd}
+    \else
+        \texdefinition {\s!btx:\s!cite:inject} {
+            \btxcitereference
+            \currentbtxfirst
+        }
+        \ifx\currentbtxsecond\empty \else
+            \btxparameter\v!inbetween
+            \texdefinition {\s!btx:\s!cite:inject} {
+                \currentbtxsecond
+            }
+        \fi
+        \ifx\currentbtxthird\empty \else
+            \texdefinition {\s!btx:\s!cite:inject} {
+                \currentbtxthird
+            }
+        \fi
+    \fi
+\stopsetups
+
+\startsetups btx:apa:cite:author:years
+    \fastsetup{btx:apa:cite:author:year}
+\stopsetups
+
+\startsetups [btx:apa:page:list]
+    \fastsetup{\s!btx:\s!page:concat}
+    \ifx\currentbtxlastpage\empty
+        \btxlabeltext{apa:page}
+    \else
+        \btxlabeltext{apa:pages}
+    \fi
+    \btxnbsp
+    \ifconditional\btxinteractive
+        \goto {
+            \currentbtxfirstpage
+        } [
+            internal(\currentbtxfirstinternal)
+        ]
+        \ifx\currentbtxlastpage\empty \else
+            \btxparameter\c!pageconnector
+            \goto {
+                \currentbtxlastpage
+            } [
+                internal(\currentbtxlastinternal)
+            ]
+        \fi
+    \else
+        \currentbtxfirstpage
+        \ifx\currentbtxlastpage\empty \else
+            \btxparameter\c!pageconnector
+            \currentbtxlastpage
+        \fi
+    \fi
+\stopsetups
 
 %D Instead of texdefinitions without arguments, we could have used setups but in my
 %D editor (hh, scite) the commands stand out better. It also saves an additional
@@ -291,214 +715,222 @@
 %D namespace, so similar calls don't clash. Performance of definitions is somewhat
 %D better.
 
-%D \btxdoif... and \btxflush rely on the definitions in publ-imp-apa.lua:
-%D fields that are not listed as required nor optional are IGNORED.
+%D We use "texdefinitions" (with eventual arguments) for helpers that are used
+%D in the rendering "setups" defined for each category below.
 
-% First some helpers:
+%D Note that \btxdoif... and \btxflush rely on the definitions in
+%D publ-imp-apa.lua: fields that are not listed as required nor optional are
+%D IGNORED. We also make heavy use of the notion of sets - comma-separated lists
+%D of alternative fields to be used in hierarchal order. For example:
+%D author = { "author", "editor", "publisher", "title" }, will return the
+%D author field if it exists; if not, the editor field will be returned, if it
+%D exists; if not, the publisher field will be returned, if it exists; if not,
+%D the title field will be returned, it it exists; if not, nothing will be
+%D returned. In lua syntax, it can be understood as
+%D author or editor or publisher or title or ""
 
-\starttexdefinition btx:apa:inject #link #content
-    \ifconditional\btxinteractive
-        \ifx\currentbtxinternal\empty
-            #content
-        \else
-            \goto {
-                #content
-            } [
-                #link
-            ]
-        \fi
+
+\starttexdefinition btx:apa:translated-title #title
+    \ifx\currentbtxlanguage\empty
+        % no need for an extra
+    \else\ifx\mainbtxlanguage\currentbtxlanguage
+        % no need for an extra
     \else
-        #content
-    \fi
+        \btxdoif {#title:\mainbtxlanguage} {
+            \begingroup
+                \language[\mainbtxlanguage]
+                \btxleftbracket
+                \btxusecommand[apa:list:title:\currentbtxcategory] {
+                    \btxflush{#title:\mainbtxlanguage}
+                }
+                \btxrightbracket
+            \endgroup
+        }
+    \fi\fi
+\stoptexdefinition
+
+\starttexdefinition btx:apa:composed-title #title
+    \begingroup
+        \language[\currentbtxlanguage]
+        \btxusecommand[apa:list:title:\currentbtxcategory] {
+            \btxflush{#title}
+            \btxdoif {sub#title} {
+                \btxcolon
+                \btxflush{sub#title}
+            }
+        }
+    \endgroup
+    \doif{\btxparameter{translate}}\v!yes {
+        \texdefinition{btx:apa:translated-title}{#title}
+    }
 \stoptexdefinition
 
 \starttexdefinition btx:apa:title
     \setmode{btx:apa:title-placed}
-    \btxdoif {file} {
-         % we make the title active, opening file
-         \texdefinition{btx:apa:inject} {url(file:\btxflush{file})}
-    }
-    {
-        \btxflush{Word -> title}
-        \btxdoif {subtitle} {
-            \btxcolon
-            \btxflush{Word -> subtitle}
-        }
-        \doifnot {\currentbtxcategory} {techreport} {
-            \doifnotmode {btx:apa:thesis} {
-                \btxdoif{type} {
-                    \btxleftbracket
-                    \btxflush{Word -> type}
-                    \btxrightbracket
-                }
+    % we make the title active, opening file
+    \btxdoifelse {file} {
+        \texdefinition{btx:format:inject}
+            {url(file:\btxflush{file})}
+            {
+                \btxstartstyleandcolor [apa:list:title:\currentbtxcategory]
+                    \texdefinition{btx:apa:composed-title}{title}
+                \btxstopstyleandcolor
             }
-        }
+    } {
+        \btxstartstyleandcolor [apa:list:title:\currentbtxcategory]
+            \texdefinition{btx:apa:composed-title}{title}
+        \btxstopstyleandcolor
+    }
+    \btxdoif {title} {
         \btxperiod
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:title-if-not-placed #it
-    \doifnotmode {btx:apa:title-placed} {
+\starttexdefinition btx:apa:title-if-not-placed
+    \doifmodeelse {btx:apa:title-placed} {
+        \resetmode{btx:apa:title-placed}
+    } {
         \btxdoif {title} {
             \btxspace
-            \doifelse {#it} {it} {
-                \begingroup
-                    \it
-                    \texdefinition{btx:apa:title}
-                    \italiccorrection
-                \endgroup
-            } {
-                \texdefinition{btx:apa:title}
-            }
+            \texdefinition {btx:apa:title}
         }
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:editor
-    \btxflush{editor}
-    \btxleftparenthesis
-    \btxsingularorplural {editor} {
-        \btxlabeltext{apa:Editor}
+\starttexdefinition btx:apa:suffixedyear
+    \btxdoifelse {year} {
+        \btxflush{year}
+        \btxflush{suffix}
     } {
-        \btxlabeltext{apa:Editors}
-    }
-    \btxrightparenthesisperiod
-\stoptexdefinition
-
-\starttexdefinition btx:apa:author
-    \btxflush{author}
-\stoptexdefinition
-
-\starttexdefinition btx:apa:authoryear
-    % we make the authoryear active, pointing to the citation
-    \texdefinition{btx:apa:inject} {internal(\currentbtxinternal)}
-    {
-        % author is a set, e.g.
-        % author  = { "author", "editor", "publisher", "title" },
-        \executeifdefined
-            {btx:apa:\btxfoundname{author}}
-            {\texdefinition{btx:apa:author}}
-        \btxleftparenthesis
-        \btxdoifelse {year} {
-            \btxflush{year}
-            %\btxflush{suffix}
-            \btxflush{suffixedyear}
-            \btxdoif {month} {
-                \btxcomma
-                \btxflush{month}
-                \btxdoif {day} {
-                    \btxspace
-                    \btxflush{day}
-                }
-            }
-        } {
-            \btxlabeltext{apa:nd}
-            \btxdoif {suffix} {% check this!
-                \btxspace
-                \btxflush{suffix}
-            }
-        }
-        \btxrightparenthesis
-    }
-    \btxperiod % outside of interaction
-\stoptexdefinition
-
-\starttexdefinition btx:apa:italic #field
-    \begingroup
-        \it
-        \btxflush{#field}
-        \italiccorrection
-    \endgroup
-\stoptexdefinition
-
-\starttexdefinition btx:apa:editor-in- #title
-    \btxdoifelse {editor} {
-        \btxlabeltext{apa:In}
-        \btxspace
-        \texdefinition{btx:apa:editor}
-        \btxdoif {#title} {
-            \texdefinition{btx:apa:italic}{Word -> #title}
-        }
-    } {
-        \btxdoif {#title} {
-            \btxlabeltext{apa:In}
-            \btxspace
-            \texdefinition{btx:apa:italic}{Word -> #title}
-        }
+        \btxlabeltext{apa:nd}
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:editionset
-    \btxdoifelse {edition} {
-        \btxleftparenthesis
-        \doif {\currentbtxcategory} {techreport} {
-            \btxdoifelse {type} {
-                \btxflush{Word -> type}
-            } {
-                \btxlabeltext{apa:technicalreport}
-            }
-            \setmode{btx:apa:comma}
-        }
-        \doif {\btxfoundname{edition}} {edition} {
-            \doifmode {btx:apa:comma}
-                {\btxcomma}
-            \btxflush{edition}
-            \btxspace
-            \btxlabeltext{apa:edition}
-            \setmode{btx:apa:comma}
-        }
-        \btxdoif {volume} {
-            \doifmode {btx:apa:comma}
-                {\btxcomma}
-            \btxoneorrange {volume} {
-                \btxlabeltext{apa:Volume}
-            } {
-                \btxlabeltext{apa:Volumes}
-            }
-            \btxspace
-            \btxflush{volume}
-            \setmode{btx:apa:comma}
-        }
-        \btxdoif {number} {
-            \doifmode {btx:apa:comma}
-                {\btxcomma}
-            \btxlabeltext{apa:Number}
-            \btxspace
-            \btxflush{number}
-            \setmode{btx:apa:comma}
-        }
-        \btxdoif {pages} {
-            \doifmode {btx:apa:comma}
-                {\btxcomma}
-            \btxoneorrange {pages} {
-                \btxlabeltext{apa:p}
-            } {
-                \btxlabeltext{apa:pp}
-            }
-            \btxspace
-            \btxflush{pages}
-        }
-        \btxrightparenthesisperiod
-    } {
-        \doif {\currentbtxcategory} {techreport} {
+\starttexdefinition btx:apa:author-or-editor #author
+    \btxdoif {#author} {
+        \btxflush{#author}
+        \doif {\btxfoundname{#author}} {editor} {
             \btxleftparenthesis
-            \btxlabeltext{apa:technicalreport}
+            \btxsingularorplural {editor} {
+                \btxlabeltext{apa:Editor}
+            } {
+                \btxlabeltext{apa:Editors}
+            }
             \btxrightparenthesisperiod
         }
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:journal-volumeset
+\starttexdefinition btx:apa:authoryear
+    % we make the authoryear active, pointing to the citation
+    \texdefinition{btx:format:inject}
+        {internal(\currentbtxinternal)}
+        {
+            \doifsetupselse{apa:list:sameauthor} {
+                \btxdoifsameaspreviouselse {author} {
+                    \fastsetup{apa:list:sameauthor}
+                } {
+                    \texdefinition{btx:apa:author-or-editor} {author}
+                }
+            } {
+                \texdefinition{btx:apa:author-or-editor} {author}
+            }
+            \btxleftparenthesis
+            \texdefinition{btx:apa:suffixedyear}
+            \btxrightparenthesis
+        }
+    \btxperiod % outside of interaction
+    \doif {\btxfoundname{author}} {title} {
+        \setmode{btx:apa:title-placed}
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:apa:editor-in
+    \btxdoif {booktitle} {
+        \btxlabeltext{apa:In}
+        \doifnot {\btxfoundname{author}} {editor} {
+            \btxspace
+            \texdefinition{btx:apa:author-or-editor} {editor}
+        }
+        \btxspace
+        \btxstartstyleandcolor[apa:list:title] % NOT :\currentbtxcategory !
+            \texdefinition{btx:apa:composed-title} {booktitle}
+        \btxstopstyleandcolor
+        \btxperiod
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:apa:editionset
+    \btxleftparenthesis
+    \setmode{btx:apa:editionset-empty}
+    \doif {\currentbtxcategory} {techreport} {
+        \resetmode{btx:apa:editionset-empty}
+        \btxdoifelse {type} {
+            \btxusecommand[apa:list:type] {
+                \btxflush{type}
+            }
+        } {
+            \btxlabeltext{apa:technicalreport}
+        }
+        \btxcomma
+    }
+    \btxdoif {volume} {
+        \resetmode{btx:apa:editionset-empty}
+        \btxoneorrange {volume} {
+            \btxlabeltext{apa:Volume}
+        } {
+            \btxlabeltext{apa:Volumes}
+        }
+        \btxspace
+        \btxflush{volume}
+        \btxcomma
+    }
+    \btxdoif {number} {
+        \resetmode{btx:apa:editionset-empty}
+        \btxlabeltext{apa:number}
+        \btxspace
+        \btxflush{number}
+        \btxcomma
+    }
+    \btxdoif {edition} {
+        \resetmode{btx:apa:editionset-empty}
+        \btxflush{edition}
+        \btxspace
+        \btxlabeltext{apa:edition}
+        \btxcomma
+    }
+    \btxdoif {pages} {
+        \resetmode{btx:apa:editionset-empty}
+        \btxoneorrange {pages} {
+            \btxlabeltext{apa:page}
+        } {
+            \btxlabeltext{apa:pages}
+        }
+        \btxnbsp
+        \btxflush{pages}
+        \btxcomma
+    }
+    \removeunwantedspaces
+    \removepunctuation
+    \doifnotmode {btx:apa:editionset-empty} {
+        \btxrightparenthesisperiod
+    }
+\stoptexdefinition
+
+\starttexdefinition btx:apa:journal-volume-number-pages
+    % this could be simplified!
     \btxdoif {journal} {
         \btxspace
-        % expandedjournal abbreviatedjournal
-        \texdefinition{btx:apa:italic}{expandedjournal -> journal}
-        % A newspaper may not have a volume but may have a number!
+        \btxstartstyleandcolor[apa:list:journal]
+            \btxusecommand[apa:list:journal] {
+                \btxflush{journal}
+            }
+        \btxstopstyleandcolor
         \btxdoif {volume} {
             \btxcomma
-            \doif {\btxfoundname{volume}} {volume} {
-                \texdefinition{btx:apa:italic}{volume}
-            }
+            \btxstartstyleandcolor[apa:list:journal]
+                \btxflush{volume}
+            \btxstopstyleandcolor
             \btxdoifnot {number} {
                 \btxdoifelse {pages}
                     {\btxcomma}
@@ -525,11 +957,11 @@
             }
             \doif {\currentbtxcategory} {newspaper} {
                 \btxoneorrange {pages} {
-                    \btxlabeltext{apa:p}
+                    \btxlabeltext{apa:page}
                 } {
-                    \btxlabeltext{apa:pp}
+                    \btxlabeltext{apa:pages}
                 }
-                \btxspace
+                \btxnbsp
             }
             \btxflush{pages}
             \btxperiod
@@ -556,6 +988,32 @@
     }
 \stoptexdefinition
 
+\starttexdefinition btx:apa:wherefrom-publisher
+    \btxdoifelse {address} {
+        \btxflush{address}
+        \btxdoif {country} {
+            \btxcomma
+            \btxflush{country}
+        }
+        \btxcolon
+    } {
+        \btxdoif {country} {
+            \btxflush{country}
+            \btxcolon
+        }
+    }
+    \doifelse {\btxfoundname{author}} {\btxfoundname{publisher}} {
+        \btxlabeltext{apa:Author}
+    } {
+        \btxdoifelse {publisher} {
+            \btxflush{publisher}
+        } {
+            \btxlabeltext{apa:Author}
+        }
+    }
+    \btxperiod
+\stoptexdefinition
+
 \definebreakpoints[doi]
 \definebreakpoint [doi][:][nleft=3,type=1]
 \definebreakpoint [doi][/][nleft=3,type=1]
@@ -569,15 +1027,15 @@
     \btxspace
     \begingroup
         \setbreakpoints[doi]
-        \btxdoifelseinteractive {url} {
+        \ifconditional\btxinteractive
             \goto {
                 \btxflush{url}
             } [
                 url(\btxflush{url})
             ]
-        } {
+        \else
             \btxflush{url}
-        }
+        \fi
     \endgroup
 \stoptexdefinition
 
@@ -586,15 +1044,15 @@
     \btxspace
     \begingroup
         \setbreakpoints[doi]
-        \btxdoifelseinteractive {doi} {
+        \ifconditional\btxinteractive
             \goto {
                 doi:\btxflush{doi}
             } [
                 url(http://dx.doi.org/\btxflush{doi})
             ]
-        } {
+        \else
             doi:\btxflush{doi}
-        }
+        \fi
     \endgroup
 \stoptexdefinition
 
@@ -603,148 +1061,78 @@
     \btxdoif {isbn} {
         \btxleftparenthesis
         \WORD{\btxfoundname{isbn}}:\btxspace
+        \setbreakpoints[doi]
         \btxflush{isbn}
         \btxrightparenthesis
     }
 \stoptexdefinition
 
 \starttexdefinition btx:apa:note
-    % grouping could indeed be useful for note.
     \btxdoif {note} {
         \btxleftparenthesis
-        {\btxflush{note}}
+        \btxflush{note}
         \btxrightparenthesis
     }
 \stoptexdefinition
 
-\starttexdefinition btx:apa:url-note-doi
+\starttexdefinition btx:apa:url-doi-note
     \doif {\btxfoundname{doi}} {url} {
         \texdefinition{btx:apa:url}
     }
     \texdefinition{btx:apa:isbn}
-    \texdefinition{btx:apa:note}
     \doif {\btxfoundname{doi}} {doi} {
         \texdefinition{btx:apa:doi}
     }
+    \texdefinition{btx:apa:note}
     \removeunwantedspaces
 \stoptexdefinition
 
-\starttexdefinition btx:apa:doifelse-publisher-or-author-or-editor #author #if #else
-    \btxdoifelse {publisher} {
-        \btxdoifelse {#author} {
-            #if
-        } {
-            \btxdoifelse {editor} {
-                #if
-            } {
-                #else
-            }
-        }
-    } {
-       \btxdoifelse {#author} {
-           #if
-       } {
-           \doifelse {editor} {
-               #if
-           } {
-               #else
-           }
-       }
-    }
-\stoptexdefinition
-
-% #author is author, editor, organization, howpublished or assignee
-\starttexdefinition btx:apa:wherefrom-publisher-author-is- #author
-    \btxdoifelse {country} {
-        \btxspace
-        \btxdoif {address} {
-            \btxflush{address}
-            \btxcomma
-        }
-        \btxflush{country}
-        \doifelse {#author} {howpublished}
-            {\btxdoifelse {howpublished}}
-            {\texdefinition{btx:apa:doifelse-publisher-or-author-or-editor}{#author}}
-                {\btxcolon} {\btxperiod}
-    } {
-        \btxdoifelse {address} {
-            \btxspace
-            \btxflush{address}
-            \doifelse {#author} {howpublished}
-                {\btxdoifelse {howpublished}}
-                {\texdefinition{btx:apa:doifelse-publisher-or-author-or-editor}{#author}}
-                    {\btxcolon} {\btxperiod}
-        } {
-            \doifelse {#author} {howpublished}
-                {\btxdoifelse {howpublished}}
-                {\texdefinition{btx:apa:doifelse-publisher-or-author-or-editor}{#author}}
-                {\btxspace} {}
-        }
-    }
-    \doifelse {#author} {howpublished} {
-        \btxdoif {howpublished} {
-            \btxflush{howpublished}
-            \btxperiod
-        }
-    } {
-        \btxdoifelse {publisher} {
-             \btxdoifelse {#author} {
-                 \btxflush{publisher}
-                 \btxperiod
-             } {
-                 \btxdoif {editor} {
-                     \btxflush{publisher}
-                     \btxperiod
-                 }
-             }
-        } {
-            \btxdoifelse {#author} {
-                \btxlabeltext{apa:Author}
-                \btxperiod
-            } {
-                \btxdoif {editor} {
-                    \btxlabeltext{apa:Author}
-                    \btxperiod
-                }
-            }
-        }
-    }
-\stoptexdefinition
-
-% Then by category
+% Then setups, by category
 
 % An article from a journal
 % Required fields: author or editor or title, journal, (year).
 % Optional fields: volume, number, pages, type, doi, url, note.
 % Note that bibtex (and tools) do not include editor (e.g. special issue or section)
 
-\startsetups btx:apa:article
+\startsetups btx:apa:list:article
     \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:journal-volumeset}
-    \texdefinition{btx:apa:url-note-doi}
+    \texdefinition{btx:apa:title-if-not-placed}
+    \texdefinition{btx:apa:journal-volume-number-pages}
+    \texdefinition{btx:apa:url-doi-note}
 \stopsetups
 
 % An article from a magazine.
 % Required fields: author or title, journal, (year).
-% Optional fields: volume, number, pages, type, month, day, doi, url, note.
+% Optional fields: number, pages, type, month, day, doi, url, note.
 
-\startsetups btx:apa:magazine
-    \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:journal-volumeset}
-    \texdefinition{btx:apa:url-note-doi}
+\startsetups btx:apa:list:magazine
+    \fastsetup{btx:apa:list:article}
 \stopsetups
 
 % An article from a newspaper.
 % Required fields: author or title, journal, (year).
 % Optional fields: volume, number, pages, type, month, day, doi, url, note.
 
-\startsetups btx:apa:newspaper
+\startsetups btx:apa:list:newspaper
+    \fastsetup{btx:apa:list:article}
+\stopsetups
+
+% A complete issue of a periodical, such as a special issue of a journal.
+% Required fields: title, year
+% Optional fields: editor, publisher, subtitle, series, volume, number, month, organization, doi, url, issn, note
+
+\startsetups btx:apa:list:periodical
+    \fastsetup{btx:apa:list:article} % needs to be tuned...
+\stopsetups
+
+% National and international standards issued by a standards body
+% Required fields: author, institution, or organization, year, title
+% Optional fields: subtitle, doi, url, note
+
+\startsetups btx:apa:list:standard
     \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:journal-volumeset}
-    \texdefinition{btx:apa:url-note-doi}
+    \texdefinition{btx:apa:title-if-not-placed}
+    \texdefinition{btx:apa:url-doi-note}
 \stopsetups
 
 % A book with an explicit publisher.
@@ -754,47 +1142,39 @@
 
 % todo: series?
 
-\startsetups btx:apa:book
+\startsetups btx:apa:list:book
     \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
+    \texdefinition{btx:apa:title-if-not-placed}
     \texdefinition{btx:apa:editionset}
-    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
-    \texdefinition{btx:apa:url-note-doi}
+    \texdefinition{btx:apa:wherefrom-publisher}
+    \texdefinition{btx:apa:url-doi-note}
 \stopsetups
 
+% There is some debate about how inbook should differ from incollection
+
 % A part of a book, which may be a chapter (or section or whatever) and/or a range of pages.
+% (note that inbook is handled differently by bibtex and biblatex)
 % Required fields: author or editor, title, chapter and/or pages, publisher, year.
 % Optional fields: volume or number, series, type, address, edition, month, note.
-% APA ignores: month
+% We add optional: booktitle.
+% APA ignores: chapter, month
 
-% todo: series?
-
-\startsetups btx:apa:inbook
+\startsetups btx:apa:list:inbook
     \texdefinition{btx:apa:authoryear}
-    \btxdoif {chapter} {
-        \btxflush{Word -> chapter}
-        \btxspace
-    }
-    \texdefinition{btx:apa:editor-in-}{title}
+    \texdefinition{btx:apa:title-if-not-placed}
+    \texdefinition{btx:apa:editor-in}
     \texdefinition{btx:apa:editionset}
-    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
-    \texdefinition{btx:apa:url-note-doi}
+    \texdefinition{btx:apa:wherefrom-publisher}
+    \texdefinition{btx:apa:url-doi-note}
 \stopsetups
 
 % A part of a book having its own title.
 % Required fields: author, title, booktitle, publisher, year.
 % Optional fields: editor, volume or number, series, type, chapter, pages, address, edition, month, note.
-% APA ignores: month
+% APA ignores: chapter, month
 
-% todo: series?
-
-\startsetups btx:apa:incollection
-    \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:editor-in-}{booktitle}
-    \texdefinition{btx:apa:editionset}
-    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
-    \texdefinition{btx:apa:url-note-doi}
+\startsetups btx:apa:list:incollection
+    \fastsetup{btx:apa:list:inbook}
 \stopsetups
 
 % The proceedings of a conference.
@@ -802,59 +1182,46 @@
 % Optional fields: editor, volume or number, series, address, month, organization, publisher, note.
 % todo: series?
 
-\startsetups btx:apa:proceedings
-    \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:editionset}
-    \btxdoifelse {editor} {
-        \btxdoif {organization} {
-            \btxspace
-            \btxflush{organization}
-            \btxcomma
-        }
-        \texdefinition{btx:apa:wherefrom-publisher-author-is-}{editor}
-    } {
-        \texdefinition{btx:apa:wherefrom-publisher-author-is-}{organization}
-    }
-    \texdefinition{btx:apa:url-note-doi}
+\startsetups btx:apa:list:proceedings
+    \fastsetup{btx:apa:list:book}
 \stopsetups
 
 % An article in a conference proceedings.
 % Required fields: author, title, booktitle, year.
 % Optional fields: editor, volume or number, series, pages, address, month, organization, publisher, note.
-% todo: series?
 
-\startsetups btx:apa:inproceedings
+\startsetups btx:apa:list:inproceedings
     \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{}
-    \texdefinition{btx:apa:editor-in-}{booktitle}
+    \texdefinition{btx:apa:title-if-not-placed}
+    \texdefinition{btx:apa:editor-in}
     \texdefinition{btx:apa:editionset}
     \btxdoif {organization} {
         \btxspace
         \btxflush{organization}
         \btxcomma
     }
-    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{author}
-    \texdefinition{btx:apa:url-note-doi}
+    \texdefinition{btx:apa:wherefrom-publisher}
+    \texdefinition{btx:apa:url-doi-note}
 \stopsetups
 
-\startsetups btx:apa:conference
-    \fastsetup{btx:apa:inproceedings}
+\startsetups btx:apa:list:conference
+    \fastsetup{btx:apa:list:inproceedings}
 \stopsetups
 
 % A thesis.
 % Required fields: author, title, school, year.
 % Optional fields: type, address, month, note.
 
-\startsetups btx:apa:thesis
-    \setmode{btx:apa:thesis}
+\startsetups btx:apa:list:thesis
     \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
+    \texdefinition{btx:apa:title-if-not-placed}
     \btxleftparenthesis
     \btxdoifelse {type} {
-        \btxflush{Word -> type}
+        \btxusecommand[apa:list:type] {
+            \btxflush{type}
+        }
     } {
-        \Word{\btxlabeltext{apa:\currentbtxcategory}}
+        \btxlabeltext{apa:\currentbtxcategory}
     }
     \btxrightparenthesis
     \btxdoif {school} {
@@ -874,60 +1241,47 @@
         }
     }
     \btxperiod
-    \texdefinition{btx:apa:url-note-doi}
+    \texdefinition{btx:apa:url-doi-note}
 \stopsetups
 
-\startsetups btx:apa:phdthesis
-    \fastsetup{btx:apa:thesis}
+\startsetups btx:apa:list:phdthesis
+    \fastsetup{btx:apa:list:thesis}
 \stopsetups
 
-\startsetups btx:apa:mastersthesis
-    \fastsetup{btx:apa:thesis}
+\startsetups btx:apa:list:mastersthesis
+    \fastsetup{btx:apa:list:thesis}
 \stopsetups
 
 % A work that is printed and bound, but without a named publisher or sponsoring institution.
 % Required field: title.
 % Optional fields: author, howpublished, address, month, year, note.
 
-\startsetups btx:apa:booklet
-    \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
-    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{howpublished}
-    \texdefinition{btx:apa:url-note-doi}
+\startsetups btx:apa:list:booklet
+    \fastsetup{btx:apa:list:book}
 \stopsetups
 
 % Technical documentation.
 % Required field: title.
 % Optional fields: author, organization, address, edition, month, year, note.
 
-\startsetups btx:apa:manual
-    \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
-    \texdefinition{btx:apa:editionset}
-    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{organization}
-    \texdefinition{btx:apa:url-note-doi}
+\startsetups btx:apa:list:manual
+    \fastsetup{btx:apa:list:book}
 \stopsetups
 
 % A report published by a school or other institution, usually numbered within a series.
 % Required fields: author, title, institution, year.
 % Optional fields: type, number, address, month, note.
 
-\startsetups btx:apa:techreport
-    \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
-    \texdefinition{btx:apa:editionset}
-    \texdefinition{btx:apa:wherefrom-publisher-author-is-}{institution}
-    \texdefinition{btx:apa:url-note-doi}
+\startsetups btx:apa:list:techreport
+    \fastsetup{btx:apa:list:book}
 \stopsetups
 
 % A document having an author and title, but not formally published.
 % Required fields: author, title, note.
 % Optional fields: month, year.
 
-\startsetups btx:apa:unpublished
-    \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
-    \texdefinition{btx:apa:url-note-doi}
+\startsetups btx:apa:list:unpublished
+    \fastsetup{btx:apa:list:book}
 \stopsetups
 
 % A patent. Note that this category was not defined with BIBTEX. Below from JabRef:
@@ -937,9 +1291,9 @@
 
 % todo: yearfiled, monthfiled, dayfiled
 
-\startsetups btx:apa:patent
+\startsetups btx:apa:list:patent
     \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
+    \texdefinition{btx:apa:title-if-not-placed}
     \begingroup
         \it
         \btxdoif {nationality} {
@@ -950,41 +1304,14 @@
         \btxlabeltext{apa:patent}
         \btxdoif {number} {
             \btxspace
-            \btxlabeltext{apa:Number}
+            \btxlabeltext{apa:number}
             \btxspace
             \btxflush{number}
         }
         \btxperiod
         \italiccorrection
     \endgroup
-    \btxdoifelse {author} {
-        \btxdoifelse {country} {
-            \btxspace
-            \btxdoif {address} {
-                \btxflush{address}
-                \btxcomma
-            }
-            \btxflush{country}
-            \btxdoifelse {assignee}
-                {\btxcolon} {\btxperiod}
-        } {
-            \btxdoifelse {address} {
-                \btxspace
-                \btxflush{address}
-                \btxdoifelse {assignee}
-                    {\btxcolon} {\btxperiod}
-            } {
-                \btxdoifelse {assignee}
-                    {\btxspace} {}
-            }
-        }
-        \btxdoif {assignee} {
-            \btxflush{assignee}
-            \btxperiod
-        }
-    } {
-        \texdefinition{btx:apa:wherefrom-publisher-author-is-}{assignee}
-    }
+    \texdefinition{btx:apa:wherefrom-publisher}
     \texdefinition{btx:apa:url}
     \texdefinition{btx:apa:note}
 \stopsetups
@@ -996,9 +1323,9 @@
 
 % Like Misc below but includes organization.
 
-\startsetups btx:apa:electronic
+\startsetups btx:apa:list:electronic
     \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
+    \texdefinition{btx:apa:title-if-not-placed}
     \btxdoif {organization} {
         \btxspace
         \btxflush{organization}
@@ -1009,37 +1336,35 @@
         \btxflush{howpublished}
         \btxperiod
     }
-    \texdefinition{btx:apa:url-note-doi}
+    \texdefinition{btx:apa:url-doi-note}
 \stopsetups
 
 % Other. Note that this category was not defined with BIBTEX. Below from JabRef:
 % Required fields: author or title, year
 % Optional fields: note, doi, url
 
-\startsetups btx:apa:other
-    \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
-    \texdefinition{btx:apa:url-note-doi}
+\startsetups btx:apa:list:other
+    \fastsetup{btx:apa:list:book}
 \stopsetups
 
 % Use this type when nothing else fits.
 % Required fields: none.
 % Optional fields: author, title, howpublished, month, year, note.
 
-\startsetups btx:apa:misc
+\startsetups btx:apa:list:misc
     \texdefinition{btx:apa:authoryear}
-    \texdefinition{btx:apa:title-if-not-placed}{it}
+    \texdefinition{btx:apa:title-if-not-placed}
     \btxdoif {howpublished} {
         \btxspace
         \btxflush{howpublished}
         \btxperiod
     }
-    \texdefinition{btx:apa:url-note-doi}
+    \texdefinition{btx:apa:url-doi-note}
 \stopsetups
 
 % If all else fails to match:
 
-\startsetups btx:apa:literal
+\startsetups btx:apa:list:literal
     %\btxleftparenthesis
     \removeunwantedspaces(
     \btxflush{key}
@@ -1049,14 +1374,35 @@
     }
 \stopsetups
 
-%D Experiment:
-
-\startsetups btx:apa:lefttext
-    \currentbtxlefttext
-\stopsetups
-
-\startsetups btx:apa:righttext
-    \currentbtxrighttext
-\stopsetups
+% HH: an example of setting up translations using a sub rendering. Keep it here
+% till we find another spot as otherwise I forget about it and I don't want to
+% waste hours reinventing a wheel when something like this is needed.
+%
+% \definebtx
+%   [apa:cite:title:translated]
+%   [apa:cite:title]
+%   [left=\btxleftbracket,
+%    right=\btxrightbracket,
+%    style=\v!bolditalic]
+%
+% \startsetups btx:apa:cite:title
+%     % need to add concat, etc.
+%     \btxcitereference
+%     \currentbtxfirst
+%     \doifmode {btx:apa:translatedtitles} {
+%         \ifx\currentbtxlanguage\empty
+%             % no need for an extra
+%         \else\ifx\mainbtxlanguage\currentbtxlanguage
+%             % no need for an extra
+%         \else
+%             \btxdoif {title:\mainbtxlanguage} {
+%                 \btxstartciterendering[title:translated]
+%                     \language[\mainbtxlanguage]
+%                     \btxflush{title:\mainbtxlanguage}
+%                 \btxstopciterendering
+%             }
+%         \fi\fi
+%     }
+% \stopsetups
 
 \stopbtxrenderingdefinitions

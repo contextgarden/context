@@ -13,11 +13,6 @@
 
 \unprotect
 
-\startsetups \s!btx:\s!cite:nocite
-    \dontleavehmode
-    \btxcitereference
-\stopsetups
-
 \starttexdefinition btx:cite:inject #content
     \ifconditional\btxinteractive
         \ifx\currentbtxinternal\empty
@@ -43,103 +38,117 @@
 
 % The null case:
 
-\startsetups \s!btx:\s!cite:none
+\startsetups btx:cite:none
+    \btxcitereference
     % dummy
 \stopsetups
 
-% This saves keying:
+\startsetups btx:cite:nocite
+    \dontleavehmode
+    \btxcitereference
+\stopsetups
 
-\startsetups [\s!btx:\s!cite:\s!unknown]
+\startsetups btx:cite:unknown
     \begingroup
-        \showmessage\m!publications{13}{\currentbtxcitevariant,\currentbtxtag,\currentbtxdataset}
-        \tttf
-        <\currentbtxcitevariant:\currentbtxtag>
+        \btxcitereference
+        \currentbtxfirst
     \endgroup
 \stopsetups
 
-\startsetups \s!btx:\s!cite:common:normal
-    \ifx\currentbtxfirst\empty
-        \fastsetup{\s!btx:\s!cite:\s!unknown}
-    \else\ifx\currentbtxsecond\empty
-        \btxcitereference
-        \currentbtxfirst
-        \ifx\currentbtxthird\empty \else
-            \currentbtxthird
-        \fi
-    \else
-        \btxcitereference
-        \currentbtxfirst
-        \btxcitevariantparameter\v!inbetween
-        \currentbtxsecond
-        \ifx\currentbtxthird\empty \else
-            \currentbtxthird
-        \fi
-    \fi\fi
+\startsetups btx:cite:invalid
+    \btxcitereference
+    <\currentbtxreference>
 \stopsetups
 
-\startsetups \s!btx:\s!cite:common:range
-    \ifx\currentbtxfirst\empty
-        \fastsetup{\s!btx:\s!cite:\s!unknown}
-    \else\ifx\currentbtxsecond\empty
-        \btxcitereference
-        \currentbtxfirst
-        \ifx\currentbtxthird\empty \else
-            \currentbtxthird
-        \fi
-    \else
-        \btxcitereference
-        \currentbtxfirst
-        \btxcitevariantparameter\c!range
-        \currentbtxsecond
-        \ifx\currentbtxthird\empty \else
-            \currentbtxthird
-        \fi
-    \fi\fi
-\stopsetups
+% \startsetups btx:cite:normal
+%     \ifx\currentbtxfirst\empty
+%         \fastsetup{\s!btx:\s!cite:\s!empty}
+%     \else\ifx\currentbtxsecond\empty
+%         \btxcitereference
+%         \currentbtxfirst
+%         \ifx\currentbtxthird\empty \else
+%             \currentbtxthird
+%         \fi
+%     \else
+%         \btxcitereference
+%         \currentbtxfirst
+%         \btxparameter\v!inbetween
+%         \currentbtxsecond
+%         \ifx\currentbtxthird\empty \else
+%             \currentbtxthird
+%         \fi
+%     \fi\fi
+% \stopsetups
 
-\startsetups \s!btx:\s!cite:concat
+%\startsetups btx:cite:range
+%    \ifx\currentbtxfirst\empty
+%        \fastsetup{\s!btx:\s!cite:\s!empty}
+%    \else\ifx\currentbtxsecond\empty
+%        \btxcitereference
+%        \currentbtxfirst
+%        \ifx\currentbtxthird\empty \else
+%            \currentbtxthird
+%        \fi
+%    \else
+%        \btxcitereference
+%        \currentbtxfirst
+%        \btxparameter\c!range
+%        \currentbtxsecond
+%        \ifx\currentbtxthird\empty \else
+%            \currentbtxthird
+%        \fi
+%    \fi\fi
+%\stopsetups
+
+\starttexdefinition btx:cite:concat
     \ifcase\currentbtxconcat \or \or
-        \btxcitevariantparameter\c!pubsep
+        \btxparameter\c!pubsep
     \or
-        \btxcitevariantparameter\c!finalpubsep
+        \btxparameter\c!lastpubsep
     \or
-        \btxcitevariantparameter\c!lastpubsep
+        \btxparameter\c!finalpubsep
     \fi
-\stopsetups
+\stoptexdefinition
 
-\startsetups \s!btx:\s!cite:render:normal
-    \fastsetup{\s!btx:\s!cite:concat}
+\startsetups btx:cite:normal
+    \texdefinition{\s!btx:\s!cite:concat}
     \ifx\currentbtxfirst\empty
-        \fastsetup{\s!btx:\s!cite:\s!unknown}
+        \fastsetup{\s!btx:\s!cite:\s!empty}
     \else
-        \texdefinition {btx:cite:inject} {
+        \texdefinition {\s!btx:\s!cite:inject} {
             \btxcitereference
-            \currentbtxfirst
+            \btxusecommand[\currentbtxspecification:cite:\currentbtxcitevariant] {
+                \currentbtxfirst
+            }
         }
         \ifx\currentbtxsecond\empty \else
-            \btxcitevariantparameter\v!inbetween
-            \texdefinition {btx:cite:inject} {
-                \currentbtxsecond
+            \btxparameter\v!inbetween
+            \texdefinition {\s!btx:\s!cite:inject} {
+                \btxusecommand[\currentbtxspecification:cite:\currentbtxcitevariant] {
+                    \currentbtxsecond
+                 }
             }
         \fi
         \ifx\currentbtxthird\empty \else
-            \texdefinition {btx:cite:inject} {
-                \currentbtxthird
+            \texdefinition {\s!btx:\s!cite:inject} {
+                \btxusecommand[\currentbtxspecification:cite:\currentbtxvariant] {
+                    \currentbtxthird
+                 }
             }
         \fi
     \fi
 \stopsetups
 
-\startsetups \s!btx:\s!cite:render:range
-    \fastsetup{\s!btx:\s!cite:concat}
+\startsetups btx:cite:range
+    \texdefinition{\s!btx:\s!cite:concat}
     \ifx\currentbtxfirst\empty
-        \fastsetup{\s!btx:\s!cite:missing}
+        \fastsetup{\s!btx:\s!cite:\s!empty}
     \else
-        \texdefinition {btx:cite:inject} {
+        \texdefinition {\s!btx:\s!cite:inject} {
             \btxcitereference
             \currentbtxfirst
             \ifx\currentbtxsecond\empty \else
-                \btxcitevariantparameter\c!range
+                \btxparameter\c!range
                 \currentbtxsecond
             \fi
             \ifx\currentbtxthird\empty \else
@@ -149,120 +158,76 @@
     \fi
 \stopsetups
 
-\startsetups \s!btx:\s!cite:render:variant
-    \fastsetup{\s!btx:\s!cite:concat}
-    \fastsetup{\s!btx:\s!cite:render:\currentbtxcitevariant}
+\startsetups btx:cite:listelement
+    \texdefinition{\s!btx:\s!cite:concat}
+    \ifx\currentbtxfirst\empty
+        \fastsetup{\s!btx:\s!cite:\s!empty}
+    \else
+       \texdefinition {\s!btx:\s!cite:inject} {
+           \btxcitereference
+           \currentbtxfirst
+       }
+    \fi
 \stopsetups
 
-\startsetups \s!btx:\s!cite:common:author
+\startsetups btx:cite:author
+    \texdefinition{\s!btx:\s!cite:concat}
     \ifx\currentbtxfirst\empty
-        \fastsetup{\s!btx:\s!cite:\s!unknown}
+        \fastsetup{\s!btx:\s!cite:\s!empty}
     \else
-        \texdefinition {btx:cite:inject} {
+        \texdefinition {\s!btx:\s!cite:inject} {
             \btxcitereference
             \currentbtxfirst
          }
     \fi
     \ifx\currentbtxsecond\empty \else
         \relax % keeps a following space
-        \btxcitevariantparameter\v!inbetween
-        \texdefinition {btx:cite:inject} {
+        \btxparameter\v!inbetween
+        \texdefinition {\s!btx:\s!cite:inject} {
             \currentbtxsecond
         }
     \fi
     \ifx\currentbtxthird\empty \else
-        \texdefinition {btx:cite:inject} {
+        \texdefinition {\s!btx:\s!cite:inject} {
             \currentbtxthird
         }
     \fi
 \stopsetups
 
-% one level will be removed
-% yes, isn't there one too many?
+% these three are goodies to get something bit are not set up as it makes no
+% sense to have something root for combinations like this (esp not because one
+% gets default anyway
 
-\startsetups \s!btx:\s!cite:render:author
-    \fastsetup{\s!btx:\s!cite:common:author}
+\startsetups btx:cite:authoryear
+    \fastsetup{btx:cite:author}
 \stopsetups
-\startsetups \s!btx:\s!cite:render:authoryear
-    \fastsetup{\s!btx:\s!cite:common:author}
+\startsetups btx:cite:authoryears
+    \fastsetup{btx:cite:author}
 \stopsetups
-\startsetups \s!btx:\s!cite:render:authoryears
-    \fastsetup{\s!btx:\s!cite:common:author}
+\startsetups btx:cite:authornum
+    \fastsetup{btx:cite:author}
 \stopsetups
-\startsetups \s!btx:\s!cite:render:authornum
-    \fastsetup{\s!btx:\s!cite:common:author}
+\startsetups btx:cite:authorref
+    \ifx{\btxparameter\c!alternative}{authoryear}
+        \fastsetup{btx:cite:authoryears}
+    \else\ifx{\btxparameter\c!alternative}{num}
+        \fastsetup{btx:cite:authornum}
+    \else
+        \fastsetup{btx:cite:author}
+    \fi\fi
 \stopsetups
-
-\startsetups \s!btx:\s!cite:author:num
-    \fastsetup{\s!btx:\s!cite:render:range}
+\startsetups btx:cite:num
+    \fastsetup{btx:cite:range}
 \stopsetups
-\startsetups \s!btx:\s!cite:author:year
-    \fastsetup{\s!btx:\s!cite:render:range}
-\stopsetups
-\startsetups \s!btx:\s!cite:author:years
-    \fastsetup{\s!btx:\s!cite:render:range}
-\stopsetups
-
-\startsetups \s!btx:\s!cite:author
-    \fastsetup{\s!btx:\s!cite:render:variant}
-\stopsetups
-\startsetups \s!btx:\s!cite:authoryear
-    \fastsetup{\s!btx:\s!cite:render:variant}
-\stopsetups
-\startsetups \s!btx:\s!cite:authoryears
-    \fastsetup{\s!btx:\s!cite:render:variant}
-\stopsetups
-\startsetups \s!btx:\s!cite:authornum
-    \fastsetup{\s!btx:\s!cite:render:variant}
+\startsetups btx:cite:year
+    \fastsetup{btx:cite:range}
 \stopsetups
 
-\startsetups \s!btx:\s!cite:year
-    \fastsetup{\s!btx:\s!cite:render:range}
-\stopsetups
-\startsetups \s!btx:\s!cite:short
-    \fastsetup{\s!btx:\s!cite:render:normal}
-\stopsetups
-\startsetups \s!btx:\s!cite:serial
-    \fastsetup{\s!btx:\s!cite:render:range}
-\stopsetups
-\startsetups \s!btx:\s!cite:tag
-    \fastsetup{\s!btx:\s!cite:render:normal}
-\stopsetups
-\startsetups \s!btx:\s!cite:key
-    \fastsetup{\s!btx:\s!cite:render:normal}
-\stopsetups
-%startsetups \s!btx:\s!cite:doi
-%   \fastsetup{\s!btx:\s!cite:render:normal}
-%stopsetups
-%startsetups \s!btx:\s!cite:url
-%   \fastsetup{\s!btx:\s!cite:render:normal}
-%stopsetups
-\startsetups \s!btx:\s!cite:category
-    \fastsetup{\s!btx:\s!cite:render:normal}
-\stopsetups
-\startsetups \s!btx:\s!cite:type
-    \fastsetup{\s!btx:\s!cite:render:normal}
-\stopsetups
-\startsetups \s!btx:\s!cite:num
-    \fastsetup{\s!btx:\s!cite:render:range}
-\stopsetups
-\startsetups \s!btx:\s!cite:textnum
-    \fastsetup{\s!btx:\s!cite:render:range}
-\stopsetups
-\startsetups \s!btx:\s!cite:title
-    \fastsetup{\s!btx:\s!cite:render:normal}
-\stopsetups
-\startsetups \s!btx:\s!cite:pages
-    \fastsetup{\s!btx:\s!cite:render:range}
-\stopsetups
+% the following is kind of specific, but can be used in many renderings
 
-\startsetups \s!btx:\s!cite:page
-    \fastsetup{\s!btx:\s!cite:render:normal}
-\stopsetups
-
-\startsetups \s!btx:\s!cite:doi
+\startsetups btx:cite:url
     \ifx\currentbtxfirst\empty
-        \fastsetup{\s!btx:\s!cite:\s!unknown}
+        \fastsetup{\s!btx:\s!cite:\s!empty}
     \else\ifconditional\btxinteractive
         \goto {
             \btxcitereference
@@ -272,12 +237,8 @@
         ]
     \else
         \btxcitereference
-        \hyphenatedurl{doi:\currentbtxfirst}
+        \hyphenatedurl{\doif{\currentbtxcitevariant}{doi}{doi:}\currentbtxfirst}
     \fi\fi
-\stopsetups
-
-\startsetups \s!btx:\s!cite:url
-    \fastsetup{\s!btx:\s!cite:\s!doi}
 \stopsetups
 
 \protect

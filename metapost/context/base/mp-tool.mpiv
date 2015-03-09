@@ -368,6 +368,11 @@ vardef asinh  primary x = ln(x+(x++1))     enddef ;
 vardef sinh   primary x = save xx ; xx = exp x ; (xx-1/xx)/2 enddef ;
 vardef cosh   primary x = save xx ; xx = exp x ; (xx+1/xx)/2 enddef ;
 
+%D Like mod, but useful for anglesl it returns (-.5d,+.5d] and is used
+%D in for instance mp-chem.
+
+primarydef a zmod b = (-((b/2 - a) mod b) + b/2) enddef ;
+
 %D Sometimes this is handy:
 
 def undashed =
@@ -1364,7 +1369,7 @@ primarydef pct along pat = % also negative
 enddef ;
 
 primarydef len on pat = % no outer ( ) .. somehow fails
-    (arctime if len>0 : len else : (arclength(pat)+len) fi of pat) of pat
+    (arctime if len>=0 : len else : (arclength(pat)+len) fi of pat) of pat
 enddef ;
 
 % this cuts of a piece from both ends
@@ -2315,7 +2320,7 @@ enddef ;
 %D Handy:
 
 def break =
-    exitif true fi ;
+    exitif true ; % fi
 enddef ;
 
 %D New too:

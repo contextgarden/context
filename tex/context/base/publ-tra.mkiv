@@ -28,7 +28,7 @@
 
 \def\publ_show_dataset_whatever#1[#2]%
   {\begingroup
-   \setdummyparameter\c!specification{\btxparameter\c!specification}%
+   \letdummyparameter\c!specification\currentbtxspecification
    \setdummyparameter\c!dataset      {\currentbtxdataset}%
    \letdummyparameter\c!field        \empty
    \iffirstargument
@@ -54,10 +54,12 @@
 \def\publ_show_fields[#1]%
   {\begingroup
    \setdummyparameter\c!rotation{90}%
-   \doifassignmentelse{#1}
-     {\setdummyparameter\c!specification{\btxparameter\c!specification}%
+   \doifassignmentelse{#1}%
+     {\letdummyparameter\c!specification\currentbtxspecification
       \getdummyparameters[#1]}%
-     {\setdummyparameter\c!specification{#1}}%
+     {\doifelsenothing{#1}%
+        {\letdummyparameter\c!specification\currentbtxspecification}%
+        {\setdummyparameter\c!specification{#1}}}%
  % \publ_specification_push{"\dummyparameter\c!specification}%
    \ctxcommand{showbtxfields{
       rotation      = "\dummyparameter\c!rotation",
@@ -79,5 +81,7 @@
 
     \showbtxfields[rotation=85] \page
     \showbtxfields[rotation=90] \page
+
+    \showbtxtables \page
 
 \stoptext

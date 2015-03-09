@@ -146,6 +146,7 @@ local user_n            = register_nut(new_nut("whatsit",whatsitcodes.userdefine
 local user_l            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_l,"type",110) -- 44
 local user_s            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_s,"type",115) -- 44
 local user_t            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_t,"type",116) -- 44
+----- user_c            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_c,"type",108) -- 44
 local left_margin_kern  = register_nut(new_nut("margin_kern",0))
 local right_margin_kern = register_nut(new_nut("margin_kern",1))
 local lineskip          = register_nut(new_nut("glue",skipcodes.lineskip))
@@ -503,6 +504,17 @@ function nutpool.usertokens(id,tokens)
     end
     return n
 end
+
+-- function nutpool.usercode(id,code)
+--     local n = copy_nut(user_c)
+--     if code then
+--         setfield(n,"user_id",id)
+--         setfield(n,"value",code)
+--     else
+--         setfield(n,"value",id)
+--     end
+--     return n
+-- end
 
 function nutpool.special(str)
     local n = copy_nut(special)

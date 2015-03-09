@@ -19,7 +19,7 @@
   {\dosingleempty\publ_convert_to_xml}
 
 \def\publ_convert_to_xml[#1]%
-  {\ctxcommand{convertbtxdatasettoxml("\iffirstargument#1\else\v!standard\fi",true)}} % or current when not empty
+  {\ctxcommand{convertbtxdatasettoxml("\iffirstargument#1\else\v!default\fi",true)}} % or current when not empty
 
 % \startxmlsetups btx:initialize
 %     \xmlregistereddocumentsetups{#1}{}

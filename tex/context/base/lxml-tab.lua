@@ -951,14 +951,18 @@ and then handle the lot.</p>
 
 -- new experimental reorganized serialize
 
-local function verbose_element(e,handlers) -- options
+local f_attribute = formatters['%s=%q']
+
+local function verbose_element(e,handlers,escape) -- options
     local handle = handlers.handle
     local serialize = handlers.serialize
     local ens, etg, eat, edt, ern = e.ns, e.tg, e.at, e.dt, e.rn
     local ats = eat and next(eat) and { }
     if ats then
+        local n = 0
         for k,v in next, eat do
-            ats[#ats+1] = formatters['%s=%q'](k,escaped(v))
+            n = n + 1
+            ats[n] = f_attribute(k,escaped(v))
         end
     end
     if ern and trace_entities and ern ~= ens then

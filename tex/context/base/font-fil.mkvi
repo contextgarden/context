@@ -290,75 +290,75 @@
 % resolve
 
 \def\font_helpers_set_features_yes#name%
-  {\ifcsname\??fontfile\fontclass#name\s!features \endcsname\expandafter\let\expandafter\m_font_features  % class + symbolic_name
-     \csname\??fontfile\fontclass#name\s!features \endcsname\else
-   \ifcsname\??fontfile          #name\s!features \endcsname\expandafter\let\expandafter\m_font_features  % symbolic_name
-     \csname\??fontfile          #name\s!features \endcsname\else
+  {\ifcsname\??fontfile\fontclass#name\s!features \endcsname \edef\m_font_features  % class + symbolic_name
+    {\csname\??fontfile\fontclass#name\s!features \endcsname}\else
+   \ifcsname\??fontfile          #name\s!features \endcsname \edef\m_font_features  % symbolic_name
+    {\csname\??fontfile          #name\s!features \endcsname}\else
    \ifcsname\??fontfile\fontclass            #name\endcsname\expandafter\font_helpers_set_features_yes    % class + parent_name
-     \csname\??fontfile\fontclass            #name\endcsname\else
-   \ifcsname\??fontfile                      #name\endcsname\expandafter\font_helpers_set_features_yes    % parent_name
-     \csname\??fontfile                      #name\endcsname\else
+     \csname\??fontfile\fontclass            #name\endcsname \else
+   \ifcsname\??fontfile                      #name\endcsname \expandafter\font_helpers_set_features_yes    % parent_name
+     \csname\??fontfile                      #name\endcsname \else
    \let\m_font_features\empty\fi\fi\fi\fi}
 
 \def\font_helpers_set_fallbacks_yes#name%
-  {\ifcsname\??fontfile\fontclass#name\s!fallbacks\endcsname\expandafter\let\expandafter\m_font_fallbacks
-     \csname\??fontfile\fontclass#name\s!fallbacks\endcsname\else
-   \ifcsname\??fontfile          #name\s!fallbacks\endcsname\expandafter\let\expandafter\m_font_fallbacks
-     \csname\??fontfile          #name\s!fallbacks\endcsname\else
-   \ifcsname\??fontfile\fontclass            #name\endcsname\expandafter\font_helpers_set_fallbacks_yes
-     \csname\??fontfile\fontclass            #name\endcsname\else
-   \ifcsname\??fontfile                      #name\endcsname\expandafter\font_helpers_set_fallbacks_yes
-     \csname\??fontfile                      #name\endcsname\else
+  {\ifcsname\??fontfile\fontclass#name\s!fallbacks\endcsname \edef\m_font_fallbacks
+    {\csname\??fontfile\fontclass#name\s!fallbacks\endcsname}\else
+   \ifcsname\??fontfile          #name\s!fallbacks\endcsname \edef\m_font_fallbacks
+    {\csname\??fontfile          #name\s!fallbacks\endcsname}\else
+   \ifcsname\??fontfile\fontclass            #name\endcsname \expandafter\font_helpers_set_fallbacks_yes
+     \csname\??fontfile\fontclass            #name\endcsname \else
+   \ifcsname\??fontfile                      #name\endcsname \expandafter\font_helpers_set_fallbacks_yes
+     \csname\??fontfile                      #name\endcsname \else
    \let\m_font_fallbacks\empty\fi\fi\fi\fi}
 
 \def\font_helpers_set_goodies_yes#name%
-  {\ifcsname\??fontfile\fontclass#name\s!goodies  \endcsname\expandafter\let\expandafter\m_font_goodies
-     \csname\??fontfile\fontclass#name\s!goodies  \endcsname\else
-   \ifcsname\??fontfile          #name\s!goodies  \endcsname\expandafter\let\expandafter\m_font_goodies
-     \csname\??fontfile          #name\s!goodies  \endcsname\else
-   \ifcsname\??fontfile\fontclass            #name\endcsname\expandafter\font_helpers_set_goodies_yes
-     \csname\??fontfile\fontclass            #name\endcsname\else
-   \ifcsname\??fontfile                      #name\endcsname\expandafter\font_helpers_set_goodies_yes
-     \csname\??fontfile                      #name\endcsname\else
+  {\ifcsname\??fontfile\fontclass#name\s!goodies  \endcsname \edef\m_font_goodies
+    {\csname\??fontfile\fontclass#name\s!goodies  \endcsname}\else
+   \ifcsname\??fontfile          #name\s!goodies  \endcsname \edef\m_font_goodies
+    {\csname\??fontfile          #name\s!goodies  \endcsname}\else
+   \ifcsname\??fontfile\fontclass            #name\endcsname \expandafter\font_helpers_set_goodies_yes
+     \csname\??fontfile\fontclass            #name\endcsname \else
+   \ifcsname\??fontfile                      #name\endcsname \expandafter\font_helpers_set_goodies_yes
+     \csname\??fontfile                      #name\endcsname \else
    \let\m_font_goodies\empty\fi\fi\fi\fi}
 
 \def\font_helpers_set_designsize_yes#name%
-  {\ifcsname\??fontfile\fontclass#name\s!designsize\endcsname\expandafter\let\expandafter\m_font_designsize
-     \csname\??fontfile\fontclass#name\s!designsize\endcsname\else
-   \ifcsname\??fontfile          #name\s!designsize\endcsname\expandafter\let\expandafter\m_font_designsize
-     \csname\??fontfile          #name\s!designsize\endcsname\else
-   \ifcsname\??fontfile\fontclass             #name\endcsname\expandafter\font_helpers_set_designsize_yes
-     \csname\??fontfile\fontclass             #name\endcsname\else
-   \ifcsname\??fontfile                       #name\endcsname\expandafter\font_helpers_set_designsize_yes
-     \csname\??fontfile                       #name\endcsname\else
+  {\ifcsname\??fontfile\fontclass#name\s!designsize\endcsname \edef\m_font_designsize
+    {\csname\??fontfile\fontclass#name\s!designsize\endcsname}\else
+   \ifcsname\??fontfile          #name\s!designsize\endcsname \edef\m_font_designsize
+    {\csname\??fontfile          #name\s!designsize\endcsname}\else
+   \ifcsname\??fontfile\fontclass             #name\endcsname \expandafter\font_helpers_set_designsize_yes
+     \csname\??fontfile\fontclass             #name\endcsname \else
+   \ifcsname\??fontfile                       #name\endcsname \expandafter\font_helpers_set_designsize_yes
+     \csname\??fontfile                       #name\endcsname \else
    \let\m_font_designsize\empty\fi\fi\fi\fi}
 
 \def\font_helpers_set_features_nop#name%
-  {\ifcsname\??fontfile#name\s!features \endcsname\expandafter\let\expandafter\m_font_features
-     \csname\??fontfile#name\s!features \endcsname\else
-   \ifcsname\??fontfile            #name\endcsname\expandafter\font_helpers_set_features_nop
-     \csname\??fontfile            #name\endcsname\else
+  {\ifcsname\??fontfile#name\s!features \endcsname \edef\m_font_features
+    {\csname\??fontfile#name\s!features \endcsname}\else
+   \ifcsname\??fontfile            #name\endcsname \expandafter\font_helpers_set_features_nop
+     \csname\??fontfile            #name\endcsname \else
    \let\m_font_features\empty\fi\fi}
 
 \def\font_helpers_set_fallbacks_nop#name%
-  {\ifcsname\??fontfile#name\s!fallbacks\endcsname\expandafter\let\expandafter\m_font_fallbacks
-     \csname\??fontfile#name\s!fallbacks\endcsname\else
-   \ifcsname\??fontfile            #name\endcsname\expandafter\font_helpers_set_fallbacks_nop
-     \csname\??fontfile            #name\endcsname\else
+  {\ifcsname\??fontfile#name\s!fallbacks\endcsname \edef\m_font_fallbacks
+    {\csname\??fontfile#name\s!fallbacks\endcsname}\else
+   \ifcsname\??fontfile            #name\endcsname \expandafter\font_helpers_set_fallbacks_nop
+     \csname\??fontfile            #name\endcsname \else
    \let\m_font_fallbacks\empty\fi\fi}
 
 \def\font_helpers_set_goodies_nop#name%
-  {\ifcsname\??fontfile#name\s!goodies  \endcsname\expandafter\let\expandafter\m_font_goodies
-     \csname\??fontfile#name\s!goodies  \endcsname\else
-   \ifcsname\??fontfile            #name\endcsname\expandafter\font_helpers_set_goodies_nop
-     \csname\??fontfile            #name\endcsname\else
+  {\ifcsname\??fontfile#name\s!goodies  \endcsname \edef\m_font_goodies
+    {\csname\??fontfile#name\s!goodies  \endcsname}\else
+   \ifcsname\??fontfile            #name\endcsname \expandafter\font_helpers_set_goodies_nop
+     \csname\??fontfile            #name\endcsname \else
    \let\m_font_goodies\empty\fi\fi}
 
 \def\font_helpers_set_designsize_nop#name%
-  {\ifcsname\??fontfile#name\s!designsize\endcsname\expandafter\let\expandafter\m_font_designsize
-     \csname\??fontfile#name\s!designsize\endcsname\else
-   \ifcsname\??fontfile             #name\endcsname\expandafter\font_helpers_set_designsize_nop
-     \csname\??fontfile             #name\endcsname\else
+  {\ifcsname\??fontfile#name\s!designsize\endcsname \edef\m_font_designsize
+    {\csname\??fontfile#name\s!designsize\endcsname}\else
+   \ifcsname\??fontfile             #name\endcsname \expandafter\font_helpers_set_designsize_nop
+     \csname\??fontfile             #name\endcsname \else
    \let\m_font_designsize\empty\fi\fi}
 
 \def\font_helpers_update_font_parameters_yes

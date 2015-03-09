@@ -891,11 +891,11 @@ function lists.number(name,n,spec)
     end
 end
 
-function lists.prefixednumber(name,n,prefixspec,numberspec)
+function lists.prefixednumber(name,n,prefixspec,numberspec,forceddata)
     local data = lists.result[n]
     if data then
         helpers.prefix(data,prefixspec)
-        local numberdata = data.numberdata
+        local numberdata = data.numberdata or forceddata
         if numberdata then
             typesetnumber(numberdata,"number",numberspec or false,numberdata or false)
         end

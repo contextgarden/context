@@ -1407,7 +1407,7 @@ primarydef pct along pat = % also negative
 enddef ;
 
 primarydef len on pat = % no outer ( ) .. somehow fails
-    (arctime if len>0 : len else : (arclength(pat)+len) fi of pat) of pat
+    (arctime if len>=0 : len else : (arclength(pat)+len) fi of pat) of pat
 enddef ;
 
 % this cuts of a piece from both ends

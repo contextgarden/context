@@ -401,37 +401,105 @@
 \unexpanded\def\inch        {\mathematics{\prime\prime}} % was: \hbox{\rm\char125\relax}
 \unexpanded\def\fraction#1#2{\mathematics{#1\over#2}}
 
-\def\periodswidth  {.5em}
-\def\periodsdefault{3}    % was 5, but now it's like \unknown
-
-\unexpanded\def\periods
-  {\dosingleempty\enco_periods}
-
+% \def\periodswidth  {.5em}
+% \def\periodsdefault{3}    % was 5, but now it's like \unknown
+%
+% \unexpanded\def\periods
+%   {\dosingleempty\enco_periods}
+%
 % \def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
 %   {\dontleavehmode
 %    \begingroup
 %    \scratchdimen\periodswidth
 %    \hbox to \iffirstargument#1\else\periodsdefault\fi \scratchdimen
-%      {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}%
+%      {\leaders\hbox to \scratchdimen{\hss\periodsymbol\hss}\hss}%
 %    \endgroup}
 %
 % better for export:
+%
+% \unexpanded\def\enco_periods[#1]% todo: also n=,width= or maybe just #1,#2
+%   {\dontleavehmode
+%    \hbox\bgroup
+%    \setbox\scratchbox\hbox to \periodswidth{\hss\periodsymbol\hss}%
+%    \dorecurse{\iffirstargument#1\else\periodsdefault\fi}{\copy\scratchbox}%
+%    \egroup}
+%
+% \unexpanded\def\unknown
+%   {\periods\relax} % relax prevents lookahead for []
+%
+% per request:
 
-\unexpanded\def\enco_periods[#1]% todo: also n=,width= or maybe just #1,#2
+%D \startbuffer
+%D \startlines
+%D     x\periods x
+%D     x\periods[10]x
+%D     x\periods[n=10,symbol={,}]x
+%D     x\periods[n=4,symbol={!!},width=1em]x
+%D     x\periods[n=4,symbol={!!},width=fit]x
+%D     x\periods[n=4,symbol={!!},width=fit,distance=1em]x
+%D     x\unknown x
+%D \stoplines
+%D \stopbuffer
+%D
+%D \typbuffer \getbuffer
+
+\def\periodswidth  {.5\emwidth}  % downward compatible
+\def\periodsdefault{3}           % downward compatible
+
+\installcorenamespace {periods}
+
+\installsetuponlycommandhandler \??periods {periods}
+
+\setupperiods
+  [\c!n=\periodsdefault,
+   \c!width=\periodswidth, % can also be \v!fit
+   \c!distance=.25\emwidth,
+   \c!symbol=.]
+
+\unexpanded\def\periods
   {\dontleavehmode
    \hbox\bgroup
-   \setbox\scratchbox\hbox to \periodswidth{\hss.\hss}%
-   \dorecurse{\iffirstargument#1\else\periodsdefault\fi}{\copy\scratchbox}%
+   \doifnextoptionalelse\enco_periods_yes\enco_periods_nop}
+
+\unexpanded\def\enco_periods_yes[#1]%
+  {\doifassignmentelse{#1}
+     {\setupcurrentperiods[#1]%
+      \scratchcounter\periodsparameter\c!n}
+     {\doifelsenothing{#1}
+        {\scratchcounter\periodsparameter\c!n}%
+        {\scratchcounter#1}}%
+   \enco_periods_finish}
+
+\unexpanded\def\enco_periods_nop
+  {\scratchcounter\periodsparameter\c!n
+   \enco_periods_finish}
+
+\unexpanded\def\enco_periods_finish
+  {\edef\p_width{\periodsparameter\c!width}%
+   \ifx\p_width\v!fit
+     \enco_periods_finish_fit
+   \else
+     \enco_periods_finish_width
+   \fi
    \egroup}
 
-\unexpanded\def\unknown
-  {\periods\relax} % relax prevents lookahead for []
+\unexpanded\def\enco_periods_finish_width
+  {\setbox\scratchbox\hbox to \p_width
+     {\hss\periodsparameter\c!symbol\hss}%
+   \dorecurse\scratchcounter{\copy\scratchbox}}
 
-% Example by Wolfgang Schuster on the context list:
-%
-% \unexpanded\def\fourdots{{\def\periodswidth{.3em}\periods[4]}}
-%
-% Hello\fourdots\ World\fourdots \par Hello\fourdots\ World.
+\unexpanded\def\enco_periods_finish_fit
+  {\edef\p_symbol{\periodsparameter\c!symbol}%
+   \scratchdistance\periodsparameter\c!distance
+   \hskip\scratchdistance
+   \dorecurse\scratchcounter{\p_symbol\hskip\scratchdistance}}
+
+\unexpanded\def\unknown
+  {\dontleavehmode
+   \hbox\bgroup
+   \enco_periods_nop}
+
+%D Left-overs:
 
 \appendtoks
     \let\buildtextaccent\secondoftwoarguments

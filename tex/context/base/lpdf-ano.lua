@@ -331,7 +331,7 @@ local f_fith  = formatters["<< /D [ %i 0 R /FitH %0.3F ] >>"]
 local f_fitv  = formatters["<< /D [ %i 0 R /FitV %0.3F ] >>"]
 local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %0.3F ] >>"]
 local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %0.3F ] >>"]
-local f_fitr  = formatters["<< /D [ %i 0 R /FitR [ %0.3F %0.3F %0.3F %0.3F ] ] >>"]
+local f_fitr  = formatters["<< /D [ %i 0 R /FitR %0.3F %0.3F %0.3F %0.3F ] >>"]
 
 local v_standard  = variables.standard
 local v_frame     = variables.frame
@@ -344,15 +344,28 @@ local v_tight     = variables.tight
 
 -- nicer is to create dictionaries and set properties but it's a bit overkill
 
+-- The problem with the following settings is that they are guesses: we never know
+-- if a box is part of something larger that needs to be in view, or that we are
+-- dealing with a vbox or vtop so the used h/d values cannot be trusted in a tight
+-- view. Of course some decent additional offset would be nice so maybe i'll add
+-- that some day. I never use anything else than 'fit' anyway as I think that the
+-- document should fit the device (and vice versa). In fact, with todays swipe
+-- and finger zooming this whole view is rather useless and as with any zooming
+-- one looses the overview and keeps zooming.
+
 local destinationactions = {
-    [v_standard]  = function(r,w,h,d) return f_xyz  (r,pdfrectangle(w,h,d))  end, -- local left,top with zoom (0 in our case)
-    [v_frame]     = function(r,w,h,d) return f_fitr (r,pdfrectangle(w,h,d))  end, -- fit rectangle in window
-    [v_width]     = function(r,w,h,d) return f_fith (r, gethpos()   *factor) end, -- top coordinate, fit width of page in window
-    [v_minwidth]  = function(r,w,h,d) return f_fitbh(r, gethpos()   *factor) end, -- top coordinate, fit width of content in window
-    [v_height]    = function(r,w,h,d) return f_fitv (r,(getvpos()+h)*factor) end, -- left coordinate, fit height of page in window
-    [v_minheight] = function(r,w,h,d) return f_fitbv(r,(getvpos()+h)*factor) end, -- left coordinate, fit height of content in window
-    [v_fit]       =                          f_fit,                               -- fit page in window
-    [v_tight]     =                          f_fitb,                              -- fit content in window
+ -- [v_standard]  = function(r,w,h,d) return f_xyz  (r,pdfrectangle(w,h,d)) end,                   -- local left,top with zoom (0 in our case)
+    [v_standard]  = function(r,w,h,d) return f_xyz  (r,gethpos()*factor,(getvpos()+h)*factor) end, -- local left,top with no zoom
+    [v_frame]     = function(r,w,h,d) return f_fitr (r,pdfrectangle(w,h,d)) end,                   -- fit rectangle in window
+ -- [v_width]     = function(r,w,h,d) return f_fith (r,gethpos()*factor) end,                      -- top coordinate, fit width of page in window
+    [v_width]     = function(r,w,h,d) return f_fith (r,(getvpos()+h)*factor) end,                  -- top coordinate, fit width of page in window
+ -- [v_minwidth]  = function(r,w,h,d) return f_fitbh(r,gethpos()*factor) end,                      -- top coordinate, fit width of content in window
+    [v_minwidth]  = function(r,w,h,d) return f_fitbh(r,(getvpos()+h)*factor) end,                  -- top coordinate, fit width of content in window
+ -- [v_height]    = function(r,w,h,d) return f_fitv (r,(getvpos()+h)*factor) end,                  -- left coordinate, fit height of page in window
+    [v_height]    = function(r,w,h,d) return f_fitv (r,gethpos()*factor) end,                      -- left coordinate, fit height of page in window
+ -- [v_minheight] = function(r,w,h,d) return f_fitbv(r,(getvpos()+h)*factor) end,                  -- left coordinate, fit height of content in window
+    [v_minheight] = function(r,w,h,d) return f_fitbv(r,gethpos()*factor) end,                      -- left coordinate, fit height of content in window    [v_fit]       =                          f_fit,                                                 -- fit page in window
+    [v_tight]     =                          f_fitb,                                               -- fit content in window
 }
 
 local mapping = {
@@ -383,7 +396,7 @@ end)
 
 local function flushdestination(width,height,depth,names,view)
     local r = pdfpagereference(texgetcount("realpageno"))
-    if view == defaultview then
+    if view == defaultview or not view or view == "" then
         r = pagedestinations[r]
     else
         local action = view and destinationactions[view] or defaultaction

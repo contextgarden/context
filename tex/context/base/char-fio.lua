@@ -6,6 +6,11 @@ if not modules then modules = { } end modules ['char-fio'] = {
     license   = "see context related readme files"
 }
 
+-- % directives="filters.utf.reorder=false"
+
+
+local next = next
+
 -- --
 
 local sequencers      = utilities.sequencers
@@ -30,19 +35,46 @@ disableaction(textfileactions,         "characters.filters.utf.collapse")
 appendaction (textfileactions,"system","characters.filters.utf.decompose")
 disableaction(textfileactions,         "characters.filters.utf.decompose")
 
+local report    = logs.reporter("unicode filter")
+local reporting = "no"
+
+-- this is messy as for performance reasons i don't want this to happen
+-- per line by default
+
+local enforced = {
+    ["characters.filters.utf.reorder"]   = true,
+    ["characters.filters.utf.collapse"]  = true,
+    ["characters.filters.utf.decompose"] = true,
+}
+
 function characters.filters.utf.enable()
-    enableaction(textfileactions,"characters.filters.utf.reorder")
-    enableaction(textfileactions,"characters.filters.utf.collapse")
-    enableaction(textfileactions,"characters.filters.utf.decompose")
+    for k, v in next, enforced do
+        if v then
+            if reporting == "yes" then
+                report("%a enabled",k)
+            end
+            enableaction(textfileactions,v)
+        else
+            if reporting == "yes" then
+                report("%a not enabled",k)
+            end
+        end
+    end
+    reporting = "never"
 end
 
 local function configure(what,v)
-    if not v then
-        disableaction(textfileactions,what)
-        disableaction(textlineactions,what)
-    elseif v == "line" then
+    if v == "line" then
         disableaction(textfileactions,what)
         enableaction (textlineactions,what)
+    elseif not toboolean(v) then
+        if reporting ~= "never" then
+            report("%a disabled",k)
+            reporting = "yes"
+        end
+        enforced[what] = false
+        disableaction(textfileactions,what)
+        disableaction(textlineactions,what)
     else -- true or text
         enableaction (textfileactions,what)
         disableaction(textlineactions,what)

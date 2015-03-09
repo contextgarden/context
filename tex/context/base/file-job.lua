@@ -88,10 +88,12 @@ function commands.locatefilepath(name)
 end
 
 function commands.usepath(paths)
+    report_jobfiles("using path: %s",paths)
     registerextrapath(paths)
 end
 
 function commands.usesubpath(subpaths)
+    report_jobfiles("using subpath: %s",subpaths)
     registerextrapath(nil,subpaths)
 end
 
@@ -771,6 +773,10 @@ function document.getargument(key,default) -- commands
         document.arguments[key] = v
     end
     context(v or default or "")
+end
+
+function document.setargument(key,value)
+    document.arguments[key] = value -- only strings
 end
 
 function document.getfilename(i) -- commands

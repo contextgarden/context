@@ -21,6 +21,7 @@ local concat, fastcopy = table.concat, table.fastcopy
 local max, min = math.max, math.min
 local allocate, mark, accesstable = utilities.storage.allocate, utilities.storage.mark, utilities.tables.accesstable
 local setmetatableindex = table.setmetatableindex
+local lpegmatch, P, C = lpeg.match, lpeg.P, lpeg.C
 
 local catcodenumbers      = catcodes.numbers
 local ctxcatcodes         = catcodenumbers.ctxcatcodes
@@ -58,6 +59,8 @@ local applyprocessor      = processors.apply
 local startapplyprocessor = processors.startapply
 local stopapplyprocessor  = processors.stopapply
 local strippedprocessor   = processors.stripped
+
+local convertnumber       = converters.convert
 
 local a_internal          = attributes.private('internal')
 
@@ -600,10 +603,10 @@ local function process(index,numbers,ownnumbers,criterium,separatorset,conversio
             if ownnumber ~= "" then
                 result[#result+1] = ownnumber
             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups) .. inherited!
-                result[#result+1] = converters.convert(conversion,number,language)
+                result[#result+1] = convertnumber(conversion,number,language)
             else
                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
-                result[#result+1] = converters.convert(theconversion,number,language)
+                result[#result+1] = convertnumber(theconversion,number,language)
             end
         else
             if ownnumber ~= "" then
@@ -921,7 +924,14 @@ end
 
 function sections.getnumber(depth,what) -- redefined here
     local sectiondata = sections.findnumber(depth,what)
-    context((sectiondata and sectiondata.numbers[depth]) or 0)
+    local askednumber = 0
+    if sectiondata then
+        local numbers = sectiondata.numbers
+        if numbers then
+            askednumber = numbers[depth] or 0
+        end
+    end
+    context(askednumber)
 end
 
 -- experimental
@@ -1003,8 +1013,16 @@ commands.setsectionentry            = sections.setentry
 commands.reportstructure            = sections.reportstructure
 --
 
-local byway = "^" .. v_by -- ugly but downward compatible
+-- local byway = "^" .. v_by -- ugly but downward compatible
+
+-- function commands.way(way)
+--     context((gsub(way,byway,"")))
+-- end
+
+local pattern = P(v_by)^-1 * C(P(1)^1)
 
 function commands.way(way)
-    context((gsub(way,byway,"")))
+    if way ~= "" then
+        context(lpegmatch(pattern,way))
+    end
 end

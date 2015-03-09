@@ -129,6 +129,8 @@
 
 \usemodule[mathml-basics]
 
+\startmodule[asciimath]
+
 \unprotect
 
 \writestatus{asciimath}{beware, this is an experimental (m4all only) module}
@@ -142,6 +144,16 @@
 \unexpanded\def\asciimathsqrt          #1{\sqrt{#1}}
 
 %D The core commands:
+
+% if we need to set
+
+\installsetuponlycommandhandler {asciimath} {asciimath}
+
+\appendtoks
+    \ctxlua{moduledata.asciimath.setup {
+        separator = "\asciimathparameter\c!separator",
+    }}%
+\to \everysetupasciimath
 
 \unexpanded\def\asciimath#1%
   {\ctxcommand{asciimath(\!!bs\detokenize\expandafter{\normalexpanded{#1}}\!!es)}}
@@ -258,9 +270,13 @@
 
 \stopsetups
 
+\stopmodule
+
 \continueifinputfile{x-asciimath.mkiv}
 
 %D This will become an extra.
+
+\showframe
 
 \setups[asciimath:layout]
 
@@ -273,10 +289,10 @@
 %   % \ShowAsciiMathSave[e:/temporary/asciimath/asciimath.lua]
 % \stoptext
 
-% \starttext
-% \unexpanded\def\MyAsciiMath#1{\startformula\asciimath{#1}\stopformula}
-% \startlines
-% \MyAsciiMath{x^2 / 10 // z_12^34 / 20}
+\starttext
+\unexpanded\def\MyAsciiMath#1{\startformula\asciimath{#1}\stopformula}
+\startlines
+\MyAsciiMath{x^2 / 10 // z_12^34 / 20}
 % \MyAsciiMath{{:{:x^2:} / 10:} // {:{:z_12^34 :} / 20:}}
 % \MyAsciiMath{x^2+y_1+z_12^34}
 % \MyAsciiMath{sin^-1(x)}
@@ -360,5 +376,5 @@
 % \MyAsciiMath{x^ (-1 1/2) =1/x^ (1 1/2)=1/ (x^1*x^ (1/2)) =1/ (xsqrt(x))}
 % \MyAsciiMath{x^2(10 -x)&gt;2 x^2}
 % \MyAsciiMath{x^4&gt;x}
-% \stoplines
-% \stoptext
+\stoplines
+\stoptext

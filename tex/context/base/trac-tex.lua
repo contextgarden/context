@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['trac-tex'] = {
 
 -- moved from trac-deb.lua
 
-local format = string.format
+local next = next
 
 local texhashtokens = tex.hashtokens
 
@@ -20,23 +20,70 @@ function trackers.savehash()
     saved = texhashtokens()
 end
 
-function trackers.dumphashtofile(filename,delta)
-    local list, hash, command_name = { }, texhashtokens(), token.command_name
-    for name, token in next, hash do
-        if not delta or not saved[name] then
-            -- token: cmd, chr, csid -- combination cmd,chr determines name
-            local category = command_name(token)
-            local dk = list[category]
-            if not dk then
-                -- a bit funny names but this sorts better (easier to study)
-                dk = { names = { }, found = 0, code = token[1] }
-                list[category] = dk
+if newtoken then
+
+    function trackers.dumphashtofile(filename,delta)
+        local list   = { }
+        local hash   = tex.hashtokens()
+        local create = newtoken.create
+        for name, token in next, hash do
+            if not delta or not saved[name] then
+                if token[2] ~= 0 then -- still old interface
+                    local token = create(name)
+                 -- inspect(token)
+                    local category = token.cmdname
+                    local dk = list[category]
+                    if not dk then
+                        dk = {
+                            names = { },
+                            found = 0,
+                         -- code  = token[1],
+                        }
+                        list[category] = dk
+                    end
+                    if token.protected then
+                        if token.expandable then
+                            dk.names[name] = "ep"
+                        else
+                            dk.names[name] = "-p"
+                        end
+                    else
+                        if token.expandable then
+                            dk.names[name] = "ep"
+                        else
+                            dk.names[name] = "--"
+                        end
+                    end
+                    dk.found = dk.found + 1
+                end
             end
-            dk.names[name] = { token[2], token[3] }
-            dk.found = dk.found + 1
         end
+        table.save(filename or tex.jobname .. "-hash.log",list)
     end
-    io.savedata(filename or tex.jobname .. "-hash.log",table.serialize(list,true))
+
+else
+
+    function trackers.dumphashtofile(filename,delta)
+        local list    = { }
+        local hash    = texhashtokens()
+        local getname = token.command_name
+        for name, token in next, hash do
+            if not delta or not saved[name] then
+                -- token: cmd, chr, csid -- combination cmd,chr determines name
+                local category = getname(token)
+                local dk = list[category]
+                if not dk then
+                    -- a bit funny names but this sorts better (easier to study)
+                    dk = { names = { }, found = 0, code = token[1] }
+                    list[category] = dk
+                end
+                dk.names[name] = { token[2], token[3] }
+                dk.found = dk.found + 1
+            end
+        end
+        table.save(filename or tex.jobname .. "-hash.log",list)
+    end
+
 end
 
 local delta = nil

@@ -638,6 +638,8 @@
 %D
 %D In \LUATEX\ we have ways around this.
 
+% no longer \errorstopmode cf. plain tex 3.141592653
+
 \normalprotected\def\tracingall
   {\tracingonline    \plusone
    \tracingcommands  \plusthree
@@ -654,8 +656,7 @@
    \tracingifs       \plusone
    \tracingscantokens\plusone
    \tracingnesting   \plusone
-   \tracingassigns   \plustwo
-   \errorstopmode}
+   \tracingassigns   \plustwo}
 
 \normalprotected\def\loggingall
   {\tracingall

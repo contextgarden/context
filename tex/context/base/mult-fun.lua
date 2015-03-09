@@ -20,6 +20,7 @@ return {
         "sqr", "log", "ln", "exp", "inv", "pow", "pi", "radian",
         "tand", "cotd", "sin", "cos", "tan", "cot", "atan", "asin", "acos",
         "invsin", "invcos", "invtan", "acosh", "asinh", "sinh", "cosh",
+        "zmod",
         "paired", "tripled",
         "unitcircle", "fulldiamond", "unitdiamond", "fullsquare",
      -- "halfcircle", "quartercircle",

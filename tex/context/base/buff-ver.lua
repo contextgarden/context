@@ -624,14 +624,16 @@ end
 
 local function getrange(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
     local noflines = #lines
-    local first, last = first or 1, last or noflines
+    local first    = first or 1
+    local last     = last or noflines
     if last < 0 then
         last = noflines + last
     end
-    local range = settings.range
     local what = settings_to_array(range)
-    local r_first, r_last = what[1], what[2]
-    local f, l = tonumber(r_first), tonumber(r_last)
+    local r_first = what[1]
+    local r_last  = what[2]
+    local f       = tonumber(r_first)
+    local l       = tonumber(r_last)
     if r_first then
         if f then
             if f > first then
@@ -688,6 +690,7 @@ local function filter(lines,settings) -- todo: inline or display in settings
     end
     local line, n = 0, 0
     local first, last, m = getstrip(lines)
+    local range = settings.range
     if range then
         first, last = getrange(lines,first,last,range)
         first, last = getstrip(lines,first,last)

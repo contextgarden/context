@@ -364,15 +364,15 @@ local styletemplate = [[
         local hyphen   = finetuning.hyphen
         local align    = finetuning.align
         --
-        if not bodyfont or bodyfont == "" then
+        if type(bodyfont) == "number" then
+            bodyfont = todimen(bodyfont)
+        else
             bodyfont = "12pt"
-        elseif type(bodyfont) == "number" then
-            bodyfont = todimen(bodyfont,"pt","%ipt") or "12pt"
         end
-        if not width or width == "" then
+        if type(width) == "number" then
+            width = todimen(width) or "50em"
+        else
             width = "50em"
-        elseif type(width) == "number" then
-            width = todimen(width,"pt","%ipt") or "50em"
         end
         if hyphen == v_yes then
             hyphen = "manual"
@@ -422,39 +422,50 @@ do
 local imagetemplate = [[
 %element%[id="%id%"], div.%element%[id="%id%"] {
     display           : block ;
-    background-image  : url(%url%) ;
+    background-image  : url('%url%') ;
     background-size   : 100%% auto ;
     background-repeat : no-repeat ;
     width             : %width% ;
     height            : %height% ;
 }]]
 
+    local f_svgname = formatters["%s.svg"]
+    local f_svgpage = formatters["%s-page-%s.svg"]
+    local collected = { }
 
-    local function substitute(name)
+    local function usedname(name,page)
         if file.suffix(name) == "pdf" then
             -- temp hack .. we will have a remapper
-            return file.replacesuffix(name,"svg")
+            if page and page > 1 then
+                name = f_svgpage(file.nameonly(name),page)
+            else
+                name = f_svgname(file.nameonly(name))
+            end
+        end
+        local scheme = url.hasscheme(name)
+        if not scheme or scheme == "file" then
+            -- or can we just use the name ?
+            return file.join("../images",file.basename(url.filename(name)))
         else
             return name
         end
     end
-
-    local collected = { }
 
     function wrapups.allusedimages(basename)
         local result = { formatters["/* %s for file %s */"]("images",basename) }
         for element, details in sortedhash(usedimages) do
             for detail, data in sortedhash(details) do
                 local name = data.name
+                local page = tonumber(data.page) or 1
                 local spec = {
                     element = element,
                     id      = data.id,
                     name    = name,
-                    url     = url.addscheme(substitute(name)),
+                    page    = page,
+                    url     = usedname(name,page),
                     width   = data.width,
                     height  = data.height,
                     used    = data.used,
-                    page    = data.page,
                 }
                 result[#result+1] = replacetemplate(imagetemplate,spec)
                 collected[detail] = spec
@@ -725,8 +736,8 @@ do
             name   = name,
             used   = used,
             page   = page and page > 1 and page or nil,
-            width  = todimen(width, "cm","%0.3Fcm"),
-            height = todimen(height,"cm","%0.3Fcm"),
+            width  = todimen(width, "cm","%0.3F%s"),
+            height = todimen(height,"cm","%0.3F%s"),
         }
     end
 
@@ -2511,13 +2522,17 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                                     nofcurrentcontent = nofcurrentcontent + 1
                                     currentcontent[nofcurrentcontent] = utfchar(u)
                                 end
-                            else -- weird, happens in hz (we really need to get rid of the pseudo fonts)
+                            elseif c > 0 then
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = utfchar(c)
+                            else
+                                -- we can have -1 as side effect of an explicit hyphen (unless we expand)
                             end
-                        else
+                        elseif c > 0 then
                             nofcurrentcontent = nofcurrentcontent + 1
                             currentcontent[nofcurrentcontent] = utfchar(c)
+                        else
+                            -- we can have -1 as side effect of an explicit hyphen (unless we expand)
                         end
                     end
                 end

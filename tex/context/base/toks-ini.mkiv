@@ -17,54 +17,6 @@
 
 \unprotect
 
-%D Handy for manuals \unknown
-
-\unexpanded\def\starttokens  [#1]{\ctxlua{tokens.collectors.install("#1","stoptokens")}}
-           \let\stoptokens        \relax
-           \def\flushtokens  [#1]{\ctxlua{tokens.collectors.flush("#1")}}
-           \def\showtokens   [#1]{\ctxlua{tokens.collectors.show("#1")}}
-           \def\testtokens   [#1]{\ctxlua{tokens.collectors.with_words("#1")}}
-           \def\registertoken  #1{\ctxlua{tokens.collectors.register("#1")}}
-
-%D Inspired by a prototype by Taco for Thomas cum suis.
-
-% \defineremapper[babelgreek]
-%
-% \remapcharacter[babelgreek][`a]{\alpha}
-% \remapcharacter[babelgreek][`b]{\beta}
-% \remapcharacter[babelgreek][`c]{\gamma}
-% \remapcharacter[babelgreek][`d]{OEPS}
-%
-% \starttext
-%
-% [\startbabelgreek
-% a b c some stuff here \blank[big] oeps b d
-% \stopbabelgreek]
-%
-% [\babelgreek{some stuff here}]
-%
-% \stoptext
-
-\unexpanded\def\defineremapper[#1]%
-  {\setuevalue{\e!start#1}{\toks_start_remapper{#1}}%
-   \setuevalue{\e!stop #1}{\toks_stop_remapper {#1}}%
-   \letvalue{#1}\relax
-   \normalexpanded{\expandafter\def\csname#1\endcsname##1{\csname\e!start#1\endcsname##1\csname\e!stop#1\endcsname}}}
-
-\unexpanded\def\toks_start_remapper#1%
-  {\ctxlua{tokens.collectors.install("#1", "\e!stop#1")}}
-
-\unexpanded\def\toks_stop_remapper#1%
-  {\ctxlua{tokens.collectors.handle("#1",function(str) return tokens.collectors.remapper.convert("#1",str) end, true)}}
-
-\unexpanded\def\remaptokens#1%
-  {\ctxlua{tokens.collectors.handle("#1",function(str) return tokens.collectors.remapper.convert("#1",str) end)}}
-
-\unexpanded\def\remapcharacter
-  {\dodoubleempty\toks_remap_character}
-
-\def\toks_remap_character[#1][#2]#3%
-  {\ctxlua{tokens.collectors.install("store", "ctxlua")}#3%
-   \ctxlua{tokens.collectors.remapper.store("store","#1",\number#2)}}
+% nothing yet
 
 \protect \endinput
