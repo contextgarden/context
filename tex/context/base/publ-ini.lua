@@ -549,6 +549,10 @@ local findallused do
                         tags[#tags+1] = tag
                     end
                 end
+                if #tags == 0 and not reported[reference] then
+                    tags[1] = reference
+                    reported[reference] = true
+                end
             else
                 for i=1,#tags do
                     local tag  = tags[i]
@@ -570,6 +574,10 @@ local findallused do
                         tags[#tags+1] = tag
                         todo[tag] = true
                     end
+                end
+                if #tags == 0 and not reported[reference] then
+                    tags[1] = reference
+                    reported[reference] = true
                 end
             else
                 for i=1,#tags do

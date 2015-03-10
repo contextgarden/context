@@ -83,6 +83,53 @@ and suitable action can be taken.
 
 \stopsection
 
+\startsection[title=Downsampling]
+
+You can plug in you rown converter, here is an example:
+
+\starttyping
+\startluacode
+
+figures.converters.jpg = figures.converters.jpg or { }
+
+figures.converters.jpg["lowresjpg.pdf"] =
+  function(oldname,newname,resolution)
+    figures.programs.run (
+      [[gm]],
+      [[convert -geometry %nx%x%ny% -compress JPEG "%old%" "%new%"]],
+      {
+         old = old,
+         new = new,
+         nx  = resolution or 300,
+         ny  = resolution or 300,
+      }
+    )
+  end
+\stopluacode
+\stoptyping
+
+You can limit the search to a few types and set the resolution with:
+
+\starttyping
+\setupexternalfigures
+  [order={pdf,jpg},
+   resolution=100,
+   method=auto]
+\stoptyping
+
+And use it like:
+
+\starttyping
+\externalfigure[verybig.jpg][height=10cm]
+\stoptyping
+
+The second string passed to the \type {run} helper contains the arguments to the
+first one. The variables between percent signs get replaced by the variables in
+the tables passed as third argument.
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent
+

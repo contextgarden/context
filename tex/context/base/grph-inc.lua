@@ -69,7 +69,7 @@ local texsetbox         = tex.setbox
 
 local hpack             = node.hpack
 
-local new_latelua      = nodes.pool.latelua
+local new_latelua       = nodes.pool.latelua
 
 local context           = context
 
@@ -105,18 +105,35 @@ local maxdimen = 2^30-1
 
 function images.check(figure)
     if figure then
-        local width = figure.width
+        local width  = figure.width
         local height = figure.height
+        if width <= 0 or height <= 0 then
+            report_inclusion("image %a has bad dimensions (%p,%p), discarding",
+                figure.filename,width,height)
+            return false, "bad dimensions"
+        end
+        local xres    = figure.xres
+        local yres    = figure.yres
+        local changes = false
         if height > width then
             if height > maxdimen then
                 figure.height = maxdimen
                 figure.width  = width * maxdimen/height
-                report_inclusion("limiting natural dimensions of %a (%s)",figure.filename,"height")
+                changed       = true
             end
         elseif width > maxdimen then
             figure.width  = maxdimen
             figure.height = height * maxdimen/width
-            report_inclusion("limiting natural dimensions of %a (%s)",figure.filename,"width")
+            changed       = true
+        end
+        if changed then
+            report_inclusion("limiting natural dimensions of %a, old %p * %p, new %p * %p",
+                figure.filename,width,height,figure.width,figure.height)
+        end
+        if width >=maxdimen or height >= maxdimen then
+            report_inclusion("image %a is too large (%p,%p), discarding",
+                figure.filename,width,height)
+            return false, "dimensions too large"
         end
         return figure
     end
@@ -594,8 +611,9 @@ local function rejected(specification)
     if extra_check then
         local fullname = specification.fullname
         if fullname and figures_native[file.suffix(fullname)] and not figures.guess(fullname) then
-            specification.comment = "probably a bade file"
+            specification.comment = "probably a bad file"
             specification.found   = false
+            specification.error   = true
             report_inclusion("file %a looks bad",fullname)
             return true
         end
@@ -1097,8 +1115,52 @@ function figures.check(data)
     return (checkers[data.status.format] or checkers.generic)(data)
 end
 
+local trace_usage = false
+local used_images = { }
+
+trackers.register("graphics.usage", function(v)
+    if v and not trace_usage then
+        luatex.registerstopactions(function()
+            local found = { }
+            for _, t in table.sortedhash(figures_found) do
+                found[#found+1] = t
+                for k, v in next, t do
+                    if v == false or v == "" then
+                        t[k] = nil
+                    end
+                end
+            end
+            for i=1,#used_images do
+                local u = used_images[i]
+                local s = u.status
+                if s then
+                    s.status = nil -- doesn't say much here
+                    if s.error then
+                        u.used = { } -- better show that it's not used
+                    end
+                end
+                for _, t in next, u do
+                    for k, v in next, t do
+                        if v == false or v == "" then
+                            t[k] = nil
+                        end
+                    end
+                end
+            end
+            table.save(file.nameonly(environment.jobname) .. "-figures-usage.lua",{
+                found = found,
+                used  = used_images,
+            } )
+        end)
+        trace_usage = true
+    end
+end)
+
 function figures.include(data)
     data = data or callstack[#callstack] or lastfiguredata
+    if trace_usage then
+        used_images[#used_images+1] = data
+    end
     return (includers[data.status.format] or includers.generic)(data)
 end
 
@@ -1187,10 +1249,17 @@ function checkers.generic(data)
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
         if figure then
-            figure = images.check(images.scan(figure)) or false
+            local f, comment = images.check(images.scan(figure))
+            if not f then
+                ds.comment = comment
+                ds.found   = false
+                ds.error   = true
+            end
+            figure = f
         end
         local f, d = codeinjections.setfigurealternative(data,figure)
-        figure, data = f or figure, d or data
+        figure = f or figure
+        data   = d or data
         figures_loaded[hash] = figure
         if trace_conversion then
             report_inclusion("new graphic, using hash %a",hash)
