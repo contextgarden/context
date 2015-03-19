@@ -64,7 +64,7 @@ function texconfig.init()
             "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package", "bit32",
         },
         basictex = { -- noad
-            "callback", "font", "img", "lang", "lua", "node", "pdf", "status", "tex", "texconfig", "texio", "token",
+            "callback", "font", "img", "lang", "lua", "node", "pdf", "status", "tex", "texconfig", "texio", "token", "newtoken"
         },
         extralua = {
             "gzip",  "zip", "zlib", "lfs", "ltn12", "mime", "socket", "md5", "profiler", "unicode", "utf",
@@ -75,6 +75,7 @@ function texconfig.init()
         obsolete = {
             "fontforge", -- can be filled by luat-log
             "kpse",
+            "token",
         },
         functions = {
             "assert", "pcall", "xpcall", "error", "collectgarbage",

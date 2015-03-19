@@ -22,33 +22,23 @@
 % \definebtx [\s!default:\s!list  ] [\s!list]
 % \definebtx [\s!default:\s!author] [\s!author]
 
-\definebtxrendering % no need to set \c!default ! ... also confusing 
+\definebtxrendering
   [\s!default]
   [\c!specification=\s!default]
 
 \definebtx
   [\s!default]
-  [\c!namesep={,\space},
-   \c!lastnamesep={\space\btxlabeltext{default:and}\space},
-   \c!finalnamesep={\space\btxlabeltext{default:and}\space},
-   \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{default:others}},
-   \c!juniorsep=\space,
-   \c!vonsep=\space,
-   \c!initialsep=\space,
-   \c!surnamesep={,\space},
-   \c!surnameinitialsep={,\space},
-   \c!surnamefirstnamesep={,\space},
-   \c!pubsep={,\space},
-   \c!lastpubsep={,\space\btxlabeltext{default:and}\space},
-   \c!finalpubsep={\space\btxlabeltext{default:and}\space}]
+  [\c!otherstext={\space\btxlabeltext{default:others}},
+   %c!journalconversion=\v!normal,
+   \c!monthconversion=\v!number,
+   \c!separator:names:2={,\space},
+   \c!separator:names:3={\space\btxlabeltext{default:and}\space},
+   \c!separator:names:4={\space\btxlabeltext{default:and}\space}]
 
 \definebtx
   [\s!default:\s!list]
   [\s!default]
-  [%c!journalconversion=\v!normal,
-   \c!monthconversion=\v!number,
-   \c!authorconversion=normalshort]
+  [\c!authorconversion=normalshort]
 
 \definebtx
   [\s!default:\s!cite]
@@ -60,7 +50,7 @@
    \c!inbetween=\space,
    \c!range=\endash,
    \c!left=,
-   \c!middle=,
+  %\c!middle=,
    \c!right=]
 
 % We define [page] settings in the default namespace, inheriting the root
@@ -70,6 +60,10 @@
 \definebtx
   [\s!default:\s!page]
   [\s!page]
+
+\definebtx
+  [\s!default:\s!page:list]
+  [\s!default:\s!page]
 
 % List variants, some having specific settings:
 
@@ -130,10 +124,7 @@
   [\s!default:\s!cite:authornum]
   [\s!default:\s!cite:author]
   [\c!left={(},
-   \c!right={)},
-   \c!pubsep={;\space},
-   \c!lastpubsep={;\space},
-   \c!finalpubsep={;\space}]
+   \c!right={)}]
 
 \definebtx
   [\s!default:\s!cite:authoryear]
@@ -141,10 +132,7 @@
   [\c!compress=\v!yes,
    \c!left={(},
    \c!right={)},
-   \c!inbetween={,\space},
-   \c!pubsep={;\space},
-   \c!lastpubsep={;\space},
-   \c!finalpubsep={;\space}]
+   \c!inbetween={,\space}]
 
 \definebtx
   [\s!default:\s!cite:authorref]
@@ -253,18 +241,24 @@
   [\c!compress=\v!yes,
    \c!left={[},
    \c!right={]},
-   \c!pubsep={,},
-   \c!lastpubsep={,},
-   \c!finalpubsep={,}]
+   \c!separator:2={,}, % no space
+   \c!separator:3=\btxparameter{\c!separator:2},
+   \c!separator:4=\btxparameter{\c!separator:2}]
 
 \definebtx
   [\s!default:\s!cite:textnum]
   [\s!default:\s!cite:num]
   [\c!left=, % in apa: {Ref.\nbsp} or so
    \c!right=,
-   \c!pubsep={,},
-   \c!lastpubsep={,\space\btxlabeltext{default:and}\space},
-   \c!finalpubsep={\space\btxlabeltext{default:and}\space}]
+   \c!separator:2={,\space},
+   \c!separator:3={,\space\btxlabeltext{default:and}\space},
+   \c!separator:4= {\space\btxlabeltext{default:and}\space}]
+
+\definebtx
+  [\s!default:\s!cite:entry]
+  [\s!default:\s!cite]
+  [\c!left={(},
+   \c!right={)}]
 
 % Multilingual text strings
 
@@ -566,9 +560,12 @@
 \startsetups \s!btx:\s!default:\s!cite:url
     \fastsetup{\s!btx:\s!cite:url}
 \stopsetups
+\startsetups \s!btx:\s!default:\s!cite:nocite
+    \fastsetup{\s!btx:\s!cite:nocite}
+\stopsetups
 
-\startsetups \s!btx:\s!default:\s!cite:unknown
-    \fastsetup{\s!btx:\s!cite:unknown}
+\startsetups \s!btx:\s!default:\s!cite:entry
+    \fastsetup{\s!btx:\s!cite:entry}
 \stopsetups
 \startsetups \s!btx:\s!default:\s!cite:none
     \fastsetup{\s!btx:\s!cite:none}

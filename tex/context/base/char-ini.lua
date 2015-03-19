@@ -987,9 +987,9 @@ if not characters.lhash then
 
 end
 
-local lhash = characters.lhash
-local uhash = characters.uhash
-local shash = characters.shash
+local lhash = characters.lhash mark(lhash)
+local uhash = characters.uhash mark(uhash)
+local shash = characters.shash mark(shash)
 
 local utf8lowercharacter = utfchartabletopattern(lhash) / lhash
 local utf8uppercharacter = utfchartabletopattern(uhash) / uhash

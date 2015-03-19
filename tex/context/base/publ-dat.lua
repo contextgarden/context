@@ -420,10 +420,10 @@ do
     ----- character = lpegpatterns.utf8character
     local any       = P(1)
     local done      = P(-1)
-    local one_l     = P("{")  / ""
-    local one_r     = P("}")  / ""
-    local two_l     = P("{{") / ""
-    local two_r     = P("}}") / ""
+ -- local one_l     = P("{")  / ""
+ -- local one_r     = P("}")  / ""
+ -- local two_l     = P("{{") / ""
+ -- local two_r     = P("}}") / ""
     local zero_l_r  = P("{}") / "" * #P(1)
     local special   = P("#")  / "\\letterhash "
 
@@ -460,13 +460,16 @@ do
 
     local function do_definition(category,tag,tab,dataset)
         publicationsstats.nofdefinitions = publicationsstats.nofdefinitions + 1
+        if tag == "" then
+            tag = "no-tag-set"
+        end
         local fields  = dataset.fields
         local luadata = dataset.luadata
         local hashtag = tag
         if luadata[tag] then
             local t = tags[tag]
             local d = dataset.name
-            local n = (t[n] or 0) + 1
+            local n = (t[d] or 0) + 1
             t[d] = n
             hashtag = tag .. "-" .. n
             if trace_duplicates then
@@ -561,23 +564,27 @@ do
         [2] = left * V(1) * right,
     }
 
-    local unbalanced = P {
-        [1] = left * V(2) * right,
-        [2] = ((escape * (left+right)) + (collapsed + 1 - (left+right))^1 + V(1))^0,
-    }
+ -- local unbalanced = P {
+ --     [1] = left * V(2) * right,
+ --     [2] = ((escape * (left+right)) + (collapsed + 1 - (left+right))^1 + V(1))^0,
+ -- }
+
+    local unbalanced = (left/"") * balanced * (right/"") * P(-1)
 
     local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
     local key        = C((1-space-equal)^1)
-    local tag        = C((1-space-comma)^1)
+    local tag        = C((1-space-comma)^0)
     local reference  = keyword
     local category   = C((1-space-left)^1)
     local s_quoted   = ((escape*single) + collapsed + (1-single))^0
     local d_quoted   = ((escape*double) + collapsed + (1-double))^0
 
     local b_value    = p_left * balanced * p_right
-    local u_value    = p_left * unbalanced * p_right -- get rid of outer { }
-    local s_value    = (single/"") * (u_value + s_quoted) * (single/"")
-    local d_value    = (double/"") * (u_value + d_quoted) * (double/"")
+ -- local u_value    = p_left * unbalanced * p_right -- get rid of outer { }
+ -- local s_value    = (single/"") * (u_value + s_quoted) * (single/"")
+ -- local d_value    = (double/"") * (u_value + d_quoted) * (double/"")
+    local s_value    = (single/"") * (unbalanced + s_quoted) * (single/"")
+    local d_value    = (double/"") * (unbalanced + d_quoted) * (double/"")
     local r_value    = reference * Carg(1) /resolve
 
     local somevalue  = d_value + b_value + s_value + r_value

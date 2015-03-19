@@ -241,13 +241,13 @@
 \newsystemmode\v!environment
 
 \unexpanded\def\startprojectindeed
-  {\starttext
+  {%starttext
    \pushsystemmode\v!project
    \setsystemmode\v!project}
 
 \unexpanded\def\stopprojectindeed
   {\popsystemmode\v!project
-   \stoptext
+   %stoptext
    \signalendofinput\v!project}
 
 \unexpanded\def\startproductindeed

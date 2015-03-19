@@ -132,6 +132,8 @@ vardef chem_init_some (suffix $) (expr e) =
             fi
             if not chem_star[$] :
                 scaled (.5/(sind .5chem_num1))
+                % carbon-carbon benzene bond length
+                scaled (1.4/1.54)
             fi ;
     fi ;
 

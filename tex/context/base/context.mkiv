@@ -28,7 +28,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2015.03.09 22:02}
+\edef\contextversion{2015.03.19 17:08}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -106,6 +106,9 @@
 \loadmarkfile{syst-fnt}
 \loadmarkfile{syst-rtp}
 
+\loadmarkfile{luat-ini}
+\loadmarkfile{toks-ini}
+
 \loadmkvifile{file-ini}
 \loadmkvifile{file-res}
 \loadmkvifile{file-lib}
@@ -126,9 +129,8 @@
 
 \loadmarkfile{cldf-int} % interface
 
-\loadmarkfile{luat-ini}
+% \loadmarkfile{luat-ini}
 
-\loadmarkfile{toks-ini}
 \loadmarkfile{toks-tra}
 %loadmarkfile{toks-map} % obsolete, never used
 
@@ -419,7 +421,7 @@
 
 \loadmarkfile{prop-ini} % only for downward compatibility
 
-\loadmarkfile{mlib-ctx}
+\loadmarkfile{mlib-ctx} % messy order
 
 \loadmarkfile{meta-ini}
 \loadmarkfile{meta-tex}

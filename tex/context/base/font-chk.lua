@@ -17,6 +17,8 @@ local fastcopy           = table.fastcopy
 
 local report_fonts       = logs.reporter("fonts","checking")
 
+local allocate           = utilities.storage.allocate
+
 local fonts              = fonts
 
 fonts.checkers           = fonts.checkers or { }
@@ -88,7 +90,7 @@ end
 
 fonts.loggers.onetimemessage = onetimemessage
 
-local mapping = { -- this is just an experiment to illustrate some principles elsewhere
+local mapping = allocate { -- this is just an experiment to illustrate some principles elsewhere
     lu = "placeholder uppercase red",
     ll = "placeholder lowercase red",
     lt = "placeholder uppercase red",
@@ -113,9 +115,15 @@ local mapping = { -- this is just an experiment to illustrate some principles el
     so = "placeholder lowercase yellow",
 }
 
-table.setmetatableindex(mapping,function(t,k) v = "placeholder unknown gray" t[k] = v return v end)
+table.setmetatableindex(mapping,
+    function(t,k)
+        v = "placeholder unknown gray"
+        t[k] = v
+        return v
+    end
+)
 
-local fakes = {
+local fakes = allocate {
     {
         name   = "lowercase",
         code   = ".025 -.175 m .425 -.175 l .425 .525 l .025 .525 l .025 -.175 l .025 0 l .425 0 l .025 -.175 m h S",
@@ -153,7 +161,7 @@ local fakes = {
     },
 }
 
-local variants = {
+local variants = allocate {
     { tag = "gray",    r = .6, g = .6, b = .6 },
     { tag = "red",     r = .6, g =  0, b =  0 },
     { tag = "green",   r =  0, g = .6, b =  0 },

@@ -51,13 +51,18 @@
 \startsetups btx:cite:unknown
     \begingroup
         \btxcitereference
-        \currentbtxfirst
+        unknown: \currentbtxfirst
     \endgroup
 \stopsetups
 
-\startsetups btx:cite:invalid
+\startsetups btx:cite:empty
     \btxcitereference
-    <\currentbtxreference>
+    <empty>
+\stopsetups
+
+\startsetups btx:cite:invalid
+     \btxcitereference
+     {\tt <\currentbtxreference>}
 \stopsetups
 
 % \startsetups btx:cite:normal
@@ -101,13 +106,7 @@
 %\stopsetups
 
 \starttexdefinition btx:cite:concat
-    \ifcase\currentbtxconcat \or \or
-        \btxparameter\c!pubsep
-    \or
-        \btxparameter\c!lastpubsep
-    \or
-        \btxparameter\c!finalpubsep
-    \fi
+    \btxparameter{\c!separator:\number\currentbtxconcat}
 \stoptexdefinition
 
 \startsetups btx:cite:normal
@@ -117,21 +116,21 @@
     \else
         \texdefinition {\s!btx:\s!cite:inject} {
             \btxcitereference
-            \btxusecommand[\currentbtxspecification:cite:\currentbtxcitevariant] {
+            \btxusecommand[\currentbtxspecification:cite:\currentbtxcitealternative] {
                 \currentbtxfirst
             }
         }
         \ifx\currentbtxsecond\empty \else
             \btxparameter\v!inbetween
             \texdefinition {\s!btx:\s!cite:inject} {
-                \btxusecommand[\currentbtxspecification:cite:\currentbtxcitevariant] {
+                \btxusecommand[\currentbtxspecification:cite:\currentbtxcitealternative] {
                     \currentbtxsecond
                  }
             }
         \fi
         \ifx\currentbtxthird\empty \else
             \texdefinition {\s!btx:\s!cite:inject} {
-                \btxusecommand[\currentbtxspecification:cite:\currentbtxvariant] {
+                \btxusecommand[\currentbtxspecification:cite:\currentbtxcitealternative] {
                     \currentbtxthird
                  }
             }
@@ -194,6 +193,11 @@
     \fi
 \stopsetups
 
+\startsetups \s!btx:\s!cite:entry
+    \texdefinition{\s!btx:\s!cite:concat}
+    \btxhandleciteentry
+\stopsetups
+
 % these three are goodies to get something bit are not set up as it makes no
 % sense to have something root for combinations like this (esp not because one
 % gets default anyway
@@ -219,6 +223,9 @@
 \startsetups btx:cite:num
     \fastsetup{btx:cite:range}
 \stopsetups
+\startsetups btx:cite:textnum
+    \fastsetup{btx:cite:num}
+\stopsetups
 \startsetups btx:cite:year
     \fastsetup{btx:cite:range}
 \stopsetups
@@ -231,13 +238,13 @@
     \else\ifconditional\btxinteractive
         \goto {
             \btxcitereference
-            \hyphenatedurl{\doif{\currentbtxcitevariant}{doi}{doi:}\currentbtxfirst}
+            \hyphenatedurl{\doif{\currentbtxcitealternative}{doi}{doi:}\currentbtxfirst}
         } [
-            url(\doif{\currentbtxcitevariant}{doi}{http://dx.doi.org/}\currentbtxfirst)
+            url(\doif{\currentbtxcitealternative}{doi}{http://dx.doi.org/}\currentbtxfirst)
         ]
     \else
         \btxcitereference
-        \hyphenatedurl{\doif{\currentbtxcitevariant}{doi}{doi:}\currentbtxfirst}
+        \hyphenatedurl{\doif{\currentbtxcitealternative}{doi}{doi:}\currentbtxfirst}
     \fi\fi
 \stopsetups
 

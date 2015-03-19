@@ -955,8 +955,11 @@ do  -- else too many locals
     local ctx_setsomefontsize    = context.fntsetsomesize
     local ctx_letvaluerelax      = context.letvaluerelax
 
+    local starttiming            = statistics.starttiming
+    local stoptiming             = statistics.stoptiming
+
     function commands.definefont_one(str)
-        statistics.starttiming(fonts)
+        starttiming(fonts)
         if trace_defining then
             report_defining("memory usage before: %s",statistics.memused())
             report_defining("start stage one: %s",str)
@@ -1186,7 +1189,7 @@ do  -- else too many locals
             lastmathids[mathsize] = lastfontid
         end
         --
-        statistics.stoptiming(fonts)
+        stoptiming(fonts)
     end
 
     function definers.define(specification)
@@ -1195,7 +1198,7 @@ do  -- else too many locals
         if not name or name == "" then
             return -1
         else
-            statistics.starttiming(fonts)
+            starttiming(fonts)
             --
             -- following calls expect a few properties to be set:
             --
@@ -1251,7 +1254,7 @@ do  -- else too many locals
                 constructors.finalize(tfmdata)
                 return id, tfmdata
             end
-            statistics.stoptiming(fonts)
+            stoptiming(fonts)
         end
     end
 

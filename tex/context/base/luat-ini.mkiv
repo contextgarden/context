@@ -107,12 +107,16 @@
 %D
 %D We provide an interface for defining instances:
 
-\def\s!lua{lua} \def\v!code{code} \def\!!name{name} \def\s!data{data}
+\def\s!lua  {lua}
+\def\s!code {code}
+\def\s!data {data}
+\def\s!start{start}
+\def\s!stop {stop}
 
 %D Beware: because \type {\expanded} is een convert command, the error
 %D message will show \type{<inserted text>} as part of the message.
 
-\installcorenamespace{luacode}
+\installsystemnamespace{luacode}
 
 \unexpanded\def\luat_start_named_lua_code#1%
   {\begingroup
@@ -120,22 +124,13 @@
    \obeyluatokens
    \csname\??luacode#1\endcsname}
 
-% \unexpanded\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet / we could use numbers instead (more efficient)
-%   {\ifcsname\??luacode#1\endcsname \else
-%      \scratchcounter\ctxlua{lua.registername("#1","#3")}%
-%      \normalexpanded{\xdef\csname\??luacode#1\endcsname##1\csname\e!stop#1\v!code\endcsname}%
-%        {\noexpand\normalexpanded{\endgroup\noexpand\directlua\the\scratchcounter{_G=protect("#1\s!data")##1}}}%
-%      \expandafter\edef\csname\e!start#1\v!code\endcsname   {\luat_start_named_lua_code{#1}}%
-%      \expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{_G=protect("#1\s!data")##1}}%
-%    \fi}
-
 \unexpanded\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet / we could use numbers instead (more efficient)
   {\ifcsname\??luacode#1\endcsname \else
      \expandafter\chardef\csname\??luacode:#1\endcsname\ctxlua{lua.registername("#1","#3")}%
-     \normalexpanded{\xdef\csname\??luacode#1\endcsname##1\csname\e!stop#1\v!code\endcsname}%
+     \normalexpanded{\xdef\csname\??luacode#1\endcsname##1\csname\s!stop#1\s!code\endcsname}%
        {\noexpand\normalexpanded{\endgroup\noexpand\directlua\csname\??luacode:#1\endcsname{_G=protect("#1\s!data")##1}}}%
-     \expandafter\edef\csname\e!start#1\v!code\endcsname   {\luat_start_named_lua_code{#1}}%
-     \expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\csname\??luacode:#1\endcsname{_G=protect("#1\s!data")##1}}%
+     \expandafter\edef\csname\s!start#1\s!code\endcsname   {\luat_start_named_lua_code{#1}}%
+     \expandafter\edef\csname        #1\s!code\endcsname##1{\noexpand\directlua\csname\??luacode:#1\endcsname{_G=protect("#1\s!data")##1}}%
    \fi}
 
 %D We predefine a few.
@@ -289,7 +284,7 @@
 %     \dorecurse{10000}{\ctxlua{context(" C3 ")}} \page
 % \stoptext
 
-\installcorenamespace{ctxfunction}
+\installsystemnamespace{ctxfunction}
 
 \normalprotected\def\startctxfunctiondefinition #1 %
   {\begingroup \obeylualines \obeyluatokens \luat_start_lua_function_definition_indeed{#1}}
@@ -297,7 +292,7 @@
 % \def\luat_start_lua_function_definition_indeed#1#2\stopctxfunctiondefinition
 %   {\endgroup\expandafter\edef\csname#1\endcsname{\noexpand\luafunction\ctxcommand{ctxfunction(\!!bs#2\!!es)}\relax}}
 
-\installcorenamespace{luafunction}
+\installsystemnamespace{luafunction}
 
 \def\luat_start_lua_function_definition_indeed#1#2\stopctxfunctiondefinition
   {\endgroup

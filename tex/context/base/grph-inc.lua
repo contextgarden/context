@@ -1560,6 +1560,7 @@ local epstopdf = {
         -dBATCH
         -dAutoRotatePages=/None
         -dPDFSETTINGS=/%presets%
+        -dCompatibilityLevel=%level%
         -dEPSCrop
         -sOutputFile="%newname%"
         "%oldname%"
@@ -1605,6 +1606,7 @@ end
 function epsconverter.pdf(oldname,newname,resolution) -- the resolution interface might change
     local epstopdf = programs.epstopdf -- can be changed
     local presets  = epstopdf.resolutions[resolution or "high"] or epstopdf.resolutions.high
+    local level    = codeinjections.getformatoption("pdf_level") or "1.3"
     local tmpname  = oldname
     if cleanups.ai then
         tmpname = cleaners.ai(oldname)

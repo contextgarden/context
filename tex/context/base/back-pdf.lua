@@ -6,8 +6,13 @@ if not modules then modules = { } end modules ['back-pdf'] = {
     license   = "see context related readme files"
 }
 
+
+local tonumber = tonumber
+local sind, cosd = math.sind, math.cosd
+local insert, remove = table.insert, table.remove
 local codeinjections = backends.pdf.codeinjections
 
+local context        = context
 local outputfilename
 
 function codeinjections.getoutputfilename()
@@ -18,11 +23,6 @@ function codeinjections.getoutputfilename()
 end
 
 backends.install("pdf")
-
-local context = context
-
-local sind, cosd = math.sind, math.cosd
-local insert, remove = table.insert, table.remove
 
 local f_matrix = string.formatters["%F %F %F %F"] -- 0.8 is default
 

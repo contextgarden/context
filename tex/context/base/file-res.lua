@@ -134,7 +134,7 @@ openers.fix = openers.file loaders.fix = loaders.file
 openers.set = openers.file loaders.set = loaders.file
 openers.any = openers.file loaders.any = loaders.file
 
-function getreadfilename(scheme,path,name) -- better do a split and then pass table
+local function getreadfilename(scheme,path,name) -- better do a split and then pass table
     local fullname
     if hasscheme(name) or is_qualified_path(name) then
         fullname = name

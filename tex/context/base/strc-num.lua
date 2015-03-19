@@ -589,6 +589,15 @@ function commands.doifnotcounter (name) commands.doifnot (counterdata[name]) end
 
 function commands.incrementedcounter(...) context(counters.add(...)) end
 
+local pattern   = lpeg.P(variables.by)^-1 * lpeg.C(lpeg.P(1)^1)
+local lpegmatch = lpeg.match
+
+function commands.way(way)
+    if way and way ~= "" then
+        context(lpegmatch(pattern,way))
+    end
+end
+
 -- the noreset is somewhat messy ... always false messes up e.g. itemize but true the pagenumbers
 --
 -- if this fails i'll clean up this still somewhat experimental mechanism (but i need use cases)

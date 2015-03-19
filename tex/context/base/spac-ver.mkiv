@@ -142,6 +142,20 @@
      \spacing\currentrelativeinterlinespace
    \fi}
 
+\unexpanded\def\spac_linespacing_setup_use
+  {\ifcsname\namedinterlinespacehash\m_spac_interlinespace\s!parent\endcsname
+      \let\currentinterlinespace\m_spac_interlinespace
+      \spac_linespacing_setup_specified_interline_space
+ % \else
+     % we only support named interlinespaces
+   \fi}
+
+\unexpanded\def\useinterlinespaceparameter#1% see footnotes
+  {\edef\m_spac_interlinespace{#1\c!interlinespace}%
+   \ifx\m_spac_interlinespace\empty \else
+     \spac_linespacing_setup_use
+   \fi}
+
 \newtoks\everysetupglobalinterlinespace
 \newtoks\everysetuplocalinterlinespace
 

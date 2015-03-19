@@ -182,10 +182,7 @@
 \installcommandhandler \??btxregister  {btxregister}  \??btxregister
 \installcommandhandler \??btxrendering {btxrendering} \??btxrendering
 
-% named: check all listvariant and citevariant
-
-\let\currentbtxcitevariant\empty
-\let\currentbtxlistvariant\empty
+\let\currentbtxcitealternative\empty
 
 \let\currentbtxspecificationfallback\empty
 
@@ -257,10 +254,11 @@
 %   [default]
 %   [mybibs.bib]
 
+\let\startpublication\relax
+\let\stoppublication \relax
+
 \unexpanded\def\startpublication
   {\dodoubleempty\publ_set_publication}
-
-\let\stoppublication\relax
 
 \def\publ_set_publication[#1][#2]%
   {\begingroup
@@ -343,17 +341,39 @@
 % \btxfield         : current
 % \btxspecificfield : dataset,tag,key
 
-\def\btxfield      #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdetail     #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxflush      #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxfieldname  #1{\ctxcommand{btxfieldname("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxfieldtype  #1{\ctxcommand{btxfieldtype("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxfoundname  #1{\ctxcommand{btxfoundname("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxfoundtype  #1{\ctxcommand{btxfoundtype("\currentbtxdataset","\currentbtxtag","#1")}}
+\ifdefined\clf_btxfield % {#1} will go
+
+    \def\btxfield      #1{\clf_btxfield      {\currentbtxdataset}{\currentbtxtag}{#1}}
+    \def\btxdetail     #1{\clf_btxdetail     {\currentbtxdataset}{\currentbtxtag}{#1}}
+    \def\btxflush      #1{\clf_btxflush      {\currentbtxdataset}{\currentbtxtag}{#1}}
+    \def\btxdirect     #1{\clf_btxdirect     {\currentbtxdataset}{\currentbtxtag}{#1}}
+    \def\btxfieldname  #1{\clf_btxfieldname  {\currentbtxdataset}{\currentbtxtag}{#1}}
+    \def\btxfieldtype  #1{\clf_btxfieldtype  {\currentbtxdataset}{\currentbtxtag}{#1}}
+    \def\btxfoundname  #1{\clf_btxfoundname  {\currentbtxdataset}{\currentbtxtag}{#1}}
+    \def\btxfoundtype  #1{\clf_btxfoundtype  {\currentbtxdataset}{\currentbtxtag}{#1}}
+  % \def\btxauthorfield#1{\clf_btxauthorfield\currentbtxauthorindex{#1}}
+    \def\btxdoifelse   #1{\clf_btxdoifelse   {\currentbtxdataset}{\currentbtxtag}{#1}}
+    \def\btxdoif       #1{\clf_btxdoif       {\currentbtxdataset}{\currentbtxtag}{#1}}
+    \def\btxdoifnot    #1{\clf_btxdoifnot    {\currentbtxdataset}{\currentbtxtag}{#1}}
+
+\else
+
+    \def\btxfield      #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
+    \def\btxdetail     #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
+    \def\btxflush      #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
+    \def\btxdirect     #1{\ctxcommand{btxdirect("\currentbtxdataset","\currentbtxtag","#1")}}
+    \def\btxfieldname  #1{\ctxcommand{btxfieldname("\currentbtxdataset","\currentbtxtag","#1")}}
+    \def\btxfieldtype  #1{\ctxcommand{btxfieldtype("\currentbtxdataset","\currentbtxtag","#1")}}
+    \def\btxfoundname  #1{\ctxcommand{btxfoundname("\currentbtxdataset","\currentbtxtag","#1")}}
+    \def\btxfoundtype  #1{\ctxcommand{btxfoundtype("\currentbtxdataset","\currentbtxtag","#1")}}
+  % \def\btxauthorfield#1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
+    \def\btxdoifelse   #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
+    \def\btxdoif       #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
+    \def\btxdoifnot    #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
+
+\fi
+
 \def\btxauthorfield#1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
-\def\btxdoifelse   #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoif       #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
-\def\btxdoifnot    #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
 
 \let\btxsetup\fastsetup
 
@@ -499,9 +519,6 @@
 
 \newtoks \everysetupbtxlistplacement % name will change
 \newtoks \everysetupbtxciteplacement % name will change
-
-% \def\publ_list_processor % bibref -> btx (old method, keep as reference)
-%   {\ctxcommand{btxaddtolist("\currentbtxrendering",\currentlistindex,"btxref")}}
 
 \definelist % only used for selecting
   [\s!btx]
@@ -821,7 +838,7 @@
 
 \unexpanded\def\btx_reference_indeed
   {\begingroup
-   \let\currentbtxlistvariant\currentbtxnumbering
+   %let\currentbtxlistvariant\currentbtxnumbering
    \setbtxparameterset\c!list\currentbtxnumbering
    \ifx\currentbtxnumbering\empty
      % nothing
@@ -869,8 +886,8 @@
       {\ifx\currentbtxdataset\v!default\else\s!btxset="\currentbtxdataset",\fi%
        \s!btxref="\currentbtxtag",%
        \s!btxspc="\currentbtxspecification",%
-       \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
-       \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
+       \ifx\currentbtxbefore\empty\else\s!btxbtx=\!!bs\currentbtxbefore\!!es,\fi%
+       \ifx\currentbtxafter \empty\else\s!btxatx=\!!bs\currentbtxafter \!!es,\fi%
        \ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint="\currentbtxbacklink"\else\s!btxbck="\currentbtxbacktrace"\fi}%
       {\s!btx::\v!list::\number\c_btx_list_reference}%
       {\currentbtxnumber}}
@@ -894,8 +911,8 @@
       [\s!btx]%
       [\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
-       \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
-       \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
+       \ifx\currentbtxbefore\empty\else\s!btxbtx=\!!bs\currentbtxbefore\!!es,\fi%
+       \ifx\currentbtxafter \empty\else\s!btxatx=\!!bs\currentbtxafter \!!es,\fi%
        \s!btxint=\number\currentbtxbacklink
        \ifx\currentbtxciteuservariables\empty\else,\currentbtxciteuservariables\fi]}}
 
@@ -936,12 +953,13 @@
   {\begingroup
    \edef\currentbtxfield{#2}%
    \setbtxparameterset\s!list\currentbtxfield
-   \let\currentbtxlistvariant\currentbtxfield
+   %let\currentbtxlistvariant\currentbtxfield
    \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\currentbtxfield",{
         combiner    = "#1",
         kind        = "list",
         etallimit   = "\btxparameter\c!etallimit",
         etaldisplay = "\btxparameter\c!etaldisplay",
+        symbol      = "\btxparameter{\c!stopper:initials}",
    })}%
    \endgroup}
 
@@ -961,6 +979,7 @@
         kind        = "cite",
         etallimit   = "\btxparameter\c!etallimit",
         etaldisplay = "\btxparameter\c!etaldisplay",
+        symbol      = "\btxparameter{\c!stopper:initials}",
    })}%
    \endgroup}
 
@@ -1086,8 +1105,8 @@
 \unexpanded\def\publ_cite_tags_indeed#1%
   {\letinteractionparameter\c!style\empty
    \setbtxparametersetroot\s!cite % we need to get the default
-   \edef\currentbtxcitevariant{\btxparameter\c!alternative}%
-   \setbtxparameterset\s!cite\currentbtxcitevariant
+   \edef\currentbtxcitealternative{\btxparameter\c!alternative}%
+   \setbtxparameterset\s!cite\currentbtxcitealternative
    \edef\currentbtxcitetag{#1}%
    \the\everysetupbtxciteplacement
    \publ_cite_variant
@@ -1116,11 +1135,11 @@
    \edef\p_alternative{\dummyparameter\c!alternative}%
    \ifx\p_alternative\empty
      \setbtxparametersetroot\s!cite
-     \edef\currentbtxcitevariant{\btxparameter\c!alternative}%
+     \edef\currentbtxcitealternative{\btxparameter\c!alternative}%
    \else
-     \let\currentbtxcitevariant\p_alternative
+     \let\currentbtxcitealternative\p_alternative
    \fi
-   \setbtxparameterset\s!cite\currentbtxcitevariant
+   \setbtxparameterset\s!cite\currentbtxcitealternative
    \setupcurrentbtx[#1]%
    %
    \edef\p_publ_cite_before   {\dummyparameter\c!before}%
@@ -1134,9 +1153,9 @@
 
 \def\publ_cite_tags_variants_indeed#1[#2]%
   {\letinteractionparameter\c!style\empty
-   \edef\currentbtxcitevariant{#1}%
+   \edef\currentbtxcitealternative{#1}%
    \edef\currentbtxcitetag{#2}%
-   \setbtxparameterset\s!cite\currentbtxcitevariant
+   \setbtxparameterset\s!cite\currentbtxcitealternative
    \the\everysetupbtxciteplacement
    \publ_cite_variant
    \endgroup}
@@ -1151,22 +1170,18 @@
 
 \unexpanded\def\publ_cite_handle_variant#1%
   {\begingroup
-   \edef\currentbtxcitevariant{#1}%
-   \setbtxparameterset\s!cite\currentbtxcitevariant
+   \edef\currentbtxcitealternative{#1}%
+   \setbtxparameterset\s!cite\currentbtxcitealternative
    \the\everysetupbtxciteplacement
    \dosingleargument\publ_cite_handle_variant_indeed}
 
-\def\publ_cite_handle_variant_indeed[#1]%
-  {\letbtxparameter\c!alternative\currentbtxcitevariant
-   \usebtxstyleandcolor\c!style\c!color
-   \uselanguageparameter\btxdatasetparameter % new
-   \btxparameter\v!left
-   \edef\currentbtxreference{#1}%
+\unexpanded\def\publ_cite_handle_variant_blob
+  {\btxparameter\v!left
    \ctxcommand{btxhandlecite{%
      dataset   = "\currentbtxdataset",%
      reference = \!!bs\currentbtxreference\!!es,%
      markentry = \iftrialtypesetting false\else true\fi,%
-     variant   = "\currentbtxcitevariant",%
+     variant   = "\currentbtxcitealternative",%
      sorttype  = "\btxparameter\c!sorttype",%
      compress  = "\btxparameter\c!compress",%
      author    = "\btxparameter\c!author",%
@@ -1175,8 +1190,15 @@
      before    = \!!bs\p_publ_cite_before\!!es,%
      after     = \!!bs\p_publ_cite_after\!!es,%
    }}%
-   \btxparameter\v!right
-   \ctxcommand{flushmarked()}%
+   \ctxcommand{flushmarked()}% maybe: \iftrialtypesetting\else ... \fi
+   \btxparameter\v!right}
+
+\def\publ_cite_handle_variant_indeed[#1]%
+  {\letbtxparameter\c!alternative\currentbtxcitealternative
+   \edef\currentbtxreference{#1}%
+   \usebtxstyleandcolor\c!style\c!color
+   \uselanguageparameter\btxdatasetparameter % new
+   \btxparameter\c!command{\publ_cite_handle_variant_blob}%
    \endgroup}
 
 \unexpanded\def\btxcitation
@@ -1341,8 +1363,8 @@
 \unexpanded\def\btxstartsubcite#1%
   {\begingroup
    \btxcitereset % todo: limited set
-   \def\currentbtxcitevariant{#1}%
-   \setbtxparameterset\s!cite\currentbtxcitevariant
+   \def\currentbtxcitealternative{#1}%
+   \setbtxparameterset\s!cite\currentbtxcitealternative
    \usebtxstyleandcolor\c!style\c!color
    \btxparameter\c!left
    \relax}
@@ -1354,8 +1376,8 @@
 
 \unexpanded\def\btxstartciterendering[#1]%
   {\begingroup
-   \edef\currentbtxcitevariant{#1}%
-   \setbtxparameterset\s!cite\currentbtxcitevariant
+   \edef\currentbtxcitealternative{#1}%
+   \setbtxparameterset\s!cite\currentbtxcitealternative
    \usebtxstyleandcolor\c!style\c!color
    \btxparameter\c!left
    \relax}
@@ -1419,27 +1441,16 @@
 
 %D In-text entries:
 
-% \definebtxcitevariant
-%   [entry]
-
 \unexpanded\def\placecitation{\citation[entry]} % [#1]
 
 \unexpanded\def\btxhandleciteentry
   {\dontleavehmode
    \begingroup
-   \def\currentbtxcitevariant{entry}%
-   \setbtxparameterset\s!cite\currentbtxcitevariant % needs checking
+   \def\currentbtxcitealternative{entry}%
+   \setbtxparameterset\s!cite\currentbtxcitealternative % needs checking
    \btxcitereference
    \btx_entry_inject
    \endgroup}
-
-\startsetups \s!btx:\s!cite:entry
-    \ifx\currentbtxfirst\empty
-        \fastbtxsetup\s!cite\s!unknown
-    \else
-        \btxhandleciteentry
-    \fi
-\stopsetups
 
 %D Registers
 
@@ -1484,19 +1495,19 @@
 
 \unexpanded\def\btxindexedauthor#1#2#3#4#5#6% alternative von last first junior
   {\begingroup
-   \def\currentbtxcitevariant{#1}%
-   \ifx\currentbtxcitevariant\empty
-      \edef\currentbtxcitevariant{invertedshort}%
+   \def\currentbtxcitealternative{#1}%
+   \ifx\currentbtxcitealternative\empty
+      \edef\currentbtxcitealternative{invertedshort}% maybe we need some default here too?
    \fi
-   \let\currentbtxlistvariant\currentbtxcitevariant % we inherit
+   %let\currentbtxlistvariant\currentbtxcitealternative % we inherit
    \the\everysetupbtxciteplacement
    \def\currentbtxvons       {#2}%
    \def\currentbtxsurnames   {#3}%
    \def\currentbtxinitials   {#4}%
    \def\currentbtxfirstnames {#5}%
    \def\currentbtxjuniors    {#6}%
-   \setbtxparameterset\s!cite\currentbtxcitevariant
-   \fastsetup{\s!btx:\s!cite:\s!author:\currentbtxcitevariant}%
+   \setbtxparameterset\s!cite\currentbtxcitealternative
+   \fastsetup{\s!btx:\s!cite:\s!author:\currentbtxcitealternative}%
    \endgroup}
 
 %D We hook some setters in the definition sets:
@@ -1562,15 +1573,31 @@
    \c!separator={;\space},
    \c!distance=1.5\emwidth]
 
-% Quite some interpunction and labels are the same of at least consistent witin
+% Quite some interpunction and labels are the same of at least consistent within
 % a standard when citations and list entries are involved. We assume that each
-% standard defines its own set but it can fall back on the defaults.
+% standard defines its own set but it can fall back on these defaults.
 
 \setupbtx
-  [\c!alternative=\v!num, % default cite
-   \c!interaction=\v!start,
+  [\c!interaction=\v!start,
+  %\c!alternative=\v!num, % default cite form
    \c!etallimit=3,
-   \c!etaldisplay=\btxparameter\c!etallimit]
+   \c!etaldisplay=\btxparameter\c!etallimit,
+   \c!otherstext={\space et al.},
+  %\c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
+   \c!separator:firstnames={\space},
+   \c!separator:juniors={\space},
+   \c!separator:vons={\space},
+   \c!separator:initials={\space},
+   \c!stopper:initials={.},
+  %\c!surnamesep={,\space}, % is this used anywhere?
+   \c!separator:invertedinitials={,\space},
+   \c!separator:invertedfirstnames={,\space},
+   \c!separator:names:2={,\space}, % separates multiple names
+   \c!separator:names:3=\btxparameter{\c!separator:2}, % before last name in a list
+   \c!separator:names:4=\btxparameter{\c!separator:2}, % between only two names
+   \c!separator:2={;\space}, % aka pubsep - separates multiple objects
+   \c!separator:3=\btxparameter{separator:2}, % before last object in a list
+   \c!separator:4=\btxparameter{separator:2}] % between only two objects
 
 % Do we want these in the format? Loading them delayed is somewhat messy.
 

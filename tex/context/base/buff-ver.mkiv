@@ -75,7 +75,12 @@
 
 \def\buff_verbatim_initialize_type_one
   {\let\obeylines\ignorelines
-   \usetypestyleandcolor\c!style\c!color
+   \edef\p_buff_option{\typeparameter\c!option}%
+   \ifx\p_buff_option\v!none
+     \usetypestyleandcolor\c!style\c!color
+   \else\ifx\p_buff_option\empty
+     \usetypestyleandcolor\c!style\c!color
+   \fi\fi
    \setcatcodetable\vrbcatcodes}
 
 \def\buff_verbatim_initialize_type_two
@@ -114,7 +119,12 @@
    \ifx\buff_verbatim_set_line_margin\relax
      \doadaptleftskip{\typingparameter\c!margin}%
    \fi
-   \usetypingstyleandcolor\c!style\c!color
+   \edef\p_buff_option{\typingparameter\c!option}%
+   \ifx\p_buff_option\v!none
+     \usetypingstyleandcolor\c!style\c!color
+   \else\ifx\p_buff_option\empty
+     \usetypingstyleandcolor\c!style\c!color
+   \fi\fi
  % will become: \usealignparameter\typingparameter
    \doifsomething{\typingparameter\c!align}{\setupalign[\typingparameter\c!align]}} % use fast one
 
@@ -330,7 +340,7 @@
    \ctxcommand{typestring{
      data    = \!!bs\detokenize{#1}\!!es,
      tab     = "\typeparameter\c!tab",
-     method  = "\typeparameter\c!option",
+     method  = "\p_buff_option",
      nature  = "inline",
      compact = "\typeparameter\c!compact",        % none | all | last (all needed in tabulate etc for manuals)
      escape  = \!!bs\typeparameter\c!escape\!!es, % new but rather useless imo (escaping in general is not used much)
@@ -346,7 +356,7 @@
      data   = \!!bs\detokenize{#1}\!!es,
      tab    = "\typeparameter\c!tab",
      method = "nested", % we force a special visualizer
-     option = "\typeparameter\c!option", % extra visualizer (maybe: nested,\typeparameter\c!option)
+     option = "\p_buff_option", % extra visualizer (maybe: nested,\typeparameter\c!option)
      nature = "inline",
    }}%
    \dostoptagged
@@ -515,7 +525,7 @@
      strip  = "\typingparameter\c!strip",
      range  = "\typingparameter\c!range",
      tab    = "\typingparameter\c!tab",
-     method = "\typingparameter\c!option",
+     method = "\p_buff_option",
      escape = \!!bs\typingparameter\c!escape\!!es,
      nature = "display",
    }}%
@@ -635,7 +645,7 @@
       range  = "\typingparameter\c!range",
       regime = "\currentregime",
       tab    = "\typingparameter\c!tab",
-      method = "\typingparameter\c!option",
+      method = "\p_buff_option",
       nature = "display",
     }}%
    \dostoptagged
@@ -808,7 +818,7 @@
      range  = "\typingparameter\c!range",
      regime = "\currentregime",
      tab    = "\typingparameter\c!tab",
-     method = "\typingparameter\c!option",
+     method = "\p_buff_option",
      escape = \!!bs\typingparameter\c!escape\!!es,
      nature = "display",
    }}%
@@ -850,7 +860,7 @@
      name   = "#2",
      strip  = "\typingparameter\c!strip",
      tab    = "\typingparameter\c!tab",
-     method = "\typingparameter\c!option",
+     method = "\p_buff_option",
      nature = "direct",
    }}}
 

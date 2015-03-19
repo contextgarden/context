@@ -124,13 +124,24 @@
 %
 % \starttext \input ward \stoptext
 
-\def\scrn_canvas_synchronize_simple
+\let\scrn_canvas_synchronize_simple \relax
+\let\scrn_canvas_synchronize_complex\relax
+
+\appendtoks
+    \global\let\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
+    \global\let\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
+\to \everysetuplayout
+
+\def\scrn_canvas_synchronize_simple_indeed
   {\ctxcommand{setupcanvas{
      paperwidth  = \number\printpaperwidth,
      paperheight = \number\printpaperheight
-   }}}
+   }}%
+  %\global\let\scrn_canvas_synchronize_simple \relax
+   \global\let\scrn_canvas_synchronize_complex\relax
+   }
 
-\def\scrn_canvas_synchronize_complex
+\def\scrn_canvas_synchronize_complex_indeed
   {\scrn_canvas_calculate % otherwise we need to hook it into setuppage etc
    \ctxcommand{setupcanvas{
         mode        = "\interactionscreenparameter\c!option",
@@ -142,12 +153,22 @@
         height      = \number\canvasheight,
         paperwidth  = \number\canvasmaxwidth,
         paperheight = \number\canvasmaxheight
-     }}}
+     }}%
+  %\global\let\scrn_canvas_synchronize_simple \relax
+   \global\let\scrn_canvas_synchronize_complex\relax
+   }
 
 \appendtoks
-    \doifcommonelse{\interactionscreenparameter\c!option}{\v!max,\v!fit}%
-      {\global\settrue \c_scrn_canvas_tight_page}%
-      {\global\setfalse\c_scrn_canvas_tight_page}%
+    \begingroup
+    \edef\p_option{\interactionscreenparameter\c!option}%
+    \ifx\p_option\v!max
+      \global\settrue \c_scrn_canvas_tight_page
+    \else\ifx\p_option\v!fit
+      \global\settrue \c_scrn_canvas_tight_page
+    \else
+      \global\setfalse\c_scrn_canvas_tight_page
+    \fi\fi
+    \endgroup
 \to \everysetupinteractionscreen
 
 \setupinteractionscreen
@@ -158,6 +179,11 @@
    \c!backspace=\backspace,
    \c!topspace=\topspace,
    \c!option=\v!auto]
+
+\appendtoks
+    \global\let\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple
+    \global\let\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex
+\to \everysetupinteractionscreen
 
 %D Conditional page breaks:
 
@@ -177,7 +203,10 @@
   {\dosingleempty\scrn_transitions_setup}
 
 \def\scrn_transitions_setup[#list]%
-  {\edef\scrn_transitions_list{#list}}
+  {\edef\scrn_transitions_list{#list}%
+   \ifx\scrn_transitions_list\v!reset
+     \let\scrn_transitions_list\empty
+   \fi}
 
 \def\scrn_transitions_set
   {\iflocation \ifx\scrn_transitions_list\empty \else

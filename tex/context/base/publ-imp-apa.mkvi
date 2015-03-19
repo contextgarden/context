@@ -78,25 +78,13 @@
 \stopsetups
 
 % set ALL specific APA compliant values
-% Note that fallback is apa, default, then root
 
 \definebtx
   [apa]
   [\c!default=, % no fallback on default rendering
-   \c!namesep={,\space},
-   \c!lastnamesep={,\nobreakspace\textampersand\space}, % comma separated list
-   \c!finalnamesep={\nobreakspace\textampersand\space}, % last of two, no comma!
-   \c!firstnamesep=\space,
    \c!otherstext={\space\btxlabeltext{apa:others}},
-   \c!juniorsep={\space},
-   \c!vonsep={\space},
-   \c!initialsep={\space},
-   \c!surnamesep={,\space},
-   \c!surnameinitialsep={,\space},
-   \c!surnamefirstnamesep={,\space},
-   \c!pubsep={,\space},
-   \c!lastpubsep={,\space\btxlabeltext{apa:and}\space},% not btxcomma?
-   \c!finalpubsep={\space\btxlabeltext{apa:and}\space}]
+   %c!journalconversion=\v!normal,
+   \c!monthconversion=\v!month]
 
 \definebtx
   [apa:list]
@@ -104,9 +92,10 @@
   [\c!otherstext={,\nobreakspace\textellipsis\space},
    \c!etallimit=7,
    \c!etaldisplay=6,
-   %c!journalconversion=\v!normal,
-   \c!monthconversion=\v!month,
-   \c!authorconversion=invertedshort]
+   \c!authorconversion=invertedshort,
+   \c!separator:names:2={,\space}, % aka namesep - in this namespace
+   \c!separator:names:3={,\nobreakspace\textampersand\space}, % comma separated list
+   \c!separator:names:4= {\nobreakspace\textampersand\space}] % last of two, no comma!
 
 % The following are similar to default, but inherit from apa:list
 
@@ -286,14 +275,15 @@
    \c!inbetween=\space,
    \c!range=\endash,
    \c!left=,
-   \c!middle=,
-   \c!right=]
+  %\c!middle=,
+   \c!right=,
+   \c!separator:names:2={,\space},
+   \c!separator:names:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:names:4= {\space\btxlabeltext{apa:and}\space}] % not \textampersand
 
 \definebtx
   [apa:cite:author]
   [apa:cite]
-  [\c!lastnamesep={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!finalnamesep={\space\btxlabeltext{apa:and}\space}] % not \textampersand
 
 % The following are similar to default, but inherit from apa:cite
 
@@ -303,20 +293,14 @@
   [\c!compress=\v!yes,
    \c!left={(},
    \c!right={)},
-   \c!inbetween={,\space},
-   \c!pubsep={;\space},
-   \c!lastpubsep={;\space},
-   \c!finalpubsep={;\space}]
+   \c!inbetween={,\space}]
 
 \definebtx
   [apa:cite:authoryears]
   [apa:cite:authoryear]
   [\c!left=,
    \c!right=,
-   \c!inbetween={\space},
-   \c!pubsep={;\space},
-   \c!lastpubsep={;\space},
-   \c!finalpubsep={;\space}]
+   \c!inbetween={\space}]
 
 \definebtx
   [apa:cite:authornum]
@@ -351,18 +335,18 @@
 \definebtx
   [apa:cite:year]
   [apa:cite]
-  [\c!pubsep={,\space},
-   \c!lastpubsep={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!finalpubsep={\space\btxlabeltext{apa:and}\space}, % not \textampersand
+  [\c!separator:2={,\space}, % :0 and :1 - between items of a list
+   \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:4= {\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!compress=\v!yes,
    \c!sorttype=\v!default]
 
 \definebtx
   [apa:cite:title]
   [apa:cite]
-  [\c!pubsep={,\space},
-   \c!lastpubsep={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!finalpubsep={\space\btxlabeltext{apa:and}\space}, % not \textampersand
+  [\c!separator:2={,\space}, % :0 and :1 - between items of a list
+   \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:4= {\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!command={\language[\currentbtxlanguage]}, % BAH
    \c!style=\v!italic]
 
@@ -391,9 +375,9 @@
   [apa:cite]
   [\c!left=,
    \c!right=,
-   \c!pubsep={,\space},
-   \c!lastpubsep={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!finalpubsep={\space\btxlabeltext{apa:and}\space}] % not \textampersand
+  [\c!separator:2={,\space}, % :0 and :1 - between items of a list
+   \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:4= {\space\btxlabeltext{apa:and}\space}] % not \textampersand
 
 \definebtx
   [apa:cite:pages]
@@ -441,18 +425,28 @@
   [\c!compress=\v!yes,
    \c!left={[},
    \c!right={]},
-   \c!pubsep={,},
-   \c!lastpubsep={,},
-   \c!finalpubsep={,}]
+   \c!separator:2={,}, % no space
+   \c!separator:3=\btxparameter{\c!separator:2},
+   \c!separator:4=\btxparameter{\c!separator:2}]
 
 \definebtx
   [apa:cite:textnum]
   [apa:cite:num]
   [\c!left={Ref.\nbsp},
    \c!right=,
-   \c!pubsep={,},
-   \c!lastpubsep={\space\btxlabeltext{apa:and}\space},
-   \c!finalpubsep={\space\btxlabeltext{apa:and}\space}]
+   \c!separator:2={,\space},
+   \c!separator:3={\space\btxlabeltext{apa:and}\space},
+   \c!separator:4={\space\btxlabeltext{apa:and}\space}]
+
+\definebtx
+  [apa:cite:entry]
+  [apa:cite]
+  [\c!left=,
+   \c!right=,
+   \c!inbetween={\space},
+   \c!separator:2={;\space},
+   \c!separator:3=\btxparameter{\c!separator:2},
+   \c!separator:4=\btxparameter{\c!separator:2}]
 
 %D Sometimes we have verbose injections in an entry and these can be language
 %D dependent, so we use labels.
@@ -639,15 +633,19 @@
     \fastsetup{btx:apa:cite:title}
 \stopsetups
 \startsetups btx:apa:cite:entry
-    \fastsetup{\s!btx:\s!cite:\s!normal}
+    \fastsetup{\s!btx:\s!cite:entry}
 \stopsetups
 \startsetups btx:apa:cite:num
     \fastsetup{\s!btx:\s!cite:range}
 \stopsetups
 \startsetups btx:apa:cite:textnum
-    \fastsetup{\s!btx:\s!cite:range}
+    \fastsetup{btx:apa:cite:num}
 \stopsetups
 \startsetups btx:apa:cite:year
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+
+\startsetups btx:apa:cite:author:num
     \fastsetup{\s!btx:\s!cite:range}
 \stopsetups
 
@@ -676,6 +674,10 @@
 
 \startsetups btx:apa:cite:author:years
     \fastsetup{btx:apa:cite:author:year}
+\stopsetups
+
+\startsetups btx:apa:cite:text:num
+    \fastsetup{\s!btx:\s!cite:range}
 \stopsetups
 
 \startsetups [btx:apa:page:list]

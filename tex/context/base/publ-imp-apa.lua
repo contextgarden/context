@@ -359,7 +359,8 @@ categories.manual = {
         "address",
         "subtitle", "file",
         "editionset", "month", "year",
-        "doi", "note", "isbn"
+        "doi", "note", "isbn",
+--         "abstract",
     },
 }
 

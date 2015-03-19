@@ -178,6 +178,8 @@
      \global\pageornamentstate\plusone
    \fi}
 
+% also needed: \page \doifoddpageelse\relax{\page[\v!blank,\v!right]
+
 \installpagebreakmethod \v!no
   {\ifconditional\c_page_breaks_enabled
      \dosomebreak\nobreak

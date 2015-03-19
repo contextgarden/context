@@ -1011,18 +1011,3 @@ commands.popsectionblock            = sections.popblock
 commands.registersection            = sections.register
 commands.setsectionentry            = sections.setentry
 commands.reportstructure            = sections.reportstructure
---
-
--- local byway = "^" .. v_by -- ugly but downward compatible
-
--- function commands.way(way)
---     context((gsub(way,byway,"")))
--- end
-
-local pattern = P(v_by)^-1 * C(P(1)^1)
-
-function commands.way(way)
-    if way ~= "" then
-        context(lpegmatch(pattern,way))
-    end
-end

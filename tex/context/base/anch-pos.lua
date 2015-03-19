@@ -21,8 +21,6 @@ more efficient.</p>
 -- maybe replace texsp by our own converter (stay at the lua end)
 -- eventually mp will have large numbers so we can use sp there too
 
-local commands, context = commands, context
-
 local tostring, next, rawget, setmetatable = tostring, next, rawget, setmetatable
 local sort = table.sort
 local format, gmatch, match = string.format, string.gmatch, string.match
@@ -30,12 +28,16 @@ local rawget = rawget
 local lpegmatch = lpeg.match
 local insert, remove = table.insert, table.remove
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
-local texsp = tex.sp
------ texsp = string.todimen -- because we cache this is much faster but no rounding
 
+local commands          = commands
+local context           = context
+
+local tex               = tex
 local texgetcount       = tex.getcount
 local texsetcount       = tex.setcount
 local texget            = tex.get
+local texsp             = tex.sp
+----- texsp             = string.todimen -- because we cache this is much faster but no rounding
 
 local pdf               = pdf -- h and v are variables
 

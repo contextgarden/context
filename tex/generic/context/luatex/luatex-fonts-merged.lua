@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/09/15 22:02:23
+-- merge date  : 03/19/15 17:08:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -5280,6 +5280,7 @@ local report_fonts=logs.reporter("fonts","loading")
 local fonts=fonts or {}
 local mappings=fonts.mappings or {}
 fonts.mappings=mappings
+local allocate=utilities.storage.allocate
 local function loadlumtable(filename) 
   local lumname=file.replacesuffix(file.basename(filename),"lum")
   local lumfile=resolvers.findfile(lumname,"map") or ""
@@ -5381,7 +5382,7 @@ mappings.fromunicode16=fromunicode16
 local ligseparator=P("_")
 local varseparator=P(".")
 local namesplitter=Ct(C((1-ligseparator-varseparator)^1)*(ligseparator*C((1-ligseparator-varseparator)^1))^0)
-local overloads={
+local overloads=allocate {
   IJ={ name="I_J",unicode={ 0x49,0x4A },mess=0x0132 },
   ij={ name="i_j",unicode={ 0x69,0x6A },mess=0x0133 },
   ff={ name="f_f",unicode={ 0x66,0x66 },mess=0xFB00 },

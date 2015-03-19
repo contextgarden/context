@@ -19,9 +19,6 @@ local lpegmatch = lpeg.match
 local jobpositions = job.positions
 local formatters   = string.formatters
 
-local scanstring   = tokens.scanstring
-local scannumber   = tokens.scannumber
-local scandimen    = tokens.scandimen
 
 local report_graphics = logs.reporter("graphics")
 

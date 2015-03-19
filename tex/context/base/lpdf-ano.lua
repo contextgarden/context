@@ -117,7 +117,7 @@ local pdf_border_color        = nil
 local set_border              = false
 
 local function pdfborder()
-    border_set = true
+    set_border = true
     return pdf_border_style, pdf_border_color
 end
 

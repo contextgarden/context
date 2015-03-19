@@ -159,16 +159,16 @@ local skipglobal = table.tohash {
     "_G", "_M", "_ENV", "",
     "context", "modules", "global", "arg", "utf", 1,
     "_ptbs_", "_pcol_", "_plib_", "_clib_", "_tlib_",
-    "kpse",
+    "kpse", "commands",
 }
 
 local skipkeys = table.tohash {
     "_pcol_", "_plib_", "_clib_", "_tlib_", "_bpnf_", "_ptbs_",
-    "_cldf_", "_cldn_",
+    "_cldf_", "_cldn_", "_cldo_",
     "_clmb_", "_clme_", "_clmm_", "_clmn_", "_clma_", "_clmh_",
     "_G", "_M", "_ENV", "",
+ -- "global",  "shortcuts",
     "_VERSION", "_COPYRIGHT", "_DESCRIPTION", "_NAME", "_PACKAGE", "__unload",
-
 }
 
 local sameglobal = {
@@ -196,6 +196,8 @@ local variant = 1 -- all parents
 local variant = 2 -- parent name too
 local variant = 3 -- no parents
 
+local done = { }
+
 local function childtables(key,tab,handler,depth)
     depth = depth or 1
     local keys = sortedkeys(tab) -- no sorted_pairs
@@ -214,6 +216,10 @@ local function childtables(key,tab,handler,depth)
                     t = "data"
                     handler(s,t,depth)
                 else
+if done[v] then
+    -- logs.report("inf-03","key %a in %a already done",k,v)
+else
+    done[v] = true
                     handler(s,t,depth)
                     if variant == 3 then
                         childtables(false,v,handler,depth+1)
@@ -223,6 +229,7 @@ local function childtables(key,tab,handler,depth)
                         childtables(s,v,handler,depth+1)
                     end
                 end
+end
             else
                 handler(s,t,depth)
             end
@@ -245,6 +252,7 @@ end
 
 local function show(title,subtitle,alias,builtin,t,lib,libcolor,glo,glocolor,mark,obsolete)
     -- todo: table as argument
+-- print(title,subtitle,alias,builtin,t,lib,libcolor,glo,glocolor,mark,obsolete)
     local keys = sortedkeys(t) -- no sorted_pairs
     if #keys > 0 then
         local fulltitle = title
@@ -341,6 +349,8 @@ end
 
 show("global","",sameglobal.global,false,_G,builtin,"darkgreen",globals,"darkblue",false,obsolete)
 
+-- inspect(table.sortedkeys(context))
+
 for k, v in table.sortedpairs(_G) do
     if not skipglobal[k] and not obsolete[k] and type(v) == "table" and not marked(v) then
 
@@ -351,7 +361,8 @@ for k, v in table.sortedpairs(_G) do
         elseif extralua[k] then show(k,"extra lua",sameglobal[k],extralua[k],v,builtin[k],"darkred",   false,false,true)
         elseif basictex[k] then show(k,"basic tex",sameglobal[k],basictex[k],v,builtin[k],"darkred",   false,false,true)
         elseif extratex[k] then show(k,"extra tex",sameglobal[k],extratex[k],v,builtin[k],"darkred",   false,false,true)
-        else                    show(k,"context",  sameglobal[k],false,      v,builtin[k],"darkyellow",false,false,true)
+        else
+            show(k,"context",  sameglobal[k],false,      v,builtin[k],"darkyellow",false,false,true)
         end
     end
 end

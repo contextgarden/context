@@ -315,13 +315,15 @@ local registerfunction, unregisterfunction, reservefunction, knownfunctions, cal
 
     interfaces.scanners = table.setmetatablenewindex(function(t,k,v)
         if storedscanners[k] then
+         -- report_cld("warning: scanner %a is already set",k)
+         -- os.exit()
             -- \scan_<k> is already in the format
          -- report_cld("using interface scanner: %s",k)
         else
             -- todo: allocate slot here and pass it
             storedscanners[k] = true
          -- report_cld("installing interface scanner: %s",k)
-            context("\\installctxfunction{scan_%s}{interfaces.scanners.%s}",k,k)
+            context("\\installctxfunction{clf_%s}{interfaces.scanners.%s}",k,k)
         end
         rawset(t,k,v)
     end)

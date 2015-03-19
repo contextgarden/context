@@ -1,0 +1,43 @@
+
+% \usemodule[luacalls]
+
+\usemodule[mathml]
+
+\setupexternalfigures
+  [location=default]
+
+\setupbackend
+  [export=yes]
+
+\setupexport
+  [svgstyle=mathtest-style,
+   hyphen=yes,
+   width=60em]
+
+\setupbodyfont[pagella]
+
+\definefloat[graphic][graphics][figure]
+
+% \environment [mathtest-style]
+
+\starttext
+
+    \startsection[title=First]
+
+        \startitemize
+            \startitem one \stopitem
+            \startitem two \stopitem
+        \stopitemize
+
+        \startplacefigure[title=First]
+            \externalfigure[cow.pdf]
+        \stopplacefigure
+
+        \startplacegraphic[title=Second]
+            \externalfigure[cow.pdf]
+        \stopplacegraphic
+
+        some math: \m{e=mc^2}
+
+    \stopsection
+\stoptext

@@ -1182,6 +1182,7 @@
    \insert\currentnoteinsertionnumber\bgroup
      \the\everyinsidenoteinsert\relax
      \usesetupsparameter\noteparameter % experimental
+     \useinterlinespaceparameter\noteparameter
      \doifelse{\noteparameter\c!paragraph}\v!yes
         {\nointerlineskip
          \startvboxtohboxseparator
@@ -1354,11 +1355,14 @@
 % idea: tag with attr and then just flush them again
 
 \def\strc_notes_flush_global
-  {\doifelse{\noteparameter\c!paragraph}\v!yes
+  {\begingroup
+   \useinterlinespaceparameter\noteparameter
+   \doifelse{\noteparameter\c!paragraph}\v!yes
      {\vbox\starthboxestohbox
         \iftrialtypesetting\unvcopy\else\unvbox\fi\currentnoteinsertionnumber
       \stophboxestohbox}
-     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber}}
+     {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber}%
+   \endgroup}
 
 %D Supporting end notes is surprisingly easy. Even better, we
 %D can combine this feature with solving the common \TEX\

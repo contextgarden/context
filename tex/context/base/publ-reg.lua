@@ -47,29 +47,32 @@ function commands.setbtxregister(specification)
         s = { }
         registrations[register] = s
     end
-    local d = s[dataset]
-    if not d then
-        d = { }
-        s[dataset] = d
-    end
-    --
-    -- check all
-    --
     local processors = name ~= register and name or ""
     if processor == "" then
         processor = nil
     elseif processor then
         processor = "btx:r:" .. processor
     end
-    --
-    d.active      = specification.state ~= v_stop
-    d.once        = specification.method == v_once or false
-    d.field       = field
-    d.processor   = processor
-    d.alternative = d.alternative or specification.alternative
-    d.register    = register
-    d.dataset     = dataset
-    d.done        = d.done or { }
+    local datasets = utilities.parsers.settings_to_array(dataset)
+    for i=1,#datasets do
+        local dataset = datasets[i]
+        local d = s[dataset]
+        if not d then
+            d = { }
+            s[dataset] = d
+        end
+        --
+        -- check all
+        --
+        d.active      = specification.state ~= v_stop
+        d.once        = specification.method == v_once or false
+        d.field       = field
+        d.processor   = processor
+        d.alternative = d.alternative or specification.alternative
+        d.register    = register
+        d.dataset     = dataset
+        d.done        = d.done or { }
+    end
     --
     sequence   = { }
     for register, s in sortedhash(registrations) do

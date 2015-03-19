@@ -61,6 +61,8 @@ if newtoken then
     local scan_glue    = newtoken.scan_glue
     local scan_keyword = newtoken.scan_keyword
     local scan_token   = newtoken.scan_token
+    local scan_word    = newtoken.scan_word
+    local scan_number  = newtoken.scan_number
 
     local get_next     = newtoken.get_next
 
@@ -102,52 +104,69 @@ if newtoken then
 
     local t = { } -- small optimization, a shared variable that is not reset
 
-    local function scan_word()
-        local n = 0
-        while true do
-            local c = scan_code()
-            if c then
-                n = n + 1
-                t[n] = utfchar(c)
-            elseif scan_code(space_bits) then
-                if n > 0 then
-                    break
-                end
-            elseif n > 0 then
-                break
+    if scan_word then
+
+        scan_number = function(base)
+            local s = scan_word()
+            if not s then
+                return nil
+            elseif base then
+                return tonumber(s,base)
             else
-                return
+                return tonumber(s)
             end
         end
-        return concat(t,"",1,n)
-    end
 
-    -- so we gobble the space (like scan_int) (number has to be space or non-char terminated
-    -- as we accept 0xabcd and such so there is no clear separator for a keyword
+    else
 
-    local function scan_number(base)
-        local n = 0
-        while true do
-            local c = scan_code()
-            if c then
-                n = n + 1
-                t[n] = char(c)
-            elseif scan_code(space_bits) then
-                if n > 0 then
+        scan_word = function()
+            local n = 0
+            while true do
+                local c = scan_code()
+                if c then
+                    n = n + 1
+                    t[n] = utfchar(c)
+                elseif scan_code(space_bits) then
+                    if n > 0 then
+                        break
+                    end
+                elseif n > 0 then
                     break
+                else
+                    return
                 end
-            elseif n > 0 then
-                break
+            end
+            return concat(t,"",1,n)
+        end
+
+        -- so we gobble the space (like scan_int) (number has to be space or non-char terminated
+        -- as we accept 0xabcd and such so there is no clear separator for a keyword
+
+        scan_number = function(base)
+            local n = 0
+            while true do
+                local c = scan_code()
+                if c then
+                    n = n + 1
+                    t[n] = char(c)
+                elseif scan_code(space_bits) then
+                    if n > 0 then
+                        break
+                    end
+                elseif n > 0 then
+                    break
+                else
+                    return
+                end
+            end
+            local s = concat(t,"",1,n)
+            if base then
+                return tonumber(s,base)
             else
-                return
+                return tonumber(s)
             end
         end
-        local s = concat(t,"",1,n)
-        if base then
-            return tonumber(s,base)
-        else
-            return tonumber(s)
-        end
+
     end
 
  -- -- the next one cannot handle \iftrue true\else false\fi
@@ -193,10 +212,16 @@ if newtoken then
 
     tokens.getters = { -- these don't expand
         token = get_next,
+        count = tex.getcount,
+        dimen = tex.getdimen,
+        box   = tex.getbox,
     }
 
     tokens.setters = {
         macro = set_macro,
+        count = tex.setcount,
+        dimen = tex.setdimen,
+        box   = tex.setbox,
     }
 
 end

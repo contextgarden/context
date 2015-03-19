@@ -39,19 +39,7 @@
 
 \definebtxlistvariant
   [aps]
-  [\c!namesep={,\space},
-   \c!lastnamesep={,\space and\space},
-   \c!finalnamesep={,\space and\space},
-   \c!firstnamesep=\space,
-   \c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
-   \c!juniorsep=\space,
-   \c!vonsep=\space,
-   \c!initialsep=\space,  % between initials and lastname
-  %\c!initialssep=\space, % between multiple initials  % todo
-  %\c!initialsterminator={.},                          % todo
-   \c!surnamesep={,\space},
-   \c!surnameinitialsep={,\space},
-   \c!surnamefirstnamesep={,\space},
+  [\c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
    \c!etallimit=10,
    \c!etaldisplay=\btxlistvariantparameter\c!etallimit,
   %\c!journalconversion=\v!normal,
@@ -72,25 +60,25 @@
    \c!namesep=\btxlistvariantparameter\c!namesep,
    \c!lastnamesep=\btxlistvariantparameter\c!lastnamesep,
    \c!finalnamesep={\nobreakspace\textampersand\space}, % no comma!
-   \c!firstnamesep=\btxlistvariantparameter\c!firstnamesep,
+   \c!separator:firstnames=\btxlistvariantparameter{\c!separator:firstnames},
    \c!otherstext=\btxlistvariantparameter\c!otherstext,
-   \c!juniorsep=\btxlistvariantparameter\c!juniorsep,
-   \c!vonsep=\btxlistvariantparameter\c!vonsep,
-   \c!initialsep=\btxlistvariantparameter\c!initialsep,
+   \c!separator:juniors=\btxlistvariantparameter{\c!separator:juniors},
+   \c!separator:vons=\btxlistvariantparameter{\c!separator:vons},
+   \c!separator:initials=\btxlistvariantparameter{\c!separator:initials},
   %\c!initialssep=\btxlistvariantparameter\c!initialssep,
   %\c!initialsterminator=\btxlistvariantparameter\c!initialsterminator,
    \c!surnamesep=\btxlistvariantparameter\c!surnamesep,
-   \c!surnameinitialsep=\btxlistvariantparameter\c!surnameinitialsep,
-   \c!surnamefirstnamesep=\btxlistvariantparameter\c!surnamefirstnamesep,
+   \c!separator:invertedinitials=\btxlistvariantparameter{\c!separator:invertedinitials},
+   \c!separator:invertedfirstnames=\btxlistvariantparameter{\c!separator:invertedfirstnames},
    \c!etallimit=\btxlistvariantparameter\c!etallimit,
    \c!etaldisplay=\btxlistvariantparameter\c!etaldisplay,
  % \c!monthconversion=\btxlistvariantparameter\c!monthconversion,
    \c!authorconversion=\btxlistvariantparameter\c!authorconversion,
    \c!interaction=\v!start,
  % \c!setups=btx:cite:initialize,
-   \c!pubsep={,\space},
-   \c!lastpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!finalpubsep={\space\btxlabeltext{\currentbtxspecification:and}\space},
+   \c!separator:2={,\space},
+   \c!separator:3={\space\btxlabeltext{\currentbtxspecification:and}\space},
+   \c!separator:4={\space\btxlabeltext{\currentbtxspecification:and}\space},
    \c!sorttype=,
    \c!compress=\v!no,
    \c!inbetween=\space,
@@ -111,9 +99,9 @@
     \c!inbetween={,\space},
     \c!left={(},
     \c!right={)},
-    \c!pubsep={;\space},
-    \c!lastpubsep={;\space},
-    \c!finalpubsep={;\space},
+    \c!separator:2={;\space},
+    \c!separator:3={;\space},
+    \c!separator:4={;\space},
     \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
     \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
     \c!authorconversion=\v!name]
@@ -123,9 +111,9 @@
    [authoryear]
    [\c!left=,
     \c!inbetween={\space(},
-    \c!pubsep={);\space},
-    \c!lastpubsep={);\space},
-    \c!finalpubsep={);\space},
+    \c!separator:2={);\space},
+    \c!separator:3={);\space},
+    \c!separator:4={);\space},
     \c!lastnamesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
     \c!finalnamesep={\space\btxlabeltext{\currentbtxspecification:and}\space}, % no comma!
     \c!authorconversion=\v!name]

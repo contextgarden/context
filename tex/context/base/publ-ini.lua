@@ -93,85 +93,72 @@ manipulatormethods.WORD  = converters.WORD
 manipulatormethods.Words = converters.Words
 manipulatormethods.WORDS = converters.WORDS
 
-local context                    = context
-local commands                   = commands
+local context                     = context
+local commands                    = commands
 
-local ctx_doifelse               = commands.doifelse
-local ctx_doif                   = commands.doif
-local ctx_doifnot                = commands.doifnot
+local ctx_doifelse                = commands.doifelse
+local ctx_doif                    = commands.doif
+local ctx_doifnot                 = commands.doifnot
 
-local ctx_firstoftwoarguments    = context.firstoftwoarguments
-local ctx_secondoftwoarguments   = context.secondoftwoarguments
-local ctx_firstofoneargument     = context.firstofoneargument
+local ctx_firstoftwoarguments     = context.firstoftwoarguments
+local ctx_secondoftwoarguments    = context.secondoftwoarguments
+local ctx_firstofoneargument      = context.firstofoneargument
 
-local ctx_gobbleoneargument      = context.gobbleoneargument
-local ctx_gobbletwoarguments     = context.gobbletwoarguments
+local ctx_gobbleoneargument       = context.gobbleoneargument
+local ctx_gobbletwoarguments      = context.gobbletwoarguments
 
-local ctx_btxdirectlink          = context.btxdirectlink
-local ctx_btxhandlelistentry     = context.btxhandlelistentry
-local ctx_btxhandlelisttextentry = context.btxhandlelisttextentry
-local ctx_btxchecklistentry      = context.btxchecklistentry
-local ctx_btxchecklistcombi      = context.btxchecklistcombi
------ ctx_btxsetcitereference    = context.btxsetcitereference
------ ctx_btxsetlistreference    = context.btxsetlistreference
+local ctx_btxdirectlink           = context.btxdirectlink
+local ctx_btxhandlelistentry      = context.btxhandlelistentry
+local ctx_btxhandlelisttextentry  = context.btxhandlelisttextentry
+local ctx_btxchecklistentry       = context.btxchecklistentry
+local ctx_btxchecklistcombi       = context.btxchecklistcombi
+----- ctx_btxsetcitereference     = context.btxsetcitereference
+----- ctx_btxsetlistreference     = context.btxsetlistreference
 
-local ctx_btxsetdataset          = context.btxsetdataset
-local ctx_btxsettag              = context.btxsettag
-local ctx_btxsetnumber           = context.btxsetnumber
-local ctx_btxsetlanguage         = context.btxsetlanguage
-local ctx_btxsetcombis           = context.btxsetcombis
-local ctx_btxsetcategory         = context.btxsetcategory
-local ctx_btxcitesetup           = context.btxcitesetup
-local ctx_btxpagesetup           = context.btxpagesetup
-local ctx_btxsetfirst            = context.btxsetfirst
-local ctx_btxsetsecond           = context.btxsetsecond
-local ctx_btxsetthird            = context.btxsetthird
-local ctx_btxsetinternal         = context.btxsetinternal
-local ctx_btxsetlefttext         = context.btxsetlefttext
-local ctx_btxsetrighttext        = context.btxsetrighttext
-local ctx_btxsetbefore           = context.btxsetbefore
-local ctx_btxsetafter            = context.btxsetafter
-local ctx_btxsetbacklink         = context.btxsetbacklink
-local ctx_btxsetbacktrace        = context.btxsetbacktrace
-local ctx_btxsetcount            = context.btxsetcount
-local ctx_btxsetconcat           = context.btxsetconcat
-local ctx_btxsetoveflow          = context.btxsetoverflow
-local ctx_btxsetfirstpage        = context.btxsetfirstpage
-local ctx_btxsetlastpage         = context.btxsetlastpage
-local ctx_btxsetfirstinternal    = context.btxsetfirstinternal
-local ctx_btxsetlastinternal     = context.btxsetlastinternal
-local ctx_btxstartcite           = context.btxstartcite
-local ctx_btxstopcite            = context.btxstopcite
-local ctx_btxstartciteauthor     = context.btxstartciteauthor
-local ctx_btxstopciteauthor      = context.btxstopciteauthor
-local ctx_btxstartsubcite        = context.btxstartsubcite
-local ctx_btxstopsubcite         = context.btxstopsubcite
-local ctx_btxstartlistentry      = context.btxstartlistentry
-local ctx_btxstoplistentry       = context.btxstoplistentry
-local ctx_btxlistsetup           = context.btxlistsetup
-local ctx_btxflushauthor         = context.btxflushauthor
-local ctx_btxsetnoflistentries   = context.btxsetnoflistentries
-local ctx_btxsetcurrentlistentry = context.btxsetcurrentlistentry
-local ctx_btxsetcurrentlistindex = context.btxsetcurrentlistindex
+local ctx_btxsetdataset           = context.btxsetdataset
+local ctx_btxsettag               = context.btxsettag
+local ctx_btxsetnumber            = context.btxsetnumber
+local ctx_btxsetlanguage          = context.btxsetlanguage
+local ctx_btxsetcombis            = context.btxsetcombis
+local ctx_btxsetcategory          = context.btxsetcategory
+local ctx_btxcitesetup            = context.btxcitesetup
+local ctx_btxpagesetup            = context.btxpagesetup
+local ctx_btxsetfirst             = context.btxsetfirst
+local ctx_btxsetsecond            = context.btxsetsecond
+local ctx_btxsetthird             = context.btxsetthird
+local ctx_btxsetinternal          = context.btxsetinternal
+local ctx_btxsetlefttext          = context.btxsetlefttext
+local ctx_btxsetrighttext         = context.btxsetrighttext
+local ctx_btxsetbefore            = context.btxsetbefore
+local ctx_btxsetafter             = context.btxsetafter
+local ctx_btxsetbacklink          = context.btxsetbacklink
+local ctx_btxsetbacktrace         = context.btxsetbacktrace
+local ctx_btxsetcount             = context.btxsetcount
+local ctx_btxsetconcat            = context.btxsetconcat
+local ctx_btxsetoveflow           = context.btxsetoverflow
+local ctx_btxsetfirstpage         = context.btxsetfirstpage
+local ctx_btxsetlastpage          = context.btxsetlastpage
+local ctx_btxsetfirstinternal     = context.btxsetfirstinternal
+local ctx_btxsetlastinternal      = context.btxsetlastinternal
+local ctx_btxstartcite            = context.btxstartcite
+local ctx_btxstopcite             = context.btxstopcite
+local ctx_btxstartciteauthor      = context.btxstartciteauthor
+local ctx_btxstopciteauthor       = context.btxstopciteauthor
+local ctx_btxstartsubcite         = context.btxstartsubcite
+local ctx_btxstopsubcite          = context.btxstopsubcite
+local ctx_btxstartlistentry       = context.btxstartlistentry
+local ctx_btxstoplistentry        = context.btxstoplistentry
+local ctx_btxlistsetup            = context.btxlistsetup
+local ctx_btxflushauthor          = context.btxflushauthor
+local ctx_btxsetnoflistentries    = context.btxsetnoflistentries
+local ctx_btxsetcurrentlistentry  = context.btxsetcurrentlistentry
+local ctx_btxsetcurrentlistindex  = context.btxsetcurrentlistindex
 
-local ctx_setmacro = tokens.setters and tokens.setters.macro
+local implement                   = interfaces.implement
+local ctx_setmacro                = interfaces.setmacro
 
-languages.data       = languages.data       or { }
-local data           = languages.data
-
--- local registeredcitevariants = publications.registeredcitevariants or { }
--- local registeredlistvariants = publications.registeredlistvariants or { }
---
--- storage.register("publications/registeredcitevariants", registeredcitevariants,"publications.registeredcitevariants")
--- storage.register("publications/registeredlistvariants", registeredlistvariants,"publications.registeredlistvariants")
---
--- function commands.registerbtxcitevariant(name,parent)
---     registeredcitevariants[name] = parent or ""
--- end
---
--- function commands.registerbtxlistvariant(name,parent)
---     registeredlistvariants[name] = parent or ""
--- end
+languages.data                    = languages.data       or { }
+local data                        = languages.data
 
 local specifications              = publications.specifications
 local currentspecification        = specifications[false]
@@ -1269,12 +1256,7 @@ do
     publications.found     = found
     publications.get       = get
 
-    function commands.btxfieldname(name,tag,field) context(get(name,tag,field,false,false)) end
-    function commands.btxfieldtype(name,tag,field) context(get(name,tag,field,true, false)) end
-    function commands.btxfoundname(name,tag,field) context(get(name,tag,field,false,true )) end
-    function commands.btxfoundtype(name,tag,field) context(get(name,tag,field,true, true )) end
-
-    function commands.btxflush(name,tag,field)
+    local function btxflush(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
             local fields = dataset.luadata[tag]
@@ -1300,7 +1282,7 @@ do
         end
     end
 
-    function commands.btxfield(name,tag,field)
+    local function btxfield(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
             local fields = dataset.luadata[tag]
@@ -1325,7 +1307,7 @@ do
         end
     end
 
-    function commands.btxdetail(name,tag,field)
+    local function btxdetail(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
             local fields = dataset.luadata[tag]
@@ -1355,6 +1337,26 @@ do
         end
     end
 
+    local function btxdirect(name,tag,field)
+        local dataset = rawget(datasets,name)
+        if dataset then
+            local fields = dataset.luadata[tag]
+            if fields then
+                local manipulator, field = splitmanipulation(field)
+                local value = fields[field]
+                if value then
+                    context(typesetters.default(field,value,manipulator))
+                elseif trace_detail then
+                    report("field %a of tag %a in dataset %a has no value",field,tag,name)
+                end
+            else
+                report("unknown tag %a in dataset %a",tag,name)
+            end
+        else
+            report("unknown dataset %a",name)
+        end
+    end
+
     local function okay(name,tag,field)
         local dataset = rawget(datasets,name)
         if dataset then
@@ -1372,9 +1374,40 @@ do
 
     publications.okay = okay
 
-    function commands.btxdoifelse(name,tag,field) ctx_doifelse(okay(name,tag,field)) end
-    function commands.btxdoif    (name,tag,field) ctx_doif    (okay(name,tag,field)) end
-    function commands.btxdoifnot (name,tag,field) ctx_doifnot (okay(name,tag,field)) end
+    if implement then
+
+        implement { name = "btxfield",     actions = btxfield,  arguments = { "string", "string", "string" } }
+        implement { name = "btxdetail",    actions = btxdetail, arguments = { "string", "string", "string" } }
+        implement { name = "btxflush",     actions = btxflush,  arguments = { "string", "string", "string" } }
+        implement { name = "btxdirect",    actions = btxdirect, arguments = { "string", "string", "string" } }
+
+        implement { name = "btxfieldname", actions = { get, context }, arguments = { "string", "string", "string", false, false } }
+        implement { name = "btxfieldtype", actions = { get, context }, arguments = { "string", "string", "string", true,  false } }
+        implement { name = "btxfoundname", actions = { get, context }, arguments = { "string", "string", "string", false, true  } }
+        implement { name = "btxfoundtype", actions = { get, context }, arguments = { "string", "string", "string", true,  true  } }
+
+        implement { name = "btxdoifelse",  actions = { okay, ctx_btxdoifelse }, arguments = { "string", "string", "string" } }
+        implement { name = "btxdoif",      actions = { okay, ctx_btxdoif     }, arguments = { "string", "string", "string" } }
+        implement { name = "btxdoifnot",   actions = { okay, ctx_btxdoifnot  }, arguments = { "string", "string", "string" } }
+
+    else
+
+        commands.btxflush  = btxflush
+        commands.btxfield  = btxfield
+        commands.btxdetail = btxdetail
+        commands.btxdirect = btxdirect
+
+        function commands.btxfieldname(name,tag,field) context(get(name,tag,field,false,false)) end
+        function commands.btxfieldtype(name,tag,field) context(get(name,tag,field,true, false)) end
+        function commands.btxfoundname(name,tag,field) context(get(name,tag,field,false,true )) end
+        function commands.btxfoundtype(name,tag,field) context(get(name,tag,field,true, true )) end
+
+        function commands.btxdoifelse (name,tag,field) ctx_doifelse(okay(name,tag,field)) end
+        function commands.btxdoif     (name,tag,field) ctx_doif    (okay(name,tag,field)) end
+        function commands.btxdoifnot  (name,tag,field) ctx_doifnot (okay(name,tag,field)) end
+
+    end
+
 
 end
 
@@ -1467,39 +1500,6 @@ do
     end)
 
     -- helper
-
-    -- local function sortedtags(dataset,list,sorttype)
-    --     local luadata = datasets[dataset].luadata
-    --     local valid = { }
-    --     for i=1,#list do
-    --         local tag = list[i]
-    --         local entry = luadata[tag]
-    --         if entry then
-    --             local key = entry[sorttype]
-    --             if key then
-    --                 valid[#valid+1] = {
-    --                     tag   = tag,
-    --                     split = sortsplitter(sortstripper(key))
-    --                 }
-    --             end
-    --         end
-    --     end
-    --     if #valid == 0 or #valid ~= #list then
-    --         return list
-    --     else
-    --         sorters.sort(valid,basicsorter)
-    --         for i=1,#valid do
-    --             valid[i] = valid[i].tag
-    --         end
-    --         return valid
-    --     end
-    -- end
-    --
-    --     if sorttype and sorttype ~= "" then
-    --         tags = sortedtags(dataset,tags,sorttype)
-    --     end
-
-    -- why shorts vs tags: only for sorting
 
     function lists.register(dataset,tag,short) -- needs checking now that we split
         local r = renderings[dataset]
@@ -1601,7 +1601,9 @@ do
         local pages     = { }
         local current   = datasets[dataset]
         local luadata   = current.luadata
-rendering.result = result
+        -- handy for tracing :
+        rendering.result = result
+        --
         for listindex=1,#result do
             local r = result[listindex]
             local u = r.userdata
@@ -2094,13 +2096,6 @@ do
         end
     end
 
-    -- function commands.btxcitevariant(dataset,block,tags,variant) -- uses? specification ?
-    --     local action = citevariants[variant]
-    --     if action then
-    --         action(dataset,tags,variant)
-    --     end
-    -- end
-
     -- sorter
 
     local keysorter = function(a,b)
@@ -2118,41 +2113,6 @@ do
             return ak < bk
         end
     end
-
-    --     local suffix   = 0
-    --     local function setsuffix(entry,suffix,sortfld)
-    --         entry.suffix  = suffix
-    --         local dataset = datasets[entry.dataset]
-    --         if dataset then
-    --             local suffixes = dataset.suffixes[entry.tag]
-    --             if suffixes then
-    --                 suffixes[sortfld] = suffix
-    --             else
-    --                 dataset.suffixes[entry.tag] = { [sortfld] = suffix }
-    --             end
-    --         end
-    --     end
-    --     for i=1,#source do
-    --         local entry   = source[i]
-    --         local sortfld = entry.sortfld
-    --         if sortfld then
-    --             local value = entry.sortkey
-    --             if value == oldvalue then
-    --                 if suffix == 0 then
-    --                     suffix = 1
-    --                     local entry = source[i-1]
-    --                     setsuffix(entry,suffix,sortfld)
-    --                 end
-    --                 suffix = suffix + 1
-    --                 setsuffix(entry,suffix,sortfld)
-    --             else
-    --                 oldvalue = value
-    --                 suffix   = 0
-    --             end
-    --         else
-    --             break
-    --         end
-    --     end
 
     local function compresslist(source)
         for i=1,#source do
@@ -2321,10 +2281,10 @@ do
                     ctx_btxsetrighttext(righttext[i] or "")
                 end
                 if before then
-                    ctx_btxsetbefore(before[i] or #before == 1 and before[1] or "")
+                    ctx_btxsetbefore(before[i] or (#before == 1 and before[1]) or "")
                 end
                 if after then
-                    ctx_btxsetafter(after[i] or #after == 1 and after[1] or "")
+                    ctx_btxsetafter(after[i] or (#after == 1 and after[1]) or "")
                 end
                 --
                 ctx_btxsetbacklink(currentcitation)

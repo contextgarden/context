@@ -103,11 +103,11 @@
    \the\everystartreadingfile
    \pushcatcodetable       % saveguard
    \setcatcodetable\ctxcatcodes
-   \ctxcommand{pushregime()}}% temporarily this way
+   \clf_pushregime}% temporarily this way
 
 \unexpanded\def\stopreadingfile
   {\popcatcodetable      % saveguard
-   \ctxcommand{popregime()}% temporarily this way
+   \clf_popregime % temporarily this way
    \the\everystopreadingfile
    \global\advance\readingfilelevel\minusone}
 
@@ -134,13 +134,13 @@
 %D \doiffileelse {filename} {found} {not found}
 %D \stoptyping
 
-\def\doiffileexistselse#name{\ctxcommand{doiffileexistelse([[#name]])}}
-\def\doifpathexistselse#name{\ctxcommand{doifpathexistelse([[#name]])}}
+\unexpanded\def\doiffileelse     {\clf_doiffileexistelse}
+\unexpanded\def\doifpathelse     {\clf_doifpathexistelse}
+\unexpanded\def\doiffile    #name{\clf_doiffileexistelse{#name}\firstofoneargument\gobbleoneargument}
+\unexpanded\def\doifnotfile #name{\clf_doiffileexistelse{#name}\gobbleoneargument\firstofoneargument}
 
-\def\doiffileelse     {\doiffileexistselse}
-\def\doifpathelse     {\doifpathexistselse}
-\def\doiffile    #name{\doiffileexistselse{#name}\firstofoneargument\gobbleoneargument}
-\def\doifnotfile #name{\doiffileexistselse{#name}\gobbleoneargument\firstofoneargument}
+\let\doiffileexistselse\doiffileelse
+\let\doifpathexistselse\doifpathelse
 
 %D \macros
 %D   {doifparentfileelse}
@@ -151,7 +151,7 @@
 
 \ifx\outputfilename\undefined \def\outputfilename{\jobname} \fi
 
-\def\doifparentfileelse#name{\ctxcommand{doifparentfileelse([[#name]])}}
+\unexpanded\def\doifparentfileelse{\clf_doifparentfileelse}
 
 %D \macros
 %D   {splitfilename}
@@ -187,7 +187,7 @@
 \let\splitoffname\empty
 \let\splitofftype\empty
 
-\def\splitfilename#name{\ctxcommand{splitfilename([[#name]])}}
+\unexpanded\def\splitfilename{\clf_splitfilename}
 
 %D \macros
 %D   {doonlyonce, doinputonce, doendinputonce}

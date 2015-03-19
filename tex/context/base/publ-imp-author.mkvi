@@ -31,15 +31,9 @@
 
 \startsetups \s!btx:\s!cite:\s!author:concat
     \ifcase\currentbtxoverflow
-        \ifcase\currentbtxconcat \or \or
-            \btxparameter\c!namesep
-        \or
-            \btxparameter\c!lastnamesep
-        \or
-            \btxparameter\c!finalnamesep
-        \fi
+        \btxparameter{\c!separator:names:\number\currentbtxconcat}
     \else
-        % \btxparameter\c!namesep
+       %\btxparameter{\c!separator:names:2}
     \fi
 \stopsetups
 
@@ -53,18 +47,18 @@
     \fastsetup{\s!btx:\s!cite:\s!author:concat}
     \ifx\currentbtxfirstnames\empty \else
         \currentbtxfirstnames
-        \btxparameter\c!firstnamesep
+        \btxparameter{\c!separator:firstnames}
     \fi
     \ifx\currentbtxvons\empty \else
         \currentbtxvons
         \ifx\currentbtxsurnames\empty \else
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
         \fi
     \fi
     \ifx\currentbtxsurnames\empty \else
         \currentbtxsurnames
         \ifx\currentbtxjuniors\empty \else
-            \btxparameter\c!juniorsep
+            \btxparameter{\c!separator:juniors}
             \currentbtxjuniors
         \fi
     \fi
@@ -75,18 +69,18 @@
     \fastsetup{\s!btx:\s!cite:\s!author:concat}
     \ifx\currentbtxinitials\empty \else
         \currentbtxinitials
-        \btxparameter\c!initialsep
+        \btxparameter{\c!separator:initials}
     \fi
     \ifx\currentbtxvons\empty \else
         \currentbtxvons
         \ifx\currentbtxsurnames\empty \else
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
         \fi
     \fi
     \ifx\currentbtxsurnames\empty \else
         \currentbtxsurnames
         \ifx\currentbtxjuniors\empty \else
-            \btxparameter\c!juniorsep
+            \btxparameter{\c!separator:juniors}
             \currentbtxjuniors
         \fi
     \fi
@@ -99,25 +93,25 @@
         \texdefinition{\s!btx:\s!cite:\s!author:\s!de}
         \doifmode {\s!btx:\s!de} {
             \currentbtxvons
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
         }
     \fi
     \ifx\currentbtxsurnames\empty \else
         \currentbtxsurnames
         \ifx\currentbtxjuniors\empty \else
-            \btxparameter\c!juniorsep
+            \btxparameter{\c!separator:juniors}
             \currentbtxjuniors
         \fi
     \fi
     \ifx\currentbtxfirstnames\empty
         % firstnames are optional
     \else
-        \btxparameter\c!surnamefirstnamesep
+        \btxparameter{\c!separator:invertedfirstnames}
         \currentbtxfirstnames
     \fi
     \ifx\currentbtxvons\empty \else
         \doifnotmode {\s!btx:\s!de} {
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
             \currentbtxvons
         }
     \fi
@@ -130,25 +124,25 @@
         \texdefinition{\s!btx:\s!cite:\s!author:\s!de}
         \doifnotmode {\s!btx:\s!de} {
             \currentbtxvons
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
         }
     \fi
     \ifx\currentbtxsurnames\empty \else
         \currentbtxsurnames
         \ifx\currentbtxjuniors\empty \else
-            \btxparameter\c!juniorsep
+            \btxparameter{\c!separator:juniors}
             \currentbtxjuniors
         \fi
     \fi
     \ifx\currentbtxinitials\empty
         % initials are optional
     \else
-        \btxparameter\c!surnameinitialsep
+        \btxparameter{\c!separator:invertedinitials}
         \currentbtxinitials
     \fi
     \ifx\currentbtxvons\empty \else
         \doifmode {\s!btx:\s!de} {
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
             \currentbtxvons
         }
     \fi
@@ -160,13 +154,13 @@
     % is this treated differently in german?
     \ifx\currentbtxvons\empty \else
         \currentbtxvons
-        \btxparameter\c!vonsep
+        \btxparameter{\c!separator:vons}
     \fi
     \currentbtxsurnames
     \ifcase\currentbtxauthorstate \else
         % potential clash of names so we force initials
         \ifx\currentbtxinitials\empty \else
-            \btxparameter\c!surnameinitialsep
+            \btxparameter{\c!separator:invertedinitials}
             \currentbtxinitials
         \fi
     \fi
@@ -177,15 +171,9 @@
 
 \startsetups \s!btx:\s!list:\s!author:concat
     \ifcase\currentbtxoverflow
-        \ifcase\currentbtxconcat \or \or
-            \btxparameter\c!namesep
-        \or
-            \btxparameter\c!lastnamesep
-        \or
-            \btxparameter\c!finalnamesep
-        \fi
+        \btxparameter{\c!separator:names:\number\currentbtxconcat}
     \else
-        \btxparameter\c!namesep
+        \btxparameter{\c!separator:names:2}
     \fi
 \stopsetups
 
@@ -199,18 +187,18 @@
     \fastsetup{\s!btx:\s!list:\s!author:concat}
     \ifx\currentbtxfirstnames\empty \else
         \currentbtxfirstnames
-        \btxparameter\c!firstnamesep
+        \btxparameter{\c!separator:firstnames}
     \fi
     \ifx\currentbtxvons\empty \else
         \currentbtxvons
         \ifx\currentbtxsurnames\empty \else
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
         \fi
     \fi
     \ifx\currentbtxsurnames\empty \else
         \currentbtxsurnames
         \ifx\currentbtxjuniors\empty \else
-            \btxparameter\c!juniorsep
+            \btxparameter{\c!separator:juniors}
             \currentbtxjuniors
         \fi
     \fi
@@ -221,18 +209,18 @@
     \fastsetup{\s!btx:\s!list:\s!author:concat}
     \ifx\currentbtxinitials\empty \else
         \currentbtxinitials
-        \btxparameter\c!initialsep
+        \btxparameter{\c!separator:initials}
     \fi
     \ifx\currentbtxvons\empty \else
         \currentbtxvons
         \ifx\currentbtxsurnames\empty \else
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
         \fi
     \fi
     \ifx\currentbtxsurnames\empty \else
         \currentbtxsurnames
         \ifx\currentbtxjuniors\empty \else
-            \btxparameter\c!juniorsep
+            \btxparameter{\c!separator:juniors}
             \currentbtxjuniors
         \fi
     \fi
@@ -245,25 +233,25 @@
         \texdefinition{\s!btx:\s!cite:\s!author:\s!de}
         \doifnotmode {\s!btx:\s!de} {
             \currentbtxvons
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
         }
     \fi
     \ifx\currentbtxsurnames\empty \else
         \currentbtxsurnames
         \ifx\currentbtxjuniors\empty \else
-            \btxparameter\c!juniorsep
+            \btxparameter{\c!separator:juniors}
             \currentbtxjuniors
         \fi
     \fi
     \ifx\currentbtxfirstnames\empty
         % firstnames are optional
     \else
-        \btxparameter\c!surnamefirstnamesep
+        \btxparameter{\c!separator:invertedfirstnames}
         \currentbtxfirstnames
     \fi
     \ifx\currentbtxvons\empty \else
         \doifmode {\s!btx:\s!de} {
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
             \currentbtxvons
         }
     \fi
@@ -276,25 +264,25 @@
         \texdefinition{\s!btx:\s!cite:\s!author:\s!de}
         \doifnotmode {\s!btx:\s!de} {
             \currentbtxvons
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
         }
     \fi
     \ifx\currentbtxsurnames\empty \else
         \currentbtxsurnames
         \ifx\currentbtxjuniors\empty \else
-            \btxparameter\c!juniorsep
+            \btxparameter{\c!separator:juniors}
             \currentbtxjuniors
         \fi
     \fi
     \ifx\currentbtxinitials\empty
         % initials are optional
     \else
-        \btxparameter\c!surnameinitialsep
+        \btxparameter{\c!separator:invertedinitials}
         \currentbtxinitials
     \fi
     \ifx\currentbtxvons\empty \else
         \doifmode {\s!btx:\s!de} {
-            \btxparameter\c!vonsep
+            \btxparameter{\c!separator:vons}
             \currentbtxvons
         }
     \fi
@@ -306,7 +294,7 @@
     % is this treated differently in german?
     \ifx\currentbtxvons\empty \else
         \currentbtxvons
-        \btxparameter\c!vonsep
+        \btxparameter{\c!separator:vons}
     \fi
     \currentbtxsurnames
     \fastsetup{\s!btx:\s!list:\s!author:others}

@@ -24,10 +24,10 @@ if not modules then modules = { } end modules ['cldf-bas'] = {
 
 -- maybe use context.generics
 
-local type    = type
-local format  = string.format
-local utfchar = utf.char
-local concat  = table.concat
+local type         = type
+local format       = string.format
+local utfchar      = utf.char
+local concat       = table.concat
 
 local context      = context
 local generics     = context.generics
@@ -49,13 +49,23 @@ function context.char(k) -- used as escape too, so don't change to utf
         elseif n > 0 then
             context([[\char%s\relax]],concat(k,[[\relax\char]]))
         end
-    elseif k then
-        context([[\char%s\relax]],k)
+    else
+        if type(k) == "string" then
+            k = tonumber(k)
+        end
+        if type(k) == "number" then
+            context([[\char%s\relax]],k)
+        end
     end
 end
 
 function context.utfchar(k)
-    context(utfchar(k))
+    if type(k) == "string" then
+        k = tonumber(k)
+    end
+    if type(k) == "number" then
+        context(utfchar(k))
+    end
 end
 
 -- plain variants

@@ -143,6 +143,9 @@ local locatedtag        = structurestags.locatedtag
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
 
+local characterdata     = characters.data
+local overloads         = fonts.mappings.overloads
+
 -- todo: more locals (and optimize)
 
 local exportversion     = "0.33"
@@ -2442,11 +2445,11 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
              -- report_export("skipping character: %C (no attribute)",n.char)
             else
                 -- we could add tonunicodes for ligatures (todo)
-                local components =  getfield(n,"components")
-                if components then -- we loose data
+                local components = getfield(n,"components")
+                local c = getchar(n)
+                if components and (not characterdata[c] or overloads[c]) then -- we loose data
                     collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
                 else
-                    local c = getchar(n)
                     if last ~= at then
                         local tl = taglist[at]
                         pushcontent()

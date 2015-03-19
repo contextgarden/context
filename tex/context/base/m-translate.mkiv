@@ -22,12 +22,34 @@
 
     local compiled, list = nil, nil
 
+ -- function translators.register(from,to)
+ --     local l = lpeg.P(from)/to
+ --     if not list then
+ --         list = l
+ --     else
+ --         list = list + l
+ --     end
+ --     compiled = nil
+ -- end
+ --
+ -- function translators.translate(s)
+ --     if list then
+ --         if not compiled then
+ --             compiled = lpeg.Cs((list + lpeg.P(1))^0)
+ --         end
+ --         return compiled:match(s)
+ --     else
+ --         return s
+ --     end
+ -- end
+
+    -- local function prepare()
+
     function translators.register(from,to)
-        local l = lpeg.P(from)/to
         if not list then
-            list = l
+            list = { [from] = to }
         else
-            list = list + l
+            list[from] = to
         end
         compiled = nil
     end
@@ -35,7 +57,8 @@
     function translators.translate(s)
         if list then
             if not compiled then
-                compiled = lpeg.Cs((list + lpeg.P(1))^0)
+                local tree = lpeg.utfchartabletopattern(list)
+                compiled = lpeg.Cs((tree/list + lpeg.patterns.utf8character)^0 * lpeg.P(-1)) -- the P(1) is needed in order to accept non utf
             end
             return compiled:match(s)
         else

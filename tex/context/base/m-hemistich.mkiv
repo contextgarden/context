@@ -41,21 +41,29 @@
      {\scratchwidth\availablehsize}
      {\scratchwidth\hemistichparameter\c!width\relax}%
    \spaceskip\zeropoint\s!plus\plusone\s!fill\relax
+   \dostarttagged\t!division\currenthemistich
    \hbox to \scratchwidth\bgroup
      \scratchwidth.5\dimexpr\scratchwidth-\hemistichparameter\c!distance\relax
      \hbox to \scratchwidth\bgroup
+       \dostarttagged\t!construct\c!lefttext
        \usehemistichstyleandcolor\c!leftstyle\c!leftcolor#3%
+       \dostoptagged
      \egroup
      \hss
      \begingroup
+       \dostarttagged\t!construct\c!separator
        \usehemistichstyleandcolor\c!separatorstyle\c!separatorcolor
        \hemistichparameter\c!separator
+       \dostoptagged
      \endgroup
      \hss
      \hbox to \scratchwidth\bgroup
+       \dostarttagged\t!construct\c!righttext
        \usehemistichstyleandcolor\c!rightstyle\c!rightcolor#4%
+       \dostoptagged
      \egroup
    \egroup
+   \dostoptagged
    \endgroup}
 
 \unexpanded\def\hemistichescaesura#1#2#3%

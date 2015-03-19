@@ -410,6 +410,8 @@ local stoplua                = P("\\stop") * Cmt(luaenvironment,stopdisplaylua)
 local startluacode           = token("embedded", startlua)
 local stopluacode            = #stoplua * token("embedded", stoplua)
 
+local luacall                = P("clf_") * R("az","__","AZ")^1
+
 local metafuncall            = ( P("reusable") + P("usable") + P("unique") + P("use") + P("reuse") ) * ("MPgraphic")
                              + P("uniqueMPpagegraphic")
                              + P("MPpositiongraphic")
@@ -430,6 +432,7 @@ local startmetafuncode       = token("embedded", startmetafun) * metafunargument
 local stopmetafuncode        = token("embedded", stopmetafun)
 
 local callers                = token("embedded", P("\\") * metafuncall) * metafunarguments
+                             + token("embedded", P("\\") * luacall)
 
 lexer.embed_lexer(contextlexer, cldlexer, startluacode,     stopluacode)
 lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)

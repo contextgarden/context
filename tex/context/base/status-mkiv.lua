@@ -320,7 +320,6 @@ return {
   },
   {
    category = "mkiv",
-   comment  = "maybe this becomes a runtime module",
    filename = "toks-ini",
    loading  = "always",
    status   = "okay",
@@ -4758,7 +4757,14 @@ return {
   {
    category = "lua",
    filename = "toks-ini",
-   status   = "todo",
+   loading  = "toks-ini",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "toks-scn",
+   loading  = "toks-ini",
+   status   = "okay",
   },
   {
    category = "lua",

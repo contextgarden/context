@@ -215,7 +215,7 @@
    \constructionparameter\c!headcommand
      {\strut
       \constructionparameter\c!text
-      \ctxcommand{savedlisttitle("\currentconstructionmain",\currentconstructionlistentry)}}%
+      \clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax}%
    \endgroup}
 
 \unexpanded\def\strc_constructions_stored_start
@@ -856,7 +856,7 @@
 \let\currentconstructionlistentry\!!zerocount
 
 \def\strc_constructions_register
-  {\ctxcommand{doiflisthasentry(\currentconstructionlistentry)}%
+  {\clf_doiflisthasentry\numexpr\currentconstructionlistentry\relax
      \strc_constructions_register_nop
      \strc_constructions_register_yes}
 
@@ -869,7 +869,7 @@
 \def\strc_constructions_discard
   {\iftrialtypesetting
    % \writestatus{constructions}{discarding \currentconstruction: \number\currentconstructionlistentry}%
-     \ctxcommand{discardfromlist(\currentconstructionlistentry)}%
+     \clf_discardfromlist\currentconstructionlistentry\relax
    \fi}
 
 \let\currentconstructionlistnumber \!!zerocount
@@ -939,59 +939,63 @@
    \else
      \setnextinternalreferences{construction}\currentconstructionmain % plural
      \relax
-     \scratchcounter\ctxcommand{addtolist{ % we can set a counter at the lua end
-        metadata = {
-            kind     = "construction",
-            name     = "\currentconstructionmain",
-            level    = structures.sections.currentlevel(),
-            catcodes = \the\catcodetable,
-        %   \currentdirectionparameters
-        },
-        references = {
-            internal        = \nextinternalreference,
-            order           = \nextinternalorderreference,
-            reference       = "\currentconstructionreference",
-            referenceprefix = "\referenceprefix",
-            block           = "\currentsectionblock",
-            section         = structures.sections.currentid(),
-        },
-        titledata = {
-            label    = \!!bs\detokenize\expandafter{\currentconstructionlabel   }\!!es,
-            title    = \!!bs\detokenize\expandafter{\currentconstructiontitle   }\!!es,
+     \scratchcounter\clf_addtolist
+        metadata {
+            kind     {construction}
+            name     {\currentconstructionmain}
+          % level    structures.sections.currentlevel()
+            catcodes \catcodetable
+         %  \currentdirectionparameters
+        }
+        references {
+            internal        \nextinternalreference
+            order           \nextinternalorderreference
+            reference       {\currentconstructionreference}
+            referenceprefix {\referenceprefix}
+            block           {\currentsectionblock}
+          % section         structures.sections.currentid(),
+        }
+        titledata  {
+            label    {\detokenize\expandafter{\currentconstructionlabel}}
+            title    {\detokenize\expandafter{\currentconstructiontitle}}
         \ifx\currentconstructionbookmark\currentconstructiontitle \else
-            bookmark = \!!bs\detokenize\expandafter{\currentconstructionbookmark}\!!es,
+            bookmark {\detokenize\expandafter{\currentconstructionbookmark}}
         \fi
         \ifx\currentconstructionlist\currentconstructiontitle \else
-            list     = \!!bs\detokenize\expandafter{\currentconstructionlist    }\!!es,
+            list     {\detokenize\expandafter{\currentconstructionlist}}
         \fi
-        },
+        }
     \ifconditional\c_strc_constructions_number_state
-        prefixdata = {
-            prefix        = "\constructionparameter\c!prefix",
-            separatorset  = "\constructionparameter\c!prefixseparatorset",
-            conversion    = \!!bs\constructionparameter\c!prefixconversion\!!es,
-            conversionset = "\constructionparameter\c!prefixconversionset",
-            set           = "\constructionparameter\c!prefixset",
-            segments      = "\constructionparameter\c!prefixsegments",
-            connector     = \!!bs\constructionparameter\c!prefixconnector\!!es,
-        },
-        numberdata = {
-            numbers       = structures.counters.compact("\currentconstructionnumber",nil,true), % ! number can be cloned
-            separatorset  = "\constructionparameter\c!numberseparatorset",
-            conversion    = "\constructionparameter\c!numberconversion",
-            conversionset = "\constructionparameter\c!numberconversionset",
-            starter       = \!!bs\constructionparameter\c!numberstarter\!!es,
-            stopper       = \!!bs\constructionparameter\c!numberstopper\!!es,
-            segments      = "\constructionparameter\c!numbersegments",
-        },
+        prefixdata {
+            prefix        {\constructionparameter\c!prefix}
+            separatorset  {\constructionparameter\c!prefixseparatorset}
+            conversion    {\constructionparameter\c!prefixconversion}
+            conversionset {\constructionparameter\c!prefixconversionset}
+            set           {\constructionparameter\c!prefixset}
+            segments      {\constructionparameter\c!prefixsegments}
+            connector     {\constructionparameter\c!prefixconnector}
+        }
+        numberdata {
+            numbers       {\currentconstructionnumber}
+            separatorset  {\constructionparameter\c!numberseparatorset}
+            conversion    {\constructionparameter\c!numberconversion}
+            conversionset {\constructionparameter\c!numberconversionset}
+            starter       {\constructionparameter\c!numberstarter}
+            stopper       {\constructionparameter\c!numberstopper}
+            segments      {\constructionparameter\c!numbersegments}
+        }
     \or
        % symbol
     \fi
-        userdata = \!!bs\detokenize{#2}\!!es % will be converted to table at the lua end
-       }
-     }\relax
+        userdata {\detokenize{#2}}
+     \relax
    % \writestatus{constructions}{registering \currentconstruction: \number\scratchcounter}%
-     \ctxcommand{setinternalreference("\referenceprefix","\currentconstructionreference",\nextinternalreference,"\interactionparameter\c!focus")}%
+     \clf_setinternalreference
+       prefix    {\referenceprefix}%
+       reference {\currentconstructionreference}%
+       internal  \nextinternalreference
+       view      {\interactionparameter\c!focus}%
+     \relax
      \normalexpanded{%
        \endgroup
        \edef\noexpand\currentconstructionlistentry  {\the\scratchcounter}%
