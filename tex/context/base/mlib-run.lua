@@ -44,6 +44,8 @@ local texerrormessage = logs.texerrormessage
 local starttiming     = statistics.starttiming
 local stoptiming      = statistics.stoptiming
 
+local formatters      = string.formatters
+
 local mplib           = mplib
 metapost              = metapost or { }
 local metapost        = metapost
@@ -177,11 +179,11 @@ function metapost.reporterror(result)
     return true
 end
 
-local preamble = [[
+local f_preamble = formatters [ [[
     boolean mplib ; mplib := true ;
     let dump = endinput ;
     input "%s" ;
-]]
+]] ]
 
 local methods = {
     double  = "double",
@@ -199,6 +201,18 @@ function metapost.scripterror(str)
     report_metapost("script error: %s",str)
 end
 
+-- todo: random_seed
+
+local f_textext = formatters["rawtextext(%q)"]
+
+function metapost.maketext(s,mode)
+    if mode and mode == 1 then
+        report_metapost("ignoring verbatimtex: %s",s)
+    else
+        return f_textext(s)
+    end
+end
+
 function metapost.load(name,method)
     starttiming(mplib)
     method = method and methods[method] or "scaled"
@@ -207,13 +221,14 @@ function metapost.load(name,method)
         math_mode    = method,
         run_script   = metapost.runscript,
         script_error = metapost.scripterror,
+        make_text    = metapost.maketext,
     }
     report_metapost("initializing number mode %a",method)
     local result
     if not mpx then
         result = { status = 99, error = "out of memory"}
     else
-        result = mpx:execute(format(preamble, file.addsuffix(name,"mp"))) -- addsuffix is redundant
+        result = mpx:execute(f_preamble(file.addsuffix(name,"mp"))) -- addsuffix is redundant
     end
     stoptiming(mplib)
     metapost.reporterror(result)
@@ -317,10 +332,11 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             if not mp_inp[mpx] then
                 mp_tag = mp_tag + 1
                 local jobname = tex.jobname
-                mp_inp[mpx] = io.open(format("%s-mplib-run-%03i.mp", jobname,mp_tag),"w")
-                mp_log[mpx] = io.open(format("%s-mplib-run-%03i.log",jobname,mp_tag),"w")
+                mp_inp[mpx] = io.open(formatters["%s-mplib-run-%03i.mp"] (jobname,mp_tag,"w"))
+                mp_log[mpx] = io.open(formatters["%s-mplib-run-%03i.log"](jobname,mp_tag,"w"))
             end
-            local banner = format("%% begin graphic: n=%s, trialrun=%s, multipass=%s, isextrapass=%s\n\n", metapost.n, tostring(trialrun), tostring(multipass), tostring(isextrapass))
+            local banner = formatters["%% begin graphic: n=%s, trialrun=%s, multipass=%s, isextrapass=%s\n\n"](
+                metapost.n, tostring(trialrun), tostring(multipass), tostring(isextrapass))
             mp_inp[mpx]:write(banner)
             mp_log[mpx]:write(banner)
         end
@@ -359,9 +375,9 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
              -- d = string.gsub(d,"\r","")
                 if d then
                     if trace_graphics then
-                        mp_inp[mpx]:write(format("\n%% begin snippet %s\n",i))
+                        mp_inp[mpx]:write(formatters["\n%% begin snippet %s\n"](i))
                         mp_inp[mpx]:write(d)
-                        mp_inp[mpx]:write(format("\n%% end snippet %s\n",i))
+                        mp_inp[mpx]:write(formatters["\n%% end snippet %s\n"](i))
                     end
                     starttiming(metapost.exectime)
                     result = mpx:execute(d)
@@ -484,7 +500,7 @@ function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
                             else
                                 output = figures[v]:svg() -- (3) for prologues
                             end
-                            local outname = format("%s-%s.%s",basename,v,outputformat)
+                            local outname = formatters["%s-%s.%s"](basename,v,outputformat)
                             report_metapost("saving %s bytes in %a",#output,outname)
                             io.savedata(outname,output)
                         end
@@ -517,7 +533,7 @@ function metapost.quickanddirty(mpxformat,data)
         stopfigure = function()
         end
     }
-    local data = format("; beginfig(1) ;\n %s\n ; endfig ;",data)
+    local data = formatters["; beginfig(1) ;\n %s\n ; endfig ;"](data)
     metapost.process(mpxformat, { data }, false, flusher, false, false, "all")
     if code then
         return {

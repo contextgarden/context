@@ -654,9 +654,9 @@ do
 
     local compact = false -- can be a directive but then we also need to deal with newlines ... not now
 
-    function publications.converttoxml(dataset,nice,dontstore,usedonly) -- we have fields !
+    function publications.converttoxml(dataset,nice,dontstore,usedonly,subset) -- we have fields !
         local current = datasets[dataset]
-        local luadata = current and current.luadata
+        local luadata = subset or (current and current.luadata)
         if luadata then
             statistics.starttiming(publications)
             --
@@ -1018,73 +1018,86 @@ do
 
 ]]
 
-    function savers.bib(dataset,filename,usedonly)
-        local current  = datasets[dataset]
-        local luadata  = current.luadata or { }
-        local usedonly = usedonly and publications.usedentries()
-        local f_start  = formatters["@%s{%s,\n"]
-        local f_field  = formatters["  %s = {%s},\n"]
-        local s_stop   = "}\n\n"
-        local result   = { s_preamble }
+    function savers.bib(dataset,filename,tobesaved)
+        local f_start = formatters["@%s{%s,\n"]
+        local f_field = formatters["  %s = {%s},\n"]
+        local s_stop  = "}\n\n"
+        local result  = { s_preamble }
         local n, r = 0, 1
-        for tag, data in sortedhash(luadata) do
-            if not usedonly or usedonly[tag] then
-                r = r + 1 ; result[r] = f_start(data.category or "article",tag)
-                for key, value in sortedhash(data) do
-                    if not privates[key] then
-                        r = r + 1 ; result[r] = f_field(key,value)
-                    end
+        for tag, data in sortedhash(tobesaved) do
+            r = r + 1 ; result[r] = f_start(data.category or "article",tag)
+            for key, value in sortedhash(data) do
+                if not privates[key] then
+                    r = r + 1 ; result[r] = f_field(key,value)
                 end
-                r = r + 1 ; result[r] = s_stop
-                n = n + 1
             end
+            r = r + 1 ; result[r] = s_stop
+            n = n + 1
         end
         report("%s entries from dataset %a saved in %a",n,dataset,filename)
         io.savedata(filename,concat(result))
     end
 
-    function savers.lua(dataset,filename,usedonly)
-        local current  = datasets[dataset]
-        local luadata  = current.luadata or { }
-        local usedonly = usedonly and publications.usedentries()
-        if usedonly then
-            local list = { }
-            if usedonly then
-                for key, value in next, luadata do
-                    if not privates[key] and usedonly[key] then
-                        list[key] = value
-                    end
-                end
-            else
-                for key, value in next, luadata do
-                    if not privates[key] then
-                        list[key] = value
-                    end
+    function savers.lua(dataset,filename,tobesaved)
+        local list = { }
+        local n = 0
+        for tag, data in next, tobesaved do
+            local t = { }
+            for key, value in next, data do
+                if not privates[key] then
+                    d[key] = value
                 end
             end
-            luadata = list
+            list[tag] = t
+            n = n + 1
         end
-        report("%s entries from dataset %a saved in %a",table.count(luadata),dataset,filename)
-        table.save(filename,luadata)
+        report("%s entries from dataset %a saved in %a",n,dataset,filename)
+        table.save(filename,list)
     end
 
-    function savers.xml(dataset,filename,usedonly)
-        local result, n = publications.converttoxml(dataset,true,true,usedonly) -- maybe also private? but then we need to have tag as attr
+    function savers.xml(dataset,filename,tobesaved)
+        local result, n = publications.converttoxml(dataset,true,true,false,tobesaved)
         report("%s entries from dataset %a saved in %a",n,dataset,filename)
         io.savedata(filename,result)
     end
 
-    function publications.save(dataset,filename,kind,usedonly)
+    function publications.save(specification)
+        local dataset   = specification.dataset
+        local filename  = specification.filename
+        local filetype  = specification.filetype
+        local criterium = specification.criterium
         statistics.starttiming(publications)
-        if not kind or kind == "" then
-            kind = file.suffix(filename)
+        if not filename or filename == "" then
+            report("no filename for saving given")
+            return
         end
-        local saver = savers[kind]
+        if not filetype or filetype == "" then
+            filetype = file.suffix(filename)
+        end
+        if not criterium or criterium == "" then
+            criterium = v_all
+        end
+        local saver = savers[filetype]
         if saver then
-            usedonly = usedonly ~= v_all
-            saver(dataset,filename,usedonly)
+            local current   = datasets[dataset]
+            local luadata   = current.luadata or { }
+            local tobesaved = { }
+            local result  = structures.lists.filter({criterium = criterium, names = "btx"}) or { }
+            for i=1,#result do
+                local userdata = result[i].userdata
+                if userdata then
+                    local set = userdata.btxset or v_default
+                    if set == dataset then
+                        local tag = userdata.btxref
+                        if tag then
+                            tobesaved[tag] = luadata[tag]
+                        end
+                    end
+                end
+            end
+            saver(dataset,filename,tobesaved)
         else
-            report("unknown format %a for saving %a",kind,dataset)
+            report("unknown format %a for saving %a",filetype,dataset)
         end
         statistics.stoptiming(publications)
         return dataset

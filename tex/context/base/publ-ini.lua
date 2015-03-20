@@ -1560,6 +1560,8 @@ do
         end
     end
 
+    -- todo: names = { "btx" }
+
     methods[v_force] = function (dataset,rendering,keyword)
         -- only for checking, can have duplicates, todo: collapse page numbers, although
         -- we then also needs deferred writes

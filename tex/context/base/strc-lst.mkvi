@@ -129,22 +129,22 @@
   {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...
    \edef\p_location{\listparameter\c!location}%
    \setnextinternalreference
-   \clf_addtolist {
+   \scratchcounter\clf_addtolist
         references  {
             internal \nextinternalreference
             block    {\currentsectionblock}
           % section  structures.sections.currentid()
           % location {\p_location}
         }
-        metadata = {
+        metadata {
             kind     {\listparameter\c!type}
             name     {\currentlist}
           % level    structures.sections.currentlevel()
             catcodes \catcodetable
         }
         userdata {\detokenize{#userdata}}
-   }%
    \relax
+   \edef\currentlistnumber{\the\scratchcounter}%
    \ifx\p_location\v!here
      % this branch injects nodes !
      \expanded{\ctxlatecommand{enhancelist(\currentlistnumber)}}%

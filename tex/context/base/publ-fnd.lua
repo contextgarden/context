@@ -19,7 +19,7 @@ local publications = publications
 
 local tonumber, next, type = tonumber, next, type
 local find = string.find
-local P, R, S, C, Cs, Cp, Cc, Carg, V = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc, lpeg.Carg, lpeg.V
+local P, R, S, C, Cs, Cp, Cc, Carg, Ct, V = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc, lpeg.Carg, lpeg.Ct, lpeg.V
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local concat = table.concat
 
@@ -143,10 +143,10 @@ local percent  = P("-") / "%%"
 local word     = Cs(lpegpatterns.unquoted + lpegpatterns.argument + valid)
 local range    = P("<") * space^0 * C((1-space)^1) * space^1 * C((1-space- P(">"))^1) * space^0 * P(">")
 
-local f_key_fld     = formatters["  local kf_%s = get(entry,%q)           \n  if kf_%s then kf_%s = lower(kf_%s) end"]
-local f_key_set     = formatters["  local ks_%s = get(entry,%q,categories)\n  if ks_%s then ks_%s = lower(ks_%s) end"]
-local f_number_fld  = formatters["  local nf_%s = tonumber(get(entry,%q))"]
-local f_number_set  = formatters["  local ns_%s = tonumber(get(entry,%q,categories))"]
+local f_key_fld      = formatters["  local kf_%s = get(entry,%q)           \n  if kf_%s then kf_%s = lower(kf_%s) end"]
+local f_key_set      = formatters["  local ks_%s = get(entry,%q,categories)\n  if ks_%s then ks_%s = lower(ks_%s) end"]
+local f_number_fld   = formatters["  local nf_%s = tonumber(get(entry,%q))"]
+local f_number_set   = formatters["  local ns_%s = tonumber(get(entry,%q,categories))"]
 
 local f_fld_exact    = formatters["(kf_%s == %q)"]
 local f_set_exact    = formatters["(ks_%s == %q)"]
@@ -161,7 +161,7 @@ local function test_key_value(keys,where,key,first,last)
     if not key or key == "" then
         return "(false)"
     elseif key == "*" then
-        last = "^.*" .. topattern(lowercase(last)) .. ".*$"
+        last = "^.*" .. topattern(lowercase(last)) .. ".*$" -- todo: make an lpeg
         return f_all_match(last)
     elseif first == false then
         -- exact
@@ -197,7 +197,7 @@ end
 
 local p_compare = P { "all",
     all      = (V("one") + V("operator") + V("nested") + C(" "))^1,
-    nested   = C("(") * V("all") * C(")"),
+    nested   = C("(") * V("all") * C(")"), -- C really needed?
     operator = C("and")
              + C("or")
              + C("not"),
@@ -216,11 +216,27 @@ local p_compare = P { "all",
     range    = range,
 }
 
-local p_combine = space^0
-                * (P(",")/" or ")
-                * space^0
+-- local p_combine = space^0 * (P(",")/" or ") * space^0
 
-local pattern = Cs((P("match")/"" * space^0 * p_compare + p_combine)^1)
+-- local  pattern = Cs((P("match")/"" * space^0 * p_compare + p_combine)^1)
+
+local comma        = P(",")
+local p_spaces     = space^0
+local p_combine    = p_spaces * comma * p_spaces / " or "
+local p_expression = P("match")/"" * Cs(p_compare)
+                   + Carg(1)
+                   * Cc("")
+                   * Cc("tag")
+                   * Cc(false)
+                   * (
+                        P("tag") * p_spaces * P("(") * Cs((1-S(")")-space)^1) * p_spaces * P(")")
+                      + p_spaces * Cs((1-space-comma)^1) * p_spaces
+                     ) / test_key_value
+
+local pattern = Cs {
+    [1] = V(2) * (p_combine * V(2))^0,
+    [2] = p_expression,
+}
 
 -- -- -- -- -- -- -- -- -- -- -- -- --
 -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -232,6 +248,14 @@ function publications.anywhere(entry,str) -- helpers
         end
     end
 end
+
+-- todo: use an environment instead of
+
+-- table={
+--  { "match", "((kf_editor and find(kf_editor,\"^.*braslau.*$\")))" },
+--  { "hash", "foo1234" },
+--  { "tag", "bar5678" },
+-- }
 
 local f_template = string.formatters[ [[
 local find = string.find
@@ -245,46 +269,6 @@ return function(entry)
   return %s and true or false
 end
 ]] ]
-
------ function compile(expr,start)
--- local function compile(dataset,expr)
---     local keys        = { }
---  -- local expression  = lpegmatch(pattern,expr,start,keys)
---     local expression  = lpegmatch(pattern,expr,1,keys)
---     if trace_match then
---         report("compiling expression: %s",expr)
---     end
---     local definitions = { }
---     local anywhere    = false
---     for k, v in next, keys do
---         if k == "anywhere" then
---             anywhere = true
---         else
---             definitions[#definitions+1] = v
---         end
---     end
---     if not anywhere or #definitions == 0 then
---         report("invalid expression: %s",expr)
---     elseif trace_match then
---         for i=1,#definitions do
---             report("% 3i : %s",i,definitions[i])
---         end
---     end
---     definitions = concat(definitions,"\n")
---     local code = f_template(definitions,expression)
---     if trace_match then
---         report("generated code: %s",code)
---     end
---     code = loadstring(code)
---     if type(code) == "function" then
---         code = code()
---         if type(code) == "function" then
---             return code
---         end
---     end
---     report("invalid expression: %s",expr)
---     return false
--- end
 
 local function compile(dataset,expr)
     local keys        = { }
@@ -309,11 +293,11 @@ local function compile(dataset,expr)
     if trace_match then
         report("generated code: %s",code)
     end
-    code = loadstring(code)
-    if type(code) == "function" then
-        code = code()
-        if type(code) == "function" then
-            return code
+    local finder = loadstring(code) -- use an environment
+    if type(finder) == "function" then
+        finder = finder()
+        if type(finder) == "function" then
+            return finder, code
         end
     end
     report("invalid expression: %s",expr)
@@ -344,7 +328,8 @@ end
 -- test("match(*:foo)")
 -- test("match(*:*)")
 
-local check = P("match") -- * space^0 * Cp()
+local trigger = (P("match") + P("tag")) * p_spaces * P("(")
+local check   = (1-trigger)^0 * trigger
 
 local function finder(dataset,expression)
     local found = lpegmatch(check,expression) and compile(dataset,expression) or false
@@ -373,7 +358,11 @@ function publications.search(dataset,expression)
         for i=1,#ordered do
             local entry = ordered[i]
             if find(entry) then
-                target[entry.tag] = entry
+                local tag = entry.tag
+                if not target[tag] then
+                    -- we always take the first
+                    target[tag] = entry
+                end
             end
         end
         return target
