@@ -20,6 +20,10 @@
 
 \unprotect
 
+% we can flush 5 in one call (saved 4 lua calls) .. brrr wself .. will change
+
+\def\MPposset#1{\ctxcommand{MPposset("#1")}} % will go
+
 % This might be overloaded later on:
 
 % \defineoverlay[\v!text-2][\positionoverlay{\v!text-2}]
@@ -46,7 +50,7 @@
 % tricky: we need to catch newly set! otherwise an old run can have positions
 
 \unexpanded\def\anch_backgrounds_text_initialize
-  {\doifelsepositionsused\enableparpositions\donothing
+  {\ctxcommand{doifelsepositionsused()}\enableparpositions\donothing
    \global\let\anch_backgrounds_text_initialize\relax}
 
 \appendtoks

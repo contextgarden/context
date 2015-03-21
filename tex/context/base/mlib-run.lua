@@ -203,12 +203,14 @@ end
 
 -- todo: random_seed
 
-local f_textext = formatters["rawtextext(%q)"]
+local f_textext = formatters[ [[rawtextext("%s")]] ]
 
 function metapost.maketext(s,mode)
     if mode and mode == 1 then
-        report_metapost("ignoring verbatimtex: %s",s)
+     -- report_metapost("ignoring verbatimtex: %s",s)
     else
+     -- report_metapost("handling btex ... etex: %s",s)
+        s = gsub(s,'"','"&ditto&"')
         return f_textext(s)
     end
 end
@@ -222,6 +224,7 @@ function metapost.load(name,method)
         run_script   = metapost.runscript,
         script_error = metapost.scripterror,
         make_text    = metapost.maketext,
+        extensions   = 1,
     }
     report_metapost("initializing number mode %a",method)
     local result

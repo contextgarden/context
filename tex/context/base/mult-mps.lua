@@ -66,7 +66,7 @@ return {
         "outputformat", "outputtemplate", "filenametemplate", "fontmapfile", "fontmapline",
         "fontpart", "fontsize", "glyph", "restoreclipcolor", "troffmode",
         --
-        "runscript",
+        "runscript", "maketext",
     },
     commands = {
         "upto", "downto",
