@@ -1390,6 +1390,7 @@ do
         implement { name = "btxdoif",      actions = { okay, ctx_btxdoif     }, arguments = { "string", "string", "string" } }
         implement { name = "btxdoifnot",   actions = { okay, ctx_btxdoifnot  }, arguments = { "string", "string", "string" } }
 
+
     else
 
         commands.btxflush  = btxflush

@@ -228,6 +228,12 @@ function italics.handler(head)
             replaceinserted = nil
             postinserted    = nil
         elseif id == disc_code then
+            previnserted    = nil
+            previtalic      = 0
+            replaceinserted = nil
+            replaceitalic   = 0
+            postinserted    = nil
+            postitalic      = 0
             replace = getfield(current,"replace")
             if replace then
                 local current = find_tail(replace)
@@ -259,18 +265,21 @@ function italics.handler(head)
                                     replace     = current
                                 end
                             end
-                        else
-                            replaceitalic = 0
+--                         else
+--                             replaceitalic = 0
                         end
-                    else
-                        replaceitalic = 0
+--                     else
+--                         replaceitalic = 0
                     end
-                else
-                    replaceitalic = 0
+--                 else
+--                     replaceitalic = 0
                 end
-                replaceinserted = nil
+--                 replaceinserted = nil
+-- else
+--     replaceitalic   = 0
+--     replaceinserted = nil
             end
-            local post = getfield(current,"post")
+            post = getfield(current,"post")
             if post then
                 local current = find_tail(post)
                 if getid(current) ~= glyph_code then
@@ -286,7 +295,7 @@ function italics.handler(head)
                             local cd = data[char]
                             if not cd then
                                 -- this really can happen
-                                postitalic = 0
+--                                 postitalic = 0
                             else
                                 postitalic = cd.italic or cd.italic_correction
                                 if not postitalic then
@@ -301,16 +310,19 @@ function italics.handler(head)
                                     post     = current
                                 end
                             end
-                        else
-                            postitalic = 0
+--                         else
+--                             postitalic = 0
                         end
-                    else
-                        postitalic = 0
+--                     else
+--                         postitalic = 0
                     end
-                else
-                    postitalic = 0
+--                 else
+--                     postitalic = 0
                 end
-                postinserted = nil
+--                 postinserted = nil
+-- else
+--     postitalic   = 0
+--     postinserted = nil
             end
         elseif id == kern_code then -- how about fontkern ?
             previnserted    = nil
@@ -350,23 +362,37 @@ function italics.handler(head)
             end
         elseif id == math_code then
             current = end_of_math(current)
+            previnserted    = nil
+            previtalic      = 0
+            replaceinserted = nil
+            replaceitalic   = 0
+            postinserted    = nil
+            postitalic      = 0
         else
             if previtalic ~= 0 then
                 if trace_italics then
                     report_italics("inserting %p between %s italic %C and whatever",previtalic,"glyph",prevchar)
                 end
                 insert_node_after(prevhead,prev,new_correction_kern(previtalic))
-                previnserted = nil
-                previtalic   = 0
-                done         = true
+                previnserted    = nil
+                previtalic      = 0
+                replaceinserted = nil
+                replaceitalic   = 0
+                postinserted    = nil
+                postitalic      = 0
+                done            = true
             else
                 if replaceitalic ~= 0 then
                     if trace_italics then
                         report_italics("inserting %p between %s italic %C and whatever",replaceritalic,"replace",replacechar)
                     end
                     insert_node_after(replacehead,replace,new_correction_kern(replaceitalic))
-                    replaceitalic   = 0
+                    previnserted    = nil
+                    previtalic      = 0
                     replaceinserted = nil
+                    replaceitalic   = 0
+                    postinserted    = nil
+                    postitalic      = 0
                     done            = true
                 end
                 if postitalic ~= 0 then
@@ -374,9 +400,13 @@ function italics.handler(head)
                         report_italics("inserting %p between %s italic %C and whatever",postitalic,"post",postchar)
                     end
                     insert_node_after(posthead,post,new_correction_kern(postitalic))
-                    postinserted = nil
-                    postitalic   = 0
-                    done         = true
+                    previnserted    = nil
+                    previtalic      = 0
+                    replaceinserted = nil
+                    replaceitalic   = 0
+                    postinserted    = nil
+                    postitalic      = 0
+                    done            = true
                 end
             end
         end

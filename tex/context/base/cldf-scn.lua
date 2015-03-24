@@ -55,9 +55,10 @@ function interfaces.implement(specification)
         local args = ""
         if arguments then
             for i=1,#arguments do
-                local t = type(arguments[i])
+                local v = arguments[i]
+                local t = type(v)
                 if t == "boolean" then
-                    a[i] = tostring(boolean)
+                    a[i] = tostring(v)
                 else
                     a[i] = char(96+i)
                 end

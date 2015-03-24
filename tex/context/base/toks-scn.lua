@@ -315,9 +315,12 @@ function tokens.compile(specification)
     if trace_compile then
         report_compile("code: %s",code)
     end
-    local code = loadstripped(code)
+    local code, message = loadstripped(code)
     if code then
         code = code() -- sets action
+    else
+        report_compile("error in code: %s",code)
+        report_compile("error message: %s",message)
     end
     if a then
         tokens._action = nil

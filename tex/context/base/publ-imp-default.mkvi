@@ -28,7 +28,8 @@
 
 \definebtx
   [\s!default]
-  [\c!otherstext={\space\btxlabeltext{default:others}},
+  [\c!default=, % we do not want to fall|-|back on ourself.
+   \c!otherstext={\space\btxlabeltext{default:others}},
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!number,
    \c!separator:names:2={,\space},
@@ -44,14 +45,7 @@
   [\s!default:\s!cite]
   [\s!default:\s!list]
   [\c!alternative=num,
-   \c!authorconversion=\v!name,
-   \c!sorttype=,
-   \c!compress=\v!no,
-   \c!inbetween=\space,
-   \c!range=\endash,
-   \c!left=,
-  %\c!middle=,
-   \c!right=]
+   \c!authorconversion=\v!name]
 
 % We define [page] settings in the default namespace, inheriting the root
 % settings, in order to eventually allow for modifications without touching
@@ -244,6 +238,10 @@
    \c!separator:2={,}, % no space
    \c!separator:3=\btxparameter{\c!separator:2},
    \c!separator:4=\btxparameter{\c!separator:2}]
+
+\definebtx
+  [\s!default:\s!cite:default]
+  [\s!default:\s!cite:num]
 
 \definebtx
   [\s!default:\s!cite:textnum]
@@ -503,6 +501,9 @@
 \startsetups \s!btx:\s!default:\s!cite:authornum
     \fastsetup{\s!btx:\s!cite:author}
 \stopsetups
+\startsetups \s!btx:\s!default:\s!cite:authorref
+    \fastsetup{\s!btx:\s!cite:authorref}
+\stopsetups
 
 \startsetups \s!btx:\s!default:\s!cite:author:num
     \fastsetup{\s!btx:\s!cite:range}
@@ -542,8 +543,11 @@
 \startsetups \s!btx:\s!default:\s!cite:num
     \fastsetup{\s!btx:\s!cite:range}
 \stopsetups
+\startsetups \s!btx:\s!default:\s!cite:default
+    \fastsetup{\s!btx:\s!default:\s!cite:num}
+\stopsetups
 \startsetups \s!btx:\s!default:\s!cite:textnum
-    \fastsetup{\s!btx:\s!cite:range}
+    \fastsetup{\s!btx:\s!default:\s!cite:num}
 \stopsetups
 \startsetups \s!btx:\s!default:\s!cite:title
     \fastsetup{\s!btx:\s!cite:normal}

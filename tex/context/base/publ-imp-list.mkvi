@@ -51,9 +51,16 @@
 \stopsetups
 
 \startsetups \s!btx:\s!list:yes
-    \texdefinition {\s!btx:\s!list:inject} {
-        \currentbtxfirst
-    }
+    \btxstartstyleandcolor [\currentbtxspecification:list:yes]
+        \btxusecommand[\currentbtxspecification:list:yes] {
+           %\btxparameter\c!left
+            \texdefinition {\s!btx:\s!list:inject} {
+                \currentbtxfirst
+                \btxparameter\c!stopper
+            }
+           %\btxparameter\c!right
+        }
+    \btxstopstyleandcolor
 \stopsetups
 \startsetups \s!btx:\s!list:num
     \texdefinition {\s!btx:\s!list:inject} {

@@ -625,9 +625,10 @@
    \fi
    \begingroup
    \usebtxstyleandcolor\c!style\c!color
+   \ignorespaces
    \fastbtxsetup\s!list\currentbtxcategory
-   \endgroup
    \removeunwantedspaces
+   \endgroup
    \ifconditional\c_btx_list_pages
      \btx_entry_inject_pages
    \fi
@@ -1618,11 +1619,13 @@
 
 \setupbtx
   [\c!interaction=\v!start,
-  %\c!alternative=\v!num, % default cite form
+   \c!alternative=num, % default cite form
+   \c!inbetween=\space,
+   \c!range=\endash,   % separator:range?
+   \c!compress=\v!no,
    \c!etallimit=3,
    \c!etaldisplay=\btxparameter\c!etallimit,
    \c!otherstext={\space et al.},
-  %\c!otherstext={\space\btxlabeltext{\currentbtxspecification:others}},
    \c!separator:firstnames={\space},
    \c!separator:juniors={\space},
    \c!separator:vons={\space},
@@ -1658,7 +1661,7 @@
 \setupbtx
   [\c!specification=\s!default,
    \c!dataset=\v!default,
-   \c!default=]
+   \c!default=\v!default]
 
 \loadbtxdefinitionfile
   [\s!default]

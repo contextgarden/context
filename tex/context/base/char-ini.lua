@@ -891,7 +891,6 @@ lpegpatterns.toshape = toshape -- old ones ... will be overloaded
 -- function characters.upper (str) return lpegmatch(toupper,str) end
 -- function characters.shaped(str) return lpegmatch(toshape,str) end
 
-
 --     local superscripts = allocate()   characters.superscripts = superscripts
 --     local subscripts   = allocate()   characters.subscripts   = subscripts
 

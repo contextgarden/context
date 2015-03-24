@@ -64,28 +64,23 @@
 % \def\setcclcuc#1#2#3{\global\catcode#1=\lettercatcode\global\lccode#1=#2\global\uccode#1=#3\relax}
 % \def\setcclcucself#1{\global\catcode#1=\lettercatcode\global\lccode#1=#1\global\uccode#1=#1\relax }
 
-\ctxcommand{setcharactercodes()}
-
 % Is setting up vrb tpa and tpb needed?
 
-\ctxcommand{definecatcodetable(
-    {   % letter catcodes
-        \number\texcatcodes,
-        \number\ctxcatcodes,
-        \number\notcatcodes,
-        %number\mthcatcodes,
-        \number\vrbcatcodes,
-        \number\prtcatcodes,
-        \number\tpacatcodes,
-        \number\tpbcatcodes,
-        \number\txtcatcodes,
-    },
-    {   % activate catcodes
-        \number\ctxcatcodes,
-        \number\notcatcodes,
-        \number\prtcatcodes, % new
-    }
-)}
+% move to lua side
+
+\ctxcommand{setlettercatcodes(\number\texcatcodes)}
+\ctxcommand{setlettercatcodes(\number\ctxcatcodes)}
+\ctxcommand{setlettercatcodes(\number\notcatcodes)}
+%ctxcommand{setlettercatcodes(\number\mthcatcodes)}
+\ctxcommand{setlettercatcodes(\number\vrbcatcodes)}
+\ctxcommand{setlettercatcodes(\number\prtcatcodes)}
+\ctxcommand{setlettercatcodes(\number\tpacatcodes)}
+\ctxcommand{setlettercatcodes(\number\tpbcatcodes)}
+\ctxcommand{setlettercatcodes(\number\txtcatcodes)}
+
+\ctxcommand{setactivecatcodes(\number\ctxcatcodes)}
+\ctxcommand{setactivecatcodes(\number\notcatcodes)}
+\ctxcommand{setactivecatcodes(\number\prtcatcodes)}
 
 \def\chardescription#1%
   {\ctxcommand{chardescription(\number#1)}}

@@ -88,16 +88,25 @@
    \xdef\outputnewlinechar{^^J}%
    \endgroup}
 
-%D We predefine some prefixes ahead of syst-aux and mult-sys. We reserve 8 slots
-%D for catcodes.
+%D We predefine some prefixes ahead of syst-aux and mult-sys.
 
-\def\??catcodelet   {1>>} % let : \let
-\def\??catcodedef   {2>>} % def : \def
-\def\??catcodeued   {3>>} % ued : \unexpanded\def
-\def\??catcodeget   {4>>} %       \meaning
+% We reserve 8 slots for catcodes.
+%
+% \def\??catcodelet   {1>>} % let : \let
+% \def\??catcodedef   {2>>} % def : \def
+% \def\??catcodeued   {3>>} % ued : \unexpanded\def
+% \def\??catcodeget   {4>>} %       \meaning
+%
+% \def\??catcodetablet{5>>}
+% \def\??catcodetablen{6>>}
 
-\def\??catcodetablet{5>>}
-\def\??catcodetablen{6>>}
+\installsystemnamespace {catcodelet} % let : \let
+\installsystemnamespace {catcodedef} % def : \def
+\installsystemnamespace {catcodeued} % ued : \unexpanded\def
+\installsystemnamespace {catcodeget} %       \meaning
+
+\installsystemnamespace {catcodetablet}
+\installsystemnamespace {catcodetablen}
 
 \newcount\c_syst_catcodes_n \c_syst_catcodes_n\zerocount % 0 = signal, so advance before allocate
 \newcount\c_syst_catcodes_a

@@ -314,7 +314,7 @@
    \setnextinternalreference
    \xdef\currentregisternumber{\ctxcommand{storeregister{
         metadata   = { name = "\currentregister" },
-        entries    = { { \!!bs#2\!!es }, { \!!bs#3\!!es } },
+        entries    = { \!!bs#2\!!es, \!!bs#3\!!es },
         processors = { \!!bs#4\!!es, \!!bs#5\!!es },
      }
    }}%

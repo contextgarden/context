@@ -74,13 +74,20 @@
 % %def\expunded#1{\normalexpanded\expandafter{#1}}
 % \def\expunded#1{\expandafter\empty#1} % used within an edef anyway
 
-
 %D As we don't have namespace definers yet, we use a special one:
 
-\newcount\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
+\ifdefined\c_syst_helpers_n_of_namespaces
 
-\def\v_interfaces_prefix_template_system{\number    \c_syst_helpers_n_of_namespaces>>}
-%def\v_interfaces_prefix_template_system{\characters\c_syst_helpers_n_of_namespaces>>} % no \characters yet
+    % lets plug in a better error message
+
+\else
+
+    \newcount\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
+
+    \def\v_interfaces_prefix_template_system{\number    \c_syst_helpers_n_of_namespaces>>}
+    %def\v_interfaces_prefix_template_system{\characters\c_syst_helpers_n_of_namespaces>>} % no \characters yet
+
+\fi
 
 \unexpanded\def\installsystemnamespace#1% maybe move this to syst-ini
   {\ifcsname ??#1\endcsname

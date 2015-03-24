@@ -157,7 +157,7 @@ local function flushxmpinfo()
     local producer   = format("LuaTeX-%0.2f.%s",tex.luatexversion/100,tex.luatexrevision)
     local creator    = "LuaTeX + ConTeXt MkIV"
     local time       = lpdf.timestamp()
-    local fullbanner = tex.pdftexbanner
+    local fullbanner = status.banner
  -- local fullbanner = gsub(tex.pdftexbanner,"kpse.*","")
 
     pdfaddxmpinfo("DocumentID",      documentid)

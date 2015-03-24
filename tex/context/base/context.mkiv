@@ -28,7 +28,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2015.03.19 17:08}
+\edef\contextversion{2015.03.24 12:32}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -99,6 +99,9 @@
 % From here on we have \unexpanded being \normalprotected, as we already had
 % \unexpanded long before etex came around.
 
+\loadmarkfile{luat-ini}
+\loadmarkfile{toks-ini}
+
 \loadmarkfile{syst-aux}
 \loadmarkfile{syst-lua}
 \loadmarkfile{syst-con}
@@ -106,8 +109,8 @@
 \loadmarkfile{syst-fnt}
 \loadmarkfile{syst-rtp}
 
-\loadmarkfile{luat-ini}
-\loadmarkfile{toks-ini}
+% \loadmarkfile{luat-ini} % moved up
+% \loadmarkfile{toks-ini} % moved up
 
 \loadmkvifile{file-ini}
 \loadmkvifile{file-res}

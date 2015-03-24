@@ -1115,4 +1115,21 @@
 %D
 %D So let's see what \TEX\ can do now that we've opened up the basic machinery.
 
+%D Now we define a few helpers that we need in a very early stage. We hav eno message system
+%D yet but redundant definitions are fatal anyway.
+
+\newcount\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
+
+\def\v_interfaces_prefix_template_system{\number    \c_syst_helpers_n_of_namespaces>>}
+%def\v_interfaces_prefix_template_system{\characters\c_syst_helpers_n_of_namespaces>>} % no \characters yet
+
+\normalprotected\def\installsystemnamespace#1%
+  {\ifcsname ??#1\endcsname
+     \immediate\write16{fatal error: duplicate system namespace '#1'}%
+     \expandafter\normalend
+   \else
+     \global\advance\c_syst_helpers_n_of_namespaces\plusone
+     \expandafter\edef\csname ??#1\endcsname{\v_interfaces_prefix_template_system}%
+   \fi}
+
 \protect \endinput

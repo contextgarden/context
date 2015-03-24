@@ -29,12 +29,6 @@
 
 % The APA style sorts the unnumbered rendered list by authoryear
 
-% Hans: should we be using or not using \c!, \s! and \v! ??
-
-% Sure: not using \c! and v! would mean that only the english interface is
-% supported and \s! saves some bytes (only within the setups). I'll deal with
-% that in the end.
-
 \definebtxrendering
   [apa]
   [\c!specification=apa,
@@ -48,40 +42,11 @@
    \c!distance=.5\emwidth,
    \c!margin=3\emwidth]
 
-% The sameauthor feature may not be APA compliant
-% (there is nothing in the manual cited above).
-% It can be removed using the command:
-% \resetsetups [apa:list:sameauthor]
-
-% Or texdefinition?
-
-\startsetups [apa:list:sameauthor]
-    \fastsetup{apa:list:sameauthor:rule}
-\stopsetups
-
-\startsetups [apa:list:sameauthor:rule]
-    \blackrule
-      [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
-       \c!height=1.5\linewidth]% are you sure you want to inconsistent with the rest? happens nowhere!
-\stopsetups
-
-\startsetups [apa:list:sameauthor:\v!empty]% it's not a space
-    \kern\dimexpr\listparameter\c!margin-\interwordspace\relax
-\stopsetups
-
-\startsetups [apa:list:sameauthor:ditto] % horrible !
-    \inframed
-      [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
-       \c!frame=\v!off,
-       \c!align=\v!middle]
-      {\doubleprime}
-\stopsetups
-
 % set ALL specific APA compliant values
 
 \definebtx
   [apa]
-  [\c!default=, % no fallback on default rendering
+  [\c!default=default,
    \c!otherstext={\space\btxlabeltext{apa:others}},
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!month]
@@ -271,12 +236,6 @@
    \c!etaldisplay=1, % TODO: when 2-4, show all first time, etaldisplay subsequently...
    \c!authorconversion=\v!name,
    \c!sorttype=authoryear,
-   \c!compress=\v!no,
-   \c!inbetween=\space,
-   \c!range=\endash,
-   \c!left=,
-  %\c!middle=,
-   \c!right=,
    \c!separator:names:2={,\space},
    \c!separator:names:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!separator:names:4= {\space\btxlabeltext{apa:and}\space}] % not \textampersand
@@ -294,6 +253,10 @@
    \c!left={(},
    \c!right={)},
    \c!inbetween={,\space}]
+
+\definebtx
+  [apa:cite:default]
+  [apa:cite:authoryear]
 
 \definebtx
   [apa:cite:authoryears]
@@ -470,10 +433,10 @@
    apa:mastersthesis={Master's thesis},
    apa:phdthesis={Doctoral dissertation},
    apa:technicalreport={Tech. Rep.},  % Technical report
-   apa:supplement={Suppl.},           % Supplement
+   apa:supplement={Suppl.},           % Supplement (not used?)
    apa:patent=Patent,
    apa:Author=Author,
-   apa:Translator={Trans.},           % Translator(s)
+   apa:Translator={Trans.},           % Translator(s) (not used?)
    apa:Advanced={Advanced online publication},
    apa:Retrieved={Available from},    % {Retrieved from},
    apa:In=In]
@@ -605,50 +568,6 @@
 
 % cite setups
 
-% as we don't fallback on default (no sane person will render the titles
-% differently so it's a bit over the top):
-
-\startsetups btx:apa:cite:empty
-    \fastsetup{\s!btx:\s!cite:\s!empty}
-\stopsetups
-\startsetups btx:apa:cite:unknown
-    \fastsetup{\s!btx:\s!cite:\s!unknown}
-\stopsetups
-\startsetups btx:apa:cite:author
-    \fastsetup{\s!btx:\s!cite:author}
-\stopsetups
-\startsetups btx:apa:cite:authoryear
-    \fastsetup{\s!btx:\s!cite:author}
-\stopsetups
-\startsetups btx:apa:cite:authoryears
-    \fastsetup{\s!btx:\s!cite:author}
-\stopsetups
-\startsetups btx:apa:cite:authornum
-    \fastsetup{\s!btx:\s!cite:author}
-\stopsetups
-\startsetups btx:apa:cite:title
-    \fastsetup{\s!btx:\s!cite:\s!normal}
-\stopsetups
-\startsetups btx:apa:cite:booktitle
-    \fastsetup{btx:apa:cite:title}
-\stopsetups
-\startsetups btx:apa:cite:entry
-    \fastsetup{\s!btx:\s!cite:entry}
-\stopsetups
-\startsetups btx:apa:cite:num
-    \fastsetup{\s!btx:\s!cite:range}
-\stopsetups
-\startsetups btx:apa:cite:textnum
-    \fastsetup{btx:apa:cite:num}
-\stopsetups
-\startsetups btx:apa:cite:year
-    \fastsetup{\s!btx:\s!cite:range}
-\stopsetups
-
-\startsetups btx:apa:cite:author:num
-    \fastsetup{\s!btx:\s!cite:range}
-\stopsetups
-
 \startsetups btx:apa:cite:author:year
     \texdefinition{\s!btx:\s!cite:concat}
     \ifx\currentbtxfirst\empty
@@ -674,10 +593,6 @@
 
 \startsetups btx:apa:cite:author:years
     \fastsetup{btx:apa:cite:author:year}
-\stopsetups
-
-\startsetups btx:apa:cite:text:num
-    \fastsetup{\s!btx:\s!cite:range}
 \stopsetups
 
 \startsetups [btx:apa:page:list]
@@ -709,6 +624,35 @@
             \currentbtxlastpage
         \fi
     \fi
+\stopsetups
+
+% The sameauthor feature may not be APA compliant
+% (there is nothing in the manual cited above).
+% It can be removed using the command:
+% \resetsetups [apa:list:sameauthor]
+
+% Or texdefinition?
+
+\startsetups [apa:list:sameauthor]
+    \fastsetup{apa:list:sameauthor:rule}
+\stopsetups
+
+\startsetups [apa:list:sameauthor:rule]
+    \blackrule
+      [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
+       \c!height=1.5\linewidth]% are you sure you want to inconsistent with the rest? happens nowhere!
+\stopsetups
+
+\startsetups [apa:list:sameauthor:\v!empty]% it's not a space
+    \kern\dimexpr\listparameter\c!margin-\interwordspace\relax
+\stopsetups
+
+\startsetups [apa:list:sameauthor:ditto] % horrible !
+    \inframed
+      [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
+       \c!frame=\v!off,
+       \c!align=\v!middle]
+      {\doubleprime}
 \stopsetups
 
 %D Instead of texdefinitions without arguments, we could have used setups but in my
@@ -855,7 +799,7 @@
             \texdefinition{btx:apa:author-or-editor} {editor}
         }
         \btxspace
-        \btxstartstyleandcolor[apa:list:title] % NOT :\currentbtxcategory !
+        \btxstartstyleandcolor[apa:list:title]
             \texdefinition{btx:apa:composed-title} {booktitle}
         \btxstopstyleandcolor
         \btxperiod
@@ -919,8 +863,9 @@
     }
 \stoptexdefinition
 
+ % this could be simplified!
+
 \starttexdefinition btx:apa:journal-volume-number-pages
-    % this could be simplified!
     \btxdoif {journal} {
         \btxspace
         \btxstartstyleandcolor[apa:list:journal]
@@ -1022,8 +967,9 @@
 \definebreakpoint [doi][-][nleft=3,type=1]
 \definebreakpoint [doi][.][nleft=3,type=1]
 
+% use \btxentry here?
+
 \starttexdefinition btx:apa:url
-    % use \btxentry here?
     \btxspace
     \btxlabeltext{apa:Retrieved}
     \btxspace
@@ -1041,8 +987,9 @@
     \endgroup
 \stoptexdefinition
 
+% use \btxentry here?
+
 \starttexdefinition btx:apa:doi
-    % use \btxentry here?
     \btxspace
     \begingroup
         \setbreakpoints[doi]
@@ -1058,8 +1005,9 @@
     \endgroup
 \stoptexdefinition
 
+% also issn - see publ-imp-apa.lua
+
 \starttexdefinition btx:apa:isbn
-    % also issn - see publ-imp-apa.lua
     \btxdoif {isbn} {
         \btxleftparenthesis
         \WORD{\btxfoundname{isbn}}:\btxspace
@@ -1123,8 +1071,10 @@
 % Required fields: title, year
 % Optional fields: editor, publisher, subtitle, series, volume, number, month, organization, doi, url, issn, note
 
+% needs to be tuned...
+
 \startsetups btx:apa:list:periodical
-    \fastsetup{btx:apa:list:article} % needs to be tuned...
+    \fastsetup{btx:apa:list:article}
 \stopsetups
 
 % National and international standards issued by a standards body

@@ -409,11 +409,13 @@ do
 
     local space     = S(" \t\n\r\f") -- / " "
     local collapsed = space^1/" "
+    ----- csletter  = R("az","AZ")
+    local csletter  = lpegpatterns.csletter
 
     ----- command   = P("\\") * Cc("btxcmd{") * (R("az","AZ")^1) * Cc("}")
     ----- command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
     ----- command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
-    local command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
+    local command   = P("\\") * (Carg(1) * C(csletter^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
     local whatever  = P("\\") * P(" ")^1 / " "
                     + P("\\") * ( P("hbox") + P("raise") ) -- bah
     local somemath  = P("$") * ((1-P("$"))^1) * P("$") -- let's not assume nested math
