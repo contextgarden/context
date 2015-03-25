@@ -11,18 +11,23 @@ if not modules then modules = { } end modules ['syst-aux'] = {
 -- utfmatch(str,"(.?)(.*)$")
 -- utf.sub(str,1,1)
 
-local commands, context = commands, context
-
 local tonumber = tonumber
-local settings_to_array = utilities.parsers.settings_to_array
 local format = string.format
 local utfsub = utf.sub
-local P, S, R, C, Cc, Cs, Carg, lpegmatch, utf8character = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match, lpeg.patterns.utf8character
+local P, S, R, C, Cc, Cs, Carg, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match
 local todimen = number.todimen
 
-local setvalue = context.setvalue
+local commands          = commands
+local context           = context
 
-local pattern = C(utf8character^-1) * C(P(1)^0)
+local setcatcode        = tex.setcatcode
+
+local utf8character     = lpeg.patterns.utf8character
+local settings_to_array = utilities.parsers.settings_to_array
+
+local setvalue          = context.setvalue
+
+local pattern           = C(utf8character^-1) * C(P(1)^0)
 
 function commands.getfirstcharacter(str)
     local first, rest = lpegmatch(pattern,str)
@@ -99,8 +104,15 @@ local sentinel  = spaces * (nohash^1 / "\\%0")
 local sargument = (single * digit)^1
 local dargument = (double * digit)^1
 
-local pattern = Cs(
-    ( P("global") / "\\global" )^0
+local usespaces   = nil
+local texpreamble = nil
+
+local pattern = Cs( -- ^-1
+    ( P("spaces") / function() usespaces = true return "" end )^0
+  * spaces
+  * ( P("nospaces") / function() usespaces = false return "" end )^0
+  * spaces
+  * ( P("global") / "\\global" )^0
   * spaces
   * ( P("unexpanded") / "\\unexpanded" )^0
   * spaces
@@ -119,10 +131,27 @@ local pattern = Cs(
     )
 )
 
-function commands.thetexdefinition(str)
--- print(str)
--- print(lpegmatch(pattern,str))
-    context(lpegmatch(pattern,str))
+local ctx_dostarttexdefinition = context.dostarttexdefinition
+
+function commands.texdefinition_1(str)
+    usespaces   = nil
+    texpreamble = lpegmatch(pattern,str)
+    if usespaces == true then
+        setcatcode(32,10) -- space
+        setcatcode(13, 5) -- endofline
+    elseif usespaces == false then
+        setcatcode(32, 9) -- ignore
+        setcatcode(13, 9) -- ignore
+    else
+        -- this is default
+     -- setcatcode(32,10) -- space
+     -- setcatcode(13, 9) -- ignore
+    end
+    ctx_dostarttexdefinition()
+end
+
+function commands.texdefinition_2()
+    context(texpreamble)
 end
 
 local upper, lower, strip = utf.upper, utf.lower, string.strip

@@ -3265,6 +3265,25 @@
 %     [here #oeps: \the\scratchcounter]
 % \stoptexdefinition
 
+% \bgroup \obeylines
+%
+% \global\let\stoptexdefinition\relax
+%
+% \unexpanded\gdef\starttexdefinition%
+%   {\bgroup%
+%    \obeylines%
+%    \syst_helpers_start_tex_definition_one}
+%
+% \gdef\syst_helpers_start_tex_definition_one#1
+%   {\catcode\endoflineasciicode\ignorecatcode%
+%    \syst_helpers_start_tex_definition_two{#1}}
+%
+% \gdef\syst_helpers_start_tex_definition_two#1#2\stoptexdefinition%
+%   {\egroup%
+%    \ctxcommand{thetexdefinition("#1")}{#2}}
+%
+% \egroup
+
 \bgroup \obeylines
 
 \global\let\stoptexdefinition\relax
@@ -3272,15 +3291,15 @@
 \unexpanded\gdef\starttexdefinition%
   {\bgroup%
    \obeylines%
-   \syst_helpers_start_tex_definition_one}
+   \syst_helpers_start_tex_definition}
 
-\gdef\syst_helpers_start_tex_definition_one#1
+\gdef\syst_helpers_start_tex_definition#1
   {\catcode\endoflineasciicode\ignorecatcode%
-   \syst_helpers_start_tex_definition_two{#1}}
+   \ctxcommand{texdefinition_1("#1")}}
 
-\gdef\syst_helpers_start_tex_definition_two#1#2\stoptexdefinition%
+\gdef\dostarttexdefinition#1\stoptexdefinition%
   {\egroup%
-   \ctxcommand{thetexdefinition("#1")}{#2}}
+   \ctxcommand{texdefinition_2()}{#1}}
 
 \egroup
 

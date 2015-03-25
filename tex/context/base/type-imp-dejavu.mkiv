@@ -15,33 +15,6 @@
 
 \starttypescriptcollection[dejavu]
 
-    \starttypescript [\s!mono] [dejavu-condensed] [\s!name]
-        \setups[\s!font:\s!fallback:\s!mono]
-      % \definefontsynonym [\s!Mono]           [\s!name:dejavusansmonocondensed]            [\s!features=\s!none]
-      % \definefontsynonym [\s!MonoBold]       [\s!name:dejavusansmonoboldcondensed]        [\s!features=\s!none]
-      % \definefontsynonym [\s!MonoItalic]     [\s!name:dejavusansmonoobliquecondensed]     [\s!features=\s!none]
-      % \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldobliquecondensed] [\s!features=\s!none]
-        \definefontsynonym [\s!Mono]           [\s!name:dejavusansmono]            [\s!features=dejavu-condensed-mono]
-        \definefontsynonym [\s!MonoBold]       [\s!name:dejavusansmonobold]        [\s!features=dejavu-condensed-mono]
-        \definefontsynonym [\s!MonoItalic]     [\s!name:dejavusansmonooblique]     [\s!features=dejavu-condensed-mono]
-        \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldoblique] [\s!features=dejavu-condensed-mono]
-    \stoptypescript
-
-  % \starttypescript [\s!mono] [dejavu-condensed] [\s!name]
-  %     \setups[\s!font:\s!fallback:\s!mono]
-  %     \definefontsynonym [\s!Mono]           [\s!name:dejavusansmono]            [\s!features=\s!none]
-  %     \definefontsynonym [\s!MonoBold]       [\s!name:dejavusansmonobold]        [\s!features=\s!none]
-  %     \definefontsynonym [\s!MonoItalic]     [\s!name:dejavusansmonooblique]     [\s!features=\s!none]
-  %     \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldoblique] [\s!features=\s!none]
-  % \stoptypescript
-
-    \starttypescript[dejavu-condensed]
-        \definetypeface [dejavu-condensed] [\s!rm] [\s!serif] [dejavu-condensed] [\s!default]
-        \definetypeface [dejavu-condensed] [\s!ss] [\s!sans]  [dejavu-condensed] [\s!default]
-        \definetypeface [dejavu-condensed] [\s!tt] [\s!mono]  [dejavu-condensed] [\s!default]
-        \definetypeface [dejavu-condensed] [\s!mm] [\s!math]  [xits]             [\s!default] [\s!rscale=1.2]
-    \stoptypescript
-
     \starttypescript [\s!serif] [dejavu] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif]           [\s!name:dejavuserif]           [\s!features=\s!default]
@@ -66,11 +39,17 @@
         \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldoblique] [\s!features=\s!none]
     \stoptypescript
 
+    \starttypescript [\s!math][dejavu][\s!name]
+       %\loadfontgoodies[dejavu]
+        \definefontsynonym[\s!MathRoman][file:dejavu-math.otf][\s!features=\s!math\mathsizesuffix]
+    \stoptypescript
+
     \starttypescript[dejavu]
         \definetypeface [dejavu] [\s!rm] [\s!serif] [dejavu] [\s!default]
         \definetypeface [dejavu] [\s!ss] [\s!sans]  [dejavu] [\s!default]
         \definetypeface [dejavu] [\s!tt] [\s!mono]  [dejavu] [\s!default]
-        \definetypeface [dejavu] [\s!mm] [\s!math]  [xits]   [\s!default] [\s!rscale=1.2]
+%       \definetypeface [dejavu] [\s!mm] [\s!math]  [xits]   [\s!default] [\s!rscale=1.2]
+        \definetypeface [dejavu] [\s!mm] [\s!math]  [dejavu] [\s!default]
     \stoptypescript
 
     \starttypescript[dejavubidi]
@@ -94,6 +73,34 @@
         \definefontsynonym [\s!SansBold]       [\s!name:dejavusanscondensedbold]        [\s!features=\s!default]
         \definefontsynonym [\s!SansItalic]     [\s!name:dejavusanscondensedoblique]     [\s!features=\s!default]
         \definefontsynonym [\s!SansBoldItalic] [\s!name:dejavusanscondensedboldoblique] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [dejavu-condensed] [\s!name]
+        \setups[\s!font:\s!fallback:\s!mono]
+      % \definefontsynonym [\s!Mono]           [\s!name:dejavusansmonocondensed]            [\s!features=\s!none]
+      % \definefontsynonym [\s!MonoBold]       [\s!name:dejavusansmonoboldcondensed]        [\s!features=\s!none]
+      % \definefontsynonym [\s!MonoItalic]     [\s!name:dejavusansmonoobliquecondensed]     [\s!features=\s!none]
+      % \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldobliquecondensed] [\s!features=\s!none]
+        \definefontsynonym [\s!Mono]           [\s!name:dejavusansmono]            [\s!features=dejavu-condensed-mono]
+        \definefontsynonym [\s!MonoBold]       [\s!name:dejavusansmonobold]        [\s!features=dejavu-condensed-mono]
+        \definefontsynonym [\s!MonoItalic]     [\s!name:dejavusansmonooblique]     [\s!features=dejavu-condensed-mono]
+        \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldoblique] [\s!features=dejavu-condensed-mono]
+    \stoptypescript
+
+  % \starttypescript [\s!mono] [dejavu-condensed] [\s!name]
+  %     \setups[\s!font:\s!fallback:\s!mono]
+  %     \definefontsynonym [\s!Mono]           [\s!name:dejavusansmono]            [\s!features=\s!none]
+  %     \definefontsynonym [\s!MonoBold]       [\s!name:dejavusansmonobold]        [\s!features=\s!none]
+  %     \definefontsynonym [\s!MonoItalic]     [\s!name:dejavusansmonooblique]     [\s!features=\s!none]
+  %     \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldoblique] [\s!features=\s!none]
+  % \stoptypescript
+
+    \starttypescript[dejavu-condensed]
+        \definetypeface [dejavu-condensed] [\s!rm] [\s!serif] [dejavu-condensed] [\s!default]
+        \definetypeface [dejavu-condensed] [\s!ss] [\s!sans]  [dejavu-condensed] [\s!default]
+        \definetypeface [dejavu-condensed] [\s!tt] [\s!mono]  [dejavu-condensed] [\s!default]
+%       \definetypeface [dejavu-condensed] [\s!mm] [\s!math]  [xits]             [\s!default] [\s!rscale=1.2]
+        \definetypeface [dejavu-condensed] [\s!mm] [\s!math]  [dejavu]           [\s!default]
     \stoptypescript
 
 \stoptypescriptcollection

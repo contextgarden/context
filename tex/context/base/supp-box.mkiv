@@ -2803,6 +2803,10 @@
    \setbox\nextbox\hbox{#2}%
    \normalexpanded{\endgroup\edef\noexpand#1{\ctxcommand{boxtostring(\number\nextbox)}}}}
 
+%D Even more dirty:
+
+\let\hyphenatedhbox\hbox
+
 \protect \endinput
 
 % a bit of test code:

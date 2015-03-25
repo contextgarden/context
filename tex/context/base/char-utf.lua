@@ -30,7 +30,10 @@ if not characters.blocks then require("char-ini") end
 local lpegmatch             = lpeg.match
 local lpegpatterns          = lpeg.patterns
 local p_utf8character       = lpegpatterns.utf8character
+local p_utf8byte            = lpegpatterns.utf8byte
 local utfchartabletopattern = lpeg.utfchartabletopattern
+
+local formatters            = string.formatters
 
 local allocate              = utilities.storage.allocate or function() return { } end
 
@@ -59,6 +62,8 @@ characters.filters          = filters
 
 local utffilters            = { }
 characters.filters.utf      = utffilters
+
+local data                  = characters.data
 
 -- is characters.combined cached?
 
@@ -610,5 +615,24 @@ end
 -- local done = utffilters.reorder(test)
 --
 -- print(test,done,test==done,false)
+
+local f_default     = formatters["[%U] "]
+local f_description = formatters["[%s] "]
+
+local function convert(n)
+    local d = data[n]
+    d = d and d.description
+    if d then
+        return f_description(d)
+    else
+        return f_default(n)
+    end
+end
+
+local pattern = Cs((p_utf8byte / convert)^1)
+
+function utffilters.verbose(data)
+    return data and lpegmatch(pattern,data) or ""
+end
 
 return characters

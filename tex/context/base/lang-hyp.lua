@@ -591,6 +591,7 @@ if context then
     local glyph_code         = nodecodes.glyph
     local disc_code          = nodecodes.disc
     local math_code          = nodecodes.math
+    local hlist_code         = nodecodes.hlist
 
     local discretionary_code = disccodes.discretionary
     local explicit_code      = disccodes.explicit
@@ -614,6 +615,7 @@ if context then
     local getnext            = nuts.getnext
     local getprev            = nuts.getprev
     local getsubtype         = nuts.getsubtype
+    local getlist            = nuts.getlist
     local insert_before      = nuts.insert_before
     local insert_after       = nuts.insert_after
     local copy_node          = nuts.copy
@@ -667,42 +669,48 @@ if context then
         if specification then
             local resources = specification.resources
             if resources then
-                local patterns = resources.patterns
-                if patterns then
-                    local data = patterns.data
-                    if data then
-                        -- regular patterns
-                        lpegmatch(p_pattern,data,1,dictionary.patterns,dictionary.specials)
-                    end
-                    local extra = patterns.extra
-                    if extra then
-                        -- special patterns
-                        lpegmatch(p_pattern,extra,1,dictionary.patterns,dictionary.specials)
-                    end
-                end
-                local exceptions = resources.exceptions
-                if exceptions then
-                    local data = exceptions.data
-                    if data and data ~= "" then
-                        lpegmatch(p_exception,data,1,dictionary.exceptions)
-                    end
-                end
-                local usedchars  = lpegmatch(p_split,patterns.characters)
-                local characters = { }
-                local unicodes   = { }
-                for i=1,#usedchars do
-                    local char  = usedchars[i]
-                    local code  = utfbyte(char)
-                    local upper = uccodes[code]
-                    characters[char]  = code
-                    unicodes  [code]  = char
-                    if type(upper) == "table" then
-                        for i=1,#upper do
-                            local u = upper[i]
-                            unicodes[u] = utfchar(u)
+                local characters = dictionary.characters or { }
+                local unicodes   = dictionary.unicodes   or { }
+                for i=1,#resources do
+                    local r = resources[i]
+                    if not r.in_dictionary then
+                        r.in_dictionary = true
+                        local patterns = r.patterns
+                        if patterns then
+                            local data = patterns.data
+                            if data then
+                                -- regular patterns
+                                lpegmatch(p_pattern,data,1,dictionary.patterns,dictionary.specials)
+                            end
+                            local extra = patterns.extra
+                            if extra then
+                                -- special patterns
+                                lpegmatch(p_pattern,extra,1,dictionary.patterns,dictionary.specials)
+                            end
                         end
-                    else
-                        unicodes[upper] = utfchar(upper)
+                        local exceptions = r.exceptions
+                        if exceptions then
+                            local data = exceptions.data
+                            if data and data ~= "" then
+                                lpegmatch(p_exception,data,1,dictionary.exceptions)
+                            end
+                        end
+                        local usedchars  = lpegmatch(p_split,patterns.characters)
+                        for i=1,#usedchars do
+                            local char  = usedchars[i]
+                            local code  = utfbyte(char)
+                            local upper = uccodes[code]
+                            characters[char]  = code
+                            unicodes  [code]  = char
+                            if type(upper) == "table" then
+                                for i=1,#upper do
+                                    local u = upper[i]
+                                    unicodes[u] = utfchar(u)
+                                end
+                            else
+                                unicodes[upper] = utfchar(upper)
+                            end
+                        end
                     end
                 end
                 dictionary.characters = characters
@@ -1423,11 +1431,24 @@ if context then
         return head, done
     end
 
-    function hyphenators.handler(head)
+    local getcount = tex.getcount
+
+    hyphenators.optimize = false
+
+    function hyphenators.handler(head,groupcode)
         if usedmethod then
-            return usedmethod(head)
+            if groupcode == "hbox" and hyphenators.optimize then
+                if getcount("hyphenstate") > 0 then
+                    forced = false
+                    return usedmethod(head)
+                else
+                    return head, false
+                end
+            else
+                return usedmethod(head)
+            end
         else
-            return head, done
+            return head, false
         end
     end
 
@@ -1435,16 +1456,22 @@ if context then
     methods.original    = original
     methods.expanded    = expanded
     methods.traditional = languages.hyphenators.traditional.hyphenate
-    methods.none        = function(head) return head, false end
+    methods.none        = false -- function(head) return head, false end
 
     usedmethod          = original
 
     local function setmethod(method)
-        usedmethod = type(method) == "string" and methods[method] or methods.tex
+        usedmethod = type(method) == "string" and methods[method]
+        if usedmethod == nil then
+            usedmethod = methods.tex
+        end
     end
     local function pushmethod(method)
         insert(stack,usedmethod)
-        setmethod(method)
+        usedmethod = type(method) == "string" and methods[method]
+        if usedmethod == nil then
+            usedmethod = methods.tex
+        end
     end
     local function popmethod()
         usedmethod = remove(stack) or methods.tex
@@ -1496,6 +1523,17 @@ if context then
             end
         end
     end
+
+    function nodes.stripdiscretionaries(head)
+        local h = tonut(head)
+        for l in traverse_id(hlist_code,h) do
+            for d in traverse_id(disc_code,getlist(l)) do
+                remove_node(h,false,true)
+            end
+        end
+        return tonode(h)
+    end
+
 
 else
 

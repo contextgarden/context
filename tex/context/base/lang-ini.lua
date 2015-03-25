@@ -131,7 +131,10 @@ local function loaddefinitions(tag,specification)
         if trace_patterns then
             report_initialization("pattern specification for language %a: %s",tag,specification.patterns)
         end
-        local dataused, ok = data.used, false
+        local dataused  = data.used
+        local ok        = false
+        local resources = data.resources or { }
+        data.resources  = resources
         for i=1,#definitions do
             local definition = definitions[i]
             if definition == "" then
@@ -153,14 +156,15 @@ local function loaddefinitions(tag,specification)
                         report_initialization("loading definition %a for language %a from %a",definition,tag,fullname)
                     end
                     local suffix, gzipped = gzip.suffix(fullname)
-                    local resources = table.load(fullname,gzipped and gzip.load)
-                    if resources then -- todo: version test
+                    local loaded = table.load(fullname,gzipped and gzip.load)
+                    if loaded then -- todo: version test
                         ok, nofloaded = true, nofloaded + 1
-                     -- instance:patterns   (resources.patterns   and resources.patterns  .data or "")
-                     -- instance:hyphenation(resources.exceptions and resources.exceptions.data or "")
-                        instance:patterns   (validdata(resources.patterns,  "patterns",  tag) or "")
-                        instance:hyphenation(validdata(resources.exceptions,"exceptions",tag) or "")
-                        data.resources = resources -- so we can use them otherwise
+                     -- instance:patterns   (loaded.patterns   and resources.patterns  .data or "")
+                     -- instance:hyphenation(loaded.exceptions and resources.exceptions.data or "")
+                        instance:patterns   (validdata(loaded.patterns,  "patterns",  tag) or "")
+                        instance:hyphenation(validdata(loaded.exceptions,"exceptions",tag) or "")
+                        resources[#resources+1] = loaded -- so we can use them otherwise
+
                     else
                         report_initialization("invalid definition %a for language %a in %a",definition,tag,filename)
                     end

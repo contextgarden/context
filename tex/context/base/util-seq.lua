@@ -17,12 +17,14 @@ use locals to refer to them when compiling the chain.</p>
 
 -- todo: protect groups (as in tasks)
 
-local format, gsub, concat, gmatch = string.format, string.gsub, table.concat, string.gmatch
+local gsub, concat, gmatch = string.gsub, table.concat, string.gmatch
 local type, load = type, load
 
 utilities            = utilities or { }
 local tables         = utilities.tables
 local allocate       = utilities.storage.allocate
+
+local formatters     = string.formatters
 
 local sequencers     = { }
 utilities.sequencers = sequencers
@@ -217,20 +219,23 @@ local function construct(t)
             for i=1,#actions do
                 local action = actions[i]
                 if not askip[action] then
+                    local localized
                     if type(action) == "function" then
                         local name = localize(tostring(action))
                         functions[name] = action
-                        action = format("utilities.sequencers.functions.%s",name)
-                    end
-                    local localized = localize(action)
-                    n = n + 1
-                    variables[n] = format("local %s = %s",localized,action)
-                    if not returnvalues then
-                        calls[n] = format("%s(%s)",localized,arguments)
-                    elseif n == 1 then
-                        calls[n] = format("local %s = %s(%s)",returnvalues,localized,arguments)
+                        action = formatters["utilities.sequencers.functions.%s"](name)
+                        localized = localize(name) -- shorter than action
                     else
-                        calls[n] = format("%s = %s(%s)",returnvalues,localized,arguments)
+                        localized = localize(action)
+                    end
+                    n = n + 1
+                    variables[n] = formatters["local %s = %s"](localized,action)
+                    if not returnvalues then
+                        calls[n] = formatters["%s(%s)"](localized,arguments)
+                    elseif n == 1 then
+                        calls[n] = formatters["local %s = %s(%s)"](returnvalues,localized,arguments)
+                    else
+                        calls[n] = formatters["%s = %s(%s)"](returnvalues,localized,arguments)
                     end
                 end
             end
@@ -243,9 +248,9 @@ local function construct(t)
         variables = concat(variables,"\n")
         calls = concat(calls,"\n")
         if results then
-            t.compiled = format("%s\nreturn function(%s)\n%s\nreturn %s\nend",variables,arguments,calls,results)
+            t.compiled = formatters["%s\nreturn function(%s)\n%s\nreturn %s\nend"](variables,arguments,calls,results)
         else
-            t.compiled = format("%s\nreturn function(%s)\n%s\nend",variables,arguments,calls)
+            t.compiled = formatters["%s\nreturn function(%s)\n%s\nend"](variables,arguments,calls)
         end
     end
 -- print(t.compiled)
@@ -271,6 +276,7 @@ compile = function(t,compiler,n) -- already referred to in sequencers.new
     if compiled == "" then
         runner = false
     else
+-- inspect(compiled)
         runner = compiled and load(compiled)() -- we can use loadstripped here
     end
     t.runner = runner
@@ -327,12 +333,12 @@ function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug
                 if not askip[action] then
                     local localized = localize(action)
                     n = n + 1
-                    vars[n] = format("local %s = %s",localized,action)
+                    vars[n] = formatters["local %s = %s"](localized,action)
                     -- only difference with tostring is kind and rets (why no return)
                     if kind[action] == "nohead" then
-                        calls[n] = format("        ok = %s(head%s) done = done or ok",localized,args)
+                        calls[n] = formatters["        ok = %s(head%s) done = done or ok"](localized,args)
                     else
-                        calls[n] = format("  head, ok = %s(head%s) done = done or ok",localized,args)
+                        calls[n] = formatters["  head, ok = %s(head%s) done = done or ok"](localized,args)
                     end
 -- local s = " print('" .. tostring(group) .. " " .. tostring(action) .. " : ' .. tostring(head)) "
 -- calls[n] = s .. calls[n] .. s
@@ -340,6 +346,6 @@ function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug
             end
         end
     end
-    local processor = #calls > 0 and format(template_yes,concat(vars,"\n"),args,concat(calls,"\n")) or template_nop
+    local processor = #calls > 0 and formatters[template_yes](concat(vars,"\n"),args,concat(calls,"\n")) or template_nop
     return processor
 end
