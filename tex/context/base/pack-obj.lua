@@ -11,19 +11,23 @@ if not modules then modules = { } end modules ['pack-obj'] = {
 reusable components.</p>
 --ldx]]--
 
-local commands, context = commands, context
+local context        = context
+local commands       = commands
 
-local allocate  = utilities.storage.allocate
+local compilescanner = tokens.compile
+local scanners       = interfaces.scanners
 
-local collected = allocate()
-local tobesaved = allocate()
+local allocate       = utilities.storage.allocate
 
-local jobobjects = {
+local collected      = allocate()
+local tobesaved      = allocate()
+
+local jobobjects     = {
     collected = collected,
     tobesaved = tobesaved,
 }
 
-job.objects = jobobjects
+job.objects          = jobobjects
 
 local function initializer()
     collected = jobobjects.collected
@@ -32,45 +36,72 @@ end
 
 job.register('job.objects.collected', tobesaved, initializer, nil)
 
-function jobobjects.save(tag,number,page)
+local function saveobject(tag,number,page)
     local t = { number, page }
     tobesaved[tag], collected[tag] = t, t
 end
 
-function jobobjects.set(tag,number,page)
+local function setobject(tag,number,page)
     collected[tag] = { number, page }
 end
 
-function jobobjects.get(tag)
+local function getobject(tag)
     return collected[tag] or tobesaved[tag]
 end
 
-function jobobjects.number(tag,default)
+local function getobjectnumber(tag,default)
     local o = collected[tag] or tobesaved[tag]
     return o and o[1] or default
 end
 
-function jobobjects.page(tag,default)
+local function getobjectpage(tag,default)
     local o = collected[tag] or tobesaved[tag]
     return o and o[2] or default
 end
 
+jobobjects.save   = saveobject
+jobobjects.set    = setobject
+jobobjects.get    = getobject
+jobobjects.number = getobjectnumber
+jobobjects.page   = getobjectpage
+
 -- interface
 
-commands.saveobject = jobobjects.save
-commands.setobject  = jobobjects.set
+commands.saveobject = saveobject
+commands.setobject  = setobject
 
 function commands.objectnumber(tag,default)
-    local o = collected[tag] or tobesaved[tag]
-    context(o and o[1] or default)
+    context(getobjectnumber(tag,default))
 end
 
 function commands.objectpage(tag,default)
-    local o = collected[tag] or tobesaved[tag]
-    context(o and o[2] or default)
+    context(getobjectpage  (tag,default))
 end
 
 function commands.doifobjectreferencefoundelse(tag)
-    commands.doifelse(collected[tag] or tobesaved[tag])
+    commands.doifelse(getobject(tag))
 end
 
+-- new
+
+scanners.saveobject = saveobject
+
+scanners.setobject = compilescanner {
+    actions   = setobject,
+    arguments = { "string", "integer", "integer" }
+}
+
+scanners.objectnumber = compilescanner {
+    actions   = { getobjectnumber, context },
+    arguments = { "string", "string" },
+}
+
+scanners.objectpage = compilescanner {
+    actions   = { getobjectpage, context },
+    arguments = { "string", "string" },
+}
+
+scanners.doifobjectreferencefoundelse = compilescanner {
+    actions   = { jobobjects.get, commands.doifelse },
+    arguments = "string"
+}

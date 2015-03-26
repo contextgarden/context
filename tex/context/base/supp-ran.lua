@@ -10,12 +10,16 @@ if not modules then modules = { } end modules ['supp-ran'] = {
 
 local report_system = logs.reporter("system","randomizer")
 
-local math = math
-local context, commands = context, commands
+local math       = math
+local context    = context
+local implement  = interfaces.implement
 
-local random, randomseed, round, seed, last = math.random, math.randomseed, math.round, false, 1
-
-local maxcount = 2^30-1 -- 1073741823
+local random     = math.random
+local randomseed = math.randomseed
+local round      = math.round
+local seed       = false
+local last       = 1
+local maxcount   = 2^30-1 -- 1073741823
 
 local function setrandomseedi(n,comment)
     if not n then
@@ -34,28 +38,23 @@ end
 
 math.setrandomseedi = setrandomseedi
 
-function commands.getrandomcounta(min,max)
+local function getrandomnumber(min,max)
     last = random(min,max)
-    context(last)
+    return last
 end
 
-function commands.getrandomcountb(min,max)
-    last = random(min,max)/65536
-    context(last)
-end
-
-function commands.setrandomseed(n)
+local function setrandomseed(n)
     last = n
     setrandomseedi(n)
 end
 
-function commands.getrandomseed(n)
-    context(last)
+local function getrandomseed()
+    return last
 end
 
 -- maybe stack
 
-function commands.freezerandomseed(n)
+local function freezerandomseed(n)
     if seed == false or seed == nil then
         seed = last
         setrandomseedi(seed,"freeze",seed)
@@ -65,9 +64,18 @@ function commands.freezerandomseed(n)
     end
 end
 
-function commands.defrostrandomseed()
+local function defrostrandomseed()
     if seed ~= false then
         setrandomseedi(seed,"defrost",seed) -- was last (bug)
         seed = false
     end
 end
+
+implement { name = "getrandomnumber",   actions = { getrandomnumber, context }, arguments = { "integer", "integer" } }
+implement { name = "getrandomdimen",    actions = { getrandomnumber, context }, arguments = { "dimen", "dimen" } }
+implement { name = "getrandomfloat",    actions = { getrandomnumber, context }, arguments = { "number", "number" } }
+implement { name = "setrandomseed",     actions = { setrandomseed },            arguments = { "integer" } }
+implement { name = "getrandomseed",     actions = { getrandomseed, context } }
+implement { name = "freezerandomseed",  actions = { freezerandomseed  } }
+implement { name = "defrostrandomseed", actions = { defrostrandomseed } }
+

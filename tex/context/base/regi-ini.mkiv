@@ -16,34 +16,18 @@
 \unprotect
 
 %D \macros
-%D   {enableregime,disableregime,currentregime}
+%D   {enableregime,disableregime,
+%D    startregime,stopregime,
+%D    currentregime}
 %D
 %D Beware, the enable and disable commands are global switches, so
 %D best use the start|/|stop commands.
 
-\unexpanded\def\enableregime[#1]{\ctxcommand{enableregime("#1")}}
-\unexpanded\def\disableregime   {\ctxcommand{disableregime()}}
-\unexpanded\def\startregime [#1]{\ctxcommand{startregime("#1")}}
-\unexpanded\def\stopregime      {\ctxcommand{stopregime()}}
-           \def\currentregime   {\ctxcommand{currentregime()}}
+\let\currentregime\empty
 
-% D \macros
-% D   {defineregimesynonym,trueregimename}
-%
-% \unexpanded\def\defineregimesynonym % more or less obsolete
-%   {\dodoubleargument\dodefineregimesynonym}
-%
-% \def\dodefineregimesynonym[#1][#2]%
-%   {\ctxcommand{setregimesynonym("#1","#2")}}
-%
-% \def\trueregimename#1%
-%   {\ctxcommand{trueregimename("#1")}}
-
-% D \macros
-% D   {useregime}
-% D
-% D This one is sort of obsolete but we keep them around.
-
-\unexpanded\def\useregime[#1]{}
+\unexpanded\def\enableregime[#1]{\clf_enableregime}
+\unexpanded\def\disableregime   {\clf_disableregime}
+\unexpanded\def\startregime [#1]{\clf_startregime}
+\unexpanded\def\stopregime      {\clf_stopregime}
 
 \protect \endinput

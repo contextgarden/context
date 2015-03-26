@@ -32,6 +32,8 @@ local fulldisc_code  = disccodes.discretionary
 
 local texgetbox      = tex.getbox
 
+local implement      = interfaces.implement
+
 local nuts           = nodes.nuts
 local tonut          = nuts.tonut
 local tonode         = nuts.tonode
@@ -159,17 +161,12 @@ function handlers.finalize(head) -- problem, attr loaded before node, todo ...
     return actions(head)
 end
 
-function commands.cleanupbox(n)
-    cleanup_flushed(texgetbox(n))
-end
-
 -- handlers.finalize = actions
 
 -- interface
 
-function commands.finalizebox(n)
-    actions(texgetbox(n))
-end
+implement { name = "cleanupbox",  actions = { texgetbox, cleanup_flushed }, arguments = "integer" }
+implement { name = "finalizebox", actions = { texgetbox, actions },         arguments = "integer" }
 
 -- just in case we want to optimize lookups:
 

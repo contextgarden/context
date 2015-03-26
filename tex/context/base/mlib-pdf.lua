@@ -30,6 +30,8 @@ local write_node      = node.write
 local pen_info        = mplib.pen_info
 local object_fields   = mplib.fields
 
+local save_table      = false
+
 metapost              = metapost or { }
 local metapost        = metapost
 
@@ -56,6 +58,16 @@ local f_J  = formatters["%i J"]
 local f_d  = formatters["[%s] %F d"]
 local f_w  = formatters["%F w"]
 
+directives.register("metapost.savetable",function(v)
+    if type(v) == "string" then
+        save_table = file.addsuffix(v,"mpl")
+    elseif v then
+        save_table = file.addsuffix(environment.jobname .. "-graphic","mpl")
+    else
+        save_table = false
+    end
+end)
+
 local pdfliteral = function(pdfcode)
     local literal = copy_node(mpsliteral)
     literal.data = pdfcode
@@ -74,7 +86,7 @@ local function getobjects(result,figure,index)
             robjects = { }
             result.objects = robjects
         end
-        local fobjects = robjects[index]
+        local fobjects = robjects[index or 1]
         if not fobjects then
             fobjects = figure:objects()
             robjects[index] = fobjects
@@ -89,11 +101,17 @@ function metapost.convert(result, trialrun, flusher, multipass, askedfig)
     if trialrun then
         local multipassindeed = metapost.parse(result,askedfig)
         if multipass and not multipassindeed and metapost.optimize then
+            if save_table then
+                table.save(save_table,metapost.totable(result,1)) -- direct
+            end
             metapost.flush(result,flusher,askedfig) -- saves a run
         else
             return false
         end
     else
+        if save_table then
+            table.save(save_table,metapost.totable(result,1)) -- direct
+        end
         metapost.flush(result,flusher,askedfig)
     end
     return true -- done
@@ -326,27 +344,6 @@ local pattern_lst = (variable * newline^0)^0
 
 metapost.variables  = { } -- to be stacked
 metapost.properties = { } -- to be stacked
-
-function commands.mprunvar(key,n) -- should be defined in another lib
-    local value = metapost.variables[key]
-    if value ~= nil then
-        local tvalue = type(value)
-        if tvalue == "table" then
-            local ntype = type(n)
-            if ntype == "number" then
-                context(value[n])
-            elseif ntype == "string" then
-                context(concat(value,n))
-            else
-                context(concat(value," "))
-            end
-        elseif tvalue == "number" or tvalue == "boolean" then
-            context(tostring(value))
-        elseif tvalue == "string" then
-            context(value)
-        end
-    end
-end
 
 function metapost.untagvariable(str,variables) -- will be redone
     if variables == false then
@@ -632,13 +629,13 @@ function metapost.pdfliterals(result)
     return result
 end
 
--- so far
-
-function metapost.totable(result)
-    local figure = result and result.fig and result.fig[1]
+function metapost.totable(result,askedfig)
+    local askedfig = askedfig or 1
+    local figure   = result and result.fig and result.fig[1]
     if figure then
         local results = { }
-        local objects = figure:objects()
+     -- local objects = figure:objects()
+        local objects = getobjects(result,figure,askedfig)
         for o=1,#objects do
             local object = objects[o]
             local result = { }

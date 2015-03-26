@@ -135,73 +135,73 @@
 
 % % % rotation % % %
 
-\unexpanded\def\dostartrotation#1% grouped
-  {\forcecolorhack
-   \pdfsave
-   \pdfsetmatrix{\ctxcommand{pdfrotation(#1)}}}
-
-\unexpanded\def\dostoprotation
-  {\pdfrestore
-   \forcecolorhack}
-
 % \unexpanded\def\dostartrotation#1% grouped
 %   {\forcecolorhack
-%    \ctxcommand{pdfstartrotation(#1)}}
+%    \pdfsave
+%    \pdfsetmatrix{\clf_pdfrotation#1}}
 
 % \unexpanded\def\dostoprotation
-%   {\ctxcommand{pdfstoprotation()}}
+%   {\pdfrestore
+%    \forcecolorhack}
+
+\unexpanded\def\dostartrotation#1%
+  {\forcecolorhack
+   \clf_pdfstartrotation#1\relax}
+
+\unexpanded\def\dostoprotation
+  {\clf_pdfstoprotation}
 
 % % % scaling % % %
 
-\unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-  {\forcecolorhack % maybe use signal instead
-   \pdfsave
-   \pdfsetmatrix
-     {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
-      \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
-
-\unexpanded\def\dostopscaling
-  {\pdfrestore
-   \forcecolorhack}
-
 % \unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-%   {\forcecolorhack
-%    \ctxcommand{pdfstartscaling(#1,#2)}}
+%   {\forcecolorhack % maybe use signal instead
+%    \pdfsave
+%    \pdfsetmatrix
+%      {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
+%       \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
 
 % \unexpanded\def\dostopscaling
-%   {\ctxcommand{pdfstopscaling()}}
+%   {\pdfrestore
+%    \forcecolorhack}
+
+\unexpanded\def\dostartscaling#1#2%
+  {\forcecolorhack
+   \clf_pdfstartscaling sx #1 sy #2\relax}
+
+\unexpanded\def\dostopscaling
+  {\clf_pdfstopscaling}
 
 % % % mirroring % % %
 
-\unexpanded\def\dostartmirroring
-  {\forcecolorhack
-   \pdfsave
-   \pdfsetmatrix{-1 0 0 1}} % 0 0
-
-\unexpanded\def\dostopmirroring
-  {\pdfrestore
-   \forcecolorhack}
-
 % \unexpanded\def\dostartmirroring
-%   {\ctxcommand{pdfstartmirroring()}}
+%   {\forcecolorhack
+%    \pdfsave
+%    \pdfsetmatrix{-1 0 0 1}} % 0 0
 
 % \unexpanded\def\dostopmirroring
-%   {\ctxcommand{pdfstopmirroring()}}
+%   {\pdfrestore
+%    \forcecolorhack}
+
+\unexpanded\def\dostartmirroring
+  {\clf_pdfstartmirroring}
+
+\unexpanded\def\dostopmirroring
+  {\clf_pdfstopmirroring}
 
 % % % transform % % %
 
-\unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
-  {\dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
+% \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
+%   {\dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
 
-\unexpanded\def\dodotransformnextbox#1#2#3%
-  {\hbox
-     {\kern#1\onebasepoint
-      \raise#2\onebasepoint\hbox
-        {\pdfsave
-         \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
-         \box\nextbox
-         \pdfrestore
-         }}}
+% \unexpanded\def\dodotransformnextbox#1#2#3%
+%   {\hbox
+%      {\kern#1\onebasepoint
+%       \raise#2\onebasepoint\hbox
+%         {\pdfsave
+%          \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
+%          \box\nextbox
+%          \pdfrestore
+%          }}}
 
 % \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
 %   {% fixing ht/dp/wd should happen elsewhere
@@ -212,9 +212,21 @@
 %      {\kern #5\onebasepoint
 %       \raise#6\onebasepoint
 %       \hbox
-%         {\ctxcommand{pdfstartmatrix(#1,#2,#3,#4)}%
+%         {\clf_pdfstartmatrix sx #1 rx #2 ry #3 sy #4\relax
 %          \box\nextbox
-%          \ctxcommand{pdfstopmatrix()}}}}
+%          \clf_pdfstopmatrix}}}
+
+\unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
+  {\dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
+
+\unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
+  {\hbox
+     {\kern #5\onebasepoint
+      \raise#6\onebasepoint
+      \hbox
+        {\clf_pdfstartmatrix sx #1 rx #2 ry #3 sy #4\relax
+         \box\nextbox
+         \clf_pdfstopmatrix}}}
 
 % somehow the shift is not happening .. bug in luatex?
 %
@@ -295,11 +307,11 @@
   {\the\pdfbackendeveryxform
    \finalizeobjectbox\objectbox
    \immediate\pdfxform resources {\pdfbackendcurrentresources}\objectbox
-   \dosetobjectreference{#1}{#2}{\the\pdflastxform}}
+   \dosetobjectreference{#1}{#2}\pdflastxform}
 
 \let\m_back_object_reference\empty
 
-\def\doinsertobject#1#2%
+\unexpanded\def\doinsertobject#1#2%
   {\begingroup
    \doifobjectreferencefoundelse{#1}{#2}
      {\dogetobjectreference{#1}{#2}\m_back_object_reference
@@ -309,7 +321,7 @@
 
 \let\lastpredefinedsymbol\empty % some day we can do more at the lua end
 
-\def\predefinesymbol[#1]%
+\unexpanded\def\predefinesymbol[#1]%
   {\begingroup
    \xdef\lastpredefinedsymbol{#1}%
    \settightobject{SYM}{#1}\hbox{\symbol[#1]}% to be checked ... maybe only fitting

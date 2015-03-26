@@ -15,34 +15,6 @@ local context = context
 
 metapost = metapost or { }
 
--- for the moment downward compatible
-
-local report_metapost = logs.reporter ("metapost")
-local status_metapost = logs.messenger("metapost")
-
-local patterns = { "meta-imp-%s.mkiv", "meta-imp-%s.tex", "meta-%s.mkiv", "meta-%s.tex" } -- we are compatible
-
-local function action(name,foundname)
-    status_metapost("library %a is loaded",name)
-    context.startreadingfile()
-    context.input(foundname)
-    context.stopreadingfile()
-end
-
-local function failure(name)
-    report_metapost("library %a is unknown or invalid",name)
-end
-
-function commands.useMPlibrary(name)
-    commands.uselibrary {
-        name     = name,
-        patterns = patterns,
-        action   = action,
-        failure  = failure,
-        onlyonce = true,
-    }
-end
-
 -- experimental
 
 local colorhash = attributes.list[attributes.private('color')]

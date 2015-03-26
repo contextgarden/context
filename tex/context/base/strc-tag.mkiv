@@ -167,11 +167,11 @@
 \unexpanded\def\setelementbackendtag{\dodoubleargument\strc_tags_set_backend}
 \unexpanded\def\setelementnature    {\dodoubleargument\strc_tags_set_nature}
 
-\def\strc_tags_set_backend[#1][#2]{\ctxcommand{settagproperty("#1","backend","#2")}} % todo: ignore when no export
-\def\strc_tags_set_nature [#1][#2]{\ctxcommand{settagproperty("#1","nature", "#2")}} % todo: ignore when no export
+\def\strc_tags_set_backend[#1][#2]{\clf_settagproperty_b{#1}{#2}} % todo: ignore when no export
+\def\strc_tags_set_nature [#1][#2]{\clf_settagproperty_n{#1}{#2}} % todo: ignore when no export
 
 \unexpanded\def\strc_tags_set_aspect_nop#1#2{}
-\unexpanded\def\strc_tags_set_aspect_yes#1#2{\ctxcommand{settagaspect("#1","#2")}} % todo: ignore when no export
+\unexpanded\def\strc_tags_set_aspect_yes#1#2{\clf_settagaspect{#1}{#2}} % todo: ignore when no export / also \let
 
 \installcorenamespace{tagging}
 
@@ -206,10 +206,10 @@
 % which might be more efficient then ... okay, we now cannot overload but who cares
 
 \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
-  {\ctxcommand{starttag("#1",{userdata=\!!bs#2\!!es})}}
+  {\clf_starttag_u{#1}{#2}}
 
 \unexpanded\def\strc_tags_element_stop_yes
-  {\ctxcommand{stoptag()}}
+  {\clf_stoptag}
 
 \unexpanded\def\strc_tags_element_start_nop_indeed[#1][#2]%
   {}
@@ -258,10 +258,10 @@
      \expandafter\strc_tags_stop_yes
   \fi}
 
-\def\strc_tags_start_yes_no_detail    #1{\ctxcommand{starttag("#1")}}
-\def\strc_tags_start_yes_detail     #1#2{\ctxcommand{starttag("#1",{detail="#2"})}}
-\def\strc_tags_start_yes_chained  #1#2#3{\ctxcommand{starttag("#1",{detail="#2",parents="\getcurrentparentchain#3{#2}"})}}
-\def\strc_tags_stop_yes                 {\ctxcommand{stoptag()}}
+\def\strc_tags_start_yes_no_detail    #1{\clf_starttag{#1}}
+\def\strc_tags_start_yes_detail     #1#2{\clf_starttag_d{#1}{#2}}
+\def\strc_tags_start_yes_chained  #1#2#3{\clf_starttag_c{#1}{#2}{\getcurrentparentchain#3{#2}}}
+\def\strc_tags_stop_yes                 {\clf_stoptag}
 
 \let\strc_tags_start_nop_no_detail\gobbleoneargument
 \let\strc_tags_start_nop_detail   \gobbletwoarguments
@@ -292,7 +292,7 @@
 
 % for luigi (beware: fully expandable):
 
-\def\strc_tags_get_element_tag_yes{\ctxcommand{getelementtag()}}
+\def\strc_tags_get_element_tag_yes{\clf_getelementtag}
 \let\strc_tags_get_element_tag_nop\donothing
 
 \unexpanded\def\strc_tags_setup_element_user_properties_yes
@@ -311,8 +311,8 @@
    \fi\fi}
 
 \def\strc_tags_setup_element_user_properties_indeed_nop[#1][#2]{}
-\def\strc_tags_setup_element_user_properties_indeed_one[#1][#2]{\ctxcommand{setelementuserproperties(\!!bs#1\!!es)}}
-\def\strc_tags_setup_element_user_properties_indeed_two[#1][#2]{\ctxcommand{setelementuserproperties("#1",\!!bs#2\!!es)}}
+\def\strc_tags_setup_element_user_properties_indeed_one[#1][#2]{\clf_setelementuserproperties_o{#1}}
+\def\strc_tags_setup_element_user_properties_indeed_two[#1][#2]{\clf_setelementuserproperties_u{#1}{#2}}
 
 \unexpanded\def\strc_tags_enable_properties
   {\let\getelementtag             \strc_tags_get_element_tag_yes
@@ -448,7 +448,7 @@
 % \doifinelementelse{division:*-structure:chapter} {yes} {no}
 
 \unexpanded\def\doifinelementelse#1%
-  {\ctxcommand{testcase(structures.atlocation("#1"))}}
+  {\clf_doifinelementelse{#1}}
 
 \unexpanded\def\taggedlabeltexts#1#2#3% experimental: label, numberdetail, numbercontent
   {\begingroup
@@ -494,7 +494,7 @@
 %D \stoptyping
 
 \unexpanded\def\settaggedmetadata[#1]%
-  {\ctxlua{structures.tags.registermetadata(\!!bs#1\!!es)}}
+  {\clf_registermetadata{#1}}
 
 %D An overload:
 

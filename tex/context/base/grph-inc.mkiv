@@ -310,56 +310,56 @@
    \edef\p_label {\externalfigureparameter\c!label}%
    %
    \dostarttagged\t!image\empty
-   \ctxlua{figures.push {
-        name       = "\p_grph_include_name",
-        label      = "\ifx\p_label\empty\p_grph_include_label\else\p_label\fi",
-        page       = "\externalfigureparameter\c!page",
-        size       = "\externalfigureparameter\c!size",
-        object     = "\externalfigureparameter\c!object",
-        prefix     = "\externalfigureparameter\c!prefix",
-        cache      = "\externalfigureparameter\c!cache",
-        format     = "\externalfigureparameter\c!method",
-        preset     = "\externalfigureparameter\c!prefix",
-        controls   = "\externalfigureparameter\c!controls",
-        resources  = "\externalfigureparameter\c!resources",
-        preview    = "\externalfigureparameter\c!preview",
-        display    = "\externalfigureparameter\c!display",
-        mask       = "\externalfigureparameter\c!mask",
-        conversion = "\externalfigureparameter\c!conversion",
-        resolution = "\externalfigureparameter\c!resolution",
-        color      = "\internalspotcolorparent{\externalfigureparameter\c!color}", % hack is needed
-        ["repeat"] = "\externalfigureparameter\c!repeat",
-        \ifx\p_width\empty \else
-            width  = \number\dimexpr\p_width,
-        \fi
-        \ifx\p_height\empty \else
-            height = \number\dimexpr\p_height,
-        \fi
-    } }%
-   \ctxlua{figures.identify()}%
-   % also mode: checkpresense only
+   \clf_figure_push
+        name       {\p_grph_include_name}%
+        label      {\ifx\p_label\empty\p_grph_include_label\else\p_label\fi}%
+        page       {\externalfigureparameter\c!page}%
+        size       {\externalfigureparameter\c!size}%
+        object     {\externalfigureparameter\c!object}%
+        prefix     {\externalfigureparameter\c!prefix}%
+        cache      {\externalfigureparameter\c!cache}%
+        format     {\externalfigureparameter\c!method}%
+        preset     {\externalfigureparameter\c!prefix}%
+        controls   {\externalfigureparameter\c!controls}%
+        resources  {\externalfigureparameter\c!resources}%
+        preview    {\externalfigureparameter\c!preview}%
+        display    {\externalfigureparameter\c!display}%
+        mask       {\externalfigureparameter\c!mask}%
+        conversion {\externalfigureparameter\c!conversion}%
+        resolution {\externalfigureparameter\c!resolution}%
+        color      {\internalspotcolorparent{\externalfigureparameter\c!color}}% hack is needed
+        repeat     {\externalfigureparameter\c!repeat}%
+    \ifx\p_width\empty \else
+        width      \dimexpr\p_width\relax
+    \fi
+    \ifx\p_height\empty \else
+        height     \dimexpr\p_height\relax
+    \fi
+   \relax
+   \clf_figure_identify
+   \relax
    \ifconditional\c_grph_include_test_only
       \ifcase\figurestatus \else
-        \ctxlua{figures.check()}%
-        \ctxlua{figures.dummy()}%
-        \ctxlua{figures.scale()}%
-        \ctxlua{figures.done()}%
+        \clf_figure_check
+        \clf_figure_dummy
+        \clf_figure_scale
+        \clf_figure_done
       \fi
       \grph_include_set_mode
    \else
       \ifcase\figurestatus
-        \ctxlua{figures.dummy()}%
-        \ctxlua{figures.scale()}%
+        \clf_figure_dummy
+        \clf_figure_scale
       \else
-        \ctxlua{figures.check()}%
-        \ctxlua{figures.include()}%
-        \ctxlua{figures.scale()}%
+        \clf_figure_check
+        \clf_figure_include
+        \clf_figure_scale
       \fi
-      \ctxlua{figures.done()}%
+      \clf_figure_done
       \grph_include_set_mode
       \grph_include_finalize
    \fi
-   \ctxlua{figures.pop()}%
+   \clf_figure_pop
    \dotagfigure
    \naturalvbox attr \imageattribute 2 {\box\foundexternalfigure}%
    \dostoptagged
@@ -426,13 +426,13 @@
   {\dodoubleargument\grph_include_set_type_synonym}
 
 \def\grph_include_set_type_synonym[#1][#2]%
-  {\ctxlua{figures.registersuffix("#1","#2")}}
+  {\clf_registerfiguresuffix{#1}{#2}}
 
 %D Additional paths can be installed with the regular setup command. The next
 %D macro picks up the list.
 
 \unexpanded\def\setfigurepathlist
-  {\ctxlua{figures.setpaths("\externalfigureparameter\c!location",\!!bs\externalfigureparameter\c!directory\!!es)}}
+  {\clf_setfigurepaths{\externalfigureparameter\c!location}{\externalfigureparameter\c!directory}}
 
 %D Variables:
 
@@ -442,36 +442,36 @@
 \def\defaultfigurewidth  {8\lineheight}
 \def\defaultfigureheight {6\lineheight}
 
-\def\figurestatus        {\numexpr\ctxcommand{figurestatus("status",0)}\relax} % number: 0 = not found
-\def\figurewidth         {\ctxcommand{figurestatus("width",0)}sp}
-\def\figureheight        {\ctxcommand{figurestatus("height",0)}sp}
-\def\figurexscale        {\ctxcommand{figurestatus("xscale",1)}}
-\def\figureyscale        {\ctxcommand{figurestatus("yscale",1)}}
+\def\figurestatus        {\numexpr\clf_figurestatus{status}{0}\relax} % number: 0 = not found
+\def\figurewidth         {\clf_figurestatus{width}{0}sp}
+\def\figureheight        {\clf_figurestatus{height}{0}sp}
+\def\figurexscale        {\clf_figurestatus{xscale}{1}}
+\def\figureyscale        {\clf_figurestatus{yscale}{1}}
 
-\def\figuresize          {\ctxcommand{figurerequest("size")}}
-\def\figurelabel         {\ctxcommand{figurerequest("label")}}
-\def\figurefileoriginal  {\ctxcommand{figurerequest("name")}}
-\def\figurefilepage      {\ctxcommand{figurerequest("page",1)}}
-\def\figurefileoptions   {\ctxcommand{figurerequest("options")}}
-\def\figurefileconversion{\ctxcommand{figurerequest("conversion")}}
-\def\figurefilecache     {\ctxcommand{figurerequest("cache")}}
-\def\figurefileprefix    {\ctxcommand{figurerequest("prefix")}}
+\def\figuresize          {\clf_figurerequest{size}{}}
+\def\figurelabel         {\clf_figurerequest{label}{}}
+\def\figurefileoriginal  {\clf_figurerequest{name}{}}
+\def\figurefilepage      {\clf_figurerequest{page}{1}}
+\def\figurefileoptions   {\clf_figurerequest{options}{}}
+\def\figurefileconversion{\clf_figurerequest{conversion}{}}
+\def\figurefilecache     {\clf_figurerequest{cache}{}}
+\def\figurefileprefix    {\clf_figurerequest{prefix}{}}
 
-\def\figurenaturalwidth  {\ctxcommand{figureused("width", \number\dimexpr\defaultfigurewidth \relax)}sp}
-\def\figurenaturalheight {\ctxcommand{figureused("height",\number\dimexpr\defaultfigureheight\relax)}sp}
-\def\figurexresolution   {\ctxcommand{figureused("xresolution",0)}}
-\def\figureyresolution   {\ctxcommand{figureused("yresolution",0)}}
-\def\figurexsize         {\ctxcommand{figureused("xsize",0)}}
-\def\figureysize         {\ctxcommand{figureused("ysize",0)}}
-\def\figurecolordepth    {\ctxcommand{figureused("colordepth",0)}}
-\def\figuredepth         {\ctxcommand{figureused("depth",0)}}
+\def\figurenaturalwidth  {\clf_figureused{width}{\number\dimexpr\defaultfigurewidth\relax}sp}
+\def\figurenaturalheight {\clf_figureused{height}{\number\dimexpr\defaultfigureheight\relax}sp}
+\def\figurexresolution   {\clf_figureused{xresolution}{0}}
+\def\figureyresolution   {\clf_figureused{yresolution}{0}}
+\def\figurexsize         {\clf_figureused{xsize}{0}}
+\def\figureysize         {\clf_figureused{ysize}{0}}
+\def\figurecolordepth    {\clf_figureused{colordepth}{0}}
+\def\figuredepth         {\clf_figureused{depth}{0}}
 
-\def\figurefullname      {\ctxcommand{figureused("fullname")}}
-\def\noffigurepages      {\ctxcommand{figureused("pages",0)}}
+\def\figurefullname      {\clf_figureused{fullname}{}}
+\def\noffigurepages      {\clf_figureused{pages}{0}}
 
-\def\figurefilepath      {\ctxcommand{figurefilepath()}}
-\def\figurefilename      {\ctxcommand{figurefilename()}}
-\def\figurefiletype      {\ctxcommand{figurefiletype()}}
+\def\figurefilepath      {\clf_figurefilepath}
+\def\figurefilename      {\clf_figurefilename}
+\def\figurefiletype      {\clf_figurefiletype}
 
 \let\naturalfigurewidth  \figurenaturalwidth
 \let\naturalfigureheight \figurenaturalheight
@@ -510,8 +510,8 @@
    \fi}
 
 \appendtoks
+    \clf_setfigurepaths{\externalfigureparameter\c!location}{\externalfigureparameter\c!directory}%
     \ctxlua { % figures.defaultwidth .. maybe a dimen some day
-        figures.setpaths("\externalfigureparameter\c!location","\externalfigureparameter\c!directory") ;
         figures.defaultwidth  = \number\dimexpr\defaultfigurewidth \relax ;
         figures.defaultheight = \number\dimexpr\defaultfigureheight\relax ;
         figures.boxnumber     = \number\foundexternalfigure ;
@@ -671,14 +671,14 @@
 % Figure bases
 
 \unexpanded\def\usefigurebase[#1]%
-  {\ctxlua{figures.bases.use("#1")}}
+  {\clf_usefigurebase{#1}}
 
 \appendtoks
    \setfigurepathlist  % the path may be used elsewhere too (as in x-res-04)
 \to \everysetupexternalfigure
 
 \appendtoks
-    \ctxcommand{setfigurelookuporder("\externalfigureparameter\c!order")}%
+    \clf_setfigurelookuporder{\externalfigureparameter\c!order}%
 \to \everysetupexternalfigure
 
 \definecolor[missingfigurecolor][s=.8]

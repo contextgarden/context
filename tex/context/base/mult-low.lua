@@ -31,7 +31,9 @@ return {
         --
         "fmtname", "fmtversion", "texengine", "texenginename", "texengineversion",
         "luatexengine", "pdftexengine", "xetexengine", "unknownengine",
-        "etexversion", "pdftexversion", "xetexversion", "xetexrevision",
+     -- "etexversion",
+     -- "pdftexversion", "pdftexrevision",
+     -- "xetexversion", "xetexrevision",
         --
         "activecatcode",
         --

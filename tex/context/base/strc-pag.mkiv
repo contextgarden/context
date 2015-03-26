@@ -111,24 +111,25 @@
 % invisible =
 
 \def\strc_pagenumbers_page_state_save % \normalexpanded?
-  {\ctxcommand{savepagedata({
-        prefix        = "\namedcounterparameter\s!userpage\c!prefix",
-        separatorset  = "\namedcounterparameter\s!userpage\c!prefixseparatorset",
-        conversion    = "\namedcounterparameter\s!userpage\c!prefixconversion",
-        conversionset = "\namedcounterparameter\s!userpage\c!prefixconversionset",
-        set           = "\namedcounterparameter\s!userpage\c!prefixset",
-        segments      = "\namedcounterparameter\s!userpage\c!prefixsegments",
-        connector     = \!!bs\namedcounterparameter\s!userpage\c!prefixconnector\!!es,
-    },{
-        conversion    = "\namedcounterparameter\s!userpage\c!numberconversion",
-        conversionset = "\namedcounterparameter\s!userpage\c!numberconversionset",
-        starter       = \!!bs\namedcounterparameter\s!userpage\c!numberstarter\!!es,
-        stopper       = \!!bs\namedcounterparameter\s!userpage\c!numberstopper\!!es,
-    },{
-        viewerprefix  = \!!bs\namedcounterparameter\s!userpage\c!viewerprefix\!!es,
-        state         = \!!bs\namedcounterparameter\s!userpage\c!state\!!es,
-    }
-   )}}
+  {\clf_savepagedata
+     {
+        prefix        {\namedcounterparameter\s!userpage\c!prefix}
+        separatorset  {\namedcounterparameter\s!userpage\c!prefixseparatorset}
+        conversion    {\namedcounterparameter\s!userpage\c!prefixconversion}
+        conversionset {\namedcounterparameter\s!userpage\c!prefixconversionset}
+        set           {\namedcounterparameter\s!userpage\c!prefixset}
+        segments      {\namedcounterparameter\s!userpage\c!prefixsegments}
+        connector     {\namedcounterparameter\s!userpage\c!prefixconnector}
+     }{
+        conversion    {\namedcounterparameter\s!userpage\c!numberconversion}
+        conversionset {\namedcounterparameter\s!userpage\c!numberconversionset}
+        starter       {\namedcounterparameter\s!userpage\c!numberstarter}
+        stopper       {\namedcounterparameter\s!userpage\c!numberstopper}
+     }{
+        viewerprefix  {\namedcounterparameter\s!userpage\c!viewerprefix}
+        state         {\namedcounterparameter\s!userpage\c!state}
+     }%
+   \relax}
 
 \prependtoks
     \strc_pagenumbers_page_state_save

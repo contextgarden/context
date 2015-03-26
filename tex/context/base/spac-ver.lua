@@ -38,7 +38,12 @@ local formatters = string.formatters
 
 local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
 
-local nodes, node, trackers, attributes, context, commands, tex =  nodes, node, trackers, attributes, context, commands, tex
+local nodes       =  nodes
+local node        =  node
+local trackers    =  trackers
+local attributes  =  attributes
+local context     =  context
+local tex         =  tex
 
 local texlists    = tex.lists
 local texgetdimen = tex.getdimen
@@ -46,6 +51,7 @@ local texsetdimen = tex.setdimen
 local texnest     = tex.nest
 
 local variables   = interfaces.variables
+local implement   = interfaces.implement
 
 -- vertical space handler
 
@@ -1718,10 +1724,51 @@ end
 
 -- interface
 
-commands.vspacing          = vspacing.analyze
-commands.vspacingsetamount = vspacing.setskip
-commands.vspacingdefine    = vspacing.setmap
-commands.vspacingcollapse  = vspacing.collapsevbox
-commands.vspacingsnap      = vspacing.snapbox
-commands.resetprevdepth    = vspacing.resetprevdepth
-commands.definesnapmethod  = vspacing.definesnapmethod
+implement {
+    name      = "vspacing",
+    actions   = vspacing.analyze,
+    scope     = "private",
+    arguments = "string"
+}
+
+implement {
+    name      = "resetprevdepth",
+    actions   = vspacing.resetprevdepth,
+    scope     = "private"
+}
+
+implement {
+    name      = "vspacingsetamount",
+    actions   = vspacing.setskip,
+    scope     = "private",
+    arguments = "string",
+}
+
+implement {
+    name      = "vspacingdefine",
+    actions   = vspacing.setmap,
+    scope     = "private",
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "vspacingcollapse",
+    actions   = vspacing.collapsevbox,
+    scope     = "private",
+    arguments = "integer"
+}
+
+implement {
+    name      = "vspacingsnap",
+    actions   = vspacing.snapbox,
+    scope     = "private",
+    arguments = { "integer", "integer" }
+}
+
+implement {
+    name      = "definesnapmethod",
+    actions   = vspacing.definesnapmethod,
+    scope     = "private",
+    arguments = { "string", "string" }
+}
+

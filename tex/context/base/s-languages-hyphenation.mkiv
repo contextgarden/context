@@ -26,7 +26,7 @@
   {\begingroup
    \par
  % \language\zerocount
-   \setupalign[\v!nothyphenated]%
+ % \setupalign[\v!nothyphenated]%
    \ctxlua{moduledata.languages.hyphenation.startcomparepatterns("#1")}}
 
 \unexpanded\def\stopcomparepatterns
@@ -56,13 +56,15 @@
 
 \starttext
 
+\def|#1|{-}
+
     \startsubject{Normal text}
             \input tufte
     \stopsubject
 
     \startsubject{Compare hyphenation points of \showcomparepatternslegend[en,de]}
         \startcomparepatterns
-            \input tufte \quad (\showcomparepatternslegend)
+           \input tufte \quad (\showcomparepatternslegend)
         \stopcomparepatterns
     \stopsubject
 

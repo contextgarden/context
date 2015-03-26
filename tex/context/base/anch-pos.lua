@@ -29,6 +29,14 @@ local lpegmatch = lpeg.match
 local insert, remove = table.insert, table.remove
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
+local scanners          = tokens.scanners
+local scanstring        = scanners.string
+local scaninteger       = scanners.integer
+local scandimen         = scanners.dimen
+
+local compilescanner    = tokens.compile
+local scanners          = interfaces.scanners
+
 local commands          = commands
 local context           = context
 
@@ -295,31 +303,31 @@ local function get(id,index)
     end
 end
 
--- local function get(id,index) -- ,key
---     local data
---     if index then
---         local container = collected[id]
---         if container then
---             data = container[index]
---             if not data then
---                 -- nothing
---             elseif type(data) == "table" then
---                 return data
---             else
---                 return { [key] = data }
---             end
---         end
---     else
---         return collected[id]
---     end
--- end
-
 jobpositions.setdim = setdim
 jobpositions.setall = setall
 jobpositions.set    = set
 jobpositions.get    = get
 
-commands.setpos     = setall
+-- scanners.setpos     = setall
+
+-- trackers.enable("tokens.compi*")
+
+-- something weird: the compiler fails us here
+
+scanners.dosaveposition = compilescanner {
+    actions   = setall, -- name p x y
+    arguments = { "string", "integer", "dimen", "dimen" }
+}
+
+scanners.dosavepositionwhd = compilescanner { -- somehow fails
+    actions   = setall, -- name p x y w h d
+    arguments = { "string", "integer", "dimen", "dimen", "dimen", "dimen", "dimen" }
+}
+
+scanners.dosavepositionplus = compilescanner {
+    actions   = setall,  -- name p x y w h d extra
+    arguments = { "string", "integer", "dimen", "dimen", "dimen", "dimen", "dimen", "string" }
+}
 
 -- will become private table (could also become attribute driven but too nasty
 -- as attributes can bleed e.g. in margin stuff)
@@ -348,18 +356,26 @@ function jobpositions.e_col(tag)
     column = columns[#columns]
 end
 
-function commands.bcolumn(tag,register) -- name will change
+scanners.bposcolumn = function() -- tag
+    local tag = scanstring()
     insert(columns,tag)
     column = tag
-    if register then
-        context(new_latelua_node(f_b_column(tag)))
-    end
 end
 
-function commands.ecolumn(register) -- name will change
-    if register then
-        context(new_latelua_node(f_e_column()))
-    end
+scanners.bposcolumnregistered = function() -- tag
+    local tag = scanstring()
+    insert(columns,tag)
+    column = tag
+    context(new_latelua_node(f_b_column(tag)))
+end
+
+scanners.eposcolumn = function()
+    remove(columns)
+    column = columns[#columns]
+end
+
+scanners.eposcolumnregistered = function()
+    context(new_latelua_node(f_e_column()))
     remove(columns)
     column = columns[#columns]
 end
@@ -385,7 +401,7 @@ function jobpositions.e_region(correct)
     region = regions[#regions]
 end
 
-function jobpositions.markregionbox(n,tag,correct)
+local function markregionbox(n,tag,correct)
     if not tag or tag == "" then
         nofregions = nofregions + 1
         tag = f_region(nofregions)
@@ -419,18 +435,21 @@ function jobpositions.markregionbox(n,tag,correct)
     setfield(box,"list",push)
 end
 
+jobpositions.markregionbox = markregionbox
+
 function jobpositions.enhance(name)
     enhance(tobesaved[name])
 end
 
-function commands.pos(name,t)
-    tobesaved[name] = t
-    context(new_latelua_node(f_enhance(name)))
-end
+-- scanners.pos = function(name,t) -- name t
+--     local name = scanstring()
+--     tobesaved[name] = scanstring()
+--     context(new_latelua_node(f_enhance(name)))
+-- end
 
 local nofparagraphs = 0
 
-function commands.parpos() -- todo: relate to localpar (so this is an intermediate variant)
+scanners.parpos = function() -- todo: relate to localpar (so this is an intermediate variant)
     nofparagraphs = nofparagraphs + 1
     texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
     local strutbox = getbox("strutbox")
@@ -473,7 +492,8 @@ function commands.parpos() -- todo: relate to localpar (so this is an intermedia
     context(new_latelua_node(f_enhance(tag)))
 end
 
-function commands.posxy(name) -- can node.write be used here?
+scanners.dosetposition = function() -- name
+    local name = scanstring()
     tobesaved[name] = {
         p = true,
         c = column,
@@ -485,38 +505,58 @@ function commands.posxy(name) -- can node.write be used here?
     context(new_latelua_node(f_enhance(name)))
 end
 
-function commands.poswhd(name,w,h,d)
+scanners.dosetpositionwhd = function() -- name w h d extra
+    local name = scanstring()
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        w = w,
-        h = h,
-        d = d,
+        w = scandimen(),
+        h = scandimen(),
+        d = scandimen(),
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
     context(new_latelua_node(f_enhance(name)))
 end
 
-function commands.posplus(name,w,h,d,extra)
+scanners.dosetpositionbox = function() -- name box
+    local name = scanstring()
+    local box  = getbox(scaninteger())
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        w = w,
-        h = h,
-        d = d,
+        w = getfield(box,"width"),
+        h = getfield(box,"height"),
+        d = getfield(box,"depth"),
         n = nofparagraphs > 0 and nofparagraphs or nil,
-        e = extra,
     }
     context(new_latelua_node(f_enhance(name)))
 end
 
-function commands.posstrut(name,w,h,d)
+scanners.dosetpositionplus = function() -- name w h d extra
+    local name = scanstring()
+    tobesaved[name] = {
+        p = true,
+        c = column,
+        r = true,
+        x = true,
+        y = true,
+        w = scandimen(),
+        h = scandimen(),
+        d = scandimen(),
+        n = nofparagraphs > 0 and nofparagraphs or nil,
+        e = scanstring(),
+    }
+    context(new_latelua_node(f_enhance(name)))
+end
+
+scanners.dosetpositionstrut = function() -- name
+    local name = scanstring()
     local strutbox = getbox("strutbox")
     tobesaved[name] = {
         p = true,
@@ -768,11 +808,23 @@ jobpositions.onsamepage  = onsamepage
 
 -- interface
 
-commands.replacepospxywhd = jobpositions.replace
-commands.copyposition     = jobpositions.copy
+scanners.replacepospxywhd = function() -- name page x y w h d
+    collected[scanstring()] = {
+        p = scaninteger(),
+        x = scandimen(),
+        y = scandimen(),
+        w = scandimen(),
+        h = scandimen(),
+        d = scandimen(),
+    }
+end
 
-function commands.MPp(id)
-    local jpi = collected[id]
+scanners.copyposition = function() -- target source
+    collected[scanstring()] = collected[scanstring()]
+end
+
+scanners.MPp = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         local p = jpi.p
         if p and p ~= true then
@@ -783,8 +835,8 @@ function commands.MPp(id)
     context('0')
 end
 
-function commands.MPx(id)
-    local jpi = collected[id]
+scanners.MPx = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         local x = jpi.x
         if x and x ~= true and x ~= 0 then
@@ -795,8 +847,8 @@ function commands.MPx(id)
     context('0pt')
 end
 
-function commands.MPy(id)
-    local jpi = collected[id]
+scanners.MPy = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         local y = jpi.y
         if y and y ~= true and y ~= 0 then
@@ -807,8 +859,8 @@ function commands.MPy(id)
     context('0pt')
 end
 
-function commands.MPw(id)
-    local jpi = collected[id]
+scanners.MPw = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         local w = jpi.w
         if w and w ~= 0 then
@@ -819,8 +871,8 @@ function commands.MPw(id)
     context('0pt')
 end
 
-function commands.MPh(id)
-    local jpi = collected[id]
+scanners.MPh = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         local h = jpi.h
         if h and h ~= 0 then
@@ -831,8 +883,8 @@ function commands.MPh(id)
     context('0pt')
 end
 
-function commands.MPd(id)
-    local jpi = collected[id]
+scanners.MPd = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         local d = jpi.d
         if d and d ~= 0 then
@@ -843,8 +895,8 @@ function commands.MPd(id)
     context('0pt')
 end
 
-function commands.MPxy(id)
-    local jpi = collected[id]
+scanners.MPxy = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         context('(%.5Fpt,%.5Fpt)',
             jpi.x*pt,
@@ -855,8 +907,8 @@ function commands.MPxy(id)
     end
 end
 
-function commands.MPll(id)
-    local jpi = collected[id]
+scanners.MPll = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         context('(%.5Fpt,%.5Fpt)',
              jpi.x       *pt,
@@ -867,8 +919,8 @@ function commands.MPll(id)
     end
 end
 
-function commands.MPlr(id)
-    local jpi = collected[id]
+scanners.MPlr = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         context('(%.5Fpt,%.5Fpt)',
             (jpi.x + jpi.w)*pt,
@@ -879,8 +931,8 @@ function commands.MPlr(id)
     end
 end
 
-function commands.MPur(id)
-    local jpi = collected[id]
+scanners.MPur = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         context('(%.5Fpt,%.5Fpt)',
             (jpi.x + jpi.w)*pt,
@@ -891,8 +943,8 @@ function commands.MPur(id)
     end
 end
 
-function commands.MPul(id)
-    local jpi = collected[id]
+scanners.MPul = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         context('(%.5Fpt,%.5Fpt)',
              jpi.x         *pt,
@@ -922,10 +974,12 @@ local function MPpos(id)
     context('0,0,0,0,0,0') -- for mp only
 end
 
-commands.MPpos = MPpos
+scanners.MPpos = function() -- name
+    MPpos(scanstring())
+end
 
-function commands.MPn(id)
-    local jpi = collected[id]
+scanners.MPn = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         local n = jpi.n
         if n then
@@ -936,8 +990,8 @@ function commands.MPn(id)
     context(0)
 end
 
-function commands.MPc(id)
-    local jpi = collected[id]
+scanners.MPc = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         local c = jpi.c
         if c and p ~= true  then
@@ -948,8 +1002,8 @@ function commands.MPc(id)
     context(c) -- number
 end
 
-function commands.MPr(id)
-    local jpi = collected[id]
+scanners.MPr = function() -- name
+    local jpi = collected[scanstring()]
     if jpi then
         local r = jpi.r
         if r and p ~= true  then
@@ -979,29 +1033,32 @@ local function MPpardata(n)
     end
 end
 
-commands.MPpardata = MPpardata
+scanners.MPpardata = function() -- name
+    MPpardata(scanstring())
+end
 
-function commands.MPposset(id) -- special helper, used in backgrounds
-    local b = f_b_tag(id)
-    local e = f_e_tag(id)
-    local w = f_w_tag(id)
+scanners.MPposset = function() -- name (special helper, used in backgrounds)
+    local name = scanstring()
+    local b = f_b_tag(name)
+    local e = f_e_tag(name)
+    local w = f_w_tag(name)
     local p = f_p_tag(jobpositions.n(b))
     MPpos(b) context(",") MPpos(e) context(",") MPpos(w) context(",") MPpos(p) context(",") MPpardata(p)
 end
 
-function commands.MPls(id)
-    local t = collected[id]
-    if t then
-        context("%.5Fpt",t.ls*pt)
+scanners.MPls = function() -- name
+    local jpi = collected[scanstring()]
+    if jpi then
+        context("%.5Fpt",jpi.ls*pt)
     else
         context("0pt")
     end
 end
 
-function commands.MPrs(id)
-    local t = collected[id]
-    if t then
-        context("%.5Fpt",t.rs*pt)
+scanners.MPrs = function() -- name
+    local jpi = collected[scanstring()]
+    if jpi then
+        context("%.5Fpt",jpi.rs*pt)
     else
         context("0pt")
     end
@@ -1009,8 +1066,10 @@ end
 
 local splitter = lpeg.tsplitat(",")
 
-function commands.MPplus(id,n,default)
-    local jpi = collected[id]
+scanners.MPplus = function() -- name n default
+    local jpi     = collected[scanstring()]
+    local n       = scaninteger()
+    local default = scanstring()
     if jpi then
         local e = jpi.e
         if e then
@@ -1026,59 +1085,71 @@ function commands.MPplus(id,n,default)
     context(default)
 end
 
-function commands.MPrest(id,default)
-    local jpi = collected[id]
+scanners.MPrest = function() -- name default
+    local jpi     = collected[scanstring()]
+    local default = scanstring()
     context(jpi and jpi.e or default)
 end
 
-function commands.MPxywhd(id)
-    local t = collected[id]
-    if t then
+scanners.MPxywhd = function() -- name
+    local jpi = collected[scanstring()]
+    if jpi then
         context("%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt",
-            t.x*pt,
-            t.y*pt,
-            t.w*pt,
-            t.h*pt,
-            t.d*pt
+            jpi.x*pt,
+            jpi.y*pt,
+            jpi.w*pt,
+            jpi.h*pt,
+            jpi.d*pt
         )
     else
         context("0,0,0,0,0") -- for mp only
     end
 end
 
-local doif, doifelse = commands.doif, commands.doifelse
+local doif     = commands.doif
+local doifelse = commands.doifelse
 
-function commands.doifpositionelse(name)
-    doifelse(collected[name])
+scanners.doifpositionelse = function() -- name
+    doifelse(collected[scanstring()])
 end
 
-function commands.doifposition(name)
-    doif(collected[name])
+scanners.doifposition = function() -- name
+    doif(collected[scanstring()])
 end
 
-function commands.doifpositiononpage(name,page) -- probably always realpageno
-    local c = collected[name]
-    doifelse(c and c.p == page)
+scanners.doifpositiononpageelse = function() -- name page -- probably always realpageno
+    local c = collected[scanstring()]
+    local p = scaninteger()
+    doifelse(c and c.p == p)
 end
 
-function commands.doifoverlappingelse(one,two,overlappingmargin)
-    doifelse(overlapping(one,two,overlappingmargin))
+scanners.doifoverlappingelse = function() -- one two
+    doifelse(overlapping(scanstring(),scanstring()))
 end
 
-function commands.doifpositionsonsamepageelse(list,page)
-    doifelse(onsamepage(list))
+scanners.doifpositionsonsamepageelse = function() -- list
+    doifelse(onsamepage(scanstring()))
 end
 
-function commands.doifpositionsonthispageelse(list)
-    doifelse(onsamepage(list,tostring(texgetcount("realpageno"))))
+scanners.doifpositionsonthispageelse = function() -- list
+    doifelse(onsamepage(scanstring(),tostring(texgetcount("realpageno"))))
 end
 
-function commands.doifelsepositionsused()
+scanners.doifelsepositionsused = function()
     doifelse(next(collected))
 end
 
-commands.markcolumnbox = jobpositions.markcolumnbox
-commands.markregionbox = jobpositions.markregionbox
+scanners.markregionbox = function() -- box
+    markregionbox(scaninteger())
+end
+
+scanners.markregionboxtagged = function() -- box tag
+    markregionbox(scaninteger(),scanstring())
+end
+
+scanners.markregionboxcorrected = function() -- box tag
+    markregionbox(scaninteger(),scanstring(),true)
+end
 
 -- statistics (at least for the moment, when testing)
 

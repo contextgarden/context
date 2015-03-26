@@ -1433,6 +1433,7 @@ if context then
 
     local getcount = tex.getcount
 
+    hyphenators.methods  = methods
     hyphenators.optimize = false
 
     function hyphenators.handler(head,groupcode)

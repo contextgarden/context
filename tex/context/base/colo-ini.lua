@@ -20,6 +20,14 @@ local report_colors = logs.reporter("colors","defining")
 local attributes, backends, storage = attributes, backends, storage
 local context, commands = context, commands
 
+local scanners            = tokens.scanners
+local scanstring          = scanners.string
+local scanboolean         = scanners.boolean
+local scaninteger         = scanners.integer
+
+local compilescanner      = tokens.compile
+local scanners            = interfaces.scanners
+
 local settings_to_hash_strict = utilities.parsers.settings_to_hash_strict
 
 local colors              = attributes.colors
@@ -48,7 +56,7 @@ storage.register("attributes/colors/sets",colorsets,"attributes.colors.sets")
 
 local stack = { }
 
-function colors.pushset(name)
+local function pushset(name)
     insert(stack,colorset)
     colorset = colorsets[name]
     if not colorset then
@@ -57,13 +65,17 @@ function colors.pushset(name)
     end
 end
 
-function colors.popset(name)
+local function popset(name)
     colorset = remove(stack)
 end
 
-function colors.setlist(name)
+local function setlist(name)
     return table.sortedkeys(name and name ~= "" and colorsets[name] or colorsets.default or {})
 end
+
+colors.pushset = pushset
+colors.popset  = popset
+colors.setlist = setlist
 
 local context_colordefagc = context.colordefagc
 local context_colordefagt = context.colordefagt
@@ -242,9 +254,11 @@ colors.forcedmodel = forcedmodel
 
 colors.couple = true
 
-function colors.definetransparency(name,n)
+local function definetransparency(name,n)
     transparent[name] = n
 end
+
+colors.definetransparency = definetransparency
 
 local registered = { }
 
@@ -327,17 +341,19 @@ directives.register("colors.pgf",function(v)
     end
 end)
 
-function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent color vs transparent
+local defineintermediatecolor
+
+local function defineprocesscolor(name,str,global,freeze) -- still inconsistent color vs transparent
     local what, one, two, three = lpegmatch(specialcolor,str)
     if what == "H" then
         -- for old times sake (if we need to feed from xml or so)
         definecolor(name, register_color(name,'rgb',one,two,three),global)
     elseif what == "M" then
         -- intermediate
-        return colors.defineintermediatecolor(name,one,l_color[two],l_color[three],l_transparency[two],l_transparency[three],"",global,freeze)
+        return defineintermediatecolor(name,one,l_color[two],l_color[three],l_transparency[two],l_transparency[three],"",global,freeze)
     elseif what == "P" then
         -- pgf for tikz
-        return colors.defineintermediatecolor(name,two,l_color[one],l_color[three],l_transparency[one],l_transparency[three],"",global,freeze)
+        return defineintermediatecolor(name,two,l_color[one],l_color[three],l_transparency[one],l_transparency[three],"",global,freeze)
     else
         local settings = settings_to_hash_strict(str)
         if settings then
@@ -393,12 +409,14 @@ function colors.defineprocesscolor(name,str,global,freeze) -- still inconsistent
     colorset[name] = true-- maybe we can store more
 end
 
-function colors.isblack(ca) -- maybe commands
+local function isblack(ca) -- maybe commands
     local cv = ca > 0 and colorvalues[ca]
     return (cv and cv[2] == 0) or false
 end
 
-function colors.definespotcolor(name,parent,str,global)
+colors.isblack = isblack
+
+local function definespotcolor(name,parent,str,global)
     if parent == "" or find(parent,"=",1,true) then
         colors.registerspotcolor(name, parent) -- does that work? no attr
     elseif name ~= parent then
@@ -479,7 +497,7 @@ local function definemixcolor(makename,name,fractions,cs,global,freeze)
     end
 end
 
-function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
+local function definemultitonecolor(name,multispec,colorspec,selfspec)
     local dd, pp, nn, max = { }, { }, { }, 0
     for k,v in gmatch(multispec,"([^=,]+)=([^%,]*)") do -- use settings_to_array
         max = max + 1
@@ -497,7 +515,7 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
             if selfspec ~= "" then
                 colorspec = colorspec .. "," .. selfspec
             end
-            colors.defineprocesscolor(parent,colorspec,true,true)
+            defineprocesscolor(parent,colorspec,true,true)
         end
         local cp = attributes_list[a_color][parent]
         dd, pp = concat(dd,','), concat(pp,',')
@@ -515,6 +533,10 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
     end
     colorset[name] = true-- maybe we can store more
 end
+
+colors.defineprocesscolor   = defineprocesscolor
+colors.definespotcolor      = definespotcolor
+colors.definemultitonecolor = definemultitonecolor
 
 -- will move to mlib-col as colors in mp are somewhat messy due to the fact
 -- that we cannot cast .. so we really need to use (s,s,s) for gray in order
@@ -732,7 +754,7 @@ local function complement(one,fraction,i)
     return otf
 end
 
-function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,specs,global,freeze)
+defineintermediatecolor = function(name,fraction,c_one,c_two,a_one,a_two,specs,global,freeze)
     fraction = tonumber(fraction) or 1
     local one, two = colorvalues[c_one], colorvalues[c_two]
     if one then
@@ -788,6 +810,8 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
     end
 end
 
+colors.defineintermediatecolor = defineintermediatecolor
+
 -- for the moment downward compatible
 
 local patterns = { "colo-imp-%s.mkiv", "colo-imp-%s.tex", "colo-%s.mkiv", "colo-%s.tex" }
@@ -807,7 +831,7 @@ local function failure(name)
     report_colors("unknown library %a",name)
 end
 
-function colors.usecolors(name)
+local function usecolors(name)
     commands.uselibrary {
         category = "color definition",
         name     = name,
@@ -818,12 +842,18 @@ function colors.usecolors(name)
     }
 end
 
+colors.usecolors = usecolors
+
 -- interface (todo: use locals)
 
 local setcolormodel = colors.setmodel
 
 function commands.setcolormodel(model,weight)
     texsetattribute(a_colorspace,setcolormodel(model,weight))
+end
+
+scanners.setcolormodel = function()
+    texsetattribute(a_colorspace,setcolormodel(scanstring(),scanboolean()))
 end
 
 -- function commands.setrastercolor(name,s)
@@ -834,11 +864,50 @@ function commands.registermaintextcolor(a)
     colors.main = a
 end
 
-commands.defineprocesscolor      = colors.defineprocesscolor
-commands.definespotcolor         = colors.definespotcolor
-commands.definemultitonecolor    = colors.definemultitonecolor
-commands.definetransparency      = colors.definetransparency
-commands.defineintermediatecolor = colors.defineintermediatecolor
+commands.defineprocesscolor      = defineprocesscolor
+commands.definespotcolor         = definespotcolor
+commands.definemultitonecolor    = definemultitonecolor
+commands.definetransparency      = definetransparency
+commands.defineintermediatecolor = defineintermediatecolor
+
+scanners.defineprocesscolorlocal = compilescanner {
+    actions   = defineprocesscolor,
+    arguments = { "string", "string", false, "boolean" }
+}
+
+scanners.defineprocesscolorglobal = compilescanner {
+    actions   = defineprocesscolor,
+    arguments = { "string", "string", true, "boolean" }
+}
+
+scanners.defineprocesscolordummy = compilescanner {
+    actions   = defineprocesscolor,
+    arguments = { "'d_u_m_m_y'", "string", false, false }
+}
+
+scanners.definespotcolorglobal = compilescanner {
+    actions   = definespotcolor,
+    arguments = { "string", "string", "string", true }
+}
+
+scanners.definemultitonecolorglobal = compilescanner {
+    actions   = definespotcolor,
+    arguments = { "string", "string", "string", "string", true }
+}
+
+scanners.registermaintextcolor = function()
+    colors.main = scaninteger()
+end
+
+scanners.definetransparency = compilescanner {
+    actions   = definetransparency,
+    arguments = { "string", "integer" },
+}
+
+scanners.defineintermediatecolor = compilescanner {
+    actions   = defineintermediatecolor,
+    arguments = { "string", "string", "integer", "integer", "integer", "integer", "string", false, "boolean" }
+}
 
 function commands.spotcolorname         (a)   context(spotcolorname         (a))   end
 function commands.spotcolorparent       (a)   context(spotcolorparent       (a))   end
@@ -849,21 +918,55 @@ function commands.processcolorcomponents(a,s) context(processcolorcomponents(a,s
 function commands.formatcolor           (...) context(formatcolor           (...)) end
 function commands.formatgray            (...) context(formatgray            (...)) end
 
+scanners.spotcolorname          = compilescanner {  actions = spotcolorname,   arguments = "integer" }
+scanners.spotcolorparent        = compilescanner {  actions = spotcolorparent, arguments = "integer" }
+scanners.spotcolorvalue         = compilescanner {  actions = spotcolorvalue,  arguments = "integer" }
+
+scanners.colorcomponents        = compilescanner {  actions = colorcomponents,        arguments =   "integer" }
+scanners.transparencycomponents = compilescanner {  actions = transparencycomponents, arguments =   "integer" }
+scanners.processcolorcomponents = compilescanner {  actions = processcolorcomponents, arguments = { "integer", "','" } }
+
+scanners.formatcolor            = compilescanner {  actions = formatcolor, arguments = { "integer", "string" } }
+scanners.formatgray             = compilescanner {  actions = formatgray,  arguments = { "integer", "string" } }
+
 function commands.mpcolor(model,ca,ta,default)
     context(mpcolor(model,ca,ta,default))
 end
+
+-- scanners.mpcolor = function()
+--     context(mpcolor(scaninteger(),scaninteger(),scaninteger()))
+-- end
+
+scanners.mpcolor = compilescanner {
+    actions   = { mpcolor, context },
+    arguments = { "integer", "integer", "integer" }
+}
 
 function commands.mpoptions(model,ca,ta,default)
     context(mpoptions(model,ca,ta,default))
 end
 
+scanners.mpoptions = compilescanner {
+    actions   = { mpoptions, context },
+    arguments = { "integer", "integer", "integer" }
+}
+
+local ctx_doifelse = commands.doifelse
+
 function commands.doifblackelse(a)
-    commands.doifelse(colors.isblack(a))
+    ctx_doifelse(isblack(a))
 end
 
 function commands.doifdrawingblackelse()
-    commands.doifelse(colors.isblack(texgetattribute(a_color)))
+    ctx_doifelse(isblack(texgetattribute(a_color)))
 end
+
+scanners.doifblackelse = compilescanner {
+    actions   = { isblack, ctx_doifelse },
+    arguments = "integer"
+}
+
+scanners.doifdrawingblackelse = commands.doifdrawingblackelse
 
 -- function commands.withcolorsinset(name,command)
 --     local set
@@ -883,14 +986,17 @@ end
 --     end
 -- end
 
-commands.startcolorset = colors.pushset
-commands.stopcolorset  = colors.popset
+commands.startcolorset = pushset
+commands.stopcolorset  = popset
+commands.usecolors     = usecolors
 
-commands.usecolors = colors.usecolors
+scanners.startcolorset = compilescanner { actions = pushset, arguments = "string" }
+scanners.stopcolorset  = popset
+scanners.usecolors     = compilescanner { actions = usecolors, arguments = "string" }
 
 -- bonus
 
-function commands.pgfxcolorspec(ca) -- {}{}{colorspace}{list}
+local function pgfxcolorspec(ca) -- {}{}{colorspace}{list}
  -- local cv = attributes.colors.values[ca]
     local cv = colorvalues[ca]
     if cv then
@@ -908,6 +1014,10 @@ function commands.pgfxcolorspec(ca) -- {}{}{colorspace}{list}
         context("{gray}{0}")
     end
 end
+
+commands.pgfxcolorspec = pgfxcolorspec
+
+scanners.pgfxcolorspec = compilescanner { actions = pgfxcolorspec, arguments = "integer" }
 
 -- function commands.pgfregistercolor(name,attribute)
 --     local cv = colorvalues[ca]

@@ -20,7 +20,12 @@
 %D This will move:
 
 \unexpanded\def\setstructuresynchronization#1% todo: use ctxcontext
-  {\ctxcommand{setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference,"\interactionparameter\c!focus")}%
+  {\clf_setinternalreference
+     prefix    {\currentstructurereferenceprefix}%
+     reference {\currentstructurereference}
+     internal  \nextinternalreference
+     view      {\interactionparameter\c!focus}%
+   \relax
    \xdef\currentstructureattribute  {\the\lastdestinationattribute}%
    \xdef\currentstructuresynchronize{\ctxlatecommand{enhancelist(#1)}}}
 

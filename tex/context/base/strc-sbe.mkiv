@@ -81,7 +81,7 @@
 \def\strc_sectionblock_set[#1][#2]% used to set the default
   {\edef\currentsectionblock{#1}% from now on we assume a value
    \setupcurrentsectionblock[#2]%
-   \ctxcommand{setsectionblock("#1", { bookmark = "\sectionblockparameter\c!bookmark" })}}
+   \clf_setsectionblock{#1}{ bookmark {\sectionblockparameter\c!bookmark} }}
 
 \let\currentsectionblock\empty % was \s!unknown
 
@@ -93,7 +93,7 @@
    \begingroup
    \edef\currentsectionblock{#1}% from now on we assume a value
    \setupcurrentsectionblock[#2]%
-   \ctxcommand{pushsectionblock("#1", { bookmark = "\sectionblockparameter\c!bookmark" })}%
+   \clf_pushsectionblock{#1}{ bookmark {\sectionblockparameter\c!bookmark} }%
    \csname #1true\endcsname % obsolete
    \setsystemmode\currentsectionblock
    \the\everybeforesectionblock\relax
@@ -102,7 +102,7 @@
 \unexpanded\def\stopsectionblock
   {\showmessage\m!structures2\currentsectionblock
    \the\everyaftersectionblock\relax
-   \ctxcommand{popsectionblock()}%
+   \clf_popsectionblock
    \endgroup}
 
 %D \starttyping

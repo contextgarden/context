@@ -8,8 +8,6 @@ if not modules then modules = { } end modules ['anch-pgr'] = {
 
 -- todo: we need to clean up lists (of previous pages)
 
-local commands, context = commands, context
-
 local format = string.format
 local abs = math.abs
 local concat, sort = table.concat, table.sort
@@ -19,6 +17,15 @@ local lpegmatch = lpeg.match
 local jobpositions = job.positions
 local formatters   = string.formatters
 
+local scanners     = tokens.scanners
+local scanstring   = scanners.string
+local scaninteger  = scanners.integer
+local scandimen    = scanners.dimen
+
+local scanners     = interfaces.scanners
+
+local commands     = commands
+local context      = context
 
 local report_graphics = logs.reporter("graphics")
 
@@ -603,13 +610,18 @@ backgrounds.point = f_point
 backgrounds.pair  = f_pair
 backgrounds.path  = f_path
 
-function commands.fetchmultipar(n,anchor,page)
-    context(fetchmultipar(n,anchor,page))
-end
+-- scanners.fetchmultipar = function() -- n anchor page
+--     context(fetchmultipar(scanstring(),scanstring(),scaninteger()))
+-- end
+--
+-- scanners.fetchmultishape = function() -- n anchor page
+--     context(fetchmultipar(scanstring(),scanstring(),scaninteger(),true))
+-- end
 
-function commands.fetchmultishape(n,anchor,page)
-    context(fetchmultipar(n,anchor,page,true))
-end
+-- n anchor page
+
+scanners.fetchmultipar   = tokens.compile { actions = { fetchmultipar, context }, arguments = { "string", "string", "integer" } }
+scanners.fetchmultishape = tokens.compile { actions = { fetchmultipar, context }, arguments = { "string", "string", "integer", true } }
 
 local f_template_a = [[
 path posboxes[], posregions[] ;
@@ -628,7 +640,10 @@ posregions[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
 f_template_a = formatters[f_template_a]
 f_template_b = formatters[f_template_b]
 
-function commands.fetchposboxes(tags,anchor,page) -- no caching (yet) / todo: anchor, page
+scanners.fetchposboxes = function() -- tags anchor page  -- no caching (yet) / todo: anchor, page
+    local tags   = scanstring()
+    local anchor = scanstring()
+    local page   = scaninteger()
     local collected = jobpositions.collected
     if type(tags) == "string" then
         tags = utilities.parsers.settings_to_array(tags)
@@ -665,20 +680,23 @@ end
 
 local doifelse = commands.doifelse
 
-function commands.doifelsemultipar(n,page,obeyhang)
-    local data = pbg[n]
-    if not data then
-        data = calculatemultipar(n,obeyhang)
-        pbg[n] = data
-    end
-    if page then
-        doifelse(data and data[page] and true)
-    else
-        doifelse(data and next(data) and true)
-    end
-end
+-- function commands.doifelsemultipar(n,page,obeyhang)
+--     local data = pbg[n]
+--     if not data then
+--         data = calculatemultipar(n,obeyhang)
+--         pbg[n] = data
+--     end
+--     if page then
+--         doifelse(data and data[page] and true)
+--     else
+--         doifelse(data and next(data) and true)
+--     end
+-- end
 
-function commands.doifelserangeonpage(first,last,page)
+scanners.doifelserangeonpage = function() -- first last page
+    local first = scanstring()
+    local last  = scanstring()
+    local page  = scaninteger()
     local collected = jobpositions.collected
     local f = collected[first]
     if not f or f.p == true then

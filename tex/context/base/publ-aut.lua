@@ -22,7 +22,11 @@ local P, C, V, Cs, Ct, Cg, Cf, Cc = lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lp
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local context         = context
-local commands        = commands
+----- commands        = commands
+
+local implement       = interfaces.implement
+local ctx_setmacro    = interfaces.setmacro
+
 local publications    = publications
 
 local datasets        = publications.datasets
@@ -284,7 +288,6 @@ local function the_initials(initials,symbol,connector)
 end
 
 local ctx_btxsetconcat        = context.btxsetconcat
-local ctx_btxsetauthorindex   = context.btxsetauthorindex
 local ctx_btxsetoverflow      = context.btxsetoverflow
 local ctx_btxsetinitials      = context.btxsetinitials
 local ctx_btxsetfirstnames    = context.btxsetfirstnames
@@ -320,13 +323,13 @@ local function value(i,field)
     end
 end
 
-function commands.btx_a_i(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol))) end end
-function commands.btx_a_f(i) local v = value(i,"firstnames") if v then context(concat(v," ")) end end
-function commands.btx_a_j(i) local v = value(i,"juniors")    if v then context(concat(v," ")) end end
-function commands.btx_a_s(i) local v = value(i,"surnames")   if v then context(concat(v," ")) end end
-function commands.btx_a_v(i) local v = value(i,"vons")       if v then context(concat(v," ")) end end
+implement { name = "btxcurrentfirstnames", arguments = "integer", actions = function(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol))) end end }
+implement { name = "btxcurrentinitials",   arguments = "integer", actions = function(i) local v = value(i,"firstnames") if v then context(concat(v," ")) end end }
+implement { name = "btxcurrentjuniors",    arguments = "integer", actions = function(i) local v = value(i,"juniors")    if v then context(concat(v," ")) end end }
+implement { name = "btxcurrentsurnames",   arguments = "integer", actions = function(i) local v = value(i,"surnames")   if v then context(concat(v," ")) end end }
+implement { name = "btxcurrentvons",       arguments = "integer", actions = function(i) local v = value(i,"vons")       if v then context(concat(v," ")) end end }
 
-function commands.btxauthorfield(i,field)
+local function btxauthorfield(i,field)
     if currentauthordata then
         local entry = currentauthordata[i]
         if entry then
@@ -337,7 +340,7 @@ function commands.btxauthorfield(i,field)
             elseif manipulator then
                 for i=1,#value do
                     if i > 1 then
-                        context(" ") -- symbol ?
+                        context(" ")
                     end
                     context(applymanipulation(manipulator,value) or value)
                 end
@@ -346,7 +349,7 @@ function commands.btxauthorfield(i,field)
             else
                 context(concat(value," "))
             end
-         end
+        end
     end
 end
 
@@ -355,7 +358,7 @@ end
 -- in. Also, authors can be combined with years and so and they
 -- might be called upon mixed with other calls.
 
-function commands.btxauthor(dataset,tag,field,settings)
+local function btxauthor(dataset,tag,field,settings)
     local split, usedfield, kind = getcasted(dataset,tag,field)
     if kind == "author" then
         local max = split and #split or 0
@@ -431,6 +434,29 @@ function commands.btxauthor(dataset,tag,field,settings)
         report("ignored field %a of tag %a, used field %a is no author",field,tag,usedfield)
     end
 end
+
+implement {
+    name      = "btxauthorfield",
+    actions   = btxauthorfield,
+    arguments = { "integer", "string" }
+}
+
+implement {
+    name      = "btxauthor",
+    actions   = btxauthor,
+    arguments = {
+        "string",
+        "string",
+        "string",
+        {
+            { "combiner" },
+            { "kind" },
+            { "etallimit" },
+            { "etaldisplay" },
+            { "symbol" },
+        }
+    }
+}
 
 local function components(snippet,short)
     local vons       = snippet.vons

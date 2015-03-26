@@ -444,7 +444,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38619, stripped down to: 19653
+-- original size: 35741, stripped down to: 19992
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1011,46 +1011,40 @@ function lpeg.append(list,pp,delayed,checked)
 end
 local p_false=P(false)
 local p_true=P(true)
-local function make(t,hash)
-  local p=p_false
-  local keys=sortedkeys(t)
-  local function making(t,w)
+local function make(t)
+  local function making(t)
     local p=p_false
     local keys=sortedkeys(t)
+    local okay=t[""]
     for i=1,#keys do
       local k=keys[i]
-      local v=t[k]
-      if w then
+      if k~="" then
+        local v=t[k]
         if v==true then
           p=p+P(k)*p_true
+        elseif v==false then
+        elseif okay then
+          p=p+P(k)*(making(v)+p_true)
         else
-          p=p+P(k)*(making(v,w)+p_true)
-        end
-      else
-        if v==true then
-          p=p+P(k)
-        else
-          p=p+P(k)*making(v,w)
+          p=p+P(k)*making(v)
         end
       end
     end
     return p
   end
+  local p=p_false
+  local keys=sortedkeys(t)
   for i=1,#keys do
     local k=keys[i]
-    local v=t[k]
-    local h=hash[v]
-    if h then
+    if k~="" then
+      local v=t[k]
       if v==true then
         p=p+P(k)*p_true
+      elseif v==false then
+      elseif v[""] then
+        p=p+P(k)*(making(v)+p_true)
       else
-        p=p+P(k)*(making(v,true)+p_true)
-      end
-    else
-      if v==true then
-        p=p+P(k)
-      else
-        p=p+P(k)*making(v,false)
+        p=p+P(k)*making(v)
       end
     end
   end
@@ -1058,58 +1052,76 @@ local function make(t,hash)
 end
 function lpeg.utfchartabletopattern(list) 
   local tree={}
-  local hash
   local n=#list
   if n==0 then
-    hash=list
     for s in next,list do
       local t=tree
       local p,pk
       for c in gmatch(s,".") do
         if t==true then
-          t={ [c]=true }
+          t={ [c]=true,[""]=true }
           p[pk]=t
           p=t
-          t=true
+          t=false
+        elseif t==false then
+          t={ [c]=false }
+          p[pk]=t
+          p=t
+          t=false
         else
           local tc=t[c]
           if not tc then
-            tc=true
-            t[c]=tc
+            tc=false
+            t[c]=false
           end
           p=t
           t=tc
         end
         pk=c
+      end
+      if t==false then
+        p[pk]=true
+      elseif t==true then
+      else
+        t[""]=true
       end
     end
   else
-    hash={}
     for i=1,n do
-      local t=tree
       local s=list[i]
+      local t=tree
       local p,pk
       for c in gmatch(s,".") do
         if t==true then
-          t={ [c]=true }
+          t={ [c]=true,[""]=true }
           p[pk]=t
           p=t
-          t=true
+          t=false
+        elseif t==false then
+          t={ [c]=false }
+          p[pk]=t
+          p=t
+          t=false
         else
           local tc=t[c]
           if not tc then
-            tc=true
-            t[c]=true
+            tc=false
+            t[c]=false
           end
           p=t
           t=tc
         end
         pk=c
       end
-      hash[s]=true
+      if t==false then
+        p[pk]=true
+      elseif t==true then
+      else
+        t[""]=true
+      end
     end
   end
-  return make(tree,hash)
+  return make(tree)
 end
 patterns.containseol=lpeg.finder(eol)
 local function nextstep(n,step,result)
@@ -17819,8 +17831,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 749393
--- stripped bytes    : 275594
+-- original bytes    : 746515
+-- stripped bytes    : 272377
 
 -- end library merge
 

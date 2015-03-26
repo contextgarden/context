@@ -10,11 +10,13 @@ if not modules then modules = { } end modules ['strc-mar'] = {
 -- todo: only commands.* print to tex, native marks return values
 
 local insert, concat = table.insert, table.concat
-local tostring, next, rawget = tostring, next, rawget
+local tostring, next, rawget, type = tostring, next, rawget, type
 local lpegmatch = lpeg.match
 
 local context            = context
 local commands           = commands
+
+local implement          = interfaces.implement
 
 local allocate           = utilities.storage.allocate
 local setmetatableindex  = table.setmetatableindex
@@ -216,7 +218,11 @@ local function resolve(t,k)
 end
 
 function marks.define(name,settings)
-    settings = settings or { }
+    if not settings then
+        settings = { }
+    elseif type(settings) == "string" then
+        settings = { parent = settings }
+    end
     data[name] = settings
     local parent = settings.parent
     if parent == nil or parent == "" or parent == name then
@@ -711,20 +717,17 @@ end
 
 -- interface
 
-commands.markingtitle       = marks.title
-commands.markingnumber      = marks.number
+implement { name = "markingtitle",       actions = marks.title,         arguments = { "string", "string" } }
+implement { name = "markingnumber",      actions = marks.number,        arguments = { "string", "string" } }
 
-commands.definemarking      = marks.define
-commands.relatemarking      = marks.relate
-commands.setmarking         = marks.set
-commands.resetmarking       = marks.reset
-commands.synchronizemarking = marks.synchronize
-commands.getmarking         = marks.fetch
-commands.fetchonemark       = marks.fetchonemark
-commands.fetchtwomarks      = marks.fetchtwomarks
-commands.fetchallmarks      = marks.fetchallmarks
+implement { name = "definemarking",      actions = marks.define,        arguments = { "string", "string" } }
+implement { name = "relatemarking",      actions = marks.relate,        arguments = { "string", "string" } }
+implement { name = "setmarking",         actions = marks.set,           arguments = { "string", "string" } }
+implement { name = "resetmarking",       actions = marks.reset,         arguments = { "string" } }
+implement { name = "synchronizemarking", actions = marks.synchronize,   arguments = { "string", "integer", "string" } }
+implement { name = "getmarking",         actions = marks.fetch,         arguments = { "string", "string", "string" } }
+implement { name = "fetchonemark",       actions = marks.fetchonemark,  arguments = { "string", "string", "string" } }
+implement { name = "fetchtwomarks",      actions = marks.fetchtwomarks, arguments = { "string", "string" } }
+implement { name = "fetchallmarks",      actions = marks.fetchallmarks, arguments = { "string", "string" } }
 
-function commands.doifelsemarking(str) -- can be shortcut
-    commands.doifelse(marks.exists(str))
-end
-
+implement { name = "doifelsemarking",    actions = { marks.exists, commands.doifelse }, arguments = "string" }

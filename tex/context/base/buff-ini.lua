@@ -11,6 +11,8 @@ local type, next, load = type, next, load
 local sub, format = string.sub, string.format
 local splitlines, validstring = string.splitlines, string.valid
 local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
+local utfchar  = utf.char
+local totable  = string.totable
 
 local trace_run         = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
 local trace_grab        = false  trackers.register("buffers.grab",      function(v) trace_grab      = v end)
@@ -22,6 +24,21 @@ local report_grabbing   = logs.reporter("buffers","grabbing")
 
 local context           = context
 local commands          = commands
+
+local implement         = interfaces.implement
+
+local scanners          = tokens.scanners
+local scanstring        = scanners.string
+local scaninteger       = scanners.integer
+local scanboolean       = scanners.boolean
+local scancode          = scanners.code
+local scantoken         = scanners.token
+
+local getters           = tokens.getters
+local gettoken          = getters.token
+
+local compilescanner    = tokens.compile
+local scanners          = interfaces.scanners
 
 local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
@@ -165,8 +182,17 @@ buffers.loadcontent    = loadcontent
 
 -- the context interface
 
-commands.erasebuffer  = erase
-commands.assignbuffer = assign
+implement {
+    name      = "assignbuffer",
+    actions   = assign,
+    arguments = { "string", "string", "integer" }
+}
+
+implement {
+    name      = "erasebuffer",
+    actions   = erase,
+    arguments = "string"
+}
 
 local anything      = patterns.anything
 local alwaysmatched = patterns.alwaysmatched
@@ -259,51 +285,141 @@ end
 
 buffers.undent = undent
 
-function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes,doundent) -- maybe move \\ to call
-    local dn = getcontent(name)
-    if dn == "" then
-        nesting  = 0
-        continue = false
-    end
-    if trace_grab then
-        if #bufferdata > 30 then
-            report_grabbing("%s => |%s..%s|",name,sub(bufferdata,1,10),sub(bufferdata,-10,#bufferdata))
+-- function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes,doundent) -- maybe move \\ to call
+--     local dn = getcontent(name)
+--     if dn == "" then
+--         nesting  = 0
+--         continue = false
+--     end
+--     if trace_grab then
+--         if #bufferdata > 30 then
+--             report_grabbing("%s => |%s..%s|",name,sub(bufferdata,1,10),sub(bufferdata,-10,#bufferdata))
+--         else
+--             report_grabbing("%s => |%s|",name,bufferdata)
+--         end
+--     end
+--     local counter = counters[begintag]
+--     if not counter then
+--         counter = countnesting(begintag,endtag)
+--         counters[begintag] = counter
+--     end
+--     nesting = nesting + lpegmatch(counter,bufferdata)
+--     local more = nesting > 0
+--     if more then
+--         dn       = dn .. sub(bufferdata,2,-1) .. endtag
+--         nesting  = nesting - 1
+--         continue = true
+--     else
+--         if continue then
+--             dn = dn .. sub(bufferdata,2,-2) -- no \r, \n is more generic
+--         elseif dn == "" then
+--             dn = sub(bufferdata,2,-2)
+--         else
+--             dn = dn .. "\n" .. sub(bufferdata,2,-2) -- no \r, \n is more generic
+--         end
+--         local last = sub(dn,-1)
+--         if last == "\n" or last == "\r" then -- \n is unlikely as \r is the endlinechar
+--             dn = sub(dn,1,-2)
+--         end
+--         if doundent or (autoundent and doundent == nil) then
+--             dn = undent(dn)
+--         end
+--     end
+--     assign(name,dn,catcodes)
+--     commands.doifelse(more)
+-- end
+
+function tokens.pickup(start,stop)
+    local stoplist    = totable(stop)
+    local stoplength  = #stoplist
+    local stoplast    = stoplist[stoplength]
+    local startlist   = totable(start)
+    local startlength = #startlist
+    local startlast   = startlist[startlength]
+    local list        = { }
+    local size        = 0
+    local depth       = 0
+    while true do -- or use depth
+        local char = scancode()
+        if char then
+            char = utfchar(char)
+            size = size + 1
+            list[size] = char
+            if char == stoplast and size >= stoplength then
+                local done = true
+                local last = size
+                for i=stoplength,1,-1 do
+                    if stoplist[i] ~= list[last] then
+                        done = false
+                        break
+                    end
+                    last = last - 1
+                end
+                if done then
+                    if depth > 0 then
+                        depth = depth - 1
+                    else
+                        break
+                    end
+                    char = false -- trick: let's skip the next (start) test
+                end
+            end
+            if char == startlast and size >= startlength then
+                local done = true
+                local last = size
+                for i=startlength,1,-1 do
+                    if startlist[i] ~= list[last] then
+                        done = false
+                        break
+                    end
+                    last = last - 1
+                end
+                if done then
+                    depth = depth + 1
+                end
+            end
         else
-            report_grabbing("%s => |%s|",name,bufferdata)
+         -- local t = scantoken()
+            local t = gettoken()
+            if t then
+                -- we're skipping leading stuff, like obeyedlines and relaxes
+            else
+                break
+            end
         end
     end
-    local counter = counters[begintag]
-    if not counter then
-        counter = countnesting(begintag,endtag)
-        counters[begintag] = counter
-    end
-    nesting = nesting + lpegmatch(counter,bufferdata)
-    local more = nesting > 0
-    if more then
-        dn       = dn .. sub(bufferdata,2,-1) .. endtag
-        nesting  = nesting - 1
-        continue = true
-    else
-        if continue then
-            dn = dn .. sub(bufferdata,2,-2) -- no \r, \n is more generic
-        elseif dn == "" then
-            dn = sub(bufferdata,2,-2)
-        else
-            dn = dn .. "\n" .. sub(bufferdata,2,-2) -- no \r, \n is more generic
-        end
-        local last = sub(dn,-1)
-        if last == "\n" or last == "\r" then -- \n is unlikely as \r is the endlinechar
-            dn = sub(dn,1,-2)
-        end
-        if doundent or (autoundent and doundent == nil) then
-            dn = undent(dn)
-        end
-    end
-    assign(name,dn,catcodes)
-    commands.doifelse(more)
+    list = concat(list,"",1,size-stoplength-1)
+    return list
 end
 
-function commands.savebuffer(list,name,prefix) -- name is optional
+-- function buffers.pickup(name,start,stop,finish,catcodes,doundent)
+--     local data = tokens.pickup(start,stop)
+--     if doundent or (autoundent and doundent == nil) then
+--         data = buffers.undent(data)
+--     end
+--     buffers.assign(name,data,catcodes)
+--     context(finish)
+-- end
+
+-- commands.pickupbuffer = buffers.pickup
+
+scanners.pickupbuffer = function()
+    local name     = scanstring()
+    local start    = scanstring()
+    local stop     = scanstring()
+    local finish   = scanstring()
+    local catcodes = scaninteger()
+    local doundent = scanboolean()
+    local data = tokens.pickup(start,stop)
+    if doundent or (autoundent and doundent == nil) then
+        data = buffers.undent(data)
+    end
+    buffers.assign(name,data,catcodes)
+ -- context[finish]()
+    context(finish)
+end
+
+local function savebuffer(list,name,prefix) -- name is optional
     if not list or list == "" then
         list = name
     end
@@ -320,47 +436,18 @@ function commands.savebuffer(list,name,prefix) -- name is optional
     io.savedata(name,content)
 end
 
--- local files = { }
--- local last  = 0
---
--- function commands.runbuffer(name,encapsulate) -- we used to compare the saved file with content
---     local names    = getnames(name)
---     local filename = files[name]
---     local tobedone = not istypeset(names)
---     if tobedone or not filename then
---         last        = last + 1
---         filename    = formatters["%s-typeset-buffer-%03i"](tex.jobname,last)
---         files[name] = filename
---     end
---     if tobedone then
---         if trace_run then
---             report_typeset("changes in %a, processing forced",name)
---         end
---         local filename = addsuffix(filename,"tmp")
---         local content = collectcontent(names,nil) or ""
---         if content == "" then
---             content = "empty buffer"
---         end
---         if encapsulate then
---             content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
---         end
---         io.savedata(filename,content)
---         local command = formatters["context %s %s"](jit and "--jit" or "",filename)
---         report_typeset("running: %s\n",command)
---         os.execute(command)
---         markastypeset(names)
---     elseif trace_run then
---         report_typeset("no changes in %a, not processed",name)
---     end
---     context(replacesuffix(filename,"pdf"))
--- end
+implement {
+    name      = "savebuffer",
+    actions   = savebuffer,
+    arguments = { "string", "string", "string" }
+}
 
 -- we can consider adding a size to avoid unlikely clashes
 
 local oldhashes = nil
 local newhashes = nil
 
-function commands.runbuffer(name,encapsulate)
+local function runbuffer(name,encapsulate)
     if not oldhashes then
         oldhashes = job.datasets.getdata("typeset buffers","hashes") or { }
         for hash, n in next, oldhashes do
@@ -406,10 +493,10 @@ function commands.runbuffer(name,encapsulate)
     registertempfile(filename)
     registertempfile(resultname,nil,true)
     --
-    context(resultname)
+    return resultname
 end
 
-function commands.getbuffer(name)
+local function getbuffer(name)
     local str = getcontent(name)
     if str ~= "" then
      -- characters.showstring(str)
@@ -417,11 +504,11 @@ function commands.getbuffer(name)
     end
 end
 
-function commands.getbuffermkvi(name) -- rather direct !
+local function getbuffermkvi(name) -- rather direct !
     context.viafile(resolvers.macros.preprocessed(getcontent(name)),formatters["buffer.%s.mkiv"](validstring(name,"noname")))
 end
 
-function commands.gettexbuffer(name)
+local function gettexbuffer(name)
     local buffer = name and cache[name]
     if buffer and buffer.data ~= "" then
         context.pushcatcodetable()
@@ -436,20 +523,29 @@ function commands.gettexbuffer(name)
     end
 end
 
-commands.getbufferctxlua = loadcontent
+implement { name = "getbufferctxlua", actions = loadcontent,   arguments = "string" }
+implement { name = "getbuffer",       actions = getbuffer,     arguments = "string" }
+implement { name = "getbuffermkvi",   actions = getbuffermkvi, arguments = "string" }
+implement { name = "gettexbuffer",    actions = gettexbuffer,  arguments = "string" }
 
-function commands.doifelsebuffer(name)
-    commands.doifelse(exists(name))
-end
+implement {
+    name      = "runbuffer",
+    actions   = { runbuffer, context },
+    arguments = { "string", "boolean" }
+}
+
+implement {
+    name      = "doifelsebuffer",
+    actions   = { exists, commands.doifelse },
+    arguments = "string"
+}
 
 -- This only used for mp buffers and is a kludge. Don't change the
 -- texprint into texsprint as it fails because "p<nl>enddef" becomes
 -- "penddef" then.
 
--- function commands.feedback(names)
---     texprint(ctxcatcodes,splitlines(collectcontent(names)))
--- end
-
-function commands.feedback(names) -- bad name, maybe rename to injectbuffercontent
-    context.printlines(collectcontent(names))
-end
+implement {
+    name      = "feedback", -- bad name, maybe rename to injectbuffercontent
+    actions   = { collectcontent, context.printlines },
+    arguments = "string"
+}

@@ -197,19 +197,25 @@
      \edef\currentsynonymexpansion{\simplelistparameter\c!expansion}%
      \preprocessexpansion\currentsynonymexpansion\currentsynonymtext   \currentsynonymcoding{#4}%
      \preprocessexpansion\currentsynonymexpansion\currentsynonymmeaning\currentsynonymcoding{#5}%
-     \ctxcommand{registersynonym("\currentsynonym", "synonym", {
-        metadata = {
-            catcodes = \the\catcodetable,
-            coding   = "\currentsynonymcoding",
-            xmlroot  = \ifx\currentsynonymcoding\s!xml "\xmldocument" \else nil \fi,
-        },
-        definition = {
-            tag     = "\currentsynonymtag",
-            synonym = \!!bs\currentsynonymtext\!!es,
-            meaning = \!!bs\currentsynonymmeaning\!!es,
-            used    = false,
-        }
-     })}%
+     \clf_registersynonym
+        {\currentsynonym}%
+        {synonym}%
+        {%
+            metadata {%
+                catcodes \catcodetable
+                coding   {\currentsynonymcoding}%
+            \ifx\currentsynonymcoding\s!xml
+                xmlroot  {\xmldocument}%
+            \fi
+            }%
+            definition {%
+                tag     {\currentsynonymtag}%
+                synonym {\currentsynonymtext}%
+                meaning {\currentsynonymmeaning}%
+                used    false
+            }%
+        }%
+     \relax
      \doif{#1}\v!yes{\setuxvalue\currentsynonymtag{\strc_synonyms_insert{\currentsynonym}{\currentsynonymtag}}}%
    \fi
    \endgroup}
@@ -218,13 +224,13 @@
   {\dodoubleargument\strc_synonyms_register}
 
 \def\strc_synonyms_register[#1][#2]%
-  {\ctxcommand{registerusedsynonym("#1","#2")}}
+  {\clf_registerusedsynonym{#1}{#2}}
 
 \unexpanded\def\strc_synonyms_insert_meaning#1#2% name tag
   {\begingroup
    \def\currentsimplelist{#1}%
    \usesimpleliststyleandcolor\c!textstyle\c!textcolor
-   \simplelistparameter\c!textcommand{\ctxcommand{synonymmeaning("#1","#2")}}%
+   \simplelistparameter\c!textcommand{\clf_synonymmeaning{#1}{#2}}%
    \endgroup}
 
 \unexpanded\def\strc_synonyms_insert#1#2% name tag
@@ -235,7 +241,7 @@
    \dostarttaggedchained\t!synonym\currentsynonym\??simplelist
    \dotagsynonym
    \usesimpleliststyleandcolor\c!synonymstyle\c!synonymcolor
-   \simplelistparameter\c!synonymcommand{\ctxcommand{synonymname("#1","#2")}}%
+   \simplelistparameter\c!synonymcommand{\clf_synonymname{#1}{#2}}%
    \dostoptagged
    \normalexpanded{\endgroup\simplelistparameter\c!next}}
 
@@ -249,11 +255,14 @@
    \setupcurrentsimplelist[#2]%
    \let\synonymentry\strc_synonym_normal
    \startpacked
-     \ctxcommand{processsynonyms('#1',{
-        criterium = "\simplelistparameter\c!criterium",
-        language  = "\simplelistparameter\s!language",
-        method    = "\simplelistparameter\c!method",
-     })}%
+     \clf_processsynonyms
+        {#1}%
+        {%
+            criterium {\simplelistparameter\c!criterium}%
+            language  {\simplelistparameter\s!language}%
+            method    {\simplelistparameter\c!method}%
+        }%
+     \relax
    \stoppacked
    \endgroup}
 
@@ -338,18 +347,24 @@
    \else
      \edef\currentsortingexpansion{\simplelistparameter\c!expansion}%
      \preprocessexpansion\currentsortingexpansion\currentsortingtext\currentsortingcoding{#4}%
-     \ctxcommand{registersynonym("\currentsorting", "sorting", {
-        metadata = {
-            catcodes = \the\catcodetable,
-            coding   = "\currentsortingcoding",
-            xmlroot  = \ifx\currentsortingcoding\s!xml "\xmldocument" \else nil \fi,
-        },
-        definition = {
-            tag     = "\currentsortingtag",
-            synonym = \!!bs\currentsortingtext\!!es,
-        %   used    = false,
-        }
-     })}%
+     \clf_registersynonym
+        {\currentsorting}%
+        {sorting}%
+        {%
+            metadata {%
+                catcodes \catcodetable
+                coding   {\currentsortingcoding}%
+            \ifx\currentsortingcoding\s!xml
+                xmlroot  {\xmldocument}%
+            \fi
+            }%
+            definition {%
+                tag     {\currentsortingtag}%
+                synonym {\currentsortingtext}%
+            %   used    false
+            }%
+        }%
+     \relax
      \doif{#1}\v!yes{\setuxvalue\currentsortingtag{\strc_sorting_insert{\currentsorting}{\currentsortingtag}}}%
    \fi
    \endgroup}
@@ -363,7 +378,7 @@
    \dostarttaggedchained\t!sorting\currentsorting\??simplelist
    \dotagsorting
    \usesimpleliststyleandcolor\c!style\c!color
-   \ctxcommand{synonymname("#1","#2")}%
+   \clf_synonymname{#1}{#2}%
    \dostoptagged
    \normalexpanded{\endgroup\simplelistparameter\c!next}}
 
@@ -371,7 +386,7 @@
   {\dodoubleargument\strc_sorting_register}
 
 \def\strc_sorting_register[#1][#2]%
-  {\ctxcommand{registerusedsynonym("#1","#2")}}
+  {\clf_registerusedsynonym{#1}{#2}}
 
 % before after
 %
@@ -392,11 +407,14 @@
      \let\synonymentry\strc_sorting_command
    \fi
    \startpacked
-     \ctxcommand{processsynonyms('#1',{
-        criterium = "\simplelistparameter\c!criterium",
-        language  = "\simplelistparameter\s!language",
-        method    = "\simplelistparameter\c!method",
-     })}%
+     \clf_processsynonyms
+        {#1}%
+        {%
+            criterium {\simplelistparameter\c!criterium}%
+            language  {\simplelistparameter\s!language}%
+            method    {\simplelistparameter\c!method}%
+        }%
+     \relax
    \stoppacked
    \endgroup}
 

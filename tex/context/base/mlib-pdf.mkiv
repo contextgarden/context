@@ -88,7 +88,7 @@
 
 % MPLIB specific:
 
-\def\MPLIBtoPDF#1{\ctxlua{metapost.flushliteral(#1)}}
+\def\MPLIBtoPDF{\clf_mpflushliteral}
 
 \def\startMPLIBtoPDF#1#2#3#4%
   {\meta_process_graphic_figure_start
@@ -109,7 +109,7 @@
    \meta_process_graphic_figure_stop}
 
 \def\MPLIBflushreset % This can (will) move to the Lua end.
-  {\ctxlua{metapost.flushreset()}}
+  {\clf_mpflushreset}
 
 %D Kind of special:
 %
@@ -134,27 +134,50 @@
 \unexpanded\def\directMPgraphic
   {\dodoublegroupempty\mlib_direct_graphic}
 
+% \def\mlib_direct_graphic#1#2% makes pages (todo: make boxes)
+%   {\meta_begin_graphic_group{#1}%
+%    \let\startMPLIBtoPDF\directstartMPLIBtoPDF
+%    \let\stopMPLIBtoPDF \directstopMPLIBtoPDF
+%    \meta_start_current_graphic
+%    \forgetall
+%    \edef\p_extensions{\MPinstanceparameter\s!extensions}%
+%    \normalexpanded{\noexpand\ctxlua{metapost.graphic {
+%        instance        = "\currentMPinstance",
+%        format          = "\currentMPformat",
+%        data            = \!!bs#2;\!!es,
+%        initializations = \!!bs\meta_flush_current_initializations\!!es,
+%     % useextensions   = "\MPinstanceparameter\s!extensions",
+% \ifx\p_extensions\v!yes
+%        extensions      = \!!bs\clf_getmpextensions{\currentMPinstance}\!!es,
+% \fi
+%        inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
+%        definitions     = \!!bs\meta_flush_current_definitions\!!es,
+%        figure          = "all",
+%        method          = "\MPinstanceparameter\c!method",
+%      }}}%
+%    \meta_stop_current_graphic
+%    \meta_end_graphic_group}
+
 \def\mlib_direct_graphic#1#2% makes pages (todo: make boxes)
   {\meta_begin_graphic_group{#1}%
    \let\startMPLIBtoPDF\directstartMPLIBtoPDF
    \let\stopMPLIBtoPDF \directstopMPLIBtoPDF
    \meta_start_current_graphic
-   \forgetall
-   \edef\p_extensions{\MPinstanceparameter\s!extensions}%
-   \normalexpanded{\noexpand\ctxlua{metapost.graphic {
-       instance        = "\currentMPinstance",
-       format          = "\currentMPformat",
-       data            = \!!bs#2;\!!es,
-       initializations = \!!bs\meta_flush_current_initializations\!!es,
-%      useextensions   = "\MPinstanceparameter\s!extensions",
-\ifx\p_extensions\v!yes
-       extensions      = \!!bs\ctxcommand{getmpextensions("\currentMPinstance")}\!!es,
-\fi
-       inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
-       definitions     = \!!bs\meta_flush_current_definitions\!!es,
-       figure          = "all",
-       method          = "\MPinstanceparameter\c!method",
-     }}}%
+     \forgetall
+     \edef\p_extensions{\MPinstanceparameter\s!extensions}%
+     \normalexpanded{\noexpand\clf_mpgraphic
+         instance        {\currentMPinstance}%
+         format          {\currentMPformat}%
+         data            {#2;}%
+         initializations {\meta_flush_current_initializations}%
+    \ifx\p_extensions\v!yes
+         extensions      {\clf_getmpextensions{\currentMPinstance}}%
+    \fi
+         inclusions      {\meta_flush_current_inclusions}%
+         definitions     {\meta_flush_current_definitions}%
+         figure          {all}%
+         method          {\MPinstanceparameter\c!method}%
+     \relax}%
    \meta_stop_current_graphic
    \meta_end_graphic_group}
 

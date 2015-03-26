@@ -24,7 +24,9 @@ local trace_tags = false  trackers.register("structures.tags", function(v) trace
 
 local report_tags = logs.reporter("structure","tags")
 
-local attributes, structures = attributes, structures
+local attributes     = attributes
+local structures     = structures
+local implement      = interfaces.implement
 
 local a_tagged       = attributes.private('tagged')
 
@@ -379,10 +381,10 @@ end
 
 local strip = C((1-S(">"))^1)
 
-commands.getelementtag = function()
+function tags.elementtag()
     local fulltag = chain[stacksize]
     if fulltag then
-        context(lpegmatch(strip,fulltag))
+        return lpegmatch(strip,fulltag)
     end
 end
 
@@ -410,8 +412,6 @@ function tags.setuserproperties(tag,list)
     end
 end
 
-commands.setelementuserproperties = tags.setuserproperties
-
 function tags.handler(head)  -- we need a dummy
     return head, false
 end
@@ -433,7 +433,72 @@ directives.register("backend.addtags", function(v)
     end
 end)
 
-commands.starttag       = tags.start
-commands.stoptag        = tags.stop
-commands.settagproperty = tags.setproperty
-commands.settagaspect   = tags.setaspect
+-- interface
+
+local starttag = tags.start
+
+implement {
+    name      = "starttag",
+    actions   = starttag,
+    arguments = { "string" }
+}
+
+implement {
+    name      = "stoptag",
+    actions   = tags.stop,
+}
+
+implement {
+    name      = "starttag_u",
+    scope     = "private",
+    actions   = function(tag,userdata) starttag(tag,{ userdata = userdata }) end,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "starttag_d",
+    scope     = "private",
+    actions   = function(tag,detail) starttag(tag,{ detail = detail }) end,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "starttag_c",
+    scope     = "private",
+    actions   = function(tag,detail,parents) starttag(tag,{ detail = detail, parents = parents }) end,
+    arguments = { "string", "string", "string" }
+}
+
+implement { name = "settagaspect",     actions = tags.setaspect,   arguments = { "string", "string" } }
+
+implement { name = "settagproperty",   actions = tags.setproperty, arguments = { "string", "string", "string" } }
+implement { name = "settagproperty_b", actions = tags.setproperty, arguments = { "string", "'backend'", "string" }, scope = "private" }
+implement { name = "settagproperty_n", actions = tags.setproperty, arguments = { "string", "'nature'",  "string" }, scope = "private" }
+
+implement { name = "getelementtag",    actions = { tags.elementtag, context } }
+
+implement {
+    name      = "setelementuserproperties_o",
+    scope     = "private",
+    actions   = tags.setuserproperties,
+    arguments = "string"
+}
+
+implement {
+    name      = "setelementuserproperties_t",
+    scope     = "private",
+    actions   = tags.setuserproperties,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "doifinelementelse",
+    actions   = { structures.atlocation, commands.testcase },
+    arguments = "string",
+}
+
+implement {
+    name      = "settaggedmetadata",
+    actions   = structures.tags.registermetadata,
+    arguments = "string"
+}

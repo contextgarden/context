@@ -1217,7 +1217,7 @@
 \let\normaloffinterlineskip\offinterlineskip % knuth's original
 
 \appendtoks
-    \ifvmode\ctxcommand{resetprevdepth()}\fi % a nasty hack (tested for a while now)
+    \ifvmode\clf_resetprevdepth\fi % a nasty hack (tested for a while now)
 \to \everyafteroutput
 
 %D My own one:
@@ -1391,7 +1391,7 @@
 \unexpanded\def\installsnapvalues#1#2% todo: a proper define
   {\edef\currentsnapper{#1:#2}%
    \ifcsname\??gridsnapperattributes\currentsnapper\endcsname \else
-     \setevalue{\??gridsnapperattributes\currentsnapper}{\ctxcommand{definesnapmethod("#1","#2")}}%
+     \setevalue{\??gridsnapperattributes\currentsnapper}{\clf_definesnapmethod{#1}{#2}}%
    \fi
    \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
 
@@ -1548,10 +1548,10 @@
 
 \def\spac_grids_snap_to_finish#1%
   {\ifvbox\nextbox % this will go away
-     \ctxcommand{vspacingcollapse(\number\nextbox)}% isn't that already done?
+     \clf_vspacingcollapse\nextbox\relax % isn't that already done?
    \fi
    \doifelsenothing{#1}{\spac_grids_snap_value_set\v!normal}{\spac_grids_snap_value_set{#1}}%
-   \ctxcommand{vspacingsnap(\number\nextbox,\number\attribute\snapmethodattribute)}%
+   \clf_vspacingsnap\nextbox\attribute\snapmethodattribute\relax
    \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}%
    \egroup}
 
@@ -1701,7 +1701,7 @@
 
 \def\spac_vspacing_define_amount[#1][#2][#3]% can be combined
   {\setvalue{\??vspacingamount#1}{\ifgridsnapping#3\else#2\fi}%
-   \ctxcommand{vspacingsetamount("#1")}}
+   \clf_vspacingsetamount{#1}}
 
 % \installcorenamespace{vspacingamountnormal}
 % \installcorenamespace{vspacingamountgrid}
@@ -1713,13 +1713,13 @@
 %    \fi
 %    \csname n>#1\endcsname{#2}%
 %    \csname g>#1\endcsname{#3}%
-%    \ctxcommand{vspacingsetamount("#1")}}
+%    \clf_vspacingsetamount{#1}}
 
 \unexpanded\def\definevspacing
   {\dodoubleempty\spac_vspacing_define}
 
 \def\spac_vspacing_define[#1][#2]%
-  {\ctxcommand{vspacingdefine("#1","#2")}}
+  {\clf_vspacingdefine{#1}{#2}}
 
 %D The injector code (generated at the \LUA\ end):
 
@@ -1841,19 +1841,19 @@
    \fi\fi}
 
 \def\spac_vspacing_yes_indeed[#1]%
-  {\ifmmode\else\par\ctxcommand{vspacing("#1")}\fi}
+  {\ifmmode\else\par\clf_vspacing{#1}\fi}
 
 \def\spac_vspacing_yes_ignore[#1]%
   {\ifmmode\else\par\fi}
 
 \def\spac_vspacing_nop_indeed
-  {\ifmmode\else\par\ctxcommand{vspacing("\currentvspacing")}\fi}
+  {\ifmmode\else\par\clf_vspacing{\currentvspacing}\fi}
 
 \def\spac_vspacing_nop_ignore
   {\ifmmode\else\par\fi}
 
 \def\directvspacing#1%
-  {\par\ctxcommand{vspacing("#1")}}
+  {\par\clf_vspacing{#1}}
 
 % handy (and faster):
 
@@ -2206,7 +2206,7 @@
 % as encountered in forced blank skips (see lua code)
 %
 % \appendtoks
-%     \ifvmode\ctxcommand{resetprevdepth()}\fi
+%     \ifvmode\clf_resetprevdepth\fi
 % \to \everyafteroutput
 %
 % this should only happen when there is nothing left over (how to detemine that) .. testcase:

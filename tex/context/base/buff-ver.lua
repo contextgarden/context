@@ -29,6 +29,12 @@ visualizers                = visualizers or { }
 local specifications       = allocate()
 visualizers.specifications = specifications
 
+local scanners             = tokens.scanners
+local scanstring           = scanners.string
+
+local compilescanner       = tokens.compile
+local scanners             = interfaces.scanners
+
 local context              = context
 local commands             = commands
 
@@ -712,7 +718,7 @@ commands.loadvisualizer = visualizers.load
 
 -- local decodecomment = resolvers.macros.decodecomment -- experiment
 
-function commands.typebuffer(settings)
+local function typebuffer(settings)
     local lines = getlines(settings.name)
     if lines then
         ctx_displayverbatiminitialize(#lines)
@@ -725,7 +731,7 @@ function commands.typebuffer(settings)
     end
 end
 
-function commands.processbuffer(settings)
+local function processbuffer(settings)
     local lines = getlines(settings.name)
     if lines then
         local content, m = filter(lines,settings)
@@ -735,6 +741,9 @@ function commands.processbuffer(settings)
         end
     end
 end
+
+commands.typebuffer    = typebuffer
+commands.processbuffer = processbuffer
 
 -- not really buffers but it's closely related
 
@@ -759,7 +768,7 @@ local compactors = {
     [v_last]     = Cs((space^1   * endstring/"" + 1)^0),
 }
 
-function commands.typestring(settings)
+local function typestring(settings)
     local content = settings.data
     if content and content ~= "" then
         local compact   = settings.compact
@@ -773,7 +782,7 @@ function commands.typestring(settings)
     end
 end
 
-function commands.typefile(settings)
+local function typefile(settings)
     local filename = settings.name
     local foundname = resolvers.findtexfile(filename)
     if foundname and foundname ~= "" then
@@ -794,4 +803,78 @@ function commands.typefile(settings)
             end
         end
     end
+end
+
+commands.typestring = typestring
+commands.typefile   = typefile
+
+-- scanners.typenormal = function()
+--     typestring {
+--         nature  = "inline",
+--         data    = scanstring(),
+--         tab     = scanstring(),
+--         method  = scanstring(),
+--         compact = scanstring(),
+--         escape  = scanstring(),
+--     }
+-- end
+
+-- scanners.typenested = function()
+--     typestring {
+--         nature = "inline",
+--         method = "nested",
+--         data   = scanstring(),
+--         tab    = scanstring(),
+--         option = scanstring(),
+--         escape = scanstring(),
+--     }
+-- end
+
+scanners.type = compilescanner {
+    actions   = typestring,
+    arguments = {
+        {
+            { "data"    },
+            { "tab"     },
+            { "option"  },
+            { "method"  },
+            { "compact" },
+            { "nature"  },
+            { "escape"  },
+        }
+    }
+}
+
+scanners.processbuffer = compilescanner {
+    actions   = processbuffer,
+    arguments = {
+        {
+             { "name" },
+             { "strip" },
+             { "tab" },
+             { "method" },
+             { "nature" },
+        }
+    }
+}
+
+local get_typing = compilescanner {
+    {
+         { "name" },
+         { "strip" },
+         { "range" },
+         { "regime" },
+         { "tab" },
+         { "method" },
+         { "escape" },
+         { "nature" },
+    }
+}
+
+scanners.typebuffer = function()
+    typebuffer(get_typing())
+end
+
+scanners.typefile = function()
+    typefile(get_typing())
 end

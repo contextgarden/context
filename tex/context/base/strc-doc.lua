@@ -27,6 +27,8 @@ local catcodenumbers      = catcodes.numbers
 local ctxcatcodes         = catcodenumbers.ctxcatcodes
 local variables           = interfaces.variables
 
+local implement           = interfaces.implement
+
 local v_last              = variables.last
 local v_first             = variables.first
 local v_previous          = variables.previous
@@ -551,10 +553,6 @@ end
 
 sections.depthnumber = depthnumber
 
-function commands.depthnumber(n)
-    return context(depthnumber(n))
-end
-
 function sections.autodepth(numbers)
     for i=#numbers,1,-1 do
         if numbers[i] ~= 0 then
@@ -938,27 +936,7 @@ end
 
 local levels = { }
 
---~ function commands.autonextstructurelevel(level)
---~     if level > #levels then
---~         for i=#levels+1,level do
---~             levels[i] = ""
---~         end
---~     end
---~     local finish = concat(levels,"\n",level) or ""
---~     for i=level+1,#levels do
---~         levels[i] = ""
---~     end
---~     levels[level] = [[\finalizeautostructurelevel]]
---~     context(finish)
---~ end
-
---~ function commands.autofinishstructurelevels()
---~     local finish = concat(levels,"\n") or ""
---~     levels = { }
---~     context(finish)
---~ end
-
-function commands.autonextstructurelevel(level)
+local function autonextstructurelevel(level)
     if level > #levels then
         for i=#levels+1,level do
             levels[i] = false
@@ -974,7 +952,7 @@ function commands.autonextstructurelevel(level)
     levels[level] = true
 end
 
-function commands.autofinishstructurelevels()
+local function autofinishstructurelevels()
     for i=1,#levels do
         if levels[i] then
             ctx_finalizeauto()
@@ -983,31 +961,132 @@ function commands.autofinishstructurelevels()
     levels = { }
 end
 
+implement {
+    name      = "autonextstructurelevel",
+    actions   = autonextstructurelevel,
+    arguments = "integer",
+}
+
+implement {
+    name      = "autofinishstructurelevels",
+    actions   = autofinishstructurelevels,
+}
+
 -- interface (some are actually already commands, like sections.fullnumber)
 
-commands.structurenumber            = sections.fullnumber
-commands.structuretitle             = sections.title
+implement {
+    name     = "depthnumber",
+    actions  = { depthnumber, context },
+    arguments = "integer",
+}
 
-commands.structurevariable          = function(name)         sections.structuredata(nil,name)             end
-commands.structureuservariable      = function(name)         sections.userdata     (nil,name)             end
-commands.structurecatcodedget       = function(name)         sections.structuredata(nil,name,nil,true)    end
-commands.structuregivencatcodedget  = function(name,catcode) sections.structuredata(nil,name,nil,catcode) end
-commands.structureautocatcodedget   = function(name,catcode) sections.structuredata(nil,name,nil,catcode) end
+implement { name = "structurenumber",            actions = sections.fullnumber }
+implement { name = "structuretitle",             actions = sections.title }
 
-commands.namedstructurevariable     = sections.structuredata
-commands.namedstructureuservariable = sections.userdata
+implement { name = "structurevariable",          actions = sections.structuredata, arguments = { false, "string" } }
+implement { name = "structureuservariable",      actions = sections.userdata,      arguments = { false, "string" } }
+implement { name = "structurecatcodedget",       actions = sections.structuredata, arguments = { false, "string", false, true } }
+implement { name = "structuregivencatcodedget",  actions = sections.structuredata, arguments = { false, "string", false, "integer" } }
+implement { name = "structureautocatcodedget",   actions = sections.structuredata, arguments = { false, "string", false, "string" } }
 
-commands.setsectionlevel            = sections.setlevel
-commands.setsectionnumber           = sections.setnumber
-commands.getsectionnumber           = sections.getnumber
-commands.getfullsectionnumber       = sections.fullnumber
-commands.getstructuredata           = sections.structuredata
-commands.getcurrentsectionlevel     = sections.getcurrentlevel
+implement { name = "namedstructurevariable",     actions = sections.structuredata }
+implement { name = "namedstructureuservariable", actions = sections.userdata }
 
-commands.setsectionblock            = sections.setblock
-commands.pushsectionblock           = sections.pushblock
-commands.popsectionblock            = sections.popblock
+implement { name = "setstructurelevel",          actions = sections.setlevel,        arguments = { "string", "string" } }
+implement { name = "getstructurelevel",          actions = sections.getcurrentlevel, arguments = { "string" } }
+implement { name = "setstructurenumber",         actions = sections.setnumber,       arguments = { "integer", "string" } }
+implement { name = "getstructurenumber",         actions = sections.getnumber,       arguments = { "integer" } }
+implement { name = "getsomestructurenumber",     actions = sections.getnumber,       arguments = { "integer", "string" } }
+implement { name = "getfullstructurenumber",     actions = sections.fullnumber,      arguments = { "integer" } }
+implement { name = "getsomefullstructurenumber", actions = sections.fullnumber,      arguments = { "integer", "string" } }
+implement { name = "getspecificstructuretitle",  actions = sections.structuredata,   arguments = { "string", "'titledata.title'",false,"string" } }
 
-commands.registersection            = sections.register
-commands.setsectionentry            = sections.setentry
-commands.reportstructure            = sections.reportstructure
+implement { name = "reportstructure",            actions = sections.reportstructure }
+
+implement {
+    name      = "registersection",
+    actions   = sections.register,
+    arguments = {
+        "string",
+        {
+            { "coupling" },
+            { "section" },
+            { "level", "integer" },
+            { "parent" },
+        }
+    }
+}
+
+implement {
+    name      = "setsectionentry",
+    actions   = sections.setentry,
+    arguments = {
+        {
+            { "references", {
+                    { "internal", "integer" },
+                    { "block" },
+                    { "referenceprefix" },
+                    { "reference" },
+                    { "backreference" },
+                }
+            },
+            { "directives", {
+                    { "resetset" }
+                }
+            },
+            { "metadata", {
+                    { "kind" },
+                    { "name" },
+                    { "catcodes", "integer" },
+                    { "coding" },
+                    { "xmlroot" },
+                    { "xmlsetup" },
+                    { "nolist", "boolean" },
+                    { "increment" },
+                }
+            },
+            { "titledata", {
+                    { "label" },
+                    { "title" },
+                    { "bookmark" },
+                    { "marking" },
+                    { "list" },
+                }
+            },
+            { "numberdata", {
+                    { "block" },
+                    { "hidenumber", "boolean" },
+                    { "separatorset" },
+                    { "conversionset" },
+                    { "conversion" },
+                    { "starter" },
+                    { "stopper" },
+                    { "set" },
+                    { "segments" },
+                    { "ownnumber" },
+                    { "language" },
+                },
+            },
+            { "userdata" },
+        }
+    }
+}
+
+-- os.exit()
+
+implement {
+    name      = "setsectionblock",
+    actions   = sections.setblock,
+    arguments = { "string", { { "bookmark" } } }
+}
+
+implement {
+    name      = "pushsectionblock",
+    actions   = sections.pushblock,
+    arguments = { "string", { { "bookmark" } } }
+}
+
+implement {
+    name      = "popsectionblock",
+    actions   = sections.popblock,
+}

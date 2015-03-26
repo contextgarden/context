@@ -32,17 +32,15 @@
 %D \dosetpositionplus      {identifier} {width} {height} {depth} {list}
 %D \stoptyping
 
-\def\dosaveposition            #1#2#3#4{\ctxcommand{setpos("#1",\number#2,\number\dimexpr#3,\number\dimexpr#4)}}
-\def\dosavepositionwhd   #1#2#3#4#5#6#7{\ctxcommand{setpos("#1",\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7)}}
-\def\dosavepositionplus#1#2#3#4#5#6#7#8{\ctxcommand{setpos("#1",\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7,"#8")}}
+\def\dosaveposition            #1#2#3#4{\clf_dosaveposition    {#1}#2 #3 #4\relax}
+\def\dosavepositionwhd   #1#2#3#4#5#6#7{\clf_dosavepositionwhd {#1}#2 #3 #4 #5 #6 #7\relax}
+\def\dosavepositionplus#1#2#3#4#5#6#7#8{\clf_dosavepositionplus{#1}#2 #3 #4 #5 #6 #7{#8}}
 
-\def\dosetposition            #1{\ctxcommand{posxy("#1")}}
-\def\dosetpositionwhd   #1#2#3#4{\ctxcommand{poswhd("#1",\number\dimexpr#2,\number\dimexpr#3,\number\dimexpr#4)}}
-\def\dosetpositionplus#1#2#3#4#5{\ctxcommand{posplus("#1",\number\dimexpr#2,\number\dimexpr#3,\number\dimexpr#4,"#5")}}
-\def\dosetpositionbox       #1#2{\ctxcommand{poswhd("#1",\number\wd#2,\number\ht#2,\number\dp#2)}}
-\def\dosetpositionstrut       #1{\ctxcommand{posstrut("#1")}}
-
-\unexpanded\def\doifelsepositionsused{\ctxcommand{doifelsepositionsused()}}
+\def\dosetposition            #1{\clf_dosetposition     {#1}} % {} expands
+\def\dosetpositionwhd   #1#2#3#4{\clf_dosetpositionwhd  {#1}#2 #3 #4\relax}
+\def\dosetpositionplus#1#2#3#4#5{\clf_dosetpositionplus {#1}#2 #3 #4{#5}}
+\def\dosetpositionbox       #1#2{\clf_dosetpositionbox  {#1}#2\relax}
+\def\dosetpositionstrut       #1{\clf_dosetpositionstrut{#1}}
 
 \newbox\b_anch_position
 \newif \ifpositioning   % sort of public
@@ -50,7 +48,7 @@
 %D Sometimes we want to trick the position handler a bit:
 
 \def\replacepospxywhd#1#2#3#4#5#6#7% when used we can better make a helper
-  {\ctxcommand{replacepospxywhd('#1',\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7)}}
+  {\clf_replacepospxywhd{#1}#2 #3 #4 #5 #6 #7\relax}
 
 %D \macros
 %D   {MPp, MPx, MPy, MPw, MPh, MPd, MPxy, MPll, MPlr, MPur, MPul, MPpos, MPanchor}
@@ -58,28 +56,35 @@
 %D Access to the positional information is provided by macros with short names
 %S that are clearly meant for \METAPOST\ but nowadays also used for other purposes.
 
-\def\MPp      #1{\ctxcommand{MPp("#1")}}     \let\MPpage     \MPp
-\def\MPr      #1{\ctxcommand{MPr("#1")}}     \let\MPregion   \MPr
-\def\MPc      #1{\ctxcommand{MPc("#1")}}     \let\MPcolumn   \MPc
-\def\MPn      #1{\ctxcommand{MPn("#1")}}     \let\MPparagraph\MPn
-\def\MPx      #1{\ctxcommand{MPx("#1")}}
-\def\MPy      #1{\ctxcommand{MPy("#1")}}
-\def\MPw      #1{\ctxcommand{MPw("#1")}}     % first we need to replace \MPwidth etc
-\def\MPh      #1{\ctxcommand{MPh("#1")}}
-\def\MPd      #1{\ctxcommand{MPd("#1")}}
-\def\MPxy     #1{\ctxcommand{MPxy("#1")}}
-\def\MPll     #1{\ctxcommand{MPll("#1")}}
-\def\MPlr     #1{\ctxcommand{MPlr("#1")}}
-\def\MPur     #1{\ctxcommand{MPur("#1")}}
-\def\MPul     #1{\ctxcommand{MPul("#1")}}
-\def\MPpos    #1{\ctxcommand{MPpos("#1")}}    \let\MPanchor\MPpos  % overloaded locally when needed
-\def\MPe      #1{\ctxcommand{MPe("#1")}}
+\def\MPp      #1{\clf_MPp      {#1}}
+\def\MPr      #1{\clf_MPr      {#1}}
+\def\MPc      #1{\clf_MPc      {#1}}
+\def\MPn      #1{\clf_MPn      {#1}}
+\def\MPx      #1{\clf_MPx      {#1}}
+\def\MPy      #1{\clf_MPy      {#1}}
+\def\MPw      #1{\clf_MPw      {#1}}
+\def\MPh      #1{\clf_MPh      {#1}}
+\def\MPd      #1{\clf_MPd      {#1}}
+\def\MPxy     #1{\clf_MPxy     {#1}}
+\def\MPll     #1{\clf_MPll     {#1}}
+\def\MPlr     #1{\clf_MPlr     {#1}}
+\def\MPur     #1{\clf_MPur     {#1}}
+\def\MPul     #1{\clf_MPul     {#1}}
+\def\MPpos    #1{\clf_MPpos    {#1}}
+\def\MPls     #1{\clf_MPls     {#1}}
+\def\MPrs     #1{\clf_MPrs     {#1}}
+\def\MPpardata#1{\clf_MPpardata{#1}}
+\def\MPxywhd  #1{\clf_MPxywhd  {#1}}
+\def\MPposset #1{\clf_MPposset {#1}}
 
-\def\MPls     #1{\ctxcommand{MPls("#1")}}     \let\MPleftskip\MPls % compatible feature
-\def\MPrs     #1{\ctxcommand{MPrs("#1")}}     \let\MPrightkip\MPrs % compatible feature
+\let\MPpage     \MPp
+\let\MPregion   \MPr
+\let\MPcolumn   \MPc
+\let\MPparagraph\MPn
 
-\def\MPpardata#1{\ctxcommand{MPpardata("#1")}}
-\def\MPxywhd  #1{\ctxcommand{MPxywhd("#1")}}
+\let\MPanchor   \MPpos % overloaded locally when needed
+\let\MPleftskip \MPls  % compatible feature
+\let\MPrightkip \MPrs  % compatible feature
 
 %D \macros
 %D  {MPplus, MPrest, MPv, MPvv}
@@ -100,8 +105,8 @@
 %D
 %D The extra parameters are not treated.
 
-\def\MPplus#1#2#3{\ctxcommand{MPplus("#1",#2,"#3")}}  \let\MPv \MPplus
-\def\MPrest  #1#2{\ctxcommand{MPrest("#1","#2")}}     \let\MPvv\MPrest
+\def\MPplus#1#2#3{\clf_MPplus{#1}#2{#3}}  \let\MPv \MPplus
+\def\MPrest  #1#2{\clf_MPrest{#1}{#2}}    \let\MPvv\MPrest
 
 %D There are two low level positioning macros. Both store the position as well
 %D as execute an action associated with that position.
@@ -250,9 +255,11 @@
 \newcount\c_anch_column % will be delegated to lua
 \newcount\c_anch_text   % will be delegated to lua
 
+% beware we need to pass \somethingexpanded or { }
+
 \unexpanded\def\anch_mark_column_box#1%
   {\global\advance\c_anch_column\plusone
-   \ctxcommand{markregionbox(\number#1,"columnarea:\the\c_anch_column")}} % extra height
+   \clf_markregionboxtagged#1{columnarea:\the\c_anch_column}} % extra height
 
 \unexpanded\def\anch_mark_region_box
   {\iftrialtypesetting
@@ -264,27 +271,27 @@
    \fi\fi}
 
 \unexpanded\def\anch_mark_region_box_indeed#1%
-  {\ctxcommand{markregionbox(\number#1)}}
+  {\clf_markregionbox#1\relax}
 
 \unexpanded\def\anch_mark_flow_box#1% will be extended / renamed
   {\hbox\bgroup
    \global\advance\c_anch_text\plusone
-   \ctxcommand{markregionbox(\number#1,"textarea:\the\c_anch_text")}%
+   \clf_markregionboxtagged#1{textarea:\the\c_anch_text}%
    \box#1%
    \egroup}
 
+\unexpanded\def\anch_mark_tagged_box#1#2%
+  {\clf_markregionboxtagged#1{#2}}
+
 \unexpanded\def\anch_mark_flow_only#1% will be extended / renamed
   {\global\advance\c_anch_text\plusone
-   \ctxcommand{markregionbox(\number#1,"textarea:\the\c_anch_text",true)}}
+   \clf_markregionboxcorrected#1{textarea:\the\c_anch_text}}
 
 \unexpanded\def\anch_make_page_box#1% maybe like text
-  {\ctxcommand{markregionbox(\number#1,"\pageanchor")}} % needs an hbox
+  {\clf_markregionboxtagged#1{page:\the\realpageno}} % needs an hbox
 
 \unexpanded\def\anch_mark_text_box#1%
-  {\ctxcommand{markregionbox(\number#1,"\textanchor")}} % needs an hbox
-
-\unexpanded\def\anch_mark_tagged_box#1#2%
-  {\ctxcommand{markregionbox(\number#1,"#2")}} % needs an hbox
+  {\clf_markregionboxtagged#1{text:\the\realpageno}} % needs an hbox
 
 %D We can copy a position with:
 %D
@@ -294,7 +301,8 @@
 %D
 %D Again, this is a global operation.
 
-\def\copyposition#1#2{\ctxcommand{copyposition('#1','#2')}}
+\unexpanded\def\copyposition#1#2%
+  {\clf_copyposition{#1}{#2}}
 
 %D The fact that handling positions is a two pass operation, is one of the
 %D reasons why we need to be able to test for existence, using:
@@ -303,8 +311,9 @@
 %D \doifpositionelse {identifier} {found action} {not found action}
 %D \stoptyping
 
-\def\doifpositionelse#1{\ctxcommand{doifpositionelse('#1')}}
-\def\doifposition    #1{\ctxcommand{doifposition('#1')}}
+\unexpanded\def\doifpositionelse        #1{\clf_doifpositionelse      {#1}}
+\unexpanded\def\doifposition            #1{\clf_doifposition          {#1}}
+\unexpanded\def\doifpositiononpageelse#1#2{\clf_doifpositiononpageelse{#1}#2\relax}
 
 %D \macros
 %D   {xypos}
@@ -357,7 +366,7 @@
    \fi}
 
 \def\anch_positions_register_par_options_normal
-  {\dontleavehmode\ctxcommand{parpos()}}
+  {\dontleavehmode\clf_parpos}
 
 \def\anch_positions_register_par_options_traced
   {\anch_positions_register_par_options_normal
@@ -412,7 +421,7 @@
 %D   {action when not overlapping}
 %D \stoptyping
 
-\def\doifoverlappingelse#1#2{\ctxcommand{doifoverlappingelse("#1","#2")}}
+\unexpanded\def\doifoverlappingelse#1#2{\clf_doifoverlappingelse{#1}{#2}}
 
 %D \macros
 %D   {doifpositionsonsamepageelse,
@@ -430,7 +439,11 @@
 %D   {action when not on this page}
 %D \stoptyping
 
-\def\doifpositionsonsamepageelse#1{\ctxcommand{doifpositionsonsamepageelse("#1")}}
-\def\doifpositionsonthispageelse#1{\ctxcommand{doifpositionsonthispageelse("#1")}}
+\unexpanded\def\doifpositionsonsamepageelse#1{\clf_doifpositionsonsamepageelse{#1}}
+\unexpanded\def\doifpositionsonthispageelse#1{\clf_doifpositionsonthispageelse{#1}}
+
+%D Moved here:
+
+\unexpanded\def\doifelsepositionsused{\clf_doifelsepositionsused}
 
 \protect \endinput

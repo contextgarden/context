@@ -203,9 +203,9 @@
 %D \usecolors[dem]
 %D \stoptyping
 
-\unexpanded\def\startcolorset[#1]{\ctxcommand{startcolorset("#1")}}
-\unexpanded\def\stopcolorset     {\ctxcommand{stopcolorset()}}
-\unexpanded\def\usecolors    [#1]{\ctxcommand{usecolors("#1")}}
+\unexpanded\def\startcolorset[#1]{\clf_startcolorset{#1}}
+\unexpanded\def\stopcolorset     {\clf_stopcolorset}
+\unexpanded\def\usecolors    [#1]{\clf_usecolors{#1}}
 
 \let\setupcolor\usecolors
 
@@ -563,7 +563,7 @@
 
 \def\colo_helpers_set_model#1% direct
   {\edef\currentcolormodel{#1}%
-   \ctxcommand{setcolormodel('\currentcolormodel',\v_colo_weight_state)}} % sets attribute at lua end
+   \clf_setcolormodel{\currentcolormodel}\v_colo_weight_state\relax} % sets attribute at lua end
 
 \colo_helpers_set_model\s!all
 
@@ -699,31 +699,31 @@
   {\advance\c_colo_protection\minusone}
 
 \def\colo_basics_define[#1][#2]%
-  {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
+  {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
    \ifcase\c_colo_protection
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\colo_basics_define_global[#1][#2]%
-  {\ctxcommand{defineprocesscolor("#1","#2",true,\v_colo_freeze_state)}%
+  {\clf_defineprocesscolorglobal{#1}{#2}\v_colo_freeze_state\relax
    \ifcase\c_colo_protection
      \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\colo_basics_define_named[#1][#2]% currently same as define
-  {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
+  {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
    \ifcase\c_colo_protection
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\dodefinefastcolor[#1][#2]% still not fast but ok (might change)
-  {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
+  {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
    \ifcase\c_colo_protection
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\colo_basics_defined_and_activated#1%
-  {\ctxcommand{defineprocesscolor("\v_colo_dummy_name","#1",false,false)}%
+  {\clf_defineprocesscolordummy{#1}%
    \colo_helpers_activate_dummy}
 
 \def\colo_basics_define_process
@@ -734,13 +734,13 @@
    \fi}
 
 \def\colo_basics_define_process_yes[#1][#2][#3]%
-  {\ctxcommand{defineprocesscolor("#1","\processcolorcomponents{#2},#3",false,\v_colo_freeze_state)}%
+  {\clf_defineprocesscolorlocal{#1}{\processcolorcomponents{#2},#3}\v_colo_freeze_state\relax
    \ifcase\c_colo_protection
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\colo_basics_define_process_nop[#1][#2][#3]%
-  {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
+  {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
    \ifcase\c_colo_protection
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
@@ -751,13 +751,13 @@
 % spot colors often are a document wide property
 
 \def\colo_basics_define_spot[#1][#2][#3]%
-  {\ctxcommand{definespotcolor("#1","#2","#3",true)}%
+  {\clf_definespotcolorglobal{#1}{#2}{#3}%
    \ifcase\c_colo_protection
      \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\colo_basics_define_multitone[#1][#2][#3][#4]%
-  {\ctxcommand{definemultitonecolor("#1","#2","#3","#4",true)}%
+  {\clf_definemultitonecolorglobal{#1}{#2}{#3}{#4}%
    \ifcase\c_colo_protection
      \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
@@ -765,7 +765,7 @@
 %D Transparencies (only):
 
 \def\colo_basics_define_transpancy[#1][#2]%
-  {\ctxcommand{definetransparency("#1",#2)}}
+  {\clf_definetransparency{#1}#2\relax}
 
 % A goodie that replaces the startMPcolor hackery
 
@@ -817,10 +817,15 @@
   {\colo_basics_define_intermediate_indeed[#1][#2][#3]}
 
 \def\colo_basics_define_intermediate_indeed[#1][#2,#3,#4][#5]%
-  {\ctxcommand{defineintermediatecolor("#1","#2",
-     \thecolorattribute{#3},\thecolorattribute{#4},
-     \thetransparencyattribute{#3},\thetransparencyattribute{#4},
-     "#5",false,\v_colo_freeze_state)}% not global
+  {\clf_defineintermediatecolor % not global
+     {#1}{#2}%
+     \thecolorattribute{#3} %
+     \thecolorattribute{#4} %
+     \thetransparencyattribute{#3} %
+     \thetransparencyattribute{#4} %
+     {#5}%
+     \v_colo_freeze_state
+   \relax
    \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
 
 %D Here is a more efficient helper for pgf:
@@ -860,7 +865,7 @@
 %D \stopmode
 
 \def\pgf@context@registercolor#1% bonus macro
-  {\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\ctxcommand{pgfxcolorspec(\thecolorattribute{#1})}}}
+  {\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\thecolorattribute{#1}}}
 
 %D \starttyping
 %D \ifdefined\pgf@context@registercolor
@@ -942,7 +947,7 @@
   {\let\maintextcolor\s!themaintextcolor
    \definecolor[\maintextcolor][#1]% can be fast one
    \colo_helpers_activate\maintextcolor
-   \ctxcommand{registermaintextcolor(\thecolorattribute\maintextcolor)}}
+   \clf_registermaintextcolor\thecolorattribute\maintextcolor\relax}
 
 \unexpanded\def\starttextcolor[#1]%
   {\doifsomething{#1}
@@ -1055,27 +1060,38 @@
 
 \let\colorformatseparator\space
 
-\def\MPcolor                 #1{\ctxcommand  {mpcolor(\number\attribute\colormodelattribute,\number\colo_helpers_inherited_current_ca{#1},\number\colo_helpers_inherited_current_ta{#1})}}
-\def\MPoptions               #1{\ctxcommand{mpoptions(\number\attribute\colormodelattribute,\number\colo_helpers_inherited_current_ca{#1},\number\colo_helpers_inherited_current_ta{#1})}}
+\def\MPcolor#1%
+  {\clf_mpcolor
+     \attribute\colormodelattribute
+     \colo_helpers_inherited_current_ca{#1} %
+     \colo_helpers_inherited_current_ta{#1} }
+
+
+\def\MPoptions#1%
+  {\clfmpoptions
+     \attribute\colormodelattribute
+     \colo_helpers_inherited_current_ca{#1} %
+     \colo_helpers_inherited_current_ta{#1} }
+
 
 \def\thecolorattribute       #1{\number\csname\??colorattribute       \ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??colorattribute       #1\endcsname#1\fi\fi\endcsname}
 \def\thetransparencyattribute#1{\number\csname\??transparencyattribute\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??transparencyattribute#1\endcsname#1\fi\fi\endcsname}
 
 \def\thecolormodelattribute    {\the\attribute\colormodelattribute}
 
-\def\internalspotcolorname   #1{\ctxcommand{spotcolorname(\thecolorattribute{#1})}}
-\def\internalspotcolorparent #1{\ctxcommand{spotcolorparent(\thecolorattribute{#1})}}
-\def\internalspotcolorsize   #1{\ctxcommand{spotcolorvalue(\thecolorattribute{#1})}}
+\def\internalspotcolorname   #1{\clf_spotcolorname  \thecolorattribute{#1} }
+\def\internalspotcolorparent #1{\clf_spotcolorparent\thecolorattribute{#1} }
+\def\internalspotcolorsize   #1{\clf_spotcolorvalue \thecolorattribute{#1} }
 
-\def\colorcomponents         #1{\ctxcommand{colorcomponents(\thecolorattribute{#1})}}
-\def\transparencycomponents  #1{\ctxcommand{transparencycomponents(\thetransparencyattribute{#1})}}
-\def\processcolorcomponents  #1{\ctxcommand{processcolorcomponents(\thecolorattribute{#1},",")}}
+\def\colorcomponents         #1{\clf_colorcomponents       \thecolorattribute{#1} }
+\def\transparencycomponents  #1{\clf_transparencycomponents\thetransparencyattribute{#1} }
+\def\processcolorcomponents  #1{\clf_processcolorcomponents\thecolorattribute{#1} }
 
-\def\colorvalue              #1{\ctxcommand{formatcolor(\thecolorattribute{#1},"\colorformatseparator")}}
-\def\grayvalue               #1{\ctxcommand{formatgray (\thecolorattribute{#1},"\colorformatseparator")}}
+\def\colorvalue              #1{\clf_formatcolor\thecolorattribute{#1}{\colorformatseparator}}
+\def\grayvalue               #1{\clf_formatgray \thecolorattribute{#1}{\colorformatseparator}}
 
-\def\doifblackelse           #1{\ctxcommand{doifblackelse(\thecolorattribute{#1})}}
-\def\doifdrawingblackelse      {\ctxcommand{doifdrawingblackelse()}}
+\def\doifblackelse           #1{\clf_doifblackelse\thecolorattribute{#1} }
+\def\doifdrawingblackelse      {\clf_doifdrawingblackelse}
 
 %D \macros
 %D   {forcecolorhack}

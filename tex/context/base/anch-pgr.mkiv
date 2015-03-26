@@ -261,7 +261,7 @@
       \setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
       \ht\scratchbox\overlayheight
       \dp\scratchbox\zeropoint
-      \ctxcommand{markregionbox(\number\scratchbox,"\MPanchorid")}% needs an hbox
+      \anch_mark_tagged_box\scratchbox\MPanchorid % needs an hbox
       \box\scratchbox
       \vfill}}
 
@@ -475,7 +475,7 @@
   {\handlepositionaction\anch_positions_meta_graphic_handle_range_indeed\with{#1}{#2}{#3}{#4}\on{#2}}
 
 \def\anch_positions_meta_graphic_insert_range#1#2#3#4% pos pos tag setups
-  {\ctxcommand{doifelserangeonpage("#1","#2",\number\realpageno)}%
+  {\clf_doifelserangeonpage{#1}{#2}\realpageno
      {\def\currentposition{#1}%
       \MPpositiongraphic{#3}{#4}}%
      {}}
@@ -497,8 +497,8 @@
 
 % Helpers:
 
-\def\MPgetposboxes   #1#2{\ctxcommand{fetchposboxes("#1","#2",\the\realpageno)}}
-\def\MPgetmultipars  #1#2{\ctxcommand{fetchmultipar("#1","#2",\the\realpageno)}}
-\def\MPgetmultishapes#1#2{\ctxcommand{fetchmultishape("#1","#2",\the\realpageno)}}
+\def\MPgetposboxes   #1#2{\clf_fetchposboxes  {#1}{#2}\realpageno}
+\def\MPgetmultipars  #1#2{\clf_fetchmultipar  {#1}{#2}\realpageno}
+\def\MPgetmultishapes#1#2{\clf_fetchmultishape{#1}{#2}\realpageno}
 
 \protect \endinput

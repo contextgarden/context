@@ -175,72 +175,133 @@
    \setnextinternalreference
    \storeinternalreference\currentstructurename\nextinternalreference %
    \strc_sectioning_set_reference_prefix
-   \ctxcommand{% todo: combine with next call, adapt marks accordingly
-        setsectionentry{
-            references = {
-                internal        = \nextinternalreference,
-                block           = "\currentsectionblock",
-                reference       = "\currentstructurereference",
-                referenceprefix = "\currentstructurereferenceprefix",
-                backreference   = "\currentstructurebackreference",
-            },
-            directives = {
-                resetset   = "\structureparameter\c!sectionresetset",
-            },
-            metadata = {
-                kind      = "section",
-                name      = "\currentstructurename",
-                catcodes  = \the\ifx\currentstructurecatcodes\empty\catcodetable\else\csname\currentstructurecatcodes\endcsname\fi,
-                coding    = "\currentstructurecoding",
-            \ifx\currentstructurecoding\s!xml
-                xmlroot   =  "\xmldocument",
-            \fi
-            \ifx\currentstructurexmlsetup\empty \else
-                xmlsetup  = "\currentstructurexmlsetup",
-            \fi
-            \ifx\currentstructuresaveinlist\v!no
-                nolist    = true,
-            \fi
-            \ifx\currentstructureincrementnumber\v!yes
-                increment = "\currentstructureincrementnumber",
-            \fi
-            },
-            titledata = { % we can add mark and reference
-                label    = \!!bs\detokenize\expandafter{\currentstructurelabel    }\!!es,
-                title    = \!!bs\detokenize\expandafter{\currentstructuretitle    }\!!es,
-            \ifx\currentstructurebookmark\currentstructuretitle \else
-                bookmark = \!!bs\detokenize\expandafter{\currentstructurebookmark }\!!es,
-            \fi
-            \ifx\currentstructuremarking\currentstructuretitle \else
-                marking  = \!!bs\detokenize\expandafter{\currentstructuremarking  }\!!es,
-            \fi
-            \ifx\currentstructuresaveinlist\v!no \else
-              \ifx\currentstructurelist\currentstructuretitle \else
-                list     = \!!bs\detokenize\expandafter{\currentstructurelist}\!!es,
-              \fi
-            \fi
-            },
-            numberdata = {
-                % needed ?
-                block         = "\currentsectionblock",
-            \ifx\currentstructureshownumber\v!no
-                hidenumber    = true, % titles
-            \fi
-                % so far
-                separatorset  = "\structureparameter\c!sectionseparatorset",
-                conversion    = "\structureparameter\c!sectionconversion", % for good old times sake
-                conversionset = "\structureparameter\c!sectionconversionset",
-                starter       = \!!bs\structureparameter\c!sectionstarter\!!es,
-                stopper       = \!!bs\structureparameter\c!sectionstopper\!!es,
-                set           = "\structureparameter\c!sectionset",
-                segments      = "\structureparameter\c!sectionsegments",
-                ownnumber     = "\currentstructureownnumber",
-                language      = "\currentlanguage", % for the moment, needed for bookmarks conversion
-            },
-            userdata = \!!bs\detokenize{#3}\!!es % will be converted to table at the lua end
+%    \ctxcommand{% todo: combine with next call, adapt marks accordingly
+%         setsectionentry{
+%             references = {
+%                 internal        = \nextinternalreference,
+%                 block           = "\currentsectionblock",
+%                 reference       = "\currentstructurereference",
+%                 referenceprefix = "\currentstructurereferenceprefix",
+%                 backreference   = "\currentstructurebackreference",
+%             },
+%             directives = {
+%                 resetset   = "\structureparameter\c!sectionresetset",
+%             },
+%             metadata = {
+%                 kind      = "section",
+%                 name      = "\currentstructurename",
+%                 catcodes  = \the\ifx\currentstructurecatcodes\empty\catcodetable\else\csname\currentstructurecatcodes\endcsname\fi,
+%                 coding    = "\currentstructurecoding",
+%             \ifx\currentstructurecoding\s!xml
+%                 xmlroot   =  "\xmldocument",
+%             \fi
+%             \ifx\currentstructurexmlsetup\empty \else
+%                 xmlsetup  = "\currentstructurexmlsetup",
+%             \fi
+%             \ifx\currentstructuresaveinlist\v!no
+%                 nolist    = true,
+%             \fi
+%             \ifx\currentstructureincrementnumber\v!yes
+%                 increment = "\currentstructureincrementnumber",
+%             \fi
+%             },
+%             titledata = { % we can add mark and reference
+%                 label    = \!!bs\detokenize\expandafter{\currentstructurelabel    }\!!es,
+%                 title    = \!!bs\detokenize\expandafter{\currentstructuretitle    }\!!es,
+%             \ifx\currentstructurebookmark\currentstructuretitle \else
+%                 bookmark = \!!bs\detokenize\expandafter{\currentstructurebookmark }\!!es,
+%             \fi
+%             \ifx\currentstructuremarking\currentstructuretitle \else
+%                 marking  = \!!bs\detokenize\expandafter{\currentstructuremarking  }\!!es,
+%             \fi
+%             \ifx\currentstructuresaveinlist\v!no \else
+%               \ifx\currentstructurelist\currentstructuretitle \else
+%                 list     = \!!bs\detokenize\expandafter{\currentstructurelist}\!!es,
+%               \fi
+%             \fi
+%             },
+%             numberdata = {
+%                 % needed ?
+%                 block         = "\currentsectionblock",
+%             \ifx\currentstructureshownumber\v!no
+%                 hidenumber    = true, % titles
+%             \fi
+%                 % so far
+%                 separatorset  = "\structureparameter\c!sectionseparatorset",
+%                 conversion    = "\structureparameter\c!sectionconversion", % for good old times sake
+%                 conversionset = "\structureparameter\c!sectionconversionset",
+%                 starter       = \!!bs\structureparameter\c!sectionstarter\!!es,
+%                 stopper       = \!!bs\structureparameter\c!sectionstopper\!!es,
+%                 set           = "\structureparameter\c!sectionset",
+%                 segments      = "\structureparameter\c!sectionsegments",
+%                 ownnumber     = "\currentstructureownnumber",
+%                 language      = "\currentlanguage", % for the moment, needed for bookmarks conversion
+%             },
+%             userdata = \!!bs\detokenize{#3}\!!es % will be converted to table at the lua end
+%         }
+%    }%
+   \clf_setsectionentry
+        references {
+            internal        \nextinternalreference\space
+            block           {\currentsectionblock}
+            referenceprefix {\currentstructurereferenceprefix}
+            reference       {\currentstructurereference}
+            backreference   {\currentstructurebackreference}
         }
-   }%
-   \xdef\currentstructurelistnumber{\ctxcommand{currentsectiontolist()}}%
+        directives {
+            resetset {\structureparameter\c!sectionresetset}
+        }
+        metadata {
+            kind      {section}
+            name      {\currentstructurename}
+            catcodes  \ifx\currentstructurecatcodes\empty\catcodetable\else\csname\currentstructurecatcodes\endcsname\fi\space
+            coding    {\currentstructurecoding}
+        \ifx\currentstructurecoding\s!xml
+            xmlroot   {\xmldocument}
+        \fi
+        \ifx\currentstructurexmlsetup\empty \else
+            xmlsetup  {\currentstructurexmlsetup}
+        \fi
+        \ifx\currentstructuresaveinlist\v!no
+            nolist \space true\space
+        \fi
+        \ifx\currentstructureincrementnumber\v!yes
+            increment {\currentstructureincrementnumber}
+        \fi
+        }
+        titledata {
+            label    {\detokenize\expandafter{\currentstructurelabel}}
+            title    {\detokenize\expandafter{\currentstructuretitle}}
+        \ifx\currentstructurebookmark\currentstructuretitle \else
+            bookmark {\detokenize\expandafter{\currentstructurebookmark}}
+        \fi
+        \ifx\currentstructuremarking\currentstructuretitle \else
+            marking  {\detokenize\expandafter{\currentstructuremarking}}
+        \fi
+        \ifx\currentstructuresaveinlist\v!no \else
+          \ifx\currentstructurelist\currentstructuretitle \else
+            list     {\detokenize\expandafter{\currentstructurelist}}
+          \fi
+        \fi
+        }
+        numberdata {
+            block         {\currentsectionblock}
+        \ifx\currentstructureshownumber\v!no
+            hidenumber    \space true\space
+        \fi
+            separatorset  {\structureparameter\c!sectionseparatorset}
+            conversionset {\structureparameter\c!sectionconversionset}
+            conversion    {\structureparameter\c!sectionconversion}
+            starter       {\structureparameter\c!sectionstarter}
+            stopper       {\structureparameter\c!sectionstopper}
+            set           {\structureparameter\c!sectionset}
+            segments      {\structureparameter\c!sectionsegments}
+            ownnumber     {\currentstructureownnumber}
+            language      {\currentlanguage}% for the moment, needed for bookmarks conversion
+        }
+        userdata {\detokenize{#3}}% will be converted to table at the lua end
+   \relax
+   \xdef\currentstructurelistnumber{\clf_currentsectiontolist}%
    % \currentstructuresynchronize has to be called someplace, since it introduces a node
    \setstructuresynchronization\currentstructurelistnumber
    \endgroup}
@@ -267,16 +328,15 @@
 
 % todo: #1 => "#1" ... adapt lua code for name and number
 
-\def\structurenumber               {\ctxcommand{structurenumber()}}
-\def\structuretitle                {\ctxcommand{structuretitle()}}
-\def\structurevariable           #1{\ctxcommand{structurevariable("#1")}}
-\def\structureuservariable       #1{\ctxcommand{structureuservariable("#1")}}
-\def\structurecatcodedget        #1{\ctxcommand{structurecatcodedget("#1")}} % bad name
-\def\structuregivencatcodedget #1#2{\ctxcommand{structuregivencatcodedget("#1",\number#2)}} % bad name
-\def\structureautocatcodedget  #1#2{\ctxcommand{structureautocatcodedget ("#1","#2")}}
-
-\def\namedstructurevariable    #1#2{\ctxcommand{namedstructurevariable    ("#1","#2")}}
-\def\namedstructureuservariable#1#2{\ctxcommand{namedstructureuservariable("#1","#2")}}
+\def\structurenumber               {\clf_structurenumber}
+\def\structuretitle                {\clf_structuretitle}
+\def\structurevariable           #1{\clf_structurevariable         {#1}}
+\def\structureuservariable       #1{\clf_structureuservariable     {#1}}
+\def\structurecatcodedget        #1{\clf_structurecatcodedget      {#1}} % bad name
+\def\structuregivencatcodedget #1#2{\clf_structuregivencatcodedget {#1}#2 } % bad name
+\def\structureautocatcodedget  #1#2{\clf_structureautocatcodedget  {#1}{#2}}
+\def\namedstructurevariable    #1#2{\clf_namedstructurevariable    {#1}{#2}}
+\def\namedstructureuservariable#1#2{\clf_namedstructureuservariable{#1}{#2}}
 
 % compatibility issue:
 %
@@ -306,14 +366,14 @@
 
 \newconditional\c_strc_rendering_continuous % not used (mkii ?)
 
-\def\setstructurelevel         #1#2{\ctxcommand{setsectionlevel("#1","#2")}}  % name, level|parent
-\def\getstructurelevel           #1{\ctxcommand{getcurrentsectionlevel("#1")}}% name
-\def\setstructurenumber        #1#2{\ctxcommand{setsectionnumber(#1,"#2")}}   % level, number (+/-)
-\def\getstructurenumber          #1{\ctxcommand{getsectionnumber(#1)}}        % level
-\def\getsomestructurenumber    #1#2{\ctxcommand{getsectionnumber(#1,"#2")}}   % level, what
-\def\getfullstructurenumber      #1{\ctxcommand{getfullsectionnumber(#1)}}       % level
-\def\getsomefullstructurenumber#1#2{\ctxcommand{getfullsectionnumber(#1,"#2")}}
-\def\getspecificstructuretitle   #1{\ctxcommand{getstructuredata("#1","titledata.title",nil,"\headparameter\s!catcodes")}}%
+\def\setstructurelevel         #1#2{\clf_setstructurelevel         {#1}{#2}}      % name, level|parent
+\def\getstructurelevel           #1{\clf_getstructurelevel         {#1}}          % name
+\def\setstructurenumber        #1#2{\clf_setstructurenumber         #1{#2}}       % level, number (+/-)
+\def\getstructurenumber          #1{\clf_getstructurenumber         #1 }          % level
+\def\getsomestructurenumber    #1#2{\clf_getsomestructurenumber     #1{#2}}       % level, what
+\def\getfullstructurenumber      #1{\clf_getfullstructurenumber     #1 }          % level
+\def\getsomefullstructurenumber#1#2{\clf_getsomefullstructurenumber #1{#2}}       % level, what
+\def\getspecificstructuretitle   #1{\clf_getspecificstructuretitle {#1}{\headparameter\s!catcodes}}
 
 % will be:
 %
@@ -447,13 +507,12 @@
     \edef\currentsectionheadcoupling{\sectionheadcoupling\currenthead}%
     \edef\currentsectionheadsection {\sectionheadsection \currentsectionheadcoupling}%
     \edef\currentsectionlevel       {\sectionlevel       \currentsectionheadsection}%
-    \ctxcommand{registersection("\currenthead",{
-        coupling = "\currentsectionheadcoupling",
-        section  = "\currentsectionheadsection",
-        level    = \currentsectionlevel,
-        % for statistical purposes:
-        parent   = "\currentheadparent"
-    })}%
+    \clf_registersection {\currenthead} {
+        coupling {\currentsectionheadcoupling}
+        section  {\currentsectionheadsection}
+        level    \currentsectionlevel
+        parent   {\currentheadparent}
+    }%
     \endgroup
 \to \everyredefinehead
 
@@ -601,8 +660,8 @@
 
 % head -> head
 
-\def\sectionheadmarkingtitle #1#2{\ctxcommand{markingtitle("#1","#2")}}
-\def\sectionheadmarkingnumber#1#2{\ctxcommand{markingnumber("#1","#2")}}
+\def\sectionheadmarkingtitle #1#2{\clf_markingtitle {#1}{#2}}
+\def\sectionheadmarkingnumber#1#2{\clf_markingnumber{#1}{#2}}
 
 \def\sectionheadcoupling#1{\namedheadparameter{#1}\c!coupling}
 \def\sectionheadsection #1{\namedheadparameter{#1}\c!section}
@@ -786,7 +845,7 @@
 \unexpanded\def\placeheadtext  {\dosingleempty\strc_sectioning_place_head_text  } % use with care
 \unexpanded\def\placeheadnumber{\dosingleempty\strc_sectioning_place_head_number} % use with care
 
-\unexpanded\def\strc_sectioning_report{\ctxcommand{reportstructure()}}
+\unexpanded\def\strc_sectioning_report{\clf_reportstructure}
 
 \ifdefined\strc_rendering_initialize_style_and_color \else
 
@@ -1067,8 +1126,8 @@
      #1%
    \fi}
 
-\def\currentsectioncountervalue {\ctxcommand{depthnumber(\thenamedheadlevel\currenthead)}}
-\def\previoussectioncountervalue{\ctxcommand{depthnumber(\thenamedheadlevel\currenthead-1)}}
+\def\currentsectioncountervalue {\clf_depthnumber\numexpr\thenamedheadlevel\currenthead\relax}
+\def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\currenthead+\minusone\relax}
 
 \def\strc_sectioning_handle_page_nop
   {\edef\p_continue{\headparameter\c!continue}%
@@ -1170,7 +1229,7 @@
 
 \unexpanded\def\strc_sectioning_initialize_autolevel
   {\ifconditional\c_strc_sectioning_auto_levels
-     \ctxcommand{autonextstructurelevel(\number\currentheadlevel)}%
+     \clf_autonextstructurelevel\currentheadlevel\relax
      \global\setfalse\c_strc_sectioning_auto_levels
    \fi}
 
@@ -1178,7 +1237,7 @@
   {\global\settrue\c_strc_sectioning_auto_levels}
 
 \unexpanded\def\finalizeautostructurelevels
-  {\ctxcommand{autofinishstructurelevels()}}
+  {\clf_autofinishstructurelevels}
 
 \unexpanded\def\finalizeautostructurelevel
   {\dostoptagged

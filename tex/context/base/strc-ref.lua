@@ -53,6 +53,7 @@ local v_auto             = variables.auto
 
 local context            = context
 local commands           = commands
+local implement          = interfaces.implement
 
 local texgetcount        = tex.getcount
 local texsetcount        = tex.setcount
@@ -1782,24 +1783,27 @@ end)
 
 local destinationattributes = { }
 
-local function setinternalreference(prefix,tag,internal,view) -- needs checking
+local function setinternalreference(specification)
+    local internal    = specification.internal
     local destination = unsetvalue
     if innermethod == v_auto then
         local t, tn = { }, 0 -- maybe add to current
-        if tag then
+        local reference = specification.reference
+        if reference then
+            local prefix = specification.prefix
             if prefix and prefix ~= "" then
                 prefix = prefix .. ":" -- watch out, : here
                 local function action(ref)
                     tn = tn + 1
                     t[tn] = prefix .. ref
                 end
-                process_settings(tag,action)
+                process_settings(reference,action)
             else
                 local function action(ref)
                     tn = tn + 1
                     t[tn] = ref
                 end
-                process_settings(tag,action)
+                process_settings(reference,action)
             end
         end
         -- ugly .. later we decide to ignore it when we have a real one
@@ -1808,7 +1812,7 @@ local function setinternalreference(prefix,tag,internal,view) -- needs checking
             tn = tn + 1
             t[tn] = internal -- when number it's internal
         end
-        destination = references.mark(t,nil,nil,view) -- returns an attribute
+        destination = references.mark(t,nil,nil,specification.view) -- returns an attribute
     end
     if internal then -- new
         destinationattributes[internal] = destination
@@ -1823,8 +1827,25 @@ end
 
 references.setinternalreference = setinternalreference
 references.getinternalreference = getinternalreference
-commands.setinternalreference   = setinternalreference
-commands.getinternalreference   = getinternalreference
+
+implement {
+    name      = "setinternalreference",
+    actions   = setinternalreference,
+    arguments = {
+        {
+            { "prefix" },
+            { "reference" },
+            { "internal", "integer" },
+            { "view" }
+        }
+    }
+}
+
+-- implement {
+--     name      = "getinternalreference",
+--     actions   = { getinternalreference, context },
+--     arguments = "integer",
+-- }
 
 function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
     local attr = references.set(kind,prefix,tag,data) and setinternalreference(prefix,tag,nil,view) or unsetvalue

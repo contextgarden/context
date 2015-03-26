@@ -19,6 +19,16 @@ local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 local context              = context
 local context_setvalue     = context.setvalue
 
+local scanners             = tokens.scanners
+local scanstring           = scanners.string
+local scaninteger          = scanners.integer
+local scandimen            = scanners.dimen
+local setters              = tokens.setters
+local setmacro             = setters.macro
+
+local compilescanner       = tokens.compile
+local scanners             = interfaces.scanners
+
 local texgetbox            = tex.getbox
 local texsetbox            = tex.setbox
 local textakebox           = tex.takebox
@@ -269,7 +279,7 @@ end
 
 -- end of new
 
-function metapost.settext(box,slot)
+local function settext(box,slot)
     if top then
         top.textexts[slot] = copy_list(texgetbox(box))
         texsetbox(box,nil)
@@ -280,7 +290,7 @@ function metapost.settext(box,slot)
     end
 end
 
-function metapost.gettext(box,slot)
+local function gettext(box,slot)
     if top then
         texsetbox(box,copy_list(top.textexts[slot]))
         if trace_textexts then
@@ -291,6 +301,12 @@ function metapost.gettext(box,slot)
         -- weird error
     end
 end
+
+metapost.settext = settext
+metapost.gettext = gettext
+
+scanners.mpsettext = compilescanner { actions = settext, arguments = { "integer", "integer" } } -- box slot
+scanners.mpgettext = compilescanner { actions = gettext, arguments = { "integer", "integer" } } -- box slot
 
 -- rather generic pdf, so use this elsewhere too it no longer pays
 -- off to distinguish between outline and fill (we now have both
@@ -481,7 +497,7 @@ end
 -- currently a a one-liner produces less code
 
 -- textext.*(".*") can have "'s but tricky parsing as we can have concatenated strings
--- so this is something for a boring plain or train trip and we might assume proper mp
+-- so this is something for a boring plane or train trip and we might assume proper mp
 -- input anyway
 
 local parser = Cs((
@@ -491,9 +507,15 @@ local parser = Cs((
   + 1
 )^0)
 
+local checking_enabled = true   directives.register("metapost.checktexts",function(v) checking_enabled = v end)
+
 local function checktexts(str)
-    found, forced = false, false
-    return lpegmatch(parser,str), found, forced
+    if checking_enabled then
+        found, forced = false, false
+        return lpegmatch(parser,str), found, forced
+    else
+        return str
+    end
 end
 
 metapost.checktexts = checktexts
@@ -504,6 +526,13 @@ function metapost.edefsxsy(wd,ht,dp) -- helper for figure
     local hd = ht + dp
     context_setvalue("sx",wd ~= 0 and factor/wd or 0)
     context_setvalue("sy",hd ~= 0 and factor/hd or 0)
+end
+
+scanners.mpsetsxsy = function() -- wd ht dp
+    local wd = scandimen()
+    local hd = scandimen() + scandimen()
+    setmacro("sx",wd ~= 0 and factor/wd or 0)
+    setmacro("sy",hd ~= 0 and factor/hd or 0)
 end
 
 local function sxsy(wd,ht,dp) -- helper for text
@@ -608,17 +637,18 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
     top.nofruns  = nofruns
     --
     local done_1, done_2, done_3, forced_1, forced_2, forced_3
-    data, done_1, forced_1 = checktexts(data)
-    -- we had preamble = extensions + inclusions
-    if extensions == "" then
-        extensions, done_2, forced_2 = "", false, false
-    else
-        extensions, done_2, forced_2 = checktexts(extensions)
-    end
-    if inclusions == "" then
-        inclusions, done_3, forced_3 = "", false, false
-    else
-        inclusions, done_3, forced_3 = checktexts(inclusions)
+    if checking_enabled then
+        data, done_1, forced_1 = checktexts(data)
+        if extensions == "" then
+            extensions, done_2, forced_2 = "", false, false
+        else
+            extensions, done_2, forced_2 = checktexts(extensions)
+        end
+        if inclusions == "" then
+            inclusions, done_3, forced_3 = "", false, false
+        else
+            inclusions, done_3, forced_3 = checktexts(inclusions)
+        end
     end
     top.intermediate     = false
     top.multipass        = false -- no needed here

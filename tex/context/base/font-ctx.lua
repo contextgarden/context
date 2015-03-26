@@ -21,6 +21,7 @@ local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, uti
 local formatcolumns = utilities.formatters.formatcolumns
 local mergehashes = utilities.parsers.mergehashes
 local formatters = string.formatters
+local basename = file.basename
 
 local tostring, next, type, rawget, tonumber = tostring, next, type, rawget, tonumber
 local utfchar, utfbyte = utf.char, utf.byte
@@ -43,6 +44,8 @@ local report_status       = logs.reporter("fonts","status")
 local report_mapfiles     = logs.reporter("fonts","mapfiles")
 
 local setmetatableindex   = table.setmetatableindex
+
+local implement           = interfaces.implement
 
 local fonts               = fonts
 local handlers            = fonts.handlers
@@ -141,9 +144,11 @@ end
 
 -- this will move elsewhere ...
 
-function fonts.helpers.name(tfmdata)
-    return file.basename(type(tfmdata) == "number" and properties[tfmdata].name or tfmdata.properties.name)
+local function getfontname(tfmdata)
+    return basename(type(tfmdata) == "number" and properties[tfmdata].name or tfmdata.properties.name)
 end
+
+fonts.helpers.name = getfontname
 
 if _LUAVERSION < 5.2  then
 
@@ -871,7 +876,10 @@ end
 specifiers.splitcontext = splitcontext
 
 function specifiers.contexttostring(name,kind,separator,yes,no,strict,omit) -- not used
-    return hash_to_string(mergedtable(handlers[kind].features.defaults or {},setups[name] or {}),separator,yes,no,strict,omit)
+    return hash_to_string(
+        mergedtable(handlers[kind].features.defaults or {},setups[name] or {}),
+        separator, yes, no, strict, omit or { "number" }
+    )
 end
 
 local function starred(features) -- no longer fallbacks here
@@ -949,16 +957,29 @@ local getspecification = definers.getspecification
 
 do  -- else too many locals
 
-    local ctx_setdefaultfontname = context.fntsetdefname
-    local ctx_setsomefontname    = context.fntsetsomename
-    local ctx_setemptyfontsize   = context.fntsetnopsize
-    local ctx_setsomefontsize    = context.fntsetsomesize
-    local ctx_letvaluerelax      = context.letvaluerelax
+    ----- ctx_setdefaultfontname = context.fntsetdefname
+    ----- ctx_setsomefontname    = context.fntsetsomename
+    ----- ctx_setemptyfontsize   = context.fntsetnopsize
+    ----- ctx_setsomefontsize    = context.fntsetsomesize
+    ----- ctx_letvaluerelax      = context.letvaluerelax
 
     local starttiming            = statistics.starttiming
     local stoptiming             = statistics.stoptiming
 
-    function commands.definefont_one(str)
+    local scanners               = tokens.scanners
+    local scanstring             = scanners.string
+    local scaninteger            = scanners.integer
+    local scanboolean            = scanners.boolean
+
+    local setmacro               = tokens.setters.macro
+
+    local scanners               = interfaces.scanners
+
+ -- function commands.definefont_one(str)
+
+    scanners.definefont_one = function()
+        local str = scanstring()
+
         starttiming(fonts)
         if trace_defining then
             report_defining("memory usage before: %s",statistics.memused())
@@ -968,29 +989,31 @@ do  -- else too many locals
         local lookup, name, sub, method, detail = getspecification(fullname)
         if not name then
             report_defining("strange definition %a",str)
-            ctx_setdefaultfontname()
+         -- ctx_setdefaultfontname()
         elseif name == "unknown" then
-            ctx_setdefaultfontname()
+         -- ctx_setdefaultfontname()
         else
-            ctx_setsomefontname(name)
+         -- ctx_setsomefontname(name)
+            setmacro("somefontname",name,"global")
         end
         -- we can also use a count for the size
         if size and size ~= "" then
             local mode, size = lpegmatch(sizepattern,size)
             if size and mode then
                 texsetcount("scaledfontmode",mode)
-                ctx_setsomefontsize(size)
+             -- ctx_setsomefontsize(size)
+                setmacro("somefontsize",size)
             else
                 texsetcount("scaledfontmode",0)
-                ctx_setemptyfontsize()
+             -- ctx_setemptyfontsize()
             end
         elseif true then
             -- so we don't need to check in tex
             texsetcount("scaledfontmode",2)
-            ctx_setemptyfontsize()
+         -- ctx_setemptyfontsize()
         else
             texsetcount("scaledfontmode",0)
-            ctx_setemptyfontsize()
+         -- ctx_setemptyfontsize()
         end
         specification = definers.makespecification(str,lookup,name,sub,method,detail,size)
         if trace_defining then
@@ -1007,33 +1030,28 @@ do  -- else too many locals
         return (gsub(cs,".->", ""))
     end
 
---     local scan_string  = newtoken.scan_string
---     local scan_dimen   = newtoken.scan_dimen
---     local scan_number  = newtoken.scan_number
---     local scan_boolean = newtoken.scan_boolean
+ -- function commands.definefont_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
+ --     mathsize,textsize,relativeid,classgoodies,goodies,classdesignsize,fontdesignsize,scaledfontmode)
 
---     function commands.definefont_two()
+    scanners.definefont_two = function()
 
---         local global          = scan_boolean()
---         local cs              = scan_string()
---         local str             = scan_string()
---         local size            = scan_number()
---         local inheritancemode = scan_number()
---         local classfeatures   = scan_string()
---         local fontfeatures    = scan_string()
---         local classfallbacks  = scan_string()
---         local fontfallbacks   = scan_string()
---         local mathsize        = scan_number()
---         local textsize        = scan_number()
---         local relativeid      = scan_string()
---         local classgoodies    = scan_string()
---         local goodies         = scan_string()
---         local classdesignsize = scan_string()
---         local fontdesignsize  = scan_string()
---         local scaledfontmode  = scan_number()
-
-    function commands.definefont_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
-            mathsize,textsize,relativeid,classgoodies,goodies,classdesignsize,fontdesignsize,scaledfontmode)
+        local global          = scanboolean() -- \ifx\fontclass\empty\s!false\else\s!true\fi
+        local cs              = scanstring () -- {#csname}%
+        local str             = scanstring () -- \somefontfile
+        local size            = scaninteger() -- \d_font_scaled_font_size
+        local inheritancemode = scaninteger() -- \c_font_feature_inheritance_mode
+        local classfeatures   = scanstring () -- \m_font_class_features
+        local fontfeatures    = scanstring () -- \m_font_features
+        local classfallbacks  = scanstring () -- \m_font_class_fallbacks
+        local fontfallbacks   = scanstring () -- \m_font_fallbacks
+        local mathsize        = scaninteger() -- \fontface
+        local textsize        = scaninteger() -- \d_font_scaled_text_face
+        local relativeid      = scaninteger() -- \relativefontid
+        local classgoodies    = scanstring () -- \m_font_class_goodies
+        local goodies         = scanstring () -- \m_font_goodies
+        local classdesignsize = scanstring () -- \m_font_class_designsize
+        local fontdesignsize  = scanstring () -- \m_font_designsize
+        local scaledfontmode  = scaninteger() -- \scaledfontmode
 
         if trace_defining then
             report_defining("start stage two: %s (size %s)",str,size)
@@ -1134,7 +1152,8 @@ do  -- else too many locals
         if not tfmdata then
             report_defining("unable to define %a as %a",name,nice_cs(cs))
             lastfontid = -1
-            ctx_letvaluerelax(cs) -- otherwise the current definition takes the previous one
+            texsetcount("scaledfontsize",0)
+         -- ctx_letvaluerelax(cs) -- otherwise the current definition takes the previous one
         elseif type(tfmdata) == "number" then
             if trace_defining then
                 report_defining("reusing %s, id %a, target %a, features %a / %a, fallbacks %a / %a, goodies %a / %a, designsize %a / %a",
@@ -1144,7 +1163,8 @@ do  -- else too many locals
             texdefinefont(global,cs,tfmdata)
             -- resolved (when designsize is used):
             local size = fontdata[tfmdata].parameters.size or 0
-            ctx_setsomefontsize(size .. "sp")
+         -- ctx_setsomefontsize(size .. "sp")
+            setmacro("somefontsize",size.."sp")
             texsetcount("scaledfontsize",size)
             lastfontid = tfmdata
         else
@@ -1171,7 +1191,8 @@ do  -- else too many locals
             end
             -- resolved (when designsize is used):
             local size = tfmdata.parameters.size or 655360
-            ctx_setsomefontsize(size .. "sp")
+            setmacro("somefontsize",size.."sp")
+         -- ctx_setsomefontsize(size .. "sp")
             texsetcount("scaledfontsize",size)
             lastfontid = id
         end
@@ -1191,6 +1212,8 @@ do  -- else too many locals
         --
         stoptiming(fonts)
     end
+
+    --
 
     function definers.define(specification)
         --
@@ -1585,6 +1608,8 @@ do -- else too many locals
             return utfchar(str)
         elseif t == "string" then
             return lpegmatch(splitter,str) or str
+        else
+            return str
         end
     end
 
@@ -1594,23 +1619,23 @@ do -- else too many locals
 
     -- interfaces:
 
-    function commands.fontchar(n)
-        n = nametoslot(n)
-        if n then
-            context_char(n)
-        end
-    end
+    implement {
+        name      = "fontchar",
+        actions   = { nametoslot, context_char },
+        arguments = "string",
+    }
 
-    function commands.fontcharbyindex(n)
-        n = indextoslot(n)
-        if n then
-            context_char(n)
-        end
-    end
+    implement {
+        name      = "fontcharbyindex",
+        actions   = { indextoslot, context_char },
+        arguments = "integer",
+    }
 
-    function commands.tochar(str)
-        context(tochar(str))
-    end
+    implement {
+        name      = "tochar",
+        actions   = { tochar, context },
+        arguments = "string",
+    }
 
 end
 
@@ -1751,91 +1776,6 @@ end
 
 function fonts.currentid()
     return currentfont() or 0
-end
-
--- interfaces
-
-local commands_doifelse = commands.doifelse
-
-function commands.doifelsecurrentfonthasfeature(name) -- can be made faster with a supportedfeatures hash
-    local f = fontdata[currentfont()]
-    f = f and f.shared
-    f = f and f.rawdata
-    f = f and f.resources
-    f = f and f.features
-    commands_doifelse(f and (f.gpos[name] or f.gsub[name]))
-end
-
-local p, f = 1, formatters["%0.1fpt"] -- normally this value is changed only once
-
-local stripper = lpeg.patterns.stripzeros
-
-function commands.nbfs(amount,precision)
-    if precision ~= p then
-        p = precision
-        f = formatters["%0." .. p .. "fpt"]
-    end
-    context(lpegmatch(stripper,f(amount/65536)))
-end
-
-function commands.featureattribute(tag)
-    context(contextnumber(tag))
-end
-
-function commands.setfontfeature(tag)
-    texsetattribute(0,contextnumber(tag))
-end
-
-function commands.resetfontfeature()
-    texsetattribute(0,0)
-end
-
--- function commands.addfs(tag) withset(tag, 1) end
--- function commands.subfs(tag) withset(tag,-1) end
--- function commands.addff(tag) withfnt(tag, 2) end -- on top of font features
--- function commands.subff(tag) withfnt(tag,-2) end -- on top of font features
-
-function commands.cleanfontname          (name)      context(names.cleanname(name))         end
-
-function commands.fontlookupinitialize   (name)      names.lookup(name)                     end
-function commands.fontlookupnoffound     ()          context(names.noflookups())            end
-function commands.fontlookupgetkeyofindex(key,index) context(names.getlookupkey(key,index)) end
-function commands.fontlookupgetkey       (key)       context(names.getlookupkey(key))       end
-
--- this might move to a runtime module:
-
-function commands.showchardata(n)
-    local tfmdata = fontdata[currentfont()]
-    if tfmdata then
-        if type(n) == "string" then
-            n = utfbyte(n)
-        end
-        local chr = tfmdata.characters[n]
-        if chr then
-            report_status("%s @ %s => %U => %c => %s",tfmdata.properties.fullname,tfmdata.parameters.size,n,n,serialize(chr,false))
-        end
-    end
-end
-
-function commands.showfontparameters(tfmdata)
-    -- this will become more clever
-    local tfmdata = tfmdata or fontdata[currentfont()]
-    if tfmdata then
-        local parameters        = tfmdata.parameters
-        local mathparameters    = tfmdata.mathparameters
-        local properties        = tfmdata.properties
-        local hasparameters     = parameters     and next(parameters)
-        local hasmathparameters = mathparameters and next(mathparameters)
-        if hasparameters then
-            report_status("%s @ %s => text parameters => %s",properties.fullname,parameters.size,serialize(parameters,false))
-        end
-        if hasmathparameters then
-            report_status("%s @ %s => math parameters => %s",properties.fullname,parameters.size,serialize(mathparameters,false))
-        end
-        if not hasparameters and not hasmathparameters then
-            report_status("%s @ %s => no text parameters and/or math parameters",properties.fullname,parameters.size)
-        end
-    end
 end
 
 -- for the moment here, this will become a chain of extras that is
@@ -2019,79 +1959,145 @@ end
 --     end
 -- end
 
-function commands.setfontofid(id)
-    context_getvalue(csnames[id])
-end
+do
 
--- more interfacing:
+    local scanners               = tokens.scanners
+    local scanstring             = scanners.string
+    local scaninteger            = scanners.integer
+    local scandimen              = scanners.dimen
+    local scanboolean            = scanners.boolean
 
-commands.definefontfeature = presetcontext
+    local setmacro               = tokens.setters.macro
 
-local cache = { }
+    local scanners               = interfaces.scanners
 
-local hows = {
-    ["+"] = "add",
-    ["-"] = "subtract",
-    ["="] = "replace",
-}
-
-function commands.feature(how,parent,name,font) -- 0/1 test temporary for testing
-    if not how or how == 0 then
-        if trace_features and texgetattribute(0) ~= 0 then
-            report_cummulative("font %!font:name!, reset",fontdata[font or true])
-        end
-        texsetattribute(0,0)
-    elseif how == true or how == 1 then
-        local hash = "feature > " .. parent
-        local done = cache[hash]
-        if trace_features and done then
-            report_cummulative("font %!font:name!, revive %a : %!font:features!",fontdata[font or true],parent,setups[numbers[done]])
-        end
-        texsetattribute(0,done or 0)
-    else
-        local full = parent .. how .. name
-        local hash = "feature > " .. full
-        local done = cache[hash]
-        if not done then
-            local n = setups[full]
-            if n then
-                -- already defined
-            else
-                n = mergecontextfeatures(parent,name,how,full)
-            end
-            done = registercontextfeature(hash,full,how)
-            cache[hash] = done
-            if trace_features then
-                report_cummulative("font %!font:name!, %s %a : %!font:features!",fontdata[font or true],hows[how],full,setups[numbers[done]])
-            end
-        end
-        texsetattribute(0,done)
+    function constructors.currentfonthasfeature(n)
+        local f = fontdata[currentfont()]
+        if not f then return end f = f.shared
+        if not f then return end f = f.rawdata
+        if not f then return end f = f.resources
+        if not f then return end f = f.features
+        return f and (f.gpos[n] or f.gsub[n])
     end
-end
 
-function commands.featurelist(...)
-    context(fonts.specifiers.contexttostring(...))
-end
+    implement {
+        name      = "doifelsecurrentfonthasfeature",
+        actions   = { currentfonthasfeature, commands.doifelse },
+        arguments = "string"
+    }
 
-function commands.registerlanguagefeatures()
-    local specifications = languages.data.specifications
-    for i=1,#specifications do
-        local specification = specifications[i]
-        local language = specification.opentype
-        if language then
-            local script = specification.opentypescript or specification.script
-            if script then
-                local context = specification.context
-                if type(context) == "table" then
-                    for i=1,#context do
-                        definecontext(context[i], { language = language, script = script})
+    -- local p, f = 1, formatters["%0.1fpt"] -- normally this value is changed only once
+    --
+    -- local stripper = lpeg.patterns.stripzeros
+    --
+    -- function commands.nbfs(amount,precision)
+    --     if precision ~= p then
+    --         p = precision
+    --         f = formatters["%0." .. p .. "fpt"]
+    --     end
+    --     context(lpegmatch(stripper,f(amount/65536)))
+    -- end
+
+    local f = formatters["%0.2fpt"] -- normally this value is changed only once
+
+    local stripper = lpeg.patterns.stripzeros
+
+    scanners.nbfs = function()
+        context(lpegmatch(stripper,f(scandimen()/65536)))
+    end
+
+    commands.featureattribute  = function(tag) context(contextnumber(tag)) end
+    commands.setfontfeature    = function(tag) texsetattribute(0,contextnumber(tag)) end
+    commands.resetfontfeature  = function()    texsetattribute(0,0) end
+    commands.setfontofid       = function(id)  context_getvalue(csnames[id]) end
+    commands.definefontfeature = presetcontext
+
+    scanners.featureattribute  = function() context(contextnumber(scanstring())) end
+    scanners.setfontfeature    = function() texsetattribute(0,contextnumber(scanstring())) end
+    scanners.resetfontfeature  = function() texsetattribute(0,0) end
+    scanners.setfontofid       = function() context_getvalue(csnames[scaninteger()]) end
+    scanners.definefontfeature = function() presetcontext(scanstring(),scanstring(),scanstring()) end
+
+    local cache = { }
+
+    local hows = {
+        ["+"] = "add",
+        ["-"] = "subtract",
+        ["="] = "replace",
+    }
+
+    local function setfeature(how,parent,name,font) -- 0/1 test temporary for testing
+        if not how or how == 0 then
+            if trace_features and texgetattribute(0) ~= 0 then
+                report_cummulative("font %!font:name!, reset",fontdata[font or true])
+            end
+            texsetattribute(0,0)
+        elseif how == true or how == 1 then
+            local hash = "feature > " .. parent
+            local done = cache[hash]
+            if trace_features and done then
+                report_cummulative("font %!font:name!, revive %a : %!font:features!",fontdata[font or true],parent,setups[numbers[done]])
+            end
+            texsetattribute(0,done or 0)
+        else
+            local full = parent .. how .. name
+            local hash = "feature > " .. full
+            local done = cache[hash]
+            if not done then
+                local n = setups[full]
+                if n then
+                    -- already defined
+                else
+                    n = mergecontextfeatures(parent,name,how,full)
+                end
+                done = registercontextfeature(hash,full,how)
+                cache[hash] = done
+                if trace_features then
+                    report_cummulative("font %!font:name!, %s %a : %!font:features!",fontdata[font or true],hows[how],full,setups[numbers[done]])
+                end
+            end
+            texsetattribute(0,done)
+        end
+    end
+
+    local function registerlanguagefeatures()
+        local specifications = languages.data.specifications
+        for i=1,#specifications do
+            local specification = specifications[i]
+            local language = specification.opentype
+            if language then
+                local script = specification.opentypescript or specification.script
+                if script then
+                    local context = specification.context
+                    if type(context) == "table" then
+                        for i=1,#context do
+                            definecontext(context[i], { language = language, script = script})
+                        end
+                    elseif type(context) == "string" then
+                       definecontext(context, { language = language, script = script})
                     end
-                elseif type(context) == "string" then
-                   definecontext(context, { language = language, script = script})
                 end
             end
         end
     end
+
+    implement { name = "resetfeature",    actions = setfeature, arguments = { false } }
+    implement { name = "addfeature",      actions = setfeature, arguments = { "'+'",  "string", "string" } }
+    implement { name = "subtractfeature", actions = setfeature, arguments = { "'-'",  "string", "string" } }
+    implement { name = "replacefeature",  actions = setfeature, arguments = { "'='",  "string", "string" } }
+    implement { name = "revivefeature",   actions = setfeature, arguments = { true, "string" } }
+
+    implement {
+        name      = "featurelist",
+        actions   = { fonts.specifiers.contexttostring, context },
+        arguments = { "string", "'otf'", "string", "'yes'", "'no'", true }
+    }
+
+    implement {
+        name      = "registerlanguagefeatures",
+        actions   = registerlanguagefeatures,
+    }
+
 end
 
 -- a fontkern plug:
@@ -2208,27 +2214,45 @@ function methods.nocolor(head,font,attr)
     return head, true
 end
 
-function commands.purefontname(name)
+local function purefontname(name)
     if type(name) == "number" then
-        name = fonts.helpers.name(name)
+        name = getfontname(name)
     end
     if type(name) == "string" then
-        context(file.basename(name))
+       return basename(name)
     end
 end
+
+implement {
+    name      = "purefontname",
+    actions   = { purefontname, context },
+    arguments = "string",
+}
 
 local list = storage.shared.bodyfontsizes or { }
 storage.shared.bodyfontsizes = list
 
-function commands.registerbodyfontsize(size)
+local function registerbodyfontsize(size)
     list[size] = true
 end
 
-function commands.getbodyfontsizes(separator)
+implement {
+    name      = "registerbodyfontsize",
+    actions   = registerbodyfontsize,
+    arguments = "string"
+}
+
+local function getbodyfontsizes(separator)
     context(concat(sortedkeys(list),separator))
 end
 
-function commands.processbodyfontsizes(command)
+implement {
+    name      = "getbodyfontsizes",
+    actions   = getbodyfontsizes,
+    arguments = "string"
+}
+
+local function processbodyfontsizes(command)
     local keys = sortedkeys(list)
     if command then
         local action = context[command]
@@ -2237,5 +2261,54 @@ function commands.processbodyfontsizes(command)
         end
     else
         context(concat(keys,","))
+    end
+end
+
+implement {
+    name      = "processbodyfontsizes",
+    actions   = processbodyfontsizes,
+    arguments = "string"
+}
+
+function commands.cleanfontname          (name)      context(names.cleanname(name))         end
+
+function commands.fontlookupinitialize   (name)      names.lookup(name)                     end
+function commands.fontlookupnoffound     ()          context(names.noflookups())            end
+function commands.fontlookupgetkeyofindex(key,index) context(names.getlookupkey(key,index)) end
+function commands.fontlookupgetkey       (key)       context(names.getlookupkey(key))       end
+
+-- this might move to a runtime module:
+
+function commands.showchardata(n)
+    local tfmdata = fontdata[currentfont()]
+    if tfmdata then
+        if type(n) == "string" then
+            n = utfbyte(n)
+        end
+        local chr = tfmdata.characters[n]
+        if chr then
+            report_status("%s @ %s => %U => %c => %s",tfmdata.properties.fullname,tfmdata.parameters.size,n,n,serialize(chr,false))
+        end
+    end
+end
+
+function commands.showfontparameters(tfmdata)
+    -- this will become more clever
+    local tfmdata = tfmdata or fontdata[currentfont()]
+    if tfmdata then
+        local parameters        = tfmdata.parameters
+        local mathparameters    = tfmdata.mathparameters
+        local properties        = tfmdata.properties
+        local hasparameters     = parameters     and next(parameters)
+        local hasmathparameters = mathparameters and next(mathparameters)
+        if hasparameters then
+            report_status("%s @ %s => text parameters => %s",properties.fullname,parameters.size,serialize(parameters,false))
+        end
+        if hasmathparameters then
+            report_status("%s @ %s => math parameters => %s",properties.fullname,parameters.size,serialize(mathparameters,false))
+        end
+        if not hasparameters and not hasmathparameters then
+            report_status("%s @ %s => no text parameters and/or math parameters",properties.fullname,parameters.size)
+        end
     end
 end

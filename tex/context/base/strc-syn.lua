@@ -13,6 +13,8 @@ local allocate = utilities.storage.allocate
 -- interface to tex end
 
 local context      = context
+local implement    = interfaces.implement
+
 local sorters      = sorters
 
 local structures   = structures
@@ -204,8 +206,46 @@ function synonyms.process(class,options)
     end
 end
 
-commands.registersynonym     = synonyms.register
-commands.registerusedsynonym = synonyms.registerused
-commands.synonymmeaning      = synonyms.meaning
-commands.synonymname         = synonyms.synonym
-commands.processsynonyms     = synonyms.process
+-- todo: local higher up
+
+implement { name = "registerusedsynonym", actions = synonyms.registerused, arguments = { "string", "string" } }
+implement { name = "synonymmeaning",      actions = synonyms.meaning,      arguments = { "string", "string" } }
+implement { name = "synonymname",         actions = synonyms.synonym,      arguments = { "string", "string" } }
+
+implement {
+    name      = "registersynonym",
+    actions   = synonyms.register,
+    arguments = {
+        "string",
+        "string",
+        {
+            { "metadata", {
+                    { "catcodes", "integer" },
+                    { "coding" },
+                    { "xmlroot" }
+                }
+            },
+            {
+                "definition", {
+                    { "tag" },
+                    { "synonym" },
+                    { "meaning" },
+                    { "used", "boolean" }
+                }
+            }
+        }
+    }
+}
+
+implement {
+    name      = "processsynonyms",
+    actions   = synonyms.process,
+    arguments = {
+        "string",
+        {
+            { "criterium" },
+            { "language" },
+            { "method" }
+        }
+    }
+}

@@ -52,6 +52,9 @@ local report_duplicates = logs.reporter("publications","duplicates")
 
 local allocate          = utilities.storage.allocate
 
+local commands          = commands
+local implement         = interfaces.implement
+
 publications            = publications or { }
 local publications      = publications
 
@@ -1105,7 +1108,16 @@ do
         return dataset
     end
 
-    commands.btxsavedataset = publications.save
+    implement {
+        name      = "btxsavedataset",
+        actions   = publications.save,
+        arguments = {
+            { "dataset" },
+            { "filename" },
+            { "filetype" },
+            { "criterium" },
+        }
+    }
 
 end
 

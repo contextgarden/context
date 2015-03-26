@@ -6,13 +6,23 @@ if not modules then modules = { } end modules ['back-pdf'] = {
     license   = "see context related readme files"
 }
 
+-- we could do \pdfmatrix sx <> sy <> etc
 
 local tonumber = tonumber
 local sind, cosd = math.sind, math.cosd
 local insert, remove = table.insert, table.remove
+
 local codeinjections = backends.pdf.codeinjections
 
 local context        = context
+
+local scanners       = tokens.scanners
+local scanstring     = scanners.string
+local scannumber     = scanners.number
+local scankeyword    = scanners.keyword
+
+local scanners       = interfaces.scanners
+
 local outputfilename
 
 function codeinjections.getoutputfilename()
@@ -26,8 +36,9 @@ backends.install("pdf")
 
 local f_matrix = string.formatters["%F %F %F %F"] -- 0.8 is default
 
-function commands.pdfrotation(a)
+scanners.pdfrotation = function() -- a
     -- todo: check for 1 and 0 and flush sparse
+    local a = scannumber()
     local s, c = sind(a), cosd(a)
     context(f_matrix(c,s,-s,c))
 end
@@ -45,7 +56,8 @@ local pdfsetmatrix = nodes.pool.pdfsetmatrix
 local stack        = { }
 local restore      = true -- false
 
-function commands.pdfstartrotation(a)
+scanners.pdfstartrotation = function() -- a
+    local a = scannumber()
     if a == 0 then
         insert(stack,false)
     else
@@ -56,7 +68,17 @@ function commands.pdfstartrotation(a)
     end
 end
 
-function commands.pdfstartscaling(sx,sy)
+scanners.pdfstartscaling = function() --  sx sy
+    local sx, sy = 0, 0
+    while true do
+        if scankeyword("sx") then
+            sx = scannumber()
+        elseif scankeyword("sy") then
+            sy = scannumber()
+        else
+            break
+        end
+    end
     if sx == 1 and sy == 1 then
         insert(stack,false)
     else
@@ -72,7 +94,21 @@ function commands.pdfstartscaling(sx,sy)
     end
 end
 
-function commands.pdfstartmatrix(sx,rx,ry,sy) -- tx, ty
+scanners.pdfstartmatrix = function() -- sx rx ry sy  -- tx, ty
+    local sx, rx, ry, sy = 0, 0, 0, 0
+    while true do
+        if scankeyword("sx") then
+            sx = scannumber()
+        elseif scankeyword("sy") then
+            sy = scannumber()
+        elseif scankeyword("rx") then
+            rx = scannumber()
+        elseif scankeyword("ry") then
+            ry = scannumber()
+        else
+            break
+        end
+    end
     if sx == 1 and rx == 0 and ry == 0 and sy == 1 then
         insert(stack,false)
     else
@@ -96,14 +132,14 @@ local function pdfstopsomething()
     end
 end
 
-commands.pdfstoprotation = pdfstopsomething
-commands.pdfstopscaling  = pdfstopsomething
-commands.pdfstopmatrix   = pdfstopsomething
+scanners.pdfstoprotation = pdfstopsomething
+scanners.pdfstopscaling  = pdfstopsomething
+scanners.pdfstopmatrix   = pdfstopsomething
 
-function commands.pdfstartmirroring()
+scanners.pdfstartmirroring = function()
     context(pdfsetmatrix(-1,0,0,1))
 end
 
-commands.pdfstopmirroring = commands.pdfstartmirroring
+scanners.pdfstopmirroring = scanners.pdfstartmirroring
 
 -- todo : clipping

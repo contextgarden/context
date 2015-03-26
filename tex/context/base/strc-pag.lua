@@ -25,6 +25,7 @@ local counterdata         = counters.data
 local variables           = interfaces.variables
 local context             = context
 local commands            = commands
+local implement           = interfaces.implement
 
 local processors          = typesetters.processors
 local applyprocessor      = processors.apply
@@ -325,5 +326,58 @@ end
 
 --
 
-commands.savepagedata      = pages.save
-commands.prefixedconverted = sections.prefixedconverted -- weird place
+implement {
+    name      = "savepagedata",
+    actions   = pages.save,
+    arguments = {
+        {
+            { "prefix" },
+            { "separatorset" },
+            { "conversionset" },
+            { "conversion" },
+            { "set" },
+            { "segments" },
+            { "connector" },
+        },
+        {
+            { "conversionset" },
+            { "conversion" },
+            { "starter" },
+            { "stopper" },
+        },
+        {
+            { "viewerprefix" },
+            { "state" },
+        }
+    }
+}
+
+implement { -- weird place
+    name      = "prefixedconverted",
+    actions   = sections.prefixedconverted,
+    arguments = {
+        "string",
+        {
+            { "prefix" },
+            { "separatorset" },
+            { "conversionset" },
+            { "conversion" },
+            { "starter" },
+            { "stopper" },
+            { "set" },
+            { "segments" },
+            { "connector" },
+        },
+        {
+            { "order" },
+            { "separatorset" },
+            { "conversionset" },
+            { "conversion" },
+            { "starter" },
+            { "stopper" },
+            { "segments" },
+            { "type" },
+            { "criterium" },
+        }
+    }
+}

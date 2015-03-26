@@ -6,21 +6,33 @@ if not modules then modules = { } end modules ['mlib-ctx'] = {
     license   = "see context related readme files",
 }
 
--- todo
+-- for the moment we have the scanners here but they migh tbe moved to
+-- the other modules
 
+local type, tostring = type, tostring
 local format, concat = string.format, table.concat
 local settings_to_hash = utilities.parsers.settings_to_hash
 
 local report_metapost = logs.reporter("metapost")
 
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+local starttiming        = statistics.starttiming
+local stoptiming         = statistics.stoptiming
 
-local mplib = mplib
+local mplib              = mplib
 
-metapost       = metapost or {}
-local metapost = metapost
+metapost                 = metapost or {}
+local metapost           = metapost
 
-local v_no = interfaces.variables.no
+local scanners           = tokens.scanners
+local scanstring         = scanners.string
+local scaninteger        = scanners.integer
+local setters            = tokens.setters
+local setmacro           = setters.macro
+
+local compilescanner     = tokens.compile
+local scanners           = interfaces.scanners
+
+local v_no               = interfaces.variables.no
 
 metapost.defaultformat   = "metafun"
 metapost.defaultinstance = "metafun"
@@ -78,13 +90,154 @@ function metapost.getextensions(instance,state)
     end
 end
 
-function commands.getmpextensions(instance,state)
-    context(metapost.getextensions(instance,state))
+-- function commands.getmpextensions(instance,state)
+--     context(metapost.getextensions(instance,state))
+-- end
+
+scanners.setmpextensions = compilescanner {
+    actions   = metapost.setextensions,
+    arguments = { "string", "string" }
+}
+
+scanners.getmpextensions = compilescanner {
+    actions   = { metapost.getextensions, context } ,
+    arguments = "string"
+}
+
+local report_metapost = logs.reporter ("metapost")
+local status_metapost = logs.messenger("metapost")
+
+local patterns = { "meta-imp-%s.mkiv", "meta-imp-%s.tex", "meta-%s.mkiv", "meta-%s.tex" } -- we are compatible
+
+local function action(name,foundname)
+    status_metapost("library %a is loaded",name)
+    context.startreadingfile()
+    context.input(foundname)
+    context.stopreadingfile()
 end
 
+local function failure(name)
+    report_metapost("library %a is unknown or invalid",name)
+end
+
+scanners.useMPlibrary = function() -- name
+    commands.uselibrary {
+        name     = scanstring(),
+        patterns = patterns,
+        action   = action,
+        failure  = failure,
+        onlyonce = true,
+    }
+end
+
+-- metapost.variables  = { } -- to be stacked
+
+scanners.mprunvar = function() -- name
+    local value = metapost.variables[scanstring()]
+    if value ~= nil then
+        local tvalue = type(value)
+        if tvalue == "table" then
+            context(concat(value," "))
+        elseif tvalue == "number" or tvalue == "boolean" then
+            context(tostring(value))
+        elseif tvalue == "string" then
+            context(value)
+        end
+    end
+end
+
+scanners.mpruntab = function() -- name n
+    local value = metapost.variables[scanstring()]
+    if value ~= nil then
+        local tvalue = type(value)
+        if tvalue == "table" then
+            context(value[scaninteger()])
+        elseif tvalue == "number" or tvalue == "boolean" then
+            context(tostring(value))
+        elseif tvalue == "string" then
+            context(value)
+        end
+    end
+end
+
+scanners.mprunset = function() -- name connector
+    local value = metapost.variables[scanstring()]
+    if value ~= nil then
+        local tvalue = type(value)
+        if tvalue == "table" then
+            context(concat(value,scanstring()))
+        elseif tvalue == "number" or tvalue == "boolean" then
+            context(tostring(value))
+        elseif tvalue == "string" then
+            context(value)
+        end
+    end
+end
+
+-- we need to move more from pps to here as pps is the plugin .. the order is a mess
+-- or just move the scanners to pps
+
 function metapost.graphic(specification)
-    setmpsformat(specification)
-    metapost.graphic_base_pass(specification)
+    metapost.graphic_base_pass(setmpsformat(specification))
+end
+
+-- scanners.mpgraphic = compilescanner {
+--     actions = { setmpsformat, metapost.graphic_base_pass }, -- not yet implemented
+--     arguments = {
+--         {
+--             { "instance" },
+--             { "format" },
+--             { "data" },
+--             { "initializations" },
+--             { "extensions" },
+--             { "inclusions" },
+--             { "definitions" },
+--             { "figure" },
+--             { "method" },
+--         },
+--     }
+-- }
+
+local get_mpgraphic_spec = compilescanner {
+    {
+        { "instance" },
+        { "format" },
+        { "data" },
+        { "initializations" },
+        { "extensions" },
+        { "inclusions" },
+        { "definitions" },
+        { "figure" },
+        { "method" },
+    }
+}
+
+scanners.mpgraphic = function()
+    metapost.graphic_base_pass(setmpsformat(get_mpgraphic_spec()))
+end
+
+-- scanners.mpsetoutercolor = compilescanner {
+--     action    = metapost.setoutercolor, -- not yet implemented
+--     arguments = { "integer", "integer", "integer", "integer" }
+-- }
+
+scanners.mpsetoutercolor = function()
+    metapost.setoutercolor(scaninteger(),scaninteger(),scaninteger(),scaninteger())
+end
+
+-- scanners.mpflushreset = metapost.flushreset -- will become obsolete and internal
+
+scanners.mpflushreset = function()
+    metapost.flushreset()
+end
+
+-- scanners.mpflushliteral = compilescanner {
+--     action    = metapost.flushliteral, -- not yet implemented
+--     arguments = "string",
+-- }
+
+scanners.mpflushliteral = function()
+    metapost.flushliteral(scanstring())
 end
 
 function metapost.getclippath(specification) -- why not a special instance for this
@@ -135,9 +288,27 @@ end
 function metapost.theclippath(...)
     local result = metapost.getclippath(...)
     if result then -- we could just print the table
-        result = concat(metapost.flushnormalpath(result),"\n")
-        context(result)
+--         return concat(metapost.flushnormalpath(result),"\n")
+        return concat(metapost.flushnormalpath(result)," ")
+    else
+        return ""
     end
+end
+
+local get_mpsetclippath_spec = compilescanner {
+    {
+        { "instance" },
+        { "format" },
+        { "data" },
+        { "initializations" },
+        { "useextensions" },
+        { "inclusions" },
+        { "method" },
+    },
+}
+
+scanners.mpsetclippath = function()
+    setmacro("MPclippath",metapost.theclippath(get_mpsetclippath_spec()),"global")
 end
 
 statistics.register("metapost processing time", function()
@@ -165,17 +336,34 @@ end)
 -- only used in graphictexts
 
 metapost.tex = metapost.tex or { }
+local mptex  = metapost.tex
 
 local environments = { }
 
-function metapost.tex.set(str)
+function mptex.set(str)
     environments[#environments+1] = str
 end
 
-function metapost.tex.reset()
+function mptex.get()
+    return concat(environments,"\n")
+end
+
+function mptex.reset()
     environments = { }
 end
 
-function metapost.tex.get()
-    return concat(environments,"\n")
+scanners.mptexset = function()
+    environments[#environments+1] = scanstring()
+end
+
+scanners.mptexget = function()
+    context(concat(environments,"\n"))
+end
+
+scanners.mptexsetfrombuffer = function()
+    environments[#environments+1] = buffers.content(scanstring())
+end
+
+scanners.mptexreset = function()
+    environments = { }
 end

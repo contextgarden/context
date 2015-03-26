@@ -12,6 +12,7 @@ local serialize = table.serialize
 
 local context             = context
 local commands            = commands
+local implement           = interfaces.implement
 
 local allocate            = utilities.storage.allocate
 local mark                = utilities.storage.mark
@@ -282,30 +283,37 @@ end
 
 -- interface
 
-function commands.writestatus(category,message,...)
-    local r = reporters[category]
-    if r then
-        r(message,...)
-    end
+function interfaces.writestatus(category,message)
+    reporters[category](message) -- could also be a setmetatablecall
 end
 
-commands.registernamespace    = interfaces.registernamespace
-commands.setinterfaceconstant = interfaces.setconstant
-commands.setinterfacevariable = interfaces.setvariable
-commands.setinterfaceelement  = interfaces.setelement
-commands.setinterfacemessage  = interfaces.setmessage
-commands.setinterfacemessages = interfaces.setmessages
-commands.showmessage          = interfaces.showmessage
+implement { name = "registernamespace",    actions = interfaces.registernamespace, arguments = { "string", "string" } }
+implement { name = "setinterfaceconstant", actions = interfaces.setconstant,       arguments = { "string", "string" } }
+implement { name = "setinterfacevariable", actions = interfaces.setvariable,       arguments = { "string", "string" } }
+implement { name = "setinterfaceelement",  actions = interfaces.setelement,        arguments = { "string", "string" } }
+implement { name = "setinterfacemessage",  actions = interfaces.setmessage,        arguments = { "string", "string", "string" } }
+implement { name = "setinterfacemessages", actions = interfaces.setmessages,       arguments = { "string", "string" } }
+implement { name = "showmessage",          actions = interfaces.showmessage,       arguments = { "string", "string", "string" } }
 
-function commands.doifelsemessage(category,tag)
-    commands.doifelse(interfaces.doifelsemessage(category,tag))
-end
+implement {
+    name      = "doifelsemessage",
+    actions   = { interfaces.doifelsemessage, commands.doifelse },
+    arguments = { "string", "string" },
+}
 
-function commands.getmessage(category,tag,default)
-    context(interfaces.getmessage(category,tag,default))
-end
+implement {
+    name      = "getmessage",
+    actions   = { interfaces.getmessage, context },
+    arguments = { "string", "string", "string" },
+}
 
-function commands.showassignerror(namespace,key,line)
+implement {
+    name      = "writestatus",
+    actions   = interfaces.writestatus,
+    arguments = { "string", "string" },
+}
+
+local function showassignerror(namespace,key,line)
     local ns, instance = match(namespace,"^(%d+)[^%a]+(%a*)")
     if ns then
         namespace = corenamespaces[tonumber(ns)] or ns
@@ -316,6 +324,12 @@ function commands.showassignerror(namespace,key,line)
         context.writestatus("setup",formatters["error in line %a, namespace %a, key %a"](line,namespace,key))
     end
 end
+
+implement {
+    name      = "showassignerror",
+    actions   = showassignerror,
+    arguments = { "string", "string", "integer" },
+}
 
 -- a simple helper
 

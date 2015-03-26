@@ -123,13 +123,13 @@
   {\dotripleargument\font_basics_define_font_feature}
 
 \def\font_basics_define_font_feature[#featureset][#parent][#settings]%
-  {\ctxcommand{definefontfeature("#featureset","#parent","#settings")}}
+  {\clf_definefontfeature{#featureset}{#parent}{#settings}}
 
 \unexpanded\def\fontfeatureslist
   {\dodoubleargument\font_basics_features_list}
 
 \def\font_basics_features_list[#name][#separator]% todo: arg voor type
-  {\cldcommand{featurelist("#name","otf","\luaescapestring{#separator}","yes","no",true,{"number"})}}
+  {\clf_featurelist{#name}{\luaescapestring{#separator}}}
 
 \attribute\zerocount\zerocount % first in list, so fast match
 
@@ -176,7 +176,7 @@
    \fi}
 
 \unexpanded\def\font_feature_add_indeed
-  {\ctxcommand{feature("+","\m_font_feature_list","\m_font_feature_asked")}%
+  {\clf_addfeature{\m_font_feature_list}{\m_font_feature_asked}%
    \edef\m_font_feature_list{\m_font_feature_list+\m_font_feature_asked}% also + at the lua end
    \c_font_feature_state\plusone
    \let\currentfeature\m_font_feature_asked}
@@ -191,7 +191,7 @@
    \fi}
 
 \unexpanded\def\font_feature_subtract_indeed
-  {\ctxcommand{feature("-","\m_font_feature_list","\m_font_feature_asked")}%
+  {\clf_subtractfeature{\m_font_feature_list}{\m_font_feature_asked}%
    \edef\m_font_feature_list{\m_font_feature_list-\m_font_feature_asked}% also - at the lua end
    \c_font_feature_state\minusone
    \let\currentfeature\m_font_feature_asked}
@@ -206,7 +206,7 @@
    \fi}
 
 \unexpanded\def\font_feature_replace_indeed
-  {\ctxcommand{feature("=","\m_font_feature_list","\m_font_feature_asked")}%
+  {\clf_replacefeature{\m_font_feature_list}{\m_font_feature_asked}%
    \edef\m_font_feature_list{\m_font_feature_list=\m_font_feature_asked}% also = at the lua end
    \c_font_feature_state\zerocount
    \let\currentfeature\m_font_feature_asked}
@@ -220,7 +220,7 @@
   {\let\m_font_feature_asked\empty
    \let\currentfeature      \s!current
    \let\m_font_feature_list \s!current
-   \ctxcommand{feature(false)}}
+   \clf_resetfeature}
 
 \unexpanded\def\revivefeature
   {\ifx\currentfeature\s!current \else
@@ -228,7 +228,7 @@
    \fi}
 
 \unexpanded\def\font_feature_revive_indeed
-  {\ctxcommand{feature(true,"\m_font_feature_list")}}
+  {\clf_revivefeature{\m_font_feature_list}}
 
 \unexpanded\def\font_feature_reset_add
   {\ifnum\c_font_feature_state=\plusone
@@ -240,7 +240,7 @@
    \fi}
 
 \unexpanded\def\font_feature_reset_add_indeed
-  {\ctxcommand{feature("+","\s!current","\m_font_feature_asked")}%
+  {\clf_addfeature{\s!current}{\m_font_feature_asked}%
    \edef\m_font_feature_list{\s!current+\m_font_feature_asked}% also + at the lua end
    \c_font_feature_state\plusone
    \let\currentfeature\m_font_feature_asked}
@@ -284,12 +284,12 @@
 % just for old times sake:
 
 \unexpanded\def\featureattribute#feature%
-  {\ctxcommand{featureattribute("#feature")}}
+  {\clf_featureattribute{#feature}}
 
 \unexpanded\def\setfontfeature#feature%
   {\edef\currentfeature{#feature}%
    \let\m_font_feature_list\currentfeature
-   \ctxcommand{setfontfeature("\currentfeature")}}
+   \clf_setfontfeature{\currentfeature}}
 
 \let\resetfontfeature\resetfeature
 
@@ -324,11 +324,11 @@
 % \doifelsecurrentfonthasfeature{kern}{YES}{NO}
 
 \def\doifelsecurrentfonthasfeature#feature%
-  {\ctxcommand{doifelsecurrentfonthasfeature("#feature")}}
+  {\clf_doifelsecurrentfonthasfeature{#feature}}
 
 % new:
 
-\ctxcommand{registerlanguagefeatures()}
+\clf_registerlanguagefeatures
 
 % also new
 

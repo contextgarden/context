@@ -68,6 +68,8 @@ if newtoken then
 
     local set_macro    = newtoken.set_macro
 
+    set_macro = function(k,v) context.setvalue(k,v or '') end
+
     local bits = {
         escape      = 2^ 0,
         begingroup  = 2^ 1,

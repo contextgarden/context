@@ -1018,7 +1018,7 @@ local a_parser = Ct { "tokenizer",
       + p_reserved
       + p_entity
   --  + p_utf - p_close - p_right
-      + p_utf - p_right
+      + (p_utf - p_right)
     )^1,
 }
 
@@ -1590,7 +1590,7 @@ local p = (
 
 local function invalidtex(str)
     n = 0
-    local result = lpegmatch(p,str)
+    lpegmatch(p,str)
     if n == 0 then
         return false
     elseif n < 0 then
@@ -1640,7 +1640,7 @@ local function register(s,cleanedup,collected,shortname)
         local texcoded = convert(s)
         local message  = invalidtex(texcoded)
         if message then
-            report_asciimath("%s: %s",message,s)
+            report_asciimath("%s: %s : %s",message,s,texcoded)
         end
         collected[c] = {
             count     = 1,
@@ -1735,7 +1735,7 @@ local function convert(str)
             else
                 local message = invalidtex(texcoded)
                 if message then
-                    report_asciimath("%s: %s",message,str)
+                    report_asciimath("%s: %s : %s",message,str,texcoded)
                     ctx_type(formatters["<%s>"](message))
                 else
                     ctx_mathematics(texcoded)
@@ -1761,6 +1761,8 @@ if not context then
 
 -- convert("10000,00001")
 -- convert("4/18*100text(%)~~22,2")
+-- convert("4/18*100text(%)≈22,2")
+convert("62541/(197,6)≈316,05")
 
 --     convert([[sum x]])
 --     convert([[sum^(1)_(2) x]])

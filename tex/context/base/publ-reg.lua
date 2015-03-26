@@ -12,8 +12,8 @@ local sortedhash = table.sortedhash
 local lpegmatch  = lpeg.match
 
 local context        = context
-local commands       = commands
 
+local implement      = interfaces.implement
 local variables      = interfaces.variables
 
 local v_once         = variables.once
@@ -30,7 +30,7 @@ local registrations  = { }
 local sequence       = { }
 local flushers       = table.setmetatableindex(function(t,k) local v = t.default t[k] = v return v end)
 
-function commands.setbtxregister(specification)
+local function btxsetregister(specification)
     local name     = specification.name
     local register = specification.register
     local dataset  = specification.dataset
@@ -84,7 +84,7 @@ function commands.setbtxregister(specification)
     end
 end
 
-function commands.btxtoregister(dataset,tag)
+local function btxtoregister(dataset,tag)
     local current = datasets[dataset]
     for i=1,#sequence do
         local step = sequence[i]
@@ -101,6 +101,29 @@ function commands.btxtoregister(dataset,tag)
         end
     end
 end
+
+implement {
+    name      = "btxsetregister",
+    actions   = btxsetregister,
+    arguments = {
+        {
+            { "specification" },
+            { "name" },
+            { "state" },
+            { "dataset" },
+            { "field" },
+            { "register" },
+            { "method" },
+            { "alternative" },
+        }
+    }
+}
+
+implement {
+    name      = "btxtoregister",
+    actions   = btxtoregister,
+    arguments = { "string", "string" }
+}
 
 -- context.setregisterentry (
 --     { register },

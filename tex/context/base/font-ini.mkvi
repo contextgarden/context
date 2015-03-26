@@ -419,24 +419,39 @@
 %D When we assign for instance 12pt to a \DIMENSION\ register the \type
 %D {\the}'d value comes out as 12.0pt, which is often not the way users
 %D specify the bodyfont size. Therefore we use normalized values. They
-%D are caches to save overhead in \LUA\ calls.
+%D are cached to save overhead in \LUA\ calls.
 
-\setnewconstant\fontdigits\plustwo
+% \setnewconstant\fontdigits\plustwo % from now on always 2
 
 \installcorenamespace{fontnormalizedbody}
 
+% \def\normalizebodyfontsize#macro#body%
+%   {\expandafter\let\expandafter#macro\csname\??fontnormalizedbody\number\fontdigits:\number\dimexpr#body\endcsname
+%    \ifx#macro\relax
+%       \normalizebodyfontsize_indeed#macro{#body}%
+%    \fi}
+%
+% \def\normalizebodyfontsize_indeed#macro#body%
+%   {\edef#macro{\ctxcommand{nbfs(\number\dimexpr#body,\number\fontdigits)}}%
+%    \global\expandafter\let\csname\??fontnormalizedbody\number\fontdigits:\number\dimexpr#body\endcsname#macro}
+%
+% \def\thenormalizedbodyfontsize#body%
+%   {\ctxcommand{nbfs(\number\dimexpr#body\relax,\number\fontdigits)}}
+%
+% caching is less relevant now
+
 \def\normalizebodyfontsize#macro#body%
-  {\expandafter\let\expandafter#macro\csname\??fontnormalizedbody\number\fontdigits:\number\dimexpr#body\endcsname
+  {\expandafter\let\expandafter#macro\csname\??fontnormalizedbody\number\dimexpr#body\endcsname
    \ifx#macro\relax
       \normalizebodyfontsize_indeed#macro{#body}%
    \fi}
 
 \def\normalizebodyfontsize_indeed#macro#body%
-  {\edef#macro{\ctxcommand{nbfs(\number\dimexpr#body,\number\fontdigits)}}%
-   \global\expandafter\let\csname\??fontnormalizedbody\number\fontdigits:\number\dimexpr#body\endcsname#macro}
+  {\edef#macro{\clf_nbfs\dimexpr#body\relax}%
+   \global\expandafter\let\csname\??fontnormalizedbody\number\dimexpr#body\endcsname#macro}
 
 \def\thenormalizedbodyfontsize#body%
-  {\ctxcommand{nbfs(\number\dimexpr#body\relax,\number\fontdigits)}}
+  {\clf_nbfs\dimexpr#body\relax}
 
 \edef\normalizedglobalbodyfontsize{\thenormalizedbodyfontsize\bodyfontsize}
 \edef\normalizedlocalbodyfontsize {\thenormalizedbodyfontsize\bodyfontsize}
@@ -723,7 +738,9 @@
 
 \unexpanded\def\font_helpers_low_level_define#specification#csname%
   {% we can now set more at the lua end
-   \ctxcommand{definefont_one(\!!bs\luaescapestring{#specification}\!!es)}% the escapestring catches at \somedimen
+   \global\let\somefontname\defaultfontfile
+   \let\somefontsize\empty
+   \clf_definefont_one{\luaescapestring{#specification}}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\fontface\relax
    % \let\v_font_size_absolute\textface % fontbody
@@ -774,39 +791,43 @@
    \else
      \d_font_scaled_text_face\textface
    \fi
-   \edef\somefontspec{at \number\d_font_scaled_font_size sp}% probably no longer used, needs checking
+   \edef\somefontspec{at \number\d_font_scaled_font_size sp}%
    \edef\somefontfile{\truefontname\somefontname}%
-   \ifx\somefontfile\s!unknown
-     \edef\somefontfile{\defaultfontfile}%
-   \fi
    \ifx\somefontfile\s!unknown
      \edef\somefontfile{\defaultfontfile}%
    \fi
    \font_helpers_update_font_parameters
    \font_helpers_update_font_class_parameters
    % \writestatus{fonts}{low level define: #csname/\somefontfile/\number\d_font_scaled_font_size/\fontface/\number\d_font_scaled_text_face}%
-   \ctxcommand{definefont_two(
-      \ifx\fontclass\empty false\else true\fi,
-      "#csname",
-      \!!bs\somefontfile\!!es,
-      \number\d_font_scaled_font_size,
-      \number\c_font_feature_inheritance_mode,
-      "\m_font_class_features",
-      "\m_font_features",
-      "\m_font_class_fallbacks",
-      "\m_font_fallbacks",
-      \fontface, % 1/2/3: text script scriptscript 0/4/5: body x xx
-      \number\d_font_scaled_text_face,
-      "\number\relativefontid",           % experiment
-      "\m_font_class_goodies",            % experiment (not yet used)
-      "\m_font_goodies",
-      "\m_font_class_designsize",
-      "\m_font_designsize",
-      \number\scaledfontmode
-   )}%
-   \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
-   \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
-   \the\everydefinefont
+   \clf_definefont_two
+      \ifx\fontclass\empty\s!false\else\s!true\fi
+      {#csname}%
+      {\somefontfile}%
+      \d_font_scaled_font_size
+      \c_font_feature_inheritance_mode
+      {\m_font_class_features}%
+      {\m_font_features}%
+      {\m_font_class_fallbacks}%
+      {\m_font_fallbacks}%
+      \fontface
+      \d_font_scaled_text_face
+      \relativefontid
+      {\m_font_class_goodies}%
+      {\m_font_goodies}%
+      {\m_font_class_designsize}%
+      {\m_font_designsize}%
+      \scaledfontmode
+   \relax
+   \ifcase\scaledfontsize
+    %\scaledfontsize\plusone
+     \let\somefontspec\empty
+     \let\lastrawfontcall\relax
+     \expandafter\let\csname#csname\endcsname\relax
+   \else
+     \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
+     \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
+     \the\everydefinefont
+   \fi
    \c_font_feature_inheritance_mode\c_font_feature_inheritance_default}
 
 \def\font_helpers_check_body_scale#fontsize%  gets character (x xx a etc)
@@ -830,10 +851,10 @@
 %D The following macros are used at the \LUA\ end. Watch the \type {\normal}
 %D hackery: this makes the mkvi parser happy.
 
-\normaldef\fntsetdefname {\global\let\somefontname\defaultfontfile}    % do before calling
-\normaldef\fntsetsomename{\normalgdef\somefontname} % takes argument
-\normaldef\fntsetnopsize {\let\somefontsize\empty}                     % do before calling
-\normaldef\fntsetsomesize{\normaldef\somefontsize}  % takes argument
+% \normaldef\fntsetdefname {\global\let\somefontname\defaultfontfile}    % do before calling
+% \normaldef\fntsetnopsize {\let\somefontsize\empty}                     % do before calling
+% \normaldef\fntsetsomename{\normalgdef\somefontname} % takes argument
+% \normaldef\fntsetsomesize{\normaldef\somefontsize}  % takes argument
 
 \newif\ifskipfontcharacteristics \skipfontcharacteristicstrue
 
@@ -1190,10 +1211,10 @@
 %D values are not consulted afterwards.
 
 \def\processbodyfontenvironmentlist#1% no \unexpanded as then we cannot use it in alignments
-  {\ctxcommand{processbodyfontsizes("\strippedcsname#1")}}
+  {\clf_processbodyfontsizes{\strippedcsname#1}}
 
 \def\bodyfontenvironmentlist
-  {\ctxcommand{getbodyfontsizes()}}
+  {\clf_getbodyfontsizes}
 
 \def\font_basics_define_body_font_environment_class[#class][#body][#settings]%
   {\edef\m_font_body{#body}%
@@ -1204,7 +1225,7 @@
      \normalizebodyfontsize\m_font_body_normalized\m_font_body
      \font_basics_define_body_font_environment_size[#class][\m_font_body_normalized][#settings]%
     %\addtocommalist\m_font_body_normalized\bodyfontenvironmentlist
-     \ctxcommand{registerbodyfontsize("\m_font_body_normalized")}%
+     \clf_registerbodyfontsize{\m_font_body_normalized}%
    \fi}
 
 %D The empty case uses the same code but needs to ignore the current class
@@ -2207,11 +2228,6 @@
 
 %D Handy for manuals:
 
-\unexpanded\def\fontchar#character%
-  {\ctxcommand{fontchar(\!!bs#character\!!es)}}
-
-\unexpanded\def\fontcharbyindex#index% unofficial command, for idris' font building
-  {\ctxcommand{fontcharbyindex(\number#index)}}
 
 %D The \type {\tochar} commmand takes a specification:
 %D
@@ -2227,14 +2243,13 @@
 %D
 %D This is an expandable command!
 
-\def\tochar#specifications%
-  {\ctxcommand{tochar(\!!bs#specifications\!!es)}} % expanded (also used in edef)
+\unexpanded\def\fontchar       #character{\clf_fontchar{#character}}
+\unexpanded\def\fontcharbyindex    #index{\clf_fontcharbyindex#index\relax}
+           \def\tochar    #specifications{\clf_tochar{#specifications}} % expanded (also used in edef)
 
-%D The next auxilliary macro is an alternative to \type
-%D {\fontname}.
+%D The next auxilliary macro is an alternative to \type {\fontname}.
 
-\def\purefontname#font{\ctxcommand{purefontname(\!!bs\fontname#font\!!es)}}
-%def\purefontname#font{\ctxcommand{purefontname(\number\fontid#font)}}
+\def\purefontname#font{\clf_purefontname{\fontname#font}}
 
 %D \macros
 %D   {switchstyleonly}

@@ -32,6 +32,7 @@ local report_lists      = logs.reporter("structure","lists")
 
 local context           = context
 local commands          = commands
+local implement         = interfaces.implement
 
 local structures        = structures
 local lists             = structures.lists
@@ -193,6 +194,9 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
     if u and type(u) == "string" then
         t.userdata = helpers.touserdata(u)
     end
+    if not m.level then
+        m.level = structures.sections.currentlevel()
+    end
     local numberdata = t.numberdata
     local group = numberdata and numberdata.group
     local name = m.name
@@ -211,6 +215,9 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
         setcomponent(t) -- can be inlined
     end
     local r = t.references
+    if r and not r.section then
+        r.section = structures.sections.currentid()
+    end
     local i = r and r.internal or 0 -- brrr
     local p = pushed[i]
     if not p then
@@ -224,6 +231,13 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
     end
     if trace_lists then
         report_lists("added %a, internal %a",name,p)
+    end
+    local n = t.numberdata
+    if n then
+        local numbers = n.numbers
+        if type(numbers) == "string" then
+            n.numbers = structures.counters.compact(numbers,nil,true)
+        end
     end
     return p
 end
@@ -926,29 +940,175 @@ end
 
 -- interface (maybe strclistpush etc)
 
-commands.pushlist           = lists.pushnesting
-commands.poplist            = lists.popnesting
-commands.enhancelist        = lists.enhance
-commands.processlist        = lists.process
-commands.analyzelist        = lists.analyze
-commands.listtitle          = lists.title
-commands.listprefixednumber = lists.prefixednumber
-commands.listprefixedpage   = lists.prefixedpage
-
-
-function commands.addtolist       (...) context(lists.addto     (...)) end
-function commands.listsize        (...) context(lists.size      (...)) end
-function commands.listlocation    (...) context(lists.location  (...)) end
-function commands.listlabel       (...) context(lists.label     (...)) end
-function commands.listrealpage    (...) context(lists.realpage  (...)) end
-function commands.listgroupindex  (...) context(lists.groupindex(...)) end
-
-function commands.currentsectiontolist()
-    context(lists.addto(sections.current()))
+if not lists.reordered then
+    function lists.reordered(data)
+        return data.numberdata
+    end
 end
 
-function commands.listuserdata(...)
-    local str, metadata = lists.userdata(...)
+implement { name = "pushlist", actions = lists.pushnesting, arguments = "integer" }
+implement { name = "poplist",  actions = lists.popnesting  }
+
+implement {
+    name      = "addtolist",
+    actions   = { lists.addto, context },
+    arguments = {
+        {
+            { "references", {
+                    { "internal", "integer" },
+                    { "block" },
+                    { "section", "integer" },
+                    { "location" },
+                    { "referenceprefix" },
+                    { "reference" },
+                    { "order", "integer" },
+                }
+            },
+            { "metadata", {
+                    { "kind" },
+                    { "name" },
+                    { "level", "integer" },
+                    { "catcodes", "integer" },
+                    { "coding" },
+                    { "xmlroot" },
+                    { "setup" },
+                }
+            },
+            { "userdata" },
+                    { "titledata", {
+                    { "label" },
+                    { "title" },
+                    { "bookmark" },
+                    { "marking" },
+                    { "list" },
+                }
+            },
+            { "prefixdata", {
+                    { "prefix" },
+                    { "separatorset" },
+                    { "conversionset" },
+                    { "conversion" },
+                    { "set" },
+                    { "segments" },
+                    { "connector" },
+                }
+            },
+            { "numberdata", {
+                    { "numbers" }, --        = structures.counters.compact("\currentcounter",nil,true),
+                    { "groupsuffix" },
+                    { "group" },
+                    { "counter" },
+                    { "separatorset" },
+                    { "conversionset" },
+                    { "conversion" },
+                    { "starter" },
+                    { "stopper" },
+                    { "segments" },
+                }
+            }
+        }
+    }
+}
+
+implement {
+    name      = "enhancelist",
+    actions   = lists.enhance,
+    arguments = "integer"
+}
+
+implement {
+    name      = "processlist",
+    actions   = lists.process,
+    arguments = {
+        {
+            { "names" },
+            { "criterium" },
+            { "reference" },
+            { "extras" },
+            { "order" },
+        }
+    }
+}
+
+implement {
+    name      = "analyzelist",
+    actions   = lists.analyze,
+    arguments = {
+        {
+            { "names" },
+            { "criterium" },
+            { "reference" },
+        }
+    }
+}
+
+implement {
+    name      = "listtitle",
+    actions   = lists.title,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "listprefixednumber",
+    actions   = lists.prefixednumber,
+    arguments = {
+        "string",
+        "integer",
+        {
+            { "prefix" },
+            { "separatorset" },
+            { "conversionset" },
+            { "starter" },
+            { "stopper" },
+            { "set" },
+            { "segments" },
+            { "connector" },
+        },
+        {
+            { "separatorset" },
+            { "conversionset" },
+            { "starter" },
+            { "stopper" },
+            { "segments" },
+        }
+    }
+}
+
+implement {
+    name      = "listprefixedpage",
+    actions   = lists.prefixedpage,
+    arguments = {
+        "string",
+        "integer",
+        {
+            { "separatorset" },
+            { "conversionset" },
+            { "set" },
+            { "segments" },
+            { "connector" },
+        },
+        {
+            { "prefix" },
+            { "conversionset" },
+            { "starter" },
+            { "stopper" },
+        }
+    }
+}
+
+implement { name = "listsize",       actions = { lists.size, context } }
+implement { name = "listlocation",   actions = { lists.location, context }, arguments = "integer" }
+implement { name = "listlabel",      actions = { lists.label, context }, arguments = { "integer", "string" } }
+implement { name = "listrealpage",   actions = { lists.realpage, context }, arguments = { "string", "integer" } }
+implement { name = "listgroupindex", actions = { lists.groupindex, context }, arguments = { "string", "string" } }
+
+implement {
+    name    = "currentsectiontolist",
+    actions = { sections.current, lists.addto, context }
+}
+
+local function userdata(name,r,tag)
+    local str, metadata = lists.userdata(name,r,tag)
     if str then
      -- local catcodes = metadata and metadata.catcodes
      -- if catcodes then
@@ -960,15 +1120,21 @@ function commands.listuserdata(...)
     end
 end
 
+implement {
+    name      = "listuserdata",
+    actions   = userdata,
+    arguments = { "string", "integer", "string" }
+}
+
 -- we could also set variables .. names will change (when this module is done)
 -- maybe strc_lists_savedtitle etc
 
-function commands.doiflisthastitleelse (...) commands.doifelse(lists.hastitledata (...)) end
-function commands.doiflisthaspageelse  (...) commands.doifelse(lists.haspagedata  (...)) end
-function commands.doiflisthasnumberelse(...) commands.doifelse(lists.hasnumberdata(...)) end
-function commands.doiflisthasentry     (n)   commands.doifelse(lists.iscached     (n  )) end
+implement { name = "doiflisthastitleelse",  actions = { lists.hastitledata,  commands.doifelse }, arguments = { "string", "integer" } }
+implement { name = "doiflisthaspageelse",   actions = { lists.haspagedata,   commands.doifelse }, arguments = { "string", "integer" } }
+implement { name = "doiflisthasnumberelse", actions = { lists.hasnumberdata, commands.doifelse }, arguments = { "string", "integer" } }
+implement { name = "doiflisthasentry",      actions = { lists.iscached,      commands.doifelse }, arguments = { "integer" } }
 
-function commands.savedlistnumber(name,n)
+local function savedlistnumber(name,n)
     local data = cached[tonumber(n)]
     if data then
         local numberdata = data.numberdata
@@ -978,7 +1144,7 @@ function commands.savedlistnumber(name,n)
     end
 end
 
-function commands.savedlisttitle(name,n,tag)
+local function savedlisttitle(name,n,tag)
     local data = cached[tonumber(n)]
     if data then
         local titledata = data.titledata
@@ -988,24 +1154,7 @@ function commands.savedlisttitle(name,n,tag)
     end
 end
 
--- function commands.savedlistprefixednumber(name,n)
---     local data = cached[tonumber(n)]
---     if data then
---         local numberdata = data.numberdata
---         if numberdata then
---             helpers.prefix(data,data.prefixdata)
---             typesetnumber(numberdata,"number",numberdata or false)
---         end
---     end
--- end
-
-if not lists.reordered then
-    function lists.reordered(data)
-        return data.numberdata
-    end
-end
-
-function commands.savedlistprefixednumber(name,n)
+local function savedlistprefixednumber(name,n)
     local data = cached[tonumber(n)]
     if data then
         local numberdata = lists.reordered(data)
@@ -1016,7 +1165,29 @@ function commands.savedlistprefixednumber(name,n)
     end
 end
 
-commands.discardfromlist = lists.discard
+implement {
+    name      = "savedlistnumber",
+    actions   = savedlistnumber,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "savedlisttitle",
+    actions   = savedlisttitle,
+    arguments = { "string", "integer", "string" }
+}
+
+implement {
+    name    = "savedlistprefixednumber",
+    actions = savedlistprefixednumber,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "discardfromlist",
+    actions   = lists.discard,
+    arguments = { "integer" }
+}
 
 -- new and experimental and therefore off by default
 

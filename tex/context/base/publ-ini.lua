@@ -95,16 +95,12 @@ manipulatormethods.WORDS = converters.WORDS
 
 local context                     = context
 local commands                    = commands
+local implement                   = interfaces.implement
+local ctx_setmacro                = interfaces.setmacro
 
 local ctx_doifelse                = commands.doifelse
 local ctx_doif                    = commands.doif
 local ctx_doifnot                 = commands.doifnot
-
-local ctx_firstoftwoarguments     = context.firstoftwoarguments
-local ctx_secondoftwoarguments    = context.secondoftwoarguments
-local ctx_firstofoneargument      = context.firstofoneargument
-
-local ctx_gobbleoneargument       = context.gobbleoneargument
 local ctx_gobbletwoarguments      = context.gobbletwoarguments
 
 local ctx_btxdirectlink           = context.btxdirectlink
@@ -112,8 +108,6 @@ local ctx_btxhandlelistentry      = context.btxhandlelistentry
 local ctx_btxhandlelisttextentry  = context.btxhandlelisttextentry
 local ctx_btxchecklistentry       = context.btxchecklistentry
 local ctx_btxchecklistcombi       = context.btxchecklistcombi
------ ctx_btxsetcitereference     = context.btxsetcitereference
------ ctx_btxsetlistreference     = context.btxsetlistreference
 
 local ctx_btxsetdataset           = context.btxsetdataset
 local ctx_btxsettag               = context.btxsettag
@@ -154,9 +148,6 @@ local ctx_btxsetnoflistentries    = context.btxsetnoflistentries
 local ctx_btxsetcurrentlistentry  = context.btxsetcurrentlistentry
 local ctx_btxsetcurrentlistindex  = context.btxsetcurrentlistindex
 
-local implement                   = interfaces.implement
-local ctx_setmacro                = interfaces.setmacro
-
 languages.data                    = languages.data       or { }
 local data                        = languages.data
 
@@ -174,7 +165,12 @@ local function setspecification(name)
 end
 
 publications.setspecification = setspecification
-commands.setbtxspecification  = setspecification
+
+implement {
+    name      = "btxsetspecification",
+    actions   = setspecification,
+    arguments = "string",
+}
 
 local optionalspace  = lpeg.patterns.whitespace^0
 local prefixsplitter = optionalspace * lpeg.splitat(optionalspace * P("::") * optionalspace)
@@ -638,7 +634,7 @@ local function flushmarked(dataset,list,todo)
     marked_list    = list
 end
 
-function commands.flushmarked()
+local function btxflushmarked()
     if marked_list and tobemarked then
         for i=1,#marked_list do
             -- keep order
@@ -657,6 +653,8 @@ function commands.flushmarked()
     marked_dataset = nil
     marked_list    = nil
 end
+
+implement { name = "btxflushmarked", actions = btxflushmarked }
 
 -- basic access
 
@@ -860,17 +858,16 @@ function nofmultiple.author(d)
     return type(d) == "table" and #d or 0
 end
 
-function commands.btxsingularorplural(dataset,tag,name)
+function publications.singularorplural(dataset,tag,name)
     local data, field, kind = getcasted(dataset,tag,name)
     if data then
         local test = nofmultiple[kind]
         if test then
             local n = test(data)
-            ctx_doifelse(not n or n < 2)
-            return
+            return not n or n < 2
         end
     end
-    ctx_doifelse(true)
+    return true
 end
 
 function firstandlast.range(d)
@@ -881,51 +878,88 @@ end
 
 firstandlast.pagenumber = firstandlast.range
 
-function commands.btxoneorrange(dataset,tag,name)
+function publications.oneorrange(dataset,tag,name)
     local data, field, kind = getcasted(dataset,tag,name)
     if data then
         local test = firstandlast[kind]
         if test then
             local first, last = test(data)
-            ctx_doifelse(not (first and last))
-            return
+            return not (first and last)
         end
     end
-    ctx_gobbletwoarguments()
+    return nil -- nothing at all
 end
 
-function commands.btxfirstofrange(dataset,tag,name)
+function publications.firstofrange(dataset,tag,name)
     local data, field, kind = getcasted(dataset,tag,name)
     if data then
         local test = firstandlast[kind]
         if test then
             local first = test(data)
             if first then
-                context(first)
+                return first
             end
         end
     end
 end
 
-function commands.lastofrange(dataset,tag,name)
+function publications.lastofrange(dataset,tag,name)
     local data, field, kind = getcasted(dataset,tag,name)
     if data then
         local test = firstandlast[kind]
         if test then
             local first, last = test(data)
             if last then
-                context(last)
+                return last
             end
         end
     end
 end
 
+local three_strings = { "string", "string", "string" }
+
+implement {
+    name      = "btxsingularorplural",
+    actions   = { publications.singularorplural, ctx_doifelse },
+    arguments = three_strings
+}
+
+implement {
+    name      = "btxoneorrange",
+    actions   = { publications.oneorrange, function(b) if b == nil then ctx_gobbletwoarguments() else ctx_doifelse(b) end end },
+    arguments = three_strings
+}
+
+implement {
+    name      = "btxfirstofrange",
+    actions   = { publications.firstofrange, context },
+    arguments = three_strings
+}
+
+implement {
+    name      = "btxlastofrange",
+    actions   = { publications.lastofrange, context },
+    arguments = three_strings
+}
+
 -- basic loading
 
-function commands.usebtxdataset(specification)
+function publications.usedataset(specification)
     specification.kind = "current"
     publications.load(specification)
 end
+
+implement {
+    name      = "btxusedataset",
+    actions   = publications.usedataset,
+    arguments = {
+        {
+            { "specification" },
+            { "dataset" },
+            { "filename" },
+        }
+    }
+}
 
 function commands.convertbtxdatasettoxml(name,nice)
     publications.converttoxml(name,nice)
@@ -1065,37 +1099,51 @@ do
 
 end
 
-function commands.addbtxentry(name,settings,content)
-    local dataset = datasets[name]
-    if dataset then
-        publications.addtexentry(dataset,settings,content)
-    end
-end
-
-function commands.setbtxdataset(name,default)
-    local dataset = rawget(datasets,name)
-    if dataset then
-        context(name)
-    elseif default and default ~= "" then
-        context(default)
-    else
-        context(v_default)
-        report("unknown dataset %a, forcing %a",name,v_default)
-    end
-end
-
-function commands.setbtxentry(name,tag)
-    local dataset = rawget(datasets,name)
-    if dataset then
-        if dataset.luadata[tag] then
-            context(tag)
-        else
-            report("unknown tag %a in dataset %a",tag,name)
+implement {
+    name      = "btxaddentry",
+    actions   = function(name,settings,content)
+        local dataset = datasets[name]
+        if dataset then
+            publications.addtexentry(dataset,settings,content)
         end
+    end,
+    arguments = { "string",  "string",  "string" }
+}
+
+function publications.checkeddataset(name,default)
+    local dataset = rawget(datasets,name)
+    if dataset then
+        return name
+    elseif default and default ~= "" then
+        return default
     else
-        report("unknown dataset %a",name)
+        report("unknown dataset %a, forcing %a",name,v_default)
+        return v_default
     end
 end
+
+implement {
+    name      = "btxsetdataset",
+    actions   = { publications.checkeddataset, context },
+    arguments = { "string", "string"}
+}
+
+implement {
+    name      = "btxsetentry",
+    actions   = function(name,tag)
+        local dataset = rawget(datasets,name)
+        if dataset then
+            if dataset.luadata[tag] then
+                context(tag)
+            else
+                report("unknown tag %a in dataset %a",tag,name)
+            end
+        else
+            report("unknown dataset %a",name)
+        end
+    end,
+    arguments = { "string", "string" },
+}
 
 -- rendering of fields
 
@@ -1374,41 +1422,19 @@ do
 
     publications.okay = okay
 
-    if implement then
+    implement { name = "btxfield",     actions = btxfield,  arguments = { "string", "string", "string" } }
+    implement { name = "btxdetail",    actions = btxdetail, arguments = { "string", "string", "string" } }
+    implement { name = "btxflush",     actions = btxflush,  arguments = { "string", "string", "string" } }
+    implement { name = "btxdirect",    actions = btxdirect, arguments = { "string", "string", "string" } }
 
-        implement { name = "btxfield",     actions = btxfield,  arguments = { "string", "string", "string" } }
-        implement { name = "btxdetail",    actions = btxdetail, arguments = { "string", "string", "string" } }
-        implement { name = "btxflush",     actions = btxflush,  arguments = { "string", "string", "string" } }
-        implement { name = "btxdirect",    actions = btxdirect, arguments = { "string", "string", "string" } }
+    implement { name = "btxfieldname", actions = { get, context }, arguments = { "string", "string", "string", false, false } }
+    implement { name = "btxfieldtype", actions = { get, context }, arguments = { "string", "string", "string", true,  false } }
+    implement { name = "btxfoundname", actions = { get, context }, arguments = { "string", "string", "string", false, true  } }
+    implement { name = "btxfoundtype", actions = { get, context }, arguments = { "string", "string", "string", true,  true  } }
 
-        implement { name = "btxfieldname", actions = { get, context }, arguments = { "string", "string", "string", false, false } }
-        implement { name = "btxfieldtype", actions = { get, context }, arguments = { "string", "string", "string", true,  false } }
-        implement { name = "btxfoundname", actions = { get, context }, arguments = { "string", "string", "string", false, true  } }
-        implement { name = "btxfoundtype", actions = { get, context }, arguments = { "string", "string", "string", true,  true  } }
-
-        implement { name = "btxdoifelse",  actions = { okay, ctx_btxdoifelse }, arguments = { "string", "string", "string" } }
-        implement { name = "btxdoif",      actions = { okay, ctx_btxdoif     }, arguments = { "string", "string", "string" } }
-        implement { name = "btxdoifnot",   actions = { okay, ctx_btxdoifnot  }, arguments = { "string", "string", "string" } }
-
-
-    else
-
-        commands.btxflush  = btxflush
-        commands.btxfield  = btxfield
-        commands.btxdetail = btxdetail
-        commands.btxdirect = btxdirect
-
-        function commands.btxfieldname(name,tag,field) context(get(name,tag,field,false,false)) end
-        function commands.btxfieldtype(name,tag,field) context(get(name,tag,field,true, false)) end
-        function commands.btxfoundname(name,tag,field) context(get(name,tag,field,false,true )) end
-        function commands.btxfoundtype(name,tag,field) context(get(name,tag,field,true, true )) end
-
-        function commands.btxdoifelse (name,tag,field) ctx_doifelse(okay(name,tag,field)) end
-        function commands.btxdoif     (name,tag,field) ctx_doif    (okay(name,tag,field)) end
-        function commands.btxdoifnot  (name,tag,field) ctx_doifnot (okay(name,tag,field)) end
-
-    end
-
+    implement { name = "btxdoifelse",  actions = { okay, ctx_doifelse }, arguments = { "string", "string", "string" } }
+    implement { name = "btxdoif",      actions = { okay, ctx_doif     }, arguments = { "string", "string", "string" } }
+    implement { name = "btxdoifnot",   actions = { okay, ctx_doifnot  }, arguments = { "string", "string", "string" } }
 
 end
 
@@ -1440,7 +1466,7 @@ do
         context.input(foundname)
     end
 
-    function commands.loadbtxdefinitionfile(name) -- a more specific name
+    function publications.loaddefinitionfile(name) -- a more specific name
         commands.uselibrary {
             name     = string.gsub(name,"^publ%-",""),
             patterns = patterns,
@@ -1454,7 +1480,7 @@ do
         "publ-imp-%s.lua",
     }
 
-    function commands.loadbtxreplacementfile(name) -- a more specific name
+    function publications.loadreplacementfile(name) -- a more specific name
         commands.uselibrary {
             name     = string.gsub(name,"^publ%-",""),
             patterns = patterns,
@@ -1463,6 +1489,9 @@ do
             onlyonce = true,
         }
     end
+
+    implement { name = "btxloaddefinitionfile",  actions = publications.loaddefinitionfile,  arguments = "string" }
+    implement { name = "btxloadreplacementfile", actions = publications.loadreplacementfile, arguments = "string" }
 
 end
 
@@ -1656,7 +1685,7 @@ do
     methods[v_global] = methods[v_local]
 
     function lists.collectentries(specification)
-        local dataset = specification.btxdataset
+        local dataset = specification.dataset
         if not dataset then
             return
         end
@@ -1764,7 +1793,7 @@ do
 
     -- setspecification
 
-    function commands.btxflushpages(dataset,tag)
+    local function btxflushpages(dataset,tag)
         -- todo: interaction
         local rendering = renderings[dataset]
         local pages     = rendering.pages
@@ -1830,6 +1859,12 @@ do
         end
     end
 
+    implement {
+        name      = "btxflushpages",
+        actions   = btxflushpages,
+        arguments = { "string", "string" }
+    }
+
     function lists.sameasprevious(dataset,i,name)
         local rendering = renderings[dataset]
         local list      = rendering.list
@@ -1850,7 +1885,6 @@ do
     function lists.flushentry(dataset,i,textmode)
         local rendering = renderings[dataset]
         local list      = rendering.list
---         local result    = rendering.result
         local luadata   = datasets[dataset].luadata
         local li        = list[i]
         if li then
@@ -1861,7 +1895,7 @@ do
             --
             ctx_btxstartlistentry()
             ctx_btxsetcurrentlistentry(i) -- redundant
-            ctx_btxsetcurrentlistindex(listindex)
+            ctx_btxsetcurrentlistindex(listindex or 0)
             local combined = entry.combined
             local language = entry.language
             if combined then
@@ -1910,73 +1944,6 @@ do
         end
     end
 
-
-if ctx_setmacro then -- no real gain, but nice as test
-
-    function lists.flushentry(dataset,i,textmode)
-        local rendering = renderings[dataset]
-        local list      = rendering.list
-        local luadata   = datasets[dataset].luadata
-        local li        = list[i]
-        if li then
-            local tag       = li[1]
-            local listindex = li[2]
-            local n         = li[3]
-            local entry     = luadata[tag]
-            --
-            ctx_btxstartlistentry()
-            ctx_setmacro("currentbtxlistentry",i) -- redundant
-            ctx_setmacro("currentbtxlistindex",listindex)
-            local combined = entry.combined
-            local language = entry.language
-            if combined then
-                ctx_setmacro("currentbtxcombis",concat(combined,","))
-            end
-            ctx_setmacro("currentbtxcategory",entry.category or "unknown")
-            ctx_setmacro("currentbtxtag",tag)
-            ctx_setmacro("currentbtxnumber",n)
-            if language then
-                ctx_setmacro("currentbtxlanguage",language)
-            end
-            local bl = li[5]
-            if bl and bl ~= "" then
-                ctx_setmacro("currentbtxbacklink",bl)
-                ctx_setmacro("currentbtxbacktrace",concat(li," ",5))
-                local uc = citetolist[tonumber(bl)]
-                if uc then
-                    ctx_setmacro("currentbtxinternal",uc.references.internal or "")
-                end
-            else
-                -- nothing
-            end
-            local userdata = li[4]
-            if userdata then
-                local b = userdata.btxbtx
-                local a = userdata.btxatx
-                if b then
-                    ctx_setmacro("currentbtxbefore",b)
-                end
-                if a then
-                    ctx_setmacro("currentbtxafter",a)
-                end
-            end
-            rendering.userdata = userdata
-            if textmode then
-                ctx_btxhandlelisttextentry()
-            else
-                ctx_btxhandlelistentry()
-            end
-            ctx_btxstoplistentry()
-            --
-         -- context(function()
-         --     -- wrapup
-         --     rendering.ignoredfields = nil
-         -- end)
-        end
-    end
-
-end
-
     local function getuserdata(dataset,key)
         local rendering = renderings[dataset]
         if rendering then
@@ -1992,21 +1959,6 @@ end
 
     lists.uservariable = getuserdata
 
-    function commands.btxuservariable(dataset,key)
-        local value = getuserdata(dataset,key)
-        if value then
-            context(value)
-        end
-    end
-
-    function commands.btxdoifelseuservariable(dataset,key)
-        if getuserdata(dataset,key) then
-            ctx_firstoftwoarguments()
-        else
-            ctx_secondoftwoarguments()
-        end
-    end
-
     function lists.filterall(dataset)
         local r = renderings[dataset]
         local list = r.list
@@ -2016,14 +1968,66 @@ end
         end
     end
 
-    commands.btxresolvelistreference   = lists.resolve
-    commands.btxaddtolist              = lists.addentry
-    commands.btxcollectlistentries     = lists.collectentries
-    commands.btxpreparelistentries     = lists.prepareentries
-    commands.btxfetchlistentries       = lists.fetchentries
-    commands.btxflushlistentry         = lists.flushentry
+    implement {
+        name      = "btxuservariable",
+        actions   = { getuserdata, context },
+        arguments = { "string", "string" }
+    }
 
-    commands.btxdoifelsesameasprevious = function(...) ctx_doifelse(lists.sameasprevious(...)) end
+    implement {
+        name      = "btxdoifelseuservariable",
+        actions   = { getuserdata, ctx_doifelse },
+        arguments = { "string", "string" }
+    }
+
+    implement {
+        name      = "btxresolvelistreference",
+        actions   = lists.resolve,
+        arguments = { "string", "string" }
+    }
+
+    implement {
+        name      = "btxcollectlistentries",
+        actions   = lists.collectentries,
+        arguments = {
+            {
+                { "names" },
+                { "criterium" },
+                { "reference" },
+                { "method" },
+                { "dataset" },
+                { "keyword" },
+                { "sorttype" },
+                { "repeated" },
+                { "ignored" },
+                { "group" },
+            },
+        }
+    }
+
+    implement {
+        name      = "btxpreparelistentries",
+        actions   = lists.prepareentries,
+        arguments = { "string" },
+    }
+
+    implement {
+        name      = "btxfetchlistentries",
+        actions   = lists.fetchentries,
+        arguments = { "string" },
+    }
+
+    implement {
+        name      = "btxflushlistentry",
+        actions   = lists.flushentry,
+        arguments = { "string", "integer" }
+    }
+
+    implement {
+        name      = "btxdoifelsesameasprevious",
+        actions   = { lists.sameasprevious, ctx_doifelse },
+        arguments = { "string", "integer", "string" }
+    }
 
 end
 
@@ -2032,7 +2036,7 @@ do
     local citevariants        = { }
     publications.citevariants = citevariants
 
-    function commands.btxhandlecite(specification)
+    local function btxhandlecite(specification)
         local dataset   = specification.dataset or v_default
         local reference = specification.reference
         local variant   = specification.variant
@@ -2067,8 +2071,7 @@ do
         citevariants[variant](specification) -- we always fall back on default
     end
 
-
-    function commands.btxhandlenocite(specification)
+    local function btxhandlenocite(specification)
         local dataset   = specification.dataset or v_default
         local reference = specification.reference
         if not reference or reference == "" then
@@ -2095,9 +2098,41 @@ do
         tobemarked = markentry and todo
         if found and tobemarked then
             flushmarked(dataset,list)
-            commands.flushmarked() -- here (could also be done in caller)
+            btxflushmarked() -- here (could also be done in caller)
         end
     end
+
+    implement {
+        name      = "btxhandlecite",
+        actions   = btxhandlecite,
+        arguments = {
+            {
+                { "dataset" },
+                { "reference" },
+                { "markentry", "boolean" },
+                { "variant" },
+                { "sorttype" },
+                { "compress" },
+                { "author" },
+                { "lefttext" },
+                { "righttext" },
+                { "before" },
+                { "after" },
+            }
+        }
+    }
+
+    implement {
+        name      = "btxhandlenocite",
+        actions   = btxhandlenocite,
+        arguments = {
+            {
+               { "dataset" },
+               { "reference" },
+               { "markentry", "boolean" },
+            }
+        }
+    }
 
     -- sorter
 
@@ -2344,7 +2379,7 @@ do
         end
         if tobemarked then
             flushmarked(dataset,list)
-            commands.flushmarked() -- here (could also be done in caller)
+            btxflushmarked() -- here (could also be done in caller)
         end
     end
 
@@ -2909,12 +2944,18 @@ do
     local listvariants        = { }
     publications.listvariants = listvariants
 
-    function commands.btxlistvariant(dataset,block,tag,variant,listindex)
+    local function btxlistvariant(dataset,block,tag,variant,listindex)
         local action = listvariants[variant] or listvariants.default
         if action then
             action(dataset,block,tag,variant,tonumber(listindex) or 0)
         end
     end
+
+    implement {
+        name      = "btxlistvariant",
+        actions   = btxlistvariant,
+        arguments = { "string", "string", "string", "string", "string" } -- not integer here
+    }
 
     function listvariants.default(dataset,block,tag,variant)
         ctx_btxsetfirst("?")

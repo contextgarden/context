@@ -106,7 +106,7 @@
   {\dosinglegroupempty\meta_start_extensions}
 
 \def\meta_start_extensions#1#2\stopMPextensions % we could use buffers instead
-  {\ctxlua{metapost.setextensions("#1",\!!bs#2\!!es)}}
+  {\clf_setmpextensions{#1}{#2}}
 
 \let\stopMPextensions\relax
 
@@ -297,25 +297,46 @@
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_process_graphic}
 
+% \unexpanded\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
+%   {\meta_start_current_graphic
+%    \forgetall
+%    \edef\p_extensions{\MPinstanceparameter\s!extensions}%
+%    \meta_process_graphic_start
+%      \normalexpanded{\noexpand\ctxlua{metapost.graphic {
+%        instance        = "\currentMPinstance",
+%        format          = "\currentMPformat",
+%        data            = \!!bs#1;\!!es,
+%        initializations = \!!bs\meta_flush_current_initializations\!!es,
+%      % useextensions   = "\MPinstanceparameter\s!extensions",
+% \ifx\p_extensions\v!yes
+%        extensions      = \!!bs\clf_getmpextensions{\currentMPinstance}\!!es,
+% \fi
+%        inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
+%        definitions     = \!!bs\meta_flush_current_definitions\!!es,
+%        figure          = "\MPaskedfigure",
+%        method          = "\MPinstanceparameter\c!method",
+%      }}}%
+%    \meta_process_graphic_stop
+%    \meta_stop_current_graphic}
+
 \unexpanded\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
   {\meta_start_current_graphic
    \forgetall
    \edef\p_extensions{\MPinstanceparameter\s!extensions}%
    \meta_process_graphic_start
-     \normalexpanded{\noexpand\ctxlua{metapost.graphic {
-       instance        = "\currentMPinstance",
-       format          = "\currentMPformat",
-       data            = \!!bs#1;\!!es,
-       initializations = \!!bs\meta_flush_current_initializations\!!es,
-%      useextensions   = "\MPinstanceparameter\s!extensions",
-\ifx\p_extensions\v!yes
-       extensions      = \!!bs\ctxcommand{getmpextensions("\currentMPinstance")}\!!es,
-\fi
-       inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
-       definitions     = \!!bs\meta_flush_current_definitions\!!es,
-       figure          = "\MPaskedfigure",
-       method          = "\MPinstanceparameter\c!method",
-     }}}%
+     \normalexpanded{\noexpand\clf_mpgraphic
+         instance        {\currentMPinstance}%
+         format          {\currentMPformat}%
+         data            {#1;}%
+         initializations {\meta_flush_current_initializations}%
+    \ifx\p_extensions\v!yes
+         extensions      {\clf_getmpextensions{\currentMPinstance}}%
+    \fi
+         inclusions      {\meta_flush_current_inclusions}%
+         definitions     {\meta_flush_current_definitions}%
+         figure          {\MPaskedfigure}%
+         method          {\MPinstanceparameter\c!method}%
+    \relax}%
    \meta_process_graphic_stop
    \meta_stop_current_graphic}
 
@@ -439,17 +460,30 @@
    \fi
    \endgroup}
 
+% \def\meta_grab_clip_path_indeed
+%   {\meta_start_current_graphic
+%      \xdef\MPclippath{\normalexpanded{\noexpand\ctxlua{metapost.theclippath {
+%           instance        = "\currentMPinstance",
+%           format          = "\currentMPformat",
+%           data            = \!!bs\csname\??mpclip\currentMPclip\endcsname\!!es,
+%           initializations = \!!bs\meta_flush_current_initializations\!!es,
+%           useextensions   = "\MPinstanceparameter\s!extensions",
+%           inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
+%           method          = "\MPinstanceparameter\c!method",
+%      }}}}%
+%    \meta_stop_current_graphic}
+
 \def\meta_grab_clip_path_indeed
   {\meta_start_current_graphic
-     \xdef\MPclippath{\normalexpanded{\noexpand\ctxlua{metapost.theclippath {
-          instance        = "\currentMPinstance",
-          format          = "\currentMPformat",
-          data            = \!!bs\csname\??mpclip\currentMPclip\endcsname\!!es,
-          initializations = \!!bs\meta_flush_current_initializations\!!es,
-          useextensions   = "\MPinstanceparameter\s!extensions",
-          inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
-          method          = "\MPinstanceparameter\c!method",
-     }}}}%
+     \normalexpanded{\noexpand\clf_mpsetclippath
+          instance        {\currentMPinstance}%
+          format          {\currentMPformat}%
+          data            {\csname\??mpclip\currentMPclip\endcsname}%
+          initializations {\meta_flush_current_initializations}%
+          useextensions   {\MPinstanceparameter\s!extensions}%
+          inclusions      {\meta_flush_current_inclusions}%
+          method          {\MPinstanceparameter\c!method}%
+     \relax}%
    \meta_stop_current_graphic}
 
 %D Since we want lables to follow the document settings, we
@@ -459,7 +493,7 @@
   {\dontleavehmode
    \begingroup
    \definedfont[#1]%
-   \hskip\cldcontext{fonts.hashes.parameters[font.current()].designsize}sp\relax
+   \hskip\cldcontext{fonts.hashes.parameters[font.current()].designsize}\scaledpoint\relax
    \endgroup}
 
 \definefontsynonym[MetafunDefault][Regular*default]
@@ -909,7 +943,7 @@
 
 \def\meta_process_buffer[#1]%
   {\meta_begin_graphic_group{#1}%
-   \meta_process_graphic{\ctxcommand{feedback("\currentMPgraphicname")}}%
+   \meta_process_graphic{\clf_feedback{\currentMPgraphicname}}%
    \meta_end_graphic_group}
 
 \unexpanded\def\runMPbuffer
@@ -953,15 +987,15 @@
    \else\ifx\m_meta_option\!!plustoken
      #2%                 % use in main doc too
    \fi\fi\fi
-   \ctxlua{metapost.tex.set(\!!bs\detokenize{#2}\!!es)}}
+   \clf_mptexset{\detokenize{#2}}}
 
 \let\stopMPenvironment\relax
 
 \unexpanded\def\resetMPenvironment
-  {\ctxlua{metapost.tex.reset()}}
+  {\clf_mptexreset}
 
 \unexpanded\def\useMPenvironmentbuffer[#1]%
-  {\ctxlua{metapost.tex.set(buffers.content("#1"))}}
+  {\clf_mpsetfrombuffer{#1}}
 
 %D This command takes \type {[reset]} as optional
 %D argument.
@@ -1083,7 +1117,7 @@
 %D Loading specific \METAPOST\ related definitions is
 %D accomplished by:
 
-\unexpanded\def\useMPlibrary[#1]{\ctxcommand{useMPlibrary(\!!bs#1\!!es)}}
+\unexpanded\def\useMPlibrary[#1]{\clf_useMPlibrary{#1}}
 
 %D \macros
 %D   {setMPtext, MPtext, MPstring, MPbetex}
@@ -1405,7 +1439,11 @@
 \newconstant\MPcolormethod
 
 \appendtoks
-    \ctxlua{metapost.setoutercolor(\number\MPcolormethod,\number\attribute\colormodelattribute,\number\attribute\colorattribute,\number\dogetattribute{transparency})}%
+    \clf_mpsetoutercolor
+        \MPcolormethod\space
+        \attribute\colormodelattribute\space
+        \attribute\colorattribute\space
+        \dogetattribute{transparency}\relax
 \to \everyMPgraphic
 
 \startMPinitializations
@@ -1436,9 +1474,9 @@
 %D $(x,y) = (\MPrunset{point}{,})$
 %D \stoptyping
 
-\def\MPrunvar  #1{\ctxcommand{mprunvar("#1")}}           \let\mprunvar\MPrunvar
-\def\MPruntab#1#2{\ctxcommand{mprunvar("#1",\number#2)}} \let\mpruntab\MPruntab
-\def\MPrunset#1#2{\ctxcommand{mprunvar("#1","#2")}}      \let\mprunset\MPrunset
+\def\MPrunvar  #1{\clf_mprunvar{#1}}         \let\mprunvar\MPrunvar
+\def\MPruntab#1#2{\clf_mpruntab{#1}#2\relax} \let\mpruntab\MPruntab % #2 is number
+\def\MPrunset#1#2{\clf_mprunset{#1}{#2}}     \let\mprunset\MPrunset
 
 %D We also provide an outputless run:
 

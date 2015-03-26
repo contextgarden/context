@@ -13,8 +13,8 @@ local a_colormodel      = attributes.private('colormodel')
 
 local nodecodes         = nodes.nodecodes
 local nodepool          = nodes.pool
-local disc              = nodecodes.disc
-local glyph             = nodecodes.glyph
+local disc_code         = nodecodes.disc
+local glyph_code        = nodecodes.glyph
 local emwidths          = fonts.hashes.emwidths
 local exheights         = fonts.hashes.exheights
 local newkern           = nodepool.kern
@@ -23,7 +23,7 @@ local newglue           = nodepool.glue
 
 local insert_node_after = node.insert_after
 local traverse_by_id    = node.traverse_id
-local hyphenate         = lang.hyphenate
+local hyphenate         = languages.hyphenators.handler -- lang.hyphenate
 local find_tail         = node.tail
 local remove_node       = nodes.remove
 
@@ -36,11 +36,11 @@ local function identify(head,marked)
     while current do
         local id = current.id
         local next = current.next
-        if id == disc then
-            if prev and next.id == glyph then -- catch other usage of disc
+        if id == disc_code then
+            if prev and next then -- and next.id == glyph_code then -- catch other usage of disc
                 marked[#marked+1] = prev
             end
-        elseif id == glyph then
+        elseif id == glyph_code then
             prev = current
         end
         current = next
@@ -81,10 +81,10 @@ function moduledata.languages.hyphenation.showhyphens(head)
             local m = { }
             local l = langs[i]
             marked[i] = m
-            for n in traverse_by_id(glyph,head) do
+            for n in traverse_by_id(glyph_code,head) do
                 n.lang = l
             end
-            hyphenate(head,find_tail(head))
+            languages.hyphenators.methods.original(head)
             identify(head,m)
             strip(head,m)
         end

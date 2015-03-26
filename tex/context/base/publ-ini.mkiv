@@ -112,11 +112,8 @@
   {\popmacro\currentbtxspecification
    \protect}
 
-\unexpanded\def\loadbtxdefinitionfile[#1]%
-  {\ctxcommand{loadbtxdefinitionfile("#1")}}
-
-\unexpanded\def\loadbtxreplacementfile[#1]%
-  {\ctxcommand{loadbtxreplacementfile("#1")}}
+\unexpanded\def\loadbtxdefinitionfile [#1]{\clf_btxloaddefinitionfile {#1}}
+\unexpanded\def\loadbtxreplacementfile[#1]{\clf_btxloadreplacementfile{#1}}
 
 \unexpanded\def\publ_specification_push#1%
   {\pushmacro\currentbtxspecification
@@ -126,12 +123,12 @@
    \ifx\currentbtxspecificationfallback\currentbtxspecification
      \let\currentbtxspecificationfallback\empty
    \fi
-   \ctxcommand{setbtxspecification("\currentbtxspecification")}}
+   \clf_btxsetspecification{\currentbtxspecification}}
 
 \unexpanded\def\publ_specification_pop
   {\popmacro\currentbtxspecificationfallback
    \popmacro\currentbtxspecification
-   \ctxcommand{setbtxspecification("\currentbtxspecification")}}
+   \clf_btxsetspecification{\currentbtxspecification}}
 
 \unexpanded\def\publ_specification_set#1% beware: is global
   {\edef\currentbtxspecification{#1}%
@@ -140,7 +137,7 @@
      \let\currentbtxspecificationfallback\empty
    \fi
   % has to be done explicitly: \loadbtxdefinitionfile[\currentbtxspecification]%
-   \ctxcommand{setbtxspecification("\currentbtxspecification")}}% todo: ,true == also load
+   \clf_btxsetspecification{\currentbtxspecification}}% todo: ,true == also load
 
 \installcorenamespace {btx}
 
@@ -156,7 +153,7 @@
 
 \appendtoks
     \ifnum\btxsetupmode=\doingrootsetuproot
-        \edef\currentbtxdataset{\ctxcommand{setbtxdataset("\btxparameter\c!dataset","\currentbtxdataset")}}%
+        \edef\currentbtxdataset{\clf_btxsetdataset{\btxparameter\c!dataset}{\currentbtxdataset}}%
     \fi
 \to \everysetupbtx
 
@@ -236,17 +233,17 @@
 \def\publ_use_dataset[#1][#2][#3]%
   {\getdummyparameters[\c!specification=\currentbtxspecification,#3]%
    \ifsecondargument
-     \ctxcommand{usebtxdataset{
-        specification = "\dummyparameter\c!specification",
-        dataset       = "#1",
-        filename      = "#2",
-     }}%
+     \clf_btxusedataset
+        specification {\dummyparameter\c!specification}%
+        dataset       {#1}%
+        filename      {#2}%
+     \relax
    \else\iffirstargument
-     \ctxcommand{usebtxdataset{
-        specification = "\dummyparameter\c!specification",
-        dataset       = "\v!default",
-        filename      = "#1",
-     }}%
+     \clf_btxusedataset
+        specification {\dummyparameter\c!specification}%
+        dataset       {\v!default}%
+        filename      {#1}%
+     \relax
    \fi\fi
    \endgroup}
 
@@ -284,7 +281,7 @@
      {\publ_set_publication_indeed{#1}{}}}
 
 \def\publ_set_publication_indeed#1#2#3\stoppublication
-  {\ctxcommand{addbtxentry("#1",\!!bs#2\!!es,\!!bs\detokenize{#3}\!!es)}%
+  {\clf_btxaddentry{#1}{#2}{\detokenize{#3}}%
    \endgroup
    \ignorespaces}
 
@@ -334,8 +331,8 @@
 \let\currentbtxtag    \empty
 \let\currentbtxdataset\v!default
 
-\unexpanded\def\setbtxentry[#1]%
-  {\edef\currentbtxtag{\ctxcommand{setbtxentry("\currentbtxdataset","#1")}}}
+\unexpanded\def\setbtxentry[#1]% or maybe btxsetentry
+  {\edef\currentbtxtag{\clf_btxsetentry{\currentbtxdataset}{#1}}}
 
 % \let\btxsetdataset\setbtxdataset
 % \let\btxsetentry  \setbtxentry
@@ -345,39 +342,18 @@
 % \btxfield         : current
 % \btxspecificfield : dataset,tag,key
 
-\ifdefined\clf_btxfield % {#1} will go
-
-    \def\btxfield      #1{\clf_btxfield      {\currentbtxdataset}{\currentbtxtag}{#1}}
-    \def\btxdetail     #1{\clf_btxdetail     {\currentbtxdataset}{\currentbtxtag}{#1}}
-    \def\btxflush      #1{\clf_btxflush      {\currentbtxdataset}{\currentbtxtag}{#1}}
-    \def\btxdirect     #1{\clf_btxdirect     {\currentbtxdataset}{\currentbtxtag}{#1}}
-    \def\btxfieldname  #1{\clf_btxfieldname  {\currentbtxdataset}{\currentbtxtag}{#1}}
-    \def\btxfieldtype  #1{\clf_btxfieldtype  {\currentbtxdataset}{\currentbtxtag}{#1}}
-    \def\btxfoundname  #1{\clf_btxfoundname  {\currentbtxdataset}{\currentbtxtag}{#1}}
-    \def\btxfoundtype  #1{\clf_btxfoundtype  {\currentbtxdataset}{\currentbtxtag}{#1}}
-  % \def\btxauthorfield#1{\clf_btxauthorfield\currentbtxauthorindex{#1}}
-    \def\btxdoifelse   #1{\clf_btxdoifelse   {\currentbtxdataset}{\currentbtxtag}{#1}}
-    \def\btxdoif       #1{\clf_btxdoif       {\currentbtxdataset}{\currentbtxtag}{#1}}
-    \def\btxdoifnot    #1{\clf_btxdoifnot    {\currentbtxdataset}{\currentbtxtag}{#1}}
-
-\else
-
-    \def\btxfield      #1{\ctxcommand{btxfield("\currentbtxdataset","\currentbtxtag","#1")}}
-    \def\btxdetail     #1{\ctxcommand{btxdetail("\currentbtxdataset","\currentbtxtag","#1")}}
-    \def\btxflush      #1{\ctxcommand{btxflush("\currentbtxdataset","\currentbtxtag","#1")}}
-    \def\btxdirect     #1{\ctxcommand{btxdirect("\currentbtxdataset","\currentbtxtag","#1")}}
-    \def\btxfieldname  #1{\ctxcommand{btxfieldname("\currentbtxdataset","\currentbtxtag","#1")}}
-    \def\btxfieldtype  #1{\ctxcommand{btxfieldtype("\currentbtxdataset","\currentbtxtag","#1")}}
-    \def\btxfoundname  #1{\ctxcommand{btxfoundname("\currentbtxdataset","\currentbtxtag","#1")}}
-    \def\btxfoundtype  #1{\ctxcommand{btxfoundtype("\currentbtxdataset","\currentbtxtag","#1")}}
-  % \def\btxauthorfield#1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
-    \def\btxdoifelse   #1{\ctxcommand{btxdoifelse("\currentbtxdataset","\currentbtxtag","#1")}}
-    \def\btxdoif       #1{\ctxcommand{btxdoif("\currentbtxdataset","\currentbtxtag","#1")}}
-    \def\btxdoifnot    #1{\ctxcommand{btxdoifnot("\currentbtxdataset","\currentbtxtag","#1")}}
-
-\fi
-
-\def\btxauthorfield#1{\ctxcommand{btxauthorfield(\number\currentbtxauthorindex,"#1")}}
+\def\btxfield      #1{\clf_btxfield      {\currentbtxdataset}{\currentbtxtag}{#1}}
+\def\btxdetail     #1{\clf_btxdetail     {\currentbtxdataset}{\currentbtxtag}{#1}}
+\def\btxflush      #1{\clf_btxflush      {\currentbtxdataset}{\currentbtxtag}{#1}}
+\def\btxdirect     #1{\clf_btxdirect     {\currentbtxdataset}{\currentbtxtag}{#1}}
+\def\btxfieldname  #1{\clf_btxfieldname  {\currentbtxdataset}{\currentbtxtag}{#1}}
+\def\btxfieldtype  #1{\clf_btxfieldtype  {\currentbtxdataset}{\currentbtxtag}{#1}}
+\def\btxfoundname  #1{\clf_btxfoundname  {\currentbtxdataset}{\currentbtxtag}{#1}}
+\def\btxfoundtype  #1{\clf_btxfoundtype  {\currentbtxdataset}{\currentbtxtag}{#1}}
+\def\btxauthorfield#1{\clf_btxauthorfield              \currentbtxauthorindex{#1}}
+\def\btxdoifelse   #1{\clf_btxdoifelse   {\currentbtxdataset}{\currentbtxtag}{#1}}
+\def\btxdoif       #1{\clf_btxdoif       {\currentbtxdataset}{\currentbtxtag}{#1}}
+\def\btxdoifnot    #1{\clf_btxdoifnot    {\currentbtxdataset}{\currentbtxtag}{#1}}
 
 \let\btxsetup\fastsetup
 
@@ -425,24 +401,24 @@
 \let\currentbtxnumber       \empty    \unexpanded\def\btxsetnumber       {\def\currentbtxnumber}
 \let\currentbtxauthorvariant\v!normal \unexpanded\def\btxsetauthorvariant{\def\currentbtxauthorvariant}
 
-\unexpanded\def\currentbtxfirstnames_indeed{\ctxcommand{btx_a_f(\number\currentbtxauthorindex)}}
-\unexpanded\def\currentbtxinitials_indeed  {\ctxcommand{btx_a_i(\number\currentbtxauthorindex)}}
-\unexpanded\def\currentbtxjuniors_indeed   {\ctxcommand{btx_a_j(\number\currentbtxauthorindex)}}
-\unexpanded\def\currentbtxsurnames_indeed  {\ctxcommand{btx_a_s(\number\currentbtxauthorindex)}}
-\unexpanded\def\currentbtxvons_indeed      {\ctxcommand{btx_a_v(\number\currentbtxauthorindex)}}
-
 \let\currentbtxfirstnames   \empty    \unexpanded\def\btxsetfirstnames{\let\currentbtxfirstnames\currentbtxfirstnames_indeed}
 \let\currentbtxinitials     \empty    \unexpanded\def\btxsetinitials  {\let\currentbtxinitials  \currentbtxinitials_indeed  }
 \let\currentbtxjuniors      \empty    \unexpanded\def\btxsetjuniors   {\let\currentbtxjuniors   \currentbtxjuniors_indeed   }
 \let\currentbtxsurnames     \empty    \unexpanded\def\btxsetsurnames  {\let\currentbtxsurnames  \currentbtxsurnames_indeed  }
 \let\currentbtxvons         \empty    \unexpanded\def\btxsetvons      {\let\currentbtxvons      \currentbtxvons_indeed      }
 
-\newconstant\currentbtxoverflow    \unexpanded\def\btxsetoverflow   #1{\currentbtxoverflow   #1\relax}
-\newconstant\currentbtxconcat      \unexpanded\def\btxsetconcat     #1{\currentbtxconcat     #1\relax}
-\newconstant\currentbtxcount       \unexpanded\def\btxsetcount      #1{\currentbtxcount      #1\relax}
-\newconstant\currentbtxauthorindex %unexpanded\def\btxsetauthorindex#1{\currentbtxauthorindex#1\relax} % passed directly
-\newconstant\currentbtxauthorcount %unexpanded\def\btxsetauthorcount#1{\currentbtxauthorcount#1\relax} % passed directly
-\newconstant\currentbtxauthorstate \unexpanded\def\btxsetauthorstate#1{\currentbtxauthorstate#1\relax}
+\newconstant\currentbtxoverflow       \unexpanded\def\btxsetoverflow   #1{\currentbtxoverflow   #1\relax}
+\newconstant\currentbtxconcat         \unexpanded\def\btxsetconcat     #1{\currentbtxconcat     #1\relax}
+\newconstant\currentbtxcount          \unexpanded\def\btxsetcount      #1{\currentbtxcount      #1\relax}
+\newconstant\currentbtxauthorindex    %unexpanded\def\btxsetauthorindex#1{\currentbtxauthorindex#1\relax} % passed directly
+\newconstant\currentbtxauthorcount    %unexpanded\def\btxsetauthorcount#1{\currentbtxauthorcount#1\relax} % passed directly
+\newconstant\currentbtxauthorstate    \unexpanded\def\btxsetauthorstate#1{\currentbtxauthorstate#1\relax}
+
+\unexpanded\def\currentbtxfirstnames_indeed{\clf_btxcurrentfirstnames\numexpr\currentbtxauthorindex\relax}
+\unexpanded\def\currentbtxinitials_indeed  {\clf_btxcurrentinitials  \numexpr\currentbtxauthorindex\relax}
+\unexpanded\def\currentbtxjuniors_indeed   {\clf_btxcurrentjuniors   \numexpr\currentbtxauthorindex\relax}
+\unexpanded\def\currentbtxsurnames_indeed  {\clf_btxcurrentsurnames  \numexpr\currentbtxauthorindex\relax}
+\unexpanded\def\currentbtxvons_indeed      {\clf_btxcurrentvons      \numexpr\currentbtxauthorindex\relax}
 
 \def\currentbtxauthorvariant{normal}
 
@@ -606,7 +582,7 @@
    \btxparameter\c!command
      {\usebtxstyleandcolor\c!style\c!color
       \btxparameter\c!pageleft
-      \ctxcommand{btxflushpages("\currentbtxdataset","\currentbtxtag")}%
+      \clf_btxflushpages{\currentbtxdataset}{\currentbtxtag}%
       \btxparameter\c!pageright}%
    \endgroup}
 
@@ -695,7 +671,7 @@
 \unexpanded\def\btxsetcurrentlistindex#1{\edef\currentbtxlistindex{#1}}
 
 \unexpanded\def\btxdoifsameaspreviouselse#1%
-  {\ctxcommand{btxdoifelsesameasprevious("\currentbtxdataset",\number\currentbtxlistentry,"#1")}}
+  {\clf_btxdoifelsesameasprevious{\currentbtxdataset}\currentbtxlistentry{#1}}
 
 \def\publ_place_list_indeed#1[#2][#3]%
   {\begingroup
@@ -747,29 +723,29 @@
    \forgetall
    % why not pass this with collect .. todo
    % here we just collect items
-   \ctxcommand{btxcollectlistentries {
-       names      = "btx",
-       criterium  = "\currentbtxcriterium",
-       reference  = "\btxrenderingparameter\c!reference",
-       method     = "\btxrenderingparameter\c!method",
-       btxdataset = "\currentbtxdataset",
-       keyword    = "\btxrenderingparameter\c!keyword",
-       sorttype   = "\btxrenderingparameter\c!sorttype",
-       repeated   = "\btxrenderingparameter\c!repeat",
-       ignored    = "\btxrenderingparameter\c!ignore",
-       group      = "\btxrenderingparameter\c!group",
-   }}%
+   \clf_btxcollectlistentries
+       names     {\s!btx}%
+       criterium {\currentbtxcriterium}%
+       reference {\btxrenderingparameter\c!reference}%
+       method    {\btxrenderingparameter\c!method}%
+       dataset   {\currentbtxdataset}%
+       keyword   {\btxrenderingparameter\c!keyword}%
+       sorttype  {\btxrenderingparameter\c!sorttype}%
+       repeated  {\btxrenderingparameter\c!repeat}%
+       ignored   {\btxrenderingparameter\c!ignore}%
+       group     {\btxrenderingparameter\c!group}%
+   \relax
    \ifnum\nofbtxlistentries>\zerocount
      \startpacked[\v!blank]%
      % sorting and so
-     \ctxcommand{btxpreparelistentries("\currentbtxdataset")}% could be put in collect
+     \clf_btxpreparelistentries{\currentbtxdataset}% could be put in collect
      % next we analyze the width
      \ifx\currentbtxnumbering\empty \else
        \edef\p_width{\listparameter\c!width}%
        \ifx\p_width\v!auto
          \setbox\scratchbox\vbox \bgroup
            \settrialtypesetting
-           \ctxcommand{btxfetchlistentries("\currentbtxdataset")}%
+           \clf_btxfetchlistentries{\currentbtxdataset}%
          \egroup
          \d_publ_number_width\wd\scratchbox
          \letlistparameter\c!width\d_publ_number_width
@@ -780,7 +756,7 @@
      % bunch gets flushed at once
      \dorecurse\nofbtxlistentries
         {\let\currentbtxlistentry\recurselevel
-         \ctxcommand{btxflushlistentry("\currentbtxdataset",\currentbtxlistentry)}}%
+         \clf_btxflushlistentry{\currentbtxdataset}\currentbtxlistentry\relax}%
      \stoppacked
    \fi
    \btxrenderingparameter\c!after
@@ -852,7 +828,13 @@
    \else
      \btxparameter\c!left
      \ifconditional\c_publ_prefixed\btxlistprefixednumber\fi
-     \ctxcommand{btxlistvariant("\currentbtxdataset","\currentbtxblock","\currentbtxtag","\currentbtxnumbering","\currentbtxnumber")}% some can go
+     \clf_btxlistvariant % some can go
+       {\currentbtxdataset}%
+       {\currentbtxblock}%
+       {\currentbtxtag}%
+       {\currentbtxnumbering}%
+       {\currentbtxnumber}%
+     \relax
      \btxparameter\c!right
    \fi\fi
    \endgroup}
@@ -927,8 +909,8 @@
        \s!btxint=\number\currentbtxbacklink
        \ifx\currentbtxciteuservariables\empty\else,\currentbtxciteuservariables\fi]}}
 
-\def\currentbtxuservariable #1{\ctxcommand{btxuservariable("\currentbtxdataset","#1")}}
-\def\btxdoifelseuservariable#1{\ctxcommand{btxdoifelseuservariable("\currentbtxdataset","#1")}}
+\def\currentbtxuservariable #1{\clf_btxuservariable        {\currentbtxdataset}{#1}}
+\def\btxdoifelseuservariable#1{\clf_btxdoifelseuservariable{\currentbtxdataset}{#1}}
 
 \let\btxcitereference\btx_cite_reference_inject
 
@@ -965,13 +947,18 @@
    \edef\currentbtxfield{#2}%
    \setbtxparameterset\s!list\currentbtxfield
    %let\currentbtxlistvariant\currentbtxfield
-   \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\currentbtxfield",{
-        combiner    = "#1",
-        kind        = "list",
-        etallimit   = "\btxparameter\c!etallimit",
-        etaldisplay = "\btxparameter\c!etaldisplay",
-        symbol      = "\btxparameter{\c!stopper:initials}",
-   })}%
+   \clf_btxauthor
+        {\currentbtxdataset}%
+        {\currentbtxtag}%
+        {\currentbtxfield}%
+        {
+            combiner    {#1}%
+            kind        {list}%
+            etallimit   {\btxparameter\c!etallimit}%
+            etaldisplay {\btxparameter\c!etaldisplay}%
+            symbol      {\btxparameter{\c!stopper:initials}}%
+        }%
+   \relax
    \endgroup}
 
 % yes or no: maybe just \flushauthor{...}{...}
@@ -985,13 +972,18 @@
 \unexpanded\def\currentbtxciteauthor % always author
   {\begingroup
    \setbtxparameterset\s!cite\s!author
-   \ctxcommand{btxauthor("\currentbtxdataset","\currentbtxtag","\s!author",{
-        combiner    = "\btxparameter\c!authorconversion",
-        kind        = "cite",
-        etallimit   = "\btxparameter\c!etallimit",
-        etaldisplay = "\btxparameter\c!etaldisplay",
-        symbol      = "\btxparameter{\c!stopper:initials}",
-   })}%
+   \clf_btxauthor
+        {\currentbtxdataset}%
+        {\currentbtxtag}%
+        {\s!author}%
+        {
+            combiner    {\btxparameter\c!authorconversion}%
+            kind        {cite}%
+            etallimit   {\btxparameter\c!etallimit}%
+            etaldisplay {\btxparameter\c!etaldisplay}%
+            symbol      {\btxparameter{\c!stopper:initials}}%
+        }%
+   \relax
    \endgroup}
 
 \unexpanded\def\btxstartauthor#1#2#3% a state > 0 signals that some authors can clash
@@ -1070,7 +1062,7 @@
    \begingroup
    \btxparameter\v!left
    \penalty\plustenthousand % todo
-   \ctxcommand{btxresolvelistreference("\currentbtxdataset","#1")}% todo: split dataset from #1, so another call
+   \clf_btxresolvelistreference{\currentbtxdataset}{#1}% todo: split dataset from #1, so another call
    \btxparameter\v!right
    \endgroup}
 
@@ -1187,22 +1179,22 @@
    \dosingleargument\publ_cite_handle_variant_indeed}
 
 \unexpanded\def\publ_cite_handle_variant_blob
-  {\btxparameter\v!left
-   \ctxcommand{btxhandlecite{%
-     dataset   = "\currentbtxdataset",%
-     reference = \!!bs\currentbtxreference\!!es,%
-     markentry = \iftrialtypesetting false\else true\fi,%
-     variant   = "\currentbtxcitealternative",%
-     sorttype  = "\btxparameter\c!sorttype",%
-     compress  = "\btxparameter\c!compress",%
-     author    = "\btxparameter\c!author",%
-     lefttext  = \!!bs\p_publ_cite_lefttext\!!es,%
-     righttext = \!!bs\p_publ_cite_righttext\!!es,%
-     before    = \!!bs\p_publ_cite_before\!!es,%
-     after     = \!!bs\p_publ_cite_after\!!es,%
-   }}%
-   \ctxcommand{flushmarked()}% maybe: \iftrialtypesetting\else ... \fi
-   \btxparameter\v!right}
+  {\btxparameter\v!left\relax
+   \clf_btxhandlecite
+     dataset   {\currentbtxdataset}%
+     reference {\currentbtxreference}%
+     markentry \iftrialtypesetting\s!false\else\s!true\fi\space
+     variant   {\currentbtxcitealternative}%
+     sorttype  {\btxparameter\c!sorttype}%
+     compress  {\btxparameter\c!compress}%
+     author    {\btxparameter\c!author}%
+     lefttext  {\p_publ_cite_lefttext}%
+     righttext {\p_publ_cite_righttext}%
+     before    {\p_publ_cite_before}%
+     after     {\p_publ_cite_after}%
+   \relax
+   \clf_btxflushmarked % maybe: \iftrialtypesetting\else ... \fi
+   \btxparameter\v!right\relax}
 
 \def\publ_cite_handle_variant_indeed[#1]%
   {\letbtxparameter\c!alternative\currentbtxcitealternative
@@ -1231,12 +1223,12 @@
   {\iftrialtypesetting \else
      \begingroup
      \edef\currentbtxreference{#1}%
-     \ctxcommand{btxhandlenocite{%
-       dataset   = "\currentbtxdataset",%
-       reference = \!!bs\currentbtxreference#1\!!es,%
-       markentry = true,%
-     }}%
-   % \ctxcommand{flushmarked()}%
+     \clf_btxhandlenocite
+       dataset   {\currentbtxdataset}%
+       reference {\currentbtxreference#1}%
+       markentry true%
+     \relax
+   % \clf_btxflushmarked
      \endgroup
    \fi}
 
@@ -1409,9 +1401,9 @@
 
 %D Whatever helpers:
 
-\unexpanded\def\btxsingularplural#1{\ctxcommand{btxsingularorplural("\currentbtxdataset","\currentbtxtag","#1")}}
-\unexpanded\def\btxoneorrange    #1{\ctxcommand{btxoneorrange("\currentbtxdataset","\currentbtxtag","#1")}}
-\unexpanded\def\btxfirstofrange  #1{\ctxcommand{btxfirstofrange("\currentbtxdataset","\currentbtxtag","#1")}}
+\unexpanded\def\btxsingularplural#1{\clf_btxsingularorplural{\currentbtxdataset}{\currentbtxtag}{#1}}
+\unexpanded\def\btxoneorrange    #1{\clf_btxoneorrange      {\currentbtxdataset}{\currentbtxtag}{#1}}
+\unexpanded\def\btxfirstofrange  #1{\clf_btxfirstofrange    {\currentbtxdataset}{\currentbtxtag}{#1}}
 
 \let\btxsingularorplural\btxsingularplural
 
@@ -1467,12 +1459,12 @@
       \c!dataset=#1,%
       \c!file=#2,%
       #3]% % all or used
-   \ctxcommand{btxsavedataset{
-     dataset   = "\dummyparameter\c!dataset",
-     filename  = "\dummyparameter\c!file",
-     filetype  = "\dummyparameter\c!type",
-     criterium = "\dummyparameter\c!criterium"
-   }}%
+   \clf_btxsavedataset
+     dataset   {\dummyparameter\c!dataset}%
+     filename  {\dummyparameter\c!file}%
+     filetype  {\dummyparameter\c!type}%
+     criterium {\dummyparameter\c!criterium}%
+   \relax
    \endgroup}
 
 % \savebtxdataset[default][e:/tmp/foo.bib]
@@ -1501,16 +1493,16 @@
 
 \unexpanded\def\publ_registers_set
   {\ifx\currentbtxregister\empty \else
-     \ctxcommand{setbtxregister {
-        specification = "\currentbtxspecification",
-        name          = "\currentbtxregister",
-        state         = "\btxregisterparameter\c!state",
-        dataset       = "\btxregisterparameter\c!dataset",
-        field         = "\btxregisterparameter\c!field",
-        register      = "\btxregisterparameter\c!register",
-        method        = "\btxregisterparameter\c!method",
-        alternative   = "\btxregisterparameter\c!alternative",
-    }}%
+     \clf_btxsetregister
+        specification {\currentbtxspecification}%
+        name          {\currentbtxregister}%
+        state         {\btxregisterparameter\c!state}%
+        dataset       {\btxregisterparameter\c!dataset}%
+        field         {\btxregisterparameter\c!field}%
+        register      {\btxregisterparameter\c!register}%
+        method        {\btxregisterparameter\c!method}%
+        alternative   {\btxregisterparameter\c!alternative}%
+     \relax
   \fi}
 
 \appendtoks
@@ -1530,7 +1522,7 @@
 \to \everydefinebtxregister
 
 \appendtoks
-    \ctxcommand{btxtoregister("\currentbtxdataset","\currentbtxtag")}%
+    \clf_btxtoregister{\currentbtxdataset}{\currentbtxtag}%
 \to \t_btx_reference_inject
 
 \unexpanded\def\btxindexedauthor#1#2#3#4#5#6% alternative von last first junior

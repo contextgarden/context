@@ -43,7 +43,7 @@
    \c!state=\v!start]
 
 \def\autostructureprefixsegments#1% todo: \c!prefixsegments=\v!auto
-  {2:\thenamedheadlevel{\ctxcommand{way("#1\c!way")}}}
+  {2:\thenamedheadlevel{\clf_way{#1\c!way}}}
 
 \appendtoks
     \resetcounterparameter\s!counter
@@ -52,12 +52,12 @@
 \appendtoks
     \ifx\currentcounterparent\empty
         \edef\p_start{\counterparameter\c!start}%
-        \ctxcommand{definecounter {
-           name    = "\currentcounter",
-           start   = \ifx\p_start\empty0\else\number\p_start\fi,
-           counter = "\counterparameter\s!counter",
-           method  = "\counterparameter\c!method",
-        }}%
+        \clf_definecounter
+           name    {\currentcounter}%
+           start   \ifx\p_start\empty\zerocount\else\p_start\fi
+           counter {\counterparameter\s!counter}%
+           method  {\counterparameter\c!method}%
+        \relax
         \letcounterparameter\s!name\currentcounter
     \else
       % \letcounterparameter\s!name\currentcounterparent % we need a chained clone
@@ -70,7 +70,7 @@
     \ifx\currentcounter\empty \else
         \edef\p_number{\counterparameter\c!number}%
         \ifx\p_number\empty \else
-          \ctxcommand{setcounter("\counterparameter\s!name",1,\number\p_number)}%
+          \clf_setcounter{\counterparameter\s!name}\p_number\relax
           \letcounterparameter\c!number\empty
         \fi
         \edef\p_start{\counterparameter\c!start}%
@@ -81,40 +81,26 @@
 
 % % % %
 
-\def\strc_counters_way#1% slow, we need to store it at the tex end
-  {\ctxcommand{way("\namedcounterparameter{#1}\c!way")}}
-
-% \def\thenamedcounterlevel#1%
-%   {\thenamedheadlevel{\strc_counters_way{#1}}}
+\def\strc_counters_way#1{\clf_way{\namedcounterparameter{#1}\c!way}}
 
 \def\thenamedcounterlevel#1%
-  {\xthenamedheadlevel{\strc_counters_way{#1}}}
+  {\xthenamedheadlevel{\clf_way{\namedcounterparameter{#1}\c!way}}}
 
-% \def\strc_counters_check_setup#1% does it have to happen here?
-%   {% this can be done at the lua end / a bit messy here ... todo ...
-%    \ifcsname\??counter#1\c!number\endcsname
-%         \doifelsevalue   {\??counter#1\c!number}{#1} {\letbeundefined{\??counter#1\c!number}}%
-%        {\doifvaluenothing{\??counter#1\c!number}     {\letbeundefined{\??counter#1\c!number}}}%
-%    \fi
-%    \ifcsname\??counter#1\c!number\endcsname
-%      % it's a clone
-%    \else
-%      \edef\currentcounterlevel{\thenamedcounterlevel{#1}}%
-%      \edef\p_start{\counterparameter{#1}\c!start}%
-%      \ctxcommand{checkcountersetup("#1",\currentcounterlevel,\ifx\p_start\empty0\else\number\p_start\fi,"\counterparameter{#1}\c!state")}%
-%    \fi}
-
-\def\strc_counters_check_setup
+\unexpanded\def\strc_counters_check_setup
   {\edef\p_name{\directcounterparameter\s!name}%
    \ifx\currentcounter\p_name
      \edef\currentcounterlevel{\thenamedcounterlevel\currentcounter}%
      \edef\p_start{\counterparameter\c!start}%
-     \ctxcommand{checkcountersetup("\currentcounter",\currentcounterlevel,\ifx\p_start\empty0\else\number\p_start\fi,"\counterparameter\c!state")}%
+     \clf_checkcountersetup
+       {\currentcounter}%
+       \numexpr\currentcounterlevel\relax
+       \numexpr\ifx\p_start\empty\zerocount\else\p_start\fi\relax % bug in scanner
+       {\counterparameter\c!state}%
    \fi}
 
-\unexpanded\def\doifcounterelse #1{\ctxcommand{doifelsecounter("\namedcounterparameter{#1}\s!name")}}
-\unexpanded\def\doifcounter     #1{\ctxcommand{doifcounter    ("\namedcounterparameter{#1}\s!name")}}
-\unexpanded\def\doifnotcounter  #1{\ctxcommand{doifnotcounter ("\namedcounterparameter{#1}\s!name")}}
+\unexpanded\def\doifcounterelse #1{\clf_doifelsecounter{\namedcounterparameter{#1}\s!name}}
+\unexpanded\def\doifcounter     #1{\clf_doifcounter    {\namedcounterparameter{#1}\s!name}}
+\unexpanded\def\doifnotcounter  #1{\clf_doifnotcounter {\namedcounterparameter{#1}\s!name}}
 
 \unexpanded\def\setcounter        {\dotripleempty   \strc_counters_set_interfaced}
 \unexpanded\def\setcounterown     {\dotripleempty   \strc_counters_setown_interfaced}
@@ -255,90 +241,90 @@
      \expandafter\gobbleoneoptional
    \fi}
 
-\def\strc_counters_set_two           [#1][#2][#3]{\strc_counters_set_sub      {#1}{#2}{#3}}
-\def\strc_counters_setown_two        [#1][#2][#3]{\strc_counters_setown_sub   {#1}{#2}{#3}}
-\def\strc_counters_restart_two       [#1][#2][#3]{\strc_counters_restart_sub  {#1}{#2}{#3}}
-\def\strc_counters_reset_two             [#1][#2]{\strc_counters_reset_sub    {#1}{#2}}
-\def\strc_counters_increment_two         [#1][#2]{\strc_counters_increment_sub{#1}{#2}}
-\def\strc_counters_decrement_two         [#1][#2]{\strc_counters_decrement_sub{#1}{#2}}
+\def\strc_counters_set_two           [#1][#2][#3]{\clf_setsubcounter          {\namedcounterparameter{#1}\s!name}#2 #3\relax}
+\def\strc_counters_setown_two        [#1][#2][#3]{\clf_setownsubcounter       {\namedcounterparameter{#1}\s!name}#2{#3}}
+\def\strc_counters_restart_two       [#1][#2][#3]{\clf_restartsubcounter      {\namedcounterparameter{#1}\s!name}#2 #3\relax}
+\def\strc_counters_reset_two             [#1][#2]{\clf_resetsubcounter        {\namedcounterparameter{#1}\s!name}#2\relax}
+\def\strc_counters_increment_two         [#1][#2]{\clf_incrementsubcounter    {\namedcounterparameter{#1}\s!name}#2\relax}
+\def\strc_counters_decrement_two         [#1][#2]{\clf_decrementsubcounter    {\namedcounterparameter{#1}\s!name}#2\relax}
 
-\def\strc_counters_raw_two               [#1][#2]{\strc_counters_raw_sub      {#1}{#2}}
-\def\strc_counters_last_two              [#1][#2]{\strc_counters_last_sub     {#1}{#2}}
-\def\strc_counters_first_two             [#1][#2]{\strc_counters_first_sub    {#1}{#2}}
-\def\strc_counters_next_two              [#1][#2]{\strc_counters_next_sub     {#1}{#2}}
-\def\strc_counters_prev_two              [#1][#2]{\strc_counters_prev_sub     {#1}{#2}}
-\def\strc_counters_subs_two              [#1][#2]{\strc_counters_subs_sub     {#1}{#2}}
+\def\strc_counters_raw_two               [#1][#2]{\clf_subcountervalue        {\namedcounterparameter{#1}\s!name}#2 }
+\def\strc_counters_last_two              [#1][#2]{\clf_lastsubcountervalue    {\namedcounterparameter{#1}\s!name}#2 }
+\def\strc_counters_first_two             [#1][#2]{\clf_firstsubcountervalue   {\namedcounterparameter{#1}\s!name}#2 }
+\def\strc_counters_next_two              [#1][#2]{\clf_nextsubcountervalue    {\namedcounterparameter{#1}\s!name}#2 }
+\def\strc_counters_prev_two              [#1][#2]{\clf_previoussubcountervalue{\namedcounterparameter{#1}\s!name}#2 }
+\def\strc_counters_subs_two              [#1][#2]{\clf_subsubcountervalues    {\namedcounterparameter{#1}\s!name}#2 }
 
-\def\strc_counters_set_one           [#1][#2][#3]{\strc_counters_set_sub      {#1}\plusone{#2}}
-\def\strc_counters_setown_one        [#1][#2][#3]{\strc_counters_setown_sub   {#1}\plusone{#2}}
-\def\strc_counters_restart_one       [#1][#2][#3]{\strc_counters_restart_sub  {#1}\plusone{#2}}
-\def\strc_counters_reset_one             [#1][#2]{\strc_counters_reset_sub    {#1}\plusone}
-\def\strc_counters_increment_one         [#1][#2]{\strc_counters_increment_sub{#1}\plusone}
-\def\strc_counters_decrement_one         [#1][#2]{\strc_counters_decrement_sub{#1}\plusone}
+\def\strc_counters_set_one           [#1][#2][#3]{\clf_setcounter             {\namedcounterparameter{#1}\s!name}#2\relax}
+\def\strc_counters_setown_one        [#1][#2][#3]{\clf_setowncounter          {\namedcounterparameter{#1}\s!name}{#2}}
+\def\strc_counters_restart_one       [#1][#2][#3]{\clf_restartcounter         {\namedcounterparameter{#1}\s!name}#2\relax}
+\def\strc_counters_reset_one             [#1][#2]{\clf_resetcounter           {\namedcounterparameter{#1}\s!name}\relax}
+\def\strc_counters_increment_one         [#1][#2]{\clf_incrementcounter       {\namedcounterparameter{#1}\s!name}\relax}
+\def\strc_counters_decrement_one         [#1][#2]{\clf_decrementcounter       {\namedcounterparameter{#1}\s!name}\relax}
 
-\def\strc_counters_raw_one               [#1][#2]{\strc_counters_raw_sub      {#1}\plusone}
-\def\strc_counters_last_one              [#1][#2]{\strc_counters_last_sub     {#1}\plusone}
-\def\strc_counters_first_one             [#1][#2]{\strc_counters_first_sub    {#1}\plusone}
-\def\strc_counters_next_one              [#1][#2]{\strc_counters_next_sub     {#1}\plusone}
-\def\strc_counters_prev_one              [#1][#2]{\strc_counters_prev_sub     {#1}\plusone}
-\def\strc_counters_subs_one              [#1][#2]{\strc_counters_subs_sub     {#1}\plusone}
+\def\strc_counters_raw_one               [#1][#2]{\clf_countervalue           {\namedcounterparameter{#1}\s!name}}
+\def\strc_counters_last_one              [#1][#2]{\clf_lastcountervalue       {\namedcounterparameter{#1}\s!name}}
+\def\strc_counters_first_one             [#1][#2]{\clf_firstcountervalue      {\namedcounterparameter{#1}\s!name}}
+\def\strc_counters_next_one              [#1][#2]{\clf_nextcountervalue       {\namedcounterparameter{#1}\s!name}}
+\def\strc_counters_prev_one              [#1][#2]{\clf_previouscountervalue   {\namedcounterparameter{#1}\s!name}}
+\def\strc_counters_subs_one              [#1][#2]{\clf_subcountervalues       {\namedcounterparameter{#1}\s!name}}
 
-\def\strc_counters_save_one                  [#1]{\strc_counters_save         {#1}}
-\def\strc_counters_restore_one               [#1]{\strc_counters_restore      {#1}}
+\def\strc_counters_save_one                  [#1]{\clf_savecounter            {\namedcounterparameter{#1}\s!name}}
+\def\strc_counters_restore_one               [#1]{\clf_restorecounter         {\namedcounterparameter{#1}\s!name}}
 
-\unexpanded\def\strc_counters_set            #1#2{\strc_counters_set_sub      {#1}\plusone{#2}}
-\unexpanded\def\strc_counters_setown         #1#2{\strc_counters_setown_sub   {#1}\plusone{#2}}
-\unexpanded\def\strc_counters_restart        #1#2{\strc_counters_restart_sub  {#1}\plusone{#2}}
-\unexpanded\def\strc_counters_reset            #1{\strc_counters_reset_sub    {#1}\plusone}
-\unexpanded\def\strc_counters_increment        #1{\strc_counters_increment_sub{#1}\plusone}
-\unexpanded\def\strc_counters_decrement        #1{\strc_counters_decrement_sub{#1}\plusone}
+\unexpanded\def\strc_counters_set            #1#2{\clf_setcounter             {\namedcounterparameter{#1}\s!name}#2\relax}
+\unexpanded\def\strc_counters_setown         #1#2{\clf_setowncounter          {\namedcounterparameter{#1}\s!name}{#2}}
+\unexpanded\def\strc_counters_restart        #1#2{\clf_restartcounter         {\namedcounterparameter{#1}\s!name}#2\relax}
+\unexpanded\def\strc_counters_reset            #1{\clf_resetcounter           {\namedcounterparameter{#1}\s!name}\relax}
+\unexpanded\def\strc_counters_increment        #1{\clf_incrementcounter       {\namedcounterparameter{#1}\s!name}\relax}
+\unexpanded\def\strc_counters_decrement        #1{\clf_decrementcounter       {\namedcounterparameter{#1}\s!name}\relax}
 
-           \def\strc_counters_raw              #1{\strc_counters_raw_sub      {#1}\plusone}
-           \def\strc_counters_last             #1{\strc_counters_last_sub     {#1}\plusone}
-           \def\strc_counters_first            #1{\strc_counters_first_sub    {#1}\plusone}
-           \def\strc_counters_next             #1{\strc_counters_next_sub     {#1}\plusone}
-           \def\strc_counters_prev             #1{\strc_counters_prev_sub     {#1}\plusone}
-           \def\strc_counters_subs             #1{\strc_counters_subs_sub     {#1}\plusone}
+           \def\strc_counters_raw              #1{\clf_countervalue           {\namedcounterparameter{#1}\s!name}}
+           \def\strc_counters_last             #1{\clf_lastcountervalue       {\namedcounterparameter{#1}\s!name}}
+           \def\strc_counters_first            #1{\clf_firstcountervalue      {\namedcounterparameter{#1}\s!name}}
+           \def\strc_counters_next             #1{\clf_nextcountervalue       {\namedcounterparameter{#1}\s!name}}
+           \def\strc_counters_prev             #1{\clf_previouscountervalue   {\namedcounterparameter{#1}\s!name}}
+           \def\strc_counters_subs             #1{\clf_subcountervalues       {\namedcounterparameter{#1}\s!name}}
 
-\unexpanded\def\strc_counters_set_sub      #1#2#3{\ctxcommand{setcounter    ("\namedcounterparameter{#1}\s!name",\number#2,\number#3)}}
-\unexpanded\def\strc_counters_setown_sub   #1#2#3{\ctxcommand{setowncounter ("\namedcounterparameter{#1}\s!name",\number#2,"#3")}}
-\unexpanded\def\strc_counters_restart_sub  #1#2#3{\ctxcommand{restartcounter("\namedcounterparameter{#1}\s!name",\number#2,\number#3)}}
-\unexpanded\def\strc_counters_reset_sub      #1#2{\ctxcommand{resetcounter  ("\namedcounterparameter{#1}\s!name",\number#2)}}
-\unexpanded\def\strc_counters_increment_sub  #1#2{\ctxcommand{addcounter    ("\namedcounterparameter{#1}\s!name",\number#2,1)}}
-\unexpanded\def\strc_counters_decrement_sub  #1#2{\ctxcommand{addcounter    ("\namedcounterparameter{#1}\s!name",\number#2,-1)}}
+\unexpanded\def\strc_counters_set_sub      #1#2#3{\clf_setsubcounter          {\namedcounterparameter{#1}\s!name}#2 #3\relax}
+\unexpanded\def\strc_counters_setown_sub   #1#2#3{\clf_setownsubcounter       {\namedcounterparameter{#1}\s!name}#2{#3}}
+\unexpanded\def\strc_counters_restart_sub  #1#2#3{\clf_restartsubcounter      {\namedcounterparameter{#1}\s!name}#2 #3\relax}
+\unexpanded\def\strc_counters_reset_sub      #1#2{\clf_resetsubcounter        {\namedcounterparameter{#1}\s!name}#2\relax}
+\unexpanded\def\strc_counters_increment_sub  #1#2{\clf_incrementsubcounter    {\namedcounterparameter{#1}\s!name}#2\relax}
+\unexpanded\def\strc_counters_decrement_sub  #1#2{\clf_decrementsubcounter    {\namedcounterparameter{#1}\s!name}#2\relax}
 
-           \def\strc_counters_raw_sub        #1#2{\ctxcommand{countervalue        ("\namedcounterparameter{#1}\s!name",\number#2)}} % maybe raw
-           \def\strc_counters_last_sub       #1#2{\ctxcommand{lastcountervalue    ("\namedcounterparameter{#1}\s!name",\number#2)}}
-           \def\strc_counters_first_sub      #1#2{\ctxcommand{firstcountervalue   ("\namedcounterparameter{#1}\s!name",\number#2)}}
-           \def\strc_counters_next_sub       #1#2{\ctxcommand{nextcountervalue    ("\namedcounterparameter{#1}\s!name",\number#2)}}
-           \def\strc_counters_prev_sub       #1#2{\ctxcommand{previouscountervalue("\namedcounterparameter{#1}\s!name",\number#2)}}
-           \def\strc_counters_subs_sub       #1#2{\ctxcommand{subcountervalues    ("\namedcounterparameter{#1}\s!name",\number#2)}}
+           \def\strc_counters_raw_sub        #1#2{\clf_subcountervalue        {\namedcounterparameter{#1}\s!name}#2 } % maybe raw
+           \def\strc_counters_last_sub       #1#2{\clf_lastsubcountervalue    {\namedcounterparameter{#1}\s!name}#2 }
+           \def\strc_counters_first_sub      #1#2{\clf_firstsubcountervalue   {\namedcounterparameter{#1}\s!name}#2 }
+           \def\strc_counters_next_sub       #1#2{\clf_nextsubcountervalue    {\namedcounterparameter{#1}\s!name}#2 }
+           \def\strc_counters_prev_sub       #1#2{\clf_previoussubcountervalue{\namedcounterparameter{#1}\s!name}#2 }
+           \def\strc_counters_subs_sub       #1#2{\clf_subsubcountervalues    {\namedcounterparameter{#1}\s!name}#2 }
 
-\unexpanded\def\strc_counters_save             #1{\ctxcommand{savecounter   ("\namedcounterparameter{#1}\s!name")}}
-\unexpanded\def\strc_counters_restore          #1{\ctxcommand{restorecounter("\namedcounterparameter{#1}\s!name")}}
+\unexpanded\def\strc_counters_save             #1{\clf_savecounter            {\namedcounterparameter{#1}\s!name}}
+\unexpanded\def\strc_counters_restore          #1{\clf_restorecounter         {\namedcounterparameter{#1}\s!name}}
 
-\unexpanded\def\strc_counters_incremented      #1{\ctxcommand{incrementedcounter("\namedcounterparameter{#1}\s!name",1, 1)}}
-\unexpanded\def\strc_counters_decremented      #1{\ctxcommand{incrementedcounter("\namedcounterparameter{#1}\s!name",1,-1)}}
+\unexpanded\def\strc_counters_incremented      #1{\clf_incrementedcounter     {\namedcounterparameter{#1}\s!name}}
+\unexpanded\def\strc_counters_decremented      #1{\clf_decrementedcounter     {\namedcounterparameter{#1}\s!name}}
 
-\unexpanded\def\showcounter                  [#1]{\ctxcommand{tracecounter("\namedcounterparameter{#1}\s!name")}}
+\unexpanded\def\showcounter                  [#1]{\clf_showcounter            {\namedcounterparameter{#1}\s!name}}
 
-\unexpanded\def\incrementedcounter           [#1]{\strc_counters_incremented{#1}} % expandable, no \dosingleargument
-\unexpanded\def\decrementedcounter           [#1]{\strc_counters_decremented{#1}} % expandable, no \dosingleargument
+\unexpanded\def\incrementedcounter           [#1]{\clf_incrementedcounter     {\namedcounterparameter{#1}\s!name}} % no \dosingleargument
+\unexpanded\def\decrementedcounter           [#1]{\clf_decrementedcounter     {\namedcounterparameter{#1}\s!name}} % no \dosingleargument
 
 % public variants ... beware, for old cases, from now on the value variants are the
 % ones that are expandable
 
-\def\rawcountervalue  [#1]{\strc_counters_raw_sub  {#1}\plusone}
-\def\lastcountervalue [#1]{\strc_counters_last_sub {#1}\plusone}
-\def\firstcountervalue[#1]{\strc_counters_first_sub{#1}\plusone}
-\def\nextcountervalue [#1]{\strc_counters_next_sub {#1}\plusone}
-\def\prevcountervalue [#1]{\strc_counters_prev_sub {#1}\plusone}
+\def\rawcountervalue     [#1]{\clf_countervalue        {\namedcounterparameter{#1}\s!name}}
+\def\lastcountervalue    [#1]{\clf_lastcountervalue    {\namedcounterparameter{#1}\s!name}}
+\def\firstcountervalue   [#1]{\clf_firstcountervalue   {\namedcounterparameter{#1}\s!name}}
+\def\nextcountervalue    [#1]{\clf_nextcountervalue    {\namedcounterparameter{#1}\s!name}}
+\def\prevcountervalue    [#1]{\clf_previouscountervalue{\namedcounterparameter{#1}\s!name}}
 
-\let\rawsubcountervalue  \strc_counters_raw_two
-\let\lastsubcountervalue \strc_counters_last_two
-\let\firstsubcountervalue\strc_counters_first_two
-\let\nextsubcountervalue \strc_counters_next_two
-\let\prevsubcountervalue \strc_counters_prev_two
+\let\rawsubcountervalue       \strc_counters_raw_two
+\let\lastsubcountervalue      \strc_counters_last_two
+\let\firstsubcountervalue     \strc_counters_first_two
+\let\nextsubcountervalue      \strc_counters_next_two
+\let\prevsubcountervalue      \strc_counters_prev_two
 
 % The bypage check needs a multipass reference and therefore we only check for it when we increment
 % and know that some content will be placed. We could also check for spreads.
@@ -352,7 +338,7 @@
        \strc_counters_reset{#1}%
      \fi
    \fi
-   \ctxcommand{addcounter("\namedcounterparameter{#1}\s!name",\number#2,1)}}
+   \clf_incrementsubcounter{\namedcounterparameter{#1}\s!name}#2\relax}
 
 \unexpanded\def\convertedcounter
   {\dodoubleempty\strc_counters_converted}
@@ -361,58 +347,58 @@
   {\begingroup
    \edef\currentcounter{#1}%
    \ifsecondargument\setupcurrentcounter[#2]\fi
-   \ctxcommand{prefixedconverted(
-     "\counterparameter\s!name",
+   \clf_prefixedconverted
+     {\counterparameter\s!name}
      {
-       prefix        = "\counterparameter\c!prefix",
-       separatorset  = "\counterparameter\c!prefixseparatorset",
-       conversion    = "\counterparameter\c!prefixconversion",
-       conversionset = "\counterparameter\c!prefixconversionset",
-       starter       = \!!bs\counterparameter\c!prefixstarter\!!es,
-       stopper       = \!!bs\counterparameter\c!prefixstopper\!!es,
-       set           = "\counterparameter\c!prefixset",
-       segments      = "\counterparameter\c!prefixsegments",
-       connector     = \!!bs\counterparameter\c!prefixconnector\!!es,
-     },
-     {
-       order         = "\counterparameter\c!numberorder",
-       separatorset  = "\counterparameter\c!numberseparatorset",
-       conversion    = \!!bs\counterparameter\c!numberconversion\!!es,
-       conversionset = "\counterparameter\c!numberconversionset",
-       starter       = \!!bs\counterparameter\c!numberstarter\!!es,
-       stopper       = \!!bs\counterparameter\c!numberstopper\!!es,
-       segments      = "\counterparameter\c!numbersegments",
-       type          = "\counterparameter\c!type",
-       criterium     = "\counterparameter\c!criterium", % might change if we also want this with sectioning
+       prefix        {\counterparameter\c!prefix}
+       separatorset  {\counterparameter\c!prefixseparatorset}
+       conversion    {\counterparameter\c!prefixconversion}
+       conversionset {\counterparameter\c!prefixconversionset}
+       starter       {\counterparameter\c!prefixstarter}
+       stopper       {\counterparameter\c!prefixstopper}
+       set           {\counterparameter\c!prefixset}
+       segments      {\counterparameter\c!prefixsegments}
+       connector     {\counterparameter\c!prefixconnector}
      }
-   )}%
+     {
+       order         {\counterparameter\c!numberorder}
+       separatorset  {\counterparameter\c!numberseparatorset}
+       conversion    {\counterparameter\c!numberconversion}
+       conversionset {\counterparameter\c!numberconversionset}
+       starter       {\counterparameter\c!numberstarter}
+       stopper       {\counterparameter\c!numberstopper}
+       segments      {\counterparameter\c!numbersegments}
+       type          {\counterparameter\c!type}
+       criterium     {\counterparameter\c!criterium}
+     }
+   \relax
    \endgroup}
 
 \def\directconvertedcounter#1#2% name, type
-  {\ctxcommand{prefixedconverted(
-     "\namedcounterparameter{#1}\s!name",
+  {\clf_prefixedconverted
+     {\namedcounterparameter{#1}\s!name}
      {
-       prefix        = "\namedcounterparameter{#1}\c!prefix",
-       separatorset  = "\namedcounterparameter{#1}\c!prefixseparatorset",
-       conversion    = "\namedcounterparameter{#1}\c!prefixconversion",
-       conversionset = "\namedcounterparameter{#1}\c!prefixconversionset",
-    %  starter       = \!!bs\namedcounterparameter{#1}\c!prefixstarter\!!es,
-    %  stopper       = \!!bs\namedcounterparameter{#1}\c!prefixstopper\!!es,
-       set           = "\namedcounterparameter{#1}\c!prefixset",
-       segments      = "\namedcounterparameter{#1}\c!prefixsegments",
-       connector     = \!!bs\namedcounterparameter{#1}\c!prefixconnector\!!es,
-     },
-     {
-       order         = "\namedcounterparameter{#1}\c!numberorder",
-       separatorset  = "\namedcounterparameter{#1}\c!numberseparatorset",
-       conversion    = \!!bs\namedcounterparameter{#1}\c!numberconversion\!!es,
-       conversionset = "\namedcounterparameter{#1}\c!numberconversionset",
-       starter       = \!!bs\namedcounterparameter{#1}\c!numberstarter\!!es,
-       stopper       = \!!bs\namedcounterparameter{#1}\c!numberstopper\!!es,
-       segments      = "\namedcounterparameter{#1}\c!numbersegments",
-       type          = "#2",
+       prefix        {\namedcounterparameter{#1}\c!prefix}
+       separatorset  {\namedcounterparameter{#1}\c!prefixseparatorset}
+       conversion    {\namedcounterparameter{#1}\c!prefixconversion}
+       conversionset {\namedcounterparameter{#1}\c!prefixconversionset}
+    %  starter       {\namedcounterparameter{#1}\c!prefixstarter}
+    %  stopper       {\namedcounterparameter{#1}\c!prefixstopper}
+       set           {\namedcounterparameter{#1}\c!prefixset}
+       segments      {\namedcounterparameter{#1}\c!prefixsegments}
+       connector     {\namedcounterparameter{#1}\c!prefixconnector}
      }
-   )}}
+     {
+       order         {\namedcounterparameter{#1}\c!numberorder}
+       separatorset  {\namedcounterparameter{#1}\c!numberseparatorset}
+       conversion    {\namedcounterparameter{#1}\c!numberconversion}
+       conversionset {\namedcounterparameter{#1}\c!numberconversionset}
+       starter       {\namedcounterparameter{#1}\c!numberstarter}
+       stopper       {\namedcounterparameter{#1}\c!numberstopper}
+       segments      {\namedcounterparameter{#1}\c!numbersegments}
+       type          {#2}
+     }
+   \relax}
 
 \unexpanded\def\convertedsubcounter
   {\dotripleempty\strc_counters_converted_sub}
@@ -598,68 +584,69 @@
    \fi
    %
    \setnextinternalreference
-   \xdef\m_strc_counters_last_registered_index{\ctxcommand{addtolist{
-      metadata = {
-          kind     = "#1",
-          name     = "\currentname",
-          level    = structures.sections.currentlevel(),
-          catcodes = \the\ifx\currentstructurecomponentcatcodes\empty\catcodetable\else\csname\currentstructurecomponentcatcodes\endcsname\fi,
-          coding   = "\currentstructurecomponentcoding",
+   \scratchcounter\clf_addtolist %{
+      metadata {
+          kind     {#1}
+          name     {\currentname}
+        % level    structures.sections.currentlevel()
+          catcodes \ifx\currentstructurecomponentcatcodes\empty\catcodetable\else\csname\currentstructurecomponentcatcodes\endcsname\fi
+          coding   {\currentstructurecomponentcoding}
       \ifx\currentstructurecomponentcoding\s!xml
-          xmlroot  =  "\xmldocument",
+          xmlroot  {\xmldocument}
       \fi
       \ifx\currentstructurecomponentxmlsetup\empty \else
-          xmlsetup = "\currentstructurexmlsetup",
+          xmlsetup {\currentstructurexmlsetup}
       \fi
-      },
-      references = {
-          internal        = \nextinternalreference,
-          block           = "\currentsectionblock",
-          reference       = "\currentstructurecomponentreference",
-          referenceprefix = "\currentstructurecomponentreferenceprefix",
-          section         = structures.sections.currentid(),
-      },
-      titledata = {
-          label    = \!!bs\detokenize\expandafter{\currentstructurecomponentlabel   }\!!es,
-          title    = \!!bs\detokenize\expandafter{\currentstructurecomponenttitle   }\!!es,
+      }
+      references {
+          internal        \nextinternalreference
+          block           {\currentsectionblock}
+          reference       {\currentstructurecomponentreference}
+          referenceprefix {\currentstructurecomponentreferenceprefix}
+        % section         structures.sections.currentid()
+      }
+      titledata {
+          label    {\detokenize\expandafter{\currentstructurecomponentlabel}}
+          title    {\detokenize\expandafter{\currentstructurecomponenttitle}}
       \ifx\currentstructurecomponentbookmark\currentstructurecomponenttitle \else
-          bookmark = \!!bs\detokenize\expandafter{\currentstructurecomponentbookmark}\!!es,
+          bookmark {\detokenize\expandafter{\currentstructurecomponentbookmark}}
       \fi
       \ifx\currentstructurecomponentmarking\currentstructurecomponenttitle \else
-          marking  = \!!bs\detokenize\expandafter{\currentstructurecomponentmarking }\!!es,
+          marking  {\detokenize\expandafter{\currentstructurecomponentmarking}}
       \fi
       \ifx\currentstructurecomponentlist\currentstructurecomponenttitle \else
-        list     = \!!bs\detokenize\expandafter{\currentstructurecomponentlist}\!!es,
+          list     {\detokenize\expandafter{\currentstructurecomponentlist}}
       \fi
-      },
-    \ifx\p_hasnumber\v!yes
-      prefixdata = {
-          prefix        = "#2\c!prefix",
-          separatorset  = "#2\c!prefixseparatorset",
-          conversion    = \!!bs#2\c!prefixconversion\!!es,
-          conversionset = "#2\c!prefixconversionset",
-          set           = "#2\c!prefixset",
-      %   segments      = "#2\c!prefixsegments",
-          segments      = "\p_prefixsegments",
-          connector     = \!!bs#2\c!prefixconnector\!!es,
-      },
-      numberdata = { % more helpers here, like compact elsewhere
-          numbers       = structures.counters.compact("\currentcounter",nil,true),
-          group         = "#2\c!group",
-          groupsuffix   = \!!bs#2\c!groupsuffix\!!es,
-          counter       = "\currentcounter",
-          separatorset  = "#2\c!numberseparatorset",
-          conversion    = \!!bs#2\c!numberconversion\!!es,
-          conversionset = "#2\c!numberconversionset",
-          starter       = \!!bs#2\c!numberstarter\!!es,
-          stopper       = \!!bs#2\c!numberstopper\!!es,
-          segments      = "#2\c!numbersegments",
-      },
-    \fi
-      userdata = \!!bs\detokenize{#4}\!!es % will be converted to table at the lua end
-     }
-   }}%
-   \ctxcommand{setinternalreference(nil,nil,\nextinternalreference)}%
+      }
+  \ifx\p_hasnumber\v!yes
+      prefixdata {
+          prefix        {#2\c!prefix}
+          separatorset  {#2\c!prefixseparatorset}
+          conversion    {#2\c!prefixconversion}
+          conversionset {#2\c!prefixconversionset}
+          set           {#2\c!prefixset}
+       %  segments      {#2\c!prefixsegments}
+          segments      {\p_prefixsegments}
+          connector     {#2\c!prefixconnector}
+      }
+      numberdata { % more helpers here, like compact elsewhere
+          numbers       {\currentcounter}
+          group         {#2\c!group}
+          groupsuffix   {#2\c!groupsuffix}
+          counter       {\currentcounter}
+          separatorset  {#2\c!numberseparatorset}
+          conversion    {#2\c!numberconversion}
+          conversionset {#2\c!numberconversionset}
+          starter       {#2\c!numberstarter}
+          stopper       {#2\c!numberstopper}
+          segments      {#2\c!numbersegments}
+      }
+  \fi
+      userdata {\detokenize{#4}}
+   %}
+   \relax
+   \xdef\m_strc_counters_last_registered_index{\the\scratchcounter}%
+   \clf_setinternalreference internal \nextinternalreference\relax
    \xdef\m_strc_counters_last_registered_attribute  {\the\lastdestinationattribute}%
    \xdef\m_strc_counters_last_registered_synchronize{\ctxlatecommand{enhancelist(\m_strc_counters_last_registered_index)}}}
 

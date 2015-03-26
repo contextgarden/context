@@ -35,21 +35,21 @@
 
 \def\doMPLIBflushenvironment
   {%\writestatus\m!metapost{flushing environment}%
-   \cldcontext{metapost.tex.get()}%
+   \clf_mptexget
    \let\MPLIBflushenvironment\relax}% MPenvironments are depricated}
 
 \let\MPLIBflushenvironment\doMPLIBflushenvironment
 
 \unexpanded\def\MPLIBsetNtext#1% #2% box text
   {\MPLIBflushenvironment
-   \dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox\bgroup
+   \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup
      \meta_set_current_color
      \let\MPLIBflushenvironment\doMPLIBflushenvironment
      \let\next} % gobble open brace
 
 \unexpanded\def\MPLIBsetCtext#1#2% #3% box colorspec text
   {\MPLIBflushenvironment
-   \dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox\bgroup
+   \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup
      \directcolored[#2]%
      \meta_set_current_color % so, textcolor wins !
      \let\MPLIBflushenvironment\doMPLIBflushenvironment
@@ -58,18 +58,18 @@
 \let\MPLIBsettext\MPLIBsetNtext
 
 \unexpanded\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
-  {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
+  {\clf_mpgettext\MPtextbox #1%
    \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=#2,\c!sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
 
 \unexpanded\def\MPLIBfigure#1#2%
   {\setbox\scratchbox\hbox{\externalfigure[#1][\c!mask=#2]}%
-   \ctxlua{metapost.edefsxsy(\number\wd\scratchbox,\number\ht\scratchbox,0)}%
+   \clf_mpsetsxsy\wd\scratchbox\ht\scratchbox\zeropoint
    \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=\sx,\c!sy=\sy]{\box\scratchbox}\hss}}}
 
 % horrible (we could inline scale and matrix code):
 
 \unexpanded\def\MPLIBgettextscaledcm#1#2#3#4#5#6#7#8#9% 2-7: sx,rx,ry,sy,tx,ty
-  {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
+  {\clf_mpgettext\MPtextbox #1%
    \setbox\MPbox\hbox\bgroup
      \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}% does push pop ... will be changed to proper lua call (avoid small numbers)
        \vbox to \zeropoint\bgroup

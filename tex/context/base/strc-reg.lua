@@ -588,7 +588,7 @@ end
 
 function commands.storeregister(rawdata)
     local nofentries = storeregister(rawdata)
-    setinternalreference(nil,nil,rawdata.references.internal)
+    setinternalreference { internal = rawdata.references.internal }
     context(nofentries)
 end
 

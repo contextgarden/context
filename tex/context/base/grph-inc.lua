@@ -73,7 +73,9 @@ local new_latelua       = nodes.pool.latelua
 
 local context           = context
 
+local implement         = interfaces.implement
 local variables         = interfaces.variables
+
 local codeinjections    = backends.codeinjections
 local nodeinjections    = backends.nodeinjections
 
@@ -192,6 +194,7 @@ end
 figures                 = figures or { }
 local figures           = figures
 
+figures.images          = images
 figures.boxnumber       = figures.boxnumber or 0
 figures.defaultsearch   = true
 figures.defaultwidth    = 0
@@ -426,6 +429,9 @@ end
 function figures.registersuffix (suffix, target) register('list',   target,suffix ) end
 function figures.registerpattern(pattern,target) register('pattern',target,pattern) end
 
+implement { name = "registerfiguresuffix",  actions = register, arguments = { "'list'",    "string", "string" } }
+implement { name = "registerfigurepattern", actions = register, arguments = { "'pattern'", "string", "string" } }
+
 local last_locationset = last_locationset or nil
 local last_pathlist    = last_pathlist    or nil
 
@@ -462,6 +468,8 @@ function figures.setpaths(locationset,pathlist)
         report_inclusion("using paths % a",figure_paths)
     end
 end
+
+implement { name = "setfigurepaths", actions = figures.setpaths, arguments = { "string", "string" } }
 
 -- check conversions and handle it here
 
@@ -576,17 +584,13 @@ end
 
 figures.get = get
 
-function commands.figurevariable(category,tag,default)
-    context(get(category,tag,default))
-end
+implement { name = "figurestatus",   actions = { get, context }, arguments = { "'status'",  "string", "string" } }
+implement { name = "figurerequest",  actions = { get, context }, arguments = { "'request'", "string", "string" } }
+implement { name = "figureused",     actions = { get, context }, arguments = { "'used'",    "string", "string" } }
 
-function commands.figurestatus (tag,default) context(get("status", tag,default)) end
-function commands.figurerequest(tag,default) context(get("request",tag,default)) end
-function commands.figureused   (tag,default) context(get("used",   tag,default)) end
-
-function commands.figurefilepath() context(file.dirname (get("used","fullname"))) end
-function commands.figurefilename() context(file.nameonly(get("used","fullname"))) end
-function commands.figurefiletype() context(file.extname (get("used","fullname"))) end
+implement { name = "figurefilepath", actions = { get, file.dirname,  context }, arguments = { "'used'", "'fullname'" } }
+implement { name = "figurefilename", actions = { get, file.nameonly, context }, arguments = { "'used'", "'fullname'" } }
+implement { name = "figurefiletype", actions = { get, file.extname,  context }, arguments = { "'used'", "'fullname'" } }
 
 -- todo: local path or cache path
 
@@ -1098,8 +1102,8 @@ function figures.identify(data)
     local list = identifiers.list -- defined at the end
     for i=1,#list do
         local identifier = list[i]
-        data = identifier(data)
-        if data.status.status > 0 then
+        local data = identifier(data)
+        if data.status and data.status.status > 0 then
             break
         end
     end
@@ -1560,8 +1564,8 @@ local epstopdf = {
         -dBATCH
         -dAutoRotatePages=/None
         -dPDFSETTINGS=/%presets%
-        -dCompatibilityLevel=%level%
         -dEPSCrop
+        -dCompatibilityLevel=%level%
         -sOutputFile="%newname%"
         "%oldname%"
         -c quit
@@ -1615,6 +1619,7 @@ function epsconverter.pdf(oldname,newname,resolution) -- the resolution interfac
         newname = newname,
         oldname = tmpname,
         presets = presets,
+        level   = tostring(level),
     } )
     if tmpname ~= oldname then
         os.remove(tmpname)
@@ -1634,10 +1639,11 @@ converters.pdf     = pdfconverter
 -- pdfconverter.stripped = function(oldname,newname)
 --     local pdftoeps = programs.pdftoeps -- can be changed
 --     local epstopdf = programs.epstopdf -- can be changed
---     local presets = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
---     local tmpname = newname .. ".tmp"
---     runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets })
---     runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets })
+--     local presets  = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
+--     local level    = codeinjections.getformatoption("pdf_level") or "1.3"
+--     local tmpname  = newname .. ".tmp"
+--     runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets, level = level })
+--     runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets, level = level })
 --     os.remove(tmpname)
 -- end
 --
@@ -1833,6 +1839,8 @@ function bases.use(basename)
     end
 end
 
+implement { name = "usefigurebase", actions = bases.use, arguments = "string" }
+
 local function bases_find(basename,askedlabel)
     if trace_bases then
         report_inclusion("checking for %a in base %a",askedlabel,basename)
@@ -1986,8 +1994,44 @@ end
 
 -- interfacing
 
-commands.setfigurelookuporder = figures.setorder
+implement {
+    name      = "figure_push",
+    scope     = "private",
+    actions   = figures.push,
+    arguments = {
+        {
+            { "name" },
+            { "label" },
+            { "page" },
+            { "size" },
+            { "object" },
+            { "prefix" },
+            { "cache" },
+            { "format" },
+            { "preset" },
+            { "controls" },
+            { "resources" },
+            { "preview" },
+            { "display" },
+            { "mask" },
+            { "conversion" },
+            { "resolution" },
+            { "color" },
+            { "repeat" },
+            { "width", "dimen" },
+            { "height", "dimen" },
+        }
+    }
+}
 
---
+-- beware, we get a number passed by default
 
-figures.images = images
+implement { name = "figure_pop",      scope = "private", actions = figures.pop }
+implement { name = "figure_done",     scope = "private", actions = figures.done }
+implement { name = "figure_dummy",    scope = "private", actions = figures.dummy }
+implement { name = "figure_identify", scope = "private", actions = figures.identify }
+implement { name = "figure_scale",    scope = "private", actions = figures.scale }
+implement { name = "figure_check",    scope = "private", actions = figures.check }
+implement { name = "figure_include",  scope = "private", actions = figures.include }
+
+implement { name = "setfigurelookuporder", actions = figures.setorder, arguments = "string" }

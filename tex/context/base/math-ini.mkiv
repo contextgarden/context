@@ -192,9 +192,9 @@
 
 % these commands are semi-public but should not be used directly (lua names wil change)
 
-\unexpanded\def\math_set_attribute   #1#2{\ifmmode\ctxcommand{setmathattribute("#1","#2")}\fi}
-\unexpanded\def\math_set_alphabet      #1{\ifmmode\ctxcommand{setmathalphabet("#1")}\fi}
-\unexpanded\def\math_set_font_style    #1{\ifmmode\ctxcommand{setmathstyle("#1")}\fi}
+\unexpanded\def\math_set_attribute   #1#2{\ifmmode\clf_setmathattribute{#1}{#2}\fi}
+\unexpanded\def\math_set_alphabet      #1{\ifmmode\clf_setmathalphabet{#1}\fi}
+\unexpanded\def\math_set_font_style    #1{\ifmmode\clf_setmathstyle{#1}\fi}
 \unexpanded\def\math_set_font_alternate#1{\ifmmode\ctxcommand{setmathalternate(\number\defaultmathfamily,"#1")}\fi}
 
 \installcorenamespace{mathstylealternate} % might become a setuphandler
@@ -218,13 +218,13 @@
 
 \unexpanded\def\mathaltcal{\math_set_font_alternate{cal}\cal} % ss01 in xits
 
-\let\setmathattribute            \math_set_attribute
-\let\setmathalphabet             \math_set_alphabet
-\let\setmathfontstyle            \math_set_font_style
-\let\setmathfontalternate        \math_set_font_alternate
+\let\setmathattribute         \math_set_attribute
+\let\setmathalphabet          \math_set_alphabet
+\let\setmathfontstyle         \math_set_font_style
+\let\setmathfontalternate     \math_set_font_alternate
 \let\setmathfontstylealternate\math_set_font_style_alternate
 
-\let\mathalternate               \math_set_font_alternate % obsolete
+\let\mathalternate            \math_set_font_alternate % obsolete
 
 \unexpanded\def\mathupright   {\math_set_attribute\s!regular\s!tf\math_set_font_style_alternate\s!tf}
 \unexpanded\def\mathdefault   {\math_set_attribute\s!regular\s!it\math_set_font_style_alternate\s!it}

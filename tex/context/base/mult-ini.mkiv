@@ -368,7 +368,7 @@
    \doifinsetelse{#1}{\currentresponses,all}\mult_messages_start_yes\mult_messages_start_nop{#2}}
 
 \def\mult_messages_start_yes#1#2\stopmessages
-  {\ctxcommand{setinterfacemessages("#1",\!!bs#2\!!es)}%
+  {\clf_setinterfacemessages{#1}{#2}%
    \egroup}
 
 \def\mult_messages_start_nop#1#2\stopmessages
@@ -378,13 +378,13 @@
 
 \unexpanded\def\setinterfacemessage#1#2#3%
   {\ifcsname\m!prefix!#1\endcsname\else\setgvalue{\m!prefix!#1}{#1}\fi
-   \ctxcommand{setinterfacemessage("#1","#2",\!!bs#3\!!es)}}
+   \clf_setinterfacemessage{#1}{#2}{#3}}
 
-\unexpanded\def\setmessagetext   #1#2{\edef\currentmessagetext{\ctxcommand{getmessage("#1","#2")}}}
-\unexpanded\def\getmessage       #1#2{\ctxcommand{getmessage("#1","#2")}}
-\unexpanded\def\doifelsemessage  #1#2{\ctxcommand{doifelsemessage("#1","#2")}}
-\unexpanded\def\showmessage    #1#2#3{\ctxcommand{showmessage("#1","#2",\!!bs#3\!!es)}}
-\unexpanded\def\writestatus      #1#2{\ctxcommand{writestatus("#1",\!!bs#2\!!es)}}
+\unexpanded\def\setmessagetext   #1#2{\edef\currentmessagetext{\clf_getmessage{#1}{#2}}}
+\unexpanded\def\getmessage       #1#2{\clf_getmessage{#1}{#2}}
+\unexpanded\def\doifelsemessage  #1#2{\clf_doifelsemessage{#1}{#2}}
+\unexpanded\def\showmessage    #1#2#3{\clf_showmessage{#1}{#2}{#3}}
+\unexpanded\def\writestatus      #1#2{\clf_writestatus{#1}{#2}}
 
 %D \macros
 %D   {ifshowwarnings, ifshowmessages}
@@ -730,11 +730,11 @@
 % temporary mkiv hack (we can best just store the whole table in memory)
 
 \unexpanded\def\setinterfaceconstant#1#2%
-  {\ctxcommand{setinterfaceconstant("#1","#2")}%
+  {\clf_setinterfaceconstant{#1}{#2}%
    \expandafter\def\csname\c!prefix!#1\endcsname{#1}}
 
 \unexpanded\def\setinterfacevariable#1#2%
-  {\ctxcommand{setinterfacevariable("#1","#2")}%
+  {\clf_setinterfacevariable{#1}{#2}%
    \expandafter\def\csname\v!prefix!#1\endcsname{#2}}
 
 %D \macros
@@ -763,7 +763,7 @@
 %D part is needed, we use a \type{-}:
 
 \unexpanded\def\setinterfaceelement#1#2%
-  {\ctxcommand{setinterfaceelement("#1","#2")}%
+  {\clf_setinterfaceelement{#1}{#2}%
    \ifcsname\e!prefix!#1\endcsname
      \doifnotvalue{\e!prefix!#1}{#2}{\setvalue{\e!prefix!#1}{#2}}%
    \else

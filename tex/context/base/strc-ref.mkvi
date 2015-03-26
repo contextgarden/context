@@ -777,7 +777,7 @@
 
 \def\thisissomeinternal#kind#name% only for old time sake
   {\begingroup
-   \ctxcommand{setinternalreference("","#kind:#name")}%
+   \clf_setinternalreference reference {#kind:#name}\relax
    \hbox attr \destinationattribute\lastdestinationattribute{}%
    \endgroup}
 

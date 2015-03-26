@@ -514,10 +514,6 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
             elseif nslistwise then
                 local a = getattr(current,attribute)
                 if a and attrib ~= a and nslistwise[a] then -- viewerlayer
--- if not stacked then
---     stacked = true
---     nsbegin()
--- end
                     head = insert_node_before(head,current,copied(nsdata[a]))
                     local list = stacker(namespace,attribute,content,a)
                     setfield(current,"list",list)
@@ -540,10 +536,10 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
         if check then
             local a = getattr(current,attribute) or unsetvalue
             if a ~= attrib then
-if not stacked then
-    stacked = true
-    nsbegin()
-end
+                if not stacked then
+                    stacked = true
+                    nsbegin()
+                end
                 local n = nsstep(a)
                 if n then
                     head = insert_node_before(head,current,tonut(n)) -- a

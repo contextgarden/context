@@ -27,6 +27,13 @@ local sequencers        = utilities.sequencers
 local textlineactions   = resolvers.openers.helpers.textlineactions
 local setmetatableindex = table.setmetatableindex
 
+local scanners          = tokens.scanners
+local scanstring        = scanners.string
+local setters           = tokens.setters
+local setmacro          = setters.macro
+
+local scanners          = interfaces.scanners
+
 --[[ldx--
 <p>We will hook regime handling code into the input methods.</p>
 --ldx]]--
@@ -197,6 +204,7 @@ end
 local function disable()
     currentregime = "utf"
     sequencers.disableaction(textlineactions,"regimes.process")
+    return currentregime
 end
 
 local function enable(regime)
@@ -207,6 +215,7 @@ local function enable(regime)
         currentregime = regime
         sequencers.enableaction(textlineactions,"regimes.process")
     end
+    return currentregime
 end
 
 regimes.toregime   = toregime
@@ -258,33 +267,34 @@ end
 
 -- interface:
 
-commands.enableregime  = enable
-commands.disableregime = disable
-
-commands.pushregime    = push
-commands.popregime     = pop
-
-function commands.currentregime()
-    context(currentregime)
+scanners.enableregime  = function()
+    setmacro("currentregime",enable(scanstring()))
 end
+
+scanners.disableregime = function()
+    setmacro("currentregime",disable())
+end
+
+scanners.pushregime = push
+scanners.popregime  = pop
 
 local stack = { }
 
-function commands.startregime(regime)
+scanners.startregime = function(regime)
     insert(stack,currentregime)
     if trace_translating then
         report_translating("start using %a",regime)
     end
-    enable(regime)
+    setmacro("currentregime",enable(regime))
 end
 
-function commands.stopregime()
+scanners.stopregime = function()
     if #stack > 0 then
         local regime = remove(stack)
         if trace_translating then
             report_translating("stop using %a",regime)
         end
-        enable(regime)
+        setmacro("currentregime",enable(regime))
     end
 end
 

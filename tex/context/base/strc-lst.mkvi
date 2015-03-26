@@ -129,30 +129,31 @@
   {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...
    \edef\p_location{\listparameter\c!location}%
    \setnextinternalreference
-   \edef\currentlistnumber{\ctxcommand{addtolist{
-        references = {
-            internal = \nextinternalreference,
-            block    = "\currentsectionblock", % handy for lists, like bibl
-            section  = structures.sections.currentid(),
-          % location = "\p_location",
-        },
-        metadata = {
-            kind     = "\listparameter\c!type",
-            name     = "\currentlist",
-            level    = structures.sections.currentlevel(),
-            catcodes = \the\catcodetable,
-        },
-        userdata = \!!bs\detokenize{#userdata}\!!es % will be converted to table at the lua end
-   }}}%
+   \scratchcounter\clf_addtolist
+        references  {
+            internal \nextinternalreference
+            block    {\currentsectionblock}
+          % section  structures.sections.currentid()
+          % location {\p_location}
+        }
+        metadata {
+            kind     {\listparameter\c!type}
+            name     {\currentlist}
+          % level    structures.sections.currentlevel()
+            catcodes \catcodetable
+        }
+        userdata {\detokenize{#userdata}}
+   \relax
+   \edef\currentlistnumber{\the\scratchcounter}%
    \ifx\p_location\v!here
      % this branch injects nodes !
      \expanded{\ctxlatecommand{enhancelist(\currentlistnumber)}}%
-     \ctxcommand{setinternalreference(nil,nil,\nextinternalreference)}% will change
+     \clf_setinternalreference internal \nextinternalreference\relax % this will change
      \xdef\currentstructurelistattribute{\the\lastdestinationattribute}%
      \dontleavehmode\hbox attr \destinationattribute \lastdestinationattribute{}% todo
    \else
      % and this one doesn't
-     \ctxcommand{enhancelist(\currentlistnumber)}%
+     \clf_enhancelist\currentlistnumber\relax
    \fi
    \endgroup}
 
@@ -324,42 +325,42 @@
 
 \def\currentstructurelistnumber{0}     % injection
 \def\currentlistmethod         {entry} % typesetting
-\def\currentlistindex          {0}     % typesetting
+\def\currentlistindex          {0}     % typesetting (maybe also a real counter)
 
 \def\structurelistlocation
-  {\ctxcommand{listlocation(\currentlistindex)}}
+  {\clf_listlocation\numexpr\currentlistindex\relax}
 
 \def\structurelistrealpagenumber
-  {\ctxcommand{listrealpage("\currentlist",\currentlistindex)}}
+  {\clf_listrealpage{\currentlist}\numexpr\currentlistindex\relax}
 
 \unexpanded\def\structurelistpagenumber
   {\dostarttagged\t!listpage\empty
-   \ctxcommand{listprefixedpage(
-    "\currentlist",
-    \currentlistindex,
-    {
-     separatorset  = "\listparameter\c!pageprefixseparatorset",
-     conversionset = "\listparameter\c!pageprefixconversionset",
-     set           = "\listparameter\c!pageprefixset",
-     segments      = "\listparameter\c!pageprefixsegments",
-     connector     = \!!bs\listparameter\c!pageprefixconnector\!!es,
-    },
-    {
-     prefix        = "\listparameter\c!pageprefix",
-     conversionset = "\listparameter\c!pageconversionset",
-     starter       = \!!bs\listparameter\c!pagestarter\!!es,
-     stopper       = \!!bs\listparameter\c!pagestopper\!!es,
+   \clf_listprefixedpage
+     {\currentlist}
+     \currentlistindex
+     {
+       separatorset  {\listparameter\c!pageprefixseparatorset}
+       conversionset {\listparameter\c!pageprefixconversionset}
+       set           {\listparameter\c!pageprefixset}
+       segments      {\listparameter\c!pageprefixsegments}
+       connector     {\listparameter\c!pageprefixconnector}
      }
-   )}%
+     {
+       prefix        {\listparameter\c!pageprefix}
+       conversionset {\listparameter\c!pageconversionset}
+       starter       {\listparameter\c!pagestarter}
+       stopper       {\listparameter\c!pagestopper}
+     }
+   \relax
    \dostoptagged}
 
 \unexpanded\def\structurelistuservariable#name%
   {\dostarttagged\t!listdata{#name}%
-   \ctxcommand{listuserdata("\currentlist",\currentlistindex,"#name")}%
+   \clf_listuserdata{\currentlist}\currentlistindex{#name}%
    \dostoptagged}
 
 \def\rawstructurelistuservariable#name%
-  {\ctxcommand{listuserdata("\currentlist",\currentlistindex,"#name")}}
+  {\clf_listuserdata{\currentlist}\currentlistindex{#name}}
 
 \unexpanded\def\structurelistfirst {\structurelistuservariable\s!first } % s!
 \unexpanded\def\structurelistsecond{\structurelistuservariable\s!second} % s!
@@ -368,62 +369,66 @@
 \def\rawstructurelistsecond{\rawstructurelistuservariable\s!second} % s! % was \unexpanded
 
 \unexpanded\def\doifstructurelisthaspageelse
-  {\ctxcommand{doiflisthaspageelse("\currentlist",\currentlistindex)}}
+  {\clf_doiflisthaspageelse{\currentlist}\numexpr\currentlistindex\relax}
 
 \unexpanded\def\doifstructurelisthasnumberelse
-  {\ctxcommand{doiflisthasnumberelse("\currentlist",\currentlistindex)}}
+  {\clf_doiflisthasnumberelse{\currentlist}\numexpr\currentlistindex\relax}
 
 \unexpanded\def\structurelistgenerictitle
   {\dostarttagged\t!listcontent\empty
-   \ctxcommand{listtitle("\currentlist",\currentlistindex)}%
+   \clf_listtitle{\currentlist}\currentlistindex\relax
    \dostoptagged}
 
 \unexpanded\def\structurelistgenericnumber % tricky, we need to delay tagging as we have nested lua calls
   {\dostarttagged\t!listtag\empty
-   \ctxcommand{listprefixednumber("\currentlist",\currentlistindex, {
-        prefix        = "\listparameter\c!prefix",
-        separatorset  = "\listparameter\c!prefixseparatorset",
-        conversionset = "\listparameter\c!prefixconversionset",
-        starter       = \!!bs\listparameter\c!prefixstarter\!!es,
-        stopper       = \!!bs\listparameter\c!prefixstopper\!!es,
-        set           = "\listparameter\c!prefixset",
-        segments      = "\listparameter\c!prefixsegments",
-        connector     = \!!bs\listparameter\c!prefixconnector\!!es,
-    },
-    {
-        separatorset  = "\listparameter\c!numberseparatorset",
-        conversionset = "\listparameter\c!numberconversionset",
-        starter       = \!!bs\listparameter\c!numberstarter\!!es,
-        stopper       = \!!bs\listparameter\c!numberstopper\!!es,
-        segments      = "\listparameter\c!numbersegments",
-    } )}%
+   \clf_listprefixednumber
+        {\currentlist}
+        \currentlistindex
+        {
+            prefix        {\listparameter\c!prefix}
+            separatorset  {\listparameter\c!prefixseparatorset}
+            conversionset {\listparameter\c!prefixconversionset}
+            starter       {\listparameter\c!prefixstarter}
+            stopper       {\listparameter\c!prefixstopper}
+            set           {\listparameter\c!prefixset}
+            segments      {\listparameter\c!prefixsegments}
+            connector     {\listparameter\c!prefixconnector}
+        }
+        {
+            separatorset  {\listparameter\c!numberseparatorset}
+            conversionset {\listparameter\c!numberconversionset}
+            starter       {\listparameter\c!numberstarter}
+            stopper       {\listparameter\c!numberstopper}
+            segments      {\listparameter\c!numbersegments}
+        }
+   \relax
    \dostoptagged}
 
 % TODO: pass extra tag name (contents, figures, bibliography ...)
 
 \unexpanded\def\strc_lists_place_current#list#criterium#reference#extras#order% beware, not a user command
   {\dostarttaggedchained\t!list\empty\??list
-   \ctxcommand{processlist{
-        names     = "#list",
-        criterium = "#criterium",
-        reference = "#reference",
-        extras    = "#extras",
-        order     = "#order"
-   }}%
+   \clf_processlist
+        names     {#list}
+        criterium {#criterium}
+        reference {#reference}
+        extras    {#extras}
+        order     {#order}
+   \relax
    \dostoptagged}
 
 \unexpanded\def\strc_lists_analyze#list#criterium#reference%
-  {\ctxcommand{analyzelist{
-        names     = "#list",
-        criterium = "#criterium",
-        reference = "#reference",
-   }}}
+  {\clf_analyzelist
+        names     {#list}
+        criterium {#criterium}
+        reference {#reference}
+   \relax}
 
 \def\firststructureelementinlist#list%
   {\ctxcommand{firstinset("#list")}}
 
 \def\structurelistsize
-  {\ctxcommand{listsize()}}
+  {\clf_listsize}
 
 %D Depending on what kind of list we have (e.g.\ a section related one)
 %D processors can be defined.
@@ -467,13 +472,13 @@
    \listextraparameter\c!after}
 
 \unexpanded\def\strclistsentryprocess#tag#method#index#extra% This one is called at the lua end!
-  {\ctxcommand{pushlist(#index)}%
+  {\clf_pushlist#index\relax
    \edef\currentlist      {#tag}%
    \edef\currentlistmethod{#method}%
    \edef\currentlistindex {#index}%
    \edef\currentlistextra {#extra}%
    \strc_lists_entry_process
-   \ctxcommand{poplist()}}
+   \clf_poplist}
 
 % lists that have a number/title are kind of generic and can share code
 
@@ -487,7 +492,7 @@
    \strc_lists_apply_renderingsetup}
 
 \installstructurelistprocessor\s!command
-  {\ctxcommand{listuserdata("\currentlist",\currentlistindex,"\s!command")}}
+  {\clf_listuserdata{\currentlist}\currentlistindex{\s!command}}
 
 \installstructurelistprocessor{section}
   {\let\currentlistentrynumber    \structurelistgenericnumber
@@ -504,7 +509,7 @@
 % example of usage elsewhere:
 %
 % \installstructcurelistprocessor{pubs:userdata}
-%   {\ctxcommand{listuserdata("\currentlist",\currentlistindex,"bibref")}}
+%   {\clf_listuserdata{\currentlist}\currentlistindex{bibref}}
 
 %D List symbols are used in interactive documents where no numbers
 %D are used but nevertheless structure is present. Beware, the list
@@ -595,7 +600,7 @@
   {\currentlistentrynumber}
 
 \setvalue{\??listsymbollabels\v!yes}% auto (use value stored in tuc file)
-  {\edef\currentlistlabel{\ctxcommand{listlabel(\currentlistindex,"\currentlistlabel")}}%
+  {\edef\currentlistlabel{\clf_listlabel\currentlistindex{\currentlistlabel}}%
    \leftlabeltext\currentlistlabel
    \listparameter\c!starter
    \currentlistentrynumber

@@ -43,16 +43,16 @@
    \fi}
 
 \unexpanded\def\tabl_tabulate_hook_b_first
-  {\ctxcommand{bcolumn("tabulate:\the\c_anch_tabs:\the\c_tabl_tabulate_column",true)}}
+  {\clf_bposcolumnregistered{tabulate:\the\c_anch_tabs:\the\c_tabl_tabulate_column}}
 
 \unexpanded\def\tabl_tabulate_hook_b_next
-  {\ctxcommand{bcolumn("tabulate:\the\c_anch_tabs:\the\c_tabl_tabulate_column")}}
+  {\clf_bposcolumn{tabulate:\the\c_anch_tabs:\the\c_tabl_tabulate_column}}
 
 \unexpanded\def\tabl_tabulate_hook_e_first
-  {\ctxcommand{ecolumn(true)}}
+  {\clf_eposcolumnregistered}
 
 \unexpanded\def\tabl_tabulate_hook_e_next
-  {\ctxcommand{ecolumn()}}
+  {\clf_eposcolumn}
 
 % \appendtoks \registerparoptions \to \everypar
 

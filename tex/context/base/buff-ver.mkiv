@@ -337,14 +337,14 @@
 \def\buff_verbatim_type_normal#1%
   {\buff_verbatim_initialize_type_two
    \dostarttaggedchained\t!verbatim\currenttype\??type
-   \ctxcommand{typestring{
-     data    = \!!bs\detokenize{#1}\!!es,
-     tab     = "\typeparameter\c!tab",
-     method  = "\p_buff_option",
-     nature  = "inline",
-     compact = "\typeparameter\c!compact",        % none | all | last (all needed in tabulate etc for manuals)
-     escape  = \!!bs\typeparameter\c!escape\!!es, % new but rather useless imo (escaping in general is not used much)
-   }}%
+   \clf_type
+     data    {\detokenize{#1}}%
+     tab     {\typeparameter\c!tab}%
+     option  {\p_buff_option}%
+     compact {\typeparameter\c!compact}% % none | all | last (all needed in tabulate etc for manuals)
+     escape  {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
+   % nature  {inline}% is default
+   \relax
    \dostoptagged
    \buff_verbatim_right_of_type
    \egroup}
@@ -352,13 +352,14 @@
 \def\buff_verbatim_type_nested#1%
   {\buff_verbatim_initialize_type_two
    \dostarttaggedchained\t!verbatim\currenttype\??type
-   \ctxcommand{typestring{
-     data   = \!!bs\detokenize{#1}\!!es,
-     tab    = "\typeparameter\c!tab",
-     method = "nested", % we force a special visualizer
-     option = "\p_buff_option", % extra visualizer (maybe: nested,\typeparameter\c!option)
-     nature = "inline",
-   }}%
+   \clf_type
+     data   {\detokenize{#1}}%
+     tab    {\typeparameter\c!tab}%
+     option {\p_buff_option}% % extra visualizer (maybe: nested,\typeparameter\c!option)
+     escape {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
+   % nature {inline}% is default
+     method {nested}%
+   \relax
    \dostoptagged
    \buff_verbatim_right_of_type
    \egroup
@@ -520,15 +521,15 @@
    \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
    \beginofverbatimlines
    \dostarttagged\t!verbatimlines\empty
-   \ctxcommand{typebuffer {
-     name   = "_typing_",
-     strip  = "\typingparameter\c!strip",
-     range  = "\typingparameter\c!range",
-     tab    = "\typingparameter\c!tab",
-     method = "\p_buff_option",
-     escape = \!!bs\typingparameter\c!escape\!!es,
-     nature = "display",
-   }}%
+   \clf_typebuffer
+     name    {_typing_}%
+     strip   {\typingparameter\c!strip}%
+     range   {\typingparameter\c!range}%
+     tab     {\typingparameter\c!tab}%
+     method  {\p_buff_option}%
+     escape  {\typingparameter\c!escape}%
+     nature  {display}%
+   \relax
    \dostoptagged
    \endofverbatimlines
    \dostoptagged
@@ -639,15 +640,15 @@
    \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
    \beginofverbatimlines
    \dostarttagged\t!verbatimlines\empty
-   \ctxcommand{typefile {
-      name   = "#2",
-      strip  = "\typingparameter\c!strip",
-      range  = "\typingparameter\c!range",
-      regime = "\currentregime",
-      tab    = "\typingparameter\c!tab",
-      method = "\p_buff_option",
-      nature = "display",
-    }}%
+   \clf_typefile
+      name   {#2}%
+      strip  {\typingparameter\c!strip}%
+      range  {\typingparameter\c!range}%
+      regime {\currentregime}%
+      tab    {\typingparameter\c!tab}%
+      method {\p_buff_option}%
+      nature {display}%
+   \relax
    \dostoptagged
    \endofverbatimlines
    \dostoptagged
@@ -812,16 +813,16 @@
    \dostarttaggedchained\t!verbatimblock{#1}\??typing
    \beginofverbatimlines
    \dostarttagged\t!verbatimlines\empty
-   \ctxcommand{typebuffer {
-     name   = "#2",
-     strip  = "\typingparameter\c!strip",
-     range  = "\typingparameter\c!range",
-     regime = "\currentregime",
-     tab    = "\typingparameter\c!tab",
-     method = "\p_buff_option",
-     escape = \!!bs\typingparameter\c!escape\!!es,
-     nature = "display",
-   }}%
+   \clf_typebuffer
+     name   {#2}%
+     strip  {\typingparameter\c!strip}%
+     range  {\typingparameter\c!range}%
+     regime {\currentregime}%
+     tab    {\typingparameter\c!tab}%
+     method {\p_buff_option}%
+     escape {\typingparameter\c!escape}%
+   % nature {display}%
+   \relax
    \dostoptagged
    \endofverbatimlines
    \dostoptagged
@@ -856,13 +857,13 @@
 
 \def\buff_verbatim_process_indeed#1#2%
   {\edef\currenttyping{#1}%
-   \ctxcommand{processbuffer {
-     name   = "#2",
-     strip  = "\typingparameter\c!strip",
-     tab    = "\typingparameter\c!tab",
-     method = "\p_buff_option",
-     nature = "direct",
-   }}}
+   \clf_processbuffer
+     name   {#2}%
+     strip  {\typingparameter\c!strip}%
+     tab    {\typingparameter\c!tab}%
+     method {\p_buff_option}%
+     nature {direct}%
+   \relax}
 
 % so far for obsolete
 

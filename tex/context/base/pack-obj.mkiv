@@ -366,7 +366,7 @@
 % no undefined test ! ! ! ! (pdftex fails on undefined objects)
 
 \unexpanded\def\pack_objects_register_reference#1#2#3{\normalexpanded{\noexpand\ctxlatecommand{saveobject("#1::#2",#3,\noexpand\the\realpageno)}}}
-\unexpanded\def\pack_objects_overload_reference#1#2#3{\ctxcommand{setobject("#1::#2",#3,\the\realpageno)}}
+\unexpanded\def\pack_objects_overload_reference#1#2#3{\clf_setobject{#1::#2}#3 \realpageno\relax}
 
 \unexpanded\def\dosetobjectreference
   {\ifcase\crossreferenceobject
@@ -382,8 +382,8 @@
 \def\defaultobjectreference#1#2{0} % driver dependent
 \def\defaultobjectpage     #1#2{\realfolio}
 
-\unexpanded\def\dogetobjectreference    #1#2#3{\xdef#3{\ctxcommand{objectnumber("#1::#2","\defaultobjectreference{#1}{#2}")}}}
-\unexpanded\def\dogetobjectreferencepage#1#2#3{\xdef#3{\ctxcommand{objectpage("#1::#2","\defaultobjectpage{#1}{#2}")}}}
+\unexpanded\def\dogetobjectreference    #1#2#3{\xdef#3{\clf_objectnumber{#1::#2}{\defaultobjectreference{#1}{#2}}}}
+\unexpanded\def\dogetobjectreferencepage#1#2#3{\xdef#3{\clf_objectpage  {#1::#2}{\defaultobjectpage     {#1}{#2}}}}
 
 \unexpanded\def\setobject     {\driverreferenced\pack_objects_set1}
 \unexpanded\def\settightobject{\driverreferenced\pack_objects_set0}
@@ -407,6 +407,6 @@
    \fi}
 
 \unexpanded\def\doifobjectreferencefoundelse#1#2%
-  {\ctxcommand{doifobjectreferencefoundelse("#1::#2")}}
+  {\clf_doifobjectreferencefoundelse{#1::#2}}
 
 \protect \endinput
