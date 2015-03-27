@@ -393,7 +393,7 @@
         \setexpandednoteparameter\s!insert{\namednoteparameter\currentnoteparent\s!insert}%
         \definenotation[\currentnote][\currentnoteparent][\c!type=\v!note]%
     \fi
-    \ctxcommand{definenote("\currentnote","insert",\number\currentnoteinsertionnumber)}%
+    \clf_definenote{\currentnote}{insert}\currentnoteinsertionnumber\relax
 \to \everydefinenote
 
 % maybe we will share this at some point:
@@ -438,7 +438,7 @@
         \strc_notes_inject_dummy
      \else
        \begingroup
-       \edef\currentnotenumber{\ctxcommand{storenote("\currentnote",\currentconstructionlistentry)}}%
+       \edef\currentnotenumber{\clf_storenote{\currentnote}\currentconstructionlistentry}%
        \settrue\processingnote
        \ifconditional\c_strc_notes_skip
          \globallet\lastnotesymbol\strc_notes_inject_symbol_nop
@@ -520,7 +520,7 @@
    \endcsname}
 
 \setvalue{\??noteinteractioninline\v!yes}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notenumberpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\clf_notenumberpage{\currentnote}\currentnotenumber)}%
    \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_style_color_inline        \strc_notes_set_style_color_inline_yes}
 
@@ -540,7 +540,7 @@
 % page(...) : we could have a dedicated one
 
 \setvalue{\??noteinteractiondisplay\v!yes}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\clf_notesymbolpage{\currentnote}\currentnotenumber)}%
    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
    \let \strc_notes_set_reference_attribute_text  \donothing
    \let \strc_notes_set_destination_attribute_text\donothing
@@ -553,7 +553,7 @@
    \let\strc_notes_set_style_color_display       \strc_notes_set_style_color_display_nop}
 
 \setvalue{\??noteinteractiondisplay\v!all}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\clf_notesymbolpage{\currentnote}\currentnotenumber)}%
    \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
   %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
    \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
@@ -562,7 +562,7 @@
    \let \strc_notes_set_style_color_display       \strc_notes_set_style_color_display_yes}
 
 \setvalue{\??noteinteractiondisplay\v!text}%
-  {\strc_references_get_simple_page_reference{page(\ctxcommand{notesymbolpage("\currentnote",\currentnotenumber)})}%
+  {\strc_references_get_simple_page_reference{page(\clf_notesymbolpage{\currentnote}\currentnotenumber)}%
    \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
   %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
    \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
@@ -587,7 +587,7 @@
   {\iftrialtypesetting
       % keep
    \else\ifx\currentcolorparameter\empty
-     \scratchcounter\ctxcommand{notedeltapage("\currentnote",\currentnotenumber)}\relax % todo calculate once
+     \scratchcounter\clf_notedeltapage{\currentnote}\currentnotenumber\relax % todo calculate once
      \setlocationcolorspecified\scratchcounter
    \fi\fi}
 
@@ -606,7 +606,7 @@
 % in mkii the pointer only showed up in pagewise notes
 
 \unexpanded\def\strc_notes_inject_pointer % todo calculate once
-  {\ifcase\ctxcommand{notedeltapage("\currentnote",\currentnotenumber)}\relax
+  {\ifcase\clf_notedeltapage{\currentnote}\currentnotenumber\relax\relax
      % unknown
    \or
      % same page
@@ -655,7 +655,7 @@
    \hbox \strc_notes_get_reference_attribute_symbol \bgroup
    \dostarttagged\t!descriptionsymbol\currentnote
    \dotagsetnotesymbol
-   \noteparameter\c!textcommand{\ctxcommand{noteprefixednumber("\currentnote",\currentnotenumber)}}%
+   \noteparameter\c!textcommand{\clf_noteprefixednumber{\currentnote}\currentnotenumber\relax}%
    % the next one can cycle so we need to make sure it has no advance width
    \doif{\noteparameter\c!indicator}\v!yes\strc_notes_inject_pointer
    \dostoptagged
@@ -1030,7 +1030,7 @@
 
 \def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
   {\settrue\c_strc_notes_delayed
-   \ctxcommand{setnotestate("\currentnote","store")}%
+   \clf_setnotestate{\currentnote}{store}%
    \page_inserts_set_location\currentnoteinsertion\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
    \global\count\currentnoteinsertionnumber\zerocount
    \global\dimen\currentnoteinsertionnumber\maxdimen
@@ -1205,7 +1205,7 @@
    \edef\currentnote{#tag}%
    \strc_constructions_initialize{#tag}%
    \strc_notes_synchronize
-   \edef\currentconstructionlistentry{\ctxcommand{notelistindex("\currentnote",#id)}}% index in list cache
+   \edef\currentconstructionlistentry{\clf_notelistindex{\currentnote}#id}% index in list cache
    % as we can have collected notes (e.g. in tables) we need to recover
    % \currentdescriptionattribute and \currentdescriptionsynchronize
    %
@@ -1226,7 +1226,7 @@
    }
 
 \unexpanded\def\strc_notes_inject_text % hm main?
-  {\ctxcommand{savedlisttitle("\currentconstructionmain",\currentconstructionlistentry)}}
+  {\clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax}
 
 \let\startpushnote\relax
 \let\stoppushnote \relax
@@ -1400,7 +1400,7 @@
   {\ifconditional\postponingnotes\else
      \global\settrue\postponingnotes
      \global\let\flushnotes\doflushnotes
-     \ctxcommand{postponenotes()}%
+     \clf_postponenotes
    \fi}
 
 \let\flushnotes\relax
@@ -1410,7 +1410,7 @@
      \begingroup
      \let\flushnotes   \relax
      \let\postponenotes\relax
-     \ctxcommand{flushpostponednotes()}% this also resets the states !
+     \clf_flushpostponednotes% this also resets the states !
      \global\setfalse\postponednote
      \global\setfalse\postponingnotes
      \global\let\flushnotes\relax
@@ -1457,20 +1457,20 @@
       \strc_counters_save{#tag}%
       \strc_counters_reset{#tag}%
    \fi
-   \ctxcommand{savenote("#tag","store")}}
+   \clf_savenote{#tag}{store}}
 
 \def\strc_notes_local_stop_step#tag%
   {\p_strc_notes_continue{\noteparameter\c!continue}%
    \ifx\p_strc_notes_continue\v!yes \else
      \strc_counters_restore{#tag}%
    \fi
-   \ctxcommand{restorenote("#tag")}}
+   \clf_restorenote{#tag}}
 
 \unexpanded\def\placelocalnotes
   {\dodoubleempty\strc_notes_local_place}
 
 \def\strc_notes_local_place[#tag][#settings]%
-  {\doif{\ctxcommand{getnotestate("#tag")}}{store}{\strc_notes_local_place_indeed{#settings}{#tag}}}
+  {\doif{\clf_getnotestate{#tag}}{store}{\strc_notes_local_place_indeed{#settings}{#tag}}}
 
 \def\strc_notes_local_place_indeed#settings#tag%
   {\begingroup
@@ -1530,7 +1530,7 @@
 
 \def\strc_notes_place_indeed#settings#tag% settings note
   {\edef\currentnote{#tag}% grouping ?
-   \doifelse{\ctxcommand{getnotestate("#tag")}}{store}
+   \doifelse{\clf_getnotestate{#tag}}{store}
      \strc_notes_local_place_indeed
      \strc_notes_global_place_indeed
      {#settings}{#tag}}
@@ -1550,7 +1550,7 @@
   {\setvalue{\??notealternative#alternative}{#command}}
 
 \unexpanded\def\doifnotescollected#tag%
-  {\ctxcommand{doifnotecontent("#tag")}}
+  {\clf_doifnotecontent{#tag}}
 
 \def\strc_notes_place_local_alternative % will be a setup (wrapper)
   {\doifnotescollected\currentnote
@@ -1577,7 +1577,7 @@
 
 % setups ?
 
-\def\flushlocalnotes#tag{\ctxcommand{flushnotes("#tag","store","\noteparameter\c!criterium")}}
+\def\flushlocalnotes#tag{\clf_flushnotes{#tag}{store}{\noteparameter\c!criterium}}
 
 \installnotealternative \v!none
   {\flushlocalnotes\currentnote}
@@ -1769,7 +1769,7 @@
 %D }
 %D \stoptyping
 
-\def\doifnoteonsamepageelse[#tag]{\ctxcommand{doifnoteonsamepageasprevious("#tag")}}
+\def\doifnoteonsamepageelse[#tag]{\clf_doifnoteonsamepageasprevious{#tag}}
 
 %D New trickery:
 

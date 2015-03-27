@@ -77,7 +77,7 @@
 % test \Word{test TEST \TeX} test
 
 \unexpanded\def\setcharactercasing[#1]%
-  {\ctxcommand{setcharactercasing("#1",\number\fontid\font)}}
+  {\clf_setcharactercasing{#1}\fontid\font}
 
 % todo: names casings
 
@@ -166,21 +166,15 @@
 %
 % here we keep the \groupedcommand
 
-% \def\typo_capitals_set_fake#1%
-%   {\edef\currentcapitals{#1}%
-%    \scratchcounter\fontid\font
-%    \usecapitalsstyleparameter\c!style
-%    \ctxcommand{setcharactercasing("\currentcapitals",\number\scratchcounter,\number\fontid\font)}}
-
 \def\typo_capitals_set_fake#1%
   {\edef\currentcapitals{#1}%
-   \ctxcommand{setcharactercasing("\currentcapitals",\number\fontid\font)}%
+   \clf_setcharactercasing{\currentcapitals}\fontid\font
    \usecapitalsstyleparameter\c!style}
 
 \def\typo_capitals_set_real#1%
   {\edef\currentcapitals{#1}%
    \sc
-   \ctxcommand{setcharactercasing("\currentcapitals",\number\fontid\font)}}
+   \clf_setcharactercasing{\currentcapitals}\fontid\font}
 
 \unexpanded\def\pseudosmallcapped{\groupedcommand{\typo_capitals_set_fake\v!WORD   }\donothing} % all upper
 \unexpanded\def\pseudoSmallcapped{\groupedcommand{\typo_capitals_set_fake\v!capital}\donothing} % one upper + font

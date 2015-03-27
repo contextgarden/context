@@ -622,4 +622,9 @@ end
 
 -- interface
 
-commands.setcharacterkerning = kerns.set
+interfaces.implement {
+    name      = "setcharacterkerning",
+    actions   = kerns.set,
+    arguments = "string"
+}
+

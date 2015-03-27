@@ -68,7 +68,13 @@ if newtoken then
 
     local set_macro    = newtoken.set_macro
 
-    set_macro = function(k,v) context.setvalue(k,v or '') end
+    set_macro = function(k,v,g)
+        if g == "global" then
+            context.setgvalue(k,v or '')
+        else
+            context.setvalue(k,v or '')
+        end
+    end
 
     local bits = {
         escape      = 2^ 0,

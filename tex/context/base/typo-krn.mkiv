@@ -35,13 +35,10 @@
      \typo_kerning_set
    \fi}
 
-% \def\typo_kerning_set
-%   {\ctxcommand{setcharacterkerning(\characterkerningparameter\c!factor)}}
-
 \def\typo_kerning_set
   {\usecharacterkerningstyleandcolor\c!style\c!color % goodie, maybe also strut
    \useaddfontfeatureparameter\characterkerningparameter
-   \ctxcommand{setcharacterkerning("\characterkerningparameter\c!factor")}}
+   \clf_setcharacterkerning{\characterkerningparameter\c!factor}}
 
 \unexpanded\def\resetcharacterkerning % fast one
   {\attribute\kernattribute\attributeunsetvalue}

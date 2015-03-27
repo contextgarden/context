@@ -38,6 +38,8 @@ local variables  = interfaces.variables
 local context    = context
 local commands   = commands
 
+local implement  = interfaces.implement
+
 -- state: store, insert, postpone
 
 local function store(tag,n)
@@ -69,9 +71,11 @@ end
 
 notes.store = store
 
-function commands.storenote(tag,n)
-    context(store(tag,n))
-end
+implement {
+    name      = "storenote",
+    actions   = { store, context },
+    arguments = { "string", "integer" }
+}
 
 local function get(tag,n) -- tricky ... only works when defined
     local nd = notedata[tag]
@@ -108,9 +112,11 @@ end
 
 notes.listindex = listindex
 
-function commands.notelistindex(tag,n)
-    context(listindex(tag,n))
-end
+implement {
+    name      = "notelistindex",
+    actions   = { listindex, context },
+    arguments = { "string", "integer" }
+}
 
 local function setstate(tag,newkind)
     local state = notestates[tag]
@@ -144,18 +150,28 @@ end
 notes.setstate        = setstate
 notes.getstate        = getstate
 
-commands.setnotestate = setstate
+implement {
+    name      = "setnotestate",
+    actions   = setstate,
+    arguments = { "string", "string" }
+}
 
-function commands.getnotestate(tag)
-    context(getstate(tag))
-end
+implement {
+    name      = "getnotestate",
+    actions   = { getstate, context },
+    arguments = "string"
+}
 
 function notes.define(tag,kind,number)
     local state = setstate(tag,kind)
     state.number = number
 end
 
-commands.definenote = notes.define
+implement {
+    name      = "definenote",
+    actions   = notes.define,
+    arguments = { "string", "string", "integer" }
+}
 
 function notes.save(tag,newkind)
     local state = notestates[tag]
@@ -184,8 +200,8 @@ function notes.restore(tag,forcedstate)
     end
 end
 
-commands.savenote    = notes.save
-commands.restorenote = notes.restore
+implement { name = "savenote",    actions = notes.save,    arguments = { "string", "string" } }
+implement { name = "restorenote", actions = notes.restore, arguments = { "string", "string" } }
 
 local function hascontent(tag)
     local ok = notestates[tag]
@@ -205,9 +221,11 @@ end
 
 notes.hascontent = hascontent
 
-function commands.doifnotecontent(tag)
-    commands.doif(hascontent(tag))
-end
+implement {
+    name      = "doifnotecontent",
+    actions   = { hascontent, commands.doif },
+    arguments = "string",
+}
 
 local function internal(tag,n)
     local nd = get(tag,n)
@@ -243,9 +261,11 @@ end
 
 notes.doifonsamepageasprevious = onsamepageasprevious
 
-function commands.doifnoteonsamepageasprevious(tag)
-    commands.doifelse(onsamepageasprevious(tag))
-end
+implement {
+    name      = "doifnoteonsamepageasprevious",
+    actions   = { onsamepageasprevious, commands.doifelse },
+    arguments = "string",
+}
 
 function notes.checkpagechange(tag) -- called before increment !
     local nd = notedata[tag] -- can be unset at first entry
@@ -277,7 +297,10 @@ function notes.postpone()
     end
 end
 
-commands.postponenotes = notes.postpone
+implement {
+    name    = "postponenotes",
+    actions = notes.postpone
+}
 
 function notes.setsymbolpage(tag,n,l)
     local l = l or listindex(tag,n)
@@ -297,7 +320,11 @@ function notes.setsymbolpage(tag,n,l)
     end
 end
 
-commands.setnotesymbolpage = notes.setsymbolpage
+implement {
+    name      = "setnotesymbolpage",
+    actions   = notes.setsymbolpage,
+    arguments = { "string", "integer" }
+}
 
 local function getsymbolpage(tag,n)
     local li = internal(tag,n)
@@ -351,11 +378,11 @@ notes.getsymbolpage = getsymbolpage
 notes.getnumberpage = getnumberpage
 notes.getdeltapage  = getdeltapage
 
-function commands.notesymbolpage(tag,n) context(getsymbolpage(tag,n)) end
-function commands.notenumberpage(tag,n) context(getnumberpage(tag,n)) end
-function commands.notedeltapage (tag,n) context(getdeltapage (tag,n)) end
+implement { name = "notesymbolpage", actions = { getsymbolpage, context }, arguments = { "string", "integer" } }
+implement { name = "notenumberpage", actions = { getnumberpage, context }, arguments = { "string", "integer" } }
+implement { name = "notedeltapage",  actions = { getdeltapage,  context }, arguments = { "string", "integer" } }
 
-function commands.flushnotes(tag,whatkind,how) -- store and postpone
+local function flushnotes(tag,whatkind,how) -- store and postpone
     local state = notestates[tag]
     local kind = state.kind
     if kind == whatkind then
@@ -411,14 +438,25 @@ function commands.flushnotes(tag,whatkind,how) -- store and postpone
     end
 end
 
-function commands.flushpostponednotes()
+local function flushpostponednotes()
     if trace_notes then
         report_notes("flushing all postponed notes")
     end
     for tag, _ in next, notestates do
-        commands.flushnotes(tag,"postpone")
+        flushnotes(tag,"postpone")
     end
 end
+
+implement {
+    name    = "flushpostponednotes",
+    actions = flushpostponednotes
+}
+
+implement {
+    name      = "flushnotes",
+    actions   = flushnotes,
+    arguments = { "string", "string",  "string" }
+}
 
 function notes.resetpostponed()
     if trace_notes then
@@ -432,13 +470,17 @@ function notes.resetpostponed()
     end
 end
 
-function commands.notetitle(tag,n)
-    command.savedlisttitle(tag,notedata[tag][n])
-end
+implement {
+    name      = "notetitle",
+    actions   = function(tag,n) lists.savedlisttitle(tag,notedata[tag][n]) end,
+    arguments = { "string", "integer" }
+}
 
-function commands.noteprefixednumber(tag,n,spec)
-    commands.savedlistprefixednumber(tag,notedata[tag][n])
-end
+implement {
+    name      = "noteprefixednumber",
+    actions   = function(tag,n) lists.savedlistprefixednumber(tag,notedata[tag][n]) end,
+    arguments = { "string", "integer" }
+}
 
 function notes.internalid(tag,n)
     local nd = get(tag,n)

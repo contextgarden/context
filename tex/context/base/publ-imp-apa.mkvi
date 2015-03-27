@@ -595,7 +595,7 @@
     \fastsetup{btx:apa:cite:author:year}
 \stopsetups
 
-\startsetups [btx:apa:page:list]
+\startsetups btx:apa:page:list
     \fastsetup{\s!btx:\s!page:concat}
     \ifx\currentbtxlastpage\empty
         \btxlabeltext{apa:page}
@@ -633,21 +633,23 @@
 
 % Or texdefinition?
 
-\startsetups [apa:list:sameauthor]
+\startsetups apa:list:sameauthor
     \fastsetup{apa:list:sameauthor:rule}
 \stopsetups
 
-\startsetups [apa:list:sameauthor:rule]
+\startsetups apa:list:sameauthor:rule
     \blackrule
       [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
-       \c!height=1.5\linewidth]% are you sure you want to inconsistent with the rest? happens nowhere!
+       \c!height=1.5\linewidth]% \linewidth is just too thin with respect to font strokes...
 \stopsetups
 
-\startsetups [apa:list:sameauthor:\v!empty]% it's not a space
+\startsetups [apa:list:sameauthor:\v!empty]
     \kern\dimexpr\listparameter\c!margin-\interwordspace\relax
 \stopsetups
 
-\startsetups [apa:list:sameauthor:ditto] % horrible !
+% horrible !
+
+\startsetups apa:list:sameauthor:ditto
     \inframed
       [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
        \c!frame=\v!off,
@@ -675,6 +677,7 @@
 %D returned. In lua syntax, it can be understood as
 %D author or editor or publisher or title or ""
 
+% #title can be title or booktitle
 
 \starttexdefinition btx:apa:translated-title #title
     \ifx\currentbtxlanguage\empty
@@ -713,7 +716,7 @@
 
 \starttexdefinition btx:apa:title
     \setmode{btx:apa:title-placed}
-    % we make the title active, opening file
+    % we make the title active, opening "file"
     \btxdoifelse {file} {
         \texdefinition{btx:format:inject}
             {url(file:\btxflush{file})}
@@ -729,6 +732,7 @@
     }
     \btxdoif {title} {
         \btxperiod
+        % TODO: this period may NOT be wanted, as in: Title (2nd ed.).
     }
 \stoptexdefinition
 
@@ -743,7 +747,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition nospaces btx:apa:suffixedyear
+\starttexdefinition btx:apa:suffixedyear
     \btxdoifelse {year} {
         \btxflush{year}
         \btxflush{suffix}
@@ -751,6 +755,8 @@
         \btxlabeltext{apa:nd}
     }
 \stoptexdefinition
+
+% #author may be author(set) or editor
 
 \starttexdefinition btx:apa:author-or-editor #author
     \btxdoif {#author} {
@@ -806,11 +812,22 @@
     }
 \stoptexdefinition
 
+% TODO: The title is terminated with period. However,
+% we probably don't want this before the parenthesis.
+
+\starttexdefinition btx:apa:leftparenthesis-or-comma
+    \doifmodeelse {btx:apa:editionset-is-empty} {
+        \btxleftparenthesis
+        \resetmode{btx:apa:editionset-is-empty}
+    } {
+        \btxcomma
+    }
+\stoptexdefinition
+
 \starttexdefinition btx:apa:editionset
-    \btxleftparenthesis
-    \setmode{btx:apa:editionset-empty}
+    \setmode{btx:apa:editionset-is-empty}
     \doif {\currentbtxcategory} {techreport} {
-        \resetmode{btx:apa:editionset-empty}
+        \texdefinition{btx:apa:leftparenthesis-or-comma}
         \btxdoifelse {type} {
             \btxusecommand[apa:list:type] {
                 \btxflush{type}
@@ -818,10 +835,9 @@
         } {
             \btxlabeltext{apa:technicalreport}
         }
-        \btxcomma
     }
     \btxdoif {volume} {
-        \resetmode{btx:apa:editionset-empty}
+        \texdefinition{btx:apa:leftparenthesis-or-comma}
         \btxoneorrange {volume} {
             \btxlabeltext{apa:Volume}
         } {
@@ -829,24 +845,21 @@
         }
         \btxspace
         \btxflush{volume}
-        \btxcomma
     }
     \btxdoif {number} {
-        \resetmode{btx:apa:editionset-empty}
+        \texdefinition{btx:apa:leftparenthesis-or-comma}
         \btxlabeltext{apa:number}
         \btxspace
         \btxflush{number}
-        \btxcomma
     }
     \btxdoif {edition} {
-        \resetmode{btx:apa:editionset-empty}
+        \texdefinition{btx:apa:leftparenthesis-or-comma}
         \btxflush{edition}
         \btxspace
         \btxlabeltext{apa:edition}
-        \btxcomma
     }
     \btxdoif {pages} {
-        \resetmode{btx:apa:editionset-empty}
+        \texdefinition{btx:apa:leftparenthesis-or-comma}
         \btxoneorrange {pages} {
             \btxlabeltext{apa:page}
         } {
@@ -854,11 +867,8 @@
         }
         \btxnbsp
         \btxflush{pages}
-        \btxcomma
     }
-    \removeunwantedspaces
-    \removepunctuation
-    \doifnotmode {btx:apa:editionset-empty} {
+    \doifnotmode {btx:apa:editionset-is-empty} {
         \btxrightparenthesisperiod
     }
 \stoptexdefinition
@@ -872,36 +882,26 @@
             \btxusecommand[apa:list:journal] {
                 \btxflush{journal}
             }
-        \btxstopstyleandcolor
-        \btxdoif {volume} {
+        \btxdoifelse {volume} {
             \btxcomma
-            \btxstartstyleandcolor[apa:list:journal]
-                \btxflush{volume}
+            \btxflush{volume}
             \btxstopstyleandcolor
-            \btxdoifnot {number} {
-                \btxdoifelse {pages}
-                    {\btxcomma}
-                    {\btxperiod}
+            \btxdoif {number} {
+                %\btxleftparenthesis
+                (\btxflush{number}
+                \btxrightparenthesis
             }
-        }
-        \btxdoif {number} {
-            \btxdoifelse {volume} {
-                \removeunwantedspaces(
-            } {
+        } {
+            \btxstopstyleandcolor
+            \btxdoif {number} {
                 \btxcomma
                 \btxleftparenthesis
+                \btxflush{number}
+                \btxrightparenthesis
             }
-            \btxflush{number}
-            \btxdoifelse {pages}
-                {\btxrightparenthesiscomma}
-                {\btxrightparenthesisperiod}
         }
         \btxdoif {pages} {
-            \btxdoifnot {volume} {
-                \btxdoifnot {number} {
-                    \btxcomma
-                }
-            }
+            \btxcomma
             \doif {\currentbtxcategory} {newspaper} {
                 \btxoneorrange {pages} {
                     \btxlabeltext{apa:page}
@@ -911,22 +911,16 @@
                 \btxnbsp
             }
             \btxflush{pages}
-            \btxperiod
         }
+        \btxperiod
         \doifnot {\currentbtxcategory} {newspaper} {
             \btxdoifnot {volume} {
                 \btxdoifnot {number} {
                     \btxdoifnot {pages} {
-                        \btxdoifelse {doi} {
-                            \btxperiod
+                        \btxdoif {doi} {%set: doi or url
+                            \btxspace
                             \btxlabeltext{apa:Advanced}
                             \btxperiod
-                        } {
-                            \btxdoif {url} {
-                                \btxperiod
-                                \btxlabeltext{apa:Advanced}
-                                \btxperiod
-                            }
                         }
                     }
                 }

@@ -1112,10 +1112,12 @@ do
         name      = "btxsavedataset",
         actions   = publications.save,
         arguments = {
-            { "dataset" },
-            { "filename" },
-            { "filetype" },
-            { "criterium" },
+            {
+                { "dataset" },
+                { "filename" },
+                { "filetype" },
+                { "criterium" },
+            }
         }
     }
 

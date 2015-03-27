@@ -86,7 +86,7 @@ function interfaces.implement(specification)
     if scope == "private" then
         return
     end
-    if commands[name] then
+    if commands[name] and not specification.overload then
         report("warning: 'commands.%s' is redefined",name)
     end
     commands[name] = command

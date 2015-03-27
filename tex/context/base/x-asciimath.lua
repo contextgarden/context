@@ -758,45 +758,67 @@ local issimplified = {
 
 -- special mess
 
-local d_one    = lpeg.R("09")
-local d_two    = d_one * d_one
-local d_three  = d_two * d_one
-local d_spaced = (Carg(1) * d_three)^1
-local d_split  = P(-1) + P(",")
+local d_one         = R("09")
+local d_two         = d_one * d_one
+local d_three       = d_two * d_one
+local d_four        = d_three * d_one
+local d_split       = P(-1) + P(",")
 
-local digitized = Cs((
-        d_three * d_spaced * d_split +
-        d_two   * d_spaced * d_split +
-        d_one   * d_spaced * d_split +
-        P(1)
-    )^1)
+local d_spaced      = (Carg(1) * d_three)^1
 
--- print(lpeg.match(digitized,"1"))
--- print(lpeg.match(digitized,"12"))
--- print(lpeg.match(digitized,"123"))
--- print(lpeg.match(digitized,"1234"))
--- print(lpeg.match(digitized,"12345"))
--- print(lpeg.match(digitized,"123456"))
--- print(lpeg.match(digitized,"1234567"))
--- print(lpeg.match(digitized,"12345678"))
--- print(lpeg.match(digitized,"123456789"))
+local digitized_1   = Cs ( (
+                        d_three * d_spaced * d_split +
+                        d_two   * d_spaced * d_split +
+                        d_one   * d_spaced * d_split +
+                        P(1)
+                      )^1 )
 
--- print(lpeg.match(digitized,"1,1"))
--- print(lpeg.match(digitized,"12,12"))
--- print(lpeg.match(digitized,"123,123"))
--- print(lpeg.match(digitized,"1234,1234"))
--- print(lpeg.match(digitized,"12345,12345"))
--- print(lpeg.match(digitized,"123456,123456"))
--- print(lpeg.match(digitized,"1234567,1234567"))
--- print(lpeg.match(digitized,"12345678,12345678"))
--- print(lpeg.match(digitized,"123456789,123456789"))
+local p_fourbefore  = d_four * d_split
+local p_fourafter   = d_four * P(-1)
+
+local p_beforecomma = d_three * d_spaced * d_split
+                    + d_two   * d_spaced * d_split
+                    + d_one   * d_spaced * d_split
+                    + d_one   * d_split
+
+local p_aftercomma  = p_fourafter
+                    + d_three * d_spaced
+                    + d_two   * d_spaced
+                    + d_one   * d_spaced
+
+local digitized_2   = Cs (
+                         p_fourbefore  *   p_aftercomma +
+                         p_beforecomma * ((p_aftercomma + d_one^1)^0)
+                      )
+
+local d_spaced      = (Carg(1) * (d_three + d_two + d_one))^1
+local p_aftercomma  = p_fourafter
+                    + d_three * d_spaced * P(1)^0
+
+local digitized_3   = Cs (
+                         p_fourbefore  *   p_aftercomma +
+                         p_beforecomma * ((p_aftercomma + d_one^1)^0)
+                      )
+
+local splitmethods = {
+    digitized_1,
+    digitized_2,
+    digitized_3,
+}
+
+local splitmethod  = nil
 
 function asciimath.setup(settings)
-    local separator = settings.separator
-    if separator == interfaces.variables.yes then
-        digitseparator = utfchar(0x2008)
-    elseif separator and separator ~= "" then
-        digitseparator = separator
+    splitmethod = splitmethods[tonumber(settings.splitmethod) or 0]
+    if splitmethod then
+        local separator = settings.separator
+        if separator == true or not interfaces or interfaces.variables.yes then
+            digitseparator = utfchar(0x2008)
+        elseif type(separator) == "string" and separator ~= "" then
+            digitseparator = separator
+        else
+            splitmethod = nil
+        end
     end
 end
 
@@ -804,8 +826,8 @@ local collected_digits   = { }
 local collected_filename = "asciimath-digits.lua"
 
 function numbermess(s)
-    if digitseparator then
-        local d = lpegmatch(digitized,s,1,digitseparator)
+    if splitmethod then
+        local d = lpegmatch(splitmethod,s,1,digitseparator)
         if d then
             if trace_digits and s ~= d then
                 collected_digits[s] = d
@@ -815,6 +837,29 @@ function numbermess(s)
     end
     return s
 end
+
+asciimath.setup { splitmethod = 3 }
+
+local t = {
+    "1", "12", "123", "1234", "12345", "123456", "1234567", "12345678", "123456789",
+    "1,1",
+    "12,12",
+    "123,123",
+    "1234,1234",
+    "12345,1234",
+    "1234,12345",
+    "12345,12345",
+    "123456,123456",
+    "1234567,1234567",
+    "12345678,12345678",
+    "123456789,123456789",
+    "0,1234",
+    "1234,0",
+    "1234,00",
+    "0,123456789",
+}
+for i=1,#t do print(formatters["%-20s : [%s]"](t[i],numbermess(t[i]))) end
+
 
 statistics.register("asciimath",function()
     if trace_digits then
@@ -1762,7 +1807,7 @@ if not context then
 -- convert("10000,00001")
 -- convert("4/18*100text(%)~~22,2")
 -- convert("4/18*100text(%)≈22,2")
-convert("62541/(197,6)≈316,05")
+-- convert("62541/(197,6)≈316,05")
 
 --     convert([[sum x]])
 --     convert([[sum^(1)_(2) x]])

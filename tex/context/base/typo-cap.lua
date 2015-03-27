@@ -432,4 +432,8 @@ end
 
 -- interface
 
-commands.setcharactercasing = cases.set
+interfaces.implement {
+    name      = "setcharactercasing",
+    actions   = cases.set,
+    arguments = { "string", "integer" }
+}

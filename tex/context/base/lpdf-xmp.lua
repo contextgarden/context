@@ -158,7 +158,6 @@ local function flushxmpinfo()
     local creator    = "LuaTeX + ConTeXt MkIV"
     local time       = lpdf.timestamp()
     local fullbanner = status.banner
- -- local fullbanner = gsub(tex.pdftexbanner,"kpse.*","")
 
     pdfaddxmpinfo("DocumentID",      documentid)
     pdfaddxmpinfo("InstanceID",      instanceid)
@@ -173,7 +172,7 @@ local function flushxmpinfo()
     pdfaddtoinfo("Creator",          creator)
     pdfaddtoinfo("CreationDate",     time)
     pdfaddtoinfo("ModDate",          time)
---  pdfaddtoinfo("PTEX.Fullbanner",  fullbanner) -- no checking done on existence
+ -- pdfaddtoinfo("PTEX.Fullbanner",  fullbanner) -- no checking done on existence
 
     local blob = xml.tostring(xml.first(xmp or valid_xmp(),"/x:xmpmeta"))
     local md = pdfdictionary {

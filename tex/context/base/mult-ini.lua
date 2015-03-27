@@ -309,6 +309,7 @@ implement {
 
 implement {
     name      = "writestatus",
+    overload  = true,
     actions   = interfaces.writestatus,
     arguments = { "string", "string" },
 }

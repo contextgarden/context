@@ -396,10 +396,8 @@ local function check(name,data,start,stop)
     end
 end
 
-counters.reset = reset
-counters.set   = set
 
-function counters.setown(name,n,value)
+local function setown(name,n,value)
     local cd = counterdata[name]
     if cd then
         local d = allocate(name,n)
@@ -417,7 +415,7 @@ function counters.setown(name,n,value)
     end
 end
 
-function counters.restart(name,n,newstart,noreset)
+local function restart(name,n,newstart,noreset)
     local cd = counterdata[name]
     if cd then
         newstart = tonumber(newstart)
@@ -445,7 +443,7 @@ function counters.restore(name)
     end
 end
 
-function counters.add(name,n,delta)
+local function add(name,n,delta)
     local cd = counterdata[name]
     if cd and (cd.state == v_start or cd.state == "") then
         local data = cd.data
@@ -514,7 +512,12 @@ local function get(name,n,key)
     end
 end
 
-counters.get = get
+counters.reset   = reset
+counters.set     = set
+counters.add     = add
+counters.get     = get
+counters.setown  = setown
+counters.restart = restart
 
 function counters.value(name,n) -- what to do with own
     return get(name,n or 1,'number') or 0
@@ -600,20 +603,20 @@ end
 
 --
 
-implement { name = "addcounter",              actions = counters.add,     arguments = { "string", "integer", "integer" } }
-implement { name = "setcounter",              actions = counters.set,     arguments = { "string", 1, "integer" } }
-implement { name = "setowncounter",           actions = counters.setown,  arguments = { "string", 1, "string" } }
-implement { name = "restartcounter",          actions = counters.restart, arguments = { "string", 1, "integer" } }
-implement { name = "resetcounter",            actions = counters.reset,   arguments = { "string", 1 } }
-implement { name = "incrementcounter",        actions = counters.add,     arguments = { "string", 1,  1 } }
-implement { name = "decrementcounter",        actions = counters.add,     arguments = { "string", 1, -1 } }
+implement { name = "addcounter",              actions = add,     arguments = { "string", "integer", "integer" } }
+implement { name = "setcounter",              actions = set,     arguments = { "string", 1, "integer" } }
+implement { name = "setowncounter",           actions = setown,  arguments = { "string", 1, "string" } }
+implement { name = "restartcounter",          actions = restart, arguments = { "string", 1, "integer" } }
+implement { name = "resetcounter",            actions = reset,   arguments = { "string", 1 } }
+implement { name = "incrementcounter",        actions = add,     arguments = { "string", 1,  1 } }
+implement { name = "decrementcounter",        actions = add,     arguments = { "string", 1, -1 } }
 
-implement { name = "setsubcounter",           actions = counters.set,     arguments = { "string", "integer", "integer" } }
-implement { name = "setownsubcounter",        actions = counters.setown,  arguments = { "string", "integer", "string" } }
-implement { name = "restartsubcounter",       actions = counters.restart, arguments = { "string", "integer", "integer" } }
-implement { name = "resetsubcounter",         actions = counters.reset,   arguments = { "string", "integer" } }
-implement { name = "incrementsubcounter",     actions = counters.add,     arguments = { "string", "integer",  1 } }
-implement { name = "decrementsubcounter",     actions = counters.add,     arguments = { "string", "integer", -1 } }
+implement { name = "setsubcounter",           actions = set,     arguments = { "string", "integer", "integer" } }
+implement { name = "setownsubcounter",        actions = setown,  arguments = { "string", "integer", "string" } }
+implement { name = "restartsubcounter",       actions = restart, arguments = { "string", "integer", "integer" } }
+implement { name = "resetsubcounter",         actions = reset,   arguments = { "string", "integer" } }
+implement { name = "incrementsubcounter",     actions = add,     arguments = { "string", "integer",  1 } }
+implement { name = "decrementsubcounter",     actions = add,     arguments = { "string", "integer", -1 } }
 
 implement { name = "rawcountervalue",         actions = { counters.raw     , context }, arguments = { "string", 1 } }
 implement { name = "countervalue",            actions = { counters.value   , context }, arguments = { "string", 1 } }
@@ -634,8 +637,8 @@ implement { name = "subsubcountervalues",     actions = { counters.subs    , con
 implement { name = "savecounter",             actions = counters.save,    arguments = "string" }
 implement { name = "restorecounter",          actions = counters.restore, arguments = "string" }
 
-implement { name = "incrementedcounter",      actions = { counters.add, context }, arguments = { "string", 1,  1 } }
-implement { name = "decrementedcounter",      actions = { counters.add, context }, arguments = { "string", 1, -1 } }
+implement { name = "incrementedcounter",      actions = { add, context }, arguments = { "string", 1,  1 } }
+implement { name = "decrementedcounter",      actions = { add, context }, arguments = { "string", 1, -1 } }
 
 implement { name = "showcounter",             actions = showcounter,       arguments = "string" }  -- todo
 implement { name = "checkcountersetup",       actions = checkcountersetup, arguments = { "string", "integer", "integer", "string" } }

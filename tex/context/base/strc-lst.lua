@@ -198,6 +198,12 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
         m.level = structures.sections.currentlevel()
     end
     local numberdata = t.numberdata
+    if numberdata then
+        local numbers = numberdata.numbers
+        if type(numbers) == "string" then
+            numberdata.numbers = structures.counters.compact(numbers,nil,true)
+        end
+    end
     local group = numberdata and numberdata.group
     local name = m.name
     if not group then
@@ -231,13 +237,6 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
     end
     if trace_lists then
         report_lists("added %a, internal %a",name,p)
-    end
-    local n = t.numberdata
-    if n then
-        local numbers = n.numbers
-        if type(numbers) == "string" then
-            n.numbers = structures.counters.compact(numbers,nil,true)
-        end
     end
     return p
 end
@@ -1134,22 +1133,22 @@ implement { name = "doiflisthaspageelse",   actions = { lists.haspagedata,   com
 implement { name = "doiflisthasnumberelse", actions = { lists.hasnumberdata, commands.doifelse }, arguments = { "string", "integer" } }
 implement { name = "doiflisthasentry",      actions = { lists.iscached,      commands.doifelse }, arguments = { "integer" } }
 
-local function savedlistnumber(name,n)
-    local data = cached[tonumber(n)]
-    if data then
-        local numberdata = data.numberdata
-        if numberdata then
-            typesetnumber(numberdata,"number",numberdata or false)
-        end
-    end
-end
-
 local function savedlisttitle(name,n,tag)
     local data = cached[tonumber(n)]
     if data then
         local titledata = data.titledata
         if titledata then
             helpers.title(titledata[tag] or titledata.title or "",data.metadata)
+        end
+    end
+end
+
+local function savedlistnumber(name,n)
+    local data = cached[tonumber(n)]
+    if data then
+        local numberdata = data.numberdata
+        if numberdata then
+            typesetnumber(numberdata,"number",numberdata or false)
         end
     end
 end
@@ -1164,6 +1163,10 @@ local function savedlistprefixednumber(name,n)
         end
     end
 end
+
+lists.savedlisttitle          = savedlisttitle
+lists.savedlistnumber         = savedlistnumber
+lists.savedlistprefixednumber = savedlistprefixednumber
 
 implement {
     name      = "savedlistnumber",

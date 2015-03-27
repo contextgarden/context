@@ -72,13 +72,19 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 --
 -- local enabled = false
 --
--- function commands.signal(what)
+-- local function signal(what)
 --     if not enabled then
 --         nodes.tasks.prependaction("processors","normalizers", "typesetters.signals.handler")
 --         enabled = true
 --     end
 --     context(stringusernode(signal,what))
 -- end
+--
+-- interfaces.implement {
+--     name      = "signal",
+--     actions   = signal,
+--     arguments = "string",
+-- }
 
 local nodecodes   = nodes.nodecodes
 local glyph_code  = nodecodes.glyph
@@ -88,7 +94,7 @@ local free_node   = node.free
 
 local punctuation = characters.is_punctuation
 
-function commands.removepunctuation()
+local function removepunctuation()
     local list = texnest[texnest.ptr]
     if list then
         local tail = list.tail
@@ -102,3 +108,8 @@ function commands.removepunctuation()
         end
     end
 end
+
+interfaces.implement {
+    name    = "removepunctuation",
+    actions = removepunctuation,
+}

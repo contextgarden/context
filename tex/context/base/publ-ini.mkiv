@@ -701,7 +701,7 @@
    \else
      \let\currentbtxrendering\currentbtxspecification
    \fi\fi
-   \setbtxparameterset\s!list\currentbtxspecification
+   \setbtxparameterset\currentbtxspecification\s!list
    \the\everybtxlistrendering
    \ifconditional#1\relax
      \edef\currentbtxrenderingtitle{\btxrenderingparameter\c!title}%
@@ -1057,14 +1057,14 @@
 
 % till here
 
-\unexpanded\def\btxnumberedreference[#1]% \bibtexnumref (replaced by \cite[num])
-  {\dontleavehmode
-   \begingroup
-   \btxparameter\v!left
-   \penalty\plustenthousand % todo
-   \clf_btxresolvelistreference{\currentbtxdataset}{#1}% todo: split dataset from #1, so another call
-   \btxparameter\v!right
-   \endgroup}
+% \unexpanded\def\btxnumberedreference[#1]% \bibtexnumref (replaced by \cite[num])
+%   {\dontleavehmode
+%    \begingroup
+%    \btxparameter\v!left
+%    \penalty\plustenthousand % todo
+%    \clf_btxresolvelistreference{\currentbtxdataset}{#1}% todo: split dataset from #1, so another call
+%    \btxparameter\v!right
+%    \endgroup}
 
 %D When a publication is cited, we need to signal that somehow. This is done with the
 %D following (not user) command. We could tag without injecting a node but this way

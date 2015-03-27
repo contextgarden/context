@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['publ-ini'] = {
+7if not modules then modules = { } end modules ['publ-ini'] = {
     version   = 1.001,
     comment   = "this module part of publication support",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -1980,11 +1980,11 @@ do
         arguments = { "string", "string" }
     }
 
-    implement {
-        name      = "btxresolvelistreference",
-        actions   = lists.resolve,
-        arguments = { "string", "string" }
-    }
+ -- implement {
+ --     name      = "btxresolvelistreference",
+ --     actions   = lists.resolve,
+ --     arguments = { "string", "string" }
+ -- }
 
     implement {
         name      = "btxcollectlistentries",
@@ -2303,6 +2303,7 @@ do
                 --
                 ctx_btxstartcite()
                 ctx_btxsettag(tag)
+                ctx_btxsetcategory(entry.category or "unknown")
                 --
                 if oneleft then
                     if i == 1 then

@@ -86,7 +86,7 @@ local categories = specification.categories
 
 categories.article = {
     sets = {
-        author = { "author", "editor", "title" },
+        author = { "author", "editor" },
 	volume = { "volume", "number", "pages" },
         doi    = generic.doi,
         isbn   = { "issn" },
@@ -97,7 +97,7 @@ categories.article = {
     optional = {
         "collaboration",
         "year",
-        "subtitle", "type", "file",
+        "title", "subtitle", "type", "file",
         "journal", "volume",
         "doi", "note", "isbn"
     },
@@ -114,7 +114,7 @@ categories.magazine = {
     },
     optional = {
         "collaboration",
-        "subtitle", "type", "file",
+        "title", "subtitle", "type", "file",
         "number",
         "month", "day",
         "doi", "note", "isbn"
@@ -167,15 +167,18 @@ categories.standard = {
 
 categories.book = {
     sets = {
-        author     = { "author", "editor", "publisher", "title" },
+        author     = { "author", "editor", "publisher" },
         editionset = generic.editionset,
         doi        = generic.doi,
     },
-    required = { "author" },
+    required = {
+        "author",
+        "title",
+    },
     optional = {
         "collaboration",
         "year", "month", "day",
-        "subtitle", "type",  "file",
+        "title", "subtitle", "type",  "file",
         "editionset", "series",
         "address",
         "doi", "note", "isbn"
@@ -186,13 +189,14 @@ categories.book = {
 
 categories.inbook = {
     sets = {
-        author     = { "author", "editor", "publisher", "title", },
+        author     = { "author", "editor", "publisher", },
         editionset = generic.editionset,
         doi        = generic.doi,
     },
     required = {
         "author",
         "year" ,
+        "title",
     },
     optional = {
         "collaboration",
@@ -211,7 +215,7 @@ categories.inbook = {
 
 categories.incollection = {
     sets = {
-        author     = { "author", "editor", "publisher", "title", },
+        author     = { "author", "editor", "publisher" },
         editionset = generic.editionset,
         doi        = generic.doi,
     },
@@ -222,7 +226,7 @@ categories.incollection = {
     },
     optional = {
         "collaboration",
-        "subtitle", "type", "file",
+        "title", "subtitle", "type", "file",
         "editionset", "series",
         "chapter",
         "month",
@@ -235,12 +239,12 @@ categories.incollection = {
 
 categories.booklet = {
     sets = {
-        author = { "author", "title", },
         publisher = { "howpublished" }, -- no "publisher"!
         doi    = generic.doi,
     },
     required = {
-        "author"
+        "author",
+        "title",
     },
     optional = {
         "publisher",
@@ -256,7 +260,7 @@ categories.booklet = {
 
 categories.proceedings = {
     sets = {
-        author     = { "editor", "organization", "publisher", "title" }, -- no "author"!
+        author     = { "editor", "organization", "publisher" }, -- no "author"!
         publisher  = { "publisher", "organization" },
         editionset = generic.editionset,
         doi        = generic.doi,
@@ -268,7 +272,7 @@ categories.proceedings = {
     optional = {
         "collaboration",
         "publisher",
-        "subtitle", "file",
+        "title", "subtitle", "file",
         "editionset", "series",
         "month",
         "address",
@@ -283,7 +287,7 @@ categories.inproceedings = {
     required = categories.incollection.required,
     optional = {
         "collaboration",
-        "subtitle", "type", "file",
+        "title", "subtitle", "type", "file",
         "month",
         "edition", "series",
         "address", "organization",
@@ -338,7 +342,7 @@ categories.phdthesis = categories.mastersthesis
 
 categories.techreport = {
     sets = {
-        author     = { "author", "institution", "publisher", "title" },
+        author     = { "author", "institution", "publisher" },
         publisher  = { "publisher", "institution", },
         editionset = { "type", "volume", "number", "pages" }, -- no "edition"!
         doi        = generic.doi,
@@ -364,7 +368,7 @@ categories.techreport = {
 
 categories.manual = {
     sets = {
-        author     = { "author", "organization", "publisher", "title" },
+        author     = { "author", "organization", "publisher" },
         publisher  = { "publisher", "organization", },
         editionset = generic.editionset,
         doi        = generic.doi,
