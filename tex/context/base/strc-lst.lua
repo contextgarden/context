@@ -1177,7 +1177,7 @@ implement {
 implement {
     name      = "savedlisttitle",
     actions   = savedlisttitle,
-    arguments = { "string", "integer", "string" }
+    arguments = { "string", "integer" }
 }
 
 implement {

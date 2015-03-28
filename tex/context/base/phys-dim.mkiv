@@ -246,7 +246,7 @@
 \unexpanded\def\phys_digits_indeed#1%
   {\dontleavehmode
    \begingroup
-   \ctxcommand{digits(\!!bs\detokenize{#1}\!!es,"\ifcase\c_phys_digits_order \v!normal\else\v!reverse\fi")}%
+   \ifcase\c_phys_digits_order\expandafter\clf_digits_normal\else\expandafter\clf_digits_reverse\fi{\detokenize{#1}}%
    \endgroup
    \settrue\c_phys_units_dospace}
 
@@ -500,7 +500,8 @@
 \to \everyunits
 
 \unexpanded\def\phys_units_indeed#1%
-  {\ctxcommand{unit(\!!bs\detokenize{#1}\!!es,"\unitparameter\c!order")}}
+  {\edef\p_order{\unitparameter\c!order}%
+   \ifx\p_order\v!reverse\expandafter\clf_unit_reverse\else\expandafter\clf_unit_normal\fi{\detokenize{#1}}}
 
 \unexpanded\def\unitsPUS#1#2#3{\phys_units_next\prefixtext{#1}\unittext{#2}\unitsraise{\suffixtext{#3}}\c_phys_units_state\plusone} % suffix
 \unexpanded\def\unitsPU   #1#2{\phys_units_next\prefixtext{#1}\unittext{#2}\c_phys_units_state\plusthree}                           % unit
@@ -682,10 +683,10 @@
 \definelabelclass [prefix]   [2]
 \definelabelclass [suffix]   [2] % This is only a label because we want to show them in a table.
 
-\ctxcommand{definelabels("prefix",  "prefixes" )}
-\ctxcommand{definelabels("unit",    "units"    )}
-\ctxcommand{definelabels("operator","operators")}
-\ctxcommand{definelabels("suffix",  "suffixes" )}
+\clf_definelabels{prefix}{prefixes}\s!false\relax
+\clf_definelabels{unit}{units}\s!false\relax
+\clf_definelabels{operator}{operators}\s!false\relax
+\clf_definelabels{suffix}{suffixes}\s!false\relax
 
 %D You can define additional units:
 %D
@@ -716,7 +717,7 @@
   {\dodoubleempty\phys_units_register}
 
 \def\phys_units_register[#1][#2]%
-  {\ctxcommand{registerunit(\!!bs#1\!!es,\!!bs#2\!!es)}}
+  {\clf_registerunit{#1}{#2}}
 
 %D You can generate a list as follows:
 %D

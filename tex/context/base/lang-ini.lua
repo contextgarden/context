@@ -21,8 +21,9 @@ local utfbyte = utf.byte
 local format, gsub = string.format, string.gsub
 local concat, sortedkeys, sortedpairs = table.concat, table.sortedkeys, table.sortedpairs
 
-local context  = context
-local commands = commands
+local context   = context
+local commands  = commands
+local implement = interfaces.implement
 
 local settings_to_array = utilities.parsers.settings_to_array
 
@@ -386,31 +387,58 @@ end)
 
 -- interface
 
-local getnumber = languages.getnumber
+implement {
+    name      = "languagenumber",
+    actions   = { languages.getnumber, context },
+    arguments = { "string", "string", "string" }
+}
 
-function commands.languagenumber(tag,default,patterns)
-    context(getnumber(tag,default,patterns))
-end
+implement {
+    name      = "installedlanguages",
+    actions   = { languages.installed, context },
+}
 
-function commands.installedlanguages(separator)
-    context(languages.installed(separator))
-end
+implement {
+    name      = "definelanguage",
+    actions   = languages.define,
+    arguments = { "string", "string" }
+}
 
-commands.definelanguage        = languages.define
-commands.setlanguagesynonym    = languages.setsynonym
-commands.unloadlanguage        = languages.unload
-commands.setlanguageexceptions = languages.setexceptions
+implement {
+    name      = "setlanguagesynonym",
+    actions   = languages.setsynonym,
+    arguments = { "string", "string" }
+}
 
-function commands.prehyphenchar(l)
-    local c = prehyphenchar(tolang(l))
-    if c and c > 0 then
-        context.char(c)
+implement {
+    name      = "unloadlanguage",
+    actions   = languages.unload,
+    arguments = { "string" }
+}
+
+implement {
+    name      = "setlanguageexceptions",
+    actions   = languages.setexceptions,
+    arguments = { "string", "string" }
+}
+
+
+implement {
+    name      = "currentprehyphenchar",
+    actions   = function()
+        local c = prehyphenchar(tolang())
+        if c and c > 0 then
+            context.char(c)
+        end
     end
-end
+}
 
-function commands.posthyphenchar(l)
-    local c = posthyphenchar(tolang(l))
-    if c and c > 0 then
-        context.char(c)
+implement {
+    name      = "currentposthyphenchar",
+    actions   = function()
+        local c = posthyphenchar(tolang())
+        if c and c > 0 then
+            context.char(c)
+        end
     end
-end
+}

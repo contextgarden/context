@@ -314,7 +314,7 @@ nuts .firstcharinbox = firstcharinbox
 nodes.firstcharinbox = firstcharinbox
 nodes.firstcharacter = vianuts(firstcharacter)
 
-function commands.buildtextaccent(n)
+function commands.buildtextaccent(n) -- Is this crap really used? Or was it an experiment?
     local char = firstcharinbox(n)
     if char > 0 then
      -- context.accent(false,char)

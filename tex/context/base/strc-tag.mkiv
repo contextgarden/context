@@ -194,14 +194,6 @@
      \expandafter\strc_tags_element_stop_yes
    \fi}
 
-% if mainlanguage == en we can even omit the label (default to tag) which is faster
-%
-% \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
-%   {\ctxcommand{starttag("#1",{label="#1",userdata=\!!bs#2\!!es})}}
-
-% \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
-%   {\ctxcommand{starttag("#1",{label="\dogetupsometaglabeltext{#1}",userdata=\!!bs#2\!!es})}}
-%
 % it makes no sense to have labels ... maybe some day as a last 'replace' in the export
 % which might be more efficient then ... okay, we now cannot overload but who cares
 

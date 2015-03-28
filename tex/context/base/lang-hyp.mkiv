@@ -70,18 +70,18 @@
    \s!lefthyphenchar=0]  % number
 
 \appendtoks
-    \ctxcommand{setuphyphenation{method="\hyphenationparameter\c!method"}}%
+    \clf_sethyphenationmethod{\hyphenationparameter\c!method}%
 \to \everysetuphyphenation
 
 %D These are mostly meant for manuals:
 
 \unexpanded\def\starthyphenation[#1]%
   {\begingroup
-   \ctxcommand{pushhyphenation("#1")}}
+   \clf_pushhyphenation{#1}}
 
 \unexpanded\def\stophyphenation
   {\ifhmode\par\fi
-   \ctxcommand{pophyphenation()}%
+   \clf_pophyphenation
    \endgroup}
 
 % This is a global setting, so we need to disable it when needed. However, as
@@ -96,33 +96,36 @@
 
 \unexpanded\def\lang_hyphenation_define_features[#1][#2]%
   {\begingroup
-   \letdummyparameter\c!characters\empty             % maybe \s!
-   \letdummyparameter\c!hyphens\empty                % maybe \s!
-   \letdummyparameter\c!joiners\empty                % maybe \s!
-   \letdummyparameter\c!rightwords\!!zerocount       % maybe \s!
-   \letdummyparameter\s!lefthyphenmin\!!zerocount
-   \letdummyparameter\s!righthyphenmin\!!zerocount
-   \letdummyparameter\s!lefthyphenchar\!!zerocount
-   \letdummyparameter\s!righthyphenchar\!!zerocount
+   \letdummyparameter\c!characters\empty           % maybe \s!
+   \letdummyparameter\c!hyphens\empty              % maybe \s!
+   \letdummyparameter\c!joiners\empty              % maybe \s!
+   \letdummyparameter\c!rightwords\zerocount       % maybe \s!
+   \letdummyparameter\s!lefthyphenmin\zerocount
+   \letdummyparameter\s!righthyphenmin\zerocount
+   \letdummyparameter\s!lefthyphenchar\zerocount
+   \letdummyparameter\s!righthyphenchar\zerocount
    \letdummyparameter\c!alternative\empty
    \letdummyparameter\c!rightedge\empty
    \getdummyparameters[#2]%
-   \ctxcommand{definehyphenationfeatures("#1",{
-      characters   = \!!bs\dummyparameter\c!characters\!!es,
-      hyphens      = \!!bs\dummyparameter\c!hyphens\!!es,
-      joiners      = \!!bs\dummyparameter\c!joiners\!!es,
-      rightwordmin = \number\dummyparameter\c!rightwords,
-      leftcharmin  = \number\dummyparameter\s!lefthyphenmin,
-      rightcharmin = \number\dummyparameter\s!righthyphenmin,
-      leftchar     = \number\dummyparameter\s!lefthyphenchar,
-      rightchar    = \number\dummyparameter\s!righthyphenchar,
-      alternative  = "\dummyparameter\c!alternative",
-      rightedge    = "\dummyparameter\c!rightedge",
-    })}%
+   \clf_definehyphenationfeatures
+      {#1}%
+      {
+        characters   {\dummyparameter\c!characters}%
+        hyphens      {\dummyparameter\c!hyphens}%
+        joiners      {\dummyparameter\c!joiners}%
+        rightwordmin \numexpr\dummyparameter\c!rightwords\relax
+        leftcharmin  \numexpr\dummyparameter\s!lefthyphenmin\relax
+        rightcharmin \numexpr\dummyparameter\s!righthyphenmin\relax
+        leftchar     \numexpr\dummyparameter\s!lefthyphenchar\relax
+        rightchar    \numexpr\dummyparameter\s!righthyphenchar\relax
+        alternative  {\dummyparameter\c!alternative}%
+        rightedge    {\dummyparameter\c!rightedge}%
+      }%
+   \relax
    \endgroup}
 
 \unexpanded\def\sethyphenationfeatures[#1]%
-  {\ctxcommand{sethyphenationfeatures("#1")}}
+  {\clf_sethyphenationfeatures{#1}}
 
 % todo: \start ... \stop too
 
@@ -130,44 +133,19 @@
   {\dodoubleempty\lang_hyphenation_register_pattern}
 
 \def\lang_hyphenation_register_pattern[#1][#2]%
-  {\ctxcommand{registerhyphenationpattern(
-     \ifsecondargument
-       \!!bs#1\!!es,
-       \!!bs#2\!!es
-     \else
-       \!!bs\currentlanguage\!!es,
-       \!!bs#1\!!es
-     \fi
-    )}}
+  {\clf_registerhyphenationpattern\ifsecondargument{#1}{#2}\else{\currentlanguage}{#1}\fi\s!true\relax}
 
 \unexpanded\def\unregisterhyphenationpattern
   {\dodoubleempty\lang_hyphenation_unregister_pattern}
 
 \def\lang_hyphenation_unregister_pattern[#1][#2]%
-  {\ctxcommand{registerhyphenationpattern(
-     \ifsecondargument
-       \!!bs#1\!!es,
-       \!!bs#2\!!es,
-     \else
-       \!!bs\currentlanguage\!!es,
-       \!!bs#1\!!es,
-     \fi
-     false
-    )}}
+  {\clf_registerhyphenationpattern\ifsecondargument{#1}{#2}\else{\currentlanguage}{#1}\fi\s!false\relax}
 
 \unexpanded\def\registerhyphenationexception
   {\dodoubleempty\lang_hyphenation_register_exception}
 
 \def\lang_hyphenation_register_exception[#1][#2]%
-  {\ctxcommand{registerhyphenationexception(
-     \ifsecondargument
-       \!!bs#1\!!es,
-       \!!bs#2\!!es
-     \else
-       \!!bs\currentlanguage\!!es,
-       \!!bs#1\!!es
-     \fi
-    )}}
+  {\clf_registerhyphenationexception\ifsecondargument{#1}{#2}\else{\currentlanguage}{#1}\fi\relax}
 
 \unexpanded\def\showhyphenationtrace
   {\dodoubleempty\lang_hyphenation_show_trace}
@@ -175,15 +153,7 @@
 \def\lang_hyphenation_show_trace[#1][#2]%
   {\begingroup
    \tt
-   \ctxcommand{showhyphenationtrace(
-    \ifsecondargument
-       \!!bs#1\!!es,
-       \!!bs#2\!!es
-     \else
-       \!!bs\currentlanguage\!!es,
-       \!!bs#1\!!es
-     \fi
-    )}%
+   \clf_showhyphenationtrace\ifsecondargument{#1}{#2}\else{\currentlanguage}{#1}\fi\relax
    \endgroup}
 
 % For old times sake:
@@ -199,7 +169,7 @@
 %D For me:
 
 \unexpanded\def\showdiscretionaries
-  {\ctxcommand{showdiscretionaries()}}
+  {\clf_showdiscretionaries}
 
 %D These are (at least now) not cummulative:
 

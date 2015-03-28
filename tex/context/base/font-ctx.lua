@@ -2270,12 +2270,34 @@ implement {
     arguments = "string"
 }
 
-function commands.cleanfontname          (name)      context(names.cleanname(name))         end
+implement {
+    name      = "cleanfontname",
+    actions   = { names.cleanname, context },
+    arguments = "string"
+}
 
-function commands.fontlookupinitialize   (name)      names.lookup(name)                     end
-function commands.fontlookupnoffound     ()          context(names.noflookups())            end
-function commands.fontlookupgetkeyofindex(key,index) context(names.getlookupkey(key,index)) end
-function commands.fontlookupgetkey       (key)       context(names.getlookupkey(key))       end
+implement {
+    name      = "fontlookupinitialize",
+    actions   = names.lookup,
+    arguments = "string",
+}
+
+implement {
+    name      = "fontlookupnoffound",
+    actions   = { names.noflookups, context },
+}
+
+implement {
+    name      = "fontlookupgetkeyofindex",
+    actions   = { names.getlookupkey, context },
+    arguments = { "string", "integer"}
+}
+
+implement {
+    name      = "fontlookupgetkey",
+    actions   = { names.getlookupkey, context },
+    arguments = "string"
+}
 
 -- this might move to a runtime module:
 

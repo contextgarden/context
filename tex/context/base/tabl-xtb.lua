@@ -32,6 +32,8 @@ local commands                = commands
 local context                 = context
 local tex                     = tex
 
+local implement               = interfaces.implement
+
 local texgetcount             = tex.getcount
 local texsetcount             = tex.setcount
 local texgetdimen             = tex.getdimen
@@ -983,23 +985,23 @@ local function spanheight(body,i)
 end
 
 function xtables.flush(directives) -- todo split by size / no inbetween then ..  glue list kern blank
-    local vsize = directives.vsize
-    local method = directives.method or v_normal
-    local settings = data.settings
-    local results  = data.results
-    local rowdistance = settings.rowdistance
-    local head = results[head_mode]
-    local foot = results[foot_mode]
-    local more = results[more_mode]
-    local body = results[body_mode]
+    local height       = directives.height
+    local method       = directives.method or v_normal
+    local settings     = data.settings
+    local results      = data.results
+    local rowdistance  = settings.rowdistance
+    local head         = results[head_mode]
+    local foot         = results[foot_mode]
+    local more         = results[more_mode]
+    local body         = results[body_mode]
     local repeatheader = settings.header == v_repeat
     local repeatfooter = settings.footer == v_repeat
-    if vsize and vsize > 0 then
+    if height and height > 0 then
         context_beginvbox()
         local bodystart = data.bodystart or 1
         local bodystop  = data.bodystop or #body
         if bodystart > 0 and bodystart <= bodystop then
-            local bodysize = vsize
+            local bodysize = height
             local footsize = total(foot,rowdistance)
             local headsize = total(head,rowdistance)
             local moresize = total(more,rowdistance)
@@ -1086,7 +1088,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                     texsetcount("global","c_tabl_x_state",2)
                 end
             else
-                if firstsize > vsize then
+                if firstsize > height then
                     -- get rid of the too large cell
                     for s=1,firstspans do
                         inject(body[bodystart])
@@ -1194,20 +1196,51 @@ end
 
 -- eventually we might only have commands
 
-commands.x_table_create             = xtables.create
-commands.x_table_reflow_width       = xtables.reflow_width
-commands.x_table_reflow_height      = xtables.reflow_height
-commands.x_table_construct          = xtables.construct
-commands.x_table_flush              = xtables.flush
-commands.x_table_cleanup            = xtables.cleanup
-commands.x_table_next_row           = xtables.next_row
-commands.x_table_finish_row         = xtables.finish_row
-commands.x_table_init_reflow_width  = xtables.initialize_reflow_width
-commands.x_table_init_reflow_height = xtables.initialize_reflow_height
-commands.x_table_init_construct     = xtables.initialize_construct
-commands.x_table_set_reflow_width   = xtables.set_reflow_width
-commands.x_table_set_reflow_height  = xtables.set_reflow_height
-commands.x_table_set_construct      = xtables.set_construct
+implement {
+    name      = "x_table_create",
+    actions   = xtables.create,
+    arguments = {
+        {
+            { "option" },
+            { "textwidth", "dimen" },
+            { "textheight", "dimen" },
+            { "maxwidth", "dimen" },
+            { "lineheight", "dimen" },
+            { "columndistance", "dimen" },
+            { "leftmargindistance", "dimen" },
+            { "rightmargindistance", "dimen" },
+            { "rowdistance", "dimen" },
+            { "header" },
+            { "footer" },
+        }
+    }
+}
 
-commands.x_table_r  = function() context(data.currentrow    or 0) end
-commands.x_table_c  = function() context(data.currentcolumn or 0) end
+implement {
+    name      = "x_table_flush",
+    actions   = xtables.flush,
+    arguments = {
+        {
+            { "method" },
+            { "height", "dimen" }
+        }
+    }
+}
+
+implement { name = "x_table_reflow_width",              actions = xtables.reflow_width  }
+implement { name = "x_table_reflow_height",             actions = xtables.reflow_height }
+implement { name = "x_table_construct",                 actions = xtables.construct }
+implement { name = "x_table_cleanup",                   actions = xtables.cleanup }
+implement { name = "x_table_next_row",                  actions = xtables.next_row }
+implement { name = "x_table_next_row_option",           actions = xtables.next_row, arguments = "string" }
+implement { name = "x_table_finish_row",                actions = xtables.finish_row }
+implement { name = "x_table_init_reflow_width",         actions = xtables.initialize_reflow_width  }
+implement { name = "x_table_init_reflow_height",        actions = xtables.initialize_reflow_height }
+implement { name = "x_table_init_reflow_width_option",  actions = xtables.initialize_reflow_width,  arguments = "string" }
+implement { name = "x_table_init_reflow_height_option", actions = xtables.initialize_reflow_height, arguments = "string" }
+implement { name = "x_table_init_construct",            actions = xtables.initialize_construct }
+implement { name = "x_table_set_reflow_width",          actions = xtables.set_reflow_width }
+implement { name = "x_table_set_reflow_height",         actions = xtables.set_reflow_height }
+implement { name = "x_table_set_construct",             actions = xtables.set_construct }
+implement { name = "x_table_r",                         actions = function() context(data.currentrow    or 0) end }
+implement { name = "x_table_c",                         actions = function() context(data.currentcolumn or 0) end }

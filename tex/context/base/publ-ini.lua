@@ -1,4 +1,4 @@
-7if not modules then modules = { } end modules ['publ-ini'] = {
+if not modules then modules = { } end modules ['publ-ini'] = {
     version   = 1.001,
     comment   = "this module part of publication support",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

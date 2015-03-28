@@ -111,7 +111,11 @@ end
 
 -- interface
 
-commands.definelabels = labels.define
+interfaces.implement {
+    name      = "definelabels",
+    actions   = labels.define,
+    arguments = { "string",  "string", "boolean" }
+}
 
 -- function commands.setstrippedtextprefix(str)
 --     context(string.strip(str))

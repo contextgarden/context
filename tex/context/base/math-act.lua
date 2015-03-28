@@ -473,12 +473,8 @@ setmetatableindex(extensibles,function(extensibles,font)
     return codes
 end)
 
-function mathematics.extensiblecode(family,unicode)
+local function extensiblecode(family,unicode)
     return extensibles[family_font(family or 0)][unicode][1]
-end
-
-function commands.extensiblecode(family,unicode)
-    context(extensibles[family_font(family or 0)][unicode][1])
 end
 
 -- left       : [head] ...
@@ -487,7 +483,7 @@ end
 --
 -- abs(right["start"] - right["end"]) | right.advance | characters[right.glyph].width
 
-function commands.horizontalcode(family,unicode)
+local function horizontalcode(family,unicode)
     local font    = family_font(family or 0)
     local data    = extensibles[font][unicode]
     local kind    = data[1]
@@ -511,12 +507,29 @@ function commands.horizontalcode(family,unicode)
             loffset = abs((left ["start"] or 0) - (left ["end"] or 0))
             roffset = abs((right["start"] or 0) - (right["end"] or 0))
         end
-    else
     end
-    texsetdimen("scratchleftoffset",loffset)
-    texsetdimen("scratchrightoffset",roffset)
-    context(kind)
+    return kind, loffset, roffset
 end
+
+mathematics.extensiblecode = extensiblecode
+mathematics.horizontalcode = horizontalcode
+
+interfaces.implement {
+    name      = "extensiblecode",
+    arguments = { "integer", "integer" },
+    actions   = { extensiblecode, context }
+}
+
+interfaces.implement {
+    name      = "horizontalcode",
+    arguments = { "integer", "integer" },
+    actions   = function(family,unicode)
+        local kind, loffset, roffset = horizontalcode(family,unicode)
+        texsetdimen("scratchleftoffset", loffset)
+        texsetdimen("scratchrightoffset",roffset)
+        context(kind)
+    end
+}
 
 -- experiment
 

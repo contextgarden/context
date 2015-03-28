@@ -25,7 +25,7 @@ local pattern     = Ct((separator * (C(nested) + Cc("")) * C((1-separator)^0))^0
 local ctx_settabulatelastentry = context.settabulatelastentry
 local ctx_settabulateentry     = context.settabulateentry
 
-function commands.presettabulate(preamble)
+local function presettabulate(preamble)
     preamble = gsub(preamble,"~","d") -- let's get rid of ~ mess here
     if find(preamble,"*",1,true) then
         -- todo: lpeg but not now
@@ -43,3 +43,10 @@ function commands.presettabulate(preamble)
     end
     ctx_settabulatelastentry(t[m+1])
 end
+
+interfaces.implement {
+    name      = "presettabulate",
+    actions   = presettabulate,
+    arguments = "string",
+    scope     = "private",
+}

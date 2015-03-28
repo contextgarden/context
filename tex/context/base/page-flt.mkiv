@@ -83,49 +83,49 @@
 \to \everyfloatscheck
 
 \unexpanded\def\page_floats_flush#1#2%
-  {\ctxcommand{flushfloat("#1",\number#2)}%
+  {\clf_flushfloat{#1}#2\relax
    \the\everyfloatscheck}
 
 \unexpanded\def\page_floats_flush_by_label#1#2%
-  {\ctxcommand{flushfloat("#1","#2",true)}%
+  {\clf_flushlabeledfloat{#1}{#2}\relax
    \the\everyfloatscheck}
 
 \unexpanded\def\page_floats_save#1%
-  {\ctxcommand{savefloat("#1")}%
+  {\clf_savefloat{#1}\relax
    \the\everyfloatscheck}
 
 \unexpanded\def\page_floats_resave#1%
-  {\ctxcommand{resavefloat("#1")}%
+  {\clf_resavefloat{#1}\relax
    \the\everyfloatscheck}
 
 \unexpanded\def\page_floats_push_saved
-  {\ctxcommand{pushfloat()}%
+  {\clf_pushfloat
    \the\everyfloatscheck}
 
 \unexpanded\def\page_floats_pop_saved
-  {\ctxcommand{popfloat()}%
+  {\clf_popfloat
    \the\everyfloatscheck}
 
 \unexpanded\def\page_floats_get_info#1%
-  {\ctxcommand{consultfloat("#1")}}
+  {\clf_consultfloat{#1}}
 
 \unexpanded\def\page_floats_if_else#1%
-  {\ctxcommand{doifelsesavedfloat("#1")}}
+  {\clf_doifelsestackedfloats{#1}}
 
 \unexpanded\def\page_floats_collect#1#2#3%
-  {\ctxcommand{collectfloat("#1",\number\dimexpr#2,\number\dimexpr#3)}}
+  {\clf_collectfloat{#1}\dimexpr#2\relax\dimexpr#3\relax}
 
-\unexpanded\def\nofstackedfloatincategory#1%
-  {\ctxcommand{nofstackedfloats("#1")}}
+\def\nofstackedfloatincategory#1%
+  {\clf_nofstackedfloats{#1}}
 
 \let\page_floats_column_push_saved\page_floats_push_saved % overloaded in page-mul
 \let\page_floats_column_pop_saved \page_floats_pop_saved  % overloaded in page-mul
 
 \unexpanded\def\page_floats_save_page_float#1#2%
-  {\ctxcommand{savefloat("#1", { specification = "#2" })}}
+  {\clf_savespecificfloat{#1}{specification{#2}}\relax}
 
 \unexpanded\def\page_floats_save_somewhere_float#1#2% #1=method
-  {\ctxcommand{savefloat("#1", { specification = "#2", label = "\floatlabel" })}}
+  {\clf_savespecificfloat{#1}{specification{#2}label{\floatlabel}}\relax}
 
 %D This is an experimental new feature (for Alan Braslau), a prelude to more:
 %D
@@ -256,7 +256,7 @@
 
 \def\page_floats_flush_page_floats_indeed#1% future releases can do more clever things
   {\page_floats_flush{#1}\plusone
-   \edef\floatspecification{\ctxcommand{getfloatvariable("specification")}}% Is this okay?
+   \edef\floatspecification{\clf_getfloatvariable{specification}}% Is this okay?
    \the\everybeforeflushedpagefloat
    \vbox to \textheight
      {\doifnotinset\v!high\floatspecification\vfill
@@ -265,7 +265,7 @@
    \page_otr_fill_and_eject_page}
 
 \unexpanded\def\page_floats_flush_page_floats % used in postpone
-  {\edef\m_page_otf_checked_page_float{\ctxcommand{checkedpagefloat()}}% (true) for packed
+  {\edef\m_page_otf_checked_page_float{\clf_checkedpagefloat}%
    \ifx\m_page_otf_checked_page_float\empty
      % nothing
    \else\ifx\m_page_otf_checked_page_float\v!empty

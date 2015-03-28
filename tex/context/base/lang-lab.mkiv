@@ -265,10 +265,10 @@
 \definelabelclass [mathlabel] [0] % functions
 \definelabelclass [taglabel]  [2] % tags
 
-\ctxcommand{definelabels("head",      "titles",   true )}
-\ctxcommand{definelabels("label",     "texts",    true )}
-\ctxcommand{definelabels("mathlabel", "functions",false)}
-\ctxcommand{definelabels("taglabel",  "tags",     false)}
+\clf_definelabels{head}{titles}\s!true\relax
+\clf_definelabels{label}{texts}\s!true\relax
+\clf_definelabels{mathlabel}{functions}\s!false\relax
+\clf_definelabels{taglabel}{tags}\s!false\relax
 
 %D \macros
 %D   {translate}

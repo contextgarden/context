@@ -115,7 +115,7 @@
    \c!color=, % maybe \maintextcolor
  % \c!name=,
  % \c!category=,
-   \c!threshold=.25ex,
+   \c!threshold=.25\exheight,
    \c!margin=\v!normal,
    \c!scope=\v!global,
    \c!width=,
@@ -207,7 +207,7 @@
          \the\everymargindatacontent
          \usemargindatastyleandcolor\c!style\c!color
          \setupcurrentmarginframed[\c!location=\v!normal,#textparameters]%
-\typo_margins_data_synchronize
+         \typo_margins_data_synchronize
          \inheritedmarginframedframed\bgroup
            \ifx\currentmargindatastrut\empty \else
              \synchronizestrut\currentmargindatastrut
@@ -223,7 +223,7 @@
        \edef\currentmargindatawidth{\margindataparameter\c!width}%
        \ifx\currentmargindatawidth\empty
          \setbox\nextbox\hbox \currentmarginreference \bgroup
-\typo_margins_data_synchronize
+           \typo_margins_data_synchronize
            \the\everymargindatacontent
            \usemargindatastyleandcolor\c!style\c!color
            \ifx\currentmargindatastrut\empty \else
@@ -237,7 +237,7 @@
          \let\currentmarginfirstheight\empty
        \else
          \setbox\nextbox\hbox \currentmarginreference \bgroup
-\typo_margins_data_synchronize
+           \typo_margins_data_synchronize
            \dosetraggedcommand{\margindataparameter\c!align}%
            \vtop \bgroup
              \the\everymargindatacontent
@@ -260,49 +260,49 @@
    \fi
    \ifdone
      \anch_positions_initialize % we use positions at the lua end
-     \ctxcommand{savemargindata{
-       location    = "\margindataparameter\c!location",
-       method      = "\margindataparameter\c!method",
-       category    = "\margindataparameter\c!category",
-       name        = "\margindataparameter\c!name",
-       scope       = "\margindataparameter\c!scope",
-       number      = \number\nextbox,
-       margin      = "\margindataparameter\c!margin", % local normal margin edge
-       distance    = \number\dimexpr\margindataparameter\c!distance,
-       hoffset     = \number\dimexpr\margindataparameter\c!hoffset,
-       voffset     = \number\dimexpr\margindataparameter\c!voffset,
-       dy          = \number\dimexpr\margindataparameter\c!dy,
-       bottomspace = \number\dimexpr\margindataparameter\c!bottomspace,
+     \clf_savemargindata
+       location    {\margindataparameter\c!location}%
+       method      {\margindataparameter\c!method}%
+       category    {\margindataparameter\c!category}%
+       name        {\margindataparameter\c!name}%
+       scope       {\margindataparameter\c!scope}%
+       number      \nextbox
+       margin      {\margindataparameter\c!margin}% local normal margin edge
+       distance    \dimexpr\margindataparameter\c!distance\relax
+       hoffset     \dimexpr\margindataparameter\c!hoffset\relax
+       voffset     \dimexpr\margindataparameter\c!voffset\relax
+       dy          \dimexpr\margindataparameter\c!dy\relax
+       bottomspace \dimexpr\margindataparameter\c!bottomspace\relax
      \ifx\currentmarginfirstheight\empty \else
-       baseline    = \currentmarginfirstheight,
+       baseline    {\currentmarginfirstheight}%
      \fi
-       threshold   = \number\dimexpr\margindataparameter\c!threshold, % overlap related, will change
+       threshold   \dimexpr\margindataparameter\c!threshold\relax % overlap related, will change
      \ifhmode
-       inline      = true,
+       inline      true %
      \fi
-       anchor      = "\margindataparameter\c!anchor",
+       anchor      {\margindataparameter\c!anchor}%
    %
    % we're not in forgetall
    %
    % \ifzeropt\leftskip \else
-   %   leftskip = \number\leftskip,
+   %   leftskip    \dimexpr\leftskip\relax
    % \fi
    % \ifzeropt\leftskip \else
-   %   rightskip = \number\rightskip,
+   %   rightskip   \dimexpr\rightskip\relax
    % \fi
-       align       = "\margindataparameter\c!align",
-       line        = \number\margindataparameter\c!line,
-       stack       = "\margindataparameter\c!stack",
-     }}%
+       align       {\margindataparameter\c!align}%
+       line        \numexpr\margindataparameter\c!line\relax
+       stack       {\margindataparameter\c!stack}%
+     \relax
    \else
-     \ctxcommand{savemargindata{
-       location    = "\margindataparameter\c!location",
-       method      = "\margindataparameter\c!method",
-       category    = "\margindataparameter\c!category",
-       name        = "\margindataparameter\c!name",
-       scope       = "\margindataparameter\c!scope",
-       number      = \number\nextbox,
-     }}%
+     \clf_savemargindata
+       location    {\margindataparameter\c!location}%
+       method      {\margindataparameter\c!method}%
+       category    {\margindataparameter\c!category}%
+       name        {\margindataparameter\c!name}%
+       scope       {\margindataparameter\c!scope}%
+       number      \nextbox
+     \relax
    \fi
    \endgroup}
 

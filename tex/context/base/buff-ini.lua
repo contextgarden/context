@@ -50,6 +50,8 @@ local registertempfile  = luatex.registertempfile
 
 local v_yes             = variables.yes
 
+local p_whitespace      = patterns.whitespace
+
 local catcodenumbers    = catcodes.numbers
 
 local ctxcatcodes       = catcodenumbers.ctxcatcodes
@@ -388,8 +390,27 @@ function tokens.pickup(start,stop)
             end
         end
     end
-    list = concat(list,"",1,size-stoplength-1)
-    return list
+    local start = 1
+    local stop  = size-stoplength-1
+    for i=start,stop do
+        if lpegmatch(p_whitespace,list[i]) then
+            start = i + 1
+        else
+            break
+        end
+    end
+    for i=stop,start,-1 do
+        if lpegmatch(p_whitespace,list[i]) then
+            stop = i - 1
+        else
+            break
+        end
+    end
+    if start <= stop then
+        return concat(list,"",start,stop)
+    else
+        return ""
+    end
 end
 
 -- function buffers.pickup(name,start,stop,finish,catcodes,doundent)

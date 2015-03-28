@@ -42,7 +42,8 @@
 % use \normalUchar when possible .. the next one is nice for documents and it also accepts
 % 0x prefixed numbers
 
-\def\utfchar#1{\ctxcommand{utfchar(\number#1)}}
+\def\utfchar #1{\clf_utfchar \numexpr#1\relax}
+\def\safechar#1{\clf_safechar\numexpr#1\relax}
 
 \def\checkedchar        {\relax\ifmmode\expandafter\checkedmathchar\else\expandafter\checkedtextchar\fi} % #1#2
 \def\checkedmathchar#1#2{#2}
@@ -68,21 +69,22 @@
 
 % move to lua side
 
-\ctxcommand{setlettercatcodes(\number\texcatcodes)}
-\ctxcommand{setlettercatcodes(\number\ctxcatcodes)}
-\ctxcommand{setlettercatcodes(\number\notcatcodes)}
-%ctxcommand{setlettercatcodes(\number\mthcatcodes)}
-\ctxcommand{setlettercatcodes(\number\vrbcatcodes)}
-\ctxcommand{setlettercatcodes(\number\prtcatcodes)}
-\ctxcommand{setlettercatcodes(\number\tpacatcodes)}
-\ctxcommand{setlettercatcodes(\number\tpbcatcodes)}
-\ctxcommand{setlettercatcodes(\number\txtcatcodes)}
+%clf_setcharactercodes
 
-\ctxcommand{setactivecatcodes(\number\ctxcatcodes)}
-\ctxcommand{setactivecatcodes(\number\notcatcodes)}
-\ctxcommand{setactivecatcodes(\number\prtcatcodes)}
+\clf_setlettercatcodes\texcatcodes
+\clf_setlettercatcodes\ctxcatcodes
+\clf_setlettercatcodes\notcatcodes
+%clf_setlettercatcodes\mthcatcodes
+\clf_setlettercatcodes\vrbcatcodes
+\clf_setlettercatcodes\prtcatcodes
+\clf_setlettercatcodes\tpacatcodes
+\clf_setlettercatcodes\tpbcatcodes
+\clf_setlettercatcodes\txtcatcodes
 
-\def\chardescription#1%
-  {\ctxcommand{chardescription(\number#1)}}
+\clf_setactivecatcodes\ctxcatcodes
+\clf_setactivecatcodes\notcatcodes
+\clf_setactivecatcodes\prtcatcodes
+
+\def\chardescription#1{\clf_chardescription#1\relax}
 
 \protect \endinput

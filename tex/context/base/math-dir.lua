@@ -162,4 +162,8 @@ function directions.setmath(n)
     end
 end
 
-commands.setmathdirection = directions.setmath
+interfaces.implement {
+    name      = "setmathdirection",
+    actions   = directions.setmath,
+    arguments = "integer"
+}

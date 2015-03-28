@@ -67,7 +67,7 @@
 \def\xmlincludeoptions#1#2#3#4{\clf_xmlincludeoptions   {#1}{#2}{#3}{#4}}
 \def\xmlinclusion           #1{\clf_xmlinclusion        {#1}}
 \def\xmlinclusions          #1{\clf_xmlinclusions       {#1}}
-\def\xmlindex           #1#2#3{\clf_xmlindex            {#1}{#2}#3 }
+\def\xmlindex           #1#2#3{\clf_xmlindex            {#1}{#2}\numexpr#3\relax}
 \def\xmlinlineverbatim      #1{\clf_xmlinlineverbatim   {#1}}
 \def\xmllast              #1#2{\clf_xmllast             {#1}{#2}}
 \def\xmlload              #1#2{\clf_xmlload             {#1}{#2}{\directxmlparameter\c!entities}{\directxmlparameter\c!compress}}

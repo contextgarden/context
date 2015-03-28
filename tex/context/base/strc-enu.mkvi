@@ -284,7 +284,7 @@
 
 \unexpanded\def\strc_enumerations_inject_extra_text
   {\ifconditional\c_strc_constructions_title_state
-     \ctxcommand{doiflisthastitleelse("\currentconstructionmain",\currentconstructionlistentry)}
+     \clf_doiflisthastitleelse{\currentconstructionmain}\numexpr\currentconstructionlistentry\relax
        \donothing
        \strc_enumerations_inject_extra_text_indeed
    \fi}
@@ -301,7 +301,7 @@
    \useconstructionstyleandcolor\c!titlestyle\c!titlecolor
    \constructionparameter\c!titlecommand
      {\constructionparameter\c!titleleft
-      \ctxcommand{savedlisttitle("\currentconstructionmain",\currentconstructionlistentry)}%
+      \clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax
       \constructionparameter\c!titleright}%
    \endgroup}
 
@@ -313,7 +313,7 @@
 \unexpanded\def\strc_enumerations_inject_number
   {\constructionparameter\c!left
    \constructionparameter\c!starter
-   \ctxcommand{savedlistprefixednumber("\currentconstructionmain",\currentconstructionlistentry)}%
+   \clf_savedlistprefixednumber{\currentconstructionmain}\currentconstructionlistentry\relax
    \constructionparameter\c!stopper
    \constructionparameter\c!right}
 

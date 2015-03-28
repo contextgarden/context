@@ -331,7 +331,7 @@
   {\dowithnextboxcs\tabl_tabulate_shaped_par_finish\vbox\bgroup}
 
 \def\tabl_tabulate_shaped_par_finish
-  {\ctxcommand{doreshapeframedbox(\number\nextbox)}%
+  {\clf_doreshapeframedbox\nextbox\relax
    \ifvmode\unvbox\else\box\fi\nextbox}
 
 \let\tabl_tabulate_shaped_par_end\egroup
@@ -2099,7 +2099,7 @@
    \c_tabl_tabulate_nofcolumns         \zerocount
    \c_tabl_tabulate_has_rule_spec_first\zerocount
    \c_tabl_tabulate_has_rule_spec_last \zerocount
-   \ctxcommand{presettabulate(\!!bs\detokenizedtabulationparameter\c!format\!!es)}%
+   \clf_presettabulate{\detokenizedtabulationparameter\c!format}%
    %
  % \edef\totaltabulatecolumns{\the\numexpr3*\c_tabl_tabulate_columns+\plusfour}%
    \d_tabl_tabulate_width\zeropoint

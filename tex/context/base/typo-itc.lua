@@ -58,6 +58,8 @@ local fontdata            = fonthashes.identifiers
 local italicsdata         = fonthashes.italics
 local exheights           = fonthashes.exheights
 
+local implement           = interfaces.implement
+
 local forcedvariant       = false
 
 function typesetters.italics.forcevariant(variant)
@@ -464,10 +466,21 @@ function italics.reset()
     texsetattribute(a_italics,unsetvalue)
 end
 
+implement {
+    name      = "setitaliccorrection",
+    actions   = italics.set,
+    arguments = "string"
+}
+
+implement {
+    name      = "resetitaliccorrection",
+    actions   = italics.reset,
+}
+
 local variables        = interfaces.variables
 local settings_to_hash = utilities.parsers.settings_to_hash
 
-function commands.setupitaliccorrection(option) -- no grouping !
+local function setupitaliccorrection(option) -- no grouping !
     if enable then
         enable()
     end
@@ -491,16 +504,28 @@ function commands.setupitaliccorrection(option) -- no grouping !
     end
 end
 
+implement {
+    name      = "setupitaliccorrection",
+    actions   = setupitaliccorrection,
+    arguments = "string"
+}
+
 -- for manuals:
 
 local stack = { }
 
-function commands.pushitaliccorrection()
-    table.insert(stack,{forcedvariant, texgetattribute(a_italics) })
-end
+implement {
+    name    = "pushitaliccorrection",
+    actions = function()
+        table.insert(stack,{forcedvariant, texgetattribute(a_italics) })
+    end
+}
 
-function commands.popitaliccorrection()
-    local top = table.remove(stack)
-    forcedvariant = top[1]
-    texsetattribute(a_italics,top[2])
-end
+implement {
+    name    = "popitaliccorrection",
+    actions = function()
+        local top = table.remove(stack)
+        forcedvariant = top[1]
+        texsetattribute(a_italics,top[2])
+    end
+}

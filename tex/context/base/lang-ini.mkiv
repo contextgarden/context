@@ -211,7 +211,7 @@
 
 \newtoks \everysetuplanguage
 
-\def\installedlanguages{\ctxcommand{installedlanguages()}}
+\def\installedlanguages{\clf_installedlanguages}
 
 \unexpanded\def\doiflanguageelse#1%
   {\ifcsname\??language#1\c!state\endcsname
@@ -236,10 +236,10 @@
          \lang_basics_install_indeed{#1}{#1}%
          \getparameters[\??language#1][\c!state=\v!start,#2]}%
       \edef\currentsetuplanguage{#1}%
-      \ctxcommand{definelanguage("#1","\specificlanguageparameter{#1}\s!default")}%
+      \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
       \the\everysetuplanguage}
      {\setvalue{\??languagelinked#1}{#2}%
-      \ctxcommand{setlanguagesynonym("#1","#2")}%
+      \clf_setlanguagesynonym{#1}{#2}%
       \lang_basics_install_indeed{#1}{#2}}}
 
 \def\lang_basics_install_indeed#1#2%
@@ -291,7 +291,7 @@
    \lang_basics_synchronize}
 
 \appendtoks
-    \ctxcommand{unloadlanguage("\currentsetuplanguage")}%
+    \clf_unloadlanguage{\currentsetuplanguage}%
 \to \everysetuplanguage
 
 \setuplanguage
@@ -413,11 +413,11 @@
 \def\lang_basics_synchronize_yes
   {\zerocount % see below
    \global\expandafter\chardef\csname\??languagenumbers\currentlanguage\endcsname
-      \ctxcommand{languagenumber(%
-        "\currentlanguage",%
-        "\defaultlanguage\currentlanguage",%
-        "\languageparameter\s!patterns"%
-      )}\relax
+      \clf_languagenumber
+        {\currentlanguage}%
+        {\defaultlanguage\currentlanguage}%
+        {\languageparameter\s!patterns}%
+      \relax
    \normallanguage\csname\??languagenumbers\currentlanguage\endcsname}
 
 \let\lang_basics_synchronize_nop\zerocount % not loaded anyway
@@ -733,7 +733,7 @@
    \ifx\askedlanguage\empty
      \let\askedlanguage\currentlanguage
    \fi
-   \ctxcommand{setlanguageexceptions("\askedlanguage",\!!bs#2\!!es)}%
+   \clf_setlanguageexceptions{\askedlanguage}{#2}%
    \endgroup}
 
 %D For the moment here:
@@ -749,8 +749,8 @@
 
 \unexpanded\def\samplediscretionary
   {\traceddiscretionary
-     {pre\ctxcommand{prehyphenchar()}}%
-     {\ctxcommand{posthyphenchar()}post}%
+     {pre\clf_currentprehyphenchar}%
+     {\clf_currentposthyphenchar post}%
      {replace}}
 
 % todo: make this configurable

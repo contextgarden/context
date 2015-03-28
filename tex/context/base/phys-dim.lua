@@ -50,12 +50,11 @@ local utfchar = utf.char
 physics            = physics or { }
 physics.units      = physics.units or { }
 
-local variables    = interfaces.variables
-local v_reverse    = variables.reverse
 local allocate     = utilities.storage.allocate
 
 local context      = context
 local commands     = commands
+local implement    = interfaces.implement
 
 local trace_units  = false
 local report_units = logs.reporter("units")
@@ -173,8 +172,8 @@ local p_c = (ddigitspace^1 * dskipperiod)^0                   -- ___.
 local p_c_dparser = math_one + math_two + dleader * p_c * dtrailer * dfinal
 local c_p_dparser = math_one + math_two + dleader * c_p * dtrailer * dfinal
 
-function commands.digits(str,p_c)
-    if p_c == v_reverse then
+local function makedigits(str,reverse)
+    if reverse then
         matchlpeg(p_c_dparser,str)
     else
         matchlpeg(c_p_dparser,str)
@@ -877,7 +876,7 @@ local p_c_parser = nil
 local c_p_parser = nil
 local dirty      = true
 
-function commands.unit(str,p_c)
+local function makeunit(str,reverse)
     if dirty then
         if trace_units then
             report_units("initializing parser")
@@ -886,7 +885,7 @@ function commands.unit(str,p_c)
         dirty = false
     end
     local ok
-    if p_c == v_reverse then
+    if reverse then
         ok = matchlpeg(p_c_parser,str)
     else
         ok = matchlpeg(c_p_parser,str)
@@ -932,7 +931,7 @@ local mapping = {
     packaged = "packaged",
 }
 
-function commands.registerunit(category,list)
+local function registerunit(category,list)
     if not list or list == "" then
         list = category
         category = "unit"
@@ -945,3 +944,11 @@ function commands.registerunit(category,list)
     end
  -- inspect(tables)
 end
+
+physics.units.registerunit = registerunit
+
+implement { name = "digits_normal",  actions = makedigits,   arguments = "string" }
+implement { name = "digits_reverse", actions = makedigits,   arguments = { "string", true } }
+implement { name = "unit_normal",    actions = makeunit,     arguments = "string"}
+implement { name = "unit_reverse",   actions = makeunit,     arguments = { "string", true } }
+implement { name = "registerunit",   actions = registerunit, arguments = { "string", "string" } }

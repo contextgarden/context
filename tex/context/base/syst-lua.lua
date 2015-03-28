@@ -40,6 +40,16 @@ function commands.doifelse(b)
     end
 end
 
+function commands.doifelsesomething(b)
+    if b and b ~= "" then
+        ctx_firstoftwoarguments()
+-- csprint(prtcatcodes,[[\ui_ft]]) -- ctx_firstoftwoarguments
+    else
+        ctx_secondoftwoarguments()
+-- csprint(prtcatcodes,[[\ui_st]]) -- ctx_secondoftwoarguments
+    end
+end
+
 function commands.doif(b)
     if b then
         ctx_firstofoneargument()
@@ -50,8 +60,28 @@ function commands.doif(b)
     end
 end
 
+function commands.doifsomething(b)
+    if b and b ~= "" then
+        ctx_firstofoneargument()
+-- context.__flushdirect(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
+    else
+        ctx_gobbleoneargument()
+-- context.__flushdirect(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
+    end
+end
+
 function commands.doifnot(b)
     if b then
+        ctx_gobbleoneargument()
+-- csprint(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
+    else
+        ctx_firstofoneargument()
+-- csprint(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
+    end
+end
+
+function commands.doifnotthing(b)
+    if b and b ~= "" then
         ctx_gobbleoneargument()
 -- csprint(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
     else

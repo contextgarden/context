@@ -174,7 +174,7 @@ end
 
 local enabled = false
 
-function commands.showdiscretionaries(v)
+function languages.showdiscretionaries(v)
     if v == false then
         setattribute(a_visualize,unsetvalue)
     else -- also nil
@@ -185,6 +185,11 @@ function commands.showdiscretionaries(v)
         setattribute(a_visualize,1)
     end
 end
+
+interfaces.implement {
+    name    = "showdiscretionaries",
+    actions = languages.showdiscretionaries
+}
 
 local toutf = nodes.listtoutf
 

@@ -6,10 +6,8 @@ if not modules then modules = { } end modules ['char-tex'] = {
     license   = "see context related readme files"
 }
 
-local lpeg = lpeg
-local context = context
-local commands = commands
 
+local lpeg = lpeg
 local next, type = next, type
 local format, find, gmatch = string.format, string.find, string.gmatch
 local utfchar, utfbyte = utf.char, utf.byte
@@ -22,6 +20,10 @@ local utfchartabletopattern = lpeg.utfchartabletopattern
 
 local allocate              = utilities.storage.allocate
 local mark                  = utilities.storage.mark
+
+local context               = context
+local commands              = commands
+local implement             = interfaces.implement
 
 local characters            = characters
 local texcharacters         = { }
@@ -417,15 +419,6 @@ if not context or not commands then
     return
 end
 
-function texcharacters.defineaccents()
-    for accent, group in next, accentmapping do
-        context.dodefineaccentcommand(accent)
-        for character, mapping in next, group do
-            context.dodefineaccent(accent,character,mapping)
-        end
-    end
-end
-
 -- all kind of initializations
 
 local tex           = tex
@@ -437,36 +430,48 @@ local texsetcatcode = tex.setcatcode
 local contextsprint = context.sprint
 local ctxcatcodes   = catcodes.numbers.ctxcatcodes
 
+function texcharacters.defineaccents()
+    local dodefineaccentcommand = context.dodefineaccentcommand
+    local dodefineaccent        = context.dodefineaccent
+    for accent, group in next, accentmapping do
+        dodefineaccentcommand(accent)
+        for character, mapping in next, group do
+            dodefineaccent(accent,character,mapping)
+        end
+    end
+end
+
+implement { -- a waste of scanner but consistent
+    name    = "defineaccents",
+    actions = texcharacters.defineaccents
+}
+
 --[[ldx--
 <p>Instead of using a <l n='tex'/> file to define the named glyphs, we
 use the table. After all, we have this information available anyway.</p>
 --ldx]]--
 
-function commands.makeactive(n,name) --
+function commands.makeactive(n,name) -- not used
     contextsprint(ctxcatcodes,format("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name))
  -- context("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name)
 end
 
-function commands.utfchar(c,n)
-    if n then
-     -- contextsprint(c,charfromnumber(n))
-        contextsprint(c,utfchar(n))
-    else
-     -- contextsprint(charfromnumber(c))
-        contextsprint(utfchar(c))
-    end
-end
+implement {
+    name      = "utfchar",
+    actions   = { utfchar, contextsprint },
+    arguments = "integer"
+}
 
-function commands.safechar(n)
-    local c = data[n]
-    if c and c.contextname then
-        contextsprint("\\" .. c.contextname) -- context[c.contextname]()
-    else
-        contextsprint(utfchar(n))
-    end
-end
+implement {
+    name      = "safechar",
+    actions   = { texcharacters.safechar, contextsprint },
+    arguments = "integer"
+}
 
 tex.uprint = commands.utfchar
+
+-- in contect we don't use lc and uc codes (in fact in luatex we should have a hf code)
+-- so at some point we might drop this
 
 local forbidden = tohash { -- at least now
     0x00A0,
@@ -478,13 +483,46 @@ local forbidden = tohash { -- at least now
 
 local csletters = characters.csletters -- also a signal that we have initialized
 local activated = { }
+local sfmode    = "unset" -- unset, traditional, normal
+local block_too = false
+
+directives.register("characters.blockstoo",function(v) block_too = v end)
+
+-- If this is something that is not documentwide and used a lot, then we
+-- need a more clever approach (trivial but not now).
+
+local function setuppersfcodes(v,n)
+    if sfstate ~= "unset" then
+        report_defining("setting uppercase sf codes to %a",n)
+        for u, chr in next, data do
+            if chr.category == "lu" then
+                texsetsfcode(u,n)
+            end
+        end
+    end
+    sfstate = v
+end
+
+directives.register("characters.spaceafteruppercase",function(v)
+    if v == "traditional" then
+        setuppersfcodes(v,999)
+    elseif v == "normal" then
+        setuppersfcodes(v,1000)
+    end
+end)
 
 if not csletters then
 
     csletters            = allocate()
     characters.csletters = csletters
 
-    report_defining("setting up character related commands")
+    report_defining("setting up character related codes and commands")
+
+    if sfstate == "unset" then
+        sfstate = "traditional"
+    end
+
+    local traditional = sfstate == "traditional"
 
     for u, chr in next, data do -- will move up
         local fallback = chr.fallback
@@ -494,10 +532,11 @@ if not csletters then
         else
             local contextname = chr.contextname
             local category    = chr.category
+            local isletter    = is_letter[category]
             if contextname then
                 if is_character[category] then
                     if chr.unicodeslot < 128 then
-                        if is_letter[category] then
+                        if isletter then
                             -- setmacro
                             local c = utfchar(u)
                             contextsprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,c)) -- has no s
@@ -510,26 +549,72 @@ if not csletters then
                         -- setmacro
                         local c = utfchar(u)
                         contextsprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,c)) -- has no s
-                        if is_letter[chr.category] and u >= 32 and u <= 65536 then
+                        if isletter and u >= 32 and u <= 65536 then
                             csletters[c] = u
                         end
                     end
+                    --
+                    if isletter then
+                        local lc, uc = chr.lccode, chr.uccode
+                        if not lc then
+                            chr.lccode, lc = u, u
+                        elseif type(lc) == "table" then
+                            lc = u
+                        end
+                        if not uc then
+                            chr.uccode, uc = u, u
+                        elseif type(uc) == "table" then
+                            uc = u
+                        end
+                        texsetlccode(u,lc,uc)
+                        if traditional and category == "lu" then
+                            texsetsfcode(code,999)
+                        end
+                    end
+                    --
                 elseif is_command[category] and not forbidden[u] then
                     -- set
                     contextsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}")
                     activated[#activated+1] = u
+                elseif is_mark[category] then
+                    texsetlccode(u,u,u) -- for hyphenation
                 end
-            elseif is_letter[chr.category] and u >= 32 and u <= 65536 then
+            elseif isletter and u >= 32 and u <= 65536 then
                 csletters[utfchar(u)] = u
+                --
+                local lc, uc = chr.lccode, chr.uccode
+                if not lc then
+                    chr.lccode, lc = u, u
+                elseif type(lc) == "table" then
+                    lc = u
+                end
+                if not uc then
+                    chr.uccode, uc = u, u
+                elseif type(uc) == "table" then
+                    uc = u
+                end
+                texsetlccode(u,lc,uc)
+                if traditional and category == "lu" then
+                    texsetsfcode(code,999)
+                end
+                --
+            elseif is_mark[category] then
+                --
+                texsetlccode(u,u,u) -- for hyphenation
+                --
             end
         end
     end
 
-    if false then
+    if blocks_too then
+        -- this slows down format generation by over 10 percent
         for k, v in next, blocks do
             if v.catcode == "letter" then
                 for u=v.first,v.last do
                     csletters[utfchar(u)] = u
+                    --
+                 -- texsetlccode(u,u,u) -- self self
+                    --
                 end
             end
         end
@@ -595,86 +680,63 @@ end
 <p>Setting the lccodes is also done in a loop over the data table.</p>
 --ldx]]--
 
-local sfmode = "unset" -- unset, traditional, normal
-
-function characters.setcodes()
-    if trace_defining then
-        report_defining("defining lc and uc codes")
-    end
-    local traditional = sfstate == "traditional" or sfstate == "unset"
-    for code, chr in next, data do
-        local cc = chr.category
-        if is_letter[cc] then
-            local range = chr.range
-            if range then
-                for i=range.first,range.last do
-                    texsetcatcode(i,11) -- letter
-                    texsetlccode(i,i,i) -- self self
-                end
-            else
-                local lc, uc = chr.lccode, chr.uccode
-                if not lc then
-                    chr.lccode, lc = code, code
-                elseif type(lc) == "table" then
-                    lc = code
-                end
-                if not uc then
-                    chr.uccode, uc = code, code
-                elseif type(uc) == "table" then
-                    uc = code
-                end
-                texsetcatcode(code,11)   -- letter
-                texsetlccode(code,lc,uc)
-                if traditional and cc == "lu" then
-                    texsetsfcode(code,999)
-                end
-            end
-        elseif is_mark[cc] then
-            texsetlccode(code,code,code) -- for hyphenation
-        end
-    end
-    if traditional then
-        sfstate = "traditional"
-    end
-end
-
--- If this is something that is not documentwide and used a lot, then we
--- need a more clever approach (trivial but not now).
-
-local function setuppersfcodes(v,n)
-    if sfstate ~= "unset" then
-        report_defining("setting uppercase sf codes to %a",n)
-        for code, chr in next, data do
-            if chr.category == "lu" then
-                texsetsfcode(code,n)
-            end
-        end
-    end
-    sfstate = v
-end
-
-directives.register("characters.spaceafteruppercase",function(v)
-    if v == "traditional" then
-        setuppersfcodes(v,999)
-    elseif v == "normal" then
-        setuppersfcodes(v,1000)
-    end
-end)
+-- function characters.setcodes() -- we could loop over csletters
+--     if trace_defining then
+--         report_defining("defining lc and uc codes")
+--     end
+--     local traditional = sfstate == "traditional" or sfstate == "unset"
+--     for code, chr in next, data do
+--         local cc = chr.category
+--         if is_letter[cc] then
+--             local range = chr.range
+--             if range then
+--                 for i=range.first,range.last do
+--                     texsetlccode(i,i,i) -- self self
+--                 end
+--             else
+--                 local lc, uc = chr.lccode, chr.uccode
+--                 if not lc then
+--                     chr.lccode, lc = code, code
+--                 elseif type(lc) == "table" then
+--                     lc = code
+--                 end
+--                 if not uc then
+--                     chr.uccode, uc = code, code
+--                 elseif type(uc) == "table" then
+--                     uc = code
+--                 end
+--                 texsetlccode(code,lc,uc)
+--                 if traditional and cc == "lu" then
+--                     texsetsfcode(code,999)
+--                 end
+--             end
+--         elseif is_mark[cc] then
+--             texsetlccode(code,code,code) -- for hyphenation
+--         end
+--     end
+--     if traditional then
+--         sfstate = "traditional"
+--     end
+-- end
 
 -- tex
 
-function commands.chardescription(slot)
-    local d = data[slot]
-    if d then
-        context(d.description)
-    end
-end
+implement {
+    name      = "chardescription",
+    arguments = "integer",
+    actions   = function(slot)
+        local d = data[slot]
+        if d then
+            context(d.description)
+        end
+    end,
+}
 
 -- xml
 
 characters.activeoffset = 0x10000 -- there will be remapped in that byte range
 
-function commands.remapentity(chr,slot)
+function commands.remapentity(chr,slot) -- not used
     contextsprint(format("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr))
 end
 
@@ -696,6 +758,6 @@ end
 --     entities.gt  = utfchar(characters.activeoffset + utfbyte(">"))
 -- end
 
-commands.setlettercatcodes = characters.setlettercatcodes
-commands.setactivecatcodes = characters.setactivecatcodes
-commands.setcharactercodes = characters.setcodes
+implement { name = "setlettercatcodes", scope = "private", actions = characters.setlettercatcodes, arguments = "integer" }
+implement { name = "setactivecatcodes", scope = "private", actions = characters.setactivecatcodes, arguments = "integer" }
+--------- { name = "setcharactercodes", scope = "private", actions = characters.setcodes }

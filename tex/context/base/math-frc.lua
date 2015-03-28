@@ -28,8 +28,8 @@ end)
 local ctx_normalatop = context.normalatop
 local ctx_normalover = context.normalover
 
-function commands.math_frac(how,left,right,width)
-    if how == v_no then
+local function mathfraction(how,left,right,width) -- of course we could use the scanners directly here which
+    if how == v_no then                           -- is faster but also less abstract ... maybe some day
         if left == 0x002E and right == 0x002E then
             ctx_normalatop()
         else
@@ -49,3 +49,9 @@ function commands.math_frac(how,left,right,width)
         end
     end
 end
+
+interfaces.implement {
+    name      = "mathfraction",
+    actions   = mathfraction,
+    arguments = { "string", "integer", "dimen", "dimen" }
+}

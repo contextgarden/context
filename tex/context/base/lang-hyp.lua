@@ -70,6 +70,8 @@ local trace_visualize   = false  trackers.register("hyphenator.visualize",functi
 
 local report            = logs.reporter("hyphenator")
 
+local implement         = interfaces and interfaces.implement or function() end
+
 languages               = languages or { }
 local hyphenators       = languages.hyphenators or { }
 languages.hyphenators   = hyphenators
@@ -837,10 +839,7 @@ if context then
         return register(name,featureset)
     end
 
-    traditional.definefeatures         = definefeatures
-    commands.definehyphenationfeatures = definefeatures
-
-    function commands.sethyphenationfeatures(n)
+    local function setfeatures(n)
         if not n or n == v_reset then
             n = false
         else
@@ -865,8 +864,46 @@ if context then
         texsetattribute(a_hyphenation,n or unsetvalue)
     end
 
-    commands.registerhyphenationpattern   = traditional.registerpattern
-    commands.registerhyphenationexception = traditional.registerexception
+    traditional.definefeatures = definefeatures
+    traditional.setfeatures    = setfeatures
+
+    implement {
+        name      = "definehyphenationfeatures",
+        actions   = definefeatures,
+        arguments = {
+            "string",
+            {
+                { "characters" },
+                { "hyphens" },
+                { "joiners" },
+                { "rightwordmin", "integer" },
+                { "leftcharmin", "integer" },
+                { "rightcharmin", "integer" },
+                { "leftchar", "integer" },
+                { "rightchar", "integer" },
+                { "alternative" },
+                { "rightedge" },
+            }
+        }
+    }
+
+    implement {
+        name      = "sethyphenationfeatures",
+        actions   = setfeatures,
+        arguments = "string"
+    }
+
+    implement {
+        name      = "registerhyphenationpattern",
+        actions   = traditional.registerpattern,
+        arguments = { "string",  "string",  "boolean" }
+    }
+
+    implement {
+        name      = "registerhyphenationexception",
+        actions   = traditional.registerexception,
+        arguments = { "string",  "string" }
+    }
 
     -- This is a relative large function with local variables and local
     -- functions. A previous implementation had the functions outside but
@@ -1484,22 +1521,25 @@ if context then
 
     directives.register("hyphenators.method",setmethod)
 
-    function commands.setuphyphenation(specification)
+    function hyphenators.setup(specification)
         local method = specification.method
         if method then
             setmethod(method)
         end
     end
 
-    commands.pushhyphenation = pushmethod
-    commands.pophyphenation  = popmethod
+    implement { name = "sethyphenationmethod", actions = setmethod,  arguments = "string" }
+    implement { name = "pushhyphenation",      actions = pushmethod, arguments = "string" }
+    implement { name = "pophyphenation",       actions = popmethod }
+
+    -- can become a runtime loaded one:
 
     local context      = context
     local ctx_NC       = context.NC
     local ctx_NR       = context.NR
     local ctx_verbatim = context.verbatim
 
-    function commands.showhyphenationtrace(language,word)
+    function hyphenators.showhyphenationtrace(language,word)
         if not word or word == "" then
             return
         end
@@ -1524,6 +1564,12 @@ if context then
             end
         end
     end
+
+    implement {
+        name      = "showhyphenationtrace",
+        actions   = hyphenators.showhyphenationtrace,
+        arguments = { "string", "string" }
+    }
 
     function nodes.stripdiscretionaries(head)
         local h = tonut(head)

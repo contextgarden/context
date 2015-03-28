@@ -221,12 +221,12 @@
 % we use utfchar anyway so we can as well do all at the lua end
 
 \def\math_frac_command
-  {\ctxcommand{math_frac(%
-    "\mathfractionparameter\c!rule",%
-    \number\mathfractionparameter\c!left,%
-    \number\mathfractionparameter\c!right,%
-    \number\dimexpr\mathfractionparameter\c!rulethickness%
-  )}}
+  {\clf_mathfraction
+     {\mathfractionparameter\c!rule}%
+     \numexpr\mathfractionparameter\c!left\relax
+     \numexpr\mathfractionparameter\c!right\relax
+     \dimexpr\mathfractionparameter\c!rulethickness\relax
+   \relax}
 
 % Having a \withmarginornot{#1}{#2} makes not much sense nor do 4 tests or 4 redundant
 % kerns (longer node lists plus possible interference). A split in normal and margin

@@ -242,8 +242,12 @@ function floats.checkedpagefloat(packed)
     end
 end
 
-function floats.nofstacked()
+function floats.nofstacked(which)
     return #stacks[which or default] or 0
+end
+
+function floats.hasstacked(which)
+    return (#stacks[which or default] or 0) > 0
 end
 
 -- todo: check for digits !
@@ -273,27 +277,101 @@ end
 
 -- interface
 
-local context          = context
-local context_setvalue = context.setvalue
+local context   = context
+local commands  = commands
+local implement = interfaces.implement
+local setmacro  = interfaces.setmacro
 
-commands.flushfloat    = floats.flush
-commands.savefloat     = floats.save
-commands.resavefloat   = floats.resave
-commands.pushfloat     = floats.push
-commands.popfloat      = floats.pop
-commands.consultfloat  = floats.consult
-commands.collectfloat  = floats.collect
+implement {
+    name      = "flushfloat",
+    actions   = floats.flush,
+    arguments = { "string", "integer" },
+}
 
-function commands.getfloatvariable  (...) local v = floats.getvariable(...)      if v then context(v) end end
-function commands.checkedpagefloat  (...) local v = floats.checkedpagefloat(...) if v then context(v) end end
+implement {
+    name      = "flushlabeledfloat",
+    actions   = floats.flush,
+    arguments = { "string", "string", true },
+}
 
-function commands.nofstackedfloats  (...) context(floats.nofstacked(...))             end
-function commands.doifelsesavedfloat(...) commands.doifelse(floats.nofstacked(...)>0) end
+implement {
+    name      = "savefloat",
+    actions   = floats.save,
+    arguments = "string"
+}
 
-function commands.analysefloatmethod(str) -- currently only one method
-    local method, label, row, column = floats.analysemethod(str)
-    context_setvalue("floatmethod",method or "")
-    context_setvalue("floatlabel", label  or "")
-    context_setvalue("floatrow",   row    or "")
-    context_setvalue("floatcolumn",column or "")
-end
+implement {
+    name      = "savespecificfloat",
+    actions   = floats.save,
+    arguments = {
+        "string",
+        {
+            { "specification" },
+            { "label" },
+        }
+    }
+}
+
+implement {
+    name      = "resavefloat",
+    actions   = floats.resave,
+    arguments = "string"
+}
+
+implement {
+    name      = "pushfloat",
+    actions   = floats.push
+}
+
+implement {
+    name      = "popfloat",
+    actions   = floats.pop
+}
+
+implement {
+    name      = "consultfloat",
+    actions   = floats.consult,
+    arguments = "string",
+}
+
+implement {
+    name      = "collectfloat",
+    actions   = floats.collect,
+    arguments = { "string", "dimen", "dimen" }
+}
+
+implement {
+    name      = "getfloatvariable",
+    actions   = { floats.getvariable, context },
+    arguments = "string"
+}
+
+implement {
+    name      = "checkedpagefloat",
+    actions   = { floats.checkedpagefloat, context },
+    arguments = "string"
+}
+
+implement {
+    name      = "nofstackedfloats",
+    actions   = { floats.nofstacked, context },
+    arguments = "string"
+}
+
+implement {
+    name      = "doifelsestackedfloats",
+    actions   = { floats.hasstacked, commands.doifelse },
+    arguments = "string"
+}
+
+implement {
+    name    = "analysefloatmethod",
+    actions = function(str)
+        local method, label, row, column = floats.analysemethod(str)
+        setmacro("floatmethod",method or "")
+        setmacro("floatlabel", label  or "")
+        setmacro("floatrow",   row    or "")
+        setmacro("floatcolumn",column or "")
+    end,
+    arguments = "string"
+}

@@ -1234,6 +1234,20 @@ end)
 
 -- interface
 
-commands.setmathalternate = mathematics.setalternate
-commands.setmathitalics   = mathematics.setitalics
-commands.resetmathitalics = mathematics.resetitalics
+local implement = interfaces.implement
+
+implement {
+    name      = "setmathalternate",
+    actions   = mathematics.setalternate,
+    arguments = { "integer", "string" }
+}
+
+implement {
+    name      = "setmathitalics",
+    actions   = mathematics.setitalics
+}
+
+implement {
+    name      = "resetmathitalics",
+    actions   = mathematics.resetitalics
+}

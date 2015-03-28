@@ -77,6 +77,7 @@ local format, validstring = string.format, string.valid
 local insert, remove = table.insert, table.remove
 local setmetatable, next = setmetatable, next
 local formatters = string.formatters
+local toboolean = toboolean
 
 local attributes, nodes, node, variables = attributes, nodes, node, variables
 
@@ -577,6 +578,11 @@ local function inject(parent,head,candidate)
     nofdelayed         = nofdelayed + 1
     status[nofstatus]  = candidate
     -- yet untested
+    baseline = tonumber(baseline)
+    if not baseline then
+        baseline = toboolean(baseline)
+    end
+    --
     if baseline == true then
         baseline = false
         -- hbox vtop
@@ -947,4 +953,32 @@ statistics.register("margin data", function()
     end
 end)
 
-commands.savemargindata = margins.save
+interfaces.implement {
+    name      = "savemargindata",
+    actions   = margins.save,
+    arguments = {
+        {
+           { "location" },
+           { "method" },
+           { "category" },
+           { "name" },
+           { "scope" },
+           { "number", "integer" },
+           { "margin" },
+           { "distance", "dimen" },
+           { "hoffset", "dimen" },
+           { "voffset", "dimen" },
+           { "dy", "dimen" },
+           { "bottomspace", "dimen" },
+           { "baseline"}, -- dimen or string or
+           { "threshold", "dimen" },
+           { "inline", "boolean" },
+           { "anchor" },
+        -- { "leftskip", "dimen" },
+        -- { "rightskip", "dimen" },
+           { "align" },
+           { "line", "integer" },
+           { "stack" },
+        }
+    }
+}

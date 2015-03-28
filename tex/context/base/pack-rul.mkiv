@@ -2287,8 +2287,8 @@
    \framedmaxwidth    \zeropoint
    \framedaveragewidth\zeropoint}
 
-\def\pack_framed_reshape_process{\ifvbox\b_framed_normal\ctxcommand{doreshapeframedbox(\number\b_framed_normal)}\fi}
-\def\pack_framed_reshape_analyze{\ifvbox\b_framed_normal\ctxcommand{doanalyzeframedbox(\number\b_framed_normal)}\fi}
+\def\pack_framed_reshape_process{\ifvbox\b_framed_normal\clf_doreshapeframedbox\b_framed_normal\relax\fi}
+\def\pack_framed_reshape_analyze{\ifvbox\b_framed_normal\clf_doanalyzeframedbox\b_framed_normal\relax\fi}
 
 % torture test / strange case (much depth) / method 2 needed
 %

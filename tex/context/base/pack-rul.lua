@@ -24,6 +24,8 @@ local line_code       = nodes.listcodes.line
 local texsetdimen     = tex.setdimen
 local texsetcount     = tex.setcount
 
+local implement       = interfaces.implement
+
 local nuts            = nodes.nuts
 
 local getfield        = nuts.getfield
@@ -39,7 +41,7 @@ local hpack           = nuts.hpack
 local traverse_id     = nuts.traverse_id
 local node_dimensions = nuts.dimensions
 
-function commands.doreshapeframedbox(n)
+local function doreshapeframedbox(n)
     local box            = getbox(n)
     local noflines       = 0
     local firstheight    = nil
@@ -128,7 +130,7 @@ function commands.doreshapeframedbox(n)
     texsetdimen("global","framedaveragewidth",averagewidth)
 end
 
-function commands.doanalyzeframedbox(n)
+local function doanalyzeframedbox(n)
     local box         = getbox(n)
     local noflines    = 0
     local firstheight = nil
@@ -156,6 +158,8 @@ function commands.doanalyzeframedbox(n)
     texsetdimen("global","framedlastdepth",lastdepth or 0)
 end
 
+implement { name = "doreshapeframedbox", actions = doreshapeframedbox, arguments = "integer" }
+implement { name = "doanalyzeframedbox", actions = doanalyzeframedbox, arguments = "integer" }
 
 function nodes.maxboxwidth(box)
     local boxwidth = getfield(box,"width")

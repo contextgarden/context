@@ -826,6 +826,7 @@
    \else\ifx\currentbtxnumbering\v!no
      % nothing
    \else
+     \usebtxstyleandcolor\c!style\c!color % new, needed?
      \btxparameter\c!left
      \ifconditional\c_publ_prefixed\btxlistprefixednumber\fi
      \clf_btxlistvariant % some can go
@@ -1561,20 +1562,28 @@
 %     \btxusecommand[btx:apa:list:article:title]{foo}
 % \btxstopstyle
 
+\let\savedcurrentbtx\empty
+
 \unexpanded\def\btxstartstyle[#1]%
   {\begingroup
+   \let\savedcurrentbtx\currentbtx
    \def\currentbtx{#1}%
-   \usebtxstyle\c!style}
+   \usebtxstyle\c!style
+   \let\currentbtx\savedcurrentbtx}
 
 \unexpanded\def\btxstartcolor[#1]%
   {\begingroup
+   \let\savedcurrentbtx\currentbtx
    \def\currentbtx{#1}%
-   \usebtxcolor\c!color}
+   \usebtxcolor\c!color
+   \let\currentbtx\savedcurrentbtx}
 
 \unexpanded\def\btxstartstyleandcolor[#1]%
   {\begingroup
+   \let\savedcurrentbtx\currentbtx
    \def\currentbtx{#1}%
-   \usebtxstyleandcolor\c!style\c!color}
+   \usebtxstyleandcolor\c!style\c!color
+   \let\currentbtx\savedcurrentbtx}
 
 \let\btxstopstyle        \endgroup
 \let\btxstopcolor        \endgroup

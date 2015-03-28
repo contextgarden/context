@@ -101,7 +101,7 @@
 
 \setnewconstant\defaultmathfamily \zerocount % 255
 
-\unexpanded\def\resetmathattributes{\ctxcommand{resetmathattributes()}}
+\unexpanded\def\resetmathattributes{\clf_resetmathattributes}
 
 % handy
 
@@ -143,9 +143,9 @@
 \unexpanded\def\rawmathematics#1% slow but only for tracing
   {\begingroup
    \ifmmode
-     \resetmathattributes#1%
+     \clf_resetmathattributes#1%
    \else
-     \startimath\resetmathattributes#1\stopimath
+     \startimath\clf_resetmathattributes#1\stopimath
    \fi
    \endgroup}
 
@@ -195,7 +195,7 @@
 \unexpanded\def\math_set_attribute   #1#2{\ifmmode\clf_setmathattribute{#1}{#2}\fi}
 \unexpanded\def\math_set_alphabet      #1{\ifmmode\clf_setmathalphabet{#1}\fi}
 \unexpanded\def\math_set_font_style    #1{\ifmmode\clf_setmathstyle{#1}\fi}
-\unexpanded\def\math_set_font_alternate#1{\ifmmode\ctxcommand{setmathalternate(\number\defaultmathfamily,"#1")}\fi}
+\unexpanded\def\math_set_font_alternate#1{\ifmmode\clf_setmathalternate\defaultmathfamily{#1}\fi}
 
 \installcorenamespace{mathstylealternate} % might become a setuphandler
 
@@ -309,7 +309,7 @@
 \newcount\c_math_renderings_attribute
 
 \appendtoks
-    \c_math_renderings_attribute\ctxcommand{mathrenderset("\mathematicsparameter\c!symbolset")}\relax
+    \c_math_renderings_attribute\clf_mathrenderset{\mathematicsparameter\c!symbolset}\relax
 \to \everysetupmathematics % only in mathematics
 
 \appendtoks
@@ -331,27 +331,21 @@
 \unexpanded\def\boldsymbol
   {\mathortext\mathboldsymbol\bold}
 
-%D Helpers:
+%D Helpers (assume {} being used):
 
-\def\utfmathclass  #1{\ctxcommand{utfmathclass  (\!!bs#1\!!es)}}
-\def\utfmathstretch#1{\ctxcommand{utfmathstretch(\!!bs#1\!!es)}}
-\def\utfmathcommand#1{\ctxcommand{utfmathcommand(\!!bs#1\!!es)}}
-\def\utfmathfiller #1{\ctxcommand{utfmathfiller (\!!bs#1\!!es)}}
+\let\utfmathclass        \clf_utfmathclass
+\let\utfmathstretch      \clf_utfmathstretch
+\let\utfmathcommand      \clf_utfmathcommand
+\let\utfmathfiller       \clf_utfmathfiller
 
-\def\utfmathclassfiltered  #1#2{\ctxcommand{utfmathclass  (\!!bs#1\!!es,nil,\!!bs#2\!!es)}}
-\def\utfmathcommandfiltered#1#2{\ctxcommand{utfmathcommand(\!!bs#1\!!es,nil,\!!bs#2\!!es)}}
+\let\utfmathcommandabove \clf_utfmathcommandabove
+\let\utfmathcommandbelow \clf_utfmathcommandbelow
+\let\utfmathcommandfiller\clf_utfmathcommandfiller
 
-\def\utfmathcommandabove #1{\ctxcommand{utfmathcommandabove (\!!bs#1\!!es)}}
-\def\utfmathcommandbelow #1{\ctxcommand{utfmathcommandbelow (\!!bs#1\!!es)}}
-\def\utfmathcommandfiller#1{\ctxcommand{utfmathcommandfiller(\!!bs#1\!!es)}}
-
-\unexpanded\def\doifelseutfmathaccent          #1{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es)}}
-\unexpanded\def\doifelseutfmathaccentfiltered#1#2{\ctxcommand{doifelseutfmathaccent(\!!bs#1\!!es,\!!bs#2\!!es)}}
-
-\unexpanded\def\doifelseutfmathabove           #1{\ctxcommand{doifelseutfmathabove(\!!bs#1\!!es)}}
-\unexpanded\def\doifelseutfmathbelow           #1{\ctxcommand{doifelseutfmathbelow(\!!bs#1\!!es)}}
-
-\unexpanded\def\doifelseutfmathfiller          #1{\ctxcommand{doifelseutfmathfiller(\!!bs#1\!!es)}}
+\unexpanded\def\doifelseutfmathaccent{\clf_doifelseutfmathaccent}
+\unexpanded\def\doifelseutfmathabove {\clf_doifelseutfmathabove }
+\unexpanded\def\doifelseutfmathbelow {\clf_doifelseutfmathbelow }
+\unexpanded\def\doifelseutfmathfiller{\clf_doifelseutfmathfiller}
 
 %D Not used that much:
 
@@ -531,8 +525,8 @@
 % Once this is stable we can store the number at the tex end which is
 % faster. Functions getnumbers >= 1000.
 
-\expanded\def\math_tags_mathfunction_indeed         #1{\ctxcommand{taggedmathfunction("#1",false,\ifconditional\c_apply_function true\else false\fi)}}
-\expanded\def\math_tags_mathfunctionlabeltext_indeed#1{\ctxcommand{taggedmathfunction("#1",true ,\ifconditional\c_apply_function true\else false\fi)}}
+\expanded\def\math_tags_mathfunction_indeed         #1{\clf_taggedmathfunction{#1}{false}{\ifconditional\c_apply_function true\else false\fi}}
+\expanded\def\math_tags_mathfunctionlabeltext_indeed#1{\clf_taggedmathfunction{#1} {true}{\ifconditional\c_apply_function true\else false\fi}}
 
 \expanded\def\math_tags_mo_indeed#1{\begingroup            \attribute\mathcategoryattribute\plusone  #1\endgroup}
 \expanded\def\math_tags_mi_indeed#1{\begingroup            \attribute\mathcategoryattribute\plustwo  #1\endgroup}
@@ -954,8 +948,8 @@
 
 \newcount\c_math_bidi
 
-\setvalue{\??mathbidi\v!no }{\ctxcommand{setmathdirection(0)}\c_math_bidi\attributeunsetvalue}
-\setvalue{\??mathbidi\v!yes}{\ctxcommand{setmathdirection(1)}\c_math_bidi\plusone}
+\setvalue{\??mathbidi\v!no }{\clf_setmathdirection\zerocount\relax\c_math_bidi\attributeunsetvalue}
+\setvalue{\??mathbidi\v!yes}{\clf_setmathdirection\plusone  \relax\c_math_bidi\plusone}
 
 \appendtoks
     \edef\p_bidi{\mathematicsparameter\c!bidi}%
@@ -1037,7 +1031,7 @@
 
 \def\math_italics_initialize
   {\ifnum\c_math_italics_attribute=\attributeunsetvalue \else
-     \ctxcommand{setmathitalics()}% one time
+     \clf_setmathitalics % one time
      \global\let\math_italics_initialize\relax
    \fi}
 
@@ -1920,11 +1914,8 @@
 
 % this should be a primitive:
 
-% \def\mathextensiblecode#1#2%
-%   {\cldcontext{mathematics.extensiblecode(\number#1,\number#2)}}
-
-\def\mathextensiblecode#1#2{\ctxcommand{extensiblecode(\number#1,\number#2)}}
-\def\mathhorizontalcode#1#2{\ctxcommand{horizontalcode(\number#1,\number#2)}}
+\def\mathextensiblecode#1#2{\clf_extensiblecode\numexpr#1\relax\numexpr#2\relax}
+\def\mathhorizontalcode#1#2{\clf_horizontalcode\numexpr#1\relax\numexpr#2\relax}
 
 % experimental:
 

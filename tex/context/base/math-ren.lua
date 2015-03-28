@@ -60,6 +60,8 @@ end
 
 mathematics.renderset = renderset
 
-function commands.mathrenderset(list)
-    context(renderset(list))
-end
+interfaces.implement {
+    name      = "mathrenderset",
+    actions   = { renderset, context },
+    arguments = "string",
+}

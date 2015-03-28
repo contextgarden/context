@@ -42,10 +42,10 @@
 % 2 = end of word and end of a list
 
 \unexpanded\def\setitaliccorrection[#code]% rather low level (might go away)
-  {\ctxlua{typesetters.italics.set(\number#code)}}
+  {\clf_setitaliccorrection#code\relax}
 
 \unexpanded\def\resetitaliccorrection% rather low level (might go away)
-  {\ctxlua{typesetters.italics.reset()}}
+  {\clf_resetitaliccorrection}
 
 % global : no attributes, just always (faster and less memory)
 % text   : only text
@@ -53,7 +53,7 @@
 % none   : -
 
 \unexpanded\def\setupitaliccorrection[#settings]%
-  {\ctxcommand{setupitaliccorrection("#settings")}}
+  {\clf_setupitaliccorrection{#settings}}
 
 \appendtoks
     \attribute\italicsattribute\attributeunsetvalue

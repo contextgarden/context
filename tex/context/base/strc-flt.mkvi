@@ -254,7 +254,7 @@
        \namedtaggedlabeltexts
          \t!floatlabel \currentfloat
          \t!floatnumber\currentfloat
-         {\ctxcommand{savedlistprefixednumber("\currentfloat",\currentfloatnumber)}%
+         {\clf_savedlistprefixednumber{\currentfloat}\currentfloatnumber\relax
           \thecurrentfloatnumbersuffix}%
      \fi
    \fi \fi}
@@ -263,7 +263,7 @@
   {\ifnofloatcaption \else
      \ifx\currentfloatnumber\relax\else
        \dostarttagged\t!floattext\empty
-       \ctxcommand{savedlisttitle("\currentfloat",\currentfloatnumber)}%
+       \clf_savedlisttitle{\currentfloat}\currentfloatnumber\relax
        \dostoptagged
      \fi
    \fi}
@@ -820,7 +820,7 @@
 % uses:
 
 \def\strc_floats_group_index
-  {\numexpr\ctxcommand{listgroupindex("\currentfloat","\currentfloatgroup")}\relax}
+  {\numexpr\clf_listgroupindex{\currentfloat}{\currentfloatgroup}\relax}
 
 \def\strc_floats_place_packaged_boxes
   {\expandafter\strc_floats_place_packaged_boxes_indeed\expandafter{\m_strc_floats_saved_userdata}}
@@ -2082,7 +2082,7 @@
 \definefloat
   [\v!graphic]
   [\v!graphics]
-
+
 % float strategy, replaces some of the above macros
 
 \installcorenamespace{floatmethods}
@@ -2094,7 +2094,7 @@
 \let\forcedfloatmethod\empty % set by lua
 
 \def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
-  {\ctxcommand{analysefloatmethod("#1")}}
+  {\clf_analysefloatmethod{#1}}
 
 \def\somesomewherefloat[#1]%
   {\page_floats_save_somewhere_float\s!somewhere{#1}}
