@@ -23,14 +23,9 @@ local mplib              = mplib
 metapost                 = metapost or {}
 local metapost           = metapost
 
-local scanners           = tokens.scanners
-local scanstring         = scanners.string
-local scaninteger        = scanners.integer
 local setters            = tokens.setters
 local setmacro           = setters.macro
-
-local compilescanner     = tokens.compile
-local scanners           = interfaces.scanners
+local implement          = interfaces.implement
 
 local v_no               = interfaces.variables.no
 
@@ -94,12 +89,14 @@ end
 --     context(metapost.getextensions(instance,state))
 -- end
 
-scanners.setmpextensions = compilescanner {
+implement {
+    name      = "setmpextensions",
     actions   = metapost.setextensions,
     arguments = { "string", "string" }
 }
 
-scanners.getmpextensions = compilescanner {
+implement {
+    name      = "getmpextensions",
     actions   = { metapost.getextensions, context } ,
     arguments = "string"
 }
@@ -107,7 +104,13 @@ scanners.getmpextensions = compilescanner {
 local report_metapost = logs.reporter ("metapost")
 local status_metapost = logs.messenger("metapost")
 
-local patterns = { "meta-imp-%s.mkiv", "meta-imp-%s.tex", "meta-%s.mkiv", "meta-%s.tex" } -- we are compatible
+local patterns = {
+    "meta-imp-%s.mkiv",
+    "meta-imp-%s.tex",
+    -- obsolete:
+    "meta-%s.mkiv",
+    "meta-%s.tex"
+}
 
 local function action(name,foundname)
     status_metapost("library %a is loaded",name)
@@ -120,59 +123,74 @@ local function failure(name)
     report_metapost("library %a is unknown or invalid",name)
 end
 
-scanners.useMPlibrary = function() -- name
-    commands.uselibrary {
-        name     = scanstring(),
-        patterns = patterns,
-        action   = action,
-        failure  = failure,
-        onlyonce = true,
-    }
-end
+implement {
+    name      = "useMPlibrary",
+    arguments = "string",
+    actions   = function(name)
+        resolvers.uselibrary {
+            name     = name,
+            patterns = patterns,
+            action   = action,
+            failure  = failure,
+            onlyonce = true,
+        }
+    end
+}
 
 -- metapost.variables  = { } -- to be stacked
 
-scanners.mprunvar = function() -- name
-    local value = metapost.variables[scanstring()]
-    if value ~= nil then
-        local tvalue = type(value)
-        if tvalue == "table" then
-            context(concat(value," "))
-        elseif tvalue == "number" or tvalue == "boolean" then
-            context(tostring(value))
-        elseif tvalue == "string" then
-            context(value)
+implement {
+    name      = "mprunvar",
+    arguments = "string",
+    actions   = function(name)
+        local value = metapost.variables[name]
+        if value ~= nil then
+            local tvalue = type(value)
+            if tvalue == "table" then
+                context(concat(value," "))
+            elseif tvalue == "number" or tvalue == "boolean" then
+                context(tostring(value))
+            elseif tvalue == "string" then
+                context(value)
+            end
         end
     end
-end
+}
 
-scanners.mpruntab = function() -- name n
-    local value = metapost.variables[scanstring()]
-    if value ~= nil then
-        local tvalue = type(value)
-        if tvalue == "table" then
-            context(value[scaninteger()])
-        elseif tvalue == "number" or tvalue == "boolean" then
-            context(tostring(value))
-        elseif tvalue == "string" then
-            context(value)
+implement {
+    name      = "mpruntab",
+    arguments = { "string", "integer" },
+    actions   = function(name,n)
+        local value = metapost.variables[name]
+        if value ~= nil then
+            local tvalue = type(value)
+            if tvalue == "table" then
+                context(value[n])
+            elseif tvalue == "number" or tvalue == "boolean" then
+                context(tostring(value))
+            elseif tvalue == "string" then
+                context(value)
+            end
         end
     end
-end
+}
 
-scanners.mprunset = function() -- name connector
-    local value = metapost.variables[scanstring()]
-    if value ~= nil then
-        local tvalue = type(value)
-        if tvalue == "table" then
-            context(concat(value,scanstring()))
-        elseif tvalue == "number" or tvalue == "boolean" then
-            context(tostring(value))
-        elseif tvalue == "string" then
-            context(value)
+implement {
+    name      = "mprunset",
+    actions   = function(name,connector)
+        local value = metapost.variables[name]
+        if value ~= nil then
+            local tvalue = type(value)
+            if tvalue == "table" then
+                context(concat(value,connector))
+            elseif tvalue == "number" or tvalue == "boolean" then
+                context(tostring(value))
+            elseif tvalue == "string" then
+                context(value)
+            end
         end
     end
-end
+}
 
 -- we need to move more from pps to here as pps is the plugin .. the order is a mess
 -- or just move the scanners to pps
@@ -181,64 +199,40 @@ function metapost.graphic(specification)
     metapost.graphic_base_pass(setmpsformat(specification))
 end
 
--- scanners.mpgraphic = compilescanner {
---     actions = { setmpsformat, metapost.graphic_base_pass }, -- not yet implemented
---     arguments = {
---         {
---             { "instance" },
---             { "format" },
---             { "data" },
---             { "initializations" },
---             { "extensions" },
---             { "inclusions" },
---             { "definitions" },
---             { "figure" },
---             { "method" },
---         },
---     }
--- }
-
-local get_mpgraphic_spec = compilescanner {
-    {
-        { "instance" },
-        { "format" },
-        { "data" },
-        { "initializations" },
-        { "extensions" },
-        { "inclusions" },
-        { "definitions" },
-        { "figure" },
-        { "method" },
+implement {
+    name      = "mpgraphic",
+    actions   = function(specification) metapost.graphic_base_pass(setmpsformat(specification)) end, -- not yet implemented
+    arguments = {
+        {
+            { "instance" },
+            { "format" },
+            { "data" },
+            { "initializations" },
+            { "extensions" },
+            { "inclusions" },
+            { "definitions" },
+            { "figure" },
+            { "method" },
+        }
     }
 }
 
-scanners.mpgraphic = function()
-    metapost.graphic_base_pass(setmpsformat(get_mpgraphic_spec()))
-end
+implement {
+    name      = "mpsetoutercolor",
+    actions   = function(...) metapost.setoutercolor(...) end, -- not yet implemented
+    arguments = { "integer", "integer", "integer", "integer" }
+}
 
--- scanners.mpsetoutercolor = compilescanner {
---     action    = metapost.setoutercolor, -- not yet implemented
---     arguments = { "integer", "integer", "integer", "integer" }
--- }
+implement {
+    name      = "mpflushreset",
+    actions   = function() metapost.flushreset() end -- not yet implemented
+}
 
-scanners.mpsetoutercolor = function()
-    metapost.setoutercolor(scaninteger(),scaninteger(),scaninteger(),scaninteger())
-end
-
--- scanners.mpflushreset = metapost.flushreset -- will become obsolete and internal
-
-scanners.mpflushreset = function()
-    metapost.flushreset()
-end
-
--- scanners.mpflushliteral = compilescanner {
---     action    = metapost.flushliteral, -- not yet implemented
---     arguments = "string",
--- }
-
-scanners.mpflushliteral = function()
-    metapost.flushliteral(scanstring())
-end
+implement {
+    name      = "mpflushliteral",
+    actions   = function(str) metapost.flushliteral(str) end, -- not yet implemented
+    arguments = "string",
+}
 
 function metapost.getclippath(specification) -- why not a special instance for this
     setmpsformat(specification)
@@ -295,21 +289,23 @@ function metapost.theclippath(...)
     end
 end
 
-local get_mpsetclippath_spec = compilescanner {
-    {
-        { "instance" },
-        { "format" },
-        { "data" },
-        { "initializations" },
-        { "useextensions" },
-        { "inclusions" },
-        { "method" },
-    },
+implement {
+    name      = "mpsetclippath",
+    actions   = function(specification)
+        setmacro("MPclippath",metapost.theclippath(specification),"global")
+    end,
+    arguments = {
+        {
+            { "instance" },
+            { "format" },
+            { "data" },
+            { "initializations" },
+            { "useextensions" },
+            { "inclusions" },
+            { "method" },
+        },
+    }
 }
-
-scanners.mpsetclippath = function()
-    setmacro("MPclippath",metapost.theclippath(get_mpsetclippath_spec()),"global")
-end
 
 statistics.register("metapost processing time", function()
     local n =  metapost.n
@@ -344,6 +340,10 @@ function mptex.set(str)
     environments[#environments+1] = str
 end
 
+function mptex.setfrombuffer(name)
+    environments[#environments+1] = buffers.content(name)
+end
+
 function mptex.get()
     return concat(environments,"\n")
 end
@@ -352,18 +352,24 @@ function mptex.reset()
     environments = { }
 end
 
-scanners.mptexset = function()
-    environments[#environments+1] = scanstring()
-end
+implement {
+    name      = "mptexset",
+    arguments = "string",
+    actions   = mptex.set
+}
 
-scanners.mptexget = function()
-    context(concat(environments,"\n"))
-end
+implement {
+    name      = "mptexsetfrombuffer",
+    arguments = "string",
+    actions   = mptex.setfrombuffer
+}
 
-scanners.mptexsetfrombuffer = function()
-    environments[#environments+1] = buffers.content(scanstring())
-end
+implement {
+    name      = "mptexget",
+    actions   = { mptex.get, context }
+}
 
-scanners.mptexreset = function()
-    environments = { }
-end
+implement {
+    name      = "mptexreset",
+    actions   = mptex.reset
+}

@@ -25,10 +25,9 @@ local permit_unprefixed = false  directives.register("modules.permitunprefixed",
 
 local report_modules    = logs.reporter("resolvers","modules")
 
-commands                = commands or { }
 local commands          = commands
-
 local context           = context
+local implement         = interfaces.implement
 
 local findbyscheme      = resolvers.finders.byscheme -- use different one
 local iterator          = utilities.parsers.iterator
@@ -97,7 +96,7 @@ local function usemodule(name,hasscheme)
     end
 end
 
-function commands.usemodules(prefix,askedname,truename)
+function environment.usemodules(prefix,askedname,truename)
     local truename = truename or environment.truefilename(askedname)
     local hasprefix = prefix and prefix ~= ""
     local hashname = ((hasprefix and prefix) or "*") .. "-" .. truename
@@ -184,23 +183,51 @@ end)
 
 -- moved from syst-lua.lua:
 
-local splitter = lpeg.tsplitter(lpeg.S(". "),tonumber)
+local lpegmatch = lpeg.match
+local splitter  = lpeg.tsplitter(lpeg.S(". "),tonumber)
 
-function commands.doifolderversionelse(one,two) -- one >= two
-    if not two then
+function environment.comparedversion(one,two) -- one >= two
+    if not two or two == "" then
         one, two = environment.version, one
     elseif one == "" then
         one = environment.version
     end
-    one = lpeg.match(splitter,one)
-    two = lpeg.match(splitter,two)
+    one = lpegmatch(splitter,one)
+    two = lpegmatch(splitter,two)
     one = (one[1] or 0) * 10000 + (one[2] or 0) * 100 + (one[3] or 0)
     two = (two[1] or 0) * 10000 + (two[2] or 0) * 100 + (two[3] or 0)
-    commands.doifelse(one>=two)
+    if one < two then
+        return -1
+    elseif one > two then
+        return 1
+    else
+        return 0
+    end
 end
 
-function commands.useluamodule(list)
+environment.comparedversion = comparedversion
+
+
+function environment.useluamodule(list)
     for filename in iterator(list) do
         environment.loadluafile(filename)
     end
 end
+
+implement {
+    name      = "usemodules",
+    actions   = environment.usemodules,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "doifolderversionelse",
+    actions   = function(one,two) commands.doifelse(comparedversion(one,two) >= 0) end,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "useluamodule",
+    actions   = environment.useluamodule,
+    arguments = "string"
+}

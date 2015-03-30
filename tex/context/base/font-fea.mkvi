@@ -129,7 +129,7 @@
   {\dodoubleargument\font_basics_features_list}
 
 \def\font_basics_features_list[#name][#separator]% todo: arg voor type
-  {\clf_featurelist{#name}{\luaescapestring{#separator}}}
+  {\clf_featurelist{#name}{\detokenize{#separator}}}
 
 \attribute\zerocount\zerocount % first in list, so fast match
 

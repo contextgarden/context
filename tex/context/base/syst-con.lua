@@ -7,16 +7,18 @@ if not modules then modules = { } end modules ['syst-con'] = {
 }
 
 local tonumber = tonumber
+local math = math
 local utfchar = utf.char
-local gsub, format = string.gsub, string.format
+local gsub = string.gsub
 
 converters       = converters or { }
 local converters = converters
 
 local context    = context
-local comands    = commands
+local commands   = commands
+local implement  = interfaces.implement
 
-local formatters = string,formatters
+local formatters = string.formatters
 
 --[[ldx--
 <p>For raw 8 bit characters, the offset is 0x110000 (bottom of plane 18) at
@@ -28,45 +30,39 @@ function converters.octstringtonumber(n) tonumber(n, 8) end
 
 function converters.rawcharacter     (n) utfchar(0x110000+n) end
 
-converters.lchexnumber  = formatters["%x"  ]
-converters.uchexnumber  = formatters["%X"  ]
-converters.lchexnumbers = formatters["%02x"]
-converters.uchexnumbers = formatters["%02X"]
-converters.octnumber    = formatters["%03o"]
+local lchexnumber  = formatters["%x"]
+local uchexnumber  = formatters["%X"]
+local lchexnumbers = formatters["%02x"]
+local uchexnumbers = formatters["%02X"]
+local octnumber    = formatters["%03o"]
+local nicenumber   = formatters["%0.6F"]
 
-function commands.hexstringtonumber(n) context(tonumber(n,16)) end
-function commands.octstringtonumber(n) context(tonumber(n, 8)) end
+converters.lchexnumber  = lchexnumber
+converters.uchexnumber  = uchexnumber
+converters.lchexnumbers = lchexnumbers
+converters.uchexnumbers = uchexnumbers
+converters.octnumber    = octnumber
+converters.nicenumber   = nicenumber
 
-function commands.rawcharacter     (n) context(utfchar(0x110000+n)) end
+implement { name = "hexstringtonumber", actions = { tonumber, context }, arguments = { "integer", 16 } }
+implement { name = "octstringtonumber", actions = { tonumber, context }, arguments = { "integer",  8 } }
 
-function commands.lchexnumber      (n) context("%x"  ,n) end
-function commands.uchexnumber      (n) context("%X"  ,n) end
-function commands.lchexnumbers     (n) context("%02x",n) end
-function commands.uchexnumbers     (n) context("%02X",n) end
-function commands.octnumber        (n) context("%03o",n) end
+implement { name = "rawcharacter", actions = function(n) context(utfchar(0x110000+n)) end, arguments = "integer" }
 
-function commands.format(fmt,...) -- used ?
-    fmt = gsub(fmt,"@","%%")
-    context(fmt,...)
-end
+implement { name = "lchexnumber",  actions = { lchexnumber,  context }, arguments = "integer" }
+implement { name = "uchexnumber",  actions = { uchexnumber,  context }, arguments = "integer" }
+implement { name = "lchexnumbers", actions = { lchexnumbers, context }, arguments = "integer" }
+implement { name = "uchexnumbers", actions = { uchexnumbers, context }, arguments = "integer" }
+implement { name = "octnumber",    actions = { octnumber,    context }, arguments = "integer" }
 
-local cosd, sind, tand = math.cosd, math.sind, math.tand
-local cos, sin, tan = math.cos, math.sin, math.tan
+implement { name = "sin",  actions = { math.sin,  nicenumber, context }, arguments = "number" }
+implement { name = "cos",  actions = { math.cos,  nicenumber, context }, arguments = "number" }
+implement { name = "tan",  actions = { math.tan,  nicenumber, context }, arguments = "number" }
 
--- unfortunately %s spits out: 6.1230317691119e-017
---
--- function commands.sind(n) context(sind(n)) end
--- function commands.cosd(n) context(cosd(n)) end
--- function commands.tand(n) context(tand(n)) end
---
--- function commands.sin (n) context(sin (n)) end
--- function commands.cos (n) context(cos (n)) end
--- function commands.tan (n) context(tan (n)) end
+implement { name = "sind", actions = { math.sind, nicenumber, context }, arguments = "number" }
+implement { name = "cosd", actions = { math.cosd, nicenumber, context }, arguments = "number" }
+implement { name = "tand", actions = { math.tand, nicenumber, context }, arguments = "number" }
 
-function commands.sind(n) context("%0.6F",sind(n)) end
-function commands.cosd(n) context("%0.6F",cosd(n)) end
-function commands.tand(n) context("%0.6F",tand(n)) end
+-- only as commands
 
-function commands.sin (n) context("%0.6F",sin (n)) end
-function commands.cos (n) context("%0.6F",cos (n)) end
-function commands.tan (n) context("%0.6F",tan (n)) end
+function commands.format(fmt,...) context((gsub(fmt,"@","%%")),...) end

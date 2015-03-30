@@ -27,6 +27,24 @@
 %D }
 %D \stopTEX
 
+% set ALL specific APS compliant values
+
+\definebtx
+  [aps]
+  [\c!default=default,
+   \c!specification=aps,
+   \c!otherstext={\space\btxlabeltext{aps:others}},
+   \c!etallimit=10,
+   \c!etaldisplay=\btxparameter\c!etallimit,
+   %c!journalconversion=\v!normal,
+   \c!monthconversion=\v!month,
+   optionaltitle=\v!yes,
+   \c!separator:names:2={,\space},
+   \c!separator:names:3={,\space\btxlabeltext{aps:and}\space}, % not \textampersand
+   \c!separator:names:4= {\space\btxlabeltext{aps:and}\space}] % not \textampersand
+
+% First, define and set list and rendering parameters
+
 \definebtxrendering
   [aps]
   [\c!specification=aps]
@@ -37,27 +55,10 @@
    width=auto,
    distance=0pt]
 
-% set ALL specific APS compliant values
-
-\definebtx
-  [aps]
-  [\c!default=default,
-   \c!otherstext={\space\btxlabeltext{aps:others}},
-   \c!etallimit=10,
-   \c!etaldisplay=\btxparameter\c!etallimit,
-   %c!journalconversion=\v!normal,
-   \c!monthconversion=\v!month,
-   \c!separator:names:2={,\space},
-   \c!separator:names:3={,\space\btxlabeltext{aps:and}\space}, % not \textampersand
-   \c!separator:names:4= {\space\btxlabeltext{aps:and}\space}] % not \textampersand
-
 \definebtx
   [aps:list]
   [aps]
-  [\c!authorconversion=normalshort,
-   placetitle=\v!yes] % can be set to no for journal, for example.
-
-% The following are similar to default, but inherit from aps:list
+  [\c!authorconversion=normalshort]
 
 \definebtx
   [aps:list:author]
@@ -107,6 +108,10 @@
   [aps:list:journal]
   [\c!style=\v!italic]
   %command=\btxexpandedjournal] % btxabbreviatedjournal
+
+\definebtx
+  [aps:list:volume]
+  [\c!style=\v!bold]
 
 \definebtx
   [aps:list:title]
@@ -226,16 +231,16 @@
   [aps:page]
   [\c!command={\wordright}]
 
+% Then define and set all cite parameters
+
 \definebtx
   [aps:cite]
-  [aps:list]
+  [aps]
   [\c!authorconversion=\v!name]
 
 \definebtx
   [aps:cite:author]
   [aps:cite]
-
-% The following are similar to default, but inherit from aps:cite
 
 \definebtx
   [aps:cite:authoryear]
@@ -667,7 +672,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:aps:optional-title
-    \doif{\btxparameter{placetitle}}\v!yes {
+    \doif{\btxparameter{optionaltitle}}\v!yes {
         \texdefinition {btx:aps:title}
     }
 \stoptexdefinition
@@ -768,14 +773,15 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:aps:journal-volumeset-year
+\starttexdefinition btx:aps:journal-volume-year
     \btxdoif {journal} {
         % expandedjournal abbreviatedjournal
         \btxflush{expandedjournal -> journal}
-        % A newspaper may not have a volume but may have a number!
         \btxdoifelse {volume} {
             \btxspace
-            \texdefinition{btx:aps:bold}{volume}
+            \btxstartstyleandcolor [aps:list:volume]
+                \btxflush{volume}
+            \btxstopstyleandcolor
             \btxdoif {number} {
                 \removeunwantedspaces(
                 \btxflush{number}
@@ -788,14 +794,13 @@
                 \btxcomma
             }
         }
-        \btxdoif {number} {
+        \btxdoif {pages} {
             \btxspace
             \btxflush{pages}
         }
         \btxleftparenthesis
         \texdefinition{btx:aps:year}
         \btxrightparenthesis
-        \btxperiod
     }
 \stoptexdefinition
 
@@ -823,58 +828,8 @@
     \btxrightparenthesis
 \stoptexdefinition
 
-\definebreakpoints[doi]
-\definebreakpoint [doi][:][nleft=3,type=1]
-\definebreakpoint [doi][/][nleft=3,type=1]
-\definebreakpoint [doi][-][nleft=3,type=1]
-\definebreakpoint [doi][.][nleft=3,type=1]
-
-% use \btxentry here?
-\starttexdefinition btx:aps:url
-    \btxspace
-    \begingroup
-        \setbreakpoints[doi]
-        \ifconditional\btxinteractive
-            \goto {
-                \btxflush{url}
-            } [
-                url(\btxflush{url})
-            ]
-        \else
-            \btxflush{url}
-        \fi
-    \endgroup
-\stoptexdefinition
-
-% use \btxentry here?
-\starttexdefinition btx:aps:doi
-    \btxspace
-    \begingroup
-        \setbreakpoints[doi]
-        \ifconditional\btxinteractive
-            \goto {
-                doi:\btxflush{doi}
-            } [
-                url(http://dx.doi.org/\btxflush{doi})
-            ]
-        \else
-            doi:\btxflush{doi}
-        \fi
-    \endgroup
-\stoptexdefinition
-
-% also issn - see publ-imp-aps.lua
-\starttexdefinition btx:aps:isbn
-    \btxdoif {isbn} {
-        \btxleftparenthesis
-        \WORD{\btxfoundname{isbn}}:\btxspace
-        \setbreakpoints[doi]
-        \btxflush{isbn}
-        \btxrightparenthesis
-    }
-\stoptexdefinition
-
 \starttexdefinition btx:aps:note
+    \btxperiod
     \btxdoif {note} {
         \btxleftparenthesis
         \btxflush{note}
@@ -882,16 +837,21 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:aps:url-doi-note
-    \doif {\btxfoundname{doi}} {url} {
-        \texdefinition{btx:aps:url}
-    }
-    \texdefinition{btx:aps:isbn}
-    \doif {\btxfoundname{doi}} {doi} {
-        \texdefinition{btx:aps:doi}
-    }
-    \texdefinition{btx:aps:note}
-    \removeunwantedspaces
+\starttexdefinition btx:aps:doi-url #text
+    \ifconditional\btxinteractive
+        \btxdoifelse {doi} {
+            \goto {#text} [url(http://dx.doi.org/\btxflush{doi})]
+        } {
+            \btxdoifelse {url} {
+                \goto {#text} [url(\btxflush{url})]
+            } {
+                #text
+            }
+        }
+    \else
+        #text
+    \fi
+
 \stoptexdefinition
 
 % Then setups, by category
@@ -904,8 +864,8 @@
 \startsetups btx:aps:list:article
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:optional-title}
-    \texdefinition{btx:aps:journal-volumeset-year}
-    \texdefinition{btx:aps:url-note-doi}
+    \texdefinition{btx:aps:doi-url} {\texdefinition{btx:aps:journal-volume-year}}
+    \texdefinition{btx:aps:note}
 \stopsetups
 
 % An article from a magazine.
@@ -918,7 +878,7 @@
 
 % An article from a newspaper.
 % Required fields: author or title, journal, (year).
-% Optional fields: volume, number, pages, type, month, day, doi, url, note.
+% Optional fields: number, pages, type, month, day, doi, url, note.
 
 \startsetups btx:aps:list:newspaper
     \fastsetup{btx:aps:list:article}
@@ -940,7 +900,7 @@
 \startsetups btx:aps:list:standard
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:title}
-    \texdefinition{btx:aps:url-doi-note}
+    \texdefinition{btx:aps:note}
 \stopsetups
 % year?
 
@@ -955,8 +915,8 @@
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:title}
     \texdefinition{btx:aps:editionset}
-    \texdefinition{btx:aps:publisher-wherefrom-year}
-    \texdefinition{btx:aps:url-doi-note}
+    \texdefinition{btx:aps:doi-url} {\texdefinition{btx:aps:publisher-wherefrom-year}}
+    \texdefinition{btx:aps:note}
 \stopsetups
 
 % There is some debate about how inbook should differ from incollection
@@ -973,8 +933,8 @@
     \texdefinition{btx:aps:title}
     \texdefinition{btx:aps:editor-in}
     \texdefinition{btx:aps:editionset}
-    \texdefinition{btx:aps:publisher-wherefrom-year}
-    \texdefinition{btx:aps:url-doi-note}
+    \texdefinition{btx:aps:doi-url} {\texdefinition{btx:aps:publisher-wherefrom-year}}
+    \texdefinition{btx:aps:note}
 \stopsetups
 % chapter?
 
@@ -1010,8 +970,8 @@
         \btxflush{organization}
         \btxcomma
     }
-    \texdefinition{btx:aps:publisher-wherefrom-year}
-    \texdefinition{btx:aps:url-doi-note}
+    \texdefinition{btx:aps:doi-url} {\texdefinition{btx:aps:publisher-wherefrom-year}}
+    \texdefinition{btx:aps:note}
 \stopsetups
 
 \startsetups btx:aps:list:conference
@@ -1051,7 +1011,7 @@
         }
     }
     \btxperiod
-    \texdefinition{btx:aps:url-doi-note}
+    \texdefinition{btx:aps:note}
 \stopsetups
 
 \startsetups btx:aps:list:phdthesis
@@ -1121,7 +1081,7 @@
         \btxperiod
         \italiccorrection
     \endgroup
-    \texdefinition{btx:aps:publisher-wherefrom-year}
+    \texdefinition{btx:aps:doi-url} {\texdefinition{btx:aps:publisher-wherefrom-year}}
     \texdefinition{btx:aps:url}
     \texdefinition{btx:aps:note}
 \stopsetups
@@ -1146,7 +1106,7 @@
         \btxflush{howpublished}
         \btxperiod
     }
-    \texdefinition{btx:aps:url-doi-note}
+    \texdefinition{btx:aps:note}
 \stopsetups
 
 % Other. Note that this category was not defined with BIBTEX. Below from JabRef:
@@ -1169,7 +1129,7 @@
         \btxflush{howpublished}
         \btxperiod
     }
-    \texdefinition{btx:aps:url-doi-note}
+    \texdefinition{btx:aps:note}
 \stopsetups
 
 % If all else fails to match:

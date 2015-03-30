@@ -8,26 +8,30 @@ if not modules then modules = { } end modules ['strc-lev'] = {
 
 local insert, remove = table.insert, table.remove
 
-local context  = context
-local commands = commands
+local context     = context
+local interfaces  = interfaces
 
-local sections = structures.sections
-local default  = interfaces.variables.default
+local sections    = structures.sections
+local implement   = interfaces.implement
 
-sections.levels = sections.levels or { }
+local v_default   = interfaces.variables.default
 
-local level, levels, categories = 0, sections.levels, { }
+sections.levels   = sections.levels or { }
 
-storage.register("structures/sections/levels", levels, "structures.sections.levels")
+local level       = 0
+local levels      = sections.levels
+local categories  = { }
 
 local f_two_colon = string.formatters["%s:%s"]
 
-function commands.definesectionlevels(category,list)
+storage.register("structures/sections/levels", levels, "structures.sections.levels")
+
+local function definesectionlevels(category,list)
     levels[category] = utilities.parsers.settings_to_array(list)
 end
 
-function commands.startsectionlevel(category)
-    category = category ~= "" and category or default
+local function startsectionlevel(category)
+    category = category ~= "" and category or v_default
     level = level + 1
     local lc = levels[category]
     if not lc or level > #lc then
@@ -38,7 +42,7 @@ function commands.startsectionlevel(category)
     insert(categories,category)
 end
 
-function commands.stopsectionlevel()
+local function stopsectionlevel()
     local category = remove(categories)
     if category then
         local lc = levels[category]
@@ -52,3 +56,20 @@ function commands.stopsectionlevel()
         -- error
     end
 end
+
+implement {
+    name      = "definesectionlevels",
+    actions   = definesectionlevels,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "startsectionlevel",
+    actions   = startsectionlevel,
+    arguments = "string"
+}
+
+implement {
+    name      = "stopsectionlevel",
+    actions   = stopsectionlevel,
+}

@@ -33,7 +33,7 @@
 \installcommandhandler \??block {block} \??block
 
 \appendtoks
-    \ctxcommand{definestructureblock("\currentblock")}%
+    \clf_definestructureblock{\currentblock}%
     \setuevalue{\e!begin\currentblock}{\dodoubleempty\strc_blocks_begin[\currentblock]}%
     \setuevalue{\e!end  \currentblock}{}%
 \to \everydefineblock
@@ -41,7 +41,7 @@
 \unexpanded\def\strc_blocks_begin[#1][#2]%
   {\normalexpanded{\buff_pickup{@block@}{\e!begin#1}{\e!end#1}}
      {}% before
-     {\ctxcommand{savestructureblock("#1","#2","@block@")}}%
+     {\clf_savestructureblock{#1}{#2}{@block@}}%
      \plusone}% after
 
 \let\strc_blocks_setup\relax
@@ -72,17 +72,17 @@
    \egroup}
 
 \def\strc_blocks_set_state[#1][#2][#3]% state name tag
-  {\ctxcommand{setstructureblockstate("#1","#2","#3")}}
+  {\clf_setstructureblockstate{#1}{#2}{#3}}
 
 \def\strc_blocks_select[#1][#2][#3][#4]% state name tag setups
   {\bgroup
    \doifassignmentelse{#3}
      {\getparameters[\??blocktemp][\c!criterium=\v!text,#3]%
       \def\strc_blocks_setup{\setupcurrentblock[#3]}%
-      \ctxcommand{selectstructureblock("#1","#2","","\csname\??blocktemp\c!criterium\endcsname")}}
+      \clf_selectstructureblock{#1}{#2}{}{\csname\??blocktemp\c!criterium\endcsname}}
      {\getparameters[\??blocktemp][\c!criterium=\v!text,#4]%
       \def\strc_blocks_setup{\setupcurrentblock[#4]}%
-      \ctxcommand{selectstructureblock("#1","#2","#3","\csname\??blocktemp\c!criterium\endcsname")}}%
+      \clf_selectstructureblock{#1}{#2}{#3}{\csname\??blocktemp\c!criterium\endcsname}}%
    \egroup}
 
 % hide   : save, if [+] also hidden execute

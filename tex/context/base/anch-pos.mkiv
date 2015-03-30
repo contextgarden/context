@@ -288,7 +288,7 @@
    \clf_markregionboxcorrected#1{textarea:\the\c_anch_text}}
 
 \unexpanded\def\anch_make_page_box#1% maybe like text
-  {\clf_markregionboxtagged#1{page:\the\realpageno}} % needs an hbox
+  {\clf_setregionboxtagged#1{page:\the\realpageno}}
 
 \unexpanded\def\anch_mark_text_box#1%
   {\clf_markregionboxtagged#1{text:\the\realpageno}} % needs an hbox

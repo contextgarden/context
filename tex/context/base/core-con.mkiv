@@ -67,47 +67,43 @@
 %D \showsetup{romannumerals}
 %D \showsetup{Romannumerals}
 
-\def\romannumerals#1{\ctxcommand{romannumerals(\number#1)}}
-\def\Romannumerals#1{\ctxcommand{Romannumerals(\number#1)}}
+\def\romannumerals#1{\clf_romannumerals\numexpr#1\relax}
+\def\Romannumerals#1{\clf_Romannumerals\numexpr#1\relax}
 
 %D Arabic  etc:
 
-\def\abjadnumerals     #1{\ctxcommand{abjadnumerals     (\number#1)}}
-\def\abjadnodotnumerals#1{\ctxcommand{abjadnodotnumerals(\number#1)}}
-\def\abjadnaivenumerals#1{\ctxcommand{arabicnumerals    (\number#1)}}
+\def\abjadnumerals     #1{\clf_abjadnumerals     \numexpr#1\relax}
+\def\abjadnodotnumerals#1{\clf_abjadnodotnumerals\numexpr#1\relax}
+\def\abjadnaivenumerals#1{\clf_alphabetic        \numexpr#1\relax{arabic}} % okay?
 
-\def\languagecharacters#1{\ctxcommand{alphabetic(\number#1,"\currentlanguage")}} % new
-\def\languageCharacters#1{\ctxcommand{Alphabetic(\number#1,"\currentlanguage")}} % new
+\def\languagecharacters#1{\clf_alphabetic\numexpr#1\relax{\currentlanguage}} % new
+\def\languageCharacters#1{\clf_Alphabetic\numexpr#1\relax{\currentlanguage}} % new
 
-\def\alphabeticnumerals#1{\ctxcommand{alphabetic(\number#1)}}
-\def\Alphabeticnumerals#1{\ctxcommand{Alphabetic(\number#1)}}
+\def\alphabeticnumerals#1{\clf_alphabetic\numexpr#1\relax{}}
+\def\Alphabeticnumerals#1{\clf_Alphabetic\numexpr#1\relax{}}
 
-% we could use an auxiliary macro to save some bytes in the format
-%
-% \def\dolanguagecharacters#1#2{\ctxcommand{alphabetic(\number#2,"#1")}}
-
-\def\thainumerals      #1{\ctxcommand{alphabetic(\number#1,"thai")}}
-\def\devanagarinumerals#1{\ctxcommand{alphabetic(\number#1,"devanagari")}}
-\def\gurmurkhinumerals #1{\ctxcommand{alphabetic(\number#1,"gurmurkhi")}}
-\def\gujaratinumerals  #1{\ctxcommand{alphabetic(\number#1,"gujarati")}}
-\def\tibetannumerals   #1{\ctxcommand{alphabetic(\number#1,"tibetan")}}
-\def\greeknumerals     #1{\ctxcommand{alphabetic(\number#1,"greek")}}
-\def\Greeknumerals     #1{\ctxcommand{Alphabetic(\number#1,"greek")}}
-\def\arabicnumerals    #1{\ctxcommand{alphabetic(\number#1,"arabic")}}
-\def\persiannumerals   #1{\ctxcommand{alphabetic(\number#1,"persian")}}
+\def\thainumerals      #1{\clf_alphabetic\numexpr#1\relax{thai}}
+\def\devanagarinumerals#1{\clf_alphabetic\numexpr#1\relax{devanagari}}
+\def\gurmurkhinumerals #1{\clf_alphabetic\numexpr#1\relax{gurmurkhi}}
+\def\gujaratinumerals  #1{\clf_alphabetic\numexpr#1\relax{gujarati}}
+\def\tibetannumerals   #1{\clf_alphabetic\numexpr#1\relax{tibetan}}
+\def\greeknumerals     #1{\clf_alphabetic\numexpr#1\relax{greek}}
+\def\Greeknumerals     #1{\clf_Alphabetic\numexpr#1\relax{greek}}
+\def\arabicnumerals    #1{\clf_alphabetic\numexpr#1\relax{arabic}}
+\def\persiannumerals   #1{\clf_alphabetic\numexpr#1\relax{persian}}
 
 \let\arabicexnumerals     \persiannumerals
 
-\def\koreannumerals    #1{\ctxcommand{alphabetic(\number#1,"korean")}}
-\def\koreannumeralsp   #1{\ctxcommand{alphabetic(\number#1,"korean-parent")}}
-\def\koreannumeralsc   #1{\ctxcommand{alphabetic(\number#1,"korean-circle")}}
+\def\koreannumerals    #1{\clf_alphabetic\numexpr#1\relax{korean}}
+\def\koreannumeralsp   #1{\clf_alphabetic\numexpr#1\relax{korean-parent}}
+\def\koreannumeralsc   #1{\clf_alphabetic\numexpr#1\relax{korean-circle}}
 
 \let\koreanparentnumerals\koreannumeralsp
 \let\koreancirclenumerals\koreannumeralsc
 
-\def\chinesenumerals   #1{\ctxcommand{chinesenumerals   (\number#1)}}
-\def\chinesecapnumerals#1{\ctxcommand{chinesecapnumerals(\number#1,"cap")}}
-\def\chineseallnumerals#1{\ctxcommand{chineseallnumerals(\number#1,"all")}}
+\def\chinesenumerals   #1{\clf_chinesenumerals\numexpr#1\relax{normal}}
+\def\chinesecapnumerals#1{\clf_chinesenumerals\numexpr#1\relax{cap}}
+\def\chineseallnumerals#1{\clf_chinesenumerals\numexpr#1\relax{all}}
 
 %D \macros
 %D   {character,Character}
@@ -127,8 +123,8 @@
 
 \def\unknowncharacter{-} % else in lists \relax
 
-\def\character#1{\ctxcommand{character(\number#1)}}
-\def\Character#1{\ctxcommand{Character(\number#1)}}
+\def\character#1{\clf_character\numexpr#1\relax}
+\def\Character#1{\clf_Character\numexpr#1\relax}
 
 %D \macros
 %D   {characters,Characters}
@@ -139,8 +135,8 @@
 %D \showsetup{characters}
 %D \showsetup{Characters}
 
-\def\characters#1{\ctxcommand{characters(\number#1)}}
-\def\Characters#1{\ctxcommand{Characters(\number#1)}}
+\def\characters#1{\clf_characters\numexpr#1\relax}
+\def\Characters#1{\clf_Characters\numexpr#1\relax}
 
 %D \macros
 %D   {greeknumerals,Greeknumerals}
@@ -209,8 +205,8 @@
 %D
 %D Anyhow, the conversion looks like:
 
-\unexpanded\def\monthlong #1{\ctxcommand{monthname(#1)}}
-\unexpanded\def\monthshort#1{\ctxcommand{monthmnem(#1)}}
+\unexpanded\def\monthlong #1{\clf_monthname\numexpr#1\relax}
+\unexpanded\def\monthshort#1{\clf_monthmnem\numexpr#1\relax}
 
 \let\convertmonth\monthlong % for old times sake
 
@@ -243,16 +239,16 @@
 %D \showsetup{weekday}
 %D \showsetup{WEEKDAY}
 
-\unexpanded\def\weekday#1{\ctxcommand{day(#1)}}
-\unexpanded\def\WEEKDAY#1{\WORD{\weekday{#1}}}
+\unexpanded\def\weekday#1{\clf_day\numexpr#1\relax}
+\unexpanded\def\WEEKDAY#1{\WORD{\clf_day\numexpr#1\relax}}
 
 %D \macros
 %D   {getdayoftheweek, dayoftheweek}
 
 \newcount\normalweekday
 
-           \def\dayoftheweek   #1#2#3{\ctxcommand{weekdayname(\number#1,\number#2,\number#3)}}                 % name
-\unexpanded\def\getdayoftheweek#1#2#3{\normalweekday\ctxcommand{weekday(\number#1,\number#2,\number#3)}\relax} % number
+           \def\dayoftheweek   #1#2#3{\clf_weekdayname\numexpr#1\relax\numexpr#2\relax,\numexpr#3\relax}                 % name
+\unexpanded\def\getdayoftheweek#1#2#3{\normalweekday\clf_weekday\numexpr#1\relax\numexpr#2\relax,\numexpr#3\relax\relax} % number
 
 %D Using this macro in
 %D
@@ -298,13 +294,13 @@
 %D The number of days is available in the macro \type {\numberofdays}.
 
 \def\doifleapyearelse#1%
-  {\ctxcommand{doifleapyearelse(\number#1)}}
+  {\clf_doifleapyearelse\numexpr#1\relax}
 
 \unexpanded\def\getdayspermonth#1#2%
-  {\edef\numberofdays{\ctxcommand{nofdays(\number#1,\number#2)}}}
+  {\edef\numberofdays{\clf_nofdays\numexpr#1\relax\numexpr#2\relax}}
 
 \def\dayspermonth#1#2%
-  {\ctxcommand{nofdays(\number#1,\number#2)}}
+  {\clf_nofdays\numexpr#1\relax\numexpr#2\relax}
 
 % \dayoftheweek{2006}{9}{15}
 % \doifleapyearelse{2000}{OK}{NOT OK}
@@ -416,7 +412,7 @@
   {\begingroup
    \the\everycurrentdate
    \doifsomething{#1}{\edef\currentdatespecification{#1}}%
-   \ctxcommand{currentdate(\!!bs\currentdatespecification\!!es,"\labellanguage")}%
+   \clf_currentdate{\currentdatespecification}{\labellanguage}%
    \endgroup}
 
 \unexpanded\def\date
@@ -437,7 +433,7 @@
    \endgroup}
 
 \def\rawdate[#1]% expandable and no labels
-  {\ctxcommand{rawdate(\!!bs\currentdatespecification\!!es)}}
+  {\clf_rawdate{\currentdatespecification}}
 
 %D \macros
 %D   {currenttime}
@@ -446,9 +442,9 @@
 %D to the previous date macro using the keys \type {h}, \type {m} and a separator.
 
 \unexpanded\def\calculatecurrenttime
-  {\edef\currenthour  {\ctxcommand{hour  ()}}%
-   \edef\currentminute{\ctxcommand{minute()}}%
-   \edef\currentsecond{\ctxcommand{second()}}}
+  {\edef\currenthour  {\clf_hour  }%
+   \edef\currentminute{\clf_minute}%
+   \edef\currentsecond{\clf_second}}
 
 \let\currenthour  \!!plusone
 \let\currentminute\!!plusone
@@ -542,12 +538,12 @@
 
 \def\syst_converters_define_conversion_indeed#1#2#3%
   {\doifinstringelse{,}{\detokenize{#3}}
-     {\ctxcommand{defineconversion("#2",\!!bs\detokenize{#3}\!!es)}% a set e.g. of symbols
+     {\clf_defineconversion{#2}{\detokenize{#3}}% a set e.g. of symbols
       \setgvalue{\??conversion#1}{\syst_converters_checked_conversion{#2}}}
      {\setgvalue{\??conversion#1}{#3}}}
 
 \def\syst_converters_checked_conversion#1#2%
-  {\ctxcommand{checkedconversion("#1",#2)}}
+  {\clf_checkedconversion{#1}\numexpr#2\relax}
 
 %D If a conversion is just a font switch then we need to make sure that the
 %D number is indeed ends up as number in the input, so we need to handle the
@@ -609,10 +605,10 @@
 
 \def\highordinalstr     #1{\high{\notsmallcapped{#1}}}
 \def\ordinalstr         #1{\notsmallcapped{#1}}
-\def\ordinaldaynumber   #1{\ctxcommand{ordinal(#1,"\currentlanguage")}}
+\def\ordinaldaynumber   #1{\clf_ordinal\numexpr#1\relax{\currentlanguage}}
 
-\def\verbosenumber      #1{\ctxcommand{verbose(#1,"\currentlanguage")}}
-\def\VerboseNumber      #1{\Words{\ctxcommand{verbose(#1,"\currentlanguage")}}}
+\def\verbosenumber      #1{\clf_verbose\numexpr#1\relax{\currentlanguage}}
+\def\VerboseNumber      #1{\Words{\clf_verbose\numexpr#1\relax{\currentlanguage}}}
 
 %D As longs as symbols are linked to levels or numbers, we can also use the
 %D conversion mechanism, but in for instance the itemization macros, we prefer
@@ -721,11 +717,11 @@
 %D feature. We do need these definitions for mechanisms like itemize that check
 %D for converters.
 
-\def\sloveniannumerals#1{\ctxcommand{alphabetic(\number#1,"sl")}}
-\def\slovenianNumerals#1{\ctxcommand{Alphabetic(\number#1,"sl")}}
+\def\sloveniannumerals#1{\clf_alphabetic\numexpr#1\relax{sl}}
+\def\slovenianNumerals#1{\clf_Alphabetic\numexpr#1\relax{sl}}
 
-\def\spanishnumerals  #1{\ctxcommand{alphabetic(\number#1,"es")}}
-\def\spanishNumerals  #1{\ctxcommand{Alphabetic(\number#1,"es")}}
+\def\spanishnumerals  #1{\clf_alphabetic\numexpr#1\relax{es}}
+\def\spanishNumerals  #1{\clf_Alphabetic\numexpr#1\relax{es}}
 
 \defineconversion [\s!sl] [character]  [\sloveniannumerals]
 \defineconversion [\s!sl] [Character]  [\slovenianNumerals]

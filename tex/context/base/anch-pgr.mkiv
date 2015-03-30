@@ -127,22 +127,25 @@
 %D the head and tail anchors from this one. We set these
 %D anchors before and after each page.
 
+\newdimen\c_anch_page_width
+\newdimen\c_anch_page_height
+
 \unexpanded\def\anch_positions_register_page#1% this one is flushed first ! ... can't we avoid this one
   {\ifpositioning\ifcase\realpageno\or
-     \ifdim\printpaperheight=\paperheight
-       \ifdim\printpaperwidth=\paperwidth
-         % not needed,
+     \ifdim\c_anch_page_height=\paperheight
+       \ifdim\c_anch_page_width=\paperwidth
+         % no change
        \else
-         \anch_positions_register_page_indeed{#1}%
+         \c_anch_page_width \paperwidth
+         \c_anch_page_height\paperheight
+         \anch_make_page_box{#1}% \ifvbox#1\setbox#1\hbox{\box#1}\fi
        \fi
      \else
-       \anch_positions_register_page_indeed{#1}%
+       \c_anch_page_width \paperwidth
+       \c_anch_page_height\paperheight
+       \anch_make_page_box{#1}% \ifvbox#1\setbox#1\hbox{\box#1}\fi
      \fi
    \fi\fi}
-
-\def\anch_positions_register_page_indeed#1% maybe like text
-  {\ifvbox#1\setbox#1\hbox{\box#1}\fi
-   \anch_make_page_box{#1}}
 
 \unexpanded\def\anch_positions_place_anchors
   {\ifpositioning

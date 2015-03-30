@@ -16,6 +16,8 @@ local allocate = utilities.storage.allocate
 local context     = context
 local commands    = commands
 
+local implement   = interfaces.implement
+
 local structures  = structures
 
 structures.blocks = structures.blocks or { }
@@ -154,8 +156,7 @@ end
 
 -- interface
 
-
-commands.definestructureblock   = blocks.define
-commands.savestructureblock     = blocks.save
-commands.selectstructureblock   = blocks.select
-commands.setstructureblockstate = blocks.setstate
+implement { name = "definestructureblock",   actions = blocks.define,   arguments = "string" }
+implement { name = "savestructureblock",     actions = blocks.save,     arguments = { "string", "string" ,"string" } }
+implement { name = "selectstructureblock",   actions = blocks.select,   arguments = { "string", "string" ,"string", "string" } }
+implement { name = "setstructureblockstate", actions = blocks.setstate, arguments = { "string", "string" ,"string" } }

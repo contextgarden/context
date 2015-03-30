@@ -1490,7 +1490,7 @@ end
 lxml.content = text
 
 function lxml.position(id,pattern,n)
-    position(xmlapplylpath(getid(id),pattern),n)
+    position(xmlapplylpath(getid(id),pattern),tonumber(n))
 end
 
 function lxml.chainattribute(id,pattern,a,default)
@@ -1506,7 +1506,7 @@ function lxml.concat(id,pattern,separator,lastseparator,textonly)
 end
 
 function lxml.element(id,n)
-    position(xmlapplylpath(getid(id),"/*"),n)
+    position(xmlapplylpath(getid(id),"/*"),tonumber(n)) -- tonumber handy
 end
 
 lxml.index = lxml.position

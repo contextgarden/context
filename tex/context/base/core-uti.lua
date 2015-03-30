@@ -29,6 +29,8 @@ local packers       = utilities.packers
 local allocate      = utilities.storage.allocate
 local mark          = utilities.storage.mark
 
+local implement     = interfaces.implement
+
 local texgetcount   = tex.getcount
 
 local report_passes = logs.reporter("job","passes")
@@ -378,5 +380,14 @@ function statistics.formatruntime(runtime)
     end
 end
 
-commands.savevariable  = job.variables.save
-commands.setjobcomment = job.comment
+implement {
+    name      = "savevariable",
+    actions   = job.variables.save,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "setjobcomment",
+    actions   = job.comment,
+    arguments = { { "*" } }
+}

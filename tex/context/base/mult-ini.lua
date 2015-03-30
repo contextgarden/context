@@ -287,7 +287,7 @@ function interfaces.writestatus(category,message)
     reporters[category](message) -- could also be a setmetatablecall
 end
 
-implement { name = "registernamespace",    actions = interfaces.registernamespace, arguments = { "string", "string" } }
+implement { name = "registernamespace",    actions = interfaces.registernamespace, arguments = { "integer", "string" } }
 implement { name = "setinterfaceconstant", actions = interfaces.setconstant,       arguments = { "string", "string" } }
 implement { name = "setinterfacevariable", actions = interfaces.setvariable,       arguments = { "string", "string" } }
 implement { name = "setinterfaceelement",  actions = interfaces.setelement,        arguments = { "string", "string" } }
@@ -319,6 +319,7 @@ local function showassignerror(namespace,key,line)
     if ns then
         namespace = corenamespaces[tonumber(ns)] or ns
     end
+    -- injected in the stream for timing:
     if instance and instance ~= "" then
         context.writestatus("setup",formatters["error in line %a, namespace %a, instance %a, key %a"](line,namespace,instance,key))
     else

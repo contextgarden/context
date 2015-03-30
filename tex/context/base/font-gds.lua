@@ -9,16 +9,23 @@ if not modules then modules = { } end modules ['font-gds'] = {
 -- depends on ctx
 
 local type, next, tonumber = type, next, tonumber
-local gmatch, format, lower, find, splitup = string.gmatch, string.format, string.lower, string.find, string.splitup
-local texsp = tex.sp
+local gmatch, lower, find, splitup = string.gmatch, string.lower, string.find, string.splitup
 
-local fonts, nodes, attributes, node = fonts, nodes, attributes, node
+local fonts              = fonts
+local nodes              = nodes
+local attributes         = attributes
+local node               = node
 
 local trace_goodies      = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
 local report_goodies     = logs.reporter("fonts","goodies")
 
 local allocate           = utilities.storage.allocate
 local setmetatableindex  = table.setmetatableindex
+
+local implement          = interfaces.implement
+
+local texsp              = tex.sp
+local formatters         = string.formatters
 
 local otf                = fonts.handlers.otf
 local afm                = fonts.handlers.afm
@@ -429,7 +436,7 @@ local function setextrafeatures(tfmdata)
                     addotffeature(tfmdata.shared.rawdata,feature,specification)
                     registerotffeature {
                         name        = feature,
-                        description = format("extra: %s",feature)
+                        description = formatters["extra: %s"](feature)
                     }
                 end
             end
@@ -819,8 +826,16 @@ end
 
 -- interface
 
-commands.loadfontgoodies        = fontgoodies.load
-commands.enablefontcolorschemes = colorschemes.enable
+implement {
+    name      = "loadfontgoodies",
+    actions   = fontgoodies.load,
+    arguments = "string"
+}
+
+implement {
+    name      = "enablefontcolorschemes",
+    actions   = colorschemes.enable
+}
 
 -- weird place ... depends on math
 

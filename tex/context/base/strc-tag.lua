@@ -389,10 +389,10 @@ function tags.elementtag()
 end
 
 function tags.setuserproperties(tag,list)
-    if list then
-        tag = tagcontext[tag]
-    else
+    if not list or list == "" then
         tag, list = chain[stacksize], tag
+    else
+        tag = tagcontext[tag]
     end
     if tag then -- an attribute now
         local l = settings_to_hash(list)
@@ -478,14 +478,7 @@ implement { name = "settagproperty_n", actions = tags.setproperty, arguments = {
 implement { name = "getelementtag",    actions = { tags.elementtag, context } }
 
 implement {
-    name      = "setelementuserproperties_o",
-    scope     = "private",
-    actions   = tags.setuserproperties,
-    arguments = "string"
-}
-
-implement {
-    name      = "setelementuserproperties_t",
+    name      = "setelementuserproperties",
     scope     = "private",
     actions   = tags.setuserproperties,
     arguments = { "string", "string" }

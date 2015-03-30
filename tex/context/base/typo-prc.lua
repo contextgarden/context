@@ -11,7 +11,7 @@ local lpegmatch, patterns, P, C, Cs = lpeg.match, lpeg.patterns, lpeg.P, lpeg.C,
 -- processors: syntax: processor->data ... not ok yet
 
 local context           = context
-local commands          = commands
+local implement         = interfaces.implement
 
 local formatters        = string.formatters
 
@@ -125,5 +125,5 @@ end
 
 -- interface
 
-commands.registerstructureprocessor = processors.register
-commands.resetstructureprocessor    = processors.reset
+implement { name = "registerstructureprocessor", actions = processors.register, arguments = "string" }
+implement { name = "resetstructureprocessor",    actions = processors.reset,    arguments = "string" }

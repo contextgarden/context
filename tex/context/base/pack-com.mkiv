@@ -178,7 +178,7 @@
 \unexpanded\def\pack_common_caption_stop {\removeunwantedspaces\egroup}
 
 \unexpanded\def\stopcombination
-  {\bgroup\normalexpanded{\egroup{}\ctxcommand{ntimes("{}{}",\number\c_pack_combinations_n)}}% brr
+  {\bgroup\normalexpanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_n}% brr
    \dostoptagged
    \egroup
    \egroup}

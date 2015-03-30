@@ -44,31 +44,6 @@
 \ifdefined \s!public    \else \def\s!public   {public}    \fi % for metatex % or hard check later
 \ifdefined \s!attribute \else \def\s!attribute{attribute} \fi % for metatex % or hard check later
 
-% \unexpanded\def\defineattribute
-%   {\dodoubleempty\attr_basics_define}
-%
-% \unexpanded\def\definesystemattribute
-%   {\dodoubleempty\attr_basics_define_system}
-%
-% \def\attr_basics_define[#1]%
-%   {\expandafter\newattribute\csname\??attributecount#1\endcsname
-%    \expandafter\newconstant \csname\??attributeid#1\endcsname
-%    \csname\??attributeid#1\endcsname\c_syst_last_allocated_attribute
-%    \ctxcommand{defineattribute("#1",\number\csname\??attributeid#1\endcsname)}%
-%    \attr_basics_define_properties[#1]}
-%
-% \def\attr_basics_define_system[#1]%
-%   {\scratchcounter\ctxcommand{getprivateattribute("#1")}\relax
-%    \expandafter\attributedef\csname\??attributecount#1\endcsname\scratchcounter
-%    \expandafter\newconstant \csname\??attributeid#1\endcsname
-%    \csname\??attributeid#1\endcsname\scratchcounter
-%   %\writestatus\m!system{defining system attribute #1 with number \number\scratchcounter}%
-%    \attr_basics_define_properties[#1]}
-%
-% \def\attr_basics_define_properties[#1][#2]%
-%   {\doifnotinset\s!global{#2}{\appendetoks\csname\??attributecount#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
-%    \doifinset   \s!public{#2}{\expandafter\let\csname#1\s!attribute\expandafter\endcsname\csname\??attributeid#1\endcsname}}
-
 \unexpanded\def\defineattribute      {\dodoubleempty\attr_basics_define}
 \unexpanded\def\definesystemattribute{\dodoubleempty\attr_basics_define_system}
 
@@ -76,7 +51,7 @@
 \def\attr_basics_define_system{\attr_basics_define_indeed{private}}
 
 \def\attr_basics_define_indeed#1[#2][#3]%
-  {\scratchcounter\ctxcommand{defineattribute("#2","#1")}\relax
+  {\scratchcounter\clf_defineattribute{#2}{#1}\relax
   %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
    \expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
    \expandafter\newconstant \csname\??attributeid#2\endcsname
@@ -101,8 +76,8 @@
 
 %D Rather special.
 
-\unexpanded\def\savecurrentattributes   #1{\ctxcommand{savecurrentattributes   ("#1")}}
-\unexpanded\def\restorecurrentattributes#1{\ctxcommand{restorecurrentattributes("#1")}}
+\unexpanded\def\savecurrentattributes   #1{\clf_savecurrentattributes   {#1}}
+\unexpanded\def\restorecurrentattributes#1{\clf_restorecurrentattributes{#1}}
 
 %D For the moment we put this here (later it will move to where it's used):
 
@@ -127,6 +102,6 @@
 \definesystemattribute [checkedbreak]        [public]
 \definesystemattribute [vboxtohboxseparator] [public]
 
-\unexpanded\def\showattributes{\ctxcommand{showattributes()}}
+\unexpanded\def\showattributes{\clf_showattributes}
 
 \protect \endinput

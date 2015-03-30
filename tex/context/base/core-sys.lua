@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['core-sys'] = {
 local lower, format, gsub = string.lower, string.format, string.gsub
 local suffixonly, basename, removesuffix = file.suffix, file.basename, file.removesuffix
 
-local environment = environment
+local environment  = environment
+local implement    = interfaces.implement
 
 local report_files = logs.reporter("system","files")
 
@@ -90,6 +91,11 @@ function environment.initializefilenames() -- commands.updatefilenames(jobname,f
     function environment.initializefilenames() end
 end
 
+implement {
+    name      = "setdocumentfilenames",
+    actions   = environment.initializefilenames,
+}
+
 statistics.register("result saved in file", function()
     -- suffix will be fetched from backend
     local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
@@ -100,6 +106,10 @@ statistics.register("result saved in file", function()
     end
 end)
 
-function commands.systemlog(whereto,category,text)
-    logs.system(whereto,"context",tex.jobname,category,text)
-end
+implement {
+    name      = "systemlog",
+    arguments = { "string", "string", "string" },
+    actions   = function(whereto,category,text)
+        logs.system(whereto,"context",tex.jobname,category,text)
+    end,
+}

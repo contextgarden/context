@@ -27,6 +27,18 @@
 %D }
 %D \stopTEX
 
+% set ALL specific APA compliant values
+
+\definebtx
+  [apa]
+  [\c!default=default,
+   \c!specification=apa,
+   \c!otherstext={\space\btxlabeltext{apa:others}},
+   %c!journalconversion=\v!normal,
+   \c!monthconversion=\v!month]
+
+% First, define list and rendering parameters
+
 % The APA style sorts the unnumbered rendered list by authoryear
 
 \definebtxrendering
@@ -42,15 +54,6 @@
    \c!distance=.5\emwidth,
    \c!margin=3\emwidth]
 
-% set ALL specific APA compliant values
-
-\definebtx
-  [apa]
-  [\c!default=default,
-   \c!otherstext={\space\btxlabeltext{apa:others}},
-   %c!journalconversion=\v!normal,
-   \c!monthconversion=\v!month]
-
 \definebtx
   [apa:list]
   [apa]
@@ -61,8 +64,6 @@
    \c!separator:names:2={,\space}, % aka namesep - in this namespace
    \c!separator:names:3={,\nobreakspace\textampersand\space}, % comma separated list
    \c!separator:names:4= {\nobreakspace\textampersand\space}] % last of two, no comma!
-
-% The following are similar to default, but inherit from apa:list
 
 \definebtx
   [apa:list:author]
@@ -225,11 +226,11 @@
   [apa:page]
   [\c!command={\wordright}]
 
-% The APA style defines authoryear citations.
+% Then define and set cite parameters.
 
 \definebtx
   [apa:cite]
-  [apa:list]
+  [apa]
   [\c!alternative=authoryear,
    \c!otherstext={,\space\btxlabeltext{apa:others}},
    \c!etallimit=5,
@@ -243,8 +244,6 @@
 \definebtx
   [apa:cite:author]
   [apa:cite]
-
-% The following are similar to default, but inherit from apa:cite
 
 \definebtx
   [apa:cite:authoryear]
@@ -440,8 +439,6 @@
    apa:Advanced={Advanced online publication},
    apa:Retrieved={Available from},    % {Retrieved from},
    apa:In=In]
-
-% Check this (google translate!!):
 
 \setupbtxlabeltext
   [nl]
@@ -791,7 +788,8 @@
             \texdefinition{btx:apa:suffixedyear}
             \btxrightparenthesis
         }
-    \btxperiod % outside of interaction
+    % outside of interaction
+    \btxperiod
     \doif {\btxfoundname{author}} {title} {
         \setmode{btx:apa:title-placed}
     }

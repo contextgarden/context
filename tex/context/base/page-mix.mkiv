@@ -544,23 +544,23 @@
 
 \unexpanded\def\page_mix_routine_construct#1%
   {\d_page_mix_max_height\mixedcolumnsparameter\c!maxheight % can have changed due to header=high
-   \ctxcommand{mixsetsplit {
-       box          = \number\b_page_mix_collected,
-       nofcolumns   = \number\c_page_mix_n_of_columns,
-       maxheight    = \number\d_page_mix_max_height,
-       step         = \number\d_page_mix_balance_step,
-       cycles       = \number\c_page_mix_balance_cycles,
-       preheight    = \number\d_page_mix_preceding_height,
-       prebox       = \number\b_page_mix_preceding,
-       strutht      = \number\strutht,
-       strutdp      = \number\strutdp,
-       threshold    = \number\d_page_mix_threshold,
-       splitmethod  = "\mixedcolumnsparameter\c!splitmethod",
-       balance      = "#1",
-       alternative  = "\mixedcolumnsparameter\c!alternative",
-       grid         = \ifgridsnapping true\else false\fi,
-       internalgrid = "\mixedcolumnsparameter\c!internalgrid",
-   }}%
+   \clf_mixsetsplit
+       box          \b_page_mix_collected
+       nofcolumns   \c_page_mix_n_of_columns
+       maxheight    \d_page_mix_max_height
+       step         \d_page_mix_balance_step
+       cycles       \c_page_mix_balance_cycles
+       preheight    \d_page_mix_preceding_height
+       prebox       \b_page_mix_preceding
+       strutht      \strutht
+       strutdp      \strutdp
+       threshold    \d_page_mix_threshold
+       splitmethod  {\mixedcolumnsparameter\c!splitmethod}%
+       balance      {#1}%
+       alternative  {\mixedcolumnsparameter\c!alternative}%
+       internalgrid {\mixedcolumnsparameter\c!internalgrid}%
+       grid         \ifgridsnapping true\else false\fi
+   \relax
    \deadcycles\zerocount}
 
 \newdimen\mixedcolumnseparatorheight
@@ -589,7 +589,7 @@
    \fi}
 
 \unexpanded\def\page_mix_routine_package
-  {\ctxcommand{mixfinalize()}%
+  {\clf_mixfinalize
    \setbox\b_page_mix_collected\vbox \bgroup
      \ifvoid\b_page_mix_preceding \else
        \page_postprocessors_linenumbers_deepbox\b_page_mix_preceding
@@ -608,7 +608,7 @@
 \unexpanded\def\page_mix_command_package_column
   {\page_mix_hbox to \d_page_mix_column_width \bgroup
      % maybe intercept empty
-     \ctxcommand{mixgetsplit(\recurselevel)}%
+     \clf_mixgetsplit\recurselevel\relax
      \hskip-\d_page_mix_column_width
      \page_mix_hbox to \d_page_mix_column_width \bgroup
        \placenoteinserts
@@ -624,8 +624,8 @@
    \page_mix_routine_construct\v!no
    \page_mix_routine_package
    \page_otr_construct_and_shipout\box\b_page_mix_collected
-   \ctxcommand{mixflushrest()}%
-   \ctxcommand{mixcleanup()}%
+   \clf_mixflushrest
+   \clf_mixcleanup
    \egroup}
 
 \unexpanded\def\page_mix_routine_balance
@@ -636,9 +636,9 @@
    \doloop
      {%writestatus\m!columns{construct continue (\the\htdp\b_page_mix_collected)}%
       \page_mix_routine_construct\v!no
-      \ifcase\ctxcommand{mixstate()}\relax
+      \ifcase\clf_mixstate\relax
         % 0 = okay, we can balance
-        \setbox\b_page_mix_collected\vbox{\ctxcommand{mixflushlist()}}% we could avoid this
+        \setbox\b_page_mix_collected\vbox{\clf_mixflushlist}% we could avoid this
         %writestatus\m!columns{construct balance}%
         \page_mix_routine_construct\v!yes
         \page_mix_routine_package
@@ -653,16 +653,16 @@
         \par
         \nointerlineskip
         \prevdepth\strutdp
-        \ctxcommand{mixflushrest()}% rubish
-        \ctxcommand{mixcleanup()}%   rubish
+        \clf_mixflushrest% rubish
+        \clf_mixcleanup  % rubish
         \exitloop
       \or
         % 1 = we have stuff left, so flush and rebalance
         %writestatus\m!columns{flush continue}%
         \page_mix_routine_package
         \page_otr_construct_and_shipout\box\b_page_mix_collected
-        \setbox\b_page_mix_collected\vbox{\ctxcommand{mixflushrest()}}% we could avoid this
-        \ctxcommand{mixcleanup()}%
+        \setbox\b_page_mix_collected\vbox{\clf_mixflushrest}% we could avoid this
+        \clf_mixcleanup
         \ifdim\ht\b_page_mix_collected=\zeropoint
             \exitloop
         \fi
@@ -757,8 +757,8 @@
    \page_mix_routine_construct\v!yes
    \page_mix_routine_package
    \dontleavehmode\box\b_page_mix_collected
-   \ctxcommand{mixflushrest()}%
-   \ctxcommand{mixcleanup()}%
+   \clf_mixflushrest
+   \clf_mixcleanup
    \egroup}
 
 %D As usual, floats complicates matters and this is where experimental code

@@ -24,6 +24,7 @@ local P, C, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.match
 
 local context            = context
 local commands           = commands
+local implement          = interfaces.implement
 
 local settings_to_array  = utilities.parsers.settings_to_array
 local allocate           = utilities.storage.allocate
@@ -39,10 +40,8 @@ local languages          = languages
 converters.number  = tonumber
 converters.numbers = tonumber
 
-commands.number  = context
-commands.numbers = context
-
-ctx_doifelse     = commands.doifelse
+implement { name = "number",  actions = context }
+implement { name = "numbers", actions = context }
 
 -- to be reconsidered ... languages namespace here, might become local plus a register command
 
@@ -223,8 +222,13 @@ local function do_alphabetic(n,mapping,mapper,t) -- todo: make zero based varian
     end
 end
 
-local function alphabetic(n,code) return do_alphabetic(n,code and counters[code] or defaultcounter,lowercharacter) end
-local function Alphabetic(n,code) return do_alphabetic(n,code and counters[code] or defaultcounter,uppercharacter) end
+local function alphabetic(n,code)
+    return do_alphabetic(n,code and code ~= "" and counters[code] or defaultcounter,lowercharacter)
+end
+
+local function Alphabetic(n,code)
+    return do_alphabetic(n,code and code ~= "" and counters[code] or defaultcounter,uppercharacter)
+end
 
 converters.alphabetic = alphabetic
 converters.Alphabetic = Alphabetic
@@ -242,12 +246,13 @@ converters['A']  = converters.Characters
 converters['AK'] = converters.Characters
 converters['KA'] = converters.Characters
 
-function commands.alphabetic(n,c) context(do_alphabetic(n,c and counters[c] or defaultcounter,lowercharacter)) end
-function commands.Alphabetic(n,c) context(do_alphabetic(n,c and counters[c] or defaultcounter,uppercharacter)) end
-function commands.character (n)   context(chr (n,lower_offset)) end
-function commands.Character (n)   context(chr (n,upper_offset)) end
-function commands.characters(n)   context(chrs(n,lower_offset)) end
-function commands.Characters(n)   context(chrs(n,upper_offset)) end
+implement { name = "alphabetic", actions = { alphabetic, context }, arguments = { "integer", "string" } }
+implement { name = "Alphabetic", actions = { Alphabetic, context }, arguments = { "integer", "string" } }
+
+implement { name = "character",  actions = { chr,  context }, arguments = { "integer", lower_offset } }
+implement { name = "Character",  actions = { chr,  context }, arguments = { "integer", upper_offset } }
+implement { name = "characters", actions = { chrs, context }, arguments = { "integer", lower_offset } }
+implement { name = "Characters", actions = { chrs, context }, arguments = { "integer", upper_offset } }
 
 local weekday    = os.weekday    -- moved to l-os
 local isleapyear = os.isleapyear -- moved to l-os
@@ -273,20 +278,22 @@ converters.leapyear   = leapyear
 converters.nofdays    = nofdays
 converters.textime    = textime
 
-function commands.weekday (day,month,year) context(weekday (day,month,year)) end
-function commands.leapyear(year)           context(leapyear(year))           end -- rather useless, only for ifcase
-function commands.nofdays (year,month)     context(nofdays (year,month))     end
+implement { name = "weekday",  actions = { weekday,  context }, arguments = { "integer", "integer", "integer" } }
+implement { name = "leapyear", actions = { leapyear, context }, arguments = { "integer" } }
+implement { name = "nofdays",  actions = { nofdays,  context }, arguments = { "integer", "integer" } }
 
-function commands.year   () context(date("%Y")) end
-function commands.month  () context(date("%m")) end
-function commands.hour   () context(date("%H")) end
-function commands.minute () context(date("%M")) end
-function commands.second () context(date("%S")) end
-function commands.textime() context(textime()) end
+implement { name = "year",     actions = { date,     context }, arguments = "'%Y'" }
+implement { name = "month",    actions = { date,     context }, arguments = "'%m'" }
+implement { name = "hour",     actions = { date,     context }, arguments = "'%H'" }
+implement { name = "minute",   actions = { date,     context }, arguments = "'%M'" }
+implement { name = "second",   actions = { date,     context }, arguments = "'%S'" }
+implement { name = "textime",  actions = { textime,  context } }
 
-function commands.doifleapyearelse(year)
-    ctx_doifelse(isleapyear(year))
-end
+implement {
+    name      = "doifleapyearelse",
+    actions   = { isleapyear, commands.doifelse },
+    arguments = "integer"
+}
 
 local roman = {
     { [0] = '', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX' },
@@ -313,8 +320,17 @@ converters['R']  = converters.Romannumerals
 converters['KR'] = converters.Romannumerals
 converters['RK'] = converters.Romannumerals
 
-function commands.romannumerals(n) context(lower(toroman(n))) end
-function commands.Romannumerals(n) context(      toroman(n))  end
+implement {
+    name      = "romannumerals",
+    actions   = { toroman, lower, context },
+    arguments = "integer",
+}
+
+implement {
+    name      = "Romannumerals",
+    actions   = { toroman, context },
+    arguments = "integer",
+}
 
 --~ local small = {
 --~     0x0627, 0x066E, 0x062D, 0x062F, 0x0647, 0x0648, 0x0631
@@ -367,8 +383,17 @@ converters.toabjad = toabjad
 function converters.abjadnumerals     (n) return toabjad(n,false) end
 function converters.abjadnodotnumerals(n) return toabjad(n,true ) end
 
-function commands.abjadnumerals     (n) context(toabjad(n,false)) end
-function commands.abjadnodotnumerals(n) context(toabjad(n,true )) end
+implement {
+    name      = "abjadnumerals",
+    actions   = { toabjad, context },
+    arguments = { "integer", false }
+}
+
+implement {
+    name      = "abjadnodotnumerals",
+    actions   = { toabjad, context },
+    arguments = { "integer", true }
+}
 
 local vector = {
     normal = {
@@ -510,13 +535,19 @@ end
 
 converters.tochinese = tochinese
 
-function converters.chinesenumerals   (n) return tochinese(n,"normal") end
-function converters.chinesecapnumerals(n) return tochinese(n,"cap"   ) end
-function converters.chineseallnumerals(n) return tochinese(n,"all"   ) end
+function converters.chinesenumerals   (n,how) return tochinese(n,how or "normal") end
+function converters.chinesecapnumerals(n)     return tochinese(n,"cap") end
+function converters.chineseallnumerals(n)     return tochinese(n,"all") end
 
 converters['cn']   = converters.chinesenumerals
 converters['cn-c'] = converters.chinesecapnumerals
 converters['cn-a'] = converters.chineseallnumerals
+
+implement {
+    name      = "chinesenumerals",
+    actions   = { tochinese, context },
+    arguments = { "integer", "string" }
+}
 
 -- this is a temporary solution: we need a better solution when we have
 -- more languages
@@ -532,10 +563,6 @@ converters['characters:sl'] = converters.sloveniannumerals
 converters['Characters:es'] = converters.Spanishnumerals
 converters['Characters:sl'] = converters.Sloveniannumerals
 
-function commands.chinesenumerals   (n) context(tochinese(n,"normal")) end
-function commands.chinesecapnumerals(n) context(tochinese(n,"cap"   )) end
-function commands.chineseallnumerals(n) context(tochinese(n,"all"   )) end
-
 converters.sequences = converters.sequences or { }
 local sequences      = converters.sequences
 
@@ -548,7 +575,11 @@ function converters.define(name,set) -- ,language)
     sequences[name] = settings_to_array(set)
 end
 
-commands.defineconversion = converters.define
+implement {
+    name      = "defineconversion",
+    actions   = converters.define,
+    arguments = { "string", "string" }
+}
 
 local function convert(method,n,language)
     local converter = language and converters[method..":"..language] or converters[method]
@@ -575,13 +606,21 @@ end
 
 converters.convert = convert
 
-function commands.doifelseconverter(method,language)
-    ctx_doifelse(converters[method..":"..language] or converters[method] or sequences[method])
+local function valid(method,language)
+    return converters[method..":"..language] or converters[method] or sequences[method]
 end
 
-function commands.checkedconversion(method,n,language)
-    context(convert(method,n,language))
-end
+implement {
+    name      = "doifelseconverter",
+    actions   = { valid, commands.doifelse },
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "checkedconversion",
+    actions   = { convert, context },
+    arguments = { "string", "integer" }
+}
 
 -- Well, since the one asking for this didn't test it the following code is not
 -- enabled.
@@ -756,7 +795,7 @@ function converters.ordinal(n,language)
     return t and t(n)
 end
 
-function commands.ordinal(n,language)
+local function ctxordinal(n,language)
     local t = language and ordinals[language]
     local o = t and t(n)
     context(n)
@@ -764,6 +803,12 @@ function commands.ordinal(n,language)
         context.highordinalstr(o)
     end
 end
+
+implement {
+    name      = "ordinal",
+    actions   = ctxordinal,
+    arguments = { "string", "string" }
+}
 
 -- verbose numbers
 
@@ -1007,10 +1052,16 @@ function converters.verbose.translate(n,language)
     return t and t.translate(n) or n
 end
 
-function commands.verbose(n,language)
+local function verbose(n,language)
     local t = language and data[language]
     context(t and t.translate(n) or n)
 end
+
+implement {
+    name      = "verbose",
+    actions   = verbose,
+    arguments = { "integer", "string" }
+}
 
 -- These are just helpers but not really for the tex end. Do we have to
 -- use translate here?
@@ -1074,33 +1125,60 @@ local months = { -- not variables.january
     "december",
 }
 
-function commands.dayname(n)
-    context.labeltext(days[n] or "unknown")
+local function dayname(n)
+    return days[n] or "unknown"
 end
 
-function commands.weekdayname(day,month,year)
-    context.labeltext(days[weekday(day,month,year)] or "unknown")
+local function weekdayname(day,month,year)
+    return days[weekday(day,month,year)] or "unknown"
 end
 
-function commands.monthname(n)
-    context.labeltext(months[n] or "unknown")
+local function monthname(n)
+    return months[n] or "unknown"
 end
 
-function commands.monthmnem(n)
+local function monthmnem(n)
     local m = months[n]
-    context.labeltext(m and (m ..":mnem") or "unknown")
+    return m and (m ..":mnem") or "unknown"
 end
+
+implement {
+    name      = "dayname",
+    actions   = { dayname,  context.labeltext },
+    arguments = "integer",
+}
+
+implement {
+    name      = "weekdayname",
+    actions   = { weekdayname,  context.labeltext },
+    arguments = { "integer", "integer", "integer" }
+}
+
+implement {
+    name      = "monthname",
+    actions   = { monthname,  context.labeltext },
+    arguments = { "integer" }
+}
+
+implement {
+    name      = "monthmnem",
+    actions   = { monthmnem,  context.labeltext },
+    arguments = { "integer" }
+}
 
 -- a prelude to a function that we can use at the lua end
 
 -- day:ord month:mmem
 -- j and jj obsolete
 
-function commands.currentdate(str,currentlanguage) -- second argument false : no label
+local function currentdate(str,currentlanguage) -- second argument false : no label
     local list = utilities.parsers.settings_to_array(str)
     local splitlabel = languages.labels.split or string.itself -- we need to get the loading order right
     local year, month, day = tex.year, tex.month, tex.day
     local auto = true
+    if currentlanguage == "" then
+        currentlanguage = false
+    end
     for i=1,#list do
         local entry = list[i]
         local tag, plus = splitlabel(entry)
@@ -1126,9 +1204,9 @@ function commands.currentdate(str,currentlanguage) -- second argument false : no
             if currentlanguage == false then
                 context(months[month] or "unknown")
             elseif mnemonic then
-                commands.monthmnem(month)
+                context.labeltext(monthmnem(month))
             else
-                commands.monthname(month)
+                context.labeltext(monthmnem(month))
             end
         elseif tag == "mm" then
             context("%02i",month)
@@ -1138,7 +1216,7 @@ function commands.currentdate(str,currentlanguage) -- second argument false : no
             if currentlanguage == false then
                 context(days[day] or "unknown")
             else
-                context.convertnumber(v_day,day)
+                context.convertnumber(v_day,day) -- why not direct
             end
             whatordinal = day
         elseif tag == "dd" then
@@ -1152,7 +1230,7 @@ function commands.currentdate(str,currentlanguage) -- second argument false : no
             if currentlanguage == false then
                 context(days[wd] or "unknown")
             else
-                commands.dayname(wd)
+                context.labeltext(days[wd] or "unknown")
             end
         elseif tag == "W" then
             context(weekday(day,month,year))
@@ -1175,6 +1253,14 @@ function commands.currentdate(str,currentlanguage) -- second argument false : no
     end
 end
 
-function commands.rawdate(str)
-    commands.currentdate(str,false)
-end
+implement {
+    name      = "currentdate",
+    actions   = currentdate,
+    arguments = { "string",  "string" }
+}
+
+implement {
+    name      = "rawdate",
+    actions   = currentdate,
+    arguments = { "string", false }
+}

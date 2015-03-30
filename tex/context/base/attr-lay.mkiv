@@ -39,23 +39,25 @@
    \c!method=\v!none]
 
 \appendtoks
-  \ctxcommand{defineviewerlayer{
-       tag       = "\currentviewerlayer",
-       title     = "\viewerlayerparameter\c!title",
-       visible   = "\viewerlayerparameter\c!state",
-       editable  = "\v!yes",
-       export    = "\viewerlayerparameter\c!export",
-       printable = "\viewerlayerparameter\c!printable",
-       scope     = "\viewerlayerparameter\c!scope"
-  }}%
+  \clf_defineviewerlayer
+       tag       {\currentviewerlayer}%
+       title     {\viewerlayerparameter\c!title}%
+       visible   {\viewerlayerparameter\c!state}%
+       editable  {\v!yes}%
+       export    {\viewerlayerparameter\c!export}%
+       printable {\viewerlayerparameter\c!printable}%
+       scope     {\viewerlayerparameter\c!scope}%
+  \relax
   \doif{\viewerlayerparameter\c!method}\v!command
     {\setuxvalue{\e!start#1}{\startviewerlayer[\currentviewerlayer]}%
      \setuxvalue{\e!stop #1}{\stopviewerlayer}}%
 \to \everydefineviewerlayer
 
-\unexpanded\def\startviewerlayer[#1]{\ctxcommand{startviewerlayer("#1")}}                      % not grouped
-\unexpanded\def\stopviewerlayer     {\ctxcommand{stopviewerlayer()}}                           % not grouped
-\unexpanded\def\viewerlayer     [#1]{\groupedcommand{\startviewerlayer[#1]}{\stopviewerlayer}} % grouped
+\unexpanded\def\startviewerlayer[#1]{\clf_startviewerlayer{#1}}% not grouped
+\unexpanded\def\stopviewerlayer     {\clf_stopviewerlayer}     % not grouped
+\unexpanded\def\viewerlayer     [#1]{\groupedcommand
+                                    {\clf_startviewerlayer{#1}}% grouped
+                                    {\clf_stopviewerlayer}}    % grouped
 
 % some day we will keep this at the lua end as the info is only needed there
 
@@ -72,13 +74,7 @@
 \installcorenamespace{layoutcomponentattribute}
 
 \def\attr_layoutcomponent_initialize#1%
-  {\edef\layoutcomponentboxattribute{\ctxcommand{definedviewerlayer{%
-     tag       = "#1",
-     title     = utilities.strings.nice("#1"), % only here as in steps we have step:<number>
-     visible   = "\v!start",
-     editable  = "\v!yes",
-     printable = "\v!yes"
-   }}}%
+  {\edef\layoutcomponentboxattribute{\clf_definedlayoutcomponent{#1}}%
    \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \layoutcomponentboxattribute\relax}%
    \expandafter\glet\csname\??layoutcomponentattribute#1\endcsname\layoutcomponentboxattribute}
 
@@ -100,7 +96,7 @@
    \let\resetlayoutcomponentattribute\attr_layoutcomponent_reset}
 
 \unexpanded\def\attr_layoutcomponent_cleanup
-  {\ctxcommand{cleanuplayers()}}
+  {\clf_cleanuplayers}
 
 \appendtoks
     \attr_layoutcomponent_cleanup

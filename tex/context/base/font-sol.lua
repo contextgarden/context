@@ -45,6 +45,8 @@ local v_preroll          = variables.preroll
 local v_random           = variables.random
 local v_split            = variables.split
 
+local implement          = interfaces.implement
+
 local settings_to_array  = utilities.parsers.settings_to_array
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
@@ -907,8 +909,52 @@ end
 
 -- interface
 
-commands.definefontsolution = splitters.define
-commands.startfontsolution  = splitters.start
-commands.stopfontsolution   = splitters.stop
-commands.setfontsolution    = splitters.set
-commands.resetfontsolution  = splitters.reset
+implement {
+    name      = "definefontsolution",
+    actions   = splitters.define,
+    arguments = {
+        "string",
+        {
+            { "goodies" },
+            { "solution" },
+            { "less" },
+            { "more" },
+        }
+    }
+}
+
+implement {
+    name      = "startfontsolution",
+    actions   = splitters.start,
+    arguments = {
+        "string",
+        {
+            { "method" },
+            { "criterium" },
+            { "randomseed" },
+        }
+    }
+}
+
+implement {
+    name      = "stopfontsolution",
+    actions   = splitters.stop
+}
+
+implement {
+    name      = "setfontsolution",
+    actions   = splitters.set,
+    arguments = {
+        "string",
+        {
+            { "method" },
+            { "criterium" },
+            { "randomseed" },
+        }
+    }
+}
+
+implement {
+    name      = "resetfontsolution",
+    actions   = splitters.reset
+}

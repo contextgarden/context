@@ -783,11 +783,11 @@
    \else
      \global\advance\c_mult_interfaces_n_of_namespaces\plusone
      \expandafter\edef\csname ??#1\endcsname{\v_interfaces_prefix_template}%
-     \ctxcommand{registernamespace(\number\c_mult_interfaces_n_of_namespaces,"#1")}%
+     \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
    \fi}
 
 \def\mult_interfaces_get_parameters_error_indeed#1#2%
-  {\ctxcommand{showassignerror("#1","#2",\the\inputlineno)}} % no longer \waitonfatalerror
+  {\clf_showassignerror{#1}{#2}\inputlineno} % no longer \waitonfatalerror
 
 % We install two core namespaces here, as we want nice error messages. Maybe
 % we will reserve the first 9.

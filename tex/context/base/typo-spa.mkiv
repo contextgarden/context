@@ -35,7 +35,7 @@
    \c!alternative=0]
 
 \unexpanded\def\definecharacterspacing[#1]%
-  {\ctxcommand{definecharacterspacing("#1")}}
+  {\clf_definecharacterspacing{#1}}
 
 \unexpanded\def\setupcharacterspacing
   {\dotripleargument\typo_characterspacing_setup}
@@ -43,15 +43,19 @@
 \def\typo_characterspacing_setup[#1][#2][#3]% todo: #2 list
   {\begingroup
    \setupcurrent_p_characterspacing[#3]%
-   \ctxcommand{setupcharacterspacing("#1",\number#2, { % todo: just pass #3 to the lua end
-      left        = \direct_p_characterspacingparameter\c!left,
-      right       = \direct_p_characterspacingparameter\c!right,
-      alternative = \direct_p_characterspacingparameter\c!alternative
-    })}%
+   \clf_setupcharacterspacing
+      {#1}%
+      \numexpr#2\relax
+      {%
+        left        \direct_p_characterspacingparameter\c!left\space
+        right       \direct_p_characterspacingparameter\c!right\space
+        alternative \direct_p_characterspacingparameter\c!alternative
+      }%
+   \relax
    \endgroup}
 
 \unexpanded\def\setcharacterspacing[#1]% we can store the attribute if we want speed
-  {\ctxcommand{setcharacterspacing("#1")}}
+  {\clf_setcharacterspacing{#1}}
 
 \unexpanded\def\resetcharacterspacing % fast one
   {\attribute\spacingattribute\attributeunsetvalue}

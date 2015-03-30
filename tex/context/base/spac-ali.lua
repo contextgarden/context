@@ -133,7 +133,11 @@ function alignments.set(n)
     texsetattribute(a_realign,texgetcount("realpageno") * 10 + n)
 end
 
-commands.setrealign = alignments.set
+interfaces.implement {
+    name      = "setrealign",
+    actions   = alignments.set,
+    arguments = "integer",
+}
 
 statistics.register("realigning", function()
     if nofrealigned > 0 then

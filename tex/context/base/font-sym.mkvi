@@ -167,8 +167,8 @@
    \currentsymbolfont
    \global\expandafter\let\csname\??symbolfont\askedsymbolfont\endcsname\lastrawfontcall}
 
-\unexpanded\def\getnamedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\ctxcommand{fontchar("#character")}}}
-\unexpanded\def\getnamedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\ctxcommand{fontchar("#character")}}}
+\unexpanded\def\getnamedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_fontchar{#character}}}
+\unexpanded\def\getnamedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_fontchar{#character}}}
 \unexpanded\def\getglyphstyled     #fontname#character{{\setstyledsymbolicfont{#fontname}\doifnumberelse{#character}\char\donothing#character}}
 \unexpanded\def\getglyphdirect     #fontname#character{{\setdirectsymbolicfont{#fontname}\doifnumberelse{#character}\char\donothing#character}}
 

@@ -1009,7 +1009,7 @@
 % macros.
 
 \def\reinstateconstructionnumberentry#1% was xdef
-  {\edef\currentconstructionattribute  {\ctxcommand    {getinternallistreference(#1)}}%
+  {\edef\currentconstructionattribute  {\clf_getinternallistreference#1}%
    \edef\currentconstructionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
 
 \installstructurelistprocessor{construction}{\usestructurelistprocessor{number+title}}

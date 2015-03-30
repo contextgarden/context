@@ -47,10 +47,10 @@
 \installcorenamespace{colorintent}
 
 \unexpanded\def\registercolorintent#1#2%
-  {\setevalue{\??colorintent#1}{\attribute\colorintentattribute\ctxcommand{registercolorintent('#2')} }}
+  {\setevalue{\??colorintent#1}{\attribute\colorintentattribute\clf_registercolorintent{#2}}}
 
 \unexpanded\def\colo_intents_set
-  {\ctxcommand{enablecolorintents()}%
+  {\clf_enablecolorintents
    \unexpanded\gdef\colo_intents_set##1{\csname\??colorintent##1\endcsname}%
    \colo_intents_set}
 

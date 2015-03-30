@@ -17,9 +17,14 @@ local format = string.format
 local concat = table.concat
 local min, max, floor = math.min, math.max, math.floor
 
-local attributes, nodes, utilities, logs, backends, storage = attributes, nodes, utilities, logs, backends, storage
-local commands, context, interfaces = commands, context, interfaces
-local tex = tex
+local attributes            = attributes
+local nodes                 = nodes
+local utilities             = utilities
+local logs                  = logs
+local backends              = backends
+local storage               = storage
+local context               = context
+local tex                   = tex
 
 local allocate              = utilities.storage.allocate
 local setmetatableindex     = table.setmetatableindex
@@ -42,6 +47,9 @@ local unsetvalue      = attributes.unsetvalue
 
 local registerstorage = storage.register
 local formatters      = string.formatters
+
+local interfaces      = interfaces
+local implement       = interfaces.implement
 
 -- We can distinguish between rules and glyphs but it's not worth the trouble. A
 -- first implementation did that and while it saves a bit for glyphs and rules, it
@@ -560,10 +568,10 @@ end
 
 -- interface
 
-commands.enablecolor        = colors.enable
-commands.enabletransparency = transparencies.enable
-commands.enablecolorintents = colorintents.enable
+implement { name = "enablecolor",         actions = colors.enable }
+implement { name = "enabletransparency",  actions = transparencies.enable }
+implement { name = "enablecolorintents",  actions = colorintents.enable }
 
-function commands.registercolor       (...) context(colors        .register(...)) end
-function commands.registertransparency(...) context(transparencies.register(...)) end
-function commands.registercolorintent (...) context(colorintents  .register(...)) end
+--------- { name = "registercolor",        actions = { colors        .register, context }, arguments = "string" }
+--------- { name = "registertransparency", actions = { transparencies.register, context }, arguments = { ... } }
+implement { name = "registercolorintent",  actions = { colorintents  .register, context }, arguments = { ... } }

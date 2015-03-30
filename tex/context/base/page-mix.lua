@@ -13,6 +13,7 @@ if not modules then modules = { } end modules ["page-mix"] = {
 -- local trackers, logs, storage = trackers, logs, storage
 -- local number, table = number, table
 
+local next, type = next, type
 local concat = table.concat
 local ceil, floor = math.ceil, math.floor
 
@@ -83,6 +84,9 @@ local v_none              = variables.none
 local v_more              = variables.more
 local v_less              = variables.less
 local v_halfline          = variables.halfline
+
+local context             = context
+local implement           = interfaces.implement
 
 pagebuilders              = pagebuilders or { }
 pagebuilders.mixedcolumns = pagebuilders.mixedcolumns or { }
@@ -224,7 +228,7 @@ local function stripbottomglue(results,discarded)
     return height
 end
 
-local function setsplit(specification) -- a rather large function
+local function preparesplit(specification) -- a rather large function
     local box = specification.box
     if not box then
         report_state("fatal error, no box")
@@ -718,7 +722,7 @@ local kept = head
     return specification
 end
 
-function mixedcolumns.finalize(result)
+local function finalize(result)
     if result then
         local results  = result.results
         local columns  = result.nofcolumns
@@ -775,12 +779,12 @@ local function report_deltas(result,str)
     report_state("%s, cycles %s, deltas % | t",str,result.cycle or 1,t)
 end
 
-function mixedcolumns.setsplit(specification)
+local function setsplit(specification)
     splitruns = splitruns + 1
     if trace_state then
         report_state("split run %s",splitruns)
     end
-    local result = setsplit(specification)
+    local result = preparesplit(specification)
     if result then
         if result.overflow then
             if trace_state then
@@ -793,7 +797,7 @@ function mixedcolumns.setsplit(specification)
             local cycles = specification.cycles or 100
             while result.rest and cycle <= cycles do
                 specification.extra = cycle * step
-                result = setsplit(specification) or result
+                result = preparesplit(specification) or result
                 if trace_state then
                     report_state("cycle: %s.%s, original height %p, total height %p",
                         splitruns,cycle,result.originalheight,result.nofcolumns*result.targetheight)
@@ -815,7 +819,7 @@ function mixedcolumns.setsplit(specification)
     end
 end
 
-function mixedcolumns.getsplit(result,n)
+local function getsplit(result,n)
     if not result then
         report_state("flush, column %s, no result",n)
         return
@@ -927,19 +931,19 @@ function mixedcolumns.getsplit(result,n)
     return v
 end
 
-function mixedcolumns.getrest(result)
+local function getrest(result)
     local rest = result and result.rest
     result.rest = nil -- to be sure
     return rest
 end
 
-function mixedcolumns.getlist(result)
+local function getlist(result)
     local originalhead = result and result.originalhead
     result.originalhead = nil -- to be sure
     return originalhead
 end
 
-function mixedcolumns.cleanup(result)
+local function cleanup(result)
     local discarded = result.discarded
     for i=1,#discarded do
         freenode(discarded[i])
@@ -947,52 +951,100 @@ function mixedcolumns.cleanup(result)
     result.discarded = { }
 end
 
+mixedcolumns.setsplit = setsplit
+mixedcolumns.getsplit = getsplit
+mixedcolumns.finalize = finalize
+mixedcolumns.getrest  = getrest
+mixedcolumns.getlist  = getlist
+mixedcolumns.cleanup  = cleanup
+
 -- interface --
 
 local result
 
-function commands.mixsetsplit(specification)
-    if result then
-        for k, v in next, specification do
-            result[k] = v
+implement {
+    name      = "mixsetsplit",
+    actions   = function(specification)
+        if result then
+            for k, v in next, specification do
+                result[k] = v
+            end
+            result = setsplit(result)
+        else
+            result = setsplit(specification)
         end
-        result = mixedcolumns.setsplit(result)
-    else
-        result = mixedcolumns.setsplit(specification)
-    end
-end
+    end,
+    arguments = {
+        {
+           { "box", "integer" },
+           { "nofcolumns", "integer" },
+           { "maxheight", "dimen" },
+           { "step", "dimen" },
+           { "cycles", "integer" },
+           { "preheight", "dimen" },
+           { "prebox", "integer" },
+           { "strutht", "dimen" },
+           { "strutdp", "dimen" },
+           { "threshold", "dimen" },
+           { "splitmethod" },
+           { "balance" },
+           { "alternative" },
+           { "internalgrid" },
+           { "grid", "boolean" },
+        }
+    }
+}
 
-function commands.mixgetsplit(n)
-    if result then
-        context(tonode(mixedcolumns.getsplit(result,n)))
-    end
-end
+implement {
+    name      = "mixgetsplit",
+    arguments = "integer",
+    actions   = function(n)
+        if result then
+            context(tonode(getsplit(result,n)))
+        end
+    end,
+}
 
-function commands.mixfinalize()
-    if result then
-        mixedcolumns.finalize(result)
+implement {
+    name    = "mixfinalize",
+    actions = function()
+        if result then
+            finalize(result)
+        end
     end
-end
+}
 
-function commands.mixflushrest()
-    if result then
-        context(tonode(mixedcolumns.getrest(result)))
+implement {
+    name    = "mixflushrest",
+    actions = function()
+        if result then
+            context(tonode(getrest(result)))
+        end
     end
-end
+}
 
-function commands.mixflushlist()
-    if result then
-        context(tonode(mixedcolumns.getlist(result)))
+implement {
+    name = "mixflushlist",
+    actions = function()
+        if result then
+            context(tonode(getlist(result)))
+        end
     end
-end
+}
 
-function commands.mixstate()
-    context(result and result.rest and 1 or 0)
-end
-
-function commands.mixcleanup()
-    if result then
-        mixedcolumns.cleanup(result)
-        result = nil
+implement {
+    name    = "mixstate",
+    actions = function()
+        context(result and result.rest and 1 or 0)
     end
-end
+}
+
+implement {
+    name = "mixcleanup",
+    actions = function()
+        if result then
+            cleanup(result)
+            result = nil
+        end
+    end
+}

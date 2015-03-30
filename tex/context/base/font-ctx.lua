@@ -1761,10 +1761,10 @@ function fonts.definetypeface(name,t)
     local boldwidth    = t.boldwidth    or t.width  or p.boldwidth    or p.width  or "normal"
     Shape = Shapes[shape] or "Serif"
     ctx_startfontclass { name }
-        ctx_definefontsynonym( { format("%s",           Shape) }, { format("spec:%s-%s-regular-%s", fontname, normalweight, normalwidth) } )
-        ctx_definefontsynonym( { format("%sBold",       Shape) }, { format("spec:%s-%s-regular-%s", fontname, boldweight,   boldwidth  ) } )
-        ctx_definefontsynonym( { format("%sBoldItalic", Shape) }, { format("spec:%s-%s-italic-%s",  fontname, boldweight,   boldwidth  ) } )
-        ctx_definefontsynonym( { format("%sItalic",     Shape) }, { format("spec:%s-%s-italic-%s",  fontname, normalweight, normalwidth) } )
+        ctx_definefontsynonym( { formatters["%s"]          (Shape) }, { formatters["spec:%s-%s-regular-%s"] (fontname, normalweight, normalwidth) } )
+        ctx_definefontsynonym( { formatters["%sBold"]      (Shape) }, { formatters["spec:%s-%s-regular-%s"] (fontname, boldweight,   boldwidth  ) } )
+        ctx_definefontsynonym( { formatters["%sBoldItalic"](Shape) }, { formatters["spec:%s-%s-italic-%s"]  (fontname, boldweight,   boldwidth  ) } )
+        ctx_definefontsynonym( { formatters["%sItalic"]    (Shape) }, { formatters["spec:%s-%s-italic-%s"]  (fontname, normalweight, normalwidth) } )
     ctx_stopfontclass()
     local settings = sequenced({ features= t.features },",")
     ctx_dofastdefinetypeface(name, shortcut, shape, size, settings)
@@ -2138,7 +2138,7 @@ local glyph_code         = nodes.nodecodes.glyph
 
 local states             = analyzers.states
 
-local names = {
+local colornames = {
     [states.init] = "font:1",
     [states.medi] = "font:2",
     [states.fina] = "font:3",
@@ -2159,7 +2159,7 @@ local function markstates(head)
         for glyph in traverse_by_id(glyph_code,head) do
             local a = getprop(glyph,a_state)
             if a then
-                local name = names[a]
+                local name = colornames[a]
                 if name then
                     local color = m_color[name]
                     if color then

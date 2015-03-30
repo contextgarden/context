@@ -45,6 +45,8 @@ local currentfont        = font.current
 
 local fontpatternhassize = fonts.helpers.fontpatternhassize
 
+local implement          = interfaces.implement
+
 local list               = { }
 local current            = 0
 local enabled            = false
@@ -275,9 +277,38 @@ end
 
 -- interface
 
-commands.fontcollectiondefine   = collections.define
-commands.fontcollectionreset    = collections.reset
-commands.fontcollectionprepare  = collections.prepare
-commands.fontcollectionreport   = collections.report
-commands.fontcollectionregister = collections.registermain
-commands.fontcollectionclone    = collections.clonevector
+implement {
+    name      = "fontcollectiondefine",
+    actions   = collections.define,
+    arguments = { "string", "string", "string", "string" }
+}
+
+implement {
+    name      = "fontcollectionreset",
+    actions   = collections.reset,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "fontcollectionprepare",
+    actions   = collections.prepare,
+    arguments = "string"
+}
+
+implement {
+    name      = "fontcollectionreport",
+    actions   = collections.report,
+    arguments = "string"
+}
+
+implement {
+    name      = "fontcollectionregister",
+    actions   = collections.registermain,
+    arguments = "string"
+}
+
+implement {
+    name      = "fontcollectionclone",
+    actions   = collections.clonevector,
+    arguments = "string"
+}

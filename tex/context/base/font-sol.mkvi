@@ -85,24 +85,30 @@
 \let\setupfontsolutions\setupfontsolution
 
 \appendtoks
-    \ctxcommand{definefontsolution("\currentfontsolution",{ % these are frozen
-        goodies  = "\fontsolutionparameter\s!goodies",
-        solution = "\fontsolutionparameter\c!solution",
-        less     = "\fontsolutionparameter\c!less",
-        more     = "\fontsolutionparameter\c!more",
-    })}
+    \clf_definefontsolution
+      {\currentfontsolution}%
+      {% these are frozen
+        goodies  {\fontsolutionparameter\s!goodies}%
+        solution {\fontsolutionparameter\c!solution}%
+        less     {\fontsolutionparameter\c!less}%
+        more     {\fontsolutionparameter\c!more}%
+      }%
+    \relax
 \to \everydefinefontsolution
 
 \unexpanded\def\setfontsolution[#solution]% just one
   {\edef\currentfontsolution{#solution}%
-   \ctxcommand{setfontsolution("\currentfontsolution",{
-        method     = "\fontsolutionparameter\c!method",
-        criterium  = "\fontsolutionparameter\c!criterium",
-      % randomseed = "\fontsolutionparameter\c!random",
-  })}}
+   \clf_setfontsolution
+     {\currentfontsolution}%
+     {%
+        method     {\fontsolutionparameter\c!method}%
+        criterium  {\fontsolutionparameter\c!criterium}%
+      % randomseed {\fontsolutionparameter\c!random}%
+     }%
+   \relax}
 
 \unexpanded\def\resetfontsolution % resets all
-  {\ctxcommand{resetfontsolution()}%
+  {\clf_resetfontsolution
    \let\currentfontsolution\empty}
 
 \unexpanded\def\startfontsolution % [#1]
@@ -111,7 +117,7 @@
 
 \unexpanded\def\stopfontsolution
   {\ifhmode\par\fi
-   \ctxcommand{stopfontsolution()}%
+   \clf_stopfontsolution
    \popmacro\currentfontsolution}
 
 % We initialize this module at the \LUA\ end.

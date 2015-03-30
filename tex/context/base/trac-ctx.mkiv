@@ -18,14 +18,14 @@
 \unprotect
 
 \unexpanded\def\installtextracker#1#2#3%
-  {\ctxcommand{installtextracker("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
+  {\clf_installtextracker{#1}{\detokenize{#2}}{\detokenize{#3}}}
 
 \unexpanded\def\installtexdirective#1#2#3%
-  {\ctxcommand{installtexdirective("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
+  {\clf_installtexdirective{#1}{\detokenize{#2}}{\detokenize{#3}}}
 
 \appendtoks
-    \ctxcommand{initializetextrackers  ()}%
-    \ctxcommand{initializetexdirectives()}%
+    \clf_initializetextrackers
+    \clf_initializetexdirectives
 \to \everyjob
 
 \protect \endinput

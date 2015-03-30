@@ -6,14 +6,19 @@ if not modules then modules = { } end modules ['attr-ini'] = {
     license   = "see context related readme files"
 }
 
-local commands, context, nodes, storage = commands, context, nodes, storage
-
 local next, type = next, type
 
 --[[ldx--
 <p>We start with a registration system for atributes so that we can use the
 symbolic names later on.</p>
 --ldx]]--
+
+local nodes           = nodes
+local context         = context
+local storage         = storage
+local commands        = commands
+
+local implement       = interfaces.implement
 
 attributes            = attributes or { }
 local attributes      = attributes
@@ -126,19 +131,11 @@ function attributes.ofnode(n)
     showlist(n,n.attr)
 end
 
--- interface
-
-commands.showattributes = attributes.showcurrent
-
-function commands.defineattribute(name,category)
-    context(attributes.define(name,category))
-end
-
 -- rather special
 
 local store = { }
 
-function commands.savecurrentattributes(name)
+function attributes.save(name)
     name = name or ""
     local n = node.current_attr()
     n = n and n.next
@@ -153,7 +150,7 @@ function commands.savecurrentattributes(name)
     }
 end
 
-function commands.restorecurrentattributes(name)
+function attributes.restore(name)
     name = name or ""
     local t = store[name]
     if t then
@@ -171,3 +168,28 @@ function commands.restorecurrentattributes(name)
     end
  -- store[name] = nil
 end
+
+implement {
+    name      = "defineattribute",
+    arguments = { "string", "string" },
+    actions   = { attributes.define, context }
+}
+
+-- interface
+
+implement {
+    name      = "showattributes",
+    actions   = attributes.showcurrent
+}
+
+implement {
+    name      = "savecurrentattributes",
+    arguments = "string",
+    actions   = attributes.save
+}
+
+implement {
+    name      = "restorecurrentattributes",
+    arguments = "string",
+    actions   = attributes.restore
+}

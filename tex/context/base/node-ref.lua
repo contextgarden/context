@@ -90,6 +90,8 @@ local free_node           = nuts.free
 
 local tosequence          = nodes.tosequence
 
+local implement           = interfaces.implement
+
 -- Normally a (destination) area is a box or a simple stretch if nodes but when it is
 -- a paragraph we hav ea problem: we cannot calculate the height well. This happens
 -- with footnotes or content broken across a page.
@@ -667,17 +669,17 @@ function references.mark(reference,h,d,view)
     return setdestination(tex.currentgrouplevel,h,d,reference,view)
 end
 
-function references.inject(prefix,reference,h,d,highlight,newwindow,layer) -- todo: use currentreference is possible
+function references.inject(prefix,reference,specification) -- todo: use currentreference is possible
 -- print(prefix,reference,h,d,highlight,newwindow,layer)
     local set, bug = references.identify(prefix,reference)
     if bug or #set == 0 then
         -- unknown ref, just don't set it and issue an error
     else
         -- check
-        set.highlight = highlight
-        set.newwindow = newwindow
-        set.layer     = layer
-        setreference(h,d,set) -- sets attribute / todo: for set[*].error
+        set.highlight = specification.highlight
+        set.newwindow = specification.newwindow
+        set.layer     = specification.layer
+        setreference(specification.height,specification.depth,set) -- sets attribute / todo: for set[*].error
     end
 end
 
@@ -688,8 +690,32 @@ function references.injectcurrentset(h,d) -- used inside doifelse
     end
 end
 
-commands.injectreference        = references.inject
-commands.injectcurrentreference = references.injectcurrentset
+implement {
+    name      = "injectreference",
+    actions   = references.inject,
+    arguments = {
+        "string",
+        "string",
+        {
+            { "highlight", "boolean" },
+            { "newwindow", "boolean" },
+            { "layer" },
+            { "height", "dimen" },
+            { "depth", "dimen" },
+        }
+    }
+}
+
+implement {
+    name      = "injectcurrentreference",
+    actions   = references.injectcurrentset,
+}
+
+implement {
+    name      = "injectcurrentreference_dimensions",
+    actions   = references.injectcurrentset,
+    arguments = { "dimen", "dimen" },
+}
 
 --
 

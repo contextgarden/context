@@ -37,39 +37,6 @@
 \let\usemodule   \usemodules
 \let\usetexmodule\usemodules
 
-% \def\strc_modules_use[#category][#name][#parameters]%
-%   {\pushmacro\currentmodule
-%    \pushmacro\currentmoduleparameters
-%    \let\currentmoduleparameters\empty
-%    \ifthirdargument
-%      \singleexpandafter\strc_modules_use_a
-%    \else\ifsecondargument
-%      \doubleexpandafter\strc_modules_use_b
-%    \else
-%      \doubleexpandafter\strc_modules_use_c
-%    \fi\fi
-%    % here we load
-%    \popmacro\currentmoduleparameters
-%    \popmacro\currentmodule}
-%
-% \def\strc_modules_use_a[#category][#name][#parameters]%
-%   {\doifsomething{#name}
-%      {\def\currentmoduleparameters{#parameters}%
-%       \processcommalist[#name]{\strc_modules_use_indeed{#category}}}}
-%
-% \def\strc_modules_use_b[#category][#name][#parameters]%
-%   {\doifsomething{#name}
-%      {\doifassignmentelse{#name}
-%         {\def\currentmoduleparameters{#name}%
-%          \processcommalist[#category]{\strc_modules_use_indeed\empty}}
-%         {\processcommalist[#name]{\strc_modules_use_indeed{#category}}}}}
-%
-% \def\strc_modules_use_c[#category][#name][#parameters]%
-%   {\processcommalist[#category]{\strc_modules_use_indeed\empty}}
-%
-% \def\strc_modules_use_indeed#category#name%
-%   {\ctxcommand{usemodules("#category","#name","\truefilename{#name}")}}
-
 \def\strc_modules_use[#category][#name][#parameters]% category=t|m|x|p|...
   {\pushmacro\currentmodule
    \pushmacro\currentmodulecategory
@@ -96,8 +63,8 @@
    \popmacro\currentmodulecategory
    \popmacro\currentmodule}
 
-\def\strc_modules_use_indeed#category#name% truefilename moved to lua end
-  {\ctxcommand{usemodules("#category","#name")}} % ,"\truefilename{#name}")}}
+\def\strc_modules_use_indeed#category#name%
+  {\clf_usemodules{#category}{#name}}
 
 \installcorenamespace{module}
 
@@ -238,8 +205,8 @@
 %D
 %D The version pattern is \type {yyyy.mm.dd} (with mm and dd being optional).
 
-\unexpanded\def\doifolderversionelse#parent#child{\ctxcommand{doifolderversionelse("#parent","#child")}}
-\unexpanded\def\doifoldercontextelse       #child{\ctxcommand{doifolderversionelse("#child")}}
+\unexpanded\def\doifolderversionelse#parent#child{\clf_doifolderversionelse{#parent}{#child}}
+\unexpanded\def\doifoldercontextelse       #child{\clf_doifolderversionelse{#child}{}}
 
 %D Relatively new:
 
@@ -299,6 +266,6 @@
 
 % new:
 
-\unexpanded\def\useluamodule[#1]{\ctxcommand{useluamodule("#1")}}
+\unexpanded\def\useluamodule[#1]{\clf_useluamodule{#1}}
 
 \protect \endinput

@@ -193,19 +193,22 @@
 %D \edef\luaescapestring#1{\!!bs#1\!!es}
 %D \stoptyping
 
-\def\setdocumentfilename       #1#2{\ctxlua{document.setfilename(#1,"#2")}}
-\def\setdocumentargument       #1#2{\ctxlua{document.setargument("#1","#2")}}
-\def\setdocumentargumentdefault#1#2{\ctxlua{document.setdefaultargument("#1","#2")}}
-\def\getdocumentfilename         #1{\ctxlua{document.getfilename("#1")}}
-\def\getdocumentargument         #1{\ctxlua{document.getargument("#1")}}
-\def\setdocumentargument       #1#2{\ctxlua{document.setargument("#1","#2")}}
-\def\getdocumentargumentdefault#1#2{\ctxlua{document.getargument("#1","#2")}}
-\def\doifdocumentargumentelse    #1{\doifsomethingelse{\getdocumentargument{#1}}}
-\def\doifdocumentargument        #1{\doifsomething    {\getdocumentargument{#1}}}
-\def\doifnotdocumentargument     #1{\doifnothing      {\getdocumentargument{#1}}}
-\def\doifdocumentfilenameelse    #1{\doifsomethingelse{\getdocumentfilename{#1}}}
-\def\doifdocumentfilename        #1{\doifsomething    {\getdocumentfilename{#1}}}
-\def\doifnotdocumentfilename     #1{\doifnothing      {\getdocumentfilename{#1}}}
+\def\setdocumentfilename       #1#2{\clf_setdocumentfilename\numexpr#1\relax{#2}}
+\def\setdocumentargument       #1#2{\clf_setdocumentargument{#1}{#2}}
+\def\setdocumentargumentdefault#1#2{\clf_setdocumentdefaultargument{#1}{#2}}
+\def\getdocumentfilename         #1{\clf_getdocumentfilename\numexpr#1\relax}
+\def\getdocumentargument         #1{\clf_getdocumentargument{#1}}
+\def\setdocumentargument       #1#2{\clf_setdocumentargument{#1}{#2}}
+\def\getdocumentargumentdefault#1#2{\clf_getdocumentargument{#1}{#2}}
+
+% seldom used so no need for speedy variants:
+
+\def\doifdocumentargumentelse    #1{\doifsomethingelse{\clf_getdocumentargument{#1}}}
+\def\doifdocumentargument        #1{\doifsomething    {\clf_getdocumentargument{#1}}}
+\def\doifnotdocumentargument     #1{\doifnothing      {\clf_getdocumentargument{#1}}}
+\def\doifdocumentfilenameelse    #1{\doifsomethingelse{\clf_getdocumentfilename\numexpr#1\relax}}
+\def\doifdocumentfilename        #1{\doifsomething    {\clf_getdocumentfilename\numexpr#1\relax}}
+\def\doifnotdocumentfilename     #1{\doifnothing      {\clf_getdocumentfilename\numexpr#1\relax}}
 
 \let\doifelsedocumentargument\doifdocumentargumentelse
 

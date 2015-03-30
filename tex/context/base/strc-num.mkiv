@@ -517,24 +517,21 @@
 \def\strc_counters_register_component_page#1%
   {\xdef\currentstructurecomponentreference      {#1\c!reference}%
    \xdef\currentstructurecomponentreferenceprefix{#1\c!referenceprefix}%
-   % maybe have a helper in strc-ref.mkvi
    \setnextinternalreference
-   \ctxcommand{setreferenceattribute(% can be helper with less passed
-      "\s!page",
-      "\currentstructurecomponentreferenceprefix",
-      "\currentstructurecomponentreference",
-      {
-          references = {
-              internal = \nextinternalreference,
-              block    = "\currentsectionblock",
-              section  = structures.sections.currentid(),
-          },
-          metadata = {
-              kind = "page",
-          },
-      },
-      "\interactionparameter\c!focus")
-   }%
+   \clf_setreferenceattribute
+        {\currentstructurecomponentreferenceprefix}%
+        {\currentstructurecomponentreference}%
+        {%
+            references {%
+                  internal \nextinternalreference
+                  block    {\currentsectionblock}%
+                  view     {\interactionparameter\c!focus}%
+            }%
+            metadata {%
+                kind {\s!page}%
+            }%
+        }%
+   \relax
    \xdef\m_strc_counters_last_registered_attribute  {\the\lastdestinationattribute}%
    \glet\m_strc_counters_last_registered_index      \relax
    \glet\m_strc_counters_last_registered_synchronize\relax}

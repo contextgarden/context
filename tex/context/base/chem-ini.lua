@@ -32,12 +32,31 @@ function chemistry.molecule(str)
     return lpegmatch(moleculeparser,str)
 end
 
-function commands.molecule(str)
-    if trace_molecules then
-        local rep = lpegmatch(moleculeparser,str)
-        report_chemistry("molecule %a becomes %a",str,rep)
-        context(rep)
-    else
-        context(lpegmatch(moleculeparser,str))
-    end
-end
+interfaces.implement {
+    name      = "molecule",
+    arguments = "string",
+    actions   = function(str)
+        if trace_molecules then
+            local rep = lpegmatch(moleculeparser,str)
+            report_chemistry("molecule %a becomes %a",str,rep)
+            context(rep)
+        else
+            context(lpegmatch(moleculeparser,str))
+        end
+    end,
+}
+
+-- interfaces.implement {
+--     name      = "molecule",
+--     scope     = "private",
+--     action    = function()
+--         local str = scanstring()
+--         if trace_molecules then
+--             local rep = lpegmatch(moleculeparser,str)
+--             report_chemistry("molecule %a becomes %a",str,rep)
+--             context(rep)
+--         else
+--             context(lpegmatch(moleculeparser,str))
+--         end
+--     end,
+-- }

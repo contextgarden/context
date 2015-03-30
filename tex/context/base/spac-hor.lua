@@ -6,13 +6,14 @@ if not modules then modules = { } end modules ['spac-hor'] = {
     license   = "see context related readme files"
 }
 
-local match = string.match
 local utfbyte = utf.byte
+local lpegmatch, P, C = lpeg.match, lpeg.P, lpeg.C
 
 local context  = context
-local commands = commands
 
 local chardata = characters.data
+
+local p_check  = P("the ") * (P("letter") + P("character")) * P(" ") * lpeg.patterns.utf8byte -- is a capture already
 
 local can_have_space = table.tohash {
     "lu", "ll", "lt", "lm", "lo", -- letters
@@ -26,10 +27,18 @@ local can_have_space = table.tohash {
  -- "cc", "cf", "cs", "co", "cn", -- others
 }
 
-function commands.autonextspace(str) -- todo: use nexttoken
-    local ch = match(str,"the letter (.)") or match(str,"the character (.)")
-    ch = ch and chardata[utfbyte(ch)]
-    if ch and can_have_space[ch.category] then
-        context.space()
+local function autonextspace(str) -- todo: make a real not intrusive lookahead
+    local b = lpegmatch(p_check,str)
+    if b then
+        local d = chardata[b]
+        if d and can_have_space[d.category] then
+            context.space()
+        end
     end
 end
+
+interfaces.implement {
+    name      = "autonextspace",
+    actions   = autonextspace,
+    arguments = "string",
+}

@@ -46,10 +46,10 @@
 %D [\expandafter\uchexnumber\expandafter{\the\zerocount}]
 %D \stoptyping
 
-\def\lchexnumber #1{\ctxcommand{lchexnumber(\number#1)}}
-\def\uchexnumber #1{\ctxcommand{uchexnumber(\number#1)}}
-\def\lchexnumbers#1{\ctxcommand{lchexnumbers(\number#1)}}
-\def\uchexnumbers#1{\ctxcommand{uchexnumbers(\number#1)}}
+\def\lchexnumber #1{\clf_lchexnumber \numexpr#1\relax}
+\def\uchexnumber #1{\clf_uchexnumber \numexpr#1\relax}
+\def\lchexnumbers#1{\clf_lchexnumbers\numexpr#1\relax}
+\def\uchexnumbers#1{\clf_uchexnumbers\numexpr#1\relax}
 
 \let\hexnumber\uchexnumber
 
@@ -58,7 +58,7 @@
 %D
 %D For unicode remapping purposes, we need octal numbers.
 
-\def\octnumber#1{\ctxcommand{octnumber(\number#1)}}
+\def\octnumber#1{\clf_octnumber\numexpr#1\relax}
 
 %D \macros
 %D   {hexstringtonumber,octstringtonumber}
@@ -67,8 +67,8 @@
 %D a decimal number, thereby taking care of lowercase characters
 %D as well.
 
-\def\hexstringtonumber#1{\ctxcommand{hexstringtonumber("#1")}}
-\def\octstringtonumber#1{\ctxcommand{octstringtonumber("#1")}}
+\def\hexstringtonumber#1{\clf_hexstringtonumber\numexpr#1\relax}
+\def\octstringtonumber#1{\clf_octstringtonumber\numexpr#1\relax}
 
 %D \macros
 %D   {rawcharacter}
@@ -76,7 +76,7 @@
 %D This macro can be used to produce proper 8 bit characters
 %D that we sometimes need in backends and round||trips.
 
-\def\rawcharacter#1{\ctxcommand{rawcharacter(\number#1)}}
+\def\rawcharacter#1{\clf_rawcharacter\numexpr#1\relax}
 
 %D \macros
 %D   {twodigits, threedigits}
@@ -126,23 +126,12 @@
 
 %D \macros
 %D    {setcalculatedsin,setcalculatedcos,setcalculatedtan}
-%D
-%D This saves some 2K in the format. At some point we will redo the
-%D code that calls this. Beware: in \MKII\ this is a separate module.
 
-% \let\calculatesin\gobbleoneargument
-% \let\calculatecos\gobbleoneargument
-% \let\calculatetan\gobbleoneargument
+\def\setcalculatedsin#1#2{\edef#1{\clf_sind#2}}
+\def\setcalculatedcos#1#2{\edef#1{\clf_cosd#2}}
+\def\setcalculatedtan#1#2{\edef#1{\clf_tand#2}}
 
-% \def\setcalculatedsin#1#2{\edef#1{\cldcontext{math.sind(#2)}}} % jit-unsafe
-% \def\setcalculatedcos#1#2{\edef#1{\cldcontext{math.cosd(#2)}}} % jit-unsafe
-% \def\setcalculatedtan#1#2{\edef#1{\cldcontext{math.tand(#2)}}} % jit-unsafe
-
-\def\setcalculatedsin#1#2{\edef#1{\ctxcommand{sind(#2)}}}
-\def\setcalculatedcos#1#2{\edef#1{\ctxcommand{cosd(#2)}}}
-\def\setcalculatedtan#1#2{\edef#1{\ctxcommand{tand(#2)}}}
-
-           \def\formatted#1{\ctxcommand{format(#1)}}
-\unexpanded\def\format   #1{\ctxcommand{format(#1)}}
+           \def\formatted#1{\ctxcommand{format(#1)}} % not clf
+\unexpanded\def\format   #1{\ctxcommand{format(#1)}} % not clf
 
 \protect \endinput

@@ -172,7 +172,7 @@
 \unexpanded\def\loadtypescriptfile[#1]%
   {\pushmacro\typescriptstate
    \let\typescriptstate\plustwo % assumes 2 at the outer level
-   \ctxcommand{loadtypescriptfile("#1")}%
+   \clf_loadtypescriptfile{#1}%
    \popmacro\typescriptstate}
 
 \unexpanded\def\loadfoundtypescriptfile#1%
@@ -237,7 +237,7 @@
    \expandafter\let\csname\??typescriptfiles\currenttypefile\endcsname\t_font_typescripts}
 
 \def\font_typescript_process_typescript_file
-  {\ctxcommand{doprocesstypescriptfile("\currenttypefile")}}
+  {\clf_doprocesstypescriptfile{\currenttypefile}}
 
 \unexpanded\def\usetypescriptonce
   {\dotripleempty\font_typescripts_use_once}
@@ -574,12 +574,6 @@
      \switchtobodyfont[\s!rm]%
    \fi \fi \fi
    \ifmmode\mr\else\tf\fi} % needed ?
-
-% obsolete
-%
-% \unexpanded\def\usetypefile[#type]% recurses on path ! % no storage
-%   {\edef\currenttypefile{#type}%
-%    \ctxcommand{doprocesstypescriptfile("\currenttypefile")}}
 
 %D For Taco:
 %D

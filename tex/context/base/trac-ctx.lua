@@ -6,15 +6,15 @@ if not modules then modules = { } end modules ['trac-ctx'] = {
     license   = "see context related readme files"
 }
 
-local commands = commands
-local context  = context
-local register = trackers.register
+local context       = context
+local implement     = interfaces.implement
+local register      = trackers.register
 
 local textrackers   = tex.trackers   or { }
 local texdirectives = tex.directives or { }
 
-tex.trackers   = textrackers
-tex.directives = texdirectives
+tex.trackers        = textrackers
+tex.directives      = texdirectives
 
 storage.register("tex/trackers",  textrackers,  "tex.trackers")
 storage.register("tex/directives",texdirectives,"tex.directives")
@@ -39,10 +39,32 @@ local function install(category,register,tag,enable,disable)
     register(tag, function(v) doit(category,tag,v) end) -- todo: v,tag in caller
 end
 
-function commands.initializetextrackers  () initialize(textrackers  ,trackers  .register  ) end
-function commands.initializetexdirectives() initialize(texdirectives,directives.register) end
+implement {
+    name    = "initializetextrackers",
+    actions = function()
+        initialize(textrackers,trackers.register)
+    end
+}
 
--- commands.install(tag,enable,disable):
+implement {
+    name    = "initializetexdirectives",
+    actions = function()
+        initialize(texdirectives,directives.register)
+    end
+}
 
-function commands.installtextracker  (...) install(textrackers  ,trackers  .register,...) end
-function commands.installtexdirective(...) install(texdirectives,directives.register,...) end
+implement {
+    name    = "installtextracker",
+    actions = function(tag,enable,disable)
+        install(textrackers,trackers.register,tag,enable,disable)
+    end,
+    arguments = { "string", "string", "string" }
+}
+
+implement {
+    name      = "installtexdirective",
+    actions   = function(tag,enable,disable)
+        install(texdirectives,directives.register,tag,enable,disable)
+    end,
+    arguments = { "string", "string", "string" }
+}

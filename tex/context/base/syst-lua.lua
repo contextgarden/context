@@ -6,15 +6,17 @@ if not modules then modules = { } end modules ['syst-lua'] = {
     license   = "see context related readme files"
 }
 
-local format, find, match, rep = string.format, string.find, string.match, string.rep
+local find, match = string.find, string.match
 local tonumber = tonumber
 local S, lpegmatch, lpegtsplitat = lpeg.S, lpeg.match, lpeg.tsplitat
 
-commands       = commands or { }
-local commands = commands
+commands          = commands or { }
+local commands    = commands
 
-local context  = context
-local csprint  = context.sprint
+local implement   = interfaces.implement
+
+local context     = context
+local csprint     = context.sprint
 
 local prtcatcodes = tex.prtcatcodes
 
@@ -158,9 +160,11 @@ function commands.firstinset(str)
     context(first or str)
 end
 
-function commands.ntimes(str,n)
-    context(rep(str,n or 1))
-end
+implement {
+    name      = "ntimes",
+    actions   = { string.rep, context },
+    arguments = { "string", "integer" }
+}
 
 function commands.execute(str)
     os.execute(str) -- wrapped in sandbox

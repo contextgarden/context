@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['attr-eff'] = {
     license   = "see context related readme files"
 }
 
-local commands, interfaces = commands, interfaces
 local attributes, nodes, backends, utilities = attributes, nodes, backends, utilities
 local tex = tex
 
@@ -17,6 +16,9 @@ local texsetattribute   = tex.setattribute
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
+
+local interfaces        = interfaces
+local implement         = interfaces.implement
 
 local variables         = interfaces.variables
 local v_normal          = variables.normal
@@ -91,8 +93,13 @@ local function register(specification)
     return n
 end
 
+local enabled = false
+
 local function enable()
-    tasks.enableaction("shipouts","attributes.effects.handler")
+    if not enabled then
+        tasks.enableaction("shipouts","attributes.effects.handler")
+        enabled = true
+    end
 end
 
 effects.register = register
@@ -100,12 +107,28 @@ effects.enable   = enable
 
 -- interface
 
-local enabled = false
+implement {
+    name      = "seteffect",
+    actions   = function(specification)
+        if not enabled then
+            enable()
+        end
+        texsetattribute(a_effect,register(specification))
+    end,
+    arguments = {
+        {
+            { "alternative",   "string"  },
+            { "stretch",       "integer" },
+            { "rulethickness", "dimen"   }
+        }
+    }
+}
 
-function commands.triggereffect(specification)
-    if not enabled then
-        enable()
-        enabled = true
+implement {
+    name      = "reseteffect",
+    actions   = function()
+        if enabled then
+            texsetattribute(a_effect,register())
+        end
     end
-    texsetattribute(a_effect,register(specification))
-end
+}

@@ -62,7 +62,7 @@
 %D a historical and practical reason (like shared keys with different meaning
 %D that could clash, e.g.\ align).
 
-\defineMPinstance
+\defineMPinstance % not really needed as we set in lua
   [chemistry]
   [\s!format=metafun,
   %\s!extensions=\v!yes,      % Should we add extensions and initializations?
@@ -88,7 +88,7 @@
   {\startnointerference
    \edef\currentdefinedchemical{#1}%
    \let\chemical\chem_chemical_nested
-   \ctxcommand{undefinechemical("#1")}%
+   \clf_undefinechemical{#1}%
    #2% flush
    \stopnointerference}
 
@@ -96,7 +96,7 @@
   {\dodoubleempty\chem_chemical_nested_indeed}
 
 \def\chem_chemical_nested_indeed[#1][#2]%
-  {\ctxcommand{definechemical("\currentdefinedchemical",\!!bs#1\!!es,\!!bs\detokenize{#2}\!!es)}}
+  {\clf_definechemical{\currentdefinedchemical}{#1}{\detokenize{#2}}}
 
 % chemical symbols
 
@@ -160,28 +160,28 @@
    \fi\fi
    \the\everystructurechemical
    \setbox\b_chem_result\hbox\bgroup
-   \ctxcommand{startchemical {
-     width         = "\chemicalparameter\c!width",
-     height        = "\chemicalparameter\c!height",
-     left          = "\chemicalparameter\c!left",
-     right         = "\chemicalparameter\c!right",
-     top           = "\chemicalparameter\c!top",
-     bottom        = "\chemicalparameter\c!bottom",
-     scale         = "\chemicalparameter\c!scale",
-     rotation      = "\chemicalparameter\c!rotation",
-     symalign      = "\chemicalparameter\c!symalign",
-     axis          = "\chemicalparameter\c!axis",
-     framecolor    = "\MPcolor{\chemicalparameter\c!framecolor}",
-     rulethickness = \number\dimexpr\chemicalparameter\c!rulethickness\relax,
-     offset        = \number\dimexpr\chemicalparameter\c!offset\relax,
-     unit          = \number\dimexpr\chemicalparameter\c!unit\relax,
-     factor        = \number\chemicalparameter\c!factor,
-   } }%
+   \clf_startchemical
+     width         {\chemicalparameter\c!width}%
+     height        {\chemicalparameter\c!height}%
+     left          {\chemicalparameter\c!left}%
+     right         {\chemicalparameter\c!right}%
+     top           {\chemicalparameter\c!top}%
+     bottom        {\chemicalparameter\c!bottom}%
+     scale         {\chemicalparameter\c!scale}%
+     rotation      {\chemicalparameter\c!rotation}%
+     symalign      {\chemicalparameter\c!symalign}%
+     axis          {\chemicalparameter\c!axis}%
+     framecolor    {\MPcolor{\chemicalparameter\c!framecolor}}%
+     rulethickness {\number\dimexpr\chemicalparameter\c!rulethickness}%
+     offset        {\number\dimexpr\chemicalparameter\c!offset}%
+     unit          {\number\dimexpr\chemicalparameter\c!unit}%
+     factor        {\number\chemicalparameter\c!factor}%
+   \relax
    \startnointerference}
 
 \unexpanded\def\stopchemical
   {\stopnointerference
-   \ctxcommand{stopchemical()}%
+   \clf_stopchemical
    \egroup
    \d_chem_width \wd\b_chem_result
    \d_chem_height\ht\b_chem_result
@@ -222,17 +222,21 @@
 
 \def\strc_chem_indeed_three[#1][#2][#3]%
   {\writestatus\m!chemicals{hyperlinked chemicals not yet supported}% todo reference, for the moment ignored
-   \ctxcommand{chemicalcomponent(\!!bs#2\!!es, \!!bs\detokenize{#3}\!!es, { % maybe also pass first two args this way
-     rulethickness = "\the\dimexpr\chemicalparameter\c!rulethickness\relax", % todo: scaled points
-     rulecolor     = "\MPcolor{\chemicalparameter\c!rulecolor}" % we can precalculate this for speedup
-    } ) }%
+   \clf_chemicalcomponent
+      {#2}%
+      {\detokenize{#3}}%
+      {\the\dimexpr\chemicalparameter\c!rulethickness}% todo: scaled points
+      {\MPcolor{\chemicalparameter\c!rulecolor}}%     % we can precalculate this for speedup
+   \relax
    \ignorespaces}
 
 \def\strc_chem_indeed_two[#1][#2]%
-  {\ctxcommand{chemicalcomponent(\!!bs#1\!!es,\!!bs\detokenize{#2}\!!es, { % maybe also pass first two args this way
-     rulethickness = "\the\dimexpr\chemicalparameter\c!rulethickness\relax", % todo: scaled points
-     rulecolor     = "\MPcolor{\chemicalparameter\c!rulecolor}" % we can precalculate this for speedup
-    } ) }%
+  {\clf_chemicalcomponent
+      {#1}%
+      {\detokenize{#2}}%
+      {\the\dimexpr\chemicalparameter\c!rulethickness}% todo: scaled points
+      {\MPcolor{\chemicalparameter\c!rulecolor}}%     % we can precalculate this for speedup
+   \relax
    \ignorespaces}
 
 \appendtoks
@@ -311,8 +315,8 @@
 \def\chem_arrow_construct#1#2#3%
   {\enspace
    \mathematics{#1%
-     {\strut\hbox \s!spread 2\emwidth{\hss\ctxcommand{inlinechemical(\!!bs#3\!!es)}\hss}}%   {\strut\hbox \s!spread 2em{\hss#3\hss}}}%
-     {\strut\hbox \s!spread 2\emwidth{\hss\ctxcommand{inlinechemical(\!!bs#2\!!es)}\hss}}}%  {\strut\hbox \s!spread 2em{\hss#2\hss}}%
+     {\strut\hbox \s!spread 2\emwidth{\hss\clf_inlinechemical{#3}\hss}}%   {\strut\hbox \s!spread 2em{\hss#3\hss}}}%
+     {\strut\hbox \s!spread 2\emwidth{\hss\clf_inlinechemical{#2}\hss}}}%  {\strut\hbox \s!spread 2em{\hss#2\hss}}%
    \enspace}
 
 % special macros (probably needs some more work)
@@ -505,7 +509,7 @@
    \begingroup
    \scratchcounter\normalmathstyle
    \usechemicalstyleandcolor\c!style\c!color
-   \hbox{\mathematics{\tf\triggermathstyle\scratchcounter\ctxcommand{inlinechemical(\!!bs#1\!!es)}}}%
+   \hbox{\mathematics{\tf\triggermathstyle\scratchcounter\clf_inlinechemical{#1}}}%
    \endgroup}
 
 \unexpanded\def\displaychemical
@@ -531,7 +535,7 @@
 
 \unexpanded\def\inlinechemical#1%
   {\dontleavehmode
-   \hbox{\usechemicalstyleandcolor\c!style\c!color\ctxcommand{inlinechemical(\!!bs#1\!!es)}}}
+   \hbox{\usechemicalstyleandcolor\c!style\c!color\clf_inlinechemical{#1}}}
 
 \unexpanded\def\chemicalbondrule
   {\hbox{\vrule\s!height.75\exheight\s!depth-\dimexpr.75\exheight-\linewidth\relax\s!width\emwidth\relax}}

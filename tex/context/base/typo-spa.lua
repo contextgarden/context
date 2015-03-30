@@ -230,6 +230,30 @@ end
 
 -- interface
 
-commands.definecharacterspacing = spacings.define
-commands.setupcharacterspacing  = spacings.setup
-commands.setcharacterspacing    = spacings.set
+local implement = interfaces.implement
+
+implement {
+    name      = "definecharacterspacing",
+    actions   = spacings.define,
+    arguments = "string"
+}
+
+implement {
+    name      = "setupcharacterspacing",
+    actions   = spacings.setup,
+    arguments = {
+        "string",
+        "integer",
+        {
+            { "left",        "number" },
+            { "right",       "number" },
+            { "alternative", "integer" },
+        }
+    }
+}
+
+implement {
+    name      = "setcharacterspacing",
+    actions   = spacings.set,
+    arguments = "string"
+}

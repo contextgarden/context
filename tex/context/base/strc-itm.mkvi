@@ -229,10 +229,10 @@
 \let           \currentitemgroupsegments       \empty
 
 \def\strc_itemgroups_register_status
-  {\ctxcommand{registeritemgroup("\currentparentitemgroup",\number\c_strc_itemgroups_nesting,\number\c_strc_itemgroups_n_of_items,\number\dimexpr\itemgroupparameter\c!maxwidth)}}
+  {\clf_registeritemgroup{\currentparentitemgroup}\c_strc_itemgroups_nesting\c_strc_itemgroups_n_of_items\dimexpr\itemgroupparameter\c!maxwidth\relax}
 
 \def\strc_itemgroups_check_n_of_items % we could do this at the lua end and save a call (i.e. will be dimen and counter)
-  {\ctxcommand{analyzeitemgroup("\currentparentitemgroup",\number\c_strc_itemgroups_nesting)}\relax
+  {\clf_analyzeitemgroup{\currentparentitemgroup}\c_strc_itemgroups_nesting\relax
    \edef\currentnofitems{\the\c_strc_itemgroups_max_items}}
 
 % todo: \dodosetreference -> \strc_counters_register_component (to be checked)
@@ -251,44 +251,47 @@
   {%\setnextinternalreference
    % no need to collect nodes in \b_strc_destination_nodes here ... maybe at some point
    \strc_references_start_destination_nodes
-     % this is somewhat over the top ... we should use the counter's reference
-     \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","\currentitemreference",
-        {
-            metadata = {
-                kind     = "item",% ?
-                catcodes = \the\catcodetable,
-                xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
-            },
-            references = {
-    %           internal = \nextinternalreference, % no: this spoils references
-                block    = "\currentsectionblock",
-                section  = structures.sections.currentid(),
-            },
-            prefixdata = structures.helpers.simplify {
-                prefix        = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefix",
-                separatorset  = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixseparatorset",
-                conversion    = \!!bs\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversion\!!es,
-                conversionset = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversionset",
-                set           = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixset",
-                segments      = "\namedcounterparameter\v_strc_itemgroups_counter\c!prefixsegments",
-            %   segments      = "\askedprefixsegments",
-                connector     = \!!bs\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconnector\!!es,
-            },
-            numberdata = structures.helpers.simplify {
-                numbers       = structures.counters.compact("\v_strc_itemgroups_counter",nil,true),
-                separatorset  = "\namedcounterparameter\v_strc_itemgroups_counter\c!numberseparatorset",
-  %             conversion    = "\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversion",
-  %             conversion    = "\currentitemgroupconversionset",
-  %             conversionset = "\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversionset",
-  % todo:       fixedconversion = "\currentitemgroupconversionset", % temp hack:
-                conversionset = "fixed::\currentitemgroupconversionset",
+   % this is somewhat over the top ... we should use the counter's reference
+   \clf_setreferenceattribute
+        {\referenceprefix}%
+        {\currentitemreference}%
+        {%
+            metadata {%
+                kind            {\s!full}% was item, why?
+            \ifx\currentreferencecoding\s!xml
+                xmlroot         {\xmldocument}% only useful when text
+            \fi
+                catcodes        \catcodetable
+            }%
+            references {%
+              % internal        \nextinternalreference % no: this spoils references
+                block           {\currentsectionblock}%
+                view            {\interactionparameter\c!focus}%
+            }%
+            prefixdata {%
+                prefix          {\namedcounterparameter\v_strc_itemgroups_counter\c!prefix}%
+                separatorset    {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixseparatorset}%
+                conversion      {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversion}%
+                conversionset   {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversionset}%
+                set             {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixset}%
+                segments        {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixsegments}%
+              % segments        {\askedprefixsegments}%
+                connector       {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconnector}%
+            }%
+            numberdata {%
+                numbers         {\v_strc_itemgroups_counter}%
+                separatorset    {\namedcounterparameter\v_strc_itemgroups_counter\c!numberseparatorset}%
+              % conversion      {\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversion}%
+              % conversionset   {\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversionset}%
+              % fixedconversion {\currentitemgroupconversionset}%
+                conversionset   {fixed::\currentitemgroupconversionset}% temp hack
               %
               % for the moment no stopper, we need to make references configurable first
-              % stopper       = \!!bs\namedcounterparameter\v_strc_itemgroups_counter\c!numberstopper\!!es,
-                segments      = "\namedcounterparameter\v_strc_itemgroups_counter\c!numbersegments",
-            },
-        })
-     }%
+              % stopper         {\namedcounterparameter\v_strc_itemgroups_counter\c!numberstopper}%
+                segments        {\namedcounterparameter\v_strc_itemgroups_counter\c!numbersegments}%
+            }%
+        }%
+   \relax
    \strc_references_stop_destination_nodes
    \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
    % will become an option:
@@ -482,6 +485,7 @@
    \fi}
 
 \ifdefined\dotagsetitemgroup \else \let\dotagsetitemgroup\relax \fi
+\ifdefined\dotagsetitem      \else \let\dotagsetitem     \relax \fi
 
 \def\strc_itemgroups_tag_start_group
   {\dostarttaggedchained\t!itemgroup\currentparentitemgroup\??itemgroup
@@ -1040,6 +1044,7 @@
      \setfalse\c_strc_itemgroups_concat
    \fi
    \dostarttagged\t!item\empty
+   \dotagsetitem
    \dostarttagged\t!itemtag\empty
    \strc_itemgroups_insert_item
    \dostoptagged
@@ -1087,6 +1092,7 @@
 
 \unexpanded\def\strc_itemgroups_start_head_indeed
   {\settrue\c_strc_itemgroups_head
+   \dotagsetitem % weird place
    \useitemgroupstyleandcolor\c!headstyle\c!headcolor\ignorespaces}
 
 \unexpanded\def\strc_itemgroups_stop_head_indeed

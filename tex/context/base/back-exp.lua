@@ -73,6 +73,8 @@ local v_flushright      = variables.flushright
 local v_middle          = variables.middle
 local v_flushleft       = variables.flushleft
 
+local implement         = interfaces.implement
+
 local settings_to_array = utilities.parsers.settings_to_array
 
 local setmetatableindex = table.setmetatableindex
@@ -612,12 +614,25 @@ do
         }
     end
 
+    function structurestags.setitem(head)
+        itemgroups[locatedtag("item")] = {
+            head = head,
+        }
+    end
+
     function extras.itemgroup(di,element,n,fulltag)
         local hash = itemgroups[fulltag]
         if hash then
             setattribute(di,"packed",hash.packed and "yes" or nil)
             setattribute(di,"symbol",hash.symbol)
             setattribute(di,"level",hash.level)
+        end
+    end
+
+    function extras.item(di,element,n,fulltag)
+        local hash = itemgroups[fulltag]
+        if hash then
+            setattribute(di,"head",hash.head and "yes" or nil)
         end
     end
 
@@ -3381,7 +3396,7 @@ local htmltemplate = [[
     local appendaction = nodes.tasks.appendaction
     local enableaction = nodes.tasks.enableaction
 
-    function commands.setupexport(t)
+    function structurestags.setupexport(t)
         table.merge(finetuning,t)
         keephyphens      = finetuning.hyphen == v_yes
         exportproperties = finetuning.properties
@@ -3389,6 +3404,8 @@ local htmltemplate = [[
             exportproperties = false
         end
     end
+
+
 
     local function startexport(v)
         if v and not exporting then
@@ -3417,16 +3434,101 @@ end
 
 -- These are called at the tex end:
 
-commands.settagsectionlevel      = structurestags.setsectionlevel
-commands.settagitemgroup         = structurestags.setitemgroup
-commands.settagsynonym           = structurestags.setsynonym
-commands.settagsorting           = structurestags.setsorting
-commands.settagdescription       = structurestags.setdescription
-commands.settagdescriptionsymbol = structurestags.setdescriptionsymbol
-commands.settaghighlight         = structurestags.sethighlight
-commands.settagfigure            = structurestags.setfigure
-commands.settagcombination       = structurestags.setcombination
-commands.settagtablecell         = structurestags.settablecell
-commands.settagtabulatecell      = structurestags.settabulatecell
-commands.settagregister          = structurestags.setregister
-commands.settaglist              = structurestags.setlist
+implement {
+    name      = "setupexport",
+    actions   = structurestags.setupexport,
+    arguments = {
+        {
+            { "align" },
+            { "bodyfont", "dimen" },
+            { "width", "dimen" },
+            { "properties" },
+            { "hyphen" },
+            { "title" },
+            { "subtitle" },
+            { "author" },
+            { "firstpage" },
+            { "lastpage" },
+            { "svgstyle" },
+            { "cssfile" },
+        }
+    }
+}
+
+implement {
+    name      = "settagitemgroup",
+    actions   = structurestags.setitemgroup,
+    arguments = { "boolean", "integer", "string" }
+}
+
+implement {
+    name      = "settagitem",
+    actions   = structurestags.setitem,
+    arguments = "boolean"
+}
+
+implement {
+    name      = "settagsynonym",
+    actions   = structurestags.setsynonym,
+    arguments = "string"
+}
+
+implement {
+    name      = "settagsorting",
+    actions   = structurestags.setsorting,
+    arguments = "string"
+}
+
+implement {
+    name      = "settagdescription",
+    actions   = structurestags.setdescription,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "settagdescriptionsymbol",
+    actions   = structurestags.setdescriptionsymbol,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "settaghighlight",
+    actions   = structurestags.sethighlight,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "settagfigure",
+    actions    = structurestags.setfigure,
+    arguments = { "string", "string", "string", "dimen", "dimen" }
+}
+
+implement {
+    name      = "settagcombination",
+    actions   = structurestags.setcombination,
+    arguments = { "integer", "integer" }
+}
+
+implement {
+    name      = "settagtablecell",
+    actions   = structurestags.settablecell,
+    arguments = { "integer", "integer", "integer" }
+}
+
+implement {
+    name      = "settagtabulatecell",
+    actions   = structurestags.settabulatecell,
+    arguments = "integer"
+}
+
+implement {
+    name      = "settagregister",
+    actions   = structurestags.setregister,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "settaglist",
+    actions   = structurestags.setlist,
+    arguments = "string"
+}

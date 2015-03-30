@@ -70,12 +70,12 @@
 \unexpanded\def\defineconversionset{\dotripleempty\strc_sets_define_conversion_set}
 \unexpanded\def\defineprefixset    {\dotripleempty\strc_sets_define_prefix_set}
 
-% Low level versions (no optional checking). The detokenize and escaping might go away.
+% Low level versions (no optional checking). The detokenize might go away.
 
-\unexpanded\def\strc_sets_define_reset_set     [#name][#set][#default]{\ctxcommand{definestructureset("structure:resets",     "#name","\luaescapestring{\detokenize{#set}}","\luaescapestring{\detokenize{#default}}",true)}}
-\unexpanded\def\strc_sets_define_separator_set [#name][#set][#default]{\ctxcommand{definestructureset("structure:separators", "#name","\luaescapestring{\detokenize{#set}}","\luaescapestring{\detokenize{#default}}")}}
-\unexpanded\def\strc_sets_define_conversion_set[#name][#set][#default]{\ctxcommand{definestructureset("structure:conversions","#name","\luaescapestring{\detokenize{#set}}","\luaescapestring{\detokenize{#default}}")}}
-\unexpanded\def\strc_sets_define_prefix_set    [#name][#set][#default]{\ctxcommand{definestructureset("structure:prefixes",   "#name","\luaescapestring{\detokenize{#set}}","\luaescapestring{\detokenize{#default}}")}}
+\unexpanded\def\strc_sets_define_reset_set     [#name][#set][#default]{\clf_definestructureset{structure:resets}     {#name}{\detokenize{#set}}{\detokenize{#default}}true\relax}
+\unexpanded\def\strc_sets_define_separator_set [#name][#set][#default]{\clf_definestructureset{structure:separators} {#name}{\detokenize{#set}}{\detokenize{#default}}false\relax}
+\unexpanded\def\strc_sets_define_conversion_set[#name][#set][#default]{\clf_definestructureset{structure:conversions}{#name}{\detokenize{#set}}{\detokenize{#default}}false\relax}
+\unexpanded\def\strc_sets_define_prefix_set    [#name][#set][#default]{\clf_definestructureset{structure:prefixes}   {#name}{\detokenize{#set}}{\detokenize{#default}}false\relax}
 
 \let\definestructureresetset     \defineresetset
 \let\definestructureseparatorset \defineseparatorset

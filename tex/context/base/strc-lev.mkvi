@@ -26,17 +26,17 @@
 \unexpanded\def\definesectionlevels{\dodoubleargument\strc_levels_define}
 \unexpanded\def\startsectionlevel  {\dosingleempty   \strc_levels_start }
 
-\unexpanded\def\strc_levels_define[#category][#list]{\ctxcommand{definesectionlevels("#category","#list")}}
-\unexpanded\def\strc_levels_start        [#category]{\ctxcommand{startsectionlevel("#category")}}
-\unexpanded\def\stopsectionlevel                    {\ctxcommand{stopsectionlevel()}}
+\unexpanded\def\strc_levels_define[#category][#list]{\clf_definesectionlevels{#category}{#list}}
+\unexpanded\def\strc_levels_start        [#category]{\clf_startsectionlevel{#category}}
+\unexpanded\def\stopsectionlevel                    {\clf_stopsectionlevel}
 
 \unexpanded\def\nostarthead{\dotripleargument\strc_levels_start_nop} % used at the lua end
 \unexpanded\def\nostophead {\dosingleargument\strc_levels_stop_nop } % used at the lua end
 
 \unexpanded\def\strc_levels_start[#category]%
   {\doifassignmentelse{#category}
-     {\ctxcommand{startsectionlevel("\v!default")}[#category]}
-     {\ctxcommand{startsectionlevel("#category")}}}
+     {\clf_startsectionlevel{\v!default}[#category]}
+     {\clf_startsectionlevel{#category}}}
 
 \unexpanded\def\strc_levels_start_nop[#category][#settings][#userdata]%
   {\blank

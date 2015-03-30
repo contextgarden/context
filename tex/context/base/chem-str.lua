@@ -44,6 +44,8 @@ local P, R, S, C, Cs, Ct, Cc, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpe
 local variables    = interfaces and interfaces.variables
 local commands     = commands
 local context      = context
+local implement    = interfaces.implement
+
 local formatters   = string.formatters
 local texgetcount  = tex.getcount
 
@@ -67,6 +69,7 @@ local chemistry = chemistry
 
 chemistry.instance   = "chemistry"
 chemistry.format     = "metafun"
+chemistry.method     = "double"
 chemistry.structures = 0
 
 local common_keys = {
@@ -768,6 +771,7 @@ function chemistry.stop()
         metapost.graphic {
             instance    = chemistry.instance,
             format      = chemistry.format,
+            method      = chemistry.method,
             data        = mpcode,
             definitions = f_initialize,
         }
@@ -776,14 +780,12 @@ function chemistry.stop()
     end
 end
 
-function chemistry.component(spec,text,settings)
+function chemistry.component(spec,text,rulethickness,rulecolor)
     if metacode then
-        rulethickness, rulecolor, offset = settings.rulethickness, settings.rulecolor
         local spec = settings_to_array_with_repeat(spec,true) -- no lower?
         local text = settings_to_array_with_repeat(text,true)
-    -- inspect(spec)
         metacode[#metacode+1] = f_start_component
-        process(1,spec,text,1,rulethickness,rulecolor) -- offset?
+        process(1,spec,text,1,rulethickness,rulecolor)
         metacode[#metacode+1] = f_stop_component
     end
 end
@@ -796,11 +798,52 @@ end)
 
 -- interfaces
 
-commands.undefinechemical  = chemistry.undefine
-commands.definechemical    = chemistry.define
-commands.startchemical     = chemistry.start
-commands.stopchemical      = chemistry.stop
-commands.chemicalcomponent = chemistry.component
+implement {
+    name      = "undefinechemical",
+    actions   = chemistry.undefine,
+    arguments = "string"
+}
+
+implement {
+    name      = "definechemical",
+    actions   = chemistry.define,
+    arguments = { "string", "string", "string" }
+}
+
+implement {
+    name      = "startchemical",
+    actions   = chemistry.start,
+    arguments = {
+        {
+            { "width" },
+            { "height" },
+            { "left" },
+            { "right" },
+            { "top" },
+            { "bottom" },
+            { "scale" },
+            { "rotation" },
+            { "symalign" },
+            { "axis" },
+            { "framecolor" },
+            { "rulethickness" },
+            { "offset" },
+            { "unit" },
+            { "factor" }
+        }
+    }
+}
+
+implement {
+    name      = "stopchemical",
+    actions   = chemistry.stop,
+}
+
+implement {
+    name      = "chemicalcomponent",
+    actions   = chemistry.component,
+    arguments = { "string", "string", "string", "string" }
+}
 
 -- todo: top / bottom
 -- maybe add "=" for double and "≡" for triple?
@@ -817,7 +860,9 @@ local inline = {
     ["space"]       = "\\chemicalspace",
 }
 
-function commands.inlinechemical(spec)
+local ctx_chemicalinline = context.chemicalinline
+
+function chemistry.inlinechemical(spec)
     local spec = settings_to_array_with_repeat(spec,true)
     for i=1,#spec do
         local s = spec[i]
@@ -825,7 +870,13 @@ function commands.inlinechemical(spec)
         if inl then
             context(inl) -- could be a fast context.sprint
         else
-            context.chemicalinline(molecule(s))
+            ctx_chemicalinline(molecule(s))
         end
     end
 end
+
+implement {
+    name      = "inlinechemical",
+    actions   = chemistry.inlinechemical,
+    arguments = "string"
+}

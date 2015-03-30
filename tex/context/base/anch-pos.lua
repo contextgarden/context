@@ -135,6 +135,21 @@ jobpositions.used       = false
 local function initializer()
     tobesaved = jobpositions.tobesaved
     collected = jobpositions.collected
+    -- add sparse regions
+    local pages = structures.pages.collected
+    if pages  then
+        local last = nil
+        for p=1,#pages do
+            local region = "page:" .. p
+            local data   = collected[region]
+            if data then
+                last   = data
+                last.p = nil -- no need for a page
+            elseif last then
+                collected[region] = last
+            end
+        end
+    end
     -- enhance regions with paragraphs
     for tag, data in next, collected do
         local region = data.r
@@ -401,7 +416,7 @@ function jobpositions.e_region(correct)
     region = regions[#regions]
 end
 
-local function markregionbox(n,tag,correct)
+local function setregionbox(n,tag)
     if not tag or tag == "" then
         nofregions = nofregions + 1
         tag = f_region(nofregions)
@@ -418,6 +433,11 @@ local function markregionbox(n,tag,correct)
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
     }
+    return tag, box
+end
+
+local function markregionbox(n,tag,correct)
+    local tag, box = setregionbox(n,tag)
     local push = new_latelua(f_b_region(tag))
     local pop  = new_latelua(f_e_region(tostring(correct))) -- todo: check if tostring is needed with formatter
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
@@ -436,6 +456,7 @@ local function markregionbox(n,tag,correct)
 end
 
 jobpositions.markregionbox = markregionbox
+jobpositions.setregionbox  = setregionbox
 
 function jobpositions.enhance(name)
     enhance(tobesaved[name])
@@ -602,7 +623,17 @@ end
 
 function jobpositions.region(id)
     local jpi = collected[id]
-    return jpi and jpi.r or false
+    if jpi then
+        local r = jpi.r
+        if r then
+            return r
+        end
+        local p = jpi.p
+        if p then
+            return "page:" .. p
+        end
+    end
+    return false
 end
 
 function jobpositions.column(id)
@@ -994,21 +1025,24 @@ scanners.MPc = function() -- name
     local jpi = collected[scanstring()]
     if jpi then
         local c = jpi.c
-        if c and p ~= true  then
+        if c and c ~= true  then
             context(c)
             return
         end
     end
-    context(c) -- number
+    context('0') -- okay ?
 end
 
 scanners.MPr = function() -- name
     local jpi = collected[scanstring()]
     if jpi then
         local r = jpi.r
-        if r and p ~= true  then
+        if r and r ~= true  then
             context(r)
-            return
+        end
+        local p = jpi.p
+        if p then
+            context("page:" .. p)
         end
     end
 end
@@ -1143,8 +1177,16 @@ scanners.markregionbox = function() -- box
     markregionbox(scaninteger())
 end
 
+scanners.setregionbox = function() -- box
+    setregionbox(scaninteger())
+end
+
 scanners.markregionboxtagged = function() -- box tag
     markregionbox(scaninteger(),scanstring())
+end
+
+scanners.setregionboxtagged = function() -- box tag
+    setregionbox(scaninteger(),scanstring())
 end
 
 scanners.markregionboxcorrected = function() -- box tag

@@ -295,16 +295,13 @@
 
 \def\strc_tags_setup_element_user_properties_indeed
   {\iftrialtypesetting
-     \expandafter      \strc_tags_setup_element_user_properties_indeed_nop
-   \else\ifsecondargument
-     \doubleexpandafter\strc_tags_setup_element_user_properties_indeed_two
+     \expandafter\strc_tags_setup_element_user_properties_indeed_nop
    \else
-     \doubleexpandafter\strc_tags_setup_element_user_properties_indeed_one
-   \fi\fi}
+     \expandafter\strc_tags_setup_element_user_properties_indeed_yes
+   \fi}
 
 \def\strc_tags_setup_element_user_properties_indeed_nop[#1][#2]{}
-\def\strc_tags_setup_element_user_properties_indeed_one[#1][#2]{\clf_setelementuserproperties_o{#1}}
-\def\strc_tags_setup_element_user_properties_indeed_two[#1][#2]{\clf_setelementuserproperties_u{#1}{#2}}
+\def\strc_tags_setup_element_user_properties_indeed_yes[#1][#2]{\clf_setelementuserproperties{#1}{#2}}
 
 \unexpanded\def\strc_tags_enable_properties
   {\let\getelementtag             \strc_tags_get_element_tag_yes
@@ -486,7 +483,7 @@
 %D \stoptyping
 
 \unexpanded\def\settaggedmetadata[#1]%
-  {\clf_registermetadata{#1}}
+  {\clf_settaggedmetadata{#1}}
 
 %D An overload:
 

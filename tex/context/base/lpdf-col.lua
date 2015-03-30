@@ -48,6 +48,7 @@ local registercolor           = colors.register
 local colorsvalue             = colors.value
 local transparenciesvalue     = transparencies.value
 local forcedmodel             = colors.forcedmodel
+local getpagecolormodel       = colors.getpagecolormodel
 
 local c_transparency          = pdfconstant("Transparency")
 
@@ -98,11 +99,10 @@ table.setmetatableindex(transparencygroups, function(transparencygroups,colormod
     end
 end)
 
-local currentgroupcolormodel
-
 local function addpagegroup()
-    if currentgroupcolormodel then
-        local g = transparencygroups[currentgroupcolormodel]
+    local model = getpagecolormodel()
+    if model then
+        local g = transparencygroups[model]
         if g then
             addtopageattributes("Group",g)
         end
@@ -110,13 +110,6 @@ local function addpagegroup()
 end
 
 lpdf.registerpagefinalizer(addpagegroup,3,"pagegroup")
-
-local function synchronizecolormodel(model)
-    currentgroupcolormodel = model
-end
-
-backends.codeinjections.synchronizecolormodel = synchronizecolormodel
-commands.synchronizecolormodel                = synchronizecolormodel
 
 -- injection code (needs a bit reordering)
 
@@ -491,8 +484,11 @@ function registrations.transparency(n,a,t)
 end
 
 statistics.register("page group warning", function()
-    if done and not transparencygroups[currentgroupcolormodel] then
-        return "transparencies are used but no pagecolormodel is set"
+    if done then
+        local model = getpagecolormodel()
+        if model and not transparencygroups[model] then
+            return "transparencies are used but no pagecolormodel is set"
+        end
     end
 end)
 

@@ -27,10 +27,10 @@
 
 % this one takes simple (utf) strings
 
-\def\wdofstring#1{\dimexpr\ctxcommand{strwd(\!!bs#1\!!es)}\scaledpoint\relax}
-\def\htofstring#1{\dimexpr\ctxcommand{strht(\!!bs#1\!!es)}\scaledpoint\relax}
-\def\dpofstring#1{\dimexpr\ctxcommand{strdp(\!!bs#1\!!es)}\scaledpoint\relax}
-\def\hdofstring#1{\dimexpr\ctxcommand{strhd(\!!bs#1\!!es)}\scaledpoint\relax}
+\def\wdofstring#1{\dimexpr\clf_strwd{#1}\scaledpoint\relax}
+\def\htofstring#1{\dimexpr\clf_strht{#1}\scaledpoint\relax}
+\def\dpofstring#1{\dimexpr\clf_strdp{#1}\scaledpoint\relax}
+\def\hdofstring#1{\dimexpr\clf_strhd{#1}\scaledpoint\relax}
 
 \def\widthofstring         {\the\wdofstring}
 \def\heightofstring        {\the\htofstring}

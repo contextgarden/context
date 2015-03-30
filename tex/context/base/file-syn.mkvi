@@ -46,8 +46,8 @@
 \unexpanded\def\definefilesynonym {\dodoubleempty   \syst_files_define_synonym }
 \unexpanded\def\definefilefallback{\dodoubleargument\syst_files_define_fallback} % still used?
 
-\def\syst_files_define_synonym     [#name][#realname]{\ctxcommand{definefilesynonym ("#name","#realname")}}
-\def\syst_files_define_fallback[#name][#alternatives]{\ctxcommand{definefilefallback("#name","#alternatives")}}
+\def\syst_files_define_synonym     [#name][#realname]{\clf_definefilesynonym {#name}{#realname}}
+\def\syst_files_define_fallback[#name][#alternatives]{\clf_definefilefallback{#name}{#alternatives}}
 
 %D \macros
 %D   {truefilename}
@@ -61,6 +61,6 @@
 %D
 %D The implementation shows that nesting is supported.
 
-\def\truefilename#1{\ctxcommand{truefilename("#1")}}
+\def\truefilename#1{\clf_truefilename{#1}}
 
 \protect \endinput

@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['file-lib'] = {
 -- todo: check all usage of truefilename at the tex end and remove
 -- files there (and replace definitions by full names)
 
-local format = string.format
+local format, gsub = string.format, string.gsub
 
 local trace_libraries = false  trackers.register("resolvers.libraries", function(v) trace_libraries = v end)
 ----- trace_files     = false  trackers.register("resolvers.readfile",  function(v) trace_files     = v end)
@@ -33,7 +33,7 @@ local function defaultfailure(name)
     report_files("asked name %a, not found",name)
 end
 
-function commands.uselibrary(specification) -- todo: reporter
+function resolvers.uselibrary(specification) -- todo: reporter
     local name = specification.name
     if name and name ~= "" then
         local patterns = specification.patterns or defaultpatterns
@@ -86,3 +86,5 @@ function commands.uselibrary(specification) -- todo: reporter
         end
     end
 end
+
+commands.uselibrary = resolvers.uselibrary -- for the moment

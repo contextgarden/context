@@ -787,7 +787,7 @@ local p_aftercomma  = p_fourafter
                     + d_one   * d_spaced
 
 local digitized_2   = Cs (
-                         p_fourbefore  *   p_aftercomma +
+                         p_fourbefore  *   (p_aftercomma^0) +
                          p_beforecomma * ((p_aftercomma + d_one^1)^0)
                       )
 
@@ -796,7 +796,7 @@ local p_aftercomma  = p_fourafter
                     + d_three * d_spaced * P(1)^0
 
 local digitized_3   = Cs (
-                         p_fourbefore  *   p_aftercomma +
+                         p_fourbefore  *   (p_aftercomma^0) +
                          p_beforecomma * ((p_aftercomma + d_one^1)^0)
                       )
 
@@ -838,28 +838,26 @@ function numbermess(s)
     return s
 end
 
-asciimath.setup { splitmethod = 3 }
-
-local t = {
-    "1", "12", "123", "1234", "12345", "123456", "1234567", "12345678", "123456789",
-    "1,1",
-    "12,12",
-    "123,123",
-    "1234,1234",
-    "12345,1234",
-    "1234,12345",
-    "12345,12345",
-    "123456,123456",
-    "1234567,1234567",
-    "12345678,12345678",
-    "123456789,123456789",
-    "0,1234",
-    "1234,0",
-    "1234,00",
-    "0,123456789",
-}
-for i=1,#t do print(formatters["%-20s : [%s]"](t[i],numbermess(t[i]))) end
-
+-- asciimath.setup { splitmethod = 3 }
+-- local t = {
+--     "1", "12", "123", "1234", "12345", "123456", "1234567", "12345678", "123456789",
+--     "1,1",
+--     "12,12",
+--     "123,123",
+--     "1234,1234",
+--     "12345,1234",
+--     "1234,12345",
+--     "12345,12345",
+--     "123456,123456",
+--     "1234567,1234567",
+--     "12345678,12345678",
+--     "123456789,123456789",
+--     "0,1234",
+--     "1234,0",
+--     "1234,00",
+--     "0,123456789",
+-- }
+-- for i=1,#t do print(formatters["%-20s : [%s]"](t[i],numbermess(t[i]))) end
 
 statistics.register("asciimath",function()
     if trace_digits then

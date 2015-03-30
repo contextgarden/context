@@ -358,12 +358,23 @@ references.setnextinternal = setnextinternal
 references.currentorder    = currentorder
 references.setcomponent    = setcomponent
 
-commands.setnextreferenceorder    = setnextorder
-commands.setnextinternalreference = setnextinternal
+implement {
+    name      = "setnextreferenceorder",
+    actions   = setnextorder,
+    arguments = { "string", "string" }
+}
 
-function commands.currentreferenceorder(kind,name)
-    context(currentorder(kind,name))
-end
+implement {
+    name      = "setnextinternalreference",
+    actions   = setnextinternal,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "currentreferenceorder",
+    actions = { currentorder, context },
+    arguments = { "string", "string" }
+}
 
 function references.set(kind,prefix,tag,data)
 --  setcomponent(data)
@@ -417,7 +428,11 @@ function references.enhance(prefix,tag)
     end
 end
 
-commands.enhancereference = references.enhance
+implement {
+    name      = "enhancereference",
+    actions   = references.enhance,
+    arguments = { "string", "string" }
+}
 
 -- -- -- related to strc-ini.lua -- -- --
 
@@ -510,7 +525,11 @@ function urls.get(name)
     end
 end
 
-function commands.geturl(name)
+function urls.found(name)
+    return urldata[name]
+end
+
+local function geturl(name)
     local url = urls.get(name)
     if url and url ~= "" then
         ctx_pushcatcodes(txtcatcodes)
@@ -519,18 +538,23 @@ function commands.geturl(name)
     end
 end
 
--- function commands.gethyphenatedurl(name,...)
---     local url = urls.get(name)
---     if url and url ~= "" then
---         hyphenatedurl(url,...)
---     end
--- end
+implement {
+    name      = "doifurldefinedelse",
+    actions   = { urls.found, commands.doifelse },
+    arguments = "string"
+}
 
-function commands.doifurldefinedelse(name)
-    commands.doifelse(urldata[name])
-end
+implement {
+    name      = "useurl",
+    actions   = urls.define,
+    arguments = { "string", "string", "string", "string" }
+}
 
-commands.useurl= urls.define
+implement {
+    name      = "geturl",
+    actions   = geturl,
+    arguments = "string",
+}
 
 -- files
 
@@ -552,11 +576,36 @@ function files.get(name,method,space) -- method: none, before, after, both, spac
     end
 end
 
-function commands.doiffiledefinedelse(name)
-    commands.doifelse(filedata[name])
+function files.found(name)
+    return filedata[name]
 end
 
-commands.usefile= files.define
+local function getfile(name)
+    local fil = files.get(name)
+    if fil and fil ~= "" then
+        ctx_pushcatcodes(txtcatcodes)
+        context(fil)
+        ctx_popcatcodes()
+    end
+end
+
+implement {
+    name      = "doiffiledefinedelse",
+    actions   = { files.found, commands.doifelse },
+    arguments = "string"
+}
+
+implement {
+    name      = "usefile",
+    actions   = files.define,
+    arguments = { "string", "string", "string" }
+}
+
+implement {
+    name      = "getfile",
+    actions   = getfile,
+    arguments = "string"
+}
 
 -- helpers
 
@@ -636,20 +685,30 @@ function references.checkedprogram(whatever) -- return whatever if not resolved
     end
 end
 
-commands.defineprogram = programs.define
+implement {
+    name      = "defineprogram",
+    actions   = programs.define,
+    arguments = { "string", "string", "string" }
+}
 
-function commands.getprogram(name)
-    local f = programdata[name]
-    if f then
-        context(f[1])
+local function getprogram(name)
+    local p = programdata[name]
+    if p then
+        context(p[1])
     end
 end
 
+implement {
+    name      = "getprogram",
+    actions   = getprogram,
+    arguments = "string"
+}
+
 -- shared by urls and files
 
-function references.whatfrom(name)
-    context((urldata[name] and v_url) or (filedata[name] and v_file) or v_unknown)
-end
+-- function references.whatfrom(name)
+--     context((urldata[name] and v_url) or (filedata[name] and v_file) or v_unknown)
+-- end
 
 function references.from(name)
     local u = urldata[name]
@@ -676,7 +735,7 @@ function references.from(name)
     end
 end
 
-function commands.from(name)
+local function from(name)
     local u = urldata[name]
     if u then
         local url, file, description = u[1], u[2], u[3]
@@ -701,6 +760,12 @@ function commands.from(name)
     end
 end
 
+implement {
+    name      = "from",
+    actions   = from,
+    arguments = "string"
+}
+
 function references.define(prefix,reference,list)
     local d = defined[prefix] if not d then d = { } defined[prefix] = d end
     d[reference] = list
@@ -713,86 +778,17 @@ function references.reset(prefix,reference)
     end
 end
 
-commands.definereference = references.define
-commands.resetreference  = references.reset
+implement {
+    name      = "definereference",
+    actions   = references.define,
+    arguments = { "string", "string", "string" }
+}
 
--- \primaryreferencefoundaction
--- \secondaryreferencefoundaction
--- \referenceunknownaction
-
--- t.special t.operation t.arguments t.outer t.inner
-
--- to what extend do we check the non prefixed variant
-
--- local strict = false
---
--- local function resolve(prefix,reference,args,set) -- we start with prefix,reference
---     if reference and reference ~= "" then
---         if not set then
---             set = { prefix = prefix, reference = reference }
---         else
---             if not set.reference then set.reference = reference end
---             if not set.prefix    then set.prefix    = prefix    end
---         end
---         local r = settings_to_array(reference)
---         for i=1,#r do
---             local ri = r[i]
---             local d
---             if strict then
---                 d = defined[prefix] or defined[""]
---                 d = d and d[ri]
---             else
---                 d = defined[prefix]
---                 d = d and d[ri]
---                 if not d then
---                     d = defined[""]
---                     d = d and d[ri]
---                 end
---             end
---             if d then
---                 resolve(prefix,d,nil,set)
---             else
---                 local var = splitreference(ri)
---                 if var then
---                     var.reference = ri
---                     local vo, vi = var.outer, var.inner
---                     if not vo and vi then
---                         -- to be checked
---                         if strict then
---                             d = defined[prefix] or defined[""]
---                             d = d and d[vi]
---                         else
---                             d = defined[prefix]
---                             d = d and d[vi]
---                             if not d then
---                                 d = defined[""]
---                                 d = d and d[vi]
---                             end
---                         end
---                         --
---                         if d then
---                             resolve(prefix,d,var.arguments,set) -- args can be nil
---                         else
---                             if args then var.arguments = args end
---                             set[#set+1] = var
---                         end
---                     else
---                         if args then var.arguments = args end
---                         set[#set+1] = var
---                     end
---                     if var.has_tex then
---                         set.has_tex = true
---                     end
---                 else
---                 --  report_references("funny pattern %a",ri)
---                 end
---             end
---         end
---         return set
---     else
---         return { }
---     end
--- end
+implement {
+    name      = "resetreference",
+    actions   = references.reset,
+    arguments = { "string", "string" }
+}
 
 setmetatableindex(defined,"table")
 
@@ -847,11 +843,11 @@ end
 
 references.currentset = nil
 
-function commands.setreferenceoperation(k,v)
+local function setreferenceoperation(k,v)
     references.currentset[k].operation = v
 end
 
-function commands.setreferencearguments(k,v)
+local function setreferencearguments(k,v)
     references.currentset[k].arguments = v
 end
 
@@ -872,7 +868,22 @@ function references.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
     end
 end
 
-commands.expandcurrentreference = references.expandcurrent -- for the moment the same
+implement {
+    name      = "expandcurrentreference",
+    actions   = references.expandcurrent
+}
+
+implement {
+    name      = "setreferenceoperation",
+    actions   = setreferenceoperation,
+    arguments = { "integer", "string" }
+}
+
+implement {
+    name      = "setreferencearguments",
+    actions   = setreferencearguments,
+    arguments = { "integer", "string" }
+}
 
 local externals = { }
 
@@ -1164,7 +1175,7 @@ local useproduct = commands.useproduct
 
 if useproduct then
 
-    function commands.useproduct(product)
+    local function newuseproduct(product)
         useproduct(product)
         if texconditionals.autocrossfilereferences then
             local component = justacomponent()
@@ -1176,6 +1187,13 @@ if useproduct then
             end
         end
     end
+
+    implement {
+        name      = "useproduct",
+        actions   = newuseproduct,
+        arguments = "string",
+        overload  = true,
+    }
 
 end
 
@@ -1702,7 +1720,7 @@ references.identify = identify
 
 local unknowns, nofunknowns, f_valid = { }, 0, formatters["[%s][%s]"]
 
-function references.valid(prefix,reference,highlight,newwindow,layer)
+function references.valid(prefix,reference,specification)
     local set, bug = identify(prefix,reference)
     local unknown = bug or #set == 0
     if unknown then
@@ -1717,18 +1735,28 @@ function references.valid(prefix,reference,highlight,newwindow,layer)
             unknowns[str] = u + 1
         end
     else
-        set.highlight    = highlight
-        set.newwindow    = newwindow
-        set.layer        = layer
+        set.highlight    = specification.highlight
+        set.newwindow    = specification.newwindow
+        set.layer        = specification.layer
         currentreference = set[1]
     end
     -- we can do the expansion here which saves a call
     return not unknown
 end
 
-function commands.doifelsereference(prefix,reference,highlight,newwindow,layer)
-    commands.doifelse(references.valid(prefix,reference,highlight,newwindow,layer))
-end
+implement {
+    name      = "doifelsereference",
+    actions   = { references.valid, commands.doifelse },
+    arguments = {
+        "string",
+        "string",
+        {
+            { "highlight", "boolean" },
+            { "newwindow", "boolean" },
+            { "layer" },
+        }
+    }
+}
 
 function references.reportproblems() -- might become local
     if nofunknowns > 0 then
@@ -1847,13 +1875,75 @@ implement {
 --     arguments = "integer",
 -- }
 
-function references.setandgetattribute(kind,prefix,tag,data,view) -- maybe do internal automatically here
-    local attr = references.set(kind,prefix,tag,data) and setinternalreference(prefix,tag,nil,view) or unsetvalue
+function references.setandgetattribute(prefix,tag,data) -- maybe do internal automatically here
+    local attr = unsetvalue
+    local mdat = data.metadata
+    local rdat = data.references
+    if mdat and rdat then
+        if not rdat.section then
+            rdat.section = structures.sections.currentid()
+        end
+        local ndat = data.numberdata
+        if ndat then
+            local numbers = ndat.numbers
+            if type(numbers) == "string" then
+                ndat.numbers = structures.counters.compact(numbers)
+            end
+            data.numberdata = structures.helpers.simplify(ndat)
+        end
+        local pdat = data.prefixdata
+        if pdat then
+            data.prefixdata = structures.helpers.simplify(pdat)
+        end
+        local udat = data.userdata
+        if type(udat) == "string"  then
+            data.userdata = structures.helpers.touserdata(udat)
+        end
+        local done = references.set(mdat.kind or "page",prefix,tag,data)
+        if done then
+            attr = setinternalreference(prefix,tag,nil,rdat.view) or unsetvalue
+        end
+    end
     texsetcount("lastdestinationattribute",attr)
     return attr
 end
 
-commands.setreferenceattribute = references.setandgetattribute
+implement {
+    name      = "setreferenceattribute",
+    actions   = references.setandgetattribute,
+    arguments = {
+        "string",
+        "string",
+        {
+            {
+                "references", {
+                    { "internal", "integer" },
+                    { "block" },
+                    { "view" },
+                },
+            },
+            {
+                "metadata", {
+                    { "kind" },
+                    { "xmlroot" },
+                    { "catcodes", "integer" },
+                },
+            },
+            {
+                "prefixdata", { "*" }
+            },
+            {
+                "numberdata", { "*" }
+            },
+            {
+                "entries", { "*" }
+            },
+            {
+                "userdata"
+            }
+        }
+    }
+}
 
 function references.getinternallistreference(n) -- n points into list (todo: registers)
     local l = lists.collected[n]
@@ -1861,11 +1951,11 @@ function references.getinternallistreference(n) -- n points into list (todo: reg
     return i and destinationattributes[i] or 0
 end
 
-function commands.getinternallistreference(n) -- this will also be a texcount
-    local l = lists.collected[n]
-    local i = l and l.references.internal
-    context(i and destinationattributes[i] or 0)
-end
+implement {
+    name      = "getinternallistreference",
+    actions   = { references.getinternallistreference, context },
+    arguments = "integer"
+}
 
 --
 
@@ -1874,12 +1964,11 @@ function references.getcurrentmetadata(tag)
     return data and data.metadata and data.metadata[tag]
 end
 
-function commands.getcurrentreferencemetadata(tag)
-    local data = references.getcurrentmetadata(tag)
-    if data then
-        context(data)
-    end
-end
+implement {
+    name      = "getcurrentreferencemetadata",
+    actions   = { references.getcurrentmetadata, context },
+    arguments = "string",
+}
 
 local function currentmetadata(tag)
     local data = currentreference and currentreference.i
@@ -1889,15 +1978,19 @@ end
 references.currentmetadata = currentmetadata
 
 local function getcurrentprefixspec(default)
-    -- todo: message
-    return currentmetadata("kind") or "?", currentmetadata("name") or "?", default or "?"
+    return
+        currentmetadata("kind") or "?",
+        currentmetadata("name") or "?",
+        default                 or "?"
 end
 
 references.getcurrentprefixspec = getcurrentprefixspec
 
-function commands.getcurrentprefixspec(default)
-    ctx_getreferencestructureprefix(getcurrentprefixspec(default))
-end
+implement {
+    name      = "getcurrentprefixspec",
+    actions   = { getcurrentprefixspec, context }, -- returns 3 arguments
+    arguments = "string",
+}
 
 local genericfilters = { }
 local userfilters    = { }
@@ -1916,7 +2009,7 @@ local function filterreference(name,...) -- number page title ...
     if data then
         if name == "realpage" then
             local cs = references.analyze() -- normally already analyzed but also sets state
-            context(tonumber(cs.realpage) or 0) -- todo, return and in command namespace
+            context(tonumber(cs.realpage) or 0)
         else -- assumes data is table
             local kind = type(data) == "table" and data.metadata and data.metadata.kind
             if kind then
@@ -1942,21 +2035,27 @@ local function filterreference(name,...) -- number page title ...
 end
 
 local function filterreferencedefault()
-    return filterreference("default",getcurrentprefixspec(v_default))
+    return filterreference("default",getcurrentprefixspec("default"))
 end
 
 references.filter        = filterreference
 references.filterdefault = filterreferencedefault
 
-commands.filterreference        = filterreference
-commands.filterdefaultreference = filterreferencedefault
+implement {
+    name      = "filterreference",
+    actions   = filterreference,
+    arguments = "string",
+}
 
-function commands.currentreferencedefault(tag)
-    if not tag then
-        tag = "default"
-    end
-    filterreference(tag,context_delayed(getcurrentprefixspec(tag)))
-end
+implement {
+    name      = "filterdefaultreference",
+    actions   = filterreference,
+    arguments = {
+        "string",    -- 'default'
+        { { "*" } }, -- prefixspec
+        { { "*" } }, -- numberspec
+    }
+}
 
 function genericfilters.title(data)
     if data then
@@ -2235,45 +2334,49 @@ function references.analyze(actions,position,spread)
     return actions
 end
 
--- function commands.referencepagestate(actions)
---     if not actions then
---         actions = references.currentset
---     end
---     if not actions then
---         context(0)
---     else
---         if not actions.pagestate then
---             references.analyze(actions) -- delayed unless explicitly asked for
---         end
---         context(actions.pagestate)
---     end
--- end
-
-function commands.referencepagestate(position,detail,spread)
+local function referencepagestate(position,detail,spread)
     local actions = references.currentset
     if not actions then
-        context(0)
+        return 0
     else
         if not actions.pagestate then
             references.analyze(actions,position,spread) -- delayed unless explicitly asked for
         end
         local pagestate = actions.pagestate
         if detail then
-            context(pagestate)
+            return pagestate
         elseif pagestate == 4 then
-            context(2) -- compatible
+            return 2 -- compatible
         elseif pagestate == 5 then
-            context(3) -- compatible
+            return 3 -- compatible
         else
-            context(pagestate)
+            return pagestate
         end
     end
 end
 
-function commands.referencerealpage(actions)
+implement {
+    name      = "referencepagestate",
+    actions   = { referencepagestate, context },
+    arguments = "string"
+}
+
+implement {
+    name      = "referencepagedetail",
+    actions   = { referencepagestate, context },
+    arguments = { "string", "boolean", "boolean" }
+}
+
+local function referencerealpage(actions)
     actions = actions or references.currentset
-    context(not actions and 0 or actions.realpage or setreferencerealpage(actions))
+    return not actions and 0 or actions.realpage or setreferencerealpage(actions)
 end
+
+implement {
+    name      = "referencerealpage",
+    actions   = { referencerealpage, context },
+    arguments = "string"
+}
 
 local plist, nofrealpages
 
@@ -2515,24 +2618,36 @@ function references.export(usedname) end
 function references.import(usedname) end
 function references.load  (usedname) end
 
-commands.exportreferences = references.export
+implement { name = "exportreferences", actions =references.export }
 
 -- better done here .... we don't insert/remove, just use a pointer
 
 local prefixstack = { "" }
 local prefixlevel = 1
 
-function commands.pushreferenceprefix(prefix)
+local function pushreferenceprefix(prefix)
     prefixlevel = prefixlevel + 1
     prefixstack[prefixlevel] = prefix
-    context(prefix)
+    return prefix
 end
 
-function commands.popreferenceprefix()
+local function popreferenceprefix()
     prefixlevel = prefixlevel - 1
     if prefixlevel > 0 then
-        context(prefixstack[prefixlevel])
+        return prefixstack[prefixlevel]
     else
         report_references("unable to pop referenceprefix")
+        return ""
     end
 end
+
+implement {
+    name      = "pushreferenceprefix",
+    actions   = { pushreferenceprefix, context }, -- we can use setmacro
+    arguments = "string",
+}
+
+implement {
+    name      = "popreferenceprefix",
+    actions   = { popreferenceprefix, context }, -- we can use setmacro
+}

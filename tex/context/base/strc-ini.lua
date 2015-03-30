@@ -377,4 +377,8 @@ end
 
 -- interface
 
-commands.definestructureset = sets.define
+interfaces.implement {
+    name      = "definestructureset",
+    actions   = sets.define,
+    arguments = { "string", "string", "string", "string", "boolean" }
+}

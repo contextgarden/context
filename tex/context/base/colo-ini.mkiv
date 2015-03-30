@@ -255,14 +255,14 @@
    \colo_helpers_set_current_model
    \ifproductionrun
      \edef\p_pagecolormodel{\directcolorsparameter\c!pagecolormodel}%
-     \ctxcommand{synchronizecolormodel("\ifx\p_pagecolormodel\v!auto \currentcolormodel \else \p_pagecolormodel \fi")}%
+     \clf_setpagecolormodel{\ifx\p_pagecolormodel\v!auto\currentcolormodel\else\p_pagecolormodel\fi}%
    \fi
 \to \everysetupcolors
 
 \appendtoks
     \setupcolors[\c!state=\v!start]%
-    \ctxcommand{enablecolor()}%           % this can as well happen when
-    \ctxcommand{enabletransparency()}%    % the handler is defined in lua
+    \clf_enablecolor           % this can as well happen when
+    \clf_enabletransparency    % the handler is defined in lua
     \let\colo_helpers_show_message\showmessage
 \to \everyjob
 
@@ -1068,7 +1068,7 @@
 
 
 \def\MPoptions#1%
-  {\clfmpoptions
+  {\clf_mpoptions
      \attribute\colormodelattribute
      \colo_helpers_inherited_current_ca{#1} %
      \colo_helpers_inherited_current_ta{#1} }
@@ -1076,16 +1076,15 @@
 
 \def\thecolorattribute       #1{\number\csname\??colorattribute       \ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??colorattribute       #1\endcsname#1\fi\fi\endcsname}
 \def\thetransparencyattribute#1{\number\csname\??transparencyattribute\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??transparencyattribute#1\endcsname#1\fi\fi\endcsname}
-
 \def\thecolormodelattribute    {\the\attribute\colormodelattribute}
 
 \def\internalspotcolorname   #1{\clf_spotcolorname  \thecolorattribute{#1} }
 \def\internalspotcolorparent #1{\clf_spotcolorparent\thecolorattribute{#1} }
 \def\internalspotcolorsize   #1{\clf_spotcolorvalue \thecolorattribute{#1} }
 
-\def\colorcomponents         #1{\clf_colorcomponents       \thecolorattribute{#1} }
+\def\colorcomponents         #1{\clf_colorcomponents       \thecolorattribute       {#1} }
 \def\transparencycomponents  #1{\clf_transparencycomponents\thetransparencyattribute{#1} }
-\def\processcolorcomponents  #1{\clf_processcolorcomponents\thecolorattribute{#1} }
+\def\processcolorcomponents  #1{\clf_processcolorcomponents\thecolorattribute       {#1} }
 
 \def\colorvalue              #1{\clf_formatcolor\thecolorattribute{#1}{\colorformatseparator}}
 \def\grayvalue               #1{\clf_formatgray \thecolorattribute{#1}{\colorformatseparator}}

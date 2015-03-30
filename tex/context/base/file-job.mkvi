@@ -22,28 +22,28 @@
 % processing
 
 \unexpanded\def\doifinputfileelse#name%
-  {\ctxcommand{doifinputfileelse("#name")}}
+  {\clf_doifinputfileelse{#name}}
 
 \unexpanded\def\processfile#name%
-  {\ctxcommand{processfile("#name")}}
+  {\clf_processfile{#name}}
 
 % path control
 
 \unexpanded\def\usepath[#path]%
-  {\ctxcommand{usepath("#path")}}
+  {\clf_usepath{#path}}
 
 \unexpanded\def\usesubpath[#path]%
-  {\ctxcommand{usesubpath("#path")}}
+  {\clf_usesubpath{#path}}
 
 \def\allinputpaths
-  {\ctxcommand{allinputpaths()}}
+  {\clf_allinputpaths}
 
 % helper (not really needed nowadays)
 
 \let\locatedfilepath\empty
 
 \unexpanded\def\locatefilepath#name% no [] ?
-  {\edef\locatedfilepath{\ctxcommand{locatefilepath("#name")}}}
+  {\edef\locatedfilepath{\clf_locatefilepath{#name}}}
 
 % % maybe:
 %
@@ -59,7 +59,7 @@
   {\dodoubleempty\syst_files_use_zip_file}
 
 \def\syst_files_use_zip_file[#zipname][#subtree]%
-  {\ctxcommand{usezipfile("#zipname","#subtree")}}
+  {\clf_usezipfile{#zipname}{#subtree}}
 
 % exa stuff might become obsolete:
 
@@ -85,14 +85,6 @@
 \def\syst_files_load_indeed#name% from now on we assume a suffix to be part of the name
   {\readsysfile{#name}{\showmessage\m!system2{#name}}\donothing}
 
-% obsolete, but we keep it as reference of what happened
-%
-% \unexpanded\def\loadoptionfile
-%   {\readjobfile{\jobname.\f!optionextension}
-%      {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
-%       \ctxcommand{copyfiletolog("\jobname.\f!optionextension")}}%
-%      {\writestatus\m!system{no \jobname.\f!optionextension}}}
-
 % document structure
 
 \ifdefined\textlevel                         \else \newcount\textlevel                          \fi % might go away
@@ -116,12 +108,12 @@
    \doifsometokselse\everynotabene{\writeline\the\everynotabene\writeline}\donothing
    \normalend}           % tex's \end
 
-\unexpanded\def\starttext    {\ctxcommand{starttext()}}
-\unexpanded\def\stoptext     {\ctxcommand{stoptext()}}
-\unexpanded\def\forcequitjob {\ctxcommand{forcequitjob()}}
-\unexpanded\def\end          {\ctxcommand{forceendjob()}}
-\unexpanded\def\autostarttext{\ctxcommand{autostarttext()}}
-\unexpanded\def\autostoptext {\ctxcommand{autostoptext()}}
+\unexpanded\def\starttext    {\clf_starttext}
+\unexpanded\def\stoptext     {\clf_stoptext}
+\unexpanded\def\forcequitjob {\clf_forcequitjob}
+\unexpanded\def\end          {\clf_forceendjob}
+\unexpanded\def\autostarttext{\clf_autostarttext}
+\unexpanded\def\autostoptext {\clf_autostoptext}
 
 \unexpanded\def\finishjob{\stoptext} % nicer in luatex call commandline
 
@@ -133,39 +125,39 @@
 
 % protect structure
 
-\unexpanded\def\processfilemany#name{\ctxcommand{processfilemany("#name")}}
-\unexpanded\def\processfileonce#name{\ctxcommand{processfileonce("#name")}}
-\unexpanded\def\processfilenone#name{\ctxcommand{processfilenone("#name")}}
+\unexpanded\def\processfilemany#name{\clf_processfilemany{#name}}
+\unexpanded\def\processfileonce#name{\clf_processfileonce{#name}}
+\unexpanded\def\processfilenone#name{\clf_processfilenone{#name}}
 
 \unexpanded\def\project    {\doifnextoptionalcselse\useproject    \syst_structure_arg_project}
 \unexpanded\def\product    {\doifnextoptionalcselse\useproduct    \syst_structure_arg_product}
 \unexpanded\def\component  {\doifnextoptionalcselse\usecomponent  \syst_structure_arg_component}
 \unexpanded\def\environment{\doifnextoptionalcselse\useenvironment\syst_structure_arg_environment}
 
-\def\syst_structure_arg_project    #name {\ctxcommand{useproject    ("#name")}}
-\def\syst_structure_arg_product    #name {\ctxcommand{useproduct    ("#name")}}
-\def\syst_structure_arg_component  #name {\ctxcommand{usecomponent  ("#name")}}
-\def\syst_structure_arg_environment#name {\ctxcommand{useenvironment("#name")}}
+\def\syst_structure_arg_project    #name {\clf_useproject    {#name}}
+\def\syst_structure_arg_product    #name {\clf_useproduct    {#name}}
+\def\syst_structure_arg_component  #name {\clf_usecomponent  {#name}}
+\def\syst_structure_arg_environment#name {\clf_useenvironment{#name}}
 
 \unexpanded\def\startproject    {\doifnextoptionalcselse\syst_structure_start_opt_project    \syst_structure_start_arg_project    }
 \unexpanded\def\startproduct    {\doifnextoptionalcselse\syst_structure_start_opt_product    \syst_structure_start_arg_product    }
 \unexpanded\def\startcomponent  {\doifnextoptionalcselse\syst_structure_start_opt_component  \syst_structure_start_arg_component  }
 \unexpanded\def\startenvironment{\doifnextoptionalcselse\syst_structure_start_opt_environment\syst_structure_start_arg_environment}
 
-\def\syst_structure_start_arg_project    #name {\ctxcommand{startproject    ("#name")}}
-\def\syst_structure_start_arg_product    #name {\ctxcommand{startproduct    ("#name")}}
-\def\syst_structure_start_arg_component  #name {\ctxcommand{startcomponent  ("#name")}}
-\def\syst_structure_start_arg_environment#name {\ctxcommand{startenvironment("#name")}}
+\def\syst_structure_start_arg_project    #name {\clf_startproject    {#name}}
+\def\syst_structure_start_arg_product    #name {\clf_startproduct    {#name}}
+\def\syst_structure_start_arg_component  #name {\clf_startcomponent  {#name}}
+\def\syst_structure_start_arg_environment#name {\clf_startenvironment{#name}}
 
-\unexpanded\def\useproject    [#name]{\ctxcommand{useproject    ("#name")}}
-\unexpanded\def\useproduct    [#name]{\ctxcommand{useproduct    ("#name")}}
-\unexpanded\def\usecomponent  [#name]{\ctxcommand{usecomponent  ("#name")}}
-\unexpanded\def\useenvironment[#name]{\ctxcommand{useenvironment("#name")}}
+\unexpanded\def\useproject    [#name]{\clf_useproject    {#name}}
+\unexpanded\def\useproduct    [#name]{\clf_useproduct    {#name}}
+\unexpanded\def\usecomponent  [#name]{\clf_usecomponent  {#name}}
+\unexpanded\def\useenvironment[#name]{\clf_useenvironment{#name}}
 
-\unexpanded\def\syst_structure_start_opt_project    [#name]{\ctxcommand{startproject    ("#name")}}
-\unexpanded\def\syst_structure_start_opt_product    [#name]{\ctxcommand{startproduct    ("#name")}}
-\unexpanded\def\syst_structure_start_opt_component  [#name]{\ctxcommand{startcomponent  ("#name")}}
-\unexpanded\def\syst_structure_start_opt_environment[#name]{\ctxcommand{startenvironment("#name")}}
+\unexpanded\def\syst_structure_start_opt_project    [#name]{\clf_startproject    {#name}}
+\unexpanded\def\syst_structure_start_opt_product    [#name]{\clf_startproduct    {#name}}
+\unexpanded\def\syst_structure_start_opt_component  [#name]{\clf_startcomponent  {#name}}
+\unexpanded\def\syst_structure_start_opt_environment[#name]{\clf_startenvironment{#name}}
 
 \newconditional\endofinput % hack, needed because \endinput happens one level down in the input when we write from lua
 
@@ -178,34 +170,35 @@
      \endinput
    \fi}
 
-\unexpanded\def\stopproject              {\ctxcommand{stopproject    ()}\honorendofinput}
-\unexpanded\def\stopproduct              {\ctxcommand{stopproduct    ()}\honorendofinput}
-\unexpanded\def\stopcomponent            {\ctxcommand{stopcomponent  ()}\honorendofinput}
-\unexpanded\def\stopenvironment          {\ctxcommand{stopenvironment()}\honorendofinput}
+\unexpanded\def\stopproject              {\clf_stopproject    \honorendofinput}
+\unexpanded\def\stopproduct              {\clf_stopproduct    \honorendofinput}
+\unexpanded\def\stopcomponent            {\clf_stopcomponent  \honorendofinput}
+\unexpanded\def\stopenvironment          {\clf_stopenvironment\honorendofinput}
 
-\def\currentproject                      {\ctxcommand{currentproject    ()}}
-\def\currentproduct                      {\ctxcommand{currentproduct    ()}}
-\def\currentcomponent                    {\ctxcommand{currentcomponent  ()}}
-\def\currentenvironment                  {\ctxcommand{currentenvironment()}}
-\def\processedfile                       {\ctxcommand{processedfile()}}
-\def\processedfiles                      {\ctxcommand{processedfiles()}}
+           \let\currentproject            \clf_currentproject
+           \let\currentproduct            \clf_currentproduct
+           \let\currentcomponent          \clf_currentcomponent
+           \let\currentenvironment        \clf_currentenvironment
+           \let\processedfile             \clf_processedfile
+           \let\processedfiles            \clf_processedfiles
 
-\unexpanded\def\dostarttextfile     #name{\ctxcommand{dostarttextfile(name)}}
-\unexpanded\def\dostoptextfile           {\ctxcommand{dostoptextfile()}}
+\unexpanded\def\dostarttextfile     #name{\clf_dostarttextfile{name}}
+\unexpanded\def\dostoptextfile           {\clf_dostoptextfile}
 
-\unexpanded\def\loadtexfile       [#name]{\ctxcommand{usetexfile("#name")}}
-\unexpanded\def\loadluafile       [#name]{\ctxcommand{useluafile("#name")}}
-\unexpanded\def\loadcldfile       [#name]{\ctxcommand{usecldfile("#name")}}
-\unexpanded\def\loadanyfile       [#name]{\ctxcommand{useanyfile("#name")}}
+\unexpanded\def\loadtexfile       [#name]{\clf_usetexfile{#name}}
+\unexpanded\def\loadluafile       [#name]{\clf_useluafile{#name}}
+\unexpanded\def\loadcldfile       [#name]{\clf_usecldfile{#name}}
+\unexpanded\def\loadanyfile       [#name]{\clf_useanyfile{#name}}
 
-\unexpanded\def\loadtexfileonce   [#name]{\ctxcommand{usetexfile("#name",true)}}
-\unexpanded\def\loadluafileonce   [#name]{\ctxcommand{useluafile("#name",true)}}
-\unexpanded\def\loadcldfileonce   [#name]{\ctxcommand{usecldfile("#name",true)}}
-\unexpanded\def\loadanyfileonce   [#name]{\ctxcommand{useanyfile("#name",true)}}
+\unexpanded\def\loadtexfileonce   [#name]{\clf_usetexfileonce{#name}}
+\unexpanded\def\loadluafileonce   [#name]{\clf_useluafileonce{#name}}
+\unexpanded\def\loadcldfileonce   [#name]{\clf_usecldfileonce{#name}}
+\unexpanded\def\loadanyfileonce   [#name]{\clf_useanyfileonce{#name}}
 
 %D Handy for modules that have a test/demo appended (true added).
 
-\unexpanded\def\continueifinputfile#name{\ctxcommand{doifelsecontinuewithfile("#name",true)}\relax\endinput} % we cannot do \endinput via lua
+\unexpanded\def\continueifinputfile#name%
+  {\clf_doifelsecontinuewithfile{#name}\relax\endinput} % we cannot do \endinput via lua
 
 % \startproject test
 %     1: \startmode[*project] project \stopmode \endgraf

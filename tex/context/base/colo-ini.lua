@@ -17,16 +17,13 @@ local trace_define = false  trackers.register("colors.define",function(v) trace_
 
 local report_colors = logs.reporter("colors","defining")
 
-local attributes, backends, storage = attributes, backends, storage
-local context, commands = context, commands
+local attributes          = attributes
+local backends            = backends
+local storage             = storage
+local context             = context
+local commands            = commands
 
-local scanners            = tokens.scanners
-local scanstring          = scanners.string
-local scanboolean         = scanners.boolean
-local scaninteger         = scanners.integer
-
-local compilescanner      = tokens.compile
-local scanners            = interfaces.scanners
+local implement           = interfaces.implement
 
 local settings_to_hash_strict = utilities.parsers.settings_to_hash_strict
 
@@ -65,7 +62,7 @@ local function pushset(name)
     end
 end
 
-local function popset(name)
+local function popset()
     colorset = remove(stack)
 end
 
@@ -814,7 +811,13 @@ colors.defineintermediatecolor = defineintermediatecolor
 
 -- for the moment downward compatible
 
-local patterns = { "colo-imp-%s.mkiv", "colo-imp-%s.tex", "colo-%s.mkiv", "colo-%s.tex" }
+local patterns = {
+    "colo-imp-%s.mkiv",
+    "colo-imp-%s.tex",
+    -- obsolete:
+    "colo-%s.mkiv",
+    "colo-%s.tex"
+}
 
 local function action(name,foundname)
     -- could be one command
@@ -844,129 +847,119 @@ end
 
 colors.usecolors = usecolors
 
--- interface (todo: use locals)
+-- backend magic
+
+local currentpagecolormodel
+
+function colors.setpagecolormodel(model)
+    currentpagecolormodel = model
+end
+
+function colors.getpagecolormodel()
+    return currentpagecolormodel
+end
+
+-- interface
 
 local setcolormodel = colors.setmodel
 
-function commands.setcolormodel(model,weight)
-    texsetattribute(a_colorspace,setcolormodel(model,weight))
-end
+implement {
+    name      = "setcolormodel",
+    arguments = { "string", "boolean" },
+    actions   = function(model,weight)
+        texsetattribute(a_colorspace,setcolormodel(model,weight))
+    end
+}
 
-scanners.setcolormodel = function()
-    texsetattribute(a_colorspace,setcolormodel(scanstring(),scanboolean()))
-end
+implement {
+    name      = "setpagecolormodel",
+    actions   = colors.setpagecolormodel,
+    arguments = { "string" },
+}
 
--- function commands.setrastercolor(name,s)
---     texsetattribute(a_color,colors.definesimplegray(name,s))
--- end
-
-function commands.registermaintextcolor(a)
-    colors.main = a
-end
-
-commands.defineprocesscolor      = defineprocesscolor
-commands.definespotcolor         = definespotcolor
-commands.definemultitonecolor    = definemultitonecolor
-commands.definetransparency      = definetransparency
-commands.defineintermediatecolor = defineintermediatecolor
-
-scanners.defineprocesscolorlocal = compilescanner {
+implement {
+    name      = "defineprocesscolorlocal",
     actions   = defineprocesscolor,
     arguments = { "string", "string", false, "boolean" }
 }
 
-scanners.defineprocesscolorglobal = compilescanner {
+implement {
+    name      = "defineprocesscolorglobal",
     actions   = defineprocesscolor,
     arguments = { "string", "string", true, "boolean" }
 }
 
-scanners.defineprocesscolordummy = compilescanner {
+implement {
+    name      = "defineprocesscolordummy",
     actions   = defineprocesscolor,
     arguments = { "'d_u_m_m_y'", "string", false, false }
 }
 
-scanners.definespotcolorglobal = compilescanner {
+implement {
+    name      = "definespotcolorglobal",
     actions   = definespotcolor,
     arguments = { "string", "string", "string", true }
 }
 
-scanners.definemultitonecolorglobal = compilescanner {
-    actions   = definespotcolor,
+implement {
+    name      = "definemultitonecolorglobal",
+    actions   = definemultitonecolor,
     arguments = { "string", "string", "string", "string", true }
 }
 
-scanners.registermaintextcolor = function()
-    colors.main = scaninteger()
-end
-
-scanners.definetransparency = compilescanner {
-    actions   = definetransparency,
-    arguments = { "string", "integer" },
+implement {
+    name      = "registermaintextcolor",
+    actions   = function(main)
+        colors.main = main
+    end,
+    arguments = { "integer" }
 }
 
-scanners.defineintermediatecolor = compilescanner {
+implement {
+    name      = "definetransparency",
+    actions   = definetransparency,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "defineintermediatecolor",
     actions   = defineintermediatecolor,
     arguments = { "string", "string", "integer", "integer", "integer", "integer", "string", false, "boolean" }
 }
 
-function commands.spotcolorname         (a)   context(spotcolorname         (a))   end
-function commands.spotcolorparent       (a)   context(spotcolorparent       (a))   end
-function commands.spotcolorvalue        (a)   context(spotcolorvalue        (a))   end
-function commands.colorcomponents       (a,s) context(colorcomponents       (a,s)) end
-function commands.transparencycomponents(a,s) context(transparencycomponents(a,s)) end
-function commands.processcolorcomponents(a,s) context(processcolorcomponents(a,s)) end
-function commands.formatcolor           (...) context(formatcolor           (...)) end
-function commands.formatgray            (...) context(formatgray            (...)) end
+implement { name = "spotcolorname",          actions = { spotcolorname,          context }, arguments = "integer" }
+implement { name = "spotcolorparent",        actions = { spotcolorparent,        context }, arguments = "integer" }
+implement { name = "spotcolorvalue",         actions = { spotcolorvalue,         context }, arguments = "integer" }
+implement { name = "colorcomponents",        actions = { colorcomponents,        context }, arguments = "integer" }
+implement { name = "transparencycomponents", actions = { transparencycomponents, context }, arguments = "integer" }
+implement { name = "processcolorcomponents", actions = { processcolorcomponents, context }, arguments = "integer" }
+implement { name = "formatcolor",            actions = { formatcolor,            context }, arguments = { "integer", "string" } }
+implement { name = "formatgray",             actions = { formatgray,             context }, arguments = { "integer", "string" } }
 
-scanners.spotcolorname          = compilescanner {  actions = spotcolorname,   arguments = "integer" }
-scanners.spotcolorparent        = compilescanner {  actions = spotcolorparent, arguments = "integer" }
-scanners.spotcolorvalue         = compilescanner {  actions = spotcolorvalue,  arguments = "integer" }
-
-scanners.colorcomponents        = compilescanner {  actions = colorcomponents,        arguments =   "integer" }
-scanners.transparencycomponents = compilescanner {  actions = transparencycomponents, arguments =   "integer" }
-scanners.processcolorcomponents = compilescanner {  actions = processcolorcomponents, arguments = { "integer", "','" } }
-
-scanners.formatcolor            = compilescanner {  actions = formatcolor, arguments = { "integer", "string" } }
-scanners.formatgray             = compilescanner {  actions = formatgray,  arguments = { "integer", "string" } }
-
-function commands.mpcolor(model,ca,ta,default)
-    context(mpcolor(model,ca,ta,default))
-end
-
--- scanners.mpcolor = function()
---     context(mpcolor(scaninteger(),scaninteger(),scaninteger()))
--- end
-
-scanners.mpcolor = compilescanner {
+implement {
+    name      = "mpcolor",
     actions   = { mpcolor, context },
     arguments = { "integer", "integer", "integer" }
 }
 
-function commands.mpoptions(model,ca,ta,default)
-    context(mpoptions(model,ca,ta,default))
-end
-
-scanners.mpoptions = compilescanner {
+implement {
+    name      = "mpoptions",
     actions   = { mpoptions, context },
     arguments = { "integer", "integer", "integer" }
 }
 
 local ctx_doifelse = commands.doifelse
 
-function commands.doifblackelse(a)
-    ctx_doifelse(isblack(a))
-end
+implement {
+    name      = "doifdrawingblackelse",
+    actions   = function() ctx_doifelse(isblack(texgetattribute(a_color))) end
+}
 
-function commands.doifdrawingblackelse()
-    ctx_doifelse(isblack(texgetattribute(a_color)))
-end
-
-scanners.doifblackelse = compilescanner {
+implement {
+    name      = "doifblackelse",
     actions   = { isblack, ctx_doifelse },
     arguments = "integer"
 }
-
-scanners.doifdrawingblackelse = commands.doifdrawingblackelse
 
 -- function commands.withcolorsinset(name,command)
 --     local set
@@ -986,38 +979,36 @@ scanners.doifdrawingblackelse = commands.doifdrawingblackelse
 --     end
 -- end
 
-commands.startcolorset = pushset
-commands.stopcolorset  = popset
-commands.usecolors     = usecolors
-
-scanners.startcolorset = compilescanner { actions = pushset, arguments = "string" }
-scanners.stopcolorset  = popset
-scanners.usecolors     = compilescanner { actions = usecolors, arguments = "string" }
+implement { name = "startcolorset", actions = pushset,   arguments = "string" }
+implement { name = "stopcolorset",  actions = popset }
+implement { name = "usecolors",     actions = usecolors, arguments = "string" }
 
 -- bonus
 
-local function pgfxcolorspec(ca) -- {}{}{colorspace}{list}
+function colors.pgfxcolorspec(ca) -- {}{}{colorspace}{list}
  -- local cv = attributes.colors.values[ca]
     local cv = colorvalues[ca]
     if cv then
         local model = cv[1]
         if model == 2 then
-            context("{gray}{%1.3f}",cv[2])
+            return formatters["{gray}{%1.3f}"](cv[2])
         elseif model == 3 then
-            context("{rgb}{%1.3f,%1.3f,%1.3f}",cv[3],cv[4],cv[5])
+            return formatters["{rgb}{%1.3f,%1.3f,%1.3f}"](cv[3],cv[4],cv[5])
         elseif model == 4 then
-            context("{cmyk}{%1.3f,%1.3f,%1.3f,%1.3f}",cv[6],cv[7],cv[8],cv[9])
+            return formatters["{cmyk}{%1.3f,%1.3f,%1.3f,%1.3f}"](cv[6],cv[7],cv[8],cv[9])
         else
-            context("{gray}{%1.3f}",cv[2])
+            return formatters["{gray}{%1.3f}"](cv[2])
         end
     else
-        context("{gray}{0}")
+        return "{gray}{0}"
     end
 end
 
-commands.pgfxcolorspec = pgfxcolorspec
-
-scanners.pgfxcolorspec = compilescanner { actions = pgfxcolorspec, arguments = "integer" }
+implement {
+    name      = "pgfxcolorspec",
+    actions   = { colors.pgfxcolorspec, context },
+    arguments = "integer"
+}
 
 -- function commands.pgfregistercolor(name,attribute)
 --     local cv = colorvalues[ca]

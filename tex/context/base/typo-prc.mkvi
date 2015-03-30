@@ -55,7 +55,7 @@
 
 \appendtoks
     \letvalue{\??processorcheck\currentprocessor}\relax
-    \ctxcommand{registerstructureprocessor("\currentprocessor")}% global, but it permits using processor that are yet undefined
+    \clf_registerstructureprocessor{\currentprocessor}% global, but it permits using processor that are yet undefined
 \to \everydefineprocessor
 
 %D The following command can be used by users but normally it will be

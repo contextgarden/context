@@ -740,7 +740,7 @@
   {% we can now set more at the lua end
    \global\let\somefontname\defaultfontfile
    \let\somefontsize\empty
-   \clf_definefont_one{\luaescapestring{#specification}}% the escapestring catches at \somedimen
+   \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\fontface\relax
    % \let\v_font_size_absolute\textface % fontbody

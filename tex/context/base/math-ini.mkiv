@@ -331,21 +331,21 @@
 \unexpanded\def\boldsymbol
   {\mathortext\mathboldsymbol\bold}
 
-%D Helpers (assume {} being used):
+%D Helpers
 
-\let\utfmathclass        \clf_utfmathclass
-\let\utfmathstretch      \clf_utfmathstretch
-\let\utfmathcommand      \clf_utfmathcommand
-\let\utfmathfiller       \clf_utfmathfiller
+\def\utfmathclass  #1{\clf_utfmathclass  {#1}}
+\def\utfmathstretch#1{\clf_utfmathstretch{#1}}
+\def\utfmathcommand#1{\clf_utfmathcommand{#1}}
+\def\utfmathfiller #1{\clf_utfmathfiller {#1}}
 
-\let\utfmathcommandabove \clf_utfmathcommandabove
-\let\utfmathcommandbelow \clf_utfmathcommandbelow
-\let\utfmathcommandfiller\clf_utfmathcommandfiller
+\def\utfmathcommandabove #1{\clf_utfmathcommandabove {#1}}
+\def\utfmathcommandbelow #1{\clf_utfmathcommandbelow {#1}}
+\def\utfmathcommandfiller#1{\clf_utfmathcommandfiller{#1}}
 
-\unexpanded\def\doifelseutfmathaccent{\clf_doifelseutfmathaccent}
-\unexpanded\def\doifelseutfmathabove {\clf_doifelseutfmathabove }
-\unexpanded\def\doifelseutfmathbelow {\clf_doifelseutfmathbelow }
-\unexpanded\def\doifelseutfmathfiller{\clf_doifelseutfmathfiller}
+\unexpanded\def\doifelseutfmathaccent#1{\clf_doifelseutfmathaccent{#1}}
+\unexpanded\def\doifelseutfmathabove #1{\clf_doifelseutfmathabove {#1}}
+\unexpanded\def\doifelseutfmathbelow #1{\clf_doifelseutfmathbelow {#1}}
+\unexpanded\def\doifelseutfmathfiller#1{\clf_doifelseutfmathfiller{#1}}
 
 %D Not used that much:
 

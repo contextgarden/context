@@ -27,51 +27,49 @@
    \fi
    \setexpandedselectfontparameter\c!style      {\expandnamespaceparameter\??selectfontstyle      \selectfontparameter\c!style      \s!rm     }%
    \setexpandedselectfontparameter\c!alternative{\expandnamespaceparameter\??selectfontalternative\selectfontparameter\c!alternative\v!default}%
-   \xdef\selectfont_index{\ctxcommand{
-        defineselectfont {
-            metadata = {
-                typeface    = "\selectfontparameter\c!name",
-                style       = "\selectfontparameter\c!style",
-                family      = "\selectfontparameter\c!family",
-            },
-            options = {
-                opticals    = "\selectfontparameter\c!opticalsize",
-                scale       = "\selectfontparameter\c!scale",
-                goodies     = "\selectfontparameter\c!goodies",
-                alternative = "\selectfontparameter\c!alternative",
-                range       = "\selectfontparameter\c!range",  % fallback only
-                offset      = "\selectfontparameter\c!offset", % fallback only
-                check       = "\selectfontparameter\c!check",  % fallback only
-                force       = "\selectfontparameter\c!force",  % fallback only
-            },
-            alternatives = {
-                ["tf"]      = "\selectfontparameter\s!tf",
-                ["bf"]      = "\selectfontparameter\s!bf",
-                ["it"]      = "\selectfontparameter\s!it",
-                ["sl"]      = "\selectfontparameter\s!sl",
-                ["bi"]      = "\selectfontparameter\s!bi",
-                ["bs"]      = "\selectfontparameter\s!bs",
-                ["sc"]      = "\selectfontparameter\s!sc",
-            },
-            files = {
-                ["tf"]      = "\selectfontparameter\c!regularfont",
-                ["bf"]      = "\selectfontparameter\c!boldfont",
-                ["it"]      = "\selectfontparameter\c!italicfont",
-                ["sl"]      = "\selectfontparameter\c!slantedfont",
-                ["bi"]      = "\selectfontparameter\c!bolditalicfont",
-                ["bs"]      = "\selectfontparameter\c!boldslantedfont",
-                ["sc"]      = "\selectfontparameter\c!smallcapsfont",
-            },
-            features = {
-                ["tf"]      = "\selectfontparameter\c!regularfeatures",
-                ["bf"]      = "\selectfontparameter\c!boldfeatures",
-                ["it"]      = "\selectfontparameter\c!italicfeatures",
-                ["sl"]      = "\selectfontparameter\c!slantedfeatures",
-                ["bi"]      = "\selectfontparameter\c!bolditalicfeatures",
-                ["bs"]      = "\selectfontparameter\c!boldslantedfeatures",
-                ["sc"]      = "\selectfontparameter\c!smallcapsfeatures",
-            }
-   }}}%
+   \xdef\selectfont_index{\clf_defineselectfont
+        metadata {%
+            typeface    {\selectfontparameter\c!name}%
+            style       {\selectfontparameter\c!style}%
+            family      {\selectfontparameter\c!family}%
+        }
+        options {%
+            opticals    {\selectfontparameter\c!opticalsize}%
+            scale       {\selectfontparameter\c!scale}%
+            goodies     {\selectfontparameter\c!goodies}%
+            alternative {\selectfontparameter\c!alternative}%
+            range       {\selectfontparameter\c!range}%  fallback only
+            offset      {\selectfontparameter\c!offset}% fallback only
+            check       {\selectfontparameter\c!check}%  fallback only
+            force       {\selectfontparameter\c!force}%  fallback only
+        }
+        alternatives {%
+            tf {\selectfontparameter\s!tf}%
+            bf {\selectfontparameter\s!bf}%
+            it {\selectfontparameter\s!it}%
+            sl {\selectfontparameter\s!sl}%
+            bi {\selectfontparameter\s!bi}%
+            bs {\selectfontparameter\s!bs}%
+            sc {\selectfontparameter\s!sc}%
+        }
+        files {%
+            tf {\selectfontparameter\c!regularfont}%
+            bf {\selectfontparameter\c!boldfont}%
+            it {\selectfontparameter\c!italicfont}%
+            sl {\selectfontparameter\c!slantedfont}%
+            bi {\selectfontparameter\c!bolditalicfont}%
+            bs {\selectfontparameter\c!boldslantedfont}%
+            sc {\selectfontparameter\c!smallcapsfont}%
+        }
+        features {%
+            tf {\selectfontparameter\c!regularfeatures}%
+            bf {\selectfontparameter\c!boldfeatures}%
+            it {\selectfontparameter\c!italicfeatures}%
+            sl {\selectfontparameter\c!slantedfeatures}%
+            bi {\selectfontparameter\c!bolditalicfeatures}%
+            bs {\selectfontparameter\c!boldslantedfeatures}%
+            sc {\selectfontparameter\c!smallcapsfeatures}%
+        }}%
    \endgroup}
 
 %D \macros
@@ -330,7 +328,7 @@
   {\doifassignmentelse{#settings}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},#settings]}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},\c!preset={#settings}]}%
-   \ctxcommand{definefontfamily(\selectfont_index)}}
+   \clf_definefontfamily\selectfont_index\relax}
 
 \unexpanded\def\definefallbackfamily
   {\doquadrupleempty\selectfont_fallback_define}
@@ -340,7 +338,7 @@
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},#settings]}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},\c!preset={#settings}]}%
    \edef\p_selectfont_style{\expandnamespacevalue\??selectfontstyle{#style}\s!rm}%
-   \ctxcommand{definefallbackfamily("#typeface","\p_selectfont_style",\selectfont_index)}}
+   \clf_definefallbackfamily{#typeface}{\p_selectfont_style}\selectfont_index\relax}
 
 %D \macros
 %D   {setupfontfamily,setupfallbackfamily}

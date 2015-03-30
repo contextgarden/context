@@ -21,8 +21,6 @@ local loadstring     = loadstring
 local scanners       = tokens.scanners
 local tokenbits      = tokens.bits
 
-if not scanners then return end -- for now
-
 local scanstring     = scanners.string
 local scaninteger    = scanners.integer
 local scannumber     = scanners.number
@@ -32,12 +30,11 @@ local scancode       = scanners.code
 local scanboolean    = scanners.boolean
 local scandimen      = scanners.dimen
 
-if not scanstring then return end -- for now
-
 local todimen        = number.todimen
+local toboolean      = toboolean
 
 local lpegmatch      = lpeg.match
-local p_unquoted     = lpeg.patterns.unquoted
+local p_unquoted     = lpeg.Cs(lpeg.patterns.unquoted)
 
 local trace_compile  = false  trackers.register("tokens.compile", function(v) trace_compile = v end)
 local report_compile = logs.reporter("tokens","compile")
@@ -93,6 +90,7 @@ local shortcuts = {
     todimen       = todimen,
     tonumber      = tonumber,
     tostring      = tostring,
+    toboolean     = toboolean,
     inspect       = inspect,
     report        = report_scan,
 }
@@ -108,10 +106,11 @@ local function loadstripped(code)
 end
 
 tokens.converters = {
-    tonumber = "tonumber",
-    todimen  = "todimen",
-    toglue   = "todimen",
-    tostring = "tostring",
+    tonumber  = "tonumber",
+    tostring  = "tostring",
+    toboolean = "toboolean",
+    todimen   = "todimen",
+    toglue    = "todimen",
 }
 
 local f_if       = formatters[    "  if scankeyword('%s') then data['%s'] = scan%s()"]
@@ -127,6 +126,9 @@ local f_scan_c   = formatters["%s(scan%s())"]
 local f_any      = formatters["  else local key = scanword() if key then data[key] = scan%s() else break end end"]
 local f_any_c    = formatters["  else local key = scanword() if key then data[key] = %s(scan%s()) else break end end"]
 local s_done     = "  else break end"
+
+local f_any_all  = formatters["  local key = scanword() if key then data[key] = scan%s() else break end"]
+local f_any_all_c= formatters["  local key = scanword() if key then data[key] = %s(scan%s()) else break end"]
 
 local f_table    = formatters["%\nt\nreturn function()\n  local data = { }\n%s\n  return %s\nend\n"]
 local f_sequence = formatters["%\nt\n%\nt\n%\nt\nreturn function()\n    return %s\nend\n"]
@@ -190,30 +192,44 @@ function tokens.compile(specification)
         local m = 0
         for i=1,#t do
             local ti = t[i]
-            local t1 = ti[1]
-            local t2 = ti[2] or "string"
-            if type(t2) == "table" then
-                n = n + 1
-                f[n] = compile(t2,n)
-                t2 = n
-            end
-            local t3 = ti[3]
-            if type(t3) == "function" then
-                -- todo: also create shortcut
-            elseif t3 then
-                c[t3] = f_shortcut(t3,t3)
-                if t1 == "*" then
-                    done = f_any_c(t3,t2)
-                else
-                    m = m + 1
-                    r[m] = (m > 1 and f_elseif_c or f_if_c)(t1,t1,t3,t2)
-                end
+            if ti == "*" and i == 1 then
+                done = f_any_all("string")
             else
-                if t1 == "*" then
-                    done = f_any(t2)
+                local t1 = ti[1]
+                local t2 = ti[2] or "string"
+                if type(t2) == "table" then
+                    n = n + 1
+                    f[n] = compile(t2,n)
+                    t2 = n
+                end
+                local t3 = ti[3]
+                if type(t3) == "function" then
+                    -- todo: also create shortcut
+                elseif t3 then
+                    c[t3] = f_shortcut(t3,t3)
+                    if t1 == "*" then
+                        if i == 1 then
+                            done = f_any_all_c(t3,t2)
+                            break
+                        else
+                            done = f_any_c(t3,t2)
+                        end
+                    else
+                        m = m + 1
+                        r[m] = (m > 1 and f_elseif_c or f_if_c)(t1,t1,t3,t2)
+                    end
                 else
-                    m = m + 1
-                    r[m] = (m > 1 and f_elseif   or f_if  )(t1,t1,t2)
+                    if t1 == "*" then
+                        if i == 1 then
+                            done = f_any_all(t2)
+                            break
+                        else
+                            done = f_any(t2)
+                        end
+                    else
+                        m = m + 1
+                        r[m] = (m > 1 and f_elseif   or f_if  )(t1,t1,t2)
+                    end
                 end
             end
         end
@@ -227,7 +243,12 @@ function tokens.compile(specification)
     local tt = type(t)
     if tt == "string" then
         if a then
-            code = f_scan(t)
+            local s = lpegmatch(p_unquoted,t)
+            if s and t ~= s then
+                code = t
+            else
+                code = f_scan(t)
+            end
             tokens._action = a
             for i=1,#a do
                 code    = f_action_f(i,code)

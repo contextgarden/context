@@ -39,8 +39,8 @@ implement { name = "xmlatt",                  actions = lxml.att,               
 implement { name = "xmlattdef",               actions = lxml.att,               arguments = { "string", "string", "string" } }
 implement { name = "xmlattribute",            actions = lxml.attribute,         arguments = { "string", "string", "string" } }
 implement { name = "xmlattributedef",         actions = lxml.attribute,         arguments = { "string", "string", "string", "string" } }
-implement { name = "xmlchainatt",             actions = lxml.chainattribute,    arguments = { "string", "string", "string" } }
-implement { name = "xmlchainattdef",          actions = lxml.chainattribute,    arguments = { "string", "string", "string", "string"  } }
+implement { name = "xmlchainatt",             actions = lxml.chainattribute,    arguments = { "string", "'/'", "string" } }
+implement { name = "xmlchainattdef",          actions = lxml.chainattribute,    arguments = { "string", "'/'", "string", "string"  } }
 implement { name = "xmlchecknamespace",       actions =  xml.checknamespace,    arguments = { "lxmlid", "string", "string" } }
 implement { name = "xmlcommand",              actions = lxml.command,           arguments = { "string", "string", "string" } }
 implement { name = "xmlconcat",               actions = lxml.concat,            arguments = { "string", "string", "string" } }                     --  \detokenize{#3}
@@ -53,7 +53,7 @@ implement { name = "xmldirectives",           actions = lxml.directives.setup,  
 implement { name = "xmldirectivesafter",      actions = lxml.directives.after,  arguments = "string" }
 implement { name = "xmldirectivesbefore",     actions = lxml.directives.before, arguments = "string" }
 implement { name = "xmldisplayverbatim",      actions = lxml.displayverbatim,   arguments = "string" }
-implement { name = "xmlelement",              actions = lxml.element,           arguments = { "string", "integer" } }
+implement { name = "xmlelement",              actions = lxml.element,           arguments = { "string", "string" } } -- could be integer but now we can alias
 implement { name = "xmlfilter",               actions = lxml.filter,            arguments = { "string", "string" } }
 implement { name = "xmlfilterlist",           actions = lxml.filterlist,        arguments = { "string", "string" } }
 implement { name = "xmlfirst",                actions = lxml.first,             arguments = { "string", "string" } }
@@ -66,7 +66,7 @@ implement { name = "xmlinclude",              actions = lxml.include,           
 implement { name = "xmlincludeoptions",       actions = lxml.include,           arguments = { "string", "string", "string", "string" } }
 implement { name = "xmlinclusion",            actions = lxml.inclusion,         arguments = "string" }
 implement { name = "xmlinclusions",           actions = lxml.inclusions,        arguments = "string" }
-implement { name = "xmlindex",                actions = lxml.index,             arguments = { "string", "string", "integer" } }
+implement { name = "xmlindex",                actions = lxml.index,             arguments = { "string", "string", "string" } } -- can be integer but now we can alias
 implement { name = "xmlinfo",                 actions = lxml.info,              arguments = "string" }
 implement { name = "xmlinlineverbatim",       actions = lxml.inlineverbatim,    arguments = "string" }
 implement { name = "xmllast",                 actions = lxml.last,              arguments = "string" }

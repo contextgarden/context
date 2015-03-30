@@ -47,6 +47,8 @@ local v_text               = variables.text
 local context              = context
 local commands             = commands
 
+local implement            = interfaces.implement
+
 local matchingtilldepth    = sections.matchingtilldepth
 local numberatdepth        = sections.numberatdepth
 local currentlevel         = sections.currentlevel
@@ -416,8 +418,18 @@ end
 
 registers.define           = defineregister -- 4 times is somewhat over the top but we want consistency
 registers.setmethod        = defineregister -- and we might have a difference some day
-commands.defineregister    = defineregister
-commands.setregistermethod = defineregister
+
+implement {
+    name      = "defineregister",
+    actions   = defineregister,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "setregistermethod",
+    actions   = defineregister, -- duplicate use
+    arguments = { "string", "string" }
+}
 
 local entrysplitter = lpeg.tsplitat('+') -- & obsolete in mkiv
 
@@ -845,13 +857,11 @@ function registers.userdata(index,name)
     return data and data.userdata and data.userdata[name] or nil
 end
 
-function commands.registeruserdata(index,name)
-    local data = references.internals[tonumber(index)]
-    data = data and data.userdata and data.userdata[name]
-    if data then
-        context(data)
-    end
-end
+implement {
+    name      = "registeruserdata",
+    actions   = { registers.userdata, context },
+    arguments = { "integer", "string" }
+}
 
 -- todo: ownnumber
 
@@ -990,8 +1000,8 @@ function registers.flush(data,options,prefixspec,pagespec)
                 if #list > 1 then
                     list[#list] = nil
                 else
-                    -- we have an \seeindex{Foo}{Bar} without Foo being defined anywhere
-                    report_registers("invalid see entry in register %a, reference %a",entry.metadata.name,list[1][1])
+                 -- we have an \seeindex{Foo}{Bar} without Foo being defined anywhere .. somehow this message is wrong
+                 -- report_registers("invalid see entry in register %a, reference %a",entry.metadata.name,list[1][1])
                 end
             end
         end

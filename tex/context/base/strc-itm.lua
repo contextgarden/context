@@ -10,6 +10,8 @@ local structures  = structures
 local itemgroups  = structures.itemgroups
 local jobpasses   = job.passes
 
+local implement   = interfaces.implement
+
 local setvariable = jobpasses.save
 local getvariable = jobpasses.getfield
 
@@ -25,7 +27,7 @@ local counts      = table.setmetatableindex("number")
 
 local trialtypesetting = context.trialtypesetting
 
-function commands.analyzeitemgroup(name,level)
+local function analyzeitemgroup(name,level)
     local n = counts[name]
     if level == 1 then
         n = n + 1
@@ -38,7 +40,7 @@ function commands.analyzeitemgroup(name,level)
     texsetdimen("local","d_strc_itemgroups_max_width",w)
 end
 
-function commands.registeritemgroup(name,level,nofitems,maxwidth)
+local function registeritemgroup(name,level,nofitems,maxwidth)
     local n = counts[name]
     if not trialtypesetting() then
         -- no trialtypsetting
@@ -47,3 +49,15 @@ function commands.registeritemgroup(name,level,nofitems,maxwidth)
         counts[name] = n - 1
     end
 end
+
+implement {
+    name      = "analyzeitemgroup",
+    actions   = analyzeitemgroup,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "registeritemgroup",
+    actions   = registeritemgroup,
+    arguments = { "string", "integer", "integer", "dimen" }
+}

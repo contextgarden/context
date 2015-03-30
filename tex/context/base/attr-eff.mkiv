@@ -36,14 +36,14 @@
 \to \everydefineeffect
 
 \unexpanded\def\starteffect[#1]%
-  {\ctxcommand{triggereffect{
-     alternative   = "\namedeffectparameter{#1}\c!alternative",
-     stretch       = \number\namedeffectparameter{#1}\c!stretch,
-     rulethickness = \number\dimexpr\namedeffectparameter{#1}\c!rulethickness\relax
-    }}}
+  {\clf_seteffect
+     alternative   {\namedeffectparameter{#1}\c!alternative}
+     stretch       \numexpr\namedeffectparameter{#1}\c!stretch\relax
+     rulethickness \dimexpr\namedeffectparameter{#1}\c!rulethickness\relax
+   \relax}
 
 \unexpanded\def\stopeffect % can be special
-  {\ctxcommand{triggereffect()}} % v!normal 0 0
+  {\clf_reseteffect} % v!normal 0 0
 
 \unexpanded\def\effect[#1]%
   {\groupedcommand{\starteffect[#1]}{\stopeffect}}

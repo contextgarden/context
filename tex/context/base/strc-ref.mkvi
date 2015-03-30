@@ -143,7 +143,7 @@
 \newcount\lastdestinationattribute
 
 \def\dofinishfullreference#prefix#label{\normalexpanded{\ctxlatecommand{enhancereference("#prefix","#label")}}}
-\def\dofinishtextreference#prefix#label{\normalexpanded{\ctxlatecommand{enhancereference("#prefix","#label",{})}}}
+\def\dofinishtextreference#prefix#label{\normalexpanded{\ctxlatecommand{enhancereference("#prefix","#label")}}}
 
 \let\dofinishpagereference\dofinishfullreference
 \let\dofinishuserreference\dofinishfullreference
@@ -216,30 +216,34 @@
        % beware, the structures.references.set writes a
        \setnextinternalreference
        \strc_references_start_destination_nodes
-         \ctxcommand{setreferenceattribute("\currentreferencekind", "\referenceprefix","\currentreferencelabels",
-           {
-                references = {
-                    internal = \nextinternalreference,
-                    block    = "\currentsectionblock",
-                    section  = structures.sections.currentid(),
-                },
-                metadata = { % we could assume page to have no metadata
-                    kind = "#kind",  % \currentreferencekind
-                    \ifx\currentreferencekind\s!page\else
-                        catcodes = \the\catcodetable,
-                        xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument"\else nil\fi, % only useful when text
-                    \fi
-                },
+       \clf_setreferenceattribute
+            {\referenceprefix}%
+            {\currentreferencelabels}%
+            {%
+                references {%
+                    internal \nextinternalreference
+                    block    {\currentsectionblock}%
+                    view     {\interactionparameter\c!focus}%
+                }%
+                metadata {%
+                    kind     {\currentreferencekind}%
+            \ifx\currentreferencekind\s!page\else
+                \ifx\currentreferencecoding\s!xml
+                    xmlroot  {\xmldocument}%
+                \fi
+                    catcodes \catcodetable
+            \fi
+                }%
             \ifx\currentreferencedata\empty\else
-                entries = {
-                    text = \!!bs\currentreferencedata\!!es
-                },
+                entries {%
+                    text {\currentreferencedata}%
+                }%
             \fi
             \ifx\currentreferenceuserdata\empty\else
-                userdata = structures.helpers.touserdata(\!!bs\detokenize{#userdata}\!!es)
+                userdata {\detokenize{#userdata}}%
             \fi
-            },"\interactionparameter\c!focus")
-           }%
+            }%
+       \relax
        \strc_references_stop_destination_nodes
      \fi
    \else
@@ -265,19 +269,21 @@
        \lastdestinationattribute\attributeunsetvalue
      \else
        \strc_references_start_destination_nodes
-\setnextinternalreference
-       \ctxcommand{setreferenceattribute("\s!page", "\referenceprefix","\currentreferencelabels",
-            {
-                references = {
-                    internal = \nextinternalreference,
-                    block    = "\currentsectionblock",
-                    section  = structures.sections.currentid(),
-                },
-                metadata = {
-                    kind = "page",
-                },
-            },"\interactionparameter\c!focus")
-         }%
+       \setnextinternalreference
+       \clf_setreferenceattribute
+            {\referenceprefix}%
+            {\currentreferencelabels}%
+            {%
+                references {%
+                    internal \nextinternalreference
+                    block    {\currentsectionblock}%
+                    view     {\interactionparameter\c!focus}%
+                }%
+                metadata {%
+                    kind {page}%
+                }%
+            }%
+       \relax
        \strc_references_stop_destination_nodes
      \fi
    \else
@@ -291,28 +297,28 @@
      \setnextinternalreference
      \edef\m_strc_references_user{#user}%
      \edef\m_strc_references_text{#text}%
-     \ctxcommand{setreferenceattribute("\s!full", "\referenceprefix","#labels",
-         {
-              references = {
-                  internal = \nextinternalreference,
-                  block    = "\currentsectionblock",
-                  section  = structures.sections.currentid(),
-              },
-              metadata = {
-                  kind = "\s!full",
-              },
-          \ifx\m_strc_references_text\empty \else
-              entries = {
-                  text = \!!bs\m_strc_references_text\!!es
-              },
-          \fi
-          \ifx\m_strc_references_user\empty \else
-              userdata = {
-                  \m_strc_references_user
-              }
-          \fi
-          },"\interactionparameter\c!focus")
-         }%
+     \clf_setreferenceattribute
+        {\referenceprefix}%
+        {#labels}%
+        {%
+            references {%
+                internal \nextinternalreference
+                block    {\currentsectionblock}%
+                view     {\interactionparameter\c!focus}%
+            }%
+            metadata {%
+                kind {\s!full}%
+            }%
+        \ifx\m_strc_references_text\empty \else
+            entries {%
+                text {\m_strc_references_text}%
+            }%
+        \fi
+        \ifx\m_strc_references_user\empty \else
+            userdata {\m_strc_references_user}%
+        \fi
+        }%
+     \relax
      \strc_references_stop_destination_nodes
    \else
      \setbox\b_strc_destination_nodes\emptyhbox
@@ -368,17 +374,19 @@
 \def\strc_references_set_simple_page_reference#label%
   {\iflocation
      \strc_references_start_destination_nodes
-       \ctxcommand{setreferenceattribute("\s!page", "\referenceprefix","#label",
-          {
-            references = {
-            %   block    = "\currentsectionblock",
-            %   section  = structures.sections.currentid(),
-            },
-            metadata = { % we could assume page to have no metadata
-                kind = "\s!page",
-            },
-          },"\interactionparameter\c!focus")
-       }%
+     \clf_setreferenceattribute
+        {\referenceprefix}%
+        {#label}%
+        {%
+            references {%
+                block {\currentsectionblock}%
+                view  {\interactionparameter\c!focus}%
+            }%
+            metadata {%
+                kind {\s!page}%
+            }%
+        }%
+     \relax
      \strc_references_stop_destination_nodes
      \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
    \else
@@ -388,7 +396,15 @@
 
 \def\strc_references_get_simple_page_reference#label%
   {\iflocation
-     \ctxcommand{injectreference("\referenceprefix","#label",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
+     \clf_injectreference
+        {\referenceprefix}%
+        {#label}%
+        {%
+            height \ht\strutbox
+            depth  \dp\strutbox
+            \extrareferencearguments
+        }%
+     \relax
      \xdef\currentreferenceattribute{\number\lastreferenceattribute}%
    \else
      \xdef\currentreferenceattribute{\number\attributeunsetvalue}%
@@ -528,9 +544,6 @@
 
 \newcount\referencehastexstate % set in backend
 
-\def\referencepagestate{\ctxcommand{referencepagestate()}}
-\def\referencerealpage {\ctxcommand{referencerealpage ()}}
-
 % referencepagestate:
 %
 % 0 = no page ref, 1=same page, 2=before, 3=after
@@ -618,13 +631,13 @@
   {\dodoubleempty\strc_references_define_reference}
 
 \def\strc_references_define_reference[#name][#specification]%
-  {\ctxcommand{definereference("\referenceprefix","#name",\!!bs\detokenize{#specification}\!!es)}}
+  {\clf_definereference{\referenceprefix}{#name}{\detokenize{#specification}}}
 
 \unexpanded\def\resetreference[#name]%
-  {\ctxcommand{resetreference("\referenceprefix","#name")}}
+  {\clf_resetreference{\referenceprefix}{#name}}
 
 \def\setpagereference#name#specification% hm,. low level ?
-  {\ctxcommand{definereference("","#name",\!!bs\v!page(\luaescapestring{#specification})\!!es)}}
+  {\clf_definereference{}{#name}{\v!page(\detokenize{#specification}}} % is detokenize needed here?
 
 %D Chained references are defined as:
 %D
@@ -654,13 +667,13 @@
 \newconditional\gotonewwindow \setfalse\gotonewwindow
 
 \def\expandtexincurrentreference % will happen in lua some time
-  {\ifcase\referencehastexstate\else\ctxcommand{expandcurrentreference()}\fi}
+  {\ifcase\referencehastexstate\else\clf_expandcurrentreference\fi}
 
-\def\expandreferenceoperation#tag#content{\ctxcommand{setreferenceoperation(#tag,\!!bs#content\!!es)}}
-\def\expandreferencearguments#tag#content{\ctxcommand{setreferencearguments(#tag,\!!bs#content\!!es)}}
+\def\expandreferenceoperation#tag#content{\clf_setreferenceoperation#tag{#content}}
+\def\expandreferencearguments#tag#content{\clf_setreferencearguments#tag{#content}}
 
-\def\doifreferencefoundelse#labels#yes#nop%
-  {\ctxcommand{doifelsereference("\referenceprefix",\!!bs#labels\!!es,\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow)}%
+\def\doifreferencefoundelse#label#yes#nop%
+  {\clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
      {\expandtexincurrentreference
       #yes}%
      {#nop}}
@@ -770,10 +783,10 @@
   {\global\advance\locationcount\plusone}
 
 \def\setnextinternalreferences#kind#name% plural
-  {\ctxcommand{setnextinternalreference("#kind","#name")}}
+  {\clf_setnextinternalreference{#kind}{#name}}
 
 \def\getinternalorderreference#kind#name%
-  {\ctxcommand{currentreferenceorder("#kind","#name")}}
+  {\clf_currentreferenceorder{#kind}{#name}}
 
 \def\thisissomeinternal#kind#name% only for old time sake
   {\begingroup
@@ -840,7 +853,7 @@
 \appendtoks
     \edef\p_export{\referencingparameter\c!export}%
     \ifx\p_export\v!yes
-      \ctxcommand{exportreferences()}%
+      \clf_exportreferences
     \fi
 \to \everygoodbye
 
@@ -855,16 +868,16 @@
 %   {\popmacro\referenceprefix}
 
 \unexpanded\def\globalpushreferenceprefix#prefix%
-  {\xdef\referenceprefix{\ctxcommand{pushreferenceprefix("#prefix")}}}
+  {\xdef\referenceprefix{\clf_pushreferenceprefix{#prefix}}}
 
 \unexpanded\def\globalpopreferenceprefix
-  {\xdef\referenceprefix{\ctxcommand{popreferenceprefix()}}}
+  {\xdef\referenceprefix{\clf_popreferenceprefix}}
 
 \unexpanded\def\pushreferenceprefix#prefix%
-  {\edef\referenceprefix{\ctxcommand{pushreferenceprefix("#prefix")}}}
+  {\edef\referenceprefix{\clf_pushreferenceprefix{#prefix}}}
 
 \unexpanded\def\popreferenceprefix
-  {\edef\referenceprefix{\ctxcommand{popreferenceprefix()}}}
+  {\edef\referenceprefix{\clf_popreferenceprefix}}
 
 \def\m_strc_references_prefix_yes{+}
 \def\m_strc_references_prefix_nop{-}
@@ -954,15 +967,15 @@
     \ifdefined\over  \let\normalmathover \over  \unexpanded\def\over {\mathortext\normalmathover \strc_references_about} \else \let\over \strc_references_about \fi
 \to \everydump
 
-           \def\filterreference  #key{\ctxcommand{filterreference("#key")}} % no checking, expanded
-\unexpanded\def\getreferenceentry#key{\ctxcommand{filterreference("#key")}} % no checking, unexpanded
+           \def\filterreference  #key{\clf_filterreference{#key}} % no checking, expanded
+\unexpanded\def\getreferenceentry#key{\clf_filterreference{#key}} % no checking, unexpanded
 
-\def\currentreferencenumber  {\filterreference{number}}
-\def\currentreferencepage    {\filterreference{page}}
-\def\currentreferencetitle   {\filterreference{title}}
-\def\currentreferencetext    {\filterreference{text}}
-\def\currentreferencedefault {\filterreference{default}}
-\def\currentreferencerealpage{\filterreference{realpage}}
+\def\currentreferencenumber  {\clf_filterreference{number}}
+\def\currentreferencepage    {\clf_filterreference{page}}
+\def\currentreferencetitle   {\clf_filterreference{title}}
+\def\currentreferencetext    {\clf_filterreference{text}}
+\def\currentreferencedefault {\clf_filterreference{default}}
+\def\currentreferencerealpage{\clf_filterreference{realpage}}
 
 %D The most straightforward way of retrieving references is
 %D using \type{\ref}.
@@ -972,7 +985,7 @@
 
 \def\strc_references_get_reference[#key][#label]% #key = number page title text default realpage ...
   {\ifsecondargument
-     \doifreferencefoundelse{#label}{\ctxcommand{filterreference("#key")}}\dummyreference
+     \doifreferencefoundelse{#label}{\clf_filterreference{#key}}\dummyreference
    \else
      \dummyreference
    \fi}
@@ -1006,42 +1019,6 @@
 %D ... \somewhere{backward text}{forward text}[someref] ...
 %D ... \atpage[someref] ...
 %D \stoptyping
-
-% % 0 = unknown
-% % 1 = same
-% % 2 = before
-% % 3 = after
-%
-% \def\strc_references_by_reference_page_state#unknown#before#current#after%
-%   {\ifcase\referencepagestate\space#unknown\or#current\or#before\or#after\fi}
-%
-% % \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
-% %   {\doifreferencefoundelse{#label}% usage needs checking (useless)
-% %      {\goto{\strc_references_by_reference_page_state{#label}{#backward}{}{#foreward}}[#label]}
-% %      {[#label]}}
-% %
-% % better:
-%
-% \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
-%   {\doifreferencefoundelse{#label}%
-%      {\strc_references_by_reference_page_state{#label}{\goto{#backward}[#label]}{}{\goto{#foreward}[#label]}}
-%      {[#label]}}
-%
-% \unexpanded\def\atpage[#label]% todo
-%   {\doifreferencefoundelse{#label}% kind of inefficient as \goto also analyzes
-%      {\goto
-%         {\strc_references_by_reference_page_state
-%            {\labeltexts\v!page\dummyreference}%
-%            {\labeltext\v!hencefore}%
-%            {\labeltexts\v!atpage\currentreferencepage}%
-%            {\labeltext\v!hereafter}}%
-%            [#label]}
-%      {[#label]}}
-%
-% \unexpanded\def\referencesymbol
-%   {\hbox{\strut\high
-%      {\setupsymbolset[\interactionparameter\c!symbolset]%
-%       \symbol[\strc_references_by_reference_page_state\v!somewhere\v!nowhere\v!previous\v!next]}}}
 
 % standard      detail
 %
@@ -1085,8 +1062,20 @@
 \setupreferencing
   [\c!doublesided=\v!yes]
 
-\def\referencepagestate {\numexpr\ctxcommand{referencepagestate("rst::\number\nofreferencestates")}\relax}
-\def\referencepagedetail{\numexpr\ctxcommand{referencepagestate("rst::\number\nofreferencestates",true\ifconditional\pagestatespread\ifdoublesided,\s!true\fi\fi)}\relax}
+\def\referencepagestate
+  {\numexpr\clf_referencepagestate
+     {rst::\number\nofreferencestates}%
+   \relax}
+
+\def\referencepagedetail
+   {\numexpr\clf_referencepagestate
+      {rst::\number\nofreferencestates}%
+      true %
+      \ifconditional\pagestatespread false\ifdoublesided true\else false\fi\fi
+    \relax}
+
+\def\referencerealpage
+  {\clf_referencerealpage}
 
 \unexpanded\def\tracedpagestate
   {{\blue\tttf(\ifcase\referencepagedetail unknown\or same\or previous\or next\or above\or below\else unknown\fi)}}
@@ -1268,8 +1257,15 @@
       \goto{\referencesequence}[#label]}%
    \strc_references_stop_goto}
 
-\unexpanded\def\strc_references_in{\strc_references_start_goto\let\currentreferencecontent\currentreferencedefault\strc_references_pickup_goto}
-\unexpanded\def\strc_references_at{\strc_references_start_goto\let\currentreferencecontent\currentreferencepage   \strc_references_pickup_goto}
+\unexpanded\def\strc_references_in
+  {\strc_references_start_goto
+   \let\currentreferencecontent\currentreferencedefault
+   \strc_references_pickup_goto}
+
+\unexpanded\def\strc_references_at
+  {\strc_references_start_goto
+   \let\currentreferencecontent\currentreferencepage
+   \strc_references_pickup_goto}
 
 %D \macros
 %D   {definereferenceformat}
@@ -1380,7 +1376,7 @@
 \def\autoreferencelabeltextflag{*} % a proper key like 'auto' or 'name' can clash with a label key
 
 \unexpanded\def\autoreferencelabeltext
-  {\ctxcommand{getcurrentreferencemetadata("name")}}
+  {\clf_getcurrentreferencemetadata{name}}
 
 % \starttext
 %     \definereferenceformat[inxx]  [left=(,right=),text=txt]
@@ -1425,7 +1421,9 @@
 \newconditional\uselocationstrut \settrue\uselocationstrut
 
 \def\extrareferencearguments
-  {\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow,"\currentviewerlayer"}
+  {highlight \luaconditional\highlighthyperlinks\space
+   newwindow \luaconditional\gotonewwindow\space
+   layer     {\currentviewerlayer}}
 
 \unexpanded\def\directgoto
   {\ifconditional\uselocationstrut
@@ -1457,7 +1455,15 @@
    \attribute\referenceattribute\attributeunsetvalue
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \iflocation
-     \ctxcommand{injectreference("\referenceprefix","#label",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
+     \clf_injectreference
+        {\referenceprefix}%
+        {#label}%
+        {%
+            height \ht\strutbox
+            depth  \dp\strutbox
+            \extrareferencearguments
+        }%
+     \relax
      \setlocationattributes
      \setstrut % can be option
      \global\lastsavedreferenceattribute\lastreferenceattribute
@@ -1476,7 +1482,15 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxcommand{injectreference("\referenceprefix","#label",\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax,\extrareferencearguments)}%
+     \clf_injectreference
+        {\referenceprefix}%
+        {#label}%
+        {%
+            height \dimexpr\interactionparameter\c!height\relax
+            depth  \dimexpr\interactionparameter\c!depth \relax
+            \extrareferencearguments
+        }%
+     \relax
      \setlocationattributes
      \attribute\referenceattribute\lastreferenceattribute
      \global\lastsavedreferenceattribute\lastreferenceattribute
@@ -1495,9 +1509,12 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxcommand{doifelsereference("\referenceprefix","#label",\extrareferencearguments)}%
+     \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
        {\expandtexincurrentreference
-        \ctxcommand{injectcurrentreference(\number\ht\strutbox,\number\dp\strutbox)}%
+        \clf_injectcurrentreference_dimensions
+          \ht\strutbox
+          \dp\strutbox
+        \relax
         \setlocationattributes
         \setstrut % can be option
         \global\lastsavedreferenceattribute\lastreferenceattribute
@@ -1516,7 +1533,9 @@
   {\dontleavehmode
    \begingroup
    \iflocation
-     \ctxcommand{doifelsereference("\referenceprefix","#label",\extrareferencearguments)}{\expandafter\startgoto_yes}{\expandafter\startgoto_nop}%
+     \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
+       {\expandafter\startgoto_yes}%
+       {\expandafter\startgoto_nop}%
    \else
      \expandafter\startgoto_nop
    \fi}
@@ -1529,7 +1548,10 @@
 
 \unexpanded\def\startgoto_yes
   {\expandtexincurrentreference
-   \ctxcommand{injectcurrentreference(\number\ht\strutbox,\number\dp\strutbox)}%
+   \clf_injectcurrentreference_dimensions
+     \ht\strutbox
+     \dp\strutbox
+   \relax
    \setlocationattributes
    \setstrut % can be option
    \global\lastsavedreferenceattribute\lastreferenceattribute
@@ -1547,9 +1569,12 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxcommand{doifelsereference("\referenceprefix","#label",\extrareferencearguments)}%
+     \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
        {\expandtexincurrentreference
-        \ctxcommand{injectcurrentreference(\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax)}%
+        \clf_injectcurrentreference_dimensions
+          \dimexpr\interactionparameter\c!height\relax
+          \dimexpr\interactionparameter\c!depth \relax
+        \relax
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute
@@ -1568,7 +1593,11 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxcommand{injectreference("\referenceprefix","#label",nil,nil,\extrareferencearguments)}%
+     \clf_injectreference
+       {\referenceprefix}%
+       {#label}%
+       {\extrareferencearguments}%
+     \relax
      \setlocationattributes
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
@@ -1585,7 +1614,11 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxcommand{injectreference("\referenceprefix","#label",nil,nil,\extrareferencearguments)}%
+     \clf_injectreference
+       {\referenceprefix}%
+       {#label}%
+       {\extrareferencearguments}%
+     \relax
      \setlocationcolorspec{#resolver}% no consequence for strut
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
@@ -1602,7 +1635,11 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxcommand{injectreference("\referenceprefix","#label",nil,nil,\extrareferencearguments)}%
+     \clf_injectreference
+       {\referenceprefix}%
+       {#label}%
+       {\extrareferencearguments}%
+     \relax
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
      \hbox attr \referenceattribute \lastreferenceattribute {#content}%
@@ -1618,9 +1655,9 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxcommand{doifelsereference("\referenceprefix","#label",\extrareferencearguments)}%
+     \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
        {\expandtexincurrentreference
-        \ctxcommand{injectcurrentreference(nil,nil)}%
+        \clf_injectcurrentreference
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \dostarttagged\t!link\empty
@@ -1640,8 +1677,8 @@
    \ht\scratchbox#height%
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
-   \ctxcommand{doifelsereference("\referenceprefix","#label",\extrareferencearguments)}%
-     {\ctxcommand{injectcurrentreference(nil,nil)}%
+   \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
+     {\clf_injectcurrentreference
       \global\lastsavedreferenceattribute\lastreferenceattribute
       \hbox attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}
      {\box\scratchbox}%
@@ -1703,13 +1740,13 @@
 \let\useexternaldocument\usefile
 
 \def\strc_references_use_url[#label][#url][#file][#description]%
-  {\ctxcommand{useurl("#label",\!!bs\detokenize{#url}\!!es,\!!bs\detokenize{#file}\!!es,\!!bs\detokenize{#description}\!!es)}}
+  {\clf_useurl{#label}{\detokenize{#url}}{\detokenize{#file}}{\detokenize{#description}}}
 
 \def\strc_references_use_file[#label][#file][#description]%
-  {\ctxcommand{usefile("#label",\!!bs\detokenize{#file}\!!es,\!!bs\detokenize{#description}\!!es)}}
+  {\clf_usefile{#label}{\detokenize{#file}}{\detokenize{#description}}}
 
-\def\doifurldefinedelse #label{\ctxcommand{doifurldefinedelse ("#label")}}
-\def\doiffiledefinedelse#label{\ctxcommand{doiffiledefinedelse("#label")}}
+\def\doifurldefinedelse #label{\clf_doifurldefinedelse {#label}}
+\def\doiffiledefinedelse#label{\clf_doiffiledefinedelse{#label}}
 
 %D \macros
 %D   {url,setupurl}
@@ -1740,7 +1777,7 @@
   {\dontleavehmode
    \begingroup
    \useurlstyleandcolor\c!style\c!color
-   \hyphenatedurl{\ctxcommand{geturl("#label")}}%
+   \hyphenatedurl{\clf_geturl{#label}}%
    \endgroup}
 
 %D This macro is hooked into a support macro, and thereby
@@ -1771,7 +1808,7 @@
 
 \def\strc_references_do_special_from[#label]%
   {\dontleavehmode
-   \goto{\ctxcommand{from("#label")}}[fileorurl(#label)]}
+   \goto{\clf_from{#label}}[fileorurl(#label)]}
 
 \def\dofromurldescription#content% called at the lua end
   {#content}
@@ -1816,13 +1853,13 @@
   {\dotripleargument\strc_references_define_program}
 
 \def\strc_references_define_program[#name][#program][#description]%
-  {\ctxcommand{defineprogram("#name",\!!bs#program\!!es,\!!bs#description\!!es)}}
+  {\clf_defineprogram{#name}{#program}{#description}}
 
 \def\program[#name]% incompatible, more consistent, hardy used anyway
   {\dontleavehmode
    \begingroup
    \useprogramsstyleandcolor\c!style\c!color
-   \ctxcommand{getprogram("#name","\directprogramsparameter\c!alternative","\directprogramsparameter\c!space")}%
+   \clf_getprogram{#name}%
    \endgroup}
 
 %D As we can see, we directly use the special reference
@@ -2046,36 +2083,25 @@
 
 \installcorenamespace{referencingprefix}
 
-% \def\getreferencestructureprefix#kind#name#category% name will change
-%   {{
-%         prefix        =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefix",
-%         separatorset  =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixseparatorset",
-%         conversion    =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversion",
-%         conversionset =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversionset",
-%         set           =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixset",
-%         segments      =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixsegments",
-%         connector     = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconnector\!!es,
-%   }}
-
 \def\getreferencestructureprefix#kind#name#category% name will change
   {{
-        prefix        =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefix",
-        separatorset  =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixseparatorset",
-        conversion    =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversion",
-        conversionset =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversionset",
-        starter       = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixstarter\!!es,
-        stopper       = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixstopper\!!es,
-        set           =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixset",
-        segments      =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixsegments",
-        connector     = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconnector\!!es,
-  },
+        prefix        {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefix}%
+        separatorset  {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixseparatorset}%
+        conversion    {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversion}%
+        conversionset {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversionset}%
+        starter       {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixstarter}%
+        stopper       {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixstopper}%
+        set           {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixset}%
+        segments      {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixsegments}%
+        connector     {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconnector}%
+  }
   {
-        separatorset  =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberseparatorset",
-        conversion    =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberconversion",
-        conversionset =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberconversionset",
-        starter       = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberstarter\!!es,
-        stopper       = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberstopper\!!es,
-        segments      =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!numbersegments",
+        separatorset  {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberseparatorset}%
+        conversion    {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberconversion}%
+        conversionset {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberconversionset}%
+        starter       {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberstarter}%
+        stopper       {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberstopper}%
+        segments      {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numbersegments}%
   }}
 
 \unexpanded\def\setupreferencestructureprefix
@@ -2097,16 +2123,11 @@
      \csname     \??referencingprefix:#category#parameter\endcsname
    \fi\fi\fi}
 
-% \def\currentreferencedefault
-%   {\ctxcommand{filterdefaultreference()}}
-
 \def\currentreferencedefault
-  {\ctxcommand{filterreference("\s!default",\ctxcommand{getcurrentprefixspec("\s!default")})}}
-
-% needs testing
-%
-% \def\currentreferencedefault
-%   {\ctxcommand{currentreferencedefault()}}
+  {\clf_filterdefaultreference
+     {\s!default}%
+     \getreferencestructureprefix\clf_getcurrentprefixspec{\s!default}% returns #kind#name#category
+   \relax}
 
 %D Not all support is visible by looking at the \TEX\ code; here is one of those:^
 %D

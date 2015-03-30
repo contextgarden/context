@@ -15,9 +15,17 @@ if not modules then modules = { } end modules ['attr-lay'] = {
 local type = type
 local insert, remove = table.insert, table.remove
 
-local attributes, nodes, utilities, logs, backends = attributes, nodes, utilities, logs, backends
-local commands, context, interfaces = commands, context, interfaces
-local tex = tex
+local attributes          = attributes
+local nodes               = nodes
+local utilities           = utilities
+local logs                = logs
+local backends            = backends
+
+local context             = context
+local interfaces          = interfaces
+local tex                 = tex
+
+local implement           = interfaces.implement
 
 local allocate            = utilities.storage.allocate
 local setmetatableindex   = table.setmetatableindex
@@ -38,6 +46,8 @@ local viewerlayers      = attributes.viewerlayers
 local variables         = interfaces.variables
 local v_local           = variables["local"]
 local v_global          = variables["global"]
+local v_start           = variables["start"]
+local v_yes             = variables["yes"]
 
 local a_viewerlayer     = attributes.private("viewerlayer")
 
@@ -84,11 +94,6 @@ viewerlayers.resolve_reset = layerstacker.resolve_reset
 viewerlayers.resolve_begin = layerstacker.resolve_begin
 viewerlayers.resolve_step  = layerstacker.resolve_step
 viewerlayers.resolve_end   = layerstacker.resolve_end
-
-function commands.cleanuplayers()
-    layerstacker.clean()
-    -- todo
-end
 
 -- stacked
 
@@ -240,15 +245,63 @@ function viewerlayers.define(settings)
     end
 end
 
-commands.defineviewerlayer = viewerlayers.define
-commands.startviewerlayer  = viewerlayers.start
-commands.stopviewerlayer   = viewerlayers.stop
-
-function commands.definedviewerlayer(settings)
-    viewerlayers.define(settings)
-    context(register(settings.tag,true)) -- true forces a use
+function viewerlayers.definedlayoutcomponent(tag)
+    viewerlayers.define {
+        tag       = tag,
+        title     = utilities.strings.nice(tag),
+        visible   = v_start,
+        editable  = v_yes,
+        printable = v_yes,
+    }
+    return register(tag,true) -- true forces a use
 end
 
-function commands.registeredviewerlayer(name)
-    context(register(name,true)) -- true forces a use
+function viewerlayers.cleanup()
+    layerstacker.clean()
+    -- todo
 end
+
+implement {
+    name      = "cleanuplayers",
+    actions   = viewerlayers.cleanup
+}
+
+implement {
+    name      = "defineviewerlayer",
+    actions   = viewerlayers.define,
+    arguments = {
+        {
+            { "tag" },
+            { "title" },
+            { "visible" },
+            { "editable" },
+            { "export" },
+            { "printable" },
+            { "scope" },
+        },
+        true
+    }
+}
+
+implement {
+    name      = "definedlayoutcomponent",
+    actions   = { viewerlayers.definedlayoutcomponent, context },
+    arguments = "string"
+}
+
+implement {
+    name      = "startviewerlayer",
+    actions   = viewerlayers.start,
+    arguments = "string",
+}
+
+implement {
+    name      = "stopviewerlayer",
+    actions   = viewerlayers.stop
+}
+
+implement {
+    name      = "registeredviewerlayer",
+    actions   = { register, context },
+    arguments = { "string", true } -- true forces a use
+}

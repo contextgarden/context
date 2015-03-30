@@ -134,7 +134,7 @@
     \ifconditional\c_strc_registers_defining \else % todo: dosingle ...
       \settrue\c_strc_registers_defining
       \definemixedcolumns[\currentregister][\v!register]% first as otherwise it overloads start/stop
-      \ctxcommand{defineregister("\currentregister","\registerparameter\c!referencemethod")}%
+      \clf_defineregister{\currentregister}{\registerparameter\c!referencemethod}%
       \normalexpanded{\presetheadtext[\currentregister=\Word{\currentregister}]}%
       \setuevalue{\currentregister}{\dodoubleempty\strc_registers_insert_entry[\currentregister]}%
       \setuevalue{\e!see\currentregister}{\dodoubleempty\strc_registers_insert_see[\currentregister]}%
@@ -155,7 +155,7 @@
 \to \everydefineregister
 
 \appendtoks
-    \ctxcommand{setregistermethod("\currentregister","\registerparameter\c!referencemethod")}%
+    \clf_setregistermethod{\currentregister}{\registerparameter\c!referencemethod}%
 \to \everysetupregister
 
 %D Registering:
@@ -923,7 +923,7 @@
 %     \placeregister[index][n=1,pagecommand=\MyRegisterPageCommand]
 % \stoptext
 
-\def\registerpageuserdata       #1#2{\ctxcommand{registeruserdata(#1,"#2")}}
+\def\registerpageuserdata       #1#2{\clf_registeruserdata#1{#2}}
 \def\currentregisterpageuserdata    {\registerpageuserdata\currentregisterpageindex} % {#1}
 
 % not yet ok : new internal handler names

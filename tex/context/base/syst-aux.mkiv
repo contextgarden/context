@@ -7038,7 +7038,7 @@
 %def\getsubstring#1#2#3{\cldcontext{utf.sub([[#3]],tonumber("#1"),tonumber("#2"))}}
 \def\getsubstring#1#2#3{\ctxcommand{getsubstring(\!!bs#3\!!es,"#1","#2")}}
 
-%D Other dimensions that pt:
+%D Other dimensions than pt:
 
 % \def\converteddimen#1#2{\ctxcommand{converteddimen(\number\dimexpr#1,"#2")}}
 
@@ -7094,6 +7094,22 @@
 %
 % \def\syst_aux_case_nop#1%
 %   {\syst_aux_case}
+
+%D \macros
+%D   {ntimes}
+%D
+%D some repetition:
+%D
+%D \startbuffer
+%D \ntimes{*}{20}
+%D \stopbuffer
+%D
+%D \typebuffer \blank gives: \getbuffer \blank
+%D
+%D This is not real fast but quite okay:
+
+%def\ntimes#1#2{\ifnum#2>\zerocount#1\ntimes{#1}{\numexpr#2-\plusone\relax}\fi} % 1.72
+\def\ntimes#1#2{\clf_ntimes{#1}\numexpr#2\relax}                                % 0.33
 
 \protect \endinput
 

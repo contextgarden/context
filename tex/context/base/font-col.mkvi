@@ -34,13 +34,13 @@
 \unexpanded\def\resetfontfallback {\dodoubleempty   \font_fallbacks_reset }
 
 \def\font_fallbacks_define[#name][#font][#ranges][#settings]%
-  {\ctxcommand{fontcollectiondefine("#name","#font",\!!bs#ranges\!!es,\!!bs#settings\!!es)}}
+  {\clf_fontcollectiondefine{#name}{#font}{#ranges}{#settings}}
 
 \def\font_fallbacks_reset[#name][#font]%
-  {\ctxcommand{fontcollectionreset("#name","#font")}}
+  {\clf_fontcollectionreset{#name}{#font}}
 
 \def\font_fallbacks_prepare#name%
-  {\ctxcommand{fontcollectionprepare("#name")}} % add fallbacks to last font
+  {\clf_fontcollectionprepare{#name}} % add fallbacks to last font
 
 % we might as well move the handling to lua but then we need to pass the
 % fallbacks, skewchar etc.
@@ -77,7 +77,7 @@
   {\endgroup}
 
 \def\font_fallbacks_clone_unique#specification#scale% kind of dododefinefont
-  {\ctxcommand{fontcollectionreport("defining #specification (relative scale: #scale)")}% brrr
+  {\clf_fontcollectionreport{defining #specification (relative scale: #scale)}% brrr
    \setfalse\c_font_auto_size
    \let\lastfontidentifier\s!dummy
    \def\v_font_size_relative{#scale}%
@@ -89,8 +89,8 @@
 \def\font_fallbacks_clone_inherited#font% also a second argument
   {\font_fallbacks_clone_unique{#font \savedfontspec}}
 
-\def\font_fallbacks_register_main        #name{\ctxcommand{fontcollectionregister("#name")}}
-\def\font_fallbacks_prepare_clone_vectors#name{\ctxcommand{fontcollectionclone("#name")}}
+\def\font_fallbacks_register_main        #name{\clf_fontcollectionregister{#name}}
+\def\font_fallbacks_prepare_clone_vectors#name{\clf_fontcollectionclone{#name}}
 
 % check : only replace when present in replacement font (default: no)
 % force : force replacent even when basefont has glyph  (default: yes)

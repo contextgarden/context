@@ -297,28 +297,6 @@
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_process_graphic}
 
-% \unexpanded\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
-%   {\meta_start_current_graphic
-%    \forgetall
-%    \edef\p_extensions{\MPinstanceparameter\s!extensions}%
-%    \meta_process_graphic_start
-%      \normalexpanded{\noexpand\ctxlua{metapost.graphic {
-%        instance        = "\currentMPinstance",
-%        format          = "\currentMPformat",
-%        data            = \!!bs#1;\!!es,
-%        initializations = \!!bs\meta_flush_current_initializations\!!es,
-%      % useextensions   = "\MPinstanceparameter\s!extensions",
-% \ifx\p_extensions\v!yes
-%        extensions      = \!!bs\clf_getmpextensions{\currentMPinstance}\!!es,
-% \fi
-%        inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
-%        definitions     = \!!bs\meta_flush_current_definitions\!!es,
-%        figure          = "\MPaskedfigure",
-%        method          = "\MPinstanceparameter\c!method",
-%      }}}%
-%    \meta_process_graphic_stop
-%    \meta_stop_current_graphic}
-
 \unexpanded\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
   {\meta_start_current_graphic
    \forgetall
@@ -330,7 +308,7 @@
          data            {#1;}%
          initializations {\meta_flush_current_initializations}%
     \ifx\p_extensions\v!yes
-         extensions      {\clf_getmpextensions{\currentMPinstance}}%
+         extensions      {\clf_getmpextensions{\currentMPinstance}}% goes through tex again
     \fi
          inclusions      {\meta_flush_current_inclusions}%
          definitions     {\meta_flush_current_definitions}%
@@ -459,19 +437,6 @@
      \xdef\MPclippath{#4}%
    \fi
    \endgroup}
-
-% \def\meta_grab_clip_path_indeed
-%   {\meta_start_current_graphic
-%      \xdef\MPclippath{\normalexpanded{\noexpand\ctxlua{metapost.theclippath {
-%           instance        = "\currentMPinstance",
-%           format          = "\currentMPformat",
-%           data            = \!!bs\csname\??mpclip\currentMPclip\endcsname\!!es,
-%           initializations = \!!bs\meta_flush_current_initializations\!!es,
-%           useextensions   = "\MPinstanceparameter\s!extensions",
-%           inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
-%           method          = "\MPinstanceparameter\c!method",
-%      }}}}%
-%    \meta_stop_current_graphic}
 
 \def\meta_grab_clip_path_indeed
   {\meta_start_current_graphic

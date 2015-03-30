@@ -62,7 +62,6 @@ local generic = {
     -- allows the substitution of an alternate field.
     --
     -- note that anything can get assigned a doi or be available online.
-    doi        = { "doi", "url" },
     editionset = { "edition", "volume", "number", "pages" },
 }
 
@@ -87,19 +86,16 @@ local categories = specification.categories
 categories.article = {
     sets = {
         author = { "author", "editor" },
-	volume = { "volume", "number", "pages" },
-        doi    = generic.doi,
-        isbn   = { "issn" },
     },
     required = {
-        "author"
+        "author",
     },
     optional = {
         "collaboration",
         "year",
         "title", "subtitle", "type", "file",
-        "journal", "volume",
-        "doi", "note", "isbn"
+        "journal", "volume", "number", "pages",
+        "doi", "url", "note",
     },
 }
 
@@ -115,9 +111,9 @@ categories.magazine = {
     optional = {
         "collaboration",
         "title", "subtitle", "type", "file",
-        "number",
+        "number", "pages",
         "month", "day",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
@@ -128,8 +124,6 @@ categories.newspaper = categories.magazine
 categories.periodical = {
     sets = {
         author = { "editor", "publisher" },
-        doi    = generic.doi,
-        isbn   = { "issn" },
     },
     required = {
         "title",
@@ -141,7 +135,7 @@ categories.periodical = {
         "subtitle", "file",
         "series", "volume", "number", "month",
         "organization",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
@@ -150,7 +144,6 @@ categories.periodical = {
 categories.standard = {
     sets = {
         author = { "author", "institution", "organization" },
-        doi    = generic.doi,
     },
     required = {
         "author",
@@ -160,6 +153,7 @@ categories.standard = {
     },
     optional = {
         "collaboration",
+        "url",
     },
 }
 
@@ -169,7 +163,6 @@ categories.book = {
     sets = {
         author     = { "author", "editor", "publisher" },
         editionset = generic.editionset,
-        doi        = generic.doi,
     },
     required = {
         "author",
@@ -181,7 +174,7 @@ categories.book = {
         "title", "subtitle", "type",  "file",
         "editionset", "series",
         "address",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
@@ -191,7 +184,6 @@ categories.inbook = {
     sets = {
         author     = { "author", "editor", "publisher", },
         editionset = generic.editionset,
-        doi        = generic.doi,
     },
     required = {
         "author",
@@ -206,7 +198,7 @@ categories.inbook = {
         "editionset", "series",
         "month",
         "address",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
@@ -217,7 +209,6 @@ categories.incollection = {
     sets = {
         author     = { "author", "editor", "publisher" },
         editionset = generic.editionset,
-        doi        = generic.doi,
     },
     required = {
         "author",
@@ -231,7 +222,7 @@ categories.incollection = {
         "chapter",
         "month",
         "address",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
@@ -240,7 +231,6 @@ categories.incollection = {
 categories.booklet = {
     sets = {
         publisher = { "howpublished" }, -- no "publisher"!
-        doi    = generic.doi,
     },
     required = {
         "author",
@@ -252,7 +242,7 @@ categories.booklet = {
         "year", "month",
         "subtitle", "type", "file",
         "address",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
      },
 }
 
@@ -263,7 +253,6 @@ categories.proceedings = {
         author     = { "editor", "organization", "publisher" }, -- no "author"!
         publisher  = { "publisher", "organization" },
         editionset = generic.editionset,
-        doi        = generic.doi,
     },
     required = {
         "author",
@@ -276,7 +265,7 @@ categories.proceedings = {
         "editionset", "series",
         "month",
         "address",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
@@ -291,7 +280,7 @@ categories.inproceedings = {
         "month",
         "edition", "series",
         "address", "organization",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
@@ -300,9 +289,6 @@ categories.conference = categories.inproceedings
 -- a thesis (of course).
 
 categories.thesis = {
-    sets = {
-        doi = generic.doi,
-    },
     required = {
         "author",
         "title",
@@ -315,7 +301,7 @@ categories.thesis = {
         "subtitle", "file",
         "month",
         "address",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
@@ -333,7 +319,7 @@ categories.mastersthesis = {
         "subtitle", "file",
         "month",
         "address",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 categories.phdthesis = categories.mastersthesis
@@ -345,7 +331,6 @@ categories.techreport = {
         author     = { "author", "institution", "publisher" },
         publisher  = { "publisher", "institution", },
         editionset = { "type", "volume", "number", "pages" }, -- no "edition"!
-        doi        = generic.doi,
     },
     required = {
         "author",
@@ -360,7 +345,7 @@ categories.techreport = {
         "subtitle", "file",
         "editionset",
         "month",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
@@ -371,7 +356,6 @@ categories.manual = {
         author     = { "author", "organization", "publisher" },
         publisher  = { "publisher", "organization", },
         editionset = generic.editionset,
-        doi        = generic.doi,
     },
     required = {
         "title"
@@ -382,7 +366,7 @@ categories.manual = {
         "address",
         "subtitle", "file",
         "editionset", "month", "year",
-        "doi", "note", "isbn",
+        "doi", "url", "note",
     },
 }
 
@@ -395,7 +379,6 @@ categories.patent = {
         year = { "year", "yearfiled", },
         month = { "month", "monthfiled", },
         day = { "day", "dayfiled", },
-        doi = generic.doi,
     },
     required = {
         "nationality",
@@ -410,16 +393,13 @@ categories.patent = {
         "title", "subtitle", "file",
         "address",
         "day", "month",
-        "doi", "note"
+        "doi", "url", "note",
     },
 }
 
 -- a document having an author and title, but not formally published.
 
 categories.unpublished = {
-    sets = {
-        doi = generic.doi,
-    },
     required = {
         "author",
         "title",
@@ -429,16 +409,13 @@ categories.unpublished = {
         "collaboration",
         "subtitle", "file",
         "year", "month",
-        "doi"
+        "doi", "url",
     },
 }
 
 -- like misc below but includes organization.
 
 categories.electronic = {
-    sets = {
-        doi = generic.doi,
-    },
     required = {
         "title"
     },
@@ -450,17 +427,13 @@ categories.electronic = {
         "address",
         "organization",
         "howpublished",
-        "doi", "note"
+        "doi", "url", "note",
     },
 }
 
 -- use this type when nothing else fits.
 
 categories.misc = {
-    sets = {
-        doi  = generic.doi,
-        isbn = { "isbn", "issn" },
-    },
     required = {
         -- nothing is really important here
     },
@@ -470,17 +443,13 @@ categories.misc = {
         "title", "subtitle", "file",
         "year", "month",
         "howpublished",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
 -- other (whatever jabref does not know!)
 
 categories.other = {
-    sets = {
-        doi  = generic.doi,
-        isbn = { "isbn", "issn" },
-    },
     required = {
         "author",
         "title",
@@ -489,7 +458,7 @@ categories.other = {
     optional = {
         "collaboration",
         "subtitle", "file",
-        "doi", "note", "isbn"
+        "doi", "url", "note",
     },
 }
 
@@ -498,14 +467,13 @@ categories.other = {
 categories.literal = {
     sets = {
         author = { "key" }, -- need to check this!
-        doi    = generic.doi,
     },
     required = {
         "text"
     },
     optional = {
         "author",
-        "doi", "note"
+        "doi", "url", "note"
     },
     virtual = false,
 }

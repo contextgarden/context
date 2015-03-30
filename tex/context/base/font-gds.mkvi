@@ -46,10 +46,10 @@
 \definesystemattribute[colorscheme][public]
 
 \unexpanded\def\loadfontgoodies[#filename]%
-  {\ctxcommand{loadfontgoodies("#filename")}}
+  {\clf_loadfontgoodies{#filename}}
 
 \unexpanded\def\setfontcolorscheme % will move to the lua end
-  {\ctxcommand{enablefontcolorschemes()}%
+  {\clf_enablefontcolorschemes
    \unexpanded\xdef\setfontcolorscheme[##1]{\attribute\colorschemeattribute##1\relax}%
    \setfontcolorscheme}
 
