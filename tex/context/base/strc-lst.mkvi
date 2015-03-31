@@ -125,7 +125,7 @@
 \def\strc_lists_inject_nop[#dummya][#dummyb]%
   {\endgroup}
 
-\def\strc_lists_inject_yes[#settings][#userdata]%
+\unexpanded\def\strc_lists_inject_yes[#settings][#userdata]% can be used directly
   {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...
    \edef\p_location{\listparameter\c!location}%
    \setnextinternalreference
@@ -142,7 +142,7 @@
           % level    structures.sections.currentlevel()
             catcodes \catcodetable
         }
-        userdata {\detokenize{#userdata}}
+        userdata {\detokenize\expandafter{\normalexpanded{#userdata}}}
    \relax
    \edef\currentlistnumber{\the\scratchcounter}%
    \ifx\p_location\v!here
@@ -156,6 +156,13 @@
      \clf_enhancelist\currentlistnumber\relax
    \fi
    \endgroup}
+
+% todo: make like \strc_references_direct_full_user ... with {}{}{}
+
+\unexpanded\def\strc_lists_inject_direct[#tag]% [#settings][#userdata]
+  {\begingroup
+   \edef\currentlist{#tag}%
+   \strc_lists_inject_yes} % [#settings][#userdata]
 
 \unexpanded\def\writebetweenlist{\dodoubleempty   \strc_lists_write_between}
 \unexpanded\def\writedatatolist {\dotripleargument\strc_lists_write_data_to}
@@ -382,25 +389,25 @@
 \unexpanded\def\structurelistgenericnumber % tricky, we need to delay tagging as we have nested lua calls
   {\dostarttagged\t!listtag\empty
    \clf_listprefixednumber
-        {\currentlist}
-        \currentlistindex
-        {
-            prefix        {\listparameter\c!prefix}
-            separatorset  {\listparameter\c!prefixseparatorset}
-            conversionset {\listparameter\c!prefixconversionset}
-            starter       {\listparameter\c!prefixstarter}
-            stopper       {\listparameter\c!prefixstopper}
-            set           {\listparameter\c!prefixset}
-            segments      {\listparameter\c!prefixsegments}
-            connector     {\listparameter\c!prefixconnector}
-        }
-        {
-            separatorset  {\listparameter\c!numberseparatorset}
-            conversionset {\listparameter\c!numberconversionset}
-            starter       {\listparameter\c!numberstarter}
-            stopper       {\listparameter\c!numberstopper}
-            segments      {\listparameter\c!numbersegments}
-        }
+     {\currentlist}%
+     \currentlistindex
+     {%
+         prefix        {\listparameter\c!prefix}%
+         separatorset  {\listparameter\c!prefixseparatorset}%
+         conversionset {\listparameter\c!prefixconversionset}%
+         starter       {\listparameter\c!prefixstarter}%
+         stopper       {\listparameter\c!prefixstopper}%
+         set           {\listparameter\c!prefixset}%
+         segments      {\listparameter\c!prefixsegments}%
+         connector     {\listparameter\c!prefixconnector}%
+     }%
+     {%
+         separatorset  {\listparameter\c!numberseparatorset}%
+         conversionset {\listparameter\c!numberconversionset}%
+         starter       {\listparameter\c!numberstarter}%
+         stopper       {\listparameter\c!numberstopper}%
+         segments      {\listparameter\c!numbersegments}%
+     }%
    \relax
    \dostoptagged}
 

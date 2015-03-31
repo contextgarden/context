@@ -257,7 +257,7 @@ end
 --  { "tag", "bar5678" },
 -- }
 
-local f_template = string.formatters[ [[
+local f_template = formatters[ [[
 local find = string.find
 local lower = characters.lower
 local anywhere = publications.anywhere

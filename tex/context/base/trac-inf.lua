@@ -207,17 +207,3 @@ function statistics.tracefunction(base,tag,...)
         statistics.register(formatters["%s.%s"](tag,name),function() return serialize(stat,"calls") end)
     end
 end
-
--- where, not really the best spot for this:
-
-commands = commands or { }
-
-function commands.resettimer(name)
-    resettiming(name or "whatever")
-    starttiming(name or "whatever")
-end
-
-function commands.elapsedtime(name)
-    stoptiming(name or "whatever")
-    context(elapsedtime(name or "whatever"))
-end

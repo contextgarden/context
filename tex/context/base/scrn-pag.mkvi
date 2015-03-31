@@ -133,30 +133,28 @@
 \to \everysetuplayout
 
 \def\scrn_canvas_synchronize_simple_indeed
-  {\ctxcommand{setupcanvas{
-     paperwidth  = \number\printpaperwidth,
-     paperheight = \number\printpaperheight
-   }}%
+  {\clf_setupcanvas
+     paperwidth  \printpaperwidth
+     paperheight \printpaperheight
+   \relax
   %\global\let\scrn_canvas_synchronize_simple \relax
-   \global\let\scrn_canvas_synchronize_complex\relax
-   }
+   \global\let\scrn_canvas_synchronize_complex\relax}
 
 \def\scrn_canvas_synchronize_complex_indeed
   {\scrn_canvas_calculate % otherwise we need to hook it into setuppage etc
-   \ctxcommand{setupcanvas{
-        mode        = "\interactionscreenparameter\c!option",
-        singlesided = \ifsinglesided true\else false\fi,
-        doublesided = \ifdoublesided true\else false\fi,
-        leftoffset  = \number\canvasbackoffset,
-        topoffset   = \number\canvastopoffset,
-        width       = \number\canvaswidth,
-        height      = \number\canvasheight,
-        paperwidth  = \number\canvasmaxwidth,
-        paperheight = \number\canvasmaxheight
-     }}%
+   \clf_setupcanvas
+        mode        {\interactionscreenparameter\c!option}%
+        singlesided \ifsinglesided true\else false\fi\space
+        doublesided \ifdoublesided true\else false\fi\space
+        leftoffset  \canvasbackoffset
+        topoffset   \canvastopoffset
+        width       \canvaswidth
+        height      \canvasheight
+        paperwidth  \canvasmaxwidth
+        paperheight \canvasmaxheight
+   \relax
   %\global\let\scrn_canvas_synchronize_simple \relax
-   \global\let\scrn_canvas_synchronize_complex\relax
-   }
+   \global\let\scrn_canvas_synchronize_complex\relax}
 
 \appendtoks
     \begingroup
@@ -216,10 +214,10 @@
 \def\scrn_transitions_set_indeed
   {\begingroup
    \edef\currentinteractionscreendelay{\interactionscreenparameter\c!delay}%
-   \ctxcommand{setpagetransition{
-      n     = "\scrn_transitions_list",
-      delay = "\ifx\currentinteractionscreendelay\v!none 0\else\currentinteractionscreendelay\fi"
-   }}%
+   \clf_setpagetransition
+      n     {\scrn_transitions_list}%
+      delay \ifx\currentinteractionscreendelay\v!none \zerocount\else\currentinteractionscreendelay\fi
+   \relax
    \endgroup}
 
 \prependtoks

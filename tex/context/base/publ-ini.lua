@@ -394,7 +394,7 @@ do
                                 end
                             end
                         end
-                    elseif kind == "userdata" then
+                    elseif kind == "btx" or kind == "userdata" then -- will go: kind == "userdata"
                         -- list entry (each cite)
                         local userdata = entry.userdata
                         if userdata then
@@ -1601,7 +1601,7 @@ do
         local luadata = current.luadata
         for listindex=1,#result do
             local r = result[listindex]
-            local u = r.userdata
+            local u = r.userdata -- better check on metadata.kind == "btx"
             if u then
                 local set = u.btxset or v_default
                 if set == dataset then
@@ -1639,7 +1639,7 @@ do
         for listindex=1,#result do
             local r = result[listindex]
             local u = r.userdata
-            if u then
+            if u then -- better check on metadata.kind == "btx"
                 local set = u.btxset or v_default
                 if set == dataset then
                     local tag = u.btxref
@@ -1667,7 +1667,9 @@ do
                             list[#list+1] = { tag, listindex, 0, u, u.btxint, data and data.index or 0 }
                         end
                     end
-                    registerpage(pages,tag,result,listindex)
+                    if tag then
+                        registerpage(pages,tag,result,listindex)
+                    end
                 end
             end
         end
@@ -1717,7 +1719,8 @@ do
             keyword = nil
         end
         filtermethod(dataset,rendering,keyword)
-        ctx_btxsetnoflistentries(#rendering.list)
+        local list = rendering.list
+        ctx_btxsetnoflistentries(list and #list or 0)
     end
 
     -- for determining width
@@ -2001,7 +2004,7 @@ do
                 { "repeated" },
                 { "ignored" },
                 { "group" },
-            },
+            }
         }
     }
 

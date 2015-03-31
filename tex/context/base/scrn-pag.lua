@@ -10,18 +10,43 @@ interactions         = interactions or { }
 interactions.pages   = interactions.pages or { }
 local pages          = interactions.pages
 
+local implement      = interfaces.implement
+
 local codeinjections = backends.codeinjections
 
-local function setupcanvas(specification)
+function pages.setupcanvas(specification)
     codeinjections.setupcanvas(specification)
 end
 
-local function setpagetransition(specification)
+function pages.setpagetransition(specification)
     codeinjections.setpagetransition(specification)
 end
 
-pages.setupcanvas          = setupcanvas
-pages.setpagetransition    = setpagetransition
+implement {
+    name      = "setupcanvas",
+    actions   = pages.setupcanvas,
+    arguments = {
+        {
+            { "mode" },
+            { "singlesided", "boolean" },
+            { "doublesided", "boolean" },
+            { "leftoffset", "dimen" },
+            { "topoffset", "dimen" },
+            { "width", "dimen" },
+            { "height", "dimen" },
+            { "paperwidth", "dimen" },
+            { "paperheight", "dimen" },
+        }
+    }
+}
 
-commands.setupcanvas       = setupcanvas
-commands.setpagetransition = setpagetransition
+implement {
+    name      = "setpagetransition",
+    actions   = pages.setpagetransition,
+    arguments = {
+        {
+            { "n" },
+            { "delay", "integer" },
+        }
+    }
+}

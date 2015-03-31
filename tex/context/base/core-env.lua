@@ -32,7 +32,7 @@ tex.isdefined           = allocate { }
 local modes             = { }
 local systemmodes       = { }
 
-if newtoken then
+-- if newtoken then -- we keep the old code for historic reasons
 
     -- undefined: mode == 0 or cmdname = "undefined_cs"
 
@@ -137,99 +137,99 @@ if newtoken then
         return types[cache[name].command] or "macro"
     end
 
-else
-
-    local csname_id = token.csname_id
-    local create    = token.create
-
-    local undefined = csname_id("*undefined*crap*")
-    local iftrue    = create("iftrue")[2] -- inefficient hack
-
-    setmetatableindex(tex.modes, function(t,k)
-        local m = modes[k]
-        if m then
-            return m()
-        else
-            local n = "mode>" .. k
-            if csname_id(n) == undefined then
-                return false
-            else
-                modes[k] = function() return texgetcount(n) == 1 end
-                return texgetcount(n) == 1 -- 2 is prevented
-            end
-        end
-    end)
-
-    setmetatableindex(tex.systemmodes, function(t,k)
-        local m = systemmodes[k]
-        if m then
-            return m()
-        else
-            local n = "mode>*" .. k
-            if csname_id(n) == undefined then
-                return false
-            else
-                systemmodes[k] = function() return texgetcount(n) == 1 end
-                return texgetcount(n) == 1 -- 2 is prevented
-            end
-        end
-    end)
-
-    setmetatableindex(tex.constants, function(t,k)
-        return csname_id(k) ~= undefined and texgetcount(k) or 0
-    end)
-
-    setmetatableindex(tex.conditionals, function(t,k) -- 0 == true
-        return csname_id(k) ~= undefined and texgetcount(k) == 0
-    end)
-
-    setmetatableindex(tex.ifs, function(t,k)
-     -- k = "if" .. k -- better not
-        return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
-    end)
-
-    setmetatableindex(tex.isdefined, function(t,k)
-        return k and csname_id(k) ~= undefined
-    end)
-    setmetatablecall(tex.isdefined, function(t,k)
-        return k and csname_id(k) ~= undefined
-    end)
-
-    local lookuptoken = token.lookup
-
-    local dimencode   = lookuptoken("scratchdimen"  )[1]
-    local countcode   = lookuptoken("scratchcounter")[1]
-    local tokencode   = lookuptoken("scratchtoken"  )[1]
-    local skipcode    = lookuptoken("scratchskip"   )[1]
-
-    local types = {
-        [dimencode] = "dimen",
-        [countcode] = "count",
-        [tokencode] = "token",
-        [skipcode ] = "skip",
-    }
-
-    function tex.isdimen(name)
-        return lookuptoken(name)[1] == dimencode
-    end
-
-    function tex.iscount(name)
-        return lookuptoken(name)[1] == countcode
-    end
-
-    function tex.istoken(name)
-        return lookuptoken(name)[1] == tokencode
-    end
-
-    function tex.isskip(name)
-        return lookuptoken(name)[1] == skipcode
-    end
-
-    function tex.type(name)
-        return types[lookuptoken(name)[1]] or "macro"
-    end
-
-end
+-- else
+--
+--     local csname_id = token.csname_id
+--     local create    = token.create
+--
+--     local undefined = csname_id("*undefined*crap*")
+--     local iftrue    = create("iftrue")[2] -- inefficient hack
+--
+--     setmetatableindex(tex.modes, function(t,k)
+--         local m = modes[k]
+--         if m then
+--             return m()
+--         else
+--             local n = "mode>" .. k
+--             if csname_id(n) == undefined then
+--                 return false
+--             else
+--                 modes[k] = function() return texgetcount(n) == 1 end
+--                 return texgetcount(n) == 1 -- 2 is prevented
+--             end
+--         end
+--     end)
+--
+--     setmetatableindex(tex.systemmodes, function(t,k)
+--         local m = systemmodes[k]
+--         if m then
+--             return m()
+--         else
+--             local n = "mode>*" .. k
+--             if csname_id(n) == undefined then
+--                 return false
+--             else
+--                 systemmodes[k] = function() return texgetcount(n) == 1 end
+--                 return texgetcount(n) == 1 -- 2 is prevented
+--             end
+--         end
+--     end)
+--
+--     setmetatableindex(tex.constants, function(t,k)
+--         return csname_id(k) ~= undefined and texgetcount(k) or 0
+--     end)
+--
+--     setmetatableindex(tex.conditionals, function(t,k) -- 0 == true
+--         return csname_id(k) ~= undefined and texgetcount(k) == 0
+--     end)
+--
+--     setmetatableindex(tex.ifs, function(t,k)
+--      -- k = "if" .. k -- better not
+--         return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
+--     end)
+--
+--     setmetatableindex(tex.isdefined, function(t,k)
+--         return k and csname_id(k) ~= undefined
+--     end)
+--     setmetatablecall(tex.isdefined, function(t,k)
+--         return k and csname_id(k) ~= undefined
+--     end)
+--
+--     local lookuptoken = token.lookup
+--
+--     local dimencode   = lookuptoken("scratchdimen"  )[1]
+--     local countcode   = lookuptoken("scratchcounter")[1]
+--     local tokencode   = lookuptoken("scratchtoken"  )[1]
+--     local skipcode    = lookuptoken("scratchskip"   )[1]
+--
+--     local types = {
+--         [dimencode] = "dimen",
+--         [countcode] = "count",
+--         [tokencode] = "token",
+--         [skipcode ] = "skip",
+--     }
+--
+--     function tex.isdimen(name)
+--         return lookuptoken(name)[1] == dimencode
+--     end
+--
+--     function tex.iscount(name)
+--         return lookuptoken(name)[1] == countcode
+--     end
+--
+--     function tex.istoken(name)
+--         return lookuptoken(name)[1] == tokencode
+--     end
+--
+--     function tex.isskip(name)
+--         return lookuptoken(name)[1] == skipcode
+--     end
+--
+--     function tex.type(name)
+--         return types[lookuptoken(name)[1]] or "macro"
+--     end
+--
+-- end
 
 function context.setconditional(name,value)
     if value then
@@ -253,7 +253,9 @@ local pattern = (
   +             sep^1
 )^1
 
-function commands.autosetups(str)
-    lpegmatch(pattern,str)
-end
+interfaces.implement {
+    name      = "autosetups",
+    actions   = function(str) lpegmatch(pattern,str) end,
+    arguments = "string"
+}
 

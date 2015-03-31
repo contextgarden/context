@@ -499,11 +499,11 @@
 % setups={S1,lua(S2),xml(test{123}),S3}
 
 \def\syst_setups_process_local
-  {\ctxcommand{autosetups("\m_syst_setups_asked")}%
+  {\clf_autosetups{\m_syst_setups_asked}%
    \relax} % let's prevent lookahead
 
 \def\autosetups#1%
-  {\ctxcommand{autosetups("#1")}}
+  {\clf_autosetups{#1}}
 
 \edef\setupwithargument#1% saves a few expansions
   {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#1\endcsname#1\noexpand\else\letterpercent\noexpand\fi\endcsname}

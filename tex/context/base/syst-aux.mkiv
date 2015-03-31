@@ -1315,10 +1315,10 @@
 \let\firstcharacter     \empty
 \let\remainingcharacters\empty
 
-\unexpanded\def\getfirstcharacter     #1{\ctxcommand{getfirstcharacter(\!!bs#1\!!es)}}
-\unexpanded\def\doiffirstcharelse   #1#2{\ctxcommand{doiffirstcharelse(\!!bs#1\!!es,\!!bs#2\!!es)}} % chr str
-\unexpanded\def\thefirstcharacter     #1{\ctxcommand{thefirstcharacter(\!!bs#1\!!es)}}
-\unexpanded\def\theremainingcharacters#1{\ctxcommand{theremainingcharacters(\!!bs#1\!!es)}}
+\unexpanded\def\getfirstcharacter     #1{\clf_getfirstcharacter{#1}}
+\unexpanded\def\doiffirstcharelse   #1#2{\clf_doiffirstcharelse{#1}{#2}} % chr str
+\unexpanded\def\thefirstcharacter     #1{\clf_thefirstcharacter{#1}}
+\unexpanded\def\theremainingcharacters#1{\clf_theremainingcharacters{#1}}
 
 %D \macros
 %D   {doifinstringelse, doifincsnameelse}
@@ -1455,10 +1455,10 @@
 %D \stoptyping
 
 \def\percentdimen#1#2% dimen percentage (with %)
-  {\dimexpr\ctxcommand{percentageof("#2",\number#1)}\relax}
+  {\dimexpr\clf_percentageof{#2}\dimexpr#1\relax}
 
 \unexpanded\def\setpercentdimen#1#2% dimen percentage (with %)
-  {#1=\ctxcommand{percentageof("#2",\number#1)}\relax}
+  {#1=\clf_percentageof{#2}\dimexpr#1\relax}
 
 %D \macros
 %D   {makerawcommalist,
@@ -3295,11 +3295,11 @@
 
 \gdef\syst_helpers_start_tex_definition#1
   {\catcode\endoflineasciicode\ignorecatcode%
-   \ctxcommand{texdefinition_1("#1")}}
+   \clf_texdefinition_one{#1}}
 
 \gdef\dostarttexdefinition#1\stoptexdefinition%
   {\egroup%
-   \ctxcommand{texdefinition_2()}{#1}}
+   \clf_texdefinition_two{#1}}
 
 \egroup
 
@@ -5966,11 +5966,11 @@
 %D These macros are sort of obsolete as we never use uppercase this
 %D way. But nevertheless we provide them:
 
-\def\utfupper#1{\ctxcommand{upper(\!!bs#1\!!es)}} % expandable
-\def\utflower#1{\ctxcommand{lower(\!!bs#1\!!es)}} % expandable
+\def\utfupper#1{\clf_upper{#1}} % expandable
+\def\utflower#1{\clf_lower{#1}} % expandable
 
-\unexpanded\def\uppercasestring#1\to#2{\dodoglobal\edef#2{\ctxcommand{upper(\!!bs#1\!!es)}}}
-\unexpanded\def\lowercasestring#1\to#2{\dodoglobal\edef#2{\ctxcommand{lower(\!!bs#1\!!es)}}}
+\unexpanded\def\uppercasestring#1\to#2{\dodoglobal\edef#2{\clf_upper{#1}}}
+\unexpanded\def\lowercasestring#1\to#2{\dodoglobal\edef#2{\clf_lower{#1}}}
 
 %D \macros
 %D   {handletokens}
@@ -6743,8 +6743,8 @@
 % \fi
 % \def\elapsedseconds{\expandafter\withoutpt\the\dimexpr\elapsedtime sp\relax}
 
-\def\resettimer    {\ctxcommand{resettimer()}}
-\def\elapsedtime   {\ctxcommand{elapsedtime()}}
+\let\resettimer    \clf_resettimer
+\let\elapsedtime   \clf_elapsedtime
 \let\elapsedseconds \elapsedtime
 
 \newcount\c_syst_helpers_test_feature_n
@@ -7035,12 +7035,11 @@
 
 % expandable:
 
-%def\getsubstring#1#2#3{\cldcontext{utf.sub([[#3]],tonumber("#1"),tonumber("#2"))}}
-\def\getsubstring#1#2#3{\ctxcommand{getsubstring(\!!bs#3\!!es,"#1","#2")}}
+\def\getsubstring#1#2#3{\clf_getsubstring{#3}{#1}{#2}}
 
 %D Other dimensions than pt:
 
-% \def\converteddimen#1#2{\ctxcommand{converteddimen(\number\dimexpr#1,"#2")}}
+% \def\converteddimen#1#2{\clf_converteddimen\dimexpr#1\relax{#2}}
 
 %D Maybe (looks ugly):
 %D

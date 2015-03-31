@@ -315,7 +315,7 @@
             }%
         \fi
         \ifx\m_strc_references_user\empty \else
-            userdata {\m_strc_references_user}%
+            userdata {\m_strc_references_user}% \detokenize\expandafter{\normalexpanded{...}}
         \fi
         }%
      \relax

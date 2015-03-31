@@ -89,10 +89,16 @@ negatives.enable   = enable
 
 local enabled = false
 
-function commands.triggernegative(stamp)
+function negatives.set(stamp)
     if not enabled then
         enable()
         enabled = true
     end
     texsetattribute(a_negative,register(stamp))
 end
+
+interfaces.implement {
+    name      = "setnegative",
+    actions   = negatives.set,
+    arguments = "string",
+}

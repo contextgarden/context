@@ -176,14 +176,14 @@
 %D Identity
 
 \def\scrn_identity_synchronize
-  {\ctxcommand{setupidentity{
-       title    = \!!bs\interactionparameter\c!title\!!es,
-       subtitle = \!!bs\interactionparameter\c!subtitle\!!es,
-       author   = \!!bs\interactionparameter\c!author\!!es,
-       creator  = \!!bs ConTeXt - \contextversion\!!es,
-       date     = \!!bs\interactionparameter\c!date\!!es,
-       keywords = \!!bs\interactionparameter\c!keyword\!!es,
-  }}}
+  {\clf_setupidentity
+       title    {\interactionparameter\c!title}%
+       subtitle {\interactionparameter\c!subtitle}%
+       author   {\interactionparameter\c!author}%
+       creator  { ConTeXt - \contextversion}%
+       date     {\interactionparameter\c!date}%
+       keywords {\interactionparameter\c!keyword}%
+   \relax}
 
 \appendtoks
     \scrn_identity_synchronize

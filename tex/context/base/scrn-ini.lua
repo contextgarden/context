@@ -16,7 +16,7 @@ local codeinjections = backends.codeinjections
 
 local identitydata   = { }
 
-local function setupidentity(specification)
+function general.setupidentity(specification)
     for k, v in next, specification do
         identitydata[k] = v
     end
@@ -27,6 +27,17 @@ function general.getidentity()
     return identitydata
 end
 
-general.setupidentity  = setupidentity
-
-commands.setupidentity = setupidentity
+interfaces.implement {
+    name      = "setupidentity",
+    actions   = general.setupidentity,
+    arguments = {
+        {
+            { "title" },
+            { "subtitle" },
+            { "author" },
+            { "creator" },
+            { "date" },
+            { "keywords" },
+        }
+    }
+}

@@ -137,7 +137,11 @@
      \let\currentbtxspecificationfallback\empty
    \fi
   % has to be done explicitly: \loadbtxdefinitionfile[\currentbtxspecification]%
-   \clf_btxsetspecification{\currentbtxspecification}}% todo: ,true == also load
+   \ifx\currentbtxspecification\empty
+     % we set default at the end
+   \else
+     \clf_btxsetspecification{\currentbtxspecification}%
+   \fi}% todo: ,true == also load
 
 \installcorenamespace {btx}
 
@@ -841,16 +845,20 @@
    \endgroup}
 
 \unexpanded\def\btxlistprefixednumber % hack but alan needs it
-  {\ctxcommand{listprefixednumber("\currentlist",\currentbtxlistindex, {
-        prefix        = "\listparameter\c!prefix",
-        separatorset  = "\listparameter\c!prefixseparatorset",
-        conversionset = "\listparameter\c!prefixconversionset",
-        starter       = \!!bs\listparameter\c!prefixstarter\!!es,
-        stopper       = \!!bs\listparameter\c!prefixstopper\!!es,
-        set           = "\listparameter\c!prefixset",
-        segments      = "\listparameter\c!prefixsegments",
-        connector     = \!!bs\listparameter\c!prefixconnector\!!es,
-    })}}
+  {\clf_listprefixednumber
+     {\currentlist}%
+     \currentbtxlistindex
+     {%
+        prefix        {\listparameter\c!prefix}%
+        separatorset  {\listparameter\c!prefixseparatorset}%
+        conversionset {\listparameter\c!prefixconversionset}%
+        starter       {\listparameter\c!prefixstarter}%
+        stopper       {\listparameter\c!prefixstopper}%
+        set           {\listparameter\c!prefixset}%
+        segments      {\listparameter\c!prefixsegments}%
+        connector     {\listparameter\c!prefixconnector}%
+     }%
+   \relax}
 
 \unexpanded\def\btx_reference_checked
   {\dontleavehmode\hbox\bgroup
@@ -871,12 +879,12 @@
   {\btx_trace_list_cross\empty\currentbtxbacktrace
    \global\advance\c_btx_list_reference\plusone
    \strc_references_direct_full_user
-      {\ifx\currentbtxdataset\v!default\else\s!btxset="\currentbtxdataset",\fi%
-       \s!btxref="\currentbtxtag",%
-       \s!btxspc="\currentbtxspecification",%
-       \ifx\currentbtxbefore\empty\else\s!btxbtx=\!!bs\currentbtxbefore\!!es,\fi%
-       \ifx\currentbtxafter \empty\else\s!btxatx=\!!bs\currentbtxafter \!!es,\fi%
-       \ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint="\currentbtxbacklink"\else\s!btxbck="\currentbtxbacktrace"\fi}%
+      {\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
+       \s!btxref=\currentbtxtag,%
+       \s!btxspc=\currentbtxspecification,%
+       \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
+       \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
+       \ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint=\currentbtxbacklink\else\s!btxbck=\currentbtxbacktrace\fi}%
       {\s!btx::\v!list::\number\c_btx_list_reference}%
       {\currentbtxnumber}}
 
@@ -898,17 +906,30 @@
 
 \newtoks\t_btx_reference_inject
 
+% \def\btx_cite_reference_inject_indeed
+%   {\btx_trace_list_cross\currentbtxbacklink\empty
+%    \the\t_btx_reference_inject
+%    \normalexpanded{\writedatatolist % can be done faster .. just merge code here (not much) / also type btx
+%       [\s!btx]%
+%       [\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
+%        \s!btxref=\currentbtxtag,%
+%        \ifx\currentbtxbefore\empty\else\s!btxbtx=\!!bs\currentbtxbefore\!!es,\fi%
+%        \ifx\currentbtxafter \empty\else\s!btxatx=\!!bs\currentbtxafter \!!es,\fi%
+%        \s!btxint=\number\currentbtxbacklink
+%        \ifx\currentbtxciteuservariables\empty\else,\currentbtxciteuservariables\fi]}}
+
 \def\btx_cite_reference_inject_indeed
   {\btx_trace_list_cross\currentbtxbacklink\empty
    \the\t_btx_reference_inject
-   \normalexpanded{\writedatatolist
+   \strc_lists_inject_direct % todo: make like \btx_list_reference_inject_now with { }
       [\s!btx]%
+      [\c!type=\s!btx]% \c!location=\v!none
       [\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
        \ifx\currentbtxbefore\empty\else\s!btxbtx=\!!bs\currentbtxbefore\!!es,\fi%
        \ifx\currentbtxafter \empty\else\s!btxatx=\!!bs\currentbtxafter \!!es,\fi%
        \s!btxint=\number\currentbtxbacklink
-       \ifx\currentbtxciteuservariables\empty\else,\currentbtxciteuservariables\fi]}}
+       \ifx\currentbtxciteuservariables\empty\else,\currentbtxciteuservariables\fi]}
 
 \def\currentbtxuservariable #1{\clf_btxuservariable        {\currentbtxdataset}{#1}}
 \def\btxdoifelseuservariable#1{\clf_btxdoifelseuservariable{\currentbtxdataset}{#1}}

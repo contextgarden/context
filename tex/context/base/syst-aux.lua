@@ -20,39 +20,62 @@ local todimen = number.todimen
 local commands          = commands
 local context           = context
 
+local implement         = interfaces.implement
+
 local setcatcode        = tex.setcatcode
 
 local utf8character     = lpeg.patterns.utf8character
 local settings_to_array = utilities.parsers.settings_to_array
 
-local setvalue          = context.setvalue
+local setmacro          = interfaces.setmacro
 
 local pattern           = C(utf8character^-1) * C(P(1)^0)
 
-function commands.getfirstcharacter(str)
-    local first, rest = lpegmatch(pattern,str)
-    setvalue("firstcharacter",first)
-    setvalue("remainingcharacters",rest)
-end
+implement {
+    name      = "getfirstcharacter",
+    arguments = "string",
+    actions   = function(str)
+        local first, rest = lpegmatch(pattern,str)
+        setmacro("firstcharacter",first)
+        setmacro("remainingcharacters",rest)
+    end
+}
 
-function commands.thefirstcharacter(str)
-    local first, rest = lpegmatch(pattern,str)
-    context(first)
-end
-function commands.theremainingcharacters(str)
-    local first, rest = lpegmatch(pattern,str)
-    context(rest)
-end
+implement {
+    name      = "thefirstcharacter",
+    arguments = "string",
+    actions   = function(str)
+        local first, rest = lpegmatch(pattern,str)
+        context(first)
+    end
+}
+
+implement {
+    name      = "theremainingcharacters",
+    arguments = "string",
+    actions   = function(str)
+        local first, rest = lpegmatch(pattern,str)
+        context(rest)
+    end
+}
 
 local pattern = C(utf8character^-1)
 
-function commands.doiffirstcharelse(chr,str)
-    commands.doifelse(lpegmatch(pattern,str) == chr)
-end
+implement {
+    name      = "doiffirstcharelse",
+    arguments = { "string", "string" },
+    actions   = function(str)
+        commands.doifelse(lpegmatch(pattern,str) == chr)
+    end
+}
 
-function commands.getsubstring(str,first,last)
-    context(utfsub(str,tonumber(first),tonumber(last)))
-end
+implement {
+    name      = "getsubstring",
+    arguments = { "string", "string", "string" },
+    actions   = function(str)
+        context(utfsub(str,tonumber(first),tonumber(last)))
+    end
+}
 
 -- function commands.addtocommalist(list,item)
 --     if list == "" then
@@ -86,11 +109,15 @@ end
 
 local pattern = (C((1-P("%"))^1) * Carg(1)) /function(n,d) return format("%.0fsp",d * tonumber(n)/100) end * P("%") * P(-1) -- .0 ?
 
--- commands.percentageof("10%",65536*10)
+-- percentageof("10%",65536*10)
 
-function commands.percentageof(str,dim)
-    context(lpegmatch(pattern,str,1,dim) or str)
-end
+implement {
+    name      = "percentageof",
+    arguments = { "string", "dimen" },
+    actions   = function(str,dim)
+        context(lpegmatch(pattern,str,1,dim) or str)
+    end
+}
 
 -- \gdef\setpercentdimen#1#2%
 --   {#1=\ctxcommand{percentageof("#2",\number#1)}\relax}
@@ -133,7 +160,7 @@ local pattern = Cs( -- ^-1
 
 local ctx_dostarttexdefinition = context.dostarttexdefinition
 
-function commands.texdefinition_1(str)
+local function texdefinition_one(str)
     usespaces   = nil
     texpreamble = lpegmatch(pattern,str)
     if usespaces == true then
@@ -150,14 +177,39 @@ function commands.texdefinition_1(str)
     ctx_dostarttexdefinition()
 end
 
-function commands.texdefinition_2()
+local function texdefinition_two()
     context(texpreamble)
 end
 
-local upper, lower, strip = utf.upper, utf.lower, string.strip
+implement { name = "texdefinition_one", actions = texdefinition_one, scope = "private", arguments = "string" }
+implement { name = "texdefinition_two", actions = texdefinition_two, scope = "private" }
 
-function commands.upper(s) context(upper(s)) end
-function commands.lower(s) context(lower(s)) end
-function commands.strip(s) context(strip(s)) end
+implement { name = "upper", arguments = "string", actions = { utf.upper, context } }
+implement { name = "lower", arguments = "string", actions = { utf.lower, context } }
+implement { name = "strip", arguments = "string", actions = { utf.strip, context } }
 
-function commands.converteddimen(dimen,unit) context(todimen(dimen,unit or "pt","%0.5f")) end -- no unit appended (%F)
+-- implement {
+--     name      = "converteddimen",
+--     arguments = { "dimen", "string" },
+--     actions   = function(dimen,unit)
+--         context(todimen(dimen,unit or "pt","%0.5f")) -- no unit appended (%F)
+--     end
+-- }
+
+-- where, not really the best spot for this:
+
+implement {
+    name    = "resettimer",
+    actions = function()
+        statistics.resettiming("whatever")
+        statistics.starttiming("whatever")
+    end
+}
+
+implement {
+    name    = "elapsedtime",
+    actions = function()
+        statistics.stoptiming("whatever")
+        context(statistics.elapsedtime("whatever"))
+    end
+}
