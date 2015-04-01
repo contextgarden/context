@@ -1433,11 +1433,11 @@
 
 %D Journals
 
-\unexpanded\def\btxloadjournallist [#1]{\ctxcommand{btxloadjournallist("#1")}}
-\unexpanded\def\btxsavejournallist [#1]{\ctxcommand{btxsavejournallist("#1")}}
-\unexpanded\def\btxaddjournal  [#1][#2]{\ctxcommand{btxaddjournal("#1"."#2")}}
-           \def\btxexpandedjournal   #1{\ctxcommand{btxexpandedjournal("#1")}}    % \unexpanded ?
-           \def\btxabbreviatedjournal#1{\ctxcommand{btxabbreviatedjournal("#1")}} % \unexpanded ?
+\unexpanded\def\btxloadjournallist [#1]{\clf_btxloadjournallist{#1}}
+\unexpanded\def\btxsavejournallist [#1]{\clf_btxsavejournallist{#1}}
+\unexpanded\def\btxaddjournal  [#1][#2]{\clf_btxaddjournal{#1}{#2}}
+           \def\btxexpandedjournal   #1{\clf_btxexpandedjournal{#1}}    % \unexpanded ?
+           \def\btxabbreviatedjournal#1{\clf_btxabbreviatedjournal{#1}} % \unexpanded ?
 
 % \installcorenamespace{btxjournal}
 %

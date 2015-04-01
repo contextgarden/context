@@ -137,14 +137,40 @@ function journals.abbreviated(name)
     return abbreviations[s] or abbreviations[simplify(expansions[s])] or name
 end
 
-local commands, context = commands, context
+local implement = interfaces and interfaces.implement
 
-if commands then
-    commands.btxloadjournallist    = journals.load
-    commands.btxsavejournallist    = journals.save
-    commands.btxaddjournal         = function(...)  context(journals.add(...)) end
-    commands.btxexpandedjournal    = function(name) context(journals.expanded(name)) end
-    commands.btxabbreviatedjournal = function(name) context(journals.abbreviated(name)) end
+if implement then
+
+    implement {
+        name      = "btxloadjournallist",
+        arguments = "string",
+        actions   = journals.load
+    }
+
+    implement {
+        name      = "btxsavejournallist",
+        arguments = "string",
+        actions   = journals.save
+    }
+
+    implement {
+        name      = "btxaddjournal",
+        arguments = { "string", "string" },
+        actions   = { journals.add, context }
+    }
+
+    implement {
+        name      = "btxexpandedjournal",
+        arguments = "string",
+        actions   = { journals.expanded, context },
+    }
+
+    implement {
+        name      = "btxabbreviatedjournal",
+        arguments = "string",
+        actions   = { journals.abbreviated, context },
+    }
+
 end
 
 -- journals.load("e:/tmp/journals.txt")

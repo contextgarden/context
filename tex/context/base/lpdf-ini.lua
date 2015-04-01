@@ -20,6 +20,9 @@ local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
 local report_blocked    = logs.reporter("backend","blocked")
 
+local implement         = interfaces.implement
+local two_strings       = interfaces.strings[2]
+
 -- In ConTeXt MkIV we use utf8 exclusively so all strings get mapped onto a hex
 -- encoded utf16 string type between <>. We could probably save some bytes by using
 -- strings between () but then we end up with escaped ()\ too.
@@ -430,7 +433,7 @@ local tostring_c = function(t) return t[1]                end -- already prefixe
 local tostring_z = function()  return "null"              end
 local tostring_t = function()  return "true"              end
 local tostring_f = function()  return "false"             end
-local tostring_r = function(t) local n = t[1] return n and n > 0 and (n .. " 0 R") or "NULL" end
+local tostring_r = function(t) local n = t[1] return n and n > 0 and (n .. " 0 R") or "null" end
 
 local tostring_v = function(t)
     local s = t[1]
@@ -452,7 +455,7 @@ local function value_a(t) return tostring_a(t,true) end
 local function value_z()  return nil                end
 local function value_t(t) return t.value or true    end
 local function value_f(t) return t.value or false   end
-local function value_r()  return t[1] or 0          end -- NULL
+local function value_r()  return t[1] or 0          end -- null
 local function value_v()  return t[1]               end
 
 local function add_x(t,k,v) rawset(t,k,tostring(v)) end
@@ -1175,12 +1178,36 @@ do
         end
     end
 
-    function commands.startactualtext(str)
-        context(pdfdirect(f_actual_text(tosixteen(str))))
-    end
+    implement {
+        name      = "startactualtext",
+        arguments = "string",
+        actions   = function(str)
+            context(pdfdirect(f_actual_text(tosixteen(str))))
+        end
+    }
 
-    function commands.stopactualtext()
-        context(pdfdirect("EMC"))
-    end
+    implement {
+        name      = "stopactualtext",
+        actions   = function()
+            context(pdfdirect("EMC"))
+        end
+    }
 
 end
+
+-- interface
+
+local lpdfverbose = lpdf.verbose
+
+implement { name = "lpdf_collectedresources",                             actions = { lpdf.collectedresources, context } }
+implement { name = "lpdf_addtocatalog",          arguments = two_strings, actions = lpdf.addtocatalog }
+implement { name = "lpdf_addtoinfo",             arguments = two_strings, actions = lpdf.addtoinfo }
+implement { name = "lpdf_addtonames",            arguments = two_strings, actions = lpdf.addtonames }
+implement { name = "lpdf_addpageattributes",     arguments = two_strings, actions = lpdf.addtopageattributes }
+implement { name = "lpdf_addpagesattributes",    arguments = two_strings, actions = lpdf.addtopagesattributes }
+implement { name = "lpdf_addpageresources",      arguments = two_strings, actions = lpdf.addtopageresources }
+implement { name = "lpdf_adddocumentextgstate",  arguments = two_strings, actions = function(a,b) lpdf.adddocumentextgstate (a,lpdfverbose(b)) end }
+implement { name = "lpdf_adddocumentcolorspace", arguments = two_strings, actions = function(a,b) lpdf.adddocumentcolorspace(a,lpdfverbose(b)) end }
+implement { name = "lpdf_adddocumentpattern",    arguments = two_strings, actions = function(a,b) lpdf.adddocumentpattern   (a,lpdfverbose(b)) end }
+implement { name = "lpdf_adddocumentshade",      arguments = two_strings, actions = function(a,b) lpdf.adddocumentshade     (a,lpdfverbose(b)) end }
+

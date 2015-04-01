@@ -508,7 +508,7 @@
         \setupalign[\p_strc_constructions_headalign]% use fast one
       \fi
       \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
-\setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
+   \setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
    \ht\constructionheadbox\strutht
    \dp\constructionheadbox\strutdp}
 
@@ -567,6 +567,7 @@
             \copy\constructionheadbox\hss
         }
     }
+    \nobreak
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -591,6 +592,7 @@
         \copy\constructionheadbox
         \hskip\rightconstructionskip
     }
+    \nobreak
     \advance\rightskip \constructionsheaddistance
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -645,6 +647,7 @@
             \box\constructionheadbox
         }
     }
+    \nobreak
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -664,6 +667,7 @@
             }
         }
     }
+    \nobreak
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -752,7 +756,7 @@
     \let\\=\crlf
     \noindent
     \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox % why copy? leftover?
-    \penalty\plustenthousand % new
+    \nobreak
     \hskip\constructionsheaddistance\relax
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -763,8 +767,8 @@
     \noindent
     \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox % why copy? leftover?
     \ifconditional\c_strc_constructions_distance_none \else
-      \penalty\plustenthousand % new
-      \hskip\constructionsheaddistance \!!plus .5\constructionsheaddistance \!!minus .25\constructionsheaddistance\relax
+        \nobreak
+        \hskip\constructionsheaddistance \!!plus .5\constructionsheaddistance \!!minus .25\constructionsheaddistance\relax
     \fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -781,6 +785,7 @@
         \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox
         \hss
     }
+    \nobreak
     \hskip\constructionsheaddistance\relax
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces

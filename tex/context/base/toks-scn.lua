@@ -16,7 +16,6 @@ local type, next, tostring, tonumber = type, next, tostring, tonumber
 
 local formatters     = string.formatters
 local concat         = table.concat
-local loadstring     = loadstring
 
 local scanners       = tokens.scanners
 local tokenbits      = tokens.bits

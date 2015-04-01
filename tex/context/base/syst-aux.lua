@@ -12,21 +12,15 @@ if not modules then modules = { } end modules ['syst-aux'] = {
 -- utf.sub(str,1,1)
 
 local tonumber = tonumber
-local format = string.format
 local utfsub = utf.sub
 local P, S, R, C, Cc, Cs, Carg, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match
-local todimen = number.todimen
 
-local commands          = commands
 local context           = context
-
 local implement         = interfaces.implement
-
+local formatters        = string.formatters
 local setcatcode        = tex.setcatcode
-
 local utf8character     = lpeg.patterns.utf8character
 local settings_to_array = utilities.parsers.settings_to_array
-
 local setmacro          = interfaces.setmacro
 
 local pattern           = C(utf8character^-1) * C(P(1)^0)
@@ -59,13 +53,14 @@ implement {
     end
 }
 
-local pattern = C(utf8character^-1)
+local pattern      = C(utf8character^-1)
+local ctx_doifelse = commands.doifelse
 
 implement {
     name      = "doiffirstcharelse",
     arguments = { "string", "string" },
     actions   = function(str)
-        commands.doifelse(lpegmatch(pattern,str) == chr)
+        ctx_doifelse(lpegmatch(pattern,str) == chr)
     end
 }
 
@@ -107,7 +102,8 @@ implement {
 --     end
 -- end
 
-local pattern = (C((1-P("%"))^1) * Carg(1)) /function(n,d) return format("%.0fsp",d * tonumber(n)/100) end * P("%") * P(-1) -- .0 ?
+local pattern = (C((1-P("%"))^1) * Carg(1)) / function(n,d)
+    return formatters["%.0fsp"](d * tonumber(n)/100) end * P("%") * P(-1) -- .0 ?
 
 -- percentageof("10%",65536*10)
 
@@ -184,9 +180,9 @@ end
 implement { name = "texdefinition_one", actions = texdefinition_one, scope = "private", arguments = "string" }
 implement { name = "texdefinition_two", actions = texdefinition_two, scope = "private" }
 
-implement { name = "upper", arguments = "string", actions = { utf.upper, context } }
-implement { name = "lower", arguments = "string", actions = { utf.lower, context } }
-implement { name = "strip", arguments = "string", actions = { utf.strip, context } }
+implement { name = "upper", arguments = "string", actions = { utf.upper,    context } }
+implement { name = "lower", arguments = "string", actions = { utf.lower,    context } }
+implement { name = "strip", arguments = "string", actions = { string.strip, context } } -- or utf.strip
 
 -- implement {
 --     name      = "converteddimen",
@@ -212,4 +208,16 @@ implement {
         statistics.stoptiming("whatever")
         context(statistics.elapsedtime("whatever"))
     end
+}
+
+local accuracy = table.setmetatableindex(function(t,k)
+    local v = formatters["%0." ..k .. "f"]
+    t[k] = v
+    return v
+end)
+
+implement {
+    name      = "rounded",
+    arguments = "integer",
+    actions   = function(n,m) context(accuracy[n](m)) end
 }

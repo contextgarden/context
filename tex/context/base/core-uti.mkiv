@@ -30,9 +30,7 @@
 \to \everystarttext
 
 \appendtoks
-    \ctxlua {
-        job.initialize(tex.jobname .. ".tuc",tex.jobname .. ".tua")
-    }%
+    \clf_initializejob
 \to \everyjob
 
 \protect \endinput

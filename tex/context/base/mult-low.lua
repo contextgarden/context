@@ -388,5 +388,6 @@ return {
         --
         "Ucheckedstartdisplaymath", "Ucheckedstopdisplaymath",
         --
+        "nobreak", "allowbreak", "goodbreak",
     }
 }

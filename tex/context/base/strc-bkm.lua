@@ -15,14 +15,13 @@ if not modules then modules = { } end modules ['strc-bkm'] = {
 
 -- todo: make an lpeg for stripped
 
-local format, concat, gsub, lower = string.format, table.concat, string.gsub, string.lower
+local next, type = next, type
+local gsub, lower = string.gsub, string.lower
+local concat = table.concat
 local utfvalues = utf.values
 local settings_to_hash = utilities.parsers.settings_to_hash
 
-local codeinjections = backends.codeinjections
-
-local trace_bookmarks = false  trackers.register("references.bookmarks", function(v) trace_bookmarks = v end)
-
+local trace_bookmarks  = false  trackers.register("references.bookmarks", function(v) trace_bookmarks = v end)
 local report_bookmarks = logs.reporter("structure","bookmarks")
 
 local structures     = structures
@@ -32,13 +31,17 @@ structures.bookmarks = structures.bookmarks or { }
 local bookmarks      = structures.bookmarks
 local sections       = structures.sections
 local lists          = structures.lists
-
 local levelmap       = sections.levelmap
 local variables      = interfaces.variables
+local implement      = interfaces.implement
+local codeinjections = backends.codeinjections
 
-bookmarks.method = "internal" -- or "page"
+bookmarks.method     = "internal" -- or "page"
 
-local names, opened, forced, numbered = { }, { }, { }, { }
+local names          = { }
+local opened         = { }
+local forced         = { }
+local numbered       = { }
 
 function bookmarks.register(settings)
     local force = settings.force == variables.yes
@@ -475,6 +478,36 @@ end
 
 -- interface
 
-commands.overloadbookmark = bookmarks.overload
-commands.registerbookmark = bookmarks.register
-commands.setupbookmarks   = bookmarks.setup
+implement {
+    name      = "setupbookmarks",
+    actions   = bookmarks.setup,
+    arguments = {
+        {
+            { "separatorset" },
+            { "conversionset" },
+            { "starter" },
+            { "stopper" },
+            { "segments" },
+            { "showblocktitle" },
+        }
+    }
+}
+
+implement {
+    name      = "registerbookmark",
+    actions   = bookmarks.register,
+    arguments = {
+        {
+            { "names" },
+            { "opened" },
+            { "force" },
+            { "number" },
+        }
+    }
+}
+
+implement {
+    name      = "overloadbookmark",
+    actions   = bookmarks.overload,
+    arguments = { "string", "string" }
+}

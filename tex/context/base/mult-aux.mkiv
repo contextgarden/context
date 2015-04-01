@@ -869,10 +869,10 @@
   {\dodoubleargument\mult_interfaces_define_name_space}
 
 \def\mult_interfaces_define_name_space[#1][#2]% namespace settings
-  {\ctxlua{interfaces.namespaces.define(\!!bs#1\!!es,\!!bs#2\!!es)}}
+  {\clf_definenamespace{#1}{#2}}
 
 \def\listnamespaces
-  {\ctxlua{interfaces.namespaces.list()}}
+  {\clf_listnamespaces}
 
 %D Helper:
 %D

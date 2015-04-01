@@ -112,19 +112,20 @@
 
 \unexpanded\def\node_rules_define
   {\edef\p_node_rules_color{\barparameter\c!color}%
-   \setevalue{\??barattribute\currentbar}{\number\ctxlua{nodes.rules.define {
-        method        = \barparameter\c!method,
-        offset        = \barparameter\c!offset,
-        continue      = "\barparameter\c!continue",
-        dy            = \barparameter\c!dy,
-        rulethickness = "\barparameter\c!rulethickness",
-        unit          = "\barparameter\c!unit",
-        order         = "\barparameter\c!order",
-        max           = \barparameter\c!max,
-        ma            = \thecolormodelattribute,
-        ca            = \thecolorattribute\p_node_rules_color,
-        ta            = \thetransparencyattribute\p_node_rules_color
-      }}}}
+   \setevalue{\??barattribute\currentbar}{\number
+     \clf_definerule
+        continue      {\barparameter\c!continue}%
+        unit          {\barparameter\c!unit}%
+        order         {\barparameter\c!order}%
+        rulethickness {\barparameter\c!rulethickness}%
+        method        \barparameter\c!method
+        ma            \thecolormodelattribute
+        ca            \thecolorattribute\p_node_rules_color
+        ta            \thetransparencyattribute\p_node_rules_color
+        offset        \barparameter\c!offset\space % number
+        dy            \barparameter\c!dy\space % number
+        max           \barparameter\c!max
+     \relax}}
 
 \unexpanded\def\node_rules_redefine#1%
   {\def\currentbar{#1}\node_rules_define}
@@ -133,7 +134,7 @@
   {\groupedcommand{\node_rules_set{#1}}\relax}
 
 \unexpanded\def\node_rules_set
-  {\ctxlua{nodes.rules.enable()}% will be moved to lua
+  {\clf_enablerules % will be moved to lua
    \glet\node_rules_set\node_rules_set_indeed
    \node_rules_set}
 
@@ -281,18 +282,19 @@
 \to \everydefineshift
 
 \unexpanded\def\node_shifts_define
-  {\setevalue{\??shiftattribute\currentshift}{\number\ctxlua{nodes.shifts.define {
-        method   = \shiftparameter\c!method,
-        continue = "\shiftparameter\c!continue",
-        dy       = \shiftparameter\c!dy,
-        unit     = "\shiftparameter\c!unit",
-   }}}}
+  {\setevalue{\??shiftattribute\currentshift}{\number
+   \clf_defineshift
+     continue {\shiftparameter\c!continue}%
+     unit     {\shiftparameter\c!unit}%
+     method   \shiftparameter\c!method
+     dy       \shiftparameter\c!dy % number
+   \relax}}
 
 \unexpanded\def\node_shifts_redefine#1%
   {\def\currentshift{#1}\node_shifts_define}
 
 \unexpanded\def\node_shifts_set
-  {\ctxlua{nodes.shifts.enable()}%
+  {\clf_enableshifts
    \glet\node_shifts_set\node_shifts_set_indeed
    \node_shifts_set}
 

@@ -280,13 +280,6 @@ function visualizers.setlayer(n)
     texsetattribute(a_layer,layers[n] or unsetvalue)
 end
 
-commands.setvisual = visualizers.setvisual
-commands.setlayer  = visualizers.setlayer
-
-function commands.visual(n)
-    context(setvisual(n))
-end
-
 local function set(mode,v)
     texsetattribute(a_visual,setvisual(mode,texgetattribute(a_visual),v))
 end
@@ -961,10 +954,6 @@ function visualizers.markfonts(list)
     markfonts(type(n) == "number" and getlist(getbox(n)) or n)
 end
 
-function commands.markfonts(n)
-    visualizers.markfonts(n)
-end
-
 luatex.registerstopactions(cleanup)
 
 statistics.register("visualization time",function()
@@ -973,3 +962,14 @@ statistics.register("visualization time",function()
         return format("%s seconds",statistics.elapsedtime(visualizers))
     end
 end)
+
+-- interface
+
+local implement = interfaces.implement
+
+implement { name = "setvisual",       arguments = "string",  actions = visualizers.setvisual }
+implement { name = "getvisual",       arguments = "string",  actions = { setvisual, context } }
+implement { name = "setvisuallayer",  arguments = "string",  actions = visualizers.setlayer }
+implement { name = "markvisualfonts", arguments = "integer", actions = visualizers.markfonts }
+implement { name = "setvisualfont",   arguments = "integer", actions = visualizers.setfont }
+

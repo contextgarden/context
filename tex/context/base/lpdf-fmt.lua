@@ -734,9 +734,11 @@ directives.register("backend.format", function(v) -- table !
     end
 end)
 
-function commands.setformat(s)
-    codeinjections.setformat(s)
-end
+interfaces.implement {
+    name      = "setformat",
+    actions   = codeinjections.setformat,
+    arguments = { { "*" } }
+}
 
 function codeinjections.getformatoption(key)
     return formatspecification and formatspecification[key]

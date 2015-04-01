@@ -381,13 +381,13 @@
 \unexpanded\def\loadmapline{\dodoubleempty\font_map_load_line}
 
 \def\font_map_load_file[#filename]%
-  {\ctxlua{fonts.mappings.loadfile("#filename")}}
+  {\clf_loadmapfile{#filename}}
 
 \def\font_map_load_line[#kind][#data]%
-  {\ctxlua{fonts.mappings.loadline("#kind","#data")}}
+  {\clf_loadmapline{#kind}{#data}}
 
 \unexpanded\def\forgetmapfiles
-  {\ctxlua{fonts.mappings.reset()}}
+  {\clf_resetmapfiles}
 
 % \prependtoks
 %     \loadmapfile[mkiv-base.map]% can't we preload this one?
@@ -497,7 +497,7 @@
   {\font_typefaces_define_indeed[#name][#style]}
 
 \def\font_typefaces_define_d[#name][#specification][#dummya][#dummyb][#dummyc][#dummyd]% use definitions in lfg file
-  {\ctxlua{fonts.definetypeface("#name",\!!bs#specification\!!es)}}
+  {\clf_definetypeface{#name}{#specification}}
 
 \def\font_typefaces_define_indeed[#name][#style]% saveguard against redefinition
   {\doifsomething{#name}

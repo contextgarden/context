@@ -422,6 +422,8 @@ local metafunenvironment     = metafuncall -- ( P("use") + P("reusable") + P("un
 local startmetafun           = P("\\start") * metafunenvironment
 local stopmetafun            = P("\\stop")  * metafunenvironment -- todo match start
 
+local xmlmacro               = token("embedded", P("\\xml") * R("az")^1)
+
 local openargument           = token("special", P("{"))
 local closeargument          = token("special", P("}"))
 local argumentcontent        = token("default",(1-P("}"))^0) -- maybe space needs a treatment
@@ -444,6 +446,7 @@ contextlexer._rules = {
     { "text",        text        }, -- non words
     { "comment",     comment     },
     { "constant",    constant    },
+    { "xmlmacro",    xmlmacro    },
     { "callers",     callers     },
     { "helper",      helper      },
     { "command",     command     },

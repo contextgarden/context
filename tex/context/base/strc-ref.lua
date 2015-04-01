@@ -1887,7 +1887,7 @@ function references.setandgetattribute(prefix,tag,data) -- maybe do internal aut
         if ndat then
             local numbers = ndat.numbers
             if type(numbers) == "string" then
-                ndat.numbers = structures.counters.compact(numbers)
+                ndat.numbers = structures.counters.compact(numbers,nil,true)
             end
             data.numberdata = structures.helpers.simplify(ndat)
         end
@@ -1899,7 +1899,7 @@ function references.setandgetattribute(prefix,tag,data) -- maybe do internal aut
         if type(udat) == "string"  then
             data.userdata = structures.helpers.touserdata(udat)
         end
-        local done = references.set(mdat.kind or "page",prefix,tag,data)
+        local done = references.set(mdat.kind or "page",prefix,tag,data) -- we had kind i.e .item -> full
         if done then
             attr = setinternalreference(prefix,tag,nil,rdat.view) or unsetvalue
         end

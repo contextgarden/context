@@ -13,6 +13,6 @@
 
 \unprotect
 
-\def\executesystemcommand#1{\ctxlua{os.execute(\!!bs#1\!!es)}}
+\let\executesystemcommand\clf_execute
 
 \protect \endinput

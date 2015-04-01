@@ -54,10 +54,10 @@
 \let\syst_visualizers_vbox\vbox
 \let\syst_visualizers_vtop\vtop
 
-\unexpanded\def\ruledhbox{\syst_visualizers_hbox attr \visualattribute \ctxcommand{visual("simplehbox")} }
-\unexpanded\def\ruledvbox{\syst_visualizers_vbox attr \visualattribute \ctxcommand{visual("simplevbox")} }
-\unexpanded\def\ruledvtop{\syst_visualizers_vtop attr \visualattribute \ctxcommand{visual("simplevtop")} } % special case
-\unexpanded\def\ruledtopv{\syst_visualizers_vtop attr \visualattribute \ctxcommand{visual("vtop")} }
+\unexpanded\def\ruledhbox{\syst_visualizers_hbox attr \visualattribute \clf_getvisual{simplehbox} }
+\unexpanded\def\ruledvbox{\syst_visualizers_vbox attr \visualattribute \clf_getvisual{simplevbox} }
+\unexpanded\def\ruledvtop{\syst_visualizers_vtop attr \visualattribute \clf_getvisual{simplevtop} } % special case
+\unexpanded\def\ruledtopv{\syst_visualizers_vtop attr \visualattribute \clf_getvisual{vtop}       }
 
 \unexpanded\def\ruledmbox#1{\ruledhbox{\startimath#1\stopimath}}
 
@@ -87,29 +87,29 @@
 
 \unexpanded\def\syst_visualizers_makeup[#1]%
   {\iffirstargument
-     \ctxcommand{setvisual("#1")}%
+     \clf_setvisual{#1}%
    \else
-     \ctxcommand{setvisual("makeup")}%
+     \clf_setvisual{makeup}%
      \let\normalvtop\ruledtopv
      \let\vtop      \ruledtopv
    \fi}
 
 \unexpanded\def\showallmakeup
-  {\ctxcommand{setvisual("all")}%
+  {\clf_setvisual{all}%
    \let\normalvtop\ruledtopv
    \let\vtop      \ruledtopv
    \showstruts}
 
 \unexpanded\def\showboxes
-  {\ctxcommand{setvisual("boxes")}%
+  {\clf_setvisual{boxes}%
    \let\normalvtop\ruledtopv
    \let\vtop      \ruledtopv}
 
 \unexpanded\def\showglyphs
-  {\ctxcommand{setvisual("glyph")}}
+  {\clf_setvisual{glyph}}
 
 \unexpanded\def\showfontkerns
-  {\ctxcommand{setvisual("fontkern")}}
+  {\clf_setvisual{fontkern}}
 
 \unexpanded\def\setvisualizerfont
   {\dosingleempty\syst_visualizers_setfont}
@@ -117,7 +117,7 @@
 \def\syst_visualizers_setfont[#1]% somename at 4pt
   {\begingroup
    \doifelsenothing{#1}{\definedfont[Mono at 4pt]}{\definedfont[#1]}%
-   \ctxlua{nodes.visualizers.setfont()}%
+   \clf_setvisualfont
    \endgroup}
 
 %D New (these might also be a visualizers):
@@ -148,14 +148,14 @@
 %D Overload:
 
 % \def\spac_struts_vide_hbox
-%   {\hbox attr \visualattribute \ctxcommand{visual("strut")} }
+%   {\hbox attr \visualattribute \clf_getvisual{strut} }
 %
 % \def\spac_struts_vide_hbox
-%   {\xdef\spac_struts_vide_hbox{\hbox attr \visualattribute \ctxcommand{visual("strut")} }%
+%   {\xdef\spac_struts_vide_hbox{\hbox attr \visualattribute \clf_getvisual{strut} }%
 %    \spac_struts_vide_hbox}
 
 \unexpanded\def\spac_struts_vide_hbox
-  {\hbox attr \visualattribute \ctxcommand{visual("strut")} }
+  {\hbox attr \visualattribute \clf_getvisual{strut} }
 
 \appendtoks
     \normalexpanded{\unexpanded\xdef\spac_struts_vide_hbox\expandafter{\spac_struts_vide_hbox}}%
@@ -167,7 +167,7 @@
   {\dontleavehmode
    \begingroup
    \setbox\scratchbox\hbox{\getbuffer}%
-   \ctxcommand{markfonts(\number\scratchbox)}%
+   \clf_markvisualfonts\scratchbox
    \unhbox\scratchbox
    \endgroup}
 

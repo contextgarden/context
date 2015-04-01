@@ -510,12 +510,14 @@
    \fi}
 
 \appendtoks
-    \clf_setfigurepaths{\externalfigureparameter\c!location}{\externalfigureparameter\c!directory}%
-    \ctxlua { % figures.defaultwidth .. maybe a dimen some day
-        figures.defaultwidth  = \number\dimexpr\defaultfigurewidth \relax ;
-        figures.defaultheight = \number\dimexpr\defaultfigureheight\relax ;
-        figures.boxnumber     = \number\foundexternalfigure ;
-    }%
+    \clf_setfigurepaths
+      {\externalfigureparameter\c!location}%
+      {\externalfigureparameter\c!directory}%
+    \clf_figure_reset
+      \foundexternalfigure
+      \defaultfigurewidth
+      \defaultfigureheight
+    \relax
 \to \everyexternalfigureresets
 
 \appendtoks

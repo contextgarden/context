@@ -1103,7 +1103,7 @@ function figures.identify(data)
     for i=1,#list do
         local identifier = list[i]
         local data = identifier(data)
-        if data.status and data.status.status > 0 then
+        if data and (not data.status and data.status.status > 0) then
             break
         end
     end
@@ -2034,4 +2034,19 @@ implement { name = "figure_scale",    scope = "private", actions = figures.scale
 implement { name = "figure_check",    scope = "private", actions = figures.check }
 implement { name = "figure_include",  scope = "private", actions = figures.include }
 
-implement { name = "setfigurelookuporder", actions = figures.setorder, arguments = "string" }
+implement {
+    name      = "setfigurelookuporder",
+    actions   = figures.setorder,
+    arguments = "string"
+}
+
+implement {
+    name      = "figure_reset",
+    scope     = "private",
+    arguments = { "integer", "dimen", "dimen" },
+    actions   = function(box,width,height)
+        figures.boxnumber     = box
+        figures.defaultwidth  = width
+        figures.defaultheight = height
+    end
+}

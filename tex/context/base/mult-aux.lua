@@ -154,3 +154,15 @@ function namespaces.list()
     local keys = { "type", "name", "comment", "version", "parent", "definition", "setup", "style" }
     utilities.formatters.list(data,"namespace",keys)
 end
+
+
+interfaces.implement {
+    name      = "definenamespace",
+    arguments = { "string", "string" },
+    actions   = namespaces.define
+}
+
+interfaces.implement {
+    name      = "listnamespaces",
+    actions   = namespaces.list
+}

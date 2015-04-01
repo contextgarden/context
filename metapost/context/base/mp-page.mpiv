@@ -18,6 +18,10 @@ if known context_page : endinput ; fi ;
 
 boolean context_page ; context_page := true ;
 
+def LoadPageState =
+    % now always set
+enddef ;
+
 if unknown PageStateAvailable :
     boolean PageStateAvailable ;
     PageStateAvailable := false ;
@@ -135,22 +139,24 @@ numeric VerPos ;
 %   scantokens "input mp-state.tmp" ;
 % enddef ;
 
+numeric mfun_temp ;
+
 def SwapPageState =
     if not OnRightPage :
              BackSpace := PaperWidth-MakeupWidth-BackSpace ;
               CutSpace := PaperWidth-MakeupWidth-CutSpace ;
-                     i := LeftMarginWidth ;
+             mfun_temp := LeftMarginWidth ;
        LeftMarginWidth := RightMarginWidth ;
-      RightMarginWidth := i ;
-                     i := LeftMarginDistance ;
+      RightMarginWidth := mfun_temp ;
+             mfun_temp := LeftMarginDistance ;
     LeftMarginDistance := RightMarginDistance ;
    RightMarginDistance := i ;
-                     i := LeftEdgeWidth ;
+             mfun_temp := LeftEdgeWidth ;
          LeftEdgeWidth := RightEdgeWidth ;
-        RightEdgeWidth := i ;
-                     i := LeftEdgeDistance ;
+        RightEdgeWidth := mfun_temp ;
+             mfun_temp := LeftEdgeDistance ;
       LeftEdgeDistance := RightEdgeDistance ;
-     RightEdgeDistance := i ;
+     RightEdgeDistance := mfun_temp ;
 
   % these are now available as ..Width and ..Distance
 

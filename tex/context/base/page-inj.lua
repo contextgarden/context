@@ -16,10 +16,9 @@ pagebuilders.injections = injections
 local report            = logs.reporter("pagebuilder","injections")
 local trace             = false  trackers.register("pagebuilder.injections",function(v) trace = v end)
 
-local variables         = interfaces.variables
-
 local context           = context
-local commands          = commands
+local implement         = interfaces.implement
+local variables         = interfaces.variables
 
 local texsetcount       = tex.setcount
 
@@ -103,6 +102,24 @@ function injections.flushafter() -- maybe not public, just commands.*
     end
 end
 
-commands.page_injections_save         = injections.save
-commands.page_injections_flush_after  = injections.flushafter
-commands.page_injections_flush_before = injections.flushbefore
+implement {
+    name      = "savepageinjections",
+    actions   = injections.save,
+    arguments = {
+        {
+            { "name" },
+            { "state" },
+            { "userdata" }
+        }
+    }
+}
+
+implement {
+    name    = "flushpageinjectionsbefore",
+    actions = injections.flushbefore
+}
+
+implement {
+    name    = "flushpageinjectionsafter",
+    actions = injections.flushafter
+}

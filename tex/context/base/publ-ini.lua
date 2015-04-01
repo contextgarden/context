@@ -2300,6 +2300,10 @@ do
             local oneleft  = lefttext  and #lefttext  == 1 and lefttext [1]
             local oneright = righttext and #righttext == 1 and righttext[1]
 
+            if not oneleft or not oneright then
+                compress = false -- very hard coded, or should we have compreess == auto?
+            end
+
             local function flush(i,n,entry,last)
                 local tag = entry.tag
                 local currentcitation = markcite(dataset,tag)

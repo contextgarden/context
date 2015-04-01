@@ -32,6 +32,8 @@ local texgetdimen = tex.getdimen
 local texgettoks  = tex.gettoks
 local texgetcount = tex.getcount
 
+local implement   = interfaces.implement
+
 strings.undefined = "undefined"
 
 lists.scratch = {
@@ -304,3 +306,20 @@ local function trace_calls(n)
 end
 
 directives.register("system.tracecalls", function(n) trace_calls(n) end) -- indirect is needed for nilling
+
+implement { name = "showtrackers",       actions = trackers.show }
+implement { name = "enabletrackers",     actions = trackers.enable,     arguments = "string" }
+implement { name = "disabletrackers",    actions = trackers.disable,    arguments = "string" }
+implement { name = "resettrackers",      actions = trackers.reset }
+
+implement { name = "showdirectives",     actions = directives.show }
+implement { name = "enabledirectives",   actions = directives.enable,   arguments = "string" }
+implement { name = "disabledirectives",  actions = directives.disable,  arguments = "string" }
+
+implement { name = "showexperiments",    actions = experiments.show }
+implement { name = "enableexperiments",  actions = experiments.enable,  arguments = "string" }
+implement { name = "disableexperiments", actions = experiments.disable, arguments = "string" }
+
+implement { name = "showdebuginfo",      actions = lmx.showdebuginfo }
+implement { name = "overloaderror",      actions = lmx.overloaderror }
+implement { name = "showlogcategories",  actions = logs.show }

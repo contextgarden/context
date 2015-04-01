@@ -424,3 +424,50 @@ nodes.shifts.handler = function(head) return process(a_shifted,data,flush_shifte
 function nodes.shifts.enable()
     tasks.enableaction("shipouts","nodes.shifts.handler")
 end
+
+-- interface
+
+local implement = interfaces.implement
+
+implement {
+    name      = "definerule",
+    actions   = { nodes.rules.define, context },
+    arguments = {
+        {
+            { "continue" },
+            { "unit" },
+            { "order" },
+            { "method", "integer" },
+            { "offset", "number" },
+            { "rulethickness", "string" },
+            { "dy", "number" },
+            { "max", "number" },
+            { "ma", "integer" },
+            { "ca", "integer" },
+            { "ta", "integer" },
+        }
+    }
+}
+
+implement {
+    name    = "enablerules",
+    actions = nodes.rules.enable
+}
+
+implement {
+    name      = "defineshift",
+    actions   = { nodes.shifts.define, context },
+    arguments = {
+        {
+            { "continue" },
+            { "unit" },
+            { "method", "integer" },
+            { "dy", "number" },
+        }
+    }
+}
+
+implement {
+    name    = "enableshifts",
+    actions = nodes.shifts.enable
+}

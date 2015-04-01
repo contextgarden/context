@@ -29,8 +29,8 @@
 \installframedcommandhandler \??pageinjection            {pageinjection}            \??pageinjection
 \installcommandhandler       \??pageinjectionalternative {pageinjectionalternative} \??pageinjectionalternative
 
-\def\page_boxes_flush_before{\ctxcommand{page_injections_flush_before()}}
-\def\page_boxes_flush_after {\ctxcommand{page_injections_flush_after ()}}
+\let\page_boxes_flush_before\clf_flushpageinjectionsbefore
+\let\page_boxes_flush_after \clf_flushpageinjectionsafter
 
 \def\page_injections_flush_saved#name#parameters%
   {\begingroup
@@ -87,11 +87,11 @@
    \fi}
 
 \def\page_injections_direct_indeed_yes#parameters%
-  {\ctxcommand{page_injections_save{
-        name  = "\currentpageinjection",
-        state = "\p_page_injections_state",
-     userdata = \!!bs\normalunexpanded{#parameters}\!!es
-   }}%
+  {\clf_savepageinjections
+        name  {\currentpageinjection}%
+        state {\p_page_injections_state}%
+     userdata {\normalunexpanded{#parameters}}%
+   \relax
    \endgroup}
 
 \def\page_injections_direct_indeed_nop#parameters%

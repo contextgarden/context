@@ -75,7 +75,7 @@
   {\begingroup
    \simplifycommands
    \ifnum\thenamedheadlevel{#1}>\zerocount
-     \ctxcommand{overloadbookmark("#1",\!!bs\detokenize\expandafter{\normalexpanded{#2}}\!!es)}%
+     \clf_overloadbookmark{#1}{\detokenize\expandafter{\normalexpanded{#2}}}%
    \else
      \strc_lists_write_to[#1][]{#2}{}% todo: a dedicated bookmark writer
    \fi
@@ -112,23 +112,23 @@
    \else\ifsecondargument
      \doifassignmentelse{#2}{\let\m_bookmarks_opened\empty\setupcurrentbookmark[#2]}\donothing
    \fi\fi
-   \ctxcommand{registerbookmark {
-      names  = "\m_bookmarks_names",
-      opened = "\m_bookmarks_opened",
-      force  = "\bookmarkparameter\c!force",
-      number = "\bookmarkparameter\c!number",
-    }}%
+   \clf_registerbookmark
+     names  {\m_bookmarks_names}%
+     opened {\m_bookmarks_opened}%
+     force  {\bookmarkparameter\c!force}%
+     number {\bookmarkparameter\c!number}%
+   \relax
    \endgroup}
 
 \appendtoks
-    \ctxcommand{setupbookmarks {
-        separatorset   = "\bookmarkparameter\c!numberseparatorset",
-        conversionset  = "\bookmarkparameter\c!numberconversionset",
-        starter        = \!!bs\bookmarkparameter\c!numberstarter\!!es,
-        stopper        = \!!bs\bookmarkparameter\c!numberstopper\!!es,
-        segments       = "\bookmarkparameter\c!numbersegments",
-        showblocktitle = "\bookmarkparameter\c!sectionblock",
-    }}%
+    \clf_setupbookmarks
+      separatorset   {\bookmarkparameter\c!numberseparatorset}%
+      conversionset  {\bookmarkparameter\c!numberconversionset}%
+      starter        {\bookmarkparameter\c!numberstarter}%
+      stopper        {\bookmarkparameter\c!numberstopper}%
+      segments       {\bookmarkparameter\c!numbersegments}%
+      showblocktitle {\bookmarkparameter\c!sectionblock}%
+    \relax
 \to \everysetupbookmark
 
 %D There is a plugin mechanism but this is for experts only. The intermediate

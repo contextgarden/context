@@ -149,16 +149,24 @@ end
 
 resolvers.getreadfilename = getreadfilename
 
-function commands.getreadfilename(scheme,path,name)
-    context(getreadfilename(scheme,path,name))
-end
-
 -- a name belonging to the run but also honoring qualified
 
-function commands.locfilename(name)
-    context(getreadfilename("loc",".",name))
-end
+local implement = interfaces.implement
 
-function commands.doiflocfileelse(name)
-    commands.doifelse(isfile(getreadfilename("loc",".",name)))
-end
+implement {
+    name      = "getreadfilename",
+    actions   = { getreadfilename, context },
+    arguments = { "string", "string", "string" }
+}
+
+implement {
+    name      = "locfilename",
+    actions   = { getreadfilename, context },
+    arguments = { "'loc'","'.'", "string" },
+}
+
+implement {
+    name      = "doiflocfileelse",
+    actions   = { getreadfilename, isfile, commands.doifelse },
+    arguments = { "'loc'","'.'", "string" },
+}

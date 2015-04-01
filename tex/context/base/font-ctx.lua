@@ -1484,6 +1484,24 @@ end
 
 mappings.reset() -- resets the default file
 
+implement {
+    name      = "loadmapfile",
+    actions   = mappings.loadfile,
+    arguments = "string"
+}
+
+implement {
+    name      = "loadmapline",
+    actions   = mappings.loadline,
+    arguments = "string"
+}
+
+implement {
+    name      = "resetmapfiles",
+    actions   = mappings.reset,
+    arguments = "string"
+}
+
 -- we need an 'do after the banner hook'
 
 -- => commands
@@ -1769,6 +1787,12 @@ function fonts.definetypeface(name,t)
     local settings = sequenced({ features= t.features },",")
     ctx_dofastdefinetypeface(name, shortcut, shape, size, settings)
 end
+
+implement {
+    name      = "definetypeface",
+    actions   = fonts.definetypeface,
+    arguments = { "string", "string" }
+}
 
 function fonts.current() -- todo: also handle name
     return fontdata[currentfont()] or fontdata[0]

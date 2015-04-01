@@ -11,6 +11,17 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% Here is some timing (2015-04-01) luajittex format generation:
+%
+% 2.6 sec : normal make
+% 2.0 sec : with terminal output piped to file
+% 0.2 sec : format dumped
+% 0.2 sec : char-def/char-ini (no bytecode)
+%
+% So a format still saves some 1.5 seconds (with luajjitex) startup and
+% on network shares cq. when no files are cached by the os it's of course
+% much worse. A zero run is .27 sec with luajittex.
+
 % Welcome to context, pronounced as kontekst (rather dutch) and not as
 % conτεχt.
 
@@ -28,7 +39,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2015.03.30 23:33}
+\edef\contextversion{2015.04.01 12:00}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -108,6 +119,8 @@
 
 \loadmarkfile{syst-fnt}
 \loadmarkfile{syst-rtp}
+
+\loadmarkfile{luat-usr}
 
 % \loadmarkfile{luat-ini} % moved up
 % \loadmarkfile{toks-ini} % moved up

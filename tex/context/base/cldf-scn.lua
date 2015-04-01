@@ -114,3 +114,12 @@ end
 interfaces.setmacro = tokens.setters.macro
 interfaces.setcount = tokens.setters.count
 interfaces.setdimen = tokens.setters.dimen
+
+interfaces.strings = table.setmetatableindex(function(t,k)
+    local v = { }
+    for i=1,k do
+        v[i] = "string"
+    end
+    t[k] = v
+    return v
+end)

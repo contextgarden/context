@@ -85,14 +85,14 @@
 % \doifsomething{\backendparameter\c!format} .. at the lua end
 
 \appendtoks
-    \ctxcommand{setformat {
-         format  = "\backendparameter\c!format",
-         level   = "\backendparameter\c!level",
-         option  = "\backendparameter\c!option",
-         profile = "\backendparameter\c!profile",
-         intent  = "\backendparameter\c!intent",
-         file    = "\backendparameter\c!file",
-    }}%
+    \clf_setformat
+         format  {\backendparameter\c!format}%
+         level   {\backendparameter\c!level}%
+         option  {\backendparameter\c!option}%
+         profile {\backendparameter\c!profile}%
+         intent  {\backendparameter\c!intent}%
+         file    {\backendparameter\c!file}%
+    \relax
 \to \everysetupbackend
 
 %D For the moment we keep these.
@@ -102,21 +102,21 @@
 
 %D These are the only official methods to add stuff to the resources.
 
-\unexpanded\def\pdfbackendsetcatalog       #1#2{\ctxlua{lpdf.addtocatalog        ("#1",\!!bs#2\!!es)}}
-\unexpanded\def\pdfbackendsetinfo          #1#2{\ctxlua{lpdf.addtoinfo           ("#1",\!!bs#2\!!es)}}
-\unexpanded\def\pdfbackendsetname          #1#2{\ctxlua{lpdf.addtonames          ("#1",\!!bs#2\!!es)}}
+\unexpanded\def\pdfbackendsetcatalog       #1#2{\clf_lpdf_addtocatalog        {#1}{#2}}
+\unexpanded\def\pdfbackendsetinfo          #1#2{\clf_lpdf_addtoinfo           {#1}{#2}}
+\unexpanded\def\pdfbackendsetname          #1#2{\clf_lpdf_addtonames          {#1}{#2}}
 
-\unexpanded\def\pdfbackendsetpageattribute #1#2{\ctxlua{lpdf.addtopageattributes ("#1",\!!bs#2\!!es)}}
-\unexpanded\def\pdfbackendsetpagesattribute#1#2{\ctxlua{lpdf.addtopagesattributes("#1",\!!bs#2\!!es)}}
-\unexpanded\def\pdfbackendsetpageresource  #1#2{\ctxlua{lpdf.addtopageresources  ("#1",\!!bs#2\!!es)}}
+\unexpanded\def\pdfbackendsetpageattribute #1#2{\clf_lpdf_addtopageattributes  {#1}{#2}}
+\unexpanded\def\pdfbackendsetpagesattribute#1#2{\clf_lpdf_addtopagesattributes {#1}{#2}}
+\unexpanded\def\pdfbackendsetpageresource  #1#2{\clf_lpdf_addtopageresources   {#1}{#2}}
 
-\unexpanded\def\pdfbackendsetextgstate     #1#2{\ctxlua{lpdf.adddocumentextgstate ("#1",lpdf.verbose(\!!bs#2\!!es))}}
-\unexpanded\def\pdfbackendsetcolorspace    #1#2{\ctxlua{lpdf.adddocumentcolorspace("#1",lpdf.verbose(\!!bs#2\!!es))}}
-\unexpanded\def\pdfbackendsetpattern       #1#2{\ctxlua{lpdf.adddocumentpattern   ("#1",lpdf.verbose(\!!bs#2\!!es))}}
-\unexpanded\def\pdfbackendsetshade         #1#2{\ctxlua{lpdf.adddocumentshade     ("#1",lpdf.verbose(\!!bs#2\!!es))}}
+\unexpanded\def\pdfbackendsetextgstate     #1#2{\clf_lpdf_adddocumentextgstate {#1}{#2}}
+\unexpanded\def\pdfbackendsetcolorspace    #1#2{\clf_lpdf_adddocumentcolorspace{#1}{#2}}
+\unexpanded\def\pdfbackendsetpattern       #1#2{\clf_lpdf_adddocumentpattern   {#1}{#2}}
+\unexpanded\def\pdfbackendsetshade         #1#2{\clf_lpdf_adddocumentshade     {#1}{#2}}
 
-           \def\pdfbackendcurrentresources     {\cldcontext{lpdf.collectedresources()}}
-           \def\pdfcolor                     #1{\cldcontext{lpdf.pdfcolor(\thecolorattribute{#1})}}
+           \def\pdfbackendcurrentresources     {\clf_lpdf_collectedresources}
+           \def\pdfcolor                     #1{\clf_lpdf_color\numexpr\thecolorattribute{#1}\relax}
            \let\PDFcolor\pdfcolor
 
 %D An example of usage is:
@@ -326,7 +326,7 @@
    \xdef\lastpredefinedsymbol{#1}%
    \settightobject{SYM}{#1}\hbox{\symbol[#1]}% to be checked ... maybe only fitting
    \dogetobjectreference{SYM}{#1}\m_back_object_reference
-   \ctxlua{backends.codeinjections.registersymbol("#1",\m_back_object_reference)}%
+   \clf_registerbackendsymbol{#1}\m_back_object_reference\relax
    \endgroup}
 
 % for the moment here
@@ -579,9 +579,9 @@
    \egroup}
 
 \unexpanded\def\pdfbackendactualtext#1#2% not interfaced
-  {\ctxcommand{startactualtext(\!!bs#2\!!es)}%
+  {\clf_startactualtext{#2}%
    #1%
-   \ctxcommand{stopactualtext()}}
+   \clf_stopactualtext}
 
 \let\pdfactualtext\pdfbackendactualtext
 

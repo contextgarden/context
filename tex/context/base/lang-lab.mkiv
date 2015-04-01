@@ -181,7 +181,8 @@
    \grabuntil{stop#1text}\lang_labels_text_prefix_start_indeed}
 
 \def\lang_labels_text_prefix_start_indeed#1% text (not special checking done here yet, only for long texts anyway)
-  {\expandafter\edef\csname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname{{\ctxcommand{strip(\!!bs#1\!!es)}}\empty}}
+  {\expandafter\edef\csname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname%
+     {{\clf_strip{#1}}\empty}}
 
 \def\lang_labels_text_prefix_setup[#1][#2]%
   {\ifsecondargument

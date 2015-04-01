@@ -70,7 +70,7 @@
 \let\readfilename\empty
 
 \def\syst_files_read_file#protocol#path#name% #true #false
-  {\edef\readfilename{\ctxcommand{getreadfilename("#protocol","#path","#name")}}%
+  {\edef\readfilename{\clf_getreadfilename{#protocol}{#path}{#name}}%
    \ifx\readfilename\empty
      \expandafter\secondoftwoarguments
    \else
@@ -145,7 +145,7 @@
 %D \doiflocfileelse {filename} {before loading} {not found}
 %D \stoptyping
 
-\unexpanded\def\doiflocfileelse#name{\ctxcommand{doiflocfileelse([[#name]])}}
-           \def\locfilename    #name{\ctxcommand{locfilename([[#name]])}}
+\unexpanded\def\doiflocfileelse#name{\clf_doiflocfileelse{#name}}
+           \def\locfilename    #name{\clf_locfilename    {#name}}
 
 \protect \endinput

@@ -258,6 +258,7 @@ function setters.new(name) -- we could use foo:bar syntax (but not used that oft
         report   = function(...) setters.report  (setter,...) end,
         enable   = function(...)         enable  (setter,...) end,
         disable  = function(...)         disable (setter,...) end,
+        reset    = function(...)         reset   (setter,...) end, -- can be dangerous
         register = function(...)         register(setter,...) end,
         list     = function(...)         list    (setter,...) end,
         show     = function(...)         show    (setter,...) end,

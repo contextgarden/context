@@ -1,0 +1,108 @@
+%D \module
+%D   [       file=luat-usr,
+%D        version=2005.08.11,% moved from luat-ini
+%D          title=\CONTEXT\ Lua Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Lua Macros / Userspace}
+
+\unprotect
+
+\registerctxluafile{luat-usr}{1.001}
+
+%D \macros
+%D   {definenamedlua}
+%D
+%D We provide an interface for defining instances:
+
+\def\s!lua  {lua}
+\def\s!code {code}
+\def\s!data {data}
+%def\s!start{start}
+%def\s!stop {stop}
+
+%D Beware: because \type {\expanded} is een convert command, the error
+%D message will show \type{<inserted text>} as part of the message.
+
+\installsystemnamespace{luacode}
+
+\unexpanded\def\definenamedlua
+  {\bgroup
+   \dodoubleempty\syst_definenamedlua}
+
+\unexpanded\def\syst_definenamedlua[#1][#2]% no optional arg handling here yet / we could use numbers instead (more efficient)
+  {\iffirstargument
+     \ifcsname\??luacode#1\endcsname \else
+       %
+       \edef\fullname{lua_code_#1}%
+       %
+       \clf_registernamedlua{#1}{#2}{\fullname}%
+       %
+       \unexpanded\expandafter\xdef\csname\s!start#1\s!code\endcsname
+         {\begingroup
+          \obeylualines
+          \obeyluatokens
+          \csname\??luacode#1\endcsname}%
+       %
+       \global\expandafter\let\csname\s!stop#1\s!code\endcsname\relax
+       %
+       \normalexpanded{\xdef\csname\??luacode#1\endcsname##1\csname\s!stop#1\s!code\endcsname}%
+         {\noexpand\expandafter\endgroup
+            \noexpand\expandafter
+            \expandafter\noexpand\csname clf_\fullname\endcsname
+            \noexpand\expandafter{\noexpand\normalexpanded{##1}}}%
+       %
+       \global\expandafter\let\csname#1\s!code\expandafter\endcsname\csname clf_\fullname\endcsname
+     \fi
+   \fi
+   \egroup}
+
+%D We predefine a few.
+
+% \definenamedlua[module][module instance] % not needed
+
+\definenamedlua[user]    [private user]
+\definenamedlua[third]   [third party module]
+\definenamedlua[isolated][isolated]
+
+%D In practice this works out as follows:
+%D
+%D \startbuffer
+%D \startluacode
+%D context("LUA")
+%D \stopluacode
+%D
+%D \startusercode
+%D global.context("USER 1")
+%D context.par()
+%D context("USER 2")
+%D context.par()
+%D if characters then
+%D     context("ACCESS directly")
+%D elseif global.characters then
+%D     context("ACCESS via global")
+%D else
+%D     context("NO ACCESS at all")
+%D end
+%D context.par()
+%D if bogus then
+%D     context("ACCESS directly")
+%D elseif global.bogus then
+%D     context("ACCESS via global")
+%D else
+%D     context("NO ACCESS at all")
+%D end
+%D context.par()
+%D \stopusercode
+%D \stopbuffer
+%D
+%D \typebuffer
+
+\protect \endinput

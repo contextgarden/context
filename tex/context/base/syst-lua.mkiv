@@ -15,15 +15,15 @@
 
 \unprotect
 
-\def\expdoifelse#1#2{\ctxcommand{doifelse(\!!bs#1\!!es==\!!bs#2\!!es)}}
-\def\expdoif    #1#2{\ctxcommand{doif    (\!!bs#1\!!es==\!!bs#2\!!es)}}
-\def\expdoifnot #1#2{\ctxcommand{doifnot (\!!bs#1\!!es==\!!bs#2\!!es)}}
+\def\expdoifelse#1#2{\clf_doifsameelse{#1}{#2}}
+\def\expdoif    #1#2{\clf_doifsame    {#1}{#2}}
+\def\expdoifnot #1#2{\clf_doifnotsame {#1}{#2}}
 
 % \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}           % 0.3
 % \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5
 
-\def\expdoifcommonelse#1#2{\ctxcommand{doifcommonelse("#1","#2")}}
-\def\expdoifinsetelse #1#2{\ctxcommand{doifinsetelse("#1","#2")}}
+\def\expdoifcommonelse#1#2{\clf_doifcommonelse{#1}{#2}}
+\def\expdoifinsetelse #1#2{\clf_doifinset {#1}{#2}}
 
 % we define these here, just in case ...
 
@@ -32,7 +32,7 @@
 \edef\!!bs{[\luastringsep[}
 \edef\!!es{]\luastringsep]}
 
-\unexpanded\def\writestatus#1#2{\ctxcommand{writestatus(\!!bs#1\!!es,\!!bs#2\!!es)}}
+\unexpanded\def\writestatus#1#2{\clf_writestatus{#1}{#2}}
 
 % A handy helper:
 
@@ -41,7 +41,7 @@
 % We can omit the tex.ctxcatcodes here as nowadays we seldom
 % change the regime at the \TEX\ end:
 
-\def\luaexpr#1{\directlua{tex.print(tostring(#1))}}
+\def\luaexpr#1{\ctxlua{tex.print(tostring(#1))}} % no use is shortcutting has to be compiled
 
 % helpers:
 
@@ -86,8 +86,7 @@
 % we have no way yet to pickup \immediate unless we redefine it
 % we assume immediate execution
 
-\def\syst_write_execute#1%
-  {\ctxcommand{execute(\!!bs#1\!!es)}}
+\let\syst_write_execute\clf_execute % always {...}
 
 \unexpanded\def\write#1#%
   {\ifnum#1=18

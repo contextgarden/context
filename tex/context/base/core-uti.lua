@@ -64,7 +64,8 @@ end
 
 job.comment("version",job.version)
 
-local enabled = true
+local enabled     = true
+local initialized = false
 
 directives.register("job.save",function(v) enabled = v end)
 ----------.register("job.keep",function(v) kept    = v end)
@@ -74,15 +75,24 @@ function job.disablesave() -- can be command
 end
 
 function job.initialize(loadname,savename)
-    job.load(loadname) -- has to come after  structure is defined !
-    luatex.registerstopactions(function()
-        if enabled and not status.lasterrorstring or status.lasterrorstring == "" then
-         -- if kept then
-         --     job.keep(loadname) -- could move to mtx-context instead
-         -- end
-            job.save(savename)
+    if not initialized then
+        if not loadname or loadname == "" then
+            loadname = tex.jobname .. ".tuc"
         end
-    end)
+        if not savename or savename == "" then
+            savename = tex.jobname .. ".tua"
+        end
+        job.load(loadname) -- has to come after  structure is defined !
+        luatex.registerstopactions(function()
+            if enabled and not status.lasterrorstring or status.lasterrorstring == "" then
+             -- if kept then
+             --     job.keep(loadname) -- could move to mtx-context instead
+             -- end
+                job.save(savename)
+            end
+        end)
+        initialized = true
+    end
 end
 
 function job.register(collected, tobesaved, initializer, finalizer, serializer)
@@ -390,4 +400,14 @@ implement {
     name      = "setjobcomment",
     actions   = job.comment,
     arguments = { { "*" } }
+}
+
+implement {
+    name      = "initializejob",
+    actions   = job.initialize
+}
+
+implement {
+    name      = "disablejobsave",
+    actions   = job.disablesave
 }

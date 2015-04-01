@@ -15,12 +15,18 @@ local commands    = commands
 
 local implement   = interfaces.implement
 
+local two_strings = interfaces.strings[2]
+
 local context     = context
 local csprint     = context.sprint
 
 local prtcatcodes = tex.prtcatcodes
 
-function commands.writestatus(...) logs.status(...) end -- overloaded later
+implement { -- will b eoverloaded later
+    name      = "writestatus",
+    arguments = two_strings,
+    actions   = logs.status,
+}
 
 local ctx_firstoftwoarguments  = context.firstoftwoarguments  -- context.constructcsonly("firstoftwoarguments" )
 local ctx_secondoftwoarguments = context.secondoftwoarguments -- context.constructcsonly("secondoftwoarguments")
@@ -109,7 +115,7 @@ end
 local s = lpegtsplitat(",")
 local h = { }
 
-function commands.doifcommonelse(a,b) -- often the same test
+local function doifcommonelse(a,b) -- often the same test
     local ha = h[a]
     local hb = h[b]
     if not ha then
@@ -133,7 +139,7 @@ function commands.doifcommonelse(a,b) -- often the same test
     ctx_secondoftwoarguments()
 end
 
-function commands.doifinsetelse(a,b)
+local function doifinsetelse(a,b)
     local hb = h[b]
     if not hb then hb = lpegmatch(s,b) h[b] = hb end
     for i=1,#hb do
@@ -144,6 +150,18 @@ function commands.doifinsetelse(a,b)
     end
     ctx_secondoftwoarguments()
 end
+
+implement {
+    name      = "doifcommonelse",
+    arguments = two_strings,
+    actions   = doifcommonelse
+}
+
+implement {
+    name      = "doifinsetelse",
+    arguments = two_strings,
+    actions   = doifinsetelse
+}
 
 local pattern = lpeg.patterns.validdimen
 
@@ -166,9 +184,11 @@ implement {
     arguments = { "string", "integer" }
 }
 
-function commands.execute(str)
-    os.execute(str) -- wrapped in sandbox
-end
+implement {
+    name      = "execute",
+    arguments = "string",
+    actions   = os.execute -- wrapped in sandbox
+}
 
 -- function commands.write(n,str)
 --     if n == 18 then
@@ -181,3 +201,39 @@ end
 --         context.writeviatex(n,str)
 --     end
 -- end
+
+implement {
+    name      = "doifsameelse",
+    arguments = two_strings,
+    actions   = function(a,b)
+        if a == b then
+            ctx_firstoftwoarguments()
+        else
+            ctx_secondoftwoarguments()
+        end
+    end
+}
+
+implement {
+    name      = "doifsame",
+    arguments = two_strings,
+    actions   = function(a,b)
+        if a == b then
+            ctx_firstofoneargument()
+        else
+            ctx_gobbleoneargument()
+        end
+    end
+}
+
+implement {
+    name      = "doifnotsame",
+    arguments = two_strings,
+    actions   = function(a,b)
+        if a == b then
+            ctx_gobbleoneargument()
+        else
+            ctx_firstofoneargument()
+        end
+    end
+}

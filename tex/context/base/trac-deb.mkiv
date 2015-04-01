@@ -13,25 +13,31 @@
 
 \writestatus{loading}{ConTeXt Tracing Macros / Debugger}
 
+\unprotect
+
 %registerctxluafile{trac-lmx}{1.001}
 \registerctxluafile{trac-deb}{1.001}
 
-\unexpanded\def\breakpoint{\showdebuginfo\wait}
+\unexpanded\def\breakpoint            {\showdebuginfo\wait}
 
-\unexpanded\def\showtrackers          {\ctxlua{trackers.show()}}
-\unexpanded\def\enabletrackers    [#1]{\ctxlua{trackers.enable("#1")}}
-\unexpanded\def\disabletrackers   [#1]{\ctxlua{trackers.disable("#1")}}
-\unexpanded\def\resettrackers         {\ctxlua{trackers.reset()}}
+\unexpanded\def\showtrackers          {\clf_showtrackers}
+\unexpanded\def\enabletrackers    [#1]{\clf_enabletrackers{#1}}
+\unexpanded\def\disabletrackers   [#1]{\clf_disabletrackers{#1}}
+\unexpanded\def\resettrackers         {\clf_resettrackers}
 
-\unexpanded\def\showdirectives        {\ctxlua{directives.show()}}
-\unexpanded\def\enabledirectives  [#1]{\ctxlua{directives.enable("#1")}}
-\unexpanded\def\disabledirectives [#1]{\ctxlua{directives.disable("#1")}}
+\unexpanded\def\showdirectives        {\clf_showdirectives}
+\unexpanded\def\enabledirectives  [#1]{\clf_enabledirectives{#1}}
+\unexpanded\def\disabledirectives [#1]{\clf_disabledirectives{#1}}
 
-\unexpanded\def\showexperiments       {\ctxlua{experiments.show()}}
-\unexpanded\def\enableexperiments [#1]{\ctxlua{experiments.enable("#1")}}
-\unexpanded\def\disableexperiments[#1]{\ctxlua{experiments.disable("#1")}}
+\unexpanded\def\showexperiments       {\clf_showexperiments}
+\unexpanded\def\enableexperiments [#1]{\clf_enableexperiments{#1}}
+\unexpanded\def\disableexperiments[#1]{\clf_disableexperiments{#1}}
 
-\unexpanded\def\showdebuginfo         {\ctxlua{lmx.showdebuginfo()}}
-\unexpanded\def\overloaderror         {\ctxlua{lmx.overloaderror()}} % \enabledirectives[system.showerror]
+\unexpanded\def\showdebuginfo         {\clf_showdebuginfo}
+\unexpanded\def\overloaderror         {\clf_overloaderror}
 
-\unexpanded\def\showlogcategories     {\ctxlua{logs.show()}}
+\unexpanded\def\showlogcategories     {\clf_showlogcategories}
+
+% \enabledirectives[system.showerror]
+
+\protect \endinput

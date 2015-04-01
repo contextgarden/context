@@ -552,7 +552,7 @@
    %
    \doifelse{\bleedingparameter\c!stretch}\v!yes\donetrue\donefalse
    %
-   \xdef\bleedwidth{\dimexpr
+   \xdef\bleedwidth{\the\dimexpr
      \ifdone
        \ifconditional\c_pack_boxes_l
          \scratchwidth+\MPx\currentbgposition-\MPx\currentpageposition
@@ -563,8 +563,9 @@
        \fi\fi
      \else
        \scratchwidth
-     \fi+\scratchhoffset}%
-   \xdef\bleedheight{\dimexpr
+     \fi+\scratchhoffset
+   \relax}%
+   \xdef\bleedheight{\the\dimexpr
      \ifdone
        \ifconditional\c_pack_boxes_t
          \paperheight  -\MPy\currentbgposition+\MPy\currentpageposition % not checked
@@ -575,7 +576,8 @@
        \fi\fi
      \else
        \scratchheight
-     \fi+\scratchvoffset}%
+     \fi+\scratchvoffset
+   \relax}%
    \dowithnextboxcontentcs\pack_boxes_bleed_settings\pack_boxes_bleed_finish\hbox}
 
 \def\pack_boxes_bleed_settings

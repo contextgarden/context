@@ -532,6 +532,12 @@ end
 
 lpdf.color = lpdfcolor
 
+interfaces.implement {
+    name      = "lpdf_color",
+    actions   = { lpdfcolor, context },
+    arguments = "integer"
+}
+
 function lpdf.colorspec(model,ca,default)
     if ca and ca > 0 then
         local cv = colors.value(ca)

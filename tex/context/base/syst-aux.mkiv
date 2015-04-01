@@ -6166,10 +6166,10 @@
 % \def\threedigitrounding#1%
 %   {\expandafter\expandafter\expandafter\dothreedigitrounding\expandafter\WITHOUTPT\the\dimexpr#1\points+.0005\points\relax0000.*00\relax}
 
-\def\integerrounding   #1{\cldcontext{"\letterpercent 0.0f",#1}}
-\def\onedigitrounding  #1{\cldcontext{"\letterpercent 0.1f",#1}}
-\def\twodigitrounding  #1{\cldcontext{"\letterpercent 0.2f",#1}}
-\def\threedigitrounding#1{\cldcontext{"\letterpercent 0.3f",#1}}
+\def\integerrounding   #1{\clf_rounded\zerocount\numexpr#1\relax}
+\def\onedigitrounding  #1{\clf_rounded\plusone  \numexpr#1\relax}
+\def\twodigitrounding  #1{\clf_rounded\plustwo  \numexpr#1\relax}
+\def\threedigitrounding#1{\clf_rounded\plusthree\numexpr#1\relax}
 
 %D \macros
 %D   {processcontent}
