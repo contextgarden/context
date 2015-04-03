@@ -51,7 +51,7 @@
      \setpagestaterealpageno{#1}{\number#2}%
    \fi}
 
-\unexpanded\def\doifrightpagestateelse#1#2% not expandable !
+\unexpanded\def\doifelserightpagestate#1#2% not expandable !
   {\ifcase\frozenpagestate
      \pagestatemismatchfalse
      \realpagestateno\realfolio
@@ -100,7 +100,7 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\doifforcedrightpagestateelse#1#2%
+\unexpanded\def\doifelseforcedrightpagestate#1#2%
   {\ifcase\frozenpagestate
      \pagestatemismatchfalse
      \realpagestateno\realfolio
@@ -135,6 +135,9 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doifrightpagestateelse      \doifelserightpagestate
+\let\doifforcedrightpagestateelse\doifelseforcedrightpagestate
+
 \unexpanded\def\freezepagestate {\frozenpagestate\plusone  }
 \unexpanded\def\defrostpagestate{\frozenpagestate\zerocount}
 
@@ -147,7 +150,9 @@
 \definepagestate[\s!paragraph]
 
 \unexpanded\def\signalrightpage  {\dotrackpagestate      \s!paragraph\nofraggedparagraphs} % use \dontleavehmode if needed
-\unexpanded\def\doifrightpageelse{\doifrightpagestateelse\s!paragraph\nofraggedparagraphs}
+\unexpanded\def\doifelserightpage{\doifelserightpagestate\s!paragraph\nofraggedparagraphs}
+
+\let\doifrightpageelse\doifelserightpage
 
 \installcorenamespace{pagechanges}
 

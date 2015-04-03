@@ -98,7 +98,7 @@
 \def\module_steps_start_chart[#name][#settings]%
   {\startnointerference
    \iffirstargument
-     \doifassignmentelse{#name}
+     \doifelseassignment{#name}
        {\let\currentSTEPchart\empty
         \xdef\module_steps_flush_chart{\module_steps_chart[][#name]}}
        {\edef\currentSTEPchart{#name}%

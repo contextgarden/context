@@ -13,7 +13,8 @@ replaces the twopass data mechanism.</p>
 
 local tonumber, tostring, type = tonumber, tostring, type
 
-local context, commands = context, commands
+local context          = context
+local commands         = commands
 
 local trace_datasets   = false  trackers.register("job.datasets" ,  function(v) trace_datasets   = v end)
 local trace_pagestates = false  trackers.register("job.pagestates", function(v) trace_pagestates = v end)
@@ -32,6 +33,8 @@ local formatters       = string.formatters
 local v_yes            = interfaces.variables.yes
 
 local new_latelua      = nodes.pool.latelua
+
+local implement        = interfaces.implement
 
 local collected = allocate()
 local tobesaved = allocate()
@@ -138,7 +141,7 @@ function datasets.getdata(name,tag,key,default)
     return default
 end
 
-function commands.setdataset(settings)
+local function setdataset(settings)
     settings.convert = true
     local name, tag = setdata(settings)
     if settings.delay ~= v_yes then
@@ -150,7 +153,7 @@ function commands.setdataset(settings)
     end
 end
 
-function commands.datasetvariable(name,tag,key)
+local function datasetvariable(name,tag,key)
     local t = collected[name]
     if t == nil then
         if trace_datasets then
@@ -174,6 +177,25 @@ function commands.datasetvariable(name,tag,key)
         end
     end
 end
+
+implement {
+    name      = "setdataset",
+    actions   = setdataset,
+    arguments = {
+        {
+            { "name" },
+            { "tag" },
+            { "delay" },
+            { "data" },
+        }
+    }
+}
+
+implement {
+    name    = "datasetvariable",
+    actions = datasetvariable,
+    arguments = { "string", "string", "string" }
+}
 
 --[[ldx--
 <p>We also provide an efficient variant for page states.</p>
@@ -245,7 +267,7 @@ function pagestates.realpage(name,tag,default)
     return default
 end
 
-function commands.setpagestate(settings)
+local function setpagestate(settings)
     local name, tag, data = setstate(settings)
     if type(tag) == "number" then
         context(new_latelua(formatters["job.pagestates.extend(%q,%i)"](name,tag)))
@@ -254,7 +276,7 @@ function commands.setpagestate(settings)
     end
 end
 
-function commands.pagestaterealpage(name,tag)
+local function pagestaterealpage(name,tag)
     local t = collected[name]
     t = t and (t[tag] or t[tonumber(tag)])
     if t then
@@ -262,8 +284,32 @@ function commands.pagestaterealpage(name,tag)
     end
 end
 
-function commands.setpagestaterealpageno(name,tag)
+local function setpagestaterealpageno(name,tag)
     local t = collected[name]
     t = t and (t[tag] or t[tonumber(tag)])
     texsetcount("realpagestateno",t or texgetcount("realpageno"))
 end
+
+implement {
+    name      = "setpagestate",
+    actions   = setpagestate,
+    arguments = {
+        {
+            { "name" },
+            { "tag" },
+            { "delay" },
+        }
+    }
+}
+
+implement {
+    name      = "pagestaterealpage",
+    actions   = pagestaterealpage,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "setpagestaterealpageno",
+    actions   = setpagestaterealpageno,
+    arguments = { "string", "string" }
+}

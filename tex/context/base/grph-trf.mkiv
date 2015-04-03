@@ -108,7 +108,7 @@
      \edef\currentscale{#1}%
      \setupcurrentscale[#2]%
    \else\iffirstargument
-     \doifassignmentelse{#1}
+     \doifelseassignment{#1}
        {\let\currentscale\empty
         \setupcurrentscale[#1]}
        {\edef\currentscale{#1}}%
@@ -318,11 +318,11 @@
 \def\m_grph_scale_factor_set{\v!max,\v!fit,\v!broad,\v!auto} % can be an \edef
 
 \def\grph_scale_by_factor
-  {\doifinsetelse\p_factor\m_grph_scale_factor_set
+  {\doifelseinset\p_factor\m_grph_scale_factor_set
      \grph_scale_by_factor_a
-     {\doifinsetelse\p_hfactor\m_grph_scale_factor_set
+     {\doifelseinset\p_hfactor\m_grph_scale_factor_set
         \grph_scale_by_factor_b
-        {\doifinsetelse\p_wfactor\m_grph_scale_factor_set
+        {\doifelseinset\p_wfactor\m_grph_scale_factor_set
            \grph_scale_by_factor_c
            \grph_scale_by_factor_d}}}
 
@@ -1080,18 +1080,18 @@
   {\boxcursor\box\nextbox}
 
 \setvalue{\??rotatepreset\v!left}%
-  {\edef\p_rotation_rotation{\doifoddpageelse{90}{270}}}
+  {\edef\p_rotation_rotation{\doifelseoddpage{90}{270}}}
 
 \setvalue{\??rotatepreset\v!right}%
-  {\edef\p_rotation_rotation{\doifoddpageelse{270}{90}}}
+  {\edef\p_rotation_rotation{\doifelseoddpage{270}{90}}}
 
 \setvalue{\??rotatepreset\v!inner}%
   {\signalrightpage
-   \doifrightpageelse{\def\p_rotation_rotation{270}}{\def\p_rotation_rotation{90}}}
+   \doifelserightpage{\def\p_rotation_rotation{270}}{\def\p_rotation_rotation{90}}}
 
 \setvalue{\??rotatepreset\v!outer}%
   {\signalrightpage
-   \doifrightpageelse{\def\p_rotation_rotation{90}}{\def\p_rotation_rotation{270}}}
+   \doifelserightpage{\def\p_rotation_rotation{90}}{\def\p_rotation_rotation{270}}}
 
 \setvalue{\??rotatepreset\v!default}%
   {\edef\p_rotation_rotation{\realnumber{\p_rotation_rotation}}}% get rid of leading zeros and spaces

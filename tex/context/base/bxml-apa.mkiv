@@ -342,7 +342,7 @@
     \bibxmlsetup{bibtex:apa:common:author-editors-crossref-year}
     \bibxmldoif {title} {
         \bgroup\it\bibxmlflush{title}\/\egroup
-        \doifmodeelse {bibtex:apa:edited-book} {
+        \doifelsemode {bibtex:apa:edited-book} {
             \bibxmldoifelse {volume} {
                 \bibtexspace Number\nonbreakablespace\bibxmlflush{volume}
                 \bibxmldoifelse {series} {
@@ -396,7 +396,7 @@
     \bibxmldoifelse {title} {
         \bgroup\it\bibxmlflush{title}\/\egroup
     } {
-        \doifmodeelse {bibtex:apa:edited-book} {
+        \doifelsemode {bibtex:apa:edited-book} {
             \bibxmldoifelse {volume} {
                 \bibtexspace number\nonbreakablespace\bibxmlflush{volume}
                 \bibxmldoifelse {series} {

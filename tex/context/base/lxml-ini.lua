@@ -6,17 +6,22 @@ if not modules then modules = { } end modules ['lxml-ini'] = {
     license   = "see context related readme files"
 }
 
-local xml        = xml
-local lxml       = lxml
+local xml  = xml
+local lxml = lxml
+
+-- this defines an extra scanner lxmlid:
 
 local scanners   = tokens.scanners
 local scanstring = scanners.string
+local getid      = lxml.id
 
 scanners.lxmlid  = function() return getid(scanstring()) end
 
 local implement  = interfaces.implement
 
 -- lxml.id
+
+implement { name = "lxmlid",                  actions = lxml.getid,             arguments = "string" }
 
 implement { name = "xmldoif",                 actions = lxml.doif,              arguments = { "string", "string" } }
 implement { name = "xmldoifnot",              actions = lxml.doifnot,           arguments = { "string", "string" } }

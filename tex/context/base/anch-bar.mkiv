@@ -89,7 +89,7 @@
    \advance\c_anch_sidebars_level\plusone
    \global\advance\c_anch_sidebars_n\plusone
    \c_anch_sidebars_current\c_anch_sidebars_n\relax % relax needed
-   \doifassignmentelse{#1}
+   \doifelseassignment{#1}
      {\edef\currentsidebar{\the\c_anch_sidebars_level}%
       \checksidebarparent
       \setupcurrentsidebar[#1]}
@@ -213,7 +213,7 @@
    \ifx\m_anch_marginrules_kind\empty
      \anch_sidebars_start[\v!margin][]%
    \else
-     \doifassignmentelse\m_anch_marginrules_kind
+     \doifelseassignment\m_anch_marginrules_kind
        {\anch_sidebars_start[\v!margin][#1]}%
        {\anch_marginrules_check{#1}%
         \anch_sidebars_start[\v!margin:#1][\c!level=#1]}%

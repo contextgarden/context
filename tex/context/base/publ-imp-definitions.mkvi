@@ -75,7 +75,7 @@
         \ifx\p_monthconversion\empty % month month:mnem
             \currentbtxfieldmonth
         \else
-            \doifnumberelse \currentbtxfieldmonth {
+            \doifelsenumber \currentbtxfieldmonth {
                 \convertnumber\p_monthconversion\currentbtxfieldmonth
             } {
                 \currentbtxfieldmonth
@@ -111,7 +111,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:style #style #content
-    \doifdefinedelse {btx:style:#style} {
+    \doifelsedefined {btx:style:#style} {
         \texdefinition{btx:style:#style} {
             #content
         }

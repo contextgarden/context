@@ -27,12 +27,7 @@ local sequencers        = utilities.sequencers
 local textlineactions   = resolvers.openers.helpers.textlineactions
 local setmetatableindex = table.setmetatableindex
 
-local scanners          = tokens.scanners
-local scanstring        = scanners.string
-local setters           = tokens.setters
-local setmacro          = setters.macro
-
-local scanners          = interfaces.scanners
+local implement         = interfaces.implement
 
 --[[ldx--
 <p>We will hook regime handling code into the input methods.</p>
@@ -267,36 +262,53 @@ end
 
 -- interface:
 
-scanners.enableregime  = function()
-    setmacro("currentregime",enable(scanstring()))
-end
+implement {
+    name      = "enableregime",
+    arguments = "string",
+    actions   = function(regime) setmacro("currentregime",enable(regime)) end
+}
 
-scanners.disableregime = function()
-    setmacro("currentregime",disable())
-end
+implement {
+    name      = "disableregime",
+    actions   = function() setmacro("currentregime",disable()) end
+}
 
-scanners.pushregime = push
-scanners.popregime  = pop
+implement {
+    name      = "pushregime",
+    actions   = push
+}
+
+implement {
+    name      = "popregime",
+    actions   = pop
+}
 
 local stack = { }
 
-scanners.startregime = function(regime)
-    insert(stack,currentregime)
-    if trace_translating then
-        report_translating("start using %a",regime)
-    end
-    setmacro("currentregime",enable(regime))
-end
-
-scanners.stopregime = function()
-    if #stack > 0 then
-        local regime = remove(stack)
+implement {
+    name      = "startregime",
+    arguments = "string",
+    actions   = function(regime)
+        insert(stack,currentregime)
         if trace_translating then
-            report_translating("stop using %a",regime)
+            report_translating("start using %a",regime)
         end
         setmacro("currentregime",enable(regime))
     end
-end
+}
+
+implement {
+    name      = "stopregime",
+    actions   = function()
+        if #stack > 0 then
+            local regime = remove(stack)
+            if trace_translating then
+                report_translating("stop using %a",regime)
+            end
+            setmacro("currentregime",enable(regime))
+        end
+    end
+}
 
 -- Next we provide some hacks. Unfortunately we run into crappy encoded
 -- (read : mixed) encoded xml files that have these Ã« Ã¤ Ã¶ Ã¼ sequences

@@ -6,32 +6,35 @@ if not modules then modules = { } end modules ['cldf-scn'] = {
     license   = "see context related readme files"
 }
 
-local load, type = load, type
+local load, type  = load, type
 
-local formatters = string.formatters
-local char       = string.char
-local concat     = table.concat
+local formatters  = string.formatters
+local char        = string.char
+local concat      = table.concat
 
-local lpegmatch  = lpeg.match
-local p_unquoted = lpeg.Cs(lpeg.patterns.unquoted)
+local lpegmatch   = lpeg.match
+local p_unquoted  = lpeg.Cs(lpeg.patterns.unquoted)
 
-local f_action_f = formatters["action%s(%s)"]
-local f_action_s = formatters["local action%s = action[%s]"]
-local f_command  = formatters["local action = tokens._action\n%\nt\nreturn function(%s) return %s end"]
+local f_action_f  = formatters["action%s(%s)"]
+local f_action_s  = formatters["local action%s = action[%s]"]
+local f_command   = formatters["local action = tokens._action\n%\nt\nreturn function(%s) return %s end"]
 
-local interfaces = interfaces
-local commands   = commands
-local scanners   = interfaces.scanners
+local interfaces  = interfaces
+local commands    = commands
+local scanners    = interfaces.scanners
 
-local compile    = tokens.compile or function() end
+local compile     = tokens.compile or function() end
 
-local report     = logs.reporter("interfaces","implementor")
+local dummy       = function() end
+
+local report      = logs.reporter("interfaces","implementor")
 
 function interfaces.implement(specification)
     local actions   = specification.actions
     local name      = specification.name
     local arguments = specification.arguments
-    local scope     = specification.scope
+    local private   = specification.scope == "private"
+    local once      = specification.once
     if not actions then
         if name then
             report("error: no actions for %a",name)
@@ -40,15 +43,48 @@ function interfaces.implement(specification)
         end
         return
     end
-    local scanner = compile(specification)
-    if not name or name == "" then
+    if name == "" then
+        name = nil
+    end
+    local scanner
+    local resetter = once and name and commands.ctxresetter(name)
+    if resetter then
+        local scan = compile(specification)
+        if private then
+            scanner = function()
+                resetter()
+                return scan()
+            end
+        else
+            scanner = function()
+                commands[name] = dummy
+                resetter()
+                return scan()
+            end
+        end
+    else
+        scanner = compile(specification)
+    end
+    if not name then
         return scanner
     end
-    local command = nil
+    if scanners[name] and not specification.overload then
+        report("warning: 'scanners.%s' is redefined",name)
+    end
+    scanners[name] = scanner
+    if private then
+        return
+    end
+    local command
+    if once then
+        if type(actions) == "function" then
+            actions = { actions }
+        elseif #actions == 1 then
+            actions = { actions[1] }
+        end
+    end
     if type(actions) == "function" then
         command = actions
-    elseif actions == context then
-        command = context
     elseif #actions == 1 then
         command = actions[1]
     else
@@ -91,16 +127,18 @@ function interfaces.implement(specification)
         command = f_command(f,args,command)
         command = load(command)
         if command then
-            command = command()
+            if resetter then
+                local cmd = command()
+                command = function()
+                    commands[name] = dummy
+                    resetter()
+                    cmd()
+                end
+            else
+                command = command()
+            end
         end
         tokens._action = nil
-    end
-    if scanners[name] and not specification.overload then
-        report("warning: 'scanners.%s' is redefined",name)
-    end
-    scanners[name] = scanner
-    if scope == "private" then
-        return
     end
     if commands[name] and not specification.overload then
         report("warning: 'commands.%s' is redefined",name)

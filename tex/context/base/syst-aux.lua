@@ -57,7 +57,7 @@ local pattern      = C(utf8character^-1)
 local ctx_doifelse = commands.doifelse
 
 implement {
-    name      = "doiffirstcharelse",
+    name      = "doifelsefirstchar",
     arguments = { "string", "string" },
     actions   = function(str)
         ctx_doifelse(lpegmatch(pattern,str) == chr)

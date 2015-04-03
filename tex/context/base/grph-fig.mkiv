@@ -45,7 +45,7 @@
   {\ifsecondargument
      \grph_buffers_typeset_indeed[#1][#2]%
    \else\iffirstargument
-     \doifassignmentelse{#1}
+     \doifelseassignment{#1}
        {\grph_buffers_typeset_indeed[\jobname][#1]}%
        {\grph_buffers_typeset_indeed[#1][]}%
    \else
@@ -53,7 +53,7 @@
    \fi\fi}
 
 \def\grph_buffers_typeset_indeed[#1][#2]% we could use the via files
-  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\ctxcommand{runbuffer("#1",true)}}}%
+  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\clf_runbuffer{#1}}}%
    \ifcase\c_grph_buffers_mode
      % typesetonly
    \or

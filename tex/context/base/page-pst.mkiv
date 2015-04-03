@@ -57,7 +57,7 @@
 \unexpanded\setvalue{\e!start\v!postponing}%
   {\bgroup
    \obeylines
-   \doifnextoptionalelse{\egroup\page_postponed_blocks_start}{\egroup\page_postponed_blocks_start[0]}}
+   \doifelsenextoptional{\egroup\page_postponed_blocks_start}{\egroup\page_postponed_blocks_start[0]}}
 
 \unexpanded\setvalue{\e!stop\v!postponing}%
   {\ctxcommand{registerpostponedblock("\currentpostponedpage")}\relax}

@@ -195,7 +195,7 @@
       \normalexpanded{\egroup\noexpand\edef\noexpand\extrasplitfloatlines{\the\noflines}}%
       \global\settrue\usesamefloatnumber
    \else
-      \doifnumberelse\extrasplitfloatlines\donothing{\def\extrasplitfloatlines{1}}%
+      \doifelsenumber\extrasplitfloatlines\donothing{\def\extrasplitfloatlines{1}}%
    \fi}
 
 \unexpanded\def\doifnotinsidesplitfloat

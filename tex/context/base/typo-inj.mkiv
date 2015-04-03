@@ -44,13 +44,13 @@
 %D     \startsection[title=Delta] fourth \index{fourth} \stopsection
 %D \stoptext
 
-\unexpanded\def\resetinjector              [#1]{\ctxcommand{resetinjector("#1")}}
-\unexpanded\def\markinjector               [#1]{\dontleavehmode\ctxcommand{markinjector("#1")}}
-\unexpanded\def\checkinjector              [#1]{\ctxcommand{checkinjector("#1")}}
-\unexpanded\def\checknextinjector              {\ctxcommand{checkinjector()}}
-\unexpanded\def\checkpreviousinjector          {\ctxcommand{checkinjector(true)}}
-\unexpanded\def\dosetinjector      [#1][#2][#3]{\ctxcommand{setinjector("#1","#2",\!!bs#3\!!es)}}
-\unexpanded\def\doshowinjector             [#1]{\ctxcommand{showinjector("#1")}}
+\unexpanded\def\resetinjector              [#1]{\clf_resetinjector{#1}}
+\unexpanded\def\markinjector               [#1]{\dontleavehmode\clf_markinjector{#1}}
+\unexpanded\def\checkinjector              [#1]{\clf_checkinjector{#1}}
+\unexpanded\def\checknextinjector              {\clf_checknextinjector}
+\unexpanded\def\checkpreviousinjector          {\clf_checkpreviousinjector}
+\unexpanded\def\dosetinjector      [#1][#2][#3]{\clf_setinjector{#1}{#2}{#3}}
+\unexpanded\def\doshowinjector             [#1]{\clf_showinjector{#1}}
 
 \unexpanded\def\setinjector {\dotripleargument\dosetinjector}
 \unexpanded\def\showinjector{\dosingleempty\doshowinjector}
@@ -66,8 +66,8 @@
    \letvalue{typo_injectors_check_#1}\donothing}
 
 \unexpanded\def\doactivateinjector#1% used at lua end
-  {\setuxvalue{typo_injectors_mark_#1}{\dontleavehmode\noexpand\ctxcommand{markinjector("#1")}}%
-   \setuxvalue{typo_injectors_check_#1}{\noexpand\ctxcommand{checkinjector("#1")}}}
+  {\setuxvalue{typo_injectors_mark_#1}{\dontleavehmode\noexpand\clf_markinjector{#1}}%
+   \setuxvalue{typo_injectors_check_#1}{\noexpand\clf_checkinjector{#1}}}
 
 \unexpanded\def\dotestinjector#1%  only for testing outside unprotect
   {\csname typo_injectors_check_#1\endcsname

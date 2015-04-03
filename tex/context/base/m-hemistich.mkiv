@@ -33,7 +33,7 @@
 \unexpanded\def\dodohemistiches#1[#2]#3#4%
   {\dontleavehmode
    \begingroup
-   \doifassignmentelse{#2}
+   \doifelseassignment{#2}
      {\edef\currenthemistich{#1}%
       \setupcurrenthemistich[#2]}
      {\def\currenthemistich{#2}}%

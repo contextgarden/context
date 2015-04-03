@@ -287,11 +287,13 @@
 %D {\localnext} because we don't want clashes with \type
 %D {\next}.
 
-\unexpanded\def\doifnextcharelse#1#2#3% #1 should not be {} !
+\unexpanded\def\doifelsenextchar#1#2#3% #1 should not be {} !
   {\let\charactertoken=#1% = needed here
    \def\m_syst_action_yes{#2}%
    \def\m_syst_action_nop{#3}%
    \futurelet\nexttoken\syst_helpers_inspect_next_character}
+
+\let\doifnextcharelse\doifelsenextchar
 
 \def\syst_helpers_inspect_next_character
   {\ifx\nexttoken\blankspace
@@ -327,17 +329,20 @@
 
 \let\syst_helpers_next_optional_character_token=[
 
-\unexpanded\def\doifnextoptionalelse#1#2%
+\unexpanded\def\doifelsenextoptional#1#2%
   {\def\m_syst_action_yes{#1}%
    \def\m_syst_action_nop{#2}%
    \let\if_next_blank_space_token\iffalse
    \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-\unexpanded\def\doifnextoptionalcselse#1#2% \cs \cs (upto 10% faster)
+\unexpanded\def\doifelsenextoptionalcs#1#2% \cs \cs (upto 10% faster)
   {\let\m_syst_action_yes#1%
    \let\m_syst_action_nop#2%
    \let\if_next_blank_space_token\iffalse
    \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+
+\let\doifnextoptionalelse  \doifelsenextoptional
+\let\doifnextoptionalcselse\doifelsenextoptionalcs
 
 \def\syst_helpers_inspect_next_optional_character
   {\ifx\nexttoken\blankspace
@@ -355,17 +360,20 @@
 
 \let\syst_helpers_next_bgroup_character_token\bgroup
 
-\unexpanded\def\doifnextbgroupelse#1#2%
+\unexpanded\def\doifelsenextbgroup#1#2%
   {\def\m_syst_action_yes{#1}%
    \def\m_syst_action_nop{#2}%
    \let\if_next_blank_space_token\iffalse
    \futurelet\nexttoken\syst_helpers_inspect_next_bgroup_character}
 
-\unexpanded\def\doifnextbgroupcselse#1#2%
+\unexpanded\def\doifelsenextbgroupcs#1#2%
   {\let\m_syst_action_yes#1%
    \let\m_syst_action_nop#2%
    \let\if_next_blank_space_token\iffalse
    \futurelet\nexttoken\syst_helpers_inspect_next_bgroup_character}
+
+\let\doifnextbgroupelse  \doifelsenextbgroup
+\let\doifnextbgroupcselse\doifelsenextbgroupcs
 
 \def\syst_helpers_inspect_next_bgroup_character
   {\ifx\nexttoken\blankspace
@@ -383,11 +391,13 @@
 
 \let\syst_helpers_next_parenthesis_character_token(
 
-\unexpanded\def\doifnextparenthesiselse#1#2%
+\unexpanded\def\doifelsenextparenthesis#1#2%
   {\def\m_syst_action_yes{#1}%
    \def\m_syst_action_nop{#2}%
    \let\if_next_blank_space_token\iffalse
    \futurelet\nexttoken\syst_helpers_inspect_next_parenthesis_character}
+
+\let\doifnextparenthesiselse\doifelsenextparenthesis
 
 \def\syst_helpers_inspect_next_parenthesis_character
   {\ifx\nexttoken\blankspace
@@ -405,15 +415,18 @@
 
 %D The next one is handy in predictable situations:
 
-\unexpanded\def\doiffastoptionalcheckelse#1#2%
+\unexpanded\def\doifelsefastoptionalcheck#1#2%
   {\def\m_syst_action_yes{#1}%
    \def\m_syst_action_nop{#2}%
    \futurelet\nexttoken\syst_helpers_do_if_fast_optional_check_else}
 
-\unexpanded\def\doiffastoptionalcheckcselse#1#2% \cs \cs
+\unexpanded\def\doifelsefastoptionalcheckcs#1#2% \cs \cs
   {\let\m_syst_action_yes#1%
    \let\m_syst_action_nop#2%
    \futurelet\nexttoken\syst_helpers_do_if_fast_optional_check_else}
+
+\let\doiffastoptionalcheckelse  \doifelsefastoptionalcheck
+\let\doiffastoptionalcheckcselse\doifelsefastoptionalcheckcs
 
 \def\syst_helpers_do_if_fast_optional_check_else
   {\ifx\nexttoken\syst_helpers_next_optional_character_token
@@ -583,12 +596,12 @@
 
 \suppressifcsnameerror\plusone
 
-\def\doifundefinedelse#1%
+\def\doifelseundefined#1%
   {\ifcsname#1\endcsname
      \expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments
    \fi}
 
-\def\doifdefinedelse#1%
+\def\doifelsedefined#1%
   {\ifcsname#1\endcsname
      \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments
    \fi}
@@ -602,6 +615,9 @@
   {\ifcsname#1\endcsname
      \expandafter\firstofoneargument\else\expandafter\gobbleoneargument
    \fi}
+
+\let\doifundefinedelse\doifelseundefined
+\let\doifdefinedelse  \doifelsedefined
 
 %D \macros
 %D   {letbeundefined}
@@ -626,7 +642,7 @@
 %D behavior in text and math mode, which was due to this grouping subtilities. We
 %D therefore decided to use \type{\begingroup} instead of \type{\bgroup}.
 
-\unexpanded\def\doifalldefinedelse#1%
+\unexpanded\def\doifelsealldefined#1%
   {\begingroup
    \donetrue % we could use a reserved one and avoid the group
    \processcommalist[#1]\syst_helpers_do_if_all_defined_else
@@ -635,6 +651,8 @@
    \else
      \endgroup\expandafter\secondoftwoarguments
    \fi}
+
+\let\doifalldefinedelse\doifelsealldefined
 
 \def\syst_helpers_do_if_all_defined_else#1%
   {\ifcsname#1\endcsname\else
@@ -699,13 +717,15 @@
 %D
 %D This time, the string is not expanded.
 
-\unexpanded\def\doifemptyelse#1%
+\unexpanded\def\doifelseempty#1%
   {\def\m_syst_string_one{#1}%
    \ifx\m_syst_string_one\empty
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifemptyelse\doifelseempty
 
 \unexpanded\def\doifempty#1%
   {\def\m_syst_string_one{#1}%
@@ -772,13 +792,15 @@
 \def\syst_helpers_re_do_if_in_set     {\expandafter\syst_helpers_do_check_if_item_in_set     \m_syst_string_two,],\relax}
 \def\syst_helpers_re_do_if_not_in_set {\expandafter\syst_helpers_do_check_if_item_not_in_set \m_syst_string_two,],\relax}
 
-\unexpanded\def\doifinsetelse#1% make this two step too
+\unexpanded\def\doifelseinset#1% make this two step too
   {\edef\m_syst_string_one{#1}%
    \ifx\m_syst_string_one\empty
      \expandafter\thirdofthreearguments
    \else
      \expandafter\syst_helpers_do_if_in_set_else
    \fi}
+
+\let\doifinsetelse\doifelseinset
 
 \def\syst_helpers_do_if_in_set_else#1%
   {\edef\m_syst_string_two{#1}%
@@ -970,9 +992,11 @@
    \fi\fi
    #1#2}
 
-\unexpanded\def\doifcommonelse{\syst_helpers_do_do_if_common_else\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifelsecommon{\syst_helpers_do_do_if_common_else\firstoftwoarguments\secondoftwoarguments}
 \unexpanded\def\doifcommon    {\syst_helpers_do_do_if_common_else\firstofoneargument \gobbleoneargument   }
 \unexpanded\def\doifnotcommon {\syst_helpers_do_do_if_common_else\gobbleoneargument  \firstofoneargument  }
+
+\let\doifcommonelse\doifelsecommon
 
 %D \macros
 %D   {processcommalist,processcommacommand,quitcommalist,
@@ -1316,9 +1340,11 @@
 \let\remainingcharacters\empty
 
 \unexpanded\def\getfirstcharacter     #1{\clf_getfirstcharacter{#1}}
-\unexpanded\def\doiffirstcharelse   #1#2{\clf_doiffirstcharelse{#1}{#2}} % chr str
+\unexpanded\def\doifelsefirstchar   #1#2{\clf_doifelsefirstchar{#1}{#2}}
 \unexpanded\def\thefirstcharacter     #1{\clf_thefirstcharacter{#1}}
 \unexpanded\def\theremainingcharacters#1{\clf_theremainingcharacters{#1}}
+
+\let\doiffirstcharelse\doifelsefirstchar
 
 %D \macros
 %D   {doifinstringelse, doifincsnameelse}
@@ -1332,13 +1358,15 @@
 
 \let\m_syst_sub_string\empty
 
-\unexpanded\def\doifinstringelse#1%
+\unexpanded\def\doifelseinstring#1%
   {\edef\m_syst_sub_string{#1}% expand #1 here
    \ifx\m_syst_sub_string\empty
      \expandafter\thirdofthreearguments
    \else
      \expandafter\syst_helpers_do_if_in_string_else_indeed
    \fi}
+
+\let\doifinstringelse\doifelseinstring
 
 \unexpanded\def\syst_helpers_do_if_in_string_else_indeed#1%
   {\syst_helpers_do_if_in_string_else\m_syst_sub_string{#1}%
@@ -1402,12 +1430,14 @@
      {\unless\if##2@}%
    \expandafter\syst_helpers_do_do_if_in_csname_else#2#1@@\_e_o_s_}
 
-\unexpanded\def\doifincsnameelse#1#2%
+\unexpanded\def\doifelseincsname#1#2%
   {\normalexpanded{\syst_helpers_do_if_in_csname_else{#1}}{#2}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifincsnameelse\doifelseincsname
 
 %D \macros
 %D   {doifnumberelse,doifnumber,doifnotnumber}
@@ -1424,12 +1454,14 @@
 %D The macro accepts \type {123}, \type {abc}, \type {{}}, \type {\getal} and
 %D \type {\the\count...}. This macro is a rather dirty one.
 
-\def\doifnumberelse#1% does not accept counters (fully expandable)
+\def\doifelsenumber#1% does not accept counters (fully expandable)
   {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
+
+\let\doifnumberelse\doifelsenumber
 
 \def\doifnumber#1%
   {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
@@ -1478,7 +1510,7 @@
 %D
 %D \starttyping
 %D \makerawcommalist[string,string,...]\stringlist
-%D \rawdoifinsetelse{string}{string,...}{...}{...}
+%D \rawdoifelseinset{string}{string,...}{...}{...}
 %D \rawprocesscommalist[string,string,...]\commando
 %D \rawprocessaction[x][a=>\a,b=>\b,c=>\c]
 %D \stoptyping
@@ -1513,18 +1545,20 @@
 \unexpanded\def\rawprocesscommacommand[#1]% not really needed
   {\normalexpanded{\rawprocesscommalist[#1]}}
 
-% \def\rawdoifinsetelse#1#2{\doifinstringelse{,#1,}{,#2,}}
+% \def\rawdoifelseinset#1#2{\doifinstringelse{,#1,}{,#2,}}
 % \def\rawdoifinset    #1#2{\doifinstring    {,#1,}{,#2,}}
 
 \def\m_syst_two_commas{,,}
 
-\unexpanded\def\rawdoifinsetelse#1%
+\unexpanded\def\rawdoifelseinset#1%
   {\edef\m_syst_sub_string{,#1,}% expand #1 here
    \ifx\m_syst_sub_string\m_syst_two_commas
      \expandafter\thirdofthreearguments
    \else
      \expandafter\syst_helpers_raw_do_if_in_set_else
    \fi}
+
+\let\rawdoifinsetelse\rawdoifinsetelse
 
 \unexpanded\def\syst_helpers_raw_do_if_in_set_else#1%
   {\syst_helpers_do_if_in_string_else\m_syst_sub_string{,#1,}%
@@ -2191,7 +2225,7 @@
 
 \unexpanded\def\dosingleempty#1%
   {\syst_helpers_argument_reset
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\firstargumenttrue#1}%
      {\syst_helpers_single_empty_one_nop#1}}
 
@@ -2203,13 +2237,13 @@
 
 \unexpanded\def\dodoubleempty#1%
   {\syst_helpers_argument_reset
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_double_empty_one_yes#1}%
      {\syst_helpers_double_empty_one_nop#1}}
 
 \def\syst_helpers_double_empty_one_yes#1[#2]%
   {\firstargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\secondargumenttrue#1[{#2}]}%
      {\syst_helpers_double_empty_two_nop#1{#2}}}
 
@@ -2233,19 +2267,19 @@
 
 \unexpanded\def\dotripleempty#1%
   {\syst_helpers_argument_reset
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_triple_empty_one_yes#1}%
      {\syst_helpers_triple_empty_one_nop#1}}
 
 \def\syst_helpers_triple_empty_one_yes#1[#2]%
   {\firstargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_triple_empty_two_yes#1{#2}}%
      {\syst_helpers_triple_empty_two_nop#1{#2}}}
 
 \def\syst_helpers_triple_empty_two_yes#1#2[#3]%
   {\secondargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\thirdargumenttrue#1[{#2}][{#3}]}%
      {\syst_helpers_triple_empty_three_nop#1{#2}{#3}}}
 
@@ -2281,25 +2315,25 @@
 
 \unexpanded\def\doquadrupleempty#1%
   {\syst_helpers_argument_reset
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_quadruple_empty_one_yes#1}%
      {\syst_helpers_quadruple_empty_one_nop#1}}
 
 \def\syst_helpers_quadruple_empty_one_yes#1[#2]%
   {\firstargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_quadruple_empty_two_yes#1{#2}}%
      {\syst_helpers_quadruple_empty_two_nop#1{#2}}}
 
 \def\syst_helpers_quadruple_empty_two_yes#1#2[#3]%
   {\secondargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_quadruple_empty_three_yes#1{#2}{#3}}%
      {\syst_helpers_quadruple_empty_three_nop#1{#2}{#3}}}
 
 \def\syst_helpers_quadruple_empty_three_yes#1#2#3[#4]%
   {\thirdargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\fourthargumenttrue#1[{#2}][{#3}][{#4}]}%
      {\syst_helpers_quadruple_empty_four_nop#1{#2}{#3}{#4}}}
 
@@ -2348,31 +2382,31 @@
 
 \unexpanded\def\doquintupleempty#1%
   {\syst_helpers_argument_reset
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_quintuple_empty_one_yes#1}%
      {\syst_helpers_quintuple_empty_one_nop#1}}
 
 \def\syst_helpers_quintuple_empty_one_yes#1[#2]%
   {\firstargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_quintuple_empty_two_yes#1{#2}}%
      {\syst_helpers_quintuple_empty_two_nop#1{#2}}}
 
 \def\syst_helpers_quintuple_empty_two_yes#1#2[#3]%
   {\secondargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_quintuple_empty_three_yes#1{#2}{#3}}%
      {\syst_helpers_quintuple_empty_three_nop#1{#2}{#3}}}
 
 \def\syst_helpers_quintuple_empty_three_yes#1#2#3[#4]%
   {\thirdargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_quintuple_empty_four_yes#1{#2}{#3}{#4}}%
      {\syst_helpers_quintuple_empty_four_nop#1{#2}{#3}{#4}}}
 
 \def\syst_helpers_quintuple_empty_four_yes#1#2#3#4[#5]%
   {\fourthargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\fifthargumenttrue#1[{#2}][{#3}][{#4}][{#5}]}%
      {\syst_helpers_quintuple_empty_five_nop#1{#2}{#3}{#4}{#5}}}
 
@@ -2435,37 +2469,37 @@
 
 \unexpanded\def\dosixtupleempty#1%
   {\syst_helpers_argument_reset
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_sixtuple_empty_one_yes#1}
      {\syst_helpers_sixtuple_empty_one_nop#1}}
 
 \def\syst_helpers_sixtuple_empty_one_yes#1[#2]%
   {\firstargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_sixtuple_empty_two_yes#1{#2}}%
      {\syst_helpers_sixtuple_empty_two_nop#1{#2}}}
 
 \def\syst_helpers_sixtuple_empty_two_yes#1#2[#3]%
   {\secondargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_sixtuple_empty_three_yes#1{#2}{#3}}%
      {\syst_helpers_sixtuple_empty_three_nop#1{#2}{#3}}}
 
 \def\syst_helpers_sixtuple_empty_three_yes#1#2#3[#4]%
   {\thirdargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_sixtuple_empty_four_yes#1{#2}{#3}{#4}}%
      {\syst_helpers_sixtuple_empty_four_nop#1{#2}{#3}{#4}}}
 
 \def\syst_helpers_sixtuple_empty_four_yes#1#2#3#4[#5]%
   {\fourthargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_sixtuple_empty_five_yes#1{#2}{#3}{#4}{#5}}%
      {\syst_helpers_sixtuple_empty_five_nop#1{#2}{#3}{#4}{#5}}}
 
 \def\syst_helpers_sixtuple_empty_five_yes#1#2#3#4#5[#6]%
   {\fifthargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\sixthargumenttrue#1[{#2}][{#3}][{#4}][{#5}][{#6}]}%
      {\syst_helpers_sixtuple_empty_six_nop#1{#2}{#3}{#4}{#5}{#6}}}
 
@@ -2543,43 +2577,43 @@
 
 \unexpanded\def\doseventupleempty#1%
   {\syst_helpers_argument_reset
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_seventuple_empty_one_yes#1}%
      {\syst_helpers_seventuple_empty_one_nop#1}}
 
 \def\syst_helpers_seventuple_empty_one_yes#1[#2]%
   {\firstargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_seventuple_empty_two_yes#1{#2}}%
      {\syst_helpers_seventuple_empty_two_nop#1{#2}}}
 
 \def\syst_helpers_seventuple_empty_two_yes#1#2[#3]%
   {\secondargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_seventuple_empty_three_yes#1{#2}{#3}}%
      {\syst_helpers_seventuple_empty_three_nop#1{#2}{#3}}}
 
 \def\syst_helpers_seventuple_empty_three_yes#1#2#3[#4]%
   {\thirdargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_seventuple_empty_four_yes#1{#2}{#3}{#4}}%
      {\syst_helpers_seventuple_empty_four_nop#1{#2}{#3}{#4}}}
 
 \def\syst_helpers_seventuple_empty_four_yes#1#2#3#4[#5]%
   {\fourthargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_seventuple_empty_five_yes#1{#2}{#3}{#4}{#5}}%
      {\syst_helpers_seventuple_empty_five_nop#1{#2}{#3}{#4}{#5}}}
 
 \def\syst_helpers_seventuple_empty_five_yes#1#2#3#4#5[#6]%
   {\fifthargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_seventuple_empty_six_yes#1{#2}{#3}{#4}{#5}{#6}}%
      {\syst_helpers_seventuple_empty_six_nop#1{#2}{#3}{#4}{#5}{#6}}}
 
 \def\syst_helpers_seventuple_empty_six_yes#1#2#3#4#5#6[#7]%
   {\sixthargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\seventhargumenttrue#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}]}%
      {\syst_helpers_seventuple_empty_seven_nop#1{#2}{#3}{#4}{#5}{#6}{#7}}}
 
@@ -2735,13 +2769,13 @@
 
 \unexpanded\def\complexorsimple#1%
   {% \relax % prevents lookahead, brrr
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\firstargumenttrue \csname\s!complex\strippedcsname#1\endcsname}
      {\firstargumentfalse\csname\s!simple \strippedcsname#1\endcsname}}
 
 \unexpanded\def\complexorsimpleempty#1%
   {% \relax % prevents lookahead, brrr
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\firstargumenttrue \csname\s!complex\strippedcsname#1\endcsname}
      {\firstargumentfalse\csname\s!complex\strippedcsname#1\endcsname[]}}
 
@@ -2753,10 +2787,10 @@
 %D in protection.
 
 \unexpanded\def\syst_helpers_complex_or_simple#1#2%
-  {\doifnextoptionalelse{\firstargumenttrue#1}{\firstargumentfalse#2}}
+  {\doifelsenextoptional{\firstargumenttrue#1}{\firstargumentfalse#2}}
 
 \unexpanded\def\syst_helpers_complex_or_simple_empty#1%
-  {\doifnextoptionalelse{\firstargumenttrue#1}{\firstargumentfalse#1[]}}
+  {\doifelsenextoptional{\firstargumenttrue#1}{\firstargumentfalse#1[]}}
 
 \unexpanded\def\definecomplexorsimple#1%
   {\unexpanded\edef#1{\syst_helpers_complex_or_simple
@@ -3380,14 +3414,14 @@
 \def\syst_helpers_do_do_do_increment#1,#2){\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi+#2\relax}}
 \def\syst_helpers_do_do_do_decrement#1,#2){\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi-#2\relax}}
 
-\def\syst_helpers_do_do_increment(#1{\doifnextcharelse,{\syst_helpers_do_do_do_increment#1}{\syst_helpers_do_do_do_increment#1,\plusone}}
-\def\syst_helpers_do_do_decrement(#1{\doifnextcharelse,{\syst_helpers_do_do_do_decrement#1}{\syst_helpers_do_do_do_decrement#1,\plusone}}
+\def\syst_helpers_do_do_increment(#1{\doifelsenextchar,{\syst_helpers_do_do_do_increment#1}{\syst_helpers_do_do_do_increment#1,\plusone}}
+\def\syst_helpers_do_do_decrement(#1{\doifelsenextchar,{\syst_helpers_do_do_do_decrement#1}{\syst_helpers_do_do_do_decrement#1,\plusone}}
 
 \unexpanded\def\fastincrement#1{\dodoglobal\edef#1{\the\numexpr#1+\plusone \relax}}
 \unexpanded\def\fastdecrement#1{\dodoglobal\edef#1{\the\numexpr#1+\minusone\relax}}
 
-\unexpanded\def\increment{\doifnextcharelse(\syst_helpers_do_do_increment\syst_helpers_do_increment}
-\unexpanded\def\decrement{\doifnextcharelse(\syst_helpers_do_do_decrement\syst_helpers_do_decrement}
+\unexpanded\def\increment{\doifelsenextchar(\syst_helpers_do_do_increment\syst_helpers_do_increment}
+\unexpanded\def\decrement{\doifelsenextchar(\syst_helpers_do_do_decrement\syst_helpers_do_decrement}
 
 \unexpanded\def\incrementvalue#1{\expandafter\increment\csname#1\endcsname}
 \unexpanded\def\decrementvalue#1{\expandafter\decrement\csname#1\endcsname}
@@ -4064,12 +4098,14 @@
 
 \def\syst_helpers_check_if_assignment_else#1=#2#3\_e_o_p_{\if#2@}%
 
-\unexpanded\def\doifassignmentelse#1% expandable
+\unexpanded\def\doifelseassignment#1% expandable
   {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=@@\_e_o_p_
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
+
+\let\doifassignmentelse\doifelseassignment
 
 \newif\ifassignment
 
@@ -4143,7 +4179,7 @@
 %D
 %D Watch the one level expansion of the second argument.
 
-\unexpanded\def\doifmeaningelse#1#2%
+\unexpanded\def\doifelsemeaning#1#2%
   {\edef\m_syst_string_one{\meaning#1}%
    \def \m_syst_string_two{#2}%
    \edef\m_syst_string_two{\meaning\m_syst_string_two}%
@@ -4152,6 +4188,8 @@
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifmeaningelse\doifelsemeaning
 
 %D \macros
 %D   {doifsamestringselse,doifsamestring,doifnotsamestring}
@@ -4170,9 +4208,11 @@
    \edef\m_syst_string_two{\detokenize\expandafter{\normalexpanded{#4}}}%
    \ifx\m_syst_string_one\m_syst_string_two\expandafter#1\else\expandafter#2\fi}
 
-\unexpanded\def\doifsamestringelse{\syst_helpers_if_samestring_else\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifelsesamestring{\syst_helpers_if_samestring_else\firstoftwoarguments\secondoftwoarguments}
 \unexpanded\def\doifsamestring    {\syst_helpers_if_samestring_else\firstofoneargument \gobbleoneargument   }
 \unexpanded\def\doifnotsamestring {\syst_helpers_if_samestring_else\gobbleoneargument  \firstofoneargument  }
+
+\let\doifsamestringelse\doifelsesamestring
 
 %D \macros
 %D   {ConvertToConstant,ConvertConstantAfter}
@@ -4235,7 +4275,7 @@
 \unexpanded\def\CheckConstantAfter#1#2%
   {\expandafter\convertargument\v!prefix!\to\ascii
    \convertargument#1\to#2\relax
-   \doifinstringelse\ascii{#2}
+   \doifelseinstring\ascii{#2}
      {\expandafter\convertargument#1\to#2}
      {}}
 
@@ -4506,10 +4546,10 @@
 %D implementation became:
 
 \unexpanded\def\groupedcommand#1#2%
-  {\doifnextbgroupelse{\syst_helpers_handle_group_normal{#1}{#2}}{\syst_helpers_handle_group_nop{#1}{#2}}}
+  {\doifelsenextbgroup{\syst_helpers_handle_group_normal{#1}{#2}}{\syst_helpers_handle_group_nop{#1}{#2}}}
 
 \unexpanded\def\simplegroupedcommand#1#2%
-  {\doifnextbgroupelse{\syst_helpers_handle_group_simple{#1}{#2}}{\syst_helpers_handle_group_nop{#1}{#2}}}
+  {\doifelsenextbgroup{\syst_helpers_handle_group_simple{#1}{#2}}{\syst_helpers_handle_group_nop{#1}{#2}}}
 
 %D Users should be aware of the fact that grouping can
 %D interfere with ones paragraph settings that are executed
@@ -4603,14 +4643,14 @@
 \newtoks\AfterPar
 
 \def\redowithpar\par
-  {\doifnextcharelse\par\redowithpar\dodowithpar}%
+  {\doifelsenextchar\par\redowithpar\dodowithpar}%
 
 \def\dowithpar#1#2%
   {\def\dodowithpar##1\par{#1##1#2}%
    \redowithpar\par}
 
 \def\redogotopar\par
-  {\doifnextcharelse\par\redogotopar\dodogotopar}%
+  {\doifelsenextchar\par\redogotopar\dodogotopar}%
 
 \def\dogotopar#1%
   {\def\dodogotopar{#1}%
@@ -4674,7 +4714,7 @@
 \unexpanded\def\dowithpargument#1%
   {\def\syst_helpers_next_par##1 \par{#1{##1}}%
    \def\syst_helpers_next_arg##1{#1{##1}}%
-   \doifnextbgroupelse\syst_helpers_next_arg{\doifnextcharelse\par{#1{}}\syst_helpers_next_par}}
+   \doifelsenextbgroup\syst_helpers_next_arg{\doifelsenextchar\par{#1{}}\syst_helpers_next_par}}
 
 %D The \type{p} in the previous command stands for paragraph.
 %D When we want to act upon words we can use the \type{w}
@@ -4704,7 +4744,7 @@
 \unexpanded\def\dowithwargument#1%
   {\def\syst_helpers_next_war##1 {#1{##1}}%
    \def\syst_helpers_next_arg##1{#1{##1}}%
-   \doifnextbgroupelse\syst_helpers_next_arg\syst_helpers_next_war}
+   \doifelsenextbgroup\syst_helpers_next_arg\syst_helpers_next_war}
 
 %D \macros
 %D   {dorepeat,dorepeatwithcommand}
@@ -4799,10 +4839,12 @@
      \expandafter\firstoftwoarguments
    \fi}
 
-\def\doifstringinstringelse#1#2%
+\def\doifelsestringinstring#1#2%
   {\expandafter\def\expandafter\syst_helpers_if_instring_else\expandafter##\expandafter1#1##2##3\_e_o_s_
      {\syst_helpers_if_instring_else_indeed##2}%
    \expandafter\expandafter\expandafter\syst_helpers_if_instring_else\expandafter#2#1@@\_e_o_s_}
+
+\let\doifstringinstringelse\doifelsestringinstring
 
 %D \macros
 %D   {appendtoks,prependtoks,appendtoksonce,prependtoksonce,
@@ -4849,19 +4891,21 @@
 \def\syst_helpers_append_toks_once#1\to#2%
   {\let\m_syst_helpers_scratch#2%
    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
-   \doifintokselse\t_syst_helpers_scratch\m_syst_helpers_scratch\donothing\syst_helpers_append_toks_indeed}
+   \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch\donothing\syst_helpers_append_toks_indeed}
 
 \def\syst_helpers_prepend_toks_once#1\to#2%
   {\let\m_syst_helpers_scratch#2%
    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
-   \doifintokselse\t_syst_helpers_scratch\m_syst_helpers_scratch\donothing\syst_helpers_prepend_toks_indeed}
+   \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch\donothing\syst_helpers_prepend_toks_indeed}
 
 %D The test macro:
 
-\unexpanded\def\doifintokselse#1#2% #1 en #2 zijn toks
+\unexpanded\def\doifelseintoks#1#2% #1 en #2 zijn toks
   {\edef\asciia{\detokenize\expandafter{\the#1}}%
    \edef\asciib{\detokenize\expandafter{\the#2}}%
-   \doifstringinstringelse\asciia\asciib}
+   \doifelsestringinstring\asciia\asciib}
+
+\let\doifintokselse\doifelseintoks
 
 %D A nice one too:
 
@@ -5055,24 +5099,26 @@
   {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}
 
 \unexpanded\def\addtocommalist#1#2% {item} \cs
-  {\rawdoifinsetelse{#1}#2\resetglobal
+  {\rawdoifelseinset{#1}#2\resetglobal
      {\dodoglobal\edef#2{\ifx#2\empty\else#2,\fi#1}}}
 
 \unexpanded\def\pretocommalist#1#2% {item} \cs
-  {\rawdoifinsetelse{#1}#2\resetglobal
+  {\rawdoifelseinset{#1}#2\resetglobal
      {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}}
 
-\unexpanded\def\robustdoifinsetelse#1#2%
+\unexpanded\def\robustdoifelseinset#1#2%
   {\edef\m_syst_string_one{\detokenize\expandafter{\normalexpanded{#1}}}%
    \edef\m_syst_string_two{\detokenize\expandafter{\normalexpanded{#2}}}%
-   \rawdoifinsetelse\m_syst_string_one\m_syst_string_two}
+   \rawdoifelseinset\m_syst_string_one\m_syst_string_two}
+
+\let\robustdoifinsetelse\robustdoifelseinset
 
 \unexpanded\def\robustaddtocommalist#1#2% {item} \cs
-  {\robustdoifinsetelse{#1}#2\resetglobal
+  {\robustdoifelseinset{#1}#2\resetglobal
      {\dodoglobal\edef#2{\ifx#2\empty\else#2,\fi#1}}}
 
 \unexpanded\def\robustpretocommalist#1#2% {item} \cs
-  {\robustdoifinsetelse{#1}#2\resetglobal
+  {\robustdoifelseinset{#1}#2\resetglobal
      {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}}
 
 \unexpanded\def\xsplitstring#1#2% \cs {str}
@@ -5086,7 +5132,7 @@
 \def\acleanedupcommalist#1,,#2\relax{#1}
 
 \unexpanded\def\removefromcommalist#1#2% to be sped up
-  {\rawdoifinsetelse{#1}#2%
+  {\rawdoifelseinset{#1}#2%
      {\normalexpanded{\xsplitstring\noexpand#2{#1}}%
       \dodoglobal\edef#2%
         {\ifx\m_syst_string_one\empty
@@ -5343,7 +5389,7 @@
 \newdimen\localhsize
 
 \unexpanded\def\setlocalhsize % don't change !
-  {\doifnextoptionalelse
+  {\doifelsenextoptional
      \syst_helpers_set_local_hsize_yes
      \syst_helpers_set_local_hsize_nop}
 
@@ -5430,7 +5476,7 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\doifsomethingelse#1%
+\unexpanded\def\doifelsesomething#1%
   {\edef\m_syst_string_one{#1}%
    \ifx\m_syst_string_one\empty
      \expandafter\secondoftwoarguments
@@ -5462,17 +5508,24 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doifvalueelse       \doifelsevalue
+\let\doifnothingelse     \doifelsenothing
+\let\doifsomethingelse   \doifelsesomething
+\let\doifvaluenothingelse\doifelsevaluenothing
+
 %D \macros
 %D   {doifemptyelsevalue, doifemptyvalue, doifnotemptyvalue}
 %D
 %D Also handy:
 
-\def\doifemptyelsevalue#1%
+\def\doifelseemptyvalue#1%
   {\expandafter\ifx\csname#1\endcsname\empty
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifemptyvalueelse\doifelseemptyvalue
 
 \def\doifemptyvalue#1%
   {\expandafter\ifx\csname#1\endcsname\empty
@@ -5503,9 +5556,11 @@
    \processcommalist[#3]\syst_helpers_do_common_check_all
    \ifdone\expandafter#1\else\expandafter#2\fi}
 
-\unexpanded\def\doifallcommonelse{\syst_helpers_do_if_all_common_else\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifelseallcommon{\syst_helpers_do_if_all_common_else\firstoftwoarguments\secondoftwoarguments}
 \unexpanded\def\doifallcommon    {\syst_helpers_do_if_all_common_else\firstofonearguments\gobbleoneargument   }
 \unexpanded\def\doifnotallcommon {\syst_helpers_do_if_all_common_else\gobbleoneargument  \firstofonearguments }
+
+\let\doifallcommonelse\doifelseallcommon
 
 %D \macros
 %D   {DOIF,DOIFELSE,DOIFNOT}
@@ -5710,12 +5765,14 @@
 
 \def\syst_helpers_if_some_space_else#1 #2#3\_e_o_s_{\if\noexpand#2@}
 
-\def\doifsomespaceelse#1%                     % #2#3%
+\def\doifelsesomespace#1%                     % #2#3%
   {\syst_helpers_if_some_space_else#1 @ @\_e_o_s_ % #3\else#2\fi}
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
+
+\let\doifsomespaceelse\doifelsesomespace
 
 %D \macros
 %D   {processseparatedlist}
@@ -6245,13 +6302,15 @@
 %D Not that fast I guess, but here's a way to test for token
 %D registers being empty.
 
-\unexpanded\def\doifsometokselse#1%
+\unexpanded\def\doifelsesometoks#1%
   {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
    \ifx\m_syst_string_one\empty
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
+
+\let\doifsometokselse\doifelsesometoks
 
 \unexpanded\def\doifsometoks#1%
   {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
@@ -6291,9 +6350,11 @@
 \unexpanded\def\stopstrictinspectnextcharacter
   {\let\syst_helpers_inspect_next_character\syst_helpers_normal_inspect_next_character}
 
-\def\strictdoifnextoptionalelse#1#2%
+\unexpanded\def\strictdoifelsenextoptional#1#2%
   {\startstrictinspectnextcharacter
-   \doifnextcharelse[{\stopstrictinspectnextcharacter#1}{\stopstrictinspectnextcharacter#2}}
+   \doifelsenextchar[{\stopstrictinspectnextcharacter#1}{\stopstrictinspectnextcharacter#2}}
+
+\let\strictdoifnextoptionalelse\strictdoifelsenextoptional
 
 %D \macros
 %D   {gobblespacetokens}
@@ -6486,8 +6547,10 @@
 %D
 %D This is a dirty one: we simply append a unit and discard it when needed.
 
-\def\doifdimensionelse#1%
+\def\doifelsedimension#1%
   {\afterassignment\syst_helpers_if_dimension_else\scratchdimen#1pt\relax}
+
+\let\doifdimensionelse\doifelsedimension
 
 \def\syst_helpers_if_dimension_else#1%
   {\ifx#1\relax
@@ -6517,7 +6580,9 @@
 \installsystemnamespace{dimencheckb}
 \installsystemnamespace{dimencheckc}
 
-\def\doifdimenstringelse#1{\normalexpanded{\noexpand\dodimenteststageone#1}\empty\empty]}
+\def\doifelsedimenstring#1{\normalexpanded{\noexpand\dodimenteststageone#1}\empty\empty]}
+
+\let\doifdimenstringelse\doifelsedimenstring
 
 \def\dodimenteststageone  #1#2{\csname \??dimenchecka\ifcsname \??dimenchecka#2\endcsname#2\else x\fi\endcsname#2}
 \def\dodimenteststagetwo  #1#2{\csname \??dimencheckb\ifcsname \??dimencheckb#2\endcsname#2\else x\fi\endcsname#2}
@@ -6640,9 +6705,11 @@
 
 % sometimes handy:
 
-\unexpanded\def\doifhasspaceelse#1%
+\unexpanded\def\doifelsehasspace#1%
   {\edef\m_syst_string_one{#1}%
    \normalexpanded{\syst_helpers_if_has_space_else#1\space}\empty\relax}
+
+\let\doifhasspaceelse\doifelsehasspace
 
 \unexpanded\def\syst_helpers_if_has_space_else#1 #2#3\relax % \space\empty\relax
   {\ifx\m_syst_string_one\space
@@ -6652,7 +6719,7 @@
    \else
      \doubleexpandafter\firstoftwoarguments
    \fi\fi}
-
+
 % this will replace loadfile once and alike !!! todo
 
 \installsystemnamespace{flag}
@@ -6671,6 +6738,8 @@
      \doubleexpandafter\secondoftwoarguments
    \fi\fi}
 
+\let\doifflaggedelse\doifelseflagged
+
 \def\doifnotflagged#1%
   {\expandafter\ifx\csname\??flag#1\endcsname\relax
      \expandafter\firstofoneargument
@@ -6679,10 +6748,10 @@
    \else
      \doubleexpandafter\firstofoneargument
    \fi\fi}
-
+
 \unexpanded\def\inheritparameter[#1]#2[#3]#4[#5]% tag tokey fromkey
   {\expandafter\def\csname#1#3\expandafter\endcsname\expandafter{\csname#1#5\endcsname}}
-
+
 \def\syst_helpers_if_non_zero_positive_else#1#2\end % #3#4%
   {\ifx#1\relax
      \ifcase\scratchcounter
@@ -6697,9 +6766,11 @@
       \expandafter\secondoftwoarguments
    \fi}
 
-\def\doifnonzeropositiveelse#1%
+\def\doifelsenonzeropositive#1%
   {\begingroup\afterassignment\syst_helpers_if_non_zero_positive_else\scratchcounter=0#1\relax\empty\end}
-
+
+\let\doifnonzeropositiveelse\doifelsenonzeropositive
+
 % here ?
 
 \unexpanded\def\dosetrawvalue #1#2#3{\expandafter \def\csname#1#2\endcsname{#3}}
@@ -6858,7 +6929,7 @@
 %D \typebuffer \getbuffer
 
 \unexpanded\def\ignoreimplicitspaces
-  {\doifnextcharelse\relax\relax\relax}
+  {\doifelsenextchar\relax\relax\relax}
 
 %D \macros
 %D   {processwords}

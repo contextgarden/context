@@ -133,13 +133,16 @@
 \unexpanded\def\node_rules_direct#1%
   {\groupedcommand{\node_rules_set{#1}}\relax}
 
-\unexpanded\def\node_rules_set
-  {\clf_enablerules % will be moved to lua
-   \glet\node_rules_set\node_rules_set_indeed
-   \node_rules_set}
+% \unexpanded\def\node_rules_set
+%   {\clf_enablerules % will be moved to lua
+%    \glet\node_rules_set\node_rules_set_indeed
+%    \node_rules_set}
+%
+%\unexpanded\def\node_rules_set_indeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
 
-\unexpanded\def\node_rules_set_indeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
-  {\edef\currentbar{#1}%
+\unexpanded\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
+  {\clf_enablerules % will be relaxed
+   \edef\currentbar{#1}%
    \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
    \advance\c_node_rules_index\plusone
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
@@ -293,21 +296,16 @@
 \unexpanded\def\node_shifts_redefine#1%
   {\def\currentshift{#1}\node_shifts_define}
 
-\unexpanded\def\node_shifts_set
+% \unexpanded\def\node_shifts_set
+%   {\clf_enableshifts
+%    \glet\node_shifts_set\node_shifts_set_indeed
+%    \node_shifts_set}
+%
+% \def\node_shifts_set_indeed#1% todo: check parent !
+
+\unexpanded\def\node_shifts_set#1% todo: check parent !
   {\clf_enableshifts
-   \glet\node_shifts_set\node_shifts_set_indeed
-   \node_shifts_set}
-
-% \unexpanded\def\node_shifts_direct#1%
-%   {\doisolatedgroupedalign{\node_shifts_set{#1}}\donothing}
-
-\unexpanded\def\node_shifts_direct#1%
-  {\groupedcommand
-     {\begingroup\dostartisolation\begingroup\node_shifts_set{#1}}
-     {\endgroup\dostopisolation\endgroup}}
-
-\def\node_shifts_set_indeed#1% todo: check parent !
-  {\def\currentshift{#1}%
+   \def\currentshift{#1}%
    \expandafter\let\expandafter\c_node_shifts_index\csname\??shiftindex#1\endcsname
    \advance\c_node_shifts_index\plusone
    \attribute\shiftedattribute\numexpr
@@ -323,6 +321,14 @@
 
 \unexpanded\def\stopshift
   {\endgroup}
+
+% \unexpanded\def\node_shifts_direct#1%
+%   {\doisolatedgroupedalign{\node_shifts_set{#1}}\donothing}
+
+\unexpanded\def\node_shifts_direct#1%
+  {\groupedcommand
+     {\begingroup\dostartisolation\begingroup\node_shifts_set{#1}}
+     {\endgroup\dostopisolation\endgroup}}
 
 \setupshifts
   [\c!method=0,

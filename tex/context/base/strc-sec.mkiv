@@ -616,7 +616,7 @@
 \unexpanded\def\strc_sectioning_handle_nop_indeed[#1][#2]% for taco: [key=value] variant
   {\setfalse\currentstructureown
    \triggerautostructurelevel
-   \doifassignmentelse{#2}\strc_sectioning_handle_nop_indeed_yes\strc_sectioning_handle_nop_indeed_nop{#1}{#2}}
+   \doifelseassignment{#2}\strc_sectioning_handle_nop_indeed_yes\strc_sectioning_handle_nop_indeed_nop{#1}{#2}}
 
 \unexpanded\def\strc_sectioning_handle_nop_indeed_yes#1#2%
   {\strc_sectioning_handle{#1}{#2}{}}

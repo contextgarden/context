@@ -280,7 +280,7 @@
   {\publ_set_publication_indeed\v!default{#1}}
 
 \def\publ_set_publication_checked#1#2%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\publ_set_publication_indeed\v!default{#1}}
      {\publ_set_publication_indeed{#1}{}}}
 
@@ -674,8 +674,10 @@
 \unexpanded\def\btxsetcurrentlistentry#1{\edef\currentbtxlistentry{#1}}
 \unexpanded\def\btxsetcurrentlistindex#1{\edef\currentbtxlistindex{#1}}
 
-\unexpanded\def\btxdoifsameaspreviouselse#1%
+\unexpanded\def\btxdoifelsesameasprevious#1%
   {\clf_btxdoifelsesameasprevious{\currentbtxdataset}\currentbtxlistentry{#1}}
+
+\let\btxdoifsameaspreviouselse\btxdoifelsesameasprevious
 
 \def\publ_place_list_indeed#1[#2][#3]%
   {\begingroup
@@ -688,7 +690,7 @@
        \let\currentbtxspecification\p_specification
      \fi
    \else\iffirstargument
-     \doifassignmentelse{#2}
+     \doifelseassignment{#2}
        {% [settings]
         \let\currentbtxrendering\currentbtxspecification
         \setupcurrentbtxrendering[#2]%
@@ -934,6 +936,8 @@
 \def\currentbtxuservariable #1{\clf_btxuservariable        {\currentbtxdataset}{#1}}
 \def\btxdoifelseuservariable#1{\clf_btxdoifelseuservariable{\currentbtxdataset}{#1}}
 
+\let\btxdoifuservariableelse\btxdoifelseuservariable
+
 \let\btxcitereference\btx_cite_reference_inject
 
 \let\currentbtxnumbering\empty
@@ -959,7 +963,7 @@
 % \to \everysetupbtxlistplacement
 
 \unexpanded\def\btxflushauthor
-  {\doifnextoptionalcselse\btx_flush_author_yes\btx_flush_author_nop}
+  {\doifelsenextoptionalcs\btx_flush_author_yes\btx_flush_author_nop}
 
 \def\btx_flush_author_yes[#1]{\btx_flush_author{#1}}
 \def\btx_flush_author_nop    {\btx_flush_author{\btxparameter\c!authorconversion}}
@@ -1122,10 +1126,10 @@
 \unexpanded\def\btxhybridcite % so one can alias the old
   {\dontleavehmode
    \begingroup
-   \strictdoifnextoptionalelse\publ_cite_tags_options\publ_cite_tags_indeed}
+   \strictdoifelsenextoptional\publ_cite_tags_options\publ_cite_tags_indeed}
 
 \unexpanded\def\publ_cite_tags_options[#1]%
-  {\strictdoifnextoptionalelse{\publ_cite_tags_options_indeed{#1}}{\publ_cite_tags_indeed{#1}}}
+  {\strictdoifelsenextoptional{\publ_cite_tags_options_indeed{#1}}{\publ_cite_tags_indeed{#1}}}
 
 \unexpanded\def\publ_cite_tags_indeed#1%
   {\letinteractionparameter\c!style\empty
@@ -1138,7 +1142,7 @@
    \endgroup}
 
 \unexpanded\def\publ_cite_tags_options_indeed#1%
-  {\doifassignmentelse{#1}\publ_cite_tags_settings_indeed\publ_cite_tags_variants_indeed{#1}}
+  {\doifelseassignment{#1}\publ_cite_tags_settings_indeed\publ_cite_tags_variants_indeed{#1}}
 
 \def\publ_cite_tags_settings_indeed#1[#2]%
   {\letinteractionparameter\c!style\empty
@@ -1462,11 +1466,11 @@
   {\ifthirdargument
      \publ_save_dataset_indeed[#1][#2][#3]%
    \else\ifsecondargument
-     \doifassignmentelse{#2}%
+     \doifelseassignment{#2}%
        {\publ_save_dataset_indeed[\s!default][#1][#2]}%
        {\publ_save_dataset_indeed[#1][#2][]}%
    \else\iffirstargument
-     \doifassignmentelse{#1}%
+     \doifelseassignment{#1}%
        {\publ_save_dataset_indeed[\s!default][\jobname-saved.bib][#1]}%
        {\publ_save_dataset_indeed[\s!default][#1][]}%
  % \else

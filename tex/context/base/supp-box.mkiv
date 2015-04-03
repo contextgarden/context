@@ -570,7 +570,7 @@
 %D \doiftext     {data} {then branch}
 %D \stoptyping
 
-\unexpanded\def\doiftextelse#1%
+\unexpanded\def\doifelsetext#1%
   {\begingroup
    \setbox\scratchbox\hbox
      {\settrialtypesetting
@@ -580,6 +580,8 @@
    \else
      \endgroup\expandafter\firstoftwoarguments
    \fi}
+
+\let\doiftextelse\doifelsetext
 
 \unexpanded\def\doiftext#1%
   {\begingroup
@@ -1064,9 +1066,10 @@
 %D \stoptyping
 
 \unexpanded\def\doshowhyphenatednextbox
-  {\ctxcommand{showhyphenatedinlist(tex.box[\number\nextbox].list)}}
+  {\clf_showhyphenatedinlist\nextbox}
 
-\unexpanded\def\showhyphens{\dowithnextboxcs\doshowhyphenatednextbox\hbox}
+\unexpanded\def\showhyphens
+  {\dowithnextboxcs\doshowhyphenatednextbox\hbox}
 
 %D The following macros are seldom used but handy for tracing.
 %D
@@ -1077,7 +1080,7 @@
 %D \stoptyping
 
 \unexpanded\def\dohyphenatednextbox
-  {\ctxcommand{hyphenatedlist(\number\nextbox)}%
+  {\clf_hyphenatedlist\nextbox false\relax
    \unhbox\nextbox}
 
 \unexpanded\def\hyphenatedword  {\dowithnextboxcs\dohyphenatednextbox\hbox}
@@ -1085,24 +1088,10 @@
 \unexpanded\def\hyphenatedfile#1{\dowithnextboxcs\dohyphenatednextbox\hbox{\readfile{#1}\donothing\donothing}}
 
 \unexpanded\def\dohyphenatednextboxcolor
-  {\ctxcommand{hyphenatedlist(\number\nextbox,true)}%
+  {\clf_hyphenatedlist\nextbox true\relax
    \unhbox\nextbox}
 
 \unexpanded\def\hyphenatedcoloredword{\dowithnextboxcs\dohyphenatednextboxcolor\hbox}
-
-% D \starttyping
-% D \hyphenatedhack{\kern-.25em_}{alongword}
-% D \stoptyping
-%
-% \unexpanded\def\dohyphenatedhackbox
-%   {\ctxcommand{hyphenatedhack(tex.box[\number\nextbox].list,tex.box[\number\scratchbox].list)}%
-%    \unhbox\nextbox
-%    \endgroup}
-%
-% \unexpanded\def\hyphenatedhack#1% the result of a test, not that useful
-%   {\begingroup
-%    \setbox\scratchbox\hbox{#1}% only chars and kerns !
-%    \dowithnextboxcs\dohyphenatedhackbox\hbox}
 
 %D \macros
 %D   {processtokens}
@@ -1383,7 +1372,12 @@
    \begingroup
    \setbox\scratchbox\hbox{\settrialtypesetting#2{\savecurrentattributes{pic}}}%
    \setbox\scratchbox\hbox{\restorecurrentattributes{pic}#1}%
-   \ctxcommand{applytochars(\number\scratchbox,"\strippedcsname#2",true)}%
+   \clf_applytobox
+     method  {char}%
+     box     \scratchbox
+     command {\checkedstrippedcsname#2}%
+     nested  true%
+   \relax
    \endgroup}
 
 \unexpanded\def\processisolatedwords#1#2%
@@ -1391,33 +1385,87 @@
    \begingroup
    \setbox\scratchbox\hbox{\settrialtypesetting#2{\savecurrentattributes{pic}}}%
    \setbox\scratchbox\hbox{\restorecurrentattributes{pic}#1}%
-   \ctxcommand{applytowords(\number\scratchbox,"\strippedcsname#2",true)}%
+   \clf_applytobox
+     method  {word}%
+     box     \scratchbox
+     command {\checkedstrippedcsname#2}%
+     nested  true%
+   \relax
    \endgroup}
+
+%D A variant:
+
+\unexpanded\def\applytocharacters#1%
+  {\dontleavehmode
+   \dowithnextbox{\clf_applytobox
+     method  {char}%
+     box     \nextbox
+     command {\checkedstrippedcsname#1}%
+     nested  true%
+   \relax}%
+   \hbox}
+
+\unexpanded\def\applytowords#1%
+  {\dontleavehmode
+   \dowithnextbox{\clf_applytobox
+     method  {word}%
+     box     \nextbox
+     command {\checkedstrippedcsname#1}%
+     nested  true%
+   \relax}%
+   \hbox}
+
+%D The old call:
 
 \unexpanded\def\processwords#1%
   {\processisolatedwords{#1}\processword}
 
 \let\processword\relax
 
-\unexpanded\def\applytosplitstringchar#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","char")}}
-\unexpanded\def\applytosplitstringword#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","word")}}
-\unexpanded\def\applytosplitstringline#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","line")}}
+\unexpanded\def\applytosplitstringchar#1#2%
+  {\dontleavehmode\clf_processsplit
+     data    {#2}%
+     command {\checkedstrippedcsname#1}%
+     method  {char}%
+   \relax}
 
-\unexpanded\def\applytosplitstringcharspaced#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","char",true)}}
-\unexpanded\def\applytosplitstringwordspaced#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","word",true)}}
-\unexpanded\def\applytosplitstringlinespaced#1#2{\dontleavehmode\ctxcommand{processsplit(\!!bs#2\!!es,"\strippedcsname#1","line",true)}}
+\unexpanded\def\applytosplitstringword#1#2%
+  {\dontleavehmode\clf_processsplit
+     data    {#2}%
+     command {\checkedstrippedcsname#1}%
+     method  {word}%
+   \relax}
 
-%D A variant:
+\unexpanded\def\applytosplitstringline#1#2%
+  {\dontleavehmode\clf_processsplit
+     data    {#2}%
+     command {\checkedstrippedcsname#1}%
+     method  {line}%
+   \relax}
 
-\unexpanded\def\applytocharacters#1%
-  {\dontleavehmode
-   \dowithnextbox{\ctxcommand{applytochars(\number\nextbox,"\strippedcsname#1",true)}}%
-   \hbox}
+\unexpanded\def\applytosplitstringcharspaced#1#2%
+  {\dontleavehmode\clf_processsplit
+     data    {#2}%
+     command {\checkedstrippedcsname#1}%
+     method  {char}%
+     spaced  true%
+   \relax}
 
-\unexpanded\def\applytowords#1%
-  {\dontleavehmode
-   \dowithnextbox{\ctxcommand{applytowords(\number\nextbox,"\strippedcsname#1",true)}}%
-   \hbox}
+\unexpanded\def\applytosplitstringwordspaced#1#2%
+  {\dontleavehmode\clf_processsplit
+     data    {#2}%
+     command {\checkedstrippedcsname#1}%
+     method  {word}%
+     spaced  true%
+   \relax}
+
+\unexpanded\def\applytosplitstringlinespaced#1#2%
+  {\dontleavehmode\clf_processsplit
+     data    {#2}%
+     command {\checkedstrippedcsname#1}%
+     method  {line}%
+     spaced  true%
+   \relax}
 
 %D \macros
 %D   {sbox}
@@ -1815,7 +1863,7 @@
       \box\d_syst_boxes_separator
    \fi
    \egroup
-   \ctxcommand{hboxtovbox(\number\scratchbox)}%
+   \clf_hboxtovbox\scratchbox
    \box\scratchbox
    \endgroup}
 
@@ -1869,7 +1917,7 @@
 
 \unexpanded\def\stophboxestohbox
   {\egroup
-   \ctxcommand{vboxlisttohbox(\number\scratchbox,\number\nextbox,\number\dimexpr\hboxestohboxslack)}%
+   \clf_vboxlisttohbox\scratchbox\nextbox\dimexpr\hboxestohboxslack\relax
    \dontleavehmode
    \unhbox\nextbox
    \removeunwantedspaces
@@ -2044,7 +2092,7 @@
   {\bgroup
    \def\syst_boxes_process_indeed{#1}% #1 can be redefined halfway
    \setbox\processbox\emptybox
-   \doifnextbgroupelse\syst_boxes_process_yes\syst_boxes_process_nop}
+   \doifelsenextbgroup\syst_boxes_process_yes\syst_boxes_process_nop}
 
 \def\syst_boxes_process_yes
   {\dowithnextboxcs\syst_boxes_process_content\hbox}
@@ -2052,7 +2100,7 @@
 \def\syst_boxes_process_content
   {\removeunwantedspaces
    \syst_boxes_process_indeed % takes \nextbox makes \processbox
-   \doifnextbgroupelse\syst_boxes_process_yes\syst_boxes_process_nop}
+   \doifelsenextbgroup\syst_boxes_process_yes\syst_boxes_process_nop}
 
 \unexpanded\def\syst_boxes_process_nop
   {\removeunwantedspaces
@@ -2509,12 +2557,14 @@
         \copy\csname\??stackbox#1:#2\endcsname
       \fi}}
 
-\unexpanded\def\doifboxelse#1#2#3#4%
+\unexpanded\def\doifelsebox#1#2#3#4%
   {\ifcsname\??stackbox#1:#2\endcsname
      \ifvoid\csname\??stackbox#1:#2\endcsname#4\else#3\fi
    \else
      #4%
    \fi}
+
+\let\doifboxelse\doifelsebox
 
 %D This one is cheaper (the above is no longer used that much):
 
@@ -2544,9 +2594,6 @@
 
 \unexpanded\def\globalpushbox{\syst_boxes_push\global}
 \unexpanded\def\globalpopbox {\syst_boxes_pop \global}
-
-% \unexpanded\def\pushbox#1{\ctxcommand{pushbox(\number#1)}}
-% \unexpanded\def\popbox #1{\ctxcommand{popbox(\number#1)}}
 
 %D \macros
 %D   {removedepth, obeydepth}
@@ -2796,12 +2843,12 @@
 %   {\dowithnextbox{\edef#1{\syst_boxes_nodestostring}}\hbox}
 %
 % \def\syst_boxes_nodestostring
-%   {\ctxcommand{boxtostring(\number\nextbox)}}
+%   {\clf_boxtostring\nextbox}
 
 \unexpanded\def\nodestostring#1#2% more tolerant for #2=\cs
   {\begingroup
    \setbox\nextbox\hbox{#2}%
-   \normalexpanded{\endgroup\edef\noexpand#1{\ctxcommand{boxtostring(\number\nextbox)}}}}
+   \normalexpanded{\endgroup\edef\noexpand#1{\clf_boxtostring\nextbox}}}
 
 %D Even more dirty:
 

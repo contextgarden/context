@@ -46,7 +46,7 @@
      \edef\currentmodule          {#name}%
      \def \currentmoduleparameters{#parameters}%
    \else\ifsecondargument
-     \doifassignmentelse{#name}
+     \doifelseassignment{#name}
        {\let\currentmodulecategory   \empty
         \edef\currentmodule          {#category}%
         \edef\currentmoduleparameters{#name}}
@@ -74,7 +74,7 @@
 \newtoks\everysetupmodule
 
 \unexpanded\def\startmodule
-  {\doifnextoptionalcselse\syst_modules_start_yes\syst_modules_start_nop}
+  {\doifelsenextoptionalcs\syst_modules_start_yes\syst_modules_start_nop}
 
 \def\syst_modules_start_yes[#name]%
   {\pushmacro\currentmodule
@@ -124,8 +124,8 @@
 
 \def\currentmoduleparameter{\moduleparameter\currentmodule} % no need for inlining
 
-\unexpanded\def\useluamodule  [#name]{\ctxlua{dofile(resolvers.findctxfile("#name"))}}
-\unexpanded\def\luaenvironment #name {\ctxlua{dofile(resolvers.findctxfile("#name"))}}
+\unexpanded\def\useluamodule  [#name]{\clf_loadluamodule{#1}} % why not use useluamodule
+\unexpanded\def\luaenvironment #name {\clf_loadluamodule{#1}}
 
 % \usemodule[newmml]
 % \usemodule[newmml][a=b]
@@ -205,10 +205,13 @@
 %D
 %D The version pattern is \type {yyyy.mm.dd} (with mm and dd being optional).
 
-\unexpanded\def\doifolderversionelse#parent#child{\clf_doifolderversionelse{#parent}{#child}}
-\unexpanded\def\doifoldercontextelse       #child{\clf_doifolderversionelse{#child}{}}
+\unexpanded\def\doifelseolderversion#parent#child{\clf_doifelseolderversion{#parent}{#child}}
+\unexpanded\def\doifelseoldercontext       #child{\clf_doifelseolderversion{#child}{}}
 
-%D Relatively new:
+\let\doifolderversionelse\doifelseolderversion
+\let\doifoldercontextelse\doifelseoldercontext
+
+%D Relatively new (no need for a speedup here):
 
 \unexpanded\def\syst_modules_direct_lua#1#2%
   {\edef\m_module_command_command {#1}%
@@ -251,8 +254,8 @@
    \ctxlua{#2(\!!bs#3\!!es,\!!bs#4\!!es)}%
    \directsetup{module:#1:stop}}
 
-\def\installmodulecommandluaone   #1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_one_lua   {\strippedcsname#1}{#2}}}}
-\def\installmodulecommandluatwo   #1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_two_lua   {\strippedcsname#1}{#2}}}}
+\def\installmodulecommandluaone#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_one_lua{\strippedcsname#1}{#2}}}}
+\def\installmodulecommandluatwo#1#2{\unexpanded\def#1{\normalexpanded{\syst_modules_two_lua{\strippedcsname#1}{#2}}}}
 
 % obsolete
 %

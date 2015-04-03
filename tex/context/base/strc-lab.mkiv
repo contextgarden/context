@@ -101,7 +101,7 @@
    \ifx\p_counter\empty %
        \let\p_counter\currentlabel
    \fi
-   \doifcounterelse\p_counter\donothing{\strc_labels_define_counter\p_counter}%
+   \doifelsecounter\p_counter\donothing{\strc_labels_define_counter\p_counter}%
    \letlabelparameter\s!counter\p_counter
 \to \everydefinelabel
 

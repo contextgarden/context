@@ -383,7 +383,7 @@
    \paragraph_start_indeed}
 
 \def\paragraph_start_one[#1][#2]%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\let\currentparagraph\empty
       \setupcurrentparagraph[#1]}
      {\edef\currentparagraph{#1}}%
@@ -432,12 +432,14 @@
     \strc_tags_disable
 \to \everybeforepagebody
 
-% \doifinelementelse{structure:section}            {yes} {no}
-% \doifinelementelse{structure:chapter}            {yes} {no}
-% \doifinelementelse{division:*-structure:chapter} {yes} {no}
+% \doifelseinelement{structure:section}            {yes} {no}
+% \doifelseinelement{structure:chapter}            {yes} {no}
+% \doifelseinelement{division:*-structure:chapter} {yes} {no}
 
-\unexpanded\def\doifinelementelse#1%
-  {\clf_doifinelementelse{#1}}
+\unexpanded\def\doifelseinelement#1%
+  {\clf_doifelseinelement{#1}}
+
+\let\doifinelementelse\doifelseinelement
 
 \unexpanded\def\taggedlabeltexts#1#2#3% experimental: label, numberdetail, numbercontent
   {\begingroup

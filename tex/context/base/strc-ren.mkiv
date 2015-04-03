@@ -135,7 +135,7 @@
 \unexpanded\def\strc_rendering_place_head_number_and_text
   {\strc_rendering_start_placement
    \setheadmarking
-   \doiftextelse\getheadnumber
+   \doifelsetext\getheadnumber
      \dosettructureheadnumbercontent
      \doresettructureheadnumbercontent
    \ifconditional\c_strc_sectioning_empty
@@ -422,7 +422,7 @@
   {\dodoubleargument\strc_rendering_define_placement}
 
 \def\strc_rendering_define_placement[#1][#2]%
-  {\doifnextbgroupelse
+  {\doifelsenextbgroup
      {\strc_rendering_define_placement_yes[#1][#2]}%
      {\strc_rendering_define_placement_nop[#1][#2]}}
 
@@ -635,7 +635,7 @@
                 \hbox {
                     \hfill
                     \headnumbercontent
-                    \doifrightpageelse{
+                    \doifelserightpage{
                         \scratchdistance\leftmargindistance
                     } {
                         \scratchdistance\rightmargindistance

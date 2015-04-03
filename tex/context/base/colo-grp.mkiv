@@ -65,7 +65,7 @@
    \processcommalist[#3]{\colo_groups_define_entry{#1}{#2}}}
 
 \def\colo_groups_define_checked[#1][#2][#3]%
-  {\doifinstringelse{:}{#2}
+  {\doifelseinstring{:}{#2}
      {\colo_groups_define_normal[#1][\v!rgb][#2]}
      {\doloop % inherited
         {\ifcsname\??colorgroup#2:\recurselevel\endcsname

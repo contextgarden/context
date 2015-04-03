@@ -302,7 +302,7 @@ local function resolve(name) -- used a few times later on
 end
 
 local processfile       = commands.processfile
-local doifinputfileelse = commands.doifinputfileelse
+local doifelseinputfile = commands.doifelseinputfile
 
 function commands.processfile(name,maxreadlevel) -- overloaded
     local prepname = resolve(name)
@@ -312,12 +312,12 @@ function commands.processfile(name,maxreadlevel) -- overloaded
     return processfile(name,maxreadlevel)
 end
 
-function commands.doifinputfileelse(name,depth)
+function commands.doifelseinputfile(name,depth)
     local prepname = resolve(name)
     if prepname then
-        return doifinputfileelse(prepname,0)
+        return doifelseinputfile(prepname,0)
     end
-    return doifinputfileelse(name,depth)
+    return doifelseinputfile(name,depth)
 end
 
 function commands.preparedfile(name)

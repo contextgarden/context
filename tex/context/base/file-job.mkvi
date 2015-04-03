@@ -21,8 +21,10 @@
 
 % processing
 
-\unexpanded\def\doifinputfileelse#name%
-  {\clf_doifinputfileelse{#name}}
+\unexpanded\def\doifelseinputfile#name%
+  {\clf_doifelseinputfile{#name}}
+
+\let\doifinputfileelse\doifelseinputfile
 
 \unexpanded\def\processfile#name%
   {\clf_processfile{#name}}
@@ -105,7 +107,7 @@
    \global\everybye\emptytoks
    \the\everygoodbye
    \global\everygoodbye\emptytoks
-   \doifsometokselse\everynotabene{\writeline\the\everynotabene\writeline}\donothing
+   \doifelsesometoks\everynotabene{\writeline\the\everynotabene\writeline}\donothing
    \normalend}           % tex's \end
 
 \unexpanded\def\starttext    {\clf_starttext}
@@ -129,20 +131,20 @@
 \unexpanded\def\processfileonce#name{\clf_processfileonce{#name}}
 \unexpanded\def\processfilenone#name{\clf_processfilenone{#name}}
 
-\unexpanded\def\project    {\doifnextoptionalcselse\useproject    \syst_structure_arg_project}
-\unexpanded\def\product    {\doifnextoptionalcselse\useproduct    \syst_structure_arg_product}
-\unexpanded\def\component  {\doifnextoptionalcselse\usecomponent  \syst_structure_arg_component}
-\unexpanded\def\environment{\doifnextoptionalcselse\useenvironment\syst_structure_arg_environment}
+\unexpanded\def\project    {\doifelsenextoptionalcs\useproject    \syst_structure_arg_project}
+\unexpanded\def\product    {\doifelsenextoptionalcs\useproduct    \syst_structure_arg_product}
+\unexpanded\def\component  {\doifelsenextoptionalcs\usecomponent  \syst_structure_arg_component}
+\unexpanded\def\environment{\doifelsenextoptionalcs\useenvironment\syst_structure_arg_environment}
 
 \def\syst_structure_arg_project    #name {\clf_useproject    {#name}}
 \def\syst_structure_arg_product    #name {\clf_useproduct    {#name}}
 \def\syst_structure_arg_component  #name {\clf_usecomponent  {#name}}
 \def\syst_structure_arg_environment#name {\clf_useenvironment{#name}}
 
-\unexpanded\def\startproject    {\doifnextoptionalcselse\syst_structure_start_opt_project    \syst_structure_start_arg_project    }
-\unexpanded\def\startproduct    {\doifnextoptionalcselse\syst_structure_start_opt_product    \syst_structure_start_arg_product    }
-\unexpanded\def\startcomponent  {\doifnextoptionalcselse\syst_structure_start_opt_component  \syst_structure_start_arg_component  }
-\unexpanded\def\startenvironment{\doifnextoptionalcselse\syst_structure_start_opt_environment\syst_structure_start_arg_environment}
+\unexpanded\def\startproject    {\doifelsenextoptionalcs\syst_structure_start_opt_project    \syst_structure_start_arg_project    }
+\unexpanded\def\startproduct    {\doifelsenextoptionalcs\syst_structure_start_opt_product    \syst_structure_start_arg_product    }
+\unexpanded\def\startcomponent  {\doifelsenextoptionalcs\syst_structure_start_opt_component  \syst_structure_start_arg_component  }
+\unexpanded\def\startenvironment{\doifelsenextoptionalcs\syst_structure_start_opt_environment\syst_structure_start_arg_environment}
 
 \def\syst_structure_start_arg_project    #name {\clf_startproject    {#name}}
 \def\syst_structure_start_arg_product    #name {\clf_startproduct    {#name}}

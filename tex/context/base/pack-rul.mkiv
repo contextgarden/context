@@ -496,12 +496,14 @@
 
 %D For testing we provide:
 
-\def\doifoverlayelse#1% only tests external overlays
+\def\doifelseoverlay#1% only tests external overlays
   {\ifcsname\??overlay#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifoverlayelse\doifelseoverlay
 
 %D The content of the box will be (temporary) saved in a box. We also have an
 %D extra box for backgrounds.
@@ -845,7 +847,7 @@
 
 \def\pack_framed_start_framed[#1]%
   {\bgroup
-   \doifassignmentelse{#1}\pack_framed_start_framed_yes\pack_framed_start_framed_nop{#1}}
+   \doifelseassignment{#1}\pack_framed_start_framed_yes\pack_framed_start_framed_nop{#1}}
 
 \def\pack_framed_start_framed_yes#1%
   {\advance\c_pack_framed_nesting\plusone
@@ -2616,7 +2618,7 @@
    \dodoubleempty\pack_framed_text_start_indeed}
 
 \def\pack_framed_text_start_indeed[#1][#2]%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\pack_framed_text_start_continue\empty{#1}}
      {\pack_framed_text_start_continue{#1}{#2}}}
 

@@ -226,7 +226,7 @@
    \else\ifthirdargument
      \pack_layers_set_indeed[#1][#2][#3]%
    \else
-     \doifassignmentelse{#2}
+     \doifelseassignment{#2}
        {\pack_layers_set_indeed[#1][][#2]}%
        {\pack_layers_set_indeed[#1][#2][]}%
    \fi\fi}
@@ -320,7 +320,7 @@
   {\dodoubleargument\pack_layers_define_preset}
 
 \def\pack_layers_define_preset[#1][#2]%
-  {\doifassignmentelse{#2}
+  {\doifelseassignment{#2}
      {\setvalue{\??layerpreset#1}{\setupcurrentlayer[#2]}}
      {\setvalue{\??layerpreset#1}{\csname\??layerpreset#2\endcsname}}}
 
@@ -507,6 +507,8 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doiflayerdataelse\doifelselayerdata
+
 %D \macros
 %D  {flushlayer}
 %D
@@ -666,7 +668,7 @@
        \pack_layers_positioned_box_nop
      \fi
    % todo: method=offset => overlayoffset right/down (handy for backgrounds with offset)
-   \doifoverlayelse{#2}%
+   \doifelseoverlay{#2}%
      {\setlayoutcomponentattribute{\v!layer:#2}}%
      \resetlayoutcomponentattribute
    % we have conflicting demands: some mechanisms want ll anchoring .. I need to figure this out

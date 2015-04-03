@@ -539,7 +539,7 @@ local function geturl(name)
 end
 
 implement {
-    name      = "doifurldefinedelse",
+    name      = "doifelseurldefined",
     actions   = { urls.found, commands.doifelse },
     arguments = "string"
 }
@@ -590,7 +590,7 @@ local function getfile(name)
 end
 
 implement {
-    name      = "doiffiledefinedelse",
+    name      = "doifelsefiledefined",
     actions   = { files.found, commands.doifelse },
     arguments = "string"
 }

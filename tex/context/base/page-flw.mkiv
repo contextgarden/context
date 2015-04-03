@@ -80,14 +80,14 @@
 \def\textflowcollector#1%
   {\csname\??textflowbox#1\endcsname}
 
-\unexpanded\def\doiftextflowcollectorelse#1%
+\unexpanded\def\doifelsetextflowcollector#1%
   {\ifcsname\??textflowbox#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\doiftextflowelse#1%
+\unexpanded\def\doifelsetextflow#1%
   {\ifcsname\??textflowbox#1\endcsname
      \ifvoid\csname\??textflowbox#1\endcsname
        \doubleexpandafter\secondoftwoarguments
@@ -97,6 +97,9 @@
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doiftextflowcollectorelse\doifelsetextflowcollector
+\let\doiftextflowelse         \doifelsetextflow
 
 % \unexpanded\def\doiftextflow#1%
 %   {\doiftextflowelse{#1}\firstofoneargument\gobbleoneargument}

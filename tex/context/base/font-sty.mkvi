@@ -279,7 +279,7 @@
   {\groupedcommand{\font_styles_use_defined{#name}}{}} % or {\font_styles_apply_grouped{#name}}
 
 \setvalue{\??styleargument3}#specification%
-  {\doifassignmentelse{#specification}\font_styles_assignment\font_styles_direct{#specification}}
+  {\doifelseassignment{#specification}\font_styles_assignment\font_styles_direct{#specification}}
 
 \def\font_styles_assignment#specification{\groupedcommand{\font_styles_use_generic{#specification}}{}}
 \def\font_styles_direct    #specification{\groupedcommand{\definedfont[#specification]}{}}
@@ -311,7 +311,7 @@
   {\font_styles_use_defined{#name}}
 
 \setvalue{\??styleenvironment3}#specification%
-  {\doifassignmentelse{#specification}\font_styles_start_assignment\font_styles_start_direct{#specification}}
+  {\doifelseassignment{#specification}\font_styles_start_assignment\font_styles_start_direct{#specification}}
 
 \def\font_styles_start_assignment#specification{\font_styles_use_generic{#specification}}
 \def\font_styles_start_direct    #specification{\definedfont[#specification]\relax}

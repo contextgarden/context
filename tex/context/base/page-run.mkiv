@@ -299,8 +299,8 @@ end
 
 \unexpanded\gdef\showmargins
   {\starttabulate
-   \NC asynchrone   \NC \doifoddpageelse     {odd}   {even} \NC \NR
-   \NC synchrone    \NC \doifrightpageelse   {right} {left} \NC \NR
+   \NC asynchrone   \NC \doifelseoddpage     {odd}   {even} \NC \NR
+   \NC synchrone    \NC \doifelserightpage   {right} {left} \NC \NR
    \NC right margin \NC \the\rightmarginwidth               \NC \NR
    \NC left margin  \NC \the\leftmarginwidth                \NC \NR
    \NC outer margin \NC \the\outermarginwidth               \NC \NR

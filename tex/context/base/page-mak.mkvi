@@ -45,7 +45,7 @@
 \appendtoks
    \setuevalue{\e!start\currentmakeup\e!makeup}{\startmakeup[\currentmakeup]}%
    \setuevalue{\e!stop \currentmakeup\e!makeup}{\stopmakeup}%
-   \doiflayoutdefinedelse\currentmakeup\donothing{\definelayout[\currentmakeup]}% new
+   \doifelselayoutdefined\currentmakeup\donothing{\definelayout[\currentmakeup]}% new
 \to \everydefinemakeup
 
 %D The \type{\start}||\type{\stop} macros are used for both

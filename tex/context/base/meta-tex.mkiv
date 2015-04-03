@@ -68,7 +68,7 @@
 
 \unexpanded\def\definetextext[#1]%
   {\def\currenttextext{#1}%
-   \doifnextoptionalcselse\meta_textext_define_one\meta_textext_define_zero}
+   \doifelsenextoptionalcs\meta_textext_define_one\meta_textext_define_zero}
 
 \def\meta_textext_define_one {\setvalue{\??graphictexarguments1:\currenttextext}}
 \def\meta_textext_define_zero{\setvalue{\??graphictexarguments0:\currenttextext}}
@@ -79,7 +79,7 @@
   {textext.drt("\mpsometxt#1{\ctxlua{metapost.escaped(\!!bs#2\!!es)}}")}
 
 \unexpanded\def\mpsometxt % no _ catcode
-  {\doifnextoptionalcselse\meta_some_txt_indeed_yes\meta_some_txt_indeed_nop}
+  {\doifelsenextoptionalcs\meta_some_txt_indeed_yes\meta_some_txt_indeed_nop}
 
 \def\meta_some_txt_indeed_yes[#1]%
   {\def\currenttextext{#1}%

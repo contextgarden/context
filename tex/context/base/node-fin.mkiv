@@ -61,12 +61,12 @@
    \stopinheritattributes}
 
 \def\enableattributeinheritance
-  {\ctxlua{attributes.states.enabletriggering()}%
+  {\clf_enablestatetriggering
    \let\attributedcopy\doattributedcopy
    \let\attributedbox \doattributedbox}
 
 \def\disableattributeinheritance
-  {\ctxlua{attributes.states.disabletriggering()}%
+  {\clf_disablestatetriggering
    \let\attributedcopy\copy
    \let\attributedbox \box}
 

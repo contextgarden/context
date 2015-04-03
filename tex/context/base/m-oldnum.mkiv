@@ -100,7 +100,7 @@
 \unexpanded\def\digits
   {\bgroup
    \let~@%
-   \doifnextbgroupelse\dodigits{\doifnextcharelse\normalmathshift\domathdigits\grabdigit}}
+   \doifelsenextbgroup\dodigits{\doifelsenextchar\normalmathshift\domathdigits\grabdigit}}
 
 \def\dodigits#1%
   {\grabdigit#1\relax}
@@ -158,13 +158,13 @@
        \chardef\powerdigits\plusone
      \else
        \savedigit\collecteddigits#1%
-       %\doifnumberelse{#1}
+       %\doifelsenumber{#1}
        %  {\savedigit\collecteddigits#1}
        %  {\def\saveddigits{#1}}%
      \fi\fi\fi
    \else
      \savedigit\savedpowerdigits#1%
-     %\doifnumberelse{#1}
+     %\doifelsenumber{#1}
      %  {\savedigit\savedpowerdigits#1}
      %  {\def\saveddigits{#1}}%
    \fi\fi\fi\fi

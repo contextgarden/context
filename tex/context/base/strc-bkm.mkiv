@@ -110,7 +110,7 @@
    \ifthirdargument
      \setupcurrentbookmark[#3]% no every so not all possible
    \else\ifsecondargument
-     \doifassignmentelse{#2}{\let\m_bookmarks_opened\empty\setupcurrentbookmark[#2]}\donothing
+     \doifelseassignment{#2}{\let\m_bookmarks_opened\empty\setupcurrentbookmark[#2]}\donothing
    \fi\fi
    \clf_registerbookmark
      names  {\m_bookmarks_names}%

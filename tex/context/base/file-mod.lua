@@ -214,16 +214,18 @@ function environment.useluamodule(list)
     end
 end
 
+local strings = interfaces.strings
+
 implement {
     name      = "usemodules",
     actions   = environment.usemodules,
-    arguments = { "string", "string" }
+    arguments = strings[2]
 }
 
 implement {
-    name      = "doifolderversionelse",
+    name      = "doifelseolderversion",
     actions   = function(one,two) commands.doifelse(comparedversion(one,two) >= 0) end,
-    arguments = { "string", "string" }
+    arguments = strings[2]
 }
 
 implement {
@@ -231,3 +233,10 @@ implement {
     actions   = environment.useluamodule,
     arguments = "string"
 }
+
+implement {
+    name      = "loadluamodule",
+    actions   = function(name) dofile(resolvers.findctxfile(name)) end, -- hack
+    arguments = "string"
+}
+

@@ -6,20 +6,27 @@ if not modules then modules = { } end modules ['symb-ini'] = {
     license   = "see context related readme files"
 }
 
-local context, commands = context, commands
+local context        = context
+local variables      = interfaces.variables
 
-local variables = interfaces.variables
+fonts                = fonts or { } -- brrrr
 
-fonts = fonts or { } -- brrrr
+local symbols        = fonts.symbols or { }
+fonts.symbols        = symbols
 
-local symbols = fonts.symbols or { }
-fonts.symbols = symbols
+local listitem       = utilities.parsers.listitem
+local uselibrary     = resolvers.uselibrary
 
 local report_symbols = logs.reporter ("fonts","symbols")
 local status_symbols = logs.messenger("fonts","symbols")
 
-local patterns = { "symb-imp-%s.mkiv", "symb-imp-%s.tex", "symb-%s.mkiv", "symb-%s.tex" }
-local listitem = utilities.parsers.listitem
+local patterns = {
+    "symb-imp-%s.mkiv",
+    "symb-imp-%s.tex",
+    -- obsolete:
+    "symb-%s.mkiv",
+    "symb-%s.tex"
+}
 
 local function action(name,foundname)
     -- context.startnointerference()
@@ -37,7 +44,7 @@ end
 function symbols.uselibrary(name)
     if name ~= variables.reset then
         for name in listitem(name) do
-            commands.uselibrary {
+            uselibrary {
                 name     = name,
                 patterns = patterns,
                 action   = action,
@@ -48,4 +55,8 @@ function symbols.uselibrary(name)
     end
 end
 
-commands.usesymbols = symbols.uselibrary
+interfaces.implement {
+    name      = "usesymbols",
+    actions   = symbols.uselibrary,
+    arguments = "string",
+}

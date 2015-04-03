@@ -294,12 +294,12 @@
  %{\appendtoks\starttypescript#definitions\stoptypescript\to\c_font_typescripts_document}
   {\c_font_typescripts_document\expandafter{\the\c_font_typescripts_document\starttypescript#definitions\stoptypescript}}
 
-\def\font_typescripts_start_process % could be a faster \doifnextoptionalelse if needed
+\def\font_typescripts_start_process % could be a faster \doifelsenextoptionalif needed
   {\let\typescriptone  \m_font_typescripts_one
    \let\typescripttwo  \m_font_typescripts_two
    \let\typescriptthree\m_font_typescripts_three
    \let\m_font_typescripts_match\empty
-   \doifnextoptionalcselse\font_typescripts_start_process_one\font_typescripts_start_process_all}
+   \doifelsenextoptionalcs\font_typescripts_start_process_one\font_typescripts_start_process_all}
 
 \def\font_typescripts_start_process_all % could be a \let
   {\ifconditional\c_font_typescripts_first_pass
@@ -333,10 +333,10 @@
   {\font_typescripts_check\m_font_typescripts_three\typescriptthree\font_typescripts_start_process_again_three}
 
 \def\font_typescripts_start_process_again_one
-  {\doifnextoptionalcselse\font_typescripts_start_process_two\font_typescripts_start_process_yes}
+  {\doifelsenextoptionalcs\font_typescripts_start_process_two\font_typescripts_start_process_yes}
 
 \def\font_typescripts_start_process_again_two
-  {\doifnextoptionalcselse\font_typescripts_start_process_three\font_typescripts_start_process_yes}
+  {\doifelsenextoptionalcs\font_typescripts_start_process_three\font_typescripts_start_process_yes}
 
 \let\font_typescripts_start_process_again_three\font_typescripts_start_process_yes
 
@@ -359,7 +359,7 @@
      \donetrue
      \let#target\m_font_typescripts_check
    \else
-     \doifcommonelse\m_font_typescripts_check#asked\donetrue\donefalse
+     \doifelsecommon\m_font_typescripts_check#asked\donetrue\donefalse
      \ifdone
        \let#target\commalistelement
      \fi

@@ -56,7 +56,7 @@
   {\dotripleempty\page_selectors_insert}
 
 \def\page_selectors_insert[#filename][#emptylist][#settings]%
-  {\doifassignmentelse{#emptylist}
+  {\doifelseassignment{#emptylist}
      {\page_selectors_insert_indeed[#filename][][#emptylist]}
      {\page_selectors_insert_indeed[#filename][#emptylist][#settings]}}
 

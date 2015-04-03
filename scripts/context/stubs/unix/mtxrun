@@ -6615,7 +6615,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 21610, stripped down to: 14974
+-- original size: 21751, stripped down to: 15108
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -6875,6 +6875,10 @@ local setting=Cf(Carg(1)*(whitespace^0*Cg(str*whitespace^0*(equal*whitespace^0*s
 local splitter=setting^1
 function utilities.parsers.options_to_hash(str,target)
   return str and lpegmatch(splitter,str,1,target or {}) or {}
+end
+local splitter=lpeg.tsplitat(" ")
+function utilities.parsers.options_to_array(str)
+  return str and lpegmatch(splitter,str) or {}
 end
 local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C(digit^1*lparent*(noparent+nestedparents)^1*rparent)+C((nestedbraces+(1-comma))^1)
 local pattern_a=spaces*Ct(value*(separator*value)^0)
@@ -11660,7 +11664,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 28227, stripped down to: 20128
+-- original size: 28225, stripped down to: 20125
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -11673,7 +11677,7 @@ local trace_manipulations=false trackers.register("lxml.manipulations",function(
 local trace_inclusions=false trackers.register("lxml.inclusions",function(v) trace_inclusions=v end)
 local report_xml=logs.reporter("xml")
 local xml=xml
-local xmlconvert,xmlcopy,xmlname=xml.convert,xml.copy,xml.name
+local xmlcopy,xmlname=xml.copy,xml.name
 local xmlinheritedconvert=xml.inheritedconvert
 local xmlapplylpath=xml.applylpath
 local xmlfilter=xml.filter
@@ -11801,6 +11805,7 @@ local function redo_ni(d)
     end
   end
 end
+xml.reindex=redo_ni
 local function xmltoelement(whatever,root)
   if not whatever then
     return nil
@@ -17823,8 +17828,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 746295
--- stripped bytes    : 272351
+-- original bytes    : 746434
+-- stripped bytes    : 272359
 
 -- end library merge
 

@@ -577,7 +577,7 @@
 \startxmlsetups xml:setups:word        \showSETUPcomponent{#1}{word}       {word}        \stopxmlsetups
 
 \def\showSETUPcomponent#1#2#3%
-  {\doifmodeelse{setups-pass-one}
+  {\doifelsemode{setups-pass-one}
      {\getvalue{showSETUP#2}{#1}}
      {\simpleSETUPargument{#3}}}
 
@@ -612,7 +612,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:assignments
-    \doifmodeelse{setups-pass-one} {
+    \doifelsemode{setups-pass-one} {
         \showSETUPassignment{#1}
     } {
         \xdef\currentSETUPwidth{0pt}%
@@ -634,7 +634,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:keywords
-    \doifmodeelse{setups-pass-one} {
+    \doifelsemode{setups-pass-one} {
         \showSETUPkeyword{#1}
     } {
         \startfirstSETUPcolumn{\showSETUPnumber}%
@@ -670,7 +670,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:constant
-    \doifmodeelse {setups-pass-one} {
+    \doifelsemode {setups-pass-one} {
     } {
         \doif {\xmlatt{#1}{default}} {yes} {
             \underbar % next needs to be {braced}
@@ -682,7 +682,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:variable
-    \doifmodeelse {setups-pass-one} {
+    \doifelsemode {setups-pass-one} {
         \expanded{\setupintfont{\xmlatt{#1}{value}}}\ignorespaces
     } {
         \c!setup!reserved!{\xmlatt{#1}{value}}

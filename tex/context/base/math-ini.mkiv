@@ -166,7 +166,7 @@
 \installswitchcommandhandler \??mathematics {mathematics} \??mathematics
 
 \unexpanded\def\startmathematics % no grouping, if ever then also an optional second
-  {\doifnextoptionalcselse\math_mathematics_start_yes\math_mathematics_start_nop}
+  {\doifelsenextoptionalcs\math_mathematics_start_yes\math_mathematics_start_nop}
 
 \unexpanded\def\math_mathematics_start_yes[#1]%
   {\pushmacro\currentmathematics
@@ -346,6 +346,11 @@
 \unexpanded\def\doifelseutfmathabove #1{\clf_doifelseutfmathabove {#1}}
 \unexpanded\def\doifelseutfmathbelow #1{\clf_doifelseutfmathbelow {#1}}
 \unexpanded\def\doifelseutfmathfiller#1{\clf_doifelseutfmathfiller{#1}}
+
+\let\doifutfmathaccentelse \doifelseutfmathaccent
+\let\doifutfmathaboveelse  \doifelseutfmathabove
+\let\doifutfmathbelowelse  \doifelseutfmathbelow
+\let\doifutfmathfillerelse \doifelseutfmathfiller
 
 %D Not used that much:
 

@@ -140,12 +140,14 @@
   {\edef\currentotrbackground{\??layoutbackgrounds#1}%
    \page_backgrounds_check_background}
 
-\def\doifsomebackgroundelse#1%
+\def\doifelsesomebackground#1%
   {\ifcsname\??layoutbackgrounds#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifsomebackgroundelse\doifelsesomebackground
 
 \def\doifsomebackground#1%
   {\ifcsname\??layoutbackgrounds#1\endcsname
@@ -277,7 +279,7 @@
      \page_backgrounds_set_boxes
      \setbox#1\vbox
        {\offinterlineskip
-        \doifmarginswapelse{\copy\leftbackground}{\copy\rightbackground}%
+        \doifelsemarginswap{\copy\leftbackground}{\copy\rightbackground}%
         \box#1}%
    \fi}
 
@@ -343,7 +345,7 @@
      {\dontcomplain
       \swapmargins
       \ifconditional\swapbackgroundmargins
-        \doifmarginswapelse \donothing
+        \doifelsemarginswap \donothing
           {\swapmacros\v!rightmargin\v!leftmargin
            \swapmacros\v!rightedge  \v!leftedge}%
       \fi
@@ -501,7 +503,7 @@
 \unexpanded\def\page_backgrounds_setup_double[#1][#2][#3]% if needed we can speed this up
   {\global\settrue\c_page_backgrounds_some
    \def\page_backgrounds_setup_step##1%
-     {\doifinsetelse{##1}\v_page_backgrounds_double_set
+     {\doifelseinset{##1}\v_page_backgrounds_double_set
         {\page_backgrounds_setup_and_check{##1}{#3}}
         {\def\page_backgrounds_setup_step_nested####1{\page_backgrounds_setup_and_check{##1####1}{#3}}%
          \processcommacommand[#2]\page_backgrounds_setup_step_nested}}%
@@ -510,7 +512,7 @@
 
 \unexpanded\def\page_backgrounds_setup_single[#1][#2][#3]%
   {\global\settrue\c_page_backgrounds_some
-   \doifcommonelse{#1}\v_page_backgrounds_single_set
+   \doifelsecommon{#1}\v_page_backgrounds_single_set
      {\def\page_backgrounds_setup_step##1{\page_backgrounds_setup_and_check{##1}{#2}}%
       \processcommacommand[#1]\page_backgrounds_setup_step
       \the\everybackgroundssetup}%

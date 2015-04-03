@@ -40,7 +40,7 @@
 
 \unexpanded\def\blackrule
   {\hbox\bgroup
-   \doifnextoptionalcselse\pack_black_rule_pickup\pack_black_rule_indeed}
+   \doifelsenextoptionalcs\pack_black_rule_pickup\pack_black_rule_indeed}
 
 \def\pack_black_rule_pickup[#1]%
   {\setupcurrentblackrules[#1]%
@@ -96,7 +96,7 @@
 
 \unexpanded\def\blackrules % probably never used
   {\hbox\bgroup
-   \doifnextoptionalcselse\pack_black_rules_pickup\pack_black_rules_indeed}
+   \doifelsenextoptionalcs\pack_black_rules_pickup\pack_black_rules_indeed}
 
 \def\pack_black_rules_pickup[#1]%
   {\setupcurrentblackrules[#1]%

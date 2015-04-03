@@ -311,9 +311,10 @@ local registerfunction, unregisterfunction, reservefunction, knownfunctions, cal
     interfaces.storedscanners = interfaces.storedscanners or { }
     local storedscanners      = interfaces.storedscanners
 
+
     storage.register("interfaces/storedscanners", storedscanners, "interfaces.storedscanners")
 
-    interfaces.scanners = table.setmetatablenewindex(function(t,k,v)
+    local interfacescanners = table.setmetatablenewindex(function(t,k,v)
         if storedscanners[k] then
          -- report_cld("warning: scanner %a is already set",k)
          -- os.exit()
@@ -323,10 +324,12 @@ local registerfunction, unregisterfunction, reservefunction, knownfunctions, cal
             -- todo: allocate slot here and pass it
             storedscanners[k] = true
          -- report_cld("installing interface scanner: %s",k)
-            context("\\installctxfunction{clf_%s}{interfaces.scanners.%s}",k,k)
+            context("\\installctxscanner{clf_%s}{interfaces.scanners.%s}",k,k)
         end
         rawset(t,k,v)
     end)
+
+    interfaces.scanners = interfacescanners
 
 -- else -- by now this is obsolete
 --
@@ -424,6 +427,25 @@ context.storenode          = storenode -- private helper
 
 function commands.ctxfunction(code,namespace)
     context(registerfunction(code,namespace))
+end
+
+function commands.ctxscanner(name,code,namespace)
+    local n = registerfunction(code,namespace)
+    if storedscanners[name] then
+        storedscanners[name] = n
+    end
+    context(n)
+end
+
+local function dummy() end
+
+function commands.ctxresetter(name)
+    return function()
+        if storedscanners[name] then
+            rawset(interfacescanners,name,dummy)
+            context.resetctxscanner("clf_" .. name)
+        end
+    end
 end
 
 function context.trialtypesetting()

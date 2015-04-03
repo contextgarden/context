@@ -648,7 +648,7 @@
    \fi\fi}
 
 \def\dotypesetbibtexpublication
-  {\doifbibreferencefoundelse\currentbibtexsessiontag
+  {\doifelsebibreferencefound\currentbibtexsessiontag
      {\global\advance\bibtexcounter\plusone
       \ctxlua{bibtex.hacks.registerplaced("\currentbibtexsessiontag")}%
       \let\currentlist\currentbibtexsession
@@ -680,13 +680,13 @@
 
 \unexpanded\def\bibtexcitation[#1]%
   {\edef\currentbibtexsession{#1}%
-   \strictdoifnextoptionalelse\dobibtexcitation\dobibtexref}
+   \strictdoifelsenextoptional\dobibtexcitation\dobibtexref}
 
 \def\dobibtexref#1%
   {\dodobibtexcitation[#1][]}
 
 \def\dobibtexcitation[#1]%
-  {\strictdoifnextoptionalelse{\dodobibtexcitation[#1]}{\dodobibtexcitation[#1][]}}
+  {\strictdoifelsenextoptional{\dodobibtexcitation[#1]}{\dodobibtexcitation[#1][]}}
 
 \def\dodobibtexcitation[#1][#2]%
   {\dontleavehmode
@@ -702,7 +702,7 @@
 \def\dowhatevercitation#1#2%
   {\processcommalist[#2]\dobibtexcitationindeed
    \setupinteraction[\c!style=]% use flag instead
-   \doifassignmentelse{#1}
+   \doifelseassignment{#1}
      {\getparameters[\??pb\??pb][\c!alternative=,\c!extras=,#1]%
       \edef\currentbibtexvariant{\@@pb@@pbalternative}%
       \ifx\currentbibtexvariant\empty
@@ -808,7 +808,7 @@
 
 % helpers
 
-\def\doifbibtexinteractionelse
+\unexpanded\def\doifelsebibtexinteraction
   {\iflocation
      \edef\temp{\bibtexcitationparameter\c!interaction}%
      \ifx\temp\v!stop
@@ -819,6 +819,8 @@
    \else
      \@EA\secondoftwoarguments
    \fi}
+
+\let\doifbibtexinteractionelse\doifelsebibtexinteraction
 
 % variants
 
@@ -837,23 +839,23 @@
    \fi}
 
 \def\inbibtexlink#1#2%
-  {\doifreferencefoundelse{\bibtexrefprefix#1}
+  {\doifelsereferencefound{\bibtexrefprefix#1}
      {\goto{#2}[\bibtexrefprefix#1]}
      {!#1!}}
 
 \def\dobibtexgotolink#1#2%
-  {\doifreferencefoundelse{\bibtexrefprefix#1}
+  {\doifelsereferencefound{\bibtexrefprefix#1}
      {\goto{#2}[\bibtexrefprefix#1]}
      {!#1!}}
 
 \def\dobibattexlink#1#2%
-  {\doifreferencefoundelse{\bibtexrefprefix#1}
+  {\doifelsereferencefound{\bibtexrefprefix#1}
     {\at{#2}[\bibtexrefprefix#1]}
     {!#1!}}
 
 \def\dobibtexurllink#1#2%
   {\expanded{\useURL[bibtex:url:#1][#2]}%
-   \doifbibtexinteractionelse
+   \doifelsebibtexinteraction
      {\goto{\url[bibtex:url:#1]}[url(bibtex:url:#1)]}
      {\url[bibtex:url:#1]}}
 

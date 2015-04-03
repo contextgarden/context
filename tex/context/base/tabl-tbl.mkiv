@@ -599,17 +599,17 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_preskip#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_posskip#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\s_tabl_tabulate_post#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }
      {\s_tabl_tabulate_post.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_preposskip#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble  }
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble#1}}
 
@@ -651,7 +651,7 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_pickup_width
-  {\doifnextparenthesiselse\tabl_tabulate_set_width_indeed\tabl_tabulate_set_preamble}
+  {\doifelsenextparenthesis\tabl_tabulate_set_width_indeed\tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_width
   {\setfalse\c_tabl_tabulate_pwidth_set
@@ -664,7 +664,7 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_paragraph
-  {\doifnextparenthesiselse
+  {\doifelsenextparenthesis
      {\c_tabl_tabulate_modus\plusone
       \settrue\c_tabl_tabulate_pwidth_set
       \tabl_tabulate_pickup_width}
@@ -749,7 +749,7 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_vrule_command#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\global\d_tabl_tabulate_vrulethickness#1\d_tabl_tabulate_vrulethickness_default}
      {\xdef\m_tabl_tabulate_vrule_color{#1}}}
 
@@ -1087,8 +1087,8 @@
      \tabulatenoalign{\kern-\lineheight}%
    \fi}
 
-\setuvalue{\e!start\v!tabulatehead}{\doifnextoptionalcselse\tabl_tabulate_start_head_yes\tabl_tabulate_start_head_nop}
-\setuvalue{\e!start\v!tabulatetail}{\doifnextoptionalcselse\tabl_tabulate_start_foot_yes\tabl_tabulate_start_foot_nop}
+\setuvalue{\e!start\v!tabulatehead}{\doifelsenextoptionalcs\tabl_tabulate_start_head_yes\tabl_tabulate_start_head_nop}
+\setuvalue{\e!start\v!tabulatetail}{\doifelsenextoptionalcs\tabl_tabulate_start_foot_yes\tabl_tabulate_start_foot_nop}
 
 \let\m_tabl_tabulate_data\empty
 
@@ -1135,7 +1135,7 @@
    \fi}
 
 \def\tabl_start_defined_one[#1][#2]%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\setuptabulation[\currenttabulation][#1]}%
      {\edef\currenttabulation{\currenttabulation:#1}}%
    \tabl_tabulate_start_building}
@@ -1164,7 +1164,7 @@
    \fi}
 
 \def\tabl_start_regular_one[#1][#2]%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\setupcurrenttabulation[\c!format={|l|p|},#1]}
      {\def\p_format{#1}%
       \ifx\p_format\empty
@@ -1314,7 +1314,7 @@
 
 \def\tabl_tabulate_set_color_column#1% overloaded
   {\unskip
-   \doiffastoptionalcheckelse{\tabl_tabulate_set_color_column_yes#1}{\tabl_tabulate_set_color_column_nop#1}}
+   \doifelsefastoptionalcheck{\tabl_tabulate_set_color_column_yes#1}{\tabl_tabulate_set_color_column_nop#1}}
 
 \def\tabl_tabulate_set_color_column_nop
   {\tabl_tabulate_column_normal}
@@ -1353,13 +1353,13 @@
 %    \fi\fi
    \global\let\m_tabl_tabulate_vrule_color_local\m_tabl_tabulate_vrule_color_default
    \global\d_tabl_tabulate_vrulethickness_local\d_tabl_tabulate_vrulethickness_default
-   \doiffastoptionalcheckelse{\tabl_tabulate_column_vruled_yes#1}{\tabl_tabulate_column_vruled_nop#1}}
+   \doifelsefastoptionalcheck{\tabl_tabulate_column_vruled_yes#1}{\tabl_tabulate_column_vruled_nop#1}}
 
 \def\tabl_tabulate_column_vruled_nop
   {\tabl_tabulate_column_normal}
 
 \def\tabl_tabulate_column_vruled_step#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\global\d_tabl_tabulate_vrulethickness_local#1\d_tabl_tabulate_vrulethickness_default}
      {\xdef\m_tabl_tabulate_vrule_color_local{#1}}}
 
@@ -1447,15 +1447,15 @@
 \def\tabl_tabulate_hrule_spec_ignore#1%
   {%\global\let\currenttabulationlocalhrulecolor\empty
    %\global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
-   \doiffastoptionalcheckelse#1#1}
+   \doifelsefastoptionalcheck#1#1}
 
 \def\tabl_tabulate_hrule_spec_pickup#1%
   {\global\let\currenttabulationlocalhrulecolor\m_tabl_tabulate_hrule_color_default
    \global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
-   \doiffastoptionalcheckelse{\tabl_tabulate_hrule_preset#1}#1}
+   \doifelsefastoptionalcheck{\tabl_tabulate_hrule_preset#1}#1}
 
 \def\tabl_tabulate_hrule_preset_step#1%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\global\d_tabl_tabulate_hrulethickness_local#1\d_tabl_tabulate_hrulethickness_default}
      {\xdef\currenttabulationlocalhrulecolor{#1}}}
 
@@ -1524,7 +1524,7 @@
 
 \unexpanded\def\tabl_tabulate_color_set#1% we could store the attributes at the cost of a lua call
   {\begingroup
-   \node_backgrounds_align_initialize % name might change
+   \clf_enablebackgroundalign % was \node_backgrounds_align_initialize
    \global\let\tabl_tabulate_color_repeat\tabl_tabulate_color_repeat_second
    \global\settrue\c_tabl_tabulate_has_colors
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_colorcolumn

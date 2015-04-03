@@ -721,7 +721,7 @@
         \edef#2{##1}%
         #3[##2]%
       \else\iffirstargument
-        \doifassignmentelse{##1}
+        \doifelseassignment{##1}
           {\let#2\empty
            #3[##1]}%
           {\edef#2{##1}}%
@@ -898,6 +898,8 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doifcommandhandlerelse\doifelsecommandhandler
+
 \unexpanded\def\doifcommandhandler#1#2% namespace name
   {\ifcsname#1#2:\s!parent\endcsname
      \expandafter\firstofoneargument
@@ -958,13 +960,13 @@
 
 \unexpanded\def\syst_helpers_double_empty#1#2#3%
   {\syst_helpers_argument_reset
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_double_empty_one_yes_mult#2#3}%
      {\syst_helpers_double_empty_one_nop_mult#1}}
 
 \def\syst_helpers_double_empty_one_yes_mult#1#2[#3]%
   {\firstargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\secondargumenttrue#2[{#3}]}%
      {\syst_helpers_double_empty_two_nop_mult#1{#3}}}
 
@@ -1031,19 +1033,19 @@
 
 \unexpanded\def\syst_helpers_triple_empty#1#2#3#4%
   {\syst_helpers_argument_reset
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_triple_empty_one_yes_mult#2#3#4}%
      {\syst_helpers_triple_empty_one_nop_mult#1}}
 
 \def\syst_helpers_triple_empty_one_yes_mult#1#2#3[#4]%
   {\firstargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\syst_helpers_triple_empty_two_yes_mult#2#3{#4}}%
      {\syst_helpers_triple_empty_two_nop_mult#1{#4}}}
 
 \def\syst_helpers_triple_empty_two_yes_mult#1#2#3[#4]%
   {\secondargumenttrue
-   \doifnextoptionalelse
+   \doifelsenextoptional
      {\thirdargumenttrue#2[{#3}][{#4}]}%
      {\syst_helpers_triple_empty_three_nop_mult#1{#3}{#4}}}
 

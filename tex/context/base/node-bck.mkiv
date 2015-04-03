@@ -21,14 +21,6 @@
 
 \registerctxluafile{node-bck}{1.001}
 
-\def\node_backgrounds_boxes_initialize % will move to lua
-  {\ctxlua{nodes.tasks.enableaction("shipouts","nodes.handlers.backgrounds")}%
-   \glet\node_backgrounds_boxes_initialize\donothing}
-
-\def\node_backgrounds_align_initialize % will move to lua
-  {\ctxlua{nodes.tasks.enableaction("shipouts","nodes.handlers.alignbackgrounds")}%
-   \glet\node_backgrounds_align_initialize\donothing}
-
 % \backgroundvbox[green] {\input tufte } \par
 % \backgroundvbox[blue]  {\input ward } \par
 % \backgroundvbox[red]   {\input knuth } \par
@@ -71,7 +63,7 @@
 
 % \def\node_backgrounds_boxes_add#1[#2]%
 %   {\begingroup
-%    \node_backgrounds_boxes_initialize
+%    \clf_enablebackgroundboxes
 %    \dousecolorparameter{#2}%
 %    \normalexpanded{\endgroup#1
 %      attr \backgroundattribute   \plusone
@@ -82,13 +74,13 @@
 % more efficient:
 
 \def\node_backgrounds_boxes_add#1[#2]%
-  {\node_backgrounds_boxes_initialize
+  {\clf_enablebackgroundboxes
    #1\backgroundcolorattr{#2}}
 
 % less argument carry over:
 %
 % \def\node_backgrounds_boxes_add#1[#2]%
-%   {\node_backgrounds_boxes_initialize#1%
+%   {\clf_enablebackgroundboxes#1%
 %    \ifcsname\??colorattribute\currentcolorprefix#2\endcsname
 %      \thebackgroundcolorattr{\currentcolorprefix#2}%
 %    \else\ifcsname\??colorattribute#2\endcsname

@@ -110,11 +110,13 @@
 
 %D The next macro can be used to make decisions based on the shape:
 
-\def\doifitalicelse#yes#nop%
+\def\doifelseitalic#yes#nop%
   {\ifx\fontalternative\s!sl#yes\else
    \ifx\fontalternative\s!it#yes\else
    \ifx\fontalternative\s!bs#yes\else
    \ifx\fontalternative\s!bi#yes\else#nop\fi\fi\fi\fi}
+
+\let\doifitalicelse\doifelseitalic
 
 %D For an example of usage of the following command,
 %D see \type {cont-log.tex}.
@@ -169,13 +171,13 @@
 
 \unexpanded\def\getnamedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_fontchar{#character}}}
 \unexpanded\def\getnamedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_fontchar{#character}}}
-\unexpanded\def\getglyphstyled     #fontname#character{{\setstyledsymbolicfont{#fontname}\doifnumberelse{#character}\char\donothing#character}}
-\unexpanded\def\getglyphdirect     #fontname#character{{\setdirectsymbolicfont{#fontname}\doifnumberelse{#character}\char\donothing#character}}
+\unexpanded\def\getglyphstyled     #fontname#character{{\setstyledsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
+\unexpanded\def\getglyphdirect     #fontname#character{{\setdirectsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
 
 % this one is wrong:
 
 \unexpanded\def\getscaledglyph#scale#name#content%
-  {{\setscaledstyledsymbolicfont\fontbody{#scale}{#name}\doifnumberelse{#content}\char\donothing#content}}
+  {{\setscaledstyledsymbolicfont\fontbody{#scale}{#name}\doifelsenumber{#content}\char\donothing#content}}
 
 \let\getglyph         \getglyphstyled               % old
 \let\getrawglyph      \getglyphdirect               % old
@@ -234,7 +236,7 @@
 
 %D \macros{doiffontcharelse}
 
-\unexpanded\def\doiffontcharelse#specification#unicode% this could be a direct lua call
+\unexpanded\def\doifelsefontchar#specification#unicode% this could be a direct lua call
   {\begingroup
    \font_basics_define_font_without_parameters{thedefinedfont}{#specification}%
    \iffontchar\font#unicode\relax
@@ -242,5 +244,7 @@
    \else
      \endgroup\expandafter\secondoftwoarguments
    \fi}
+
+\let\doiffontcharelse\doifelsefontchar
 
 \protect \endinput

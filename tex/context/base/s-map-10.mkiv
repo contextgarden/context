@@ -172,7 +172,7 @@
 \def\hfontii{\ssbf}
 \def\hfontiii{\rm\it}
 
-\doifmodeelse{nosubsub}{%
+\doifelsemode{nosubsub}{%
 \setuphead [section][%
   style=\hfontii,
   before={\blank[line]},
@@ -201,7 +201,7 @@
   before={\blank[halfline]}%
 ]}
 
-\doifmodeelse{nosubsub}{%
+\doifelsemode{nosubsub}{%
 \setuphead [subject][%
   style=\hfontii,
   before={\blank[halfline]},
@@ -348,10 +348,10 @@
      #1]%
   \doifnothing{\MapsPeriod}{%
     \ifnum \normalmonth<6 \gdef\MapsPeriod{VOORJAAR}\else \gdef\MapsPeriod{NAJAAR}\fi}
-  \doifinstringelse{oorjaar}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
-  \doifinstringelse{pring}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
-  \doifinstringelse{ajaar}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
-  \doifinstringelse{utumn}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
+  \doifelseinstring{oorjaar}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
+  \doifelseinstring{pring}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
+  \doifelseinstring{ajaar}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
+  \doifelseinstring{utumn}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
   \doifnothing{\MapsYear}{\gdef\MapsYear{\the\year}}%
   \doifnothing{\MapsNumber}{%
     \ifnum \normalmonth<6
@@ -441,9 +441,9 @@
 
 %%%%%%%%%%%
 
-\doifmodeelse{onecolumn}{%
+\doifelsemode{onecolumn}{%
   \setuplayout[width=340pt]
-  \doifmodeelse{asym}{% one col, asymmetric
+  \doifelsemode{asym}{% one col, asymmetric
     \setuplayout[backspace=187.3pt]%
     \setuptyping [widetyping][oddmargin=-117pt]
     \setuppagenumbering [alternative={singlesided,doublesided}]

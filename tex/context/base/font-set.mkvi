@@ -47,7 +47,7 @@
    \globallet\font_preloads_reset_nullfont\relax}
 
 \def\font_preload_check_mode
-  {\doifmodeelse{lmmath}
+  {\doifelsemode{lmmath}
      {\def\m_font_fallback_name{modern-designsize-virtual}}% this will stay
      {\def\m_font_fallback_name{modern-designsize}}%       % this might become 'modern'
    \glet\font_preload_check_mode\relax}
@@ -103,7 +103,7 @@
    \font_preloads_zero_stage}
 
 \unexpanded\def\font_preloads_first_stage % % *nofonts -> *preloadfonts
-  {\doifmodeelse{*preloadfonts}
+  {\doifelsemode{*preloadfonts}
      {\font_preload_default_fonts
       \writestatus\m!fonts{preloading latin modern fonts (first stage)}}
      {\writestatus\m!fonts{latin modern fonts are not preloaded}}}

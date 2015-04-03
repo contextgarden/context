@@ -159,7 +159,7 @@
    \attribute\referenceattribute\attributeunsetvalue
    \global\setfalse\c_scrn_button_skipped
    \chardef\locationboxpagestate\csname\??buttonlocation#currentparameter\c!samepage\endcsname % ?? bt: todo
-   \doifreferencefoundelse{#action}\scrn_button_make_yes\scrn_button_make_nop
+   \doifelsereferencefound{#action}\scrn_button_make_yes\scrn_button_make_nop
      #currentparameter%
      #inheritedframed%
      #letparameter%
@@ -343,12 +343,12 @@
 
 \def\scrn_menu_define[#tag][#category][#settings]% category reflects location, settings can be parent
   {\ifthirdargument
-     \doifassignmentelse{#settings}%
+     \doifelseassignment{#settings}%
        {\scrn_menu_define_original[#tag][#category][\c!category=#category,#settings]}% child definition
        {\scrn_menu_define_original[#tag][#settings][\c!category=#category]}%         % child definition
      \scrn_menu_register{#tag}{#category}%
    \else\ifsecondargument
-     \doifassignmentelse{#category}%
+     \doifelseassignment{#category}%
        {\scrn_menu_define_original[#tag][#category]}%                                % root definition
        {\scrn_menu_define_original[#tag][#category][\c!category=#category]%          % child definition
         \scrn_menu_register{#tag}{#category}}%
@@ -691,7 +691,7 @@
 
 \def\scrn_button_make_position#currentparameter#inheritedframed#letparameter#setparameter#text#action%
   {\global\advance\c_scrn_menu_position\plusone
-   \doifreferencefoundelse{#action}% 0=not found, 1=same page, >1=elsewhere
+   \doifelsereferencefound{#action}% 0=not found, 1=same page, >1=elsewhere
      {\c_scrn_menu_page_mode\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
      {\c_scrn_menu_page_mode\plustwo}%
    \doglobal\appendetoks
@@ -967,7 +967,7 @@
      \scrn_menu_menu_button_a
        {#menutag}{#settings}{#text}{#action}%
    \else
-     \doifassignmentelse{#menutag}\scrn_menu_menu_button_b\scrn_menu_menu_button_c
+     \doifelseassignment{#menutag}\scrn_menu_menu_button_b\scrn_menu_menu_button_c
        {#menutag}{#text}{#action}%
    \fi}
 

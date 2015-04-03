@@ -50,6 +50,8 @@ local tracers               = nodes.tracers
 local setcolor              = tracers.colors.set
 local resetcolor            = tracers.colors.reset
 
+local implement             = interfaces.implement
+
 local directions            = typesetters.directions or { }
 typesetters.directions      = directions
 
@@ -137,9 +139,17 @@ function directions.setcolor(current,direction,reversed,mirror)
     end
 end
 
-function commands.getbidimode(specification)
-    context(tomode(specification)) -- hash at tex end
-end
+implement {
+    name      = "getbidimode",
+    actions   = { tomode, context },
+    arguments = {
+        {
+            { "scope" },
+            { "method" },
+            { "fences" },
+        }
+    }
+}
 
 local enabled = false
 
@@ -190,4 +200,8 @@ function directions.set(n) -- todo: names and numbers
     texsetattribute(a_directions,n)
 end
 
-commands.setdirection = directions.set
+implement {
+    name      = "setdirection",
+    arguments = "integer",
+    actions   = directions.set
+}

@@ -311,9 +311,12 @@
 %D \doifpositionelse {identifier} {found action} {not found action}
 %D \stoptyping
 
-\unexpanded\def\doifpositionelse        #1{\clf_doifpositionelse      {#1}}
 \unexpanded\def\doifposition            #1{\clf_doifposition          {#1}}
-\unexpanded\def\doifpositiononpageelse#1#2{\clf_doifpositiononpageelse{#1}#2\relax}
+\unexpanded\def\doifelseposition        #1{\clf_doifelseposition      {#1}}
+\unexpanded\def\doifelsepositiononpage#1#2{\clf_doifelsepositiononpage{#1}#2\relax}
+
+\let\doifpositionelse      \doifelseposition
+\let\doifpositiononpageelse\doifelsepositiononpage
 
 %D \macros
 %D   {xypos}
@@ -421,7 +424,9 @@
 %D   {action when not overlapping}
 %D \stoptyping
 
-\unexpanded\def\doifoverlappingelse#1#2{\clf_doifoverlappingelse{#1}{#2}}
+\unexpanded\def\doifelseoverlapping#1#2{\clf_doifelseoverlapping{#1}{#2}}
+
+\let\doifoverlappingelse\doifelseoverlapping
 
 %D \macros
 %D   {doifpositionsonsamepageelse,
@@ -439,11 +444,16 @@
 %D   {action when not on this page}
 %D \stoptyping
 
-\unexpanded\def\doifpositionsonsamepageelse#1{\clf_doifpositionsonsamepageelse{#1}}
-\unexpanded\def\doifpositionsonthispageelse#1{\clf_doifpositionsonthispageelse{#1}}
+\unexpanded\def\doifelsepositionsonsamepage#1{\clf_doifelsepositionsonsamepage{#1}}
+\unexpanded\def\doifelsepositionsonthispage#1{\clf_doifelsepositionsonthispage{#1}}
+
+\let\doifpositionsonsamepageelse\doifelsepositionsonsamepage
+\let\doifpositionsonthispageelse\doifelsepositionsonthispage
 
 %D Moved here:
 
 \unexpanded\def\doifelsepositionsused{\clf_doifelsepositionsused}
+
+\let\doifpositionsusedelse\doifelsepositionsused
 
 \protect \endinput

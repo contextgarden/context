@@ -92,10 +92,10 @@
 \def\page_lines_in_to  {\in[lr:e:\currentlinenotereference]}
 
 \unexpanded\def\strc_linenotes_range_normal#1% order
-  {\doifreferencefoundelse{lr:b:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_from
+  {\doifelsereferencefound{lr:b:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_from
    \ifconditional\c_page_lines_current_from
       \xdef\m_page_lines_current_from{\currentreferencelinenumber}%
-      \doifreferencefoundelse{lr:e:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_to
+      \doifelsereferencefound{lr:e:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_to
       \ifconditional\c_page_lines_current_to
         \xdef\m_page_lines_current_to{\currentreferencelinenumber}%
         \page_lines_in_from
@@ -111,10 +111,10 @@
    \fi}
 
 \unexpanded\def\strc_linenotes_range_sparse#1% order
-  {\doifreferencefoundelse{lr:b:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_from
+  {\doifelsereferencefound{lr:b:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_from
    \ifconditional\c_page_lines_current_from
      \xdef\m_page_lines_current_from{\currentreferencelinenumber}%
-     \doifreferencefoundelse{lr:e:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_to
+     \doifelsereferencefound{lr:e:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_to
      \ifconditional\c_page_lines_current_to
        \xdef\m_page_lines_current_to{\currentreferencelinenumber}%
        \ifx\m_page_lines_previous_from\m_page_lines_current_from

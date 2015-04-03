@@ -196,10 +196,10 @@
      \ifx\m_argument\v!empty
        \let\currentlinenumbering\empty
      \else
-       \doifassignmentelse{#1}
+       \doifelseassignment{#1}
          {\let\currentlinenumbering\empty
           \setupcurrentlinenumbering[#1]}
-         {\doifnumberelse\m_argument
+         {\doifelsenumber\m_argument
             {\let\currentlinenumbering\empty
              \letlinenumberingparameter\c!start\m_argument}
             {\let\currentlinenumbering\m_argument}}%
@@ -219,7 +219,7 @@
    \else
      \c_page_lines_mode\plusone
      \ifx\m_argument\v!empty \else
-       \doifassignmentelse{#2}
+       \doifelseassignment{#2}
          {\setupcurrentlinenumbering[#2]}
          {\doifnumber\m_argument
             {\letlinenumberingparameter\c!start\m_argument}}%
@@ -541,14 +541,16 @@
 \let\m_page_lines_to  \empty
 
 \unexpanded\def\doifelsesamelinereference#1#2#3%
-  {\doifreferencefoundelse{lr:b:#1}
+  {\doifelsereferencefound{lr:b:#1}
      {\edef\m_page_lines_from{\currentreferencelinenumber}%
-      \doifreferencefoundelse{lr:e:#1}
+      \doifelsereferencefound{lr:e:#1}
         {\edef\m_page_lines_to{\currentreferencelinenumber}%
          %[\m_page_lines_from,\m_page_lines_to]
          \ifx\m_page_lines_from\m_page_lines_to#2\else#3\fi}
         {#2}}
      {#2}}
+
+\let\doifsamelinereferenceelse\doifelsesamelinereference
 
 \unexpanded\def\inline#1[#2]%
   {\doifelsenothing{#1}

@@ -258,16 +258,19 @@
      \expandafter#1%
    \fi}
 
-\unexpanded\def\doifmodeelse        {\syst_modes_check\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifelsemode        {\syst_modes_check\firstoftwoarguments\secondoftwoarguments}
 \unexpanded\def\doifmode            {\syst_modes_check\firstofoneargument\gobbleoneargument}
 \unexpanded\def\doifnotmode         {\syst_modes_check\gobbleoneargument\firstofoneargument}
 \unexpanded\def\startmode       [#1]{\syst_modes_check\donothing\syst_modes_stop_yes{#1}}
 \unexpanded\def\startnotmode    [#1]{\syst_modes_check\syst_modes_stop_nop\donothing{#1}}
-\unexpanded\def\doifallmodeselse    {\syst_modes_check_all\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifelseallmodes    {\syst_modes_check_all\firstoftwoarguments\secondoftwoarguments}
 \unexpanded\def\doifallmodes        {\syst_modes_check_all\firstofoneargument\gobbleoneargument}
 \unexpanded\def\doifnotallmodes     {\syst_modes_check_all\gobbleoneargument\firstofoneargument}
 \unexpanded\def\startallmodes   [#1]{\syst_modes_check_all\donothing\syst_modes_stop_all_yes{#1}}
 \unexpanded\def\startnotallmodes[#1]{\syst_modes_check_all\syst_modes_stop_all_nop\donothing{#1}}
+
+\let\doifmodeelse     \doifelsemode
+\let\doifallmodeselse \doifelseallmodes
 
 \unexpanded\def\stopmode         {} % no relax
 \unexpanded\def\stopnotmode      {} % no relax
@@ -349,7 +352,7 @@
 \unexpanded\def\startmodeset
   {\pushmacro\c_syst_modes_set_done
    \setfalse\c_syst_modes_set_done
-   \doifnextoptionalcselse\syst_modes_set_start\syst_modes_set_quit}
+   \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
 
 \def\syst_modes_set_start[#1]%
   {\edef\m_mode_case{#1}%
@@ -369,10 +372,10 @@
 \def\syst_modes_set_yes#1%
   {\settrue\c_syst_modes_set_done
    #1%
-   \doifnextoptionalcselse\syst_modes_set_start\syst_modes_set_quit}
+   \doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
 
 \def\syst_modes_set_nop#1%
-  {\doifnextoptionalcselse\syst_modes_set_start\syst_modes_set_quit}
+  {\doifelsenextoptionalcs\syst_modes_set_start\syst_modes_set_quit}
 
 \def\syst_modes_set_quit#1\stopmodeset
   {\popmacro\c_syst_modes_set_done}
@@ -398,8 +401,8 @@
 %
 % \letvalue{\e!stop\v!setups}\relax
 
-\unexpanded\def\setups{\doifnextbgroupelse\syst_setups_a\syst_setups_b} % {..} or [..]
-\unexpanded\def\setup {\doifnextbgroupelse\syst_setups  \syst_setups_c} % {..} or [..]
+\unexpanded\def\setups{\doifelsenextbgroup\syst_setups_a\syst_setups_b} % {..} or [..]
+\unexpanded\def\setup {\doifelsenextbgroup\syst_setups  \syst_setups_c} % {..} or [..]
 
 \def\syst_setups_a  #1{\processcommacommand[#1]\syst_setups} % {..}
 \def\syst_setups_b[#1]{\processcommacommand[#1]\syst_setups} % [..]
@@ -514,12 +517,14 @@
 \let\directsetup\syst_setups
 \let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup
 
-\unexpanded\def\doifsetupselse#1% to be done: grid
+\unexpanded\def\doifelsesetups#1% to be done: grid
   {\ifcsname\??setup:#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifsetupselse\doifelsesetups
 
 \unexpanded\def\doifsetups#1% to be done: grid
   {\ifcsname\??setup:#1\endcsname
@@ -591,11 +596,11 @@
 
 % Is doglobal still relevant? Maybe always global? Or never? Anyway, it will become obsolete.
 
-\unexpanded\def\startluasetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_lua_a\syst_setups_start_lua_b} \let\stopluasetups              \relax
-\unexpanded\def\startxmlsetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_xml_a\syst_setups_start_xml_b} \let\stopxmlsetups              \relax
-\unexpanded\def\startrawsetups  {\begingroup\doifnextoptionalcselse\syst_setups_start_raw_a\syst_setups_start_raw_b} \let\stoprawsetups              \relax
-\unexpanded\def\startlocalsetups{\begingroup\doifnextoptionalcselse\syst_setups_start_loc_a\syst_setups_start_loc_b} \let\stoplocalsetups            \relax
-\unexpanded\def\startsetups     {\begingroup\doifnextoptionalcselse\syst_setups_start_tex_a\syst_setups_start_tex_b} \let\stopsetups                 \relax
+\unexpanded\def\startluasetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_lua_a\syst_setups_start_lua_b} \let\stopluasetups              \relax
+\unexpanded\def\startxmlsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_xml_a\syst_setups_start_xml_b} \let\stopxmlsetups              \relax
+\unexpanded\def\startrawsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_raw_a\syst_setups_start_raw_b} \let\stoprawsetups              \relax
+\unexpanded\def\startlocalsetups{\begingroup\doifelsenextoptionalcs\syst_setups_start_loc_a\syst_setups_start_loc_b} \let\stoplocalsetups            \relax
+\unexpanded\def\startsetups     {\begingroup\doifelsenextoptionalcs\syst_setups_start_tex_a\syst_setups_start_tex_b} \let\stopsetups                 \relax
 
 \def\syst_setups_start_lua_indeed#1#2#3\stopluasetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
 \def\syst_setups_start_xml_indeed#1#2#3\stopxmlsetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
@@ -737,6 +742,8 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doifvariableelse\doifelsevariable
+
 \unexpanded\def\doifvariable#1#2%
   {\ifcsname\??variables#1:#2\endcsname
      \expandafter\firstofoneargument
@@ -764,6 +771,8 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doifemptyvariableelse\doifelseemptyvariable
+
 \unexpanded\def\doifemptyvariable#1#2%
   {\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
    \ifx\m_syst_string_one\empty
@@ -787,11 +796,13 @@
 \unexpanded\def\setupenv
   {\dotripleargument\syst_variables_set[\getrawparameters][\s!environment]}
 
-\unexpanded\def\doifenvelse{\doifelsevariable  \s!environment}
+\unexpanded\def\doifelseenv{\doifelsevariable  \s!environment}
 \unexpanded\def\doifenv    {\doifvariable      \s!environment}
 \unexpanded\def\doifnotenv {\doifnotvariable   \s!environment}
 \def\env                   {\getvariable       \s!environment}
 \def\envvar                {\getvariabledefault\s!environment}
+
+\let\doifenvelse\doifelseenv
 
 %D \macros
 %D   {defineselector,setupselector,select,directselect}

@@ -95,7 +95,9 @@
 %D \doiffontpresentelse{adam-lindsay-modern-serif}{YES}{NO}
 %D \stoptyping
 
-\unexpanded\def\doiffontpresentelse#1{\ctxcommand{doifelse(fonts.names.exists("#1"))}}
+\unexpanded\def\doifelsefontpresent#1{\ctxcommand{doifelse(fonts.names.exists("#1"))}}
+
+\let\doiffontpresentelse\doifelsefontpresent
 
 % experimental, maybe this becomes a module
 

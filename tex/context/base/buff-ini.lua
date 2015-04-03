@@ -552,7 +552,7 @@ implement { name = "gettexbuffer",    actions = gettexbuffer,  arguments = "stri
 implement {
     name      = "runbuffer",
     actions   = { runbuffer, context },
-    arguments = { "string", "boolean" }
+    arguments = { "string", true }
 }
 
 implement {

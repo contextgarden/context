@@ -143,11 +143,11 @@
 
 % hashing at this end is slower
 
-\unexpanded\def\addfeature        {\doifnextoptionalcselse\font_feature_add_yes      \font_feature_add_nop      }
-\unexpanded\def\subtractfeature   {\doifnextoptionalcselse\font_feature_subtract_yes \font_feature_subtract_nop }
-\unexpanded\def\replacefeature    {\doifnextoptionalcselse\font_feature_replace_yes  \font_feature_replace_nop  }
-\unexpanded\def\resetandaddfeature{\doifnextoptionalcselse\font_feature_reset_add_yes\font_feature_reset_add_nop}
-\unexpanded\def\feature           {\doifnextoptionalcselse\font_feature_yes          \font_feature_nop          }
+\unexpanded\def\addfeature        {\doifelsenextoptionalcs\font_feature_add_yes      \font_feature_add_nop      }
+\unexpanded\def\subtractfeature   {\doifelsenextoptionalcs\font_feature_subtract_yes \font_feature_subtract_nop }
+\unexpanded\def\replacefeature    {\doifelsenextoptionalcs\font_feature_replace_yes  \font_feature_replace_nop  }
+\unexpanded\def\resetandaddfeature{\doifelsenextoptionalcs\font_feature_reset_add_yes\font_feature_reset_add_nop}
+\unexpanded\def\feature           {\doifelsenextoptionalcs\font_feature_yes          \font_feature_nop          }
 
 \unexpanded\def\font_feature_add_yes      [#feature]{\edef\m_font_feature_asked{#feature}\font_feature_add}
 \unexpanded\def\font_feature_add_nop        #feature{\edef\m_font_feature_asked{#feature}\font_feature_add}
@@ -325,6 +325,8 @@
 
 \def\doifelsecurrentfonthasfeature#feature%
   {\clf_doifelsecurrentfonthasfeature{#feature}}
+
+\let\doifcurrentfonthasfeatureelse\doifelsecurrentfonthasfeature
 
 % new:
 

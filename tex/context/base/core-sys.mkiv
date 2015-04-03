@@ -279,12 +279,12 @@
 \let\directhighlight\typo_highlights_indeed
 
 \unexpanded\def\defineexpandable
-  {\doifnextoptionalelse
+  {\doifelsenextoptional
      {\syst_basics_define_yes\def}%
      {\syst_basics_define_nop\def}}
 
 \unexpanded\def\define
-  {\doifnextoptionalelse
+  {\doifelsenextoptional
      {\syst_basics_define_yes{\unexpanded\def}}%
      {\syst_basics_define_nop{\unexpanded\def}}}
 

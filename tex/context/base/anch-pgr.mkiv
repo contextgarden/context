@@ -43,12 +43,14 @@
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\doifpositionactionelse#1%
+\unexpanded\def\doifelsepositionaction#1%
   {\ifcsname\??positionaction#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifpositionactionelse\doifelsepositionaction
 
 \unexpanded\def\dopositionaction#1%
   {\edef\currentpositionaction{#1}%
@@ -57,7 +59,7 @@
    \fi}
 
 \def\anch_positions_action_indeed
-  {\doifpositionelse\currentpositionaction
+  {\doifelseposition\currentpositionaction
      \anch_positions_action_indeed_yes
      \anch_positions_action_indeed_nop}
 

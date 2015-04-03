@@ -38,18 +38,18 @@
 \installcorenamespace {parbuilder}
 
 \unexpanded\def\defineparbuilder[#1]%
-  {\ctxcommand{defineparbuilder("#1")}}
+  {\clf_defineparbuilder{#1}}
 
 \unexpanded\def\startparbuilder[#1]%
   {\ifhmode\par\fi
-   \ctxcommand{startparbuilder("#1")}}
+   \clf_startparbuilder{#1}}
 
 \unexpanded\def\stopparbuilder
   {\ifhmode\par\fi
-   \ctxcommand{stopparbuilder()}}
+   \clf_stopparbuilder}
 
 \unexpanded\def\setmainparbuilder[#1]%
-  {\ctxcommand{setparbuilder("#1")}}
+  {\clf_setparbuilder{#1}}
 
 % no high level interface, after all implementing a linebreaker is not something that
 % the average user will do
@@ -58,7 +58,7 @@
 \defineparbuilder[oneline] % just for testing
 \defineparbuilder[basic]   % just for testing
 
-\def\enableparbuilders {\ctxcommand{enableparbuilder()}}  % hooks in otr so we need to pickup
-\def\disableparbuilders{\ctxcommand{disableparbuilder()}} % hooks in otr so we need to pickup
+\unexpanded\def\enableparbuilders {\clf_enableparbuilder } % hooks in otr so we need to pickup
+\unexpanded\def\disableparbuilders{\clf_disableparbuilder} % hooks in otr so we need to pickup
 
 \protect \endinput

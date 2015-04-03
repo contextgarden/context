@@ -193,20 +193,6 @@
 
 % these are expandable! todo: \xmldoifelseattribute
 
-%def\xmldoif              #1#2{\clf_xmldoif             {#1}{#2}}
-%def\xmldoifnot           #1#2{\clf_xmldoifnot          {#1}{#2}}
-%def\xmldoifelse          #1#2{\clf_xmldoifelse         {#1}{#2}}
-%def\xmldoiftext          #1#2{\clf_xmldoiftext         {#1}{#2}}
-%def\xmldoifnottext       #1#2{\clf_xmldoifnottext      {#1}{#2}}
-%def\xmldoifelsetext      #1#2{\clf_xmldoifelsetext     {#1}{#2}}
-
-%def\xmldoifempty         #1#2{\clf_xmldoifempty        {#1}{#2}}
-%def\xmldoifnotempty      #1#2{\clf_xmldoifnotempty     {#1}{#2}}
-%def\xmldoifelseempty     #1#2{\clf_xmldoifelseempty    {#1}{#2}}
-%def\xmldoifselfempty       #1{\clf_xmldoifselfempty    {#1}}
-%def\xmldoifnotselfempty    #1{\clf_xmldoifnotselfempty {#1}}
-%def\xmldoifelseselfempty   #1{\clf_xmldoifelseselfempty{#1}}
-
 \let\xmldoif              \clf_xmldoif
 \let\xmldoifnot           \clf_xmldoifnot
 \let\xmldoifelse          \clf_xmldoifelse
@@ -220,6 +206,10 @@
 \let\xmldoifselfempty     \clf_xmldoifselfempty
 \let\xmldoifnotselfempty  \clf_xmldoifnotselfempty
 \let\xmldoifelseselfempty \clf_xmldoifelseselfempty
+
+\let\xmldoiftextelse      \xmldoifelsetext
+\let\xmldoifemptyelse     \xmldoifelseempty
+\let\xmldoifselfemptyelse \xmldoifelseselfempty
 
 % \startxmlsetups xml:include
 %     \xmlinclude{main}{include}{filename|href}
@@ -372,8 +362,11 @@
 
 % processing instructions
 
-\def\xmlcontextdirective#1% kind class key value
-  {\executeifdefined{xml#1directive}\gobblethreearguments}
+\unexpanded\def\xmlinstalldirective#1#2%
+  {\clf_xmlinstalldirective{#1}{\checkedstrippedcsname#2}}
+
+% \def\xmlcontextdirective#1% kind class key value
+%   {\executeifdefined{xml#1directive}\gobblethreearguments}
 
 % setting up xml:
 %
@@ -420,6 +413,8 @@
 \def\xmlvalue       #1#2#3{\executeifdefined{\??xmlmapvalue#1:#2}{#3}}
 %def\xmlvalue         #1#2{\ifcsname\??xmlmapvalue#1:#2\endcsname\csname\??xmlmapvalue#1:#2\expandafter\expandafter\gobbleoneargument\expandafter\endcsname\else\expandafter\firstofoneargument\fi}
 \def\xmldoifelsevalue #1#2{\ifcsname\??xmlmapvalue#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+
+\let\xmldoifvalueelse\xmldoifelsevalue
 
 \let\xmlmapval\xmlmapvalue
 \let\xmlval   \xmlvalue
@@ -486,6 +481,16 @@
 \let\processxmlbuffer\processXMLbuffer
 \let\processxmlfile  \processXMLfile
 \let\xmldata         \XMLdata
+
+\unexpanded\def\xmlsetinjectors[#1]%
+  {\clf_xmlsetinjectors{#1}}
+
+\unexpanded\def\xmlresetinjectors
+  {\clf_xmlresetinjectors{}}
+
+\def\xmlinjector#1{\executeifdefined{#1}\donothing}
+
+\let\xmlapplyselectors\clf_xmlapplyselectors
 
 \protect \endinput
 

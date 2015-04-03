@@ -388,7 +388,7 @@ end
 --    \normalexpanded
 --      {\def\yes[#one]#two\csname\e!stop#stoptag\endcsname{\command_yes[#one]{#two}}%
 --       \def\nop      #one\csname\e!stop#stoptag\endcsname{\command_nop      {#one}}}%
---    \doifnextoptionalelse\yes\nop}
+--    \doifelsenextoptional\yes\nop}
 -- ]]))
 --
 -- print(macros.preprocessed([[

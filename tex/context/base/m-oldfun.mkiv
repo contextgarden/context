@@ -131,7 +131,7 @@
 \unexpanded\def\DroppedCaps#1#2#3#4#5#6#7% does not yet handle accented chars
   {\defconvertedargument\asciia{#7}%
    \defconvertedcommand \asciib{\DroppedString}%
-   \doifinstringelse\asciia\asciib
+   \doifelseinstring\asciia\asciib
      {\noindentation
       \dontleavehmode
       \checkindentation % redo this one

@@ -98,9 +98,11 @@
        {\counterparameter\c!state}%
    \fi}
 
-\unexpanded\def\doifcounterelse #1{\clf_doifelsecounter{\namedcounterparameter{#1}\s!name}}
+\unexpanded\def\doifelsecounter #1{\clf_doifelsecounter{\namedcounterparameter{#1}\s!name}}
 \unexpanded\def\doifcounter     #1{\clf_doifcounter    {\namedcounterparameter{#1}\s!name}}
 \unexpanded\def\doifnotcounter  #1{\clf_doifnotcounter {\namedcounterparameter{#1}\s!name}}
+
+\let\doifcounterelse\doifelsecounter
 
 \unexpanded\def\setcounter        {\dotripleempty   \strc_counters_set_interfaced}
 \unexpanded\def\setcounterown     {\dotripleempty   \strc_counters_setown_interfaced}
@@ -433,7 +435,9 @@
 
 \unexpanded\def\doifdefinedcounter    {\doifcommandhandler    \??counter}
 \unexpanded\def\doifundefinedcounter  {\doifnotcommandhandler \??counter}
-\unexpanded\def\doifdefinedcounterelse{\doifelsecommandhandler\??counter}
+\unexpanded\def\doifelsedefinedcounter{\doifelsecommandhandler\??counter}
+
+\let\doifdefinedcounterelse\doifelsedefinedcounter
 
 %D What follows is a compatibility layer.
 
@@ -454,7 +458,8 @@
 
 \let \doifdefinednumber     \doifdefinedcounter     % {number}{true}
 \let \doifundefinednumber   \doifnotdefinedcounter  % {number}{true}
-\let \doifdefinednumberelse \doifdefinedcounterelse % {number}{true}{false}
+\let \doifelsedefinednumber \doifelsedefinedcounter % {number}{true}{false}
+\let \doifdefinednumberelse \doifelsedefinedcounter % {number}{true}{false}
 
 \let \setupnumbering        \setupcounter
 

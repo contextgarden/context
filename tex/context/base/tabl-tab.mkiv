@@ -1503,9 +1503,9 @@
    \global\setfalse\tableactionstatepermitted
    \global\setfalse\hassometablehead
    \global\setfalse\hassometabletail
-   \expanded{\doifinstringelse{|}{#1}}
+   \expanded{\doifelseinstring{|}{#1}}
      {\xdef\restarttable{\noexpand\dorestarttable{\noexpand\thirdstagestarttable{#1}}}}
-     {\doifdefinedelse{\??tabletemplate#1}
+     {\doifelsedefined{\??tabletemplate#1}
         {\gdef\restarttable{\getvalue{\??tabletemplate#1}}}
         {\gdef\restarttable{\dorestarttable{\getvalue{#1}}}}}%
    \egroup
@@ -1921,7 +1921,7 @@
   {\global\currenttablecolumn\zerocount}
 
 \def\dotablevrulecommand#1% global assignments
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\global\tablevrulethicknessfactor#1\relax
       \global\multiply\tablevrulethicknessfactor\m_tabl_table_VLwidth\relax}
      {\xdef\tablecurrentvrulecolor{#1}}}
@@ -1955,7 +1955,7 @@
 \unexpanded\def\dotableVN#1{\global\noftablevrules#1\relax\VL}
 
 \def\dotablehrulecommand#1% global assignments
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\global\tablehrulethicknessfactor#1\relax
       \global\multiply\tablehrulethicknessfactor\m_tabl_table_HLheight\relax}
      {\xdef\tablecurrenthrulecolor{#1}}}
@@ -2075,7 +2075,7 @@
    \fi}
 
 \def\dotabledrulecommand#1% global assignments
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\ifcase\tabledrulespan
         \global\tabledrulespan#1\relax
       \else

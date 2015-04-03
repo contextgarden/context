@@ -134,11 +134,11 @@
    \endgroup}
 
 \installpagebreakmethod \s!unknown
-  {\doifinstringelse{+}\page_breaks_current_option
+  {\doifelseinstring{+}\page_breaks_current_option
      {\page_otr_flush_all_floats
       \page_otr_command_next_page
       \dorecurse\page_breaks_current_option\page_otr_insert_dummy_page}
-     {\doifnumberelse\page_breaks_current_option
+     {\doifelsenumber\page_breaks_current_option
         {\page_otr_flush_all_floats
          \page_otr_command_next_page
          \doloop
@@ -222,11 +222,11 @@
 
 \installpagebreakmethod \v!even
   {\page
-   \doifoddpageelse\page_reset_marks_and_insert_dummy\donothing}
+   \doifelseoddpage\page_reset_marks_and_insert_dummy\donothing}
 
 \installpagebreakmethod \v!odd
   {\page
-   \doifoddpageelse\donothing\page_reset_marks_and_insert_dummy}
+   \doifelseoddpage\donothing\page_reset_marks_and_insert_dummy}
 
 \installpagebreakmethod \v!quadruple % not yet ok inside columnsets
   {\ifdoublesided

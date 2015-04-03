@@ -74,9 +74,12 @@
 
 \letvalue{\??symbolset}\empty
 
-\unexpanded\def\doifinsymbolsetelse#1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+\unexpanded\def\doifelseinsymbolset#1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
 \unexpanded\def\doifinsymbolset    #1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
-\unexpanded\def\doifsymbolsetelse    #1{\ifcsname\??symbolset#1\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+\unexpanded\def\doifelsesymbolset    #1{\ifcsname\??symbolset#1\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+
+\let\doifinsymbolsetelse\doifelseinsymbolset
+\let\doifsymbolsetelse  \doifelsesymbolset
 
 \def\symbolset#1{\csname\??symbolset\ifcsname\??symbolset#1\endcsname#1\fi\endcsname} % no [#1], to be used in commalists etc
 
@@ -216,7 +219,7 @@
 \def\symb_fetch_second#1%
   {\doifinsymbolset\empty\currentsymbol{\settrue\c_symb_found}}
 
-\def\doifsymboldefinedelse#1%
+\unexpanded\def\doifelsesymboldefined#1%
   {\begingroup
    \edef\currentsymbol{#1}%
    \let\symb_fetch\symb_fetch_first
@@ -232,6 +235,8 @@
        \endgroup\doubleexpandafter\secondoftwoarguments
      \fi
    \fi}
+
+\let\doifsymboldefinedelse\doifelsesymboldefined
 
 %D \macros
 %D   {setupsymbolset,startsymbolset}
@@ -300,7 +305,7 @@
 %D
 %D \showsetup{usesymbols}
 
-\unexpanded\def\usesymbols[#1]{\ctxcommand{usesymbols("#1")}}
+\unexpanded\def\usesymbols[#1]{\clf_usesymbols{#1}}
 
 %D As longs as symbols are linked to levels or numbers, we can
 %D also use the conversion mechanism, but in for instance the

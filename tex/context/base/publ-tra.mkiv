@@ -32,7 +32,7 @@
    \setdummyparameter\c!dataset      {\currentbtxdataset}%
    \letdummyparameter\c!field        \empty
    \iffirstargument
-     \doifassignmentelse{#2}
+     \doifelseassignment{#2}
        {\getdummyparameters[#2]}%
        {\setdummyparameter\c!dataset{#2}}%
    \else
@@ -54,7 +54,7 @@
 \def\publ_show_fields[#1]%
   {\begingroup
    \setdummyparameter\c!rotation{90}%
-   \doifassignmentelse{#1}%
+   \doifelseassignment{#1}%
      {\letdummyparameter\c!specification\currentbtxspecification
       \getdummyparameters[#1]}%
      {\doifelsenothing{#1}%

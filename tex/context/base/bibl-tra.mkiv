@@ -450,8 +450,8 @@
 
 \unexpanded\def\bibinsertmonth#1#2#3%
   {\bibdoifelse\@@pb@month
-     {#1\doifnumberelse\@@pb@month
-       {\doifconversiondefinedelse\@@pbmonthconversion
+     {#1\doifelsenumber\@@pb@month
+       {\doifelseconversiondefined\@@pbmonthconversion
           {\convertnumber\@@pbmonthconversion\@@pb@month}{\@@pb@month}}%
           {\@@pb@month}#2}%
      {#3}}
@@ -686,7 +686,7 @@
 
 \unexpanded\def\dostartpublication[#1]%
   {\begingroup
-   \doifassignmentelse{#1}%
+   \doifelseassignment{#1}%
      {\getparameters[\??pb][k=\s!unknown,t=article,n=,s=,a=,y=,o=,u=,#1]}%
      {\getparameters[\??pb][k=#1,t=article,n=,s=,a=,y=,o=,u=]}%
    \ctxlua{bibtex.hacks.register(\!!bs\@@pbk\!!es,\!!bs\@@pbs\!!es)}%
@@ -717,11 +717,13 @@
 \def\bibgetvaru#1{\csname pbd:#1\endcsname\pluseight}
 \def\bibgetvard#1{\csname pbd:#1\endcsname\plusnine }
 
-\unexpanded\def\doifbibreferencefoundelse#1%
+\unexpanded\def\doifelsebibreferencefound#1%
   {\preloadbiblist
-   \doifdefinedelse{pbd:#1}
+   \doifelsedefined{pbd:#1}
      \firstoftwoarguments
      {\showmessage\m!publications{5}{#1,\the\inputlineno}\secondoftwoarguments}}
+
+\let\doifbibreferencefoundelse\doifelsebibreferencefound
 
 %D \macros{bib@crossref}
 %D
@@ -878,7 +880,7 @@
 % we'll define proper handlers later
 
 \unexpanded\def\doplacepublicationindeed#1%
-  {\doifbibreferencefoundelse{#1}
+  {\doifelsebibreferencefound{#1}
      {\global\advance\bibtexcounter\plusone
       \def\currentpublicationkey{#1}%
       \ctxlua{bibtex.hacks.registerplaced("#1")}%
@@ -932,13 +934,13 @@
 %D in included data from the \type{.bib} file).
 
 \unexpanded\def\cite
-  {\strictdoifnextoptionalelse\dodocite\dobibref}
+  {\strictdoifelsenextoptional\dodocite\dobibref}
 
 \unexpanded\def\dobibref#1%
   {\docite[#1][]}
 
 \unexpanded\def\dodocite[#1]%
-  {\strictdoifnextoptionalelse{\docite[#1]}{\docite[#1][]}}
+  {\strictdoifelsenextoptional{\docite[#1]}{\docite[#1][]}}
 
 \unexpanded\def\docite[#1][#2]%
   {\begingroup
@@ -953,7 +955,7 @@
 \unexpanded\def\dowhatevercite#1#2%
   {\processcommalist[#2]\docitation
    \setupinteraction[\c!style=]%
-   \doifassignmentelse
+   \doifelseassignment
      {#1}%
      {\getparameters[LO][\c!alternative=,\c!extras=,#1]%
       \edef\@@currentalternative{\LOalternative}%
@@ -1007,7 +1009,7 @@
 \unexpanded\def\getcitedata#1[#2]#3[#4]#5to#6%
   {\bgroup
    \dofetchapublication{#4}%
-   \doifdefinedelse{\??pb @bib#2}%
+   \doifelsedefined{\??pb @bib#2}%
      {\xdef#6{\getvalue{\??pb @bib#2}}}%
      {\xdef#6{\getvalue{\??pb @#2}}}%
    \egroup}
@@ -1139,7 +1141,7 @@
 %D but it will do for now.
 
 \unexpanded\def\docurrentbibauthor#1,#2%
-  {\doifemptyelse{#2}
+  {\doifelseempty{#2}
      {\def\currentbibauthor{#1\bibalternative{otherstext}}}
      {\expandafter\ifx\csname\??pv\@@currentalternative authoretallimit\endcsname\relax
         \edef\currentbibauthor{#1\bibalternative{andtext}#2}%
@@ -1154,7 +1156,7 @@
 %D \type{\doglobal }
 
 \unexpanded\def\robustaddtocommalist#1#2% {item} \cs
-  {\robustdoifinsetelse{#1}#2\resetglobal
+  {\robustdoifelseinset{#1}#2\resetglobal
      {\dodoglobal\xdef#2{\ifx#2\empty\else#2,\fi#1}}}
 
 %D \macros{donormalbibauthoryear}
@@ -1165,7 +1167,7 @@
 \unexpanded\def\donormalbibauthoryear#1%
   {\def\myauthor{Xxxxxxxxxx}%
    \def\myyear{0000}%
-   \doifbibreferencefoundelse{#1}
+   \doifelsebibreferencefound{#1}
      {\def\myauthor{{\bibgetvara{#1}}}%
       \def\myyear  {\bibgetvary{#1}}}%
      {}%
@@ -1181,7 +1183,7 @@
 \unexpanded\def\docompressbibauthoryear#1%
   {\def\myauthor{Xxxxxxxxxx}%
    \def\myyear  {0000}%
-   \doifbibreferencefoundelse{#1}
+   \doifelsebibreferencefound{#1}
      {\xdef\myauthor{\bibgetvara{#1}}%
       \xdef\myyear  {\bibgetvary{#1}}}
      {}%
@@ -1202,7 +1204,7 @@
 %D information in the correct item of \type{\thebibyears}
 
 \unexpanded\def\checkifmyauthoralreadyexists
-  {\doifemptyelsevalue{thebibauthors}
+  {\doifelseemptyvalue{thebibauthors}
      {\global\bibitemwanted \plusone
       \global\bibitemcounter\plusone
       \xdef\thebibauthors{{\myauthor}}}
@@ -1250,9 +1252,9 @@
 
 %D Beware, we can have cites without reference match.
 
-\unexpanded\def\gotobiblink#1[#2]{\doifreferencefoundelse{\bibrefprefix#2}{\goto{#1}[\bibrefprefix#2]}{#1}}
-\unexpanded\def\atbiblink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\at      [\bibrefprefix#1]}{#1}}
-\unexpanded\def\inbiblink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\expanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{#1}}
+\unexpanded\def\gotobiblink#1[#2]{\doifelsereferencefound{\bibrefprefix#2}{\goto{#1}[\bibrefprefix#2]}{#1}}
+\unexpanded\def\atbiblink    [#1]{\doifelsereferencefound{\bibrefprefix#1}{\at      [\bibrefprefix#1]}{#1}}
+\unexpanded\def\inbiblink    [#1]{\doifelsereferencefound{\bibrefprefix#1}{\expanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{#1}}
 
 %D \macros{bibauthoryearref,bibauthoryearsref,bibauthorref,bibyearref}
 %D
@@ -1260,7 +1262,7 @@
 %D \type{\ixbibauthoryearref} stores the data in the macros
 %D \type{\currentbibauthor} and \type{\currentbibyear}.
 
-\unexpanded\def\doifbibinteractionelse
+\unexpanded\def\doifelsebibinteraction
   {\iflocation
      \edef\test{\bibalternative\c!interaction}%
      \ifx\test\v!stop
@@ -1272,8 +1274,10 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doifbibinteractionelse\doifelsebibinteraction
+
 \unexpanded\def\bibmaybeinteractive#1#2%
-  {\doifbibinteractionelse{\gotobiblink{#2}[#1]}{#2}}
+  {\doifelsebibinteraction{\gotobiblink{#2}[#1]}{#2}}
 
 \unexpanded\def\bibauthoryearref[#1]%
  {\ixbibauthoryear{#1}%
@@ -1338,7 +1342,7 @@
 
 \unexpanded\def\dobibshortref#1%
   {\bibinsertrefsep
-   \doifbibreferencefoundelse{#1}
+   \doifelsebibreferencefound{#1}
      {\gotobiblink{\bibgetvars{#1}}[#1]}
 	 {}}
 
@@ -1349,7 +1353,7 @@
 
 \unexpanded\def\dobibserialref#1%
   {\bibinsertrefsep
-   \doifbibreferencefoundelse{#1}
+   \doifelsebibreferencefound{#1}
      {\gotobiblink{\bibgetvarn{#1}}[#1]}
      {}}
 
@@ -1363,7 +1367,7 @@
    \gotobiblink{#1}[#1]}
 
 \unexpanded\def\bibgotoDOI#1#2%
-  {\doifbibinteractionelse
+  {\doifelsebibinteraction
      {\useURL[bibfooDoi#1][#2]%
       \useURL[bibfoo#1][http://dx.doi.org/#2]%
       \goto{\url[bibfooDoi#1]}[url(bibfoo#1)]}
@@ -1376,7 +1380,7 @@
 
 \unexpanded\def\dobibdoiref#1%
   {\bibinsertrefsep
-   \doifbibreferencefoundelse{#1}
+   \doifelsebibreferencefound{#1}
      {\expanded{\bibgotoDOI{#1}{\bibgetvaro{#1}}}}
      {}}
 
@@ -1386,13 +1390,13 @@
    \bibalternative\v!right}
 
 \unexpanded\def\bibgotoURL#1#2%
-  {\doifbibinteractionelse
+  {\doifelsebibinteraction
      {\useURL[bibfoo#1][#2]\goto{\url[bibfoo#1]}[url(bibfoo#1)]}
      {\hyphenatedurl{#2}}}
 
 \unexpanded\def\dobiburlref#1%
   {\bibinsertrefsep
-   \doifbibreferencefoundelse{#1}
+   \doifelsebibreferencefound{#1}
      {\expanded{\bibgotoURL{#1}{\bibgetvaru{#1}}}}
      {}}
 
@@ -1403,7 +1407,7 @@
 
 \unexpanded\def\dobibtyperef#1%
   {\bibinsertrefsep
-   \doifbibreferencefoundelse{#1}
+   \doifelsebibreferencefound{#1}
      {\gotobiblink{\bibgetvart{#1}}[#1]}
      {}}
 
@@ -1414,7 +1418,7 @@
 
 \unexpanded\def\dobibpageref#1%
   {\bibinsertrefsep
-   \doifbibinteractionelse
+   \doifelsebibinteraction
      {\atbiblink[#1]}
      {{\referencingfalse\at[#1]}}}
 
@@ -1425,7 +1429,7 @@
 
 \unexpanded\def\dobibdata#1%
   {\bibinsertrefsep
-   \doifbibreferencefoundelse{#1}
+   \doifelsebibreferencefound{#1}
      {\dotypesetapublication{#1}}
      {}}
 
@@ -1476,7 +1480,7 @@
 
 \unexpanded\def\dobibauthornumref#1%
   {\bibinsertrefsep
-   \doifbibreferencefoundelse{#1}
+   \doifelsebibreferencefound{#1}
      {\begingroup
       \cite[\c!left=,\c!right=,\c!alternative=\v!author][#1]%
       \bibalternative\c!inbetween

@@ -92,9 +92,10 @@ return {
         -- maybe a different class
         --
         "startmode", "stopmode", "startnotmode", "stopnotmode", "startmodeset", "stopmodeset",
-        "doifmode", "doifmodeelse", "doifnotmode",
+        "doifmode", "doifelsemode", "doifmodeelse", "doifnotmode",
         "startmodeset","stopmodeset",
-        "startallmodes", "stopallmodes", "startnotallmodes", "stopnotallmodes", "doifallmodes", "doifallmodeselse", "doifnotallmodes",
+        "startallmodes", "stopallmodes", "startnotallmodes", "stopnotallmodes",
+        "doifallmodes", "doifelseallmodes", "doifallmodeselse", "doifnotallmodes",
         "startenvironment", "stopenvironment", "environment",
         "startcomponent", "stopcomponent", "component",
         "startproduct", "stopproduct", "product",
@@ -145,8 +146,8 @@ return {
         "startcontextdefinitioncode", "stopcontextdefinitioncode",
         "texdefinition",
         --
-        "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup", "fastsetup",
-        "doifelsecommandhandler","doifnotcommandhandler","doifcommandhandler",
+        "doifelsesetups", "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup", "fastsetup",
+        "doifelsecommandhandler", "doifcommandhandlerelse", "doifnotcommandhandler", "doifcommandhandler",
         --
         "newmode", "setmode", "resetmode",
         "newsystemmode", "setsystemmode", "resetsystemmode", "pushsystemmode", "popsystemmode",
@@ -228,18 +229,29 @@ return {
         "scratchleftskip", "scratchrightskip", "scratchtopskip", "scratchbottomskip",
         --
         "doif", "doifnot", "doifelse",
-        "doifinset", "doifnotinset", "doifinsetelse",
-        "doifnextcharelse", "doifnextoptionalelse", "doifnextoptionalcselse", "doiffastoptionalcheckelse",
-        "doifnextbgroupelse", "doifnextbgroupcselse",
-        "doifnextparenthesiselse",
-        "doifundefinedelse", "doifdefinedelse", "doifundefined", "doifdefined",
+        "doifinset", "doifnotinset",
+        "doifelseinset", "doifinsetelse",
+        "doifelsenextchar", "doifnextcharelse",
+        "doifelsenextoptional", "doifnextoptionalelse",
+        "doifelsenextoptionalcs", "doifnextoptionalcselse",
+        "doifelsefastoptionalcheck", "doiffastoptionalcheckelse",
+        "doifelsenextbgroup", "doifnextbgroupelse",
+        "doifelsenextbgroupcs", "doifnextbgroupcselse",
+        "doifelsenextparenthesis", "doifnextparenthesiselse",
+        "doifelseundefined", "doifundefinedelse",
+        "doifelsedefined", "doifdefinedelse",
+        "doifundefined", "doifdefined",
         "doifelsevalue", "doifvalue", "doifnotvalue",
-        "doifnothing", "doifsomething", "doifelsenothing", "doifsomethingelse",
-        "doifvaluenothing", "doifvaluesomething", "doifelsevaluenothing",
-        "doifdimensionelse", "doifnumberelse", "doifnumber", "doifnotnumber",
-        "doifcommonelse", "doifcommon", "doifnotcommon",
-        "doifinstring", "doifnotinstring", "doifinstringelse",
-        "doifassignmentelse", "docheckassignment",
+        "doifnothing", "doifsomething",
+        "doifelsenothing", "doifnothingelse",
+        "doifelsesomething", "doifsomethingelse",
+        "doifvaluenothing", "doifvaluesomething",
+        "doifelsevaluenothing", "doifvaluenothingelse",
+        "doifelsedimension", "doifdimensionelse",
+        "doifelsenumber", "doifnumberelse", "doifnumber", "doifnotnumber",
+        "doifelsecommon", "doifcommonelse", "doifcommon", "doifnotcommon",
+        "doifinstring", "doifnotinstring", "doifelseinstring", "doifinstringelse",
+        "doifelseassignment", "doifassignmentelse", "docheckassignment",
         --
         "tracingall", "tracingnone", "loggingall",
         --
@@ -308,7 +320,7 @@ return {
         --
         "modulonumber", "dividenumber",
         --
-        "getfirstcharacter", "doiffirstcharelse",
+        "getfirstcharacter", "doifelsefirstchar", "doiffirstcharelse",
         --
         "startnointerference", "stopnointerference",
         --
@@ -359,7 +371,10 @@ return {
         "triggersmallstyle", "triggeruncrampedsmallstyle", "triggercrampedsmallstyle",
         "triggerbigstyle", "triggeruncrampedbigstyle", "triggercrampedbigstyle",
         --
-        "luaexpr", "expdoifelse", "expdoif", "expdoifnot", "expdoifcommonelse", "expdoifinsetelse",
+        "luaexpr",
+        "expelsedoif", "expdoif", "expdoifnot",
+        "expdoifelsecommon", "expdoifcommonelse",
+        "expdoifelseinset", "expdoifinsetelse",
         --
         "ctxdirectlua", "ctxlatelua", "ctxsprint", "ctxwrite", "ctxcommand", "ctxdirectcommand", "ctxlatecommand", "ctxreport",
         "ctxlua", "luacode", "lateluacode", "directluacode",

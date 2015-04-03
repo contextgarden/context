@@ -46,7 +46,7 @@
 
 \gdef\colo_show_palet[#1][#2]%
   {\ifcsname\??colorpalet#1\endcsname
-     \doifinsetelse\v!vertical{#2} \colo_palets_show_vertical \colo_palets_show_horizontal [#1][#2]%
+     \doifelseinset\v!vertical{#2} \colo_palets_show_vertical \colo_palets_show_horizontal [#1][#2]%
    \fi}
 
 \gdef\colo_palets_show_vertical[#1][#2]%
@@ -58,7 +58,7 @@
       \setuppalet[#1]
       \tabskip\zeropoint
       \def\colo_palets_show_palet##1%
-        {\doifinsetelse\v!number{#2}{##1\hskip.5em}{}&
+        {\doifelseinset\v!number{#2}{##1\hskip.5em}{}&
          \color[##1]{\vrule\s!width3em\s!height\strutht\s!depth\strutdp}%
          \graycolor[##1]{\vrule\s!width3em\s!height\strutht\s!depth\strutdp}&
          \doifinset\v!value{#2}{\hskip.5em\colorvalue{##1}}\crcr}
@@ -155,7 +155,7 @@
 
 \gdef\colo_groups_show[#1][#2]%
   {\doifcolor{#1:1}
-     {\doifinsetelse\v!vertical{#2} \colo_groups_show_vertical \colo_groups_show_horizontal [#1][#2]}}
+     {\doifelseinset\v!vertical{#2} \colo_groups_show_vertical \colo_groups_show_horizontal [#1][#2]}}
 
 \gdef\colo_groups_show_horizontal[#1][#2]%
   {\vbox
@@ -177,7 +177,7 @@
       \hbox
         {\doifinset\v!name{#2}
            {\strut
-            \doifinsetelse\v!value{#2}
+            \doifelseinset\v!value{#2}
               {\raise3\lineheight\hbox{#1\hskip.5em}}
               {#1}%
             \hskip.5em}%

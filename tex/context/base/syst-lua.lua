@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['syst-lua'] = {
 
 local find, match = string.find, string.match
 local tonumber = tonumber
-local S, lpegmatch, lpegtsplitat = lpeg.S, lpeg.match, lpeg.tsplitat
+local S, C, P, lpegmatch, lpegtsplitat = lpeg.S, lpeg.C, lpeg.P, lpeg.match, lpeg.tsplitat
+
 
 commands          = commands or { }
 local commands    = commands
@@ -115,7 +116,7 @@ end
 local s = lpegtsplitat(",")
 local h = { }
 
-local function doifcommonelse(a,b) -- often the same test
+local function doifelsecommon(a,b) -- often the same test
     local ha = h[a]
     local hb = h[b]
     if not ha then
@@ -139,7 +140,7 @@ local function doifcommonelse(a,b) -- often the same test
     ctx_secondoftwoarguments()
 end
 
-local function doifinsetelse(a,b)
+local function doifelseinset(a,b)
     local hb = h[b]
     if not hb then hb = lpegmatch(s,b) h[b] = hb end
     for i=1,#hb do
@@ -152,20 +153,20 @@ local function doifinsetelse(a,b)
 end
 
 implement {
-    name      = "doifcommonelse",
+    name      = "doifelsecommon",
     arguments = two_strings,
-    actions   = doifcommonelse
+    actions   = doifelsecommon
 }
 
 implement {
-    name      = "doifinsetelse",
+    name      = "doifelseinset",
     arguments = two_strings,
-    actions   = doifinsetelse
+    actions   = doifelseinset
 }
 
 local pattern = lpeg.patterns.validdimen
 
-function commands.doifdimenstringelse(str)
+function commands.doifelsedimenstring(str)
     if lpegmatch(pattern,str) then
         ctx_firstoftwoarguments()
     else
@@ -173,15 +174,18 @@ function commands.doifdimenstringelse(str)
     end
 end
 
-function commands.firstinset(str)
-    local first = match(str,"^([^,]+),")
-    context(first or str)
-end
+local p_first = C((1-P(",")-P(-1))^0)
+
+implement {
+    name      = "firstinset",
+    arguments = "string",
+    actions   = function(str) context(lpegmatch(p_first,str or "")) end
+}
 
 implement {
     name      = "ntimes",
-    actions   = { string.rep, context },
-    arguments = { "string", "integer" }
+    arguments = { "string", "integer" },
+    actions   = { string.rep, context }
 }
 
 implement {
@@ -203,7 +207,7 @@ implement {
 -- end
 
 implement {
-    name      = "doifsameelse",
+    name      = "doifelsesame",
     arguments = two_strings,
     actions   = function(a,b)
         if a == b then

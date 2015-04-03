@@ -51,26 +51,26 @@
 \def\syst_datasets_set_named[#1][#2][#3]%
   {\begingroup
    \edef\currentdataset{#1}%
-   \ctxcommand{setdataset{
-      name  = "\currentdataset",
-      tag   = \!!bs#2\!!es,
-      delay = "\datasetparameter\c!delay",
-      data  = \!!bs#3\!!es
-   }}%
+   \clf_setdataset
+      name  {\currentdataset}%
+      tag   {#2}%
+      delay {\datasetparameter\c!delay}%
+      data  {#3}%
+   \relax
    \endgroup}
 
 \def\syst_datasets_set_indexed[#1][#2][#3]%
   {\begingroup
    \edef\currentdataset{#1}%
-   \ctxcommand{setdataset{
-      name  = "\currentdataset",
-      delay = "\datasetparameter\c!delay",
-      data  = \!!bs#2\!!es
-   }}%
+   \clf_setdataset
+      name  {\currentdataset}%
+      delay {\datasetparameter\c!delay}%
+      data  {#2}%
+   \relax
    \endgroup}
 
 \def\datasetvariable#1#2#3%
-  {\ctxcommand{datasetvariable("#1","#2","#3")}}
+  {\clf_datasetvariable{#1}{#2}{#3}}
 
 \installcorenamespace{pagestate}
 
@@ -85,17 +85,17 @@
 \def\syst_pagestates_set[#1][#2]%
   {\begingroup
    \edef\currentpagestate{#1}%
-   \ctxcommand{setpagestate{
-      name  = "\currentpagestate",
-      tag   = \!!bs#2\!!es,
-      delay = "\pagestateparameter\c!delay",
-   }}%
+   \clf_setpagestate
+      name  {\currentpagestate}%
+      tag   {#2}%
+      delay {\pagestateparameter\c!delay}%
+   \relax
    \endgroup}
 
 \def\pagestaterealpage#1#2%
-  {\ctxcommand{pagestaterealpage("#1","#2")}}
+  {\clf_pagestaterealpage{#1}{#2}}
 
 \def\setpagestaterealpageno#1#2%
-  {\ctxcommand{setpagestaterealpageno("#1","#2")}}
+  {\clf_setpagestaterealpageno{#1}{#2}}
 
 \protect

@@ -94,6 +94,8 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doiflistelse\doifelselist
+
 %D Regular list entries are bound to a specific location in order to
 %D get the right pagenumber etc.\ associated. When pushing something
 %D inbetween (in mkiv) it ends up directtly in the list. This is the
@@ -375,11 +377,14 @@
 \def\rawstructurelistfirst {\rawstructurelistuservariable\s!first } % s! % was \unexpanded
 \def\rawstructurelistsecond{\rawstructurelistuservariable\s!second} % s! % was \unexpanded
 
-\unexpanded\def\doifstructurelisthaspageelse
-  {\clf_doiflisthaspageelse{\currentlist}\numexpr\currentlistindex\relax}
+\unexpanded\def\doifelsestructurelisthaspage
+  {\clf_doifelselisthaspage{\currentlist}\numexpr\currentlistindex\relax}
 
-\unexpanded\def\doifstructurelisthasnumberelse
-  {\clf_doiflisthasnumberelse{\currentlist}\numexpr\currentlistindex\relax}
+\unexpanded\def\doifelsestructurelisthasnumber
+  {\clf_doifelselisthasnumber{\currentlist}\numexpr\currentlistindex\relax}
+
+\let\doifstructurelisthaspageelse  \doifelsestructurelisthaspage
+\let\doifstructurelisthasnumberelse\doifelsestructurelisthasnumber
 
 \unexpanded\def\structurelistgenerictitle
   {\dostarttagged\t!listcontent\empty
@@ -431,8 +436,8 @@
         reference {#reference}
    \relax}
 
-\def\firststructureelementinlist#list%
-  {\ctxcommand{firstinset("#list")}}
+\def\firststructureelementinlist#list% expandable
+  {\clf_firstinset{#list}}
 
 \def\structurelistsize
   {\clf_listsize}
@@ -538,7 +543,7 @@
 
 \def\strc_lists_assign_dimen#dimension#key#default%
   {\edef\m_strc_list_dimen{\listparameter#key}%
-   \doifinsetelse\m_strc_list_dimen{\v!fit,\v!broad}{#dimension#default}{#dimension\m_strc_list_dimen}\relax}
+   \doifelseinset\m_strc_list_dimen{\v!fit,\v!broad}{#dimension#default}{#dimension\m_strc_list_dimen}\relax}
 
 \definesymbol[\v!list][\v!none   ][\strc_lists_symbol_none]
 \definesymbol[\v!list][\v!one    ][\strc_lists_symbol_one]
@@ -549,7 +554,7 @@
 
 \unexpanded\def\currentlistsymbol
   {\edef\p_symbol{\listparameter\c!symbol}%
-   \doifinsymbolsetelse\v!list\p_symbol
+   \doifelseinsymbolset\v!list\p_symbol
      {\directsymbol\v!list\p_symbol}
      {\directsymbol\v!list\s!default}}
 
@@ -718,7 +723,7 @@
      \let\p_method\v!command
    \fi
    \normalexpanded{\definelistalternative[#tag][\p_method]}[\c!command=\strc_lists_placement_command]%
-   \doifnextbgroupelse
+   \doifelsenextbgroup
      {\strc_lists_define_placement_yes{#tag}}
      {\strc_lists_define_placement_nop{#tag}}}
 
@@ -782,7 +787,7 @@
       \settrue\c_lists_has_page
       \settrue\c_lists_show_page
     \else
-      \doifstructurelisthaspageelse\settrue\setfalse\c_lists_has_page
+      \doifelsestructurelisthaspage\settrue\setfalse\c_lists_has_page
       \ifx\p_pagenumber\v!yes
         \settrue\c_lists_show_page
       \else
@@ -795,7 +800,7 @@
       \settrue\c_lists_has_number
       \settrue\c_lists_show_number
     \else
-      \doifstructurelisthasnumberelse\settrue\setfalse\c_lists_has_number
+      \doifelsestructurelisthasnumber\settrue\setfalse\c_lists_has_number
       \ifx\p_headnumber\v!yes
         \settrue\c_lists_show_number
       \else

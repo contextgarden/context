@@ -367,7 +367,7 @@
   {\dodoubleargument\colo_palets_define}
 
 \unexpanded\def\colo_palets_define[#1][#2]% todo
-  {\doifassignmentelse{#2}
+  {\doifelseassignment{#2}
      {%\colo_helpers_show_message\m!colors6{#1}%
       \let\m_colo_palets_tmp\empty
       \setevalue{\??colorpaletspecification#1}{#2}%
@@ -382,7 +382,7 @@
 %   {\colo_palets_define_two{#1}[#2]}%
 
 \def\colo_palets_define_one#1#2% get rid of { }
-  {\doifassignmentelse{#2} % catch empty entries
+  {\doifelseassignment{#2} % catch empty entries
      {\colo_palets_define_two{#1}[#2]}
      {\colo_palets_define_three{#1}{#2}}}
 
@@ -880,7 +880,7 @@
 %D command. Later on we will explain the use of palets.  We
 %D define ourselves a color conditional first.
 
-\def\doifcolorelse#1%
+\def\doifelsecolor#1%
   {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
      \expandafter\firstoftwoarguments
    \else\ifcsname\??colorattribute#1\endcsname
@@ -888,6 +888,8 @@
    \else
      \doubleexpandafter\secondoftwoarguments
    \fi\fi}
+
+\let\doifcolorelse\doifelsecolor
 
 \def\doifcolor#1%
   {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
@@ -989,7 +991,7 @@
 \to \everysetupcolors
 
 \def\colo_palets_define_set#1#2#3%
-  {\doifassignmentelse{#3}% \definepalet[test][xx={y=.4}]
+  {\doifelseassignment{#3}% \definepalet[test][xx={y=.4}]
      {\definecolor[\??colorpalet#1:#2][#3]%
       \colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_palet_ca{#1}{#2}}%
       \colo_helpers_set_value{\??colorattribute       #1:#2}{\colo_helpers_inherited_palet_cs{#1}{#2}}%
@@ -1089,8 +1091,14 @@
 \def\colorvalue              #1{\clf_formatcolor\thecolorattribute{#1}{\colorformatseparator}}
 \def\grayvalue               #1{\clf_formatgray \thecolorattribute{#1}{\colorformatseparator}}
 
-\def\doifblackelse           #1{\clf_doifblackelse\thecolorattribute{#1} }
-\def\doifdrawingblackelse      {\clf_doifdrawingblackelse}
+\def\doifelseblack           #1{\clf_doifelseblack\thecolorattribute{#1} }
+\def\doifelsedrawingblack      {\clf_doifelsedrawingblack}
+
+\let\doifblackelse        \doifelseblack
+\let\doifdrawingblackelse \doifelsedrawingblack
+
+\let\doifblackelse       \doifelseblack
+\let\doifdrawingblackelse\doifelsedrawingblack
 
 %D \macros
 %D   {forcecolorhack}

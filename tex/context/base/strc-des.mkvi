@@ -103,10 +103,10 @@
 \unexpanded\def\strc_descriptions_start#1%
   {\begingroup
    \strc_constructions_initialize{#1}%
-   \doifnextoptionalcselse\strc_descriptions_start_yes\strc_descriptions_start_nop}
+   \doifelsenextoptionalcs\strc_descriptions_start_yes\strc_descriptions_start_nop}
 
 \unexpanded\def\strc_descriptions_start_yes[#1]%
-  {\doifassignmentelse{#1}\strc_descriptions_start_yes_assignment\strc_descriptions_start_yes_reference[#1]}
+  {\doifelseassignment{#1}\strc_descriptions_start_yes_assignment\strc_descriptions_start_yes_reference[#1]}
 
 \unexpanded\def\strc_descriptions_start_yes_assignment[#1]% todo userdata
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1][]%
@@ -120,7 +120,7 @@
    \fi}
 
 \unexpanded\def\strc_descriptions_start_yes_titled[#1]%
-  {\doifnextbgroupelse
+  {\doifelsenextbgroup
      {\strc_descriptions_start_yes_titled_indeed[#1]}%
      {\setfalse\c_strc_constructions_title_state
       \strc_descriptions_start_yes_normal[#1]}}
@@ -141,7 +141,7 @@
    \fi}
 
 \unexpanded\def\strc_descriptions_start_nop_titled
-  {\doifnextbgroupelse
+  {\doifelsenextbgroup
      {\strc_descriptions_start_nop_titled_indeed}%
      {\setfalse\c_strc_constructions_title_state
       \strc_descriptions_start_nop_normal}}%
@@ -163,7 +163,7 @@
 \unexpanded\def\strc_descriptions_command#1%
   {\begingroup
    \strc_constructions_initialize{#1}%
-   \doifnextoptionalcselse\strc_descriptions_yes\strc_descriptions_nop}
+   \doifelsenextoptionalcs\strc_descriptions_yes\strc_descriptions_nop}
 
 \unexpanded\def\strc_descriptions_yes
   {\ifconditional\c_strc_constructions_title_state
@@ -177,7 +177,7 @@
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_yes_titled[#1]%
-  {\doifnextbgroupelse
+  {\doifelsenextbgroup
      {\strc_descriptions_yes_titled_indeed[#1]}%
      {\setfalse\c_strc_constructions_title_state
       \strc_descriptions_yes_normal[#1]}}
@@ -198,7 +198,7 @@
    \fi}
 
 \unexpanded\def\strc_descriptions_nop_titled
-  {\doifnextbgroupelse
+  {\doifelsenextbgroup
      {\strc_descriptions_nop_titled_indeed}%
      {\setfalse\c_strc_constructions_title_state
       \strc_descriptions_nop_normal}}

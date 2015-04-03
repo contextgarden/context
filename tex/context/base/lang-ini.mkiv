@@ -213,12 +213,14 @@
 
 \def\installedlanguages{\clf_installedlanguages}
 
-\unexpanded\def\doiflanguageelse#1%
+\unexpanded\def\doifelselanguage#1%
   {\ifcsname\??language#1\c!state\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doiflanguageelse\doifelselanguage
 
 \def\reallanguagetag#1%
   {\ifcsname\??languagelinked#1\endcsname\csname\??languagelinked#1\endcsname\else#1\fi}
@@ -229,8 +231,8 @@
   {\dodoubleargument\lang_basics_install}
 
 \def\lang_basics_install[#1][#2]%
-  {\doifassignmentelse{#2}
-     {\doiflanguageelse{#1}
+  {\doifelseassignment{#2}
+     {\doifelselanguage{#1}
         {\getparameters[\??language#1][#2]}
         {\setvalue{\??languagelinked#1}{#1}%
          \lang_basics_install_indeed{#1}{#1}%
@@ -250,7 +252,7 @@
 %D used dutch mnemonics in the dutch version, but nowadays
 %D conform a standard.
 
-\unexpanded\def\doifpatternselse#1%
+\unexpanded\def\doifelsepatterns#1%
   {\begingroup % will change
    \lang_basics_set_current[#1]%
    \ifnum\normallanguage>\zerocount
@@ -258,6 +260,8 @@
    \else
      \endgroup\expandafter\secondoftwoarguments
    \fi}
+
+\let\doifpatternselse\doifelsepatterns
 
 %D \macros
 %D   {setuplanguage}
@@ -561,7 +565,7 @@
    \lang_basics_switch_asked}
 
 \unexpanded\def\language
-  {\doifnextoptionalcselse\lang_basics_set_current\normallanguage}
+  {\doifelsenextoptionalcs\lang_basics_set_current\normallanguage}
 
 \let\setlanguage\language % we make these synonyms
 

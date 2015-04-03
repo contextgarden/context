@@ -25,6 +25,8 @@
 \def\doifelsebuffer#1%
   {\clf_doifelsebuffer{#1}}
 
+\let\doifbufferelse\doifelsebuffer
+
 \unexpanded\def\resetbuffer
   {\dosingleempty\buff_reset}
 
@@ -235,7 +237,7 @@
 
 \def\buff_save[#1][#2]%
   {\begingroup
-   \doifassignmentelse{#1}
+   \doifelseassignment{#1}
      {\setupcurrentsavebuffer[#1]}%
      {\setupcurrentsavebuffer[\c!list={#1},\c!file=#2]}%
    \clf_savebuffer{\directsavebufferparameter\c!list}{\directsavebufferparameter\c!file}{\directsavebufferparameter\c!prefix}%

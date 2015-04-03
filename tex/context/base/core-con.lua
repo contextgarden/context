@@ -290,7 +290,7 @@ implement { name = "second",   actions = { date,     context }, arguments = "'%S
 implement { name = "textime",  actions = { textime,  context } }
 
 implement {
-    name      = "doifleapyearelse",
+    name      = "doifelseleapyear",
     actions   = { isleapyear, commands.doifelse },
     arguments = "integer"
 }
@@ -1206,7 +1206,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
             elseif mnemonic then
                 context.labeltext(monthmnem(month))
             else
-                context.labeltext(monthmnem(month))
+                context.labeltext(monthname(month))
             end
         elseif tag == "mm" then
             context("%02i",month)

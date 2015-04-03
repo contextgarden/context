@@ -32,7 +32,7 @@
   {\doifoutervmode{\ifconditional\c_spac_indentation_indent_first\else\spac_indentation_variant_no\fi}}
 
 \unexpanded\def\setupindenting
-  {\doifnextoptionalcselse\spac_indentation_setup_options\spac_indentation_setup_size}
+  {\doifelsenextoptionalcs\spac_indentation_setup_options\spac_indentation_setup_size}
 
 \unexpanded\def\spac_indentation_setup_size
   {\assigndimension\v_spac_indentation_current\d_spac_indentation_par{1\emwidth}{1.5\emwidth}{2\emwidth}}
@@ -128,7 +128,7 @@
    \fi\fi}
 
 \unexpanded\def\indenting % kind of obsolete
-  {\doifnextoptionalcselse\spac_indentation_setup_options\relax}
+  {\doifelsenextoptionalcs\spac_indentation_setup_options\relax}
 
 % use \noindentation to suppress next indentation
 
@@ -264,7 +264,7 @@
 
 \unexpanded\def\spac_indentation_check_next_indentation
   {\global\let\dorechecknextindentation\relax
-   \doifnextcharelse\par\donothing\spac_indentation_variant_no} % messy check as next is seldom \par
+   \doifelsenextchar\par\donothing\spac_indentation_variant_no} % messy check as next is seldom \par
 
 \def\spac_indentation_variant_auto
   {\global\let\dorechecknextindentation\spac_indentation_check_next_indentation}
@@ -386,7 +386,7 @@
 \installspacingmethod \v!broad  {\nonfrenchspacing} % more depending on what punctuation
 
 \unexpanded\def\setupspacing
-  {\doifnextoptionalcselse\spac_spacecodes_setup_yes\spac_spacecodes_setup_nop}
+  {\doifelsenextoptionalcs\spac_spacecodes_setup_yes\spac_spacecodes_setup_nop}
 
 \def\spac_spacecodes_setup_yes[#1]%
   {\csname\??spacecodemethod#1\endcsname
@@ -677,7 +677,7 @@
    \fi}
 
 \def\spac_narrower_start_named_one[#1]%
-  {\doifassignmentelse{#1}\spac_narrower_start_named_one_yes\spac_narrower_start_named_one_nop[#1]}
+  {\doifelseassignment{#1}\spac_narrower_start_named_one_yes\spac_narrower_start_named_one_nop[#1]}
 
 \def\spac_narrower_start_named_one_yes[#1][#2]% [settings] []
   {\setupcurrentnarrower[#1]%
@@ -688,14 +688,14 @@
    \spac_narrower_start_apply{\narrowerparameter\v!default}}
 
 \def\spac_narrower_start_named_two[#1]%
-  {\doifassignmentelse{#1}\spac_narrower_start_named_settings_how\spac_narrower_start_named_tag_unknown[#1]}
+  {\doifelseassignment{#1}\spac_narrower_start_named_settings_how\spac_narrower_start_named_tag_unknown[#1]}
 
 \def\spac_narrower_start_named_settings_how[#1][#2]% [settings] [how]
   {\setupcurrentnarrower[#1]%
    \spac_narrower_start_apply{#2}}
 
 \def\spac_narrower_start_named_tag_unknown[#1][#2]% [tag] [...]
-  {\doifassignmentelse{#2}\spac_narrower_start_named_tag_settings\spac_narrower_start_named_tag_how[#1][#2]}
+  {\doifelseassignment{#2}\spac_narrower_start_named_tag_settings\spac_narrower_start_named_tag_how[#1][#2]}
 
 \def\spac_narrower_start_named_tag_settings[#1][#2]% [tag] [settings]
   {\edef\currentnarrower{#1}%
@@ -786,7 +786,7 @@
   {\dosingleargument\spac_tolerances_setup}
 
 \def\spac_tolerances_setup[#1]%
-  {\doifinsetelse\v!vertical{#1}%
+  {\doifelseinset\v!vertical{#1}%
      {\processcommacommand[#1]\spac_tolerances_step_vertical  }
      {\processcommacommand[#1]\spac_tolerances_step_horizontal}}
 
@@ -1081,7 +1081,7 @@
 %D A rather unknown one:
 
 \unexpanded\def\widened % moved from cont-new
-  {\doifnextoptionalcselse\spac_widened_yes\spac_widened_nop}
+  {\doifelsenextoptionalcs\spac_widened_yes\spac_widened_nop}
 
 \def\spac_widened_yes[#1]#2{\hbox \s!spread       #1{\hss#2\hss}}
 \def\spac_widened_nop    #1{\hbox \s!spread \emwidth{\hss#1\hss}}

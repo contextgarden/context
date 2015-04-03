@@ -109,9 +109,9 @@
      \let\p_typo_items_symbol\empty
      \let\m_typo_items_symbol\firstofoneargument
    \else
-     \doifconversiondefinedelse\p_typo_items_symbol
+     \doifelseconversiondefined\p_typo_items_symbol
        {\def\m_typo_items_symbol{\convertnumber\p_typo_items_symbol}}
-       {\doifsymboldefinedelse\p_typo_items_symbol
+       {\doifelsesymboldefined\p_typo_items_symbol
           {\def\m_typo_items_symbol{\symbol[\p_typo_items_symbol]\gobbleoneargument}}
           {\let\m_typo_items_symbol\firstofoneargument}}%
    \fi\fi

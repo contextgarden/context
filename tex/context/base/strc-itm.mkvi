@@ -581,7 +581,7 @@
 % can be made a bit faster
 
 \def\strc_itemgroups_setup_each#category#whatever%
-  {\doifassignmentelse{#whatever}
+  {\doifelseassignment{#whatever}
      {\strc_itemgroups_normal_setup[#category][#whatever]}
      {\strc_itemgroups_normal_setup[#category][\c!option={#whatever}]}}
 
@@ -592,7 +592,7 @@
   {\strc_itemgroups_normal_setup[#category:#level][\c!option={#whatever}]}
 
 \def\strc_itemgroups_setup_list#subcategories#category#whatever%
-  {\doifassignmentelse{#whatever}
+  {\doifelseassignment{#whatever}
      {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_a{#category}{#whatever}}}
      {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_b{#category}{#whatever}}}}
 
@@ -644,9 +644,9 @@
 \def\strc_itemgroups_set_symbol#symbol%
   {\edef\strc_itemgroups_tmp_symbol{#symbol}%
    \ifx\strc_itemgroups_tmp_symbol\empty \else
-     \doifsymboldefinedelse\strc_itemgroups_tmp_symbol
+     \doifelsesymboldefined\strc_itemgroups_tmp_symbol
         \strc_itemgroups_set_symbol_symbol
-        {\doifconversiondefinedelse\strc_itemgroups_tmp_symbol
+        {\doifelseconversiondefined\strc_itemgroups_tmp_symbol
            \strc_itemgroups_set_symbol_conversion
            \donothing}%
    \fi}
@@ -711,7 +711,7 @@
    \ifthirdargument
      \strc_itemgroups_start_indeed[#options][#settings]%
    \else\ifsecondargument
-     \doifassignmentelse{#options}
+     \doifelseassignment{#options}
        {\strc_itemgroups_start_indeed[][#options]}
        {\strc_itemgroups_start_indeed[#options][]}%
    \else
@@ -1539,7 +1539,7 @@
   {\strc_itemgroups_item_alone}
 
 \def\strc_itemgroups_item_alone[#category]#text\par
-  {\doifsomethingelse{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
+  {\doifelsesomething{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
    \startitem#text\stopitem
    \stopitemgroup}
 
@@ -1547,7 +1547,7 @@
   {\strc_itemgroups_head_alone}
 
 \def\strc_itemgroups_head_alone[#category]#head\par#body\par
-  {\doifsomethingelse{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
+  {\doifelsesomething{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
    \starthead{#head}#body\stophead
    \stopitemgroup}
 

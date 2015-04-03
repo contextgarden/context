@@ -122,7 +122,7 @@
 \setvalue{\??interlinespacerelative\v!auto }{\let\setrelativeinterlinespace\spac_linespacing_set_relative_interlinespace}
 
 \def\spac_linespacing_set_specified_relative_interlinespace#1% fragile?
-  {\doifdimenstringelse{#1}
+  {\doifelsedimenstring{#1}
      {\setupspecifiedinterlinespace[\c!line=#1]}
      {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
       \spacing\currentrelativeinterlinespace}}
@@ -190,7 +190,7 @@
    \fi\fi}
 
 \def\spac_linespacing_setup_specified_or_relative[#1]%
-  {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
+  {\doifelseassignment{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
    \the\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
 
 \def\spac_linespacing_synchronize_local % adapts to the font
@@ -217,7 +217,7 @@
      \fi
      \popmacro\currentinterlinespace
    \else
-     \normalexpanded{\noexpand\doifassignmentelse{\p_spac_checked_interlinespace}%
+     \normalexpanded{\noexpand\doifelseassignment{\p_spac_checked_interlinespace}%
        \setupspecifiedinterlinespace\setuprelativeinterlinespace[\p_spac_checked_interlinespace]}%
      \iflocalinterlinespace
        \the\everysetuplocalinterlinespace
@@ -350,7 +350,7 @@
 \let\v_spac_whitespace_current\v!none
 
 \unexpanded\def\setupwhitespace
-  {\doifnextoptionalcselse\spac_whitespace_setup_yes\spac_whitespace_setup_nop}
+  {\doifelsenextoptionalcs\spac_whitespace_setup_yes\spac_whitespace_setup_nop}
 
 \def\spac_whitespace_setup_nop
   {\ifx\v_spac_whitespace_current\v!none\else
@@ -1820,7 +1820,7 @@
 % The main spacer:
 
 \unexpanded\def\vspacing
-  {\doifnextoptionalcselse\spac_vspacing_yes\spac_vspacing_nop}
+  {\doifelsenextoptionalcs\spac_vspacing_yes\spac_vspacing_nop}
 
 \def\spac_vspacing_yes
   {\ifinpagebody % somewhat weird
@@ -1876,7 +1876,7 @@
 % these depend on bigskipamount cum suis so we'd better sync them
 
 \unexpanded\def\setupvspacing
-  {\doifnextoptionalcselse\setupvspacing_yes\setupvspacing_nop}
+  {\doifelsenextoptionalcs\setupvspacing_yes\setupvspacing_nop}
 
 \let\currentvspacing\s!default % hm, default, standard ...
 
@@ -2077,7 +2077,7 @@
 \let\m_spac_hanging_location\empty
 
 \def\spac_hanging_start[#1]%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\let\m_spac_hanging_location\empty
       \setupcurrenthanging[#1]}%
      {\edef\m_spac_hanging_location{#1}}%

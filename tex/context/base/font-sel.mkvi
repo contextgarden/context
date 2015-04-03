@@ -102,7 +102,7 @@
   {\dodoubleargument\selectfont_preset_define}
 
 \def\selectfont_preset_define[#name][#settings]%
-  {\doifassignmentelse{#settings}
+  {\doifelseassignment{#settings}
      {\setvalue{\??selectfontpreset#name}{\setupcurrentselectfont[#settings]}}
      {\setvalue{\??selectfontpreset#name}{\csname\??selectfontpreset#settings\endcsname}}}
 
@@ -325,7 +325,7 @@
   {\doquadrupleempty\selectfont_family_define}
 
 \def\selectfont_family_define[#typeface][#style][#family][#settings]%
-  {\doifassignmentelse{#settings}
+  {\doifelseassignment{#settings}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},#settings]}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},\c!preset={#settings}]}%
    \clf_definefontfamily\selectfont_index\relax}
@@ -334,7 +334,7 @@
   {\doquadrupleempty\selectfont_fallback_define}
 
 \def\selectfont_fallback_define[#typeface][#style][#family][#settings]%
-  {\doifassignmentelse{#settings}
+  {\doifelseassignment{#settings}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},#settings]}
      {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},\c!preset={#settings}]}%
    \edef\p_selectfont_style{\expandnamespacevalue\??selectfontstyle{#style}\s!rm}%

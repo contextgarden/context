@@ -253,7 +253,7 @@
 %D only when double sided typesetting is enabled.
 
 \unexpanded\def\page_layouts_process_element_double
-  {\doifoddpageelse
+  {\doifelseoddpage
      \page_layouts_process_element_double_odd
      \page_layouts_process_element_double_even}
 
@@ -377,6 +377,9 @@
    \else
      \doubleexpandafter\firstoftwoarguments
    \fi\fi}
+
+\let\doiflayouttextlineelse\doifelselayouttextline
+\let\doiflayoutsomelineelse\doifelselayoutsomeline
 
 \newconditional\resyncaftertextline
 

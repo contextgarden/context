@@ -136,7 +136,7 @@
   {\bgroup
    \doifelsenothing{#registered}
       {\scrn_attachment_inject[\v!auto][]}
-      {\doifassignmentelse{#registered}
+      {\doifelseassignment{#registered}
          {\scrn_attachment_inject[\v!auto][#registered]}
          {\scrn_attachment_inject[#registered][#settings]}}%
    \egroup}
@@ -162,7 +162,7 @@
   {\bgroup
    \doifelsenothing{#registered}
      {\def\scrn_attachment_stop{\scrn_attachment_inject[\v!auto][\c!buffer=\v!attachment]\egroup}}%
-     {\doifassignmentelse{#registered}
+     {\doifelseassignment{#registered}
         {\def\scrn_attachment_stop{\scrn_attachment_inject[\v!auto][\c!buffer=\v!attachment,#registered]\egroup}}%
         {\def\scrn_attachment_stop{\scrn_attachment_inject[#registered][\c!buffer=\v!attachment,#settings]\egroup}}}%
    \grabbufferdatadirect\v!attachment{\e!start\currentattachment}{\e!stop\currentattachment}}
@@ -398,7 +398,7 @@
      \scrn_comment_argument_ignore}
 
 \def\scrn_comment_argument_indeed[#title][#settings]#text%
-  {\doifassignmentelse{#title}
+  {\doifelseassignment{#title}
      {\setupcurrentcomment[#title]}
      {\setupcurrentcomment[\c!title=#title,#settings]}%
    \ctxcommand{assignbuffer("\v!comment",\!!bs#text\!!es)}% todo: expansion control, but expanded by default (xml)
@@ -421,7 +421,7 @@
 
 \def\scrn_comment_start_indeed[#title][#settings]%
   {\bgroup
-   \doifassignmentelse{#title}
+   \doifelseassignment{#title}
      {\setupcurrentcomment[#title]}
      {\setupcurrentcomment[\c!title=#title,#settings]}%
    \unexpanded\def\scrn_comment_stop{\scrn_comment_inject\egroup}%

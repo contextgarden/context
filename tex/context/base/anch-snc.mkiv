@@ -51,6 +51,8 @@
 \def\doifelselastsyncposition#1#2%
   {\doifelse{\lastsyncclass\lastsyncposition}{#1#2}}
 
+\let\doiflastsyncpositionelse\doifelselastsyncposition
+
 \def\dodosyncposition#1#2#3%
   {\letgvalue{\s!reset:\s!syncpos:#1}\relax
    \letgvalue{\s!preset:\s!syncpos:#1}\relax
@@ -74,7 +76,7 @@
    \!!counta\zerocount
    \!!countc\zerocount
    \doloop
-     {\doifpositionelse{\s!syncpos:#1:\recurselevel}
+     {\doifelseposition{\s!syncpos:#1:\recurselevel}
         {\!!dimenb\MPy{\s!syncpos:#1:\recurselevel}\relax
          \!!countb\MPp{\s!syncpos:#1:\recurselevel}\relax
          \ifnum\!!countb=\!!counta % same page

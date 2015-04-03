@@ -16,7 +16,7 @@ local report_xml = logs.reporter("xml")
 
 local xml = xml
 
-local xmlconvert, xmlcopy, xmlname = xml.convert, xml.copy, xml.name
+local xmlcopy, xmlname = xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 local xmlapplylpath = xml.applylpath
 local xmlfilter = xml.filter
@@ -166,6 +166,8 @@ local function redo_ni(d)
         end
     end
 end
+
+xml.reindex = redo_ni
 
 local function xmltoelement(whatever,root)
     if not whatever then

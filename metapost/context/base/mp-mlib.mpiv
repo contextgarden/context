@@ -1102,26 +1102,71 @@ enddef ;
 
 % moved here from mp-grap.mpiv
 
+% vardef escaped_format(expr s) =
+%     "" for n=0 upto length(s) : &
+%         if ASCII substring (n,n+1) of s = 37 :
+%             "@"
+%         else :
+%             substring (n,n+1) of s
+%         fi
+%     endfor
+% enddef ;
+
+numeric mfun_esc_b ; % begin
+numeric mfun_esc_l ; % length
+string  mfun_esc_s ; % character
+
+mfun_esc_s := str 37 ;
+
+% this one is the fastest when we have a match
+
+% vardef escaped_format(expr s) =
+%     "" for n=0 upto length(s)-1 : &
+%         if substring (n,n+1) of s = mfun_esc_s :
+%             "@"
+%         else :
+%             substring (n,n+1) of s
+%         fi
+%     endfor
+% enddef ;
+
+% this one wins when we have no match
+
 vardef escaped_format(expr s) =
-    "" for n=0 upto length(s) : &
-        if ASCII substring (n,n+1) of s = 37 :
-            "@"
-        else :
-            substring (n,n+1) of s
+    mfun_esc_b := 0 ;
+    mfun_esc_l := length(s) ;
+    for n=0 upto mfun_esc_l-1 :
+        if substring (n,n+1) of s = mfun_esc_s :
+            if mfun_esc_b = 0 :
+                ""
+            fi
+            if n >= mfun_esc_b :
+                & (substring (mfun_esc_b,n) of s)
+                exitif numeric begingroup mfun_esc_b := n+1 endgroup ; % hide
+            fi
+            & "@"
         fi
     endfor
+    if mfun_esc_b = 0 :
+        s
+    elseif mfun_esc_b > 0 :
+        & (substring (mfun_esc_b,mfun_esc_l) of s)
+    fi
 enddef ;
 
-vardef strfmt(expr f, x) = % maybe use mfun_ namespace
-    "\MPgraphformat{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}"
-enddef ;
-
-vardef varfmt(expr f, x) = % maybe use mfun_ namespace
-    "\MPformatted{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}"
-enddef ;
+vardef strfmt(expr f, x) = "\MPgraphformat{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}" enddef ;
+vardef varfmt(expr f, x) = "\MPformatted{"   & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}" enddef ;
 
 vardef format   (expr f, x) = textext(strfmt(f, x)) enddef ;
 vardef formatted(expr f, x) = textext(varfmt(f, x)) enddef ;
+
+% could be this:
+
+% vardef format   (expr f,x) = lua.mp.graphformat(f,mfun_tagged_string(x) enddef ;
+% vardef formatted(expr f,x) = lua.mp.format     (f,                   x) enddef ;
+
+% def strfmt = format    enddef ; % old
+% def varfmt = formatted enddef ; % old
 
 % new
 

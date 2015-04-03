@@ -251,7 +251,7 @@
    \settrue\c_phys_units_dospace}
 
 \unexpanded\def\digits
-  {\doifnextbgroupelse\phys_digits_argument\phys_digits_spaced}
+  {\doifelsenextbgroup\phys_digits_argument\phys_digits_spaced}
 
 \def\phys_digits_argument#1%
   {\phys_digits_indeed{#1}}
@@ -579,7 +579,7 @@
 \let\unitsNstartindeed\unitsNstart
 
 \unexpanded\def\unitsNstart
-  {\doifnextcharelse\unitsNstop\gobbleoneargument\unitsNstartindeed}
+  {\doifelsenextchar\unitsNstop\gobbleoneargument\unitsNstartindeed}
 
 % End of hack.
 

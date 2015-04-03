@@ -71,7 +71,7 @@
 \let\dodefineaccentcommand\enco_define_accent_command % used at the lua end
 
 \unexpanded\def\definecharacter#1 #2 %
-  {\doifnumberelse{\string#2}
+  {\doifelsenumber{\string#2}
      {\setevalue{\string#1}{\utfchar{#2}}} % or {\expandafter\chardef\csname#1\endcsname#2\relax}
      {\setuvalue{\string#1}{#2}}}
 
@@ -459,10 +459,10 @@
 \unexpanded\def\periods
   {\dontleavehmode
    \hbox\bgroup
-   \doifnextoptionalelse\enco_periods_yes\enco_periods_nop}
+   \doifelsenextoptional\enco_periods_yes\enco_periods_nop}
 
 \unexpanded\def\enco_periods_yes[#1]%
-  {\doifassignmentelse{#1}
+  {\doifelseassignment{#1}
      {\setupcurrentperiods[#1]%
       \scratchcounter\periodsparameter\c!n}
      {\doifelsenothing{#1}

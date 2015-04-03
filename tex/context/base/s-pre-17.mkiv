@@ -194,7 +194,7 @@
     \egroup
     \setbox\scratchbox\vbox\bgroup
         \vskip100pt
-        \doifmodeelse {SpreadPage} {
+        \doifelsemode {SpreadPage} {
             \hbox spread 200pt
         } {
             \hbox to \wd\scratchbox

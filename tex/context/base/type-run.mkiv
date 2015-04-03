@@ -21,7 +21,7 @@
    \def\dochecktypescript##1##2% script use
      {\doifelsenothing{##1##2}
         {\donetrue}
-        {\doifcommonelse{##1}{##2}\donetrue\donefalse}}
+        {\doifelsecommon{##1}{##2}\donetrue\donefalse}}
    \edef\typescriptone  {\truetypescript{#1}}%
    \edef\typescripttwo  {\truetypescript{#2}}%
    \edef\typescriptthree{\truetypescript{#3}}%

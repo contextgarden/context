@@ -89,11 +89,11 @@
 
 \def\font_basics_define_font_synonym_nop
   {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
-   \doifnextoptionalcselse\font_basics_define_font_synonym_nop_opt\font_basics_define_font_synonym_nop_nil}
+   \doifelsenextoptionalcs\font_basics_define_font_synonym_nop_opt\font_basics_define_font_synonym_nop_nil}
 
 \def\font_basics_define_font_synonym_yes
   {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
-   \doifnextoptionalcselse\font_basics_define_font_synonym_yes_opt\font_basics_define_font_synonym_yes_nil}
+   \doifelsenextoptionalcs\font_basics_define_font_synonym_yes_opt\font_basics_define_font_synonym_yes_nil}
 
 \def\font_basics_define_font_synonym_nop_opt[#specification]%
   {\let\p_features  \undefined
@@ -240,6 +240,8 @@
    \else
      \doubleexpandafter\secondoftwoarguments
    \fi\fi}
+
+\let\doiffontsynonymelse\doifelsefontsynonym
 
 %D \macros
 %D   {tracedfontname}

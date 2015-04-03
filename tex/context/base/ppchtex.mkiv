@@ -100,11 +100,11 @@
 
 \newconstant\chemicaldrawingmode
 
-\doifdefinedelse{beginpicture}           % PiCTeX
-  {\doifdefinedelse{startMPdrawing}
+\doifelsedefined{beginpicture}           % PiCTeX
+  {\doifelsedefined{startMPdrawing}
      {\chemicaldrawingmode\plustwo  }   % MetaPost
      {\chemicaldrawingmode\zerocount}}  % raw
-  {\doifdefinedelse{psaxes}
+  {\doifelsedefined{psaxes}
      {\chemicaldrawingmode\plusone  }   % PSTricks
      {\chemicaldrawingmode\plusthree}}  % unknown
 
@@ -387,7 +387,7 @@
   {\def\maxchemical{#1}}
 
 \def\doifchemicalnumber#1#2#3%
-  {\doifnumberelse{#1}
+  {\doifelsenumber{#1}
      {\ifnum#1>\maxchemical\relax
         \writestatus{ppchtex}{number #1 is skipped}%
       \else
@@ -682,7 +682,7 @@
    \edef\@@chemicaltop   {\the\!!countc}%
    \edef\@@chemicalbottom{\the\!!countd}%
    %
-   \doifinsetelse\v!on{\@@chemicalframe,\@@chemicalaxis}
+   \doifelseinset\v!on{\@@chemicalframe,\@@chemicalaxis}
      {\def\@@chemicalborder{\chemicalframe}}
      {\def\@@chemicalborder{\normalchemicalframe}}%
    %
@@ -867,14 +867,14 @@
 \def\chemicalrepeat       {1}
 
 \def\redoprocesschemical[#1#2]%
-  {\doifinstringelse{#1}{0123456789.}
+  {\doifelseinstring{#1}{0123456789.}
      {\edef\chemicalrepeat{\chemicalrepeat#1}%
       \redoprocesschemical[#2]}
      {\processchemical[#1#2]%
       \def\chemicalrepeat{1}}}
 
 \def\doprocesschemical[#1#2]#3%
-  {\doifinstringelse{#1}{0123456789.}
+  {\doifelseinstring{#1}{0123456789.}
      {\def\chemicalrepeat{#1}%
       \redoprocesschemical[#2]}
      {#3}}
@@ -891,9 +891,9 @@
    \divide\dimen0 by \@@localchemicalscale
    \!!counta=\dimen0
    \def\doprocess[##1##2]%
-     {\doifinstringelse{##1}{128}
+     {\doifelseinstring{##1}{128}
         {\edef\chemicaloffset{\the\!!counta}}
-        {\doifinstringelse{##1}{456}
+        {\doifelseinstring{##1}{456}
            {\edef\chemicaloffset{-\the\!!counta}}
            {\doifelse{##1}{0}
               {\edef\chemicaloffset{0}}
@@ -917,9 +917,9 @@
    \dimen0=.25\wd0
    \divide\dimen0 by \@@localchemicalscale
    \!!counta=\dimen0
-   \doifinstringelse{#1}{128}
+   \doifelseinstring{#1}{128}
      {\edef\chemicaloffset{\the\!!counta}}
-     {\doifinstringelse{#1}{456}
+     {\doifelseinstring{#1}{456}
         {\edef\chemicaloffset{-\the\!!counta}}
         {\doifelse{#1}{0}
            {\edef\chemicaloffset{0}}
@@ -959,7 +959,7 @@
    \setvalue{\s!angle4.#1}{\dosetchemicalangle{#5}}}
 
 \def\chemicalrotate[#1]%
-  {\doifdefinedelse{\s!mirror#1}
+  {\doifelsedefined{\s!mirror#1}
      {\getvalue{\s!rotate\chemicalrotation.#1\getvalue{\s!mirror#1}}%
       \getvalue{\s!angle\chemicalrotation.#1\getvalue{\s!mirror#1}}}
      {\getvalue{\s!rotate\chemicalrotation.#1}%
@@ -984,7 +984,7 @@
 
 \def\processchemicalrotation#1%
   {\def\doprocess[##1##2]%
-     {\doifnumberelse{##1}
+     {\doifelsenumber{##1}
         {\def\chemicalrotation{##1}}
         {\unknownchemical{ROT#1}}}%
    \doprocess[#1]}
@@ -1067,8 +1067,10 @@
 \def\dodoifsinglelocation#1#2\\#3%
   {\ifx#2\relax#3\fi}
 
-\def\doifsinglelocationelse#1%
+\def\doifelsesinglelocation#1%
   {\expandafter\dodoifsinglelocationelse#1\relax\\}
+
+\let\doifsinglelocationelse\doifelsesinglelocation
 
 \def\putchemicaltext#1#2%
   {\enablechemicalspecials
@@ -1706,7 +1708,7 @@
 \newif\ifinnerchemical
 
 \def\dosimplechemical#1#2#3%
-  {\doifdefinedelse{\??chemical\c!location}
+  {\doifelsedefined{\??chemical\c!location}
      {\writestatus{ppchtex}{the {}{}-alternative is not permitted here}}
      {\ifinnerchemical
         \let\chemicalsign         = \chemicalinnersign
@@ -2065,7 +2067,7 @@
              HIGH=>\sethighsubscripts,
               LOW=>\setlowsubscripts,
       \s!default=>,
-      \s!unknown=>\doifdefinedelse{\s!executechemical#1}
+      \s!unknown=>\doifelsedefined{\s!executechemical#1}
                     {\def\chemicalrotation{1}%
                      \def\chemicaloffset{0}%
                      \doifdefined{\s!executechemical#1}
@@ -2260,9 +2262,9 @@
   {\dosingleargument\dodefinechemical}
 
 \def\getpredefinedchemical#1%
-  {\doifdefinedelse{\??chemical#1}
+  {\doifelsedefined{\??chemical#1}
      {\getvalue{\??chemical#1}}
-     {\doifdefinedelse{#1}
+     {\doifelsedefined{#1}
         {\getvalue{#1}}
         {\writestatus{ppchtex}{unknown chemical definition #1}}}}
 

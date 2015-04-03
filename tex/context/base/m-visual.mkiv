@@ -161,7 +161,7 @@
      {\freezerandomseed
       \let\endstrut\relax
       \let\begstrut\relax
-      \doifinsetelse{#1}{\v!left,\v!right}
+      \doifelseinset{#1}{\v!left,\v!right}
         {\fakewords{2}{4}}
         {\fakewords{4}{10}}}%
      {\doifinset{#1}{\v!left,\v!right}

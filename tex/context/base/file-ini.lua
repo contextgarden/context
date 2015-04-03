@@ -47,6 +47,6 @@ local function istexfile(name)
 end
 
 implement { name = "splitfilename",      actions = splitfilename,                       arguments = "string" }
-implement { name = "doifparentfileelse", actions = { isparentfile, commands_doifelse }, arguments = "string" }
-implement { name = "doifpathexistelse",  actions = { lfs.isdir,    commands_doifelse }, arguments = "string" }
-implement { name = "doiffileexistelse",  actions = { istexfile,    commands_doifelse }, arguments = "string" }
+implement { name = "doifelseparentfile", actions = { isparentfile, commands_doifelse }, arguments = "string" }
+implement { name = "doifelsepathexist",  actions = { lfs.isdir,    commands_doifelse }, arguments = "string" }
+implement { name = "doifelsefileexist",  actions = { istexfile,    commands_doifelse }, arguments = "string" }

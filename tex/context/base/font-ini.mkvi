@@ -363,7 +363,7 @@
 \let\thedefinedfont\relax % not to be confused with \everydefinefont
 
 \unexpanded\def\definedfont
-  {\doifnextoptionalcselse\font_basics_defined_font_yes\font_basics_defined_font_nop}
+  {\doifelsenextoptionalcs\font_basics_defined_font_yes\font_basics_defined_font_nop}
 
 \def\font_basics_defined_font_yes[#specification]%
   {\c_font_feature_inheritance_mode\c_font_feature_inheritance_fontonly
@@ -899,7 +899,7 @@
    \fi}
 
 \def\font_basics_define_font_a[#name][#specification][#settings]% [name][spec][1.6 | line=10pt | setup_id]
-  {\doifsetupselse{#settings}%
+  {\doifelsesetups{#settings}%
      {\setuvalue{#name}{\font_basics_define_font_with_setups    {#name}{#specification}{#settings}}}
      {\setuvalue{#name}{\font_basics_define_font_with_parameters{#name}{#specification}{#settings}}}}
 
@@ -1405,19 +1405,19 @@
   {\font_basics_define_body_font_a[bwhatever][\s!rm][]}
 
 \unexpanded\def\font_basics_define_body_font_a[#whatever]%
-  {\doifnumberelse{#whatever}%
+  {\doifelsenumber{#whatever}%
      \font_basics_define_body_font_body
      \font_basics_define_body_font_name
      [#whatever]}
 
 \unexpanded\def\font_basics_define_body_font_body[#body][#style][#specification]%
-  {\doifassignmentelse{#specification}
+  {\doifelseassignment{#specification}
      \font_basics_define_body_font_body_assignment
      \font_basics_define_body_font_body_identifier
      [#body][#style][#specification]}%
 
 \unexpanded\def\font_basics_define_body_font_name[#name][#style][#specification]%
-  {\doifassignmentelse{#specification}
+  {\doifelseassignment{#specification}
      \font_basics_define_body_font_name_assignment
      \font_basics_define_body_font_name_identifier
      [#name][#style][#specification]}%
@@ -1678,13 +1678,13 @@
    \fi}
 
 \def\font_helpers_set_font_check_size#option%
-  {\doifnumberelse{#option}{\font_helpers_check_bodyfont_environment{#option}{#option}}\donothing}
+  {\doifelsenumber{#option}{\font_helpers_check_bodyfont_environment{#option}{#option}}\donothing}
 
 \def\font_helpers_set_font_set_font#method#option% method=1: set, method=2: switch
   {\doifsomething{#option}{\font_helpers_set_font_set_font_option{#method}{#option}}}
 
 \def\font_helpers_set_font_set_font_option#method#option%
-  {\doifnumberelse{#option}%
+  {\doifelsenumber{#option}%
      \font_helpers_set_font_set_font_option_body
      \font_helpers_set_font_set_font_option_keyword
      {#method}{#option}{#option}}
@@ -2141,7 +2141,7 @@
 % \newtoks \everyswitchtobodyfont
 
 \unexpanded\def\setupbodyfont
-  {\doifnextoptionalcselse\font_basics_setupbodyfont_yes\font_basics_setupbodyfont_nop}
+  {\doifelsenextoptionalcs\font_basics_setupbodyfont_yes\font_basics_setupbodyfont_nop}
 
 \def\font_basics_setupbodyfont_nop
   {\restoreglobalbodyfont
@@ -2264,7 +2264,7 @@
 %D \stoptyping
 
 \unexpanded\def\switchstyleonly
-  {\doifnextoptionalcselse\font_basics_switch_style_only_opt\font_basics_switch_style_only_arg}
+  {\doifelsenextoptionalcs\font_basics_switch_style_only_opt\font_basics_switch_style_only_arg}
 
 \def\font_basics_switch_style_only_arg#name% stupid version
   {\font_helpers_set_current_font_style{\csname\??fontshortstyle\checkedstrippedcsname#name\endcsname}%

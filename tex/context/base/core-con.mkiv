@@ -293,8 +293,10 @@
 %D
 %D The number of days is available in the macro \type {\numberofdays}.
 
-\def\doifleapyearelse#1%
-  {\clf_doifleapyearelse\numexpr#1\relax}
+\def\doifelseleapyear#1%
+  {\clf_doifelseleapyear\numexpr#1\relax}
+
+\let\doifleapyearelse\doifelseleapyear
 
 \unexpanded\def\getdayspermonth#1#2%
   {\edef\numberofdays{\clf_nofdays\numexpr#1\relax\numexpr#2\relax}}
@@ -453,7 +455,7 @@
 \def\currenttimespecification{h,:,m}
 
 \unexpanded\def\currenttime
-  {\doifnextoptionalelse\syst_converters_current_time_yes\syst_converters_current_time_nop}
+  {\doifelsenextoptional\syst_converters_current_time_yes\syst_converters_current_time_nop}
 
 \unexpanded\def\syst_converters_current_time_yes[#1]%
   {\calculatecurrenttime
@@ -537,7 +539,7 @@
    \fi}
 
 \def\syst_converters_define_conversion_indeed#1#2#3%
-  {\doifinstringelse{,}{\detokenize{#3}}
+  {\doifelseinstring{,}{\detokenize{#3}}
      {\clf_defineconversion{#2}{\detokenize{#3}}% a set e.g. of symbols
       \setgvalue{\??conversion#1}{\syst_converters_checked_conversion{#2}}}
      {\setgvalue{\??conversion#1}{#3}}}
@@ -567,7 +569,7 @@
 % if we have definitions that are not matched at the lua end .. eventually we might do
 % that when more shows up
 
-\def\doifconversiondefinedelse#1%
+\def\doifelseconversiondefined#1%
   {\ifcsname\??conversion\currentlanguage#1\endcsname
      \expandafter\firstoftwoarguments
    \else\ifcsname\??conversion#1\endcsname
@@ -582,6 +584,9 @@
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifconversiondefinedelse\doifelseconversiondefined
+\let\doifconversionnumberelse \doifelseconversionnumber
 
 %D Handy.
 

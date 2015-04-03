@@ -341,6 +341,12 @@ function utilities.parsers.options_to_hash(str,target)
     return str and lpegmatch(splitter,str,1,target or { }) or { }
 end
 
+local splitter = lpeg.tsplitat(" ")
+
+function utilities.parsers.options_to_array(str)
+    return str and lpegmatch(splitter,str) or { }
+end
+
 -- for chem (currently one level)
 
 local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)

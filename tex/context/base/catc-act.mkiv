@@ -39,10 +39,10 @@
 
 \setnewconstant\c_syst_catcodes_hack\tildeasciicode % also defined in catc-ini.mkiv
 
-\normalprotected\def\defineactivecharacter #1#2 #3% uses \doifnumberelse which is not yet defined
+\normalprotected\def\defineactivecharacter #1#2 #3% uses \doifelsenumber which is not yet defined
   {\c_syst_catcodes_c\uccode\c_syst_catcodes_hack
-   \if#1"\uccode\c_syst_catcodes_hack\expandafter\doifnumberelse\expandafter{\string#1#2}\empty #1#2\else
-         \uccode\c_syst_catcodes_hack\expandafter\doifnumberelse\expandafter{\string#1#2}\empty`#1#2\fi
+   \if#1"\uccode\c_syst_catcodes_hack\expandafter\doifelsenumber\expandafter{\string#1#2}\empty #1#2\else
+         \uccode\c_syst_catcodes_hack\expandafter\doifelsenumber\expandafter{\string#1#2}\empty`#1#2\fi
    \catcode\uccode\c_syst_catcodes_hack\activecatcode
    \uppercase{\def\m_syst_catcodes_temp{~}}% brrr
    \uccode\c_syst_catcodes_hack\c_syst_catcodes_c

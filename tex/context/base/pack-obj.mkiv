@@ -399,14 +399,17 @@
 %D \doifobjectreferencefoundelse{class}{object}{do then}{do else}
 %D \stoptyping
 
-\unexpanded\def\doifobjectfoundelse#1#2%
+\unexpanded\def\doifelseobjectfound#1#2%
   {\ifcsname\??objects#1::#2\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\doifobjectreferencefoundelse#1#2%
-  {\clf_doifobjectreferencefoundelse{#1::#2}}
+\unexpanded\def\doifelseobjectreferencefound#1#2%
+  {\clf_doifelseobjectreferencefound{#1::#2}}
+
+\let\doifobjectfoundelse         \doifelseobjectfound
+\let\doifobjectreferencefoundelse\doifelseobjectreferencefound
 
 \protect \endinput

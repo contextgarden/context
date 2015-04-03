@@ -27,6 +27,8 @@ local texsetattribute   = tex.setattribute
 local nodecodes         = nodes.nodecodes
 local unsetvalue        = attributes.unsetvalue
 
+local implement         = interfaces.implement
+
 local glyph_code        = nodecodes.glyph
 local glue_code         = nodecodes.glue
 
@@ -938,5 +940,22 @@ function autofontfeature.disable()
     disableaction("processors","scripts.autofontfeature.handler")
 end
 
-commands.enableautofontscript  = autofontfeature.enable
-commands.disableautofontscript = autofontfeature.disable
+implement {
+    name      = "enableautofontscript",
+    actions   = autofontfeature.enable
+}
+
+implement {
+    name      = "disableautofontscript",
+    actions   = autofontfeature.disable }
+
+implement {
+    name      = "setscript",
+    actions   = scripts.set,
+    arguments = { "string", "string", "string" }
+}
+
+implement {
+    name      = "resetscript",
+    actions   = scripts.reset
+}

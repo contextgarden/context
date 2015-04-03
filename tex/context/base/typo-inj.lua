@@ -7,7 +7,9 @@ if not modules then modules = { } end modules ['typo-inj'] = { -- was node-par
 }
 
 local tonumber = tonumber
-local context, commands = context, commands
+
+local context         = context
+local implement       = interfaces.implement
 
 local injectors       = { }
 typesetters.injectors = injectors
@@ -68,7 +70,7 @@ function injectors.mark(name,show)
     end
 end
 
-function injectors.check(name,n)
+function injectors.check(name,n) -- we could also accent n = number : +/- 2
     local injector = list[name]
     if n == false then
         n = injector.counter
@@ -83,8 +85,10 @@ function injectors.check(name,n)
     end
 end
 
-commands.resetinjector  = injectors.reset
-commands.showinjector   = injectors.show
-commands.setinjector    = injectors.set
-commands.markinjector   = injectors.mark
-commands.checkinjector  = injectors.check
+implement { name = "resetinjector",         actions = injectors.reset, arguments = "string" }
+implement { name = "showinjector",          actions = injectors.show,  arguments = "string" }
+implement { name = "setinjector",           actions = injectors.set,   arguments = { "string", "string", "string" } }
+implement { name = "markinjector",          actions = injectors.mark,  arguments = "string" }
+implement { name = "checkinjector",         actions = injectors.check, arguments = "string" }
+implement { name = "checkpreviousinjector", actions = injectors.check, arguments = { "string", true } }
+implement { name = "checknextinjector",     actions = injectors.check }

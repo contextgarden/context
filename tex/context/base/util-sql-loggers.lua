@@ -52,7 +52,7 @@ table.setmetatableindex(fromtype,function() return "info" end)
 loggers.totype   = totype
 loggers.fromtype = fromtype
 
-local template =[[
+local template = [[
     CREATE TABLE IF NOT EXISTS %basename% (
         `id`     int(11) NOT NULL AUTO_INCREMENT,
         `time`   int(11) NOT NULL,

@@ -568,9 +568,9 @@ end
 
 -- interface
 
-implement { name = "enablecolor",         actions = colors.enable }
-implement { name = "enabletransparency",  actions = transparencies.enable }
-implement { name = "enablecolorintents",  actions = colorintents.enable }
+implement { name = "enablecolor",        once = true, actions = colors.enable }
+implement { name = "enabletransparency", once = true, actions = transparencies.enable }
+implement { name = "enablecolorintents", once = true, actions = colorintents.enable }
 
 --------- { name = "registercolor",        actions = { colors        .register, context }, arguments = "string" }
 --------- { name = "registertransparency", actions = { transparencies.register, context }, arguments = { ... } }

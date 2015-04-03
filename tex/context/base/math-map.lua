@@ -53,11 +53,7 @@ local report_remapping    = logs.reporter("mathematics","remapping")
 mathematics               = mathematics or { }
 local mathematics         = mathematics
 
-local scanners            = tokens.scanners
-local scanstring          = scanners.string
-local scaninteger         = scanners.integer
-
-local scanners            = interfaces.scanners
+local implement           = interfaces.implement
 
 -- Unfortunately some alphabets have gaps (thereby troubling all applications that
 -- need to deal with math). Somewhat strange considering all those weird symbols that
@@ -623,26 +619,38 @@ function mathematics.syncname(alphabet)
     texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
 end
 
-scanners.setmathattribute = function() -- alphabet style
-    local data = alphabets[scanstring()] or regular
-    data = data[scanstring()] or data.tf
-    texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
-end
+implement {
+    name      = "setmathattribute",
+    arguments = { "string", "string" },
+    actions   = function(alphabet,style)
+        local data = alphabets[alphabet] or regular
+        data = data[style] or data.tf
+        texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+    end
+}
 
-scanners.setmathstyle = function() -- style
-    local r = mathremap[texgetattribute(mathalphabet)]
-    local alphabet = r and r.alphabet or "regular"
-    local data = alphabets[alphabet][scanstring()]
-    texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
-end
+implement {
+    name      = "setmathstyle",
+    arguments = "string",
+    actions   = function(style)
+        local r = mathremap[texgetattribute(mathalphabet)]
+        local alphabet = r and r.alphabet or "regular"
+        local data = alphabets[alphabet][style]
+        texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+    end
+}
 
-scanners.setmathalphabet = function() -- alphabet
- -- local r = mathremap[mathalphabet]
-    local r = mathremap[texgetattribute(mathalphabet)]
-    local style = r and r.style or "tf"
-    local data = alphabets[scanstring()][style]
-    texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
-end
+implement {
+    name      = "setmathalphabet",
+    arguments = "string",
+    actions   = function(alphabet)
+     -- local r = mathremap[mathalphabet]
+        local r = mathremap[texgetattribute(mathalphabet)]
+        local style = r and r.style or "tf"
+        local data = alphabets[alphabet][style]
+        texsetattribute(mathalphabet,data and data.attribute or texattribute[mathalphabet])
+    end
+}
 
 local islcgreek = regular_tf.lcgreek
 local isucgreek = regular_tf.ucgreek

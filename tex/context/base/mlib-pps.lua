@@ -19,15 +19,8 @@ local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 local context              = context
 local context_setvalue     = context.setvalue
 
-local scanners             = tokens.scanners
-local scanstring           = scanners.string
-local scaninteger          = scanners.integer
-local scandimen            = scanners.dimen
-local setters              = tokens.setters
-local setmacro             = setters.macro
-
-local compilescanner       = tokens.compile
-local scanners             = interfaces.scanners
+local implement            = interfaces.implement
+local setmacro             = interfaces.setmacro
 
 local texgetbox            = tex.getbox
 local texsetbox            = tex.setbox
@@ -305,8 +298,8 @@ end
 metapost.settext = settext
 metapost.gettext = gettext
 
-scanners.mpsettext = compilescanner { actions = settext, arguments = { "integer", "integer" } } -- box slot
-scanners.mpgettext = compilescanner { actions = gettext, arguments = { "integer", "integer" } } -- box slot
+implement { name = "mpsettext", actions = settext, arguments = { "integer", "integer" } } -- box slot
+implement { name = "mpgettext", actions = gettext, arguments = { "integer", "integer" } } -- box slot
 
 -- rather generic pdf, so use this elsewhere too it no longer pays
 -- off to distinguish between outline and fill (we now have both
@@ -522,18 +515,21 @@ metapost.checktexts = checktexts
 
 local factor = 65536*(7227/7200)
 
-function metapost.edefsxsy(wd,ht,dp) -- helper for figure
-    local hd = ht + dp
-    context_setvalue("sx",wd ~= 0 and factor/wd or 0)
-    context_setvalue("sy",hd ~= 0 and factor/hd or 0)
-end
+-- function metapost.edefsxsy(wd,ht,dp) -- helper for figure
+--     local hd = ht + dp
+--     context_setvalue("sx",wd ~= 0 and factor/wd or 0)
+--     context_setvalue("sy",hd ~= 0 and factor/hd or 0)
+-- end
 
-scanners.mpsetsxsy = function() -- wd ht dp
-    local wd = scandimen()
-    local hd = scandimen() + scandimen()
-    setmacro("sx",wd ~= 0 and factor/wd or 0)
-    setmacro("sy",hd ~= 0 and factor/hd or 0)
-end
+implement {
+    name       = "mpsetsxsy",
+    arguments  = { "dimen", "dimen", "dimen" },
+    actions    = function(wd,ht,dp)
+        local hd = ht + dp
+        setmacro("sx",wd ~= 0 and factor/wd or 0)
+        setmacro("sy",hd ~= 0 and factor/hd or 0)
+    end
+}
 
 local function sxsy(wd,ht,dp) -- helper for text
     local hd = ht + dp

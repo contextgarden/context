@@ -139,6 +139,8 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doifhelpelse\doifelsehelp
+
 \def\placehelp % was \helpdata
   {\ifinpagebody\ifcase\c_scrn_help_n\else
      \ctxcommand{collecthelp(255)}% rather hard coded ... bad

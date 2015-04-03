@@ -485,7 +485,7 @@ implement {
 }
 
 implement {
-    name      = "doifinelementelse",
+    name      = "doifelseinelement",
     actions   = { structures.atlocation, commands.testcase },
     arguments = "string",
 }

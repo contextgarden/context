@@ -184,14 +184,14 @@
 \def\grph_include_use[#1][#2][#3][#4]%
   {\doifelsenothing{#1}
      {\doifsomething{#2}
-        {\doifassignmentelse{#3}
+        {\doifelseassignment{#3}
            {\grph_include_use_indeed{#2}{#2}{#3}{#4}}
            {\grph_include_use_indeed{#2}{#2}\empty{#4}}}}
      {\doifelsenothing{#2}
-        {\doifassignmentelse{#3}
+        {\doifelseassignment{#3}
            {\grph_include_use_indeed{#1}{#1}\empty{#3}}
            {\grph_include_use_indeed{#1}{#1}{#3}{#4}}}
-        {\doifassignmentelse{#3}
+        {\doifelseassignment{#3}
            {\grph_include_use_indeed{#1}{#2}\empty{#3}}
            {\grph_include_use_indeed{#1}{#2}{#3}{#4}}}}}
 
@@ -641,13 +641,15 @@
      \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
    \stopnointerference}
 
-\unexpanded\def\doiffigureelse#1%
+\unexpanded\def\doifelsefigure#1%
   {\getfiguredimensions[#1]% so data is available !
    \ifcase\figurestatus
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
+
+\let\doiffigureelse\doifelsefigure
 
 % No placement, handy for preprocessing:
 

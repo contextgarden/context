@@ -165,28 +165,14 @@ local function processor(head,followed_by_display)
     end
 end
 
-function constructors.enable()
-    enabled = true
-end
-
-function constructors.disable()
-    enabled = false
-end
+function constructors.enable () enabled = true  end
+function constructors.disable() enabled = false end
 
 callbacks.register('linebreak_filter', processor, "breaking paragraps into lines")
 
 statistics.register("linebreak processing time", function()
     return statistics.elapsedseconds(parbuilders)
 end)
-
--- interface
-
-commands.defineparbuilder  = constructors.define
-commands.startparbuilder   = constructors.start
-commands.stopparbuilder    = constructors.stop
-commands.setparbuilder     = constructors.set
-commands.enableparbuilder  = constructors.enable
-commands.disableparbuilder = constructors.disable
 
 -- todo: move from nodes.builders to builders
 
@@ -267,3 +253,12 @@ callbacks.register('buildpage_filter', builders.buildpage_filter, "vertical spac
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)
 end)
+
+local implement = interfaces.implement
+
+implement { name = "defineparbuilder",  actions = constructors.define, arguments = "string" }
+implement { name = "setparbuilder",     actions = constructors.set,    arguments = "string" }
+implement { name = "startparbuilder",   actions = constructors.start,  arguments = "string" }
+implement { name = "stopparbuilder",    actions = constructors.stop    }
+implement { name = "enableparbuilder",  actions = constructors.enable  }
+implement { name = "disableparbuilder", actions = constructors.disable }

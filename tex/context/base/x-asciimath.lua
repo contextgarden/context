@@ -791,14 +791,19 @@ local digitized_2   = Cs (
                          p_beforecomma * ((p_aftercomma + d_one^1)^0)
                       )
 
+local p_fourbefore  = d_four * d_split
+local p_fourafter   = d_four
 local d_spaced      = (Carg(1) * (d_three + d_two + d_one))^1
-local p_aftercomma  = p_fourafter
+local p_aftercomma  = p_fourafter * P(-1)
                     + d_three * d_spaced * P(1)^0
+                    + d_one^1
 
-local digitized_3   = Cs (
-                         p_fourbefore  *   (p_aftercomma^0) +
-                         p_beforecomma * ((p_aftercomma + d_one^1)^0)
-                      )
+-- local digitized_3   = Cs (
+--                          p_fourbefore  * p_aftercomma^0 +
+--                          p_beforecomma * p_aftercomma^0
+--                       )
+
+local digitized_3   = Cs((p_fourbefore + p_beforecomma) * p_aftercomma^0)
 
 local splitmethods = {
     digitized_1,
@@ -844,6 +849,7 @@ end
 --     "1,1",
 --     "12,12",
 --     "123,123",
+--     "1234,123",
 --     "1234,1234",
 --     "12345,1234",
 --     "1234,12345",

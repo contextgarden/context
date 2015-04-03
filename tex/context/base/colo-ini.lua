@@ -951,12 +951,12 @@ implement {
 local ctx_doifelse = commands.doifelse
 
 implement {
-    name      = "doifdrawingblackelse",
+    name      = "doifelsedrawingblack",
     actions   = function() ctx_doifelse(isblack(texgetattribute(a_color))) end
 }
 
 implement {
-    name      = "doifblackelse",
+    name      = "doifelseblack",
     actions   = { isblack, ctx_doifelse },
     arguments = "integer"
 }

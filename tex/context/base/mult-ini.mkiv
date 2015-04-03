@@ -365,7 +365,7 @@
   {\bgroup
    \ifcsname\m!prefix!#2\endcsname\else\setgvalue{\m!prefix!#2}{#2}\fi
    \catcode\endoflineasciicode\activecatcode
-   \doifinsetelse{#1}{\currentresponses,all}\mult_messages_start_yes\mult_messages_start_nop{#2}}
+   \doifelseinset{#1}{\currentresponses,all}\mult_messages_start_yes\mult_messages_start_nop{#2}}
 
 \def\mult_messages_start_yes#1#2\stopmessages
   {\clf_setinterfacemessages{#1}{#2}%
@@ -385,6 +385,8 @@
 \unexpanded\def\doifelsemessage  #1#2{\clf_doifelsemessage{#1}{#2}}
 \unexpanded\def\showmessage    #1#2#3{\clf_showmessage{#1}{#2}{#3}}
 \unexpanded\def\writestatus      #1#2{\clf_writestatus{#1}{#2}}
+
+\let\doifmessageelse\doifelsemessage
 
 %D \macros
 %D   {ifshowwarnings, ifshowmessages}

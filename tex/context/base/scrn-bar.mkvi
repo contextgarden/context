@@ -67,7 +67,7 @@
 \def\scrn_bar_direct[#tag][#settings]% somewhat messy
   {\iflocation
      \begingroup
-     \doifassignmentelse{#tag}
+     \doifelseassignment{#tag}
        {\let\currentinteractionbar\empty
         \setupcurrentinteractionbar[#tag]%
         \edef\currentinteractionbar{\interactionbarparameter\c!alternative}}%

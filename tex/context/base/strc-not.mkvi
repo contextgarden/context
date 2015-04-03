@@ -170,7 +170,7 @@
    \ifx\p_counter\empty %
        \let\p_counter\currentnotation
    \fi
-   \doifcounterelse\p_counter\donothing{\strc_notes_define_counter\p_counter}%
+   \doifelsecounter\p_counter\donothing{\strc_notes_define_counter\p_counter}%
    \letnotationparameter\s!counter\p_counter
   %\strc_notes_setup_counter\currentnotation
 \to \everydefinenotation
@@ -232,7 +232,7 @@
    \ifnotesenabled
      \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
    \fi
-   \doifnextoptionalcselse\strc_notations_command_yes\strc_notations_command_nop}
+   \doifelsenextoptionalcs\strc_notations_command_yes\strc_notations_command_nop}
 
 \unexpanded\def\strc_notations_command_nop#title%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=][]%
@@ -241,7 +241,7 @@
    \normalexpanded{\endgroup\noteparameter\c!next}}
 
 \unexpanded\def\strc_notations_command_yes[#optional]%
-  {\doifassignmentelse{#optional}\strc_notations_command_assignment\strc_notations_command_argument[#optional]}
+  {\doifelseassignment{#optional}\strc_notations_command_assignment\strc_notations_command_argument[#optional]}
 
 \unexpanded\def\strc_notations_command_assignment[#settings]%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#settings][]%
@@ -279,7 +279,7 @@
    \normalexpanded % not that efficient but also not that frequently used (\normaldef for parser)
      {\def\noexpand\strc_pickup_yes[#one]#two\csname\e!stop#stoptag\endcsname{\strc_notations_command_yes[#one]{#two}}%
       \def\noexpand\strc_pickup_nop      #one\csname\e!stop#stoptag\endcsname{\strc_notations_command_nop      {#one}}}%
-   \doifnextoptionalcselse\strc_pickup_yes\strc_pickup_nop}
+   \doifelsenextoptionalcs\strc_pickup_yes\strc_pickup_nop}
 
 \unexpanded\def\strc_notations_start_yes[#reference]#title%
   {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=][]%
@@ -383,7 +383,7 @@
 
 \appendtoks
     \ifx\currentnoteparent\empty
-        \doifinsertionelse\currentnote
+        \doifelseinsertion\currentnote
           \donothing
           {\defineinsertion[\currentnote]% could be an option
            \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}%
@@ -639,7 +639,7 @@
 
 \unexpanded\def\strc_notes_inject_symbol_indeed#synchronize%
   {\removeunwantedspaces
-   \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
+   \doifelseitalic\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
    % \kern\noteparameter\c!distance % yes or no note font? or main text
      \strc_notes_inject_separator
@@ -666,7 +666,7 @@
 
 \unexpanded\def\strc_notes_inject_dummy % temp hack
   {\removeunwantedspaces
-   \doifitalicelse\/\donothing % Charles IV \footnote{the fourth}
+   \doifelseitalic\/\donothing % Charles IV \footnote{the fourth}
    \ifdim\lastkern=\notesignal
    % \kern\noteparameter\c!distance % yes or no note font? or main text
      \strc_notes_inject_separator
@@ -1602,7 +1602,7 @@
    \setupcurrentnote[\c!location=]%
    \inheritednoteframed
      {\edef\currentnotewidth{\noteparameter\c!width}%
-      \doifdimensionelse\currentnotewidth\donothing
+      \doifelsedimension\currentnotewidth\donothing
         {\edef\currentnotewidth{\the\hsize}}%
       \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\currentnotewidth]%
         \flushlocalnotes\currentnote
@@ -1769,7 +1769,9 @@
 %D }
 %D \stoptyping
 
-\def\doifnoteonsamepageelse[#tag]{\clf_doifnoteonsamepageasprevious{#tag}}
+\def\doifelsenoteonsamepage[#tag]{\clf_doifnoteonsamepageasprevious{#tag}}
+
+\let\doifnoteonsamepageelse\doifelsenoteonsamepage
 
 %D New trickery:
 

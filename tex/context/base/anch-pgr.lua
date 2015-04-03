@@ -17,15 +17,10 @@ local lpegmatch = lpeg.match
 local jobpositions = job.positions
 local formatters   = string.formatters
 
-local scanners     = tokens.scanners
-local scanstring   = scanners.string
-local scaninteger  = scanners.integer
-local scandimen    = scanners.dimen
-
-local scanners     = interfaces.scanners
-
 local commands     = commands
 local context      = context
+
+local implement    = interfaces.implement
 
 local report_graphics = logs.reporter("graphics")
 
@@ -610,18 +605,19 @@ backgrounds.point = f_point
 backgrounds.pair  = f_pair
 backgrounds.path  = f_path
 
--- scanners.fetchmultipar = function() -- n anchor page
---     context(fetchmultipar(scanstring(),scanstring(),scaninteger()))
--- end
---
--- scanners.fetchmultishape = function() -- n anchor page
---     context(fetchmultipar(scanstring(),scanstring(),scaninteger(),true))
--- end
-
 -- n anchor page
 
-scanners.fetchmultipar   = tokens.compile { actions = { fetchmultipar, context }, arguments = { "string", "string", "integer" } }
-scanners.fetchmultishape = tokens.compile { actions = { fetchmultipar, context }, arguments = { "string", "string", "integer", true } }
+implement {
+    name      = "fetchmultipar",
+    actions   = { fetchmultipar, context },
+    arguments = { "string", "string", "integer" }
+}
+
+implement {
+    name      = "fetchmultishape",
+    actions   = { fetchmultipar, context },
+    arguments = { "string", "string", "integer", true }
+}
 
 local f_template_a = [[
 path posboxes[], posregions[] ;
@@ -640,73 +636,62 @@ posregions[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
 f_template_a = formatters[f_template_a]
 f_template_b = formatters[f_template_b]
 
-scanners.fetchposboxes = function() -- tags anchor page  -- no caching (yet) / todo: anchor, page
-    local tags   = scanstring()
-    local anchor = scanstring()
-    local page   = scaninteger()
-    local collected = jobpositions.collected
-    if type(tags) == "string" then
-        tags = utilities.parsers.settings_to_array(tags)
-    end
-    local list, nofboxes = { }, 0
-    for i=1,#tags do
-        local tag= tags[i]
-        local c = collected[tag]
-        if c then
-            local r = c.r
-            if r then
-                r = collected[r]
-                if r then
-                    local rx, ry, rw, rh, rd = r.x, r.y, r.w, r.h, r.d
-                    local cx = c.x - rx
-                    local cy = c.y - ry
-                    local cw = cx + c.w
-                    local ch = cy + c.h
-                    local cd = cy - c.d
-                    nofboxes = nofboxes + 1
-                    list[nofboxes] = f_template_b(
-                        nofboxes,c.p,
-                        nofboxes,cx,ch,cw,ch,cw,cd,cx,cd,
-                        nofboxes,0,rh,rw,rh,rw,rd,0,rd
-                    )
-                end
-            end
-        else
-            print("\n missing",tag)
+implement {
+    name      = "fetchposboxes",
+    arguments = { "string", "string", "integer" },
+    actions   = function(tags,anchor,page)  -- no caching (yet) / todo: anchor, page
+        local collected = jobpositions.collected
+        if type(tags) == "string" then
+            tags = utilities.parsers.settings_to_array(tags)
         end
+        local list, nofboxes = { }, 0
+        for i=1,#tags do
+            local tag= tags[i]
+            local c = collected[tag]
+            if c then
+                local r = c.r
+                if r then
+                    r = collected[r]
+                    if r then
+                        local rx, ry, rw, rh, rd = r.x, r.y, r.w, r.h, r.d
+                        local cx = c.x - rx
+                        local cy = c.y - ry
+                        local cw = cx + c.w
+                        local ch = cy + c.h
+                        local cd = cy - c.d
+                        nofboxes = nofboxes + 1
+                        list[nofboxes] = f_template_b(
+                            nofboxes,c.p,
+                            nofboxes,cx,ch,cw,ch,cw,cd,cx,cd,
+                            nofboxes,0,rh,rw,rh,rw,rd,0,rd
+                        )
+                    end
+                end
+            else
+                print("\n missing",tag)
+            end
+        end
+        context(f_template_a(nofboxes,list))
     end
-    context(f_template_a(nofboxes,list))
-end
+}
 
 local doifelse = commands.doifelse
 
--- function commands.doifelsemultipar(n,page,obeyhang)
---     local data = pbg[n]
---     if not data then
---         data = calculatemultipar(n,obeyhang)
---         pbg[n] = data
---     end
---     if page then
---         doifelse(data and data[page] and true)
---     else
---         doifelse(data and next(data) and true)
---     end
--- end
-
-scanners.doifelserangeonpage = function() -- first last page
-    local first = scanstring()
-    local last  = scanstring()
-    local page  = scaninteger()
-    local collected = jobpositions.collected
-    local f = collected[first]
-    if not f or f.p == true then
-        doifelse(false)
-        return
+implement {
+    name      = "doifelserangeonpage",
+    arguments = { "string", "string", "integer" },
+    actions   = function(first,last,page)
+        local collected = jobpositions.collected
+        local f = collected[first]
+        if not f or f.p == true then
+            doifelse(false)
+            return
+        end
+        local l = collected[last]
+        if not l or l.p == true  then
+            doifelse(false)
+            return
+        end
+        doifelse(page >= f.p and page <= l.p)
     end
-    local l = collected[last]
-    if not l or l.p == true  then
-        doifelse(false)
-        return
-    end
-    doifelse(page >= f.p and page <= l.p)
-end
+}

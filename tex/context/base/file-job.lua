@@ -89,7 +89,7 @@ implement {
 }
 
 implement {
-    name      = "doifinputfileelse",
+    name      = "doifelseinputfile",
     arguments = "string",
     actions   = function(name)
         ctx_doifelse(findctxfile(name) ~= "")

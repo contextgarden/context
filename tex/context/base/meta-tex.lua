@@ -163,3 +163,34 @@ end
 -- test("@j","1.2e+102")
 -- test("@j","1.23e+102")
 -- test("@j","1.234e+102")
+
+local f_textext = formatters[ [[textext("%s")]] ]
+local f_mthtext = formatters[ [[textext("\mathematics{%s}")]] ]
+local f_exptext = formatters[ [[textext("\mathematics{%s\times10^{%s}}")]] ]
+
+local mpprint   = mp.print
+
+function mp.format(fmt,str)
+    fmt = lpegmatch(cleaner,fmt)
+    mpprint(f_textext(formatters[fmt](metapost.untagvariable(str,false))))
+end
+
+function mp.formatted(fmt,num) -- svformat
+    fmt = lpegmatch(cleaner,fmt)
+    mpprint(f_textext(formatters[fmt](tonumber(num) or num)))
+end
+
+function mp.graphformat(fmt,num) -- nvformat
+    fmt = lpegmatch(cleaner,fmt)
+    local number = tonumber(num)
+    if number then
+        local base, exponent = lpegmatch(enumber,number)
+        if base and exponent then
+            mpprint(f_exptext(base,exponent))
+        else
+            mpprint(f_mthtext(num))
+        end
+    else
+        mpprint(f_textext(tostring(num)))
+    end
+end

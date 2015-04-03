@@ -125,7 +125,7 @@
 \def\inputgivenfile#name{\normalinput{#name}}
 
 %D \macros
-%D   {doiffileelse}
+%D   {doifelsefile}
 %D
 %D The next alternative only looks if a file is present. No
 %D loading is done. This one obeys the standard \TEX\ lookup.
@@ -134,13 +134,19 @@
 %D \doiffileelse {filename} {found} {not found}
 %D \stoptyping
 
-\unexpanded\def\doiffileelse     {\clf_doiffileexistelse}
-\unexpanded\def\doifpathelse     {\clf_doifpathexistelse}
-\unexpanded\def\doiffile    #name{\clf_doiffileexistelse{#name}\firstofoneargument\gobbleoneargument}
-\unexpanded\def\doifnotfile #name{\clf_doiffileexistelse{#name}\gobbleoneargument\firstofoneargument}
+\unexpanded\def\doifelsefile     {\clf_doifelsefileexist}
+\unexpanded\def\doifelsepath     {\clf_doifelsepathexist}
+\unexpanded\def\doiffile    #name{\clf_doifelsefileexist{#name}\firstofoneargument\gobbleoneargument}
+\unexpanded\def\doifnotfile #name{\clf_doifelsefileexist{#name}\gobbleoneargument\firstofoneargument}
 
-\let\doiffileexistselse\doiffileelse
-\let\doifpathexistselse\doifpathelse
+\let\doiffileelse\doifelsefile
+\let\doifpathelse\doifelsepath
+
+\let\doifelsefileexists\doifelsefile
+\let\doifelsepathexists\doifelsepath
+
+\let\doiffileexistselse\doifelsefileexists
+\let\doifpathexistselse\doifelsepathexists
 
 %D \macros
 %D   {doifparentfileelse}
@@ -151,7 +157,9 @@
 
 \ifx\outputfilename\undefined \def\outputfilename{\jobname} \fi
 
-\unexpanded\def\doifparentfileelse{\clf_doifparentfileelse}
+\unexpanded\def\doifelseparentfile{\clf_doifelseparentfile}
+
+\let\doifparentfileelse\doifelseparentfile
 
 %D \macros
 %D   {splitfilename}
@@ -218,7 +226,7 @@
    \fi}
 
 \unexpanded\def\doinputonce#name%
-  {\doonlyonce{#name}{\doiffileelse{#name}{\inputgivenfile{#name}}\donothing}}
+  {\doonlyonce{#name}{\doifelsefile{#name}{\inputgivenfile{#name}}\donothing}}
 
 \unexpanded\def\doendinputonce#name%
   {\ifcsname\??fileonce#name\endcsname

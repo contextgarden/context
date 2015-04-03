@@ -672,11 +672,13 @@
 \def\expandreferenceoperation#tag#content{\clf_setreferenceoperation#tag{#content}}
 \def\expandreferencearguments#tag#content{\clf_setreferencearguments#tag{#content}}
 
-\def\doifreferencefoundelse#label#yes#nop%
+\def\doifelsereferencefound#label#yes#nop%
   {\clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
      {\expandtexincurrentreference
       #yes}%
      {#nop}}
+
+\let\doifreferencefoundelse \doifelsereferencefound
 
 %D The tester only splits the reference in components but does
 %D not look into them. The following macro does a preroll and
@@ -985,7 +987,7 @@
 
 \def\strc_references_get_reference[#key][#label]% #key = number page title text default realpage ...
   {\ifsecondargument
-     \doifreferencefoundelse{#label}{\clf_filterreference{#key}}\dummyreference
+     \doifelsereferencefound{#label}{\clf_filterreference{#key}}\dummyreference
    \else
      \dummyreference
    \fi}
@@ -1001,7 +1003,7 @@
    \let\\\space
    \postponenotes % might go
    \referencingparameter\c!left
-   \doifreferencefoundelse{#label}
+   \doifelsereferencefound{#label}
      {\goto{\limitatetext\currentreferencetitle{\referencingparameter\c!width}\unknown}[#label]}% not so efficient (dup lookup)
      {}% todo
    \flushnotes % might go
@@ -1093,7 +1095,7 @@
    \endgroup}
 
 \unexpanded\def\doifcheckedpagestate#label% #preceding#backward#current#foreward#following#otherwise%
-  {\doifreferencefoundelse{#label}\strc_references_handle_page_state_yes\strc_references_handle_page_state_nop}
+  {\doifelsereferencefound{#label}\strc_references_handle_page_state_yes\strc_references_handle_page_state_nop}
 
 \let\strc_references_handle_page_state_nop\sixthofsixarguments
 
@@ -1187,11 +1189,11 @@
 
 \setvalue{\??referencinginteraction\v!all}%
   {\the\leftreferencetoks
-   \doifsometokselse\leftreferencetoks \leftofreferencecontent \donothing
+   \doifelsesometoks\leftreferencetoks \leftofreferencecontent \donothing
    \leftofreference
    \currentreferencecontent
    \rightofreference
-   \doifsometokselse\rightreferencetoks\rightofreferencecontent\donothing
+   \doifelsesometoks\rightreferencetoks\rightofreferencecontent\donothing
    \the\rightreferencetoks}
 
 \setvalue{\??referencinginteraction\v!label}%
@@ -1251,7 +1253,7 @@
        \let\rightofreferencecontent\empty
      \fi
    % inefficient: double resolve
-   \doifreferencefoundelse{#label} % we need to resolve the text
+   \doifelsereferencefound{#label} % we need to resolve the text
      {\goto{\referencesequence}[#label]}
      {\let\currentreferencecontent\dummyreference
       \goto{\referencesequence}[#label]}%
@@ -1511,7 +1513,7 @@
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
        {\expandtexincurrentreference
-        \clf_injectcurrentreference_dimensions
+        \clf_injectcurrentreferencehtdp
           \ht\strutbox
           \dp\strutbox
         \relax
@@ -1548,7 +1550,7 @@
 
 \unexpanded\def\startgoto_yes
   {\expandtexincurrentreference
-   \clf_injectcurrentreference_dimensions
+   \clf_injectcurrentreferencehtdp
      \ht\strutbox
      \dp\strutbox
    \relax
@@ -1571,7 +1573,7 @@
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
        {\expandtexincurrentreference
-        \clf_injectcurrentreference_dimensions
+        \clf_injectcurrentreferencehtdp
           \dimexpr\interactionparameter\c!height\relax
           \dimexpr\interactionparameter\c!depth \relax
         \relax
@@ -1745,8 +1747,11 @@
 \def\strc_references_use_file[#label][#file][#description]%
   {\clf_usefile{#label}{\detokenize{#file}}{\detokenize{#description}}}
 
-\def\doifurldefinedelse #label{\clf_doifurldefinedelse {#label}}
-\def\doiffiledefinedelse#label{\clf_doiffiledefinedelse{#label}}
+\def\doifelseurldefined #label{\clf_doifelseurldefined {#label}}
+\def\doifelsefiledefined#label{\clf_doifelsefiledefined{#label}}
+
+\let\doifurldefinedelse \doifelseurldefined
+\let\doiffiledefinedelse\doifelsefiledefined
 
 %D \macros
 %D   {url,setupurl}

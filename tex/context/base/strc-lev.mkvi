@@ -34,7 +34,7 @@
 \unexpanded\def\nostophead {\dosingleargument\strc_levels_stop_nop } % used at the lua end
 
 \unexpanded\def\strc_levels_start[#category]%
-  {\doifassignmentelse{#category}
+  {\doifelseassignment{#category}
      {\clf_startsectionlevel{\v!default}[#category]}
      {\clf_startsectionlevel{#category}}}
 

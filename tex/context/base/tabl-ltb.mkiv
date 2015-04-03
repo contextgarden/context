@@ -138,6 +138,8 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+\let\doiflinetablecparameterelse\doifelselinetablecparameter
+
 \def\linetablecparameter#1%
   {\csname
      \ifcsname\??lec\number\linetablecolumn#1\endcsname
@@ -614,7 +616,7 @@
   {\global\linetablepage\zerocount
    \ifcase\linetablerepeat \else \ifcase\linetablepage
      \doif{\linetableparameter\c!repeat}\v!no
-       {\global\linetablepage\doifoddpageelse\plusone\plustwo}%
+       {\global\linetablepage\doifelseoddpage\plusone\plustwo}%
    \fi \fi}
 
 \def\flushlinetablehead

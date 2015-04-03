@@ -464,7 +464,7 @@
 %D \getbuffer
 
 \unexpanded\def\cfrac
-  {\doifnextoptionalcselse\math_cfrac_yes\math_cfrac_nop}
+  {\doifelsenextoptionalcs\math_cfrac_yes\math_cfrac_nop}
 
 \def\math_cfrac_nop    {\math_cfrac_indeed[cc]}
 \def\math_cfrac_yes[#1]{\math_cfrac_indeed[#1cc]}

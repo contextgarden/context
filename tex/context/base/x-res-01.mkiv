@@ -256,7 +256,7 @@
                 \vfill
             }
             \advance\hsize by -30pt
-            \doifmodeelse {clipgrid-distance,clipgrid-steps} {
+            \doifelsemode {clipgrid-distance,clipgrid-steps} {
                 \xmlsetup{#1}{xml:resource:a}
             } {
                 \xmlsetup{#1}{xml:resource:b}

@@ -77,14 +77,10 @@
 \def\strc_markings_synchronize[#1][#2][#3]% #1=class #2=boxnumber (some day also name) #3=options, maybe second argument table
   {\ifvoid#2\else\clf_synchronizemarking{#1}#2{#3}\fi}
 
-% \def\doifelsemarking#1% why no \unexpanded
-%   {\clf_doifelsemarking{#1}}
-
-% \def\doifelsemarking#1%
-%   {\normalexpanded{\noexpand\clf_doifelsemarking{\noexpand\detokenize{#1}}}}
-
 \def\doifelsemarking#1% no \noexpanded
   {\clf_doifelsemarking{#1}}
+
+\let\doifmarkingelse \doifelsemarking
 
 % \appendtoks
 %     \strc_markings_synchronize[\v!page][\normalpagebox][\v!keep]% keep if no marks

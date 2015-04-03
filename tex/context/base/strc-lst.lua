@@ -1128,10 +1128,10 @@ implement {
 -- we could also set variables .. names will change (when this module is done)
 -- maybe strc_lists_savedtitle etc
 
-implement { name = "doiflisthastitleelse",  actions = { lists.hastitledata,  commands.doifelse }, arguments = { "string", "integer" } }
-implement { name = "doiflisthaspageelse",   actions = { lists.haspagedata,   commands.doifelse }, arguments = { "string", "integer" } }
-implement { name = "doiflisthasnumberelse", actions = { lists.hasnumberdata, commands.doifelse }, arguments = { "string", "integer" } }
-implement { name = "doiflisthasentry",      actions = { lists.iscached,      commands.doifelse }, arguments = { "integer" } }
+implement { name = "doifelselisthastitle",  actions = { lists.hastitledata,  commands.doifelse }, arguments = { "string", "integer" } }
+implement { name = "doifelselisthaspage",   actions = { lists.haspagedata,   commands.doifelse }, arguments = { "string", "integer" } }
+implement { name = "doifelselisthasnumber", actions = { lists.hasnumberdata, commands.doifelse }, arguments = { "string", "integer" } }
+implement { name = "doifelselisthasentry",  actions = { lists.iscached,      commands.doifelse }, arguments = { "integer" } }
 
 local function savedlisttitle(name,n,tag)
     local data = cached[tonumber(n)]

@@ -63,7 +63,7 @@
 \setvalue{\??matharrowsettings\v!big    }{\def\m_math_arrows_extra{20}}
 \setvalue{\??matharrowsettings\v!normal }{}
 \setvalue{\??matharrowsettings          }{}
-\setvalue{\??matharrowsettings\s!unknown}{\doifnumberelse\p_math_spacing{\let\m_math_arrows_extra\p_math_spacing}\donothing}
+\setvalue{\??matharrowsettings\s!unknown}{\doifelsenumber\p_math_spacing{\let\m_math_arrows_extra\p_math_spacing}\donothing}
 
 \def\math_arrows_construct#1#2#3#4#5% hm, looks like we do a double mathrel (a bit cleaned up .. needs checking)
   {\begingroup

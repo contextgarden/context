@@ -235,7 +235,7 @@
      \the\everyafterpagebody
    \egroup}
 
-\def\doiftopofpageelse
+\def\doifelsetopofpage
   {\ifdim\pagegoal=\maxdimen
      \expandafter\firstoftwoarguments
    \else\ifdim\pagegoal=\vsize
@@ -243,6 +243,8 @@
    \else
      \doubleexpandafter\secondoftwoarguments
    \fi\fi}
+
+\let\doiftopofpageelse\doifelsetopofpage
 
 % %D Idea:
 %

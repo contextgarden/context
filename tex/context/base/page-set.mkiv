@@ -2184,11 +2184,11 @@
 
 \def\dodefinecolumntextarea[#1][#2][#3]% y=0 is mogelijke en handig !
   {\ifthirdargument
-     \doifinsetelse{#2}{\v!both,\v!fixed}
+     \doifelseinset{#2}{\v!both,\v!fixed}
        {\definecolumntextarea[#1][\v!left ][\c!type=#2,#3]%
         \definecolumntextarea[#1][\v!right][\c!type=#2,#3]}
        {\doifelse{#2}\v!next
-          {\doifoddpageelse
+          {\doifelseoddpage
              {\definecolumntextarea[#1][\v!right][\c!type=#2,#3]}
              {\definecolumntextarea[#1][\v!left ][\c!type=#2,#3]}}
           {\presetlocalframed
@@ -2214,7 +2214,7 @@
        {\setupcolumntextarea[#1][\v!left ][#3]%
         \setupcolumntextarea[#1][\v!right][#3]}
        {\doifelse{#2}\v!next
-          {\doifoddpageelse
+          {\doifelseoddpage
              {\setupcolumntextarea[#1][\v!right][#3]}
              {\setupcolumntextarea[#1][\v!left][#3]}}
           {\getparameters[\??mt#1#2][#3]}}%
@@ -2385,7 +2385,7 @@
        {\setvalue{\??mt#1\v!left }{#3}%
         \setvalue{\??mt#1\v!right}{#3}}
        {\doifelse{#2}\v!next
-          {\doifoddpageelse
+          {\doifelseoddpage
              {\setvalue{\??mt#1\v!right}{#3}}%
              {\setvalue{\??mt#1\v!left }{#3}}}%
           {\setvalue{\??mt#1#2}{#3}}}%

@@ -127,7 +127,7 @@
   {\processcommalist[#set]\scrn_symbols_preset_indeed}%
 
 \def\scrn_symbols_preset_indeed#tag%
-  {\doifobjectfoundelse{SYM}{#tag}
+  {\doifelseobjectfound{SYM}{#tag}
      {}
      {\settightobject{SYM}{#tag}\hbox{\symbol[#tag]}%                        % todo: set this as immediate xform
       \page_otr_add_special_content{\hskip-\maxdimen\getobject{SYM}{#tag}}}} % and then force it into the file
@@ -276,10 +276,14 @@
 
 %D A few testing macros:
 
-\def\doiffieldbodyelse    #tag{\ctxcommand{doiffieldelse("#tag")}}
-\def\doiffieldcategoryelse#tag{\ctxcommand{doiffieldcategoryelse("#tag")}}
+\def\doifelsefieldbody    #tag{\ctxcommand{doiffieldelse("#tag")}}
+\def\doifelsefieldcategory#tag{\ctxcommand{doiffieldcategoryelse("#tag")}}
 
-\let\doiffieldelse\doiffieldbodyelse % compatibility
+\let\doiffieldbodyelse    \doifelsefieldbody
+\let\doiffieldcategoryelse\doifelsefieldcategory
+
+\let\doiffieldelse        \doifelsefieldbody % compatibility / will be dropped
+\let\doifelsefield        \doifelsefieldbody % compatibility / will be dropped
 
 %D We still support the traditional method of defining fields:
 %D
@@ -679,7 +683,7 @@
      \edef\currenttooltipname{tooltip:\number\c_scrn_tooltip_n}%
      \setbox\b_scrn_tooltip_anchor\hbox
        {\strut#anchortext}%
-     \doifassignmentelse{#settings}
+     \doifelseassignment{#settings}
        {\setupcurrenttooltip[#settings]}%
        {\setupcurrenttooltip[\c!location=#settings]}%
      \setbox\b_scrn_tooltip_text\hbox
@@ -870,7 +874,7 @@
    \setvalue{pushbutton:#tag}{\scrn_pushbutton_handle{#tag}{#settings}}}
 
 \def\scrn_pushbutton_define_variant#tag#variant#content%
-  {\doifsymboldefinedelse{pushsymbol:#tag:#variant}
+  {\doifelsesymboldefined{pushsymbol:#tag:#variant}
      \donothing
      {\definesymbol[pushsymbol:#tag:#variant][{#content}]}}
 
@@ -977,7 +981,7 @@
        \setupcurrentinteractionmenu[#settings]%
        \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_m
      \else
-       \doifassignmentelse{#tag}
+       \doifelseassignment{#tag}
          {\let\currentbutton\empty
           \setupcurrentbutton[#tag]%
           \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_b}%

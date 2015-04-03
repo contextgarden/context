@@ -451,6 +451,7 @@ implement {
 
 implement {
     name    = "enablerules",
+    once    = true,
     actions = nodes.rules.enable
 }
 
@@ -469,5 +470,6 @@ implement {
 
 implement {
     name    = "enableshifts",
+    once    = true,
     actions = nodes.shifts.enable
 }

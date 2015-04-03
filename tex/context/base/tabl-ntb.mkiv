@@ -964,10 +964,10 @@
 
 \unexpanded\def\eTABLE % beware, we need to get rid of spurious spaces when in hmode
   {% tricky and dirty order -)
-   \doifsometokselse\t_tabl_ntb_head % slow, better a flag
+   \doifelsesometoks\t_tabl_ntb_head % slow, better a flag
      {\the\t_tabl_ntb_head
       \c_tabl_ntb_n_of_head_lines\c_tabl_ntb_maximum_row\relax
-      \doifsometokselse\t_tabl_ntb_next
+      \doifelsesometoks\t_tabl_ntb_next
         {\the\t_tabl_ntb_next
          \c_tabl_ntb_n_of_next_lines\numexpr\c_tabl_ntb_maximum_row-\c_tabl_ntb_n_of_head_lines\relax}%
         {\c_tabl_ntb_n_of_next_lines\zerocount}% was 1

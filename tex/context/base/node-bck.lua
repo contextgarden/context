@@ -178,5 +178,19 @@ nodes.handlers.alignbackgrounds = function(head) local head, done = add_alignbac
 
 -- elsewhere: needs checking
 
-tasks.appendaction("shipouts","normalizers","nodes.handlers.backgrounds")
-tasks.appendaction("shipouts","normalizers","nodes.handlers.alignbackgrounds")
+-- tasks.appendaction("shipouts","normalizers","nodes.handlers.backgrounds")
+-- tasks.appendaction("shipouts","normalizers","nodes.handlers.alignbackgrounds")
+
+interfaces.implement {
+    name      = "enablebackgroundboxes",
+    once      = true,
+    actions   = nodes.tasks.enableaction,
+    arguments = { "'shipouts'", "'nodes.handlers.backgrounds'" }
+}
+
+interfaces.implement {
+    name      = "enablebackgroundalign",
+    once      = true,
+    actions   = nodes.tasks.enableaction,
+    arguments = { "'shipouts'", "'nodes.handlers.alignbackgrounds'" }
+}

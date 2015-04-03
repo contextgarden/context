@@ -712,7 +712,7 @@ implement {
 }
 
 implement {
-    name      = "injectcurrentreference_dimensions",
+    name      = "injectcurrentreferencehtdp",
     actions   = references.injectcurrentset,
     arguments = { "dimen", "dimen" },
 }

@@ -191,19 +191,19 @@
    \edef\currentcombination{#1}%
    \edef\currentcombinationspec{#2}%
    \ifx\currentcombinationspec\empty
-     \doifassignmentelse{#1}%
+     \doifelseassignment{#1}%
        {\let\currentcombination\empty
         \setupcurrentcombination[#1]%
         \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}
-       {\doifinstringelse{*}\currentcombination
+       {\doifelseinstring{*}\currentcombination
           {\edef\currentcombinationspec{\currentcombination*\plusone*}%
            \let\currentcombination\empty}
-          {\doifnumberelse\currentcombination
+          {\doifelsenumber\currentcombination
              {\edef\currentcombinationspec{\currentcombination*\plusone*}%
               \let\currentcombination\empty}
              {\edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}}%
    \else
-     \doifassignmentelse{#2}%
+     \doifelseassignment{#2}%
        {\setupcurrentcombination[#2]%
         \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}
        {\edef\currentcombinationspec{\currentcombinationspec*\plusone*}}%
@@ -629,12 +629,12 @@
 \unexpanded\def\placepairedbox[#1]%
   {\bgroup
    \edef\currentpairedbox{#1}%
-   \doifnextoptionalcselse\pack_pairedboxes_place\pack_pairedboxes_place_indeed}
+   \doifelsenextoptionalcs\pack_pairedboxes_place\pack_pairedboxes_place_indeed}
 
 \unexpanded\def\startplacepairedbox[#1]%
   {\bgroup
    \edef\currentpairedbox{#1}%
-   \doifnextoptionalcselse\pack_pairedboxes_place\pack_pairedboxes_place_indeed}
+   \doifelsenextoptionalcs\pack_pairedboxes_place\pack_pairedboxes_place_indeed}
 
 \unexpanded\def\stopplacepairedbox
   {}

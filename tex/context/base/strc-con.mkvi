@@ -539,7 +539,7 @@
 
 \startsetups[\??constructionrenderings:\v!left]
     \edef\p_strc_constructions_hang{\constructionparameter\c!hang}%
-    \doifsetupselse{\??constructionrenderings:\v!left:\p_strc_constructions_hang} {
+    \doifelsesetups{\??constructionrenderings:\v!left:\p_strc_constructions_hang} {
         \directsetup{\??constructionrenderings:\v!left:\p_strc_constructions_hang}
     } {
         \directsetup{\??constructionrenderings:\v!left:\v!hanging}
@@ -548,7 +548,7 @@
 
 \startsetups[\??constructionrenderings:\v!right]
     \edef\p_strc_constructions_hang{\constructionparameter\c!hang}
-    \doifsetupselse{\??constructionrenderings:\v!right:\p_strc_constructions_hang} {
+    \doifelsesetups{\??constructionrenderings:\v!right:\p_strc_constructions_hang} {
         \directsetup{\??constructionrenderings:\v!right:\p_strc_constructions_hang}
     } {
         \directsetup{\??constructionrenderings:\v!right:\v!hanging}
@@ -745,7 +745,7 @@
 
 \startsetups[\??constructionrenderings:\v!serried]
     \edef\p_strc_constructions_width{\constructionparameter\c!width}% CHECK ! ! ! wrong parameter namespace
-    \doifsetupselse{\??constructionrenderings:\v!serried:\p_strc_constructions_width} {
+    \doifelsesetups{\??constructionrenderings:\v!serried:\p_strc_constructions_width} {
         \directsetup{\??constructionrenderings:\v!serried:\p_strc_constructions_width}
     } {
         \directsetup{\??constructionrenderings:\v!serried:\v!wide}
@@ -861,7 +861,7 @@
 \let\currentconstructionlistentry\!!zerocount
 
 \def\strc_constructions_register
-  {\clf_doiflisthasentry\numexpr\currentconstructionlistentry\relax
+  {\clf_doifelselisthasentry\numexpr\currentconstructionlistentry\relax
      \strc_constructions_register_nop
      \strc_constructions_register_yes}
 

@@ -50,6 +50,8 @@ local numbers            = attributes.numbers
 local a_trigger          = attributes.private('trigger')
 local triggering         = false
 
+local implement          = interfaces.implement
+
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
 local loadstripped       = utilities.lua.loadstripped
@@ -59,6 +61,9 @@ local unsetvalue         = attributes.unsetvalue
 
 function states.enabletriggering () triggering = true  end
 function states.disabletriggering() triggering = false end
+
+implement { name = "enablestatetriggering",  actions = states.enabletriggering  }
+implement { name = "disablestatetriggering", actions = states.disabletriggering }
 
 nodes.plugindata = nil
 

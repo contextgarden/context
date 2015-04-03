@@ -8,12 +8,15 @@ if not modules then modules = { } end modules ['supp-box'] = {
 
 -- this is preliminary code, use insert_before etc
 
+local lpegmatch = lpeg.match
+
 local report_hyphenation = logs.reporter("languages","hyphenation")
 
 local tex          = tex
 local context      = context
-local commands     = commands
 local nodes        = nodes
+
+local implement    = interfaces.implement
 
 local splitstring  = string.split
 
@@ -120,12 +123,16 @@ local function hyphenatedlist(head,usecolor)
     end
 end
 
-function commands.hyphenatedlist(n,color)
-    local b = texgetbox(n)
-    if b then
-        hyphenatedlist(b.list,color)
+implement {
+    name      = "hyphenatedlist",
+    arguments = { "integer", "boolean" },
+    actions   = function(n,color)
+        local b = texgetbox(n)
+        if b then
+            hyphenatedlist(b.list,color)
+        end
     end
-end
+}
 
 -- local function hyphenatedhack(head,pre)
 --     pre = tonut(pre)
@@ -140,10 +147,6 @@ end
 --
 -- commands.hyphenatedhack = hyphenatedhack
 
-function commands.showhyphenatedinlist(list)
-    report_hyphenation("show: %s",listtoutf(tonut(list),false,true))
-end
-
 local function checkedlist(list)
     if type(list) == "number" then
         return getlist(getbox(tonut(list)))
@@ -151,6 +154,14 @@ local function checkedlist(list)
         return tonut(list)
     end
 end
+
+implement {
+    name      = "showhyphenatedinlist",
+    arguments = "integer",
+    actions   = function(box)
+        report_hyphenation("show: %s",listtoutf(checkedlist(n),false,true))
+    end
+}
 
 local function applytochars(current,doaction,noaction,nested)
     while current do
@@ -192,17 +203,43 @@ local function applytowords(current,doaction,noaction,nested)
     end
 end
 
-commands.applytochars = function(list,what,nested) applytochars(checkedlist(list),context[what or "ruledhbox"],context,nested) end
-commands.applytowords = function(list,what,nested) applytowords(checkedlist(list),context[what or "ruledhbox"],context,nested) end
+local methods = {
+    char       = applytochars,
+    characters = applytochars,
+    word       = applytowords,
+    words      = applytowords,
+}
+
+implement {
+    name      = "applytobox",
+    arguments = {
+        {
+            { "box", "integer" },
+            { "command" },
+            { "method" },
+            { "nested", "boolean" },
+        }
+    },
+    actions   = function(specification)
+        local list   = checkedlist(specification.box)
+        local action = methods[specification.method or "char"]
+        if list and action then
+            action(list,context[specification.command or "ruledhbox"],context,specification.nested)
+        end
+     end
+}
 
 local split_char = lpeg.Ct(lpeg.C(1)^0)
 local split_word = lpeg.tsplitat(lpeg.patterns.space)
 local split_line = lpeg.tsplitat(lpeg.patterns.eol)
 
-function commands.processsplit(str,command,how,spaced)
-    how = how or "word"
-    if how == "char" then
-        local words = lpeg.match(split_char,str)
+local function processsplit(specification)
+    local str     = specification.data    or ""
+    local command = specification.command or "ruledhbox"
+    local method  = specification.method  or "word"
+    local spaced  = specification.spaced
+    if method == "char" or method == "character" then
+        local words = lpegmatch(split_char,str)
         for i=1,#words do
             local word = words[i]
             if word == " " then
@@ -215,8 +252,8 @@ function commands.processsplit(str,command,how,spaced)
                 context(word)
             end
         end
-    elseif how == "word" then
-        local words = lpeg.match(split_word,str)
+    elseif method == "word" then
+        local words = lpegmatch(split_word,str)
         for i=1,#words do
             local word = words[i]
             if spaced and i > 1 then
@@ -228,8 +265,8 @@ function commands.processsplit(str,command,how,spaced)
                 context(word)
             end
         end
-    elseif how == "line" then
-        local words = lpeg.match(split_line,str)
+    elseif method == "line" then
+        local words = lpegmatch(split_line,str)
         for i=1,#words do
             local word = words[i]
             if spaced and i > 1 then
@@ -246,63 +283,88 @@ function commands.processsplit(str,command,how,spaced)
     end
 end
 
+implement {
+    name      = "processsplit",
+    actions   = processsplit,
+    arguments = {
+        {
+            { "data" },
+            { "command" },
+            { "method" },
+            { "spaced", "boolean" },
+        }
+    }
+}
+
 local a_vboxtohboxseparator = attributes.private("vboxtohboxseparator")
 
-function commands.vboxlisttohbox(original,target,inbetween)
-    local current = getlist(getbox(original))
-    local head = nil
-    local tail = nil
-    while current do
-        local id   = getid(current)
-        local next = getnext(current)
-        if id == hlist_code then
-            local list = getlist(current)
-            if head then
-                if inbetween > 0 then
-                    local n = new_glue(0,0,inbetween)
-                    setfield(tail,"next",n)
-                    setfield(n,"prev",tail)
-                    tail = n
-                end
-                setfield(tail,"next",list)
-                setfield(list,"prev",tail)
-            else
-                head = list
-            end
-            tail = find_tail(list)
-            -- remove last separator
-            if getid(tail) == hlist_code and getattribute(tail,a_vboxtohboxseparator) == 1 then
-                local temp = tail
-                local prev = getprev(tail)
-                if next then
-                    local list = getlist(tail)
-                    setfield(prev,"next",list)
-                    setfield(list,"prev",prev)
-                    setfield(tail,"list",nil)
-                    tail = find_tail(list)
+implement {
+    name      = "vboxlisttohbox",
+    arguments = { "integer", "integer", "dimen" },
+    actions   = function(original,target,inbetween)
+        local current = getlist(getbox(original))
+        local head = nil
+        local tail = nil
+        while current do
+            local id   = getid(current)
+            local next = getnext(current)
+            if id == hlist_code then
+                local list = getlist(current)
+                if head then
+                    if inbetween > 0 then
+                        local n = new_glue(0,0,inbetween)
+                        setfield(tail,"next",n)
+                        setfield(n,"prev",tail)
+                        tail = n
+                    end
+                    setfield(tail,"next",list)
+                    setfield(list,"prev",tail)
                 else
-                    tail = prev
+                    head = list
                 end
-                free_node(temp)
+                tail = find_tail(list)
+                -- remove last separator
+                if getid(tail) == hlist_code and getattribute(tail,a_vboxtohboxseparator) == 1 then
+                    local temp = tail
+                    local prev = getprev(tail)
+                    if next then
+                        local list = getlist(tail)
+                        setfield(prev,"next",list)
+                        setfield(list,"prev",prev)
+                        setfield(tail,"list",nil)
+                        tail = find_tail(list)
+                    else
+                        tail = prev
+                    end
+                    free_node(temp)
+                end
+                -- done
+                setfield(tail,"next",nil)
+                setfield(current,"list",nil)
             end
-            -- done
-            setfield(tail,"next",nil)
-            setfield(current,"list",nil)
+            current = next
         end
-        current = next
+        local result = new_hlist()
+        setfield(result,"list",head)
+        setbox(target,result)
     end
-    local result = new_hlist()
-    setfield(result,"list",head)
-    setbox(target,result)
-end
+}
 
-function commands.hboxtovbox(original)
-    local b = getbox(original)
-    local factor = texget("baselineskip").width / texget("hsize")
-    setfield(b,"depth",0)
-    setfield(b,"height",getfield(b,"width") * factor)
-end
+implement {
+    name      = "hboxtovbox",
+    arguments = "integer",
+    actions   = function(n)
+        local b = getbox(n)
+        local factor = texget("baselineskip").width / texget("hsize")
+        setfield(b,"depth",0)
+        setfield(b,"height",getfield(b,"width") * factor)
+    end
+}
 
-function commands.boxtostring(n)
-    context.puretext(nodes.toutf(texgetbox(n).list)) -- helper is defined later
-end
+implement {
+    name      = "boxtostring",
+    arguments = "integer",
+    actions   = function(n)
+        context.puretext(nodes.toutf(texgetbox(n).list)) -- helper is defined later
+    end
+}

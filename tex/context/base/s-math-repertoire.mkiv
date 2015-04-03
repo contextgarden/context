@@ -230,7 +230,7 @@
       \showmathcharactersmth{10}{#1}%
       \endgroup
       \vfilll
-      \doifmodeelse{crosslink}
+      \doifelsemode{crosslink}
         {\goto{\strut\textcolor\showmathcharacterstxt{#2}}[#2::#1]}%
               {\strut\textcolor\showmathcharacterstxt{#2}}}%
    \hskip1ex}

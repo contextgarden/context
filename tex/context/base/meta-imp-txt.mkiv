@@ -104,7 +104,7 @@
 
 \unexpanded\def\getshapecharacteristics
   {\doglobal\increment\currentshapetext
-   \doifdefinedelse{parlines:\currentshapetext}
+   \doifelsedefined{parlines:\currentshapetext}
      {\global\parlines         \getvalue{parlines:\currentshapetext}%
       \global\chardef\parfirst \getvalue{parfirst:\currentshapetext}%
       \global\parvoffset       \getvalue{parvoffset:\currentshapetext}%

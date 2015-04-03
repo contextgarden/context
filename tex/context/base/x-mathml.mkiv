@@ -214,7 +214,9 @@
 
 %D We start with the parent elements and the option handler.
 
-\def\xmlmathmldirective#1{\dosetvalue{MML#1}}
+\unexpanded\def\xmlmathmldirective#1{\dosetvalue{MML#1}}
+
+\xmlinstalldirective{mathml}{xmlmathmldirective}
 
 %def\xmlmathmldirective#1#2#3{[#1][#2][#3]\dosetvalue{MML#1}{#2}{#3}}
 
@@ -383,7 +385,7 @@
 %             \MMLdoR
 %         } {
             \edef\mmlapplyaction{\xmlfilter{#1}{/*/name()}}
-            \doifsetupselse {mml:apply:mml:\mmlapplyaction} {
+            \doifelsesetups {mml:apply:mml:\mmlapplyaction} {
                 \xmlsetup{#1}{mml:apply:mml:\mmlapplyaction}
              } {
 %                 \MMLdoL
@@ -404,7 +406,7 @@
 \startxmlsetups mml:apply:mml:fn
     \xmldoifelse {#1} {/mml:fn/mml:ci} {
         \edef\mmlfnci{\xmlstripped{#1}{/mml:fn/mml:ci}}% was xmlcontent
-        \doifsetupselse{mmc:fn:\mmlfnci} { % was mmc:fn:...
+        \doifelsesetups{mmc:fn:\mmlfnci} { % was mmc:fn:...
             \xmlsetup{#1}{mmc:fn:\mmlfnci} % \MMLdoL/MMLdoR to be handled in plugin
         } {
             \MMLcreset
@@ -471,7 +473,7 @@
     \fi
     \xmldoifelse {#1} {/mml:ci} { % first
         \edef\mmlfnci{\xmltext{#1}{/mml:ci}}%  was xmlcontent
-        \doifsetupselse{mmc:fn:\mmlfnci} { % was mmc:fn:...
+        \doifelsesetups{mmc:fn:\mmlfnci} { % was mmc:fn:...
             \xmlsetup{#1}{mmc:fn:\mmlfnci} % \MMLdoL/MMLdoR to be handled in plugin
         } {
             \MMLcreset
@@ -502,7 +504,7 @@
 \startxmlsetups mmc:fn:apply % where used?
     \xmldoifelse {#1} {/mml:ci} { % first
         \edef\mmlfnci{\xmltext{#1}{/mml:ci}}%  was xmlcontent
-        \doifsetupselse{mmc:fn:\mmlfnci} { % was mmc:fn:...
+        \doifelsesetups{mmc:fn:\mmlfnci} { % was mmc:fn:...
             \xmlsetup{#1}{mmc:fn:\mmlfnci} % \MMLdoL/MMLdoR to be handled in plugin
         } {
             \MMLcreset
@@ -532,12 +534,12 @@
 %         {\mr #4}
         \text{#4}
     } {
-        \doifsetupselse {mml:csymbol:#1} {
+        \doifelsesetups {mml:csymbol:#1} {
             % full url
             \fastsetup{mml:csymbol:#1}
         } {
             % somename (fallback)
-            \doifsetupselse {mml:csymbol:#2} {
+            \doifelsesetups {mml:csymbol:#2} {
                 \fastsetup{mml:csymbol:#2}
             } {
                 \xmlval{mmc:cs}{#3}{}% todo
@@ -1056,7 +1058,7 @@
         \let\MMLtimes@@symbol\MMLtimessymbol
     } {
         \xmldoifelse {#1} {/mml:cn[name(1) == 'mml:cn']} {% name(1) is next one
-           \doifinsetelse\MMLtimessymbol{\v!yes,\v!no} {
+           \doifelseinset\MMLtimessymbol{\v!yes,\v!no} {
                 \let\MMLtimes@@symbol\v!yes
             } {
                 \let\MMLtimes@@symbol\MMLtimessymbol
@@ -2026,13 +2028,13 @@
                         \framed
                             [frame=off,strut=no,background={\mmlmenclosenotation}] % offset is kind of undefined
                             {\startimath
-                                \expanded{\doifinsetelse {mml:enclose:longdiv} {\mmlmenclosenotation}} {
+                                \expanded{\doifelseinset {mml:enclose:longdiv} {\mmlmenclosenotation}} {
                                     \overline{\left)\strut\xmlflush{#1}\right.}
                                 } {
-                                    \expanded{\doifinsetelse {mml:enclose:actuarial} {\mmlmenclosenotation}} {
+                                    \expanded{\doifelseinset {mml:enclose:actuarial} {\mmlmenclosenotation}} {
                                         \overline{\left.\strut\xmlflush{#1}\right|}
                                     } {
-                                        \expanded{\doifinsetelse {mml:enclose:radical} {\mmlmenclosenotation}} {
+                                        \expanded{\doifelseinset {mml:enclose:radical} {\mmlmenclosenotation}} {
                                             \sqrt{\xmlflush{#1}}
                                         } {
                                             \xmlflush{#1}

@@ -104,7 +104,7 @@
 \let\buff_verbatim_set_line_margin\relax
 
 \def\buff_verbatim_set_line_margin_indeed
-  {\hskip\doifoddpageelse{\typingparameter\c!oddmargin}{\typingparameter\c!evenmargin}\relax}
+  {\hskip\doifelseoddpage{\typingparameter\c!oddmargin}{\typingparameter\c!evenmargin}\relax}
 
 \def\buff_verbatim_initialize_typing_one
   {\switchtobodyfont[\typingparameter\c!bodyfont]% can be low level call
@@ -281,7 +281,7 @@
   {\dontleavehmode
    \bgroup
    \edef\currenttype{#1}%
-   \doifnextoptionalcselse\buff_verbatim_type_yes\buff_verbatim_type_nop}
+   \doifelsenextoptionalcs\buff_verbatim_type_yes\buff_verbatim_type_nop}
 
 \def\buff_verbatim_type_yes[#1]%
   {\setupcurrenttype[#1]%
@@ -297,7 +297,7 @@
    \edef\currenttype{#1}%
    \lettypeparameter\c!lines\v!hyphenated
    \let\specialobeyedspace\specialstretchedspace
-   \doifnextoptionalcselse\buff_verbatim_type_yes\buff_verbatim_type_nop}
+   \doifelsenextoptionalcs\buff_verbatim_type_yes\buff_verbatim_type_nop}
 
 \def\buff_verbatim_type_one
   {\ifx\next\bgroup
@@ -505,7 +505,7 @@
 \def\buff_verbatim_typing_start_yes[#1]%
   {\typingparameter\c!before
    \startpacked[\v!blank]
-   \doifassignmentelse{#1}
+   \doifelseassignment{#1}
      {\setupcurrenttyping[#1]}
      {\doifinset\v!continue{#1}{\lettypingparameter\c!continue\v!yes}}%
    \buff_verbatim_setup_line_numbering
@@ -605,7 +605,7 @@
      \setuptyping[#1][#2]%
      \buff_verbatim_type_file_checked{#1}{#3}%
    \else\iffirstargument
-     \doifassignmentelse{#1}
+     \doifelseassignment{#1}
        {\setuptyping[\v!file][#1]
         \buff_verbatim_type_file_checked\v!file{#3}}
        {\buff_verbatim_type_file_checked{#1}{#3}}%
@@ -629,6 +629,8 @@
    \else
      \expandafter\firstoftwoarguments
    \fi}
+
+\let\doiftypingfileelse\doifelsetypingfile
 
 \def\buff_verbatim_type_file_indeed#1#2% category name
   {\edef\currenttyping{#1}%
@@ -786,7 +788,7 @@
      \setuptyping[\v!buffer][#2]%
      \processcommalist[#1]{\buff_verbatim_type_buffer_indeed\v!buffer}% [name] [settings]
    \else\iffirstargument
-     \doifassignmentelse{#1}
+     \doifelseassignment{#1}
        {\setuptyping[\v!buffer][#1]%
         \buff_verbatim_type_buffer_indeed\v!buffer\empty}% [settings]
        {\processcommalist[#1]{\buff_verbatim_type_buffer_indeed\v!buffer}}% [name]
@@ -846,7 +848,7 @@
      \setuptyping[\v!buffer][#2]%
      \processcommalist[#1]{\buff_verbatim_process_indeed\v!buffer}% [name] [settings]
    \else\iffirstargument
-     \doifassignmentelse{#1}
+     \doifelseassignment{#1}
        {\setuptyping[\v!buffer][#1]%
         \buff_verbatim_process_indeed\v!buffer\empty}% [settings]
        {\processcommalist[#1]{\buff_verbatim_process_indeed\v!buffer}}% [name]

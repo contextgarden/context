@@ -53,6 +53,8 @@ local tasks              = nodes.tasks
 
 local v_reset            = interfaces.variables.reset
 
+local implement          = interfaces.implement
+
 local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 local new_disc           = nodepool.disc
@@ -319,6 +321,32 @@ end
 
 -- interface
 
-commands.definebreakpoints = breakpoints.define
-commands.definebreakpoint  = breakpoints.setreplacement
-commands.setbreakpoints    = breakpoints.set
+implement {
+    name      = "definebreakpoints",
+    actions   = breakpoints.define,
+    arguments = "string"
+}
+
+implement {
+    name      = "definebreakpoint",
+    actions   = breakpoints.setreplacement,
+    arguments = {
+        "string",
+        "string",
+        "string",
+        {
+            { "type", "integer" },
+            { "nleft" },
+            { "nright" },
+            { "right" },
+            { "left" },
+            { "middle" },
+        }
+    }
+}
+
+implement {
+    name      = "setbreakpoints",
+    actions   = breakpoints.set,
+    arguments = "string"
+}

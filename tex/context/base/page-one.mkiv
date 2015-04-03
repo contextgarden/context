@@ -496,12 +496,12 @@
 \def\page_one_place_float_bottom     {\page_one_place_float_otherwise}
 
 \def\page_one_place_float_otherwise
-  {\doifinsetelse\v!here\floatlocationmethod
+  {\doifelseinset\v!here\floatlocationmethod
      \page_one_place_float_otherwise_here
      \page_one_place_float_otherwise_else}
 
 \def\page_one_place_float_otherwise_here
-  {\doifinsetelse\v!always\floatlocationmethod
+  {\doifelseinset\v!always\floatlocationmethod
      {\page[\v!preference]%
       \page_otr_command_check_if_float_fits
       \ifconditional\c_page_floats_room
@@ -525,7 +525,7 @@
       \fi}}
 
 \def\page_one_place_float_otherwise_else
-  {\doifinsetelse\v!always\floatlocationmethod
+  {\doifelseinset\v!always\floatlocationmethod
      {\page_otr_command_check_if_float_fits
       \ifconditional\c_page_floats_room
         \page_one_place_float_auto_top_bottom

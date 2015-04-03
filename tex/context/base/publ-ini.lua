@@ -961,9 +961,11 @@ implement {
     }
 }
 
-function commands.convertbtxdatasettoxml(name,nice)
-    publications.converttoxml(name,nice)
-end
+implement {
+    name       = "convertbtxdatasettoxml",
+    arguments  = { "string", true },
+    actions    = publications.converttoxml
+}
 
 -- enhancing
 
@@ -1467,7 +1469,7 @@ do
     end
 
     function publications.loaddefinitionfile(name) -- a more specific name
-        commands.uselibrary {
+        resolvers.uselibrary {
             name     = string.gsub(name,"^publ%-",""),
             patterns = patterns,
             action   = action,
@@ -1481,7 +1483,7 @@ do
     }
 
     function publications.loadreplacementfile(name) -- a more specific name
-        commands.uselibrary {
+        resolvers.uselibrary {
             name     = string.gsub(name,"^publ%-",""),
             patterns = patterns,
             action   = publications.loaders.registercleaner,

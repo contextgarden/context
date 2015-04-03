@@ -88,6 +88,8 @@
 \unexpanded\def\doifelsespreadsheetcell
   {\dosingleempty\module_spreadsheet_doifelse_cell}
 
+\let\doifspreadsheetcellelse\doifelsespreadsheetcell
+
 \unexpanded\def\module_spreadsheet_doifelse_cell[#1]#2#3%
   {\ctxlua{moduledata.spreadsheets.doifelsecell("#1",\number#2,\number#3)}}
 
@@ -118,7 +120,7 @@
    \let\stoprow  \module_spreadsheet_row_stop
    \let\startcell\module_spreadsheet_cell_start
    \let\stopcell \module_spreadsheet_cell_stop
-   \doifassignmentelse{#1}
+   \doifelseassignment{#1}
      {\module_spreadsheet_start
       \directsetup{spreadsheet:before:\currentspreadsheet}%
       \bTABLE[\c!align=\v!flushright,#1]}
@@ -136,7 +138,7 @@
 \unexpanded\def\module_spreadsheet_row_stop {\eTR}
 
 \unexpanded\def\module_spreadsheet_cell_start
-  {\doifnextoptionalelse\module_spreadsheet_cell_start_yes\module_spreadsheet_cell_start_nop}
+  {\doifelsenextoptional\module_spreadsheet_cell_start_yes\module_spreadsheet_cell_start_nop}
 
 \unexpanded\def\module_spreadsheet_cell_start_yes[#1]#2\stopcell
   {\bTD[#1]\getspr{#2}\eTD}

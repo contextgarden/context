@@ -1143,7 +1143,7 @@ end
 local doif     = commands.doif
 local doifelse = commands.doifelse
 
-scanners.doifpositionelse = function() -- name
+scanners.doifelseposition = function() -- name
     doifelse(collected[scanstring()])
 end
 
@@ -1151,21 +1151,21 @@ scanners.doifposition = function() -- name
     doif(collected[scanstring()])
 end
 
-scanners.doifpositiononpageelse = function() -- name page -- probably always realpageno
+scanners.doifelsepositiononpage = function() -- name page -- probably always realpageno
     local c = collected[scanstring()]
     local p = scaninteger()
     doifelse(c and c.p == p)
 end
 
-scanners.doifoverlappingelse = function() -- one two
+scanners.doifelseoverlapping = function() -- one two
     doifelse(overlapping(scanstring(),scanstring()))
 end
 
-scanners.doifpositionsonsamepageelse = function() -- list
+scanners.doifelsepositionsonsamepage = function() -- list
     doifelse(onsamepage(scanstring()))
 end
 
-scanners.doifpositionsonthispageelse = function() -- list
+scanners.doifelsepositionsonthispage = function() -- list
     doifelse(onsamepage(scanstring(),tostring(texgetcount("realpageno"))))
 end
 

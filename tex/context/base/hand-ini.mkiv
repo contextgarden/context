@@ -42,8 +42,8 @@
 \unexpanded\def\setupfontexpansion {\dodoubleargument\font_expansion_setup }
 \unexpanded\def\setupfontprotrusion{\dodoubleargument\font_protrusion_setup}
 
-\def\font_expansion_setup [#1][#2]{\ctxcommand{setupfontexpansion ("#1","#2")}}
-\def\font_protrusion_setup[#1][#2]{\ctxcommand{setupfontprotrusion("#1","#2")}}
+\def\font_expansion_setup [#1][#2]{\clf_setupfontexpansion {#1}{#2}}
+\def\font_protrusion_setup[#1][#2]{\clf_setupfontprotrusion{#1}{#2}}
 
 % \setupfontprotrusion[quality-upright][vector=quality]
 % \setupfontprotrusion[quality-slanted][vector=quality,right=1.5]

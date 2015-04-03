@@ -62,7 +62,7 @@
      \edef\currentpositioning{#1}%
      \setupcurrentpositioning[#2]%
    \else\iffirstargument
-     \doifassignmentelse{#1}
+     \doifelseassignment{#1}
        {\let\currentpositioning\empty
         \setupcurrentpositioning[#1]}%
        {\edef\currentpositioning{#1}}%

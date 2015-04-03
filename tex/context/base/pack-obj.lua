@@ -12,10 +12,8 @@ reusable components.</p>
 --ldx]]--
 
 local context        = context
-local commands       = commands
 
-local compilescanner = tokens.compile
-local scanners       = interfaces.scanners
+local implement      = interfaces.implement
 
 local allocate       = utilities.storage.allocate
 
@@ -65,43 +63,31 @@ jobobjects.get    = getobject
 jobobjects.number = getobjectnumber
 jobobjects.page   = getobjectpage
 
--- interface
+implement {
+    name      = "saveobject",
+    actions   = saveobject
+}
 
-commands.saveobject = saveobject
-commands.setobject  = setobject
-
-function commands.objectnumber(tag,default)
-    context(getobjectnumber(tag,default))
-end
-
-function commands.objectpage(tag,default)
-    context(getobjectpage  (tag,default))
-end
-
-function commands.doifobjectreferencefoundelse(tag)
-    commands.doifelse(getobject(tag))
-end
-
--- new
-
-scanners.saveobject = saveobject
-
-scanners.setobject = compilescanner {
+implement {
+    name      = "setobject",
     actions   = setobject,
     arguments = { "string", "integer", "integer" }
 }
 
-scanners.objectnumber = compilescanner {
+implement {
+    name      = "objectnumber",
     actions   = { getobjectnumber, context },
     arguments = { "string", "string" },
 }
 
-scanners.objectpage = compilescanner {
+implement {
+    name      = "objectpage",
     actions   = { getobjectpage, context },
     arguments = { "string", "string" },
 }
 
-scanners.doifobjectreferencefoundelse = compilescanner {
+implement {
+    name      = "doifelseobjectreferencefound",
     actions   = { jobobjects.get, commands.doifelse },
     arguments = "string"
 }

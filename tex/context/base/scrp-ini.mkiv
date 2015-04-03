@@ -41,14 +41,14 @@
 \to \everydefinescript
 
 \unexpanded\def\scripts_basics_set
-  {\ctxlua{scripts.set("\currentscript","\scriptparameter\c!method","\scriptparameter\c!preset")}}
+  {\clf_setscript{\currentscript}{\scriptparameter\c!method}{\scriptparameter\c!preset}}
 
 \unexpanded\def\setscript[#1]%
   {\edef\currentscript{#1}%
    \scripts_basics_set}
 
 \unexpanded\def\resetscript
-  {\ctxlua{scripts.reset()}}
+  {\clf_resetscript}
 
 \unexpanded\def\startscript[#1]%
   {\begingroup
@@ -86,8 +86,8 @@
     \fi
 \to \everysetupscript
 
-\unexpanded\def\enableautofontscript {\ctxcommand{enableautofontscript ()}}
-\unexpanded\def\disableautofontscript{\ctxcommand{disableautofontscript()}}
+\unexpanded\def\enableautofontscript {\clf_enableautofontscript }
+\unexpanded\def\disableautofontscript{\clf_disableautofontscript}
 
 \definefontfeature[latn][script=latn]
 \definefontfeature[grek][script=grek]

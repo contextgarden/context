@@ -76,7 +76,7 @@
 
 \def\strc_blocks_select[#1][#2][#3][#4]% state name tag setups
   {\bgroup
-   \doifassignmentelse{#3}
+   \doifelseassignment{#3}
      {\getparameters[\??blocktemp][\c!criterium=\v!text,#3]%
       \def\strc_blocks_setup{\setupcurrentblock[#3]}%
       \clf_selectstructureblock{#1}{#2}{}{\csname\??blocktemp\c!criterium\endcsname}}

@@ -82,12 +82,14 @@
      \insert#1{\unvbox#1}%
    \fi}
 
-\unexpanded\def\doifinsertionelse#1%
+\unexpanded\def\doifelseinsertion#1%
   {\ifcsname\??insertionnumber#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+\let\doifinsertionelse\doifelseinsertion
 
 % \unexpanded\def\startinsertion[#1]%
 %   {\insert\csname\??insertionnumber#1\endcsname\bgroup}

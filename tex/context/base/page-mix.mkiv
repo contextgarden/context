@@ -365,7 +365,7 @@
    \csname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname}
 
 \def\page_mix_start_columns_b[#1][#2]%
-  {\doifassignmentelse{#1}%
+  {\doifelseassignment{#1}%
      {\let\currentmixedcolumns\empty
       \page_mix_error_b}
      {\edef\currentmixedcolumns{#1}%
@@ -799,11 +799,11 @@
 % \unexpanded\def\page_mix_command_flush_top_insertions
 %   {\page_one_command_flush_top_insertions}
 
-% \unexpanded\def\page_mix_place_float_top
-%   {\showmessage\m!columns4\empty\page_one_place_float_here}
+\unexpanded\def\page_mix_place_float_top
+  {\showmessage\m!columns4\empty\page_one_place_float_here}
 
-% \unexpanded\def\page_mix_place_float_bottom
-%   {\showmessage\m!columns5\empty\page_one_place_float_here}
+\unexpanded\def\page_mix_place_float_bottom
+  {\showmessage\m!columns5\empty\page_one_place_float_here}
 
 \unexpanded\def\page_mix_place_float_here
   {\page_one_place_float_here}
