@@ -15,6 +15,8 @@ local codeinjections    = backends.codeinjections
 local expandcurrent     = structures.references.expandcurrent
 local identify          = structures.references.identify
 
+local implement         = interfaces.implement
+
 local function check(what)
     if what and what ~= "" then
         local set, bug = identify("",what)
@@ -54,12 +56,12 @@ local function setclosepageaction(close)
     end
 end
 
-references.setopendocument      = setopendocumentaction
-references.setclosedocument     = setclosedocumentaction
-references.setopenpage          = setopenpageaction
-references.setclosepage         = setclosepageaction
+references.setopendocument  = setopendocumentaction
+references.setclosedocument = setclosedocumentaction
+references.setopenpage      = setopenpageaction
+references.setclosepage     = setclosepageaction
 
-commands.setopendocumentaction  = setopendocumentaction
-commands.setclosedocumentaction = setclosedocumentaction
-commands.setopenpageaction      = setopenpageaction
-commands.setclosepageaction     = setclosepageaction
+implement { name = "setopendocumentaction",  arguments = "string", actions = setopendocumentaction }
+implement { name = "setclosedocumentaction", arguments = "string", actions = setclosedocumentaction }
+implement { name = "setopenpageaction",      arguments = "string", actions = setopenpageaction }
+implement { name = "setclosepageaction",     arguments = "string", actions = setclosepageaction }

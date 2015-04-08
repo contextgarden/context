@@ -568,7 +568,7 @@ local points = function(n)
     elseif type(n) == "number" then
         return lpegmatch(stripper,format("%.5fpt",n*ptfactor)) -- faster than formatter
     else
-        return numbertodimen(n,"pt",true,true) -- also deals with nodes
+        return numbertodimen(n,"pt") -- also deals with nodes
     end
 end
 
@@ -578,7 +578,7 @@ local basepoints = function(n)
     elseif type(n) == "number" then
         return lpegmatch(stripper,format("%.5fbp",n*bpfactor)) -- faster than formatter
     else
-        return numbertodimen(n,"bp",true,true) -- also deals with nodes
+        return numbertodimen(n,"bp") -- also deals with nodes
     end
 end
 
@@ -588,7 +588,7 @@ local pts = function(n)
     elseif type(n) == "number" then
         return format("%.5fpt",n*ptfactor) -- faster than formatter
     else
-        return numbertodimen(n,"pt",true) -- also deals with nodes
+        return numbertodimen(n,"pt") -- also deals with nodes
     end
 end
 
@@ -605,10 +605,10 @@ number.basepoints = basepoints
 number.pts        = pts
 number.nopts      = nopts
 
-nodes.points     = function(n) return numbertodimen(n,"pt",true,true) end
-nodes.basepoints = function(n) return numbertodimen(n,"bp",true,true) end
-nodes.pts        = function(n) return numbertodimen(n,"pt",true)      end
-nodes.nopts      = function(n) return format("%.5f",n*ptfactor)       end
+nodes.points     = function(n) return numbertodimen(n,"pt")     end
+nodes.basepoints = function(n) return numbertodimen(n,"bp")     end
+nodes.pts        = function(n) return numbertodimen(n,"pt")     end
+nodes.nopts      = function(n) return format("%.5f",n*ptfactor) end
 
 local colors          = { }
 tracers.colors        = colors

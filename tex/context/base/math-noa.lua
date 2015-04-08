@@ -90,8 +90,6 @@ local font_of_family      = node.family_font
 local new_kern            = nodepool.kern
 local new_rule            = nodepool.rule
 
-local topoints            = number.points
-
 local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
 local fontcharacters      = fonthashes.characters

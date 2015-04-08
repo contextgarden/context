@@ -80,8 +80,13 @@
 \let\dotagxtablesignal\relax % names will change
 
 \appendtoks
-    \def\dotagxtablecell  {\taggedctxcommand{settagtablecell(\number\tablecellrows,\number\tablecellcolumns,\number\raggedstatus)}}%
-    \def\dotagxtablesignal{\char\zerocount}% not used
+    \def\dotagxtablecell
+      {\clf_settagtablecell
+         \numexpr\tablecellrows\relax
+         \numexpr\tablecellcolumns\relax
+         \numexpr\raggedstatus\relax}%
+    \def\dotagxtablesignal
+      {\char\zerocount}% not used
 \to \everyenableelements
 
 \newdimen\d_tabl_x_width

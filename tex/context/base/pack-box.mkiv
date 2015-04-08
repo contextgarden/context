@@ -24,10 +24,10 @@
 %D which in itself is ok, but can lead to loops due to rounding errors (happened
 %D in demo-obv).
 
-\definelayer[\v!text-2][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
-\definelayer[\v!text-1][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
-\definelayer[\v!text+1][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
-\definelayer[\v!text+2][\c!position=\v!yes,\c!region=,\c!width=\overlaywidth,\c!height=\overlayheight]
+\definelayer[\v!text-2][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
+\definelayer[\v!text-1][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
+\definelayer[\v!text+1][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
+\definelayer[\v!text+2][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
 
 \unexpanded\def\internaltextoverlay#1% will become more generic and installable
   {\startoverlay                     % i.e. probably an overlay by itself
@@ -436,7 +436,7 @@
 
 \def\pack_ornament_text[#1][#2]%
   {\bgroup
-   \doifassignmentelse{#1}
+   \doifelseassignment{#1}
      {\letdummyparameter\c!alternative\v!a
       \getdummyparameters[#1]%
       \doifelse{\directdummyparameter\c!alternative}\v!a

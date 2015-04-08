@@ -16,7 +16,8 @@ local allocate                      = utilities.storage.allocate
 
 local report_interface = logs.reporter("interface","checking")
 
-interfaces = interfaces or { }
+local interfaces = interfaces
+local implement  = interfaces.implement
 
 interfaces.syntax = allocate {
     test = { keys = table.tohash { "a","b","c","d","e","f","g" } }
@@ -48,6 +49,18 @@ function interfaces.addvalidkeys(category,list)
     end
 end
 
+implement {
+    name      = "setvalidinterfacekeys",
+    actions   = interfaces.setvalidkeys,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "addvalidinterfacekeys",
+    actions   = interfaces.addvalidkeys,
+    arguments = { "string", "string" }
+}
+
 -- weird code, looks incomplete ... probably an experiment
 
 local prefix, category, keys
@@ -73,4 +86,8 @@ function interfaces.getcheckedparameters(k,p,s)
     end
 end
 
--- _igcp_ = interfaces.getcheckedparameters
+implement {
+    name      = "getcheckedinterfaceparameters",
+    actions   = interfaces.getcheckedparameters,
+    arguments = { "string", "string", "string" }
+}

@@ -79,7 +79,7 @@
 
 \appendtoks
     \doifsomething{\backendparameter{xmpfile}}
-      {\ctxcommand{setxmpfile("\backendparameter{xmpfile}")}}%
+      {\clf_setxmpfile{\backendparameter{xmpfile}}}%
 \to \everysetupbackend
 
 % \doifsomething{\backendparameter\c!format} .. at the lua end
@@ -313,7 +313,7 @@
 
 \unexpanded\def\doinsertobject#1#2%
   {\begingroup
-   \doifobjectreferencefoundelse{#1}{#2}
+   \doifelseobjectreferencefound{#1}{#2}
      {\dogetobjectreference{#1}{#2}\m_back_object_reference
       \pdfrefxform\m_back_object_reference}%
      \donothing

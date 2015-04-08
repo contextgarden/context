@@ -16,18 +16,19 @@
 \unprotect
 
 % Very nasty but needed for margin stuff inside colored
-% paragraphs. Obsolete anyway.
+% paragraphs. Obsolete for while .
 
 \registerctxluafile{spac-adj}{1.001}
 
 \definesystemattribute [graphicvadjust]  [public]
 
 \unexpanded\def\enablegraphicvadjust
-  {\ctxlua{nodes.tasks.enableaction("finalizers","nodes.handlers.graphicvadjust")}%
+  {\writestatus\m!systems{graphicvadjusting is no longer needed!}
+   \clf_enablegraphicvadjust %once anyway
    \glet\enablegraphicvadjust\relax}
 
 \unexpanded\def\graphicvadjust % currently not enabled ... nasty bidi handling
-  {\enablegraphicvadjust       % and no longer needed anyway
+  {\clf_enablegraphicvadjust   % and probably no longer needed anyway
    \dowithnextboxcontentcs\forgetall\spac_vadjust_graphic_finish\vbox}
 
 \def\spac_vadjust_graphic_finish

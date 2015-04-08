@@ -157,7 +157,7 @@
 \to \everysetupasciimath
 
 \unexpanded\def\asciimath#1%
-  {\ctxcommand{asciimath(\!!bs\detokenize\expandafter{\normalexpanded{#1}}\!!es)}}
+  {\clf_asciimath{\detokenize\expandafter{\normalexpanded{#1}}}}
 
 \unexpanded\def\ctxmoduleasciimath#1%
   {\ctxlua{moduledata.asciimath.#1}}

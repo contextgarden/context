@@ -173,11 +173,11 @@
    \setbox\nextbox\mathstylehbox{#body}%
    % we use the \overlay variables as these are passes anyway and
    % it's more efficient than using parameters
-   \edef\overlaywidth    {\the\wd\nextbox}%
-   \edef\overlayheight   {\the\ht\nextbox}%
-   \edef\overlaydepth    {\the\dp\nextbox}%
-   \edef\overlayoffset   {\the\scratchoffset}%
-   \edef\overlaylinewidth{\the\linewidth}%
+   \d_overlay_width    \wd\nextbox
+   \d_overlay_height   \ht\nextbox
+   \d_overlay_depth    \dp\nextbox
+   \d_overlay_offset   \scratchoffset
+   \d_overlay_linewidth\linewidth
    \edef\overlaylinecolor{\mathradicalparameter\c!color}%
    %
    \edef\p_mp{\mathradicalparameter\c!mp}%
@@ -233,11 +233,11 @@
   {\begingroup
    \scratchoffset\mathornamentparameter\c!mpoffset
    \setbox\nextbox\mathstylehbox{#body}%
-   \edef\overlaywidth    {\the\wd\nextbox}%
-   \edef\overlayheight   {\the\ht\nextbox}%
-   \edef\overlaydepth    {\the\dp\nextbox}%
-   \edef\overlayoffset   {\the\scratchoffset}%
-   \edef\overlaylinewidth{\the\linewidth}%
+   \d_overlay_width    \wd\nextbox
+   \d_overlay_height   \ht\nextbox
+   \d_overlay_depth    \dp\nextbox
+   \d_overlay_offset   \scratchoffset
+   \d_overlay_linewidth\linewidth
    \edef\overlaylinecolor{\mathornamentparameter\c!color}%
    \edef\p_mp{\mathornamentparameter\c!mp}%
    % thw width of the graphic determines the width of the final result

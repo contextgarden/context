@@ -241,8 +241,16 @@ function interfaces.setuserinterface(interface,response)
         end
         report_interface("definitions: %a constants, %a variables, %a elements, %a commands, %a formats, %a translations",
             nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations)
+    else
+        report_interface("the language(s) can only be set when making the format")
     end
 end
+
+interfaces.implement {
+    name      = "setuserinterface",
+    actions   = interfaces.setuserinterface,
+    arguments = { "string", "string" }
+}
 
 interfaces.cachedsetups = interfaces.cachedsetups or { }
 interfaces.hashedsetups = interfaces.hashedsetups or { }

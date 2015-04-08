@@ -176,8 +176,6 @@ local texgetcount        = tex.getcount
 local texgetdimen        = tex.getdimen
 local texget             = tex.get
 
-local points             = number.points
-
 local isleftpage         = layouts.status.isleftpage
 local registertogether   = builders.paragraphs.registertogether -- tonode
 

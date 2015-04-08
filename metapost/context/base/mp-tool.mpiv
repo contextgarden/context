@@ -192,7 +192,8 @@ def data_mpd_file =
 enddef ;
 
 %D Because \METAPOST\ has a hard coded limit of 4~datafiles,
-%D we need some trickery when we have multiple files.
+%D we need some trickery when we have multiple files. This will
+%D be redone (via \LUA).
 
 if unknown collapse_data :
     boolean collapse_data ;

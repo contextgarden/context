@@ -272,6 +272,24 @@ function pages.is_odd(n)
     end
 end
 
+function pages.on_right(n)
+    local pagemode = texgetcount("pageduplexmode")
+    if pagemode == 2 or pagemode == 1 then
+        n = n or texgetcount("realpageno")
+        if texgetcount("pagenoshift") % 2 == 0 then
+            return n % 2 == 0
+        else
+            return n % 2 ~= 0
+        end
+    else
+        return true
+    end
+end
+
+function pages.in_body(n)
+    return texgetcount("pagebodymode") > 0
+end
+
 -- move to strc-pag.lua
 
 function counters.analyze(name,counterspecification)

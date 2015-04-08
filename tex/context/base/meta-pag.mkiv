@@ -23,78 +23,76 @@
 %D pagebody looks.
 
 \startMPextensions
-    boolean PageStateAvailable,OnRightPage,InPageBody;
+    boolean PageStateAvailable;
     PageStateAvailable:=true;
 \stopMPextensions
 
-\startMPinitializations
-    OnRightPage:=true;
-    InPageBody:=\ifinpagebody true \else false \fi;
-\stopMPinitializations
-
-\startMPinitializations
-    CurrentColumn:=\number\mofcolumns;
-    NOfColumns:=\number\nofcolumns;
-    % todo: ColumnDistance
-\stopMPinitializations
-
 % maybe always set as frozen anyway
 
-\startMPinitializations
-    OnRightPage:=\MPonrightpage;
-    OnOddPage:=\MPonoddpage;
-    RealPageNumber:=\the\realpageno;
-    PageNumber:=\the\pageno;
-    NOfPages:=\lastpage;
-    PaperHeight:=\the\paperheight;
-    PaperWidth:=\the\paperwidth;
-    PrintPaperHeight:=\the\printpaperheight;
-    PrintPaperWidth:=\the\printpaperwidth;
-    TopSpace:=\the\topspace;
-    BottomSpace:=\the\bottomspace;
-    BackSpace:=\the\backspace;
-    CutSpace:=\the\cutspace;
-    MakeupHeight:=\the\makeupheight;
-    MakeupWidth:=\the\makeupwidth;
-    TopHeight:=\the\topheight;
-    TopDistance:=\the\topdistance;
-    HeaderHeight:=\the\headerheight;
-    HeaderDistance:=\the\headerdistance;
-    TextHeight:=\the\textheight;
-    FooterDistance:=\the\footerdistance;
-    FooterHeight:=\the\footerheight;
-    BottomDistance:=\the\bottomdistance;
-    BottomHeight:=\the\bottomheight;
-    LeftEdgeWidth:=\the\leftedgewidth;
-    LeftEdgeDistance:=\the\leftedgedistance;
-    LeftMarginWidth:=\the\leftmarginwidth;
-    LeftMarginDistance:=\the\leftmargindistance;
-    TextWidth:=\the\textwidth;
-    RightMarginDistance:=\the\rightmargindistance;
-    RightMarginWidth:=\the\rightmarginwidth;
-    RightEdgeDistance:=\the\rightedgedistance;
-    RightEdgeWidth:=\the\rightedgewidth;
-    InnerMarginDistance:=\the\innermargindistance;
-    InnerMarginWidth:=\the\innermarginwidth;
-    OuterMarginDistance:=\the\outermargindistance;
-    OuterMarginWidth:=\the\outermarginwidth;
-    InnerEdgeDistance:=\the\inneredgedistance;
-    InnerEdgeWidth:=\the\inneredgewidth;
-    OuterEdgeDistance:=\the\outeredgedistance;
-    OuterEdgeWidth:=\the\outeredgewidth;
-    PageOffset:=\the\pagebackgroundoffset;
-    PageDepth:=\the\pagebackgrounddepth;
-    LayoutColumns:=\the\layoutcolumns;
-    LayoutColumnDistance:=\the\layoutcolumndistance;
-    LayoutColumnWidth:=\the\layoutcolumnwidth;
-\stopMPinitializations
+% \startMPinitializations
+%     PaperHeight:=\the\paperheight;
+%     PaperWidth:=\the\paperwidth;
+%     PrintPaperHeight:=\the\printpaperheight;
+%     PrintPaperWidth:=\the\printpaperwidth;
+%     TopSpace:=\the\topspace;
+%     BottomSpace:=\the\bottomspace;
+%     BackSpace:=\the\backspace;
+%     CutSpace:=\the\cutspace;
+%     MakeupHeight:=\the\makeupheight;
+%     MakeupWidth:=\the\makeupwidth;
+%     TopHeight:=\the\topheight;
+%     TopDistance:=\the\topdistance;
+%     HeaderHeight:=\the\headerheight;
+%     HeaderDistance:=\the\headerdistance;
+%     TextHeight:=\the\textheight;
+%     FooterDistance:=\the\footerdistance;
+%     FooterHeight:=\the\footerheight;
+%     BottomDistance:=\the\bottomdistance;
+%     BottomHeight:=\the\bottomheight;
+%     LeftEdgeWidth:=\the\leftedgewidth;
+%     LeftEdgeDistance:=\the\leftedgedistance;
+%     LeftMarginWidth:=\the\leftmarginwidth;
+%     LeftMarginDistance:=\the\leftmargindistance;
+%     TextWidth:=\the\textwidth;
+%     RightMarginDistance:=\the\rightmargindistance;
+%     RightMarginWidth:=\the\rightmarginwidth;
+%     RightEdgeDistance:=\the\rightedgedistance;
+%     RightEdgeWidth:=\the\rightedgewidth;
+%     InnerMarginDistance:=\the\innermargindistance;
+%     InnerMarginWidth:=\the\innermarginwidth;
+%     OuterMarginDistance:=\the\outermargindistance;
+%     OuterMarginWidth:=\the\outermarginwidth;
+%     InnerEdgeDistance:=\the\inneredgedistance;
+%     InnerEdgeWidth:=\the\inneredgewidth;
+%     OuterEdgeDistance:=\the\outeredgedistance;
+%     OuterEdgeWidth:=\the\outeredgewidth;
+%     PageOffset:=\the\pagebackgroundoffset;
+%     PageDepth:=\the\pagebackgrounddepth;
+%     LayoutColumns:=\the\layoutcolumns;
+%     LayoutColumnDistance:=\the\layoutcolumndistance;
+%     LayoutColumnWidth:=\the\layoutcolumnwidth;
+%     %
+%     boolean OnRightPage,OnOddPage,InPageBody;
+%     %
+%     OnRightPage:=\MPonrightpage;
+%     OnOddPage:=\MPonoddpage;
+%     InPageBody:=\ifinpagebody true \else false \fi;
+%     %
+%     RealPageNumber:=\the\realpageno;
+%     PageNumber:=\the\pageno;
+%     NOfPages:=\lastpage;
+%     LastPageNumber:=\lastpage;
+%     %
+%     CurrentColumn:=\number\mofcolumns;
+%     NOfColumns:=\number\nofcolumns;
+% \stopMPinitializations
 
 \def\MPonrightpage{true}
 \def\MPonoddpage  {true}
 
 \def\freezeMPpagelayout
   {\edef\MPonrightpage{\doifbothsides  {tru}{tru}{fals}e}%
-   \edef\MPonoddpage  {\doifoddpageelse     {tru}{fals}e}}
+   \edef\MPonoddpage  {\doifelseoddpage     {tru}{fals}e}}
 
 %D We need to freeze the pagelayout before the backgrounds
 %D are build, because the overlay will temporarily become

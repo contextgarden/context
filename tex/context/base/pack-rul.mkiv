@@ -429,13 +429,25 @@
 %D
 %D The resulting box is lowered to the right depth.
 
-\def\overlaywidth      {\the\hsize\space} % We preset the variables
-\def\overlayheight     {\the\vsize\space} % to some reasonable default
-\def\overlaydepth      {0pt }             % values. The attributes
-\let\overlayoffset     \overlaydepth      % of the frame can be (are)
-\let\overlaylinewidth  \overlaydepth      % set somewhere else.
+%def\overlaywidth      {\the\hsize\space} % We preset the variables
+%def\overlayheight     {\the\vsize\space} % to some reasonable default
+%def\overlaydepth      {0pt }             % values. The attributes
+%let\overlayoffset     \overlaydepth      % of the frame can be (are)
+%let\overlaylinewidth  \overlaydepth      % set somewhere else.
 \let\overlaycolor      \empty
 \let\overlaylinecolor  \empty
+
+\newdimen\d_overlay_width
+\newdimen\d_overlay_height
+\newdimen\d_overlay_depth
+\newdimen\d_overlay_offset
+\newdimen\d_overlay_linewidth
+
+\def\overlaywidth      {\the\d_overlay_width    \space} % We preset the variables
+\def\overlayheight     {\the\d_overlay_height   \space} % to some reasonable default
+\def\overlaydepth      {\the\d_overlay_depth    \space} % values.
+\def\overlayoffset     {\the\d_overlay_offset   \space} % of the frame can be (are)
+\def\overlaylinewidth  {\the\d_overlay_linewidth\space} % set somewhere else.
 
 %D The next register is used to initialize overlays.
 
@@ -452,8 +464,8 @@
 \to \everyoverlay
 
 \prependtoks
-    \hsize\overlaywidth
-    \vsize\overlayheight
+    \hsize\d_overlay_width
+    \vsize\d_overlay_height
 \to \everyoverlay
 
 \unexpanded\def\defineoverlay
@@ -475,8 +487,8 @@
    \egroup
    \setlayoutcomponentattribute{\v!overlay:#1}%
    \setbox\scratchbox\hbox \layoutcomponentboxattribute
-     {\kern -.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax % was \overlaywidth
-      \raise-.5\dimexpr\ht\scratchbox-\d_framed_target_ht\relax % not \overlayheight !
+     {\kern -.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax % was \d_overlay_width
+      \raise-.5\dimexpr\ht\scratchbox-\d_framed_target_ht\relax % not \d_overlay_height !
       \box\scratchbox}%
    \wd\scratchbox\d_framed_target_wd
    \ht\scratchbox\d_framed_target_ht
@@ -490,8 +502,8 @@
 \unexpanded\def\overlayfakebox
   {\hbox
      {\setbox\scratchbox\emptyhbox
-      \wd\scratchbox\overlaywidth
-      \ht\scratchbox\overlayheight
+      \wd\scratchbox\d_overlay_width
+      \ht\scratchbox\d_overlay_height
       \box\scratchbox}}
 
 %D For testing we provide:
@@ -601,16 +613,28 @@
          \hss
       \egroup}}
 
+% \def\pack_framed_overlay_initialize_indeed
+%   {\edef\overlaywidth    {\the\d_framed_target_wd\space}%
+%    \edef\overlayheight   {\the\dimexpr\d_framed_target_ht+\d_framed_target_dp\relax\space}%
+%    \edef\overlaydepth    {\the\d_framed_target_dp\space}%
+%    \edef\overlaycolor    {\framedparameter\c!backgroundcolor}% let ?
+%    \edef\overlaylinecolor{\framedparameter\c!framecolor}% only needed for layers
+%    \edef\overlaylinewidth{\the\d_framed_linewidth\space}%
+%   %\edef\overlaycorner   {\framedparameter\c!backgroundcorner}%
+%   %\edef\overlayradius   {\framedparameter\c!backgroundradius}%
+%    \edef\overlayoffset   {\the\framedbackgroundoffset\space}% \backgroundoffset % we steal this one
+%    \let\pack_framed_overlay_initialize\relax}
+
 \def\pack_framed_overlay_initialize_indeed
-  {\edef\overlaywidth    {\the\d_framed_target_wd\space}%
-   \edef\overlayheight   {\the\dimexpr\d_framed_target_ht+\d_framed_target_dp\relax\space}%
-   \edef\overlaydepth    {\the\d_framed_target_dp\space}%
+  {\d_overlay_width     \d_framed_target_wd
+   \d_overlay_height    \dimexpr\d_framed_target_ht+\d_framed_target_dp\relax
+   \d_overlay_depth     \d_framed_target_dp
+   \d_overlay_linewidth \d_framed_linewidth
+   \d_overlay_offset    \framedbackgroundoffset\relax
    \edef\overlaycolor    {\framedparameter\c!backgroundcolor}% let ?
    \edef\overlaylinecolor{\framedparameter\c!framecolor}% only needed for layers
-   \edef\overlaylinewidth{\the\d_framed_linewidth\space}%
   %\edef\overlaycorner   {\framedparameter\c!backgroundcorner}%
   %\edef\overlayradius   {\framedparameter\c!backgroundradius}%
-   \edef\overlayoffset   {\the\framedbackgroundoffset\space}% \backgroundoffset % we steal this one
    \let\pack_framed_overlay_initialize\relax}
 
 %D One can explictly insert the foreground box. For that purpose we introduce the

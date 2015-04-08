@@ -11,12 +11,171 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module is rather preliminary and subjected to
-%D changes.
+%D This module is rather preliminary and subjected to changes.
 
 if known context_page : endinput ; fi ;
 
 boolean context_page ; context_page := true ;
+
+% def LoadPageState =
+%     % now always set
+% enddef ;
+%
+% if unknown PageStateAvailable :
+%     boolean PageStateAvailable ;
+%     PageStateAvailable := false ;
+% fi ;
+%
+% if unknown OnRightPage :
+%     boolean OnRightPage ;
+%     OnRightPage := true ;
+% fi ;
+%
+% if unknown OnOddPage :
+%     boolean OnOddPage ;
+%     OnOddPage := true ;
+% fi ;
+%
+% if unknown InPageBody :
+%     boolean InPageBody ;
+%     InPageBody := false ;
+% fi ;
+%
+% string CurrentLayout ;
+%
+% CurrentLayout       := "default" ;
+%
+% PageNumber          := 0 ;
+% PaperHeight         := 845.04684pt  ;
+% PaperWidth          := 597.50787pt  ;
+% PrintPaperHeight    := 845.04684pt  ;
+% PrintPaperWidth     := 597.50787pt  ;
+% TopSpace            :=  71.12546pt  ;
+% BottomSpace         :=   0.0pt      ;
+% BackSpace           :=  71.13275pt  ;
+% CutSpace            :=   0.0pt      ;
+% MakeupHeight        := 711.3191pt   ;
+% MakeupWidth         := 426.78743pt  ;
+% TopHeight           :=   0.0pt      ;
+% TopDistance         :=   0.0pt      ;
+% HeaderHeight        :=  56.90294pt  ;
+% HeaderDistance      :=   0.0pt      ;
+% TextHeight          := 597.51323pt  ;
+% FooterDistance      :=   0.0pt      ;
+% FooterHeight        :=  56.90294pt  ;
+% BottomDistance      :=   0.0pt      ;
+% BottomHeight        :=   0.0pt      ;
+% LeftEdgeWidth       :=   0.0pt      ;
+% LeftEdgeDistance    :=   0.0pt      ;
+% LeftMarginWidth     :=   75.58197pt ;
+% LeftMarginDistance  :=   11.99829pt ;
+% TextWidth           :=  426.78743pt ;
+% RightMarginDistance :=   11.99829pt ;
+% RightMarginWidth    :=   75.58197pt ;
+% RightEdgeDistance   :=    0.0pt     ;
+% RightEdgeWidth      :=    0.0pt     ;
+%
+% PageOffset          :=    0.0pt     ;
+% PageDepth           :=    0.0pt     ;
+%
+% LayoutColumns       :=    0         ;
+% LayoutColumnDistance:=    0.0pt     ;
+% LayoutColumnWidth   :=    0.0pt     ;
+%
+% LeftEdge             :=  -4 ; Top             := -40 ;
+% LeftEdgeSeparator    :=  -3 ; TopSeparator    := -30 ;
+% LeftMargin           :=  -2 ; Header          := -20 ;
+% LeftMarginSeparator  :=  -1 ; HeaderSeparator := -10 ;
+% Text                 :=   0 ; Text            :=   0 ;
+% RightMarginSeparator :=  +1 ; FooterSeparator := +10 ;
+% RightMargin          :=  +2 ; Footer          := +20 ;
+% RightEdgeSeparator   :=  +3 ; BottomSeparator := +30 ;
+% RightEdge            :=  +4 ; Bottom          := +40 ;
+%
+% Margin      := LeftMargin  ; % obsolete
+% Edge        := LeftEdge    ; % obsolete
+% InnerMargin := RightMargin ; % obsolete
+% InnerEdge   := RightEdge   ; % obsolete
+% OuterMargin := LeftMargin  ; % obsolete
+% OuterEdge   := LeftEdge    ; % obsolete
+%
+% InnerMarginWidth     := 0pt ;
+% OuterMarginWidth     := 0pt ;
+% InnerMarginDistance  := 0pt ;
+% OuterMarginDistance  := 0pt ;
+%
+% InnerEdgeWidth     := 0pt ;
+% OuterEdgeWidth     := 0pt ;
+% InnerEdgeDistance  := 0pt ;
+% OuterEdgeDistance  := 0pt ;
+%
+% % path Area[][] ;
+% % pair Location[][] ;
+% % path Field[][] ;
+%
+% % numeric Hstep[] ;
+% % numeric Hsize[] ;
+% % numeric Vstep[] ;
+% % numeric Vsize[] ;
+%
+% path Page ;
+%
+% numeric HorPos ;
+% numeric VerPos ;
+%
+% % for VerPos=Top step 10 until Bottom:
+% %     for HorPos=LeftEdge step 1 until RightEdge:
+% %         Area[HorPos][VerPos] := origin--cycle ;
+% %         Area[VerPos][HorPos] := Area[HorPos][VerPos] ;
+% %         Location[HorPos][VerPos] := origin ;
+% %         Location[VerPos][HorPos] := Location[HorPos][VerPos] ;
+% %         Field[HorPos][VerPos] := origin--cycle ;
+% %         Field[VerPos][HorPos] := Field[HorPos][VerPos] ;
+% %     endfor ;
+% % endfor ;
+%
+% % def LoadPageState =
+% %   scantokens "input mp-state.tmp" ;
+% % enddef ;
+%
+% numeric mfun_temp ;
+%
+% def SwapPageState =
+%     if not OnRightPage :
+%              BackSpace := PaperWidth-MakeupWidth-BackSpace ;
+%               CutSpace := PaperWidth-MakeupWidth-CutSpace ;
+%              mfun_temp := LeftMarginWidth ;
+%        LeftMarginWidth := RightMarginWidth ;
+%       RightMarginWidth := mfun_temp ;
+%              mfun_temp := LeftMarginDistance ;
+%     LeftMarginDistance := RightMarginDistance ;
+%    RightMarginDistance := mfun_temp ;
+%              mfun_temp := LeftEdgeWidth ;
+%          LeftEdgeWidth := RightEdgeWidth ;
+%         RightEdgeWidth := mfun_temp ;
+%              mfun_temp := LeftEdgeDistance ;
+%       LeftEdgeDistance := RightEdgeDistance ;
+%      RightEdgeDistance := mfun_temp ;
+%
+%   % these are now available as ..Width and ..Distance
+%
+%                 Margin := LeftMargin ;
+%                   Edge := LeftEdge ;
+%            InnerMargin := RightMargin ;
+%              InnerEdge := RightEdge ;
+%            OuterMargin := LeftMargin ;
+%              OuterEdge := LeftEdge ;
+%     else :
+%                 Margin := RightMargin ;
+%                   Edge := RightEdge ;
+%            InnerMargin := LeftMargin ;
+%              InnerEdge := LeftEdge ;
+%            OuterMargin := RightMargin ;
+%              OuterEdge := RightEdge ;
+%     fi ;
+% enddef ;
+
+% the new way:
 
 def LoadPageState =
     % now always set
@@ -27,61 +186,124 @@ if unknown PageStateAvailable :
     PageStateAvailable := false ;
 fi ;
 
-if unknown OnRightPage :
-    boolean OnRightPage ;
-    OnRightPage := true ;
-fi ;
+string CurrentLayout ; CurrentLayout := "default" ;
 
-if unknown OnOddPage :
-    boolean OnOddPage ;
-    OnOddPage := true ;
-fi ;
+path Page ;
 
-if unknown InPageBody :
-    boolean InPageBody ;
-    InPageBody := false ;
-fi ;
+vardef PaperHeight          = lua.mp.PaperHeight         () enddef ;
+vardef PaperWidth           = lua.mp.PaperWidth          () enddef ;
+vardef PrintPaperHeight     = lua.mp.PrintPaperHeight    () enddef ;
+vardef PrintPaperWidth      = lua.mp.PrintPaperWidth     () enddef ;
+vardef TopSpace             = lua.mp.TopSpace            () enddef ;
+vardef BottomSpace          = lua.mp.BottomSpace         () enddef ;
+vardef BackSpace            = lua.mp.BackSpace           () enddef ;
+vardef CutSpace             = lua.mp.CutSpace            () enddef ;
+vardef MakeupHeight         = lua.mp.MakeupHeight        () enddef ;
+vardef MakeupWidth          = lua.mp.MakeupWidth         () enddef ;
+vardef TopHeight            = lua.mp.TopHeight           () enddef ;
+vardef TopDistance          = lua.mp.TopDistance         () enddef ;
+vardef HeaderHeight         = lua.mp.HeaderHeight        () enddef ;
+vardef HeaderDistance       = lua.mp.HeaderDistance      () enddef ;
+vardef TextHeight           = lua.mp.TextHeight          () enddef ;
+vardef FooterDistance       = lua.mp.FooterDistance      () enddef ;
+vardef FooterHeight         = lua.mp.FooterHeight        () enddef ;
+vardef BottomDistance       = lua.mp.BottomDistance      () enddef ;
+vardef BottomHeight         = lua.mp.BottomHeight        () enddef ;
+vardef LeftEdgeWidth        = lua.mp.LeftEdgeWidth       () enddef ;
+vardef LeftEdgeDistance     = lua.mp.LeftEdgeDistance    () enddef ;
+vardef LeftMarginWidth      = lua.mp.LeftMarginWidth     () enddef ;
+vardef LeftMarginDistance   = lua.mp.LeftMarginDistance  () enddef ;
+vardef TextWidth            = lua.mp.TextWidth           () enddef ;
+vardef RightMarginDistance  = lua.mp.RightMarginDistance () enddef ;
+vardef RightMarginWidth     = lua.mp.RightMarginWidth    () enddef ;
+vardef RightEdgeDistance    = lua.mp.RightEdgeDistance   () enddef ;
+vardef RightEdgeWidth       = lua.mp.RightEdgeWidth      () enddef ;
+vardef InnerMarginDistance  = lua.mp.InnerMarginDistance () enddef ;
+vardef InnerMarginWidth     = lua.mp.InnerMarginWidth    () enddef ;
+vardef OuterMarginDistance  = lua.mp.OuterMarginDistance () enddef ;
+vardef OuterMarginWidth     = lua.mp.OuterMarginWidth    () enddef ;
+vardef InnerEdgeDistance    = lua.mp.InnerEdgeDistance   () enddef ;
+vardef InnerEdgeWidth       = lua.mp.InnerEdgeWidth      () enddef ;
+vardef OuterEdgeDistance    = lua.mp.OuterEdgeDistance   () enddef ;
+vardef OuterEdgeWidth       = lua.mp.OuterEdgeWidth      () enddef ;
+vardef PageOffset           = lua.mp.PageOffset          () enddef ;
+vardef PageDepth            = lua.mp.PageDepth           () enddef ;
+vardef LayoutColumns        = lua.mp.LayoutColumns       () enddef ;
+vardef LayoutColumnDistance = lua.mp.LayoutColumnDistance() enddef ;
+vardef LayoutColumnWidth    = lua.mp.LayoutColumnWidth   () enddef ;
 
-string CurrentLayout ;
+vardef OnRightPage          = lua.mp.OnRightPage         () enddef ;
+vardef OnOddPage            = lua.mp.OnOddPage           () enddef ;
+vardef InPageBody           = lua.mp.InPageBody          () enddef ;
 
-CurrentLayout       := "default" ;
+vardef RealPageNumber       = lua.mp.RealPageNumber      () enddef ;
+vardef PageNumber           = lua.mp.PageNumber          () enddef ;
+vardef NOfPages             = lua.mp.NOfPages            () enddef ;
+vardef LastPageNumber       = lua.mp.LastPageNumber      () enddef ; % duplicates
 
-PageNumber          := 0 ;
-PaperHeight         := 845.04684pt  ;
-PaperWidth          := 597.50787pt  ;
-PrintPaperHeight    := 845.04684pt  ;
-PrintPaperWidth     := 597.50787pt  ;
-TopSpace            :=  71.12546pt  ;
-BottomSpace         :=   0.0pt      ;
-BackSpace           :=  71.13275pt  ;
-CutSpace            :=   0.0pt      ;
-MakeupHeight        := 711.3191pt   ;
-MakeupWidth         := 426.78743pt  ;
-TopHeight           :=   0.0pt      ;
-TopDistance         :=   0.0pt      ;
-HeaderHeight        :=  56.90294pt  ;
-HeaderDistance      :=   0.0pt      ;
-TextHeight          := 597.51323pt  ;
-FooterDistance      :=   0.0pt      ;
-FooterHeight        :=  56.90294pt  ;
-BottomDistance      :=   0.0pt      ;
-BottomHeight        :=   0.0pt      ;
-LeftEdgeWidth       :=   0.0pt      ;
-LeftEdgeDistance    :=   0.0pt      ;
-LeftMarginWidth     :=   75.58197pt ;
-LeftMarginDistance  :=   11.99829pt ;
-TextWidth           :=  426.78743pt ;
-RightMarginDistance :=   11.99829pt ;
-RightMarginWidth    :=   75.58197pt ;
-RightEdgeDistance   :=    0.0pt     ;
-RightEdgeWidth      :=    0.0pt     ;
+vardef CurrentColumn        = lua.mp.CurrentColumn       () enddef ;
+vardef NOfColumns           = lua.mp.NOfColumns          () enddef ;
 
-PageOffset          :=    0.0pt     ;
-PageDepth           :=    0.0pt     ;
+vardef BaseLineSkip         = lua.mp.BaseLineSkip        () enddef ;
+vardef LineHeight           = lua.mp.LineHeight          () enddef ;
+vardef BodyFontSize         = lua.mp.BodyFontSize        () enddef ;
 
-LayoutColumns       :=    0         ;
-LayoutColumnDistance:=    0.0pt     ;
-LayoutColumnWidth   :=    0.0pt     ;
+vardef TopSkip              = lua.mp.TopSkip             () enddef ;
+vardef StrutHeight          = lua.mp.StrutHeight         () enddef ;
+vardef StrutDepth           = lua.mp.StrutDepth          () enddef ;
+
+vardef CurrentWidth         = lua.mp.CurrentWidth        () enddef ;
+vardef CurrentHeight        = lua.mp.CurrentHeight       () enddef ;
+
+vardef HSize                = lua.mp.HSize               () enddef ; % duplicates
+vardef VSize                = lua.mp.VSize               () enddef ; % duplicates
+
+vardef EmWidth              = lua.mp.EmWidth             () enddef ;
+vardef ExHeight             = lua.mp.ExHeight            () enddef ;
+
+vardef PageFraction         = lua.mp.PageFraction        () enddef ;
+
+boolean mfun_swapped ;
+
+def SwapPageState =
+    mfun_swapped := true ;
+enddef ;
+
+extra_beginfig := extra_beginfig & "mfun_swapped := false ;" ;
+
+vardef BackSpace = if (mfun_swapped and not OnRightPage) : PaperWidth - MakeupWidth - fi  lua.mp.BackSpace() enddef ;
+vardef CutSpace  = if (mfun_swapped and not OnRightPage) : PaperWidth - MakeupWidth - fi  lua.mp.CutSpace () enddef ;
+
+vardef LeftMarginWidth     = if mfun_swapped and not OnRightPage : lua.mp.RightMarginWidth   () else : lua.mp.LeftMarginWidth    () fi enddef ;
+vardef RightMarginWidth    = if mfun_swapped and not OnRightPage : lua.mp.LeftMarginWidth    () else : lua.mp.RightMarginWidth   () fi enddef ;
+vardef LeftMarginDistance  = if mfun_swapped and not OnRightPage : lua.mp.RightMarginDistance() else : lua.mp.LeftMarginDistance () fi enddef ;
+vardef RightMarginDistance = if mfun_swapped and not OnRightPage : lua.mp.LeftMarginDistance () else : lua.mp.RightMarginDistance() fi enddef ;
+vardef LeftEdgeWidth       = if mfun_swapped and not OnRightPage : lua.mp.RightEdgeWidth     () else : lua.mp.LeftEdgeWidth      () fi enddef ;
+vardef RightEdgeWidth      = if mfun_swapped and not OnRightPage : lua.mp.LeftEdgeWidth      () else : lua.mp.RightEdgeWidth     () fi enddef ;
+vardef LeftEdgeDistance    = if mfun_swapped and not OnRightPage : lua.mp.RightEdgeDistance  () else : lua.mp.LeftEdgeDistance   () fi enddef ;
+vardef RightEdgeDistance   = if mfun_swapped and not OnRightPage : lua.mp.LeftEdgeDistance   () else : lua.mp.RightEdgeDistance  () fi enddef ;
+
+% vardef Margin      = if OnRightPage : lua.mp.RightMarginWidth else : lua.mp.LeftMarginWidth  fi enddef ;
+% vardef Edge        = if OnRightPage : lua.mp.RightEdgeWidth   else : lua.mp.LeftEdgeWidth    fi enddef ;
+% vardef InnerMargin = if OnRightPage : lua.mp.LeftMarginWidth  else : lua.mp.RightMarginWidth fi enddef ;
+% vardef InnerEdge   = if OnRightPage : lua.mp.LeftEdgeWidth    else : lua.mp.RightEdgeWidth   fi enddef ;
+% vardef OuterMargin = if OnRightPage : lua.mp.RightMarginWidth else : lua.mp.LeftMarginWidth  fi enddef ;
+% vardef OuterEdge   = if OnRightPage : lua.mp.RightEdgeWidth   else : lua.mp.LeftEdgeWidth    fi enddef ;
+
+% vardef CurrentLayout = lua.mp.CurrentLayout () enddef ;
+
+vardef OverlayWidth      = lua.mp.OverlayWidth    ()  enddef ;
+vardef OverlayHeight     = lua.mp.OverlayHeight   ()  enddef ;
+vardef OverlayDepth      = lua.mp.OverlayDepth    ()  enddef ;
+vardef OverlayLineWidth  = lua.mp.OverlayLineWidth()  enddef ;
+vardef OverlayOffset     = lua.mp.OverlayOffset   ()  enddef ;
+
+vardef defaultcolormodel = lua.mp.defaultcolormodel() enddef ;
+
+%  def OverlayLineColor  = lua.mp.OverlayLineColor()  enddef ;
+%  def OverlayColor      = lua.mp.OverlayColor    ()  enddef ;
+
+% Next we implement the the page area model. First some constants.
 
 LeftEdge             :=  -4 ; Top             := -40 ;
 LeftEdgeSeparator    :=  -3 ; TopSeparator    := -30 ;
@@ -93,37 +315,28 @@ RightMargin          :=  +2 ; Footer          := +20 ;
 RightEdgeSeparator   :=  +3 ; BottomSeparator := +30 ;
 RightEdge            :=  +4 ; Bottom          := +40 ;
 
-Margin      := LeftMargin  ; % obsolete
-Edge        := LeftEdge    ; % obsolete
-InnerMargin := RightMargin ; % obsolete
-InnerEdge   := RightEdge   ; % obsolete
-OuterMargin := LeftMargin  ; % obsolete
-OuterEdge   := LeftEdge    ; % obsolete
+% Margin      := LeftMargin  ; % obsolete
+% Edge        := LeftEdge    ; % obsolete
+% InnerMargin := RightMargin ; % obsolete
+% InnerEdge   := RightEdge   ; % obsolete
+% OuterMargin := LeftMargin  ; % obsolete
+% OuterEdge   := LeftEdge    ; % obsolete
 
-InnerMarginWidth     := 0pt ;
-OuterMarginWidth     := 0pt ;
-InnerMarginDistance  := 0pt ;
-OuterMarginDistance  := 0pt ;
+numeric HorPos ; HorPos := 0 ;
+numeric VerPos ; VerPos := 0 ;
 
-InnerEdgeWidth     := 0pt ;
-OuterEdgeWidth     := 0pt ;
-InnerEdgeDistance  := 0pt ;
-OuterEdgeDistance  := 0pt ;
+% We used to initialize these variables each (sub)run but at some point MP
+% became too slow for this. See later.
 
 % path Area[][] ;
 % pair Location[][] ;
 % path Field[][] ;
-
+%
 % numeric Hstep[] ;
 % numeric Hsize[] ;
 % numeric Vstep[] ;
 % numeric Vsize[] ;
-
-path Page ;
-
-numeric HorPos ;
-numeric VerPos ;
-
+%
 % for VerPos=Top step 10 until Bottom:
 %     for HorPos=LeftEdge step 1 until RightEdge:
 %         Area[HorPos][VerPos] := origin--cycle ;
@@ -134,48 +347,8 @@ numeric VerPos ;
 %         Field[VerPos][HorPos] := Field[HorPos][VerPos] ;
 %     endfor ;
 % endfor ;
-
-% def LoadPageState =
-%   scantokens "input mp-state.tmp" ;
-% enddef ;
-
-numeric mfun_temp ;
-
-def SwapPageState =
-    if not OnRightPage :
-             BackSpace := PaperWidth-MakeupWidth-BackSpace ;
-              CutSpace := PaperWidth-MakeupWidth-CutSpace ;
-             mfun_temp := LeftMarginWidth ;
-       LeftMarginWidth := RightMarginWidth ;
-      RightMarginWidth := mfun_temp ;
-             mfun_temp := LeftMarginDistance ;
-    LeftMarginDistance := RightMarginDistance ;
-   RightMarginDistance := i ;
-             mfun_temp := LeftEdgeWidth ;
-         LeftEdgeWidth := RightEdgeWidth ;
-        RightEdgeWidth := mfun_temp ;
-             mfun_temp := LeftEdgeDistance ;
-      LeftEdgeDistance := RightEdgeDistance ;
-     RightEdgeDistance := mfun_temp ;
-
-  % these are now available as ..Width and ..Distance
-
-                Margin := LeftMargin ;
-                  Edge := LeftEdge ;
-           InnerMargin := RightMargin ;
-             InnerEdge := RightEdge ;
-           OuterMargin := LeftMargin ;
-             OuterEdge := LeftEdge ;
-    else :
-                Margin := RightMargin ;
-                  Edge := RightEdge ;
-           InnerMargin := LeftMargin ;
-             InnerEdge := LeftEdge ;
-           OuterMargin := RightMargin ;
-             OuterEdge := RightEdge ;
-    fi ;
-enddef ;
-
+%
+%
 % def SetPageAreas =
 %
 %     numeric Vsize[], Hsize[], Vstep[], Hstep[] ;

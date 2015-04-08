@@ -69,3 +69,9 @@ function jobfiles.context(name,options)
         return file.replacesuffix(name,"pdf")
     end
 end
+
+interfaces.implement {
+    name      = "runcontextjob",
+    arguments = { "string", "string" },
+    actions   = { jobfiles.context, context }
+}

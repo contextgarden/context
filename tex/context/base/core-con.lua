@@ -1264,3 +1264,9 @@ implement {
     actions   = currentdate,
     arguments = { "string", false }
 }
+
+implement {
+    name      = "unihex",
+    actions   = { formatters["U+%05X"], context },
+    arguments = "integer"
+}

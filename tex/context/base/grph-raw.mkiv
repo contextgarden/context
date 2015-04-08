@@ -46,14 +46,14 @@
 \unexpanded\def\bitmapimage[#1]#2%
   {\hbox\bgroup
      \getdummyparameters[\c!color=rgb,\c!width=,\c!height=,\c!x=,\c!y=,#1]%
-     \ctxlua{figures.bitmapimage { % we could pass #1 directly ... todo
-        data        = \!!bs#2\!!es,
-        colorspace  = "\directdummyparameter\c!color",
-        width       = "\directdummyparameter\c!width",
-        height      = "\directdummyparameter\c!height",
-        xresolution = "\directdummyparameter\c!x",
-        yresolution = "\directdummyparameter\c!y",
-     }}%
+     \clf_bitmapimage
+       data        {#2}%
+       colorspace  {\directdummyparameter\c!color}%
+       width       {\directdummyparameter\c!width}%
+       height      {\directdummyparameter\c!height}%
+       xresolution {\directdummyparameter\c!x}%
+       yresolution {\directdummyparameter\c!y}%
+     \relax
    \egroup}
 
 \unexpanded\def\startbitmapimage[#1]#2\stopbitmapimage

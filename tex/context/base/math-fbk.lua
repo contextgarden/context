@@ -189,12 +189,12 @@ virtualcharacters[0x207B] = function(data)
 end
 
 virtualcharacters[0x208A] = function(data)
-    data.replacement = 0x2212
+    data.replacement = 0x002B
     return raised(data,true)
 end
 
 virtualcharacters[0x208B] = function(data)
-    data.replacement = 0x002B
+    data.replacement = 0x2212
     return raised(data,true)
 end
 

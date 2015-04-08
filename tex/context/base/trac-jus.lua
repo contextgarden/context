@@ -62,9 +62,10 @@ end
 checkers.set   = set
 checkers.reset = reset
 
-function commands.showjustification(n)
-    set(n)
-end
+interfaces.implement {
+    name    = "showjustification",
+    actions = set
+}
 
 trackers.register("visualizers.justification", function(v)
     if v then

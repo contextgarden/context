@@ -19,7 +19,7 @@ local variables          = interfaces.variables
 local formatters         = string.formatters
 
 local context            = context
-local commands           = commands
+local implement          = interfaces.implement
 
 local trace_javascript   = false  trackers.register("backends.javascript", function(v) trace_javascript = v end)
 
@@ -196,7 +196,13 @@ function javascripts.flushpreambles()
     return t
 end
 
-local patterns = { "java-imp-%s.mkiv", "java-imp-%s.tex", "java-%s.mkiv", "java-%s.tex" }
+local patterns = {
+    "java-imp-%s.mkiv",
+    "java-imp-%s.tex",
+    -- obsolete:
+    "java-%s.mkiv",
+    "java-%s.tex"
+}
 
 local function action(name,foundname)
     context.startnointerference()
@@ -213,7 +219,7 @@ end
 
 function javascripts.usescripts(name)
     if name ~= variables.reset then -- reset is obsolete
-        commands.uselibrary {
+        resolvers.uselibrary {
             name     = name,
             patterns = patterns,
             action   = action,
@@ -225,8 +231,38 @@ end
 
 -- interface
 
-commands.storejavascriptcode     = interactions.javascripts.storecode
-commands.storejavascriptpreamble = interactions.javascripts.storepreamble
-commands.addtojavascriptpreamble = interactions.javascripts.addtopreamble
-commands.usejavascriptpreamble   = interactions.javascripts.usepreamblenow
-commands.usejavascriptscripts    = interactions.javascripts.usescripts
+implement {
+    name      = "storejavascriptcode",
+    actions   = javascripts.storecode,
+    arguments = "string"
+}
+
+implement {
+    name      = "storejavascriptpreamble",
+    actions   = javascripts.storepreamble,
+    arguments = "string"
+}
+
+implement {
+    name      = "setjavascriptpreamble",
+    actions   = javascripts.setpreamble,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "addtojavascriptpreamble",
+    actions   = javascripts.addtopreamble,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "usejavascriptpreamble",
+    actions   = javascripts.usepreamblenow,
+    arguments = "string"
+}
+
+implement {
+    name      = "usejavascriptscripts",
+    actions   = javascripts.usescripts,
+    arguments = "string"
+}

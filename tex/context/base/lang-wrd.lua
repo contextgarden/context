@@ -14,7 +14,10 @@ local P, S, Cs = lpeg.P, lpeg.S, lpeg.Cs
 
 local report_words = logs.reporter("languages","words")
 
-local nodes, node, languages = nodes, node, languages
+local nodes           = nodes
+local languages       = languages
+
+local implement       = interfaces.implement
 
 languages.words       = languages.words or { }
 local words           = languages.words
@@ -361,6 +364,24 @@ end
 
 -- interface
 
-commands.enablespellchecking  = words.enable
-commands.disablespellchecking = words.disable
-commands.loadspellchecklist   = words.load
+implement {
+    name      = "enablespellchecking",
+    actions   = words.enable,
+    arguments = {
+        {
+            { "method" },
+            { "list" }
+        }
+    }
+}
+
+implement {
+    name      = "disablespellchecking",
+    actions   = words.disable
+}
+
+implement {
+    name      = "loadspellchecklist",
+    arguments = { "string", "string" },
+    actions   = words.load
+}

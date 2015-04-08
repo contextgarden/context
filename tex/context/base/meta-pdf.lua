@@ -573,3 +573,11 @@ statistics.register("mps conversion time",function()
         return nil
     end
 end)
+
+-- interface
+
+interfaces.implement {
+    name      = "convertmpstopdf",
+    arguments = "string",
+    actions   = mptopdf.convertmpstopdf
+}

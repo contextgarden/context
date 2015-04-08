@@ -108,10 +108,8 @@ appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")   
 ------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled
 appendaction("math",         "builders",    "typesetters.directions.processmath")                -- disabled (has to happen pretty late)
 
--- quite experimental (nodes.handlers.graphicvadjust might go away)
-
 appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether")
-appendaction("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
+------------("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
 appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
 
@@ -184,7 +182,7 @@ disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
 
 disableaction("finalizers",  "builders.paragraphs.keeptogether")
 disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
-disableaction("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
+-------------("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
 disableaction("finalizers",  "builders.paragraphs.tag")
 
 disableaction("math",        "noads.handlers.showtree")

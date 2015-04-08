@@ -173,4 +173,8 @@ end
 
 -- interface
 
-commands.setdigitsmanipulation = digits.set
+interfaces.implement {
+    name      = "setdigitsmanipulation",
+    actions   = digits.set,
+    arguments = "string"
+}

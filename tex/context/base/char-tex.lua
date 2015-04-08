@@ -468,6 +468,14 @@ implement {
     arguments = "integer"
 }
 
+implement {
+    name      = "uchar",
+    arguments = { "integer", "integer" },
+    actions   = function(h,l)
+        context(utfchar(h*256+l))
+    end
+}
+
 tex.uprint = commands.utfchar
 
 -- in contect we don't use lc and uc codes (in fact in luatex we should have a hf code)

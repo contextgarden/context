@@ -21,6 +21,8 @@ local attributes         = attributes
 local nodes              = nodes
 local context            = context
 
+local implement          = interfaces.implement
+
 nodes.lines              = nodes.lines or { }
 local lines              = nodes.lines
 
@@ -163,9 +165,19 @@ function boxed.register(configuration)
     return last
 end
 
-function commands.registerlinenumbering(configuration)
-    context(boxed.register(configuration))
-end
+implement {
+    name      = "registerlinenumbering",
+    actions   = { boxed.register, context },
+    arguments = {
+        {
+            { "continue" },
+            { "start", "integer" },
+            { "step", "integer" },
+            { "method" },
+            { "tag" },
+        }
+    }
+}
 
 function boxed.setup(n,configuration)
     local d = data[n]
@@ -185,7 +197,20 @@ function boxed.setup(n,configuration)
     return n
 end
 
-commands.setuplinenumbering = boxed.setup
+implement {
+    name      = "setuplinenumbering",
+    actions   = { boxed.setup, context },
+    arguments = {
+        "integer",
+        {
+            { "continue" },
+            { "start", "integer" },
+            { "step", "integer" },
+            { "method" },
+            { "tag" },
+        }
+    }
+}
 
 local function check_number(n,a,skip,sameline)
     local d = data[a]
@@ -394,5 +419,14 @@ function boxed.stage_two(n,m)
     end
 end
 
-commands.linenumbersstageone = boxed.stage_one
-commands.linenumbersstagetwo = boxed.stage_two
+implement {
+    name      = "linenumbersstageone",
+    actions   = boxed.stage_one,
+    arguments = { "integer", "boolean" }
+}
+
+implement {
+    name      = "linenumbersstagetwo",
+    actions   = boxed.stage_two,
+    arguments = { "integer", "integer" }
+}

@@ -744,4 +744,11 @@ end)
 function references.enableinteraction()
     tasks.enableaction("shipouts","nodes.references.handler")
     tasks.enableaction("shipouts","nodes.destinations.handler")
+    function references.enableinteraction() end
 end
+
+implement {
+    name     = "enableinteraction",
+    actions  = references.enableinteraction,
+    onlyonce = true
+}

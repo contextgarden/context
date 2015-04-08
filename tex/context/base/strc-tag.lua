@@ -78,6 +78,8 @@ local properties     = allocate {
     item                  = { pdf = "LI",         nature = "display" },
     itemtag               = { pdf = "Lbl",        nature = "mixed"   },
     itemcontent           = { pdf = "LBody",      nature = "mixed"   },
+    itemhead              = { pdf = "Div",        nature = "display" },
+    itembody              = { pdf = "Div",        nature = "display" },
 
     description           = { pdf = "Div",        nature = "display" },
     descriptiontag        = { pdf = "Div",        nature = "mixed"   },

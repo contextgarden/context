@@ -69,29 +69,68 @@ end
 scanners.scanopen  = scanopen
 scanners.scanclose = scanclose
 
+local function scanlist()
+    local wrapped = scanopen()
+    local list    = { }
+    local size    = 0
+    while true do
+        local entry = scanstring()
+        if entry then
+            size = size + 1
+            list[size] = entry
+        else
+            break
+        end
+    end
+    if wrapped then
+        scanclose()
+    end
+    return list
+end
+
+local function scanconditional()
+    local kw = scanword()
+    if kw == "true" then
+        return true
+    end
+    if kw == "false" then
+        return false
+    end
+    local c = scaninteger()
+    if c then
+        return c == 0 -- with a conditional 0=true
+    end
+    return nil
+end
+
+scanners.list        = scanlist
+scanners.conditional = scanconditional
+
 local shortcuts = {
-    tokens        = tokens,
-    bits          = tokenbits,
-    open          = open,
-    close         = close,
-    scanners      = scanners,
-    scanstring    = scanstring,
-    scaninteger   = scaninteger,
-    scannumber    = scannumber,
-    scankeyword   = scankeyword,
-    scanword      = scanword,
-    scancode      = scancode,
-    scanboolean   = scanboolean,
-    scandimen     = scandimen,
-    scandimension = scandimen,
-    scanopen      = scanopen,
-    scanclose     = scanclose,
-    todimen       = todimen,
-    tonumber      = tonumber,
-    tostring      = tostring,
-    toboolean     = toboolean,
-    inspect       = inspect,
-    report        = report_scan,
+    tokens          = tokens,
+    bits            = tokenbits,
+    open            = open,
+    close           = close,
+    scanners        = scanners,
+    scanstring      = scanstring,
+    scaninteger     = scaninteger,
+    scannumber      = scannumber,
+    scankeyword     = scankeyword,
+    scanword        = scanword,
+    scancode        = scancode,
+    scanboolean     = scanboolean,
+    scandimen       = scandimen,
+    scandimension   = scandimen,
+    scanconditional = scanconditional,
+    scanopen        = scanopen,
+    scanclose       = scanclose,
+    scanlist        = scanlist,
+    todimen         = todimen,
+    tonumber        = tonumber,
+    tostring        = tostring,
+    toboolean       = toboolean,
+    inspect         = inspect,
+    report          = report_scan,
 }
 
 tokens.shortcuts = shortcuts

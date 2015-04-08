@@ -256,15 +256,15 @@
 \def\MPoverlayanchor#1{\MPpos\MPanchorid}
 
 \def\anch_positions_overlay_compose
-  {\vbox to \overlayheight
+  {\vbox to \d_overlay_height
      {%\writestatus{!!!}{\currentpositionoverlay/\MPanchoridentifier/\MPanchornumber}%
       \edef\MPanchorid{\currentpositionoverlay::\MPanchoridentifier:\MPanchornumber}% realpageno
     % \edef\MPanchor##1{\MPpos\MPanchorid}%
       \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
       \the\everyinsertpositionaction
       \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
-      \setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
-      \ht\scratchbox\overlayheight
+      \setbox\scratchbox\hbox to \d_overlay_width{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
+      \ht\scratchbox\d_overlay_height
       \dp\scratchbox\zeropoint
       \anch_mark_tagged_box\scratchbox\MPanchorid % needs an hbox
       \box\scratchbox
@@ -289,13 +289,13 @@
    \endgroup}
 
 \def\anch_positions_region_overlay_compose
-  {\vbox to \overlayheight
+  {\vbox to \d_overlay_height
      {\let\MPanchorid\currentpositionregion
       \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
       \the\everyinsertpositionaction
       \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
-      \setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
-      \ht\scratchbox\overlayheight
+      \setbox\scratchbox\hbox to \d_overlay_width{\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
+      \ht\scratchbox\d_overlay_height
       \dp\scratchbox\zeropoint
       \box\scratchbox
       \vfill}}

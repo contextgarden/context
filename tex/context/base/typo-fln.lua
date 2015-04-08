@@ -23,6 +23,9 @@ local firstlines         = typesetters.firstlines
 local nodes              = nodes
 local tasks              = nodes.tasks
 
+local context            = context
+local implement          = interfaces.implement
+
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
 local tonode             = nuts.tonode
@@ -85,7 +88,21 @@ function firstlines.set(specification)
     texsetattribute(a_firstline,1)
 end
 
-commands.setfirstline = firstlines.set
+implement {
+    name      = "setfirstline",
+    actions   = firstlines.set,
+    arguments = {
+        {
+            { "alternative" },
+            { "font", "integer" },
+            { "dynamic", "integer" },
+            { "ma", "integer" },
+            { "ca", "integer" },
+            { "ta", "integer" },
+            { "n", "integer" },
+        }
+    }
+}
 
 actions[v_line] = function(head,setting)
  -- local attribute = fonts.specifiers.contextnumber(setting.feature) -- was experimental
@@ -262,7 +279,7 @@ end
 
 -- goodie
 
-function commands.applytofirstcharacter(box,what)
+local function applytofirstcharacter(box,what)
     local tbox = getbox(box) -- assumes hlist
     local list = getlist(tbox)
     local done = nil
@@ -283,3 +300,9 @@ function commands.applytofirstcharacter(box,what)
         end
     end
 end
+
+implement {
+    name      = "applytofirstcharacter",
+    actions   = applytofirstcharacter,
+    arguments = { "integer", "string" }
+}

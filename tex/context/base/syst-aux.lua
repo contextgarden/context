@@ -59,7 +59,7 @@ local ctx_doifelse = commands.doifelse
 implement {
     name      = "doifelsefirstchar",
     arguments = { "string", "string" },
-    actions   = function(str)
+    actions   = function(str,chr)
         ctx_doifelse(lpegmatch(pattern,str) == chr)
     end
 }
@@ -67,7 +67,7 @@ implement {
 implement {
     name      = "getsubstring",
     arguments = { "string", "string", "string" },
-    actions   = function(str)
+    actions   = function(str,first,last)
         context(utfsub(str,tonumber(first),tonumber(last)))
     end
 }
@@ -193,6 +193,12 @@ implement { name = "strip", arguments = "string", actions = { string.strip, cont
 -- }
 
 -- where, not really the best spot for this:
+
+implement {
+    name      = "immediatemessage",
+    arguments = { "'message'", "string" },
+    actions   = logs.status
+}
 
 implement {
     name    = "resettimer",

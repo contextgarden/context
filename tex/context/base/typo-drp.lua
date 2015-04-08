@@ -91,7 +91,27 @@ function initials.set(specification)
     texsetattribute(a_initial,1)
 end
 
-commands.setinitial = initials.set
+interfaces.implement {
+    name      = "setinitial",
+    actions   = initials.set,
+    arguments = {
+        {
+            { "location" },
+            { "enabled", "boolean" },
+            { "method" },
+            { "distance" ,"dimen" },
+            { "hoffset" ,"dimen" },
+            { "voffset" ,"dimen" },
+            { "font", "integer" },
+            { "dynamic", "integer" },
+            { "ca", "integer" },
+            { "ma", "integer" },
+            { "ta", "integer" },
+            { "n", "integer" },
+            { "m", "integer" },
+        }
+    }
+}
 
 -- dropped caps experiment (will be done properly when luatex
 -- stores the state in the local par node) .. btw, search still

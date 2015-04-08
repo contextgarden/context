@@ -222,11 +222,11 @@
 
 \setvalue{\??mathstackersalternative\v!mp}%
   {\hbox\bgroup %  todo: add code key + tag
-   \edef\overlaywidth    {\the\scratchwidth}%
-   \edef\overlayheight   {\the\dimexpr\mathstackersparameter\c!mpheight}%
-   \edef\overlaydepth    {\the\dimexpr\mathstackersparameter\c!mpdepth}%
-   \edef\overlayoffset   {\the\dimexpr\mathstackersparameter\c!mpoffset}%
-   \edef\overlaylinewidth{\the\linewidth}%
+   \d_overlay_width    \scratchwidth
+   \d_overlay_height   \dimexpr\mathstackersparameter\c!mpheight
+   \d_overlay_depth    \dimexpr\mathstackersparameter\c!mpdepth
+   \d_overlay_offset   \dimexpr\mathstackersparameter\c!mpoffset
+   \d_overlay_linewidth\linewidth
    \edef\overlaylinecolor{\mathstackersparameter\c!color}%
    \edef\p_mp{\mathstackersparameter\c!mp}%
    \uniqueMPgraphic{\p_mp}%

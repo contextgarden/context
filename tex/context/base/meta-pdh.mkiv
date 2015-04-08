@@ -374,17 +374,17 @@
 %D
 %D \startbuffer
 %D \startuniqueMPgraphic{CircularShade}
-%D   path  p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+%D   path  p ; p := unitsquare xscaled OverlayWidth yscaled OverlayHeight ;
 %D   circular_shade(p,0,.2red,.9red) ;
 %D \stopuniqueMPgraphic
 %D
 %D \startuniqueMPgraphic{LinearShade}
-%D   path  p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+%D   path  p ; p := unitsquare xscaled OverlayWidth yscaled OverlayHeight ;
 %D   linear_shade(p,0,.2blue,.9blue) ;
 %D \stopuniqueMPgraphic
 %D
 %D \startuniqueMPgraphic{DuotoneShade}
-%D   path  p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+%D   path  p ; p := unitsquare xscaled OverlayWidth yscaled OverlayHeight ;
 %D   linear_shade(p,2,.5green,.5red) ;
 %D \stopuniqueMPgraphic
 %D \stopbuffer
@@ -429,8 +429,8 @@
 %D
 %D \def\SomeShade#1#2#3#4#5%
 %D   {\startuniqueMPgraphic{Shade-#1}
-%D      width := \overlaywidth ;
-%D      height := \overlayheight ;
+%D      width := OverlayWidth ;
+%D      height := OverlayHeight ;
 %D      path p ; p := unitsquare xscaled width yscaled height ;
 %D      #2_shade(p,#3,#4,#5) ;
 %D    \stopuniqueMPgraphic

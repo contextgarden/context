@@ -29,14 +29,9 @@ visualizers                = visualizers or { }
 local specifications       = allocate()
 visualizers.specifications = specifications
 
-local scanners             = tokens.scanners
-local scanstring           = scanners.string
-
-local compilescanner       = tokens.compile
-local scanners             = interfaces.scanners
-
 local context              = context
 local commands             = commands
+local implement            = interfaces.implement
 
 local tabtospace           = utilities.strings.tabtospace
 local variables            = interfaces.variables
@@ -324,6 +319,10 @@ function visualizers.register(name,specification)
         specification.direct  = parser
     end
     return specification
+end
+
+function visualizers.getspecification(name)
+    return specifications[lower(name)]
 end
 
 local escapepatterns       = allocate()
@@ -708,14 +707,6 @@ end
 
 local getlines = buffers.getlines
 
--- interface
-
-function commands.doifelsevisualizer(name)
-    commands.doifelse(specifications[lower(name)])
-end
-
-commands.loadvisualizer = visualizers.load
-
 -- local decodecomment = resolvers.macros.decodecomment -- experiment
 
 local function typebuffer(settings)
@@ -741,9 +732,6 @@ local function processbuffer(settings)
         end
     end
 end
-
-commands.typebuffer    = typebuffer
-commands.processbuffer = processbuffer
 
 -- not really buffers but it's closely related
 
@@ -805,32 +793,8 @@ local function typefile(settings)
     end
 end
 
-commands.typestring = typestring
-commands.typefile   = typefile
-
--- scanners.typenormal = function()
---     typestring {
---         nature  = "inline",
---         data    = scanstring(),
---         tab     = scanstring(),
---         method  = scanstring(),
---         compact = scanstring(),
---         escape  = scanstring(),
---     }
--- end
-
--- scanners.typenested = function()
---     typestring {
---         nature = "inline",
---         method = "nested",
---         data   = scanstring(),
---         tab    = scanstring(),
---         option = scanstring(),
---         escape = scanstring(),
---     }
--- end
-
-scanners.type = compilescanner {
+implement {
+    name      = "type",
     actions   = typestring,
     arguments = {
         {
@@ -845,7 +809,8 @@ scanners.type = compilescanner {
     }
 }
 
-scanners.processbuffer = compilescanner {
+implement {
+    name      = "processbuffer",
     actions   = processbuffer,
     arguments = {
         {
@@ -858,23 +823,48 @@ scanners.processbuffer = compilescanner {
     }
 }
 
-local get_typing = compilescanner {
-    {
-         { "name" },
-         { "strip" },
-         { "range" },
-         { "regime" },
-         { "tab" },
-         { "method" },
-         { "escape" },
-         { "nature" },
+implement {
+    name    = "typebuffer",
+    actions = typebuffer,
+    arguments = {
+        {
+             { "name" },
+             { "strip" },
+             { "range" },
+             { "regime" },
+             { "tab" },
+             { "method" },
+             { "escape" },
+             { "nature" },
+        }
     }
 }
 
-scanners.typebuffer = function()
-    typebuffer(get_typing())
-end
+implement {
+    name    = "typefile",
+    actions = typefile,
+    arguments = {
+        {
+             { "name" },
+             { "strip" },
+             { "range" },
+             { "regime" },
+             { "tab" },
+             { "method" },
+             { "escape" },
+             { "nature" },
+        }
+    }
+}
 
-scanners.typefile = function()
-    typefile(get_typing())
-end
+implement {
+    name      = "doifelsevisualizer",
+    actions   = { visualizers.getspecification, commands.doifelse },
+    arguments = "string"
+}
+
+implement {
+    name      = "loadvisualizer",
+    actions   = visualizers.load,
+    arguments = "string"
+}

@@ -11,9 +11,13 @@ local utfchar = utf.char
 -- Beware, initializing unicodechar happens at first usage and takes
 -- 0.05 -- 0.1 second (lots of function calls).
 
-function commands.unicodechar(asked)
-    local n = characters.unicodechar(asked)
-    if n then
-        context(utfchar(n))
+interfaces.implement {
+    name      = "unicodechar",
+    arguments = "string",
+    actions   = function(asked)
+        local n = characters.unicodechar(asked)
+        if n then
+            context(utfchar(n))
+        end
     end
-end
+}

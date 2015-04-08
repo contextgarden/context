@@ -38,8 +38,8 @@
 \unexpanded\def\setvalidparameterkeys{\dodoubleargument\mult_checkers_set_valid_parameter_keys}
 \unexpanded\def\addvalidparameterkeys{\dodoubleargument\mult_checkers_add_valid_parameter_keys}
 
-\def\mult_checkers_set_valid_parameter_keys[#1][#2]{\ctxlua{interfaces.setvalidkeys("#1",\!!bs#2\!!es)}}
-\def\mult_checkers_add_valid_parameter_keys[#1][#2]{\ctxlua{interfaces.addvalidkeys("#1",\!!bs#2\!!es)}}
+\def\mult_checkers_set_valid_parameter_keys[#1][#2]{\clf_setvalidinterfacekeys{#1}{#2}}
+\def\mult_checkers_add_valid_parameter_keys[#1][#2]{\clf_addvalidinterfacekeys{#1}{#2}}
 
 \def\mult_checkers_get_checked_parameters_yes[#1]#2[#3]#4[#5%
   {\if\noexpand#5]%
@@ -50,8 +50,7 @@
    \fi{#1}{#3}#5}
 
 \def\mult_checkers_get_checked_parameters_yes_indeed#1#2#3]%
- %{\ctxlua{_igcp_("#1","#2",\!!bs\detokenize{#3}\!!es)}}
-  {\ctxlua{interfaces.getcheckedparameters("#1","#2",\!!bs\detokenize{#3}\!!es)}}
+  {\clf_getcheckedinterfaceparameters{#1}{#2}{\detokenize{#3}}}
 
 \def\mult_checkers_get_checked_parameters_nop[#1]#2[#3]#4[#5%
   {\if\noexpand#5]%

@@ -155,12 +155,12 @@
    \global\t_meta_inclusions\expandafter{\the\t_meta_inclusions#2}%
    \let\currentMPinstance\m_meta_saved_instance}
 
-\def\meta_preset_definitions
-  {\edef\overlaywidth    {\overlaywidth    \space}%
-   \edef\overlayheight   {\overlayheight   \space}%
-   \edef\overlaylinewidth{\overlaylinewidth\space}%
-   \edef\currentwidth    {\the\hsize       \space}%
-   \edef\currentheight   {\the\vsize       \space}}
+% \def\meta_preset_definitions
+%   {\edef\overlaywidth    {\overlaywidth    \space}%
+%    \edef\overlayheight   {\overlayheight   \space}%
+%    \edef\overlaylinewidth{\overlaylinewidth\space}}
+
+\let\meta_preset_definitions\relax
 
 \installcommandhandler \??mpinstance {MPinstance} \??mpinstance
 
@@ -426,8 +426,10 @@
 
 \unexpanded\def\meta_grab_clip_path#1#2#3#4% #4 is alternative (called in backend code)
   {\begingroup
-   \edef\width {#2\space}\let\overlaywidth \width
-   \edef\height{#3\space}\let\overlayheight\height
+%    \edef\width {#2\space}\let\overlaywidth \width
+%    \edef\height{#3\space}\let\overlayheight\height
+   \d_overlay_width #2\onebasepoint\edef\width {\the\d_overlay_width \space}%
+   \d_overlay_height#3\onebasepoint\edef\height{\the\d_overlay_height\space}%
    \edef\currentMPclip{#1}%
    \ifcsname\??mpclip\currentMPclip\endcsname
      \meta_grab_clip_path_indeed
@@ -459,7 +461,7 @@
   {\dontleavehmode
    \begingroup
    \definedfont[#1]%
-   \hskip\cldcontext{fonts.hashes.parameters[font.current()].designsize}\scaledpoint\relax
+   \hskip\clf_currentdesignsize\scaledpoint\relax
    \endgroup}
 
 \definefontsynonym[MetafunDefault][Regular*default]
@@ -467,7 +469,7 @@
 \startMPinitializations % scale is not yet ok
     defaultfont:="\truefontname{MetafunDefault}";
   % defaultscale:=\the\bodyfontsize/10pt; % only when hard coded 10pt
-    defaultscale:=1;
+  % defaultscale:=1;
 \stopMPinitializations
 
 % watch out, this is a type1 font because mp can only handle 8 bit fonts
@@ -600,7 +602,7 @@
 
 \def\meta_prepare_variable_yes
   {\defconvertedcommand\ascii\m_meta_current_variable % otherwise problems
-   \doifcolorelse \ascii                              % with 2\bodyfontsize
+   \doifelsecolor \ascii                              % with 2\bodyfontsize
      {\meta_prepare_variable_color}
      {\begingroup
       \setbox\b_meta_variable_box\hbox{\scratchdimen\m_meta_current_variable sp}%
@@ -629,7 +631,13 @@
 %D \stoptyping
 
 \def\overlaystamp % watch the \MPcolor, since colors can be redefined
-  {\overlaywidth:\overlayheight:\overlaydepth:\overlayoffset:\overlaylinewidth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
+  {\the\d_overlay_width    :%
+   \the\d_overlay_height   :%
+   \the\d_overlay_depth    :%
+   \the\d_overlay_offset   :%
+   \the\d_overlay_linewidth:%
+   \MPcolor\overlaycolor   :%  % todo, expand once \m_overlaycolor
+   \MPcolor\overlaylinecolor}  % todo, expand once \m_overlaylinecolor
 
 %D A better approach is to let additional variables play a role
 %D in determining the uniqueness. In the next macro, the
@@ -817,10 +825,20 @@
 %D
 %D Experimental.
 
-\def\m_meta_page_prefix{\doifoddpageelse oe}
+\def\m_meta_page_prefix{\doifelseoddpage oe}
+
+% \def\overlaypagestamp
+%   {\m_meta_page_prefix:\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
 
 \def\overlaypagestamp
-  {\m_meta_page_prefix:\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
+  {\m_meta_page_prefix     :%
+   \the\d_overlay_width    :%
+   \the\d_overlay_height   :%
+   \the\d_overlay_depth    :%
+   \the\d_overlay_offset   :%
+   \the\d_overlay_linewidth:%
+   \MPcolor\overlaycolor   :%
+   \MPcolor\overlaylinecolor}
 
 \unexpanded\def\startuniqueMPpagegraphic
   {\dodoublegroupempty\meta_start_unique_page_graphic}
@@ -884,12 +902,21 @@
 
 % makempy.registerfile(filename)
 
-\startMPinitializations
-    boolean collapse_data; collapse_data:=true;
-    def data_mpd_file = "\MPdataMPDfile" enddef ;
-    def data_mpo_file = "\MPdataMPOfile" enddef ;
-    def data_mpy_file = "\MPdataMPYfile" enddef ;
-\stopMPinitializations
+% % hm. extensions get expanded so the wrong names then end up in format
+%
+% \startMPinitializations
+%     boolean collapse_data; collapse_data:=true ;  % will be obsolete
+%     def data_mpd_file = "\MPdataMPDfile" enddef ; % will go via lua
+%     def data_mpo_file = "\MPdataMPOfile" enddef ;
+%     def data_mpy_file = "\MPdataMPYfile" enddef ;
+% \stopMPinitializations
+
+\startMPextensions
+    boolean collapse_data; collapse_data:=true ;  % will be obsolete
+    def data_mpd_file = "\noexpand\MPdataMPDfile" enddef ; % will go via lua
+    def data_mpo_file = "\noexpand\MPdataMPOfile" enddef ;
+    def data_mpy_file = "\noexpand\MPdataMPYfile" enddef ;
+\stopMPextensions
 
 \unexpanded\def\getMPdata
   {\let\MPdata\secondoftwoarguments
@@ -1113,45 +1140,61 @@
 
 % \setupcolors[state=stop,conversion=never] % quite tricky ... type mismatch
 
-% A dirty trick, ** in colo-ini.lua (mpcolor).
-
-\def\m_meta_colo_initializations{% no vardef, goes wrong with spot colors
-    def OverlayLineColor=\MPcolor{\overlaylinecolor} enddef;
-    def OverlayColor=\MPcolor{\overlaycolor} enddef;
-}
-
-\startMPextensions
-    color OverlayColor,OverlayLineColor;
-\stopMPextensions
+% \startMPextensions
+%     color OverlayColor,OverlayLineColor;
+% \stopMPextensions
 
 \startMPinitializations
     CurrentLayout:="\currentlayout";
-    OverlayWidth:=\overlaywidth;
-    OverlayHeight:=\overlayheight;
-    OverlayDepth:=\overlaydepth;
-    OverlayLineWidth:=\overlaylinewidth;
-    OverlayOffset:=\overlayoffset;
-    %
-    \m_meta_colo_initializations
-    %
-    BaseLineSkip:=\the\baselineskip;
-    LineHeight:=\the\baselineskip;
-    BodyFontSize:=\the\bodyfontsize;
-    %
-    TopSkip:=\the\topskip;
-    StrutHeight:=\strutheight;
-    StrutDepth:=\strutdepth;
-    %
-    CurrentWidth:=\the\hsize;
-    CurrentHeight:=\the\vsize;
-    %
-    EmWidth:=\the\emwidth;
-    ExHeight:=\the\exheight;
-    %
-    PageNumber:=\the\pageno;
-    RealPageNumber:=\the\realpageno;
-    LastPageNumber:= \lastpage;
 \stopMPinitializations
+
+% \startMPinitializations
+%     OverlayWidth:=\overlaywidth;
+%     OverlayHeight:=\overlayheight;
+%     OverlayDepth:=\overlaydepth;
+%     OverlayLineWidth:=\overlaylinewidth;
+%     OverlayOffset:=\overlayoffset;
+% \stopMPinitializations
+
+% A dirty trick, ** in colo-ini.lua (mpcolor). We cannot use a vardef, because
+% that fails with spot colors.
+
+\startMPinitializations
+    def OverlayLineColor=\ifx\overlaylinecolor\empty black \else\MPcolor{\overlaylinecolor} \fi enddef;
+    def OverlayColor    =\ifx\overlaycolor    \empty black \else\MPcolor{\overlaycolor}     \fi enddef;
+\stopMPinitializations
+
+% \newcount\c_overlay_colormodel
+% \newcount\c_overlay_color
+% \newcount\c_overlay_transparency
+% \newcount\c_overlay_linecolor
+% \newcount\c_overlay_linetransparency
+
+% \appendtoks
+%     \c_overlay_colormodel      \attribute\colormodelattribute
+%     \c_overlay_color           \colo_helpers_inherited_current_ca\overlaycolor
+%     \c_overlay_transparency    \colo_helpers_inherited_current_ta\overlaycolor
+%     \c_overlay_linecolor       \colo_helpers_inherited_current_ca\overlaylinecolor
+%     \c_overlay_linetransparency\colo_helpers_inherited_current_ta\overlaylinecolor
+% \to \everyMPgraphic
+
+% \startMPinitializations
+%     BaseLineSkip:=\the\baselineskip;
+%     LineHeight:=\the\baselineskip;
+%     BodyFontSize:=\the\bodyfontsize;
+%     %
+%     TopSkip:=\the\topskip;
+%     StrutHeight:=\strutheight;
+%     StrutDepth:=\strutdepth;
+%     %
+%     CurrentWidth:=\the\hsize;
+%     CurrentHeight:=\the\vsize;
+%     HSize:=\the\hsize ;
+%     VSize:=\the\vsize ;
+%     %
+%     EmWidth:=\the\emwidth;
+%     ExHeight:=\the\exheight;
+% \stopMPinitializations
 
 \appendtoks
     \disablediscretionaries
@@ -1182,11 +1225,6 @@
     \let \} \letterclosebrace
 \to \everyMPgraphic
 
-\startMPinitializations
-    prologues:=0;
-    mpprocset:=1;
-\stopMPinitializations
-
 %D \macros
 %D   {PDFMPformoffset}
 %D
@@ -1213,21 +1251,19 @@
     enddef;
 \stopMPextensions
 
-\startMPinitializations
-    HSize:=\the\hsize ;
-    VSize:=\the\vsize ;
-\stopMPinitializations
-
 \startMPextensions
     vardef ForegroundBox =
         unitsquare xysized(HSize,VSize)
     enddef ;
-    PageFraction := 1 ;
 \stopMPextensions
 
-\startMPinitializations
-    PageFraction := if \lastpage>1: (\realfolio-1)/(\lastpage-1) else: 1 fi ;
-\stopMPinitializations
+% \startMPextensions
+%     PageFraction := 1 ;
+% \stopMPextensions
+
+% \startMPinitializations
+%     PageFraction := if \lastpage>1: (\realfolio-1)/(\lastpage-1) else: 1 fi ;
+% \stopMPinitializations
 
 \startMPdefinitions {metapost}
     if unknown context_bare : input mp-bare.mpiv ; fi ;
@@ -1412,9 +1448,9 @@
         \dogetattribute{transparency}\relax
 \to \everyMPgraphic
 
-\startMPinitializations
-    defaultcolormodel := \ifcase\MPcolormethod1\or1\or3\else3\fi;
-\stopMPinitializations
+% \startMPinitializations
+%     defaultcolormodel := \ifcase\MPcolormethod1\or1\or3\else3\fi;
+% \stopMPinitializations
 
 %D macros
 %D  {mprunvar,mpruntab,mprunset}
@@ -1511,7 +1547,7 @@
     \edef\p_mpy{\directMPgraphicsparameter{mpy}}%
     \ifx\p_mpy\empty \else
       \let\MPdataMPYfile\p_mpy
-      \ctxlua{metapost.makempy.registerfile("\p_mpy")}%
+      \clf_registermpyfile{\p_mpy}%
     \fi
 \to \everysetupMPgraphics
 

@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['lxml-tex'] = {
 -- be an cldf-xml helper library.
 
 local utfchar = utf.char
-local concat, insert, remove = table.concat, table.insert, table.remove
+local concat, insert, remove, sortedkeys = table.concat, table.insert, table.remove, table.sortedkeys
 local format, sub, gsub, find, gmatch, match = string.format, string.sub, string.gsub, string.find, string.gmatch, string.match
 local type, next, tonumber, tostring, select = type, next, tonumber, tostring, select
 local lpegmatch = lpeg.match
@@ -47,7 +47,7 @@ local xmlunprivatized   = xml.unprivatized
 local xmlprivatetoken   = xml.privatetoken
 local xmlprivatecodes   = xml.privatecodes
 local xmlstripelement   = xml.stripelement
-local xmlinclusion      = xml.inclusio
+local xmlinclusion      = xml.inclusion
 local xmlinclusions     = xml.inclusions
 local xmlcontent        = xml.content
 
@@ -66,13 +66,14 @@ local resolveprefix     = resolvers.resolve
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
 
-local trace_setups      = false  trackers.register("lxml.setups",   function(v) trace_setups   = v end)
-local trace_loading     = false  trackers.register("lxml.loading",  function(v) trace_loading  = v end)
-local trace_access      = false  trackers.register("lxml.access",   function(v) trace_access   = v end)
-local trace_comments    = false  trackers.register("lxml.comments", function(v) trace_comments = v end)
-local trace_entities    = false  trackers.register("xml.entities",  function(v) trace_entities = v end)
+local trace_setups      = false  trackers.register("lxml.setups",   function(v) trace_setups    = v end)
+local trace_loading     = false  trackers.register("lxml.loading",  function(v) trace_loading   = v end)
+local trace_access      = false  trackers.register("lxml.access",   function(v) trace_access    = v end)
+local trace_comments    = false  trackers.register("lxml.comments", function(v) trace_comments  = v end)
+local trace_entities    = false  trackers.register("xml.entities",  function(v) trace_entities  = v end)
+local trace_selectors   = false  trackers.register("lxml.selectors",function(v) trace_selectors = v end)
 
-local report_lxml       = logs.reporter("xml","tex")
+local report_lxml       = logs.reporter("lxml","tex")
 local report_xml        = logs.reporter("xml","tex")
 
 local forceraw          = false
@@ -438,7 +439,7 @@ function lxml.convert(id,data,entities,compress,currentresource)
 end
 
 function lxml.load(id,filename,compress,entities)
-    filename = commands.preparedfile(filename) -- not commands!
+    filename = ctxrunner.preparedfile(filename)
     if trace_loading then
         report_lxml("loading file %a as %a",filename,id)
     end
@@ -1904,7 +1905,8 @@ function lxml.applyselectors(id)
         local dt   = e.dt
         local ndt  = #dt
         local done = false
-        for i=1,ndt do
+        local i = 1
+        while i <= ndt do
             local dti = dt[i]
             if type(dti) == "table" then
                 if dti.tg == "@pi@" then
@@ -1916,30 +1918,39 @@ function lxml.applyselectors(id)
                             local okay = false
                             for k, v in next, permitted do
                                 if categories[k] then
-                                    okay = true
+                                    okay = k
                                     break
                                 end
                             end
-                            if not okay then
-                                for j=i,ndt do
-                                    local dtj = dt[j]
-                                    if type(dtj) == "table" then
-                                        local tg = dtj.tg
-                                        if tg == "@pi@" then
-                                            local text = dtj.dt[1]
-                                            local what, rest = lpegmatch(pattern,text)
-                                            if what == "select" then
-                                                local categories = options_to_hash(rest)
-                                                if categories["end"] then
-                                                    break
-                                                else
-                                                    -- error
-                                                end
+                            if not trace_selectors then
+                                -- skip
+                            elseif okay then
+                                report_lxml("accepting selector: %s",okay)
+                            else
+                                categories.begin = false
+                                report_lxml("rejecting selector: % t",sortedkeys(categories))
+                            end
+                            for j=i,ndt do
+                                local dtj = dt[j]
+                                if type(dtj) == "table" then
+                                    local tg = dtj.tg
+                                    if tg == "@pi@" then
+                                        local text = dtj.dt[1]
+                                        local what, rest = lpegmatch(pattern,text)
+                                        if what == "select" then
+                                            local categories = options_to_hash(rest)
+                                            if categories["end"] then
+                                                i = j
+                                                break
+                                            else
+                                                -- error
                                             end
-                                        else
-                                            dtj.tg = "@cm@"
                                         end
+                                    elseif not okay then
+                                        dtj.tg = "@cm@"
                                     end
+                                else
+--                                     dt[j] = "" -- okay ?
                                 end
                             end
                         end
@@ -1949,9 +1960,17 @@ function lxml.applyselectors(id)
                             local okay = false
                             for k, v in next, permitted do
                                 if categories[k] then
-                                    okay = true
+                                    okay = k
                                     break
                                 end
+                            end
+                            if not trace_selectors then
+                                -- skip
+                            elseif okay then
+                                report_lxml("accepting include: %s",okay)
+                            else
+                                categories.begin = false
+                                report_lxml("rejecting include: % t",sortedkeys(categories))
                             end
                             if okay then
                                 for j=i,ndt do
@@ -1965,11 +1984,12 @@ function lxml.applyselectors(id)
                                             element.__p__ = dt -- needs checking
                                             done = true
                                         elseif tg == "@pi@" then
-                                            local text = dti.dt[1]
+                                            local text = dtj.dt[1]
                                             local what, rest = lpegmatch(pattern,text)
                                             if what == "include" then
                                                 local categories = options_to_hash(rest)
                                                 if categories["end"] then
+                                                    i = j
                                                     break
                                                 else
                                                     -- error
@@ -1978,7 +1998,6 @@ function lxml.applyselectors(id)
                                         end
                                     end
                                 end
-                                break
                             end
                         end
                     else
@@ -1990,6 +2009,7 @@ function lxml.applyselectors(id)
                     xml.reindex(dt)
                 end
             end
+            i = i + 1
         end
     end
     xmlwithelements(root,filter)

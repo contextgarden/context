@@ -56,3 +56,11 @@ function nodes.handlers.graphicvadjust(head,groupcode) -- we can make an actionc
         return head, false
     end
 end
+
+interfaces.implement {
+    name     = "enablegraphicvadjust",
+    onlyonce = true,
+    actions  = function()
+        nodes.tasks.enableaction("finalizers","nodes.handlers.graphicvadjust")
+    end
+}

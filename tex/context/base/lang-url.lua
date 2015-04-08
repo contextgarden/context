@@ -8,10 +8,14 @@ if not modules then modules = { } end modules ['lang-url'] = {
 
 local utfcharacters, utfvalues, utfbyte, utfchar = utf.characters, utf.values, utf.byte, utf.char
 
-commands        = commands or { }
 local commands  = commands
+local context   = context
 
-context         = context
+local implement = interfaces.implement
+
+local variables = interfaces.variables
+local v_before  = variables.before
+local v_after   = variables.after
 
 local is_letter = characters.is_letter
 
@@ -129,10 +133,10 @@ local function action(hyphenatedurl,str,left,right,disc)
             ctx_d(utfbyte(s))
         else
             local c = characters[s]
-            if c == 1 then
+            if c == v_before then
                 p = false
                 ctx_b(utfbyte(s))
-            elseif c == 2 then
+            elseif c == v_after then
                 p = false
                 ctx_a(utfbyte(s))
             else
@@ -162,8 +166,21 @@ table.setmetatablecall(hyphenatedurl,action) -- watch out: a caller
 
 function hyphenatedurl.setcharacters(str,value) -- 1, 2 == before, after
     for s in utfcharacters(str) do
-        characters[s] = value or 1
+        characters[s] = value or v_before
     end
 end
 
 -- .hyphenatedurl.setcharacters("')]}",2)
+
+implement {
+    name      = "sethyphenatedurlcharacters",
+    actions   = hyphenatedurl.setcharacters,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "hyphenatedurl",
+    scope     = "private",
+    actions   = function(...) action(hyphenatedurl,...) end,
+    arguments = { "string", "integer", "integer", "string" }
+}

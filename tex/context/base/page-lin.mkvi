@@ -74,24 +74,33 @@
 \unexpanded\def\page_postprocessors_linenumbers_column #tag{\page_lines_add_numbers_to_box{#tag}\currentcolumn\nofcolumns\zerocount}
 
 \def\page_lines_parameters_regular
-  {continue = "\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi",
-   start    = \number\linenumberingparameter\c!start,
-   step     = \number\linenumberingparameter\c!step,
-   method   = "\linenumberingparameter\c!method",
-   tag      = "\currentlinenumbering"}
+  {continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+   start    \linenumberingparameter\c!start
+   step     \linenumberingparameter\c!step
+   method   {\linenumberingparameter\c!method}
+   tag      {\currentlinenumbering}}
 
 \def\page_lines_parameters_update
-  {continue = "\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi"}
+  {continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}}
 
 \def\page_lines_start_define
-  {\setxvalue{\??linenumberinginstance\currentlinenumbering}{\ctxcommand{registerlinenumbering({\page_lines_parameters_regular})}}}
+  {\setxvalue{\??linenumberinginstance\currentlinenumbering}%
+     {\clf_registerlinenumbering
+        \page_lines_parameters_regular
+     }}
 
 \def\page_lines_start_update
-  {\ctxcommand{setuplinenumbering(\csname\??linenumberinginstance\currentlinenumbering\endcsname,{\page_lines_parameters_update})}}
+  {\clf_setuplinenumbering
+     \csname\??linenumberinginstance\currentlinenumbering\endcsname
+     {\page_lines_parameters_update}%
+   \relax}
 
 \def\page_lines_setup
   {\ifcsname \??linenumberinginstance\currentlinenumbering\endcsname
-     \ctxcommand{setuplinenumbering(\csname\??linenumberinginstance\currentlinenumbering\endcsname,{\page_lines_parameters_regular})}%
+     \clf_setuplinenumbering
+       \csname\??linenumberinginstance\currentlinenumbering\endcsname
+       {\page_lines_parameters_regular}%
+     \relax
    \fi}
 
 % we could make this a bit more efficient by putting the end reference
@@ -302,8 +311,14 @@
    \setbox\b_page_lines_scratch\vbox
      {\forgetall
       \offinterlineskip
-      \ctxcommand{linenumbersstageone(\number\b_page_lines_number,\ifcase\c_page_lines_nesting false\else true\fi)}}%
-   \ctxcommand{linenumbersstagetwo(\number\b_page_lines_number,\number\b_page_lines_scratch)}% can move to lua code
+      \clf_linenumbersstageone
+        \b_page_lines_number
+        \ifcase\c_page_lines_nesting false\else true\fi
+      \relax}%
+   \clf_linenumbersstagetwo
+     \b_page_lines_number
+     \b_page_lines_scratch
+   \fi
    \egroup}
 
 \let\page_lines_make_number_indeed\relax
@@ -322,8 +337,14 @@
    \setbox\b_page_lines_scratch\vbox
      {\forgetall
       \offinterlineskip
-      \ctxcommand{linenumbersstageone(\number\b_page_lines_number,\ifcase\c_page_lines_nesting false\else true\fi)}}%
-   \ctxcommand{linenumbersstagetwo(\number\b_page_lines_number,\number\b_page_lines_scratch)}% can move to lua code
+      \clf_linenumbersstageone
+        \b_page_lines_number
+        \ifcase\c_page_lines_nesting false\else true\fi
+      \relax}%
+   \clf_linenumbersstagetwo
+     \b_page_lines_number
+     \b_page_lines_scratch
+   \relax
    \egroup}
 
 \def\page_lines_make_number#tag#mode#linenumber#shift#width#leftskip#dir% beware, one needs so compensate for this in the \hsize

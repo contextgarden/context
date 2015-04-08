@@ -54,7 +54,7 @@
 
 \def\buff_parallel_define[#name][#instances]%
   {\buff_parallel_define_saved[#name][\c!list={#instances}]% list is internal
-   \ctxcommand{defineparallel("#name","#instances")}%
+   \clf_defineparallel{#name}{#instances}%
    \expandafter\newtoks\csname\??parallelhandler#name\endcsname
    \processcommacommand[#instances]{\buff_parallel_define_instance{#name}}%
    \setuevalue{\e!start#name}{\buff_parallel_start{#name}}%
@@ -85,13 +85,17 @@
 \unexpanded\def\buff_parallel_start#name%
   {\pushmacro\currentparallel
    \edef\currentparallel{#name}%
-   \ctxcommand{nextparallel("\currentparallel")}}
+   \clf_nextparallel{\currentparallel}}
 
 \unexpanded\def\buff_parallel_stop
   {\popmacro\currentparallel}
 
 \unexpanded\def\buff_parallel_save#instance% defined moet ook aan de lua kant kunnen
-  {\ctxcommand{saveparallel("\currentparallel","#instance",buffers.raw("\thedefinedbuffer{#instance}"))}}
+  {\clf_saveparallel
+     {\currentparallel}%
+     {#instance},
+     {\thedefinedbuffer{#instance}}%
+   \relax}
 
 \unexpanded\def\placeparallel
   {\dotripleempty\buff_parallel_place}
@@ -100,12 +104,16 @@
   {\begingroup
    \edef\currentparallel{#name}%
    \setupcurrentparallel[#settings]%
-   \ctxcommand{placeparallel("\currentparallel","#instance",{
-    % setups    = "\parallelparameter\c!setups",
-      start     = "\parallelparameter\c!start",
-      n         = "\parallelparameter\c!n",
-      criterium = "\parallelparameter\c!criterium",
-   })}%
+   \clf_placeparallel
+     {\currentparallel}%
+     {#instance}%
+     {%
+      % setups    {\parallelparameter\c!setups}%
+        start     {\parallelparameter\c!start}%
+        n         {\parallelparameter\c!n}%
+        criterium {\parallelparameter\c!criterium}%
+     }%
+   \relax
    \endgroup}
 
 \def\doflushparallel#instance#status#line#label#content% called at lua end
@@ -129,7 +137,7 @@
   {\directsetup{\namedparallelparameter{\currentparallel:\currentparallelinstance}\c!setups}}
 
 \unexpanded\def\doifelseparallel#name#instance%
-  {\ctxcommand{doifelseparallel("#name","#instance")}}
+  {\clf_doifelseparallel{#name}{#instance}}
 
 \let\doifparallelelse\doifelseparallel
 
@@ -137,7 +145,7 @@
   {\dodoubleempty\buff_parallel_reset}
 
 \def\buff_parallel_reset[#name][#instance]%
-  {\ctxcommand{resetparallel("#name","#instance"))}}
+  {\clf_resetparallel{#name}{#instance}}
 
 \startsetups parallel:place:default
     \hangafter\plusone

@@ -22,7 +22,7 @@
 \defineoverlay[system:graphics:epdf][\directsetup{system:graphics:epdf}]
 
 \startsetups system:graphics:epdf
-    \ctxlua{figures.mergegoodies("\externalfigureparameter\c!interaction")}%
+    \clf_figure_mergegoodies{\externalfigureparameter\c!interaction}%
     \reference[\figurereference]{}% todo: dest area
 \stopsetups
 

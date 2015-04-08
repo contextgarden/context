@@ -39,7 +39,8 @@
 % \setuplayout
 %   [page]
 
-\setuppapersize[HD+]
+\setuppapersize
+  [HD+]
 
 \setuplayout
   [backspace=0pt,
@@ -102,6 +103,16 @@
    color=textcolor,
    contrastcolor=nonecolor]
 
+\def\showmathcharacterssetrange#1#2#3%
+  {\writestatus{range}{#1: \unihex{#2} - \unihex{#3}}%
+   \ifcase#2\relax
+     \definereference[#1][notpresent]%
+   \else\ifcase#3\relax
+     \definereference[#1][notpresent]%
+   \else
+     \normalexpanded{\definereference[#1][\unihex{#2}]}%
+   \fi\fi}
+
 \startinteractionmenu[bottom]
     \startgot [firstpage]       first    \stopgot \quad
     \startgot [deltapage(-100)] -100     \stopgot \quad
@@ -159,6 +170,22 @@
     \startgot [U+1D7AA] grk ss bolditalic \stopgot
 \stopinteractionmenu
 
+% \startinteractionmenu[symbols]
+%     \startgot [U+00030] dig normal       \stopgot \quad
+%     \startgot [U+1D7CE] dig bold         \stopgot \quad
+%     \startgot [U+1D7D8] dig doublestruck \stopgot \quad
+%     \startgot [U+1D7E2] dig ss normal    \stopgot \quad
+%     \startgot [U+1D7EC] dig ss bold      \stopgot \quad
+%     \startgot [U+1D7F6] dig monospace    \stopgot \quad
+%     \startgot [U+02200] operators        \stopgot \quad
+%     \startgot [U+02701] symbols a        \stopgot \quad
+%     \startgot [U+02901] symbols b        \stopgot \quad
+%     \startgot [U+02A00] supplemental     \stopgot \quad
+%     \startgot [U+027F0] arrows a         \stopgot \quad
+%     \startgot [U+02900] arrows b         \stopgot \quad
+%     \startgot [U+1F800] arrows c         \stopgot
+% \stopinteractionmenu
+
 \startinteractionmenu[symbols]
     \startgot [U+00030] dig normal       \stopgot \quad
     \startgot [U+1D7CE] dig bold         \stopgot \quad
@@ -167,12 +194,13 @@
     \startgot [U+1D7EC] dig ss bold      \stopgot \quad
     \startgot [U+1D7F6] dig monospace    \stopgot \quad
     \startgot [U+02200] operators        \stopgot \quad
-    \startgot [U+02701] symbols a        \stopgot \quad
-    \startgot [U+02901] symbols b        \stopgot \quad
-    \startgot [U+02A00] supplemental     \stopgot \quad
-    \startgot [U+027F0] arrows a         \stopgot \quad
-    \startgot [U+02900] arrows b         \stopgot \quad
-    \startgot [U+1F800] arrows c         \stopgot
+    \startgot [miscellaneousmathematicalsymbolsa] symbols a    \stopgot \quad
+    \startgot [miscellaneousmathematicalsymbolsb] symbols b    \stopgot \quad
+    \startgot [supplementalmathematicaloperators] supplemental \stopgot \quad
+    \startgot [supplementalarrowsa]               arrows a     \stopgot \quad
+    \startgot [supplementalarrowsb]               arrows b     \stopgot \quad
+    \startgot [supplementalarrowsc]               arrows c     \stopgot \quad
+    \removeunwantedspaces
 \stopinteractionmenu
 
 \defineframed
@@ -407,13 +435,17 @@
 
 % main
 
+% this is a one-run style so we can forget about an alternative
+% just assume that the previous definitions are global
+
 \unprotect
 
 \unexpanded\def\showmathfontrepertoire
   {\dosingleempty\module_math_repertoire_show}
 
-\def\module_math_repertoire_show[#1]%           % this is a one-run style so we can forget about an alternative
-  {\showmathfontcharacters[\c!alternative=,#1]} % just assume that the previous definitions are global
+\def\module_math_repertoire_show[#1]%
+  {\showmathfontcharacters[alternative=,option=,check=yes,#1]
+   \showmathfontcharacters[alternative=,option=,#1]}
 
 \protect
 

@@ -37,13 +37,9 @@
      \expandafter\spac_crlf
    \fi}
 
-\def\spac_crlf
-  {\ctxcommand{enablecrlf()}%
-   \glet\spac_crlf\spac_crlf_indeed
-   \spac_crlf}
-
-\unexpanded\def\spac_crlf_indeed
-  {\unskip
+\unexpanded\def\spac_crlf
+  {\clf_enablecrlf % once
+   \unskip
    \prewordbreak % here or in \spac_crlf_placeholder
    \spac_crlf_placeholder
    \ifcase\raggedstatus\hfil\or\or\or\hfil\fi

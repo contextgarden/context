@@ -249,7 +249,16 @@ function metapost.fonts.define(specification)
     } )
 end
 
-commands.definemetafont = metapost.fonts.define
+interfaces.implement {
+    name      = "definemetafont",
+    actions   = metapost.fonts.define,
+    arguments = {
+        {
+            { "fontname" },
+            { "filename" },
+        }
+    }
+}
 
 -- metapost.fonts.define {
 --     fontname = "bidi",

@@ -110,7 +110,12 @@
         \else
           \expandafter\newinsert\csname\??insertionnumber\currentinsertion\endcsname
           \page_inserts_synchronize_registers
-          \ctxcommand{defineinsertion("\currentinsertion",{ number = \number\currentinsertionnumber })}%
+          \clf_defineinsertion
+            {\currentinsertion}%
+            {%
+                number \currentinsertionnumber
+            }%
+          \relax
           \t_page_inserts_list\expandafter\expandafter\expandafter
             {\expandafter\the\expandafter\t_page_inserts_list
              \expandafter\page_inserts_process\csname\??insertionnumber\currentinsertion\endcsname}%
@@ -125,13 +130,16 @@
 \to \everydefineinsertion
 
 \appendtoks
-    \ctxcommand{setupinsertion("\currentinsertion",{
-        location = "\insertionparameter\c!location",
-    })}%
+    \clf_setupinsertion
+      {\currentinsertion}
+      {%
+        location {\insertionparameter\c!location}%
+      }%
+    \relax
 \to \everysetupinsertion
 
 \unexpanded\def\page_inserts_set_location#1#2% fast one
-  {\ctxcommand{setinsertionlocation("#1","#2")}}
+  {\clf_setinsertionlocation{#1}{#2}}
 
 %D Auxiliary macros:
 

@@ -17,11 +17,13 @@
 
 \unprotect
 
-\unexpanded\def\job_options_get_commandline {\ctxcommand{getcommandline()}}
-\unexpanded\def\job_options_get_ctxfile     {\ctxcommand{getctxfile()}}
-\unexpanded\def\job_options_set_modes       {\ctxcommand{setdocumentmodes()}}
-\unexpanded\def\job_options_set_modules     {\ctxcommand{setdocumentmodules()}}
-\unexpanded\def\job_options_set_environments{\ctxcommand{setdocumentenvironments()}}
-\unexpanded\def\job_options_set_filenames   {\ctxcommand{setdocumentfilenames()}}
+% called directly in core-def.mkiv
+%
+% \unexpanded\def\job_options_get_commandline {\clf_setdocumentcommandline}
+% \unexpanded\def\job_options_get_ctxfile     {\clf_setdocumentctxfile}
+% \unexpanded\def\job_options_set_modes       {\clf_setdocumentmodes}
+% \unexpanded\def\job_options_set_modules     {\clf_setdocumentmodules}
+% \unexpanded\def\job_options_set_environments{\clf_setdocumentenvironments}
+% \unexpanded\def\job_options_set_filenames   {\clf_setdocumentfilenames}
 
 \protect \endinput

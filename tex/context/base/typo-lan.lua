@@ -67,6 +67,8 @@ function frequencies.averagecharwidth(language,font)
     return frequencycache[language or "en"][font or currentfont()]
 end
 
-function commands.averagecharwidth(language,font)
-    context(frequencycache[language or "en"][font or currentfont()])
-end
+interfaces.implement {
+    name      = "averagecharwidth",
+    actions   = { frequencies.averagecharwidth, context },
+    arguments = "string"
+}

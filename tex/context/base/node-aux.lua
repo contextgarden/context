@@ -314,13 +314,17 @@ nuts .firstcharinbox = firstcharinbox
 nodes.firstcharinbox = firstcharinbox
 nodes.firstcharacter = vianuts(firstcharacter)
 
-function commands.buildtextaccent(n) -- Is this crap really used? Or was it an experiment?
-    local char = firstcharinbox(n)
-    if char > 0 then
-     -- context.accent(false,char)
-        context([[\accent%s\relax]],char)
+interfaces.implement {
+    name      = "buildtextaccent",
+    arguments = "integer",
+    actions   = function(n) -- Is this crap really used? Or was it an experiment?
+        local char = firstcharinbox(n)
+        if char > 0 then
+         -- context.accent(false,char)
+            context([[\accent%s\relax]],char)
+        end
     end
-end
+}
 
 -- this depends on fonts, so we have a funny dependency ... will be
 -- sorted out .. we could make tonodes a plugin into this

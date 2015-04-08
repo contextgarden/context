@@ -47,7 +47,7 @@ local enforced = {
     ["characters.filters.utf.decompose"] = true,
 }
 
-function characters.filters.utf.enable()
+function utffilters.enable()
     for k, v in next, enforced do
         if v then
             if reporting == "yes" then
@@ -86,3 +86,9 @@ directives.register("filters.utf.collapse",  function(v) configure("characters.f
 directives.register("filters.utf.decompose", function(v) configure("characters.filters.utf.decompose",v) end)
 
 utffilters.setskippable { "mkiv", "mkvi", "mkix", "mkxi" }
+
+interfaces.implement {
+    name     = "enableutf",
+    onlyonce = true,
+    actions  = utffilters.enable
+}

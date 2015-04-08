@@ -3083,7 +3083,7 @@
 %D
 %D A fully expandable message:
 
-\def\immediatemessage#1{\ctxlua{logs.status("message","#1")}}
+\let\immediatemessage\clf_immediatemessage % {} mandate
 
 %D \macros
 %D   {debuggerinfo}
@@ -4514,6 +4514,18 @@
   {\m_syst_helpers_handle_group_after
    \egroup}%
 
+\unexpanded\def\syst_helpers_handle_group_pickup#1#2#3% no inner group (so no kerning interference)
+  {\bgroup
+   \def\m_syst_helpers_handle_group_before{#1}%
+   \def\m_syst_helpers_handle_group_after {#2\egroup#3}%
+   \afterassignment\m_syst_helpers_handle_group_pickup_before
+   \let\next=}
+
+\def\m_syst_helpers_handle_group_pickup_before
+  {\bgroup
+   \aftergroup\m_syst_helpers_handle_group_after
+   \m_syst_helpers_handle_group_before}
+
 \unexpanded\def\syst_helpers_handle_group_nop
   {\ifnum\currentgrouptype=\semisimplegroupcode
      \expandafter\syst_helpers_handle_group_nop_a
@@ -4550,6 +4562,9 @@
 
 \unexpanded\def\simplegroupedcommand#1#2%
   {\doifelsenextbgroup{\syst_helpers_handle_group_simple{#1}{#2}}{\syst_helpers_handle_group_nop{#1}{#2}}}
+
+\unexpanded\def\pickupgroupedcommand#1#2#3%
+  {\doifelsenextbgroup{\syst_helpers_handle_group_pickup{#1}{#2}{#3}}{\syst_helpers_handle_group_nop{#1}{#2}}}
 
 %D Users should be aware of the fact that grouping can
 %D interfere with ones paragraph settings that are executed

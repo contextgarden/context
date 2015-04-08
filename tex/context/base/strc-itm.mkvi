@@ -486,8 +486,8 @@
      \csname\??itemgroupfirst#option\endcsname
    \fi}
 
-\ifdefined\dotagsetitemgroup \else \let\dotagsetitemgroup\relax \fi
-\ifdefined\dotagsetitem      \else \let\dotagsetitem     \relax \fi
+\ifdefined\dotagsetitemgroup \else \let\dotagsetitemgroup\relax             \fi
+\ifdefined\dotagsetitem      \else \let\dotagsetitem     \gobbleoneargument \fi
 
 \def\strc_itemgroups_tag_start_group
   {\dostarttaggedchained\t!itemgroup\currentparentitemgroup\??itemgroup
@@ -1046,7 +1046,7 @@
      \setfalse\c_strc_itemgroups_concat
    \fi
    \dostarttagged\t!item\empty
-   \dotagsetitem
+  % \dotagsetitem\empty
    \dostarttagged\t!itemtag\empty
    \strc_itemgroups_insert_item
    \dostoptagged
@@ -1087,18 +1087,24 @@
      \fi
    \fi
    \strc_itemgroups_start_item[#reference]%
-   \groupedcommand\strc_itemgroups_start_head_indeed\strc_itemgroups_stop_head_indeed}
+   \pickupgroupedcommand
+     \strc_itemgroups_start_head_indeed
+     \strc_itemgroups_stop_head_indeed
+     \strc_itemgroups_head_body_indeed}
 
 \unexpanded\def\stopitemgrouphead
-  {\stopitemgroupitem}
+  {\dostoptagged
+   \stopitemgroupitem}
 
 \unexpanded\def\strc_itemgroups_start_head_indeed
   {\settrue\c_strc_itemgroups_head
-   \dotagsetitem % weird place
+   \dotagsetitem\s!head% % weird place
+   \dostarttagged\t!itemhead\empty
    \useitemgroupstyleandcolor\c!headstyle\c!headcolor\ignorespaces}
 
 \unexpanded\def\strc_itemgroups_stop_head_indeed
   {\removeunwantedspaces
+   \dostoptagged
    \ifconditional\c_strc_itemgroups_text
      \space
      \ignorespaces
@@ -1107,7 +1113,10 @@
    \fi
    \strc_itemgroups_insert_breakno
    \ifconditional\c_strc_itemgroups_pack\else\strc_itemgroups_after_head_command\fi
-   \strc_itemgroups_insert_breakno
+   \strc_itemgroups_insert_breakno}
+
+\unexpanded\def\strc_itemgroups_head_body_indeed
+  {\dostarttagged\t!itembody\empty
    \noindentation}
 
 % Simple commands.
@@ -1125,30 +1134,37 @@
 \unexpanded\def\strc_itemgroups_start_symbol#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
    \settrue\c_strc_itemgroups_symbol
-   \startitemgroupitem}
+   \startitemgroupitem
+   \dotagsetitem\s!symbol}
 
 \unexpanded\def\strc_itemgroups_start_dummy
   {\strc_itemgroups_start_symbol\strut\strut} % two ?
 
 \unexpanded\def\strc_itemgroups_start_subitem
   {\settrue\c_strc_itemgroups_sub
-   \startitemgroupitem}
+   \startitemgroupitem
+   \dotagsetitem\s!sub}
 
 \unexpanded\def\strc_itemgroups_start_edge#text%
   {\strc_itemgroups_start_symbol
      {\strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting
+      \dostarttagged\t!ignore\empty % for the moment, maybe an attribute
       \hbox to \d_strc_itemgroups_list_width
-        {#text\hskip\itemgroupparameter\c!distance}}}
+        {#text\hskip\itemgroupparameter\c!distance}%
+      \dostoptagged}}
 
 \unexpanded\def\strc_itemgroups_start_margin#text%
   {\def\strc_itemgroups_margin_symbol % brrr
-     {\llap
+     {\dostarttagged\t!ignore\empty % for the moment, maybe an attribute
+      \llap
         {\begingroup
          \useitemgroupstyleandcolor\c!marstyle\c!marcolor
          #text% keep em/ex local
          \endgroup
-         \hskip\dimexpr\leftskip+\leftmargindistance\relax}}%
-   \startitemgroupitem}
+         \hskip\dimexpr\leftskip+\leftmargindistance\relax}%
+      \dostoptagged}%
+   \startitemgroupitem
+   \dotagsetitem\s!margin}
 
 \unexpanded\def\strc_itemgroups_start_text#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
@@ -1222,7 +1238,9 @@
      {\dontcomplain
       \hbox to \d_strc_itemgroups_list_width
         {\ifconditional\c_strc_itemgroups_sub
+           \dostarttagged\t!ignore\empty
            \llap{+\enspace}%
+           \dostoptagged
          \fi
          \strc_itemgroups_left_sym_filler
          \box\b_strc_itemgroups % can already have a forced widt, only factor handled here
@@ -1232,7 +1250,9 @@
 \def\strc_itemgroups_handle_lapped_item_negative
   {\llap
      {\ifconditional\c_strc_itemgroups_sub
+        \dostarttagged\t!ignore\empty
         \llap{+\enspace}%
+        \dostoptagged
       \fi
       \box\b_strc_itemgroups
       \hskip\leftmargindistance}}
@@ -1240,7 +1260,9 @@
 \def\strc_itemgroups_handle_groups_text_item
   {\hbox
      {\ifconditional\c_strc_itemgroups_sub
+        \dostarttagged\t!ignore\empty
         +\enspace
+        \dostoptagged
       \fi
       \box\b_strc_itemgroups
       \hskip\interwordspace}%
@@ -1249,7 +1271,9 @@
 \def\strc_itemgroups_handle_groups_inline_item
   {\hbox to \d_strc_itemgroups_list_width
      {\ifconditional\c_strc_itemgroups_sub
+        \dostarttagged\t!ignore\empty
         \llap{+\enspace}%
+        \dostoptagged
       \fi
       \box\b_strc_itemgroups
       \hss}} % was: \hfill

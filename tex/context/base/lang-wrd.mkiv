@@ -40,15 +40,18 @@
 
 \appendtoks
    \doifelse{\directspellcheckingparameter\c!state}\v!start
-     {\ctxcommand{enablespellchecking { method = "\directspellcheckingparameter\c!method", list = "\directspellcheckingparameter\c!list" }}}
-     {\ctxcommand{disablespellchecking()}}%
+     {\clf_enablespellchecking
+        method {\directspellcheckingparameter\c!method}%
+        list   {\directspellcheckingparameter\c!list}%
+      \relax}
+     {\clf_disablespellchecking}%
 \to \everysetupspellchecking
 
 \unexpanded\def\loadspellchecklist
   {\dodoubleempty\lang_spellchecking_load_list}
 
 \def\lang_spellchecking_load_list[#1][#2]%
-  {\ctxcommand{loadspellchecklist("#1","#2")}}
+  {\clf_loadspellchecklist{#1}{#2}}
 
 \setupspellchecking
   [\c!state=\v!stop,

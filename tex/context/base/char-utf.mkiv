@@ -32,7 +32,7 @@
 %D initialization till runtime.
 
 \appendtoks
-    \ctxlua{characters.filters.utf.enable()}%
+    \clf_enableutf % not needed when we create a format so we do it now
 \to \everyjob
 
 %D The next one influences input parsing.
@@ -42,6 +42,6 @@
 %D \stoptyping
 
 \unexpanded\def\definecomposedutf#1 #2 #3 %
-  {\ctxlua{characters.filters.utf.addgrapheme("#1","#2","#3")}}
+  {\clf_addgrapheme{#1}{#2}{#3}}
 
 \protect

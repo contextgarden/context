@@ -1799,6 +1799,13 @@ function references.setinnermethod(m)
     end
 end
 
+implement {
+    name      = "setinnerreferencemethod",
+    actions   = references.setinnermethod,
+    arguments = "string",
+    onlyonce  = true
+}
+
 function references.getinnermethod()
     return innermethod or defaultinnermethod
 end

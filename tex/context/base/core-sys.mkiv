@@ -35,24 +35,24 @@
 %D End of lines to the output. \TEX\ will map this onto the platform specific
 %D line ending. I hate this mess.
 
-\edef\operatingsystem  {\cldcontext{os.platform}}
+\let\operatingsystem\clf_operatingsystem
 
 %D The jobname is what gets loaded by the cont-yes stub file. This name
 %D also determines the name of tuc etc files.
 
-\def \jobfilename      {\cldcontext{environment.jobfilename or ""}}
-\def \jobfilesuffix    {\cldcontext{environment.jobfilesuffix or ""}}
+\let\jobfilename  \clf_jobfilename
+\let\jobfilesuffix\clf_jobfilesuffix
 
 %D However, that one can itself load another file.
 
-\def \inputfilebarename  {\cldcontext{environment.inputfilebarename or ""}}
-\def \inputfilerealsuffix{\cldcontext{environment.inputfilerealsuffix or ""}}
-\def \inputfilesuffix    {\cldcontext{environment.inputfilesuffix or ""}}
-\def \inputfilename      {\cldcontext{environment.inputfilename or ""}}
+\let\inputfilebarename  \clf_inputfilebarename
+\let\inputfilerealsuffix\clf_inputfilerealsuffix
+\let\inputfilesuffix    \clf_inputfilesuffix
+\let\inputfilename      \clf_inputfilename
 
 %D The output name is only used for some checking.
 
-\def \outputfilename   {\cldcontext{environment.outputfilename or ""}}
+\let\outputfilename\clf_outputfilename
 
 \installcorenamespace{system}
 

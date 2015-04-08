@@ -86,9 +86,9 @@
 
 \let\lang_url_show\relax
 
-\unexpanded\def\sethyphenatedurlnormal#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}} % Lua names will change
-\unexpanded\def\sethyphenatedurlbefore#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}} % Lua names will change
-\unexpanded\def\sethyphenatedurlafter #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,2)}} % Lua names will change
+\unexpanded\def\sethyphenatedurlnormal#1{\clf_sethyphenatedurlcharacters{#1}{\v!normal}}
+\unexpanded\def\sethyphenatedurlbefore#1{\clf_sethyphenatedurlcharacters{#1}{\v!before}}
+\unexpanded\def\sethyphenatedurlafter #1{\clf_sethyphenatedurlcharacters{#1}{\v!after }}
 
 % \sethyphenatedurlafter{ABCDEF}
 
@@ -106,12 +106,12 @@
    \let\C\lang_url_C % character_nobreak
    \scratchskipone\zeropoint\s!plus\dimexpr\emwidth/12\s!minus\dimexpr\emwidth/24\relax % 1.00pt @ 12pt
    \scratchskiptwo\zeropoint\s!plus\dimexpr\emwidth/48\s!minus\dimexpr\emwidth/96\relax % 0.25pt @ 12pt
-   \normalexpanded{\noexpand\ctxcommand{hyphenatedurl(
-        \!!bs\noexpand\detokenize{#1}\!!es,
-        \number\hyphenatedurllefthyphenmin,
-        \number\hyphenatedurlrighthyphenmin,
-        "\hyphenatedurldiscretionary"
-    )}}%
+   \normalexpanded{\noexpand\clf_hyphenatedurl
+     {\noexpand\detokenize{#1}}%
+     \hyphenatedurllefthyphenmin
+     \hyphenatedurlrighthyphenmin
+     {\hyphenatedurldiscretionary}%
+   }%
    \endgroup}
 
 %D \macros

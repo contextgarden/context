@@ -76,7 +76,7 @@
 \def\sometxt#1#{\meta_some_txt{#1}}
 
 \def\meta_some_txt#1#2% we need to capture embedded quotes (a bit messy as later on textext is filtered
-  {textext.drt("\mpsometxt#1{\ctxlua{metapost.escaped(\!!bs#2\!!es)}}")}
+  {textext.drt("\mpsometxt#1{\clf_metapostescaped{#2}}")}
 
 \unexpanded\def\mpsometxt % no _ catcode
   {\doifelsenextoptionalcs\meta_some_txt_indeed_yes\meta_some_txt_indeed_nop}
@@ -139,7 +139,7 @@
 % {\showstruts\useMPgraphic{testgraphic}}
 
 \unexpanded\def\MPexponent   #1#2{\mathematics{#1\times10^{#2}}}
-\unexpanded\def\MPformatted  #1#2{\ctxlua{metapost.svformat("#1","#2")}}
-\unexpanded\def\MPgraphformat#1#2{\ctxlua{metapost.nvformat("#1","#2")}}
+\unexpanded\def\MPformatted  #1#2{\clf_metapostformatted{#1}{#2}}
+\unexpanded\def\MPgraphformat#1#2{\clf_metapostgraphformat{#1}{#2}}
 
 \protect \endinput

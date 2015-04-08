@@ -93,7 +93,7 @@
   [\c!state=\v!start,
    \c!width=\v!fit,
    \c!height=\v!broad,
-   \c!offset=0.25em,
+   \c!offset=0.25\emwidth,
    \c!frame=\v!on,
    \c!background=,
    \c!backgroundcolor=,
@@ -217,12 +217,12 @@
   {\global\settrue\c_scrn_button_skipped}
 
 \def\scrn_button_make_normal#currentparameter#inheritedframed#letparameter#setparameter#text%
-  {\ctxcommand{injectcurrentreference()}%
+  {\clf_injectcurrentreference
    \hbox attr \referenceattribute \lastreferenceattribute
      {#inheritedframed{\ignorespaces#text\removeunwantedspaces}}}
 
 \def\scrn_button_make_contrast#currentparameter#inheritedframed#letparameter#setparameter#text%
-  {\ctxcommand{injectcurrentreference()}%
+  {\clf_injectcurrentreference
    \hbox attr \referenceattribute \lastreferenceattribute
      {#setparameter\c!foregroundcolor{#currentparameter\c!contrastcolor}%
       #inheritedframed{\ignorespaces#text\removeunwantedspaces}}}
@@ -368,7 +368,7 @@
 
 %D Fill menus:
 
-\normalexpanded{\long\def\expandafter\noexpand\csname\e!start\v!interactionmenu\endcsname[#tag]#content\expandafter\noexpand\csname\e!stop\v!interactionmenu\endcsname}%
+\normalexpanded{\def\expandafter\noexpand\csname\e!start\v!interactionmenu\endcsname[#tag]#content\expandafter\noexpand\csname\e!stop\v!interactionmenu\endcsname}%
   {\def\currentinteractionmenu{#tag}%
    \expandafter\settrue\csname\??menustate\interactionmenuparameter\c!category\endcsname
    \setinteractionmenuparameter\c!menu{#content}}
@@ -709,7 +709,8 @@
 
 \unexpanded\def\scrn_menu_got_start[#action]#text\stopgot
   {\scrn_menu_action_start
-   \setupcurrentinteractionmenu[\c!frame=\v!off,\c!background=]% needs checking, was buttons
+   \letinteractionmenuparameter\c!frame\v!off
+   \letinteractionmenuparameter\c!background\empty
    \scrn_button_make
      \interactionmenuparameter
      \inheritedinteractionmenuframed
@@ -1022,9 +1023,14 @@
 
 \def\scrn_menu_register_menu_buttons[#menu][#register]%
   {\ifsecondargument
-     \ctxcommand{registerbuttons("menu","#register","\currentlanguage")}
+     \clf_registerbuttons{menu}{#register}{\currentlanguage}%
    \else
-     \ctxcommand{registerbuttons("","#menu","\currentlanguage")}
+     \clf_registerbuttons{}{#menu}{\currentlanguage}%
    \fi}
+
+% or less readable:
+%
+% \def\scrn_menu_register_menu_buttons[#menu][#register]%
+%   {\clf_registerbuttons\ifsecondargument{menu}{#register}\else{}{#menu}\fi{\currentlanguage}}
 
 \protect \endinput

@@ -315,7 +315,8 @@ function metapost.reset(mpx)
     end
 end
 
-local mp_inp, mp_log, mp_tag = { }, { }, 0
+local mp_tra = { }
+local mp_tag = 0
 
 -- key/values
 
@@ -329,19 +330,24 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
         mpx = metapost.format(mpx) -- goody
     end
     if mpx and data then
+        local tra = nil
         starttiming(metapost)
         metapost.initializescriptrunner(mpx,trialrun)
         if trace_graphics then
-            if not mp_inp[mpx] then
+            tra = mp_tra[mpx]
+            if not tra then
                 mp_tag = mp_tag + 1
                 local jobname = tex.jobname
-                mp_inp[mpx] = io.open(formatters["%s-mplib-run-%03i.mp"] (jobname,mp_tag,"w"))
-                mp_log[mpx] = io.open(formatters["%s-mplib-run-%03i.log"](jobname,mp_tag,"w"))
+                tra = {
+                    inp = io.open(formatters["%s-mplib-run-%03i.mp"] (jobname,mp_tag),"w"),
+                    log = io.open(formatters["%s-mplib-run-%03i.log"](jobname,mp_tag),"w"),
+                }
+                mp_tra[mpx] = tra
             end
             local banner = formatters["%% begin graphic: n=%s, trialrun=%s, multipass=%s, isextrapass=%s\n\n"](
                 metapost.n, tostring(trialrun), tostring(multipass), tostring(isextrapass))
-            mp_inp[mpx]:write(banner)
-            mp_log[mpx]:write(banner)
+            tra.inp:write(banner)
+            tra.log:write(banner)
         end
         if type(data) == "table" then
             -- this hack is needed because the library currently barks on \n\n
@@ -378,9 +384,9 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
              -- d = string.gsub(d,"\r","")
                 if d then
                     if trace_graphics then
-                        mp_inp[mpx]:write(formatters["\n%% begin snippet %s\n"](i))
-                        mp_inp[mpx]:write(d)
-                        mp_inp[mpx]:write(formatters["\n%% end snippet %s\n"](i))
+                        tra.inp:write(formatters["\n%% begin snippet %s\n"](i))
+                        tra.inp:write(d)
+                        tra.inp:write(formatters["\n%% end snippet %s\n"](i))
                     end
                     starttiming(metapost.exectime)
                     result = mpx:execute(d)
@@ -388,7 +394,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                     if trace_graphics and result then
                         local str = result.log or result.error
                         if str and str ~= "" then
-                            mp_log[mpx]:write(str)
+                            tra.log:write(str)
                         end
                     end
                     if not metapost.reporterror(result) then
@@ -412,7 +418,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                 data = "tracingall;" .. data
             end
             if trace_graphics then
-                mp_inp[mpx]:write(data)
+                tra.inp:write(data)
             end
             starttiming(metapost.exectime)
             result = mpx:execute(data)
@@ -420,7 +426,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             if trace_graphics and result then
                 local str = result.log or result.error
                 if str and str ~= "" then
-                    mp_log[mpx]:write(str)
+                    tra.log:write(str)
                 end
             end
             -- todo: error message
@@ -440,8 +446,8 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
         end
         if trace_graphics then
             local banner = "\n% end graphic\n\n"
-            mp_inp[mpx]:write(banner)
-            mp_log[mpx]:write(banner)
+            tra.inp:write(banner)
+            tra.log:write(banner)
         end
         stoptiming(metapost)
     end

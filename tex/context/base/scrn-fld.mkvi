@@ -105,7 +105,7 @@
 \installdirectcommandhandler \??forms {forms}
 
 \appendtoks
-    \ctxcommand{setformsmethod("\formsparameter\c!method")}%
+    \clf_setformsmethod{\formsparameter\c!method}%
 \to \everysetupforms
 
 \setupforms
@@ -113,7 +113,7 @@
 
 \appendtoks
     \iflocation
-      \ctxcommand{exportformdata("\formsparameter\c!export")}%
+      \clf_exportformdata{\formsparameter\c!export}%
     \fi
 \to \everystoptext
 
@@ -177,23 +177,23 @@
 \appendtoks % we cannot use parent .. maybe s!parent has to change
     \ifx\currentfieldbodyparent\empty
         \scrn_field_check_category
-        \ctxcommand{definefield{
-            name        = "\currentfieldbody",
-            alternative = "normal",
-            type        = "\fieldbodyparameter\c!type",
-            category    = "\fieldbodyparameter\c!category",
-            values      = \!!bs\fieldbodyparameter\c!values\!!es,
-            default     = \!!bs\fieldbodyparameter\c!default\!!es
-        }}%
+        \clf_definefield
+            name        {\currentfieldbody}%
+            alternative {normal}%
+            type        {\fieldbodyparameter\c!type}%
+            category    {\fieldbodyparameter\c!category}%
+            values      {\fieldbodyparameter\c!values}%
+            default     {\fieldbodyparameter\c!default}%
+        \relax
     \else
-         \ctxcommand{clonefield{
-            children    = "\currentfieldbody",
-            alternative = "clone",
-            parent      = "\currentfieldbodyparent",
-            category    = "\fieldbodyparameter\c!category",
-            values      = \!!bs\fieldbodyparameter\c!values\!!es,
-            default     = \!!bs\fieldbodyparameter\c!default\!!es
-        }}%
+        \clf_clonefield
+            children    {\currentfieldbody}%
+            alternative {clone}%
+            parent      {\currentfieldbodyparent}%
+            category    {\fieldbodyparameter\c!category}%
+            values      {\fieldbodyparameter\c!values}%
+            default     {\fieldbodyparameter\c!default}%
+        \relax
     \fi
 \to \everydefinefieldbody
 
@@ -224,43 +224,46 @@
     % == \edef\currentfieldbackgroundcolorvalue{\thecolorattribute\currentfieldbackgroundcolor}%
    \fi
    \usefieldbodystyleandcolor\c!style\c!color
-   \ctxcommand{insertfield("\currentfieldbody", {
-        title                = "\currentfieldbody",
-        width                = \number\dimexpr\fieldbodyparameter\c!width \relax,
-        height               = \number\dimexpr\fieldbodyparameter\c!height\relax,
-        depth                = \number\dimexpr\fieldbodyparameter\c!depth \relax,
-        align                = "\fieldbodyparameter\c!align",
-        length               = "\fieldbodyparameter\c!n",
-        fontstyle            = "\fontstyle",
-        fontalternative      = "\fontalternative",
-        fontsize             = "\fontbody",
-        fontsymbol           = "\fieldbodyparameter\c!symbol",
-        color                = "\fieldbodyparameter\c!color",
-        colorvalue           = \number\attribute\colorattribute,
-    \ifx\currentfieldbackgroundcolor\empty \else
-        backgroundcolor      = "\currentfieldbackgroundcolor",
-        backgroundcolorvalue = "\currentfieldbackgroundcolorvalue",
-    \fi
-    \ifx\currentfieldframecolor\empty \else
-        framecolor           = "\currentfieldframecolor",
-        framecolorvalue      = "\currentfieldframecolorvalue",
-    \fi
-        layer                = "\fieldbodyparameter\c!fieldlayer",
-        option               = "\fieldbodyparameter\c!option",
-        align                = "\fieldbodyparameter\c!align",
-        clickin              = "\fieldbodyparameter\c!clickin",
-        clickout             = "\fieldbodyparameter\c!clickout",
-        regionin             = "\fieldbodyparameter\c!regionin",
-        regionout            = "\fieldbodyparameter\c!regionout",
-        afterkey             = "\fieldbodyparameter\c!afterkey",
-        format               = "\fieldbodyparameter\c!format",
-        validate             = "\fieldbodyparameter\c!validate",
-        calculate            = "\fieldbodyparameter\c!calculate",
-        focusin              = "\fieldbodyparameter\c!focusin",
-        focusout             = "\fieldbodyparameter\c!focusout",
-        openpage             = "\fieldbodyparameter\c!openpage",
-        closepage            = "\fieldbodyparameter\c!closepage",
-   })}}
+   \clf_insertfield
+     {\currentfieldbody}%
+     {%
+       title                {\currentfieldbody}
+       width                \dimexpr\fieldbodyparameter\c!width \relax
+       height               \dimexpr\fieldbodyparameter\c!height\relax
+       depth                \dimexpr\fieldbodyparameter\c!depth \relax
+       align                {\fieldbodyparameter\c!align}%
+       length               {\fieldbodyparameter\c!n}%
+       fontstyle            {\fontstyle}%
+       fontalternative      {\fontalternative}%
+       fontsize             {\fontbody}%
+       fontsymbol           {\fieldbodyparameter\c!symbol}%
+       color                {\fieldbodyparameter\c!color}%
+       colorvalue           \attribute\colorattribute
+   \ifx\currentfieldbackgroundcolor\empty \else
+       backgroundcolor      {\currentfieldbackgroundcolor}%
+       backgroundcolorvalue \numexpr\currentfieldbackgroundcolorvalue\relax
+   \fi
+   \ifx\currentfieldframecolor\empty \else
+       framecolor           {\currentfieldframecolor}%
+       framecolorvalue      \numexpr\currentfieldframecolorvalue\relax
+   \fi
+       layer                {\fieldbodyparameter\c!fieldlayer}%
+       option               {\fieldbodyparameter\c!option}%
+       align                {\fieldbodyparameter\c!align}%
+       clickin              {\fieldbodyparameter\c!clickin}%
+       clickout             {\fieldbodyparameter\c!clickout}%
+       regionin             {\fieldbodyparameter\c!regionin}%
+       regionout            {\fieldbodyparameter\c!regionout}%
+       afterkey             {\fieldbodyparameter\c!afterkey}%
+       format               {\fieldbodyparameter\c!format}%
+       validate             {\fieldbodyparameter\c!validate}%
+       calculate            {\fieldbodyparameter\c!calculate}%
+       focusin              {\fieldbodyparameter\c!focusin}%
+       focusout             {\fieldbodyparameter\c!focusout}%
+       openpage             {\fieldbodyparameter\c!openpage}%
+       closepage            {\fieldbodyparameter\c!closepage}%
+      }%
+    \relax}
 
 %D The sets are used in grouped calculations.
 %D
@@ -270,14 +273,14 @@
   {\dodoubleempty\scrn_field_define_set}
 
 \def\scrn_field_define_set[#tag][#list]%
-  {\ctxcommand{definefieldset("#tag","#list")}}
+  {\clf_definefieldset{#tag}{#list}}
 
 \let\dodefinefieldset\definefieldbodyset % compatibility
 
 %D A few testing macros:
 
-\def\doifelsefieldbody    #tag{\ctxcommand{doiffieldelse("#tag")}}
-\def\doifelsefieldcategory#tag{\ctxcommand{doiffieldcategoryelse("#tag")}}
+\def\doifelsefieldbody    #tag{\clf_doifelsefield{#tag}}
+\def\doifelsefieldcategory#tag{\clf_doifelsefieldcategory{#tag}}
 
 \let\doiffieldbodyelse    \doifelsefieldbody
 \let\doiffieldcategoryelse\doifelsefieldcategory
@@ -369,7 +372,7 @@
 \def\scrn_field_fit[#tag][#settings]%
   {\iflocation
      \begingroup
-       \edef\currentdefaultfieldvalue{\ctxcommand{getdefaultfieldvalue("#tag")}}%
+       \edef\currentdefaultfieldvalue{\clf_getdefaultfieldvalue{#tag}}%
        \setbox\b_scrn_field_fit_symbol\hbox{\symbol[\currentdefaultfieldvalue]}%
        \fitfieldframed
          {\fieldbody[#tag]
@@ -498,7 +501,7 @@
      \scrn_field_load_scripts
      \edef\currentfieldbody    {#tag}%
      \edef\currentfieldlabel   {#label}%
-     \edef\currentfieldcategory{\ctxcommand{getfieldcategory("#tag")}}%
+     \edef\currentfieldcategory{\clf_getfieldcategory{#tag}}%
      \ifx\currentfieldlabel\empty
        \let\currentfieldlabel\currentfieldbody
      \fi

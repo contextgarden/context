@@ -46,7 +46,7 @@
      \forgetall
      \offinterlineskip
      \setbox\MPbox\vbox\bgroup
-       \ctxlua{metapost.mptopdf.convertmpstopdf("\MPfilename")}%
+       \clf_convertmpstopdf{\MPfilename}%
        \removeunwantedspaces % not that needed
      \egroup
      \finalizeMPbox

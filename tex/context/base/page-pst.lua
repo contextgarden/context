@@ -8,15 +8,17 @@ if not modules then modules = { } end modules ['page-pst'] = {
 
 -- todo: adapt message
 
-local tonumber, next = tonumber, next
-local format, validstring = string.format, string.valid
-local sortedkeys = table.sortedkeys
+local tonumber, next, type = tonumber, next, type
+local find, validstring = string.find, string.valid
 
-local context  = context
-local commands = commands
+local context     = context
+local implement   = interfaces.implement
 
 local texgetcount = tex.getcount
 local texsetcount = tex.setcount
+
+local sortedkeys   = table.sortedkeys
+local formatters   = string.formatters
 
 local cache = { }
 
@@ -25,7 +27,7 @@ local function flush(page)
     if c then
         for i=1,#c do
          -- characters.showstring(c[i])
-            context.viafile(c[i],format("page.%s",validstring(page,"nopage")))
+            context.viafile(c[i],formatters["page.%s"](validstring(page,"nopage")))
         end
         cache[page] = nil
     end
@@ -43,11 +45,11 @@ local function setnextpage()
     texsetcount("global","c_page_postponed_blocks_next_page",n)
 end
 
-function commands.flushpostponedblocks(page)
+local function flushpostponedblocks(specification)
     -- we need to flush previously pending pages as well and the zero
     -- slot is the generic one so that one is always flushed
     local t = sortedkeys(cache)
-    local p = tonumber(page) or texgetcount("realpageno") or 0
+    local p = tonumber(specification.page) or texgetcount("realpageno") or 0
     for i=1,#t do
         local ti = t[i]
         if ti <= p then
@@ -59,9 +61,19 @@ function commands.flushpostponedblocks(page)
     setnextpage()
 end
 
-function commands.registerpostponedblock(page)
+implement {
+    name      = "flushpostponedblocks",
+    actions   = flushpostponedblocks,
+    arguments = {
+        {
+            { "page" }
+        }
+    }
+}
+
+local function registerpostponedblock(page)
     if type(page) == "string" then
-        if string.find(page,"^+") then
+        if find(page,"^+") then
             page = texgetcount("realpageno") + (tonumber(page) or 1) -- future delta page
         else
             page = tonumber(page) or 0 -- preferred page or otherwise first possible occasion
@@ -80,7 +92,14 @@ function commands.registerpostponedblock(page)
     if page == 0 then
         interfaces.showmessage("layouts",3,#c)
     else
-        interfaces.showmessage("layouts",3,string.format("%s (realpage: %s)",#c,page))
+        interfaces.showmessage("layouts",3,formatters["%s (realpage: %s)"](#c,page))
     end
     setnextpage()
 end
+
+implement {
+    name      = "registerpostponedblock",
+    actions   = registerpostponedblock,
+    arguments = "string"
+}
+

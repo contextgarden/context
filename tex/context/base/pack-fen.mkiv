@@ -50,12 +50,12 @@
 \else
 
     \def\setinstalledframedimensions
-      {\edef\overlaywidth    {\the\frameddimenwd\space}%
-       \edef\overlayheight   {\the\dimexpr\frameddimenht+\frameddimendp\relax\space}%
-       \edef\overlaydepth    {\the\frameddimendp\space}%
+      {\d_overlay_width       \frameddimenwd
+       \d_overlay_height      \dimexpr\frameddimenht+\frameddimendp\relax
+       \d_overlay_depth       \frameddimendp
+       \d_overlay_linewidth   \ruledlinewidth
        \edef\overlaycolor    {\framedparameter\c!backgroundcolor}%
-       \edef\overlaylinecolor{\framedparameter\c!framecolor}%
-       \edef\overlaylinewidth{\the\ruledlinewidth}}
+       \edef\overlaylinecolor{\framedparameter\c!framecolor}}
 
 \fi
 
@@ -63,7 +63,7 @@
 
 \def\whateverleftframe#1%
   {\setinstalledframedimensions
-   \setbox\b_framed_rendered\vbox to \overlayheight{\vss#1\vss}%
+   \setbox\b_framed_rendered\vbox to \d_overlay_height{\vss#1\vss}%
    \setbox\b_framed_rendered\hbox to \zeropoint{\box\b_framed_rendered\hss}%
    \ht\b_framed_rendered\zeropoint
    \dp\b_framed_rendered\zeropoint
@@ -71,7 +71,7 @@
 
 \def\whateverrightframe#1%
   {\setinstalledframedimensions
-   \setbox\b_framed_rendered\vbox to \overlayheight{\vss#1\vss}%
+   \setbox\b_framed_rendered\vbox to \d_overlay_height{\vss#1\vss}%
    \setbox\b_framed_rendered\hbox to \zeropoint{\hss\box\b_framed_rendered}%
    \ht\b_framed_rendered\zeropoint
    \dp\b_framed_rendered\zeropoint
@@ -79,7 +79,7 @@
 
 \def\whatevertopframe#1%
   {\setinstalledframedimensions
-   \setbox\b_framed_rendered\hbox to \overlaywidth{\hss#1\hss}%
+   \setbox\b_framed_rendered\hbox to \d_overlay_width{\hss#1\hss}%
    \setbox\b_framed_rendered\vbox to \zeropoint{\box\b_framed_rendered\vss}%
    \ht\b_framed_rendered\zeropoint
    \dp\b_framed_rendered\zeropoint
@@ -88,7 +88,7 @@
 
 \def\whateverbottomframe#1%
   {\setinstalledframedimensions
-   \setbox\b_framed_rendered\hbox to \overlaywidth{\hss#1\hss}%
+   \setbox\b_framed_rendered\hbox to \d_overlay_width{\hss#1\hss}%
    \setbox\b_framed_rendered\vbox to \zeropoint{\vss\box\b_framed_rendered}%
    \ht\b_framed_rendered\zeropoint
    \dp\b_framed_rendered\zeropoint

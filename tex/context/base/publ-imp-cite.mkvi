@@ -111,6 +111,7 @@
 
 \startsetups btx:cite:normal
     \texdefinition{\s!btx:\s!cite:concat}
+    \currentbtxleftttext
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
     \else
@@ -136,10 +137,12 @@
             }
         \fi
     \fi
+    \currentbtxrighttext
 \stopsetups
 
 \startsetups btx:cite:range
     \texdefinition{\s!btx:\s!cite:concat}
+    \currentbtxleftttext
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
     \else
@@ -155,10 +158,12 @@
             \fi
         }
     \fi
+    \currentbtxrighttext
 \stopsetups
 
 \startsetups btx:cite:listelement
     \texdefinition{\s!btx:\s!cite:concat}
+    \currentbtxleftttext
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
     \else
@@ -167,10 +172,12 @@
            \currentbtxfirst
        }
     \fi
+    \currentbtxrighttext
 \stopsetups
 
 \startsetups btx:cite:author
     \texdefinition{\s!btx:\s!cite:concat}
+    \currentbtxlefttext
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
     \else
@@ -191,11 +198,14 @@
             \currentbtxthird
         }
     \fi
+    \currentbtxrighttext
 \stopsetups
 
 \startsetups \s!btx:\s!cite:entry
     \texdefinition{\s!btx:\s!cite:concat}
+    \currentbtxlefttext
     \btxhandleciteentry
+    \currentbtxrighttext
 \stopsetups
 
 % these three are goodies to get something bit are not set up as it makes no

@@ -25,7 +25,7 @@
 \to \everysetupinteraction
 
 \def\scrn_reference_enable_page_destinations % no reset
-  {\ctxlua{structures.references.setinnermethod("\interactionparameter\c!page")}}
+  {\clf_setinnerreferencemethod{\interactionparameter\c!page}}
 
 \setupinteraction % start fit page and reset form
   [\c!page=\v!no,
@@ -34,7 +34,7 @@
    \c!focus=\v!fit,
    \c!calculate=,
    % rendering:
-   \c!width=1em,
+   \c!width=\emwidth,
    \c!height=\zeropoint,
    \c!depth=\zeropoint,
    \c!symbolset=]
@@ -46,10 +46,10 @@
      \edef\currentinteractionopenaction {\interactionparameter\c!openaction }%
      \edef\currentinteractioncloseaction{\interactionparameter\c!closeaction}%
      \ifx\currentinteractionopenaction\empty \else
-       \ctxcommand{setopendocumentaction("\currentinteractionopenaction")}%
+       \clf_setopendocumentaction{\currentinteractionopenaction}%
      \fi
      \ifx\currentinteractioncloseaction\empty \else
-       \ctxcommand{setclosedocumentaction("\currentinteractioncloseaction")}%
+       \clf_setclosedocumentaction{\currentinteractioncloseaction}%
      \fi
      \glet\scrn_reference_set_text_actions\relax
    \fi}
@@ -59,10 +59,10 @@
      \edef\currentinteractionopenpageaction {\interactionparameter\c!openpageaction }%
      \edef\currentinteractionclosepageaction{\interactionparameter\c!closepageaction}%
      \ifx\currentinteractionopenpageaction\empty \else
-       \ctxcommand{setopenpageaction("\currentinteractionopenpageaction")}%
+       \clf_setopenpageaction{\currentinteractionopenpageaction}%
      \fi
      \ifx\currentinteractionclosepageaction\empty \else
-       \ctxcommand{setclosepageaction("\currentinteractionclosepageaction")}%
+       \clf_setclosepageaction{\currentinteractionclosepageaction}%
      \fi
    \fi}
 
@@ -73,7 +73,7 @@
 
 \def\scrn_reference_enable_references
   {\ifproductionrun
-     \ctxlua{structures.references.enableinteraction()}%
+     \clf_enableinteraction % only once anyway
      \glet\scrn_reference_enable_references\relax
    \fi}
 

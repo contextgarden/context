@@ -94,6 +94,7 @@ local csnames             = hashes.csnames
 local lastmathids         = hashes.lastmathids
 local exheights           = hashes.exheights
 local emwidths            = hashes.emwidths
+local parameters          = hashes.parameters
 
 local designsizefilename  = fontgoodies.designsizes.filename
 
@@ -249,7 +250,17 @@ function definers.resetnullfont()
     definers.resetnullfont = function() end
 end
 
-commands.resetnullfont = definers.resetnullfont
+implement {
+    name     = "resetnullfont",
+    onlyonce = true,
+    actions  = function()
+        for i=1,7 do
+            -- we have no direct method yet
+            context([[\fontdimen%s\nullfont\zeropoint]],i)
+        end
+        definers.resetnullfont()
+    end
+}
 
 -- this cannot be a feature initializer as there is no auto namespace
 -- so we never enter the loop then; we can store the defaults in the tma
@@ -2084,6 +2095,13 @@ do
         end
     end
 
+    local function resetfeature()
+        if trace_features and texgetattribute(0) ~= 0 then
+            report_cummulative("font %!font:name!, reset",fontdata[true])
+        end
+        texsetattribute(0,0)
+    end
+
     local function registerlanguagefeatures()
         local specifications = languages.data.specifications
         for i=1,#specifications do
@@ -2105,7 +2123,7 @@ do
         end
     end
 
-    implement { name = "resetfeature",    actions = setfeature, arguments = { false } }
+    implement { name = "resetfeature",    actions = resetfeature }
     implement { name = "addfeature",      actions = setfeature, arguments = { "'+'",  "string", "string" } }
     implement { name = "subtractfeature", actions = setfeature, arguments = { "'-'",  "string", "string" } }
     implement { name = "replacefeature",  actions = setfeature, arguments = { "'='",  "string", "string" } }
@@ -2256,42 +2274,36 @@ implement {
 local list = storage.shared.bodyfontsizes or { }
 storage.shared.bodyfontsizes = list
 
-local function registerbodyfontsize(size)
-    list[size] = true
-end
-
 implement {
     name      = "registerbodyfontsize",
-    actions   = registerbodyfontsize,
-    arguments = "string"
+    arguments = "string",
+    actions   = function(size)
+        list[size] = true
+    end
 }
-
-local function getbodyfontsizes(separator)
-    context(concat(sortedkeys(list),separator))
-end
 
 implement {
     name      = "getbodyfontsizes",
-    actions   = getbodyfontsizes,
-    arguments = "string"
-}
-
-local function processbodyfontsizes(command)
-    local keys = sortedkeys(list)
-    if command then
-        local action = context[command]
-        for i=1,#keys do
-            action(keys[i])
-        end
-    else
-        context(concat(keys,","))
+    arguments = "string",
+    actions   = function(separator)
+        context(concat(sortedkeys(list),separator))
     end
-end
+}
 
 implement {
     name      = "processbodyfontsizes",
-    actions   = processbodyfontsizes,
-    arguments = "string"
+    arguments = "string",
+    actions   = function(command)
+        local keys = sortedkeys(list)
+        if command then
+            local action = context[command]
+            for i=1,#keys do
+                action(keys[i])
+            end
+        else
+            context(concat(keys,","))
+        end
+    end
 }
 
 implement {
@@ -2358,3 +2370,16 @@ function commands.showfontparameters(tfmdata)
         end
     end
 end
+
+implement {
+    name    = "currentdesignsize",
+    actions = function()
+        context(parameters[currentfont()].designsize)
+    end
+}
+
+implement {
+    name      = "doifelsefontpresent",
+    actions   = { names.exists, commands.doifelse },
+    arguments = "string"
+}

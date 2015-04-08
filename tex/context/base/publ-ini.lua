@@ -2299,12 +2299,12 @@ do
             if before    and before    ~= "" then before    = settings_to_array(before)    end
             if after     and after     ~= "" then after     = settings_to_array(after)     end
 
-            local oneleft  = lefttext  and #lefttext  == 1 and lefttext [1]
-            local oneright = righttext and #righttext == 1 and righttext[1]
-
-            if not oneleft or not oneright then
-                compress = false -- very hard coded, or should we have compreess == auto?
-            end
+        --  local oneleft  = lefttext  and #lefttext  == 1 and lefttext [1]
+        --  local oneright = righttext and #righttext == 1 and righttext[1]
+        --
+        --  if not oneleft or not oneright then
+        --      compress = false -- very hard coded, or should we have compreess == auto?
+        --  end
 
             local function flush(i,n,entry,last)
                 local tag = entry.tag
@@ -2314,26 +2314,31 @@ do
                 ctx_btxsettag(tag)
                 ctx_btxsetcategory(entry.category or "unknown")
                 --
-                if oneleft then
-                    if i == 1 then
-                        ctx_btxsetlefttext(oneleft)
-                    end
-                elseif lefttext then
-                    ctx_btxsetlefttext(lefttext[i] or "")
-                end
-                if oneright then
-                    if i == n then
-                        ctx_btxsetrighttext(oneright)
-                    end
-                elseif righttext then
-                    ctx_btxsetrighttext(righttext[i] or "")
-                end
-                if before then
-                    ctx_btxsetbefore(before[i] or (#before == 1 and before[1]) or "")
-                end
-                if after then
-                    ctx_btxsetafter(after[i] or (#after == 1 and after[1]) or "")
-                end
+             -- if oneleft then
+             --     if i == 1 then
+             --         ctx_btxsetlefttext(oneleft)
+             --     end
+             -- elseif lefttext then
+             --     ctx_btxsetlefttext(lefttext[i] or "")
+             -- end
+             -- if oneright then
+             --     if i == n then
+             --         ctx_btxsetrighttext(oneright)
+             --     end
+             -- elseif righttext then
+             --     ctx_btxsetrighttext(righttext[i] or "")
+             -- end
+             -- if before then
+             --     ctx_btxsetbefore(before[i] or (#before == 1 and before[1]) or "")
+             -- end
+             -- if after then
+             --     ctx_btxsetafter(after[i] or (#after == 1 and after[1]) or "")
+             -- end
+                --
+                if lefttext  then local text = lefttext [i] ; if text and text ~= "" then ctx_btxsetlefttext (text) end end
+                if righttext then local text = righttext[i] ; if text and text ~= "" then ctx_btxsetrighttext(text) end end
+                if before    then local text = before   [i] ; if text and text ~= "" then ctx_btxsetbefore   (text) end end
+                if after     then local text = after    [i] ; if text and text ~= "" then ctx_btxsetafter    (text) end end
                 --
                 ctx_btxsetbacklink(currentcitation)
                 local bl = listtocite[currentcitation]

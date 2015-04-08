@@ -42,7 +42,7 @@
 \to \everyenableoutputstream
 
 \unexpanded\def\initializeoutputstreams
-  {\ctxlua{streams.initialize()}%
+  {\clf_initializestream
    \glet\initializeoutputstreams\relax}
 
 \unexpanded\def\enableoutputstream[#1]% could be \startoutputsubstream
@@ -50,12 +50,12 @@
    \the\everyenableoutputstream
    \inoutputstreamtrue
    \xdef\currentoutputstream{#1}%
-   \ctxlua{streams.enable("#1")}}
+   \clf_enablestream{#1}}
 
 \unexpanded\def\disableoutputstream
   {\inoutputstreamfalse
    \global\let\currentoutputstream\s!default
-   \ctxlua{streams.disable()}}
+   \clf_disablestream}
 
 \unexpanded\def\startoutputstream[#1]%
   {\begingroup
@@ -63,10 +63,10 @@
    \the\everyenableoutputstream
    \inoutputstreamtrue
    \xdef\currentoutputstream{#1}%
-   \ctxlua{streams.start("#1")}}
+   \clf_startstream{#1}}
 
 \unexpanded\def\stopoutputstream
-  {\ctxlua{streams.stop()}%
+  {\clf_stopstream
    \endgroup}
 
 \unexpanded\def\startoutputsubstream[#1]% just push/pop instead
@@ -77,13 +77,13 @@
   {\globalpopmacro\currentoutputstream
    \enableoutputstream[\currentoutputstream]}
 
-\def\flushoutputstream  [#1]{\ctxlua{streams.flush("#1")}}
-\def\outputstreamcopy   [#1]{\vbox{\ctxlua{streams.flush("#1",true)}}}
-\def\outputstreambox    [#1]{\vbox{\ctxlua{streams.flush("#1")}}}
-\def\outputstreamunvcopy[#1]{\ctxlua{streams.flush("#1",true)}}
-\def\outputstreamunvbox [#1]{\ctxlua{streams.flush("#1")}}
-\def\synchronizestreams [#1]{\ctxlua{streams.synchronize("#1")}}
-\def\dopushoutputstream [#1]{\ctxlua{streams.push("#1")}}
+\def\flushoutputstream  [#1]{\clf_flushstream{#1}}
+\def\outputstreambox    [#1]{\vbox{\clf_flushstream{#1}}}
+\def\outputstreamcopy   [#1]{\vbox{\clf_flushstreamcopy{#1}}}
+\def\outputstreamunvbox [#1]{\clf_flushstream{#1}}
+\def\outputstreamunvcopy[#1]{\clf_flushstreamcopy{#1}}
+\def\synchronizestreams [#1]{\clf_synchronizestream{#1}}
+\def\dopushoutputstream [#1]{\clf_pushstream{#1}}
 
 \unexpanded\def\pushoutputstream
   {\dosingleempty\dopushoutputstream}

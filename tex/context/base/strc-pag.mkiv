@@ -26,12 +26,14 @@
 \countdef\subpageno  \plustwo    \subpageno  \zerocount % !
 \countdef\arrangeno  \plusthree  \arrangeno  \zerocount % !
 \countdef\pagenoshift\plusfour   \pagenoshift\zerocount % !
+\countdef\lastpageno \plusfive   \lastpageno \zerocount % !
 
 \let\pageno\userpageno
 
 \def\realfolio{\the\realpageno}
 \def\userfolio{\the\userpageno}
 \def\subfolio {\the\subpageno }
+\def\lastfolio{\the\lastpageno}
 
 \newtoks\everyinitializepagecounters
 
@@ -103,6 +105,7 @@
     \strc_counters_set\s!realpage\realpageno
     \strc_counters_set\s!userpage\userpageno
     \strc_counters_set\s!subpage \subpageno
+    \lastpageno\lastcountervalue[\s!realpage]\relax
 \to \everyinitializepagecounters
 
 \let\setuppagenumber\setupuserpagenumber
@@ -304,6 +307,12 @@
        \trackingmarginnotesfalse
      \fi
    \fi
+   \pageduplexmode
+     \ifsinglesided
+       \ifdoublesided\plustwo\else\zerocount\fi
+     \else
+       \ifdoublesided\plusone\else\zerocount\fi
+     \fi
    \page_backgrounds_recalculate
    \strc_pagenumbers_set_location
 \to \everysetuppagenumbering

@@ -808,7 +808,7 @@ local function nodesettostring(set,nodetest)
         if not ns or ns == "" then ns = "*" end
         if not tg or tg == "" then tg = "*" end
         tg = (tg == "@rt@" and "[root]") or format("%s:%s",ns,tg)
-        t[i] = (directive and tg) or format("not(%s)",tg)
+        t[#t+1] = (directive and tg) or format("not(%s)",tg)
     end
     if nodetest == false then
         return format("not(%s)",concat(t,"|"))

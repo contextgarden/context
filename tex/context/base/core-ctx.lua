@@ -39,12 +39,12 @@ local xmltext = xml.text
 
 local report_prepfiles = logs.reporter("system","prepfiles")
 
-commands       = commands or { }
-local commands = commands
+local commands         = commands
+local implement        = interfaces.implement
 
-ctxrunner = ctxrunner or { }
+ctxrunner              = ctxrunner or { }
 
-ctxrunner.prepfiles = utilities.storage.allocate()
+ctxrunner.prepfiles    = utilities.storage.allocate()
 
 local function dontpreparefile(t,k)
     return k -- we only store when we have a prepper
@@ -301,35 +301,55 @@ local function resolve(name) -- used a few times later on
     return ctxrunner.prepfiles[file.collapsepath(name)] or false
 end
 
-local processfile       = commands.processfile
-local doifelseinputfile = commands.doifelseinputfile
-
-function commands.processfile(name,maxreadlevel) -- overloaded
-    local prepname = resolve(name)
-    if prepname then
-        return processfile(prepname,0)
-    end
-    return processfile(name,maxreadlevel)
-end
-
-function commands.doifelseinputfile(name,depth)
-    local prepname = resolve(name)
-    if prepname then
-        return doifelseinputfile(prepname,0)
-    end
-    return doifelseinputfile(name,depth)
-end
-
-function commands.preparedfile(name)
+function ctxrunner.preparedfile(name)
     return resolve(name) or name
 end
 
-function commands.getctxfile()
-    local ctxfile = document.arguments.ctx or ""
-    if ctxfile ~= "" then
-        ctxrunner.load(ctxfile) -- do we need to locate it?
+local processfile       = commands.processfile
+local doifelseinputfile = commands.doifelseinputfile
+
+implement {
+    name      = "processfile",
+    overload  = true,
+    arguments = { "string", "integer" },
+    actions   = function(name,maxreadlevel) -- overloaded
+        local prepname = resolve(name)
+        if prepname then
+            return processfile(prepname,0)
+        end
+        return processfile(name,maxreadlevel)
     end
-end
+}
+
+implement {
+    name      = "doifelseinputfile",
+    overload  = true,
+    arguments = { "string", "integer" },
+    actions   = function(name,depth)
+        local prepname = resolve(name)
+        if prepname then
+            return doifelseinputfile(prepname,0)
+        end
+        return doifelseinputfile(name,depth)
+    end
+}
+
+-- implement {
+--     name      = "preparedfile", -- not used
+--     arguments = "string",
+--     actions   = { ctxrunner.preparedfile, context }
+-- }
+
+implement {
+    name      = "setdocumentctxfile",
+    onlyonce  = true,
+    actions   = function()
+        local ctxfile = document.arguments.ctx or ""
+        if ctxfile ~= "" then
+            ctxrunner.load(ctxfile) -- do we need to locate it?
+        end
+    end
+}
 
 function ctxrunner.resolve(name) -- used a few times later on
     local collapsedname = file.collapsepath(name,".")

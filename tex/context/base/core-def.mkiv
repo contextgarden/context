@@ -107,17 +107,17 @@
     \initializenewlinechar
     \calculatecurrenttime
     \syst_files_load
-    \job_options_get_commandline          % expands some commands
-    \job_options_get_ctxfile              % might expand some commands
-    \job_options_set_filenames
+    \clf_setdocumentcommandline
+    \clf_setdocumentctxfile
+    \clf_setdocumentfilenames
     \font_preloads_at_every_job
     \settopskip                           % brrr
     \initializemainlanguage
     \initializepagebackgrounds
     \initializepagecounters
-    \job_options_set_modes
-    \job_options_set_modules
-    \job_options_set_environments
+    \clf_setdocumentmodes
+    \clf_setdocumentmodules
+    \clf_setdocumentenvironments
 \to \everyjob
 
 \appendtoks

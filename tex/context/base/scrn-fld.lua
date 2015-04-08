@@ -8,6 +8,10 @@ if not modules then modules = { } end modules ['scrn-fld'] = {
 
 -- we should move some code from lpdf-fld to here
 
+local context       = context
+local ctx_doifelse  = commands.doifelse
+local implement = interfaces.implement
+
 local variables     = interfaces.variables
 local v_yes         = variables.yes
 
@@ -40,48 +44,141 @@ fields.defineset = defineset
 fields.clone     = clone
 fields.insert    = insert
 
-commands.definefield    = define
-commands.definefieldset = defineset
-commands.clonefield     = clone
+-- codeinjections are not yet defined
 
-function commands.insertfield(name,specification)
-    texsetbox("b_scrn_field_body",insert(name,specification))
-end
+implement {
+    name      = "definefield",
+    actions   = define,
+    arguments = {
+        {
+            { "name" },
+            { "alternative" },
+            { "type" },
+            { "category" },
+            { "values" },
+            { "default" },
+        }
+    }
+}
+
+implement {
+    name      = "definefieldset",
+    actions   = defineset,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "clonefield",
+    actions   = clone,
+    arguments = {
+        {
+            { "children" },
+            { "alternative" },
+            { "parent" },
+            { "category" },
+            { "values" },
+            { "default" },
+        }
+    }
+}
+
+implement {
+    name     = "insertfield",
+    actions  = function(name,specification)
+        texsetbox("b_scrn_field_body",insert(name,specification))
+    end,
+    arguments = {
+        "string",
+        {
+            { "title" },
+            { "width", "dimen" },
+            { "height", "dimen" },
+            { "depth", "dimen" },
+            { "align" },
+            { "length" },
+            { "fontstyle" },
+            { "fontalternative" },
+            { "fontsize" },
+            { "fontsymbol" },
+            { "colorvalue", "integer" },
+            { "color" },
+            { "backgroundcolorvalue", "integer" },
+            { "backgroundcolor" },
+            { "framecolorvalue", "integer" },
+            { "framecolor" },
+            { "layer" },
+            { "option" },
+            { "align" },
+            { "clickin" },
+            { "clickout" },
+            { "regionin" },
+            { "regionout" },
+            { "afterkey" },
+            { "format" },
+            { "validate" },
+            { "calculate" },
+            { "focusin" },
+            { "focusout" },
+            { "openpage" },
+            { "closepage" },
+        }
+    }
+}
 
 -- (for the monent) only tex interface
 
-function commands.getfieldcategory(name)
-    local g = codeinjections.getfieldcategory(name)
-    if g then
-        context(g)
+implement {
+    name      = "getfieldcategory",
+    arguments = "string",
+    actions   = function(name)
+        local g = codeinjections.getfieldcategory(name)
+        if g then
+            context(g)
+        end
     end
-end
+}
 
-function commands.getdefaultfieldvalue(name)
-    local d = codeinjections.getdefaultfieldvalue(name)
-    if d then
-        context(d)
+implement {
+    name      = "getdefaultfieldvalue",
+    arguments = "string",
+    actions   = function(name)
+        local d = codeinjections.getdefaultfieldvalue(name)
+        if d then
+            context(d)
+        end
     end
-end
+}
 
-function commands.exportformdata(export)
-    if export == v_yes then
-        codeinjections.exportformdata()
+implement {
+    name      = "exportformdata",
+    arguments = "string",
+    actions   = function(export)
+        if export == v_yes then
+            codeinjections.exportformdata()
+        end
     end
-end
+}
 
-function commands.setformsmethod(method)
-    codeinjections.setformsmethod(method)
-end
+implement {
+    name      = "setformsmethod",
+    arguments = "string",
+    actions   = function(method)
+        codeinjections.setformsmethod(method)
+    end
+}
 
-function commands.doiffieldcategoryelse(name)
-    commands.doifelse(codeinjections.validfieldcategory(name))
-end
+implement {
+    name      = "doifelsefieldcategory",
+    arguments = "string",
+    actions   = function(name)
+        ctx_doifelse(codeinjections.validfieldcategory(name))
+    end
+}
 
-function commands.doiffieldsetelse(tag)
-    commands.doifelse(codeinjections.validfieldset(name))
-end
-
-function commands.doiffieldelse(name)
-    commands.doifelse(codeinjections.validfield(name))
-end
+implement {
+    name      = "doiffieldsetelse",
+    arguments = "string",
+    actions   = function(name)
+        ctx_doifelse(codeinjections.validfieldset(name))
+    end
+}

@@ -609,7 +609,7 @@
 %      {\setlayoutcomponentattribute{\v!layer:#2}}%
 %      \resetlayoutcomponentattribute
 %    \ifx\p_pack_layers_option\v!test \ruledvbox \else \vbox \fi \ifx\p_pack_layers_method\v!overlay to \overlayheight \fi \layoutcomponentboxattribute
-%      {\hbox \ifx\p_pack_layers_method\v!overlay to \overlaywidth \fi
+%      {\hbox \ifx\p_pack_layers_method\v!overlay to \d_overlay_width \fi
 %         {\edef\currentlayer{#2\the\realpageno}% local
 %          \edef\p_pack_layers_position{\layerparameter\c!position}% local
 %          \ifx\p_pack_layers_position\v!yes
@@ -676,7 +676,7 @@
    \setbox\nextbox
    \ifx\p_pack_layers_option\v!test \ruledvbox \else \vbox \fi \ifx\p_pack_layers_method\v!overlay to \overlayheight \fi \layoutcomponentboxattribute
      {\pack_layers_top_fill
-      \hbox \ifx\p_pack_layers_method\v!overlay to \overlaywidth \fi
+      \hbox \ifx\p_pack_layers_method\v!overlay to \d_overlay_width \fi
         {\box\nextbox
          \hss}%
       \pack_layers_bottom_fill}%
@@ -726,9 +726,9 @@
 \unexpanded\def\tightlayer[#1]%
   {\hbox
      {\def\currentlayer{#1}% todo: left/right
-      \setbox\nextbox\emptybox       % hoogte/breedte are \wd\nextbox/\ht\nextbox
-      \hsize\layerparameter\c!width  % \overlaywidth   = \hsize
-      \vsize\layerparameter\c!height % \overlaywheight = \vsize
+      \setbox\nextbox\emptybox
+      \hsize\layerparameter\c!width
+      \vsize\layerparameter\c!height
       \composedlayer{#1}}}
 
 \let\placelayer\flushlayer

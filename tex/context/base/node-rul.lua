@@ -450,9 +450,9 @@ implement {
 }
 
 implement {
-    name    = "enablerules",
-    once    = true,
-    actions = nodes.rules.enable
+    name     = "enablerules",
+    onlyonce = true,
+    actions  = nodes.rules.enable
 }
 
 implement {
@@ -469,7 +469,7 @@ implement {
 }
 
 implement {
-    name    = "enableshifts",
-    once    = true,
-    actions = nodes.shifts.enable
+    name     = "enableshifts",
+    onlyonce = true,
+    actions  = nodes.shifts.enable
 }

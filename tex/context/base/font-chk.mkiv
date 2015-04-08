@@ -21,11 +21,9 @@
 %
 % \definefontfeature[default][default][missing=yes]
 % \enabletrackers[fonts.missing=replace]
-%
-% or better:
 
-\unexpanded\def\checkcharactersinfont   {\ctxcommand{checkcharactersinfont()}}
-\unexpanded\def\removemissingcharacters {\ctxcommand{removemissingcharacters()}}
-\unexpanded\def\replacemissingcharacters{\ctxcommand{replacemissingcharacters()}}
+\unexpanded\def\checkcharactersinfont   {\enabletrackers[fonts.missing]}
+\unexpanded\def\removemissingcharacters {\enabletrackers[fonts.missing=remove]}
+\unexpanded\def\replacemissingcharacters{\enabletrackers[fonts.missing=replace]}
 
 \endinput

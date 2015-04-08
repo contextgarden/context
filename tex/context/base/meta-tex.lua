@@ -6,11 +6,14 @@ if not modules then modules = { } end modules ['meta-tex'] = {
     license   = "see context related readme files"
 }
 
+local tostring = tostring
 local format, gsub, find, match = string.format, string.gsub, string.find, string.match
 local formatters = string.formatters
 local P, S, R, C, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.match
 
 metapost = metapost or { }
+
+local implement = interfaces.implement
 
 -- local left     = P("[")
 -- local right    = P("]")
@@ -38,6 +41,12 @@ local pattern = Cs((P([[\"]]) + P([["]])/"\\quotedbl{}" + P(1))^0) -- or \char
 function metapost.escaped(str)
     context(lpegmatch(pattern,str))
 end
+
+implement {
+    name      = "metapostescaped",
+    actions   = metapost.escaped,
+    arguments = "string"
+}
 
 local simplify = true
 
@@ -137,6 +146,9 @@ end
 function metapost.nvformat(fmt,str)
     metapost.format_number(fmt,metapost.untagvariable(str,false))
 end
+
+implement { name =  "metapostformatted",   actions = metapost.svformat, arguments = { "string", "string" } }
+implement { name =  "metapostgraphformat", actions = metapost.nvformat, arguments = { "string", "string" } }
 
 -- local function test(fmt,n)
 --     logs.report("mp format test","fmt: %s, n: %s, result: %s, \\exponent{%s}{%s}",fmt,n,

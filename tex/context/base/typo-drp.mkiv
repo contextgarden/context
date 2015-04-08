@@ -99,21 +99,21 @@
      {\useinitialstyleparameter\c!style}%
    \useinitialcolorparameter\c!color
    \edef\p_text{\initialparameter\c!text}% optional
-   \ctxcommand{setinitial{
-        location  = "\initialparameter\c!location",
-        enabled   = true,
-        n         = \number\scratchcounter,
-        m         = \number\initialparameter\c!m,
-        method    = "\initialparameter\c!method",
-        distance  = \number\scratchdistance,
-        hoffset   = \number\scratchhoffset,
-        voffset   = \number\scratchvoffset,
-        ma        = \the\attribute\colormodelattribute,
-        ca        = \the\attribute\colorattribute,
-        ta        = \the\attribute\transparencyattribute,
-        font      = \fontid\font,
-        dynamic   = \number\attribute\zerocount, % it's a bit over the top to support this here
-   }}%
+   \clf_setinitial
+        location  {\initialparameter\c!location}%
+        enabled   true\space
+        n         \scratchcounter
+        m         \numexpr\initialparameter\c!m\relax
+        method    {\initialparameter\c!method}%
+        distance  \scratchdistance
+        hoffset   \scratchhoffset
+        voffset   \scratchvoffset
+        ma        \attribute\colormodelattribute
+        ca        \attribute\colorattribute
+        ta        \attribute\transparencyattribute
+        font      \fontid\font
+        dynamic   \attribute\zerocount % it's a bit over the top to support this here
+   \relax
    \stopluacode
    \kern\zeropoint % we need a node
    \p_text

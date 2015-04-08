@@ -26,3 +26,9 @@ function figures.mergegoodies(optionlist)
         codeinjections.mergebookmarks()
     end
 end
+
+interfaces.implement {
+    name      = "figure_mergegoodies",
+    actions   = figures.mergegoodies,
+    arguments = "string"
+}

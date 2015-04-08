@@ -51,7 +51,7 @@
 %D \stoptyping
 
 \unexpanded\def\setreplacements[#1]%
-  {\ctxcommand{setreplacements("#1")}}
+  {\clf_setreplacements{#1}}
 
 \unexpanded\def\resetreplacements
   {\attribute\replacementsattribute\attributeunsetvalue}
@@ -61,7 +61,7 @@
 
 \unexpanded\def\languages_replacements_replace[#1][#2][#3]%
   {\ifthirdargument
-     \ctxcommand{addreplacements("#1",\!!bs#2\!!es,\!!bs#3\!!es)}%
+     \clf_addreplacements{#1}{#2}{#3}%
    \fi}
 
 \appendtoks

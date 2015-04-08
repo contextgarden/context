@@ -91,7 +91,12 @@ local function setxmpfile(name)
 end
 
 codeinjections.setxmpfile = setxmpfile
-commands.setxmpfile       = setxmpfile
+
+interfaces.implement {
+    name      = "setxmpfile",
+    arguments = "string",
+    actions   = setxmpfile
+}
 
 local function valid_xmp()
     if not xmp then

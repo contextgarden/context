@@ -106,7 +106,7 @@
 \unexpanded\def\buildtextaccent#1#2% we could do all at the lua end
   {\begingroup                     % but that's no fun (yet)
    \setbox\b_enco_accent\hbox{#1}%
-   \ctxcommand{buildtextaccent(\number\b_enco_accent)}#2%
+   \clf_buildtextaccent\b_enco_accent#2%
    \endgroup}
 
 \unexpanded\def\bottomaccent#1#2#3#4#5% down right slantcorrection accent char

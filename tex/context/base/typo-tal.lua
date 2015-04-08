@@ -74,6 +74,8 @@ local enabled              = false
 
 local datasets             = false
 
+local implement            = interfaces.implement
+
 local comma                = 0x002C
 local period               = 0x002E
 local punctuationspace     = 0x2008
@@ -141,8 +143,16 @@ end
 characteralign.setcharacteralign   = setcharacteralign
 characteralign.resetcharacteralign = resetcharacteralign
 
-commands.setcharacteralign         = setcharacteralign
-commands.resetcharacteralign       = resetcharacteralign
+implement {
+    name      = "setcharacteralign",
+    actions   = setcharacteralign,
+    arguments = { "integer", "string" }
+}
+
+implement {
+    name      = "resetcharacteralign",
+    actions   = resetcharacteralign
+}
 
 local function traced_kern(w)
     return tracedrule(w,nil,nil,"darkgray")

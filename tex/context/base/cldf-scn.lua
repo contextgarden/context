@@ -34,7 +34,7 @@ function interfaces.implement(specification)
     local name      = specification.name
     local arguments = specification.arguments
     local private   = specification.scope == "private"
-    local once      = specification.once
+    local onlyonce  = specification.onlyonce
     if not actions then
         if name then
             report("error: no actions for %a",name)
@@ -47,7 +47,7 @@ function interfaces.implement(specification)
         name = nil
     end
     local scanner
-    local resetter = once and name and commands.ctxresetter(name)
+    local resetter = onlyonce and name and commands.ctxresetter(name)
     if resetter then
         local scan = compile(specification)
         if private then
@@ -76,7 +76,7 @@ function interfaces.implement(specification)
         return
     end
     local command
-    if once then
+    if onlyonce then
         if type(actions) == "function" then
             actions = { actions }
         elseif #actions == 1 then

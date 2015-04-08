@@ -989,8 +989,8 @@ implement { name = "structurecatcodedget",       actions = sections.structuredat
 implement { name = "structuregivencatcodedget",  actions = sections.structuredata, arguments = { false, "string", false, "integer" } }
 implement { name = "structureautocatcodedget",   actions = sections.structuredata, arguments = { false, "string", false, "string" } }
 
-implement { name = "namedstructurevariable",     actions = sections.structuredata }
-implement { name = "namedstructureuservariable", actions = sections.userdata }
+implement { name = "namedstructurevariable",     actions = sections.structuredata, arguments = { "string", "string" }  }
+implement { name = "namedstructureuservariable", actions = sections.userdata,      arguments = { "string", "string" }  }
 
 implement { name = "setstructurelevel",          actions = sections.setlevel,        arguments = { "string", "string" } }
 implement { name = "getstructurelevel",          actions = sections.getcurrentlevel, arguments = { "string" } }

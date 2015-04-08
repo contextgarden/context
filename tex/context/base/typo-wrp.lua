@@ -67,7 +67,10 @@ function wrappers.handler(head)
     return head, true
 end
 
-function commands.enablecrlf()
-    nodes.tasks.enableaction("processors","typesetters.wrappers.handler")
-    function commands.enablecrlf() end
-end
+interfaces.implement {
+    name     = "enablecrlf",
+    onlyonce = true,
+    actions  = function()
+        nodes.tasks.enableaction("processors","typesetters.wrappers.handler")
+    end
+}

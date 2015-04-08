@@ -28,6 +28,7 @@ local textlineactions   = resolvers.openers.helpers.textlineactions
 local setmetatableindex = table.setmetatableindex
 
 local implement         = interfaces.implement
+local setmacro          = interfaces.setmacro
 
 --[[ldx--
 <p>We will hook regime handling code into the input methods.</p>

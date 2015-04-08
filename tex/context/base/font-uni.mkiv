@@ -13,14 +13,14 @@
 
 \writestatus{loading}{ConTeXt Font Macros / Unicode}
 
-%D In \MKIV\ we only provide the \type {\uchar} macro and
-%D implement it as just an \UTF\ converter. We expand it so
-%D best not use not use it for active characters.
+%D In \MKIV\ we only provide the \type {\uchar} macro and implement it as just
+%D an \UTF\ converter. We expand it so best not use not use it for active
+%D characters. In practice this command is probably never used anyway but we keep
+%D if for old styles.
 
 \unprotect
 
-%def\uchar#1#2{\ctxcommand{uchar(,)}}
-\def\uchar#1#2{\cldcontext{utf.char(\number\numexpr#1*256+#2\relax)}}
+\def\uchar#1#2{\clf_uchar\numexpr#1\relax\numexpr#2\relax}
 
 \let\uc\uchar
 

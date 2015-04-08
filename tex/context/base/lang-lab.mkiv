@@ -349,12 +349,12 @@
   {\dodoubleempty\typo_helpers_concat_comma_list}
 
 \def\typo_helpers_concat_comma_list[#1][#2]%
-  {\ctxcommand{concatcommalist{
-     text       = \!!bs#1\!!es,
-     separators = \!!bs#2\!!es,
-     first      = \!!bs\labeltext{and-1}\!!es,
-     second     = \!!bs\labeltext{and-2}\!!es
-   }}}
+  {\clf_concatcommalist
+     text       {#1}%
+     separators {#2}%
+     first      {\detokenize\expandafter{\normalexpanded{\labeltext{and-1}}}}%
+     second     {\detokenize\expandafter{\normalexpanded{\labeltext{and-2}}}}%
+   \relax}
 
 \setuplabeltext [\s!nl] [and-1={{, }}, and-2={{ en }}]   % 1, 2 en 3
 \setuplabeltext [\s!en] [and-1={{, }}, and-2={{, }}]     % 1, 2, 3

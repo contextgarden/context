@@ -46,6 +46,7 @@
     \let\showmathcharactersstartlookupvariants   \relax
     \let\showmathcharacterslookupvariant         \gobblefourarguments
     \let\showmathcharactersstoplookupvariants    \relax
+    \let\showmathcharacterssetrange              \gobblethreearguments
 
 \stopsetups
 
@@ -126,15 +127,23 @@
 
 \def\module_math_characters_show[#1]%
   {\begingroup
-   \getdummyparameters[\c!bodyfont=,\c!list=,\c!alternative=default,#1]%
+   \getdummyparameters
+     [\c!bodyfont=,
+      \c!list=,
+      \c!check=,
+      \c!alternative=default,
+      \c!option=\v!all,
+      #1]%
    \directsetup{s-math-characters:\dummyparameter\c!alternative}%
    \doifelsenothing{\dummyparameter\c!bodyfont}
      {\definedfont[MathRoman*math-text]}
      {\definedfont[\dummyparameter\c!bodyfont]}%
    \dontcomplain
    \ctxlua{moduledata.math.characters.showlist {
-      number = false,
-      list   = "\dummyparameter\c!list",
+      number   = false,
+      check    = "\dummyparameter\c!check",
+      list     = "\dummyparameter\c!list",
+      option   = "\dummyparameter\c!option",
    }}%
    \endgroup}
 

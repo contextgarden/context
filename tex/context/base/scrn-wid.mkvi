@@ -100,16 +100,16 @@
      \begingroup
      \def\currentattachment{_}%
      \setupcurrentattachment[#settings,\s!parent=\??attachment]%
-     \ctxcommand{registerattachment{
-        tag        = "#tag",
-        registered = "#tag",
-        title      = "\attachmentparameter\c!title",
-        subtitle   = "\attachmentparameter\c!subtitle",
-        author     = "\attachmentparameter\c!author",
-        file       = "\attachmentparameter\c!file",
-        name       = "\attachmentparameter\c!name",
-        buffer     = "\attachmentparameter\c!buffer",
-     }}%
+     \clf_registerattachment
+        tag        {#tag}%
+        registered {#tag}%
+        title      {\attachmentparameter\c!title}%
+        subtitle   {\attachmentparameter\c!subtitle}%
+        author     {\attachmentparameter\c!author}%
+        file       {\attachmentparameter\c!file}%
+        name       {\attachmentparameter\c!name}%
+        buffer     {\attachmentparameter\c!buffer}%
+     \relax
      \endgroup
    \else
      % todo
@@ -181,37 +181,37 @@
    \edef\currentattachmentheight{\attachmentparameter\c!height}%
    \edef\currentattachmentdepth {\attachmentparameter\c!depth }%
    \ifx\currentattachmentsymbol\empty
-     \ifx\currentattachmentwidth \v!fit\edef\currentattachmentwidth {.5em}\fi
-     \ifx\currentattachmentheight\v!fit\edef\currentattachmentheight{.5em}\fi
+     \ifx\currentattachmentwidth \v!fit\edef\currentattachmentwidth {.5\emwidth}\fi
+     \ifx\currentattachmentheight\v!fit\edef\currentattachmentheight{.5\emwidth}\fi
      \ifx\currentattachmentdepth \v!fit\let \currentattachmentdepth \zeropoint\fi
    \else
-     \ctxcommand{presetsymbollist("\attachmentparameter\c!symbol")}%
+     \clf_presetsymbollist{\attachmentparameter\c!symbol}%
      % we cannot yet ask for the wd/ht/dp of an xform else we could use those
      \setbox\b_scrn_attachment_symbol\hbox{\symbol[\lastpredefinedsymbol]}%
      \ifx\currentattachmentwidth \v!fit\edef\currentattachmentwidth {\wd\b_scrn_attachment_symbol}\fi
      \ifx\currentattachmentheight\v!fit\edef\currentattachmentheight{\ht\b_scrn_attachment_symbol}\fi
      \ifx\currentattachmentdepth \v!fit\edef\currentattachmentdepth {\dp\b_scrn_attachment_symbol}\fi
    \fi
-   \ctxcommand{insertattachment{
-     tag               = "\currentattachment",
-     registered        = "\currentattachmentregistered",
-     width             = \number\dimexpr\currentattachmentwidth \relax,
-     height            = \number\dimexpr\currentattachmentheight\relax,
-     depth             = \number\dimexpr\currentattachmentdepth \relax,
-     color             = "\attachmentparameter\c!color",
-     colormodel        = \number\attribute\colormodelattribute,
-     colorvalue        = \thecolorattribute{\attachmentparameter\c!color},
-     transparencyvalue = \thetransparencyattribute{\attachmentparameter\c!color},
-     symbol            = "\currentattachmentsymbol",
-     layer             = "\attachmentparameter\c!textlayer",
+   \clf_insertattachment
+     tag               {\currentattachment}%
+     registered        {\currentattachmentregistered}%
+     width             \dimexpr\currentattachmentwidth \relax
+     height            \dimexpr\currentattachmentheight\relax
+     depth             \dimexpr\currentattachmentdepth \relax
+     color             {\attachmentparameter\c!color}%
+     colormodel        \attribute\colormodelattribute
+     colorvalue        \numexpr\thecolorattribute{\attachmentparameter\c!color}\relax % or are these chardefs
+     transparencyvalue \numexpr\thetransparencyattribute{\attachmentparameter\c!color}\relax % or are these chardefs
+     symbol            {\currentattachmentsymbol}%
+     layer             {\attachmentparameter\c!textlayer}%
      % these will be overloaded by registered when available
-     title             = "\attachmentparameter\c!title",
-     subtitle          = "\attachmentparameter\c!subtitle",
-     author            = "\attachmentparameter\c!author",
-     file              = "\attachmentparameter\c!file",
-     name              = "\attachmentparameter\c!name",
-     buffer            = "\attachmentparameter\c!buffer",
-   }}%
+     title             {\attachmentparameter\c!title}%
+     subtitle          {\attachmentparameter\c!subtitle}%
+     author            {\attachmentparameter\c!author}%
+     file              {\attachmentparameter\c!file}%
+     name              {\attachmentparameter\c!name}%
+     buffer            {\attachmentparameter\c!buffer}%
+   \relax
    \setbox\b_scrn_attachment_link\hbox{\scrn_attachment_place}%
    \wd\b_scrn_attachment_link\currentattachmentwidth
    \ht\b_scrn_attachment_link\currentattachmentheight
@@ -219,11 +219,11 @@
    \box\b_scrn_attachment_link}
 
 \setvalue{\??attachmentmethod\v!hidden}%
-  {\ctxcommand{insertattachment{
-     tag        = "\currentattachment",
-     registered = "\currentattachmentregistered",
-     method     = "\v!hidden"
-  }}}
+  {\clf_insertattachment
+     tag        {\currentattachment}%
+     registered {\currentattachmentregistered}%
+     method     {\v!hidden}%
+   \relax}
 
 \def\scrn_attachment_place
   {\executeifdefined
@@ -401,7 +401,7 @@
   {\doifelseassignment{#title}
      {\setupcurrentcomment[#title]}
      {\setupcurrentcomment[\c!title=#title,#settings]}%
-   \ctxcommand{assignbuffer("\v!comment",\!!bs#text\!!es)}% todo: expansion control, but expanded by default (xml)
+   \clf_assignbuffer{\v!comment}{#text}\catcodetable\relax% todo: expansion control, but expanded by default (xml)
    \scrn_comment_inject
    \ignorespaces}
 
@@ -447,35 +447,35 @@
    \edef\currentcommentheight{\commentparameter\c!height}%
    \edef\currentcommentdepth {\commentparameter\c!depth }%
    \ifx\currentcommentsymbol\empty
-     \ifx\currentcommentwidth \v!fit\edef\currentcommentwidth {.5em}\fi
-     \ifx\currentcommentheight\v!fit\edef\currentcommentheight{.5em}\fi
+     \ifx\currentcommentwidth \v!fit\edef\currentcommentwidth {.5\emwidth}\fi
+     \ifx\currentcommentheight\v!fit\edef\currentcommentheight{.5\emwidth}\fi
      \ifx\currentcommentdepth \v!fit\let \currentcommentdepth \zeropoint\fi
    \else
-     \ctxcommand{presetsymbollist("\commentparameter\c!symbol")}%
+     \clf_presetsymbollist{\commentparameter\c!symbol}%
      % we cannot yet ask for the wd/ht/dp of an xform else we could use those
      \setbox\b_scrn_comment_symbol\hbox{\symbol[\lastpredefinedsymbol]}%
      \ifx\currentcommentwidth \v!fit\edef\currentcommentwidth {\wd\b_scrn_comment_symbol}\fi
      \ifx\currentcommentheight\v!fit\edef\currentcommentheight{\ht\b_scrn_comment_symbol}\fi
      \ifx\currentcommentdepth \v!fit\edef\currentcommentdepth {\dp\b_scrn_comment_symbol}\fi
    \fi
-   \ctxcommand{insertcomment{
-        tag               = "\currentcomment",
-        title             = "\commentparameter\c!title",
-        subtitle          = "\commentparameter\c!subtitle",
-        author            = "\commentparameter\c!author",
-        width             = \number\dimexpr\currentcommentwidth,
-        height            = \number\dimexpr\currentcommentheight,
-        depth             = \number\dimexpr\currentcommentdepth,
-        nx                = \commentparameter\c!nx,
-        ny                = \commentparameter\c!ny,
-        colormodel        = \number\attribute\colormodelattribute,
-        colorvalue        = \thecolorattribute{\commentparameter\c!color},
-        transparencyvalue = \thetransparencyattribute{\commentparameter\c!color},
-        option            = "\commentparameter\c!option", % todo
-        symbol            = "\commentparameter\c!symbol",
-        buffer            = "\v!comment",
-        layer             = "\commentparameter\c!textlayer"
-   }}%
+   \clf_insertcomment
+     tag               {\currentcomment}%
+     title             {\commentparameter\c!title}%
+     subtitle          {\commentparameter\c!subtitle}%
+     author            {\commentparameter\c!author}%
+     width             \dimexpr\currentcommentwidth\relax
+     height            \dimexpr\currentcommentheight\relax
+     depth             \dimexpr\currentcommentdepth\relax
+     nx                {\commentparameter\c!nx}%
+     ny                {\commentparameter\c!ny}%
+     colormodel        \attribute\colormodelattribute
+     colorvalue        \numexpr\thecolorattribute{\commentparameter\c!color}\relax
+     transparencyvalue \numexpr\thetransparencyattribute{\commentparameter\c!color}\relax
+     option            {\commentparameter\c!option}% % todo
+     symbol            {\commentparameter\c!symbol}%
+     buffer            {\v!comment}%
+     layer             {\commentparameter\c!textlayer}%
+   \relax
    \wd\b_scrn_comment_link\currentcommentwidth
    \ht\b_scrn_comment_link\currentcommentheight
    \dp\b_scrn_comment_link\currentcommentdepth
@@ -542,17 +542,17 @@
   {\dodoubleargument\scrn_soundtrack_indeed}
 
 \def\scrn_soundtrack_indeed[#tag][#filename]%
-  {\ctxcommand{registersoundclip{
-     tag  = "#tag",
-     file = "#filename"
-   }}}
+  {\clf_registersoundclip
+     tag  {#tag}%
+     file {#filename}%
+   \relax}
 
 \def\checksoundtrack#tag% yet untested in mkiv (also move management to lua)
   {\iflocation
-     \ctxcommand{insertsoundclip{
-       tag        = "#tag",
-       ["repeat"] = "\directexternalsoundtrackparameter\c!option", % todo: pass option as-is
-      }}%
+     \clf_insertsoundclip
+       tag    {#tag}%
+       repeat {\directexternalsoundtrackparameter\c!option}%
+     \relax
    \fi}
 
 %D Renderings (not yet tested in mkvi):
@@ -571,31 +571,31 @@
 \unexpanded\def\setinternalrendering{\dodoubleempty   \scrn_rendering_set}
 
 \def\scrn_rendering_use[#tag][#mime][#file][#option]%
-  {\ctxcommand{registerrendering{
-      type     = "external",
-      label    = "#tag",
-      mime     = "#mime",
-      filename = "#file",
-      option   = "#option",
-  }}}
+  {\clf_registerrendering
+     type     {external}%
+     label    {#tag}%
+     mime     {#mime}%
+     filename {#file}%
+     option   {#option}%
+   \relax}
 
 \def\scrn_rendering_set[#tag][#option]% {content} % crappy
   {\bgroup
    \dowithnextbox
-     {\ctxcommand{registerrendering{
-         type     = "internal",
-         label    = "#tag",
-         mime     = "IRO", % brrr
-         filename = "#tag",
-         option   = "#option",
-      }}%
+     {\clf_registerrendering
+         type     {internal}%
+         label    {#tag}%
+         mime     {IRO}% brrr
+         filename {#tag}%
+         option   {#option}%
+      \relax
       \let\objectoffset\zeropoint
       \setobject{IRO}{#tag}\hbox{\box\nextbox}%
       \egroup}%
      \hbox}
 
-\def\renderingtype  #tag{\ctxcommand{renderingvar("#tag","type")}}
-\def\renderingoption#tag{\ctxcommand{renderingvar("#tag","option")}}
+\def\renderingtype  #tag{\clf_renderingvar{#tag}{type}}
+\def\renderingoption#tag{\clf_renderingvar{#tag}{option}}
 
 \newdimen\d_scrn_rendering_width  \d_scrn_rendering_width  8cm
 \newdimen\d_scrn_rendering_height \d_scrn_rendering_height 6cm
@@ -648,13 +648,14 @@
    \letrenderingwindowparameter\c!offset\v!overlay
    \inheritedrenderingwindowframed
      {\vfill
-      \ctxcommand{insertrenderingwindow {
-        label  = "\currentrendering",
-        width  = \number\d_scrn_rendering_width,
-        height = \number\d_scrn_rendering_height,
-        option = "\renderingoption\currentrendering",
-        page   = \number\m_scrn_rendering_page,
-      }}\hfill}%
+      \clf_insertrenderingwindow
+        label  {\currentrendering}%
+        width  \d_scrn_rendering_width
+        height \d_scrn_rendering_height
+        option {\renderingoption\currentrendering}%
+        page   \m_scrn_rendering_page
+      \relax
+      \hfill}%
    \egroup}
 
 %D Linkedlists (not tested in mkvi):
@@ -676,7 +677,7 @@
 % \let\setupbutton\setuplinkedlists\setuplinkedlist
 %
 % \appendtoks
-%     \ctxcommand{definelinkedlist("\currentlinkedlist")}%
+%     \clf_definelinkedlist{\currentlinkedlist}%
 % \to \everydefinelinkedlist
 %
 % \def\setlinkedlistproperties#1#2#3#4#5#6%
@@ -694,8 +695,8 @@
 %      \edef\currentlinkedlist{#1}%
 %      \ifcsname\??lk\currentlinkedlist\s!parent\endcsname
 %        \hskip\linkedlistparameter\c!distance
-%        \ctxcommand{addlinklistelement("\currentlinkedlist")}%
-%        \expanded{\ctxlatelua{commands.enhancelinkedlist("\currentlinkedlist",\currentlink)}}% can also be done at the lua end
+%        \clf_addlinklistelement{\currentlinkedlist}%
+%        \expanded{\ctxlatecommand{enhancelinkedlist("\currentlinkedlist",\currentlink)}}% can also be done at the lua end
 %        \dogotosomepage  {\??lk\currentlinkedlist}\gotobegincharacter \firstlink
 %        \ifnum\noflinks>\plustwo
 %          \dogotosomepage{\??lk\currentlinkedlist}\gobackwardcharacter\previouslink

@@ -79,15 +79,15 @@
    \begingroup
    \edef\currentfirstline{#1}%
    \usefirstlinestyleandcolor\c!style\c!color
-   \ctxcommand{setfirstline {
-        alternative = "\firstlineparameter\c!alternative",
-        ma          = \the\attribute\colormodelattribute,
-        ca          = \the\attribute\colorattribute,
-        ta          = \the\attribute\transparencyattribute,
-        n           = \number\firstlineparameter\c!n,
-        font        = \fontid\font,
-        dynamic     = \number\attribute\zerocount,
-   }}%
+   \clf_setfirstline
+        alternative {\firstlineparameter\c!alternative}%
+        ma          \attribute\colormodelattribute
+        ca          \attribute\colorattribute
+        ta          \attribute\transparencyattribute
+        n           \numexpr\firstlineparameter\c!n\relax
+        font        \fontid\font
+        dynamic     \attribute\zerocount
+   \relax
    \kern\zeropoint % we need a node
 %    \hskip\zeropoint\s!plus\emwidth\relax % can be an option
    \endgroup
@@ -104,7 +104,7 @@
 \unexpanded\def\applytofirstcharacter#1%
   {\begingroup
    \dowithnextbox
-     {\ctxcommand{applytofirstcharacter(\number\nextbox,"\strippedcsname#1")}%
+     {\clf_applytofirstcharacter\nextbox{\strippedcsname#1}%
       \unhbox\nextbox
       \endgroup}%
    \hbox}

@@ -435,23 +435,54 @@ local entrysplitter = lpeg.tsplitat('+') -- & obsolete in mkiv
 
 local tagged = { }
 
+-- this whole splitting is an inheritance of mkii
+
 local function preprocessentries(rawdata)
     local entries = rawdata.entries
     if entries then
-        local e, k = entries[1] or "", entries[2] or ""
-        local et, kt, entryproc, pageproc
-        if type(e) == "table" then
-            et = e
-        else
-            entryproc, e = splitprocessor(e)
+        --
+     -- local e = entries[1] or ""
+     -- local k = entries[2] or ""
+     -- local et, kt, entryproc, pageproc
+     -- if type(e) == "table" then
+     --     et = e
+     -- else
+     --     entryproc, e = splitprocessor(e)
+     --     et = lpegmatch(entrysplitter,e)
+     -- end
+     -- if type(k) == "table" then
+     --     kt = k
+     -- else
+     --     pageproc, k = splitprocessor(k)
+     --     kt = lpegmatch(entrysplitter,k)
+     -- end
+        --
+        local processors = rawdata.processors
+        local et         = entries.entries
+        local kt         = entries.keys
+        local entryproc  = processors and processors.entry
+        local pageproc   = processors and processors.page
+        if entryproc == "" then
+            entryproc = nil
+        end
+        if pageproc == "" then
+            pageproc = nil
+        end
+        if not et then
+            local p, e = splitprocessor(entries.entry or "")
+            if p then
+                entryproc = p
+            end
             et = lpegmatch(entrysplitter,e)
         end
-        if type(k) == "table" then
-            kt = k
-        else
-            pageproc, k = splitprocessor(k)
+        if not kt then
+            local p, k = splitprocessor(entries.key or "")
+            if p then
+                pageproc = p
+            end
             kt = lpegmatch(entrysplitter,k)
         end
+        --
         entries = { }
         local ok = false
         for k=#et,1,-1 do
@@ -466,7 +497,7 @@ local function preprocessentries(rawdata)
         end
         rawdata.list = entries
         if pageproc or entryproc then
-            rawdata.processors = { entryproc, pageproc }
+            rawdata.processors = { entryproc, pageproc } -- old way: indexed .. will be keys
         end
         rawdata.entries = nil
     end
@@ -479,18 +510,18 @@ end
 local function storeregister(rawdata) -- metadata, references, entries
     local references = rawdata.references
     local metadata   = rawdata.metadata
-    local processors = rawdata.processors
     -- checking
+    if not metadata then
+        metadata = { }
+        rawdata.metadata = metadata
+    end
+    --
     if not metadata.kind then
         metadata.kind = "entry"
     end
     --
     if not metadata.catcodes then
         metadata.catcodes = tex.catcodetable -- get
-    end
-    --
-    if processors and processors[1] == "" and processors[2] == "" then
-        rawdata.processors = nil
     end
     --
     local name     = metadata.name
@@ -537,7 +568,9 @@ local function storeregister(rawdata) -- metadata, references, entries
     return #entries
 end
 
-local function enhanceregister(name,n)
+registers.store = storeregister
+
+function registers.enhance(name,n)
     local data = tobesaved[name].metadata.notsaved and collected[name] or tobesaved[name]
     local entry = data.entries[n]
     if entry then
@@ -545,7 +578,7 @@ local function enhanceregister(name,n)
     end
 end
 
-local function extendregister(name,tag,rawdata) -- maybe do lastsection internally
+function registers.extend(name,tag,rawdata) -- maybe do lastsection internally
     if type(tag) == "string" then
         tag = tagged[tag]
     end
@@ -589,23 +622,70 @@ local function extendregister(name,tag,rawdata) -- maybe do lastsection internal
     end
 end
 
-registers.store   = storeregister
-registers.enhance = enhanceregister
-registers.extend  = extendregister
-
 function registers.get(tag,n)
     local list = tobesaved[tag]
     return list and list.entries[n]
 end
 
-function commands.storeregister(rawdata)
-    local nofentries = storeregister(rawdata)
-    setinternalreference { internal = rawdata.references.internal }
-    context(nofentries)
-end
+implement {
+    name      = "enhanceregister",
+    actions   = registers.enhance,
+    arguments = { "string", "integer" }
+}
 
-commands.enhanceregister = enhanceregister
-commands.extendregister  = extendregister
+implement {
+    name      = "extendregister",
+    actions   = registers.extend,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "storeregister",
+    actions   = function(rawdata)
+        local nofentries = storeregister(rawdata)
+        setinternalreference { internal = rawdata.references.internal }
+        context(nofentries)
+    end,
+    arguments = {
+        {
+            { "metadata", {
+                    { "kind" },
+                    { "name" },
+                    { "coding" },
+                    { "level", "integer" },
+                    { "catcodes", "integer" },
+                    { "own" },
+                    { "xmlroot" },
+                    { "xmlsetup" }
+                }
+            },
+            { "entries", {
+                    { "entries", "list" },
+                    { "keys", "list" },
+                    { "entry" },
+                    { "key" }
+                }
+            },
+            { "references", {
+                    { "internal", "integer" },
+                    { "section", "integer" },
+                    { "label" }
+                }
+            },
+            { "seeword", {
+                    { "text" }
+                }
+            },
+            { "processors", {
+                    { "entry" },
+                    { "key" },
+                    { "page" }
+                }
+            },
+            { "userdata" },
+        }
+    }
+}
 
 -- sorting and rendering
 
@@ -846,9 +926,21 @@ end
 
 registers.analyze = analyzeregister
 
-function commands.analyzeregister(class,options)
-    context(analyzeregister(class,options))
-end
+implement {
+    name      = "analyzeregister",
+    actions   = { analyzeregister, context },
+    arguments = {
+        "string",
+        {
+            { "language" },
+            { "method" },
+            { "numberorder" },
+            { "compress" },
+            { "criterium" },
+            { "pagenumber", "boolean" },
+        }
+    }
+}
 
 -- todo take conversion from index
 
@@ -1214,12 +1306,42 @@ function registers.flush(data,options,prefixspec,pagespec)
  -- collectgarbage("collect")
 end
 
-local function processregister(class,...)
+function registers.process(class,...)
     if analyzeregister(class,...) > 0 then
         local data = collected[class]
         registers.flush(data,...)
     end
 end
 
-registers.process        = processregister
-commands.processregister = processregister
+implement {
+    name      = "processregister",
+    actions   = registers.process,
+    arguments = {
+        "string",
+        {
+            { "language" },
+            { "method" },
+            { "numberorder" },
+            { "compress" },
+            { "criterium" },
+            { "pagenumber", "boolean" },
+        },
+        {
+            { "separatorset" },
+            { "conversionset" },
+            { "starter" },
+            { "stopper" },
+            { "set" },
+            { "segments" },
+            { "connector" },
+        },
+        {
+            { "prefix" },
+            { "separatorset" },
+            { "conversionset" },
+            { "starter" },
+            { "stopper" },
+            { "segments" },
+        }
+    }
+}

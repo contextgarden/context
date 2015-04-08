@@ -614,9 +614,9 @@ do
         }
     end
 
-    function structurestags.setitem(head)
+    function structurestags.setitem(kind)
         itemgroups[locatedtag("item")] = {
-            head = head,
+            kind = kind,
         }
     end
 
@@ -632,7 +632,10 @@ do
     function extras.item(di,element,n,fulltag)
         local hash = itemgroups[fulltag]
         if hash then
-            setattribute(di,"head",hash.head and "yes" or nil)
+            local kind = hash.kind
+            if kind and kind ~= "" then
+                setattribute(di,"kind",kind)
+            end
         end
     end
 
@@ -3464,7 +3467,7 @@ implement {
 implement {
     name      = "settagitem",
     actions   = structurestags.setitem,
-    arguments = "boolean"
+    arguments = "string"
 }
 
 implement {

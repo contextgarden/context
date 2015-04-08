@@ -740,10 +740,6 @@ function scripts.context.run(ctxdata,filename)
                     ["jithash"]               = a_jithash,
                 }
                 --
-                if a_synctex then
-                    report("warning: synctex is enabled") -- can add upto 5% runtime
-                end
-                --
                 if not a_timing then
                     -- okay
                 elseif c_flags.usemodule then
@@ -758,6 +754,15 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.directives = format("system.profile,%s",c_flags.directives)
                 else
                     c_flags.directives = "system.profile"
+                end
+                --
+                if a_synctex then
+                    report("warning: synctex is enabled") -- can add upto 5% runtime
+                    if c_flags.directives then
+                        c_flags.directives = format("system.synctex=%s,%s",a_synctex,c_flags.directives)
+                    else
+                        c_flags.directives = format("system.synctex=%s",a_synctex)
+                    end
                 end
                 --
                 -- kindofrun: 1:first run, 2:successive run, 3:once, 4:last of maxruns

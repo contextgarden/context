@@ -729,6 +729,12 @@ function makempy.registerfile(filename)
     mpyfilename = filename
 end
 
+implement {
+    name      = "registermpyfile",
+    actions   = makempy.registerfile,
+    arguments = "string"
+}
+
 function makempy.processgraphics(graphics)
     if #graphics == 0 then
         return

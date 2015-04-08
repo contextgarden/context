@@ -1382,12 +1382,17 @@
      \setfalse\c_btx_cite_reference_injected
 \to \everybtxciteentry
 
+% \unexpanded\def\btxcitesetup#1%
+%   {\the\everybtxciteentry
+%    \everybtxciteentry\emptytoks % tricky maybe not when subcites
+%    \currentbtxlefttext
+%    \fastbtxsetup\s!cite{#1}%
+%    \currentbtxrighttext} % no \btxcitereset as we loose dataset and such
+
 \unexpanded\def\btxcitesetup#1%
   {\the\everybtxciteentry
    \everybtxciteentry\emptytoks % tricky maybe not when subcites
-   \currentbtxlefttext
-   \fastbtxsetup\s!cite{#1}%
-   \currentbtxrighttext} % no \btxcitereset as we loose dataset and such
+   \fastbtxsetup\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
 
 \appendtoks
     \btx_check_language

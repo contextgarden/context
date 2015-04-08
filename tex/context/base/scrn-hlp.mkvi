@@ -130,9 +130,13 @@
       \c!values=\currenthelpname]%
    \setbox\b_scrn_help_box\hbox
      {\fieldbody[\currenthelpname]}%
-   \ctxcommand{registerhelp(\number\c_scrn_help_n,"\currenthelpreference",\number\b_scrn_help_box)}}
+   \clf_registerhelp
+     number \c_scrn_help_n
+     name   {\currenthelpreference}%
+     box    \b_scrn_help_box
+   \relax}
 
-\def\doifelsehelp
+\unexpanded\def\doifelsehelp
   {\ifcase\c_scrn_help_n
      \expandafter\firstoftwoarguments
    \else
@@ -141,16 +145,16 @@
 
 \let\doifhelpelse\doifelsehelp
 
-\def\placehelp % was \helpdata
+\unexpanded\def\placehelp % was \helpdata
   {\ifinpagebody\ifcase\c_scrn_help_n\else
-     \ctxcommand{collecthelp(255)}% rather hard coded ... bad
+     \clf_collecthelp\normalpagebox
    \fi\fi}
 
 \def\helpreference#category%
-  {\ctxcommand{helpreference("#category")}}
+  {\clf_helpreference{#category}}
 
 \def\helpaction#category%
-  {\ctxcommand{helpaction("#category")}}
+  {\clf_helpaction{#category}}
 
 \unexpanded\def\helpsignal#category%
   {\hbox attr \helpattribute \helpreference{#category}{}}

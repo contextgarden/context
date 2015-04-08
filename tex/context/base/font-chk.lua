@@ -46,6 +46,8 @@ local tasks              = nodes.tasks
 local enableaction       = tasks.enableaction
 local disableaction      = tasks.disableaction
 
+local implement          = interfaces.implement
+
 local glyph_code         = nodes.nodecodes.glyph
 
 local nuts               = nodes.nuts
@@ -336,24 +338,6 @@ trackers.register("fonts.missing", function(v)
     end
     action = v
 end)
-
-function commands.checkcharactersinfont()
-    enableaction("processors","fonts.checkers.missing")
-    tracked = true
-end
-
-function commands.removemissingcharacters()
-    enableaction("processors","fonts.checkers.missing")
-    action = "remove"
-    tracked = true
-end
-
-function commands.replacemissingcharacters()
-    enableaction("processors","fonts.checkers.missing")
-    action = "replace"
-    otffeatures.defaults.missing = true
-    tracked = true
-end
 
 local report_characters = logs.reporter("fonts","characters")
 local report_character  = logs.reporter("missing")

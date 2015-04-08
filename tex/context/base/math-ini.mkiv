@@ -874,17 +874,16 @@
 %    \ifconditional\knuthmode\else\donknuthmode\fi}
 
 \unexpanded\def\enableasciimode
-  {\ctxlua{resolvers.macros.enablecomment()}%
-   \glet\enableasciimode\relax}
+  {\clf_enableasciimode} % relaxes itself
 
 \unexpanded\def\asciimode
   {\catcodetable\txtcatcodes
-   \enableasciimode}
+   \clf_enableasciimode}
 
 \unexpanded\def\startasciimode
   {\pushcatcodetable
    \catcodetable\txtcatcodes
-   \enableasciimode}
+   \clf_enableasciimode}
 
 \unexpanded\def\stopasciimode
   {\popcatcodetable}

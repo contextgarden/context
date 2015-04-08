@@ -26,8 +26,7 @@
 %D
 %D \typebuffer \getbuffer
 
-%def\unicodechar#1{\char\numexpr#1\relax} % no lookahead
-\def\unicodechar#1{\ctxcommand{unicodechar("#1")}}
+\def\unicodechar#1{\clf_unicodechar{#1}}
 
 \unexpanded\def\unknownchar
   {\dontleavehmode\hbox{\vrule\s!width.5\emwidth\s!height\exheight\s!depth\zeropoint}}

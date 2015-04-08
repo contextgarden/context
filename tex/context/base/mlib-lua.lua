@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['mlib-pdf'] = {
+if not modules then modules = { } end modules ['mlib-lua'] = {
     version   = 1.001,
     comment   = "companion to mlib-ctx.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -68,7 +68,7 @@ local f_quadruple = formatters["(%.16f,%.16f,%.16f,%.16f)"]
 function mp.print(...)
     for i=1,select("#",...) do
         local value = select(i,...)
-        if value then
+        if value ~= nil then
             n = n + 1
             local t = type(value)
             if t == "number" then
@@ -82,6 +82,11 @@ function mp.print(...)
             end
         end
     end
+end
+
+function mp.boolean(n)
+    n = n + 1
+    buffer[n] = n and "true" or "false"
 end
 
 function mp.numeric(n)

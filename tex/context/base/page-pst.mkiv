@@ -60,7 +60,7 @@
    \doifelsenextoptional{\egroup\page_postponed_blocks_start}{\egroup\page_postponed_blocks_start[0]}}
 
 \unexpanded\setvalue{\e!stop\v!postponing}%
-  {\ctxcommand{registerpostponedblock("\currentpostponedpage")}\relax}
+  {\clf_registerpostponedblock{\currentpostponedpage}\relax}
 
 \def\page_postponed_blocks_start[#1]%
   {\edef\currentpostponedpage{#1}%
@@ -80,7 +80,8 @@
    \setnormalcatcodes                 % postponing in verbatim
    \uncatcodespacetokens              % postponing in startlines
    \restoreglobalbodyfont             % otherwise problems inside split verbatim
-   \ctxcommand{flushpostponedblocks()}%
+   \clf_flushpostponedblocks
+     % page {123}
    \relax
    \page_otr_command_flush_floats     % new but potential dangerous, maybe we need a classification
    \endgroup}                         % of blocks: with and without flush

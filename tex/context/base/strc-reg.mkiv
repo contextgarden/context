@@ -251,48 +251,48 @@
    \setnextinternalreference
    % we could consider storing register entries in a list which we
    % could then sort
-   \xdef\currentregisternumber{\ctxcommand{storeregister{ % 'own' should not be in metadata
-        metadata = {
-          % kind     = "entry",
-            name     = "\currentregister",
-          % level    = structures.sections.currentlevel(),
-            coding   = "\currentregistercoding",
-          % catcodes = \the\catcodetable,
+   \xdef\currentregisternumber{\clf_storeregister % 'own' should not be in metadata
+        metadata {%
+            name     {\currentregister}%
+            coding   {\currentregistercoding}%
         \ifx\currentregisterownnumber\v!yes
-            own      = "\registerparameter\c!alternative", % can be used instead of pagenumber
+            own      {\registerparameter\c!alternative}% can be used instead of pagenumber
         \fi
         \ifx\currentreferencecoding\s!xml
-            xmlroot  =  "\xmldocument", % only useful when text
+            xmlroot  {\xmldocument} % only useful when text
         \fi
         \ifx\currentregisterxmlsetup\empty \else
-            xmlsetup = "\currentregisterxmlsetup",
+            xmlsetup {\currentregisterxmlsetup}%
         \fi
-        },
-        references = {
-          % internal = \nextinternalreference,
-          % section  = structures.sections.currentid(), % hm, why then not also lastsection the same way
+        }%
+        references {%
         \ifx\currentregisterlabel\empty \else
-            label    = "\currentregisterlabel",
+            label    {\currentregisterlabel}%
         \fi
-        },
-    % \ifx\currentregisterentries\empty \else
-        entries = {
+        }%
+        entries {%
             % we need a special one for xml, this is just a single one
             \ifx\currentregisterentries\empty
-                { \!!bs\currentregisterentriesa\!!es, \!!bs\currentregisterentriesb\!!es, \!!bs\currentregisterentriesc\!!es },
+                entries {
+                    {\currentregisterentriesa}%
+                    {\currentregisterentriesb}%
+                    {\currentregisterentriesc}%
+                }
             \else
-                \!!bs\currentregisterentries\!!es,
+                entry {\currentregisterentries}%
             \fi
             \ifx\currentregisterkeys\empty
-                { \!!bs\currentregisterkeysa\!!es, \!!bs\currentregisterkeysb\!!es, \!!bs\currentregisterkeysc\!!es },
+                keys {
+                    {\currentregisterkeysa}%
+                    {\currentregisterkeysb}%
+                    {\currentregisterkeysc}%
+                }
             \else
-                \!!bs\currentregisterkeys\!!es,
+                key {\currentregisterkeys}%
             \fi
-        },
-    % \fi
-        userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
-     }
-   }}%
+        }%
+        userdata {\detokenize\expandafter{\normalexpanded{#3}}}
+   }%
  % \clf_setinternalreference internal \nextinternalreference\relax % in previous
    \ifx\currentregisterownnumber\v!yes
      \glet\currentregistersynchronize\relax
@@ -312,12 +312,21 @@
   {\begingroup
    \edef\currentregister{#1}%
    \setnextinternalreference
-   \xdef\currentregisternumber{\ctxcommand{storeregister{
-        metadata   = { name = "\currentregister" },
-        entries    = { \!!bs#2\!!es, \!!bs#3\!!es },
-        processors = { \!!bs#4\!!es, \!!bs#5\!!es },
-     }
-   }}%
+   \xdef\currentregisternumber{\clf_storeregister
+     {%
+        metadata {%
+          name {\currentregister}%
+        }
+        entries {%
+          entry {#2}%
+          key   {#3}%
+        }%
+        processors {%
+          entry {#4}%
+          page  {#5}%
+        }%
+     }%
+   }%
    % overlap with the above
    \xdef\currentregistersynchronize{\ctxlatecommand{enhanceregister("\currentregister",\currentregisternumber)}}%
    \currentregistersynchronize % here?
@@ -485,26 +494,23 @@
    \fi
    \setnextinternalreference
    % we could consider storing register entries in list
-   \edef\temp{\ctxcommand{storeregister{
-        metadata = {
-            kind     = "see",
-            name     = "\currentregister",
-          % level    = structures.sections.currentlevel(),
-          % catcodes = \the\catcodetable,
-        },
-        references = {
-          % internal = \nextinternalreference,
-          % section  = structures.sections.currentid(),
-        },
-        entries = {
-            % we need a special one for xml, this is just a single one
-            \!!bs\currentregisterentries\!!es,
-            \!!bs#2\!!es
-        },
-        seeword = {
-            text = \!!bs\currentregisterseeword\!!es
-        },
-     }
+   \edef\temp{\clf_storeregister{
+     metadata {%
+         kind {see}%
+         name {\currentregister}%
+     }%
+     references {%
+       % internal = \nextinternalreference,
+       % section  = structures.sections.currentid(),
+     }%
+     entries {%
+         % we need a special one for xml, this is just a single one
+         entry {\currentregisterentries}%
+         key   {#2}%
+     }%
+     seeword {%
+         text  {\currentregisterseeword}%
+     }%
    }}%
    \dostarttagged\t!registerlocation\currentregister
    \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
@@ -525,14 +531,17 @@
   {\begingroup
    \edef\currentregister{#1}%
    \setupregister[\currentregister][#2]%
-   \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\ctxcommand{analyzeregister('\currentregister',{
-        language    = "\registerparameter\s!language",
-        method      = "\registerparameter\c!method",
-        numberorder = "\registerparameter\c!numberorder",
-        compress    = "\registerparameter\c!compress",
-        criterium   = "\registerparameter\c!criterium",
-        pagenumber  = \ifx\registerpageseparatorsymbol\empty false\else true\fi,
-   })}}}% brrr
+   \normalexpanded{\endgroup\noexpand\xdef\noexpand\utilityregisterlength{\clf_analyzeregister
+     {\currentregister}%
+     {%
+        language    {\registerparameter\s!language}%
+        method      {\registerparameter\c!method}%
+        numberorder {\registerparameter\c!numberorder}%
+        compress    {\registerparameter\c!compress}%
+        criterium   {\registerparameter\c!criterium}%
+        pagenumber  \ifx\registerpageseparatorsymbol\empty false\else true\fi
+     }%
+   }}%
    \ifcase\utilityregisterlength\relax
      \resetsystemmode\v!register
    \else
@@ -566,29 +575,32 @@
    \fi}
 
 \def\strc_registers_place_indeed
-  {\ctxcommand{processregister('\currentregister',{
-        language    = "\registerparameter\s!language",
-        method      = "\registerparameter\c!method",
-        numberorder = "\registerparameter\c!numberorder",
-        compress    = "\registerparameter\c!compress",
-        criterium   = "\registerparameter\c!criterium",
-        pagenumber  = \ifx\registerpageseparatorsymbol\empty false\else true\fi,
-   },{
-        separatorset  = "\registerparameter\c!pageprefixseparatorset",
-        conversionset = "\registerparameter\c!pageprefixconversionset",
-        starter       = \!!bs\registerparameter\c!pageprefixstarter\!!es,
-        stopper       = \!!bs\registerparameter\c!pageprefixstopper\!!es,
-        set           = "\registerparameter\c!pageprefixset",
-        segments      = "\registerparameter\c!pageprefixsegments",
-        connector     = \!!bs\registerparameter\c!pageprefixconnector\!!es,
-   },{
-        prefix        = "\registerparameter\c!pageprefix",
-        separatorset  = "\registerparameter\c!pageseparatorset",
-        conversionset = "\registerparameter\c!pageconversionset",
-        starter       = \!!bs\registerparameter\c!pagestarter\!!es,
-        stopper       = \!!bs\registerparameter\c!pagestopper\!!es,
-        segments      = "\registerparameter\c!pagesegments",
-   })}}
+  {\clf_processregister
+     {\currentregister}%
+     {%
+        language    {\registerparameter\s!language}%
+        method      {\registerparameter\c!method}%
+        numberorder {\registerparameter\c!numberorder}%
+        compress    {\registerparameter\c!compress}%
+        criterium   {\registerparameter\c!criterium}%
+        pagenumber  \ifx\registerpageseparatorsymbol\empty false\else true\fi
+     }{%
+        separatorset  {\registerparameter\c!pageprefixseparatorset}%
+        conversionset {\registerparameter\c!pageprefixconversionset}%
+        starter       {\registerparameter\c!pageprefixstarter}%
+        stopper       {\registerparameter\c!pageprefixstopper}%
+        set           {\registerparameter\c!pageprefixset}%
+        segments      {\registerparameter\c!pageprefixsegments}%
+        connector     {\registerparameter\c!pageprefixconnector}%
+     }{%
+        prefix        {\registerparameter\c!pageprefix}%
+        separatorset  {\registerparameter\c!pageseparatorset}%
+        conversionset {\registerparameter\c!pageconversionset}%
+        starter       {\registerparameter\c!pagestarter}%
+        stopper       {\registerparameter\c!pagestopper}%
+        segments      {\registerparameter\c!pagesegments}%
+     }%
+   \relax}
 
 \def\strc_registers_limited_entry#1%
   {\limitatetext{#1}\currentregistermaxwidth\unknown}%

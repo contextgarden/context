@@ -40,3 +40,18 @@ function figures.bitmapimage(t)
         report_bitmap("invalid specification")
     end
 end
+
+interfaces.implement {
+    name      = "bitmapimage",
+    actions   = figures.bitmapimage,
+    arguments = {
+        {
+            { "data" },
+            { "colorspace" },
+            { "width" },
+            { "height" },
+            { "xresolution" },
+            { "yresolution" },
+        }
+    }
+}

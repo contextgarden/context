@@ -204,7 +204,7 @@ end
 
 function macros.convertfile(oldname,newname) -- beware, no testing on oldname == newname
     local data = resolvers.loadtexfile(oldname)
-    data = interfaces.preprocessed(data) or ""
+    data = interfaces.preprocessed(data) or "" -- interfaces not yet defined
     io.savedata(newname,data)
 end
 

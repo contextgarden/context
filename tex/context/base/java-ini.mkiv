@@ -113,7 +113,7 @@
    \java_start_code}
 
 \def\java_start_code#1\stopJScode
-  {\normalexpanded{\endgroup\ctxcommand{storejavascriptcode(\!!bs#1\!!es)}}}
+  {\normalexpanded{\endgroup\clf_storejavascriptcode{#1}}}
 
 \let\stopJScode\relax
 
@@ -125,12 +125,12 @@
    \java_start_preamble}
 
 \def\java_start_preamble#1\stopJSpreamble
-  {\normalexpanded{\endgroup\ctxcommand{storejavascriptpreamble(\!!bs#1\!!es)}}}
+  {\normalexpanded{\endgroup\clf_storejavascriptpreamble{#1}}}
 
 \let\stopJSpreamble\relax
 
-\unexpanded\def\setJSpreamble  #1#2{\ctxcommand{storejavascriptpreamble("#1",\!!bs#2\!!es)}}
-\unexpanded\def\addtoJSpreamble#1#2{\ctxcommand{addtojavascriptpreamble("#1",\!!bs#2\!!es)}}
+\unexpanded\def\setJSpreamble  #1#2{\clf_setjavascriptpreamble  {#1}{#2}}
+\unexpanded\def\addtoJSpreamble#1#2{\clf_addtojavascriptpreamble{#1}{#2}}
 
 %D \macros
 %D   {useJSscripts}
@@ -147,11 +147,11 @@
 %D
 %D The not so complicated implementation of this macro is:
 
-\def\useJSscripts
+\unexpanded\def\useJSscripts
   {\dodoubleempty\java_use_scripts}
 
 \def\java_use_scripts[#1][#2]%
-  {\ctxcommand{usejavascriptscripts(\!!bs#1\!!es)}% two steps as this one calls tex code
-   \ctxcommand{usejavascriptpreamble("#2")}}      % so this one comes later
+  {\clf_usejavascriptscripts {#1}%  two steps as this one calls tex code
+   \clf_usejavascriptpreamble{#2}}% so this one comes later
 
 \protect \endinput

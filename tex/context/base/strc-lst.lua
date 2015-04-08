@@ -60,6 +60,11 @@ lists.pushed            = pushed
 lists.kinds             = kinds
 lists.names             = names
 
+local sorters           = sorters
+local sortstripper      = sorters.strip
+local sortsplitter      = sorters.splitters.utf
+local sortcomparer      = sorters.comparers.basic
+
 local sectionblocks     = allocate()
 lists.sectionblocks     = sectionblocks
 
@@ -75,6 +80,7 @@ local variables         = interfaces.variables
 
 local v_all             = variables.all
 local v_reference       = variables.reference
+local v_title           = variables.title
 local v_number          = variables.reference
 local v_command         = variables.command
 local v_text            = variables.text
@@ -343,7 +349,7 @@ end
 
 local splitter = lpeg.splitat(":") -- maybe also :: or have a block parameter
 
-local sorters = {
+local listsorters = {
     [v_command] = function(a,b)
         if a.metadata.kind == "command" or b.metadata.kind == "command" then
             return a.references.internal < b.references.internal
@@ -354,6 +360,28 @@ local sorters = {
     [v_all] = function(a,b)
         return a.references.internal < b.references.internal
     end,
+    [v_title] = function(a,b)
+        local da = a.titledata
+        local db = b.titledata
+        if da and db then
+            local ta = da.title
+            local tb = db.title
+            if ta and tb then
+                local sa = da.split
+                if not sa then
+                    sa = sortsplitter(sortstripper(ta))
+                    da.split = sa
+                end
+                local sb = db.split
+                if not sb then
+                    sb = sortsplitter(sortstripper(tb))
+                    db.split = sb
+                end
+                return sortcomparer(da,db) == -1
+            end
+        end
+        return a.references.internal < b.references.internal
+    end
 }
 
 -- was: names, criterium, number, collected, forced, nested, sortorder
@@ -412,7 +440,7 @@ local function filtercollected(specification)
     end
     --
     if sortorder then -- experiment
-        local sorter = sorters[sortorder]
+        local sorter = listsorters[sortorder]
         if sorter then
             if trace_lists then
                 report_lists("sorting list using method %a",sortorder)
@@ -974,7 +1002,7 @@ implement {
                 }
             },
             { "userdata" },
-                    { "titledata", {
+            { "titledata", {
                     { "label" },
                     { "title" },
                     { "bookmark" },

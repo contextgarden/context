@@ -794,7 +794,11 @@ function environment.loadexamodes(filename)
     end
 end
 
-commands.loadexamodes = environment.loadexamodes
+implement {
+    name      = "loadexamodes",
+    actions   = environment.loadexamodes,
+    arguments = "string"
+}
 
 -- changed in mtx-context
 -- code moved from luat-ini
@@ -881,7 +885,7 @@ implement {
     arguments = "integer"
 }
 
-function commands.getcommandline() -- has to happen at the tex end in order to expand
+function document.setcommandline() -- has to happen at the tex end in order to expand
 
     -- the document[arguments|files] tables are copies
 
@@ -1020,20 +1024,35 @@ local function apply(list,action)
     end
 end
 
-function commands.setdocumentmodes() -- was setup: *runtime:modes
+function document.setmodes() -- was setup: *runtime:modes
     apply(document.options.ctxfile    .modes,context.enablemode)
     apply(document.options.commandline.modes,context.enablemode)
 end
 
-function commands.setdocumentmodules() -- was setup: *runtime:modules
+function document.setmodules() -- was setup: *runtime:modules
     apply(document.options.ctxfile    .modules,context.usemodule)
     apply(document.options.commandline.modules,context.usemodule)
 end
 
-function commands.setdocumentenvironments() -- was setup: *runtime:environments
+function document.setenvironments() -- was setup: *runtime:environments
     apply(document.options.ctxfile    .environments,context.environment)
     apply(document.options.commandline.environments,context.environment)
 end
+
+function document.setfilenames()
+    local initialize = environment.initializefilenames
+    if initialize then
+        initialize()
+    else
+        -- fatal error
+    end
+end
+
+implement { name = "setdocumentcommandline",   actions = document.setcommandline,  onlyonce = true }
+implement { name = "setdocumentmodes",         actions = document.setmodes,        onlyonce = true }
+implement { name = "setdocumentmodules",       actions = document.setmodules,      onlyonce = true }
+implement { name = "setdocumentenvironments",  actions = document.setenvironments, onlyonce = true }
+implement { name = "setdocumentfilenames",     actions = document.setfilenames,    onlyonce = true }
 
 local report_files    = logs.reporter("system","files")
 local report_options  = logs.reporter("system","options")

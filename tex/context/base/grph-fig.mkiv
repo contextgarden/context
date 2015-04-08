@@ -94,7 +94,7 @@
 
 \def\grph_typesetting_process_indeed#1#2#3#4% options settings-a filename settings-b
   {\begingroup
-   \edef\m_typesetting_name{\cldcontext{job.files.context("#3","#1")}}%
+   \edef\m_typesetting_name{\clf_runcontextjob{#3}{#1}}%
    \ifx\m_typesetting_name\empty \else
      \expanded{\externalfigure[\m_typesetting_name]}[#2,#4]%
    \fi

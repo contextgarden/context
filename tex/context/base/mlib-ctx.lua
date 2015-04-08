@@ -201,7 +201,7 @@ end
 
 implement {
     name      = "mpgraphic",
-    actions   = function(specification) metapost.graphic_base_pass(setmpsformat(specification)) end, -- not yet implemented
+    actions   = metapost.graphic,
     arguments = {
         {
             { "instance" },

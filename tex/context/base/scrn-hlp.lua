@@ -6,13 +6,15 @@ if not modules then modules = { } end modules ['scrn-hlp'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local tonumber = tonumber
 
 local help           = { }
 interactions.help    = help
 
 local context        = context
-local commands       = commands
+local implement      = interfaces.implement
+
+local formatters     = string.formatters
 
 local a_help         = attributes.private("help")
 
@@ -48,21 +50,26 @@ local helpscript = [[
 
 local template = "javascript(Hide_All_Help{help:}),action(show{help:%s})"
 
-function help.register(number,name,box)
-    if helpscript then
-        interactions.javascripts.setpreamble("HelpTexts",helpscript)
-        helpscript = false
-    end
-    local b = copy_nodelist(texgetbox(box))
-    register_list(b)
-    data[number] = b
-    if name and name ~= "" then
-        references[name] = number
-        structures.references.define("",name,format(template,number))
+local function register(specification)
+    local number = specification.number
+    local name   = specification.name
+    local box    = specification.box
+    if number and name and box then
+        if helpscript then
+            interactions.javascripts.setpreamble("HelpTexts",helpscript)
+            helpscript = false
+        end
+        local b = copy_nodelist(texgetbox(box))
+        register_list(b)
+        data[number] = b
+        if name and name ~= "" then
+            references[name] = number
+            structures.references.define("",name,formatters[template](number))
+        end
     end
 end
 
-local function collect(head,used)
+local function collectused(head,used)
     while head do
         local id = head.id
         if id == hlist_code then
@@ -74,51 +81,77 @@ local function collect(head,used)
                     used[#used+1] = a
                 end
             else
-                used = collect(head.list,used)
+                used = collectused(head.list,used)
             end
         elseif id == vlist_code then
-            used = collect(head.list,used)
+            used = collectused(head.list,used)
         end
         head = head.next
     end
     return used
 end
 
-function help.collect(box)
+local function collect(box)
     if next(data) then
-        return collect(texgetbox(box).list)
+        return collectused(texgetbox(box).list)
     end
 end
 
-commands.registerhelp = help.register
-
-function commands.collecthelp(box)
-    local used = help.collect(box)
-    if used then
-        local done = { }
-        context.startoverlay()
-        for i=1,#used do
-            local d = data[used[i]]
-            if d and not done[d] then
-                local box = hpack_nodelist(copy_nodelist(d))
-                context(false,box)
-                done[d] = true
-            else
-                -- error
-            end
-        end
-        context.stopoverlay()
-    end
-end
-
-function help.reference(name)
+local function reference(name)
     return references[name] or tonumber(name) or 0
 end
 
-function commands.helpreference(name)
-    context(references[name] or tonumber(name) or 0)
-end
+help.register  = register
+help.collect   = collect
+help.reference = reference
 
-function commands.helpaction(name)
-    context(template,references[name] or tonumber(name) or 0)
-end
+implement {
+    name    = "registerhelp",
+    actions = register,
+    arguments = {
+        {
+            { "number", "integer" },
+            { "name" },
+            { "box" , "integer" }
+        }
+    }
+}
+
+implement {
+    name      = "collecthelp",
+    arguments = "integer",
+    actions   = function(box)
+        local used = collect(box)
+        if used then
+            local done = { }
+            context.startoverlay()
+            for i=1,#used do
+                local d = data[used[i]]
+                if d and not done[d] then
+                    local box = hpack_nodelist(copy_nodelist(d))
+                    context(false,box)
+                    done[d] = true
+                else
+                    -- error
+                end
+            end
+            context.stopoverlay()
+        end
+    end
+}
+
+implement {
+    name      = "helpreference",
+    arguments = "string",
+    actions   = function(name)
+        context(reference(name))
+    end
+}
+
+implement {
+    name      = "helpaction",
+    arguments = "string",
+    actions   = function(name)
+        context(template,reference(name))
+    end
+}

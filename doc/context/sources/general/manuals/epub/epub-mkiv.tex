@@ -56,37 +56,37 @@ setbounds currentpicture to p ;
 
 There is a pretty long tradition of typesetting math with \TEX\ and it looks like
 this program will dominate for many more years. Even if we move to the web, the
-simple fact that support for \MATHML\ in some browsers is subtoptimal will drive
+simple fact that support for \MATHML\ in some browsers is suboptimal will drive
 those who want a quality document to use \PDF\ instead.
 
-I'm writing this in 2014, at a time that \XML\ is widespread. The idea of \XML\ is
+I'm writing this in 2014, at a time when \XML\ is widespread. The idea of \XML\ is
 that you code your data in a very structured way, so that it can be manipulated and
 (if needed) validated. Text has always been a target for \XML\ which is a follow|-|up
 to \SGML\ that was in use by publishers. Because \HTML\ is less structured (and also
 quite tolerant with respect to end tags) we prefer to use \XHTML\ but unfortunately
 support for that is less widespread.
 
-Interesting is that documents are probably among the more complex targets of the
+Interestingly, documents are probably among the more complex targets of the
 \XML\ format. The reason is that unless the author restricts him|/|herself or
-gets restricted by the publisher, tag|-|abuse can happen. At \PRAGMA\ we mostly
-deal with education related \XML\ and it's not always easy to come up with
+gets restricted by the publisher, tag abuse can happen. At \PRAGMA\ we mostly
+deal with education|-|related \XML\ and it's not always easy to come up with
 something that suits the specific needs of the educational concept behind a
 school method. Even if we start out nice and clean, eventually we end up with a
-poluted source, often with additonal structure needed to satisfy the tools used
+polluted source, often with additional structure needed to satisfy the tools used
 for conversion.
 
 We have been supporting \XML\ from the day it showed up and most of our projects
 involve \XML\ in one way or the other. That doesn't mean that we don't use \TEX\
 for coding documents. This manual is for instance a regular \TEX\ document. In
 many ways a structured \TEX\ document is much more convenient to edit, especially
-if one wants to add a personal touch and do some local makeup. On the other hand,
+if one wants to add a personal touch and do some local page make|-|up. On the other hand,
 diverting from standard structure commands makes the document less suitable for
-other output than \PDF. There is simply no final solution for coding your document,
+output other than \PDF. There is simply no final solution for coding a document,
 it's mostly a matter of taste.
 
 So we have a dilemma: if we want to have multiple output, frozen \PDF\ as well as
-less controlled \HTML\ output, we can best code in \XML, but when we want to code
-comfortably we'd like to use \TEX. There are other ways, like markdown, that can
+less-controlled \HTML\ output, we can best code in \XML, but when we want to code
+comfortably we'd like to use \TEX. There are other ways, like Markdown, that can
 be converted to intermediate formats like \TEX, but that is only suitable for
 simple documents: the more advanced documents get, the more one has to escape
 from the boundaries of (any) document encoding, and then often \TEX\ is not a bad
@@ -135,8 +135,8 @@ Say that we have this input:
 \stoptext
 \stoptyping
 
-The main export ends up in the \type {test-raw.xml} export file and looks as
-follows (we leave out the preamble and style references):
+The main export ends up in the \type {test-raw.xml} export file and looks like
+the following (we leave out the preamble and style references):
 
 \starttyping
 <document> <!-- with some attributes -->
@@ -159,8 +159,8 @@ follows (we leave out the preamble and style references):
 </document>
 \stoptyping
 
-This file refers to the stylesheets and therefore renders quite okay in a browser
-like FireFox that can handle \XHTML\ with arbitrary tags.
+This file refers to the stylesheets and therefore renders quite well in a browser
+like Firefox that can handle \XHTML\ with arbitrary tags.
 
 The \type {detail} attribute tells us what instance of the element is used.
 Normally the \type {chain} attribute is the same but it can have more values.
@@ -196,16 +196,16 @@ we get this:
 \stoptyping
 
 This makes it possible to style specific categories of floats by using a
-(combination of) \type {detail} and|/|or \type {chain} as filter.
+(combination of) \type {detail} and|/|or \type {chain} as filters.
 
 The body of the \type {test-tag.xhtml} file looks similar but it is slightly more
-tuned for viewing. For instance hyperlinks are converted to a way that \CSS\ and
+tuned for viewing. For instance, hyperlinks are converted to a way that \CSS\ and
 browsers like more. Keep in mind that the raw file can be the base for conversion
 to other formats, so that one stays closest to the original structure.
 
 The \type {test-div.xhtml} file is even more tuned for viewing in browsers as it
 completely does away with specific tags. We explicitly don't map onto native
-\HTML\ elements because that would make all look messy and horrible, if only
+\HTML\ elements because that would make everything look messy and horrible, if only
 because there seldom is a relation between those elements and the original. One
 can always transform one of the export formats to pure \HTML\ tags if needed.
 
@@ -239,11 +239,11 @@ can always transform one of the export formats to pure \HTML\ tags if needed.
 </body>
 \stoptyping
 
-The also default \CSS\ file can deal with tags as well as classes. The additional
-styles file contains definitions of so called highlights. In the \CONTEXT\ source
-one can better use explicit named highlights instead of local font and color
+The default \CSS\ file can deal with tags as well as classes. The file
+of additional styles contains definitions of so|-|called highlights. In the \CONTEXT\ source
+one is better off using explicit named highlights instead of local font and color
 switches because these properties are then exported to the \CSS. The images style
-defines all used images. The templates file lists all the used elements and can
+defines all images used. The templates file lists all the elements used and can
 be used as a starting point for additional \CSS\ styling.
 
 Keep in mind that the export is \notabene{not} meant as a one|-|to|-|one visual
@@ -269,12 +269,12 @@ So, we trigger a specific (extra) backend. In addition you can set up the export
 
 The \type {hyphen} option will also export hyphenation information so that the
 text can be nicely justified. The \type {svgstyle} option can be used to specify
-a file where math is setup, normally this would only contain a bodyfont setup
-and this option is only needed if you want to create an \EPUB\ file afterwards that
+a file where math is set up; normally this would only contain a \type{bodyfont} setup,
+and this option is only needed if you want to create an \EPUB\ file afterwards which
 has math represented as \SVG.
 
-The value of \type {cssfile} ends up as style reference in the exported files.
-You can also pass a comma separates list of names (between curly braces). These
+The value of \type {cssfile} ends up as a style reference in the exported files.
+You can also pass a comma|-|separated list of names (between curly braces). These
 entries come after those of the automatically generated \CSS\ files so you need
 to be aware of default properties.
 
@@ -287,11 +287,11 @@ special image related stylesheet and then gets referred to by \type {id}. Some
 extra information is written to a status file so that the script that creates
 \EPUB\ files can deal with the right conversion, for instance from \PDF\ to \SVG.
 Because we can refer to specific pages in a \PDF\ file, this subsystem deals with
-that too. Images are expected in an \type {images} subpath and because in \CSS\
+that too. Images are expected to be in an \type {images} subdirectory and because in \CSS\
 the references are relative to the path where the stylesheet resides, we use
 \type {../images} instead. If you do some postprocessing on the files or relocate
 them you need to keep in mind that you might have to change these paths in the
-image related \CSS\ file.
+image|-|related \CSS\ file.
 
 \stopsection
 
@@ -325,26 +325,28 @@ This will create a tree with the following organization:
 ./test-epub/mimetype
 \stoptyping
 
-Images will be moved to this tree as well and if needed they will be converted
-into for instance \SVG. Converted \PDF\ files can have a \typ {page-<number>} in
+Images will be moved to this tree as well and if needed they will be converted,
+for instance into \SVG. Converted \PDF\ files can have a \typ {page-<number>} in
 their name when a specific page has been used.
 
 You can pass the option \type {--svgmath} in which case math will be converted to
 \SVG. The main reason for this feature is that we found out that \MATHML\ support
-in browsers will not be as widespread as expected. The best bet is FireFox which
+in browsers is not currently as widespread as might be expected. The best bet is Firefox which
 natively supports it. The Chrome browser had it for a while but it got dropped
 and math is now delegated to \JAVASCRIPT\ and friends. In Internet Explorer
-\MATHML\ should work (but I need to test that again). This conversion mechanism is
+\MATHML\ should work (but I need to test that again).
+
+This conversion mechanism is
 kind of interesting: one enters \TEX\ math, then gets \MATHML\ in the export, and
-that gets rendered by \TEX\ again, but now as standalone snippet that then gets
+that gets rendered by \TEX\ again, but now as a standalone snippet that then gets
 converted to \SVG\ and embedded in the result.
 
 \stopsection
 
 \startsection[title=Styles]
 
-One can argue that we should use native \HTML\ elements but we don't have a nice
-guaranteed consistent mapping onto that so it makes no sense to do so. Instead we
+One can argue that we should use native \HTML\ elements but since we don't have a nice
+guaranteed|-|consistent mapping onto that, it makes no sense to do so. Instead, we
 rely on either explicit tags with details and chains or divisions with classes
 that combine the tag, detail and chain. The tagged variant has some more
 attributes and those that use a fixed set of values become classes in the
@@ -353,11 +355,11 @@ division variant. Also, once we start going the (for instance) \type {H1}, \type
 different structure. If an \type {H3} can reflect several levels it makes no
 sense to use it. The same is true for other tags: if a list is not really a list
 than tagging it with \type {LI} is counterproductive. We're often dealing with
-very complex documents so basic \HTML\ tagging is rather meaningless then.
+very complex documents so basic \HTML\ tagging becomes rather meaningless.
 
-If you look at the division variant (the one used for \EPUB\ too) you will notice
-that there are no empty elements but \type {div} ones with a comment as content.
-This is needed because otherwise they get ignored which for instance makes table
+If you look at the division variant (this is used for \EPUB\ too) you will notice
+that there are no empty elements but \type {div} blocks with a comment as content.
+This is needed because otherwise they get ignored, which for instance makes table
 cells invisible.
 
 The relation between \type {detail} and \type {chain} (reflected in \type {class})
@@ -381,7 +383,8 @@ chain.
 \stoptyping
 
 In a \CSS\ style you can now configure tags, details, and chains as well as
-classes (we only show a few possibilities):
+classes (we show only a few possibilities).  Here, the \CSS\ element on the
+first line of each pair is invoked by the \CSS\ selector on the second line.
 
 \starttyping
 div.float.myfloata { }           float[detail='myfloata'] { }
@@ -395,16 +398,16 @@ div.figure.myfloatb { }          *[chain~='figure'][detail='myfloatb'] { }
 \stoptyping
 
 The default styles cover some basics but if you're serious about the export
-or want to use the \EPUB\ then it makes sense to overload some of it and|/|or
-provide additional styling. You can find enough about \CSS\ and it's options
-on the internet.
+or want to use \EPUB\ then it makes sense to overload some of it and|/|or
+provide additional styling. You can find plenty about \CSS\ and its options
+on the Internet.
 
 \stopsection
 
 \startsection[title=Coding]
 
-The default output reflects the structure present in the document. If this is not
-enough you can add your own structure.
+The default output reflects the structure present in the document. If that is not
+enough you can add your own structure, as in:
 
 \starttyping
 \startelement[question]
@@ -420,7 +423,7 @@ Is this right?
 \stopelement
 \stoptyping
 
-But these will only be exported when you also say:
+But these will be exported only when you also say:
 
 \starttyping
 \setupexport
@@ -446,11 +449,11 @@ In most cases it makes more sense to use highlights:
 This has the advantage that the style and color are exported to a special
 \CSS\ file.
 
-Headers and footers and other content that is part of the page builder is not
-exported. If your document has coverpages you might want to hide them too. The
-same is true when you create special chapter title rendering that have as side
+Headers, footers, and other content that is part of the page builder are not
+exported. If your document has cover pages you might want to hide them too. The
+same is true when you create special chapter title rendering with a side
 effect that content ends up in the page stream. If something shows up that you
-want to, you can wrap it in an \type {ignore} element:
+don't want, you can wrap it in an \type {ignore} element:
 
 \starttyping
 \startelement[ignore]

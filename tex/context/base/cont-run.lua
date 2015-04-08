@@ -18,6 +18,9 @@ local fastserialize = table.fastserialize
 local quoted        = string.quoted
 local possiblepath  = sandbox.possiblepath
 
+local context       = context
+local implement     = interfaces.implement
+
 local qualified     = { }
 local writeable     = { }
 local readable      = { }
@@ -170,7 +173,7 @@ if sandboxing then
 
 end
 
-function commands.processjob()
+local function processjob()
 
     environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
 
@@ -241,3 +244,9 @@ function commands.processjob()
     context.finishjob()
 
 end
+
+implement {
+    name     = "processjob",
+    onlyonce = true,
+    actions  = processjob,
+}

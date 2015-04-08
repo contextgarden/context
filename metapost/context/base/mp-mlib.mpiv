@@ -206,7 +206,10 @@ enddef ;
 
 % More text
 
-defaultfont := "Mono" ; % was cmr10, could be lmmono10-regular, but is fed into context anyway
+defaultfont  := "Mono" ;
+defaultscale := 1 ;
+
+extra_beginfig := extra_beginfig & "defaultscale:=1;" ;
 
 vardef fontsize expr name =
     save size ; numeric size ;
@@ -1160,11 +1163,11 @@ vardef varfmt(expr f, x) = "\MPformatted{"   & escaped_format(f) & "}{" & mfun_t
 vardef format   (expr f, x) = textext(strfmt(f, x)) enddef ;
 vardef formatted(expr f, x) = textext(varfmt(f, x)) enddef ;
 
-% could be this:
-
+% could be this (something to discuss with alan as it involves graph):
+%
 % vardef format   (expr f,x) = lua.mp.graphformat(f,mfun_tagged_string(x) enddef ;
 % vardef formatted(expr f,x) = lua.mp.format     (f,                   x) enddef ;
-
+%
 % def strfmt = format    enddef ; % old
 % def varfmt = formatted enddef ; % old
 

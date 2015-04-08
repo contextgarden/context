@@ -4,19 +4,9 @@ if not modules then modules = { } end modules ['page-ins'] = {
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files",
- -- public    = {
- --     functions = {
- --         "inserts.define",
- --         "inserts.getdata",
- --     },
- --     commands = {
- --         "defineinsertion",
- --         "inserttionnumber",
- --     }
- -- }
 }
 
--- Maybe we should only register in lua and forget about the tex end.
+local next = next
 
 structures           = structures or { }
 structures.inserts   = structures.inserts or { }
@@ -36,6 +26,9 @@ local v_firstcolumn  = variables.firstcolumn
 local v_lastcolumn   = variables.lastcolumn
 local v_text         = variables.text
 
+local context        = context
+local implement      = interfaces.implement
+
 storage.register("structures/inserts/stored", inserts.stored, "structures.inserts.stored")
 
 local data           = inserts.data
@@ -49,7 +42,7 @@ end
 function inserts.define(name,specification)
     specification.name= name
     local number = specification.number or 0
-    data[name] = specification
+    data[name]   = specification
     data[number] = specification
     -- only needed at runtime as this get stored in a bytecode register
     stored[name] = specification
@@ -90,8 +83,37 @@ end
 
 -- interface
 
-commands.defineinsertion      = inserts.define
-commands.setupinsertion       = inserts.setup
-commands.setinsertionlocation = inserts.setlocation
-commands.insertionnumber      = function(name) context(data[name].number or 0) end
+implement {
+    name      = "defineinsertion",
+    actions   = inserts.define,
+    arguments = {
+        "string",
+        {
+            { "number", "integer" }
+        }
+    }
+}
+
+implement {
+    name      = "setupinsertion",
+    actions   = inserts.setup,
+    arguments = {
+        "string",
+        {
+            { "location" }
+        }
+    }
+}
+
+implement {
+    name      = "setinsertionlocation",
+    actions   = inserts.setlocation,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "insertionnumber",
+    actions   = function(name) context(data[name].number or 0) end,
+    arguments = "string"
+}
 

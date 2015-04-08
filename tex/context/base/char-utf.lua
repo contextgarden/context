@@ -478,6 +478,12 @@ function utffilters.addgrapheme(result,first,second) -- can be U+ 0x string or u
     end
 end
 
+interfaces.implement {
+    name      = "addgrapheme",
+    actions   = utffilters.addgrapheme,
+    arguments = { "string", "string", "string" }
+}
+
 -- --
 
 local p_reorder = nil

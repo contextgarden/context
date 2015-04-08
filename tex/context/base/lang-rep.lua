@@ -15,7 +15,7 @@ if not modules then modules = { } end modules ['lang-rep'] = {
 -- although (given experiences so far) we don't really need that. After all, each problem
 -- is somewhat unique.
 
-local type = type
+local type, tonumber = type, tonumber
 local utfbyte, utfsplit = utf.byte, utf.split
 local P, C, U, Cc, Ct, lpegmatch = lpeg.P, lpeg.C, lpeg.patterns.utf8character, lpeg.Cc, lpeg.Ct, lpeg.match
 local find = string.find
@@ -56,6 +56,8 @@ local unsetvalue         = attributes.unsetvalue
 
 local v_reset            = interfaces.variables.reset
 
+local implement          = interfaces.implement
+
 local replacements       = languages.replacements or { }
 languages.replacements   = replacements
 
@@ -74,6 +76,8 @@ table.setmetatableindex(lists,function(lists,name)
     trees[last] = list
     return data
 end)
+
+lists[v_reset].attribute = unsetvalue -- so we discard 0
 
 -- todo: glue kern
 
@@ -260,7 +264,7 @@ end
 
 local enabled = false
 
-function replacements.set(n) -- number or 'reset'
+function replacements.set(n)
     if n == v_reset then
         n = unsetvalue
     else
@@ -278,5 +282,14 @@ end
 
 -- interface
 
-commands.setreplacements = replacements.set
-commands.addreplacements = replacements.add
+implement {
+    name      = "setreplacements",
+    actions   = replacements.set,
+    arguments = "string"
+}
+
+implement {
+    name      = "addreplacements",
+    actions   = replacements.add,
+    arguments = { "string", "string", "string" }
+}

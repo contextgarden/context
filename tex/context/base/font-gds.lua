@@ -834,7 +834,7 @@ implement {
 
 implement {
     name      = "enablefontcolorschemes",
-    once      = true,
+    onlyonce  = true,
     actions   = colorschemes.enable
 }
 

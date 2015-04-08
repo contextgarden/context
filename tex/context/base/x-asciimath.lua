@@ -29,6 +29,8 @@ local asciimath        = { }
 local moduledata       = moduledata or { }
 moduledata.asciimath   = asciimath
 
+local implement        = interfaces.implement
+
 if not characters then
     require("char-def")
     require("char-ini")
@@ -1794,7 +1796,11 @@ local function convert(str)
     end
 end
 
-commands.asciimath = convert
+implement {
+    name      = "asciimath", -- module_asciimath_convert
+    actions   = convert,
+    arguments = "string"
+}
 
 local context = context
 

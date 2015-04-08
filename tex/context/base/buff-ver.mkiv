@@ -191,13 +191,17 @@
     \fi
 \to \everydefinetyping
 
-
 \appendtoks
    \buff_verbatim_initialize_visualizer{\typingparameter\c!option}% we can check at the tex end
 \to \everysetuptyping
 
 \def\buff_verbatim_initialize_visualizer#1%
-  {\ifproductionrun\ctxcommand{loadvisualizer("#1")}\fi}
+  {\ifproductionrun\clf_loadvisualizer{#1}\fi}
+
+\unexpanded\def\doifelsevisualizer#1%
+  {\clf_doifelsevisualizer{#1}}
+
+\let\doifvisualizerelse\doifelsevisualizer
 
 %D Verbatim command are very sensitive to argument processing,
 %D which is a direct result of the \CATCODES\ being fixed at

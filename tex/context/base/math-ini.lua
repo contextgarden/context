@@ -699,3 +699,11 @@ implement {
     name    = "resetmathattributes",
     actions = mathematics.resetattributes
 }
+
+-- weird to do this here but it's a side affect of math anyway
+
+interfaces.implement {
+    name     = "enableasciimode",
+    onlyonce = true,
+    actions  = resolvers.macros.enablecomment,
+}

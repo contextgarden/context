@@ -183,14 +183,14 @@ nodes.handlers.alignbackgrounds = function(head) local head, done = add_alignbac
 
 interfaces.implement {
     name      = "enablebackgroundboxes",
-    once      = true,
+    onlyonce  = true,
     actions   = nodes.tasks.enableaction,
     arguments = { "'shipouts'", "'nodes.handlers.backgrounds'" }
 }
 
 interfaces.implement {
     name      = "enablebackgroundalign",
-    once      = true,
+    onlyonce  = true,
     actions   = nodes.tasks.enableaction,
     arguments = { "'shipouts'", "'nodes.handlers.alignbackgrounds'" }
 }

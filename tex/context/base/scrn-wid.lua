@@ -10,6 +10,7 @@ interactions             = interactions or { }
 local interactions       = interactions
 
 local context            = context
+local implement          = interfaces.implement
 
 local allocate           = utilities.storage.allocate
 
@@ -42,9 +43,13 @@ local report_attachments = logs.reporter("widgets","attachments")
 
 -- Symbols
 
-function commands.presetsymbollist(list)
-    codeinjections.presetsymbollist(list)
-end
+implement {
+    name      = "presetsymbollist",
+    arguments = "string",
+    actions   = function(list)
+                    codeinjections.presetsymbollist(list)
+                end
+}
 
 -- Attachments
 --
@@ -108,11 +113,51 @@ function attachments.insert(specification)
     return nodeinjections.attachfile(specification)
 end
 
-commands.registerattachment = attachments.register
+implement {
+    name      = "registerattachment",
+    actions   = attachments.register,
+    arguments = {
+        {
+            { "tag" },
+            { "registered" },
+            { "title" },
+            { "subtitle" },
+            { "author" },
+            { "file" },
+            { "name" },
+            { "buffer" },
+        }
+    }
+}
 
-function commands.insertattachment(specification)
-    texsetbox("b_scrn_attachment_link",(attachments.insert(specification)))
-end
+implement {
+    name      = "insertattachment",
+    actions   = function(specification)
+                    texsetbox("b_scrn_attachment_link",(attachments.insert(specification)))
+                end,
+    arguments = {
+        {
+            { "tag" },
+            { "registered" },
+            { "method" },
+            { "width", "dimen" },
+            { "height", "dimen" },
+            { "depth", "dimen" },
+            { "colormodel", "integer" },
+            { "colorvalue", "integer" },
+            { "color" },
+            { "transparencyvalue", "integer" },
+            { "symbol" },
+            { "layer" },
+            { "title" },
+            { "subtitle" },
+            { "author" },
+            { "file" },
+            { "name" },
+            { "buffer" },
+        }
+    }
+}
 
 -- Comment
 
@@ -124,9 +169,32 @@ function comments.insert(specification)
     return nodeinjections.comment(specification)
 end
 
-function commands.insertcomment(specification)
-    texsetbox("b_scrn_comment_link",(comments.insert(specification)))
-end
+implement {
+    name      = "insertcomment",
+    actions   = function(specification)
+                    texsetbox("b_scrn_comment_link",(comments.insert(specification)))
+                end,
+    arguments = {
+        {
+            { "tag" },
+            { "title" },
+            { "subtitle" },
+            { "author" },
+            { "width", "dimen" },
+            { "height", "dimen" },
+            { "depth", "dimen" },
+            { "nx" },
+            { "ny" },
+            { "colormodel", "integer" },
+            { "colorvalue", "integer" },
+            { "transparencyvalue", "integer" },
+            { "option" },
+            { "symbol" },
+            { "buffer" },
+            { "layer" },
+        }
+    }
+}
 
 -- Soundclips
 
@@ -153,8 +221,27 @@ function soundclips.insert(tag)
     end
 end
 
-commands.registersoundclip = soundclips.register
-commands.insertsoundclip   = soundclips.insert
+implement {
+    name      = registersoundclip,
+    actions   = soundclips.register,
+    arguments = {
+        {
+            { "tag" },
+            { "file" }
+        }
+    }
+}
+
+implement {
+    name      = insertsoundclip,
+    actions   = soundclips.insert,
+    arguments = {
+        {
+            { "tag" },
+            { "repeat" }
+        }
+    }
+}
 
 -- Renderings
 
@@ -175,48 +262,84 @@ function renderings.rendering(label)
     end
 end
 
-local function var(label,key)
+function renderings.var(label,key)
     local rn = renderings[label]
     return rn and rn[key] or ""
 end
 
-renderings.var = var
+implement {
+    name      = "renderingvar",
+    actions   = { renderings.var, context },
+    arguments = { "string", "string" }
+}
 
-function commands.renderingvar(label,key)
-    context(var(label,key))
-end
-
-commands.registerrendering = renderings.register
+implement {
+    name      = "registerrendering",
+    actions   = renderings.register,
+    arguments = {
+        {
+            { "type" },
+            { "label" },
+            { "mime" },
+            { "filename" },
+            { "option" },
+        }
+    }
+}
 
 -- Rendering:
 
-function commands.insertrenderingwindow(specification)
-    codeinjections.insertrenderingwindow(specification)
-end
+implement {
+    name      = "insertrenderingwindow",
+    actions   = function(specification)
+                    codeinjections.insertrenderingwindow(specification)
+                end,
+    arguments = {
+        {
+            { "label" },
+            { "width", "dimen" },
+            { "height", "dimen"  },
+            { "option" },
+            { "page", "integer" },
+        }
+    }
+}
 
 -- Linkedlists (only a context interface)
 
-function commands.definelinkedlist(tag)
-    -- no need
-end
+implement {
+    name      = "definelinkedlist",
+    arguments = "string",
+    actions   = function(tag)
+                    -- no need
+                end
+}
 
-function commands.enhancelinkedlist(tag,n)
-    local ll = jobpasses.gettobesaved(tag)
-    if ll then
-        ll[n] = texgetcount("realpageno")
-    end
-end
+implement {
+    name      = "enhancelinkedlist",
+    arguments = { "string", "integer" },
+    actions   = function(tag,n)
+                    local ll = jobpasses.gettobesaved(tag)
+                    if ll then
+                        ll[n] = texgetcount("realpageno")
+                    end
+                end
+}
 
-function commands.addlinklistelement(tag)
-    local tobesaved   = jobpasses.gettobesaved(tag)
-    local collected   = jobpasses.getcollected(tag) or { }
-    local currentlink = #tobesaved + 1
-    local noflinks    = #collected
-    tobesaved[currentlink] = 0
-    local f = collected[1] or 0
-    local l = collected[noflinks] or 0
-    local p = collected[currentlink-1] or f
-    local n = collected[currentlink+1] or l
-    context.setlinkedlistproperties(currentlink,noflinks,f,p,n,l)
- -- context.ctxlatelua(function() commands.enhancelinkedlist(tag,currentlink) end)
-end
+implement {
+    name      = "addlinklistelement",
+    arguments = "string",
+    actions   = function(tag)
+                    local tobesaved   = jobpasses.gettobesaved(tag)
+                    local collected   = jobpasses.getcollected(tag) or { }
+                    local currentlink = #tobesaved + 1
+                    local noflinks    = #collected
+                    tobesaved[currentlink] = 0
+                    local f = collected[1] or 0
+                    local l = collected[noflinks] or 0
+                    local p = collected[currentlink-1] or f
+                    local n = collected[currentlink+1] or l
+                    context.setlinkedlistproperties(currentlink,noflinks,f,p,n,l)
+                 -- context.ctxlatelua(function() commands.enhancelinkedlist(tag,currentlink) end)
+                end
+}

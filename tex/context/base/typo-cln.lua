@@ -101,4 +101,8 @@ end
 
 -- interface
 
-commands.setcharactercleaning = cleaners.set
+interfaces.implement {
+    name      = "setcharactercleaning",
+    actions   = cleaners.set,
+    arguments = "string"
+}

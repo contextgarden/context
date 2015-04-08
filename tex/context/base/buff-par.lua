@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['buff-par'] = {
     license   = "see context related readme files"
 }
 
-local context, commands = context, commands
-
 local insert, remove, find, gmatch = table.insert, table.remove, string.find, string.gmatch
 local fullstrip, formatters = string.fullstrip, string.formatters
 
@@ -22,6 +20,9 @@ local parallel          = buffers.parallel or { }
 buffers.parallel        = parallel
 
 local settings_to_array = utilities.parsers.settings_to_array
+
+local context           = context
+local implement         = interfaces.implement
 
 local data              = { }
 
@@ -63,7 +64,10 @@ function parallel.next(category)
     end
 end
 
-function parallel.save(category,tag,content)
+function parallel.save(category,tag,content,frombuffer)
+    if frombuffer then
+        content = buffers.raw(content)
+    end
     local dc = data[category]
     if not dc then
         report_parallel("unknown category %a",category)
@@ -131,7 +135,6 @@ function parallel.hassomecontent(category,tags)
 end
 
 local ctx_doflushparallel = context.doflushparallel
-local ctx_doifelse        = commands.doifelse
 local f_content           = formatters["\\input{%s}"]
 local save_byscheme       = resolvers.savers.byscheme
 
@@ -183,12 +186,47 @@ end
 
 -- interface
 
-commands.defineparallel = parallel.define
-commands.nextparallel   = parallel.next
-commands.saveparallel   = parallel.save
-commands.placeparallel  = parallel.place
-commands.resetparallel  = parallel.reset
+implement {
+    name      = "defineparallel",
+    actions   = parallel.define,
+    arguments = { "string", "string" }
+}
 
-function commands.doifelseparallel(category,tags)
-    ctx_doifelse(parallel.hassomecontent(category,tags))
-end
+implement {
+    name      = "nextparallel",
+    actions   = parallel.next,
+    arguments = "string"
+}
+
+implement {
+    name      = "saveparallel",
+    actions   = parallel.save,
+    arguments = { "string", "string", "string", true },
+}
+
+implement {
+    name      = "placeparallel",
+    actions   = parallel.place,
+    arguments = {
+        "string",
+        "string",
+        {
+            { "start" },
+            { "n" },
+            { "criterium" },
+            { "setups" },
+        }
+    }
+}
+
+implement {
+    name      = "resetparallel",
+    actions   = parallel.reset,
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "doifelseparallel",
+    actions   = { parallel.hassomecontent, commands.doifelse } ,
+    arguments = { "string", "string" }
+}

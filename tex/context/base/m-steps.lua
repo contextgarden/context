@@ -10,7 +10,6 @@ if not modules then modules = { } end modules ['x-flow'] = {
 
 moduledata.steps = moduledata.steps or { }
 
-local points       = number.points -- number.pt
 local variables    = interfaces.variables
 
 local trace_charts = false
@@ -100,22 +99,22 @@ function commands.step_make_chart(settings)
     end
     --
     context("text_line_color   := \\MPcolor{%s} ;", textsettings.framecolor)
-    context("text_line_width   := %s ;",     points(textsettings.rulethickness))
+    context("text_line_width   := %p ;", textsettings.rulethickness)
     context("text_fill_color   := \\MPcolor{%s} ;", textsettings.backgroundcolor)
-    context("text_offset       := %s ;",     points(textsettings.offset))
-    context("text_distance_set := %s ;",     points(textsettings.distance))
+    context("text_offset       := %p ;", textsettings.offset)
+    context("text_distance_set := %p ;", textsettings.distance)
     --
     context("cell_line_color := \\MPcolor{%s} ;", cellsettings.framecolor)
-    context("cell_line_width := %s ;",     points(cellsettings.rulethickness))
+    context("cell_line_width := %p ;", cellsettings.rulethickness)
     context("cell_fill_color := \\MPcolor{%s} ;", cellsettings.backgroundcolor)
-    context("cell_offset     := %s ;",     points(cellsettings.offset))
-    context("cell_distance_x := %s ;",     points(cellsettings.dx))
-    context("cell_distance_y := %s ;",     points(cellsettings.dy))
+    context("cell_offset     := %p ;", cellsettings.offset)
+    context("cell_distance_x := %p ;", cellsettings.dx)
+    context("cell_distance_y := %p ;", cellsettings.dy)
     --
     context("line_line_color := \\MPcolor{%s} ;", linesettings.color)
-    context("line_line_width := %s ;",     points(linesettings.rulethickness))
-    context("line_distance   := %s ;",     points(linesettings.distance))
-    context("line_offset     := %s ;",     points(linesettings.offset))
+    context("line_line_width := %p ;", linesettings.rulethickness)
+    context("line_distance   := %p ;", linesettings.distance)
+    context("line_offset     := %p ;", linesettings.offset)
     --
     for i=1,#steps do
         local step = steps[i]

@@ -130,31 +130,21 @@ luatex.registerstopactions(luatex.cleanuptempfiles)
 
 -- for the moment here
 
-local synctex = false
-
 local report_system = logs.reporter("system")
+local synctex       = 0
 
 directives.register("system.synctex", function(v)
-    synctex = v
-    if v then
-        report_system("synctex functionality is enabled!")
+    synctex = tonumber(v) or (toboolean(v,true) and 1) or (v == "zipped" and 1) or (v == "unzipped" and -1) or 0
+    if synctex ~= 0 then
+        report_system("synctex functionality is enabled (%s)!",tostring(synctex))
     else
         report_system("synctex functionality is disabled!")
     end
-    synctex = tonumber(synctex) or (toboolean(synctex,true) and 1) or (synctex == "zipped" and 1) or (synctex == "unzipped" and -1) or false
-    -- currently this is bugged:
-    tex.synctex = synctex
-    -- so for the moment we need:
-    context.normalsynctex()
-    if synctex then
-        context.plusone()
-    else
-        context.zerocount()
-    end
+    tex.normalsynctex = synctex
 end)
 
 statistics.register("synctex tracing",function()
-    if synctex or tex.synctex ~= 0 then
+    if synctex ~= 0 then
         return "synctex has been enabled (extra log file generated)"
     end
 end)

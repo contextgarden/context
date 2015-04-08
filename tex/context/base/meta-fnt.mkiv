@@ -21,11 +21,11 @@
   {\dotripleempty\meta_font_define}
 
 \def\meta_font_define[#1][#2][#3]%
-  {\ctxcommand{definemetafont {
-      fontname = "#1",
-      filename = "#2"
+  {\clf_definemetafont
+      fontname {#1}%
+      filename {#2}%
       % no #3 settings yet (compose, instances)
-   }}}
+   \relax}
 
 % \startluacode
 %     metapost.fonts.define { fontname = "bidi-symbols", filename = "bidi-symbols.mp" }

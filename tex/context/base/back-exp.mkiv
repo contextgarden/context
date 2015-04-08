@@ -38,8 +38,8 @@
      \doubleexpandafter\back_export_set_element_tag_b
    \fi\fi}
 
-\def\back_export_set_element_tag_a[#1][#2][#3]{\taggedctxcommand{settagproperty("#1","#2","#3")}}
-\def\back_export_set_element_tag_b[#1][#2][#3]{\taggedctxcommand{settagproperty("#1","export","#2")}}
+\def\back_export_set_element_tag_a[#1][#2][#3]{\clf_settagproperty{#1}{#2}{#3}}
+\def\back_export_set_element_tag_b[#1][#2][#3]{\clf_settagproperty{#1}{export}{#2}}
 
 % todo: no need for calls when trialtypesetting
 
@@ -152,9 +152,9 @@
            \numexpr\currentitemlevel\relax
            {\currentitemgroupsymbol}%
        \fi}%
-    \unexpanded\def\dotagsetitem
+    \unexpanded\def\dotagsetitem#1%
       {\iftrialtypesetting\else
-         \clf_settagitem\ifconditional\c_strc_itemgroups_head true\else false\fi\relax
+         \clf_settagitem{#1}%
        \fi}%
 \to \everyenableelements
 

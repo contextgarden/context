@@ -138,4 +138,8 @@ tasks.disableaction("processors","nodes.handlers.stripping")
 
 -- interface
 
-commands.setcharacterstripping = stripping.set
+interfaces.implement {
+    name      = "setcharacterstripping",
+    actions   = stripping.set,
+    arguments = "string"
+}

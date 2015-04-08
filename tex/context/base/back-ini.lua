@@ -113,6 +113,10 @@ function codeinjections.getmatrix() return 1, 0, 0, 1, 0, 0 end
 
 -- can best be here
 
-function commands.setrealspaces(v)
-    nodes.tasks.setaction("shipouts","nodes.handlers.accessibility",v == interfaces.variables.yes)
-end
+interfaces.implement {
+    name      = "setrealspaces",
+    arguments = "string",
+    actions   = function(v)
+        nodes.tasks.setaction("shipouts","nodes.handlers.accessibility",v == interfaces.variables.yes)
+    end
+}

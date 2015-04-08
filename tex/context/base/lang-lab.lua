@@ -19,6 +19,9 @@ local report_labels = logs.reporter("languages","labels")
 languages.labels        = languages.labels or { }
 local labels            = languages.labels
 
+local context           = context
+local implement         = interfaces.implement
+
 local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
 
@@ -128,7 +131,7 @@ interfaces.implement {
 -- text       : "a,b,c"
 -- separators : "{, },{ and }"
 
-function commands.concatcommalist(settings) -- it's too easy to forget that this one is there
+local function concatcommalist(settings) -- it's too easy to forget that this one is there
     local list = settings.list or settings_to_array(settings.text or "")
     local size = #list
     local command = settings.command and context[settings.command] or context
@@ -153,3 +156,16 @@ function commands.concatcommalist(settings) -- it's too easy to forget that this
         command(list[size])
     end
 end
+
+implement {
+    name      = "concatcommalist",
+    actions   = concatcommalist,
+    arguments = {
+        {
+            { "text" },
+            { "separators" },
+            { "first" },
+            { "second" },
+        }
+    }
+}

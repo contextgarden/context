@@ -17,6 +17,8 @@ local nodes, node = nodes, node
 local nodepool          = nodes.pool
 local tasks             = nodes.tasks
 
+local implement         = interfaces.implement
+
 local new_kern          = nodepool.kern
 local new_glyph         = nodepool.glyph
 
@@ -235,6 +237,60 @@ tasks.disableaction("mvlbuilders", "streams.collect")
 
 function streams.initialize()
     tasks.enableaction ("mvlbuilders", "streams.collect")
+    function streams.initialize() end
 end
 
 -- todo: remove empty last { }'s
+-- todo: better names, enable etc
+
+implement {
+    name    = "initializestream",
+    actions = streams.initialize,
+    onlyonce = true,
+}
+
+implement {
+    name      = "enablestream",
+    actions   = streams.enable,
+    arguments = "string"
+}
+
+implement {
+    name      = "disablestream",
+    actions   = streams.disable
+}
+
+implement {
+    name      = "startstream",
+    actions   = streams.start,
+    arguments = "string"
+}
+
+implement {
+    name      = "stopstream",
+    actions   = streams.stop
+}
+
+implement {
+    name      = "flushstream",
+    actions   = streams.flush,
+    arguments = "string"
+}
+
+implement {
+    name      = "flushstreamcopy",
+    actions   = streams.flush,
+    arguments = { "string", true }
+}
+
+implement {
+    name      = "synchronizestream",
+    actions   = streams.synchronize,
+    arguments = "string"
+}
+
+implement {
+    name      = "pushstream",
+    actions   = streams.push,
+    arguments = "string"
+}

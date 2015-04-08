@@ -19,8 +19,6 @@ local P, S, C, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.match
 
 local report_chart = logs.reporter("chart")
 
-local points     = number.points -- we can use %p instead
-
 local variables  = interfaces.variables
 
 local v_yes      = variables.yes
@@ -507,17 +505,17 @@ local function process_cells(chart,xoffset,yoffset)
                     local linesettings = settings.line
                     context("flow_shape_line_color := \\MPcolor{%s} ;", linesettings.color)
                     context("flow_shape_fill_color := \\MPcolor{%s} ;", linesettings.backgroundcolor)
-                    context("flow_shape_line_width := %s ; ",           points(linesettings.rulethickness))
+                    context("flow_shape_line_width := %p ; ",           linesettings.rulethickness)
                 elseif focus[cell.focus] or focus[cell.name] then
                     local focussettings = settings.focus
                     context("flow_shape_line_color := \\MPcolor{%s} ;", focussettings.framecolor)
                     context("flow_shape_fill_color := \\MPcolor{%s} ;", focussettings.backgroundcolor)
-                    context("flow_shape_line_width := %s ; ",           points(focussettings.rulethickness))
+                    context("flow_shape_line_width := %p ; ",           focussettings.rulethickness)
                 else
                     local shapesettings = settings.shape
                     context("flow_shape_line_color := \\MPcolor{%s} ;", shapesettings.framecolor)
                     context("flow_shape_fill_color := \\MPcolor{%s} ;", shapesettings.backgroundcolor)
-                    context("flow_shape_line_width := %s ; " ,          points(shapesettings.rulethickness))
+                    context("flow_shape_line_width := %p ; " ,          shapesettings.rulethickness)
                 end
                 context("flow_peepshape := false ;")   -- todo
                 context("flow_new_shape(%s,%s,%s) ;",cell.x+xoffset,cell.y+yoffset,shapedata.number)
@@ -588,7 +586,7 @@ local function process_connections(chart,xoffset,yoffset)
                             context("flow_touchshape := %s ;", linesettings.offset == v_none and "true" or "false")
                             context("flow_dsp_x := %s ; flow_dsp_y := %s ;",connection.dx or 0, connection.dy or 0)
                             context("flow_connection_line_color := \\MPcolor{%s} ;",linesettings.color)
-                            context("flow_connection_line_width := %s ;",points(linesettings.rulethickness))
+                            context("flow_connection_line_width := %p ;",linesettings.rulethickness)
                             context("flow_connect_%s_%s (%s) (%s,%s,%s) (%s,%s,%s) ;",where_cell,where_other,j,cellx,celly,what_cell,otherx,othery,what_other)
                             context("flow_dsp_x := 0 ; flow_dsp_y := 0 ;")
                         end
@@ -803,14 +801,14 @@ local function makechart(chart)
     local labeloffset   = chartsettings.labeloffset
     local exitoffset    = chartsettings.exitoffset
     local commentoffset = chartsettings.commentoffset
-    context("flow_grid_width     := %s ;", points(gridwidth))
-    context("flow_grid_height    := %s ;", points(gridheight))
-    context("flow_shape_width    := %s ;", points(shapewidth))
-    context("flow_shape_height   := %s ;", points(shapeheight))
-    context("flow_chart_offset   := %s ;", points(chartoffset))
-    context("flow_label_offset   := %s ;", points(labeloffset))
-    context("flow_exit_offset    := %s ;", points(exitoffset))
-    context("flow_comment_offset := %s ;", points(commentoffset))
+    context("flow_grid_width     := %p ;", gridwidth)
+    context("flow_grid_height    := %p ;", gridheight)
+    context("flow_shape_width    := %p ;", shapewidth)
+    context("flow_shape_height   := %p ;", shapeheight)
+    context("flow_chart_offset   := %p ;", chartoffset)
+    context("flow_label_offset   := %p ;", labeloffset)
+    context("flow_exit_offset    := %p ;", exitoffset)
+    context("flow_comment_offset := %p ;", commentoffset)
     --
     local radius = settings.line.radius
     local rulethickness = settings.line.rulethickness
@@ -825,10 +823,10 @@ local function makechart(chart)
             radius = dy
         end
     end
-    context("flow_connection_line_width := %s ;", points(rulethickness))
-    context("flow_connection_smooth_size := %s ;", points(radius))
-    context("flow_connection_arrow_size := %s ;", points(radius))
-    context("flow_connection_dash_size := %s ;", points(radius))
+    context("flow_connection_line_width  := %p ;", rulethickness)
+    context("flow_connection_smooth_size := %p ;", radius)
+    context("flow_connection_arrow_size  := %p ;", radius)
+    context("flow_connection_dash_size   := %p ;", radius)
     --
     local offset = chartsettings.offset -- todo: pass string
     if offset == v_none or offset == v_overlay or offset == "" then
@@ -836,7 +834,7 @@ local function makechart(chart)
     elseif offset == v_standard then
         offset = radius -- or rulethickness?
     end
-    context("flow_chart_offset := %s ;",points(offset))
+    context("flow_chart_offset := %p ;",offset)
     --
     context("flow_reverse_y := true ;")
     process_cells(chart,0,0)
