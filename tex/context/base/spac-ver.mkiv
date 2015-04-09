@@ -1991,8 +1991,20 @@
 %D \type {\blank} (we needed the first one while playing with the
 %D new code).
 
+% We keep this one as reference
+%
+% \unexpanded\def\inhibitblank
+%   {\vspacing[\v!disable]}
+%
+% but use the following more efficient variant instead:
+
 \unexpanded\def\inhibitblank
-  {\vspacing[\v!disable]} % can be made faster
+  {\ifvmode
+     \begingroup
+     \attribute\skipcategoryattribute\plusfive
+     \vskip\zeropoint
+     \endgroup
+   \fi}
 
 \let\doinhibitblank\inhibitblank % keep this command, used in styles
 

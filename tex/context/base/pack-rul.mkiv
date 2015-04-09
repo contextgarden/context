@@ -43,23 +43,23 @@
 \def\pack_framed_setup_line_width[#1]%
   {\assigndimension{#1}\linewidth{.2\points}{.4\points}{.6\points}}
 
-%D \macros
-%D   {setupscreens}
-%D
-%D Sort of obsolete:
-%D
-%D \showsetup{setupscreens}
-
-\installcorenamespace{screens}
-
-\installsetuponlycommandhandler \??screens {screens}
-
-\appendtoks
-    \edef\defaultbackgroundscreen{\directscreensparameter\c!screen}
-\to \everysetupscreens
-
-\setupscreens
-  [\c!screen=.90] % was .95 but that's hardly visible
+% %D \macros
+% %D   {setupscreens}
+% %D
+% %D Sort of obsolete:
+% %D
+% %D \showsetup{setupscreens}
+%
+% \installcorenamespace{screens}
+%
+% \installsetuponlycommandhandler \??screens {screens}
+%
+% \appendtoks
+%     \edef\defaultbackgroundscreen{\directscreensparameter\c!screen}
+% \to \everysetupscreens
+%
+% \setupscreens
+%   [\c!screen=.90] % was .95 but that's hardly visible
 
 %D The parameter handler:
 
@@ -155,8 +155,6 @@
   %\c!foregroundcolor=,
   %\c!foregroundstyle=,
   %\c!background=,
-  %\c!backgroundscreen=,
-   \c!backgroundscreen=\defaultbackgroundscreen,
   %\c!backgroundcolor=,
    \c!backgroundoffset=\zeropoint,
   %\c!framecolor=,
@@ -238,7 +236,6 @@
 \let\p_framed_lines           \empty
 \let\p_framed_empty           \empty
 \let\p_framed_backgroundcolor \empty
-\let\p_framed_backgroundscreen\empty
 \let\p_framed_framecolor      \empty
 \let\p_framed_component       \empty
 \let\p_framed_region          \empty
@@ -352,14 +349,14 @@
 %D The oval box is drawn using a special macro, depending on
 %D the driver in use.
 
-\def\pack_framed_background_box_gray % avoid black rules when no gray
-  {\edef\p_framed_backgroundscreen{\framedparameter\c!backgroundscreen}%
-   \ifx\p_framed_backgroundscreen\empty \else
-     \pack_framed_background_box_gray_indeed
-   \fi}
-
-\def\pack_framed_background_box_gray_indeed  % can be more direct but who cares, just compatibility
-  {\colored[s=\p_framed_backgroundscreen]{\pack_framed_filled_box}}
+% \def\pack_framed_background_box_gray % avoid black rules when no gray
+%   {\edef\p_framed_backgroundscreen{\framedparameter\c!backgroundscreen}%
+%    \ifx\p_framed_backgroundscreen\empty \else
+%      \pack_framed_background_box_gray_indeed
+%    \fi}
+%
+% \def\pack_framed_background_box_gray_indeed  % can be more direct but who cares, just compatibility
+%   {\colored[s=\p_framed_backgroundscreen]{\pack_framed_filled_box}}
 
 %D It won't be a surprise that we not only provide gray boxes, but also colored
 %D ones. Here it is:
@@ -1402,10 +1399,19 @@
 \def\pack_framed_restart
   {\aftergroup\pack_framed_finish}
 
-\def\pack_framed_do_top   {\raggedtopcommand\framedparameter\c!top}
-\def\pack_framed_do_bottom{\framedparameter\c!bottom\raggedbottomcommand}
+\def\pack_framed_do_top
+  {\raggedtopcommand
+   \framedparameter\c!top
+   \edef\p_blank{\framedparameter\c!blank}%
+   \ifx\p_blank\v!yes\else % auto or no
+     \doinhibitblank
+   \fi}
 
-%D Carefull analysis of this macro will learn us that not all branches in the last
+\def\pack_framed_do_bottom
+  {\framedparameter\c!bottom
+   \raggedbottomcommand}
+
+%D Careful analysis of this macro will learn us that not all branches in the last
 %D conditionals can be encountered, that is, some assignments to \type{\next} will
 %D never occur. Nevertheless we implement the whole scheme, if not for future
 %D extensions.
@@ -2106,7 +2112,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2117,7 +2123,7 @@
        \raggedcommand
        \pack_framed_do_top
        \bgroup
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localbegstrut
        \aftergroup\localendstrut
        \aftergroup\pack_framed_do_bottom
@@ -2128,7 +2134,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2139,7 +2145,7 @@
        \raggedcenter
        \vss
        \bgroup
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localbegstrut
        \aftergroup\localendstrut
        \aftergroup\vss
@@ -2150,7 +2156,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2162,7 +2168,7 @@
        \aftergroup\localendstrut
        \aftergroup\vss
        \aftergroup\egroup
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localbegstrut
        \doformatonelinerbox}
 
@@ -2170,7 +2176,7 @@
   {\vbox
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2180,7 +2186,7 @@
        \raggedcommand
        \pack_framed_do_top
        \bgroup
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localbegstrut
        \aftergroup\localendstrut
        \aftergroup\pack_framed_do_bottom
@@ -2191,7 +2197,7 @@
   {\vbox to \d_framed_height
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
@@ -2204,7 +2210,7 @@
        \hbox
          \bgroup
          \aftergroup\egroup
-\synchronizeinlinedirection
+         \synchronizeinlinedirection
          \localstrut
          \doformatonelinerbox}
 
@@ -2212,13 +2218,13 @@
   {\hbox to \d_framed_width
      \bgroup
        \let\postprocessframebox\relax
-%        \pack_framed_forgetall
+     % \pack_framed_forgetall
        \iftrialtypesetting \else
          \pack_framed_set_foregroundcolor
        \fi
        \pack_framed_do_setups
        \hss
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localstrut
        \bgroup
        \aftergroup\hss
@@ -2233,7 +2239,7 @@
        \fi
        \let\postprocessframebox\relax
        \pack_framed_do_setups
-\synchronizeinlinedirection
+       \synchronizeinlinedirection
        \localstrut
        \doformatonelinerbox}
 
@@ -2612,7 +2618,6 @@
   %\c!foregroundstyle=,
   %\c!background=,
   %\c!backgroundcolor=,
-   \c!backgroundscreen=\defaultbackgroundscreen,
    \c!linecorrection=\v!on,
    \c!depthcorrection=\v!on,
    \c!margin=\v!standard]

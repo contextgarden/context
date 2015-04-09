@@ -573,7 +573,8 @@ local function ruledglyph(head,current,previous)
         setfield(current,"prev",nil)
         local linewidth = emwidth/20
         local baseline
-        if dp ~= 0 and ht ~= 0 then
+     -- if dp ~= 0 and ht ~= 0 then
+        if (dp >= 0 and ht >= 0) or (dp <= 0 and ht <= 0) then
             baseline = new_rule(wd-2*linewidth,linewidth,0)
         end
         local doublelinewidth = 2*linewidth

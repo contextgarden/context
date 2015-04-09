@@ -270,6 +270,10 @@ local function stopjob()
     end
 end
 
+function metapost.getjobdata()
+    return top
+end
+
 -- end of new
 
 local function settext(box,slot)
@@ -546,29 +550,34 @@ local do_begin_fig = "; beginfig(1) ; "
 local do_end_fig   = "; endfig ;"
 local do_safeguard = ";"
 
-local f_text_data  = formatters["mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"]
+-- local f_text_data  = formatters["mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"]
+--
+-- function metapost.textextsdata()
+--     local textexts     = top.textexts
+--     local collected    = { }
+--     local nofcollected = 0
+--     for k, data in sortedhash(top.texdata) do -- sort is nicer in trace
+--         local texorder = data.texorder
+--         for n=1,#texorder do
+--             local box = textexts[texorder[n]]
+--             if box then
+--                 local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
+--                 if trace_textexts then
+--                     report_textexts("passed data item %s:%s > (%p,%p,%p)",k,n,wd,ht,dp)
+--                 end
+--                 nofcollected = nofcollected + 1
+--                 collected[nofcollected] = f_text_data(n,wd,n,ht,n,dp)
+--             else
+--                 break
+--             end
+--         end
+--     end
+--     return collected
+-- end
 
 function metapost.textextsdata()
-    local textexts     = top.textexts
-    local collected    = { }
-    local nofcollected = 0
-    for k, data in sortedhash(top.texdata) do -- sort is nicer in trace
-        local texorder = data.texorder
-        for n=1,#texorder do
-            local box = textexts[texorder[n]]
-            if box then
-                local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
-                if trace_textexts then
-                    report_textexts("passed data item %s:%s > (%p,%p,%p)",k,n,wd,ht,dp)
-                end
-                nofcollected = nofcollected + 1
-                collected[nofcollected] = f_text_data(n,wd,n,ht,n,dp)
-            else
-                break
-            end
-        end
-    end
-    return collected
+    local top = metapost.getjobdata()
+    mp.tt_initialize(top and top.textexts)
 end
 
 metapost.intermediate         = metapost.intermediate         or { }
@@ -601,10 +610,11 @@ local function extrapass()
     if trace_runs then
         report_metapost("second run of job %s, asked figure %a",top.nofruns,top.askedfig)
     end
+    local textexts = metapost.textextsdata()
     processmetapost(top.mpx, {
         top.wrappit and do_begin_fig or "",
         no_trial_run,
-        concat(metapost.textextsdata()," ;\n"),
+        textexts and concat(textexts," ;\n") or "",
         top.initializations,
         do_safeguard,
         top.data,
@@ -921,8 +931,16 @@ local fmt = formatters["%s %s %s % t"]
 ----- pat = tsplitat(":")
 local pat = lpeg.tsplitter(":",tonumber) -- so that %F can do its work
 
+local f_gray_yes = formatters["s=%F,a=%F,t=%F"]
+local f_gray_nop = formatters["s=%F"]
+local f_rgb_yes  = formatters["r=%F,g=%F,b=%F,a=%F,t=%F"]
+local f_rgb_nop  = formatters["r=%F,g=%F,b=%F"]
+local f_cmyk_yes = formatters["c=%F,m=%F,y=%F,k=%F,a=%F,t=%F"]
+local f_cmyk_nop = formatters["c=%F,m=%F,y=%F,k=%F"]
+
 local ctx_MPLIBsetNtext = context.MPLIBsetNtext
 local ctx_MPLIBsetCtext = context.MPLIBsetCtext
+local ctx_MPLIBsettext  = context.MPLIBsettext
 
 local function tx_analyze(object,prescript) -- todo: hash content and reuse them
     local data = top.texdata[metapost.properties.number]
@@ -946,25 +964,26 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
         if not n then
             local tx_last = top.texlast + 1
             top.texlast = tx_last
+         -- report_textexts("tex string: %s",s)
             if not c then
                 ctx_MPLIBsetNtext(tx_last,s)
             elseif #c == 1 then
                 if a and t then
-                    ctx_MPLIBsetCtext(tx_last,formatters["s=%F,a=%F,t=%F"](c[1],a,t),s)
+                    ctx_MPLIBsetCtext(tx_last,f_gray_yes(c[1],a,t),s)
                 else
-                    ctx_MPLIBsetCtext(tx_last,formatters["s=%F"](c[1]),s)
+                    ctx_MPLIBsetCtext(tx_last,f_gray_nop(c[1]),s)
                 end
             elseif #c == 3 then
                 if a and t then
-                    ctx_MPLIBsetCtext(tx_last,formatters["r=%F,g=%F,b=%F,a=%F,t=%F"](c[1],c[2],c[3],a,t),s)
+                    ctx_MPLIBsetCtext(tx_last,f_rgb_nop(c[1],c[2],c[3],a,t),s)
                 else
-                    ctx_MPLIBsetCtext(tx_last,formatters["r=%F,g=%F,b=%F"](c[1],c[2],c[3]),s)
+                    ctx_MPLIBsetCtext(tx_last,f_rgb_nop(c[1],c[2],c[3]),s)
                 end
             elseif #c == 4 then
                 if a and t then
-                    ctx_MPLIBsetCtext(tx_last,formatters["c=%F,m=%F,y=%F,k=%F,a=%F,t=%F"](c[1],c[2],c[3],c[4],a,t),s)
+                    ctx_MPLIBsetCtext(tx_last,f_cmyk_yes(c[1],c[2],c[3],c[4],a,t),s)
                 else
-                    ctx_MPLIBsetCtext(tx_last,formatters["c=%F,m=%F,y=%F,k=%F"](c[1],c[2],c[3],c[4]),s)
+                    ctx_MPLIBsetCtext(tx_last,f_cmyk_nop(c[1],c[2],c[3],c[4]),s)
                 end
             else
                 ctx_MPLIBsetNtext(tx_last,s)
@@ -990,7 +1009,7 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
             local s = object.postscript or ""
             local tx_last = top.texlast + 1
             top.texlast = tx_last
-            context.MPLIBsettext(tx_last,s)
+            ctx_MPLIBsettext(tx_last,s)
             top.multipass = true
             data.texslots[tx_trial] = tx_last
             data.texorder[tx_number] = tx_last

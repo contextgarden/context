@@ -475,7 +475,7 @@
    \tabl_x_stop_cell}
 
 \unexpanded\def\tabl_x_begin_of_cell
-  {\inhibitblank
+  {%\inhibitblank % already in framed
    \everypar{\delayedbegstrut}}
 
 \unexpanded\def\tabl_x_end_of_cell

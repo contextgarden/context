@@ -506,6 +506,19 @@ registerotffeature {
     }
 }
 
+local function initializerealdimensions(tfmdata,value)
+    tfmdata.properties.realdimensions = value and true
+end
+
+registerotffeature {
+    name        = "realdimensions",
+    description = "accept negative dimenions",
+    initializers = {
+        base = initializerealdimensions,
+        node = initializerealdimensions,
+    }
+}
+
 local function initializeitlc(tfmdata,value) -- hm, always value
     if value then
         -- the magic 40 and it formula come from Dohyun Kim but we might need another guess

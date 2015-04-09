@@ -348,3 +348,35 @@ function metapost.initializescriptrunner(mpx,trialrun)
     end
  -- trace_enabled = not trialrun blocks too much
 end
+
+-- texts:
+
+local factor    = 65536*(7227/7200)
+local textexts  = nil
+local mptriplet = mp.triplet
+
+function mp.tt_initialize(tt)
+    textexts = tt
+end
+
+-- function mp.tt_wd(n)
+--     local box = textexts and textexts[n]
+--     mpprint(box and box.width/factor or 0)
+-- end
+-- function mp.tt_ht(n)
+--     local box = textexts and textexts[n]
+--     mpprint(box and box.height/factor or 0)
+-- end
+-- function mp.tt_dp(n)
+--     local box = textexts and textexts[n]
+--     mpprint(box and box.depth/factor or 0)
+-- end
+
+function mp.tt_dimensions(n)
+    local box = textexts and textexts[n]
+    if box then
+        mptriplet(box.width/factor,box.height/factor,box.depth/factor)
+    else
+        mptriplet(0,0,0)
+    end
+end

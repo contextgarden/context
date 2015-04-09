@@ -90,6 +90,8 @@ end
 
 sequencers.appendaction("mathparameters","system","mathematics.scaleparameters")
 
+-- AccentBaseHeight vs FlattenedAccentBaseHeight
+
 function mathematics.checkaccentbaseheight(target,original)
     local mathparameters = target.mathparameters
     if mathparameters and mathparameters.AccentBaseHeight == 0 then

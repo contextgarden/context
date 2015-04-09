@@ -56,10 +56,10 @@
 
 \xmlregistersetup{xml:mml:define}
 
-\unexpanded\def\MMLhack
-  {\let\MMLpar\par
-   \let\par\relax
-   \everyvbox{\let\par\MMLpar}}
+% \unexpanded\def\MMLhack % no longer needed
+%   {\let\MMLpar\par
+%    \let\par\relax
+%    \everyvbox{\let\par\MMLpar}}
 
 \xmlmapvalue {mml:math:mode}    {display} {\displaymathematics} % we had this already
 \xmlmapvalue {mml:math:mode}    {inline}  {\inlinemathematics }
@@ -80,7 +80,7 @@
         }
         {
             \math_fences_checked_start
-                \MMLhack
+               %\MMLhack
                 \xmlflush{#1}
             \math_fences_checked_stop
         }
@@ -90,7 +90,7 @@
 \startxmlsetups mml:imath
     \inlinemathematics {
         \math_fences_checked_start
-            \MMLhack
+           %\MMLhack
             \xmlflush{#1}
         \math_fences_checked_stop
     }
@@ -99,7 +99,7 @@
 \startxmlsetups mml:dmath
     \displaymathematics {
         \math_fences_checked_start
-            \MMLhack
+           %\MMLhack
             \xmlflush{#1}
         \math_fences_checked_stop
     }
@@ -111,7 +111,10 @@
     \edef\mmlformulalabel   {\xmlatt{#1}{label}\xmlatt{#1}{id}}
     \edef\mmlformulasublabel{\xmlatt{#1}{sublabel}\xmlatt{#1}{id}}
     \doifsomething\mmlformulalabel{\placeformula[\mmlformulalabel]{\mmlformulasublabel}}
-    \startformula\MMLhack\xmlfirst{#1}{/mml:math}\stopformula
+    \startformula
+       %\MMLhack
+        \xmlfirst{#1}{/mml:math}
+    \stopformula
 \stopxmlsetups
 
 % old delimiter hacks
@@ -1752,7 +1755,7 @@
 \startxmlsetups mml:notanumber     \mathopnolimits{NaN}   \stopxmlsetups
 \startxmlsetups mml:true           \mathopnolimits{true}  \stopxmlsetups
 \startxmlsetups mml:false          \mathopnolimits{false} \stopxmlsetups
-\startxmlsetups mml:emptyset       \mathopnolimits{\O}    \stopxmlsetups
+\startxmlsetups mml:emptyset       \mathopnolimits{Ø}     \stopxmlsetups
 \startxmlsetups mml:pi             \pi                    \stopxmlsetups
 \startxmlsetups mml:eulergamma     \gamma                 \stopxmlsetups
 \startxmlsetups mml:infinity       \infty                 \stopxmlsetups
@@ -2018,7 +2021,7 @@
             \overline{\left)\strut\xmlflush{#1}\right.}
         } {
             \doifelse \mmlmenclosenotation {mml:enclose:actuarial} {
-                \overline{\left.\strut\xmlflush{#1}\right|}
+                \overline{\left.\strut\xmlflush{#1}\right\vert}
             } {
                 \doifelse \mmlmenclosenotation {mml:enclose:radical} {
                     \sqrt{\xmlflush{#1}}
@@ -2032,7 +2035,7 @@
                                     \overline{\left)\strut\xmlflush{#1}\right.}
                                 } {
                                     \expanded{\doifelseinset {mml:enclose:actuarial} {\mmlmenclosenotation}} {
-                                        \overline{\left.\strut\xmlflush{#1}\right|}
+                                        \overline{\left.\strut\xmlflush{#1}\right\vert}
                                     } {
                                         \expanded{\doifelseinset {mml:enclose:radical} {\mmlmenclosenotation}} {
                                             \sqrt{\xmlflush{#1}}
@@ -2418,7 +2421,11 @@
 % tables (mml:mtable, mml:mtr, mml:mlabledtr, mml:mtd)
 
 \startxmlsetups mml:mtable % some more attributes need to be supported
-    \vcenter{\ctxmodulemathml{mtable("#1")}}
+    \vcenter {
+        \hbox {% needed because otherwise positions makr the vcenter wide
+            \ctxmodulemathml{mtable("#1")}
+        }
+    }
 \stopxmlsetups
 
 \startxmlsetups mml:mcolumn

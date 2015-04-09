@@ -30,29 +30,34 @@
 %D On into Yes. Also, we've changed the test for the on value
 %D into !Off as we dón't know what value it gets in the reader.
 
+% Is this still okay? We can have unicode now, can't we? Anyway it's kind of
+% messy and unneeded in these unicode times.
+
 \startluasetups javascript:pdfencoding
-    local verbatim = context.verbatim
-    verbatim("{\n")
-    for accent, group in table.sortedhash(characters.tex.accentmapping) do
-        for character, mapping in table.sortedhash(group) do
+    local ctx_verbatim = context.verbatim
+    local utfbyte      = utf.byte
+    local sortedhash   = table.sortedhash
+
+    ctx_verbatim("{\n")
+    for accent, group in sortedhash(characters.tex.accentmapping) do
+        for character, mapping in sortedhash(group) do
             if character == "" then
                 character = " "
             end
             if accent == '"' then
-                verbatim("    '\\\\%s%s' : '\\u%04X',\n",accent,character,utf.byte(mapping))
+                ctx_verbatim("    '\\\\%s%s' : '\\u%04X',\n",accent,character,utfbyte(mapping))
             else
-                verbatim('    "\\\\%s%s" : "\\u%04X",\n',accent,character,utf.byte(mapping))
+                ctx_verbatim('    "\\\\%s%s" : "\\u%04X",\n',accent,character,utfbyte(mapping))
             end
         end
     end
-    verbatim("    '\\\\OE' : '\\u0152',\n")
-    verbatim("    '\\\\oe' : '\\u0153',\n")
-    verbatim("    '\\\\AE' : '\\u00C6',\n")
-    verbatim("    '\\\\ae' : '\\u00E6',\n")
-    verbatim("    '\\\\<<' : '\\u00AB',\n")
-    verbatim("    '\\\\>>' : '\\u00BB',\n")
-    verbatim("    '\\\\ss' : '\\u00DF' \n")
-    verbatim("}\n")
+    for command, mapping in sortedhash(characters.tex.commandmapping) do
+        ctx_verbatim('    "\\\\%s" : "\\u%04X",\n',command,utfbyte(mapping))
+    end
+ -- ctx_verbatim("    '\\\\<<' : '\\u00AB',\n")
+ -- ctx_verbatim("    '\\\\>>' : '\\u00BB',\n")
+    ctx_verbatim("}\n")
+
 \stopluasetups
 
 % maybe make { } tex braces in javascript code so that we can call lua

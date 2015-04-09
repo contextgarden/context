@@ -389,7 +389,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                         tra.inp:write(formatters["\n%% end snippet %s\n"](i))
                     end
                     starttiming(metapost.exectime)
-                    result = mpx:execute(d)
+                    result = mpx:execute(d) -- some day we wil use a coroutine with textexts
                     stoptiming(metapost.exectime)
                     if trace_graphics and result then
                         local str = result.log or result.error

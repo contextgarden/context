@@ -134,7 +134,8 @@ enddef ;
 
 newinternal textextoffset ; textextoffset := 0 ;
 
-numeric mfun_tt_w[], mfun_tt_h[], mfun_tt_d[] ; % we can consider using colors (less hash space)
+%%%%%%% mfun_tt_w[], mfun_tt_h[], mfun_tt_d[] ; % we can consider using colors (less hash space)
+color   mfun_tt_b ;
 numeric mfun_tt_n ; mfun_tt_n := 0 ;
 picture mfun_tt_p ; mfun_tt_p := nullpicture ;
 picture mfun_tt_o ; mfun_tt_o := nullpicture ;
@@ -175,6 +176,35 @@ extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
 
 % see mp-keep.mpiv for older code
 
+% vardef rawtextext(expr s) = % todo: avoid currentpicture
+%     if s = "" :
+%         nullpicture
+%     else :
+%         mfun_tt_n := mfun_tt_n + 1 ;
+%         mfun_tt_c := nullpicture ;
+%         if mfun_trial_run :
+%             mfun_tt_o := nullpicture ;
+%             addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+%             addto mfun_tt_c doublepath unitsquare
+%                 withprescript "tx_number=" & decimal mfun_tt_n
+%                 withprescript "tx_stage=trial"
+%                 withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+%                 withpostscript s ;
+%             addto mfun_tt_p also mfun_tt_c ;
+%         elseif known mfun_tt_d[mfun_tt_n] :
+%             addto mfun_tt_c doublepath unitsquare
+%                 xscaled mfun_tt_w[mfun_tt_n]
+%                 yscaled (mfun_tt_h[mfun_tt_n] + mfun_tt_d[mfun_tt_n])
+%                 shifted (0,-mfun_tt_d[mfun_tt_n])
+%                 withprescript "tx_number=" & decimal mfun_tt_n
+%                 withprescript "tx_stage=final" ;
+%         else :
+%             addto mfun_tt_c doublepath unitsquare ; % unitpicture
+%         fi ;
+%         mfun_tt_c
+%     fi
+% enddef ;
+
 vardef rawtextext(expr s) = % todo: avoid currentpicture
     if s = "" :
         nullpicture
@@ -190,15 +220,14 @@ vardef rawtextext(expr s) = % todo: avoid currentpicture
                 withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
                 withpostscript s ;
             addto mfun_tt_p also mfun_tt_c ;
-        elseif known mfun_tt_d[mfun_tt_n] :
+        else :
+            mfun_tt_b := lua.mp.tt_dimensions(mfun_tt_n) ;
             addto mfun_tt_c doublepath unitsquare
-                xscaled mfun_tt_w[mfun_tt_n]
-                yscaled (mfun_tt_h[mfun_tt_n] + mfun_tt_d[mfun_tt_n])
-                shifted (0,-mfun_tt_d[mfun_tt_n])
+                xscaled redpart mfun_tt_b
+                yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
+                shifted (0,- bluepart mfun_tt_b)
                 withprescript "tx_number=" & decimal mfun_tt_n
                 withprescript "tx_stage=final" ;
-        else :
-            addto mfun_tt_c doublepath unitsquare ; % unitpicture
         fi ;
         mfun_tt_c
     fi
@@ -1119,12 +1148,13 @@ numeric mfun_esc_b ; % begin
 numeric mfun_esc_l ; % length
 string  mfun_esc_s ; % character
 
-mfun_esc_s := str 37 ;
+mfun_esc_s := "%" ; % or: char(37)
 
 % this one is the fastest when we have a match
 
 % vardef escaped_format(expr s) =
 %     "" for n=0 upto length(s)-1 : &
+%       % if ASCII substring (n,n+1) of s = 37 :
 %         if substring (n,n+1) of s = mfun_esc_s :
 %             "@"
 %         else :
@@ -1139,6 +1169,7 @@ vardef escaped_format(expr s) =
     mfun_esc_b := 0 ;
     mfun_esc_l := length(s) ;
     for n=0 upto mfun_esc_l-1 :
+      % if ASCII substring (n,n+1) of s = 37 :
         if substring (n,n+1) of s = mfun_esc_s :
             if mfun_esc_b = 0 :
                 ""
@@ -1152,7 +1183,8 @@ vardef escaped_format(expr s) =
     endfor
     if mfun_esc_b = 0 :
         s
-    elseif mfun_esc_b > 0 :
+  % elseif mfun_esc_b > 0 :
+    elseif mfun_esc_b < mfun_esc_l :
         & (substring (mfun_esc_b,mfun_esc_l) of s)
     fi
 enddef ;

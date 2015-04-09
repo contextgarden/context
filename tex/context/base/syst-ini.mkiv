@@ -114,15 +114,6 @@
     end
 }
 
-%D Handy.
-
-
-\suppresslongerror    = 1
-\suppressoutererror   = 1
-%suppressmathparerror = 1
-
-\ifdefined\suppressmathparerror \suppressmathparerror = 1 \fi
-
 %D \ETEX\ has a not so handy way of telling you the version number, i.e. the revision
 %D number has a period in it:
 
@@ -1097,6 +1088,12 @@
 
 \voffset\zeropoint \let\voffset\relax \newdimen\voffset % prevent messing up
 \hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset % prevent messing up
+
+%D Handy.
+
+\suppresslongerror    \plusone
+\suppressoutererror   \plusone
+\suppressmathparerror \plusone
 
 %D While cleaning this code up a bit I was listening to Heather Nova's \CD\ Redbird.
 %D The first song on that \CD\ ends with a few lines suitable for ending this

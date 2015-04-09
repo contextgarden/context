@@ -105,11 +105,13 @@
 %D This macro can be used to force inclusion of postponed
 %D \JAVASCRIPT\ preambles.
 
+\def\m_java_escape_u{\letterbackslash u}
+
 \unexpanded\def\startJScode
   {\begingroup
    \obeylualines
    \obeyluatokens
-   \def\u{\letterbackslash u}%
+   \let\u\m_java_escape_u
    \java_start_code}
 
 \def\java_start_code#1\stopJScode
@@ -121,7 +123,7 @@
   {\begingroup
    \obeylualines
    \obeyluatokens
-   \def\u{\letterbackslash u}%
+   \let\u\m_java_escape_u
    \java_start_preamble}
 
 \def\java_start_preamble#1\stopJSpreamble

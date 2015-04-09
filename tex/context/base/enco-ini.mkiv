@@ -66,9 +66,13 @@
      \fi\fi
    \endcsname}
 
+\unexpanded\def\enco_define_command#1#2%
+  {\setuvalue{\string#1}{#2}}
+
 \let\dohandleaccent       \enco_handle_accent         % maybe useful
 \let\dodefineaccent       \enco_define_accent         % used at the lua end
 \let\dodefineaccentcommand\enco_define_accent_command % used at the lua end
+\let\dodefinecommand      \enco_define_command        % used at the lua end
 
 \unexpanded\def\definecharacter#1 #2 %
   {\doifelsenumber{\string#2}

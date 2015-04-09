@@ -93,7 +93,7 @@ implement { name = "xmlremapnamespace",       actions =  xml.renamespace,       
 implement { name = "xmlsave",                 actions = lxml.save,              arguments = { "string", "string" } }
 implement { name = "xmlsetfunction",          actions = lxml.setaction,         arguments = { "string", "string", "string" } }
 implement { name = "xmlsetsetup",             actions = lxml.setsetup,          arguments = { "string", "string", "string" } }
-implement { name = "xmlsnippet",              actions = lxml.snippet,           arguments = { "string", "integer" } }
+implement { name = "xmlsnippet",              actions = lxml.snippet,           arguments = { "string", "string" } }
 implement { name = "xmlstrip",                actions = lxml.strip,             arguments = { "string", "string" } }
 implement { name = "xmlstripanywhere",        actions = lxml.strip,             arguments = { "string", "string", true, true } }
 implement { name = "xmlstripnolines",         actions = lxml.strip,             arguments = { "string", "string", true } }

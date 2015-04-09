@@ -227,16 +227,6 @@ local accentmapping = allocate {
         O = "Õ", o = "õ",
         U = "Ũ", u = "ũ",
     },
-    ["o"] = { [""] = "ø",
-    },
-    ["O"] = { [""] = "Ø",
-    },
-    ["a"] = {
-        ["a"] = "å",
-    },
-    ["A"] = {
-        ["A"] = "Å",
-    },
 }
 
 texcharacters.accentmapping = accentmapping
@@ -283,17 +273,15 @@ local function remap_accent(a,c,braced)
 end
 
 local commandmapping = allocate {
-    ["i"]  = "ı",
-    ["l"]  = "ł",
-    ["ss"] = "ß",
-    ["ae"] = "æ",
-    ["AE"] = "Æ",
-    ["oe"] = "œ",
-    ["OE"] = "Œ",
-    ["o"]  = "ø",
-    ["O"]  = "Ø",
-    ["aa"] = "å",
-    ["AA"] = "Å",
+    ["aa"] = "å", ["AA"] = "Å",
+    ["ae"] = "æ", ["AE"] = "Æ",
+    ["cc"] = "ç", ["CC"] = "Ç",
+    ["i"]  = "ı", ["j"]  = "ȷ",
+    ["ij"] = "ĳ", ["IJ"] = "Ĳ",
+    ["l"]  = "ł", ["L"]  = "Ł",
+    ["o"]  = "ø", ["O"]  = "Ø",
+    ["oe"] = "œ", ["OE"] = "Œ",
+    ["sz"] = "ß", ["SZ"] = "SZ", ["SS"] = "ß",
 }
 
 texcharacters.commandmapping = commandmapping
@@ -431,13 +419,17 @@ local contextsprint = context.sprint
 local ctxcatcodes   = catcodes.numbers.ctxcatcodes
 
 function texcharacters.defineaccents()
-    local dodefineaccentcommand = context.dodefineaccentcommand
-    local dodefineaccent        = context.dodefineaccent
+    local ctx_dodefineaccentcommand = context.dodefineaccentcommand
+    local ctx_dodefineaccent        = context.dodefineaccent
+    local ctx_dodefinecommand       = context.dodefinecommand
     for accent, group in next, accentmapping do
-        dodefineaccentcommand(accent)
+        ctx_dodefineaccentcommand(accent)
         for character, mapping in next, group do
-            dodefineaccent(accent,character,mapping)
+            ctx_dodefineaccent(accent,character,mapping)
         end
+    end
+    for command, mapping in next, commandmapping do
+        ctx_dodefinecommand(command,mapping)
     end
 end
 
@@ -631,6 +623,9 @@ if not csletters then
     if storage then
         storage.register("characters/csletters", csletters, "characters.csletters")
     end
+
+else
+    mark(csletters)
 
 end
 

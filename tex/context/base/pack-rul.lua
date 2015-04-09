@@ -14,6 +14,12 @@ if not modules then modules = { } end modules ['pack-rul'] = {
 -- challenge: adapt glue_set
 -- setfield(h,"glue_set", getfield(h,"glue_set") * getfield(h,"width")/maxwidth -- interesting ... doesn't matter much
 
+-- \framed[align={lohi,middle}]{$x$}
+-- \framed[align={lohi,middle}]{$ $}
+-- \framed[align={lohi,middle}]{\hbox{ }}
+-- \framed[align={lohi,middle}]{\hbox{}}
+-- \framed[align={lohi,middle}]{$\hskip2pt$}
+
 local type = type
 
 local hlist_code      = nodes.nodecodes.hlist
@@ -93,7 +99,7 @@ local function doreshapeframedbox(n)
              -- vdone = true
             end
             if not firstheight then
-                -- done
+                -- done)
             elseif maxwidth ~= 0 then
                 if hdone then
                     for h in traverse_id(hlist_code,list) do
@@ -119,6 +125,8 @@ local function doreshapeframedbox(n)
              -- end
                 setfield(box,"width",maxwidth)
                 averagewidth = noflines > 0 and totalwidth/noflines or 0
+            else -- e.g. empty math {$ $} or \hbox{} or ...
+setfield(box,"width",0)
             end
         end
     end
