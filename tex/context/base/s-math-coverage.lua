@@ -9,45 +9,50 @@ if not modules then modules = { } end modules ['s-math-coverage'] = {
 local utfchar, utfbyte = utf.char, utf.byte
 local formatters, lower = string.formatters, string.lower
 local concat = table.concat
+local sortedhash = table.sortedhash
 
-moduledata.math            = moduledata.math          or { }
-moduledata.math.coverage   = moduledata.math.coverage or { }
+moduledata.math             = moduledata.math          or { }
+moduledata.math.coverage    = moduledata.math.coverage or { }
 
-local context              = context
+local context               = context
 
-local ctx_NC               = context.NC
-local ctx_NR               = context.NR
-local ctx_HL               = context.HL
+local ctx_NC                = context.NC
+local ctx_NR                = context.NR
+local ctx_HL                = context.HL
 
-local ctx_rawmathematics   = context.formatted.rawmathematics
-local ctx_mathematics      = context.formatted.mathematics
-local ctx_startimath       = context.startimath
-local ctx_stopimath        = context.stopimath
-local ctx_setmathattribute = context.setmathattribute
-local ctx_underbar         = context.underbar
-local ctx_getglyph         = context.getglyph
+local ctx_startmixedcolumns = context.startmixedcolumns
+local ctx_stopmixedcolumns  = context.stopmixedcolumns
+local ctx_setupalign        = context.setupalign
+local ctx_starttabulate     = context.starttabulate
+local ctx_stoptabulate      = context.stoptabulate
+local ctx_rawmathematics    = context.formatted.rawmathematics
+local ctx_mathematics       = context.formatted.mathematics
+local ctx_startimath        = context.startimath
+local ctx_stopimath         = context.stopimath
+local ctx_setmathattribute  = context.setmathattribute
+local ctx_underbar          = context.underbar
+local ctx_getglyph          = context.getglyph
 
-local styles               = mathematics.styles
-local alternatives         = mathematics.alternatives
-local charactersets        = mathematics.charactersets
+local styles                = mathematics.styles
+local alternatives          = mathematics.alternatives
+local charactersets         = mathematics.charactersets
 
-local getboth              = mathematics.getboth
-local remapalphabets       = mathematics.remapalphabets
+local getboth               = mathematics.getboth
+local remapalphabets        = mathematics.remapalphabets
 
-local chardata             = characters.data
-local superscripts         = characters.superscripts
-local subscripts           = characters.subscripts
+local chardata              = characters.data
+local superscripts          = characters.superscripts
+local subscripts            = characters.subscripts
 
 context.writestatus("math coverage","underline: not remapped")
 
 function moduledata.math.coverage.showalphabets()
-    context.starttabulate { "|lT|l|Tl|" }
+    ctx_starttabulate { "|lT|l|Tl|" }
     for i=1,#styles do
         local style = styles[i]
         for i=1,#alternatives do
             local alternative = alternatives[i]
-            for i=1,#charactersets do
-                local alphabet = charactersets[i]
+            for _, alphabet in sortedhash(charactersets) do
                 ctx_NC()
                     if i == 1 then
                         context("%s %s",style,alternative)
@@ -80,14 +85,14 @@ function moduledata.math.coverage.showalphabets()
             end
         end
     end
-    context.stoptabulate()
+    ctx_stoptabulate()
 end
 
 function moduledata.math.coverage.showcharacters()
-    context.startmixedcolumns()
-    context.setupalign { "nothyphenated" }
-    context.starttabulate { "|T|i2|Tpl|" }
-    for u, d in table.sortedhash(chardata) do
+    ctx_startmixedcolumns { balance = "yes" }
+    ctx_setupalign { "nothyphenated" }
+    ctx_starttabulate { "|T|i2|Tpl|" }
+    for u, d in sortedhash(chardata) do
         local mathclass = d.mathclass
         local mathspec = d.mathspec
         if mathclass or mathspec then
@@ -110,15 +115,15 @@ function moduledata.math.coverage.showcharacters()
             ctx_NR()
         end
     end
-    context.stoptabulate()
-    context.stopmixedcolumns()
+    ctx_stoptabulate()
+    ctx_stopmixedcolumns()
 end
 
 -- This is a somewhat tricky table as we need to bypass the math machinery.
 
 function moduledata.math.coverage.showscripts()
-    context.starttabulate { "|cT|c|cT|c|c|c|l|" }
-    for k, v in table.sortedhash(table.merged(superscripts,subscripts)) do
+    ctx_starttabulate { "|cT|c|cT|c|c|c|l|" }
+    for k, v in sortedhash(table.merged(superscripts,subscripts)) do
         local ck = utfchar(k)
         local cv = utfchar(v)
         local ss = superscripts[k] and "^" or "_"
@@ -131,14 +136,14 @@ function moduledata.math.coverage.showscripts()
         ctx_NC() context(lower(chardata[k].description))
         ctx_NC() ctx_NR()
     end
-    context.stoptabulate()
+    ctx_stoptabulate()
 end
 
 -- Handy too.
 
 function moduledata.math.coverage.showbold()
-    context.starttabulate { "|lT|cm|lT|cm|lT|" }
-    for k, v in table.sortedhash(mathematics.boldmap) do
+    ctx_starttabulate { "|lT|cm|lT|cm|lT|" }
+    for k, v in sortedhash(mathematics.boldmap) do
         ctx_NC() context("%U",k)
         ctx_NC() context("%c",k)
         ctx_NC() context("%U",v)
@@ -146,5 +151,47 @@ function moduledata.math.coverage.showbold()
         ctx_NC() context(chardata[k].description)
         ctx_NC() ctx_NR()
     end
-    context.stoptabulate()
+    ctx_stoptabulate()
 end
+
+-- function moduledata.math.coverage.showentities()
+--     ctx_startmixedcolumns { balance = "yes" }
+--     ctx_starttabulate { "|Tl|c|Tl|" }
+--     for k, v in sortedhash(characters.entities) do
+--         local b = utf.byte(v)
+--         local d = chardata[b]
+--         local m = d.mathname
+--         local c = d.contextname
+--         local s = ((m and "\\"..m) or (c and "\\".. c) or v) .. "{}{}{}"
+--         ctx_NC()
+--         context("%U",b)
+--         ctx_NC()
+--         ctx_mathematics(s)
+--         ctx_NC()
+--         context(k)
+--         ctx_NC()
+--         ctx_NR()
+--     end
+--     ctx_stoptabulate()
+--     ctx_stopmixedcolumns()
+-- end
+
+function moduledata.math.coverage.showentities()
+    ctx_startmixedcolumns { balance = "yes" }
+    ctx_starttabulate { "|T||T|T|" }
+    for k, v in sortedhash(characters.entities) do
+        local d = chardata[v]
+        if d then
+            local m = d.mathclass or d.mathspec
+            local u = d.unicodeslot
+            ctx_NC() context(m and "m" or "t")
+            ctx_NC() ctx_getglyph("MathRoman",u)
+            ctx_NC() context("%05X",u)
+            ctx_NC() context(k)
+            ctx_NC() ctx_NR()
+        end
+    end
+    ctx_stoptabulate()
+    ctx_stopmixedcolumns()
+end
+

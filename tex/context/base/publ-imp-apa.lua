@@ -84,7 +84,6 @@ categories.article = {
     sets = {
         author = { "author", "editor", "title" },
         doi    = generic.doi,
-        isbn   = { "issn" },
     },
     required = {
         "author"
@@ -93,7 +92,7 @@ categories.article = {
         "year",
         "subtitle", "type", "file",
         "journal", "volume", "number", "pages",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -110,7 +109,7 @@ categories.magazine = {
         "subtitle", "type", "file",
         "number",
         "month", "day",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -122,7 +121,6 @@ categories.periodical = {
     sets = {
         author = { "editor", "publisher" },
         doi    = generic.doi,
-        isbn   = { "issn" },
     },
     required = {
         "title",
@@ -133,7 +131,7 @@ categories.periodical = {
         "subtitle", "file",
         "series", "volume", "number", "month",
         "organization",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -168,7 +166,7 @@ categories.book = {
         "subtitle", "type",  "file",
         "editionset", "series",
         "address",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -191,7 +189,7 @@ categories.inbook = {
         "editionset", "series",
         "month",
         "address",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -215,7 +213,7 @@ categories.incollection = {
         -- APA ignores this: "chapter",
         "month",
         "address",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -235,7 +233,7 @@ categories.booklet = {
         "year", "month",
         "subtitle", "type", "file",
         "address",
-        "doi", "note", "isbn"
+        "doi", "note",
      },
 }
 
@@ -258,7 +256,7 @@ categories.proceedings = {
         "editionset", "series",
         "month",
         "address",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -272,7 +270,7 @@ categories.inproceedings = {
         "month",
         "edition", "series",
         "address", "organization",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -295,7 +293,7 @@ categories.thesis = {
         "subtitle", "file",
         "month",
         "address",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -312,7 +310,7 @@ categories.mastersthesis = {
         "subtitle", "file",
         "month",
         "address",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 categories.phdthesis = categories.mastersthesis
@@ -338,7 +336,7 @@ categories.techreport = {
         "subtitle", "file",
         "editionset",
         "month",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -359,7 +357,7 @@ categories.manual = {
         "address",
         "subtitle", "file",
         "editionset", "month", "year",
-        "doi", "note", "isbn",
+        "doi", "note",
 --         "abstract",
     },
 }
@@ -434,7 +432,6 @@ categories.electronic = {
 categories.misc = {
     sets = {
         doi  = generic.doi,
-        isbn = { "isbn", "issn" },
     },
     required = {
         -- nothing is really important here
@@ -444,7 +441,7 @@ categories.misc = {
         "title", "subtitle", "file",
         "year", "month",
         "howpublished",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 
@@ -453,7 +450,6 @@ categories.misc = {
 categories.other = {
     sets = {
         doi  = generic.doi,
-        isbn = { "isbn", "issn" },
     },
     required = {
         "author",
@@ -462,7 +458,7 @@ categories.other = {
     },
     optional = {
         "subtitle", "file",
-        "doi", "note", "isbn"
+        "doi", "note",
     },
 }
 

@@ -254,8 +254,9 @@
        \namedtaggedlabeltexts
          \t!floatlabel \currentfloat
          \t!floatnumber\currentfloat
-         {\clf_savedlistprefixednumber{\currentfloat}\currentfloatnumber\relax
-          \thecurrentfloatnumbersuffix}%
+         {\floatcaptionparameter\c!numbercommand
+            {\clf_savedlistprefixednumber{\currentfloat}\currentfloatnumber\relax
+             \thecurrentfloatnumbersuffix}}%
      \fi
    \fi \fi}
 
@@ -263,7 +264,8 @@
   {\ifnofloatcaption \else
      \ifx\currentfloatnumber\relax\else
        \dostarttagged\t!floattext\empty
-       \clf_savedlisttitle{\currentfloat}\currentfloatnumber\relax
+       \floatcaptionparameter\c!textcommand
+         {\clf_savedlisttitle{\currentfloat}\currentfloatnumber\relax}%
        \dostoptagged
      \fi
    \fi}

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/09/15 20:56:25
+-- merge date  : 04/10/15 15:19:00
 
 do -- begin closure to overcome local limits and interference
 
@@ -666,7 +666,6 @@ local function make(t)
   local function making(t)
     local p=p_false
     local keys=sortedkeys(t)
-    local okay=t[""]
     for i=1,#keys do
       local k=keys[i]
       if k~="" then
@@ -674,12 +673,13 @@ local function make(t)
         if v==true then
           p=p+P(k)*p_true
         elseif v==false then
-        elseif okay then
-          p=p+P(k)*(making(v)+p_true)
         else
           p=p+P(k)*making(v)
         end
       end
+    end
+    if t[""] then
+      p=p+p_true
     end
     return p
   end
@@ -692,8 +692,6 @@ local function make(t)
       if v==true then
         p=p+P(k)*p_true
       elseif v==false then
-      elseif v[""] then
-        p=p+P(k)*(making(v)+p_true)
       else
         p=p+P(k)*making(v)
       end

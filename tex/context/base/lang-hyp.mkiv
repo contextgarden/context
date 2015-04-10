@@ -102,6 +102,7 @@
    \letdummyparameter\c!rightwords\zerocount       % maybe \s!
    \letdummyparameter\s!lefthyphenmin\zerocount
    \letdummyparameter\s!righthyphenmin\zerocount
+   \letdummyparameter\s!hyphenmin\zerocount
    \letdummyparameter\s!lefthyphenchar\zerocount
    \letdummyparameter\s!righthyphenchar\zerocount
    \letdummyparameter\c!alternative\empty
@@ -114,6 +115,7 @@
         hyphens      {\dummyparameter\c!hyphens}%
         joiners      {\dummyparameter\c!joiners}%
         rightwordmin \numexpr\dummyparameter\c!rightwords\relax
+        charmin      \numexpr\dummyparameter\s!hyphenmin\relax
         leftcharmin  \numexpr\dummyparameter\s!lefthyphenmin\relax
         rightcharmin \numexpr\dummyparameter\s!righthyphenmin\relax
         leftchar     \numexpr\dummyparameter\s!lefthyphenchar\relax

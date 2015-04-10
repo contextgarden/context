@@ -817,6 +817,7 @@ if context then
         local joinerchars  = featureset.joiners
         local alternative  = featureset.alternative
         local rightwordmin = tonumber(featureset.rightwordmin)
+        local charmin      = tonumber(featureset.charmin)
         local leftcharmin  = tonumber(featureset.leftcharmin)
         local rightcharmin = tonumber(featureset.rightcharmin)
         local rightedge    = featureset.rightedge
@@ -830,6 +831,7 @@ if context then
         featureset.hyphenchars  = makeset(hyphenchars or "")
         featureset.alternative  = alternative or "hyphenate"
         featureset.rightwordmin = rightwordmin and rightwordmin > 0 and rightwordmin or nil
+        featureset.charmin      = charmin      and charmin      > 0 and charmin      or nil
         featureset.leftcharmin  = leftcharmin  and leftcharmin  > 0 and leftcharmin  or nil
         featureset.rightcharmin = rightcharmin and rightcharmin > 0 and rightcharmin or nil
         featureset.leftchar     = leftchar
@@ -877,6 +879,7 @@ if context then
                 { "hyphens" },
                 { "joiners" },
                 { "rightwordmin", "integer" },
+                { "charmin", "integer" },
                 { "leftcharmin", "integer" },
                 { "rightcharmin", "integer" },
                 { "leftchar", "integer" },
@@ -967,6 +970,7 @@ if context then
         local rightexchar  = false -- utfbyte("-")
         local leftmin      = 0
         local rightmin     = 0
+        local charmin      = 1
         local leftcharmin  = nil
         local rightcharmin = nil
         ----- leftwordmin  = nil
@@ -997,6 +1001,7 @@ if context then
                 extrachars   = f.extrachars
                 hyphenchars  = f.hyphenchars
                 rightwordmin = f.rightwordmin
+                charmin      = f.charmin
                 leftcharmin  = f.leftcharmin
                 rightcharmin = f.rightcharmin
                 leftchar     = f.leftchar
@@ -1024,17 +1029,22 @@ if context then
                     end
                     lastwordlast = rightwordmin
                 end
+                if not charmin or charmin == 0 then
+                    charmin = 1
+                end
             else
                 hyphenated   = methods.hyphenate
                 extrachars   = false
                 hyphenchars  = false
                 rightwordmin = false
+                charmin      = 1
                 leftcharmin  = false
                 rightcharmin = false
                 leftchar     = false
                 rightchar    = false
                 strict       = false
             end
+
             return a
         end
 
@@ -1255,7 +1265,7 @@ if context then
                 local code = getchar(current)
                 local lang = getfield(current,"lang")
                 if lang ~= language then
-                    if size > 0 and dictionary and leftmin + rightmin <= size then
+                    if dictionary and size > charmin and leftmin + rightmin <= size then
                         if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
                             -- skip
                         else
@@ -1307,7 +1317,7 @@ if context then
                         size = size + 1
                         word[size] = char
                     elseif dictionary then
-                        if leftmin + rightmin <= size then
+                        if size > charmin and leftmin + rightmin <= size then
                             if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
                                 -- skip
                             else
@@ -1386,7 +1396,7 @@ if context then
                     current = id == math_code and getnext(end_of_math(current)) or getnext(current)
                 end
                 if size > 0 then
-                    if dictionary and leftmin + rightmin <= size then
+                    if dictionary and size > charmin and leftmin + rightmin <= size then
                         if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
                             -- skip
                         else
@@ -1402,7 +1412,7 @@ if context then
         end
         -- we can have quit due to last so we need to flush the last seen word, we could move this in
         -- the loop and test for current but ... messy
-        if size > 0 and dictionary and leftmin + rightmin <= size then
+        if dictionary and size > charmin and leftmin + rightmin <= size then
             if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
                 -- skip
             else

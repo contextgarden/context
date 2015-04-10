@@ -34,17 +34,17 @@ local application = logs.application {
     helpinfo = helpinfo,
 }
 
-local report = application.report
+local report      = application.report
 
-scripts         = scripts         or { }
-scripts.checker = scripts.checker or { }
+scripts           = scripts         or { }
+scripts.checker   = scripts.checker or { }
 
-local validator = { }
+local validator   = { }
 
-validator.n      = 1
-validator.errors = { }
-validator.trace  = false
-validator.direct = false
+validator.n       = 1
+validator.errors  = { }
+validator.trace   = false
+validator.direct  = false
 
 validator.printer = print
 validator.tracer  = print
@@ -68,27 +68,24 @@ local progress = function(position, data, kind)
     end
 end
 
-local i_m, d_m = P("$"), P("$$")
-local l_s, r_s = P("["), P("]")
-local l_g, r_g = P("{"), P("}")
+local i_m, d_m     = P("$"), P("$$")
+local l_s, r_s     = P("["), P("]")
+local l_g, r_g     = P("{"), P("}")
 
-local okay = lpeg.P("{[}") + lpeg.P("{]}")
+local okay         = lpeg.P("{[}") + lpeg.P("{]}")
 
-local esc     = P("\\")
-local cr      = P("\r")
-local lf      = P("\n")
-local crlf    = P("\r\n")
-local space   = S(" \t\f\v")
-local newline = crlf + cr + lf
+local esc          = P("\\")
+local space        = S(" \t\f\v")
+local newline      = lpeg.patterns.newline
 
-local line = newline / function() validator.n = validator.n + 1 end
+local line         = newline / function() validator.n = validator.n + 1 end
 
 local startluacode = P("\\startluacode")
 local stopluacode  = P("\\stopluacode")
 
-local somecode  = startluacode * (1-stopluacode)^1 * stopluacode
+local somecode     = startluacode * (1-stopluacode)^1 * stopluacode
 
-local stack = { }
+local stack        = { }
 
 local function push(p,s)
 -- print("start",p,s)
@@ -117,7 +114,7 @@ local contextgrammar = P { "tokens",
     ["start"]       = start,
     ["stop"]        = stop,
     ["whatever"]    = line + esc * 1 + C(P("%") * (1-line)^0),
-    ["grouped"]     = l_g * (V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_g - r_g))^0 * r_g,
+    ["grouped"]     = l_g * (V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + line + (1 - l_g - r_g))^0 * r_g,
     ["setup"]       = l_s * (okay + V("whatever") + V("grouped") + V("setup") + V("display") + V("inline") + (1 - l_s - r_s))^0 * r_s,
     ["display"]     = d_m * (V("whatever") + V("grouped") + (1 - d_m))^0 * d_m,
     ["inline"]      = i_m * (V("whatever") + V("grouped") + (1 - i_m))^0 * i_m,

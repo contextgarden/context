@@ -2435,29 +2435,39 @@
 \def\mmlsetfakewidth#1{\setbox\scratchbox\hbox{#1}\scratchdimen\wd\scratchbox}
 
 \def\mmlmcolumndigitspace     {\mmlsetfakewidth     {0}\kern\scratchdimen}
-\def\mmlmcolumndigitrule      {\mmlsetfakewidth     {0}\vrule width \scratchdimen height .2pt depth .2pt\relax}
-\def\mmlmcolumnsymbolrule     {\mmlsetfakewidth{\times}\vrule width \scratchdimen height .2pt depth .2pt\relax}
-\def\mmlmcolumnpunctuationrule{\mmlsetfakewidth     {.}\vrule width \scratchdimen height .2pt depth .2pt\relax}
+\def\mmlmcolumndigitrule      {\mmlsetfakewidth     {0}\vrule \s!width \scratchdimen \s!height .2\points \s!depth .2\points\relax}
+\def\mmlmcolumnsymbolrule     {\mmlsetfakewidth{\times}\vrule \s!width \scratchdimen \s!height .2\points \s!depth .2\points\relax}
+\def\mmlmcolumnpunctuationrule{\mmlsetfakewidth     {.}\vrule \s!width \scratchdimen \s!height .2\points \s!depth .2\points\relax}
+
+\setupMMLappearance[mspace][\c!option=] % \v!test
 
 \startxmlsetups mml:mspace
     \begingroup
     \edef\mmlspacetext{\xmlatt{#1}{spacing}}
     \ifx\mmlspacetext\empty
-        \!!widtha \xmlattdef{#1}{width} \!!zeropoint % must be string
-        \!!heighta\xmlattdef{#1}{height}\!!zeropoint
-        \!!deptha \xmlattdef{#1}{depth} \!!zeropoint
-        \ifdim\!!heighta=\zeropoint
-            \ifdim\!!deptha=\zeropoint\else
-                \hbox{\vrule\s!depth\!!deptha\s!height\zeropoint\s!width\zeropoint}%
+        \scratchwidth \xmlattdef{#1}{width} \!!zeropoint % must be string
+        \scratchheight\xmlattdef{#1}{height}\!!zeropoint
+        \scratchdepth \xmlattdef{#1}{depth} \!!zeropoint
+        \ifdim\scratchheight=\zeropoint
+            \ifdim\scratchdepth=\zeropoint\else
+                \hbox{\vrule\s!depth\scratchdepth\s!height\zeropoint\s!width\zeropoint}%
             \fi
         \else
-            \hbox{\vrule\s!depth\zeropoint\s!height\!!heighta\s!width\zeropoint}%
+            \hbox{\vrule\s!depth\zeropoint\s!height\scratchheight\s!width\zeropoint}%
         \fi
-        \ifdim\!!widtha=\zeropoint\else
-            \hskip\!!widtha
+        \ifdim\scratchwidth=\zeropoint\else
+            \ifx\MMLmspaceoption\v!test
+                \hbox to \scratchwidth{\showstruts\strut\hss\lower2\exheight\hbox{\infofont\xmlattdef{#1}{width}}\hss\strut}
+            \else
+                \hskip\scratchwidth
+            \fi
         \fi
     \else
-        \phantom{\triggermathstyle\normalmathstyle\mmlspacetext}
+        \ifx\MMLmspaceoption\v!test
+            \hbox{\showstruts\strut\phantom{\triggermathstyle\normalmathstyle\mmlspacetext}\strut}
+        \else
+            \phantom{\triggermathstyle\normalmathstyle\mmlspacetext}
+        \fi
     \fi
     \endgroup
 \stopxmlsetups

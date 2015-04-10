@@ -248,8 +248,7 @@
 \definebtx
   [apa:cite:authoryear]
   [apa:cite:author]
-  [\c!compress=\v!yes,
-   \c!left={(},
+  [\c!left={(},
    \c!right={)},
    \c!inbetween={,\space}]
 
@@ -997,18 +996,6 @@
     \endgroup
 \stoptexdefinition
 
-% also issn - see publ-imp-apa.lua
-
-\starttexdefinition btx:apa:isbn
-    \btxdoif {isbn} {
-        \btxleftparenthesis
-        \WORD{\btxfoundname{isbn}}:\btxspace
-        \setbreakpoints[doi]
-        \btxflush{isbn}
-        \btxrightparenthesis
-    }
-\stoptexdefinition
-
 \starttexdefinition btx:apa:note
     \btxdoif {note} {
         \btxleftparenthesis
@@ -1021,7 +1008,6 @@
     \doif {\btxfoundname{doi}} {url} {
         \texdefinition{btx:apa:url}
     }
-    \texdefinition{btx:apa:isbn}
     \doif {\btxfoundname{doi}} {doi} {
         \texdefinition{btx:apa:doi}
     }

@@ -175,7 +175,7 @@ end
 implement {
     name      = "sethyphenatedurlcharacters",
     actions   = hyphenatedurl.setcharacters,
-    arguments = { "string", "integer" }
+    arguments = { "string", "string" }
 }
 
 implement {

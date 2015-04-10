@@ -29,8 +29,6 @@ local asciimath        = { }
 local moduledata       = moduledata or { }
 moduledata.asciimath   = asciimath
 
-local implement        = interfaces.implement
-
 if not characters then
     require("char-def")
     require("char-ini")
@@ -697,6 +695,10 @@ local reserved = {
     ["rfloor"]   = { true, "⌋" },
     ["rceil"]    = { true, "⌉" },
 
+    -- a bit special:
+
+    ["\\frac"]   = { true, "frac" },
+
 }
 
 local isbinary = {
@@ -886,8 +888,13 @@ local p_spaces      = patterns.whitespace
 
 local p_utf_base    = patterns.utf8character
 local p_utf         = C(p_utf_base)
-local p_entity_base = P("&") * ((1-P(";"))^2) * P(";")
-local p_entity      = P("&") * (((1-P(";"))^2) / entities) * P(";")
+local p_entity      = (P("&") * C((1-P(";"))^2) * P(";"))/ entities
+
+entities["gt"]    = ">"
+entities["lt"]    = "<"
+entities["amp"]   = "&"
+entities["dquot"] = '"'
+entities["quot"]  = "'"
 
 local p_onechar     = p_utf_base * P(-1)
 
@@ -896,8 +903,7 @@ local p_onechar     = p_utf_base * P(-1)
 local sign    = P("-")^-1
 local digits  = R("09")^1
 local integer = sign * digits
------ real    = sign * digits * (S(".,") * digits)^-1
-local real    = digits * (S(".,") * digits)^-1
+local real    = digits * (S(".") * digits)^-1
 local float   = real * (P("E") * integer)^-1
 
 -- local number  = C(float + integer)
@@ -927,7 +933,12 @@ for k, v in sortedhash(reserved) do
     end
 
 for k, v in next, entities do
+    k_unicode[k] = v
     k_unicode["\\"..k] = v
+end
+
+if not find(k,"[^[a-zA-Z]+$]") then
+    k_unicode["\\"..k] = k -- dirty trick, no real unicode
 end
 
     if not find(k,"[^a-zA-Z]") then
@@ -1049,6 +1060,12 @@ local p_special =
 
 -- open | close :: {: | :}
 
+local e_parser = Cs ( (
+    p_entity +
+    p_utf_base
+)^0 )
+
+
 local u_parser = Cs ( (
     patterns.doublequoted +
     P("text") * p_spaces^0 * P("(") * (1-P(")"))^0 * P(")") + -- -- todo: balanced
@@ -1067,7 +1084,6 @@ local a_parser = Ct { "tokenizer",
       + Ct(p_left * V("tokenizer") * p_right)        -- {  (a+b,=,1),(a+b,=,7)  }
       + p_special
       + p_reserved
-      + p_entity
   --  + p_utf - p_close - p_right
       + (p_utf - p_right)
     )^1,
@@ -1081,8 +1097,9 @@ local function show_state(t,level,state)
     report_asciimath(serialize(t,f_state(level,state)))
 end
 
-local function show_result(original,unicoded,texcoded)
+local function show_result(original,entified,unicoded,texcoded)
     report_asciimath("original > %s",original)
+    report_asciimath("entified > %s",entified)
     report_asciimath("unicoded > %s",unicoded)
     report_asciimath("texcoded > %s",texcoded)
 end
@@ -1202,6 +1219,7 @@ local function collapse_pairs(t)
         if current == "/" and i > 1 then
             local tl = t[i-1]
             local tr = t[i+1]
+            local tn = t[i+2]
             if type(tl) == "table" then
                 if isleft[tl[1]] and isright[tl[#tl]] then
                     tl[1]   = "" -- todo: remove
@@ -1209,7 +1227,9 @@ local function collapse_pairs(t)
                 end
             end
             if type(tr) == "table" then
-                if isleft[tr[1]] and isright[tr[#tr]] then
+                if tn == "^" then
+                    -- brr 1/(1+x)^2
+                elseif isleft[tr[1]] and isright[tr[#tr]] then
                     tr[1]   = "" -- todo: remove
                     tr[#tr] = nil
                 end
@@ -1620,10 +1640,11 @@ local ctx_type        = context and context.type        or function() end
 local ctx_inleft      = context and context.inleft      or function() end
 
 local function convert(str,totex)
-    local unicoded = lpegmatch(u_parser,str)
+    local entified = lpegmatch(e_parser,str) or str -- when used in text
+    local unicoded = lpegmatch(u_parser,entified) or entified
     local texcoded = collapse(lpegmatch(a_parser,unicoded))
     if trace_mapping then
-        show_result(str,unicoded,texcoded)
+        show_result(str,entified,unicoded,texcoded)
     end
     if totex then
         ctx_mathematics(texcoded)
@@ -1668,7 +1689,7 @@ local p_text =
     )
   + patterns.doublequoted
 
-local p_expand   = Cs((p_text + p_reserved_spaced + p_entity_base + p_utf_base)^0)
+local p_expand   = Cs((p_text + p_reserved_spaced + p_utf_base)^0)
 local p_compress = patterns.collapser
 
 local function cleanedup(str)
@@ -1773,13 +1794,14 @@ asciimath.cleanedup  = cleanedup
 
 local function convert(str)
     if #str > 0 then
-        local unicoded = lpegmatch(u_parser,str)
+        local entified = lpegmatch(e_parser,str) or str  -- when used in text
+        local unicoded = lpegmatch(u_parser,entified) or entified
         if lpegmatch(p_onechar,unicoded) then
             ctx_mathematics(unicoded)
         else
             local texcoded = collapse(lpegmatch(a_parser,unicoded))
             if trace_mapping then
-                show_result(str,unicoded,texcoded)
+                show_result(str,entified,unicoded,texcoded)
             end
             if #texcoded == 0 then
                 report_asciimath("error in asciimath: %s",str)
@@ -1796,12 +1818,6 @@ local function convert(str)
     end
 end
 
-implement {
-    name      = "asciimath", -- module_asciimath_convert
-    actions   = convert,
-    arguments = "string"
-}
-
 local context = context
 
 if not context then
@@ -1814,10 +1830,24 @@ if not context then
 --     report_asciimath(cleanedup([[a "α" b]]))
 --     report_asciimath(cleanedup([[//4]]))
 
--- convert("10000,00001")
--- convert("4/18*100text(%)~~22,2")
--- convert("4/18*100text(%)≈22,2")
--- convert("62541/(197,6)≈316,05")
+-- convert("\\frac{a}{b}")
+-- convert("frac{a}{b}")
+-- convert("\\sin{a}{b}")
+-- convert("sin{a}{b}")
+-- convert("1: rightarrow")
+-- convert("2: \\rightarrow")
+
+-- convert("((1,2,3),(4,5,6),(7,8,9))")
+
+-- convert("1/(t+x)^2")
+
+--     convert("AA a > 0 ^^ b > 0 | {:log_g:} a + {:log_g:} b")
+--     convert("AA a &gt; 0 ^^ b > 0 | {:log_g:} a + {:log_g:} b")
+
+--     convert("10000,00001")
+--     convert("4/18*100text(%)~~22,2")
+--     convert("4/18*100text(%)≈22,2")
+--     convert("62541/(197,6)≈316,05")
 
 --     convert([[sum x]])
 --     convert([[sum^(1)_(2) x]])
@@ -1875,6 +1905,12 @@ if not context then
     return
 
 end
+
+interfaces.implement {
+    name      = "asciimath", -- module_asciimath_convert
+    actions   = convert,
+    arguments = "string"
+}
 
 local ctx_typebuffer  = context.typebuffer
 local ctx_mathematics = context.mathematics
