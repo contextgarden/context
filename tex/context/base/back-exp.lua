@@ -150,8 +150,9 @@ local overloads         = fonts.mappings.overloads
 
 -- todo: more locals (and optimize)
 
-local exportversion     = "0.33"
+local exportversion     = "0.34"
 local mathmlns          = "http://www.w3.org/1998/Math/MathML"
+local contextns         = "http://www.contextgarden.net/context/export" -- whatever suits
 
 local nofcurrentcontent = 0 -- so we don't free (less garbage collection)
 local currentcontent    = { }
@@ -206,13 +207,6 @@ local alignmapping = {
     flushright = "right",
     middle     = "center",
     flushleft  = "left",
-}
-
-local numbertoallign = {
-    [0] = "justify", ["0"] = "justify", [v_normal    ] = "justify",
-    [1] = "right",   ["1"] = "right",   [v_flushright] = "right",
-    [2] = "center",  ["2"] = "center",  [v_middle    ] = "center",
-    [3] = "left",    ["3"] = "left",    [v_flushleft ] = "left",
 }
 
 local defaultnature = "mixed" -- "inline"
@@ -306,7 +300,7 @@ local function setattribute(di,key,value,escaped)
     end
 end
 
-local listdata = { } -- maybe do this otherwise
+local listdata = { } -- this has to be done otherwise: each element can just point back to ...
 
 function wrapups.hashlistdata()
     local c = structures.lists.collected
@@ -315,12 +309,11 @@ function wrapups.hashlistdata()
         local tag = ci.references.tag
         if tag then
             local m = ci.metadata
-            listdata[m.kind .. ":" .. m.name .. "-" .. tag] = ci
+--             listdata[m.kind .. ":" .. m.name .. "-" .. tag] = ci
+            listdata[m.kind .. ">" .. tag] = ci
         end
     end
 end
-
-local spaces = utilities.strings.newrepeater("  ",-1)
 
 function structurestags.setattributehash(attr,key,value) -- public hash
     local specification = taglist[attr]
@@ -332,6 +325,12 @@ function structurestags.setattributehash(attr,key,value) -- public hash
 end
 
 local usedstyles = { }
+
+local namespacetemplate = [[
+/* %what% for file %filename% */
+
+@namespace context url('%namespace%') ;
+]]
 
 do
 
@@ -352,7 +351,7 @@ document {
 ]]
 
 local styletemplate = [[
-%element%[detail="%detail%"], div.%element%.detail-%detail% {
+%element%[detail="%detail%"], context|div.%element%.%detail% {
     display      : inline ;
     font-style   : %style% ;
     font-variant : %variant% ;
@@ -361,8 +360,19 @@ local styletemplate = [[
     color        : %color% ;
 }]]
 
+    local numbertoallign = {
+        [0] = "justify", ["0"] = "justify", [v_normal    ] = "justify",
+        [1] = "right",   ["1"] = "right",   [v_flushright] = "right",
+        [2] = "center",  ["2"] = "center",  [v_middle    ] = "center",
+        [3] = "left",    ["3"] = "left",    [v_flushleft ] = "left",
+    }
+
     function wrapups.allusedstyles(basename)
-        local result = { formatters["/* %s for file %s */"]("styles",basename) }
+        local result = { replacetemplate(namespacetemplate, {
+            what      = "styles",
+            filename  = basename,
+            namespace = contextns,
+        }) }
         --
         local bodyfont = finetuning.bodyfont
         local width    = finetuning.width
@@ -404,6 +414,7 @@ local styletemplate = [[
             for detail, data in sortedhash(details) do
                 local s = fontspecification(data.style)
                 local c = colorspecification(data.color)
+                detail = gsub(detail,"[^A-Za-z0-9]+","-")
                 result[#result+1] = replacetemplate(styletemplate,{
                     element = element,
                     detail  = detail,
@@ -425,7 +436,7 @@ local usedimages = { }
 do
 
 local imagetemplate = [[
-%element%[id="%id%"], div.%element%[id="%id%"] {
+%element%[id="%id%"], context|div.%element%[id="%id%"] {
     display           : block ;
     background-image  : url('%url%') ;
     background-size   : 100%% auto ;
@@ -457,7 +468,11 @@ local imagetemplate = [[
     end
 
     function wrapups.allusedimages(basename)
-        local result = { formatters["/* %s for file %s */"]("images",basename) }
+        local result = { replacetemplate(namespacetemplate, {
+            what      = "images",
+            filename  = basename,
+            namespace = contextns,
+        }) }
         for element, details in sortedhash(usedimages) do
             for detail, data in sortedhash(details) do
                 local name = data.name
@@ -675,8 +690,10 @@ do
     local highlight      = { }
     usedstyles.highlight = highlight
 
-    function structurestags.sethighlight(style,color) -- we assume global styles
-        highlight[locatedtag("highlight")] = {
+    local strippedtag    = structurestags.strip -- we assume global styles
+
+    function structurestags.sethighlight(style,color)
+        highlight[strippedtag(locatedtag("highlight"))] = {
             style = style, -- xml.css.fontspecification(style),
             color = color, -- xml.css.colorspec(color),
         }
@@ -2867,14 +2884,14 @@ local cssheadlink = [[
 local elementtemplate = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
-%element%, div.%element% {
+%element%, context|div.%element% {
     display: %display% ;
 }]]
 
 local detailtemplate = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
-%element%[detail=%detail%], div.%element%.%detail% {
+%element%[detail=%detail%], context|div.%element%.%detail% {
     display: %display% ;
 }]]
 
@@ -2895,11 +2912,13 @@ local htmltemplate = [[
 
     </head>
     <body>
+        <div xmlns="http://www.pragma-ade.com/context/export">
 
-        <div class="warning">Rendering can be suboptimal because there is no default/fallback css loaded.</div>
+<div class="warning">Rendering can be suboptimal because there is no default/fallback css loaded.</div>
 
 %body%
 
+        </div>
     </body>
 </html>
 ]]
@@ -2911,7 +2930,11 @@ local htmltemplate = [[
     }
 
     local function allusedelements(basename)
-        local result = { formatters["/* %s for file %s */"]("template",basename) }
+        local result = { replacetemplate(namespacetemplate, {
+            what      = "template",
+            filename  = basename,
+            namespace = contextns,
+        }) }
         for element, details in sortedhash(used) do
             if namespaces[element] then
                 -- skip math
@@ -3049,6 +3072,7 @@ local htmltemplate = [[
     }
 
     local addclicks   = true
+    local f_onclick   = formatters[ [[location.href='%s']] ]
     local f_onclick   = formatters[ [[location.href='%s']] ]
 
     local p_cleanid   = lpeg.replacer { [":"] = "-" }
@@ -3533,5 +3557,5 @@ implement {
 implement {
     name      = "settaglist",
     actions   = structurestags.setlist,
-    arguments = "string"
+    arguments = "integer"
 }

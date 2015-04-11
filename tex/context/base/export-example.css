@@ -19,46 +19,48 @@
 	\definefloat[myfloata]
 	\definefloat[myfloatb][myfloatbs][figure]
 
-	div.float.myfloata { }           float[detail='myfloata'] { }
-	div.float.myfloatb { }           float[detail='myfloatb'] { }
-	div.float.figure { }             float[detail='figure']   { }
-	div.float.figure.myfloatb { }    float[chain~='figure'][detail='myfloata'] { }
-	div.myfloata { }                 *[detail='myfloata'] { }
-	div.myfloatb { }                 *[detail='myfloatb'] { }
-	div.figure { }                   *[chain~='figure'] { }
-	div.figure.myfloatb { }          *[chain~='figure'][detail='myfloatb'] { }
+	context|div.float.myfloata { }           float[detail='myfloata'] { }
+	context|div.float.myfloatb { }           float[detail='myfloatb'] { }
+	context|div.float.figure { }             float[detail='figure']   { }
+	context|div.float.figure.myfloatb { }    float[chain~='figure'][detail='myfloata'] { }
+	context|div.myfloata { }                 *[detail='myfloata'] { }
+	context|div.myfloatb { }                 *[detail='myfloatb'] { }
+	context|div.figure { }                   *[chain~='figure'] { }
+	context|div.figure.myfloatb { }          *[chain~='figure'][detail='myfloatb'] { }
 
 */
+
+@namespace context url('http://www.pragma-ade.com/context/export') ;
 
 /* ignore  : mixed   */
 /* metadata: display */
 
-ignore, div.ignore {
+ignore, context|div.ignore {
 	display : none ;
 }
 
-ignore, div.private {
+ignore, context|div.private {
 	display : none ;
 }
 
-xmetadata, div.xmetadata {
+xmetadata, context|div.xmetadata {
 	display : none ;
 }
 
-xmetavariable, div.xmetavariable {
+xmetavariable, context|div.xmetavariable {
 	display : none ;
 }
 
 /* document : display */
 
-document:before, div.document:before {
+document:before, context|div.document:before {
 	content       : attr(title) ;
 	font-size     : 44pt ;
 	font-weight   : bold ;
 	margin-bottom : 1em ;
 }
 
-document, div.document {
+document, context|div.document {
 	font-family  : "DejaVu Serif", "Lucida Bright", serif ;
 	font-size    : 12pt ;
 	line-height  : 14.4pt;
@@ -70,35 +72,35 @@ document, div.document {
  /* text-justify : inter-word ; */
 }
 
-document>metadata, div.document div.metadata {
+document>metadata, context|div.document context|div.metadata {
 	font-family   : "DejaVu Sans Mono", "Lucida Console", monospace ;
 	margin-bottom : 2em ;
 }
 
 document>metadata>metavariable[name="title"]:before,
-		div.document div.metadata div.metavariable.name-title:before {
+		context|div.document context|div.metadata context|div.metavariable.name-title:before {
 	content : "title\00A0\00A0\00A0:\00A0" ;
 }
 
 document>metadata>metavariable[name="author"]:before,
-		div.document div.metadata div.metavariable.name-author:before {
+		context|div.document context|div.metadata context|div.metavariable.name-author:before {
 	content : "author\00A0\00A0:\00A0" ;
 }
 
 document>metadata>metavariable[name="version"]:before,
-		div.document div.metadata div.metavariable.name-version:before {
+		context|div.document context|div.metadata context|div.metavariable.name-version:before {
 	content : "version\00A0:\00A0" ;
 }
 
 document>metadata>metavariable[name="title"], document>metadata>metavariable[name="author"], document>metadata>metavariable[name="version"],
-		div.document div.metadata div.metavariable.name-title, div.document div.metadata div.metavariable.name-author, div.document div.metadata div.metavariable.name-version {
+		context|div.document context|div.metadata context|div.metavariable.name-title, context|div.document context|div.metadata context|div.metavariable.name-author, context|div.document context|div.metadata context|div.metavariable.name-version {
 	display : block ;
 }
 
 /* paragraph : mixed */
 /* p         : mixed */
 
-paragraph, p, div.paragraph, div.p {
+paragraph, p, context|div.paragraph, context|div.p {
 	display       : block ;
 	margin-top    : 0.5em ;
 	margin-bottom : 0.5em ;
@@ -106,7 +108,7 @@ paragraph, p, div.paragraph, div.p {
 
 /* break : display */
 
-break, div.break {
+break, context|div.break {
 	display       : block ;
 	margin-bottom : 0.5em ;
 }
@@ -114,14 +116,14 @@ break, div.break {
 /* construct : inline */
 /* highlight : inline */
 
-construct, div.construct {
+construct, context|div.construct {
 }
 
-construct[detail="important"], div.construct.important {
+construct[detail="important"], context|div.construct.important {
 	font-weight : bold ;
 }
 
-highlight, div.highlight { /* todo: style and color */
+highlight, context|div.highlight { /* todo: style and color */
 	display : inline ;
 }
 
@@ -130,18 +132,18 @@ highlight, div.highlight { /* todo: style and color */
 /* sectionnumber  : mixed   */
 /* sectioncontent : display */
 
-section, div.section {
+section, context|div.section {
 	display : block ;
 }
 
-sectioncontent, div.sectioncontent {
+sectioncontent, context|div.sectioncontent {
 	display       : block ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 }
 
 section[detail="chapter"], section[detail="title"],
-		div.section.chapter, div.section.title {
+		context|div.section.chapter, context|div.section.title {
 	page-break-before : always ;
 	page-break-after  : avoid ;
 	margin-top        : 3em ;
@@ -149,34 +151,34 @@ section[detail="chapter"], section[detail="title"],
 }
 
 section[detail="section"], section[detail="subject"],
-		div.section.section, div.section.subject {
+		context|div.section.section, context|div.section.subject {
 	page-break-after : avoid ;
 	margin-top       : 2.5em ;
 	margin-bottom    : 2.5em ;
 }
 
 section[detail="subsection"], section[detail="subsubject"],
-		div.section.subsection, div.section.subsubject {
+		context|div.section.subsection, context|div.section.subsubject {
 	page-break-after : avoid ;
 	margin-top       : 2em ;
 	margin-bottom    : 2em ;
 }
 
 section[detail="subsubsection"], section[detail="subsubsubject"],
-		div.section.subsubsection, div.section.subsubsubject {
+		context|div.section.subsubsection, context|div.section.subsubsubject {
 	page-break-after : avoid ;
 	margin-top       : 1em ;
 	margin-bottom    : 0em ;
 }
 
 section[detail="summary"], section[detail="subsummary"],
-		div.section.summary, div.section.subsummary {
+		context|div.section.summary, context|div.section.subsummary {
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 }
 
 section[detail="chapter"]>sectionnumber,
-		div.section.chapter div.sectionnumber {
+		context|div.section.chapter context|div.sectionnumber {
 	display      : inline-block ;
 	margin-right : 1em ;
 	font-size    : 3em ;
@@ -184,41 +186,41 @@ section[detail="chapter"]>sectionnumber,
 }
 
 section[detail="chapter"]>sectiontitle, section[detail="title"]>sectiontitle,
-		div.section.chapter div.sectiontitle, div.section.title div.sectiontitle {
+		context|div.section.chapter context|div.sectiontitle, context|div.section.title context|div.sectiontitle {
 	display     : inline-block ;
 	font-size   : 3em ;
 	font-weight : bold ;
 }
 
 section[detail="section"]>sectiontitle, section[detail="subject"]>sectiontitle,
-		div.section.section div.sectiontitle, div.section.subject div.sectiontitle {
+		context|div.section.section context|div.sectiontitle, context|div.section.subject context|div.sectiontitle {
 	display     : inline-block ;
 	font-size   : 2.5em ;
 	font-weight : bold ;
 }
 
 section[detail="subsection"]>sectiontitle, section[detail="subsubject"]>sectiontitle,
-		div.section.subsection div.sectiontitle, div.section.subsubject div.sectiontitle {
+		context|div.section.subsection context|div.sectiontitle, context|div.section.subsubject context|div.sectiontitle {
 	display     : inline-block ;
 	font-size   : 2em ;
 	font-weight : bold ;
 }
 
 section[detail="subsubsection"]>sectiontitle, section[detail="subsubsubject"]>sectiontitle,
-		div.section.subsubsection div.sectiontitle, div.section.subsubsubject div.sectiontitle {
+		context|div.section.subsubsection context|div.sectiontitle, context|div.section.subsubsubject context|div.sectiontitle {
 	display     : inline-block ;
 	font-size   : 1em ;
 	font-weight : bold ;
 }
 
-section[detail="section"]>sectionnumber, div.section.section div.sectionnumber {
+section[detail="section"]>sectionnumber, context|div.section.section context|div.sectionnumber {
 	display      : inline-block ;
 	margin-right : 1em ;
 	font-size    : 2.5em ;
 	font-weight  : bold ;
 }
 
-section[detail="summary"]>sectiontitle, div.section.summary div.sectiontitle {
+section[detail="summary"]>sectiontitle, context|div.section.summary context|div.sectiontitle {
 	display             : block ;
 	margin-top          : 1em ;
 	margin-bottom       : 1em ;
@@ -228,14 +230,14 @@ section[detail="summary"]>sectiontitle, div.section.summary div.sectiontitle {
 	border-width        : .15em;
 }
 
-section[detail="subsection"]>sectionnumber, div.section.subsection div.sectionnumber {
+section[detail="subsection"]>sectionnumber, context|div.section.subsection context|div.sectionnumber {
 	display      : inline-block ;
 	margin-right : 1em ;
 	font-size    : 1em ;
 	font-weight  : bold ;
 }
 
-section[detail="subsummary"]>sectiontitle, div.section.subsummary div.sectiontitle {
+section[detail="subsummary"]>sectiontitle, context|div.section.subsummary context|div.sectiontitle {
 	display             : block ;
 	margin-top          : 1em ;
 	margin-bottom       : 1em ;
@@ -263,37 +265,37 @@ section[detail="subsummary"]>sectiontitle, div.section.subsummary div.sectiontit
     glyphs : 'Α' 'B' 'Γ' 'Δ' 'Ε' 'Ζ' 'Η' 'Θ' 'Ι' 'Κ' 'Λ' 'Μ' 'Ν' 'Ξ' 'Ο' 'Π' 'Ρ' 'Σ' 'Τ' 'Υ' 'Φ' 'Χ' 'Ψ' 'Ω' ;
 }
 
-itemgroup, div.itemgroup {
+itemgroup, context|div.itemgroup {
 	display       : block ;
 	margin-bottom : 0.5em ;
 	margin-top    : 0.5em ;
 }
 
-itemgroup[symbol="1"], div.itemgroup.symbol-1 { list-style-type : disc ; }
-itemgroup[symbol="2"], div.itemgroup.symbol-2 { list-style-type : square ; }
-itemgroup[symbol="3"], div.itemgroup.symbol-3 { list-style-type : square ; }
-itemgroup[symbol="4"], div.itemgroup.symbol-4 { list-style-type : square ; }
-itemgroup[symbol="5"], div.itemgroup.symbol-5 { list-style-type : circ ; }
-itemgroup[symbol="a"], div.itemgroup.symbol-a { list-style-type : lower-alpha ; }
-itemgroup[symbol="A"], div.itemgroup.symbol-A { list-style-type : alpha ; }
-itemgroup[symbol="r"], div.itemgroup.symbol-r { list-style-type : lower-roman ; }
-itemgroup[symbol="R"], div.itemgroup.symbol-R { list-style-type : upper-roman ; }
-itemgroup[symbol="n"], div.itemgroup.symbol-n { list-style-type : decimal ; }
-itemgroup[symbol="g"], div.itemgroup.symbol-g { list-style-type : lower-greek ; }
-itemgroup[symbol="G"], div.itemgroup.symbol-G { list-style-type : upper-greek ; }
+itemgroup[symbol="1"], context|div.itemgroup.symbol-1 { list-style-type : disc ; }
+itemgroup[symbol="2"], context|div.itemgroup.symbol-2 { list-style-type : square ; }
+itemgroup[symbol="3"], context|div.itemgroup.symbol-3 { list-style-type : square ; }
+itemgroup[symbol="4"], context|div.itemgroup.symbol-4 { list-style-type : square ; }
+itemgroup[symbol="5"], context|div.itemgroup.symbol-5 { list-style-type : circ ; }
+itemgroup[symbol="a"], context|div.itemgroup.symbol-a { list-style-type : lower-alpha ; }
+itemgroup[symbol="A"], context|div.itemgroup.symbol-A { list-style-type : alpha ; }
+itemgroup[symbol="r"], context|div.itemgroup.symbol-r { list-style-type : lower-roman ; }
+itemgroup[symbol="R"], context|div.itemgroup.symbol-R { list-style-type : upper-roman ; }
+itemgroup[symbol="n"], context|div.itemgroup.symbol-n { list-style-type : decimal ; }
+itemgroup[symbol="g"], context|div.itemgroup.symbol-g { list-style-type : lower-greek ; }
+itemgroup[symbol="G"], context|div.itemgroup.symbol-G { list-style-type : upper-greek ; }
 
-item, div.item {
+item, context|div.item {
 	display       : list-item ;
 	margin-left   : 1em ;
 	margin-bottom : 0.5em ;
 	margin-top    : 0.5em ;
 }
 
-itemtag, div.item {
+itemtag, context|div.item {
 	display: none ;
 }
 
-itemcontent, div.itemcontent {
+itemcontent, context|div.itemcontent {
 }
 
 /* description        : display */
@@ -301,13 +303,13 @@ itemcontent, div.itemcontent {
 /* descriptioncontent : mixed   */
 /* descriptionsymbol  : inline  */
 
-description, div.description {
+description, context|div.description {
 	display       : block ;
 	margin-bottom : 1em ;
 	margin-top    : 1em ;
 }
 
-descriptiontag, div.descriptiontag {
+descriptiontag, context|div.descriptiontag {
 	display      : inline ;
     float        : left ;
     clear        : left ;
@@ -316,10 +318,10 @@ descriptiontag, div.descriptiontag {
     font-weight  : bold ;
 }
 
-descriptioncontent, div.descriptioncontent {
+descriptioncontent, context|div.descriptioncontent {
 }
 
-descriptionsymbol, div.descriptionsymbol {
+descriptionsymbol, context|div.descriptionsymbol {
 	display : inline ;
 }
 
@@ -328,7 +330,7 @@ descriptionsymbol, div.descriptionsymbol {
 /* verbatimline       : mixed   */
 /* verbatim           : inline  */
 
-verbatimblock, div.verbatimblock {
+verbatimblock, context|div.verbatimblock {
 	background-color : rgb(50%,50%,100%) ;
 	display          : block ;
 	padding          : 1em ;
@@ -337,17 +339,17 @@ verbatimblock, div.verbatimblock {
 	font-family      : "DejaVu Sans Mono", "Lucida Console", monospace ;
 }
 
-verbatimlines+verbatimlines, div.verbatimlines+div.verbatimlines {
+verbatimlines+verbatimlines, context|div.verbatimlines+context|div.verbatimlines {
 	display    : block ;
 	margin-top : 1em ;
 }
 
-verbatimline, div.verbatimline {
+verbatimline, context|div.verbatimline {
 	display     : block ;
 	white-space : pre-wrap ;
 }
 
-verbatim, div.verbatim {
+verbatim, context|div.verbatim {
 	display     : inline ;
 	white-space : pre-wrap ;
 	color       : rgb(60%,60%,0%) ;
@@ -357,18 +359,18 @@ verbatim, div.verbatim {
 /* lines : display */
 /* line  : mixed   */
 
-lines, div.lines {
+lines, context|div.lines {
 	display       : block ;
 	margin-bottom : 1em ;
 	margin-top    : 1em ;
 }
 
-lines+lines, div.lines+div.lines {
+lines+lines, context|div.lines+context|div.lines {
 	display    : block ;
 	margin-top : 1em ;
 }
 
-line, div.line {
+line, context|div.line {
 	display     : block ;
 	white-space : pre-wrap ;
 }
@@ -376,7 +378,7 @@ line, div.line {
 /* synonym : inline  */
 /* sorting : inline  */
 
-sorting, synonym, div.sorting, div.synonym {
+sorting, synonym, context|div.sorting, context|div.synonym {
 	display      : inline ;
 	font-variant : small-caps ;
 }
@@ -391,15 +393,15 @@ sorting, synonym, div.sorting, div.synonym {
 /* registerpage      : inline  */
 /* registerpagerange : mixed   */
 
-register, div.register {
+register, context|div.register {
 	display: none ;
 }
 
-registerlocation, div.registerlocation {
+registerlocation, context|div.registerlocation {
 	display: inline ;
 }
 
-registerlocation:after, div.registerlocation:after {
+registerlocation:after, context|div.registerlocation:after {
 	content        : "\25B6\00A0\00A0" ;
 	color          : rgb(40%,40%,40%) ;
 	font-size      : x-small ;
@@ -412,33 +414,33 @@ registerlocation:after, div.registerlocation:after {
 /* tablerow  : display */
 /* tablecell : mixed   */
 
-table, div.table {
+table, context|div.table {
 	display : table ;
 }
 
-tablerow, div.tablerow {
+tablerow, context|div.tablerow {
 	display : table-row ;
 }
 
-tablecell[align="middle"], div.tablecell.align-middle {
+tablecell[align="middle"], context|div.tablecell.align-middle {
 	display    : table-cell ;
 	text-align : center ;
 	padding    : .1em ;
 }
 
-tablecell[align="flushleft"], div.tablecell.align-flushleft {
+tablecell[align="flushleft"], context|div.tablecell.align-flushleft {
 	display    : table-cell ;
 	text-align : left ;
 	padding    : .1em ;
 }
 
-tablecell[align="flushright"], div.tablecell.align-flushright {
+tablecell[align="flushright"], context|div.tablecell.align-flushright {
 	display    : table-cell ;
 	text-align : right ;
 	padding    : .1em ;
 }
 
-tablecell, div.tablecell {
+tablecell, context|div.tablecell {
 	display    : table-cell ;
 	text-align : left ;
 	padding    : .1em ;
@@ -448,40 +450,40 @@ tablecell, div.tablecell {
 /* tabulaterow  : display */
 /* tabulatecell : mixed   */
 
-tabulate, div.tabulate {
+tabulate, context|div.tabulate {
 	display       : table ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 	margin-left   : 2.5em ;
 }
 
-floatcontent>tabulate, div.floatcontent div.tabulate {
+floatcontent>tabulate, context|div.floatcontent context|div.tabulate {
 	margin-left   : 0em ;
 }
 
-tabulaterow, div.tabulaterow {
+tabulaterow, context|div.tabulaterow {
 	display : table-row ;
 }
 
-tabulatecell[align="middle"], div.tabulatecell.align-middle {
+tabulatecell[align="middle"], context|div.tabulatecell.align-middle {
 	display       : table-cell ;
 	text-align    : center ;
 	padding-right : 1em ;
 }
 
-tabulatecell[align="flushleft"], div.tabulatecell.align-flushleft {
+tabulatecell[align="flushleft"], context|div.tabulatecell.align-flushleft {
 	display       : table-cell ;
 	text-align    : left ;
 	padding-right : 1em ;
 }
 
-tabulatecell[align="flushright"], div.tabulatecell.align-flushright {
+tabulatecell[align="flushright"], context|div.tabulatecell.align-flushright {
 	display       : table-cell ;
 	text-align    : right ;
 	padding-right : 1em ;
 }
 
-tabulatecell, div.tabulatecell {
+tabulatecell, context|div.tabulatecell {
 	display       : table-cell ;
 	text-align    : left ;
 	padding-right : 1em ;
@@ -492,23 +494,23 @@ tabulatecell, div.tabulatecell {
 /* combinationcontent : mixed   */
 /* combinationcaption : mixed   */
 
-combination, div.combination {
+combination, context|div.combination {
 	display       : table ;
 	margin-top    : 0em ;
 	margin-bottom : 0em ;
 }
 
-combinationpair, div.combinationpair {
+combinationpair, context|div.combinationpair {
 	display       : table-cell ;
 	padding-right : 1em ;
 }
 
-combinationcontent, div.combinationcontent {
+combinationcontent, context|div.combinationcontent {
 	display    : table-row ;
 	text-align : center ;
 }
 
-combinationcaption, div.combinationcaption {
+combinationcaption, context|div.combinationcaption {
 	display     : table-row ;
 	padding-top : 1ex ;
 	text-align  : center ;
@@ -522,39 +524,39 @@ combinationcaption, div.combinationcaption {
 /* listdata    : mixed   */
 /* listpage    : mixed   */
 
-list, div.list {
+list, context|div.list {
 	display : block ;
 }
 
-listitem[detail="chapter"], div.listitem.chapter {
+listitem[detail="chapter"], context|div.listitem.chapter {
 	display     : block ;
 	margin-top  : 1em ;
 	font-weight : bold ;
 }
 
-listitem[detail="section"], div.listitem.section {
+listitem[detail="section"], context|div.listitem.section {
 	display : block ;
 }
 
-listitem[detail="subsection"], div.listitem.subsection {
+listitem[detail="subsection"], context|div.listitem.subsection {
 	display : block ;
 	display : inline-block ;
 }
 
-listtag, div.listtag {
+listtag, context|div.listtag {
 	display : inline-block ;
 	width   : 5em ;
 }
 
-listcontent, div.listcontent {
+listcontent, context|div.listcontent {
 	display : inline-block ;
 }
 
-listdata, div.listdata {
+listdata, context|div.listdata {
 	display : inline-block ;
 }
 
-listpage, div.listpage {
+listpage, context|div.listpage {
 	display : none ;
 }
 
@@ -565,42 +567,42 @@ listpage, div.listpage {
 /* :lang(en) */
 
 delimited[detail="quotation"]:before, delimitedblock[detail="quotation"]:before,
-	div.delimited.quotation:before, div.delimitedblock.quotation:before {
+	context|div.delimited.quotation:before, context|div.delimitedblock.quotation:before {
 	/* content : "\201C" ; */
 	font-style : italic ;
 }
 
 delimited[detail="quotation"]:after, delimitedblock[detail="quotation"]:after,
-	div.delimited.quotation:after, div.delimitedblock.quotation:after {
+	context|div.delimited.quotation:after, context|div.delimitedblock.quotation:after {
 	/* content : "\201D" ; */
 	font-style : italic ;
 }
 
 delimited[detail="quote"]:before, delimitedblock[detail="quote"]:before,
-	div.delimited.quote:before, div.delimitedblock.quote:before {
+	context|div.delimited.quote:before, context|div.delimitedblock.quote:before {
 	/* content : "\2018" ; */
 	font-style : italic ;
 }
 
 delimited[detail="quote"]:after, delimitedblock[detail="quote"]:after,
-	div.delimited.quote:after, div.delimitedblock.quote:after {
+	context|div.delimited.quote:after, context|div.delimitedblock.quote:after {
 	/* content : "\2019" ; */
 	font-style : italic ;
 }
 
-delimited, div.delimited {
+delimited, context|div.delimited {
     display : inline
 }
 
-delimitedblock, div.delimitedblock {
+delimitedblock, context|div.delimitedblock {
     display : block
 }
 
-subsentence:before, subsentence:after, div.subsentence:before, div.subsentence:after {
+subsentence:before, subsentence:after, context|div.subsentence:before, context|div.subsentence:after {
 	content : "\2014" ;
 }
 
-subsentence, div.subsentence {
+subsentence, context|div.subsentence {
     display : inline
 }
 
@@ -614,36 +616,36 @@ subsentence, div.subsentence {
 /* floattext    : mixed   */
 /* floatcontent : mixed   */
 
-float, div.float {
+float, context|div.float {
 	display       : block ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 	margin-left   : 2.5em ;
 }
 
-floatcaption, div.floatcaption {
+floatcaption, context|div.floatcaption {
 	display    : block ;
 	margin-top : 0.5em ;
 	color      : rgb(60%,60%,0%) ;
 }
 
-floatlabel, div.floatlabel {
+floatlabel, context|div.floatlabel {
 	display      : inline-block ;
 	font-weight  : bold ;
 	margin-right : 0.25em ;
 }
 
-floatnumber, div.floatnumber {
+floatnumber, context|div.floatnumber {
 	display      : inline ;
 	font-weight  : bold ;
 	margin-right : 0.25em ;
 }
 
-floattext, div.floattext {
+floattext, context|div.floattext {
 	display      : inline ;
 }
 
-floatcontent, div.floatcontent {
+floatcontent, context|div.floatcontent {
 }
 
 /* image     : mixed */
@@ -657,11 +659,11 @@ floatcontent, div.floatcontent {
     height          : 5.994cm ;
 } */
 
-mpgraphic:before, div.mpgraphic:before { /* does not work with empty element */
+mpgraphic:before, context|div.mpgraphic:before { /* does not work with empty element */
 	content : "[runtime metapost graphic]" ;
 }
 
-mpgraphic, div.mpgraphic {
+mpgraphic, context|div.mpgraphic {
 	display : inline ;
 }
 
@@ -673,63 +675,63 @@ mpgraphic, div.mpgraphic {
 /* formulanumber  : mixed   */
 /* formulacontent : display */
 
-formula, div.formula {
+formula, context|div.formula {
 	display       : block ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 	margin-left   : 2.5em ;
 }
 
-subformula, div.subformula { /* todo */
+subformula, context|div.subformula { /* todo */
 	display       : block ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 	margin-left   : 2.5em ;
 }
 
-formulaset, div.formulaset { /* todo */
+formulaset, context|div.formulaset { /* todo */
 	display       : block ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 	margin-left   : 2.5em ;
 }
 
-formulacaption, div.formulacaption { /* todo */
+formulacaption, context|div.formulacaption { /* todo */
 	display    : block ;
 	margin-top : 0.5em ;
 	color      : rgb(60%,60%,0%) ;
 }
 
-formulalabel, div.formulalabel {
+formulalabel, context|div.formulalabel {
 	display      : inline ;
 	font-weight  : bold ;
 	margin-right : .25em ;
 }
 
-formulanumber, div.formulanumber {
+formulanumber, context|div.formulanumber {
 	display     : inline ;
 	font-weight : bold ;
 }
 
-formulacontent, div.formulacontent {
+formulacontent, context|div.formulacontent {
 	display : block ;
 }
 
-link, div.link {
+link, context|div.link {
 	display : inline ;
 }
 
 /* margintextblock : inline  */
 /* margintext      : inline  */
 
-margintext, div.margintext {
+margintext, context|div.margintext {
 	display       : block ;
 	font-weight   : bold ;
 	margin-top    : 1em ;
 	margin-bottom : 1em ;
 }
 
-margintext:before, div.margintext:before {
+margintext:before, context|div.margintext:before {
 	content : "\25B6\00A0\00A0" ;
 	color   : rgb(40%,40%,40%) ;
 }
@@ -757,12 +759,12 @@ margintext:before, div.margintext:before {
 /* mtr        : display */
 /* mtd        : display */
 
-div.math-inline {
+context|div.math-inline {
 	display        : inline ;
 	vertical-align : 0 ; /* this will be set directly */
 }
 
-div.math-display {
+context|div.math-display {
 	display : block ;
 	margin  : 1ex 0ex 1em 3em ;
 }
@@ -771,15 +773,15 @@ div.math-display {
 /* unit     : inline */
 /* number   : inline */
 
-quantity, div.quantity {
+quantity, context|div.quantity {
 	display : inline ;
 }
 
-quantity>unit, div.quantity>div.unit {
+quantity>unit, context|div.quantity>context|div.unit {
 	display : inline ;
 }
 
-quantity>number, div.quantity>div.number {
+quantity>number, context|div.quantity>context|div.number {
 	display : inline ;
 }
 
@@ -787,42 +789,42 @@ quantity>number, div.quantity>div.number {
 /* sup    : inline */
 /* subsup : inline */
 
-sup, div.sup {
+sup, context|div.sup {
 	display        : inline-block ;
 	font-size      : xx-small ;
 	vertical-align : super ;
 }
 
-sub, div.sub {
+sub, context|div.sub {
 	display        : inline-block ;
 	font-size      : xx-small ;
 	vertical-align : sub ;
 }
 
-subsup>sup, div.subsup>div.sup {
+subsup>sup, context|div.subsup>context|div.sup {
 	display        : inline ;
 	vertical-align : top ;
 }
 
-subsup>sub, div.subsup>div.sub {
+subsup>sub, context|div.subsup>context|div.sub {
 	display        : inline ;
 	vertical-align : bottom ;
 }
 
 /* links */
 
-div[href]:hover {
+context|div[href]:hover {
 	color            : rgb(50%,0%,0%) ;
 	background-color : rgb(85%,85%,85%) ;
 }
 
 /* setups */
 
-setup, div.setup {
+setup, context|div.setup {
 	display : block ;
 }
 
-comment, div.comment {
+comment, context|div.comment {
 	background-color : rgb(50%,75%,100%) ;
 	display          : block ;
 	padding          : 1em ;
@@ -833,10 +835,10 @@ comment, div.comment {
 
 /* special */
 
-c, div.c {
+c, context|div.c {
 	display : inline ;
 }
 
-warning, div.warning {
+warning, context|div.warning {
 	display : none ;
 }

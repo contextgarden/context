@@ -6,16 +6,18 @@ if not modules then modules = { } end modules ['x-mathml'] = {
     license   = "see context related readme files"
 }
 
--- This needs an upgrade to the latest greatest mechanisms.
+-- This needs an upgrade to the latest greatest mechanisms. But ... it
+-- probably doesn't pay back as no mathml support ever did.
 
 local type, next = type, next
 local formatters, lower, find, gsub, match = string.formatters, string.lower, string.find, string.gsub, string.match
 local strip = string.strip
-local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
-local lxmlcollected = lxml.collected
+local xmlsprint, xmlcprint, xmltext, xmlcontent, xmlempty = xml.sprint, xml.cprint, xml.text, xml.content, xml.empty
+local lxmlcollected, lxmlfilter = lxml.collected, lxml.filter
 local getid = lxml.getid
-local utfchar, utfcharacters, utfvalues = utf.char, utf.characters, utf.values
+local utfchar, utfcharacters, utfvalues, utfsplit, utflen = utf.char, utf.characters, utf.values, utf.split, utf.len
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local P, Cs = lpeg.P, lpeg.Cs
 
 local mathml      = { }
 moduledata.mathml = mathml
@@ -502,20 +504,39 @@ function mathml.stripped(str)
     context(strip(str))
 end
 
+local p_entity  = (P("&") * ((1-P(";"))^0) * P(";"))
+local p_utfchar = lpegpatterns.utf8character
+local p_spacing = lpegpatterns.whitespace^1
+
+local p_mn      =  Cs((p_entity/"" + p_spacing/utfchar(0x205F) + p_utfchar/n_replacements)^0)
+local p_strip   =  Cs((p_entity/""                             + p_utfchar               )^0)
+local p_mi      =  Cs((p_entity/""                             + p_utfchar/i_replacements)^0)
+
+-- function mathml.mn(id,pattern)
+--     -- maybe at some point we need to interpret the number, but
+--     -- currently we assume an upright font
+--     local str = xmlcontent(getid(id)) or ""
+--     local rep = gsub(str,"&.-;","")
+--     local rep = gsub(rep,"(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
+--     local rep = gsub(rep,".",n_replacements)
+--     ctx_mn(rep)
+-- end
+
 function mathml.mn(id,pattern)
     -- maybe at some point we need to interpret the number, but
     -- currently we assume an upright font
-    local str = xmlcontent(getid(id)) or ""
-    local rep = gsub(str,"&.-;","")
-    local rep = gsub(rep,"(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
-    local rep = gsub(rep,".",n_replacements)
-    ctx_mn(rep)
+    ctx_mn(lpegmatch(p_mn,xmlcontent(getid(id)) or ""))
 end
 
+-- function mathml.mo(id)
+--     local str = xmlcontent(getid(id)) or ""
+--     local rep = gsub(str,"&.-;","") -- todo
+--     context(simpleoperatorremapper(rep) or rep)
+-- end
+
 function mathml.mo(id)
-    local str = xmlcontent(getid(id)) or ""
-    local rep = gsub(str,"&.-;","") -- todo
-    context(simpleoperatorremapper(rep) or rep)
+    local str = lpegmatch(p_strip,xmlcontent(getid(id)) or "")
+    context(simpleoperatorremapper(str) or str)
 end
 
 function mathml.mi(id)
@@ -529,11 +550,13 @@ function mathml.mi(id)
         elseif n == 1 then
             local first = str[1]
             if type(first) == "string" then
-                local str = gsub(first,"&.-;","") -- bah
-                local rep = i_replacements[str]
-                if not rep then
-                    rep = gsub(str,".",i_replacements)
-                end
+                -- local str = gsub(first,"&.-;","") -- bah
+                -- local rep = i_replacements[str]
+                -- if not rep then
+                --     rep = gsub(str,".",i_replacements)
+                -- end
+                local str = lpegmatch(p_strip,first)
+                local rep = i_replacements[str] or lpegmatch(p_mi,str)
                 context(rep)
              -- ctx_mi(rep)
             else
@@ -549,8 +572,12 @@ end
 
 function mathml.mfenced(id) -- multiple separators
     id = getid(id)
-    local left, right, separators = id.at.open or "(", id.at.close or ")", id.at.separators or ","
-    local l, r = l_replacements[left], r_replacements[right]
+    local at         = id.at
+    local left       = at.open       or "("
+    local right      = at.close      or ")"
+    local separators = at.separators or ","
+    local l          = l_replacements[left]
+    local r          = r_replacements[right]
     ctx_enabledelimiter()
     if l then
         context(l_replacements[left] or o_replacements[left] or "")
@@ -559,7 +586,7 @@ function mathml.mfenced(id) -- multiple separators
         context(left)
     end
     ctx_disabledelimiter()
-    local collected = lxml.filter(id,"/*") -- check the *
+    local collected = lxmlfilter(id,"/*") -- check the *
     if collected then
         local n = #collected
         if n == 0 then
@@ -567,7 +594,7 @@ function mathml.mfenced(id) -- multiple separators
         elseif n == 1 then
             xmlsprint(collected[1]) -- to be checked
         else
-            local t = utf.split(separators,true)
+            local t = utfsplit(separators,true)
             for i=1,n do
                 xmlsprint(collected[i]) -- to be checked
                 if i < n then
@@ -667,12 +694,12 @@ function mathml.mcolumn(root)
         local tag = e.tg
         if tag == "mi" or tag == "mn" or tag == "mo" or tag == "mtext" then
             local str = xmltext(e)
-            str = gsub(str,"&.-;","")
+            str = lpegmatch(p_strip,str)
             for s in utfcharacters(str) do
                 m[#m+1] = { tag, s }
             end
             if tag == "mn" then
-                local n = utf.len(str)
+                local n = utflen(str)
                 if n > numbers then
                     numbers = n
                 end
@@ -795,7 +822,7 @@ function mathml.mtable(root)
                 local cca = columnalignments[at.columnalign or (columnaligns and columnaligns[col]) or rca or "center"] or "middle"
                 local cfr = frametypes      [at.frame       or (frames       and frames      [col]) or rfr or "none"  ] or "off"
                 ctx_bTD { align = formatters["{%s,%s}"](cra,cca), frame = cfr, nx = columnspan, ny = rowspan }
-                if xml.empty(e,".") then
+                if xmlempty(e,".") then
                     -- nothing, else hsize max
                 else
                     ctx_startimath()

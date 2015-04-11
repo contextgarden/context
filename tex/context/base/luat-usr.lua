@@ -37,7 +37,10 @@ local tex_errormessage  = context.errmessage
 local implement         = interfaces.implement
 local reporter          = logs.reporter
 
-local report            = reporter("lua instance")
+local report_instance   = reporter("lua instance")
+local report_script     = reporter("lua script")
+local report_thread     = reporter("lua thread")
+local newline           = logs.newline
 
 lua.numbers             = lua.numbers  or { }
 lua.messages            = lua.messages or { }
@@ -48,13 +51,80 @@ local messages          = lua.messages
 storage.register("lua/numbers",  numbers,  "lua.numbers" )
 storage.register("lua/messages", messages, "lua.messages")
 
+-- First we implement a pure lua version of directlua and a persistent
+-- variant of it:
+
+local function runscript(code)
+    local done, message = loadstring(code)
+    if done then
+        done()
+    else
+        newline()
+        report_script("error : %s",message or "unknown")
+        report_script()
+        report_script("code  : %s",code)
+        newline()
+    end
+end
+
+local threads = setmetatableindex(function(t,k)
+    local v = setmetatableindex({},global)
+    t[k] = v
+    return v
+end)
+
+local function runthread(name,code)
+    if not code or code == "" then
+        threads[name] = nil
+    else
+        local thread = threads[name]
+        local done, message = loadstring(code,nil,nil,thread)
+        if done then
+            done()
+        else
+            newline()
+            report_thread("thread: %s",name)
+            report_thread("error : %s",message or "unknown")
+            report_thread()
+            report_thread("code  : %s",code)
+            newline()
+        end
+    end
+end
+
+interfaces.implement {
+    name      = "luascript",
+    actions   = runscript,
+    arguments = "string"
+}
+
+interfaces.implement {
+    name      = "luathread",
+    actions   = runthread,
+    arguments = { "string", "string" }
+}
+
+-- local scanners = interfaces.scanners
+--
+-- local function ctxscanner(name)
+--     local scanner = scanners[name]
+--     if scanner then
+--         scanner()
+--     else
+--         report("unknown scanner: %s",name)
+--     end
+-- end
+--
+-- interfaces.implement {
+--     name      = "clfscanner",
+--     actions   = ctxscanner,
+--     arguments = "string",
+-- }
+
 local function registername(name,message)
     if not name or name == "" then
-        report("no valid name given")
+        report_instance("no valid name given")
         return
-    end
-    if not message or message == "" then
-        message = name
     end
     if not message or message == "" then
         message = name
@@ -69,9 +139,9 @@ local function registername(name,message)
     local report = reporter("lua instance",message)
     local proxy = {
         -- we can access all via:
-        global       = global,
+        global       = global, -- or maybe just a metatable
         -- some protected data
-        moduledata   = setmetatableindex(moduledata),    --
+        moduledata   = setmetatableindex(moduledata),
         thirddata    = setmetatableindex(thirddata),
         -- less protected data
         userdata     = userdata,
@@ -95,7 +165,7 @@ local function registername(name,message)
     return function(code)
         local code, message = load(code,nil,nil,proxy)
         if not code then
-            report("error: %s",message or code)
+            report_instance("error: %s",message or code)
         elseif not xpcall(code,report) then
             tex_errormessage("hit return to continue or quit this run")
         end
@@ -116,7 +186,7 @@ implement {
                 scope     = "private",
             }
         else
-            report("unvalid csname for %a",message or name or "?")
+            report_instance("unvalid csname for %a",message or name or "?")
         end
     end
 }

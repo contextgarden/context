@@ -182,7 +182,7 @@
 \appendtoks
     \unexpanded\def\dotaglistlocation
       {\iftrialtypesetting\else
-         \clf_settaglist{\currentlistindex}%
+         \clf_settaglist\currentlistindex\relax
        \fi}%
 \to \everyenableelements
 

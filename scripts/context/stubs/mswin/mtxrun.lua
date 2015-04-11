@@ -9053,7 +9053,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 6621, stripped down to: 3627
+-- original size: 7100, stripped down to: 3978
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -9133,6 +9133,10 @@ local function replacekeyquoted(s,t,how,recurse)
     return escaper(replacekey(s,t,how,recurse))
   end
 end
+local function replaceoptional(l,m,r,t,how,recurse)
+  local v=t[l]
+  return v and v~="" and lpegmatch(replacer,r,1,t,how or "lua",recurse or false) or ""
+end
 local single=P("%") 
 local double=P("%%") 
 local lquoted=P("%[") 
@@ -9146,11 +9150,16 @@ local nolquoted=lquoted/''
 local norquoted=rquoted/''
 local nolquotedq=lquotedq/''
 local norquotedq=rquotedq/''
-local key=nosingle*((C((1-nosingle )^1)*Carg(1)*Carg(2)*Carg(3))/replacekey    )*nosingle
-local quoted=nolquotedq*((C((1-norquotedq)^1)*Carg(1)*Carg(2)*Carg(3))/replacekeyquoted )*norquotedq
-local unquoted=nolquoted*((C((1-norquoted )^1)*Carg(1)*Carg(2)*Carg(3))/replacekeyunquoted)*norquoted
+local noloptional=P("%?")/''
+local noroptional=P("?%")/''
+local nomoptional=P(":")/''
+local args=Carg(1)*Carg(2)*Carg(3)
+local key=nosingle*((C((1-nosingle  )^1)*args)/replacekey    )*nosingle
+local quoted=nolquotedq*((C((1-norquotedq )^1)*args)/replacekeyquoted )*norquotedq
+local unquoted=nolquoted*((C((1-norquoted )^1)*args)/replacekeyunquoted)*norquoted
+local optional=noloptional*((C((1-nomoptional)^1)*nomoptional*C((1-noroptional)^1)*args)/replaceoptional)*noroptional
 local any=P(1)
-   replacer=Cs((unquoted+quoted+escape+key+any)^0)
+   replacer=Cs((unquoted+quoted+escape+optional+key+any)^0)
 local function replace(str,mapping,how,recurse)
   if mapping and str then
     return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
@@ -17826,8 +17835,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 746921
--- stripped bytes    : 272944
+-- original bytes    : 747400
+-- stripped bytes    : 273072
 
 -- end library merge
 

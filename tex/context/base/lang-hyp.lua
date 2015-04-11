@@ -362,6 +362,7 @@ local function hyphenate(dictionary,word,n) -- odd is okay
     local specials   = dictionary.specials
     local patterns   = dictionary.patterns
     --
+-- inspect(specials)
     local spec
     for i=1,l do
         for j=i,l do
@@ -572,7 +573,7 @@ do
             lpegmatch(u_pattern,str,1,dictionary.patterns,dictionary.specials)
          -- unregister_pattern(dictionary.patterns,dictionary.specials,str)
         else
-            lpegmatch(r_pattern,str,1,dictionary.patterns,dictionary.specials,specification or false)
+            lpegmatch(r_pattern,str,1,dictionary.patterns,dictionary.specials,type(specification) == "table" and specification or false)
          -- register_pattern(dictionary.patterns,dictionary.specials,str,specification)
         end
     end

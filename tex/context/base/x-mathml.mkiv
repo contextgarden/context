@@ -172,11 +172,6 @@
 %D filter. There is an intermediate cleaner module but it has
 %D some namespace limitations. Here we do it the \MKIV\ way.
 
-\def\widevec#1%
-  {\vbox{\mathsurround\zeropoint\ialign{##\crcr
-     \rightarrowfill\crcr\noalign{\nointerlineskip}%
-     \startimath\hfil\displaystyle{#1}\hfil\stopimath\crcr}}}
-
 %D The rendering macros:
 
 \def\MMLrm{\mr}
@@ -534,7 +529,6 @@
 \starttexdefinition mmlapplycsymbol #1#2#3#4
     % #1=full url, #2=name, #3=encoding, #4=text
     \doifelse {#3} {text} {
-%         {\mr #4}
         \text{#4}
     } {
         \doifelsesetups {mml:csymbol:#1} {
@@ -590,7 +584,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:ci:vector
-    \widevec{\xmlflush{#1}}
+    \overrightarrow{\xmlflush{#1}}
 \stopxmlsetups
 
 \startxmlsetups mml:ci:matrix
@@ -1341,13 +1335,11 @@
                             \xmlfirst{#1}{/mml:ci}
                         } {
                             \MMLcreset
-\ifnum\xmlcount{#1}{/mml:apply/*}>\plustwo % hack
-    \left(
-                            \xmlfirst{#1}{/mml:apply}
-    \right)
-\else
-                            \xmlfirst{#1}{/mml:apply}
-\fi
+                            \ifnum\xmlcount{#1}{/mml:apply/*}>\plustwo % hack
+                                \left(\xmlfirst{#1}{/mml:apply}\right)
+                            \else
+                                \xmlfirst{#1}{/mml:apply}
+                            \fi
                         }
                     }
                 } {

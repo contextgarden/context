@@ -44,18 +44,21 @@
 \newtoks\everyhyphenatedurl
 
 \appendtoks
-   \let\&\letterampersand
-   \let\#\letterhash
-   \let\~\lettertilde
-   \let\\\letterbackslash
-   \let\$\letterdollar
-   \let\^\letterhat
-   \let\_\letterunderscore
-   \let\{\letterleftbrace
-   \let\}\letterrightbrace
-   \let\|\letterbar
-   \let~=\lettertilde
-   \let|=\letterbar
+    \resetfontfeature
+    \resetcharacterspacing
+    %
+    \let\&\letterampersand
+    \let\#\letterhash
+    \let\~\lettertilde
+    \let\\\letterbackslash
+    \let\$\letterdollar
+    \let\^\letterhat
+    \let\_\letterunderscore
+    \let\{\letterleftbrace
+    \let\}\letterrightbrace
+    \let\|\letterbar
+    \let~=\lettertilde
+    \let|=\letterbar
 \to \everyhyphenatedurl
 
 \let\hyphenatedurlseparator    \empty % \periodcentered

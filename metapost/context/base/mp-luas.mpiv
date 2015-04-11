@@ -13,6 +13,15 @@
 
 if known context_luas : endinput ; fi ;
 
+% When I prototyped the runscript primitive I was just thinking of a usage like
+% the original \directlua primitive in luatex: genererate something and pipe
+% that back to metapost, and have access to some internals. Instead of compiling
+% the code a the metapost end here we delegate that to the lua end. Only strings
+% get passed. Of course in the end the real usage got a bit beyong the intended
+% usage. So, in addition to some definitions here there are and will be use in
+% other metafun modules too. Of course in retrospect I should have done this five
+% years earlier.
+
 boolean context_luas ; context_luas := true ;
 
 % First variant:

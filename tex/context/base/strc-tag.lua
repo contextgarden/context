@@ -390,6 +390,10 @@ function tags.elementtag()
     end
 end
 
+function tags.strip(fulltag)
+    return lpegmatch(strip,fulltag)
+end
+
 function tags.setuserproperties(tag,list)
     if not list or list == "" then
         tag, list = chain[stacksize], tag

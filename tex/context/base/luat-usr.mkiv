@@ -17,6 +17,24 @@
 
 \registerctxluafile{luat-usr}{1.001}
 
+%D A few goodies:
+%D
+%D \startbuffer
+%D \luascript        {        context("foo 1:") context(i) }
+%D \luathread {test} { i = 10 context("bar 1:") context(i) }
+%D \luathread {test} {        context("bar 2:") context(i) }
+%D \luathread {test} {}
+%D \luathread {test} {        context("bar 3:") context(i) }
+%D \luascript        {        context("foo 2:") context(i) }
+%D \stopbuffer
+%D
+%D \typebuffer \startlines \getbuffer \stoplines
+
+\let\luascript \clf_luascript
+\let\luathread \clf_luathread
+%let\clfscanner\clf_clfscanner
+%def\clfscanner#1{\csname clf_#1\endcsname}
+
 %D \macros
 %D   {definenamedlua}
 %D

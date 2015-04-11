@@ -128,6 +128,11 @@ local function replacekeyquoted(s,t,how,recurse) -- ".. \" "
     end
 end
 
+local function replaceoptional(l,m,r,t,how,recurse)
+    local v = t[l]
+    return v and v ~= "" and lpegmatch(replacer,r,1,t,how or "lua",recurse or false) or ""
+end
+
 local single      = P("%")  -- test %test% test     : resolves test
 local double      = P("%%") -- test 10%% test       : %% becomes %
 local lquoted     = P("%[") -- test '%[test]%' test : resolves to test with escaped "'s
@@ -143,12 +148,19 @@ local norquoted   = rquoted  / ''
 local nolquotedq  = lquotedq / ''
 local norquotedq  = rquotedq / ''
 
-local key         = nosingle   * ((C((1-nosingle  )^1) * Carg(1) * Carg(2) * Carg(3)) / replacekey        ) * nosingle
-local quoted      = nolquotedq * ((C((1-norquotedq)^1) * Carg(1) * Carg(2) * Carg(3)) / replacekeyquoted  ) * norquotedq
-local unquoted    = nolquoted  * ((C((1-norquoted )^1) * Carg(1) * Carg(2) * Carg(3)) / replacekeyunquoted) * norquoted
+local noloptional = P("%?") / ''
+local noroptional = P("?%") / ''
+local nomoptional = P(":")  / ''
+
+
+local args        = Carg(1) * Carg(2) * Carg(3)
+local key         = nosingle    * ((C((1-nosingle   )^1) * args) / replacekey        ) * nosingle
+local quoted      = nolquotedq  * ((C((1-norquotedq )^1) * args) / replacekeyquoted  ) * norquotedq
+local unquoted    = nolquoted   * ((C((1-norquoted  )^1) * args) / replacekeyunquoted) * norquoted
+local optional    = noloptional * ((C((1-nomoptional)^1) * nomoptional * C((1-noroptional)^1) * args) / replaceoptional) *  noroptional
 local any         = P(1)
 
-      replacer    = Cs((unquoted + quoted + escape + key + any)^0)
+      replacer    = Cs((unquoted + quoted + escape + optional + key + any)^0)
 
 local function replace(str,mapping,how,recurse)
     if mapping and str then
@@ -164,6 +176,7 @@ end
 -- print(replace("test '%[x]%' test",{ x = [[a '%y%'  a]], y = "oeps" },'sql',true))
 -- print(replace([[test %[x]% test]],{ x = [[a "x"  a]]}))
 -- print(replace([[test %(x)% test]],{ x = [[a "x"  a]]}))
+-- print(replace([[convert %?x: -x "%x%" ?% %?y: -y "%y%" ?%]],{ x = "yes" }))
 
 templates.replace = replace
 

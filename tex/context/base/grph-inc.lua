@@ -1733,6 +1733,8 @@ bmpconverter.default = converter
 -- srgb.icc
 -- srgb_v4_icc_preference.icc
 
+-- [[convert %?colorspace: -colorspace "%colorspace%" ?%]]
+
 local rgbprofile  = "srgb_v4_icc_preference.icc" -- srgb.icc
 local cmykprofile = "isocoated_v2_300_eci.icc"   -- isocoated_v2_eci.icc
 
@@ -1761,25 +1763,40 @@ end
 
 programs.pngtocmykpdf = {
     command  = "gm",
-    argument = [[convert -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -colorspace cmyk -sampling-factor 1x1 "%oldname%" "%newname%"]],
- -- argument = [[convert -strip +profile "*" -colorspace cmyk -sampling-factor 1x1 "%oldname%" "%newname%"]],
+    argument = [[convert -compress Zip  -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
 }
 
 programs.jpgtocmykpdf = {
     command  = "gm",
-    argument = [[convert -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -colorspace cmyk -sampling-factor 1x1 -compress JPEG "%oldname%" "%newname%"]],
- -- argument = [[convert -strip +profile "*" -colorspace cmyk -sampling-factor 1x1 -compress JPEG "%oldname%" "%newname%"]],
+    argument = [[convert -compress JPEG -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+}
+
+programs.pngtograypdf = {
+    command  = "gm",
+    argument = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+}
+
+programs.jpgtograypdf = {
+    command  = "gm",
+    argument = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
 }
 
 figures.converters.png = {
     ["cmyk.pdf"] = function(oldname,newname,resolution)
         local rgbprofile, cmykprofile = profiles()
         runprogram(programs.pngtocmykpdf.command, programs.pngtocmykpdf.argument, {
--- new:        runprogram(programs.pngtocmykpdf, {
+     -- runprogram(programs.pngtocmykpdf, {
             rgbprofile  = rgbprofile,
             cmykprofile = cmykprofile,
             oldname     = oldname,
             newname     = newname,
+        } )
+    end,
+    ["gray.pdf"] = function(oldname,newname,resolution)
+        runprogram(programs.pngtograypdf.command, programs.pngtograypdf.argument, {
+     -- runprogram(programs.pngtograypdf, {
+            oldname = oldname,
+            newname = newname,
         } )
     end,
 }
@@ -1788,11 +1805,18 @@ figures.converters.jpg = {
     ["cmyk.pdf"] = function(oldname,newname,resolution)
         local rgbprofile, cmykprofile = profiles()
         runprogram(programs.jpgtocmykpdf.command, programs.jpgtocmykpdf.argument, {
--- new:        runprogram(programs.jpgtocmykpdf, {
+     -- runprogram(programs.jpgtocmykpdf, {
             rgbprofile  = rgbprofile,
             cmykprofile = cmykprofile,
             oldname     = oldname,
             newname     = newname,
+        } )
+    end,
+    ["gray.pdf"] = function(oldname,newname,resolution)
+        runprogram(programs.jpgtograypdf.command, programs.jpgtograypdf.argument, {
+     -- runprogram(programs.jpgtograypdf, {
+            oldname = oldname,
+            newname = newname,
         } )
     end,
 }

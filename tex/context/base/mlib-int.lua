@@ -58,6 +58,8 @@ function mp.PageDepth           () mpprint(getdimen("pagebackgrounddepth") *fact
 function mp.LayoutColumns       () mpprint(getcount("layoutcolumns"))               end
 function mp.LayoutColumnDistance() mpprint(getdimen("layoutcolumndistance")*factor) end
 function mp.LayoutColumnWidth   () mpprint(getdimen("layoutcolumnwidth")   *factor) end
+function mp.SpineWidth          () mpprint(getdimen("spinewidth")          *factor) end
+function mp.PaperBleed          () mpprint(getdimen("paperbleed")          *factor) end
 
 function mp.PageNumber          () mpprint(getcount("pageno"))                      end
 function mp.RealPageNumber      () mpprint(getcount("realpageno"))                  end

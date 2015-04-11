@@ -188,8 +188,6 @@ fi ;
 
 string CurrentLayout ; CurrentLayout := "default" ;
 
-path Page ;
-
 vardef PaperHeight          = lua.mp.PaperHeight         () enddef ;
 vardef PaperWidth           = lua.mp.PaperWidth          () enddef ;
 vardef PrintPaperHeight     = lua.mp.PrintPaperHeight    () enddef ;
@@ -262,6 +260,9 @@ vardef EmWidth              = lua.mp.EmWidth             () enddef ;
 vardef ExHeight             = lua.mp.ExHeight            () enddef ;
 
 vardef PageFraction         = lua.mp.PageFraction        () enddef ;
+
+vardef SpineWidth           = lua.mp.SpineWidth          () enddef ;
+vardef PaperBleed           = lua.mp.PaperBleed          () enddef ;
 
 boolean mfun_swapped ;
 
@@ -517,29 +518,55 @@ def SetPageField =
     endfor ;
 enddef ;
 
-def SetPagePage =
-    path Page ;
-    Page := unitsquare xscaled PaperWidth yscaled PaperHeight ;
+def mfun_page_Area      = hide(SetPageArea     ;) Area      enddef ;
+def mfun_page_Location  = hide(SetPageLocation ;) Location  enddef ;
+def mfun_page_Field     = hide(SetPageField    ;) Field     enddef ;
+def mfun_page_Vsize     = hide(SetPageVsize    ;) Vsize     enddef ;
+def mfun_page_Hsize     = hide(SetPageHsize    ;) Hsize     enddef ;
+def mfun_page_Vstep     = hide(SetPageVstep    ;) Vstep     enddef ;
+def mfun_page_Hstep     = hide(SetPageHstep    ;) Hstep     enddef ;
+
+def SetAreaVariables =
+    let Area      = mfun_page_Area ;
+    let Location  = mfun_page_Location ;
+    let Field     = mfun_page_Field ;
+    let Vsize     = mfun_page_Vsize ;
+    let Hsize     = mfun_page_Hsize ;
+    let Vstep     = mfun_page_Vstep ;
+    let Hstep     = mfun_page_Hstep ;
 enddef ;
 
-def mfun_page_Area     = hide(SetPageArea     ;) Area     enddef ;
-def mfun_page_Location = hide(SetPageLocation ;) Location enddef ;
-def mfun_page_Field    = hide(SetPageField    ;) Field    enddef ;
-def mfun_page_Vsize    = hide(SetPageVsize    ;) Vsize    enddef ;
-def mfun_page_Hsize    = hide(SetPageHsize    ;) Hsize    enddef ;
-def mfun_page_Vstep    = hide(SetPageVstep    ;) Vstep    enddef ;
-def mfun_page_Hstep    = hide(SetPageHstep    ;) Hstep    enddef ;
-def mfun_page_Page     = hide(SetPagePage     ;) Page     enddef ;
+% we should make Page no path .. from now on don't assume this .. for a while we keek it
+
+vardef FrontPageWidth  = PaperWidth enddef ;
+vardef BackPageWidth   = PaperWidth enddef ;
+vardef CoverWidth      = 2 * PaperWidth + SpineWidth enddef ;
+vardef CoverHeight     = PaperHeight enddef ;
+
+vardef FrontPageHeight = PaperHeight enddef ;
+vardef BackPageHeight  = PaperHeight enddef ;
+vardef SpineHeight     = PaperHeight enddef ;
+
+def SetPagePage      = path Page      ; Page      := unitsquare xscaled PaperWidth      yscaled PaperHeight ; enddef ;
+def SetPageCoverPage = path CoverPage ; CoverPage := unitsquare xscaled CoverWidth      yscaled CoverHeight ; enddef ;
+def SetPageSpine     = path Spine     ; Spine     := unitsquare xscaled SpineWidth      yscaled CoverHeight shifted (BackPageWidth,0) ; enddef ;
+def SetPageBackPage  = path BackPage  ; BackPage  := unitsquare xscaled BackPageWidth   yscaled CoverHeight ; enddef ;
+def SetPageFrontPage = path FrontPage ; FrontPage := unitsquare xscaled FrontPageWidth  yscaled CoverHeight shifted (BackPageWidth+SpineWidth,0) ; enddef ;
+
+def mfun_page_Page      = hide(SetPagePage     ;) Page      enddef ;
+def mfun_page_CoverPage = hide(SetPageCoverPage;) CoverPage enddef ;
+def mfun_page_Spine     = hide(SetPageSpine    ;) Spine     enddef ;
+def mfun_page_BackPage  = hide(SetPageBackPage ;) BackPage  enddef ;
+def mfun_page_FrontPage = hide(SetPageFrontPage;) FrontPage enddef ;
 
 def SetPageVariables =
-    let Area     = mfun_page_Area     ;
-    let Location = mfun_page_Location ;
-    let Field    = mfun_page_Field    ;
-    let Vsize    = mfun_page_Vsize    ;
-    let Hsize    = mfun_page_Hsize    ;
-    let Vstep    = mfun_page_Vstep    ;
-    let Hstep    = mfun_page_Hstep    ;
-    let Page     = mfun_page_Page     ;
+    SetAreaVariables ;
+    %
+    let Page      = mfun_page_Page ;
+    let CoverPage = mfun_page_CoverPage ;
+    let Spine     = mfun_page_Spine ;
+    let BackPage  = mfun_page_BackPage ;
+    let FrontPage = mfun_page_FrontPage ;
 enddef ;
 
 SetPageVariables ;
@@ -572,45 +599,10 @@ enddef ;
 
 def BoundCoverAreas =
     % todo: add cropmarks
-    bboxmargin := 0 ; setbounds currentpicture to Paper enlarged PaperBleed ;
+    bboxmargin := 0 ; setbounds currentpicture to CoverPage enlarged PaperBleed ;
 enddef ;
 
-def SetCoverAreas =
-
-    if unknown SpineWidth :
-        SpineWidth := 8mm ;
-    fi ;
-
-    if unknown PaperBleed :
-        PaperBleed := 0 ;
-    fi ;
-
-    FrontPageWidth  := PaperWidth ;
-    BackPageWidth   := PaperWidth ;
-    PaperWidth      := 2 * PaperWidth + SpineWidth ;
-
-    FrontPageHeight := PaperHeight ;
-    BackPageHeight  := PaperHeight ;
-    PaperHeight     := PaperHeight ;
-    SpineHeight     := PaperHeight ;
-
-    path Paper     ; Paper     := unitsquare xscaled PaperWidth      yscaled PaperHeight ;
-    path Spine     ; Spine     := unitsquare xscaled SpineWidth      yscaled PaperHeight shifted (BackPageWidth,0);
-    path BackPage  ; BackPage  := unitsquare xscaled BackPageWidth   yscaled PaperHeight ;
-    path FrontPage ; FrontPage := unitsquare xscaled FrontPageWidth  yscaled PaperHeight shifted (BackPageWidth+SpineWidth,0) ;
-
-enddef ;
-
-% def StartCover =
-%     begingroup ;
-%     if PageStateAvailable :
-%         LoadPageState ;
-%      %  SwapPageState ;
-%     fi ;
-%     SetPageAreas ;
-%     SetCoverAreas ;
-%     BoundCoverAreas ;
-% enddef ;
+let SetCoverAreas = SetPageVariables ;  % compatiblity
 
 def StartCover =
     begingroup ;

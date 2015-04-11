@@ -601,10 +601,15 @@ function scripts.epub.make(purge,rename,svgmath,svgstyle)
             newfiles[#newfiles+1] = target
         end
         local target = newfiles[#newfiles]
-        if suffix(target) == "svg" then
+        if suffix(target) == "svg" and isfile(target) then
             local data = io.loaddata(target)
-            data = gsub(data,"<!(DOCTYPE.-)>","<!-- %1 -->",1)
-            io.savedata(target,data)
+            if data then
+                local done = gsub(data,"<!(DOCTYPE.-)>","<!-- %1 -->",1)
+                if data ~= done then
+                    report("doctype fixed in %a",target)
+                    io.savedata(target,data)
+                end
+            end
         end
         data.newname = name -- without path
     end
