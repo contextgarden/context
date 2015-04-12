@@ -71,6 +71,7 @@
 \def\s!btxatx       {btxatx}
 \def\s!btxbtx       {btxbtx}
 \def\s!btxspc       {btxspc}
+\def\s!btxlst       {btxlst}
 
 \definelabelclass[btxlabel][2]
 
@@ -674,10 +675,19 @@
 \unexpanded\def\btxsetcurrentlistentry#1{\edef\currentbtxlistentry{#1}}
 \unexpanded\def\btxsetcurrentlistindex#1{\edef\currentbtxlistindex{#1}}
 
-\unexpanded\def\btxdoifelsesameasprevious#1%
-  {\clf_btxdoifelsesameasprevious{\currentbtxdataset}\currentbtxlistentry{#1}}
+\unexpanded\def\btxdoifelsesameaspreviouschecked#1#2% #1 == always | doublesided
+  {\clf_btxdoifelsesameasprevious
+     {\currentbtxdataset}%
+     \currentbtxlistentry%
+     {#2}%
+     \c_btx_list_reference
+     {#1}}
 
-\let\btxdoifsameaspreviouselse\btxdoifelsesameasprevious
+\unexpanded\def\btxdoifelsesameasprevious
+  {\btxdoifelsesameaspreviouschecked\v!doublesided}
+
+\let\btxdoifsameaspreviouscheckedelse\btxdoifelsesameaspreviouschecked
+\let\btxdoifsameaspreviouselse       \btxdoifelsesameasprevious
 
 \def\publ_place_list_indeed#1[#2][#3]%
   {\begingroup
@@ -807,10 +817,14 @@
   {\strc_lists_entry_process}
 
 \unexpanded\def\btxstartlistentry % maybe pass i
-  {\begingroup}
+  {\begingroup
+   \global\advance\c_btx_list_reference\plusone}
 
 \unexpanded\def\btxstoplistentry
-  {\endgroup}
+  {\iftrialtypesetting
+     \global\advance\c_btx_list_reference\minusone
+   \fi
+   \endgroup}
 
 \newtoks\everybtxlistentry
 
@@ -879,11 +893,11 @@
 
 \def\btx_list_reference_inject_now
   {\btx_trace_list_cross\empty\currentbtxbacktrace
-   \global\advance\c_btx_list_reference\plusone
    \strc_references_direct_full_user
       {\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
        \s!btxspc=\currentbtxspecification,%
+       \s!btxlst=\number\c_btx_list_reference,% check if needed
        \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
        \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
        \ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint=\currentbtxbacklink\else\s!btxbck=\currentbtxbacktrace\fi}%
@@ -1251,7 +1265,7 @@
      \edef\currentbtxreference{#1}%
      \clf_btxhandlenocite
        dataset   {\currentbtxdataset}%
-       reference {\currentbtxreference#1}%
+       reference {\currentbtxreference}%
        markentry true%
      \relax
    % \clf_btxflushmarked

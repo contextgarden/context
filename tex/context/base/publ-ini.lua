@@ -66,8 +66,12 @@ local v_force            = variables.force
 local v_none             = variables.none
 local v_yes              = variables.yes
 local v_all              = variables.all
+local v_always           = variables.always
+local v_doublesided      = variables.doublesided
 local v_default          = variables.default
 local v_dataset          = variables.dataset
+
+local conditionals       = tex.conditionals
 
 local numbertochar       = converters.characters
 
@@ -321,6 +325,7 @@ local nofcitations = 0
 local usedentries  = nil
 local citetolist   = nil
 local listtocite   = nil
+local listtolist   = nil
 
 do
 
@@ -330,6 +335,7 @@ do
         usedentries = allocate { }
         citetolist  = allocate { }
         listtocite  = allocate { }
+        listtolist  = allocate { }
         local names     = { }
         local internals = structures.references.internals
         local p_collect = (C(R("09")^1) * Carg(1) / function(s,entry) listtocite[tonumber(s)] = entry end + P(1))^0
@@ -365,6 +371,10 @@ do
                                 local bck = userdata.btxbck
                                 if bck then
                                     lpegmatch(p_collect,bck,1,entry) -- for s in string.gmatch(bck,"[^ ]+") do listtocite[tonumber(s)] = entry end
+                                    local lst = tonumber(userdata.btxlst)
+                                    if lst then
+                                        listtolist[lst] = entry
+                                    end
                                 else
                                     local int = tonumber(userdata.btxint)
                                     if int then
@@ -433,6 +443,7 @@ do
     usedentries = setmetatableindex(function(_,k) if initialize then initialize() end return usedentries[k] end)
     citetolist  = setmetatableindex(function(_,k) if initialize then initialize() end return citetolist [k] end)
     listtocite  = setmetatableindex(function(_,k) if initialize then initialize() end return listtocite [k] end)
+    listtolist  = setmetatableindex(function(_,k) if initialize then initialize() end return listtolist [k] end)
 
     function publications.usedentries()
         if initialize then
@@ -523,6 +534,7 @@ local findallused do
                     tags[#tags+1] = tag
                 end
             elseif find then
+-- print("case 1.1")
                 tags = { }
                 for i=1,#ordered do
                     local entry = ordered[i]
@@ -537,6 +549,7 @@ local findallused do
                     reported[reference] = true
                 end
             else
+-- print("case 1.2")
                 for i=1,#tags do
                     local tag  = tags[i]
                     if valid[tag] then
@@ -549,6 +562,7 @@ local findallused do
             end
         else
             if find then
+-- print("case 2.1")
                 tags = { }
                 for i=1,#ordered do
                     local entry = ordered[i]
@@ -563,6 +577,7 @@ local findallused do
                     reported[reference] = true
                 end
             else
+-- print("case 2.2")
                 for i=1,#tags do
                     local tag = tags[i]
                     if valid[tag] then
@@ -1870,18 +1885,47 @@ do
         arguments = { "string", "string" }
     }
 
-    function lists.sameasprevious(dataset,i,name)
+    function lists.sameasprevious(dataset,i,name,order,method)
         local rendering = renderings[dataset]
         local list      = rendering.list
         local n         = tonumber(i)
         if n and n > 1 and n <= #list then
-            local luadata  = datasets[dataset].luadata
-            local current  = getdirect(dataset,luadata[list[n  ][1]],name)
-            local previous = getdirect(dataset,luadata[list[n-1][1]],name)
-            if trace_detail then
-                report("previous %a, current %a",tostring(previous),tostring(current))
+            local luadata   = datasets[dataset].luadata
+            local current   = getdirect(dataset,luadata[list[n  ][1]],name)
+            local previous  = getdirect(dataset,luadata[list[n-1][1]],name)
+          -- if not order then
+          --    order = gettexcounter("c_btx_list_reference")
+          -- end
+            if order and order > 0 and (method == v_always or method == v_doublesided) then
+                local clist = listtolist[order]
+                local plist = listtolist[order-1]
+                if clist and plist then
+                    local crealpage = clist.references.realpage
+                    local prealpage = plist.references.realpage
+                    if crealpage ~= prealpage then
+                        if method == v_always or not conditionals.layoutisdoublesided then
+                            if trace_detail then
+                                report("previous %a, current %a, different page",previous,current)
+                            end
+                            return false
+                        elseif crealpage % 2 == 0 then
+                            if trace_detail then
+                                report("previous %a, current %a, different page",previous,current)
+                            end
+                            return false
+                        end
+                    end
+                end
             end
-            return current and current == previous
+            local sameentry = current and current == previous
+            if trace_detail then
+                if sameentry then
+                    report("previous %a, current %a, same entry",previous,current)
+                else
+                    report("previous %a, current %a, different entry",previous,current)
+                end
+           end
+            return sameentry
         else
             return false
         end
@@ -2031,7 +2075,7 @@ do
     implement {
         name      = "btxdoifelsesameasprevious",
         actions   = { lists.sameasprevious, ctx_doifelse },
-        arguments = { "string", "integer", "string" }
+        arguments = { "string", "integer", "string", "integer", "string" }
     }
 
 end
@@ -2600,7 +2644,7 @@ do
             local suffix = getdetail(dataset,tag,"suffix")
             data.year    = year
             data.suffix  = suffix
-            data.sortkey = tonumber(year) or 0
+            data.sortkey = tonumber(year) or 9999
         end
 
         local function getter(first,last)
@@ -2917,7 +2961,7 @@ do
             local suffix = getdetail(dataset,tag,"suffix")
             data.year    = year
             data.suffix  = suffix
-            data.sortkey = tonumber(year) or 0
+            data.sortkey = tonumber(year) or 9999
         end
 
         local function getter(first,last)
