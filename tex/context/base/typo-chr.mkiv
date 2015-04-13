@@ -21,6 +21,8 @@
 
 \registerctxluafile{typo-chr}{1.001}
 
-\unexpanded\def\removepunctuation{\clf_removepunctuation}
+\unexpanded\def\removepunctuation{\clf_pickuppunctuation action {remove}\relax}
+\unexpanded\def\pushpunctuation  {\clf_pickuppunctuation action   {push}\relax}
+\unexpanded\def\poppunctuation   {\clf_pickuppunctuation action    {pop}\relax}
 
 \protect

@@ -49,12 +49,6 @@
   [aps]
   [\c!specification=aps]
 
-\setupbtxlist
-  [aps]
-  [alternative=paragraph,
-   width=auto,
-   distance=0pt]
-
 \definebtx
   [aps:list]
   [aps]
@@ -92,8 +86,8 @@
 \definebtx
   [aps:list:yes]
   [aps:list]
-  [\c!command={\high},   % also, left, right, stopper, style, color...
-   \c!align=flushright]
+  [left={[},
+   right={]}]
 
 %D In order to be able to get journals expanded (or normalized or abbreviated) you need
 %D to load a list:

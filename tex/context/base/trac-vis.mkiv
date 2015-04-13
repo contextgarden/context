@@ -117,7 +117,7 @@
 \def\syst_visualizers_setfont[#1]% somename at 4pt
   {\begingroup
    \doifelsenothing{#1}{\definedfont[Mono at 4pt]}{\definedfont[#1]}%
-   \clf_setvisualfont
+   \clf_setvisualfont\fontid\font
    \endgroup}
 
 %D New (these might also be a visualizers):

@@ -985,50 +985,58 @@ implement { name = "usecolors",     actions = usecolors, arguments = "string" }
 
 -- bonus
 
-function colors.pgfxcolorspec(ca) -- {}{}{colorspace}{list}
- -- local cv = attributes.colors.values[ca]
-    local cv = colorvalues[ca]
-    if cv then
-        local model = cv[1]
-        if model == 2 then
-            return formatters["{gray}{%1.3f}"](cv[2])
-        elseif model == 3 then
-            return formatters["{rgb}{%1.3f,%1.3f,%1.3f}"](cv[3],cv[4],cv[5])
-        elseif model == 4 then
-            return formatters["{cmyk}{%1.3f,%1.3f,%1.3f,%1.3f}"](cv[6],cv[7],cv[8],cv[9])
+do
+
+    local function pgfxcolorspec(model,ca) -- {}{}{colorspace}{list}
+     -- local cv = attributes.colors.values[ca]
+        local cv = colorvalues[ca]
+        if cv then
+            if model and model ~= 0 then
+                model = model
+            else
+                model = forcedmodel(cv[1])
+            end
+            if model == 2 then
+                return formatters["{gray}{%1.3f}"](cv[2])
+            elseif model == 3 then
+                return formatters["{rgb}{%1.3f,%1.3f,%1.3f}"](cv[3],cv[4],cv[5])
+            elseif model == 4 then
+                return formatters["{cmyk}{%1.3f,%1.3f,%1.3f,%1.3f}"](cv[6],cv[7],cv[8],cv[9])
+            else
+                return formatters["{gray}{%1.3f}"](cv[2])
+            end
         else
-            return formatters["{gray}{%1.3f}"](cv[2])
+            return "{gray}{0}"
         end
-    else
-        return "{gray}{0}"
     end
+
+    implement {
+        name      = "pgfxcolorspec",
+        actions   = { pgfxcolorspec, context },
+        arguments = { "integer", "integer" }
+    }
+
+    -- function commands.pgfregistercolor(name,attribute)
+    --     local cv = colorvalues[ca]
+    --     context.pushcatcodes('prt')
+    --     if cv then
+    --         local model = forcedmodel(cv[1])
+    --         if model == 2 then
+    --             context["pgfutil@definecolor"]("{%s}{gray}{%1.3f}",name,cv[2])
+    --         elseif model == 3 then
+    --             context["pgfutil@definecolor"]("{%s}{rgb}{%1.3f,%1.3f,%1.3f}",name,cv[3],cv[4],cv[5])
+    --         elseif model == 4 then
+    --             context["pgfutil@definecolor"]("{%s}{cmyk}{%1.3f,%1.3f,%1.3f,%1.3f}",name,cv[6],cv[7],cv[8],cv[9])
+    --         else
+    --             context["pgfutil@definecolor"]("{%s}{gray}{0}",name)
+    --         end
+    --     else
+    --         context["pgfutil@definecolor"]("{%s}{gray}{0}",name)
+    --     end
+    --     context.popcatcodes()
+    -- end
+
 end
-
-implement {
-    name      = "pgfxcolorspec",
-    actions   = { colors.pgfxcolorspec, context },
-    arguments = "integer"
-}
-
--- function commands.pgfregistercolor(name,attribute)
---     local cv = colorvalues[ca]
---     context.pushcatcodes('prt')
---     if cv then
---         local model = forcedmodel(cv[1])
---         if model == 2 then
---             context["pgfutil@definecolor"]("{%s}{gray}{%1.3f}",name,cv[2])
---         elseif model == 3 then
---             context["pgfutil@definecolor"]("{%s}{rgb}{%1.3f,%1.3f,%1.3f}",name,cv[3],cv[4],cv[5])
---         elseif model == 4 then
---             context["pgfutil@definecolor"]("{%s}{cmyk}{%1.3f,%1.3f,%1.3f,%1.3f}",name,cv[6],cv[7],cv[8],cv[9])
---         else
---             context["pgfutil@definecolor"]("{%s}{gray}{0}",name)
---         end
---     else
---         context["pgfutil@definecolor"]("{%s}{gray}{0}",name)
---     end
---     context.popcatcodes()
--- end
 
 -- handy
 

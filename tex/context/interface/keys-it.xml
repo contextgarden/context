@@ -868,6 +868,7 @@
 		<cd:constant name='nright' value='ndestra'/>
 		<cd:constant name='ntop' value='ncima'/>
 		<cd:constant name='number' value='numero'/>
+		<cd:constant name='numberalign' value='numberalign'/>
 		<cd:constant name='numbercolor' value='colorenumero'/>
 		<cd:constant name='numbercommand' value='comandonumero'/>
 		<cd:constant name='numberconversion' value='numberconversion'/>

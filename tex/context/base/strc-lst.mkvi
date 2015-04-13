@@ -127,12 +127,15 @@
 \def\strc_lists_inject_nop[#dummya][#dummyb]%
   {\endgroup}
 
+\unexpanded\def\strc_lists_inject_enhance#listindex#internal%
+  {\normalexpanded{\ctxlatecommand{enhancelist(#listindex)}}}
+
 \unexpanded\def\strc_lists_inject_yes[#settings][#userdata]% can be used directly
   {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...
    \edef\p_location{\listparameter\c!location}%
    \setnextinternalreference
    \scratchcounter\clf_addtolist
-        references  {
+        references {
             internal \nextinternalreference
             block    {\currentsectionblock}
           % section  structures.sections.currentid()
@@ -149,7 +152,7 @@
    \edef\currentlistnumber{\the\scratchcounter}%
    \ifx\p_location\v!here
      % this branch injects nodes !
-     \expanded{\ctxlatecommand{enhancelist(\currentlistnumber)}}%
+     \strc_lists_inject_enhance{\currentlistnumber}{\nextinternalreference}%
      \clf_setinternalreference internal \nextinternalreference\relax % this will change
      \xdef\currentstructurelistattribute{\the\lastdestinationattribute}%
      \dontleavehmode\hbox attr \destinationattribute \lastdestinationattribute{}% todo
@@ -1264,11 +1267,10 @@
     \hskip-\leftskip
     \ifconditional\c_lists_has_number
         \ifconditional\c_lists_show_number
-            \setbox\scratchbox\hbox\ifdim\scratchwidth>\zeropoint to \scratchwidth\fi
+            \setbox\scratchbox\simplealignedbox\scratchwidth{\usealignparameter\c!numberalign}
                 \bgroup
                     \useliststyleandcolor\c!numberstyle\c!numbercolor
                     \currentlistsymbol
-                    \hss
                 \egroup
             \ifdim\wd\scratchbox>\zeropoint
                 \box\scratchbox

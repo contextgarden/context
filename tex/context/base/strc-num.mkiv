@@ -481,7 +481,6 @@
 
 % currentstructurecomponent => \strc_current_ or just \m_strc_
 
-
 \unexpanded\def\strc_counters_register_component#1#2#3#4#5#6#7[#8][#9]% maybe also nolist
   {\begingroup
    %
@@ -519,9 +518,21 @@
    \glet\m_strc_counters_last_registered_attribute  \attributeunsetvalue
    \glet\m_strc_counters_last_registered_synchronize\relax}
 
+\def\strc_counters_register_component_check_prefix
+  {\ifx\currentstructurecomponentreferenceprefix\empty
+     \let\currentstructurecomponentreferenceprefix\currentstructurereferenceprefix
+   \fi
+   \ifx\currentstructurecomponentreferenceprefix\empty
+     \let\currentstructurecomponentreferenceprefix\referenceprefix
+   \fi
+   \ifdefined\currentstructurecomponentreferenceprefix\else
+     \let\currentstructurecomponentreferenceprefix\empty
+   \fi}
+
 \def\strc_counters_register_component_page#1%
   {\xdef\currentstructurecomponentreference      {#1\c!reference}%
    \xdef\currentstructurecomponentreferenceprefix{#1\c!referenceprefix}%
+   \strc_counters_register_component_check_prefix
    \setnextinternalreference
    \clf_setreferenceattribute
         {\currentstructurecomponentreferenceprefix}%
@@ -529,7 +540,7 @@
         {%
             references {%
                   internal \nextinternalreference
-                  block    {\currentsectionblock}%
+                  block    {\currentsectionblock}% move to lua
                   view     {\interactionparameter\c!focus}%
             }%
             metadata {%
@@ -550,6 +561,7 @@
    \xdef\currentstructurecomponentlabel          {#2\c!label}%
    \xdef\currentstructurecomponentreference      {#2\c!reference}%
    \xdef\currentstructurecomponentreferenceprefix{#2\c!referenceprefix}%
+   \strc_counters_register_component_check_prefix
    \ifx\currentstructurecomponentexpansion\s!xml
      \xmlstartraw
        \xdef\currentstructurecomponenttitle   {#2\c!title}%
@@ -650,7 +662,7 @@
    \xdef\m_strc_counters_last_registered_index{\the\scratchcounter}%
    \clf_setinternalreference internal \nextinternalreference\relax
    \xdef\m_strc_counters_last_registered_attribute  {\the\lastdestinationattribute}%
-   \xdef\m_strc_counters_last_registered_synchronize{\ctxlatecommand{enhancelist(\m_strc_counters_last_registered_index)}}}
+   \xdef\m_strc_counters_last_registered_synchronize{\strc_lists_inject_enhance{\m_strc_counters_last_registered_index}{\nextinternalreference}}}
 
 \let\m_strc_counters_last_registered_index      \relax
 \let\m_strc_counters_last_registered_attribute  \relax

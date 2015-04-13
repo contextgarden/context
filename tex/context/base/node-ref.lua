@@ -16,6 +16,8 @@ if not modules then modules = { } end modules ['node-ref'] = {
 
 -- is grouplevel still used?
 
+local concat = table.concat
+
 local attributes, nodes, node = attributes, nodes, node
 
 local allocate            = utilities.storage.allocate, utilities.storage.mark
@@ -32,9 +34,11 @@ local colors              = attributes.colors
 local references          = structures.references
 local tasks               = nodes.tasks
 
-local trace_references    = false  trackers.register("nodes.references",   function(v) trace_references   = v end)
-local trace_destinations  = false  trackers.register("nodes.destinations", function(v) trace_destinations = v end)
-local trace_areas         = false  trackers.register("nodes.areas",        function(v) trace_areas        = v end)
+local trace_references    = false  trackers.register("nodes.references",        function(v) trace_references   = v end)
+local trace_destinations  = false  trackers.register("nodes.destinations",      function(v) trace_destinations = v end)
+local trace_areas         = false  trackers.register("nodes.areas",             function(v) trace_areas        = v end)
+local show_references     = false  trackers.register("nodes.references.show",   function(v) show_references    = v end)
+local show_destinations   = false  trackers.register("nodes.destinations.show", function(v) show_destinations  = v end)
 
 local report_reference    = logs.reporter("backend","references")
 local report_destination  = logs.reporter("backend","destinations")
@@ -419,7 +423,7 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
     return head, true
 end
 
--- tracing
+-- tracing: todo: use predefined colors
 
 local register_color = colors.register
 
@@ -430,7 +434,22 @@ local u_transparency = nil
 local u_colors       = { }
 local force_gray     = true
 
-local function colorize(width,height,depth,n,reference,what)
+local function addstring(str,what)
+    if str then
+        local typesetters = nuts.typesetters
+        if typesetters then
+            if what == "reference" then
+                str = str .. "<"
+            else
+                str = str .. ">"
+            end
+            local text = typesetters.fast_hpack(str,fonts.infofont())
+            return text
+        end
+    end
+end
+
+local function colorize(width,height,depth,n,reference,what,sr)
     if force_gray then n = 0 end
     u_transparency = u_transparency or transparencies.register(nil,2,.65)
     local ucolor = u_colors[n]
@@ -468,7 +487,34 @@ local function colorize(width,height,depth,n,reference,what)
         setfield(rule,"prev",kern)
         return kern
     else
+
+if sr and sr ~= "" then
+    local text = addstring(sr)
+    if text then
+        local kern = new_kern(-getfield(text,"width"))
+        setfield(kern,"next",text)
+        setfield(text,"prev",kern)
+        setfield(text,"next",rule)
+        setfield(rule,"prev",text)
+        return kern
+    end
+end
+
         return rule
+    end
+end
+
+local function justadd(what,sr)
+    if sr and sr ~= "" then
+        local text = addstring(sr)
+        if text then
+            local kern = new_kern(-getfield(text,"width"))
+            setfield(kern,"next",text)
+            setfield(text,"prev",kern)
+            setfield(text,"next",rule)
+            setfield(rule,"prev",text)
+            return kern
+        end
     end
 end
 
@@ -523,12 +569,35 @@ local function makereference(width,height,depth,reference) -- height and depth a
         if annot then
             annot = tonut(annot) -- todo
             nofreferences = nofreferences + 1
-            local result, current
+            local result, current, texts
+            if show_references then
+                local d = sr[1]
+                if d then
+                    local r = d.reference
+                    local p = d.prefix
+                    if r then
+                        if p then
+                            texts = p .. " : " .. r
+                        else
+                            texts = r
+                        end
+                    else
+                     -- t[#t+1] = d.internal or "?"
+                    end
+                end
+            end
             if trace_references then
                 local step = 65536
-                result = hpack_list(colorize(width,height-step,depth-step,2,reference,"reference")) -- step subtracted so that we can see seperate links
+                result = hpack_list(colorize(width,height-step,depth-step,2,reference,"reference",texts)) -- step subtracted so that we can see seperate links
                 setfield(result,"width",0)
                 current = result
+            elseif texts then
+                texts = justadd("reference",texts)
+                if texts then
+                    result = hpack_list(texts)
+                    setfield(result,"width",0)
+                    current = result
+                end
             end
             if current then
                 setfield(current,"next",annot)
@@ -600,14 +669,40 @@ local function makedestination(width,height,depth,reference)
             if height < ht then height = ht end
             if depth  < dp then depth  = dp end
         end
-        local result, current
+        local result, current, texts
+        if show_destinations then
+            local str = sr[4]
+            if str and #str > 0 then
+                local t = { }
+                for i=1,#str do
+                    local d = references.internals[str[i]]
+                    if d then
+                        d = d.references
+                        local r = d.reference
+                        local p = d.usedprefix
+                        if r then
+                            if p then
+                                t[#t+1] = p .. " : " .. r
+                            else
+                                t[#t+1] = r
+                            end
+                        else
+                         -- t[#t+1] = d.internal or "?"
+                        end
+                    end
+                end
+                if #t > 0 then
+                    texts = concat(t," | ")
+                end
+            end
+        end
         if trace_destinations then
             local step = 0
             if width  == 0 then
                 step = 4*65536
                 width, height, depth = 5*step, 5*step, 0
             end
-            local rule = hpack_list(colorize(width,height,depth,3,reference,"destination"))
+            local rule = hpack_list(colorize(width,height,depth,3,reference,"destination",texts))
             setfield(rule,"width",0)
             if not result then
                 result, current = rule, rule
@@ -617,6 +712,15 @@ local function makedestination(width,height,depth,reference)
                 current = rule
             end
             width, height = width - step, height - step
+        elseif texts then
+            texts = justadd("destination",texts)
+            if texts then
+                result = hpack_list(texts)
+                if result then
+                    setfield(result,"width",0)
+                    current = result
+                end
+            end
         end
         nofdestinations = nofdestinations + 1
         local annot = nodeinjections.destination(width,height,depth,name,view)

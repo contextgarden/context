@@ -120,6 +120,9 @@
 
 % maybe: \let\reference\textreference
 
+\unexpanded\def\showreferences
+  {\enabletrackers[nodes.references.show,nodes.destinations.show]}
+
 %D These are implemented in a low level form as:
 
 \unexpanded\def\strc_references_text_reference          [#labels]{\strc_references_set_named_reference\s!text{#labels}{}}
@@ -142,13 +145,10 @@
 \newcount\lastreferenceattribute
 \newcount\lastdestinationattribute
 
-\def\dofinishfullreference#prefix#label{\normalexpanded{\ctxlatecommand{enhancereference("#prefix","#label")}}}
-\def\dofinishtextreference#prefix#label{\normalexpanded{\ctxlatecommand{enhancereference("#prefix","#label")}}}
+\def\strc_references_finish#prefix#reference#internal%
+  {\normalexpanded{\ctxlatecommand{enhancereference("#prefix","#reference")}}}
 
-\let\dofinishpagereference\dofinishfullreference
-\let\dofinishuserreference\dofinishfullreference
-
-\def\dofinishsomereference#kind{\executeifdefined{dofinish#{kind}reference}\gobbletwoarguments}
+\let\dofinishreference\strc_references_finish % used at lua end
 
 % This is somewhat tricky: we want to keep the reference with the following word but
 % that word should also hyphenate. We need to find a better way.

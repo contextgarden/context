@@ -510,6 +510,7 @@
       \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
    \fi
    \strc_floats_analyze_location
+   % todo: use \lets
    \setupcurrentfloatcaption[\c!reference={#reference},\c!title={#caption},\c!marking=,\c!list=,\c!bookmark=]%
    \doifelseinset\v!split\floatlocation\strc_floats_place_next_box_split\strc_floats_place_next_box_normal}
 

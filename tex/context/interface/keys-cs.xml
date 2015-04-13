@@ -868,6 +868,7 @@
 		<cd:constant name='nright' value='nvpravo'/>
 		<cd:constant name='ntop' value='nvrsek'/>
 		<cd:constant name='number' value='cislo'/>
+		<cd:constant name='numberalign' value='numberalign'/>
 		<cd:constant name='numbercolor' value='barvacisla'/>
 		<cd:constant name='numbercommand' value='ciselnyprikaz'/>
 		<cd:constant name='numberconversion' value='numberconversion'/>

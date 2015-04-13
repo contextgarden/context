@@ -106,8 +106,6 @@
 % we could make this a bit more efficient by putting the end reference
 % in the same table as the start one but why make things complex ...
 
-\let\dofinishlinereference\dofinishfullreference % at lua end
-
 \unexpanded\def\page_lines_some_reference#1#2#3%
   {\dontleavehmode\begingroup
    \global\advance\c_page_lines_reference\plusone

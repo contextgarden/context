@@ -1292,13 +1292,9 @@ do  -- else too many locals
         end
     end
 
-end
-
--- local id, cs = fonts.definers.internal { }
--- local id, cs = fonts.definers.internal { number = 2 }
--- local id, cs = fonts.definers.internal { name = "dejavusans" }
-
-do
+    -- local id, cs = fonts.definers.internal { }
+    -- local id, cs = fonts.definers.internal { number = 2 }
+    -- local id, cs = fonts.definers.internal { name = "dejavusans" }
 
     local n = 0
 
@@ -1332,6 +1328,17 @@ do
             id = currentfont()
         end
         return id, csnames[id]
+    end
+
+    -- here
+
+    local infofont = 0
+
+    function fonts.infofont()
+        if infofont == 0 then
+            infofont = definers.define { name = "dejavusansmono", size = tex.sp("6pt") }
+        end
+        return infofont
     end
 
 end

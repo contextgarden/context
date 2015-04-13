@@ -128,7 +128,7 @@ local context_delayed    = context.delayed
 
 local ctx_pushcatcodes                = context.pushcatcodes
 local ctx_popcatcodes                 = context.popcatcodes
-local ctx_dofinishsomereference       = context.dofinishsomereference
+local ctx_dofinishreference           = context.dofinishreference
 local ctx_dofromurldescription        = context.dofromurldescription
 local ctx_dofromurlliteral            = context.dofromurlliteral
 local ctx_dofromfiledescription       = context.dofromfiledescription
@@ -378,6 +378,7 @@ implement {
 
 function references.set(kind,prefix,tag,data)
 --  setcomponent(data)
+-- print(kind,prefix,tag)
     local pd = tobesaved[prefix] -- nicer is a metatable
     if not pd then
         pd = { }
@@ -396,7 +397,8 @@ function references.set(kind,prefix,tag,data)
         else
             n = n + 1
             pd[ref] = data
-            ctx_dofinishsomereference(kind,prefix,ref)
+            local r = data.references
+            ctx_dofinishreference(prefix or "",ref or "",r and r.internal or 0)
         end
     end
     process_settings(tag,action)
@@ -440,12 +442,31 @@ implement {
 
 local function register_from_lists(collected,derived,pages,sections)
     local derived_g = derived[""] -- global
+    local derived_p = nil
+    local derived_c = nil
+    local prefix    = nil
+    local component = nil
+    local entry     = nil
     if not derived_g then
         derived_g = { }
         derived[""] = derived_g
     end
+    local function action(s)
+        if trace_referencing then
+            report_references("list entry %a provides %a reference %a on realpage %a",i,kind,s,realpage)
+        end
+        if derived_p and not derived_p[s] then
+            derived_p[s] = entry
+        end
+        if derived_c and not derived_c[s] then
+            derived_c[s] = entry
+        end
+        if not derived_g[s] then
+            derived_g[s] = entry -- first wins
+        end
+    end
     for i=1,#collected do
-        local entry    = collected[i]
+        entry = collected[i]
         local metadata = entry.metadata
         if metadata then
             local kind = metadata.kind
@@ -456,10 +477,8 @@ local function register_from_lists(collected,derived,pages,sections)
                     if reference and reference ~= "" then
                         local realpage = references.realpage
                         if realpage then
-                            local prefix    = references.referenceprefix
-                            local component = references.component
-                            local derived_p = nil
-                            local derived_c = nil
+                            prefix    = references.referenceprefix
+                            component = references.component
                             if prefix and prefix ~= "" then
                                 derived_p = derived[prefix]
                                 if not derived_p then
@@ -474,20 +493,6 @@ local function register_from_lists(collected,derived,pages,sections)
                                     derived[component] = derived_c
                                 end
                             end
-                            local function action(s)
-                                if trace_referencing then
-                                    report_references("list entry %a provides %a reference %a on realpage %a",i,kind,s,realpage)
-                                end
-                                if derived_p and not derived_p[s] then
-                                    derived_p[s] = entry
-                                end
-                                if derived_c and not derived_c[s] then
-                                    derived_c[s] = entry
-                                end
-                                if not derived_g[s] then
-                                    derived_g[s] = entry -- first wins
-                                end
-                            end
                             process_settings(reference,action)
                         end
                     end
@@ -499,6 +504,79 @@ local function register_from_lists(collected,derived,pages,sections)
 end
 
 references.registerinitializer(function() register_from_lists(lists.collected,derived) end)
+
+-- tracing
+
+local function collectbypage(tracedpages)
+    -- lists
+    do
+        local collected = structures.lists.collected
+        local data      = nil
+        local function action(reference)
+            local prefix    = data.referenceprefix
+            local component = data.component
+            local realpage  = data.realpage
+            if realpage then
+                local pagelist  = rawget(tracedpages,realpage)
+                local internal  = data.internal or 0
+                local prefix    = (prefix ~= "" and prefix) or (component ~= "" and component) or ""
+                local pagedata  = { prefix, reference, internal }
+                if pagelist then
+                    pagelist[#pagelist+1] = pagedata
+                else
+                    tracedpages[realpage] = { pagedata }
+                end
+                if internal > 0 then
+                    data.usedprefix = prefix
+                end
+            end
+        end
+        for i=1,#collected do
+            local entry = collected[i]
+            local metadata = entry.metadata
+            if metadata and metadata.kind then
+                data = entry.references
+                if data then
+                    local reference = data.reference
+                    if reference and reference ~= "" then
+                        process_settings(reference,action)
+                    end
+                end
+            end
+        end
+    end
+    -- references
+    do
+        for prefix, list in next, collected do
+            for reference, entry in next, list do
+                local data      = entry.references
+                local reference = data and data.reference
+                if reference then
+                    local realpage = data.realpage
+                    local internal = data.internal or 0
+                    local pagelist = rawget(tracedpages,realpage)
+                    local pagedata = { prefix, reference, internal }
+                    if pagelist then
+                        pagelist[#pagelist+1] = pagedata
+                    else
+                        tracedpages[realpage] = { pagedata }
+                    end
+                    if internal > 0 then
+                        data.usedprefix = prefix
+                    end
+                end
+            end
+        end
+    end
+end
+
+references.tracedpages = table.setmetatableindex(allocate(),function(t,k)
+    if collectbypage then
+        collectbypage(t)
+        collectbypage = nil
+    end
+    return rawget(t,k)
+end)
 
 -- urls
 

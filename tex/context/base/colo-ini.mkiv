@@ -864,8 +864,10 @@
 %D
 %D \stopmode
 
-\def\pgf@context@registercolor#1% bonus macro
-  {\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\thecolorattribute{#1}}}
+\def\pgf@context@registercolor#1{\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\zerocount\thecolorattribute{#1}}}
+\def\pgf@context@registergray #1{\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\plustwo  \thecolorattribute{#1}}}
+\def\pgf@context@registerrgb  #1{\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\plusthree\thecolorattribute{#1}}}
+\def\pgf@context@registercmyk #1{\setevalue{\string\color@#1}{\noexpand\xcolor@{}{}\clf_pgfxcolorspec\plusfour \thecolorattribute{#1}}}
 
 %D \starttyping
 %D \ifdefined\pgf@context@registercolor

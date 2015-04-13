@@ -6580,6 +6580,10 @@ return {
    ["en"]="headalign",
    ["nl"]="kopuitlijnen",
   },
+  ["numberalign"]={
+   ["en"]="numberalign",
+   ["nl"]="nummeruitlijnen",
+  },
   ["alignsymbol"]={
    ["en"]="alignsymbol",
   },

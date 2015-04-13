@@ -86,6 +86,8 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 --     arguments = "string",
 -- }
 
+local insert, remove = table.insert, table.remove
+
 local nodecodes   = nodes.nodecodes
 local glyph_code  = nodecodes.glyph
 
@@ -94,7 +96,9 @@ local free_node   = node.free
 
 local punctuation = characters.is_punctuation
 
-local function removepunctuation()
+local stack       = { }
+
+local function pickup()
     local list = texnest[texnest.ptr]
     if list then
         local tail = list.tail
@@ -104,12 +108,48 @@ local function removepunctuation()
             if prev then
                 prev.next = nil
             end
-            free_node(tail)
+            list.tail = prev
+            tail.prev = nil
+            return tail
         end
     end
 end
 
-interfaces.implement {
-    name    = "removepunctuation",
-    actions = removepunctuation,
+local actions = {
+    remove = function(specification)
+        local n = pickup()
+        if n then
+            free_node(n)
+        end
+    end,
+    push = function(specification)
+        local n = pickup()
+        if n then
+            insert(stack,n or false)
+        end
+    end,
+    pop = function(specification)
+        local n = remove(stack)
+        if n then
+            context(n)
+        end
+    end,
 }
+
+local function pickuppunctuation(specification)
+    local action = actions[specification.action or "remove"]
+    if action then
+        action(specification)
+    end
+end
+
+interfaces.implement {
+    name      = "pickuppunctuation",
+    actions   = pickuppunctuation,
+    arguments = {
+        {
+            { "action" }
+        }
+    }
+}
+

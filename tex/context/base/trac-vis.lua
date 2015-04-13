@@ -190,7 +190,7 @@ end
 
 local function enable()
     if not usedfont then
-        -- we use a narrow monospaced font
+        -- we use a narrow monospaced font -- infofont ?
         visualizers.setfont(fonts.definers.define { name = "lmmonoltcond10regular", size = tex.sp("4pt") })
     end
     for mode, value in next, modes do
@@ -315,7 +315,7 @@ local c_glyph_d    = "trace:do"
 local c_white_d    = "trace:dw"
 local c_math_d     = "trace:dr"
 
-local function sometext(str,layer,color,textcolor) -- we can just paste verbatim together .. no typesteting needed
+local function sometext(str,layer,color,textcolor,lap) -- we can just paste verbatim together .. no typesteting needed
     local text = fast_hpack_string(str,usedfont)
     local size = getfield(text,"width")
     local rule = new_rule(size,2*exheight,exheight/2)
@@ -329,10 +329,13 @@ local function sometext(str,layer,color,textcolor) -- we can just paste verbatim
     local info = linked_nodes(rule,kern,text)
     setlisttransparency(info,c_zero)
     info = fast_hpack(info)
+    local width = getfield(info,"width")
+    if lap then
+        info = fast_hpack(linked_nodes(new_kern(-width),info))
+    end
     if layer then
         setattr(info,a_layer,layer)
     end
-    local width = getfield(info,"width")
     setfield(info,"width",0)
     setfield(info,"height",0)
     setfield(info,"depth",0)
