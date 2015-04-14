@@ -1299,7 +1299,7 @@
        \noteparameter\c!before
      \fi
       %        \bgroup
-      %        \setupalign[\noteparameter\c!align]%
+      %        \usealignparameter\noteparameter
      \placenoterule  % alleen in ..mode
       %        \par
       %        \egroup
@@ -1727,8 +1727,8 @@
 \def\strc_notes_set_bodyfont
   {\let\strc_notes_set_bodyfont\relax
    \restoreglobalbodyfont
-   \switchtobodyfont[\noteparameter\c!bodyfont]%
-   \setupalign[\noteparameter\c!align]}
+   \usebodyfontparameter\noteparameter
+   \usealignparameter\noteparameter}
 
 %D The footnote mechanism defaults to a traditional one
 %D column way of showing them. By default we precede them by

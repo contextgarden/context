@@ -2173,6 +2173,13 @@
 \unexpanded\def\switchtobodyfont[#specification]% could become an ifx
   {\doifsomething{#specification}{\font_basics_switchtobodyfont{#specification}}}
 
+
+\unexpanded\def\usebodyfontparameter#1%
+  {\edef\m_font_bodyfont_asked{#1\c!bodyfont}%
+   \ifx\m_font_bodyfont_asked\empty\else
+     \font_basics_switchtobodyfont\m_font_bodyfont_asked
+   \fi}
+
 \def\font_helpers_switch_bodyfont_step
   {\font_basics_switch_points\m_font_step
    \font_basics_switch_style \fontstyle}

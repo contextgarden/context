@@ -674,7 +674,7 @@
    % we have conflicting demands: some mechanisms want ll anchoring .. I need to figure this out
    % an dmaybe we will have 'origin=bottom' or so
    \setbox\nextbox
-   \ifx\p_pack_layers_option\v!test \ruledvbox \else \vbox \fi \ifx\p_pack_layers_method\v!overlay to \overlayheight \fi \layoutcomponentboxattribute
+   \ifx\p_pack_layers_option\v!test \ruledvbox \else \vbox \fi \ifx\p_pack_layers_method\v!overlay to \d_overlay_height \fi \layoutcomponentboxattribute
      {\pack_layers_top_fill
       \hbox \ifx\p_pack_layers_method\v!overlay to \d_overlay_width \fi
         {\box\nextbox
@@ -723,12 +723,20 @@
 
 \unexpanded\def\composedlayer#1{\flushlayer[#1]}
 
+% \unexpanded\def\tightlayer[#1]%
+%   {\hbox
+%      {\def\currentlayer{#1}% todo: left/right
+%       \setbox\nextbox\emptybox
+%       \hsize\layerparameter\c!width
+%       \vsize\layerparameter\c!height
+%       \composedlayer{#1}}}
+
 \unexpanded\def\tightlayer[#1]%
   {\hbox
      {\def\currentlayer{#1}% todo: left/right
       \setbox\nextbox\emptybox
-      \hsize\layerparameter\c!width
-      \vsize\layerparameter\c!height
+      \d_overlay_width \layerparameter\c!width
+      \d_overlay_height\layerparameter\c!height
       \composedlayer{#1}}}
 
 \let\placelayer\flushlayer

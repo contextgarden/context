@@ -7,13 +7,11 @@ if not modules then modules = { } end modules ['strc-syn'] = {
 }
 
 local next, type = next, type
-local format = string.format
-local allocate = utilities.storage.allocate
-
--- interface to tex end
 
 local context      = context
 local implement    = interfaces.implement
+
+local allocate     = utilities.storage.allocate
 
 local sorters      = sorters
 
@@ -46,73 +44,73 @@ job.register('structures.synonyms.collected', tobesaved, initializer, finalizer)
 
 -- todo: allocate becomes metatable
 
-local function allocate(class)
-    local d = tobesaved[class]
-    if not d then
-        d = {
-            metadata = {
-                language = 'en',
-                sorted   = false,
-                class    = class
-            },
-            entries  = {
-            },
-            hash = {
-            }
+table.setmetatableindex(tobesaved,function(t,k)
+    local v = {
+        metadata = {
+            language = 'en',
+            sorted   = false,
+            class    = v
+        },
+        entries  = {
+        },
+        hash = {
         }
-        tobesaved[class] = d
-    end
-    return d
-end
+    }
+    t[k] = v
+    return v
+end)
 
 function synonyms.define(class,kind)
-    local data = allocate(class)
+    local data = tobesaved[class]
     data.metadata.kind = kind
 end
 
 function synonyms.register(class,kind,spec)
-    local data = allocate(class)
+    local data = tobesaved[class]
+    local hash = data.hash
+    local tag  = spec.definition.tag or ""
     data.metadata.kind = kind -- runtime, not saved in format (yet)
-    if not data.hash[spec.definition.tag or ""] then
-        data.entries[#data.entries+1] = spec
-        data.hash[spec.definition.tag or ""] = spec
+    if not hash[tag] then
+        local entries = data.entries
+        entries[#entries+1] = spec
+        hash[tag] = spec
     end
 end
 
 function synonyms.registerused(class,tag)
-    local data = allocate(class)
-    local dht = data.hash[tag]
-    if dht then
-        dht.definition.used = true
+    local data = tobesaved[class]
+    local okay = data.hash[tag]
+    if okay then
+        okay.definition.used = true
     end
 end
 
 function synonyms.synonym(class,tag)
-    local data = allocate(class).hash
-    local d = data[tag]
-    if d then
-        local de = d.definition
-        de.used = true
-        context(de.synonym)
+    local data = tobesaved[class]
+    local okay = data.hash[tag]
+    if okay then
+        local definition = okay.definition
+        definition.used = true
+        context(definition.synonym)
     end
 end
 
 function synonyms.meaning(class,tag)
-    local data = allocate(class).hash
-    local d = data[tag]
-    if d then
-        local de = d.definition
-        de.used = true
-        context(de.meaning)
+    local data = tobesaved[class]
+    local okay = data.hash[tag]
+    if okay then
+        local definition = okay.definition
+        definition.used = true
+        context(definition.meaning)
     end
 end
 
 synonyms.compare = sorters.comparers.basic -- (a,b)
 
 function synonyms.filter(data,options)
-    local result = { }
+    local result  = { }
     local entries = data.entries
-    local all = options and options.criterium == interfaces.variables.all
+    local all     = options and options.criterium == interfaces.variables.all
     for i=1,#entries do
         local entry = entries[i]
         if all or entry.definition.used then
@@ -122,16 +120,35 @@ function synonyms.filter(data,options)
     data.result = result
 end
 
+function synonyms.filter(data,options)
+    local result  = { }
+    local entries = data.entries
+    local all     = options and options.criterium == interfaces.variables.all
+    if all then
+        for i=1,#entries do
+            result[i] = entries[i]
+        end
+    else
+        for i=1,#entries do
+            local entry = entries[i]
+            if entry.definition.used then
+                result[#result+1] = entry
+            end
+        end
+    end
+    data.result = result
+end
+
 function synonyms.prepare(data)
     local result = data.result
     if result then
         for i=1, #result do
-            local r = result[i]
-            local rd = r.definition
-            if rd then
-                local rt = rd.tag
-                local sortkey = rt and rt ~= "" and rt or rd.synonym
-                r.split = splitter(strip(sortkey))
+            local entry      = result[i]
+            local definition = entry.definition
+            if definition then
+                local tag = definition.tag
+                local key = tag ~= "" and tag or definition.synonym
+                entry.split = splitter(strip(key))
             end
         end
     end
@@ -139,16 +156,19 @@ end
 
 function synonyms.sort(data,options)
     sorters.sort(data.result,synonyms.compare)
+    data.metadata.sorted = true
 end
 
 function synonyms.finalize(data,options) -- mostly the same as registers so we will generalize it: sorters.split
-    local result = data.result
-    data.metadata.nofsorted = #result
-    local split, nofsplit, lasttag, done, nofdone = { }, 0, nil, nil, 0
-    local firstofsplit = sorters.firstofsplit
+    local result   = data.result
+    local split    = { }
+    local nofsplit = 0
+    local lasttag  = nil
+    local lasttag  = nil
+    local nofdone  = 0
     for k=1,#result do
-        local v = result[k]
-        local entry, tag = firstofsplit(v)
+        local entry = result[k]
+        local first, tag = firstofsplit(entry)
         if tag ~= lasttag then
          -- if trace_registers then
          --     report_registers("splitting at %a",tag)
@@ -160,7 +180,7 @@ function synonyms.finalize(data,options) -- mostly the same as registers so we w
             split[nofsplit] = { tag = tag, data = done }
         end
         nofdone = nofdone + 1
-        done[nofdone] = v
+        done[nofdone] = entry
     end
     data.result = split
 end
@@ -171,23 +191,22 @@ end
 local ctx_synonymentry = context.synonymentry
 
 function synonyms.flush(data,options)
-    local kind = data.metadata.kind -- hack, will be done better
     local result = data.result
     for i=1,#result do
         local sublist = result[i]
-        local letter = sublist.tag
-        local data = sublist.data
+        local letter  = sublist.tag
+        local data    = sublist.data
         for d=1,#data do
             local entry = data[d].definition
             ctx_synonymentry(d,entry.tag,entry.synonym,entry.meaning or "")
         end
     end
-    data.result = nil
+    data.result          = nil
     data.metadata.sorted = false
 end
 
 function synonyms.analyzed(class,options)
-    local data = synonyms.collected[class]
+    local data = collected[class]
     if data and data.entries then
         options = options or { }
         sorters.setlanguage(options.language,options.method)
@@ -202,7 +221,7 @@ end
 
 function synonyms.process(class,options)
     if synonyms.analyzed(class,options) then
-        synonyms.flush(synonyms.collected[class],options)
+        synonyms.flush(collected[class],options)
     end
 end
 

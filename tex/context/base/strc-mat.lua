@@ -6,28 +6,35 @@ if not modules then modules = { } end modules ['strc-mat'] = {
     license   = "see context related readme files"
 }
 
+----- copytable  = table.copy
+
 local structures = structures
 
-local lists     = structures.lists
-local sections  = structures.sections
-local floats    = structures.floats
-local helpers   = structures.helpers
-local formulas  = structures.formulas
+local lists      = structures.lists
+local sections   = structures.sections
+local floats     = structures.floats
+local helpers    = structures.helpers
+local formulas   = structures.formulas -- not used but reserved
 
-lists.enhancers = lists.enhancers or { }
+----- context    = context
+----- simplify   = helpers.simplify
 
 -- maybe we want to do clever things with formulas, the store might go away
 
-local formuladata = { }
+-- local formuladata = { }
+--
+-- function formulas.store(data)
+--     formuladata[#formuladata+1] = data
+--     context(#formuladata)
+-- end
+--
+-- function formulas.current()
+--     return formuladata[#formuladata]
+-- end
 
-function formulas.store(data)
-    formuladata[#formuladata+1] = data
-    context(#formuladata)
-end
-
-function formulas.current()
-    return formuladata[#formuladata]
-end
+-- function formulas.simplify(entry)
+--     return simplify(copytable(entry or formuladata[#formuladata]))
+-- end
 
 function helpers.formulanumber(data,spec)
     if data then
@@ -38,10 +45,9 @@ function helpers.formulanumber(data,spec)
     end
 end
 
-function formulas.simplify(entry)
-    return helpers.simplify(table.copy(entry or formuladata[#formuladata]))
-end
-
 function lists.formulanumber(name,n,spec)
-    helpers.formulanumber(lists.result[n])
+    local result = lists.result
+    if result then
+        helpers.formulanumber(result[n])
+    end
 end

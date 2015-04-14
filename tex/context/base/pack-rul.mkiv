@@ -440,11 +440,21 @@
 \newdimen\d_overlay_offset
 \newdimen\d_overlay_linewidth
 
-\def\overlaywidth      {\the\d_overlay_width    \space} % We preset the variables
-\def\overlayheight     {\the\d_overlay_height   \space} % to some reasonable default
-\def\overlaydepth      {\the\d_overlay_depth    \space} % values.
-\def\overlayoffset     {\the\d_overlay_offset   \space} % of the frame can be (are)
-\def\overlaylinewidth  {\the\d_overlay_linewidth\space} % set somewhere else.
+% expandable ... in a future version the space will go (in my one can use Overlay*)
+
+\def\overlaywidth        {\the\d_overlay_width    \space} % We preset the variables
+\def\overlayheight       {\the\d_overlay_height   \space} % to some reasonable default
+\def\overlaydepth        {\the\d_overlay_depth    \space} % values.
+\def\overlayoffset       {\the\d_overlay_offset   \space} % of the frame can be (are)
+\def\overlaylinewidth    {\the\d_overlay_linewidth\space} % set somewhere else.
+
+% public but kind of protected
+
+\def\usedoverlaywidth    {\dimexpr\d_overlay_width    \relax}
+\def\usedoverlayheight   {\dimexpr\d_overlay_height   \relax}
+\def\usedoverlaydepth    {\dimexpr\d_overlay_depth    \relax}
+\def\usedoverlayoffset   {\dimexpr\d_overlay_offset   \relax}
+\def\usedoverlaylinewidth{\dimexpr\d_overlay_linewidth\relax}
 
 %D The next register is used to initialize overlays.
 
@@ -2662,7 +2672,7 @@
      \startboxedcontent
        \hsize\localhsize
     %  \insidefloattrue % ? better
-       \normalexpanded{\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
+       \usebodyfontparameter\framedtextparameter
        \letframedtextparameter\c!strut\v!no
        \inheritedframedtextframed\bgroup
          \let\\=\endgraf
@@ -2778,7 +2788,7 @@
    \dosingleempty\pack_framed_text_start_direct}
 
 \def\pack_framed_text_start_direct[#1]%
-  {\normalexpanded{\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
+  {\usebodyfontparameter\framedtextparameter
    \letframedtextparameter\c!strut\v!no
    \iffirstargument
      \setupcurrentframedtext[#1]%

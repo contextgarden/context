@@ -1953,7 +1953,7 @@
 %D
 %D Only when \type {text} is not empty, a space is inserted.
 
-\def\dotextprefix#text%
+\unexpanded\def\dotextprefix#text%
   {\begingroup
    \setbox\scratchbox\hbox{#text}% to be solved some day
    \ifdim\wd\scratchbox>\zeropoint
@@ -2089,7 +2089,7 @@
 \installcorenamespace{referencingprefix}
 
 \def\getreferencestructureprefix#kind#name#category% name will change
-  {{
+  {{%
         prefix        {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefix}%
         separatorset  {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixseparatorset}%
         conversion    {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversion}%
@@ -2099,8 +2099,8 @@
         set           {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixset}%
         segments      {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixsegments}%
         connector     {\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconnector}%
-  }
-  {
+  }%
+  {%
         separatorset  {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberseparatorset}%
         conversion    {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberconversion}%
         conversionset {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numberconversionset}%
@@ -2128,11 +2128,11 @@
      \csname     \??referencingprefix:#category#parameter\endcsname
    \fi\fi\fi}
 
-\def\currentreferencedefault
-  {\clf_filterdefaultreference
+\def\currentreferencedefault % for some reason we need to explicitly expand
+  {\normalexpanded{\noexpand\clf_filterdefaultreference
      {\s!default}%
-     \getreferencestructureprefix\clf_getcurrentprefixspec{\s!default}% returns #kind#name#category
-   \relax}
+     \noexpand\getreferencestructureprefix\clf_getcurrentprefixspec{\s!default}% returns #kind#name#category
+   \relax}}
 
 %D Not all support is visible by looking at the \TEX\ code; here is one of those:^
 %D

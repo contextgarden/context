@@ -268,8 +268,7 @@
   {\begingroup % *
    \forgetall % moved here
    \dontcomplain % for the moment here till we figure out where we get the overflow
-   \doifsomething{\xtableparameter\c!bodyfont}
-     {\setupbodyfont[\xtableparameter\c!bodyfont]}%
+   \usebodyfontparameter\xtableparameter
    \setbox\scratchbox\vbox
      {\doifsomething{\xtableparameter\c!spaceinbetween}{\blank[\xtableparameter\c!spaceinbetween]}}%
    \clf_x_table_create

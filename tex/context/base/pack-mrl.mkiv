@@ -631,7 +631,7 @@
    \def\pack_textrule_nop_indeed{\csname\??textrulealternatives\v!middle\endcsname}%
    \csname\??textrulealternatives\v!top\endcsname{#1}%
    \bgroup
-   \doifsomething{\directtextrulesparameter\c!bodyfont}{\switchtobodyfont[\directtextrulesparameter\c!bodyfont]}}
+   \usebodyfontparameter\directtextrulesparameter}
 
 \unexpanded\def\stoptextrule
   {\par

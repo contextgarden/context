@@ -22,7 +22,7 @@
 
 % split but common in lua
 
-\def\preprocessexpansion#1#2#3#4%
+\def\preprocessexpansion#1#2#3#4% do this at the lua end if still needed
   {\ifx#1\s!xml
      \xmlstartraw
        \xdef#2{#4}%
@@ -251,19 +251,21 @@
 \def\strc_synonyms_place_list[#1][#2]%
   {\begingroup
    \edef\currentsimplelist{#1}%
-   \strc_constructions_initialize{#1}%
-   \setupcurrentsimplelist[#2]%
-   \let\synonymentry\strc_synonym_normal
-   \startpacked
-     \clf_processsynonyms
-        {#1}%
-        {%
-            criterium {\simplelistparameter\c!criterium}%
-            language  {\simplelistparameter\s!language}%
-            method    {\simplelistparameter\c!method}%
-        }%
-     \relax
-   \stoppacked
+   \doifelsecommandhandler\??simplelist\currentsimplelist
+     {\strc_constructions_initialize{#1}%
+      \setupcurrentsimplelist[#2]%
+      \let\synonymentry\strc_synonym_normal
+      \startpacked
+        \clf_processsynonyms
+           {#1}%
+           {%
+               criterium {\simplelistparameter\c!criterium}%
+               language  {\simplelistparameter\s!language}%
+               method    {\simplelistparameter\c!method}%
+           }%
+        \relax
+      \stoppacked}%
+     {}% todo: message that invalid
    \endgroup}
 
 \def\completelistofsynonyms
@@ -272,10 +274,12 @@
 \def\strc_synonyms_complete_list[#1][#2]%
   {\begingroup
    \edef\currentsimplelist{#1}%
-   \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
-   \strc_synonyms_place_list[#1][#2]%
-   \page
-   \stopnamedsection
+   \doifelsecommandhandler\??simplelist\currentsimplelist
+     {\normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
+        \strc_synonyms_place_list[#1][#2]%
+        \page
+      \stopnamedsection}%
+     {}% todo: message that invalid
    \endgroup}
 
 \unexpanded\def\strc_synonym_normal#1#2#3#4%

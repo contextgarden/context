@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['strc-tag'] = {
 
 local type, next = type, next
 local insert, remove, unpack, concat = table.insert, table.remove, table.unpack, table.concat
-local gsub, find, topattern, format = string.gsub, string.find, string.topattern, string.format
+local find, topattern, format = string.find, string.topattern, string.format
 local lpegmatch, P, S, C, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 local texattribute = tex.attribute
 local allocate = utilities.storage.allocate

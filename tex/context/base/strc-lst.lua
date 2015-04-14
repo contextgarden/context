@@ -40,6 +40,7 @@ local sections          = structures.sections
 local helpers           = structures.helpers
 local documents         = structures.documents
 local tags              = structures.tags
+local counters          = structures.counters
 local references        = structures.references
 
 local collected         = allocate()
@@ -207,7 +208,7 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
     if numberdata then
         local numbers = numberdata.numbers
         if type(numbers) == "string" then
-            numberdata.numbers = structures.counters.compact(numbers,nil,true)
+            numberdata.numbers = counters.compact(numbers,nil,true)
         end
     end
     local group = numberdata and numberdata.group
@@ -1021,7 +1022,7 @@ implement {
                 }
             },
             { "numberdata", {
-                    { "numbers" }, --        = structures.counters.compact("\currentcounter",nil,true),
+                    { "numbers" },
                     { "groupsuffix" },
                     { "group" },
                     { "counter" },

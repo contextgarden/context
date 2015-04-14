@@ -107,7 +107,7 @@
   {\hskip\doifelseoddpage{\typingparameter\c!oddmargin}{\typingparameter\c!evenmargin}\relax}
 
 \def\buff_verbatim_initialize_typing_one
-  {\switchtobodyfont[\typingparameter\c!bodyfont]% can be low level call
+  {\usebodyfontparameter\typingparameter
    \scratchskip\typingparameter\c!oddmargin\relax
    \ifzeropt\scratchskip \else
      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
@@ -125,8 +125,7 @@
    \else\ifx\p_buff_option\empty
      \usetypingstyleandcolor\c!style\c!color
    \fi\fi
- % will become: \usealignparameter\typingparameter
-   \doifsomething{\typingparameter\c!align}{\setupalign[\typingparameter\c!align]}} % use fast one
+   \usealignparameter\typingparameter}
 
 \def\buff_verbatim_initialize_typing_two
   {\spaceskip.5\emwidth\relax
@@ -344,7 +343,7 @@
    \clf_type
      data    {\detokenize{#1}}%
      tab     {\typeparameter\c!tab}%
-     option  {\p_buff_option}%
+     method  {\p_buff_option}%
      compact {\typeparameter\c!compact}% % none | all | last (all needed in tabulate etc for manuals)
      escape  {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
    % nature  {inline}% is default
@@ -359,7 +358,7 @@
    \clf_type
      data   {\detokenize{#1}}%
      tab    {\typeparameter\c!tab}%
-     option {\p_buff_option}% % extra visualizer (maybe: nested,\typeparameter\c!option)
+     method {\p_buff_option}% % extra visualizer (maybe: nested,\typeparameter\c!option)
      escape {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
    % nature {inline}% is default
      method {nested}%

@@ -1976,17 +1976,17 @@ function references.setandgetattribute(data) -- maybe do internal automatically 
         if ndat then
             local numbers = ndat.numbers
             if type(numbers) == "string" then
-                ndat.numbers = structures.counters.compact(numbers,nil,true)
+                ndat.numbers = counters.compact(numbers,nil,true)
             end
-            data.numberdata = structures.helpers.simplify(ndat)
+            data.numberdata = helpers.simplify(ndat)
         end
         local pdat = data.prefixdata
         if pdat then
-            data.prefixdata = structures.helpers.simplify(pdat)
+            data.prefixdata = helpers.simplify(pdat)
         end
         local udat = data.userdata
         if type(udat) == "string"  then
-            data.userdata = structures.helpers.touserdata(udat)
+            data.userdata = helpers.touserdata(udat)
         end
         if not rdat.block then
             rdat.block = structures.sections.currentblock()
@@ -2075,17 +2075,27 @@ end
 references.currentmetadata = currentmetadata
 
 local function getcurrentprefixspec(default)
+    local data     = currentreference and currentreference.i
+    local metadata = data and data.metadata
     return
-        currentmetadata("kind") or "?",
-        currentmetadata("name") or "?",
-        default                 or "?"
+        metatadata and metadata.kind or "?",
+        metatadata and metadata.name or "?",
+        default                      or "?"
 end
 
 references.getcurrentprefixspec = getcurrentprefixspec
 
+-- implement {
+--     name      = "getcurrentprefixspec",
+--     actions   = { getcurrentprefixspec, context }, -- returns 3 arguments
+--     arguments = "string",
+-- }
+
 implement {
     name      = "getcurrentprefixspec",
-    actions   = { getcurrentprefixspec, context }, -- returns 3 arguments
+    actions   = function(tag)
+        context("{%s}{%s}{%s}",getcurrentprefixspec(tag))
+    end,
     arguments = "string",
 }
 
@@ -2101,7 +2111,7 @@ filters.text    = textfilters
 filters.full    = fullfilters
 filters.section = sectionfilters
 
-local function filterreference(name,...) -- number page title ...
+local function filterreference(name,prefixspec,numberspec) -- number page title ...
     local data = currentreference and currentreference.i -- maybe we should take realpage from here
     if data then
         if name == "realpage" then
@@ -2116,7 +2126,7 @@ local function filterreference(name,...) -- number page title ...
                     if trace_referencing then
                         report_references("name %a, kind %a, using dedicated filter",name,kind)
                     end
-                    filter(data,name,...)
+                    filter(data,name,prefixspec,numberspec)
                 elseif trace_referencing then
                     report_references("name %a, kind %a, using generic filter",name,kind)
                 end

@@ -562,6 +562,12 @@
      \spac_align_use_indeed
    \fi}
 
+\unexpanded\def\dousealignparameter#1% faster local variant
+  {\edef\m_spac_align_asked{#1}%
+   \ifx\m_spac_align_asked\empty\else
+     \spac_align_use_indeed
+   \fi}
+
 \def\spac_align_use_indeed
   {\expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align_asked\endcsname
    \ifx\raggedcommand\relax

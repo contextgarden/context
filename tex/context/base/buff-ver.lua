@@ -800,7 +800,6 @@ implement {
         {
             { "data"    },
             { "tab"     },
-            { "option"  },
             { "method"  },
             { "compact" },
             { "nature"  },

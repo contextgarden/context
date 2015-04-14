@@ -2203,7 +2203,7 @@
 
 \def\dolocaltablesetup
   {\directtablesparameter\c!commands\relax
-   \doifsomething{\directtablesparameter\c!bodyfont}{\switchtobodyfont[\directtablesparameter\c!bodyfont]}%
+   \usebodyfontparameter\directtablesparameter
    \tablelinethicknessunit\dimexpr\directtablesparameter\c!rulethickness/\tablelinethicknessfactor\relax
    \edef\p_tabl_table_height{\directtablesparameter\c!height}%
    \edef\p_tabl_table_depth{\directtablesparameter\c!depth}%
