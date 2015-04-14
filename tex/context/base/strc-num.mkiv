@@ -535,13 +535,13 @@
    \strc_counters_register_component_check_prefix
    \setnextinternalreference
    \clf_setreferenceattribute
-        {\currentstructurecomponentreferenceprefix}%
-        {\currentstructurecomponentreference}%
         {%
             references {%
-                  internal \nextinternalreference
-                  block    {\currentsectionblock}% move to lua
-                  view     {\interactionparameter\c!focus}%
+                  internal  \nextinternalreference
+                % block     {\currentsectionblock}% move to lua
+                  view      {\interactionparameter\c!focus}%
+                  prefix    {\currentstructurecomponentreferenceprefix}%
+                  reference {\currentstructurecomponentreference}%
             }%
             metadata {%
                 kind {\s!page}%
@@ -613,11 +613,11 @@
       \fi
       }
       references {
-          internal        \nextinternalreference
-          block           {\currentsectionblock}
-          reference       {\currentstructurecomponentreference}
-          referenceprefix {\currentstructurecomponentreferenceprefix}
-        % section         structures.sections.currentid()
+          internal  \nextinternalreference
+        % block     {\currentsectionblock}
+          reference {\currentstructurecomponentreference}
+          prefix    {\currentstructurecomponentreferenceprefix}
+        % section   structures.sections.currentid()
       }
       titledata {
           label    {\detokenize\expandafter{\currentstructurecomponentlabel}}

@@ -195,15 +195,15 @@ end
 -- we could use t (as hash key) in order to check for dup entries
 
 function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
-    local m = t.metadata
-    local u = t.userdata
-    if u and type(u) == "string" then
-        t.userdata = helpers.touserdata(u)
-    end
-    if not m.level then
-        m.level = structures.sections.currentlevel()
-    end
+    local metadata   = t.metadata
+    local userdata   = t.userdata
     local numberdata = t.numberdata
+    if userdata and type(userdata) == "string" then
+        t.userdata = helpers.touserdata(userdata)
+    end
+    if not metadata.level then
+        metadata.level = structures.sections.currentlevel() -- this is not used so it will go away
+    end
     if numberdata then
         local numbers = numberdata.numbers
         if type(numbers) == "string" then
@@ -211,7 +211,7 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
         end
     end
     local group = numberdata and numberdata.group
-    local name = m.name
+    local name  = metadata.name
     if not group then
         -- forget about it
     elseif group == "" then
@@ -986,7 +986,7 @@ implement {
                     { "block" },
                     { "section", "integer" },
                     { "location" },
-                    { "referenceprefix" },
+                    { "prefix" },
                     { "reference" },
                     { "order", "integer" },
                 }

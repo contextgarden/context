@@ -344,8 +344,8 @@ local function setcomponent(data)
         local references = data and data.references
         if references then
             references.component = component
-            if references.referenceprefix == component then
-                references.referenceprefix = nil
+            if references.prefix == component then
+                references.prefix = nil
             end
         end
         return component
@@ -376,9 +376,14 @@ implement {
     arguments = { "string", "string" }
 }
 
-function references.set(kind,prefix,tag,data)
---  setcomponent(data)
--- print(kind,prefix,tag)
+function references.set(data)
+    local references = data.references
+    local prefix     = references.prefix or ""
+    local reference  = references.reference
+    if not reference or reference == "" then
+        report_references("invalid reference")
+        return 0
+    end
     local pd = tobesaved[prefix] -- nicer is a metatable
     if not pd then
         pd = { }
@@ -401,7 +406,7 @@ function references.set(kind,prefix,tag,data)
             ctx_dofinishreference(prefix or "",ref or "",r and r.internal or 0)
         end
     end
-    process_settings(tag,action)
+    process_settings(reference,action)
     return n > 0
 end
 
@@ -469,7 +474,7 @@ local function register_from_lists(collected,derived,pages,sections)
         entry = collected[i]
         local metadata = entry.metadata
         if metadata then
-            local kind = metadata.kind
+            local kind = metadata.kind -- why this check
             if kind then
                 local references = entry.references
                 if references then
@@ -477,7 +482,7 @@ local function register_from_lists(collected,derived,pages,sections)
                     if reference and reference ~= "" then
                         local realpage = references.realpage
                         if realpage then
-                            prefix    = references.referenceprefix
+                            prefix    = references.prefix
                             component = references.component
                             if prefix and prefix ~= "" then
                                 derived_p = derived[prefix]
@@ -513,7 +518,7 @@ local function collectbypage(tracedpages)
         local collected = structures.lists.collected
         local data      = nil
         local function action(reference)
-            local prefix    = data.referenceprefix
+            local prefix    = data.prefix
             local component = data.component
             local realpage  = data.realpage
             if realpage then
@@ -549,9 +554,8 @@ local function collectbypage(tracedpages)
     do
         for prefix, list in next, collected do
             for reference, entry in next, list do
-                local data      = entry.references
-                local reference = data and data.reference
-                if reference then
+                local data = entry.references
+                if data then
                     local realpage = data.realpage
                     local internal = data.internal or 0
                     local pagelist = rawget(tracedpages,realpage)
@@ -1005,7 +1009,7 @@ local function loadexternalreferences(name,utilitydata)
                     local realpage = references.realpage
                     if kind and realpage then
                         references.pagedata = pages[realpage]
-                        local prefix = references.referenceprefix or ""
+                        local prefix = references.prefix or ""
                         local target = external[prefix]
                         if not target then
                             target = { }
@@ -1107,7 +1111,7 @@ local function loadproductreferences(productname,componentname,utilitydata)
                     local realpage = references.realpage
                     if kind and realpage then
                         references.pagedata = pages[realpage]
-                        local prefix    = references.referenceprefix or ""
+                        local prefix    = references.prefix or ""
                         local component = references.component
                         local ctarget, ptarget
                         if not component or component == componentname then
@@ -1900,7 +1904,7 @@ local function setinternalreference(specification)
     local internal    = specification.internal
     local destination = unsetvalue
     if innermethod == v_auto then
-        local t, tn = { }, 0 -- maybe add to current
+        local t, tn = { }, 0 -- maybe add to current (now only used for tracing)
         local reference = specification.reference
         if reference then
             local prefix = specification.prefix
@@ -1960,7 +1964,7 @@ implement {
 --     arguments = "integer",
 -- }
 
-function references.setandgetattribute(prefix,tag,data) -- maybe do internal automatically here
+function references.setandgetattribute(data) -- maybe do internal automatically here
     local attr = unsetvalue
     local mdat = data.metadata
     local rdat = data.references
@@ -1984,9 +1988,17 @@ function references.setandgetattribute(prefix,tag,data) -- maybe do internal aut
         if type(udat) == "string"  then
             data.userdata = structures.helpers.touserdata(udat)
         end
-        local done = references.set(mdat.kind or "page",prefix,tag,data) -- we had kind i.e .item -> full
+        if not rdat.block then
+            rdat.block = structures.sections.currentblock()
+        end
+        local done = references.set(data) -- we had kind i.e .item -> full
         if done then
-            attr = setinternalreference(prefix,tag,nil,rdat.view) or unsetvalue
+            attr = setinternalreference {
+                prefix    = prefix,
+                reference = tag,
+                internal  = rdat.internal,
+                view      = rdat.view
+            } or unsetvalue
         end
     end
     texsetcount("lastdestinationattribute",attr)
@@ -1997,14 +2009,14 @@ implement {
     name      = "setreferenceattribute",
     actions   = references.setandgetattribute,
     arguments = {
-        "string",
-        "string",
         {
             {
                 "references", {
                     { "internal", "integer" },
                     { "block" },
                     { "view" },
+                    { "prefix" },
+                    { "reference" },
                 },
             },
             {

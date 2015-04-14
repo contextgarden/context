@@ -177,11 +177,11 @@
    \strc_sectioning_set_reference_prefix
    \clf_setsectionentry
         references {
-            internal        \nextinternalreference\space
-            block           {\currentsectionblock}
-            referenceprefix {\currentstructurereferenceprefix}
-            reference       {\currentstructurereference}
-            backreference   {\currentstructurebackreference}
+            internal      \nextinternalreference\space
+          % block         {\currentsectionblock}
+            prefix        {\currentstructurereferenceprefix}
+            reference     {\currentstructurereference}
+            backreference {\currentstructurebackreference}
         }
         directives {
             resetset {\structureparameter\c!sectionresetset}
@@ -220,7 +220,7 @@
         \fi
         }
         numberdata {
-            block         {\currentsectionblock}
+          % block         {\currentsectionblock}
         \ifx\currentstructureshownumber\v!no
             hidenumber    \space true\space
         \fi

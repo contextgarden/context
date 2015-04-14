@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ['strc-doc'] = {
 
 local next, type, tonumber, select = next, type, tonumber, select
 local format, gsub, find, gmatch, match = string.format, string.gsub, string.find, string.gmatch, string.match
-local concat, fastcopy = table.concat, table.fastcopy
+local concat, fastcopy, insert, remove = table.concat, table.fastcopy, table.insert, table.remove
 local max, min = math.max, math.min
 local allocate, mark, accesstable = utilities.storage.allocate, utilities.storage.mark, utilities.tables.accesstable
 local setmetatableindex = table.setmetatableindex
@@ -239,7 +239,7 @@ end
 function sections.pushblock(name,settings)
     counters.check(0) -- we assume sane usage of \page between blocks
     local block = name or data.block
-    data.blocks[#data.blocks+1] = block
+    insert(data.blocks,block)
     data.block = block
     sectionblockdata[block] = settings
     documents.reset()
@@ -247,16 +247,17 @@ function sections.pushblock(name,settings)
 end
 
 function sections.popblock()
-    data.blocks[#data.blocks] = nil
-    local block = data.blocks[#data.blocks] or data.block
+    local block = remove(data.blocks) or data.block
     data.block = block
     documents.reset()
     return block
 end
 
-function sections.currentblock()
+local function getcurrentblock()
     return data.block or data.blocks[#data.blocks] or "unknown"
 end
+
+sections.currentblock = getcurrentblock
 
 function sections.currentlevel()
     return data.depth
@@ -271,15 +272,33 @@ local saveset = { } -- experiment, see sections/tricky-001.tex
 function sections.setentry(given)
     -- old number
     local numbers     = data.numbers
+    --
+    local metadata    = given.metadata
+    local numberdata  = given.numberdata
+    local references  = given.references
+    local directives  = given.directives
+    local userdata    = given.userdata
+
+    if not metadata then
+        metadata       = { }
+        given.metadata = metadata
+    end
+    if not numberdata then
+        numberdata = { }
+        given.numberdata = numberdata
+    end
+    if not references then
+        references       = { }
+        given.references = references
+    end
 
     local ownnumbers  = data.ownnumbers
     local forced      = data.forced
     local status      = data.status
     local olddepth    = data.depth
-    local givenname   = given.metadata.name
+    local givenname   = metadata.name
     local mappedlevel = levelmap[givenname]
     local newdepth    = tonumber(mappedlevel or (olddepth > 0 and olddepth) or 1) -- hm, levelmap only works for section-*
-    local directives  = given.directives
     local resetset    = directives and directives.resetset or ""
  -- local resetter = sets.getall("structure:resets",data.block,resetset)
     -- a trick to permit userdata to overload title, ownnumber and reference
@@ -289,14 +308,13 @@ function sections.setentry(given)
         report_structure("name %a, mapped level %a, old depth %a, new depth %a, reset set %a",
             givenname,mappedlevel,olddepth,newdepth,resetset)
     end
-    local u = given.userdata
-    if u then
-        -- kind of obsolete as we can pass them directly anyway
-        if u.reference and u.reference ~= "" then given.metadata.reference   = u.reference ; u.reference = nil end
-        if u.ownnumber and u.ownnumber ~= "" then given.numberdata.ownnumber = u.ownnumber ; u.ownnumber = nil end
-        if u.title     and u.title     ~= "" then given.titledata.title      = u.title     ; u.title     = nil end
-        if u.bookmark  and u.bookmark  ~= "" then given.titledata.bookmark   = u.bookmark  ; u.bookmark  = nil end
-        if u.label     and u.label     ~= "" then given.titledata.label      = u.label     ; u.label     = nil end
+    if userdata then
+        -- kind of obsolete as we can pass them directly anyway ... NEEDS CHECKING !
+        if userdata.reference and userdata.reference ~= "" then given.metadata.reference   = userdata.reference ; userdata.reference = nil end
+        if userdata.ownnumber and userdata.ownnumber ~= "" then given.numberdata.ownnumber = userdata.ownnumber ; userdata.ownnumber = nil end
+        if userdata.title     and userdata.title     ~= "" then given.titledata.title      = userdata.title     ; userdata.title     = nil end
+        if userdata.bookmark  and userdata.bookmark  ~= "" then given.titledata.bookmark   = userdata.bookmark  ; userdata.bookmark  = nil end
+        if userdata.label     and userdata.label     ~= "" then given.titledata.label      = userdata.label     ; userdata.label     = nil end
     end
     -- so far for the trick
     if saveset then
@@ -334,12 +352,12 @@ function sections.setentry(given)
         end
     end
     counters.check(newdepth)
-    ownnumbers[newdepth] = given.numberdata.ownnumber or ""
-    given.numberdata.ownnumber = nil
+    ownnumbers[newdepth] = numberdata.ownnumber or ""
+    numberdata.ownnumber = nil
     data.depth = newdepth
     -- new number
     olddepth = newdepth
-    if given.metadata.increment then
+    if metadata.increment then
         local oldn, newn = numbers[newdepth] or 0, 0
         local fd = forced[newdepth]
         if fd then
@@ -369,40 +387,31 @@ function sections.setentry(given)
             v[2](k)
         end
     end
-    local numberdata= given.numberdata
-    if not numberdata then
-        -- probably simplified to nothing
-        numberdata = { }
-        given.numberdata = numberdata
-    end
-
     local n = { }
     for i=1,newdepth do
         n[i] = numbers[i]
     end
     numberdata.numbers = n
---     numberdata.numbers = fastcopy(numbers)
-
+    if not numberdata.block then
+        numberdata.block = getcurrentblock() -- also in references
+    end
     if #ownnumbers > 0 then
         numberdata.ownnumbers = fastcopy(ownnumbers)
     end
     if trace_detail then
         report_structure("name %a, numbers % a, own numbers % a",givenname,numberdata.numbers,numberdata.ownnumbers)
     end
-
-    local metadata   = given.metadata
-    local references = given.references
-
+    if not references.block then
+        references.block = getcurrentblock() -- also in numberdata
+    end
     local tag = references.tag or tags.getid(metadata.kind,metadata.name)
     if tag and tag ~= "" and tag ~= "?" then
         references.tag = tag
     end
-
     local setcomponent = structures.references.setcomponent
     if setcomponent then
         setcomponent(given) -- might move to the tex end
     end
-
     references.section = sections.save(given)
  -- given.numberdata = nil
 end
@@ -1025,9 +1034,9 @@ implement {
             { "references", {
                     { "internal", "integer" },
                     { "block" },
-                    { "referenceprefix" },
-                    { "reference" },
                     { "backreference" },
+                    { "prefix" },
+                    { "reference" },
                 }
             },
             { "directives", {

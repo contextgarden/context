@@ -32,10 +32,6 @@ local specification = {
         --
         author      = "author", -- interpreted as name(s)
         editor      = "author",
-        artist      = "author",
-        interpreter = "author",
-        composer    = "author",
-        producer    = "author",
         doi         = "url",        -- an external link
         url         = "url",
         page        = "pagenumber", -- number or range: f--t

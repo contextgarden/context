@@ -1228,11 +1228,11 @@ end
 
 function checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
-    local name = du.fullname or "unknown generic"
-    local page = du.page or dr.page
-    local size = dr.size or "crop"
+    local name  = du.fullname or "unknown generic"
+    local page  = du.page or dr.page
+    local size  = dr.size or "crop"
     local color = dr.color or "natural"
-    local mask = dr.mask or "none"
+    local mask  = dr.mask or "none"
     local conversion = dr.conversion
     local resolution = dr.resolution
     if not conversion or conversion == "" then
@@ -1299,9 +1299,9 @@ end
 function includers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     -- here we set the 'natural dimensions'
-    dr.width = du.width
-    dr.height = du.height
-    local hash = figures.hash(data)
+    dr.width     = du.width
+    dr.height    = du.height
+    local hash   = figures.hash(data)
     local figure = figures_used[hash]
  -- figures.registerresource {
  --     filename = du.fullname,
@@ -1317,9 +1317,7 @@ function includers.generic(data)
         figures_used[hash] = figure
     end
     if figure then
-        local nr = figures.boxnumber
-        -- it looks like we have a leak in attributes here .. todo
-
+        local nr     = figures.boxnumber
         nofimages    = nofimages + 1
         ds.pageindex = nofimages
         local image  = images.node(figure)
@@ -1328,7 +1326,7 @@ function includers.generic(data)
         end)
         image.next = pager
         pager.prev = image
-        local box = hpack(image) -- images.node(figure) not longer valid
+        local box  = hpack(image) -- images.node(figure) not longer valid
 
         indexed[figure.index] = figure
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
@@ -1567,6 +1565,7 @@ local epstopdf = {
         -dEPSCrop
         -dCompatibilityLevel=%level%
         -sOutputFile="%newname%"
+        %colorspace%
         "%oldname%"
         -c quit
     ]],
@@ -1607,7 +1606,7 @@ cleaners.ai = function(name)
     return tmpname
 end
 
-function epsconverter.pdf(oldname,newname,resolution) -- the resolution interface might change
+function epsconverter.pdf(oldname,newname,resolution,colorspace) -- the resolution interface might change
     local epstopdf = programs.epstopdf -- can be changed
     local presets  = epstopdf.resolutions[resolution or "high"] or epstopdf.resolutions.high
     local level    = codeinjections.getformatoption("pdf_level") or "1.3"
@@ -1615,15 +1614,26 @@ function epsconverter.pdf(oldname,newname,resolution) -- the resolution interfac
     if cleanups.ai then
         tmpname = cleaners.ai(oldname)
     end
+    if colorspace == "gray" then
+        colorspace = "-sColorConversionStrategy=Gray -sProcessColorModel=DeviceGray"
+     -- colorspace = "-sColorConversionStrategy=Gray"
+    else
+        colorspace = nil
+    end
     runprogram(epstopdf.command, epstopdf.argument, {
-        newname = newname,
-        oldname = tmpname,
-        presets = presets,
-        level   = tostring(level),
+        newname    = newname,
+        oldname    = tmpname,
+        presets    = presets,
+        level      = tostring(level),
+        colorspace = colorspace,
     } )
     if tmpname ~= oldname then
         os.remove(tmpname)
     end
+end
+
+epsconverter["gray.pdf"] = function(oldname,newname,resolution) -- the resolution interface might change
+    epsconverter.pdf(oldname,newname,resolution,"gray")
 end
 
 epsconverter.default = epsconverter.pdf
@@ -1895,10 +1905,10 @@ local function bases_find(basename,askedlabel)
                 page = page + 1
                 if xml.text(e) == askedlabel then
                     t = {
-                        base = file.replacesuffix(base[2],"pdf"),
+                        base   = file.replacesuffix(base[2],"pdf"),
                         format = "pdf",
-                        name = xml.text(e,"../*:file"), -- to be checked
-                        page = page,
+                        name   = xml.text(e,"../*:file"), -- to be checked
+                        page   = page,
                     }
                     bases_found[askedlabel] = t
                     if trace_bases then
@@ -1933,13 +1943,13 @@ function identifiers.base(data)
         local dr, du, ds = data.request, data.used, data.status
         local fbl = bases_locate(dr.name or dr.label)
         if fbl then
-            du.page = fbl.page
-            du.format = fbl.format
+            du.page     = fbl.page
+            du.format   = fbl.format
             du.fullname = fbl.base
             ds.fullname = fbl.name
-            ds.format = fbl.format
-            ds.page = fbl.page
-            ds.status = 10
+            ds.format   = fbl.format
+            ds.page     = fbl.page
+            ds.status   = 10
         end
     end
     return data

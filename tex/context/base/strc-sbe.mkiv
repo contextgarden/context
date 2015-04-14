@@ -81,7 +81,9 @@
 \def\strc_sectionblock_set[#1][#2]% used to set the default
   {\edef\currentsectionblock{#1}% from now on we assume a value
    \setupcurrentsectionblock[#2]%
-   \clf_setsectionblock{#1}{ bookmark {\sectionblockparameter\c!bookmark} }}
+   \clf_setsectionblock{#1}
+      bookmark {\sectionblockparameter\c!bookmark}%
+   \relax}
 
 \let\currentsectionblock\empty % was \s!unknown
 
@@ -93,7 +95,9 @@
    \begingroup
    \edef\currentsectionblock{#1}% from now on we assume a value
    \setupcurrentsectionblock[#2]%
-   \clf_pushsectionblock{#1}{ bookmark {\sectionblockparameter\c!bookmark} }%
+   \clf_pushsectionblock{#1}
+     bookmark {\sectionblockparameter\c!bookmark}%
+   \relax
    \csname #1true\endcsname % obsolete
    \setsystemmode\currentsectionblock
    \the\everybeforesectionblock\relax

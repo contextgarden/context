@@ -217,13 +217,13 @@
        \setnextinternalreference
        \strc_references_start_destination_nodes
        \clf_setreferenceattribute
-            {\referenceprefix}%
-            {\currentreferencelabels}%
             {%
                 references {%
-                    internal \nextinternalreference
-                    block    {\currentsectionblock}%
-                    view     {\interactionparameter\c!focus}%
+                    internal  \nextinternalreference
+                  % block     {\currentsectionblock}%
+                    view      {\interactionparameter\c!focus}%
+                    prefix    {\referenceprefix}%
+                    reference {\currentreferencelabels}%
                 }%
                 metadata {%
                     kind     {\currentreferencekind}%
@@ -271,13 +271,13 @@
        \strc_references_start_destination_nodes
        \setnextinternalreference
        \clf_setreferenceattribute
-            {\referenceprefix}%
-            {\currentreferencelabels}%
             {%
                 references {%
-                    internal \nextinternalreference
-                    block    {\currentsectionblock}%
-                    view     {\interactionparameter\c!focus}%
+                    internal  \nextinternalreference
+                 %  block     {\currentsectionblock}%
+                    view      {\interactionparameter\c!focus}%
+                    prefix    {\referenceprefix}%
+                    reference {\currentreferencelabels}%
                 }%
                 metadata {%
                     kind {page}%
@@ -298,13 +298,13 @@
      \edef\m_strc_references_user{#user}%
      \edef\m_strc_references_text{#text}%
      \clf_setreferenceattribute
-        {\referenceprefix}%
-        {#labels}%
         {%
             references {%
-                internal \nextinternalreference
-                block    {\currentsectionblock}%
-                view     {\interactionparameter\c!focus}%
+                internal  \nextinternalreference
+              % block     {\currentsectionblock}%
+                view      {\interactionparameter\c!focus}%
+                prefix    {\referenceprefix}%
+                reference {#labels}%
             }%
             metadata {%
                 kind {\s!full}%
@@ -375,12 +375,12 @@
   {\iflocation
      \strc_references_start_destination_nodes
      \clf_setreferenceattribute
-        {\referenceprefix}%
-        {#label}%
         {%
             references {%
-                block {\currentsectionblock}%
-                view  {\interactionparameter\c!focus}%
+              % block     {\currentsectionblock}%
+                view      {\interactionparameter\c!focus}%
+                prefix    {\referenceprefix}%
+                reference {#label}%
             }%
             metadata {%
                 kind {\s!page}%

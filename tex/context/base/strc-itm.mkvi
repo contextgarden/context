@@ -248,13 +248,12 @@
    \fi \fi}
 
 \def\strc_itemgroups_insert_reference_indeed % maybe we need a 'frozen counter' numberdata blob / quick hack .. .mive this to strc-ref
-  {%\setnextinternalreference
+  {% needs testing, gave problems:
+   \setnextinternalreference
    % no need to collect nodes in \b_strc_destination_nodes here ... maybe at some point
    \strc_references_start_destination_nodes
    % this is somewhat over the top ... we should use the counter's reference
    \clf_setreferenceattribute
-     {\referenceprefix}%
-     {\currentitemreference}%
      {%
          metadata {%
              kind            {item}% was item, why?
@@ -264,9 +263,11 @@
              catcodes        \catcodetable
          }%
          references {%
-           % internal        \nextinternalreference % no: this spoils references
-             block           {\currentsectionblock}%
+             internal        \nextinternalreference % no: this spoils references
+           % block           {\currentsectionblock}%
              view            {\interactionparameter\c!focus}%
+             prefix          {\referenceprefix}%
+             reference       {\currentitemreference}%
          }%
          prefixdata {%
              prefix          {\namedcounterparameter\v_strc_itemgroups_counter\c!prefix}%

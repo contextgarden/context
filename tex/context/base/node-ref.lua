@@ -37,8 +37,8 @@ local tasks               = nodes.tasks
 local trace_references    = false  trackers.register("nodes.references",        function(v) trace_references   = v end)
 local trace_destinations  = false  trackers.register("nodes.destinations",      function(v) trace_destinations = v end)
 local trace_areas         = false  trackers.register("nodes.areas",             function(v) trace_areas        = v end)
-local show_references     = false  trackers.register("nodes.references.show",   function(v) show_references    = v end)
-local show_destinations   = false  trackers.register("nodes.destinations.show", function(v) show_destinations  = v end)
+local show_references     = false  trackers.register("nodes.references.show",   function(v) show_references    = tonumber(v) or (v and 2.25 or false) end)
+local show_destinations   = false  trackers.register("nodes.destinations.show", function(v) show_destinations  = tonumber(v) or (v and 2.00 or false) end)
 
 local report_reference    = logs.reporter("backend","references")
 local report_destination  = logs.reporter("backend","destinations")
@@ -434,22 +434,33 @@ local u_transparency = nil
 local u_colors       = { }
 local force_gray     = true
 
-local function addstring(str,what)
+local function addstring(what,str,shift) --todo make a pluggable helper (in font-ctx)
     if str then
         local typesetters = nuts.typesetters
         if typesetters then
+            local hashes   = fonts.hashes
+            local infofont = fonts.infofont()
+            local emwidth  = hashes.emwidths [infofont]
+            local exheight = hashes.exheights[infofont]
             if what == "reference" then
-                str = str .. "<"
+                str   = str .. " "
+                shift = - (shift or 2.25) * exheight
             else
-                str = str .. ">"
+                str   = str .. " "
+                shift = (shift or 2) * exheight
             end
-            local text = typesetters.fast_hpack(str,fonts.infofont())
-            return text
+            local text = typesetters.fast_hpack(str,infofont)
+            local rule = new_rule(emwidth/5,4*exheight,3*exheight)
+            local list = getlist(text)
+            setfield(text,"shift",shift)
+            return nuts.fasthpack(nuts.linked(text,rule))
+         -- local text = typesetters.fast_hpack(str,fonts.infofont())
+         -- return text
         end
     end
 end
 
-local function colorize(width,height,depth,n,reference,what,sr)
+local function colorize(width,height,depth,n,reference,what,sr,offset)
     if force_gray then n = 0 end
     u_transparency = u_transparency or transparencies.register(nil,2,.65)
     local ucolor = u_colors[n]
@@ -489,7 +500,7 @@ local function colorize(width,height,depth,n,reference,what,sr)
     else
 
 if sr and sr ~= "" then
-    local text = addstring(sr)
+    local text = addstring(what,sr,shift)
     if text then
         local kern = new_kern(-getfield(text,"width"))
         setfield(kern,"next",text)
@@ -504,9 +515,9 @@ end
     end
 end
 
-local function justadd(what,sr)
+local function justadd(what,sr,shift)
     if sr and sr ~= "" then
-        local text = addstring(sr)
+        local text = addstring(what,sr,shift)
         if text then
             local kern = new_kern(-getfield(text,"width"))
             setfield(kern,"next",text)
@@ -558,13 +569,12 @@ local function makereference(width,height,depth,reference) -- height and depth a
             report_reference("resolving attribute %a",reference)
         end
         local resolved, ht, dp, set, n = sr[1], sr[2], sr[3], sr[4], sr[5]
--- logs.report("temp","child: ht=%p dp=%p, parent: ht=%p dp=%p",ht,dp,height,depth)
+     -- logs.report("temp","child: ht=%p dp=%p, parent: ht=%p dp=%p",ht,dp,height,depth)
         if ht then
             if height < ht then height = ht end
             if depth  < dp then depth  = dp end
         end
--- logs.report("temp","used: ht=%p dp=%p",height,depth)
--- step = 0
+     -- logs.report("temp","used: ht=%p dp=%p",height,depth)
         local annot = nodeinjections.reference(width,height,depth,set)
         if annot then
             annot = tonut(annot) -- todo
@@ -577,7 +587,7 @@ local function makereference(width,height,depth,reference) -- height and depth a
                     local p = d.prefix
                     if r then
                         if p then
-                            texts = p .. " : " .. r
+                            texts = p .. "|" .. r
                         else
                             texts = r
                         end
@@ -588,11 +598,11 @@ local function makereference(width,height,depth,reference) -- height and depth a
             end
             if trace_references then
                 local step = 65536
-                result = hpack_list(colorize(width,height-step,depth-step,2,reference,"reference",texts)) -- step subtracted so that we can see seperate links
+                result = hpack_list(colorize(width,height-step,depth-step,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
                 setfield(result,"width",0)
                 current = result
             elseif texts then
-                texts = justadd("reference",texts)
+                texts = justadd("reference",texts,show_references)
                 if texts then
                     result = hpack_list(texts)
                     setfield(result,"width",0)
@@ -664,35 +674,39 @@ local function makedestination(width,height,depth,reference)
         if trace_destinations then
             report_destination("resolving attribute %a",reference)
         end
-        local resolved, ht, dp, name, view = sr[1], sr[2], sr[3], sr[4], sr[5]
+        local resolved, ht, dp, name, view = sr[1], sr[2], sr[3], sr[4], sr[5] -- sr[4] will change to just internal
         if ht then
             if height < ht then height = ht end
             if depth  < dp then depth  = dp end
         end
         local result, current, texts
         if show_destinations then
-            local str = sr[4]
-            if str and #str > 0 then
+            if name and #name > 0 then
                 local t = { }
-                for i=1,#str do
-                    local d = references.internals[str[i]]
-                    if d then
-                        d = d.references
-                        local r = d.reference
-                        local p = d.usedprefix
-                        if r then
-                            if p then
-                                t[#t+1] = p .. " : " .. r
+                for i=1,#name do
+                    local s = name[i]
+                    if type(s) == "number" then
+                        local d = references.internals[s]
+                        if d then
+                            d = d.references
+                            local r = d.reference
+                            local p = d.usedprefix
+                            if r then
+                                if p then
+                                    t[#t+1] = p .. "|" .. r
+                                else
+                                    t[#t+1] = r
+                                end
                             else
-                                t[#t+1] = r
+                             -- t[#t+1] = d.internal or "?"
                             end
-                        else
-                         -- t[#t+1] = d.internal or "?"
                         end
+                    else
+                        -- in fact we have a prefix:name here
                     end
                 end
                 if #t > 0 then
-                    texts = concat(t," | ")
+                    texts = concat(t," & ")
                 end
             end
         end
@@ -702,7 +716,7 @@ local function makedestination(width,height,depth,reference)
                 step = 4*65536
                 width, height, depth = 5*step, 5*step, 0
             end
-            local rule = hpack_list(colorize(width,height,depth,3,reference,"destination",texts))
+            local rule = hpack_list(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
             setfield(rule,"width",0)
             if not result then
                 result, current = rule, rule
@@ -713,7 +727,7 @@ local function makedestination(width,height,depth,reference)
             end
             width, height = width - step, height - step
         elseif texts then
-            texts = justadd("destination",texts)
+            texts = justadd("destination",texts,show_destinations)
             if texts then
                 result = hpack_list(texts)
                 if result then

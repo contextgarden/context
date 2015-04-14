@@ -968,12 +968,12 @@
         \setbreakpoints[doi]
         \ifconditional\btxinteractive
             \goto {
-                \btxflush{url}
+                \hyphenatedurl{\btxflush{url}}
             } [
                 url(\btxflush{url})
             ]
         \else
-            \btxflush{url}
+            \hyphenatedurl{\btxflush{url}}
         \fi
     \endgroup
 \stoptexdefinition
@@ -986,12 +986,12 @@
         \setbreakpoints[doi]
         \ifconditional\btxinteractive
             \goto {
-                doi:\btxflush{doi}
+                \hyphenatedurl{doi:\btxflush{doi}}
             } [
                 url(http://dx.doi.org/\btxflush{doi})
             ]
         \else
-            doi:\btxflush{doi}
+            \hyphenatedurl{doi:\btxflush{doi}}
         \fi
     \endgroup
 \stoptexdefinition
