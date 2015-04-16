@@ -406,13 +406,13 @@ end
 
 -- resolvers --
 
-local whatsiters = {
+local whatsitters = {
     get_width      = { },
     get_dimensions = { },
 }
 
-local get_whatsit_width      = whatsiters.get_width
-local get_whatsit_dimensions = whatsiters.get_dimensions
+local get_whatsit_width      = whatsitters.get_width
+local get_whatsit_dimensions = whatsitters.get_dimensions
 
 local function get_width     (n,dir) return getfield(n,"width") end
 local function get_dimensions(n,dir) return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth") end
@@ -422,6 +422,8 @@ get_whatsit_width[pdfrefxform_code ] = get_width
 
 get_whatsit_dimensions[pdfrefximage_code] = get_dimensions
 get_whatsit_dimensions[pdfrefxform_code ] = get_dimensions
+
+nodes.whatsitters = whatsitters
 
 -- expansion etc --
 
@@ -3154,6 +3156,8 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
 end
 
 xpack_nodes = hpack -- comment this for old fashioned expansion (we need to fix float mess)
+
+constructors.methods.hpack = hpack
 
 local function common_message(hlist,line,str)
     write_nl("")

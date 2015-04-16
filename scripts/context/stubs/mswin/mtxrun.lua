@@ -5125,7 +5125,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-math"] = package.loaded["l-math"] or true
 
--- original size: 915, stripped down to: 836
+-- original size: 974, stripped down to: 890
 
 if not modules then modules={} end modules ['l-math']={
   version=1.001,
@@ -5135,6 +5135,9 @@ if not modules then modules={} end modules ['l-math']={
   license="see context related readme files"
 }
 local floor,sin,cos,tan=math.floor,math.sin,math.cos,math.tan
+if not math.ceiling then
+  math.ceiling=math.ceil
+end
 if not math.round then
   function math.round(x) return floor(x+0.5) end
 end
@@ -14474,7 +14477,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 75211, stripped down to: 45919
+-- original size: 67003, stripped down to: 46291
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -15099,45 +15102,63 @@ function resolvers.registerextrapath(paths,subpaths)
   if newn>0 then
     instance.extra_paths=ep 
   end
-  if newn>oldn then
+  if newn~=oldn then
     reset_caches()
   end
 end
+function resolvers.pushextrapath(path)
+  local paths=settings_to_array(path)
+  if instance.extra_stack then
+    insert(instance.extra_stack,1,paths)
+  else
+    instance.extra_stack={ paths }
+  end
+  reset_caches()
+end
+function resolvers.popextrapath()
+  if instance.extra_stack then
+    reset_caches()
+    return remove(instance.extra_stack,1)
+  end
+end
 local function made_list(instance,list,extra_too)
-  local done,new,newn={},{},0
-  for k=1,#list do
-    local v=list[k]
-    if not done[v] then
-      if find(v,"^[%.%/]$") then
+  local done={}
+  local new={}
+  local newn=0
+  local function add(p)
+    for k=1,#p do
+      local v=p[k]
+      if not done[v] then
         done[v]=true
         newn=newn+1
         new[newn]=v
-      else
-        break
-      end
-    end
-  end
-  if extra_too then
-    local ep=instance.extra_paths
-    if ep and #ep>0 then
-      for k=1,#ep do
-        local v=ep[k]
-        if not done[v] then
-          done[v]=true
-          newn=newn+1
-          new[newn]=v
-        end
       end
     end
   end
   for k=1,#list do
     local v=list[k]
-    if not done[v] then
+    if done[v] then
+    elseif find(v,"^[%.%/]$") then
       done[v]=true
       newn=newn+1
       new[newn]=v
+    else
+      break
     end
   end
+  if extra_too then
+    local es=instance.extra_stack
+    if es and #es>0 then
+      for k=1,#es do
+        add(es[k])
+      end
+    end
+    local ep=instance.extra_paths
+    if ep and #ep>0 then
+      add(ep)
+    end
+  end
+  add(list)
   return new
 end
 function resolvers.cleanpathlist(str)
@@ -17835,8 +17856,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 747400
--- stripped bytes    : 273072
+-- original bytes    : 739251
+-- stripped bytes    : 264497
 
 -- end library merge
 

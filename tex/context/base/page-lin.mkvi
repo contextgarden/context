@@ -73,33 +73,35 @@
 \unexpanded\def\page_postprocessors_linenumbers_deepbox#tag{\page_lines_add_numbers_to_box{#tag}\plusone      \plusone   \plusone  }
 \unexpanded\def\page_postprocessors_linenumbers_column #tag{\page_lines_add_numbers_to_box{#tag}\currentcolumn\nofcolumns\zerocount}
 
-\def\page_lines_parameters_regular
-  {continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
-   start    \linenumberingparameter\c!start
-   step     \linenumberingparameter\c!step
-   method   {\linenumberingparameter\c!method}
-   tag      {\currentlinenumbering}}
-
-\def\page_lines_parameters_update
-  {continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}}
-
 \def\page_lines_start_define
   {\setxvalue{\??linenumberinginstance\currentlinenumbering}%
      {\clf_registerlinenumbering
-        \page_lines_parameters_regular
+        continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+        start    \linenumberingparameter\c!start
+        step     \linenumberingparameter\c!step
+        method   {\linenumberingparameter\c!method}%
+        tag      {\currentlinenumbering}%
      }}
 
 \def\page_lines_start_update
   {\clf_setuplinenumbering
      \csname\??linenumberinginstance\currentlinenumbering\endcsname
-     {\page_lines_parameters_update}%
+     {%
+        continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+     }%
    \relax}
 
 \def\page_lines_setup
   {\ifcsname \??linenumberinginstance\currentlinenumbering\endcsname
      \clf_setuplinenumbering
        \csname\??linenumberinginstance\currentlinenumbering\endcsname
-       {\page_lines_parameters_regular}%
+       {%
+            continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
+            start    \linenumberingparameter\c!start
+            step     \linenumberingparameter\c!step
+            method   {\linenumberingparameter\c!method}%
+            tag      {\currentlinenumbering}%
+       }%
      \relax
    \fi}
 

@@ -1155,7 +1155,14 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 head = insert_node_before(head,current,p)
             end
 -- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
-    properties[p] = { special_penalty = special_penalty or penalty_data }
+    local props = properties[p]
+    if props then
+        props.special_penalty = special_penalty or penalty_data
+    else
+        properties[p] = {
+            special_penalty = special_penalty or penalty_data
+        }
+    end
 -- end
         end
         if glue_data then
@@ -1573,7 +1580,14 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         if trace then trace_done("result",p) end
         head, tail = insert_node_after(head,tail,p)
      -- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
-            properties[p] = { special_penalty = special_penalty or penalty_data }
+            local props = properties[p]
+            if props then
+                props.special_penalty = special_penalty or penalty_data
+            else
+                properties[p] = {
+                    special_penalty = special_penalty or penalty_data
+                }
+            end
      -- end
     end
     if glue_data then

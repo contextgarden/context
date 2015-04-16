@@ -33,9 +33,9 @@ local specification = {
         author      = "author", -- interpreted as name(s)
         editor      = "author",
         artist      = "author",
-        interpreter = "author",
         composer    = "author",
         producer    = "author",
+        director    = "author",
         doi         = "url",        -- an external link
         url         = "url",
         page        = "pagenumber", -- number or range: f--t
@@ -424,6 +424,43 @@ categories.electronic = {
         "organization",
         "howpublished",
         "doi", "note"
+    },
+}
+
+-- not bibtex categories...
+
+categories.film = {
+    sets = {
+        doi = generic.doi,
+    },
+    required = {
+        "producer", "director",
+        "title", "year",
+        "address", "publisher", -- aka studio
+    },
+    optional = {
+        "type",
+        "note",
+        "doi",
+    },
+}
+
+categories.music = {
+    sets = {
+        doi = generic.doi,
+        author  = { "composer", "artist", "title", "album" },
+        title   = { "title", "album", },
+    },
+    required = {
+        "author",
+        "title",
+        "year",
+        "address", "publisher", -- aka label
+    },
+    optional = {
+        "type",
+        "note",
+        "doi",
     },
 }
 

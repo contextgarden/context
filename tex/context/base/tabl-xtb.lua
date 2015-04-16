@@ -673,6 +673,8 @@ function xtables.reflow_width()
     --
     data.currentrow = 0
     data.currentcolumn = 0
+    --
+--     inspect(data)
 end
 
 function xtables.reflow_height()
@@ -733,6 +735,7 @@ function xtables.reflow_height()
         end
     end
     --
+--     inspect(data)
 end
 
 local function showspans(data)

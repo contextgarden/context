@@ -576,9 +576,22 @@ local do_safeguard = ";"
 -- end
 
 function metapost.textextsdata()
-    local top = metapost.getjobdata()
-    mp.tt_initialize(top and top.textexts)
+    local textexts  = top.textexts
+    local collected = { }
+    for k, data in sortedhash(top.texdata) do -- sort is nicer in trace
+        local texorder = data.texorder
+        for n=1,#texorder do
+            local box = textexts[texorder[n]]
+            if box then
+                collected[n] = box
+            else
+                break
+            end
+        end
+    end
+    mp.tt_initialize(collected)
 end
+
 
 metapost.intermediate         = metapost.intermediate         or { }
 metapost.intermediate.actions = metapost.intermediate.actions or { }

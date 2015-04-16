@@ -1221,8 +1221,8 @@ do
         if ignoredfields and ignoredfields[field] then
             return false
         end
-        local virtual = catspec.virtual
-        if virtual and virtual[field] then
+        local virtualfields = currentspecification.virtualfields
+        if virtualfields and virtualfields[field] then
             return true
         end
         local sets = catspec.sets

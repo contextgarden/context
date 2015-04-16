@@ -80,6 +80,8 @@
      \usetypestyleandcolor\c!style\c!color
    \else\ifx\p_buff_option\empty
      \usetypestyleandcolor\c!style\c!color
+   \else
+     \usetypestyleparameter\c!style % no color
    \fi\fi
    \setcatcodetable\vrbcatcodes}
 
@@ -124,6 +126,8 @@
      \usetypingstyleandcolor\c!style\c!color
    \else\ifx\p_buff_option\empty
      \usetypingstyleandcolor\c!style\c!color
+   \else
+     \usetypingstyleparameter\c!style % no color !
    \fi\fi
    \usealignparameter\typingparameter}
 

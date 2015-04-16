@@ -66,11 +66,18 @@ function synonyms.define(class,kind)
 end
 
 function synonyms.register(class,kind,spec)
-    local data = tobesaved[class]
-    local hash = data.hash
-    local tag  = spec.definition.tag or ""
+    local data       = tobesaved[class]
+    local hash       = data.hash
+    local definition = spec.definition
+    local tag        = definition.tag or ""
     data.metadata.kind = kind -- runtime, not saved in format (yet)
     if not hash[tag] then
+        if definition.used == nil then
+            definition.used = false
+        end
+        if definition.shown == nil then
+            definition.shown = false
+        end
         local entries = data.entries
         entries[#entries+1] = spec
         hash[tag] = spec
@@ -81,7 +88,43 @@ function synonyms.registerused(class,tag)
     local data = tobesaved[class]
     local okay = data.hash[tag]
     if okay then
-        okay.definition.used = true
+        local definition = okay.definition
+        definition.used = true
+        definition.list = true
+    end
+end
+
+function synonyms.registershown(class,tag)
+    local data = tobesaved[class]
+    local okay = data.hash[tag]
+    if okay then
+        local definition = okay.definition
+        definition.shown = true
+        definition.list  = true
+    end
+end
+
+function synonyms.isused(class,tag)
+    local data = tobesaved[class]
+    local okay = data.hash[tag]
+    return okay and okay.definition.used
+end
+
+function synonyms.isshown(class,tag)
+    local data = tobesaved[class]
+    local okay = data.hash[tag]
+    return okay and okay.definition.shown
+end
+
+function synonyms.resetused(class)
+    for tag, data in next, tobesaved[class].hash do
+        data.definition.used = false
+    end
+end
+
+function synonyms.resetshown(class)
+    for tag, data in next, tobesaved[class].hash do
+        data.definition.shown = false
     end
 end
 
@@ -91,6 +134,7 @@ function synonyms.synonym(class,tag)
     if okay then
         local definition = okay.definition
         definition.used = true
+        definition.list = true
         context(definition.synonym)
     end
 end
@@ -100,25 +144,13 @@ function synonyms.meaning(class,tag)
     local okay = data.hash[tag]
     if okay then
         local definition = okay.definition
-        definition.used = true
+        definition.shown = true
+        definition.list  = true
         context(definition.meaning)
     end
 end
 
 synonyms.compare = sorters.comparers.basic -- (a,b)
-
-function synonyms.filter(data,options)
-    local result  = { }
-    local entries = data.entries
-    local all     = options and options.criterium == interfaces.variables.all
-    for i=1,#entries do
-        local entry = entries[i]
-        if all or entry.definition.used then
-            result[#result+1] = entry
-        end
-    end
-    data.result = result
-end
 
 function synonyms.filter(data,options)
     local result  = { }
@@ -130,8 +162,9 @@ function synonyms.filter(data,options)
         end
     else
         for i=1,#entries do
-            local entry = entries[i]
-            if entry.definition.used then
+            local entry      = entries[i]
+            local definition = entry.definition
+            if definition.list then
                 result[#result+1] = entry
             end
         end
@@ -227,9 +260,24 @@ end
 
 -- todo: local higher up
 
-implement { name = "registerusedsynonym", actions = synonyms.registerused, arguments = { "string", "string" } }
-implement { name = "synonymmeaning",      actions = synonyms.meaning,      arguments = { "string", "string" } }
-implement { name = "synonymname",         actions = synonyms.synonym,      arguments = { "string", "string" } }
+implement { name = "registerusedsynonym",  actions = synonyms.registerused,  arguments = { "string", "string" } }
+implement { name = "registershownsynonym", actions = synonyms.registershown, arguments = { "string", "string" } }
+implement { name = "synonymmeaning",       actions = synonyms.meaning,       arguments = { "string", "string" } }
+implement { name = "synonymname",          actions = synonyms.synonym,       arguments = { "string", "string" } }
+implement { name = "resetusedsynonyms",    actions = synonyms.resetused,     arguments = "string" }
+implement { name = "resetshownsynonyms",   actions = synonyms.resetshown,    arguments = "string" }
+
+implement {
+    name      = "doifelsesynonymused",
+    actions   = { synonyms.isused, commands.doifelse },
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "doifelsesynonymshown",
+    actions   = { synonyms.isshown, commands.doifelse },
+    arguments = { "string", "string" }
+}
 
 implement {
     name      = "registersynonym",

@@ -54,6 +54,9 @@ local hasscheme         = url.hasscheme
 local jobresolvers      = resolvers.jobs
 
 local registerextrapath = resolvers.registerextrapath
+local resetextrapath    = resolvers.resetextrapath
+local pushextrapath     = resolvers.pushextrapath
+local popextrapath      = resolvers.popextrapath
 
 local v_outer           = variables.outer
 local v_text            = variables.text
@@ -114,11 +117,36 @@ implement {
 }
 
 implement {
+    name      = "pushpath",
+    arguments = "string",
+    actions   = function(paths)
+        report_jobfiles("pushing path: %s",paths)
+        pushextrapath(paths)
+    end
+}
+
+implement {
+    name      = "poppath",
+    actions   = function(paths)
+        popextrapath()
+        report_jobfiles("popping path")
+    end
+}
+
+implement {
     name      = "usesubpath",
     arguments = "string",
     actions   = function(subpaths)
         report_jobfiles("using subpath: %s",subpaths)
         registerextrapath(nil,subpaths)
+    end
+}
+
+implement {
+    name      = "resetpath",
+    actions   = function()
+        report_jobfiles("resetting path")
+        resetextrapath()
     end
 }
 

@@ -15,6 +15,93 @@
 
 \registerctxluafile{strc-syn}{1.001}
 
+%D Although we could nowadays build this on top of regular lists we keep this
+%D more efficient variant around. Eventually we can add some options to lists
+%D that also provide such functionality but at the cost of much more overhead.
+%D
+%D We show a usage of both synonyms and sorts, which are deep down variants of
+%D so called simple lists. A definition looks like this:
+%D
+%D \startbuffer
+%D \definesynonyms
+%D   [myabbreviation]
+%D
+%D \setupsynonyms
+%D   [myabbreviation]
+%D   [headstyle=bold,
+%D    headcolor=darkred,
+%D    synonymstyle=boldslanted,
+%D    synonymcolor=darkblue,
+%D    textstyle=slanted,
+%D    textcolor=darkgreen,
+%D    style=normal,
+%D    color=darkyellow]
+%D
+%D \definesorting
+%D   [mylogo]
+%D
+%D \setupsorting
+%D   [mylogo]
+%D   [style=bold,
+%D    color=darkmagenta]
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D More complex definitions involves commands to call up meanings and such. The
+%D use of the defined commands is as follows: \
+%D
+%D \startbuffer
+%D \myabbreviation [FIRST]  {TheFirst}  {The First Words}
+%D \myabbreviation [SECOND] {TheSecond} {The Second Words}
+%D \myabbreviation [THIRD]  {TheThird}  {The Third Words}
+%D
+%D \mylogo [FOURTH] {TheFourth}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D By default a synonym is just typeset and flagges as being used, so that in
+%D a list it wil be shows with its meaning. You can however also expand the
+%D meaning automatically at first use:
+%D
+%D \startbuffer
+%D \setupsynonyms[myabbreviation][alternative=first]
+%D
+%D We have \FIRST, \SECOND\ and also \THIRD\ but no \FOURTH.
+%D
+%D We have \FIRST, \SECOND\ and also \THIRD\ but no \FOURTH.
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D We can change the order, as demonstrated in:
+%D
+%D \startbuffer
+%D \resetshownsynonyms[myabbreviation]
+%D
+%D \setupsynonyms[myabbreviation][alternative=last]
+%D
+%D We have \FIRST\ and \THIRD\ or \FOURTH.
+%D
+%D We have \FIRST\ and \THIRD\ or \FOURTH.
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D A list is called up with:
+%D
+%D \startbuffer
+%D \placelistofsynonyms[myabbreviation]
+%D
+%D \placelistofsorts[mylogo]
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D The lists are constructions (like descriptions are) and can be set up
+%D likewise.
+
 % todo: add 'define only' option to descriptions, then add sorting (also based on key)
 % and call to definition -> replaces this module
 
@@ -176,7 +263,7 @@
    %
    \presetheadtext[#2=\Word{#2}]% changes the \if...argument
    %
-   \setvalue{\e!setup #2\e!endsetup}{\setupsynonym[#1]}% obsolete definition
+   \setvalue{\e!setup #2\e!endsetup}{\setupsynonyms[#1]}% obsolete definition
    \setvalue{\e!place   \e!listof#2}{\placelistofsynonyms[#1]}% accepts extra argument
    \setvalue{\e!complete\e!listof#2}{\completelistofsynonyms[#1]}}
 
@@ -195,8 +282,8 @@
      % todo: error message
    \else
      \edef\currentsynonymexpansion{\simplelistparameter\c!expansion}%
-     \preprocessexpansion\currentsynonymexpansion\currentsynonymtext   \currentsynonymcoding{#4}%
-     \preprocessexpansion\currentsynonymexpansion\currentsynonymmeaning\currentsynonymcoding{#5}%
+     \preprocessexpansion\currentsynonymexpansion\m_synonyms_text   \currentsynonymcoding{#4}%
+     \preprocessexpansion\currentsynonymexpansion\m_synonyms_meaning\currentsynonymcoding{#5}%
      \clf_registersynonym
         {\currentsynonym}%
         {synonym}%
@@ -210,9 +297,9 @@
             }%
             definition {%
                 tag     {\currentsynonymtag}%
-                synonym {\currentsynonymtext}%
-                meaning {\currentsynonymmeaning}%
-                used    false
+                synonym {\m_synonyms_text}%
+                meaning {\m_synonyms_meaning}%
+              % used    false
             }%
         }%
      \relax
@@ -226,24 +313,96 @@
 \def\strc_synonyms_register[#1][#2]%
   {\clf_registerusedsynonym{#1}{#2}}
 
+\unexpanded\def\currentsynonymname         {\clf_synonymname         {\currentsimplelist}{\currentsynonymtag}}
+\unexpanded\def\currentsynonymmeaning      {\clf_synonymmeaning      {\currentsimplelist}{\currentsynonymtag}}
+\unexpanded\def\doifelsecurrentsynonymused {\clf_doifelsesynonymused {\currentsimplelist}{\currentsynonymtag}}
+\unexpanded\def\doifelsecurrentsynonymshown{\clf_doifelsesynonymshown{\currentsimplelist}{\currentsynonymtag}}
+\unexpanded\def\resetusedsynonyms      [#1]{\clf_resetusedsynonyms   {#1}}
+\unexpanded\def\resetshownsynonyms     [#1]{\clf_resetshownsynonyms  {#1}}
+
+\installcorenamespace{simplelistalternative} % specific ways of rendering a list
+\installcorenamespace{simplelistrenderings}  % a namespace for setups (rather local)
+
+\installcommandhandler \??simplelistalternative {simplelistalternative} \??simplelistalternative
+
+\setupsimplelist
+  [\v!synonym]
+  [\c!alternative=\v!normal]
+
 \unexpanded\def\strc_synonyms_insert_meaning#1#2% name tag
   {\begingroup
    \def\currentsimplelist{#1}%
-   \usesimpleliststyleandcolor\c!textstyle\c!textcolor
-   \simplelistparameter\c!textcommand{\clf_synonymmeaning{#1}{#2}}%
+   \fastsetup{\??simplelistrenderings:\v!text}%
    \endgroup}
 
 \unexpanded\def\strc_synonyms_insert#1#2% name tag
   {\begingroup
    \edef\currentsimplelist{#1}%
-   \let\currentsynonym\currentsimplelist % for a while
-   \def\currentsynonymtag{#2}%
-   \dostarttaggedchained\t!synonym\currentsynonym\??simplelist
-   \dotagsynonym
-   \usesimpleliststyleandcolor\c!synonymstyle\c!synonymcolor
-   \simplelistparameter\c!synonymcommand{\clf_synonymname{#1}{#2}}%
-   \dostoptagged
+   \let \currentsynonym\currentsimplelist % for a while
+   \def \currentsynonymtag{#2}%
+   \edef\currentsimplelistalternative{\simplelistparameter\c!alternative}%
+   \fastsetup{\??simplelistrenderings:\v!synonym:\currentsimplelistalternative}%
    \normalexpanded{\endgroup\simplelistparameter\c!next}}
+
+% \setupsimplelistalternative
+%   [\c!command=\strictsimplelistparameter\c!command]
+
+\definesimplelistalternative
+  [\v!normal]
+  [\c!inbetween=\space,
+   \c!left=(,
+   \c!right=)]
+
+\definesimplelistalternative
+  [\v!first]
+  [\v!normal]
+
+\definesimplelistalternative
+  [\v!last]
+  [\v!normal]
+
+\startsetups[\??simplelistrenderings::\v!synonym]
+    \begingroup
+    \dostarttaggedchained\t!synonym\currentsynonym\??simplelist
+    \dotagsynonym
+    \usesimpleliststyleandcolor\c!synonymstyle\c!synonymcolor
+    \simplelistparameter\c!synonymcommand{\currentsynonymname}%
+    \dostoptagged
+    \endgroup
+\stopsetups
+
+\startsetups[\??simplelistrenderings::\v!text]
+    \begingroup
+    \usesimpleliststyleandcolor\c!textstyle\c!textcolor
+    \simplelistparameter\c!textcommand{\currentsynonymmeaning}%
+    \endgroup
+\stopsetups
+
+\startsetups[\??simplelistrenderings:\v!synonym:\v!normal]
+    \fastsetup{\??simplelistrenderings::\v!synonym}
+\stopsetups
+
+\startsetups[\??simplelistrenderings:\v!synonym:\v!first]
+    \fastsetup{\??simplelistrenderings::\v!synonym}
+    \doifelsecurrentsynonymshown \donothing {
+        \simplelistalternativeparameter\c!inbetween
+        \simplelistalternativeparameter\c!left
+        \fastsetup{\??simplelistrenderings::\v!text}
+        \simplelistalternativeparameter\c!right
+    }
+\stopsetups
+
+\startsetups[\??simplelistrenderings:\v!synonym:\v!last]
+    \doifelsecurrentsynonymshown {
+        \fastsetup{\??simplelistrenderings::\v!synonym}
+    } {
+        \fastsetup{\??simplelistrenderings::\v!text}
+        \simplelistalternativeparameter\c!inbetween
+        \simplelistalternativeparameter\c!left
+        \fastsetup{\??simplelistrenderings::\v!synonym}
+        \simplelistalternativeparameter\c!right
+    }
+\stopsetups
 
 \unexpanded\def\placelistofsynonyms
   {\dodoubleempty\strc_synonyms_place_list}
@@ -365,7 +524,7 @@
             definition {%
                 tag     {\currentsortingtag}%
                 synonym {\currentsortingtext}%
-            %   used    false
+              % used    false
             }%
         }%
      \relax
@@ -373,18 +532,37 @@
    \fi
    \endgroup}
 
+\unexpanded\def\currentsortingname         {\clf_synonymname         {\currentsimplelist}{\currentsortingtag}}
+\unexpanded\def\doifelsecurrentsortingused {\clf_doifelsesynonymused {\currentsimplelist}{\currentsortingtag}}
+\unexpanded\def\resetusedsortings      [#1]{\clf_resetusedsynonyms   {#1}}
+
+\setupsimplelist
+  [\v!sorting]
+  [\c!alternative=\v!normal]
+
 \unexpanded\def\strc_sorting_insert#1#2% name tag
   {\begingroup
    % no kap currently, of .. we need to map cap onto WORD
    \edef\currentsorting{#1}%
-   \def\currentsortingtag{#2}%
-   \let\currentsimplelist\currentsorting
-   \dostarttaggedchained\t!sorting\currentsorting\??simplelist
-   \dotagsorting
-   \usesimpleliststyleandcolor\c!style\c!color
-   \clf_synonymname{#1}{#2}%
-   \dostoptagged
+   \def \currentsortingtag{#2}%
+   \let \currentsimplelist\currentsorting
+   \edef\currentsimplelistalternative{\simplelistparameter\c!alternative}%
+   \fastsetup{\??simplelistrenderings:\v!sorting:\currentsimplelistalternative}%
    \normalexpanded{\endgroup\simplelistparameter\c!next}}
+
+\startsetups [\??simplelistrenderings:\v!sorting:\v!normal]
+   \fastsetup{\??simplelistrenderings::\v!sorting}%
+\stopsetups
+
+\startsetups [\??simplelistrenderings::\v!sorting]
+    \begingroup
+    \dostarttaggedchained\t!sorting\currentsorting\??simplelist
+    \dotagsorting
+    \usesimpleliststyleandcolor\c!style\c!color
+    \currentsortingname
+    \dostoptagged
+    \endgroup
+\stopsetups
 
 \unexpanded\def\registersort
   {\dodoubleargument\strc_sorting_register}

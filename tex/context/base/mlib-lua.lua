@@ -373,8 +373,9 @@ end
 -- end
 
 function mp.tt_dimensions(n)
-    local box = textexts and textexts[n]
+    local box = textexts[n]
     if box then
+        -- could be made faster with nuts but not critical
         mptriplet(box.width/factor,box.height/factor,box.depth/factor)
     else
         mptriplet(0,0,0)

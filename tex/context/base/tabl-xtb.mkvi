@@ -500,8 +500,16 @@
 % Although this becomes kind of messy. It saves already time that we only check
 % for it when we have settings.
 
-\def\tabl_x_set_hsize
-  {\hsize.25\maxdimen} % let's be reasonable
+% \def\tabl_x_set_hsize
+%   {\hsize.25\maxdimen} % let's be reasonable
+
+% \def\tabl_x_set_hsize
+%   {\edef\p_width{\xtableparameter\c!width}%
+%    \ifx\p_width\empty
+%      \hsize.25\maxdimen % is this really needed
+%    \fi}
+
+\let\tabl_x_set_hsize\relax
 
 \unexpanded\def\tabl_x_start_cell_reflow_width_yes[#settings]%
   {\setbox\b_tabl_x\hbox\bgroup

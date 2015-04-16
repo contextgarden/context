@@ -31,11 +31,31 @@
 
 % path control
 
+%D In the following example the lookup order is \type {.}, {/foo}, \type
+%D {foo/bar} as one can always explicitly prefix a wanted file.
+%D
+%D \starttyping
+%D \pushpath[foo]
+%D     \pushpath[foo/bar]
+%D         \input test
+%D     \poppath
+%D \poppath
+%D \stoptyping
+
 \unexpanded\def\usepath[#path]%
   {\clf_usepath{#path}}
 
 \unexpanded\def\usesubpath[#path]%
   {\clf_usesubpath{#path}}
+
+\unexpanded\def\pushpath[#path]%
+  {\clf_pushpath{#path}}
+
+\unexpanded\def\poppath
+  {\clf_poppath}
+
+\unexpanded\def\resetpath % not the pushed paths
+  {\clf_resetpath}
 
 \def\allinputpaths
   {\clf_allinputpaths}

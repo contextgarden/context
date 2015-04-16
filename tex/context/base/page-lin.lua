@@ -199,7 +199,7 @@ end
 
 implement {
     name      = "setuplinenumbering",
-    actions   = { boxed.setup, context },
+    actions   = boxed.setup,
     arguments = {
         "integer",
         {

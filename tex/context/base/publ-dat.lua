@@ -26,7 +26,7 @@ local chardata  = characters.data
 local lowercase = characters.lower
 
 local lower, find, sub = string.lower, string.find, string.sub
-local concat, copy = table.concat, table.copy
+local concat, copy, tohash = table.concat, table.copy, table.tohash
 local next, type, rawget = next, type, rawget
 local utfchar = utf.char
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
@@ -294,9 +294,14 @@ local specifications = setmetatableindex(function(t,name)
     --
     local virtual = specification.virtual
     if virtual == nil then -- so false is valid
+        virtual = { }
+    elseif virtual == false then
+        virtual = { }
+    elseif type(virtual) ~= table then
         virtual = virtuals
-        specification.virtual = virtual
     end
+    specification.virtual = virtual
+    specification.virtualfields = tohash(virtual)
     --
     for category, data in next, categories do
         categories[category] = checkfield(specification,category,copy(data)) -- we make sure we have no clones

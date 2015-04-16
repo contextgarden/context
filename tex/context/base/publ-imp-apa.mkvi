@@ -63,7 +63,7 @@
    \c!authorconversion=invertedshort,
    \c!separator:names:2={,\space}, % aka namesep - in this namespace
    \c!separator:names:3={,\nobreakspace\textampersand\space}, % comma separated list
-   \c!separator:names:4= {\nobreakspace\textampersand\space}] % last of two, no comma!
+   \c!separator:names:4={\nobreakspace\textampersand\space}] % last of two, no comma!
 
 \definebtx
   [apa:list:author]
@@ -239,7 +239,7 @@
    \c!sorttype=authoryear,
    \c!separator:names:2={,\space},
    \c!separator:names:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:names:4= {\space\btxlabeltext{apa:and}\space}] % not \textampersand
+   \c!separator:names:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
 
 \definebtx
   [apa:cite:author]
@@ -248,9 +248,10 @@
 \definebtx
   [apa:cite:authoryear]
   [apa:cite:author]
-  [\c!left={(},
-   \c!right={)},
-   \c!inbetween={,\space}]
+  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace(},
+   \c!right={)\poppunctuation},
+   \c!inbetween={,\space},
+   \c!compress=\v!yes]
 
 \definebtx
   [apa:cite:default]
@@ -266,8 +267,8 @@
 \definebtx
   [apa:cite:authornum]
   [apa:cite:author]
-  [\c!left={(},
-   \c!right={)},
+  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace(},
+   \c!right={)\poppunctuation},
    \c!sorttype=authornum]
 
 \definebtx
@@ -277,14 +278,14 @@
 \definebtx
   [apa:cite:author:num] % todo
   [apa:cite:authornum]
-  [\c!left={[},
-   \c!right={]}]
+  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace[},
+   \c!right={]\poppunctuation}]
 
 \definebtx
   [apa:cite:author:year] % todo
   [apa:cite:authoryear]
-  [\c!left=,
-   \c!right=]
+  [\c!left=(,
+   \c!right=)]
 
 \definebtx
   [apa:cite:author:years] % todo
@@ -298,7 +299,7 @@
   [apa:cite]
   [\c!separator:2={,\space}, % :0 and :1 - between items of a list
    \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:4= {\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:4={\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!compress=\v!yes,
    \c!sorttype=\v!default]
 
@@ -307,7 +308,7 @@
   [apa:cite]
   [\c!separator:2={,\space}, % :0 and :1 - between items of a list
    \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:4= {\space\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:4={\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!command={\language[\currentbtxlanguage]}, % BAH
    \c!style=\v!italic]
 
@@ -318,8 +319,8 @@
 \definebtx
   [apa:cite:tag]
   [apa:cite]
-  [\c!left={[},
-   \c!right={]}]
+  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace[},
+   \c!right={]\poppunctuation}]
 
 \definebtx
   [apa:cite:key]
@@ -338,7 +339,7 @@
    \c!right=,
   [\c!separator:2={,\space}, % :0 and :1 - between items of a list
    \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:4= {\space\btxlabeltext{apa:and}\space}] % not \textampersand
+   \c!separator:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
 
 \definebtx
   [apa:cite:pages]
@@ -433,6 +434,12 @@
    apa:technicalreport={Tech. Rep.},  % Technical report
    apa:supplement={Suppl.},           % Supplement (not used?)
    apa:patent=Patent,
+   apa:MotionPicture={Motion picture},
+   apa:Producer=Producer,
+   apa:Producers=Producers,
+   apa:Director=Director,
+   apa:Directors=Directors,
+   apa:Recordedby={Recorded by},
    apa:Author=Author,
    apa:Translator={Trans.},           % Translator(s) (not used?)
    apa:Advanced={Advanced online publication},
@@ -457,6 +464,12 @@
    apa:technicalreport={Technisch rapport},  % Technical report
    apa:supplement=Supplement,
    apa:patent=Octrooi,
+   apa:MotionPicture=Film, % ?
+   apa:Producer=Producent,   % ?
+   apa:Producers=Producents, % ?
+   apa:Director=Directeur,
+   apa:Directors=Directeurs,
+   apa:Recordedby={Opgenomen door}, % ?
    apa:Author=Auteur,
    apa:Translator=Vertaler,
    apa:Advanced={Geavanceerde online publicatie},
@@ -482,6 +495,12 @@
    apa:technicalreport={Rapport technique},
    apa:supplement=Supplément,
    apa:patent=Brevet,
+   apa:MotionPicture={Film cinématographique},
+   apa:Producer=Producteur,
+   apa:Producers=Producteurs,
+   apa:Director=Réalisateur,
+   apa:Directors=Réalisateurs,
+   apa:Recordedby={Enregistré par},
    apa:Author=Auteur,
    apa:Translator=Traducteur,
    apa:Advanced={Publication en ligne anticipée},
@@ -506,6 +525,12 @@
    apa:technicalreport={Technischer Bericht},
    apa:supplement={Beilage},          % Supplement
    apa:patent=Patent,
+   apa:MotionPicture=Kinofilm, % ?
+   apa:Producer=Producer,      % ?
+   apa:Producers=Produzenten,  % ?
+   apa:Director=Director,      % ?
+   apa:Directors=Directors,    % ?
+   apa:Recordedby={per Einschreiben}, % ?
    apa:Author=Autor,
    apa:Translator={Übersetzer},       % Übers.
    apa:Advanced={Erweiterte Online-Publikation},
@@ -532,6 +557,12 @@
    apa:technicalreport={Relazione tecnica},
    apa:supplement={Supplemento},
    apa:patent=Brevetto,
+   apa:MotionPicture=Film, % ?
+   apa:Producer=Produttore,
+   apa:Producers=Produttori,
+   apa:Director=Direttore,
+   apa:Directors=Direttori,
+   apa:Recordedby={Registrato da},
    apa:Author=Autore,
    apa:Translator={Trad.},                        % Translator(s)
    apa:Advanced={Pre-pubblicazione on line},
@@ -556,6 +587,12 @@
    apa:technicalreport={Informe técnico},
    apa:supplement=Suplemento,
    apa:patent=Patente,
+   apa:MotionPicture=Cinematográfica,
+   apa:Producer=Productor,
+   apa:Producers=Productores,
+   apa:Director=Director,
+   apa:Directors=Directores,
+   apa:Recordedby={Grabada por},
    apa:Author=Autor,
    apa:Translator=Traductor,
    apa:Advanced={Publicación en línea avanzada},
@@ -566,6 +603,7 @@
 
 \startsetups btx:apa:cite:author:year
     \texdefinition{\s!btx:\s!cite:concat}
+    \btxparameter\c!left
     \ifx\currentbtxfirst\empty
         \btxlabeltext{apa:nd}
     \else
@@ -585,6 +623,7 @@
             }
         \fi
     \fi
+    \btxparameter\c!right
 \stopsetups
 
 \startsetups btx:apa:cite:author:years
@@ -747,6 +786,7 @@
     \btxdoifelse {year} {
         \btxflush{year}
         \btxflush{suffix}
+        %or \btxflush{suffixedyear}
     } {
         \btxlabeltext{apa:nd}
     }
@@ -1266,6 +1306,85 @@
         \btxflush{howpublished}
         \btxperiod
     }
+    \texdefinition{btx:apa:url-doi-note}
+\stopsetups
+
+% Film. Note that this category was not defined with BIBTEX.
+% Required fields: producer, director, title, year, address, publisher
+% Optional fields: subtitle, type, note, url, doi
+
+\startsetups btx:apa:list:film
+    \btxdoif {producer} {
+        \btxflush{producer}
+        \btxleftparenthesis
+        \btxsingularorplural {producer} {
+            \btxlabeltext{apa:Producer}
+        } {
+            \btxlabeltext{apa:Producers}
+        }
+        \btxrightparenthesis
+        \btxdoifelse {director} {
+            \removeunwantedspaces
+            \btxparameter{\c!separator:names:3}
+        } {
+            \btxperiod
+        }
+    }
+    \btxdoif {director} {
+        \btxflush{director}
+        \btxleftparenthesis
+        \btxsingularorplural {director} {
+            \btxlabeltext{apa:Director}
+        } {
+            \btxlabeltext{apa:Directors}
+        }
+        \btxrightparenthesisperiod
+    }
+    \btxleftparenthesis
+    \texdefinition{btx:apa:suffixedyear}
+    \btxrightparenthesisperiod
+    \texdefinition {btx:apa:title}
+    \btxleftbracket
+        \btxdoifelse {type} {
+            \btxflush{type}
+        } {
+            \btxlabeltext{apa:MotionPicture}
+        }
+    \btxrightbracketperiod
+    \texdefinition{btx:apa:wherefrom-publisher}
+    \texdefinition{btx:apa:url-doi-note}
+\stopsetups
+
+% Music. Note that this category was not defined with BIBTEX.
+% Required fields: composer, artist, title, album, year, address, publisher
+% Optional fields: subtitle, type, note, url, doi
+
+\startsetups btx:apa:list:music
+    \texdefinition{btx:apa:authoryear}
+    \texdefinition{btx:apa:title-if-not-placed}
+    \doifnot {\btxfoundname{author}} {artist} {
+        \btxdoif {artist} {
+            \btxleftbracket
+            \btxlabeltext{apa:Recordedby}
+            \btxspace
+            \btxflush{artist}
+            \btxrightbracketperiod
+        }
+    }
+    \doifnot {\btxfoundname{title}} {album} {
+        \btxdoif {album} {
+            \btxlabeltext{apa:In}
+            \btxspace
+            \btxflush{album}
+            \btxperiod
+        }
+    }
+    \btxdoif {type} {
+        \btxleftbracket
+        \btxflush{type}
+        \btxrightbracketperiod
+    }
+    \texdefinition{btx:apa:wherefrom-publisher}
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
 
