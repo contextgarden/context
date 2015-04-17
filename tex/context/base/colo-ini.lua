@@ -14,8 +14,10 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local formatters = string.formatters
 
 local trace_define = false  trackers.register("colors.define",function(v) trace_define = v end)
+local trace_pgf    = false  trackers.register("colors.pgf",   function(v) trace_pgf    = v end)
 
 local report_colors = logs.reporter("colors","defining")
+local report_pgf    = logs.reporter("colors","pgf")
 
 local attributes          = attributes
 local backends            = backends
@@ -990,24 +992,27 @@ do
     local function pgfxcolorspec(model,ca) -- {}{}{colorspace}{list}
      -- local cv = attributes.colors.values[ca]
         local cv = colorvalues[ca]
+        local str
         if cv then
             if model and model ~= 0 then
                 model = model
             else
                 model = forcedmodel(cv[1])
             end
-            if model == 2 then
-                return formatters["{gray}{%1.3f}"](cv[2])
-            elseif model == 3 then
-                return formatters["{rgb}{%1.3f,%1.3f,%1.3f}"](cv[3],cv[4],cv[5])
+            if model == 3 then
+                str = formatters["{rgb}{%1.3f,%1.3f,%1.3f}"](cv[3],cv[4],cv[5])
             elseif model == 4 then
-                return formatters["{cmyk}{%1.3f,%1.3f,%1.3f,%1.3f}"](cv[6],cv[7],cv[8],cv[9])
-            else
-                return formatters["{gray}{%1.3f}"](cv[2])
+                str = formatters["{cmyk}{%1.3f,%1.3f,%1.3f,%1.3f}"](cv[6],cv[7],cv[8],cv[9])
+            else -- there is no real gray
+                str = formatters["{rgb}{%1.3f,%1.3f,%1.3f}"](cv[2],cv[2],cv[2])
             end
         else
-            return "{gray}{0}"
+            str = "{rgb}{0,0,0}"
         end
+        if trace_pgf then
+            report_pgf("model %a, string %a",model,str)
+        end
+        return str
     end
 
     implement {

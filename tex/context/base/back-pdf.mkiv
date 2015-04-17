@@ -267,7 +267,12 @@
 \unexpanded\def\dostartclipping#1#2#3% we can move this to lua and only set a box here
   {\PointsToBigPoints{#2}\width
    \PointsToBigPoints{#3}\height
-   \meta_grab_clip_path{#1}\width\height{0 0 m \width\space 0 l \width \height l 0 \height l}%
+   \meta_grab_clip_path{#1}\width\height{%
+     0            0             m %
+     \width\space 0             l %
+     \width\space \height\space l %
+     0            \height\space l%
+   }%
    \pdfliteral{q 0 w \MPclippath\space W n}}
 
 \unexpanded\def\dostopclipping

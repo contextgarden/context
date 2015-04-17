@@ -163,7 +163,7 @@
        \donetrue
      \fi
    \else % testen, aangepast / expanded nodig ?
-     \normalexpanded{\doifinsetelse{\the\shippedoutpages}{\pagestoshipout}}\donetrue\donefalse
+     \normalexpanded{\doifelseinset{\the\shippedoutpages}{\pagestoshipout}}\donetrue\donefalse
    \fi
    \ifdone
      \setbox\shipoutscratchbox\hbox{#1}%
@@ -362,7 +362,7 @@
 \installpagearrangement 2TOPSIDE
   {\dosetuparrangement{1}{2}{4}{2}{3}%
      \pusharrangedpageTWOTOPSIDE\poparrangedpagesTWOTOPSIDE\handlearrangedpageTOP}
-
+
 \def\filluparrangedpages % beware: \realpageno is 1 ahead
   {\ifarrangingpages
      \scratchcounter\numexpr\realpageno-\plusone\relax
@@ -1351,7 +1351,7 @@
      \doifelse{#1}\v!page {\let\page_boxes_apply_shift_print\page_boxes_apply_shift}{\let\page_boxes_apply_shift_print\gobbleoneargument}%
      \doifelse{#1}\v!paper{\let\page_boxes_apply_shift_paper\page_boxes_apply_shift}{\let\page_boxes_apply_shift_paper\gobbleoneargument}%
    \else\ifsecondargument
-     \doifinsetelse{#1}{\v!page,\v!paper}
+     \doifelseinset{#1}{\v!page,\v!paper}
        {\setuppageshift[#1][#2][#2]}
        {\setuppageshift[\v!page][#1][#2]}%
    \else\iffirstargument

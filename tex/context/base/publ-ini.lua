@@ -39,12 +39,14 @@ local report             = logs.reporter("publications")
 local report_cite        = logs.reporter("publications","cite")
 local report_list        = logs.reporter("publications","list")
 local report_reference   = logs.reporter("publications","reference")
+local report_shorts      = logs.reporter("publications","shorts")
 
 local trace              = false  trackers.register("publications",                 function(v) trace            = v end)
 local trace_cite         = false  trackers.register("publications.cite",            function(v) trace_cite       = v end)
 local trace_missing      = false  trackers.register("publications.cite.missing",    function(v) trace_missing    = v end)
 local trace_references   = false  trackers.register("publications.cite.references", function(v) trace_references = v end)
 local trace_detail       = false  trackers.register("publications.detail",          function(v) trace_detail     = v end)
+local trace_shorts       = false  trackers.register("publications.shorts",          function(v) trace_shorts     = v end)
 
 publications             = publications or { }
 local datasets           = publications.datasets
@@ -995,7 +997,13 @@ do
         end
         local ay, by = a[3], b[3]
         if ay ~= by then
-            return ay < by
+            -- bah, bah, bah
+            local an, bn = tonumber(ay), tonumber(by)
+            if an and bn then
+                return an < bn
+            else
+                return ay < by
+            end
         end
         return a[4] < b[4]
     end
@@ -1079,34 +1087,41 @@ do
                 end
             end
         end
-        for short, tags in next, shorts do -- ordered ?
-            local done = #tags > 0
-            -- now we assign the suffixes, unless we have only one reference
-            if done then
-                sort(tags,shortsorter)
-                local n = #tags
-                if n > 1 then
-                    for i=1,n do
-                        local tag     = tags[i][1]
-                        local detail  = details[tag]
-                        local suffix  = numbertochar(i)
-                        local entry   = luadata[tag]
-                        local year    = entry.year
-                        detail.short  = short
-                        detail.suffix = suffix
-                        if year then
-                            detail.suffixedyear = year .. suffix
-                        end
-                    end
-                end
-            else
-                local tag    = tags[1][1]
-                local detail = details[tag]
-                local entry  = luadata[tag]
-                local year   = entry.year
-                detail.short = short
+     -- for short, tags in next, shorts do -- ordered ?
+        for short, tags in sortedhash(shorts) do -- ordered ?
+            local n = #tags
+            if n == 0 then
+                -- skip
+            elseif n == 1 then
+                local tagdata = tags[1]
+                local tag     = tagdata[1]
+                local detail  = details[tag]
+                local entry   = luadata[tag]
+                local year    = entry.year
+                detail.short  = short
                 if year then
                     detail.suffixedyear = year
+                end
+                if trace_shorts then
+                    report_shorts("year %a, suffix %a, short %a, tag %a",year or "-","-",short,tag)
+                end
+            elseif n > 1 then
+                sort(tags,shortsorter)
+                for i=1,n do
+                    local tagdata = tags[i]
+                    local tag     = tagdata[1]
+                    local detail  = details[tag]
+                    local suffix  = numbertochar(i)
+                    local entry   = luadata[tag]
+                    local year    = entry.year
+                    detail.short  = short
+                    detail.suffix = suffix
+                    if year then
+                        detail.suffixedyear = year .. suffix
+                    end
+                    if trace_shorts then
+                        report_shorts("year %a, suffix %a, short %a, tag %a",year or "-",suffix or "-",short,tag)
+                    end
                 end
             end
         end

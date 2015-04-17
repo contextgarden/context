@@ -426,10 +426,10 @@
 
 \unexpanded\def\meta_grab_clip_path#1#2#3#4% #4 is alternative (called in backend code)
   {\begingroup
-%    \edef\width {#2\space}\let\overlaywidth \width
-%    \edef\height{#3\space}\let\overlayheight\height
-   \d_overlay_width #2\onebasepoint\edef\width {\the\d_overlay_width \space}%
-   \d_overlay_height#3\onebasepoint\edef\height{\the\d_overlay_height\space}%
+   \edef\width {#2}% \let\overlaywidth \width
+   \edef\height{#3}% \let\overlayheight\height
+   \d_overlay_width #2\onebasepoint
+   \d_overlay_height#3\onebasepoint
    \edef\currentMPclip{#1}%
    \ifcsname\??mpclip\currentMPclip\endcsname
      \meta_grab_clip_path_indeed
