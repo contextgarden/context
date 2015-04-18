@@ -226,6 +226,28 @@ function commands.getplaceholderchar(name)
     context(helpers.getprivatenode(fontdata[id],name))
 end
 
+local function placeholder(font,char)
+    local tfmdata    = fontdata[font]
+    local properties = tfmdata.properties
+    local privates   = properties.privates
+    local category   = chardata[char].category
+    local fakechar   = mapping[category]
+    local p = privates and privates[fakechar]
+    if not p then
+        addmissingsymbols(tfmdata)
+        p = properties.privates[fakechar]
+    end
+    if properties.lateprivates then
+        -- frozen already
+        return "node", getprivatenode(tfmdata,fakechar)
+    else
+        -- good, we have \definefontfeature[default][default][missing=yes]
+        return "char", p
+    end
+end
+
+checkers.placeholder = placeholder
+
 function checkers.missing(head)
     local lastfont, characters, found = nil, nil, nil
     head = tonut(head)
@@ -259,27 +281,15 @@ function checkers.missing(head)
         end
     elseif action == "replace" then
         for i=1,#found do
-            local n = found[i]
-            local font = getfont(n)
-            local char = getchar(n)
-            local tfmdata = fontdata[font]
-            local properties = tfmdata.properties
-            local privates = properties.privates
-            local category = chardata[char].category
-            local fakechar = mapping[category]
-            local p = privates and privates[fakechar]
-            if not p then
-                addmissingsymbols(tfmdata)
-                p = properties.privates[fakechar]
-            end
-            if properties.lateprivates then -- .frozen
-                -- bad, we don't have them at the tex end
-                local fake = getprivatenode(tfmdata,fakechar)
-                insert_node_after(head,n,fake)
-                head = remove_node(head,n,true)
+            local node = found[i]
+            local kind, char = placeholder(getfont(node),getchar(node))
+            if kind == "node" then
+                insert_node_after(head,node,tonut(char))
+                head = remove_node(head,node,true)
+            elseif kind == "char" then
+                setfield(node,"char",char)
             else
-                -- good, we have \definefontfeature[default][default][missing=yes]
-                setfield(n,"char",p)
+                -- error
             end
         end
     else
@@ -288,13 +298,17 @@ function checkers.missing(head)
     return tonode(head), false
 end
 
-local relevant = { "missing (will be deleted)", "missing (will be flagged)", "missing" }
+local relevant = {
+    "missing (will be deleted)",
+    "missing (will be flagged)",
+    "missing"
+}
 
-function checkers.getmissing(id)
+local function getmissing(id)
     if id then
-        local list = checkers.getmissing(font.current())
+        local list = getmissing(font.current())
         if list then
-            local _, list = next(checkers.getmissing(font.current()))
+            local _, list = next(getmissing(font.current()))
             return list
         else
             return { }
@@ -323,6 +337,8 @@ function checkers.getmissing(id)
         return t
     end
 end
+
+checkers.getmissing = getmissing
 
 local tracked = false
 

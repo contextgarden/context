@@ -140,43 +140,9 @@
     \currentbtxrighttext
 \stopsetups
 
-\startsetups btx:cite:range
-    \texdefinition{\s!btx:\s!cite:concat}
-    \currentbtxlefttext
-    \ifx\currentbtxfirst\empty
-        \fastsetup{\s!btx:\s!cite:\s!empty}
-    \else
-        \texdefinition {\s!btx:\s!cite:inject} {
-            \btxcitereference
-            \currentbtxfirst
-            \ifx\currentbtxsecond\empty \else
-                \btxparameter\c!range
-                \currentbtxsecond
-            \fi
-            \ifx\currentbtxthird\empty \else
-                \currentbtxthird
-            \fi
-        }
-    \fi
-    \currentbtxrighttext
-\stopsetups
-
-\startsetups btx:cite:listelement
-    \texdefinition{\s!btx:\s!cite:concat}
-    \currentbtxlefttext
-    \ifx\currentbtxfirst\empty
-        \fastsetup{\s!btx:\s!cite:\s!empty}
-    \else
-       \texdefinition {\s!btx:\s!cite:inject} {
-           \btxcitereference
-           \currentbtxfirst
-       }
-    \fi
-    \currentbtxrighttext
-\stopsetups
-
 \startsetups btx:cite:author
     \texdefinition{\s!btx:\s!cite:concat}
+    \btxparameter\c!left
     \currentbtxlefttext
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
@@ -199,6 +165,44 @@
         }
     \fi
     \currentbtxrighttext
+    \btxparameter\c!right
+\stopsetups
+
+\startsetups btx:cite:range
+    \texdefinition{\s!btx:\s!cite:concat}
+    \currentbtxlefttext
+    \ifx\currentbtxfirst\empty
+        \fastsetup{\s!btx:\s!cite:\s!empty}
+    \else
+        \texdefinition {\s!btx:\s!cite:inject} {
+            \btxcitereference
+            \btxusecommand[\currentbtxspecification:cite:\currentbtxcitealternative] {
+                \currentbtxfirst
+                \ifx\currentbtxsecond\empty \else
+                    \btxparameter\c!range
+                    \currentbtxsecond
+                \fi
+                \ifx\currentbtxthird\empty \else
+                    \currentbtxthird
+                \fi
+            }
+        }
+    \fi
+    \currentbtxrighttext
+\stopsetups
+
+\startsetups btx:cite:listelement
+    \texdefinition{\s!btx:\s!cite:concat}
+    \currentbtxlefttext
+    \ifx\currentbtxfirst\empty
+        \fastsetup{\s!btx:\s!cite:\s!empty}
+    \else
+       \texdefinition {\s!btx:\s!cite:inject} {
+           \btxcitereference
+           \currentbtxfirst
+       }
+    \fi
+    \currentbtxrighttext
 \stopsetups
 
 \startsetups \s!btx:\s!cite:entry
@@ -208,39 +212,85 @@
     \currentbtxrighttext
 \stopsetups
 
-% these three are goodies to get something bit are not set up as it makes no
+% these three are goodies to get something but are not set up as it makes no
 % sense to have something root for combinations like this (esp not because one
 % gets default anyway
 
-\startsetups btx:cite:authoryear
-    \fastsetup{btx:cite:author}
+% AB: not so sure about that. Why define them in default rather than here?
+
+\startsetups \s!btx:\s!cite:authoryear
+    \fastsetup{\s!btx:\s!cite:author}
 \stopsetups
-\startsetups btx:cite:authoryears
-    \fastsetup{btx:cite:author}
+\startsetups \s!btx:\s!cite:authoryears
+    \fastsetup{\s!btx:\s!cite:authoryear}
 \stopsetups
-\startsetups btx:cite:authornum
-    \fastsetup{btx:cite:author}
+\startsetups \s!btx:\s!cite:authornum
+    \fastsetup{\s!btx:\s!cite:authoryear}
 \stopsetups
-\startsetups btx:cite:authorref
-    \ifx{\btxparameter\c!alternative}{authoryear}
-        \fastsetup{btx:cite:authoryears}
+\startsetups \s!btx:\s!cite:authorref
+    \ifx{\\s!btxparameter\c!alternative}{authoryear}
+        \fastsetup{\s!btx:\s!cite:authoryears}
     \else\ifx{\btxparameter\c!alternative}{num}
-        \fastsetup{btx:cite:authornum}
+        \fastsetup{\s!btx:\s!cite:authornum}
     \else
-        \fastsetup{btx:cite:author}
+        \fastsetup{\s!btx:\s!cite:author}
     \fi\fi
 \stopsetups
-\startsetups btx:cite:num
-    \fastsetup{btx:cite:range}
+\startsetups \s!btx:\s!cite:num
+    \fastsetup{\s!btx:\s!cite:range}
 \stopsetups
-\startsetups btx:cite:default
-    \fastsetup{btx:cite:num}
+\startsetups \s!btx:\s!cite:default
+    \fastsetup{\s!btx:\s!cite:num}
 \stopsetups
-\startsetups btx:cite:textnum
-    \fastsetup{btx:cite:num}
+\startsetups \s!btx:\s!cite:textnum
+    \fastsetup{\s!btx:\s!cite:num}
 \stopsetups
-\startsetups btx:cite:year
-    \fastsetup{btx:cite:range}
+\startsetups \s!btx:\s!cite:year
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!cite:short
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!cite:author:num
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!cite:author:year
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!cite:author:years
+    \fastsetup{\s!btx:\s!cite:concat}%?? in range already?
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+
+\startsetups \s!btx:\s!cite:serial
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!cite:tag
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!cite:key
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!cite:category
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+% the following correspond to fields, but can be used in many renderings
+
+\startsetups \s!btx:\s!cite:keywords
+    \fastsetup{\s!btx:\s!cite:list}
+\stopsetups
+\startsetups \s!btx:\s!cite:type
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!cite:title
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+\startsetups \s!btx:\s!cite:pages
+    \fastsetup{\s!btx:\s!cite:range}
+\stopsetups
+\startsetups \s!btx:\s!cite:page
+    \fastsetup{\s!btx:\s!cite:normal}
 \stopsetups
 
 % the following is kind of specific, but can be used in many renderings

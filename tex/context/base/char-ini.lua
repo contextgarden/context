@@ -1236,6 +1236,7 @@ if not characters.superscripts then
 
     local superscripts = allocate()   characters.superscripts = superscripts
     local subscripts   = allocate()   characters.subscripts   = subscripts
+    local fractions    = allocate()   characters.fractions    = fractions
 
     -- skipping U+02120 (service mark) U+02122 (trademark)
 
@@ -1255,16 +1256,24 @@ if not characters.superscripts then
                 elseif trace_defining then
                     report_defining("ignoring %s %a, char %c, description %a","subscript",ustring(k),k,v.description)
                 end
+            elseif what == "fraction" then
+                if #specials > 1 then
+                    fractions[k] = { unpack(specials,2) }
+                elseif trace_defining then
+                    report_defining("ignoring %s %a, char %c, description %a","fraction",ustring(k),k,v.description)
+                end
             end
         end
     end
 
  -- print(table.serialize(superscripts, "superscripts", { hexify = true }))
  -- print(table.serialize(subscripts,   "subscripts",   { hexify = true }))
+ -- print(table.serialize(fractions,    "fractions",    { hexify = true }))
 
     if storage then
         storage.register("characters/superscripts", superscripts, "characters.superscripts")
         storage.register("characters/subscripts",   subscripts,   "characters.subscripts")
+        storage.register("characters/fractions",    fractions,   "characters.fractions")
     end
 
 end

@@ -904,8 +904,11 @@ registerotffeature {
 
 -- a handy helper (might change or be moved to another namespace)
 
-local new_special = nodes.pool.special
-local new_glyph   = nodes.pool.glyph
+local nodepool    = nodes.pool
+
+local new_special = nodepool.special
+local new_glyph   = nodepool.glyph
+local new_rule    = nodepool.rule
 local hpack_node  = node.hpack
 
 local helpers     = fonts.helpers
@@ -941,13 +944,13 @@ local function getprivatenode(tfmdata,name)
     if privates then
         local p = privates[name]
         if p then
-            local char = tfmdata.characters[p]
+            local char     = tfmdata.characters[p]
             local commands = char.commands
             if commands then
-                local fake = hpack_node(new_special(commands[1][2]))
-                fake.width = char.width
+                local fake  = hpack_node(new_special(commands[1][2]))
+                fake.width  = char.width
                 fake.height = char.height
-                fake.depth = char.depth
+                fake.depth  = char.depth
                 return fake
             else
                 -- todo: set current attribibutes

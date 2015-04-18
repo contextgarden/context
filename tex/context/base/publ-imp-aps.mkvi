@@ -75,19 +75,30 @@
   [aps:list]
 
 \definebtx
-  [aps:list:invertedshort]
+  [aps:list:numbering:invertedshort]
   [aps:list]
 
 \definebtx
-  [aps:list:short]
+  [aps:list:numbering]
   [aps:list]
 
-% This is for numbering=yes
 \definebtx
-  [aps:list:yes]
-  [aps:list]
+  [aps:list:numbering:num]
+  [aps:list:numbering]
   [left={[},
    right={]}]
+
+\definebtx
+  [aps:list:numbering:yes]
+  [aps:list:numbering:num]
+
+\definebtx
+  [aps:list:numbering:short]
+  [aps:list:numbering:num]
+
+\definebtx
+  [aps:list:numbering:bib]
+  [aps:list:numbering:num]
 
 %D In order to be able to get journals expanded (or normalized or abbreviated) you need
 %D to load a list:

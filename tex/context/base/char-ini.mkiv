@@ -47,7 +47,10 @@
 
 \def\checkedchar        {\relax\ifmmode\expandafter\checkedmathchar\else\expandafter\checkedtextchar\fi} % #1#2
 \def\checkedmathchar#1#2{#2}
-\def\checkedtextchar  #1{\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}
+%def\checkedtextchar  #1{\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}
+
+\unexpanded\def\checkedtextchar#1% #2%
+  {\clf_doifelsecharinfont\numexpr#1\relax{\char#1}} % {#2}
 
 \unexpanded\def\textormathchar#1%
   {\relax\ifmmode

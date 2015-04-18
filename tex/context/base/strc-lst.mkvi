@@ -137,7 +137,7 @@
    \scratchcounter\clf_addtolist
         references {
             internal \nextinternalreference
-            block    {\currentsectionblock}
+          % block    {\currentsectionblock}
           % section  structures.sections.currentid()
           % location {\p_location}
         }
@@ -1267,7 +1267,12 @@
     \hskip-\leftskip
     \ifconditional\c_lists_has_number
         \ifconditional\c_lists_show_number
-            \setbox\scratchbox\simplealignedbox\scratchwidth{\usealignparameter\c!numberalign}
+            \setbox\scratchbox
+                \ifzeropt\scratchwidth
+                    \hbox
+                \else
+                    \simplealignedbox\scratchwidth{\listparameter\c!numberalign}
+                \fi
                 \bgroup
                     \useliststyleandcolor\c!numberstyle\c!numbercolor
                     \currentlistsymbol

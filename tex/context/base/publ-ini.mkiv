@@ -482,7 +482,7 @@
 
 %D Tracing
 
-\newconditional\c_btx_trace
+\newconditional\c_btx_trace % not used yet
 
 \installtextracker
   {btxrendering}
@@ -571,6 +571,12 @@
    \setconstant\currentbtxconcat       \zerocount
    \setconstant\currentbtxcount        \zerocount}
 
+\unexpanded\def\btxnumberingreset
+  {\let        \currentbtxfirst \empty
+   \let        \currentbtxsecond\empty
+   \let        \currentbtxthird \empty
+   \setconstant\currentbtxconcat\zerocount}
+
 \newconditional\c_btx_list_pages
 
 \appendtoks
@@ -591,9 +597,15 @@
       \btxparameter\c!pageright}%
    \endgroup}
 
-\unexpanded\def\btxpagesetup
-  {\fastbtxsetup\s!page\s!list
+\unexpanded\def\btxpagesetup#1% nothign yet
+  {\btxsetuptype\plusfive
+   \fastbtxsetup\s!list\s!page
    \btxpagereset}
+
+\unexpanded\def\btxnumberingsetup#1%
+  {\btxsetuptype\plusthree
+   \fastbtxsetup{\s!list:\s!numbering}{#1}%
+   \btxnumberingreset}
 
 % end of page stuff
 
@@ -607,6 +619,7 @@
    \begingroup
    \usebtxstyleandcolor\c!style\c!color
    \ignorespaces
+   \btxsetuptype\plusfour
    \fastbtxsetup\s!list\currentbtxcategory
    \removeunwantedspaces
    \endgroup
@@ -638,6 +651,7 @@
   {\begingroup
    \def\currentbtxtag{#1}%
    \ignorespaces
+   \btxsetuptype\plusfour
    \fastbtxsetup\s!list\currentbtxcategory
    \removeunwantedspaces
    \endgroup}
@@ -831,6 +845,7 @@
 \unexpanded\def\btxlistsetup#1% used for the reference in the list
   {\the\everybtxlistentry
    \everybtxlistentry\emptytoks % so only once per entry to be sure
+   \btxsetuptype\plusfour
    \fastbtxsetup\s!list{#1}}
 
 \appendtoks
@@ -991,7 +1006,7 @@
         {\currentbtxdataset}%
         {\currentbtxtag}%
         {\currentbtxfield}%
-        {
+        {%
             combiner    {#1}%
             kind        {list}%
             etallimit   {\btxparameter\c!etallimit}%
@@ -1016,7 +1031,7 @@
         {\currentbtxdataset}%
         {\currentbtxtag}%
         {\s!author}%
-        {
+        {%
             combiner    {\btxparameter\c!authorconversion}%
             kind        {cite}%
             etallimit   {\btxparameter\c!etallimit}%
@@ -1327,27 +1342,24 @@
 
 \let\publ_fastbtxsetup_normal\fastbtxsetup
 
-% \unexpanded\def\publ_fastbtxsetup_chain_yes#1#2%
-%   {\inframed[\c!foregroundstyle=\infofont]{%
-%      \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else->%
-%      \currentbtxspecificationfallback:#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback                :#1:#2\endcsname\else->%
-%                                       #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else->%
-%      \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else->%
-%      \currentbtxspecificationfallback:#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:\s!unknown\endcsname\else->%
-%      ?\fi\fi\fi\fi\fi}}
+\newconstant\btxsetuptype
 
-% \unexpanded\def\publ_fastbtxsetup_chain_nop#1#2%
-%   {\inframed[\c!foregroundstyle=\infofont]{%
-%      \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else->%
-%                                       #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else->%
-%      \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else->%
-%      ?\fi\fi\fi}}
+% 0 = unknown   darkred
+% 1 = cite      darkblue
+% 2 = subcite   darkgreen
+% 3 = numbering darkorange
+% 4 = list      darkcyan
+% 5 = page      darkmagenta
+% 6 = unknown   darkred
 
 \unexpanded\def\publ_fastbtxsetup_chain_inbetween
   {\allowbreak->\allowbreak}
 
 \unexpanded\def\publ_fastbtxsetup_chain_yes#1#2%
-  {\dontleavehmode\begingroup\infofont\darkblue[%
+  {\dontleavehmode\begingroup
+   \infofont
+   \ifcase\btxsetuptype\darkred\or\darkblue\or\darkgreen\or\darkcyan\or\darkmagenta\else\darkred\fi
+   [%
    \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else
    \publ_fastbtxsetup_chain_inbetween
    \currentbtxspecificationfallback:#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback                :#1:#2\endcsname\else
@@ -1359,10 +1371,14 @@
    \currentbtxspecificationfallback:#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:\s!unknown\endcsname\else
    \publ_fastbtxsetup_chain_inbetween
    unset\fi\fi\fi\fi\fi
-   ]\endgroup}
+   ]%
+   \endgroup}
 
 \unexpanded\def\publ_fastbtxsetup_chain_nop#1#2%
-  {\dontleavehmode\begingroup\infofont\darkred[%
+  {\dontleavehmode\begingroup
+   \infofont
+   \darkred
+   [%
    \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else
    \publ_fastbtxsetup_chain_inbetween
                                     #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else
@@ -1370,7 +1386,8 @@
    \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else
    \publ_fastbtxsetup_chain_inbetween
    unset\fi\fi\fi
-   ]\endgroup}
+   ]%
+   \endgroup}
 
 \unexpanded\def\publ_fastbtxsetup_chain
   {\ifx\currentbtxspecificationfallback\empty
@@ -1396,15 +1413,15 @@
      \setfalse\c_btx_cite_reference_injected
 \to \everybtxciteentry
 
-% \unexpanded\def\btxcitesetup#1%
-%   {\the\everybtxciteentry
-%    \everybtxciteentry\emptytoks % tricky maybe not when subcites
-%    \currentbtxlefttext
-%    \fastbtxsetup\s!cite{#1}%
-%    \currentbtxrighttext} % no \btxcitereset as we loose dataset and such
-
 \unexpanded\def\btxcitesetup#1%
   {\the\everybtxciteentry
+   \btxsetuptype\plusone
+   \everybtxciteentry\emptytoks % tricky maybe not when subcites
+   \fastbtxsetup\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
+
+\unexpanded\def\btxsubcitesetup#1%
+  {\the\everybtxciteentry
+   \btxsetuptype\plustwo
    \everybtxciteentry\emptytoks % tricky maybe not when subcites
    \fastbtxsetup\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
 

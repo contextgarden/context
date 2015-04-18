@@ -65,6 +65,8 @@
    \c!separator:names:3={,\nobreakspace\textampersand\space}, % comma separated list
    \c!separator:names:4={\nobreakspace\textampersand\space}] % last of two, no comma!
 
+% First, we define a namespace for a few special fields
+
 \definebtx
   [apa:list:author]
   [apa:list]
@@ -86,12 +88,31 @@
   [apa:list]
 
 \definebtx
-  [apa:list:invertedshort]
+  [apa:list:numbering:invertedshort]
   [apa:list]
 
 \definebtx
-  [apa:list:short]
+  [apa:list:numbering]
   [apa:list]
+
+\definebtx
+  [apa:list:numbering:num]
+  [apa:list:numbering]
+  [\c!right=:]
+
+\definebtx
+  [apa:list:numbering:yes]
+  [apa:list:numbering:num]
+
+\definebtx
+  [apa:list:numbering:short]
+  [apa:list:numbering:num]
+
+\definebtx
+  [apa:list:numbering:bib]
+  [apa:list:numbering:num]
+
+% Next, we define a namespace for each category
 
 %D In order to be able to get journals expanded (or normalized or abbreviated) you need
 %D to load a list:
@@ -100,7 +121,6 @@
 %D \btxloadjournallist[journals.txt] % the jabref list
 %D \stoptyping
 
-% TODO
 
 \definebtx
   [apa:list:journal]
@@ -198,6 +218,14 @@
   [apa:list:title]
 
 \definebtx
+  [apa:list:title:music]
+  [apa:list:title]
+
+\definebtx
+  [apa:list:title:film]
+  [apa:list:title]
+
+\definebtx
   [apa:list:title:other]
   [apa:list:title]
 
@@ -282,10 +310,8 @@
    \c!right={]\poppunctuation}]
 
 \definebtx
-  [apa:cite:author:year] % todo
-  [apa:cite:authoryear]
-  [\c!left=(,
-   \c!right=)]
+  [apa:cite:author:year] % todo 
+  [apa:cite]
 
 \definebtx
   [apa:cite:author:years] % todo
@@ -358,8 +384,8 @@
 \definebtx
   [apa:cite:short]
   [apa:cite]
-  [\c!left={[},
-   \c!right={]}]
+  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace[},
+   \c!right={]\poppunctuation}]
 
 \definebtx
   [apa:cite:category]
@@ -409,6 +435,8 @@
    \c!separator:2={;\space},
    \c!separator:3=\btxparameter{\c!separator:2},
    \c!separator:4=\btxparameter{\c!separator:2}]
+
+% Now we setup for the details of the renderings
 
 %D Sometimes we have verbose injections in an entry and these can be language
 %D dependent, so we use labels.
@@ -601,6 +629,8 @@
 
 % cite setups
 
+% The following differs from the default returning n.d. if year is empty
+
 \startsetups btx:apa:cite:author:year
     \texdefinition{\s!btx:\s!cite:concat}
     \btxparameter\c!left
@@ -629,6 +659,8 @@
 \startsetups btx:apa:cite:author:years
     \fastsetup{btx:apa:cite:author:year}
 \stopsetups
+
+% The following differs from the default by including the labels p. and pp.
 
 \startsetups btx:apa:page:list
     \fastsetup{\s!btx:\s!page:concat}
@@ -666,7 +698,7 @@
 % It can be removed using the command:
 % \resetsetups [apa:list:sameauthor]
 
-% Or texdefinition?
+% :rule, :empty or :ditto ...
 
 \startsetups apa:list:sameauthor
     \fastsetup{apa:list:sameauthor:rule}
@@ -677,6 +709,7 @@
       [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
        \c!height=1.5\linewidth]% \linewidth is just too thin with respect to font strokes...
 \stopsetups
+
 
 \startsetups [apa:list:sameauthor:\v!empty]
     \kern\dimexpr\listparameter\c!margin-\interwordspace\relax

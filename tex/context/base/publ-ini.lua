@@ -122,6 +122,8 @@ local ctx_btxsetlanguage          = context.btxsetlanguage
 local ctx_btxsetcombis            = context.btxsetcombis
 local ctx_btxsetcategory          = context.btxsetcategory
 local ctx_btxcitesetup            = context.btxcitesetup
+local ctx_btxsubcitesetup         = context.btxsubcitesetup
+local ctx_btxnumberingsetup       = context.btxnumberingsetup
 local ctx_btxpagesetup            = context.btxpagesetup
 local ctx_btxsetfirst             = context.btxsetfirst
 local ctx_btxsetsecond            = context.btxsetsecond
@@ -1890,7 +1892,7 @@ do
             if trace_detail then
                 report("expanding page setup")
             end
-            ctx_btxpagesetup()
+            ctx_btxpagesetup("") -- nothing yet
         end
     end
 
@@ -2861,7 +2863,7 @@ do
                     if trace_detail then
                         report("expanding %a cite setup %a","multiple author",setup)
                     end
-                    ctx_btxcitesetup(setup)
+                    ctx_btxsubcitesetup(setup)
                     ctx_btxstopciteauthor()
                 end
             end
@@ -3036,7 +3038,7 @@ do
         if trace_detail then
             report("expanding %a list setup %a","default",variant)
         end
-        ctx_btxlistsetup(variant)
+        ctx_btxnumberingsetup("default")
     end
 
     function listvariants.num(dataset,block,tag,variant,listindex)
@@ -3044,7 +3046,7 @@ do
         if trace_detail then
             report("expanding %a list setup %a","num",variant)
         end
-        ctx_btxlistsetup(variant)
+        ctx_btxnumberingsetup(variant or "num")
     end
 
     listvariants[v_yes] = listvariants.num
@@ -3062,7 +3064,7 @@ do
         if trace_detail then
             report("expanding %a list setup %a","short",variant)
         end
-        ctx_btxlistsetup(variant)
+        ctx_btxnumberingsetup(variant or "short")
     end
 
     function listvariants.page(dataset,block,tag,variant,listindex)

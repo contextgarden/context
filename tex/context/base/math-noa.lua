@@ -525,11 +525,14 @@ end
 -- normalize scripts
 
 local unscript = { }  noads.processors.unscript = unscript
+local checkers = { }  noads.processors.checkers = checkers
 
 local superscripts = characters.superscripts
 local subscripts   = characters.subscripts
+local fractions    = characters.fractions
 
 local replaced = { }
+local unknowns = { }
 
 local function replace(pointer,what,n,parent)
     pointer = parent -- we're following the parent list (chars trigger this)
@@ -608,22 +611,83 @@ local function replace(pointer,what,n,parent)
     -- we could return stop
 end
 
+local tracked = false  trackers.register("fonts.missing", function(v) tracked = v end)
+local checked = { } -- simple case
+local cached  = table.setmetatableindex("table") -- complex case
+
+local function check(pointer,what,n,parent)
+    if tracked then
+        -- slower as we check each font too and we always replace as math has
+        -- more demands than text
+        local char = getchar(pointer)
+        local font = font_of_family(getfield(pointer,"fam"))
+        local fake = cached[font][char]
+        if fake then
+            unknowns[char] = unknowns[char]  + 1
+            setfield(pointer,"char",fake)
+        else
+            local chars = fontcharacters[font]
+            if not chars[char] then
+                unknowns[char] = 1
+                local kind, fake = fonts.checkers.placeholder(font,char)
+                if kind == "char" then
+                    cached[font][char] = fake
+                    setfield(pointer,"char",fake)
+                else
+                    cached[font][char] = 0x3F
+                end
+            end
+        end
+    else
+        -- only simple checking, report at the end so one should take
+        -- action anyway ... we can miss a few checks but that is ok
+        -- as there is at least one reported
+        local char = getchar(pointer)
+        local done = unknowns[char]
+        if done then
+            unknowns[char] = done  + 1
+            setfield(pointer,"char",0x3F)
+        elseif not checked[char] then
+            local font  = font_of_family(getfield(pointer,"fam"))
+            local chars = fontcharacters[font]
+            if not chars[char] then
+                unknowns[char] = 1
+                setfield(pointer,"char",0x3F)
+                if trace_normalizing then
+                    report_normalizing("character %C is not available",char)
+                end
+            end
+        end
+        checked[char] = true
+    end
+end
+
 unscript[math_char] = replace -- not noads as we need to recurse
+checkers[math_char] = check  -- not noads as we need to recurse
 
 function handlers.unscript(head,style,penalties)
     processnoads(head,unscript,"unscript")
+    processnoads(head,checkers,"checkers")
     return true
 end
 
-statistics.register("math script replacements", function()
-    if next(replaced) then
+local function collected(list)
+    if list and next(list) then
         local n, t = 0, { }
-        for k, v in table.sortedpairs(replaced) do
+        for k, v in table.sortedpairs(list) do
             n = n + v
             t[#t+1] = formatters["%C"](k)
         end
         return formatters["% t (n=%s)"](t,n)
     end
+end
+
+statistics.register("math script replacements", function()
+    return collected(replaced)
+end)
+
+statistics.register("unknown math characters", function()
+    return collected(unknowns)
 end)
 
 -- math alternates: (in xits       lgf: $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$)

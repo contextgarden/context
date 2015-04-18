@@ -31,6 +31,7 @@
 %
 % end help
 
+
 \input mtx-context-common.tex
 
 \doifdocumentargument {paperoffset} {
@@ -45,6 +46,7 @@
 } {
     \setdocumentargument{sided}{singlesided}
 }
+
 
 \setuppapersize
   [\getdocumentargument{paperformat_paper}]
@@ -95,16 +97,17 @@
 \starttext
 
 \startluacode
-    local format = string.format
-    local fprint = function(...) tex.sprint(tex.ctxcatcodes,format(...)) end
-
-    if #document.files > 0 then
-        if document.arguments.sort then
-            table.sort(document.files)
+    local arguments = document.arguments
+    local files     = document.files
+    local noffiles  = #files
+    if noffiles > 0 then
+        if arguments.sort then
+            table.sort(files)
         end
-        local emptypages = document.arguments.addempty  or ""
-        local textwidth  = document.arguments.textwidth or "0cm"
-        for _, filename in ipairs(document.files) do
+        local emptypages = arguments.addempty  or ""
+        local textwidth  = arguments.textwidth or "0cm"
+        for i=1,noffiles do
+            local filename = files[i]
             if not string.find(filename,"^mtx%-context%-") then
                 context.insertpages (
                     { filename },
@@ -114,7 +117,7 @@
             end
         end
     else
-        fprint("no files given")
+        context("no files given")
     end
 \stopluacode
 

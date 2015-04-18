@@ -40,6 +40,7 @@ local vectors            = collections.vectors or { }
 collections.vectors      = vectors
 
 local fontdata           = fonts.hashes.identifiers
+local chardata           = fonts.hashes.characters
 local glyph_code         = nodes.nodecodes.glyph
 local currentfont        = font.current
 
@@ -275,6 +276,18 @@ function collections.process(head) -- this way we keep feature processing
     return head, done
 end
 
+function collections.found(font,char) -- this way we keep feature processing
+    if not char then
+        font, char = currentfont(), font
+    end
+    if chardata[font][char] then
+        return true -- in normal font
+    else
+        local v = vectors[font]
+        return v and v[char] and true or false
+    end
+end
+
 -- interface
 
 implement {
@@ -311,4 +324,10 @@ implement {
     name      = "fontcollectionclone",
     actions   = collections.clonevector,
     arguments = "string"
+}
+
+implement {
+    name      = "doifelsecharinfont",
+    actions   = { collections.found, commands.doifelse },
+    arguments = { "integer" }
 }

@@ -454,10 +454,13 @@
      \fi\fi
    \fi}
 
+
 \def\page_one_place_float_here_indeed
-  {%\ifgridsnapping \else
-     \baselinecorrection
-   %\fi
+  {\ifgridsnapping
+     % otherwise real bad outcome
+   \else
+     \baselinecorrection % this has to be done better (and definitely not in column mode)
+   \fi
    \doplacefloatbox
    \page_floats_report_total
    \dohandlenextfloatindent}

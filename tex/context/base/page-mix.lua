@@ -245,16 +245,16 @@ local function preparesplit(specification) -- a rather large function
         return
     end
     slidenodes(head) -- we can have set prev's to nil to prevent backtracking
-    local discarded = { }
-    local originalhead = head
-    local originalwidth = specification.originalwidth or getfield(list,"width")
+    local discarded      = { }
+    local originalhead   = head
+    local originalwidth  = specification.originalwidth or getfield(list,"width")
     local originalheight = specification.originalheight or getfield(list,"height")
-    local current = head
-    local skipped = 0
-    local height = 0
-    local depth = 0
-    local skip = 0
-    local splitmethod = specification.splitmethod or false
+    local current        = head
+    local skipped        = 0
+    local height         = 0
+    local depth          = 0
+    local skip           = 0
+    local splitmethod    = specification.splitmethod or false
     if splitmethod == v_none then
         splitmethod = false
     end
@@ -434,6 +434,7 @@ local function preparesplit(specification) -- a rather large function
     local function checked(advance,where,locked)
         local total   = skip + height + depth + advance
         local delta   = total - target
+-- - 65536*3
         local state   = "same"
         local okay    = false
         local skipped = 0
