@@ -36,6 +36,8 @@ local allocate        = utilities.storage.allocate
 
 local chardata        = characters.data
 
+local trace_hashing   = false  trackers.register("publications.authorhash", function(v) trace_hashing = v end)
+
 local report          = logs.reporter("publications","authors")
 
 -- local function makesplitter(separator)
@@ -99,7 +101,7 @@ end
 
 -- local cleaner = Cs( ( P("{}")/"" + P(1) )^1 )
 
-local cache   = { } -- 33% reuse on tugboat.bib
+local cache   = allocate() -- 33% reuse on tugboat.bib
 local nofhits = 0
 local nofused = 0
 
@@ -115,6 +117,144 @@ local function makeinitials(firstnames)
     end
 end
 
+local authormap        = allocate()
+publications.authormap = authormap
+
+local function splitauthor(author)
+    local detail = cache[author]
+    if detail then
+        return detail
+    end
+    local remapped = authormap[author]
+    if remapped then
+        report("remapping %a to %a",author,remapped)
+        local detail = cache[remapped]
+        if detail then
+            cache[author] = detail
+            return detail
+        end
+    end
+    local author = remapped or author
+    local firstnames, vons, surnames, initials, juniors, options
+    local split = lpegmatch(commasplitter,author)
+    local n = #split
+    detail = {
+        original = author,
+        snippets = n,
+    }
+    if n == 1 then
+        -- {First Middle von Last}
+        local words = lpegmatch(spacesplitter,author)
+        firstnames, vons, surnames = { }, { }, { }
+        local i, n = 1, #words
+        while i <= n do
+            local w = words[i]
+            if is_upper(w) then
+                firstnames[#firstnames+1], i = w, i + 1
+            else
+                break
+            end
+        end
+        while i <= n do
+            local w = words[i]
+            if is_upper(w) then
+                break
+            else
+                vons[#vons+1], i = w, i + 1
+            end
+        end
+        if i <= n then
+            while i <= n do
+                surnames[#surnames+1], i = words[i], i + 1
+            end
+        elseif #vons == 0 then
+            surnames[1] = firstnames[#firstnames]
+            firstnames[#firstnames] = nil
+        else
+            -- mess
+        end
+        if #surnames == 0 then
+            -- safeguard
+            firstnames = { }
+            vons       = { }
+            surnames   = { author }
+        else
+            initials = makeinitials(firstnames)
+        end
+    elseif n == 2 then
+        -- {Last, First}
+        -- {von Last, First}
+        firstnames, vons, surnames = { }, { }, { }
+        local words = lpegmatch(spacesplitter,split[1])
+        local i, n = 1, #words
+        while i <= n do
+            local w = words[i]
+            if is_upper(w) then
+                break
+            else
+                vons[#vons+1], i = w, i + 1
+            end
+        end
+        while i <= n do
+            surnames[#surnames+1], i = words[i], i + 1
+        end
+        --
+        local words = lpegmatch(spacesplitter,split[2])
+        local i, n = 1, #words
+        while i <= n do
+            local w = words[i]
+            if is_upper(w) then
+                firstnames[#firstnames+1], i = w, i + 1
+            else
+                break
+            end
+        end
+        while i <= n do
+            vons[#vons+1], i = words[i], i + 1
+        end
+        if surnames and firstnames and #surnames == 0 then
+            -- safeguard
+            surnames[1] = firstnames[#firstnames]
+            firstnames[#firstnames] = nil
+        end
+        initials = makeinitials(firstnames)
+    elseif n == 3 then
+        -- {von Last, First, Jr}
+        surnames   = lpegmatch(spacesplitter,split[1])
+        juniors    = lpegmatch(spacesplitter,split[2])
+        firstnames = lpegmatch(spacesplitter,split[3])
+        initials   = makeinitials(firstnames)
+    elseif n == 4 then
+        -- {Von, Last, First, Jr}
+        vons       = lpegmatch(spacesplitter,split[1])
+        surnames   = lpegmatch(spacesplitter,split[2])
+        juniors    = lpegmatch(spacesplitter,split[3])
+        firstnames = lpegmatch(spacesplitter,split[4])
+        initials   = makeinitials(firstnames)
+    elseif n >= 5 then
+        -- {Von, Last, First, Jr, F.}
+        -- {Von, Last, First, Jr, Fr., options}
+        vons       = lpegmatch(spacesplitter,split[1])
+        surnames   = lpegmatch(spacesplitter,split[2])
+        juniors    = lpegmatch(spacesplitter,split[3])
+        firstnames = lpegmatch(spacesplitter,split[4])
+        initials   = lpegmatch(spacesplitter,split[5])
+        options    = split[6]
+        if options then
+            options = lpegmatch(optionsplitter,options)
+        end
+    end
+    if firstnames and #firstnames > 0 then detail.firstnames = firstnames end
+    if vons       and #vons       > 0 then detail.vons       = vons       end
+    if surnames   and #surnames   > 0 then detail.surnames   = surnames   end
+    if initials   and #initials   > 0 then detail.initials   = initials   end
+    if juniors    and #juniors    > 0 then detail.juniors    = juniors    end
+    if options    and next(options)   then detail.options    = options    end
+    cache[author] = detail
+    nofhits = nofhits + 1
+    return detail
+end
+
 local function splitauthorstring(str)
     if str then
      -- str = lpegmatch(cleaner,str)
@@ -122,143 +262,31 @@ local function splitauthorstring(str)
         return
     end
     nofused = nofused + 1
+
+    local remapped = authormap[str]
+    if remapped then
+        local detail = cache[remapped]
+        if detail then
+            cache[str] = detail
+            return { detail }
+        end
+    end
+
     local authors = cache[str]
     if authors then
-        -- hit 1
-        -- print("hit 1",author,nofhits,nofused,math.round(100*nofhits/nofused))
         return { authors } -- we assume one author
     end
+
+
     local authors = lpegmatch(andsplitter,str)
     for i=1,#authors do
-        local author = authors[i]
-        local detail = cache[author]
-        if detail then
-            -- hit 2
-            -- print("hit 2",author,nofhits,nofused,math.round(100*nofhits/nofused))
-        end
-        if not detail then
-            local firstnames, vons, surnames, initials, juniors, options
-            local split = lpegmatch(commasplitter,author)
-            local n = #split
-            detail = {
-                original = author,
-                snippets = n,
-            }
-            if n == 1 then
-                -- {First Middle von Last}
-                local words = lpegmatch(spacesplitter,author)
-                firstnames, vons, surnames = { }, { }, { }
-                local i, n = 1, #words
-                while i <= n do
-                    local w = words[i]
-                    if is_upper(w) then
-                        firstnames[#firstnames+1], i = w, i + 1
-                    else
-                        break
-                    end
-                end
-                while i <= n do
-                    local w = words[i]
-                    if is_upper(w) then
-                        break
-                    else
-                        vons[#vons+1], i = w, i + 1
-                    end
-                end
-                if i <= n then
-                    while i <= n do
-                        surnames[#surnames+1], i = words[i], i + 1
-                    end
-                elseif #vons == 0 then
-                    surnames[1] = firstnames[#firstnames]
-                    firstnames[#firstnames] = nil
-                else
-                    -- mess
-                end
-                if #surnames == 0 then
-                    -- safeguard
-                    firstnames = { }
-                    vons       = { }
-                    surnames   = { author }
-                else
-                    initials = makeinitials(firstnames)
-                end
-            elseif n == 2 then
-                -- {Last, First}
-                -- {von Last, First}
-                firstnames, vons, surnames = { }, { }, { }
-                local words = lpegmatch(spacesplitter,split[1])
-                local i, n = 1, #words
-                while i <= n do
-                    local w = words[i]
-                    if is_upper(w) then
-                        break
-                    else
-                        vons[#vons+1], i = w, i + 1
-                    end
-                end
-                while i <= n do
-                    surnames[#surnames+1], i = words[i], i + 1
-                end
-                --
-                local words = lpegmatch(spacesplitter,split[2])
-                local i, n = 1, #words
-                while i <= n do
-                    local w = words[i]
-                    if is_upper(w) then
-                        firstnames[#firstnames+1], i = w, i + 1
-                    else
-                        break
-                    end
-                end
-                while i <= n do
-                    vons[#vons+1], i = words[i], i + 1
-                end
-                if surnames and firstnames and #surnames == 0 then
-                    -- safeguard
-                    surnames[1] = firstnames[#firstnames]
-                    firstnames[#firstnames] = nil
-                end
-                initials = makeinitials(firstnames)
-            elseif n == 3 then
-                -- {von Last, First, Jr}
-                surnames   = lpegmatch(spacesplitter,split[1])
-                juniors    = lpegmatch(spacesplitter,split[2])
-                firstnames = lpegmatch(spacesplitter,split[3])
-                initials   = makeinitials(firstnames)
-            elseif n == 4 then
-                -- {Von, Last, First, Jr}
-                vons       = lpegmatch(spacesplitter,split[1])
-                surnames   = lpegmatch(spacesplitter,split[2])
-                juniors    = lpegmatch(spacesplitter,split[3])
-                firstnames = lpegmatch(spacesplitter,split[4])
-                initials   = makeinitials(firstnames)
-            elseif n >= 5 then
-                -- {Von, Last, First, Jr, F.}
-                -- {Von, Last, First, Jr, Fr., options}
-                vons       = lpegmatch(spacesplitter,split[1])
-                surnames   = lpegmatch(spacesplitter,split[2])
-                juniors    = lpegmatch(spacesplitter,split[3])
-                firstnames = lpegmatch(spacesplitter,split[4])
-                initials   = lpegmatch(spacesplitter,split[5])
-                options    = split[6]
-                if options then
-                    options = lpegmatch(optionsplitter,options)
-                end
-            end
-            if firstnames and #firstnames > 0 then detail.firstnames = firstnames end
-            if vons       and #vons       > 0 then detail.vons       = vons       end
-            if surnames   and #surnames   > 0 then detail.surnames   = surnames   end
-            if initials   and #initials   > 0 then detail.initials   = initials   end
-            if juniors    and #juniors    > 0 then detail.juniors    = juniors    end
-            if options    and next(options)   then detail.options    = options    end
-            cache[author] = detail
-            nofhits = nofhits + 1
-        end
-        authors[i] = detail
+        authors[i] = splitauthor(authors[i])
     end
     return authors
 end
+
+publications.splitoneauthor  = splitauthor
+publications.splitauthor     = splitauthorstring
 
 local function the_initials(initials,symbol,connector)
     if not symbol then
@@ -477,6 +505,11 @@ local collapsers = allocate { }
 publications.authorcollapsers = collapsers
 
 local function default(author)
+    local hash = author.hash
+    if hash then
+        return hash
+    end
+    local original   = author.original
     local vons       = author.vons
     local surnames   = author.surnames
     local initials   = author.initials
@@ -499,12 +532,17 @@ local function default(author)
     if juniors and #juniors > 0 then
         nofresult = nofresult + 1 ; result[nofresult] = concat(juniors," ")
     end
-    return concat(result," ")
+    local hash = concat(result," ")
+    if trace_hashing then
+        report("hash: %s -> %s",original,hash)
+    end
+    author.hash = hash
+    return hash
 end
 
 collapsers.default = default
 
-local function writer(key,snippets)
+local function authorwriter(key,index)
     if not key then
         return ""
     end
@@ -514,8 +552,16 @@ local function writer(key,snippets)
     local n = #key
     if n == 0 then
         return ""
+    end
+    if index then
+        if not key[index] then
+            return ""
+        end
     elseif n == 1 then
-        local author  = key[1]
+        index = 1
+    end
+    if index then
+        local author  = key[index]
         local options = author.options
         if options then
             for option in next, options do
@@ -525,32 +571,43 @@ local function writer(key,snippets)
                 end
             end
         end
-        return default(author)
-    else
-        local t = { }
-        local s = 0
-        for i=1,n do
-            local author  = key[i]
-            local options = author.options
-            s = s + 1
-            if options then
-                local done = false
-                for option in next, options do
-                    local collapse = collapsers[option]
-                    if collapse then
-                        t[s] = collapse(author)
-                        done = true
-                    end
+        local hash = default(author)
+     -- if trace_hashing then
+     --     report("hash: %s",hash)
+     -- end
+        return hash
+    end
+    local t = { }
+    local s = 0
+    for i=1,n do
+        local author  = key[i]
+        local options = author.options
+        s = s + 1
+        if options then
+            local done = false
+            for option in next, options do
+                local collapse = collapsers[option]
+                if collapse then
+                    t[s] = collapse(author)
+                    done = true
                 end
-                if not done then
-                    t[s] = default(author)
-                end
-            else
+            end
+            if not done then
                 t[s] = default(author)
             end
+        else
+            t[s] = default(author)
         end
-        return concat(t," & ")
     end
+    local hash = concat(t," & ")
+ -- if trace_hashing then
+ --     report("hash: %s",hash)
+ -- end
+    return hash
+end
+
+local function writer(key)
+    return authorwriter(key) -- discard extra arguments in the caller
 end
 
 publications.writers   .author = writer
@@ -582,4 +639,12 @@ publications.sortmethods.authoryear = {
         { field = "title",   default = "",     unknown = "" },
         { field = "pages",   default = "",     unknown = "" },
     },
+}
+
+implement {
+    name      = "btxremapauthor",
+    arguments = { "string", "string" },
+    actions   = function(k,v)
+        publications.authormap[k] = v
+    end
 }

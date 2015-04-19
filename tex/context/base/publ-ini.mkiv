@@ -597,14 +597,20 @@
       \btxparameter\c!pageright}%
    \endgroup}
 
-\unexpanded\def\btxpagesetup#1% nothign yet
-  {\btxsetuptype\plusfive
+\unexpanded\def\btxpagesetup#1% nothing yet
+  {%\begingroup
+   %\setbtxparameterset{\c!page:\s!default}\currentbtxnumbering
+   \btxsetuptype\plusfive
    \fastbtxsetup\s!list\s!page
+   %\endgroup
    \btxpagereset}
 
 \unexpanded\def\btxnumberingsetup#1%
-  {\btxsetuptype\plusthree
+  {\begingroup
+   \setbtxparameterset{\c!list:\s!numbering}\currentbtxnumbering % brrrr   \setbtxlist
+   \btxsetuptype\plusthree
    \fastbtxsetup{\s!list:\s!numbering}{#1}%
+   \endgroup
    \btxnumberingreset}
 
 % end of page stuff
@@ -854,15 +860,15 @@
 
 \unexpanded\def\btx_reference_indeed
   {\begingroup
-   %let\currentbtxlistvariant\currentbtxnumbering
-   \setbtxparameterset\c!list\currentbtxnumbering
+   % redundantm will go away:
+   \setbtxparameterset{\c!list:\s!numbering}\currentbtxnumbering
+   %
    \ifx\currentbtxnumbering\empty
      % nothing
    \else\ifx\currentbtxnumbering\v!no
      % nothing
    \else
      \usebtxstyleandcolor\c!style\c!color % new, needed?
-   % \btxparameter\c!left
      \ifconditional\c_publ_prefixed\btxlistprefixednumber\fi
      \clf_btxlistvariant % some can go
        {\currentbtxdataset}%
@@ -871,7 +877,6 @@
        {\currentbtxnumbering}%
        {\currentbtxnumber}%
      \relax
-   % \btxparameter\c!right
    \fi\fi
    \endgroup}
 
@@ -990,6 +995,12 @@
 % \appendtoks
 %     \edef\currentbtxcriterium{\btxrenderingparameter\c!criterium}%
 % \to \everysetupbtxlistplacement
+
+\unexpanded\def\btxremapauthor
+  {\dodoubleargument\btx_remap_author}
+
+\def\btx_remap_author[#1][#2]%
+  {\clf_btxremapauthor{#1}{#2}}
 
 \unexpanded\def\btxflushauthor
   {\doifelsenextoptionalcs\btx_flush_author_yes\btx_flush_author_nop}
@@ -1110,17 +1121,6 @@
     \fi
 \to \everysetupbtxciteplacement
 
-% till here
-
-% \unexpanded\def\btxnumberedreference[#1]% \bibtexnumref (replaced by \cite[num])
-%   {\dontleavehmode
-%    \begingroup
-%    \btxparameter\v!left
-%    \penalty\plustenthousand % todo
-%    \clf_btxresolvelistreference{\currentbtxdataset}{#1}% todo: split dataset from #1, so another call
-%    \btxparameter\v!right
-%    \endgroup}
-
 %D When a publication is cited, we need to signal that somehow. This is done with the
 %D following (not user) command. We could tag without injecting a node but this way
 %D we also store the location, which makes it possible to ask local lists.
@@ -1234,8 +1234,7 @@
    \dosingleargument\publ_cite_handle_variant_indeed}
 
 \unexpanded\def\publ_cite_handle_variant_blob
-  {%\btxparameter\v!left\relax
-   \clf_btxhandlecite
+  {\clf_btxhandlecite
      dataset   {\currentbtxdataset}%
      reference {\currentbtxreference}%
      markentry \iftrialtypesetting\s!false\else\s!true\fi\space
@@ -1248,8 +1247,7 @@
      before    {\p_publ_cite_before}%
      after     {\p_publ_cite_after}%
    \relax
-   \clf_btxflushmarked % maybe: \iftrialtypesetting\else ... \fi
-   }%\btxparameter\v!right\relax}
+   \clf_btxflushmarked} % maybe: \iftrialtypesetting\else ... \fi
 
 \def\publ_cite_handle_variant_indeed[#1]%
   {\letbtxparameter\c!alternative\currentbtxcitealternative
@@ -1650,8 +1648,8 @@
 \let\btxstopcolor        \endgroup
 \let\btxstopstyleandcolor\endgroup
 
-\unexpanded\def\btxusecommand[#1]%
-  {\namedbtxparameter{#1}\c!command}
+\unexpanded\def\btxusecommand[#1]#2% using #2 permits space after []
+  {\namedbtxparameter{#1}\c!command{#2}}
 
 %D Defaults:
 

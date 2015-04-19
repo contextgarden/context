@@ -155,12 +155,13 @@ local function sortsequence(dataset,list,sorttype)
         end
 
         for i=1,#sequence do
-            local step    = sequence[i]
-            local field   = step.field   or "?"
-            local default = step.default or c_default
-            local unknown = step.unknown or c_unknown
-            local fldtype = types[field]
-            local writer  = fldtype and writers[fldtype]
+            local step      = sequence[i]
+            local field     = step.field or "?"
+            local default   = step.default or c_default
+            local unknown   = step.unknown or c_unknown
+            local fldtype   = types[field]
+            local fldwriter = step.writer or fldtype
+            local writer    = fldwriter and writers[fldwriter]
 
             if trace_sorters then
                 report("% 3i : field %a, type %a, default %a, unknown %a",i,field,fldtype,
@@ -172,7 +173,7 @@ local function sortsequence(dataset,list,sorttype)
             if writer then
                 local h = #helpers + 1
                 getters[i] = f_writer(h,field,default,field)
-                helpers[h] = f_helper(h,fldtype,field,fldtype)
+                helpers[h] = f_helper(h,fldwriter,field,fldtype)
             else
                 getters[i] = f_getter(field,default,field)
             end

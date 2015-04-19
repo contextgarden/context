@@ -702,7 +702,14 @@ local function packch(entry)
             local tt, li = { }, split[i].ch
             for j=1,#li do
                 local lij = li[j]
-                tt[j] = utfbyte(lij) > ignoredoffset and "[]" or lij
+                local byt = utfbyte(lij)
+                if byt > ignoredoffset then
+                    tt[j] = "[]"
+                elseif byt == 0 then
+                    tt[j] = " "
+                else
+                    tt[j] = lij
+                end
             end
             t[i] = concat(tt)
         end
@@ -711,7 +718,14 @@ local function packch(entry)
         local t, li = { }, split.ch
         for j=1,#li do
             local lij = li[j]
-            t[j] = utfbyte(lij) > ignoredoffset and "[]" or lij
+            local byt = utfbyte(lij)
+            if byt > ignoredoffset then
+                t[j] = "[]"
+            elseif byt == 0 then
+                t[j] = " "
+            else
+                t[j] = lij
+            end
         end
         return concat(t)
     end
@@ -731,7 +745,7 @@ local function packuc(entry)
 end
 
 function sorters.sort(entries,cmp)
-    if trace_tests or trace_methods then
+    if trace_methods then
         local nofentries = #entries
         report_sorters("entries: %s, language: %s, method: %s, digits: %s",nofentries,language,method,tostring(digits))
         for i=1,nofentries do

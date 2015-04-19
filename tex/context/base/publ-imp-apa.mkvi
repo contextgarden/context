@@ -310,7 +310,7 @@
    \c!right={]\poppunctuation}]
 
 \definebtx
-  [apa:cite:author:year] % todo 
+  [apa:cite:author:year] % todo
   [apa:cite]
 
 \definebtx
@@ -642,7 +642,7 @@
             \currentbtxfirst
         }
         \ifx\currentbtxsecond\empty \else
-            \btxparameter\v!inbetween
+            \btxparameter\c!range
             \texdefinition {\s!btx:\s!cite:inject} {
                 \currentbtxsecond
             }
@@ -662,7 +662,7 @@
 
 % The following differs from the default by including the labels p. and pp.
 
-\startsetups btx:apa:page:list
+\startsetups btx:apa:list:page
     \fastsetup{\s!btx:\s!page:concat}
     \ifx\currentbtxlastpage\empty
         \btxlabeltext{apa:page}
@@ -757,7 +757,7 @@
             \begingroup
                 \language[\mainbtxlanguage]
                 \btxleftbracket
-                \btxusecommand[apa:list:title:\currentbtxcategory] {
+                \btxusecommand [apa:list:title:\currentbtxcategory] {
                     \btxflush{#title:\mainbtxlanguage}
                 }
                 \btxrightbracket
@@ -769,7 +769,7 @@
 \starttexdefinition btx:apa:composed-title #title
     \begingroup
         \language[\currentbtxlanguage]
-        \btxusecommand[apa:list:title:\currentbtxcategory] {
+        \btxusecommand [apa:list:title:\currentbtxcategory] {
             \btxflush{#title}
             \btxdoif {sub#title} {
                 \btxcolon
@@ -819,7 +819,6 @@
     \btxdoifelse {year} {
         \btxflush{year}
         \btxflush{suffix}
-        %or \btxflush{suffixedyear}
     } {
         \btxlabeltext{apa:nd}
     }
@@ -899,7 +898,7 @@
     \doif {\currentbtxcategory} {techreport} {
         \texdefinition{btx:apa:leftparenthesis-or-comma}
         \btxdoifelse {type} {
-            \btxusecommand[apa:list:type] {
+            \btxusecommand [apa:list:type] {
                 \btxflush{type}
             }
         } {
@@ -949,7 +948,7 @@
     \btxdoif {journal} {
         \btxspace
         \btxstartstyleandcolor[apa:list:journal]
-            \btxusecommand[apa:list:journal] {
+            \btxusecommand [apa:list:journal] {
                 \btxflush{journal}
             }
         \btxdoifelse {volume} {
@@ -1220,7 +1219,7 @@
     \texdefinition{btx:apa:title-if-not-placed}
     \btxleftparenthesis
     \btxdoifelse {type} {
-        \btxusecommand[apa:list:type] {
+        \btxusecommand [apa:list:type] {
             \btxflush{type}
         }
     } {

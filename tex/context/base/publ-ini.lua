@@ -993,11 +993,11 @@ do
     -- maybe not redo when already done
 
     local function shortsorter(a,b)
-        local ay, by = a[2], b[2]
+        local ay, by = a[2], b[2] -- year
         if ay ~= by then
             return ay < by
         end
-        local ay, by = a[3], b[3]
+        local ay, by = a[3], b[3] -- suffix
         if ay ~= by then
             -- bah, bah, bah
             local an, bn = tonumber(ay), tonumber(by)
@@ -1052,16 +1052,22 @@ do
                             -- this will become a specification entry
                             local author = getcasted(dataset,tag,field,specifications[btxspc])
                             if type(author) == "table" then
-                                -- number depends on sort order
+                                -- a short is a real dumb hardcodes kind of tag and we only support
+                                -- this one because some users might expect it, not because it makes
+                                -- sense
                                 local t = { }
-                                if #author > 0 then
-                                    local n = #author == 1 and 3 or 1
-                                    for i=1,#author do
+                                local a = #author
+                                if a > 0 then
+                                    local n = a == 1 and 3 or 1
+                                    for i=1,a do
                                         local surnames = author[i].surnames
                                         if not surnames or #surnames == 0 then
-                                            -- error
-                                        else
+                                            -- in fact this is an error
+                                        elseif #t < 3 then
                                             t[#t+1] = utfsub(surnames[1],1,n)
+                                        else
+                                            t[4] = "+" -- indeed
+                                            break
                                         end
                                     end
                                 end
@@ -1101,9 +1107,6 @@ do
                 local entry   = luadata[tag]
                 local year    = entry.year
                 detail.short  = short
-                if year then
-                    detail.suffixedyear = year
-                end
                 if trace_shorts then
                     report_shorts("year %a, suffix %a, short %a, tag %a",year or "-","-",short,tag)
                 end
@@ -1118,9 +1121,6 @@ do
                     local year    = entry.year
                     detail.short  = short
                     detail.suffix = suffix
-                    if year then
-                        detail.suffixedyear = year .. suffix
-                    end
                     if trace_shorts then
                         report_shorts("year %a, suffix %a, short %a, tag %a",year or "-",suffix or "-",short,tag)
                     end
@@ -1908,8 +1908,13 @@ do
         local n         = tonumber(i)
         if n and n > 1 and n <= #list then
             local luadata   = datasets[dataset].luadata
-            local current   = getdirect(dataset,luadata[list[n  ][1]],name)
-            local previous  = getdirect(dataset,luadata[list[n-1][1]],name)
+            local p_index   = list[n-1][1]
+            local c_index   = list[n  ][1]
+            local previous  = getdirect(dataset,luadata[p_index],name)
+            local current   = getdirect(dataset,luadata[c_index],name)
+
+            -- authors are a special case
+
           -- if not order then
           --    order = gettexcounter("c_btx_list_reference")
           -- end
@@ -1934,7 +1939,18 @@ do
                     end
                 end
             end
-            local sameentry = current and current == previous
+            local sameentry = false
+            if current and current == previous then
+                sameentry = true
+            else
+                local p_casted = getcasted(dataset,p_index,name)
+                local c_casted = getcasted(dataset,c_index,name)
+                if c_casted and c_casted == p_casted then
+                    sameentry = true
+                elseif type(c_casted) == "table" and type(p_casted) == "table" then
+                    sameentry = table.identical(c_casted,p_casted)
+                end
+            end
             if trace_detail then
                 if sameentry then
                     report("previous %a, current %a, same entry",previous,current)
@@ -2474,7 +2490,7 @@ do
 
     local setters = setmetatableindex({},function(t,k)
         local v = function(data,dataset,tag,entry)
-            local value = getcasted(dataset,tag,k)
+            local value  = getcasted(dataset,tag,k)
             data.value   = value -- not really needed
             data[k]      = value
             data.sortkey = value
@@ -2635,7 +2651,7 @@ do
             local entries = entry.entries
             local text    = entries and entries.text or "?"
             data.num      = text
-            data.sortkey  = text
+            data.sortkey  = tonumber(text) or text
         end
 
         local function getter(first,last)

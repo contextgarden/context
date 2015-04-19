@@ -575,7 +575,7 @@
             \currentbtxfirst
         }
         \ifx\currentbtxsecond\empty \else
-            \btxparameter\v!inbetween
+            \btxparameter\c!inbetween
             \texdefinition {\s!btx:\s!cite:inject} {
                 \currentbtxsecond
             }
@@ -646,7 +646,7 @@
 \starttexdefinition btx:aps:composed-title #title
     \begingroup
         \language[\currentbtxlanguage]
-        \btxusecommand[aps:list:title:\currentbtxcategory] {
+        \btxusecommand [aps:list:title:\currentbtxcategory] {
             \btxflush{#title}
             \btxdoif {sub#title} {
                 \btxcolon
@@ -736,7 +736,7 @@
 \starttexdefinition btx:aps:editionset
     \doif {\currentbtxcategory} {techreport} {
         \btxdoifelse {type} {
-            \btxusecommand[\currentbtx:type] {
+            \btxusecommand [\currentbtx:type] {
                 \btxflush{type}
             }
         } {
@@ -992,7 +992,7 @@
     \texdefinition{btx:aps:title}
     \btxleftparenthesis
     \btxdoifelse {type} {
-        \btxusecommand[aps:list:type] {
+        \btxusecommand [aps:list:type] {
             \btxflush{type}
         }
     } {
