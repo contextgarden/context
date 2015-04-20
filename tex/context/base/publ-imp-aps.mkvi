@@ -228,12 +228,12 @@
 % root.
 
 \definebtx
-  [aps:page]
+  [aps:\s!page]
   [\s!page]
 
 \definebtx
-  [aps:page:list]
-  [aps:page]
+  [aps:\s!page:list]
+  [aps:\s!page]
   [\c!command={\wordright}]
 
 % Then define and set all cite parameters
@@ -592,7 +592,7 @@
     \fastsetup{btx:aps:cite:author:year}
 \stopsetups
 
-\startsetups [btx:aps:page:list]
+\startsetups [btx:aps:list:page]
     \fastsetup{\s!btx:\s!page:concat}
     \ifx\currentbtxlastpage\empty
         \btxlabeltext{aps:page}

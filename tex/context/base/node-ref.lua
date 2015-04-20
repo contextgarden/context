@@ -451,7 +451,6 @@ local function addstring(what,str,shift) --todo make a pluggable helper (in font
             end
             local text = typesetters.fast_hpack(str,infofont)
             local rule = new_rule(emwidth/5,4*exheight,3*exheight)
-            local list = getlist(text)
             setfield(text,"shift",shift)
             return nuts.fasthpack(nuts.linked(text,rule))
          -- local text = typesetters.fast_hpack(str,fonts.infofont())
