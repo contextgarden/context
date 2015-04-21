@@ -258,22 +258,22 @@ local function preparesplit(specification) -- a rather large function
     if splitmethod == v_none then
         splitmethod = false
     end
-    local options = settings_to_hash(specification.option or "")
+    local options     = settings_to_hash(specification.option or "")
     local stripbottom = specification.alternative == v_local
-    local cycle = specification.cycle or 1
-    local nofcolumns = specification.nofcolumns or 1
+    local cycle       = specification.cycle or 1
+    local nofcolumns  = specification.nofcolumns or 1
     if nofcolumns == 0 then
         nofcolumns = 1
     end
     local preheight = specification.preheight or 0
-    local extra = specification.extra or 0
+    local extra     = specification.extra or 0
     local maxheight = specification.maxheight
-    local optimal = originalheight/nofcolumns
+    local optimal   = originalheight/nofcolumns
     if specification.balance ~= v_yes then
         optimal = maxheight
     end
-    local target = optimal + extra
-    local overflow = target > maxheight - preheight
+    local target    = optimal + extra
+    local overflow  = target > maxheight - preheight
     local threshold = specification.threshold or 0
     if overflow then
         target = maxheight - preheight

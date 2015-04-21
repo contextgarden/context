@@ -591,7 +591,7 @@
    \setbtxlist % probably already set
    \btxpagereset
    \setbtxparameterset\s!page\s!list
-   \btxparameter\c!command
+   \btxparameter\c!pagecommand
      {\usebtxstyleandcolor\c!style\c!color
       \btxparameter\c!pageleft
       \clf_btxflushpages{\currentbtxdataset}{\currentbtxtag}%
@@ -599,18 +599,20 @@
    \endgroup}
 
 \unexpanded\def\btxpagesetup#1% nothing yet
-  {%\begingroup
+  {\begingroup
    %\setbtxparameterset{\c!page:\s!default}\currentbtxnumbering
-   \btxsetuptype\plusfive
-   \fastbtxsetup\s!list\s!page
-   %\endgroup
+   \btxparameter\c!left
+%    \btxparameter\c!command{\fastbtxsetup\plusfive\s!list\s!page}%
+   \fastbtxsetup\plusfive\s!list\s!page
+   \btxparameter\c!right
+   \endgroup
    \btxpagereset}
 
 \unexpanded\def\btxnumberingsetup#1%
   {\begingroup
    \setbtxparameterset{\c!list:\s!numbering}\currentbtxnumbering % brrrr   \setbtxlist
-   \btxsetuptype\plusthree
-   \fastbtxsetup{\s!list:\s!numbering}{#1}%
+%    \btxparameter\c!command{\fastbtxsetup\plusthree{\s!list:\s!numbering}{#1}}%
+   \fastbtxsetup\plusthree{\s!list:\s!numbering}{#1}%
    \endgroup
    \btxnumberingreset}
 
@@ -626,8 +628,7 @@
    \begingroup
    \usebtxstyleandcolor\c!style\c!color
    \ignorespaces
-   \btxsetuptype\plusfour
-   \fastbtxsetup\s!list\currentbtxcategory
+   \fastbtxsetup\plusfour\s!list\currentbtxcategory
    \removeunwantedspaces
    \endgroup
    \ifconditional\c_btx_list_pages
@@ -658,8 +659,7 @@
   {\begingroup
    \def\currentbtxtag{#1}%
    \ignorespaces
-   \btxsetuptype\plusfour
-   \fastbtxsetup\s!list\currentbtxcategory
+   \fastbtxsetup\plusfour\s!list\currentbtxcategory
    \removeunwantedspaces
    \endgroup}
 
@@ -852,8 +852,7 @@
 \unexpanded\def\btxlistsetup#1% used for the reference in the list
   {\the\everybtxlistentry
    \everybtxlistentry\emptytoks % so only once per entry to be sure
-   \btxsetuptype\plusfour
-   \fastbtxsetup\s!list{#1}}
+   \fastbtxsetup\plusfour\s!list{#1}}
 
 \appendtoks
     \btx_check_language
@@ -1255,7 +1254,9 @@
    \edef\currentbtxreference{#1}%
    \usebtxstyleandcolor\c!style\c!color
    \uselanguageparameter\btxdatasetparameter % new
+   \btxparameter\c!left
    \btxparameter\c!command{\publ_cite_handle_variant_blob}%
+   \btxparameter\c!right
    \endgroup}
 
 \unexpanded\def\btxcitation
@@ -1332,15 +1333,6 @@
      \fi\fi\fi
    \endcsname{#2}}
 
-\def\fastbtxsetup
-  {\ifx\currentbtxspecificationfallback\empty
-     \expandafter\fastbtxsetup_nop
-   \else
-     \expandafter\fastbtxsetup_yes
-   \fi}
-
-\let\publ_fastbtxsetup_normal\fastbtxsetup
-
 \newconstant\btxsetuptype
 
 % 0 = unknown   darkred
@@ -1370,6 +1362,8 @@
    \currentbtxspecificationfallback:#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:\s!unknown\endcsname\else
    \publ_fastbtxsetup_chain_inbetween
    unset\fi\fi\fi\fi\fi
+   \space @\space
+   \currentbtx
    ]%
    \endgroup}
 
@@ -1385,24 +1379,38 @@
    \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else
    \publ_fastbtxsetup_chain_inbetween
    unset\fi\fi\fi
+   \space @\space
+   \currentbtx
    ]%
    \endgroup}
 
-\unexpanded\def\publ_fastbtxsetup_chain
-  {\ifx\currentbtxspecificationfallback\empty
+\unexpanded\def\publ_fastbtxsetup_normal#1%
+  {\btxsetuptype#1\relax
+   \ifx\currentbtxspecificationfallback\empty
+     \expandafter\fastbtxsetup_nop
+   \else
+     \expandafter\fastbtxsetup_yes
+   \fi}
+
+\unexpanded\def\publ_fastbtxsetup_visual#1#2#3%
+  {\btxsetuptype#1\relax
+   \ifx\currentbtxspecificationfallback\empty
      \expandafter\publ_fastbtxsetup_chain_nop
    \else
      \expandafter\publ_fastbtxsetup_chain_yes
-   \fi}
-
-\unexpanded\def\publ_fastbtxsetup_visual#1#2%
-  {\publ_fastbtxsetup_chain{#1}{#2}%
-   \publ_fastbtxsetup_normal{#1}{#2}}
+   \fi{#2}{#3}%
+   \ifx\currentbtxspecificationfallback\empty
+     \expandafter\fastbtxsetup_nop
+   \else
+     \expandafter\fastbtxsetup_yes
+   \fi{#2}{#3}}
 
 \installtextracker
   {publications.setups}
   {\let\fastbtxsetup\publ_fastbtxsetup_visual}
   {\let\fastbtxsetup\publ_fastbtxsetup_normal}
+
+\let\fastbtxsetup\publ_fastbtxsetup_normal
 
 %D Cite helpers:
 
@@ -1414,15 +1422,13 @@
 
 \unexpanded\def\btxcitesetup#1%
   {\the\everybtxciteentry
-   \btxsetuptype\plusone
    \everybtxciteentry\emptytoks % tricky maybe not when subcites
-   \fastbtxsetup\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
+   \fastbtxsetup\plusone\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
 
 \unexpanded\def\btxsubcitesetup#1%
   {\the\everybtxciteentry
-   \btxsetuptype\plustwo
    \everybtxciteentry\emptytoks % tricky maybe not when subcites
-   \fastbtxsetup\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
+   \fastbtxsetup\plustwo\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
 
 \appendtoks
     \btx_check_language
@@ -1434,12 +1440,12 @@
    \def\currentbtxcitealternative{#1}%
    \setbtxparameterset\s!cite\currentbtxcitealternative
    \usebtxstyleandcolor\c!style\c!color
- % \btxparameter\c!left
+   \btxparameter\c!left
    \relax}
 
 \unexpanded\def\btxstopsubcite
-  {%\relax
- % \btxparameter\c!right
+  {\relax
+   \btxparameter\c!right
    \endgroup}
 
 \unexpanded\def\btxstartciterendering[#1]%
@@ -1447,12 +1453,12 @@
    \edef\currentbtxcitealternative{#1}%
    \setbtxparameterset\s!cite\currentbtxcitealternative
    \usebtxstyleandcolor\c!style\c!color
- % \btxparameter\c!left
-   }%\relax}
+   \btxparameter\c!left
+   \relax}
 
 \unexpanded\def\btxstopciterendering
   {\relax
- % \btxparameter\c!right
+   \btxparameter\c!right
    \endgroup}
 
 \let\btxstartcite      \begingroup

@@ -61,7 +61,6 @@ local trace_page_builder     = false  trackers.register("builders.page",     fun
 local trace_collect_vspacing = false  trackers.register("vspacing.collect",  function(v) trace_collect_vspacing = v end)
 local trace_vspacing         = false  trackers.register("vspacing.spacing",  function(v) trace_vspacing         = v end)
 local trace_vsnapping        = false  trackers.register("vspacing.snapping", function(v) trace_vsnapping        = v end)
-local trace_vpacking         = false  trackers.register("vspacing.packing",  function(v) trace_vpacking         = v end)
 local trace_specials         = false  trackers.register("vspacing.specials", function(v) trace_specials         = v end)
 
 local report_vspacing     = logs.reporter("vspacing","spacing")
@@ -1706,7 +1705,7 @@ local ignore = table.tohash {
 function vspacing.vboxhandler(head,where)
     if head and not ignore[where] then
         local h = tonut(head)
-        if getnext(h) then
+        if getnext(h) then -- what if a one liner and snapping?
             h = collapser(h,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
             return tonode(h)
         end
