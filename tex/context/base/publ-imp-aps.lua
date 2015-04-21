@@ -462,7 +462,7 @@ categories.other = {
 
 categories.literal = {
     sets = {
-        author = { "key" }, -- need to check this!
+        author = { "tag" }, -- need to check this!
     },
     required = {
         "text"

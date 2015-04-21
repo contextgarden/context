@@ -22,7 +22,7 @@
 %D     editor   ={Waldron, A and Judd, P. and Miller, V.},
 %D     address  ={Ridge, NY},
 %D     publisher={American Physical Society},
-%D     pages    ={26},
+%D     Xpages   ={26},
 %D     url      ={http://journals.aps.org/files/styleguide-pr.pdf}
 %D }
 %D \stopTEX
@@ -48,6 +48,10 @@
 \definebtxrendering
   [aps]
   [\c!specification=aps]
+
+\setupbtxlist
+  [aps]
+  [\c!alternative=b] % spaces
 
 \definebtx
   [aps:list]
@@ -234,7 +238,7 @@
 \definebtx
   [aps:\s!page:list]
   [aps:\s!page]
-  [\c!command={\wordright}]
+ %[\c!command={\wordright}]
 
 % Then define and set all cite parameters
 
@@ -252,14 +256,16 @@
   [aps:cite:author]
   [\c!left={(},
    \c!right={)},
-   \c!inbetween={,\space}]
+   \c!inbetween={,\space},
+   \c!compress=\v!yes]
 
 \definebtx
   [aps:cite:authoryears]
   [aps:cite:authoryear]
   [\c!left=,
    \c!right=,
-   \c!inbetween={\space}]
+   \c!inbetween={\space},
+   \c!compress=\v!yes]
 
 \definebtx
   [aps:cite:authornum]
@@ -314,11 +320,7 @@
    \c!right={]}]
 
 \definebtx
-  [aps:cite:key]
-  [aps:cite:tag]
-
-\definebtx
-  [aps:cite:serial]
+  [aps:cite:index]
   [aps:cite]
   [\c!left={[},
    \c!right={]}]
@@ -342,6 +344,8 @@
   [\c!left={(},
    \c!right={)}]
 
+% What is \cite[invertedshort]? An mkii thingie.
+
 \definebtx
   [aps:cite:invertedshort]
   [aps:cite]
@@ -355,12 +359,6 @@
 \definebtx
   [aps:cite:category]
   [aps:cite]
-  [\c!left={[},
-   \c!right={]}]
-
-\definebtx
-  [aps:cite:type]
-  [aps:cite:category]
 
 \definebtx
   [aps:cite:url]
@@ -1142,7 +1140,7 @@
 \startsetups btx:aps:list:literal
     %\btxleftparenthesis
     \removeunwantedspaces(
-    \btxflush{key}
+    \btxflush{tag}
     \btxrightparenthesis
     \btxdoif {text} {
         \btxflush{text}

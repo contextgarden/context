@@ -707,7 +707,6 @@ function xtables.reflow_height()
                     local delta = htdp - total
                     if delta > 0 then
                         delta = delta / ny
-print(r,c,delta)
                         for y=0,ny-1 do
                             local nxt = r + y
                             heights[nxt] = heights[nxt] + delta

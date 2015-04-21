@@ -19,6 +19,7 @@ if not modules then modules = { } end modules ['publ-jrn'] = {
 local context  = context
 local commands = commands
 
+local type = type
 local find = string.find
 local P, C, S, Cs, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.S, lpeg.Cs, lpeg.match, lpeg.patterns
 

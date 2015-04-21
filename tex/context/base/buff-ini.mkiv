@@ -197,6 +197,9 @@
 \unexpanded\def\buff_get_stored_inline_indeed#1%
   {\ignorespaces\clf_getbuffer{#1}\removeunwantedspaces}
 
+\def\rawbuffer#1% expandable
+  {\clf_getbuffer{#1}}
+
 \definebuffer
   [\v!hiding]
 

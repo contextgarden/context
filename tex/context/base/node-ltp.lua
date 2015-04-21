@@ -406,24 +406,8 @@ end
 
 -- resolvers --
 
-local whatsitters = {
-    get_width      = { },
-    get_dimensions = { },
-}
-
-local get_whatsit_width      = whatsitters.get_width
-local get_whatsit_dimensions = whatsitters.get_dimensions
-
-local function get_width     (n,dir) return getfield(n,"width") end
-local function get_dimensions(n,dir) return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth") end
-
-get_whatsit_width[pdfrefximage_code] = get_width
-get_whatsit_width[pdfrefxform_code ] = get_width
-
-get_whatsit_dimensions[pdfrefximage_code] = get_dimensions
-get_whatsit_dimensions[pdfrefxform_code ] = get_dimensions
-
-nodes.whatsitters = whatsitters
+local get_whatsit_width      = nodes.whatsitters.getters.width
+local get_whatsit_dimensions = nodes.whatsitters.getters.dimensions
 
 -- expansion etc --
 

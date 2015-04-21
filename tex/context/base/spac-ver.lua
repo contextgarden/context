@@ -1714,13 +1714,17 @@ function vspacing.vboxhandler(head,where)
     return head
 end
 
-function vspacing.collapsevbox(n) -- for boxes but using global a_snapmethod
+function vspacing.collapsevbox(n,aslist) -- for boxes but using global a_snapmethod
     local box = getbox(n)
     if box then
         local list = getlist(box)
         if list then
             list = collapser(list,"snapper","vbox",trace_vbox_vspacing,true,a_snapmethod)
-            setfield(box,"list",vpack_node(list))
+            if aslist then
+                setfield(box,"list",list) -- beware, dimensions of box are wrong now
+            else
+                setfield(box,"list",vpack_node(list))
+            end
         end
     end
 end
@@ -1770,6 +1774,13 @@ implement {
     actions   = vspacing.collapsevbox,
     scope     = "private",
     arguments = "integer"
+}
+
+implement {
+    name      = "vspacingcollapseonly",
+    actions   = vspacing.collapsevbox,
+    scope     = "private",
+    arguments = { "integer", true }
 }
 
 implement {

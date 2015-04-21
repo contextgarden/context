@@ -752,3 +752,39 @@ function nuts.copy_properties(source,target,what)
     end
     return newprops -- for checking
 end
+
+-- a bit special
+
+local getwidth      = { }
+local setwidth      = { }
+local getdimensions = { }
+local setdimensions = { }
+
+nodes.whatsitters = {
+    getters = { width = getwidth, dimensions = getdimensions },
+    setters = { width = setwidth, dimensions = setdimensions },
+}
+
+-- this might move (in fact forms and images will become nodes)
+
+local function get_width(n,dir)
+    n = tonut(n)
+    return getfield(n,"width")
+end
+
+local function get_dimensions(n,dir)
+    n = tonut(n)
+    return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
+end
+
+local whatcodes         = nodes.whatcodes
+local pdfrefximage_code = whatcodes.pdfrefximage
+local pdfrefxform_code  = whatcodes.pdfrefxform
+
+getwidth     [pdfrefximage_code] = get_width
+getwidth     [pdfrefxform_code ] = get_width
+
+getdimensions[pdfrefximage_code] = get_dimensions
+getdimensions[pdfrefxform_code ] = get_dimensions
+
+

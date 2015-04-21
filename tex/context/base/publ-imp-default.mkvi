@@ -173,11 +173,7 @@
    \c!right={]}]
 
 \definebtx
-  [\s!default:\s!cite:key]
-  [\s!default:\s!cite:tag]
-
-\definebtx
-  [\s!default:\s!cite:serial]
+  [\s!default:\s!cite:index]
   [\s!default:\s!cite]
   [\c!left={[},
    \c!right={]}]
@@ -198,6 +194,8 @@
   [\c!left={(},
    \c!right={)}]
 
+% What is \cite[invertedshort]? Some mkii crap, who knows.
+
 \definebtx
   [\s!default:\s!cite:invertedshort]
   [\s!default:\s!cite]
@@ -211,12 +209,6 @@
 \definebtx
   [\s!default:\s!cite:category]
   [\s!default:\s!cite]
-  [\c!left={[},
-   \c!right={]}]
-
-\definebtx
-  [\s!default:\s!cite:type]
-  [\s!default:\s!cite:category]
 
 \definebtx
   [\s!default:\s!cite:url]
@@ -524,19 +516,13 @@
 % \startsetups \s!btx:\s!default:\s!cite:short
 %     \fastsetup{\s!btx:\s!cite:normal}
 % \stopsetups
-% \startsetups \s!btx:\s!default:\s!cite:serial
+% \startsetups \s!btx:\s!default:\s!cite:index
 %     \fastsetup{\s!btx:\s!cite:range}
 % \stopsetups
 % \startsetups \s!btx:\s!default:\s!cite:tag
 %     \fastsetup{\s!btx:\s!cite:normal}
 % \stopsetups
-% \startsetups \s!btx:\s!default:\s!cite:key
-%     \fastsetup{\s!btx:\s!cite:normal}
-% \stopsetups
 % \startsetups \s!btx:\s!default:\s!cite:category
-%     \fastsetup{\s!btx:\s!cite:normal}
-% \stopsetups
-% \startsetups \s!btx:\s!default:\s!cite:type
 %     \fastsetup{\s!btx:\s!cite:normal}
 % \stopsetups
 % \startsetups \s!btx:\s!default:\s!cite:num

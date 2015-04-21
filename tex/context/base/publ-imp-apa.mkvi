@@ -22,7 +22,7 @@
 %D     edition  ={Sixth},
 %D     address  ={Washington, DC},
 %D     publisher={American Psychological Association},
-%D     pages    ={291},
+%D     Xpages   ={291},
 %D     url      ={http://www.apa.org/books/},
 %D }
 %D \stopTEX
@@ -50,9 +50,9 @@
 \setupbtxlist
   [apa]
   [\c!alternative=\v!paragraph,
-   \c!width=\v!fit,
-   \c!distance=.5\emwidth,
-   \c!margin=3\emwidth]
+  %\c!width=\v!fit,
+  %\c!distance=.5\emwidth,
+   \c!margin=3.5\emwidth]
 
 \definebtx
   [apa:list]
@@ -98,7 +98,6 @@
 \definebtx
   [apa:list:numbering:num]
   [apa:list:numbering]
-  [\c!right=:]
 
 \definebtx
   [apa:list:numbering:yes]
@@ -290,7 +289,8 @@
   [apa:cite:authoryear]
   [\c!left=,
    \c!right=,
-   \c!inbetween={\space}]
+   \c!inbetween={\space},
+   \c!compress=\v!yes]
 
 \definebtx
   [apa:cite:authornum]
@@ -348,12 +348,9 @@
   [\c!left={\removeunwantedspaces\pushpunctuation\btxspace[},
    \c!right={]\poppunctuation}]
 
-\definebtx
-  [apa:cite:key]
-  [apa:cite:tag]
 
 \definebtx
-  [apa:cite:serial]
+  [apa:cite:index]
   [apa:cite]
   [\c!left={[},
    \c!right={]}]
@@ -377,6 +374,8 @@
   [\c!left={(},
    \c!right={)}]
 
+% What is \cite[invertedshort]? Something mkii.
+
 \definebtx
   [apa:cite:invertedshort]
   [apa:cite]
@@ -390,12 +389,6 @@
 \definebtx
   [apa:cite:category]
   [apa:cite]
-  [\c!left={[},
-   \c!right={]}]
-
-\definebtx
-  [apa:cite:type]
-  [apa:cite:category]
 
 \definebtx
   [apa:cite:url]
@@ -1448,7 +1441,7 @@
 \startsetups btx:apa:list:literal
     %\btxleftparenthesis
     \removeunwantedspaces(
-    \btxflush{key}
+    \btxflush{tag}
     \btxrightparenthesis
     \btxdoif {text} {
         \btxflush{text}

@@ -512,11 +512,12 @@
   [\s!btx]
   [\c!prefixstopper=:,
    \c!state=\v!start,
-   \c!alternative=\v!paragraph,
+   \c!alternative=a,
+  %\c!alternative=\v!paragraph,
+  %\c!width=\v!auto,
+  %\c!distance=\emwidth,
    \c!before=\blank,
-   \c!after=\blank,
-   \c!width=\v!auto,
-   \c!distance=\emwidth]
+   \c!after=\blank]
 
 \unexpanded\def\setupbtxlist
   {\dodoubleempty\publ_setup_list}

@@ -881,11 +881,11 @@
        \strutheightfactor\dimexpr\normallineheight
      \fi
    \strutdp\spacingfactor\dimexpr
-       \ifdim\minimumstrutdepth>\zeropoint
-         \minimumstrutdepth
-       \else
-         \strutdepthfactor\dimexpr\normallineheight
-       \fi
+     \ifdim\minimumstrutdepth>\zeropoint
+       \minimumstrutdepth
+     \else
+       \strutdepthfactor\dimexpr\normallineheight
+     \fi
    \dosetstrut}
 
 \unexpanded\def\setcharstrut#1%
@@ -924,7 +924,9 @@
    \ifabsnum\dimexpr\strutht+\strutdp-\lineheight\relax<\plustwo
      % compensate rounding error /- 1sp to avoid too many
      % 1sp baselineskips in for instance verbatim
-     \strutht\dimexpr\lineheight-\strutdp\relax
+     % \strutht\dimexpr\lineheight-\strutdp\relax
+     % better:
+     \strutdp\dimexpr\lineheight-\strutht\relax
      \struttotal\lineheight
    \else
      \struttotal\dimexpr\strutht+\strutdp\relax
@@ -1471,13 +1473,13 @@
 
 \unexpanded\def\synchronizelocallinespecs
   {\bodyfontlineheight \normallineheight
-   \bodyfontstrutheight\strutheight
-   \bodyfontstrutdepth \strutdepth}
+   \bodyfontstrutheight\strutht
+   \bodyfontstrutdepth \strutdp}
 
 \unexpanded\def\synchronizegloballinespecs
   {\global\globalbodyfontlineheight \normallineheight
-   \global\globalbodyfontstrutheight\strutheight
-   \global\globalbodyfontstrutdepth \strutdepth}
+   \global\globalbodyfontstrutheight\strutht
+   \global\globalbodyfontstrutdepth \strutdp}
 
 \appendtoks
     \synchronizegloballinespecs
@@ -1909,8 +1911,8 @@
 \definevspacingamount[\v!quarterline] [.25\openlineheight] [.25\bodyfontlineheight]
 \definevspacingamount[\v!formula]     [\medskipamount]     [.5\bodyfontlineheight]
 \definevspacingamount[\v!white]       [\parskip]           [\bodyfontwhitespace]
-\definevspacingamount[\v!height]      [\strutheight]       [\bodyfontstrutheight]
-\definevspacingamount[\v!depth]       [\strutdepth]        [\bodyfontstrutdepth]
+\definevspacingamount[\v!height]      [\strutht]           [\bodyfontstrutheight]
+\definevspacingamount[\v!depth]       [\strutdp]           [\bodyfontstrutdepth]
 
 \definevspacingamount[-\v!line]       [-\openlineheight]   [-\bodyfontlineheight]
 \definevspacingamount[-\v!halfline]   [-.5\openlineheight] [-.5\bodyfontlineheight]

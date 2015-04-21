@@ -2525,7 +2525,7 @@ do
         })
     end
 
-    -- category | type
+    -- category
 
     do
 
@@ -2539,15 +2539,6 @@ do
 
         function citevariants.category(presets)
             processcite(presets,{
-             -- variant  = presets.variant or "serial",
-                setter  = setter,
-                getter  = getter,
-            })
-        end
-
-        function citevariants.type(presets)
-            processcite(presets,{
-             -- variant  = presets.variant or "type",
                 setter  = setter,
                 getter  = getter,
             })
@@ -2694,7 +2685,7 @@ do
 
     end
 
-    -- index | serial
+    -- index
 
     do
 
@@ -2716,17 +2707,9 @@ do
             })
         end
 
-        function citevariants.serial(presets)
-            processcite(presets,{
-             -- variant  = presets.variant or "serial",
-                setter  = setter,
-                getter  = getter,
-            })
-        end
-
     end
 
-    -- key | tag
+    -- tag
 
     do
 
@@ -2737,14 +2720,6 @@ do
         local function getter(first,last)
             ctx_btxsetfirst(first.tag)
             return true
-        end
-
-        function citevariants.key(presets)
-            return processcite(presets,{
-                variant = "key",
-                setter  = setter,
-                getter  = getter,
-            })
         end
 
         function citevariants.tag(presets)
