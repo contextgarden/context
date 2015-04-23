@@ -373,6 +373,8 @@
 \unexpanded\def\btxnbsp                  {\removeunwantedspaces\nbsp}         % the same anyway
 \unexpanded\def\btxperiod                {\removeunwantedspaces.\space}
 \unexpanded\def\btxcomma                 {\removeunwantedspaces,\space}
+\unexpanded\def\btxcommabreak            {\removeunwantedspaces,\hskip\zeropoint plus \onepoint\relax}
+\unexpanded\def\btxcolon                 {\removeunwantedspaces:\space}
 \unexpanded\def\btxcolon                 {\removeunwantedspaces:\space}
 \unexpanded\def\btxsemicolon             {\removeunwantedspaces;\space}
 \unexpanded\def\btxlparent               {\removeunwantedspaces\space(} % obsolete
@@ -611,8 +613,10 @@
 \unexpanded\def\btxnumberingsetup#1%
   {\begingroup
    \setbtxparameterset{\c!list:\s!numbering}\currentbtxnumbering % brrrr   \setbtxlist
+   \btxparameter\c!left
 %    \btxparameter\c!command{\fastbtxsetup\plusthree{\s!list:\s!numbering}{#1}}%
    \fastbtxsetup\plusthree{\s!list:\s!numbering}{#1}%
+   \btxparameter\c!right
    \endgroup
    \btxnumberingreset}
 

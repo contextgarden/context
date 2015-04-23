@@ -401,10 +401,13 @@ end)
 local function getindex(dataset,luadata,tag)
     local found = luadata[tag]
     if found then
-        return found.index or 0
+        local index = found.index or 0
+        dataset.ordered[tag] = index
+        return index
     else
         local index = dataset.nofentries + 1
         dataset.nofentries = index
+        dataset.ordered[index] = tag
         return index
     end
 end
@@ -676,7 +679,7 @@ do
             r = r + 1 ; result[r] = "<?xml version='1.0' standalone='yes'?>"
             r = r + 1 ; result[r] = "<bibtex>"
             --
-            if nice then
+            if nice then -- will be default
                 local f_entry_start = formatters[" <entry tag='%s' category='%s' index='%s'>"]
                 local s_entry_stop  = " </entry>"
                 local f_field       = formatters["  <field name='%s'>%s</field>"]
@@ -836,7 +839,8 @@ do
         end
         if data then
             local luadata = current.luadata
-            for tag, entry in next, data do
+            -- we want the same index each run
+            for tag, entry in sortedhash(data) do
                 if type(entry) == "table" then
                     entry.index  = getindex(current,luadata,tag)
                     entry.tag    = tag
@@ -935,12 +939,13 @@ do
 
     function enhancers.order(dataset)
         local luadata = dataset.luadata
-        local ordered = sortedkeys(luadata)
-        local total   = #ordered
-        for i=1,total do
-            ordered[i] = luadata[ordered[i]]
+        local ordered = dataset.ordered
+        for i=1,#ordered do
+            local tag = ordered[i]
+            if type(tag) == "string" then
+                ordered[i] = luadata[tag]
+            end
         end
-        dataset.ordered = ordered
     end
 
     function enhancers.details(dataset)

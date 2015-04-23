@@ -15,22 +15,19 @@
 
 \unprotect
 
-\definepalet
-  [layout]
-  [grid=red,
-   page=green]
-
 \newconstant\c_page_grids_location
 \newconstant\c_page_grids_line_mode
 \newconstant\c_page_grids_lineno_mode
+\newconstant\c_page_grids_columns_mode
 
 \unexpanded\def\showgrid
   {\dosingleempty\page_grids_show}
 
 \def\page_grids_show[#1]%
-  {\c_page_grids_location   \plusone % downward compatible default
-   \c_page_grids_line_mode  \plusone
-   \c_page_grids_lineno_mode\plusone
+  {\c_page_grids_location    \plusone % downward compatible default
+   \c_page_grids_line_mode   \plusone
+   \c_page_grids_lineno_mode \plusone
+   \c_page_grids_columns_mode\plusone
    \processallactionsinset
      [#1]%
      [ \v!reset=>\c_page_grids_location   \zerocount,
@@ -48,14 +45,24 @@
      \let\page_grids_add_to_box\gobbleoneargument
    \else % 1=bottom 2=top
      \let\page_grids_add_to_box\page_grids_add_to_box_indeed
+   \fi
+   \ifcase\c_page_grids_columns_mode
+     \let\page_grids_add_to_one\gobbleoneargument
+     \let\page_grids_add_to_mix\gobbleoneargument
+   \else
+     \let\page_grids_add_to_one\page_grids_add_to_one_indeed
+     \let\page_grids_add_to_mix\page_grids_add_to_mix_indeed
    \fi}
 
 % if really needed for speed we can cache the grid
 
 \let\page_grids_add_to_box\gobbleoneargument
+\let\page_grids_add_to_one\gobbleoneargument
+\let\page_grids_add_to_mix\gobbleoneargument
 
 \def\page_grids_add_to_box_indeed#1% to be checked for color and layer ..... use mp
   {\startcolor[layout:grid]%
+   \resetvisualizers
    \gridboxlinemode  \c_page_grids_line_mode
    \gridboxlinenomode\c_page_grids_lineno_mode
    \setgridbox\scratchbox\makeupwidth\textheight % todo: check color
@@ -81,5 +88,17 @@
       \endgroup
       \ifcase\c_page_grids_location\or\hskip-\makeupwidth\box#1\fi}%
    \stopcolor}
+
+\def\page_grids_add_to_one_indeed#1%
+  {\begingroup
+   \resetvisualizers
+   \global\setbox#1\vbox{\backgroundline[layout:one]{\box#1}}%
+   \endgroup}
+
+\def\page_grids_add_to_mix_indeed#1%
+  {\begingroup
+   \resetvisualizers
+   \global\setbox#1\vbox{\backgroundline[layout:mix]{\box#1}}%
+   \endgroup}
 
 \protect \endinput

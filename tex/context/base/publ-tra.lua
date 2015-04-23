@@ -107,8 +107,8 @@ function tracers.showdatasetcompleteness(settings)
 
     local preamble = { "|lTBw(5em)|lBTp(10em)|plT|" }
 
-    local function identified(tag,category,crossref)
-        ctx_NC()
+    local function identified(tag,category,crossref,index)
+        ctx_NC() ctx_monobold(index)
         ctx_NC() ctx_monobold(category)
         ctx_NC() if crossref then
                 ctx_monobold("%s\\hfill\\darkblue => %s",tag,crossref)
@@ -179,7 +179,7 @@ function tracers.showdatasetcompleteness(settings)
                 foundfields[k] = true
             end
             ctx_starttabulate(preamble)
-            identified(tag,category,entry.crossref)
+            identified(tag,category,entry.crossref,entry.index)
             ctx_FL()
             if fields then
                 local requiredfields = fields.required

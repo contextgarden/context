@@ -351,8 +351,8 @@ local function value(i,field)
     end
 end
 
-implement { name = "btxcurrentfirstnames", arguments = "integer", actions = function(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol))) end end }
-implement { name = "btxcurrentinitials",   arguments = "integer", actions = function(i) local v = value(i,"firstnames") if v then context(concat(v," ")) end end }
+implement { name = "btxcurrentfirstnames", arguments = "integer", actions = function(i) local v = value(i,"firstnames") if v then context(concat(v," ")) end end }
+implement { name = "btxcurrentinitials",   arguments = "integer", actions = function(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol))) end end }
 implement { name = "btxcurrentjuniors",    arguments = "integer", actions = function(i) local v = value(i,"juniors")    if v then context(concat(v," ")) end end }
 implement { name = "btxcurrentsurnames",   arguments = "integer", actions = function(i) local v = value(i,"surnames")   if v then context(concat(v," ")) end end }
 implement { name = "btxcurrentvons",       arguments = "integer", actions = function(i) local v = value(i,"vons")       if v then context(concat(v," ")) end end }
@@ -638,6 +638,7 @@ publications.sortmethods.authoryear = {
         { field = "number",  default = "",     unknown = "" },
         { field = "title",   default = "",     unknown = "" },
         { field = "pages",   default = "",     unknown = "" },
+        { field = "index",   default = "",     unknown = "" },
     },
 }
 

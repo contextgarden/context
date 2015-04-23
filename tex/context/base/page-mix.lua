@@ -484,7 +484,15 @@ local function preparesplit(specification) -- a rather large function
             end
             height = height + depth + skip
             depth  = 0
+if advance < 0 then
+    height = height + advance
+    skip   = 0
+    if height < 0 then
+        height = 0
+    end
+else
             skip   = height > 0 and advance or 0
+end
             if trace_state then
                 report_state("%-7s > column %s, height %p, depth %p, skip %p","glue",column,height,depth,skip)
             end
@@ -602,7 +610,8 @@ local function preparesplit(specification) -- a rather large function
         local nxtid = nxt and getid(nxt)
         line = line + 1
         local inserts, currentskips, nextskips, inserttotal = nil, 0, 0, 0
-        local advance = getfield(current,"height") -- + getfield(current,"depth")
+        local advance = getfield(current,"height")
+-- + getfield(current,"depth") -- when > strutdp
         if trace_state then
             report_state("%-7s > column %s, content: %s","line",column,listtoutf(getlist(current),true,true))
         end

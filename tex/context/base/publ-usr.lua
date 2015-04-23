@@ -89,10 +89,12 @@ local function addtexentry(dataset,settings,content)
         category = settings.category or settings.t or "article",
     }
     lpegmatch(pattern,content,1,data) -- can set tag too
-    local tag = data.tag
-    current.userdata[tag] = data
-    current.luadata[tag]  = data
-    current.details[tag]  = nil
+    local tag   = data.tag
+    local index = publications.getindex(dataset,current.luadata,tag)
+    current.ordered[index] = data
+    current.luadata[tag]   = data
+    current.userdata[tag]  = data
+    current.details[tag]   = nil
     return data
 end
 

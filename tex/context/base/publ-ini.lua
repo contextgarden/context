@@ -65,8 +65,11 @@ local v_local            = variables["local"]
 local v_global           = variables["global"]
 
 local v_force            = variables.force
+local v_normal           = variables.normal
+local v_reverse          = variables.reverse
 local v_none             = variables.none
 local v_yes              = variables.yes
+local v_no               = variables.no
 local v_all              = variables.all
 local v_always           = variables.always
 local v_doublesided      = variables.doublesided
@@ -296,7 +299,7 @@ do
 
     local function initializer()
         statistics.starttiming(publications)
-        for name, state in next, collected do
+        for name, state in sortedhash(collected) do
             local dataset     = datasets[name]
             local datasources = state.datasources
             local usersource  = state.usersource
@@ -423,7 +426,7 @@ do
                 -- weird
             end
         end
-        for k, v in next, names do
+        for k, v in sortedhash(names) do
             local n = #v
             if n > 1 then
                 local original = v[1].original
@@ -1095,7 +1098,6 @@ do
                 end
             end
         end
-     -- for short, tags in next, shorts do -- ordered ?
         for short, tags in sortedhash(shorts) do -- ordered ?
             local n = #tags
             if n == 0 then
@@ -1116,7 +1118,7 @@ do
                     local tagdata = tags[i]
                     local tag     = tagdata[1]
                     local detail  = details[tag]
-                    local suffix  = numbertochar(i)
+                    local suffix  = i -- numbertochar(i)
                     local entry   = luadata[tag]
                     local year    = entry.year
                     detail.short  = short
@@ -1745,6 +1747,7 @@ do
             report_list("invalid method %a",method or "")
             return
         end
+        report_list("collecting entries using method %a and sort order %a",method,rendering.sorttype)
         lists.result  = { } -- kind of reset
         local keyword = specification.keyword
         if keyword and keyword ~= "" then
@@ -1786,31 +1789,39 @@ do
                     if not repeated then
                         used[tag] = true -- beware we keep the old state (one can always use criterium=all)
                     end
-                    local detail = details[tag]
-                    if detail then
-                        local referencenumber = detail.referencenumber
-                        if not referencenumber then
-                            lastreferencenumber    = lastreferencenumber + 1
-                            referencenumber        = lastreferencenumber
-                            detail.referencenumber = lastreferencenumber
-                        end
-                        li[3] = referencenumber
-                    else
-                        report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
-                        -- weird, this shouldn't happen .. all have a detail
-                        lastreferencenumber = lastreferencenumber + 1
-                        details[tag] = { referencenumber = lastreferencenumber }
-                        li[3] = lastreferencenumber
-                    end
                 end
             end
         end
         groups[group] = lastreferencenumber
         if type(sorter) == "function" then
-            rendering.list = sorter(dataset,rendering,newlist,sorttype) or newlist
+            list = sorter(dataset,rendering,newlist,sorttype) or newlist
         else
-            rendering.list = newlist
+            list = newlist
         end
+        for i=1,#list do
+            local li    = list[i]
+            local tag   = li[1]
+            local entry = luadata[tag]
+            if entry then
+                local detail = details[tag]
+                if detail then
+                    local referencenumber = detail.referencenumber
+                    if not referencenumber then
+                        lastreferencenumber    = lastreferencenumber + 1
+                        referencenumber        = lastreferencenumber
+                        detail.referencenumber = lastreferencenumber
+                    end
+                    li[3] = referencenumber
+                else
+                    report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
+                    -- weird, this shouldn't happen .. all have a detail
+                    lastreferencenumber = lastreferencenumber + 1
+                    details[tag] = { referencenumber = lastreferencenumber }
+                    li[3] = lastreferencenumber
+                end
+            end
+        end
+        rendering.list = list
     end
 
     function lists.fetchentries(dataset)
@@ -1992,11 +2003,7 @@ do
             local bl = li[5]
             if bl and bl ~= "" then
                 ctx_btxsetbacklink(bl)
-                ctx_btxsetbacktrace(concat(li," ",5))
-                local uc = citetolist[tonumber(bl)]
-                if uc then
-                    ctx_btxsetinternal(uc.references.internal or "")
-                end
+             -- ctx_btxsetbacktrace(concat(li," ",5)) -- two numbers
             else
                 -- nothing
             end
@@ -2130,8 +2137,12 @@ do
         end
         --
         specification.variant   = variant
-        specification.compress  = specification.compress == v_yes
+        specification.compress  = specification.compress
         specification.markentry = specification.markentry ~= false
+        --
+        if specification.sorttype == v_yes then
+            specification.sorttype = v_normal
+        end
         --
         local prefix, rest = lpegmatch(prefixsplitter,reference)
         if prefix and rest then
@@ -2218,14 +2229,30 @@ do
 
     -- sorter
 
+--     local keysorter = function(a,b)
+--         local ak = a.sortkey
+--         local bk = b.sortkey
+--         if ak == bk then
+--             local as = a.suffix -- alphabetic
+--             local bs = b.suffix -- alphabetic
+--             if as and bs then
+--                 return (as or "") < (bs or "")
+--             else
+--                 return false
+--             end
+--         else
+--             return ak < bk
+--         end
+--     end
+
     local keysorter = function(a,b)
         local ak = a.sortkey
         local bk = b.sortkey
         if ak == bk then
-            local as = a.suffix -- alphabetic
-            local bs = b.suffix -- alphabetic
+            local as = a.suffix -- numeric
+            local bs = b.suffix -- numeric
             if as and bs then
-                return (as or "") < (bs or "")
+                return (as or 0) < (bs or 0)
             else
                 return false
             end
@@ -2234,56 +2261,67 @@ do
         end
     end
 
-    local function compresslist(source)
-        for i=1,#source do
-            local t = type(source[i].sortkey)
-            if t == "number" then
-                -- okay
-         -- elseif t == "string" then
-         --     -- okay
-            else
-                return source
-            end
+    local revsorter = function(a,b)
+        return keysorter(b,a)
+    end
+
+    local function compresslist(source,specification)
+        if specification.sorttype == v_normal then
+            sort(source,keysorter)
+        elseif specification.sorttype == v_reverse then
+            sort(source,revsorter)
         end
-        local first, last, firstr, lastr
-        local target, noftarget, tags = { }, 0, { }
-        sort(source,keysorter)
-        local oldvalue = nil
-        local function flushrange()
-            noftarget = noftarget + 1
-            if last > first + 1 then
-                target[noftarget] = {
-                    first = firstr,
-                    last  = lastr,
-                    tags  = tags,
-                }
-            else
-                target[noftarget] = firstr
-                if last > first then
-                    noftarget = noftarget + 1
-                    target[noftarget] = lastr
+        if specification and specification.compress == v_yes then
+            local first, last, firstr, lastr
+            local target, noftarget, tags = { }, 0, { }
+            local oldvalue = nil
+            local function flushrange()
+                noftarget = noftarget + 1
+                if last > first + 1 then
+                    target[noftarget] = {
+                        first = firstr,
+                        last  = lastr,
+                        tags  = tags,
+                    }
+                else
+                    target[noftarget] = firstr
+                    if last > first then
+                        noftarget = noftarget + 1
+                        target[noftarget] = lastr
+                    end
                 end
+                tags = { }
             end
-            tags = { }
-        end
-        for i=1,#source do
-            local entry = source[i]
-            local current = entry.sortkey
-            local suffix  = entry.suffix -- todo but what
-            if not first then
-                first, last, firstr, lastr = current, current, entry, entry
-            elseif current == last + 1 then
-                last, lastr = current, entry
-            else
+            for i=1,#source do
+                local entry   = source[i]
+                local current = entry.sortkey
+                local suffix  = entry.suffix -- todo but what
+                if not first then
+                    first, last, firstr, lastr = current, current, entry, entry
+                elseif current == last + 1 then
+                    last, lastr = current, entry
+                else
+                    flushrange()
+                    first, last, firstr, lastr = current, current, entry, entry
+                end
+                tags[#tags+1] = entry.tag
+            end
+            if first and last then
                 flushrange()
-                first, last, firstr, lastr = current, current, entry, entry
             end
-            tags[#tags+1] = entry.tag
+            return target
+        else
+            local target, noftarget = { }, 0
+            for i=1,#source do
+                local entry = source[i]
+                noftarget   = noftarget + 1
+                target[noftarget] = {
+                    first = entry,
+                    tags  = { entry.tag },
+                }
+            end
+            return target
         end
-        if first and last then
-            flushrange()
-        end
-        return target
     end
 
     -- local source = {
@@ -2314,6 +2352,7 @@ do
         local internal   = specification.internal
         local setup      = specification.variant
         local compress   = specification.compress
+        local sorttype   = specification.sorttype
         local getter     = specification.getter
         local setter     = specification.setter
         local compressor = specification.compressor
@@ -2332,7 +2371,6 @@ do
                 report("processing reference %a",reference)
             end
             local source  = { }
-            local badkey  = false
             local luadata = datasets[dataset].luadata
             for i=1,#found do
                 local entry = found[i]
@@ -2346,19 +2384,6 @@ do
                  -- luadata   = ldata,
                 }
                 setter(data,dataset,tag,entry)
-                if compress and not compressor then
-                    local sortkey = data.sortkey
-                    if sortkey then
-                        local key = lpegmatch(numberonly,sortkey)
-                        if key then
-                            data.sortkey = key
-                        else
-                            badkey = true
-                        end
-                    else
-                        badkey = true
-                    end
-                end
                 if type(data) == "table" then
                     source[#source+1] = data
                 else
@@ -2376,13 +2401,6 @@ do
             if before    and before    ~= "" then before    = settings_to_array(before)    end
             if after     and after     ~= "" then after     = settings_to_array(after)     end
 
-        --  local oneleft  = lefttext  and #lefttext  == 1 and lefttext [1]
-        --  local oneright = righttext and #righttext == 1 and righttext[1]
-        --
-        --  if not oneleft or not oneright then
-        --      compress = false -- very hard coded, or should we have compreess == auto?
-        --  end
-
             local function flush(i,n,entry,last)
                 local tag = entry.tag
                 local currentcitation = markcite(dataset,tag)
@@ -2390,27 +2408,6 @@ do
                 ctx_btxstartcite()
                 ctx_btxsettag(tag)
                 ctx_btxsetcategory(entry.category or "unknown")
-                --
-             -- if oneleft then
-             --     if i == 1 then
-             --         ctx_btxsetlefttext(oneleft)
-             --     end
-             -- elseif lefttext then
-             --     ctx_btxsetlefttext(lefttext[i] or "")
-             -- end
-             -- if oneright then
-             --     if i == n then
-             --         ctx_btxsetrighttext(oneright)
-             --     end
-             -- elseif righttext then
-             --     ctx_btxsetrighttext(righttext[i] or "")
-             -- end
-             -- if before then
-             --     ctx_btxsetbefore(before[i] or (#before == 1 and before[1]) or "")
-             -- end
-             -- if after then
-             --     ctx_btxsetafter(after[i] or (#after == 1 and after[1]) or "")
-             -- end
                 --
                 if lefttext  then local text = lefttext [i] ; if text and text ~= "" then ctx_btxsetlefttext (text) end end
                 if righttext then local text = righttext[i] ; if text and text ~= "" then ctx_btxsetrighttext(text) end end
@@ -2440,9 +2437,8 @@ do
                 ctx_btxcitesetup(setup)
                 ctx_btxstopcite()
             end
-
-            if compress and not badkey then
-                local target = (compressor or compresslist)(source)
+            if sorttype == v_normal then
+                local target = (compressor or compresslist)(source,specification)
                 local nofcollected = #target
                 if nofcollected == 0 then
                     report("nothing found for %a",reference)
@@ -2779,7 +2775,7 @@ do
             return true -- needed?
         end
 
-        local function authorcompressor(found)
+        local function authorcompressor(found,specification)
             local result  = { }
             local entries = { }
             for i=1,#found do
@@ -2835,7 +2831,8 @@ do
                     if first then
                         ctx_btxsetfirst(first[key] or "") -- f_missing(first.tag))
                         local suffix = entry.suffix
-                        local value  = entry.last[key]
+                        local last   = entry.last
+                        local value  = last and last[key]
                         if value then
                             ctx_btxsetsecond(value)
                         end
@@ -2900,7 +2897,7 @@ do
             end
             if entries then
                 -- happens with year
-                local c = compresslist(entries)
+                local c = compresslist(entries,setup)
                 local f = function() authorconcat(c,key,setup) return true end -- indeed return true?
                 ctx_btxsetcount(#c)
                 ctx_btxsetsecond(f)
@@ -2930,7 +2927,6 @@ do
 
         function citevariants.author(presets)
             processcite(presets,{
-                compress = false,
                 variant  = "author",
                 setter   = setter,
                 getter   = getter,

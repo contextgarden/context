@@ -39,6 +39,13 @@
 
 \unprotect
 
+\ifdefined\profilemethodattribute
+    % we're okay
+\else
+    \newcount\profilemethodattribute
+    \let\useprofileparameter\gobbleoneargument
+\fi
+
 %D The mixed output routine replaces the traditional multi column handler that
 %D started out in \MKII. One of the complications of a routine is that it needs
 %D to align nicely when mixed in a single column layout. Instead of using all
@@ -172,6 +179,14 @@
    \c!internalgrid=\v!halfline, % new, we may still revert to \v!line
    \c!balance=\v!yes]
 
+% better
+
+\setupmixedcolumns
+  [\s!itemgroupcolumns]
+  [\c!splitmethod=\v!fixed,
+   \c!grid=\v!yes,
+   \c!internalgrid=\v!line]
+
 \unexpanded\def\strc_itemgroups_start_columns
   {\startmixedcolumns[\s!itemgroupcolumns]} % we could have a fast one
 
@@ -198,11 +213,6 @@
    \fi}
 
 %D The interceptor is quite simple, at least for the moment.
-
-% \def\page_mix_routine_intercept
-%   {\global\setbox\b_page_mix_preceding\vbox
-%      {\page_otr_command_flush_top_insertions
-%       \unvbox\normalpagebox}}
 
 \def\page_mix_routine_intercept
   {\ifdim\pagetotal>\pagegoal
@@ -443,8 +453,7 @@
   [\s!itemgroupcolumns]
   [\c!grid=\itemgroupparameter\c!grid]
 
-\setupitemgroups
-  [\c!grid=\v!tolerant]
+% better
 
 %D The common initialization:
 
@@ -471,6 +480,8 @@
    %
    \insidecolumnstrue % new
    %
+   \useprofileparameter\mixedcolumnsparameter % new
+   %
    \nofcolumns\c_page_mix_n_of_columns} % public
 
 %D The otr method related hooks are defined next:
@@ -484,23 +495,44 @@
 
 \newcount\c_page_mix_otr_nesting
 
+% \setvalue{\??mixedcolumnsbefore\s!otr}%
+%   {\par
+%    \global\advance\c_page_mix_otr_nesting\plusone
+%    \ifcase\c_page_mix_otr_nesting\or
+%      \ifdim\pagetotal=\zeropoint \else
+%        \obeydepth % we could handle this in pre material
+%      \fi
+%    \fi}
+
 \setvalue{\??mixedcolumnsbefore\s!otr}%
   {\par
    \global\advance\c_page_mix_otr_nesting\plusone
    \ifcase\c_page_mix_otr_nesting\or
      \ifdim\pagetotal=\zeropoint \else
-       \obeydepth % we could handle this in pre material
+       % make sure that whitespace an dblanks are done
+       \strut
+       \vskip-\lineheight
+      % no, bad spacing: \obeydepth % we could handle this in pre material
      \fi
    \fi}
 
 \setvalue{\??mixedcolumnsstart\s!otr}%
   {\ifcase\c_page_mix_otr_nesting\or
+     \scratchwidth\textwidth
      \setupoutputroutine[\s!mixedcolumn]%
      \c_page_mix_routine\c_page_mix_routine_intercept
      \page_otr_trigger_output_routine
      %
      \holdinginserts\maxdimen
      %
+     \ifvoid\b_page_mix_preceding \else
+       % moved here, before the packaging
+       \page_postprocessors_linenumbers_deepbox\b_page_mix_preceding
+       % we need to avoid unvboxing with successive balanced on one page
+       \global\setbox\b_page_mix_preceding\vbox{\box\b_page_mix_preceding}%
+       \wd\b_page_mix_preceding\scratchwidth % \makeupwidth
+       \page_grids_add_to_one\b_page_mix_preceding
+     \fi
      \global\d_page_mix_preceding_height\ht\b_page_mix_preceding
      \c_page_mix_routine\c_page_mix_routine_continue
      %
@@ -574,7 +606,7 @@
    % backgrounds
    \anch_mark_column_box\scratchbox
    % for the moment a quick and dirty patch .. we need to go into the box (hence the \plusone) .. a slowdowner
-   \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_mix_n_of_columns\plusone
+   % moved to start: \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_mix_n_of_columns\plusone
    % the framed needs a reset of strut, align, setups etc
    \mixedcolumnseparatorheight\ht\scratchbox
    \mixedcolumnseparatordepth \dp\scratchbox
@@ -593,9 +625,13 @@
    \setbox\b_page_mix_collected\vbox \bgroup
      \ifvoid\b_page_mix_preceding \else
        \page_postprocessors_linenumbers_deepbox\b_page_mix_preceding
-       \box\b_page_mix_preceding
+       \vbox\bgroup
+         \box\b_page_mix_preceding
+       \egroup
        \global\d_page_mix_preceding_height\zeropoint
        \nointerlineskip
+       % no no:
+       % \prevdepth\strutdepth
      \fi
      \hskip\d_page_mix_leftskip
      \page_mix_hbox to \d_page_mix_max_width \bgroup
@@ -648,6 +684,7 @@
         \page_otr_command_set_hsize
         \par
         %writestatus\m!columns{flush balance}%
+        \page_grids_add_to_mix\b_page_mix_collected % no linenumbers here
         \box\b_page_mix_collected
         \vskip\zeropoint % triggers recalculation of page stuff (weird that this is needed but it *is* needed, see mixed-001.tex)
         \par
@@ -730,11 +767,32 @@
 \letvalue{\??mixedcolumnsbefore\s!box}\donothing
 \letvalue{\??mixedcolumnsafter \s!box}\donothing
 
+% \setvalue{\??mixedcolumnsstart\s!box}%
+%   {\edef\p_page_mix_strut{\mixedcolumnsparameter\c!strut}%
+%    \setbox\b_page_mix_collected\vbox\bgroup
+%      \let\currentoutputroutine\s!mixedcolumn % makes \column work
+%      \forgetall
+%      \page_mix_command_set_hsize
+%      \ifx\p_page_mix_strut\v!yes
+%        \begstrut
+%        \ignorespaces
+%      \fi}
+%
+% \setvalue{\??mixedcolumnsstop\s!box}%
+%   {\ifx\p_page_mix_strut\v!yes
+%      \removeunwantedspaces
+%      \endstrut
+%    \fi
+%    \egroup
+%    \page_mix_box_balance}
+
 \setvalue{\??mixedcolumnsstart\s!box}%
   {\edef\p_page_mix_strut{\mixedcolumnsparameter\c!strut}%
-   \setbox\b_page_mix_collected\vbox\bgroup
+   \setbox\b_page_mix_collected\vbox \bgroup
      \let\currentoutputroutine\s!mixedcolumn % makes \column work
      \forgetall
+     \usegridparameter\mixedcolumnsparameter
+   % \useprofileparameter\mixedcolumnsparameter
      \page_mix_command_set_hsize
      \ifx\p_page_mix_strut\v!yes
        \begstrut
@@ -747,6 +805,16 @@
      \endstrut
    \fi
    \egroup
+   \edef\p_profile{\mixedcolumnsparameter\c!profile}%
+   \ifx\p_profile\empty \else
+      % this can never be ok because we cheat with depth and height
+      % and glue in between and when we're too large we run into issues
+      % so mayb best limit correction to one line
+      \profilegivenbox\p_profile\b_page_mix_collected
+      \setbox\b_page_mix_collected\vbox{\unvbox\b_page_mix_collected}%
+      % tracing
+      % \addprofiletobox\b_page_mix_collected
+   \fi
    \page_mix_box_balance}
 
 %D The related balancer is only a few lines:

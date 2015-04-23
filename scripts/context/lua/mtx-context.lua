@@ -260,7 +260,7 @@ end
 -- multipass control
 
 local multipass_suffixes   = { ".tuc" }
-local multipass_nofruns    = 8 -- or 7 to test oscillation
+local multipass_nofruns    = 9 -- better for tracing oscillation
 local multipass_forcedruns = false
 
 local function multipass_hashfiles(jobname)

@@ -301,13 +301,13 @@
 
 \newconditional\c_strc_rendering_continuous % not used (mkii ?)
 
-\def\setstructurelevel         #1#2{\clf_setstructurelevel         {#1}{#2}}      % name, level|parent
-\def\getstructurelevel           #1{\clf_getstructurelevel         {#1}}          % name
-\def\setstructurenumber        #1#2{\clf_setstructurenumber         #1{#2}}       % level, number (+/-)
-\def\getstructurenumber          #1{\clf_getstructurenumber         #1 }          % level
-\def\getsomestructurenumber    #1#2{\clf_getsomestructurenumber     #1{#2}}       % level, what
-\def\getfullstructurenumber      #1{\clf_getfullstructurenumber     #1 }          % level
-\def\getsomefullstructurenumber#1#2{\clf_getsomefullstructurenumber #1{#2}}       % level, what
+\def\setstructurelevel         #1#2{\clf_setstructurelevel         {#1}{#2}}         % name, level|parent
+\def\getstructurelevel           #1{\clf_getstructurelevel         {#1}}             % name
+\def\setstructurenumber        #1#2{\clf_setstructurenumber         #1{#2}}          % level, number (+/-)
+\def\getstructurenumber          #1{\clf_getstructurenumber         \numexpr#1\relax} % level
+\def\getsomestructurenumber    #1#2{\clf_getsomestructurenumber     #1{#2}}           % level, what
+\def\getfullstructurenumber      #1{\clf_getfullstructurenumber     \numexpr#1\relax} % level
+\def\getsomefullstructurenumber#1#2{\clf_getsomefullstructurenumber #1{#2}}           % level, what
 \def\getspecificstructuretitle   #1{\clf_getspecificstructuretitle {#1}{\headparameter\s!catcodes}}
 
 % structure heads (like \startchapter)

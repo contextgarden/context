@@ -275,8 +275,8 @@
 \definebtx
   [apa:cite:authoryear]
   [apa:cite:author]
-  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace(},
-   \c!right={)\poppunctuation},
+  [\c!left={(},
+   \c!right={)},
    \c!inbetween={,\space},
    \c!compress=\v!yes]
 
@@ -295,8 +295,8 @@
 \definebtx
   [apa:cite:authornum]
   [apa:cite:author]
-  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace(},
-   \c!right={)\poppunctuation},
+  [\c!left={(},
+   \c!right={)},
    \c!sorttype=authornum]
 
 \definebtx
@@ -306,8 +306,8 @@
 \definebtx
   [apa:cite:author:num] % todo
   [apa:cite:authornum]
-  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace[},
-   \c!right={]\poppunctuation}]
+  [\c!left={[},
+   \c!right={]}]
 
 \definebtx
   [apa:cite:author:year] % todo
@@ -345,8 +345,8 @@
 \definebtx
   [apa:cite:tag]
   [apa:cite]
-  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace[},
-   \c!right={]\poppunctuation}]
+  [\c!left={[},
+   \c!right={]}]
 
 
 \definebtx
@@ -383,8 +383,8 @@
 \definebtx
   [apa:cite:short]
   [apa:cite]
-  [\c!left={\removeunwantedspaces\pushpunctuation\btxspace[},
-   \c!right={]\poppunctuation}]
+  [\c!left={[},
+   \c!right={]}]
 
 \definebtx
   [apa:cite:category]
@@ -811,7 +811,9 @@
 \starttexdefinition btx:apa:suffixedyear
     \btxdoifelse {year} {
         \btxflush{year}
-        \btxflush{suffix}
+        \btxdoifelse {suffix} {
+            \characters{\btxflush{suffix}}
+        }
     } {
         \btxlabeltext{apa:nd}
     }

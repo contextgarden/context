@@ -226,7 +226,7 @@
   [\c!compress=\v!yes,
    \c!left={[},
    \c!right={]},
-   \c!separator:2={,}, % no space
+   \c!separator:2=\btxcommabreak,
    \c!separator:3=\btxparameter{\c!separator:2},
    \c!separator:4=\btxparameter{\c!separator:2}]
 
@@ -360,7 +360,9 @@
 
 \starttexdefinition btx:default:year
     \btxflush{year}
-    \btxflush{suffix}
+        \btxdoifelse {suffix} {
+            \characters{\btxflush{suffix}}
+        }
 \stoptexdefinition
 
 \starttexdefinition btx:default:journal

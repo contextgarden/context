@@ -1498,10 +1498,20 @@
      \pack_framed_reshape_reset
    \fi}
 
+\def\pack_framed_profile_box
+  {\profilegivenbox\p_profile\b_framed_normal
+   \setbox\b_framed_normal\vbox{\unvbox\b_framed_normal}}
+
 \unexpanded\def\pack_framed_finish
   {%\pack_framed_stop_orientation % hm, wrong place ! should rotate the result (after reshape) .. moved down
    \pack_framed_locator_before\p_framed_location
    \ifconditional\c_framed_has_format
+     \ifconditional\c_framed_has_height \else
+       \edef\p_profile{\framedparameter\c!profile}%
+       \ifx\p_profile\empty\else
+         \pack_framed_profile_box
+       \fi
+     \fi
      \ifx\p_framed_autowidth\v!force
        \pack_framed_finish_a
      \else\ifx\localwidth\v!fit
@@ -2115,7 +2125,8 @@
 
 \def\pack_framed_do_setups
   {\ifx\p_framed_setups\empty \else
-     \setups[\p_framed_setups]% \texsetup
+     \setups[\p_framed_setups]% \texsetup (or only one!)
+   % \fastsetup\p_framed_setup % singular would have been better
    \fi}
 
 \def\pack_framed_format_format_yes

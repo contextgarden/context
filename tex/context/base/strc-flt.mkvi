@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D This module will be redone with conditionals and everythings
+
 \writestatus{loading}{ConTeXt Structure Macros / Float Numbering}
 
 \registerctxluafile{strc-flt}{1.001}
@@ -478,6 +480,10 @@
    \ifx\currentfloat\empty
      \let\currentfloat\v!figure % a bit of a hack
    \fi
+   \doifelsecommandhandler\??float\currentfloat
+     \donothing
+     {\writestatus\m!floatblocks{unknown float type '\currentfloat'}%
+      \let\currentfloat\v!figure}% also a hack
    \global\let\lastplacedfloat\currentfloat
    \let\m_strc_floats_saved_userdata\empty
    \let\currentfloatcaption\currentfloat}
@@ -569,7 +575,7 @@
   {\flushnotes
    \page_otr_command_flush_side_floats % here !
    \strc_floats_begin_group
-   \dodoubleempty\strc_floats_start_place_float}
+   \dotripleempty\strc_floats_start_place_float}
 
 \def\strc_floats_start_place_float[#tag]%
   {\strc_floats_set_current_tag{#tag}%
@@ -1774,7 +1780,7 @@
   {\dp\b_strc_floats_caption\strutdepth
    \setbox\scratchbox\vbox
      {\strc_floats_align_caption{\copy\b_strc_floats_caption}%
-      \strc_floats_align_content  {\copy\b_strc_floats_content  }}%
+      \strc_floats_align_content{\copy\b_strc_floats_content}}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
    \vbox to \noflines\lineheight
      {\d_strc_float_temp_width\wd\b_strc_floats_content
@@ -2304,6 +2310,7 @@
 
 \installfloatmethod \s!singlecolumn \v!local \somelocalfloat
 \installfloatmethod \s!multicolumn  \v!local \somelocalfloat
+\installfloatmethod \s!mixedcolumn  \v!local \somelocalfloat
 \installfloatmethod \s!columnset    \v!local \somelocalfloat
 
 \protect \endinput

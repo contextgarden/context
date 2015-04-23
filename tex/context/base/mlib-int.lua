@@ -101,9 +101,13 @@ end
 
 -- locals
 
-mp.OnRightPage = function() mpprint(structures.pages.on_right()) end -- needs checking
-mp.OnOddPage   = function() mpprint(structures.pages.is_odd  ()) end -- needs checking
-mp.InPageBody  = function() mpprint(structures.pages.in_body ()) end -- needs checking
+local on_right = structures.pages.on_right
+local is_odd   = structures.pages.is_odd
+local in_body  = structures.pages.in_body
+
+mp.OnRightPage = function() mpprint(on_right()) end -- needs checking
+mp.OnOddPage   = function() mpprint(is_odd  ()) end -- needs checking
+mp.InPageBody  = function() mpprint(in_body ()) end -- needs checking
 
 -- mp.CurrentLayout    : \currentlayout
 

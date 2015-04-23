@@ -218,45 +218,51 @@ local sorters = {
     [v_short] = function(dataset,rendering,list)
         local shorts = rendering.shorts
         local function compare(a,b)
-            local aa, bb = a and a[1], b and b[1]
+            local aa = a and a[1]
+            local bb = b and b[1]
             if aa and bb then
                 aa, bb = shorts[aa], shorts[bb]
                 return aa and bb and aa < bb
+            else
+                return a[1] < b[1]
             end
-            return false
         end
         sort(list,compare)
     end,
     [v_reference] = function(dataset,rendering,list)
         local function compare(a,b)
-            local aa, bb = a and a[1], b and b[1]
+            local aa = a and a[1]
+            local bb = b and b[1]
             if aa and bb then
-                return aa and bb and aa < bb
+                return aa < bb
+            else
+                return a[1] < b[1]
             end
-            return false
         end
         sort(list,compare)
     end,
     [v_dataset] = function(dataset,rendering,list)
         local function compare(a,b)
--- inspect(a,b)
-            local aa, bb = a and a[6], b and b[6]
+            local aa = a and a[6]
+            local bb = b and b[6]
             if aa and bb then
-             -- aa, bb = list[aa].index or 0, list[bb].index or 0
-                return aa and bb and aa < bb
+                return aa < bb
+            else
+                return a[1] < b[1]
             end
-            return false
         end
         sort(list,compare)
     end,
     [v_default] = function(dataset,rendering,list,sorttype) -- experimental
         if sorttype == "" or sorttype == v_default then
             local function compare(a,b)
-                local aa, bb = a and a[3], b and b[3]
-                if aa and bb then
-                    return aa and bb and aa < bb
+                local aa = a and a[3] or 0
+                local bb = b and b[3] or 0
+                if aa == bb then
+                    return a[1] < b[1]
+                else
+                    return aa < bb
                 end
-                return false
             end
             sort(list,compare)
         else

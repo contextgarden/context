@@ -116,11 +116,12 @@ appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
 -- still experimental
 
 appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")
-appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler")                        -- here !
-appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !
 
-appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler")                        -- here !
+appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !
+appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler")                        -- here !
+
 appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")
+appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler")                        -- here !
 
 -- experimental too
 

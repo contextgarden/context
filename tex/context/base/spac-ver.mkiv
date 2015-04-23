@@ -946,15 +946,47 @@
         \s!height\strutht
         \s!depth \strutdp}}
 
+\newconstant\c_strut_visual_mode
+
 \def\spac_struts_set_vide
   {\setbox\strutbox\hbox  % at some time this extra wrapping was needed
      {\spac_struts_vide_hbox to \zeropoint
-        {% \hss % new, will be option
-         \vrule
-           \s!width \strutwidth
-           \s!height\strutht
-           \s!depth \strutdp
-         \hss}}}
+        {\ifcase\c_strut_visual_mode
+           \spac_struts_black
+         \or
+           \spac_struts_color
+         \else
+           \spac_struts_black
+         \fi}}}
+
+\def\spac_struts_black
+  {\vrule
+     \s!width \strutwidth
+     \s!height\strutht
+     \s!depth \strutdp
+   \hss}
+
+\def\spac_struts_color
+  {\hss % new, will be option
+   \scratchwidth.1\struthtdp
+   \begingroup
+   \directcolor[f:b:t]%
+   \vrule
+     \s!width \scratchwidth
+     \s!height\strutht
+     \s!depth \strutdp
+   \kern-\scratchwidth
+   \vrule
+     \s!width \scratchwidth
+     \s!height\zeropoint
+     \s!depth \strutdp
+   \endgroup
+   \kern-.625\scratchwidth
+   \vrule
+     \s!width .25\scratchwidth
+     \s!height\strutht
+     \s!depth \strutdp
+   \hss}
 
 \let\spac_struts_vide_hbox\hbox % overloaded in trac-vis.mkiv
 
@@ -1048,7 +1080,13 @@
    \fi}
 
 \unexpanded\def\showstruts % adapts .. is wrong
-  {\setteststrut
+  {\c_strut_visual_mode\zerocount
+   \setteststrut
+   \settestcrlf}
+
+\unexpanded\def\showcolorstruts % adapts .. is wrong
+  {\c_strut_visual_mode\plusone
+   \setteststrut
    \settestcrlf}
 
 \unexpanded\def\setteststrut
@@ -1396,6 +1434,16 @@
      \setevalue{\??gridsnapperattributes\currentsnapper}{\clf_definesnapmethod{#1}{#2}}%
    \fi
    \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
+
+\unexpanded\def\usegridparameter#1% no checking here
+  {\edef\m_spac_grid_asked{#1\c!grid}%
+   \ifx\m_spac_grid_asked\empty
+     \attribute \snapvboxattribute\attributeunsetvalue
+   \else
+     \spac_grids_snap_value_set\m_spac_grid_asked
+     \attribute \snapvboxattribute\attribute\snapmethodattribute
+   \fi}
+
 
 \unexpanded\def\definegridsnapping
   {\dodoubleargument\spac_grids_define}

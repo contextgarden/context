@@ -267,29 +267,38 @@ vardef PaperBleed           = lua.mp.PaperBleed          () enddef ;
 boolean mfun_swapped ;
 
 def SwapPageState =
-    mfun_swapped := true ;
+    mfun_swapped := true ; % eventually this will go !
 enddef ;
 
 extra_beginfig := extra_beginfig & "mfun_swapped := false ;" ;
-
-vardef BackSpace = if (mfun_swapped and not OnRightPage) : PaperWidth - MakeupWidth - fi  lua.mp.BackSpace() enddef ;
-vardef CutSpace  = if (mfun_swapped and not OnRightPage) : PaperWidth - MakeupWidth - fi  lua.mp.CutSpace () enddef ;
 
 vardef LeftMarginWidth     = if mfun_swapped and not OnRightPage : lua.mp.RightMarginWidth   () else : lua.mp.LeftMarginWidth    () fi enddef ;
 vardef RightMarginWidth    = if mfun_swapped and not OnRightPage : lua.mp.LeftMarginWidth    () else : lua.mp.RightMarginWidth   () fi enddef ;
 vardef LeftMarginDistance  = if mfun_swapped and not OnRightPage : lua.mp.RightMarginDistance() else : lua.mp.LeftMarginDistance () fi enddef ;
 vardef RightMarginDistance = if mfun_swapped and not OnRightPage : lua.mp.LeftMarginDistance () else : lua.mp.RightMarginDistance() fi enddef ;
+
 vardef LeftEdgeWidth       = if mfun_swapped and not OnRightPage : lua.mp.RightEdgeWidth     () else : lua.mp.LeftEdgeWidth      () fi enddef ;
 vardef RightEdgeWidth      = if mfun_swapped and not OnRightPage : lua.mp.LeftEdgeWidth      () else : lua.mp.RightEdgeWidth     () fi enddef ;
 vardef LeftEdgeDistance    = if mfun_swapped and not OnRightPage : lua.mp.RightEdgeDistance  () else : lua.mp.LeftEdgeDistance   () fi enddef ;
 vardef RightEdgeDistance   = if mfun_swapped and not OnRightPage : lua.mp.LeftEdgeDistance   () else : lua.mp.RightEdgeDistance  () fi enddef ;
 
-% vardef Margin      = if OnRightPage : lua.mp.RightMarginWidth else : lua.mp.LeftMarginWidth  fi enddef ;
-% vardef Edge        = if OnRightPage : lua.mp.RightEdgeWidth   else : lua.mp.LeftEdgeWidth    fi enddef ;
-% vardef InnerMargin = if OnRightPage : lua.mp.LeftMarginWidth  else : lua.mp.RightMarginWidth fi enddef ;
-% vardef InnerEdge   = if OnRightPage : lua.mp.LeftEdgeWidth    else : lua.mp.RightEdgeWidth   fi enddef ;
-% vardef OuterMargin = if OnRightPage : lua.mp.RightMarginWidth else : lua.mp.LeftMarginWidth  fi enddef ;
-% vardef OuterEdge   = if OnRightPage : lua.mp.RightEdgeWidth   else : lua.mp.LeftEdgeWidth    fi enddef ;
+vardef BackSpace           = if mfun_swapped and not OnRightPage : PaperWidth - MakeupWidth - fi  lua.mp.BackSpace() enddef ;
+vardef CutSpace            = if mfun_swapped and not OnRightPage : PaperWidth - MakeupWidth - fi  lua.mp.CutSpace () enddef ;
+
+% better use:
+
+vardef OuterMarginWidth    = if not OnRightPage : lua.mp.LeftMarginWidth    () else : lua.mp.RightMarginWidth   () fi enddef ;
+vardef InnerMarginWidth    = if not OnRightPage : lua.mp.RightMarginWidth   () else : lua.mp.LeftMarginWidth    () fi enddef ;
+vardef OuterMarginDistance = if not OnRightPage : lua.mp.LeftMarginDistance () else : lua.mp.RightMarginDistance() fi enddef ;
+vardef InnerMarginDistance = if not OnRightPage : lua.mp.RightMarginDistance() else : lua.mp.leftMarginDistance () fi enddef ;
+
+vardef OuterEdgeWidth      = if not OnRightPage : lua.mp.LeftEdgeWidth      () else : lua.mp.RightEdgeWidth     () fi enddef ;
+vardef InnerEdgeWidth      = if not OnRightPage : lua.mp.RightEdgeWidth     () else : lua.mp.LeftEdgeWidth      () fi enddef ;
+vardef OuterEdgeDistance   = if not OnRightPage : lua.mp.LeftEdgeDistance   () else : lua.mp.RightEdgeDistance  () fi enddef ;
+vardef InnerEdgeDistance   = if not OnRightPage : lua.mp.RightEdgeDistance  () else : lua.mp.leftEdgeDistance   () fi enddef ;
+
+vardef OuterSpaceWidth     = if not OnRightPage : lua.mp.BackSpace          () else : lua.mp.CutSpace           () fi enddef ;
+vardef InnerSpaceWidth     = if not OnRightPage : lua.mp.CutSpace           () else : lua.mp.BackSpace          () fi enddef ;
 
 % vardef CurrentLayout = lua.mp.CurrentLayout () enddef ;
 
