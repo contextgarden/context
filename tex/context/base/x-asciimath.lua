@@ -123,6 +123,7 @@ local reserved = {
     ["bar"]       = { false, "\\overbar",           "unary" },
     ["overbar"]   = { false, "\\overbar",           "unary" },
     ["underline"] = { false, "\\underline",         "unary" },
+    ["ul"]        = { false, "\\underline",         "unary" },
     ["vec"]       = { false, "\\overrightarrow",    "unary" },
     ["dot"]       = { false, "\\dot",               "unary" }, -- 0x2D9
     ["ddot"]      = { false, "\\ddot",              "unary" }, -- 0xA8

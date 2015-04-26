@@ -71,6 +71,7 @@ implement { name = "xmlinclude",              actions = lxml.include,           
 implement { name = "xmlincludeoptions",       actions = lxml.include,           arguments = { "string", "string", "string", "string" } }
 implement { name = "xmlinclusion",            actions = lxml.inclusion,         arguments = "string" }
 implement { name = "xmlinclusions",           actions = lxml.inclusions,        arguments = "string" }
+implement { name = "xmlbadinclusions",        actions = lxml.badinclusions,     arguments = "string" }
 implement { name = "xmlindex",                actions = lxml.index,             arguments = { "string", "string", "string" } } -- can be integer but now we can alias
 implement { name = "xmlinfo",                 actions = lxml.info,              arguments = "string" }
 implement { name = "xmlinlineverbatim",       actions = lxml.inlineverbatim,    arguments = "string" }

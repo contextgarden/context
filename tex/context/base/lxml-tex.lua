@@ -49,6 +49,7 @@ local xmlprivatecodes   = xml.privatecodes
 local xmlstripelement   = xml.stripelement
 local xmlinclusion      = xml.inclusion
 local xmlinclusions     = xml.inclusions
+local xmlbadinclusions  = xml.badinclusions
 local xmlcontent        = xml.content
 
 local variables         = interfaces and interfaces.variables or { }
@@ -519,7 +520,14 @@ end
 function lxml.inclusions(id,sorted)
     local inclusions = xmlinclusions(getid(id),sorted)
     if inclusions then
-        context(table.concat(inclusions,","))
+        context(concat(inclusions,","))
+    end
+end
+
+function lxml.badinclusions(id,sorted)
+    local badinclusions = xmlbadinclusions(getid(id),sorted)
+    if badinclusions then
+        context(concat(badinclusions,","))
     end
 end
 
@@ -1205,12 +1213,12 @@ local function command(collected,cmd,otherwise)
             local e = collected[c]
             local ix = e.ix
             local name = e.name
-            if not ix then
+            if name and not ix then
                 lxml.addindex(name,false,true)
                 ix = e.ix
             end
-            if not ix then
-                report_lxml("no valid node index for element %a in command %s",name,cmd)
+            if not ix or not name then
+                report_lxml("no valid node index for element %a using command %s",name or "?",cmd)
             elseif wildcard then
                 contextsprint(ctxcatcodes,"\\xmlw{",(gsub(cmd,"%*",e.tg)),"}{",name,"::",ix,"}")
             else

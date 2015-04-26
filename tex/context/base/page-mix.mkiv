@@ -39,13 +39,6 @@
 
 \unprotect
 
-\ifdefined\profilemethodattribute
-    % we're okay
-\else
-    \newcount\profilemethodattribute
-    \let\useprofileparameter\gobbleoneargument
-\fi
-
 %D The mixed output routine replaces the traditional multi column handler that
 %D started out in \MKII. One of the complications of a routine is that it needs
 %D to align nicely when mixed in a single column layout. Instead of using all

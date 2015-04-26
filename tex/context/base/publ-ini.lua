@@ -130,7 +130,8 @@ local ctx_btxnumberingsetup       = context.btxnumberingsetup
 local ctx_btxpagesetup            = context.btxpagesetup
 local ctx_btxsetfirst             = context.btxsetfirst
 local ctx_btxsetsecond            = context.btxsetsecond
-local ctx_btxsetthird             = context.btxsetthird
+----- ctx_btxsetthird             = context.btxsetthird
+local ctx_btxsetsuffix            = context.btxsetsuffix
 local ctx_btxsetinternal          = context.btxsetinternal
 local ctx_btxsetlefttext          = context.btxsetlefttext
 local ctx_btxsetrighttext         = context.btxsetrighttext
@@ -2229,22 +2230,6 @@ do
 
     -- sorter
 
---     local keysorter = function(a,b)
---         local ak = a.sortkey
---         local bk = b.sortkey
---         if ak == bk then
---             local as = a.suffix -- alphabetic
---             local bs = b.suffix -- alphabetic
---             if as and bs then
---                 return (as or "") < (bs or "")
---             else
---                 return false
---             end
---         else
---             return ak < bk
---         end
---     end
-
     local keysorter = function(a,b)
         local ak = a.sortkey
         local bk = b.sortkey
@@ -2427,7 +2412,7 @@ do
                 if language then
                     ctx_btxsetlanguage(language)
                 end
-                if not getter(entry,last) then
+                if not getter(entry,last,nil,specification) then
                     ctx_btxsetfirst("") -- (f_missing(tag))
                 end
                 ctx_btxsetconcat(concatstate(i,n))
@@ -2473,7 +2458,7 @@ do
 
     --
 
-    local function simplegetter(first,last,field)
+    local function simplegetter(first,last,field,specification)
         local value = first[field]
         if value then
             ctx_btxsetfirst(value)
@@ -2497,8 +2482,8 @@ do
     end)
 
     local getters = setmetatableindex({},function(t,k)
-        local v = function(first,last)
-            return simplegetter(first,last,k)
+        local v = function(first,last,_,specification)
+            return simplegetter(first,last,k,specification) -- maybe _ or k
         end
         t[k] = v
         return v
@@ -2529,8 +2514,8 @@ do
             data.category = getfield(dataset,tag,"category")
         end
 
-        local function getter(first,last)
-            return simplegetter(first,last,"category")
+        local function getter(first,last,_,specification)
+            return simplegetter(first,last,"category",specification)
         end
 
         function citevariants.category(presets)
@@ -2551,14 +2536,13 @@ do
             -- nothing
         end
 
-        local function getter(first,last) -- last not used
+        local function getter(first,last,_,specification) -- last not used
             ctx_btxsetfirst(first.tag)
         end
 
         function citevariants.entry(presets)
             processcite(presets,{
                 compress = false,
-             -- variant  = presets.variant or "entry",
                 setter   = setter,
                 getter   = getter,
             })
@@ -2575,14 +2559,13 @@ do
             data.suffix = getdetail(dataset,tag,"suffix")
         end
 
-        local function getter(first,last) -- last not used
+        local function getter(first,last,_,specification) -- last not used
             local short = first.short
             if short then
                 local suffix = first.suffix
+                ctx_btxsetfirst(short)
                 if suffix then
-                    ctx_btxsetfirst(short .. suffix)
-                else
-                    ctx_btxsetfirst(short)
+                    ctx_btxsetsuffix(suffix) -- watch out: third
                 end
                 return true
             end
@@ -2591,7 +2574,6 @@ do
         function citevariants.short(presets)
             processcite(presets,{
                 compress = false,
-             -- variant  = presets.variant or "short",
                 setter   = setter,
                 getter   = getter,
             })
@@ -2607,7 +2589,7 @@ do
             data.pages = getcasted(dataset,tag,"pages")
         end
 
-        local function getter(first,last)
+        local function getter(first,last,_,specification)
             local pages = first.pages
             if pages then
                 if type(pages) == "table" then
@@ -2641,8 +2623,8 @@ do
             data.sortkey  = tonumber(text) or text
         end
 
-        local function getter(first,last)
-            return simplegetter(first,last,"num")
+        local function getter(first,last,_,specification)
+            return simplegetter(first,last,"num",specification)
         end
 
         function citevariants.num(presets)
@@ -2667,8 +2649,8 @@ do
             data.sortkey = tonumber(year) or 9999
         end
 
-        local function getter(first,last)
-            return simplegetter(first,last,"year")
+        local function getter(first,last,_,specification)
+            return simplegetter(first,last,"year",specification)
         end
 
         function citevariants.year(presets)
@@ -2691,8 +2673,8 @@ do
             data.sortkey = index
         end
 
-        local function getter(first,last)
-            return simplegetter(first,last,"index")
+        local function getter(first,last,_,specification)
+            return simplegetter(first,last,"index",specification)
         end
 
         function citevariants.index(presets)
@@ -2713,7 +2695,7 @@ do
             -- nothing
         end
 
-        local function getter(first,last)
+        local function getter(first,last,_,specification)
             ctx_btxsetfirst(first.tag)
             return true
         end
@@ -2752,7 +2734,7 @@ do
             data.keywords = getcasted(dataset,tag,"keywords")
         end
 
-        local function getter(first,last)
+        local function getter(first,last,_,specification)
             context(listof(first.keywords))
         end
 
@@ -2790,7 +2772,7 @@ do
                     end
                 end
             end
-            -- beware: we usetables as hash so we get a cycle when inspecting (unless we start
+            -- beware: we use tables as hash so we get a cycle when inspecting (unless we start
             -- hashing with strings)
             for i=1,#found do
                 local entry  = found[i]
@@ -2837,14 +2819,14 @@ do
                             ctx_btxsetsecond(value)
                         end
                         if suffix then
-                            ctx_btxsetthird(suffix)
+                            ctx_btxsetsuffix(suffix)
                         end
                     else
                         local suffix = entry.suffix
                         local value  = entry[key] or "" -- f_missing(tag)
                         ctx_btxsetfirst(value)
                         if suffix then
-                            ctx_btxsetthird(suffix)
+                            ctx_btxsetsuffix(suffix)
                         end
                     end
                     ctx_btxsetconcat(concatstate(i,nofcollected))
@@ -2869,7 +2851,7 @@ do
          -- ctx_btxsetinternal(bl and bl.references.internal or "")
             ctx_btxsetfirst(entry[key] or "") -- f_missing(tag)
             if suffix then
-                ctx_btxsetthird(entry.suffix)
+                ctx_btxsetsuffix(entry.suffix)
             end
             if trace_detail then
                 report("expanding %a cite setup %a","single author",setup)
@@ -2881,7 +2863,7 @@ do
 
         local partialinteractive = false
 
-        local function authorgetter(first,last,key,setup) -- only first
+        local function authorgetter(first,last,key,specification) -- only first
          -- ctx_btxsetfirst(first.author)         -- unformatted
          -- ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
             if first.type == "author" then
@@ -2897,13 +2879,13 @@ do
             end
             if entries then
                 -- happens with year
-                local c = compresslist(entries,setup)
-                local f = function() authorconcat(c,key,setup) return true end -- indeed return true?
+                local c = compresslist(entries,specification)
+                local f = function() authorconcat(c,key,specification.setup or "author") return true end -- indeed return true?
                 ctx_btxsetcount(#c)
                 ctx_btxsetsecond(f)
             elseif first then
                 -- happens with num
-                local f = function() authorsingle(first,key,setup) return true end -- indeed return true?
+                local f = function() authorsingle(first,key,specification.setup or "author") return true end -- indeed return true?
                 ctx_btxsetcount(0)
                 ctx_btxsetsecond(f)
             end
@@ -2916,7 +2898,7 @@ do
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
         end
 
-        local function getter(first,last,_,setup)
+        local function getter(first,last,_,specification)
             if first.type == "author" then
                 ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
             else
@@ -2928,6 +2910,7 @@ do
         function citevariants.author(presets)
             processcite(presets,{
                 variant  = "author",
+                setup    = "author",
                 setter   = setter,
                 getter   = getter,
             })
@@ -2943,14 +2926,15 @@ do
             data.sortkey = text and lpegmatch(numberonly,text)
         end
 
-        local function getter(first,last)
-            authorgetter(first,last,"num","author:num")
+        local function getter(first,last,_,specification)
+            authorgetter(first,last,"num",specification)
             return true
         end
 
         function citevariants.authornum(presets)
             processcite(presets,{
                 variant    = "authornum",
+                setup      = "author:num",
                 setter     = setter,
                 getter     = getter,
                 compressor = authorcompressor,
@@ -2968,28 +2952,30 @@ do
             data.sortkey = tonumber(year) or 9999
         end
 
-        local function getter(first,last)
-            authorgetter(first,last,"year","author:year")
+        local function getter(first,last,_,specification)
+            authorgetter(first,last,"year",specification)
             return true
         end
 
         function citevariants.authoryear(presets)
             processcite(presets,{
                 variant    = "authoryear",
+                setup      = "author:year",
                 setter     = setter,
                 getter     = getter,
                 compressor = authorcompressor,
             })
         end
 
-        local function getter(first,last)
-            authorgetter(first,last,"year","author:years")
+        local function getter(first,last,_,specification)
+            authorgetter(first,last,"year",specification)
             return true
         end
 
         function citevariants.authoryears(presets)
             processcite(presets,{
                 variant    = "authoryears",
+                setup      = "author:years",
                 setter     = setter,
                 getter     = getter,
                 compressor = authorcompressor,
@@ -3046,7 +3032,7 @@ do
             ctx_btxsetfirst(short)
         end
         if suffix then
-            ctx_btxsetthird(suffix)
+            ctx_btxsetsuffix(suffix)
         end
         if trace_detail then
             report("expanding %a list setup %a","short",variant)

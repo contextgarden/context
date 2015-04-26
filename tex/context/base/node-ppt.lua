@@ -58,7 +58,7 @@ local cache            = { }
 local nofslots         = 0
 local property_id      = nodepool.userids["property"]
 
-local properties       = nodes.properties                     if not properties then return end -- temp
+local properties       = nodes.properties
 local propertydata     = properties.data
 
 local starttiming      = statistics.starttiming

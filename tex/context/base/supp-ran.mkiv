@@ -26,7 +26,14 @@
 \unexpanded\def\getrandomfloat #1#2#3{\edef#1{\clf_getrandomfloat#2 #3}}
 \unexpanded\def\setrandomseed      #1{\clf_setrandomseed#1\relax}
 \unexpanded\def\getrandomseed      #1{\edef#1{\clf_getrandomseed}}
-\unexpanded\def\freezerandomseed     {\clf_freezerandomseed}
-\unexpanded\def\defrostrandomseed    {\clf_defrostrandomseed}
+\unexpanded\def\pushrandomseed       {\clf_pushrandomseed}
+\unexpanded\def\poprandomseed        {\clf_poprandomseed}
+\unexpanded\def\reuserandomseed      {\clf_reuserandomseed} % within push/pop
+
+\let\freezerandomseed \pushrandomseed
+\let\defrostrandomseed\poprandomseed
+
+\def\randomnumber  #1#2{\clf_getrandomnumber\numexpr#1\relax\numexpr#2\relax}
+\let\mprandomnumber     \clf_getmprandomnumber
 
 \protect \endinput

@@ -50,6 +50,7 @@
 
 \startsetups btx:cite:unknown
     \begingroup
+        \tttf
         \btxcitereference
         unknown: \currentbtxfirst
     \endgroup
@@ -69,36 +70,79 @@
     \btxparameter{\c!separator:\number\currentbtxconcat}
 \stoptexdefinition
 
+% when we have an author-year combination, the first and seconds is not
+% fields data but something more complex (that itself calls for a setup)
+
+% \startsetups btx:cite:normal
+%     \texdefinition{\s!btx:\s!cite:concat}
+%     \currentbtxlefttext
+%     \ifx\currentbtxfirst\empty
+%         \fastsetup{\s!btx:\s!cite:\s!empty}
+%     \else
+%         \texdefinition {\s!btx:\s!cite:inject} {
+%             \btxcitereference
+%             \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
+%                 \currentbtxfirst
+%             }
+%         }
+%         \ifx\currentbtxsecond\empty
+%           \btxflushsuffix
+%         \else
+%             \btxparameter\c!inbetween
+%             \texdefinition {\s!btx:\s!cite:inject} {
+%                 \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
+%                     \currentbtxsecond
+%                  }
+%             }
+%             % quite likely an error
+%             \btxflushsuffix
+%         \fi
+%     \fi
+%     \currentbtxrighttext
+% \stopsetups
+
 \startsetups btx:cite:normal
     \texdefinition{\s!btx:\s!cite:concat}
     \currentbtxlefttext
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
-    \else
+    \else\ifx\currentbtxsecond\empty
         \texdefinition {\s!btx:\s!cite:inject} {
             \btxcitereference
             \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
                 \currentbtxfirst
+                \btxflushsuffix
             }
         }
-        \ifx\currentbtxsecond\empty \else
-            \btxparameter\c!inbetween
-            \texdefinition {\s!btx:\s!cite:inject} {
-                \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
-                    \currentbtxsecond
-                 }
-            }
-        \fi
-        \ifx\currentbtxthird\empty \else
-            \texdefinition {\s!btx:\s!cite:inject} {
-                \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
-                    \currentbtxthird
-                 }
-            }
-        \fi
-    \fi
+    \else
+      %  \texdefinition {\s!btx:\s!cite:inject} {
+      %      \btxcitereference
+      %      \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
+      %          \currentbtxfirst
+      %      }
+      %  }
+      %  \btxparameter\c!inbetween
+      %  \texdefinition {\s!btx:\s!cite:inject} {
+      %      \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
+      %          \currentbtxsecond
+      %       }
+      %  }
+      %  \btxflushsuffix
+      %
+      % probably better:
+        \texdefinition {\s!btx:\s!cite:inject} {
+            \btxcitereference
+            \btxusecommand [\currentbtxspecification:cite:\currentbtxcitealternative] {
+                \currentbtxfirst
+                \btxparameter\c!inbetween
+                \currentbtxsecond
+                \btxflushsuffix
+             }
+        }
+    \fi\fi
     \currentbtxrighttext
 \stopsetups
+
 
 \startsetups btx:cite:range
     \texdefinition{\s!btx:\s!cite:concat}
@@ -114,9 +158,7 @@
                     \btxparameter\c!range
                     \currentbtxsecond
                 \fi
-                \ifx\currentbtxthird\empty \else
-                    \currentbtxthird
-                \fi
+                \btxflushsuffix
             }
         }
     \fi
@@ -194,7 +236,6 @@
     \fastsetup{\s!btx:\s!cite:range}
 \stopsetups
 \startsetups \s!btx:\s!cite:author:years
-    \fastsetup{\s!btx:\s!cite:concat}%?? in range already?
     \fastsetup{\s!btx:\s!cite:range}
 \stopsetups
 
@@ -222,6 +263,9 @@
 \startsetups \s!btx:\s!cite:pages
     \fastsetup{\s!btx:\s!cite:range}
 \stopsetups
+
+% is the next one used?
+
 \startsetups \s!btx:\s!cite:page
     \fastsetup{\s!btx:\s!cite:normal}
 \stopsetups

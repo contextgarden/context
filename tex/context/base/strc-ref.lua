@@ -378,13 +378,13 @@ implement {
 
 function references.set(data)
     local references = data.references
-    local prefix     = references.prefix or ""
     local reference  = references.reference
     if not reference or reference == "" then
-        report_references("invalid reference")
+     -- report_references("invalid reference") -- harmless
         return 0
     end
-    local pd = tobesaved[prefix] -- nicer is a metatable
+    local prefix = references.prefix or ""
+    local pd     = tobesaved[prefix] -- nicer is a metatable
     if not pd then
         pd = { }
         tobesaved[prefix] = pd

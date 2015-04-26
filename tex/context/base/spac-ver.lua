@@ -998,7 +998,11 @@ specialmethods[1] = function(pagehead,pagetail,start,penalty)
     end
     -- none found, so no reson to be special
     if trace_specials then
-        report_specials("  context penalty, discarding")
+        if pagetail then
+            report_specials("  context penalty, discarding, nothing special")
+        else
+            report_specials("  context penalty, discarding, nothing preceding")
+        end
     end
     return special_penalty_xxx
 end
@@ -1123,19 +1127,17 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
     --
     -- todo: keep_together: between headers
     --
+    local pagehead = nil
+    local pagetail = nil
+
     local function getpagelist()
         if not pagehead then
             pagehead = texlists.page_head
             if pagehead then
                 pagehead = tonut(texlists.page_head)
                 pagetail = find_node_tail(pagehead) -- no texlists.page_tail yet-- no texlists.page_tail yet
-            else
-                pagetail = nil
             end
-        else
-            pagetail = nil
         end
-        return pagehead, pagetail
     end
     --
     local function flush(why)
@@ -1289,7 +1291,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 local sp = getattr(current,a_skippenalty)    -- has no default, no unset (yet)
                 if sp and sc == penalty then
                     if where == "page" then
-                        local pagehead, pagetail = getpagelist()
+                        getpagelist()
                         local p = specialmethods[specialmethod](pagehead,pagetail,current,sp)
                         if p then
                             if trace then

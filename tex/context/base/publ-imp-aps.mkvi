@@ -38,7 +38,7 @@
    \c!etaldisplay=\btxparameter\c!etallimit,
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!month,
-   optionaltitle=\v!yes,
+   \c!title=\v!yes,
    \c!separator:names:2={,\space},
    \c!separator:names:3={,\space\btxlabeltext{aps:and}\space}, % not \textampersand
    \c!separator:names:4= {\space\btxlabeltext{aps:and}\space}] % not \textampersand
@@ -76,10 +76,6 @@
 
 \definebtx
   [aps:list:doi]
-  [aps:list]
-
-\definebtx
-  [aps:list:numbering:invertedshort]
   [aps:list]
 
 \definebtx
@@ -245,7 +241,8 @@
 \definebtx
   [aps:cite]
   [aps]
-  [\c!authorconversion=\v!name]
+  [\c!authorconversion=\v!name,
+   \c!compress=\v!yes]
 
 \definebtx
   [aps:cite:author]
@@ -256,16 +253,14 @@
   [aps:cite:author]
   [\c!left={(},
    \c!right={)},
-   \c!inbetween={,\space},
-   \c!compress=\v!yes]
+   \c!inbetween={,\space}]
 
 \definebtx
   [aps:cite:authoryears]
   [aps:cite:authoryear]
   [\c!left=,
    \c!right=,
-   \c!inbetween={\space},
-   \c!compress=\v!yes]
+   \c!inbetween={\space}]
 
 \definebtx
   [aps:cite:authornum]
@@ -300,8 +295,7 @@
 \definebtx
   [aps:cite:year]
   [aps:cite]
-  [\c!compress=\v!yes,
-   \c!sorttype=year]
+  [\c!sorttype=year]
 
 \definebtx
   [aps:cite:title]
@@ -344,12 +338,6 @@
   [\c!left={(},
    \c!right={)}]
 
-% What is \cite[invertedshort]? An mkii thingie.
-
-\definebtx
-  [aps:cite:invertedshort]
-  [aps:cite]
-
 \definebtx
   [aps:cite:short]
   [aps:cite]
@@ -373,13 +361,12 @@
 \definebtx
   [aps:cite:num]
   [aps:cite]
-  [\c!compress=\v!yes,
-   \c!left={[},
+  [\c!left={[},
    \c!right={]},
   %\c!left=,   % TODO: PRB uses superscript references...
   %\c!right=,  % and after punctuation, PRA, C, D, E, and L are before!
   %\c!command={\high},
-   \c!separator:2={,}, % no space
+   \c!separator:2={\btxcommabreak},
    \c!separator:3=\btxparameter{\c!separator:2},
    \c!separator:4=\btxparameter{\c!separator:2}]
 
@@ -578,11 +565,11 @@
                 \currentbtxsecond
             }
         \fi
-        \ifx\currentbtxthird\empty \else
-            \texdefinition {\s!btx:\s!cite:inject} {
-                \currentbtxthird
-            }
-        \fi
+      % \ifx\currentbtxsuffix\empty \else
+      %     \texdefinition {\s!btx:\s!cite:inject} {
+        \currentbtxsuffix
+      %     }
+      % \fi
     \fi
 \stopsetups
 
@@ -675,7 +662,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:aps:optional-title
-    \doif{\btxparameter{optionaltitle}}\v!yes {
+    \doif{\btxparameter{\c!title}\v!yes {
         \texdefinition {btx:aps:title}
     }
 \stoptexdefinition

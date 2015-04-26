@@ -288,10 +288,13 @@ for mode, value in next, modes do
     trackers.register(formatters["visualizers.%s"](mode), function(v) set(mode,v) end)
 end
 
-trackers.register("visualizers.reset", function(v) set("reset", v) end)
-trackers.register("visualizers.all",   function(v) set("all",   v) end)
-trackers.register("visualizers.makeup",function(v) set("makeup",v) end)
-trackers.register("visualizers.boxes", function(v) set("boxes", v) end)
+local fraction = 10
+
+trackers  .register("visualizers.reset",    function(v) set("reset", v) end)
+trackers  .register("visualizers.all",      function(v) set("all",   v) end)
+trackers  .register("visualizers.makeup",   function(v) set("makeup",v) end)
+trackers  .register("visualizers.boxes",    function(v) set("boxes", v) end)
+directives.register("visualizers.fraction", function(v) fraction = tonumber(v) or fraction end)
 
 local c_positive   = "trace:b"
 local c_negative   = "trace:r"
@@ -301,6 +304,7 @@ local c_space      = "trace:y"
 local c_skip_a     = "trace:c"
 local c_skip_b     = "trace:m"
 local c_glyph      = "trace:o"
+local c_ligature   = "trace:s"
 local c_white      = "trace:w"
 local c_math       = "trace:r"
 
@@ -312,6 +316,7 @@ local c_space_d    = "trace:dy"
 local c_skip_a_d   = "trace:dc"
 local c_skip_b_d   = "trace:dm"
 local c_glyph_d    = "trace:do"
+local c_ligature_d = "trace:ds"
 local c_white_d    = "trace:dw"
 local c_math_d     = "trace:dr"
 
@@ -351,7 +356,7 @@ local function fontkern(head,current)
         -- print("hit fontkern")
     else
         local text = fast_hpack_string(formatters[" %0.3f"](kern*pt_factor),usedfont)
-        local rule = new_rule(emwidth/10,6*exheight,2*exheight)
+        local rule = new_rule(emwidth/fraction,6*exheight,2*exheight)
         local list = getlist(text)
         if kern > 0 then
             setlistcolor(list,c_positive_d)
@@ -470,7 +475,7 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
         local prev = previous -- getprev(current) ... prev can be wrong in math mode < 0.78.3
         setfield(current,"next",nil)
         setfield(current,"prev",nil)
-        local linewidth = emwidth/10
+        local linewidth = emwidth/fraction
         local baseline, baseskip
         if dp ~= 0 and ht ~= 0 then
             if wd > 20*linewidth then
@@ -574,7 +579,7 @@ local function ruledglyph(head,current,previous)
         local prev = previous
         setfield(current,"next",nil)
         setfield(current,"prev",nil)
-        local linewidth = emwidth/20
+        local linewidth = emwidth/(2*fraction)
         local baseline
      -- if dp ~= 0 and ht ~= 0 then
         if (dp >= 0 and ht >= 0) or (dp <= 0 and ht <= 0) then
@@ -591,8 +596,14 @@ local function ruledglyph(head,current,previous)
             new_kern(-wd+doublelinewidth),
             baseline
         )
+local char = chardata[getfield(current,"font")][getfield(current,"char")]
+if char and char.tounicode and #char.tounicode > 4 then -- hack test
+        setlistcolor(info,c_ligature)
+        setlisttransparency(info,c_ligature_d)
+else
         setlistcolor(info,c_glyph)
         setlisttransparency(info,c_glyph_d)
+end
         info = fast_hpack(info)
         setfield(info,"width",0)
         setfield(info,"height",0)

@@ -363,10 +363,10 @@
    \page_otr_sides_pop_penalties}
 
 \def\page_sides_output_routine_yes % we need to rework this ... add pagediscards and such
-  {\unvbox\normalpagebox
+  {\unvbox\normalpagebox % bah, and the discards?
    \setbox\b_page_sides_bottom\lastbox
    \ifdim\wd\b_page_sides_bottom>\d_page_sides_hsize
-     \penalty-201
+     \penalty-201 % hm, i really need to write this from scatch
      \box\b_page_sides_bottom
    \else\ifvoid\b_page_sides_bottom
    \else
@@ -663,7 +663,7 @@
 
 \def\page_sides_prepare_space
   {\par
-   \whitespace
+   % no longer needed  \whitespace
    \begingroup
    \forgetall
    \reseteverypar
@@ -771,13 +771,15 @@
    \fi}
 
 \def\page_sides_inject_dummy_lines
-  {\scratchcounter\pageshrink
+  {\begingroup
+   \scratchcounter\pageshrink
    \divide\scratchcounter \baselineskip
    \advance\scratchcounter \plusone
    \parskip\zeropoint
    \dorecurse\scratchcounter{\hbox to \hsize{}}%
    \kern-\scratchcounter\baselineskip
-   \penalty\zerocount}
+   \penalty\zerocount
+   \endgroup}
 
 % Display math
 %

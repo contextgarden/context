@@ -152,7 +152,8 @@ end
 local t = { } for i=1,24 do t[i] = random() end
 
 local function flushxmpinfo()
-    commands.freezerandomseed(os.clock()) -- hack
+    commands.pushrandomseed()
+    commands.setrandomseed(os.time())
 
     local t = { } for i=1,24 do t[i] = char(96 + random(26)) end
     local packetid = concat(t)
@@ -201,7 +202,7 @@ local function flushxmpinfo()
     local r = pdfflushstreamobject(blob,md,false) -- uncompressed
     lpdf.addtocatalog("Metadata",pdfreference(r))
 
-    commands.defrostrandomseed() -- hack
+    commands.poprandomseed() -- hack
 end
 
 --  his will be enabled when we can inhibit compression for a stream at the lua end

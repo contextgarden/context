@@ -30,13 +30,6 @@
 \stoptexdefinition
 
 \starttexdefinition btx:list:helpers:concat
-  % \ifcase\currentbtxconcat \or \or
-  %     \btxparameter\c!pubsep
-  % \or
-  %     \btxparameter\c!finalpubsep
-  % \or
-  %     \btxparameter\c!lastpubsep
-  % \fi
     \space
 \stoptexdefinition
 
@@ -51,12 +44,11 @@
 \stopsetups
 
 \startsetups[\s!btx:\s!list:\s!numbering]
-   %\btxparameter\c!left
     \texdefinition {\s!btx:\s!list:inject} {
         \currentbtxfirst
+        \currentbtxsuffix
         \btxparameter\c!stopper
     }
-   %\btxparameter\c!right
 \stopsetups
 
 \startsetups[\s!btx:\s!list:\s!numbering:num]

@@ -9541,7 +9541,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 43882, stripped down to: 26870
+-- original size: 45683, stripped down to: 27866
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -9654,8 +9654,10 @@ local function add_end(spacing,namespace,tag)
   top=stack[#stack]
   if #stack<1 then
     errorstr=formatters["unable to close %s %s"](tag,xml.checkerror(top,toclose) or "")
+    report_xml(errorstr)
   elseif toclose.tg~=tag then 
     errorstr=formatters["unable to close %s with %s %s"](toclose.tg,tag,xml.checkerror(top,toclose) or "")
+    report_xml(errorstr)
   end
   dt=top.dt
   dt[#dt+1]=toclose
@@ -9664,10 +9666,29 @@ local function add_end(spacing,namespace,tag)
   end
 end
 local function add_text(text)
+  local n=#dt
   if cleanup and #text>0 then
-    dt[#dt+1]=cleanup(text)
+    if n>0 then
+      local s=dt[n]
+      if type(s)=="string" then
+        dt[n]=s..cleanup(text)
+      else
+        dt[n+1]=cleanup(text)
+      end
+    else
+      dt[1]=cleanup(text)
+    end
   else
-    dt[#dt+1]=text
+    if n>0 then
+      local s=dt[n]
+      if type(s)=="string" then
+        dt[n]=s..text
+      else
+        dt[n+1]=text
+      end
+    else
+      dt[1]=text
+    end
   end
 end
 local function add_special(what,spacing,text)
@@ -9699,8 +9720,10 @@ local function attribute_specification_error(str)
   end
   return str
 end
+local badentity="&error;"
+local badentity="&"
 xml.placeholders={
-  unknown_dec_entity=function(str) return str=="" and "&error;" or formatters["&%s;"](str) end,
+  unknown_dec_entity=function(str) return str=="" and badentity or formatters["&%s;"](str) end,
   unknown_hex_entity=function(str) return formatters["&#x%s;"](str) end,
   unknown_any_entity=function(str) return formatters["&#x%s;"](str) end,
 }
@@ -9860,7 +9883,7 @@ local function handle_any_entity(str)
               report_xml("keeping entity &%s;",str)
             end
             if str=="" then
-              a="&error;"
+              a=badentity
             else
               a="&"..str..";"
             end
@@ -9888,7 +9911,7 @@ local function handle_any_entity(str)
         if trace_entities then
           report_xml("invalid entity &%s;",str)
         end
-        a="&error;"
+        a=badentity
         acache[str]=a
       else
         if trace_entities then
@@ -9901,8 +9924,14 @@ local function handle_any_entity(str)
     return a
   end
 end
-local function handle_end_entity(chr)
-  report_xml("error in entity, %a found instead of %a",chr,";")
+local function handle_end_entity(str)
+  report_xml("error in entity, %a found without ending %a",str,";")
+  return str
+end
+local function handle_crap_error(chr)
+  report_xml("error in parsing, unexpected %a found ",chr)
+  add_text(chr)
+  return chr
 end
 local space=S(' \r\n\t')
 local open=P('<')
@@ -9920,13 +9949,13 @@ local name_nop=C(P(true))*C(valid^1)
 local name=name_yes+name_nop
 local utfbom=lpegpatterns.utfbom 
 local spacing=C(space^0)
-local anyentitycontent=(1-open-semicolon-space-close)^0
+local anyentitycontent=(1-open-semicolon-space-close-ampersand)^0
 local hexentitycontent=R("AF","af","09")^0
 local decentitycontent=R("09")^0
 local parsedentity=P("#")/""*(
                 P("x")/""*(hexentitycontent/handle_hex_entity)+(decentitycontent/handle_dec_entity)
               )+(anyentitycontent/handle_any_entity)
-local entity=ampersand/""*parsedentity*((semicolon/"")+#(P(1)/handle_end_entity))
+local entity=(ampersand/"")*parsedentity*(semicolon/"")+ampersand*(anyentitycontent/handle_end_entity)
 local text_unparsed=C((1-open)^1)
 local text_parsed=Cs(((1-open-ampersand)^1+entity)^1)
 local somespace=space^1
@@ -9977,16 +10006,20 @@ local instruction=(spacing*begininstruction*someinstruction*endinstruction)/func
 local comment=(spacing*begincomment*somecomment*endcomment  )/function(...) add_special("@cm@",...) end
 local cdata=(spacing*begincdata*somecdata*endcdata   )/function(...) add_special("@cd@",...) end
 local doctype=(spacing*begindoctype*somedoctype*enddoctype  )/function(...) add_special("@dt@",...) end
+local crap_parsed=1-beginelement-endelement-emptyelement-begininstruction-begincomment-begincdata-ampersand
+local crap_unparsed=1-beginelement-endelement-emptyelement-begininstruction-begincomment-begincdata
+local parsedcrap=Cs((crap_parsed^1+entity)^1)/handle_crap_error
+local unparsedcrap=Cs((crap_unparsed     )^1)/handle_crap_error
 local trailer=space^0*(text_unparsed/set_message)^0
 local grammar_parsed_text=P { "preamble",
   preamble=utfbom^0*instruction^0*(doctype+comment+instruction)^0*V("parent")*trailer,
   parent=beginelement*V("children")^0*endelement,
-  children=parsedtext+V("parent")+emptyelement+comment+cdata+instruction,
+  children=parsedtext+V("parent")+emptyelement+comment+cdata+instruction+parsedcrap,
 }
 local grammar_unparsed_text=P { "preamble",
   preamble=utfbom^0*instruction^0*(doctype+comment+instruction)^0*V("parent")*trailer,
   parent=beginelement*V("children")^0*endelement,
-  children=unparsedtext+V("parent")+emptyelement+comment+cdata+instruction,
+  children=unparsedtext+V("parent")+emptyelement+comment+cdata+instruction+unparsedcrap,
 }
 local function _xmlconvert_(data,settings)
   settings=settings or {}
@@ -10020,7 +10053,6 @@ local function _xmlconvert_(data,settings)
     errorstr="empty xml file"
   elseif utfize or resolve then
     if lpegmatch(grammar_parsed_text,data) then
-      errorstr=""
     else
       errorstr="invalid xml file - parsed text"
     end
@@ -10036,6 +10068,8 @@ local function _xmlconvert_(data,settings)
   local result
   if errorstr and errorstr~="" then
     result={ dt={ { ns="",tg="error",dt={ errorstr },at={},er=true } } }
+setmetatable(result,mt)
+setmetatable(result.dt[1],mt)
     setmetatable(stack,mt)
     local errorhandler=settings.error_handler
     if errorhandler==false then
@@ -11674,7 +11708,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 28225, stripped down to: 20125
+-- original size: 28786, stripped down to: 20578
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -12051,6 +12085,14 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
           else
             xmldata.settings.inclusions={ name }
           end
+          if child.er then
+            local badinclusions=xmldata.settings.badinclusions
+            if badinclusions then
+              badinclusions[#badinclusions+1]=name
+            else
+              xmldata.settings.badinclusions={ name }
+            end
+          end
         end
       end
     end
@@ -12068,11 +12110,11 @@ function xml.inclusion(e,default)
   end
   return default
 end
-function xml.inclusions(e,sorted)
+local function getinclusions(key,e,sorted)
   while e do
     local settings=e.settings
     if settings then
-      local inclusions=settings.inclusions
+      local inclusions=settings[key]
       if inclusions then
         inclusions=table.unique(inclusions) 
         if sorted then
@@ -12086,6 +12128,12 @@ function xml.inclusions(e,sorted)
       e=e.__p__
     end
   end
+end
+function xml.inclusions(e,sorted)
+  return getinclusions("inclusions",e,sorted)
+end
+function xml.badinclusions(e,sorted)
+  return getinclusions("badinclusions",e,sorted)
 end
 local b_collapser=lpeg.patterns.b_collapser
 local m_collapser=lpeg.patterns.m_collapser
@@ -17856,8 +17904,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 739251
--- stripped bytes    : 264497
+-- original bytes    : 741613
+-- stripped bytes    : 265410
 
 -- end library merge
 

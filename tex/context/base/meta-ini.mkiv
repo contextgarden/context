@@ -336,12 +336,14 @@
 
 \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
 
+\let\theMPrandomseed\empty
+
 \def\setMPrandomseed
-  {\let\theMPrandomseed\empty
-   \ifsetMPrandomseed \ifx\getrandomnumber\undefined \else
-     \getrandomnumber\localMPseed\zerocount{4095}%
-     \def\theMPrandomseed{randomseed:=\localMPseed}%
-   \fi\fi}
+  {\ifsetMPrandomseed
+     \def\theMPrandomseed{randomseed:=\mprandomnumber;}%
+   \else
+     \let\theMPrandomseed\empty
+   \fi}
 
 %D Calling up previously defined graphics.
 

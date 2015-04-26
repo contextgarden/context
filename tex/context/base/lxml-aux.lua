@@ -427,6 +427,14 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                     else
                         xmldata.settings.inclusions = { name }
                     end
+                    if child.er then
+                        local badinclusions = xmldata.settings.badinclusions
+                        if badinclusions then
+                            badinclusions[#badinclusions+1] = name
+                        else
+                            xmldata.settings.badinclusions = { name }
+                        end
+                    end
                 end
             end
         end
@@ -447,11 +455,11 @@ function xml.inclusion(e,default)
     return default
 end
 
-function xml.inclusions(e,sorted)
+local function getinclusions(key,e,sorted)
     while e do
         local settings = e.settings
         if settings then
-            local inclusions = settings.inclusions
+            local inclusions = settings[key]
             if inclusions then
                 inclusions = table.unique(inclusions) -- a copy
                 if sorted then
@@ -465,6 +473,14 @@ function xml.inclusions(e,sorted)
             e = e.__p__
         end
     end
+end
+
+function xml.inclusions(e,sorted)
+    return getinclusions("inclusions",e,sorted)
+end
+
+function xml.badinclusions(e,sorted)
+    return getinclusions("badinclusions",e,sorted)
 end
 
 local b_collapser  = lpeg.patterns.b_collapser
