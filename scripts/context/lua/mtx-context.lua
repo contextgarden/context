@@ -863,6 +863,24 @@ function scripts.context.run(ctxdata,filename)
                     pdf_open(resultname or jobname,pdfview)
                 end
                 --
+                local epub = analysis.epub
+                if epub then
+                    if type(epub) == "string" then
+                        local t = settings_to_array(epub)
+                        for i=1,#t do
+                            t[i] = "--" .. gsub(t[i],"^%-*","")
+                        end
+                        epub = concat(t," ")
+                    else
+                        epub = "--make"
+                    end
+                    local command = "mtxrun --script epub " .. epub .. " " .. jobname
+                    report()
+                    report("making epub file: ",command)
+                    report()
+                    os.execute(command)
+                end
+                --
                 if a_timing then
                     report()
                     report("you can process (timing) statistics with:",jobname)

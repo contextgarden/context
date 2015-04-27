@@ -376,8 +376,13 @@ function step_tracers.codes(i,command,space)
         if w then
             context.startcolor(colors[what])
             context("%s:",what)
-            for c in traverse_id(glyph_code,w) do
-                showchar(c)
+            for c in traverse_nodes(w) do
+                local id = getid(c)
+                if id == glyph_code then
+                    showchar(c)
+                else
+                    context("[%s]",nodecodes[id])
+                end
             end
             context[space]()
             context.stopcolor()

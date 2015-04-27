@@ -2836,6 +2836,7 @@ local xmlpreamble = [[
     exporter version : %exportversion%
 
 -->
+
 ]]
 
     local flushtree = wrapups.flushtree
@@ -3331,6 +3332,14 @@ local htmltemplate = [[
         -- housekeeping and data collecting; at this point we still have an xml
         -- representation that uses verbose element names and carries information in
         -- attributes
+
+
+        local data = tree.data
+        for i=1,#data do
+            if data[i].tg ~= "document" then
+                data[i] = { }
+            end
+        end
 
         local result = allcontent(tree)
 

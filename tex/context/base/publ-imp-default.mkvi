@@ -45,6 +45,8 @@
   [\s!default:\s!cite]
   [\s!default]
   [\c!alternative=num,
+  [\c!compress=\v!yes,
+   \c!sorttype=normal,
    \c!authorconversion=\v!name]
 
 % We define [page] settings in the default namespace, inheriting the root
@@ -151,8 +153,6 @@
 \definebtx
   [\s!default:\s!cite:year]
   [\s!default:\s!cite]
-  [\c!compress=\v!yes,
-   \c!sorttype=year]
 
 \definebtx
   [\s!default:\s!cite:title]
@@ -211,8 +211,7 @@
 \definebtx
   [\s!default:\s!cite:num]
   [\s!default:\s!cite]
-  [\c!compress=\v!yes,
-   \c!left={[},
+  [\c!left={[},
    \c!right={]},
    \c!separator:2=\btxcommabreak,
    \c!separator:3=\btxparameter{\c!separator:2},

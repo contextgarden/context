@@ -2003,15 +2003,15 @@ end
 
 do
 
-    local scanners               = tokens.scanners
-    local scanstring             = scanners.string
-    local scaninteger            = scanners.integer
-    local scandimen              = scanners.dimen
-    local scanboolean            = scanners.boolean
+ -- local scanners               = tokens.scanners
+ -- local scanstring             = scanners.string
+ -- local scaninteger            = scanners.integer
+ -- local scandimen              = scanners.dimen
+ -- local scanboolean            = scanners.boolean
+
+ -- local scanners               = interfaces.scanners
 
     local setmacro               = tokens.setters.macro
-
-    local scanners               = interfaces.scanners
 
     function constructors.currentfonthasfeature(n)
         local f = fontdata[currentfont()]
@@ -2040,25 +2040,64 @@ do
     --     context(lpegmatch(stripper,f(amount/65536)))
     -- end
 
-    local f = formatters["%0.2fpt"] -- normally this value is changed only once
-
+    local f_strip  = formatters["%0.2fpt"] -- normally this value is changed only once
     local stripper = lpeg.patterns.stripzeros
 
-    scanners.nbfs = function()
-        context(lpegmatch(stripper,f(scandimen()/65536)))
-    end
+ -- scanners.nbfs = function()
+ --     context(lpegmatch(stripper,f_strip(scandimen()/65536)))
+ -- end
 
-    commands.featureattribute  = function(tag) context(contextnumber(tag)) end
-    commands.setfontfeature    = function(tag) texsetattribute(0,contextnumber(tag)) end
-    commands.resetfontfeature  = function()    texsetattribute(0,0) end
-    commands.setfontofid       = function(id)  context_getvalue(csnames[id]) end
-    commands.definefontfeature = presetcontext
+    implement {
+        name      = "nbfs",
+        arguments = "dimen",
+        actions   = function(d)
+            context(lpegmatch(stripper,f_strip(d/65536)))
+        end
+    }
 
-    scanners.featureattribute  = function() context(contextnumber(scanstring())) end
-    scanners.setfontfeature    = function() texsetattribute(0,contextnumber(scanstring())) end
-    scanners.resetfontfeature  = function() texsetattribute(0,0) end
-    scanners.setfontofid       = function() context_getvalue(csnames[scaninteger()]) end
-    scanners.definefontfeature = function() presetcontext(scanstring(),scanstring(),scanstring()) end
+    -- commands.featureattribute  = function(tag) context(contextnumber(tag)) end
+    -- commands.setfontfeature    = function(tag) texsetattribute(0,contextnumber(tag)) end
+    -- commands.resetfontfeature  = function()    texsetattribute(0,0) end
+    -- commands.setfontofid       = function(id)  context_getvalue(csnames[id]) end
+    -- commands.definefontfeature = presetcontext
+
+    -- scanners.featureattribute  = function() context(contextnumber(scanstring())) end
+    -- scanners.setfontfeature    = function() texsetattribute(0,contextnumber(scanstring())) end
+    -- scanners.resetfontfeature  = function() texsetattribute(0,0) end
+    -- scanners.setfontofid       = function() context_getvalue(csnames[scaninteger()]) end
+    -- scanners.definefontfeature = function() presetcontext(scanstring(),scanstring(),scanstring()) end
+
+    implement {
+        name      = "featureattribute",
+        arguments = "string",
+        actions   = { contextnumber, context }
+    }
+
+    implement {
+        name      = "setfontfeature",
+        arguments = "string",
+        actions   = function(tag) texsetattribute(0,contextnumber(tag)) end
+    }
+
+    implement {
+        name      = "resetfontfeature",
+        arguments = { 0, 0 },
+        actions   = texsetattribute,
+    }
+
+    implement {
+        name      = "setfontofid",
+        arguments = "integer",
+        actions   = function(id)
+            context_getvalue(csnames[id])
+        end
+    }
+
+    implement {
+        name      = "definefontfeature",
+        arguments = { "string", "string", "string" },
+        actions   = presetcontext
+    }
 
     local cache = { }
 

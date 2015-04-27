@@ -281,7 +281,7 @@ local commandmapping = allocate {
     ["l"]  = "ł", ["L"]  = "Ł",
     ["o"]  = "ø", ["O"]  = "Ø",
     ["oe"] = "œ", ["OE"] = "Œ",
-    ["sz"] = "ß", ["SZ"] = "SZ", ["SS"] = "ß",
+    ["sz"] = "ß", ["SZ"] = "SZ", ["ss"] = "ß", ["SS"] = "ß",
 }
 
 texcharacters.commandmapping = commandmapping

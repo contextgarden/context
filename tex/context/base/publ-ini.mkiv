@@ -11,7 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-
 % TODO: s! vs v! for default and neutral key/values
 % todo: too many refs in list
 
@@ -371,7 +370,7 @@
 \unexpanded\def\btxnbsp                  {\removeunwantedspaces\nbsp}         % the same anyway
 \unexpanded\def\btxperiod                {\removeunwantedspaces.\space}
 \unexpanded\def\btxcomma                 {\removeunwantedspaces,\space}
-\unexpanded\def\btxcommabreak            {\removeunwantedspaces,\hskip\zeropoint plus \onepoint\relax}
+\unexpanded\def\btxcommabreak            {\removeunwantedspaces,\hskip\zeropoint plus .5\emwidth\relax}
 \unexpanded\def\btxcolon                 {\removeunwantedspaces:\space}
 \unexpanded\def\btxsemicolon             {\removeunwantedspaces;\space}
 \unexpanded\def\btxlparent               {\removeunwantedspaces\space(} % obsolete
@@ -425,9 +424,14 @@
 \unexpanded\def\currentbtxsurnames_indeed  {\clf_btxcurrentsurnames  \numexpr\currentbtxauthorindex\relax}
 \unexpanded\def\currentbtxvons_indeed      {\clf_btxcurrentvons      \numexpr\currentbtxauthorindex\relax}
 
+\let\currentbtxfirstpage    \empty \unexpanded\def\btxsetfirstpage    #1{\def\currentbtxfirstpage{\btx_page_number{#1}}}
+\let\currentbtxlastpage     \empty \unexpanded\def\btxsetlastpage     #1{\def\currentbtxlastpage {\btx_page_number{#1}}}
+\let\currentbtxfirstinternal\empty \unexpanded\def\btxsetfirstinternal  {\def\currentbtxfirstinternal}
+\let\currentbtxlastinternal \empty \unexpanded\def\btxsetlastinternal   {\def\currentbtxlastinternal}
+
 \def\currentbtxauthorvariant{normal}
 
-\unexpanded\def\btxlistreset
+\unexpanded\def\btx_reset_list % not needed as we're grouped
   {\let\currentbtxcombis   \empty
    \let\currentbtxcategory \empty
    \let\currentbtxinternal \empty
@@ -443,7 +447,7 @@
    \let\currentbtxnumber   \empty
    \let\currentbtxdataset  \empty}
 
-\unexpanded\def\btxcitereset % check for less .. not all resets needed
+\unexpanded\def\btx_reset_cite % check for less .. not all resets needed when we're grouped (only subcites)
   {\let        \currentbtxfirst      \empty
    \let        \currentbtxsecond     \empty
    \let        \currentbtxsuffix     \empty
@@ -461,6 +465,27 @@
    \setconstant\currentbtxoverflow   \zerocount
    \setconstant\currentbtxconcat     \zerocount
    \setconstant\currentbtxcount      \zerocount}
+
+\unexpanded\def\btx_reset_page % probably not needed
+  {\let        \currentbtxfirstpage    \empty
+   \let        \currentbtxlastpage     \empty
+   \let        \currentbtxfirstinternal\empty
+   \let        \currentbtxlastinternal \empty
+   \setconstant\currentbtxoverflow     \zerocount
+   \setconstant\currentbtxconcat       \zerocount
+   \setconstant\currentbtxcount        \zerocount}
+
+\unexpanded\def\btx_reset_numbering  % probably not needed
+  {\let        \currentbtxfirst \empty
+   \let        \currentbtxsecond\empty
+   \let        \currentbtxsuffix\empty
+   \setconstant\currentbtxconcat\zerocount}
+
+%D Pages:
+
+\unexpanded\def\btx_page_number#1%
+  {\def\currentlistindex{#1}%
+   \structurelistpagenumber}
 
 %D Language:
 
@@ -553,32 +578,6 @@
       \settrue\setfalse\c_btx_list_texts
 \to \everysetupbtxlistplacement
 
-% page stuff (for thomas)
-
-\let\currentbtxfirstpage    \empty \unexpanded\def\btxsetfirstpage    #1{\def\currentbtxfirstpage{\btx_page_number{#1}}}
-\let\currentbtxlastpage     \empty \unexpanded\def\btxsetlastpage     #1{\def\currentbtxlastpage {\btx_page_number{#1}}}
-\let\currentbtxfirstinternal\empty \unexpanded\def\btxsetfirstinternal  {\def\currentbtxfirstinternal}
-\let\currentbtxlastinternal \empty \unexpanded\def\btxsetlastinternal   {\def\currentbtxlastinternal}
-
-\unexpanded\def\btx_page_number#1%
-  {\def\currentlistindex{#1}%
-   \structurelistpagenumber}
-
-\unexpanded\def\btxpagereset
-  {\let        \currentbtxfirstpage    \empty
-   \let        \currentbtxlastpage     \empty
-   \let        \currentbtxfirstinternal\empty
-   \let        \currentbtxlastinternal \empty
-   \setconstant\currentbtxoverflow     \zerocount
-   \setconstant\currentbtxconcat       \zerocount
-   \setconstant\currentbtxcount        \zerocount}
-
-\unexpanded\def\btxnumberingreset
-  {\let        \currentbtxfirst \empty
-   \let        \currentbtxsecond\empty
-   \let        \currentbtxsuffix\empty
-   \setconstant\currentbtxconcat\zerocount}
-
 \newconditional\c_btx_list_pages
 
 \appendtoks
@@ -590,7 +589,7 @@
   {\dontleavehmode
    \begingroup
    \setbtxlist % probably already set
-   \btxpagereset
+   \btx_reset_page
    \setbtxparameterset\s!page\s!list
    \btxparameter\c!pagecommand
      {\usebtxstyleandcolor\c!style\c!color
@@ -603,21 +602,21 @@
   {\begingroup
    %\setbtxparameterset{\c!page:\s!default}\currentbtxnumbering
    \btxparameter\c!left
- % \btxparameter\c!command{\fastbtxsetup\plusfive\s!list\s!page}%
-   \fastbtxsetup\plusfive\s!list\s!page
+ % \btxparameter\c!command{\publ_fast_setup\plusfive\s!list\s!page}%
+   \publ_fast_setup\plusfive\s!list\s!page
    \btxparameter\c!right
    \endgroup
-   \btxpagereset}
+   \btx_reset_page} % probably not needed
 
 \unexpanded\def\btxnumberingsetup#1%
   {\begingroup
    \setbtxparameterset{\c!list:\s!numbering}\currentbtxnumbering % brrrr   \setbtxlist
    \btxparameter\c!left
- % \btxparameter\c!command{\fastbtxsetup\plusthree{\s!list:\s!numbering}{#1}}%
-   \fastbtxsetup\plusthree{\s!list:\s!numbering}{#1}%
+ % \btxparameter\c!command{\publ_fast_setup\plusthree{\s!list:\s!numbering}{#1}}%
+   \publ_fast_setup\plusthree{\s!list:\s!numbering}{#1}%
    \btxparameter\c!right
    \endgroup
-   \btxnumberingreset}
+   \btx_reset_numbering} % probably not needed
 
 % end of page stuff
 
@@ -631,7 +630,7 @@
    \begingroup
    \usebtxstyleandcolor\c!style\c!color
    \ignorespaces
-   \fastbtxsetup\plusfour\s!list\currentbtxcategory
+   \publ_fast_setup\plusfour\s!list\currentbtxcategory
    \removeunwantedspaces
    \endgroup
    \ifconditional\c_btx_list_pages
@@ -662,7 +661,7 @@
   {\begingroup
    \def\currentbtxtag{#1}%
    \ignorespaces
-   \fastbtxsetup\plusfour\s!list\currentbtxcategory
+   \publ_fast_setup\plusfour\s!list\currentbtxcategory
    \removeunwantedspaces
    \endgroup}
 
@@ -855,7 +854,7 @@
 \unexpanded\def\btxlistsetup#1% used for the reference in the list
   {\the\everybtxlistentry
    \everybtxlistentry\emptytoks % so only once per entry to be sure
-   \fastbtxsetup\plusfour\s!list{#1}}
+   \publ_fast_setup\plusfour\s!list{#1}}
 
 \appendtoks
     \btx_check_language
@@ -1297,7 +1296,7 @@
 
 \setvalue{\??setup:\s!btx:\s!unknown}#1{\inframed{\tttf#1}}
 
-\def\fastbtxsetup_yes#1#2%
+\def\publ_fast_setup_yes#1#2%
   {\csname\??setup:\s!btx:%
      \ifcsname\??setup:\s!btx:\currentbtxspecification:#1:#2\endcsname
         \currentbtxspecification:#1:#2%
@@ -1314,7 +1313,7 @@
      \fi\fi\fi\fi\fi
    \endcsname{#2}}
 
-\def\fastbtxsetup_nop#1#2%
+\def\publ_fast_setup_nop#1#2%
   {\csname\??setup:\s!btx:%
      \ifcsname\??setup:\s!btx:\currentbtxspecification:#1:#2\endcsname
         \currentbtxspecification:#1:#2%
@@ -1337,74 +1336,74 @@
 % 5 = page      darkmagenta
 % 6 = unknown   darkred
 
-\unexpanded\def\publ_fastbtxsetup_chain_inbetween
+\unexpanded\def\publ_fast_btx_setup_chain_inbetween
   {\allowbreak->\allowbreak}
 
-\unexpanded\def\publ_fastbtxsetup_chain_yes#1#2%
+\unexpanded\def\publ_fast_btx_setup_chain_yes#1#2%
   {\dontleavehmode\begingroup
    \infofont
    \ifcase\btxsetuptype\darkred\or\darkblue\or\darkgreen\or\darkcyan\or\darkmagenta\else\darkred\fi
    [%
    \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else
-   \publ_fastbtxsetup_chain_inbetween
+   \publ_fast_btx_setup_chain_inbetween
    \currentbtxspecificationfallback:#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback                :#1:#2\endcsname\else
-   \publ_fastbtxsetup_chain_inbetween
+   \publ_fast_btx_setup_chain_inbetween
                                     #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else
-   \publ_fastbtxsetup_chain_inbetween
+   \publ_fast_btx_setup_chain_inbetween
    \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else
-   \publ_fastbtxsetup_chain_inbetween
+   \publ_fast_btx_setup_chain_inbetween
    \currentbtxspecificationfallback:#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:\s!unknown\endcsname\else
-   \publ_fastbtxsetup_chain_inbetween
+   \publ_fast_btx_setup_chain_inbetween
    unset\fi\fi\fi\fi\fi
    \space @\space
    \currentbtx
    ]%
    \endgroup}
 
-\unexpanded\def\publ_fastbtxsetup_chain_nop#1#2%
+\unexpanded\def\publ_fast_btx_setup_chain_nop#1#2%
   {\dontleavehmode\begingroup
    \infofont
    \darkred
    [%
    \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else
-   \publ_fastbtxsetup_chain_inbetween
+   \publ_fast_btx_setup_chain_inbetween
                                     #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else
-   \publ_fastbtxsetup_chain_inbetween
+   \publ_fast_btx_setup_chain_inbetween
    \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else
-   \publ_fastbtxsetup_chain_inbetween
+   \publ_fast_btx_setup_chain_inbetween
    unset\fi\fi\fi
    \space @\space
    \currentbtx
    ]%
    \endgroup}
 
-\unexpanded\def\publ_fastbtxsetup_normal#1%
+\unexpanded\def\publ_fast_btx_setup_normal#1%
   {\btxsetuptype#1\relax
    \ifx\currentbtxspecificationfallback\empty
-     \expandafter\fastbtxsetup_nop
+     \expandafter\publ_fast_setup_nop
    \else
-     \expandafter\fastbtxsetup_yes
+     \expandafter\publ_fast_setup_yes
    \fi}
 
-\unexpanded\def\publ_fastbtxsetup_visual#1#2#3%
+\unexpanded\def\publ_fast_btx_setup_visual#1#2#3%
   {\btxsetuptype#1\relax
    \ifx\currentbtxspecificationfallback\empty
-     \expandafter\publ_fastbtxsetup_chain_nop
+     \expandafter\publ_fast_btx_setup_chain_nop
    \else
-     \expandafter\publ_fastbtxsetup_chain_yes
+     \expandafter\publ_fast_btx_setup_chain_yes
    \fi{#2}{#3}%
    \ifx\currentbtxspecificationfallback\empty
-     \expandafter\fastbtxsetup_nop
+     \expandafter\publ_fast_setup_nop
    \else
-     \expandafter\fastbtxsetup_yes
+     \expandafter\publ_fast_setup_yes
    \fi{#2}{#3}}
 
 \installtextracker
   {publications.setups}
-  {\let\fastbtxsetup\publ_fastbtxsetup_visual}
-  {\let\fastbtxsetup\publ_fastbtxsetup_normal}
+  {\let\publ_fast_setup\publ_fast_btx_setup_visual}
+  {\let\publ_fast_setup\publ_fast_btx_setup_normal}
 
-\let\fastbtxsetup\publ_fastbtxsetup_normal
+\let\publ_fast_setup\publ_fast_btx_setup_normal
 
 %D Cite helpers:
 
@@ -1417,12 +1416,12 @@
 \unexpanded\def\btxcitesetup#1%
   {\the\everybtxciteentry
    \everybtxciteentry\emptytoks % tricky maybe not when subcites
-   \fastbtxsetup\plusone\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
+   \publ_fast_setup\plusone\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
 
 \unexpanded\def\btxsubcitesetup#1%
   {\the\everybtxciteentry
    \everybtxciteentry\emptytoks % tricky maybe not when subcites
-   \fastbtxsetup\plustwo\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
+   \publ_fast_setup\plustwo\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
 
 \appendtoks
     \btx_check_language
@@ -1430,7 +1429,7 @@
 
 \unexpanded\def\btxstartsubcite#1%
   {\begingroup
-   \btxcitereset % todo: limited set
+   \btx_reset_cite % todo: limited set
    \def\currentbtxcitealternative{#1}%
    \setbtxparameterset\s!cite\currentbtxcitealternative
    \usebtxstyleandcolor\c!style\c!color
@@ -1683,7 +1682,8 @@
    \c!alternative=num, % default cite form
    \c!inbetween=\space,
    \c!range=\endash,   % separator:range?
-   \c!compress=\v!no,
+   \c!compress=\v!yes, % was no?
+   \c!sorttype=normal, % normal, reverse or none
    \c!etallimit=3,
    \c!etaldisplay=\btxparameter\c!etallimit,
    \c!otherstext={\space et al.},

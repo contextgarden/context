@@ -22,7 +22,7 @@ if not modules then modules = { } end modules ['publ-ini'] = {
 -- gain is not that large anyway because not much publication stuff is flushed.
 
 local next, rawget, type, tostring, tonumber = next, rawget, type, tostring, tonumber
-local match, find = string.match, string.find
+local match, find, gsub = string.match, string.find, string.gsub
 local concat, sort, tohash = table.concat, table.sort, table.tohash
 local utfsub = utf.sub
 local mod = math.mod
@@ -32,7 +32,7 @@ local settings_to_array, settings_to_set = utilities.parsers.settings_to_array, 
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local lpegmatch = lpeg.match
-local P, S, C, Ct, R, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.R, lpeg.Carg
+local P, S, C, Ct, Cs, R, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.R, lpeg.Carg
 local upper = utf.upper
 
 local report             = logs.reporter("publications")
@@ -1021,6 +1021,12 @@ do
 
     local f_short = formatters["%t%02i"]
 
+    local p_clean = Cs ( (
+                        P("\\btxcmd") / "" -- better keep the argument
+                      + S("`~!@#$%^&*()_-+={}[]:;\"\'<>,.?/|\\") / ""
+                      + lpeg.patterns.utf8character
+                    )^1)
+
     function publications.enhancers.suffixes(dataset)
         if not dataset then
             return -- bad news
@@ -1068,7 +1074,12 @@ do
                                         if not surnames or #surnames == 0 then
                                             -- in fact this is an error
                                         elseif #t < 3 then
-                                            t[#t+1] = utfsub(surnames[1],1,n)
+                                            local s = surnames[1]
+                                            local c = lpegmatch(p_clean,s)
+                                            if s ~= c then
+                                                report_cite("bad name %a cleaned to %a for short construction",s,c)
+                                            end
+                                            t[#t+1] = utfsub(c,1,n)
                                         else
                                             t[4] = "+" -- indeed
                                             break
@@ -2256,7 +2267,7 @@ do
         elseif specification.sorttype == v_reverse then
             sort(source,revsorter)
         end
-        if specification and specification.compress == v_yes then
+        if specification and specification.compress == v_yes and specification.numeric then
             local first, last, firstr, lastr
             local target, noftarget, tags = { }, 0, { }
             local oldvalue = nil
@@ -2279,8 +2290,7 @@ do
             end
             for i=1,#source do
                 local entry   = source[i]
-                local current = entry.sortkey
-                local suffix  = entry.suffix -- todo but what
+                local current = entry.sortkey -- so we need a sortkey !
                 if not first then
                     first, last, firstr, lastr = current, current, entry, entry
                 elseif current == last + 1 then
@@ -2422,12 +2432,18 @@ do
                 ctx_btxcitesetup(setup)
                 ctx_btxstopcite()
             end
-            if sorttype == v_normal then
+            if sorttype == v_normal or sorttype == v_reverse then
                 local target = (compressor or compresslist)(source,specification)
                 local nofcollected = #target
                 if nofcollected == 0 then
-                    report("nothing found for %a",reference)
-                    unknowncite(reference)
+                    local nofcollected = #source
+                    if nofcollected == 0 then
+                        unknowncite(reference)
+                    else
+                        for i=1,nofcollected do
+                            flush(i,nofcollected,source[i])
+                        end
+                    end
                 else
                     for i=1,nofcollected do
                         local entry = target[i]
@@ -2604,9 +2620,8 @@ do
 
         function citevariants.page(presets)
             processcite(presets,{
-             -- variant = presets.variant or "page",
-                setter  = setter,
-                getter  = getter,
+                setter = setter,
+                getter = getter,
             })
         end
 
@@ -2629,7 +2644,7 @@ do
 
         function citevariants.num(presets)
             processcite(presets,{
-             -- variant = presets.variant or "num",
+                numeric = true,
                 setter  = setter,
                 getter  = getter,
             })
@@ -2655,7 +2670,7 @@ do
 
         function citevariants.year(presets)
             processcite(presets,{
-             -- variant  = presets.variant or "year",
+                numeric = true,
                 setter  = setter,
                 getter  = getter,
             })
@@ -2679,7 +2694,7 @@ do
 
         function citevariants.index(presets)
             processcite(presets,{
-             -- variant  = presets.variant or "index",
+                numeric = true,
                 setter  = setter,
                 getter  = getter,
             })
@@ -2692,19 +2707,18 @@ do
     do
 
         local function setter(data,dataset,tag,entry)
-            -- nothing
+            data.tag     = tag
+            data.sortkey = tag
         end
 
         local function getter(first,last,_,specification)
-            ctx_btxsetfirst(first.tag)
-            return true
+            return simplegetter(first,last,"tag",specification)
         end
 
         function citevariants.tag(presets)
             return processcite(presets,{
-                variant = "tag",
-                setter  = setter,
-                getter  = getter,
+                setter = setter,
+                getter = getter,
             })
         end
 
@@ -2935,6 +2949,7 @@ do
             processcite(presets,{
                 variant    = "authornum",
                 setup      = "author:num",
+                numeric    = true,
                 setter     = setter,
                 getter     = getter,
                 compressor = authorcompressor,
@@ -2961,6 +2976,7 @@ do
             processcite(presets,{
                 variant    = "authoryear",
                 setup      = "author:year",
+                numeric    = true,
                 setter     = setter,
                 getter     = getter,
                 compressor = authorcompressor,
@@ -2976,6 +2992,7 @@ do
             processcite(presets,{
                 variant    = "authoryears",
                 setup      = "author:years",
+                numeric    = true,
                 setter     = setter,
                 getter     = getter,
                 compressor = authorcompressor,
