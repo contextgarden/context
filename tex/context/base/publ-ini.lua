@@ -39,7 +39,7 @@ local report             = logs.reporter("publications")
 local report_cite        = logs.reporter("publications","cite")
 local report_list        = logs.reporter("publications","list")
 local report_reference   = logs.reporter("publications","reference")
-local report_shorts      = logs.reporter("publications","shorts")
+local report_suffix      = logs.reporter("publications","suffix")
 
 local trace              = false  trackers.register("publications",                 function(v) trace            = v end)
 local trace_cite         = false  trackers.register("publications.cite",            function(v) trace_cite       = v end)
@@ -1019,13 +1019,7 @@ do
     -- seconds are irrelevant (there is for sure more to gain by proper coding
     -- of the source and or style).
 
-    local f_short = formatters["%t%02i"]
-
-    local p_clean = Cs ( (
-                        P("\\btxcmd") / "" -- better keep the argument
-                      + S("`~!@#$%^&*()_-+={}[]:;\"\'<>,.?/|\\") / ""
-                      + lpeg.patterns.utf8character
-                    )^1)
+    local f_short = formatters["%s%02i"]
 
     function publications.enhancers.suffixes(dataset)
         if not dataset then
@@ -1033,6 +1027,8 @@ do
         else
             report("analyzing previous publication run for %a",dataset.name)
         end
+        dataset.suffixed = true
+        --
         local used = usedentries[dataset.name]
         if not used then
             return -- probably a first run
@@ -1044,8 +1040,13 @@ do
             report("nothing to be analyzed in %a",dataset.name)
             return -- also bad news
         end
-        local field  = "author"  -- currently only author
-        local shorts = { }
+        -- we have two suffixes: author (dependent of type) and short
+        local kind    = dataset.authorconversion or "name"
+        local field   = "author"  -- currently only author
+        local shorts  = { }
+        local authors = { }
+        local hasher  = publications.authorhashers[kind]
+        local shorter = publications.authorhashers.short
         for i=1,#ordered do
             local entry = ordered[i]
             if entry then
@@ -1062,44 +1063,31 @@ do
                             -- this will become a specification entry
                             local author = getcasted(dataset,tag,field,specifications[btxspc])
                             if type(author) == "table" then
-                                -- a short is a real dumb hardcodes kind of tag and we only support
-                                -- this one because some users might expect it, not because it makes
-                                -- sense
-                                local t = { }
-                                local a = #author
-                                if a > 0 then
-                                    local n = a == 1 and 3 or 1
-                                    for i=1,a do
-                                        local surnames = author[i].surnames
-                                        if not surnames or #surnames == 0 then
-                                            -- in fact this is an error
-                                        elseif #t < 3 then
-                                            local s = surnames[1]
-                                            local c = lpegmatch(p_clean,s)
-                                            if s ~= c then
-                                                report_cite("bad name %a cleaned to %a for short construction",s,c)
-                                            end
-                                            t[#t+1] = utfsub(c,1,n)
-                                        else
-                                            t[4] = "+" -- indeed
-                                            break
-                                        end
-                                    end
-                                end
-                                local year  = tonumber(entry.year) or 0
-                                local short = f_short(t,mod(year,100))
-                                local s = shorts[short]
-                                -- we could also sort on reference i.e. entries.text
                                 if u then
                                     u = listentry.entries.text -- hm
                                 else
                                     u = "0"
                                 end
-                                if not s then
-                                    shorts[short] = { { tag, year, u, i } }
+                                local t = { tag, year, u, i }
+                                -- authors
+                                local hash = hasher(author)
+                                local a = authors[hash]
+                                if not a then
+                                    authors[hash] = { t }
                                 else
-                                    s[#s+1] = { tag, year, u, i }
+                                    a[#a+1] = t
                                 end
+                                -- shorts
+                                local hash  = shorter(author)
+                                local year  = tonumber(entry.year) or 9999
+                                local short = f_short(hash,mod(year,100))
+                                local s = shorts[short]
+                                if not s then
+                                    shorts[short] = { t }
+                                else
+                                    s[#s+1] = t
+                                end
+                                --
                             else
                                 report("author typecast expected for field %a",field)
                             end
@@ -1110,40 +1098,44 @@ do
                 end
             end
         end
-        for short, tags in sortedhash(shorts) do -- ordered ?
-            local n = #tags
-            if n == 0 then
-                -- skip
-            elseif n == 1 then
-                local tagdata = tags[1]
-                local tag     = tagdata[1]
-                local detail  = details[tag]
-                local entry   = luadata[tag]
-                local year    = entry.year
-                detail.short  = short
-                if trace_shorts then
-                    report_shorts("year %a, suffix %a, short %a, tag %a",year or "-","-",short,tag)
-                end
-            elseif n > 1 then
-                sort(tags,shortsorter)
-                for i=1,n do
-                    local tagdata = tags[i]
+        local function addsuffix(hashed,key,suffixkey)
+            for hash, tags in sortedhash(hashed) do -- ordered ?
+                local n = #tags
+                if n == 0 then
+                    -- skip
+                elseif n == 1 then
+                    local tagdata = tags[1]
                     local tag     = tagdata[1]
                     local detail  = details[tag]
-                    local suffix  = i -- numbertochar(i)
                     local entry   = luadata[tag]
                     local year    = entry.year
-                    detail.short  = short
-                    detail.suffix = suffix
+                    detail[key]   = hash
                     if trace_shorts then
-                        report_shorts("year %a, suffix %a, short %a, tag %a",year or "-",suffix or "-",short,tag)
+                        report_suffix("%s: tag %a, hash %a, year %a",key,tag,hash,year or '')
+                    end
+                elseif n > 1 then
+                    sort(tags,shortsorter) -- todo: proper utf sorter
+                    for i=1,n do
+                        local tagdata     = tags[i]
+                        local tag         = tagdata[1]
+                        local detail      = details[tag]
+                        local suffix      = i -- numbertochar(i)
+                        local entry       = luadata[tag]
+                        local year        = entry.year
+                        detail[key]       = hash
+                        detail[suffixkey] = suffix
+                        if trace_shorts then
+                            report_suffix("%s: tag %a, hash %a, year %a, suffix %a, tag %a",key,tag,hash,year or '',suffix or '')
+                        end
                     end
                 end
             end
         end
+        addsuffix(shorts, "shorthash", "shortsuffix") -- todo: shorthash
+        addsuffix(authors,"authorhash","authorsuffix")
     end
 
-    utilities.sequencers.appendaction(enhancer,"system","publications.enhancers.suffixes")
+ -- utilities.sequencers.appendaction(enhancer,"system","publications.enhancers.suffixes")
 
 end
 
@@ -1990,13 +1982,16 @@ do
     function lists.flushentry(dataset,i,textmode)
         local rendering = renderings[dataset]
         local list      = rendering.list
-        local luadata   = datasets[dataset].luadata
+        local data      = datasets[dataset]
+        local luadata   = data.luadata
+        local details   = data.details
         local li        = list[i]
         if li then
             local tag       = li[1]
             local listindex = li[2]
             local n         = li[3]
             local entry     = luadata[tag]
+            local detail    = details[tag]
             --
             ctx_btxstartlistentry()
             ctx_btxsetcurrentlistentry(i) -- redundant
@@ -2018,6 +2013,10 @@ do
              -- ctx_btxsetbacktrace(concat(li," ",5)) -- two numbers
             else
                 -- nothing
+            end
+            local authorsuffix = detail.authorsuffix
+            if authorsuffix then
+                ctx_btxsetsuffix(authorsuffix)
             end
             local userdata = li[4]
             if userdata then
@@ -2148,6 +2147,12 @@ do
             return
         end
         --
+        local data = datasets[dataset]
+        if not data.suffixed then
+            data.authorconversion = specification.authorconversion
+            publications.enhancers.suffixes(data)
+        end
+        --
         specification.variant   = variant
         specification.compress  = specification.compress
         specification.markentry = specification.markentry ~= false
@@ -2218,6 +2223,7 @@ do
                 { "variant" },
                 { "sorttype" },
                 { "compress" },
+                { "authorconversion" },
                 { "author" },
                 { "lefttext" },
                 { "righttext" },
@@ -2571,8 +2577,11 @@ do
     do
 
         local function setter(data,dataset,tag,entry)
-            data.short  = getdetail(dataset,tag,"short")
-            data.suffix = getdetail(dataset,tag,"suffix")
+            local short  = getdetail(dataset,tag,"shorthash")
+            local suffix = getdetail(dataset,tag,"shortsuffix")
+            data.short   = short
+            data.sortkey = short
+            data.suffix  = suffix
         end
 
         local function getter(first,last,_,specification) -- last not used
@@ -2589,9 +2598,8 @@ do
 
         function citevariants.short(presets)
             processcite(presets,{
-                compress = false,
-                setter   = setter,
-                getter   = getter,
+                setter = setter,
+                getter = getter,
             })
         end
 
@@ -2658,7 +2666,7 @@ do
 
         local function setter(data,dataset,tag,entry)
             local year   = getfield (dataset,tag,"year")
-            local suffix = getdetail(dataset,tag,"suffix")
+            local suffix = getdetail(dataset,tag,"authorsuffix")
             data.year    = year
             data.suffix  = suffix
             data.sortkey = tonumber(year) or 9999
@@ -2683,7 +2691,7 @@ do
     do
 
         local function setter(data,dataset,tag,entry)
-            local index = getfield(dataset,tag,"index")
+            local index  = getfield(dataset,tag,"index")
             data.index   = index
             data.sortkey = index
         end
@@ -2694,9 +2702,9 @@ do
 
         function citevariants.index(presets)
             processcite(presets,{
-                numeric = true,
                 setter  = setter,
                 getter  = getter,
+                numeric = true,
             })
         end
 
@@ -2804,7 +2812,6 @@ do
                     end
                 end
             end
-            -- todo: add letters (should we then tag all?)
             return result
         end
 
@@ -2961,7 +2968,7 @@ do
         local function setter(data,dataset,tag,entry)
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
             local year   = getfield (dataset,tag,"year")
-            local suffix = getdetail(dataset,tag,"suffix")
+            local suffix = getdetail(dataset,tag,"authorsuffix")
             data.year    = year
             data.suffix  = suffix
             data.sortkey = tonumber(year) or 9999
@@ -3043,8 +3050,8 @@ do
     listvariants.bib    = listvariants.num
 
     function listvariants.short(dataset,block,tag,variant,listindex)
-        local short  = getdetail(dataset,tag,"short","short")
-        local suffix = getdetail(dataset,tag,"suffix","suffix")
+        local short  = getdetail(dataset,tag,"shorthash")
+        local suffix = getdetail(dataset,tag,"shortsuffix")
         if short then
             ctx_btxsetfirst(short)
         end

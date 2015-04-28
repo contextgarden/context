@@ -214,8 +214,17 @@ local function sortsequence(dataset,list,sorttype)
 
 end
 
+-- index      : order in dataset
+-- order      : order of citations
+-- short      : alphabetic + suffix
+-- reference  : order in list
+-- default    : automatic sorter
+-- authoryear : sort order list
+
+-- tag | listindex | 0 | u | u.btxint | data.index
+
 local sorters = {
-    [v_short] = function(dataset,rendering,list)
+    [v_short] = function(dataset,rendering,list) -- should we store it
         local shorts = rendering.shorts
         local function compare(a,b)
             local aa = a and a[1]
@@ -229,19 +238,15 @@ local sorters = {
         end
         sort(list,compare)
     end,
-    [v_reference] = function(dataset,rendering,list)
+    [v_reference] = function(dataset,rendering,list) -- order
         local function compare(a,b)
             local aa = a and a[1]
             local bb = b and b[1]
-            if aa and bb then
-                return aa < bb
-            else
-                return a[1] < b[1]
-            end
+            return aa < bb
         end
         sort(list,compare)
     end,
-    [v_dataset] = function(dataset,rendering,list)
+    [v_dataset] = function(dataset,rendering,list) -- index
         local function compare(a,b)
             local aa = a and a[6]
             local bb = b and b[6]

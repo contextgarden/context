@@ -1228,17 +1228,18 @@
 
 \unexpanded\def\publ_cite_handle_variant_blob
   {\clf_btxhandlecite
-     dataset   {\currentbtxdataset}%
-     reference {\currentbtxreference}%
-     markentry \iftrialtypesetting\s!false\else\s!true\fi\space
-     variant   {\currentbtxcitealternative}%
-     sorttype  {\btxparameter\c!sorttype}%
-     compress  {\btxparameter\c!compress}%
-     author    {\btxparameter\c!author}%
-     lefttext  {\p_publ_cite_lefttext}%
-     righttext {\p_publ_cite_righttext}%
-     before    {\p_publ_cite_before}%
-     after     {\p_publ_cite_after}%
+     dataset          {\currentbtxdataset}%
+     reference        {\currentbtxreference}%
+     markentry        \iftrialtypesetting\s!false\else\s!true\fi\space
+     variant          {\currentbtxcitealternative}%
+     sorttype         {\btxparameter\c!sorttype}%
+     compress         {\btxparameter\c!compress}%
+     author           {\btxparameter\c!author}%
+     authorconversion {\c!authorconversion}%
+     lefttext         {\p_publ_cite_lefttext}%
+     righttext        {\p_publ_cite_righttext}%
+     before           {\p_publ_cite_before}%
+     after            {\p_publ_cite_after}%
    \relax
    \clf_btxflushmarked} % maybe: \iftrialtypesetting\else ... \fi
 

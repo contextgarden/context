@@ -381,6 +381,7 @@ function publications.new(name)
         specifications = {
             -- used specifications
         },
+        suffixed   = false,
     }
     -- we delay details till we need it (maybe we just delay the
     -- individual fields but that is tricky as there can be some

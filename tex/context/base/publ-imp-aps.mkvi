@@ -323,7 +323,7 @@
   [aps:cite]
   [\c!left=,
    \c!right=,
-  [\c!separator:2={,\space}, % :0 and :1 - between items of a list
+   \c!separator:2={,\space}, % :0 and :1 - between items of a list
    \c!separator:3={,\space\btxlabeltext{aps:and}\space}, % not \textampersand
    \c!separator:4= {\space\btxlabeltext{aps:and}\space}] % not \textampersand
 
@@ -566,7 +566,7 @@
         \fi
       % \ifx\currentbtxsuffix\empty \else
       %     \texdefinition {\s!btx:\s!cite:inject} {
-        \currentbtxsuffix
+        \btxflushsuffix
       %     }
       % \fi
     \fi
@@ -661,7 +661,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:aps:optional-title
-    \doif{\btxparameter{\c!title}\v!yes {
+    \doif{\btxparameter{\c!title}}\v!yes {
         \texdefinition {btx:aps:title}
     }
 \stoptexdefinition

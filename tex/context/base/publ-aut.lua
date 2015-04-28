@@ -16,9 +16,10 @@ local lpeg = lpeg
 local type, next, tostring = type, next, tostring
 local concat = table.concat
 local utfchar = utf.char
+local utfsub = utf.sub
 local formatters = string.formatters
 
-local P, C, V, Cs, Ct, Cg, Cf, Cc = lpeg.P, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Cc
+local P, S, C, V, Cs, Ct, Cg, Cf, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Cc
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local context         = context
@@ -39,6 +40,7 @@ local chardata        = characters.data
 local trace_hashing   = false  trackers.register("publications.authorhash", function(v) trace_hashing = v end)
 
 local report          = logs.reporter("publications","authors")
+local report_cite     = logs.reporter("publications","cite")
 
 -- local function makesplitter(separator)
 --     return Ct { "start",
@@ -504,7 +506,7 @@ local collapsers = allocate { }
 
 publications.authorcollapsers = collapsers
 
-local function default(author)
+local function default(author) -- one author
     local hash = author.hash
     if hash then
         return hash
@@ -518,19 +520,34 @@ local function default(author)
     local result     = { }
     local nofresult  = 0
     if vons and #vons > 0 then
-        nofresult = nofresult + 1 ; result[nofresult] = concat(vons," ")
+        for j=1,#vons do
+            nofresult = nofresult + 1
+            result[nofresult] = vons[j]
+        end
     end
     if surnames and #surnames > 0 then
-        nofresult = nofresult + 1 ; result[nofresult] = concat(surnames," ")
+        for j=1,#surnames do
+            nofresult = nofresult + 1
+            result[nofresult] = surnames[j]
+        end
     end
     if initials and #initials > 0 then
-        nofresult = nofresult + 1 ; result[nofresult] = concat(the_initials(initials)," ")
+        for j=1,#initials do
+            nofresult = nofresult + 1
+            result[nofresult] = initials[j]
+        end
     end
     if firstnames and #firstnames > 0 then
-        nofresult = nofresult + 1 ; result[nofresult] = concat(firstnames," ")
+        for j=1,#firstnames do
+            nofresult = nofresult + 1
+            result[nofresult] = firstnames[j]
+        end
     end
     if juniors and #juniors > 0 then
-        nofresult = nofresult + 1 ; result[nofresult] = concat(juniors," ")
+        for j=1,#juniors do
+            nofresult = nofresult + 1
+            result[nofresult] = juniors[j]
+        end
     end
     local hash = concat(result," ")
     if trace_hashing then
@@ -538,6 +555,157 @@ local function default(author)
     end
     author.hash = hash
     return hash
+end
+
+local authorhashers        = { }
+publications.authorhashers = authorhashers
+
+-- todo: some hashing
+
+local function name(authors)
+    local n = #authors
+    if n == 0 then
+        return ""
+    end
+    local result    = { }
+    local nofresult = 0
+    for i=1,n do
+        local author   = authors[i]
+        local surnames = author.surnames
+        if surnames and #surnames > 0 then
+            for j=1,#surnames do
+                nofresult = nofresult + 1
+                result[nofresult] = surnames[j]
+            end
+        end
+    end
+    return concat(result," ")
+end
+
+table.setmetatableindex(authorhashers,function(t,k)
+    t[k] = name
+    return name
+end)
+
+authorhashers.normal = function(authors)
+    local n = #authors
+    if n == 0 then
+        return ""
+    end
+    local result    = { }
+    local nofresult = 0
+    for i=1,n do
+        local author     = authors[i]
+        local vons       = author.vons
+        local surnames   = author.surnames
+        local firstnames = author.firstnames
+        local juniors    = author.juniors
+        if vons and #vons > 0 then
+            for j=1,#vons do
+                nofresult = nofresult + 1
+                result[nofresult] = vons[j]
+            end
+        end
+        if surnames and #surnames > 0 then
+            for j=1,#surnames do
+                nofresult = nofresult + 1
+                result[nofresult] = surnames[j]
+            end
+        end
+        if firstnames and #firstnames > 0 then
+            for j=1,#firstnames do
+                nofresult = nofresult + 1
+                result[nofresult] = firstnames[j]
+            end
+        end
+        if juniors and #juniors > 0 then
+            for j=1,#juniors do
+                nofresult = nofresult + 1
+                result[nofresult] = juniors[j]
+            end
+        end
+    end
+    return concat(result," ")
+end
+
+authorhashers.normalshort = function(authors)
+    local n = #authors
+    if n == 0 then
+        return ""
+    end
+    local result    = { }
+    local nofresult = 0
+    for i=1,n do
+        local author   = authors[i]
+        local vons     = author.vons
+        local surnames = author.surnames
+        local initials = author.initials
+        local juniors  = author.juniors
+        if vons and #vons > 0 then
+            for j=1,#vons do
+                nofresult = nofresult + 1
+                result[nofresult] = vons[j]
+            end
+        end
+        if surnames and #surnames > 0 then
+            for j=1,#surnames do
+                nofresult = nofresult + 1
+                result[nofresult] = surnames[j]
+            end
+        end
+        if initials and #initials > 0 then
+            for j=1,#initials do
+                nofresult = nofresult + 1
+                result[nofresult] = initials[j]
+            end
+        end
+        if juniors and #juniors > 0 then
+            for j=1,#juniors do
+                nofresult = nofresult + 1
+                result[nofresult] = juniors[j]
+            end
+        end
+    end
+    return concat(result," ")
+end
+
+authorhashers.normalinverted = authorhashers.normal
+authorhashers.invertedshort  = authorhashers.normalshort
+
+local p_clean = Cs ( (
+                    P("\\btxcmd") / "" -- better keep the argument
+                  + S("`~!@#$%^&*()_-+={}[]:;\"\'<>,.?/|\\") / ""
+                  + lpeg.patterns.utf8character
+                )^1)
+
+authorhashers.short = function(authors)
+    -- a short is a real dumb hardcodes kind of tag and we only support
+    -- this one because some users might expect it, not because it makes
+    -- sense
+    local t = { }
+    local n = #authors
+    if n > 0 then
+        if n > 3 then
+            n = 3
+        end
+        for i=1,n do
+            local surnames = authors[i].surnames
+            if not surnames or #surnames == 0 then
+                -- in fact this is an error
+            elseif #t < 3 then
+                local s = surnames[1]
+                local c = lpegmatch(p_clean,s)
+                if s ~= c then
+                    report_cite("bad name %a cleaned to %a for short construction",s,c)
+                end
+                t[#t+1] = utfsub(c,1,n)
+            else
+                t[4] = "+" -- indeed
+                break
+            end
+        end
+    end
+    return concat(t)
 end
 
 collapsers.default = default
@@ -630,7 +798,7 @@ publications.sortmethods.authoryear = {
         { field = "key",     default = "",     unknown = "" },
         { field = "author",  default = "",     unknown = "" },
         { field = "year",    default = "9998", unknown = "9999" },
-        { field = "suffix",  default = " ",    unknown = " " },
+     -- { field = "suffix",  default = " ",    unknown = " " },
         { field = "month",   default = "13",   unknown = "14" },
         { field = "day",     default = "32",   unknown = "33" },
         { field = "journal", default = "",     unknown = "" },
