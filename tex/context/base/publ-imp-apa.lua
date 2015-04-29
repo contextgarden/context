@@ -432,10 +432,12 @@ categories.electronic = {
 categories.film = {
     sets = {
         doi = generic.doi,
+        author = { "producer", "director", },
     },
     required = {
-        "producer", "director",
-        "title", "year",
+        "author",
+        "title",
+        "year",
         "address", "publisher", -- aka studio
     },
     optional = {

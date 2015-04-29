@@ -315,7 +315,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                     runner(getlist(n),depth+1)
                                 elseif id == glyph_code then
                                     runner(getfield(n,"components"),depth+1) -- this should not be needed
-                                elseif id == disc_node then
+                                elseif id == disc_code then
                                     runner(getfield(n,"pre"),depth+1)        -- idem
                                     runner(getfield(n,"post"),depth+1)       -- idem
                                     runner(getfield(n,"replace"),depth+1)    -- idem

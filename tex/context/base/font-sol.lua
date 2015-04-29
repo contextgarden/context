@@ -507,7 +507,7 @@ local function collect_words(list) -- can be made faster for attributes
                 words[w] = { index, first, last }
                 index = nil
                 first = nil
-                if id == disc_node then
+                if id == disc_code then
                     if trace_split then
                         report_splitters("skipped: disc node")
                     end

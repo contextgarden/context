@@ -532,6 +532,7 @@ local function default(author) -- one author
         end
     end
     if initials and #initials > 0 then
+        initials = the_initials(initials)
         for j=1,#initials do
             nofresult = nofresult + 1
             result[nofresult] = initials[j]
@@ -654,6 +655,7 @@ authorhashers.normalshort = function(authors)
             end
         end
         if initials and #initials > 0 then
+            initials = the_initials(initials)
             for j=1,#initials do
                 nofresult = nofresult + 1
                 result[nofresult] = initials[j]
@@ -682,30 +684,42 @@ authorhashers.short = function(authors)
     -- a short is a real dumb hardcodes kind of tag and we only support
     -- this one because some users might expect it, not because it makes
     -- sense
-    local t = { }
     local n = #authors
-    if n > 0 then
-        if n > 3 then
-            n = 3
+    if n == 0 then
+        return "unk"
+    elseif n == 1 then
+        local surnames = authors[1].surnames
+        if not surnames or #surnames == 0 then
+            return "err"
+        else
+            local s = surnames[1]
+            local c = lpegmatch(p_clean,s)
+            if s ~= c then
+                report_cite("name %a cleaned to %a for short construction",s,c)
+            end
+            return utfsub(c,1,3)
         end
+    else
+        local t = { }
         for i=1,n do
+            if i > 3 then
+                t[#t+1] = "+" -- indeed
+                break
+            end
             local surnames = authors[i].surnames
             if not surnames or #surnames == 0 then
-                -- in fact this is an error
-            elseif #t < 3 then
+                t[#t+1] = "?"
+            else
                 local s = surnames[1]
                 local c = lpegmatch(p_clean,s)
                 if s ~= c then
-                    report_cite("bad name %a cleaned to %a for short construction",s,c)
+                    report_cite("name %a cleaned to %a for short construction",s,c)
                 end
-                t[#t+1] = utfsub(c,1,n)
-            else
-                t[4] = "+" -- indeed
-                break
+                t[#t+1] = utfsub(c,1,1)
             end
         end
+        return concat(t)
     end
-    return concat(t)
 end
 
 collapsers.default = default
@@ -803,9 +817,9 @@ publications.sortmethods.authoryear = {
         { field = "day",     default = "32",   unknown = "33" },
         { field = "journal", default = "",     unknown = "" },
         { field = "volume",  default = "",     unknown = "" },
-        { field = "number",  default = "",     unknown = "" },
-        { field = "title",   default = "",     unknown = "" },
+     -- { field = "number",  default = "",     unknown = "" },
         { field = "pages",   default = "",     unknown = "" },
+        { field = "title",   default = "",     unknown = "" },
         { field = "index",   default = "",     unknown = "" },
     },
 }

@@ -46,7 +46,7 @@ local trace_cite         = false  trackers.register("publications.cite",        
 local trace_missing      = false  trackers.register("publications.cite.missing",    function(v) trace_missing    = v end)
 local trace_references   = false  trackers.register("publications.cite.references", function(v) trace_references = v end)
 local trace_detail       = false  trackers.register("publications.detail",          function(v) trace_detail     = v end)
-local trace_shorts       = false  trackers.register("publications.shorts",          function(v) trace_shorts     = v end)
+local trace_suffixes     = false  trackers.register("publications.suffixes",        function(v) trace_suffixes   = v end)
 
 publications             = publications or { }
 local datasets           = publications.datasets
@@ -1051,7 +1051,7 @@ do
             local entry = ordered[i]
             if entry then
                 local tag = entry.tag
-                if tag  then
+                if tag then
                     local use = used[tag]
                     if use then
                         -- use is a table of used list entries (so there can be more) and we just look at
@@ -1068,24 +1068,24 @@ do
                                 else
                                     u = "0"
                                 end
-                                local t = { tag, year, u, i }
+                                local year  = tonumber(entry.year) or 9999
+                                local data  = { tag, year, u, i }
                                 -- authors
-                                local hash = hasher(author)
-                                local a = authors[hash]
-                                if not a then
-                                    authors[hash] = { t }
+                                local hash  = hasher(author)
+                                local found = authors[hash]
+                                if not found then
+                                    authors[hash] = { data }
                                 else
-                                    a[#a+1] = t
+                                    found[#found+1] = data
                                 end
                                 -- shorts
                                 local hash  = shorter(author)
-                                local year  = tonumber(entry.year) or 9999
                                 local short = f_short(hash,mod(year,100))
-                                local s = shorts[short]
-                                if not s then
-                                    shorts[short] = { t }
+                                local found = shorts[short]
+                                if not found then
+                                    shorts[short] = { data }
                                 else
-                                    s[#s+1] = t
+                                    found[#found+1] = data
                                 end
                                 --
                             else
@@ -1110,22 +1110,40 @@ do
                     local entry   = luadata[tag]
                     local year    = entry.year
                     detail[key]   = hash
-                    if trace_shorts then
-                        report_suffix("%s: tag %a, hash %a, year %a",key,tag,hash,year or '')
-                    end
                 elseif n > 1 then
-                    sort(tags,shortsorter) -- todo: proper utf sorter
+                    sort(tags,shortsorter) -- or take first -- todo: proper utf sorter
+                    local lastyear = nil
+                    local suffix   = nil
+                    local previous = nil
                     for i=1,n do
-                        local tagdata     = tags[i]
-                        local tag         = tagdata[1]
-                        local detail      = details[tag]
-                        local suffix      = i -- numbertochar(i)
-                        local entry       = luadata[tag]
-                        local year        = entry.year
-                        detail[key]       = hash
-                        detail[suffixkey] = suffix
-                        if trace_shorts then
-                            report_suffix("%s: tag %a, hash %a, year %a, suffix %a, tag %a",key,tag,hash,year or '',suffix or '')
+                        local tagdata = tags[i]
+                        local tag     = tagdata[1]
+                        local detail  = details[tag]
+                        local entry   = luadata[tag]
+                        local year    = entry.year
+                        detail[key]   = hash
+                        if year ~= lastyear then
+                            lastyear = year
+                            suffix = 1
+                        else
+                            if previous and suffix == 1 then
+                                previous[suffixkey] = suffix
+                            end
+                            suffix = suffix + 1
+                            detail[suffixkey] = suffix
+                        end
+                        previous = detail
+                    end
+                end
+                if trace_suffixes then
+                    for i=1,n do
+                        local tag    = tags[i][1]
+                        local year   = luadata[tag].year
+                        local suffix = details[tag].suffix
+                        if suffix then
+                            report_suffix("%s: tag %a, hash %a, year %a, suffix %a",key,tag,hash,year or '',suffix or '')
+                        else
+                            report_suffix("%s: tag %a, hash %a, year %a",key,tag,hash,year or '')
                         end
                     end
                 end
@@ -1796,7 +1814,6 @@ do
                 end
             end
         end
-        groups[group] = lastreferencenumber
         if type(sorter) == "function" then
             list = sorter(dataset,rendering,newlist,sorttype) or newlist
         else
@@ -1825,6 +1842,7 @@ do
                 end
             end
         end
+        groups[group] = lastreferencenumber
         rendering.list = list
     end
 
@@ -2297,6 +2315,14 @@ do
             for i=1,#source do
                 local entry   = source[i]
                 local current = entry.sortkey -- so we need a sortkey !
+if entry.suffix then
+    if not first then
+        first, last, firstr, lastr = current, current, entry, entry
+    else
+        flushrange()
+        first, last, firstr, lastr = current, current, entry, entry
+    end
+else
                 if not first then
                     first, last, firstr, lastr = current, current, entry, entry
                 elseif current == last + 1 then
@@ -2305,6 +2331,7 @@ do
                     flushrange()
                     first, last, firstr, lastr = current, current, entry, entry
                 end
+end
                 tags[#tags+1] = entry.tag
             end
             if first and last then
@@ -2784,7 +2811,7 @@ do
             local entries = { }
             for i=1,#found do
                 local entry  = found[i]
-                local author = entry.author
+                local author = entry.authorhash
                 if author then
                     local aentries = entries[author]
                     if aentries then
@@ -2798,7 +2825,7 @@ do
             -- hashing with strings)
             for i=1,#found do
                 local entry  = found[i]
-                local author = entry.author
+                local author = entry.authorhash
                 if author then
                     local aentries = entries[author]
                     if not aentries then
@@ -2917,6 +2944,7 @@ do
 
         local function setter(data,dataset,tag,entry)
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
+data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
         end
 
         local function getter(first,last,_,specification)
@@ -2943,6 +2971,7 @@ do
             local entries = entry.entries
             local text    = entries and entries.text or "?"
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
+data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
             data.num     = text
             data.sortkey = text and lpegmatch(numberonly,text)
         end
@@ -2967,6 +2996,7 @@ do
 
         local function setter(data,dataset,tag,entry)
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
+data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
             local year   = getfield (dataset,tag,"year")
             local suffix = getdetail(dataset,tag,"authorsuffix")
             data.year    = year

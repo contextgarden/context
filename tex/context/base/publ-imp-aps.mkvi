@@ -289,8 +289,8 @@
   [aps:cite:author:years] % todo
   [aps:cite:authoryears]
   [\c!inbetween=,
-   \c!left=(,
-   \c!right=)]
+   \c!left={\space(},
+   \c!right={)}]
 
 \definebtx
   [aps:cite:year]
@@ -564,11 +564,7 @@
                 \currentbtxsecond
             }
         \fi
-      % \ifx\currentbtxsuffix\empty \else
-      %     \texdefinition {\s!btx:\s!cite:inject} {
         \btxflushsuffix
-      %     }
-      % \fi
     \fi
 \stopsetups
 

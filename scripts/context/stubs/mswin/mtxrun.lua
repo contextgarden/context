@@ -4535,7 +4535,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 37233, stripped down to: 15684
+-- original size: 37388, stripped down to: 15817
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -4701,6 +4701,7 @@ if not utf.sub then
   local pattern_zero=Cmt(p_utf8char,slide_zero)^0
   local pattern_one=Cmt(p_utf8char,slide_one )^0
   local pattern_two=Cmt(p_utf8char,slide_two )^0
+  local pattern_first=C(patterns.utf8character)
   function utf.sub(str,start,stop)
     if not start then
       return str
@@ -4742,7 +4743,9 @@ if not utf.sub then
         end
       end
     end
-    if start>stop then
+    if start==1 and stop==1 then
+      return lpegmatch(pattern_first,str) or ""
+    elseif start>stop then
       return ""
     elseif start>1 then
       b,e,n,first,last=0,0,0,start-1,stop
@@ -17929,8 +17932,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 742365
--- stripped bytes    : 265704
+-- original bytes    : 742520
+-- stripped bytes    : 265726
 
 -- end library merge
 

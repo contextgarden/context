@@ -311,8 +311,8 @@
   [apa:cite:author:years] % todo
   [apa:cite:authoryears]
   [\c!inbetween=,
-   \c!left=(,
-   \c!right=)]
+   \c!left={\space(},
+   \c!right={)}]
 
 \definebtx
   [apa:cite:year]
@@ -623,11 +623,7 @@
                 \currentbtxsecond
             }
         \fi
-      % \ifx\currentbtxsuffix\empty \else
-      %     \texdefinition {\s!btx:\s!cite:inject} {
         \btxflushsuffix
-      %     }
-      % \fi
     \fi
    %\btxparameter\c!right
 \stopsetups
@@ -805,7 +801,7 @@
 \starttexdefinition btx:apa:author-or-editor #author
     \btxdoif {#author} {
         \btxflush{#author}
-        \doif {\btxfoundname{#author}} {editor} {
+        \doifelse {\btxfoundname{#author}} {editor} {
             \btxleftparenthesis
             \btxsingularorplural {editor} {
                 \btxlabeltext{apa:Editor}
@@ -813,6 +809,40 @@
                 \btxlabeltext{apa:Editors}
             }
             \btxrightparenthesisperiod
+        } {
+            \doifelse {\btxfoundname{#author}} {producer} {
+                \btxleftparenthesis
+                \btxsingularorplural {producer} {
+                    \btxlabeltext{apa:Producer}
+                } {
+                    \btxlabeltext{apa:Producers}
+                }
+                \btxrightparenthesis
+                \btxdoifelse {director} {
+                    \removeunwantedspaces
+                    \btxparameter{\c!separator:names:3}
+                    \btxflush{director}
+                    \btxleftparenthesis
+                    \btxsingularorplural {director} {
+                        \btxlabeltext{apa:Director}
+                    } {
+                        \btxlabeltext{apa:Directors}
+                    }
+                    \btxrightparenthesisperiod
+                } {
+                    \btxperiod
+                }
+            } {
+                \doif {\btxfoundname{#author}} {director} {
+                    \btxleftparenthesis
+                    \btxsingularorplural {director} {
+                        \btxlabeltext{apa:Director}
+                    } {
+                        \btxlabeltext{apa:Directors}
+                    }
+                    \btxrightparenthesisperiod
+                }
+            }
         }
     }
 \stoptexdefinition
@@ -1073,6 +1103,11 @@
 \startsetups btx:apa:list:article
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
+    \btxdoif {type} {
+        \btxleftbracket
+        \btxflush{type}
+        \btxrightbracketperiod
+    }
     \texdefinition{btx:apa:journal-volume-number-pages}
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
@@ -1322,35 +1357,7 @@
 % Optional fields: subtitle, type, note, url, doi
 
 \startsetups btx:apa:list:film
-    \btxdoif {producer} {
-        \btxflush{producer}
-        \btxleftparenthesis
-        \btxsingularorplural {producer} {
-            \btxlabeltext{apa:Producer}
-        } {
-            \btxlabeltext{apa:Producers}
-        }
-        \btxrightparenthesis
-        \btxdoifelse {director} {
-            \removeunwantedspaces
-            \btxparameter{\c!separator:names:3}
-        } {
-            \btxperiod
-        }
-    }
-    \btxdoif {director} {
-        \btxflush{director}
-        \btxleftparenthesis
-        \btxsingularorplural {director} {
-            \btxlabeltext{apa:Director}
-        } {
-            \btxlabeltext{apa:Directors}
-        }
-        \btxrightparenthesisperiod
-    }
-    \btxleftparenthesis
-    \texdefinition{btx:apa:suffixedyear}
-    \btxrightparenthesisperiod
+    \texdefinition{btx:apa:authoryear}
     \texdefinition {btx:apa:title}
     \btxleftbracket
         \btxdoifelse {type} {

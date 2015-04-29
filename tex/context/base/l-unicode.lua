@@ -418,9 +418,11 @@ if not utf.sub then
         end
     end
 
-    local pattern_zero = Cmt(p_utf8char,slide_zero)^0
-    local pattern_one  = Cmt(p_utf8char,slide_one )^0
-    local pattern_two  = Cmt(p_utf8char,slide_two )^0
+    local pattern_zero  = Cmt(p_utf8char,slide_zero)^0
+    local pattern_one   = Cmt(p_utf8char,slide_one )^0
+    local pattern_two   = Cmt(p_utf8char,slide_two )^0
+
+    local pattern_first = C(patterns.utf8character)
 
     function utf.sub(str,start,stop)
         if not start then
@@ -463,7 +465,9 @@ if not utf.sub then
                 end
             end
         end
-        if start > stop then
+        if start == 1 and stop == 1 then
+            return lpegmatch(pattern_first,str) or ""
+        elseif start > stop then
             return ""
         elseif start > 1 then
             b, e, n, first, last = 0, 0, 0, start - 1, stop

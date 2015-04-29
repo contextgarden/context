@@ -46,7 +46,6 @@
 \startsetups[\s!btx:\s!list:\s!numbering]
     \texdefinition {\s!btx:\s!list:inject} {
         \currentbtxfirst
-        \btxflushsuffix
         \btxparameter\c!stopper
     }
 \stopsetups
@@ -67,6 +66,7 @@
     \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:short]
         \btxusecommand [\currentbtxspecification:\s!list:\s!numbering:short] {
             \fastsetup{\s!btx:\s!list:\s!numbering}
+            \btxflushsuffix
         }
     \btxstopstyleandcolor
 \stopsetups
