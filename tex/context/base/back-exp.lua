@@ -68,10 +68,6 @@ local attributes        = attributes
 local variables         = interfaces.variables
 local v_yes             = variables.yes
 local v_no              = variables.no
-local v_normal          = variables.normal
-local v_flushright      = variables.flushright
-local v_middle          = variables.middle
-local v_flushleft       = variables.flushleft
 
 local implement         = interfaces.implement
 
@@ -153,6 +149,11 @@ local overloads         = fonts.mappings.overloads
 local exportversion     = "0.34"
 local mathmlns          = "http://www.w3.org/1998/Math/MathML"
 local contextns         = "http://www.contextgarden.net/context/export" -- whatever suits
+local cssnamespaceurl   = "@namespace context url('%namespace%') ;"
+local cssnamespace      = "context|"
+----- cssnamespacenop   = "/* no namespace */"
+
+local usecssnamespace   = false
 
 local nofcurrentcontent = 0 -- so we don't free (less garbage collection)
 local currentcontent    = { }
@@ -201,13 +202,11 @@ local p_attribute       = lpeg.replacer(attribentities)
 local p_stripper        = lpeg.patterns.stripper
 local p_escaped         = lpeg.patterns.xml.escaped
 
-local f_id              = formatters["%s-%s"]
-
-local alignmapping = {
-    flushright = "right",
-    middle     = "center",
-    flushleft  = "left",
-}
+-- local alignmapping = {
+--     flushright = "right",
+--     middle     = "center",
+--     flushleft  = "left",
+-- }
 
 local defaultnature = "mixed" -- "inline"
 
@@ -329,7 +328,7 @@ local usedstyles = { }
 local namespacetemplate = [[
 /* %what% for file %filename% */
 
-@namespace context url('%namespace%') ;
+%cssnamespaceurl%
 ]]
 
 do
@@ -340,9 +339,10 @@ do
 
     -- /* padding      : ; */
     -- /* text-justify : inter-word ; */
+    -- /* text-align : justify ; */
 
 local documenttemplate = [[
-document {
+document, %namespace%div.document {
     font-size  : %size% !important ;
     max-width  : %width% !important ;
     text-width : %align% !important ;
@@ -351,7 +351,7 @@ document {
 ]]
 
 local styletemplate = [[
-%element%[detail="%detail%"], context|div.%element%.%detail% {
+%element%[detail="%detail%"], %namespace%div.%element%.%detail% {
     display      : inline ;
     font-style   : %style% ;
     font-variant : %variant% ;
@@ -361,17 +361,19 @@ local styletemplate = [[
 }]]
 
     local numbertoallign = {
-        [0] = "justify", ["0"] = "justify", [v_normal    ] = "justify",
-        [1] = "right",   ["1"] = "right",   [v_flushright] = "right",
-        [2] = "center",  ["2"] = "center",  [v_middle    ] = "center",
-        [3] = "left",    ["3"] = "left",    [v_flushleft ] = "left",
+        [0] = "justify", ["0"] = "justify", [variables.normal    ] = "justify",
+        [1] = "right",   ["1"] = "right",   [variables.flushright] = "right",
+        [2] = "center",  ["2"] = "center",  [variables.middle    ] = "center",
+        [3] = "left",    ["3"] = "left",    [variables.flushleft ] = "left",
     }
 
     function wrapups.allusedstyles(basename)
         local result = { replacetemplate(namespacetemplate, {
-            what      = "styles",
-            filename  = basename,
-            namespace = contextns,
+            what            = "styles",
+            filename        = basename,
+            namespace       = contextns,
+         -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or cssnamespacenop,
+            cssnamespaceurl = cssnamespaceurl,
         }) }
         --
         local bodyfont = finetuning.bodyfont
@@ -398,7 +400,7 @@ local styletemplate = [[
             align = numbertoallign[align]
         end
         if not align then
-            align = hyphens and "justify" or "inherited"
+            align = hyphen and "justify" or "inherited"
         end
         --
         result[#result+1] = replacetemplate(documenttemplate,{
@@ -416,13 +418,14 @@ local styletemplate = [[
                 local c = colorspecification(data.color)
                 detail = gsub(detail,"[^A-Za-z0-9]+","-")
                 result[#result+1] = replacetemplate(styletemplate,{
-                    element = element,
-                    detail  = detail,
-                    style   = s.style   or "inherit",
-                    variant = s.variant or "inherit",
-                    weight  = s.weight  or "inherit",
-                    family  = s.family  or "inherit",
-                    color   = c         or "inherit",
+                    namespace = usecssnamespace and cssnamespace or "",
+                    element   = element,
+                    detail    = detail,
+                    style     = s.style   or "inherit",
+                    variant   = s.variant or "inherit",
+                    weight    = s.weight  or "inherit",
+                    family    = s.family  or "inherit",
+                    color     = c         or "inherit",
                 })
             end
         end
@@ -436,7 +439,7 @@ local usedimages = { }
 do
 
 local imagetemplate = [[
-%element%[id="%id%"], context|div.%element%[id="%id%"] {
+%element%[id="%id%"], %namespace%div.%element%[id="%id%"] {
     display           : block ;
     background-image  : url('%url%') ;
     background-size   : 100%% auto ;
@@ -469,23 +472,26 @@ local imagetemplate = [[
 
     function wrapups.allusedimages(basename)
         local result = { replacetemplate(namespacetemplate, {
-            what      = "images",
-            filename  = basename,
-            namespace = contextns,
+            what            = "images",
+            filename        = basename,
+            namespace       = contextns,
+         -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or "",
+            cssnamespaceurl = cssnamespaceurl,
         }) }
         for element, details in sortedhash(usedimages) do
             for detail, data in sortedhash(details) do
                 local name = data.name
                 local page = tonumber(data.page) or 1
                 local spec = {
-                    element = element,
-                    id      = data.id,
-                    name    = name,
-                    page    = page,
-                    url     = usedname(name,page),
-                    width   = data.width,
-                    height  = data.height,
-                    used    = data.used,
+                    element   = element,
+                    id        = data.id,
+                    name      = name,
+                    page      = page,
+                    url       = usedname(name,page),
+                    width     = data.width,
+                    height    = data.height,
+                    used      = data.used,
+                    namespace = usecssnamespace and cssnamespace or "",
                 }
                 result[#result+1] = replacetemplate(imagetemplate,spec)
                 collected[detail] = spec
@@ -764,6 +770,8 @@ do
 
     local image       = { }
     usedimages.image  = image
+
+    local f_id        = formatters["%s-%s"]
 
     function structurestags.setfigure(name,used,page,width,height)
         local fulltag = locatedtag("image")
@@ -2885,14 +2893,14 @@ local cssheadlink = [[
 local elementtemplate = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
-%element%, context|div.%element% {
+%element%, %namespace%div.%element% {
     display: %display% ;
 }]]
 
 local detailtemplate = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
-%element%[detail=%detail%], context|div.%element%.%detail% {
+%element%[detail=%detail%], %namespace%div.%element%.%detail% {
     display: %display% ;
 }]]
 
@@ -2932,9 +2940,11 @@ local htmltemplate = [[
 
     local function allusedelements(basename)
         local result = { replacetemplate(namespacetemplate, {
-            what      = "template",
-            filename  = basename,
-            namespace = contextns,
+            what            = "template",
+            filename        = basename,
+            namespace       = contextns,
+         -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or "",
+            cssnamespaceurl = cssnamespaceurl,
         }) }
         for element, details in sortedhash(used) do
             if namespaces[element] then
@@ -2946,16 +2956,18 @@ local htmltemplate = [[
                     local display = displaymapping[nature] or "block"
                     if detail == "" then
                         result[#result+1] = replacetemplate(elementtemplate, {
-                            element = element,
-                            display = display,
-                            chain   = chain,
+                            element   = element,
+                            display   = display,
+                            chain     = chain,
+                            namespace = usecssnamespace and namespace or "",
                         })
                     else
                         result[#result+1] = replacetemplate(detailtemplate, {
-                            element = element,
-                            display = display,
-                            detail  = detail,
-                            chain   = chain,
+                            element   = element,
+                            display   = display,
+                            detail    = detail,
+                            chain     = chain,
+                            namespace = usecssnamespace and cssnamespace or "",
                         })
                     end
                 end
@@ -3307,7 +3319,13 @@ local htmltemplate = [[
 
         local examplefilename = resolvers.find_file("export-example.css")
         if examplefilename then
-            file.copy(examplefilename,defaultfilename)
+            local data = io.loaddata(examplefilename)
+            if not data or data == "" then
+                data = "/* missing css file */"
+            elseif not usecssnamespace then
+                data = gsub(data,cssnamespace,"")
+            end
+            io.savedata(defaultfilename,data)
         end
 
         if cssfile then
@@ -3411,11 +3429,17 @@ local htmltemplate = [[
 
         remap(specification,xmltree)
 
+        local title = specification.title
+
+        if not title or title == "" then
+            title = "no title" -- believe it or not, but a <title/> can prevent viewing in browsers
+        end
+
         local variables = {
             style    = h_styles,
             body     = xml.tostring(xml.first(xmltree,"/div")),
             preamble = wholepreamble(false),
-            title    = specification.title,
+            title    = title,
         }
 
         io.savedata(htmlfilename,replacetemplate(htmltemplate,variables,"xml"))

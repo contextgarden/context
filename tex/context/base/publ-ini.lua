@@ -2315,23 +2315,23 @@ do
             for i=1,#source do
                 local entry   = source[i]
                 local current = entry.sortkey -- so we need a sortkey !
-if entry.suffix then
-    if not first then
-        first, last, firstr, lastr = current, current, entry, entry
-    else
-        flushrange()
-        first, last, firstr, lastr = current, current, entry, entry
-    end
-else
-                if not first then
-                    first, last, firstr, lastr = current, current, entry, entry
-                elseif current == last + 1 then
-                    last, lastr = current, entry
+                if entry.suffix then
+                    if not first then
+                        first, last, firstr, lastr = current, current, entry, entry
+                    else
+                        flushrange()
+                        first, last, firstr, lastr = current, current, entry, entry
+                    end
                 else
-                    flushrange()
-                    first, last, firstr, lastr = current, current, entry, entry
+                    if not first then
+                        first, last, firstr, lastr = current, current, entry, entry
+                    elseif current == last + 1 then
+                        last, lastr = current, entry
+                    else
+                        flushrange()
+                        first, last, firstr, lastr = current, current, entry, entry
+                    end
                 end
-end
                 tags[#tags+1] = entry.tag
             end
             if first and last then
@@ -2801,12 +2801,40 @@ end
 
     do
 
+        -- is this good enough?
+
+        local keysorter = function(a,b)
+            local ak = a.authorhash
+            local bk = b.authorhash
+            if ak == bk then
+                local as = a.authorsuffix -- numeric
+                local bs = b.authorsuffix -- numeric
+                if as and bs then
+                    return (as or 0) < (bs or 0)
+                else
+                    return false
+                end
+            else
+                return ak < bk
+            end
+        end
+
+        local revsorter = function(a,b)
+            return keysorter(b,a)
+        end
+
         local currentbtxciteauthor = function()
             context.currentbtxciteauthor()
             return true -- needed?
         end
 
         local function authorcompressor(found,specification)
+            -- HERE
+            if specification.sorttype == v_normal then
+                sort(found,keysorter)
+            elseif specification.sorttype == v_reverse then
+                sort(found,revsorter)
+            end
             local result  = { }
             local entries = { }
             for i=1,#found do
@@ -2944,7 +2972,8 @@ end
 
         local function setter(data,dataset,tag,entry)
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
-data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
+            data.sortkey = text and lpegmatch(numberonly,text)
+            data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
         end
 
         local function getter(first,last,_,specification)
@@ -2958,10 +2987,11 @@ data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted retu
 
         function citevariants.author(presets)
             processcite(presets,{
-                variant  = "author",
-                setup    = "author",
-                setter   = setter,
-                getter   = getter,
+                variant    = "author",
+                setup      = "author",
+                setter     = setter,
+                getter     = getter,
+                compressor = authorcompressor,
             })
         end
 
@@ -2971,7 +3001,7 @@ data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted retu
             local entries = entry.entries
             local text    = entries and entries.text or "?"
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
-data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
+            data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
             data.num     = text
             data.sortkey = text and lpegmatch(numberonly,text)
         end
@@ -2996,7 +3026,7 @@ data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted retu
 
         local function setter(data,dataset,tag,entry)
             data.author, data.field, data.type = getcasted(dataset,tag,"author")
-data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
+            data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
             local year   = getfield (dataset,tag,"year")
             local suffix = getdetail(dataset,tag,"authorsuffix")
             data.year    = year

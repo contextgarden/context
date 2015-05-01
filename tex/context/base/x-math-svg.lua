@@ -40,8 +40,10 @@ local pdftosvg      = os.which("mudraw")
 local f_make_tex    = formatters[ [[context --global kpse:x-math-svg.mkvi --inputfile="%s" --svgstyle="%s" --batch --noconsole --once --purgeall]] ]
 local f_make_svg    = formatters[ [[mudraw -o "math-%%d.svg" "%s" 1-9999]] ]
 
-local f_inline      = formatters[ [[<div class='math-inline' style='vertical-align:%p'></div>]] ]
+----- f_inline      = formatters[ [[<div class='math-inline' style='vertical-align:%p'></div>]] ]
+local f_inline      = formatters[ [[<div class='math-inline'></div>]] ]
 local f_display     = formatters[ [[<div class='math-display'></div>]] ]
+local f_style       = formatters[ [[vertical-align:%p]] ]
 
 local f_math_tmp    = formatters[ [[math-%i]] ]
 
@@ -140,7 +142,8 @@ function svgmath.convert(filename,svgstyle)
             local mode    = info.mode
             local svgname = addsuffix(f_math_tmp(page),"svg")
             local action  = mode == "inline" and f_inline or f_display
-            local x_div   = xmlfirst(xmlconvert(action(-depth)),"/div")
+         -- local x_div   = xmlfirst(xmlconvert(action(-depth)),"/div")
+            local x_div   = xmlfirst(xmlconvert(action()),"/div")
             local svgdata = io.loaddata(svgname)
             if not svgdata or svgdata == "" then
                 print("error in:",svgname,tostring(mth))
@@ -149,6 +152,10 @@ function svgmath.convert(filename,svgstyle)
                 svgdata = lpegmatch(strip,svgdata)
                 local x_svg = xmlfirst(xmlconvert(svgdata),"/svg")
              -- xmldelete(x_svg,"text")
+if mode == "inline" then
+    x_svg.at.style = f_style(-depth)
+end
+
                 x_div.dt = { x_svg }
                 mth.__p__.dt[mth.ni] = x_div -- use helper
             end

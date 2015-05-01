@@ -774,7 +774,7 @@ context|div.math-display {
 /* number   : inline */
 
 quantity, context|div.quantity {
-	display : inline ;
+	display : inline-block ;
 }
 
 quantity>unit, context|div.quantity>context|div.unit {

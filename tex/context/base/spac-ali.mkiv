@@ -1066,12 +1066,26 @@
 \letvalue{\??alignsimplereverse\v!middle    }\spac_align_simple_middle
 
 \unexpanded\def\simplealignedbox#1#2%
-  {\hbox to #1\csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\endcsname}
+  {\hbox \ifdim#1>\zeropoint to #1
+     \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
+   \fi}
+
+\unexpanded\def\simplealignedboxplus#1#2#3%
+  {\hbox #3 \ifdim#1>\zeropoint to #1
+     \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
+   \fi}
 
 \newconditional\alignsimplelefttoright \settrue\alignsimplelefttoright
 
 \unexpanded\def\simplereversealignedbox#1#2%
-  {\hbox to #1\csname\??alignsimplereverse\ifcsname\??alignsimplereverse#2\endcsname#2\else\v!left\fi\endcsname}
+  {\hbox \ifdim#1>\zeropoint to #1
+     \csname\??alignsimplereverse\ifcsname\??alignsimplereverse#2\endcsname#2\else\v!left\fi\expandafter\endcsname
+   \fi}
+
+\unexpanded\def\simplereversealignedboxplus#1#2#3%
+  {\hbox #3 \ifdim#1>\zeropoint to #1
+     \csname\??alignsimplereverse\ifcsname\??alignsimplereverse#2\endcsname#2\else\v!left\fi\expandafter\endcsname
+   \fi}
 
 % \installnamespace{alignsets}
 %

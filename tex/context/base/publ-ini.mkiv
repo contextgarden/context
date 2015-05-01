@@ -952,8 +952,8 @@
       [\c!type=\s!btx]% \c!location=\v!none
       [\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
-       \ifx\currentbtxbefore\empty\else\s!btxbtx=\!!bs\currentbtxbefore\!!es,\fi%
-       \ifx\currentbtxafter \empty\else\s!btxatx=\!!bs\currentbtxafter \!!es,\fi%
+       \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
+       \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
        \s!btxint=\number\currentbtxbacklink
        \ifx\currentbtxciteuservariables\empty\else,\currentbtxciteuservariables\fi]}
 
@@ -1243,13 +1243,15 @@
    \relax
    \clf_btxflushmarked} % maybe: \iftrialtypesetting\else ... \fi
 
+\let\dobtxcitevariantblob\publ_cite_handle_variant_blob % command can use it via lua
+
 \def\publ_cite_handle_variant_indeed[#1]%
   {\letbtxparameter\c!alternative\currentbtxcitealternative
    \edef\currentbtxreference{#1}%
    \usebtxstyleandcolor\c!style\c!color
    \uselanguageparameter\btxdatasetparameter % new
    \btxparameter\c!left
-   \btxparameter\c!command{\publ_cite_handle_variant_blob}%
+   \btxparameter\c!command{\dobtxcitevariantblob}% {\publ_cite_handle_variant_blob}%
    \btxparameter\c!right
    \endgroup}
 

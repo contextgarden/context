@@ -162,6 +162,7 @@ function fonts.handlers.vf.combiner.commands.metafont(g,v)
     end
     g.properties.virtualized = true
     g.variants = list
+    print(g)
 end
 
 fonts.definers.methods.install( "punk", {
@@ -177,14 +178,29 @@ fonts.definers.methods.install( "punkboldslanted", {
     { "metafont", "mfplain", "punkfont-boldslanted.mp", 10 },
 } )
 
-typesetters.cases.register("RandomPunk", function(current)
-    local used = fontdata[current.font].variants
+-- typesetters.cases.register("RandomPunk", function(current)
+--     local used = fontdata[current].variants
+--     if used then
+--         local f = math.random(1,#used)
+--         current.font = used[f]
+--         return current, true
+--     else
+--         return current, false
+--     end
+-- end)
+
+local getfont  = nodes.nuts.getfont
+local setfield = nodes.nuts.setfield
+local random   = math.random
+
+typesetters.cases.register("RandomPunk", function(start)
+    local used = fontdata[getfont(start)].variants
     if used then
-        local f = math.random(1,#used)
-        current.font = used[f]
-        return current, true
+        local f = random(1,#used)
+        setfield(start,"font",used[f])
+        return start, true
     else
-        return current, false
+        return start, false
     end
 end)
 
@@ -214,7 +230,7 @@ end)
 \unexpanded\def\StartRandomPunk  {\begingroup\EnableRandomPunk}
 \unexpanded\def\StopRandomPunk   {\endgroup}
 
-\starttypescript [serif] [punk] [default]
+\starttypescript [serif] [punk]
     \definefontsynonym [Serif]            [demo@punk]
     \definefontsynonym [SerifBold]        [demobold@punkbold]
     \definefontsynonym [SerifSlanted]     [demoslanted@punkslanted]

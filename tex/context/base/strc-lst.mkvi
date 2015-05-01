@@ -953,11 +953,19 @@
             \scratchhsize\hsize
             \ifconditional\c_lists_has_number
                 \ifconditional\c_lists_show_number
-                    \setbox\b_strc_lists_number\hbox \strc_lists_get_reference_attribute\v!number \ifdim\scratchwidth>\zeropoint to \scratchwidth \fi {
-                        \strc_lists_set_style_color\c!numberstyle\c!numbercolor\v!number
-                        \listparameter\c!numbercommand\currentlistsymbol
-                        \hfill
-                    }
+                  \setbox\b_strc_lists_number
+%                    \hbox
+%                      \strc_lists_get_reference_attribute\v!number
+%                      \ifdim\scratchwidth>\zeropoint to \scratchwidth \fi
+                    \simplealignedboxplus
+                        \scratchwidth
+                        {\listparameter\c!numberalign}
+                        {\strc_lists_get_reference_attribute\v!number}
+                        {
+                            \strc_lists_set_style_color\c!numberstyle\c!numbercolor\v!number
+                            \listparameter\c!numbercommand\currentlistsymbol
+%                             \hfill
+                        }
                 \else
                     \setbox\b_strc_lists_number\emptyhbox
                 \fi
@@ -1268,11 +1276,7 @@
     \ifconditional\c_lists_has_number
         \ifconditional\c_lists_show_number
             \setbox\scratchbox
-                \ifzeropt\scratchwidth
-                    \hbox
-                \else
-                    \simplealignedbox\scratchwidth{\listparameter\c!numberalign}
-                \fi
+                \simplealignedbox\scratchwidth{\listparameter\c!numberalign}
                 \bgroup
                     \useliststyleandcolor\c!numberstyle\c!numbercolor
                     \currentlistsymbol

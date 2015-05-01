@@ -332,7 +332,8 @@
 \unexpanded\def\strc_synonyms_insert_meaning#1#2% name tag
   {\begingroup
    \def\currentsimplelist{#1}%
-   \fastsetup{\??simplelistrenderings:\v!text}%
+   \def\currentsynonymtag{#2}%
+   \fastsetup{\??simplelistrenderings::\v!text}%
    \endgroup}
 
 \unexpanded\def\strc_synonyms_insert#1#2% name tag
