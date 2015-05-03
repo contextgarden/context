@@ -24,7 +24,8 @@
 
 \definebtxrendering
   [\s!default]
-  [\c!specification=\s!default]
+  [\c!specification=\s!default,
+   \c!sorttype=\v!default]
 
 \definebtx
   [\s!default]
@@ -124,17 +125,13 @@
    \c!inbetween={,\space}]
 
 \definebtx
-  [\s!default:\s!cite:authorref]
-  [\s!default:\s!cite:authornum]
-
-\definebtx
   [\s!default:\s!cite:authoryears]
   [\s!default:\s!cite:author]
 
 \definebtx
   [\s!default:\s!cite:author:num] % todo
   [\s!default:\s!cite:authornum]
-  [\c!left={[},
+  [\c!left={\space[},
    \c!right={]}]
 
 \definebtx
@@ -147,8 +144,8 @@
   [\s!default:\s!cite:author:years] % todo
   [\s!default:\s!cite:authoryears]
   [\c!inbetween=,
-   \c!left=(,
-   \c!right=)]
+   \c!left={\space(},
+   \c!right={)}]
 
 \definebtx
   [\s!default:\s!cite:year]

@@ -184,13 +184,13 @@ implement { name = "upper", arguments = "string", actions = { utf.upper,    cont
 implement { name = "lower", arguments = "string", actions = { utf.lower,    context } }
 implement { name = "strip", arguments = "string", actions = { string.strip, context } } -- or utf.strip
 
--- implement {
---     name      = "converteddimen",
---     arguments = { "dimen", "string" },
---     actions   = function(dimen,unit)
---         context(todimen(dimen,unit or "pt","%0.5f")) -- no unit appended (%F)
---     end
--- }
+implement {
+    name      = "converteddimen",
+    arguments = { "dimen", "string" },
+    actions   = function(dimen,unit)
+        context(number.todimen(dimen,unit or "pt","%0.5f")) -- no unit appended (%F)
+    end
+}
 
 -- where, not really the best spot for this:
 

@@ -1005,7 +1005,7 @@
   {\begingroup
    \edef\currentbtxfield{#2}%
    \setbtxparameterset\s!list\currentbtxfield
-   %let\currentbtxlistvariant\currentbtxfield
+% \let\currentbtxlistvariant\currentbtxfield
    \clf_btxauthor
         {\currentbtxdataset}%
         {\currentbtxtag}%
@@ -1288,11 +1288,10 @@
 
 %D Compatibility:
 
-\let\cite          \btxcitation
-\let\citation      \btxcitation
-\let\nocite        \btxnocitation
-\let\nocitation    \btxnocitation
-%let\usepublication\btxnocitation
+\let\cite      \btxcitation
+\let\citation  \btxcitation
+\let\nocite    \btxnocitation
+\let\nocitation\btxnocitation
 
 %D Setup helpers, beware, we need to wrap this .. now we need to know
 %D how setups are implemented.
@@ -1664,7 +1663,7 @@
    \c!continue=\v!no,
    \c!method=\v!global,
  % \c!setups=btx:\btxrenderingparameter\c!alternative:initialize, % not the same usage as cite !
- % \c!sorttype=authoryear,
+   \c!sorttype=\v!default,
    \c!criterium=\v!text,
    \c!refcommand=authoryears,  % todo
    \c!numbering=\v!yes,
@@ -1686,6 +1685,7 @@
    \c!inbetween=\space,
    \c!range=\endash,   % separator:range?
    \c!compress=\v!yes, % was no?
+   \c!authorconversion=normal,
    \c!sorttype=normal, % normal, reverse or none
    \c!etallimit=3,
    \c!etaldisplay=\btxparameter\c!etallimit,

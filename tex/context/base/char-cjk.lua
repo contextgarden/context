@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['char-cjk'] = {
 local setmetatable = setmetatable
 local insert = table.insert
 local floor = math.floor
-local format = string.format
+local formatters = string.formatters
 local utfchar = utf.char
 
 local ranges   = characters.ranges
@@ -85,8 +85,7 @@ local tail_consonants = { [0] =
 --         local lead_consonant = floor( index / NCount)
 --         local medial_vowel   = floor((index % NCount) / TCount)
 --         local tail_consonant =        index % TCount
---         return format(
---             "HANGUL SYLLABLE %s%s%s",
+--         return formatters["HANGUL SYLLABLE %s%s%s"](
 --             lead_consonants[lead_consonant],
 --             medial_vowels  [medial_vowel  ],
 --             tail_consonants[tail_consonant]
@@ -100,8 +99,7 @@ local function description(unicode)
         local lead_consonant = floor( index / (21 * 28))
         local medial_vowel   = floor((index % (21 * 28)) / 28)
         local tail_consonant =        index % 28
-        return format(
-            "HANGUL SYLLABLE %s%s%s",
+        return formatters["HANGUL SYLLABLE %s%s%s"](
             lead_consonants[lead_consonant],
             medial_vowels  [medial_vowel  ],
             tail_consonants[tail_consonant]
@@ -363,3 +361,5 @@ insert(ranges, hangul_syllable_range)
 insert(ranges, cjk_ideograph_range)
 insert(ranges, cjk_ideograph_extension_a_range)
 insert(ranges, cjk_ideograph_extension_b_range)
+
+-- Japanese

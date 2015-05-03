@@ -1,0 +1,137 @@
+%D \module
+%D   [       file=type-imp-ipaex,
+%D        version=2015.05.01,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=IPAex,
+%D         author=Yusuke KUROKI \& Hans HAGEN,
+%D           date=\currentdate,
+%D      copyright=Yusuke KUROKI \& Hans HAGEN]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% usage: \setupbodyfont[ipaex,10pt]
+
+\loadtypescriptfile[texgyre]
+\loadtypescriptfile[xits]
+
+\definefontfeature
+  [jp-default]
+  [script=default,lang=japanese]
+
+\definefontfeature
+  [jp-latin-default]
+  [jp-default]
+
+\definefontfeature
+  [jp-latin-slanted]
+  [jp-latin-default]
+  [slant=.2]
+
+\definefontfeature
+  [jp-latin-slanted-mono]
+  [slant=.2]
+
+\definefontfeature
+  [jp-latin-smallcaps]
+  [jp-latin-default]
+  [smcp=yes]
+
+\definefontfeature
+  [jp-latin-smallcaps-mono]
+  [cmcp=yes]
+
+\definefontfallback[jp-serif]           [texgyrepagella-regular*jp-latin-default]      [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-serifbold]       [texgyrepagella-bold*jp-latin-default]         [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-serifitalic]     [texgyrepagella-italic*jp-latin-default]       [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-serifbolditalic] [texgyrepagella-bolditalic*jp-latin-default]   [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-serifslanted]    [texgyrepagella-regular*jp-latin-slanted]      [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-serifboldslanted][texgyrepagella-bold*jp-latin-slanted]         [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-serifcaps]       [texgyrepagella-regular*jp-latin-smallcaps]    [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-sans]            [texgyreheros-regular*jp-latin-default]        [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-sansbold]        [texgyreheros-bold*jp-latin-default]           [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-sansitalic]      [texgyreheros-italic*jp-latin-default]         [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-sansbolditalic]  [texgyreheros-bolditalic*jp-latin-default]     [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-sansslanted]     [texgyreheros-regular*jp-latin-slanted]        [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-sansboldslanted] [texgyreheros-bold*jp-latin-slanted]           [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-sanscaps]        [texgyreheros-regular*jp-latin-smallcaps]      [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-mono]            [texgyrecursor-regular]                        [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-monobold]        [texgyrecursor-bold]                           [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-monoitalic]      [texgyrecursor-italic]                         [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-monobolditalic]  [texgyrecursor-bolditalic]                     [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-monoslanted]     [texgyrecursor-regular*jp-latin-slanted-mono]  [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-monoboldslanted] [texgyrecursor-bold*jp-latin-slanted-mono]     [0x0000-0x0400][force=yes,rscale=1.0406]
+\definefontfallback[jp-monocaps]        [texgyrecursor-regular*jp-latin-smallcaps-mono][0x0000-0x0400][force=yes,rscale=1.0406]
+
+\starttypescriptcollection[ipaex]
+    \starttypescript [\s!serif] [ipaexm]
+        \definefontsynonym [ipaexm]           [\s!file:ipaexm][\s!features=jp-default,\s!fallbacks=jp-serif]
+        \definefontsynonym [ipaexmbold]       [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-serifbold]
+        \definefontsynonym [ipaexmitalic]     [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-serifitalic]
+        \definefontsynonym [ipaexmbolditalic] [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-serifbolditalic]
+        \definefontsynonym [ipaexmslanted]    [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-serifslanted]
+        \definefontsynonym [ipaexmboldslanted][\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-serifboldslanted]
+        \definefontsynonym [ipaexmcaps]       [\s!file:ipaexm][\s!features=jp-default,\s!fallbacks=jp-serifcaps]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [ipaexg]
+        \definefontsynonym[ipaexg]             [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-sans]
+        \definefontsynonym[ipaexgbold]         [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-sansbold]
+        \definefontsynonym[ipaexgitalic]       [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-sansitalic]
+        \definefontsynonym[ipaexgbolditalic]   [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-sansbolditalic]
+        \definefontsynonym[ipaexgslanted]      [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-sansslanted]
+        \definefontsynonym[ipaexgboldslanted]  [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-sansboldslanted]
+        \definefontsynonym[ipaexgcaps]         [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-sanscaps]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [ipaexgmono]
+        \definefontsynonym[ipaexgmono]              [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-mono]
+        \definefontsynonym[ipaexgmonobold]          [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-monobold]
+        \definefontsynonym[ipaexgmonoitalic]        [\s!file:ipaexg][\s!features=jp-slanted,\s!fallbacks=jp-monoitalic]
+        \definefontsynonym[ipaexgmonobolditalic]    [\s!file:ipaexg][\s!features=jp-slanted,\s!fallbacks=jp-monobolditalic]
+        \definefontsynonym[ipaexgmonoslanted]       [\s!file:ipaexg][\s!features=jp-slanted,\s!fallbacks=jp-monoslanted]
+        \definefontsynonym[ipaexgmonoboldslanted]   [\s!file:ipaexg][\s!features=jp-slanted,\s!fallbacks=jp-monoboldslanted]
+        \definefontsynonym[ipaexgmonocaps]          [\s!file:ipaexg][\s!features=jp-default,\s!fallbacks=jp-monocaps]
+    \stoptypescript
+    
+    \starttypescript [\s!serif] [ipaexm] [\s!name]
+        \definefontsynonym[\s!Serif]           [ipaexm]
+        \definefontsynonym[\s!SerifBold]       [ipaexmbold]
+        \definefontsynonym[\s!SerifItalic]     [ipaexmitalic]
+        \definefontsynonym[\s!SerifBoldItalic] [ipaexmbolditalic]
+        \definefontsynonym[\s!SerifSlanted]    [ipaexmslanted]
+        \definefontsynonym[\s!SerifBoldSlanted][ipaexmboldslanted]
+        \definefontsynonym[\s!SerifCaps]       [ipaexmcaps]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [ipaexg] [\s!name]
+        \definefontsynonym[\s!Sans]            [ipaexg]
+        \definefontsynonym[\s!SansBold]        [ipaexgbold]
+        \definefontsynonym[\s!SansItalic]      [ipaexgitalic]
+        \definefontsynonym[\s!SansBoldItalic]  [ipaexgbolditalic]
+        \definefontsynonym[\s!SansSlanted]     [ipaexgslanted]
+        \definefontsynonym[\s!SansBoldSlanted] [ipaexgboldslanted]
+        \definefontsynonym[\s!SansCaps]        [ipaexgcaps]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [ipaexgmono] [\s!name]
+        \definefontsynonym[\s!Mono]            [ipaexgmono]
+        \definefontsynonym[\s!MonoBold]        [ipaexgmonobold]
+        \definefontsynonym[\s!MonoItalic]      [ipaexgmonoitalic]
+        \definefontsynonym[\s!MonoBoldItalic]  [ipaexgmonobolditalic]
+        \definefontsynonym[\s!MonoSlanted]     [ipaexgmonoslanted]
+        \definefontsynonym[\s!MonoBoldSlanted] [ipaexgmonoboldslanted]
+        \definefontsynonym[\s!MonoCaps]        [ipaexgmonocaps]
+    \stoptypescript
+
+    % xits might get replaced with a pagella once we have it
+
+    \starttypescript[ipaex]
+        \definetypeface [ipaex] [\s!rm] [\s!serif] [ipaexm]
+        \definetypeface [ipaex] [\s!ss] [\s!sans]  [ipaexg]
+        \definetypeface [ipaex] [\s!tt] [\s!mono]  [ipaexgmono]
+        \definetypeface [ipaex] [\s!mm] [\s!math]  [xits]
+    \stoptypescript
+
+\stoptypescriptcollection

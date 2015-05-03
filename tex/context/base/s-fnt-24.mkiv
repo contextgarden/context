@@ -56,7 +56,7 @@ function fonts.analyzers.cjktest(first,second)
 end
 \stopluacode
 
-\def\ShowCombinationsKorean
+\unexpanded\def\ShowCombinationsKorean
   {\dodoubleempty\doShowCombinationsKorean}
 
 \def\doShowCombinationsKorean[#1][#2]%
@@ -68,7 +68,7 @@ end
    \disabletrackers[cjk.analyzing]
    \stoppacked}
 
-\def\ShowCombinationsChinese
+\unexpanded\def\ShowCombinationsChinese
   {\dodoubleempty\doShowCombinationsChinese}
 
 \def\doShowCombinationsChinese[#1][#2]%

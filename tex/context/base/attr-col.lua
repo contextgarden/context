@@ -127,15 +127,25 @@ local models = {
 }
 
 local function rgbtocmyk(r,g,b) -- we could reduce
-    return 1-r, 1-g, 1-b, 0
+    if not r then
+        return 0, 0, 0
+    else
+        return 1-r, 1-g, 1-b, 0
+    end
 end
 
 local function cmyktorgb(c,m,y,k)
-    return 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
+    if not c then
+        return 0, 0, 0, 1
+    else
+        return 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
+    end
 end
 
 local function rgbtogray(r,g,b)
-    if colors.weightgray then
+    if not r then
+        return 0
+    elseif colors.weightgray then
         return .30*r + .59*g + .11*b
     else
         return r/3 + g/3 + b/3

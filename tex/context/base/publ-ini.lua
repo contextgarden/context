@@ -2673,7 +2673,7 @@ do
             data.sortkey  = tonumber(text) or text
         end
 
-        local function getter(first,last,_,specification)
+        local function getter(first,last,tag,specification)
             return simplegetter(first,last,"num",specification)
         end
 
@@ -2684,6 +2684,8 @@ do
                 getter  = getter,
             })
         end
+
+        citevariants.textnum = citevariants.num -- should not be needed
 
     end
 

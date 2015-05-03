@@ -126,6 +126,7 @@ local function sortsequence(dataset,list,sorttype)
     if not sequence and type(sorttype) == "string" then
         local list = toarray(sorttype)
         if #list > 0 then
+            local indexdone = false
             sequence = { }
             for i=1,#list do
                 local entry   = toarray(list[i])
@@ -136,6 +137,16 @@ local function sortsequence(dataset,list,sorttype)
                     field   = field,
                     default = default == s_default and c_default or default or c_default,
                     unknown = unknown == s_unknown and c_unknown or unknown or c_unknown,
+                }
+                if field == "index" then
+                    indexdone = true
+                end
+            end
+            if not indexdone then
+                sequence[#sequence+1] = {
+                    field   = "index",
+                    default = 0,
+                    unknown = 0,
                 }
             end
         end
@@ -238,15 +249,13 @@ local sorters = {
         end
         sort(list,compare)
     end,
-    [v_reference] = function(dataset,rendering,list) -- order
+    [v_reference] = function(dataset,rendering,list) -- tag
         local function compare(a,b)
-            local aa = a and a[1]
-            local bb = b and b[1]
-            return aa < bb
+            return a[1] < b[1]
         end
         sort(list,compare)
     end,
-    [v_dataset] = function(dataset,rendering,list) -- index
+    [v_dataset] = function(dataset,rendering,list) -- dataset index
         local function compare(a,b)
             local aa = a and a[6]
             local bb = b and b[6]
@@ -258,21 +267,18 @@ local sorters = {
         end
         sort(list,compare)
     end,
-    [v_default] = function(dataset,rendering,list,sorttype) -- experimental
-        if sorttype == "" or sorttype == v_default then
+    [v_default] = function(dataset,rendering,list,sorttype)
+        if sorttype == "" or sorttype == v_default then -- listorder
             local function compare(a,b)
-                local aa = a and a[3] or 0
-                local bb = b and b[3] or 0
-                if aa == bb then
-                    return a[1] < b[1]
-                else
-                    return aa < bb
-                end
+                return a[2] <  b[2]
             end
             sort(list,compare)
         else
-            local valid = sortsequence(dataset,list,sorttype)
+            local valid = sortsequence(dataset,list,sorttype) -- field order
             if valid and #valid > 0 then
+                -- hm, we have a complication here because a sortsequence doesn't know if there's a field
+                -- so there is no real catch possible here .., anyway, we add a index as last entry when no
+                -- one is set so that should be good enough (needs testing)
                 for i=1,#valid do
                     local v = valid[i]
                     valid[i] = list[v.index]

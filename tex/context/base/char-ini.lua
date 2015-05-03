@@ -546,7 +546,17 @@ local categorytags = allocate {
     cn = "Other Not Assigned",
 }
 
+local detailtags = allocate {
+    sl = "small letter",
+    bl = "big letter",
+    im = "iteration mark",
+    pm = "prolonged sound mark"
+}
+
 characters.categorytags = categorytags
+characters.detailtags   = detailtags
+
+-- sounds : voiced unvoiced semivoiced
 
 --~ special   : cf (softhyphen) zs (emspace)
 --~ characters: ll lm lo lt lu mn nl no pc pd pe pf pi po ps sc sk sm so

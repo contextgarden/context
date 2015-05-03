@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['buff-ini'] = {
 local concat = table.concat
 local type, next, load = type, next, load
 local sub, format = string.sub, string.format
-local splitlines, validstring = string.splitlines, string.valid
+local splitlines, validstring, replacenewlines = string.splitlines, string.valid, string.replacenewlines
 local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 local utfchar  = utf.char
 local totable  = string.totable
@@ -157,12 +157,14 @@ local function collectcontent(name,separator) -- no print
                 t[n] = c
             end
         end
-        return concat(t,separator or "\n") -- was \r
+        -- the default separator was \r, then \n and is now os.newline because buffers
+        -- can be loaded in other applications
+        return concat(t,separator or os.newline)
     end
 end
 
 local function loadcontent(name) -- no print
-    local content = collectcontent(name,"\n")
+    local content = collectcontent(name,"\n") -- tex likes \n
     local ok, err = load(content)
     if ok then
         return ok()
@@ -454,7 +456,7 @@ local function savebuffer(list,name,prefix) -- name is optional
     if prefix == v_yes then
         name = addsuffix(tex.jobname .. "-" .. name,"tmp")
     end
-    io.savedata(name,content)
+    io.savedata(name,replacenewlines(content))
 end
 
 implement {

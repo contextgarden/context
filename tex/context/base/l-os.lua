@@ -349,6 +349,8 @@ else
 
 end
 
+os.newline = name == "windows" and "\013\010" or "\010" -- crlf or lf
+
 function resolvers.bits(t,k)
     local bits = find(os.platform,"64",1,true) and 64 or 32
     os.bits = bits

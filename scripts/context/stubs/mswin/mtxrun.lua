@@ -2878,7 +2878,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 15761, stripped down to: 9403
+-- original size: 15832, stripped down to: 9456
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -3108,6 +3108,7 @@ else
     return platform
   end
 end
+os.newline=name=="windows" and "\013\010" or "\010" 
 function resolvers.bits(t,k)
   local bits=find(os.platform,"64",1,true) and 64 or 32
   os.bits=bits
@@ -5193,7 +5194,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 34407, stripped down to: 18852
+-- original size: 34503, stripped down to: 18933
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5228,6 +5229,11 @@ else
 end
 if not number then number={} end 
 local stripper=patterns.stripzeros
+local newline=patterns.newline
+local endofstring=patterns.endofstring
+local whitespace=patterns.whitespace
+local spacer=patterns.spacer
+local spaceortab=patterns.spaceortab
 local function points(n)
   n=tonumber(n)
   return (not n or n==0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
@@ -5238,12 +5244,12 @@ local function basepoints(n)
 end
 number.points=points
 number.basepoints=basepoints
-local rubish=patterns.spaceortab^0*patterns.newline
-local anyrubish=patterns.spaceortab+patterns.newline
+local rubish=spaceortab^0*newline
+local anyrubish=spaceortab+newline
 local anything=patterns.anything
-local stripped=(patterns.spaceortab^1/"")*patterns.newline
+local stripped=(spaceortab^1/"")*newline
 local leading=rubish^0/""
-local trailing=(anyrubish^1*patterns.endofstring)/""
+local trailing=(anyrubish^1*endofstring)/""
 local redundant=rubish^3/"\n"
 local pattern=Cs(leading*(trailing+redundant+stripped+anything)^0)
 function strings.collapsecrlf(str)
@@ -5289,17 +5295,13 @@ local pattern=Carg(1)/function(t)
      else
        return ""
      end
-   end+patterns.newline*Cp()/function(position)
+   end+newline*Cp()/function(position)
      extra,start=0,position
    end+patterns.anything
  )^1)
 function strings.tabtospace(str,tab)
   return lpegmatch(pattern,str,1,tab or 7)
 end
-local newline=patterns.newline
-local endofstring=patterns.endofstring
-local whitespace=patterns.whitespace
-local spacer=patterns.spacer
 local space=spacer^0
 local nospace=space/""
 local endofline=nospace*newline
@@ -5867,6 +5869,10 @@ local pattern=Cs(dquote*(equote-P(-2))^0*dquote)
 +Cs(cquote*(equote-space)^0*space*equote^0*cquote) 
 function string.optionalquoted(str)
   return lpegmatch(pattern,str) or str
+end
+local pattern=Cs((newline/os.newline+1)^0)
+function string.replacenewlines(str)
+  return lpegmatch(pattern,str)
 end
 
 
@@ -17932,8 +17938,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 742520
--- stripped bytes    : 265726
+-- original bytes    : 742687
+-- stripped bytes    : 265759
 
 -- end library merge
 
