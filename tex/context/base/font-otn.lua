@@ -2732,7 +2732,7 @@ local function discrun(disc,drun,krun)
         setfield(pre,"prev",nest)
         setfield(prev,"next",disc)
     else
-        run(pre,"preinjections")
+        krun(pre,"preinjections")
     end
     return next
 end

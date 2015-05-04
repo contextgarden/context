@@ -127,6 +127,8 @@ local free_node          = nuts.free
 local remove_node        = nuts.remove
 local flush_list         = nuts.flush_list
 
+local copyinjection      = nodes.injections.copy -- KE: is this necessary? HH: probably not as positioning comes later and we rawget/set
+
 local unsetvalue         = attributes.unsetvalue
 
 local fontdata           = fonts.hashes.identifiers
@@ -157,7 +159,7 @@ local fontprocesses      = fonts.hashes.processes
 local xprocesscharacters = nil
 
 xprocesscharacters = function(head,font)
-    xprocesscharacters = nodes.handlers.characters
+    xprocesscharacters = nodes.handlers.nodepass
     return xprocesscharacters(head,font)
 end
 
@@ -469,6 +471,7 @@ local sequence_reorder_matras = {
     features  = { dv01 = dev2_defaults },
     flags     = false_flags,
     name      = "dv01_reorder_matras",
+    order     = { "dv01" },
     subtables = { "dv01_reorder_matras" },
     type      = "devanagari_reorder_matras",
 }
@@ -478,6 +481,7 @@ local sequence_reorder_reph = {
     features  = { dv02 = dev2_defaults },
     flags     = false_flags,
     name      = "dv02_reorder_reph",
+    order     = { "dv02" },
     subtables = { "dv02_reorder_reph" },
     type      = "devanagari_reorder_reph",
 }
@@ -487,6 +491,7 @@ local sequence_reorder_pre_base_reordering_consonants = {
     features  = { dv03 = dev2_defaults },
     flags     = false_flags,
     name      = "dv03_reorder_pre_base_reordering_consonants",
+    order     = { "dv03" },
     subtables = { "dv03_reorder_pre_base_reordering_consonants" },
     type      = "devanagari_reorder_pre_base_reordering_consonants",
 }
@@ -496,6 +501,7 @@ local sequence_remove_joiners = {
     features  = { dv04 = deva_defaults },
     flags     = false_flags,
     name      = "dv04_remove_joiners",
+    order     = { "dv04" },
     subtables = { "dv04_remove_joiners" },
     type      = "devanagari_remove_joiners",
 }
@@ -698,7 +704,9 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                             local tmp = next and getnext(next) or nil -- needs checking
                             local changestop = next == stop
                             local tempcurrent = copy_node(next)
+							copyinjection(tempcurrent,next)
                             local nextcurrent = copy_node(current)
+							copyinjection(nextcurrent,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
                             setfield(tempcurrent,"next",nextcurrent)
                             setfield(nextcurrent,"prev",tempcurrent)
                             setprop(tempcurrent,a_state,s_blwf)
@@ -707,10 +715,11 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                             if getchar(next) == getchar(tempcurrent) then
                                 flush_list(tempcurrent)
                                 local n = copy_node(current)
+								copyinjection(n,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
                                 setfield(current,"char",dotted_circle)
                                 head = insert_node_after(head, current, n)
                             else
-                                setfield(current,"char",getchar(tempcurrent))    -- (assumes that result of blwf consists of one node)
+                                setfield(current,"char",getchar(tempcurrent)) -- we assumes that the result of blwf consists of one node
                                 local freenode = getnext(current)
                                 setfield(current,"next",tmp)
                                 if tmp then
@@ -1525,16 +1534,15 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
         current = getnext(getnext(start))
     end
 
-    local function stand_alone(is_nbsp)
+    if current ~= getnext(stop) and getchar(current) == c_nbsp then
+        -- Stand Alone cluster
         if current == stop then
             stop = getprev(stop)
             head = remove_node(head,current)
             free_node(current)
             return head, stop, nbspaces
         else
-            if is_nbsp then
-                nbspaces = nbspaces + 1
-            end
+            nbspaces = nbspaces + 1
             base     = current
             current  = getnext(current)
             if current ~= stop then
@@ -1561,6 +1569,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         if halant[getchar(current)] then
                             setfield(getnext(current),"next",tmp)
                             local nc = copy_node(current)
+							copyinjection(nc,current)
                             setfield(current,"char",dotted_circle)
                             head = insert_node_after(head,current,nc)
                         else
@@ -1573,14 +1582,6 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                 end
             end
         end
-    end
-
-    if current ~= getnext(stop) then
-        -- Stand Alone cluster
-        stand_alone()
-    elseif getchar(current) == c_nbsp then
-        -- Stand Alone cluster
-        stand_alone(true)
     else -- not Stand Alone cluster
         local last = getnext(stop)
         while current ~= last do    -- find base consonant
@@ -1636,6 +1637,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
 local tpm = twopart_mark[char]
 if tpm then
     local extra = copy_node(current)
+	copyinjection(extra,current)
     char = tpm[1]
     setfield(current,"char",char)
     setfield(extra,"char",tpm[2])
@@ -2070,6 +2072,7 @@ end
 
 local function inject_syntax_error(head,current,mark)
     local signal = copy_node(current)
+	copyinjection(signal,current)
     if mark == pre_mark then
         setfield(signal,"char",dotted_circle)
     else

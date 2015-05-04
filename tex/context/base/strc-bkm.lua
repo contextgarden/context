@@ -144,8 +144,10 @@ function bookmarks.place()
                                 else
                                     titledata = { title = first }
                                 end
-                            else
+                            elseif second then
                                 titledata = { title = second }
+                            else
+                                -- ignoring (command and so)
                             end
                         end
                     end

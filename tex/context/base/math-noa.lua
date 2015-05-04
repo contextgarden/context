@@ -231,6 +231,48 @@ end
 
 noads.process = processnoads
 
+--
+
+local unknowns = { }
+local checked  = { } -- simple case
+local tracked  = false  trackers.register("fonts.missing", function(v) tracked = v end)
+local cached   = table.setmetatableindex("table") -- complex case
+
+local function errorchar(font,char)
+    local done = unknowns[char]
+    if done then
+        unknowns[char] = done  + 1
+    else
+        unknowns[char] = 1
+    end
+    if tracked then
+        -- slower as we check each font too and we always replace as math has
+        -- more demands than text
+        local fake = cached[font][char]
+        if fake then
+            return fake
+        else
+            local kind, fake = fonts.checkers.placeholder(font,char)
+            if not fake or kind ~= "char" then
+                fake = 0x3F
+            end
+            cached[font][char] = fake
+            return fake
+        end
+    else
+        -- only simple checking, report at the end so one should take
+        -- action anyway ... we can miss a few checks but that is ok
+        -- as there is at least one reported
+        if not checked[char] then
+            if trace_normalizing then
+                report_normalizing("character %C is not available",char)
+            end
+            checked[char] = true
+        end
+        return 0x3F
+    end
+end
+
 -- experiment (when not present fall back to fam 0) -- needs documentation
 
 -- 0-2 regular
@@ -377,8 +419,12 @@ local function checked(pointer)
 end
 
 processors.relocate[math_char] = function(pointer)
-    local g = getattr(pointer,a_mathgreek) or 0
-    local a = getattr(pointer,a_mathalphabet) or 0
+    local g          = getattr(pointer,a_mathgreek) or 0
+    local a          = getattr(pointer,a_mathalphabet) or 0
+    local char       = getchar(pointer)
+    local fam        = getfield(pointer,"fam")
+    local font       = font_of_family(fam)
+    local characters = fontcharacters[font]
     if a > 0 or g > 0 then
         if a > 0 then
             setattr(pointer,a_mathgreek,0)
@@ -386,15 +432,11 @@ processors.relocate[math_char] = function(pointer)
         if g > 0 then
             setattr(pointer,a_mathalphabet,0)
         end
-        local char = getchar(pointer)
         local newchar = remapalphabets(char,a,g)
         if newchar then
-            local fam = getfield(pointer,"fam")
-            local id = font_of_family(fam)
-            local characters = fontcharacters[id]
             if characters[newchar] then
                 if trace_remapping then
-                    report_remap("char",id,char,newchar)
+                    report_remap("char",font,char,newchar)
                 end
                 if trace_analyzing then
                     setnodecolor(pointer,"font:isol")
@@ -408,7 +450,7 @@ processors.relocate[math_char] = function(pointer)
                     if newchar then
                         if characters[newchar] then
                             if trace_remapping then
-                                report_remap("char",id,char,newchar," (fallback remapping used)")
+                                report_remap("char",font,char,newchar," (fallback remapping used)")
                             end
                             if trace_analyzing then
                                 setnodecolor(pointer,"font:isol")
@@ -416,16 +458,19 @@ processors.relocate[math_char] = function(pointer)
                             setfield(pointer,"char",newchar)
                             return true
                         elseif trace_remapping then
-                            report_remap("char",id,char,newchar," fails (no fallback character)")
+                            report_remap("char",font,char,newchar," fails (no fallback character)")
                         end
                     elseif trace_remapping then
-                        report_remap("char",id,char,newchar," fails (no fallback remap character)")
+                        report_remap("char",font,char,newchar," fails (no fallback remap character)")
                     end
                 elseif trace_remapping then
-                    report_remap("char",id,char,newchar," fails (no fallback style)")
+                    report_remap("char",font,char,newchar," fails (no fallback style)")
                 end
             end
         end
+    end
+    if not characters[char] then
+        setfield(pointer,"char",errorchar(font,char))
     end
     if trace_analyzing then
         setnodecolor(pointer,"font:medi")
@@ -466,9 +511,9 @@ processors.render[math_char] = function(pointer)
         if renderset then
             local newchar = renderset[char]
             if newchar then
-                local fam = getfield(pointer,"fam")
-                local id = font_of_family(fam)
-                local characters = fontcharacters[id]
+                local fam        = getfield(pointer,"fam")
+                local font       = font_of_family(fam)
+                local characters = fontcharacters[font]
                 if characters and characters[newchar] then
                     setfield(pointer,"char",newchar)
                     setattr(pointer,a_exportstatus,char)
@@ -524,15 +569,11 @@ end
 
 -- normalize scripts
 
-local unscript = { }  noads.processors.unscript = unscript
-local checkers = { }  noads.processors.checkers = checkers
-
+local unscript     = { }  noads.processors.unscript = unscript
 local superscripts = characters.superscripts
 local subscripts   = characters.subscripts
 local fractions    = characters.fractions
-
-local replaced = { }
-local unknowns = { }
+local replaced     = { }
 
 local function replace(pointer,what,n,parent)
     pointer = parent -- we're following the parent list (chars trigger this)
@@ -611,63 +652,11 @@ local function replace(pointer,what,n,parent)
     -- we could return stop
 end
 
-local tracked = false  trackers.register("fonts.missing", function(v) tracked = v end)
-local checked = { } -- simple case
-local cached  = table.setmetatableindex("table") -- complex case
-
-local function check(pointer,what,n,parent)
-    if tracked then
-        -- slower as we check each font too and we always replace as math has
-        -- more demands than text
-        local char = getchar(pointer)
-        local font = font_of_family(getfield(pointer,"fam"))
-        local fake = cached[font][char]
-        if fake then
-            unknowns[char] = unknowns[char]  + 1
-            setfield(pointer,"char",fake)
-        else
-            local chars = fontcharacters[font]
-            if not chars[char] then
-                unknowns[char] = 1
-                local kind, fake = fonts.checkers.placeholder(font,char)
-                if kind == "char" then
-                    cached[font][char] = fake
-                    setfield(pointer,"char",fake)
-                else
-                    cached[font][char] = 0x3F
-                end
-            end
-        end
-    else
-        -- only simple checking, report at the end so one should take
-        -- action anyway ... we can miss a few checks but that is ok
-        -- as there is at least one reported
-        local char = getchar(pointer)
-        local done = unknowns[char]
-        if done then
-            unknowns[char] = done  + 1
-            setfield(pointer,"char",0x3F)
-        elseif not checked[char] then
-            local font  = font_of_family(getfield(pointer,"fam"))
-            local chars = fontcharacters[font]
-            if not chars[char] then
-                unknowns[char] = 1
-                setfield(pointer,"char",0x3F)
-                if trace_normalizing then
-                    report_normalizing("character %C is not available",char)
-                end
-            end
-        end
-        checked[char] = true
-    end
-end
-
 unscript[math_char] = replace -- not noads as we need to recurse
-checkers[math_char] = check  -- not noads as we need to recurse
 
 function handlers.unscript(head,style,penalties)
     processnoads(head,unscript,"unscript")
-    processnoads(head,checkers,"checkers")
+--  processnoads(head,checkers,"checkers")
     return true
 end
 
