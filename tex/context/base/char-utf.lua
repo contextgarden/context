@@ -478,11 +478,15 @@ function utffilters.addgrapheme(result,first,second) -- can be U+ 0x string or u
     end
 end
 
-interfaces.implement {
-    name      = "addgrapheme",
-    actions   = utffilters.addgrapheme,
-    arguments = { "string", "string", "string" }
-}
+if interfaces then -- eventually this goes to char-ctx.lua
+
+    interfaces.implement {
+        name      = "addgrapheme",
+        actions   = utffilters.addgrapheme,
+        arguments = { "string", "string", "string" }
+    }
+
+end
 
 -- --
 

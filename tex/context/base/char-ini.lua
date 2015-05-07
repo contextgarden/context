@@ -828,6 +828,9 @@ local categories = allocate()  characters.categories = categories -- lazy table
 
 setmetatableindex(categories, function(t,u) if u then local c = data[u] c = c and c.category or u t[u] = c return c end end)
 
+-- todo: overloads (these register directly in the tables as number and string) e.g. for greek
+-- todo: for string do a numeric lookup in the table itself
+
 local lccodes = allocate()  characters.lccodes = lccodes -- lazy table
 local uccodes = allocate()  characters.uccodes = uccodes -- lazy table
 local shcodes = allocate()  characters.shcodes = shcodes -- lazy table

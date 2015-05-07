@@ -240,6 +240,12 @@
     \doifsomething{\backendparameter\c!export}\dosynchronizeexport
 \to \everystarttext
 
+% better (before pdf gets closed, so we can embed), but it needs testing:
+
+\appendtoks
+    \clf_finishexport
+\to \everystoptext
+
 \appendtoks
     \doifsomething{\backendparameter\c!export}\dosynchronizeexport % in case it is done inside \starttext
 \to \everysetupdocument

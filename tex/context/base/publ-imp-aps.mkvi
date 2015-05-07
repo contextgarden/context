@@ -47,7 +47,8 @@
 
 \definebtxrendering
   [aps]
-  [\c!specification=aps]
+  [\c!specification=aps,
+   \c!sorttype=\v!default]
 
 \setupbtxlist
   [aps]
@@ -97,7 +98,7 @@
   [aps:list:numbering:num]
 
 \definebtx
-  [aps:list:numbering:bib]
+  [aps:list:numbering:tag]
   [aps:list:numbering:num]
 
 %D In order to be able to get journals expanded (or normalized or abbreviated) you need
@@ -270,13 +271,9 @@
    \c!right={)}]
 
 \definebtx
-  [aps:cite:authorref]
-  [aps:cite:authornum]
-
-\definebtx
   [aps:cite:author:num] % todo
   [aps:cite:authornum]
-  [\c!left={[},
+  [\c!left={\space[},
    \c!right={]}]
 
 \definebtx
@@ -300,6 +297,7 @@
   [aps:cite:title]
   [aps:cite]
   [\c!command={\language[\currentbtxlanguage]}, % BAH
+   \c!sorttype=none,
    \c!style=\v!italic]
 
 \definebtx

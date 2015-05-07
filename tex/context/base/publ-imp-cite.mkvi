@@ -206,19 +206,6 @@
 \startsetups \s!btx:\s!cite:authornum
     \fastsetup{\s!btx:\s!cite:normal}
 \stopsetups
-\startsetups \s!btx:\s!cite:authorref
-    % what a crap ... no one will ever understand this module .. it makes no
-    % sense to have these tests, just let users set the right variant ..
-    \doifelse{\btxparameter\c!alternative} {authoryear} {
-        \fastsetup{\s!btx:\s!cite:authoryears}
-    } {
-        \doifelse {\btxparameter\c!alternative} {num} {
-            \fastsetup{\s!btx:\s!cite:authornum}
-        } {
-            \fastsetup{\s!btx:\s!cite:author}
-        }
-    }
-\stopsetups
 \startsetups \s!btx:\s!cite:num
     \fastsetup{\s!btx:\s!cite:range}
 \stopsetups

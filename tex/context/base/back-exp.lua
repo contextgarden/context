@@ -68,6 +68,7 @@ local attributes        = attributes
 local variables         = interfaces.variables
 local v_yes             = variables.yes
 local v_no              = variables.no
+local v_hidden          = variables.hidden
 
 local implement         = interfaces.implement
 
@@ -201,6 +202,8 @@ local p_entity          = lpeg.replacer(entities) -- was: entityremapper = utf.r
 local p_attribute       = lpeg.replacer(attribentities)
 local p_stripper        = lpeg.patterns.stripper
 local p_escaped         = lpeg.patterns.xml.escaped
+
+local f_tagid           = formatters["%s-%04i"]
 
 -- local alignmapping = {
 --     flushright = "right",
@@ -1002,10 +1005,10 @@ end
 
 do
 
-    local automathrows   = true  directives.register("backend.export.math.autorows",   function(v) automathrows   = v end)
-    local automathapply  = true  directives.register("backend.export.math.autoapply",  function(v) automathapply  = v end)
-    local automathnumber = true  directives.register("backend.export.math.autonumber", function(v) automathnumber = v end)
-    local automathstrip  = true  directives.register("backend.export.math.autostrip",  function(v) automathstrip  = v end)
+    local automathrows   = true  directives.register("export.math.autorows",   function(v) automathrows   = v end)
+    local automathapply  = true  directives.register("export.math.autoapply",  function(v) automathapply  = v end)
+    local automathnumber = true  directives.register("export.math.autonumber", function(v) automathnumber = v end)
+    local automathstrip  = true  directives.register("export.math.autostrip",  function(v) automathstrip  = v end)
 
     local functions      = mathematics.categories.functions
 
@@ -1838,7 +1841,7 @@ do
         result[#result+1] = "</p>\n"
     end
 
-    local function emptytag(result,element,nature,di) -- currently only break but at some point
+    local function emptytag(result,embedded,element,nature,di) -- currently only break but at some point
         local a = di.attributes                       -- we might add detail etc
         if a then -- happens seldom
             if nature == "display" then
@@ -1859,7 +1862,7 @@ do
         end
     end
 
-    local function begintag(result,element,nature,di,skip)
+    local function begintag(result,embedded,element,nature,di,skip)
         local index         = di.n
         local fulltag       = di.fulltag
         local specification = specifications[fulltag] or { } -- we can have a dummy
@@ -1882,6 +1885,13 @@ do
         elseif skip then
             -- ignore
         else
+
+         -- if embedded then
+         --     if element == "math" then
+         --         embedded[f_tagid(element,index)] = #result+1
+         --     end
+         -- end
+
             local n = 0
             local r = { } -- delay this
             if detail then
@@ -1991,7 +2001,7 @@ do
         end
     end
 
-    local function endtag(result,element,nature,di,skip)
+    local function endtag(result,embedded,element,nature,di,skip)
         if skip == "comment" then
             if show_comment then
                 if nature == "display" and (inline == 0 or inline == 1) then
@@ -2022,10 +2032,18 @@ do
                 inline = inline - 1
                 result[#result+1] = f_end_inline(namespaced[element])
             end
+
+         -- if embedded then
+         --     if element == "math" then
+         --         local id = f_tagid(element,di.n) -- index)
+         --         local tx = concat(result,"",embedded[id],#result)
+         --         embedded[id] = "<?xml version='1.0' standalone='yes'?>" .. "\n" .. tx
+         --     end
+         -- end
         end
     end
 
-    local function flushtree(result,data,nature)
+    local function flushtree(result,embedded,data,nature)
         local nofdata = #data
         for i=1,nofdata do
             local di = data[i]
@@ -2033,7 +2051,7 @@ do
                 -- whatever
             else
                 local content = di.content
--- also optimize for content == "" : trace that first
+             -- also optimize for content == "" : trace that first
                 if content then
                     -- already has breaks
                     local content = lpegmatch(p_entity,content)
@@ -2057,23 +2075,23 @@ do
                     if not element then
                         -- skip
                     elseif element == "break" then -- or element == "pagebreak"
-                        emptytag(result,element,nature,di)
+                        emptytag(result,embedded,element,nature,di)
                     elseif element == "" or di.skip == "ignore" then
                         -- skip
                     else
                         if di.before then
-                            flushtree(result,di.before,nature)
+                            flushtree(result,embedded,di.before,nature)
                         end
                         local natu = di.nature
                         local skip = di.skip
                         if di.breaknode then
-                            emptytag(result,"break","display",di)
+                            emptytag(result,embedded,"break","display",di)
                         end
-                        begintag(result,element,natu,di,skip)
-                        flushtree(result,di.data,natu)
-                        endtag(result,element,natu,di,skip)
+                        begintag(result,embedded,element,natu,di,skip)
+                        flushtree(result,embedded,di.data,natu)
+                        endtag(result,embedded,element,natu,di,skip)
                         if di.after then
-                            flushtree(result,di.after,nature)
+                            flushtree(result,embedded,di.after,nature)
                         end
                     end
                 end
@@ -2976,14 +2994,15 @@ local htmltemplate = [[
         return concat(result,"\n\n")
     end
 
-    local function allcontent(tree)
-        local result  = { }
-        flushtree(result,tree.data,"display") -- we need to collect images
+    local function allcontent(tree,embed)
+        local result   = { }
+        local embedded = embed and { }
+        flushtree(result,embedded,tree.data,"display") -- we need to collect images
         result = concat(result)
         -- no need to lpeg .. fast enough
         result = gsub(result,"\n *\n","\n")
         result = gsub(result,"\n +([^< ])","\n%1")
-        return result
+        return result, embedded
     end
 
     -- local xhtmlpreamble = [[
@@ -3217,6 +3236,9 @@ local htmltemplate = [[
     local addsuffix = file.addsuffix
     local joinfile  = file.join
 
+    local embedfile = false  directives.register("export.embed",function(v) embedfile = v end)
+    local embedmath = false
+
     local function stopexport(v)
 
         starttiming(treehash)
@@ -3359,9 +3381,39 @@ local htmltemplate = [[
             end
         end
 
-        local result = allcontent(tree)
+        local result, embedded = allcontent(tree,embedmath) -- embedfile is for testing
 
-        local results = concat {
+        local attach = backends.nodeinjections.attachfile
+
+        if embedfile and attach then
+            -- only for testing
+            attach {
+                data       = concat{ wholepreamble(true), result },
+                name       = file.basename(xmlfilename),
+                registered = "export",
+                title      = "raw xml export",
+                method     = v_hidden,
+                mimetype   = "application/mathml+xml",
+            }
+        end
+     -- if embedmath and attach then
+     --     local refs = { }
+     --     for k, v in sortedhash(embedded) do
+     --         attach {
+     --             data       = v,
+     --             file       = file.basename(k),
+     --             name       = file.addsuffix(k,"xml"),
+     --             registered = k,
+     --             reference  = k,
+     --             title      = "xml export snippet: " .. k,
+     --             method     = v_hidden,
+     --             mimetype   = "application/mathml+xml",
+     --         }
+     --         refs[k] = 0
+     --     end
+     -- end
+
+        result = concat {
             wholepreamble(true),
             x_styles, -- adds to files
             result,
@@ -3372,7 +3424,7 @@ local htmltemplate = [[
         -- we're now ready for saving the result in the xml file
 
         report_export("saving xml data in %a",xmlfilename)
-        io.savedata(xmlfilename,results)
+        io.savedata(xmlfilename,result)
 
         report_export("saving css image definitions in %a",imagefilename)
         io.savedata(imagefilename,wrapups.allusedimages(basename))
@@ -3387,7 +3439,7 @@ local htmltemplate = [[
 
         report_export("saving xhtml variant in %a",xhtmlfilename)
 
-        local xmltree = cleanxhtmltree(xml.convert(results))
+        local xmltree = cleanxhtmltree(xml.convert(result))
 
         xml.save(xmltree,xhtmlfilename)
 
@@ -3465,8 +3517,6 @@ local htmltemplate = [[
         end
     end
 
-
-
     local function startexport(v)
         if v and not exporting then
             report_export("enabling export to xml")
@@ -3477,8 +3527,15 @@ local htmltemplate = [[
             enableaction("math",    "noads.handlers.tags")
          -- appendaction("finalizers","lists","builders.paragraphs.tag")
          -- enableaction("finalizers","builders.paragraphs.tag")
-            luatex.registerstopactions(function() stopexport(v) end)
-            exporting = true
+            luatex.registerstopactions(structurestags.finishexport)
+            exporting = v
+        end
+    end
+
+    function structurestags.finishexport()
+        if exporting then
+            stopexport(exporting)
+            exporting = false
         end
     end
 
@@ -3513,6 +3570,11 @@ implement {
             { "cssfile" },
         }
     }
+}
+
+implement {
+    name      = "finishexport",
+    actions   = structurestags.finishexport,
 }
 
 implement {

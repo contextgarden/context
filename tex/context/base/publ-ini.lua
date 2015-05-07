@@ -3109,7 +3109,14 @@ do
     end
 
     listvariants[v_yes] = listvariants.num
-    listvariants.bib    = listvariants.num
+
+    function listvariants.tag(dataset,block,tag,variant,listindex)
+        ctx_btxsetfirst(tag)
+        if trace_detail then
+            report("expanding %a list setup %a","tag",variant)
+        end
+        ctx_btxnumberingsetup(variant or "tag")
+    end
 
     function listvariants.short(dataset,block,tag,variant,listindex)
         local short  = getdetail(dataset,tag,"shorthash")

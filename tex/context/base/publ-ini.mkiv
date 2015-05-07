@@ -151,7 +151,9 @@
     \ifnum\btxsetupmode=\doingrootsetuproot
         \publ_specification_set{\btxparameter\c!specification}%
     \else\ifnum\btxsetupmode=\doingrootsetupnamed
-        \publ_specification_set{\btxparameter\c!specification}%
+        \doifelsecommandhandler\??btx\currentbtx
+          {\publ_specification_set{\btxparameter\c!specification}}%
+          {}% maybe a warning
     \fi\fi
 \to \everysetupbtx
 

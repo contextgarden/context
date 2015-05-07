@@ -13,6 +13,8 @@ local info = {
 -- todo: make sure we can run in one state .. copies or shared?
 -- todo: auto-nesting
 
+if lpeg.setmaxstack then lpeg.setmaxstack(1000) end
+
 local log      = false
 local trace    = false
 local detail   = false
@@ -200,11 +202,13 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 -- reload the word lists each time. (In the past I assumed a shared instance and took
 -- some precautions.)
 
+-- todo: make sure we don't overload context definitions when used in context
+
 local lpeg  = require("lpeg")
 
 local global = _G
 local find, gmatch, match, lower, upper, gsub, sub, format = string.find, string.gmatch, string.match, string.lower, string.upper, string.gsub, string.sub, string.format
-local concat = table.concat
+local concat, sort = table.concat, table.sort
 local type, next, setmetatable, rawset, tonumber, tostring = type, next, setmetatable, rawset, tonumber, tostring
 local R, P, S, V, C, Cp, Cs, Ct, Cmt, Cc, Cf, Cg, Carg = lpeg.R, lpeg.P, lpeg.S, lpeg.V, lpeg.C, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Carg
 local lpegmatch = lpeg.match
@@ -263,7 +267,9 @@ end
 
 local lexers              = { }
 local context             = { }
+local helpers             = { }
 lexers.context            = context
+lexers.helpers            = helpers
 
 local patterns            = { }
 context.patterns          = patterns -- todo: lexers.patterns
@@ -278,6 +284,21 @@ if resolvers then
     -- todo: set LEXERPATH
     -- todo: set report
 end
+
+local function sortedkeys(hash) -- simple version, good enough for here
+    local t, n = { }, 0
+    for k, v in next, hash do
+        t[#t+1] = k
+        local l = #tostring(k)
+        if l > n then
+            n = l
+        end
+    end
+    sort(t)
+    return t, n
+end
+
+helpers.sortedkeys = sortedkeys
 
 local usedlexers          = { }
 local parent_lexer        = nil
@@ -547,19 +568,6 @@ end
 
 context.toproperty = toproperty
 context.tostyles   = tostyles
-
-local function sortedkeys(hash)
-    local t, n = { }, 0
-    for k, v in next, hash do
-        t[#t+1] = k
-        local l = #tostring(k)
-        if l > n then
-            n = l
-        end
-    end
-    table.sort(t)
-    return t, n
-end
 
 -- If we had one instance/state of Lua as well as all regular libraries
 -- preloaded we could use the context base libraries. So, let's go poor-
@@ -1834,43 +1842,194 @@ do
 
     context.utfchar = utfchar
 
-    -- a helper from l-lpeg:
+ -- -- the next one is good enough for use here but not perfect (see context for a
+ -- -- better one)
+ --
+ -- local function make(t)
+ --     local p
+ --     for k, v in next, t do
+ --         if not p then
+ --             if next(v) then
+ --                 p = P(k) * make(v)
+ --             else
+ --                 p = P(k)
+ --             end
+ --         else
+ --             if next(v) then
+ --                 p = p + P(k) * make(v)
+ --             else
+ --                 p = p + P(k)
+ --             end
+ --         end
+ --     end
+ --     return p
+ -- end
+ --
+ -- function lpeg.utfchartabletopattern(list)
+ --     local tree = { }
+ --     for i=1,#list do
+ --         local t = tree
+ --         for c in gmatch(list[i],".") do
+ --             if not t[c] then
+ --                 t[c] = { }
+ --             end
+ --             t = t[c]
+ --         end
+ --     end
+ --     return make(tree)
+ -- end
+
+    helpers.utfcharpattern = P(1) * R("\128\191")^0 -- unchecked but fast
+
+    local p_false = P(false)
+    local p_true  = P(true)
 
     local function make(t)
-        local p
-        for k, v in next, t do
-            if not p then
-                if next(v) then
-                    p = P(k) * make(v)
-                else
-                    p = P(k)
+        local function making(t)
+            local p    = p_false
+            local keys = sortedkeys(t)
+            for i=1,#keys do
+                local k = keys[i]
+                if k ~= "" then
+                    local v = t[k]
+                    if v == true then
+                        p = p + P(k) * p_true
+                    elseif v == false then
+                        -- can't happen
+                    else
+                        p = p + P(k) * making(v)
+                    end
                 end
-            else
-                if next(v) then
-                    p = p + P(k) * make(v)
+            end
+            if t[""] then
+                p = p + p_true
+            end
+            return p
+        end
+        local p    = p_false
+        local keys = sortedkeys(t)
+        for i=1,#keys do
+            local k = keys[i]
+            if k ~= "" then
+                local v = t[k]
+                if v == true then
+                    p = p + P(k) * p_true
+                elseif v == false then
+                    -- can't happen
                 else
-                    p = p + P(k)
+                    p = p + P(k) * making(v)
                 end
             end
         end
         return p
     end
 
-    function lpeg.utfchartabletopattern(list)
-        local tree = { }
-        for i=1,#list do
-            local t = tree
-            for c in gmatch(list[i],".") do
-                if not t[c] then
-                    t[c] = { }
+    local function collapse(t,x)
+        if type(t) ~= "table" then
+            return t, x
+        else
+            local n = next(t)
+            if n == nil then
+                return t, x
+            elseif next(t,n) == nil then
+                -- one entry
+                local k = n
+                local v = t[k]
+                if type(v) == "table" then
+                    return collapse(v,x..k)
+                else
+                    return v, x .. k
                 end
-                t = t[c]
+            else
+                local tt = { }
+                for k, v in next, t do
+                    local vv, kk = collapse(v,k)
+                    tt[kk] = vv
+                end
+                return tt, x
             end
         end
+    end
+
+    function helpers.utfchartabletopattern(list)
+        local tree = { }
+        local n = #list
+        if n == 0 then
+            for s in next, list do
+                local t = tree
+                local p, pk
+                for c in gmatch(s,".") do
+                    if t == true then
+                        t = { [c] = true, [""] = true }
+                        p[pk] = t
+                        p = t
+                        t = false
+                    elseif t == false then
+                        t = { [c] = false }
+                        p[pk] = t
+                        p = t
+                        t = false
+                    else
+                        local tc = t[c]
+                        if not tc then
+                            tc = false
+                            t[c] = false
+                        end
+                        p = t
+                        t = tc
+                    end
+                    pk = c
+                end
+                if t == false then
+                    p[pk] = true
+                elseif t == true then
+                    -- okay
+                else
+                    t[""] = true
+                end
+            end
+        else
+            for i=1,n do
+                local s = list[i]
+                local t = tree
+                local p, pk
+                for c in gmatch(s,".") do
+                    if t == true then
+                        t = { [c] = true, [""] = true }
+                        p[pk] = t
+                        p = t
+                        t = false
+                    elseif t == false then
+                        t = { [c] = false }
+                        p[pk] = t
+                        p = t
+                        t = false
+                    else
+                        local tc = t[c]
+                        if not tc then
+                            tc = false
+                            t[c] = false
+                        end
+                        p = t
+                        t = tc
+                    end
+                    pk = c
+                end
+                if t == false then
+                    p[pk] = true
+                elseif t == true then
+                    -- okay
+                else
+                    t[""] = true
+                end
+            end
+        end
+        collapse(tree,"")
+    --     inspect(tree)
         return make(tree)
     end
 
-    patterns.invisibles = lpeg.utfchartabletopattern {
+    patterns.invisibles = helpers.utfchartabletopattern {
         utfchar(0x00A0), -- nbsp
         utfchar(0x2000), -- enquad
         utfchar(0x2001), -- emquad
@@ -1895,7 +2054,7 @@ do
 
 end
 
--- The following helpers are not used, partyally replace by other mechanism and
+-- The following helpers are not used, partially replaced by other mechanisms and
 -- when needed I'll first optimize them. I only made them somewhat more readable.
 
 function lexers.delimited_range(chars, single_line, no_escape, balanced) -- unchanged

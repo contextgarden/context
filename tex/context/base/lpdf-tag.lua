@@ -90,9 +90,23 @@ local lasttaginchain      = structurestags.lastinchain
 
 local usedmapping         = { }
 
--- local tagsplitter         = structurestags.patterns.splitter
+----- tagsplitter         = structurestags.patterns.splitter
 
-local add_ids             = false -- true
+-- local embeddedtags        = false -- true will id all, for tracing
+-- local f_tagid             = formatters["%s-%04i"]
+-- local embeddedfilelist    = pdfarray() -- /AF crap
+--
+-- directives.register("structures.tags.embedmath",function(v)
+--     if not v then
+--         -- only enable
+--     elseif embeddedtags == true then
+--         -- already all tagged
+--     elseif embeddedtags then
+--         embeddedtags.math = true
+--     else
+--         embeddedtags = { math = true }
+--     end
+-- end)
 
 -- function codeinjections.maptag(original,target,kind)
 --     mapping[original] = { target, kind or "inline" }
@@ -110,7 +124,7 @@ local function finishstructure()
         }
         -- we need to split names into smaller parts (e.g. alphabetic or so)
         -- we already have code for that somewhere
-        if add_ids then
+        if #names > 0 then
             local kids = pdfdictionary {
                 Limits = pdfarray { names[1], names[#names-1] },
                 Names  = names,
@@ -130,7 +144,7 @@ local function finishstructure()
             Type       = pdfconstant("StructTreeRoot"),
             K          = pdfreference(pdfflushobject(structure_kids)),
             ParentTree = pdfreference(pdfflushobject(parent_ref,parenttree)),
-            IDTree     = (add_ids and pdfreference(pdfflushobject(idtree))) or nil,
+            IDTree     = #names > 0 and pdfreference(pdfflushobject(idtree)) or nil,
             RoleMap    = rolemap,
         }
         pdfflushobject(structure_ref,structuretree)
@@ -140,6 +154,7 @@ local function finishstructure()
             Marked         = pdfboolean(true),
          -- UserProperties = pdfboolean(true),
          -- Suspects       = pdfboolean(true),
+         -- AF             = #embeddedfilelist > 0 and pdfreference(pdfflushobject(embeddedfilelist)) or nil,
         }
         addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
         --
@@ -204,13 +219,31 @@ local function makeelement(fulltag,parent)
     --
     usedmapping[tag] = true
     --
+    -- specification.attribute is unique
+    --
+    local id = nil
+ -- local af = nil
+ -- if embeddedtags then
+ --     local tagname  = specification.tagname
+ --     local tagindex = specification.tagindex
+ --     if embeddedtags == true or embeddedtags[tagname] then
+ --         id = f_tagid(tagname,tagindex)
+ --         af = job.fileobjreferences.collected[id]
+ --         if af then
+ --             local r = pdfreference(af)
+ --             af = pdfarray { r }
+ --          -- embeddedfilelist[#embeddedfilelist+1] = r
+ --         end
+ --     end
+ -- end
+    --
     local k = pdfarray()
     local r = pdfreserveobject()
     local t = usedlabels[tag] or tag
     local d = pdfdictionary {
         Type       = pdf_struct_element,
         S          = pdfconstant(t),
-        ID         = (add_ids and fulltag) or nil,
+        ID         = id,
         T          = detail and detail or nil,
         P          = parent.pref,
         Pg         = pageref,
@@ -218,15 +251,22 @@ local function makeelement(fulltag,parent)
         A          = a and makeattribute(a) or nil,
      -- Alt        = " Who cares ",
      -- ActualText = " Hi Hans ",
+        AF         = af,
     }
     local s = pdfreference(pdfflushobject(d))
-    if add_ids then
-        names[#names+1] = fulltag
+    if id then
+        names[#names+1] = id
         names[#names+1] = s
     end
     local kids = parent.kids
     kids[#kids+1] = s
-    local e = { tag = t, pref = s, kids = k, knum = r, pnum = pagenum }
+    local e = {
+        tag  = t,
+        pref = s,
+        kids = k,
+        knum = r,
+        pnum = pagenum
+    }
     elements[fulltag] = e
     return e
 end

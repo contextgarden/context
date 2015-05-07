@@ -177,10 +177,27 @@ local function analyzetransparency(transparencyvalue)
 end
 
 -- Attachments
+local nofattachments    = 0
+local attachments       = { }
+local filestreams       = { }
+local referenced        = { }
+local ignorereferenced  = true -- fuzzy pdf spec .. twice in attachment list, can become an option
+local tobesavedobjrefs  = utilities.storage.allocate()
+local collectedobjrefs  = utilities.storage.allocate()
 
-local nofattachments, attachments, filestreams, referenced = 0, { }, { }, { }
+local fileobjreferences = {
+    collected = collectedobjrefs,
+    tobesaved = tobesavedobjrefs,
+}
 
-local ignorereferenced = true -- fuzzy pdf spec .. twice in attachment list, can become an option
+job.fileobjreferences = fileobjreferences
+
+local function initializer()
+    collectedobjrefs = job.fileobjreferences.collected or { }
+    tobesavedobjrefs = job.fileobjreferences.tobesaved or { }
+end
+
+job.register('job.fileobjreferences.collected', tobesavedobjrefs, initializer)
 
 local function flushembeddedfiles()
     if next(filestreams) then
@@ -209,6 +226,7 @@ function codeinjections.embedfile(specification)
     local hash     = specification.hash or filename
     local keepdir  = specification.keepdir -- can change
     local usedname = specification.usedname
+    local filetype = specification.filetype
     if filename == "" then
         filename = nil
     end
@@ -246,11 +264,20 @@ function codeinjections.embedfile(specification)
             end
         end
     end
-    usedname = usedname ~= "" and usedname or filename
+    -- needs to cleaned up:
+    usedname = usedname ~= "" and usedname or filename or name
     local basename = keepdir == true and usedname or file.basename(usedname)
-local basename = gsub(basename,"%./","")
-    local savename = file.addsuffix(name ~= "" and name or basename,"txt") -- else no valid file
-    local a = pdfdictionary { Type = pdfconstant("EmbeddedFile") }
+    local basename = gsub(basename,"%./","")
+    local savename = name ~= "" and name or basename
+    if not filetype or filetype == "" then
+        filetype = name and (filename and file.suffix(filename)) or "txt"
+    end
+    savename = file.addsuffix(savename,filetype) -- type is mandate for proper working in viewer
+    local mimetype = specification.mimetype
+    local a = pdfdictionary {
+        Type    = pdfconstant("EmbeddedFile"),
+        Subtype = mimetype and mimetype ~= "" and pdfconstant(mimetype) or nil,
+    }
     local f
     if data then
         f = pdfflushstreamobject(data,a)
@@ -265,6 +292,7 @@ local basename = gsub(basename,"%./","")
         UF   = pdfstring(savename),
         EF   = pdfdictionary { F = pdfreference(f) },
         Desc = title ~= "" and pdfunicode(title) or nil,
+     -- AFRelationship = pdfconstant("Source"), -- some day maybe, not mandate
     }
     local r = pdfreference(pdfflushobject(d))
     filestreams[hash] = r
@@ -317,6 +345,10 @@ function nodeinjections.attachfile(specification)
     if not aref then
         aref = codeinjections.embedfile(specification)
         attachments[registered] = aref
+    end
+    local reference = specification.reference
+    if reference and aref then
+        tobesavedobjrefs[reference] = aref[1]
     end
     if not aref then
         report_attachment("skipping attachment, registered %a",registered)

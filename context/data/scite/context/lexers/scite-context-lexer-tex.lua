@@ -214,10 +214,16 @@ local p_rest                 = any
 
 local p_preamble             = knownpreamble
 local p_comment              = commentline
-local p_command              = backslash * knowncommand
-local p_constant             = backslash * exact_match(constants)
-local p_helper               = backslash * exact_match(helpers)
-local p_primitive            = backslash * exact_match(primitives)
+----- p_command              = backslash * knowncommand
+----- p_constant             = backslash * exact_match(constants)
+----- p_helper               = backslash * exact_match(helpers)
+----- p_primitive            = backslash * exact_match(primitives)
+
+local p_command              = backslash * lexer.helpers.utfchartabletopattern(currentcommands) * #(1-cstoken)
+local p_constant             = backslash * lexer.helpers.utfchartabletopattern(constants)       * #(1-cstoken)
+local p_helper               = backslash * lexer.helpers.utfchartabletopattern(helpers)         * #(1-cstoken)
+local p_primitive            = backslash * lexer.helpers.utfchartabletopattern(primitives)      * #(1-cstoken)
+
 local p_ifprimitive          = P("\\if") * cstoken^1
 local p_csname               = backslash * (cstoken^1 + P(1))
 local p_grouping             = S("{$}")
@@ -422,7 +428,10 @@ local metafunenvironment     = metafuncall -- ( P("use") + P("reusable") + P("un
 local startmetafun           = P("\\start") * metafunenvironment
 local stopmetafun            = P("\\stop")  * metafunenvironment -- todo match start
 
-local xmlmacro               = token("embedded", P("\\xml") * R("az")^1)
+----- subsystem              = token("embedded", P("\\xml") * R("az")^1 + (P("\\st") * (P("art") + P("op")) * P("xmlsetups")))
+local subsystemtags          = P("xml") + P("btx") -- will be pluggable or maybe even a proper list of valid commands
+local subsystemmacro         = P("\\") * (subsystemtags * R("az")^1 + (R("az")-subsystemtags)^1 * subsystemtags * R("az")^1)
+local subsystem              = token("embedded", subsystemmacro)
 
 local openargument           = token("special", P("{"))
 local closeargument          = token("special", P("}"))
@@ -446,12 +455,13 @@ contextlexer._rules = {
     { "text",        text        }, -- non words
     { "comment",     comment     },
     { "constant",    constant    },
-    { "xmlmacro",    xmlmacro    },
+ -- { "subsystem",   subsystem   },
     { "callers",     callers     },
     { "helper",      helper      },
     { "command",     command     },
     { "primitive",   primitive   },
     { "ifprimitive", ifprimitive },
+    { "subsystem",   subsystem   },
     { "reserved",    reserved    },
     { "csname",      csname      },
  -- { "whatever",    specialword }, -- not yet, crashes
