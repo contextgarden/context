@@ -7188,6 +7188,7 @@
         <cd:constant type="بردبار"/>
         <cd:constant type="خیلی‌بردبار"/>
         <cd:constant type="بکش"/>
+        <cd:constant type="extremestretch"/>
         <cd:constant type="lefttoright"/>
         <cd:constant type="righttoleft"/>
       </cd:keywords>

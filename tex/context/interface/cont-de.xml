@@ -7188,6 +7188,7 @@
         <cd:constant type="tolerant"/>
         <cd:constant type="sehrtolerant"/>
         <cd:constant type="strecken"/>
+        <cd:constant type="extremestretch"/>
         <cd:constant type="lefttoright"/>
         <cd:constant type="righttoleft"/>
       </cd:keywords>

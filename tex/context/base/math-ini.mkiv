@@ -184,12 +184,103 @@
 
 \definemathematics[\v!default] % not needed, but nicer when nesting back to normal
 
-% Normally this is applied to only one character.
+% Now we redefine \type {\mathematics} and \type {\m}:
+
+\unexpanded\def\mathematics
+  {\doifelsenextoptionalcs\math_m_yes\math_m_nop}
+
+\def\math_m_yes[#1]#2%
+  {\relax
+   \ifmmode
+     #2%
+   \else
+     \normalstartimath
+     \edef\currentmathematics{#1}% check for valid
+     \the\everyswitchmathematics\relax
+     #2%
+     \normalstopimath
+   \fi}
+
+\def\math_m_nop#1%
+  {\relax
+   \ifmmode
+     #1%
+   \else
+     \normalstartimath
+     #1%
+     \normalstopimath
+   \fi}
+
+\let\m\mathematics
+
+\newmuskip\defaultthickmuskip  \defaultthickmuskip  5mu plus 5mu
+\newmuskip\defaultmedmuskip    \defaultmedmuskip    4mu plus 2mu minus 4mu
+\newmuskip\defaultthinmuskip   \defaultthinmuskip   3mu
+
+\newmuskip\halfthickmuskip     \halfthickmuskip     2.5mu plus 2.5mu
+\newmuskip\halfmedmuskip       \halfmedmuskip       2.0mu plus 1.0mu minus 2.0mu
+\newmuskip\halfthinmuskip      \halfthinmuskip      1.5mu
+
+\newcount \defaultrelpenalty   \defaultrelpenalty   500
+\newcount \defaultbinoppenalty \defaultbinoppenalty 700
+
+
+\startsetups math:spacing:default
+    \thickmuskip   \defaultthickmuskip
+    \medmuskip     \defaultmedmuskip
+    \thinmuskip    \defaultthinmuskip
+    \relpenalty    \defaultrelpenalty
+    \binoppenalty  \defaultbinoppenalty
+\stopsetups
+
+\startsetups math:spacing:half
+    \thickmuskip   \halfthickmuskip
+    \medmuskip     \halfmedmuskip
+    \thinmuskip    \halfthinmuskip
+    \relpenalty    \defaultrelpenalty
+    \binoppenalty  \defaultbinoppenalty
+\stopsetups
+
+\startsetups math:spacing:tight
+    \ifcase\raggedstatus
+        \thickmuskip   \halfthickmuskip
+        \medmuskip     \halfmedmuskip
+        \thinmuskip    \halfthinmuskip
+    \else
+        \thickmuskip  1\halfthickmuskip
+        \medmuskip    1\halfmedmuskip
+        \thinmuskip   1\halfthinmuskip
+    \fi
+    \relpenalty    \defaultrelpenalty
+    \binoppenalty  \maxdimen
+\stopsetups
+
+\startsetups math:spacing:fixed
+    \ifcase\raggedstatus
+        \thickmuskip   \halfthickmuskip
+        \medmuskip     \halfmedmuskip
+        \thinmuskip    \halfthinmuskip
+    \else
+        \thickmuskip  1\halfthickmuskip
+        \medmuskip    1\halfmedmuskip
+        \thinmuskip   1\halfthinmuskip
+    \fi
+    \relpenalty    \maxdimen
+    \binoppenalty  \maxdimen
+\stopsetups
+
+% \dorecurse{80}{test \m[i:tight]{\red \fakeformula} test }
+
+\definemathematics[i:default][\c!setups=math:spacing:equal]
+\definemathematics[i:half]   [\c!setups=math:spacing:half]
+\definemathematics[i:tight]  [\c!setups=math:spacing:tight]
+\definemathematics[i:fixed]  [\c!setups=math:spacing:fixed]
+
+% Normally the next is applied to only one character.
 %
 % $ABC$ $\cal ABC$ $\mathaltcal ABC$
 
 % todo: only in mmode
-
 % these commands are semi-public but should not be used directly (lua names wil change)
 
 \unexpanded\def\math_set_attribute   #1#2{\ifmmode\clf_setmathattribute{#1}{#2}\fi}

@@ -207,6 +207,9 @@
 \unexpanded\def\spac_align_set_stretch
   {\emergencystretch\bodyfontsize}
 
+\unexpanded\def\spac_align_set_extreme_stretch
+  {\emergencystretch10\bodyfontsize}
+
 % Vertical
 
 \newconstant\c_spac_align_state_vertical
@@ -681,6 +684,7 @@
 \setvalue{\??aligncommand\v!tolerant       }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\spac_align_set_tolerant}}
 \setvalue{\??aligncommand\v!verytolerant   }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\spac_align_set_very_tolerant}}
 \setvalue{\??aligncommand\v!stretch        }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\spac_align_set_stretch}}
+\setvalue{\??aligncommand\v!extremestretch }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\spac_align_set_extreme_stretch}}
 
 %D For Wolfgang:
 

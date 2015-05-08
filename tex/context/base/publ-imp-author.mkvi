@@ -172,9 +172,9 @@
 \startsetups \s!btx:\s!list:\s!author:concat
     \ifcase\currentbtxoverflow
         \btxparameter{\c!separator:names:\number\currentbtxconcat}
-    \else
+    \else\ifnum\currentbtxauthorindex>\plusone
         \btxparameter{\c!separator:names:2}
-    \fi
+    \fi\fi
 \stopsetups
 
 \startsetups \s!btx:\s!list:\s!author:others

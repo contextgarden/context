@@ -1060,9 +1060,11 @@ do
                         local userdata  = listentry.userdata
                         local btxspc    = userdata and userdata.btxspc
                         if btxspc then
-                            -- this will become a specification entry
+                            -- we could act on the 3rd arg returned by getcasted but in general any string will do
+                            -- so we deal with it in the author hashers ... maybe some day ...
                             local author = getcasted(dataset,tag,field,specifications[btxspc])
-                            if type(author) == "table" then
+                            local kind   = type(author)
+                            if kind == "table" or kind == "string" then
                                 if u then
                                     u = listentry.entries.text -- hm
                                 else
@@ -2391,7 +2393,7 @@ do
         tobemarked = specification.markentry and todo
         --
         if not found or #found == 0 then
-            report("nothing found for %a",reference)
+            report("no entry %a found in dataset %a",reference,dataset)
         elseif not setup then
             report("invalid reference for %a",reference)
         else
@@ -2816,8 +2818,10 @@ do
                 else
                     return false
                 end
-            else
+            elseif ak and bk then
                 return ak < bk
+            else
+                return false
             end
         end
 
@@ -3159,5 +3163,34 @@ do
             end
         end
     end
+
+end
+
+-- a helper
+
+do
+
+ -- local context   = context
+ -- local lpegmatch = lpeg.match
+    local splitter  = lpeg.tsplitat(":")
+
+    interfaces.implement {
+        name      = "checkinterfacechain",
+        arguments = { "string", "string" },
+        actions   = function(str,command)
+            local chain = lpegmatch(splitter,str)
+            if #chain > 0 then
+                local command = context[command]
+                local parent  = ""
+                local child   = chain[1]
+                command(child,parent)
+                for i=2,#chain do
+                    parent = child
+                    child  = child .. ":" .. chain[i]
+                    command(child,parent)
+                end
+            end
+        end
+    }
 
 end

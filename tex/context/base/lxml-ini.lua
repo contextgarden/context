@@ -46,6 +46,7 @@ implement { name = "xmlattribute",            actions = lxml.attribute,         
 implement { name = "xmlattributedef",         actions = lxml.attribute,         arguments = { "string", "string", "string", "string" } }
 implement { name = "xmlchainatt",             actions = lxml.chainattribute,    arguments = { "string", "'/'", "string" } }
 implement { name = "xmlchainattdef",          actions = lxml.chainattribute,    arguments = { "string", "'/'", "string", "string"  } }
+implement { name = "xmlrefatt",               actions = lxml.refatt,            arguments = { "string", "string" } }
 implement { name = "xmlchecknamespace",       actions =  xml.checknamespace,    arguments = { "lxmlid", "string", "string" } }
 implement { name = "xmlcommand",              actions = lxml.command,           arguments = { "string", "string", "string" } }
 implement { name = "xmlconcat",               actions = lxml.concat,            arguments = { "string", "string", "string" } }                     --  \detokenize{#3}

@@ -7188,6 +7188,7 @@
         <cd:constant type="tolerantni"/>
         <cd:constant type="velmitolerantni"/>
         <cd:constant type="natahnout"/>
+        <cd:constant type="extremestretch"/>
         <cd:constant type="lefttoright"/>
         <cd:constant type="righttoleft"/>
       </cd:keywords>

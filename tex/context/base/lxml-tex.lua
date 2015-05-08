@@ -1597,6 +1597,22 @@ function lxml.att(id,a,default)
     end
 end
 
+function lxml.refatt(id,a)
+    local e = getid(id)
+    if e then
+        local at = e.at
+        if at then
+            local str = at[a]
+            if str and str ~= "" then
+                str = gsub(str,"^#+","")
+                if str ~= "" then
+                    contextsprint(notcatcodes,str)
+                end
+            end
+        end
+    end
+end
+
 function lxml.name(id) -- or remapped name? -> lxml.info, combine
     local e = getid(id)
     if e then

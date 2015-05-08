@@ -14,6 +14,8 @@
 % TODO: s! vs v! for default and neutral key/values
 % todo: too many refs in list
 
+% todo: no need for all these %'s
+
 % todo: tagging
 % todo: we cannot use 'default' as this wipes metadata names (maybe no longer do that)
 % todo: \v!cite => \s!cite
@@ -146,6 +148,34 @@
 \installcorenamespace {btx}
 
 \installswitchcommandhandler \??btx {btx} \??btx
+
+% because we have lots of setups we provide a checker for sloppy users
+
+\unexpanded\def\btx_check_chain#1#2#3%
+  {\doifelsesomething{#3}
+     {\writestatus{btx #1}{defining\space"#2"\space as\space descendant\space of\space"#3"}% we're in definition regime (no space)
+      \definebtx[#2][#3]}
+     {\writestatus{btx #1}{defining\space"#2"}%
+      \definebtx[#2]}}
+
+% \unexpanded\def\btxcheckdefine#1#2{\doifelsecommandhandler\??btx{#1}\donothing{\btx_check_chain{define}{#1}{#2}}}
+% \unexpanded\def\btxchecksetup #1#2{\doifelsecommandhandler\??btx{#1}\donothing{\btx_check_chain {setup}{#1}{#2}}}
+
+\unexpanded\def\btxcheckdefine#1{\doifelsecommandhandler\??btx{#1}\gobbleoneargument{\btx_check_chain{define}{#1}}} % {#2}
+\unexpanded\def\btxchecksetup #1{\doifelsecommandhandler\??btx{#1}\gobbleoneargument{\btx_check_chain {setup}{#1}}} % {#2}
+
+% fpr the moment experimental:
+
+\unexpanded\def\btxenableautodefine
+  {\prependtoks
+     \clf_checkinterfacechain{\currentbtx}{btxcheckdefine}%
+   \to \everydefinebtx
+   \prependtoks
+     \ifnum\btxsetupmode=\doingrootsetupnamed
+       \clf_checkinterfacechain{\currentbtx}{btxchecksetup}%
+     \fi
+   \to \everysetupbtx
+   \let\btxenableautodefine\relax}
 
 \appendtoks
     \ifnum\btxsetupmode=\doingrootsetuproot
@@ -1017,6 +1047,7 @@
             kind        {list}%
             etallimit   {\btxparameter\c!etallimit}%
             etaldisplay {\btxparameter\c!etaldisplay}%
+            etaloption  {\btxparameter\c!etaloption}%
             symbol      {\btxparameter{\c!stopper:initials}}%
         }%
    \relax
@@ -1042,6 +1073,7 @@
             kind        {cite}%
             etallimit   {\btxparameter\c!etallimit}%
             etaldisplay {\btxparameter\c!etaldisplay}%
+            etaloption  {\btxparameter\c!etaloption}%
             symbol      {\btxparameter{\c!stopper:initials}}%
         }%
    \relax

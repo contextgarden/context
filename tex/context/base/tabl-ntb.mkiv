@@ -235,7 +235,7 @@
 \installcorenamespace{naturaltablehei}
 \installcorenamespace{naturaltabledis}
 \installcorenamespace{naturaltableaut}
-\installcorenamespace{naturaltablefwd} % forcedwidth
+%installcorenamespace{naturaltablefwd} % forcedwidth
 \installcorenamespace{naturaltabletxt}
 \installcorenamespace{naturaltablespn}
 \installcorenamespace{naturaltableref}
@@ -1459,6 +1459,8 @@
      \tabl_ntb_set_aut\c_tabl_ntb_col{\the\dimexpr\localwidth}%
    \fi}
 
+\let\tabl_ntb_preroll\relax
+
 \def\tabl_ntb_table_stop
   {\forgetall % new, here see narrower-004.tex
   %\setbox\scratchbox\hbox
@@ -1481,6 +1483,7 @@
    \dorecurse\c_tabl_ntb_maximum_row
      {\tabl_ntb_let_hei\recurselevel\maxdimen}%
    \tabl_ntb_let_gal\zerocount
+\tabl_ntb_preroll\relax
    \c_tabl_tbl_pass\plusone
    \let\tabl_ntb_pass\tabl_ntb_pass_one
    \let\tabl_ntb_cell_process\tabl_ntb_cell_process_a
@@ -1822,38 +1825,52 @@
      \fi
    \fi}
 
-\def\tabl_ntb_cell_process_a_check_span_two_yes
-  {\iftightTBLcolspan
-     \donefalse
-   \else
-     \ifnum\scratchcounter>\plusone
-       \begingroup
-       \edef\p_width{\naturaltablelocalparameter\c!width}%
-       \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
-       \ifdone
-         \endgroup
-         \edef\p_option{\naturaltablelocalparameter\c!option}%
-         \ifx\p_option\v!tight\donefalse\else\donetrue\fi
-       \else
-         % a dimension
-         \endgroup
-         \donefalse
-       \fi
-     \else
-       \edef\p_option{\naturaltablelocalparameter\c!option}%
-       \ifx\p_option\v!tight\donefalse\else\donetrue\fi
-     \fi
-   \fi}
+% \def\tabl_ntb_cell_process_a_check_span_two_yes
+%   {\iftightTBLcolspan
+%      \donefalse
+%    \else
+%      \ifnum\scratchcounter>\plusone
+%        \begingroup
+%        \edef\p_width{\naturaltablelocalparameter\c!width}%
+%        \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
+%        \ifdone
+%          \endgroup
+%          \edef\p_option{\naturaltablelocalparameter\c!option}%
+%          \ifx\p_option\v!tight\donefalse\else\donetrue\fi
+%        \else
+%          % a dimension
+%          \endgroup
+%          \donefalse
+%        \fi
+%      \else
+%        \edef\p_option{\naturaltablelocalparameter\c!option}%
+%        \ifx\p_option\v!tight\donefalse\else\donetrue\fi
+%      \fi
+%    \fi
+%    \ifdone
+%      \ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
+%         \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
+%       \fi
+%    \fi}
 
+% \def\tabl_ntb_cell_process_a_check_span_two_nop
+%   {\ifnum\scratchcounter>\plusone
+%      \edef\p_width{\naturaltablelocalparameter\c!width}%
+%      \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
+%    \else
+%      \donetrue
+%    \fi
+%    \ifdone
+%      \ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
+%         \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
+%       \fi
+%    \fi}
 
-% \let\tabl_ntb_cell_process_a_check_span_two_nop\donetrue
+\let\tabl_ntb_cell_process_a_check_span_two_yes\relax
 
 \def\tabl_ntb_cell_process_a_check_span_two_nop
-  {\ifnum\scratchcounter>\plusone
-     \edef\p_width{\naturaltablelocalparameter\c!width}%
-     \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
-   \else
-     \donetrue
+  {\ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
+     \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
    \fi}
 
 \unexpanded\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
@@ -1878,11 +1895,6 @@
      \tabl_ntb_spn_doifelse\c_tabl_ntb_col
        \tabl_ntb_cell_process_a_check_span_two_yes
        \tabl_ntb_cell_process_a_check_span_two_nop
-     \ifdone
-       \ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
-          \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
-        \fi
-     \fi
    \fi
    \scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
    \scratchdimen\tabl_ntb_get_hei\scratchcounter\relax

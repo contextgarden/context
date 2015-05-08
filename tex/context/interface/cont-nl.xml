@@ -7188,6 +7188,7 @@
         <cd:constant type="soepel"/>
         <cd:constant type="zeersoepel"/>
         <cd:constant type="rek"/>
+        <cd:constant type="extremestretch"/>
         <cd:constant type="lefttoright"/>
         <cd:constant type="righttoleft"/>
       </cd:keywords>

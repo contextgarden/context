@@ -38,7 +38,7 @@ end
 local type, rawget = type, rawget
 local concat, insert, remove = table.concat, table.insert, table.remove
 local rep, gmatch, gsub, find = string.rep, string.gmatch, string.gsub, string.find
-local utfchar = utf.char
+local utfchar, utfbyte = utf.char, utf.byte
 
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local S, P, R, C, V, Cc, Ct, Cs, Carg = lpeg.S, lpeg.P, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Ct, lpeg.Cs, lpeg.Carg
@@ -140,6 +140,7 @@ local reserved = {
     ["times"]     = { true,  "×" },
     ["-:"]        = { true,  "÷" },
     ["@"]         = { true,  "∘" },
+    ["circ"]      = { true,  "∘" },
     ["o+"]        = { true,  "⊕" },
     ["ox"]        = { true,  "⊗" },
     ["o."]        = { true,  "⊙" },
@@ -700,7 +701,28 @@ local reserved = {
 
     ["\\frac"]   = { true, "frac" },
 
+    -- now it gets real crazy, only these two:
+
+    ["&gt;"]     = { true, ">" },
+    ["&lt;"]     = { true, "<" },
+
 }
+
+for k, v in next, characters.data do
+    local name = v.mathname
+    if name and not reserved[name] then
+        reserved[name] = { true, utfchar(k) }
+    end
+    local spec = v.mathspec
+--     if spec then
+--         for i=1,#spec do
+--             local name = spec[i].name
+--             if name and not reserved[name] then
+--                 reserved[name] = { true, utfchar(k) }
+--             end
+--         end
+--     end
+end
 
 local isbinary = {
     ["\\frac"]              = true,
@@ -889,13 +911,13 @@ local p_spaces      = patterns.whitespace
 
 local p_utf_base    = patterns.utf8character
 local p_utf         = C(p_utf_base)
-local p_entity      = (P("&") * C((1-P(";"))^2) * P(";"))/ entities
+-- local p_entity      = (P("&") * C((1-P(";"))^2) * P(";"))/ entities
 
-entities["gt"]    = ">"
-entities["lt"]    = "<"
-entities["amp"]   = "&"
-entities["dquot"] = '"'
-entities["quot"]  = "'"
+-- entities["gt"]    = ">"
+-- entities["lt"]    = "<"
+-- entities["amp"]   = "&"
+-- entities["dquot"] = '"'
+-- entities["quot"]  = "'"
 
 local p_onechar     = p_utf_base * P(-1)
 
@@ -934,8 +956,10 @@ for k, v in sortedhash(reserved) do
     end
 
 for k, v in next, entities do
-    k_unicode[k] = v
-    k_unicode["\\"..k] = v
+    if not k_unicode[k] then
+        k_unicode[k] = v
+        k_unicode["\\"..k] = v
+    end
 end
 
 if not find(k,"[^[a-zA-Z]+$]") then
@@ -1061,10 +1085,10 @@ local p_special =
 
 -- open | close :: {: | :}
 
-local e_parser = Cs ( (
-    p_entity +
-    p_utf_base
-)^0 )
+-- local e_parser = Cs ( (
+--     p_entity +
+--     p_utf_base
+-- )^0 )
 
 
 local u_parser = Cs ( (
@@ -1641,7 +1665,7 @@ local ctx_type        = context and context.type        or function() end
 local ctx_inleft      = context and context.inleft      or function() end
 
 local function convert(str,totex)
-    local entified = lpegmatch(e_parser,str) or str -- when used in text
+    local entified = str -- lpegmatch(e_parser,str) or str -- when used in text
     local unicoded = lpegmatch(u_parser,entified) or entified
     local texcoded = collapse(lpegmatch(a_parser,unicoded))
     if trace_mapping then
@@ -1795,7 +1819,7 @@ asciimath.cleanedup  = cleanedup
 
 local function convert(str)
     if #str > 0 then
-        local entified = lpegmatch(e_parser,str) or str  -- when used in text
+        local entified = str -- lpegmatch(e_parser,str) or str  -- when used in text
         local unicoded = lpegmatch(u_parser,entified) or entified
         if lpegmatch(p_onechar,unicoded) then
             ctx_mathematics(unicoded)
@@ -2063,3 +2087,5 @@ end
 function show.save(name)
     table.save(name ~= "" and name or "dummy.lua",collected)
 end
+
+-- inspect(sortedkeys(reserved))

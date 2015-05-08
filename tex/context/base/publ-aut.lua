@@ -21,6 +21,7 @@ local formatters = string.formatters
 
 local P, S, C, V, Cs, Ct, Cg, Cf, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Cc
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local settings_to_hash = utilities.parsers.settings_to_hash
 
 local context         = context
 ----- commands        = commands
@@ -41,6 +42,8 @@ local trace_hashing   = false  trackers.register("publications.authorhash", func
 
 local report          = logs.reporter("publications","authors")
 local report_cite     = logs.reporter("publications","cite")
+
+local v_last          = interfaces.variables.last
 
 -- local function makesplitter(separator)
 --     return Ct { "start",
@@ -279,10 +282,17 @@ local function splitauthorstring(str)
         return { authors } -- we assume one author
     end
 
+    -- we could cache these too but it can become messy .. leave that for later
 
-    local authors = lpegmatch(andsplitter,str)
-    for i=1,#authors do
+    local authors    = lpegmatch(andsplitter,str)
+    local nofauthors = #authors
+    for i=1,nofauthors do
         authors[i] = splitauthor(authors[i])
+    end
+    if nofauthors > 1 and authors[nofauthors].original == "others" then
+        -- only the last one is looked at
+        authors[nofauthors] = nil
+        authors.others      = true
     end
     return authors
 end
@@ -396,8 +406,11 @@ local function btxauthor(dataset,tag,field,settings)
             return
             -- error
         end
+        local absmax      = max
         local etallimit   = tonumber(settings.etallimit) or 1000
         local etaldisplay = tonumber(settings.etaldisplay) or etallimit
+        local etaloption  = settings_to_hash(settings.etaloption or "")
+        local etallast    = etaloption[v_last]
         local combiner    = settings.combiner
         local symbol      = settings.symbol
         local index       = settings.index
@@ -408,16 +421,22 @@ local function btxauthor(dataset,tag,field,settings)
             symbol = "."
         end
         local ctx_btxsetup = settings.kind == "cite" and ctx_btxciteauthorsetup or ctx_btxlistauthorsetup
-        if max > etallimit and etaldisplay < max then
+        if max > etallimit and (etaldisplay+(etallast and 1 or 0)) < max then
             max = etaldisplay
+        else
+            etallast = false
         end
         currentauthordata   = split
         currentauthorsymbol = symbol
 
-        local function oneauthor(i)
+        local function oneauthor(i,last,justone)
             local author = split[i]
             if index then
                 ctx_btxstartauthor(i,1,0)
+            elseif last then
+                ctx_btxstartauthor(i,1,0)
+                ctx_btxsetconcat(0)
+                ctx_btxsetauthorvariant(combiner)
             else
                 local state = author.state or 0
                 ctx_btxstartauthor(i,max,state)
@@ -445,9 +464,13 @@ local function btxauthor(dataset,tag,field,settings)
                 ctx_btxsetjuniors() -- (concat(juniors," "))
             end
             if not index and i == max then
-                local overflow = #split - max
-                if overflow > 0 then
-                    ctx_btxsetoverflow(overflow)
+                if split.others then
+                    ctx_btxsetoverflow(1)
+                else
+                    local overflow = #split - max
+                    if overflow > 0 then
+                        ctx_btxsetoverflow(overflow)
+                    end
                 end
             end
             ctx_btxsetup(combiner)
@@ -455,9 +478,14 @@ local function btxauthor(dataset,tag,field,settings)
         end
         if index then
             oneauthor(index)
+        elseif max == 1 then
+            oneauthor(1,false,true)
         else
             for i=1,max do
                 oneauthor(i)
+            end
+            if etallast then
+                oneauthor(absmax,true)
             end
         end
     else
@@ -483,6 +511,7 @@ implement {
             { "kind" },
             { "etallimit" },
             { "etaldisplay" },
+            { "etaloption" },
             { "symbol" },
         }
     }
@@ -564,23 +593,27 @@ publications.authorhashers = authorhashers
 -- todo: some hashing
 
 local function name(authors)
-    local n = #authors
-    if n == 0 then
-        return ""
-    end
-    local result    = { }
-    local nofresult = 0
-    for i=1,n do
-        local author   = authors[i]
-        local surnames = author.surnames
-        if surnames and #surnames > 0 then
-            for j=1,#surnames do
-                nofresult = nofresult + 1
-                result[nofresult] = surnames[j]
+    if type(authors) == "table" then
+        local n = #authors
+        if n == 0 then
+            return ""
+        end
+        local result    = { }
+        local nofresult = 0
+        for i=1,n do
+            local author   = authors[i]
+            local surnames = author.surnames
+            if surnames and #surnames > 0 then
+                for j=1,#surnames do
+                    nofresult = nofresult + 1
+                    result[nofresult] = surnames[j]
+                end
             end
         end
+        return concat(result," ")
+    else
+        return authors
     end
-    return concat(result," ")
 end
 
 table.setmetatableindex(authorhashers,function(t,k)
@@ -589,86 +622,94 @@ table.setmetatableindex(authorhashers,function(t,k)
 end)
 
 authorhashers.normal = function(authors)
-    local n = #authors
-    if n == 0 then
-        return ""
+    if type(authors) == "table" then
+        local n = #authors
+        if n == 0 then
+            return ""
+        end
+        local result    = { }
+        local nofresult = 0
+        for i=1,n do
+            local author     = authors[i]
+            local vons       = author.vons
+            local surnames   = author.surnames
+            local firstnames = author.firstnames
+            local juniors    = author.juniors
+            if vons and #vons > 0 then
+                for j=1,#vons do
+                    nofresult = nofresult + 1
+                    result[nofresult] = vons[j]
+                end
+            end
+            if surnames and #surnames > 0 then
+                for j=1,#surnames do
+                    nofresult = nofresult + 1
+                    result[nofresult] = surnames[j]
+                end
+            end
+            if firstnames and #firstnames > 0 then
+                for j=1,#firstnames do
+                    nofresult = nofresult + 1
+                    result[nofresult] = firstnames[j]
+                end
+            end
+            if juniors and #juniors > 0 then
+                for j=1,#juniors do
+                    nofresult = nofresult + 1
+                    result[nofresult] = juniors[j]
+                end
+            end
+        end
+        return concat(result," ")
+    else
+        return authors
     end
-    local result    = { }
-    local nofresult = 0
-    for i=1,n do
-        local author     = authors[i]
-        local vons       = author.vons
-        local surnames   = author.surnames
-        local firstnames = author.firstnames
-        local juniors    = author.juniors
-        if vons and #vons > 0 then
-            for j=1,#vons do
-                nofresult = nofresult + 1
-                result[nofresult] = vons[j]
-            end
-        end
-        if surnames and #surnames > 0 then
-            for j=1,#surnames do
-                nofresult = nofresult + 1
-                result[nofresult] = surnames[j]
-            end
-        end
-        if firstnames and #firstnames > 0 then
-            for j=1,#firstnames do
-                nofresult = nofresult + 1
-                result[nofresult] = firstnames[j]
-            end
-        end
-        if juniors and #juniors > 0 then
-            for j=1,#juniors do
-                nofresult = nofresult + 1
-                result[nofresult] = juniors[j]
-            end
-        end
-    end
-    return concat(result," ")
 end
 
 authorhashers.normalshort = function(authors)
-    local n = #authors
-    if n == 0 then
-        return ""
+    if type(authors) == "table" then
+        local n = #authors
+        if n == 0 then
+            return ""
+        end
+        local result    = { }
+        local nofresult = 0
+        for i=1,n do
+            local author   = authors[i]
+            local vons     = author.vons
+            local surnames = author.surnames
+            local initials = author.initials
+            local juniors  = author.juniors
+            if vons and #vons > 0 then
+                for j=1,#vons do
+                    nofresult = nofresult + 1
+                    result[nofresult] = vons[j]
+                end
+            end
+            if surnames and #surnames > 0 then
+                for j=1,#surnames do
+                    nofresult = nofresult + 1
+                    result[nofresult] = surnames[j]
+                end
+            end
+            if initials and #initials > 0 then
+                initials = the_initials(initials)
+                for j=1,#initials do
+                    nofresult = nofresult + 1
+                    result[nofresult] = initials[j]
+                end
+            end
+            if juniors and #juniors > 0 then
+                for j=1,#juniors do
+                    nofresult = nofresult + 1
+                    result[nofresult] = juniors[j]
+                end
+            end
+        end
+        return concat(result," ")
+    else
+        return authors
     end
-    local result    = { }
-    local nofresult = 0
-    for i=1,n do
-        local author   = authors[i]
-        local vons     = author.vons
-        local surnames = author.surnames
-        local initials = author.initials
-        local juniors  = author.juniors
-        if vons and #vons > 0 then
-            for j=1,#vons do
-                nofresult = nofresult + 1
-                result[nofresult] = vons[j]
-            end
-        end
-        if surnames and #surnames > 0 then
-            for j=1,#surnames do
-                nofresult = nofresult + 1
-                result[nofresult] = surnames[j]
-            end
-        end
-        if initials and #initials > 0 then
-            initials = the_initials(initials)
-            for j=1,#initials do
-                nofresult = nofresult + 1
-                result[nofresult] = initials[j]
-            end
-        end
-        if juniors and #juniors > 0 then
-            for j=1,#juniors do
-                nofresult = nofresult + 1
-                result[nofresult] = juniors[j]
-            end
-        end
-    end
-    return concat(result," ")
 end
 
 authorhashers.normalinverted = authorhashers.normal
@@ -684,41 +725,45 @@ authorhashers.short = function(authors)
     -- a short is a real dumb hardcodes kind of tag and we only support
     -- this one because some users might expect it, not because it makes
     -- sense
-    local n = #authors
-    if n == 0 then
-        return "unk"
-    elseif n == 1 then
-        local surnames = authors[1].surnames
-        if not surnames or #surnames == 0 then
-            return "err"
-        else
-            local s = surnames[1]
-            local c = lpegmatch(p_clean,s)
-            if s ~= c then
-                report_cite("name %a cleaned to %a for short construction",s,c)
-            end
-            return utfsub(c,1,3)
-        end
-    else
-        local t = { }
-        for i=1,n do
-            if i > 3 then
-                t[#t+1] = "+" -- indeed
-                break
-            end
-            local surnames = authors[i].surnames
+    if type(authors) == "table" then
+        local n = #authors
+        if n == 0 then
+            return "unk"
+        elseif n == 1 then
+            local surnames = authors[1].surnames
             if not surnames or #surnames == 0 then
-                t[#t+1] = "?"
+                return "err"
             else
                 local s = surnames[1]
                 local c = lpegmatch(p_clean,s)
                 if s ~= c then
                     report_cite("name %a cleaned to %a for short construction",s,c)
                 end
-                t[#t+1] = utfsub(c,1,1)
+                return utfsub(c,1,3)
             end
+        else
+            local t = { }
+            for i=1,n do
+                if i > 3 then
+                    t[#t+1] = "+" -- indeed
+                    break
+                end
+                local surnames = authors[i].surnames
+                if not surnames or #surnames == 0 then
+                    t[#t+1] = "?"
+                else
+                    local s = surnames[1]
+                    local c = lpegmatch(p_clean,s)
+                    if s ~= c then
+                        report_cite("name %a cleaned to %a for short construction",s,c)
+                    end
+                    t[#t+1] = utfsub(c,1,1)
+                end
+            end
+            return concat(t)
         end
-        return concat(t)
+    else
+        return utfsub(authors,1,4)
     end
 end
 
