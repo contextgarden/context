@@ -1635,17 +1635,20 @@ do
         end
     end
 
+
+    -- tag | listindex | reference | userdata | dataindex
+
     local methods = { }
     lists.methods = methods
 
     methods[v_dataset] = function(dataset,rendering,keyword)
-        -- why only once unless criterium=all?
         local current = datasets[dataset]
         local luadata = current.luadata
         local list    = rendering.list
         for tag, data in sortedhash(luadata) do
             if not keyword or validkeyword(dataset,tag,keyword) then
-                list[#list+1] = { tag, false, 0, false, false, data.index or 0}
+                local index = data.index or 0
+                list[#list+1] = { tag, index, 0, false, index }
             end
         end
     end
@@ -1668,7 +1671,7 @@ do
                     local tag = u.btxref
                     if tag and (not keyword or validkeyword(dataset,tag,keyword)) then
                         local data = luadata[tag]
-                        list[#list+1] = { tag, listindex, 0, u, u.btxint, data and data.index or 0 }
+                        list[#list+1] = { tag, listindex, 0, u, data and data.index or 0 }
                     end
                 end
             end
@@ -1716,7 +1719,7 @@ do
                                 l[#l+1] = u.btxint
                             else
                                 local data = luadata[tag]
-                                local l = { tag, listindex, 0, u, u.btxint, data and data.index or 0 }
+                                local l = { tag, listindex, 0, u, data and data.index or 0 }
                                 list[#list+1] = l
                                 traced[tag] = l
                             end
@@ -1724,7 +1727,7 @@ do
                             done[tag]    = section
                             alldone[tag] = true
                             local data = luadata[tag]
-                            list[#list+1] = { tag, listindex, 0, u, u.btxint, data and data.index or 0 }
+                            list[#list+1] = { tag, listindex, 0, u, data and data.index or 0 }
                         end
                     end
                     if tag then
@@ -2027,17 +2030,6 @@ do
             if language then
                 ctx_btxsetlanguage(language)
             end
-            local bl = li[5]
-            if bl and bl ~= "" then
-                ctx_btxsetbacklink(bl)
-             -- ctx_btxsetbacktrace(concat(li," ",5)) -- two numbers
-            else
-                -- nothing
-            end
-            local authorsuffix = detail.authorsuffix
-            if authorsuffix then
-                ctx_btxsetsuffix(authorsuffix)
-            end
             local userdata = li[4]
             if userdata then
                 local b = userdata.btxbtx
@@ -2048,6 +2040,14 @@ do
                 if a then
                     ctx_btxsetafter(a)
                 end
+                local bl = userdata.btxint
+                if bl and bl ~= "" then
+                    ctx_btxsetbacklink(bl)
+                end
+            end
+            local authorsuffix = detail.authorsuffix
+            if authorsuffix then
+                ctx_btxsetsuffix(authorsuffix)
             end
             rendering.userdata = userdata
             if textmode then

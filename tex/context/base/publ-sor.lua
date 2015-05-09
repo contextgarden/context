@@ -26,6 +26,8 @@ local v_short      = variables.short
 local v_default    = variables.default
 local v_reference  = variables.reference
 local v_dataset    = variables.dataset
+local v_list       = variables.list
+local v_used       = variables.used
 
 local report       = logs.reporter("publications","sorters")
 
@@ -225,70 +227,138 @@ local function sortsequence(dataset,list,sorttype)
 
 end
 
--- index      : order in dataset
--- order      : order of citations
--- short      : alphabetic + suffix
--- reference  : order in list
--- default    : automatic sorter
--- authoryear : sort order list
+-- tag | listindex | reference | userdata | dataindex
 
--- tag | listindex | 0 | u | u.btxint | data.index
+-- short      : short + tag index
+-- dataset    : index + tag
+-- list       : list + index
+-- reference  : tag + index
+-- used       : reference + dataset
+-- authoryear : complex sort
 
-local sorters = {
-    [v_short] = function(dataset,rendering,list) -- should we store it
-        local shorts = rendering.shorts
-        local function compare(a,b)
-            local aa = a and a[1]
-            local bb = b and b[1]
-            if aa and bb then
-                aa, bb = shorts[aa], shorts[bb]
-                return aa and bb and aa < bb
-            else
-                return a[1] < b[1]
-            end
-        end
-        sort(list,compare)
-    end,
-    [v_reference] = function(dataset,rendering,list) -- tag
-        local function compare(a,b)
-            return a[1] < b[1]
-        end
-        sort(list,compare)
-    end,
-    [v_dataset] = function(dataset,rendering,list) -- dataset index
-        local function compare(a,b)
-            local aa = a and a[6]
-            local bb = b and b[6]
-            if aa and bb then
-                return aa < bb
-            else
-                return a[1] < b[1]
-            end
-        end
-        sort(list,compare)
-    end,
-    [v_default] = function(dataset,rendering,list,sorttype)
-        if sorttype == "" or sorttype == v_default then -- listorder
-            local function compare(a,b)
-                return a[2] <  b[2]
-            end
-            sort(list,compare)
-        else
-            local valid = sortsequence(dataset,list,sorttype) -- field order
-            if valid and #valid > 0 then
-                -- hm, we have a complication here because a sortsequence doesn't know if there's a field
-                -- so there is no real catch possible here .., anyway, we add a index as last entry when no
-                -- one is set so that should be good enough (needs testing)
-                for i=1,#valid do
-                    local v = valid[i]
-                    valid[i] = list[v.index]
+local sorters = { }
+
+sorters[v_short] = function(dataset,rendering,list) -- should we store it
+    local shorts = rendering.shorts
+    local function compare(a,b)
+        if a and b then
+            local taga = a[1]
+            local tagb = b[1]
+            if taga and tagb then
+                local shorta = shorts[taga]
+                local shortb = shorts[tagb]
+                if shorta and shortb then
+                    -- assumes ascii shorts ... no utf yet
+                    return shorta < shortb
                 end
-                return valid
+                -- fall back on tag order
+                return taga < tagb
+            end
+            -- fall back on dataset order
+            local indexa = a[5]
+            local indexb = b[5]
+            if indexa and indexb then
+                return indexa < indexb
             end
         end
+        return false
     end
-}
+    sort(list,compare)
+end
 
-table.setmetatableindex(sorters,function(t,k) return t[v_default] end)
+sorters[v_dataset] = function(dataset,rendering,list) -- dataset index
+    local function compare(a,b)
+        if a and b then
+            local indexa = a[5]
+            local indexb = b[5]
+            if indexa and indexb then
+                return indexa < indexb
+            end
+            local taga = a[1]
+            local tagb = b[1]
+            if taga and tagb then
+                return taga < tagb
+            end
+        end
+        return false
+    end
+    sort(list,compare)
+end
+
+sorters[v_list] = function(dataset,rendering,list) -- list index (normally redundant)
+    local function compare(a,b)
+        if a and b then
+            local lista = a[2]
+            local listb = b[2]
+            if lista and listb then
+                return lista < listb
+            end
+            local indexa = a[5]
+            local indexb = b[5]
+            if indexa and indexb then
+                return indexa < indexb
+            end
+        end
+        return false
+    end
+    sort(list,compare)
+end
+
+sorters[v_reference] = function(dataset,rendering,list) -- tag
+    local function compare(a,b)
+        if a and b then
+            local taga = a[1]
+            local tagb = b[1]
+            if taga and tagb then
+                return taga < tagb
+            end
+            local indexa = a[5]
+            local indexb = b[5]
+            if indexa and indexb then
+                return indexa < indexb
+            end
+        end
+        return false
+    end
+    sort(list,compare)
+end
+
+sorters[v_used] = function(dataset,rendering,list) -- tag
+    local function compare(a,b)
+        if a and b then
+            local referencea = a[2]
+            local referenceb = b[2]
+            if referencea and referenceb then
+                return referencea < referenceb
+            end
+            local indexa = a[5]
+            local indexb = b[5]
+            if indexa and indexb then
+                return indexa < indexb
+            end
+        end
+        return false
+    end
+    sort(list,compare)
+end
+
+sorters[v_default] = sorters[v_list]
+sorters[""]        = sorters[v_list]
+
+local function anything(dataset,rendering,list,sorttype)
+    local valid = sortsequence(dataset,list,sorttype) -- field order
+    if valid and #valid > 0 then
+        -- hm, we have a complication here because a sortsequence doesn't know if there's a field
+        -- so there is no real catch possible here .., anyway, we add a index as last entry when no
+        -- one is set so that should be good enough (needs testing)
+        for i=1,#valid do
+            local v = valid[i]
+            valid[i] = list[v.index]
+        end
+        return valid
+    end
+end
+
+table.setmetatableindex(sorters,function(t,k) return anything end)
 
 publications.lists.sorters = sorters

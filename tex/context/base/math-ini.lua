@@ -655,24 +655,27 @@ local noffunctions = 1000 -- offset
 categories.functions = functions
 
 implement {
-    name      = "taggedmathfunction",
-    arguments = { "string", "string", "string" },
-    actions   = function(tag,label,apply)
-        local delta = toboolean(apply) and 1000 or 0
-        if toboolean(label) then
-            local n = functions[tag]
-            if not n then
-                noffunctions = noffunctions + 1
-                functions[noffunctions] = tag
-                functions[tag] = noffunctions
-                texsetattribute(a_mathcategory,noffunctions + delta)
-            else
-                texsetattribute(a_mathcategory,n + delta)
-            end
-            context.mathlabeltext(tag)
+    name      = "tagmfunctiontxt",
+    arguments = { "string", "conditional" },
+    actions   = function(tag,apply)
+        local delta = apply and 1000 or 0
+        texsetattribute(a_mathcategory,1000 + delta)
+    end
+}
+
+implement {
+    name      = "tagmfunctionlab",
+    arguments = { "string", "conditional" },
+    actions   = function(tag,apply)
+        local delta = apply and 1000 or 0
+        local n = functions[tag]
+        if not n then
+            noffunctions = noffunctions + 1
+            functions[noffunctions] = tag
+            functions[tag] = noffunctions
+            texsetattribute(a_mathcategory,noffunctions + delta)
         else
-            texsetattribute(a_mathcategory,1000 + delta)
-            context(tag)
+            texsetattribute(a_mathcategory,n + delta)
         end
     end
 }

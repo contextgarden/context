@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-odv'] = {
     license   = "see context related readme files"
 }
 
+-- One day I'll speed this up ... char swapping and properties.
+
 -- A few remarks:
 --
 -- This code is a partial rewrite of the code that deals with devanagari. The data and logic
@@ -155,18 +157,26 @@ replace_all_nbsp = function(head) -- delayed definition
     return replace_all_nbsp(head)
 end
 
-local fontprocesses      = fonts.hashes.processes
 local xprocesscharacters = nil
 
-xprocesscharacters = function(head,font)
-    xprocesscharacters = nodes.handlers.nodepass
-    return xprocesscharacters(head,font)
+if context then
+    xprocesscharacters = function(head,font)
+        xprocesscharacters = nodes.handlers.characters
+        return xprocesscharacters(head,font)
+    end
+else
+    xprocesscharacters = function(head,font)
+        xprocesscharacters = nodes.handlers.nodepass -- generic
+        return xprocesscharacters(head,font)
+    end
 end
 
 local function processcharacters(head,font)
     return tonut(xprocesscharacters(tonode(head)))
 end
 
+-- local fontprocesses = fonts.hashes.processes
+--
 -- function processcharacters(head,font)
 --     local processors = fontprocesses[font]
 --     for i=1,#processors do

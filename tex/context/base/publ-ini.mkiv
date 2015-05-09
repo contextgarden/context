@@ -622,7 +622,7 @@
    \begingroup
    \setbtxlist % probably already set
    \btx_reset_page
-   \setbtxparameterset\s!page\s!list
+   \setbtxparameterset\s!list\s!page
    \btxparameter\c!pagecommand
      {\usebtxstyleandcolor\c!style\c!color
       \btxparameter\c!pageleft
@@ -1000,8 +1000,10 @@
 
 \appendtoks
     \edef\currentbtxnumbering{\btxrenderingparameter\c!numbering}%
-    \edef\p_numbering{\btxrenderingparameter\c!numbering}% link to headnumber
-    \ifx\p_numbering\v!no
+    \ifx\currentbtxnumbering\v!yes
+        \def\currentbtxnumbering{num}% convenient alias
+        \letbtxrenderingparameter\c!numbering\currentbtxnumbering
+    \else\ifx\currentbtxnumbering\v!no
         \letlistparameter\c!headnumber\v!no
         \let\currentbtxnumbering\empty
       % \letlistparameter\c!textcommand\outdented % needed? we can use titlealign
@@ -1010,7 +1012,7 @@
         \letlistparameter\c!numbercommand\firstofoneargument % for the moment, no doubling needed
     \else
         \letlistparameter\c!headnumber\v!always
-    \fi
+    \fi\fi
     \let\currentlistmethod\s!btx
 \to \everysetupbtxlistplacement
 

@@ -615,19 +615,32 @@
 \unexpanded\def\math_tags_mn#1{\begingroup\mathupright#1\endgroup}
 \unexpanded\def\math_tags_ms#1{\begingroup\mathupright#1\endgroup}
 
-\unexpanded\def\mfunction         #1{{\mathupright\math_tags_function{#1}}}
-\unexpanded\def\mfunctionlabeltext#1{{\mathupright\math_tags_functionlabeltext{#1}}}
-
 % Once this is stable we can store the number at the tex end which is
 % faster. Functions getnumbers >= 1000.
 
-\expanded\def\math_tags_mathfunction_indeed         #1{\clf_taggedmathfunction{#1}{false}{\ifconditional\c_apply_function true\else false\fi}}
-\expanded\def\math_tags_mathfunctionlabeltext_indeed#1{\clf_taggedmathfunction{#1} {true}{\ifconditional\c_apply_function true\else false\fi}}
+\setupmathematics
+  [\c!functionstyle=\mr,
+   \c!functioncolor=]
 
-\expanded\def\math_tags_mo_indeed#1{\begingroup            \attribute\mathcategoryattribute\plusone  #1\endgroup}
-\expanded\def\math_tags_mi_indeed#1{\begingroup            \attribute\mathcategoryattribute\plustwo  #1\endgroup}
-\expanded\def\math_tags_mn_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusthree#1\endgroup}
-\expanded\def\math_tags_ms_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusfour #1\endgroup}
+\unexpanded\def\mfunction#1%
+  {\begingroup
+   \math_tags_mfunctiontxt{#1}\c_apply_function
+   \mathoptext{\usemathematicsstyleandcolor\c!functionstyle\c!functioncolor#1}%
+   \endgroup}
+
+\unexpanded\def\mfunctionlabeltext#1%
+  {\begingroup
+   \math_tags_mfunctionlab{#1}\c_apply_function
+   \mathoptext{\usemathematicsstyleandcolor\c!functionstyle\c!functioncolor\mathlabeltext{#1}}%
+   \endgroup}
+
+\let\math_tags_mfunctiontxt\gobbletwoarguments
+\let\math_tags_mfunctionlab\gobbletwoarguments
+
+\unexpanded\def\math_tags_mo_indeed#1{\begingroup            \attribute\mathcategoryattribute\plusone  #1\endgroup}
+\unexpanded\def\math_tags_mi_indeed#1{\begingroup            \attribute\mathcategoryattribute\plustwo  #1\endgroup}
+\unexpanded\def\math_tags_mn_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusthree#1\endgroup}
+\unexpanded\def\math_tags_ms_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusfour #1\endgroup} % todo: mathoptext
 
 \newconditional\c_apply_function
 
@@ -642,12 +655,12 @@
    \endgroup}
 
 \appendtoks
-    \let\math_tags_function         \math_tags_mathfunction_indeed
-    \let\math_tags_functionlabeltext\math_tags_mathfunctionlabeltext_indeed
-    \let\math_tags_mo               \math_tags_mo_indeed
-    \let\math_tags_mi               \math_tags_mi_indeed
-    \let\math_tags_mn               \math_tags_mn_indeed
-    \let\math_tags_ms               \math_tags_ms_indeed
+    \let\math_tags_mfunctiontxt\clf_tagmfunctiontxt
+    \let\math_tags_mfunctionlab\clf_tagmfunctionlab
+    \let\math_tags_mo          \math_tags_mo_indeed
+    \let\math_tags_mi          \math_tags_mi_indeed
+    \let\math_tags_mn          \math_tags_mn_indeed
+    \let\math_tags_ms          \math_tags_ms_indeed
 \to \everyenableelements
 
 \appendtoks
@@ -661,21 +674,21 @@
 % \def\mlimitsfunction  #1{\mathlimopcomm{{\mr#1}}
 % \def\mnolimitsfunction#1{\mathnolopcomm{{\mr#1}}
 
-%D Taco posted this solution as response to a mail by Olivier, so let's integrate
-%D it here.
-
-\def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
-
-\unexpanded\def\math_function_style_opnolimits        #1{\mathop{\mscaledtext{#1}}\nolimits}
-\unexpanded\def\math_function_style_mfunction         #1{\mscaledtext{\math_tags_function{#1}}}
-\unexpanded\def\math_function_style_mfunctionlabeltext#1{\mscaledtext{\math_tags_functionlabeltext{#1}}}
-
-\unexpanded\def\setmathfunctionstyle#1% rm ss tt (can be made faster if needed)
-  {\doifsomething{#1}
-     {\def\currentmscaledstyle{#1}%
-      \let\mathopnolimits    \math_function_style_opnolimits
-      \let\mfunction         \math_function_style_mfunction
-      \let\mfunctionlabeltext\math_function_style_mfunctionlabeltext}}
+% %D Taco posted this solution as response to a mail by Olivier, so let's integrate
+% %D it here.
+%
+% \def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
+%
+% \unexpanded\def\math_function_style_opnolimits        #1{\mathop{\mscaledtext{#1}}\nolimits}
+% \unexpanded\def\math_function_style_mfunction         #1{\mscaledtext{\math_tags_function{#1}}}
+% \unexpanded\def\math_function_style_mfunctionlabeltext#1{\mscaledtext{\math_tags_functionlabeltext{#1}}}
+%
+% \unexpanded\def\setmathfunctionstyle#1% rm ss tt (can be made faster if needed)
+%   {\doifsomething{#1}
+%      {\def\currentmscaledstyle{#1}%
+%       \let\mathopnolimits    \math_function_style_opnolimits
+%       \let\mfunction         \math_function_style_mfunction
+%       \let\mfunctionlabeltext\math_function_style_mfunctionlabeltext}}
 
 \unexpanded\def\mscaledtext#1%
   {\mathchoice
@@ -683,6 +696,9 @@
      {\hbox{\csname\currentmscaledstyle\endcsname\tf  #1}}
      {\hbox{\csname\currentmscaledstyle\endcsname\tfx #1}}
      {\hbox{\csname\currentmscaledstyle\endcsname\tfxx#1}}}
+
+\unexpanded\def\setmathfunctionstyle#1%
+  {\setupmathematics[\c!functionstyle=#1]} % for old times sake
 
 %D We can force the way functions are typeset by manipulating the text option:
 %D
