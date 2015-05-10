@@ -55,7 +55,7 @@
    \c!margin=3.5\emwidth]
 
 \definebtx
-  [apa:list]
+  [apa:\s!list]
   [apa]
   [\c!otherstext={,\nobreakspace\textellipsis\space},
    \c!etallimit=7,
@@ -69,47 +69,48 @@
 % First, we define a namespace for a few special fields
 
 \definebtx
-  [apa:list:author]
-  [apa:list]
+  [apa:\s!list:author]
+  [apa:\s!list]
 
 \definebtx
-  [apa:list:editor]
-  [apa:list:author]
+  [apa:\s!list:editor]
+  [apa:\s!list:author]
 
 \definebtx
-  [apa:list:suffix]
-  [apa:list]
+  [apa:\s!list:suffix]
+  [apa:\s!list]
 
 \definebtx
-  [apa:list:url]
-  [apa:list]
+  [apa:\s!list:url]
+  [apa:\s!list]
 
 \definebtx
-  [apa:list:doi]
-  [apa:list]
+  [apa:\s!list:doi]
+  [apa:\s!list]
 
 \definebtx
-  [apa:list:numbering]
-  [apa:list]
+  [apa:\s!list:\s!page]
+  [apa:\s!list]
+  [\c!pagecommand={\wordright}]
 
 \definebtx
-  [apa:list:numbering:num]
-  [apa:list:numbering]
+  [apa:\s!list:numbering]
+  [apa:\s!list]
+
+\definebtx
+  [apa:\s!list:numbering:num]
+  [apa:\s!list:numbering]
   [\c!stopper={.},
    \c!right={\space}]
 
 \definebtx
-  [apa:list:numbering:yes]
-  [apa:list:numbering:num]
-
-\definebtx
-  [apa:list:numbering:short]
-  [apa:list:numbering:num]
+  [apa:\s!list:numbering:short]
+  [apa:\s!list:numbering:num]
   [\c!stopper=]
 
 \definebtx
-  [apa:list:numbering:tag]
-  [apa:list:numbering:num]
+  [apa:\s!list:numbering:tag]
+  [apa:\s!list:numbering:num]
   [\c!stopper=]
 
 % Next, we define a namespace for each category
@@ -121,143 +122,129 @@
 %D \btxloadjournallist[journals.txt] % the jabref list
 %D \stoptyping
 
-
 \definebtx
-  [apa:list:journal]
+  [apa:\s!list:journal]
   [\c!style=\v!italic]
   %command=\btxexpandedjournal] % btxabbreviatedjournal
 
 \definebtx
-  [apa:list:title]
+  [apa:\s!list:title]
   [\c!style=\v!italic,
    \c!command=\Word,
    \c!translate=\v!yes]
 
 \definebtx
-  [apa:list:title:article]
-  [apa:list:title]
+  [apa:\s!list:title:article]
+  [apa:\s!list:title]
   [\c!style=] % journal is set in italics
 
 \definebtx
-  [apa:list:title:magazine]
-  [apa:list:title]
+  [apa:\s!list:title:magazine]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:newspaper]
-  [apa:list:title]
+  [apa:\s!list:title:newspaper]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:periodical]
-  [apa:list:title]
+  [apa:\s!list:title:periodical]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:standard]
-  [apa:list:title]
+  [apa:\s!list:title:standard]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:book]
-  [apa:list:title]
+  [apa:\s!list:title:book]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:inbook]
-  [apa:list:title]
+  [apa:\s!list:title:inbook]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:incollection]
-  [apa:list:title]
+  [apa:\s!list:title:incollection]
+  [apa:\s!list:title]
   [\c!style=] % booktitle is set in italics
 
 \definebtx
-  [apa:list:title:proceedings]
-  [apa:list:title]
+  [apa:\s!list:title:proceedings]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:inproceedings]
-  [apa:list:title]
+  [apa:\s!list:title:inproceedings]
+  [apa:\s!list:title]
   [\c!style=] % booktitle is set in italics
 
 \definebtx
-  [apa:list:title:conference]
-  [apa:list:title]
+  [apa:\s!list:title:conference]
+  [apa:\s!list:title]
   [\c!style=] % booktitle is set in italics
 
 \definebtx
-  [apa:list:title:thesis]
-  [apa:list:title]
+  [apa:\s!list:title:thesis]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:phdthesis]
-  [apa:list:title]
+  [apa:\s!list:title:phdthesis]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:mastersthesis]
-  [apa:list:title]
+  [apa:\s!list:title:mastersthesis]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:booklet]
-  [apa:list:title]
+  [apa:\s!list:title:booklet]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:manual]
-  [apa:list:title]
+  [apa:\s!list:title:manual]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:techreport]
-  [apa:list:title]
+  [apa:\s!list:title:techreport]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:unpublished]
-  [apa:list:title]
+  [apa:\s!list:title:unpublished]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:patent]
-  [apa:list:title]
+  [apa:\s!list:title:patent]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:electronic]
-  [apa:list:title]
+  [apa:\s!list:title:electronic]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:music]
-  [apa:list:title]
+  [apa:\s!list:title:music]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:film]
-  [apa:list:title]
+  [apa:\s!list:title:film]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:other]
-  [apa:list:title]
+  [apa:\s!list:title:other]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:misc]
-  [apa:list:title]
+  [apa:\s!list:title:misc]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:title:literal]
-  [apa:list:title]
+  [apa:\s!list:title:literal]
+  [apa:\s!list:title]
 
 \definebtx
-  [apa:list:type]
+  [apa:\s!list:type]
   [\c!command=\Word]
-
-% We define [page] settings in the apa namespace, inheriting the root
-% settings, in order to eventually allow for modifications without touching
-% root.
-
-\definebtx
-  [apa:\s!page]
-  [\s!page]
-
-\definebtx
-  [apa:\s!page:list]
-  [apa:\s!page]
-  [\c!pagecommand={\wordright}]
 
 % Then define and set cite parameters.
 
 \definebtx
-  [apa:cite]
+  [apa:\s!cite]
   [apa]
   [\c!alternative=authoryear,
    \c!otherstext={,\space\btxlabeltext{apa:others}},
@@ -271,60 +258,60 @@
    \c!separator:names:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
 
 \definebtx
-  [apa:cite:author]
-  [apa:cite]
+  [apa:\s!cite:author]
+  [apa:\s!cite]
 
 \definebtx
-  [apa:cite:authoryear]
-  [apa:cite:author]
+  [apa:\s!cite:authoryear]
+  [apa:\s!cite:author]
   [\c!left={(},
    \c!right={)},
    \c!inbetween={,\space}]
 
 \definebtx
-  [apa:cite:default]
-  [apa:cite:authoryear]
+  [apa:\s!cite:default]
+  [apa:\s!cite:authoryear]
 
 \definebtx
-  [apa:cite:authoryears]
-  [apa:cite:authoryear]
+  [apa:\s!cite:authoryears]
+  [apa:\s!cite:authoryear]
   [\c!left=,
    \c!right=,
    \c!inbetween={\space}]
 
 \definebtx
-  [apa:cite:authornum]
-  [apa:cite:author]
+  [apa:\s!cite:authornum]
+  [apa:\s!cite:author]
   [\c!left={(},
    \c!right={)}]
 
 \definebtx
-  [apa:cite:author:num] % todo
-  [apa:cite:authornum]
+  [apa:\s!cite:author:num] % todo
+  [apa:\s!cite:authornum]
   [\c!left={\space[},
    \c!right={]}]
 
 \definebtx
-  [apa:cite:author:year] % todo
-  [apa:cite]
+  [apa:\s!cite:author:year] % todo
+  [apa:\s!cite]
 
 \definebtx
-  [apa:cite:author:years] % todo
-  [apa:cite:authoryears]
+  [apa:\s!cite:author:years] % todo
+  [apa:\s!cite:authoryears]
   [\c!inbetween=,
    \c!left={\space(},
    \c!right={)}]
 
 \definebtx
-  [apa:cite:year]
-  [apa:cite]
+  [apa:\s!cite:year]
+  [apa:\s!cite]
   [\c!separator:2={,\space}, % :0 and :1 - between items of a list
    \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!separator:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
 
 \definebtx
-  [apa:cite:title]
-  [apa:cite]
+  [apa:\s!cite:title]
+  [apa:\s!cite]
   [\c!separator:2={,\space}, % :0 and :1 - between items of a list
    \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!separator:4={\space\btxlabeltext{apa:and}\space}, % not \textampersand
@@ -333,25 +320,25 @@
    \c!style=\v!italic]
 
 \definebtx
-  [apa:cite:booktitle]
-  [apa:cite:title]
+  [apa:\s!cite:booktitle]
+  [apa:\s!cite:title]
 
 \definebtx
-  [apa:cite:tag]
-  [apa:cite]
+  [apa:\s!cite:tag]
+  [apa:\s!cite]
   [\c!left={[},
    \c!right={]}]
 
 
 \definebtx
-  [apa:cite:index]
-  [apa:cite]
+  [apa:\s!cite:index]
+  [apa:\s!cite]
   [\c!left={[},
    \c!right={]}]
 
 \definebtx
-  [apa:cite:page]
-  [apa:cite]
+  [apa:\s!cite:page]
+  [apa:\s!cite]
   [\c!left=,
    \c!right=,
    \c!separator:2={,\space}, % :0 and :1 - between items of a list
@@ -359,36 +346,36 @@
    \c!separator:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
 
 \definebtx
-  [apa:cite:pages]
-  [apa:cite:page]
+  [apa:\s!cite:pages]
+  [apa:\s!cite:page]
 
 \definebtx
-  [apa:cite:keywords]
-  [apa:cite]
+  [apa:\s!cite:keywords]
+  [apa:\s!cite]
 
 \definebtx
-  [apa:cite:short]
-  [apa:cite]
+  [apa:\s!cite:short]
+  [apa:\s!cite]
   [\c!left={[},
    \c!right={]}]
 
 \definebtx
-  [apa:cite:category]
-  [apa:cite]
+  [apa:\s!cite:category]
+  [apa:\s!cite]
 
 \definebtx
-  [apa:cite:url]
-  [apa:cite]
+  [apa:\s!cite:url]
+  [apa:\s!cite]
   [\c!left={[},
    \c!right={]}]
 
 \definebtx
-  [apa:cite:doi]
-  [apa:cite:url]
+  [apa:\s!cite:doi]
+  [apa:\s!cite:url]
 
 \definebtx
-  [apa:cite:num]
-  [apa:cite]
+  [apa:\s!cite:num]
+  [apa:\s!cite]
   [\c!left={[},
    \c!right={]},
    \c!separator:2={,}, % no space
@@ -396,8 +383,8 @@
    \c!separator:4=\btxparameter{\c!separator:2}]
 
 \definebtx
-  [apa:cite:textnum]
-  [apa:cite:num]
+  [apa:\s!cite:textnum]
+  [apa:\s!cite:num]
   [\c!left={Ref.\nbsp},
    \c!right=,
    \c!separator:2={,\space},
@@ -405,8 +392,8 @@
    \c!separator:4={\space\btxlabeltext{apa:and}\space}]
 
 \definebtx
-  [apa:cite:entry]
-  [apa:cite]
+  [apa:\s!cite:entry]
+  [apa:\s!cite]
   [\c!left=,
    \c!right=,
    \c!inbetween={\space},

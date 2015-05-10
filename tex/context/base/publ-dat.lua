@@ -346,6 +346,12 @@ function publications.parenttag(dataset,tag)
                     local entry = luadata[tag]
                     if entry then
                         combined[#combined+1] = tag
+                        if combined[tag] then
+                            report("error in combination, dataset %a, tag %a, parent %a, ignored %a",dataset,tag,combined[tag],parent)
+                        else
+                            report("combining, dataset %a, tag %a, parent %a",dataset,tag,parent)
+                            current.combined[tag] = parent
+                        end
                     end
                 end
             end
@@ -382,6 +388,7 @@ function publications.new(name)
             -- used specifications
         },
         suffixed   = false,
+        combined   = { },
     }
     -- we delay details till we need it (maybe we just delay the
     -- individual fields but that is tricky as there can be some

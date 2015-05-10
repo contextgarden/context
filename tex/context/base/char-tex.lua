@@ -286,6 +286,13 @@ local commandmapping = allocate {
 
 texcharacters.commandmapping = commandmapping
 
+local ligaturemapping = allocate {
+    ["''"]  = "”",
+    ["``"]  = "“",
+    ["--"]  = "–",
+    ["---"] = "—",
+}
+
 -- local achar    = R("az","AZ") + P("ı") + P("\\i")
 --
 -- local spaces   = P(" ")^0
@@ -354,6 +361,9 @@ local function toutfpattern()
             hash["\\"..k.." "] = v
             hash["{\\"..k.."}"] = v
             hash["{\\"..k.." }"] = v
+        end
+        for k, v in next, ligaturemapping do
+            hash[k] = v
         end
         untex = utfchartabletopattern(hash) / hash
     end

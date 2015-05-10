@@ -17,15 +17,16 @@
 
 \startbtxrenderingdefinitions[\s!default]
 
-% \definebtx [\s!default:\s!page  ] [\s!page]
-% \definebtx [\s!default:\s!cite  ] [\s!cite]
-% \definebtx [\s!default:\s!list  ] [\s!list]
-% \definebtx [\s!default:\s!author] [\s!author]
+%?? \definebtx [\s!default:\s!page  ] [\s!page]
+%?? \definebtx [\s!default:\s!cite  ] [\s!cite]
+%?? \definebtx [\s!default:\s!list  ] [\s!list]
+%?? \definebtx [\s!default:\s!author] [\s!author]
 
 \definebtxrendering
   [\s!default]
   [\c!specification=\s!default,
-   \c!sorttype=\v!default]
+   \c!sorttype=\v!default,
+   \c!numbering=num]
 
 \definebtx
   [\s!default]
@@ -50,19 +51,12 @@
    \c!sorttype=normal,
    \c!authorconversion=\v!name]
 
-% We define [page] settings in the default namespace, inheriting the root
-% settings, in order to eventually allow for modifications without touching
-% root.
-
-\definebtx
-  [\s!default:\s!page]
-  [\s!page]
-
-\definebtx
-  [\s!default:\s!page:list]
-  [\s!default:\s!page]
-
 % List variants, some having specific settings:
+
+\definebtx
+  [\s!default:\s!list:\s!page]
+  [\s!default:\s!list]
+  [\c!left={\space}]
 
 \definebtx
   [\s!default:\s!list:numbering]
@@ -71,10 +65,6 @@
 \definebtx
   [\s!default:\s!list:numbering:num]
   [\s!default:\s!list:numbering]
-
-\definebtx
-  [\s!default:\s!list:numbering:yes]
-  [\s!default:\s!list:numbering:num]
 
 \definebtx
   [\s!default:\s!list:numbering:short]

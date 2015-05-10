@@ -131,6 +131,9 @@
 \definemathfence [angle]       [\c!left="27E8,\c!right="27E9]
 \definemathfence [doubleangle] [\c!left="27EA,\c!right="27EB]
 \definemathfence [solidus]     [\c!left="2044,\c!right="2044]
+\definemathfence [ceil]        [\c!left="2308,\c!right="2309]
+\definemathfence [floor]       [\c!left="230A,\c!right="230B]
+
 \definemathfence [nothing]
 
 \definemathfence [mirrored] % \v!mirrored
@@ -158,6 +161,8 @@
 \unexpanded\def\Ltriplebar   {\math_fenced_fenced_start{triplebar}}    \unexpanded\def\Rtriplebar   {\math_fenced_fenced_stop{triplebar}}
 \unexpanded\def\Lsolidus     {\math_fenced_fenced_start{solidus}}      \unexpanded\def\Rsolidus     {\math_fenced_fenced_stop{solidus}}
 \unexpanded\def\Lnothing     {\math_fenced_fenced_start{nothing}}      \unexpanded\def\Rnothing     {\math_fenced_fenced_stop{nothing}}
+\unexpanded\def\Lfloor       {\math_fenced_fenced_start{floor}}        \unexpanded\def\Rfloor       {\math_fenced_fenced_stop{floor}}
+\unexpanded\def\Lceil        {\math_fenced_fenced_start{ceil}}         \unexpanded\def\Rceil        {\math_fenced_fenced_stop{ceil}}
 
 \unexpanded\def\Lparentmirrored      {\math_fenced_fenced_stop{mirroredparenthesis}}  \unexpanded\def\Rparentmirrored      {\math_fenced_fenced_start{mirroredparenthesis}}
 \unexpanded\def\Lbracketmirrored     {\math_fenced_fenced_stop{mirroredbracket}}      \unexpanded\def\Rbracketmirrored     {\math_fenced_fenced_start{mirroredbracket}}
@@ -264,6 +269,11 @@
 \expandafter\let\csname\??mathleft \meaning /\endcsname\Rsolidusmirrored
 \expandafter\let\csname\??mathleft \meaning .\endcsname\Rnothingmirrored
 
+\expandafter\let\csname\??mathleft \meaning ⌊\endcsname\Lfloor
+\expandafter\let\csname\??mathright\meaning ⌋\endcsname\Rfloor
+\expandafter\let\csname\??mathleft \meaning ⌈\endcsname\Lceil
+\expandafter\let\csname\??mathright\meaning ⌉\endcsname\Rceil
+
 % todo paren parent
 
 \let\lbrack\lbracket
@@ -278,6 +288,8 @@
 %installmathfencepair \lbar     \Lbar         \rbar     \Rbar
 \installmathfencepair \vert     \Lbar         \vert     \Rbar
 \installmathfencepair \solidus  \Lsolidus     \solidus  \Rsolidus
+\installmathfencepair \lfloor   \Lfloor       \rfloor   \Rfloor
+\installmathfencepair \lceil    \Lceil        \rceil    \Rceil
 
 \unexpanded\def\{{\mathortext\lbrace  \letterleftbrace   } % or maybe a chardef
 \unexpanded\def\}{\mathortext\rbrace  \letterrightbrace  } % or maybe a chardef

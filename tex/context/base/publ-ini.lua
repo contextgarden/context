@@ -115,6 +115,7 @@ local ctx_gobbletwoarguments      = context.gobbletwoarguments
 local ctx_btxdirectlink           = context.btxdirectlink
 local ctx_btxhandlelistentry      = context.btxhandlelistentry
 local ctx_btxhandlelisttextentry  = context.btxhandlelisttextentry
+local ctx_btxhandlecombientry     = context.btxhandlecombientry
 local ctx_btxchecklistentry       = context.btxchecklistentry
 local ctx_btxchecklistcombi       = context.btxchecklistcombi
 
@@ -154,6 +155,8 @@ local ctx_btxstartsubcite         = context.btxstartsubcite
 local ctx_btxstopsubcite          = context.btxstopsubcite
 local ctx_btxstartlistentry       = context.btxstartlistentry
 local ctx_btxstoplistentry        = context.btxstoplistentry
+local ctx_btxstartcombientry      = context.btxstartcombientry
+local ctx_btxstopcombientry       = context.btxstopcombientry
 local ctx_btxlistsetup            = context.btxlistsetup
 local ctx_btxflushauthor          = context.btxflushauthor
 local ctx_btxsetnoflistentries    = context.btxsetnoflistentries
@@ -340,10 +343,10 @@ do
     local initialize = nil
 
     initialize = function(t)
-        usedentries = allocate { }
-        citetolist  = allocate { }
-        listtocite  = allocate { }
-        listtolist  = allocate { }
+        usedentries     = allocate { }
+        citetolist      = allocate { }
+        listtocite      = allocate { }
+        listtolist      = allocate { }
         local names     = { }
         local internals = structures.references.internals
         local p_collect = (C(R("09")^1) * Carg(1) / function(s,entry) listtocite[tonumber(s)] = entry end + P(1))^0
@@ -477,15 +480,16 @@ local findallused do
     local finder   = publications.finder
 
     findallused = function(dataset,reference,internal)
-        local current = datasets[dataset]
-        local finder  = publications.finder -- for the moment, not yet in all betas
-        local find    = finder and finder(current,reference)
-        local tags    = not find and settings_to_array(reference)
-        local todo    = { }
-        local okay    = { } -- only if mark
-        local set     = usedentries[dataset]
-        local valid   = current.luadata
-        local ordered = current.ordered
+        local current  = datasets[dataset]
+        local finder   = publications.finder -- for the moment, not yet in all betas
+        local find     = finder and finder(current,reference)
+        local tags     = not find and settings_to_array(reference)
+        local todo     = { }
+        local okay     = { } -- only if mark
+        local set      = usedentries[dataset]
+        local valid    = current.luadata
+        local ordered  = current.ordered
+        local combined = current.combined
         if set then
             local registered = { }
             local function register(tag)
@@ -495,6 +499,16 @@ local findallused do
                     registered[tag] = true
                 end
                 local entry = set[tag]
+                if not entry then
+                    local parent = combined[tag]
+                    if parent then
+                        entry = set[parent]
+                    end
+                    if entry then
+                        report("using reference of parent %a for %a",parent,tag)
+                        tag = parent
+                    end
+                end
                 if entry then
                     -- only once in a list but at some point we can have more (if we
                     -- decide to duplicate)
@@ -533,22 +547,22 @@ local findallused do
                     okay[#okay+1] = entry
                 end
                 todo[tag] = true
+                return tag
             end
             if reference == "*" then
                 tags = { }
                 for i=1,#ordered do
                     local tag = ordered[i].tag
-                    register(tag)
+                    tag = register(tag)
                     tags[#tags+1] = tag
                 end
             elseif find then
--- print("case 1.1")
                 tags = { }
                 for i=1,#ordered do
                     local entry = ordered[i]
                     if find(entry) then
                         local tag = entry.tag
-                        register(tag)
+                        tag = register(tag)
                         tags[#tags+1] = tag
                     end
                 end
@@ -557,11 +571,11 @@ local findallused do
                     reported[reference] = true
                 end
             else
--- print("case 1.2")
                 for i=1,#tags do
-                    local tag  = tags[i]
+                    local tag = tags[i]
                     if valid[tag] then
-                        register(tag)
+                        tag = register(tag)
+                        tags[i] = tag
                     elseif not reported[tag] then
                         reported[tag] = true
                         report_cite("non-existent entry %a in %a",tag,dataset)
@@ -570,12 +584,15 @@ local findallused do
             end
         else
             if find then
--- print("case 2.1")
                 tags = { }
                 for i=1,#ordered do
                     local entry = ordered[i]
                     if find(entry) then
-                        local tag = entry.tag
+                        local tag    = entry.tag
+                        local parent = combined[tag]
+                        if parent then
+                            tag = parent
+                        end
                         tags[#tags+1] = tag
                         todo[tag] = true
                     end
@@ -585,9 +602,13 @@ local findallused do
                     reported[reference] = true
                 end
             else
--- print("case 2.2")
                 for i=1,#tags do
-                    local tag = tags[i]
+                    local tag    = tags[i]
+                    local parent = combined[tag]
+                    if parent then
+                        tag = parent
+                        tags[i] = tag
+                    end
                     if valid[tag] then
                         todo[tag] = true
                     elseif not reported[tag] then
@@ -1705,6 +1726,7 @@ do
             if u then -- better check on metadata.kind == "btx"
                 local set = u.btxset or v_default
                 if set == dataset then
+-- inspect(structures.references.internals[tonumber(u.btxint)])
                     local tag = u.btxref
                     if not tag then
                         -- problem
@@ -1803,6 +1825,7 @@ do
         local current   = datasets[dataset]
         local luadata   = current.luadata
         local details   = current.details
+        local combined  = current.combined
         local newlist   = { }
         local lastreferencenumber = groups[group] -- current.lastreferencenumber or 0
         for i=1,#list do
@@ -1824,31 +1847,55 @@ do
         else
             list = newlist
         end
+--         local combined = { }
+        local newlist  = { }
+--         for i=1,#list do
+--             local userdata = list[i][4]
+--             if userdata then
+--                 local com = userdata.btxcom
+--                 if com then
+--                     com = settings_to_array(com)
+--                     for i=1,#com do
+--                         local c = com[i]
+--                         if not combined[c] then
+--                             report("ignoring list entry for tag %a due to combined usage in %a ",c,tag)
+--                             combined[c] = true
+--                         end
+--                     end
+--                 end
+--             end
+--         end
+        local tagtolistindex     = { }
+        rendering.tagtolistindex = tagtolistindex
         for i=1,#list do
             local li    = list[i]
             local tag   = li[1]
-            local entry = luadata[tag]
-            if entry then
-                local detail = details[tag]
-                if detail then
-                    local referencenumber = detail.referencenumber
-                    if not referencenumber then
-                        lastreferencenumber    = lastreferencenumber + 1
-                        referencenumber        = lastreferencenumber
-                        detail.referencenumber = lastreferencenumber
+            if not combined[tag] then
+                local entry = luadata[tag]
+                if entry then
+                    local detail = details[tag]
+                    if detail then
+                        local referencenumber = detail.referencenumber
+                        if not referencenumber then
+                            lastreferencenumber    = lastreferencenumber + 1
+                            referencenumber        = lastreferencenumber
+                            detail.referencenumber = lastreferencenumber
+                        end
+                        li[3] = referencenumber
+                    else
+                        report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
+                        -- weird, this shouldn't happen .. all have a detail
+                        lastreferencenumber = lastreferencenumber + 1
+                        details[tag] = { referencenumber = lastreferencenumber }
+                        li[3] = lastreferencenumber
                     end
-                    li[3] = referencenumber
-                else
-                    report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
-                    -- weird, this shouldn't happen .. all have a detail
-                    lastreferencenumber = lastreferencenumber + 1
-                    details[tag] = { referencenumber = lastreferencenumber }
-                    li[3] = lastreferencenumber
+                    tagtolistindex[tag] = i
                 end
+                newlist[#newlist+1] = li
             end
         end
         groups[group] = lastreferencenumber
-        rendering.list = list
+        rendering.list = newlist
     end
 
     function lists.fetchentries(dataset)
@@ -2002,14 +2049,56 @@ do
         end
     end
 
+    function lists.combiinlist(dataset,tag)
+        local rendering = renderings[dataset]
+        local list      = rendering.list
+        local toindex   = rendering.tagtolistindex
+        return toindex and toindex[tag]
+    end
+
+    function lists.flushcombi(dataset,tag)
+        local rendering = renderings[dataset]
+        local list      = rendering.list
+        local toindex   = rendering.tagtolistindex
+        local listindex = toindex and toindex[tag]
+        if listindex then
+            local li = list[listindex]
+            if li then
+                local data      = datasets[dataset]
+                local luadata   = data.luadata
+                local details   = data.details
+                local tag       = li[1]
+                local listindex = li[2]
+                local n         = li[3]
+                local entry     = luadata[tag]
+                local detail    = details[tag]
+                ctx_btxstartcombientry()
+                ctx_btxsetcurrentlistindex(listindex)
+                ctx_btxsetcategory(entry.category or "unknown")
+                ctx_btxsettag(tag)
+                ctx_btxsetnumber(n)
+                local language = entry.language
+                if language then
+                    ctx_btxsetlanguage(language)
+                end
+                local authorsuffix = detail.authorsuffix
+                if authorsuffix then
+                    ctx_btxsetsuffix(authorsuffix)
+                end
+                ctx_btxhandlecombientry()
+                ctx_btxstopcombientry()
+            end
+        end
+    end
+
     function lists.flushentry(dataset,i,textmode)
         local rendering = renderings[dataset]
         local list      = rendering.list
-        local data      = datasets[dataset]
-        local luadata   = data.luadata
-        local details   = data.details
         local li        = list[i]
         if li then
+            local data      = datasets[dataset]
+            local luadata   = data.luadata
+            local details   = data.details
             local tag       = li[1]
             local listindex = li[2]
             local n         = li[3]
@@ -2144,9 +2233,21 @@ do
     }
 
     implement {
+        name      = "btxflushlistcombi",
+        actions   = lists.flushcombi,
+        arguments = { "string", "string" }
+    }
+
+    implement {
         name      = "btxdoifelsesameasprevious",
         actions   = { lists.sameasprevious, ctx_doifelse },
         arguments = { "string", "integer", "string", "integer", "string" }
+    }
+
+    implement {
+        name      = "btxdoifelsecombiinlist",
+        actions   = { lists.combiinlist, ctx_doifelse },
+        arguments = { "string", "string" }
     }
 
 end
@@ -2404,6 +2505,7 @@ do
             local luadata = datasets[dataset].luadata
             for i=1,#found do
                 local entry = found[i]
+-- inspect(entry)
                 local tag   = entry.userdata.btxref
                 local ldata = luadata[tag]
                 local data  = {
@@ -2411,6 +2513,7 @@ do
                     language  = ldata.language,
                     dataset   = dataset,
                     tag       = tag,
+                    combis    = entry.userdata.btxcom,
                  -- luadata   = ldata,
                 }
                 setter(data,dataset,tag,entry)
@@ -2457,6 +2560,10 @@ do
                 if language then
                     ctx_btxsetlanguage(language)
                 end
+local combis = entry.combis
+if combis then
+    ctx_btxsetcombis(combis)
+end
                 if not getter(entry,last,nil,specification) then
                     ctx_btxsetfirst("") -- (f_missing(tag))
                 end

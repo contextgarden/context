@@ -73,6 +73,7 @@
 \def\s!btxbtx       {btxbtx}
 \def\s!btxspc       {btxspc}
 \def\s!btxlst       {btxlst}
+\def\s!btxcom       {btxcom}
 
 \definelabelclass[btxlabel][2]
 
@@ -665,12 +666,15 @@
    \publ_fast_setup\plusfour\s!list\currentbtxcategory
    \removeunwantedspaces
    \endgroup
-   \ifconditional\c_btx_list_pages
-     \btx_entry_inject_pages
-   \fi
    \ifx\currentbtxcombis\empty \else
      \btxrenderingparameter\c!separator
-     \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi
+     % maybe move this loop to lua
+     \begingroup
+       \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi
+     \endgroup
+   \fi
+   \ifconditional\c_btx_list_pages
+     \btx_entry_inject_pages
    \fi
    \ifconditional\c_btx_list_texts
      \currentbtxafter
@@ -689,6 +693,15 @@
      \ctxcommand{showbtxentry("\currentbtxdataset","\currentbtxtag")}
    \fi\fi}
 
+\unexpanded\def\btxstartcombientry
+  {\begingroup}
+
+\unexpanded\def\btxstopcombientry
+  {\endgroup}
+
+\unexpanded\def\btxhandlecombientry
+  {\btx_reference_indeed}
+
 \def\btx_entry_inject_combi#1%
   {\begingroup
    \def\currentbtxtag{#1}%
@@ -696,6 +709,18 @@
    \publ_fast_setup\plusfour\s!list\currentbtxcategory
    \removeunwantedspaces
    \endgroup}
+
+% uses reference when set
+
+% \def\btx_entry_inject_combi#1%
+%   {\begingroup
+%    \def\currentbtxtag{#1}%
+%    \ignorespaces
+%    \btxdoifelsecombiinlist\currentbtxdataset\currentbtxtag
+%      {\clf_btxflushlistcombi{\currentbtxdataset}{\currentbtxtag}}
+%      {\publ_fast_setup\plusfour\s!list\currentbtxcategory}%
+%    \removeunwantedspaces
+%    \endgroup}
 
 \unexpanded\def\completebtxrendering{\dodoubleempty\publ_place_list_complete}
 \unexpanded\def\placebtxrendering   {\dodoubleempty\publ_place_list_standard}
@@ -741,8 +766,12 @@
 \unexpanded\def\btxdoifelsesameasprevious
   {\btxdoifelsesameaspreviouschecked\v!doublesided}
 
+\unexpanded\def\btxdoifelsecombiinlist#1#2%
+  {\clf_btxdoifelsecombiinlist{#1}{#2}}
+
 \let\btxdoifsameaspreviouscheckedelse\btxdoifelsesameaspreviouschecked
 \let\btxdoifsameaspreviouselse       \btxdoifelsesameasprevious
+\let\btxdoifcombiinlistelse          \btxdoifelsecombiinlist
 
 \def\publ_place_list_indeed#1[#2][#3]%
   {\begingroup
@@ -952,6 +981,7 @@
        \s!btxref=\currentbtxtag,%
        \s!btxspc=\currentbtxspecification,%
        \s!btxlst=\number\c_btx_list_reference,% check if needed
+      %\ifx\currentbtxcombis\empty\else\s!btxcom={\currentbtxcombis},\fi%
        \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
        \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
        \ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint=\currentbtxbacklink\else\s!btxbck=\currentbtxbacktrace\fi}%
@@ -984,6 +1014,7 @@
       [\c!type=\s!btx]% \c!location=\v!none
       [\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
+      %\ifx\currentbtxcombis\empty\else\s!btxcom={\currentbtxcombis},\fi%
        \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
        \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
        \s!btxint=\number\currentbtxbacklink
@@ -1003,6 +1034,7 @@
     \ifx\currentbtxnumbering\v!yes
         \def\currentbtxnumbering{num}% convenient alias
         \letbtxrenderingparameter\c!numbering\currentbtxnumbering
+        \letlistparameter\c!headnumber\v!always
     \else\ifx\currentbtxnumbering\v!no
         \letlistparameter\c!headnumber\v!no
         \let\currentbtxnumbering\empty

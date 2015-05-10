@@ -158,7 +158,7 @@
 \let\xmlremapname              \clf_xmlremapname          % element
 \let\xmlremapnamespace         \clf_xmlremapnamespace     % document
 \let\xmlsave                   \clf_xmlsave
-\let\xmlsetfunction            \clf_xmlsetfunction
+%let\xmlsetfunction            \clf_xmlsetfunction
 \let\xmlsetsetup               \clf_xmlsetsetup
 \let\xmlsnippet                \clf_xmlsnippet
 \let\xmlstrip                  \clf_xmlstrip
@@ -176,6 +176,10 @@
 
 \def\xmlinfo                #1{\hbox{\ttxx[\clf_xmlinfo{#1}]}}
 \def\xmlshow                #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
+
+% we need to pass the last argument as function, so
+
+\def\xmlsetfunction#1#2#3{\ctxcommand{xmlsetfunction("#1",\!!bs#2\!!es,#3)}}
 
 % goodie:
 

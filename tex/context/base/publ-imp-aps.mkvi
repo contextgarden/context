@@ -48,58 +48,60 @@
 \definebtxrendering
   [aps]
   [\c!specification=aps,
-   \c!sorttype=\v!default]
+   \c!sorttype=\v!default,
+   \c!numbering=num]
 
 \setupbtxlist
   [aps]
   [\c!alternative=b] % spaces
 
 \definebtx
-  [aps:list]
+  [aps:\s!list]
   [aps]
   [\c!authorconversion=normalshort]
 
 \definebtx
-  [aps:list:author]
-  [aps:list]
+  [aps:\s!list:author]
+  [aps:\s!list]
 
 \definebtx
-  [aps:list:editor]
-  [aps:list:author]
+  [aps:\s!list:editor]
+  [aps:\s!list:author]
 
 \definebtx
-  [aps:list:suffix]
-  [aps:list]
+  [aps:\s!list:suffix]
+  [aps:\s!list]
 
 \definebtx
-  [aps:list:url]
-  [aps:list]
+  [aps:\s!list:url]
+  [aps:\s!list]
 
 \definebtx
-  [aps:list:doi]
-  [aps:list]
+  [aps:\s!list:doi]
+  [aps:\s!list]
 
 \definebtx
-  [aps:list:numbering]
-  [aps:list]
+  [aps:\s!list:\s!page]
+  [aps:\s!list]
+  [\c!left={\space}]
 
 \definebtx
-  [aps:list:numbering:num]
-  [aps:list:numbering]
+  [aps:\s!list:numbering]
+  [aps:\s!list]
+
+\definebtx
+  [aps:\s!list:numbering:num]
+  [aps:\s!list:numbering]
   [left={[},
    right={]}]
 
 \definebtx
-  [aps:list:numbering:yes]
-  [aps:list:numbering:num]
+  [aps:\s!list:numbering:short]
+  [aps:\s!list:numbering:num]
 
 \definebtx
-  [aps:list:numbering:short]
-  [aps:list:numbering:num]
-
-\definebtx
-  [aps:list:numbering:tag]
-  [aps:list:numbering:num]
+  [aps:\s!list:numbering:tag]
+  [aps:\s!list:numbering:num]
 
 %D In order to be able to get journals expanded (or normalized or abbreviated) you need
 %D to load a list:
@@ -111,214 +113,201 @@
 % TODO
 
 \definebtx
-  [aps:list:journal]
+  [aps:\s!list:journal]
   [\c!style=\v!italic]
   %command=\btxexpandedjournal] % btxabbreviatedjournal
 
 \definebtx
-  [aps:list:volume]
+  [aps:\s!list:volume]
   [\c!style=\v!bold]
 
 \definebtx
-  [aps:list:title]
+  [aps:\s!list:title]
   [\c!style=\v!italic,
    \c!command=\Word]
 
 \definebtx
-  [aps:list:title:article]
-  [aps:list:title]
+  [aps:\s!list:title:article]
+  [aps:\s!list:title]
   [\c!style=] % journal is set in italics
 
 \definebtx
-  [aps:list:title:magazine]
-  [aps:list:title]
+  [aps:\s!list:title:magazine]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:newspaper]
-  [aps:list:title]
+  [aps:\s!list:title:newspaper]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:periodical]
-  [aps:list:title]
+  [aps:\s!list:title:periodical]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:standard]
-  [aps:list:title]
+  [aps:\s!list:title:standard]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:book]
-  [aps:list:title]
+  [aps:\s!list:title:book]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:inbook]
-  [aps:list:title]
+  [aps:\s!list:title:inbook]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:incollection]
-  [aps:list:title]
+  [aps:\s!list:title:incollection]
+  [aps:\s!list:title]
   [\c!style=] % booktitle is set in italics
 
 \definebtx
-  [aps:list:title:proceedings]
-  [aps:list:title]
+  [aps:\s!list:title:proceedings]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:inproceedings]
-  [aps:list:title]
+  [aps:\s!list:title:inproceedings]
+  [aps:\s!list:title]
   [\c!style=] % booktitle is set in italics
 
 \definebtx
-  [aps:list:title:conference]
-  [aps:list:title]
+  [aps:\s!list:title:conference]
+  [aps:\s!list:title]
   [\c!style=] % booktitle is set in italics
 
 \definebtx
-  [aps:list:title:thesis]
-  [aps:list:title]
+  [aps:\s!list:title:thesis]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:phdthesis]
-  [aps:list:title]
+  [aps:\s!list:title:phdthesis]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:mastersthesis]
-  [aps:list:title]
+  [aps:\s!list:title:mastersthesis]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:booklet]
-  [aps:list:title]
+  [aps:\s!list:title:booklet]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:manual]
-  [aps:list:title]
+  [aps:\s!list:title:manual]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:techreport]
-  [aps:list:title]
+  [aps:\s!list:title:techreport]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:unpublished]
-  [aps:list:title]
+  [aps:\s!list:title:unpublished]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:patent]
-  [aps:list:title]
+  [aps:\s!list:title:patent]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:electronic]
-  [aps:list:title]
+  [aps:\s!list:title:electronic]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:other]
-  [aps:list:title]
+  [aps:\s!list:title:other]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:misc]
-  [aps:list:title]
+  [aps:\s!list:title:misc]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:title:literal]
-  [aps:list:title]
+  [aps:\s!list:title:literal]
+  [aps:\s!list:title]
 
 \definebtx
-  [aps:list:type]
+  [aps:\s!list:type]
   [\c!command=\Word]
-
-% We define [page] settings in the aps namespace, inheriting the root
-% settings, in order to eventually allow for modifications without touching
-% root.
-
-\definebtx
-  [aps:\s!page]
-  [\s!page]
-
-\definebtx
-  [aps:\s!page:list]
-  [aps:\s!page]
- %[\c!pagecommand={\wordright}]
 
 % Then define and set all cite parameters
 
 \definebtx
-  [aps:cite]
+  [aps:\s!cite]
   [aps]
   [\c!authorconversion=\v!name,
    \c!compress=\v!yes,
    \c!sorttype=normal]
 
 \definebtx
-  [aps:cite:author]
-  [aps:cite]
+  [aps:\s!cite:author]
+  [aps:\s!cite]
 
 \definebtx
-  [aps:cite:authoryear]
-  [aps:cite:author]
+  [aps:\s!cite:authoryear]
+  [aps:\s!cite:author]
   [\c!left={(},
    \c!right={)},
    \c!inbetween={,\space}]
 
 \definebtx
-  [aps:cite:authoryears]
-  [aps:cite:authoryear]
+  [aps:\s!cite:authoryears]
+  [aps:\s!cite:authoryear]
   [\c!left=,
    \c!right=,
    \c!inbetween={\space}]
 
 \definebtx
-  [aps:cite:authornum]
-  [aps:cite:author]
+  [aps:\s!cite:authornum]
+  [aps:\s!cite:author]
   [\c!left={(},
    \c!right={)}]
 
 \definebtx
-  [aps:cite:author:num] % todo
-  [aps:cite:authornum]
+  [aps:\s!cite:author:num] % todo
+  [aps:\s!cite:authornum]
   [\c!left={\space[},
    \c!right={]}]
 
 \definebtx
-  [aps:cite:author:year] % todo
-  [aps:cite:authoryear]
+  [aps:\s!cite:author:year] % todo
+  [aps:\s!cite:authoryear]
   [\c!left=,
    \c!right=]
 
 \definebtx
-  [aps:cite:author:years] % todo
-  [aps:cite:authoryears]
+  [aps:\s!cite:author:years] % todo
+  [aps:\s!cite:authoryears]
   [\c!inbetween=,
    \c!left={\space(},
    \c!right={)}]
 
 \definebtx
-  [aps:cite:year]
-  [aps:cite]
+  [aps:\s!cite:year]
+  [aps:\s!cite]
 
 \definebtx
-  [aps:cite:title]
-  [aps:cite]
+  [aps:\s!cite:title]
+  [aps:\s!cite]
   [\c!command={\language[\currentbtxlanguage]}, % BAH
    \c!sorttype=none,
    \c!style=\v!italic]
 
 \definebtx
-  [aps:cite:booktitle]
-  [aps:cite:title]
+  [aps:\s!cite:booktitle]
+  [aps:\s!cite:title]
 
 \definebtx
-  [aps:cite:tag]
-  [aps:cite]
+  [aps:\s!cite:tag]
+  [aps:\s!cite]
   [\c!left={[},
    \c!right={]}]
 
 \definebtx
-  [aps:cite:index]
-  [aps:cite]
+  [aps:\s!cite:index]
+  [aps:\s!cite]
   [\c!left={[},
    \c!right={]}]
 
 \definebtx
-  [aps:cite:page]
-  [aps:cite]
+  [aps:\s!cite:page]
+  [aps:\s!cite]
   [\c!left=,
    \c!right=,
    \c!separator:2={,\space}, % :0 and :1 - between items of a list
@@ -326,38 +315,38 @@
    \c!separator:4= {\space\btxlabeltext{aps:and}\space}] % not \textampersand
 
 \definebtx
-  [aps:cite:pages]
-  [aps:cite:page]
+  [aps:\s!cite:pages]
+  [aps:\s!cite:page]
 
 \definebtx
-  [aps:cite:keywords]
-  [aps:cite]
+  [aps:\s!cite:keywords]
+  [aps:\s!cite]
   [\c!left={(},
    \c!right={)}]
 
 \definebtx
-  [aps:cite:short]
-  [aps:cite]
+  [aps:\s!cite:short]
+  [aps:\s!cite]
   [\c!left={[},
    \c!right={]}]
 
 \definebtx
-  [aps:cite:category]
-  [aps:cite]
+  [aps:\s!cite:category]
+  [aps:\s!cite]
 
 \definebtx
-  [aps:cite:url]
-  [aps:cite]
+  [aps:\s!cite:url]
+  [aps:\s!cite]
   [\c!left={[},
    \c!right={]}]
 
 \definebtx
-  [aps:cite:doi]
-  [aps:cite:url]
+  [aps:\s!cite:doi]
+  [aps:\s!cite:url]
 
 \definebtx
-  [aps:cite:num]
-  [aps:cite]
+  [aps:\s!cite:num]
+  [aps:\s!cite]
   [\c!left={[},
    \c!right={]},
   %\c!left=,   % TODO: PRB uses superscript references...
@@ -368,12 +357,12 @@
    \c!separator:4=\btxparameter{\c!separator:2}]
 
 \definebtx
-  [aps:cite:default]
-  [aps:cite:num]
+  [aps:\s!cite:default]
+  [aps:\s!cite:num]
 
 \definebtx
-  [aps:cite:textnum]
-  [aps:cite:num]
+  [aps:\s!cite:textnum]
+  [aps:\s!cite:num]
   [\c!left={Ref.\nbsp},
    \c!command=,
    \c!separator:2={,\space},
@@ -381,8 +370,8 @@
    \c!separator:4={\space\btxlabeltext{aps:and}\space}]
 
 \definebtx
-  [aps:cite:entry]
-  [aps:cite]
+  [aps:\s!cite:entry]
+  [aps:\s!cite]
   [\c!left=,
    \c!right=,
    \c!inbetween={\space},

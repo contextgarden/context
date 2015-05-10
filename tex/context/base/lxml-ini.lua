@@ -93,7 +93,7 @@ implement { name = "xmlregisterns",           actions =  xml.registerns,        
 implement { name = "xmlremapname",            actions =  xml.remapname,         arguments = { "lxmlid", "string","string","string" } }
 implement { name = "xmlremapnamespace",       actions =  xml.renamespace,       arguments = { "lxmlid", "string", "string" } }
 implement { name = "xmlsave",                 actions = lxml.save,              arguments = { "string", "string" } }
-implement { name = "xmlsetfunction",          actions = lxml.setaction,         arguments = { "string", "string", "string" } }
+--------- { name = "xmlsetfunction",          actions = lxml.setaction,         arguments = { "string", "string", "string" } }
 implement { name = "xmlsetsetup",             actions = lxml.setsetup,          arguments = { "string", "string", "string" } }
 implement { name = "xmlsnippet",              actions = lxml.snippet,           arguments = { "string", "string" } }
 implement { name = "xmlstrip",                actions = lxml.strip,             arguments = { "string", "string" } }
@@ -136,3 +136,7 @@ implement { name = "xmlsetcommandtonone",     actions = lxml.setcommandtonone,  
 
 implement { name = "xmlstarttiming",          actions = function() statistics.starttiming(lxml) end }
 implement { name = "xmlstoptiming",           actions = function() statistics.stoptiming (lxml) end }
+
+-- kind of special (3rd argument is a function)
+
+commands.xmlsetfunction = lxml.setaction

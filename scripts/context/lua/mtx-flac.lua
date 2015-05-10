@@ -107,29 +107,34 @@ function flac.savecollection(pattern,filename)
     local music = { }
     table.sort(files)
     for i=1,#files do
-        local data = flac.getmetadata(files[i])
+        local name = files[i]
+        local data = flac.getmetadata(name)
         if data then
             local tags   = data.tags
             local info   = data.info
-            local artist = tags.artist or "no-artist"
-            local album  = tags.album  or "no-album"
-            local albums = music[artist]
-            if not albums then
-                albums = { }
-                music[artist] = albums
-            end
-            local albumx = albums[album]
-            if not albumx then
-                albumx = {
-                    year   = tags.date,
-                    tracks = { },
+            if tags and info then
+                local artist = tags.artist or "no-artist"
+                local album  = tags.album  or "no-album"
+                local albums = music[artist]
+                if not albums then
+                    albums = { }
+                    music[artist] = albums
+                end
+                local albumx = albums[album]
+                if not albumx then
+                    albumx = {
+                        year   = tags.date,
+                        tracks = { },
+                    }
+                    albums[album] = albumx
+                end
+                albumx.tracks[tonumber(tags.tracknumber) or 0] = {
+                    title  = tags.title,
+                    length = math.round((info.samples_in_stream/info.sample_rate_in_hz)),
                 }
-                albums[album] = albumx
+            else
+                flac.report("unable to read file",name)
             end
-            albumx.tracks[tonumber(tags.tracknumber) or 0] = {
-                title  = tags.title,
-                length = math.round((info.samples_in_stream/info.sample_rate_in_hz)),
-            }
         end
     end
  -- inspect(music)
@@ -153,6 +158,7 @@ function flac.savecollection(pattern,filename)
                     return ya < yb
                 end
             end)
+            nofalbums = nofalbums + #list
             for nofalbums=1,#list do
                 local album = list[nofalbums]
                 local data  = albums[album]

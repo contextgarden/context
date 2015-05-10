@@ -27,6 +27,8 @@ local v_default    = variables.default
 local v_reference  = variables.reference
 local v_dataset    = variables.dataset
 local v_list       = variables.list
+local v_index      = variables.index
+local v_cite       = variables.cite
 local v_used       = variables.used
 
 local report       = logs.reporter("publications","sorters")
@@ -344,6 +346,8 @@ end
 
 sorters[v_default] = sorters[v_list]
 sorters[""]        = sorters[v_list]
+sorters[v_cite]    = sorters[v_list]
+sorters[v_index]   = sorters[v_dataset]
 
 local function anything(dataset,rendering,list,sorttype)
     local valid = sortsequence(dataset,list,sorttype) -- field order

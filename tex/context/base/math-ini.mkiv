@@ -567,13 +567,14 @@
 \unexpanded\def\mathop
   {\normalmathop
    \bgroup
-   \let\rm\mf
+  % no: \let\rm\mf
    \let\nexttoken=}
 
 % this one too: \letvalue{\??mathcodecommand op}\mathop ?
 
 \unexpanded\def\normalmbox
-  {\normalhbox\bgroup\mf
+  {\normalhbox\bgroup
+   \usemathematicsstyleandcolor\c!textstyle\c!textcolor % new
    \dowithnextboxcs\math_mbox_finish\normalhbox}
 
 \def\math_mbox_finish
@@ -619,19 +620,56 @@
 % faster. Functions getnumbers >= 1000.
 
 \setupmathematics
-  [\c!functionstyle=\mr,
+  [\c!textstyle=,     % rm ss etc i.e. known alternatives, otherwise math
+   \c!textcolor=,
+   \c!functionstyle=, % rm ss etc i.e. known alternatives, otherwise math
    \c!functioncolor=]
+
+% \unexpanded\def\math_mfunction_styled
+%   {\edef\m_math_text_choice_face{\textstyleface\normalmathstyle}%
+%    \dowithnextbox
+%      {\mathop{\box\nextbox}}%
+%      \hbox\bgroup
+%      \usemathematicsstyleandcolor\c!functionstyle\c!functioncolor
+%      \m_math_text_choice_face
+%      \let\next}
+
+\unexpanded\def\math_mfunction_styled
+  {\begingroup
+   \usemathematicscolorparameter\c!functioncolor
+   \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
+   \ifx\p_functionstyle\empty
+     \expandafter\math_mfunction_styled_none
+   \else\ifcsname\??alternativestyles\p_functionstyle\endcsname
+     \doubleexpandafter\math_mfunction_styled_text
+   \else
+     \doubleexpandafter\math_mfunction_styled_math
+   \fi\fi}
+
+\unexpanded\def\math_mfunction_styled_text#1%
+  {\mathoptext{\csname\??alternativestyles\p_functionstyle\endcsname#1}%
+   \endgroup}
+
+\unexpanded\def\math_mfunction_styled_math#1%
+  {\p_functionstyle
+   #1%
+   \endgroup}
+
+\unexpanded\def\math_mfunction_styled_none#1%
+  {\mathupright
+   #1%
+   \endgroup}
 
 \unexpanded\def\mfunction#1%
   {\begingroup
    \math_tags_mfunctiontxt{#1}\c_apply_function
-   \mathoptext{\usemathematicsstyleandcolor\c!functionstyle\c!functioncolor#1}%
+   \math_mfunction_styled{#1}%
    \endgroup}
 
 \unexpanded\def\mfunctionlabeltext#1%
   {\begingroup
    \math_tags_mfunctionlab{#1}\c_apply_function
-   \mathoptext{\usemathematicsstyleandcolor\c!functionstyle\c!functioncolor\mathlabeltext{#1}}%
+   \math_mfunction_styled{\mathlabeltext{#1}}%
    \endgroup}
 
 \let\math_tags_mfunctiontxt\gobbletwoarguments
@@ -1427,6 +1465,19 @@
      \expandafter#3\or
      \expandafter#3\else
      \expandafter#1\fi}
+
+% \def\textstyleface#1% #1 is number (\normalmathstyle)
+%   {\ifcase\numexpr#1\relax
+%      \tf   \or
+%      \tf   \or
+%      \tf   \or
+%      \tf   \or
+%      \tfx  \or
+%      \tfx  \or
+%      \tfxx \or
+%      \tfxx \else
+%      \tf
+%    \fi}
 
 \unexpanded\def\verbosemathstyle#1% #1 is number (\normalmathstyle)
   {{\normalexpanded{\relax\darkgray\ttxx[\number#1:\ifcase\numexpr#1\relax
