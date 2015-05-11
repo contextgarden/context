@@ -981,6 +981,12 @@
 \setvalue{\??floatmovement+\v!hang}{\strc_floats_move_down_hang\plusone}
 \setvalue{\??floatmovement-\v!hang}{\strc_floats_move_down_hang\minusone}
 
+\setvalue{\??floatmovement-2*\v!line}{\strc_floats_move_down_line{-2}}
+\setvalue{\??floatmovement+2*\v!line}{\strc_floats_move_down_line{2}}
+\setvalue{\??floatmovement 2*\v!line}{\strc_floats_move_down_line{2}}
+
+\unexpanded\def\installfloatmovement#1#2{\setvalue{\??floatmovement#1}{#2}}
+
 \def\strc_floats_move_down#setting%
   {\csname\??floatmovement
      \ifcsname\??floatmovement#setting\endcsname#setting\fi

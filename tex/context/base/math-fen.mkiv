@@ -133,6 +133,11 @@
 \definemathfence [solidus]     [\c!left="2044,\c!right="2044]
 \definemathfence [ceil]        [\c!left="2308,\c!right="2309]
 \definemathfence [floor]       [\c!left="230A,\c!right="230B]
+\definemathfence [moustache]   [\c!left="23B0,\c!right="23B1]
+\definemathfence [uppercorner] [\c!left="231C,\c!right="231D]
+\definemathfence [lowercorner] [\c!left="231E,\c!right="231F]
+\definemathfence [group]       [\c!left="27EE,\c!right="27EF]
+\definemathfence [openbracket] [\c!left="27E6,\c!right="27E7]
 
 \definemathfence [nothing]
 
@@ -147,38 +152,54 @@
 \definemathfence [mirroredangle]       [mirrored] [\c!right="27E8,\c!left="27E9]
 \definemathfence [mirroreddoubleangle] [mirrored] [\c!right="27EA,\c!left="27EB]
 \definemathfence [mirroredsolidus]     [mirrored] [\c!right="2044,\c!left="2044]
+\definemathfence [mirroredceil]        [mirrored] [\c!right="2308,\c!left="2309]
+\definemathfence [mirroredfloor]       [mirrored] [\c!right="230A,\c!left="230B]
+\definemathfence [mirroredmoustache]   [mirrored] [\c!right="23B0,\c!left="23B1]
+\definemathfence [mirroreduppercorner] [mirrored] [\c!right="231C,\c!left="231D]
+\definemathfence [mirroredlowercorner] [mirrored] [\c!right="231E,\c!left="231F]
+\definemathfence [mirroredgroup]       [mirrored] [\c!right="27EE,\c!left="27EF]
+\definemathfence [mirroredopenbracket] [mirrored] [\c!right="27E6,\c!left="27E7]
+
 \definemathfence [mirrorednothing]     [mirrored]
 
 %D A bonus:
 
-\unexpanded\def\Lparent      {\math_fenced_fenced_start{parenthesis}}  \unexpanded\def\Rparent      {\math_fenced_fenced_stop{parenthesis}}
-\unexpanded\def\Lbracket     {\math_fenced_fenced_start{bracket}}      \unexpanded\def\Rbracket     {\math_fenced_fenced_stop{bracket}}
-\unexpanded\def\Lbrace       {\math_fenced_fenced_start{brace}}        \unexpanded\def\Rbrace       {\math_fenced_fenced_stop{brace}}
-\unexpanded\def\Langle       {\math_fenced_fenced_start{angle}}        \unexpanded\def\Rangle       {\math_fenced_fenced_stop{angle}}
-\unexpanded\def\Ldoubleangle {\math_fenced_fenced_start{doubleangle}}  \unexpanded\def\Rdoubleangle {\math_fenced_fenced_stop{doubleangle}}
-\unexpanded\def\Lbar         {\math_fenced_fenced_start{bar}}          \unexpanded\def\Rbar         {\math_fenced_fenced_stop{bar}}
-\unexpanded\def\Ldoublebar   {\math_fenced_fenced_start{doublebar}}    \unexpanded\def\Rdoublebar   {\math_fenced_fenced_stop{doublebar}}
-\unexpanded\def\Ltriplebar   {\math_fenced_fenced_start{triplebar}}    \unexpanded\def\Rtriplebar   {\math_fenced_fenced_stop{triplebar}}
-\unexpanded\def\Lsolidus     {\math_fenced_fenced_start{solidus}}      \unexpanded\def\Rsolidus     {\math_fenced_fenced_stop{solidus}}
-\unexpanded\def\Lnothing     {\math_fenced_fenced_start{nothing}}      \unexpanded\def\Rnothing     {\math_fenced_fenced_stop{nothing}}
-\unexpanded\def\Lfloor       {\math_fenced_fenced_start{floor}}        \unexpanded\def\Rfloor       {\math_fenced_fenced_stop{floor}}
-\unexpanded\def\Lceil        {\math_fenced_fenced_start{ceil}}         \unexpanded\def\Rceil        {\math_fenced_fenced_stop{ceil}}
+\unexpanded\def\Lparent              {\math_fenced_fenced_start{parenthesis}}          \unexpanded\def\Rparent              {\math_fenced_fenced_stop {parenthesis}}
+\unexpanded\def\Lbracket             {\math_fenced_fenced_start{bracket}}              \unexpanded\def\Rbracket             {\math_fenced_fenced_stop {bracket}}
+\unexpanded\def\Lbrace               {\math_fenced_fenced_start{brace}}                \unexpanded\def\Rbrace               {\math_fenced_fenced_stop {brace}}
+\unexpanded\def\Langle               {\math_fenced_fenced_start{angle}}                \unexpanded\def\Rangle               {\math_fenced_fenced_stop {angle}}
+\unexpanded\def\Ldoubleangle         {\math_fenced_fenced_start{doubleangle}}          \unexpanded\def\Rdoubleangle         {\math_fenced_fenced_stop {doubleangle}}
+\unexpanded\def\Lbar                 {\math_fenced_fenced_start{bar}}                  \unexpanded\def\Rbar                 {\math_fenced_fenced_stop {bar}}
+\unexpanded\def\Ldoublebar           {\math_fenced_fenced_start{doublebar}}            \unexpanded\def\Rdoublebar           {\math_fenced_fenced_stop {doublebar}}
+\unexpanded\def\Ltriplebar           {\math_fenced_fenced_start{triplebar}}            \unexpanded\def\Rtriplebar           {\math_fenced_fenced_stop {triplebar}}
+\unexpanded\def\Lsolidus             {\math_fenced_fenced_start{solidus}}              \unexpanded\def\Rsolidus             {\math_fenced_fenced_stop {solidus}}
+\unexpanded\def\Lfloor               {\math_fenced_fenced_start{floor}}                \unexpanded\def\Rfloor               {\math_fenced_fenced_stop {floor}}
+\unexpanded\def\Lceil                {\math_fenced_fenced_start{ceil}}                 \unexpanded\def\Rceil                {\math_fenced_fenced_stop {ceil}}
+\unexpanded\def\Lmoustache           {\math_fenced_fenced_start{moustache}}            \unexpanded\def\Rmoustache           {\math_fenced_fenced_stop {moustache}}
+\unexpanded\def\Luppercorner         {\math_fenced_fenced_start{uppercorner}}          \unexpanded\def\Ruppercorner         {\math_fenced_fenced_stop {uppercorner}}
+\unexpanded\def\Llowercorner         {\math_fenced_fenced_start{lowercorner}}          \unexpanded\def\Rlowercorner         {\math_fenced_fenced_stop {lowercorner}}
+\unexpanded\def\Lgroup               {\math_fenced_fenced_start{group}}                \unexpanded\def\Rgroup               {\math_fenced_fenced_stop {group}}
+\unexpanded\def\Lopenbracket         {\math_fenced_fenced_start{openbracket}}          \unexpanded\def\Ropenbracket         {\math_fenced_fenced_stop {openbracket}}
+\unexpanded\def\Lnothing             {\math_fenced_fenced_start{nothing}}              \unexpanded\def\Rnothing             {\math_fenced_fenced_stop {nothing}}
 
-\unexpanded\def\Lparentmirrored      {\math_fenced_fenced_stop{mirroredparenthesis}}  \unexpanded\def\Rparentmirrored      {\math_fenced_fenced_start{mirroredparenthesis}}
-\unexpanded\def\Lbracketmirrored     {\math_fenced_fenced_stop{mirroredbracket}}      \unexpanded\def\Rbracketmirrored     {\math_fenced_fenced_start{mirroredbracket}}
-\unexpanded\def\Lbracemirrored       {\math_fenced_fenced_stop{mirroredbrace}}        \unexpanded\def\Rbracemirrored       {\math_fenced_fenced_start{mirroredbrace}}
-\unexpanded\def\Langlemirrored       {\math_fenced_fenced_stop{mirroredangle}}        \unexpanded\def\Ranglemirrored       {\math_fenced_fenced_start{mirroredangle}}
-\unexpanded\def\Ldoubleanglemirrored {\math_fenced_fenced_stop{mirroreddoubleangle}}  \unexpanded\def\Rdoubleanglemirrored {\math_fenced_fenced_start{mirroreddoubleangle}}
-\unexpanded\def\Lbarmirrored         {\math_fenced_fenced_stop{mirroredbar}}          \unexpanded\def\Rbarmirrored         {\math_fenced_fenced_start{mirroredbar}}
-\unexpanded\def\Ldoublebarmirrored   {\math_fenced_fenced_stop{mirroreddoublebar}}    \unexpanded\def\Rdoublebarmirrored   {\math_fenced_fenced_start{mirroreddoublebar}}
-\unexpanded\def\Ltriplebarmirrored   {\math_fenced_fenced_stop{mirroredtriplebar}}    \unexpanded\def\Rtriplebarmirrored   {\math_fenced_fenced_start{mirroredtriplebar}}
-\unexpanded\def\Lsolidusmirrored     {\math_fenced_fenced_stop{mirroredsolidus}}      \unexpanded\def\Rsolidusmirrored     {\math_fenced_fenced_start{mirroredsolidus}}
-\unexpanded\def\Lnothingmirrored     {\math_fenced_fenced_stop{mirrorednothing}}      \unexpanded\def\Rnothingmirrored     {\math_fenced_fenced_start{mirrorednothing}}
+\unexpanded\def\Lparentmirrored      {\math_fenced_fenced_stop {mirroredparenthesis}}  \unexpanded\def\Rparentmirrored      {\math_fenced_fenced_start{mirroredparenthesis}}
+\unexpanded\def\Lbracketmirrored     {\math_fenced_fenced_stop {mirroredbracket}}      \unexpanded\def\Rbracketmirrored     {\math_fenced_fenced_start{mirroredbracket}}
+\unexpanded\def\Lbracemirrored       {\math_fenced_fenced_stop {mirroredbrace}}        \unexpanded\def\Rbracemirrored       {\math_fenced_fenced_start{mirroredbrace}}
+\unexpanded\def\Langlemirrored       {\math_fenced_fenced_stop {mirroredangle}}        \unexpanded\def\Ranglemirrored       {\math_fenced_fenced_start{mirroredangle}}
+\unexpanded\def\Ldoubleanglemirrored {\math_fenced_fenced_stop {mirroreddoubleangle}}  \unexpanded\def\Rdoubleanglemirrored {\math_fenced_fenced_start{mirroreddoubleangle}}
+\unexpanded\def\Lbarmirrored         {\math_fenced_fenced_stop {mirroredbar}}          \unexpanded\def\Rbarmirrored         {\math_fenced_fenced_start{mirroredbar}}
+\unexpanded\def\Ldoublebarmirrored   {\math_fenced_fenced_stop {mirroreddoublebar}}    \unexpanded\def\Rdoublebarmirrored   {\math_fenced_fenced_start{mirroreddoublebar}}
+\unexpanded\def\Ltriplebarmirrored   {\math_fenced_fenced_stop {mirroredtriplebar}}    \unexpanded\def\Rtriplebarmirrored   {\math_fenced_fenced_start{mirroredtriplebar}}
+\unexpanded\def\Lsolidusmirrored     {\math_fenced_fenced_stop {mirroredsolidus}}      \unexpanded\def\Rsolidusmirrored     {\math_fenced_fenced_start{mirroredsolidus}}
+\unexpanded\def\Lfloormirrored       {\math_fenced_fenced_stop {mirroredfloor}}        \unexpanded\def\Rfloormirrored       {\math_fenced_fenced_start{mirroredfloor}}
+\unexpanded\def\Lceilmirrored        {\math_fenced_fenced_stop {mirroredceil}}         \unexpanded\def\Rceilmirrored        {\math_fenced_fenced_start{mirroredceil}}
+\unexpanded\def\Lmoustachemirrored   {\math_fenced_fenced_stop {mirroredmoustache}}    \unexpanded\def\Rmoustachemirrored   {\math_fenced_fenced_start{mirroredmoustache}}
+\unexpanded\def\Luppercornermirrored {\math_fenced_fenced_stop {mirroreduppercorner}}  \unexpanded\def\Ruppercornermirrored {\math_fenced_fenced_start{mirroreduppercorner}}
+\unexpanded\def\Llowercornermirrored {\math_fenced_fenced_stop {mirroredlowercorner}}  \unexpanded\def\Rlowercornermirrored {\math_fenced_fenced_start{mirroredlowercorner}}
+\unexpanded\def\Lgroupmirrored       {\math_fenced_fenced_stop {mirroredgroup}}        \unexpanded\def\Rgroupmirrored       {\math_fenced_fenced_start{mirroredgroup}}
+\unexpanded\def\Lopenbracketmirrored {\math_fenced_fenced_stop {mirroredopenbracket}}  \unexpanded\def\Ropenbracketmirrored {\math_fenced_fenced_start{mirroredopenbracket}}
+\unexpanded\def\Lnothingmirrored     {\math_fenced_fenced_stop {mirrorednothing}}      \unexpanded\def\Rnothingmirrored     {\math_fenced_fenced_start{mirrorednothing}}
 
-%D And another one:
-
-% \setupmathfences[color=darkgreen]
-%
 % \startformula
 % \left{ \frac{1}{a} \right}
 % \left[ \frac{1}{b} \right]
@@ -279,17 +300,26 @@
 \let\lbrack\lbracket
 \let\rbrack\rbracket
 
-\installmathfencepair \lbrace   \Lbrace       \rbrace   \Rbrace
-\installmathfencepair \lbracket \Lbracket     \rbracket \Rbracket
-\installmathfencepair \lparen   \Lparen       \rparen   \Rparen
-\installmathfencepair \lparent  \Lparent      \rparent  \Rparent
-\installmathfencepair \langle   \Langle       \rangle   \Rangle
-%installmathfencepair \lrangle  \Ldoubleangle \rrangle  \Rdoubleangle
-%installmathfencepair \lbar     \Lbar         \rbar     \Rbar
-\installmathfencepair \vert     \Lbar         \vert     \Rbar
-\installmathfencepair \solidus  \Lsolidus     \solidus  \Rsolidus
-\installmathfencepair \lfloor   \Lfloor       \rfloor   \Rfloor
-\installmathfencepair \lceil    \Lceil        \rceil    \Rceil
+\installmathfencepair \lbrace     \Lbrace       \rbrace     \Rbrace
+\installmathfencepair \lbracket   \Lbracket     \rbracket   \Rbracket
+\installmathfencepair \lparen     \Lparen       \rparen     \Rparen
+\installmathfencepair \lparent    \Lparent      \rparent    \Rparent
+\installmathfencepair \langle     \Langle       \rangle     \Rangle
+\installmathfencepair \lrangle    \Ldoubleangle \rrangle    \Rdoubleangle
+\installmathfencepair \lbar       \Lbar         \rbar       \Rbar
+\installmathfencepair \lVert      \Ldoublebar   \rVert      \Rdoublebar
+\installmathfencepair \vert       \Lbar         \vert       \Rbar
+\installmathfencepair \solidus    \Lsolidus     \solidus    \Rsolidus
+\installmathfencepair \lfloor     \Lfloor       \rfloor     \Rfloor
+\installmathfencepair \lceil      \Lceil        \rceil      \Rceil
+
+\installmathfencepair \ulcorner   \Luppercorner \ulcorner   \Ruppercorner
+\installmathfencepair \llcorner   \Llowercorner \llcorner   \Rlowercorner
+\installmathfencepair \lmoustache \Lmoustache   \lmoustache \Rmoustache
+\installmathfencepair \llbracket  \Lopenbracket \llbracket  \Ropenbracket
+\installmathfencepair \lgroup     \Lgroup       \lgroup     \Rgroup
+
+% \setupmathfences[color=darkgreen]
 
 \unexpanded\def\{{\mathortext\lbrace  \letterleftbrace   } % or maybe a chardef
 \unexpanded\def\}{\mathortext\rbrace  \letterrightbrace  } % or maybe a chardef

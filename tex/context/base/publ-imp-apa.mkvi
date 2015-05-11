@@ -91,7 +91,12 @@
 \definebtx
   [apa:\s!list:\s!page]
   [apa:\s!list]
-  [\c!pagecommand={\wordright}]
+  [\c!separator:2={,\space},
+   \c!separator:3={,\space\btxlabeltext{apa:and}\space},
+   \c!separator:4={\space\btxlabeltext{apa:and}\space},
+   \c!left={\btxleftparenthesis},
+   \c!right={\btxrightparenthesis},
+   \c!command={\wordright}]
 
 \definebtx
   [apa:\s!list:numbering]
@@ -124,11 +129,18 @@
 
 \definebtx
   [apa:\s!list:journal]
+  [apa:\s!list]
   [\c!style=\v!italic]
   %command=\btxexpandedjournal] % btxabbreviatedjournal
 
 \definebtx
+  [apa:\s!list:volume]
+  [apa:\s!list]
+  [\c!style=\v!italic]
+
+\definebtx
   [apa:\s!list:title]
+  [apa:\s!list]
   [\c!style=\v!italic,
    \c!command=\Word,
    \c!translate=\v!yes]
@@ -595,11 +607,15 @@
 
 % The following differs from the default returning n.d. if year is empty
 
+\startsetups btx:apa:nd
+    \btxlabeltext{apa:nd}
+\stopsetups
+
 \startsetups btx:apa:cite:author:year
     \texdefinition{\s!btx:\s!cite:concat}
    %\btxparameter\c!left
     \ifx\currentbtxfirst\empty
-        \btxlabeltext{apa:nd}
+        \fastsetup{btx:apa:nd}
     \else
         \texdefinition {\s!btx:\s!cite:inject} {
             \btxcitereference
@@ -620,37 +636,15 @@
     \fastsetup{btx:apa:cite:author:year}
 \stopsetups
 
-% The following differs from the default by including the labels p. and pp.
+% used in publ-imp-page.mkvi
 
-\startsetups btx:apa:list:page
-    \fastsetup{\s!btx:\s!page:concat}
+\startsetups [btx:apa:list:page-or-pages]
     \ifx\currentbtxlastpage\empty
         \btxlabeltext{apa:page}
     \else
         \btxlabeltext{apa:pages}
     \fi
     \btxnbsp
-    \ifconditional\btxinteractive
-        \goto {
-            \currentbtxfirstpage
-        } [
-            internal(\currentbtxfirstinternal)
-        ]
-        \ifx\currentbtxlastpage\empty \else
-            \btxparameter\c!pageconnector
-            \goto {
-                \currentbtxlastpage
-            } [
-                internal(\currentbtxlastinternal)
-            ]
-        \fi
-    \else
-        \currentbtxfirstpage
-        \ifx\currentbtxlastpage\empty \else
-            \btxparameter\c!pageconnector
-            \currentbtxlastpage
-        \fi
-    \fi
 \stopsetups
 
 % The sameauthor feature may not be APA compliant
@@ -669,7 +663,6 @@
       [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
        \c!height=1.5\linewidth]% \linewidth is just too thin with respect to font strokes...
 \stopsetups
-
 
 \startsetups [apa:list:sameauthor:\v!empty]
     \kern\dimexpr\listparameter\c!margin-\interwordspace\relax
@@ -717,7 +710,7 @@
             \begingroup
                 \language[\mainbtxlanguage]
                 \btxleftbracket
-                \btxusecommand [apa:list:title:\currentbtxcategory] {
+                \btxusecommand [apa:\s!list:title:\currentbtxcategory] {
                     \btxflush{#title:\mainbtxlanguage}
                 }
                 \btxrightbracket
@@ -727,20 +720,22 @@
 \stoptexdefinition
 
 \starttexdefinition btx:apa:composed-title #title
-    \begingroup
-        \language[\currentbtxlanguage]
-        \btxusecommand [apa:list:title:\currentbtxcategory] {
-            \btxflush{#title}
-            \btxdoif {sub#title} {
-                \btxcolon
-                \btxflush{sub#title}
+    \btxstartstyleandcolor [apa:\s!list:title:\currentbtxcategory]
+        \begingroup
+            \language[\currentbtxlanguage]
+            \btxusecommand [apa:\s!list:title:\currentbtxcategory] {
+                \btxflush{#title}
+                \btxdoif {sub#title} {
+                    \btxcolon
+                    \btxflush{sub#title}
+                }
             }
-        }
-    \endgroup
-    % which namespace?
-    %\doif{\btxparameter{translate}}\v!yes {
-        \texdefinition{btx:apa:translated-title}{#title}
-    %}
+        \endgroup
+        % which namespace?
+        %\doif{\btxparameter{translate}}\v!yes {
+            \texdefinition{btx:apa:translated-title}{#title}
+        %}
+    \btxstopstyleandcolor
 \stoptexdefinition
 
 \starttexdefinition btx:apa:title
@@ -750,14 +745,10 @@
         \texdefinition{btx:format:inject}
             {url(file:\btxflush{file})}
             {
-                \btxstartstyleandcolor [apa:list:title:\currentbtxcategory]
-                    \texdefinition{btx:apa:composed-title}{title}
-                \btxstopstyleandcolor
+                \texdefinition{btx:apa:composed-title}{title}
             }
     } {
-        \btxstartstyleandcolor [apa:list:title:\currentbtxcategory]
-            \texdefinition{btx:apa:composed-title}{title}
-        \btxstopstyleandcolor
+        \texdefinition{btx:apa:composed-title}{title}
     }
     \btxdoif {title} {
         \btxperiod
@@ -869,9 +860,7 @@
             \texdefinition{btx:apa:author-or-editor} {editor}
         }
         \btxspace
-        \btxstartstyleandcolor[apa:list:title]
-            \texdefinition{btx:apa:composed-title} {booktitle}
-        \btxstopstyleandcolor
+        \texdefinition{btx:apa:composed-title} {booktitle}
         \btxperiod
     }
 \stoptexdefinition
@@ -893,7 +882,7 @@
     \doif {\currentbtxcategory} {techreport} {
         \texdefinition{btx:apa:leftparenthesis-or-comma}
         \btxdoifelse {type} {
-            \btxusecommand [apa:list:type] {
+            \btxusecommand [apa:\s!list:type] {
                 \btxflush{type}
             }
         } {
@@ -937,26 +926,35 @@
     }
 \stoptexdefinition
 
+\starttexdefinition btx:apa:journal
+    \btxstartstyleandcolor[apa:\s!list:journal]
+        \btxusecommand [apa:\s!list:journal] {
+            \btxflush{journal}
+        }
+    \btxstopstyleandcolor
+\stoptexdefinition
+
+\starttexdefinition btx:apa:volume
+    \btxstartstyleandcolor[apa:\s!list:volume]
+        \btxflush{volume}
+    \btxstopstyleandcolor
+\stoptexdefinition
+
  % this could be simplified!
 
 \starttexdefinition btx:apa:journal-volume-number-pages
     \btxdoif {journal} {
         \btxspace
-        \btxstartstyleandcolor[apa:list:journal]
-            \btxusecommand [apa:list:journal] {
-                \btxflush{journal}
-            }
+        \texdefinition{btx:apa:journal}
         \btxdoifelse {volume} {
             \btxcomma
-            \btxflush{volume}
-            \btxstopstyleandcolor
+            \texdefinition{btx:apa:volume}
             \btxdoif {number} {
                 %\btxleftparenthesis
                 (\btxflush{number}
                 \btxrightparenthesis
             }
         } {
-            \btxstopstyleandcolor
             \btxdoif {number} {
                 \btxcomma
                 \btxleftparenthesis
@@ -1219,7 +1217,7 @@
     \texdefinition{btx:apa:title-if-not-placed}
     \btxleftparenthesis
     \btxdoifelse {type} {
-        \btxusecommand [apa:list:type] {
+        \btxusecommand [apa:\s!list:type] {
             \btxflush{type}
         }
     } {

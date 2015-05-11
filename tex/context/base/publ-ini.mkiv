@@ -624,20 +624,16 @@
    \setbtxlist % probably already set
    \btx_reset_page
    \setbtxparameterset\s!list\s!page
-   \btxparameter\c!pagecommand
+   \btxparameter\c!command
      {\usebtxstyleandcolor\c!style\c!color
-      \btxparameter\c!pageleft
+      \btxparameter\c!left
       \clf_btxflushpages{\currentbtxdataset}{\currentbtxtag}%
-      \btxparameter\c!pageright}%
+      \btxparameter\c!right}%
    \endgroup}
 
-\unexpanded\def\btxpagesetup#1% nothing yet
+\unexpanded\def\btxpagesetup#1% there will b eno left|right|command|style at this inner level 
   {\begingroup
-   %\setbtxparameterset{\c!page:\s!default}\currentbtxnumbering
-   \btxparameter\c!left
- % \btxparameter\c!command{\publ_fast_setup\plusfive\s!list\s!page}%
    \publ_fast_setup\plusfive\s!list\s!page
-   \btxparameter\c!right
    \endgroup
    \btx_reset_page} % probably not needed
 
@@ -655,6 +651,7 @@
 
 \unexpanded\def\btx_entry_inject
   {\begingroup
+   \redoconvertfont % see (**) in strc-lst, this will become an configuration option
    \edef\currentbtxcategory{\btxfield{category}}%
    \ignorespaces
    \ifconditional\c_btx_list_texts
@@ -1738,8 +1735,6 @@
   %\c!saveinlist=\v!no, % maybe for before/after
    \c!textstate=\v!start,
    \c!width=\v!auto,
-  %\c!pageright=,
-  %\c!pageleft=,
    \c!separator={;\space},
    \c!distance=1.5\emwidth]
 
@@ -1771,7 +1766,8 @@
    \c!separator:names:4=\btxparameter{\c!separator:2}, % between only two names
    \c!separator:2={;\space}, % aka pubsep - separates multiple objects
    \c!separator:3=\btxparameter{separator:2}, % before last object in a list
-   \c!separator:4=\btxparameter{separator:2}] % between only two objects
+   \c!separator:4=\btxparameter{separator:2}, % between only two objects
+   \c!pagestate=\v!stop]
 
 % Do we want these in the format? Loading them delayed is somewhat messy.
 

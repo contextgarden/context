@@ -83,7 +83,12 @@
 \definebtx
   [aps:\s!list:\s!page]
   [aps:\s!list]
-  [\c!left={\space}]
+  [\c!separator:2={,\space},
+   \c!separator:3={,\space\btxlabeltext{aps:and}\space},
+   \c!separator:4={\space\btxlabeltext{aps:and}\space},
+   \c!left={\btxleftparenthesis},
+   \c!right={\btxrightparenthesis},
+   \c!command={\wordright}]
 
 \definebtx
   [aps:\s!list:numbering]
@@ -114,15 +119,18 @@
 
 \definebtx
   [aps:\s!list:journal]
+  [aps:\s!list]
   [\c!style=\v!italic]
   %command=\btxexpandedjournal] % btxabbreviatedjournal
 
 \definebtx
   [aps:\s!list:volume]
+  [aps:\s!list]
   [\c!style=\v!bold]
 
 \definebtx
   [aps:\s!list:title]
+  [aps:\s!list]
   [\c!style=\v!italic,
    \c!command=\Word]
 
@@ -558,35 +566,15 @@
     \fastsetup{btx:aps:cite:author:year}
 \stopsetups
 
-\startsetups [btx:aps:list:page]
-    \fastsetup{\s!btx:\s!page:concat}
+% used in publ-imp-page.mkvi
+
+\startsetups [btx:aps:list:page-or-pages]
     \ifx\currentbtxlastpage\empty
         \btxlabeltext{aps:page}
     \else
         \btxlabeltext{aps:pages}
     \fi
     \btxnbsp
-    \ifconditional\btxinteractive
-        \goto {
-            \currentbtxfirstpage
-        } [
-            internal(\currentbtxfirstinternal)
-        ]
-        \ifx\currentbtxlastpage\empty \else
-            \btxparameter\c!pageconnector
-            \goto {
-                \currentbtxlastpage
-            } [
-                internal(\currentbtxlastinternal)
-            ]
-        \fi
-    \else
-        \currentbtxfirstpage
-        \ifx\currentbtxlastpage\empty \else
-            \btxparameter\c!pageconnector
-            \currentbtxlastpage
-        \fi
-    \fi
 \stopsetups
 
 %D Instead of texdefinitions without arguments, we could have used setups but in my
@@ -610,16 +598,18 @@
 %D author or editor or publisher or title or ""
 
 \starttexdefinition btx:aps:composed-title #title
-    \begingroup
-        \language[\currentbtxlanguage]
-        \btxusecommand [aps:list:title:\currentbtxcategory] {
-            \btxflush{#title}
-            \btxdoif {sub#title} {
-                \btxcolon
-                \btxflush{sub#title}
+    \btxstartstyleandcolor [aps:\s!list:title:\currentbtxcategory]
+        \begingroup
+            \language[\currentbtxlanguage]
+            \btxusecommand [aps:\s!list:title:\currentbtxcategory] {
+                \btxflush{#title}
+                \btxdoif {sub#title} {
+                    \btxcolon
+                    \btxflush{sub#title}
+                }
             }
-        }
-    \endgroup
+        \endgroup
+    \btxstopstyleandcolor
 \stoptexdefinition
 
 \starttexdefinition btx:aps:title
@@ -629,14 +619,10 @@
             \texdefinition{btx:format:inject}
                 {url(file:\btxflush{file})}
                 {
-                    \btxstartstyleandcolor [aps:list:title:\currentbtxcategory]
-                        \texdefinition{btx:aps:composed-title}{title}
-                    \btxstopstyleandcolor
+                    \texdefinition{btx:aps:composed-title}{title}
                 }
         } {
-            \btxstartstyleandcolor [aps:list:title:\currentbtxcategory]
-                \texdefinition{btx:aps:composed-title}{title}
-            \btxstopstyleandcolor
+            \texdefinition{btx:aps:composed-title}{title}
         }
         \btxcomma
     }
@@ -692,9 +678,7 @@
             \texdefinition{btx:aps:author-or-editor} {editor}
         }
         \btxspace
-        \btxstartstyleandcolor[aps:list:title]
-            \texdefinition{btx:aps:composed-title} {booktitle}
-        \btxstopstyleandcolor
+        \texdefinition{btx:aps:composed-title} {booktitle}
         \btxcomma
     }
 \stoptexdefinition
@@ -746,11 +730,13 @@
 
 \starttexdefinition btx:aps:journal-volume-year
     \btxdoif {journal} {
-        % expandedjournal abbreviatedjournal
-        \btxflush{expandedjournal -> journal}
+        \btxstartstyleandcolor [aps:\s!list:journal]
+            % expandedjournal abbreviatedjournal
+            \btxflush{expandedjournal -> journal}
+        \btxstopstyleandcolor
         \btxdoifelse {volume} {
             \btxspace
-            \btxstartstyleandcolor [aps:list:volume]
+            \btxstartstyleandcolor [aps:\s!list:volume]
                 \btxflush{volume}
             \btxstopstyleandcolor
             \btxdoif {number} {

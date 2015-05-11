@@ -13,45 +13,17 @@
 
 \unprotect
 
-\definebtx
-  [\s!page] % or just outer level
-  [\c!pagestate=\v!stop,
-   \c!pageleft=\btxleftparenthesis, % see below!!
-   \c!pageright=\btxrightparenthesis,
-   \c!pagesep={,\space},
-   \c!lastpagesep={,\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!finalpagesep={\space\btxlabeltext{\currentbtxspecification:and}\space},
-   \c!pageconnector=\endash]
-
-\definebtx
-  [\s!page:\s!list]
-  [\s!page]
-  [\c!pagecommand={\wordright}]
-
-\startsetups \s!btx:\s!page:concat
+\startsetups \s!btx:\s!list:\s!page:concat
     \ifcase\currentbtxoverflow
-        \ifcase\currentbtxconcat
-        \or % first
-        \or % second
-            \btxparameter\c!pagesep
-        \or % second of two
-            \btxparameter\c!lastpagesep
-        \or % last
-            \btxparameter\c!finalpagesep
-        \fi
+        \btxparameter{\c!separator:\number\currentbtxconcat}
     \fi
 \stopsetups
 
 % for the moment we have only one variant
 
 \startsetups [\s!btx:\s!list:\s!page]
-    \fastsetup{\s!btx:\s!page:concat}
-  % \ifx\currentbtxlastpage\empty
-  %     p.
-  % \else
-  %     pp.
-  % \fi
-  % \btxnbsp
+    \fastsetup{\s!btx:\s!list:\s!page:concat}
+    \fastsetup{\s!btx:\currentbtxspecification:\s!list:page-or-pages}
     \ifconditional\btxinteractive
         \goto {
             \currentbtxfirstpage
@@ -59,7 +31,8 @@
             internal(\currentbtxfirstinternal)
         ]
         \ifx\currentbtxlastpage\empty \else
-            \btxparameter\c!pageconnector
+            %\btxparameter\c!pageconnector
+            \btxparameter\c!range
             \goto {
                 \currentbtxlastpage
             } [
@@ -69,7 +42,7 @@
     \else
         \currentbtxfirstpage
         \ifx\currentbtxlastpage\empty \else
-            \btxparameter\c!pageconnector
+            \btxparameter\c!range
             \currentbtxlastpage
         \fi
     \fi

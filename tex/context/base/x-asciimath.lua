@@ -714,15 +714,18 @@ for k, v in next, characters.data do
         reserved[name] = { true, utfchar(k) }
     end
     local spec = v.mathspec
---     if spec then
---         for i=1,#spec do
---             local name = spec[i].name
---             if name and not reserved[name] then
---                 reserved[name] = { true, utfchar(k) }
---             end
---         end
---     end
+ -- if spec then
+ --     for i=1,#spec do
+ --         local name = spec[i].name
+ --         if name and not reserved[name] then
+ --             reserved[name] = { true, utfchar(k) }
+ --         end
+ --     end
+ -- end
 end
+
+reserved.P  = nil
+reserved.S  = nil
 
 local isbinary = {
     ["\\frac"]              = true,

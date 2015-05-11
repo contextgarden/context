@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['mtx-flac'] = {
 
 local sub, match, byte, lower = string.sub, string.match, string.byte, string.lower
 local readstring, readnumber = io.readstring, io.readnumber
-local concat, sortedpairs = table.concat, table.sortedpairs
+local concat, sortedpairs, sort, keys = table.concat, table.sortedpairs, table.sort, table.keys
 local tonumber = tonumber
 local tobitstring = number.tobitstring
 local lpegmatch = lpeg.match
@@ -105,7 +105,7 @@ function flac.savecollection(pattern,filename)
     local files = dir.glob(pattern)
     flac.report("%s files found, analyzing files",#files)
     local music = { }
-    table.sort(files)
+    sort(files)
     for i=1,#files do
         local name = files[i]
         local data = flac.getmetadata(name)
@@ -137,8 +137,30 @@ function flac.savecollection(pattern,filename)
             end
         end
     end
- -- inspect(music)
-    local nofartists, nofalbums, noftracks, noferrors = 0, 0, 0, 0
+    --
+    local nofartists = 0
+    local nofalbums  = 0
+    local noftracks  = 0
+    local noferrors  = 0
+    --
+    local allalbums
+    local function compare(a,b)
+        local ya = allalbums[a].year or 0
+        local yb = allalbums[b].year or 0
+        if ya == yb then
+            return a < b
+        else
+            return ya < yb
+        end
+    end
+    local function getlist(albums)
+        allalbums = albums
+        local list = keys(albums)
+        sort(list,compare)
+        return list
+    end
+    --
+    filename = file.addsuffix(filename,"xml")
     local f = io.open(filename,"wb")
     if f then
         flac.report("saving data in file %q",filename)
@@ -149,15 +171,7 @@ function flac.savecollection(pattern,filename)
             f:write("\t<artist>\n")
             f:write("\t\t<name>",lpegmatch(p_escaped,artist),"</name>\n")
             f:write("\t\t<albums>\n")
-            local list = table.keys(albums)
-            table.sort(list,function(a,b)
-                local ya, yb = albums[a].year or 0, albums[b].year or 0
-                if ya == yb then
-                    return a < b
-                else
-                    return ya < yb
-                end
-            end)
+            local list = getlist(albums)
             nofalbums = nofalbums + #list
             for nofalbums=1,#list do
                 local album = list[nofalbums]
@@ -186,6 +200,40 @@ function flac.savecollection(pattern,filename)
         f:write("</collection>\n")
         f:close()
         flac.report("%s tracks of %s albums of %s artists saved in %q (%s errors)",noftracks,nofalbums,nofartists,filename,noferrors)
+        -- a secret option for alan braslau
+        if environment.argument("bibtex") then
+            filename = file.replacesuffix(filename,"bib")
+            local f = io.open(filename,"wb")
+            if f then
+                local n = 0
+                for artist, albums in sortedpairs(music) do
+                    local list = getlist(albums)
+                    for nofalbums=1,#list do
+                        n = n + 1
+                        local album  = list[nofalbums]
+                        local data   = albums[album]
+                        local tracks = data.tracks
+                        f:write("@cd{entry-",n,",\n")
+                        f:write("\tartist   = {",artist,"},\n")
+                        f:write("\ttitle    = {",album or "no title","},\n")
+                        f:write("\tyear     = {",data.year or 0,"},\n")
+                        f:write("\ttracks   = {",#tracks,"},\n")
+                        for i=1,#tracks do
+                            local track = tracks[i]
+                            if track then
+                                noftracks = noftracks + 1
+                                f:write("\ttrack:",i,"  = {",track.title,"},\n")
+                                f:write("\tlength:",i," = {",track.length,"},\n")
+                            end
+                        end
+                        f:write("}\n")
+                    end
+                end
+                f:close()
+                flac.report("additional bibtex file generated: %s",filename)
+            end
+        end
+        --
     else
         flac.report("unable to save data in file %q",filename)
     end

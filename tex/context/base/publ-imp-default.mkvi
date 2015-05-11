@@ -17,11 +17,6 @@
 
 \startbtxrenderingdefinitions[\s!default]
 
-%?? \definebtx [\s!default:\s!page  ] [\s!page]
-%?? \definebtx [\s!default:\s!cite  ] [\s!cite]
-%?? \definebtx [\s!default:\s!list  ] [\s!list]
-%?? \definebtx [\s!default:\s!author] [\s!author]
-
 \definebtxrendering
   [\s!default]
   [\c!specification=\s!default,
@@ -56,7 +51,11 @@
 \definebtx
   [\s!default:\s!list:\s!page]
   [\s!default:\s!list]
-  [\c!left={\space}]
+  [\c!separator:2={,\space},
+   \c!separator:3={,\space\btxlabeltext{default:and}\space},
+   \c!separator:4={\space\btxlabeltext{default:and}\space},
+   \c!left={\btxleftparenthesis},
+   \c!right={\btxrightparenthesis}]
 
 \definebtx
   [\s!default:\s!list:numbering]

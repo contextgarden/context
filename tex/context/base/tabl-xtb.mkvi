@@ -351,7 +351,8 @@
 % in text flow: headers and footers only once
 
 \setvalue{\??xtableflushsplit\v!no}%
-  {\noindent % \dontleavehmode % else no leftskip etc
+  {\noindentation % better than \noindent (no \dontleavehmode here) % else no leftskip etc
+  %\ignorespaces
    \clf_x_table_flush
      method {\v!normal}%
    \relax

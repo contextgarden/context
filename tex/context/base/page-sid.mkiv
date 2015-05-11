@@ -661,14 +661,39 @@
      \global\settrue\c_page_floats_room
    \fi}
 
+% \def\page_sides_prepare_space
+%   {\par
+%    % no longer needed  \whitespace
+%    \begingroup
+%    \forgetall
+%    \reseteverypar
+%    \verticalstrut
+%    \vskip-\struttotal
+%    \endgroup}
+
+\installtextracker
+  {sidefloats.anchor}
+  {\let\page_sides_anchor\page_sides_anchor_yes}
+  {\let\page_sides_anchor\page_sides_anchor_nop}
+
+\def\page_sides_anchor_yes
+  {\darkred
+   \hskip-5\emwidth
+   \vrule\s!height.05\exheight\s!depth.05\exheight\s!width10\emwidth}
+
+\def\page_sides_anchor_nop
+  {\strut}
+
+\let\page_sides_anchor\page_sides_anchor_nop
+
 \def\page_sides_prepare_space
   {\par
-   % no longer needed  \whitespace
    \begingroup
-   \forgetall
    \reseteverypar
-   \verticalstrut
+   \dontleavehmode\hbox to \zeropoint{\page_sides_anchor\hss\strut}%
+   \vskip-\parskip
    \vskip-\struttotal
+   \inhibitblank
    \endgroup}
 
 \def\page_sides_handle_float#1% grid (4) is rather experimental

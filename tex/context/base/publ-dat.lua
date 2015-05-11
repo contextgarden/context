@@ -327,30 +327,33 @@ function publications.parenttag(dataset,tag)
         local parent  = tags[1]
         local current = datasets[dataset]
         local luadata = current.luadata
+        local details = current.details
         local first   = luadata[parent]
         if first then
-            local combined = first.combined
-            if not combined then
-                combined = { }
-                first.combined = combined
+            local detail   = details[parent]
+            local children = detail.children
+            if not children then
+                children = { }
+                detail.children = children
             end
             -- add new ones but only once
             for i=2,#tags do
                 local tag = tags[i]
-                for j=1,#combined do
-                    if combined[j] == tag then
+                for j=1,#children do
+                    if children[j] == tag then
                         tag = false
                     end
                 end
                 if tag then
                     local entry = luadata[tag]
                     if entry then
-                        combined[#combined+1] = tag
-                        if combined[tag] then
-                            report("error in combination, dataset %a, tag %a, parent %a, ignored %a",dataset,tag,combined[tag],parent)
+                        local detail = details[tag]
+                        children[#children+1] = tag
+                        if detail.parent then
+                            report("error in combination, dataset %a, tag %a, parent %a, ignored %a",dataset,tag,detail.parent,parent)
                         else
                             report("combining, dataset %a, tag %a, parent %a",dataset,tag,parent)
-                            current.combined[tag] = parent
+                            detail.parent = parent
                         end
                     end
                 end
@@ -388,7 +391,6 @@ function publications.new(name)
             -- used specifications
         },
         suffixed   = false,
-        combined   = { },
     }
     -- we delay details till we need it (maybe we just delay the
     -- individual fields but that is tricky as there can be some

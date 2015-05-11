@@ -486,28 +486,26 @@ local findallused do
         local tags     = not find and settings_to_array(reference)
         local todo     = { }
         local okay     = { } -- only if mark
-        local set      = usedentries[dataset]
-        local valid    = current.luadata
+        local allused  = usedentries[dataset] or { }
+        local luadata  = current.luadata
+        local details  = current.details
         local ordered  = current.ordered
-        local combined = current.combined
         if set then
             local registered = { }
             local function register(tag)
-                if registered[tag] then
-                    return
-                else
-                    registered[tag] = true
-                end
-                local entry = set[tag]
+                local entry = allused[tag]
                 if not entry then
-                    local parent = combined[tag]
+                    local parent = details[tag].parent
                     if parent then
-                        entry = set[parent]
+                        entry = allused[parent]
                     end
                     if entry then
                         report("using reference of parent %a for %a",parent,tag)
                         tag = parent
                     end
+                end
+                if registered[tag] then
+                    return
                 end
                 if entry then
                     -- only once in a list but at some point we can have more (if we
@@ -547,6 +545,7 @@ local findallused do
                     okay[#okay+1] = entry
                 end
                 todo[tag] = true
+                registered[tag] = true
                 return tag
             end
             if reference == "*" then
@@ -573,7 +572,7 @@ local findallused do
             else
                 for i=1,#tags do
                     local tag = tags[i]
-                    if valid[tag] then
+                    if luadata[tag] then
                         tag = register(tag)
                         tags[i] = tag
                     elseif not reported[tag] then
@@ -589,7 +588,7 @@ local findallused do
                     local entry = ordered[i]
                     if find(entry) then
                         local tag    = entry.tag
-                        local parent = combined[tag]
+                        local parent = details[tag].parent
                         if parent then
                             tag = parent
                         end
@@ -604,12 +603,12 @@ local findallused do
             else
                 for i=1,#tags do
                     local tag    = tags[i]
-                    local parent = combined[tag]
+                    local parent = details[tag].parent
                     if parent then
                         tag = parent
                         tags[i] = tag
                     end
-                    if valid[tag] then
+                    if luadata[tag] then
                         todo[tag] = true
                     elseif not reported[tag] then
                         reported[tag] = true
@@ -1825,7 +1824,6 @@ do
         local current   = datasets[dataset]
         local luadata   = current.luadata
         local details   = current.details
-        local combined  = current.combined
         local newlist   = { }
         local lastreferencenumber = groups[group] -- current.lastreferencenumber or 0
         for i=1,#list do
@@ -1847,51 +1845,36 @@ do
         else
             list = newlist
         end
---         local combined = { }
-        local newlist  = { }
---         for i=1,#list do
---             local userdata = list[i][4]
---             if userdata then
---                 local com = userdata.btxcom
---                 if com then
---                     com = settings_to_array(com)
---                     for i=1,#com do
---                         local c = com[i]
---                         if not combined[c] then
---                             report("ignoring list entry for tag %a due to combined usage in %a ",c,tag)
---                             combined[c] = true
---                         end
---                     end
---                 end
---             end
---         end
-        local tagtolistindex     = { }
+        local newlist        = { }
+        local tagtolistindex = { }
         rendering.tagtolistindex = tagtolistindex
         for i=1,#list do
             local li    = list[i]
             local tag   = li[1]
-            if not combined[tag] then
-                local entry = luadata[tag]
-                if entry then
-                    local detail = details[tag]
-                    if detail then
-                        local referencenumber = detail.referencenumber
-                        if not referencenumber then
-                            lastreferencenumber    = lastreferencenumber + 1
-                            referencenumber        = lastreferencenumber
-                            detail.referencenumber = lastreferencenumber
-                        end
-                        li[3] = referencenumber
-                    else
-                        report("missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
-                        -- weird, this shouldn't happen .. all have a detail
-                        lastreferencenumber = lastreferencenumber + 1
-                        details[tag] = { referencenumber = lastreferencenumber }
-                        li[3] = lastreferencenumber
+            local entry = luadata[tag]
+            if entry then
+                local detail = details[tag]
+                if not detail then
+                    -- fatal error
+                    report("fatal error, missing details for tag %a in dataset %a (enhanced: %s)",tag,dataset,current.enhanced and "yes" or "no")
+                 -- lastreferencenumber = lastreferencenumber + 1
+                 -- details[tag] = { referencenumber = lastreferencenumber }
+                 -- li[3] = lastreferencenumber
+                 -- tagtolistindex[tag] = i
+                 -- newlist[#newlist+1] = li
+                elseif detail.parent then
+                    -- skip this one
+                else
+                    local referencenumber = detail.referencenumber
+                    if not referencenumber then
+                        lastreferencenumber    = lastreferencenumber + 1
+                        referencenumber        = lastreferencenumber
+                        detail.referencenumber = lastreferencenumber
                     end
+                    li[3] = referencenumber
                     tagtolistindex[tag] = i
+                    newlist[#newlist+1] = li
                 end
-                newlist[#newlist+1] = li
             end
         end
         groups[group] = lastreferencenumber
@@ -2108,10 +2091,10 @@ do
             ctx_btxstartlistentry()
             ctx_btxsetcurrentlistentry(i) -- redundant
             ctx_btxsetcurrentlistindex(listindex or 0)
-            local combined = entry.combined
+            local children = detail.children
             local language = entry.language
-            if combined then
-                ctx_btxsetcombis(concat(combined,","))
+            if children then
+                ctx_btxsetcombis(concat(children,","))
             end
             ctx_btxsetcategory(entry.category or "unknown")
             ctx_btxsettag(tag)
@@ -2513,7 +2496,7 @@ do
                     language  = ldata.language,
                     dataset   = dataset,
                     tag       = tag,
-                    combis    = entry.userdata.btxcom,
+                 -- combis    = entry.userdata.btxcom,
                  -- luadata   = ldata,
                 }
                 setter(data,dataset,tag,entry)
@@ -2560,10 +2543,10 @@ do
                 if language then
                     ctx_btxsetlanguage(language)
                 end
-local combis = entry.combis
-if combis then
-    ctx_btxsetcombis(combis)
-end
+             -- local combis = entry.combis
+             -- if combis then
+             --     ctx_btxsetcombis(combis)
+             -- end
                 if not getter(entry,last,nil,specification) then
                     ctx_btxsetfirst("") -- (f_missing(tag))
                 end
