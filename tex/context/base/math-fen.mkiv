@@ -219,6 +219,8 @@
 \newconditional\c_math_fenced_done
 \newconditional\c_math_fenced_unknown  \settrue\c_math_fenced_unknown
 
+% maybe use \detokenize ...
+
 \def\math_left
   {\settrue\c_math_fenced_done
    \edef\m_math_left{\meaning\nexttoken}%
@@ -234,6 +236,21 @@
    \edef\m_math_middle{\meaning\nexttoken}%
    \csname\??mathmiddle\ifcsname\??mathmiddle\m_math_middle\endcsname\m_math_middle\else\s!unknown\fi\endcsname}
 
+\unexpanded\def\lfence#1%
+  {\settrue\c_math_fenced_done
+   \edef\m_math_left{\meaning#1}%
+   \csname\??mathleft\ifcsname\??mathleft\m_math_left\endcsname\m_math_left\else\s!unknown\fi\endcsname}
+
+\unexpanded\def\rfence#1%
+  {\settrue\c_math_fenced_done
+   \edef\m_math_right{\meaning#1}%
+   \csname\??mathright\ifcsname\??mathright\m_math_right\endcsname\m_math_right\else\s!unknown\fi\endcsname}
+
+\unexpanded\def\mfence#1%
+  {\settrue\c_math_fenced_done
+   \edef\m_math_middle{\meaning#1}%
+   \csname\??mathmiddle\ifcsname\??mathmiddle\m_math_middle\endcsname\m_math_middle\else\s!unknown\fi\endcsname}
+
 \setvalue{\??mathleft  \s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalleft  \nexttoken\fi}
 \setvalue{\??mathright \s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalright \nexttoken\fi}
 \setvalue{\??mathmiddle\s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalmiddle\nexttoken\fi}
@@ -242,58 +259,49 @@
   {\expandafter\let\csname\??mathleft \meaning#1\endcsname#2%
    \expandafter\let\csname\??mathright\meaning#3\endcsname#4}
 
-\expandafter\let\csname\??mathleft \meaning [\endcsname\Lbracket
-\expandafter\let\csname\??mathleft \meaning (\endcsname\Lparent
-\expandafter\let\csname\??mathleft \meaning <\endcsname\Langle
-\expandafter\let\csname\??mathleft \meaning ⟨\endcsname\Langle
-\expandafter\let\csname\??mathleft \meaning ⟪\endcsname\Ldoubleangle
-\expandafter\let\csname\??mathleft \meaning {\endcsname\Lbrace
-\expandafter\let\csname\??mathleft \meaning |\endcsname\Lbar
-\expandafter\let\csname\??mathleft \meaning ‖\endcsname\Ldoublebar
-\expandafter\let\csname\??mathleft \meaning ⦀\endcsname\Ltriplebar
-\expandafter\let\csname\??mathleft \meaning /\endcsname\Lsolidus
-\expandafter\let\csname\??mathleft \meaning .\endcsname\Lnothing
+\normalexpanded{\installmathfencepair {|\detokenize {|}} \Ldoublebar {|\detokenize {|}} \Rdoublebar}
+\normalexpanded{\installmathfencepair {|\detokenize{||}} \Ltriplebar {|\detokenize{||}} \Rtriplebar}
 
-\expandafter\let\csname\??mathright\meaning ]\endcsname\Rbracket
-\expandafter\let\csname\??mathright\meaning )\endcsname\Rparent
-\expandafter\let\csname\??mathright\meaning >\endcsname\Rangle
-\expandafter\let\csname\??mathright\meaning ⟩\endcsname\Rangle
-\expandafter\let\csname\??mathright\meaning ⟫\endcsname\Rdoubleangle
-\expandafter\let\csname\??mathright\meaning }\endcsname\Rbrace
-\expandafter\let\csname\??mathright\meaning |\endcsname\Rbar
-\expandafter\let\csname\??mathright\meaning ‖\endcsname\Rdoublebar
-\expandafter\let\csname\??mathright\meaning ⦀\endcsname\Rtriplebar
-\expandafter\let\csname\??mathright\meaning /\endcsname\Rsolidus
-\expandafter\let\csname\??mathright\meaning .\endcsname\Rnothing
+\installmathfencepair \bgroup \Lbrace         \egroup \Rbrace
+\installmathfencepair \egroup \Rbracemirrored \bgroup \Lbracemirrored
 
-\expandafter\let\csname\??mathright\meaning [\endcsname\Lbracketmirrored
-\expandafter\let\csname\??mathright\meaning (\endcsname\Lparentmirrored
-\expandafter\let\csname\??mathright\meaning <\endcsname\Langlemirrored
-\expandafter\let\csname\??mathright\meaning ⟨\endcsname\Langlemirrored
-\expandafter\let\csname\??mathright\meaning ⟪\endcsname\Ldoubleanglemirrored
-\expandafter\let\csname\??mathright\meaning {\endcsname\Lbracemirrored
-%expandafter\let\csname\??mathright\meaning |\endcsname\Lbarmirrored
-%expandafter\let\csname\??mathright\meaning ‖\endcsname\Ldoublebarmirrored
-%expandafter\let\csname\??mathright\meaning ⦀\endcsname\Ltriplebarmirrored
-\expandafter\let\csname\??mathright\meaning /\endcsname\Lsolidusmirrored
-\expandafter\let\csname\??mathright\meaning .\endcsname\Lnothingmirrored
+\installmathfencepair . \Lnothing            . \Rnothing
+\installmathfencepair . \Rnothingmirrored    . \Lnothingmirrored
 
-\expandafter\let\csname\??mathleft \meaning ]\endcsname\Rbracketmirrored
-\expandafter\let\csname\??mathleft \meaning )\endcsname\Rparentmirrored
-\expandafter\let\csname\??mathleft \meaning >\endcsname\Ranglemirrored
-\expandafter\let\csname\??mathleft \meaning ⟩\endcsname\Ranglemirrored
-\expandafter\let\csname\??mathleft \meaning ⟫\endcsname\Rdoubleanglemirrored
-\expandafter\let\csname\??mathleft \meaning }\endcsname\Rbracemirrored
-%expandafter\let\csname\??mathleft \meaning |\endcsname\Rbarmirrored
-%expandafter\let\csname\??mathleft \meaning ‖\endcsname\Rdoublebarmirrored
-%expandafter\let\csname\??mathleft \meaning ⦀\endcsname\Rtriplebarmirrored
-\expandafter\let\csname\??mathleft \meaning /\endcsname\Rsolidusmirrored
-\expandafter\let\csname\??mathleft \meaning .\endcsname\Rnothingmirrored
+\installmathfencepair [ \Lbracket            ] \Rbracket
+\installmathfencepair ] \Rbracketmirrored    [ \Lbracketmirrored
 
-\expandafter\let\csname\??mathleft \meaning ⌊\endcsname\Lfloor
-\expandafter\let\csname\??mathright\meaning ⌋\endcsname\Rfloor
-\expandafter\let\csname\??mathleft \meaning ⌈\endcsname\Lceil
-\expandafter\let\csname\??mathright\meaning ⌉\endcsname\Rceil
+\installmathfencepair ( \Lparent             ) \Rparent
+\installmathfencepair ) \Rparentmirrored     ( \Lparentmirrored
+
+\installmathfencepair < \Langle              > \Rangle
+\installmathfencepair > \Ranglemirrored      < \Langlemirrored
+
+\installmathfencepair / \Lsolidus            / \Rsolidus
+%installmathfencepair / \Rsolidusmirrored    / \Lsolidusmirrored
+
+\installmathfencepair | \Lbar                | \Rbar
+%installmathfencepair | \Rbarmirrored        | \Lbarmirrored
+
+\installmathfencepair ⌊ \Lfloor              ⌋ \Rfloor
+\installmathfencepair ⌋ \Rfloormirrored      ⌊ \Lfloormirrored
+\installmathfencepair ⌈ \Lceil               ⌉ \Rceil
+\installmathfencepair ⌉ \Rceilmirrored       ⌈ \Lceilmirrored
+
+\installmathfencepair ⟨ \Langle              ⟩ \Rangle
+\installmathfencepair ⟩ \Ranglemirrored      ⟨ \Langlemirrored
+
+\installmathfencepair ⟪ \Ldoubleangle         ⟫ \Rdoubleangle
+\installmathfencepair ⟫ \Rdoubleanglemirrored ⟪ \Ldoubleanglemirrored
+
+\installmathfencepair ‖ \Ldoublebar           ‖ \Rdoublebar
+%installmathfencepair ‖ \Rdoublebarmirrored   ‖ \Ldoublebarmirrored
+
+\installmathfencepair ⦀ \Ltriplebar           ⦀ \Rtriplebar
+%installmathfencepair ⦀ \Rtriplebarmirrored   ⦀ \Ltriplebarmirrored
+
+% \installmathfencepair { \Lbrace          } \Rbrace
+% \installmathfencepair } \Rbracemirrored  { \Lbracemirrored
 
 % todo paren parent
 

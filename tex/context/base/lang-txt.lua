@@ -181,6 +181,11 @@ data.labels={
     sk="cotg",
    },
   },
+  diff={
+   labels={
+    en="d",
+   },
+  },
   deg={
    labels={
     cz="deg",

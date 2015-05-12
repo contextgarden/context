@@ -1,9 +1,9 @@
 
 %D \module
-%D   [       file=typo-cap,
-%D        version=2009.03.27, % code moved from core-spa.mkiv
+%D   [       file=typo-chr,
+%D        version=2015.01.01, % or about that time
 %D          title=\CONTEXT\ Typesetting Macros,
-%D       subtitle=Capping,
+%D       subtitle=Cleaning Up Mess,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -16,13 +16,34 @@
 
 \unprotect
 
-%D Maybe we need a more clever system: either command or style mode etc. so
-%D that we can avoid the grouped mess in a simple style switch.
+%D This is a very experimental feature, mostly for Alan and me to play with in
+%D publication hell.
+%D
+%D \startbuffer
+%D before, after\par
+%D before,\removepunctuation after\par
+%D before\markcontent[gone]{\darkred   gone}\removemarkedcontent[gone]after\par
+%D before\markcontent[kept]{\darkgreen kept}\removemarkedcontent[gone]after\par
+%D \markcontent[gone]{\darkred   gone}\removemarkedcontent[gone]after\par
+%D \markcontent[kept]{\darkgreen kept}\removemarkedcontent[gone]after\par
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer\blank
+%D
+%D This feature is line based and is only to be used for small snippets of text, for
+%D instance when combining bit and pieces where keeping a state is complex compared
+%D to cleaning up unwanted stuff.
 
 \registerctxluafile{typo-chr}{1.001}
 
-\unexpanded\def\removepunctuation{\clf_pickuppunctuation action {remove}\relax}
-\unexpanded\def\pushpunctuation  {\clf_pickuppunctuation action   {push}\relax}
-\unexpanded\def\poppunctuation   {\clf_pickuppunctuation action    {pop}\relax}
+\definesystemattribute[marked][public]
 
-\protect
+\unexpanded\def\removepunctuation      {\clf_pickuppunctuation action {remove}\relax} % the first experiment
+\unexpanded\def\pushpunctuation        {\clf_pickuppunctuation action   {push}\relax} % the first experiment
+\unexpanded\def\poppunctuation         {\clf_pickuppunctuation action    {pop}\relax} % the first experiment
+\unexpanded\def\markcontent        [#1]{\groupedcommand{\clf_markcontent{#1}}{}}
+\unexpanded\def\startmarkedcontent [#1]{\begingroup\clf_markcontent{#1}}
+           \let\stopmarkedcontent       \endgroup
+\unexpanded\def\removemarkedcontent[#1]{\clf_pickupmarkedcontent action {remove} mark {#1}\relax}
+
+\protect \endinput

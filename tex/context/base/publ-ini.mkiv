@@ -631,7 +631,7 @@
       \btxparameter\c!right}%
    \endgroup}
 
-\unexpanded\def\btxpagesetup#1% there will b eno left|right|command|style at this inner level 
+\unexpanded\def\btxpagesetup#1% there will b eno left|right|command|style at this inner level
   {\begingroup
    \publ_fast_setup\plusfive\s!list\s!page
    \endgroup
@@ -1357,6 +1357,12 @@
 \let\citation  \btxcitation
 \let\nocite    \btxnocitation
 \let\nocitation\btxnocitation
+
+\unexpanded\def\cite  {\doifelsenextoptionalcs\btxcitation  \btxdirectcite}
+\unexpanded\def\nocite{\doifelsenextoptionalcs\btxnocitation\btxdirectnocite}
+
+\unexpanded\def\btxdirectcite  #1{\btxcitation  [#1]\relax} % no optional arguments
+\unexpanded\def\btxdirectnocite#1{\btxnocitation[#1]\relax} % no optional arguments
 
 %D Setup helpers, beware, we need to wrap this .. now we need to know
 %D how setups are implemented.

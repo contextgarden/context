@@ -74,6 +74,8 @@ return function(dataset,list,method) -- indexer
         local index = tostring(i)
         local entry = luadata[tag]
         if entry then
+            -- maybe optional: if entry.key then push the keygetter
+            -- in slot 1 and ignore (e.g. author)
             local detail  = details[tag]
             result[i] = {
                 index  = i,
@@ -366,3 +368,10 @@ end
 table.setmetatableindex(sorters,function(t,k) return anything end)
 
 publications.lists.sorters = sorters
+
+-- publications.sortmethods.key = {
+--     sequence = {
+--         { field = "key",   default = "", unknown = "" },
+--         { field = "index", default = "", unknown = "" },
+--     },
+-- }

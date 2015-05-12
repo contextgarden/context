@@ -1210,8 +1210,8 @@ implement {
 }
 
 implement {
-    name    = "savedlistprefixednumber",
-    actions = savedlistprefixednumber,
+    name      = "savedlistprefixednumber",
+    actions   = savedlistprefixednumber,
     arguments = { "string", "integer" }
 }
 

@@ -339,6 +339,10 @@
 \def\currentlistmethod         {entry} % typesetting
 \def\currentlistindex          {0}     % typesetting (maybe also a real counter)
 
+\unexpanded\def\savedlistnumber        #1#2{\clf_savedlistnumber        {#1}\numexpr#2\relax}
+\unexpanded\def\savedlisttitle         #1#2{\clf_savedlisttitle         {#1}\numexpr#2\relax}
+\unexpanded\def\savedlistprefixednumber#1#2{\clf_savedlistprefixednumber{#1}\numexpr#2\relax}
+
 \def\structurelistlocation
   {\clf_listlocation\numexpr\currentlistindex\relax}
 

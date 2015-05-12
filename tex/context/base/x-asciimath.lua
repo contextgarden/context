@@ -957,18 +957,9 @@ for k, v in sortedhash(reserved) do
             k_reserved_different[#k_reserved_different+1] = k
         end
     end
-
-for k, v in next, entities do
-    if not k_unicode[k] then
-        k_unicode[k] = v
-        k_unicode["\\"..k] = v
+    if not find(k,"[^[a-zA-Z]+$]") then
+        k_unicode["\\"..k] = k -- dirty trick, no real unicode
     end
-end
-
-if not find(k,"[^[a-zA-Z]+$]") then
-    k_unicode["\\"..k] = k -- dirty trick, no real unicode
-end
-
     if not find(k,"[^a-zA-Z]") then
         k_reserved_words[#k_reserved_words+1] = k
     end
@@ -980,6 +971,8 @@ local p_reserved =
 
 local p_unicode =
     lpeg.utfchartabletopattern(table.keys(k_unicode)) / k_unicode
+
+-- inspect(k_reserved_different)
 
 local p_texescape = patterns.texescape
 
@@ -1030,8 +1023,8 @@ local m_right = {
     ["]"]  = s_rbracket,
     ["}"]  = s_rbrace,
     ["⟩"]  = s_rangle,
-    ["⌉"] = s_rceil,
-    ["⌋"] = s_rfloor,
+    ["⌉"]  = s_rceil,
+    ["⌋"]  = s_rfloor,
 
  -- [">>"] = s_rangle,   -- why not :>
  -- ["~|"] = s_rceil,
@@ -1088,12 +1081,6 @@ local p_special =
 
 -- open | close :: {: | :}
 
--- local e_parser = Cs ( (
---     p_entity +
---     p_utf_base
--- )^0 )
-
-
 local u_parser = Cs ( (
     patterns.doublequoted +
     P("text") * p_spaces^0 * P("(") * (1-P(")"))^0 * P(")") + -- -- todo: balanced
@@ -1125,9 +1112,8 @@ local function show_state(t,level,state)
     report_asciimath(serialize(t,f_state(level,state)))
 end
 
-local function show_result(original,entified,unicoded,texcoded)
+local function show_result(original,unicoded,texcoded)
     report_asciimath("original > %s",original)
-    report_asciimath("entified > %s",entified)
     report_asciimath("unicoded > %s",unicoded)
     report_asciimath("texcoded > %s",texcoded)
 end
@@ -1301,9 +1287,10 @@ local function collapse_signs(t)
         if isunary[current] then
             local one = t[i+1]
             if not one then
-                m = m + 1
+--                 m = m + 1
                 t[m] = current .. "{}" -- error
-                break
+return t
+--                 break
             end
             if type(one) == "table" then
                 if isleft[one[1]] and isright[one[#one]] then
@@ -1371,7 +1358,8 @@ local function collapse_binaries(t)
             local two = t[i+2]
             if not one then
                 t[m] = current .. "{}{}" -- error
-                break
+return t
+--                 break
             end
             if type(one) == "table" then
                 if isleft[one[1]] and isright[one[#one]] then
@@ -1382,7 +1370,8 @@ local function collapse_binaries(t)
             end
             if not two then
                 t[m] = current .. "{" .. one .. "}{}"
-                break
+return t
+--                 break
             end
             if type(two) == "table" then
                 if isleft[two[1]] and isright[two[#two]] then
@@ -1668,11 +1657,10 @@ local ctx_type        = context and context.type        or function() end
 local ctx_inleft      = context and context.inleft      or function() end
 
 local function convert(str,totex)
-    local entified = str -- lpegmatch(e_parser,str) or str -- when used in text
-    local unicoded = lpegmatch(u_parser,entified) or entified
+    local unicoded = lpegmatch(u_parser,str) or str
     local texcoded = collapse(lpegmatch(a_parser,unicoded))
     if trace_mapping then
-        show_result(str,entified,unicoded,texcoded)
+        show_result(str,unicoded,texcoded)
     end
     if totex then
         ctx_mathematics(texcoded)
@@ -1820,16 +1808,24 @@ asciimath.cleanedup  = cleanedup
 
 -- sin(x) = 1 : 3.3 uncached 1.2 cached , so no real gain (better optimize the converter then)
 
+local uncrapped = {
+    ["%"] = "\\mathpercent",
+    ["&"] = "\\mathampersand",
+    ["#"] = "\\mathhash",
+    ["$"] = "\\mathdollar",
+    ["^"] = "\\Hat{\\enspace}", -- terrible hack ... tex really does it sbest to turn any ^ into a superscript
+    ["_"] = "\\underline{\\enspace}",
+}
+
 local function convert(str)
     if #str > 0 then
-        local entified = str -- lpegmatch(e_parser,str) or str  -- when used in text
-        local unicoded = lpegmatch(u_parser,entified) or entified
+        local unicoded = lpegmatch(u_parser,str) or str
         if lpegmatch(p_onechar,unicoded) then
-            ctx_mathematics(unicoded)
+            ctx_mathematics(uncrapped[unicoded] or unicoded)
         else
             local texcoded = collapse(lpegmatch(a_parser,unicoded))
             if trace_mapping then
-                show_result(str,entified,unicoded,texcoded)
+                show_result(str,unicoded,texcoded)
             end
             if #texcoded == 0 then
                 report_asciimath("error in asciimath: %s",str)
@@ -1846,6 +1842,7 @@ local function convert(str)
     end
 end
 
+
 local context = context
 
 if not context then
@@ -1857,6 +1854,10 @@ if not context then
 --     report_asciimath(cleanedup([[a "αsinsqrtx" b]]))
 --     report_asciimath(cleanedup([[a "α" b]]))
 --     report_asciimath(cleanedup([[//4]]))
+
+-- convert([[\^{1/5}log]])
+-- convert("sqrt")
+-- convert("^")
 
 -- convert("\\frac{a}{b}")
 -- convert("frac{a}{b}")
@@ -2090,5 +2091,3 @@ end
 function show.save(name)
     table.save(name ~= "" and name or "dummy.lua",collected)
 end
-
--- inspect(sortedkeys(reserved))

@@ -603,6 +603,9 @@
    \box\scratchbox
    \endgroup}
 
+\unexpanded\def\mtext#1%
+  {\text{\usemathematicsstyleandcolor\c!textstyle\c!textcolor#1}}
+
 %D The next hack is needed needed for sine, cosine etc.
 
 \let\mathfunction\firstofoneunexpanded
@@ -802,6 +805,13 @@
 \activatemathcharacter\ampersandasciicode
 
 % \activatemathcharacter\primeasciicode
+
+% not needed:
+%
+% \activatemathcharacter\barasciicode
+% \appendtoks
+%     \let |\letterbar
+% \to \everymathematics
 
 % not used:
 %

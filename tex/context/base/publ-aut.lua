@@ -261,9 +261,7 @@ local function splitauthor(author)
 end
 
 local function splitauthorstring(str)
-    if str then
-     -- str = lpegmatch(cleaner,str)
-    else
+    if not str or str == "" then
         return
     end
     nofused = nofused + 1
@@ -284,7 +282,7 @@ local function splitauthorstring(str)
 
     -- we could cache these too but it can become messy .. leave that for later
 
-    local authors    = lpegmatch(andsplitter,str)
+    local authors    = lpegmatch(andsplitter,str) or { } -- maybe fake an author
     local nofauthors = #authors
     for i=1,nofauthors do
         authors[i] = splitauthor(authors[i])
@@ -763,7 +761,7 @@ authorhashers.short = function(authors)
             return concat(t)
         end
     else
-        return utfsub(authors,1,4)
+        return utfsub(authors,1,3)
     end
 end
 
@@ -854,7 +852,7 @@ publications.components.author = components
 
 publications.sortmethods.authoryear = {
     sequence = {
-        { field = "key",     default = "",     unknown = "" },
+     -- { field = "key",     default = "ZZZZ", unknown = "ZZZZ" },
         { field = "author",  default = "",     unknown = "" },
         { field = "year",    default = "9998", unknown = "9999" },
      -- { field = "suffix",  default = " ",    unknown = " " },

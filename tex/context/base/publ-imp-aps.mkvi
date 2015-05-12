@@ -755,10 +755,10 @@
             \btxspace
             \btxflush{pages}
         }
-        \btxleftparenthesis
-        \texdefinition{btx:aps:year}
-        \btxrightparenthesis
     }
+    \btxleftparenthesis
+    \texdefinition{btx:aps:year}
+    \btxrightparenthesis
 \stoptexdefinition
 
 \starttexdefinition btx:aps:publisher-wherefrom-year
@@ -967,7 +967,9 @@
             \btxflush{country}
         }
     }
-    \btxperiod
+    \btxleftparenthesis
+    \texdefinition{btx:aps:year}
+    \btxrightparenthesis
     \texdefinition{btx:aps:note}
 \stopsetups
 
@@ -1061,8 +1063,10 @@
     \btxdoif {howpublished} {
         \btxspace
         \btxflush{howpublished}
-        \btxperiod
     }
+    \btxleftparenthesis
+    \texdefinition{btx:aps:year}
+    \btxrightparenthesis
     \texdefinition{btx:aps:note}
 \stopsetups
 
@@ -1079,14 +1083,8 @@
 % Optional fields: author, title, howpublished, month, year, note.
 
 \startsetups btx:aps:list:misc
-    \texdefinition{btx:aps:author}
-    \texdefinition{btx:aps:title}
-    \btxdoif {howpublished} {
-        \btxspace
-        \btxflush{howpublished}
-        \btxperiod
-    }
-    \texdefinition{btx:aps:note}
+    \fastsetup{btx:aps:list:electronic}
+    % Note that organization is an "ignored" field.
 \stopsetups
 
 % If all else fails to match:

@@ -55,6 +55,8 @@
 \unexpanded\def\enco_define_accent#1#2#3% no spaces, used low level
   {\setvalue{\??accents\string#1\string#2\empty}{#3}}
 
+% the following dirty trick is needed to catch \asciimath{\^{1/5}log}:
+
 \def\enco_handle_accent#1#2% expandable because we want them in the tuc file
   {\csname\??accents
      \ifcsname\??accents\string#1#2\empty\endcsname
@@ -62,9 +64,11 @@
      \else\ifcsname\??accents\string#1\string#2\empty\endcsname
        \string#1\string#2\empty
      \else
-       \empty
+       \endcsname#2\csname\??accents % very dirty trick: ignore accent but keep char
      \fi\fi
    \endcsname}
+
+\letvalue{\??accents}\empty
 
 \unexpanded\def\enco_define_command#1#2%
   {\setuvalue{\string#1}{#2}}

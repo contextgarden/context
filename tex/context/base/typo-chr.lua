@@ -88,15 +88,24 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 
 local insert, remove = table.insert, table.remove
 
-local nodecodes   = nodes.nodecodes
-local glyph_code  = nodecodes.glyph
+local nodecodes       = nodes.nodecodes
+local whatsitcodes    = nodes.whatsitcodes
+local glyph_code      = nodecodes.glyph
+local whatsit_code    = nodecodes.whatsit
+local localpar_code   = whatsitcodes.localpar
 
-local texnest     = tex.nest
-local free_node   = node.free
+local texnest         = tex.nest
+local free_node       = node.free
+local flush_list      = node.flush_list
 
-local punctuation = characters.is_punctuation
+local settexattribute = tex.setattribute
+local punctuation     = characters.is_punctuation
 
-local stack       = { }
+local a_marked        = attributes.numbers['marked']
+local lastmarked      = 0
+local marked          = { }
+
+local stack           = { }
 
 local function pickup()
     local list = texnest[texnest.ptr]
@@ -143,6 +152,66 @@ local function pickuppunctuation(specification)
     end
 end
 
+local function pickup(head,tail,str)
+    local attr = marked[str]
+    local last = tail
+    if last[a_marked] == attr then
+        local first = last
+        while true do
+            local prev = first.prev
+            if prev and prev[a_marked] == attr then
+                if prev.id == whatsit_code and prev.subtype == localpar_code then
+                    break
+                else
+                    first = prev
+                end
+            else
+                break
+            end
+        end
+        return first, last
+    end
+end
+
+local actions = {
+    remove = function(specification)
+        local list = texnest[texnest.ptr]
+        if list then
+            local head = list.head
+            local tail = list.tail
+            local first, last = pickup(head,tail,specification.mark)
+            if first then
+                if first == head then
+                    list.head = nil
+                    list.tail = nil
+                else
+                    local prev = first.prev
+                    list.tail  = prev
+                    prev.next  = nil
+                end
+                flush_list(first)
+            end
+        end
+    end,
+}
+
+local function pickupmarkedcontent(specification)
+    local action = actions[specification.action or "remove"]
+    if action then
+        action(specification)
+    end
+end
+
+local function markcontent(str)
+    local currentmarked = marked[str]
+    if not currentmarked then
+        lastmarked    = lastmarked + 1
+        currentmarked = lastmarked
+        marked[str]   = currentmarked
+    end
+    settexattribute(a_marked,currentmarked)
+end
+
 interfaces.implement {
     name      = "pickuppunctuation",
     actions   = pickuppunctuation,
@@ -153,3 +222,19 @@ interfaces.implement {
     }
 }
 
+interfaces.implement {
+    name      = "pickupmarkedcontent",
+    actions   = pickupmarkedcontent,
+    arguments = {
+        {
+            { "action" },
+            { "mark" }
+        }
+    }
+}
+
+interfaces.implement {
+    name      = "markcontent",
+    actions   = markcontent,
+    arguments = "string",
+}

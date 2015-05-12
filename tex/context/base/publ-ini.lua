@@ -1548,7 +1548,7 @@ do
 
     function publications.loaddefinitionfile(name) -- a more specific name
         resolvers.uselibrary {
-            name     = string.gsub(name,"^publ%-",""),
+            name     = gsub(name,"^publ%-",""),
             patterns = patterns,
             action   = action,
             failure  = failure,
@@ -1562,7 +1562,7 @@ do
 
     function publications.loadreplacementfile(name) -- a more specific name
         resolvers.uselibrary {
-            name     = string.gsub(name,"^publ%-",""),
+            name     = gsub(name,"^publ%-",""),
             patterns = patterns,
             action   = publications.loaders.registercleaner,
             failure  = failure,

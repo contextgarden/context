@@ -16,6 +16,8 @@ local calcmath      = { }
 local moduledata    = moduledata or { }
 moduledata.calcmath = calcmath
 
+local context       = context
+
 local list_1 = {
     "median", "min", "max", "round", "ln", "log",
     "sin", "cos", "tan", "sinh", "cosh", "tanh"
@@ -46,8 +48,8 @@ local function freeze()
     for k=1,#list_2 do
         local v = list_2[k]
         list_2_1[v .. "%((.-),(.-),(.-)%)"] = "\\" .. upper(v) .. "^{%1}_{%2}{%3}"
-        list_2_2[v .. "%((.-),(.-)%)"] = "\\" .. upper(v) .. "^{%1}{%2}"
-        list_2_3[v .. "%((.-)%)"] = "\\" .. upper(v) .. "{%1}"
+        list_2_2[v .. "%((.-),(.-)%)"]      = "\\" .. upper(v) .. "^{%1}{%2}"
+        list_2_3[v .. "%((.-)%)"]           = "\\" .. upper(v) .. "{%1}"
     end
     for k=1,#list_4 do
         local v = list_4[k]
@@ -191,7 +193,6 @@ if false then
     -- Dx Dy      \frac {{\rm d}y} {{\rm d}x}
     -- Df Dg      {\rm f}^{\prime}
     -- f() g()    {\rm f}()
-
 
     -- valid utf8
 
