@@ -817,7 +817,7 @@ do
         if not fullname then
             return
         end
-        local data = io.loaddata(filename) or ""
+        local data = io.loaddata(fullname) or ""
         if data == "" then
             report("empty file %a, nothing loaded",fullname)
             return
@@ -845,7 +845,7 @@ do
                 return
             end
             current = datasets[dataset]
-            data    = table.load(filename)
+            data    = table.load(fullname)
         end
         if data then
             local luadata = current.luadata
@@ -881,7 +881,7 @@ do
         end
         local current = datasets[dataset]
         local luadata = current.luadata
-        local root    = xml.load(filename)
+        local root    = xml.load(fullname)
         for bibentry in xmlcollected(root,"/bibtex/entry") do
             local attributes = bibentry.at
             local tag        = attributes.tag

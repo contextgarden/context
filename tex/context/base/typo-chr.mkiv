@@ -30,20 +30,53 @@
 %D
 %D \typebuffer \blank \getbuffer\blank
 %D
-%D This feature is line based and is only to be used for small snippets of text, for
-%D instance when combining bit and pieces where keeping a state is complex compared
+%D This feature is paragraph based and is only to be used for small snippets of text,
+%D for instance when combining bit and pieces where keeping a state is complex compared
 %D to cleaning up unwanted stuff.
 
 \registerctxluafile{typo-chr}{1.001}
 
 \definesystemattribute[marked][public]
 
-\unexpanded\def\removepunctuation      {\clf_pickuppunctuation action {remove}\relax} % the first experiment
-\unexpanded\def\pushpunctuation        {\clf_pickuppunctuation action   {push}\relax} % the first experiment
-\unexpanded\def\poppunctuation         {\clf_pickuppunctuation action    {pop}\relax} % the first experiment
-\unexpanded\def\markcontent        [#1]{\groupedcommand{\clf_markcontent{#1}}{}}
-\unexpanded\def\startmarkedcontent [#1]{\begingroup\clf_markcontent{#1}}
-           \let\stopmarkedcontent       \endgroup
-\unexpanded\def\removemarkedcontent[#1]{\clf_pickupmarkedcontent action {remove} mark {#1}\relax}
+\unexpanded\def\removepunctuation
+  {\clf_pickuppunctuation action{remove}\relax} % the first experiment
+
+\unexpanded\def\pushpunctuation
+  {\clf_pickuppunctuation action{push}\relax} % the first experiment
+
+\unexpanded\def\poppunctuation
+  {\clf_pickuppunctuation action{pop}\relax} % the first experiment
+
+\unexpanded\def\markcontent
+  {\dosingleempty\typo_marked_mark}
+
+\def\typo_marked_mark[#1]#2%
+  {\dontleavehmode
+   \bgroup
+   \clf_markcontent{#1}%
+   \bgroup
+   #2% double grouping makes aftergroups work ok
+   \egroup
+   \egroup}
+
+\unexpanded\def\startmarkedcontent
+  {\dontleavehmode
+   \bgroup
+   \dosingleempty\typo_marked_start}
+
+\def\typo_marked_start[#1]%
+  {\clf_markcontent{#1}%
+   % double grouping makes aftergroups work ok
+   \bgroup}
+
+\unexpanded\def\stopmarkedcontent
+  {\egroup
+   \egroup}
+
+\unexpanded\def\removemarkedcontent
+  {\dosingleempty\typo_marked_remove}
+
+\def\typo_marked_remove[#1]%
+  {\clf_pickupmarkedcontent action{remove}mark{#1}\relax}
 
 \protect \endinput

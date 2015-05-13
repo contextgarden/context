@@ -101,9 +101,17 @@ local flush_list      = node.flush_list
 local settexattribute = tex.setattribute
 local punctuation     = characters.is_punctuation
 
+local variables       = interfaces.variables
+local v_all           = variables.all
+local v_reset         = variables.reset
+
 local a_marked        = attributes.numbers['marked']
 local lastmarked      = 0
-local marked          = { }
+local marked          = {
+    [v_all]   = 1,
+    [""]      = 1,
+    [v_reset] = attributes.unsetvalue,
+}
 
 local stack           = { }
 
@@ -151,6 +159,9 @@ local function pickuppunctuation(specification)
         action(specification)
     end
 end
+
+-- I played with nested marked content but it makes no sense and gives
+-- complex code. Also, it's never needed so why bother.
 
 local function pickup(head,tail,str)
     local attr = marked[str]
@@ -203,7 +214,7 @@ local function pickupmarkedcontent(specification)
 end
 
 local function markcontent(str)
-    local currentmarked = marked[str]
+    local currentmarked = marked[str or v_all]
     if not currentmarked then
         lastmarked    = lastmarked + 1
         currentmarked = lastmarked

@@ -126,6 +126,42 @@ local function okay(data,current,font,prevchar,previtalic,char,what)
     return true
 end
 
+-- maybe: with_attributes(current,n) :
+--
+-- local function correction_kern(kern,n)
+--     return with_attributes(new_correction_kern(kern),n)
+-- end
+
+local function correction_glue(glue,n)
+    local g = new_correction_glue(glue)
+    if n then
+        setfield(g,"attr",getfield(n,"attr"))
+    end
+    return g
+end
+
+local function correction_kern(kern,n)
+    local k = new_correction_kern(kern)
+    if n then
+        local a = getfield(n,"attr")
+        if a then -- maybe not
+            setfield(k,"attr",a) -- can be a marked content (border case)
+        end
+    end
+    return k
+end
+
+local function correction_glue(n,glue)
+    local g = new_correction_glue(glue)
+    if n then
+        local a = getfield(n,"attr")
+        if a then -- maybe not
+            setfield(g,"attr",a) -- can be a marked content (border case)
+        end
+    end
+    return g
+end
+
 function italics.handler(head)
 
     local prev            = nil
@@ -160,7 +196,7 @@ function italics.handler(head)
             if font ~= lastfont then
                 if previtalic ~= 0 then
                     if okay(data,current,font,prevchar,previtalic,char,"glyph") then
-                        insert_node_after(prevhead,prev,new_correction_kern(previtalic))
+                        insert_node_after(prevhead,prev,correction_kern(previtalic,current))
                         done = true
                     end
                 elseif previnserted and data then
@@ -172,7 +208,7 @@ function italics.handler(head)
                     --
                     if replaceitalic ~= 0 then
                         if okay(data,replace,font,replacechar,replaceitalic,char,"replace") then
-                            insert_node_after(replacehead,replace,new_correction_kern(replaceitalic))
+                            insert_node_after(replacehead,replace,correction_kern(replaceitalic,current))
                             done = true
                         end
                         replaceitalic = 0
@@ -185,7 +221,7 @@ function italics.handler(head)
                     --
                     if postitalic ~= 0 then
                         if okay(data,post,font,postchar,postitalic,char,"post") then
-                            insert_node_after(posthead,post,new_correction_kern(postitalic))
+                            insert_node_after(posthead,post,correction_kern(postitalic,current))
                             done = true
                         end
                         postitalic = 0
@@ -338,7 +374,7 @@ function italics.handler(head)
                 if trace_italics then
                     report_italics("inserting %p between %s italic %C and glue",previtalic,"glyph",prevchar)
                 end
-                previnserted = new_correction_glue(previtalic) -- maybe just add ? else problem with penalties
+                previnserted = correction_glue(previtalic,current) -- maybe just add ? else problem with penalties
                 previtalic   = 0
                 done         = true
                 insert_node_after(prevhead,prev,previnserted)
@@ -347,7 +383,7 @@ function italics.handler(head)
                     if trace_italics then
                         report_italics("inserting %p between %s italic %C and glue",replaceitalic,"replace",replacechar)
                     end
-                    replaceinserted = new_correction_kern(replaceitalic) -- needs to be a kern
+                    replaceinserted = correction_kern(replaceitalic,current) -- needs to be a kern
                     replaceitalic   = 0
                     done            = true
                     insert_node_after(replacehead,replace,replaceinserted)
@@ -356,7 +392,7 @@ function italics.handler(head)
                     if trace_italics then
                         report_italics("inserting %p between %s italic %C and glue",postitalic,"post",postchar)
                     end
-                    postinserted = new_correction_kern(postitalic) -- needs to be a kern
+                    postinserted = correction_kern(postitalic,current) -- needs to be a kern
                     postitalic   = 0
                     done         = true
                     insert_node_after(posthead,post,postinserted)
@@ -375,7 +411,7 @@ function italics.handler(head)
                 if trace_italics then
                     report_italics("inserting %p between %s italic %C and whatever",previtalic,"glyph",prevchar)
                 end
-                insert_node_after(prevhead,prev,new_correction_kern(previtalic))
+                insert_node_after(prevhead,prev,correction_kern(previtalic,current))
                 previnserted    = nil
                 previtalic      = 0
                 replaceinserted = nil
@@ -388,7 +424,7 @@ function italics.handler(head)
                     if trace_italics then
                         report_italics("inserting %p between %s italic %C and whatever",replaceritalic,"replace",replacechar)
                     end
-                    insert_node_after(replacehead,replace,new_correction_kern(replaceitalic))
+                    insert_node_after(replacehead,replace,correction_kern(replaceitalic,current))
                     previnserted    = nil
                     previtalic      = 0
                     replaceinserted = nil
@@ -401,7 +437,7 @@ function italics.handler(head)
                     if trace_italics then
                         report_italics("inserting %p between %s italic %C and whatever",postitalic,"post",postchar)
                     end
-                    insert_node_after(posthead,post,new_correction_kern(postitalic))
+                    insert_node_after(posthead,post,correction_kern(postitalic,current))
                     previnserted    = nil
                     previtalic      = 0
                     replaceinserted = nil
@@ -419,21 +455,21 @@ function italics.handler(head)
             if trace_italics then
                 report_italics("inserting %p between %s italic %C and end of list",previtalic,"glyph",prevchar)
             end
-            insert_node_after(prevhead,prev,new_correction_kern(previtalic))
+            insert_node_after(prevhead,prev,correction_kern(previtalic,current))
             done = true
         else
             if replaceitalic ~= 0 then
                 if trace_italics then
                     report_italics("inserting %p between %s italic %C and end of list",replaceitalic,"replace",replacechar)
                 end
-                insert_node_after(replacehead,replace,new_correction_kern(replaceitalic))
+                insert_node_after(replacehead,replace,correction_kern(replaceitalic,current))
                 done = true
             end
             if postitalic ~= 0 then
                 if trace_italics then
                     report_italics("inserting %p between %s italic %C and end of list",postitalic,"post",postchar)
                 end
-                insert_node_after(posthead,post,new_correction_kern(postitalic))
+                insert_node_after(posthead,post,correction_kern(postitalic,current))
                 done = true
             end
         end

@@ -42,13 +42,14 @@
 
 \ifdefined \s!global    \else \def\s!global   {global}    \fi % for metatex % or hard check later
 \ifdefined \s!public    \else \def\s!public   {public}    \fi % for metatex % or hard check later
+\ifdefined \s!private   \else \def\s!private  {private}   \fi % for metatex % or hard check later
 \ifdefined \s!attribute \else \def\s!attribute{attribute} \fi % for metatex % or hard check later
 
 \unexpanded\def\defineattribute      {\dodoubleempty\attr_basics_define}
 \unexpanded\def\definesystemattribute{\dodoubleempty\attr_basics_define_system}
 
-\def\attr_basics_define       {\attr_basics_define_indeed{public}}
-\def\attr_basics_define_system{\attr_basics_define_indeed{private}}
+\def\attr_basics_define       {\attr_basics_define_indeed\s!public}
+\def\attr_basics_define_system{\attr_basics_define_indeed\s!private}
 
 \def\attr_basics_define_indeed#1[#2][#3]%
   {\scratchcounter\clf_defineattribute{#2}{#1}\relax
@@ -61,7 +62,9 @@
    % here public means 'visible' so it's not to be confused with 'public' at the lua end
    \doifinset   \s!public{#3}{\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}}
 
-\unexpanded\def\newattribute#1{\attr_basics_define_indeed{public}[\strippedcsname#1][]}
+\unexpanded\def\newattribute#1%
+  {\attr_basics_define_indeed\s!public[\strippedcsname#1][]%
+   \expandafter\let\expandafter#1\csname\??attributeid\strippedcsname#1\endcsname}
 
 % expandable so we can \edef them for speed
 

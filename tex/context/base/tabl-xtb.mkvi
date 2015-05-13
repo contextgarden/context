@@ -351,8 +351,11 @@
 % in text flow: headers and footers only once
 
 \setvalue{\??xtableflushsplit\v!no}%
-  {\noindentation % better than \noindent (no \dontleavehmode here) % else no leftskip etc
-  %\ignorespaces
+  {% \noindent       % gives extra line after table
+   % \noindentation  % messes up the next indentation
+   % \dontleavehmode % no leftskip
+   \kern\zeropoint   % yet another guess
+   \ignorespaces
    \clf_x_table_flush
      method {\v!normal}%
    \relax

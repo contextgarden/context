@@ -189,17 +189,51 @@
 \unexpanded\def\mathematics
   {\doifelsenextoptionalcs\math_m_yes\math_m_nop}
 
-\def\math_m_yes[#1]#2%
+\def\math_m_yes
   {\relax
    \ifmmode
-     #2%
+     \expandafter\math_m_yes_math
    \else
-     \normalstartimath
-     \edef\currentmathematics{#1}% check for valid
-     \the\everyswitchmathematics\relax
-     #2%
-     \normalstopimath
+     \expandafter\math_m_yes_text
    \fi}
+
+\def\math_m_yes_math[#1]#2%
+  {#2}
+
+\def\math_m_yes_text[#1]%
+  {\begingroup
+   \edef\currentmathematics{#1}% check for valid
+   \edef\p_openup{\mathematicsparameter\c!openup}%
+   \ifx\p_openup\v!yes
+     \expandafter\math_m_yes_text_openedup
+   \else
+     \expandafter\math_m_yes_text_normal
+   \fi}
+
+\def\math_m_yes_text_openedup#1%
+  {\setbox\scratchbox\hbox\bgroup
+      \normalstartimath
+      \the\everyswitchmathematics\relax
+      #1%
+      \normalstopimath
+   \egroup
+   \ifdim\ht\scratchbox>\strutht
+     \math_inline_openup_start_yes
+   \else\ifdim\dp\scratchbox>\strutdp
+     \math_inline_openup_start_yes
+   \else
+     \math_inline_openup_start_nop
+   \fi\fi
+   \unhbox\scratchbox % \normalstartimath#1\normalstopimath
+   \math_inline_openup_stop
+   \endgroup}
+
+\def\math_m_yes_text_normal#1%
+  {\normalstartimath
+   \the\everyswitchmathematics\relax
+   #1%
+   \normalstopimath
+   \endgroup}
 
 \def\math_m_nop#1%
   {\relax
@@ -212,6 +246,8 @@
    \fi}
 
 \let\m\mathematics
+
+% e.g.: \definemathematics[i:mp][setups=i:tight,openup=yes]
 
 \newmuskip\defaultthickmuskip  \defaultthickmuskip  5mu plus 5mu
 \newmuskip\defaultmedmuskip    \defaultmedmuskip    4mu plus 2mu minus 4mu
