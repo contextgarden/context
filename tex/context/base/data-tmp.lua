@@ -23,7 +23,8 @@ luatools with a recache feature.</p>
 --ldx]]--
 
 local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
-local concat, serialize, serializetofile = table.concat, table.serialize, table.tofile
+----- serialize, serializetofile = table.serialize, table.tofile -- overloaded so no local
+local concat = table.concat
 local mkdirs, isdir, isfile = dir.mkdirs, lfs.isdir, lfs.isfile
 local addsuffix, is_writable, is_readable = file.addsuffix, file.is_writable, file.is_readable
 local formatters = string.formatters
@@ -349,15 +350,11 @@ local saveoptions = { compact = true }
 
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
-    local reduce, simplify = true, true
-    if raw then
-        reduce, simplify = false, false
-    end
     data.cache_uuid = os.uuid()
     if caches.direct then
-        file.savedata(tmaname,serialize(data,true,saveoptions))
+        file.savedata(tmaname,table.serialize(data,true,saveoptions))
     else
-        serializetofile(tmaname,data,true,saveoptions)
+        table.tofile(tmaname,data,true,saveoptions)
     end
     utilities.lua.compile(tmaname,tmcname)
 end
@@ -429,7 +426,7 @@ function caches.savecontent(cachename,dataname,content,filename)
         content = content,
         uuid    = os.uuid(),
     }
-    local ok = io.savedata(luaname,serialize(data,true))
+    local ok = io.savedata(luaname,table.serialize(data,true))
     if ok then
         if trace_locating then
             report_resolvers("category %a, cachename %a saved in %a",dataname,cachename,luaname)

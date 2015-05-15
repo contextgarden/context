@@ -21,6 +21,8 @@ parsers.patterns  = patterns
 
 local setmetatableindex = table.setmetatableindex
 local sortedhash        = table.sortedhash
+local sortedkeys        = table.sortedkeys
+local tohash            = table.tohash
 
 -- we share some patterns
 
@@ -94,9 +96,7 @@ patterns.settings_to_hash_b = pattern_b_s
 patterns.settings_to_hash_c = pattern_c_s
 
 function parsers.make_settings_to_hash_pattern(set,how)
-    if type(str) == "table" then
-        return set
-    elseif how == "strict" then
+    if how == "strict" then
         return (pattern_c/set)^1
     elseif how == "tolerant" then
         return (pattern_b/set)^1
@@ -106,7 +106,9 @@ function parsers.make_settings_to_hash_pattern(set,how)
 end
 
 function parsers.settings_to_hash(str,existing)
-    if type(str) == "table" then
+    if not str or str == "" then
+        return { }
+    elseif type(str) == "table" then
         if existing then
             for k, v in next, str do
                 existing[k] = v
@@ -115,17 +117,17 @@ function parsers.settings_to_hash(str,existing)
         else
             return str
         end
-    elseif str and str ~= "" then
+    else
         hash = existing or { }
         lpegmatch(pattern_a_s,str)
         return hash
-    else
-        return { }
     end
 end
 
 function parsers.settings_to_hash_tolerant(str,existing)
-    if type(str) == "table" then
+    if not str or str == "" then
+        return { }
+    elseif type(str) == "table" then
         if existing then
             for k, v in next, str do
                 existing[k] = v
@@ -134,17 +136,17 @@ function parsers.settings_to_hash_tolerant(str,existing)
         else
             return str
         end
-    elseif str and str ~= "" then
+    else
         hash = existing or { }
         lpegmatch(pattern_b_s,str)
         return hash
-    else
-        return { }
     end
 end
 
 function parsers.settings_to_hash_strict(str,existing)
-    if type(str) == "table" then
+    if not str or str == "" then
+        return nil
+    elseif type(str) == "table" then
         if existing then
             for k, v in next, str do
                 existing[k] = v
@@ -157,8 +159,6 @@ function parsers.settings_to_hash_strict(str,existing)
         hash = existing or { }
         lpegmatch(pattern_c_s,str)
         return next(hash) and hash
-    else
-        return nil
     end
 end
 
@@ -174,10 +174,10 @@ patterns.settings_to_array = pattern
 -- we could use a weak table as cache
 
 function parsers.settings_to_array(str,strict)
-    if type(str) == "table" then
-        return str
-    elseif not str or str == "" then
+    if not str or str == "" then
         return { }
+    elseif type(str) == "table" then
+        return str
     elseif strict then
         if find(str,"{",1,true) then
             return lpegmatch(pattern,str)
@@ -262,8 +262,8 @@ end
 
 function parsers.hash_to_string(h,separator,yes,no,strict,omit)
     if h then
-        local t, tn, s = { }, 0, table.sortedkeys(h)
-        omit = omit and table.tohash(omit)
+        local t, tn, s = { }, 0, sortedkeys(h)
+        omit = omit and tohash(omit)
         for i=1,#s do
             local key = s[i]
             if not omit or not omit[key] then
@@ -478,7 +478,7 @@ local defaultspecification = { separator = ",", quote = '"' }
 -- database module
 
 function parsers.csvsplitter(specification)
-    specification   = specification and table.setmetatableindex(specification,defaultspecification) or defaultspecification
+    specification   = specification and setmetatableindex(specification,defaultspecification) or defaultspecification
     local separator = specification.separator
     local quotechar = specification.quote
     local separator = S(separator ~= "" and separator or ",")
@@ -517,7 +517,7 @@ end
 -- local list, names = mycsvsplitter(crap)        inspect(list) inspect(names)
 
 function parsers.rfc4180splitter(specification)
-    specification     = specification and table.setmetatableindex(specification,defaultspecification) or defaultspecification
+    specification     = specification and setmetatableindex(specification,defaultspecification) or defaultspecification
     local separator   = specification.separator --> rfc: COMMA
     local quotechar   = P(specification.quote)  -->      DQUOTE
     local dquotechar  = quotechar * quotechar   -->      2DQUOTE
@@ -602,10 +602,10 @@ end
 -- print(utilities.parsers.unittotex("10^-32 %"),utilities.parsers.unittoxml("10^32 %"))
 
 local cache   = { }
-local spaces  = lpeg.patterns.space^0
+local spaces  = lpegpatterns.space^0
 local dummy   = function() end
 
-table.setmetatableindex(cache,function(t,k)
+setmetatableindex(cache,function(t,k)
     local separator = P(k)
     local value     = (1-separator)^0
     local pattern   = spaces * C(value) * separator^0 * Cp()

@@ -153,6 +153,9 @@ local shorts = {
 }
 
 function flushers.author(step,field,value)
+    if type(value) == "string" then
+        value = publications.authorcache[value]
+    end
     if type(value) == "table" and #value > 0 then
         local register    = step.register
         local processor   = step.processor
@@ -160,7 +163,7 @@ function flushers.author(step,field,value)
         for i=1,#value do
             local a = value[i]
             local k = writers[field] { a }
-            local e = f_author(alternative,components(a,short))
+            local e = f_author(alternative,components(a))
             ctx_dosetfastregisterentry(register,e,k,processor or "","")
         end
     end
@@ -175,3 +178,50 @@ function flushers.keyword(step,field,value)
         end
     end
 end
+
+-- publications.registerflushers = flushers
+
+local function btxtoregister(dataset,tag)
+    local current = datasets[dataset]
+    for i=1,#sequence do
+        local step = sequence[i]
+        local dset = step.dataset
+        if dset == v_all or dset == dataset then
+            local done = step.done
+            if not done[tag] then
+                local value, field, kind = getcasted(current,tag,step.field,specifications[step.specification])
+                if value then
+                    flushers[kind](step,field,value)
+                end
+                done[tag] = true
+            end
+        end
+    end
+end
+
+local function authortoregister(dataset,hash)
+    local author = publications.authorcache[hash]
+    if author then
+        local current = datasets[dataset]
+        for i=1,#sequence do
+            local step = sequence[i]
+            local dset = step.dataset
+            if dset == v_all or dset == dataset then
+                local register    = step.register
+                local processor   = step.processor
+                local alternative = shorts[step.alternative or "invertedshort"] or "invertedshort"
+                local k = writers.author { author }
+                local e = f_author(alternative,components(author,short))
+                ctx_dosetfastregisterentry(register,e,k,processor or "","")
+            end
+        end
+    end
+end
+
+publications.authortoregister = authortoregister
+
+implement {
+    name      = "btxauthortoregister",
+    actions   = authortoregister,
+    arguments = { "string", "string" }
+}

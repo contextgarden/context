@@ -303,6 +303,10 @@
 % \installmathfencepair { \Lbrace          } \Rbrace
 % \installmathfencepair } \Rbracemirrored  { \Lbracemirrored
 
+\appendtoks
+    \ignorediscretionaries % so $\mtext{a|b}$ works, this is ok because it's an \hbox
+\to \everymathematics
+
 % todo paren parent
 
 \let\lbrack\lbracket

@@ -471,10 +471,34 @@ function tracers.showvariants(dataset,pages)
     end
 end
 
+function tracers.showhashedauthors(dataset,pages)
+    local components = publications.components.author
+    ctx_starttabulate { "|T|T|T|T|T|T|" }
+    ctx_NC() ctx_bold("hash")
+    ctx_NC() ctx_bold("vons")
+    ctx_NC() ctx_bold("surnames")
+    ctx_NC() ctx_bold("initials")
+    ctx_NC() ctx_bold("firstnames")
+    ctx_NC() ctx_bold("juniors")
+    ctx_NC() ctx_NR() ctx_HL()
+    for hash, data in sortedhash(publications.authorcache) do
+        local vons, surnames, initials, firstnames, juniors = components(data)
+        ctx_NC() context(hash)
+        ctx_NC() context(vons)
+        ctx_NC() context(surnames)
+        ctx_NC() context(initials)
+        ctx_NC() context(firstnames)
+        ctx_NC() context(juniors)
+        ctx_NC() ctx_NR()
+    end
+    ctx_stoptabulate()
+end
+
 commands.showbtxdatasetfields       = tracers.showdatasetfields
 commands.showbtxdatasetcompleteness = tracers.showdatasetcompleteness
 commands.showbtxfields              = tracers.showfields
 commands.showbtxtables              = tracers.showtables
 commands.showbtxdatasetauthors      = tracers.showdatasetauthors
+commands.showbtxhashedauthors       = tracers.showhashedauthors
 commands.showbtxentry               = tracers.showentry
 commands.showbtxvariants            = tracers.showvariants

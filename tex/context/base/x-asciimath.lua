@@ -1817,7 +1817,7 @@ local uncrapped = {
     ["_"] = "\\underline{\\enspace}",
 }
 
-local function convert(str)
+local function convert(str,nowrap)
     if #str > 0 then
         local unicoded = lpegmatch(u_parser,str) or str
         if lpegmatch(p_onechar,unicoded) then
@@ -1834,6 +1834,8 @@ local function convert(str)
                 if message then
                     report_asciimath("%s: %s : %s",message,str,texcoded)
                     ctx_type(formatters["<%s>"](message))
+                elseif nowrap then
+                     context(texcoded)
                 else
                     ctx_mathematics(texcoded)
                 end
@@ -1936,9 +1938,15 @@ if not context then
 end
 
 interfaces.implement {
-    name      = "asciimath", -- module_asciimath_convert
+    name      = "asciimath",
     actions   = convert,
     arguments = "string"
+}
+
+interfaces.implement {
+    name      = "justasciimath",
+    actions   = convert,
+    arguments = { "string", true },
 }
 
 local ctx_typebuffer  = context.typebuffer

@@ -1658,7 +1658,7 @@
     \clf_btxtoregister{\currentbtxdataset}{\currentbtxtag}%
 \to \t_btx_reference_inject
 
-\unexpanded\def\btxindexedauthor#1#2#3#4#5#6% alternative von last first junior
+\unexpanded\def\btxindexedauthor#1#2#3#4#5#6% alternative von last initials first junior
   {\begingroup
    \def\currentbtxcitealternative{#1}%
    \ifx\currentbtxcitealternative\empty
@@ -1674,6 +1674,16 @@
    \setbtxparameterset\s!cite\currentbtxcitealternative
    \fastsetup{\s!btx:\s!cite:\s!author:\currentbtxcitealternative}%
    \endgroup}
+
+\unexpanded\def\btxregisterauthor
+  {\doifelsenextoptionalcs\publ_register_author_yes\publ_register_author_nop}
+
+\def\publ_register_author_yes[#1]#2%
+  {\clf_btxauthortoregister{#1}{#2}\relax}
+
+\def\publ_register_author_nop#1%
+  {\clf_btxauthortoregister{\currentbtxdataset}{#1}\relax}
+
 
 %D We hook some setters in the definition sets:
 

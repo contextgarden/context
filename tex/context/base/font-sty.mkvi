@@ -352,7 +352,7 @@
 
 \def\font_styles_define_style_instance[#instance][#2][#3][#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]
   {\iffirstargument
-     \ifcsname#1\endcsname\else\font_styles_define_style_collection[#instance]\fi
+     \ifcsname#instance\endcsname\else\font_styles_define_style_collection[#instance]\fi
    \fi
    \iffourthargument
      \setvalue{\??stylecollection#instance:#2:#3}{#4}%

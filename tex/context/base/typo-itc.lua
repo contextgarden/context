@@ -39,6 +39,7 @@ local getfont             = nuts.getfont
 local getchar             = nuts.getchar
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
+local setfield            = nuts.setfield
 
 local insert_node_after   = nuts.insert_after
 local delete_node         = nuts.delete
@@ -132,14 +133,6 @@ end
 --     return with_attributes(new_correction_kern(kern),n)
 -- end
 
-local function correction_glue(glue,n)
-    local g = new_correction_glue(glue)
-    if n then
-        setfield(g,"attr",getfield(n,"attr"))
-    end
-    return g
-end
-
 local function correction_kern(kern,n)
     local k = new_correction_kern(kern)
     if n then
@@ -151,7 +144,7 @@ local function correction_kern(kern,n)
     return k
 end
 
-local function correction_glue(n,glue)
+local function correction_glue(glue,n)
     local g = new_correction_glue(glue)
     if n then
         local a = getfield(n,"attr")

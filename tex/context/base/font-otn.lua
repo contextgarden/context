@@ -2085,7 +2085,7 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                                 if not replace then
                                                     break
                                                 elseif n > l then
---                                                     match = false
+                                                 -- match = false
                                                     break
                                                 end
                                             else
@@ -2163,7 +2163,7 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                                 if not replace or replace == finish then
                                                     break
                                                 elseif n < 1 then
---                                                     match = false
+                                                 -- match = false
                                                     break
                                                 end
                                             else
@@ -2196,17 +2196,8 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                             break
                         end
                     end
-                elseif f == 2 then
-                    match = seq[1][32]
---                 elseif f > 2 then
---                     match = false	-- KE ?
                 else
-                    for n=f-1,1 do
-                        if not seq[n][32] then
-                            match = false
-                            break
-                        end
-                    end
+                    match = false
                 end
             end
             -- after
@@ -2287,15 +2278,8 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                             break
                         end
                     end
-                elseif s-l == 1 then
-                    match = seq[s][32]
                 else
-                    for n=l+1,s do
-                        if not seq[n][32] then
-                            match = false
-                            break
-                        end
-                    end
+                    match = false
                 end
             end
         end

@@ -23,6 +23,7 @@
 \unexpanded\def\showbtxdatasetfields      {\dosingleempty\publ_show_dataset_fields}
 \unexpanded\def\showbtxdatasetcompleteness{\dosingleempty\publ_show_dataset_completeness}
 \unexpanded\def\showbtxdatasetauthors     {\dosingleempty\publ_show_dataset_authors}
+\unexpanded\def\showbtxhashedauthors      {\dosingleempty\publ_show_hashed_authors}
 \unexpanded\def\showbtxfields             {\dosingleempty\publ_show_fields}
 \unexpanded\def\showbtxtables             {\dosingleempty\publ_show_tables}
 
@@ -68,6 +69,9 @@
   {\begingroup
    \ctxcommand{showbtxtables{}}%
    \endgroup}
+
+\def\publ_show_hashed_authors[#1]%
+  {\ctxcommand{showbtxhashedauthors{}}}
 
 \protect
 

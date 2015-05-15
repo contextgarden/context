@@ -3202,7 +3202,16 @@ do
         ctx_btxnumberingsetup(variant or "num")
     end
 
-    listvariants[v_yes] = listvariants.num
+ -- listvariants[v_yes] = listvariants.num
+
+    function listvariants.index(dataset,block,tag,variant,listindex)
+        local index = getdetail(dataset,tag,"index")
+        ctx_btxsetfirst(index or "?")
+        if trace_detail then
+            report("expanding %a list setup %a","index",variant)
+        end
+        ctx_btxnumberingsetup(variant or "index")
+    end
 
     function listvariants.tag(dataset,block,tag,variant,listindex)
         ctx_btxsetfirst(tag)

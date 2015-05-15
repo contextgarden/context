@@ -50,16 +50,22 @@
     }
 \stopsetups
 
+% Hans: can the following setups be condensed to one using some variable?
+
+\startsetups[\s!btx:\s!list:\s!numbering:default]
+    \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:default]
+        \btxusecommand[\currentbtxspecification:\s!list:\s!numbering:default] {
+            \fastsetup{\s!btx:\s!list:\s!numbering}
+        }
+    \btxstopstyleandcolor
+\stopsetups
+
 \startsetups[\s!btx:\s!list:\s!numbering:num]
     \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:num]
         \btxusecommand[\currentbtxspecification:\s!list:\s!numbering:num] {
             \fastsetup{\s!btx:\s!list:\s!numbering}
         }
     \btxstopstyleandcolor
-\stopsetups
-
-\startsetups[\s!btx:\s!list:\s!numbering:\v!yes]
-    \fastsetup{\s!btx:\s!list:\s!numbering:num}
 \stopsetups
 
 \startsetups[\s!btx:\s!list:\s!numbering:short]
@@ -74,6 +80,14 @@
 \startsetups[\s!btx:\s!list:\s!numbering:tag]
     \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:tag]
         \btxusecommand [\currentbtxspecification:\s!list:\s!numbering:tag] {
+            \fastsetup{\s!btx:\s!list:\s!numbering}
+        }
+    \btxstopstyleandcolor
+\stopsetups
+
+\startsetups[\s!btx:\s!list:\s!numbering:index]
+    \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:index]
+        \btxusecommand [\currentbtxspecification:\s!list:\s!numbering:index] {
             \fastsetup{\s!btx:\s!list:\s!numbering}
         }
     \btxstopstyleandcolor

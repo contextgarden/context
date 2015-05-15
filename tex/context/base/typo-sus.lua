@@ -20,6 +20,11 @@ local closequote = {
     pf = true,
 }
 
+local weird = {
+    lm = true,
+    no = true,
+}
+
 local categories      = characters.categories
 
 local nodecodes       = nodes.nodecodes
@@ -187,6 +192,8 @@ function typesetters.marksuspects(head)
                     if prev and pid == glue_code then
                         done = 1 -- darkred
                     end
+                elseif weird[code] then
+                    done = 2 -- darkgreen
                 else
                     local prev, pid = goback(current)
                     if prev then

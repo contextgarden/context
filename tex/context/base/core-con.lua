@@ -807,7 +807,7 @@ end
 implement {
     name      = "ordinal",
     actions   = ctxordinal,
-    arguments = { "string", "string" }
+    arguments = { "integer", "string" }
 }
 
 -- verbose numbers
