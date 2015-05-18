@@ -45,7 +45,16 @@
    \c!indentnext=\v!no,
    \c!alternative=\s!default,
    \c!strut=\v!no,
-   \c!distance=\emwidth]
+   \c!distance=2\emwidth]
+
+\ifdefined\matheqnogapstep
+    % we're ok, now we have that quad in the distance which is
+    % more consistent and not depending on the text font in math
+    \matheqnogapstep\zerocount
+\else
+    % we will keep this for a while
+    \setupformulas[\c!distance=\emwidth]
+\fi
 
 \setupsubformulas % subformulas could be last in chain
   [\c!indentnext=\formulaparameter\c!indentnext]
@@ -228,18 +237,27 @@
 %       nested:     \number\c_strc_formulas_nested_number_mode]}}
 
 \unexpanded\def\placecurrentformulanumber
-  {\rm % nodig ?
-   \doif{\formulaparameter\c!location}\v!right{\hskip\formulaparameter\c!distance}%
+  {\begingroup
+   \rm % determines the distance and main font
+   \edef\p_location{\formulaparameter\c!location}%
+   \ifx\p_location\v!right
+      \hskip\formulaparameter\c!distance
+   \fi
+   \begingroup
+   \useformulastyleandcolor\c!numberstyle\c!numbercolor
    \formulaparameter\c!numbercommand
-     {\useformulastyleandcolor\c!numberstyle\c!numbercolor
-      \strut
+     {\strut
       \formulaparameter\c!left
       \namedtaggedlabeltexts
         \t!formulalabel \v!formula
         \t!formulanumber\v!formula
         {\ignorespaces\strc_formulas_place_current_number\removeunwantedspaces}%
       \formulaparameter\c!right}%
-   \doif{\formulaparameter\c!location}\v!left{\hskip\formulaparameter\c!distance}}
+   \endgroup
+   \ifx\p_location\v!left
+     \hskip\formulaparameter\c!distance
+   \fi
+   \endgroup}
 
 \unexpanded\def\strc_formulas_place_current_number
   {\strc_formulas_handle_current_references
@@ -432,6 +450,8 @@
 %D \stoptyping
 %D
 %D Otherwise we get a missing \type {$$} error reported.
+
+\let\reqno\eqno
 
 \unexpanded\def\resetdisplaymatheq % when used?
   {\let\normalleqno\gobbleoneargument \let\leqno\gobbleoneargument

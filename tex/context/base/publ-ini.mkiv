@@ -1749,9 +1749,10 @@
    \c!refcommand=authoryears,  % todo
    \c!numbering=\v!yes,
   %\c!saveinlist=\v!no, % maybe for before/after
+   \c!pagestate=\v!stop,
    \c!textstate=\v!start,
    \c!width=\v!auto,
-   \c!separator={;\space},
+   \c!separator={\btxsemicolon},
    \c!distance=1.5\emwidth]
 
 % Quite some interpunction and labels are the same of at least consistent within
@@ -1760,30 +1761,29 @@
 
 \setupbtx
   [\c!interaction=\v!start,
-   \c!alternative=num, % default cite form
-   \c!inbetween=\space,
+   \c!alternative=num, % default cite form, normally defined in the cite namespace
+   \c!inbetween=\btxspace,
    \c!range=\endash,   % separator:range?
    \c!compress=\v!yes, % was no?
    \c!authorconversion=normal,
    \c!sorttype=normal, % normal, reverse or none
    \c!etallimit=3,
    \c!etaldisplay=\btxparameter\c!etallimit,
-   \c!otherstext={\space et al.},
-   \c!separator:firstnames={\space},
-   \c!separator:juniors={\space},
-   \c!separator:vons={\space},
-   \c!separator:initials={\space},
+   \c!otherstext={\btxspace et al.},
+   \c!separator:firstnames={\btxspace},
+   \c!separator:juniors={\btxspace},
+   \c!separator:vons={\btxspace},
+   \c!separator:initials={\btxspace},
    \c!stopper:initials={.},
-  %\c!surnamesep={,\space}, % is this used anywhere?
-   \c!separator:invertedinitials={,\space},
-   \c!separator:invertedfirstnames={,\space},
-   \c!separator:names:2={,\space}, % separates multiple names
+  %\c!surnamesep={\btxcomma}, % is this used anywhere?
+   \c!separator:invertedinitials={\btxcomma},
+   \c!separator:invertedfirstnames={\btxcomma},
+   \c!separator:names:2={\btxcomma}, % separates multiple names
    \c!separator:names:3=\btxparameter{\c!separator:2}, % before last name in a list
    \c!separator:names:4=\btxparameter{\c!separator:2}, % between only two names
-   \c!separator:2={;\space}, % aka pubsep - separates multiple objects
+   \c!separator:2={\btxsemicolon}, % aka pubsep - separates multiple objects
    \c!separator:3=\btxparameter{separator:2}, % before last object in a list
-   \c!separator:4=\btxparameter{separator:2}, % between only two objects
-   \c!pagestate=\v!stop]
+   \c!separator:4=\btxparameter{separator:2}] % between only two objects
 
 % Do we want these in the format? Loading them delayed is somewhat messy.
 

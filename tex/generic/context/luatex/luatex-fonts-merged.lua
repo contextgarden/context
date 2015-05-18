@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/15/15 23:03:46
+-- merge date  : 05/18/15 12:26:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -3442,7 +3442,7 @@ local pattern=Cs(dquote*(equote-P(-2))^0*dquote)
 function string.optionalquoted(str)
   return lpegmatch(pattern,str) or str
 end
-local pattern=Cs((newline/os.newline+1)^0)
+local pattern=Cs((newline/(os.newline or "\r")+1)^0)
 function string.replacenewlines(str)
   return lpegmatch(pattern,str)
 end
@@ -7778,13 +7778,12 @@ actions["prepare glyphs"]=function(data,filename,raw)
               indices[index]=unicode 
               local description={
                 boundingbox=glyph.boundingbox,
-                name=glyph.name or name or "unknown",
+                name=name or "unknown",
                 cidindex=cidindex,
                 index=index,
                 glyph=glyph,
               }
               descriptions[unicode]=description
-            else
             end
           end
         end

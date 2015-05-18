@@ -721,6 +721,8 @@ actions["prepare glyphs"] = function(data,filename,raw)
         if rawcidinfo.registry then
             local cidmap = fonts.cid.getmap(rawcidinfo)
             if cidmap then
+-- local map = raw.map.map -- else created each time
+-- local backmap = raw.map.backmap -- else created each time
                 rawcidinfo.usedname = cidmap.usedname
                 local nofnames, nofunicodes = 0, 0
                 local cidunicodes, cidnames = cidmap.unicodes, cidmap.names
@@ -735,6 +737,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                         local glyph = cidglyphs[index]
                         if glyph then
                             local unicode = glyph.unicode
+-- local unicode = backmap[index] or -1
                             if     unicode >= 0x00E000 and unicode <= 0x00F8FF then
                                 unicode = -1
                             elseif unicode >= 0x0F0000 and unicode <= 0x0FFFFD then
@@ -743,6 +746,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                 unicode = -1
                             end
                             local name = glyph.name or cidnames[index]
+-- print(index,unicode,glyph.name,raw.map.map[unicode],raw.map.backmap[index])
                             if not unicode or unicode == -1 then -- or unicode >= criterium then
                                 unicode = cidunicodes[index]
                             end
@@ -786,14 +790,13 @@ actions["prepare glyphs"] = function(data,filename,raw)
                             local description = {
                              -- width       = glyph.width,
                                 boundingbox = glyph.boundingbox,
-                                name        = glyph.name or name or "unknown", -- uniXXXX
+                             -- name        = glyph.name or name or "unknown", -- uniXXXX
+                                name        = name or "unknown", -- uniXXXX
                                 cidindex    = cidindex,
                                 index       = index,
                                 glyph       = glyph,
                             }
                             descriptions[unicode] = description
-                        else
-                         -- report_otf("potential problem: glyph %U is used but empty",index)
                         end
                     end
                 end
@@ -974,8 +977,8 @@ actions["check encoding"] = function(data,filename,raw)
     end
 
     if mapdata then
-        mapdata.map     = { } -- clear some memory
-        mapdata.backmap = { } -- clear some memory
+        mapdata.map     = { } -- clear some memory (virtual and created each time anyway)
+        mapdata.backmap = { } -- clear some memory (virtual and created each time anyway)
     end
 end
 
@@ -991,7 +994,6 @@ actions["add duplicates"] = function(data,filename,raw)
     local unicodes     = resources.unicodes -- name to unicode
     local indices      = resources.indices  -- index to unicodes
     local duplicates   = resources.duplicates
-
     for unicode, d in next, duplicates do
         local nofduplicates = #d
         if nofduplicates > 4 then

@@ -254,6 +254,7 @@ return {
   "suppresslongerror",
   "suppressoutererror",
   "suppressmathparerror",
+  "matheqnogapstep",
   "synctex",
  },
  ["omega"]={

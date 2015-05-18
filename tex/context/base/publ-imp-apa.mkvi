@@ -33,7 +33,7 @@
   [apa]
   [\c!default=default,
    \c!specification=apa,
-   \c!otherstext={\space\btxlabeltext{apa:others}},
+   \c!otherstext={\btxspace\btxlabeltext{apa:others}},
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!month]
 
@@ -57,14 +57,14 @@
 \definebtx
   [apa:\s!list]
   [apa]
-  [\c!otherstext={,\nobreakspace\textellipsis\space},
+  [\c!otherstext={\btxcomma\btxnobreakspace\textellipsis\space},
    \c!etallimit=7,
    \c!etaldisplay=6,
    \c!etaloption=last,
    \c!authorconversion=invertedshort,
-   \c!separator:names:2={,\space}, % aka namesep - in this namespace
-   \c!separator:names:3={,\nobreakspace\textampersand\space}, % comma separated list
-   \c!separator:names:4={\nobreakspace\textampersand\space}] % last of two, no comma!
+   \c!separator:names:2={\btxcomma}, % aka namesep - in this namespace
+   \c!separator:names:3={\btxcomma\btxnobreakspace\textampersand\space}, % comma separated list
+   \c!separator:names:4={\btxnobreakspace\textampersand\space}] % last of two, no comma!
 
 % First, we define a namespace for a few special fields
 
@@ -91,9 +91,9 @@
 \definebtx
   [apa:\s!list:\s!page]
   [apa:\s!list]
-  [\c!separator:2={,\space},
-   \c!separator:3={,\space\btxlabeltext{apa:and}\space},
-   \c!separator:4={\space\btxlabeltext{apa:and}\space},
+  [\c!separator:2={\btxcomma},
+   \c!separator:3={\btxcomma\btxlabeltext{apa:and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{apa:and}\space},
    \c!left={\btxleftparenthesis},
    \c!right={\btxrightparenthesis},
    \c!command={\wordright}]
@@ -101,7 +101,7 @@
 \definebtx
   [apa:\s!list:numbering]
   [apa:\s!list]
-  [\c!right={\space}]
+  [\c!right={\btxspace}]
 
 \definebtx
   [apa:\s!list:numbering:default]
@@ -265,15 +265,40 @@
   [apa:\s!cite]
   [apa]
   [\c!alternative=authoryear,
-   \c!otherstext={,\space\btxlabeltext{apa:others}},
+   \c!otherstext={\btxcomma\btxlabeltext{apa:others}},
    \c!etallimit=5,
    \c!etaldisplay=1, % TODO: when 2-4, show all first time, etaldisplay subsequently...
    \c!authorconversion=\v!name,
    \c!sorttype=normal,
    \c!compress=\v!yes, % note that cite sorts only work with compress=yes.
-   \c!separator:names:2={,\space},
-   \c!separator:names:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:names:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
+   \c!separator:names:2={\btxcomma},
+   \c!separator:names:3={\btxcomma\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:names:4={\btxspace\btxlabeltext{apa:and}\space}] % not \textampersand
+
+\definebtx
+  [apa:\s!cite:name]
+  [apa:\s!cite]
+  [\c!authorconversion=\v!name]
+
+\definebtx
+  [apa:\s!cite:inverted]
+  [apa:\s!cite]
+  [\c!authorconversion=\v!invertedshort]
+
+\definebtx
+  [apa:\s!cite:invertedshort]
+  [apa:\s!cite]
+  [\c!authorconversion=\v!invertedshort]
+
+\definebtx
+  [apa:\s!cite:normalshort]
+  [apa:\s!cite]
+  [\c!authorconversion=\v!normalshort]
+
+\definebtx
+  [apa:\s!cite:normal]
+  [apa:\s!cite]
+  [\c!authorconversion=\v!normal]
 
 \definebtx
   [apa:\s!cite:author]
@@ -284,7 +309,7 @@
   [apa:\s!cite:author]
   [\c!left={(},
    \c!right={)},
-   \c!inbetween={,\space}]
+   \c!inbetween={\btxcomma}]
 
 \definebtx
   [apa:\s!cite:default]
@@ -295,7 +320,7 @@
   [apa:\s!cite:authoryear]
   [\c!left=,
    \c!right=,
-   \c!inbetween={\space}]
+   \c!inbetween={\btxspace}]
 
 \definebtx
   [apa:\s!cite:authornum]
@@ -306,7 +331,7 @@
 \definebtx
   [apa:\s!cite:author:num] % todo
   [apa:\s!cite:authornum]
-  [\c!left={\space[},
+  [\c!left={\btxspace[},
    \c!right={]}]
 
 \definebtx
@@ -317,22 +342,22 @@
   [apa:\s!cite:author:years] % todo
   [apa:\s!cite:authoryears]
   [\c!inbetween=,
-   \c!left={\space(},
+   \c!left={\btxspace(},
    \c!right={)}]
 
 \definebtx
   [apa:\s!cite:year]
   [apa:\s!cite]
-  [\c!separator:2={,\space}, % :0 and :1 - between items of a list
-   \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
+  [\c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
+   \c!separator:3={\btxcomma\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:4={\btxspace\btxlabeltext{apa:and}\space}] % not \textampersand
 
 \definebtx
   [apa:\s!cite:title]
   [apa:\s!cite]
-  [\c!separator:2={,\space}, % :0 and :1 - between items of a list
-   \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:4={\space\btxlabeltext{apa:and}\space}, % not \textampersand
+  [\c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
+   \c!separator:3={\btxcomma\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:4={\btxspace\btxlabeltext{apa:and}\space}, % not \textampersand
    \c!command={\language[\currentbtxlanguage]}, % BAH
    \c!sorttype=none,
    \c!style=\v!italic]
@@ -359,9 +384,9 @@
   [apa:\s!cite]
   [\c!left=,
    \c!right=,
-   \c!separator:2={,\space}, % :0 and :1 - between items of a list
-   \c!separator:3={,\space\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:4={\space\btxlabeltext{apa:and}\space}] % not \textampersand
+   \c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
+   \c!separator:3={\btxcomma\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:4={\btxspace\btxlabeltext{apa:and}\space}] % not \textampersand
 
 \definebtx
   [apa:\s!cite:pages]
@@ -405,17 +430,17 @@
   [apa:\s!cite:num]
   [\c!left={Ref.\nbsp},
    \c!right=,
-   \c!separator:2={,\space},
-   \c!separator:3={\space\btxlabeltext{apa:and}\space},
-   \c!separator:4={\space\btxlabeltext{apa:and}\space}]
+   \c!separator:2={\btxcomma},
+   \c!separator:3={\btxspace\btxlabeltext{apa:and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{apa:and}\space}]
 
 \definebtx
   [apa:\s!cite:entry]
   [apa:\s!cite]
   [\c!left=,
    \c!right=,
-   \c!inbetween={\space},
-   \c!separator:2={;\space},
+   \c!inbetween={\btxspace},
+   \c!separator:2={\btxsemicolon},
    \c!separator:3=\btxparameter{\c!separator:2},
    \c!separator:4=\btxparameter{\c!separator:2}]
 
@@ -778,7 +803,13 @@
         \btxflush{year}
         \btxflushsuffix
     } {
-        \btxlabeltext{apa:nd}
+        \fastsetup{btx:apa:nd}
+        % Hans: the following won't work but should.
+        \btxdoif {suffix} {
+            \btxspace
+            \btxflushsuffix
+            % Hans: similarly, why can't \btxflush{suffix} be made to work?
+        }
     }
 \stoptexdefinition
 

@@ -102,6 +102,7 @@
 
 \def\page_marks_add_page_indeed#1%
   {\setbox#1\hbox\bgroup
+     \resetvisualizers
      \let\objectoffset\pagecutmarkmargin
     %\infofont
      \scratchwidth \wd#1%
@@ -115,6 +116,7 @@
 
 \def\page_marks_add_more_indeed#1%
   {\setbox#1\hbox\bgroup
+     \resetvisualizers
      \let\objectoffset\pagecutmarkmargin
      \infofont
      \scratchwidth \wd#1% these can move out

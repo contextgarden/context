@@ -211,7 +211,10 @@
   {\namedstartstopparameter{#1}\c!before\relax
    \bgroup
    \def\currentstartstop{#1}%
-   \startstopparameter\c!commands\relax % better: setups so that will show op soon
+   % we will keep this for a while:
+   \startstopparameter\c!commands\relax % obsolete
+   % this is the new method:
+   \usesetupsparameter\startstopparameter\relax % only in the display version
    \dostarttagged\t!construct\currentstartstop
    \usestartstopstyleandcolor\c!style\c!color}
 

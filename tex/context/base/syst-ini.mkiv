@@ -1095,6 +1095,10 @@
 \suppressoutererror   \plusone
 \suppressmathparerror \plusone
 
+\ifdefined\matheqnogapstep % for now
+    \matheqnogapstep  \zerocount
+\fi
+
 %D While cleaning this code up a bit I was listening to Heather Nova's \CD\ Redbird.
 %D The first song on that \CD\ ends with a few lines suitable for ending this
 %D initialization module:

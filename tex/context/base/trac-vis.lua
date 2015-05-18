@@ -471,8 +471,10 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
     if wd ~= 0 then
         local ht = getfield(current,"height")
         local dp = getfield(current,"depth")
+        local shift = getfield(current,"shift")
         local next = getnext(current)
-        local prev = previous -- getprev(current) ... prev can be wrong in math mode < 0.78.3
+        local prev = previous
+     -- local prev = getprev(current) -- prev can be wrong in math mode < 0.78.3
         setfield(current,"next",nil)
         setfield(current,"prev",nil)
         local linewidth = emwidth/fraction
@@ -533,7 +535,22 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
             new_rule(wd-2*linewidth,ht,-ht+linewidth)
         )
         if baseskip then
-            info = linked_nodes(info,baseskip,baseline)
+            info = linked_nodes(info,baseskip,baseline) -- could be in previous linked
+        end
+        local shft
+        if shift == 0 then
+            shift = nil
+        else
+            local sh = shift > 0 and   shift or 0
+            local sd = shift < 0 and - shift or 0
+            shft = fast_hpack(new_rule(2*emwidth/fraction,sh,sd))
+            setfield(shft,"width",0)
+            if sh > 0 then
+                setfield(shft,"height",0)
+            end
+            if sd > 0 then
+                setfield(shft,"depth",0)
+            end
         end
         setlisttransparency(info,c_text)
         info = fast_hpack(info)
@@ -541,10 +558,17 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
         setfield(info,"height",0)
         setfield(info,"depth",0)
         setattr(info,a_layer,layer)
-        local info = linked_nodes(current,new_kern(-wd),info)
+        local info = linked_nodes(shft,current,new_kern(-wd),info)
         info = fast_hpack(info,wd)
         if vertical then
             info = vpack_nodes(info)
+        end
+        if shift then
+            setfield(current,"shift",0)
+            setfield(info,"width",wd)
+            setfield(info,"height",ht)
+            setfield(info,"depth",dp)
+            setfield(info,"shift",shift)
         end
         if next then
             setfield(info,"next",next)

@@ -43,6 +43,7 @@ local rawset, next = rawset, next
 local V, P, S, R, C, Cc, Cs, matchlpeg = lpeg.V, lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match
 local format, lower = string.format, string.lower
 local appendlpeg = lpeg.append
+local utfchartabletopattern = lpeg.utfchartabletopattern
 local mergetable, mergedtable, keys, loweredkeys = table.merge, table.merged, table.keys, table.loweredkeys
 local setmetatablenewindex = table.setmetatablenewindex
 local utfchar = utf.char
@@ -663,11 +664,11 @@ labels.suffixes = allocate {
     square     = { labels = { en = [[2]]  } },
     cubic      = { labels = { en = [[3]]  } },
     quadratic  = { labels = { en = [[4]]  } },
-    inverse    = { labels = { en = [[-1]] } },
-    ilinear    = { labels = { en = [[-1]] } },
-    isquare    = { labels = { en = [[-2]] } },
-    icubic     = { labels = { en = [[-3]] } },
-    iquadratic = { labels = { en = [[-4]]  } },
+    inverse    = { labels = { en = [[\mathminus1]] } },
+    ilinear    = { labels = { en = [[\mathminus1]] } },
+    isquare    = { labels = { en = [[\mathminus2]] } },
+    icubic     = { labels = { en = [[\mathminus3]] } },
+    iquadratic = { labels = { en = [[\mathminus4]] } },
 }
 
 local function dimpus(p,u,s)
@@ -773,6 +774,20 @@ local function update_parsers() -- todo: don't remap utf sequences
     local p_short_unit     = appendlpeg(short_units)
     local p_short_operator = appendlpeg(short_operators)
     local p_short_suffix   = appendlpeg(short_suffixes)
+
+    -- more efficient but needs testing
+
+--     local p_long_prefix    = utfchartabletopattern(all_long_prefixes)  / all_long_prefixes
+--     local p_long_unit      = utfchartabletopattern(all_long_units)     / all_long_units
+--     local p_long_operator  = utfchartabletopattern(all_long_operators) / all_long_operators
+--     local p_long_suffix    = utfchartabletopattern(all_long_suffixes)  / all_long_suffixes
+--     local p_symbol         = utfchartabletopattern(all_symbol_units)   / all_symbol_units
+--     local p_packaged       = utfchartabletopattern(all_packaged_units) / all_packaged_units
+
+--     local p_short_prefix   = utfchartabletopattern(short_prefixes)     / short_prefixes
+--     local p_short_unit     = utfchartabletopattern(short_units)        / short_units
+--     local p_short_operator = utfchartabletopattern(short_operators)    / short_operators
+--     local p_short_suffix   = utfchartabletopattern(short_suffixes)     / short_suffixes
 
     -- we can can cleanup some space issues here (todo)
 

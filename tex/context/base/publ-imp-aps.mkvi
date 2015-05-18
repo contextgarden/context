@@ -33,15 +33,15 @@
   [aps]
   [\c!default=default,
    \c!specification=aps,
-   \c!otherstext={\space{\it\btxlabeltext{aps:others}}},
+   \c!otherstext={\btxspace{\it\btxlabeltext{aps:others}}},
    \c!etallimit=10,
    \c!etaldisplay=\btxparameter\c!etallimit,
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!month,
    \c!title=\v!yes,
-   \c!separator:names:2={,\space},
-   \c!separator:names:3={,\space\btxlabeltext{aps:and}\space}, % not \textampersand
-   \c!separator:names:4= {\space\btxlabeltext{aps:and}\space}] % not \textampersand
+   \c!separator:names:2={\btxcomma},
+   \c!separator:names:3={\btxcomma\btxlabeltext{aps:and}\space},
+   \c!separator:names:4={\btxspace\btxlabeltext{aps:and}\space}]
 
 % First, define and set list and rendering parameters
 
@@ -83,9 +83,9 @@
 \definebtx
   [aps:\s!list:\s!page]
   [aps:\s!list]
-  [\c!separator:2={,\space},
-   \c!separator:3={,\space\btxlabeltext{aps:and}\space},
-   \c!separator:4={\space\btxlabeltext{aps:and}\space},
+  [\c!separator:2={\btxcomma},
+   \c!separator:3={\btxcomma\btxlabeltext{aps:and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{aps:and}\space},
    \c!left={\btxleftparenthesis},
    \c!right={\btxrightparenthesis},
    \c!command={\wordright}]
@@ -247,9 +247,35 @@
 \definebtx
   [aps:\s!cite]
   [aps]
-  [\c!authorconversion=\v!name,
+  [\c!alternative=num,
+   \c!authorconversion=\v!name,
    \c!compress=\v!yes,
    \c!sorttype=normal]
+
+\definebtx
+  [aps:\s!cite:name]
+  [aps:\s!cite]
+  [\c!authorconversion=\v!name]
+
+\definebtx
+  [aps:\s!cite:inverted]
+  [aps:\s!cite]
+  [\c!authorconversion=\v!invertedshort]
+
+\definebtx
+  [aps:\s!cite:invertedshort]
+  [aps:\s!cite]
+  [\c!authorconversion=\v!invertedshort]
+
+\definebtx
+  [aps:\s!cite:normalshort]
+  [aps:\s!cite]
+  [\c!authorconversion=\v!normalshort]
+
+\definebtx
+  [aps:\s!cite:normal]
+  [aps:\s!cite]
+  [\c!authorconversion=\v!normal]
 
 \definebtx
   [aps:\s!cite:author]
@@ -260,14 +286,14 @@
   [aps:\s!cite:author]
   [\c!left={(},
    \c!right={)},
-   \c!inbetween={,\space}]
+   \c!inbetween={\btxcomma}]
 
 \definebtx
   [aps:\s!cite:authoryears]
   [aps:\s!cite:authoryear]
   [\c!left=,
    \c!right=,
-   \c!inbetween={\space}]
+   \c!inbetween={\btxspace}]
 
 \definebtx
   [aps:\s!cite:authornum]
@@ -278,7 +304,7 @@
 \definebtx
   [aps:\s!cite:author:num] % todo
   [aps:\s!cite:authornum]
-  [\c!left={\space[},
+  [\c!left={\btxspace[},
    \c!right={]}]
 
 \definebtx
@@ -291,7 +317,7 @@
   [aps:\s!cite:author:years] % todo
   [aps:\s!cite:authoryears]
   [\c!inbetween=,
-   \c!left={\space(},
+   \c!left={\btxspace(},
    \c!right={)}]
 
 \definebtx
@@ -326,9 +352,9 @@
   [aps:\s!cite]
   [\c!left=,
    \c!right=,
-   \c!separator:2={,\space}, % :0 and :1 - between items of a list
-   \c!separator:3={,\space\btxlabeltext{aps:and}\space}, % not \textampersand
-   \c!separator:4= {\space\btxlabeltext{aps:and}\space}] % not \textampersand
+   \c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
+   \c!separator:3={\btxcomma\btxlabeltext{aps:and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{aps:and}\space}]
 
 \definebtx
   [aps:\s!cite:pages]
@@ -381,17 +407,17 @@
   [aps:\s!cite:num]
   [\c!left={Ref.\nbsp},
    \c!command=,
-   \c!separator:2={,\space},
-   \c!separator:3={\space\btxlabeltext{aps:and}\space},
-   \c!separator:4={\space\btxlabeltext{aps:and}\space}]
+   \c!separator:2={\btxcomma},
+   \c!separator:3={\btxspace\btxlabeltext{aps:and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{aps:and}\space}]
 
 \definebtx
   [aps:\s!cite:entry]
   [aps:\s!cite]
   [\c!left=,
    \c!right=,
-   \c!inbetween={\space},
-   \c!separator:2={;\space},
+   \c!inbetween={\btxspace},
+   \c!separator:2={\btxsemicolon},
    \c!separator:3=\btxparameter{\c!separator:2},
    \c!separator:4=\btxparameter{\c!separator:2}]
 
@@ -816,7 +842,6 @@
     \else
         #text
     \fi
-
 \stoptexdefinition
 
 % Then setups, by category

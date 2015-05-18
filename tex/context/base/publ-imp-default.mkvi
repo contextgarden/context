@@ -26,12 +26,12 @@
 \definebtx
   [\s!default]
   [\c!default=, % we do not want to fall|-|back on ourself.
-   \c!otherstext={\space\btxlabeltext{default:others}},
+   \c!otherstext={\btxspace\btxlabeltext{default:others}},
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!number,
-   \c!separator:names:2={,\space},
-   \c!separator:names:3={\space\btxlabeltext{default:and}\space},
-   \c!separator:names:4={\space\btxlabeltext{default:and}\space}]
+   \c!separator:names:2={\btxcomma},
+   \c!separator:names:3={\btxspace\btxlabeltext{default:and}\space},
+   \c!separator:names:4={\btxspace\btxlabeltext{default:and}\space}]
 
 \definebtx
   [\s!default:\s!list]
@@ -46,14 +46,39 @@
    \c!sorttype=normal,
    \c!authorconversion=\v!name]
 
+\definebtx
+  [\s!default:\s!cite:name]
+  [\s!default:\s!cite]
+  [\c!authorconversion=\v!name]
+
+\definebtx
+  [\s!default:\s!cite:inverted]
+  [\s!default:\s!cite]
+  [\c!authorconversion=\v!invertedshort]
+
+\definebtx
+  [\s!default:\s!cite:invertedshort]
+  [\s!default:\s!cite]
+  [\c!authorconversion=\v!invertedshort]
+
+\definebtx
+  [\s!default:\s!cite:normalshort]
+  [\s!default:\s!cite]
+  [\c!authorconversion=\v!normalshort]
+
+\definebtx
+  [\s!default:\s!cite:normal]
+  [\s!default:\s!cite]
+  [\c!authorconversion=\v!normal]
+
 % List variants, some having specific settings:
 
 \definebtx
   [\s!default:\s!list:\s!page]
   [\s!default:\s!list]
-  [\c!separator:2={,\space},
-   \c!separator:3={,\space\btxlabeltext{default:and}\space},
-   \c!separator:4={\space\btxlabeltext{default:and}\space},
+  [\c!separator:2={\btxcomma},
+   \c!separator:3={\btxcomma\btxlabeltext{default:and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{default:and}\space},
    \c!left={\btxleftparenthesis},
    \c!right={\btxrightparenthesis}]
 
@@ -139,7 +164,7 @@
   [\s!default:\s!cite:author]
   [\c!left={(},
    \c!right={)},
-   \c!inbetween={,\space}]
+   \c!inbetween={\btxcomma}]
 
 \definebtx
   [\s!default:\s!cite:authoryears]
@@ -148,7 +173,7 @@
 \definebtx
   [\s!default:\s!cite:author:num] % todo
   [\s!default:\s!cite:authornum]
-  [\c!left={\space[},
+  [\c!left={\btxleftbracket},
    \c!right={]}]
 
 \definebtx
@@ -161,7 +186,7 @@
   [\s!default:\s!cite:author:years] % todo
   [\s!default:\s!cite:authoryears]
   [\c!inbetween=,
-   \c!left={\space(},
+   \c!left={\btxleftparenthesis},
    \c!right={)}]
 
 \definebtx
@@ -240,9 +265,9 @@
   [\s!default:\s!cite:num]
   [\c!left=, % in apa: {Ref.\nbsp} or so
    \c!right=,
-   \c!separator:2={,\space},
-   \c!separator:3={,\space\btxlabeltext{default:and}\space},
-   \c!separator:4= {\space\btxlabeltext{default:and}\space}]
+   \c!separator:2={\btxcomma},
+   \c!separator:3={\btxcomma\btxlabeltext{default:and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{default:and}\space}]
 
 \definebtx
   [\s!default:\s!cite:entry]

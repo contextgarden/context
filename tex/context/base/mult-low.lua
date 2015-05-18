@@ -266,6 +266,7 @@ return {
         "singleexpandafter", "doubleexpandafter", "tripleexpandafter",
         --
         "dontleavehmode", "removelastspace", "removeunwantedspaces", "keepunwantedspaces",
+        "removepunctuation",
         --
         "wait", "writestatus", "define", "defineexpandable", "redefine",
         --

@@ -264,8 +264,17 @@ end
 --     end
 -- end
 
+local spaceonly = lpegpatterns.whitespace^0 * P(-1)
+
 local function add_text(text)
     local n = #dt
+--
+-- will be an option: dataonly
+--
+-- if #text == 0 or lpegmatch(spaceonly,text) then
+--     return
+-- end
+--
     if cleanup and #text > 0 then
         if n > 0 then
             local s = dt[n]
