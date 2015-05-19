@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/18/15 12:26:48
+-- merge date  : 05/20/15 01:02:14
 
 do -- begin closure to overcome local limits and interference
 
@@ -7163,6 +7163,7 @@ local stoptiming=statistics.stoptiming
 local elapsedtime=statistics.elapsedtime
 local findbinfile=resolvers.findbinfile
 local trace_private=false registertracker("otf.private",function(v) trace_private=v end)
+local trace_subfonts=false registertracker("otf.subfonts",function(v) trace_subfonts=v end)
 local trace_loading=false registertracker("otf.loading",function(v) trace_loading=v end)
 local trace_features=false registertracker("otf.features",function(v) trace_features=v end)
 local trace_dynamics=false registertracker("otf.dynamics",function(v) trace_dynamics=v end)
@@ -7175,7 +7176,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.803 
+otf.version=2.810 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -7708,6 +7709,7 @@ local function somecopy(old)
   end
 end
 actions["prepare glyphs"]=function(data,filename,raw)
+  local tableversion=tonumber(raw.table_version) or 0
   local rawglyphs=raw.glyphs
   local rawsubfonts=raw.subfonts
   local rawcidinfo=raw.cidinfo
@@ -7728,64 +7730,94 @@ actions["prepare glyphs"]=function(data,filename,raw)
       local cidmap=fonts.cid.getmap(rawcidinfo)
       if cidmap then
         rawcidinfo.usedname=cidmap.usedname
-        local nofnames,nofunicodes=0,0
-        local cidunicodes,cidnames=cidmap.unicodes,cidmap.names
+        local nofnames=0
+        local nofunicodes=0
+        local cidunicodes=cidmap.unicodes
+        local cidnames=cidmap.names
+        local cidtotal=0
+        local unique=trace_subfonts and {}
         for cidindex=1,#rawsubfonts do
           local subfont=rawsubfonts[cidindex]
           local cidglyphs=subfont.glyphs
           if includesubfonts then
             metadata.subfonts[cidindex]=somecopy(subfont)
           end
-          for index=0,subfont.glyphcnt-1 do 
-            local glyph=cidglyphs[index]
-            if glyph then
-              local unicode=glyph.unicode
-              if   unicode>=0x00E000 and unicode<=0x00F8FF then
-                unicode=-1
-              elseif unicode>=0x0F0000 and unicode<=0x0FFFFD then
-                unicode=-1
-              elseif unicode>=0x100000 and unicode<=0x10FFFD then
-                unicode=-1
-              end
-              local name=glyph.name or cidnames[index]
-              if not unicode or unicode==-1 then 
-                unicode=cidunicodes[index]
-              end
-              if unicode and descriptions[unicode] then
-                if trace_private then
-                  report_otf("preventing glyph %a at index %H to overload unicode %U",name or "noname",index,unicode)
-                end
-                unicode=-1
-              end
-              if not unicode or unicode==-1 then 
-                if not name then
-                  name=format("u%06X.ctx",private)
-                end
-                unicode=private
-                unicodes[name]=private
-                if trace_private then
-                  report_otf("glyph %a at index %H is moved to private unicode slot %U",name,index,private)
-                end
-                private=private+1
-                nofnames=nofnames+1
-              else
-                if not name then
-                  name=format("u%06X.ctx",unicode)
-                end
-                unicodes[name]=unicode
-                nofunicodes=nofunicodes+1
-              end
-              indices[index]=unicode 
-              local description={
-                boundingbox=glyph.boundingbox,
-                name=name or "unknown",
-                cidindex=cidindex,
-                index=index,
-                glyph=glyph,
-              }
-              descriptions[unicode]=description
-            end
+          local cidcnt,cidmin,cidmax
+          if tableversion>0.3 then
+            cidcnt=subfont.glyphcnt
+            cidmin=subfont.glyphmin
+            cidmax=subfont.glyphmax
+          else
+            cidcnt=subfont.glyphcnt
+            cidmin=0
+            cidmax=cidcnt-1
           end
+          if trace_subfonts then
+            local cidtot=cidmax-cidmin+1
+            cidtotal=cidtotal+cidtot
+            report_otf("subfont: %i, min: %i, max: %i, cnt: %i, n: %i",cidindex,cidmin,cidmax,cidtot,cidcnt)
+          end
+          if cidcnt>0 then
+            for cidslot=cidmin,cidmax do
+              local glyph=cidglyphs[cidslot]
+              if glyph then
+                local index=tableversion>0.3 and glyph.orig_pos or cidslot
+                if trace_subfonts then
+                  unique[index]=true
+                end
+                local unicode=glyph.unicode
+                if   unicode>=0x00E000 and unicode<=0x00F8FF then
+                  unicode=-1
+                elseif unicode>=0x0F0000 and unicode<=0x0FFFFD then
+                  unicode=-1
+                elseif unicode>=0x100000 and unicode<=0x10FFFD then
+                  unicode=-1
+                end
+                local name=glyph.name or cidnames[index]
+                if not unicode or unicode==-1 then 
+                  unicode=cidunicodes[index]
+                end
+                if unicode and descriptions[unicode] then
+                  if trace_private then
+                    report_otf("preventing glyph %a at index %H to overload unicode %U",name or "noname",index,unicode)
+                  end
+                  unicode=-1
+                end
+                if not unicode or unicode==-1 then 
+                  if not name then
+                    name=format("u%06X.ctx",private)
+                  end
+                  unicode=private
+                  unicodes[name]=private
+                  if trace_private then
+                    report_otf("glyph %a at index %H is moved to private unicode slot %U",name,index,private)
+                  end
+                  private=private+1
+                  nofnames=nofnames+1
+                else
+                  if not name then
+                    name=format("u%06X.ctx",unicode)
+                  end
+                  unicodes[name]=unicode
+                  nofunicodes=nofunicodes+1
+                end
+                indices[index]=unicode 
+                local description={
+                  boundingbox=glyph.boundingbox,
+                  name=name or "unknown",
+                  cidindex=cidindex,
+                  index=cidslot,
+                  glyph=glyph,
+                }
+                descriptions[unicode]=description
+              end
+            end
+          else
+            report_otf("potential problem: no glyphs found in subfont %i",cidindex)
+          end
+        end
+        if trace_subfonts then
+          report_otf("nofglyphs: %i, unique: %i",cidtotal,table.count(unique))
         end
         if trace_loading then
           report_otf("cid font remapped, %s unicode points, %s symbolic names, %s glyphs",nofunicodes,nofnames,nofunicodes+nofnames)
@@ -7797,68 +7829,75 @@ actions["prepare glyphs"]=function(data,filename,raw)
       report_otf("font %a has no glyphs",filename)
     end
   else
-    for index=0,raw.glyphcnt-1 do 
-      local glyph=rawglyphs[index]
-      if glyph then
-        local unicode=glyph.unicode
-        local name=glyph.name
-        if not unicode or unicode==-1 then 
-          unicode=private
-          unicodes[name]=private
-          if trace_private then
-            report_otf("glyph %a at index %H is moved to private unicode slot %U",name,index,private)
-          end
-          private=private+1
-        else
-          if unicode>criterium then
-            local taken=descriptions[unicode]
-            if taken then
-              if unicode>=private then
-                private=unicode+1 
+    local cnt=raw.glyphcnt or 0
+    local min=tableversion>0.3 and raw.glyphmin or 0
+    local max=tableversion>0.3 and raw.glyphmax or (raw.glyphcnt-1)
+    if cnt>0 then
+      for index=min,max do
+        local glyph=rawglyphs[index]
+        if glyph then
+          local unicode=glyph.unicode
+          local name=glyph.name
+          if not unicode or unicode==-1 then 
+            unicode=private
+            unicodes[name]=private
+            if trace_private then
+              report_otf("glyph %a at index %H is moved to private unicode slot %U",name,index,private)
+            end
+            private=private+1
+          else
+            if unicode>criterium then
+              local taken=descriptions[unicode]
+              if taken then
+                if unicode>=private then
+                  private=unicode+1 
+                else
+                  private=private+1 
+                end
+                descriptions[private]=taken
+                unicodes[taken.name]=private
+                indices[taken.index]=private
+                if trace_private then
+                  report_otf("slot %U is moved to %U due to private in font",unicode)
+                end
               else
-                private=private+1 
+                if unicode>=private then
+                  private=unicode+1 
+                end
               end
-              descriptions[private]=taken
-              unicodes[taken.name]=private
-              indices[taken.index]=private
-              if trace_private then
-                report_otf("slot %U is moved to %U due to private in font",unicode)
-              end
-            else
-              if unicode>=private then
-                private=unicode+1 
+            end
+            unicodes[name]=unicode
+          end
+          indices[index]=unicode
+          descriptions[unicode]={
+            boundingbox=glyph.boundingbox,
+            name=name,
+            index=index,
+            glyph=glyph,
+          }
+          local altuni=glyph.altuni
+          if altuni then
+            for i=1,#altuni do
+              local a=altuni[i]
+              local u=a.unicode
+              local v=a.variant
+              if v then
+                local vv=variants[v]
+                if vv then
+                  vv[u]=unicode
+                else 
+                  vv={ [u]=unicode }
+                  variants[v]=vv
+                end
               end
             end
           end
-          unicodes[name]=unicode
+        else
+          report_otf("potential problem: glyph %U is used but empty",index)
         end
-        indices[index]=unicode
-        descriptions[unicode]={
-          boundingbox=glyph.boundingbox,
-          name=name,
-          index=index,
-          glyph=glyph,
-        }
-        local altuni=glyph.altuni
-        if altuni then
-          for i=1,#altuni do
-            local a=altuni[i]
-            local u=a.unicode
-            local v=a.variant
-            if v then
-              local vv=variants[v]
-              if vv then
-                vv[u]=unicode
-              else 
-                vv={ [u]=unicode }
-                variants[v]=vv
-              end
-            end
-          end
-        end
-      else
-        report_otf("potential problem: glyph %U is used but empty",index)
       end
+    else
+      report_otf("potential problem: no glyphs found")
     end
   end
   resources.private=private

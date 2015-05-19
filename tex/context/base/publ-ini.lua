@@ -72,6 +72,9 @@ local v_yes              = variables.yes
 local v_no               = variables.no
 local v_all              = variables.all
 local v_always           = variables.always
+local v_hidden           = variables.hidden
+local v_list             = variables.list
+local v_text             = variables.text
 local v_doublesided      = variables.doublesided
 local v_default          = variables.default
 local v_dataset          = variables.dataset
@@ -162,6 +165,8 @@ local ctx_btxflushauthor          = context.btxflushauthor
 local ctx_btxsetnoflistentries    = context.btxsetnoflistentries
 local ctx_btxsetcurrentlistentry  = context.btxsetcurrentlistentry
 local ctx_btxsetcurrentlistindex  = context.btxsetcurrentlistindex
+
+local trialtypesetting            = context.trialtypesetting
 
 languages.data                    = languages.data       or { }
 local data                        = languages.data
@@ -479,7 +484,7 @@ local findallused do
     local reported = { }
     local finder   = publications.finder
 
-    findallused = function(dataset,reference,internal)
+    findallused = function(dataset,reference,internal,forcethem)
         local current  = datasets[dataset]
         local finder   = publications.finder -- for the moment, not yet in all betas
         local find     = finder and finder(current,reference)
@@ -490,10 +495,20 @@ local findallused do
         local luadata  = current.luadata
         local details  = current.details
         local ordered  = current.ordered
-        if set then
+        if allused then
             local registered = { }
             local function register(tag)
-                local entry = allused[tag]
+                local entry = forcethem and luadata[tag]
+                if entry then
+                    if registered[tag] then
+                        return
+                    end
+                    okay[#okay+1] = entry
+                 -- todo[tag] = true
+                    registered[tag] = true
+                    return tag
+                end
+                entry = allused[tag]
                 if not entry then
                     local parent = details[tag].parent
                     if parent then
@@ -632,7 +647,15 @@ end
 
 local concatstate = publications.concatstate
 
-local tobemarked = nil
+-- hidden : mark for list, don't show in text
+-- list   : mark for list, show in text only when in list
+-- text   : not to list, show in text
+-- always : mark for list, show in text
+
+local marked_todo    = false -- keeps track or not yet flushed
+local marked_dataset = false
+local marked_list    = false -- the sequential list (we flush in order, not by unordered hash)
+local marked_forced  = false
 
 local function marknocite(dataset,tag,nofcitations,setup)
     ctx_btxstartcite()
@@ -647,10 +670,10 @@ local function marknocite(dataset,tag,nofcitations,setup)
 end
 
 local function markcite(dataset,tag,flush)
-    if not tobemarked then
+    if not marked_todo then
         return 0
     end
-    local citation = tobemarked[tag]
+    local citation = marked_todo[tag]
     if not citation then
         return 0
     end
@@ -662,39 +685,35 @@ local function markcite(dataset,tag,flush)
         if flush then
             marknocite(dataset,tag,nofcitations,"nocite")
         end
-        tobemarked[tag] = nofcitations
+        marked_todo[tag] = nofcitations -- signal that it's marked
         return nofcitations
     else
         return citation
     end
 end
 
-local marked_dataset = nil
-local marked_list    = nil
-
-local function flushmarked(dataset,list,todo)
-    marked_dataset = dataset
-    marked_list    = list
-end
-
 local function btxflushmarked()
-    if marked_list and tobemarked then
+    if marked_list and marked_todo then
         for i=1,#marked_list do
             -- keep order
             local tag = marked_list[i]
-            local tbm = tobemarked[tag]
+            local tbm = marked_todo[tag]
             if tbm == true or not tbm then
                 nofcitations = nofcitations + 1
-                marknocite(marked_dataset,tag,nofcitations,tbm and "nocite" or "invalid")
+                local setup = (tbm or marked_method == v_always) and "nocite" or "invalid"
+                marknocite(marked_dataset,tag,nofcitations,setup)
                 if trace_cite then
-                    report_cite("mark, dataset: %s, tag: %s, number: %s, state: %s",marked_dataset,tag,nofcitations,tbm and "unset" or "invalid")
+                    report_cite("mark, dataset: %s, tag: %s, number: %s, setup: %s",marked_dataset,tag,nofcitations,setup)
                 end
+            else
+                -- a number signaling being marked
             end
         end
     end
-    tobemarked     = nil
-    marked_dataset = nil
-    marked_list    = nil
+    marked_todo    = false
+    marked_dataset = false
+    marked_list    = false
+    marked_method  = false
 end
 
 implement { name = "btxflushmarked", actions = btxflushmarked }
@@ -2286,14 +2305,17 @@ do
     end
 
     local function btxhandlenocite(specification)
+        if trialtypesetting() then
+            return
+        end
         local dataset   = specification.dataset or v_default
         local reference = specification.reference
         if not reference or reference == "" then
             return
         end
         --
-        local markentry = specification.markentry ~= false
-        local internal  = specification.internal or ""
+        local method   = specification.method
+        local internal = specification.internal or ""
         --
         local prefix, rest = lpegmatch(prefixsplitter,reference)
         if rest then
@@ -2309,10 +2331,14 @@ do
         --
         local found, todo, list = findallused(dataset,reference,internal)
         --
-        tobemarked = markentry and todo
-        if found and tobemarked then
-            flushmarked(dataset,list)
-            btxflushmarked() -- here (could also be done in caller)
+        if todo then
+            marked_todo    = todo
+            marked_dataset = dataset
+            marked_list    = list
+            marked_method  = method
+         -- btxflushmarked() -- here (could also be done in caller)
+        else
+            marked_todo = false
         end
     end
 
@@ -2323,7 +2349,7 @@ do
             {
                 { "dataset" },
                 { "reference" },
-                { "markentry", "boolean" },
+                { "method" },
                 { "variant" },
                 { "sorttype" },
                 { "compress" },
@@ -2342,9 +2368,9 @@ do
         actions   = btxhandlenocite,
         arguments = {
             {
-               { "dataset" },
-               { "reference" },
-               { "markentry", "boolean" },
+                { "dataset" },
+                { "reference" },
+                { "method" },
             }
         }
     }
@@ -2470,11 +2496,11 @@ do
         local getter     = specification.getter
         local setter     = specification.setter
         local compressor = specification.compressor
+        local method     = specification.method
         --
         local reference  = publications.parenttag(dataset,reference)
         --
-        local found, todo, list = findallused(dataset,reference,internal)
-        tobemarked = specification.markentry and todo
+        local found, todo, list = findallused(dataset,reference,internal,method == v_text or method == v_always) -- also when not in list
         --
         if not found or #found == 0 then
             report("no entry %a found in dataset %a",reference,dataset)
@@ -2487,23 +2513,26 @@ do
             local source  = { }
             local luadata = datasets[dataset].luadata
             for i=1,#found do
-                local entry = found[i]
--- inspect(entry)
-                local tag   = entry.userdata.btxref
-                local ldata = luadata[tag]
-                local data  = {
-                    internal  = entry.references.internal,
-                    language  = ldata.language,
-                    dataset   = dataset,
-                    tag       = tag,
-                 -- combis    = entry.userdata.btxcom,
-                 -- luadata   = ldata,
-                }
-                setter(data,dataset,tag,entry)
-                if type(data) == "table" then
-                    source[#source+1] = data
-                else
-                    report("error in cite rendering %a",setup or "?")
+                local entry      = found[i]
+                local userdata   = entry.userdata
+                local references = entry.references
+                local tag        = userdata and userdata.btxref or entry.tag -- no need for userdata
+                if tag then
+                    local ldata = luadata[tag]
+                    local data  = {
+                        internal  = references and references.internal,
+                        language  = ldata.language,
+                        dataset   = dataset,
+                        tag       = tag,
+                     -- combis    = entry.userdata.btxcom,
+                     -- luadata   = ldata,
+                    }
+                    setter(data,dataset,tag,entry)
+                    if type(data) == "table" then
+                        source[#source+1] = data
+                    else
+                        report("error in cite rendering %a",setup or "?")
+                    end
                 end
             end
 
@@ -2530,14 +2559,16 @@ do
                 if before    then local text = before   [i] ; if text and text ~= "" then ctx_btxsetbefore   (text) end end
                 if after     then local text = after    [i] ; if text and text ~= "" then ctx_btxsetafter    (text) end end
                 --
-                ctx_btxsetbacklink(currentcitation)
-                local bl = listtocite[currentcitation]
-                if bl then
-                    -- we refer to a coming list entry
-                    ctx_btxsetinternal(bl.references.internal or "")
-                else
-                    -- we refer to a previous list entry
-                    ctx_btxsetinternal(entry.internal or "")
+                if method ~= 2 then
+                    ctx_btxsetbacklink(currentcitation)
+                    local bl = listtocite[currentcitation]
+                    if bl then
+                        -- we refer to a coming list entry
+                        ctx_btxsetinternal(bl.references.internal or "")
+                    else
+                        -- we refer to a previous list entry
+                        ctx_btxsetinternal(entry.internal or "")
+                    end
                 end
                 local language = entry.language
                 if language then
@@ -2591,9 +2622,16 @@ do
                 end
             end
         end
-        if tobemarked then
-            flushmarked(dataset,list)
-            btxflushmarked() -- here (could also be done in caller)
+        if trialtypesetting() then
+            marked_todo = false
+        elseif method ~= v_text then
+            marked_todo    = todo
+            marked_dataset = dataset
+            marked_list    = list
+            marked_method  = method
+         -- btxflushmarked() -- here (could also be done in caller)
+        else
+            marked_todo = false
         end
     end
 

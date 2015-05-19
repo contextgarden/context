@@ -383,6 +383,7 @@ function publications.new(name)
         userdata   = { },
         used       = { },
         commands   = { }, -- for statistical purposes
+        citestate  = { },
         status     = {
             resources = false,
             userdata  = false,

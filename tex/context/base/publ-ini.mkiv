@@ -1203,6 +1203,13 @@
 
 % these need to be sort of protected:
 
+% methods:
+%
+% hidden : mark for list, don't show in text
+% list   : mark for list, show in text only when in list
+% text   : not to list, show in text
+% always : mark for list, show in text
+
 \let\p_publ_cite_before   \empty
 \let\p_publ_cite_after    \empty
 \let\p_publ_cite_lefttext \empty
@@ -1279,6 +1286,7 @@
 \newconditional\btxcitecompress
 
 \let\currentbtxreference\empty
+\let\currentbtxcitemethod\v!hidden
 
 \def\publ_cite_variant
   {\begingroup
@@ -1295,7 +1303,7 @@
   {\clf_btxhandlecite
      dataset          {\currentbtxdataset}%
      reference        {\currentbtxreference}%
-     markentry        \iftrialtypesetting\s!false\else\s!true\fi\space
+     method           {\currentbtxcitemethod}%
      variant          {\currentbtxcitealternative}%
      sorttype         {\btxparameter\c!sorttype}%
      compress         {\btxparameter\c!compress}%
@@ -1306,7 +1314,9 @@
      before           {\p_publ_cite_before}%
      after            {\p_publ_cite_after}%
    \relax
-   \clf_btxflushmarked} % maybe: \iftrialtypesetting\else ... \fi
+   \iftrialtypesetting\else
+     \clf_btxflushmarked
+   \fi}
 
 \let\dobtxcitevariantblob\publ_cite_handle_variant_blob % command can use it via lua
 
@@ -1320,9 +1330,22 @@
    \btxparameter\c!right
    \endgroup}
 
-\unexpanded\def\btxcitation
+\unexpanded\def\btxlistcitation
   {\dontleavehmode
    \begingroup
+   \let\currentbtxcitemethod\v!list
+   \dodoubleempty\publ_citation}
+
+\unexpanded\def\btxtextcitation
+  {\dontleavehmode
+   \begingroup
+   \let\currentbtxcitemethod\v!text
+   \dodoubleempty\publ_citation}
+
+\unexpanded\def\btxalwayscitation
+  {\dontleavehmode
+   \begingroup
+   \let\currentbtxcitemethod\v!always
    \dodoubleempty\publ_citation}
 
 \def\publ_citation[#1][#2]% could be made more efficient but not now
@@ -1332,19 +1355,20 @@
      \publ_cite_tags_indeed{#1}%
    \fi}
 
-\unexpanded\def\btxnocitation
-  {\dosingleempty\publ_cite_no}
+\unexpanded\def\btxhiddencitation
+  {\dosingleempty\publ_cite_hidden}
 
-\unexpanded\def\publ_cite_no[#1]%
+\unexpanded\def\publ_cite_hidden[#1]%
   {\iftrialtypesetting \else
      \begingroup
+     \let\currentbtxcitemethod\v!hidden
      \edef\currentbtxreference{#1}%
      \clf_btxhandlenocite
+       method    {\currentbtxcitemethod}%
        dataset   {\currentbtxdataset}%
        reference {\currentbtxreference}%
-       markentry true%
      \relax
-   % \clf_btxflushmarked
+     \clf_btxflushmarked
      \endgroup
    \fi}
 
@@ -1353,16 +1377,16 @@
 
 %D Compatibility:
 
-\let\cite      \btxcitation
-\let\citation  \btxcitation
-\let\nocite    \btxnocitation
-\let\nocitation\btxnocitation
+\let\hiddencite\btxhiddencitation  \let\hiddencitation\btxhiddencitation  % nocite
+\let\listcite  \btxlistcitation    \let\listcitation  \btxhiddencitation  % cite
+\let\textcite  \btxtextcitation    \let\textcitation  \btxtextcitation
+\let\alwayscite\btxalwayscitation  \let\alwayscitation\btxalwayscitation
 
-\unexpanded\def\cite  {\doifelsenextoptionalcs\btxcitation  \btxdirectcite}
-\unexpanded\def\nocite{\doifelsenextoptionalcs\btxnocitation\btxdirectnocite}
+\unexpanded\def\cite  {\doifelsenextoptionalcs\btxlistcitation  \btxdirectlistcite}
+\unexpanded\def\nocite{\doifelsenextoptionalcs\btxhiddencitation\btxdirecthiddencite}
 
-\unexpanded\def\btxdirectcite  #1{\btxcitation  [#1]\relax} % no optional arguments
-\unexpanded\def\btxdirectnocite#1{\btxnocitation[#1]\relax} % no optional arguments
+\unexpanded\def\btxdirectlistcite  #1{\btxlistcitation  [#1]\relax} % no optional arguments
+\unexpanded\def\btxdirecthiddencite#1{\btxhiddencitation[#1]\relax} % no optional arguments
 
 %D Setup helpers, beware, we need to wrap this .. now we need to know
 %D how setups are implemented.
