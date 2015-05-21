@@ -538,7 +538,7 @@ function lpdf_epdf.load(filename)
             --
             local Catalog          = some_dictionary(__xref__:getCatalog():getDict(),document)
             local Info             = some_dictionary(__xref__:getDocInfo():getDict(),document)
-			--
+            --
             document.Catalog       = Catalog
             document.Info          = Info
             -- a few handy helper tables

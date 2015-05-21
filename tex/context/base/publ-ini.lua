@@ -655,7 +655,7 @@ local concatstate = publications.concatstate
 local marked_todo    = false -- keeps track or not yet flushed
 local marked_dataset = false
 local marked_list    = false -- the sequential list (we flush in order, not by unordered hash)
-local marked_forced  = false
+local marked_method  = false
 
 local function marknocite(dataset,tag,nofcitations,setup)
     ctx_btxstartcite()
@@ -2559,7 +2559,7 @@ do
                 if before    then local text = before   [i] ; if text and text ~= "" then ctx_btxsetbefore   (text) end end
                 if after     then local text = after    [i] ; if text and text ~= "" then ctx_btxsetafter    (text) end end
                 --
-                if method ~= 2 then
+                if method ~= v_text then
                     ctx_btxsetbacklink(currentcitation)
                     local bl = listtocite[currentcitation]
                     if bl then

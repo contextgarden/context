@@ -1339,6 +1339,7 @@
 \unexpanded\def\btxtextcitation
   {\dontleavehmode
    \begingroup
+   \let\btxcitereference\relax % a bit of a hack but ok
    \let\currentbtxcitemethod\v!text
    \dodoubleempty\publ_citation}
 
@@ -1377,13 +1378,24 @@
 
 %D Compatibility:
 
-\let\hiddencite\btxhiddencitation  \let\hiddencitation\btxhiddencitation  % nocite
-\let\listcite  \btxlistcitation    \let\listcitation  \btxhiddencitation  % cite
-\let\textcite  \btxtextcitation    \let\textcitation  \btxtextcitation
-\let\alwayscite\btxalwayscitation  \let\alwayscitation\btxalwayscitation
+\let\hiddencitation\btxhiddencitation  \let\hiddencite\hiddencitation
+\let\listcitation  \btxlistcitation    \let\listcite  \listcitation
+\let\textcitation  \btxtextcitation    \let\textcite  \textcitation
+\let\alwayscitation\btxalwayscitation  \let\alwayscite\alwayscitation
 
-\unexpanded\def\cite  {\doifelsenextoptionalcs\btxlistcitation  \btxdirectlistcite}
-\unexpanded\def\nocite{\doifelsenextoptionalcs\btxhiddencitation\btxdirecthiddencite}
+\unexpanded\def\citation  {\doifelsenextoptionalcs\btxlistcitation  \btxdirectlistcite}
+\unexpanded\def\nocitation{\doifelsenextoptionalcs\btxhiddencitation\btxdirecthiddencite}
+
+\let\citation  \listcitation \let\cite  \citation
+\let\nocitation\nocitation   \let\nocite\nocitation
+
+\unexpanded\def\publ_entry_citation  {\doifelsenextoptionalcs\btxlistcitation  \btxdirectlistcite}
+\unexpanded\def\publ_entry_nocitation{\doifelsenextoptionalcs\btxhiddencitation\btxdirecthiddencite}
+
+\appendtoks
+    \let\cite  \publ_entry_citation
+    \let\nocite\publ_entry_nocitation
+\to \everybtxlistrendering
 
 \unexpanded\def\btxdirectlistcite  #1{\btxlistcitation  [#1]\relax} % no optional arguments
 \unexpanded\def\btxdirecthiddencite#1{\btxhiddencitation[#1]\relax} % no optional arguments

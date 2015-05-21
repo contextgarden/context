@@ -295,6 +295,10 @@ function interfaces.writestatus(category,message)
     reporters[category](message) -- could also be a setmetatablecall
 end
 
+function interfaces.message(str)
+    texio.write(str) -- overloaded
+end
+
 implement { name = "registernamespace",    actions = interfaces.registernamespace, arguments = { "integer", "string" } }
 implement { name = "setinterfaceconstant", actions = interfaces.setconstant,       arguments = { "string", "string" } }
 implement { name = "setinterfacevariable", actions = interfaces.setvariable,       arguments = { "string", "string" } }
@@ -320,6 +324,13 @@ implement {
     overload  = true,
     actions   = interfaces.writestatus,
     arguments = { "string", "string" },
+}
+
+implement {
+    name      = "message",
+    overload  = true,
+    actions   = interfaces.message,
+    arguments = "string",
 }
 
 local function showassignerror(namespace,key,line)
