@@ -23,6 +23,7 @@ local report_fonts      = logs.reporter("fonts","processing")
 
 local fonthashes        = fonts.hashes
 local fontdata          = fonthashes.identifiers
+local fontvariants      = fonthashes.variants
 
 local otf               = fonts.handlers.otf
 
@@ -44,8 +45,10 @@ local getchar           = nuts.getchar
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getfield          = nuts.getfield
+local setfield          = nuts.setfield
 
 local traverse_id       = nuts.traverse_id
+local delete_node       = nuts.delete
 
 local glyph_code        = nodecodes.glyph
 local disc_code         = nodecodes.disc
@@ -135,6 +138,7 @@ function handlers.characters(head)
     local prevfont  = nil
     local prevattr  = 0
     local done      = false
+    local variants  = false
 
     if trace_fontrun then
         run = run + 1
@@ -200,6 +204,23 @@ function handlers.characters(head)
                 end
                 prevfont = font
                 prevattr = attr
+                variants = fontvariants[font]
+            end
+            if variants then
+                local char = getchar(n)
+                if char >= 0xFE00 and (char <= 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF)) then
+                    local hash = variants[char]
+                    if hash then
+                        local p = getprev(n)
+                        if p and getid(p) == glyph_code then
+                            local variant = hash[getchar(p)]
+                            if variant then
+                                setfield(p,"char",variant)
+                                delete_node(nuthead,n)
+                            end
+                        end
+                    end
+                end
             end
         end
     end
@@ -499,6 +520,24 @@ end
 --                 end
 --                 prevfont = font
 --                 prevattr = attr
+--                 variants = fontvariants[font]
+--             end
+--             if variants then
+--                 local char = getchar(n)
+--                 if char >= 0xFE00 and (char <= 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF)) then
+--                     local hash = variants[char]
+--                     if hash then
+--                         local p = getprev(n)
+--                         if p and getid(p) == glyph_code then
+--                             local variant = hash[getchar(p)]
+--                             if variant then
+--                                 setfield(p,"char",variant)
+--                                 delete_node(nuthead,n)
+--                             end
+--                         end
+--                     end
+--                 end
+--             end
 --             end
 --         -- end
 --         end

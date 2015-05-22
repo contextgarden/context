@@ -37,6 +37,7 @@ local dynamics      = hashes.dynamics     or allocate()
 local unicodes      = hashes.unicodes     or allocate()
 local originals     = hashes.originals    or allocate()
 local modes         = hashes.modes        or allocate()
+local variants      = hashes.variants     or allocate()
 
 hashes.characters   = characters
 hashes.descriptions = descriptions
@@ -56,6 +57,7 @@ hashes.dynamics     = dynamics
 hashes.unicodes     = unicodes
 hashes.originals    = originals
 hashes.modes        = modes
+hashes.variants     = variants
 
 local nodepool      = nodes.pool
 local dummyglyph    = nodepool.register(nodepool.glyph())
@@ -300,6 +302,23 @@ setmetatableindex(modes, function(t,k)
         local mode = properties[k].mode or "base"
         t[k] = mode
         return mode
+    end
+end)
+
+setmetatableindex(variants, function(t,k)
+    if k == true then
+        return variants[currentfont()]
+    else
+        local resources = resources[k]
+        if resources then
+            local variants = resources.variants
+            if variants and next(variants) then
+                t[k] = variants
+                return variants
+            end
+        end
+        t[k] = false
+        return false
     end
 end)
 

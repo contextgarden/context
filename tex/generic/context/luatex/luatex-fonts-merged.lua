@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/20/15 01:02:14
+-- merge date  : 05/22/15 19:25:13
 
 do -- begin closure to overcome local limits and interference
 
@@ -7176,7 +7176,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.810 
+otf.version=2.811 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -7810,6 +7810,25 @@ actions["prepare glyphs"]=function(data,filename,raw)
                   glyph=glyph,
                 }
                 descriptions[unicode]=description
+local altuni=glyph.altuni
+if altuni then
+  for i=1,#altuni do
+    local a=altuni[i]
+    local u=a.unicode
+    if u~=unicode then
+      local v=a.variant
+      if v then
+        local vv=variants[v]
+        if vv then
+          vv[u]=unicode
+        else 
+          vv={ [u]=unicode }
+          variants[v]=vv
+        end
+      end
+    end
+  end
+end
               end
             end
           else
@@ -7880,14 +7899,16 @@ actions["prepare glyphs"]=function(data,filename,raw)
             for i=1,#altuni do
               local a=altuni[i]
               local u=a.unicode
-              local v=a.variant
-              if v then
-                local vv=variants[v]
-                if vv then
-                  vv[u]=unicode
-                else 
-                  vv={ [u]=unicode }
-                  variants[v]=vv
+              if u~=unicode then
+                local v=a.variant
+                if v then
+                  local vv=variants[v]
+                  if vv then
+                    vv[u]=unicode
+                  else 
+                    vv={ [u]=unicode }
+                    variants[v]=vv
+                  end
                 end
               end
             end
@@ -15189,6 +15210,7 @@ end
 local fonts=fonts
 local nodes=nodes
 local traverse_id=node.traverse_id
+local free_node=node.free
 local glyph_code=nodes.nodecodes.glyph
 local disc_code=nodes.nodecodes.disc
 local ligaturing=node.ligaturing
@@ -15218,6 +15240,7 @@ function nodes.handlers.nodepass(head)
     local basefonts={}
     local prevfont=nil
     local basefont=nil
+    local variants=nil
     for n in traverse_id(glyph_code,head) do
       local font=n.font
       if font~=prevfont then
@@ -15237,6 +15260,36 @@ function nodes.handlers.nodepass(head)
               elseif basepass then
                 basefont={ n,nil }
                 basefonts[#basefonts+1]=basefont
+              end
+            end
+            local resources=tfmdata.resources
+            variants=resources and resources.variants
+            variants=variants and next(variants) and variants or false
+          end
+        else
+          local tfmdata=fontdata[prevfont]
+          if tfmdata then
+            local resources=tfmdata.resources
+            variants=resources and resources.variants
+            variants=variants and next(variants) and variants or false
+          end
+        end
+      end
+      if variants then
+        local char=n.char
+        if char>=0xFE00 and (char<=0xFE0F or (char>=0xE0100 and char<=0xE01EF)) then
+          local hash=variants[char]
+          if hash then
+            local p=n.prev
+            if p and p.id==glyph_code then
+              local variant=hash[p.char]
+              if variant then
+                p.char=variant
+                p.next=n.next
+                if n.next then
+                  n.next.prev=p
+                end
+                node.free(n)
               end
             end
           end

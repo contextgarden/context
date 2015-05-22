@@ -38,7 +38,7 @@ REM ~ copy /y bin\x.lua bin\mtx-update.lua
 
 REM --mingw --nofiledatabase --engine=luatex
 
-mtxrun --script ./bin/mtx-update.lua --update --force --make --engine=all --context=beta --texroot=%OWNPATH%tex %*
+mtxrun --script ./bin/mtx-update.lua --update --force --make --engine=all --context=beta --texroot="%OWNPATH%tex" %*
 
 echo.
 echo.

@@ -3422,6 +3422,10 @@ local function prepare_lookups(tfmdata)
     -- much memory as it's only a reference to a table and the slot in the
     -- description hash is not freed anyway
 
+    -- we can delay this using metatables so that we don't make the hashes for
+    -- features we don't use but then we need to loop over the characters
+    -- many times so we gain nothing
+
     for unicode, character in next, characters do -- we cannot loop over descriptions !
 
         local description = descriptions[unicode]

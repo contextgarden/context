@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['font-syn'] = {
 }
 
 -- todo: subs in lookups requests
+-- todo: see if the (experimental) lua reader (on my machine) be used (it's a bit slower so maybe wait till lua 5.3)
 
 local next, tonumber, type, tostring = next, tonumber, type, tostring
 local sub, gsub, lower, match, find, lower, upper = string.sub, string.gsub, string.lower, string.match, string.find, string.lower, string.upper

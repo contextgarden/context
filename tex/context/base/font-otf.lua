@@ -54,7 +54,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.810 -- beware: also sync font-mis.lua
+otf.version              = 2.811 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -819,6 +819,35 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                     glyph       = glyph,
                                 }
                                 descriptions[unicode] = description
+local altuni = glyph.altuni
+if altuni then
+ -- local d
+    for i=1,#altuni do
+        local a = altuni[i]
+        local u = a.unicode
+        if u ~= unicode then
+            local v = a.variant
+            if v then
+                -- tricky: no addition to d? needs checking but in practice such dups are either very simple
+                -- shapes or e.g cjk with not that many features
+                local vv = variants[v]
+                if vv then
+                    vv[u] = unicode
+                else -- xits-math has some:
+                    vv = { [u] = unicode }
+                    variants[v] = vv
+                end
+         -- elseif d then
+         --     d[#d+1] = u
+         -- else
+         --     d = { u }
+            end
+        end
+    end
+ -- if d then
+ --     duplicates[unicode] = d -- is this needed ?
+ -- end
+end
                             end
                         end
                     else
@@ -902,21 +931,23 @@ actions["prepare glyphs"] = function(data,filename,raw)
                         for i=1,#altuni do
                             local a = altuni[i]
                             local u = a.unicode
-                            local v = a.variant
-                            if v then
-                                -- tricky: no addition to d? needs checking but in practice such dups are either very simple
-                                -- shapes or e.g cjk with not that many features
-                                local vv = variants[v]
-                                if vv then
-                                    vv[u] = unicode
-                                else -- xits-math has some:
-                                    vv = { [u] = unicode }
-                                    variants[v] = vv
+                            if u ~= unicode then
+                                local v = a.variant
+                                if v then
+                                    -- tricky: no addition to d? needs checking but in practice such dups are either very simple
+                                    -- shapes or e.g cjk with not that many features
+                                    local vv = variants[v]
+                                    if vv then
+                                        vv[u] = unicode
+                                    else -- xits-math has some:
+                                        vv = { [u] = unicode }
+                                        variants[v] = vv
+                                    end
+                             -- elseif d then
+                             --     d[#d+1] = u
+                             -- else
+                             --     d = { u }
                                 end
-                         -- elseif d then
-                         --     d[#d+1] = u
-                         -- else
-                         --     d = { u }
                             end
                         end
                      -- if d then
