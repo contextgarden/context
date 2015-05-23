@@ -138,7 +138,8 @@ function handlers.characters(head)
     local prevfont  = nil
     local prevattr  = 0
     local done      = false
-    local variants  = false
+    local variants  = nil
+    local redundant = nil
 
     if trace_fontrun then
         run = run + 1
@@ -216,12 +217,22 @@ function handlers.characters(head)
                             local variant = hash[getchar(p)]
                             if variant then
                                 setfield(p,"char",variant)
-                                delete_node(nuthead,n)
+                                if not redundant then
+                                    redundant = { n }
+                                else
+                                    redundant[#redundant+1] = n
+                                end
                             end
                         end
                     end
                 end
             end
+        end
+    end
+
+    if redundant then
+        for i=1,#redundant do
+            delete_node(nuthead,n)
         end
     end
 

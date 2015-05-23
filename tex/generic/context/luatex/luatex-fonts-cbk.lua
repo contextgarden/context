@@ -18,6 +18,7 @@ local nodes = nodes
 
 local traverse_id = node.traverse_id
 local free_node   = node.free
+local remove_node = node.remove
 
 local glyph_code  = nodes.nodecodes.glyph
 local disc_code   = nodes.nodecodes.disc
@@ -60,6 +61,7 @@ function nodes.handlers.nodepass(head)
         local prevfont  = nil
         local basefont  = nil
         local variants  = nil
+        local redundant = nil
         for n in traverse_id(glyph_code,head) do
             local font = n.font
             if font ~= prevfont then
@@ -104,15 +106,22 @@ function nodes.handlers.nodepass(head)
                             local variant = hash[p.char]
                             if variant then
                                 p.char = variant
-                                p.next = n.next
-                                if n.next then
-                                    n.next.prev = p
+                                if not redundant then
+                                    redundant = { n }
+                                else
+                                    redundant[#redundant+1] = n
                                 end
-                                node.free(n)
                             end
                         end
                     end
                 end
+            end
+        end
+        if redundant then
+            for i=1,#redundant do
+                local n = redundant[i]
+                remove_node(head,n)
+                free_node(n)
             end
         end
         for d in traverse_id(disc_code,head) do
