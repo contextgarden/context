@@ -15,7 +15,9 @@ local sortedkeys        = table.sortedkeys
 local format            = string.format
 local concat            = table.concat
 
-local tabletracers = moduledata.fonts.tables
+local tabletracers      = moduledata.fonts.tables
+
+local context           = context
 
 local digits = {
     dflt = {
@@ -184,7 +186,7 @@ function tabletracers.showparameters(nesting)
 end
 
 function tabletracers.showpositionings()
-    local tfmdata = fonts.hashes.identifiers[font.current()]
+    local tfmdata = fonts.hashes.resources[font.current()]
     local resources = tfmdata.resources
     if resources then
         local features = resources.features
@@ -290,6 +292,42 @@ function tabletracers.showsubstitutions()
     end
 end
 
+function tabletracers.showunicodevariants()
+
+    local variants = fonts.hashes.variants[true]
+
+    if variants then
+        context.starttabulate { "|c|c|c|c|c|c|c|" }
+        for selector, unicodes in sortedhash(variants) do
+            local done = false
+            for unicode, variant in sortedhash(unicodes) do
+                context.NC()
+                if not done then
+                    context("%U",selector)
+                    done = true
+                end
+                context.NC()
+                context("%U",unicode)
+                context.NC()
+                context("%c",unicode)
+                context.NC()
+                context("%U",variant)
+                context.NC()
+                context("%c",variant)
+                context.NC()
+                context("%c%c",unicode,selector)
+                context.NC()
+                context.startoverlay()
+                    context("{\\color[trace:r]{%c}}{\\color[trace:ds]{%c}}",unicode,variant)
+                context.stopoverlay()
+                context.NC()
+                context.NR()
+            end
+        end
+        context.stoptabulate()
+    end
+
+end
 function tabletracers.showall(specification) -- not interfaced
 
     specification = interfaces.checkedspecification(specification)
@@ -312,6 +350,10 @@ function tabletracers.showall(specification) -- not interfaced
 
     context.startsubject { title = "Substitution features" }
         tabletracers.showsubstitutions()
+    context.stopsubject()
+
+    context.startsubject { title = "Unicode variants" }
+        tabletracers.showunicodevariants()
     context.stopsubject()
 
     if title then
