@@ -128,7 +128,7 @@ end
 
 nodes.astable = astable
 
-setinspector(function(v) if is_node(v) then printtable(astable(v),tostring(v)) return true end end)
+setinspector("node",function(v) if is_node(v) then printtable(astable(v),tostring(v)) return true end end)
 
 -- under construction:
 

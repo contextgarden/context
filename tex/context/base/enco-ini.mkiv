@@ -111,10 +111,36 @@
 %    \relax#2%
 %    \endgroup}
 
+% \unexpanded\def\buildtextaccent#1#2% we could do all at the lua end
+%   {\begingroup                     % but that's no fun (yet)
+%    \setbox\b_enco_accent\hbox{#1}%
+%    \clf_buildtextaccent\b_enco_accent#2%
+%    \endgroup}
+%
+% This one can handle font collections too. The accent command is a scanner
+% and the same font and otherwise discards the character (imo it could
+% better drop the accent).
+
 \unexpanded\def\buildtextaccent#1#2% we could do all at the lua end
-  {\begingroup                     % but that's no fun (yet)
-   \setbox\b_enco_accent\hbox{#1}%
-   \clf_buildtextaccent\b_enco_accent#2%
+  {\dontleavehmode\begingroup      % but that's no fun (yet)
+   \setbox\scratchboxone\hbox{#1}% accent
+   \setbox\scratchboxtwo\hbox{#2}% character
+   \scratchheight\dimexpr\ht\scratchboxtwo-\ht\scratchboxone\relax
+   \scratchdepth \dimexpr\dp\scratchboxtwo-\dp\scratchboxone\relax
+   \scratchwidth \wd\scratchboxtwo
+   \hbox to \wd\ifdim\wd\scratchboxone>\wd\scratchboxtwo\scratchboxone\else\scratchboxtwo\fi\bgroup
+     \hss\box\scratchboxtwo\hss
+     \hskip-\scratchwidth
+     \hss
+     \ifdim\ht\scratchboxone>\exheight
+       % top accent
+       \raise\dimexpr\scratchheight+\exheight/3\relax
+     \else
+       \lower-\dimexpr\scratchdepth+\exheight/3\relax
+     \fi
+     \box\scratchboxone
+     \hss
+   \egroup
    \endgroup}
 
 \unexpanded\def\bottomaccent#1#2#3#4#5% down right slantcorrection accent char

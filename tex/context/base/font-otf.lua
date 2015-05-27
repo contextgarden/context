@@ -12,6 +12,12 @@ if not modules then modules = { } end modules ['font-otf'] = {
 -- to_table -> totable
 -- ascent descent
 
+-- to be checked: combinations like:
+--
+-- current="ABCD" with [A]=nothing, [BC]=ligature, [D]=single (applied to result of BC so funny index)
+--
+-- unlikely but possible
+
 -- more checking against low level calls of functions
 
 local utfbyte = utf.byte
@@ -54,7 +60,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.811 -- beware: also sync font-mis.lua
+otf.version              = 2.812 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes

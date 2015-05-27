@@ -214,6 +214,7 @@ max_print_line.luatex    =    255
 max_print_line.xetex     =    255
 max_print_line.mpost     =    255
 max_print_line.metafun   =    255
+max_print_line.luatex-plain = 255
 
 extra_mem_top.mptopdf    = 1000000
 extra_mem_bot.mptopdf    = 1000000

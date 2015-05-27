@@ -26,7 +26,7 @@ local traverse_id        = nuts.traverse_id
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
-local trace_collecting   = false  trackers.register("fonts.collecting",  function(v) trace_collecting  = v end)
+local trace_collecting   = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
 
 local report_fonts       = logs.reporter("fonts","collections")
 
@@ -253,23 +253,32 @@ end
 function collections.process(head) -- this way we keep feature processing
     local done = false
     for n in traverse_id(glyph_code,tonut(head)) do
-        local v = vectors[getfont(n)]
-        if v then
-            local id = v[getchar(n)]
-            if id then
-                if type(id) == "table" then
-                    local newid, newchar = id[1], id[2]
-                    if trace_collecting then
-                        report_fonts("remapping character %C in font %a to character %C in font %a",getchar(n),getfont(n),newchar,newid)
-                    end
-                    setfield(n,"font",newid)
-                    setfield(n,"char",newchar)
-                else
-                    if trace_collecting then
-                        report_fonts("remapping font %a to %a for character %C",getfont(n),id,getchar(n))
-                    end
-                    setfield(n,"font",id)
+        local font   = getfont(n)
+        local vector = vectors[font]
+        if vector then
+            local char = getchar(n)
+            local vect = vector[char]
+            if not vect then
+                -- keep it
+            elseif type(vect) == "table" then
+                local newfont = vect[1]
+                local newchar = vect[2]
+                if trace_collecting then
+                    report_fonts("remapping character %C in font %a to character %C in font %a%s",
+                        char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
+                    )
                 end
+                setfield(n,"font",newfont)
+                setfield(n,"char",newchar)
+                done = true
+            else
+                if trace_collecting then
+                    report_fonts("remapping font %a to %a for character %C%s",
+                        font,vect,char,not chardata[vect][char] and " (missing)" or ""
+                    )
+                end
+                setfield(n,"font",vect)
+                done = true
             end
         end
     end

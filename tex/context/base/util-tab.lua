@@ -545,6 +545,7 @@ local f_val_str           = formatters["%w%q,"]
 local f_val_boo           = formatters["%w%l,"]
 local f_val_not           = formatters["%w{},"]
 local f_val_seq           = formatters["%w{ %, t },"]
+local f_fin_seq           = formatters[" %, t }"]
 
 local f_table_return      = formatters["return {"]
 local f_table_name        = formatters["%s={"]
@@ -562,14 +563,15 @@ local serialize = table.serialize -- the extensive one, the one we started with
 -- latest lua for the value of #n (with holes) .. anyway for tracing purposes we want
 -- indices / keys being sorted, so it will never be real fast
 
-function table.serialize(root,name,specification)
+local function serialize(root,name,specification)
 
     if type(specification) == "table" then
         return serialize(root,name,specification) -- the original one
     end
 
-    local t -- = { }
-    local n = 1
+    local t    -- = { }
+    local n       = 1
+    local unknown = false
 
 --     local function simple_table(t)
 --         local ts = #t
@@ -614,6 +616,7 @@ function table.serialize(root,name,specification)
                     return nil
                 end
             end
+            local haszero = t[0]
             if n == nt then
                 local tt = { }
                 for i=1,nt do
@@ -629,6 +632,23 @@ function table.serialize(root,name,specification)
                         return nil
                     end
                 end
+                return tt
+            elseif haszero and (n == nt + 1) then
+                local tt = { }
+                for i=0,nt do
+                    local v = t[i]
+                    local tv = type(v)
+                    if tv == "number" then
+                        tt[i+1] = v -- not needed tostring(v)
+                    elseif tv == "string" then
+                        tt[i+1] = format("%q",v) -- f_string(v)
+                    elseif tv == "boolean" then
+                        tt[i+1] = v and "true" or "false"
+                    else
+                        return nil
+                    end
+                end
+                tt[1] = "[0] = " .. tt[1]
                 return tt
             end
         end
@@ -680,7 +700,7 @@ function table.serialize(root,name,specification)
                     elseif tv == "string" then
                         n = n + 1 t[n] = f_val_str(depth,v)
                     elseif tv == "table" then
-                        if next(v) == nil then
+                        if next(v) == nil then -- tricky as next is unpredictable in a hash
                             n = n + 1 t[n] = f_val_not(depth)
                         else
                             local st = simple_table(v)
@@ -692,6 +712,8 @@ function table.serialize(root,name,specification)
                         end
                     elseif tv == "boolean" then
                         n = n + 1 t[n] = f_val_boo(depth,v)
+                    elseif unknown then
+                        n = n + 1 t[n] = f_val_str(depth,tostring(v))
                     end
                 elseif tv == "number" then
                     if tk == "number" then
@@ -700,6 +722,8 @@ function table.serialize(root,name,specification)
                         n = n + 1 t[n] = f_key_str_value_num(depth,k,v)
                     elseif tk == "boolean" then
                         n = n + 1 t[n] = f_key_boo_value_num(depth,k,v)
+                    elseif unknown then
+                        n = n + 1 t[n] = f_key_str_value_num(depth,tostring(k),v)
                     end
                 elseif tv == "string" then
                     if tk == "number" then
@@ -708,6 +732,8 @@ function table.serialize(root,name,specification)
                         n = n + 1 t[n] = f_key_str_value_str(depth,k,v)
                     elseif tk == "boolean" then
                         n = n + 1 t[n] = f_key_boo_value_str(depth,k,v)
+                    elseif unknown then
+                        n = n + 1 t[n] = f_key_str_value_str(depth,tostring(k),v)
                     end
                 elseif tv == "table" then
                     if next(v) == nil then
@@ -717,6 +743,8 @@ function table.serialize(root,name,specification)
                             n = n + 1 t[n] = f_key_str_value_not(depth,k)
                         elseif tk == "boolean" then
                             n = n + 1 t[n] = f_key_boo_value_not(depth,k)
+                        elseif unknown then
+                            n = n + 1 t[n] = f_key_str_value_not(depth,tostring(k))
                         end
                     else
                         local st = simple_table(v)
@@ -728,6 +756,8 @@ function table.serialize(root,name,specification)
                             n = n + 1 t[n] = f_key_str_value_seq(depth,k,st)
                         elseif tk == "boolean" then
                             n = n + 1 t[n] = f_key_boo_value_seq(depth,k,st)
+                        elseif unknown then
+                            n = n + 1 t[n] = f_key_str_value_seq(depth,tostring(k),st)
                         end
                     end
                 elseif tv == "boolean" then
@@ -737,6 +767,18 @@ function table.serialize(root,name,specification)
                         n = n + 1 t[n] = f_key_str_value_boo(depth,k,v)
                     elseif tk == "boolean" then
                         n = n + 1 t[n] = f_key_boo_value_boo(depth,k,v)
+                    elseif unknown then
+                        n = n + 1 t[n] = f_key_str_value_boo(depth,tostring(k),v)
+                    end
+                else
+                    if tk == "number" then
+                        n = n + 1 t[n] = f_key_num_value_str(depth,k,tostring(v))
+                    elseif tk == "string" then
+                        n = n + 1 t[n] = f_key_str_value_str(depth,k,tostring(v))
+                    elseif tk == "boolean" then
+                        n = n + 1 t[n] = f_key_boo_value_str(depth,k,tostring(v))
+                    elseif unknown then
+                        n = n + 1 t[n] = f_key_str_value_str(depth,tostring(k),tostring(v))
                     end
                 end
             end
@@ -775,10 +817,21 @@ function table.serialize(root,name,specification)
         end
         -- Let's forget about empty tables.
         if next(root) ~= nil then
-            do_serialize(root,name,1,0)
+            local st = simple_table(root)
+            if st then
+                return t[1] .. f_fin_seq(st) -- todo: move up and in one go
+            else
+                do_serialize(root,name,1,0)
+            end
         end
     end
     n = n + 1
     t[n] = f_table_finish()
     return concat(t,"\n")
+end
+
+table.serialize = serialize
+
+if setinspector then
+    setinspector("table",function(v) if type(v) == "table" then print(serialize(v,"table")) return true end end)
 end

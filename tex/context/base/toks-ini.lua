@@ -49,7 +49,7 @@ if newtoken then
         tokens.istoken = istoken
         tokens.astable = astable
 
-        setinspector(function(v) if istoken(v) then printtable(astable(v),tostring(v)) return true end end)
+        setinspector("token",function(v) if istoken(v) then printtable(astable(v),tostring(v)) return true end end)
 
     end
 

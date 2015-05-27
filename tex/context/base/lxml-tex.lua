@@ -1940,10 +1940,12 @@ function lxml.applyselectors(id)
                         local categories = options_to_hash(rest)
                         if categories["begin"] then
                             local okay = false
-                            for k, v in next, permitted do
-                                if categories[k] then
-                                    okay = k
-                                    break
+                            if permitted then
+                                for k, v in next, permitted do
+                                    if categories[k] then
+                                        okay = k
+                                        break
+                                    end
                                 end
                             end
                             if not trace_selectors then
@@ -1982,10 +1984,12 @@ function lxml.applyselectors(id)
                         local categories = options_to_hash(rest)
                         if categories["begin"] then
                             local okay = false
-                            for k, v in next, permitted do
-                                if categories[k] then
-                                    okay = k
-                                    break
+                            if permitted then
+                                for k, v in next, permitted do
+                                    if categories[k] then
+                                        okay = k
+                                        break
+                                    end
                                 end
                             end
                             if not trace_selectors then

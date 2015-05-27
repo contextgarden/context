@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/23/15 10:13:59
+-- merge date  : 05/27/15 19:41:37
 
 do -- begin closure to overcome local limits and interference
 
@@ -57,21 +57,33 @@ if not package.loaders then
 end
 local print,select,tostring=print,select,tostring
 local inspectors={}
-function setinspector(inspector) 
-  inspectors[#inspectors+1]=inspector
+function setinspector(kind,inspector) 
+  inspectors[kind]=inspector
 end
 function inspect(...) 
   for s=1,select("#",...) do
     local value=select(s,...)
-    local done=false
-    for i=1,#inspectors do
-      done=inspectors[i](value)
-      if done then
-        break
+    if value==nil then
+      print("nil")
+    else
+      local done=false
+      local kind=type(value)
+      local inspector=inspectors[kind]
+      if inspector then
+        done=inspector(value)
+        if done then
+          break
+        end
       end
-    end
-    if not done then
-      print(tostring(value))
+      for kind,inspector in next,inspectors do
+        done=inspector(value)
+        if done then
+          break
+        end
+      end
+      if not done then
+        print(tostring(value))
+      end
     end
   end
 end
@@ -112,7 +124,7 @@ local floor=math.floor
 local P,R,S,V,Ct,C,Cs,Cc,Cp,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.V,lpeg.Ct,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Cp,lpeg.Cmt
 local lpegtype,lpegmatch,lpegprint=lpeg.type,lpeg.match,lpeg.print
 if setinspector then
-  setinspector(function(v) if lpegtype(v) then lpegprint(v) return true end end)
+  setinspector("lpeg",function(v) if lpegtype(v) then lpegprint(v) return true end end)
 end
 lpeg.patterns=lpeg.patterns or {} 
 local patterns=lpeg.patterns
@@ -1884,7 +1896,7 @@ function table.print(t,...)
   end
 end
 if setinspector then
-  setinspector(function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
+  setinspector("table",function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
 end
 function table.sub(t,i,j)
   return { unpack(t,i,j) }
@@ -7176,7 +7188,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.811 
+otf.version=2.812 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
