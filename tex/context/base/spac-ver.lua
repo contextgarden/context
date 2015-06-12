@@ -75,6 +75,7 @@ local a_skiporder         = attributes.private('skiporder')
 ----- snap_category       = attributes.private('snapcategory')
 local a_snapmethod        = attributes.private('snapmethod')
 local a_snapvbox          = attributes.private('snapvbox')
+local a_profilemethod     = attributes.private("profilemethod")
 
 local nuts                = nodes.nuts
 local tonode              = nuts.tonode

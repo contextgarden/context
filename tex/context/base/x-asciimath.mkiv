@@ -153,6 +153,7 @@
     \ctxlua{moduledata.asciimath.setup {
         splitmethod = "\asciimathparameter\c!splitmethod",
         separator   = "\asciimathparameter\c!separator",
+        symbol      = "\asciimathparameter\c!symbol",
     }}%
 \to \everysetupasciimath
 
@@ -390,4 +391,37 @@
 % \MyAsciiMath{x^2(10 -x)&gt;2 x^2}
 % \MyAsciiMath{x^4&gt;x}
 \stoplines
+
+\setupasciimath[splitmethod=3,symbol={{,}}]
+
+\startlines
+\asciimath{sqrt 1}
+\asciimath{sqrt 1.2}
+\asciimath{sqrt 1.2}
+\asciimath{1}
+\asciimath{12}
+\asciimath{123}
+\asciimath{1234}
+\asciimath{12345}
+\asciimath{123456}
+\asciimath{1234567}
+\asciimath{12345678}
+\asciimath{123456789}
+\asciimath{1.1}
+\asciimath{12.12}
+\asciimath{1234.123}
+\asciimath{1234.1234}
+\asciimath{12345.1234}
+\asciimath{1234.12345}
+\asciimath{12345.12345}
+\asciimath{123456.123456}
+\asciimath{1234567.1234567}
+\asciimath{12345678.12345678}
+\asciimath{123456789.123456789}
+\asciimath{0.1234}
+\asciimath{1234.0}
+\asciimath{1234.00}
+\asciimath{0.123456789}
+\stoplines
+
 \stoptext

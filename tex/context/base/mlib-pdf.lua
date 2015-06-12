@@ -428,6 +428,8 @@ function metapost.flush(result,flusher,askedfig)
                         result[#result+1] = "q"
                         if objects then
                             resetplugins(result) -- we should move the colorinitializer here
+local savedpath = nil
+local savedhtap = nil
                             for o=1,#objects do
                                 local object = objects[o]
                                 local objecttype = object.type
@@ -466,95 +468,129 @@ function metapost.flush(result,flusher,askedfig)
                                     })
                                     -- first we analyze
                                     local before, after = processplugins(object)
-                                    local objecttype = object.type -- can have changed
-                                    if before then
-                                        result = pluginactions(before,result,flushfigure)
-                                    end
-                                    local ml = object.miterlimit
-                                    if ml and ml ~= miterlimit then
-                                        miterlimit = ml
-                                        result[#result+1] = f_M(ml)
-                                    end
-                                    local lj = object.linejoin
-                                    if lj and lj ~= linejoin then
-                                        linejoin = lj
-                                        result[#result+1] = f_j(lj)
-                                    end
-                                    local lc = object.linecap
-                                    if lc and lc ~= linecap then
-                                        linecap = lc
-                                        result[#result+1] = f_J(lc)
-                                    end
-                                    local dl = object.dash
-                                    if dl then
-                                        local d = f_d(concat(dl.dashes or {}," "),dl.offset)
-                                        if d ~= dashed then
-                                            dashed = d
-                                            result[#result+1] = d
-                                        end
-                                    elseif dashed ~= false then -- was just dashed test
-                                       result[#result+1] = "[] 0 d"
-                                       dashed = false
-                                    end
-                                    local path = object.path -- newpath
-                                    local transformed, penwidth = false, 1
-                                    local open = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
-                                    local pen = object.pen
-                                    if pen then
-                                       if pen.type == 'elliptical' then
-                                            transformed, penwidth = pen_characteristics(original) -- boolean, value
-                                            result[#result+1] = f_w(penwidth) -- todo: only if changed
-                                            if objecttype == 'fill' then
-                                                objecttype = 'both'
-                                            end
-                                       else -- calculated by mplib itself
-                                            objecttype = 'fill'
-                                       end
-                                    end
-                                    if transformed then
-                                        result[#result+1] = "q"
-                                    end
                                     local evenodd = not object.istext and object.postscript == "evenodd"
-                                    if path then
-                                        if transformed then
-                                            flushconcatpath(path,result,open)
+                                    local collect = not object.istext and object.postscript == "collect"
+                                    if collect then
+                                        if not savedpath then
+                                            savedpath = { object.path or false }
+                                            savedhtap = { object.htap or false }
                                         else
-                                            flushnormalpath(path,result,open)
+                                            savedpath[#savedpath+1] = object.path or false
+                                            savedhtap[#savedhtap+1] = object.htap or false
                                         end
-                                        if objecttype == "fill" then
-                                            result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
-                                        elseif objecttype == "outline" then
-                                            result[#result+1] = open and "S" or "h S"
-                                        elseif objecttype == "both" then
-                                            result[#result+1] = evenodd and "h B*" or "h B"-- B* = eo -- b includes closepath
+                                    else
+                                        local objecttype = object.type -- can have changed
+                                        if before then
+                                            result = pluginactions(before,result,flushfigure)
                                         end
-                                    end
-                                    if transformed then
-                                        result[#result+1] = "Q"
-                                    end
-                                    local path = object.htap
-                                    if path then
+                                        local ml = object.miterlimit
+                                        if ml and ml ~= miterlimit then
+                                            miterlimit = ml
+                                            result[#result+1] = f_M(ml)
+                                        end
+                                        local lj = object.linejoin
+                                        if lj and lj ~= linejoin then
+                                            linejoin = lj
+                                            result[#result+1] = f_j(lj)
+                                        end
+                                        local lc = object.linecap
+                                        if lc and lc ~= linecap then
+                                            linecap = lc
+                                            result[#result+1] = f_J(lc)
+                                        end
+                                        local dl = object.dash
+                                        if dl then
+                                            local d = f_d(concat(dl.dashes or {}," "),dl.offset)
+                                            if d ~= dashed then
+                                                dashed = d
+                                                result[#result+1] = d
+                                            end
+                                        elseif dashed ~= false then -- was just dashed test
+                                           result[#result+1] = "[] 0 d"
+                                           dashed = false
+                                        end
+                                        local path = object.path -- newpath
+                                        local transformed, penwidth = false, 1
+                                        local open = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
+                                        local pen = object.pen
+                                        if pen then
+                                           if pen.type == 'elliptical' then
+                                                transformed, penwidth = pen_characteristics(original) -- boolean, value
+                                                result[#result+1] = f_w(penwidth) -- todo: only if changed
+                                                if objecttype == 'fill' then
+                                                    objecttype = 'both'
+                                                end
+                                           else -- calculated by mplib itself
+                                                objecttype = 'fill'
+                                           end
+                                        end
                                         if transformed then
                                             result[#result+1] = "q"
                                         end
-                                        if transformed then
-                                            flushconcatpath(path,result,open)
-                                        else
-                                            flushnormalpath(path,result,open)
-                                        end
-                                        if objecttype == "fill" then
-                                            result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
-                                        elseif objecttype == "outline" then
-                                            result[#result+1] = open and "S" or "h S"
-                                        elseif objecttype == "both" then
-                                            result[#result+1] = evenodd and "h B*" or "h B"-- B* = eo -- b includes closepath
+                                        if path then
+                                            if savedpath then
+                                                for i=1,#savedpath do
+                                                    local path = savedpath[i]
+                                                    if transformed then
+                                                        flushconcatpath(path,result,open)
+                                                    else
+                                                        flushnormalpath(path,result,open)
+                                                    end
+                                                end
+                                                savedpath = nil
+                                            end
+                                            if transformed then
+                                                flushconcatpath(path,result,open)
+                                            else
+                                                flushnormalpath(path,result,open)
+                                            end
+                                            if objecttype == "fill" then
+                                                result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
+                                            elseif objecttype == "outline" then
+                                                result[#result+1] = open and "S" or "h S"
+                                            elseif objecttype == "both" then
+                                                result[#result+1] = evenodd and "h B*" or "h B"-- B* = eo -- b includes closepath
+                                            end
                                         end
                                         if transformed then
                                             result[#result+1] = "Q"
                                         end
-                                    end
-                                    if after then
-                                        result = pluginactions(after,result,flushfigure)
+                                        local path = object.htap
+                                        if path then
+                                            if transformed then
+                                                result[#result+1] = "q"
+                                            end
+                                            if savedhtap then
+                                                for i=1,#savedhtap do
+                                                    local path = savedhtap[i]
+                                                    if transformed then
+                                                        flushconcatpath(path,result,open)
+                                                    else
+                                                        flushnormalpath(path,result,open)
+                                                    end
+                                                end
+                                                savedhtap = nil
+                                                evenodd   = true
+                                            end
+                                            if transformed then
+                                                flushconcatpath(path,result,open)
+                                            else
+                                                flushnormalpath(path,result,open)
+                                            end
+                                            if objecttype == "fill" then
+                                                result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
+                                            elseif objecttype == "outline" then
+                                                result[#result+1] = open and "S" or "h S"
+                                            elseif objecttype == "both" then
+                                                result[#result+1] = evenodd and "h B*" or "h B"-- B* = eo -- b includes closepath
+                                            end
+                                            if transformed then
+                                                result[#result+1] = "Q"
+                                            end
+                                        end
+                                        if after then
+                                            result = pluginactions(after,result,flushfigure)
+                                        end
                                     end
                                     if object.grouped then
                                         -- can be qQ'd so changes can end up in groups

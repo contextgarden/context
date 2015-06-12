@@ -557,7 +557,7 @@ local f_table_finish      = formatters["}"]
 
 local spaces = utilities.strings.newrepeater(" ")
 
-local serialize = table.serialize -- the extensive one, the one we started with
+local original_serialize = table.serialize -- the extensive one, the one we started with
 
 -- there is still room for optimization: index run, key run, but i need to check with the
 -- latest lua for the value of #n (with holes) .. anyway for tracing purposes we want
@@ -566,7 +566,7 @@ local serialize = table.serialize -- the extensive one, the one we started with
 local function serialize(root,name,specification)
 
     if type(specification) == "table" then
-        return serialize(root,name,specification) -- the original one
+        return original_serialize(root,name,specification) -- the original one
     end
 
     local t    -- = { }

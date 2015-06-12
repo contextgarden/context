@@ -84,7 +84,6 @@ local function addfeature(data,feature,specifications)
                             local unicode = tonumber(code) or unicodes[code]
                             local description = descriptions[unicode]
                             if description then
-                                local slookups = description.slookups
                                 if type(ligature) == "string" then
                                     ligature = { lpegmatch(splitter,ligature) }
                                 end
@@ -96,6 +95,7 @@ local function addfeature(data,feature,specifications)
                                     end
                                 end
                                 if present then
+                                    local slookups = description.slookups
                                     if slookups then
                                         slookups[full] = ligature
                                     else
@@ -113,9 +113,9 @@ local function addfeature(data,feature,specifications)
                             local unicode = tonumber(code) or unicodes[code]
                             local description = descriptions[unicode]
                             if description then
-                                local slookups = description.slookups
                                 replacement = tonumber(replacement) or unicodes[replacement]
                                 if descriptions[replacement] then
+                                    local slookups = description.slookups
                                     if slookups then
                                         slookups[full] = replacement
                                     else
@@ -347,3 +347,21 @@ registerotffeature {
     name        = 'anum',
     description = 'arabic digits',
 }
+
+-- maybe:
+
+-- fonts.handlers.otf.addfeature("hangulfix",{
+--     type     = "substitution",
+--     features = { ["hang"] = { ["*"] = true } },
+--     data     = {
+--         [0x1160] = 0x119E,
+--     },
+--     order    = { "hangulfix" },
+--     flags    = { },
+--     prepend  = true,
+-- })
+
+-- fonts.handlers.otf.features.register {
+--     name        = 'hangulfix',
+--     description = 'fixes for hangul',
+-- }

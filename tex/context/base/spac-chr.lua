@@ -272,6 +272,8 @@ local methods = {
 
 }
 
+characters.methods = methods
+
 function characters.handler(head) -- todo: use traverse_id
     head = tonut(head)
     local current = head

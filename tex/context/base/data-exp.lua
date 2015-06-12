@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['data-exp'] = {
 
 local format, find, gmatch, lower, char, sub = string.format, string.find, string.gmatch, string.lower, string.char, string.sub
 local concat, sort = table.concat, table.sort
+local sortedkeys = table.sortedkeys
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local Ct, Cs, Cc, Carg, P, C, S = lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.P, lpeg.C, lpeg.S
 local type, next = type, next
@@ -501,17 +502,41 @@ end
 
 local nothing = function() end
 
+-- function resolvers.filtered_from_content(content,pattern)
+--     if content and type(pattern) == "string" then
+--         local pattern = lower(pattern)
+--         local files   = content.files
+--         local remap   = content.remap
+--         if files and remap then
+--             local n = next(files)
+--             local function iterator()
+--                 while n do
+--                     local k = n
+--                     n = next(files,k)
+--                     if find(k,pattern) then
+--                         return files[k], remap and remap[k] or k
+--                     end
+--                 end
+--             end
+--             return iterator
+--         end
+--     end
+--     return nothing
+-- end
+
 function resolvers.filtered_from_content(content,pattern)
     if content and type(pattern) == "string" then
         local pattern = lower(pattern)
-        local files   = content.files
+        local files   = content.files -- we could store the sorted list
         local remap   = content.remap
         if files and remap then
-            local n = next(files)
+            local f = sortedkeys(files)
+            local n = #f
+            local i = 0
             local function iterator()
-                while n do
-                    local k = n
-                    n = next(files,k)
+                while i < n do
+                    i = i + 1
+                    local k = f[i]
                     if find(k,pattern) then
                         return files[k], remap and remap[k] or k
                     end
@@ -522,7 +547,6 @@ function resolvers.filtered_from_content(content,pattern)
     end
     return nothing
 end
-
 
 -- inspect(resolvers.simplescanfiles("e:/temporary/mb-mp"))
 -- inspect(resolvers.scanfiles("e:/temporary/mb-mp"))

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/27/15 19:41:37
+-- merge date  : 06/12/15 22:19:11
 
 do -- begin closure to overcome local limits and interference
 
@@ -1007,9 +1007,10 @@ function string.valid(str,default)
   return (type(str)=="string" and str~="" and str) or default or nil
 end
 string.itself=function(s) return s end
-local pattern=Ct(C(1)^0) 
-function string.totable(str)
-  return lpegmatch(pattern,str)
+local pattern_c=Ct(C(1)^0) 
+local pattern_b=Ct((C(1)/byte)^0)
+function string.totable(str,bytes)
+  return lpegmatch(bytes and pattern_b or pattern_c,str)
 end
 local replacer=lpeg.replacer("@","%%") 
 function string.tformat(fmt,...)
@@ -2949,7 +2950,13 @@ function string.autosingle(s,sep)
   end
   return ("'"..tostring(s).."'")
 end
-local tracedchars={}
+local tracedchars={ [0]=
+  "[null]","[soh]","[stx]","[etx]","[eot]","[enq]","[ack]","[bel]",
+  "[bs]","[ht]","[lf]","[vt]","[ff]","[cr]","[so]","[si]",
+  "[dle]","[dc1]","[dc2]","[dc3]","[dc4]","[nak]","[syn]","[etb]",
+  "[can]","[em]","[sub]","[esc]","[fs]","[gs]","[rs]","[us]",
+  "[space]",
+}
 string.tracedchars=tracedchars
 strings.tracers=tracedchars
 function string.tracedchar(b)
@@ -4373,6 +4380,7 @@ function constructors.scale(tfmdata,specification)
   local hdelta=delta
   local vdelta=delta
   target.designsize=parameters.designsize 
+  target.units=units
   target.units_per_em=units
   local direction=properties.direction or tfmdata.direction or 0 
   target.direction=direction
@@ -4774,11 +4782,20 @@ function constructors.finalize(tfmdata)
   if not parameters.slantfactor then
     parameters.slantfactor=tfmdata.slant or 0
   end
-  if not parameters.designsize then
-    parameters.designsize=tfmdata.designsize or (factors.pt*10)
+  local designsize=parameters.designsize
+  if designsize then
+    parameters.minsize=tfmdata.minsize or designsize
+    parameters.maxsize=tfmdata.maxsize or designsize
+  else
+    designsize=factors.pt*10
+    parameters.designsize=designsize
+    parameters.minsize=designsize
+    parameters.maxsize=designsize
   end
+  parameters.minsize=tfmdata.minsize or parameters.designsize
+  parameters.maxsize=tfmdata.maxsize or parameters.designsize
   if not parameters.units then
-    parameters.units=tfmdata.units_per_em or 1000
+    parameters.units=tfmdata.units or tfmdata.units_per_em or 1000
   end
   if not tfmdata.descriptions then
     local descriptions={} 
@@ -4841,6 +4858,7 @@ function constructors.finalize(tfmdata)
   tfmdata.auto_protrude=nil
   tfmdata.extend=nil
   tfmdata.slant=nil
+  tfmdata.units=nil
   tfmdata.units_per_em=nil
   tfmdata.cache=nil
   properties.finalized=true
@@ -6079,7 +6097,7 @@ local keys={}
 function keys.FontName  (data,line) data.metadata.fontname=strip  (line) 
                    data.metadata.fullname=strip  (line) end
 function keys.ItalicAngle (data,line) data.metadata.italicangle=tonumber (line) end
-function keys.IsFixedPitch(data,line) data.metadata.isfixedpitch=toboolean(line,true) end
+function keys.IsFixedPitch(data,line) data.metadata.monospaced=toboolean(line,true) end
 function keys.CharWidth  (data,line) data.metadata.charwidth=tonumber (line) end
 function keys.XHeight   (data,line) data.metadata.xheight=tonumber (line) end
 function keys.Descender  (data,line) data.metadata.descender=tonumber (line) end
@@ -6501,7 +6519,7 @@ local function copytotfm(data)
     local emdash=0x2014
     local spacer="space"
     local spaceunits=500
-    local monospaced=metadata.isfixedpitch
+    local monospaced=metadata.monospaced
     local charwidth=metadata.charwidth
     local italicangle=metadata.italicangle
     local charxheight=metadata.xheight and metadata.xheight>0 and metadata.xheight
@@ -7188,7 +7206,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.812 
+otf.version=2.815 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -7365,10 +7383,11 @@ local ordered_enhancers={
   "reorganize subtables",
   "check glyphs",
   "check metadata",
-  "check extra features",
   "prepare tounicode",
   "check encoding",
   "add duplicates",
+  "expand lookups",
+  "check extra features",
   "cleanup tables",
   "compact lookups",
   "purge names",
@@ -7538,6 +7557,7 @@ function otf.load(filename,sub,featurefile)
       data={
         size=size,
         time=time,
+        subfont=sub,
         format=otf_format(filename),
         featuredata=featurefiles,
         resources={
@@ -7822,25 +7842,25 @@ actions["prepare glyphs"]=function(data,filename,raw)
                   glyph=glyph,
                 }
                 descriptions[unicode]=description
-local altuni=glyph.altuni
-if altuni then
-  for i=1,#altuni do
-    local a=altuni[i]
-    local u=a.unicode
-    if u~=unicode then
-      local v=a.variant
-      if v then
-        local vv=variants[v]
-        if vv then
-          vv[u]=unicode
-        else 
-          vv={ [u]=unicode }
-          variants[v]=vv
-        end
-      end
-    end
-  end
-end
+                local altuni=glyph.altuni
+                if altuni then
+                  for i=1,#altuni do
+                    local a=altuni[i]
+                    local u=a.unicode
+                    if u~=unicode then
+                      local v=a.variant
+                      if v then
+                        local vv=variants[v]
+                        if vv then
+                          vv[u]=unicode
+                        else 
+                          vv={ [u]=unicode }
+                          variants[v]=vv
+                        end
+                      end
+                    end
+                  end
+                end
               end
             end
           else
@@ -8365,12 +8385,15 @@ local function r_uncover(splitter,cache,cover,replacements)
 end
 actions["reorganize lookups"]=function(data,filename,raw)
   if data.lookups then
-    local splitter=data.helpers.tounicodetable
+    local helpers=data.helpers
+    local duplicates=data.resources.duplicates
+    local splitter=helpers.tounicodetable
     local t_u_cache={}
     local s_u_cache=t_u_cache 
     local t_h_cache={}
     local s_h_cache=t_h_cache 
     local r_u_cache={} 
+    helpers.matchcache=t_h_cache
     for _,lookup in next,data.lookups do
       local rules=lookup.rules
       if rules then
@@ -8510,6 +8533,44 @@ actions["reorganize lookups"]=function(data,filename,raw)
                 end
               end
             end
+          end
+        end
+      end
+    end
+  end
+end
+actions["expand lookups"]=function(data,filename,raw) 
+  if data.lookups then
+    local cache=data.helpers.matchcache
+    if cache then
+      local duplicates=data.resources.duplicates
+      for key,hash in next,cache do
+        local done=nil
+        for key in next,hash do
+          local unicode=duplicates[key]
+          if not unicode then
+          elseif type(unicode)=="table" then
+            for i=1,#unicode do
+              local u=unicode[i]
+              if hash[u] then
+              elseif done then
+                done[u]=key
+              else
+                done={ [u]=key }
+              end
+            end
+          else
+            if hash[unicode] then
+            elseif done then
+              done[unicode]=key
+            else
+              done={ [unicode]=key }
+            end
+          end
+        end
+        if done then
+          for u in next,done do
+            hash[u]=true
           end
         end
       end
@@ -9115,9 +9176,13 @@ local function copytotfm(data,cache_id)
     local spaceunits=500
     local spacer="space"
     local designsize=metadata.designsize or metadata.design_size or 100
+    local minsize=metadata.minsize or metadata.design_range_bottom or designsize
+    local maxsize=metadata.maxsize or metadata.design_range_top  or designsize
     local mathspecs=metadata.math
     if designsize==0 then
       designsize=100
+      minsize=100
+      maxsize=100
     end
     if mathspecs then
       for name,value in next,mathspecs do
@@ -9177,13 +9242,13 @@ local function copytotfm(data,cache_id)
     local fontname=metadata.fontname
     local fullname=metadata.fullname or fontname
     local psname=fontname or fullname
-    local units=metadata.units_per_em or 1000
+    local units=metadata.units or metadata.units_per_em or 1000
     if units==0 then 
       units=1000 
-      metadata.units_per_em=1000
+      metadata.units=1000
       report_otf("changing %a units to %a",0,units)
     end
-    local monospaced=metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose.proportion=="Monospaced")
+    local monospaced=metadata.monospaced or metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose.proportion=="Monospaced")
     local charwidth=pfminfo.avgwidth 
     local charxheight=pfminfo.os2_xheight and pfminfo.os2_xheight>0 and pfminfo.os2_xheight
     local italicangle=metadata.italicangle
@@ -9248,8 +9313,10 @@ local function copytotfm(data,cache_id)
       end
     end
     parameters.designsize=(designsize/10)*65536
-    parameters.ascender=abs(metadata.ascent or 0)
-    parameters.descender=abs(metadata.descent or 0)
+    parameters.minsize=(minsize/10)*65536
+    parameters.maxsize=(maxsize/10)*65536
+    parameters.ascender=abs(metadata.ascender or metadata.ascent or 0)
+    parameters.descender=abs(metadata.descender or metadata.descent or 0)
     parameters.units=units
     properties.space=spacer
     properties.encodingbytes=2
@@ -12883,9 +12950,9 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
           end
          else
           local i=1
-          while true do
+          while start and true do
             if skipped then
-              while true do
+              while true do 
                 local char=getchar(start)
                 local ccd=descriptions[char]
                 if ccd then
@@ -12914,17 +12981,20 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                 head,start,ok,n=cp(head,start,last,kind,chainname,ck,lookuphash,chainlookup,chainlookupname,i,sequence)
                 if ok then
                   done=true
-                  i=i+(n or 1)
-                else
-                  i=i+1
+                  if n and n>1 then
+                    if i+n>nofchainlookups then
+                      break
+                    else
+                    end
+                  end
                 end
+                i=i+1
               end
             end
-            if i>nofchainlookups then
+            if i>nofchainlookups or not start then
               break
             elseif start then
               start=getnext(start)
-            else
             end
           end
         end

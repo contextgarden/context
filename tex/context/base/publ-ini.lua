@@ -2336,7 +2336,7 @@ do
             marked_dataset = dataset
             marked_list    = list
             marked_method  = method
-         -- btxflushmarked() -- here (could also be done in caller)
+            btxflushmarked() -- here (could also be done in caller)
         else
             marked_todo = false
         end
@@ -2502,6 +2502,9 @@ do
         --
         local found, todo, list = findallused(dataset,reference,internal,method == v_text or method == v_always) -- also when not in list
         --
+-- inspect(found)
+-- inspect(todo)
+-- inspect(list)
         if not found or #found == 0 then
             report("no entry %a found in dataset %a",reference,dataset)
         elseif not setup then
@@ -2629,7 +2632,7 @@ do
             marked_dataset = dataset
             marked_list    = list
             marked_method  = method
-         -- btxflushmarked() -- here (could also be done in caller)
+            btxflushmarked() -- here (could also be done in caller)
         else
             marked_todo = false
         end

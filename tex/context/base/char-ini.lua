@@ -1291,17 +1291,6 @@ if not characters.superscripts then
 
 end
 
--- for the moment only a few
-
-local tracedchars = utilities.strings.tracers
-
-tracedchars[0x00] = "[signal]"
-tracedchars[0x0A] = "[linefeed]"
-tracedchars[0x0B] = "[tab]"
-tracedchars[0x0C] = "[formfeed]"
-tracedchars[0x0D] = "[return]"
-tracedchars[0x20] = "[space]"
-
 function characters.showstring(str)
     local list = utotable(str)
     for i=1,#list do

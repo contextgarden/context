@@ -19,12 +19,13 @@ local lpegmatch  = lpeg.match
 
 local P, S, Ct = lpeg.P, lpeg.S, lpeg.Ct
 
-local report_luarun = logs.reporter("metapost","lua")
+local report_luarun  = logs.reporter("metapost","lua")
+local report_message = logs.reporter("metapost")
 
-local trace_luarun  = false  trackers.register("metapost.lua",function(v) trace_luarun = v end)
-local trace_enabled = true
+local trace_luarun   = false  trackers.register("metapost.lua",function(v) trace_luarun = v end)
+local trace_enabled  = true
 
-local be_tolerant   = true   directives.register("metapost.lua.tolerant",function(v) be_tolerant = v end)
+local be_tolerant    = true   directives.register("metapost.lua.tolerant",function(v) be_tolerant = v end)
 
 mp = mp or { } -- system namespace
 MP = MP or { } -- user namespace
@@ -187,8 +188,10 @@ function mp.quoted(fmt,s,...)
             fmt = lpegmatch(replacer,fmt)
         end
         buffer[n] = '"' .. formatters[fmt](s,...) .. '"'
-    else
+    elseif fmt then
         buffer[n] = '"' .. fmt .. '"'
+    else
+        -- something is wrong
     end
 end
 
@@ -379,5 +382,13 @@ function mp.tt_dimensions(n)
         mptriplet(box.width/factor,box.height/factor,box.depth/factor)
     else
         mptriplet(0,0,0)
+    end
+end
+
+function mp.report(a,b)
+    if b then
+        report_message("%s : %s",a,b)
+    elseif a then
+        report_message("%s : %s","message",a)
     end
 end

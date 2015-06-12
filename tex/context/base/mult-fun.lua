@@ -49,7 +49,7 @@ return {
         "inverted", "uncolored", "softened", "grayed", "greyed",
         "onlayer",
         "along",
-        "graphictext", "loadfigure", "externalfigure", "figure", "register",
+        "graphictext", "loadfigure", "externalfigure", "figure", "register", "outlinetext", -- "lua",
         "withmask", "bitmapimage",
         "colordecimals", "ddecimal", "dddecimal", "ddddecimal",
         "textext", "thetextext", "rawtextext", "textextoffset",
@@ -106,7 +106,7 @@ return {
         --
      -- "swappointlabels",
         "normalfill", "normaldraw", "visualizepaths", "naturalizepaths",
-        "drawboundary", "drawwholepath",
+        "drawboundary", "drawwholepath", "drawpathonly",
         "visualizeddraw", "visualizedfill",
         "draworigin", "drawboundingbox",
         "drawpath",
@@ -122,7 +122,7 @@ return {
         "passvariable", "passarrayvariable", "tostring", "format", "formatted",
         "startpassingvariable", "stoppassingvariable",
         --
-        "eofill", "eoclip",
+        "eofill", "eoclip", "nofill",
         "area",
     },
 }

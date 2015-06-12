@@ -142,4 +142,12 @@
 \unexpanded\def\MPformatted  #1#2{\clf_metapostformatted{#1}{#2}}
 \unexpanded\def\MPgraphformat#1#2{\clf_metapostgraphformat{#1}{#2}}
 
+%D Some new fun (but exprimental for a while):
+
+\unexpanded\def\MPLIBoutlinetext#1#2#3% index kind text
+  {\begingroup
+   \setbox\scratchbox\hbox{#3}%
+   \clf_MPLIBconvertoutlinetext\numexpr#1\relax{#2}\scratchbox
+   \endgroup}
+
 \protect \endinput

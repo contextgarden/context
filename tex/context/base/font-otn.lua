@@ -12,6 +12,13 @@ if not modules then modules = { } end modules ['font-otn'] = {
 -- this is a context version which can contain experimental code, but when we
 -- have serious patches we also need to change the other two font-otn files
 
+-- at some point i might decide to convert the whole list into a table and then
+-- run over that instead (but it has some drawbacks as we also need to deal with
+-- attributes and such so we need to keep a lot of track - which is why i rejected
+-- that method - although it has become a bit easier in the meantime so it might
+-- become an alternative (by that time i probably have gone completely lua) .. the
+-- usual chicken-egg issues ... maybe mkix as it's no real tex any more then
+
 -- preprocessors = { "nodes" }
 
 -- anchor class : mark, mkmk, curs, mklg (todo)
@@ -1573,7 +1580,7 @@ function chainprocs.gsub_ligature(head,start,stop,kind,chainname,currentcontext,
             local s = getnext(start)
             local discfound = false
             local last = stop
-            local nofreplacements = 0
+            local nofreplacements = 1
             local skipmark = currentlookup.flags[1]
             while s do
                 local id = getid(s)
@@ -2005,6 +2012,8 @@ local function show_skip(kind,chainname,char,ck,class)
     end
 end
 
+--hm, do i need to deal with disc here ?
+
 local function normal_handle_contextchain(head,start,kind,chainname,contexts,sequence,lookuphash)
     --  local rule, lookuptype, sequence, f, l, lookups = ck[1], ck[2] ,ck[3], ck[4], ck[5], ck[6]
     local flags        = sequence.flags
@@ -2319,9 +2328,9 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                     end
                  else
                     local i = 1
-                    while true do
+                    while start and true do
                         if skipped then
-                            while true do
+                            while true do -- todo: use properties
                                 local char = getchar(start)
                                 local ccd = descriptions[char]
                                 if ccd then
@@ -2336,10 +2345,11 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                 end
                             end
                         end
+                        -- see remark in ms standard under : LookupType 5: Contextual Substitution Subtable
                         local chainlookupname = chainlookups[i]
                         local chainlookup = lookuptable[chainlookupname]
                         if not chainlookup then
-                            -- okay, n matches, < n replacements
+                            -- we just advance
                             i = i + 1
                         else
                             local cp = chainmores[chainlookup.type]
@@ -2353,19 +2363,29 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                 -- messy since last can be changed !
                                 if ok then
                                     done = true
-                                    -- skip next one(s) if ligature
-                                    i = i + (n or 1)
-                                else
-                                    i = i + 1
+                                    if n and n > 1 then
+                                        -- we have a ligature (cf the spec we advance one but we really need to test it
+                                        -- as there are fonts out there that are fuzzy and have too many lookups:
+                                        --
+                                        -- U+1105 U+119E U+1105 U+119E : sourcehansansklight: script=hang ccmp=yes
+                                        --
+                                        if i + n > nofchainlookups then
+                                         -- if trace_contexts then
+                                         --     logprocess("%s: quitting lookups",cref(kind,chainname))
+                                         -- end
+                                            break
+                                        else
+                                            -- we need to carry one
+                                        end
+                                    end
                                 end
+                                i = i + 1
                             end
                         end
-                        if i > nofchainlookups then
+                        if i > nofchainlookups or not start then
                             break
                         elseif start then
                             start = getnext(start)
-                        else
-                            -- weird
                         end
                     end
                 end
@@ -3363,47 +3383,47 @@ local function generic(lookupdata,lookupname,unicode,lookuphash)
     end
 end
 
-local action = {
+local function ligature(lookupdata,lookupname,unicode,lookuphash)
+    local target = lookuphash[lookupname]
+    if not target then
+        target = { }
+        lookuphash[lookupname] = target
+    end
+    for i=1,#lookupdata do
+        local li = lookupdata[i]
+        local tu = target[li]
+        if not tu then
+            tu = { }
+            target[li] = tu
+        end
+        target = tu
+    end
+    target.ligature = unicode
+end
 
+local function pair(lookupdata,lookupname,unicode,lookuphash)
+    local target = lookuphash[lookupname]
+    if not target then
+        target = { }
+        lookuphash[lookupname] = target
+    end
+    local others = target[unicode]
+    local paired = lookupdata[1]
+    if others then
+        others[paired] = lookupdata
+    else
+        others = { [paired] = lookupdata }
+        target[unicode] = others
+    end
+end
+
+local action = {
     substitution = generic,
     multiple     = generic,
     alternate    = generic,
     position     = generic,
-
-    ligature = function(lookupdata,lookupname,unicode,lookuphash)
-        local target = lookuphash[lookupname]
-        if not target then
-            target = { }
-            lookuphash[lookupname] = target
-        end
-        for i=1,#lookupdata do
-            local li = lookupdata[i]
-            local tu = target[li]
-            if not tu then
-                tu = { }
-                target[li] = tu
-            end
-            target = tu
-        end
-        target.ligature = unicode
-    end,
-
-    pair = function(lookupdata,lookupname,unicode,lookuphash)
-        local target = lookuphash[lookupname]
-        if not target then
-            target = { }
-            lookuphash[lookupname] = target
-        end
-        local others = target[unicode]
-        local paired = lookupdata[1]
-        if others then
-            others[paired] = lookupdata
-        else
-            others = { [paired] = lookupdata }
-            target[unicode] = others
-        end
-    end,
-
+    ligature     = ligature,
+    pair         = pair,
 }
 
 local function prepare_lookups(tfmdata)
@@ -3416,6 +3436,7 @@ local function prepare_lookups(tfmdata)
     local lookuptypes      = resources.lookuptypes
     local characters       = tfmdata.characters
     local descriptions     = tfmdata.descriptions
+    local duplicates       = resources.duplicates
 
     -- we cannot free the entries in the descriptions as sometimes we access
     -- then directly (for instance anchors) ... selectively freeing does save
@@ -3435,7 +3456,7 @@ local function prepare_lookups(tfmdata)
             local lookups = description.slookups
             if lookups then
                 for lookupname, lookupdata in next, lookups do
-                    action[lookuptypes[lookupname]](lookupdata,lookupname,unicode,lookuphash)
+                    action[lookuptypes[lookupname]](lookupdata,lookupname,unicode,lookuphash,duplicates)
                 end
             end
 
@@ -3445,7 +3466,7 @@ local function prepare_lookups(tfmdata)
                     local lookuptype = lookuptypes[lookupname]
                     for l=1,#lookuplist do
                         local lookupdata = lookuplist[l]
-                        action[lookuptype](lookupdata,lookupname,unicode,lookuphash)
+                        action[lookuptype](lookupdata,lookupname,unicode,lookuphash,duplicates)
                     end
                 end
             end
@@ -3564,7 +3585,7 @@ local function prepare_contextchains(tfmdata)
                                 -- use sequence[start] instead but it's somewhat ugly.
                                 nt = nt + 1
                                 t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups, replacements }
-                                for unic, _  in next, sequence[start] do
+                                for unic in next, sequence[start] do
                                     local cu = contexts[unic]
                                     if not cu then
                                         contexts[unic] = t

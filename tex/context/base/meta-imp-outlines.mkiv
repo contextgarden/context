@@ -1,0 +1,150 @@
+%D \module
+%D   [       file=meta-imp-outlines,
+%D        version=2015.06.02,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Outlines,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startluacode
+
+local concat      = table.concat
+local formatters  = string.formatters
+local validstring = string.valid
+
+local f_setbounds = formatters["setbounds currentpicture to (%s) enlarged %.4G;"]
+local f_index     = formatters['draw anchored.bot(textext("\\tttf\\setstrut\\strut index %i") ysized 2bp ,.5[llcorner currentpicture,lrcorner currentpicture] shifted (0,%.4G));']
+local f_unicode   = formatters['draw anchored.bot(textext("\\tttf\\setstrut\\strut unicode %05X") ysized 2bp ,.5[llcorner currentpicture,lrcorner currentpicture] shifted (0,%.4G));']
+
+local f_in_red    = formatters["draw %s withpen pencircle scaled .15 withcolor .5red;"]
+local f_in_green  = formatters["draw %s withpen pencircle scaled .15 withcolor .5green;"]
+local f_in_blue   = formatters["draw %s withpen pencircle scaled .15 withcolor .5blue;"]
+local f_in_gray   = formatters["draw image(%s) withcolor .75yellow;"]
+
+local f_glyph = formatters [ [[
+pickup pencircle scaled .15;
+pointlabelfont := "Mono sa .125";
+pointlabelscale := 1bp ;
+drawoptionsfactor := .2bp ;
+originlength := 2bp ;
+%s;
+]] ]
+
+local metapost  = fonts.metapost
+
+local variables = interfaces.variables
+
+local v_all     = variables.all
+local v_page    = variables.page
+local v_text    = variables.text
+local v_command = variables.command
+
+function metapost.showglyph(specification)
+    local fontid      = font.current()
+    local shapedata   = fonts.hashes.shapes[fontid] -- by index
+    local chardata    = fonts.hashes.characters[fontid] -- by unicode
+    local shapeglyphs = shapedata.glyphs
+    local character   = validstring(specification.character)
+    local index       = validstring(specification.index)
+    local alternative = validstring(specification.alternative)
+    local command     = validstring(specification.command)
+
+    local function shape(index,what,f_comment)
+        if not index then
+            return
+        end
+        local glyph = shapeglyphs[index]
+        if glyph and glyph.segments or glyph.sequence then
+            local units  = data.fontheader and data.fontheader.emsize or 1000
+            local factor = 100/units
+            local paths  = metapost.paths(glyph,factor)
+            if #paths > 0 then
+                local graphic = f_glyph(concat{
+                    f_in_gray(metapost.fill(paths)),
+                    metapost.draw(paths,true),
+                    f_in_red(metapost.boundingbox(glyph,factor)),
+                    f_in_green(metapost.widthline(glyph,factor)),
+                    f_in_blue(metapost.zeroline(glyph,factor)),
+                    f_setbounds(metapost.maxbounds(data,index,factor),offset or 1),
+                    f_comment(what,1)
+                })
+                if alternative == v_page then
+                    context.startMPpage()
+                        context(graphic)
+                    context.stopMPpage()
+                elseif alternative == v_command then
+                    context[command](graphic)
+                else -- v_text
+                    context.startMPcode()
+                        context(graphic)
+                    context.stopMPcode()
+                end
+            end
+        end
+    end
+
+    if character == v_all then
+        for u, c in table.sortedhash(chardata) do
+            shape(c.index,u,f_unicode)
+        end
+        return
+    end
+    if type(character) == "string" then
+        character = utf.byte(character)
+    end
+    if type(character) == "number" then
+        local c = chardata[character]
+        if c then
+            shape(c.index,c.index,f_index)
+        end
+        return
+    end
+    if type(index) == "number" then
+        shape(index,index,f_index)
+        return
+    end
+    for index=1,#shapeglyphs do
+        shape(index,index,f_index)
+    end
+end
+
+\stopluacode
+
+\unprotect
+
+\unexpanded\def\showshape
+  {\dosingleargument\meta_shapes_show}
+
+\def\meta_shapes_show[#1]%
+  {\begingroup
+   \getdummyparameters[\c!alternative=\v!text,#1]%
+   \ctxlua{fonts.metapost.showglyph{
+        character   = "\dummyparameter\c!character",
+        index       = "\dummyparameter\c!index",
+        alternative = "\dummyparameter\c!alternative",
+        command     = "\dummyparameter\c!command",
+   }}%
+   \endgroup}
+
+\protect
+
+\continueifinputfile{meta-imp-outlines.mkiv}
+
+\starttext
+
+\setupbodyfont[pagella]
+
+\showshape[character=all,alternative=page]
+
+% \setupbodyfont[dejavu]
+% \showshape[character=P,alternative=text]
+
+% \definedfont[almfixed]
+% \showshape[character=all,alternative=page]
+
+\stoptext

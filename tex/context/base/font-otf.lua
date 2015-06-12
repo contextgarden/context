@@ -60,7 +60,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.812 -- beware: also sync font-mis.lua
+otf.version              = 2.815 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -289,12 +289,16 @@ local ordered_enhancers = {
 
     "check glyphs",
     "check metadata",
-    "check extra features", -- after metadata
+--     "check extra features", -- after metadata
 
     "prepare tounicode",
 
     "check encoding", -- moved
     "add duplicates",
+
+    "expand lookups", -- a temp hack awaiting the lua loader
+
+    "check extra features", -- after metadata and duplicates
 
     "cleanup tables",
 
@@ -392,6 +396,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
     if featurefile then
         name = name .. "@" .. file.removesuffix(file.basename(featurefile))
     end
+    -- or: sub = tonumber(sub)
     if sub == "" then
         sub = false
     end
@@ -482,6 +487,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
             data = {
                 size        = size,
                 time        = time,
+                subfont     = sub,
                 format      = otf_format(filename),
                 featuredata = featurefiles,
                 resources   = {
@@ -825,35 +831,35 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                     glyph       = glyph,
                                 }
                                 descriptions[unicode] = description
-local altuni = glyph.altuni
-if altuni then
- -- local d
-    for i=1,#altuni do
-        local a = altuni[i]
-        local u = a.unicode
-        if u ~= unicode then
-            local v = a.variant
-            if v then
-                -- tricky: no addition to d? needs checking but in practice such dups are either very simple
-                -- shapes or e.g cjk with not that many features
-                local vv = variants[v]
-                if vv then
-                    vv[u] = unicode
-                else -- xits-math has some:
-                    vv = { [u] = unicode }
-                    variants[v] = vv
-                end
-         -- elseif d then
-         --     d[#d+1] = u
-         -- else
-         --     d = { u }
-            end
-        end
-    end
- -- if d then
- --     duplicates[unicode] = d -- is this needed ?
- -- end
-end
+                                local altuni = glyph.altuni
+                                if altuni then
+                                 -- local d
+                                    for i=1,#altuni do
+                                        local a = altuni[i]
+                                        local u = a.unicode
+                                        if u ~= unicode then
+                                            local v = a.variant
+                                            if v then
+                                                -- tricky: no addition to d? needs checking but in practice such dups are either very simple
+                                                -- shapes or e.g cjk with not that many features
+                                                local vv = variants[v]
+                                                if vv then
+                                                    vv[u] = unicode
+                                                else -- xits-math has some:
+                                                    vv = { [u] = unicode }
+                                                    variants[v] = vv
+                                                end
+                                         -- elseif d then
+                                         --     d[#d+1] = u
+                                         -- else
+                                         --     d = { u }
+                                            end
+                                        end
+                                    end
+                                 -- if d then
+                                 --     duplicates[unicode] = d -- is this needed ?
+                                 -- end
+                                end
                             end
                         end
                     else
@@ -1500,12 +1506,16 @@ end
 actions["reorganize lookups"] = function(data,filename,raw) -- we could check for "" and n == 0
     -- we prefer the before lookups in a normal order
     if data.lookups then
-        local splitter = data.helpers.tounicodetable
-        local t_u_cache = { }
-        local s_u_cache = t_u_cache -- string keys
-        local t_h_cache = { }
-        local s_h_cache = t_h_cache -- table keys (so we could use one cache)
-        local r_u_cache = { } -- maybe shared
+        local helpers      = data.helpers
+        local duplicates   = data.resources.duplicates
+        local splitter     = helpers.tounicodetable
+        local t_u_cache    = { }
+        local s_u_cache    = t_u_cache -- string keys
+        local t_h_cache    = { }
+        local s_h_cache    = t_h_cache -- table keys (so we could use one cache)
+        local r_u_cache    = { } -- maybe shared
+        helpers.matchcache = t_h_cache -- so that we can add duplicates
+        --
         for _, lookup in next, data.lookups do
             local rules = lookup.rules
             if rules then
@@ -1652,6 +1662,50 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
                                 end
                             end
                         end
+                    end
+                end
+            end
+        end
+    end
+end
+
+actions["expand lookups"] = function(data,filename,raw) -- we could check for "" and n == 0
+    if data.lookups then
+        local cache = data.helpers.matchcache
+        if cache then
+            local duplicates = data.resources.duplicates
+            for key, hash in next, cache do
+                local done = nil
+                for key in next, hash do
+                    local unicode = duplicates[key]
+                    if not unicode then
+                        -- no duplicate
+                    elseif type(unicode) == "table" then
+                        -- multiple duplicates
+                        for i=1,#unicode do
+                            local u = unicode[i]
+                            if hash[u] then
+                                -- already in set
+                            elseif done then
+                                done[u] = key
+                            else
+                                done = { [u] = key }
+                            end
+                        end
+                    else
+                        -- one duplicate
+                        if hash[unicode] then
+                            -- already in set
+                        elseif done then
+                            done[unicode] = key
+                        else
+                            done = { [unicode] = key }
+                        end
+                    end
+                end
+                if done then
+                    for u in next, done do
+                        hash[u] = true
                     end
                 end
             end
@@ -2340,10 +2394,14 @@ local function copytotfm(data,cache_id)
         local spaceunits     = 500
         local spacer         = "space"
         local designsize     = metadata.designsize or metadata.design_size or 100
+        local minsize        = metadata.minsize or metadata.design_range_bottom or designsize
+        local maxsize        = metadata.maxsize or metadata.design_range_top    or designsize
         local mathspecs      = metadata.math
         --
         if designsize == 0 then
             designsize = 100
+            minsize    = 100
+            maxsize    = 100
         end
         if mathspecs then
             for name, value in next, mathspecs do
@@ -2420,15 +2478,15 @@ local function copytotfm(data,cache_id)
         local fontname = metadata.fontname
         local fullname = metadata.fullname or fontname
         local psname   = fontname or fullname
-        local units    = metadata.units_per_em or 1000
+        local units    = metadata.units or metadata.units_per_em or 1000
         --
         if units == 0 then -- catch bugs in fonts
             units = 1000 -- maybe 2000 when ttf
-            metadata.units_per_em = 1000
+            metadata.units = 1000
             report_otf("changing %a units to %a",0,units)
         end
         --
-        local monospaced  = metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose.proportion == "Monospaced")
+        local monospaced  = metadata.monospaced or metadata.isfixedpitch or (pfminfo.panose and pfminfo.panose.proportion == "Monospaced")
         local charwidth   = pfminfo.avgwidth -- or unset
         local charxheight = pfminfo.os2_xheight and pfminfo.os2_xheight > 0 and pfminfo.os2_xheight
 -- charwidth = charwidth * units/1000
@@ -2498,17 +2556,16 @@ local function copytotfm(data,cache_id)
             end
         end
         --
-        parameters.designsize = (designsize/10)*65536
-        parameters.ascender   = abs(metadata.ascent  or 0)
-        parameters.descender  = abs(metadata.descent or 0)
-        parameters.units      = units
+        parameters.designsize    = (designsize/10)*65536
+        parameters.minsize       = (minsize   /10)*65536
+        parameters.maxsize       = (maxsize   /10)*65536
+        parameters.ascender      = abs(metadata.ascender  or metadata.ascent  or 0)
+        parameters.descender     = abs(metadata.descender or metadata.descent or 0)
+        parameters.units         = units
         --
         properties.space         = spacer
         properties.encodingbytes = 2
         properties.format        = data.format or otf_format(filename) or formats.otf
--- if units ~= 1000 and format ~= "truetype" then
---     properties.format = "truetype"
--- end
         properties.noglyphnames  = true
         properties.filename      = filename
         properties.fontname      = fontname

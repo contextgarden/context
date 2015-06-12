@@ -426,6 +426,7 @@ function constructors.scale(tfmdata,specification)
     local vdelta         = delta
     --
     target.designsize    = parameters.designsize -- not really needed so it might become obsolete
+    target.units         = units
     target.units_per_em  = units                 -- just a trigger for the backend
     --
     local direction      = properties.direction or tfmdata.direction or 0 -- pointless, as we don't use omf fonts at all
@@ -895,12 +896,21 @@ function constructors.finalize(tfmdata)
         parameters.slantfactor = tfmdata.slant or 0
     end
     --
-    if not parameters.designsize then
-        parameters.designsize = tfmdata.designsize or (factors.pt * 10)
+    local designsize = parameters.designsize
+    if designsize then
+        parameters.minsize = tfmdata.minsize or designsize
+        parameters.maxsize = tfmdata.maxsize or designsize
+    else
+        designsize = factors.pt * 10
+        parameters.designsize = designsize
+        parameters.minsize    = designsize
+        parameters.maxsize    = designsize
     end
+    parameters.minsize = tfmdata.minsize or parameters.designsize
+    parameters.maxsize = tfmdata.maxsize or parameters.designsize
     --
     if not parameters.units then
-        parameters.units = tfmdata.units_per_em or 1000
+        parameters.units = tfmdata.units or tfmdata.units_per_em or 1000
     end
     --
     if not tfmdata.descriptions then
@@ -976,6 +986,7 @@ function constructors.finalize(tfmdata)
     tfmdata.auto_protrude  = nil
     tfmdata.extend         = nil
     tfmdata.slant          = nil
+    tfmdata.units          = nil
     tfmdata.units_per_em   = nil
     --
     tfmdata.cache          = nil

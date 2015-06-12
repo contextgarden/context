@@ -794,7 +794,7 @@ local d_one         = R("09")
 local d_two         = d_one * d_one
 local d_three       = d_two * d_one
 local d_four        = d_three * d_one
-local d_split       = P(-1) + P(",")
+local d_split       = P(-1) + Carg(2) * (S(".") /"")
 
 local d_spaced      = (Carg(1) * d_three)^1
 
@@ -808,9 +808,9 @@ local digitized_1   = Cs ( (
 local p_fourbefore  = d_four * d_split
 local p_fourafter   = d_four * P(-1)
 
-local p_beforecomma = d_three * d_spaced * d_split
-                    + d_two   * d_spaced * d_split
-                    + d_one   * d_spaced * d_split
+local p_beforecomma = d_three * d_spaced^0 * d_split
+                    + d_two   * d_spaced^0 * d_split
+                    + d_one   * d_spaced^0 * d_split
                     + d_one   * d_split
 
 local p_aftercomma  = p_fourafter
@@ -843,11 +843,15 @@ local splitmethods = {
     digitized_3,
 }
 
-local splitmethod  = nil
+local splitmethod    = nil
+local symbolmethod   = nil
+local digitseparator = utfchar(0x2008)
+local digitsymbol    = "."
 
 function asciimath.setup(settings)
     splitmethod = splitmethods[tonumber(settings.splitmethod) or 0]
     if splitmethod then
+        digitsymbol = settings.symbol or "."
         local separator = settings.separator
         if separator == true or not interfaces or interfaces.variables.yes then
             digitseparator = utfchar(0x2008)
@@ -855,6 +859,11 @@ function asciimath.setup(settings)
             digitseparator = separator
         else
             splitmethod = nil
+        end
+        if digitsymbol ~= "." then
+            symbolmethod = lpeg.replacer(".",digitsymbol)
+        else
+            symbolmethod = nil
         end
     end
 end
@@ -864,7 +873,10 @@ local collected_filename = "asciimath-digits.lua"
 
 function numbermess(s)
     if splitmethod then
-        local d = lpegmatch(splitmethod,s,1,digitseparator)
+        local d = lpegmatch(splitmethod,s,1,digitseparator,digitsymbol)
+        if not d and symbolmethod then
+            d = lpegmatch(symbolmethod,s)
+        end
         if d then
             if trace_digits and s ~= d then
                 collected_digits[s] = d
@@ -875,25 +887,31 @@ function numbermess(s)
     return s
 end
 
--- asciimath.setup { splitmethod = 3 }
+-- asciimath.setup { splitmethod = 3, symbol = "," }
 -- local t = {
 --     "1", "12", "123", "1234", "12345", "123456", "1234567", "12345678", "123456789",
---     "1,1",
---     "12,12",
---     "123,123",
---     "1234,123",
---     "1234,1234",
---     "12345,1234",
---     "1234,12345",
---     "12345,12345",
---     "123456,123456",
---     "1234567,1234567",
---     "12345678,12345678",
---     "123456789,123456789",
---     "0,1234",
---     "1234,0",
---     "1234,00",
---     "0,123456789",
+--     "1.1",
+--     "12.12",
+--     "123.123",
+--     "1234.123",
+--     "1234.1234",
+--     "12345.1234",
+--     "1234.12345",
+--     "12345.12345",
+--     "123456.123456",
+--     "1234567.1234567",
+--     "12345678.12345678",
+--     "123456789.123456789",
+--     "0.1234",
+--     "1234.0",
+--     "1234.00",
+--     "0.123456789",
+--     "100.00005",
+--     "0.80018",
+--     "10.80018",
+--     "100.80018",
+--     "1000.80018",
+--     "10000.80018",
 -- }
 -- for i=1,#t do print(formatters["%-20s : [%s]"](t[i],numbermess(t[i]))) end
 
@@ -1860,7 +1878,7 @@ if not context then
 --     report_asciimath(cleanedup([[a "α" b]]))
 --     report_asciimath(cleanedup([[//4]]))
 
-convert("leq\\leq")
+-- convert("leq\\leq")
 -- convert([[\^{1/5}log]])
 -- convert("sqrt")
 -- convert("^")

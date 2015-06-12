@@ -12,6 +12,7 @@ local report_fallbacks  = logs.reporter("math","fallbacks")
 
 local formatters        = string.formatters
 local fastcopy          = table.fastcopy
+local byte              = string.byte
 
 local fallbacks         = { }
 mathematics.fallbacks   = fallbacks
@@ -420,6 +421,53 @@ end
 
 virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
 virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
+
+-- spacing
+
+local c_zero   = byte('0')
+local c_period = byte('.')
+
+local function spacefraction(data,fraction)
+    local width = fraction * data.target.parameters.space
+    return {
+        width    = width,
+        commands = { right = width }
+    }
+end
+
+local function charfraction(data,char)
+    local width = data.target.characters[char].width
+    return {
+        width    = width,
+        commands = { right = width }
+    }
+end
+
+local function quadfraction(data,fraction)
+    local width = fraction * data.target.parameters.quad
+    return {
+        width    = width,
+        commands = { right = width }
+    }
+end
+
+virtualcharacters[0x00A0] = function(data) return spacefraction(data,1)        end -- nbsp
+virtualcharacters[0x2000] = function(data) return quadfraction (data,1/2)      end -- enquad
+virtualcharacters[0x2001] = function(data) return quadfraction (data,1)        end -- emquad
+virtualcharacters[0x2002] = function(data) return quadfraction (data,1/2)      end -- enspace
+virtualcharacters[0x2003] = function(data) return quadfraction (data,1)        end -- emspace
+virtualcharacters[0x2004] = function(data) return quadfraction (data,1/3)      end -- threeperemspace
+virtualcharacters[0x2005] = function(data) return quadfraction (data,1/4)      end -- fourperemspace
+virtualcharacters[0x2006] = function(data) return quadfraction (data,1/6)      end -- sixperemspace
+virtualcharacters[0x2007] = function(data) return charfraction (data,c_zero)   end -- figurespace
+virtualcharacters[0x2008] = function(data) return charfraction (data,c_period) end -- punctuationspace
+virtualcharacters[0x2009] = function(data) return quadfraction (data,1/8)      end -- breakablethinspace
+virtualcharacters[0x200A] = function(data) return quadfraction (data,1/8)      end -- hairspace
+virtualcharacters[0x200B] = function(data) return quadfraction (data,0)        end -- zerowidthspace
+virtualcharacters[0x202F] = function(data) return quadfraction (data,1/8)      end -- narrownobreakspace
+virtualcharacters[0x205F] = function(data) return spacefraction(data,1/2)      end -- math thinspace
+
+--
 
 local function smashed(data,unicode,swap,private)
     local target   = data.target

@@ -1929,9 +1929,9 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                     end
                  else
                     local i = 1
-                    while true do
+                    while start and true do
                         if skipped then
-                            while true do
+                            while true do -- todo: use properties
                                 local char = getchar(start)
                                 local ccd = descriptions[char]
                                 if ccd then
@@ -1946,10 +1946,11 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                 end
                             end
                         end
+                        -- see remark in ms standard under : LookupType 5: Contextual Substitution Subtable
                         local chainlookupname = chainlookups[i]
                         local chainlookup = lookuptable[chainlookupname]
                         if not chainlookup then
-                            -- okay, n matches, < n replacements
+                            -- we just advance
                             i = i + 1
                         else
                             local cp = chainmores[chainlookup.type]
@@ -1963,19 +1964,26 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                 -- messy since last can be changed !
                                 if ok then
                                     done = true
-                                    -- skip next one(s) if ligature
-                                    i = i + (n or 1)
-                                else
-                                    i = i + 1
+                                    if n and n > 1 then
+                                        -- we have a ligature (cf the spec we advance one but we really need to test it
+                                        -- as there are fonts out there that are fuzzy and have too many lookups
+                                        if i + n > nofchainlookups then
+                                         -- if trace_contexts then
+                                         --     logprocess("%s: quitting lookups",cref(kind,chainname))
+                                         -- end
+                                            break
+                                        else
+                                            -- we need to carry one
+                                        end
+                                    end
                                 end
+                                i = i + 1
                             end
                         end
-                        if i > nofchainlookups then
+                        if i > nofchainlookups or not start then
                             break
                         elseif start then
                             start = getnext(start)
-                        else
-                            -- weird
                         end
                     end
                 end

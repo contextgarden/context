@@ -467,6 +467,15 @@ boolean     trace_shades ; trace_shades := false ;  % still there
 
 % but this is nicer
 
+% fill fullcircle scaled 10cm
+%     withshademethod "circular"
+%     withshadevector (5cm,1cm)
+%     withshadecenter (.1,.5)
+%     withshadedomain (.2,.6)
+%     withshadefactor 1.2
+%     withshadecolors (red,green)
+% ;
+
 path mfun_shade_path ;
 
 primarydef p withshademethod m =
@@ -746,9 +755,158 @@ def register (expr tag, width, height, offset) =
 %     ) ; % no transformations
 enddef ;
 
+% outlines (todo: pass around less arguments)
+
+numeric currentoutlinetext ; currentoutlinetext := 0 ;
+
+vardef mfun_do_outline_text_flush (expr kind, n, x, y) (text t) =
+    if kind = "f" :
+        mfun_do_outline_text_f (n, x, y) (t)
+    elseif kind = "d" :
+        mfun_do_outline_text_d (n, x, y) (t)
+    elseif kind = "b" :
+        mfun_do_outline_text_b (n, x, y) (t)
+    elseif kind = "r" :
+        mfun_do_outline_text_r (n, x, y) (t)
+    elseif kind = "p" :
+        mfun_do_outline_text_p (n, x, y) (t)
+    else :
+        mfun_do_outline_text_n (n, x, y) (t)
+    fi ;
+enddef ;
+
+numeric mfun_do_outline_n ; mfun_do_outline_n := 0 ;
+
+vardef mfun_do_outline_text_f (expr n, x, y) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n :
+            fill   i shifted(x,y) mfun_do_outline_options_f
+        else :
+            nofill i shifted(x,y)
+        fi ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_d (expr n, x, y) (text t) =
+    for i=t :
+        draw i shifted(x,y) mfun_do_outline_options_d ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_p (expr n, x, y) (text t) =
+    for i=t :
+        draw i shifted(x,y) ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_b (expr n, x, y) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n :
+            fill   i shifted(x,y) mfun_do_outline_options_f
+        else :
+            nofill i shifted(x,y)
+        fi ;
+    endfor ;
+    for i=t :
+        draw i shifted(x,y) mfun_do_outline_options_d ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_r (expr n, x, y) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        draw i shifted(x,y) mfun_do_outline_options_d ;
+    endfor ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n :
+            fill   i shifted(x,y) mfun_do_outline_options_f
+        else :
+            nofill i shifted(x,y)
+        fi ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_n (expr n, x, y) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n : fill else : nofill fi i shifted(x,y) ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_set_f (text f) text r =
+    def mfun_do_outline_options_f = f enddef ;
+    def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_d (text d) text r =
+    def mfun_do_outline_options_d = d enddef ;
+    def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_b (text f) (text d) text r =
+    def mfun_do_outline_options_f = f enddef ;
+    def mfun_do_outline_options_d = d enddef ;
+    def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_r (text d) (text f) text r =
+    def mfun_do_outline_options_d = d enddef ;
+    def mfun_do_outline_options_f = f enddef ;
+    def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_n text r =
+    def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_p =
+enddef ;
+
+def mfun_do_outline_options_d = enddef ;
+def mfun_do_outline_options_f = enddef ;
+def mfun_do_outline_options_r = enddef ;
+
+vardef outlinetext@# (expr t) text rest =
+    save kind ; string kind ; kind := str @# ;
+    currentoutlinetext := currentoutlinetext + 1 ;
+    image ( draw image (
+        if mfun_trial_run :
+          % lua.mp.report("set outline text",currentoutlinetext);
+            draw unitsquare
+                withprescript "ot_stage=trial"
+                withprescript "ot_index=" & decimal currentoutlinetext
+                withprescript "ot_kind=" & kind
+                withpostscript t ;
+        else :
+          % lua.mp.report("get outline text",currentoutlinetext);
+            if kind = "f" :
+                mfun_do_outline_text_set_f rest ;
+            elseif kind = "d" :
+                mfun_do_outline_text_set_d rest ;
+            elseif kind = "b" :
+                mfun_do_outline_text_set_b rest ;
+            elseif kind = "r" :
+                mfun_do_outline_text_set_r rest ;
+            elseif kind = "p" :
+                mfun_do_outline_text_set_p ;
+            else :
+                mfun_do_outline_text_set_n rest ;
+            fi ;
+            lua.mp.get_outline_text(currentoutlinetext) ;
+        fi ;
+    ) mfun_do_outline_options_r ; )
+enddef ;
+
 % Housekeeping
 
 extra_beginfig := extra_beginfig & "currentgraphictext := 0 ; " ;
+extra_beginfig := extra_beginfig & "currentoutlinetext := 0 ; " ;
 extra_endfig   := extra_endfig   & "finishsavingdata ; " ;
 extra_endfig   := extra_endfig   & "mfun_reset_tex_texts ; " ;
 
@@ -1206,6 +1364,7 @@ vardef formatted(expr f, x) = textext(varfmt(f, x)) enddef ;
 % new
 
 def eofill text t = fill t withpostscript "evenodd" enddef ;
+def nofill text t = fill t withpostscript "collect" enddef ;
 %%% eoclip text t = clip t withpostscript "evenodd" enddef ; % no postscripts yet
 
 % def withrule expr r =

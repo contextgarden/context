@@ -1074,14 +1074,16 @@ def draworiginoptions (text t) = def _ori_opt_ = t enddef ; enddef ;
 def drawboundoptions  (text t) = def _bnd_opt_ = t enddef ; enddef ;
 def drawpathoptions   (text t) = def _pth_opt_ = t enddef ; enddef ;
 
+numeric drawoptionsfactor ; drawoptionsfactor := pt ;
+
 def resetdrawoptions =
-    drawlineoptions   (withpen pencircle scaled 1pt   withcolor .5white) ;
-    drawpointoptions  (withpen pencircle scaled 4pt   withcolor   black) ;
-    drawcontroloptions(withpen pencircle scaled 2.5pt withcolor   black) ;
+    drawlineoptions   (withpen pencircle scaled 1drawoptionsfactor withcolor .5white) ;
+    drawpointoptions  (withpen pencircle scaled 4drawoptionsfactor withcolor black) ;
+    drawcontroloptions(withpen pencircle scaled 2.5drawoptionsfactor withcolor black) ;
     drawlabeloptions  () ;
-    draworiginoptions (withpen pencircle scaled 1pt   withcolor .5white) ;
+    draworiginoptions (withpen pencircle scaled 1drawoptionsfactor withcolor .5white) ;
     drawboundoptions  (dashed evenly _ori_opt_) ;
-    drawpathoptions   (withpen pencircle scaled 5pt   withcolor .8white) ;
+    drawpathoptions   (withpen pencircle scaled 5drawoptionsfactor withcolor .8white) ;
 enddef ;
 
 resetdrawoptions ;
@@ -1152,13 +1154,25 @@ def mfun_draw_controllines text t =
 enddef;
 
 boolean swappointlabels ; swappointlabels := false ;
+numeric pointlabelscale ; pointlabelscale := 0 ;
+string  pointlabelfont  ; pointlabelfont  := "" ;
 
 def mfun_draw_pointlabels text t =
     for _i_=0 upto length(_c_) :
         pair _u_ ; _u_ := unitvector(direction _i_ of _c_) rotated if swappointlabels : - fi 90 ;
         pair _p_ ; _p_ := (point _i_ of _c_) ;
-        _u_ := 12 * defaultscale * _u_ ;
+        begingroup ;
+        if pointlabelscale > 0 :
+            save defaultscale ; numeric defaultscale ;
+            defaultscale := pointlabelscale ;
+        fi ;
+        if pointlabelfont <> "" :
+            save defaultfont ; string defaultfont ;
+            defaultfont := pointlabelfont ;
+        fi ;
+        _u_ := 10 * drawoptionsfactor * defaultscale * _u_ ;
         normaldraw thelabel ( decimal _i_, _p_ shifted if cycle _c_ and (_i_=0) : - fi _u_ ) _lab_opt_ t ;
+        endgroup ;
     endfor ;
 enddef;
 
@@ -1230,6 +1244,14 @@ def drawwholepath expr p =
     drawcontrolpoints p ;
     drawpoints        p ;
     drawboundingbox   p ;
+    drawpointlabels   p ;
+enddef ;
+
+def drawpathonly expr p =
+    drawpath          p ;
+    drawcontrollines  p ;
+    drawcontrolpoints p ;
+    drawpoints        p ;
     drawpointlabels   p ;
 enddef ;
 

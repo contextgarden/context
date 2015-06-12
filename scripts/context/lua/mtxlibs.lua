@@ -88,6 +88,7 @@ local ownlibs = {
 
     "util-str.lua",
     "util-tab.lua",
+    "util-fil.lua",
     "util-sto.lua",
  -- "util-lua.lua", -- no need for compiling
     "util-prs.lua",

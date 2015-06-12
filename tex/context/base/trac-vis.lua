@@ -654,7 +654,8 @@ end
     end
 end
 
-local g_cache = { }
+local g_cache_v = { }
+local g_cache_h = { }
 
 local tags = {
  -- userskip              = "US",
@@ -691,7 +692,7 @@ local function ruledglue(head,current,vertical)
     local width = getfield(spec,"width")
     local subtype = getsubtype(current)
     local amount = formatters["%s:%0.3f"](tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
-    local info = g_cache[amount]
+    local info = (vertical and g_cache_v or g_cache_h)[amount]
     if info then
         -- print("glue hit")
     else
@@ -710,7 +711,7 @@ local function ruledglue(head,current,vertical)
         else
             info = sometext(amount,l_glue,c_skip_b)
         end
-        g_cache[amount] = info
+        (vertical and g_cache_v or g_cache_h)[amount] = info
     end
     info = copy_list(info)
     if vertical then
@@ -720,11 +721,12 @@ local function ruledglue(head,current,vertical)
     return head, getnext(current)
 end
 
-local k_cache = { }
+local k_cache_v = { }
+local k_cache_h = { }
 
 local function ruledkern(head,current,vertical)
     local kern = getfield(current,"kern")
-    local info = k_cache[kern]
+    local info = (vertical and k_cache_v or k_cache_h)[kern]
     if info then
         -- print("kern hit")
     else
@@ -736,7 +738,7 @@ local function ruledkern(head,current,vertical)
         else
             info = sometext(amount,l_kern,c_zero)
         end
-        k_cache[kern] = info
+        (vertical and k_cache_v or k_cache_h)[kern] = info
     end
     info = copy_list(info)
     if vertical then
@@ -746,11 +748,12 @@ local function ruledkern(head,current,vertical)
     return head, getnext(current)
 end
 
-local p_cache = { }
+local p_cache_v = { }
+local p_cache_h = { }
 
 local function ruledpenalty(head,current,vertical)
     local penalty = getfield(current,"penalty")
-    local info = p_cache[penalty]
+    local info = (vertical and p_cache_v or p_cache_h)[penalty]
     if info then
         -- print("penalty hit")
     else
@@ -762,7 +765,7 @@ local function ruledpenalty(head,current,vertical)
         else
             info = sometext(amount,l_penalty,c_zero)
         end
-        p_cache[penalty] = info
+        (vertical and p_cache_v or p_cache_h)[penalty] = info
     end
     info = copy_list(info)
     if vertical then
@@ -919,14 +922,18 @@ local function freed(cache)
 end
 
 local function cleanup()
-    local hf, ng, np, nk, nw
-    nf, f_cache = freed(f_cache)
-    ng, g_cache = freed(g_cache)
-    np, p_cache = freed(p_cache)
-    nk, k_cache = freed(k_cache)
-    nw, w_cache = freed(w_cache)
-    nb, b_cache = freed(b_cache)
- -- report_visualize("cache cleanup: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes",nf,ng,np,nk,nw,nb)
+    local hf, nw, nb, ng_v, ng_h, np_v, np_h, nk_v, nk_h
+    nf,   f_cache   = freed(f_cache)
+    nw,   w_cache   = freed(w_cache)
+    nb,   b_cache   = freed(b_cache)
+    ng_v, g_cache_v = freed(g_cache_v)
+    ng_h, g_cache_h = freed(g_cache_h)
+    np_v, p_cache_v = freed(p_cache_v)
+    np_h, p_cache_h = freed(p_cache_h)
+    nk_v, k_cache_v = freed(k_cache_v)
+    nk_h, k_cache_h = freed(k_cache_h)
+ -- report_visualize("cache cleanup: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes",
+ --     nf,ng_v+ng_h,np_v+np_h,nk_v+nk_h,nw,nb)
 end
 
 local function handler(head)
@@ -936,7 +943,7 @@ local function handler(head)
      -- local v = texgetattribute(a_visual)
      -- texsetattribute(a_layer,unsetvalue)
      -- texsetattribute(a_visual,unsetvalue)
-        head = visualize(tonut(head))
+        head = visualize(tonut(head),true)
      -- texsetattribute(a_layer,l)
      -- texsetattribute(a_visual,v)
      -- -- cleanup()
@@ -953,7 +960,9 @@ function visualizers.box(n)
     if usedfont then
         starttiming(visualizers)
         local box = getbox(n)
-        setfield(box,"list",visualize(getlist(box)))
+        if box then
+            setfield(box,"list",visualize(getlist(box),getid(box) == vlist_code))
+        end
         stoptiming(visualizers)
         return head, true
     else

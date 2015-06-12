@@ -128,7 +128,9 @@ do
     local function i_finder(name,mode,ftype) -- fake message for mpost.map and metafun.mpvi
         local specification = url.hashed(name)
         local finder = finders[specification.scheme] or finders.file
-        return finder(specification,name,mode,validftype(ftype))
+        local found = finder(specification,name,mode,validftype(ftype))
+     -- print(found)
+        return found
     end
 
     local function o_finder(name,mode,ftype)

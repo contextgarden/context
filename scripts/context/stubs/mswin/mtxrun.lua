@@ -1279,7 +1279,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 5694, stripped down to: 2827
+-- original size: 5770, stripped down to: 2894
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -1366,9 +1366,10 @@ function string.valid(str,default)
   return (type(str)=="string" and str~="" and str) or default or nil
 end
 string.itself=function(s) return s end
-local pattern=Ct(C(1)^0) 
-function string.totable(str)
-  return lpegmatch(pattern,str)
+local pattern_c=Ct(C(1)^0) 
+local pattern_b=Ct((C(1)/byte)^0)
+function string.totable(str,bytes)
+  return lpegmatch(bytes and pattern_b or pattern_c,str)
 end
 local replacer=lpeg.replacer("@","%%") 
 function string.tformat(fmt,...)
@@ -5209,7 +5210,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 34513, stripped down to: 18943
+-- original size: 34893, stripped down to: 19218
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5380,7 +5381,13 @@ function string.autosingle(s,sep)
   end
   return ("'"..tostring(s).."'")
 end
-local tracedchars={}
+local tracedchars={ [0]=
+  "[null]","[soh]","[stx]","[etx]","[eot]","[enq]","[ack]","[bel]",
+  "[bs]","[ht]","[lf]","[vt]","[ff]","[cr]","[so]","[si]",
+  "[dle]","[dc1]","[dc2]","[dc3]","[dc4]","[nak]","[syn]","[etb]",
+  "[can]","[em]","[sub]","[esc]","[fs]","[gs]","[rs]","[us]",
+  "[space]",
+}
 string.tracedchars=tracedchars
 strings.tracers=tracedchars
 function string.tracedchar(b)
@@ -5897,7 +5904,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 27822, stripped down to: 18037
+-- original size: 27840, stripped down to: 18055
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6333,10 +6340,10 @@ local f_table_direct=formatters["{"]
 local f_table_entry=formatters["[%q]={"]
 local f_table_finish=formatters["}"]
 local spaces=utilities.strings.newrepeater(" ")
-local serialize=table.serialize
+local original_serialize=table.serialize
 local function serialize(root,name,specification)
   if type(specification)=="table" then
-    return serialize(root,name,specification) 
+    return original_serialize(root,name,specification) 
   end
   local t  
   local n=1
@@ -6559,6 +6566,105 @@ end
 table.serialize=serialize
 if setinspector then
   setinspector("table",function(v) if type(v)=="table" then print(serialize(v,"table")) return true end end)
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-fil"] = package.loaded["util-fil"] or true
+
+-- original size: 2521, stripped down to: 1962
+
+if not modules then modules={} end modules ['util-fil']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local byte=string.byte
+local extract=bit32.extract
+utilities=utilities or {}
+local files={}
+utilities.files=files
+function files.readbyte(f)
+  return byte(f:read(1))
+end
+function files.readchar(f)
+  return f:read(1)
+end
+function files.readbytes(f,n)
+  return byte(f:read(n),1,n)
+end
+function files.skipbytes(f,n)
+  f:read(n or 1) 
+end
+function files.readinteger1(f) 
+  local n=byte(f:read(1))
+  if n>=0x80 then
+    return n-0xFF-1
+  else
+    return n
+  end
+end
+files.readcardinal1=files.readbyte 
+files.readcardinal=files.readcardinal1
+files.readinteger=files.readinteger1
+function files.readcardinal2(f)
+  local a,b=byte(f:read(2),1,2)
+  return 0x100*a+b
+end
+function files.readinteger2(f)
+  local a,b=byte(f:read(2),1,2)
+  local n=0x100*a+b
+  if n>=0x8000 then
+    return n-0xFFFF-1
+  else
+    return n
+  end
+end
+function files.readcardinal3(f)
+  local a,b,c=byte(f:read(3),1,3)
+  return 0x10000*a+0x100*b+c
+end
+function files.readcardinal4(f)
+  local a,b,c,d=byte(f:read(4),1,4)
+  return 0x1000000*a+0x10000*b+0x100*c+d
+end
+function files.readinteger4(f)
+  local a,b,c,d=byte(f:read(4),1,4)
+  local n=0x1000000*a+0x10000*b+0x100*c+d
+  if n>=0x8000000 then
+    return n-0xFFFFFFFF-1
+  else
+    return n
+  end
+end
+function files.readfixed4(f)
+  local a,b,c,d=byte(f:read(4),1,4)
+  local n=0x100*a+b
+  if n>=0x8000 then
+    return n-0xFFFF-1+(0x100*c+d)/0xFFFF
+  else
+    return n+(0x100*c+d)/0xFFFF
+  end
+end
+function files.readstring(f,n)
+  return f:read(n or 1)
+end
+function files.read2dot14(f)
+  local a,b=byte(f:read(2),1,2)
+  local n=0x100*a+b
+  local m=extract(n,0,30)
+  if n>0x7FFF then
+    n=extract(n,30,2)
+    return m/0x4000-4
+  else
+    n=extract(n,30,2)
+    return n+m/0x4000
+  end
 end
 
 
@@ -10666,7 +10772,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 48229, stripped down to: 30684
+-- original size: 48172, stripped down to: 30632
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -11256,13 +11362,12 @@ local function tagstostring(list)
 end
 xml.nodesettostring=nodesettostring
 local lpath 
-local lshowoptions={ functions=false }
 local function lshow(parsed)
   if type(parsed)=="string" then
     parsed=lpath(parsed)
   end
   report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,
-    table.serialize(parsed,false,lshowoptions))
+    table.serialize(parsed,false))
 end
 xml.lshow=lshow
 local function add_comment(p,str)
@@ -13465,7 +13570,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 17216, stripped down to: 10657
+-- original size: 18067, stripped down to: 10726
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -13476,6 +13581,7 @@ if not modules then modules={} end modules ['data-exp']={
 }
 local format,find,gmatch,lower,char,sub=string.format,string.find,string.gmatch,string.lower,string.char,string.sub
 local concat,sort=table.concat,table.sort
+local sortedkeys=table.sortedkeys
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local Ct,Cs,Cc,Carg,P,C,S=lpeg.Ct,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.P,lpeg.C,lpeg.S
 local type,next=type,next
@@ -13821,14 +13927,16 @@ local nothing=function() end
 function resolvers.filtered_from_content(content,pattern)
   if content and type(pattern)=="string" then
     local pattern=lower(pattern)
-    local files=content.files
+    local files=content.files 
     local remap=content.remap
     if files and remap then
-      local n=next(files)
+      local f=sortedkeys(files)
+      local n=#f
+      local i=0
       local function iterator()
-        while n do
-          local k=n
-          n=next(files,k)
+        while i<n do
+          i=i+1
+          local k=f[i]
           if find(k,pattern) then
             return files[k],remap and remap[k] or k
           end
@@ -17998,10 +18106,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 748759
--- stripped bytes    : 270199
+-- original bytes    : 752548
+-- stripped bytes    : 271649
 
 -- end library merge
 
@@ -18045,6 +18153,7 @@ local ownlibs = { -- order can be made better
 
     'util-str.lua', -- code might move to l-string
     'util-tab.lua',
+    'util-fil.lua',
     'util-sto.lua',
     'util-prs.lua',
     'util-fmt.lua',

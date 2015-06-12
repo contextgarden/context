@@ -882,7 +882,7 @@ function metapost.analyzeplugins(object) -- each object (first pass)
     if top.plugmode then
         local prescript = object.prescript   -- specifications
         if prescript and #prescript > 0 then
-            analyzer(object,splitprescript(prescript))
+            analyzer(object,splitprescript(prescript) or {})
             return top.multipass
         end
     end
@@ -895,7 +895,7 @@ function metapost.processplugins(object) -- each object (second pass)
         if prescript and #prescript > 0 then
             local before = { }
             local after = { }
-            processor(object,splitprescript(prescript),before,after)
+            processor(object,splitprescript(prescript) or {},before,after)
             return #before > 0 and before, #after > 0 and after
         else
             local c = object.color
@@ -1386,13 +1386,56 @@ local function gr_process(object,prescript,before,after)
     end
 end
 
+-- outlines
+
+local outlinetexts = { }
+
+local function ot_reset()
+    outlinetexts = { }
+end
+
+local function ot_analyze(object,prescript)
+    local ot_stage = prescript.ot_stage
+    local ot_index = tonumber(prescript.ot_index)
+    if ot_index and ot_stage == "trial" and not outlinetexts[ot_index] then
+        local ot_kind = prescript.ot_kind or ""
+        top.intermediate  = true
+        top.multipass     = true
+        context.MPLIBoutlinetext(ot_index,ot_kind,object.postscript)
+    end
+end
+
+local function ot_process(object,prescript,before,after)
+end
+
+implement {
+    name      = "MPLIBconvertoutlinetext",
+    arguments = { "integer", "string", "integer" },
+    actions   = function(index,kind,box)
+        local boxtomp = fonts.metapost.boxtomp
+        if boxtomp then
+            outlinetexts[index] = boxtomp(box,kind)
+        else
+            outlinetexts[index] = ""
+        end
+    end
+}
+
+function mp.get_outline_text(index) -- maybe we need a more private namespace
+    mp.print(outlinetexts[index] or "draw origin;")
+end
+
+
 -- definitions
 
+appendaction(resetteractions, "system",ot_reset)
 appendaction(resetteractions, "system",cl_reset)
 appendaction(resetteractions, "system",tx_reset)
 
+appendaction(processoractions,"system",ot_process)
 appendaction(processoractions,"system",gr_process)
 
+appendaction(analyzeractions, "system",ot_analyze)
 appendaction(analyzeractions, "system",tx_analyze)
 appendaction(analyzeractions, "system",gt_analyze)
 
@@ -1405,6 +1448,18 @@ appendaction(processoractions,"system",fg_process)
 appendaction(processoractions,"system",tr_process) -- last, as color can be reset
 
 appendaction(processoractions,"system",la_process)
+
+-- function metapost.installplugin(reset,analyze,process)
+--     if reset then
+--         appendaction(resetteractions,"system",reset)
+--     end
+--     if analyze then
+--         appendaction(analyzeractions,"system",analyze)
+--     end
+--     if process then
+--         appendaction(processoractions,"system",process)
+--     end
+-- end
 
 -- we're nice and set them already
 

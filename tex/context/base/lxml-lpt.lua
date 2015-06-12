@@ -837,14 +837,12 @@ xml.nodesettostring = nodesettostring
 
 local lpath -- we have a harmless kind of circular reference
 
-local lshowoptions = { functions = false }
-
 local function lshow(parsed)
     if type(parsed) == "string" then
         parsed = lpath(parsed)
     end
     report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,
-        table.serialize(parsed,false,lshowoptions))
+        table.serialize(parsed,false))
 end
 
 xml.lshow = lshow
