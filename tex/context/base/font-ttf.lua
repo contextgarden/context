@@ -99,13 +99,23 @@ local function curveto(m_x,m_y,l_x,l_y,r_x,r_y) -- todo: inline this
     }
 end
 
--- we could omit the operator which saves some 10%
+-- We could omit the operator which saves some 10%:
 --
 -- #2=lineto  #4=quadratic  #6=cubic #3=moveto (with "m")
+--
+-- For the moment we keep the original outlines but that default might change
+-- in the future. In any case, a backend should support both.
+--
+-- The code is a bit messy. I looked at the ff code but it's messy too. It has
+-- to do with the fact that we need to look at points on the curve and control
+-- points in between. This also means that we start at point 2 and have to look at
+-- point 1 when we're at the end. We still use a ps like storage with the operator
+-- last in an entry. It's typical code that evolves stepwise till a point of no
+-- comprehension.
 
 local function contours2outlines(glyphs,shapes)
     local quadratic = true
---     local quadratic = false
+ -- local quadratic = false
     for index=1,#glyphs do
         local glyph    = glyphs[index]
         local shape    = shapes[index]

@@ -23,7 +23,7 @@ if not modules then modules = { } end modules ['font-cff'] = {
 local next, type = next, type
 local byte = string.byte
 local concat, remove = table.concat, table.remove
-local floor, abs, round = math.floor, math.abs, math.round
+local floor, abs, round, ceil = math.floor, math.abs, math.round, math.ceil
 local P, C, R, S, C, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct
 local lpegmatch = lpeg.match
 
@@ -554,8 +554,6 @@ do
         stack  = { }
     end
 
-    -- todo: local x, y
-    --
     -- All bezier curves have 6 points with successive pairs relative to
     -- the previous pair. Some can be left out and are then copied or zero
     -- (optimization).
@@ -563,6 +561,14 @@ do
     -- We are not really interested in all the details of a glyph because we
     -- only need to calculate the boundingbox. So, todo: a quick no result but
     -- calculate only variant.
+    --
+    -- The conversion is straightforward and the specification os clear once
+    -- you understand that the x and y needs to be updates each step. It's also
+    -- quite easy to test because in mp a shape will look bad when a few variables
+    -- are swapped. But still there might be bugs down here because not all
+    -- variants are seen in a font so far. We are less compact that the ff code
+    -- because there quite some variants are done in one helper with a lot of
+    -- testing for states.
 
     local x          = 0
     local y          = 0
@@ -1063,8 +1069,8 @@ do
         end
     end
 
-    local function process(tab)
-        local i = 1
+    local function process(tab) -- I should profile this and optimize the order
+        local i = 1             -- which is something for a cold dark evening.
         local n = #tab
         while i <= n do
             local t = tab[i]
@@ -1172,6 +1178,8 @@ do
             if x > xmax then xmax = x end
             if y < ymin then ymin = y end
             if y > ymax then ymax = y end
+            -- we now have a reasonable start so we could
+            -- simplyfy the next checks
             for i=1,nofsegments do
                 local s = segments[i]
                 local x = s[1]
@@ -1183,19 +1191,15 @@ do
                 if s[#s] == "c" then -- "curveto"
                     local x = s[3]
                     local y = s[4]
-                    if x < xmin then xmin = x end
-                    if x > xmax then xmax = x end
-                    if y < ymin then ymin = y end
-                    if y > ymax then ymax = y end
+                    if x < xmin then xmin = x elseif x > xmax then xmax = x end
+                    if y < ymin then ymin = y elseif y > ymax then ymax = y end
                     local x = s[5]
                     local y = s[6]
-                    if x < xmin then xmin = x end
-                    if x > xmax then xmax = x end
-                    if y < ymin then ymin = y end
-                    if y > ymax then ymax = y end
+                    if x < xmin then xmin = x elseif x > xmax then xmax = x end
+                    if y < ymin then ymin = y elseif y > ymax then ymax = y end
                 end
             end
-            return { round(xmin), round(ymin), round(xmax), round(ymax) }
+            return { round(xmin), round(ymin), round(xmax), round(ymax) } -- doesn't make ceil more sense
         end
     end
 
