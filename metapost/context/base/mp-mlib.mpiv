@@ -476,10 +476,24 @@ boolean     trace_shades ; trace_shades := false ;  % still there
 %     withshadecolors (red,green)
 % ;
 
-path mfun_shade_path ;
+path    mfun_shade_path ;
+numeric mfun_shade_step ; mfun_shade_step := 0 ;
+
+def withshadestep =
+    hide(mfun_shade_step := mfun_shade_step + 1 ;)
+    mfun_withshadestep
+enddef ;
+
+def mfun_withshadestep (text t) =
+    withprescript "sh_step=" & decimal mfun_shade_step
+    t
+enddef ;
 
 primarydef p withshademethod m =
-    hide(mfun_shade_path := p ;)
+    hide(
+        mfun_shade_path := p ;
+        mfun_shade_step := 1 ;
+    )
     p
     withprescript "sh_domain=0 1"
     withprescript "sh_color=into"
@@ -527,10 +541,28 @@ def withshadefactor expr f =
     withprescript "sh_factor=" & decimal f
 enddef ;
 
+% def withshadebound (expr a) =
+%     if mfun_shade_step > 0 :
+%         withprescript "sh_bound_" & decimal mfun_shade_step & "=" & decimal a
+%     fi
+% enddef ;
+
+def withshadefraction expr a =
+    if mfun_shade_step > 0 :
+        withprescript "sh_fraction_" & decimal mfun_shade_step & "=" & decimal a
+    fi
+enddef ;
+
 def withshadecolors (expr a, b) =
-    withprescript "sh_color=into"
-    withprescript "sh_color_a=" & colordecimals a
-    withprescript "sh_color_b=" & colordecimals b
+    if mfun_shade_step > 0 :
+        withprescript "sh_color=into"
+        withprescript "sh_color_a_" & decimal mfun_shade_step & "=" & colordecimals a
+        withprescript "sh_color_b_" & decimal mfun_shade_step & "=" & colordecimals b
+    else :
+        withprescript "sh_color=into"
+        withprescript "sh_color_a=" & colordecimals a
+        withprescript "sh_color_b=" & colordecimals b
+    fi
 enddef ;
 
 primarydef a shadedinto b = % withcolor red shadedinto green

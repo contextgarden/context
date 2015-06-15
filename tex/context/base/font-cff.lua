@@ -1249,14 +1249,14 @@ do
             local glyph = glyphs[index] -- can be autodefined in otr
             if not glyph then
                 glyphs[index] = {
-                    segments    = doshapes ~= false and result, -- optional
+                    segments    = doshapes ~= false and result or nil, -- optional
                     boundingbox = boundingbox,
                     width       = width,
                     name        = charset[index],
                  -- sidebearing = 0,
                 }
             else
-                glyph.segments    = doshapes ~= false and result
+                glyph.segments    = doshapes ~= false and result or nil
                 glyph.boundingbox = boundingbox
                 if not glyph.width then
                     glyph.width = width

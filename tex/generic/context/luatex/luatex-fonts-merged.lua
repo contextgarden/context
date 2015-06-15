@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/12/15 22:19:11
+-- merge date  : 06/15/15 13:42:51
 
 do -- begin closure to overcome local limits and interference
 
@@ -12343,7 +12343,7 @@ function chainprocs.gsub_ligature(head,start,stop,kind,chainname,currentcontext,
       local s=getnext(start)
       local discfound=false
       local last=stop
-      local nofreplacements=0
+      local nofreplacements=1
       local skipmark=currentlookup.flags[1]
       while s do
         local id=getid(s)

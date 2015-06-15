@@ -10,6 +10,8 @@ local getargument = environment.getargument
 local setargument = environment.setargument
 local givenfiles  = environment.files
 
+local otfversion  = 2.815
+
 local helpinfo = [[
 <?xml version="1.0"?>
 <application>
@@ -401,7 +403,7 @@ end
 function scripts.fonts.unpack()
     local name = file.removesuffix(file.basename(givenfiles[1] or ""))
     if name and name ~= "" then
-        local cache = containers.define("fonts", "otf", 2.742, true)
+        local cache = containers.define("fonts", "otf", otfversion, true)
         local cleanname = containers.cleanname(name)
         local data = containers.read(cache,cleanname)
         if data then

@@ -170,7 +170,7 @@ local function checkandconvertspot(n_a,f_a,c_a,v_a,n_b,f_b,c_b,v_b)
     end
 end
 
-local function checkandconvert(ca,cb)
+local function checkandconvert(ca,cb,model)
     local name = f_shade(nofshades)
     if not ca or not cb or type(ca) == "string" then
         return { 0 }, { 1 }, "DeviceGray", name
@@ -180,7 +180,9 @@ local function checkandconvert(ca,cb)
         elseif #ca < #cb then
             normalize(cb,ca)
         end
-        local model = colors.model
+        if not model then
+            model = colors.model
+        end
         if model == "all" then
             model= (#ca == 4 and "cmyk") or (#ca == 3 and "rgb") or "gray"
         end
@@ -193,7 +195,7 @@ local function checkandconvert(ca,cb)
                 ca = { a, a, a }
                 cb = { b, b, b }
             end
-            return ca, cb, "DeviceRGB", name
+            return ca, cb, "DeviceRGB", name, model
         elseif model == "cmyk" then
             if #ca == 3 then
                 ca = { rgbtocmyk(ca[1],ca[2],ca[3]) }
@@ -202,7 +204,7 @@ local function checkandconvert(ca,cb)
                 ca = { 0, 0, 0, ca[1] }
                 cb = { 0, 0, 0, ca[1] }
             end
-            return ca, cb, "DeviceCMYK", name
+            return ca, cb, "DeviceCMYK", name, model
         else
             if #ca == 4 then
                 ca = { cmyktogray(ca[1],ca[2],ca[3],ca[4]) }
@@ -212,7 +214,7 @@ local function checkandconvert(ca,cb)
                 cb = { rgbtogray(cb[1],cb[2],cb[3]) }
             end
             -- backend specific (will be renamed)
-            return ca, cb, "DeviceGray", name
+            return ca, cb, "DeviceGray", name, model
         end
     end
 end
@@ -1107,13 +1109,13 @@ local function sh_process(object,prescript,before,after)
     local sh_type = prescript.sh_type
     if sh_type then
         nofshades = nofshades + 1
-        local domain  = lpegmatch(domainsplitter,prescript.sh_domain   or "0 1")
-        local centera = lpegmatch(centersplitter,prescript.sh_center_a or "0 0")
-        local centerb = lpegmatch(centersplitter,prescript.sh_center_b or "0 0")
-        --
-        local sh_color_a = prescript.sh_color_a or "1"
-        local sh_color_b = prescript.sh_color_b or "1"
-        local ca, cb, colorspace, name, separation
+        local domain   = lpegmatch(domainsplitter,prescript.sh_domain   or "0 1")
+        local centera  = lpegmatch(centersplitter,prescript.sh_center_a or "0 0")
+        local centerb  = lpegmatch(centersplitter,prescript.sh_center_b or "0 0")
+        local steps    = tonumber(prescript.sh_step) or 1
+        local sh_color_a = prescript.sh_color_a_1 or prescript.sh_color_a or "1"
+        local sh_color_b = prescript.sh_color_b_1 or prescript.sh_color_b or "1" -- sh_color_b_<sh_steps>
+        local ca, cb, colorspace, name, model, separation, fractions
         if prescript.sh_color == "into" and prescript.sp_name then
             -- some spotcolor
             local value_a, components_a, fractions_a, name_a
@@ -1149,27 +1151,41 @@ local function sh_process(object,prescript,before,after)
         else
             local colora = lpegmatch(colorsplitter,sh_color_a)
             local colorb = lpegmatch(colorsplitter,sh_color_b)
-            ca, cb, colorspace, name = checkandconvert(colora,colorb)
+            ca, cb, colorspace, name, model = checkandconvert(colora,colorb)
+            -- test:
+            if steps > 1 then
+                ca = { ca }
+                cb = { cb }
+                fractions = { tonumber(prescript[formatters["sh_fraction_%i"](1)]) or 0 }
+                for i=2,steps do
+                    local colora = lpegmatch(colorsplitter,prescript[formatters["sh_color_a_%i"](i)])
+                    local colorb = lpegmatch(colorsplitter,prescript[formatters["sh_color_b_%i"](i)])
+                    ca[i], cb[i] = checkandconvert(colora,colorb,model)
+                    fractions[i] = tonumber(prescript[formatters["sh_fraction_%i"](i)]) or (i/steps)
+                end
+            end
         end
         if not ca or not cb then
             ca, cb, colorspace, name = checkandconvert()
+            steps = 1
         end
         if sh_type == "linear" then
             local coordinates = { centera[1], centera[2], centerb[1], centerb[2] }
-            lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates,separation) -- backend specific (will be renamed)
+            lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates,separation,steps>1 and steps,fractions) -- backend specific (will be renamed)
         elseif sh_type == "circular" then
             local factor  = tonumber(prescript.sh_factor) or 1
             local radiusa = factor * tonumber(prescript.sh_radius_a)
             local radiusb = factor * tonumber(prescript.sh_radius_b)
             local coordinates = { centera[1], centera[2], radiusa, centerb[1], centerb[2], radiusb }
-            lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates,separation) -- backend specific (will be renamed)
+            lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates,separation,steps>1 and steps,fractions) -- backend specific (will be renamed)
         else
             -- fatal error
         end
-        before[#before+1], after[#after+1] = "q /Pattern cs", formatters["W n /%s sh Q"](name)
+        before[#before+1] = "q /Pattern cs"
+        after [#after+1]  = formatters["W n /%s sh Q"](name)
         -- false, not nil, else mt triggered
         object.colored = false -- hm, not object.color ?
-        object.type = false
+        object.type    = false
         object.grouped = true
     end
 end

@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['lpdf-grp'] = {
     license   = "see context related readme files"
 }
 
+local type = type
 local formatters, gsub = string.formatters, string.gsub
 local concat = table.concat
 local round = math.round
@@ -35,7 +36,11 @@ local pdfflushobject = lpdf.flushobject
 -- 22 : << /Bounds [ ] /Domain [ 0.0 1.0 ] /Encode [ 0.0 1.0 ] /FunctionType 3 /Functions [ 31 0 R ] >>
 -- 31 : << /C0 [ 1.0 0.0 ] /C1 [ 0.0 1.0 ] /Domain [ 0.0 1.0 ] /FunctionType 2 /N 1.0 >>
 
-local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,separation)
+local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps)
+    if steps then
+        color_a = color_a[1]
+        color_b = color_b[1]
+    end
     local f = pdfdictionary {
         FunctionType = 2,
         Domain       = pdfarray(domain), -- domain is actually a string
@@ -55,12 +60,58 @@ local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,
     lpdf.adddocumentshade(name,pdfreference(pdfflushobject(s)))
 end
 
-function lpdf.circularshade(name,domain,color_a,color_b,n,colorspace,coordinates,separation)
-    shade(3,name,domain,color_a,color_b,n,colorspace,coordinates,separation)
+local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
+    local func = nil
+    if steps then
+        local list   = pdfarray()
+        local bounds = pdfarray()
+        local encode = pdfarray()
+        for i=1,steps do
+            bounds[i]     = fractions[i] or 1
+            encode[2*i-1] = 0
+            encode[2*i]   = 1
+            list  [i]     = pdfdictionary {
+                FunctionType = 2,
+                Domain       = pdfarray(domain), -- domain is actually a string
+                C0           = pdfarray(color_a[i]),
+                C1           = pdfarray(color_b[i]),
+                N            = tonumber(n),
+            }
+        end
+        func = pdfdictionary {
+            FunctionType = 3,
+            Bounds       = bounds,
+            Encode       = encode,
+            Functions    = list,
+            Domain       = pdfarray(domain), -- domain is actually a string
+        }
+    else
+        func = pdfdictionary {
+            FunctionType = 2,
+            Domain       = pdfarray(domain), -- domain is actually a string
+            C0           = pdfarray(color_a),
+            C1           = pdfarray(color_b),
+            N            = tonumber(n),
+        }
+    end
+    separation = separation and registrations.getspotcolorreference(separation)
+    local s = pdfdictionary {
+        ShadingType = stype,
+        ColorSpace  = separation and pdfreference(separation) or pdfconstant(colorspace),
+        Function    = pdfreference(pdfflushobject(func)),
+        Coords      = pdfarray(coordinates),
+        Extend      = pdfarray { true, true },
+        AntiAlias   = pdfboolean(true),
+    }
+    lpdf.adddocumentshade(name,pdfreference(pdfflushobject(s)))
 end
 
-function lpdf.linearshade(name,domain,color_a,color_b,n,colorspace,coordinates,separation)
-    shade(2,name,domain,color_a,color_b,n,colorspace,coordinates,separation)
+function lpdf.circularshade(name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
+    shade(3,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
+end
+
+function lpdf.linearshade(name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
+    shade(2,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
 end
 
 -- inline bitmaps but xform'd

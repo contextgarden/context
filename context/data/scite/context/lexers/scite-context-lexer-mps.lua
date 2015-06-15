@@ -122,7 +122,7 @@ local stopluacode  = #stoplua * token("embedded", stoplua)
 
 lexer.embed_lexer(metafunlexer, cldlexer, startluacode, stopluacode)
 
-local luacall      = token("embedded",P("lua") * ( P(".") * R("az","AZ")^1 )^1)
+local luacall      = token("embedded",P("lua") * ( P(".") * R("az","AZ","__")^1 )^1)
 
 metafunlexer._rules = {
     { "whitespace", spacing    },

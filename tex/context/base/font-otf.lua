@@ -60,7 +60,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.815 -- beware: also sync font-mis.lua
+otf.version              = 2.815 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -2060,7 +2060,9 @@ end
 
 -- we can share { } as it is never set
 
---- ligatures have an extra specification.char entry that we don't use
+-- ligatures have an extra specification.char entry that we don't use
+
+-- mlookups probably only with pairs
 
 actions["reorganize glyph lookups"] = function(data,filename,raw)
     local resources    = data.resources
@@ -2141,6 +2143,7 @@ actions["reorganize glyph lookups"] = function(data,filename,raw)
             if mlookups then
                 description.mlookups = mlookups
             end
+         -- description.lookups = nil
         end
     end
 

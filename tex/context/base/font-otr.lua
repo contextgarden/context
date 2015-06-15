@@ -1544,6 +1544,13 @@ local function readdata(f,offset,specification)
     readers["gpos"](f,fontdata,specification)
     readers["math"](f,fontdata,specification)
     --
+    if readers.filterkerns then
+        readers.filterkerns(fontdata)
+    end
+    if readers.splitlookups then
+        readers.splitlookups(fontdata)
+    end
+    --
     fontdata.locations    = nil
     fontdata.tables       = nil
     fontdata.cidmaps      = nil
@@ -1762,7 +1769,7 @@ if fonts.hashes then
     local identifiers = fonts.hashes.identifiers
     local loadshapes  = readers.loadshapes
 
-    readers.version  = 0.005
+    readers.version  = 0.006
     readers.cache    = containers.define("fonts", "shapes", readers.version, true)
 
     -- todo: loaders per format

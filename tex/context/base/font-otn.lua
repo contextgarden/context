@@ -3374,6 +3374,8 @@ local function featuresprocessor(head,font,attr)
     return head, done
 end
 
+-- this might move to the loader
+
 local function generic(lookupdata,lookupname,unicode,lookuphash)
     local target = lookuphash[lookupname]
     if target then
@@ -3509,6 +3511,8 @@ local function prepare_lookups(tfmdata)
     end
 
 end
+
+-- so far
 
 local function split(replacement,original)
     local result = { }

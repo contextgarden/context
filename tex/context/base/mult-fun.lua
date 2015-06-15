@@ -44,6 +44,7 @@ return {
         "defineshade", "shaded",
      -- "withshading", "withlinearshading", "withcircularshading", "withfromshadecolor", "withtoshadecolor",
         "shadedinto", "withshadecolors", "withshadedomain", "withshademethod", "withshadefactor", "withshadevector", "withshadecenter",
+        "withshadestep", "withshadefraction",
         "cmyk", "spotcolor", "multitonecolor", "namedcolor",
         "drawfill", "undrawfill",
         "inverted", "uncolored", "softened", "grayed", "greyed",
