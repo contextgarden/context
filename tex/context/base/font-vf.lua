@@ -24,36 +24,36 @@ local fonts             = fonts
 local constructors      = fonts.constructors
 local vf                = constructors.newhandler("vf")
 
--- general code
-
-function vf.find(name)
-    name = file.removesuffix(file.basename(name))
-    if constructors.resolvevirtualtoo then
-        local format = fonts.loggers.format(name)
-        if format == 'tfm' or format == 'ofm' then
-            if trace_defining then
-                report_defining("locating vf for %a",name)
-            end
-            return findbinfile(name,"ovf")
-        else
-            if trace_defining then
-                report_defining("vf for %a is already taken care of",name)
-            end
-            return nil -- ""
-        end
-    else
-        if trace_defining then
-            report_defining("locating vf for %a",name)
-        end
-        return findbinfile(name,"ovf")
-    end
-end
-
 --[[ldx--
 <p>We overload the <l n='vf'/> reader.</p>
 --ldx]]--
 
-callbacks.register('find_vf_file', vf.find, "locating virtual fonts, insofar needed") -- not that relevant any more
+-- general code / already frozen
+--
+-- function vf.find(name)
+--     name = file.removesuffix(file.basename(name))
+--     if constructors.resolvevirtualtoo then
+--         local format = fonts.loggers.format(name)
+--         if format == 'tfm' or format == 'ofm' then
+--             if trace_defining then
+--                 report_defining("locating vf for %a",name)
+--             end
+--             return findbinfile(name,"ovf")
+--         else
+--             if trace_defining then
+--                 report_defining("vf for %a is already taken care of",name)
+--             end
+--             return nil -- ""
+--         end
+--     else
+--         if trace_defining then
+--             report_defining("locating vf for %a",name)
+--         end
+--         return findbinfile(name,"ovf")
+--     end
+-- end
+--
+-- callbacks.register('find_vf_file', vf.find, "locating virtual fonts, insofar needed") -- not that relevant any more
 
 -- specific code (will move to other module)
 

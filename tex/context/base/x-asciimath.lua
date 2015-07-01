@@ -117,6 +117,7 @@ local reserved = {
 
     ["sqrt"]      = { false, "\\asciimathsqrt",     "unary" },
     ["root"]      = { false, "\\asciimathroot",     "binary" },
+--     ["\\frac"]    = { false, "\\frac",              "binary" },
     ["frac"]      = { false, "\\frac",              "binary" },
     ["stackrel"]  = { false, "\\asciimathstackrel", "binary" },
     ["hat"]       = { false, "\\widehat",           "unary" },
@@ -699,7 +700,7 @@ local reserved = {
 
     -- a bit special:
 
-    ["\\frac"]   = { true, "frac" },
+--     ["\\frac"]   = { true, "frac" },
 
     -- now it gets real crazy, only these two:
 
@@ -851,7 +852,10 @@ local digitsymbol    = "."
 function asciimath.setup(settings)
     splitmethod = splitmethods[tonumber(settings.splitmethod) or 0]
     if splitmethod then
-        digitsymbol = settings.symbol or "."
+        digitsymbol = settings.symbol
+        if not digitsymbol or digitsymbol == "" then
+             digitsymbol = "."
+        end
         local separator = settings.separator
         if separator == true or not interfaces or interfaces.variables.yes then
             digitseparator = utfchar(0x2008)
@@ -889,6 +893,7 @@ end
 
 -- asciimath.setup { splitmethod = 3, symbol = "," }
 -- local t = {
+--     "0.00002",
 --     "1", "12", "123", "1234", "12345", "123456", "1234567", "12345678", "123456789",
 --     "1.1",
 --     "12.12",
@@ -1105,6 +1110,7 @@ local p_special =
 local u_parser = Cs ( (
     patterns.doublequoted +
     P("text") * p_spaces^0 * P("(") * (1-P(")"))^0 * P(")") + -- -- todo: balanced
+    P("\\frac") / "frac" + -- bah
     p_unicode +
     p_utf_base
 )^0 )
@@ -1883,7 +1889,9 @@ if not context then
 -- convert("sqrt")
 -- convert("^")
 
--- convert("\\frac{a}{b}")
+-- convert[[\frac{a}{b}]]
+-- convert[[frac{a}{b}]]
+
 -- convert("frac{a}{b}")
 -- convert("\\sin{a}{b}")
 -- convert("sin{a}{b}")

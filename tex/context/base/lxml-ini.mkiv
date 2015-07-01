@@ -496,7 +496,25 @@
 \unexpanded\def\xmlresetinjectors
   {\clf_xmlresetinjectors{}}
 
-\def\xmlinjector#1{\executeifdefined{#1}\donothing}
+% \def\xmlinjector#1{\executeifdefined{#1}\donothing}
+
+\def\xmlinjector#1{\fastsetup{xml:directive:injector:#1}}
+
+\startsetups xml:directive:injector:page
+    \page
+\stopsetups
+
+\startsetups xml:directive:injector:column
+    \column
+\stopsetups
+
+\startsetups xml:directive:injector:blank
+    \blank
+\stopsetups
+
+\startsetups xml:directive:injector:noline
+    \vskip-\lineheight
+\stopsetups
 
 \let\xmlapplyselectors\clf_xmlapplyselectors
 

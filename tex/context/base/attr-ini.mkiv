@@ -108,3 +108,19 @@
 \unexpanded\def\showattributes{\clf_showattributes}
 
 \protect \endinput
+
+% for the luatex list:
+%
+% \attributedef\zeroattribute=0
+% \attributedef\someatriubute=999
+%
+% \directlua {
+%     local createtoken = newtoken.create
+%     function attributenumber(name)
+%         local n = createtoken(name).mode - createtoken("zeroattribute").mode
+%         return n >= 0 and n or false
+%     end
+% }
+%
+% \directlua{print(attributenumber("noneattribute"))}
+% \directlua{print(attributenumber("someattribute"))}

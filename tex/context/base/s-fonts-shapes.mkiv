@@ -20,21 +20,22 @@
 \installmodulecommandluatwo    \showlastglyphshapefield {moduledata.fonts.shapes.showlastglyphshapefield}
 \installmodulecommandluasingle \showallglyphshapes      {moduledata.fonts.shapes.showallglypshapes}
 
-\let\modulefontsstartshowglyphshape\relax
+\let\modulefontsstartshowglyphshape\gobblethreearguments
 \let\modulefontsstopshowglyphshape \relax
 
 \unprotect
 
 \startsetups module:showallglyphshapes:start
 
-   \def\modulefontsstartshowglyphshape##1##2{
+    \unexpanded\def\modulefontsstartshowglyphshape##1##2##3{
         \startTEXpage[\c!offset=\exheight]
         \edef\lastshownglyphshapefieldunicode{##1}%
         \edef\lastshownglyphshapefieldname   {##2}%
+        \edef\lastshownglyphshapefieldindex  {##3}%
         \raggedcenter
     }
 
-   \def\modulefontsstopshowglyphshape {
+    \unexpanded\def\modulefontsstopshowglyphshape {
         \par
         \doifsomething {\lastshownglyphshapefieldunicode} {
             \begingroup
@@ -43,8 +44,10 @@
                 \setstrut
                 \strut
                 0x\uchexnumbers\lastshownglyphshapefieldunicode
-                :\space
+                \space:\space
                 \lastshownglyphshapefieldname
+                \space:\space
+                \lastshownglyphshapefieldindex
                 \par
             \endgroup
         }
@@ -80,38 +83,33 @@
 
 \starttext
 
-    \savedefinedfont[Bold*default]
+%     \savedefinedfont[Bold*default]
+%     \showfontshapes[number=\saveddefinedfontid]
+%     \page
 
-    \showfontshapes[number=\saveddefinedfontid]
-
-    \page
-
-    \showfontshapes[name=BoldItalic*default]
-
-    \page
+%     \showfontshapes[name=BoldItalic*default]
+%     \page
 
     % \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0x62A}       \stopTEXpage
     % \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0x2004}      \stopTEXpage
     % \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0xF0299}     \stopTEXpage
     % \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{NameMe.1190} \stopTEXpage
 
-    \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{20bp}{0x00066}\stopTEXpage
-    \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{20bp}{0x1D453}\stopTEXpage
-    \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{20bp}{0x1D43F}\stopTEXpage
-    \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D444}\stopTEXpage
-    \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D447}\stopTEXpage
-    \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x02112}\stopTEXpage
-    \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D432}\stopTEXpage
-    \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D43D}\stopTEXpage
-    \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D44A}\stopTEXpage
-    \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D45D}\stopTEXpage
-
-    \page
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{20bp}{0x00066}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{20bp}{0x1D453}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{20bp}{0x1D43F}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D444}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D447}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x02112}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D432}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D43D}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D44A}\stopTEXpage
+%     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D45D}\stopTEXpage
+%     \page
 
   % \showallglyphshapes[name=name:cambria-math,size=100bp]
-  % \showallglyphshapes[name=name:dejavuserif,size=100bp]
+% \showallglyphshapes[name=name:dejavuserif,size=100bp]
 
-\stoptext
-
+\showallglyphshapes[name=file:brill.otf,size=100bp]
 
 \stoptext

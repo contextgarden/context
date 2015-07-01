@@ -24,9 +24,7 @@ local utfbyte = utf.byte
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local abs = math.abs
-local insert = table.insert
-local lpegmatch = lpeg.match
-local reversed, concat, remove, sortedkeys = table.reversed, table.concat, table.remove, table.sortedkeys
+local reversed, concat, insert, remove, sortedkeys = table.reversed, table.concat, table.insert, table.remove, table.sortedkeys
 local ioflush = io.flush
 local fastcopy, tohash, derivetable = table.fastcopy, table.tohash, table.derive
 local formatters = string.formatters
@@ -60,7 +58,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.815 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 2.816 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -709,7 +707,7 @@ local function somecopy(old) -- fast one
     end
 end
 
--- not setting hasitalics and class (when nil) during table cronstruction can save some mem
+-- not setting hasitalics and class (when nil) during table construction can save some mem
 
 actions["prepare glyphs"] = function(data,filename,raw)
     local tableversion = tonumber(raw.table_version) or 0
@@ -1128,7 +1126,7 @@ actions["analyze glyphs"] = function(data,filename,raw) -- maybe integrate this 
     local marks             = { } -- always present (saves checking)
     for unicode, description in next, descriptions do
         local glyph = description.glyph
-        local italic = glyph.italic_correction
+        local italic = glyph.italic_correction -- only in a math font
         if not italic then
             -- skip
         elseif italic == 0 then
@@ -1197,7 +1195,8 @@ end
 actions["reorganize features"] = function(data,filename,raw) -- combine with other
     local features = { }
     data.resources.features = features
-    for k, what in next, otf.glists do
+    for k=1,#otf.glists do
+        local what = otf.glists[k]
         local dw = raw[what]
         if dw then
             local f = { }
@@ -1266,6 +1265,140 @@ actions["reorganize anchor classes"] = function(data,filename,raw)
     end
 end
 
+-- local function checklookups(data,missing,nofmissing)
+--     local resources    = data.resources
+--     local unicodes     = resources.unicodes
+--     local lookuptypes  = resources.lookuptypes
+--     if not unicodes or not lookuptypes then
+--         return
+--     elseif nofmissing <= 0 then
+--         return
+--     end
+--     local descriptions = data.descriptions
+--     local private      = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
+--     --
+--     local ns, nl = 0, 0
+
+--     local guess  = { }
+--     -- helper
+--     local function check(gname,code,unicode)
+--         local description = descriptions[code]
+--         -- no need to add a self reference
+--         local variant = description.name
+--         if variant == gname then
+--             return
+--         end
+--         -- the variant already has a unicode (normally that results in a default tounicode to self)
+--         local unic = unicodes[variant]
+--         if unic == -1 or unic >= private or (unic >= 0xE000 and unic <= 0xF8FF) or unic == 0xFFFE or unic == 0xFFFF then
+--             -- no default mapping and therefore maybe no tounicode yet
+--         else
+--             return
+--         end
+--         -- the variant already has a tounicode
+--         if descriptions[code].unicode then
+--             return
+--         end
+--         -- add to the list
+--         local g = guess[variant]
+--      -- local r = overloads[unicode]
+--      -- if r then
+--      --     unicode = r.unicode
+--      -- end
+--         if g then
+--             g[gname] = unicode
+--         else
+--             guess[variant] = { [gname] = unicode }
+--         end
+--     end
+--     --
+--     for unicode, description in next, descriptions do
+--         local slookups = description.slookups
+--         if slookups then
+--             local gname = description.name
+--             for tag, data in next, slookups do
+--                 local lookuptype = lookuptypes[tag]
+--                 if lookuptype == "alternate" then
+--                     for i=1,#data do
+--                         check(gname,data[i],unicode)
+--                     end
+--                 elseif lookuptype == "substitution" then
+--                     check(gname,data,unicode)
+--                 end
+--             end
+--         end
+--         local mlookups = description.mlookups
+--         if mlookups then
+--             local gname = description.name
+--             for tag, list in next, mlookups do
+--                 local lookuptype = lookuptypes[tag]
+--                 if lookuptype == "alternate" then
+--                     for i=1,#list do
+--                         local data = list[i]
+--                         for i=1,#data do
+--                             check(gname,data[i],unicode)
+--                         end
+--                     end
+--                 elseif lookuptype == "substitution" then
+--                     for i=1,#list do
+--                         check(gname,list[i],unicode)
+--                     end
+--                 end
+--             end
+--         end
+--     end
+--     -- resolve references
+--     local done = true
+--     while done do
+--         done = false
+--         for k, v in next, guess do
+--             if type(v) ~= "number" then
+--                 for kk, vv in next, v do
+--                     if vv == -1 or vv >= private or (vv >= 0xE000 and vv <= 0xF8FF) or vv == 0xFFFE or vv == 0xFFFF then
+--                         local uu = guess[kk]
+--                         if type(uu) == "number" then
+--                             guess[k] = uu
+--                             done = true
+--                         end
+--                     else
+--                         guess[k] = vv
+--                         done = true
+--                     end
+--                 end
+--             end
+--         end
+--     end
+--     -- wrap up
+--     local orphans = 0
+--     local guessed = 0
+--     for k, v in next, guess do
+--         if type(v) == "number" then
+--             descriptions[unicodes[k]].unicode = descriptions[v].unicode or v -- can also be a table
+--             guessed = guessed + 1
+--         else
+--             local t = nil
+--             local l = lower(k)
+--             local u = unicodes[l]
+--             if not u then
+--                 orphans = orphans + 1
+--             elseif u == -1 or u >= private or (u >= 0xE000 and u <= 0xF8FF) or u == 0xFFFE or u == 0xFFFF then
+--                 local unicode = descriptions[u].unicode
+--                 if unicode then
+--                     descriptions[unicodes[k]].unicode = unicode
+--                     guessed = guessed + 1
+--                 else
+--                     orphans = orphans + 1
+--                 end
+--             else
+--                 orphans = orphans + 1
+--             end
+--         end
+--     end
+--     if trace_loading and orphans > 0 or guessed > 0 then
+--         report_otf("%s glyphs with no related unicode, %s guessed, %s orphans",guessed+orphans,guessed,orphans)
+--     end
+-- end
+
 actions["prepare tounicode"] = function(data,filename,raw)
     fonts.mappings.addtounicode(data,filename)
 end
@@ -1300,8 +1433,9 @@ actions["reorganize subtables"] = function(data,filename,raw)
     local lookups         = { }
     local chainedfeatures = { }
     resources.sequences   = sequences
-    resources.lookups     = lookups
-    for _, what in next, otf.glists do
+    resources.lookups     = lookups -- we also have lookups in data itself
+    for k=1,#otf.glists do
+        local what = otf.glists[k]
         local dw = raw[what]
         if dw then
             for k=1,#dw do
@@ -1386,12 +1520,6 @@ actions["reorganize subtables"] = function(data,filename,raw)
         end
     end
 end
-
--- test this:
---
---    for _, what in next, otf.glists do
---        raw[what] = nil
---    end
 
 actions["prepare lookups"] = function(data,filename,raw)
     local lookups = raw.lookups
@@ -1963,7 +2091,7 @@ actions["merge kern classes"] = function(data,filename,raw)
             report_otf("%s kern overloads ignored",ignored)
         end
         if blocked > 0 then
-            report_otf("%s succesive kerns blocked",blocked)
+            report_otf("%s successive kerns blocked",blocked)
         end
     end
 end
@@ -2062,7 +2190,7 @@ end
 
 -- ligatures have an extra specification.char entry that we don't use
 
--- mlookups probably only with pairs
+-- mlookups only with pairs and ligatures
 
 actions["reorganize glyph lookups"] = function(data,filename,raw)
     local resources    = data.resources
@@ -2146,12 +2274,11 @@ actions["reorganize glyph lookups"] = function(data,filename,raw)
          -- description.lookups = nil
         end
     end
-
 end
 
 local zero = { 0, 0 }
 
-actions["reorganize glyph anchors"] = function(data,filename,raw) -- when we replace inplace we safe entries
+actions["reorganize glyph anchors"] = function(data,filename,raw)
     local descriptions = data.descriptions
     for unicode, description in next, descriptions do
         local anchors = description.glyph.anchors

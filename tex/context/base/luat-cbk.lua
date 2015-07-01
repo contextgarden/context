@@ -6,15 +6,11 @@ if not modules then modules = { } end modules ['luat-cbk'] = {
     license   = "see context related readme files"
 }
 
-local insert, remove, find, format = table.insert, table.remove, string.find, string.format
+local insert, remove, concat = table.insert, table.remove, table.concat
+local find, format = string.find, string.format
 local collectgarbage, type, next = collectgarbage, type, next
 local round = math.round
-local sortedhash, tohash = table.sortedhash, table.tohash
-
-local trace_checking = false  trackers.register("memory.checking", function(v) trace_checking = v end)
-
-local report_callbacks = logs.reporter("system","callbacks")
-local report_memory    = logs.reporter("system","memory")
+local sortedhash, sortedkeys, tohash = table.sortedhash, table.sortedkeys, table.tohash
 
 --[[ldx--
 <p>Callbacks are the real asset of <l n='luatex'/>. They permit you to hook
@@ -28,23 +24,61 @@ local callbacks = callbacks
 --[[ldx--
 <p>When you (temporarily) want to install a callback function, and after a
 while wants to revert to the original one, you can use the following two
-functions.</p>
+functions. This only works for non-frozen ones.</p>
 --ldx]]--
 
-local trace_callbacks = false  trackers.register("system.callbacks", function(v) trace_callbacks = v end)
-local trace_calls     = false  -- only used when analyzing performance and initializations
+local trace_callbacks   = false  trackers.register("system.callbacks", function(v) trace_callbacks = v end)
+local trace_calls       = false  -- only used when analyzing performance and initializations
+local trace_checking    = false  trackers.register("memory.checking", function(v) trace_checking = v end)
+
+local report_system     = logs.reporter("system")
+local report_callbacks  = logs.reporter("system","callbacks")
+local report_memory     = logs.reporter("system","memory")
 
 local register_callback = callback.register
 local find_callback     = callback.find
 local list_callbacks    = callback.list
+local register_usercall = false
+local original_register = register_callback
 
-local frozen, stack, list = { }, { }, callbacks.list
+local frozen            = { }
+local stack             = { }
+local list              = callbacks.list
+local permit_overloads  = false
+local block_overloads   = false
+
+--[[ldx--
+<p>By now most callbacks are frozen and most provide a way to plug in your own code. For instance
+all node list handlers provide before/after namespaces and the file handling code can be extended
+by adding schemes and if needed I can add more hooks. So there is no real need to overload a core
+callback function. It might be ok for quick and dirty testing but anyway you're on your own if
+you permanently overload callback functions.</p>
+--ldx]]--
+
+-- This might become a configuration file only option when it gets abused too much.
+
+directives.register("system.callbacks.permitoverloads", function(v)
+    if block_overloads or permit_overloads then
+        -- once bad news, always bad news
+    elseif v then
+        permit_overloads = { }
+        report_system()
+        report_system("The callback system has been brought in an unprotected state. As a result of directly")
+        report_system("setting of callbacks subsystems of ConTeXt can stop working. There is no support for")
+        report_system("bugs resulting from this state. It's better to use the official extension mechanisms.")
+        report_system()
+    end
+end)
+
+sandbox.initializer(function()
+    block_overloads = true
+end)
 
 if not list then -- otherwise counters get reset
 
     list = utilities.storage.allocate(list_callbacks())
 
-    for k, _ in next, list do
+    for k in next, list do
         list[k] = 0
     end
 
@@ -56,11 +90,9 @@ local delayed = tohash {
     "buildpage_filter",
 }
 
-
 if trace_calls then
 
     local functions = { }
-    local original  = register_callback
 
     register_callback = function(name,func)
         if type(func) == "function" then
@@ -73,21 +105,45 @@ if trace_calls then
                     list[name] = list[name] + 1
                     return functions[name](...)
                 end
-                return original(name,cnuf)
+                return original_register(name,cnuf)
             end
         else
-            return original(name,func)
+            return original_register(name,func)
         end
     end
 
 end
 
+local reported = { }
+
+local function register_usercall(what,name,func)
+    if list[name] then
+        if trace_callbacks or not reported[name] then
+            report_system()
+            report_system("disabling core code by %s user function into callback '%s' (reported only once)",what,name)
+            report_system()
+            reported[name] = true
+        end
+        permit_overloads[name] = true
+        return original_register(name,function(...)
+            if trace_callbacks then
+                report_callbacks("calling user function from '%s'",name)
+            end
+            return func(...)
+        end)
+    else
+        report_callbacks("not %s function into invalid callback '%s'",name)
+        return nil, format("unknown callback '%s'",name)
+    end
+end
+
 local function frozen_message(what,name)
-    report_callbacks("not %s frozen %a to %a",what,name,frozen[name])
+    report_callbacks("not %s frozen %a",what,name)
 end
 
 local function frozen_callback(name)
-    return nil, format("callback '%s' is frozen to '%s'",name,frozen[name]) -- no formatter yet
+    frozen_message("registering",name)
+    return nil, format("callback '%s' is frozen",name) -- no formatter yet
 end
 
 local function state(name)
@@ -117,25 +173,28 @@ function callbacks.report()
 end
 
 function callbacks.freeze(name,freeze)
-    freeze = type(freeze) == "string" and freeze
-    if find(name,"*",1,true) then
-        local pattern = name
-        for name, _ in next, list do
-            if find(name,pattern) then
-                frozen[name] = freeze or frozen[name] or "frozen"
+    if not permit_overloads then
+        freeze = type(freeze) == "string" and freeze
+        if find(name,"*",1,true) then
+            local pattern = name
+            for name, _ in next, list do
+                if find(name,pattern) then
+                    frozen[name] = freeze or frozen[name] or "frozen"
+                end
             end
+        else
+            frozen[name] = freeze or frozen[name] or "frozen"
         end
-    else
-        frozen[name] = freeze or frozen[name] or "frozen"
     end
 end
 
 function callbacks.register(name,func,freeze)
     if frozen[name] then
-        if trace_callbacks then
-            frozen_message("registering",name)
+        if permit_overloads then
+            return register_usercall("registering",name,func)
+        else
+            return frozen_callback(name)
         end
-        return frozen_callback(name)
     elseif freeze then
         frozen[name] = type(freeze) == "string" and freeze or "registered"
     end
@@ -148,36 +207,41 @@ end
 function callback.register(name,func) -- original
     if not frozen[name] then
         return register_callback(name,func)
-    elseif trace_callbacks then
-        frozen_message("registering",name)
+    elseif permit_overloads then
+        return register_usercall("registering",name,func)
+    else
+        return frozen_callback(name)
     end
-    return frozen_callback(name)
 end
 
 function callbacks.push(name,func)
-    if not frozen[name] then
+    if not frozen[name] or permit_overloads then
         local sn = stack[name]
         if not sn then
             sn = { }
             stack[name] = sn
         end
         insert(sn,find_callback(name))
-        register_callback(name, func)
-    elseif trace_callbacks then
+        if permit_overloads then
+            register_usercall("pushing",name,func)
+        else
+            register_callback(name,func)
+        end
+    else
         frozen_message("pushing",name)
     end
 end
 
 function callbacks.pop(name)
-    if not frozen[name] then
+    if not frozen[name] or permit_overloads then
         local sn = stack[name]
         if not sn or #sn == 0 then
             -- some error
-            register_callback(name, nil) -- ! really needed
+            register_callback(name,nil) -- ! really needed
         else
          -- this fails: register_callback(name, remove(stack[name]))
             local func = remove(sn)
-            register_callback(name, func)
+            register_callback(name,func)
         end
     end
 end
@@ -193,6 +257,12 @@ if trace_calls then
         return t
     end)
 end
+
+statistics.register("callbacks overloaded by user", function()
+    if permit_overloads then
+        return concat(sortedkeys(permit_overloads)," ")
+    end
+end)
 
 -- -- somehow crashes later on
 --

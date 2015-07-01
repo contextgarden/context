@@ -351,22 +351,21 @@ function handlers.characters(head)
         -- skip
     elseif b == 1 then
         -- only one font
-        local front = head == start
         local range = basefonts[1]
         local start = range[1]
         local stop  = range[2]
-        if stop then
-            start, stop = ligaturing(start,stop)
-            start, stop = kerning(start,stop)
-        elseif start then -- safeguard
-            start = ligaturing(start)
-            start = kerning(start)
-        else
-            -- something bad happened
-        end
-        if front then
-            -- shouldn't happen
-            head = start
+        if (start or stop) and (start ~= stop) then
+            local front = head == start
+            if stop then
+                start, stop = ligaturing(start,stop)
+                start, stop = kerning(start,stop)
+            elseif start then -- safeguard
+                start = ligaturing(start)
+                start = kerning(start)
+            end
+            if front then
+                head = start
+            end
         end
     else
         -- multiple fonts
@@ -375,19 +374,34 @@ function handlers.characters(head)
             local range = basefonts[i]
             local start = range[1]
             local stop  = range[2]
-            if stop then
-                start, stop = ligaturing(start,stop)
-                start, stop = kerning(start,stop)
-            elseif start then -- safeguard
-                start = ligaturing(start)
-                start = kerning(start)
-            else
-                -- something bad happened
+            if (start or stop) and (start ~= stop) then
+                local prev, next
+                if stop then
+                    next = getnext(stop)
+                    start, stop = ligaturing(start,stop)
+                    start, stop = kerning(start,stop)
+                elseif start then -- safeguard
+                    prev  = getprev(start)
+                    start = ligaturing(start)
+                    start = kerning(start)
+                end
+                if prev then
+                    setfield(start,"prev",prev)
+                    setfield(prev,"next",start)
+                end
+                if next then
+                    setfield(stop,"next",next)
+                    setfield(next,"prev",start)
+                end
+                if front then
+                    head  = start
+                    front = nil -- we assume a proper sequence
+                end
             end
-        end
-        if front then
-            -- shouldn't happen
-            head = start
+            if front then
+                -- shouldn't happen
+                head = start
+            end
         end
     end
     stoptiming(nodes)

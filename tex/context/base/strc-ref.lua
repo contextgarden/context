@@ -2078,9 +2078,9 @@ local function getcurrentprefixspec(default)
     local data     = currentreference and currentreference.i
     local metadata = data and data.metadata
     return
-        metatadata and metadata.kind or "?",
-        metatadata and metadata.name or "?",
-        default                      or "?"
+        metadata and metadata.kind or "?",
+        metadata and metadata.name or "?",
+        default                    or "?"
 end
 
 references.getcurrentprefixspec = getcurrentprefixspec

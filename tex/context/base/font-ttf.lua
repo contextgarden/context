@@ -10,16 +10,20 @@ local next, type, unpack = next, type, unpack
 local bittest = bit32.btest
 local sqrt = math.sqrt
 
-local report     = logs.reporter("otf reader","ttf")
+local report      = logs.reporter("otf reader","ttf")
 
-local files      = utilities.files
+local readers      = fonts.handlers.otf.readers
+local streamreader = readers.streamreader
 
-local readbyte   = files.readcardinal1  --  8-bit unsigned integer
-local readushort = files.readcardinal2  -- 16-bit unsigned integer
-local readulong  = files.readcardinal4  -- 24-bit unsigned integer
-local readchar   = files.readinteger1   --  8-bit   signed integer
-local readshort  = files.readinteger2   -- 16-bit   signed integer
-local read2dot14 = files.read2dot14     -- 16-bit signed fixed number with the low 14 bits of fraction (2.14) (F2DOT14)
+local setposition  = streamreader.setposition
+local getposition  = streamreader.getposition
+local skipbytes    = streamreader.skip
+local readbyte     = streamreader.readcardinal1  --  8-bit unsigned integer
+local readushort   = streamreader.readcardinal2  -- 16-bit unsigned integer
+local readulong    = streamreader.readcardinal4  -- 24-bit unsigned integer
+local readchar     = streamreader.readinteger1   --  8-bit   signed integer
+local readshort    = streamreader.readinteger2   -- 16-bit   signed integer
+local read2dot14   = streamreader.read2dot14     -- 16-bit signed fixed number with the low 14 bits of fraction (2.14) (F2DOT14)
 
 local function mergecomposites(glyphs,shapes)
 
@@ -226,7 +230,8 @@ local function readglyph(f,nofcontours)
     end
     local nofpoints       = endpoints[nofcontours]
     local nofinstructions = readushort(f)
-    f:seek("set",f:seek()+nofinstructions)
+--     f:seek("set",f:seek()+nofinstructions)
+    skipbytes(f,nofinstructions)
     -- because flags can repeat we don't know the amount ... in fact this is
     -- not that efficient (small files but more mem)
     local i = 1
@@ -392,7 +397,7 @@ end
 -- need it in our usage (yet). We can remove the locations table when
 -- we're done (todo: cleanup finalizer).
 
-function fonts.handlers.otf.readers.loca(f,fontdata,specification)
+function readers.loca(f,fontdata,specification)
     if specification.glyphs then
         local datatable = fontdata.tables.loca
         if datatable then
@@ -400,7 +405,7 @@ function fonts.handlers.otf.readers.loca(f,fontdata,specification)
             local offset    = fontdata.tables.glyf.offset
             local format    = fontdata.fontheader.indextolocformat
             local locations = { }
-            f:seek("set",datatable.offset)
+            setposition(f,datatable.offset)
             if format == 1 then
                 local nofglyphs = datatable.length/4 - 1
             -1
@@ -421,7 +426,7 @@ function fonts.handlers.otf.readers.loca(f,fontdata,specification)
     end
 end
 
-function fonts.handlers.otf.readers.glyf(f,fontdata,specification) -- part goes to cff module
+function readers.glyf(f,fontdata,specification) -- part goes to cff module
     if specification.glyphs then
         local datatable = fontdata.tables.glyf
         if datatable then
@@ -441,7 +446,7 @@ function fonts.handlers.otf.readers.glyf(f,fontdata,specification) -- part goes 
                         fontdata.badfont   = true
                         break
                     elseif location > 0 then
-                        f:seek("set",location)
+                        setposition(f,location)
                         local nofcontours = readshort(f)
                         glyphs[index].boundingbox = {
                             readshort(f), -- xmin

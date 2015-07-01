@@ -87,6 +87,7 @@ local specifications      = structurestags.specifications
 local usedlabels          = structurestags.labels
 local properties          = structurestags.properties
 local lasttaginchain      = structurestags.lastinchain
+local usewithcare         = structurestags.usewithcare
 
 local usedmapping         = { }
 
@@ -273,16 +274,19 @@ end
 
 local f_BDC = formatters["/%s <</MCID %s>> BDC"]
 
-local function makecontent(parent,id)
+local function makecontent(parent,id,specification)
     local tag  = parent.tag
     local kids = parent.kids
     local last = index
     if id == "image" then
+        local list  = specification.taglist
+        local data  = usewithcare.images[list[#list]]
+        local label = data and data.label
         local d = pdfdictionary {
             Type = pdf_mcr,
             Pg   = pageref,
             MCID = last,
-            Alt  = "image",
+            Alt  = pdfunicode(label ~= "" and label or "image"),
         }
         kids[#kids+1] = d
     elseif pagenum == parent.pnum then
@@ -301,6 +305,10 @@ local function makecontent(parent,id)
     list[index] = parent.pref -- page related list
     --
     return f_BDC(tag,last)
+end
+
+local function makeignore(specification)
+    return "/Artifact BMC"
 end
 
 -- no need to adapt head, as we always operate on lists
@@ -388,14 +396,17 @@ function nodeinjections.addtags(head)
             end
         end
 
-        local prev = common > 0 and elements[taglist[common]] or root
+        local prev    = common > 0 and elements[taglist[common]] or root
+        local ignore  = false
+        local literal = nil
 
         for j=common+1,noftags do
             local tag = taglist[j]
             local prv = elements[tag] or makeelement(tag,prev)
             if prv == false then
                 -- ignore this one
-                prev = false
+                prev   = false
+                ignore = true
                 break
             elseif prv == true then
                 -- skip this one
@@ -405,9 +416,12 @@ function nodeinjections.addtags(head)
         end
 
         if prev then
-            -- use insert instead:
-            local literal = pdfliteral(makecontent(prev,id))
-            local prev    = getprev(start)
+            literal = pdfliteral(makecontent(prev,id,specification))
+        elseif ignore then
+            literal = pdfliteral(makeignore(specification))
+        end
+        if literal then
+            local prev = getprev(start)
             if prev then
                 setfield(prev,"next",literal)
                 setfield(literal,"prev",prev)

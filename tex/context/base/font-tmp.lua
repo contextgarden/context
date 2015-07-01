@@ -11,24 +11,23 @@ if not modules then modules = { } end modules ['font-tmp'] = {
 
 local next, type = next, type
 
-local report     = logs.reporter("otf reader")
+local report       = logs.reporter("otf reader")
 
-local files      = utilities.files
+local readers      = fonts.handlers.otf.readers
+local streamreader = readers.streamreader
 
-local readushort = files.readcardinal2  -- 16-bit unsigned integer
-local readulong  = files.readcardinal4  -- 24-bit unsigned integer
-local readshort  = files.readinteger2   -- 16-bit   signed integer
+local readushort   = streamreader.readcardinal2  -- 16-bit unsigned integer
+local readulong    = streamreader.readcardinal4  -- 24-bit unsigned integer
+local readshort    = streamreader.readinteger2   -- 16-bit   signed integer
+local readtag      = streamreader.readtag
+local skipshort    = streamreader.skipshort
+local setposition  = streamreader.setposition
 
-local readtag    = function(f) return f:read(4) end
-local skipshort  = function(f,n) f:read(n and 2*n or 2) end
-
-local readers    = fonts.handlers.otf.readers
-
-local plugins    = { }
+local plugins      = { }
 
 function plugins.size(f,fontdata,tableoffset,parameters)
     if not fontdata.designsize then
-        f:seek("set",tableoffset+parameters)
+        setposition(f,tableoffset+parameters)
         local designsize = readushort(f)
         if designsize > 0 then
             fontdata.designsize = designsize
@@ -45,7 +44,7 @@ local function readscripts(f,fontdata,what)
         return
     end
     local tableoffset = datatable.offset
-    f:seek("set",tableoffset)
+    setposition(f,tableoffset)
     local version = readulong(f)
     if version ~= 0x00010000 then
         report("table version %a of %a is not supported (yet), maybe font %s is bad",version,what,fontdata.filename)
@@ -56,7 +55,7 @@ local function readscripts(f,fontdata,what)
     local featureoffset = tableoffset + readushort(f)
     local lookupoffset  = tableoffset + readushort(f)
     --
-    f:seek("set",scriptoffset)
+    setposition(f,scriptoffset)
     local nofscripts = readushort(f)
     local scripts    = { }
     for i=1,nofscripts do
@@ -64,7 +63,7 @@ local function readscripts(f,fontdata,what)
     end
     local languagesystems = table.setmetatableindex("table") -- we share when possible
     for script, offset in next, scripts do
-        f:seek("set",offset)
+        setposition(f,offset)
         local defaultoffset = readushort(f)
         local noflanguages  = readushort(f)
         local languages     = { }
@@ -79,7 +78,7 @@ local function readscripts(f,fontdata,what)
         scripts[script] = languages
     end
     --
-    f:seek("set",featureoffset)
+    setposition(f,featureoffset)
     local features    = { }
     local noffeatures = readushort(f)
     for i=1,noffeatures do
@@ -92,7 +91,7 @@ local function readscripts(f,fontdata,what)
     for i=1,noffeatures do
         local feature = features[i]
         local offset  = featureoffset + feature.offset
-        f:seek("set",offset)
+        setposition(f,offset)
         local parameters = readushort(f) -- feature.parameters
         local noflookups = readushort(f)
         skipshort(f,noflookups+1)
@@ -117,4 +116,3 @@ function readers.gpos(f,fontdata,specification)
         readscripts(f,fontdata,"gpos")
     end
 end
-

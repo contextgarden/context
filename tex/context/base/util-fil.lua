@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['util-fil'] = {
     license   = "see context related readme files"
 }
 
-local byte    = string.byte
+local byte = string.byte
 local extract = bit32.extract
 
 -- Here are a few helpers (the starting point were old ones I used for parsing
@@ -17,20 +17,72 @@ utilities       = utilities or { }
 local files     = { }
 utilities.files = files
 
-function files.readbyte(f)
-    return byte(f:read(1))
+local zerobased = { }
+
+function files.open(filename,zb)
+    local f = io.open(filename,"rb")
+    zerobased[f] = zb or false
+    return f
 end
 
-function files.readchar(f)
-    return f:read(1)
+function files.close(f)
+    zerobased[f] = nil
+    f:close()
+end
+
+function files.size(f)
+    return f:seek("end")
+end
+
+function files.setposition(f,n)
+    if zerobased[f] then
+        f:seek("set",n)
+    else
+        f:seek("set",n - 1)
+    end
+end
+
+function files.getposition(f)
+    if zerobased[f] then
+        return f:seek()
+    else
+        return f:seek() + 1
+    end
+end
+
+function files.look(f,n,chars)
+    local p = f:seek()
+    local s = f:read(n)
+    f:seek("set",p)
+    if chars then
+        return s
+    else
+        return byte(s,1,#s)
+    end
+end
+
+function files.skip(f,n)
+    if n == 1 then
+        f:read(n)
+    else
+        f:seek("set",f:seek()+n)
+    end
+end
+
+function files.readbyte(f)
+    return byte(f:read(1))
 end
 
 function files.readbytes(f,n)
     return byte(f:read(n),1,n)
 end
 
-function files.skipbytes(f,n)
-    f:read(n or 1) -- or a seek
+function files.readchar(f)
+    return f:read(1)
+end
+
+function files.readstring(f,n)
+    return f:read(n or 1)
 end
 
 function files.readinteger1(f)  -- one byte
@@ -91,10 +143,6 @@ function files.readfixed4(f)
     end
 end
 
-function files.readstring(f,n)
-    return f:read(n or 1)
-end
-
 function files.read2dot14(f)
     local a, b = byte(f:read(2),1,2)
     local n = 0x100 * a + b
@@ -106,4 +154,12 @@ function files.read2dot14(f)
         n = extract(n,30,2)
         return n + m/0x4000
     end
+end
+
+function files.skipshort(f,n)
+    f:read(2*(n or 1))
+end
+
+function files.skiplong(f,n)
+    f:read(4*(n or 1))
 end

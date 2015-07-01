@@ -1948,13 +1948,15 @@ function lxml.applyselectors(id)
                                     end
                                 end
                             end
-                            if not trace_selectors then
-                                -- skip
-                            elseif okay then
-                                report_lxml("accepting selector: %s",okay)
+                            if okay then
+                                if trace_selectors then
+                                    report_lxml("accepting selector: %s",okay)
+                                end
                             else
                                 categories.begin = false
-                                report_lxml("rejecting selector: % t",sortedkeys(categories))
+                                if trace_selectors then
+                                    report_lxml("rejecting selector: % t",sortedkeys(categories))
+                                end
                             end
                             for j=i,ndt do
                                 local dtj = dt[j]
@@ -1992,13 +1994,15 @@ function lxml.applyselectors(id)
                                     end
                                 end
                             end
-                            if not trace_selectors then
-                                -- skip
-                            elseif okay then
-                                report_lxml("accepting include: %s",okay)
+                            if okay then
+                                if trace_selectors then
+                                    report_lxml("accepting include: %s",okay)
+                                end
                             else
                                 categories.begin = false
-                                report_lxml("rejecting include: % t",sortedkeys(categories))
+                                if trace_selectors then
+                                    report_lxml("rejecting include: % t",sortedkeys(categories))
+                                end
                             end
                             if okay then
                                 for j=i,ndt do

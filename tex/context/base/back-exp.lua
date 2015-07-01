@@ -139,6 +139,9 @@ local specifications    = structurestags.specifications
 local properties        = structurestags.properties
 local locatedtag        = structurestags.locatedtag
 
+local usewithcare          = { }
+structurestags.usewithcare = usewithcare
+
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
 
@@ -771,12 +774,13 @@ end
 
 do
 
-    local image       = { }
-    usedimages.image  = image
+    local image        = { }
+    usedimages.image   = image
+    usewithcare.images = image
 
     local f_id        = formatters["%s-%s"]
 
-    function structurestags.setfigure(name,used,page,width,height)
+    function structurestags.setfigure(name,used,page,width,height,label)
         local fulltag = locatedtag("image")
         local spec    = specifications[fulltag]
         local page    = tonumber(page)
@@ -787,6 +791,7 @@ do
             page   = page and page > 1 and page or nil,
             width  = todimen(width, "cm","%0.3F%s"),
             height = todimen(height,"cm","%0.3F%s"),
+            label  = label,
         }
     end
 
@@ -798,6 +803,7 @@ do
             setattribute(di,"id",data.id)
             setattribute(di,"width",data.width)
             setattribute(di,"height",data.height)
+            setattribute(di,"label",data.height)
         end
     end
 
@@ -3622,7 +3628,7 @@ implement {
 implement {
     name      = "settagfigure",
     actions    = structurestags.setfigure,
-    arguments = { "string", "string", "string", "dimen", "dimen" }
+    arguments = { "string", "string", "string", "dimen", "dimen", "string" }
 }
 
 implement {

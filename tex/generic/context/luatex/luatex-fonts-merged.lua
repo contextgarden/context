@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/15/15 13:42:51
+-- merge date  : 07/01/15 21:40:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -5423,24 +5423,13 @@ local fonts=fonts or {}
 local mappings=fonts.mappings or {}
 fonts.mappings=mappings
 local allocate=utilities.storage.allocate
-local function loadlumtable(filename) 
-  local lumname=file.replacesuffix(file.basename(filename),"lum")
-  local lumfile=resolvers.findfile(lumname,"map") or ""
-  if lumfile~="" and lfs.isfile(lumfile) then
-    if trace_loading or trace_mapping then
-      report_fonts("loading map table %a",lumfile)
-    end
-    lumunic=dofile(lumfile)
-    return lumunic,lumfile
-  end
-end
 local hex=R("AF","09")
-local hexfour=(hex*hex*hex*hex)/function(s) return tonumber(s,16) end
-local hexsix=(hex*hex*hex*hex*hex*hex)/function(s) return tonumber(s,16) end
+local hexfour=(hex*hex*hex^-2)/function(s) return tonumber(s,16) end
+local hexsix=(hex*hex*hex^-4)/function(s) return tonumber(s,16) end
 local dec=(R("09")^1)/tonumber
 local period=P(".")
-local unicode=P("uni")*(hexfour*(period+P(-1))*Cc(false)+Ct(hexfour^1)*Cc(true))
-local ucode=P("u")*(hexsix*(period+P(-1))*Cc(false)+Ct(hexsix^1)*Cc(true))
+local unicode=(P("uni")+P("UNI"))*(hexfour*(period+P(-1))*Cc(false)+Ct(hexfour^1)*Cc(true)) 
+local ucode=(P("u")+P("U") )*(hexsix*(period+P(-1))*Cc(false)+Ct(hexsix^1)*Cc(true)) 
 local index=P("index")*dec*Cc(false)
 local parser=unicode+ucode+index
 local parsers={}
@@ -5515,7 +5504,6 @@ local function fromunicode16(str)
     return (tonumber(l,16))*0x400+tonumber(r,16)-0xDC00
   end
 end
-mappings.loadlumtable=loadlumtable
 mappings.makenameparser=makenameparser
 mappings.tounicode=tounicode
 mappings.tounicode16=tounicode16
@@ -5546,243 +5534,161 @@ for k,v in next,overloads do
   end
 end
 mappings.overloads=overloads
-function mappings.addtounicode(data,filename)
+function mappings.addtounicode(data,filename,checklookups)
   local resources=data.resources
-  local properties=data.properties
-  local descriptions=data.descriptions
   local unicodes=resources.unicodes
-  local lookuptypes=resources.lookuptypes
   if not unicodes then
     return
   end
+  local properties=data.properties
+  local descriptions=data.descriptions
   unicodes['space']=unicodes['space'] or 32
   unicodes['hyphen']=unicodes['hyphen'] or 45
   unicodes['zwj']=unicodes['zwj']  or 0x200D
   unicodes['zwnj']=unicodes['zwnj']  or 0x200C
-  local private=fonts.constructors.privateoffset
-  local unicodevector=fonts.encodings.agl.unicodes
+  local private=fonts.constructors and fonts.constructors.privateoffset or 0xF0000 
+  local unicodevector=fonts.encodings.agl.unicodes or {} 
+  local contextvector=fonts.encodings.agl.ctxcodes or {} 
   local missing={}
-  local lumunic,uparser,oparser
-  local cidinfo,cidnames,cidcodes,usedmap
-  cidinfo=properties.cidinfo
-  usedmap=cidinfo and fonts.cid.getmap(cidinfo)
+  local nofmissing=0
+  local oparser=nil
+  local cidnames=nil
+  local cidcodes=nil
+  local cidinfo=properties.cidinfo
+  local usedmap=cidinfo and fonts.cid.getmap(cidinfo)
+  local uparser=makenameparser() 
   if usedmap then
-    oparser=usedmap and makenameparser(cidinfo.ordering)
-    cidnames=usedmap.names
-    cidcodes=usedmap.unicodes
+     oparser=usedmap and makenameparser(cidinfo.ordering)
+     cidnames=usedmap.names
+     cidcodes=usedmap.unicodes
   end
-  uparser=makenameparser()
-  local ns,nl=0,0
+  local ns=0
+  local nl=0
   for unic,glyph in next,descriptions do
-    local index=glyph.index
     local name=glyph.name
-    local r=overloads[name]
-    if r then
-      glyph.unicode=r.unicode
-    elseif unic==-1 or unic>=private or (unic>=0xE000 and unic<=0xF8FF) or unic==0xFFFE or unic==0xFFFF then
-      local unicode=lumunic and lumunic[name] or unicodevector[name]
-      if unicode then
-        glyph.unicode=unicode
-        ns=ns+1
-      end
-      if (not unicode) and usedmap then
-        local foundindex=lpegmatch(oparser,name)
-        if foundindex then
-          unicode=cidcodes[foundindex] 
-          if unicode then
-            glyph.unicode=unicode
-            ns=ns+1
-          else
-            local reference=cidnames[foundindex] 
-            if reference then
-              local foundindex=lpegmatch(oparser,reference)
-              if foundindex then
-                unicode=cidcodes[foundindex]
-                if unicode then
-                  glyph.unicode=unicode
-                  ns=ns+1
-                end
-              end
-              if not unicode or unicode=="" then
-                local foundcodes,multiple=lpegmatch(uparser,reference)
-                if foundcodes then
-                  glyph.unicode=foundcodes
-                  if multiple then
-                    nl=nl+1
-                    unicode=true
-                  else
+    if name then
+      local index=glyph.index
+      local r=overloads[name]
+      if r then
+        glyph.unicode=r.unicode
+      elseif not unic or unic==-1 or unic>=private or (unic>=0xE000 and unic<=0xF8FF) or unic==0xFFFE or unic==0xFFFF then
+        local unicode=unicodevector[name] or contextvector[name]
+        if unicode then
+          glyph.unicode=unicode
+          ns=ns+1
+        end
+        if (not unicode) and usedmap then
+          local foundindex=lpegmatch(oparser,name)
+          if foundindex then
+            unicode=cidcodes[foundindex] 
+            if unicode then
+              glyph.unicode=unicode
+              ns=ns+1
+            else
+              local reference=cidnames[foundindex] 
+              if reference then
+                local foundindex=lpegmatch(oparser,reference)
+                if foundindex then
+                  unicode=cidcodes[foundindex]
+                  if unicode then
+                    glyph.unicode=unicode
                     ns=ns+1
-                    unicode=foundcodes
+                  end
+                end
+                if not unicode or unicode=="" then
+                  local foundcodes,multiple=lpegmatch(uparser,reference)
+                  if foundcodes then
+                    glyph.unicode=foundcodes
+                    if multiple then
+                      nl=nl+1
+                      unicode=true
+                    else
+                      ns=ns+1
+                      unicode=foundcodes
+                    end
                   end
                 end
               end
             end
           end
         end
-      end
-      if not unicode or unicode=="" then
-        local split=lpegmatch(namesplitter,name)
-        local nsplit=split and #split or 0
-        local t,n={},0
-        unicode=true
-        for l=1,nsplit do
-          local base=split[l]
-          local u=unicodes[base] or unicodevector[base]
-          if not u then
-            break
-          elseif type(u)=="table" then
-            if u[1]>=private then
-              unicode=false
-              break
+        if not unicode or unicode=="" then
+          local split=lpegmatch(namesplitter,name)
+          local nsplit=split and #split or 0 
+          if nsplit==0 then
+          elseif nsplit==1 then
+            local base=split[1]
+            local u=unicodes[base] or unicodevector[base] or contextvector[name]
+            if not u then
+            elseif type(u)=="table" then
+              if u[1]<private then
+                unicode=u
+                glyph.unicode=unicode
+              end
+            elseif u<private then
+              unicode=u
+              glyph.unicode=unicode
             end
-            n=n+1
-            t[n]=u[1]
           else
-            if u>=private then
-              unicode=false
-              break
+            local t,n={},0
+            for l=1,nsplit do
+              local base=split[l]
+              local u=unicodes[base] or unicodevector[base] or contextvector[name]
+              if not u then
+                break
+              elseif type(u)=="table" then
+                if u[1]>=private then
+                  break
+                end
+                n=n+1
+                t[n]=u[1]
+              else
+                if u>=private then
+                  break
+                end
+                n=n+1
+                t[n]=u
+              end
             end
-            n=n+1
-            t[n]=u
+            if n>0 then
+              if n==1 then
+                unicode=t[1]
+              else
+                unicode=t
+              end
+              glyph.unicode=unicode
+            end
+          end
+          nl=nl+1
+        end
+        if not unicode or unicode=="" then
+          local foundcodes,multiple=lpegmatch(uparser,name)
+          if foundcodes then
+            glyph.unicode=foundcodes
+            if multiple then
+              nl=nl+1
+              unicode=true
+            else
+              ns=ns+1
+              unicode=foundcodes
+            end
           end
         end
-        if n==0 then
-        elseif n==1 then
-          glyph.unicode=t[1]
-        else
-          glyph.unicode=t
+        local r=overloads[unicode]
+        if r then
+          unicode=r.unicode
+          glyph.unicode=unicode
         end
-        nl=nl+1
-      end
-      if not unicode or unicode=="" then
-        local foundcodes,multiple=lpegmatch(uparser,name)
-        if foundcodes then
-          glyph.unicode=foundcodes
-          if multiple then
-            nl=nl+1
-            unicode=true
-          else
-            ns=ns+1
-            unicode=foundcodes
-          end
+        if not unicode then
+          missing[unic]=true
+          nofmissing=nofmissing+1
         end
       end
-      local r=overloads[unicode]
-      if r then
-        unicode=r.unicode
-        glyph.unicode=unicode
-      end
-      if not unicode then
-        missing[name]=true
-      end
+    else
     end
   end
-  if next(missing) then
-    local guess={}
-    local function check(gname,code,unicode)
-      local description=descriptions[code]
-      local variant=description.name
-      if variant==gname then
-        return
-      end
-      local unic=unicodes[variant]
-      if unic==-1 or unic>=private or (unic>=0xE000 and unic<=0xF8FF) or unic==0xFFFE or unic==0xFFFF then
-      else
-        return
-      end
-      if descriptions[code].unicode then
-        return
-      end
-      local g=guess[variant]
-      if g then
-        g[gname]=unicode
-      else
-        guess[variant]={ [gname]=unicode }
-      end
-    end
-    for unicode,description in next,descriptions do
-      local slookups=description.slookups
-      if slookups then
-        local gname=description.name
-        for tag,data in next,slookups do
-          local lookuptype=lookuptypes[tag]
-          if lookuptype=="alternate" then
-            for i=1,#data do
-              check(gname,data[i],unicode)
-            end
-          elseif lookuptype=="substitution" then
-            check(gname,data,unicode)
-          end
-        end
-      end
-      local mlookups=description.mlookups
-      if mlookups then
-        local gname=description.name
-        for tag,list in next,mlookups do
-          local lookuptype=lookuptypes[tag]
-          if lookuptype=="alternate" then
-            for i=1,#list do
-              local data=list[i]
-              for i=1,#data do
-                check(gname,data[i],unicode)
-              end
-            end
-          elseif lookuptype=="substitution" then
-            for i=1,#list do
-              check(gname,list[i],unicode)
-            end
-          end
-        end
-      end
-    end
-    local done=true
-    while done do
-      done=false
-      for k,v in next,guess do
-        if type(v)~="number" then
-          for kk,vv in next,v do
-            if vv==-1 or vv>=private or (vv>=0xE000 and vv<=0xF8FF) or vv==0xFFFE or vv==0xFFFF then
-              local uu=guess[kk]
-              if type(uu)=="number" then
-                guess[k]=uu
-                done=true
-              end
-            else
-              guess[k]=vv
-              done=true
-            end
-          end
-        end
-      end
-    end
-    local orphans=0
-    local guessed=0
-    for k,v in next,guess do
-      if type(v)=="number" then
-        descriptions[unicodes[k]].unicode=descriptions[v].unicode or v 
-        guessed=guessed+1
-      else
-        local t=nil
-        local l=lower(k)
-        local u=unicodes[l]
-        if not u then
-          orphans=orphans+1
-        elseif u==-1 or u>=private or (u>=0xE000 and u<=0xF8FF) or u==0xFFFE or u==0xFFFF then
-          local unicode=descriptions[u].unicode
-          if unicode then
-            descriptions[unicodes[k]].unicode=unicode
-            guessed=guessed+1
-          else
-            orphans=orphans+1
-          end
-        else
-          orphans=orphans+1
-        end
-      end
-    end
-    if trace_loading and orphans>0 or guessed>0 then
-      report_fonts("%s glyphs with no related unicode, %s guessed, %s orphans",guessed+orphans,guessed,orphans)
-    end
+  if type(checklookups)=="function" then
+    checklookups(data,missing,nofmissing)
   end
   if trace_mapping then
     for unic,glyph in table.sortedhash(descriptions) do
@@ -7177,9 +7083,7 @@ local utfbyte=utf.byte
 local format,gmatch,gsub,find,match,lower,strip=string.format,string.gmatch,string.gsub,string.find,string.match,string.lower,string.strip
 local type,next,tonumber,tostring=type,next,tonumber,tostring
 local abs=math.abs
-local insert=table.insert
-local lpegmatch=lpeg.match
-local reversed,concat,remove,sortedkeys=table.reversed,table.concat,table.remove,table.sortedkeys
+local reversed,concat,insert,remove,sortedkeys=table.reversed,table.concat,table.insert,table.remove,table.sortedkeys
 local ioflush=io.flush
 local fastcopy,tohash,derivetable=table.fastcopy,table.tohash,table.derive
 local formatters=string.formatters
@@ -7206,7 +7110,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.815 
+otf.version=2.816 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -8067,7 +7971,7 @@ actions["analyze glyphs"]=function(data,filename,raw)
   local marks={} 
   for unicode,description in next,descriptions do
     local glyph=description.glyph
-    local italic=glyph.italic_correction
+    local italic=glyph.italic_correction 
     if not italic then
     elseif italic==0 then
     else
@@ -8128,7 +8032,8 @@ end
 actions["reorganize features"]=function(data,filename,raw) 
   local features={}
   data.resources.features=features
-  for k,what in next,otf.glists do
+  for k=1,#otf.glists do
+    local what=otf.glists[k]
     local dw=raw[what]
     if dw then
       local f={}
@@ -8210,8 +8115,9 @@ actions["reorganize subtables"]=function(data,filename,raw)
   local lookups={}
   local chainedfeatures={}
   resources.sequences=sequences
-  resources.lookups=lookups
-  for _,what in next,otf.glists do
+  resources.lookups=lookups 
+  for k=1,#otf.glists do
+    local what=otf.glists[k]
     local dw=raw[what]
     if dw then
       for k=1,#dw do
@@ -8818,7 +8724,7 @@ actions["merge kern classes"]=function(data,filename,raw)
       report_otf("%s kern overloads ignored",ignored)
     end
     if blocked>0 then
-      report_otf("%s succesive kerns blocked",blocked)
+      report_otf("%s successive kerns blocked",blocked)
     end
   end
 end
@@ -8974,7 +8880,7 @@ actions["reorganize glyph lookups"]=function(data,filename,raw)
   end
 end
 local zero={ 0,0 }
-actions["reorganize glyph anchors"]=function(data,filename,raw) 
+actions["reorganize glyph anchors"]=function(data,filename,raw)
   local descriptions=data.descriptions
   for unicode,description in next,descriptions do
     local anchors=description.glyph.anchors
@@ -13780,9 +13686,8 @@ if not modules then modules={} end modules ['font-otp']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local next,type=next,type
+local next,type,tostring=next,type,tostring
 local sort,concat=table.sort,table.concat
-local sortedhash=table.sortedhash
 local trace_packing=false trackers.register("otf.packing",function(v) trace_packing=v end)
 local trace_loading=false trackers.register("otf.loading",function(v) trace_loading=v end)
 local report_otf=logs.reporter("fonts","otf loading")
@@ -15423,12 +15328,30 @@ function nodes.handlers.nodepass(head)
         local range=basefonts[i]
         local start=range[1]
         local stop=range[2]
-        if stop then
-          start,stop=ligaturing(start,stop)
-          start,stop=kerning(start,stop)
-        elseif start then
-          start=ligaturing(start)
-          start=kerning(start)
+        if start or stop then
+          local prev=nil
+          local next=nil
+          local front=start==head
+          if stop then
+            next=stop.next
+            start,stop=ligaturing(start,stop)
+            start,stop=kerning(start,stop)
+          elseif start then
+            prev=start.prev
+            start=ligaturing(start)
+            start=kerning(start)
+          end
+          if prev then
+            start.prev=prev
+            prev.next=start
+          end
+          if next then
+            stop.next=next
+            next.prev=stop
+          end
+          if front then
+            head=start
+          end
         end
       end
     end
@@ -15438,7 +15361,7 @@ function nodes.handlers.nodepass(head)
   end
 end
 function nodes.handlers.basepass(head)
-  if not basepass then
+  if basepass then
     head=ligaturing(head)
     head=kerning(head)
   end

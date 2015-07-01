@@ -262,6 +262,11 @@
 \let\strc_tags_start_nop_chained  \gobblethreearguments
 \let\strc_tags_stop_nop           \donothing
 
+\def\strc_tags_start_yes_ignore{\clf_starttag{\t!ignore}}
+\let\strc_tags_stop_yes_ignore \strc_tags_stop_yes
+\let\strc_tags_start_nop_ignore\donothing
+\let\strc_tags_stop_nop_ignore \donothing
+
 % more efficient:
 
 % \dostarttagged         % {tag} {detail}
@@ -276,13 +281,17 @@
   {\let\dostarttagged        \strc_tags_enabled_start_detail
    \let\dostarttaggednodetail\strc_tags_enabled_start_no_detail
    \let\dostarttaggedchained \strc_tags_enabled_start_chained
-   \let\dostoptagged         \strc_tags_enabled_stop}
+   \let\dostoptagged         \strc_tags_enabled_stop
+   \let\dostartignoretagging \strc_tags_start_yes_ignore
+   \let\dostopignoretagging  \strc_tags_stop_yes_ignore}
 
 \unexpanded\def\strc_tags_disable
   {\let\dostarttagged        \strc_tags_start_nop_detail
    \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
    \let\dostarttaggedchained \strc_tags_start_nop_chained
-   \let\dostoptagged         \strc_tags_stop_nop}
+   \let\dostoptagged         \strc_tags_stop_nop
+   \let\dostartignoretagging \strc_tags_start_nop_ignore
+   \let\dostopignoretagging  \strc_tags_stop_nop_ignore}
 
 % for luigi (beware: fully expandable):
 
@@ -433,6 +442,16 @@
     \strc_tags_disable_elements
     \strc_tags_disable
 \to \everybeforepagebody
+
+%D This will only work well with sane use.
+
+\appendtoks
+   \dostartignoretagging
+\to \everybeforepagebody
+
+\appendtoks
+    \dostopignoretagging
+\to \everyafterpagebody
 
 % \doifelseinelement{structure:section}            {yes} {no}
 % \doifelseinelement{structure:chapter}            {yes} {no}

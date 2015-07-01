@@ -1085,7 +1085,7 @@ function handlers.gpos_mark2mark(head,start,kind,lookupname,markanchors,sequence
                             if al[anchor] then
                                 local ma = markanchors[anchor]
                                 if ma then
-                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,characters[basechar])
+                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,characters[basechar],true)
                                     if trace_marks then
                                         logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                                             pref(kind,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -1198,7 +1198,7 @@ function handlers.gpos_pair(head,start,kind,lookupname,kerns,sequence,lookuphash
                     -- skip
                 elseif type(krn) == "table" then
                     if lookuptype == "pair" then -- probably not needed
-                        local a, b = krn[2], krn[3]
+						local a, b = krn[2], krn[3]
                         if a and #a > 0 then
                             local startchar = getchar(start)
                             local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,injection) -- characters[startchar])
@@ -1811,7 +1811,7 @@ function chainprocs.gpos_mark2mark(head,start,stop,kind,chainname,currentcontext
                             if al[anchor] then
                                 local ma = markanchors[anchor]
                                 if ma then
-                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,characters[basechar])
+                                    local dx, dy, bound = setmark(start,base,tfmdata.parameters.factor,rlmode,ba,ma,characters[basechar],true)
                                     if trace_marks then
                                         logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                                             cref(kind,chainname,chainlookupname,lookupname),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -1965,16 +1965,16 @@ function chainprocs.gpos_pair(head,start,stop,kind,chainname,currentcontext,look
                                 end
                             else
                                 report_process("%s: check this out (old kern stuff)",cref(kind,chainname,chainlookupname))
-                                local a, b = krn[2], krn[6]
-                                if a and a ~= 0 then
-                                    local k = setkern(snext,factor,rlmode,a)
-                                    if trace_kerns then
-                                        logprocess("%s: inserting first kern %s between %s and %s",cref(kind,chainname,chainlookupname),k,gref(getchar(prev)),gref(nextchar))
-                                    end
-                                end
-                                if b and b ~= 0 then
-                                    logwarning("%s: ignoring second kern xoff %s",cref(kind,chainname,chainlookupname),b*factor)
-                                end
+                             -- local a, b = krn[2], krn[6]
+                             -- if a and a ~= 0 then
+                             --     local k = setkern(snext,factor,rlmode,a)
+                             --     if trace_kerns then
+                             --         logprocess("%s: inserting first kern %s between %s and %s",cref(kind,chainname,chainlookupname),k,gref(getchar(prev)),gref(nextchar))
+                             --     end
+                             -- end
+                             -- if b and b ~= 0 then
+                             --     logwarning("%s: ignoring second kern xoff %s",cref(kind,chainname,chainlookupname),b*factor)
+                             -- end
                             end
                             done = true
                         elseif krn ~= 0 then
@@ -3492,7 +3492,7 @@ local function prepare_lookups(tfmdata)
                         for name, anchor in next, anchors do
                             local lookups = anchor_to_lookup[name]
                             if lookups then
-                                for lookup, _ in next, lookups do
+                                for lookup in next, lookups do
                                     local target = lookuphash[lookup]
                                     if target then
                                         target[unicode] = anchors

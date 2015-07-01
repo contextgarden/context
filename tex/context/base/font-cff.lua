@@ -20,29 +20,34 @@ if not modules then modules = { } end modules ['font-cff'] = {
 -- per segment. For pdf a simple concat works ok, but for other purposes a operator first
 -- flush is nicer.
 
-local next, type = next, type
+local next, type, tonumber = next, type, tonumber
 local byte = string.byte
 local concat, remove = table.concat, table.remove
 local floor, abs, round, ceil = math.floor, math.abs, math.round, math.ceil
 local P, C, R, S, C, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct
 local lpegmatch = lpeg.match
 
-local files             = utilities.files
+local readers           = fonts.handlers.otf.readers
+local streamreader      = readers.streamreader
 
-local readbytes         = files.readbytes
-local readstring        = files.readstring
-local readbyte          = files.readcardinal1  --  8-bit unsigned integer
-local readushort        = files.readcardinal2  -- 16-bit unsigned integer
-local readuint          = files.readcardinal3  -- 24-bit unsigned integer
-local readulong         = files.readcardinal4  -- 24-bit unsigned integer
+local readbytes         = streamreader.readbytes
+local readstring        = streamreader.readstring
+local readbyte          = streamreader.readcardinal1  --  8-bit unsigned integer
+local readushort        = streamreader.readcardinal2  -- 16-bit unsigned integer
+local readuint          = streamreader.readcardinal3  -- 24-bit unsigned integer
+local readulong         = streamreader.readcardinal4  -- 24-bit unsigned integer
+local setposition       = streamreader.setposition
+local getposition       = streamreader.getposition
 
 local setmetatableindex = table.setmetatableindex
 
 local trace_charstrings = false trackers.register("fonts.cff.charstrings",function(v) trace_charstrings = v end)
 local report            = logs.reporter("otf reader","cff")
 
-local parsetopdictionary
+local parsedictionaries
+local parsecharstring
 local parsecharstrings
+local resetcharstrings
 local parseprivates
 
 local defaultstrings = { [0] = -- hijacked from ff
@@ -123,14 +128,15 @@ local cffreaders = {
 -- The header contains information about its own size.
 
 local function readheader(f)
+    local offset = getposition(f)
     local header = {
-        offset = f:seek("cur"),
+        offset = offset,
         major  = readbyte(f),
         minor  = readbyte(f),
         size   = readbyte(f), -- headersize
         osize  = readbyte(f), -- for offsets to start
     }
-    f:seek("set",header.offset+header.size)
+    setposition(f,offset+header.size)
     return header
 end
 
@@ -495,8 +501,7 @@ do
       + p_unsupported
     )^1
 
-    parsetopdictionary = function(data)
-        local dictionaries = data.dictionaries
+    parsedictionaries = function(data,dictionaries)
         stack   = { }
         strings = data.strings
         for i=1,#dictionaries do
@@ -523,18 +528,18 @@ do
             lpegmatch(p_dictionary,dictionaries[i])
             dictionaries[i] = result
         end
+        --
         result = { }
         top    = 0
         stack  = { }
     end
 
-    parseprivates = function(data)
-        local dictionaries = data.dictionaries
+    parseprivates = function(data,dictionaries)
         stack   = { }
         strings = data.strings
         for i=1,#dictionaries do
             local private = dictionaries[i].private
-            if private.data then
+            if private and private.data then
                 top    = 0
                 result  = {
                     forcebold         = false,
@@ -580,6 +585,12 @@ do
     local globals    = false
     local locals     = false
     local depth      = 1
+    local xmin       = 0
+    local xmax       = 0
+    local ymin       = 0
+    local ymax       = 0
+    local checked    = false
+    local keepcurve  = false
 
     local function showstate(where)
         report("%w%-10s : [%s] n=%i",depth*2,where,concat(stack," ",1,top),top)
@@ -591,6 +602,65 @@ do
         else
             report("%w%-10s : %s",depth*2,where,tostring(value))
         end
+    end
+
+    -- All these indirect calls makt this run slower but it's cleaner this way
+    -- and we cache the result. As we moved the boundingbox code inline we gain
+    -- some back.
+
+    local function moveto(x,y)
+        if keepcurve then
+            r = r + 1
+            result[r] = { x, y, "m" }
+        end
+        if checked then
+            if x < xmin then xmin = x elseif x > xmax then xmax = x end
+            if y < ymin then ymin = y elseif y > ymax then ymax = y end
+        else
+            xmin = x
+            ymin = y
+            xmax = x
+            ymax = y
+            checked = true
+        end
+    end
+
+    local function lineto(x,y)
+        if keepcurve then
+            r = r + 1
+            result[r] = { x, y, "l" }
+        end
+        if checked then
+            if x < xmin then xmin = x elseif x > xmax then xmax = x end
+            if y < ymin then ymin = y elseif y > ymax then ymax = y end
+        else
+            xmin = x
+            ymin = y
+            xmax = x
+            ymax = y
+            checked = true
+        end
+    end
+
+    local function curveto(x1,y1,x2,y2,x3,y3)
+        if keepcurve then
+            r = r + 1
+            result[r] = { x1, y1, x2, y2, x3, y3, "c" }
+        end
+        if checked then
+            if x1 < xmin then xmin = x1 elseif x1 > xmax then xmax = x1 end
+            if y1 < ymin then ymin = y1 elseif y1 > ymax then ymax = y1 end
+        else
+            xmin = x1
+            ymin = y1
+            xmax = x1
+            ymax = y1
+            checked = true
+        end
+        if x2 < xmin then xmin = x2 elseif x2 > xmax then xmax = x2 end
+        if y2 < ymin then ymin = y2 elseif y2 > ymax then ymax = y2 end
+        if x3 < xmin then xmin = x3 elseif x3 > xmax then xmax = x3 end
+        if y3 < ymin then ymin = y3 elseif y3 > ymax then ymax = y3 end
     end
 
     local function rmoveto()
@@ -611,8 +681,7 @@ do
         x = x + stack[top-1] -- dx1
         y = y + stack[top]   -- dy1
         top = 0
-        r = r + 1
-        result[r] = { x, y, "m" } -- "moveto"
+        moveto(x,y)
     end
 
     local function hmoveto()
@@ -632,8 +701,7 @@ do
         end
         x = x + stack[top] -- dx1
         top = 0
-        r = r + 1
-        result[r] = { x, y, "m" } -- "moveto"
+        moveto(x,y)
     end
 
     local function vmoveto()
@@ -653,8 +721,7 @@ do
         end
         y = y + stack[top] -- dy1
         top = 0
-        r = r + 1
-        result[r] = { x, y, "m" } -- "moveto"
+        moveto(x,y)
     end
 
     local function rlineto()
@@ -664,8 +731,7 @@ do
         for i=1,top,2 do
             x = x + stack[i]   -- dxa
             y = y + stack[i+1] -- dya
-            r = r + 1
-            result[r] = { x, y, "l" } -- "lineto"
+            lineto(x,y)
         end
         top = 0
     end
@@ -679,8 +745,7 @@ do
                 y = y + stack[i]
                 swap = true
             end
-            r = r + 1
-            result[r] = { x, y, "l" } -- "lineto"
+            lineto(x,y)
         end
         top = 0
     end
@@ -710,8 +775,7 @@ do
             local by = ay + stack[i+3] -- dyb
             x = bx + stack[i+4] -- dxc
             y = by + stack[i+5] -- dyc
-            r = r + 1
-            result[r] = { ax, ay, bx, by, x, y, "c" } -- "curveto"
+            curveto(ax,ay,bx,by,x,y)
         end
         top = 0
     end
@@ -732,8 +796,7 @@ do
             local by = ay + stack[i+2] -- dyb
             x = bx + stack[i+3] -- dxc
             y = by
-            r = r + 1
-            result[r] = { ax, ay, bx, by, x, y, "c" } -- "curveto"
+            curveto(ax,ay,bx,by,x,y)
         end
         top = 0
     end
@@ -755,8 +818,7 @@ do
             local by = ay + stack[i+2] -- dyb
             x = bx
             y = by + stack[i+3] -- dyc
-            r = r + 1
-            result[r] = { ax, ay, bx, by, x, y, "c" } -- "curveto"
+            curveto(ax,ay,bx,by,x,y)
             d = 0
         end
         top = 0
@@ -795,8 +857,7 @@ do
                 end
                 swap = true
             end
-            r = r + 1
-            result[r] = { ax, ay, bx, by, x, y, "c" } -- "curveto"
+            curveto(ax,ay,bx,by,x,y)
         end
         top = 0
     end
@@ -826,13 +887,11 @@ do
             local by = ay + stack[i+3] -- dyb
             x = bx + stack[i+4] -- dxc
             y = by + stack[i+5] -- dyc
-            r = r + 1
-            result[r] = { ax, ay, bx, by, x, y, "c" } -- "curveto"
+            curveto(ax,ay,bx,by,x,y)
         end
         x = x + stack[top-1] -- dxc
         y = y + stack[top]   -- dyc
-        r = r + 1
-        result[r] = { x, y, "l" } -- "lineto"
+        lineto(x,y)
         top = 0
     end
 
@@ -844,41 +903,39 @@ do
             for i=1,top-6,2 do
                 x = x + stack[i]
                 y = y + stack[i+1]
-                r = r + 1
-                result[r] = { x, y, "l" } -- "lineto"
+                lineto(x,y)
             end
         end
         local ax = x  + stack[top-5]
         local ay = y  + stack[top-4]
         local bx = ax + stack[top-3]
         local by = ay + stack[top-2]
-        x  = bx + stack[top-1]
-        y  = by + stack[top]
-        r = r + 1
-        result[r] = { ax, ay, bx, by, x, y, "c" } -- "curveto"
+        x = bx + stack[top-1]
+        y = by + stack[top]
+        curveto(ax,ay,bx,by,x,y)
         top = 0
     end
+
+    -- flex is not yet tested! no loop
 
     local function flex() -- fd not used
         if trace_charstrings then
             showstate("flex")
         end
-        local ax = x  + stack[i]   -- dx1
-        local ay = y  + stack[i+1] -- dy1
-        local bx = ax + stack[i+2] -- dx2
-        local by = ay + stack[i+3] -- dy2
-        local cx = bx + stack[i+4] -- dx3
-        local cy = by + stack[i+5] -- dy3
-        r = r + 1
-        result[r] = { ax, ay, bx, by, cx, cy, "c" } -- "curveto"
-        local dx = cx + stack[i+6] -- dx4
-        local dy = cy + stack[i+7] -- dy4
-        local ex = dx + stack[i+8] -- dx5
-        local ey = dy + stack[i+9] -- dy5
-        x = ex + stack[i+10]       -- dx6
-        y = ey + stack[i+11]       -- dy6
-        r = r + 1
-        result[r] = { dx, dy, ex, ey,  x,  y, "c" } -- "curveto"
+        local ax = x  + stack[1]  -- dx1
+        local ay = y  + stack[2]  -- dy1
+        local bx = ax + stack[3]  -- dx2
+        local by = ay + stack[4]  -- dy2
+        local cx = bx + stack[5]  -- dx3
+        local cy = by + stack[6]  -- dy3
+        curveto(ax,ay,bx,by,cx,cy)
+        local dx = cx + stack[7]  -- dx4
+        local dy = cy + stack[8]  -- dy4
+        local ex = dx + stack[9]  -- dx5
+        local ey = dy + stack[10] -- dy5
+        x = ex + stack[11]        -- dx6
+        y = ey + stack[12]        -- dy6
+        curveto(dx,dy,ex,ey,x,y)
         top = 0
     end
 
@@ -886,21 +943,19 @@ do
         if trace_charstrings then
             showstate("hflex")
         end
-        local ax = x  + stack[i  ] -- dx1
+        local ax = x  + stack[1]   -- dx1
         local ay = y
-        local bx = ax + stack[i+1] -- dx2
-        local by = ay + stack[i+2] -- dy2
-        local cx = bx + stack[i+3] -- dx3
+        local bx = ax + stack[2] -- dx2
+        local by = ay + stack[3] -- dy2
+        local cx = bx + stack[4] -- dx3
         local cy = by
-        r = r + 1
-        result[r] = { ax, ay, bx, by, cx, cy, "c" } -- "curveto"
-        local dx = cx + stack[i+4] -- dx4
+        curveto(ax,ay,bx,by,cx,cy)
+        local dx = cx + stack[5] -- dx4
         local dy = by
-        local ex = dx + stack[i+5] -- dx5
+        local ex = dx + stack[6] -- dx5
         local ey = y
-        x  = ex + stack[i+6] -- dx6
-        r = r + 1
-        result[r] = { dx, dy, ex, ey,  x,  y, "c" } -- "curveto"
+        x  = ex + stack[7]       -- dx6
+        curveto(dx,dy,ex,ey,x,y)
         top = 0
     end
 
@@ -908,21 +963,19 @@ do
         if trace_charstrings then
             showstate("hflex1")
         end
-        local ax = x  + stack[i  ] -- dx1
-        local ay = y  + stack[i+1] -- dy1
-        local bx = ax + stack[i+2] -- dx2
-        local by = ay + stack[i+3] -- dy2
-        local cx = bx + stack[i+4] -- dx3
+        local ax = x  + stack[1] -- dx1
+        local ay = y  + stack[2] -- dy1
+        local bx = ax + stack[3] -- dx2
+        local by = ay + stack[4] -- dy2
+        local cx = bx + stack[5] -- dx3
         local cy = by
-        r = r + 1
-        result[r] = { ax, ay, bx, by, cx, cy, "c" } -- "curveto"
-        local dx = cx + stack[i+5] -- dx4
+        curveto(ax,ay,bx,by,cx,cy)
+        local dx = cx + stack[6] -- dx4
         local dy = by
-        local ex = dx + stack[i+7] -- dx5
-        local ey = dy + stack[i+8] -- dy5
-        x  = ex + stack[i+9] -- dx6
-        r = r + 1
-        result[r] = { dx, dy, dx, dy,  x,  y, "c" } -- "curveto"
+        local ex = dx + stack[7] -- dx5
+        local ey = dy + stack[8] -- dy5
+        x  = ex + stack[9]       -- dx6
+        curveto(dx,dy,ex,ey,x,y)
         top = 0
     end
 
@@ -930,39 +983,39 @@ do
         if trace_charstrings then
             showstate("flex1")
         end
-        local ax = x  + stack[i  ] --dx1
-        local ay = y  + stack[i+1] --dy1
-        local bx = ax + stack[i+2] --dx2
-        local by = ay + stack[i+3] --dy2
-        local cx = bx + stack[i+4] --dx3
-        local cy = by + stack[i+5] --dy3
-        r = r + 1
-        result[r] = { ax, ay, bx, by, cx, cy, "c" } -- "curveto"
-        local dx = cx + stack[i+6] --dx4
-        local dy = cy + stack[i+7] --dy4
-        local ex = dx + stack[i+8] --dx5
-        local ey = dy + stack[i+9] --dy5
+        local ax = x  + stack[1]  --dx1
+        local ay = y  + stack[2]  --dy1
+        local bx = ax + stack[3]  --dx2
+        local by = ay + stack[4]  --dy2
+        local cx = bx + stack[5]  --dx3
+        local cy = by + stack[6]  --dy3
+        curveto(ax,ay,bx,by,cx,cy)
+        local dx = cx + stack[7]  --dx4
+        local dy = cy + stack[8]  --dy4
+        local ex = dx + stack[9]  --dx5
+        local ey = dy + stack[10] --dy5
         if abs(ex - x) > abs(ey - y) then -- spec: abs(dx) > abs(dy)
-            x = ex + stack[i+10]
+            x = ex + stack[11]
         else
-            y = ey + stack[i+10]
+            y = ey + stack[11]
         end
-        r = r + 1
-        result[r] = { dx, dy, dx, dy,  x,  y, "c" } -- "curveto"
+        curveto(dx,dy,ex,ey,x,y)
         top = 0
     end
 
     local function getstem()
-        if top % 2 ~= 0 then
+        if top == 0 then
+            -- bad
+        elseif top % 2 ~= 0 then
             if width then
                 remove(stack,1)
             else
                 width = remove(stack,1)
+                if trace_charstrings then
+                    showvalue("width",width)
+                end
             end
             top = top - 1
-            if trace_charstrings then
-                showvalue("width",width)
-            end
         end
         if trace_charstrings then
             showstate("stem")
@@ -972,23 +1025,27 @@ do
     end
 
     local function getmask()
-        if top % 2 ~= 0 then
+        if top == 0 then
+            -- bad
+        elseif top % 2 ~= 0 then
             if width then
                 remove(stack,1)
             else
                 width = remove(stack,1)
+                if trace_charstrings then
+                    showvalue("width",width)
+                end
             end
             top = top - 1
-            if trace_charstrings then
-                showvalue("width",width)
-            end
         end
         if trace_charstrings then
             showstate(operator == 19 and "hintmark" or "cntrmask")
         end
         stems = stems + top/2
         top   = 0
-        if stems <= 8 then
+        if stems == 0 then
+            -- forget about it
+        elseif stems <= 8 then
             return 1
         else
             return floor((stems+7)/8)
@@ -1069,8 +1126,8 @@ do
         end
     end
 
-    local function process(tab) -- I should profile this and optimize the order
-        local i = 1             -- which is something for a cold dark evening.
+    local function process(tab)
+        local i = 1
         local n = #tab
         while i <= n do
             local t = tab[i]
@@ -1108,20 +1165,15 @@ do
                     stack[top] = n              + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
                 end
                 i = i + 5
-            elseif t == 12 then
-                i = i + 1
-                local t = tab[i]
-                local a = subactions[t]
-                if a then
-                    a()
-                else
-                    if trace_charstrings then
-                        showvalue("<subaction>",t)
-                    end
-                    top = 0
+           elseif t == 11 then
+                if trace_charstrings then
+                    showstate("return")
                 end
+                return
+            elseif t == 10 then
+                call("local",locals,localbias,process)
                 i = i + 1
-            elseif t == 14 then -- endchar
+             elseif t == 14 then -- endchar
                 if width then
                     -- okay
                 elseif top > 0 then
@@ -1136,16 +1188,21 @@ do
                     showstate("endchar")
                 end
                 return
-            elseif t == 11 then
-                if trace_charstrings then
-                    showstate("return")
-                end
-                return
-            elseif t == 10 then
-                call("local",locals,localbias,process)
-                i = i + 1
             elseif t == 29 then
                 call("global",globals,globalbias,process)
+                i = i + 1
+            elseif t == 12 then
+                i = i + 1
+                local t = tab[i]
+                local a = subactions[t]
+                if a then
+                    a()
+                else
+                    if trace_charstrings then
+                        showvalue("<subaction>",t)
+                    end
+                    top = 0
+                end
                 i = i + 1
             else
                 local a = actions[t]
@@ -1165,49 +1222,50 @@ do
         end
     end
 
-    local function calculatebounds(segments,x,y)
-        local nofsegments = #segments
-        if nofsegments == 0 then
-            return { x, y, x, y }
-        else
-            local xmin =  10000
-            local xmax = -10000
-            local ymin =  10000
-            local ymax = -10000
-            if x < xmin then xmin = x end
-            if x > xmax then xmax = x end
-            if y < ymin then ymin = y end
-            if y > ymax then ymax = y end
-            -- we now have a reasonable start so we could
-            -- simplyfy the next checks
-            for i=1,nofsegments do
-                local s = segments[i]
-                local x = s[1]
-                local y = s[2]
-                if x < xmin then xmin = x end
-                if x > xmax then xmax = x end
-                if y < ymin then ymin = y end
-                if y > ymax then ymax = y end
-                if s[#s] == "c" then -- "curveto"
-                    local x = s[3]
-                    local y = s[4]
-                    if x < xmin then xmin = x elseif x > xmax then xmax = x end
-                    if y < ymin then ymin = y elseif y > ymax then ymax = y end
-                    local x = s[5]
-                    local y = s[6]
-                    if x < xmin then xmin = x elseif x > xmax then xmax = x end
-                    if y < ymin then ymin = y elseif y > ymax then ymax = y end
-                end
-            end
-            return { round(xmin), round(ymin), round(xmax), round(ymax) } -- doesn't make ceil more sense
-        end
-    end
+ -- local function calculatebounds(segments,x,y)
+ --     local nofsegments = #segments
+ --     if nofsegments == 0 then
+ --         return { x, y, x, y }
+ --     else
+ --         local xmin =  10000
+ --         local xmax = -10000
+ --         local ymin =  10000
+ --         local ymax = -10000
+ --         if x < xmin then xmin = x end
+ --         if x > xmax then xmax = x end
+ --         if y < ymin then ymin = y end
+ --         if y > ymax then ymax = y end
+ --         -- we now have a reasonable start so we could
+ --         -- simplyfy the next checks
+ --         for i=1,nofsegments do
+ --             local s = segments[i]
+ --             local x = s[1]
+ --             local y = s[2]
+ --             if x < xmin then xmin = x end
+ --             if x > xmax then xmax = x end
+ --             if y < ymin then ymin = y end
+ --             if y > ymax then ymax = y end
+ --             if s[#s] == "c" then -- "curveto"
+ --                 local x = s[3]
+ --                 local y = s[4]
+ --                 if x < xmin then xmin = x elseif x > xmax then xmax = x end
+ --                 if y < ymin then ymin = y elseif y > ymax then ymax = y end
+ --                 local x = s[5]
+ --                 local y = s[6]
+ --                 if x < xmin then xmin = x elseif x > xmax then xmax = x end
+ --                 if y < ymin then ymin = y elseif y > ymax then ymax = y end
+ --             end
+ --         end
+ --         return { round(xmin), round(ymin), round(xmax), round(ymax) } -- doesn't make ceil more sense
+ --     end
+ -- end
 
     parsecharstrings = function(data,glyphs,doshapes)
         -- for all charstrings
         local dictionary  = data.dictionaries[1]
-        local charstrings = data.charstrings
-        local charset     = data.charset
+        local charstrings = dictionary.charstrings
+        local charset     = dictionary.charset
+        keepcurve  = doshapes
         stack      = { }
         glyphs     = glyphs or { }
         strings    = data.strings
@@ -1224,13 +1282,20 @@ do
             local str   = charstrings[i]
             local tab   = lpegmatch(p_bytes,str)
             local index = i - 1
-            x      = 0
-            y      = 0
-            width  = false
-            r      = 0
-            top    = 0
-            stems  = 0
-            result = { }
+            x       = 0
+            y       = 0
+            width   = false
+            r       = 0
+            top     = 0
+            stems   = 0
+            result  = { }
+            --
+            xmin    = 0
+            xmax    = 0
+            ymin    = 0
+            ymax    = 0
+            checked = false
+            --
             if trace_charstrings then
                 report("glyph: %i",index)
                 report("data: % t",tab)
@@ -1238,7 +1303,7 @@ do
             --
             process(tab)
             --
-            local boundingbox = calculatebounds(result,x,y)
+            local boundingbox = { xmin, ymin, xmax, ymax }
             --
             if width == true or width == false then
                 width = defaultwidth
@@ -1272,10 +1337,85 @@ do
             end
             charstrings[i] = nil -- free memory
         end
+        return glyphs
+    end
+
+    parsecharstring = function(data,dictionary,charstring,glyphs,index,doshapes)
+        local private = dictionary.private
+        keepcurve  = doshapes
+        strings    = data.strings -- or in dict?
+        locals     = dictionary.subroutines or { }
+        globals    = data.routines or { }
+        globalbias = #globals
+        localbias  = #locals
+        globalbias = ((globalbias <  1240 and 107) or (globalbias < 33900 and 1131) or 32768) + 1
+        localbias  = ((localbias  <  1240 and 107) or (localbias  < 33900 and 1131) or 32768) + 1
+        local nominalwidth = private and private.data.nominalwidthx or 0
+        local defaultwidth = private and private.data.defaultwidthx or 0
+        --
+        local tab = lpegmatch(p_bytes,charstring)
+        x         = 0
+        y         = 0
+        width     = false
+        r         = 0
+        top       = 0
+        stems     = 0
+        result    = { }
+        --
+        xmin      = 0
+        xmax      = 0
+        ymin      = 0
+        ymax      = 0
+        checked   = false
+        --
+        if trace_charstrings then
+            report("glyph: %i",index)
+            report("data: % t",tab)
+        end
+        --
+        process(tab)
+        --
+        local boundingbox = { xmin, ymin, xmax, ymax }
+        --
+        if width == true or width == false then
+            width = defaultwidth
+        else
+            width = nominalwidth + width
+        end
+        --
+        local glyph = glyphs[index] -- can be autodefined in otr
+        if not glyph then
+            glyphs[index] = {
+                segments    = doshapes ~= false and result or nil, -- optional
+                boundingbox = boundingbox,
+                width       = width,
+                name        = charset[index],
+             -- sidebearing = 0,
+            }
+        else
+            glyph.segments    = doshapes ~= false and result or nil
+            glyph.boundingbox = boundingbox
+            if not glyph.width then
+                glyph.width = width
+            end
+            if charset and not glyph.name then
+                glyph.name = charset[index]
+            end
+         -- glyph.sidebearing = 0 -- todo
+        end
+        --
+        if trace_charstrings then
+            report("width: %s",tostring(width))
+            report("boundingbox: % t",boundingbox)
+        end
+        --
+        return charstring
+    end
+
+    resetcharstrings = function()
         result = { }
         top    = 0
         stack  = { }
-        return glyphs
     end
 
 end
@@ -1292,28 +1432,39 @@ local function readencodings(f,data)
     data.encodings = { }
 end
 
-local function readcharsets(f,data)
-    local header       = data.header
-    local dictionaries = data.dictionaries
-    local strings      = data.strings
-    f:seek("set",header.offset+dictionaries[1].charset)
-    local format = readbyte(f)
-    if format == 0 then
-        local charset = { [0] = ".notdef" }
-        for i=1,data.nofglyphs do
-            charset[i] = strings[readushort(f)]
-        end
-        data.charset = charset
-    elseif format == 1 then
-        report("cff parser: todo charset format %a",format)
-    elseif format == 2 then
-        report("cff parser: todo charset format %a",format)
-    else
-        report("cff parser: unsupported charset format %a",format)
-    end
-end
+local function readcharsets(f,data,dictionary)
+    local header        = data.header
+    local strings       = data.strings
+    local nofglyphs     = data.nofglyphs
+    local charsetoffset = dictionary.charset
 
-local function readfdselect(f,data)
+    if charsetoffset ~= 0 then
+        setposition(f,header.offset+charsetoffset)
+        local format       = readbyte(f)
+        local charset      = { [0] = ".notdef" }
+        dictionary.charset = charset
+        if format == 0 then
+            for i=1,nofglyphs do
+                charset[i] = strings[readushort(f)]
+            end
+        elseif format == 1 or format == 2 then
+            local readcount = format == 1 and readbyte or readushort
+            local i = 0
+            while i<= nofglyphs do
+                local sid = readushort(f)
+                local n   = readcount(f)
+                for s=sid,sid+n do
+                    charset[i] = strings[s]
+                    i = i + 1
+                    if i > nofglyphs then
+                        break
+                    end
+                end
+            end
+        else
+            report("cff parser: unsupported charset format %a",format)
+        end
+    end
 end
 
 local function readprivates(f,data)
@@ -1321,25 +1472,29 @@ local function readprivates(f,data)
     local dictionaries = data.dictionaries
     local private      = dictionaries[1].private
     if private then
-        f:seek("set",header.offset+private.offset)
+        setposition(f,header.offset+private.offset)
         private.data = readstring(f,private.size)
     end
 end
 
-local function readlocals(f,data)
-    -- todo: make them local indeed
-    local header       = data.header
-    local dictionaries = data.dictionaries
-    local dictionary   = dictionaries[1]
-    local private      = dictionary.private
+local function readlocals(f,data,dictionary)
+    local header  = data.header
+    local private = dictionary.private
     if private then
-        f:seek("set",header.offset+private.offset+private.data.subroutines)
-        local subroutines = readlengths(f)
-        for i=1,#subroutines do
-            subroutines[i] = readstring(f,subroutines[i])
+        local subroutineoffset = private.data.subroutines
+        if subroutineoffset ~= 0 then
+            setposition(f,header.offset+private.offset+subroutineoffset)
+            local subroutines = readlengths(f)
+            for i=1,#subroutines do
+                subroutines[i] = readstring(f,subroutines[i])
+            end
+            dictionary.subroutines = subroutines
+            private.data.subroutines = nil
+        else
+            dictionary.subroutines = { }
         end
-        dictionary.subroutines = subroutines
-        private.data.subroutines = nil
+    else
+        dictionary.subroutines = { }
     end
 end
 
@@ -1351,24 +1506,120 @@ local function readcharstrings(f,data)
     local dictionaries = data.dictionaries
     local dictionary   = dictionaries[1]
     local type         = dictionary.charstringtype
+    local offset       = dictionary.charstrings
     if type == 2 then
-        f:seek("set",header.offset+dictionary.charstrings)
+        setposition(f,header.offset+offset)
         -- could be a metatable .. delayed loading
         local charstrings = readlengths(f)
         local nofglyphs   = #charstrings
         for i=1,nofglyphs do
             charstrings[i] = readstring(f,charstrings[i])
         end
-        data.nofglyphs   = nofglyphs
-        data.charstrings = charstrings
+        data.nofglyphs         = nofglyphs
+        dictionary.charstrings = charstrings
     else
         report("unsupported charstr type %i",type)
-        data.nofglyphs   = 0
-        data.charstrings = { }
+        data.nofglyphs         = 0
+        dictionary.charstrings = { }
     end
 end
 
-function fonts.handlers.otf.readers.cff(f,fontdata,specification)
+-- cid (maybe do this stepwise so less mem) -- share with above
+
+local function readcidprivates(f,data)
+    local header       = data.header
+    local dictionaries = data.dictionaries[1].cid.dictionaries
+    for i=1,#dictionaries do
+        local dictionary = dictionaries[i]
+        local private    = dictionary.private
+        if private then
+            setposition(f,header.offset+private.offset)
+            private.data = readstring(f,private.size)
+        end
+    end
+    parseprivates(data,dictionaries)
+end
+
+local function readnoselect(f,data,glyphs,doshapes)
+    local dictionaries = data.dictionaries
+    local dictionary   = dictionaries[1]
+    readglobals(f,data)
+    readcharstrings(f,data)
+    readencodings(f,data)
+    readcharsets(f,data,dictionary)
+    readprivates(f,data)
+    parseprivates(data,data.dictionaries)
+    readlocals(f,data,dictionary)
+    parsecharstrings(data,glyphs,doshapes)
+    resetcharstrings()
+end
+
+local function readfdselect(f,data,glyphs,doshapes)
+    local header       = data.header
+    local dictionaries = data.dictionaries
+    local dictionary   = dictionaries[1]
+    local cid          = dictionary.cid
+    local cidselect    = cid and cid.fdselect
+    readglobals(f,data)
+    readcharstrings(f,data)
+    readencodings(f,data)
+    local charstrings  = dictionary.charstrings
+    local fdindex      = { }
+    local nofglyphs    = data.nofglyphs
+    local maxindex     = -1
+    setposition(f,header.offset+cidselect)
+    local format       = readbyte(f)
+    if format == 1 then
+        for i=0,nofglyphs do -- notdef included (needs checking)
+            local index = readbyte(i)
+            fdindex[i] = index
+            if index > maxindex then
+                maxindex = index
+            end
+        end
+    elseif format == 3 then
+        local nofranges = readushort(f)
+        local first     = readushort(f)
+        local index     = readbyte(f)
+        while true do
+            local last = readushort(f)
+            if index > maxindex then
+                maxindex = index
+            end
+            for i=first,last do
+                fdindex[i] = index
+            end
+            if last >= nofglyphs then
+                break
+            else
+                first = last + 1
+                index = readbyte(f)
+            end
+        end
+    else
+        -- unsupported format
+    end
+    if maxindex >= 0 then
+        local cidarray = cid.fdarray
+        setposition(f,header.offset+cidarray)
+        local dictionaries = readlengths(f)
+        for i=1,#dictionaries do
+            dictionaries[i] = readstring(f,dictionaries[i])
+        end
+        parsedictionaries(data,dictionaries)
+        cid.dictionaries = dictionaries
+        readcidprivates(f,data)
+        for i=1,#dictionaries do
+            readlocals(f,data,dictionaries[i])
+        end
+        for i=1,#charstrings do
+            parsecharstring(data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes)
+        end
+        resetcharstrings()
+    end
+end
+
+function readers.cff(f,fontdata,specification)
 --     if specification.glyphs then
     if specification.details then
         local datatable = fontdata.tables.cff
@@ -1380,7 +1631,7 @@ function fonts.handlers.otf.readers.cff(f,fontdata,specification)
                 return
             end
             if offset then
-                f:seek("set",offset)
+                setposition(f,offset)
             end
             local header = readheader(f)
             if header.major > 1 then
@@ -1395,11 +1646,13 @@ function fonts.handlers.otf.readers.cff(f,fontdata,specification)
                 names        = names,
                 dictionaries = dictionaries,
                 strings      = strings,
+                nofglyphs    = fontdata.nofglyphs,
             }
             --
-            parsetopdictionary(data)
+            parsedictionaries(data,data.dictionaries)
             --
             local d = dictionaries[1]
+            local c = d.cid
             fontdata.cffinfo = {
                 familynamename     = d.familyname,
                 fullname           = d.fullname,
@@ -1410,19 +1663,21 @@ function fonts.handlers.otf.readers.cff(f,fontdata,specification)
                 underlinethickness = d.underlinethickness,
                 monospaced         = d.monospaced,
             }
+            fontdata.cidinfo = c and {
+                registry   = c.registry,
+                ordering   = c.ordering,
+                supplement = c.supplement,
+            }
             --
-            if specification.glyphs then
-                readglobals(f,data)
-                readcharstrings(f,data)
-                readencodings(f,data)
-                readcharsets(f,data)
-                readfdselect(f,data)
-                --
-                readprivates(f,data)
-                parseprivates(data)
-                readlocals(f,data)
-                --
-                parsecharstrings(data,glyphs,specification.shapes or false)
+            if not specification.glyphs then
+                -- we only want some metadata
+            else
+                local cid = d.cid
+                if cid and cid.fdselect then
+                    readfdselect(f,data,glyphs,specification.shapes or false)
+                else
+                    readnoselect(f,data,glyphs,specification.shapes or false)
+                end
             end
             --
             -- cleanup (probably more can go)

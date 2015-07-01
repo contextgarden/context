@@ -59,7 +59,7 @@ function metapost.showglyph(specification)
             return
         end
         local glyph = shapeglyphs[index]
-        if glyph and glyph.segments or glyph.sequence then
+        if glyph and (glyph.segments or glyph.sequence) then
             local units  = data.fontheader and data.fontheader.emsize or 1000
             local factor = 100/units
             local paths  = metapost.paths(glyph,factor)
@@ -108,7 +108,27 @@ function metapost.showglyph(specification)
         shape(index,index,f_index)
         return
     end
-    for index=1,#shapeglyphs do
+    local first, last
+    if type(index) == "string" then
+        first, last = string.match(index,"^(.-):(.*)$")
+        if first and last then
+            first = tonumber(first)
+            last  = tonumber(last)
+        else
+            first = tonumber(index)
+            last  = first
+        end
+        if not first then
+            first = 1
+            last  = #shapeglyphs
+        elseif not last then
+            last = first
+        end
+    else
+        first = 1
+        last  = #shapeglyphs
+    end
+    for index=first,last do
         shape(index,index,f_index)
     end
 end
@@ -138,7 +158,6 @@ end
 \starttext
 
 \setupbodyfont[pagella]
-
 \showshape[character=all,alternative=page]
 
 % \setupbodyfont[dejavu]
@@ -146,5 +165,8 @@ end
 
 % \definedfont[almfixed]
 % \showshape[character=all,alternative=page]
+
+% \definedfont[file:sourcehansans-bold.otf]
+% \showshape[index=40000:41000,alternative=page]
 
 \stoptext

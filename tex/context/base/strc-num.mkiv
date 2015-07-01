@@ -247,7 +247,7 @@
 \def\strc_counters_setown_two        [#1][#2][#3]{\clf_setownsubcounter       {\namedcounterparameter{#1}\s!name}\numexpr#2\relax{#3}}
 \def\strc_counters_restart_two       [#1][#2][#3]{\clf_restartsubcounter      {\namedcounterparameter{#1}\s!name}\numexpr#2\relax\numexpr#3\relax}
 \def\strc_counters_reset_two             [#1][#2]{\clf_resetsubcounter        {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
-\def\strc_counters_increment_two         [#1][#2]{\clf_incrementsubcounter    {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
+%def\strc_counters_increment_two         [#1][#2]{\clf_incrementsubcounter    {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
 \def\strc_counters_decrement_two         [#1][#2]{\clf_decrementsubcounter    {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
 
 \def\strc_counters_raw_two               [#1][#2]{\clf_subcountervalue        {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
@@ -261,7 +261,7 @@
 \def\strc_counters_setown_one        [#1][#2][#3]{\clf_setowncounter          {\namedcounterparameter{#1}\s!name}{#2}}
 \def\strc_counters_restart_one       [#1][#2][#3]{\clf_restartcounter         {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
 \def\strc_counters_reset_one             [#1][#2]{\clf_resetcounter           {\namedcounterparameter{#1}\s!name}}
-\def\strc_counters_increment_one         [#1][#2]{\clf_incrementcounter       {\namedcounterparameter{#1}\s!name}}
+%def\strc_counters_increment_one         [#1][#2]{\clf_incrementcounter       {\namedcounterparameter{#1}\s!name}}
 \def\strc_counters_decrement_one         [#1][#2]{\clf_decrementcounter       {\namedcounterparameter{#1}\s!name}}
 
 \def\strc_counters_raw_one               [#1][#2]{\clf_countervalue           {\namedcounterparameter{#1}\s!name}}
@@ -278,7 +278,7 @@
 \unexpanded\def\strc_counters_setown         #1#2{\clf_setowncounter          {\namedcounterparameter{#1}\s!name}{#2}}
 \unexpanded\def\strc_counters_restart        #1#2{\clf_restartcounter         {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
 \unexpanded\def\strc_counters_reset            #1{\clf_resetcounter           {\namedcounterparameter{#1}\s!name}}
-\unexpanded\def\strc_counters_increment        #1{\clf_incrementcounter       {\namedcounterparameter{#1}\s!name}}
+%unexpanded\def\strc_counters_increment        #1{\clf_incrementcounter       {\namedcounterparameter{#1}\s!name}}
 \unexpanded\def\strc_counters_decrement        #1{\clf_decrementcounter       {\namedcounterparameter{#1}\s!name}}
 
            \def\strc_counters_raw              #1{\clf_countervalue           {\namedcounterparameter{#1}\s!name}}
@@ -292,7 +292,7 @@
 \unexpanded\def\strc_counters_setown_sub   #1#2#3{\clf_setownsubcounter       {\namedcounterparameter{#1}\s!name}\numexpr#2\relax{#3}}
 \unexpanded\def\strc_counters_restart_sub  #1#2#3{\clf_restartsubcounter      {\namedcounterparameter{#1}\s!name}\numexpr#2\relax\numexpr#3\relax}
 \unexpanded\def\strc_counters_reset_sub      #1#2{\clf_resetsubcounter        {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
-\unexpanded\def\strc_counters_increment_sub  #1#2{\clf_incrementsubcounter    {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
+%unexpanded\def\strc_counters_increment_sub  #1#2{\clf_incrementsubcounter    {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
 \unexpanded\def\strc_counters_decrement_sub  #1#2{\clf_decrementsubcounter    {\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
 
            \def\strc_counters_raw_sub        #1#2{\clf_subcountervalue        {\namedcounterparameter{#1}\s!name}\numexpr#2\relax} % maybe raw
@@ -341,6 +341,14 @@
      \fi
    \fi
    \clf_incrementsubcounter{\namedcounterparameter{#1}\s!name}\numexpr#2\relax}
+
+% We also need to redefine these because of the page check:
+
+           \def\strc_counters_increment_two [#1][#2]{\strc_counters_increment_sub{#1}{#2}}
+           \def\strc_counters_increment_one [#1][#2]{\strc_counters_increment_sub{#1}\plusone}
+\unexpanded\def\strc_counters_increment           #1{\strc_counters_increment_sub{#1}\plusone}
+
+% so far for the hack
 
 \unexpanded\def\convertedcounter
   {\dodoubleempty\strc_counters_converted}

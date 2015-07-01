@@ -285,7 +285,7 @@ function injections.setkern(current,factor,rlmode,x,injection)
     end
 end
 
-function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase) -- ba=baseanchor, ma=markanchor
+function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk) -- ba=baseanchor, ma=markanchor
     local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])
     nofregisteredmarks = nofregisteredmarks + 1
  -- markanchors[nofregisteredmarks] = base
@@ -293,14 +293,20 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase) -- ba=basean
         dx = tfmbase.width - dx -- see later commented ox
     end
     local p = rawget(properties,start)
+    -- hm, dejavu serif does a sloppy mark2mark before mark2base
     if p then
         local i = rawget(p,"injections")
         if i then
+if i.markmark then
+    -- out of order mkmk: yes or no or option
+else
             i.markx        = dx
             i.marky        = dy
             i.markdir      = rlmode or 0
             i.markbase     = nofregisteredmarks
             i.markbasenode = base
+            i.markmark     = mkmk
+end
         else
             p.injections = {
                 markx        = dx,
@@ -308,6 +314,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase) -- ba=basean
                 markdir      = rlmode or 0,
                 markbase     = nofregisteredmarks,
                 markbasenode = base,
+                markmark     = mkmk,
             }
         end
     else
@@ -318,6 +325,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase) -- ba=basean
                 markdir      = rlmode or 0,
                 markbase     = nofregisteredmarks,
                 markbasenode = base,
+                markmark     = mkmk,
             },
         }
     end
@@ -548,12 +556,13 @@ local function inject_marks(marks,nofmarks)
                     setfield(n,"xoffset",ox)
                     --
                     local py = getfield(p,"yoffset")
-                    local oy = 0
-                    if marks[p] then
-                        oy = py + pn.marky
-                    else
-                        oy = getfield(n,"yoffset") + py + pn.marky
-                    end
+--                     local oy = 0
+--                     if marks[p] then
+--                         oy = py + pn.marky
+--                     else
+--                         oy = getfield(n,"yoffset") + py + pn.marky
+--                     end
+                    local oy = getfield(n,"yoffset") + py + pn.marky
                     setfield(n,"yoffset",oy)
                 else
                     -- normally this can't happen (only when in trace mode which is a special case anyway)

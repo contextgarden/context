@@ -303,7 +303,10 @@ function moduledata.fonts.shapes.showallglypshapes(specification)
     local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
     local descriptions = fontdata[id].descriptions
     for unicode, description in fonts.iterators.descriptions(tfmdata) do
-        context.modulefontsstartshowglyphshape(unicode,description.name)
+        if unicode >= 0x110000 then
+            break
+        end
+        context.modulefontsstartshowglyphshape(unicode,description.name or "",description.index or 0)
         showglyphshape { number = id, character = unicode }
         context.modulefontsstopshowglyphshape()
     end

@@ -66,11 +66,11 @@ if not resolvers.instance then
         register('read_sfd_file'       , function(file) return loadbinfile(file,"sfd")    end, true)
         register('read_vf_file'        , function(file) return loadbinfile(file,"vf" )    end, true)
 
-        register('find_font_file'      , function(name) return findbinfile(name,"ofm")    end, true)
-        register('find_vf_file'        , function(name) return findbinfile(name,"ovf")    end, true)
+     -- register('find_font_file'      , function(name) return findbinfile(name,"ofm")    end, true)
+     -- register('find_vf_file'        , function(name) return findbinfile(name,"ovf")    end, true)
 
-        register('read_font_file'      , function(file) return loadbinfile(file,"ofm")    end, true)
-        register('read_vf_file'        , function(file) return loadbinfile(file,"ovf")    end, true)
+     -- register('read_font_file'      , function(file) return loadbinfile(file,"ofm")    end, true)
+     -- register('read_vf_file'        , function(file) return loadbinfile(file,"ovf")    end, true)
 
      -- register('read_opentype_file'  , function(file) return loadbinfile(file,"otf")    end, true)
      -- register('read_truetype_file'  , function(file) return loadbinfile(file,"ttf")    end, true)

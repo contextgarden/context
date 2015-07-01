@@ -31,6 +31,14 @@
         \definefontsynonym [\s!SansBoldItalic] [\s!file:arialbi.ttf] [\s!features=\s!default]
     \stoptypescript
 
+    \starttypescript [\s!sans] [mscorearialnarrow] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:arialn.ttf]   [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:arialnb.ttf]  [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:arialni.ttf]  [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:arialnbi.ttf] [\s!features=\s!default]
+    \stoptypescript
+
     \starttypescript [\s!mono] [mscorecourier] [\s!name]
         \setups[\s!font:\s!fallback:\s!mono]
         \definefontsynonym [\s!Mono]           [\s!file:cour.ttf]   [\s!features=\s!none]
@@ -52,6 +60,13 @@
         \definetypeface [mscore] [\s!ss] [\s!sans]  [mscorearial]   [\s!default] [\s!rscale=0.860]
         \definetypeface [mscore] [\s!tt] [\s!mono]  [mscorecourier] [\s!default] [\s!rscale=1.065]
         \definetypeface [mscore] [\s!mm] [\s!math]  [times]         [\s!default] [\s!rscale=1.020]
+    \stoptypescript
+
+    \starttypescript[mscorenarrow]
+        \definetypeface [mscorenarrow] [\s!rm] [\s!serif] [mscoretimes]       [\s!default]
+        \definetypeface [mscorenarrow] [\s!ss] [\s!sans]  [mscorearialnarrow] [\s!default] [\s!rscale=0.860]
+        \definetypeface [mscorenarrow] [\s!tt] [\s!mono]  [mscorecourier]     [\s!default] [\s!rscale=1.065]
+        \definetypeface [mscorenarrow] [\s!mm] [\s!math]  [times]             [\s!default] [\s!rscale=1.020]
     \stoptypescript
 
   % \starttypescript[mscoress]
