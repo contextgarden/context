@@ -6,9 +6,10 @@ if not modules then modules = { } end modules ['font-otc'] = {
     license   = "see context related readme files"
 }
 
-local format, insert = string.format, table.insert
+local format, insert, sortedkeys = string.format, table.insert, table.sortedkeys
 local type, next = type, next
 local lpegmatch = lpeg.match
+local utfbyte = utf.byte
 
 -- we assume that the other otf stuff is loaded already
 
@@ -28,8 +29,10 @@ local setmetatableindex   = table.setmetatableindex
 
 local types = {
     substitution = "gsub_single",
+    single       = "gsub_single",
     ligature     = "gsub_ligature",
     alternate    = "gsub_alternate",
+    multiple     = "gsub_multiple",
 }
 
 setmetatableindex(types, function(t,k) t[k] = k return k end) -- "key"
@@ -46,7 +49,7 @@ local function addfeature(data,feature,specifications)
         -- already present
     else
         local sequences    = resources.sequences
-        local fontfeatures = resources.features
+        local fontfeatures = resources.features or everywhere
         local unicodes     = resources.unicodes
         local lookuptypes  = resources.lookuptypes
         local splitter     = lpeg.splitter(" ",unicodes)
@@ -182,7 +185,13 @@ otf.enhancers.addfeature = addfeature
 local extrafeatures = { }
 
 function otf.addfeature(name,specification)
-    extrafeatures[name] = specification
+    if type(name) == "table" then
+        specification = name
+        name = specification.name
+    end
+    if type(name) == "string" then
+        extrafeatures[name] = specification
+    end
 end
 
 local function enhance(data,filename,raw)
@@ -211,6 +220,7 @@ local tlig_specification = {
     type     = "ligature",
     features = everywhere,
     data     = tlig,
+    name     = "ctx_tlig",
     order    = { "tlig" },
     flags    = noflags,
     prepend  = true,
@@ -235,6 +245,7 @@ local trep_specification = {
     type      = "substitution",
     features  = everywhere,
     data      = trep,
+    name     = "ctx_trep",
     order     = { "trep" },
     flags     = noflags,
     prepend   = true,

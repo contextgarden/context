@@ -338,7 +338,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
         local addprivate = fonts.helpers.addprivate
         if swap then
             swap = characters[swap]
-            height = swap.depth
+            height = swap.depth or 0
             depth  = 0
         else
             height = height or 0

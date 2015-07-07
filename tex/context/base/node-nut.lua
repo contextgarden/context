@@ -700,14 +700,21 @@ if propertydata then
     end
 
     nuts.setprop = function(n,k,v)
-        if v then
-            local p = propertydata[n]
-            if p then
-                p[k] = v
-            else
-                propertydata[n] = { [k] = v }
-            end
+        local p = propertydata[n]
+        if p then
+            p[k] = v
+        else
+            propertydata[n] = { [k] = v }
         end
+    end
+
+    nuts.theprop = function(n)
+        local p = propertydata[n]
+        if not p then
+            p = { }
+            propertydata[n] = p
+        end
+        return p
     end
 
     nodes.setprop = nodes.setproperty

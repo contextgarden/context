@@ -50,7 +50,7 @@ local parsecharstrings
 local resetcharstrings
 local parseprivates
 
-local defaultstrings = { [0] = -- hijacked from ff
+local defaultstrings = { [0] = -- taken from ff
     ".notdef", "space", "exclam", "quotedbl", "numbersign", "dollar", "percent",
     "ampersand", "quoteright", "parenleft", "parenright", "asterisk", "plus",
     "comma", "hyphen", "period", "slash", "zero", "one", "two", "three", "four",
@@ -1449,8 +1449,8 @@ local function readcharsets(f,data,dictionary)
             end
         elseif format == 1 or format == 2 then
             local readcount = format == 1 and readbyte or readushort
-            local i = 0
-            while i<= nofglyphs do
+            local i = 1
+            while i <= nofglyphs do
                 local sid = readushort(f)
                 local n   = readcount(f)
                 for s=sid,sid+n do

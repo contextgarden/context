@@ -626,7 +626,7 @@ end
 
 -- so far
 
-local function setblocked(category,value)
+local function setblocked(category,value) -- v.state == value == true : disable
     if category == true then
         -- lock all
         category, value = "*", true
@@ -644,7 +644,7 @@ local function setblocked(category,value)
         end
     else
         states = utilities.parsers.settings_to_hash(category,type(states)=="table" and states or nil)
-        for c, _ in next, states do
+        for c in next, states do
             local v = data[c]
             if v then
                 v.state = value

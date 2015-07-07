@@ -129,6 +129,11 @@
 \unexpanded\def\sethyphenationfeatures[#1]%
   {\clf_sethyphenationfeatures{#1}}
 
+\unexpanded\def\resethyphenationfeatures
+  {\hyphenationattribute\attributeunsetvalue}
+
+\resethyphenationfeatures
+
 % todo: \start ... \stop too
 
 \unexpanded\def\registerhyphenationpattern

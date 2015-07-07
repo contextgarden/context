@@ -39,7 +39,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2015.06.15 13:42}
+\edef\contextversion{2015.07.07 21:43}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -547,13 +547,13 @@
 
 % now we hook in backend code (needs checking)
 
+\loadmarkfile{back-exp}
+
 \loadmarkfile{back-pdf} % actually, this one should load the next three using document.arguments.backend
 \loadmarkfile{mlib-pdf}
 \loadmarkfile{mlib-pps}
 \loadmarkfile{meta-pdf}
 \loadmarkfile{grph-epd}
-
-\loadmarkfile{back-exp}
 
 \loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
 

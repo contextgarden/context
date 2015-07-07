@@ -354,6 +354,12 @@ end
 
 lxml.addindex = addindex
 
+implement {
+    name      = "xmladdindex",
+    arguments = { "string" },
+    actions   = addindex,
+}
+
 -- another cache
 
 local function lxmlapplylpath(id,pattern) -- better inline, saves call
@@ -1214,7 +1220,7 @@ local function command(collected,cmd,otherwise)
             local ix = e.ix
             local name = e.name
             if name and not ix then
-                lxml.addindex(name,false,true)
+                addindex(name,false,true)
                 ix = e.ix
             end
             if not ix or not name then

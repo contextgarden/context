@@ -39,7 +39,8 @@
 <table>
     <tr><th style="width: 10em">flag</th><th style="width: 8em">value</th><th>description</th></tr>
         <tr><th/><td/><td/></tr>
-        <tr><th>--save</th><td></td><td>save open type font in raw table</td></tr>
+        <tr><th>--save</th><td></td><td>save open type font in raw table (ff format)</td></tr>
+        <tr><th>--convert</th><td></td><td>save open type font in raw table (ctx format)</td></tr>
         <tr><th>--unpack</th><td></td><td>save a tma file in a more readable format</td></tr>
         <tr><th/><td/><td/></tr>
         <tr><th>--reload</th><td></td><td>generate new font database (use --force when in doubt)</td></tr>
@@ -55,6 +56,7 @@
         <tr><th>--info</th><td></td><td>give more details</td></tr>
         <tr><th>--trackers</th><td>list</td><td>enable trackers</td></tr>
         <tr><th>--statistics</th><td></td><td>some info about the database</td></tr>
+        <tr><th>--names</th><td></td><td>uise name instead of unicodes</td></tr>
     </table>
 <br/>
 <h1>Examples</h1>
@@ -71,6 +73,9 @@
 <br/><tt>mtxrun --script font --list --file somename</tt>
 <br/><tt>mtxrun --script font --list --file --all somename</tt>
 <br/><tt>mtxrun --script font --list --file --pattern=*somename*</tt>
+<br/><br/><tt>mtxrun --script font --save --texgyrepagella-regular.otf</tt>
+<br/><tt>mtxrun --script font --convert --texgyrepagella-regular.otf</tt>
+<br/><tt>mtxrun --script font --convert --names --texgyrepagella-regular.otf</tt>
 <br/><br/>            </div>
         </div>
     </body>

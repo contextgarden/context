@@ -177,6 +177,11 @@
 \def\xmlinfo                #1{\hbox{\ttxx[\clf_xmlinfo{#1}]}}
 \def\xmlshow                #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
 
+% the next one is handy for mode runs because it enforces a consistent
+% #1 indexing (needed when using \xmltext{main:123}{...} like calls
+
+\let\xmladdindex               \clf_xmladdindex
+
 % we need to pass the last argument as function, so
 
 \def\xmlsetfunction#1#2#3{\ctxcommand{xmlsetfunction("#1",\!!bs#2\!!es,#3)}}

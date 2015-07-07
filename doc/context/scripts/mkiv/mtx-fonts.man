@@ -12,7 +12,10 @@
 .SH OPTIONS
 .TP
 .B --save
-save open type font in raw table
+save open type font in raw table (ff format)
+.TP
+.B --convert
+save open type font in raw table (ctx format)
 .TP
 .B --unpack
 save a tma file in a more readable format
@@ -49,6 +52,9 @@ enable trackers
 .TP
 .B --statistics
 some info about the database
+.TP
+.B --names
+uise name instead of unicodes
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

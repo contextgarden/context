@@ -7964,7 +7964,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 29359, stripped down to: 20483
+-- original size: 29394, stripped down to: 20482
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -8453,7 +8453,7 @@ function logs.messenger(category,subcategory)
     end
   end
 end
-local function setblocked(category,value)
+local function setblocked(category,value) 
   if category==true then
     category,value="*",true
   elseif category==false then
@@ -8468,7 +8468,7 @@ local function setblocked(category,value)
     end
   else
     states=utilities.parsers.settings_to_hash(category,type(states)=="table" and states or nil)
-    for c,_ in next,states do
+    for c in next,states do
       local v=data[c]
       if v then
         v.state=value
@@ -18336,8 +18336,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 757476
--- stripped bytes    : 272592
+-- original bytes    : 757511
+-- stripped bytes    : 272628
 
 -- end library merge
 

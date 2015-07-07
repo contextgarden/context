@@ -451,6 +451,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         end
      end
      if reload then
+        starttiming("fontloader")
         report_otf("loading %a, hash %a",filename,hash)
         local fontdata, messages
         if sub then
@@ -522,7 +523,6 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
                     tounicodetable = Ct(splitter),
                 },
             }
-            starttiming(data)
             report_otf("file size: %s", size)
             enhancers.apply(data,filename,fontdata)
             local packtime = { }
@@ -539,10 +539,10 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
             if cleanup > 1 then
                 collectgarbage("collect")
             end
-            stoptiming(data)
+            stoptiming("fontloader")
             if elapsedtime then -- not in generic
-                report_otf("preprocessing and caching time %s, packtime %s",
-                    elapsedtime(data),packdata and elapsedtime(packtime) or 0)
+                report_otf("loading, optimizing, packing and caching time %s, pack time %s",
+                    elapsedtime("fontloader"),packdata and elapsedtime(packtime) or 0)
             end
             close_font(fontdata) -- free memory
             if cleanup > 3 then
@@ -553,6 +553,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
                 collectgarbage("collect")
             end
         else
+            stoptiming("fontloader")
             data = nil
             report_otf("loading failed due to read error")
         end

@@ -115,6 +115,10 @@ end
 
 -- -- -- sections -- -- --
 
+-- This is just a quick way to have access to prefixes and the numbers (section entry in a ref)
+-- is not the list entry. An alternative is to  use the list index of the last numbered section. In
+-- that case we should check a buse of the current structure.
+
 local collected  = allocate()
 local tobesaved  = allocate()
 

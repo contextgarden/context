@@ -34,7 +34,7 @@ local formatters    = string.formatters
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 0.61",
+    banner   = "ConTeXt Process Management 0.62",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }
@@ -173,7 +173,7 @@ end
 
 function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
 
-    if not ctxdata.jobname or ctxdata.jobname == "" then
+    if not ctxdata.jobname or ctxdata.jobname == "" or getargument("noctx") then
         return
     end
 
@@ -1600,7 +1600,7 @@ elseif getargument("make") then
     scripts.context.timed(function() scripts.context.make() end)
 elseif getargument("generate") then
     scripts.context.timed(function() scripts.context.generate() end)
-elseif getargument("ctx") then
+elseif getargument("ctx") and not getargument("noctx") then
     scripts.context.timed(scripts.context.ctx)
 -- elseif getargument("mp") or getargument("metapost") then
 --     scripts.context.timed(scripts.context.metapost)

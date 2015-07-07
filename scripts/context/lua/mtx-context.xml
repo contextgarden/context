@@ -4,7 +4,7 @@
     <metadata>
         <entry name="name">mtx-context</entry>
         <entry name="detail">ConTeXt Process Management</entry>
-        <entry name="version">0.60</entry>
+        <entry name="version">0.62</entry>
         <entry name="comment">external helpinfo file</entry>
     </metadata>
     <flags>
@@ -20,6 +20,9 @@
             <subcategory>
                 <flag name="ctx=name">
                     <short>use ctx file (process management specification)</short>
+                </flag>
+                <flag name="noctx">
+                    <short>ignore ctx directives and flags</short>
                 </flag>
                 <flag name="interface">
                     <short>use specified user interface (default: en)</short>

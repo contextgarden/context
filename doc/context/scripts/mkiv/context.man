@@ -1,4 +1,4 @@
-.TH "mtx-context" "1" "01-01-2015" "version 0.60" "ConTeXt Process Management"
+.TH "mtx-context" "1" "01-01-2015" "version 0.62" "ConTeXt Process Management"
 .SH NAME
 .B mtx-context
 .SH SYNOPSIS
@@ -19,6 +19,9 @@ create context formats
 .TP
 .B --ctx=name
 use ctx file (process management specification)
+.TP
+.B --noctx
+ignore ctx directives and flags
 .TP
 .B --interface
 use specified user interface (default: en)

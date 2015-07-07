@@ -24,7 +24,8 @@
 % --scite               : pretty print comform suffix using scite lexer
 % --bodyfont=list       : additional bodyfont settings
 % --paperformat=spec    : paper*print or paperxprint
-% --compact             : small margins, small font
+% --compact             : small margins, 8pt font
+% --verycompact         : small margins, 7pt font
 %
 % end help
 
@@ -34,6 +35,12 @@
     \setdocumentargument{topspace} {5mm}
     \setdocumentargument{backspace}{5mm}
     \setdocumentargument{bodyfont} {8pt}
+}
+
+\doifdocumentargument {verycompact} {
+    \setdocumentargument{topspace} {5mm}
+    \setdocumentargument{backspace}{5mm}
+    \setdocumentargument{bodyfont} {7pt}
 }
 
 \setupbodyfont

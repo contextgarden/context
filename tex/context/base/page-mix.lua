@@ -63,6 +63,8 @@ local setbox              = nuts.setbox
 local getskip             = nuts.getskip
 local getattribute        = nuts.getattribute
 
+local theprop             = nuts.theprop
+
 local nodepool            = nuts.pool
 
 local new_hlist           = nodepool.hlist
@@ -272,6 +274,7 @@ local function preparesplit(specification) -- a rather large function
     if specification.balance ~= v_yes then
         optimal = maxheight
     end
+    local topback   = 0
     local target    = optimal + extra
     local overflow  = target > maxheight - preheight
     local threshold = specification.threshold or 0
@@ -291,6 +294,7 @@ local function preparesplit(specification) -- a rather large function
             depth   = 0,
             inserts = { },
             delta   = 0,
+            back    = 0,
         }
     end
 
@@ -611,7 +615,6 @@ end
         line = line + 1
         local inserts, currentskips, nextskips, inserttotal = nil, 0, 0, 0
         local advance = getfield(current,"height")
--- + getfield(current,"depth") -- when > strutdp
         if trace_state then
             report_state("%-7s > column %s, content: %s","line",column,listtoutf(getlist(current),true,true))
         end
@@ -628,6 +631,23 @@ end
         if state == "quit" then
             return true
         end
+-- if state == "next" then -- only when profile
+--     local unprofiled = theprop(current).unprofiled
+--     if unprofiled then
+--         local h = unprofiled.height
+--         local s = unprofiled.strutht
+--         local t = s/2
+-- print("profiled",h,s)
+-- local snapped = theprop(current).snapped
+-- if snapped then
+--     inspect(snapped)
+-- end
+--         if h < s + t then
+--             result.back = - (h - s)
+--             advance     = s
+--         end
+--     end
+-- end
         height = height + depth + skip + advance + inserttotal
         if state == "next" then
             height = height + nextskips
@@ -742,6 +762,13 @@ local function finalize(result)
             local h = r.head
             if h then
                 setfield(h,"prev",nil)
+if r.back then
+    local k = new_glue(r.back)
+    setfield(h,"prev",k)
+    setfield(k,"next",h)
+    h = k
+    r.head = h
+end
                 local t = r.tail
                 if t then
                     setfield(t,"next",nil)

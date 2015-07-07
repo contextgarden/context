@@ -38,20 +38,20 @@ local formatters = string.formatters
 
 local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
 
-local nodes       =  nodes
-local node        =  node
-local trackers    =  trackers
-local attributes  =  attributes
-local context     =  context
-local tex         =  tex
+local nodes        =  nodes
+local node         =  node
+local trackers     =  trackers
+local attributes   =  attributes
+local context      =  context
+local tex          =  tex
 
-local texlists    = tex.lists
-local texgetdimen = tex.getdimen
-local texsetdimen = tex.setdimen
-local texnest     = tex.nest
+local texlists     = tex.lists
+local texgetdimen  = tex.getdimen
+local texsetdimen  = tex.setdimen
+local texnest      = tex.nest
 
-local variables   = interfaces.variables
-local implement   = interfaces.implement
+local variables    = interfaces.variables
+local implement    = interfaces.implement
 
 -- vertical space handler
 
@@ -108,6 +108,8 @@ local vpack_node          = nuts.vpack
 local writable_spec       = nuts.writable_spec
 local nodereference       = nuts.reference
 
+local theprop             = nuts.theprop
+
 local listtoutf           = nodes.listtoutf
 local nodeidstostring     = nodes.idstostring
 
@@ -116,7 +118,6 @@ local nodepool            = nuts.pool
 local new_penalty         = nodepool.penalty
 local new_kern            = nodepool.kern
 local new_rule            = nodepool.rule
-local new_glue            = nodepool.glue
 local new_gluespec        = nodepool.gluespec
 
 local nodecodes           = nodes.nodecodes
@@ -308,7 +309,18 @@ end
 
 -- check variables.none etc
 
+local function fixedprofile(current)
+    if builders.profiling then
+        return builders.profiling.fixedprofile(current)
+    else
+        return false
+    end
+end
+
 local function snap_hlist(where,current,method,height,depth) -- method.strut is default
+    if fixedprofile(current) then
+        return
+    end
     local list = getlist(current)
     local t = trace_vsnapping and { }
     if t then
@@ -359,6 +371,17 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
     local plusht   = snapht
     local plusdp   = snapdp
     local snaphtdp = snapht + snapdp
+
+-- local properties = theprop(current)
+-- local unsnapped  = properties.unsnapped
+-- if not unsnapped then -- experiment
+--     properties.unsnapped = {
+--         height = h,
+--         depth  = d,
+--         snapht = snapht,
+--         snapdp = snapdp,
+--     }
+-- end
 
     if method.box then
         local br = 1 - br

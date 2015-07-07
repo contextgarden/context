@@ -326,14 +326,13 @@
      }%
    }\endgroup}
 
-\unexpanded\def\xfrac {\begingroup\let\xfrac\xxfrac\math_frac_alternative\scriptstyle}
-\unexpanded\def\xxfrac{\begingroup                 \math_frac_alternative\scriptscriptstyle}
 
-%D The \type {xx} variant looks still ugly, so maybe it's best to say:
+\definemathfraction[xfrac] [\c!alternative=\v!inner,\c!mathstyle=\s!script]
+\definemathfraction[xxfrac][\c!alternative=\v!inner,\c!mathstyle=\s!scriptscript]
 
-\unexpanded\def\xxfrac#1#2%
-  {\begingroup
-   \math_frac_alternative\scriptscriptstyle{#1}{\raise.25\exheight\hbox{$\scriptscriptstyle#2$}}}
+\let\normalxfrac\xfrac
+
+\unexpanded\def\xfrac#1#2{\normalxfrac{\let\xfrac\xxfrac#1}{\let\xfrac\xxfrac#2}}
 
 %D Spacing:
 

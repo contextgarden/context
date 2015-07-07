@@ -32,10 +32,6 @@ if not modules then modules = { } end modules ['font-otr'] = {
 -- Optimizing the widths wil be done anyway as it save quite some on a cjk font
 -- and the existing (old) code if okay.
 
--- todo: duplicates
--- todo: markclasses : checking needed  (see font-otf)
---
--- todo: check all unsigned / signed (will be done last)
 -- todo: more messages (only if really needed)
 --
 -- todo (in old loader and new one) math:
@@ -47,18 +43,35 @@ if not modules then modules = { } end modules ['font-otr'] = {
 -- vert_variants     -> vvariants -> next in tex, so better 'sizes'
 -- horiz_variants    -> hvariants -> next in tex, so better 'sizes'
 --
+-- considered, in math:
+--
 -- start -> first (so we can skip the first same-size one)
 -- end   -> last
---
--- We can optimize kern pairs (i.e. simple h only positioning) later if we want
--- which is easier as then we know if we have clashes between features. We can have
--- kerns as well as moves (smaller files)
 --
 -- Widths and weights are kind of messy: for instance lmmonolt has a pfmweight of
 -- 400 while it should be 300. So, for now we mostly stick to the old compromis.
 
 -- We don't really need all those language tables so they might be dropped some
 -- day.
+
+-- The new reader is faster on some aspects and slower on other. The memory footprint
+-- is lower. The string reader is a  bit faster than the file reader. The new reader
+-- gives more efficient tables and has bit more analysis. In practice these times are
+-- not that relevant because we cache. The otf files take a it more time because we
+-- need to calculate the boundingboxes. In theory the processing of text should be
+-- somewhat faster especially for complex fonts with many lookups.
+--
+--                        old    new    str reader
+-- lmroman12-regular.otf  0.103  0.203  0.195
+-- latinmodern-math.otf   0.454  0.768  0.712
+-- husayni.ttf            1.142  1.526  1.259
+--
+-- If there is demand I will consider making a ff compatible table dumper but it's
+-- probably more fun to provide a way to show features applied.
+
+-- I experimented a bit with f:readbyte(n) and f:readshort() and so and it is indeed
+-- faster but it might not be the real bottleneck as we still need to juggle data. It
+-- is probably more memory efficient as no intermediate strings are involved.
 
 if not characters then
     require("char-def")
@@ -90,7 +103,7 @@ handlers.otf            = otf
 local readers           = otf.readers or { }
 otf.readers             = readers
 
--- local streamreader      = utilities.streams -- faster on big files
+----- streamreader      = utilities.streams -- faster on big files
 local streamreader      = utilities.files   -- faster on identify
 
 readers.streamreader    = streamreader
@@ -129,6 +142,8 @@ end
 
 local tableversion      = 0.001
 local privateoffset     = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
+
+readers.tableversion    = tableversion
 
 local reportedskipped   = { }
 
@@ -585,7 +600,7 @@ local languages = {
     },
 }
 
-local standardromanencoding = { [0] = -- hijacked from wikipedia
+local standardromanencoding = { [0] = -- taken from wikipedia
     "notdef", ".null", "nonmarkingreturn", "space", "exclam", "quotedbl",
     "numbersign", "dollar", "percent", "ampersand", "quotesingle", "parenleft",
     "parenright", "asterisk", "plus", "comma", "hyphen", "period", "slash",
@@ -898,11 +913,10 @@ readers.head = function(f,fontdata)
             glyphformat      = readshort(f),
         }
         fontdata.fontheader = fontheader
-        fontdata.nofglyphs  = 0
     else
         fontdata.fontheader = { }
-        fontdata.nofglyphs  = 0
     end
+    fontdata.nofglyphs  = 0
 end
 
 -- This table is a rather simple one. No treatment of values is needed here. Most
@@ -940,9 +954,8 @@ readers.hhea = function(f,fontdata,specification)
     end
 end
 
--- We probably never need all these variables, but we do need the nofglyphs
--- when loading other tables. Again we use the microsoft names but see no reason
--- to have "max" in each name.
+-- We probably never need all these variables, but we do need the nofglyphs when loading other
+-- tables. Again we use the microsoft names but see no reason to have "max" in each name.
 
 -- fontdata.maximumprofile can be bad
 
@@ -988,8 +1001,8 @@ readers.maxp = function(f,fontdata,specification)
     end
 end
 
--- Here we filter the (advance) widths (that can be different from the boundingbox
--- width of course).
+-- Here we filter the (advance) widths (that can be different from the boundingbox width of
+-- course).
 
 readers.hmtx = function(f,fontdata,specification)
     if specification.glyphs then
@@ -1028,10 +1041,9 @@ readers.hmtx = function(f,fontdata,specification)
     end
 end
 
--- The post table relates to postscript (printing) but has some relevant
--- properties for other usage as well. We just use the names from the microsoft
--- specification. The version 2.0 description is somewhat fuzzy but it is a
--- hybrid with overloads.
+-- The post table relates to postscript (printing) but has some relevant properties for other
+-- usage as well. We just use the names from the microsoft specification. The version 2.0
+-- description is somewhat fuzzy but it is a hybrid with overloads.
 
 readers.post = function(f,fontdata,specification)
     local datatable = fontdata.tables.post
@@ -1103,9 +1115,10 @@ readers.cff = function(f,fontdata,specification)
     end
 end
 
--- Not all cmaps make sense .. e.g. dfont is obsolete and probably more are not
--- relevant. Let's see what we run into. There is some weird calculation going
--- on here because we offset in a table being a blob of memory or file.
+-- Not all cmaps make sense .. e.g. dfont is obsolete and probably more are not relevant. Let's see
+-- what we run into. There is some weird calculation going on here because we offset in a table
+-- being a blob of memory or file. Anyway, I can't stand lunatic formats like this esp when there
+-- is no real gain.
 
 local formatreaders = { }
 
@@ -1129,7 +1142,7 @@ formatreaders[4] = function(f,fontdata,offset)
     for i=1,nofsegments do
         endchars[i] = readushort(f)
     end
-    local reserved = readushort(f)
+    local reserved = readushort(f) -- 0
     for i=1,nofsegments do
         startchars[i] = readushort(f)
     end
@@ -1153,31 +1166,34 @@ formatreaders[4] = function(f,fontdata,offset)
         if startchar == 0xFFFF and endchar == 0xFFFF then
             break
         elseif offset == 0 then
-            for char=startchar,endchar do
-                local unicode = char
-                local index   = mod(char + delta,65536)
+            for unicode=startchar,endchar do
+                index = mod(unicode + delta,65536)
                 if index and index > 0 then
                     local glyph = glyphs[index]
-                    if not glyph.unicode then
-                        glyph.unicode = unicode
+                    if glyph then
+                        if not glyph.unicode then
+                            glyph.unicode = unicode
+                        end
+                        mapping[index] = unicode
+                     -- report("case 1: %C %04i %s",unicode,index,glyphs[index].name)
                     end
-                    mapping[index] = unicode
-                 -- report("%C %04i %05i %s",unicode,index,glyphs[index].name)
                 end
             end
         else
             local shift = (segment-nofsegments+offset/2) - startchar
-            for char=startchar,endchar do
-                local unicode = mod(char + delta,65536)
-                local slot    = shift + char
-                local index   = indices[slot]
+            for unicode=startchar,endchar do
+                local slot  = shift + unicode
+                local index = indices[slot]
                 if index and index > 0 then
+                    index = mod(index + delta,65536)
                     local glyph = glyphs[index]
-                    if not glyph.unicode then
-                        glyph.unicode = unicode
+                    if glyph then
+                        if not glyph.unicode then
+                            glyph.unicode = unicode
+                        end
+                        mapping[index] = unicode
+                     -- report("case 2: %C %04i %s",unicode,index,glyphs[index].name)
                     end
-                    mapping[index] = unicode
-                 -- report("%C %04i %05i %s",unicode,index,glyphs[index].name)
                 end
             end
         end
@@ -1349,10 +1365,10 @@ function readers.cmap(f,fontdata,specification)
          -- checkcmap(f,fontdata,records,0, 3, 4)
          -- checkcmap(f,fontdata,records,1, 0, 6)
             checkcmap(f,fontdata,records,0, 5,14)
---             variantcid = records[0] and records[0][5]
---             if variantcid then
---                 formatreaders[14](f,fontdata,offset,variantcid[14])
---             end
+         -- variantcid = records[0] and records[0][5]
+         -- if variantcid then
+         --     formatreaders[14](f,fontdata,offset,variantcid[14])
+         -- end
             --
             fontdata.cidmaps = {
                 version   = version,
@@ -1365,11 +1381,9 @@ function readers.cmap(f,fontdata,specification)
     end
 end
 
--- The glyf table depends on the loca table. We have one entry to much
--- in the locations table (the last one is a dummy) because we need to
--- calculate the size of a glyph blob from the delta, although we not
--- need it in our usage (yet). We can remove the locations table when
--- we're done (todo: cleanup finalizer).
+-- The glyf table depends on the loca table. We have one entry to much in the locations table (the
+-- last one is a dummy) because we need to calculate the size of a glyph blob from the delta,
+-- although we not need it in our usage (yet). We can remove the locations table when we're done.
 
 function readers.loca(f,fontdata,specification)
     if specification.glyphs then
@@ -1383,9 +1397,8 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
     end
 end
 
--- Here we have a table that we really need for later processing although a more
--- advanced gpos table can also be available. Todo: we need a 'fake' lookup for
--- this (analogue to ff).
+-- Here we have a table that we really need for later processing although a more advanced gpos table
+-- can also be available. Todo: we need a 'fake' lookup for this (analogue to ff).
 
 function readers.kern(f,fontdata,specification)
     if specification.kerns then
@@ -1514,7 +1527,7 @@ local function packoutlines(data,makesequence)
                 for i=1,#segments do
                     local segment = segments[i]
                     local h = concat(segment," ")
-                    if hash[h] > 1 then
+                    if hash[h] > 1 then -- minimal one shared in order to hash
                         local idx = reverse[h]
                         if not idx then
                             last = last + 1
@@ -1866,39 +1879,32 @@ function readers.loadfont(filename,n)
         --
         return {
             tableversion  = tableversion,
-         -- cache_uuid    = false, -- only when cached
-         -- cache_version = false, -- only when cached
+            creator       = "context mkiv",
             size          = fontdata.filesize,
             time          = fontdata.filetime,
-         -- warnings      = { },
             glyphs        = fontdata.glyphs,
             descriptions  = fontdata.descriptions,
             format        = fontdata.format,
             goodies       = { },
-         -- lookups       = { },
             metadata      = getinfo(fontdata,n),
             properties    = {
                 hasitalics = fontdata.hasitalics or false,
             },
             resources     = {
-             -- anchor_to_lookup = fontdata.anchor_to_lookup or { },
-                creator          = "context mkiv",
-                duplicates       = { }, -- todo
-                features         = fontdata.features,
-                filename         = fontdata.filename,
-             -- lookup_to_anchor = fontdata.lookup_to_anchor or { },
-                sublookups       = fontdata.sublookups,
-                subtables        = fontdata.subtables,
-             -- lookuptags       = { }, -- will be metatable using offsets: gsub-1, gpos-1 etc
-                lookuptypes      = fontdata.lookuptypes or { },
-                marks            = fontdata.marks or { },
-                markclasses      = fontdata.markclasses or { },
-                marksets         = fontdata.marksets or { },
-                private          = privateoffset,
-                sequences        = fontdata.sequences,
-                variants         = fontdata.variants, -- variant -> unicode -> glyph
-                version          = getname(fontdata,"version"),
-                cidinfo          = fontdata.cidinfo,
+                duplicates    = { }, -- todo
+                features      = fontdata.features,
+                filename      = fontdata.filename,
+                sublookups    = fontdata.sublookups,
+                subtables     = fontdata.subtables,
+                marks         = fontdata.marks or { },
+                markclasses   = fontdata.markclasses or { },
+                marksets      = fontdata.marksets or { },
+                private       = privateoffset,
+                sequences     = fontdata.sequences,
+                variants      = fontdata.variants, -- variant -> unicode -> glyph
+                version       = getname(fontdata,"version"),
+                cidinfo       = fontdata.cidinfo,
+                mathconstants = fontdata.mathconstants,
             },
         }
     end
@@ -1953,6 +1959,10 @@ end
 
 function readers.expand(fontdata)
     report("the %a helper is not yet implemented","unpack")
+end
+
+function readers.compact(fontdata)
+    report("the %a helper is not yet implemented","compact")
 end
 
 --

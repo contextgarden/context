@@ -104,13 +104,10 @@ end
 local savedluaerror = nil
 
 local function errorreporter(luaerror)
-    if luaerror then
-        logs.enable("lua error") --
-        return logs.reporter("lua error")
-    else
-        logs.enable("tex error")
-        return logs.reporter("tex error")
-    end
+    local category = luaerror and "lua error" or "tex error"
+    local report = logs.reporter(category)
+    logs.enable(category)
+    return report
 end
 
 function tracers.showlines(filename,linenumber,offset,luaerrorline)
@@ -185,7 +182,6 @@ local function processerror(offset)
     local lasttexerror = status.lasterrorstring or "?"
     local lastluaerror = status.lastluaerrorstring or lasttexerror
     local luaerrorline = match(lastluaerror,[[lua%]?:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
-    local report       = errorreporter(luaerrorline)
     tracers.printerror {
         filename     = filename,
         linenumber   = linenumber,
@@ -213,10 +209,10 @@ function tracers.printerror(specification)
     else
         report_nl()
         if luaerrorline then
-            report("error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
+            report("lua error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
          -- report("error on line %s in file %s:\n\n%s",linenumber,filename,lasttexerror)
         else
-            report("error on line %s in file %s: %s",linenumber,filename,lasttexerror)
+            report("tex error on line %s in file %s: %s",linenumber,filename,lasttexerror)
             if tex.show_context then
                 report_nl()
                 tex.show_context()

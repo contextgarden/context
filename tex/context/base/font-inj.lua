@@ -146,7 +146,8 @@ end
 function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext) -- hm: nuts or nodes
     local dx =  factor*(exit[1]-entry[1])
     local dy = -factor*(exit[2]-entry[2])
-    local ws, wn = tfmstart.width, tfmnext.width
+    local ws = tfmstart.width
+    local wn = tfmnext.width
     nofregisteredcursives = nofregisteredcursives + 1
     if rlmode < 0 then
         dx = -(dx + wn)

@@ -10,7 +10,7 @@ local getargument = environment.getargument
 local setargument = environment.setargument
 local givenfiles  = environment.files
 
-local otfversion  = 2.815
+local otfversion  = 2.816
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -23,7 +23,8 @@ local helpinfo = [[
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="save"><short>save open type font in raw table</short></flag>
+    <flag name="save"><short>save open type font in raw table (ff format)</short></flag>
+    <flag name="convert"><short>save open type font in raw table (ctx format)</short></flag>
     <flag name="unpack"><short>save a tma file in a more readable format</short></flag>
    </subcategory>
    <subcategory>
@@ -42,6 +43,7 @@ local helpinfo = [[
     <flag name="info"><short>give more details</short></flag>
     <flag name="trackers" value="list"><short>enable trackers</short></flag>
     <flag name="statistics"><short>some info about the database</short></flag>
+    <flag name="names"><short>uise name instead of unicodes</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -69,6 +71,11 @@ local helpinfo = [[
     <example><command>mtxrun --script font --list --file --all somename</command></example>
     <example><command>mtxrun --script font --list --file --pattern=*somename*</command></example>
    </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script font --save --texgyrepagella-regular.otf</command></example>
+    <example><command>mtxrun --script font --convert --texgyrepagella-regular.otf</command></example>
+    <example><command>mtxrun --script font --convert --names --texgyrepagella-regular.otf</command></example>
+   </subcategory>
   </category>
  </examples>
 </application>
@@ -86,17 +93,31 @@ local report = application.report
 
 if not fontloader then fontloader = fontforge end
 
-dofile(resolvers.findfile("font-otr.lua","tex"))
-dofile(resolvers.findfile("font-cff.lua","tex"))
-dofile(resolvers.findfile("font-ttf.lua","tex"))
-dofile(resolvers.findfile("font-tmp.lua","tex"))
-------(resolvers.findfile("font-dsp.lua","tex"))
-------(resolvers.findfile("font-off.lua","tex"))
+local function loadmodule(filename)
+    local fullname = resolvers.findfile(filename,"tex")
+    if fullname and fullname ~= "" then
+        dofile(fullname)
+    end
+end
 
-dofile(resolvers.findfile("font-otp.lua","tex")) -- we need to unpack the font for analysis
-dofile(resolvers.findfile("font-syn.lua","tex"))
-dofile(resolvers.findfile("font-trt.lua","tex"))
-dofile(resolvers.findfile("font-mis.lua","tex"))
+-- old loader code
+
+loadmodule("font-otp.lua") -- we need to unpack the font for analysis
+
+-- new loader code
+
+loadmodule("font-otr.lua")
+loadmodule("font-cff.lua")
+loadmodule("font-ttf.lua")
+loadmodule("font-tmp.lua")
+loadmodule("font-dsp.lua") -- not yet in distribution
+loadmodule("font-oup.lua") -- not yet in distribution
+
+-- extra code
+
+loadmodule("font-syn.lua")
+loadmodule("font-trt.lua")
+loadmodule("font-mis.lua")
 
 scripts       = scripts       or { }
 scripts.fonts = scripts.fonts or { }
@@ -403,13 +424,17 @@ end
 function scripts.fonts.unpack()
     local name = file.removesuffix(file.basename(givenfiles[1] or ""))
     if name and name ~= "" then
-        local cache = containers.define("fonts", "otf", otfversion, true)
+        local cache = containers.define("fonts", getargument("cache") or "otf", otfversion, true) -- cache is temp
         local cleanname = containers.cleanname(name)
         local data = containers.read(cache,cleanname)
         if data then
             local savename = file.addsuffix(cleanname .. "-unpacked","tma")
             report("fontsave, saving data in %s",savename)
-            fonts.handlers.otf.enhancers.unpack(data)
+            if data.creator == "context mkiv" then
+                fonts.handlers.otf.readers.unpack(data)
+            else
+                fonts.handlers.otf.enhancers.unpack(data)
+            end
             io.savedata(savename,table.serialize(data,true))
         else
             report("unknown file %a",name)
@@ -462,6 +487,36 @@ function scripts.fonts.save()
     end
 end
 
+function scripts.fonts.convert() -- new save
+    local name = givenfiles[1] or ""
+    local sub  = givenfiles[2] or ""
+    if name and name ~= "" then
+        local filename = resolvers.findfile(name) -- maybe also search for opentype
+        if filename and filename ~= "" then
+            local suffix = string.lower(file.suffix(filename))
+            if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' then
+                local data = fonts.handlers.otf.readers.loadfont(filename,sub)
+                if data then
+                    fonts.handlers.otf.readers.compact(data)
+                    fonts.handlers.otf.readers.rehash(data,getargument("names") and "names" or "unicodes")
+                    local savename = file.replacesuffix(string.lower(data.metadata.fullname or filename),"lua")
+                    table.save(savename,data)
+                    report("font: %a saved as %a",filename,savename)
+                else
+                    report("font: %a not loaded",filename)
+                end
+            else
+                report("font: %a not saved",filename)
+            end
+        else
+            report("font: %a not found",name)
+        end
+    else
+        report("font: no name given")
+    end
+end
+
+
 if getargument("names") then
     setargument("reload",true)
     setargument("simple",true)
@@ -473,6 +528,8 @@ elseif getargument("reload") then
     scripts.fonts.reload()
 elseif getargument("save") then
     scripts.fonts.save()
+elseif getargument("convert") then
+    scripts.fonts.convert()
 elseif getargument("justload") then
     scripts.fonts.justload()
 elseif getargument("unpack") then
