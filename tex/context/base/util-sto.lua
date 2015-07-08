@@ -113,22 +113,16 @@ local f_index = {
     ["number"] = f_number,
 }
 
-local t_index = {
-    ["empty"]  = { __index = f_empty  },
-    ["self"]   = { __index = f_self   },
-    ["table"]  = { __index = f_table  },
-    ["number"] = { __index = f_number },
-}
-
 function table.setmetatableindex(t,f)
     if type(t) ~= "table" then
         f, t = t, { }
     end
     local m = getmetatable(t)
+    local i = f_index[f] or f
     if m then
-        m.__index = f_index[f] or f
+        m.__index = i
     else
-        setmetatable(t,t_index[f] or { __index = f })
+        setmetatable(t,{ __index = i })
     end
     return t
 end
@@ -137,19 +131,16 @@ local f_index = {
     ["ignore"] = f_ignore,
 }
 
-local t_index = {
-    ["ignore"] = { __newindex = f_ignore },
-}
-
 function table.setmetatablenewindex(t,f)
     if type(t) ~= "table" then
         f, t = t, { }
     end
     local m = getmetatable(t)
+    local i = f_index[f] or f
     if m then
-        m.__newindex = f_index[f] or f
+        m.__newindex = i
     else
-        setmetatable(t,t_index[f] or { __newindex = f })
+        setmetatable(t,{ __newindex = i })
     end
     return t
 end

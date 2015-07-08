@@ -6902,7 +6902,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sto"] = package.loaded["util-sto"] or true
 
--- original size: 4172, stripped down to: 2953
+-- original size: 3926, stripped down to: 2742
 
 if not modules then modules={} end modules ['util-sto']={
   version=1.001,
@@ -6980,39 +6980,32 @@ local f_index={
   ["table"]=f_table,
   ["number"]=f_number,
 }
-local t_index={
-  ["empty"]={ __index=f_empty },
-  ["self"]={ __index=f_self  },
-  ["table"]={ __index=f_table },
-  ["number"]={ __index=f_number },
-}
 function table.setmetatableindex(t,f)
   if type(t)~="table" then
     f,t=t,{}
   end
   local m=getmetatable(t)
+  local i=f_index[f] or f
   if m then
-    m.__index=f_index[f] or f
+    m.__index=i
   else
-    setmetatable(t,t_index[f] or { __index=f })
+    setmetatable(t,{ __index=i })
   end
   return t
 end
 local f_index={
   ["ignore"]=f_ignore,
 }
-local t_index={
-  ["ignore"]={ __newindex=f_ignore },
-}
 function table.setmetatablenewindex(t,f)
   if type(t)~="table" then
     f,t=t,{}
   end
   local m=getmetatable(t)
+  local i=f_index[f] or f
   if m then
-    m.__newindex=f_index[f] or f
+    m.__newindex=i
   else
-    setmetatable(t,t_index[f] or { __newindex=f })
+    setmetatable(t,{ __newindex=i })
   end
   return t
 end
@@ -18336,8 +18329,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 757511
--- stripped bytes    : 272628
+-- original bytes    : 757265
+-- stripped bytes    : 272593
 
 -- end library merge
 

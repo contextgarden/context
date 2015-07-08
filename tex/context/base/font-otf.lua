@@ -21,7 +21,7 @@ if not modules then modules = { } end modules ['font-otf'] = {
 -- more checking against low level calls of functions
 
 local utfbyte = utf.byte
-local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
+local gmatch, gsub, find, match, lower, strip = string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local abs = math.abs
 local reversed, concat, insert, remove, sortedkeys = table.reversed, table.concat, table.insert, table.remove, table.sortedkeys
@@ -58,7 +58,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.816 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 2.817 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -296,7 +296,7 @@ local ordered_enhancers = {
 
     "expand lookups", -- a temp hack awaiting the lua loader
 
-    "check extra features", -- after metadata and duplicates
+--     "check extra features", -- after metadata and duplicates
 
     "cleanup tables",
 
@@ -600,6 +600,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
             applyruntimefixes(filename,data)
         end
         enhance("add dimensions",data,filename,nil,false)
+enhance("check extra features",data,filename)
         if trace_sequences then
             showfeatureorder(data,filename)
         end
@@ -791,7 +792,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                 end
                                 if not unicode or unicode == -1 then -- or unicode >= criterium then
                                     if not name then
-                                        name = format("u%06X.ctx",private)
+                                        name = formatters["u%06X.ctx"](private)
                                     end
                                     unicode = private
                                     unicodes[name] = private
@@ -814,7 +815,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                  --     end
                                  -- end
                                     if not name then
-                                        name = format("u%06X.ctx",unicode)
+                                        name = formatters["u%06X.ctx"](unicode)
                                     end
                                     unicodes[name] = unicode
                                     nofunicodes = nofunicodes + 1
@@ -927,7 +928,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     end
                     indices[index] = unicode
                  -- if not name then
-                 --     name = format("u%06X",unicode) -- u%06X.ctx
+                 --     name = formatters["u%06X"](unicode) -- u%06X.ctx
                  -- end
                     descriptions[unicode] = {
                      -- width       = glyph.width,
@@ -1100,7 +1101,7 @@ actions["add duplicates"] = function(data,filename,raw)
                     end
                     if u > 0 then -- and
                         local duplicate = table.copy(description) -- else packing problem
-                        duplicate.comment = format("copy of U+%05X", unicode)
+                        duplicate.comment = formatters["copy of %U"](unicode)
                         descriptions[u] = duplicate
                      -- validduplicates[#validduplicates+1] = u
                         if trace_loading then
@@ -2897,3 +2898,33 @@ function otf.scriptandlanguage(tfmdata,attr)
     local properties = tfmdata.properties
     return properties.script or "dflt", properties.language or "dflt"
 end
+
+-- a little bit of abstraction
+
+local function justset(coverage,unicode,replacement)
+    coverage[unicode] = replacement
+end
+
+otf.coverup = {
+    stepkey = "subtables",
+    actions = {
+        substitution = justset,
+        alternate    = justset,
+        multiple     = justset,
+        ligature     = justset,
+    },
+    register = function(coverage,descriptions,resources,feature,lookuptype,n)
+        local name = formatters["ctx_%s_%s"](feature,n)
+        resources.lookuptypes[name] = lookuptype
+        for u, c in next, coverage do
+            local description = descriptions[u]
+            local slookups = description.slookups
+            if slookups then
+                slookups[name] = c
+            else
+                description.slookups = { [name] = c }
+            end
+        end
+        return name
+    end
+}

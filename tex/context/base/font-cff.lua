@@ -604,7 +604,7 @@ do
         end
     end
 
-    -- All these indirect calls makt this run slower but it's cleaner this way
+    -- All these indirect calls make this run slower but it's cleaner this way
     -- and we cache the result. As we moved the boundingbox code inline we gain
     -- some back.
 
@@ -671,7 +671,6 @@ do
                     showvalue("width",width)
                 end
             end
-            top = top - 1
         elseif not width then
             width = true
         end
@@ -692,7 +691,6 @@ do
                     showvalue("width",width)
                 end
             end
-            top = top - 1
         elseif not width then
             width = true
         end
@@ -712,7 +710,6 @@ do
                     showvalue("width",width)
                 end
             end
-            top = top - 1
         elseif not width then
             width = true
         end
@@ -1311,6 +1308,7 @@ do
                 width = nominalwidth + width
             end
             --
+         -- trace_charstrings = index == 3078 -- todo: make tracker
             local glyph = glyphs[index] -- can be autodefined in otr
             if not glyph then
                 glyphs[index] = {

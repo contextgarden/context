@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/07/15 21:43:15
+-- merge date  : 07/08/15 23:50:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -7080,7 +7080,7 @@ if not modules then modules={} end modules ['font-otf']={
   license="see context related readme files"
 }
 local utfbyte=utf.byte
-local format,gmatch,gsub,find,match,lower,strip=string.format,string.gmatch,string.gsub,string.find,string.match,string.lower,string.strip
+local gmatch,gsub,find,match,lower,strip=string.gmatch,string.gsub,string.find,string.match,string.lower,string.strip
 local type,next,tonumber,tostring=type,next,tonumber,tostring
 local abs=math.abs
 local reversed,concat,insert,remove,sortedkeys=table.reversed,table.concat,table.insert,table.remove,table.sortedkeys
@@ -7110,7 +7110,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.816 
+otf.version=2.817 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -7291,7 +7291,6 @@ local ordered_enhancers={
   "check encoding",
   "add duplicates",
   "expand lookups",
-  "check extra features",
   "cleanup tables",
   "compact lookups",
   "purge names",
@@ -7562,6 +7561,7 @@ function otf.load(filename,sub,featurefile)
       applyruntimefixes(filename,data)
     end
     enhance("add dimensions",data,filename,nil,false)
+enhance("check extra features",data,filename)
     if trace_sequences then
       showfeatureorder(data,filename)
     end
@@ -7722,7 +7722,7 @@ actions["prepare glyphs"]=function(data,filename,raw)
                 end
                 if not unicode or unicode==-1 then 
                   if not name then
-                    name=format("u%06X.ctx",private)
+                    name=formatters["u%06X.ctx"](private)
                   end
                   unicode=private
                   unicodes[name]=private
@@ -7733,7 +7733,7 @@ actions["prepare glyphs"]=function(data,filename,raw)
                   nofnames=nofnames+1
                 else
                   if not name then
-                    name=format("u%06X.ctx",unicode)
+                    name=formatters["u%06X.ctx"](unicode)
                   end
                   unicodes[name]=unicode
                   nofunicodes=nofunicodes+1
@@ -7951,7 +7951,7 @@ actions["add duplicates"]=function(data,filename,raw)
           end
           if u>0 then 
             local duplicate=table.copy(description) 
-            duplicate.comment=format("copy of U+%05X",unicode)
+            duplicate.comment=formatters["copy of %U"](unicode)
             descriptions[u]=duplicate
             if trace_loading then
               report_otf("duplicating %U to %U with index %H (%s kerns)",unicode,u,description.index,n)
@@ -9402,6 +9402,32 @@ function otf.scriptandlanguage(tfmdata,attr)
   local properties=tfmdata.properties
   return properties.script or "dflt",properties.language or "dflt"
 end
+local function justset(coverage,unicode,replacement)
+  coverage[unicode]=replacement
+end
+otf.coverup={
+  stepkey="subtables",
+  actions={
+    substitution=justset,
+    alternate=justset,
+    multiple=justset,
+    ligature=justset,
+  },
+  register=function(coverage,descriptions,resources,feature,lookuptype,n)
+    local name=formatters["ctx_%s_%s"](feature,n)
+    resources.lookuptypes[name]=lookuptype
+    for u,c in next,coverage do
+      local description=descriptions[u]
+      local slookups=description.slookups
+      if slookups then
+        slookups[name]=c
+      else
+        description.slookups={ [name]=c }
+      end
+    end
+    return name
+  end
+}
 
 end -- closure
 

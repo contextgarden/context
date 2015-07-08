@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-tmp'] = {
     license   = "see context related readme files"
 }
 
--- There is a complet efeature loader but it needs a bit of testing, first so this
+-- There is a complete feature loader but it needs a bit of testing, first so this
 -- one does design size only (as needed for identifying).
 
 local next, type = next, type

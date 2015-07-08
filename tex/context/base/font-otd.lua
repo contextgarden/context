@@ -249,23 +249,11 @@ function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in specia
         }
         rl[attr] = ra
         local sequences = tfmdata.resources.sequences
-     -- setmetatableindex(ra, function(t,k)
-     --     if type(k) == "number" then
-     --         local v = initialize(sequences[k],script,language,s_enabled,a_enabled,font,attr,dynamic)
-     --         t[k] = v or false
-     --         return v
-     --     end
-     -- end)
---         for s=1,#sequences do
---             local v = initialize(sequences[s],script,language,s_enabled,a_enabled,font,attr,dynamic)
---             if v then
---                 ra[#ra+1] = v
---             end
---         end
-        for s=1,#sequences do
-            initialize(sequences[s],script,language,s_enabled,a_enabled,font,attr,dynamic,ra)
+        if sequences then
+            for s=1,#sequences do
+                initialize(sequences[s],script,language,s_enabled,a_enabled,font,attr,dynamic,ra)
+            end
         end
--- table.save((jit and "tmc-" or "tma-")..font..".log",ra) -- bug in jit
     end
     return ra
 

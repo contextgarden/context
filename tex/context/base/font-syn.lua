@@ -313,6 +313,7 @@ but to keep the overview, we define them here.</p>
 filters.otf = fonts.handlers.otf.readers.getinfo
 filters.ttf = filters.otf
 filters.ttc = filters.otf
+-- filters.ttx = filters.otf
 
 local function normalize(t)
     local boundingbox = t.fontbbox
@@ -1001,6 +1002,7 @@ local function analyzefiles(olddata)
             if trace_names then
                 report_names("identifying %s font %a",suffix,completename)
             end
+            -- needs checking with ttc / ttx : date not updated ?
             local result = nil
             local modification = lfs.attributes(completename,"modification")
             if olddata and modification and modification > 0 then
@@ -1013,8 +1015,10 @@ local function analyzefiles(olddata)
                             result = oldspecification
                             specifications[#specifications + 1] = result
                         else
+                            -- ??
                         end
                     else
+                         -- ??
                     end
                 elseif oldrejected[storedname] == modification then
                     result = false
@@ -1026,7 +1030,7 @@ local function analyzefiles(olddata)
                 if result then
                     if #result > 0 then
                         for r=1,#result do
-                            local ok = check_name(data,result[r],storedname,modification,suffix,r-1) -- subfonts start at zero
+                            local ok = check_name(data,result[r],storedname,modification,suffix,r) -- subfonts start at zero
                          -- if not ok then
                          --     nofskipped = nofskipped + 1
                          -- end

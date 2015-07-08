@@ -94,14 +94,14 @@ local direct              = node.direct
 
 local fastcopy            = table.fastcopy
 
-if type(direct) ~= "table" then
-    return
-elseif gonuts then
-    statistics.register("running in nuts mode", function() return "yes" end)
-else
-    statistics.register("running in nuts mode", function() return "no" end)
-    return
-end
+-- if type(direct) ~= "table" then
+--     return
+-- elseif gonuts then
+--     statistics.register("running in nuts mode", function() return "yes" end)
+-- else
+--     statistics.register("running in nuts mode", function() return "no" end)
+--     return
+-- end
 
 local texget              = tex.get
 

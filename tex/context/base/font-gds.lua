@@ -611,16 +611,20 @@ local function initialize(tfmdata)
                             local hfactor     = parameters.hfactor
                             for k, v in next, corrections do
                                 local c = characters[k]
-                                if v > -1 and v < 1 then
-                                    v = v * quad
+                                if c then
+                                    if v > -1 and v < 1 then
+                                        v = v * quad
+                                    else
+                                        v = v * hfactor
+                                    end
+                                    c.italic_correction = v -- for context
+                                    if mathitalics then
+                                        c.italic = v -- for tex
+                                    else
+                                        c.italic = nil
+                                    end
                                 else
-                                    v = v * hfactor
-                                end
-                                c.italic_correction = v -- for context
-                                if mathitalics then
-                                    c.italic = v -- for tex
-                                else
-                                    c.italic = nil
+                                    report_goodies("invalid mathitalics entry %U for font %a",k,properties.name)
                                 end
                             end
                         end)

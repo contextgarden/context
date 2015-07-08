@@ -297,17 +297,19 @@ local privatefeatures = {
 }
 
 local function checkedscript(tfmdata,resources,features)
-    local latn = false
+    local latn   = false
     local script = false
-    for g, list in next, resources.features do
-        for f, scripts in next, list do
-            if privatefeatures[f] then
-                -- skip
-            elseif scripts.dflt then
-                script = "dflt"
-                break
-            elseif scripts.latn then
-                latn = true
+    if resources.features then
+        for g, list in next, resources.features do
+            for f, scripts in next, list do
+                if privatefeatures[f] then
+                    -- skip
+                elseif scripts.dflt then
+                    script = "dflt"
+                    break
+                elseif scripts.latn then
+                    latn = true
+                end
             end
         end
     end
