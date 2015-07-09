@@ -343,7 +343,24 @@
      \getparameters[\??mathstylealternate][#1]%
    \fi}
 
-\unexpanded\def\mathaltcal{\math_set_font_alternate{cal}\cal} % ss01 in xits
+% if there were many features we could have a feature pass over math nodes but it makes no
+% sense now so we have commands to deal with it
+
+\unexpanded\def\mathaltcal      {\math_set_font_alternate{cal}\cal}     % set via goody file
+%unexpanded\def\mathslashedzero {\math_set_font_alternate{zero}0}       % set via goody file or automatic
+\unexpanded\def\mathdotless     {\math_set_font_alternate{dotless}}     % set via goody file or automatic
+\unexpanded\def\mathdotlessi    {\mathdotless i}
+\unexpanded\def\mathdotlessj    {\mathdotless j}
+
+%let\textslashedzero\slashedzero \unexpanded\def\autoslashedzero{\mathortext\mathslashedzero\textslashedzero}
+\let\textdotlessi   \dotlessi    \unexpanded\def\autodotlessi   {\mathortext\mathdotlessi   \textdotlessi}
+\let\textdotlessj   \dotlessj    \unexpanded\def\autodotlessj   {\mathortext\mathdotlessj   \textdotlessj}
+
+\appendtoks
+    %let\slashedzero\autoslashedzero
+    \let\dotlessi   \autodotlessi
+    \let\dotlessj   \autodotlessj
+\to \everymathematics
 
 \let\setmathattribute         \math_set_attribute
 \let\setmathalphabet          \math_set_alphabet
@@ -351,7 +368,7 @@
 \let\setmathfontalternate     \math_set_font_alternate
 \let\setmathfontstylealternate\math_set_font_style_alternate
 
-\let\mathalternate            \math_set_font_alternate % obsolete
+\let\mathalternate            \math_set_font_alternate
 
 \unexpanded\def\mathupright   {\math_set_attribute\s!regular\s!tf\math_set_font_style_alternate\s!tf}
 \unexpanded\def\mathdefault   {\math_set_attribute\s!regular\s!it\math_set_font_style_alternate\s!it}

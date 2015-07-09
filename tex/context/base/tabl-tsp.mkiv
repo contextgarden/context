@@ -257,6 +257,8 @@
    \global\setfalse\usesamefloatnumber % new, prevent next increment
    \global\setfalse\splitfloatfirstdone} % we can use this one for tests
 
+\newconditional\tabl_split_forced_page
+
 \def\tabl_split_loop_body
   {\ifinsidecolumns
      % brrr, assumes empty columns
@@ -303,8 +305,22 @@
    \splittopskip\zeropoint
    \doloop % inner loop
      {\setbox\scratchbox\vsplit\tsplitcontent to \onepoint % \lineheight
-      \setbox\scratchbox\vbox{\unvbox\scratchbox}%
-      \ifdim\dimexpr\d_tabl_split_available-\htdp\scratchbox-\htdp\tsplitresult\relax>\zeropoint
+      \setbox\scratchbox\vbox
+        {\unvbox\scratchbox
+         \setbox\scratchbox\vbox
+           {\splitdiscards
+            \ifnum\lastpenalty>-\plustenthousand\else
+               % so that \bTR[before=\page] works
+               \global\settrue\tabl_split_forced_page
+            \fi}}%
+      \ifconditional\tabl_split_forced_page
+        \global\setfalse\tabl_split_forced_page
+        \setbox\tsplitresult\vbox
+          {\unvbox\tsplitresult
+           \tsplitinbetween
+           \unvbox\scratchbox}%
+        \exitloop
+      \else\ifdim\dimexpr\d_tabl_split_available-\htdp\scratchbox-\htdp\tsplitresult\relax>\zeropoint
         \setbox\tsplitresult\vbox
           {\unvbox\tsplitresult
            \tsplitinbetween
@@ -328,7 +344,7 @@
            \tsplitinbetween
            \ifvoid\tsplitcontent\else\unvbox\tsplitcontent\fi}%
         \exitloop
-      \fi\fi\fi
+      \fi\fi\fi\fi
       \setfalse\c_tabl_split_head
       \setfalse\c_tabl_split_full}%
    \postprocesstsplit

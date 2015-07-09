@@ -176,6 +176,8 @@ return {
         --
         "inlineordisplaymath","indisplaymath","forcedisplaymath","startforceddisplaymath","stopforceddisplaymath","reqno",
         --
+        "mathortext",
+        --
         "htdp",
         "unvoidbox",
         "hfilll", "vfilll",

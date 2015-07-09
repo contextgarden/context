@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/09/15 15:23:36
+-- merge date  : 07/10/15 00:05:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -9412,10 +9412,15 @@ otf.coverup={
     alternate=justset,
     multiple=justset,
     ligature=justset,
+    kern=justset,
   },
-  register=function(coverage,descriptions,resources,feature,lookuptype,n)
+  register=function(coverage,lookuptype,format,feature,n,descriptions,resources)
     local name=formatters["ctx_%s_%s"](feature,n)
-    resources.lookuptypes[name]=lookuptype
+    if lookuptype=="kern" then
+      resources.lookuptypes[name]="position"
+    else
+      resources.lookuptypes[name]=lookuptype
+    end
     for u,c in next,coverage do
       local description=descriptions[u]
       local slookups=description.slookups
@@ -9428,6 +9433,52 @@ otf.coverup={
     return name
   end
 }
+local function getgsub(tfmdata,k,kind)
+  local description=tfmdata.descriptions[k]
+  if description then
+    local slookups=description.slookups 
+    if slookups then
+      local shared=tfmdata.shared
+      local rawdata=shared and shared.rawdata
+      if rawdata then
+        local lookuptypes=rawdata.resources.lookuptypes
+        if lookuptypes then
+          local properties=tfmdata.properties
+          local validlookups,lookuplist=otf.collectlookups(rawdata,kind,properties.script,properties.language)
+          if validlookups then
+            for l=1,#lookuplist do
+              local lookup=lookuplist[l]
+              local found=slookups[lookup]
+              if found then
+                return found,lookuptypes[lookup]
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end
+otf.getgsub=getgsub 
+function otf.getsubstitution(tfmdata,k,kind,value)
+  local found,kind=getgsub(tfmdata,k,kind)
+  if not found then
+  elseif kind=="substitution" then
+    return found
+  elseif kind=="alternate" then
+    local choice=tonumber(value) or 1 
+    return found[choice] or found[1] or k
+  end
+  return k
+end
+otf.getalternate=otf.getsubstitution
+function otf.getmultiple(tfmdata,k,kind)
+  local found,kind=getgsub(tfmdata,k,kind)
+  if found and kind=="multiple" then
+    return found
+  end
+  return { k }
+end
 
 end -- closure
 
@@ -9958,8 +10009,8 @@ local function featuresinitializer(tfmdata,value)
       local collectlookups=otf.collectlookups
       local rawdata=tfmdata.shared.rawdata
       local properties=tfmdata.properties
-      local script=properties.script
-      local language=properties.language
+      local script=properties.script  
+      local language=properties.language 
       local basesubstitutions=rawdata.resources.features.gsub
       local basepositionings=rawdata.resources.features.gpos
       if basesubstitutions or basepositionings then

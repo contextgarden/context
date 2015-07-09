@@ -20,6 +20,7 @@ if not modules then modules = { } end modules ['math-noa'] = {
 
 local utfchar, utfbyte = utf.char, utf.byte
 local formatters = string.formatters
+local sortedhash = table.sortedhash
 local div = math.div
 
 local fonts, nodes, node, mathematics = fonts, nodes, node, mathematics
@@ -663,7 +664,7 @@ end
 local function collected(list)
     if list and next(list) then
         local n, t = 0, { }
-        for k, v in table.sortedpairs(list) do
+        for k, v in sortedhash(list) do
             n = n + v
             t[#t+1] = formatters["%C"](k)
         end
@@ -683,32 +684,57 @@ end)
 -- math alternates: (in lucidanova lgf: $ABC \mathalternate{italic} ABC$)
 
 -- todo: set alternate for specific symbols
+-- todo: no need to do this when already loaded
+
+local defaults = {
+    dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
+ -- zero    = { feature = 'zero', value = 1, comment = "Slashed or Dotted Zero" }, -- in no math font (yet)
+}
 
 local function initializemathalternates(tfmdata)
-    local goodies = tfmdata.goodies
+    local goodies  = tfmdata.goodies
+    local autolist = table.copy(defaults)
+
+    local function setthem(alternates)
+        local resources     = tfmdata.resources -- was tfmdata.shared
+        local lastattribute = 0
+        local attributes    = { }
+        for k, v in sortedhash(alternates) do
+            lastattribute = lastattribute + 1
+            v.attribute   = lastattribute
+            attributes[lastattribute] = v
+        end
+        resources.mathalternates           = alternates -- to be checked if shared is ok here
+        resources.mathalternatesattributes = attributes -- to be checked if shared is ok here
+    end
+
     if goodies then
-        local shared = tfmdata.shared
+        local done = { }
         for i=1,#goodies do
             -- first one counts
             -- we can consider sharing the attributes ... todo (only once scan)
             local mathgoodies = goodies[i].mathematics
-            local alternates = mathgoodies and mathgoodies.alternates
+            local alternates  = mathgoodies and mathgoodies.alternates
             if alternates then
                 if trace_goodies then
                     report_goodies("loading alternates for font %a",tfmdata.properties.name)
                 end
-                local lastattribute, attributes = 0, { }
-                for k, v in next, alternates do
-                    lastattribute = lastattribute + 1
-                    v.attribute = lastattribute
-                    attributes[lastattribute] = v
+                for k, v in next, autolist do
+                    if not alternates[k] then
+                        alternates[k] = v
+                    end
                 end
-                shared.mathalternates           = alternates -- to be checked if shared is ok here
-                shared.mathalternatesattributes = attributes -- to be checked if shared is ok here
+                setthem(alternates)
                 return
             end
         end
     end
+
+    if trace_goodies then
+        report_goodies("loading default alternates for font %a",tfmdata.properties.name)
+    end
+    setthem(autolist)
+
 end
 
 registerotffeature {
@@ -720,19 +746,24 @@ registerotffeature {
     }
 }
 
-local getalternate = otf.getalternate
+-- local getalternate = otf.getalternate (runtime new method so ...)
+
+-- todo: not shared but copies ... one never knows
 
 local a_mathalternate = privateattribute("mathalternate")
 
 local alternate = { } -- processors.alternate = alternate
 
 function mathematics.setalternate(fam,tag)
-    local id = font_of_family(fam)
-    local tfmdata = fontdata[id]
-    local mathalternates = tfmdata.shared and tfmdata.shared.mathalternates
-    if mathalternates then
-        local m = mathalternates[tag]
-        texsetattribute(a_mathalternate,m and m.attribute or unsetvalue)
+    local id        = font_of_family(fam)
+    local tfmdata   = fontdata[id]
+    local resources = tfmdata.resources -- was tfmdata.shared
+    if resources then
+        local mathalternates = resources.mathalternates
+        if mathalternates then
+            local m = mathalternates[tag]
+            texsetattribute(a_mathalternate,m and m.attribute or unsetvalue)
+        end
     end
 end
 
@@ -740,17 +771,20 @@ alternate[math_char] = function(pointer)
     local a = getattr(pointer,a_mathalternate)
     if a and a > 0 then
         setattr(pointer,a_mathalternate,0)
-        local tfmdata = fontdata[font_of_family(getfield(pointer,"fam"))] -- we can also have a famdata
-        local mathalternatesattributes = tfmdata.shared.mathalternatesattributes
-        if mathalternatesattributes then
-            local what = mathalternatesattributes[a]
-            local alt = getalternate(tfmdata,getchar(pointer),what.feature,what.value)
-            if alt then
-                if trace_alternates then
-                    report_alternates("alternate %a, value %a, replacing glyph %U by glyph %U",
-                        tostring(what.feature),tostring(what.value),getchar(pointer),alt)
+        local tfmdata   = fontdata[font_of_family(getfield(pointer,"fam"))] -- we can also have a famdata
+        local resources = tfmdata.resources -- was tfmdata.shared
+        if resources then
+            local mathalternatesattributes = resources.mathalternatesattributes
+            if mathalternatesattributes then
+                local what = mathalternatesattributes[a]
+                local alt  = otf.getalternate(tfmdata,getchar(pointer),what.feature,what.value)
+                if alt then
+                    if trace_alternates then
+                        report_alternates("alternate %a, value %a, replacing glyph %U by glyph %U",
+                            tostring(what.feature),tostring(what.value),getchar(pointer),alt)
+                    end
+                    setfield(pointer,"char",alt)
                 end
-                setfield(pointer,"char",alt)
             end
         end
     end

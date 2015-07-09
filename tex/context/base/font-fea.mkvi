@@ -340,4 +340,14 @@
      \font_feature_add
    \fi}
 
+% let's put this here:
+
+\unexpanded\def\slashedzero
+  {\dontleavehmode
+   \begingroup
+  %\addff{zero}
+   \font_feature_add_nop{zero}%
+   0%
+   \endgroup}
+
 \protect \endinput

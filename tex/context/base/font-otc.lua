@@ -33,6 +33,7 @@ local normalized = {
     ligature     = "ligature",
     alternate    = "alternate",
     multiple     = "multiple",
+    kern         = "kern",
 }
 
 local types = {
@@ -41,6 +42,7 @@ local types = {
     ligature     = "gsub_ligature",
     alternate    = "gsub_alternate",
     multiple     = "gsub_multiple",
+    kern         = "gpos_pair",
 }
 
 setmetatableindex(types, function(t,k) t[k] = k return k end) -- "key"
@@ -106,8 +108,28 @@ local function addfeature(data,feature,specifications)
                 local list     = askedsteps[i]
                 local coverage = { }
                 local cover    = coveractions[featuretype]
+                local format   = nil
                 if not cover then
                     -- unknown
+                elseif featuretype == "substitution" then
+                    for code, replacement in next, list do
+                        local unicode     = tounicode(code)
+                        local description = descriptions[unicode]
+                        if description then
+                            if type(replacement) == "table" then
+                                replacement = replacement[1]
+                            end
+                            replacement = tounicode(replacement)
+                            if replacement and descriptions[replacement] then
+                                cover(coverage,unicode,replacement)
+                                done = done + 1
+                            else
+                                skip = skip + 1
+                            end
+                        else
+                            skip = skip + 1
+                        end
+                    end
                 elseif featuretype == "ligature" then
                     for code, ligature in next, list do
                         local unicode     = tounicode(code)
@@ -129,25 +151,6 @@ local function addfeature(data,feature,specifications)
                             end
                             if present then
                                 cover(coverage,unicode,ligature)
-                                done = done + 1
-                            else
-                                skip = skip + 1
-                            end
-                        else
-                            skip = skip + 1
-                        end
-                    end
-                elseif featuretype == "substitution" then
-                    for code, replacement in next, list do
-                        local unicode     = tounicode(code)
-                        local description = descriptions[unicode]
-                        if description then
-                            if type(replacement) == "table" then
-                                replacement = replacement[1]
-                            end
-                            replacement = tounicode(replacement)
-                            if replacement and descriptions[replacement] then
-                                cover(coverage,unicode,replacement)
                                 done = done + 1
                             else
                                 skip = skip + 1
@@ -211,11 +214,34 @@ local function addfeature(data,feature,specifications)
                             end
                         end
                     end
+                elseif featuretype == "kern" then
+                    for code, replacement in next, list do
+                        local unicode     = tounicode(code)
+                        local description = descriptions[unicode]
+                        if description and type(replacement) == "table" then
+                            local r = { }
+                            for k, v in next, replacement do
+                                local u = tounicode(k)
+                                if u then
+                                    r[u] = v
+                                end
+                            end
+                            if next(r) then
+                                cover(coverage,unicode,r)
+                                done = done + 1
+                            else
+                                skip = skip + 1
+                            end
+                        else
+                            skip = skip + 1
+                        end
+                    end
+                    format = "kern"
                 end
                 if next(coverage) then
                     added = true
                     nofsteps = nofsteps + 1
-                    steps[nofsteps] = register(coverage,descriptions,resources,feature,featuretype,nofsteps)
+                    steps[nofsteps] = register(coverage,featuretype,format,feature,nofsteps,descriptions,resources)
                 end
             end
             if added then
@@ -491,7 +517,14 @@ registerotffeature {
 --     name = "ltest",
 --     type = "ligature",
 --     data = {
---         a = { "X", "Y" },
---         b = { "P", "Q" },
+--         X = { "a", "b" },
+--         Y = { "d", "a" },
+--     }
+-- }
+-- fonts.handlers.otf.addfeature {
+--     name = "ktest",
+--     type = "kern",
+--     data = {
+--         a = { b = -500 },
 --     }
 -- }

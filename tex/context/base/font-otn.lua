@@ -3426,6 +3426,7 @@ local action = {
     position     = generic,
     ligature     = ligature,
     pair         = pair,
+    kern         = pair,
 }
 
 local function prepare_lookups(tfmdata)

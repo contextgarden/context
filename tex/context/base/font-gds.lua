@@ -91,6 +91,9 @@ local function loadgoodies(filename) -- maybe a merge is better
             end
             goodies.name = goodies.name or "no name"
             for name, fnc in next, list do
+                if trace_goodies then
+                    report_goodies("handling goodie %a",name)
+                end
                 fnc(goodies)
             end
             goodies.initialized = true
@@ -833,13 +836,15 @@ end
 implement {
     name      = "loadfontgoodies",
     actions   = fontgoodies.load,
-    arguments = "string"
+    arguments = "string",
+    overload  = true, -- for now, permits new font loader
 }
 
 implement {
     name      = "enablefontcolorschemes",
     onlyonce  = true,
-    actions   = colorschemes.enable
+    actions   = colorschemes.enable,
+    overload  = true, -- for now, permits new font loader
 }
 
 -- weird place ... depends on math

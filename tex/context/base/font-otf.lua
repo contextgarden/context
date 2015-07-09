@@ -2912,10 +2912,15 @@ otf.coverup = {
         alternate    = justset,
         multiple     = justset,
         ligature     = justset,
+        kern         = justset,
     },
-    register = function(coverage,descriptions,resources,feature,lookuptype,n)
+    register = function(coverage,lookuptype,format,feature,n,descriptions,resources)
         local name = formatters["ctx_%s_%s"](feature,n)
-        resources.lookuptypes[name] = lookuptype
+        if lookuptype == "kern" then
+            resources.lookuptypes[name] = "position"
+        else
+            resources.lookuptypes[name] = lookuptype
+        end
         for u, c in next, coverage do
             local description = descriptions[u]
             local slookups = description.slookups
@@ -2924,7 +2929,63 @@ otf.coverup = {
             else
                 description.slookups = { [name] = c }
             end
+-- inspect(feature,description)
         end
         return name
     end
 }
+
+-- moved from font-oth.lua
+
+local function getgsub(tfmdata,k,kind)
+    local description = tfmdata.descriptions[k]
+    if description then
+        local slookups = description.slookups -- we assume only slookups (we can always extend)
+        if slookups then
+            local shared = tfmdata.shared
+            local rawdata = shared and shared.rawdata
+            if rawdata then
+                local lookuptypes = rawdata.resources.lookuptypes
+                if lookuptypes then
+                    local properties = tfmdata.properties
+                    -- we could cache these
+                    local validlookups, lookuplist = otf.collectlookups(rawdata,kind,properties.script,properties.language)
+                    if validlookups then
+                        for l=1,#lookuplist do
+                            local lookup = lookuplist[l]
+                            local found  = slookups[lookup]
+                            if found then
+                                return found, lookuptypes[lookup]
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+otf.getgsub = getgsub -- returns value, gsub_kind
+
+function otf.getsubstitution(tfmdata,k,kind,value)
+    local found, kind = getgsub(tfmdata,k,kind)
+    if not found then
+        --
+    elseif kind == "substitution" then
+        return found
+    elseif kind == "alternate" then
+        local choice = tonumber(value) or 1 -- no random here (yet)
+        return found[choice] or found[1] or k
+    end
+    return k
+end
+
+otf.getalternate = otf.getsubstitution
+
+function otf.getmultiple(tfmdata,k,kind)
+    local found, kind = getgsub(tfmdata,k,kind)
+    if found and kind == "multiple" then
+        return found
+    end
+    return { k }
+end

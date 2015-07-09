@@ -24,7 +24,7 @@ if not modules then modules = { } end modules ['font-otl'] = {
 -- todo: less tounicodes
 
 local gmatch, find, match, lower, strip = string.gmatch, string.find, string.match, string.lower, string.strip
-local type, next, tonumber, tostring = type, next, tonumber, tostring
+local type, next, tonumber, tostring, unpack = type, next, tonumber, tostring, unpack
 local abs = math.abs
 local ioflush = io.flush
 local derivetable = table.derive
@@ -603,33 +603,123 @@ registerotffeature {
 -- readers
 
 function otf.collectlookups(rawdata,kind,script,language)
-    local sequences = rawdata.resources.sequences
-    if sequences then
+    if not kind then
+        return
+    end
+    if not script then
+        script = default
+    end
+    if not language then
+        language = default
+    end
+    local lookupcache = rawdata.lookupcache
+    if not lookupcache then
+        lookupcache = { }
+        rawdata.lookupcache = lookupcache
+    end
+    local kindlookup = lookupcache[kind]
+    if not kindlookup then
+        kindlookup = { }
+        lookupcache[kind] = kindlookup
+    end
+    local scriptlookup = kindlookup[script]
+    if not scriptlookup then
+        scriptlookup = { }
+        kindlookup[script] = scriptlookup
+    end
+    local languagelookup = scriptlookup[language]
+    if not languagelookup then
+        local sequences   = rawdata.resources.sequences
         local featuremap  = { }
         local featurelist = { }
-        for s=1,#sequences do
-            local sequence = sequences[s]
-            local features = sequence.features
-            if features then
-                features = features[kind]
+        if sequences then
+            for s=1,#sequences do
+                local sequence = sequences[s]
+                local features = sequence.features
                 if features then
-                    features = features[script] or features[default] or features[wildcard]
+                    features = features[kind]
                     if features then
-                        features = features[language] or features[default] or features[wildcard]
+                     -- features = features[script] or features[default] or features[wildcard]
+                        features = features[script] or features[wildcard]
                         if features then
-                            if not featuremap[sequence] then
-                                featuremap[sequence] = true
-                                featurelist[#featurelist+1] = sequence
+                         -- features = features[language] or features[default] or features[wildcard]
+                            features = features[language] or features[wildcard]
+                            if features then
+                                if not featuremap[sequence] then
+                                    featuremap[sequence] = true
+                                    featurelist[#featurelist+1] = sequence
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if #featurelist == 0 then
+                featuremap, featurelist = false, false
+            end
+        else
+            featuremap, featurelist = false, false
+        end
+        languagelookup = { featuremap, featurelist }
+        scriptlookup[language] = languagelookup
+    end
+    return unpack(languagelookup)
+end
+
+-- moved from font-oth.lua
+
+local function getgsub(tfmdata,k,kind,value)
+    local shared  = tfmdata.shared
+    local rawdata = shared and shared.rawdata
+    if rawdata then
+        local sequences = rawdata.resources.sequences
+        if sequences then
+            local properties = tfmdata.properties
+            local validlookups, lookuplist = otf.collectlookups(rawdata,kind,properties.script,properties.language)
+            if validlookups then
+                local choice = tonumber(value) or 1 -- no random here (yet)
+                for i=1,#lookuplist do
+                    local lookup   = lookuplist[i]
+                    local steps    = lookup.steps
+                    local nofsteps = lookup.nofsteps
+                    for i=1,nofsteps do
+                        local coverage = steps[i].coverage
+                        if coverage then
+                            local found = coverage[k]
+                            if found then
+                                return found, lookup.type
                             end
                         end
                     end
                 end
             end
         end
-        if #featurelist > 0 then
-            return featuremap, featurelist
-        end
     end
+end
+
+otf.getgsub = getgsub -- returns value, gsub_kind
+
+function otf.getsubstitution(tfmdata,k,kind,value)
+    local found, kind = getgsub(tfmdata,k,kind)
+    if not found then
+        --
+    elseif kind == "gsub_single" then
+        return found
+    elseif kind == "gsub_alternate" then
+        local choice = tonumber(value) or 1 -- no random here (yet)
+        return found[choice] or found[1] or k
+    end
+    return k
+end
+
+otf.getalternate = otf.getsubstitution
+
+function otf.getmultiple(tfmdata,k,kind)
+    local found, kind = getgsub(tfmdata,k,kind)
+    if found and kind == "gsub_multiple" then
+        return found
+    end
+    return { k }
 end
 
 local function check_otf(forced,specification,suffix)
@@ -681,7 +771,9 @@ otf.coverup = {
         substitution = justset,
         alternate    = justset,
         multiple     = justset,
-        ligature     = function (coverage,unicode,ligature)
+        kern         = justset,
+        pair         = justset,
+        ligature     = function(coverage,unicode,ligature)
             local first = ligature[1]
             local tree  = coverage[first]
             if not tree then
@@ -700,7 +792,10 @@ otf.coverup = {
             tree.ligature = unicode
         end,
     },
-    register = function(coverage)
-        return { coverage = coverage }
+    register = function(coverage,featuretype,format)
+        return {
+            format   = format,
+            coverage = coverage,
+        }
     end
 }

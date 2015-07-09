@@ -33,4 +33,9 @@ return {
             "tgschola-math.otf",
         },
     },
+    mathematics = {
+        alternates = {
+            dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
+        },
+    },
 }
