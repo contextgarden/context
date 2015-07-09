@@ -81,8 +81,10 @@
 		<cd:variable name='appendices' value='پیوستها'/>
 		<cd:variable name='appendix' value='پیوست'/>
 		<cd:variable name='april' value='آوریل'/>
+		<cd:variable name='atleftmargin' value='درحاشیه‌چپ'/>
 		<cd:variable name='atmargin' value='درحاشیه'/>
 		<cd:variable name='atpage' value='درصفحه'/>
+		<cd:variable name='atrightmargin' value='درحاشیه‌راست'/>
 		<cd:variable name='attachment' value='attachment'/>
 		<cd:variable name='august' value='آگوست'/>
 		<cd:variable name='author' value='author'/>
@@ -226,12 +228,23 @@
 		<cd:variable name='indices' value='نمایه‌ها'/>
 		<cd:variable name='informeel' value='informeel'/>
 		<cd:variable name='inherit' value='ارث‌بردن'/>
+		<cd:variable name='ininner' value='درداخلی'/>
+		<cd:variable name='ininneredge' value='ininneredge'/>
+		<cd:variable name='ininnermargin' value='ininnermargin'/>
 		<cd:variable name='inleft' value='درون‌چپ'/>
+		<cd:variable name='inleftedge' value='درلبه‌چپ'/>
+		<cd:variable name='inleftmargin' value='درحاشیه‌چپ'/>
 		<cd:variable name='inmargin' value='درون‌حاشیه'/>
 		<cd:variable name='inner' value='داخلی'/>
 		<cd:variable name='inneredge' value='لبه‌داخلی'/>
 		<cd:variable name='innermargin' value='حاشیه‌داخلی'/>
+		<cd:variable name='inother' value='inother'/>
+		<cd:variable name='inouter' value='درخارجی'/>
+		<cd:variable name='inouteredge' value='inouteredge'/>
+		<cd:variable name='inoutermargin' value='inoutermargin'/>
 		<cd:variable name='inright' value='درون‌راست'/>
+		<cd:variable name='inrightedge' value='درلبه‌راست'/>
+		<cd:variable name='inrightmargin' value='درحاشیه‌راست'/>
 		<cd:variable name='interaction' value='پانل'/>
 		<cd:variable name='interactionmenu' value='منوی‌پانل'/>
 		<cd:variable name='intermezzi' value='میان‌پرده‌ها'/>
@@ -283,6 +296,7 @@
 		<cd:variable name='march' value='مارس'/>
 		<cd:variable name='margin' value='حاشیه'/>
 		<cd:variable name='marginedge' value='لبه‌حاشیه'/>
+		<cd:variable name='margintext' value='متن‌حاشیه'/>
 		<cd:variable name='margintitle' value='عنوان‌حاشیه'/>
 		<cd:variable name='marking' value='نشانه‌گذاری'/>
 		<cd:variable name='math' value='math'/>
@@ -545,7 +559,7 @@
 		<cd:variable name='xml' value='xml'/>
 		<cd:variable name='year' value='سال'/>
 		<cd:variable name='yes' value='بله'/>
-	</cd:variable>
+	</cd:variables>
 
 	<!-- definitions for interface constants for language pe -->
 
@@ -1133,7 +1147,7 @@
 		<cd:constant name='yoffset' value='آفست‌وای'/>
 		<cd:constant name='yscale' value='مقیاس‌وای'/>
 		<cd:constant name='ystep' value='گام‌وای'/>
-	</cd:constant>
+	</cd:constants>
 
 	<!-- definitions for interface elements for language pe -->
 
@@ -1164,7 +1178,7 @@
 		<cd:element name='stop' value='پایان'/>
 		<cd:element name='text' value='متن'/>
 		<cd:element name='type' value='تایپ'/>
-	</cd:element>
+	</cd:elements>
 
 	<!-- definitions for interface commands for language pe -->
 
@@ -1820,6 +1834,6 @@
 		<cd:command name='writetolist' value='بنویس‌در‌لیست'/>
 		<cd:command name='writetoreferencelist' value='بنویس‌درلیست‌مرجع'/>
 		<cd:command name='writetoregister' value='بنویس‌درثبت'/>
-	</cd:command>
+	</cd:commands>
 
 </cd:interface>

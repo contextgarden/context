@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['mult-def'] = {
     dataonly  = true,
 }
 
+-- we can remove some commands, like inleftmargin and so (see typo-mar.mkiv)
+
 return {
  ["commands"]={
   ["CAPPED"]={
@@ -13694,6 +13696,16 @@ return {
    ["pe"]="ارث‌بردن",
    ["ro"]="inherit",
   },
+  ["ininner"]={
+   ["cs"]="ininner",
+   ["de"]="ininner",
+   ["en"]="ininner",
+   ["fr"]="ininner",
+   ["it"]="ininner",
+   ["nl"]="inbinnen",
+   ["pe"]="درداخلی",
+   ["ro"]="ininner",
+  },
   ["inleft"]={
    ["cs"]="vlevo",
    ["de"]="imlinken",
@@ -13704,6 +13716,26 @@ return {
    ["pe"]="درون‌چپ",
    ["ro"]="instanga",
   },
+  ["inleftedge"]={
+   ["cs"]="nalevo",
+   ["de"]="imlinkenrand",
+   ["en"]="inleftedge",
+   ["fr"]="dansbordgauche",
+   ["it"]="inlatosinistro",
+   ["nl"]="inlinkerrand",
+   ["pe"]="درلبه‌چپ",
+   ["ro"]="inparteastanga",
+  },
+  ["inleftmargin"]={
+   ["cs"]="nalevyokraj",
+   ["de"]="inlinkermarginale",
+   ["en"]="inleftmargin",
+   ["fr"]="dansmargegauche",
+   ["it"]="inmarginesinistro",
+   ["nl"]="inlinkermarge",
+   ["pe"]="درحاشیه‌چپ",
+   ["ro"]="inmargineastanga",
+  },
   ["inmargin"]={
    ["cs"]="naokraji",
    ["de"]="imrand",
@@ -13713,6 +13745,38 @@ return {
    ["nl"]="inmarge",
    ["pe"]="درون‌حاشیه",
    ["ro"]="inmargine",
+  },
+  ["inoutermargin"]={
+   ["en"]="inoutermargin",
+  },
+  ["ininnermargin"]={
+   ["en"]="ininnermargin",
+  },
+  ["inouteredge"]={
+   ["en"]="inouteredge",
+  },
+  ["ininneredge"]={
+   ["en"]="ininneredge",
+  },
+  ["atleftmargin"]={
+   ["cs"]="atleftmargin",
+   ["de"]="atleftmargin",
+   ["en"]="atleftmargin",
+   ["fr"]="atleftmargin",
+   ["it"]="atleftmargin",
+   ["nl"]="oplinkermarge",
+   ["pe"]="درحاشیه‌چپ",
+   ["ro"]="atleftmargin",
+  },
+  ["atrightmargin"]={
+   ["cs"]="atrightmargin",
+   ["de"]="atrightmargin",
+   ["en"]="atrightmargin",
+   ["fr"]="atrightmargin",
+   ["it"]="atrightmargin",
+   ["nl"]="oprechtermarge",
+   ["pe"]="درحاشیه‌راست",
+   ["ro"]="atrightmargin",
   },
   ["inner"]={
    ["cs"]="uvnitr",
@@ -13744,6 +13808,26 @@ return {
    ["pe"]="حاشیه‌داخلی",
    ["ro"]="innermargin",
   },
+  ["inother"]={
+   ["cs"]="inother",
+   ["de"]="inother",
+   ["en"]="inother",
+   ["fr"]="inother",
+   ["it"]="inother",
+   ["nl"]="inandere",
+   ["pe"]="inother",
+   ["ro"]="inother",
+  },
+  ["inouter"]={
+   ["cs"]="inouter",
+   ["de"]="inouter",
+   ["en"]="inouter",
+   ["fr"]="inouter",
+   ["it"]="inouter",
+   ["nl"]="inbuiten",
+   ["pe"]="درخارجی",
+   ["ro"]="inouter",
+  },
   ["inright"]={
    ["cs"]="vpravo",
    ["de"]="imrechten",
@@ -13753,6 +13837,26 @@ return {
    ["nl"]="inrechter",
    ["pe"]="درون‌راست",
    ["ro"]="indreapta",
+  },
+  ["inrightedge"]={
+   ["cs"]="napravo",
+   ["de"]="imrechtenrand",
+   ["en"]="inrightedge",
+   ["fr"]="dansborddroit",
+   ["it"]="inlatodestro",
+   ["nl"]="inrechterrand",
+   ["pe"]="درلبه‌راست",
+   ["ro"]="inparteadreapta",
+  },
+  ["inrightmargin"]={
+   ["cs"]="napravyokraj",
+   ["de"]="inrechtermarginale",
+   ["en"]="inrightmargin",
+   ["fr"]="dansmargedroite",
+   ["it"]="inmarginedestro",
+   ["nl"]="inrechtermarge",
+   ["pe"]="درحاشیه‌راست",
+   ["ro"]="inmargineadreapta",
   },
   ["interaction"]={
    ["cs"]="interakce",
@@ -14253,6 +14357,16 @@ return {
    ["nl"]="kantlijn",
    ["pe"]="لبه‌حاشیه",
    ["ro"]="marginebordura",
+  },
+  ["margintext"]={
+   ["cs"]="marginalnitext",
+   ["de"]="marginaltext",
+   ["en"]="margintext",
+   ["fr"]="textemarge",
+   ["it"]="testoinmargine",
+   ["nl"]="margetekst",
+   ["pe"]="متن‌حاشیه",
+   ["ro"]="textmarginal",
   },
   ["margintitle"]={
    ["cs"]="titulmarginalie",

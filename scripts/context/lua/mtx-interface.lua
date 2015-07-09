@@ -367,7 +367,7 @@ function scripts.interface.interfaces()
                         xmlresult[#xmlresult+1] = format("\t\t<cd:%s name='%s' value='%s'/>",tag,key,value)
                     end
                 end
-                xmlresult[#xmlresult+1] = format("\t</cd:%s>\n",tag)
+                xmlresult[#xmlresult+1] = format("\t</cd:%s>\n",what)
             end
             local function replace(str, element, attribute, category, othercategory, language)
                 return str:gsub(format("(<%s[^>]-%s=)([\"\'])([^\"\']-)([\"\'])",element,attribute), function(a,b,c)

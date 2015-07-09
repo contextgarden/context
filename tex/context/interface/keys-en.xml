@@ -81,8 +81,10 @@
 		<cd:variable name='appendices' value='appendices'/>
 		<cd:variable name='appendix' value='appendix'/>
 		<cd:variable name='april' value='april'/>
+		<cd:variable name='atleftmargin' value='atleftmargin'/>
 		<cd:variable name='atmargin' value='atmargin'/>
 		<cd:variable name='atpage' value='atpage'/>
+		<cd:variable name='atrightmargin' value='atrightmargin'/>
 		<cd:variable name='attachment' value='attachment'/>
 		<cd:variable name='august' value='august'/>
 		<cd:variable name='author' value='author'/>
@@ -226,12 +228,23 @@
 		<cd:variable name='indices' value='indices'/>
 		<cd:variable name='informeel' value='informeel'/>
 		<cd:variable name='inherit' value='inherit'/>
+		<cd:variable name='ininner' value='ininner'/>
+		<cd:variable name='ininneredge' value='ininneredge'/>
+		<cd:variable name='ininnermargin' value='ininnermargin'/>
 		<cd:variable name='inleft' value='inleft'/>
+		<cd:variable name='inleftedge' value='inleftedge'/>
+		<cd:variable name='inleftmargin' value='inleftmargin'/>
 		<cd:variable name='inmargin' value='inmargin'/>
 		<cd:variable name='inner' value='inner'/>
 		<cd:variable name='inneredge' value='inneredge'/>
 		<cd:variable name='innermargin' value='innermargin'/>
+		<cd:variable name='inother' value='inother'/>
+		<cd:variable name='inouter' value='inouter'/>
+		<cd:variable name='inouteredge' value='inouteredge'/>
+		<cd:variable name='inoutermargin' value='inoutermargin'/>
 		<cd:variable name='inright' value='inright'/>
+		<cd:variable name='inrightedge' value='inrightedge'/>
+		<cd:variable name='inrightmargin' value='inrightmargin'/>
 		<cd:variable name='interaction' value='interaction'/>
 		<cd:variable name='interactionmenu' value='interactionmenu'/>
 		<cd:variable name='intermezzi' value='intermezzi'/>
@@ -283,6 +296,7 @@
 		<cd:variable name='march' value='march'/>
 		<cd:variable name='margin' value='margin'/>
 		<cd:variable name='marginedge' value='marginedge'/>
+		<cd:variable name='margintext' value='margintext'/>
 		<cd:variable name='margintitle' value='margintitle'/>
 		<cd:variable name='marking' value='marking'/>
 		<cd:variable name='math' value='math'/>
@@ -545,7 +559,7 @@
 		<cd:variable name='xml' value='xml'/>
 		<cd:variable name='year' value='year'/>
 		<cd:variable name='yes' value='yes'/>
-	</cd:variable>
+	</cd:variables>
 
 	<!-- definitions for interface constants for language en -->
 
@@ -1133,7 +1147,7 @@
 		<cd:constant name='yoffset' value='yoffset'/>
 		<cd:constant name='yscale' value='yscale'/>
 		<cd:constant name='ystep' value='ystep'/>
-	</cd:constant>
+	</cd:constants>
 
 	<!-- definitions for interface elements for language en -->
 
@@ -1164,7 +1178,7 @@
 		<cd:element name='stop' value='stop'/>
 		<cd:element name='text' value='text'/>
 		<cd:element name='type' value='type'/>
-	</cd:element>
+	</cd:elements>
 
 	<!-- definitions for interface commands for language en -->
 
@@ -1820,6 +1834,6 @@
 		<cd:command name='writetolist' value='writetolist'/>
 		<cd:command name='writetoreferencelist' value='writetoreferencelist'/>
 		<cd:command name='writetoregister' value='writetoregister'/>
-	</cd:command>
+	</cd:commands>
 
 </cd:interface>

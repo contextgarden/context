@@ -1366,10 +1366,19 @@ function readers.cmap(f,fontdata,specification)
             ok = checkcmap(f,fontdata,records,0, 3, 4) or ok
             ok = checkcmap(f,fontdata,records,0, 1, 4) or ok
             ok = checkcmap(f,fontdata,records,1, 0, 6) or ok
+         -- ok = checkcmap(f,fontdata,records,3, 0, 4) or ok -- maybe
             -- 1 0 0
             if not ok then
-                report("no unicode cmap record done, problems ahead") -- we could fall back on glyph names
-                inspect(records)
+                local list = { }
+                for k1, v1 in next, records do
+                    for k2, v2 in next, v1 do
+                        for k3, v3 in next, v2 do
+                            list[#list+1] = formatters["%s.%s.%s"](k1,k2,k3)
+                        end
+                    end
+                end
+                table.sort(list)
+                report("no unicode cmap record loaded, found tables: % t",list)
             end
             checkcmap(f,fontdata,records,0, 5,14) -- variants
             --
@@ -1415,14 +1424,14 @@ function readers.kern(f,fontdata,specification)
                 local length   = readushort(f)
                 local coverage = readushort(f)
                 -- bit 8-15 of coverage: format 0 or 2
-                local format = bit32.rshift(coverage,8) -- is this ok?
+                local format   = bit32.rshift(coverage,8) -- is this ok?
                 if format == 0 then
                     local nofpairs      = readushort(f)
                     local searchrange   = readushort(f)
                     local entryselector = readushort(f)
                     local rangeshift    = readushort(f)
-                    local kerns         = { }
-                    local glyphs        = fontdata.glyphs
+                    local kerns  = { }
+                    local glyphs = fontdata.glyphs
                     for i=1,nofpairs do
                         local left  = readushort(f)
                         local right = readushort(f)
@@ -1435,7 +1444,6 @@ function readers.kern(f,fontdata,specification)
                             glyph.kerns = { [right] = kern }
                         end
                     end
-                 -- fontdata.kerns = kerns
                 elseif format == 2 then
                     report("todo: kern classes")
                 else
@@ -1877,6 +1885,7 @@ function readers.loadfont(filename,n)
         glyphs   = true,
         shapes   = false,
         lookups  = true,
+     -- kerns    = true,
         subfont  = n,
     }
     if fontdata then

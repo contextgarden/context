@@ -783,12 +783,12 @@
 
 % A prelude to a rewrite and some more:
 
-\definetype[parametercommand][type]
-\definetype[parameterkey]    [type]
-\definetype[parametervalue]  [type][space=on]
+\definetype[parametercommand][\v!type]
+\definetype[parameterkey]    [\v!type]
+\definetype[parametervalue]  [\v!type][\c!space=\v!on]
 
-\setuptype[parametercommand] [color=darkmagenta]
-\setuptype[parametervalue]   [color=darkyellow]
+\setuptype [parametercommand] [\c!color=darkmagenta]
+\setuptype [parametervalue]   [\c!color=darkyellow]
 
 \startxmlsetups xml:setups:parameters:value
     \edef\currentsetupparameterkey  {\xmlatt{#1}{name}}

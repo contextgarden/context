@@ -81,8 +81,10 @@
 		<cd:variable name='appendices' value='dodatky'/>
 		<cd:variable name='appendix' value='dodatek'/>
 		<cd:variable name='april' value='duben'/>
+		<cd:variable name='atleftmargin' value='atleftmargin'/>
 		<cd:variable name='atmargin' value='naokraji'/>
 		<cd:variable name='atpage' value='nastrance'/>
+		<cd:variable name='atrightmargin' value='atrightmargin'/>
 		<cd:variable name='attachment' value='attachment'/>
 		<cd:variable name='august' value='srpen'/>
 		<cd:variable name='author' value='autor'/>
@@ -226,12 +228,23 @@
 		<cd:variable name='indices' value='rejstriky'/>
 		<cd:variable name='informeel' value='informeel'/>
 		<cd:variable name='inherit' value='inherit'/>
+		<cd:variable name='ininner' value='ininner'/>
+		<cd:variable name='ininneredge' value='ininneredge'/>
+		<cd:variable name='ininnermargin' value='ininnermargin'/>
 		<cd:variable name='inleft' value='vlevo'/>
+		<cd:variable name='inleftedge' value='nalevo'/>
+		<cd:variable name='inleftmargin' value='nalevyokraj'/>
 		<cd:variable name='inmargin' value='naokraji'/>
 		<cd:variable name='inner' value='uvnitr'/>
 		<cd:variable name='inneredge' value='inneredge'/>
 		<cd:variable name='innermargin' value='innermargin'/>
+		<cd:variable name='inother' value='inother'/>
+		<cd:variable name='inouter' value='inouter'/>
+		<cd:variable name='inouteredge' value='inouteredge'/>
+		<cd:variable name='inoutermargin' value='inoutermargin'/>
 		<cd:variable name='inright' value='vpravo'/>
+		<cd:variable name='inrightedge' value='napravo'/>
+		<cd:variable name='inrightmargin' value='napravyokraj'/>
 		<cd:variable name='interaction' value='interakce'/>
 		<cd:variable name='interactionmenu' value='interaktivnimenu'/>
 		<cd:variable name='intermezzi' value='intermezzi'/>
@@ -283,6 +296,7 @@
 		<cd:variable name='march' value='brezen'/>
 		<cd:variable name='margin' value='marginalie'/>
 		<cd:variable name='marginedge' value='textovahrana'/>
+		<cd:variable name='margintext' value='marginalnitext'/>
 		<cd:variable name='margintitle' value='titulmarginalie'/>
 		<cd:variable name='marking' value='znaceni'/>
 		<cd:variable name='math' value='math'/>
@@ -545,7 +559,7 @@
 		<cd:variable name='xml' value='xml'/>
 		<cd:variable name='year' value='rok'/>
 		<cd:variable name='yes' value='ano'/>
-	</cd:variable>
+	</cd:variables>
 
 	<!-- definitions for interface constants for language cs -->
 
@@ -1133,7 +1147,7 @@
 		<cd:constant name='yoffset' value='yoffset'/>
 		<cd:constant name='yscale' value='ymeritko'/>
 		<cd:constant name='ystep' value='ykrok'/>
-	</cd:constant>
+	</cd:constants>
 
 	<!-- definitions for interface elements for language cs -->
 
@@ -1164,7 +1178,7 @@
 		<cd:element name='stop' value='stop'/>
 		<cd:element name='text' value='text'/>
 		<cd:element name='type' value='opis'/>
-	</cd:element>
+	</cd:elements>
 
 	<!-- definitions for interface commands for language cs -->
 
@@ -1820,6 +1834,6 @@
 		<cd:command name='writetolist' value='zapisdoseznamu'/>
 		<cd:command name='writetoreferencelist' value='zapisdoseznamuodkazu'/>
 		<cd:command name='writetoregister' value='zapisdorejstriku'/>
-	</cd:command>
+	</cd:commands>
 
 </cd:interface>

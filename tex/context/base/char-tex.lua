@@ -23,7 +23,6 @@ local mark                  = utilities.storage.mark
 
 local context               = context
 local commands              = commands
-local implement             = interfaces.implement
 
 local characters            = characters
 local texcharacters         = { }
@@ -418,6 +417,10 @@ if not context or not commands then
 end
 
 -- all kind of initializations
+
+if not interfaces then return end
+
+local implement     = interfaces.implement
 
 local tex           = tex
 local texsetlccode  = tex.setlccode

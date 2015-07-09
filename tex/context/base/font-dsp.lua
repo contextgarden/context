@@ -74,6 +74,7 @@ local skipshort         = streamreader.skipshort
 local readushort        = streamreader.readcardinal2  -- 16-bit unsigned integer
 local readulong         = streamreader.readcardinal4  -- 24-bit unsigned integer
 local readshort         = streamreader.readinteger2   -- 16-bit   signed integer
+local readfword         = readshort
 local readstring        = streamreader.readstring
 local readtag           = streamreader.readtag
 
@@ -180,7 +181,10 @@ local lookupflags = setmetatableindex(function(t,k)
     return v
 end)
 
-local function readcoverage(f,offset,simple) -- beware: only simple if we don't set keys/values
+-- Beware: only use the simple variant if we don't set keys/values (otherwise too many entries). We
+-- could also have a variant that applies a function but there is no real benefit in this.
+
+local function readcoverage(f,offset,simple)
     setposition(f,offset)
     local coverageformat = readushort(f)
     local coverage = { }
@@ -1569,6 +1573,8 @@ do
         -- that once we only use this loader. Then we can also move the simple specs into the sequence.
         -- After all, we pack afterwards.
 
+        local reported = { }
+
         for i=lastsequence+1,nofsequences do
             local sequence = sequences[i]
             local steps    = sequence.steps
@@ -1580,9 +1586,17 @@ do
                         local rule     = rules[i]
                         local rlookups = rule.lookups
                         if not rlookups then
-                            report("rule %i in %s lookup %a has %s lookups",i,what,sequence.name,"no")
+                            local name = sequence.name
+                            if not reported[name] then
+                                report("rule %i in %s lookup %a has %s lookups",i,what,name,"no")
+                                reported[name] = true
+                            end
                         elseif not next(rlookups) then
-                            report("rule %i in %s lookup %a has %s lookups",i,what,sequence.name,"empty")
+                            local name = sequence.name
+                            if not reported[name] then
+                                report("rule %i in %s lookup %a has %s lookups",i,what,name,"empty")
+                                reported[name] = true
+                            end
                             rule.lookups = nil
                         else
                             for index, lookupid in sortedhash(rlookups) do -- nicer
@@ -1661,6 +1675,70 @@ do
         end
     end
 
+    local function checkkerns(f,fontdata,specification)
+        local features     = fontdata.features
+        local gposfeatures = features and features.gpos
+        if not gposfeatures or not gposfeatures.kern then
+            local datatable = fontdata.tables.kern
+            if datatable then
+                report("adding global kern table as gpos feature")
+                setposition(f,datatable.offset)
+                local version   = readushort(f)
+                local noftables = readushort(f)
+                local kerns     = setmetatableindex("table")
+                for i=1,noftables do
+                    local version  = readushort(f)
+                    local length   = readushort(f)
+                    local coverage = readushort(f)
+                    -- bit 8-15 of coverage: format 0 or 2
+                    local format   = bit32.rshift(coverage,8) -- is this ok?
+                    if format == 0 then
+                        local nofpairs      = readushort(f)
+                        local searchrange   = readushort(f)
+                        local entryselector = readushort(f)
+                        local rangeshift    = readushort(f)
+                        for i=1,nofpairs do
+                            kerns[readushort(f)][readushort(f)] = readfword(f)
+                        end
+                    elseif format == 2 then
+                        -- apple specific so let's ignore it
+                    else
+                        -- not supported by ms
+                    end
+                end
+                local feature = { dflt = { dflt = true } }
+                if not features then
+                    fontdata.features = { gpos = { kern = feature } }
+                elseif not gposfeatures then
+                    fontdata.features.gpos = { kern = feature }
+                else
+                    gposfeatures.kern = feature
+                end
+                local sequences = fontdata.sequences
+                if not sequences then
+                    sequences = { }
+                    fontdata.sequences = sequences
+                end
+                local nofsequences = #sequences + 1
+                sequences[nofsequences] = {
+                    index     = nofsequences,
+                    name      = "kern",
+                    steps     = {
+                        {
+                            coverage = kerns,
+                            format   = "kern",
+                        },
+                    },
+                    nofsteps  = 1,
+                    type      = "gpos_pair",
+                    flags     = { false, false, false, false },
+                    order     = { "kern" },
+                    features  = { kern = feature },
+                }
+            end
+        end
+    end
+
     function readers.gsub(f,fontdata,specification)
         if specification.details then
             readscripts(f,fontdata,"gsub",gsubtypes,gsubhandlers,specification.lookups)
@@ -1670,6 +1748,9 @@ do
     function readers.gpos(f,fontdata,specification)
         if specification.details then
             readscripts(f,fontdata,"gpos",gpostypes,gposhandlers,specification.lookups)
+            if specification.lookups then
+                checkkerns(f,fontdata,specification)
+            end
         end
     end
 
