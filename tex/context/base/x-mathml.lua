@@ -92,6 +92,8 @@ local r_replacements = { -- in main table
 
 -- todo: play with asciimode and avoid mmlchar
 
+-- we can use the proper names now! todo
+
 local o_replacements = { -- in main table
     ["@l"]             = "\\mmlleftdelimiter.",
     ["@r"]             = "\\mmlrightdelimiter.",

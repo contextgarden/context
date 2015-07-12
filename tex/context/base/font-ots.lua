@@ -2165,7 +2165,7 @@ handlers.gsub_reversecontextchain = handle_contextchain
 handlers.gpos_contextchain        = handle_contextchain
 handlers.gpos_context             = handle_contextchain
 
-local missing = { } -- we only report once
+local missing = setmetatableindex("table")
 
 local function logprocess(...)
     if trace_steps then
@@ -2177,10 +2177,9 @@ end
 local logwarning = report_process
 
 local function report_missing_cache(dataset,sequence)
-    local f = missing[currentfont] if not f then f = { } missing[currentfont] = f end
-    local t = f[typ]               if not t then t = { } f[typ]               = t end
+    local t = missing[currentfont]
     if not t[sequence] then
-        t[seqence] = true
+        t[sequence] = true
         logwarning("missing cache for feature %a, lookup %a, type %a, font %a, name %a",
             dataset[4],sequence.name,sequence.type,currentfont,tfmdata.properties.fullname)
     end

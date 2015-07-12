@@ -72,6 +72,7 @@
 
 \startxmlsetups mml:math
     \begingroup
+        \enableautofences
         \xmlval {mml:math:dir} {\xmlatt{#1}{dir}} {}
         \xmlval {mml:math:display} {\xmlatt{#1}{display}} {
             \xmlval {mml:math:mode} {\xmlatt{#1}{mode}} {
@@ -79,29 +80,31 @@
             }
         }
         {
-            \math_fences_checked_start
+           %\math_fences_checked_start
                %\MMLhack
                 \xmlflush{#1}
-            \math_fences_checked_stop
+           %\math_fences_checked_stop
         }
     \endgroup
 \stopxmlsetups
 
 \startxmlsetups mml:imath
     \inlinemathematics {
-        \math_fences_checked_start
+        \enableautofences
+       %\math_fences_checked_start
            %\MMLhack
             \xmlflush{#1}
-        \math_fences_checked_stop
+       %\math_fences_checked_stop
     }
 \stopxmlsetups
 
 \startxmlsetups mml:dmath
     \displaymathematics {
-        \math_fences_checked_start
+        \enableautofences
+       %\math_fences_checked_start
            %\MMLhack
             \xmlflush{#1}
-        \math_fences_checked_stop
+       %\math_fences_checked_stop
     }
 \stopxmlsetups
 
@@ -150,10 +153,15 @@
 
 \setfalse\mmlignoredelimiter % alternatively we could turn it on/off inside the start/stop and ignore \left\right\middle otherwise
 
-\def\mmlleftdelimiter       {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_left         \fi}
-\def\mmlrightdelimiter      {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_right        \fi}
-\def\mmlmiddledelimiter     {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_middle       \fi}
-\def\mmlleftorrightdelimiter{\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_left_or_right\fi}
+% \def\mmlleftdelimiter       {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_left         \fi}
+% \def\mmlrightdelimiter      {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_right        \fi}
+% \def\mmlmiddledelimiter     {\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_middle       \fi}
+% \def\mmlleftorrightdelimiter{\ifconditional\mmlignoredelimiter\else\expandafter\math_fences_checked_left_or_right\fi}
+
+\let\mmlleftdelimiter       \autofenceopen
+\let\mmlmiddledelimiter     \autofencemiddle
+\let\mmlrightdelimiter      \autofenceclose
+\let\mmlleftorrightdelimiter\autofenceboth
 
 % end of delimiter mess
 
@@ -1940,9 +1948,9 @@
 % \stopxmlsetups
 
 \startxmlsetups mml:mfenced % {} around separator is needed for spacing
-    \math_fences_checked_start
+   %\math_fences_checked_start
     \ctxmodulemathml{mfenced("#1")}
-    \math_fences_checked_stop
+   %\math_fences_checked_stop
 \stopxmlsetups
 
 
@@ -2182,13 +2190,13 @@
 
 \startxmlsetups mml:mrow
     \begingroup
-        \xmldoifelse {#1} {/mml:mo[first() or last()]} {% we need a {}
-            \math_fences_checked_start
-                \xmlflush{#1}
-            \math_fences_checked_stop
-        } {
+       %\xmldoifelse {#1} {/mml:mo[first() or last()]} {% we need a {}
+       %   % \math_fences_checked_start
+       %        \xmlflush{#1}
+       %    \math_fences_checked_stop
+       %} {
             \xmlflush{#1}
-        }
+       %}
     \endgroup
 \stopxmlsetups
 
@@ -2264,22 +2272,22 @@
 \definemathtriplet   [\v!mathematics]  [mmlundertriplet]  % or will we use a special instance
 \definemathtriplet   [\v!mathematics]  [mmldoubletriplet] % or will we use a special instance
 
-% common to munder/mover/munderover
+% common to munder/mover/munderover : will become core helper (speed up too)
 
 \starttexdefinition unexpanded mmlfencedfirst #1
-    \math_fences_checked_start
+    %\math_fences_checked_start
     \mmlunexpandedfirst{#1}
-    \math_fences_checked_stop
+    %\math_fences_checked_stop
 \stoptexdefinition
 \starttexdefinition unexpanded mmlfencedsecond #1
-    \math_fences_checked_start
+    %\math_fences_checked_start
     \mmlunexpandedsecond{#1}
-    \math_fences_checked_stop
+    %\math_fences_checked_stop
 \stoptexdefinition
 \starttexdefinition unexpanded mmlfencedthird #1
-    \math_fences_checked_start
+    %\math_fences_checked_start
     \mmlunexpandedthird{#1}
-    \math_fences_checked_stop
+    %\math_fences_checked_stop
 \stoptexdefinition
 
 % mover

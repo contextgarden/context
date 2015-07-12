@@ -50,7 +50,12 @@ local registertempfile  = luatex.registertempfile
 
 local v_yes             = variables.yes
 
-local p_whitespace      = patterns.whitespace
+local eol               = patterns.eol
+local space             = patterns.space
+local whitespace        = patterns.whitespace
+local blackspace        = whitespace - eol
+local whatever          = (1-eol)^1 * eol^0
+local emptyline         = space^0 * eol
 
 local catcodenumbers    = catcodes.numbers
 
@@ -264,25 +269,24 @@ local continue   = false
 
 -- how about tabs
 
-local getmargin = (Cs(P(" ")^1)*P(-1)+1)^1 -- 1 or utf8character
-local eol       = patterns.eol
-local whatever  = (P(1)-eol)^0 * eol^1
+local strippers  = { }
+local nofspaces  = 0
 
-local strippers = { }
+local normalline = space^0 / function(s) local n = #s if n < nofspaces then nofspaces = n end end
+                 * whatever
+
+local getmargin = (emptyline + normalline)^1
 
 local function undent(str) -- new version, needs testing: todo: not always needed, like in xtables
+    nofspaces = #str
     local margin = lpegmatch(getmargin,str)
-    if type(margin) ~= "string" then
+    if nofspaces == #str or nofspaces ==0 then
         return str
     end
-    local indent = #margin
-    if indent == 0 then
-        return str
-    end
-    local stripper = strippers[indent]
+    local stripper = strippers[nofspaces]
     if not stripper then
-        stripper = Cs((P(margin)/"" * whatever + eol^1)^1)
-        strippers[indent] = stripper
+        stripper = Cs(((space^-nofspaces)/"" * whatever + emptyline)^1)
+        strippers[nofspaces] = stripper
     end
     return lpegmatch(stripper,str) or str
 end
@@ -334,54 +338,61 @@ buffers.undent = undent
 -- end
 
 function tokens.pickup(start,stop)
-    local stoplist    = totable(stop)
-    local stoplength  = #stoplist
-    local stoplast    = stoplist[stoplength]
-    local startlist   = totable(start)
-    local startlength = #startlist
-    local startlast   = startlist[startlength]
-    local list        = { }
-    local size        = 0
-    local depth       = 0
+    local stoplist     = totable(stop)
+    local stoplength   = #stoplist
+    local stoplast     = stoplist[stoplength]
+    local startlist    = totable(start)
+    local startlength  = #startlist
+    local startlast    = startlist[startlength]
+    local list         = { }
+    local size         = 0
+    local depth        = 0
+--     local done         = 32
     while true do -- or use depth
         local char = scancode()
         if char then
-            char = utfchar(char)
-            size = size + 1
-            list[size] = char
-            if char == stoplast and size >= stoplength then
-                local done = true
-                local last = size
-                for i=stoplength,1,-1 do
-                    if stoplist[i] ~= list[last] then
-                        done = false
-                        break
+--             if char < done then
+--                 -- we skip leading control characters so that we can use them to
+--                 -- obey spaces (a dirty trick)
+--             else
+--                 done = 0
+                char = utfchar(char)
+                size = size + 1
+                list[size] = char
+                if char == stoplast and size >= stoplength then
+                    local done = true
+                    local last = size
+                    for i=stoplength,1,-1 do
+                        if stoplist[i] ~= list[last] then
+                            done = false
+                            break
+                        end
+                        last = last - 1
                     end
-                    last = last - 1
-                end
-                if done then
-                    if depth > 0 then
-                        depth = depth - 1
-                    else
-                        break
+                    if done then
+                        if depth > 0 then
+                            depth = depth - 1
+                        else
+                            break
+                        end
+                        char = false -- trick: let's skip the next (start) test
                     end
-                    char = false -- trick: let's skip the next (start) test
                 end
-            end
-            if char == startlast and size >= startlength then
-                local done = true
-                local last = size
-                for i=startlength,1,-1 do
-                    if startlist[i] ~= list[last] then
-                        done = false
-                        break
+                if char == startlast and size >= startlength then
+                    local done = true
+                    local last = size
+                    for i=startlength,1,-1 do
+                        if startlist[i] ~= list[last] then
+                            done = false
+                            break
+                        end
+                        last = last - 1
                     end
-                    last = last - 1
+                    if done then
+                        depth = depth + 1
+                    end
                 end
-                if done then
-                    depth = depth + 1
-                end
-            end
+--             end
         else
          -- local t = scantoken()
             local t = gettoken()
@@ -394,15 +405,21 @@ function tokens.pickup(start,stop)
     end
     local start = 1
     local stop  = size-stoplength-1
+    -- not good enough: only empty lines, but even then we miss the leading
+    -- for verbatim
     for i=start,stop do
-        if lpegmatch(p_whitespace,list[i]) then
+        local li = list[i]
+        if lpegmatch(blackspace,li) then
+            -- keep going
+        elseif lpegmatch(eol,li) then
+            -- okay
             start = i + 1
         else
             break
         end
     end
     for i=stop,start,-1 do
-        if lpegmatch(p_whitespace,list[i]) then
+        if lpegmatch(whitespace,list[i]) then
             stop = i - 1
         else
             break
@@ -435,7 +452,7 @@ scanners.pickupbuffer = function()
     local doundent = scanboolean()
     local data = tokens.pickup(start,stop)
     if doundent or (autoundent and doundent == nil) then
-        data = buffers.undent(data)
+        data = undent(data)
     end
     buffers.assign(name,data,catcodes)
  -- context[finish]()

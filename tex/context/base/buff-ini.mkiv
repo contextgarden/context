@@ -118,7 +118,7 @@
      \scratchcounter
      \ifnum#6=\plusone\s!true\else\s!false\fi
  % \relax}
-   \expandafter\relax\string}
+   \expandafter\relax\string} % maybe \normalexpanded{\relax\utfchar{7}}} signal
 
 \unexpanded\def\buff_stop#1%
   {\endgroup % (3 & 4 & 5 & 6)
@@ -170,7 +170,7 @@
 
 \unexpanded\def\buff_get[#1]% [name]
   {\namedbufferparameter\empty\c!before
-   \doifelsenothing{#1}
+%    \doifelsenothing{#1}
      {\buff_get_stored_indeed\empty}
      {\processcommalist[#1]\buff_get_stored_indeed}%
    \namedbufferparameter\empty\c!after}

@@ -1607,7 +1607,8 @@ local function identify_inner_or_outer(set,var,i)
 
         -- nest we look at each component (but we can omit the already consulted one
 
-        local components = job.structure.components
+        local jobstructure = job.structure
+        local components   = jobstructure and jobstructure.components
         if components then
             for c=1,#components do
                 local component = components[c]

@@ -1888,6 +1888,7 @@ function readers.loadfont(filename,n)
      -- kerns    = true,
         subfont  = n,
     }
+print(fontdata.subfonts)
     if fontdata then
         --
         return {

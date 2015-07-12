@@ -88,21 +88,22 @@ appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler")  
 
 --maybe integrate relocate and families
 
-appendaction("math",         "normalizers", "noads.handlers.showtree", nil, "nohead")
+appendaction("math",         "normalizers", "noads.handlers.showtree",  nil, "nohead")
 
-appendaction("math",         "normalizers", "noads.handlers.unscript", nil, "nohead")            -- always on (maybe disabled)
-appendaction("math",         "normalizers", "noads.handlers.variants", nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.relocate", nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.families", nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.unscript",  nil, "nohead")            -- always on (maybe disabled)
+appendaction("math",         "normalizers", "noads.handlers.variants",  nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.relocate",  nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.families",  nil, "nohead")            -- always on
 
-appendaction("math",         "normalizers", "noads.handlers.render",   nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.collapse", nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.resize",   nil, "nohead")            -- always on
-------------("math",         "normalizers", "noads.handlers.respace",  nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.check",    nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.tags",     nil, "nohead")            -- disabled
-appendaction("math",         "normalizers", "noads.handlers.italics",  nil, "nohead")            -- disabled
-appendaction("math",         "normalizers", "noads.handlers.classes",  nil, "nohead")            -- disabled
+appendaction("math",         "normalizers", "noads.handlers.render",    nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.collapse",  nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.autofences")               -- head !  -- always on
+appendaction("math",         "normalizers", "noads.handlers.resize",    nil, "nohead")            -- always on
+------------("math",         "normalizers", "noads.handlers.respace",   nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.alternates",nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.tags",      nil, "nohead")            -- disabled
+appendaction("math",         "normalizers", "noads.handlers.italics",   nil, "nohead")            -- disabled
+appendaction("math",         "normalizers", "noads.handlers.classes",   nil, "nohead")            -- disabled
 
 appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
 ------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled

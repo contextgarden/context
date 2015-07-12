@@ -1,0 +1,40 @@
+%D \module
+%D   [       file=m-newotf,
+%D        version=2015.07.08,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Experimental OTF Loader,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module will go away as soon as we use the new loader code by default.
+%D That will happen after extensive testing. Generic support will happen after
+%D that.
+
+\unprotect
+
+\startluacode
+    local files = {
+        "font-otr", "font-cff", "font-ttf", "font-dsp", "font-oup",
+        "font-otl", "font-ots", "font-oto", "font-otd", "font-otc",
+        "font-osd", "font-map", "font-fbk", "font-gds",
+    }
+    local report    = logs.reporter("newotf")
+    local findfile  = resolvers.findfile
+    local addsuffix = file.addsuffix
+    report()
+    report("replacing font loader code by experimental code")
+    report()
+    for i=1,#files do
+        local foundfile = findfile(addsuffix(files[i],"lua"))
+        report("loading %a",foundfile)
+        dofile(foundfile)
+    end
+    report()
+\stopluacode
+
+\protect \endinput

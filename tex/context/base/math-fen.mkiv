@@ -216,6 +216,8 @@
 \unexpanded\def\right {\afterassignment\math_right \let\nexttoken}
 \unexpanded\def\middle{\afterassignment\math_middle\let\nexttoken}
 
+\let\leftorright\relax
+
 \newconditional\c_math_fenced_done
 \newconditional\c_math_fenced_unknown  \settrue\c_math_fenced_unknown
 
@@ -448,74 +450,159 @@
 
 %D This is needed for mathml (used in mrow, so it gets reset):
 
-\let\math_fences_saved_left  \left
-\let\math_fences_saved_middle\middle
-\let\math_fences_saved_right \right
+% old code:
 
-% \def\math_fences_traced#1{\ruledhbox{\ttx#1\low{\the\c_math_fenced_nesting}}}
+% \let\math_fences_saved_left  \left
+% \let\math_fences_saved_middle\middle
+% \let\math_fences_saved_right \right
+%
+% % \def\math_fences_traced#1{\ruledhbox{\ttx#1\low{\the\c_math_fenced_nesting}}}
+%
+% \unexpanded\def\math_fences_checked_left
+%   {%\math_fences_traced L%
+%    \math_fences_saved_left}
+%
+% \unexpanded\def\math_fences_checked_middle
+%   {%\math_fences_traced M%
+%    \ifcase\c_math_fenced_nesting
+%      \expandafter\math_fences_saved_middle
+%    \else
+%      \expandafter\firstofoneargument
+%    \fi}
+%
+% \unexpanded\def\math_fences_checked_right
+%   {%\math_fences_traced R%
+%    \ifcase\c_math_fenced_nesting
+%      \expandafter\firstofoneargument
+%    \else
+%      \expandafter\math_fences_saved_right
+%    \fi}
+%
+% \newconditional\c_math_checked_done % only bars
+%
+% \unexpanded\def\math_fences_checked_left_or_right
+%   {%\math_fences_traced B%
+%    \ifcase\c_math_fenced_nesting
+%      \settrue\c_math_checked_done
+%      \expandafter\math_fences_saved_left
+%    \else\ifconditional\c_math_checked_done
+%      \setfalse\c_math_checked_done
+%      \doubleexpandafter\math_fences_saved_right
+%    \else
+%      \doubleexpandafter\math_fences_saved_middle
+%    \fi\fi}
+%
+% \unexpanded\def\math_fences_checked_start
+%   {\c_math_fenced_nesting\zerocount}
+%
+% \unexpanded\def\math_fences_checked_stop
+%   {\ifcase\c_math_fenced_nesting\else
+%      \right.\relax % error, todo: nil spacing
+%      \expandafter\math_fences_checked_stop
+%    \fi}
+%
+% \unexpanded\def\startcheckedfences
+%   {\begingroup
+%    \let\left  \math_fences_checked_left
+%    \let\middle\math_fences_checked_middle
+%    \let\right \math_fences_checked_right
+%    \math_fences_checked_start}
+%
+% \unexpanded\def\stopcheckedfences
+%   {\math_fences_checked_stop
+%    \endgroup}
+%
+% \let\leftorright\math_fences_checked_left_or_right % for bars
 
-\unexpanded\def\math_fences_checked_left
-  {%\math_fences_traced L%
-   \math_fences_saved_left}
+\definesystemattribute[mathautofence][public]
 
-\unexpanded\def\math_fences_checked_middle
-  {%\math_fences_traced M%
-   \ifcase\c_math_fenced_nesting
-     \expandafter\math_fences_saved_middle
+\let\math_fences_normal_left  \left
+\let\math_fences_normal_right \right
+\let\math_fences_normal_middle\middle
+\let\math_fences_normal_both  \leftorright
+
+\unexpanded\def\math_fences_auto_left  #1{\attribute\mathautofenceattribute\plusone  #1\attribute\mathautofenceattribute\attributeunsetvalue}
+\unexpanded\def\math_fences_auto_right #1{\attribute\mathautofenceattribute\plustwo  #1\attribute\mathautofenceattribute\attributeunsetvalue}
+\unexpanded\def\math_fences_auto_middle#1{\attribute\mathautofenceattribute\plusthree#1\attribute\mathautofenceattribute\attributeunsetvalue}
+\unexpanded\def\math_fences_auto_both  #1{\attribute\mathautofenceattribute\plusfour #1\attribute\mathautofenceattribute\attributeunsetvalue}
+
+\let\autofenceopen  \math_fences_auto_left    % for testing
+\let\autofenceclose \math_fences_auto_right   % for testing
+\let\autofenceleft  \math_fences_auto_left    % for testing
+\let\autofenceright \math_fences_auto_right   % for testing
+\let\autofencemiddle\math_fences_auto_middle  % for testing
+\let\autofenceboth  \math_fences_auto_both    % for testing
+
+% fences are used not that often (i.e. no performance issue) so we can use a state
+% instead of \let ... also some state variable can come in handy in the future
+
+\newconditional\c_math_fences_auto
+
+\unexpanded\def\enableautofences {\settrue \c_math_fences_auto}
+\unexpanded\def\disableautofences{\setfalse\c_math_fences_auto}
+
+\unexpanded\def\math_fences_used_left
+  {\ifconditional\c_math_fences_auto
+     \expandafter\math_fences_auto_left
    \else
-     \expandafter\firstofoneargument
+     \expandafter\math_fences_normal_left
+   \fi}
+\unexpanded\def\math_fences_used_right
+  {\ifconditional\c_math_fences_auto
+     \expandafter\math_fences_auto_right
+   \else
+     \expandafter\math_fences_normal_right
+   \fi}
+\unexpanded\def\math_fences_used_middle
+  {\ifconditional\c_math_fences_auto
+     \expandafter\math_fences_auto_middle
+   \else
+     \expandafter\math_fences_normal_middle
+   \fi}
+\unexpanded\def\math_fences_used_both
+  {\ifconditional\c_math_fences_auto
+     \expandafter\math_fences_auto_both
+   \else
+     \expandafter\math_fences_normal_both
    \fi}
 
-\unexpanded\def\math_fences_checked_right
-  {%\math_fences_traced R%
-   \ifcase\c_math_fenced_nesting
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\math_fences_saved_right
-   \fi}
+\let\left       \math_fences_used_left
+\let\right      \math_fences_used_right
+\let\middle     \math_fences_used_middle
+\let\leftorright\math_fences_used_both
 
-\newconditional\c_math_checked_done % only bars
-
-\unexpanded\def\math_fences_checked_left_or_right
-  {%\math_fences_traced B%
-   \ifcase\c_math_fenced_nesting
-     \settrue\c_math_checked_done
-     \expandafter\math_fences_saved_left
-   \else\ifconditional\c_math_checked_done
-     \setfalse\c_math_checked_done
-     \doubleexpandafter\math_fences_saved_right
-   \else
-     \doubleexpandafter\math_fences_saved_middle
-   \fi\fi}
-
-\unexpanded\def\math_fences_checked_start
-  {\c_math_fenced_nesting\zerocount}
-
-\unexpanded\def\math_fences_checked_stop
-  {\ifcase\c_math_fenced_nesting\else
-     \right.\relax % error, todo: nil spacing
-     \expandafter\math_fences_checked_stop
-   \fi}
+% wrappers
 
 \unexpanded\def\startcheckedfences
   {\begingroup
-   \let\left  \math_fences_checked_left
-   \let\middle\math_fences_checked_middle
-   \let\right \math_fences_checked_right
-   \math_fences_checked_start}
+   \enableautofences}
 
 \unexpanded\def\stopcheckedfences
-  {\math_fences_checked_stop
-   \endgroup}
+  {\endgroup}
 
-\let\leftorright\math_fences_checked_left_or_right % for bars
+\appendtoks
+   % maybe: safeguard against overloading
+   %
+   % \let\left       \math_fences_used_left
+   % \let\right      \math_fences_used_right
+   % \let\middle     \math_fences_used_middle
+   % \let\leftorright\math_fences_used_both
+\to \everymathematics
+
+\appendtoks
+    \ifx\currentmathfence\empty
+        \doifelse{\mathfenceparameter\c!state}\v!auto\enableautofences\disableautofences
+    \fi
+\to \everysetupmathfence
+
+% some day default: \setupmathfences[\c!state=\v!auto]
 
 %D The next characters were used for constructing nicer extensibles but
 %D nowadays we have real characters.
 
-\Umathchardef\braceld=0 \defaultmathfamily "FF07A
-\Umathchardef\bracerd=0 \defaultmathfamily "FF07B
-\Umathchardef\bracelu=0 \defaultmathfamily "FF07C
-\Umathchardef\braceru=0 \defaultmathfamily "FF07D
+\Umathchardef\braceld\zerocount \defaultmathfamily "FF07A
+\Umathchardef\bracerd\zerocount \defaultmathfamily "FF07B
+\Umathchardef\bracelu\zerocount \defaultmathfamily "FF07C
+\Umathchardef\braceru\zerocount \defaultmathfamily "FF07D
 
 \protect

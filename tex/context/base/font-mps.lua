@@ -21,9 +21,9 @@ fonts          = fonts or { }
 local metapost = fonts.metapost or { }
 fonts.metapost = metapost
 
-local f_moveto      = formatters["(%.4G,%.4G)"]
-local f_lineto      = formatters["--(%.4G,%.4G)"]
-local f_curveto     = formatters["..controls(%.4G,%.4G)and(%.4G,%.4G)..(%.4G,%.4G)"]
+local f_moveto      = formatters["(%.4F,%.4F)"]
+local f_lineto      = formatters["--(%.4F,%.4F)"]
+local f_curveto     = formatters["..controls(%.4F,%.4F)and(%.4F,%.4F)..(%.4F,%.4F)"]
 local s_cycle       = "--cycle"
 
 local f_nofill      = formatters["nofill %s;"]
@@ -32,8 +32,8 @@ local f_dofill      = formatters["fill %s;"]
 local f_draw_trace  = formatters["drawpathonly %s;"]
 local f_draw        = formatters["draw %s;"]
 
-local f_boundingbox = formatters["((%.4G,%.4G)--(%.4G,%.4G)--(%.4G,%.4G)--(%.4G,%.4G)--cycle)"]
-local f_vertical    = formatters["((%.4G,%.4G)--(%.4G,%.4G))"]
+local f_boundingbox = formatters["((%.4F,%.4F)--(%.4F,%.4F)--(%.4F,%.4F)--(%.4F,%.4F)--cycle)"]
+local f_vertical    = formatters["((%.4F,%.4F)--(%.4F,%.4F))"]
 
 function metapost.boundingbox(d,factor)
     local bounds = d.boundingbox
@@ -254,7 +254,7 @@ local characters   = fonts.hashes.characters
 local shapes       = fonts.hashes.shapes
 local topaths      = fonts.metapost.paths
 
-local f_code       = formatters["mfun_do_outline_text_flush(%q,%i,%.4G,%.4G)(%,t);"]
+local f_code       = formatters["mfun_do_outline_text_flush(%q,%i,%.4F,%.4F)(%,t);"]
 local s_nothing    = "(origin scaled 10)"
 
 local sc = 10
@@ -334,7 +334,9 @@ function fonts.metapost.boxtomp(n,kind)
                 advance = a + current.width * fc
             elseif id == vlist_code then
                 boxtomp(current) -- ,distance + (shift or 0),current.glue_set*current.glue_sign)
-            else -- todo: rule
+            elseif id == rule_code then
+                -- todo
+            else
              -- print("horizontal >>>",nodecodes[id])
             end
             current = current.next
@@ -369,8 +371,14 @@ function fonts.metapost.boxtomp(n,kind)
             else
                 vertical(current,shift)
             end
+result[#result+1] = formatters["setbounds currentpicture to %s;"] ( metapost.boundingbox (
+    { boundingbox = { 0, -list.depth, list.width, list.height } },
+    fc
+) )
         end
     end
+
+    -- todo: honor struts / ht dp
 
     local box = tex.box[n]
     boxtomp(box,box.shift,box.glue_sign,box.glue_set,box.glue_order)

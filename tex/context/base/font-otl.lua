@@ -53,7 +53,7 @@ local report_otf         = logs.reporter("fonts","otf loading")
 local fonts              = fonts
 local otf                = fonts.handlers.otf
 
-otf.version              = 3.000 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 3.002 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otl", otf.version, true)
 
 local otfreaders         = otf.readers
@@ -183,6 +183,9 @@ function enhancers.register(what,action) -- only already registered can be overl
 end
 
 function otf.load(filename,sub,featurefile) -- second argument (format) is gone !
+    --
+    local featurefile = nil -- not supported (yet)
+    --
     local base = file.basename(file.removesuffix(filename))
     local name = file.removesuffix(base)
     local attr = lfs.attributes(filename)
@@ -251,7 +254,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         report_otf("loading %a, hash %a",filename,hash)
         --
         starttiming(otfreaders)
-        data = otfreaders.loadfont(filename,sub)
+        data = otfreaders.loadfont(filename,sub or 1)
         --
         -- if featurefiles then
         --     for i=1,#featurefiles do

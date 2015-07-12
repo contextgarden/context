@@ -163,14 +163,23 @@
 %     \ignorediscretionaries
 % \to \everyasciimath
 
+\appendtoks
+    \enableautofences
+\to \everyasciimath
+
 \unexpanded\def\asciimath
   {\doifnextoptionalelse\asciimath_yes\asciimath_nop}
 
 \def\asciimath_yes[#1]#2%
-  {\mathematics[#1]{\clf_justasciimath{\detokenize\expandafter{\normalexpanded{#2}}}}}
+  {\mathematics
+    [#1]%
+    {\the\everyasciimath%
+     \clf_justasciimath{\detokenize\expandafter{\normalexpanded{#2}}}}}
 
 \def\asciimath_nop#1%
-  {\mathematics{\clf_justasciimath{\detokenize\expandafter{\normalexpanded{#1}}}}}
+  {\mathematics
+    {\the\everyasciimath
+     \clf_justasciimath{\detokenize\expandafter{\normalexpanded{#1}}}}}
 
 \unexpanded\def\ctxmoduleasciimath#1%
   {\ctxlua{moduledata.asciimath.#1}}

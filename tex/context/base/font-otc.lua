@@ -21,12 +21,6 @@ local otf                 = fonts.handlers.otf
 local registerotffeature  = otf.features.register
 local setmetatableindex   = table.setmetatableindex
 
--- In the userdata interface we can not longer tweak the loaded font as
--- conveniently as before. For instance, instead of pushing extra data in
--- in the table using the original structure, we now have to operate on
--- the mkiv representation. And as the fontloader interface is modelled
--- after fontforge we cannot change that one too much either.
-
 local normalized = {
     substitution = "substitution",
     single       = "substitution",
@@ -37,7 +31,6 @@ local normalized = {
 }
 
 local types = {
-    single       = "gsub_single",
     substitution = "gsub_single",
     ligature     = "gsub_ligature",
     alternate    = "gsub_alternate",

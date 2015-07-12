@@ -646,12 +646,15 @@ function readers.addunicodetable(fontdata)
     local resources = fontdata.resources
     local unicodes  = resources.unicodes
     if not unicodes then
-        unicodes = { }
-        resources.unicodes = unicodes
-        for u, d in next, fontdata.descriptions do
-            local n = d.name
-            if n then
-                unicodes[n] = u
+        local descriptions = fontdata.descriptions
+        if descriptions then
+            unicodes = { }
+            resources.unicodes = unicodes
+            for u, d in next, descriptions do
+                local n = d.name
+                if n then
+                    unicodes[n] = u
+                end
             end
         end
     end
@@ -1129,7 +1132,7 @@ function readers.pack(data)
                                             end
                                         end
                                     end
-                                elseif kind == "gpos_mark2base" or kind == "gpos_mark2mark" or kind == "gpos_mark2ligature" then
+--                                 elseif kind == "gpos_mark2base" or kind == "gpos_mark2mark" or kind == "gpos_mark2ligature" then
 -- local c = step.baseclasses
 -- for k, v in next, c do
 --     c[k] = pack_normal(v)
@@ -1814,101 +1817,103 @@ function readers.expand(data)
             end
         end
     end
-    if sequences then
-        -- we also need to do sublookups
-        for i=1,#sequences do
-            local sequence = sequences[i]
-            local steps = sequence.steps
-            if steps then
-                local kind = sequence.type
-                local markclass = sequence.markclass
-                if markclass then
-                    if not markclasses then
-                        report_warning("missing markclasses")
-                        sequence.markclass = false
-                    else
-                        sequence.markclass = markclasses[markclass]
-                    end
-                end
-                for i=1,sequence.nofsteps do
-                    local step = steps[i]
-                    local baseclasses = step.baseclasses
-                    if baseclasses then
-                        local coverage = step.coverage
-                        for k, v in next, coverage do
---                             v[1] = baseclasses[v[2]] -- slot 1 is a placeholder
-                            v[1] = baseclasses[v[1]]
-                        end
-                    elseif kind == "gpos_cursive" then
-                        local coverage = step.coverage
-                        for k, v in next, coverage do
-                            v[1] = coverage -- slot 1 is a placeholder
+    local function expandlookups(sequences)
+        if sequences then
+            -- we also need to do sublookups
+            for i=1,#sequences do
+                local sequence = sequences[i]
+                local steps = sequence.steps
+                if steps then
+                    local kind = sequence.type
+                    local markclass = sequence.markclass
+                    if markclass then
+                        if not markclasses then
+                            report_warning("missing markclasses")
+                            sequence.markclass = false
+                        else
+                            sequence.markclass = markclasses[markclass]
                         end
                     end
-                    local rules = step.rules
-                    if rules then
-                        local rulehash   = { }
-                        local rulesize   = 0
-                        local coverage   = { }
-                        local lookuptype = sequence.type
-                        step.coverage    = coverage -- combined hits
-                        for nofrules=1,#rules do
-                            local rule         = rules[nofrules]
-                            local current      = rule.current
-                            local before       = rule.before
-                            local after        = rule.after
-                            local replacements = rule.replacements
-                            local sequence     = { }
-                            local nofsequences = 0
-                            if before then
-                                for n=1,#before do
-                                    nofsequences = nofsequences + 1
-                                    sequence[nofsequences] = before[n]
-                                end
+                    for i=1,sequence.nofsteps do
+                        local step = steps[i]
+                        local baseclasses = step.baseclasses
+                        if baseclasses then
+                            local coverage = step.coverage
+                            for k, v in next, coverage do
+    --                             v[1] = baseclasses[v[2]] -- slot 1 is a placeholder
+                                v[1] = baseclasses[v[1]]
                             end
-                            local start = nofsequences + 1
-                            for n=1,#current do
-                                nofsequences = nofsequences + 1
-                                sequence[nofsequences] = current[n]
+                        elseif kind == "gpos_cursive" then
+                            local coverage = step.coverage
+                            for k, v in next, coverage do
+                                v[1] = coverage -- slot 1 is a placeholder
                             end
-                            local stop = nofsequences
-                            if after then
-                                for n=1,#after do
-                                    nofsequences = nofsequences + 1
-                                    sequence[nofsequences] = after[n]
-                                end
-                            end
-                            local lookups = rule.lookups
-                            local subtype = nil
-                            if lookups then
-                                for k, v in next, lookups do
-                                    local lookup = sublookups[v]
-                                    if lookup then
-                                        lookups[k] = lookup
-                                        if not subtype then
-                                            subtype = lookup.type
-                                        end
-                                    else
-                                        -- already expanded
+                        end
+                        local rules = step.rules
+                        if rules then
+                            local rulehash   = { }
+                            local rulesize   = 0
+                            local coverage   = { }
+                            local lookuptype = sequence.type
+                            step.coverage    = coverage -- combined hits
+                            for nofrules=1,#rules do
+                                local rule         = rules[nofrules]
+                                local current      = rule.current
+                                local before       = rule.before
+                                local after        = rule.after
+                                local replacements = rule.replacements
+                                local sequence     = { }
+                                local nofsequences = 0
+                                if before then
+                                    for n=1,#before do
+                                        nofsequences = nofsequences + 1
+                                        sequence[nofsequences] = before[n]
                                     end
                                 end
-                            end
-                            if sequence[1] then -- we merge coverage into one
-                                rulesize = rulesize + 1
-                                rulehash[rulesize] = {
-                                    nofrules,     -- 1
-                                    lookuptype,   -- 2
-                                    sequence,     -- 3
-                                    start,        -- 4
-                                    stop,         -- 5
-                                    rule.lookups, -- 6
-                                    replacements, -- 7
-                                    subtype,      -- 8
-                                }
-                                for unic in next, sequence[start] do
-                                    local cu = coverage[unic]
-                                    if not cu then
-                                        coverage[unic] = rulehash -- can now be done cleaner i think
+                                local start = nofsequences + 1
+                                for n=1,#current do
+                                    nofsequences = nofsequences + 1
+                                    sequence[nofsequences] = current[n]
+                                end
+                                local stop = nofsequences
+                                if after then
+                                    for n=1,#after do
+                                        nofsequences = nofsequences + 1
+                                        sequence[nofsequences] = after[n]
+                                    end
+                                end
+                                local lookups = rule.lookups
+                                local subtype = nil
+                                if lookups then
+                                    for k, v in next, lookups do
+                                        local lookup = sublookups[v]
+                                        if lookup then
+                                            lookups[k] = lookup
+                                            if not subtype then
+                                                subtype = lookup.type
+                                            end
+                                        else
+                                            -- already expanded
+                                        end
+                                    end
+                                end
+                                if sequence[1] then -- we merge coverage into one
+                                    rulesize = rulesize + 1
+                                    rulehash[rulesize] = {
+                                        nofrules,     -- 1
+                                        lookuptype,   -- 2
+                                        sequence,     -- 3
+                                        start,        -- 4
+                                        stop,         -- 5
+                                        rule.lookups, -- 6
+                                        replacements, -- 7
+                                        subtype,      -- 8
+                                    }
+                                    for unic in next, sequence[start] do
+                                        local cu = coverage[unic]
+                                        if not cu then
+                                            coverage[unic] = rulehash -- can now be done cleaner i think
+                                        end
                                     end
                                 end
                             end
@@ -1918,4 +1923,6 @@ function readers.expand(data)
             end
         end
     end
+    expandlookups(sequences)
+    expandlookups(sublookups)
 end

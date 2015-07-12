@@ -22,7 +22,7 @@ local trace_singles          = false  trackers.register("otf.singles",          
 local trace_multiples        = false  trackers.register("otf.multiples",        function(v) trace_multiples        = v end)
 local trace_alternatives     = false  trackers.register("otf.alternatives",     function(v) trace_alternatives     = v end)
 local trace_ligatures        = false  trackers.register("otf.ligatures",        function(v) trace_ligatures        = v end)
-local trace_ligatures_detail = false  trackers.register("otf.ligatures.detail", function(v) trace_ligatures_detail = v end)
+----- trace_ligatures_detail = false  trackers.register("otf.ligatures.detail", function(v) trace_ligatures_detail = v end)
 local trace_kerns            = false  trackers.register("otf.kerns",            function(v) trace_kerns            = v end)
 local trace_preparing        = false  trackers.register("otf.preparing",        function(v) trace_preparing        = v end)
 
@@ -272,7 +272,6 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
                 end
             end
         elseif kind == "gsub_ligature" then
--- inspect(steps)
             for i=1,#steps do
                 for unicode, data in next, steps[i].coverage do
                     ligatures[#ligatures+1] = { unicode, data, "" } -- lookupname }
