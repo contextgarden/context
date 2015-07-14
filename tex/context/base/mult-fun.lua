@@ -13,6 +13,7 @@ return {
      -- "angleoffset", anglelength", anglemethod",
         "metapostversion",
         "maxdimensions",
+        "drawoptionsfactor",
     },
     commands = {
         "transparency",
@@ -51,6 +52,7 @@ return {
         "onlayer",
         "along",
         "graphictext", "loadfigure", "externalfigure", "figure", "register", "outlinetext", -- "lua",
+        "checkedbounds", "checkbounds", "strut", "rule",
         "withmask", "bitmapimage",
         "colordecimals", "ddecimal", "dddecimal", "ddddecimal",
         "textext", "thetextext", "rawtextext", "textextoffset",
@@ -106,9 +108,9 @@ return {
         "colortype", "whitecolor", "blackcolor", "basiccolors",
         --
      -- "swappointlabels",
-        "normalfill", "normaldraw", "visualizepaths", "naturalizepaths",
+        "normalfill", "normaldraw", "visualizepaths", "detailpaths", "naturalizepaths",
         "drawboundary", "drawwholepath", "drawpathonly",
-        "visualizeddraw", "visualizedfill",
+        "visualizeddraw", "visualizedfill", "detaileddraw",
         "draworigin", "drawboundingbox",
         "drawpath",
         "drawpoint", "drawpoints", "drawcontrolpoints", "drawcontrollines",
@@ -125,5 +127,7 @@ return {
         --
         "eofill", "eoclip", "nofill",
         "area",
+        --
+        "addbackground",
     },
 }

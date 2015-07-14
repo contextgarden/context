@@ -170,7 +170,7 @@
 
 \unexpanded\def\buff_get[#1]% [name]
   {\namedbufferparameter\empty\c!before
-%    \doifelsenothing{#1}
+   \doifelsenothing{#1}
      {\buff_get_stored_indeed\empty}
      {\processcommalist[#1]\buff_get_stored_indeed}%
    \namedbufferparameter\empty\c!after}

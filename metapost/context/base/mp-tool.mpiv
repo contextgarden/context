@@ -1077,13 +1077,13 @@ def drawpathoptions   (text t) = def _pth_opt_ = t enddef ; enddef ;
 numeric drawoptionsfactor ; drawoptionsfactor := pt ;
 
 def resetdrawoptions =
-    drawlineoptions   (withpen pencircle scaled 1drawoptionsfactor withcolor .5white) ;
-    drawpointoptions  (withpen pencircle scaled 4drawoptionsfactor withcolor black) ;
-    drawcontroloptions(withpen pencircle scaled 2.5drawoptionsfactor withcolor black) ;
+    drawlineoptions   (withpen pencircle scaled 1.0 drawoptionsfactor withcolor .5white) ;
+    drawpointoptions  (withpen pencircle scaled 4.0 drawoptionsfactor withcolor   black) ;
+    drawcontroloptions(withpen pencircle scaled 2.5 drawoptionsfactor withcolor   black) ;
     drawlabeloptions  () ;
-    draworiginoptions (withpen pencircle scaled 1drawoptionsfactor withcolor .5white) ;
+    draworiginoptions (withpen pencircle scaled 1.0 drawoptionsfactor withcolor .5white) ;
     drawboundoptions  (dashed evenly _ori_opt_) ;
-    drawpathoptions   (withpen pencircle scaled 5drawoptionsfactor withcolor .8white) ;
+    drawpathoptions   (withpen pencircle scaled 5.0 drawoptionsfactor withcolor .8white) ;
 enddef ;
 
 resetdrawoptions ;
@@ -1285,9 +1285,27 @@ def do_visualizedfill text t =
     drawpointlabels   _c_ ;
 enddef ;
 
+def detaileddraw expr c =
+    if picture c : normaldraw c else : path _c_ ; _c_ := c ; do_detaileddraw fi
+enddef ;
+
+def do_detaileddraw text t =
+    drawpath          _c_ t ;
+    drawcontrollines  _c_ ;
+    drawcontrolpoints _c_ ;
+    drawpoints        _c_ ;
+  % % for labels we need an third run (as the second will mark the numbers); i could preroll them
+  % % but then the hash needs to handle that as well (as now we keep numbering)
+  % drawpointlabels   _c_ ;
+enddef ;
+
 def visualizepaths =
     let fill = visualizedfill ;
     let draw = visualizeddraw ;
+enddef ;
+
+def detailpaths =
+    let draw = detaileddraw ;
 enddef ;
 
 def naturalizepaths =

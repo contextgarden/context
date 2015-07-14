@@ -694,7 +694,7 @@
 
 \installcolumnbreakmethod \s!columnset \v!page
   {\page_otr_fill_and_eject_page}
-
+
 \newtoks\OTRSETeverystartofcolumn
 
 \newbox\OTRSETsavedfootnotes
@@ -857,7 +857,7 @@
    \fi}
 
 \let\OTRSETcheckfreelines\donothing
-
+
 \def\OTRSETfillgapsbetweencells#1#2% col
   {\ifnum\columngaplimit>\zerocount
      \donefalse
@@ -885,7 +885,7 @@
 \appendtoks
   \OTRSETfillgapsbetweencells\mofcolumns\plusone
 \to \OTRSETeverystartofcolumn
-
+
 \newif\ifspancolumnslots \spancolumnslotstrue
 \newif\ifcheckcolumnspan \checkcolumnspantrue
 
@@ -963,7 +963,7 @@
      \columnlastcell\savedcolumnlastcell
      \OTRSETsavebox{#1}%
    \fi}
-
+
 \newdimen\totalcolumnspace
 
 \def\columnspacetopoffset{0}
@@ -1298,7 +1298,7 @@
      \ifnum#1<3\vss\fi
      \egroup
    \fi}
-
+
 \unexpanded\def\page_set_command_check_if_float_fits
   {\global\ifconditional\c_page_floats_not_permitted\setfalse\c_page_floats_room\else\settrue\c_page_floats_room\fi}
 
@@ -1334,6 +1334,13 @@
         \ifdim\floatwidth>\zeropoint
           \!!doneatrue
           \page_floats_flush\s!text\plusone
+%
+% a quick hack ... will be redone
+%
+\ifdim\wd\floatbox<\floatwidth \ifhbox\floatbox
+    \global\setbox\floatbox\hbox{\unhbox\floatbox}%
+\fi \fi
+%
           \dp\floatbox\zeropoint
           \OTRSETstoreincolumnslot{TBLR}\floatbox
           \if!!donea
@@ -1349,9 +1356,8 @@
         \exitloop
       \fi}
    \egroup}
-
-\newif\ifcentergridcells \centergridcellstrue
 
+\newif\ifcentergridcells        \centergridcellstrue
 \newif\ifcentergridcellonly     \centergridcellonlyfalse
 \newif\ifautocentergridcellonly \autocentergridcellonlytrue
 
@@ -1420,7 +1426,7 @@
            \fi
            \fi}}%
    \fi}
-
+
 \def\OTRSETinitializecolumns% once per page
   {\columnspreadtrue % todo
    \ifcolumnspread
@@ -1442,7 +1448,7 @@
    \OTRSETassignwidths
    \global\mofcolumns\plusone
    \page_set_cell_erase_grid}
-
+
 % this is a first step in upgrading
 
 \installcorenamespace{columnset}
@@ -1558,7 +1564,7 @@
          \v!last=>\expanded{\doOTRSETgotoCOLUMN{\the\nofcolumns}},
       \s!default=>\OTRSETdummycolumn,
       \s!unknown=>\expanded{\doOTRSETgotoCOLROW{\commalistelement}}]}
-
+
 % to be documented and tested, not yet that robust
 
 % \def\OTRSETgotocell#1#2%
@@ -1600,7 +1606,7 @@
   {\endgraf
    \doOTRSETgotoCOLUMN{#1}%
    \doOTRSETgotoROW   {#2}}
-
+
 \def\OTRSETdummycolumn
   {\verticalstrut
    \vskip-\struttotal
@@ -2032,7 +2038,7 @@
    \@EA\uppercasestring\floatmethod\to\floatmethod
    \OTRSETstoreincolumnslot\floatmethod\floatbox
    \page_floats_report_total}
-
+
 % kind of new, looks much like OTRONE, but not entirely
 
 \newconditional\c_page_set_top_of_insert
@@ -2046,10 +2052,8 @@
      \ifnum\rootfloatparameter\c!nbottom=\zerocount
        \ifnum\rootfloatparameter\c!nlines>\zerocount
          \ifdim\totaltopinserted>\zeropoint\relax
-           \dimen0\lineheight
-           \dimen0=\rootfloatparameter\c!nlines\dimen0
-           \advance\dimen0 \totaltopinserted\relax
-           \ifdim\dimen0>\textheight % \vsize  %%%%%%%%% \textheight
+           \scratchdimen\dimexpr\rootfloatparameter\c!nlines\lineheight+\totaltopinserted\relax
+           \ifdim\scratchdimen>\textheight % \vsize  %%%%%%%%% \textheight
              \showmessage\m!floatblocks8{\rootfloatparameter\c!nlines}%
              \page_otr_fill_and_eject_page % was triple: vfilll
            \fi
@@ -2080,7 +2084,7 @@
         \blank[\rootfloatparameter\c!spaceafter]}%
      \global\advance\d_page_floats_inserted_top \ht\scratchbox\relax
      \ifdim\d_page_floats_inserted_top>\vsize % was \textheight\relax
-       \OTRSETresavebox\floatbox
+       \OTRSETresavebox\scratchbox
        \noffloatinserts\c_page_floats_n_of_top\relax
        \global\advance\d_page_floats_inserted_top -\ht\scratchbox
        \let\OTRSETdodosettopinserts\relax % to be tested
@@ -2167,7 +2171,7 @@
 %        \box\columnbotbox\mofcolumns}
    \fi
    \global\d_page_floats_inserted_bottom\zeropoint\relax} % goes away
-
+
 % set ipv text
 
 % left right 1 2 3 +1 +2 +3
@@ -2441,7 +2445,7 @@
      \else
        \d_strc_float_temp_width
      \fi}
-
+
 \unexpanded\def\definecolumnsetspan
   {\dodoubleempty\dodefinecolumnsetspan}
 

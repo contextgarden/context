@@ -17,9 +17,11 @@ local formatters = string.formatters
 -- CP1 = QP0 + 2/3 *(QP1-QP0)
 -- CP2 = QP2 + 2/3 *(QP1-QP2)
 
-fonts          = fonts or { }
-local metapost = fonts.metapost or { }
-fonts.metapost = metapost
+fonts               = fonts or { }
+local metapost      = fonts.metapost or { }
+fonts.metapost      = metapost
+
+local trace_skips   = false  trackers.register("metapost.outlines.skips",function(v) trace_skips = v end)
 
 local f_moveto      = formatters["(%.4F,%.4F)"]
 local f_lineto      = formatters["--(%.4F,%.4F)"]
@@ -246,7 +248,10 @@ local kern_code    = nodecodes.kern
 local glue_code    = nodecodes.glue
 local hlist_code   = nodecodes.hlist
 local vlist_code   = nodecodes.vlist
+local rule_code    = nodecodes.rule
 local penalty_code = nodecodes.penalty
+
+local find_tail    = nodes.tail
 
 ----- metapost     = fonts.glyphs.metapost
 
@@ -278,7 +283,8 @@ function metapost.output(kind,font,char,advance,shift)
                     local advance = advance or 0
                     local paths   = topaths(glyf,factor)
                     local code    = f_code(kind,#paths,advance,shift,paths)
-                    return code, glyf.width * factor
+                 -- return code, glyf.width * factor
+                    return code, character.width * fc
                 end
             end
         end
@@ -288,54 +294,78 @@ end
 
 -- shifted hboxes
 
+local signal = -0x3FFFFFFF - 1
+
 function fonts.metapost.boxtomp(n,kind)
 
     local result   = { }
-    local advance  = 0
+    local advance  = 0   -- in bp
     local distance = 0
+
+    local llx, lly, urx, ury = 0, 0, 0, 0
 
     local boxtomp
 
-    local function horizontal(current,shift,glue_sign,glue_set,glue_order)
+    local function horizontal(current,shift,glue_sign,glue_set,glue_order,ht,dp)
+        shift = shift or 0
         while current do
             local id = current.id
             if id == glyph_code then
-                local code, width = metapost.output(kind,current.font,current.char,advance,-(shift or 0)* fc)
+                local code, width = metapost.output(kind,current.font,current.char,advance,-shift*fc)
                 result[#result+1] = code
                 advance = advance + width
             elseif id == disc_code then
                 local replace = current.replace
                 if replace then
-                    horizontal(replace,shift,glue_sign,glue_set,glue_order)
+                    horizontal(replace,shift,glue_sign,glue_set,glue_order,ht,dp)
                 end
             elseif id == kern_code then
-                advance = advance + current.kern * fc
+                local kern = current.kern * fc
+                if trace_skips then -- todo: shift
+                    result[#result+1] = formatters["draw rule(%3F,%3F,%3F) shifted (%3F,%3F) withcolor .5white;"](kern,0.8*ht*fc,0.8*dp*fc,advance,-shift*fc)
+                end
+                advance = advance + kern
             elseif id == glue_code then
                 local spec  = current.spec
                 local width = spec.width
                 if glue_sign == 1 then
                     if spec.stretch_order == glue_order then
-                        advance = advance + (width + spec.stretch * glue_set) * fc
+                        width = (width + spec.stretch * glue_set) * fc
                     else
-                        advance = advance + width * fc
+                        width = width * fc
                     end
                 elseif glue_sign == 2 then
                     if spec.shrink_order == glue_order then
-                        advance = advance + (width - spec.shrink * glue_set) * fc
+                        width = (width - spec.shrink * glue_set) * fc
                     else
-                        advance = advance + width * fc
+                        width = width * fc
                     end
                 else
-                    advance = advance + width * fc
+                    width = width * fc
                 end
+                if trace_skips then -- todo: shift
+                    result[#result+1] = formatters["draw rule(%3F,%3F,%3F) shifted (%3F,%3F) withcolor .5white;"](width,0.1*ht*fc,0.1*dp*fc,advance,-shift*fc)
+                end
+                advance = advance + width
             elseif id == hlist_code then
                 local a = advance
-                boxtomp(current,(shift or 0)+current.shift,current.glue_sign,current.glue_set,current.glue_order)
+                boxtomp(current,shift+current.shift,current.glue_sign,current.glue_set,current.glue_order)
                 advance = a + current.width * fc
             elseif id == vlist_code then
-                boxtomp(current) -- ,distance + (shift or 0),current.glue_set*current.glue_sign)
+                boxtomp(current) -- ,distance + shift,current.glue_set*current.glue_sign)
             elseif id == rule_code then
-                -- todo
+                local wd = current.width
+                local ht = current.height
+                local dp = current.depth
+                if not (ht == signal or dp == signal or wd == signal) then
+                    ht = ht - shift
+                    dp = dp - shift
+                    if wd == 0 then
+                        result[#result+1] = formatters["strut(%3F,%3F);"](ht*fc,-dp*fc)
+                    else
+                        result[#result+1] = formatters["draw rule(%3F,%3F,%3F);"](wd*fc,ht*fc,-dp*fc)
+                    end
+                end
             else
              -- print("horizontal >>>",nodecodes[id])
             end
@@ -344,22 +374,24 @@ function fonts.metapost.boxtomp(n,kind)
     end
 
     local function vertical(current,shift)
+        shift = shift or 0
+        current = find_tail(current) -- otherwise bad bbox
         while current do
             local id = current.id
             if id == hlist_code then
-                distance = distance + current.height
-                boxtomp(current,distance + (shift or 0),current.glue_set*current.glue_sign)
-                distance = distance + current.depth
+                distance = distance - current.depth
+                boxtomp(current,distance + shift,current.glue_set*current.glue_sign)
+                distance = distance - current.height
             elseif id == vlist_code then
                 print("vertical >>>",nodecodes[id])
             elseif id == kern_code then
-                distance = distance + current.kern
+                distance = distance - current.kern
                 advance  = 0
             elseif id == glue_code then
-                distance = distance + current.spec.width
+                distance = distance - current.spec.width
                 advance  = 0
             end
-            current = current.next
+            current = current.prev
         end
     end
 
@@ -367,21 +399,24 @@ function fonts.metapost.boxtomp(n,kind)
         local current = list.list
         if current then
             if list.id == hlist_code then
-                horizontal(current,shift,list.glue_sign,list.glue_set,list.glue_order)
+                horizontal(current,shift,list.glue_sign,list.glue_set,list.glue_order,list.height,list.depth)
             else
                 vertical(current,shift)
             end
-result[#result+1] = formatters["setbounds currentpicture to %s;"] ( metapost.boundingbox (
-    { boundingbox = { 0, -list.depth, list.width, list.height } },
-    fc
-) )
         end
     end
 
-    -- todo: honor struts / ht dp
-
     local box = tex.box[n]
+
     boxtomp(box,box.shift,box.glue_sign,box.glue_set,box.glue_order)
+
+    local wd = box.width
+    local ht = box.height
+    local dp = box.depth
+    local sh = box.shift
+
+    result[#result+1] = formatters["checkbounds(%3F,%3F,%3F,%3F);"](0,-dp*fc,wd*fc,ht*fc)
+
     return concat(result)
 
 end

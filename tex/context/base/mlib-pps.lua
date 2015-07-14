@@ -280,6 +280,9 @@ end
 
 local function settext(box,slot)
     if top then
+     -- if trace_textexts then
+     --     report_textexts("getting text %s from box %s",slot,box)
+     -- end
         top.textexts[slot] = copy_list(texgetbox(box))
         texsetbox(box,nil)
         -- this can become
@@ -292,9 +295,9 @@ end
 local function gettext(box,slot)
     if top then
         texsetbox(box,copy_list(top.textexts[slot]))
-        if trace_textexts then
-            report_textexts("putting text %s in box %s",slot,box)
-        end
+     -- if trace_textexts then
+     --     report_textexts("putting text %s in box %s",slot,box)
+     -- end
      -- top.textexts[slot] = nil -- no, pictures can be placed several times
     else
         -- weird error

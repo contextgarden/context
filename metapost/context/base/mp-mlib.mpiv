@@ -346,7 +346,7 @@ vardef plain_thelabel@#(expr p,z) =
 enddef;
 
 def plain_label = % takes two arguments, contrary to textext that takes one
-    draw plain_thelabel
+    normaldraw plain_thelabel
 enddef ;
 
 let mfun_label    = label ;
@@ -360,6 +360,12 @@ enddef ;
 def usemetafunlabels =
     let label    = mfun_label ;
     let thelabel = mfun_thelabel ;
+enddef ;
+
+vardef dotlabel@#(expr s,z) text t_ =
+    label@#(s,z) t_ ;
+    interim linecap := rounded ;
+    normaldraw z withpen pencircle scaled dotlabeldiam t_ ;
 enddef ;
 
 plain_compatibility_data := plain_compatibility_data & "save label, thelabel ;" & "useplainlabels ;" ;
@@ -394,7 +400,7 @@ vardef thelabel@#(expr p,z) =
 enddef;
 
 def label = % takes two arguments, contrary to textext that takes one
-    draw thelabel
+    normaldraw thelabel
 enddef ;
 
 vardef anchored@#(expr p, z) = % beware: no "+ mfun_laboff@#" here (never!)
@@ -907,10 +913,10 @@ def mfun_do_outline_options_r = enddef ;
 vardef outlinetext@# (expr t) text rest =
     save kind ; string kind ; kind := str @# ;
     currentoutlinetext := currentoutlinetext + 1 ;
-    image ( draw image (
+    image ( normaldraw image (
         if mfun_trial_run :
           % lua.mp.report("set outline text",currentoutlinetext);
-            draw unitsquare
+            normaldraw unitsquare
                 withprescript "ot_stage=trial"
                 withprescript "ot_index=" & decimal currentoutlinetext
                 withprescript "ot_kind=" & kind
@@ -934,6 +940,34 @@ vardef outlinetext@# (expr t) text rest =
         fi ;
     ) mfun_do_outline_options_r ; )
 enddef ;
+
+% A few helpers:
+
+numeric mfun_c_b_llx, mfun_c_b_h, mfun_c_b_w, mfun_c_b_l ;
+
+vardef checkedbounds(expr llx,lly,urx,ury) =
+    mfun_c_b_llx := min(xpart llcorner currentpicture,llx) ;
+    mfun_c_b_urx := max(xpart urcorner currentpicture,urx) ;
+    mfun_c_b_lly := min(ypart llcorner currentpicture,lly) ;
+    mfun_c_b_ury := max(ypart urcorner currentpicture,ury) ;
+    (mfun_c_b_llx,mfun_c_b_lly) --
+    (mfun_c_b_urx,mfun_c_b_lly) --
+    (mfun_c_b_urx,mfun_c_b_ury) --
+    (mfun_c_b_llx,mfun_c_b_ury) -- cycle
+enddef ;
+
+vardef checkbounds(expr llx,lly,urx,ury) =
+    setbounds currentpicture to checkedbounds(llx,lly,urx,ury) ;
+enddef ;
+
+vardef strut(expr ht,dp) =
+    setbounds currentpicture to checkedbounds(0,0,ht,dp) ;
+enddef ;
+
+vardef rule(expr wd,ht,dp) =
+    image (fill (0,-dp)--(wd,-dp)--(wd,ht)--(0,ht)--cycle)
+enddef ;
+
 
 % Housekeeping
 

@@ -89,8 +89,10 @@ local function takebox(id)
     if box then
         local copy = copy_node(box)
         local list = getlist(box)
-        setfield(copy,"list",list)
-        setfield(box,"list",nil)
+        if list then
+            setfield(copy,"list",list)
+            setfield(box,"list",nil)
+        end
         texsetbox(id,nil)
         return copy
     end
