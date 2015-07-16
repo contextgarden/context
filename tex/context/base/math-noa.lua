@@ -47,6 +47,7 @@ local trace_variants      = false  registertracker("math.variants",    function(
 local trace_alternates    = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
 local trace_italics       = false  registertracker("math.italics",     function(v) trace_italics     = v end)
 local trace_families      = false  registertracker("math.families",    function(v) trace_families    = v end)
+local trace_fences        = false  registertracker("math.fences",      function(v) trace_fences      = v end)
 
 local check_coverage      = true   registerdirective("math.checkcoverage", function(v) check_coverage = v end)
 
@@ -60,6 +61,7 @@ local report_variants     = logreporter("mathematics","variants")
 local report_alternates   = logreporter("mathematics","alternates")
 local report_italics      = logreporter("mathematics","italics")
 local report_families     = logreporter("mathematics","families")
+local report_fences       = logreporter("mathematics","fences")
 
 local a_mathrendering     = privateattribute("mathrendering")
 local a_exportstatus      = privateattribute("exportstatus")
@@ -246,7 +248,7 @@ local function process(start,what,n,parent)
     end
 end
 
-local function processnested(current,what)
+local function processnested(current,what,n)
     local noad = nil
     local id   = getid(current)
     if id == math_noad then
@@ -665,13 +667,15 @@ local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
         local prev    = f_o
         local current = o_next
         while current ~= f_c do
-            if middle[current] then
+            local m = middle[current]
+            if m then
                 local next  = getnext(current)
                 local fence = makefence(middle_fence_code,current)
                 setfield(current,"nucleus",nil)
                 free_node(current)
                 middle[current] = nil
                 -- replace_node
+-- print(">>>",prev,m) -- weird, can differ
                 setfield(prev,"next",fence)
                 setfield(fence,"prev",prev)
                 setfield(next,"prev",fence)
@@ -726,6 +730,8 @@ local function convert_close(close,first,middle)
     return close
 end
 
+local stacks = table.setmetatableindex("table")
+
 autofences[math_noad] = function(pointer,what,n,parent)
     -- can we do a fast check?
     local current = pointer
@@ -741,30 +747,39 @@ autofences[math_noad] = function(pointer,what,n,parent)
         if id == math_noad then
             local a = getattr(current,a_autofence)
             if a and a > 0 then
+                local stack = stacks[n]
                 setattr(current,a_autofence,0)
                 if a == 1 or (a == 4 and (not stack or #stack == 0)) then
-                    if stack then
-                        insert(stack,current)
-                    else
-                        stack = { current }
+                    if trace_fences then
+                        report_fences("%2i: pushing open on stack",n)
                     end
+                    insert(stack,current)
                 elseif a == 2 or a == 4 then
-                    local open = stack and remove(stack)
+                    local open = remove(stack)
                     if open then
+                        if trace_fences then
+                            report_fences("%2i: handling %s, stack depth %i",n,"both",#stack)
+                        end
                         current = convert_both(open,current,middle)
                     elseif current == start then
                         -- skip
                     else
+                        if trace_fences then
+                            report_fences("%2i: handling %s, stack depth %i",n,"close",#stack)
+                        end
                         current = convert_close(current,initial,middle)
                         if not parent then
                             initial = current
                         end
                     end
                 elseif a == 3 then
+                    if trace_fences then
+                        report_fences("%2i: registering middle",n)
+                    end
                     if middle then
-                        middle[current] = true
+                        middle[current] = last
                     else
-                        middle = { [current] = true }
+                        middle = { [current] = last }
                     end
                 end
                 done = true
@@ -775,18 +790,25 @@ autofences[math_noad] = function(pointer,what,n,parent)
                 noad = getfield(current,"sub")     if noad then process(noad,what,n,current) end -- list
             end
         else
-            process(current,autofences)
+            -- next at current level
+            process(current,autofences,n-1)
         end
         last    = current
         current = getnext(current)
     end
     if done then
-        if stack then
-            local n = #stack
-            if n > 0 then
-                for i=1,n do
-                    last = convert_open(remove(stack),last,middle)
+        local stack = stacks[n]
+        local s = #stack
+        if s > 0 then
+            if trace_fences then
+                report_fences("%2i: handling %s stack levels",n,s)
+            end
+            for i=1,s do
+                local open = remove(stack)
+                if trace_fences then
+                    report_fences("%2i: handling %s, stack depth %i",n,"open",#stack)
                 end
+                last = convert_open(open,last,middle)
             end
         end
         if not parent then
@@ -800,8 +822,9 @@ end
 
 function handlers.autofences(head,style,penalties)
  -- if tex.modes.c_math_fences_auto then
+-- inspect(nodes.totree(head))
         local h, d = processnoads(head,autofences,"autofence")
-     -- inspect(nodes.totree(h))
+-- inspect(nodes.totree(h))
         return h or head, d
  -- else
  --     return head, false

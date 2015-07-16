@@ -83,6 +83,8 @@
 
 % use zeroskipplusfill
 
+% i really need to redo this eqno mess ... in lua
+
 \def\math_prepare_r_eqalign_no
   {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
    \c_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
@@ -98,7 +100,7 @@
    \the\mathdisplayaligntweaks
    \tabskip\centering}
 
-\def\math_prepare_l_eqalign_no
+\def\math_prepare_l_eqalign_no  % \checkeddisplaymath
   {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
    \c_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
    % problem: number is handled after rest and so ends up in the margin
@@ -123,7 +125,7 @@
      \let\math_finish_eqalign_no\relax
    \fi
    #1%
-   \halign \ifcase\eqalignmode \or to \displaywidth \fi \expandafter {\the\scratchtoks\crcr#2\crcr}%
+   \halign \ifcase\eqalignmode \or to \checkeddisplaywidth \fi \expandafter {\the\scratchtoks\crcr#2\crcr}%
    \math_finish_eqalign_no}
 
 \def\math_both_eqalign_no_aligned#1%
@@ -139,7 +141,7 @@
     \fi
    \fi
    #1%
-   \halign \ifcase\eqalignmode \or to \displaywidth \fi \expandafter \bgroup\the\scratchtoks\crcr}
+   \halign \ifcase\eqalignmode \or to \checkeddisplaywidth \fi \expandafter \bgroup\the\scratchtoks\crcr}
 
 \def\math_rlap#1%
   {\setbox\scratchbox\hbox{#1}%
@@ -202,7 +204,7 @@
 \def\math_alignment_start_indeed[#1]%
   {% \begingroup not permitted ($$...assignments...\halign... )
    \iffirstargument
-     \setupmathalignment[\currentmathalignment][#1]%
+     \setupmathalignment[\currentmathalignment][#1]% bad! ungrouped
    \fi
    \the\everymathalignment
    \c_math_eqalign_column\zerocount
@@ -1034,7 +1036,7 @@
 \let\math_the_l_eq_no\empty
 
 \unexpanded\def\startmathbox#1%
-  {\hsize\displaywidth
+  {\hsize\displaywidth % \checkeddisplaymath
    \global\mathnumberstatus\plusone
    \mathraggedstatus#1\relax
    \let\mathnumbercorrection\!!zeropoint
@@ -1049,7 +1051,7 @@
    \let\normaleqno \eqno
    % added
    \strc_formulas_place_number
-   \setbox\scratchbox\math_hbox to \displaywidth\bgroup
+   \setbox\scratchbox\math_hbox to \displaywidth\bgroup % \checkeddisplaymath
      \mathinnerstrut
      \startforceddisplaymath
      \ifcase\mathraggedstatus\or\hfill\or\hfill\fi}
@@ -1078,7 +1080,8 @@
    \egroup
    \setbox0\hbox{\unhcopy\scratchbox}%
    \scratchdimen\wd0
-   \ifdim\scratchdimen>\displaywidth
+  % to be tested: \scratchdimen\naturalwd\scratchbox
+   \ifdim\scratchdimen>\displaywidth % \checkeddisplaymath
      \donetrue
    \else
      \donefalse
@@ -1092,14 +1095,14 @@
            \box\scratchbox
          \else
            \ifdone
-             \vbox{\box\scratchbox\hbox to \displaywidth{\hss\math_box_llapped_math_no}}%
+             \vbox{\box\scratchbox\hbox to \displaywidth{\hss\math_box_llapped_math_no}}% \checkeddisplaymath
            \else
              \hss\box\scratchbox\math_box_llapped_math_no % hss makes room for number
            \fi
          \fi
        \else
          \ifdone
-           \vbox{\hbox to \displaywidth{\math_box_rlapped_math_no\hss}\box\scratchbox}%
+           \vbox{\hbox to \displaywidth{\math_box_rlapped_math_no\hss}\box\scratchbox}% \checkeddisplaymath
          \else
            \math_box_rlapped_math_no\box\scratchbox\hss % hss makes room for number
          \fi

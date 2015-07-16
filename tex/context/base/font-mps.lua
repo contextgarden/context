@@ -64,13 +64,14 @@ function metapost.zeroline(d,factor)
     return f_vertical(0,lly,0,ury)
 end
 
-function metapost.paths(d,factor)
+function metapost.paths(d,xfactor,yfactor)
     local sequence = d.sequence
     local segments = d.segments
     local list     = { }
     local path     = { } -- recycled
     local size     = 0
-    local factor   = factor or 1
+    local xfactor  = xfactor or 1
+    local yfactor  = yfactor or xfactor
     if sequence then
         local i = 1
         local n = #sequence
@@ -85,22 +86,22 @@ function metapost.paths(d,factor)
                 else
                     size = size + 1
                 end
-                path[size] = f_moveto(factor*sequence[i+1],factor*sequence[i+2])
+                path[size] = f_moveto(xfactor*sequence[i+1],yfactor*sequence[i+2])
                 i = i + 3
             elseif operator == "l" then -- "lineto"
                 size = size + 1
-                path[size] = f_lineto(factor*sequence[i+1],factor*sequence[i+2])
+                path[size] = f_lineto(xfactor*sequence[i+1],yfactor*sequence[i+2])
                 i = i + 3
             elseif operator == "c" then -- "curveto"
                 size = size + 1
-                path[size] = f_curveto(factor*sequence[i+1],factor*sequence[i+2],factor*sequence[i+3],factor*sequence[i+4],factor*sequence[i+5],factor*sequence[i+6])
+                path[size] = f_curveto(xfactor*sequence[i+1],yfactor*sequence[i+2],xfactor*sequence[i+3],yfactor*sequence[i+4],xfactor*sequence[i+5],yfactor*sequence[i+6])
                 i = i + 7
             elseif operator =="q" then -- "quadraticto"
                 size = size + 1
                 -- first is always a moveto
-                local l_x, l_y = factor*sequence[i-2], factor*sequence[i-1]
-                local m_x, m_y = factor*sequence[i+1], factor*sequence[i+2]
-                local r_x, r_y = factor*sequence[i+3], factor*sequence[i+4]
+                local l_x, l_y = xfactor*sequence[i-2], yfactor*sequence[i-1]
+                local m_x, m_y = xfactor*sequence[i+1], yfactor*sequence[i+2]
+                local r_x, r_y = xfactor*sequence[i+3], yfactor*sequence[i+4]
                 path[size] = f_curveto (
                     l_x + 2/3 * (m_x-l_x),
                     l_y + 2/3 * (m_y-l_y),
@@ -127,20 +128,20 @@ function metapost.paths(d,factor)
                 else
                     size = size + 1
                 end
-                path[size] = f_moveto(factor*segment[1],factor*segment[2])
+                path[size] = f_moveto(xfactor*segment[1],yfactor*segment[2])
             elseif operator == "l" then -- "lineto"
                 size = size + 1
-                path[size] = f_lineto(factor*segment[1],factor*segment[2])
+                path[size] = f_lineto(xfactor*segment[1],yfactor*segment[2])
             elseif operator == "c" then -- "curveto"
                 size = size + 1
-                path[size] = f_curveto(factor*segment[1],factor*segment[2],factor*segment[3],factor*segment[4],factor*segment[5],factor*segment[6])
+                path[size] = f_curveto(xfactor*segment[1],yfactor*segment[2],xfactor*segment[3],yfactor*segment[4],xfactor*segment[5],yfactor*segment[6])
             elseif operator =="q" then -- "quadraticto"
                 size = size + 1
                 -- first is always a moveto
                 local prev = segments[i-1]
-                local l_x, l_y = factor*prev[#prev-2], factor*prev[#prev-1]
-                local m_x, m_y = factor*segment[1], factor*segment[2]
-                local r_x, r_y = factor*segment[3], factor*segment[4]
+                local l_x, l_y = xfactor*prev[#prev-2], yfactor*prev[#prev-1]
+                local m_x, m_y = xfactor*segment[1], yfactor*segment[2]
+                local r_x, r_y = xfactor*segment[3], yfactor*segment[4]
                 path[size] = f_curveto (
                     l_x + 2/3 * (m_x-l_x),
                     l_y + 2/3 * (m_y-l_y),
@@ -256,18 +257,24 @@ local find_tail    = nodes.tail
 ----- metapost     = fonts.glyphs.metapost
 
 local characters   = fonts.hashes.characters
+local quaddata     = fonts.hashes.emwidths
 local shapes       = fonts.hashes.shapes
-local topaths      = fonts.metapost.paths
+local topaths      = metapost.paths
 
 local f_code       = formatters["mfun_do_outline_text_flush(%q,%i,%.4F,%.4F)(%,t);"]
 local s_nothing    = "(origin scaled 10)"
+local f_trace_rule = formatters["draw rule(%6F,%6F,%6F) shifted (%6F,%6F) withcolor .5white;"]
+local f_strut      = formatters["strut(%6F,%6F);"]
+local f_hrule      = formatters["draw rule(%6F,%6F,%6F);"]
+local f_vrule      = formatters["draw rule(%6F,%6F,%6F) shifted (%6F,%6F);"]
+local f_bounds     = formatters["checkbounds(%6F,%6F,%6F,%6F);"]
 
 local sc = 10
 local fc = number.dimenfactors.bp * sc / 10
 
 -- todo: make the next more efficient:
 
-function metapost.output(kind,font,char,advance,shift)
+function metapost.output(kind,font,char,advance,shift,ex)
     local character = characters[font][char]
     if char then
         local index = character.index
@@ -277,14 +284,20 @@ function metapost.output(kind,font,char,advance,shift)
             if glyphs then
                 local glyf = data.glyphs[index]
                 if glyf then
-                    local units   = data.fontheader and data.fontheader.units or data.units or 1000
-                    local factor  = sc/units
-                    local shift   = shift or 0
-                    local advance = advance or 0
-                    local paths   = topaths(glyf,factor)
-                    local code    = f_code(kind,#paths,advance,shift,paths)
-                 -- return code, glyf.width * factor
-                    return code, character.width * fc
+                    local units     = data.fontheader and data.fontheader.units or data.units or 1000
+                    local yfactor   = sc/units
+                    local xfactor   = yfactor
+                    local shift     = shift or 0
+                    local advance   = advance or 0
+                    local exfactor  = ex or 0
+                    local wfactor   = 1
+                    if exfactor ~= 0 then
+                        wfactor = (1+(ex/units)/1000)
+                        xfactor = xfactor * wfactor
+                    end
+                    local paths = topaths(glyf,xfactor,yfactor)
+                    local code  = f_code(kind,#paths,advance,shift,paths)
+                    return code, character.width * fc * wfactor
                 end
             end
         end
@@ -292,7 +305,7 @@ function metapost.output(kind,font,char,advance,shift)
     return s_nothing, 10 * sc/1000
 end
 
--- shifted hboxes
+-- not ok yet: leftoffset in framed not handled well
 
 local signal = -0x3FFFFFFF - 1
 
@@ -311,7 +324,7 @@ function fonts.metapost.boxtomp(n,kind)
         while current do
             local id = current.id
             if id == glyph_code then
-                local code, width = metapost.output(kind,current.font,current.char,advance,-shift*fc)
+                local code, width = metapost.output(kind,current.font,current.char,advance,-shift*fc,current.expansion_factor)
                 result[#result+1] = code
                 advance = advance + width
             elseif id == disc_code then
@@ -321,8 +334,8 @@ function fonts.metapost.boxtomp(n,kind)
                 end
             elseif id == kern_code then
                 local kern = current.kern * fc
-                if trace_skips then -- todo: shift
-                    result[#result+1] = formatters["draw rule(%3F,%3F,%3F) shifted (%3F,%3F) withcolor .5white;"](kern,0.8*ht*fc,0.8*dp*fc,advance,-shift*fc)
+                if trace_skips then
+                    result[#result+1] = f_trace_rule(kern,0.8*ht*fc,0.8*dp*fc,advance,-shift*fc)
                 end
                 advance = advance + kern
             elseif id == glue_code then
@@ -343,8 +356,8 @@ function fonts.metapost.boxtomp(n,kind)
                 else
                     width = width * fc
                 end
-                if trace_skips then -- todo: shift
-                    result[#result+1] = formatters["draw rule(%3F,%3F,%3F) shifted (%3F,%3F) withcolor .5white;"](width,0.1*ht*fc,0.1*dp*fc,advance,-shift*fc)
+                if trace_skips then
+                    result[#result+1] = f_trace_rule(width,0.1*ht*fc,0.1*dp*fc,advance,-shift*fc)
                 end
                 advance = advance + width
             elseif id == hlist_code then
@@ -353,6 +366,7 @@ function fonts.metapost.boxtomp(n,kind)
                 advance = a + current.width * fc
             elseif id == vlist_code then
                 boxtomp(current) -- ,distance + shift,current.glue_set*current.glue_sign)
+                advance = advance + current.width * fc
             elseif id == rule_code then
                 local wd = current.width
                 local ht = current.height
@@ -361,13 +375,14 @@ function fonts.metapost.boxtomp(n,kind)
                     ht = ht - shift
                     dp = dp - shift
                     if wd == 0 then
-                        result[#result+1] = formatters["strut(%3F,%3F);"](ht*fc,-dp*fc)
+                        result[#result+1] = f_strut(ht*fc,-dp*fc)
                     else
-                        result[#result+1] = formatters["draw rule(%3F,%3F,%3F);"](wd*fc,ht*fc,-dp*fc)
+                        result[#result+1] = f_hrule(wd*fc,ht*fc,-dp*fc)
                     end
                 end
-            else
-             -- print("horizontal >>>",nodecodes[id])
+                if wd ~= signal then
+                    advance = advance + wd * fc
+                end
             end
             current = current.next
         end
@@ -390,6 +405,19 @@ function fonts.metapost.boxtomp(n,kind)
             elseif id == glue_code then
                 distance = distance - current.spec.width
                 advance  = 0
+            elseif id == rule_code then
+                local wd = current.width
+                local ht = current.height
+                local dp = current.depth
+                if not (ht == signal or dp == signal or wd == signal) then
+                    distance = distance - dp
+                    if wd == 0 then
+                        result[#result+1] = f_strut(ht*fc,-dp*fc)
+                    else
+                        result[#result+1] = f_vrule(wd*fc,ht*fc,-dp*fc,0,distance+shift)
+                    end
+                    distance = distance - ht
+                end
             end
             current = current.prev
         end
@@ -415,7 +443,7 @@ function fonts.metapost.boxtomp(n,kind)
     local dp = box.depth
     local sh = box.shift
 
-    result[#result+1] = formatters["checkbounds(%3F,%3F,%3F,%3F);"](0,-dp*fc,wd*fc,ht*fc)
+    result[#result+1] = f_bounds(0,-dp*fc,wd*fc,ht*fc)
 
     return concat(result)
 

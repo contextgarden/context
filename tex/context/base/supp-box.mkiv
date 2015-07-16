@@ -2854,6 +2854,25 @@
 
 \let\hyphenatedhbox\hbox
 
+%D We can do this:
+%D
+%D \starttyping
+%D \setbox0\hbox to 10cm{foo} \setbox2\hbox{\unhbox0} \the\wd2
+%D \stoptyping
+%D
+%D But this saves a copy (and hpack pass):
+%D
+%D \starttyping
+%D \setbox0\hbox to 10cm{foo} \the\naturalwd0
+%D \stoptyping
+
+\newdimen\lastnaturalboxwd
+\newdimen\lastnaturalboxht
+\newdimen\lastnaturalboxdp
+
+\let\getnaturaldimensions\clf_getnaturaldimensions % sets three dimensions
+\let\naturalwd           \clf_naturalwd            % calculates and returns wd
+
 \protect \endinput
 
 % a bit of test code:

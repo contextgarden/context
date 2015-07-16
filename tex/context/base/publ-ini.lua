@@ -1163,7 +1163,7 @@ do
                         local entry   = luadata[tag]
                         local year    = entry.year
                         detail[key]   = hash
-                        if year ~= lastyear then
+                        if not year or year ~= lastyear then
                             lastyear = year
                             suffix = 1
                         else

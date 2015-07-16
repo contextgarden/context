@@ -1826,16 +1826,17 @@ end
 local function loadfont(specification,n)
     if type(specification) == "string" then
         specification = {
-            filename   = specification,
-            info       = true, -- always true (for now)
-            details    = true,
-            glyphs     = true,
-            shapes     = true,
-            kerns      = true,
-            lookups    = true,
+            filename    = specification,
+            info        = true, -- always true (for now)
+            details     = true,
+            glyphs      = true,
+            shapes      = true,
+            kerns       = true,
+            globalkerns = true,
+            lookups     = true,
             -- true or number:
-            subfont    = n or true,
-            tounicode  = false,
+            subfont     = n or true,
+            tounicode   = false,
         }
     end
     -- if shapes only then
@@ -1881,14 +1882,14 @@ end
 
 function readers.loadfont(filename,n)
     local fontdata = loadfont {
-        filename = filename,
-        glyphs   = true,
-        shapes   = false,
-        lookups  = true,
-     -- kerns    = true,
-        subfont  = n,
+        filename    = filename,
+        glyphs      = true,
+        shapes      = false,
+        lookups     = true,
+     -- kerns       = true,
+     -- globalkerns = true, -- only for testing, e.g. cambria has different gpos and kern
+        subfont     = n,
     }
-print(fontdata.subfonts)
     if fontdata then
         --
         return {

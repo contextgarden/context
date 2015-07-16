@@ -310,11 +310,8 @@ end
 -- check variables.none etc
 
 local function fixedprofile(current)
-    if builders.profiling then
-        return builders.profiling.fixedprofile(current)
-    else
-        return false
-    end
+    local profiling = builders.profiling
+    return profiling and profiling.fixedprofile(current)
 end
 
 local function snap_hlist(where,current,method,height,depth) -- method.strut is default

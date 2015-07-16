@@ -1676,67 +1676,75 @@ do
     end
 
     local function checkkerns(f,fontdata,specification)
+        local datatable = fontdata.tables.kern
+        if not datatable then
+            return -- no kerns
+        end
         local features     = fontdata.features
         local gposfeatures = features and features.gpos
+        local name
         if not gposfeatures or not gposfeatures.kern then
-            local datatable = fontdata.tables.kern
-            if datatable then
-                report("adding global kern table as gpos feature")
-                setposition(f,datatable.offset)
-                local version   = readushort(f)
-                local noftables = readushort(f)
-                local kerns     = setmetatableindex("table")
-                for i=1,noftables do
-                    local version  = readushort(f)
-                    local length   = readushort(f)
-                    local coverage = readushort(f)
-                    -- bit 8-15 of coverage: format 0 or 2
-                    local format   = bit32.rshift(coverage,8) -- is this ok?
-                    if format == 0 then
-                        local nofpairs      = readushort(f)
-                        local searchrange   = readushort(f)
-                        local entryselector = readushort(f)
-                        local rangeshift    = readushort(f)
-                        for i=1,nofpairs do
-                            kerns[readushort(f)][readushort(f)] = readfword(f)
-                        end
-                    elseif format == 2 then
-                        -- apple specific so let's ignore it
-                    else
-                        -- not supported by ms
-                    end
+            name = "kern"
+        elseif specification.globalkerns then
+            name = "globalkern"
+        else
+            report("ignoring global kern table using gpos kern feature")
+            return
+        end
+        report("adding global kern table as gpos feature %a",name)
+        setposition(f,datatable.offset)
+        local version   = readushort(f)
+        local noftables = readushort(f)
+        local kerns     = setmetatableindex("table")
+        for i=1,noftables do
+            local version  = readushort(f)
+            local length   = readushort(f)
+            local coverage = readushort(f)
+            -- bit 8-15 of coverage: format 0 or 2
+            local format   = bit32.rshift(coverage,8) -- is this ok?
+            if format == 0 then
+                local nofpairs      = readushort(f)
+                local searchrange   = readushort(f)
+                local entryselector = readushort(f)
+                local rangeshift    = readushort(f)
+                for i=1,nofpairs do
+                    kerns[readushort(f)][readushort(f)] = readfword(f)
                 end
-                local feature = { dflt = { dflt = true } }
-                if not features then
-                    fontdata.features = { gpos = { kern = feature } }
-                elseif not gposfeatures then
-                    fontdata.features.gpos = { kern = feature }
-                else
-                    gposfeatures.kern = feature
-                end
-                local sequences = fontdata.sequences
-                if not sequences then
-                    sequences = { }
-                    fontdata.sequences = sequences
-                end
-                local nofsequences = #sequences + 1
-                sequences[nofsequences] = {
-                    index     = nofsequences,
-                    name      = "kern",
-                    steps     = {
-                        {
-                            coverage = kerns,
-                            format   = "kern",
-                        },
-                    },
-                    nofsteps  = 1,
-                    type      = "gpos_pair",
-                    flags     = { false, false, false, false },
-                    order     = { "kern" },
-                    features  = { kern = feature },
-                }
+            elseif format == 2 then
+                -- apple specific so let's ignore it
+            else
+                -- not supported by ms
             end
         end
+        local feature = { dflt = { dflt = true } }
+        if not features then
+            fontdata.features = { gpos = { [name] = feature } }
+        elseif not gposfeatures then
+            fontdata.features.gpos = { [name] = feature }
+        else
+            gposfeatures[name] = feature
+        end
+        local sequences = fontdata.sequences
+        if not sequences then
+            sequences = { }
+            fontdata.sequences = sequences
+        end
+        local nofsequences = #sequences + 1
+        sequences[nofsequences] = {
+            index     = nofsequences,
+            name      = name,
+            steps     = {
+                {
+                    coverage = kerns,
+                    format   = "kern",
+                },
+            },
+            nofsteps  = 1,
+            type      = "gpos_pair",
+            flags     = { false, false, false, false },
+            order     = { name },
+            features  = { [name] = feature },
+        }
     end
 
     function readers.gsub(f,fontdata,specification)

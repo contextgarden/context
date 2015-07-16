@@ -12,59 +12,61 @@ local lpegmatch = lpeg.match
 
 local report_hyphenation = logs.reporter("languages","hyphenation")
 
-local tex          = tex
-local context      = context
-local nodes        = nodes
+local tex           = tex
+local context       = context
+local nodes         = nodes
 
-local implement    = interfaces.implement
+local implement     = interfaces.implement
 
-local splitstring  = string.split
+local splitstring   = string.split
 
-local nodecodes    = nodes.nodecodes
+local nodecodes     = nodes.nodecodes
 
-local disc_code    = nodecodes.disc
-local hlist_code   = nodecodes.hlist
-local vlist_code   = nodecodes.vlist
-local glue_code    = nodecodes.glue
-local kern_code    = nodecodes.kern
-local glyph_code   = nodecodes.glyph
+local disc_code     = nodecodes.disc
+local hlist_code    = nodecodes.hlist
+local vlist_code    = nodecodes.vlist
+local glue_code     = nodecodes.glue
+local kern_code     = nodecodes.kern
+local glyph_code    = nodecodes.glyph
 
-local nuts         = nodes.nuts
-local tonut        = nuts.tonut
-local tonode       = nuts.tonode
+local nuts          = nodes.nuts
+local tonut         = nuts.tonut
+local tonode        = nuts.tonode
 
-local getfield     = nuts.getfield
-local getnext      = nuts.getnext
-local getprev      = nuts.getprev
-local getid        = nuts.getid
-local getlist      = nuts.getlist
-local getattribute = nuts.getattribute
-local getbox       = nuts.getbox
+local getfield      = nuts.getfield
+local getnext       = nuts.getnext
+local getprev       = nuts.getprev
+local getid         = nuts.getid
+local getlist       = nuts.getlist
+local getattribute  = nuts.getattribute
+local getbox        = nuts.getbox
 
-local setfield     = nuts.setfield
-local setbox       = nuts.setbox
+local setfield      = nuts.setfield
+local setbox        = nuts.setbox
 
-local free_node    = nuts.free
-local flush_list   = nuts.flush_list
-local copy_node    = nuts.copy
-local copy_list    = nuts.copy_list
-local find_tail    = nuts.tail
-local traverse_id  = nuts.traverse_id
-local link_nodes   = nuts.linked
+local free_node     = nuts.free
+local flush_list    = nuts.flush_list
+local copy_node     = nuts.copy
+local copy_list     = nuts.copy_list
+local find_tail     = nuts.tail
+local traverse_id   = nuts.traverse_id
+local link_nodes    = nuts.linked
+local dimensions    = nuts.dimensions
 
-local listtoutf    = nodes.listtoutf
+local listtoutf     = nodes.listtoutf
 
-local nodepool     = nuts.pool
-local new_penalty  = nodepool.penalty
-local new_hlist    = nodepool.hlist
-local new_glue     = nodepool.glue
-local new_rule     = nodepool.rule
-local new_kern     = nodepool.kern
+local nodepool      = nuts.pool
+local new_penalty   = nodepool.penalty
+local new_hlist     = nodepool.hlist
+local new_glue      = nodepool.glue
+local new_rule      = nodepool.rule
+local new_kern      = nodepool.kern
 
-local setlistcolor = nodes.tracers.colors.setlist
+local setlistcolor  = nodes.tracers.colors.setlist
 
-local texget       = tex.get
-local texgetbox    = tex.getbox
+local texget        = tex.get
+local texgetbox     = tex.getbox
+local texsetdimen   = tex.setdimen
 
 local function hyphenatedlist(head,usecolor)
     local current = head and tonut(head)
@@ -366,5 +368,32 @@ implement {
     arguments = "integer",
     actions   = function(n)
         context.puretext(nodes.toutf(texgetbox(n).list)) -- helper is defined later
+    end
+}
+
+local function getnaturaldimensions(n)
+    local w, h, d = 0, 0, 0
+    local l = getlist(getbox(n))
+    if l then
+        w, h, d = dimensions(l)
+    end
+    texsetdimen("lastnaturalboxwd",w)
+    texsetdimen("lastnaturalboxht",h)
+    texsetdimen("lastnaturalboxdp",d)
+    return w, h, d
+end
+
+interfaces.implement {
+    name      = "getnaturaldimensions",
+    arguments = "integer",
+    actions   = getnaturaldimensions
+}
+
+interfaces.implement {
+    name      = "naturalwd",
+    arguments = "integer",
+    actions   = function(n)
+        getnaturaldimensions(n)
+        context.lastnaturalboxwd(false)
     end
 }
