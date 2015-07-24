@@ -84,6 +84,7 @@
 \definesystemattribute[mathmode]       [public]
 \definesystemattribute[mathitalics]    [public]
 \definesystemattribute[mathbidi]       [public]
+\definesystemattribute[mathdomain]     [public]
 
 \definesystemattribute[displaymath]    [public]
 
@@ -2296,6 +2297,23 @@
        \displaywidth
      \fi\fi
    \relax}
+
+%D Experiment:
+
+\unexpanded\def\setmathdomain[#1]%
+  {\clf_setmathdomain{#1}}
+
+\appendtoks
+    \edef\p_domain{\mathematicsparameter\c!domain}%
+    \ifx\currentmathdomain\p_domain \else
+        \ifx\p_domain\empty
+            \attribute\mathdomainattribute\attributeunsetvalue
+        \else
+            \clf_setmathdomain\p_domain
+        \fi
+        \let\currentmathdomain\p_domain
+    \fi
+\to \everysetupmathematics
 
 \protect \endinput
 

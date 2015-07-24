@@ -540,7 +540,7 @@ do
         for i=1,#dictionaries do
             local private = dictionaries[i].private
             if private and private.data then
-                top    = 0
+                top     = 0
                 result  = {
                     forcebold         = false,
                     languagegroup     = 0,
@@ -549,6 +549,9 @@ do
                     subroutines       = 0,
                     defaultwidthx     = 0,
                     nominalwidthx     = 0,
+                    cid               = {
+                        -- actually an error
+                    },
                 }
                 lpegmatch(p_dictionary,private.data)
                 private.data = result

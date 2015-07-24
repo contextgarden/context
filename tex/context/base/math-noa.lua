@@ -46,6 +46,7 @@ local trace_goodies       = false  registertracker("math.goodies",     function(
 local trace_variants      = false  registertracker("math.variants",    function(v) trace_variants    = v end)
 local trace_alternates    = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
 local trace_italics       = false  registertracker("math.italics",     function(v) trace_italics     = v end)
+local trace_domains       = false  registertracker("math.domains",     function(v) trace_domains     = v end)
 local trace_families      = false  registertracker("math.families",    function(v) trace_families    = v end)
 local trace_fences        = false  registertracker("math.fences",      function(v) trace_fences      = v end)
 
@@ -60,6 +61,7 @@ local report_goodies      = logreporter("mathematics","goodies")
 local report_variants     = logreporter("mathematics","variants")
 local report_alternates   = logreporter("mathematics","alternates")
 local report_italics      = logreporter("mathematics","italics")
+local report_domains      = logreporter("mathematics","domains")
 local report_families     = logreporter("mathematics","families")
 local report_fences       = logreporter("mathematics","fences")
 
@@ -109,6 +111,9 @@ local variables           = interfaces.variables
 local texsetattribute     = tex.setattribute
 local texgetattribute     = tex.getattribute
 local unsetvalue          = attributes.unsetvalue
+local implement           = interfaces.implement
+
+local v_reset             = variables.reset
 
 local chardata            = characters.data
 
@@ -129,6 +134,9 @@ local fencecodes          = nodes.fencecodes
 
 local noad_ord            = noadcodes.ord
 local noad_rel            = noadcodes.rel
+local noad_bin            = noadcodes.bin
+local noad_open           = noadcodes.open
+local noad_close          = noadcodes.close
 local noad_punct          = noadcodes.punct
 local noad_opdisplaylimits= noadcodes.opdisplaylimits
 local noad_oplimits       = noadcodes.oplimits
@@ -1030,6 +1038,12 @@ function mathematics.setalternate(fam,tag)
     end
 end
 
+implement {
+    name      = "setmathalternate",
+    actions   = mathematics.setalternate,
+    arguments = { "integer", "string" }
+}
+
 alternate[math_char] = function(pointer)
     local a = getattr(pointer,a_mathalternate)
     if a and a > 0 then
@@ -1268,26 +1282,32 @@ end
 
 -- best do this only on math mode (less overhead)
 
-function mathematics.setitalics(n)
+function mathematics.setitalics(name)
     if enable then
         enable()
     end
-    if n == variables.reset then
-        texsetattribute(a_mathitalics,unsetvalue)
-    else
-        texsetattribute(a_mathitalics,tonumber(n) or unsetvalue)
-    end
+    texsetattribute(a_mathitalics,name and name ~= v_reset and tonumber(name) or unsetvalue)
 end
 
 function mathematics.resetitalics()
     texsetattribute(a_mathitalics,unsetvalue)
 end
 
+implement {
+    name      = "setmathitalics",
+    actions   = mathematics.setitalics
+}
+
+implement {
+    name      = "resetmathitalics",
+    actions   = mathematics.resetitalics
+}
+
 -- primes and such
 
 local collapse = { } processors.collapse = collapse
 
-local mathpairs = characters.mathpairs
+local mathpairs = characters.mathpairs -- next will move to char-def
 
 mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034, [0x2034] = 0x2057 } -- (prime,prime) (prime,doubleprime) (prime,tripleprime)
 mathpairs[0x2033] = { [0x2032] = 0x2034, [0x2033] = 0x2057 }                    -- (doubleprime,prime) (doubleprime,doubleprime)
@@ -1317,6 +1337,8 @@ local movesub = {
 local validpair = {
     [noad_rel]             = true,
     [noad_ord]             = true,
+    [noad_bin]             = true, -- new
+    [noad_punct]           = true, -- new
     [noad_opdisplaylimits] = true,
     [noad_oplimits]        = true,
     [noad_opnolimits]      = true,
@@ -1490,19 +1512,19 @@ end
 local classes = { }
 
 local colors = {
-    [noadcodes.rel]             = "trace:dr",
-    [noadcodes.ord]             = "trace:db",
-    [noadcodes.bin]             = "trace:dg",
-    [noadcodes.open]            = "trace:dm",
-    [noadcodes.close]           = "trace:dm",
-    [noadcodes.punct]           = "trace:dc",
- -- [noadcodes.opdisplaylimits] = "",
- -- [noadcodes.oplimits]        = "",
- -- [noadcodes.opnolimits]      = "",
- -- [noadcodes.inner            = "",
- -- [noadcodes.under            = "",
- -- [noadcodes.over             = "",
- -- [noadcodes.vcenter          = "",
+    [noad_rel]             = "trace:dr",
+    [noad_ord]             = "trace:db",
+    [noad_bin]             = "trace:dg",
+    [noad_open]            = "trace:dm",
+    [noad_close]           = "trace:dm",
+    [noad_punct]           = "trace:dc",
+ -- [noad_opdisplaylimits] = "",
+ -- [noad_oplimits]        = "",
+ -- [noad_opnolimits]      = "",
+ -- [noad_inner            = "",
+ -- [noad_under            = "",
+ -- [noad_over             = "",
+ -- [noad_vcenter          = "",
 }
 
 classes[math_char] = function(pointer,what,n,parent)
@@ -1520,6 +1542,147 @@ function handlers.classes(head,style,penalties)
 end
 
 registertracker("math.classes",function(v) tasks.setaction("math","noads.handlers.classes",v) end)
+
+-- experimental
+
+do
+
+ -- mathematics.registerdomain {
+ --     name       = "foo",
+ --     parents    = { "bar" },
+ --     characters = {
+ --         [0x123] = { char = 0x234, class = binary },
+ --     },
+ -- }
+
+    local domains       = { }
+    local categories    = { }
+    local numbers       = { }
+    local mclasses      = mathematics.classes
+    local a_mathdomain  = privateattribute("mathdomain")
+
+    mathematics.domains = categories
+
+    local permitted     = {
+        ordinary    = noad_ord,
+        binary      = noad_bin,
+        relation    = noad_rel,
+        punctuation = noad_punct,
+        inner       = noad_inner,
+    }
+
+    function mathematics.registerdomain(data)
+        local name = data.name
+        if not name then
+            return
+        end
+        local attr       = #numbers + 1
+        categories[name] = data
+        numbers[attr]    = data
+        data.attribute   = attr
+        -- we delay hashing
+        return attr
+    end
+
+    local enable
+
+    enable = function()
+        tasks.enableaction("math", "noads.handlers.domains")
+        if trace_domains then
+            report_domains("enabling math domains")
+        end
+        enable = false
+    end
+
+    function mathematics.setdomain(name)
+        if enable then
+            enable()
+        end
+        local data = name and name ~= v_reset and categories[name]
+        texsetattribute(a_mathdomain,data and data.attribute or unsetvalue)
+    end
+
+    implement {
+        name      = "setmathdomain",
+        arguments = "string",
+        actions   = mathematics.setdomain,
+    }
+
+    local function makehash(data)
+        local hash    = { }
+        local parents = data.parents
+        if parents then
+            local function merge(name)
+                if name then
+                    local c = categories[name]
+                    if c then
+                        local hash = c.hash
+                        if not hash then
+                            hash = makehash(c)
+                        end
+                        for k, v in next, hash do
+                            hash[k] = v
+                        end
+                    end
+                end
+            end
+            if type(parents) == "string" then
+                merge(parents)
+            elseif type(parents) == "table" then
+                for i=1,#parents do
+                    merge(parents[i])
+                end
+            end
+        end
+        local characters = data.characters
+        if characters then
+            for k, v in next, characters do
+             -- local chr = n.char
+                local cls = v.class
+                if cls then
+                    v.code = permitted[cls]
+                else
+                    -- invalid class
+                end
+                hash[k] = v
+            end
+        end
+        data.hash = hash
+        return hash
+    end
+
+    domains[math_char] = function(pointer,what,n,parent)
+        local attr = getattr(pointer,a_mathdomain)
+        if attr then
+            local domain = numbers[attr]
+            if domain then
+                local hash = domain.hash
+                if not hash then
+                    hash = makehash(domain)
+                end
+                local char = getchar(pointer)
+                local okay = hash[char]
+                if okay then
+                    local chr = okay.char
+                    local cls = okay.code
+                    if chr and chr ~= char then
+                        setfield(pointer,"char",chr)
+                    end
+                    if cls and cls ~= getsubtype(parent) then
+                        setfield(parent,"subtype",cls)
+                    end
+                end
+            end
+        end
+    end
+
+    function handlers.domains(head,style,penalties)
+        processnoads(head,domains,"domains")
+        return true
+    end
+
+end
+
 
 -- just for me
 
@@ -1579,23 +1742,3 @@ callbacks.register('mlist_to_hlist',processors.mlist_to_hlist,"preprocessing mat
 statistics.register("math processing time", function()
     return statistics.elapsedseconds(noads)
 end)
-
--- interface
-
-local implement = interfaces.implement
-
-implement {
-    name      = "setmathalternate",
-    actions   = mathematics.setalternate,
-    arguments = { "integer", "string" }
-}
-
-implement {
-    name      = "setmathitalics",
-    actions   = mathematics.setitalics
-}
-
-implement {
-    name      = "resetmathitalics",
-    actions   = mathematics.resetitalics
-}

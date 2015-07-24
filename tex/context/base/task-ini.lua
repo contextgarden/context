@@ -96,7 +96,8 @@ appendaction("math",         "normalizers", "noads.handlers.relocate",  nil, "no
 appendaction("math",         "normalizers", "noads.handlers.families",  nil, "nohead")            -- always on
 
 appendaction("math",         "normalizers", "noads.handlers.render",    nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.collapse",  nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.collapse",  nil, "nohead") -- * first -- always on
+appendaction("math",         "normalizers", "noads.handlers.domains",   nil, "nohead") -- * last  -- disabled
 appendaction("math",         "normalizers", "noads.handlers.autofences")               -- head !  -- always on
 appendaction("math",         "normalizers", "noads.handlers.resize",    nil, "nohead")            -- always on
 ------------("math",         "normalizers", "noads.handlers.respace",   nil, "nohead")            -- always on
@@ -192,6 +193,7 @@ disableaction("finalizers",  "builders.paragraphs.tag")
 disableaction("math",        "noads.handlers.showtree")
 disableaction("math",        "noads.handlers.tags")
 disableaction("math",        "noads.handlers.italics")
+disableaction("math",        "noads.handlers.domains")
 disableaction("math",        "noads.handlers.classes")
 disableaction("math",        "typesetters.directions.processmath")
 

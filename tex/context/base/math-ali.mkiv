@@ -197,12 +197,30 @@
    \let\NR\math_alignment_NR
 \to \everymathalignment
 
+\let\math_alignment_snap_start\relax
+\let\math_alignment_snap_stop \relax
+
+% experimental
+
+\def\math_alignment_snap_start
+  {\ifgridsnapping
+     \snaptogrid[\v!both]\vbox\bgroup
+   \fi}
+
+\def\math_alignment_snap_stop
+  {\ifgridsnapping
+     \egroup
+   \fi}
+
+% end of experimental
+
 \unexpanded\def\math_alignment_start#1%
   {\edef\currentmathalignment{#1}%
    \dosingleempty\math_alignment_start_indeed}
 
 \def\math_alignment_start_indeed[#1]%
   {% \begingroup not permitted ($$...assignments...\halign... )
+   \math_alignment_snap_start
    \iffirstargument
      \setupmathalignment[\currentmathalignment][#1]% bad! ungrouped
    \fi
@@ -219,7 +237,8 @@
 \def\math_alignment_stop
   {\math_finish_eqalign_no
    \dostoptagged
-   \dostoptagged}
+   \dostoptagged
+   \math_alignment_snap_stop}
 
 \installcorenamespace{mathalignment}
 \installcorenamespace{mathalignmentvariant}

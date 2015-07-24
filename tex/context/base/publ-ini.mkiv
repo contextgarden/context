@@ -1563,10 +1563,11 @@
    \btxparameter\c!right
    \endgroup}
 
-\let\btxstartcite      \begingroup
-\let\btxstopcite       \endgroup
 \let\btxstartciteauthor\begingroup
 \let\btxstopciteauthor \endgroup
+
+\unexpanded\def\btxstartcite{\begingroup\btx_reset_cite}
+           \let\btxstopcite  \endgroup
 
 %D Whatever helpers:
 

@@ -88,15 +88,15 @@
    \setuvalue{start#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dotripleempty\lang_labels_text_prefix_start[#1]}%
    \letvalue{stop#1text}\relax
    \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
-   \ifnum#2=\plustwo
+   \ifnum#2=\plustwo % used for math and tags
      \def#3{#5#4}%
      \def#5##1##2% ##1=language
        {\ifcsname\??label\currentlabelcategory#1:##1:##2\endcsname
           \csname\??label\currentlabelcategory#1:##1:##2\endcsname
         \else\ifcsname\??label#1:##1:##2\endcsname
           \csname\??label#1:##1:##2\endcsname
-%         \else\ifcsname\??language#4\s!default\endcsname
-%           \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
+      % \else\ifcsname\??language#4\s!default\endcsname
+      %   \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
         \else\ifcsname\??language##1\s!default\endcsname
           \expandafter#5\csname\??language##1\s!default\endcsname{##2}%
         \else\ifcsname\??label\currentlabelcategory#1:##2\endcsname

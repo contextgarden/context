@@ -59,6 +59,7 @@ local fontgoodies         = fonts.goodies
 local helpers             = fonts.helpers
 local hashes              = fonts.hashes
 local currentfont         = font.current
+local definefont          = font.define
 
 local encodings           = fonts.encodings
 ----- aglunicodes         = encodings.agl.unicodes
@@ -1191,7 +1192,7 @@ do  -- else too many locals
          -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
             --
             constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
-            local id = font.define(tfmdata)
+            local id = definefont(tfmdata)
             csnames[id] = specification.cs
             tfmdata.properties.id = id
             definers.register(tfmdata,id) -- to be sure, normally already done
@@ -1279,7 +1280,7 @@ do  -- else too many locals
                 return tfmdata, fontdata[tfmdata]
             else
                 constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
-                local id = font.define(tfmdata)
+                local id = definefont(tfmdata)
                 tfmdata.properties.id = id
                 definers.register(tfmdata,id)
                 if cs then

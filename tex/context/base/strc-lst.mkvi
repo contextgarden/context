@@ -856,6 +856,12 @@
     % nothing, nb we use the [] syntax here because we end with a \cs
 \stopsetups
 
+\unexpanded\def\currentlistentrytitlesynchronize
+  {\the\t_lists_every_renderingsynchronize}
+
+\unexpanded\def\currentlistentrytitlerendered
+  {\currentlistentrytitlesynchronize\currentlistentrytitle}
+
 \startsetups[\??listrenderings:command]
     \edef\p_command{\listalternativeparameter\c!command}%
     \ifx\p_command\empty
@@ -863,7 +869,7 @@
     \else
         \p_command
           \currentlistentrynumber
-          {\the\t_lists_every_renderingsynchronize\currentlistentrytitle}%
+          \currentlistentrytitlerendered % {\currentlistentrytitlesynchronize\currentlistentrytitle}
           \currentlistentrypagenumber
     \fi
 \stopsetups

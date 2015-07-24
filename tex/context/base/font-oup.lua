@@ -57,7 +57,7 @@ local function unifyresources(fontdata,indices)
         return
     end
     --
-    local variants = fontdata.variants
+    local variants = fontdata.resources.variants
     if variants then
         for selector, unicodes in next, variants do
             for unicode, index in next, unicodes do

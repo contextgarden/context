@@ -522,7 +522,8 @@
 % referencing: \permithyphenation, also removes leading spaces (new per 29-11-2013)
 
 \unexpanded\def\someline [#1]{\page_lines_reference_start{#1}\page_lines_reference_stop{#1}} % was just a def
-\unexpanded\def\startline[#1]{\page_lines_reference_start{#1}\ignorespaces}
+%unexpanded\def\startline[#1]{\page_lines_reference_start{#1}\ignorespaces}
+\unexpanded\def\startline[#1]{\page_lines_reference_start{#1}\permithyphenation\ignorespaces} %okay?
 \unexpanded\def\stopline [#1]{\removeunwantedspaces\permithyphenation\page_lines_reference_stop{#1}}
 
 \def\page_lines_reference_show_start

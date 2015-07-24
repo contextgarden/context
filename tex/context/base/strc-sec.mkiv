@@ -453,6 +453,10 @@
    \setuevalue{\e!stop \currenthead}{\strc_sectioning_stop [\currenthead]}%
 \to \everydefinehead
 
+% so \subject as well as \section will need two commands when ownnumber
+% is used (one can disable it anyway for subject) .. this is not downward
+% compatible but better
+
 \appendtoks
    \doifelse{\headparameter\c!ownnumber}\v!yes
      {\setuevalue\currenthead{\strc_sectioning_handle_own[\currenthead]}}

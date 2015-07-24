@@ -696,53 +696,67 @@ end
 
 local function packch(entry)
     local split = entry.split
-    if #split > 0 then -- useless test
+    if split and #split > 0 then -- useless test
         local t = { }
         for i=1,#split do
-            local tt, li = { }, split[i].ch
-            for j=1,#li do
-                local lij = li[j]
-                local byt = utfbyte(lij)
+            local tt = { }
+            local ch = split[i].ch
+            for j=1,#ch do
+                local chr = ch[j]
+                local byt = utfbyte(chr)
                 if byt > ignoredoffset then
                     tt[j] = "[]"
                 elseif byt == 0 then
                     tt[j] = " "
                 else
-                    tt[j] = lij
+                    tt[j] = chr
                 end
             end
             t[i] = concat(tt)
         end
         return concat(t," + ")
     else
-        local t, li = { }, split.ch
-        for j=1,#li do
-            local lij = li[j]
-            local byt = utfbyte(lij)
-            if byt > ignoredoffset then
-                t[j] = "[]"
-            elseif byt == 0 then
-                t[j] = " "
-            else
-                t[j] = lij
+        local t  = { }
+        local ch = (split and split.ch) or entry.ch or entry
+        if ch then
+            for i=1,#ch do
+                local chr = ch[i]
+                local byt = utfbyte(chr)
+                if byt > ignoredoffset then
+                    t[i] = "[]"
+                elseif byt == 0 then
+                    t[i] = " "
+                else
+                    t[i] = chr
+                end
             end
+            return concat(t)
+        else
+            return ""
         end
-        return concat(t)
     end
 end
 
 local function packuc(entry)
     local split = entry.split
-    if #split > 0 then -- useless test
+    if split and #split > 0 then -- useless test
         local t = { }
         for i=1,#split do
             t[i] = concat(split[i].uc, " ") -- sq
         end
         return concat(t," + ")
     else
-        return concat(split.uc," ") -- sq
+        local uc = (split and split.uc) or entry.uc or entry
+        if uc then
+            return concat(uc," ") -- sq
+        else
+            return ""
+        end
     end
 end
+
+sorters.packch = packch
+sorters.packuc = packuc
 
 function sorters.sort(entries,cmp)
     if trace_methods then

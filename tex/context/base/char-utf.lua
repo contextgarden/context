@@ -166,7 +166,7 @@ characters.decomposed = decomposed
 --     characters.initialize = function() end -- when used outside tex
 -- end
 
-local function initialize()
+local function initialize() -- maybe in tex mode store in format !
     local data = characters.data
     local function backtrack(v,last,target)
         local vs = v.specials
@@ -175,6 +175,22 @@ local function initialize()
             local first, second = utfchar(one), utfchar(two) .. last
             collapsed[first..second] = target
             backtrack(data[one],second,target)
+        end
+    end
+    local function setpair(one,two,unicode,first,second,combination)
+        local mps = mathpairs[one]
+        if not mps then
+            mps = { [two] = unicode }
+            mathpairs[one] = mps
+        else
+            mps[two] = unicode
+        end
+        local mps = mathpairs[first]
+        if not mps then
+            mps = { [second] = combination }
+            mathpairs[first] = mps
+        else
+            mps[second] = combination
         end
     end
     for unicode, v in next, data do
@@ -196,21 +212,14 @@ local function initialize()
             end
             --
             if v.mathclass or v.mathspec then
-                local mps = mathpairs[two]
-                if not mps then
-                    mps = { [one] = unicode }
-                    mathpairs[two] = mps
-                else
-                    mps[one] = unicode -- here unicode
-                end
-                local mps = mathpairs[second]
-                if not mps then
-                    mps = { [first] = combination }
-                    mathpairs[second] = mps
-                else
-                    mps[first] = combination
-                end
+                setpair(two,one,unicode,second,first,combination) -- watch order
             end
+        end
+        local mp = v.mathpair
+        if mp then
+            local one, two = mp[1], mp[2]
+            local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
+            setpair(one,two,unicode,first,second,combination)
         end
     end
     initialize = false

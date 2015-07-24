@@ -1003,7 +1003,7 @@ local p_unicode =
 local p_texescape = patterns.texescape
 
 local function texescaped(s)
-    return lpegmatch(p_texescape,s)
+    return lpegmatch(p_texescape,s) or s
 end
 
 local p_text =
@@ -1014,7 +1014,7 @@ local p_text =
         Cs( P("{")      * ((1-P("}"))^0/texescaped) *  P("}")     )
       + Cs((P("(")/"{") * ((1-P(")"))^0/texescaped) * (P(")")/"}"))
     )
-  + Cc("\\asciimathoptext") * Cs(Cc("{") * (patterns.undouble/texescaped) * Cc("}"))
+  + Cc("\\asciimathoptext") * Cs(Cc("{") * (C(patterns.undouble)/texescaped) * Cc("}"))
 
 local m_left = {
     ["(:"] = s_langle,
@@ -1871,7 +1871,6 @@ local function convert(str,nowrap)
     end
 end
 
-
 local context = context
 
 if not context then
@@ -1881,6 +1880,7 @@ if not context then
 
 --     report_asciimath(cleanedup([[ac+sinx+xsqrtx+sinsqrtx+sinsqrt(x)]]))
 --     report_asciimath(cleanedup([[a "αsinsqrtx" b]]))
+--     convert([[a "αsinsqrtx" b]])
 --     report_asciimath(cleanedup([[a "α" b]]))
 --     report_asciimath(cleanedup([[//4]]))
 
