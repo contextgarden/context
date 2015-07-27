@@ -276,15 +276,15 @@ local fc = number.dimenfactors.bp * sc / 10
 
 function metapost.output(kind,font,char,advance,shift,ex)
     local character = characters[font][char]
-    if char then
+    if character then
         local index = character.index
         if index then
             local shapedata = shapes[font]
             local glyphs    = shapedata.glyphs -- todo: subfonts fonts.shapes.indexed(font,sub)
             if glyphs then
-                local glyf = data.glyphs[index]
+                local glyf = glyphs[index]
                 if glyf then
-                    local units     = data.fontheader and data.fontheader.units or data.units or 1000
+                    local units     = shapedata.units or 1000
                     local yfactor   = sc/units
                     local xfactor   = yfactor
                     local shift     = shift or 0

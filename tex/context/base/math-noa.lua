@@ -25,143 +25,149 @@ local sortedhash = table.sortedhash
 local insert, remove = table.insert, table.remove
 local div = math.div
 
-local fonts, nodes, node, mathematics = fonts, nodes, node, mathematics
+local fonts                = fonts
+local nodes                = nodes
+local node                 = node
+local mathematics          = mathematics
+local context              = context
 
-local otf                 = fonts.handlers.otf
-local otffeatures         = fonts.constructors.newfeatures("otf")
-local registerotffeature  = otffeatures.register
+local otf                  = fonts.handlers.otf
+local otffeatures          = fonts.constructors.newfeatures("otf")
+local registerotffeature   = otffeatures.register
 
-local privateattribute    = attributes.private
-local registertracker     = trackers.register
-local registerdirective   = directives.register
-local logreporter         = logs.reporter
+local privateattribute     = attributes.private
+local registertracker      = trackers.register
+local registerdirective    = directives.register
+local logreporter          = logs.reporter
 
-local trace_remapping     = false  registertracker("math.remapping",   function(v) trace_remapping   = v end)
-local trace_processing    = false  registertracker("math.processing",  function(v) trace_processing  = v end)
-local trace_analyzing     = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
-local trace_normalizing   = false  registertracker("math.normalizing", function(v) trace_normalizing = v end)
-local trace_collapsing    = false  registertracker("math.collapsing",  function(v) trace_collapsing  = v end)
-local trace_patching      = false  registertracker("math.patching",    function(v) trace_patching    = v end)
-local trace_goodies       = false  registertracker("math.goodies",     function(v) trace_goodies     = v end)
-local trace_variants      = false  registertracker("math.variants",    function(v) trace_variants    = v end)
-local trace_alternates    = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
-local trace_italics       = false  registertracker("math.italics",     function(v) trace_italics     = v end)
-local trace_domains       = false  registertracker("math.domains",     function(v) trace_domains     = v end)
-local trace_families      = false  registertracker("math.families",    function(v) trace_families    = v end)
-local trace_fences        = false  registertracker("math.fences",      function(v) trace_fences      = v end)
+local trace_remapping      = false  registertracker("math.remapping",   function(v) trace_remapping   = v end)
+local trace_processing     = false  registertracker("math.processing",  function(v) trace_processing  = v end)
+local trace_analyzing      = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
+local trace_normalizing    = false  registertracker("math.normalizing", function(v) trace_normalizing = v end)
+local trace_collapsing     = false  registertracker("math.collapsing",  function(v) trace_collapsing  = v end)
+local trace_patching       = false  registertracker("math.patching",    function(v) trace_patching    = v end)
+local trace_goodies        = false  registertracker("math.goodies",     function(v) trace_goodies     = v end)
+local trace_variants       = false  registertracker("math.variants",    function(v) trace_variants    = v end)
+local trace_alternates     = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
+local trace_italics        = false  registertracker("math.italics",     function(v) trace_italics     = v end)
+local trace_domains        = false  registertracker("math.domains",     function(v) trace_domains     = v end)
+local trace_families       = false  registertracker("math.families",    function(v) trace_families    = v end)
+local trace_fences         = false  registertracker("math.fences",      function(v) trace_fences      = v end)
 
-local check_coverage      = true   registerdirective("math.checkcoverage", function(v) check_coverage = v end)
+local check_coverage       = true   registerdirective("math.checkcoverage", function(v) check_coverage = v end)
 
-local report_processing   = logreporter("mathematics","processing")
-local report_remapping    = logreporter("mathematics","remapping")
-local report_normalizing  = logreporter("mathematics","normalizing")
-local report_collapsing   = logreporter("mathematics","collapsing")
-local report_patching     = logreporter("mathematics","patching")
-local report_goodies      = logreporter("mathematics","goodies")
-local report_variants     = logreporter("mathematics","variants")
-local report_alternates   = logreporter("mathematics","alternates")
-local report_italics      = logreporter("mathematics","italics")
-local report_domains      = logreporter("mathematics","domains")
-local report_families     = logreporter("mathematics","families")
-local report_fences       = logreporter("mathematics","fences")
+local report_processing    = logreporter("mathematics","processing")
+local report_remapping     = logreporter("mathematics","remapping")
+local report_normalizing   = logreporter("mathematics","normalizing")
+local report_collapsing    = logreporter("mathematics","collapsing")
+local report_patching      = logreporter("mathematics","patching")
+local report_goodies       = logreporter("mathematics","goodies")
+local report_variants      = logreporter("mathematics","variants")
+local report_alternates    = logreporter("mathematics","alternates")
+local report_italics       = logreporter("mathematics","italics")
+local report_domains       = logreporter("mathematics","domains")
+local report_families      = logreporter("mathematics","families")
+local report_fences        = logreporter("mathematics","fences")
 
-local a_mathrendering     = privateattribute("mathrendering")
-local a_exportstatus      = privateattribute("exportstatus")
+local a_mathrendering      = privateattribute("mathrendering")
+local a_exportstatus       = privateattribute("exportstatus")
 
-local nuts                = nodes.nuts
-local nodepool            = nuts.pool
-local tonut               = nuts.tonut
-local tonode              = nuts.tonode
-local nutstring           = nuts.tostring
+local nuts                 = nodes.nuts
+local nodepool             = nuts.pool
+local tonut                = nuts.tonut
+local tonode               = nuts.tonode
+local nutstring            = nuts.tostring
 
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
-local getnext             = nuts.getnext
-local getprev             = nuts.getprev
-local getid               = nuts.getid
-local getfont             = nuts.getfont
-local getsubtype          = nuts.getsubtype
-local getchar             = nuts.getchar
-local getattr             = nuts.getattr
-local setattr             = nuts.setattr
+local getfield             = nuts.getfield
+local setfield             = nuts.setfield
+local getnext              = nuts.getnext
+local getprev              = nuts.getprev
+local getid                = nuts.getid
+local getfont              = nuts.getfont
+local getsubtype           = nuts.getsubtype
+local getchar              = nuts.getchar
+local getattr              = nuts.getattr
+local setattr              = nuts.setattr
 
-local insert_node_after   = nuts.insert_after
-local insert_node_before  = nuts.insert_before
-local free_node           = nuts.free
-local new_node            = nuts.new -- todo: pool: math_noad math_sub
-local copy_node           = nuts.copy
-local slide_nodes         = nuts.slide
+local insert_node_after    = nuts.insert_after
+local insert_node_before   = nuts.insert_before
+local free_node            = nuts.free
+local new_node             = nuts.new -- todo: pool: math_noad math_sub
+local copy_node            = nuts.copy
+local slide_nodes          = nuts.slide
+local linked_nodes         = nuts.linked
+local set_visual           = nuts.setvisual
 
-local mlist_to_hlist      = nodes.mlist_to_hlist
+local mlist_to_hlist       = nodes.mlist_to_hlist
 
-local font_of_family      = node.family_font
+local font_of_family       = node.family_font
 
-local new_kern            = nodepool.kern
-local new_rule            = nodepool.rule
+local new_kern             = nodepool.kern
+local new_rule             = nodepool.rule
 
-local fonthashes          = fonts.hashes
-local fontdata            = fonthashes.identifiers
-local fontcharacters      = fonthashes.characters
-local fontproperties      = fonthashes.properties
-local fontitalics         = fonthashes.italics
-local fontemwidths        = fonthashes.emwidths
-local fontexheights       = fonthashes.exheights
+local fonthashes           = fonts.hashes
+local fontdata             = fonthashes.identifiers
+local fontcharacters       = fonthashes.characters
+local fontproperties       = fonthashes.properties
+local fontitalics          = fonthashes.italics
+local fontemwidths         = fonthashes.emwidths
+local fontexheights        = fonthashes.exheights
 
-local variables           = interfaces.variables
-local texsetattribute     = tex.setattribute
-local texgetattribute     = tex.getattribute
-local unsetvalue          = attributes.unsetvalue
-local implement           = interfaces.implement
+local variables            = interfaces.variables
+local texsetattribute      = tex.setattribute
+local texgetattribute      = tex.getattribute
+local unsetvalue           = attributes.unsetvalue
+local implement            = interfaces.implement
 
-local v_reset             = variables.reset
+local v_reset              = variables.reset
 
-local chardata            = characters.data
+local chardata             = characters.data
 
-noads                     = noads or { }  -- todo: only here
-local noads               = noads
+noads                      = noads or { }  -- todo: only here
+local noads                = noads
 
-noads.processors          = noads.processors or { }
-local processors          = noads.processors
+noads.processors           = noads.processors or { }
+local processors           = noads.processors
 
-noads.handlers            = noads.handlers   or { }
-local handlers            = noads.handlers
+noads.handlers             = noads.handlers   or { }
+local handlers             = noads.handlers
 
-local tasks               = nodes.tasks
+local tasks                = nodes.tasks
 
-local nodecodes           = nodes.nodecodes
-local noadcodes           = nodes.noadcodes
-local fencecodes          = nodes.fencecodes
+local nodecodes            = nodes.nodecodes
+local noadcodes            = nodes.noadcodes
+local fencecodes           = nodes.fencecodes
 
-local noad_ord            = noadcodes.ord
-local noad_rel            = noadcodes.rel
-local noad_bin            = noadcodes.bin
-local noad_open           = noadcodes.open
-local noad_close          = noadcodes.close
-local noad_punct          = noadcodes.punct
-local noad_opdisplaylimits= noadcodes.opdisplaylimits
-local noad_oplimits       = noadcodes.oplimits
-local noad_opnolimits     = noadcodes.opnolimits
-local noad_inner          = noadcodes.inner
+local noad_ord             = noadcodes.ord
+local noad_rel             = noadcodes.rel
+local noad_bin             = noadcodes.bin
+local noad_open            = noadcodes.open
+local noad_close           = noadcodes.close
+local noad_punct           = noadcodes.punct
+local noad_opdisplaylimits = noadcodes.opdisplaylimits
+local noad_oplimits        = noadcodes.oplimits
+local noad_opnolimits      = noadcodes.opnolimits
+local noad_inner           = noadcodes.inner
 
-local math_noad           = nodecodes.noad           -- attr nucleus sub sup
-local math_accent         = nodecodes.accent         -- attr nucleus sub sup accent
-local math_radical        = nodecodes.radical        -- attr nucleus sub sup left degree
-local math_fraction       = nodecodes.fraction       -- attr nucleus sub sup left right
-local math_box            = nodecodes.subbox         -- attr list
-local math_sub            = nodecodes.submlist       -- attr list
-local math_char           = nodecodes.mathchar       -- attr fam char
-local math_textchar       = nodecodes.mathtextchar   -- attr fam char
-local math_delim          = nodecodes.delim          -- attr small_fam small_char large_fam large_char
-local math_style          = nodecodes.style          -- attr style
-local math_choice         = nodecodes.choice         -- attr display text script scriptscript
-local math_fence          = nodecodes.fence          -- attr subtype
+local math_noad            = nodecodes.noad           -- attr nucleus sub sup
+local math_accent          = nodecodes.accent         -- attr nucleus sub sup accent
+local math_radical         = nodecodes.radical        -- attr nucleus sub sup left degree
+local math_fraction        = nodecodes.fraction       -- attr nucleus sub sup left right
+local math_box             = nodecodes.subbox         -- attr list
+local math_sub             = nodecodes.submlist       -- attr list
+local math_char            = nodecodes.mathchar       -- attr fam char
+local math_textchar        = nodecodes.mathtextchar   -- attr fam char
+local math_delim           = nodecodes.delim          -- attr small_fam small_char large_fam large_char
+local math_style           = nodecodes.style          -- attr style
+local math_choice          = nodecodes.choice         -- attr display text script scriptscript
+local math_fence           = nodecodes.fence          -- attr subtype
 
-local hlist_code          = nodecodes.hlist
-local glyph_code          = nodecodes.glyph
+local hlist_code           = nodecodes.hlist
+local glyph_code           = nodecodes.glyph
 
-local left_fence_code     = fencecodes.left
-local middle_fence_code   = fencecodes.middle
-local right_fence_code    = fencecodes.right
+local left_fence_code      = fencecodes.left
+local middle_fence_code    = fencecodes.middle
+local right_fence_code     = fencecodes.right
 
 -- this initial stuff is tricky as we can have removed and new nodes with the same address
 -- the only way out is a free-per-page list of nodes (not bad anyway)
@@ -1077,87 +1083,29 @@ end
 -- = we check for correction first because accessing nodes is slower
 -- = the actual glyph is not that important (we can control it with numbers)
 
--- Italic correction in luatex math is a mess. There are all kind of assumptions based on
--- old fonts and new font. Eventually there should be a flag that can signal to ignore all
--- those heuristics. We want to deal with it ourselves also in the perspective of mxed math
--- and text.
+-- Italic correction in luatex math is (was) a mess. There are all kind of assumptions based on
+-- old fonts and new fonts. Eventually there should be a flag that can signal to ignore all
+-- those heuristics. We want to deal with it ourselves also in the perspective of mixed math
+-- and text. Also, for a while in context we had to deal with a mix of virtual math fonts and
+-- real ones.
+
+-- in opentype the italic correction of a limop is added to the width and luatex does some juggling
+-- that we want to avoid but we need to do something here (in fact, we could better fix the width of
+-- the character
 
 local a_mathitalics = privateattribute("mathitalics")
 
 local italics        = { }
 local default_factor = 1/20
 
-local function getcorrection(method,font,char) -- -- or character.italic -- (this one is for tex)
-
-    local correction, fromvisual
-
-    if method == 1 then
-        -- only font data triggered by fontitalics
-        local italics = fontitalics[font]
-        if italics then
-            local character = fontcharacters[font][char]
-            if character then
-                correction = character.italic_correction
-                if correction and correction ~= 0 then
-                    return correction, false
-                end
-            end
-        end
-    elseif method == 2 then
-        -- only font data triggered by fontdata
-        local character = fontcharacters[font][char]
-        if character then
-            correction = character.italic_correction
-            if correction and correction ~= 0 then
-                return correction, false
-            end
-        end
-    elseif method == 3 then
-        -- only quad based by selective
-        local visual = chardata[char].visual
-        if not visual then
-            -- skip
-        elseif visual == "it" or visual == "bi" then
-            correction = fontproperties[font].mathitalic_defaultvalue or default_factor*fontemwidths[font]
-            if correction and correction ~= 0 then
-                return correction, true
-            end
-        end
-    elseif method == 4 then
-        -- combination of 1 and 3
-        local italics = fontitalics[font]
-        if italics then
-            local character = fontcharacters[font][char]
-            if character then
-                correction = character.italic_correction
-                if correction and correction ~= 0 then
-                    return correction, false
-                end
-            end
-        end
-        if not correction then
-            local visual = chardata[char].visual
-            if not visual then
-                -- skip
-            elseif visual == "it" or visual == "bi" then
-                correction = fontproperties[font].mathitalic_defaultvalue or default_factor*fontemwidths[font]
-                if correction and correction ~= 0 then
-                    return correction, true
-                end
-            end
-        end
-    end
-
-end
-
 local setcolor     = nodes.tracers.colors.set
 local resetcolor   = nodes.tracers.colors.reset
 local italic_kern  = new_kern
-local c_positive_d = "trace:db"
+local c_positive_d = "trace:dg"
 local c_negative_d = "trace:dr"
 
 local function insert_kern(current,kern)
-    local sub  = new_node(math_sub) -- todo: pool
+    local sub  = new_node(math_sub)  -- todo: pool
     local noad = new_node(math_noad) -- todo: pool
     setfield(sub,"list",kern)
     setfield(kern,"next",noad)
@@ -1167,98 +1115,83 @@ end
 
 registertracker("math.italics.visualize", function(v)
     if v then
-        italic_kern = function(k,font)
-            local ex = 1.5 * fontexheights[font]
-            if k > 0 then
-                return setcolor(new_rule(k,ex,ex),c_positive_d)
-            else
-                -- influences un*
-                return old_kern(k) .. setcolor(new_rule(-k,ex,ex),c_negative_d) .. old_kern(k)
-            end
+        italic_kern = function(k)
+            local n = new_kern(k)
+            set_visual(n,"italic")
+            return n
         end
     else
         italic_kern = new_kern
     end
 end)
 
+local function getcorrection(method,font,char) -- -- or character.italic -- (this one is for tex)
+
+    local visual = chardata[char].visual
+
+    if method == 1 then
+        -- check on state
+        local italics = fontitalics[font]
+        if italics then
+            local character = fontcharacters[font][char]
+            if character then
+                local correction = character.italic
+                if correction and correction ~= 0 then
+                    return correction, visual
+                end
+            end
+        end
+    elseif method == 2 then
+        -- no check
+        local character = fontcharacters[font][char]
+        if character then
+            local correction = character.italic
+            if correction and correction ~= 0 then
+                return correction, visual
+            end
+        end
+    elseif method == 3 then
+        -- check on visual
+        if visual == "it" or visual == "bi" then
+            local character = fontcharacters[font][char]
+            if character then
+                local correction = character.italic
+                if correction and correction ~= 0 then
+                    return correction, visual
+                end
+            end
+        end
+    elseif method == 4 then
+        -- combination of 1 and 3
+        local italics = fontitalics[font]
+        if italics and (visual == "it" or visual == "bi") then
+            local character = fontcharacters[font][char]
+            if character then
+                local correction = character.italic
+                if correction and correction ~= 0 then
+                    return correction, visual
+                end
+            end
+        end
+    end
+
+end
+
 italics[math_char] = function(pointer,what,n,parent)
     local method = getattr(pointer,a_mathitalics)
-    if method and method > 0 then
+    if method and method > 0 and method < 100 then
         local char = getchar(pointer)
         local font = font_of_family(getfield(pointer,"fam")) -- todo: table
         local correction, visual = getcorrection(method,font,char)
-        if correction then
-            local pid = getid(parent)
-            local sub, sup
-            if pid == math_noad then
-                sup = getfield(parent,"sup")
-                sub = getfield(parent,"sub")
-            end
-            if sup or sub then
-                local subtype = getsubtype(parent)
-                if subtype == noad_oplimits then
-                    if sup then
-                        setfield(parent,"sup",insert_kern(sup,italic_kern(correction,font)))
-                        if trace_italics then
-                            report_italics("method %a, adding %p italic correction for upper limit of %C",method,correction,char)
-                        end
+        if correction and correction ~= 0 then
+            local next_noad = getnext(parent)
+            if not next_noad then
+                if n == 1 then -- only at the outer level .. will become an option (always,endonly,none)
+                    if trace_italics then
+                        report_italics("method %a, flagging italic correction between %C and end math",method,correction,char)
                     end
-                    if sub then
-                        local correction = - correction
-                        setfield(parent,"sub",insert_kern(sub,italic_kern(correction,font)))
-                        if trace_italics then
-                            report_italics("method %a, adding %p italic correction for lower limit of %C",method,correction,char)
-                        end
-                    end
-                elseif sup then
-                    if pointer ~= sub then
-                        setfield(parent,"sup",insert_kern(sup,italic_kern(correction,font)))
-                        if trace_italics then
-                            report_italics("method %a, adding %p italic correction before superscript after %C",method,correction,char)
-                        end
-                    else
-                        -- otherwise we inject twice
-                    end
-                end
-            else
-                local next_noad = getnext(parent)
-                if not next_noad then
-                    if n== 1 then -- only at the outer level .. will become an option (always,endonly,none)
-                        if trace_italics then
-                            report_italics("method %a, adding %p italic correction between %C and end math",method,correctio,char)
-                        end
-                        insert_node_after(parent,parent,italic_kern(correction,font))
-                    end
-                elseif getid(next_noad) == math_noad then
-                    local next_subtype = getsubtype(next_noad)
-                    if next_subtype == noad_punct or next_subtype == noad_ord then
-                        local next_nucleus = getfield(next_noad,"nucleus")
-                        if getid(next_nucleus) == math_char then
-                            local next_char = getchar(next_nucleus)
-                            local next_data = chardata[next_char]
-                            local visual = next_data.visual
-                            if visual == "it" or visual == "bi" then
-                             -- if trace_italics then
-                             --     report_italics("method %a, skipping %p italic correction between italic %C and italic %C",method,correction,char,next_char)
-                             -- end
-                            else
-                                local category = next_data.category
-                                if category == "nd" or category == "ll" or category == "lu" then
-                                    if trace_italics then
-                                        report_italics("method %a, adding %p italic correction between italic %C and non italic %C",method,correction,char,next_char)
-                                    end
-                                    insert_node_after(parent,parent,italic_kern(correction,font))
-                             -- elseif next_data.height > (fontexheights[font]/2) then
-                             --     if trace_italics then
-                             --         report_italics("method %a, adding %p italic correction between %C and ascending %C",method,correction,char,next_char)
-                             --     end
-                             --     insert_node_after(parent,parent,italic_kern(correction,font))
-                             -- elseif trace_italics then
-                             --  -- report_italics("method %a, skipping %p italic correction between %C and %C",method,correction,char,next_char)
-                                end
-                            end
-                        end
-                    end
+                    setattr(pointer,a_mathitalics,101)
+                    setattr(parent,a_mathitalics,101)
                 end
             end
         end
@@ -1286,7 +1219,14 @@ function mathematics.setitalics(name)
     if enable then
         enable()
     end
-    texsetattribute(a_mathitalics,name and name ~= v_reset and tonumber(name) or unsetvalue)
+    texsetattribute(a_mathitalics,name and name ~= v_reset and tonumber(name) or unsetvalue) -- maybe also v_none
+end
+
+function mathematics.getitalics(name)
+    if enable then
+        enable()
+    end
+    context(name and name ~= v_reset and tonumber(name) or unsetvalue)
 end
 
 function mathematics.resetitalics()
@@ -1294,8 +1234,21 @@ function mathematics.resetitalics()
 end
 
 implement {
+    name      = "initializemathitalics",
+    actions   = enable,
+    onlyonce  = true,
+}
+
+implement {
     name      = "setmathitalics",
-    actions   = mathematics.setitalics
+    actions   = mathematics.setitalics,
+    arguments = "string",
+}
+
+implement {
+    name      = "getmathitalics",
+    actions   = mathematics.getitalics,
+    arguments = "string",
 }
 
 implement {
@@ -1602,10 +1555,30 @@ do
         texsetattribute(a_mathdomain,data and data.attribute or unsetvalue)
     end
 
+    function mathematics.getdomain(name)
+        if enable then
+            enable()
+        end
+        local data = name and name ~= v_reset and categories[name]
+        context(data and data.attribute or unsetvalue)
+    end
+
+    implement {
+        name      = "initializemathdomain",
+        actions   = enable,
+        onlyonce  = true,
+    }
+
     implement {
         name      = "setmathdomain",
         arguments = "string",
         actions   = mathematics.setdomain,
+    }
+
+    implement {
+        name      = "getmathdomain",
+        arguments = "string",
+        actions   = mathematics.getdomain,
     }
 
     local function makehash(data)

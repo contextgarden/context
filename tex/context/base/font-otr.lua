@@ -34,15 +34,6 @@ if not modules then modules = { } end modules ['font-otr'] = {
 
 -- todo: more messages (only if really needed)
 --
--- todo (in old loader and new one) math:
---
--- italic_correction -> italic
--- top_accent        -> top accent
--- vert_parts        -> vparts
--- horiz_parts       -> hparts
--- vert_variants     -> vvariants -> next in tex, so better 'sizes'
--- horiz_variants    -> hvariants -> next in tex, so better 'sizes'
---
 -- considered, in math:
 --
 -- start -> first (so we can skip the first same-size one)

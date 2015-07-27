@@ -144,6 +144,7 @@ local trace_strut
 local trace_whatsit
 local trace_user
 local trace_math
+local trace_italic
 
 local report_visualize = logs.reporter("visualize")
 
@@ -164,6 +165,7 @@ local modes = {
     simplevtop = 1024 + 4,
     user       = 2048,
     math       = 4096,
+    italic     = 8192,
 }
 
 local modes_makeup = { "hbox", "vbox", "kern", "glue", "penalty" }
@@ -171,7 +173,7 @@ local modes_boxes  = { "hbox", "vbox"  }
 local modes_all    = { "hbox", "vbox", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph", "user", "math" }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic
 
 local enabled = false
 local layers  = { }
@@ -216,6 +218,7 @@ local function enable()
     l_glyph    = layers.glyph
     l_user     = layers.user
     l_math     = layers.math
+    l_italic   = layers.italic
     nodes.tasks.enableaction("shipouts","nodes.visualizers.handler")
     report_visualize("enabled")
     enabled = true
@@ -270,6 +273,10 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
         enable()
     end
     return a
+end
+
+function nuts.setvisual(n,mode)
+    setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true))
 end
 
 function visualizers.setvisual(n)
@@ -748,6 +755,29 @@ local function ruledkern(head,current,vertical)
     return head, getnext(current)
 end
 
+local i_cache = { }
+
+local function ruleditalic(head,current)
+    local kern = getfield(current,"kern")
+    local info = i_cache[kern]
+    if info then
+        -- print("kern hit")
+    else
+        local amount = formatters["%s:%0.3f"]("IC",kern*pt_factor)
+        if kern > 0 then
+            info = sometext(amount,l_kern,c_positive)
+        elseif kern < 0 then
+            info = sometext(amount,l_kern,c_negative)
+        else
+            info = sometext(amount,l_kern,c_zero)
+        end
+        i_cache[kern] = info
+    end
+    info = copy_list(info)
+    head, current = insert_node_before(head,current,info)
+    return head, getnext(current)
+end
+
 local p_cache_v = { }
 local p_cache_h = { }
 
@@ -789,6 +819,7 @@ local function visualize(head,vertical,forced)
     local trace_simple   = false
     local trace_user     = false
     local trace_math     = false
+    local trace_italic   = false
     local current        = head
     local previous       = nil
     local attr           = unsetvalue
@@ -812,6 +843,7 @@ local function visualize(head,vertical,forced)
                 trace_simple   = false
                 trace_user     = false
                 trace_math     = false
+                trace_italic   = false
             else -- dead slow:
                 trace_hbox     = hasbit(a,   1)
                 trace_vbox     = hasbit(a,   2)
@@ -826,6 +858,7 @@ local function visualize(head,vertical,forced)
                 trace_simple   = hasbit(a,1024)
                 trace_user     = hasbit(a,2048)
                 trace_math     = hasbit(a,4096)
+                trace_italic   = hasbit(a,8192)
             end
             attr = a
         end
@@ -856,7 +889,9 @@ local function visualize(head,vertical,forced)
                     head, current = fontkern(head,current)
                 end
             else -- if subtype == user_kern_code then
-                if trace_kern then
+                if trace_italic then
+                    head, current = ruleditalic(head,current)
+                elseif trace_kern then
                     head, current = ruledkern(head,current,vertical)
                 end
             end

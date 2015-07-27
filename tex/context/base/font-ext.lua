@@ -534,8 +534,8 @@ local function initializeitlc(tfmdata,value) -- hm, always value
 end
 
 registerotffeature {
-    name        = "itlc",
-    description = "italic correction",
+    name         = "itlc",
+    description  = "italic correction",
     initializers = {
         base = initializeitlc,
         node = initializeitlc,
@@ -543,8 +543,8 @@ registerotffeature {
 }
 
 registerafmfeature {
-    name        = "itlc",
-    description = "italic correction",
+    name         = "itlc",
+    description  = "italic correction",
     initializers = {
         base = initializeitlc,
         node = initializeitlc,
@@ -552,14 +552,12 @@ registerafmfeature {
 }
 
 local function initializetextitalics(tfmdata,value) -- yes no delay
-    local delay = value == "delay"
-    tfmdata.properties.textitalics = delay and true or value
-    tfmdata.properties.delaytextitalics = delay
+    tfmdata.properties.textitalics = toboolean(value)
 end
 
 registerotffeature {
-    name        = "textitalics",
-    description = "use alternative text italic correction",
+    name         = "textitalics",
+    description  = "use alternative text italic correction",
     initializers = {
         base = initializetextitalics,
         node = initializetextitalics,
@@ -567,11 +565,33 @@ registerotffeature {
 }
 
 registerafmfeature {
-    name        = "textitalics",
-    description = "use alternative text italic correction",
+    name         = "textitalics",
+    description  = "use alternative text italic correction",
     initializers = {
         base = initializetextitalics,
         node = initializetextitalics,
+    }
+}
+
+local function initializemathitalics(tfmdata,value) -- yes no delay
+    tfmdata.properties.mathitalics = toboolean(value)
+end
+
+registerotffeature {
+    name         = "mathitalics",
+    description  = "use alternative math italic correction",
+    initializers = {
+        base = initializemathitalics,
+        node = initializemathitalics,
+    }
+}
+
+registerafmfeature {
+    name         = "mathitalics",
+    description  = "use alternative math italic correction",
+    initializers = {
+        base = initializemathitalics,
+        node = initializemathitalics,
     }
 }
 

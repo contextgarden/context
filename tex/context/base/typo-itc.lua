@@ -49,6 +49,8 @@ local find_tail           = nuts.tail
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
 local a_italics           = attributes.private("italics")
+local a_mathitalics       = attributes.private("mathitalics")
+
 local unsetvalue          = attributes.unsetvalue
 
 local new_correction_kern = nodepool.fontkern
@@ -59,6 +61,8 @@ local fontdata            = fonthashes.identifiers
 local italicsdata         = fonthashes.italics
 local exheights           = fonthashes.exheights
 
+local is_punctuation      = characters.is_punctuation
+
 local implement           = interfaces.implement
 
 local forcedvariant       = false
@@ -67,11 +71,14 @@ function typesetters.italics.forcevariant(variant)
     forcedvariant = variant
 end
 
+-- We use the same key as the tex font handler. So, if a valua has already be set, we
+-- use that one.
+
 local function setitalicinfont(font,char)
     local tfmdata = fontdata[font]
     local character = tfmdata.characters[char]
     if character then
-        local italic = character.italic_correction
+        local italic = character.italic
         if not italic then
             local autoitalicamount = tfmdata.properties.autoitalicamount or 0
             if autoitalicamount ~= 0 then
@@ -93,7 +100,10 @@ local function setitalicinfont(font,char)
             if trace_italics then
                 report_italics("setting italic correction of %C of font %a to %p",char,font,italic)
             end
-            character.italic_correction = italic or 0
+            if not italic then
+                italic = 0
+            end
+            character.italic = italic
         end
         return italic
     else
@@ -236,7 +246,7 @@ function italics.handler(head)
                         -- this really can happen
                         previtalic = 0
                     else
-                        previtalic = cd.italic or cd.italic_correction
+                        previtalic = cd.italic
                         if not previtalic then
                             previtalic = setitalicinfont(font,char) -- calculated once
                          -- previtalic = 0
@@ -283,7 +293,7 @@ function italics.handler(head)
                                 -- this really can happen
                                 replaceitalic = 0
                             else
-                                replaceitalic = cd.italic or cd.italic_correction
+                                replaceitalic = cd.italic
                                 if not replaceitalic then
                                     replaceitalic = setitalicinfont(font,char) -- calculated once
                                  -- replaceitalic = 0
@@ -328,7 +338,7 @@ function italics.handler(head)
                                 -- this really can happen
 --                                 postitalic = 0
                             else
-                                postitalic = cd.italic or cd.italic_correction
+                                postitalic = cd.italic
                                 if not postitalic then
                                     postitalic = setitalicinfont(font,char) -- calculated once
                                  -- postitalic = 0
@@ -399,6 +409,30 @@ function italics.handler(head)
             replaceitalic   = 0
             postinserted    = nil
             postitalic      = 0
+            local next = getnext(current)
+            if next and getid(next) == glyph_code then
+                local char = getchar(next)
+                if is_punctuation[char] then
+                    local kern = getprev(current)
+                    if kern and getid(kern) == kern_code then
+                        local glyph = getprev(kern)
+                        if glyph and getid(glyph) == glyph_code then
+                            local a = getattr(glyph,a_mathitalics)
+                            if a == 101 then
+                                local font = getfont(next)
+                                local ex = exheights[font]
+                                -- we need an extrat punctuation checker: . ; etc
+                                if getfield(next,"height") < 1.25*ex then
+                                    if trace_italics then
+                                        report_italics("removing italic between math %C and punctuation %C",getchar(glyph),char)
+                                    end
+                                    setfield(kern,"kern",0) -- or maybe a small value or half the ic
+                                end
+                            end
+                        end
+                    end
+                end
+            end
         else
             if previtalic ~= 0 then
                 if trace_italics then
@@ -529,7 +563,7 @@ local function setupitaliccorrection(option) -- no grouping !
         texsetattribute(a_italics,variant)
     end
     if trace_italics then
-        report_italics("forcing %a, variant %a",forcedvariant,variant ~= unsetvalue and variant)
+        report_italics("forcing %a, variant %a",forcedvariant or "-",variant ~= unsetvalue and variant)
     end
 end
 

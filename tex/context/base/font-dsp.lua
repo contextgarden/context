@@ -1938,8 +1938,9 @@ local function readmathglyphinfo(f,fontdata,offset)
         local coverage  = readushort(f)
         local nofglyphs = readushort(f)
         coverage = readcoverage(f,offset+italics+coverage,true)
+        setposition(f,offset+italics+4)
         for i=1,nofglyphs do
-            local italic = readshort(f)
+            local italic = readmathvalue(f)
             if italic ~= 0 then
                 local glyph = glyphs[coverage[i]]
                 local math  = glyph.math
@@ -1957,8 +1958,9 @@ local function readmathglyphinfo(f,fontdata,offset)
         local coverage  = readushort(f)
         local nofglyphs = readushort(f)
         coverage = readcoverage(f,offset+accents+coverage,true)
+        setposition(f,offset+accents+4)
         for i=1,nofglyphs do
-            local accent = readshort(f)
+            local accent = readmathvalue(f)
             if accent ~= 0 then
                 local glyph = glyphs[coverage[i]]
                 local math  = glyph.math
@@ -2062,7 +2064,7 @@ local function readmathvariants(f,fontdata,offset)
     --     advance = readushort(f),
     -- }
 
-    local function get(offset,coverage,nofglyphs,construction,kvariants,kparts)
+    local function get(offset,coverage,nofglyphs,construction,kvariants,kparts,kitalic)
         if coverage ~= 0 and nofglyphs > 0 then
             local coverage = readcoverage(f,offset+coverage,true)
             for i=1,nofglyphs do
@@ -2100,7 +2102,7 @@ local function readmathvariants(f,fontdata,offset)
                     end
                     if assembly ~= 0 then
                         setposition(f,offset + c + assembly)
-                        local italics  = readmathvalue(f)
+                        local italic   = readmathvalue(f)
                         local nofparts = readushort(f)
                         local parts    = { }
                         for i=1,nofparts do
@@ -2117,10 +2119,15 @@ local function readmathvariants(f,fontdata,offset)
                             parts[i] = p
                         end
                         if not math then
-                            math = { [kparts] = parts }
+                            math = {
+                                [kparts] = parts
+                            }
                             glyph.math = math
                         else
                             math[kparts] = parts
+                        end
+                        if italic and italic ~= 0 then
+                            math[kitalic] = italic
                         end
                     end
                 end
@@ -2128,8 +2135,8 @@ local function readmathvariants(f,fontdata,offset)
         end
     end
 
-    get(offset,vcoverage,vnofglyphs,vconstruction,"vvariants","vparts")
-    get(offset,hcoverage,hnofglyphs,hconstruction,"hvariants","hparts")
+    get(offset,vcoverage,vnofglyphs,vconstruction,"vvariants","vparts","vitalic")
+    get(offset,hcoverage,hnofglyphs,hconstruction,"hvariants","hparts","hitalic")
 end
 
 function readers.math(f,fontdata,specification)

@@ -58,7 +58,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.817 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 2.818 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -1119,16 +1119,16 @@ end
 -- boundingbox: split into ht/dp takes more memory (larger tables and less sharing)
 
 actions["analyze glyphs"] = function(data,filename,raw) -- maybe integrate this in the previous
-    local descriptions      = data.descriptions
-    local resources         = data.resources
-    local metadata          = data.metadata
-    local properties        = data.properties
-    local hasitalics        = false
-    local widths            = { }
-    local marks             = { } -- always present (saves checking)
+    local descriptions = data.descriptions
+    local resources    = data.resources
+    local metadata     = data.metadata
+    local properties   = data.properties
+    local hasitalics   = false
+    local widths       = { }
+    local marks        = { } -- always present (saves checking)
     for unicode, description in next, descriptions do
-        local glyph = description.glyph
-        local italic = glyph.italic_correction -- only in a math font
+        local glyph  = description.glyph
+        local italic = glyph.italic_correction -- only in a math font (we also have vert/horiz)
         if not italic then
             -- skip
         elseif italic == 0 then
@@ -1883,11 +1883,11 @@ local function check_variants(unicode,the_variants,splitter,unicodes)
             parts = nil
         end
     end
-    local italic_correction = the_variants.italic_correction
-    if italic_correction and italic_correction == 0 then
-        italic_correction = nil
+    local italic = the_variants.italic
+    if italic and italic == 0 then
+        italic = nil
     end
-    return variants, parts, italic_correction
+    return variants, parts, italic
 end
 
 actions["analyze math"] = function(data,filename,raw)
@@ -1896,15 +1896,16 @@ actions["analyze math"] = function(data,filename,raw)
         local unicodes = data.resources.unicodes
         local splitter = data.helpers.tounicodetable
         for unicode, description in next, data.descriptions do
-            local glyph          = description.glyph
-            local mathkerns      = glyph.mathkern -- singular
-            local horiz_variants = glyph.horiz_variants
-            local vert_variants  = glyph.vert_variants
-            local top_accent     = glyph.top_accent
-            if mathkerns or horiz_variants or vert_variants or top_accent then
+            local glyph        = description.glyph
+            local mathkerns    = glyph.mathkern -- singular
+            local hvariants    = glyph.horiz_variants
+            local vvariants    = glyph.vert_variants
+            local accent       = glyph.top_accent
+            local italic       = glyph.italic_correction
+            if mathkerns or hvariants or vvariants or accent or italic then
                 local math = { }
-                if top_accent then
-                    math.top_accent = top_accent
+                if accent then
+                    math.accent = accent
                 end
                 if mathkerns then
                     for k, v in next, mathkerns do
@@ -1920,15 +1921,14 @@ actions["analyze math"] = function(data,filename,raw)
                     end
                     math.kerns = mathkerns
                 end
-                if horiz_variants then
-                    math.horiz_variants, math.horiz_parts, math.horiz_italic_correction = check_variants(unicode,horiz_variants,splitter,unicodes)
+                if hvariants then
+                    math.hvariants, math.hparts, math.hitalic = check_variants(unicode,hvariants,splitter,unicodes)
                 end
-                if vert_variants then
-                    math.vert_variants, math.vert_parts, math.vert_italic_correction = check_variants(unicode,vert_variants,splitter,unicodes)
+                if vvariants then
+                    math.vvariants, math.vparts, math.vitalic = check_variants(unicode,vvariants,splitter,unicodes)
                 end
-                local italic_correction = description.italic
-                if italic_correction and italic_correction ~= 0 then
-                    math.italic_correction = italic_correction
+                if italic and italic ~= 0 then
+                    math.italic = italic
                 end
                 description.math = math
             end
@@ -2503,7 +2503,7 @@ end
 -- we cannot share descriptions as virtual fonts might extend them (ok,
 -- we could use a cache with a hash
 --
--- we already assing an empty tabel to characters as we can add for
+-- we already assign an empty tabel to characters as we can add for
 -- instance protruding info and loop over characters; one is not supposed
 -- to change descriptions and if one does so one should make a copy!
 
@@ -2551,8 +2551,11 @@ local function copytotfm(data,cache_id)
                 local m = d.math
                 if m then
                     -- watch out: luatex uses horiz_variants for the parts
-                    local variants = m.horiz_variants
-                    local parts    = m.horiz_parts
+                    --
+                    local italic   = m.italic
+                    --
+                    local variants = m.hvariants
+                    local parts    = m.hparts
                  -- local done     = { [unicode] = true }
                     if variants then
                         local c = character
@@ -2569,9 +2572,11 @@ local function copytotfm(data,cache_id)
                         c.horiz_variants = parts
                     elseif parts then
                         character.horiz_variants = parts
+                        italic = m.hitalic
                     end
-                    local variants = m.vert_variants
-                    local parts    = m.vert_parts
+                    --
+                    local variants = m.vvariants
+                    local parts    = m.vparts
                  -- local done     = { [unicode] = true }
                     if variants then
                         local c = character
@@ -2588,15 +2593,18 @@ local function copytotfm(data,cache_id)
                         c.vert_variants = parts
                     elseif parts then
                         character.vert_variants = parts
+                        italic = m.vitalic
                     end
-                    local italic_correction = m.vert_italic_correction
-                    if italic_correction then
-                        character.vert_italic_correction = italic_correction -- was c.
+                    --
+                    if italic and italic ~= 0 then
+                        character.italic = italic -- overload
                     end
-                    local top_accent = m.top_accent
-                    if top_accent then
-                        character.top_accent = top_accent
+                    --
+                    local accent = m.accent
+                    if accent then
+                        character.accent = accent
                     end
+                    --
                     local kerns = m.kerns
                     if kerns then
                         character.mathkerns = kerns

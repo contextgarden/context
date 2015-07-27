@@ -1,0 +1,25 @@
+%D \module
+%D   [       file=luatex-gadgets,
+%D        version=2015.05.12,
+%D          title=\LUATEX\ Support Macros,
+%D       subtitle=Useful stuff from articles,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+\directlua{dofile(resolvers.findfile('luatex-gadgets.lua'))}
+
+% optional removal of marked content
+%
+% before\marksomething{gone}{\em HERE}\unsomething{gone}after
+% before\marksomething{kept}{\em HERE}\unsomething{gone}after
+% \marksomething{gone}{\em HERE}\unsomething{gone}last
+% \marksomething{kept}{\em HERE}\unsomething{gone}last
+
+\def\setmarksignal  #1{\directlua{gadgets.marking.setsignal(\number#1)}}
+\def\marksomething#1#2{{\directlua{gadgets.marking.mark("#1")}{#2}}}
+\def\unsomething    #1{\directlua{gadgets.marking.remove("#1")}}
+
+\newattribute\gadgetmarkattribute \setmarksignal\gadgetmarkattribute
+
+\endinput

@@ -48,13 +48,11 @@
    \or
      \limits
    \or
-     % auto
-     \ifcase\normalmathstyle\displaylimits\or\displaylimits\else\limits\fi
-   % \ifnum\attribute\mathmodeattribute=\plusone % we need a proper flag
-   %    \displaylimits
-   % \else
-   %    \limits
-   % \fi
+     \ifnum\attribute\mathmodeattribute=\plusone
+       \limits
+     \else
+       \nolimits
+     \fi
    \else
      % none
    \fi}

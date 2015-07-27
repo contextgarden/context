@@ -240,9 +240,22 @@ function sections.setblock(name,settings)
     return block
 end
 
+local pushed_order = { }
+local pushed_done  = { }
+
+function sections.order()
+    return job.variables.collected.sectionblockorder or pushed_order -- so we have a first pass list too
+end
+
 function sections.pushblock(name,settings)
     counters.check(0) -- we assume sane usage of \page between blocks
     local block = name or data.block
+    if not pushed_done[name] then
+        pushed_done[name] = true
+        local nofpushed = #pushed_order + 1
+        pushed_order[nofpushed] = name
+        job.variables.tobesaved.sectionblockorder = pushed_order
+    end
     insert(data.blocks,block)
     data.block = block
     sectionblockdata[block] = settings
@@ -1102,4 +1115,17 @@ implement {
 implement {
     name      = "popsectionblock",
     actions   = sections.popblock,
+}
+
+-- bah, i'll probably forget about this hack but it's needed for
+-- preamble list mess as used by some users for booksmarks
+
+implement {
+    name      = "setinitialsectionblock",
+    onlyonce  = true,
+    arguments = "string",
+    actions   = function(default)
+        local name = sections.order()[1]
+        context.setsectionblock { name ~= "" and name or default }
+    end
 }

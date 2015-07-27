@@ -53,7 +53,7 @@ local report_otf         = logs.reporter("fonts","otf loading")
 local fonts              = fonts
 local otf                = fonts.handlers.otf
 
-otf.version              = 3.002 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 3.003 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otl", otf.version, true)
 
 local otfreaders         = otf.readers
@@ -375,6 +375,9 @@ local function copytotfm(data,cache_id)
                 local m = d.math
                 if m then
                     -- watch out: luatex uses horiz_variants for the parts
+                    --
+                    local italic   = m.italic
+                    --
                     local variants = m.hvariants
                     local parts    = m.hparts
                     if variants then
@@ -388,7 +391,9 @@ local function copytotfm(data,cache_id)
                         c.horiz_variants = parts
                     elseif parts then
                         character.horiz_variants = parts
+                        italic = m.hitalic
                     end
+                    --
                     local variants = m.vvariants
                     local parts    = m.vparts
                     if variants then
@@ -402,15 +407,18 @@ local function copytotfm(data,cache_id)
                         c.vert_variants = parts
                     elseif parts then
                         character.vert_variants = parts
+                        italic = m.vitalic
                     end
-                    local italic_correction = m.italic -- vitalic ?
-                    if italic_correction then
-                        character.vert_italic_correction = italic_correction -- was c.
+                    --
+                    if italic and italic ~= 0 then
+                        character.italic = italic
                     end
-                    local top_accent = m.accent -- taccent?
-                    if top_accent then
-                        character.top_accent = top_accent
+                    --
+                    local accent = m.accent -- taccent?
+                    if accent then
+                        character.top_accent = accent
                     end
+                    --
                     local kerns = m.kerns
                     if kerns then
                         character.mathkerns = kerns
@@ -436,7 +444,9 @@ local function copytotfm(data,cache_id)
         local charwidth   = metadata.averagewidth -- or unset
         local charxheight = metadata.xheight -- or unset
         local italicangle = metadata.italicangle
+        local hasitalics  = metadata.hasitalics
         properties.monospaced  = monospaced
+        properties.hasitalics  = hasitalics
         parameters.italicangle = italicangle
         parameters.charwidth   = charwidth
         parameters.charxheight = charxheight

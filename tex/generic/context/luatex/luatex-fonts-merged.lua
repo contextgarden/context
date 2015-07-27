@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/14/15 10:37:12
+-- merge date  : 07/27/15 19:36:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -4492,21 +4492,28 @@ function constructors.scale(tfmdata,specification)
     target.nomath=true
     target.mathparameters=nil 
   end
-  local italickey="italic"
-  local useitalics=true
   if hasmath then
-    autoitalicamount=false 
-  elseif properties.textitalics then
-    italickey="italic_correction"
-    useitalics=false
-    if properties.delaytextitalics then
+    local mathitalics=properties.mathitalics
+    if mathitalics==false then
+      if trace_defining then
+        report_defining("%s italics %s for font %a, fullname %a, filename %a","math",hasitalics and "ignored" or "disabled",name,fullname,filename)
+      end
+      hasitalics=false
+      autoitalicamount=false
+    end
+  else
+    local textitalics=properties.textitalics
+    if textitalics==false then
+      if trace_defining then
+        report_defining("%s italics %s for font %a, fullname %a, filename %a","text",hasitalics and "ignored" or "disabled",name,fullname,filename)
+      end
+      hasitalics=false
       autoitalicamount=false
     end
   end
   if trace_defining then
     report_defining("defining tfm, name %a, fullname %a, filename %a, hscale %a, vscale %a, math %a, italics %a",
-      name,fullname,filename,hdelta,vdelta,
-      hasmath and "enabled" or "disabled",useitalics and "enabled" or "disabled")
+      name,fullname,filename,hdelta,vdelta,hasmath and "enabled" or "disabled",hasitalics and "enabled" or "disabled")
   end
   constructors.beforecopyingcharacters(target,tfmdata)
   local sharedkerns={}
@@ -4604,22 +4611,6 @@ function constructors.scale(tfmdata,specification)
         chr.right_protruding=protrusionfactor*width*vr
       end
     end
-    if autoitalicamount then
-      local vi=description.italic
-      if not vi then
-        local vi=description.boundingbox[3]-description.width+autoitalicamount
-        if vi>0 then 
-          chr[italickey]=vi*hdelta
-        end
-      elseif vi~=0 then
-        chr[italickey]=vi*hdelta
-      end
-    elseif hasitalics then
-      local vi=description.italic
-      if vi and vi~=0 then
-        chr[italickey]=vi*hdelta
-      end
-    end
     if hasmath then
       local vn=character.next
       if vn then
@@ -4657,7 +4648,7 @@ function constructors.scale(tfmdata,specification)
           end
         end
       end
-      local va=character.top_accent
+      local va=character.accent
       if va then
         chr.top_accent=vdelta*va
       end
@@ -4679,6 +4670,27 @@ function constructors.scale(tfmdata,specification)
           end   kerns.bottom_right=k end
           chr.mathkern=kerns 
         end
+      end
+      if hasitalics then
+        local vi=character.italic
+        if vi and vi~=0 then
+          chr.italic=vi*hdelta
+        end
+      end
+    elseif autoitalicamount then 
+      local vi=description.italic
+      if not vi then
+        local vi=description.boundingbox[3]-description.width+autoitalicamount
+        if vi>0 then 
+          chr.italic=vi*hdelta
+        end
+      elseif vi~=0 then
+        chr.italic=vi*hdelta
+      end
+    elseif hasitalics then 
+      local vi=character.italic
+      if vi and vi~=0 then
+        chr.italic=vi*hdelta
       end
     end
     if haskerns then
@@ -4742,6 +4754,7 @@ function constructors.scale(tfmdata,specification)
     end
     targetcharacters[unicode]=chr
   end
+  properties.setitalics=hasitalics
   constructors.aftercopyingcharacters(target,tfmdata)
   constructors.trytosharefont(target,tfmdata)
   return target
@@ -7110,7 +7123,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.817 
+otf.version=2.818 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -8524,11 +8537,11 @@ local function check_variants(unicode,the_variants,splitter,unicodes)
       parts=nil
     end
   end
-  local italic_correction=the_variants.italic_correction
-  if italic_correction and italic_correction==0 then
-    italic_correction=nil
+  local italic=the_variants.italic
+  if italic and italic==0 then
+    italic=nil
   end
-  return variants,parts,italic_correction
+  return variants,parts,italic
 end
 actions["analyze math"]=function(data,filename,raw)
   if raw.math then
@@ -8538,13 +8551,14 @@ actions["analyze math"]=function(data,filename,raw)
     for unicode,description in next,data.descriptions do
       local glyph=description.glyph
       local mathkerns=glyph.mathkern 
-      local horiz_variants=glyph.horiz_variants
-      local vert_variants=glyph.vert_variants
-      local top_accent=glyph.top_accent
-      if mathkerns or horiz_variants or vert_variants or top_accent then
+      local hvariants=glyph.horiz_variants
+      local vvariants=glyph.vert_variants
+      local accent=glyph.top_accent
+      local italic=glyph.italic_correction
+      if mathkerns or hvariants or vvariants or accent or italic then
         local math={}
-        if top_accent then
-          math.top_accent=top_accent
+        if accent then
+          math.accent=accent
         end
         if mathkerns then
           for k,v in next,mathkerns do
@@ -8560,15 +8574,14 @@ actions["analyze math"]=function(data,filename,raw)
           end
           math.kerns=mathkerns
         end
-        if horiz_variants then
-          math.horiz_variants,math.horiz_parts,math.horiz_italic_correction=check_variants(unicode,horiz_variants,splitter,unicodes)
+        if hvariants then
+          math.hvariants,math.hparts,math.hitalic=check_variants(unicode,hvariants,splitter,unicodes)
         end
-        if vert_variants then
-          math.vert_variants,math.vert_parts,math.vert_italic_correction=check_variants(unicode,vert_variants,splitter,unicodes)
+        if vvariants then
+          math.vvariants,math.vparts,math.vitalic=check_variants(unicode,vvariants,splitter,unicodes)
         end
-        local italic_correction=description.italic
-        if italic_correction and italic_correction~=0 then
-          math.italic_correction=italic_correction
+        if italic and italic~=0 then
+          math.italic=italic
         end
         description.math=math
       end
@@ -9104,8 +9117,9 @@ local function copytotfm(data,cache_id)
         local d=descriptions[unicode]
         local m=d.math
         if m then
-          local variants=m.horiz_variants
-          local parts=m.horiz_parts
+          local italic=m.italic
+          local variants=m.hvariants
+          local parts=m.hparts
           if variants then
             local c=character
             for i=1,#variants do
@@ -9116,9 +9130,10 @@ local function copytotfm(data,cache_id)
             c.horiz_variants=parts
           elseif parts then
             character.horiz_variants=parts
+            italic=m.hitalic
           end
-          local variants=m.vert_variants
-          local parts=m.vert_parts
+          local variants=m.vvariants
+          local parts=m.vparts
           if variants then
             local c=character
             for i=1,#variants do
@@ -9129,14 +9144,14 @@ local function copytotfm(data,cache_id)
             c.vert_variants=parts
           elseif parts then
             character.vert_variants=parts
+            italic=m.vitalic
           end
-          local italic_correction=m.vert_italic_correction
-          if italic_correction then
-            character.vert_italic_correction=italic_correction 
+          if italic and italic~=0 then
+            character.italic=italic 
           end
-          local top_accent=m.top_accent
-          if top_accent then
-            character.top_accent=top_accent
+          local accent=m.accent
+          if accent then
+            character.accent=accent
           end
           local kerns=m.kerns
           if kerns then

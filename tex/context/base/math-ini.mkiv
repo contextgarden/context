@@ -261,7 +261,6 @@
 \newcount \defaultrelpenalty   \defaultrelpenalty   500
 \newcount \defaultbinoppenalty \defaultbinoppenalty 700
 
-
 \startsetups math:spacing:default
     \thickmuskip   \defaultthickmuskip
     \medmuskip     \defaultmedmuskip
@@ -670,8 +669,8 @@
 \let\math_tags_mo\firstofoneunexpanded
 \let\math_tags_mi\firstofoneunexpanded
 
-\unexpanded\def\math_tags_mn#1{\begingroup\mathupright#1\endgroup}
-\unexpanded\def\math_tags_ms#1{\begingroup\mathupright#1\endgroup}
+\unexpanded\def\math_tags_mn#1{\begingroup\mathupright\math_set_o_both#1\endgroup}
+\unexpanded\def\math_tags_ms#1{\begingroup\mathupright\math_set_p_both#1\endgroup}
 
 % Once this is stable we can store the number at the tex end which is
 % faster. Functions getnumbers >= 1000.
@@ -732,10 +731,10 @@
 \let\math_tags_mfunctiontxt\gobbletwoarguments
 \let\math_tags_mfunctionlab\gobbletwoarguments
 
-\unexpanded\def\math_tags_mo_indeed#1{\begingroup            \attribute\mathcategoryattribute\plusone  #1\endgroup}
-\unexpanded\def\math_tags_mi_indeed#1{\begingroup            \attribute\mathcategoryattribute\plustwo  #1\endgroup}
-\unexpanded\def\math_tags_mn_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusthree#1\endgroup}
-\unexpanded\def\math_tags_ms_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusfour #1\endgroup} % todo: mathoptext
+\unexpanded\def\math_tags_mo_indeed#1{\begingroup            \attribute\mathcategoryattribute\plusone                  #1\endgroup}
+\unexpanded\def\math_tags_mi_indeed#1{\begingroup            \attribute\mathcategoryattribute\plustwo                  #1\endgroup}
+\unexpanded\def\math_tags_mn_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusthree\math_set_o_both#1\endgroup}
+\unexpanded\def\math_tags_ms_indeed#1{\begingroup\mathupright\attribute\mathcategoryattribute\plusfour \math_set_p_both#1\endgroup} % todo: mathoptext
 
 \newconditional\c_apply_function
 
@@ -1223,21 +1222,23 @@
 
 %D Math italics (experiment)
 
-% we need keys
+%D We need keys but what names to use and because we have hardcoded solution
+%D we can stick to numbers.
 
 \installcorenamespace{mathitalics}
 
 \setnewconstant\c_math_italics_attribute\attributeunsetvalue
 
-\letvalue{\??mathitalics      1}\plusone              % fontitalics
-\letvalue{\??mathitalics      2}\plustwo              % fontdata
-\letvalue{\??mathitalics      3}\plusthree            % quad based
-\letvalue{\??mathitalics      4}\plusfour             % combination of 1 and 3
-\letvalue{\??mathitalics\v!none}\attributeunsetvalue
+\letvalue{\??mathitalics       1}\plusone              % fontitalics
+\letvalue{\??mathitalics       2}\plustwo              % fontdata
+\letvalue{\??mathitalics       3}\plusthree            % quad based
+\letvalue{\??mathitalics       4}\plusfour             % combination of 1 and 3
+\letvalue{\??mathitalics\v!none }\attributeunsetvalue
+\letvalue{\??mathitalics\v!reset}\attributeunsetvalue
 
 \def\math_italics_initialize
   {\ifnum\c_math_italics_attribute=\attributeunsetvalue \else
-     \clf_setmathitalics % one time
+     \clf_initializemathitalics % one time
      \global\let\math_italics_initialize\relax
    \fi}
 
@@ -1255,7 +1256,7 @@
 \to \everymathematics
 
 \setupmathematics
-  [\s!italics=3] % for the moment only this one makes sense .. still experimental
+  [\s!italics=3] % 4 is probably better
 
 % looks nicer but can generate bogus csnames
 %
@@ -1334,16 +1335,43 @@
 % to delegate to \LUA\ when we have more variants and need analysis (experimental
 % trickery removed for a while).
 
-\def\math_punctuation_comma_next {\ifx\nexttoken\blankspace \mathpunct{\textcomma }\else\mathord{\textcomma }\fi}
-\def\math_punctuation_period_next{\ifx\nexttoken\blankspace \mathpunct{\textperiod}\else\mathord{\textperiod}\fi}
+% \def\math_punctuation_comma_next {\ifx\nexttoken\blankspace\mathpunct\else\mathord\fi{\textcomma }}
+% \def\math_punctuation_period_next{\ifx\nexttoken\blankspace\mathpunct\else\mathord\fi{\textperiod}}
+%
+% \unexpanded\def\math_punctuation_nop_comma {\mathpunct{\textcomma}}
+% \unexpanded\def\math_punctuation_nop_period{\mathord{\textperiod}}
+%
+% \unexpanded\def\math_punctuation_all_comma {\futurelet\nexttoken\math_punctuation_comma_next}
+% \unexpanded\def\math_punctuation_all_period{\futurelet\nexttoken\math_punctuation_period_next}
+%
+%            \let\math_punctuation_yes_comma \math_punctuation_all_comma
+%            \let\math_punctuation_yes_period\math_punctuation_nop_period
+%
+% The next one is more efficient as it produces more flat noad lists for numbers.
 
-\unexpanded\def\math_punctuation_nop_comma {\mathpunct{\textcomma}}
+\setnewconstant\c_math_comma  "002C
+\setnewconstant\c_math_period "002E
+\setnewconstant\c_math_special"8000
+
+\def\math_set_o_period{\Umathcode\c_math_period\mathordcode  \zerocount\c_math_period}
+\def\math_set_p_period{\Umathcode\c_math_period\mathpunctcode\zerocount\c_math_period}
+\def\math_set_o_comma {\Umathcode\c_math_comma \mathordcode  \zerocount\c_math_comma }
+\def\math_set_p_comma {\Umathcode\c_math_comma \mathpunctcode\zerocount\c_math_comma }
+
+\edef\math_set_o_both {\math_set_o_period\math_set_o_comma}
+\edef\math_set_p_both {\math_set_p_period\math_set_p_comma}
+
+\unexpanded\def\math_punctuation_nop_comma {\begingroup\math_set_p_comma ,\endgroup}
+\unexpanded\def\math_punctuation_nop_period{\begingroup\math_set_o_period.\endgroup}
+
 \unexpanded\def\math_punctuation_all_comma {\futurelet\nexttoken\math_punctuation_comma_next}
-           \let\math_punctuation_yes_comma \math_punctuation_all_comma
-
-\unexpanded\def\math_punctuation_nop_period{\mathord{\textperiod}}
 \unexpanded\def\math_punctuation_all_period{\futurelet\nexttoken\math_punctuation_period_next}
+
+           \let\math_punctuation_yes_comma \math_punctuation_all_comma
            \let\math_punctuation_yes_period\math_punctuation_nop_period
+
+\def\math_punctuation_comma_next {\begingroup\Umathcode\c_math_comma \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_comma ,\endgroup}
+\def\math_punctuation_period_next{\begingroup\Umathcode\c_math_period\ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_period.\endgroup}
 
 \setnewconstant\c_math_comma  "002C
 \setnewconstant\c_math_period "002E
@@ -1359,6 +1387,12 @@
     \setgvalue{\??mathautopunctuation\v!no}%
       {\let,\math_punctuation_nop_comma
        \let.\math_punctuation_nop_period}
+
+  %  more efficient list:
+  %
+  %  \setgvalue{\??mathautopunctuation\v!no}%
+  %    {\Umathcode\c_math_period\mathordcode  \zerocount\c_math_period
+  %     \Umathcode\c_math_comma \mathpunctcode\zerocount\c_math_comma }
 
     \setgvalue{\??mathautopunctuation\v!yes}%
       {\let,\math_punctuation_yes_comma
@@ -2298,22 +2332,33 @@
      \fi\fi
    \relax}
 
-%D Experiment:
+%D Experiment: (todo: same switch as italic, using \type {\everyswitchmathematics}).
 
-\unexpanded\def\setmathdomain[#1]%
-  {\clf_setmathdomain{#1}}
+\newcount\c_math_domain_attribute
+
+\def\math_domain_initialize
+  {\ifnum\c_math_domain_attribute=\attributeunsetvalue \else
+     \clf_initializemathdomain % one time
+     \global\let\math_domain_initialize\relax
+   \fi}
 
 \appendtoks
     \edef\p_domain{\mathematicsparameter\c!domain}%
-    \ifx\currentmathdomain\p_domain \else
-        \ifx\p_domain\empty
-            \attribute\mathdomainattribute\attributeunsetvalue
-        \else
-            \clf_setmathdomain\p_domain
-        \fi
-        \let\currentmathdomain\p_domain
+    \ifx\p_domain\empty
+        \c_math_domain_attribute\attributeunsetvalue
+    \else
+        \c_math_domain_attribute\clf_getmathdomain\p_domain\relax
+        \math_domain_initialize
     \fi
-\to \everysetupmathematics
+\to \everyswitchmathematics % only in mathematics
+
+\appendtoks
+    \attribute\mathdomainattribute\c_math_domain_attribute
+\to \everymathematics
+
+\setupmathematics
+  [\s!italics=3] % for the moment only this one makes sense .. still experimental
+
 
 \protect \endinput
 

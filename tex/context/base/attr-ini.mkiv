@@ -52,15 +52,17 @@
 \def\attr_basics_define_system{\attr_basics_define_indeed\s!private}
 
 \def\attr_basics_define_indeed#1[#2][#3]%
-  {\scratchcounter\clf_defineattribute{#2}{#1}\relax
-  %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
-   \expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
-   \expandafter\newconstant \csname\??attributeid#2\endcsname
-   \csname\??attributeid#2\endcsname\scratchcounter
-   % some attributes are always global
-   \doifnotinset\s!global{#3}{\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\attributesresetlist}%
-   % here public means 'visible' so it's not to be confused with 'public' at the lua end
-   \doifinset   \s!public{#3}{\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}}
+  {\ifcsname\??attributecount#2\endcsname\else
+     \scratchcounter\clf_defineattribute{#2}{#1}\relax
+    %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
+     \expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
+     \expandafter\newconstant \csname\??attributeid#2\endcsname
+     \csname\??attributeid#2\endcsname\scratchcounter
+     % some attributes are always global
+     \doifnotinset\s!global{#3}{\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\attributesresetlist}%
+     % here public means 'visible' so it's not to be confused with 'public' at the lua end
+     \doifinset   \s!public{#3}{\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
+   \fi}
 
 \unexpanded\def\newattribute#1%
   {\attr_basics_define_indeed\s!public[\strippedcsname#1][]%

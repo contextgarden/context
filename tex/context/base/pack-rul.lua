@@ -108,6 +108,7 @@ local function doreshapeframedbox(n)
                             local subtype = getsubtype(h)
                             if subtype == box_code or subtype == line_code then
                                 l = hpack(l,maxwidth,'exactly',getfield(h,"dir")) -- multiple return values
+-- setfield(l,"attr",getfield(h,"attr"))
                                 setfield(h,"list",l)
                                 setfield(h,"shift",0) -- needed for display math, so no width check possible
                             end

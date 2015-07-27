@@ -566,8 +566,8 @@ fontgoodies.register("mathematics", initialize)
 --     },
 -- }
 
--- math italics
-
+-- math italics (not rteally needed)
+--
 -- it would be nice to have a \noitalics\font option
 
 local function initialize(tfmdata)
@@ -579,60 +579,44 @@ local function initialize(tfmdata)
             local mathitalics = mathgoodies and mathgoodies.italics
             if mathitalics then
                 local properties = tfmdata.properties
-                mathitalics = mathitalics[file.nameonly(properties.name)] or mathitalics
-                if mathitalics then
-                    if trace_goodies then
-                        report_goodies("loading mathitalics for font %a",properties.name)
-                    end
-                    local corrections   = mathitalics.corrections
-                    local defaultfactor = mathitalics.defaultfactor
-                    local disableengine = mathitalics.disableengine
-                    properties.hasitalics = true
-                    properties.mathitalic_defaultfactor = defaultfactor -- we inherit outer one anyway (name will change)
-                    if properties.mathitalics == nil then
-                        properties.mathitalics = disableengine
-                    end
-                    if corrections then
-                        -- As we want to set italic_correction (the context one) we need a
-                        -- postprocessor instead of messing with the (unscaled) descriptions.
-                        fontgoodies.registerpostprocessor(tfmdata, function(tfmdata) -- this is another tfmdata (a copy)
-                            -- better make a helper so that we have less code being defined
-                            local properties = tfmdata.properties
-                            local parameters = tfmdata.parameters
-                            local characters = tfmdata.characters
-                            properties.hasitalics = true
-                            properties.mathitalic_defaultfactor = defaultfactor
-                            properties.mathitalic_defaultvalue  = defaultfactor * parameters.quad
-                            if properties.mathitalics == nil then
-                                properties.mathitalics = disableengine
-                            end
-                            if trace_goodies then
-                                report_goodies("assigning mathitalics for font %a",properties.name)
-                            end
-                            local mathitalics = properties.mathitalics
-                            local quad        = parameters.quad
-                            local hfactor     = parameters.hfactor
-                            for k, v in next, corrections do
-                                local c = characters[k]
-                                if c then
-                                    if v > -1 and v < 1 then
-                                        v = v * quad
-                                    else
-                                        v = v * hfactor
-                                    end
-                                    c.italic_correction = v -- for context
-                                    if mathitalics then
-                                        c.italic = v -- for tex
-                                    else
-                                        c.italic = nil
-                                    end
-                                else
-                                    report_goodies("invalid mathitalics entry %U for font %a",k,properties.name)
+                if properties.setitalics then
+                    mathitalics = mathitalics[file.nameonly(properties.name)] or mathitalics
+                    if mathitalics then
+                        if trace_goodies then
+                            report_goodies("loading mathitalics for font %a",properties.name)
+                        end
+                        local corrections   = mathitalics.corrections
+                        local defaultfactor = mathitalics.defaultfactor
+                     -- properties.mathitalic_defaultfactor = defaultfactor -- we inherit outer one anyway (name will change)
+                        if corrections then
+                            fontgoodies.registerpostprocessor(tfmdata, function(tfmdata) -- this is another tfmdata (a copy)
+                                -- better make a helper so that we have less code being defined
+                                local properties = tfmdata.properties
+                                local parameters = tfmdata.parameters
+                                local characters = tfmdata.characters
+                                properties.mathitalic_defaultfactor = defaultfactor
+                                properties.mathitalic_defaultvalue  = defaultfactor * parameters.quad
+                                if trace_goodies then
+                                    report_goodies("assigning mathitalics for font %a",properties.name)
                                 end
-                            end
-                        end)
+                                local quad    = parameters.quad
+                                local hfactor = parameters.hfactor
+                                for k, v in next, corrections do
+                                    local c = characters[k]
+                                    if c then
+                                        if v > -1 and v < 1 then
+                                            c.italic = v * quad
+                                        else
+                                            c.italic = v * hfactor
+                                        end
+                                    else
+                                        report_goodies("invalid mathitalics entry %U for font %a",k,properties.name)
+                                    end
+                                end
+                            end)
+                        end
+                        return -- maybe not as these can accumulate
                     end
-                    return -- maybe not as these can accumulate
                 end
             end
         end

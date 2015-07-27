@@ -214,6 +214,7 @@ function bookmarks.place()
                 end
             end
         end
+-- inspect(levels)
         bookmarks.finalize(levels)
         function bookmarks.place() end -- prevent second run
     end

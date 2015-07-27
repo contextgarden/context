@@ -1051,9 +1051,10 @@ end
 
 local function build(levels,start,parent,method,nested)
     local startlevel = levels[start].level
+    local noflevels  = #levels
     local i, n = start, 0
     local child, entry, m, prev, first, last, f, l
-    while i and i <= #levels do
+    while i and i <= noflevels do
         local current = levels[i]
         if current.usedpage == false then
             -- safeguard
@@ -1086,19 +1087,20 @@ local function build(levels,start,parent,method,nested)
             if variant == "unknown" then
                 -- error, ignore
                 i = i + 1
-            elseif level <= startlevel then
-                if level < startlevel then
-                    if nested then -- could be an option but otherwise we quit too soon
-                        if entry then
-                            pdfflushobject(child,entry)
-                        else
-                            report_bookmark("error 1")
-                        end
-                        return i, n, first, last
+            elseif level < startlevel then
+                if nested then -- could be an option but otherwise we quit too soon
+                    if entry then
+                        pdfflushobject(child,entry)
                     else
-                        report_bookmark("confusing level change at level %a around %a",level,title)
+                        report_bookmark("error 1")
                     end
+                    return i, n, first, last
+                else
+                    report_bookmark("confusing level change at level %a around %a",level,title)
+                    startlevel = level
                 end
+            end
+            if level == startlevel then
                 if trace_bookmarks then
                     report_bookmark("%3i %w%s %s",reference.realpage,(level-1)*2,(opened and "+") or "-",title)
                 end
@@ -1121,12 +1123,14 @@ local function build(levels,start,parent,method,nested)
                     A      = action,
                 }
              -- entry.Dest = somedestination(reference.internal,reference.internal,reference.realpage)
-                if not first then first, last = child, child end
+                if not first then
+                    first, last = child, child
+                end
                 prev = child
                 last = prev
                 n = n + 1
                 i = i + 1
-            elseif i < #levels and level > startlevel then
+            elseif i < noflevels and level > startlevel then
                 i, m, f, l = build(levels,i,pdfreference(child),method,true)
                 if entry then
                     entry.Count = (opened and m) or -m
@@ -1160,6 +1164,7 @@ end
 
 function codeinjections.addbookmarks(levels,method)
     if levels and #levels > 0 then
+-- inspect(levels)
         local parent = pdfreserveobject()
         local _, m, first, last = build(levels,1,pdfreference(parent),method or "internal",false)
         local dict = pdfdictionary {

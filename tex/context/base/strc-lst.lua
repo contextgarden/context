@@ -122,6 +122,7 @@ local function initializer()
     local ordered       = lists.ordered
     local usedinternals = references.usedinternals
     local blockdone     = { }
+    local lastblock     = nil
     for i=1,#collected do
         local c = collected[i]
         local m = c.metadata
@@ -135,9 +136,22 @@ local function initializer()
                     usedinternals[internal] = r.used
                 end
                 local block = r.block
-                if block and not blockdone[block] then
+                if not block then
+                    -- shouldn't happen
+                elseif lastblock == block then
+                    -- we're okay
+                elseif lastblock then
+                    if blockdone[block] then
+                        report_lists("out of order sectionsblocks, maybe use \\setsectionblock")
+                    else
+                        blockdone[block] = true
+                        sectionblocks[#sectionblocks+1] = block
+                    end
+                    lastblock = block
+                elseif not blockdone[block] then
                     blockdone[block] = true
                     sectionblocks[#sectionblocks+1] = block
+                    lastblock = block
                 end
             end
             -- access by order in list
