@@ -266,35 +266,71 @@ local function processnested(current,what,n)
     local noad = nil
     local id   = getid(current)
     if id == math_noad then
-        noad = getfield(current,"nucleus")      if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"nucleus")      if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"sup")          if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"sub")          if noad then process(noad,what,n,current) end -- list
     elseif id == math_box or id == math_sub then
-        noad = getfield(current,"list")         if noad then return process(noad,what,n,current) end -- list (not getlist !)
+        noad = getfield(current,"list")         if noad then process(noad,what,n,current) end -- list (not getlist !)
     elseif id == math_fraction then
-        noad = getfield(current,"num")          if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"denom")        if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"left")         if noad then return process(noad,what,n,current) end -- delimiter
-        noad = getfield(current,"right")        if noad then return process(noad,what,n,current) end -- delimiter
+        noad = getfield(current,"num")          if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"denom")        if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"left")         if noad then process(noad,what,n,current) end -- delimiter
+        noad = getfield(current,"right")        if noad then process(noad,what,n,current) end -- delimiter
     elseif id == math_choice then
-        noad = getfield(current,"display")      if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"text")         if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"script")       if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"scriptscript") if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"display")      if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"text")         if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"script")       if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"scriptscript") if noad then process(noad,what,n,current) end -- list
     elseif id == math_fence then
-        noad = getfield(current,"delim")        if noad then return process(noad,what,n,current) end -- delimiter
+        noad = getfield(current,"delim")        if noad then process(noad,what,n,current) end -- delimiter
     elseif id == math_radical then
-        noad = getfield(current,"nucleus")      if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"left")         if noad then return process(noad,what,n,current) end -- delimiter
-        noad = getfield(current,"degree")       if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"nucleus")      if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"sup")          if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"sub")          if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"left")         if noad then process(noad,what,n,current) end -- delimiter
+        noad = getfield(current,"degree")       if noad then process(noad,what,n,current) end -- list
     elseif id == math_accent then
-        noad = getfield(current,"nucleus")      if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"accent")       if noad then return process(noad,what,n,current) end -- list
-        noad = getfield(current,"bot_accent")   if noad then return process(noad,what,n,current) end -- list
+        noad = getfield(current,"nucleus")      if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"sup")          if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"sub")          if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"accent")       if noad then process(noad,what,n,current) end -- list
+        noad = getfield(current,"bot_accent")   if noad then process(noad,what,n,current) end -- list
+    end
+end
+
+local function processstep(current,process,n,id)
+    local noad = nil
+    local id   = id or getid(current)
+    if id == math_noad then
+        noad = getfield(current,"nucleus")      if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"sup")          if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"sub")          if noad then process(noad,n,current) end -- list
+    elseif id == math_box or id == math_sub then
+        noad = getfield(current,"list")         if noad then process(noad,n,current) end -- list (not getlist !)
+    elseif id == math_fraction then
+        noad = getfield(current,"num")          if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"denom")        if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"left")         if noad then process(noad,n,current) end -- delimiter
+        noad = getfield(current,"right")        if noad then process(noad,n,current) end -- delimiter
+    elseif id == math_choice then
+        noad = getfield(current,"display")      if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"text")         if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"script")       if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"scriptscript") if noad then process(noad,n,current) end -- list
+    elseif id == math_fence then
+        noad = getfield(current,"delim")        if noad then process(noad,n,current) end -- delimiter
+    elseif id == math_radical then
+        noad = getfield(current,"nucleus")      if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"sup")          if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"sub")          if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"left")         if noad then process(noad,n,current) end -- delimiter
+        noad = getfield(current,"degree")       if noad then process(noad,n,current) end -- list
+    elseif id == math_accent then
+        noad = getfield(current,"nucleus")      if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"sup")          if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"sub")          if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"accent")       if noad then process(noad,n,current) end -- list
+        noad = getfield(current,"bot_accent")   if noad then process(noad,n,current) end -- list
     end
 end
 
@@ -705,20 +741,24 @@ local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
 end
 
 local function convert_both(open,close,middle)
-    local f_o = makefence(left_fence_code,open)
-    local f_c = makefence(right_fence_code,close)
     local o_next = getnext(open)
  -- local o_prev = getprev(open)
     local c_next = getnext(close)
     local c_prev = getprev(close)
-    makelist(open,f_o,o_next,c_prev,f_c,middle)
-    setfield(close,"nucleus",nil)
-    free_node(close)
-    if c_next then
-        setfield(c_next,"prev",open)
+    if o_next == close then
+        return close
+    else
+        local f_o = makefence(left_fence_code,open)
+        local f_c = makefence(right_fence_code,close)
+        makelist(open,f_o,o_next,c_prev,f_c,middle)
+        setfield(close,"nucleus",nil)
+        free_node(close)
+        if c_next then
+            setfield(c_next,"prev",open)
+        end
+        setfield(open,"next",c_next)
+        return open
     end
-    setfield(open,"next",c_next)
-    return open
 end
 
 local function convert_open(open,last,middle)
@@ -746,14 +786,12 @@ end
 
 local stacks = table.setmetatableindex("table")
 
-autofences[math_noad] = function(pointer,what,n,parent)
-    -- can we do a fast check?
+local function processfences(pointer,n,parent)
     local current = pointer
     local last    = pointer
     local start   = pointer
     local done    = false
     local initial = pointer
-    local noad    = nil
     local stack   = nil
     local middle  = nil -- todo: use properties
     while current do
@@ -798,14 +836,11 @@ autofences[math_noad] = function(pointer,what,n,parent)
                 end
                 done = true
             else
-                -- make a helper for this
-                noad = getfield(current,"nucleus") if noad then process(noad,what,n,current) end -- list
-                noad = getfield(current,"sup")     if noad then process(noad,what,n,current) end -- list
-                noad = getfield(current,"sub")     if noad then process(noad,what,n,current) end -- list
+                processstep(current,processfences,n+1,id)
             end
         else
             -- next at current level
-            process(current,autofences,n-1)
+            processstep(current,processfences,n,id)
         end
         last    = current
         current = getnext(current)
@@ -825,24 +860,29 @@ autofences[math_noad] = function(pointer,what,n,parent)
                 last = convert_open(open,last,middle)
             end
         end
-        if not parent then
-            return true, current, initial
-        end
     end
 end
 
 -- we can have a first changed node .. an option is to have a leading dummy node in math
 -- lists like the par node as it can save a  lot of mess
 
+local enabled = false
+
+implement {
+    name     = "enableautofences",
+    onlyonce = true,
+    actions  = function()
+        tasks.enableaction("math","noads.handlers.autofences")
+        enabled = true
+    end
+}
+
 function handlers.autofences(head,style,penalties)
- -- if tex.modes.c_math_fences_auto then
--- inspect(nodes.totree(head))
-        local h, d = processnoads(head,autofences,"autofence")
--- inspect(nodes.totree(h))
-        return h or head, d
- -- else
- --     return head, false
- -- end
+    if enabled then -- tex.modes.c_math_fences_auto
+     -- inspect(nodes.totree(head))
+        processfences(tonut(head),1)
+     -- inspect(nodes.totree(head))
+    end
 end
 
 -- normalize scripts

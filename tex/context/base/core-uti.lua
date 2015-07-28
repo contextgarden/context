@@ -17,6 +17,7 @@ utility file under different setups, we now load a table once. This
 saves much runtime but at the cost of more memory usage.</p>
 --ldx]]--
 
+local math = math
 local format, match = string.format, string.match
 local next, type, tostring = next, type, tostring
 local concat = table.concat
@@ -82,7 +83,7 @@ function job.initialize(loadname,savename)
         if not savename or savename == "" then
             savename = tex.jobname .. ".tua"
         end
-        job.load(loadname) -- has to come after  structure is defined !
+        job.load(loadname) -- has to come after structure is defined !
         luatex.registerstopactions(function()
             if enabled and not status.lasterrorstring or status.lasterrorstring == "" then
              -- if kept then
@@ -121,12 +122,14 @@ end
 job.register('job.variables.checksums', 'job.variables.checksums', initializer)
 
 local rmethod, rvalue
+local collectedmacros, tobesavedmacros
 
 local ctx_setxvalue = context.setxvalue
 
 local function initializer()
     tobesaved = jobvariables.tobesaved
     collected = jobvariables.collected
+    --
     rvalue = collected.randomseed
     if not rvalue then
         rvalue = math.random()
@@ -137,19 +140,33 @@ local function initializer()
         rmethod = "resumed"
     end
     tobesaved.randomseed = rvalue
-    for cs, value in next, collected do
-        ctx_setxvalue(cs,value)
+    --
+    collectedmacros = collected.macros
+    tobesavedmacros = tobesaved.macros
+    if not collectedmacros then
+        collectedmacros  = { }
+        collected.macros = collectedmacros
+    end
+    if not tobesavedmacros then
+        tobesavedmacros  = { }
+        tobesaved.macros = tobesavedmacros
+    end
+    -- will become collected.macros
+    for cs, value in next, collectedmacros do
+        if type(value) == "string" then -- safeguard
+            ctx_setxvalue(cs,value)
+        end
     end
 end
 
 job.register('job.variables.collected', tobesaved, initializer)
 
 function jobvariables.save(cs,value)
-    tobesaved[cs] = value
+    tobesavedmacros[cs] = value
 end
 
 function jobvariables.restore(cs)
-    return collected[cs] or tobesaved[cs]
+    return collectedmacros[cs] or tobesavedmacros[cs]
 end
 
 -- checksums

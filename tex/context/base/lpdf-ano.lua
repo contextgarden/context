@@ -1063,6 +1063,7 @@ local function build(levels,start,parent,method,nested)
             local level     = current.level
             local title     = current.title
             local reference = current.reference
+            local block     = reference.block
             local opened    = current.opened
             local reftype   = type(reference)
             local variant   = "unknown"
@@ -1087,7 +1088,7 @@ local function build(levels,start,parent,method,nested)
             if variant == "unknown" then
                 -- error, ignore
                 i = i + 1
-            elseif level < startlevel then
+            elseif (level < startlevel) or (i > 1 and block ~= levels[i-1].reference.block) then
                 if nested then -- could be an option but otherwise we quit too soon
                     if entry then
                         pdfflushobject(child,entry)

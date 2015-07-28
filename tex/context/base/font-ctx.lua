@@ -738,13 +738,14 @@ local function registercontextfeature(mergedname,extraname,how)
         for k, v in next, extra do
             mergedfeatures[k] = v
         end
-        local number = #numbers + 1
+        local number = #numbers + 1 -- we somehow end up with steps of 2
         mergedfeatures.number = number
         numbers[number] = mergedname
         merged[number] = how == "=" and 1 or 2 -- 1=replace, 2=combine
         setups[mergedname] = mergedfeatures
         return number -- contextnumber(mergedname)
     else
+        report_features("unknown feature %a cannot be merged into %a using method %a",extraname,mergedname,how)
         return 0
     end
 end

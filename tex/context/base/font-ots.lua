@@ -304,7 +304,7 @@ end
 local function mref(rlmode)
     if not rlmode or rlmode == 0 then
         return "---"
-    elseif rlmode < 0 then
+    elseif rlmode == -1 or rlmode == "+TRT" then
         return "r2l"
     else
         return "l2r"

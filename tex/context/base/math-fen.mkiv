@@ -538,8 +538,14 @@
 
 \newconditional\c_math_fences_auto
 
-\unexpanded\def\enableautofences {\settrue \c_math_fences_auto}
-\unexpanded\def\disableautofences{\setfalse\c_math_fences_auto}
+\unexpanded\def\enableautofences
+  {\clf_enableautofences
+   \glet\clf_enableautofences\relax % onlyonce anyway
+   \unexpanded\gdef\enableautofences{\settrue\c_math_fences_auto}%
+   \enableautofences}
+
+\unexpanded\def\disableautofences
+  {\setfalse\c_math_fences_auto}
 
 \unexpanded\def\math_fences_used_left
   {\ifconditional\c_math_fences_auto

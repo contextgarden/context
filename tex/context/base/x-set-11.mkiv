@@ -783,9 +783,13 @@
 
 % A prelude to a rewrite and some more:
 
-\definetype[parametercommand][\v!type]
-\definetype[parameterkey]    [\v!type]
-\definetype[parametervalue]  [\v!type][\c!space=\v!on]
+% \definetype[parametercommand][\v!type]
+% \definetype[parameterkey]    [\v!type]
+% \definetype[parametervalue]  [\v!type][\c!space=\v!on]
+
+\definetype[parametercommand]
+\definetype[parameterkey]
+\definetype[parametervalue]  [\c!space=\v!on]
 
 \setuptype [parametercommand] [\c!color=darkmagenta]
 \setuptype [parametervalue]   [\c!color=darkyellow]
