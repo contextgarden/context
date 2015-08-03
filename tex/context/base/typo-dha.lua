@@ -123,234 +123,184 @@ local function startdir(finish)
     return new_textdir(finish == "TRT" and "+TRT" or "+TLT")
 end
 
+local function nextisright(current)
+    current = getnext(current)
+    local id = getid(current)
+    if id == glyph_code then
+        local character = getchar(current)
+        local direction = chardirections[character]
+        return direction == "r" or direction == "al" or direction == "an"
+    end
+end
+
+local function previsright(current)
+    current = getprev(current)
+    local id = getid(current)
+    if id == glyph_code then
+        local character = getchar(current)
+        local direction = chardirections[character]
+        return direction == "r" or direction == "al" or direction == "an"
+    end
+end
+
 local function process(start)
 
     local head     = tonut(start) -- we have a global head
-
     local current  = head
-    local inserted = nil
-    local finish   = nil
     local autodir  = 0
     local embedded = 0
     local override = 0
     local pardir   = 0
     local textdir  = 0
     local done     = false
-    local finished = nil
-    local finidir  = nil
     local stack    = { }
     local top      = 0
     local obsolete = { }
-    local lro      = false
+    local rlo      = false
     local lro      = false
     local prevattr = false
     local fences   = { }
 
-    local function finish_auto_before()
-        head, inserted = insert_node_before(head,current,stopdir(finish))
-        finished, finidir, autodir = inserted, finish, 0
-        finish, done = nil, true
-    end
-
-    local function finish_auto_after()
-        head, current = insert_node_after(head,current,stopdir(finish))
-        finished, finidir, autodir = current, finish, 0
-        finish, done = nil, true
-    end
-
-    local function force_auto_left_before(direction)
-        if finish then
-            head, inserted = insert_node_before(head,current,stopdir(finish))
-            finished = inserted
-            finidir  = finish
-        end
-        if embedded >= 0 then
-            finish, autodir = "TLT",  1
-        else
-            finish, autodir = "TRT", -1
-        end
-        done = true
-        if finidir == finish then
-            head = remove_node(head,finished,true)
-        else
-            head, inserted = insert_node_before(head,current,startdir(finish))
-        end
-    end
-
-    local function force_auto_right_before(direction)
-        if finish then
-            head, inserted = insert_node_before(head,current,stopdir(finish))
-            finished = inserted
-            finidir  = finish
-        end
-        if embedded <= 0 then
-            finish, autodir = "TRT", -1
-        else
-            finish, autodir = "TLT",  1
-        end
-        done = true
-        if finidir == finish then
-            head = remove_node(head,finished,true)
-        else
-            head, inserted = insert_node_before(head,current,startdir(finish))
-        end
-    end
-
-    local function nextisright(current)
-        current = getnext(current)
-        local id = getid(current)
-        if id == glyph_code then
-            local character = getchar(current)
-            local direction = chardirections[character]
-            return direction == "r" or direction == "al" or direction == "an"
-        end
-    end
-
-    local function previsright(current)
-        current = getprev(current)
-        local id = getid(current)
-        if id == glyph_code then
-            local character = getchar(current)
-            local direction = chardirections[character]
-            return direction == "r" or direction == "al" or direction == "an"
-        end
-    end
-
     while current do
-        local id = getid(current)
+        local id   = getid(current)
+        local next = getnext(current)
         if id == math_code then
-            current = getnext(end_of_math(getnext(current)))
+            current = getnext(end_of_math(next))
+        elseif getprop(current,"direction") then
+            -- this handles unhbox etc
+            current = next
         else
             local attr = getattr(current,a_directions)
-            if attr and attr > 0 and attr ~= prevattr then
-                if not getglobal(a) then
-                    lro, rlo = false, false
+            if attr and attr > 0 then
+                if attr ~= prevattr then
+                    if not getglobal(a) then
+                        lro = false
+                        rlo = false
+                    end
+                    prevattr = attr
                 end
-                prevattr = attr
             end
             if id == glyph_code then
                 if attr and attr > 0 then
                     local character = getchar(current)
-                    local direction = chardirections[character]
-                    local reversed  = false
-                    if rlo or override > 0 then
-                        if direction == "l" then
-                            direction = "r"
-                            reversed = true
-                        end
-                    elseif lro or override < 0 then
-                        if direction == "r" or direction == "al" then
-                            setprop(current,a_state,s_isol)
-                            direction = "l"
-                            reversed = true
-                        end
-                    end
-                    if direction == "on" then
-                        local mirror = charmirrors[character]
-                        if mirror and fontchar[getfont(current)][mirror] then
-                            local class = charclasses[character]
-                            if class == "open" then
-                                if nextisright(current) then
-                                    if autodir >= 0 then
-                                        force_auto_right_before(direction)
-                                    end
-                                    setfield(current,"char",mirror)
-                                    done = true
-                                elseif autodir < 0 then
-                                    setfield(current,"char",mirror)
-                                    done = true
-                                else
-                                    mirror = false
-                                end
-                                local fencedir = autodir == 0 and textdir or autodir
-                                fences[#fences+1] = fencedir
-                            elseif class == "close" and #fences > 0 then
-                                local fencedir = fences[#fences]
-                                fences[#fences] = nil
-                                if fencedir < 0 then
-                                    setfield(current,"char",mirror)
-                                    done = true
-                                    force_auto_right_before(direction)
-                                else
-                                    mirror = false
-                                end
-                            elseif autodir < 0 then
-                                setfield(current,"char",mirror)
-                                done = true
-                            else
-                                mirror = false
+                    if character == 0 then
+                        -- skip signals
+                        setprop(current,"direction",true)
+                    else
+                        local direction = chardirections[character]
+                        local reversed  = false
+                        if rlo or override > 0 then
+                            if direction == "l" then
+                                direction = "r"
+                                reversed  = true
+                            end
+                        elseif lro or override < 0 then
+                            if direction == "r" or direction == "al" then
+                                setprop(current,a_state,s_isol) -- hm
+                                direction = "l"
+                                reversed  = true
                             end
                         end
-                        if trace_directions then
-                            setcolor(current,direction,false,mirror)
+                        if direction == "on" then
+                            local mirror = charmirrors[character]
+                            if mirror and fontchar[getfont(current)][mirror] then
+                                local class = charclasses[character]
+                                if class == "open" then
+                                    if nextisright(current) then
+                                        setfield(current,"char",mirror)
+                                        setprop(current,"direction","r")
+                                    elseif autodir < 0 then
+                                        setfield(current,"char",mirror)
+                                        setprop(current,"direction","r")
+                                    else
+                                        mirror = false
+                                        setprop(current,"direction","l")
+                                    end
+                                    local fencedir = autodir == 0 and textdir or autodir
+                                    fences[#fences+1] = fencedir
+                                elseif class == "close" and #fences > 0 then
+                                    local fencedir = fences[#fences]
+                                    fences[#fences] = nil
+                                    if fencedir < 0 then
+                                        setfield(current,"char",mirror)
+                                        setprop(current,"direction","r")
+                                    else
+                                        setprop(current,"direction","l")
+                                        mirror = false
+                                    end
+                                elseif autodir < 0 then
+                                    setfield(current,"char",mirror)
+                                    setprop(current,"direction","r")
+                                else
+                                    setprop(current,"direction","l")
+                                    mirror = false
+                                end
+                            end
+                            if trace_directions then
+                                setcolor(current,direction,false,mirror)
+                            end
+                        elseif direction == "l" then
+                            if trace_directions then
+                                setcolor(current,"l",reversed)
+                            end
+                            setprop(current,"direction","l")
+                        elseif direction == "r" then
+                            if trace_directions then
+                                setcolor(current,"r",reversed)
+                            end
+                            setprop(current,"direction","r")
+                        elseif direction == "en" then -- european number
+                            if trace_directions then
+                                setcolor(current,"l")
+                            end
+                            setprop(current,"direction","l")
+                        elseif direction == "al" then -- arabic number
+                            if trace_directions then
+                                setcolor(current,"r")
+                            end
+                            setprop(current,"direction","r")
+                        elseif direction == "an" then -- arabic number
+                            if trace_directions then
+                                setcolor(current,"r")
+                            end
+                            setprop(current,"direction","r")
+                        elseif direction == "lro" then -- Left-to-Right Override -> right becomes left
+                            top        = top + 1
+                            stack[top] = { override, embedded }
+                            override   = -1
+                            obsolete[#obsolete+1] = current
+                        elseif direction == "rlo" then -- Right-to-Left Override -> left becomes right
+                            top        = top + 1
+                            stack[top] = { override, embedded }
+                            override   = 1
+                            obsolete[#obsolete+1] = current
+                        elseif direction == "lre" then -- Left-to-Right Embedding -> TLT
+                            top        = top + 1
+                            stack[top] = { override, embedded }
+                            embedded   = 1
+                            obsolete[#obsolete+1] = current
+                        elseif direction == "rle" then -- Right-to-Left Embedding -> TRT
+                            top        = top + 1
+                            stack[top] = { override, embedded }
+                            embedded   = -1
+                            obsolete[#obsolete+1] = current
+                        elseif direction == "pdf" then -- Pop Directional Format
+                            if top > 0 then
+                                local s  = stack[top]
+                                override = s[1]
+                                embedded = s[2]
+                                top      = top - 1
+                            else
+                                override = 0
+                                embedded = 0
+                            end
+                            obsolete[#obsolete+1] = current
+                        elseif trace_directions then
+                            setcolor(current)
                         end
-                    elseif direction == "l" then
-                        if trace_directions then
-                            setcolor(current,"l",reversed)
-                        end
-                        if autodir <= 0 then -- could be option
-                            force_auto_left_before(direction)
-                        end
-                    elseif direction == "r" then
-                        if trace_directions then
-                            setcolor(current,"r",reversed)
-                        end
-                        if autodir >= 0 then
-                            force_auto_right_before(direction)
-                        end
-                    elseif direction == "en" then -- european number
-                        if trace_directions then
-                            setcolor(current,"l")
-                        end
-                        if autodir <= 0 then -- could be option
-                            force_auto_left_before(direction)
-                        end
-                    elseif direction == "al" then -- arabic number
-                        if trace_directions then
-                            setcolor(current,"r")
-                        end
-                        if autodir >= 0 then
-                            force_auto_right_before(direction)
-                        end
-                    elseif direction == "an" then -- arabic number
-                        if trace_directions then
-                            setcolor(current,"r")
-                        end
-                        if autodir >= 0 then
-                            force_auto_right_before(direction)
-                        end
-                    elseif direction == "lro" then -- Left-to-Right Override -> right becomes left
-                        top = top + 1
-                        stack[top] = { override, embedded }
-                        override = -1
-                        obsolete[#obsolete+1] = current
-                    elseif direction == "rlo" then -- Right-to-Left Override -> left becomes right
-                        top = top + 1
-                        stack[top] = { override, embedded }
-                        override = 1
-                        obsolete[#obsolete+1] = current
-                    elseif direction == "lre" then -- Left-to-Right Embedding -> TLT
-                        top = top + 1
-                        stack[top] = { override, embedded }
-                        embedded = 1
-                        obsolete[#obsolete+1] = current
-                    elseif direction == "rle" then -- Right-to-Left Embedding -> TRT
-                        top = top + 1
-                        stack[top] = { override, embedded }
-                        embedded = -1
-                        obsolete[#obsolete+1] = current
-                    elseif direction == "pdf" then -- Pop Directional Format
-                        if top > 0 then
-                            local s = stack[top]
-                            override, embedded = s[1], s[2]
-                            top = top - 1
-                        end
-                        obsolete[#obsolete+1] = current
-                    elseif trace_directions then
-                        setcolor(current)
                     end
                 else
-                    -- we do nothing
+                    setprop(current,"direction",true)
                 end
             elseif id == whatsit_code then
                 local subtype = getsubtype(current)
@@ -361,40 +311,69 @@ local function process(start)
                     elseif dir == 'TLT' then
                         autodir = 1
                     end
-                    pardir = autodir
+                    pardir  = autodir
                     textdir = pardir
                 elseif subtype == dir_code then
-                    -- todo: also treat as lro|rlo and stack
-                    if finish then
-                        finish_auto_before()
-                    end
                     local dir = getfield(current,"dir")
                     if dir == "+TRT" then
-                        finish, autodir = "TRT", -1
-                    elseif dir == "-TRT" then
-                        finish, autodir = nil, 0
+                        autodir = -1
                     elseif dir == "+TLT" then
-                        finish, autodir = "TLT", 1
-                    elseif dir == "-TLT" then
-                        finish, autodir = nil, 0
+                        autodir = 1
+                    elseif dir == "-TRT" or dir == "-TLT" then
+                        if embedded and embedded~= 0 then
+                            autodir = embedded
+                        else
+                            autodir = 0
+                        end
+                    else
+                        -- message
                     end
                     textdir = autodir
-                else
-                    if finish then
-                        finish_auto_before()
-                    end
                 end
-            elseif finish then
-                finish_auto_before()
+                setprop(current,"direction",true)
+            else
+                setprop(current,"direction",true)
             end
-            local cn = getnext(current)
-            if cn then
-                -- we're okay
-            elseif finish then
-                finish_auto_after()
-            end
-            current = cn
+            current = next
         end
+    end
+
+    -- todo: track if really needed
+
+    local pp = nil
+
+    while current do
+        local id = getid(current)
+        if id == math_code then
+            current = getnext(end_of_math(getnext(current)))
+        else
+            local cp = getprop(current,"direction")
+            if cp == pp then
+            elseif cp == true then
+                if pp == "r" then
+                    head = insert_node_before(head,current,stopdir("TRT"))
+                elseif pp == "l" then
+                    head = insert_node_before(head,current,stopdir("TLT"))
+                end
+                pp   = cp
+                done = true
+            elseif cp == "l" then
+                if pp == "r" then
+                    head = insert_node_before(head,current,stopdir("TRT"))
+                end
+                head = insert_node_before(head,current,startdir("TLT"))
+                pp   = cp
+                done = true
+            elseif cp == "r" then
+                if pp == "l" then
+                    head = insert_node_before(head,current,stopdir("TLT"))
+                end
+                head = insert_node_before(head,current,startdir("TRT"))
+                pp   = cp
+                done = true
+            end
+        end
+        current = getnext(current)
     end
 
     if done and strip then
@@ -403,7 +382,9 @@ local function process(start)
             for i=1,n do
                 remove_node(head,obsolete[i],true)
             end
-            report_directions("%s character nodes removed",n)
+            if trace_directions then
+                report_directions("%s character nodes removed",n)
+            end
         end
     end
 
@@ -412,4 +393,3 @@ local function process(start)
 end
 
 directions.installhandler(interfaces.variables.default,process)
-

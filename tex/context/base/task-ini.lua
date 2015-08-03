@@ -65,6 +65,7 @@ appendaction("processors",   "lists",       "languages.visualizediscretionaries"
 
 -- appendaction("processors",   "lists",       "typesetters.initials.handler")                   -- disabled
 
+appendaction("shipouts",     "normalizers", "typesetters.margins.finalhandler")                  -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
 appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
@@ -90,26 +91,27 @@ appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler")  
 
 appendaction("math",         "normalizers", "noads.handlers.showtree",  nil, "nohead")
 
-appendaction("math",         "normalizers", "noads.handlers.unscript",  nil, "nohead")            -- always on (maybe disabled)
-appendaction("math",         "normalizers", "noads.handlers.variants",  nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.relocate",  nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.families",  nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.unscript",  nil, "nohead")           -- always on (maybe disabled)
+appendaction("math",         "normalizers", "noads.handlers.variants",  nil, "nohead")           -- always on
+appendaction("math",         "normalizers", "noads.handlers.relocate",  nil, "nohead")           -- always on
+appendaction("math",         "normalizers", "noads.handlers.families",  nil, "nohead")           -- always on
 
-appendaction("math",         "normalizers", "noads.handlers.render",    nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.collapse",  nil, "nohead") -- * first -- always on
-appendaction("math",         "normalizers", "noads.handlers.domains",   nil, "nohead") -- * last  -- disabled
-appendaction("math",         "normalizers", "noads.handlers.autofences",nil, "nohead")            -- disabled
-appendaction("math",         "normalizers", "noads.handlers.resize",    nil, "nohead")            -- always on
-------------("math",         "normalizers", "noads.handlers.respace",   nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.alternates",nil, "nohead")            -- always on
-appendaction("math",         "normalizers", "noads.handlers.tags",      nil, "nohead")            -- disabled
-appendaction("math",         "normalizers", "noads.handlers.italics",   nil, "nohead")            -- disabled
-appendaction("math",         "normalizers", "noads.handlers.classes",   nil, "nohead")            -- disabled
+appendaction("math",         "normalizers", "noads.handlers.render",    nil, "nohead")           -- always on
+appendaction("math",         "normalizers", "noads.handlers.collapse",  nil, "nohead") -- * first-- always on
+appendaction("math",         "normalizers", "noads.handlers.domains",   nil, "nohead") -- * last -- disabled
+appendaction("math",         "normalizers", "noads.handlers.autofences",nil, "nohead")           -- disabled
+appendaction("math",         "normalizers", "noads.handlers.resize",    nil, "nohead")           -- always on
+------------("math",         "normalizers", "noads.handlers.respace",   nil, "nohead")           -- always on
+appendaction("math",         "normalizers", "noads.handlers.alternates",nil, "nohead")           -- always on
+appendaction("math",         "normalizers", "noads.handlers.tags",      nil, "nohead")           -- disabled
+appendaction("math",         "normalizers", "noads.handlers.italics",   nil, "nohead")           -- disabled
+appendaction("math",         "normalizers", "noads.handlers.classes",   nil, "nohead")           -- disabled
 
 appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
 ------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled
 appendaction("math",         "builders",    "typesetters.directions.processmath")                -- disabled (has to happen pretty late)
 
+appendaction("finalizers",   "lists",       "typesetters.margins.localhandler")                  -- disabled
 appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether")
 ------------("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
@@ -117,13 +119,15 @@ appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
 
 -- still experimental
 
+appendaction("mvlbuilders",  "normalizers", "typesetters.margins.globalhandler")                 -- disabled
 appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")
 
 appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !
-appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler")                        -- here !
+appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler")                    -- here !
 
+------------("vboxbuilders", "normalizers", "typesetters.margins.localhandler")
 appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")
-appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler")                        -- here !
+appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler")                    -- here !
 
 -- experimental too
 
@@ -159,7 +163,9 @@ disableaction("processors",  "typesetters.kerns.handler")
 disableaction("processors",  "typesetters.italics.handler")
 disableaction("processors",  "languages.visualizediscretionaries")
 disableaction("processors",  "nodes.handlers.stripping")
+disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
 
+disableaction("shipouts",    "typesetters.margins.finalhandler")
 disableaction("shipouts",    "builders.paragraphs.expansion.trace")
 disableaction("shipouts",    "typesetters.alignments.handler")
 disableaction("shipouts",    "nodes.rules.handler")
@@ -175,16 +181,11 @@ disableaction("shipouts",    "nodes.visualizers.handler")
 disableaction("shipouts",    "nodes.handlers.accessibility")
 disableaction("shipouts",    "nodes.handlers.backgrounds")
 disableaction("shipouts",    "nodes.handlers.alignbackgrounds")
-
 disableaction("shipouts",    "nodes.references.handler")
 disableaction("shipouts",    "nodes.destinations.handler")
+-------------("shipouts",    "nodes.handlers.export")
 
---~ disableaction("shipouts",    "nodes.handlers.export")
-
-disableaction("mvlbuilders", "nodes.handlers.migrate")
-
-disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
-
+disableaction("finalizers",  "typesetters.margins.localhandler")
 disableaction("finalizers",  "builders.paragraphs.keeptogether")
 disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
 -------------("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
@@ -198,9 +199,12 @@ disableaction("math",        "noads.handlers.classes")
 disableaction("math",        "noads.handlers.autofences")
 disableaction("math",        "typesetters.directions.processmath")
 
+disableaction("mvlbuilders",  "typesetters.margins.globalhandler")
+disableaction("mvlbuilders", "nodes.handlers.migrate")
 disableaction("mvlbuilders", "typesetters.checkers.handler")
 disableaction("mvlbuilders", "builders.profiling.pagehandler")
 
+-------------("vboxbuilders","typesetters.margins.localhandler")
 disableaction("vboxbuilders","typesetters.checkers.handler")
 disableaction("vboxbuilders","builders.profiling.vboxhandler")
 

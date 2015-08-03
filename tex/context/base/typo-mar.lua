@@ -180,6 +180,7 @@ local isleftpage         = layouts.status.isleftpage
 local registertogether   = builders.paragraphs.registertogether -- tonode
 
 local a_margindata       = attributes.private("margindata")
+local a_specialcontent   = attributes.private("specialcontent")
 
 local inline_mark        = nodepool.userids["margins.inline"]
 
@@ -261,6 +262,7 @@ end
 function margins.save(t)
     setmetatable(t,defaults)
     local content  = getbox(t.number)
+setattr(content,a_specialcontent,1)
     local location = t.location
     local category = t.category
     local inline   = t.inline
@@ -786,12 +788,17 @@ local function flushed(scope,parent) -- current is hlist
         done = done or don
     end
     if done then
-        local a = getattr(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
-        local l = hpack_nodes(head,getfield(parent,"width"),"exactly")
-        setfield(parent,"list",l)
-        if a then
-            setattr(l,a_linenumber,a)
-        end
+--         local a = getattr(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
+--         local l = hpack_nodes(head,getfield(parent,"width"),"exactly")
+--         setfield(parent,"list",l)
+--         if a then
+--             setattr(l,a_linenumber,a)
+--         end
+-- packing messes up profiling
+local a = getattr(head,a_linenumber)
+if a then
+    setattr(parent,a_linenumber,a)
+end
      -- resetstacked()
     end
     return done, continue

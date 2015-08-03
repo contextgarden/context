@@ -1358,9 +1358,10 @@
   {\begingroup
    \useinterlinespaceparameter\noteparameter
    \doifelse{\noteparameter\c!paragraph}\v!yes
-     {\vbox\starthboxestohbox
-        \iftrialtypesetting\unvcopy\else\unvbox\fi\currentnoteinsertionnumber
-      \stophboxestohbox}
+     {\leftorrightvbox % cf mail from ws to list
+        {\starthboxestohbox
+           \iftrialtypesetting\unvcopy\else\unvbox\fi\currentnoteinsertionnumber
+         \stophboxestohbox}}
      {\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteinsertionnumber}%
    \endgroup}
 

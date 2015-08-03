@@ -39,7 +39,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2015.07.27 19:36}
+\edef\contextversion{2015.08.03 15:33}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -271,11 +271,7 @@
 \loadmarkfile{spac-par}
 %loadmarkfile{spac-adj} % no longer needed
 \loadmarkfile{spac-def}
-
-\doiffileelse{spac-prf.mkvi}
-    {\loadmkvifile{spac-prf}}
-    {\loadmkivfile{spac-prf}}
-
+\loadmkvifile{spac-prf}
 \loadmarkfile{spac-grd}
 
 %loadmarkfile{anch-pos}

@@ -492,7 +492,7 @@
       \ifconditional\c_strc_constructions_distance_none \else
         \advance\ifx#1\v!flushleft\rightskip\else\leftskip\fi\constructionsheaddistance % only difference and wrong anyway
       \fi
-      \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
+      \flushconstructionheadbox}%
    \setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
    \ht\constructionheadbox\strutht
    \dp\constructionheadbox\strutdp}
@@ -507,7 +507,7 @@
       \else
         \setupalign[\p_strc_constructions_headalign]% use fast one
       \fi
-      \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
+      \flushconstructionheadbox}%
    \setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
    \ht\constructionheadbox\strutht
    \dp\constructionheadbox\strutdp}
@@ -528,6 +528,12 @@
    \fi\fi\fi
    \relax
    \hangindent\ifx#1\v!right-\fi\constructionsheadwidth}
+
+% \unexpanded\def\flushconstructionheadbox
+%   {\ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}
+
+\unexpanded\def\flushconstructionheadbox
+  {\ifhbox\constructionheadbox\unhbox\else\box\fi\constructionheadbox}
 
 % The setups. These only deal with placement of the descriptor and initializing the
 % environment. The wrapping happens elsewhere.
@@ -694,7 +700,7 @@
 \startsetups[\??constructionrenderings:\v!margin]
     \let\\=\crlf
     \noindent
-    \inmargin[\c!scope=\v!local]{\ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
+    \inmargin[\c!scope=\v!local]{\flushconstructionheadbox}%
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -702,7 +708,7 @@
 \startsetups[\??constructionrenderings:\v!leftmargin]
     \let\\=\crlf
     \noindent
-    \inleft[\c!scope=\v!local]{\ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
+    \inleft[\c!scope=\v!local]{\flushconstructionheadbox}%
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -710,7 +716,7 @@
 \startsetups[\??constructionrenderings:\v!rightmargin]
     \let\\=\crlf
     \noindent
-    \inright[\c!scope=\v!local]{\ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
+    \inright[\c!scope=\v!local]{\flushconstructionheadbox}%
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -718,7 +724,7 @@
 \startsetups[\??constructionrenderings:\v!innermargin]
     \let\\=\crlf
     \noindent
-    \ininner[\c!scope=\v!local]{\ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
+    \ininner[\c!scope=\v!local]{\flushconstructionheadbox}%
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -726,7 +732,7 @@
 \startsetups[\??constructionrenderings:\v!outermargin]
     \let\\=\crlf
     \noindent
-    \inouter[\c!scope=\v!local]{\ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}%
+    \inouter[\c!scope=\v!local]{\flushconstructionheadbox}%
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -755,7 +761,7 @@
 \startsetups[\??constructionrenderings:\v!serried:\v!fit]
     \let\\=\crlf
     \noindent
-    \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox % why copy? leftover?
+    \flushconstructionheadbox
     \nobreak
     \hskip\constructionsheaddistance\relax
     \useconstructionstyleandcolor\c!style\c!color
@@ -765,7 +771,7 @@
 \startsetups[\??constructionrenderings:\v!serried:\v!broad]
     \let\\=\crlf
     \noindent
-    \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox % why copy? leftover?
+    \flushconstructionheadbox
     \ifconditional\c_strc_constructions_distance_none \else
         \nobreak
         \hskip\constructionsheaddistance \!!plus .5\constructionsheaddistance \!!minus .25\constructionsheaddistance\relax
@@ -782,7 +788,7 @@
     \let\\=\crlf
     \noindent
     \hbox to \constructionsheadwidth {
-        \ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox
+        \flushconstructionheadbox
         \hss
     }
     \nobreak
@@ -827,7 +833,7 @@
 
 \startsetups[\??constructionrenderings:\v!command]
     \noindent
-    \constructionparameter\c!headcommand{\ifhbox\constructionheadbox\unhcopy\else\copy\fi\constructionheadbox}
+    \constructionparameter\c!headcommand{\flushconstructionheadbox}
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups

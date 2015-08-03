@@ -76,14 +76,17 @@ local setfield           = nuts.setfield
 local traverse_id        = nuts.traverse_id
 local traverse           = nuts.traverse
 local copy_node          = nuts.copy
-local hpack_node         = nuts.hpack
+local hpack_nodes        = nuts.hpack
+local linked_nodes       = nuts.linked
 local insert_node_after  = nuts.insert_after
 local insert_node_before = nuts.insert_before
 local is_display_math    = nuts.is_display_math
 local leftmarginwidth    = nuts.leftmarginwidth
 
-local negated_glue       = nuts.pool.negatedglue
-local new_hlist          = nuts.pool.hlist
+local nodepool           = nuts.pool
+local negated_glue       = nodepool.negatedglue
+local new_hlist          = nodepool.hlist
+local new_kern           = nodepool.kern
 
 local ctx_convertnumber  = context.convertnumber
 local ctx_makelinenumber = context.makelinenumber
@@ -296,13 +299,11 @@ function boxed.stage_one(n,nested)
                                 n = getnext(n)
                             elseif id == glue_code and getsubtype(n) == leftskip_code then
                                 n = getnext(n)
-                            else
-if id == glyph_code then
+                            elseif id == glyph_code then
                                 break
-else
-    -- can be hlist or skip (e.g. footnote line)
-    n = getnext(n)
-end
+                            else
+                                -- can be hlist or skip (e.g. footnote line)
+                                n = getnext(n)
                             end
                         end
                         a = n and getattr(n,a_linenumber)
@@ -342,7 +343,14 @@ end
     end
 end
 
--- [dir][leftskip][content]
+-- todo: a general model for attaching stuff l/r
+
+-- setfield(ti,"next",l)
+-- setfield(l,"prev",ti)
+-- local h = copy_node(n)
+-- -- setfield(h,"dir","TLT")
+-- setfield(h,"list",ti) -- the number
+-- setfield(n,"list",h)
 
 function boxed.stage_two(n,m)
     if #current_list > 0 then
@@ -356,60 +364,15 @@ function boxed.stage_two(n,m)
             local li = current_list[i]
             local n, m, ti = li[1], li[2], t[i]
             if ti then
+                local d = getfield(n,"dir")
                 local l = getlist(n)
-                -- we want to keep leftskip at the start
---                 local id = getid(l)
---                 if id == whatsit_code and getsubtype(l) == textdir_code then
---                     l = getnext(l)
---                     id = getid(l)
---                 end
---                 if getid(l) == glue_code and getsubtype(l) == leftskip_code then
---                     -- [leftskip] [number] [rest]
---                     local forward  = copy_node(l)
---                     local backward = negated_glue(l)
---                     local next     = getnext(l)
---                     setfield(l,"next",backward)
---                     setfield(backward,"prev",l)
---                     setfield(backward,"next",ti)
---                     setfield(ti,"prev",backward)
---                     setfield(ti,"next",forward)
---                     setfield(forward,"prev",ti)
---                     setfield(forward,"next",next)
---                     setfield(next,"prev",forward)
---                 else
-                    -- [number] [rest]
-                    setfield(ti,"next",l)
-                    setfield(l,"prev",ti)
-                    setfield(n,"list",ti)
---                 end
-                resolve(n,m)
-            else
-                report_lines("error in linenumbering (1)")
-                return
-            end
-       end
-    end
-end
-
-function boxed.stage_two(n,m)
-    if #current_list > 0 then
-        m = m or lines.scratchbox
-        local t, tn = { }, 0
-        for l in traverse_id(hlist_code,getlist(getbox(m))) do
-            tn = tn + 1
-            t[tn] = copy_node(l) -- use take_box instead
-        end
-        for i=1,#current_list do
-            local li = current_list[i]
-            local n, m, ti = li[1], li[2], t[i]
-            if ti then
-                local l = getlist(n)
+                if d == "TRT" then
+                    local w = getfield(n,"width")
+                    ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
+                end
                 setfield(ti,"next",l)
                 setfield(l,"prev",ti)
-                local h = copy_node(n)
-                setfield(h,"dir","TLT")
-                setfield(h,"list",ti)
-                setfield(n,"list",h)
+                setfield(n,"list",ti)
                 resolve(n,m)
             else
                 report_lines("error in linenumbering (1)")

@@ -167,6 +167,10 @@
 \unexpanded\def\autodirvbox#1#{\vbox#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vbox
 \unexpanded\def\autodirvtop#1#{\vtop#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vtop
 
+\unexpanded\def\leftorrighthbox{\ifconditional\displaylefttoright\expandafter\lefttorighthbox\else\expandafter\righttolefthbox\fi}
+\unexpanded\def\leftorrightvbox{\ifconditional\displaylefttoright\expandafter\lefttorightvbox\else\expandafter\righttoleftvbox\fi}
+\unexpanded\def\leftorrightvtop{\ifconditional\displaylefttoright\expandafter\lefttorightvtop\else\expandafter\righttoleftvtop\fi}
+
 % Tolerance and hyphenation
 
 \ifdefined\lesshyphens \else \let\lesshyphens\relax \fi

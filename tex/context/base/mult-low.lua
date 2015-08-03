@@ -211,7 +211,7 @@ return {
         --
         "availablehsize", "localhsize", "setlocalhsize", "distributedhsize", "hsizefraction",
         --
-        "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs",
+        "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs", "flushnextbox",
         --
         "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance",
         "scratchhsize", "scratchvsize",
@@ -400,6 +400,7 @@ return {
         "righttolefthbox", "lefttorighthbox", "righttoleftvbox", "lefttorightvbox", "righttoleftvtop", "lefttorightvtop",
         "rtlhbox", "ltrhbox", "rtlvbox", "ltrvbox", "rtlvtop", "ltrvtop",
         "autodirhbox", "autodirvbox", "autodirvtop",
+        "leftorrighthbox", "leftorrightvbox", "leftorrightvtop",
         "lefttoright", "righttoleft","synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens",

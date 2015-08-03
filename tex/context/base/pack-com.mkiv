@@ -76,19 +76,59 @@
     \global\resetsystemmode{combination}%
 \to \everyinsidefloat
 
-\newcount\c_pack_combinations_x
-\newcount\c_pack_combinations_n
-\newcount\c_pack_combinations_max
-\newbox  \b_pack_combinations_captions
-\newbox  \b_pack_combinations_content
-\newbox  \b_pack_combinations_caption
-\newbox  \b_pack_combinations_temp % global
+\newcount\c_pack_combinations_nesting  % local
+\newcount\c_pack_combinations_x        % global
+\newcount\c_pack_combinations_n        % global
+\newcount\c_pack_combinations_max      % global
+\newbox  \b_pack_combinations_captions % global
+\newbox  \b_pack_combinations_temp     % global
+\newbox  \b_pack_combinations_content  % local
+\newbox  \b_pack_combinations_caption  % local
 
 \installcorenamespace{combination}
 
 \installcommandhandler \??combination {combination} \??combination
 
+\initializeboxstack{\??combination captions}
+\initializeboxstack{\??combination temp}
+
+\newcount\c_pack_combinations_x_saved
+\newcount\c_pack_combinations_n_saved
+\newcount\c_pack_combinations_max_saved
+\newbox  \b_pack_combinations_captions_saved
+\newbox  \b_pack_combinations_temp_saved
+\newbox  \b_pack_combinations_content_saved
+\newbox  \b_pack_combinations_caption_saved
+
 \setfalse\c_strc_constructions_define_commands
+
+\def\pack_combinations_push
+  {\advance\c_pack_combinations_nesting\plusone
+   \ifnum\c_pack_combinations_nesting>\plusone
+     \c_pack_combinations_x_saved  \c_pack_combinations_x
+     \c_pack_combinations_n_saved  \c_pack_combinations_n
+     \c_pack_combinations_max_saved\c_pack_combinations_max
+     \setbox\b_pack_combinations_captions_saved\box\b_pack_combinations_captions
+     \setbox\b_pack_combinations_temp_saved    \box\b_pack_combinations_temp
+     \setbox\b_pack_combinations_content_saved \box\b_pack_combinations_content
+     \setbox\b_pack_combinations_caption_saved \box\b_pack_combinations_caption
+   \else
+     \global\setsystemmode{combination}% why global
+   \fi}
+
+\def\pack_combinations_pop
+  {\ifnum\c_pack_combinations_nesting>\plusone
+     \global\c_pack_combinations_x  \c_pack_combinations_x_saved
+     \global\c_pack_combinations_n  \c_pack_combinations_n_saved
+     \global\c_pack_combinations_max\c_pack_combinations_max_saved
+     \global\setbox\b_pack_combinations_captions\box\b_pack_combinations_captions_saved
+     \global\setbox\b_pack_combinations_temp    \box\b_pack_combinations_temp_saved
+     \setbox\b_pack_combinations_content        \box\b_pack_combinations_content_saved
+     \setbox\b_pack_combinations_caption        \box\b_pack_combinations_caption_saved
+   \else
+     \global\resetsystemmode{combination}% why global
+   \fi
+   \advance\c_pack_combinations_nesting\minusone}
 
 \definelabel
   [\v!combination] % handy for configuring
@@ -143,6 +183,7 @@
 
 \unexpanded\def\startcombination
   {\bgroup % so we can grab a group
+   \pack_combinations_push
    \dodoubleempty\pack_combinations_start}
 
 % formally ok:
@@ -181,14 +222,13 @@
   {\bgroup\normalexpanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_n}% brr
    \dostoptagged
    \egroup
+   \pack_combinations_pop
    \egroup}
 
 \newtoks\everycombination
 
 \def\pack_combinations_start[#1][#2]% needs a cleanup, also nx ny (pretty old, this one)
-  {\global\setsystemmode{combination}%
-   %
-   \edef\currentcombination{#1}%
+  {\edef\currentcombination{#1}%
    \edef\currentcombinationspec{#2}%
    \ifx\currentcombinationspec\empty
      \doifelseassignment{#1}%
