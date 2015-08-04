@@ -116,11 +116,15 @@ local strip              = false
 local s_isol             = fonts.analyzers.states.isol
 
 local function stopdir(finish)
-    return new_textdir(finish == "TRT" and "-TRT" or "-TLT")
+    local n = new_textdir(finish == "TRT" and "-TRT" or "-TLT")
+    setprop(n,"direction",true)
+    return n
 end
 
 local function startdir(finish)
-    return new_textdir(finish == "TRT" and "+TRT" or "+TLT")
+    local n = new_textdir(finish == "TRT" and "+TRT" or "+TLT")
+    setprop(n,"direction",true)
+    return n
 end
 
 local function nextisright(current)
@@ -297,11 +301,16 @@ local function process(start)
                             obsolete[#obsolete+1] = current
                         elseif trace_directions then
                             setcolor(current)
+                            setprop(current,"direction",true)
                         end
                     end
                 else
                     setprop(current,"direction",true)
                 end
+            elseif id == glue_code then
+                setprop(current,"direction",'g')
+            elseif id == kern_code then
+                setprop(current,"direction",'k')
             elseif id == whatsit_code then
                 local subtype = getsubtype(current)
                 if subtype == localpar_code then
@@ -339,42 +348,7 @@ local function process(start)
     end
 
     -- todo: track if really needed
-
-    local pp = nil
-
-    while current do
-        local id = getid(current)
-        if id == math_code then
-            current = getnext(end_of_math(getnext(current)))
-        else
-            local cp = getprop(current,"direction")
-            if cp == pp then
-            elseif cp == true then
-                if pp == "r" then
-                    head = insert_node_before(head,current,stopdir("TRT"))
-                elseif pp == "l" then
-                    head = insert_node_before(head,current,stopdir("TLT"))
-                end
-                pp   = cp
-                done = true
-            elseif cp == "l" then
-                if pp == "r" then
-                    head = insert_node_before(head,current,stopdir("TRT"))
-                end
-                head = insert_node_before(head,current,startdir("TLT"))
-                pp   = cp
-                done = true
-            elseif cp == "r" then
-                if pp == "l" then
-                    head = insert_node_before(head,current,stopdir("TLT"))
-                end
-                head = insert_node_before(head,current,startdir("TRT"))
-                pp   = cp
-                done = true
-            end
-        end
-        current = getnext(current)
-    end
+    -- todo: maybe we need to set the property (as it can be a copied list)
 
     if done and strip then
         local n = #obsolete
@@ -385,6 +359,70 @@ local function process(start)
             if trace_directions then
                 report_directions("%s character nodes removed",n)
             end
+        end
+    end
+
+    local state    = false
+    local last     = false
+    local collapse = true
+    current        = head
+
+    -- spaces are an issue: todo
+
+    while current do
+        local id = getid(current)
+        if id == math_code then
+            -- todo: this might be tricky nesting
+            current = getnext(end_of_math(getnext(current)))
+        else
+            local cp = getprop(current,"direction")
+            if cp == "l" then
+                if state ~= "l" then
+                    if state == "r" then
+                        head = insert_node_before(head,last or current,stopdir("TRT"))
+                    end
+                    head  = insert_node_before(head,current,startdir("TLT"))
+                    state = "l"
+                    done  = true
+                end
+                last  = false
+            elseif cp == "r" then
+                if state ~= "r" then
+                    if state == "l" then
+                        head = insert_node_before(head,last or current,stopdir("TLT"))
+                    end
+                    head  = insert_node_before(head,current,startdir("TRT"))
+                    state = "r"
+                    done  = true
+                end
+                last  = false
+            elseif collapse then
+                if cp == "k" or cp == "g" then
+                    last = last or current
+                else
+                    last = false
+                end
+            else
+                if state == "r" then
+                    head = insert_node_before(head,current,stopdir("TRT"))
+                elseif state == "l" then
+                    head = insert_node_before(head,current,stopdir("TLT"))
+                end
+                state = false
+                last  = false
+            end
+            setprop(current,"direction",true)
+        end
+        local next = getnext(current)
+        if next then
+            current = next
+        else
+            if state == "r" then
+                head = insert_node_after(head,current,stopdir("TRT"))
+            elseif state == "l" then
+                head = insert_node_after(head,current,stopdir("TLT"))
+            end
+            break
         end
     end
 

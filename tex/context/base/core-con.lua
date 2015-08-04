@@ -17,7 +17,7 @@ slower but look nicer this way.</p>
 --ldx]]--
 
 local floor, date, time, concat = math.floor, os.date, os.time, table.concat
-local lower, rep, match = string.lower, string.rep, string.match
+local lower, rep, match, gsub = string.lower, string.rep, string.match, string.gsub
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring = tonumber, tostring
 local P, C, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.match
@@ -161,6 +161,19 @@ counters['koreancirclenumerals'] = counters['korean-circle']
 counters['sloveniannumerals']    = counters['slovenian']
 counters['spanishnumerals']      = counters['spanish']
 
+local decimals = allocate {
+    ['arabic'] = {
+        ["0"] = "٠", ["1"] = "١", ["2"] = "٢", ["3"] = "٣", ["4"] = "٤",
+        ["5"] = "٥", ["6"] = "٦", ["7"] = "٧", ["8"] = "٨", ["9"] = "٩",
+    },
+    ['persian'] = {
+        ["0"] = "۰", ["1"] = "۱", ["2"] = "۲", ["3"] = "۳", ["4"] = "۴",
+        ["5"] = "۵", ["6"] = "۶", ["7"] = "۷", ["8"] = "۸", ["9"] = "۹",
+    }
+}
+
+languages.decimals = decimals
+
 local fallback = utfbyte('0')
 
 local function chr(n,m)
@@ -233,6 +246,16 @@ end
 converters.alphabetic = alphabetic
 converters.Alphabetic = Alphabetic
 
+-- we could make a replacer
+
+local function todecimals(n,name)
+    local stream  = tostring(n)
+    local mapping = decimals[name]
+    return mapping and gsub(stream,".",mapping) or stream
+end
+
+converters.decimals = todecimals
+
 local lower_offset = 96
 local upper_offset = 64
 
@@ -253,6 +276,8 @@ implement { name = "character",  actions = { chr,  context }, arguments = { "int
 implement { name = "Character",  actions = { chr,  context }, arguments = { "integer", upper_offset } }
 implement { name = "characters", actions = { chrs, context }, arguments = { "integer", lower_offset } }
 implement { name = "Characters", actions = { chrs, context }, arguments = { "integer", upper_offset } }
+
+implement { name = "decimals",   actions = { todecimals, context }, arguments = { "integer", "string" } }
 
 local weekday    = os.weekday    -- moved to l-os
 local isleapyear = os.isleapyear -- moved to l-os

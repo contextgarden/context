@@ -182,12 +182,10 @@ local function getprofile(line,step)
                 wd = getfield(spec,"width")
                 if glue_sign == 1 then
                     if getfield(spec,"stretch_order") == glue_order then
-                     -- wd = (wd + getfield(spec,"stretch")) * glue_set
                         wd = wd + getfield(spec,"stretch") * glue_set
                     end
                 elseif glue_sign == 2 then
                     if getfield(spec,"shrink_order") == glue_order then
-                     -- wd = (wd - getfield(spec,"shrink")) * glue_set
                         wd = wd - getfield(spec,"shrink") * glue_set
                     end
                 end
@@ -242,6 +240,8 @@ local function getprofile(line,step)
                 ht = 0
                 dp = 0
                 progress()
+            else
+--     print(nodecodes[id])
             end
             current = getnext(current)
         end
@@ -471,7 +471,7 @@ end
 
 -- lineskip | lineskiplimit
 
-local function inject(top,bot,amount)
+local function inject(top,bot,amount) -- todo: look at penalties
     local glue = new_glue(amount)
     --
     setattr(glue,a_profilemethod,0)
@@ -541,24 +541,18 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
     local snapmethod = getattr(top,a_snapmethod)
 
     if snapmethod then
-        distance = 0 -- if needed take it from the snapper
-    end
 
-    if delta >= distance then
-        setfield(top,"depth",strutdp)
-        setfield(bot,"height",strutht)
-        return true
-    end
+        -- no distance (yet)
 
-    local delta = getdelta(t_profile,b_profile)
+        if delta < lineheight then
+            setfield(top,"depth",strutdp)
+            setfield(bot,"height",strutht)
+            return true
+        end
 
-    if delta < lineheight + distance then
-        setfield(top,"depth",strutdp)
-        setfield(bot,"height",strutht)
-        return true
-    end
 
-    if snapmethod then
+        local delta  = getdelta(t_profile,b_profile)
+
         local dp = strutdp
         while depth > lineheight - strutdp do
             depth = depth - lineheight
@@ -575,25 +569,44 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
         if lines > 0 then
             inject(top,bot,-lines * lineheight)
         end
+
+        return true
+
+    end
+
+    if delta < lineheight + distance then
+        setfield(top,"depth",strutdp)
+        setfield(bot,"height",strutht)
         return true
     end
 
-    local room       = total - delta
+    if depth < strutdp then
+        setfield(top,"depth",strutdp)
+        total = total - depth + strutdp
+    end
+    if height < strutht then
+        setfield(bot,"height",strutht)
+        total = total - height + strutht
+    end
+
+    local target     = total - delta
     local factor     = specification.factor or 1
-    local lines      = specification.lines or 0 -- todo
+ -- local lines      = specification.lines or 0
     local step       = lineheight / factor
     local correction = 0
-    local initial    = room - distance
     local nofsteps   = 0
-    while initial > step do -- a loop is more accurate, for now
+    while correction < target - step do -- a loop is more accurate, for now
         correction = correction + step
-        initial    = initial - step
         nofsteps   = nofsteps + 1
     end
 
-    if correction + total <= lineheight then
-        setfield(top,"depth",strutdp)
-        setfield(bot,"height",strutht)
+    -- target + distance   = wanted
+    -- total  - correction = calculated
+
+    local d = (total - correction) - (target + distance)
+
+    if d > 0 then
+        correction = correction - d
     end
 
     if trace_profile then
@@ -604,20 +617,16 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
         report("  total      : %p",total)
         report("  lineheight : %p",lineheight)
         report("  delta      : %p",delta)
-        report("  room       : %p",room)
+        report("  target     : %p",target)
         report("  factor     : %i",factor)
         report("  distance   : %p",distance)
         report("  step       : %p",step)
         report("  nofsteps   : %i",nofsteps)
-        report("  max lines  : %s",lines == 0 and "unset" or lines)
+     -- report("  max lines  : %s",lines == 0 and "unset" or lines)
         report("  correction : %p",correction)
     end
 
-    correction = correction - distance
-
-    if correction ~= 0 then
-        inject(top,bot,-correction) -- we could mess with the present glue (if present)
-    end
+    inject(top,bot,-correction) -- we could mess with the present glue (if present)
 
     return true -- remove interlineglue
 
@@ -862,28 +871,28 @@ function profiling.profilebox(specification)
                 bot = nil
             end
         elseif id == glue_code then
-local subtype = getsubtype(current)
-if subtype == lineskip_code or subtype == baselineskip_code then
-            if top then
-                local spec = getfield(current,"spec")
-                local wd   = getfield(spec,"width")
-                if wd > 0 then
-                    distance = wd
-                    lastglue = current
-                elseif wd < 0 then
+            local subtype = getsubtype(current)
+            if subtype == lineskip_code or subtype == baselineskip_code then
+                if top then
+                    local spec = getfield(current,"spec")
+                    local wd   = getfield(spec,"width")
+                    if wd > 0 then
+                        distance = wd
+                        lastglue = current
+                    elseif wd < 0 then
+                        top = nil
+                        bot = nil
+                    else
+                        -- ok
+                    end
+                else
                     top = nil
                     bot = nil
-                else
-                    -- ok
                 end
             else
                 top = nil
                 bot = nil
             end
-else
-    top = nil
-    bot = nil
-end
         elseif id == penalty_code then
             -- okay
         else

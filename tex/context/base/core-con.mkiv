@@ -91,6 +91,8 @@
 \def\Greeknumerals     #1{\clf_Alphabetic\numexpr#1\relax{greek}}
 \def\arabicnumerals    #1{\clf_alphabetic\numexpr#1\relax{arabic}}
 \def\persiannumerals   #1{\clf_alphabetic\numexpr#1\relax{persian}}
+\def\arabicdecimals    #1{\clf_decimals  \numexpr#1\relax{arabic}}
+\def\persiandecimals   #1{\clf_decimals  \numexpr#1\relax{persian}}
 
 \let\arabicexnumerals     \persiannumerals
 
@@ -684,8 +686,8 @@
 %defineconversion [Ñ]                    [\Spanishnumerals]
 
 \defineconversion [abjadnumerals]        [\abjadnumerals]
-\defineconversion [abjadnodotnumerals]   [\adjadnodotnumerals]
-\defineconversion [abjadnaivenumerals]   [\adjadnaivenumerals]
+\defineconversion [abjadnodotnumerals]   [\abjadnodotnumerals]
+\defineconversion [abjadnaivenumerals]   [\abjadnaivenumerals]
 
 \defineconversion [thainumerals]         [\thainumerals]
 \defineconversion [devanagarinumerals]   [\devanagarinumerals]
@@ -697,6 +699,8 @@
 \defineconversion [arabicnumerals]       [\arabicnumerals]
 \defineconversion [persiannumerals]      [\persiannumerals]
 \defineconversion [arabicexnumerals]     [\arabicexnumerals]
+\defineconversion [arabicdecimals]       [\arabicdecimals]
+\defineconversion [persiandecimals]      [\persiandecimals]
 
 \defineconversion [koreannumerals]       [\koreannumerals]
 \defineconversion [koreanparentnumerals] [\koreanparentnumerals]
