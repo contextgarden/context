@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['typo-dub'] = {
+if not modules then modules = { } end modules ['typo-dua'] = {
     version   = 1.001,
     comment   = "companion to typo-dir.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -67,6 +67,8 @@ local getlist             = nuts.getlist
 local getattr             = nuts.getattr
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
+local getprop             = nuts.getprop
+local setprop             = nuts.setprop
 
 local remove_node         = nuts.remove
 local copy_node           = nuts.copy
@@ -109,6 +111,7 @@ local remove_controls     = true  directives.register("typesetters.directions.re
 
 local trace_directions    = false trackers  .register("typesetters.directions.two",           function(v) trace_directions = v end)
 local trace_details       = false trackers  .register("typesetters.directions.two.details",   function(v) trace_details    = v end)
+local trace_list          = false trackers  .register("typesetters.directions.two.list",      function(v) trace_list       = v end)
 
 local report_directions   = logs.reporter("typesetting","directions two")
 
@@ -197,7 +200,7 @@ local function show_list(list,size,what)
                 result[i] = formatters["%-3s:%s %s (%i)"](direction,joiner,nodecodes[first],skip or 0)
             end
         elseif character >= 0x202A and character <= 0x202C then
-            result[i] = formatters["%-3s:%s   %U"](direction,joiner,character)
+            result[i] = formatters["%-3s:%s %U"](direction,joiner,character)
         else
             result[i] = formatters["%-3s:%s %c %U"](direction,joiner,character,character)
         end
@@ -258,12 +261,31 @@ local function build_list(head) -- todo: store node pointer ... saves loop
     while current do
         size = size + 1
         local id = getid(current)
-        if id == glyph_code then
+        if getprop(current,"directions") then
+            local skip = 0
+            local last = id
+            current    = getnext(current)
+            while n do
+                local id = getid(current)
+                if getprop(current,"directions") then
+                    skip    = skip + 1
+                    last    = id
+                    current = getnext(current)
+                else
+                    break
+                end
+            end
+            if id == last then -- the start id
+                list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id }
+            else
+                list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id, last = last }
+            end
+        elseif id == glyph_code then
             local chr = getchar(current)
             local dir = directiondata[chr]
             list[size] = { char = chr, direction = dir, original = dir, level = 0 }
             current = getnext(current)
-        elseif id == glue_code then
+        elseif id == glue_code then -- and how about kern
             list[size] = { char = 0x0020, direction = "ws", original = "ws", level = 0 }
             current = getnext(current)
         elseif id == whatsit_code and getsubtype(current) == dir_code then
@@ -302,7 +324,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
                     break
                 end
             end
-            if id == last then
+            if id == last then -- the start id
                 list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id }
             else
                 list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id, last = last }
@@ -327,7 +349,7 @@ end
 -- ש ( ל [ א ] כ ) 2-8,4-6
 
 local function resolve_fences(list,size,start,limit)
-    -- N0: funny effects, not always better, so it's an options
+    -- N0: funny effects, not always better, so it's an option
     local stack = { }
     local top   = 0
     for i=start,limit do
@@ -391,7 +413,7 @@ local function get_baselevel(head,list,size) -- todo: skip if first is object (o
         for i=1,size do
             local entry     = list[i]
             local direction = entry.direction
-            if direction == "r" or direction == "al" then
+            if direction == "r" or direction == "al" then -- and an ?
                 return 1, "TRT", true
             elseif direction == "l" then
                 return 0, "TLT", true
@@ -598,18 +620,21 @@ local function resolve_neutral(list,size,start,limit,orderbefore,orderafter)
     for i=start,limit do
         local entry = list[i]
         if b_s_ws_on[entry.direction] then
+            -- this needs checking
             local leading_direction, trailing_direction, resolved_direction
             local runstart = i
             local runlimit = runstart
-            for i=runstart,limit do
-                if b_s_ws_on[list[i].direction] then
-                    runstart = i
+--             for j=runstart,limit do
+            for j=runstart+1,limit do
+                if b_s_ws_on[list[j].direction] then
+--                     runstart = j
+                    runlimit = j
                 else
                     break
                 end
             end
             if runstart == start then
-                leading_direction = sor
+                leading_direction = orderbefore
             else
                 leading_direction = list[runstart-1].direction
                 if leading_direction == "en" or leading_direction == "an" then
@@ -629,7 +654,7 @@ local function resolve_neutral(list,size,start,limit,orderbefore,orderafter)
                 resolved_direction = leading_direction
             else
                 -- N2 / does the weird period
-                resolved_direction = entry.level % 2 == 1 and "r" or "l" -- direction_of_level(entry.level)
+                resolved_direction = entry.level % 2 == 1 and "r" or "l"
             end
             for j=runstart,runlimit do
                 list[j].direction = resolved_direction
@@ -640,26 +665,47 @@ local function resolve_neutral(list,size,start,limit,orderbefore,orderafter)
     end
 end
 
-local function resolve_implicit(list,size,start,limit,orderbefore,orderafter)
-    -- I1
+-- local function resolve_implicit(list,size,start,limit,orderbefore,orderafter)
+--     -- I1
+--     for i=start,limit do
+--         local entry = list[i]
+--         local level = entry.level
+--         if level % 2 ~= 1 then -- not odd(level)
+--             local direction = entry.direction
+--             if direction == "r" then
+--                 entry.level = level + 1
+--             elseif direction == "an" or direction == "en" then
+--                 entry.level = level + 2
+--             end
+--         end
+--     end
+--     -- I2
+--     for i=start,limit do
+--         local entry = list[i]
+--         local level = entry.level
+--         if level % 2 == 1 then -- odd(level)
+--             local direction = entry.direction
+--             if direction == "l" or direction == "en" or direction == "an" then
+--                 entry.level = level + 1
+--             end
+--         end
+--     end
+-- end
+
+local function resolve_implicit(list,size,start,limit,orderbefore,orderafter,baselevel)
     for i=start,limit do
-        local entry = list[i]
-        local level = entry.level
-        if level % 2 ~= 1 then -- not odd(level)
-            local direction = entry.direction
+        local entry     = list[i]
+        local level     = entry.level
+        local direction = entry.direction
+        if level % 2 ~= 1 then -- even
+            -- I1
             if direction == "r" then
                 entry.level = level + 1
             elseif direction == "an" or direction == "en" then
                 entry.level = level + 2
             end
-        end
-    end
-    -- I2
-    for i=start,limit do
-        local entry = list[i]
-        local level = entry.level
-        if level % 2 == 1 then -- odd(level)
-            local direction = entry.direction
+        else
+            -- I2
             if direction == "l" or direction == "en" or direction == "an" then
                 entry.level = level + 1
             end
@@ -678,8 +724,8 @@ local function resolve_levels(list,size,baselevel,analyze_fences)
         end
         local prev_level  = start == 1    and baselevel or list[start-1].level
         local next_level  = limit == size and baselevel or list[limit+1].level
-        local orderbefore = (level > prev_level and level or prev_level) % 2 == 1 and "r" or "l" -- direction_of_level(max(level,prev_level))
-        local orderafter  = (level > next_level and level or next_level) % 2 == 1 and "r" or "l" -- direction_of_level(max(level,next_level))
+        local orderbefore = (level > prev_level and level or prev_level) % 2 == 1 and "r" or "l"
+        local orderafter  = (level > next_level and level or next_level) % 2 == 1 and "r" or "l"
         -- W1 .. W7
         resolve_weak(list,size,start,limit,orderbefore,orderafter)
         -- N0
@@ -689,7 +735,7 @@ local function resolve_levels(list,size,baselevel,analyze_fences)
         -- N1 .. N2
         resolve_neutral(list,size,start,limit,orderbefore,orderafter)
         -- I1 .. I2
-        resolve_implicit(list,size,start,limit,orderbefore,orderafter)
+        resolve_implicit(list,size,start,limit,orderbefore,orderafter,baselevel)
         start = limit
     end
     -- L1
@@ -795,6 +841,9 @@ local function apply_to_list(list,size,head,pardir)
     local index   = 1
     local current = head
     local done    = false
+if trace_list then
+    report_directions("start run")
+end
     while current do
         if index > size then
             report_directions("fatal error, size mismatch")
@@ -804,6 +853,7 @@ local function apply_to_list(list,size,head,pardir)
         local entry    = list[index]
         local begindir = entry.begindir
         local enddir   = entry.enddir
+setprop(current,"directions",true)
         if id == glyph_code then
             local mirror = entry.mirror
             if mirror then
@@ -811,7 +861,17 @@ local function apply_to_list(list,size,head,pardir)
             end
             if trace_directions then
                 local direction = entry.direction
-                setcolor(current,direction,direction ~= entry.original,mirror)
+if trace_list then
+    local original = entry.original
+    local char     = entry.char
+    local level    = entry.level
+    if direction == original then
+        report_directions("%2i : %C : %s",level,char,direction)
+    else
+        report_directions("%2i : %C : %s -> %s",level,char,original,direction)
+    end
+end
+                setcolor(current,direction,false,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
             setfield(current,"dir",pardir) -- is this really needed?
@@ -819,6 +879,7 @@ local function apply_to_list(list,size,head,pardir)
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
                 local d = new_textdir(enddir)
+setprop(d,"directions",true)
              -- setfield(d,"attr",getfield(current,"attr"))
                 head = insert_node_before(head,current,d)
                 enddir = false
@@ -828,14 +889,18 @@ local function apply_to_list(list,size,head,pardir)
             if begindir and getsubtype(current) == localpar_code then
                 -- local_par should always be the 1st node
                 local d = new_textdir(begindir)
+setprop(d,"directions",true)
              -- setfield(d,"attr",getfield(current,"attr"))
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
                 done = true
             end
+        else
+-- print(nodecodes[id])
         end
         if begindir then
             local d = new_textdir(begindir)
+setprop(d,"directions",true)
          -- setfield(d,"attr",getfield(current,"attr"))
             head = insert_node_before(head,current,d)
             done = true
@@ -844,10 +909,12 @@ local function apply_to_list(list,size,head,pardir)
         if skip and skip > 0 then
             for i=1,skip do
                 current = getnext(current)
+setprop(current,"directions",true)
             end
         end
         if enddir then
             local d = new_textdir(enddir)
+setprop(d,"directions",true)
          -- setfield(d,"attr",getfield(current,"attr"))
             head, current = insert_node_after(head,current,d)
             done = true
@@ -863,6 +930,9 @@ local function apply_to_list(list,size,head,pardir)
         end
         index = index + 1
     end
+if trace_list then
+    report_directions("stop run")
+end
     return head, done
 end
 

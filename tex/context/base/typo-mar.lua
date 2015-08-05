@@ -788,17 +788,20 @@ local function flushed(scope,parent) -- current is hlist
         done = done or don
     end
     if done then
---         local a = getattr(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
---         local l = hpack_nodes(head,getfield(parent,"width"),"exactly")
---         setfield(parent,"list",l)
---         if a then
---             setattr(l,a_linenumber,a)
---         end
--- packing messes up profiling
-local a = getattr(head,a_linenumber)
-if a then
-    setattr(parent,a_linenumber,a)
-end
+        local a = getattr(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
+        if false then
+            local l = hpack_nodes(head,getfield(parent,"width"),"exactly")
+            setfield(parent,"list",l)
+            if a then
+                setattr(l,a_linenumber,a)
+            end
+        else
+            -- because packing messes up profiling
+            setfield(parent,"list",head)
+            if a then
+                setattr(parent,a_linenumber,a)
+            end
+        end
      -- resetstacked()
     end
     return done, continue

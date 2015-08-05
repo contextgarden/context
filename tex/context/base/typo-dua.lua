@@ -78,6 +78,8 @@ local getsubtype          = nuts.getsubtype
 local getlist             = nuts.getlist
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
+local getprop             = nuts.getprop
+local setprop             = nuts.setprop
 
 local remove_node         = nuts.remove
 local copy_node           = nuts.copy
@@ -204,12 +206,31 @@ local function build_list(head) -- todo: store node pointer ... saves loop
     while current do
         size = size + 1
         local id = getid(current)
-        if id == glyph_code then
+        if getprop(current,"directions") then
+            local skip = 0
+            local last = id
+            current    = getnext(current)
+            while n do
+                local id = getid(current)
+                if getprop(current,"directions") then
+                    skip    = skip + 1
+                    last    = id
+                    current = getnext(current)
+                else
+                    break
+                end
+            end
+            if id == last then -- the start id
+                list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id }
+            else
+                list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id, last = last }
+            end
+        elseif id == glyph_code then
             local chr = getchar(current)
             local dir = directiondata[chr]
             list[size] = { char = chr, direction = dir, original = dir, level = 0 }
             current = getnext(current)
-        elseif id == glue_code then
+        elseif id == glue_code then -- and how about kern
             list[size] = { char = 0x0020, direction = "ws", original = "ws", level = 0 }
             current = getnext(current)
         elseif id == whatsit_code and getsubtype(current) == dir_code then
@@ -248,7 +269,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
                     break
                 end
             end
-            if id == last then
+            if id == last then -- the start id
                 list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id }
             else
                 list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id, last = last }
@@ -549,26 +570,47 @@ local function resolve_neutral(list,size,start,limit,sor,eor)
     end
 end
 
+-- local function resolve_implicit(list,size,start,limit,sor,eor)
+--     -- I1
+--     for i=start,limit do
+--         local entry = list[i]
+--         local level = entry.level
+--         if level % 2 ~= 1 then -- not odd(level)
+--             local direction = entry.direction
+--             if direction == "r" then
+--                 entry.level = level + 1
+--             elseif direction == "an" or direction == "en" then
+--                 entry.level = level + 2
+--             end
+--         end
+--     end
+--     -- I2
+--     for i=start,limit do
+--         local entry = list[i]
+--         local level = entry.level
+--         if level % 2 == 1 then -- odd(level)
+--             local direction = entry.direction
+--             if direction == "l" or direction == "en" or direction == "an" then
+--                 entry.level = level + 1
+--             end
+--         end
+--     end
+-- end
+
 local function resolve_implicit(list,size,start,limit,sor,eor)
-    -- I1
     for i=start,limit do
-        local entry = list[i]
-        local level = entry.level
-        if level % 2 ~= 1 then -- not odd(level)
-            local direction = entry.direction
+        local entry     = list[i]
+        local level     = entry.level
+        local direction = entry.direction
+        if level % 2 ~= 1 then -- even
+            -- I1
             if direction == "r" then
                 entry.level = level + 1
             elseif direction == "an" or direction == "en" then
                 entry.level = level + 2
             end
-        end
-    end
-    -- I2
-    for i=start,limit do
-        local entry = list[i]
-        local level = entry.level
-        if level % 2 == 1 then -- odd(level)
-            local direction = entry.direction
+        else
+            -- I2
             if direction == "l" or direction == "en" or direction == "an" then
                 entry.level = level + 1
             end
@@ -695,6 +737,7 @@ local function apply_to_list(list,size,head,pardir)
         local entry    = list[index]
         local begindir = entry.begindir
         local enddir   = entry.enddir
+setprop(current,"directions",true)
         if id == glyph_code then
             local mirror = entry.mirror
             if mirror then
@@ -702,7 +745,8 @@ local function apply_to_list(list,size,head,pardir)
             end
             if trace_directions then
                 local direction = entry.direction
-                setcolor(current,direction,direction ~= entry.original,mirror)
+--                 setcolor(current,direction,direction ~= entry.original,mirror)
+                setcolor(current,direction,false,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
             setfield(current,"dir",pardir) -- is this really needed?
@@ -710,6 +754,7 @@ local function apply_to_list(list,size,head,pardir)
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
                 local d = new_textdir(enddir)
+setprop(d,"directions",true)
              -- setfield(d,"attr",getfield(current,"attr"))
                 head = insert_node_before(head,current,d)
                 enddir = false
@@ -719,6 +764,7 @@ local function apply_to_list(list,size,head,pardir)
             if begindir and getsubtype(current) == localpar_code then
                 -- local_par should always be the 1st node
                 local d = new_textdir(begindir)
+setprop(d,"directions",true)
              -- setfield(d,"attr",getfield(current,"attr"))
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
@@ -727,6 +773,7 @@ local function apply_to_list(list,size,head,pardir)
         end
         if begindir then
             local d = new_textdir(begindir)
+setprop(d,"directions",true)
          -- setfield(d,"attr",getfield(current,"attr"))
             head = insert_node_before(head,current,d)
             done = true
@@ -735,10 +782,12 @@ local function apply_to_list(list,size,head,pardir)
         if skip and skip > 0 then
             for i=1,skip do
                 current = getnext(current)
+setprop(current,"directions",true)
             end
         end
         if enddir then
             local d = new_textdir(enddir)
+setprop(d,"directions",true)
          -- setfield(d,"attr",getfield(current,"attr"))
             head, current = insert_node_after(head,current,d)
             done = true

@@ -258,16 +258,17 @@ local function process(start)
                                 setcolor(current,"l")
                             end
                             setprop(current,"direction","l")
-                        elseif direction == "al" then -- arabic number
+                        elseif direction == "al" then -- arabic letter
                             if trace_directions then
                                 setcolor(current,"r")
                             end
                             setprop(current,"direction","r")
                         elseif direction == "an" then -- arabic number
+                            -- needs a better scanner as it can be a float
                             if trace_directions then
-                                setcolor(current,"r")
+                                setcolor(current,"l") -- was r
                             end
-                            setprop(current,"direction","r")
+                            setprop(current,"direction","l") -- was r
                         elseif direction == "lro" then -- Left-to-Right Override -> right becomes left
                             top        = top + 1
                             stack[top] = { override, embedded }
@@ -367,7 +368,8 @@ local function process(start)
     local collapse = true
     current        = head
 
-    -- spaces are an issue: todo
+    -- todo: textdir
+    -- todo: inject before parfillskip
 
     while current do
         local id = getid(current)
