@@ -420,7 +420,7 @@
        % subcounter
        \ifconditional\c_strc_formulas_inside_formulas_sub
          \ifcase\c_strc_formulas_sub_number_mode
-           % nothing
+           \strc_formulas_handle_sub_numbering % was nothing
          \or
            \strc_formulas_handle_sub_numbering
          \or

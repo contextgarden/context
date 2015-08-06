@@ -248,8 +248,14 @@ function handlers.characters(head)
      -- local prevfont  = nil
      -- local prevattr  = 0
 
+-- local expanders = languages.expanders
+
         for d in traverse_id(disc_code,nuthead) do
             -- we could use first_glyph
+-- local subtype = getsubtype(d)
+-- if subtype ~= discretionary_code then
+--     expanders[subtype](d)
+-- end
             local r = getfield(n,"replace") -- good enough
             if r then
                 for n in traverse_id(glyph_code,r) do

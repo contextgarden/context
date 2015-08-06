@@ -189,7 +189,7 @@ local localpar_code      = whatcodes.localpar
 
 local discretionary_code = disccodes.discretionary
 local regular_code       = disccodes.regular
-local automatic_code     = disccodes.automatic
+----- automatic_code     = disccodes.automatic
 
 local ligature_code      = glyphcodes.ligature
 
@@ -620,7 +620,8 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
                     setfield(discfound,"subtype",discretionary_code)
                     base = prev -- restart
                 end
-            elseif discretionary_code == regular_code then
+         -- elseif discretionary_code == regular_code then -- ??
+            elseif subtype == regular_code then
              -- local prev   = getfield(base,"prev")
              -- local next   = getfield(base,"next")
                 local copied = copy_node_list(comp)

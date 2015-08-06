@@ -841,9 +841,9 @@ local function apply_to_list(list,size,head,pardir)
     local index   = 1
     local current = head
     local done    = false
-if trace_list then
-    report_directions("start run")
-end
+    if trace_list then
+        report_directions("start run")
+    end
     while current do
         if index > size then
             report_directions("fatal error, size mismatch")
@@ -853,7 +853,7 @@ end
         local entry    = list[index]
         local begindir = entry.begindir
         local enddir   = entry.enddir
-setprop(current,"directions",true)
+        setprop(current,"directions",true)
         if id == glyph_code then
             local mirror = entry.mirror
             if mirror then
@@ -861,16 +861,16 @@ setprop(current,"directions",true)
             end
             if trace_directions then
                 local direction = entry.direction
-if trace_list then
-    local original = entry.original
-    local char     = entry.char
-    local level    = entry.level
-    if direction == original then
-        report_directions("%2i : %C : %s",level,char,direction)
-    else
-        report_directions("%2i : %C : %s -> %s",level,char,original,direction)
-    end
-end
+                if trace_list then
+                    local original = entry.original
+                    local char     = entry.char
+                    local level    = entry.level
+                    if direction == original then
+                        report_directions("%2i : %C : %s",level,char,direction)
+                    else
+                        report_directions("%2i : %C : %s -> %s",level,char,original,direction)
+                    end
+                end
                 setcolor(current,direction,false,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
@@ -879,7 +879,7 @@ end
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
                 local d = new_textdir(enddir)
-setprop(d,"directions",true)
+                setprop(d,"directions",true)
              -- setfield(d,"attr",getfield(current,"attr"))
                 head = insert_node_before(head,current,d)
                 enddir = false
@@ -889,18 +889,17 @@ setprop(d,"directions",true)
             if begindir and getsubtype(current) == localpar_code then
                 -- local_par should always be the 1st node
                 local d = new_textdir(begindir)
-setprop(d,"directions",true)
+                setprop(d,"directions",true)
              -- setfield(d,"attr",getfield(current,"attr"))
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
                 done = true
             end
         else
--- print(nodecodes[id])
         end
         if begindir then
             local d = new_textdir(begindir)
-setprop(d,"directions",true)
+            setprop(d,"directions",true)
          -- setfield(d,"attr",getfield(current,"attr"))
             head = insert_node_before(head,current,d)
             done = true
@@ -909,12 +908,12 @@ setprop(d,"directions",true)
         if skip and skip > 0 then
             for i=1,skip do
                 current = getnext(current)
-setprop(current,"directions",true)
+                setprop(current,"directions",true)
             end
         end
         if enddir then
             local d = new_textdir(enddir)
-setprop(d,"directions",true)
+            setprop(d,"directions",true)
          -- setfield(d,"attr",getfield(current,"attr"))
             head, current = insert_node_after(head,current,d)
             done = true
@@ -930,9 +929,9 @@ setprop(d,"directions",true)
         end
         index = index + 1
     end
-if trace_list then
-    report_directions("stop run")
-end
+    if trace_list then
+        report_directions("stop run")
+    end
     return head, done
 end
 

@@ -408,7 +408,7 @@ function figures.registerresource(t)
     return n
 end
 
-local function register(tag,target,what)
+local function register(tag,what,target)
     local data = figures_formats[target] -- resolver etc
     if not data then
         data = { }
@@ -426,8 +426,8 @@ local function register(tag,target,what)
     setlookups()
 end
 
-function figures.registersuffix (suffix, target) register('list',   target,suffix ) end
-function figures.registerpattern(pattern,target) register('pattern',target,pattern) end
+function figures.registersuffix (suffix, target) register('list',suffix,target) end
+function figures.registerpattern(pattern,target) register('pattern',pattern,target) end
 
 implement { name = "registerfiguresuffix",  actions = register, arguments = { "'list'",    "string", "string" } }
 implement { name = "registerfigurepattern", actions = register, arguments = { "'pattern'", "string", "string" } }

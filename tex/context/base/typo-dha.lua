@@ -31,14 +31,11 @@ if not modules then modules = { } end modules ['typo-dha'] = {
 -- elseif d == "ws"  then -- Whitespace
 -- elseif d == "on"  then -- Other Neutrals
 
--- todo  : delayed inserts here
--- todo  : get rid of local functions here
 -- beware: math adds whatsits afterwards so that will mess things up
 -- todo  : use new dir functions
 -- todo  : make faster
 -- todo  : move dir info into nodes
 -- todo  : swappable tables and floats i.e. start-end overloads (probably loop in builders)
--- todo  : check if we still have crashes in luatex when non-matched (used to be the case)
 
 -- I removed the original tracing code and now use the colorful one. If I ever want to change
 -- something I will just inject prints for tracing.
@@ -239,6 +236,8 @@ local function process(start)
                                     setprop(current,"direction","l")
                                     mirror = false
                                 end
+                            else
+                                setprop(current,"direction",true)
                             end
                             if trace_directions then
                                 setcolor(current,direction,false,mirror)
@@ -268,7 +267,7 @@ local function process(start)
                             if trace_directions then
                                 setcolor(current,"l") -- was r
                             end
-                            setprop(current,"direction","l") -- was r
+                            setprop(current,"direction","n") -- was r
                         elseif direction == "lro" then -- Left-to-Right Override -> right becomes left
                             top        = top + 1
                             stack[top] = { override, embedded }
@@ -302,6 +301,8 @@ local function process(start)
                             obsolete[#obsolete+1] = current
                         elseif trace_directions then
                             setcolor(current)
+                            setprop(current,"direction",true)
+                        else
                             setprop(current,"direction",true)
                         end
                     end
@@ -378,7 +379,25 @@ local function process(start)
             current = getnext(end_of_math(getnext(current)))
         else
             local cp = getprop(current,"direction")
-            if cp == "l" then
+            if cp == "n" then
+                local swap = state == "r"
+                if swap then
+                    head = insert_node_before(head,current,startdir("TLT"))
+                end
+                setprop(current,"direction",true)
+                while true do
+                    local n = getnext(current)
+                    if n and getprop(n,"direction") == "n" then
+                        current = n
+                        setprop(current,"direction",true)
+                    else
+                        break
+                    end
+                end
+                if swap then
+                    head, current = insert_node_after(head,current,stopdir("TLT"))
+                end
+            elseif cp == "l" then
                 if state ~= "l" then
                     if state == "r" then
                         head = insert_node_before(head,last or current,stopdir("TRT"))
