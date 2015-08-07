@@ -960,7 +960,11 @@ local ctx_MPLIBsetNtext = context.MPLIBsetNtext
 local ctx_MPLIBsetCtext = context.MPLIBsetCtext
 local ctx_MPLIBsettext  = context.MPLIBsettext
 
-local function tx_analyze(object,prescript) -- todo: hash content and reuse them
+-- we reuse content when possible
+-- we always create at least one instance (for dimensions)
+-- we make sure we don't do that when we use one (else counter issues with e.g. \definelabel)
+
+local function tx_analyze(object,prescript)
     local data = top.texdata[metapost.properties.number]
     local tx_stage = prescript.tx_stage
     if tx_stage == "trial" then
@@ -979,7 +983,17 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
         local t = tonumber(prescript.tr_transparency)
         local h = fmt(tx_number,a or "-",t or "-",c or "-")
         local n = data.texhash[h] -- todo: hashed variant with s (nicer for similar labels)
-        if not n then
+        if n then
+            data.texslots[tx_trial] = n
+            if trace_textexts then
+                report_textexts("stage %a, usage %a, number %a, %s %a, hash %a, text %a",tx_stage,tx_trial,tx_number,"old",n,h,s)
+            end
+        elseif prescript.tx_global == "yes" and data.texorder[tx_number] then
+            -- we already have one flush and don't want it redone .. this needs checking
+            if trace_textexts then
+                report_textexts("stage %a, usage %a, number %a, %s %a, hash %a, text %a",tx_stage,tx_trial,tx_number,"ignored",tx_last,h,s)
+            end
+        else
             local tx_last = top.texlast + 1
             top.texlast = tx_last
          -- report_textexts("tex string: %s",s)
@@ -1008,15 +1022,11 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
             end
             top.multipass = true
             data.texhash [h]         = tx_last
+         -- data.texhash [tx_number] = tx_last
             data.texslots[tx_trial]  = tx_last
             data.texorder[tx_number] = tx_last
             if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, new %a, hash %a, text %a",tx_stage,tx_trial,tx_number,tx_last,h,s)
-            end
-        else
-            data.texslots[tx_trial] = n
-            if trace_textexts then
-                report_textexts("stage %a, usage %a, number %a, old %a, hash %a, text %a",tx_stage,tx_trial,tx_number,n,h,s)
+                report_textexts("stage %a, usage %a, number %a, %s %a, hash %a, text %a",tx_stage,tx_trial,tx_number,"new",tx_last,h,s)
             end
         end
     elseif tx_stage == "extra" then

@@ -205,8 +205,11 @@ extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
 %     fi
 % enddef ;
 
+boolean mfun_onetime_textext ; mfun_onetime_textext := false ;
+
 vardef rawtextext(expr s) = % todo: avoid currentpicture
     if s = "" :
+        mfun_onetime_textext := false ;
         nullpicture
     else :
         mfun_tt_n := mfun_tt_n + 1 ;
@@ -219,7 +222,10 @@ vardef rawtextext(expr s) = % todo: avoid currentpicture
                 withprescript "tx_stage=trial"
                 withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
                 withpostscript s ;
-            addto mfun_tt_p also mfun_tt_c ;
+            if not mfun_onetime_textext :
+                addto mfun_tt_p also mfun_tt_c
+                    withprescript "tx_global=yes" ;
+            fi ;
         else :
             mfun_tt_b := lua.mp.tt_dimensions(mfun_tt_n) ;
             addto mfun_tt_c doublepath unitsquare
@@ -229,6 +235,7 @@ vardef rawtextext(expr s) = % todo: avoid currentpicture
                 withprescript "tx_number=" & decimal mfun_tt_n
                 withprescript "tx_stage=final" ;
         fi ;
+        mfun_onetime_textext := false ;
         mfun_tt_c
     fi
 enddef ;
@@ -388,6 +395,11 @@ vardef thetextext@#(expr p,z) =
 enddef ;
 
 vardef textext@#(expr p) = % no draw here
+    thetextext@#(p,origin)
+enddef ;
+
+vardef onetimetextext@#(expr p) = % no draw here
+    mfun_onetime_textext := true ;
     thetextext@#(p,origin)
 enddef ;
 
