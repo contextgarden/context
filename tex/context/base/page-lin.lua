@@ -266,7 +266,7 @@ local function identify(list)
     end
 end
 
-function boxed.stage_zero(n)
+function boxed.stage_zero(n) -- not used
     return identify(getlist(getbox(n)))
 end
 

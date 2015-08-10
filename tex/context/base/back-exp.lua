@@ -19,7 +19,6 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- tocs/registers -> maybe add a stripper (i.e. just don't flush entries in final tree)
 -- footnotes      -> css 3
 -- bodyfont       -> in styles.css
--- delimited      -> left/right string (needs marking)
 
 -- Because we need to look ahead we now always build a tree (this was optional in
 -- the beginning). The extra overhead in the frontend is neglectable.
@@ -35,11 +34,11 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- check setting __i__
 
 local next, type, tonumber = next, type, tonumber
-local concat, sub, gsub = table.concat, string.sub, string.gsub
+local sub, gsub = string.sub, string.gsub
 local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfvalues = utf.char, utf.values
-local insert, remove = table.insert, table.remove
+local concat, insert, remove, merge = table.concat, table.insert, table.remove, table.merge
 local sortedhash = table.sortedhash
 local formatters = string.formatters
 local todimen = number.todimen
@@ -139,8 +138,7 @@ local specifications    = structurestags.specifications
 local properties        = structurestags.properties
 local locatedtag        = structurestags.locatedtag
 
-local usewithcare          = { }
-structurestags.usewithcare = usewithcare
+structurestags.usewithcare = { }
 
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
@@ -314,7 +312,6 @@ function wrapups.hashlistdata()
         local tag = ci.references.tag
         if tag then
             local m = ci.metadata
---             listdata[m.kind .. ":" .. m.name .. "-" .. tag] = ci
             listdata[m.kind .. ">" .. tag] = ci
         end
     end
@@ -631,6 +628,44 @@ end
 
 do
 
+    local symbols = { }
+
+    function structurestags.settagdelimitedsymbol(symbol)
+        symbols[locatedtag("delimitedsymbol")] = {
+            symbol = symbol,
+        }
+    end
+
+    function extras.delimitedsymbol(di,element,n,fulltag)
+        local hash = symbols[fulltag]
+        if hash then
+            setattribute(di,"symbol",hash.symbol or nil)
+        end
+    end
+
+end
+
+do
+
+    local symbols = { }
+
+    function structurestags.settagsubsentencesymbol(symbol)
+        symbols[locatedtag("subsentencesymbol")] = {
+            symbol = symbol,
+        }
+    end
+
+    function extras.subsentencesymbol(di,element,n,fulltag)
+        local hash = symbols[fulltag]
+        if hash then
+            setattribute(di,"symbol",hash.symbol or nil)
+        end
+    end
+
+end
+
+do
+
     local itemgroups = { }
 
     function structurestags.setitemgroup(packed,level,symbol)
@@ -774,11 +809,11 @@ end
 
 do
 
-    local image        = { }
-    usedimages.image   = image
-    usewithcare.images = image
+    local f_id       = formatters["%s-%s"]
+    local image      = { }
+    usedimages.image = image
 
-    local f_id        = formatters["%s-%s"]
+    structurestags.usewithcare.images = image
 
     function structurestags.setfigure(name,used,page,width,height,label)
         local fulltag = locatedtag("image")
@@ -3196,13 +3231,16 @@ local htmltemplate = [[
                         at.href   = nil
                         at.detail = nil
                         at.chain  = nil
+                    elseif tg == "metavariable" then
+                        at.detail = "metaname-" .. at.name
+                        class = makeclass(tg,at)
                     else
                         class = makeclass(tg,at)
                     end
-                    local id    = at.id
-                    local href  = at.href
+                    local id   = at.id
+                    local href = at.href
                     if id then
-                        id   = lpegmatch(p_cleanid,  id)   or id
+                        id = lpegmatch(p_cleanid,  id)   or id
                         if href then
                             href = lpegmatch(p_cleanhref,href) or href
                             c.at = {
@@ -3515,7 +3553,7 @@ local htmltemplate = [[
     local enableaction = nodes.tasks.enableaction
 
     function structurestags.setupexport(t)
-        table.merge(finetuning,t)
+        merge(finetuning,t)
         keephyphens      = finetuning.hyphen == v_yes
         exportproperties = finetuning.properties
         if exportproperties == v_no then
@@ -3592,6 +3630,18 @@ implement {
 implement {
     name      = "settagitem",
     actions   = structurestags.setitem,
+    arguments = "string"
+}
+
+implement {
+    name      = "settagdelimitedsymbol",
+    actions   = structurestags.settagdelimitedsymbol,
+    arguments = "string"
+}
+
+implement {
+    name      = "settagsubsentencesymbol",
+    actions   = structurestags.settagsubsentencesymbol,
     arguments = "string"
 }
 

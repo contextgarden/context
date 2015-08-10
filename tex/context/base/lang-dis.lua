@@ -60,7 +60,7 @@ local expanders = {
         if post and getid(post) == glyph_code and getchar(post) <= 0 then
             setfield(d,"post",nil)
         end
---         setfield(d,"subtype",discretionary_code) -- to be checked
+setfield(d,"subtype",discretionary_code) -- to be checked
         return template
     end,
     [disccodes.automatic] = function(d,template)
@@ -96,6 +96,8 @@ local expanders = {
             else
              -- print("lone regular discretionary ignored")
             end
+        else
+setfield(d,"subtype",discretionary_code)
         end
         return template
     end,

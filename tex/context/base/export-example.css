@@ -560,9 +560,13 @@ listpage, context|div.listpage {
 	display : none ;
 }
 
-/* delimitedblock : display */
-/* delimited      : inline  */
-/* subsentence    : inline  */
+/* delimitedblock     : display */
+/* delimited          : inline  */
+/* delimitedsymbol    : inline  */
+/* delimitedcontent   : inline  */
+/* subsentence        : inline  */
+/* subsentencesymbol  : inline  */
+/* subsentencecontent : inline  */
 
 /* :lang(en) */
 
@@ -594,6 +598,14 @@ delimited, context|div.delimited {
     display : inline
 }
 
+delimitedcontent, context|div.delimitedcontent {
+    display : inline
+}
+
+delimitedsymbol, context|div.delimitedsymbol {
+    display : inline
+}
+
 delimitedblock, context|div.delimitedblock {
     display : block
 }
@@ -603,6 +615,14 @@ subsentence:before, subsentence:after, context|div.subsentence:before, context|d
 }
 
 subsentence, context|div.subsentence {
+    display : inline
+}
+
+subsentencecontent, context|div.subsentencecontent {
+    display : inline
+}
+
+subsentencesymbol, context|div.subsentencesymbol {
     display : inline
 }
 

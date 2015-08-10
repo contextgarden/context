@@ -1,0 +1,204 @@
+%D \module
+%D   [      file=s-fonts-charts,
+%D        version=2015.08.08,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Fonts Charts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin info
+%
+% title   : show unicode blocks
+%
+% comment : show charts of a given fgont
+%
+% end info
+
+\startmodule[fonts-charts]
+
+% \registerctxluafile{s-fonts-charts}{}
+\starttexdefinition unexpanded FontChartSetSlot #1#2
+    \dontleavehmode
+    \setbox\scratchbox\vbox to 1cm \bgroup
+        \vss
+        \hbox to 1cm \bgroup
+            \infofont \hss\raise.25mm\hbox{#2}\hss
+        \egroup
+    \egroup
+    \wd\scratchbox0mm
+    \ht\scratchbox5mm
+    \dp\scratchbox5mm
+    \box\scratchbox
+    \setbox\scratchbox\ruledhbox to 1cm \bgroup
+        \hss\char#1\hss
+    \egroup
+    \ht\scratchbox5mm
+    \dp\scratchbox5mm
+    \box\scratchbox
+\stoptexdefinition
+
+\starttexdefinition unexpanded FontChartNoSlot
+    \dontleavehmode
+    \setbox\scratchbox\hbox to 1cm \bgroup
+        % empty
+    \egroup
+    \ht\scratchbox5mm
+    \dp\scratchbox5mm
+    \box\scratchbox
+\stoptexdefinition
+
+\starttexdefinition unexpanded FontChartSetLegend #1
+    \dontleavehmode
+    \setbox\scratchbox\hbox to 1cm \bgroup
+        \infofont\hss#1\hss
+    \egroup
+    \ht\scratchbox5mm
+    \dp\scratchbox5mm
+    \box\scratchbox
+\stoptexdefinition
+
+\starttexdefinition unexpanded FontChartSetCaption #1#2
+    \dontleavehmode
+    \setbox\scratchbox\hbox to 16cm \bgroup
+        \infofontbold\hskip1cm#1: #2\hss
+    \egroup
+    \ht\scratchbox7.5mm
+    \dp\scratchbox2.5mm
+    \box\scratchbox
+\stoptexdefinition
+
+\starttexdefinition unexpanded FontChartGap
+    \kern .5mm
+\stoptexdefinition
+
+\startluacode
+    local div, mod = math.div, math.mod
+    local formatters = string.formatters
+
+    moduledata.fonts        = moduledata.fonts        or { }
+    moduledata.fonts.charts = moduledata.fonts.charts or { }
+
+    function moduledata.fonts.charts.show(settings)
+
+        local settings = utilities.parsers.settings_to_hash(settings)
+
+        local filename = settings.filename or ""
+        local fontid   = true
+        local newpage  = settings.page == interfaces.variables.yes
+
+        if filename ~= "" then
+            fontid = fonts.definers.internal({ name = filename, size = "10pt" },"chartfont")
+        end
+
+        local ranges   = { }
+        local data     = fonts.hashes.identifiers[fontid]
+        local private  = fonts.constructors.privateoffset
+        local chars    = data.characters
+
+        for u in table.sortedhash(chars) do
+            if u >= private then
+                break
+            else
+                ranges[div(u,0xFF)] = true
+            end
+        end
+
+        local ctx_setlegend  = context.FontChartSetLegend
+        local ctx_noslot     = context.FontChartNoSlot
+        local ctx_setslot    = context.FontChartSetSlot
+        local ctx_setcaption = context.FontChartSetCaption
+        local ctx_par        = context.par
+        local ctx_gap        = context.FontChartGap
+
+        for r in table.sortedhash(ranges) do
+            if newpage then
+                context.page()
+            end
+            context.startframed { offset = "overlay", frame = "off", align = "normal" }
+                if filename ~= "" then
+                    context.chartfont()
+                end
+                context.dontcomplain()
+                context.offinterlineskip()
+                ctx_noslot()
+                for i=0,0xF do
+                    ctx_setlegend(formatters["%03X"](r*0x10+i))
+                end
+                r = r * 0xFF
+                ctx_par()
+                for i=0,0xF do
+                    ctx_setlegend(formatters["%0X"](i))
+                    ctx_gap()
+                    for j=0,0xF do
+                        local u = r + i*0x10 + j
+                        local d = chars[u]
+                        if d then
+                            ctx_setslot(u,formatters["%04X"](u))
+                        else
+                            ctx_noslot()
+                        end
+                        if j ~= 0xF then
+                            ctx_gap()
+                        end
+                    end
+                    ctx_par()
+                    ctx_gap()
+                end
+                ctx_setcaption(formatters["%04X-%04X"](r,r+0xFF),file.basename(data.properties.filename))
+                ctx_par()
+            context.stopframed()
+            if newpage then
+                context.page()
+            end
+        end
+    end
+\stopluacode
+
+\installmodulecommandluasingle \showfontchart {moduledata.fonts.charts.show}
+
+\stopmodule
+
+\continueifinputfile{s-fonts-charts.mkiv}
+
+\usemodule[art-01]
+
+\starttext
+
+    \showfontchart[filename=LucidaBrightOT.otf,page=yes]
+    \showfontchart[filename=LucidaBrightOT-Demi.otf,page=yes]
+    \showfontchart[filename=LucidaBrightOT-DemiItalic.otf,page=yes]
+    \showfontchart[filename=LucidaBrightOT-Italic.otf,page=yes]
+
+    \showfontchart[filename=LucidaSansOT.otf,page=yes]
+    \showfontchart[filename=LucidaSansOT-Demi.otf,page=yes]
+    \showfontchart[filename=LucidaSansOT-DemiItalic.otf,page=yes]
+    \showfontchart[filename=LucidaSansOT-Italic.otf,page=yes]
+
+    \showfontchart[filename=LucidaSansTypewriterOT.otf,page=yes]
+    \showfontchart[filename=LucidaSansTypewriterOT-Bold.otf,page=yes]
+    \showfontchart[filename=LucidaSansTypewriterOT-BoldOblique.otf,page=yes]
+    \showfontchart[filename=LucidaSansTypewriterOT-Oblique.otf,page=yes]
+
+    \showfontchart[filename=LucidaConsoleDK.otf,page=yes]
+    \showfontchart[filename=LucidaConsoleDK-Bold.otf,page=yes]
+    \showfontchart[filename=LucidaConsoleDK-BoldItalic.otf,page=yes]
+    \showfontchart[filename=LucidaConsoleDK-Italic.otf,page=yes]
+
+    \showfontchart[filename=LucidaGrandeMonoDK.otf,page=yes]
+    \showfontchart[filename=LucidaGrandeMonoDK-Bold.otf,page=yes]
+    \showfontchart[filename=LucidaGrandeMonoDK-BoldItalic.otf,page=yes]
+    \showfontchart[filename=LucidaGrandeMonoDK-Italic.otf,page=yes]
+
+    \showfontchart[filename=LucidaBrightMathOT.otf,page=yes]
+    \showfontchart[filename=LucidaBrightMathOT-Demi.otf,page=yes]
+
+    \showfontchart[filename=LucidaBlackletterOT.otf,page=yes]
+    \showfontchart[filename=LucidaCalligraphyOT.otf,page=yes]
+    \showfontchart[filename=LucidaHandwritingOT.otf,page=yes]
+
+\stoptext

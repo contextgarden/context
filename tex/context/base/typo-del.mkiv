@@ -15,6 +15,9 @@
 
 \unprotect
 
+\ifdefined\dotagsetdelimitedsymbol   \else \let\dotagsetdelimitedsymbol  \gobbleoneargument \fi
+\ifdefined\dotagsetsubsentencesymbol \else \let\dotagsetsubsentencesymbol\gobbleoneargument \fi
+
 % THIS IS OBSOLETE:
 
 \installcorenamespace{hyphenmarksign} % let's not waste a setuphandler (yet)
@@ -136,7 +139,10 @@
 % \def\aftersubsentence {\ignorespaces}
 
 \unexpanded\def\midsentence
-  {\symbol[\c!midsentence]}
+  {\dostarttagged\t!subsentencesymbol\empty
+   \dotagsetsubsentencesymbol\s!middle
+   \symbol[\c!midsentence]%
+   \dostoptagged}
 
 \unexpanded\def\beginofsubsentence
   {\beforesubsentence
@@ -149,11 +155,19 @@
      \dontleavehmode % was \leaveoutervmode
    \fi
    \dostarttagged\t!subsentence\empty % no chain
+   \dostarttagged\t!subsentencesymbol\empty
+   \dotagsetsubsentencesymbol\s!left
    \symbol[\ifodd\c_typo_subsentence_nesting\c!leftsentence\else\c!leftsubsentence\fi]%
+   \dostoptagged
+   \dostarttagged\t!subsentencecontent\empty
   }%  \ignorespaces}
 
 \unexpanded\def\endofsubsentence % relax prevents space gobbling
-  {\symbol[\ifodd\c_typo_subsentence_nesting\c!rightsentence\else\c!rightsubsentence\fi]%
+  {\dostoptagged
+   \dostarttagged\t!subsentencesymbol\empty
+   \dotagsetsubsentencesymbol\s!right
+   \symbol[\ifodd\c_typo_subsentence_nesting\c!rightsentence\else\c!rightsubsentence\fi]%
+   \dostoptagged
    \dostoptagged
    \global\advance\c_typo_subsentence_nesting\minusone
    \unskip
@@ -237,13 +251,11 @@
     \def\quote    #1{'#1'}%
 \to \everysimplifycommands
 
-%D The next features was so desperately needed by Giuseppe
-%D Bilotta that he made a module for it. Since this is a
-%D typical example of core functionality, I decided to extend
-%D the low level quotation macros in such a way that a speech
-%D feature could be build on top of it. The speech opening and
-%D closing symbols are defined per language. Italian is an
-%D example of a language that has them set.
+%D The next features was so desperately needed by Giuseppe Bilotta that he made a
+%D module for it. Since this is a typical example of core functionality, I decided
+%D to extend the low level quotation macros in such a way that a speech feature
+%D could be build on top of it. The speech opening and closing symbols are defined
+%D per language. Italian is an example of a language that has them set.
 
 \newsignal\d_typo_delimited_signal
 
@@ -318,7 +330,10 @@
 
 \def\typo_delimited_start_font
   {\let\typo_delimited_stop\typo_delimitedtexts_finish_font
+   \dostarttagged\t!delimitedsymbol\empty
+   \dotagsetdelimitedsymbol\s!left
    \delimitedtextparameter\c!left
+   \dostoptagged
    \ignorespaces}
 
 \def\typo_delimited_start_other
@@ -338,7 +353,11 @@
    \fi\fi}
 
 \def\typo_delimitedtexts_finish_font
-  {\removeunwantedspaces\delimitedtextparameter\c!right}
+  {\removeunwantedspaces
+   \dostarttagged\t!delimitedsymbol\empty
+   \dotagsetdelimitedsymbol\s!right
+   \delimitedtextparameter\c!right
+   \dostoptagged}
 
 \def\typo_delimited_start_par
   {\dosingleempty\typo_delimited_start_par_indeed}
@@ -379,11 +398,13 @@
    \setnextleftdelimitedtextmark
    \setnextrightdelimitedtextmark
    %
-   \ignorespaces}
+   \ignorespaces
+   \dostarttagged\t!delimitedcontent\empty}
 
 \def\typo_delimited_stop_par
   {\removeunwantedspaces
    \removelastskip
+   \dostoptagged
    \rightdelimitedtextmark
    \carryoverpar\endgroup % new per 2013-01-21 ... please left floats
    \popmacro\checkindentation
@@ -401,10 +422,12 @@
    \begingroup
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_handle_left\c!left
-   \ignorespaces}
+   \ignorespaces
+   \dostarttagged\t!delimitedcontent\empty}
 
 \def\typo_delimited_stop_txt
   {\removeunwantedspaces
+   \dostoptagged
    \typo_delimited_handle_right\c!right
    \endgroup}
 
@@ -499,16 +522,22 @@
    \fi}
 
 \def\typo_delimited_left_symbol#1%
-  {\setbox\scratchbox\hbox{\usedelimitedtextstyleandcolor\c!symstyle\c!symcolor#1}%
+  {\dostarttagged\t!delimitedsymbol\empty
+   \dotagsetdelimitedsymbol\s!left
+   \setbox\scratchbox\hbox{\usedelimitedtextstyleandcolor\c!symstyle\c!symcolor#1}%
    \dontleavehmode
    \edef\p_delimited_margin{\delimitedtextparameter\c!location}%
    \ifx\p_delimited_margin\v!margin
       \hskip-\wd\scratchbox
    \fi
-   \box\scratchbox}
+   \box\scratchbox
+   \dostoptagged}
 
 \def\typo_delimited_right_symbol#1%
-  {\hsmash{\usedelimitedtextstyleandcolor\c!symstyle\c!symcolor#1}}
+  {\dostarttagged\t!delimitedsymbol\empty
+   \dotagsetdelimitedsymbol\s!right
+   \hsmash{\usedelimitedtextstyleandcolor\c!symstyle\c!symcolor#1}%
+   \dostoptagged}
 
 \def\typo_delimited_nextleft_symbol#1%
   {\localleftbox\bgroup
@@ -538,7 +567,8 @@
 % \stoptext
 
 \def\typo_delimited_handle_middle#1%
-  {\begingroup
+  {\dostoptagged
+   \begingroup
    \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
    \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
    \ifdim\wd\scratchbox>\zeropoint
@@ -551,11 +581,15 @@
        \hskip\zeropoint % == \prewordbreak
      \fi
      \strut % new, needed below
+     \dostarttagged\t!delimitedsymbol\empty
+     \dotagsetdelimitedsymbol\s!middle
      \delimitedtextparameter#1% unhbox\scratchbox
+     \dostoptagged
    % \penalty\plustenthousand % else overfull boxes, but that's better than dangling periods
      \kern\d_typo_delimited_signal % +- \prewordbreak
    \fi
-   \endgroup}
+   \endgroup
+   \dostarttagged\t!delimitedcontent\empty}
 
 \def\typo_delimited_handle_left#1%
   {\begingroup
@@ -575,7 +609,10 @@
        \hskip\zeropoint % == \prewordbreak
      \fi
      \strut % new, needed below
+     \dostarttagged\t!delimitedsymbol\empty
+     \dotagsetdelimitedsymbol\s!left
      \delimitedtextparameter#1% unhbox\scratchbox
+     \dostoptagged
      \penalty\plustenthousand % new per 2013-03-09 WS mailing list
      \hskip\d_typo_delimited_signal % +- \prewordbreak
    \fi
@@ -600,7 +637,10 @@
        \hskip\zeropoint % == \prewordbreak
      \fi
      \strut % new, needed below
+     \dostarttagged\t!delimitedsymbol\empty
+     \dotagsetdelimitedsymbol\s!right
      \delimitedtextparameter#1% unhbox\scratchbox
+     \dostoptagged
      \kern\d_typo_delimited_signal % +- \prewordbreak
    \fi
    \endgroup}
@@ -608,8 +648,10 @@
 \unexpanded\def\typo_delimited_par
   {\groupedcommand
      {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext % block?
-      \typo_delimited_handle_left\c!left}
-     {\typo_delimited_handle_right\c!right
+      \typo_delimited_handle_left\c!left
+      \dostarttagged\t!delimitedcontent\empty}
+     {\dostoptagged
+      \typo_delimited_handle_right\c!right
       \removelastskip
       \dostoptagged
       \typo_delimited_pop}}
@@ -657,29 +699,36 @@
 \def\typo_delimited_quoted_b
   {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \typo_delimited_handle_left\c!left
-   \usedelimitedtextstyleandcolor\c!style\c!color}
+   \usedelimitedtextstyleandcolor\c!style\c!color
+   \dostarttagged\t!delimitedcontent\empty}
 
 \def\typo_delimited_quoted_e
-  {\typo_delimited_handle_right\c!right
-   \removelastskip
+  {\dostoptagged
+   \typo_delimited_handle_right\c!right
+   \removelastskip % ?
    \dostoptagged
    \typo_delimited_pop}
 
 \def\typo_delimited_attributed_b
   {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
-   \usedelimitedtextstyleandcolor\c!style\c!color}
+   \usedelimitedtextstyleandcolor\c!style\c!color
+   \dostarttagged\t!delimitedcontent\empty
+   \ignorespaces}
 
 \def\typo_delimited_attributed_e
   {\dostoptagged
+   \dostoptagged
    \typo_delimited_pop}
 
 \def\typo_delimited_fontdriven_b
   {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
-   \usedelimitedtextstyleandcolor\c!style\c!color}
+   \usedelimitedtextstyleandcolor\c!style\c!color
+   \dostarttagged\t!delimitedcontent\empty}
 
 \def\typo_delimited_fontdriven_e
-  {\usedlanguageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
+  {\dostoptagged
+   \usedlanguageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
    \dostoptagged
    \typo_delimited_pop}
 

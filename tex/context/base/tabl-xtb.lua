@@ -573,11 +573,13 @@ function xtables.reflow_width()
                 widths[c] = fixedwidth
                 width = width + fixedwidth
             else
-                width = width + widths[c]
-                if width > maxwidth then
+                local wc = widths[c]
+                width = width + wc
+             -- if width > maxwidth then
+                if wc > maxwidth then -- per 2015-08-09
                     autowidths[c] = true
                     nofwide = nofwide + 1
-                    widetotal = widetotal + widths[c]
+                    widetotal = widetotal + wc
                 end
             end
             if c < nofcolumns then

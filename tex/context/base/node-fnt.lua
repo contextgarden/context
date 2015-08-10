@@ -13,11 +13,11 @@ local concat, keys = table.concat, table.keys
 
 local nodes, node, fonts = nodes, node, fonts
 
-local trace_characters  = false  trackers  .register("nodes.characters", function(v) trace_characters = v end)
-local trace_fontrun     = false  trackers  .register("nodes.fontrun",    function(v) trace_fontrun    = v end)
+local trace_characters  = false  trackers  .register("nodes.characters",    function(v) trace_characters = v end)
+local trace_fontrun     = false  trackers  .register("nodes.fontrun",       function(v) trace_fontrun    = v end)
 
-local force_discrun     = true   directives.register("nodes.discrun",    function(v) force_discrun    = v end)
-local force_basepass    = true   directives.register("nodes.basepass",   function(v) force_basepass   = v end)
+local force_discrun     = true   directives.register("nodes.discrun",       function(v) force_discrun    = v end)
+local force_basepass    = true   directives.register("nodes.basepass",      function(v) force_basepass   = v end)
 
 local report_fonts      = logs.reporter("fonts","processing")
 
@@ -125,6 +125,18 @@ fonts.hashes.processes   = fontprocesses
 
 local ligaturing = node.ligaturing
 local kerning    = node.kerning
+
+local expanders
+
+function fonts.setdiscexpansion(v)
+    if v == nil or v == true then
+        expanders = languages and languages.expanders
+    elseif type(v) == "table" then
+        expanders = v
+    else
+        expanders = false
+    end
+end
 
 function handlers.characters(head)
     -- either next or not, but definitely no already processed list
@@ -239,6 +251,8 @@ function handlers.characters(head)
     -- could be an optional pass : seldom needed, only for documentation as a discretionary
     -- with pre/post/replace will normally not occur on it's own
 
+    local e = 0
+
     if force_discrun then
 
         -- basefont is not supported in disc only runs ... it would mean a lot of
@@ -248,14 +262,8 @@ function handlers.characters(head)
      -- local prevfont  = nil
      -- local prevattr  = 0
 
--- local expanders = languages.expanders
-
         for d in traverse_id(disc_code,nuthead) do
             -- we could use first_glyph
--- local subtype = getsubtype(d)
--- if subtype ~= discretionary_code then
---     expanders[subtype](d)
--- end
             local r = getfield(n,"replace") -- good enough
             if r then
                 for n in traverse_id(glyph_code,r) do
@@ -292,6 +300,14 @@ function handlers.characters(head)
                     end
                     break
                 end
+            elseif expanders then
+                local subtype = getsubtype(d)
+                if subtype == discretionary_code then
+                    -- already done when replace
+                else
+                    expanders[subtype](d)
+                    e = e + 1
+                end
             end
         end
 
@@ -302,6 +318,9 @@ function handlers.characters(head)
         report_fonts("statics : %s",u > 0 and concat(keys(usedfonts)," ") or "none")
         report_fonts("dynamics: %s",a > 0 and concat(keys(attrfonts)," ") or "none")
         report_fonts("built-in: %s",b > 0 and b                           or "none")
+    if expanders then
+        report_fonts("expanded: %s",e > 0 and e                           or "none")
+    end
         report_fonts()
     end
     -- in context we always have at least 2 processors

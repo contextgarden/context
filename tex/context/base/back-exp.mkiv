@@ -188,6 +188,20 @@
 \to \everyenableelements
 
 \appendtoks
+    \unexpanded\def\dotagsetdelimitedsymbol#1%
+      {\iftrialtypesetting\else
+         \clf_settagdelimitedsymbol{#1}\relax
+       \fi}%
+\to \everyenableelements
+
+\appendtoks
+    \unexpanded\def\dotagsetsubsentencesymbol#1%
+      {\iftrialtypesetting\else
+         \clf_settagsubsentencesymbol{#1}\relax
+       \fi}%
+\to \everyenableelements
+
+\appendtoks
     \let\specialfixedspace    \explicitfixedspace
     \let\specialobeyedspace   \explicitobeyedspace
     \let\specialstretchedspace\explicitstretchedspace

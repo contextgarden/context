@@ -83,7 +83,9 @@ local function set(tag,font)
     else
         run = run + 1
     end
-    return font * 0x10000 + tag * 0x100 + run
+    local a = font * 0x10000 + tag * 0x100 + run
+    blocked[a] = false
+    return a
 end
 
 local function get(a)
@@ -92,6 +94,7 @@ local function get(a)
     local run  = extract(a, 0, 8) --   50
     return tag, font, run
 end
+
 
 -- print(get(set(  1,   0)))
 -- print(get(set(  1,  99)))

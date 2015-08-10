@@ -718,6 +718,19 @@
     \letvalue{\??xtablecheck\currentxtable}\relax % faster than checking parent
 \to \everysetupxtable
 
+% \definefontfamily[newtimes][serif][TeX Gyre Termes]
+% \setupxtable[newtimes][foregroundstyle=\newtimes]
+% \startxcell[newtimes]                  ...\stopxcell
+% \startxcell[foregroundstyle=\newtimes] ...\stopxcell
+
+% % \ifcsname\namedxtablehash{#tag}\s!parent\endcsname
+% % \ifcsname\??xtablecheck#tag\endcsname
+%   \ifcsname\??xtablecheck\detokenize\expandafter{\normalexpanded{#tag}}\endcsname % two times slower on keywords
+%     \expandafter\whatever                                                         % but more tolerant for tricky key=value
+%   \else
+%     \expandafter\whatever
+%   \fi[#tag]
+
 % groups
 
 \unexpanded\def\startxgroup
@@ -728,8 +741,7 @@
   {\endgroup}
 
 \unexpanded\def\tabl_x_start_group_delayed_one[#tag]%
-% {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
-  {\ifcsname\??xtablecheck#tag\endcsname
+  {\ifcsname\??xtablecheck\detokenize\expandafter{\normalexpanded{#tag}}\endcsname
      \expandafter\tabl_x_start_group_delayed_two
    \else
      \expandafter\setupcurrentxtable
@@ -754,8 +766,7 @@
    \doifelsenextoptionalcs\tabl_x_start_cell_delayed_one\tabl_x_start_cell_nop}
 
 \unexpanded\def\tabl_x_start_cell_delayed_one[#tag]%
-% {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
-  {\ifcsname\??xtablecheck#tag\endcsname
+  {\ifcsname\??xtablecheck\detokenize\expandafter{\normalexpanded{#tag}}\endcsname
      \expandafter\tabl_x_start_cell_delayed_two
    \else
      \expandafter\tabl_x_start_cell_yes
@@ -779,8 +790,7 @@
    \doifelsenextoptionalcs\tabl_x_start_row_delayed_one\tabl_x_start_row_nop}
 
 \unexpanded\def\tabl_x_start_row_delayed_one[#tag]%
-% {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
-  {\ifcsname\??xtablecheck#tag\endcsname
+  {\ifcsname\??xtablecheck\detokenize\expandafter{\normalexpanded{#tag}}\endcsname
      \expandafter\tabl_x_start_row_delayed_two
    \else
      \expandafter\tabl_x_start_row_yes

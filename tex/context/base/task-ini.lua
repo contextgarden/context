@@ -199,7 +199,7 @@ disableaction("math",        "noads.handlers.classes")
 disableaction("math",        "noads.handlers.autofences")
 disableaction("math",        "typesetters.directions.processmath")
 
-disableaction("mvlbuilders",  "typesetters.margins.globalhandler")
+disableaction("mvlbuilders", "typesetters.margins.globalhandler")
 disableaction("mvlbuilders", "nodes.handlers.migrate")
 disableaction("mvlbuilders", "typesetters.checkers.handler")
 disableaction("mvlbuilders", "builders.profiling.pagehandler")

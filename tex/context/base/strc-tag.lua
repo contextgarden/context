@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['strc-tag'] = {
 -- end of the chain tag) or by so called fullname which is a tagname combined with a number.
 
 local type, next = type, next
-local insert, remove, unpack, concat = table.insert, table.remove, table.unpack, table.concat
+local insert, remove, unpack, concat, merge = table.insert, table.remove, table.unpack, table.concat, table.merge
 local find, topattern, format = string.find, string.topattern, string.format
 local lpegmatch, P, S, C, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 local texattribute = tex.attribute
@@ -45,6 +45,7 @@ local tagpatterns    = { }
 local lasttags       = { }
 local stacksize      = 0
 local metadata       = nil -- applied to the next element
+local documentdata   = { }
 
 local tags           = structures.tags
 tags.taglist         = taglist -- can best be hidden
@@ -127,7 +128,11 @@ local properties     = allocate {
 
     delimitedblock        = { pdf = "BlockQuote", nature = "display" },
     delimited             = { pdf = "Quote",      nature = "inline"  },
+    delimitedcontent      = { pdf = "Span",       nature = "inline"  },
+    delimitedsymbol       = { pdf = "Span",       nature = "inline"  },
     subsentence           = { pdf = "Span",       nature = "inline"  },
+    subsentencecontent    = { pdf = "Span",       nature = "inline"  },
+    subsentencesymbol     = { pdf = "Span",       nature = "inline"  },
 
     label                 = { pdf = "Span",       nature = "mixed"   },
     number                = { pdf = "Span",       nature = "mixed"   },
@@ -266,10 +271,14 @@ end
 
 function tags.registermetadata(data)
     local d = settings_to_hash(data)
-    if metadata then
-        table.merge(metadata,d)
+    if #chain > 1 then
+        if metadata then
+            merge(metadata,d)
+        else
+            metadata = d
+        end
     else
-        metadata = d
+        merge(documentdata,d)
     end
 end
 
@@ -330,6 +339,10 @@ function tags.start(tag,specification)
     --
     taglist[attribute]          = specification
     specifications[completetag] = specification
+    --
+    if completetag == "document>1" then
+        specification.metadata = documentdata
+    end
     --
     texattribute[a_tagged] = attribute
     return attribute

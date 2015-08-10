@@ -390,6 +390,7 @@ return {
         "startluacode", "stopluacode", "startlua", "stoplua",
         "startctxfunction","stopctxfunction","ctxfunction",
         "startctxfunctiondefinition","stopctxfunctiondefinition", "installctxfunction",
+        "cldprocessfile", "cldloadfile", "cldcontext", "cldcommand",
         --
         "carryoverpar",
         --

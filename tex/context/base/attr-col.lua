@@ -583,5 +583,5 @@ implement { name = "enabletransparency", onlyonce = true, actions = transparenci
 implement { name = "enablecolorintents", onlyonce = true, actions = colorintents.enable }
 
 --------- { name = "registercolor",        actions = { colors        .register, context }, arguments = "string" }
---------- { name = "registertransparency", actions = { transparencies.register, context }, arguments = { ... } }
-implement { name = "registercolorintent",  actions = { colorintents  .register, context }, arguments = { ... } }
+--------- { name = "registertransparency", actions = { transparencies.register, context }, arguments = "string" }
+implement { name = "registercolorintent",  actions = { colorintents  .register, context }, arguments = "string" }

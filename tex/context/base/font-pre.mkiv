@@ -668,9 +668,11 @@
 %D don't want huge switches to the main bodyfont and style, so
 %D here too we use a direct method.
 
-\let\infofont\relax % satisfy dep checker
+\let\infofont    \relax % satisfy dep checker
+\let\infofontbold\relax % satisfy dep checker
 
-\definefont[infofont][dejavusansmono at 6pt] % todo \the\everybodyfont
+\definefont[infofont]    [dejavusansmono     at 6pt] % todo \the\everybodyfont
+\definefont[infofontbold][dejavusansmonobold at 6pt] % todo \the\everybodyfont
 
 %D Optimization (later we overload in math):
 

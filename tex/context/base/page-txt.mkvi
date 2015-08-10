@@ -880,7 +880,7 @@
 % page-spr we overload the the stored version .. evenatually i will
 % clear up the experimental mess
 
-\def\settextpagecontent#1#2#3% #2 and #3 will disappear
+\def\settextpagecontent#1#2#3% #2 and #3 will disappear / is overloaded
   {\setbox#1\hbox to \makeupwidth
      {\hss                     % so don't change this
       \setlayoutcomponentattribute{\v!page:\v!text}%
@@ -890,7 +890,7 @@
          \hsize\textwidth      % local variant of \sethsize  <<< in columns?
          \boxmaxdepth\maxdepth
          \noindent             % content can be < \hsize
-         \dopagecontents#2#3}%
+         \page_otr_command_package_contents#2#3}%
       \hss}%
    \dp#1\zeropoint}
 
