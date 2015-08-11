@@ -67,6 +67,7 @@ local getid              = nuts.getid
 local getsubtype         = nuts.getsubtype
 local getnext            = nuts.getnext
 local getattr            = nuts.getattr
+local setattr            = nuts.setattr
 local getlist            = nuts.getlist
 local getbox             = nuts.getbox
 local getfield           = nuts.getfield
@@ -291,16 +292,19 @@ function boxed.stage_one(n,nested)
                 else
                     local list = getlist(n)
                     local a = getattr(list,a_linenumber)
+-- if a and a < 0 then
+--     break
+-- end
                     if not a or a == 0 then
                         local n = getnext(list)
                         while n do
                             local id = getid(n)
-                            if id == whatsit_code and getsubtype(n) == textdir_code then
-                                n = getnext(n)
-                            elseif id == glue_code and getsubtype(n) == leftskip_code then
-                                n = getnext(n)
-                            elseif id == glyph_code then
+                            if id == glyph_code then
                                 break
+                            elseif id == whatsit_code and getsubtype(n) == textdir_code then
+                                n = getnext(n)
+                            elseif id == glue_code and getsubtype(n) == leftskip_code then -- first in list
+                                n = getnext(n)
                             else
                                 -- can be hlist or skip (e.g. footnote line)
                                 n = getnext(n)
@@ -337,6 +341,7 @@ function boxed.stage_one(n,nested)
                         end
                         skip = false
                     end
+-- setattr(list,a_linenumber,-1)
                 end
             end
         end

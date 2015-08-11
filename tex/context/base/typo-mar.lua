@@ -181,6 +181,7 @@ local registertogether   = builders.paragraphs.registertogether -- tonode
 
 local a_margindata       = attributes.private("margindata")
 local a_specialcontent   = attributes.private("specialcontent")
+local a_linenumber       = attributes.private('linenumber')
 
 local inline_mark        = nodepool.userids["margins.inline"]
 
@@ -746,8 +747,6 @@ local function flushinline(parent,head)
     end
     return head, done, continue
 end
-
-local a_linenumber = attributes.private('linenumber')
 
 local function flushed(scope,parent) -- current is hlist
     local head = getlist(parent)

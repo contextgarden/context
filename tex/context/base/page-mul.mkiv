@@ -452,6 +452,9 @@
    \box\columnpagebox
    \egroup}
 
+\def\page_mul_synchronize_marks
+  {\dohandleallcolumns{\page_marks_synchronize_column\plusone\nofcolumns\mofcolumns\currentcolumnbox}}
+
 \def\page_mul_flush_packaged_columns_indeed
   {\ifvoid\b_page_mul_preceding
      \setfalse\c_page_mul_preceding_present % will be set elsewhere
@@ -463,10 +466,7 @@
    \page_mul_initialize_variables
    \page_mul_calculate_column_result_dimensions
    \page_mul_postprocess_linenumbers
-   \dohandleallcolumns
-     {\page_postprocessors_column\currentcolumnbox}%
-   \dohandleallcolumns
-     {\page_marks_synchronize_column\plusone\nofcolumns\mofcolumns\currentcolumnbox}%
+   \page_mul_synchronize_marks
    \page_mul_postprocess_lines
    \page_mul_postprocess_columns
    \dohandleallcolumns

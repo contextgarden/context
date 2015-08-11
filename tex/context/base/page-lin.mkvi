@@ -300,27 +300,6 @@
    \ifx\p_align\v!left      \let\p_align\v!right     \else
    \ifx\p_align\v!right     \let\p_align\v!left      \fi\fi\fi\fi\fi\fi}
 
-\def\page_lines_add_numbers_to_box#box#column#max#nesting%
-  {\bgroup
-   \b_page_lines_number     #box\relax
-   \c_page_lines_column     #column\relax
-   \c_page_lines_last_column#max\relax
-   \c_page_lines_nesting    #nesting\relax
-   \fullrestoreglobalbodyfont
-   \let\makelinenumber\page_lines_make_number % used at lua end
-   \setbox\b_page_lines_scratch\vbox
-     {\forgetall
-      \offinterlineskip
-      \clf_linenumbersstageone
-        \b_page_lines_number
-        \ifcase\c_page_lines_nesting false\else true\fi
-      \relax}%
-   \clf_linenumbersstagetwo
-     \b_page_lines_number
-     \b_page_lines_scratch
-   \fi
-   \egroup}
-
 \let\page_lines_make_number_indeed\relax
 
 % \def\page_lines_rlap{\ifconditional\c_page_lines_dir_left_to_right\expandafter\rlap\else\expandafter\llap\fi}

@@ -21,7 +21,11 @@ local P, C, U, Cc, Ct, lpegmatch = lpeg.P, lpeg.C, lpeg.patterns.utf8character, 
 local find = string.find
 
 local grouped  = P("{") * ( Ct((U/utfbyte-P("}"))^1) + Cc(false) ) * P("}")-- grouped
-local splitter = Ct((Ct(Cc("discretionary") * grouped * grouped * grouped) + U/utfbyte)^1)
+local splitter = Ct((
+                    Ct(Cc("discretionary") * grouped * grouped * grouped)
+                  + Ct(Cc("noligature")    * grouped)
+                  + U/utfbyte
+                )^1)
 
 local trace_replacements = false  trackers.register("languages.replacements",        function(v) trace_replacements = v end)
 local trace_detail       = false  trackers.register("languages.replacements.detail", function(v) trace_detail       = v end)
@@ -38,6 +42,7 @@ local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getattr            = nuts.getattr
+local setattr            = nuts.setattr
 local getid              = nuts.getid
 local getchar            = nuts.getchar
 
@@ -62,6 +67,7 @@ local replacements       = languages.replacements or { }
 languages.replacements   = replacements
 
 local a_replacements     = attributes.private("replacements")
+local a_noligature       = attributes.private("noligature")
 
 local lists = { }
 local last  = 0
@@ -79,7 +85,7 @@ end)
 
 lists[v_reset].attribute = unsetvalue -- so we discard 0
 
--- todo: glue kern
+-- todo: glue kern attr
 
 local function add(root,word,replacement)
     local list = utfsplit(word,true)
@@ -199,7 +205,8 @@ function replacements.handler(head)
                         if not current then
                             head = nil
                         end
-                        for i=1,newlength do
+                        local i = 1
+                        while i <= newlength do
                             local codes = newcodes[i]
                             local new = nil
                             if type(codes) == "table" then
@@ -216,16 +223,25 @@ function replacements.handler(head)
                                     if replace then
                                         setfield(new,"replace",tonodes(replace,last))
                                     end
+                                    head, current = insert_after(head,current,new)
+                                elseif method == "noligature" then
+                                    -- not that efficient to copy but ok for testing
+                                    local list = codes[2]
+                                    for i=1,#list do
+                                        new = copy_node(last)
+                                        setfield(new,"char",list[i])
+                                        setattr(new,a_noligature,1)
+                                        head, current = insert_after(head,current,new)
+                                    end
                                 else
                                     -- todo
                                 end
                             else
                                 new = copy_node(last)
                                 setfield(new,"char",codes)
-                            end
-                            if new then
                                 head, current = insert_after(head,current,new)
                             end
+                            i = i + 1
                         end
                         flush_list(list)
                     elseif oldlength == newlength then -- #old == #new
