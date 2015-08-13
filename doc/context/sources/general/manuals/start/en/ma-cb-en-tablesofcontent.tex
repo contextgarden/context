@@ -1,0 +1,174 @@
+\startcomponent ma-cb-en-tablesofcontent
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Table of contents (lists)]
+
+\index{table of contents}
+\index{list}
+
+\Command{\tex{completecontent}}
+\Command{\tex{placecontent}}
+\Command{\tex{definelist}}
+\Command{\tex{setuplist}}
+\Command{\tex{writetolist}}
+\Command{\tex{writebetweenlist}}
+\Command{\tex{definecombinedlist}}
+\Command{\tex{setupcombinedlist}}
+
+A table of contents contains chapter numbers, chapter titles and page numbers and
+can be extended with sections, sub sections, etc. A table of contents is
+generated automatically by typing:
+
+\starttyping
+\placecontent
+\stoptyping
+
+Which table of contents is produced depends on the location of this command in
+your document. At the start of the document it will generate a list of chapters,
+sections etc. But at the top of a chapter:
+
+\startbuffer
+\chapter{Hasselt in Summer}
+
+\placecontent
+
+\section{Hasselt in July}
+
+\section{Hasselt in August}
+
+\stopbuffer
+
+\typebuffer
+
+it will only produce a list of (sub) section titles with the corresponding
+section numbers and page numbers.
+
+The predefined command \type{\placecontent} is available because it was defined
+with:
+
+\shortsetup{definecombinedlist}
+
+This command and \type{\definelist} allows you to define your own lists necessary
+for accessing your documents.
+
+The use of this command and its related commands is illustrated for the default available
+table of contents.
+
+\startbuffer
+\definelist[chapter]
+\setuplist
+   [chapter]
+   [before=\blank,
+    after=\blank,
+    style=bold]
+
+\definelist[section]
+\setuplist
+   [section]
+   [alternative=d]
+\stopbuffer
+
+\typebuffer
+
+Now there are two lists of chapters and sections and these will be combined in a
+table of contents with the command \type{\definecombinedlist}.
+
+\startbuffer
+\definecombinedlist
+   [content]
+   [chapter,section]
+   [level=subsection]
+\stopbuffer
+
+\typebuffer
+
+Now two commands are available: \type{\placecontent} and \type{\completecontent}.
+With the second command the title of the table of contents will be added to the
+table of contents.
+
+The layout of lists can be varied with the parameter \type{alternative}.
+
+\placetable
+  [here,force]
+  [tab:alternatives]
+  {Alternatives for displaying lists.}
+  {\starttable[|c|l|]
+  \HL
+  \NC \bf Alternative \NC \bf Display \NC\SR
+  \HL
+  \NC \type{a} \NC number -- title -- page number              \NC\FR
+  \NC \type{b} \NC number -- title -- spaces -- page number    \NC\MR
+  \NC \type{c} \NC number -- title -- dots -- page number      \NC\MR
+  \NC \type{d} \NC number -- title -- page number (continuing) \NC\MR
+  \NC \type{e} \NC reserved for interactive purposes           \NC\MR
+  \NC \type{f} \NC reserved for interactive purposes           \NC\MR
+  \NC \type{g} \NC reserved for interactive purposes           \NC\LR
+  \HL
+  \stoptable}
+
+Lists are set up with:
+
+\shortsetup{setuplist}
+\shortsetup{setupcombinedlist}
+
+If you want to change the layout of the generated table of contents you'll have
+to remember that it is a (combined) list and that we can set the partial lists
+separately.
+
+\startbuffer
+\setuplist
+  [section]
+  [textstyle=bold,
+   pagestyle=bold,
+   numberstyle=bold]
+\stopbuffer
+
+\typebuffer
+
+This will result in a bold page number, section title and section number.
+
+Lists are generated and placed with:
+
+\shortsetup{placelist}
+
+So if you want a list of sections at the beginning of a new chapter, you type:
+
+\starttyping
+\placelist[section]
+\stoptyping
+
+only the sections will be displayed.
+
+A long list or a long table of contents will use up more than one page. To be
+able to force page breaking you can type:
+
+\starttyping
+\placecontent[extras={8.2=page}]
+\stoptyping
+
+A page break will then occur after section 8.2.
+
+In some cases you want to be able to write your own text in an automatically
+generated list. This is done with:
+
+\shortsetup{writetolist}
+\shortsetup{writebetweenlist}
+
+For example if you want to make a remark in your table of contents after a
+section titled {\em Hotels in Hasselt} you can type:
+
+\startbuffer
+\section{Hotels in Hasselt}
+\writebetweenlist[section]{\blank}
+\writetolist[section][location=here]{}{Section under construction}
+\writebetweenlist[section]{\blank}
+\stopbuffer
+
+\typebuffer
+
+\stopchapter
+
+\stopcomponent

@@ -64,7 +64,7 @@
 
 % tag skipflag s getfield(n,"shift") getfield(n,"width") leftmarginwidth(getlist(n)) getfield(n,"dir"))
 
-\let\makelinenumber\gobblesevenarguments % used at lua end
+\let\makelinenumber\gobblefivearguments % used at lua end
 
 \newconditional\page_postprocessors_needed_box
 
@@ -326,7 +326,7 @@
    \relax
    \egroup}
 
-\def\page_lines_make_number#tag#mode#linenumber#shift#width#leftskip#dir% beware, one needs so compensate for this in the \hsize
+\def\page_lines_make_number#tag#mode#linenumber#width#dir% with hang and parindent and skips we have to compensatefor \hsize
   {\naturalhbox to \zeropoint \bgroup
    \ifcase#mode\relax
    % \settrue \c_page_lines_fake_number

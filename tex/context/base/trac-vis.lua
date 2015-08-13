@@ -301,7 +301,7 @@ trackers  .register("visualizers.reset",    function(v) set("reset", v) end)
 trackers  .register("visualizers.all",      function(v) set("all",   v) end)
 trackers  .register("visualizers.makeup",   function(v) set("makeup",v) end)
 trackers  .register("visualizers.boxes",    function(v) set("boxes", v) end)
-directives.register("visualizers.fraction", function(v) fraction = v and tonumber(v) or 10 end)
+directives.register("visualizers.fraction", function(v) fraction = (v and tonumber(v)) or (v == "more" and 5) or 10 end)
 
 local c_positive   = "trace:b"
 local c_negative   = "trace:r"

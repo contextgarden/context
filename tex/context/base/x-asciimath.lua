@@ -103,13 +103,13 @@ local reserved = {
     ["max"]       = { false, "\\max" },
     ["ln"]        = { false, "\\ln" },
 
-    ["atan"]      = { false, "\\atan" },         -- extra
-    ["acos"]      = { false, "\\acos" },         -- extra
-    ["asin"]      = { false, "\\asin" },         -- extra
-                                                 -- extra
-    ["arctan"]    = { false, "\\arctan" },       -- extra
-    ["arccos"]    = { false, "\\arccos" },       -- extra
-    ["arcsin"]    = { false, "\\arcsin" },       -- extra
+    ["atan"]      = { false, "\\atan" }, -- extra
+    ["acos"]      = { false, "\\acos" }, -- extra
+    ["asin"]      = { false, "\\asin" }, -- extra
+
+    ["arctan"]    = { false, "\\arctan" }, -- extra
+    ["arccos"]    = { false, "\\arccos" }, -- extra
+    ["arcsin"]    = { false, "\\arcsin" }, -- extra
 
     ["and"]       = { false, "\\text{and}" },
     ["or"]        = { false, "\\text{or}" },
@@ -117,7 +117,7 @@ local reserved = {
 
     ["sqrt"]      = { false, "\\asciimathsqrt",     "unary" },
     ["root"]      = { false, "\\asciimathroot",     "binary" },
---     ["\\frac"]    = { false, "\\frac",              "binary" },
+ -- ["\\frac"]    = { false, "\\frac",              "binary" },
     ["frac"]      = { false, "\\frac",              "binary" },
     ["stackrel"]  = { false, "\\asciimathstackrel", "binary" },
     ["hat"]       = { false, "\\widehat",           "unary" },
@@ -737,7 +737,7 @@ local isbinary = {
     ["\\asciimathstackrel"] = true,
 }
 
-local isunary = {
+local isunary = { -- can be taken from reserved
     ["\\sqrt"]            = true,
     ["\\asciimathsqrt"]   = true,
     ["\\text"]            = true, --  mathoptext
@@ -762,6 +762,40 @@ local isfunny = {
 local isinfix = {
     ["^"] = true,
     ["_"] = true,
+}
+
+local isstupid = {
+    ["\\prod"]      = true,
+    ["\\sinh"]      = true,
+    ["\\cosh"]      = true,
+    ["\\tanh"]      = true,
+    ["\\sum"]       = true,
+    ["\\int"]       = true,
+    ["\\sin"]       = true,
+    ["\\cos"]       = true,
+    ["\\tan"]       = true,
+    ["\\csc"]       = true,
+    ["\\sec"]       = true,
+    ["\\cot"]       = true,
+    ["\\log"]       = true,
+    ["\\det"]       = true,
+    ["\\lim"]       = true,
+    ["\\mod"]       = true,
+    ["\\gcd"]       = true,
+    ["\\min"]       = true,
+    ["\\max"]       = true,
+    ["\\ln"]        = true,
+
+    ["\\atan"]      = true,
+    ["\\acos"]      = true,
+    ["\\asin"]      = true,
+                      true,
+    ["\\arctan"]    = true,
+    ["\\arccos"]    = true,
+    ["\\arcsin"]    = true,
+
+    ["f"]           = true,
+    ["g"]           = true,
 }
 
 local isleft = {
@@ -1306,6 +1340,38 @@ local function collapse_parentheses(t)
     return t
 end
 
+local function collapse_stupids(t)
+    local n, m, i = #t, 0, 1
+    while i <= n do
+        m = m + 1
+        local current = t[i]
+        if isstupid[current] then
+            local one = t[i+1]
+            if type(one) == "table" then
+                one = collapse(one,level)
+                t[m] = current .. "{" .. one .. "}"
+                i = i + 2
+            else
+                t[m] = current
+                i = i + 1
+            end
+        else
+            t[m] = current
+            i = i + 1
+        end
+    end
+    if i == n then -- yes?
+        m = m + 1
+        t[m] = t[n]
+    end
+    if m < n then
+        for i=n,m+1,-1 do
+            t[i] = nil
+        end
+    end
+    return t
+end
+
 local function collapse_signs(t)
     local n, m, i = #t, 0, 1
     while i <= n do
@@ -1316,7 +1382,7 @@ local function collapse_signs(t)
             if not one then
 --                 m = m + 1
                 t[m] = current .. "{}" -- error
-return t
+                return t
 --                 break
             end
             if type(one) == "table" then
@@ -1662,6 +1728,7 @@ collapse = function(t,level)
     -- steps
     t = collapse_matrices   (t) if trace_detail then show_state(t,level,"matrices")      end
     t = collapse_bars       (t) if trace_detail then show_state(t,level,"bars")          end
+t = collapse_stupids     (t) if trace_detail then show_state(t,level,"stupids")         end
     t = collapse_pairs      (t) if trace_detail then show_state(t,level,"pairs")         end
     t = collapse_parentheses(t) if trace_detail then show_state(t,level,"parentheses")   end
     t = collapse_signs      (t) if trace_detail then show_state(t,level,"signs")         end

@@ -1,0 +1,129 @@
+% language=uk
+
+% author  : Hans Hagen, PRAGMA ADE, NL
+% license : Creative Commons, Attribution-NonCommercial-ShareAlike 3.0 Unported
+
+\usemodule[art-01,abr-02]
+
+\setupbodyfont
+  [10pt]
+
+\definecolor
+  [maincolor]
+  [b=.4]
+
+\usesymbols
+  [cc]
+
+\setuptype
+  [color=maincolor]
+
+\setuptyping
+  [color=maincolor]
+
+\definefont
+  [TitlePageFont]
+  [file:lmmonolt10-bold.otf]
+
+\setuphead
+  [color=maincolor]
+
+\setupinteraction
+  [hidden]
+
+\startdocument
+  [metadata:author=Hans Hagen,
+   metadata:title={Lua, the context libraries},
+   author=Hans Hagen,
+   affiliation=PRAGMA ADE,
+   location=Hasselt NL,
+   title=Lua,
+   subtitle=the context libraries,
+   support=www.contextgarden.net,
+   website=www.pragma-ade.nl]
+
+\startMPpage
+
+    StartPage ;
+
+    numeric w ; w := bbwidth(Page) ;
+    numeric h ; h := bbheight(Page) ;
+
+    fill Page withcolor \MPcolor{maincolor} ;
+
+    draw textext.urt("\TitlePageFont \getvariable{document}{title}")    xsized (0.8w) shifted (.1w,.2h) withcolor .80white ;
+    draw textext.top("\TitlePageFont \getvariable{document}{subtitle}") xsized (0.8w) shifted (.5w,.1h) withcolor .60white ;
+
+    StopPage ;
+
+\stopMPpage
+
+\startsubject[title=Contents]
+
+\placelist[section][alternative=a]
+
+\stopsubject
+
+\startsection[title=Introduction]
+
+Once we started the \LUATEX\ project it didn't take long for \CONTEXT\ to use
+the \LUA\ language extensively. And so, rather soon, a bunch of libraries
+evolved that provided all kind of helpers. Because \LUATEX\ can also act as
+a \LUA\ interpreter, and because we have \type {mtxrun} as script runner
+we can also use some of those libraries outside \CONTEXT. So, for me, a rather
+natural way to run a \LUA\ script is:
+
+\starttyping
+mtxrun --script myscript.lua <optional arguments>
+\stoptyping
+
+The advantage of this approach is that you operate in the same file domain as
+your \TEX\ runs as all file locators are preloaded as well. However, in some
+cases this is not possible, for instance when you run a stock \LUA\ or some
+embedded version. For this we provide an alternative mechanism.
+
+\stopsection
+
+\startsection[title=Making libraries]
+
+In the \CONTEXT\ distribution there is a script called \type {mtxlibs.lua} that
+can create a library for you that has the basic general purpose \CONTEXT\
+libraries on board, as well as whatever more you specify.
+
+\starttyping
+lua mtxlibs.lua --selfmerge  myproject-a-libs.lua
+lua mtxlibs.lua --selfmerge  myproject-b-libs.lua \
+    trac-lmx
+lua mtxlibs.lua --selfmerge  myproject-c-libs.lua \
+    util-sql util-sql-imp-client util-sql-imp-library
+\stoptyping
+
+Here we create three libs. The first one has only the core libraries. You can
+read more about what they provide in the \type {cld-mkiv.pdf} manual. The second
+library includes code for creating web pages. The third variant preloads \SQL\
+support.
+
+You can best run this file in its own directory, in the \CONTEXT\ tree, so that
+it knows where to find the libraries needed. Of course you can put the result
+everywhere you want, preferably alongside your normal scripts. As we merge code,
+this is a rather good way to prevent compatibility issues. After all, some of
+the code might get improved.
+
+You can \type {require("mtxlibs")} directly in which case it will load the core
+libraries runtime. Of course this means that \LUA\ should be able to figure out
+where it can find them.
+
+\stopsection
+
+\startsubject[title={Colofon}]
+
+\starttabulate[|B|p|]
+\NC author    \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
+\NC version   \NC \currentdate \NC \NR
+\NC website   \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
+\NC copyright \NC \symbol[cc][cc-by-sa-nc] \NC \NR
+\stoptabulate
+
+\stopsubject
+
+\stopdocument

@@ -1,0 +1,144 @@
+\startcomponent ma-cb-en-frames
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Outlined text]
+
+\index{outline+text}
+
+\Command{\tex{framed}}
+\Command{\tex{setupframed}}
+\Command{\tex{inframed}}
+
+You can \inframed{outline} a text with \type{\framed}. The
+command looks like this:
+
+\shortsetup{framed}
+
+The bracket pair is optional and contains the set up parameters. The curly braces
+enclose the text. To be honest, the outlined text in the first paragraph was done
+with \type{\inframed}. This command takes care of the interline spacing.
+
+Some other examples of \type{\framed} and its set up parameters are shown below.
+
+\startbuffer[a]
+\framed
+  [height=fit,
+   width=.5\textwidth]
+  {Hasselt}
+\stopbuffer
+
+\placefigure[right,none][]{}{\externalfigure[a][type=buffer]}
+\typebuffer[a]
+
+\startbuffer[b]
+\framed
+  [height=3em,
+   width=.5\textwidth]
+  {Hasselt now has more space}
+\stopbuffer
+
+\placefigure[right,none][]{}{\externalfigure[b][type=buffer]}
+\typebuffer[b]
+
+\startbuffer[d]
+\framed
+  [height=3em,
+   width=.5\textwidth,
+   foregroundcolor=red,
+   framecolor=blue]
+  {Hasselt now has some color}
+\stopbuffer
+
+\placefigure[right,none][]{}{\externalfigure[d][type=buffer]}
+\typebuffer[d]
+
+\startbuffer[e]
+\framed
+  [height=3em,
+   width=.5\textwidth,
+   foregroundcolor=red,
+   framecolor=blue,
+   rulethickness=2pt]
+  {Hasselt now has more frame}
+\stopbuffer
+
+\placefigure[right,none][]{}{\externalfigure[e][type=buffer]}
+\typebuffer[e]
+
+\startbuffer[f]
+\framed
+  [height=3em,
+   width=.5\textwidth,
+   foregroundcolor=red,
+   framecolor=blue,
+   rulethickness=2pt,
+   background=color,
+   backgroundcolor=green]
+  {Hasselt now has a colorful background}
+\stopbuffer
+
+\placefigure[right,none][]{}{\externalfigure[f][type=buffer]}
+\typebuffer[f]
+
+\startbuffer[g]
+\framed
+  [height=3em,
+   width=.5\textwidth,
+   foregroundcolor=red,
+   framecolor=blue,
+   rulethickness=2pt,
+   background=color,
+   backgroundcolor=green,
+   foregroundstyle=bold]
+  {Hasselt now has another style}
+\stopbuffer
+
+\placefigure[right,none][]{}{\externalfigure[g][type=buffer]}
+\typebuffer[g]
+
+\startbuffer[needed-for-h]
+\definecolor[a][black]
+\definecolor[b][white]
+
+\startuniqueMPgraphic{LinearShade}
+  fill OverlayBox
+    withshademethod "linear" withcolor \MPcolor{a} shadedinto \MPcolor{b} ;
+\stopuniqueMPgraphic
+
+\defineoverlay
+  [linear shade]
+  [\uniqueMPgraphic{LinearShade}]
+\stopbuffer
+
+\getbuffer[needed-for-h]
+
+\startbuffer[h]
+\framed
+  [height=3em,
+   width=.5\textwidth,
+   foregroundcolor=red,
+   framecolor=blue,
+   rulethickness=2pt,
+   background=linear shade,
+   foregroundstyle=bold]
+  {Hasselt now has a little shade}
+\stopbuffer
+
+\placefigure[right,none][]{}{\externalfigure[h][type=buffer]}
+\typebuffer[h]
+
+The shady background was defined with:
+
+\typebuffer[needed-for-h]
+
+The \type{\framed} command is very sophisticated and is used in many macros.
+The command to set up frames is:
+
+\shortsetup{setupframed}
+
+\stopchapter
+
+\stopcomponent

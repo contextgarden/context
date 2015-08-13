@@ -1,0 +1,273 @@
+% language=uk
+
+% author  : Hans Hagen, PRAGMA ADE, NL
+% license : Creative Commons, Attribution-NonCommercial-ShareAlike 3.0 Unported
+
+\usemodule[art-01,abr-02]
+
+\definecolor[maincolor] [r=.4]
+\definecolor[extracolor][b=.4]
+
+\setupbodyfont
+  [10pt]
+
+\usesymbols
+  [cc]
+
+\setuptyping
+  [color=extracolor]
+
+\setuptype
+  [color=extracolor]
+
+\setuphead
+  [section]
+  [color=maincolor]
+
+\setupinteraction
+  [hidden]
+
+\startdocument
+  [metadata:author=Hans Hagen,
+   metadata:title=LMX Templates,
+   author=Hans Hagen,
+   affiliation=PRAGMA ADE,
+   location=Hasselt NL,
+   title=LMX Templates,
+   extra-1=LMX,
+   extra-2=TEMPLATES,
+   extra-3=HANS HAGEN,
+   support=www.contextgarden.net,
+   website=www.pragma-ade.nl]
+
+\startMPpage
+
+    StartPage;
+
+    numeric n, m ; n := 3 * 4 ; m := 4 * 4 ;
+    numeric w, h ; w := PaperWidth/n ; h := PaperHeight/m ;
+    numeric max ; max := 20 ;
+
+    for i=1 upto n :
+        for j=1 upto m :
+            fill
+                unitsquare
+                xysized (w,h)
+                shifted ((i-1)*w,(j-1)*h)
+                withcolor (.5[red,blue] randomized(.75,.75,.75))
+            ;
+        endfor ;
+    endfor ;
+
+    path p ; p := Page enlarged -5mm ;
+
+    pair a[] ; % <
+
+    a[1] := .80[lrcorner p,urcorner p] ;
+    a[2] := .50[llcorner p,ulcorner p] ;
+    a[3] := .20[lrcorner p,urcorner p] ;
+
+    pair b[] ; % \
+
+    b[1] := ulcorner p ;
+    b[2] := center   p ;
+    b[3] := lrcorner p ;
+
+    path c[] ; % from < (xml) to \ (tex)
+
+    c[1] := a[1] .. b[1] ;
+    c[2] := a[2] .. b[2] ;
+    c[3] := a[3] .. b[3] ;
+
+    linecap := butt ;
+
+    numeric fraction ;
+
+    for i=1 step 1 until max :
+        fraction := i/max ;
+        draw
+            ((point fraction along c[1]) -- (point fraction along c[2]) -- (point fraction along c[3]))
+            withpen pencircle scaled 5mm
+            withcolor .75[(max+1-i)*green/n,i*yellow/max]
+            withtransparency (1,.5)
+            ;
+    endfor ;
+
+    draw
+        textext.rt("\ssbf{\documentvariable{extra-1}}")
+        xsized (7w)
+        shifted (.8w,3h)
+        withcolor white
+    ;
+
+    draw
+        textext.rt("\ssbf{\documentvariable{extra-2}}")
+        xsized (8w)
+        shifted (w,h)
+        withcolor white
+    ;
+
+    draw
+        textext.ulft("\ssbf{\documentvariable{extra-3}}")
+        rotated 90
+        ysized (5.9h)
+        shifted (PaperWidth-1.2w,PaperHeight/2+2.95h)
+        withcolor white
+    ;
+
+    StopPage;
+
+\stopMPpage
+
+\startsubject[title={Contents}]
+
+\placelist[section][criterium=all,interaction=all]
+
+\stopsubject
+
+\startsection [title={Introduction}]
+
+{\em This manual is not finished yet. The main reason is that what is described
+here is an afternoon experiment resulting in a dozen lines of \LUA\ glue code
+that builds upon an already existing mechanism. When users like this, I will
+extend the basic \LMX\ handler to suit the \TEX\ end better. There will also be
+also support for cache based and in||document templates.)}
+
+The acronym \type {lmx} stands for document that are a mix of \LUA\ and \XML\ and
+is just the three letters \type {xml} reversed. Such documents showed up pretty
+soon in \MKIV\ while I was exploring ways to present debugging and error
+information to users using \XML. As a consequence this is one of the older
+mechanisms available, although I doubt if users start looking for it when they
+start using \CONTEXT.
+
+Anyhow, because we also use \LMX\ for populating web pages, at some point I wondered
+if using the same approach for \TEX\ files made sense. I'm still not sure about it
+but who knows where this ends up. Currently code is shared but in the future we might
+end up with a variant that adds some more flexibility.
+
+\stopsection
+
+\startsection [title={How it works}]
+
+First of all, using this mechanism involves yet another kind of \type {mk}, so
+now we have:
+
+\starttabulate[|TB||]
+\HL
+\NC mkii \NC The old version of \CONTEXT, using \PDFTEX,\XETEX, etc. \NC \NR
+\HL
+\NC mkiv \NC The new version of \CONTEXT, using \LUATEX. \NC \NR
+\NC mkvi \NC Similar to \MKIV\ but with named macro parameters. \NC \NR
+\HL
+\NC mkix \NC A \MKIV\ file mixed with \LUA\ wrapped in \XML\ processing instructions. \NC \NR
+\NC mkxi \NC Similar to \MKIX\ but with named macro parameters. \NC \NR
+\HL
+\stoptabulate
+
+The nice thing about sticking to wrapping in angle brackets is that it plays nice
+with syntax highlighting. Before we show an example of such a mix, we first point
+out that loading (and thereby conversion) happens automatically. A \type {mkix} or
+\type {mkxi} file is just a regular \CONTEXT\ file. In the test suite there
+is a demo file that can be included like this:
+
+\starttyping
+\input lmxlike-001.mkxi
+\stoptyping
+
+This file is loaded and converted on the fly. No caching takes place, but in due time
+we can use the cache built into the \LMX\ handlers if needed. The template itself
+can be fed with variables in the \type {document} namespace:
+
+\starttyping
+\starttext
+
+  \startluacode
+     document.variables.text = "set"
+  \stopluacode
+
+  \input lmxlike-001.mkxi
+
+\stoptext
+\stoptyping
+
+Instead of a special suffix, you can also force conversion with the \type {macros}
+directive:
+
+\starttyping
+% macros=mkix
+\stoptyping
+
+Part of the mentioned looks as follows:
+
+\starttyping
+\bTABLE
+  <?lua for i=1,40 do ?>
+    \bTR
+      <?lua for j=1,5 do ?>
+        \bTD
+          cell (<?lua inject(i) ?>,<?lua inject(j)?>)
+          is <?lua inject(variables.text or "unset") ?>
+        \eTD
+      <?lua end ?>
+    \eTR
+  <?lua end ?>
+\eTABLE
+\stoptyping
+
+The \type {<?lua ... ?>} command is conceptually different from (say) \type
+{\ctxlua} in the sense that the later executes some \LUA\ code at that spot,
+while in a template a \LUA\ function is constructed out of the whole that gets
+executed. In fact, we use \LUA\ to construct an input file.
+
+For the moment we only mention the predefined \type {inject} command. There are
+some more but they make more sense for \XML\ and \HTML\ and in due time this will
+be decoupled so that we can have dedicated helpers. Even the \XML\ and \HTML\
+part is somewhat in flux.
+
+The previous example can of course also be done differently. It's a matter of
+taste and usage what method gets used:
+
+\starttyping
+\startluacode
+  context.bTABLE()
+    for i=1,40 do
+      context.bTR()
+        for j=1,5 do
+          context.bTD()
+            context("cell (%s,%s) is %s",i,j,document.variables.text or "unset")
+          context.eTD()
+        end
+      context.eTR()
+    end
+  context.eTABLE()
+\stopluacode
+\stoptyping
+
+The difference between a \MKIX\ and \MKXI\ file is the same as between a \MKIV\
+and \MKVI\ file: the way macros can be defined:
+
+\starttyping
+\def\testmacro#one#two{[#one,#two]}
+
+\testmacro{1}{2}
+\testmacro{one}{two}
+\testmacro{second}{first}
+\stoptyping
+
+In practice one will seldom need macro definitions in a template file but the
+possibility is provided.
+
+\stopsection
+
+\startsubject[title={Colofon}]
+
+\starttabulate[|B|p|]
+\NC author    \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
+\NC version   \NC \currentdate \NC \NR
+\NC website   \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
+\NC copyright \NC \symbol[cc][cc-by-sa-nc] \NC \NR
+\stoptabulate
+
+\stopsubject
+
+\stopdocument

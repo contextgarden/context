@@ -1,0 +1,68 @@
+\startcomponent ma-cb-en-usersetups
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=User specifications]
+
+\index{preamble}
+\index{input file}
+
+The setup area of your document is the area before
+the \type{\starttext} command. For example:
+
+\setuptyping
+    [escape=yes]
+
+\definestartstop
+    [comment][style={\rm}]
+
+\starttyping
+                                   /BTEX \comment{first line of your file} /ETEX
+\setuplayout[width=25cm]           /BTEX \comment{set the width of your text} /ETEX
+                                   /BTEX \comment{empty line for readability} /ETEX
+\starttext                         /BTEX \comment{starts your text} /ETEX
+Hello Hasselt.                     /BTEX \comment{your text} /ETEX
+\stoptext                          /BTEX \comment{ends your text} /ETEX
+\stoptyping
+
+Note that the first line of this file is empty. However, this first line
+is a preamble and can be used for specific user specifications. For example:
+
+\starttyping
+% engine=luatex                    /BTEX \comment{use the \type{luatex} engine} /ETEX
+                                   /BTEX \comment{empty line for readability} /ETEX
+\setuplayout[width=25cm]           /BTEX \comment{set the width of your text} /ETEX
+                                   /BTEX \comment{empty line for readability} /ETEX
+\starttext                         /BTEX \comment{starts your text} /ETEX
+Hello Hasselt.                     /BTEX \comment{your text} /ETEX
+\stoptext                          /BTEX \comment{ends your text} /ETEX
+\stoptyping
+
+Note that \CONTEXT\ sees the text after the \type{ % }
+sign in this first line not as a comment.
+
+The preamble can have a meaning for both \CONTEXT\ and \SCITE:
+
+\starttyping
+% engine=pdftex interface=en modes=screen language=uk
+
+\starttext
+Hello Hasselt.
+\stoptext
+\stoptyping
+
+This will be interpreted as:
+
+\starttabulate[|T||p|]
+\NC engine=pdftex \NC \CONTEXT \EQ run as \PDFTEX \NC\NR
+\NC interface=en  \NC \CONTEXT \EQ expect english \CONTEXT\ commands (lexing) \NC\NR
+\NC               \NC \SCITE   \EQ use english lexing \NC\NR
+\NC modes=screen  \NC \CONTEXT \EQ invoke mode \type{screen} that is set in the text \NC\NR
+\NC language=uk   \NC \SCITE   \EQ use the english spell checker \NC\NR
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

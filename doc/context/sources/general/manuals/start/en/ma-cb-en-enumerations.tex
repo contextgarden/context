@@ -1,0 +1,106 @@
+\startcomponent ma-cb-en-enumerations
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Numbered definitions]
+
+\index{numbered definition}
+
+\Command{\tex{defineenumeration}}
+\Command{\tex{setupenumerations}}
+
+With \type{\defineenumeration} you can number text elements like remarks or
+questions. If you want to make numbered remarks in your document you use:
+
+\shortsetup{defineenumeration}
+
+For example:
+
+\startbuffer[a]
+\defineenumeration
+  [remark]
+  [alternative=top,
+   text=Remark,
+   inbetween={\blank[none]},
+   after=\blank]
+\stopbuffer
+
+\typebuffer[a]
+
+Now the new commands \type{\remark}, \type{\subremark}, \type{\resetremark} and
+\type{\nextremark} are available and you can type remarks like this:
+
+\startbuffer[b]
+\remark In the early medieval times Hasselt was a place of
+pilgrimage. The {\em Heilige Stede} (Holy Place) was torn down during
+the Reformation. In 1930, after 300 years, the {\em Heilige Stede} was
+reopened.
+
+\subremark Nowadays the {\em Heilige Stede} is closed again but once
+a year an open air service is held on the same spot. \par
+\stopbuffer
+
+\typebuffer[b]
+
+This becomes:
+
+\start
+\getbuffer[a]\getbuffer[b]
+\stop
+
+You can reset numbering with \type{\resetremark} or \type{\resetsubremark} or
+increment a number with \type{\nextremark} or \type{\nextsubremark}. This is
+normally done automatically per chapter, section or whatever.
+
+You can set up the layout of \type{\defineenumeration} with:
+
+\shortsetup{setupenumerations}
+
+You can also vary the layout of \type{remark} and \type{subremark} in the example
+above with:
+
+\starttyping
+\setupenumeration[remark][headstyle=bold]
+\setupenumeration[subremark][headstyle=slanted]
+\stoptyping
+
+If a number becomes obsolete you can type:
+
+\starttyping
+\remark[-]
+\stoptyping
+
+If the \type{remark} contains several paragraphs you should use the command
+pair \type{\start ... \stopremark} that becomes available after defining
+\type{remark} with \type{\defineenumeration[remark]}.
+
+\startbuffer[c]
+\setupenumeration
+   [remark]
+   [alternative=hanging,
+    width=broad]
+
+\startremark
+In the early medieval times Hasselt was a place of pilgrimage. The
+{\em Heilige Stede} (Holy Place) was torn down during the
+Reformation.
+
+After 300 years in 1930 the {\em Heilige Stede} was reopened.
+Nowadays the {\em Heilige Stede} is closed again but once a year an
+open air service is held on the same spot.
+\stopremark
+\stopbuffer
+
+\typebuffer[c]
+
+So the example above would look like this:
+
+\start
+\getbuffer[a]\getbuffer[c] \par
+\stop
+
+\stopchapter
+
+\stopcomponent

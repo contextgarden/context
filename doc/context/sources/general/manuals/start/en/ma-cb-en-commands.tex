@@ -1,0 +1,94 @@
+\startcomponent ma-cb-en-commands
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Defining commands / macros]
+
+\CONTEXT\ is a set of macros based on \TEX. \TEX\ is a programming language as
+well as a typographical system. This means that you can do the programming
+yourself if you need that kind of flexability.
+
+You can define a new command with:
+
+\shortsetup{define}
+
+The next example will explain its meaning.
+
+You may have a well illustrated document and you are tired of typing:
+
+\startbuffer
+\placefigure
+  [here,force]
+  [fig:logical name]
+  {Caption.}
+  {\externalfigure[filename][width=5cm]}
+\stopbuffer
+
+\typebuffer
+
+You could define your own command with a few variables like:
+
+\startitemize[packed]
+\item logical name
+\item caption
+\item file name
+\stopitemize
+
+Your command definition and call could look something like
+this:
+
+\startbuffer
+\define[3]\myputfigure
+  {\placefigure
+     [here,force][fig:#1]
+     {#2}{\externalfigure[#3][width=5cm]}}
+
+\myputfigure{lion}{The Dutch lion is a sentry.}{ma-cb-13}
+\stopbuffer
+
+\typebuffer
+
+From then on the \type{\myputfigure} is available.
+Between brackets \type{[3]} indicates that you want to use three variables
+\type{#1}, \type{#2} and \type{#3}. In the command call \type{\myputfigure} you
+have to place these variables between curly braces. The result is shown in
+\in{figure}[fig:lion].
+
+\getbuffer
+
+Very sophisticated commands can be programmed, but this is left to your own
+inventiveness.
+
+In addition to defining commands you can also define \type{\start...\stop}
+command pairs.
+
+\shortsetup{definestartstop}
+
+For example:
+
+\startbuffer
+\definestartstop
+   [attention]
+   [before=\blank\startmarginrule,
+    after=\stopmarginrule\blank]
+
+\startattention
+{\em Hasselter Juffers} are sweet cookies but the name is no
+coincidence. On July 21 in 1233 the {\em Zwartewaterklooster}
+(Blackwater Monastery) was founded. The monastery was meant
+for unmarried girls and women belonging to the nobility of
+Hasselt. These girls and women were called {\em juffers}.
+\stopattention
+\stopbuffer
+
+\typebuffer
+
+This will result in:
+
+\getbuffer
+
+\stopchapter
+
+\stopcomponent

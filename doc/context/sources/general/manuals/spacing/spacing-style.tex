@@ -1,0 +1,55 @@
+\startenvironment spacing-style
+
+\setupbodyfont
+  [pagella]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   topspace=15mm,
+   header=15mm,
+   footer=0pt,
+   bottomspace=20mm]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setupwhitespace
+  [big]
+
+\definecolor
+  [blackcolor]
+  [r=0,b=0,g=0]
+
+\definecolor
+  [whitecolor]
+  [r=1,b=1,g=1]
+
+\definecolor
+  [maincolor]
+  [.25(blackcolor,green)]
+
+\definecolor
+  [extracolor]
+  [.25(whitecolor,green)]
+
+% \blackrule[color=maincolor,width=10cm,,height=10cm]
+% \blackrule[color=extracolor,width=10cm,,height=10cm]
+
+\setuptyping
+  [color=maincolor]
+
+\setuptype
+  [color=maincolor]
+
+\setuphead
+  [chapter]
+  [style=\bfd,
+   color=maincolor]
+
+\setuphead
+  [section]
+  [style=\bfc,
+   color=maincolor]
+
+\stopenvironment

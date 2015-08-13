@@ -263,7 +263,7 @@ end
 function margins.save(t)
     setmetatable(t,defaults)
     local content  = getbox(t.number)
-setattr(content,a_specialcontent,1)
+setattr(content,a_specialcontent,1) -- todo: a property
     local location = t.location
     local category = t.category
     local inline   = t.inline
@@ -681,6 +681,7 @@ local function inject(parent,head,candidate)
     end
     setfield(box,"shift",shift)
     setfield(box,"width",0)
+-- print(head)
     if not head then
         head = box
     elseif getid(head) == whatsit_code and getsubtype(head) == localpar_code then

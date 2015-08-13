@@ -1,0 +1,44 @@
+\startcomponent ma-cb-en-processingfiles
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=The \type{context} command,reference=contextcommand]
+
+\index{\type{context} (command)}
+\index{\type{mtxrun} (command)}
+\index{processing TeX file}
+
+You can process a \TEX\ file or run \CONTEXT\ with the command \type{context}
+that you can type at your console:
+
+\starttyping
+context myfile
+\stoptyping
+
+\CONTEXT\ will make multiple runs to get the layout, references, lists and
+pagenumbering straight. You can see those runs echoed on your screen and listed
+in the \type{myfile.log} file.
+
+You can add parameters to give the command \type{context} additional
+tasks while processing the file. If you want start up \READER\ automatically
+you can type:
+
+\starttyping
+context --autopdf myfile
+\stoptyping
+
+A full overview of the parameters is given when you type:
+
+\starttyping
+context --help
+\stoptyping
+
+Please refer to the manual \goto{luatools, mtxrun, context}[ url (manual:tools) ]
+for more information on running \CONTEXT.
+
+\stopchapter
+
+
+\stopcomponent

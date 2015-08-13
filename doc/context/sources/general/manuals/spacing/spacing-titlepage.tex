@@ -1,0 +1,37 @@
+\environment spacing-style
+
+\startcomponent spacing-titlepage
+
+% This titlepage demonstrates once again how well designed the computer modern monospaced
+% font is, especially when we look at the consistent grayness.
+
+\startMPpage
+
+    fill Page enlarged 4mm withcolor \MPcolor{maincolor} ;
+
+    draw image (
+        for i=1 upto 20 :
+            draw bottomboundary Page shifted (0,100*log(i)) ;
+        endfor ;
+    )
+        xysized (PaperWidth-6mm,PaperHeight-6mm)
+        shifted (3mm,3mm)
+        withcolor \MPcolor{extracolor}
+        withpen pencircle scaled 1mm ;
+
+    numeric a ; a := log(1)*PaperHeight/(log(20)) ;
+    numeric b ; b := log(2)*PaperHeight/(log(20)) ;
+
+    picture p ; p := textext.lrt("\ttbf Spacing in Con\TeX t") xsized(.9PaperWidth) ;
+
+    draw p
+        shifted (.05PaperWidth,(b+a)/2 - ypart center p)
+        withcolor \MPcolor{extracolor} ;
+
+    setbounds currentpicture to Page ;
+
+\stopMPpage
+
+\page[right] \setuppagenumber[number=1]
+
+\stopcomponent

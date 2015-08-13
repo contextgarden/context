@@ -1,0 +1,524 @@
+\startcomponent ma-cb-en-math
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[reference=formulas,title=Typesetting math]
+
+\startsection[title=Introduction]
+
+\index {math}
+
+\TEX\ is {\em the} typesetting program for math. However, this is not the
+extensive chapter on typesetting math you might expect. We advise you to do some
+further reading on typesetting formulas in \TEX. See for example: \footnote{In
+this introduction on typesetting math we relied on the booklet {\em \TEX niques}
+by Arthur Samuel.}
+
+\startitemize[packed]
+\item {\em The \TeX Book} by D.E. Knuth
+\item {\em The Beginners Book of \TeX} by S. Levy and R. Seroul
+\stopitemize
+
+\startsection[title=Typesetting math]
+
+\index {math mode}
+\index {display mode}
+\index {text mode}
+
+Normally different conventions are applied for typesetting normal text and math
+text. These conventions are \quote{known} by \TEX\ and applied accordingly when
+generating a document. We can rely on \TEX\ for delivering high quality math
+output.
+
+A number of conventions for math are:
+
+\startitemize[n,packed]
+
+\item Characters are typeset in $math\ italic$ (don't confuse this with the
+      normal {\it italic characters} in a font).
+
+\item Symbols like Greek characters ($\alpha$, $\chi$) and math symbols ($\leq$,
+      $\geq$, $\in$) are used.
+
+\item Spacing will differ from normal spacing.
+
+\item Math expressions have a different alignment than that of the running text.
+
+\item The sub and superscripts are downsized automatically, like in $a^{b}_{c}$.
+
+\item Certain symbols have different appearances in the inline and display mode.
+
+\stopitemize
+
+When typesetting math you have to work in the so called math mode in which math
+expressions can be defined by means of plain \TEX||commands.
+
+Math mode has two alternatives: text mode and display mode. Math in text
+mode is activated by \type{$} and \type{$}, while display mode is activated by
+\type{$$} and \type{$$}. In \CONTEXT\ however, display mode is activated with
+the \type{\start ... \stopformula} command pair to have more grip on vertical
+spacing around the formula.
+
+\startbuffer
+The municipality of Hasselt covers an area of 42,05 \unit{Square Kilo
+Meter}. Now, if you consider a circular area of this size with the
+market place of Hasselt as the center point $M$ you can calculate its
+diameter with ${{1}\over{4}} \pi r^2$.
+\stopbuffer
+
+\typebuffer
+
+This will become:
+
+\getbuffer
+
+The many \type{{}} (grouping) in ${{1}\over{4}} \pi r^2$ are essential for
+separating operations in the expression. If you omit the outer curly braces like
+this: \type{${1}\over{4} \pi r^2$}, you would get a non desired result:
+${1}\over{4} \pi r^2$.
+
+The letters and numbers are typeset in three different sizes: text size $a+b$,
+script size $\scriptstyle a+b$ and scriptscript size $\scriptscriptstyle a+b$.
+These can be influenced by the commands \type{\scriptstyle} and
+\type{\scriptscriptstyle}.
+
+Symbols like $\int$ and $\sum$ will have a different form in text and display
+mode. If we type \type {$\sum_{n=1}^{m}$} or \type {$\int_{-\infty}^{+\infty}$}
+we will get {$\sum_{n=1}^{m}$} and {$\int_{-\infty}^{+\infty}$}. But when you
+type:
+
+\startbuffer
+\startformula
+  \sum_{n=1}^{m} \quad {\rm and} \quad \int_{-\infty}^{+\infty}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+to get displaymode you get:
+
+\getbuffer
+
+With the commands \type {\nolimits} and \type{\limits} you can influence the
+appearances of \type{\sum} and \type{\int}:
+
+\startbuffer
+\startformula
+  \sum_{n=1}^{m}\nolimits
+  \quad {\rm and} \quad
+  \int_{-\infty}^{+\infty}\limits
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+which will result in:
+
+\getbuffer
+
+For typesetting fractions there is the command \type {\over}. In \CONTEXT\ you
+can use the alternative \type {\frac}. For ${\frac{a}{1+b}}+c$ we type for
+instance \type {${\frac{a}{1+b}}+c$}.
+
+Other commands to put one thing above the other, are:
+
+\startbuffer[atop]
+${a} \atop {b}$
+\stopbuffer
+\startbuffer[choose]
+${n+1} \choose {k}$
+\stopbuffer
+\startbuffer[brack]
+${m} \brack {n}$
+\stopbuffer
+\startbuffer[brace]
+${m} \brace {n-1}$
+\stopbuffer
+
+\starttabulate[|l|l|l|l|]
+\NC \type {\atop}
+\NC \typebuffer[atop]
+\NC \mathstrut\getbuffer[atop]
+\NC
+\NC\NR
+\NC \type {\choose}
+\NC \typebuffer[choose]
+\NC
+\NC \mathstrut\getbuffer[choose]
+\NC\NR
+\NC \type {\brack}
+\NC \typebuffer[brack]
+\NC \mathstrut\getbuffer[brack]
+\NC
+\NC\NR
+\NC \type {\brace}
+\NC \typebuffer[brace]
+\NC
+\NC \mathstrut\getbuffer[brace]
+\NC\NR
+\stoptabulate
+
+\TEX\ can enlarge delimiters like (~) and $\{~\}$ automatically if the left and
+right delimiter is preceeded by the commands \type {\left} and \type {\right}
+respectively. If you type:
+
+\startbuffer
+\startformula
+  1+\left(\frac{1}{1-x^{x-2}}\right)^3
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+you will get:
+
+\getbuffer
+
+Sub and superscripts are invoked by \quote {\type{_}} and \quote {\type{^}}. They
+have effect on the next first character so grouping with $\{$~$\}$ is necessary
+in case of multi character sub and superscripts.
+
+In certain situations the delimiters can be preceeded by \type{\bigl},
+\type{\Bigl}, \type{\biggl} and \type{\Biggl} and their right counterparts. Even
+bigger delimiters can be produced by placing \type{\left} and \type{\right} in a
+\type{\vbox} construction. When we type a senseless expression like:
+
+\startbuffer
+\startformula
+  \left(\vbox to 16pt{}x^{2^{2^{2^{2}}}}\right)
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+we get:
+
+\getbuffer
+
+In display mode the following delimiters will work in the automatic enlargement
+mechanism:
+
+\starttabulate[|l|l|l|l|l|l|l|l|]
+\NC \type{\lfloor}      \NC $\lfloor$
+\NC \type{\langle}      \NC $\langle$
+\NC \type{\vert}        \NC $\vert$
+\NC \type{\downarrow}   \NC $\downarrow$
+\NC\NR
+\NC \type{\rfloor}      \NC $\rfloor$
+\NC \type{\rangle}      \NC $\rangle$
+\NC \type{\Vert}        \NC $\Vert$
+\NC \type{\Downarrow}   \NC $\Downarrow$
+\NC\NR
+\NC \type{\lceil}       \NC $\lceil$
+\NC \type{/}            \NC $/$
+\NC \type{\uparrow}     \NC $\uparrow$
+\NC \type{\updownarrow} \NC $\updownarrow$
+\NC\NR
+\NC \type{\rceil}       \NC $\rceil$
+\NC \type{\backslash}   \NC $\backslash$
+\NC \type{\Uparrow}     \NC $\Uparrow$
+\NC \type{\Updownarrow} \NC $\Updownarrow$
+\NC\NR
+\stoptabulate
+
+In display mode we should typeset only one fraction and otherwise switch to the
+\type{a/b} notation. To get:
+
+\startformula
+  a_0 + {\frac{a}{a_1 + \frac{1}{a_2}}}
+\stopformula
+
+we will not type:
+
+\startbuffer
+\startformula
+  a_0+{\frac{a}{a_1+\frac{1}{a_2}}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+but prefer:
+
+\startbuffer
+\startformula
+  a_0 + {\frac{a}{a_1 + 1/a_2}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+to obtain:
+
+\getbuffer
+
+In addition we could also use the command \type{\displaystyle}. If we would type:
+
+\startbuffer
+\startformula
+  a_0 + {\frac{a}{a_1 + \frac{1}{\strut \displaystyle a_2}}}
+\stopformula
+\stopbuffer
+
+\getbuffer
+
+we will get:
+
+\getbuffer
+
+Below we demonstrate the commands \type{\matrix}, \type{\pmatrix}, \type{\ldots},
+\type{\cdots} and \type{\cases} without any further explanation.
+
+\startbuffer[a]
+\startformula
+\stopbuffer
+
+\startbuffer[c]
+\stopformula
+\stopbuffer
+
+\startbuffer[b]
+  A=\left(\matrix{x-\lambda & 1         & 0         \cr
+                  0         & x-\lambda & 1         \cr
+                  0         & 0         & x-\lambda \cr}\right)
+\stopbuffer
+
+\typebuffer[a,b,c] \startformula\getbuffer[b]\stopformula
+
+\startbuffer[b]
+  A=\left|\matrix{x-\mu& 1     & 0     \cr
+                  0    & x-\mu & 1     \cr
+                  0    & 0     & x-\mu \cr}\right|
+\stopbuffer
+
+\typebuffer[a,b,c] \startformula\getbuffer[b]\stopformula
+
+\startbuffer[b]
+  A=\pmatrix{a_{11} & a_{12} & \ldots & a_{1n} \cr
+             a_{21} & a_{22} & \ldots & a_{2n} \cr
+             \vdots & \vdots & \ddots & \vdots \cr
+             a_{m1} & a_{m2} & \ldots & a_{mn} \cr}
+\stopbuffer
+
+\typebuffer[a,b,c] \startformula\getbuffer[b]\stopformula
+
+\startbuffer[b]
+  A=\pmatrix{a_{11} & a_{12} & \ldots & a_{1n} \cr
+             a_{21} & a_{22} & \ldots & a_{2n} \cr
+             \vdots & \vdots & \ddots & \vdots \cr
+             a_{m1} & a_{m2} & \ldots & a_{mn} \cr}
+\stopbuffer
+
+\typebuffer[a,b,c] \startformula\getbuffer[b]\stopformula
+
+\startbuffer[b]
+  |x|=\cases{ x, & if $x\geq0$; \cr
+             -x, & otherwise    \cr}
+\stopbuffer
+
+\typebuffer[a,b,c] \startformula\getbuffer[b]\stopformula
+
+To typeset normal text in a math expression we have to consider the following.
+First a space is not typeset in math mode so we have to enforce one with
+\type{ \ } (backslash). Second we have to indicate a font switch, because the text should
+not appear in $math\ italic$ but in the actual font. So in \CONTEXT\ we have to
+type:
+
+\startbuffer
+\startformula
+  x^3+{\tf lower\ order\ terms}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+to get:
+
+\getbuffer
+
+The math functions like $\sin$ and $\tan$ that have to be typeset in the actual
+font are predefined functions in \TEX:
+
+\starttabulate[|l|l|l|l|l|l|l|l|]
+\NC \type{\arccos} \NC \type{\cos} \NC \type{\csc} \NC \type{\exp} \NC \type{\ker} \NC \type{\limsup} \NC \type{\min} \NC \type{\sinh} \NC\NR
+\NC \type{\arcsin} \NC \type{\cosh} \NC \type{\deg} \NC \type{\gcd} \NC \type{\lg} \NC \type{\ln} \NC \type{\Pr} \NC \type{\sup} \NC\NR
+\NC \type{\arctan} \NC \type{\cot} \NC \type{\det} \NC \type{\hom} \NC \type{\lim} \NC \type{\log} \NC \type{\sec} \NC \type{\tan} \NC\NR
+\NC \type{\arg} \NC \type{\coth} \NC \type{\dim} \NC \type{\inf} \NC \type{\liminf} \NC \type{\max} \NC \type{\sin} \NC \type{\tanh} \NC\NR
+\stoptabulate
+
+If we type the sinus or limit function:
+
+\startbuffer
+\startformula
+  \sin 2\theta=2\sin\theta\cos\theta
+  \quad {\tf or} \quad
+  \lim_{x\to0}{\frac{\sin x}{x}}=1
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+we get:
+
+\getbuffer
+
+Alignment in math expressions may need special attention. In multi line
+expressions we sometimes need alignment at the \quote {$=$} sign. This is done by
+the command \type{\eqalign}. If we type:
+
+\startbuffer
+\startformula
+  \eqalign{
+    ax^2+bx+c &= 0                                \cr
+    x         &= \frac{-b \pm \sqrt{b^2-4ac}}{2a} \cr}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+we get:
+
+\getbuffer
+
+Sometimes alignment at more than one location is wanted. Watch the second line in
+the next example and see how it is defined:
+
+\startbuffer
+\startformula
+  \eqalign{
+    ax+bx+\cdots+yx+zx &         = x(a +b+ \cdots \cr
+                       &\phantom{= x(a~}+y+z)     \cr
+                       &         = y              \cr}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+This results in:
+
+\getbuffer
+
+Next to the command \type{\phantom} there are \type{\hphantom} without height and
+depth and \type{\vphantom} without width.
+
+You can rely on \TEX\ for spacing within a math expression. In some situations,
+however you may want to influence spacing. This is done by:
+
+\starttabulate[|l|r|]
+\NC \type{\!} \NC $-\frac{1}{6}$\type{\quad} \NC\NR
+\NC \type{\,} \NC $\frac{1}{6}$\type{\quad}  \NC\NR
+\NC \type{\>} \NC $\frac{2}{9}$\type{\quad}  \NC\NR
+\NC \type{\;} \NC $\frac{5}{18}$\type{\quad} \NC\NR
+\stoptabulate
+
+These \quote {spaces} are related to \type {\quad} that stands for the width of
+the capital \quote{M}.
+
+The use of the command \type{\prime} speaks for itself. For example if would want
+$y_1^\prime+y_2^{\prime\prime}$ you should type
+\type{$y_1^\prime+y_2^{\prime\prime}$}.
+
+An expression like $\root 3 \of {x^2+y^2}$ is obtained by \type{$\root 3 \of
+{x^2+y^2}$}.
+
+At the end of this section we point to the command \type{\mathstrut} which we can
+use to enforce consistency, for example within the root symbol. With
+\type{$\sqrt{\mathstrut a}+\sqrt{\mathstrut d}+\sqrt{\mathstrut y}$} we will get
+$\sqrt{\mathstrut a}+\sqrt{\mathstrut d}+\sqrt{\mathstrut y}$ in stead of
+$\sqrt{a}+\sqrt{d}+\sqrt{y}$.
+
+See \in{appendix}[overviews] for a complete overview of math commands.
+
+\stopsection
+
+\startsection[title=Placing formulas]
+
+\index{formula}
+
+\Command{\tex{placeformula}}
+\Command{\tex{startformula}}
+\Command{\tex{setupformulas}}
+
+You can typeset numbered formulas with:
+
+\shortsetup{placeformula}
+\shortsetup{startformula}
+
+Two examples:
+
+\startbuffer
+\placeformula[formula:aformula]
+  \startformula
+     y=x^2
+  \stopformula
+
+\placeformula
+  \startformula
+    \int_0^1 x^2 dx
+  \stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The command \type{\placeformula} handles spacing around the formulas and the
+numbering. The bracket pair is optional and is used for referencing and to switch
+numbering on and off.
+
+\startbuffer
+\placeformula[first one]
+\startformula
+  y=x^2
+\stopformula
+
+\placeformula[middle one]
+\startformula
+  y=x^3
+\stopformula
+
+\placeformula[last one]
+\startformula
+  y=x^4
+\stopformula
+\stopbuffer
+
+\getbuffer
+
+\in{Formula}[middle one] was typed like this:
+
+\startbuffer
+\placeformula[middle one]
+  \startformula
+     y=x^3
+  \stopformula
+\stopbuffer
+
+\typebuffer
+
+The lable \type{[middle one]} is used for refering to this formula. Such a
+reference is made with \type{\in{formula}[middle one]}.
+
+If no numbering is required you type:
+
+\type{\placeformula[-]}
+
+Numbering of formulas is set up with \type{\setupnumbering}. In this manual
+numbering is set up with \type{\setupnumbering[way=bychapter]}. This means that
+the chapter number preceeds the formula number and numbering is reset with each
+new chapter. For reasons of consistency the tables, figures, intermezzi etc. are
+numbered in the same way. Therefore you use \type{\setupnumbering} in the set up
+area of your input file.
+
+Formulas can be set up with:
+
+\shortsetup{setupformulae}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

@@ -1,0 +1,201 @@
+\startenvironment ma-cb-screen
+
+% This setups adds some functionality as well as redefines
+% some of the previously defined layout.
+
+\unprotect
+
+\definepapersize
+  [LocalPaperFormat]
+  [\c!width=28cm,
+   \c!height=21cm]
+
+\setuppapersize
+  [LocalPaperFormat]
+  [LocalPaperFormat]
+
+\setuplayout
+  [\c!location=\v!middle,
+   \c!topspace=.5cm,
+   \c!header=1.5cm,
+   \c!height=20cm,
+   \c!rightedge=5cm,
+   \c!rightedgedistance=1cm]
+
+\setupinteractionscreen
+  [\c!width=28cm,
+   \c!height=21cm,
+   \c!option=\v!max]
+
+% We place the pagenumber (not that useful in an interactive
+% document) somewhere else and the chapter number in the
+% footer.
+
+\setuppagenumbering
+  [\c!alternative=\v!singlesided,
+   \c!location=,
+   \c!command=\NummerCommando]
+
+\unexpanded\def\NummerCommando#1% uitlijnen op onderkant voet
+  {\hbox to \rightedgewidth
+     {\scratchcounter=\lastpage
+      \advance\scratchcounter by -\realpageno
+      \hskip0pt plus \realpageno cm
+      \framed
+        [\c!background=NummerAchtergrond,
+         \c!frame=\v!off,
+         \c!offset=4pt]%
+        {\lower.5\dp\strutbox\hbox spread 60pt{\hss\tx#1\hss}}% {\hss#1\hss}}%
+      \hskip0pt plus \scratchcounter cm}}
+
+\setupfootertexts
+  [\v!edge]
+  [][\v!pagenumber]
+
+\unexpanded\def\PlaatsHoofdstukStatus
+  {\determineheadnumber[\v!chapter]%
+   \ifnum\currentheadnumber>0
+     \hbox to \hsize
+       {\hss
+        \framed
+          [\c!background=NummerAchtergrond,
+           \c!frame=\v!off,
+           \c!offset=6pt]
+          {\lower.5\dp\strutbox\hbox spread 60pt
+             {\hss\getmarking[\v!chapter\v!number]\hss}}%
+        \hss}
+   \fi}
+
+\setupfootertexts
+  [\v!margin]
+  [][]
+
+\setupfootertexts
+  [\v!text]
+  [][\PlaatsHoofdstukStatus]
+
+\setupinteraction
+  [\c!state=\v!start,
+   \c!color=,
+   \c!menu=\v!on]
+
+% We let users click on the whole table of contents line and
+% provide some menus.
+
+\setuplist
+  [\v!chapter]
+  [\c!interaction=\v!all]
+
+\setupinteractionmenu
+  [\v!right]
+  [\c!state=\v!start,
+   \c!color=,
+   \c!offset=4pt,
+   \c!background=MenuAchtergrond,
+   \c!frame=\v!off]
+
+\startmode[**nl]
+
+  \setupinteractionmenu
+    [\v!right]
+    [    {inhoud[contents]},
+          {index[subind]},
+     {commando's[comind]},
+     {definities[comdefs]},
+        {colofon[colofon]},
+            {\vfill},
+        {stoppen[\v!CloseDocument]},
+     {\ZoekEnZoek{zoeken}},
+          {terug[\v!PreviousJump]},
+        {\HeenEnWeer}]
+
+\stopmode
+
+\startmode[**en,**uk]
+
+  \setupinteractionmenu
+    [\v!right]
+    [  {contents[contents]},
+          {index[subind]},
+       {commands[comind]},
+    {definitions[comdefs]},
+        {colofon[colofon]},
+            {\vfill},
+           {exit[\v!CloseDocument]},
+     {\ZoekEnZoek{search}},
+        {go back[\v!PreviousJump]},
+        {\HeenEnWeer}]
+
+\stopmode
+
+\startmode[**cz]
+
+  \setupinteractionmenu
+    [\v!right]
+    [                             {obsah[contents]},
+                  {rejst\rcaron\iacute k[subind]},
+       {seznam p\rcaron\iacute kaz\uring[comind]},
+     {definice p\rcaron\iacute kaz\uring[comdefs]},
+                      {tir\aacute\zcaron[colofon]},
+                                    {\vfill},
+                                  {konec[\v!CloseDocument]},
+                            {\ZoekEnZoek{vyhledej}},
+                       {krok zp\ecaron t[\v!PreviousJump]},
+                                  {\HeenEnWeer}]
+
+\stopmode
+
+\startmode[**fr]
+
+  \setupinteractionmenu
+    [\v!right]
+    [  {table des mati\egrave res[contents]},
+          {index[subind]},
+       {commandes[comind]},
+    {d\eacute finitions[comdefs]},
+        {colophon[colofon]},
+            {\vfill},
+           {quitter[\v!CloseDocument]},
+     {\ZoekEnZoek{recherche}},
+        {retour[\v!PreviousJump]},
+        {\HeenEnWeer}]
+
+\stopmode
+
+\startmode[**vn]
+
+  \setupinteractionmenu
+    [\v!right]
+    [  {mục lục[contents]},
+      {bảng tra[subind]},
+          {lệnh[comind]},
+    {định nghĩa[comdefs]},
+    {trang cuối[colofon]},
+            {\vfill},
+         {thoát[\v!CloseDocument]},
+     {\ZoekEnZoek{tìm kiếm}},
+      {quay lại[\v!PreviousJump]},
+        {\HeenEnWeer}]
+
+\stopmode
+
+% This not that \TEX nical definition deals with the two sets
+% of buttons. Someday I'll make a general macro for this.
+
+\def\TwoMenuButtons#1[#2]#3[#4]%
+  {\hbox to \hsize
+     {\dimen0=\hsize
+      \advance\hsize by -12pt
+      \menubutton[\v!right][\c!width=.5\hsize]{#1}[#2]%
+      \hss
+      \menubutton[\v!right][\c!width=.5\hsize]{#3}[#4]}}
+
+\def\HeenEnWeer
+  {\TwoMenuButtons{--}[\v!previouspage]{+}[\v!nextpage]}
+
+\def\ZoekEnZoek#1%
+  {\TwoMenuButtons{#1}[\v!SearchDocument]{+}[\v!SearchAgain]}
+
+\protect
+
+\stopenvironment

@@ -1,0 +1,100 @@
+\startcomponent ma-cb-en-margintexts
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Margin texts]
+
+\index{margin text}
+
+\Command{\tex{margintext}}
+\Command{\tex{inmargin}}
+\Command{\tex{inleft}}
+\Command{\tex{inright}}
+\Command{\tex{margintitle}}
+
+It is very easy to put text in the margin. You just use \type{\inmargin}.
+
+\shortsetup{inmargin}
+
+You may remember one of the earlier examples:
+
+\startbuffer[marginpicture]
+\inmargin
+  {\externalfigure
+     [ma-cb-23]
+     [width=.6\marginwidth]}
+\stopbuffer
+
+\typebuffer[marginpicture]
+
+This would result in a figure in the \pagereference [marginpicture]
+margin. You can imagine that it looks quite nice in some
+documents. But be careful. The margin is rather small so the figure could become
+very marginal.
+
+A few other examples are shown in the text below.\getbuffer
+[marginpicture]
+
+\startbuffer
+The Ridderstraat (Street of knights) \inmargin{Street of\\Knights}
+is an obvious name. In the 14th and 15th centuries, nobility and
+prominent citizens lived in this street. Some of their big houses
+were later turned into poorhouses \inright{poorhouse}and old
+peoples homes.
+
+Up until \inleft[low]{\tfc 1940}1940 there was a synagog in the
+Ridderstraat. Some 40 Jews gathered there to celebrate their
+sabbath. During the war all Jews were deported to Westerbork and
+then to the extermination camps in Germany and Poland. None of
+the Jewish families returned. The synagog was knocked down in
+1958.
+\stopbuffer
+
+\typebuffer
+
+The commands \type{\inmargin}, \type{\inleft} and \type{\inright} all have the
+same function. In a two sided document \type{\inmargin} puts the margin text in
+the correct margin. The \type{\\} is used for line breaking. The example above
+would look like this:
+
+\getbuffer
+
+You can set up the margin text with:
+
+\shortsetup{setupinmargin}
+
+Other commands that you can use for forcing text into the margin
+are listed in \in{table}[tab:margincommands].
+
+\placetable
+  [here]
+  [tab:margincommands]
+  {Overview of margin commands.}
+  {\starttable[|l|l|]
+  \HL
+  \NC \bf Command           \NC \bf Meaning \NC\SR
+  \HL
+  \NC \type{\ininner}       \NC text in inner margin \NC\FR
+  \NC \type{\inouter}       \NC text in outer margin \NC\MR
+  \NC \type{\inright}       \NC text in right margin \NC\MR
+  \NC \type{\inleft}        \NC text in left margin \NC\MR
+  \NC \type{\inmargin}      \NC text in the margin \NC\MR
+  \NC \type{\inothermargin} \NC text in other margin \NC\MR
+  \NC \type{\margintext}    \NC text in the margin \NC\LR
+  \HL
+  \stoptable}
+
+If you want to place more extensive text blocks in the margin there is the
+command:
+
+\shortsetup{marginblock}
+
+and the accompanying command:
+
+\shortsetup{setupmarginblocks}
+
+\stopchapter
+
+\stopcomponent

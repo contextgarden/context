@@ -237,7 +237,7 @@ local function check_number(n,a,skip,sameline)
                 report_lines("skipping line number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or v_no)
             end
         end
-        ctx_makelinenumber(tag,skipflag,s,getfield(n,"shift"),getfield(n,"width"),leftmarginwidth(getlist(n)),getfield(n,"dir"))
+        ctx_makelinenumber(tag,skipflag,s,getfield(n,"width"),getfield(n,"dir"))
     end
 end
 
@@ -357,6 +357,38 @@ end
 -- setfield(h,"list",ti) -- the number
 -- setfield(n,"list",h)
 
+-- function boxed.stage_two(n,m)
+--     if #current_list > 0 then
+--         m = m or lines.scratchbox
+--         local t, tn = { }, 0
+--         for l in traverse_id(hlist_code,getlist(getbox(m))) do
+--             tn = tn + 1
+--             t[tn] = copy_node(l) -- use take_box instead
+--         end
+--         for i=1,#current_list do
+--             local li = current_list[i]
+--             local n, m, ti = li[1], li[2], t[i]
+--             if ti then
+--                 local d = getfield(n,"dir")
+--                 local l = getlist(n)
+--                 if d == "TRT" then
+--                     local w = getfield(n,"width")
+--                     ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
+--                 end
+--                 setfield(ti,"next",l)
+--                 setfield(l,"prev",ti)
+--                 setfield(n,"list",ti)
+--                 resolve(n,m)
+--             else
+--                 report_lines("error in linenumbering (1)")
+--                 return
+--             end
+--        end
+--     end
+-- end
+
+local addtoline = typesetters.paragraphs and typesetters.paragraphs.addtoline
+
 function boxed.stage_two(n,m)
     if #current_list > 0 then
         m = m or lines.scratchbox
@@ -369,15 +401,19 @@ function boxed.stage_two(n,m)
             local li = current_list[i]
             local n, m, ti = li[1], li[2], t[i]
             if ti then
-                local d = getfield(n,"dir")
-                local l = getlist(n)
-                if d == "TRT" then
-                    local w = getfield(n,"width")
-                    ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
+                if addtoline then
+                    addtoline(n,ti)
+                else
+                    local d = getfield(n,"dir")
+                    local l = getlist(n)
+                    if d == "TRT" then
+                        local w = getfield(n,"width")
+                        ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
+                    end
+                    setfield(ti,"next",l)
+                    setfield(l,"prev",ti)
+                    setfield(n,"list",ti)
                 end
-                setfield(ti,"next",l)
-                setfield(l,"prev",ti)
-                setfield(n,"list",ti)
                 resolve(n,m)
             else
                 report_lines("error in linenumbering (1)")

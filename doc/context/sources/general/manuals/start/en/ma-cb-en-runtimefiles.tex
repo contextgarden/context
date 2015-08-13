@@ -1,0 +1,41 @@
+\startcomponent ma-cb-en-runtimefiles
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Auxilliary files,reference=runtimefiles]
+
+\index[tuc]{{\tt tuc}--file}
+\index{auxilliary files}
+
+\CONTEXT\ will produce a number of auxilliary files during processing. If your
+input file is called \type{myfile.tex} the following files may appear on your
+working directory.
+
+\index[tuc]{{\tt tuc}--file}
+\index{auxilliary files}
+
+\starttabulate[|l|l|l|]
+\HL
+\NC \darkgray \bf \CONTEXT\ MkII \NC \bf \CONTEXT\ MkIV \NC \bf Meaning                      \NC\NR
+\HL
+\NC \darkgray \tt myfile.tex     \NC \tt myfile.tex     \NC your text file                   \NC\NR
+\HL
+\NC \darkgray \tt myfile.log     \NC \tt myfile.log     \NC log information                  \NC\NR
+\NC \darkgray \tt myfile.tuo     \NC \tt myfile.tuc     \NC output information               \NC\NR
+\NC \darkgray \tt myfile.tui     \NC                    \NC \darkgray input information      \NC\NR
+\NC \darkgray \tt myfile.tmp     \NC                    \NC \darkgray temporary information  \NC\NR
+\NC \darkgray \tt mpgraph.mp     \NC                    \NC \darkgray \METAPOST\ information \NC\NR
+\HL
+\NC \darkgray \tt myfile.pdf     \NC \tt myfile.pdf     \NC result file                      \NC\NR
+\HL
+\stoptabulate
+
+The \type{myfile.tuc} file contains information about registers, lists and
+references which will be used when necessary. The \type{myfile.log}
+can be viewed in case there are problems during processing.
+
+\stopchapter
+
+\stopcomponent

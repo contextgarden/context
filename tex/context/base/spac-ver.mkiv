@@ -487,33 +487,22 @@
 %
 % todo: a version that works ok inside a box
 
+% global : outer hsize + keep skips
+% local  : inner hsize + reset skips
+
 \installcorenamespace{linesaround}
+
+\let\spac_lines_vbox\vbox
+
+\installtextracker
+  {linecorrection.boxes}
+  {\let\spac_lines_vbox\ruledvbox}
+  {\let\spac_lines_vbox\vbox}
 
 \let\v_spac_lines_around_action_set\relax
 \let\m_spac_lines_around           \empty
 
-% \setvalue{\??linesaround\v!blank  }{\blank}
-% \letvalue{\??linesaround\empty    }\relax
-% \setvalue{\??linesaround\s!unknown}{\blank[\m_spac_lines_around]}
-%
-% \unexpanded\def\startlinecorrection
-%   {\bgroup
-%    \dodoubleempty\spac_lines_start_correction}
-%
-% \def\spac_lines_start_correction[#1][#2]% #2 gobbles spaces
-%   {\edef\m_spac_lines_around{#1}%
-%    \expandafter\let\expandafter\spac_lines_action_around\csname\??linesaround
-%      \ifcsname\??linesaround\m_spac_lines_around\endcsname\m_spac_lines_around\else\s!unknown\fi
-%    \endcsname
-%    \spac_lines_action_around
-%    \startbaselinecorrection
-%    \offbaselinecorrection
-%    \ignorespaces}
-%
-% \unexpanded\def\stoplinecorrection
-%   {\stopbaselinecorrection
-%    \spac_lines_action_around
-%    \egroup}
+\newconstant\c_spac_lines_correction_mode
 
 \setvalue{\??linesaround\v!blank  }{\blank}
 \letvalue{\??linesaround\empty    }\relax
@@ -526,62 +515,61 @@
 
 \unexpanded\def\startlinecorrection
   {\endgraf
-   \bgroup
+   \begingroup
+   \setconstant\c_spac_lines_correction_mode\plusone
    \dosingleempty\spac_lines_start_correction}
 
 \unexpanded\def\startlocallinecorrection
   {\endgraf
-   \bgroup
-   \setlocalhsize
-   \hsize\localhsize
+   \begingroup
+   \setconstant\c_spac_lines_correction_mode\plustwo
    \dosingleempty\spac_lines_start_correction}
 
-\def\spac_lines_start_correction
-  {\ifvmode
-     \expandafter\spac_lines_start_correction_yes
-   \else
-     \expandafter\spac_lines_start_correction_nop
-   \fi}
-
-\def\spac_lines_start_correction_nop[#1]%
-  {\vbox\bgroup
-   \ignorespaces
-   \let\spac_lines_stop_correction\spac_lines_stop_correction_nop}
-
-\def\spac_lines_stop_correction_nop
-  {\removeunwantedspaces
-   \egroup}
-
-\def\spac_lines_start_correction_yes[#1]%
+\unexpanded\def\spac_lines_start_correction[#1]%
   {\edef\m_spac_lines_around{#1}%
    \spac_lines_action_around
    \d_spac_prevdepth\prevdepth
    \spac_lines_initialize_corrections
    \offbaselinecorrection % ???
-   \setbox\scratchbox\vbox\bgroup
-   \ignorespaces
-   \let\spac_lines_stop_correction\spac_lines_stop_correction_yes}
+   \setbox\scratchbox\spac_lines_vbox\bgroup
+     \ifcase\c_spac_lines_correction_mode
+       % nothing
+     \or
+       % global
+     \or
+       % local
+       \setlocalhsize
+       \hsize\localhsize
+       \forgetbothskips
+     \fi
+     \ignorespaces}
 
-% still not ok ... will move to the lua end ... needs a final solution
-
-\unexpanded\def\spac_lines_stop_correction_yes
+\unexpanded\def\spac_lines_stop_correction
   {\removeunwantedspaces
    \egroup
    \ifgridsnapping
-     \blank[\v!white]%
-     \snaptogrid\hbox{\box\scratchbox}%
+     \spac_lines_stop_correction_ongrid
    \else
-\blank[\v!nowhite]%
-\ifdim\parskip>\zeropoint
-     % too fuzzy otherwise
-\else
-     % doesn't like whitespace
+     \spac_lines_stop_correction_normal
+   \fi
+   \endgroup}
+
+\unexpanded\def\spac_lines_stop_correction_ongrid
+  {\blank[\v!white]%
+   \snaptogrid\hbox{\box\scratchbox}}
+
+\unexpanded\def\spac_lines_stop_correction_normal
+  {\blank[\v!nowhite]%
+   \ifdim\parskip>\zeropoint
+      % too fuzzy otherwise
+   \else
+      % doesn't like whitespace
      \ifdim\d_spac_prevdepth<\maxdimen
        \unless\ifdim\d_spac_prevdepth<\zeropoint
          \ifdim\d_spac_prevdepth<\strutdp \relax
            \pushlastnode
            \ifdim\d_spac_prevdepth>\zeropoint
-             \kern-\d_spac_prevdepth
+              \kern-\d_spac_prevdepth
            \fi
            \kern\strutdp
            \prevdepth\strutdp
@@ -589,24 +577,30 @@
          \fi
        \fi
      \fi
-\fi
-     \ifdim\pagegoal<\maxdimen
-       \blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
-     \fi
-     \nointerlineskip % new
-     \noindent % not just \dontleavehmode (MKII compatible)
-     \box\scratchbox
-     \endgraf
-     \blank[\the\d_spac_lines_correction_after]% \dobotbaselinecorrection
-   % \allowbreak % new, otherwise problems when many in a row
-     \prevdepth\strutdp
    \fi
-   \spac_lines_action_around
-   \egroup}
+   \ifdim\pagegoal<\maxdimen
+     \blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
+   \fi
+   \nointerlineskip % new
+   \noindent % not \dontleavehmode !
+   \ifcase\c_spac_lines_correction_mode
+     % nothing
+   \or
+     % global
+     \hskip-\leftskip % more tricky would be hangindent so we ignore that one
+   \or
+     % local
+   \fi
+   \box\scratchbox
+   \endgraf
+   \blank[\the\d_spac_lines_correction_after]% \dobotbaselinecorrection
+ % \allowbreak % new, otherwise problems when many in a row
+   \prevdepth\strutdp
+   \spac_lines_action_around}
 
-\unexpanded\def\stoplinecorrection{\spac_lines_stop_correction}
 
-\let\stoplocallinecorrection\stoplinecorrection
+\let\stoplinecorrection     \spac_lines_stop_correction
+\let\stoplocallinecorrection\spac_lines_stop_correction
 
 % todo:
 

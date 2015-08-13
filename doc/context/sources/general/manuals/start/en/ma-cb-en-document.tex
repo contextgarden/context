@@ -1,0 +1,117 @@
+\startcomponent ma-cb-en-document
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=How to create a textbook]
+
+\index{input file}
+
+Let's assume you want to create a simple textbook. It has some structure and
+contains a title page, a few chapters, sections and sub sections. Of course there
+is a table of contents.
+
+\CONTEXT\ can create such a document automatically if you offer the right input
+by means of a file. So first you have to create an input file. An input file
+consists of a name and an extension. You can choose any name you want but the
+extension has to be \type{.tex}. If you create a file with the name
+\type{mybook.tex} you will find no difficulties in running \CONTEXT.
+
+An \pagereference[inputfile] input file could look like this:
+
+\startbuffer
+\starttext
+
+\startstandardmakeup
+  \midaligned{From Hasselt to America}
+  \midaligned{by}
+  \midaligned{J. Jonker and C. van Marle}
+\stopstandardmakeup
+
+\placecombinedlist[content]
+
+\chapter{Introduction}
+
+... ties between Hasselt and America ...
+
+\chapter[rensselaer]{The Rensselaer family}
+
+\section{The first born}
+
+... was born in the year ...
+
+\section{The early years}
+
+... in those days Hasselt was ...
+
+\section{Living and workin in America}
+
+... life in America was ...
+
+\chapter[lansing]{The Lansing family}
+
+... the Lansing family was also ...
+
+\chapter[cuyler]{The Cuyler family}
+
+... much later Tydeman Cuyler ...
+
+\stoptext
+\stopbuffer
+
+{\switchtobodyfont[9pt]\typebuffer}
+
+\CONTEXT\ expects a plain \ASCII\ input file. Of course you can use any
+text|-|editor, as long as you save the file as standard \ASCII\ (also called txt
+file) with the extension \type{.tex}. Note that spaces in the filename are
+not allowed.
+
+The input file contains the text you want to typeset and the \CONTEXT\ commands.
+A \CONTEXT\ command begins with a backslash~\tex{}. With the command
+\type{\starttext} you indicate the beginning of your text.
+
+A command is sometimes followed by an argument which is enclosed by curly braces
+\type{{}}. The command \type{\chapter[cuyler]{The Cuyler family}} that you see in
+the example will have its effect on {\em The Cuyler family}. Its actions will
+have effect on the design, typography and structure. The actions may be:
+
+\startitemize[n,packed]
+\item start a new page
+\item increase chapter number by one
+\item place chapter number in front of chapter title
+\item reserve some vertical space
+\item use a big font
+\item put chapter title (and page number) in the table of contents
+\stopitemize
+
+Other actions concerning running heads, number resetting and interactivity are
+disregarded at this moment.
+
+Sometimes you will see two brackets (\type{[]}) directly after the command. These
+brackets are used to feed specific options to the command. Further on in this
+manual you will get more information on these brackets.
+
+The commands in your input file can have the following appearance:
+
+\starttabulate[|||]
+\HL
+\NC \bf Appearance of command  \NC \bf Example \NC\NR
+\HL
+\NC \type{\startcommand ... \stopcommand}   \NC \type{\starttext ... \stoptext} \NC\NR
+\NC \type{\startcommand[] ... \stopcommand} \NC \type{\startitemize[packed] ... \stopitemize} \NC\NR
+\NC \type{\command}                         \NC \type{\item} \NC\NR
+\NC \type{\command[]}                       \NC \type{\in[cuyler]} \NC\NR
+\NC \type{\command{}[]}                     \NC \type{\at{page}[cuyler]} \NC\NR
+\NC \type{\command{}}                       \NC \type{\index{America}} \NC\NR
+\NC \type{\command[]{}}                     \NC \type{\chapter[cuyler]{The Cuyler family}} \NC\NR
+\HL
+\stoptabulate
+
+If you have \CONTEXT\ process the above example file, you would obtain a very
+simple document with a title page, a few numbered chapters and section headers
+and a table of content (because of \type{\placecombinedlist[content]}).
+
+\stopchapter
+
+\stopcomponent

@@ -691,15 +691,21 @@ end
 local a_autofence     = privateattribute("mathautofence")
 local autofences      = { }
 processors.autofences = autofences
+local dummyfencechar  = 0x2E
 
 local function makefence(what,char)
     local d = new_node(math_delim)
     local f = new_node(math_fence)
     if char then
-        local c = getfield(char,"nucleus")
-        setfield(d,"small_char",getfield(c,"char"))
-        setfield(d,"small_fam", getfield(c,"fam"))
-        free_node(c)
+        local sym = getfield(char,"nucleus")
+        local chr = getfield(sym,"char")
+        local fam = getfield(sym,"fam")
+        if chr == dummyfencechar then
+            chr = 0
+        end
+        setfield(d,"small_char",chr)
+        setfield(d,"small_fam", fam)
+        free_node(sym)
     end
     setfield(f,"subtype",what)
     setfield(f,"delim",d)

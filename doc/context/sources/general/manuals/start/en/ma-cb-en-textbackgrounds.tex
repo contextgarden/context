@@ -1,0 +1,55 @@
+\startcomponent ma-cb-en-textbackgrounds
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Background in paragraphs]
+
+\index{background+text}
+
+\Command{\tex{setuptextbackground}}
+\Command{\tex{definetextbackground}}
+\Command{\tex{starttextbackground}}
+
+To emphasize a paragraph you can use backgrounds. A background is set with the
+command pair:
+
+\shortsetup{starttextbackground}
+
+An example can illustrate the use:
+
+\startbuffer
+\setuptextbackground
+  [corner=round,frame=on,
+   location=paragraph,
+   leftoffset=.5\bodyfontsize,
+   rightoffset=.5\bodyfontsize,
+   bottomoffset=5pt]
+
+\starttextbackground
+Hasselt has produced a number of well known people. Only recently
+it turned out that Kilian van Rensselaer played a prominent role
+in the foundation of the State of New York.
+\stoptextbackground
+\stopbuffer
+
+\typebuffer
+
+This would be displayed as:
+
+\getbuffer
+
+Backgrounds can span multiple pages.
+
+You can vary the display of the backgrounds with:
+
+\shortsetup{setuptextbackground}
+
+You can even define your own text backgrounds with:
+
+\shortsetup{definetextbackground}
+
+\stopchapter
+
+\stopcomponent

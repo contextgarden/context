@@ -1,0 +1,148 @@
+\startcomponent ma-cb-en-references
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Refering to text elements]
+
+\index{refering}
+\index{label}
+
+\Command{\tex{in}}
+\Command{\tex{at}}
+\Command{\tex{pagereference}}
+
+To disclose your document for your readers you can use the table of contents and
+the register. However, it is not uncommon to refer to specific text elements like
+formulas, tables, images and sections to enhance readability.
+
+For refering from one location in a document to another you can use the command:
+
+\shortsetup{in}
+
+The curly braces contain text and the brackets contain a logical label. If you have
+written a chapter header like this:
+
+\starttyping
+\startchapter[title=Hotels in Hasselt,reference=hotel]
+  ...
+\stopchapter
+\stoptyping
+
+then you can refer to this chapter with:
+
+\starttyping
+\in{chapter}[hotel]
+\stoptyping
+
+After processing the chapter number is available and the reference could look
+something like: {\em chapter 23}. You can use \type{\in} for any references to
+text elements like chapters, sections, figures, tables, formulas etc.
+
+Another example:
+
+\startbuffer
+There are a number of things you can do in Hasselt:
+
+\startitemize[n,packed]
+\item swimming
+\item sailing
+\item[hiking] hiking
+\item biking
+\stopitemize
+
+An activity like \in{activity}[hiking] described on \at{page}[hiking]
+is very tiring.
+\stopbuffer
+
+\typebuffer
+
+This would look like this:
+
+\getbuffer
+
+As you can see, it is also possible to refer to pages. This is done with:
+
+\shortsetup{at}
+
+For example with:
+
+\starttyping
+\at{page}[hiking]
+\stoptyping
+
+This command can be used in combination with:
+
+\shortsetup{pagereference}
+
+and
+
+\shortsetup{textreference}
+
+If you want to refer to the chapter {\em Hotels in Hasselt} you could type:
+
+\startbuffer
+Look in \in{chapter}[hotel] on \at{page}[hotel] for a complete
+overview of accomodations in \pagereference[accomodation]Hasselt.
+\stopbuffer
+
+\typebuffer
+
+A chapter number and a page number will be generated when processing the input
+file. On another spot in the document you can refer to \type{accomodation} with
+\type{\at{page}[accomodation]}.
+
+You can also define a set of labels separated by commas.
+
+\startbuffer
+\placefigure
+  [here]
+  [fig:canals,fig:boats]
+  {A characteristic picture of Hasselt.}
+  {\externalfigure[ma-cb-08][width=10cm]}
+
+There are many canals in Hasselt (see \in{figure}[fig:canals]).
+.
+.
+.
+Boats can be moored in the canals of Hasselt (see
+\in{figure}[fig:boats]).
+\stopbuffer
+
+\typebuffer
+
+This might look like this:
+
+\getbuffer
+
+You can also refer to a title of a chapter or section or even a caption of an
+image. This is done with:
+
+\shortsetup{about}
+
+This:
+
+\startbuffer
+The caption of \in{figure}[fig:canals] is {\em \about[fig:canals]}.
+\stopbuffer
+
+\typebuffer
+
+Becomes:
+
+\getbuffer
+
+With the command:
+
+\starttyping
+\setupinteraction[state=start]
+\stoptyping
+
+all references become active links. See \in{chapter}[interactivity] for more
+information on this subject.
+
+\stopchapter
+
+\stopcomponent
+

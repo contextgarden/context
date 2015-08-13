@@ -1,0 +1,46 @@
+\startcomponent ma-cb-en-gettingstarted
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=How to process a file]
+
+\index{input file+processing}
+\index[pdffile]{\type{pdf}--file}
+
+In this chapter we assume that you have installed and initiated \CONTEXT\ \MKIV\
+correctly so that you can run it from the commandline in your working directory.
+You can find the \CONTEXT\ installation procedure on the \goto {\CONTEXTWIKI}
+[ url (http://wiki.contextgarden.net/ConTeXt_Standalone#Windows) ].
+
+If you want to process a \CONTEXT\ input file, you should type at the command line
+prompt:
+
+\starttyping
+context myfile.tex
+\stoptyping
+
+the extension \type{.tex} is not needed. See \in{appendices}[contextcommand] and
+\in[runtimefiles] for more information on the \type{context} command.
+
+After pressing \Enter\ processing will be started. \CONTEXT\ will show processing
+information on your screen. During the processing of your input file \CONTEXT\
+will also inform you of what it is doing with your document. For example it will
+show page numbers and information about processing steps. Further more it gives
+warnings. These are of a typographical order and tells you when line breaking is
+not successful. All information on processing is stored in a \type{log} file that
+can be used for reviewing warnings and errors and the respective line numbers
+where they occur in your file.
+
+If processing is succesful the command line prompt will return and \CONTEXT\ will
+produce the file \type{myfile.pdf}. The abbreviation \PDF\ stands for Portable
+Document Format. This is a platform independent format for printing and viewing
+with \READER.
+
+When you use a configurable text editor you can also run \CONTEXT\ from that editor.
+More information on that topic can be found \in{appendix}[texteditor].
+
+\stopchapter
+
+\stopcomponent

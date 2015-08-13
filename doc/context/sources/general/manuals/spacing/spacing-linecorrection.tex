@@ -1,0 +1,108 @@
+% language=uk
+
+\environment spacing-style
+
+\startcomponent spacing-linecorrection
+
+\startchapter[title=Line correction]
+
+\startbuffer[linecorrection]
+\typebuffer
+\blank
+\enabletrackers[linecorrection.boxes]
+\getbuffer
+\disabletrackers[linecorrection.boxes]
+\blank
+\stopbuffer
+
+We really do out best to make the spacing look as good as possible
+(or at least consistent) but sometimes \TEX\ needs a bit of help.
+An example of a helper is the following:
+
+\startbuffer
+\startlinecorrection
+    \input ward
+\stoplinecorrection
+\stopbuffer
+
+\getbuffer[linecorrection]
+
+When we use the same command with some left and/or right margins set, we get
+this:
+
+\startbuffer
+\startnarrower
+    \startlinecorrection
+        \input ward
+    \stoplinecorrection
+\stopnarrower
+\stopbuffer
+
+\getbuffer[linecorrection]
+
+Here we do obey the margins inside the correction box but the box itself is still
+as wide as the current width. A typical case where this happens is:
+
+\startbuffer
+\startitemize
+    \startitem an item:
+        \startlinecorrection
+            \input ward
+        \stoplinecorrection
+    \stopitem
+\stopitemize
+\stopbuffer
+
+\getbuffer[linecorrection]
+
+Here is a variant:
+
+\startbuffer
+\startitemize
+    \startitem a local linecorrection:
+        \startlocallinecorrection
+            \input ward
+        \stoplocallinecorrection
+    \stopitem
+\stopitemize
+\stopbuffer
+
+\getbuffer[linecorrection]
+
+Both types of correction wrap their content in a box and make sure that the
+spacing around it is visually as good as possible. The local variant uses a box
+fitting the available width taking margins into account and but resetting them
+inside the box. The normal variant applies the margins inside the box. Which one
+you use depends on the situation and content.
+
+You can pass an optional argument that indicates the amount of spacing to be
+added before and after the correction.
+
+\startbuffer
+\startlinecorrection[3*line]
+    \input ward
+\stoplinecorrection
+\stopbuffer
+
+\getbuffer[linecorrection]
+
+Normally you don't need this correction. It is mainly used for correcting spacing
+around boxed material, like \type {\framed}:
+
+\startbuffer
+before
+\startlinecorrection
+    \framed{something inbetween}
+\stoplinecorrection
+after
+\stopbuffer
+
+\getbuffer[linecorrection]
+
+Because in this document we have set the whitespace this also gets added around
+the box. So, in case your spacing around some special content looks bad, consider
+using these commands.
+
+\stopchapter
+
+\stopcomponent

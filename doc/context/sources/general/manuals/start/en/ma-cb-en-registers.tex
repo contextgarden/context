@@ -1,0 +1,83 @@
+\startcomponent ma-cb-en-registers
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Registers]
+
+\index{register}
+
+\Command{\tex{index}}
+\Command{\tex{placeindex}}
+\Command{\tex{completeindex}}
+\Command{\tex{defineregister}}
+\Command{\tex{placeregister}}
+\Command{\tex{completeregister}}
+\Command{\tex{setupregister}}
+
+It is possible to generate one or more registers. By default the command
+\type{\index} is available. If you want to add a word to the index you type:
+
+\starttyping
+\index{town hall}
+\stoptyping
+
+The word {\em town hall} will appear as an index entry in the sorted register.
+Sometimes the index word does not appear in normal alphabetic order. For example,
+entries such as symbols have to provide extra sorting information in order to
+produce a correct alphabetical list:
+
+\starttyping
+\index[minus]{$-$}
+\stoptyping
+
+Sometimes you have sub- or sub sub entries. These can be defined as follows:
+
+\starttyping
+\index{town hall+location}
+\index{town hall+architecture}
+\stoptyping
+
+You can generate your register with the command:
+
+\starttyping
+\placeindex
+\stoptyping
+
+or
+
+\starttyping
+\completeindex
+\stoptyping
+
+The command \type{\index} is a predefined \CONTEXT\ command, but of course you
+can also define your own registers.
+
+\shortsetup{defineregister}
+
+For example if you want to make a new register based on the streets in Hasselt
+you could type:
+
+\starttyping
+\defineregister[street]
+\stoptyping
+
+Now a new register command \type{\street} is available. Now
+\type{\street{Ridderstraat}} is a new index entry. To produce a list of entries
+you could now use:
+
+\starttyping
+\placeregister[street]
+\placestreet
+\completestreet
+\stoptyping
+
+You can alter the layout of the registers with:
+
+\shortsetup{setupregister}
+
+\stopchapter
+
+\stopcomponent
+
