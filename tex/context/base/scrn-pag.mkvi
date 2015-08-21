@@ -30,6 +30,10 @@
 \newdimen\canvastopoffset
 \newdimen\canvasmaxwidth
 \newdimen\canvasmaxheight
+\newdimen\canvascropoffset
+\newdimen\canvastrimoffset
+\newdimen\canvasbleedoffset
+\newdimen\canvasartoffset
 
 \newconditional\c_scrn_canvas_tight_page
 
@@ -39,9 +43,11 @@
    \edef\currentinteractionscreenheight{\interactionscreenparameter\c!height}%
    \canvasbackoffset\backspace
    \canvastopoffset\topspace
+   \donetrue
    \ifx\currentinteractionscreenwidth\v!max
      \global\canvaswidth\printpaperwidth
    \else\ifx\currentinteractionscreenwidth\v!fit
+     \donefalse
      \global\canvaswidth\dimexpr
        \leftcombitotal
      + \makeupwidth
@@ -52,6 +58,7 @@
         \relax
      \relax
    \else\ifx\currentinteractionscreenwidth\v!tight
+     \donefalse
      \ifdim\backspace>\canvaswidth
        \ifdim\backspace>\zeropoint\relax
          \global\advance\canvasbackoffset -\canvaswidth
@@ -66,11 +73,13 @@
         \relax
      \relax
    \else
+     \donefalse
      \global\canvaswidth\currentinteractionscreenwidth
    \fi\fi\fi
    \ifx\currentinteractionscreenheight\v!max
      \global\canvasheight\printpaperheight
    \else\ifx\currentinteractionscreenheight\v!fit
+     \donefalse
      \global\canvasheight\dimexpr
        \topheight
      + \topdistance
@@ -83,6 +92,7 @@
         \relax
      \relax
    \else\ifx\currentinteractionscreenheight\v!tight
+     \donefalse
      \global\canvasheight\dimexpr\topheight+\topdistance\relax
      \ifdim\topspace>\canvasheight
        \ifdim\topspace>\zeropoint\relax
@@ -99,6 +109,7 @@
         \relax
      \relax
    \else
+     \donefalse
      \global\canvasheight\currentinteractionscreenheight
    \fi\fi\fi
    \ifconditional\c_page_layouts_location_is_set
@@ -111,7 +122,56 @@
      \global\canvasmaxwidth \printpaperwidth
      \global\canvasmaxheight\printpaperheight
    \fi
+   % new:
+   \ifdone
+     \global\canvascropoffset \layoutcropoffset
+     \global\canvastrimoffset \layouttrimoffset
+     \global\canvasbleedoffset\layoutbleedoffset
+     \global\canvasartoffset  \layoutartoffset
+   \else
+     \global\canvascropoffset \zeropoint
+     \global\canvastrimoffset \zeropoint
+     \global\canvasbleedoffset\zeropoint
+     \global\canvasartoffset  \zeropoint
+   \fi
    \endgroup}
+
+\newdimen\layoutcropoffset
+\newdimen\layouttrimoffset
+\newdimen\layoutbleedoffset
+\newdimen\layoutartoffset
+
+\appendtoks
+   \edef\p_cropoffset{\layoutparameter\c!cropoffset}%
+   \ifx\p_cropoffset\v!auto
+     \ifconditional\c_page_layouts_location_is_middle
+       \scratchheight\dimexpr(\printpaperheight-\paperheight)/2\relax
+       \scratchwidth \dimexpr(\printpaperwidth -\paperwidth )/2\relax
+       \layoutcropoffset\ifdim\scratchheight>\scratchwidth\scratchheight\else\scratchwidth\fi
+       \layouttrimoffset \layoutparameter\c!trimoffset
+       \layoutbleedoffset\layoutparameter\c!bleedoffset
+       \layoutartoffset  \layoutparameter\c!artoffset
+     \else
+       \writestatus\m!system{auto crop etc only supported when location=middle}%
+       \layoutcropoffset \zeropoint
+       \layouttrimoffset \zeropoint
+       \layoutbleedoffset\zeropoint
+       \layoutartoffset  \zeropoint
+     \fi
+   \else
+     \layoutcropoffset \layoutparameter\c!cropoffset
+     \layouttrimoffset \layoutparameter\c!trimoffset
+     \layoutbleedoffset\layoutparameter\c!bleedoffset
+     \layoutartoffset  \layoutparameter\c!artoffset
+   \fi
+   \relax
+\to \everysetuplayout
+
+\setuplayout
+  [\c!cropoffset=\zeropoint,
+   \c!trimoffset=\zeropoint,
+   \c!bleedoffset=\zeropoint,
+   \c!artoffset=\zeropoint]
 
 % test the next when something is changed here:
 %
@@ -152,6 +212,10 @@
         height      \canvasheight
         paperwidth  \canvasmaxwidth
         paperheight \canvasmaxheight
+        cropoffset  \canvascropoffset
+        trimoffset  \canvastrimoffset
+        bleedoffset \canvasbleedoffset
+        artoffset   \canvasartoffset
    \relax
   %\global\let\scrn_canvas_synchronize_simple \relax
    \global\let\scrn_canvas_synchronize_complex\relax}

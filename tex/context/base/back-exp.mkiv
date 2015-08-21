@@ -159,17 +159,24 @@
        \fi}%
 \to \everyenableelements
 
+%     \appendtoks
+%         \unexpanded\def\dotagsetdescription
+%           {\iftrialtypesetting\else
+%              \clf_settagdescription{\currentdescription}\currentdescriptionnumberentry\relax
+%            \fi}%
+%     \to \everyenableelements
+
 \appendtoks
-    \unexpanded\def\dotagsetdescription
+    \unexpanded\def\dotagsetnotation
       {\iftrialtypesetting\else
-         \clf_settagdescription{\currentdescription}\currentdescriptionnumberentry\relax
+        \clf_settagnotation{\currentnote}\currentnotenumber\relax
        \fi}%
 \to \everyenableelements
 
 \appendtoks
     \unexpanded\def\dotagsetnotesymbol
       {\iftrialtypesetting\else
-         \clf_settagdescriptionsymbol{\currentnote}\currentnotenumber\relax
+         \clf_settagnotationsymbol{\currentnote}\currentnotenumber\relax
        \fi}%
 \to \everyenableelements
 

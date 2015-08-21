@@ -784,23 +784,21 @@ function fontgoodies.designsizes.register(name,size,specification)
 end
 
 function fontgoodies.designsizes.filename(name,spec,size) -- returns nil of no match
-    if spec and spec ~= "" then
-        local data = designdata[lower(name)]
-        if data then
-            if spec == "default" then
-                return data.default
-            elseif spec == "auto" then
-                local ranges = data.ranges
-                if ranges then
-                    for i=1,#ranges do
-                        local r = ranges[i]
-                        if r[1] >= size then -- todo: rounding so maybe size - 100
-                            return r[2]
-                        end
+    local data = designdata[lower(name)]
+    if data then
+        if not spec or spec == "" or spec == "default" then
+            return data.default
+        elseif spec == "auto" then
+            local ranges = data.ranges
+            if ranges then
+                for i=1,#ranges do
+                    local r = ranges[i]
+                    if r[1] >= size then -- todo: rounding so maybe size - 100
+                        return r[2]
                     end
                 end
-                return data.default or (ranges and ranges[#ranges][2])
             end
+            return data.default or (ranges and ranges[#ranges][2])
         end
     end
 end

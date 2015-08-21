@@ -184,7 +184,7 @@
 %D Also, passing the title as argument has some history so we need to keep that as
 %D well.
 
-\ifdefined\dotagsetconstruction \else \let\dotagsetconstruction\relax \fi
+% \ifdefined\dotagsetconstruction \else \let\dotagsetconstruction\relax \fi
 
 \newtoks\everyconstruction
 
@@ -271,7 +271,7 @@
 
 \unexpanded\setvalue{\??constructionstarthandler\v!construction}% this will be redone (reorganized) .. too much boxing
   {\dostarttaggedchained\t!construction\currentconstruction\currentconstructionhash
-   \dotagsetconstruction
+%    \dotagsetconstruction
    \constructionparameter\c!before
    \begingroup
    \edef\currentconstructionalternative{\constructionparameter\c!alternative}%

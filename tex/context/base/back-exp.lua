@@ -750,13 +750,13 @@ end
 
 do
 
-    -- is this referencing still needed?
-
     local descriptions = { }
     local symbols      = { }
     local linked       = { }
 
-    function structurestags.setdescription(tag,n) -- needs checking (is tag needed)
+    -- we could move the notation itself to the first reference (can be an option)
+
+    function structurestags.setnotation(tag,n) -- needs checking (is tag needed)
         -- we can also use the internals hash or list
         local nd = structures.notes.get(tag,n)
         if nd then
@@ -765,7 +765,7 @@ do
         end
     end
 
-    function structurestags.setdescriptionsymbol(tag,n) -- needs checking (is tag needed)
+    function structurestags.setnotationsymbol(tag,n) -- needs checking (is tag needed)
         local nd = structures.notes.get(tag,n) -- todo: use listdata instead
         if nd then
             local references = nd.references
@@ -3658,14 +3658,14 @@ implement {
 }
 
 implement {
-    name      = "settagdescription",
-    actions   = structurestags.setdescription,
+    name      = "settagnotation",
+    actions   = structurestags.setnotation,
     arguments = { "string", "integer" }
 }
 
 implement {
-    name      = "settagdescriptionsymbol",
-    actions   = structurestags.setdescriptionsymbol,
+    name      = "settagnotationsymbol",
+    actions   = structurestags.setnotationsymbol,
     arguments = { "string", "integer" }
 }
 

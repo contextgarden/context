@@ -254,7 +254,7 @@ if trace_calls then
                 t[#t+1] = format("%s -> %s",name,n)
             end
         end
-        return t
+        return concat(t," ")
     end)
 end
 

@@ -217,16 +217,26 @@ end
 
 -- use tex.[sg]etlist
 
+-- check why box is called before after_linebreak .. maybe make categories and
+-- call 'm less
+
+local build_par_codes = {
+    pre_box    = true,
+    box        = true,
+    pre_adjust = true,
+    adjust     = true,
+}
+
 function builders.buildpage_filter(groupcode)
- -- -- this needs checking .. gets called too often
- -- if group_code ~= "after_output" then
- --     if trace_page_builder then
- --         report(groupcode)
- --     end
- --     return nil, false
- -- end
+    -- the next check saves 1% runtime on 1000 tufte pages
+    if build_par_codes[groupcode] then
+        -- also called in vbox .. we really need another callback for these four
+        return nil, false -- can be another action set .. like anchoring for box
+    end
+    --
     local head, done = texlists.contrib_head, false
     if head then
+        -- called quite often ... maybe time to remove timing
         starttiming(builders)
         if trace_page_builder then
             report(groupcode,head)
@@ -239,6 +249,7 @@ function builders.buildpage_filter(groupcode)
 -- tex.setlist("contrib_head",head,head and nodes.tail(head))
         return done and head or true -- no return value needed
     else
+        -- happens quite often
         if trace_page_builder then
             report(groupcode)
         end

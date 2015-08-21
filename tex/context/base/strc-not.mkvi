@@ -22,6 +22,7 @@
 % todo: see if we can now use \insertpenalties (>0 == some left)
 
 \ifdefined\dotagsetnotesymbol \else \let\dotagsetnotesymbol\relax \fi
+\ifdefined\dotagsetnotation   \else \let\dotagsetnotation  \relax \fi
 
 \unexpanded\def\unvboxed {\ifvmode\unvbox \else\box \fi} % will change or used more often
 \unexpanded\def\unvcopied{\ifvmode\unvcopy\else\copy\fi} % will change or used more often
@@ -599,6 +600,7 @@
    % a criterium
  % \strc_notes_interaction_check_display
    \strc_notes_set_reference_attribute_number
+   \dotagsetnotation
    \strc_notes_set_style_color_display\c!headstyle\c!headcolor
    \strc_enumerations_text
    \endgroup}

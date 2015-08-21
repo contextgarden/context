@@ -36,6 +36,10 @@ implement {
             { "height", "dimen" },
             { "paperwidth", "dimen" },
             { "paperheight", "dimen" },
+            { "cropoffset", "dimen" },
+            { "bleedoffset", "dimen" },
+            { "artoffset", "dimen" },
+            { "trimoffset", "dimen" },
         }
     }
 }

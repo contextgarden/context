@@ -54,9 +54,11 @@
 \installcorenamespace{chemicalframed}
 \installcorenamespace{chemicalsize}
 
-\installsimplecommandhandler \??chemical {chemical} \??chemical % no \define...
+% \installsimplecommandhandler \??chemical {chemical} \??chemical % no \define...
+\installcommandhandler \??chemical {chemical} \??chemical % no \define...
 
-\let\setupchemicals\setupchemical
+\let\setupchemicals \setupchemical
+\let\definechemicals\definechemical
 
 %D We use a dedicated framed macro instead of inheriting one. This is both
 %D a historical and practical reason (like shared keys with different meaning

@@ -257,6 +257,7 @@ local pagespecs = {
 }
 
 local pagespec, topoffset, leftoffset, height, width, doublesided = "default", 0, 0, 0, 0, false
+local cropoffset, bleedoffset, trimoffset, artoffset = 0, 0, 0, 0
 
 local pdfpaperheight = tex.pdfpageheight
 local pdfpaperwidth  = tex.pdfpagewidth
@@ -273,11 +274,17 @@ function codeinjections.setupcanvas(specification)
         texset('global','pdfpagewidth',paperwidth)
         pdfpaperwidth = paperwidth
     end
-    pagespec    = specification.mode       or pagespec
-    topoffset   = specification.topoffset  or 0
-    leftoffset  = specification.leftoffset or 0
-    height      = specification.height     or pdfpaperheight
-    width       = specification.width      or pdfpaperwidth
+    pagespec    = specification.mode        or pagespec
+    topoffset   = specification.topoffset   or 0
+    leftoffset  = specification.leftoffset  or 0
+    height      = specification.height      or pdfpaperheight
+    width       = specification.width       or pdfpaperwidth
+    --
+    cropoffset  = specification.cropoffset  or 0
+    trimoffset  = cropoffset  - (specification.trimoffset  or 0)
+    bleedoffset = trimoffset  - (specification.bleedoffset or 0)
+    artoffset   = bleedoffset - (specification.artoffset   or 0)
+    --
     if paperdouble ~= nil then
         doublesided = paperdouble
     end
@@ -332,24 +339,33 @@ end
 
 -- temp hack: the mediabox is not under our control and has a precision of 4 digits
 
-local factor = number.dimenfactors.bp
+local factor  = number.dimenfactors.bp
+local f_value = formatters["%0.4F"]
 
 local function boxvalue(n) -- we could share them
-    return pdfverbose(formatters["%0.4F"](factor * n))
+    return pdfverbose(f_value(factor * n))
 end
 
 local function pagespecification()
-    local pageheight = pdfpaperheight
-    local box = pdfarray { -- can be cached
-        boxvalue(leftoffset),
-        boxvalue(pageheight+topoffset-height),
-        boxvalue(width-leftoffset),
-        boxvalue(pageheight-topoffset),
-    }
-    addtopageattributes("CropBox",box) -- mandate for rendering
-    addtopageattributes("TrimBox",box) -- mandate for pdf/x
- -- addtopageattributes("BleedBox",box)
- -- addtopageattributes("ArtBox",box)
+    local llx = leftoffset
+    local lly = pdfpaperheight + topoffset - height
+    local urx = width - leftoffset
+    local ury = pdfpaperheight - topoffset
+    -- boxes can be cached
+    local function extrabox(WhatBox,offset,always)
+        if offset ~= 0 or always then
+            addtopageattributes(WhatBox, pdfarray {
+                boxvalue(llx + offset),
+                boxvalue(lly + offset),
+                boxvalue(urx - offset),
+                boxvalue(ury - offset),
+            })
+        end
+    end
+    extrabox("CropBox",cropoffset,true) -- mandate for rendering
+    extrabox("TrimBox",trimoffset,true) -- mandate for pdf/x
+    extrabox("BleedBox",bleedoffset)    -- optional
+    extrabox("ArtBox",artoffset)        -- optional
 end
 
 lpdf.registerpagefinalizer(pagespecification,"page specification")

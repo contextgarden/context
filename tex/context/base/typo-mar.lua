@@ -681,7 +681,6 @@ local function inject(parent,head,candidate)
     end
     setfield(box,"shift",shift)
     setfield(box,"width",0)
--- print(head)
     if not head then
         head = box
     elseif getid(head) == whatsit_code and getsubtype(head) == localpar_code then

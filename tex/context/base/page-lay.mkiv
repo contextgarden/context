@@ -868,32 +868,40 @@
 \appendtoks \page_layouts_check_next \to \everyaftershipout
 
 \newconditional\c_page_layouts_location_is_set
+\newconditional\c_page_layouts_location_is_middle
 
 \def\page_layouts_location_reset % we start in the left top and mirror right pages
   {\setfalse\c_page_layouts_location_is_set
+   \setfalse\c_page_layouts_location_is_middle
    \let\v_page_target_left_fill  \relax
    \let\v_page_target_right_fill \hss % ? \relax
    \let\v_page_target_top_fill   \relax
    \let\v_page_target_bottom_fill\vss} % \relax}
 
 \setvalue{\??layoutlocation\v!right      }{\settrue\c_page_layouts_location_is_set
+                                           \setfalse\c_page_layouts_location_is_middle
                                            \let\v_page_target_left_fill  \hss
                                            \let\v_page_target_right_fill \relax}
 \setvalue{\??layoutlocation\v!left       }{\settrue\c_page_layouts_location_is_set
+                                           \setfalse\c_page_layouts_location_is_middle
                                            \let\v_page_target_left_fill  \relax
                                            \let\v_page_target_right_fill \hss}
 \setvalue{\??layoutlocation\v!bottom     }{\settrue\c_page_layouts_location_is_set
+                                           \setfalse\c_page_layouts_location_is_middle
                                            \let\v_page_target_top_fill   \vss
                                            \let\v_page_target_bottom_fill\relax}
 \setvalue{\??layoutlocation\v!top        }{\settrue\c_page_layouts_location_is_set
+                                           \setfalse\c_page_layouts_location_is_middle
                                            \let\v_page_target_top_fill   \relax
                                            \let\v_page_target_bottom_fill\vss}
 \setvalue{\??layoutlocation\v!middle     }{\settrue\c_page_layouts_location_is_set
+                                           \settrue\c_page_layouts_location_is_middle
                                            \let\v_page_target_left_fill  \hss
                                            \let\v_page_target_right_fill \hss
                                            \let\v_page_target_top_fill   \vss
                                            \let\v_page_target_bottom_fill\vss}
 \setvalue{\??layoutlocation\empty        }{\setfalse\c_page_layouts_location_is_set % default also signal to scrn_
+                                           \setfalse\c_page_layouts_location_is_middle
                                            \let\v_page_target_right_fill \hss
                                            \let\v_page_target_bottom_fill\hss}
 \setvalue{\??layoutlocation\v!doublesided}{\settrue \c_page_target_print_doublesided}

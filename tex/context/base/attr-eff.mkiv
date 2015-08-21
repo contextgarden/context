@@ -29,7 +29,7 @@
 
 \appendtoks
     \edef\p_method{\effectparameter\c!method}%
-    \ifx\p_method\v!method
+    \ifx\p_method\v!command
         \setuxvalue{\e!start\currenteffect}{\starteffect[#1]}%
         \setuxvalue{\e!stop \currenteffect}{\stopeffect}%
     \fi

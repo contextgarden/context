@@ -2808,7 +2808,6 @@ local function featuresprocessor(head,font,attr)
                             end
                             if a then
                                 local char = getchar(start)
-                                local lookupcache = step.coverage
                                 for i=1,nofsteps do
                                     local step = steps[i]
                                     local lookupcache = step.coverage
