@@ -13,6 +13,7 @@ if not modules then modules = { } end modules ['font-ots'] = { -- sequences
 
 -- todo: looks like we have a leak somewhere (probably in ligatures)
 -- todo: copy attributes to disc
+-- todo: get rid of components, better use the tounicode entry if needed (at all)
 
 -- we do some disc juggling where we need to keep in mind that the
 -- pre, post and replace fields can have prev pointers to a nesting
@@ -512,9 +513,10 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
         return head, start
     end
     -- needs testing (side effects):
-    local components = getfield(base,"components")
+    local components = getfield(start,"components")
     if components then
-        flush_node_list(components)
+-- we get a double free .. needs checking
+--         flush_node_list(components)
     end
     --
     local prev = getprev(start)

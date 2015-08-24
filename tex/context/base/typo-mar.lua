@@ -179,6 +179,8 @@ local texget             = tex.get
 local isleftpage         = layouts.status.isleftpage
 local registertogether   = builders.paragraphs.registertogether -- tonode
 
+local addtoline          = typesetters.paragraphs.addtoline
+
 local a_margindata       = attributes.private("margindata")
 local a_specialcontent   = attributes.private("specialcontent")
 local a_linenumber       = attributes.private('linenumber')
@@ -681,20 +683,21 @@ local function inject(parent,head,candidate)
     end
     setfield(box,"shift",shift)
     setfield(box,"width",0)
-    if not head then
-        head = box
-    elseif getid(head) == whatsit_code and getsubtype(head) == localpar_code then
-        -- experimental
-        if getfield(head,"dir") == "TRT" then
-            local list = hpack_nodes(linked_nodes(new_kern(candidate.hsize),getlist(box),new_kern(-candidate.hsize)))
-            setfield(box,"list",list)
-        end
-        insert_node_after(head,head,box)
-    else
-        setfield(head,"prev",box)
-        setfield(box,"next",head)
-        head = box
-    end
+ -- if not head then
+ --     head = box
+ -- elseif getid(head) == whatsit_code and getsubtype(head) == localpar_code then
+ --     -- experimental
+ --     if getfield(head,"dir") == "TRT" then
+ --         local list = hpack_nodes(linked_nodes(new_kern(candidate.hsize),getlist(box),new_kern(-candidate.hsize)))
+ --         setfield(box,"list",list)
+ --     end
+ --     insert_node_after(head,head,box)
+ -- else
+ --     setfield(head,"prev",box)
+ --     setfield(box,"next",head)
+ --     head = box
+ -- end
+    addtoline(parent,box)
     setattr(box,a_margindata,nofstatus)
     if trace_margindata then
         report_margindata("injected, location %a, shift %p",location,shift)

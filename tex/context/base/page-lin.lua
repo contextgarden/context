@@ -43,12 +43,14 @@ local v_no               = variables.no
 local nodecodes          = nodes.nodecodes
 local skipcodes          = nodes.skipcodes
 local whatcodes          = nodes.whatcodes
+local listcodes          = nodes.listcodes
 
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local whatsit_code       = nodecodes.whatsit
 local glue_code          = nodecodes.glue
 local glyph_code         = nodecodes.glyph
+local line_code          = listcodes.line
 local leftskip_code      = skipcodes.leftskip
 local textdir_code       = whatcodes.dir
 
@@ -72,6 +74,9 @@ local getlist            = nuts.getlist
 local getbox             = nuts.getbox
 local getfield           = nuts.getfield
 
+local setprop            = nuts.setprop
+local getprop            = nuts.getprop
+
 local setfield           = nuts.setfield
 
 local traverse_id        = nuts.traverse_id
@@ -91,6 +96,8 @@ local new_kern           = nodepool.kern
 
 local ctx_convertnumber  = context.convertnumber
 local ctx_makelinenumber = context.makelinenumber
+
+local addtoline          = typesetters.paragraphs.addtoline
 
 -- cross referencing
 
@@ -237,38 +244,96 @@ local function check_number(n,a,skip,sameline)
                 report_lines("skipping line number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or v_no)
             end
         end
-        ctx_makelinenumber(tag,skipflag,s,getfield(n,"width"),getfield(n,"dir"))
+        local p = getprop(n,"line")
+        ctx_makelinenumber(tag,skipflag,s,p.hsize,p.reverse and "TRT" or "TLT") -- getfield(n,"dir"))
     end
 end
 
--- xlist
---   xlist
---     hlist
+-- print(nodes.idstostring(list))
 
-local function identify(list)
+-- hlists of type line will only have an attribute when the line number attribute
+-- still set at par building time which is not always the case unless we explicitly
+-- do a par before we end the line
+
+-- todo: check for a: when <= 0 then false
+
+local function lineisnumbered(n)
+    local n = getlist(n)
+    while n do
+        local id = getid(n)
+        if id == hlist_code or id == vlist_code then
+            -- this can hit fast as we inherit anchor attributes from parent
+            local a = getattr(n,a_linenumber)
+            if a and a > 0 then
+                return a
+            end
+        elseif id == glyph_code then
+            local a = getattr(n,a_linenumber)
+            if a and a > 0 then
+                return a
+            else
+                return false
+            end
+        end
+        n = getnext(n)
+    end
+end
+
+local function listisnumbered(list)
     if list then
         for n in traverse_id(hlist_code,list) do
-            local a = getattr(n,a_linenumber)
-            if a then
-                return list, a
-            end
-        end
-        local n = list
-        while n do
-            local id = getid(n)
-            if id == hlist_code or id == vlist_code then
-                local ok, a = identify(getlist(n))
-                if ok then
-                    return ok, a
+            if getsubtype(n) == line_code then
+                local a = getattr(n,a_linenumber)
+                if a then
+                    -- a quick test for lines (only valid when \par before \stoplinenumbering)
+                    return a > 0 and list or false
+                else
+                    -- a bit slower one, assuming that we have normalized and anchored
+                    if lineisnumbered(n) then
+                        return list
+                    end
                 end
             end
-            n = getnext(n)
         end
     end
 end
 
-function boxed.stage_zero(n) -- not used
-    return identify(getlist(getbox(n)))
+local function findnumberedlist(list)
+    -- we assume wrapped boxes, only one with numbers
+    local n = list
+    while n do
+        local id = getid(n)
+        if id == hlist_code then
+            if getsubtype(n) == line_code then
+                local a = getattr(n,a_linenumber)
+                if a then
+                    return a > 0 and list
+                end
+                return
+            else
+                local list = getlist(n)
+                if lineisnumbered(list) then
+                    return n
+                end
+                local okay = findnumberedlist(list)
+                if okay then
+                    return okay
+                end
+            end
+        elseif id == vlist_code then
+            local list = getlist(n)
+            if listisnumbered(list) then
+                return list
+            end
+            local okay = findnumberedlist(list)
+            if okay then
+                return okay
+            end
+        elseif id == glyph_code then
+            return
+        end
+        n = getnext(n)
+    end
 end
 
 -- reset ranges per page
@@ -279,40 +344,36 @@ function boxed.stage_one(n,nested)
     current_list = { }
     local box = getbox(n)
     if box then
-        local found = nil
-        local list  = getlist(box)
-        if list and nested then
-            list, found = identify(list)
+        local list = getlist(box)
+        if not list then
+            return
         end
+        if nested then
+            local id = getid(box)
+            if id == vlist_code then
+                if listisnumbered(list) then
+                    -- ok
+                else
+                    list = findnumberedlist(list)
+                end
+            else -- hlist
+                list = findnumberedlist(list)
+            end
+        end
+        -- we assume we have a vlist
         if list then
-            local last_a, last_v, skip = nil, -1, false
+            local last_a = nil
+            local last_v = -1
+            local skip   = false
             for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
-                if getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
+                local subtype = getsubtype(n)
+                if subtype ~= line_code then
+                    -- go on
+                elseif getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
                     -- skip funny hlists -- todo: check line subtype
                 else
-                    local list = getlist(n)
-                    local a = getattr(list,a_linenumber)
--- if a and a < 0 then
---     break
--- end
-                    if not a or a == 0 then
-                        local n = getnext(list)
-                        while n do
-                            local id = getid(n)
-                            if id == glyph_code then
-                                break
-                            elseif id == whatsit_code and getsubtype(n) == textdir_code then
-                                n = getnext(n)
-                            elseif id == glue_code and getsubtype(n) == leftskip_code then -- first in list
-                                n = getnext(n)
-                            else
-                                -- can be hlist or skip (e.g. footnote line)
-                                n = getnext(n)
-                            end
-                        end
-                        a = n and getattr(n,a_linenumber)
-                    end
-                    if a and a > 0 then
+                    local a = lineisnumbered(n)
+                    if a then
                         if last_a ~= a then
                             local da = data[a]
                             local ma = da.method
@@ -341,53 +402,11 @@ function boxed.stage_one(n,nested)
                         end
                         skip = false
                     end
--- setattr(list,a_linenumber,-1)
                 end
             end
         end
     end
 end
-
--- todo: a general model for attaching stuff l/r
-
--- setfield(ti,"next",l)
--- setfield(l,"prev",ti)
--- local h = copy_node(n)
--- -- setfield(h,"dir","TLT")
--- setfield(h,"list",ti) -- the number
--- setfield(n,"list",h)
-
--- function boxed.stage_two(n,m)
---     if #current_list > 0 then
---         m = m or lines.scratchbox
---         local t, tn = { }, 0
---         for l in traverse_id(hlist_code,getlist(getbox(m))) do
---             tn = tn + 1
---             t[tn] = copy_node(l) -- use take_box instead
---         end
---         for i=1,#current_list do
---             local li = current_list[i]
---             local n, m, ti = li[1], li[2], t[i]
---             if ti then
---                 local d = getfield(n,"dir")
---                 local l = getlist(n)
---                 if d == "TRT" then
---                     local w = getfield(n,"width")
---                     ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
---                 end
---                 setfield(ti,"next",l)
---                 setfield(l,"prev",ti)
---                 setfield(n,"list",ti)
---                 resolve(n,m)
---             else
---                 report_lines("error in linenumbering (1)")
---                 return
---             end
---        end
---     end
--- end
-
-local addtoline = typesetters.paragraphs and typesetters.paragraphs.addtoline
 
 function boxed.stage_two(n,m)
     if #current_list > 0 then
@@ -401,19 +420,16 @@ function boxed.stage_two(n,m)
             local li = current_list[i]
             local n, m, ti = li[1], li[2], t[i]
             if ti then
-                if addtoline then
-                    addtoline(n,ti)
-                else
-                    local d = getfield(n,"dir")
-                    local l = getlist(n)
-                    if d == "TRT" then
-                        local w = getfield(n,"width")
-                        ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
-                    end
-                    setfield(ti,"next",l)
-                    setfield(l,"prev",ti)
-                    setfield(n,"list",ti)
-                end
+             -- local d = getfield(n,"dir")
+             -- local l = getlist(n)
+             -- if d == "TRT" then
+             --     local w = getfield(n,"width")
+             --     ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
+             -- end
+             -- setfield(ti,"next",l)
+             -- setfield(l,"prev",ti)
+             -- setfield(n,"list",ti)
+                addtoline(n,ti)
                 resolve(n,m)
             else
                 report_lines("error in linenumbering (1)")
@@ -422,6 +438,10 @@ function boxed.stage_two(n,m)
        end
     end
 end
+
+-- function boxed.stage_zero(n) -- not used
+--     return identify(getlist(getbox(n)))
+-- end
 
 implement {
     name      = "linenumbersstageone",

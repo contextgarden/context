@@ -365,7 +365,7 @@ local function pagespecification()
     extrabox("CropBox",cropoffset,true) -- mandate for rendering
     extrabox("TrimBox",trimoffset,true) -- mandate for pdf/x
     extrabox("BleedBox",bleedoffset)    -- optional
-    extrabox("ArtBox",artoffset)        -- optional
+ -- extrabox("ArtBox",artoffset)        -- optional .. unclear what this is meant to do
 end
 
 lpdf.registerpagefinalizer(pagespecification,"page specification")

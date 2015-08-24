@@ -131,7 +131,7 @@ local function readlongdatetime(f)
     return 0x100000000 * d + 0x1000000 * e + 0x10000 * f + 0x100 * g + h
 end
 
-local tableversion      = 0.001
+local tableversion      = 0.002
 local privateoffset     = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
 
 readers.tableversion    = tableversion
@@ -1634,6 +1634,8 @@ local function getinfo(maindata,sub)
             monospaced   = (tonumber(postscript.monospaced or 0) > 0) or metrics.panosewidth == "monospaced",
             averagewidth = metrics.averagewidth,
             xheight      = metrics.xheight,
+            ascender     = metrics.typoascender,
+            descender    = metrics.typodescender,
         }
     elseif n then
         return {

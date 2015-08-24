@@ -312,7 +312,7 @@ local function update() -- prepare parent chains, needed when new languages are 
     end
 end
 
-local function setlanguage(l,m,d,u) -- this will become a specification table
+local function setlanguage(l,m,d,u) -- this will become a specification table (also keep this one as it's used in manuals)
     language = (l ~= "" and l) or constants.defaultlanguage
     data     = definitions[language or constants.defaultlanguage] or definitions[constants.defaultlanguage]
     method   = (m ~= "" and m) or (data.method ~= "" and data.method) or constants.defaultmethod

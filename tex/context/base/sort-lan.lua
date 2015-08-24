@@ -103,10 +103,10 @@ definitions['de']    = {
     },
 }
 
-definitions['deo']   = { parent = 'de'      } -- old german
+definitions['deo']   = { parent = 'de' } -- old german
 
-definitions['de-DE'] = { parent = 'de'      } -- german - Germany
-definitions['de-CH'] = { parent = 'de'      } -- german - Swiss
+definitions['de-DE'] = { parent = 'de' } -- german - Germany
+definitions['de-CH'] = { parent = 'de' } -- german - Swiss
 
 -- german - Austria
 

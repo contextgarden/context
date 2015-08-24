@@ -590,6 +590,7 @@ function scripts.context.run(ctxdata,filename)
     local a_texformat   = getargument("texformat")
     local a_keeptuc     = getargument("keeptuc")
     local a_keeplog     = getargument("keeplog")
+    local a_export      = getargument("export")
 
     -- the following flag is not officially supported because i cannot forsee
     -- side effects (so no bug reports please) .. we provide --sandbox that
@@ -716,6 +717,7 @@ function scripts.context.run(ctxdata,filename)
                     fulljobname = validstring(filename),
                     files       = concat(files,","),
                     ctx         = validstring(ctxname),
+                    export      = a_export and true or nil,
                 }
                 --
                 for k, v in next, environment.arguments do

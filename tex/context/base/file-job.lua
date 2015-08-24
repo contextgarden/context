@@ -64,7 +64,7 @@ local v_project         = variables.project
 local v_environment     = variables.environment
 local v_product         = variables.product
 local v_component       = variables.component
-local c_prefix          = variables.prefix
+local v_yes             = variables.yes
 
 -- main code .. there is some overlap .. here we have loc://
 
@@ -953,6 +953,10 @@ function document.setcommandline() -- has to happen at the tex end in order to e
 
     if validstring(arguments.path)  then
         context.usepath { arguments.path }
+    end
+
+    if arguments.export then
+        context.setupbackend { export = v_yes }
     end
 
     local inputfile = validstring(arguments.input)

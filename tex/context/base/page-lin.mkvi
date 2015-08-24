@@ -421,15 +421,22 @@
 \def\page_line_handle_left#align#width#distance%
   {\llap
      {\page_lines_number_inject#align#width%
-      \kern\dimexpr#distance+\d_page_lines_distance\relax
+      \kern\dimexpr
+        #distance+\d_page_lines_distance
+        \ifconditional\c_page_lines_dir_left_to_right\else+\d_page_lines_line_width\fi
+      \relax
       \the\everylinenumber
       \hss}}
 
 \def\page_line_handle_right#align#width#distance%
   {\rlap
-     {\kern\dimexpr#distance+\d_page_lines_distance+\d_page_lines_line_width\relax
+     {\kern\dimexpr
+        #distance+\d_page_lines_distance
+        \ifconditional\c_page_lines_dir_left_to_right+\d_page_lines_line_width\fi
+      \relax
       \page_lines_number_inject#align#width%
-      \the\everylinenumber}}
+      \the\everylinenumber
+      \hss}}
 
 \setuvalue{\??linenumberinghandler\v!left}%
   {\page_line_handle_left\p_align\leftmarginwidth\leftmargindistance}

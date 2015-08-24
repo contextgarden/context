@@ -179,7 +179,7 @@ end)
 nodes.builders = nodes.builder or { }
 local builders = nodes.builders
 
-local actions = nodes.tasks.actions("vboxbuilders")
+local vboxactions = nodes.tasks.actions("vboxbuilders")
 
 function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
@@ -187,7 +187,7 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
         starttiming(builders)
         if trace_vpacking then
             local before = nodes.count(head)
-            head, done = actions(head,groupcode,size,packtype,maxdepth,direction)
+            head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
             local after = nodes.count(head)
             if done then
                 nodes.processors.tracer("vpack","changed",head,groupcode,before,after,true)
@@ -195,7 +195,7 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
                 nodes.processors.tracer("vpack","unchanged",head,groupcode,before,after,true)
             end
         else
-            head, done = actions(head,groupcode)
+            head, done = vboxactions(head,groupcode)
         end
         stoptiming(builders)
     end
@@ -205,7 +205,8 @@ end
 -- This one is special in the sense that it has no head and we operate on the mlv. Also,
 -- we need to do the vspacing last as it removes items from the mvl.
 
-local actions = nodes.tasks.actions("mvlbuilders")
+local pageactions = nodes.tasks.actions("mvlbuilders")
+----- lineactions = nodes.tasks.actions("linebuilders")
 
 local function report(groupcode,head)
     report_page_builder("trigger: %s",groupcode)
@@ -241,12 +242,12 @@ function builders.buildpage_filter(groupcode)
         if trace_page_builder then
             report(groupcode,head)
         end
-        head, done = actions(head,groupcode)
+        head, done = pageactions(head,groupcode)
         stoptiming(builders)
      -- -- doesn't work here (not passed on?)
      -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
         texlists.contrib_head = head or nil -- needs checking
--- tex.setlist("contrib_head",head,head and nodes.tail(head))
+     -- tex.setlist("contrib_head",head,head and nodes.tail(head))
         return done and head or true -- no return value needed
     else
         -- happens quite often

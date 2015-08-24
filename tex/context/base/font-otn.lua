@@ -580,9 +580,10 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
         return head, start
     end
     -- needs testing (side effects):
-    local components = getfield(base,"components")
+    local components = getfield(start,"components")
     if components then
-        flush_node_list(components)
+-- we get a double free .. needs checking
+--         flush_node_list(components)
     end
     --
     local prev = getprev(start)

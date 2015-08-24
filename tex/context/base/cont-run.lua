@@ -192,7 +192,7 @@ local function processjob()
         report("processing as xml: %s",filename)
 
         context.starttext()
-        context.xmlprocess("main",filename,"")
+            context.xmlprocess("main",filename,"")
         context.stoptext()
 
     elseif suffix == "cld" or arguments.forcecld then
@@ -209,7 +209,7 @@ local function processjob()
         report("processing as lua: %s",filename)
 
         context.starttext()
-        context.ctxlua(string.format('dofile("%s")',filename))
+            context.ctxlua(string.format('dofile("%s")',filename))
         context.stoptext()
 
     elseif suffix == "mp" or arguments.forcemp then

@@ -111,6 +111,8 @@ appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")   
 ------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled
 appendaction("math",         "builders",    "typesetters.directions.processmath")                -- disabled (has to happen pretty late)
 
+appendaction("finalizers",   "normalizers", "typesetters.paragraphs.normalize")                  -- enabled
+
 appendaction("finalizers",   "lists",       "typesetters.margins.localhandler")                  -- disabled
 appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether")
 ------------("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo

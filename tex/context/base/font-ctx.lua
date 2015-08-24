@@ -1368,6 +1368,7 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
             local parameters = tfmdata.parameters
             local designsize = parameters.designsize
             if     special == "ht" then
+--         inspect(parameters)
                 local height = parameters.ascender * designsize / parameters.units
                 scaledpoints = (scaledpoints/height) * designsize
             elseif special == "cp" then
