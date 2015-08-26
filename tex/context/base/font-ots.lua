@@ -597,8 +597,8 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
                     setfield(discnext,"prev",nil) -- also blocks funny assignments
                     setfield(discprev,"next",nil) -- also blocks funny assignments
                     if pre then
-                        setfield(comp,"next",pre)
-                        setfield(pre,"prev",comp)
+                        setfield(discprev,"next",pre)
+                        setfield(pre,"prev",discprev)
                     end
                     pre = comp
                     if post then
@@ -622,7 +622,6 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
                     setfield(discfound,"subtype",discretionary_code)
                     base = prev -- restart
                 end
-         -- elseif discretionary_code == regular_code then -- ??
             elseif subtype == regular_code then
              -- local prev   = getfield(base,"prev")
              -- local next   = getfield(base,"next")
@@ -2271,17 +2270,32 @@ end
 --
 -- * languages that use complex disc nodes
 
--- optimization comes later ...
-
-local function kernrun(disc,run) -- we can assume that prev and next are glyphs
+local function kernrun(disc,run)
+    --
+    -- we catch <font 1><disc font 2>
+    --
     if trace_kernruns then
         report_run("kern") -- will be more detailed
     end
-        --
-    local prev = getprev(disc) -- todo, keep these in the main loop
-    local next = getnext(disc) -- todo, keep these in the main loop
     --
-    local pre = getfield(disc,"pre")
+    local prev    = getprev(disc) -- todo, keep these in the main loop
+    local next    = getnext(disc) -- todo, keep these in the main loop
+    --
+    local pre     = getfield(disc,"pre")
+    local post    = getfield(disc,"post")
+    local replace = getfield(disc,"replace")
+    --
+    if pre or replace then
+        if not (prev and getid(prev) == glyph_code and getfont(prev) == currentfont and getsubtype(prev)<256) then
+            prev = false
+        end
+    end
+    if post or replace then
+        if not (next and getid(next) == glyph_code and getfont(next) == currentfont and getsubtype(next)<256) then
+            next = false
+        end
+    end
+    --
     if not pre then
         -- go on
     elseif prev then
@@ -2295,7 +2309,6 @@ local function kernrun(disc,run) -- we can assume that prev and next are glyphs
         run(pre,"preinjections")
     end
     --
-    local post = getfield(disc,"post")
     if not post then
         -- go on
     elseif next then
@@ -2309,8 +2322,7 @@ local function kernrun(disc,run) -- we can assume that prev and next are glyphs
         run(post,"postinjections")
     end
     --
-    local replace = getfield(disc,"replace")
-    if not replace then
+    if not replace and prev and next then
         -- this should be already done by discfound
     elseif prev and next then
         local tail = find_node_tail(replace)
@@ -2331,7 +2343,7 @@ local function kernrun(disc,run) -- we can assume that prev and next are glyphs
         run(prev,"replaceinjections")
         setfield(replace,"prev",nest)
         setfield(prev,"next",disc)
-    elseif next then
+	elseif next then
         local tail = find_node_tail(replace)
         setfield(tail,"next",next)
         setfield(next,"prev",tail)

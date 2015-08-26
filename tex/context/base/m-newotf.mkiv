@@ -19,9 +19,23 @@
 
 \startluacode
     local files = {
-        "font-otr", "font-cff", "font-ttf", "font-dsp", "font-oup",
-        "font-otl", "font-ots", "font-oto", "font-otd", "font-otc",
-        "font-osd", "font-map", "font-fbk", "font-gds",
+        "font-inj-new", -- for me, testing
+        "node-fnt-new", -- for me, testing
+        "font-otr",
+        "font-cff",
+        "font-ttf",
+        "font-dsp",
+        "font-oup",
+        "font-otl",
+        "font-ots",
+        "font-ots-new", -- for me, testing
+        "font-oto",
+        "font-otd",
+        "font-otc",
+        "font-osd",
+        "font-map",
+        "font-fbk",
+        "font-gds",
     }
     local report    = logs.reporter("newotf")
     local findfile  = resolvers.findfile
@@ -31,10 +45,30 @@
     report()
     for i=1,#files do
         local foundfile = findfile(addsuffix(files[i],"lua"))
-        report("loading %a",foundfile)
-        dofile(foundfile)
+        if foundfile and foundfile ~= "" then
+            report("loading %a",foundfile)
+            dofile(foundfile)
+        end
     end
     report()
+
+    -- needed for testing:
+
+    local nuts      = nodes.nuts
+    local copy_node = nuts.copy
+    local kern      = nuts.pool.register(nuts.pool.kern())
+    local setfield  = nuts.setfield
+
+    nuts.setattr(kern,attributes.private('fontkern'),1) -- we can have several, attributes are shared
+
+    nodes.injections.installnewkern(function(k)
+        local c = copy_node(kern)
+        setfield(c,"kern",k)
+        return c
+    end)
+
+    directives.register("nodes.injections.fontkern", function(v) setfield(kern,"subtype",v and 0 or 1) end)
+
 \stopluacode
 
 \protect \endinput

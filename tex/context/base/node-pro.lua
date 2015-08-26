@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['node-pro'] = {
 local utfchar = utf.char
 local format, concat = string.format, table.concat
 
-local trace_callbacks = false  trackers.register("nodes.callbacks", function(v) trace_callbacks = v end)
+local trace_callbacks  = false  trackers  .register("nodes.callbacks",        function(v) trace_callbacks  = v end)
+local force_processors = false  directives.register("nodes.processors.force", function(v) force_processors = v end)
 
 local report_nodes = logs.reporter("nodes","processors")
 
@@ -77,7 +78,7 @@ processors.enabled = true -- this will become a proper state (like trackers)
 
 function processors.pre_linebreak_filter(head,groupcode) -- ,size,packtype,direction
  -- local first, found = first_glyph(head) -- they really need to be glyphs
-    local found = has_glyph(head)
+    local found = force_processors or has_glyph(head)
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
@@ -105,7 +106,7 @@ local enabled = true
 function processors.hpack_filter(head,groupcode,size,packtype,direction)
     if enabled then
      -- local first, found = first_glyph(head) -- they really need to be glyphs
-        local found = has_glyph(head)
+        local found = force_processors or has_glyph(head)
         if found then
             if trace_callbacks then
                 local before = nodes.count(head,true)

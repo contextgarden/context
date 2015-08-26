@@ -78,7 +78,7 @@
 
 \starttexdefinition showotfligaturesbanner #1
     \bTR[frame=off]
-        \bTD [nx=\showotfligaturesnx,width=\showotfligatureswidth,align={middle,lohi},height=4ex]
+        \bTD [nx=\showotfligaturesnx,xwidth=\showotfligatureswidth,align={middle,lohi},height=4ex]
             \tttf #1
         \eTD
     \eTR
@@ -138,7 +138,7 @@
 
 \starttexdefinition showotfligaturesdefaults
     \bTR
-        \bTD [nx=\showotfligaturesnx,width=\showotfligatureswidth,align=middle,height=4ex,frame=off]
+        \bTD [nx=\showotfligaturesnx,xwidth=\showotfligatureswidth,align=middle,height=4ex,frame=off]
             \start \LigatureFont fb  \stop \quad
             \start \LigatureFont ff  \stop \quad
             \start \LigatureFont fi  \stop \quad
@@ -192,13 +192,16 @@
 
 \starttext
 
-    \startTEXpage[offset=10pt] \showotfligatures[font=lmroman10-regular.otf, features=default]   \stopTEXpage
-    \startTEXpage[offset=10pt] \showotfligatures[font=dejavu-serif.ttf,      features=default]   \stopTEXpage
-    \startTEXpage[offset=10pt] \showotfligatures[font=minionpro.otf,         features=default]   \stopTEXpage
-    \startTEXpage[offset=10pt] \showotfligatures[font=minionpro.otf,         features=smallcaps] \stopTEXpage
-    \startTEXpage[offset=10pt] \showotfligatures[font=brill.otf,             features=default]   \stopTEXpage
-    \startTEXpage[offset=10pt] \showotfligatures[font=gentiumplus-r.ttf,     features=default]   \stopTEXpage
-    \startTEXpage[offset=10pt] \showotfligatures[font=cambria,               features=default]   \stopTEXpage
-    \startTEXpage[offset=10pt] \showotfligatures[font=garamond,              features=default]   \stopTEXpage
+    \definefontfeature[fonttest][default]  [mode=node,language=dflt,script=latn,ccmp=yes,liga=yes,kern=yes,mark=yes,mkmk=yes]
+    \definefontfeature[capstest][smallcaps][mode=node,language=dflt,script=latn,ccmp=yes,liga=yes,kern=yes,mark=yes,mkmk=yes]
+
+    \startTEXpage[offset=10pt] \showotfligatures[font=lmroman10-regular.otf,   features=fonttest] \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=dejavu-serif.ttf,        features=fonttest] \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=minionpro.otf,           features=fonttest] \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=minionpro.otf,           features=capstest] \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=brill.otf,               features=fonttest] \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=gentiumplus-r.ttf,       features=fonttest] \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=cambria,                 features=fonttest] \stopTEXpage
+    \startTEXpage[offset=10pt] \showotfligatures[font=ebgaramond12-regular.otf,features=fonttest] \stopTEXpage
 
 \stoptext

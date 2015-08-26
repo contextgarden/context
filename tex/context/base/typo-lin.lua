@@ -136,9 +136,9 @@ function paragraphs.normalize(head,...)
                     head = remove_node(head,head,true)
                 end
             end
-            head = insert_before(head,head,anchor)
+            head  = insert_before(head,head,anchor)
+            shift = shift + width - hsize
             if reverse then
-                shift = shift + width - hsize
                 head  = insert_before(head,head,new_kern(shift))
                 insert_after(head,anchor,new_kern(-shift))
             else
