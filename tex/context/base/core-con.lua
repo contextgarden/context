@@ -1272,7 +1272,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
             if currentlanguage == false then
                 -- ignore
             else
-                context(converters.ordinal(whatordinal,currentlanguage)) -- no "%s" needed
+                context.highordinalstr(converters.ordinal(whatordinal,currentlanguage))
             end
         end
     end

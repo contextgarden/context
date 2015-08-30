@@ -245,7 +245,11 @@ local function check_number(n,a,skip,sameline)
             end
         end
         local p = getprop(n,"line")
-        ctx_makelinenumber(tag,skipflag,s,p.hsize,p.reverse and "TRT" or "TLT") -- getfield(n,"dir"))
+        if p then
+            ctx_makelinenumber(tag,skipflag,s,p.hsize,p.reverse and "TRT" or "TLT")
+        else
+            report_lines("needs checking")
+        end
     end
 end
 

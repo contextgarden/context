@@ -16,6 +16,9 @@ if not modules then modules = { } end modules ['font-inj'] = {
 -- cleaner to have an identification pass here. Also, I need to keep tracing in mind so
 -- being too clever here is dangerous.
 
+-- The subtype test is not needed as there will be no (new) properties set, given that we
+-- reset the properties.
+
 if not nodes.properties then return end
 
 local next, rawget = next, rawget
@@ -211,9 +214,12 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2l
             if rlmode and rlmode < 0 then
                 leftkern, rightkern = rightkern, leftkern
             end
+            if not injection then
+                injection = "injections"
+            end
             local p = rawget(properties,current)
             if p then
-                local i = rawget(p,"injections")
+                local i = rawget(p,injection)
                 if i then
                     if leftkern ~= 0 then
                         i.leftkern  = (i.leftkern  or 0) + leftkern
@@ -225,19 +231,19 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2l
                         i.yoffset = (i.yoffset or 0) + yoffset
                     end
                 elseif leftkern ~= 0 or rightkern ~= 0 then
-                    p.injections = {
+                    p[injection] = {
                         leftkern  = leftkern,
                         rightkern = rightkern,
                         yoffset   = yoffset,
                     }
                 else
-                    p.injections = {
+                    p[injection] = {
                         yoffset = yoffset,
                     }
                 end
             elseif leftkern ~= 0 or rightkern ~= 0 then
                 properties[current] = {
-                    injections = {
+                    [injection] = {
                         leftkern  = leftkern,
                         rightkern = rightkern,
                         yoffset   = yoffset,
@@ -245,7 +251,7 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2l
                 }
             else
                 properties[current] = {
-                    injections = {
+                    [injection] = {
                         yoffset = yoffset,
                     },
                 }
@@ -545,9 +551,9 @@ local function inject_marks(marks,marki,nofmarks)
                          -- ox = px - getfield(p,"width") + pn.markx - pp.leftkern
                             local leftkern = pp.leftkern
                             if leftkern then
-                                ox = px - pn.markx
-                            else
                                 ox = px - pn.markx - leftkern
+                            else
+                                ox = px - pn.markx
                             end
                         end
                     else
@@ -674,7 +680,15 @@ local function inject_cursives(glyphs,glyphi,nofglyphs)
     end
 end
 
-local function inject_kerns(head,glist,ilist,length)
+-- G  +D-pre        G
+--     D-post+
+--    +D-replace+
+--
+-- G  +D-pre       +D-pre
+--     D-post      +D-post
+--    +D-replace   +D-replace
+
+local function inject_kerns(head,glist,ilist,length) -- not complete ! compare with inject_kerns_only (but unlikely disc here)
     for i=1,length do
         local n  = glist[i]
         local pn = rawget(properties,n)
@@ -682,8 +696,9 @@ local function inject_kerns(head,glist,ilist,length)
 			local dp = nil
 			local dr = nil
             local ni = ilist[i]
+            local p  = nil
 			if ni == "injections" then
-				local p = getprev(n)
+				p = getprev(n)
 				if p then
 					local id = getid(p)
 					if id == disc_code then
@@ -699,6 +714,7 @@ local function inject_kerns(head,glist,ilist,length)
 					if leftkern and leftkern ~= 0 then
 						local t = find_tail(dp)
 						insert_node_after(dp,t,newkern(leftkern))
+setfield(p,"post",dp) -- currently we need to force a tail refresh
 					end
 				end
 			end
@@ -709,6 +725,7 @@ local function inject_kerns(head,glist,ilist,length)
 					if leftkern and leftkern ~= 0 then
 						local t = find_tail(dr)
 						insert_node_after(dr,t,newkern(leftkern))
+setfield(p,"replace",dr) -- currently we need to force a tail refresh
 					end
 				end
 			else
@@ -757,6 +774,14 @@ local function inject_everything(head,where)
     return tonode(head), true
 end
 
+-- G  +D-pre        G
+--     D-post+
+--    +D-replace+
+--
+-- G  +D-pre       +D-pre
+--     D-post      +D-post
+--    +D-replace   +D-replace
+
 local function inject_kerns_only(head,where)
     head = tonut(head)
     if trace_injections then
@@ -779,6 +804,7 @@ local function inject_kerns_only(head,where)
                                 if leftkern and leftkern ~= 0 then
                                     local t = find_tail(d)
                                     insert_node_after(d,t,newkern(leftkern))
+setfield(p,"post",d) -- currently we need to force a tail refresh
                                 end
                             end
                         end
@@ -790,6 +816,7 @@ local function inject_kerns_only(head,where)
                                 if leftkern and leftkern ~= 0 then
                                     local t = find_tail(d)
                                     insert_node_after(d,t,newkern(leftkern))
+setfield(p,"replace",d) -- currently we need to force a tail refresh
                                 end
                             end
                         else
@@ -839,6 +866,7 @@ local function inject_kerns_only(head,where)
                     setfield(n,"pre",h)
                 end
             end
+            -- weird
             local d = getfield(n,"post")
             if d then
                 local h = d
@@ -923,6 +951,7 @@ local function inject_pairs_only(head,where)
                                 if leftkern and leftkern ~= 0 then
                                     local t = find_tail(d)
                                     insert_node_after(d,t,newkern(leftkern))
+setfield(p,"post",d) -- currently we need to force a tail refresh
                                 end
                              -- local rightkern = i.rightkern
                              -- if rightkern and rightkern ~= 0 then
@@ -939,6 +968,7 @@ local function inject_pairs_only(head,where)
                                 if leftkern and leftkern ~= 0 then
                                     local t = find_tail(d)
                                     insert_node_after(d,t,newkern(leftkern))
+setfield(p,"replace",d) -- currently we need to force a tail refresh
                                 end
                              -- local rightkern = i.rightkern
                              -- if rightkern and rightkern ~= 0 then

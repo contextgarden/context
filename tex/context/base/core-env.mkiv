@@ -473,7 +473,7 @@
 % no checking and we assume it being defined:
 
 \def\fastsetup                     #1{\csname\??setup:#1\endcsname\empty}
-\def\fastsetupwithargument       #1#2{\csname\??setup:#2\endcsname{#1}}
+\def\fastsetupwithargument       #1#2{\csname\??setup:#1\endcsname{#2}} % swapped per 2015-08-30
 \def\fastsetupwithargumentswapped  #1{\csname\??setup:#1\endcsname}
 
 % the next one is meant for \c!setups situations, hence the check for

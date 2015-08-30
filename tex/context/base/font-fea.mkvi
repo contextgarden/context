@@ -248,8 +248,8 @@
 \installcorenamespace{featureyes}
 \installcorenamespace{featurenop}
 
-\unexpanded\def\font_feature_yes[#method]{\csname\??featureyes\ifcsname\??featureyes#1\endcsname#1\else\s!unknown\fi\endcsname}
-\unexpanded\def\font_feature_nop  #method{\csname\??featurenop\ifcsname\??featurenop#1\endcsname#1\else\s!unknown\fi\endcsname}
+\unexpanded\def\font_feature_yes[#method]{\csname\??featureyes\ifcsname\??featureyes#method\endcsname#method\else\s!unknown\fi\endcsname}
+\unexpanded\def\font_feature_nop  #method{\csname\??featurenop\ifcsname\??featurenop#method\endcsname#method\else\s!unknown\fi\endcsname}
 
 \letvalue{\??featureyes +}\addfeature
 \letvalue{\??featurenop +}\addfeature
@@ -334,8 +334,8 @@
 
 % also new
 
-\unexpanded\def\useaddfontfeatureparameter#1% faster local variant
-  {\edef\m_font_feature_asked{#1\c!features}%
+\unexpanded\def\useaddfontfeatureparameter#namespace% faster local variant
+  {\edef\m_font_feature_asked{#namespace\c!features}%
    \ifx\m_font_feature_asked\empty\else
      \font_feature_add
    \fi}

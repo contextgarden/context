@@ -107,20 +107,20 @@ typesetters.paragraphs = paragraphs
 
 -- todo: see if we can hook into box in buildpagefilter .. saves traverse
 
-function paragraphs.normalize(head,...)
+function paragraphs.normalize(head,islocal)
     if texgetcount("pagebodymode") > 0 then
-        -- can be an option, maybe we need a proper state in lua itself
+        -- can be an option, maybe we need a proper state in lua itself ... is this check still needed?
         return head, false
     end
     for line in traverse_id(hlist_code,tonut(head)) do
-        if getsubtype(line) == line_code then
+        if getsubtype(line) == line_code and not getprop(line,"line") then
             local head     = getlist(line)
             local leftskip = nil
             local anchor   = new_hlist()
             local id       = getid(head)
             local shift    = getfield(line,"shift")
             local width    = getfield(line,"width")
-            local hsize    = tex.hsize
+            local hsize    = islocal and width or tex.hsize
             local reverse  = getfield(line,"dir") == "TRT" or false
             if id == glue_code then
                 local subtype = getsubtype(head)

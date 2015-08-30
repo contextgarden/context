@@ -32,6 +32,8 @@
 % TODO: as these files are in tds we can locate them and set the lexer root
 % to that one. Currently we're on: we're on context/documents.
 
+% TODO: tab
+
 % This is an experiment: eventually we need to hook it into the verbatim code
 % and deal with widow lines and so.
 
@@ -71,6 +73,7 @@ local f_mapping   = [[
 \let\string\slxH\string\letterhash
 \let\string\slxB\string\letterbackslash
 \let\string\slxP\string\letterpercent
+\let\string\slxT\string\lettertilde
 \let\string\slxS\string\fixedspace
 %]]
 
@@ -84,6 +87,7 @@ local replacer = lpeg.replacer {
     ["#"]  = "\\slxH ",
     ["\\"] = "\\slxB ",
     ["%"]  = "\\slxP ",
+    ["~"]  = "\\slxT ",
     [" "]  = "\\slxS ",
 }
 

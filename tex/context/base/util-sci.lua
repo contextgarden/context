@@ -1,3 +1,11 @@
+if not modules then modules = { } end modules ['util-sci'] = {
+    version   = 1.001,
+    comment   = "companion to m-scite.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
 local gsub, sub, find = string.gsub, string.sub, string.find
 local concat = table.concat
 local formatters = string.formatters

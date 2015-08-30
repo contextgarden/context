@@ -312,7 +312,8 @@ function wrapups.hashlistdata()
         local tag = ci.references.tag
         if tag then
             local m = ci.metadata
-            listdata[m.kind .. ">" .. tag] = ci
+            local t = m.kind .. ">" .. tag -- todo: use internal (see strc-lst.lua where it's set)
+            listdata[t] = ci
         end
     end
 end

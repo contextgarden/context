@@ -44,6 +44,8 @@ local application = logs.application {
 --     ["default-translate-file"]      = true, -- ignored, input is assumed to be in UTF-8 encoding
 --     ["translate-file"]              = true, -- ignored, input is assumed to be in UTF-8 encoding
 --     ["etex"]                        = true, -- ignored, the etex extensions are always active
+--     ["parse-first-line"]            = true, -- ignored, enable parsing of the first line of the input file
+--     ["no-parse-first-line"]         = true, -- ignored, disable parsing of the first line of the input file
 --
 --     ["credits"]                     = true, -- display credits and exit
 --     ["debug-format"]                = true, -- enable format debugging
@@ -68,8 +70,6 @@ local application = logs.application {
 --     ["output-comment"]              = true, -- use STRING for DVI file comment instead of date (no effect for PDF)
 --     ["output-directory"]            = true, -- use existing DIR as the directory to write files in
 --     ["output-format"]               = true, -- use FORMAT for job output; FORMAT is 'dvi' or 'pdf'
---     ["parse-first-line"]            = true, -- enable parsing of the first line of the input file
---     ["no-parse-first-line"]         = true, -- disable parsing of the first line of the input file
 --     ["progname"]                    = true, -- set the program name to STRING
 --     ["recorder"]                    = true, -- enable filename recorder
 --     ["safer"]                       = true, -- disable easily exploitable lua commands
@@ -731,7 +731,7 @@ function scripts.context.run(ctxdata,filename)
                 local l_flags = {
                     ["interaction"]           = a_batchmode,
                     ["synctex"]               = a_synctex,
-                    ["no-parse-first-line"]   = true,
+                    ["no-parse-first-line"]   = true, -- obsolete
                     ["safer"]                 = a_safer,
                  -- ["no-mktex"]              = true,
                  -- ["file-line-error-style"] = true,

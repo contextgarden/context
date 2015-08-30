@@ -998,4 +998,3 @@ function xml.totable(x,strip,flat)
         return convert(x,strip,flat)
     end
 end
-

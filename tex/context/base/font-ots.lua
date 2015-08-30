@@ -6,6 +6,11 @@ if not modules then modules = { } end modules ['font-ots'] = { -- sequences
     license   = "see context related readme files",
 }
 
+-- assumptions:
+--
+-- cursives don't cross discretionaries
+-- marks precede bases
+
 -- This is a version of font-otn.lua adapted to the new font loader code. It
 -- is a context version which can contain experimental code, but when we
 -- have serious patches we will backport to the font-otn files. There will
@@ -885,16 +890,16 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
             elseif step.format == "pair" then
                 local a, b = krn[1], krn[2]
                 if a and #a > 0 then
-                    local startchar = getchar(start)
                     local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,injection) -- characters[startchar])
                     if trace_kerns then
+                        local startchar = getchar(start)
                         logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
                     end
                 end
                 if b and #b > 0 then
-                    local startchar = getchar(start)
                     local x, y, w, h = setpair(snext,factor,rlmode,sequence.flags[4],b,injection) -- characters[nextchar])
                     if trace_kerns then
+                        local startchar = getchar(start)
                         logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
                     end
                 end
@@ -1426,7 +1431,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
                 end
             else
                 local schar = getchar(current)
-                    if skipmark and marks[schar] then -- marks
+                if skipmark and marks[schar] then -- marks
                     -- if current == stop then -- maybe add this
                     --     break
                     -- else
@@ -2887,7 +2892,7 @@ local function featuresprocessor(head,font,attr)
                     end
                 end
 
-               local function k_run(sub,injection,last)
+                local function k_run(sub,injection,last)
                     local a = getattr(sub,0)
                     if a then
                         a = (a == attr) and (not attribute or getprop(sub,a_state) == attribute)

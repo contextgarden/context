@@ -227,6 +227,7 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
     end
     local group = numberdata and numberdata.group
     local name  = metadata.name
+    local kind  = metadata.kind
     if not group then
         -- forget about it
     elseif group == "" then
@@ -246,6 +247,12 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
         r.section = structures.sections.currentid()
     end
     local i = r and r.internal or 0 -- brrr
+if r and kind and name then
+    local tag = tags.getid(kind,name)
+    if tag and tag ~= "?" then
+        r.tag = tag -- todo: use internal ... is unique enough
+    end
+end
     local p = pushed[i]
     if not p then
         p = #cached + 1
@@ -314,13 +321,13 @@ function lists.enhance(n)
         if trace_lists then
             report_lists("enhancing %a, name %a",n,name)
         end
-        if references then
-            -- is this used ?
-            local tag = tags.getid(kind,name)
-            if tag and tag ~= "?" then
-                references.tag = tag
-            end
-        end
+--         if references then
+--             -- is this used ?
+--             local tag = tags.getid(kind,name)
+--             if tag and tag ~= "?" then
+--                 references.tag = tag
+--             end
+--         end
         -- specific enhancer (kind of obsolete)
         local enhancer = kind and lists.enhancers[kind]
         if enhancer then

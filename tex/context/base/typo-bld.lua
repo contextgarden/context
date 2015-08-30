@@ -179,12 +179,15 @@ end)
 nodes.builders = nodes.builder or { }
 local builders = nodes.builders
 
+local normalize = typesetters.paragraphs.normalize
+
 local vboxactions = nodes.tasks.actions("vboxbuilders")
 
 function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
+        normalize(head,true) -- a bit weird place
         if trace_vpacking then
             local before = nodes.count(head)
             head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
@@ -230,12 +233,13 @@ local build_par_codes = {
 
 function builders.buildpage_filter(groupcode)
     -- the next check saves 1% runtime on 1000 tufte pages
+    local head = texlists.contrib_head
+    local done = false
     if build_par_codes[groupcode] then
         -- also called in vbox .. we really need another callback for these four
-        return nil, false -- can be another action set .. like anchoring for box
+        normalize(head) -- a bit weird place
     end
     --
-    local head, done = texlists.contrib_head, false
     if head then
         -- called quite often ... maybe time to remove timing
         starttiming(builders)

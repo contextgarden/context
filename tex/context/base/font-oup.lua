@@ -1913,6 +1913,8 @@ function readers.expand(data)
                                         local cu = coverage[unic]
                                         if not cu then
                                             coverage[unic] = rulehash -- can now be done cleaner i think
+-- else
+--     sequence[start] = nil
                                         end
                                     end
                                 end

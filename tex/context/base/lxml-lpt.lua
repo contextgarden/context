@@ -1446,3 +1446,34 @@ function xml.finalizers.paragraphs(c)
     end
     return c
 end
+
+-- local lpegmatch = lpeg.match
+-- local w = lpeg.patterns.whitespace
+-- local p = w^0 * lpeg.Cf(lpeg.Ct("") * lpeg.Cg(lpeg.C((1-w)^1) * lpeg.Cc(true) * w^0)^1,rawset)
+
+-- function xml.functions.classes(e) -- cache
+--     local class = e.at.class
+--     if class then
+--         return lpegmatch(p,class)
+--     else
+--         return { }
+--     end
+-- end
+
+-- local gmatch = string.gmatch
+
+-- function xml.functions.hasclass(e,c,class)
+--     class = class and e.at[class] or e.at.class
+--     if class and class ~= "" then
+--         if class == c then
+--             return true
+--         else
+--             for s in gmatch(class,"%S+") do
+--                 if s == c then
+--                     return true
+--                 end
+--             end
+--         end
+--     end
+--     return false
+-- end
