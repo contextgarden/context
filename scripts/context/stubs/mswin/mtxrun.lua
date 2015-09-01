@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 4355, stripped down to: 2467
+-- original size: 4547, stripped down to: 2526
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -166,7 +166,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 10587, stripped down to: 7815
+-- original size: 10949, stripped down to: 8037
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -456,7 +456,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 36984, stripped down to: 20356
+-- original size: 38157, stripped down to: 20990
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1260,7 +1260,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-function"] = package.loaded["l-function"] or true
 
--- original size: 361, stripped down to: 322
+-- original size: 372, stripped down to: 329
 
 if not modules then modules={} end modules ['l-functions']={
   version=1.001,
@@ -1279,7 +1279,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 5770, stripped down to: 2894
+-- original size: 5983, stripped down to: 2959
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -1385,7 +1385,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 35732, stripped down to: 21533
+-- original size: 36997, stripped down to: 22376
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2361,7 +2361,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 8643, stripped down to: 6232
+-- original size: 9001, stripped down to: 6512
 
 if not modules then modules={} end modules ['l-io']={
   version=1.001,
@@ -2676,7 +2676,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-number"] = package.loaded["l-number"] or true
 
--- original size: 4939, stripped down to: 2830
+-- original size: 5146, stripped down to: 2933
 
 if not modules then modules={} end modules ['l-number']={
   version=1.001,
@@ -2821,7 +2821,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-set"] = package.loaded["l-set"] or true
 
--- original size: 1923, stripped down to: 1133
+-- original size: 2010, stripped down to: 1186
 
 if not modules then modules={} end modules ['l-set']={
   version=1.001,
@@ -2894,7 +2894,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 15832, stripped down to: 9456
+-- original size: 16390, stripped down to: 9734
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -3276,7 +3276,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 20949, stripped down to: 9945
+-- original size: 21647, stripped down to: 10237
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -3656,7 +3656,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-gzip"] = package.loaded["l-gzip"] or true
 
--- original size: 1211, stripped down to: 1002
+-- original size: 1265, stripped down to: 1038
 
 if not modules then modules={} end modules ['l-gzip']={
   version=1.001,
@@ -3710,7 +3710,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-md5"] = package.loaded["l-md5"] or true
 
--- original size: 3248, stripped down to: 2266
+-- original size: 3355, stripped down to: 2321
 
 if not modules then modules={} end modules ['l-md5']={
   version=1.001,
@@ -3798,7 +3798,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-url"] = package.loaded["l-url"] or true
 
--- original size: 12531, stripped down to: 5721
+-- original size: 12897, stripped down to: 5882
 
 if not modules then modules={} end modules ['l-url']={
   version=1.001,
@@ -4015,7 +4015,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 16765, stripped down to: 11003
+-- original size: 17358, stripped down to: 11378
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -4480,7 +4480,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-boolean"] = package.loaded["l-boolean"] or true
 
--- original size: 1850, stripped down to: 1568
+-- original size: 1919, stripped down to: 1621
 
 if not modules then modules={} end modules ['l-boolean']={
   version=1.001,
@@ -4552,7 +4552,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 37388, stripped down to: 15817
+-- original size: 38659, stripped down to: 16287
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -5170,7 +5170,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-math"] = package.loaded["l-math"] or true
 
--- original size: 974, stripped down to: 890
+-- original size: 1012, stripped down to: 912
 
 if not modules then modules={} end modules ['l-math']={
   version=1.001,
@@ -5210,7 +5210,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 34893, stripped down to: 19218
+-- original size: 36027, stripped down to: 19685
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5904,7 +5904,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 27840, stripped down to: 18055
+-- original size: 28677, stripped down to: 18633
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6575,7 +6575,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 3387, stripped down to: 2739
+-- original size: 3580, stripped down to: 2870
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -6592,7 +6592,9 @@ utilities.files=files
 local zerobased={}
 function files.open(filename,zb)
   local f=io.open(filename,"rb")
-  zerobased[f]=zb or false
+  if f then
+    zerobased[f]=zb or false
+  end
   return f
 end
 function files.close(f)
@@ -6721,7 +6723,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 4062, stripped down to: 3208
+-- original size: 4264, stripped down to: 3349
 
 if not modules then modules={} end modules ['util-sac']={
   version=1.001,
@@ -6902,7 +6904,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sto"] = package.loaded["util-sto"] or true
 
--- original size: 3926, stripped down to: 2742
+-- original size: 4100, stripped down to: 2852
 
 if not modules then modules={} end modules ['util-sto']={
   version=1.001,
@@ -7042,7 +7044,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 21780, stripped down to: 15121
+-- original size: 22496, stripped down to: 15539
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -7563,7 +7565,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fmt"] = package.loaded["util-fmt"] or true
 
--- original size: 2274, stripped down to: 1781
+-- original size: 2350, stripped down to: 1847
 
 if not modules then modules={} end modules ['util-fmt']={
   version=1.001,
@@ -7644,7 +7646,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 12482, stripped down to: 8864
+-- original size: 12862, stripped down to: 9104
 
 if not modules then modules={} end modules ['trac-set']={ 
   version=1.001,
@@ -7957,7 +7959,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 29394, stripped down to: 20482
+-- original size: 30417, stripped down to: 21120
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -8743,7 +8745,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 6704, stripped down to: 5343
+-- original size: 6913, stripped down to: 5481
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -8924,7 +8926,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-pro"] = package.loaded["trac-pro"] or true
 
--- original size: 5829, stripped down to: 3501
+-- original size: 6039, stripped down to: 3616
 
 if not modules then modules={} end modules ['trac-pro']={
   version=1.001,
@@ -9071,7 +9073,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 4982, stripped down to: 3511
+-- original size: 5142, stripped down to: 3611
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -9201,7 +9203,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 3898, stripped down to: 2644
+-- original size: 4030, stripped down to: 2718
 
 if not modules then modules={} end modules ['util-deb']={
   version=1.001,
@@ -9305,7 +9307,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-mrg"] = package.loaded["util-mrg"] or true
 
--- original size: 7757, stripped down to: 6015
+-- original size: 7985, stripped down to: 6153
 
 if not modules then modules={} end modules ['util-mrg']={
   version=1.001,
@@ -9482,7 +9484,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 7100, stripped down to: 3978
+-- original size: 7313, stripped down to: 4076
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -9627,7 +9629,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 8022, stripped down to: 5038
+-- original size: 8284, stripped down to: 5176
 
 if not modules then modules={} end modules ['util-env']={
   version=1.001,
@@ -9814,7 +9816,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 6174, stripped down to: 4141
+-- original size: 6358, stripped down to: 4257
 
  if not modules then modules={} end modules ['luat-env']={
   version=1.001,
@@ -9967,7 +9969,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 45848, stripped down to: 27914
+-- original size: 47323, stripped down to: 28746
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -10993,7 +10995,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 48982, stripped down to: 30632
+-- original size: 50461, stripped down to: 31497
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -12065,7 +12067,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-mis"] = package.loaded["lxml-mis"] or true
 
--- original size: 3684, stripped down to: 1957
+-- original size: 3787, stripped down to: 2003
 
 if not modules then modules={} end modules ['lxml-mis']={
   version=1.001,
@@ -12134,7 +12136,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 28785, stripped down to: 20578
+-- original size: 29785, stripped down to: 21310
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -12987,7 +12989,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-xml"] = package.loaded["lxml-xml"] or true
 
--- original size: 10274, stripped down to: 7538
+-- original size: 10719, stripped down to: 7841
 
 if not modules then modules={} end modules ['lxml-xml']={
   version=1.001,
@@ -13365,7 +13367,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-xml"] = package.loaded["trac-xml"] or true
 
--- original size: 6351, stripped down to: 4919
+-- original size: 6534, stripped down to: 5072
 
 if not modules then modules={} end modules ['trac-xml']={
   version=1.001,
@@ -13535,7 +13537,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-ini"] = package.loaded["data-ini"] or true
 
--- original size: 11085, stripped down to: 7662
+-- original size: 11445, stripped down to: 7830
 
 if not modules then modules={} end modules ['data-ini']={
   version=1.001,
@@ -13791,7 +13793,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 18067, stripped down to: 10726
+-- original size: 18619, stripped down to: 11042
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -14176,7 +14178,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-env"] = package.loaded["data-env"] or true
 
--- original size: 9216, stripped down to: 6798
+-- original size: 9518, stripped down to: 7037
 
 if not modules then modules={} end modules ['data-env']={
   version=1.001,
@@ -14455,7 +14457,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 15618, stripped down to: 11629
+-- original size: 16066, stripped down to: 11938
 
 if not modules then modules={} end modules ['data-tmp']={
   version=1.100,
@@ -14831,7 +14833,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-met"] = package.loaded["data-met"] or true
 
--- original size: 5347, stripped down to: 4015
+-- original size: 5488, stripped down to: 4101
 
 if not modules then modules={} end modules ['data-met']={
   version=1.100,
@@ -16498,7 +16500,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-pre"] = package.loaded["data-pre"] or true
 
--- original size: 3950, stripped down to: 2935
+-- original size: 4092, stripped down to: 3016
 
 if not modules then modules={} end modules ['data-pre']={
   version=1.001,
@@ -16616,7 +16618,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-inp"] = package.loaded["data-inp"] or true
 
--- original size: 910, stripped down to: 823
+-- original size: 935, stripped down to: 838
 
 if not modules then modules={} end modules ['data-inp']={
   version=1.001,
@@ -16646,7 +16648,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-out"] = package.loaded["data-out"] or true
 
--- original size: 530, stripped down to: 475
+-- original size: 548, stripped down to: 483
 
 if not modules then modules={} end modules ['data-out']={
   version=1.001,
@@ -16669,7 +16671,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-fil"] = package.loaded["data-fil"] or true
 
--- original size: 3863, stripped down to: 3310
+-- original size: 3976, stripped down to: 3391
 
 if not modules then modules={} end modules ['data-fil']={
   version=1.001,
@@ -16777,7 +16779,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-con"] = package.loaded["data-con"] or true
 
--- original size: 5010, stripped down to: 3588
+-- original size: 5148, stripped down to: 3680
 
 if not modules then modules={} end modules ['data-con']={
   version=1.100,
@@ -16896,7 +16898,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-use"] = package.loaded["data-use"] or true
 
--- original size: 3899, stripped down to: 2984
+-- original size: 4000, stripped down to: 3052
 
 if not modules then modules={} end modules ['data-use']={
   version=1.001,
@@ -16987,7 +16989,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-zip"] = package.loaded["data-zip"] or true
 
--- original size: 8772, stripped down to: 6841
+-- original size: 9036, stripped down to: 7041
 
 if not modules then modules={} end modules ['data-zip']={
   version=1.001,
@@ -17224,7 +17226,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tre"] = package.loaded["data-tre"] or true
 
--- original size: 8479, stripped down to: 5580
+-- original size: 8712, stripped down to: 5726
 
 if not modules then modules={} end modules ['data-tre']={
   version=1.001,
@@ -17413,7 +17415,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 6569, stripped down to: 5304
+-- original size: 6779, stripped down to: 5444
 
 if not modules then modules={} end modules ['data-sch']={
   version=1.001,
@@ -17594,7 +17596,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lua"] = package.loaded["data-lua"] or true
 
--- original size: 4313, stripped down to: 3227
+-- original size: 4447, stripped down to: 3302
 
 if not modules then modules={} end modules ['data-lua']={
   version=1.001,
@@ -17703,7 +17705,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-aux"] = package.loaded["data-aux"] or true
 
--- original size: 2431, stripped down to: 1996
+-- original size: 2494, stripped down to: 2047
 
 if not modules then modules={} end modules ['data-aux']={
   version=1.001,
@@ -17770,7 +17772,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmf"] = package.loaded["data-tmf"] or true
 
--- original size: 2601, stripped down to: 1627
+-- original size: 2674, stripped down to: 1658
 
 if not modules then modules={} end modules ['data-tmf']={
   version=1.001,
@@ -17826,7 +17828,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lst"] = package.loaded["data-lst"] or true
 
--- original size: 2734, stripped down to: 2354
+-- original size: 2815, stripped down to: 2415
 
 if not modules then modules={} end modules ['data-lst']={
   version=1.001,
@@ -17906,7 +17908,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 11549, stripped down to: 5905
+-- original size: 11846, stripped down to: 6059
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -18092,7 +18094,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-sta"] = package.loaded["luat-sta"] or true
 
--- original size: 5703, stripped down to: 2507
+-- original size: 5914, stripped down to: 2584
 
 if not modules then modules={} end modules ['luat-sta']={
   version=1.001,
@@ -18195,7 +18197,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 5955, stripped down to: 4926
+-- original size: 6095, stripped down to: 5035
 
 if not modules then modules={} end modules ['luat-fmt']={
   version=1.001,
@@ -18329,8 +18331,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 758074
--- stripped bytes    : 273402
+-- original bytes    : 780760
+-- stripped bytes    : 282936
 
 -- end library merge
 

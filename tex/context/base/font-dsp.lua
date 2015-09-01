@@ -1419,7 +1419,7 @@ do
             end
             lookups[lookupid] = {
                 type      = lookuptype,
-                chain     = chaindirections[lookuptype] or nil,
+             -- chain     = chaindirections[lookuptype] or nil,
                 flags     = lookupflags,
                 name      = lookupid,
                 subtables = subtables,
@@ -1475,6 +1475,7 @@ do
                 local nofsubtables = #subtables
                 local order        = lookup.order
                 local flags        = lookup.flags
+             -- local chain        = lookup.chain
                 local markclass    = lookup.markclass
                 if nofsubtables > 0 then
                     local steps     = { }
@@ -1537,6 +1538,7 @@ do
                             type      = lookuptype,
                             markclass = markclass or nil,
                             flags     = flags,
+                         -- chain     = chain,
                             order     = order,
                             features  = features,
                         }
@@ -1553,6 +1555,7 @@ do
                             type      = lookuptype,
                             markclass = markclass or nil,
                             flags     = flags,
+                         -- chain     = chain,
                         }
                         sublookuplist[nofsublookups] = l
                         sublookuphash[lookupid] = nofsublookups
@@ -1616,6 +1619,7 @@ do
                                         type      = d.lookuptype,
                                         markclass = d.markclass or nil,
                                         flags     = d.flags,
+                                     -- chain     = d.chain,
                                     }
                                     sublookuplist[nofsublookups] = h
                                     sublookuphash[lookupid] = nofsublookups

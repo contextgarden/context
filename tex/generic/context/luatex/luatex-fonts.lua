@@ -29,7 +29,7 @@ if not modules then modules = { } end modules ['luatex-fonts'] = {
 
 -- texio.write_nl("")
 -- texio.write_nl("--------------------------------------------------------------------------------")
--- texio.write_nl("The font code has been brought in sync with the context version of 2014.12.21 so")
+-- texio.write_nl("The font code has been brought in sync with the context version of 2015.08.31 so")
 -- texio.write_nl("if things don't work out as expected the interfacing needs to be checked. When")
 -- texio.write_nl("this works as expected a second upgrade will happen that gives a more complete")
 -- texio.write_nl("support and another sync with the context code (that new code is currently being")

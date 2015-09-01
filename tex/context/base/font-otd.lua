@@ -178,7 +178,7 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                                     "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a",
                                         font,attr or 0,dynamic,kind,script,language,sequence.name,valid)
                             end
-                            ra[#ra+1] = { valid, attribute, sequence.chain or 0, kind, sequence }
+                            ra[#ra+1] = { valid, attribute, sequence, kind }
                         end
                     end
                 end

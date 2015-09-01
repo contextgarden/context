@@ -21,7 +21,9 @@ local zerobased = { }
 
 function files.open(filename,zb)
     local f = io.open(filename,"rb")
-    zerobased[f] = zb or false
+    if f then
+        zerobased[f] = zb or false
+    end
     return f
 end
 
