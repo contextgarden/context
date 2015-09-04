@@ -39,7 +39,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2015.08.26 09:07}
+\edef\contextversion{2015.09.04 11:00}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -207,7 +207,7 @@
 \loadmarkfile{hand-ini}
 
 \loadmarkfile{lang-ini}
-\loadmarkfile{lang-hyp}
+\loadmarkfile{lang-hyp} % also loads dis
 \loadmarkfile{lang-lab}
 
 \loadmarkfile{unic-ini}
@@ -365,7 +365,7 @@
 
 \loadmarkfile{char-enc} % will move up
 
-\loadmkvifile{font-lib} % way too late
+\loadmkvifile{font-lib} % way too late but after language
 \loadmkvifile{font-fil}
 \loadmkvifile{font-var}
 \loadmkvifile{font-fea}

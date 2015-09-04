@@ -549,9 +549,19 @@ local function inject_marks(marks,marki,nofmarks)
                         else
                             -- kern(x) glyph(p) kern(w-x) mark(n)
                          -- ox = px - getfield(p,"width") + pn.markx - pp.leftkern
-                            local leftkern = pp.leftkern
-                            if leftkern then
-                                ox = px - pn.markx - leftkern
+                            -- 
+							-- According to Kai we don't need to handle leftkern here but I'm
+                            -- pretty sure I've run into a case where it was needed so maybe 
+	                        -- some day we need something more clever here.
+                            -- 
+							if false then  
+                                -- a mark with kerning 
+                                local leftkern = pp.leftkern
+                                if leftkern then
+                                    ox = px - pn.markx - leftkern
+                                else
+                                    ox = px - pn.markx
+                                end
                             else
                                 ox = px - pn.markx
                             end

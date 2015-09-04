@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% \endinput
+
 %D This module will go away as soon as we use the new loader code by default.
 %D That will happen after extensive testing. Generic support will happen after
 %D that.
@@ -19,6 +21,8 @@
 
 \startluacode
     local files = {
+        "font-otj",
+"font-otj-new",
         "font-otr",
         "font-cff",
         "font-ttf",
@@ -66,6 +70,17 @@
     end)
 
     directives.register("nodes.injections.fontkern", function(v) setfield(kern,"subtype",v and 0 or 1) end)
+
+    local fonts    = fonts
+    local handlers = fonts.handlers
+    local otf      = handlers.otf -- brrr
+    local afm      = handlers.afm -- brrr
+    local getters  = fonts.getters
+
+    getters.kern        .opentype = otf.getkern
+    getters.substitution.opentype = otf.getsubstitution
+    getters.alternate   .opentype = otf.getalternate
+    getters.multiple    .opentype = otf.getmultiple
 
 \stopluacode
 

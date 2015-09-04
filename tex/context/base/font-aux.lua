@@ -11,6 +11,11 @@ local tonumber, type = tonumber, type
 
 local fonts, font = fonts, font
 
+local fonts       = fonts
+local handlers    = fonts.handlers
+local otf         = handlers.otf -- brrr
+local afm         = handlers.afm -- brrr
+
 local iterators   = { }
 fonts.iterators   = iterators
 
@@ -161,5 +166,76 @@ function iterators.glyphs(data)
         end
     else
         return dummy
+    end
+end
+
+-- for the moment here, it might move to some other file later
+
+function afm.getkern(tfmdata,left,right)
+    local c = tfmdata.characters[left]
+    if c then
+        local kerns = c.kerns
+        if kerns then
+            return kerns[right] -- already scaled
+        end
+    end
+    return 0
+end
+
+local getters = { -- maybe better getters[format][...]
+    kern = {
+        ["type1"]    = afm.getkern,
+        ["opentype"] = otf.getkern,
+    },
+    substitution = {
+        ["opentype"] = otf.getsubstitution,
+    },
+    alternate = {
+        ["opentype"] = otf.getalternate,
+    },
+    multiple = {
+        ["opentype"] = otf.getmultiple,
+    }
+}
+
+fonts.getters = getters
+
+function fonts.getkern(tfmdata,left,right)
+    local format = tfmdata.properties.format
+    local getter = getters.kern[format]
+    if getter then
+        return getter(tfmdata,left,right)
+    else
+        return 0
+    end
+end
+
+function fonts.getsubstitution(tfmdata,k,kind)
+    local format = tfmdata.properties.format
+    local getter = getters.substitution[format]
+    if getter then
+        return getter(tfmdata,k,kind,value)
+    else
+        return 0
+    end
+end
+
+function fonts.getalternate(tfmdata,k,kind,value)
+    local format = tfmdata.properties.format
+    local getter = getters.substitution[format]
+    if getter then
+        return getter(tfmdata,k,kind,value)
+    else
+        return 0
+    end
+end
+
+function fonts.getmultiple(tfmdata,k,kind)
+    local format = tfmdata.properties.format
+    local getter = getters.substitution[format]
+    if getter then
+        return getter(tfmdata,k,kind,value)
+    else
+        return 0
     end
 end

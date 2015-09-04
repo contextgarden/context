@@ -2997,3 +2997,20 @@ function otf.getmultiple(tfmdata,k,kind)
     end
     return { k }
 end
+
+function otf.getkern(tfmdata,left,right,kind)
+    local kerns = getgsub(tfmdata,left,kind or "kern",true) -- for now we use getsub
+    if kerns then
+        local found = kerns[right]
+        local kind  = type(found)
+        if kind == "table" then
+            found = found[1][3] -- can be more clever
+        elseif kind ~= "number" then
+            found = false
+        end
+        if found then
+            return found * tfmdata.parameters.factor
+        end
+    end
+    return 0
+end

@@ -266,14 +266,14 @@
 %   [MixedCaps]
 %   [MixedCaps*default cp \the\exheight]
 
-\definefontfeature
-  [mixeddefault]
-  [default]
-  [extend=1.2]
+% \definefontfeature
+%   [mixeddefault]
+%   [default]
+%   [extend=1.2]
 
 \definefont
   [MixedCaps]
-  [CurrentFont*default,mixeddefault cp \the\exheight]
+  [CurrentFont*default cp 1.2\exheight]
 
 \setupcapitals
   [\v!mixed]

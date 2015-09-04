@@ -11,6 +11,7 @@ local format, insert = string.format, table.insert
 local div, randomnumber = math.div, math.random
 
 local trace_casing = false  trackers.register("typesetters.casing", function(v) trace_casing = v end)
+local check_kerns  = false  directives.register("typesetters.casing.checkkerns", function(v) check_kerns = v end)
 
 local report_casing = logs.reporter("typesetting","casing")
 
@@ -50,6 +51,8 @@ local kerning_code    = kerncodes.kerning
 local userskip_code   = skipcodes.userskip
 
 local tasks           = nodes.tasks
+
+local newkern         = nuts.pool.kern
 
 local fonthashes      = fonts.hashes
 local fontdata        = fonthashes.identifiers
@@ -199,25 +202,67 @@ local function camel(start,attr,lastfont,n,count,where,first)
     return start, done_1 or done_2, true
 end
 
+-- local function mixed(start,attr,lastfont,n,count,where,first)
+--     if where == "post" then
+--         return
+--     end
+--     local used = first or start
+--     local char = getchar(first)
+--     local dc   = uccodes[char]
+--     if not dc then
+--         return start, false, true
+--     elseif dc == char then
+--         local lfa = lastfont[n]
+--         if lfa then
+--             setfield(first,"font",lfa)
+--             return start, true, true
+--         else
+--             return start, false, true
+--         end
+--     else
+--         replacer(first or start,uccodes)
+--         return start, true, true
+--     end
+-- end
+
 local function mixed(start,attr,lastfont,n,count,where,first)
     if where == "post" then
         return
     end
     local used = first or start
-    local char = getchar(first)
+    local char = getchar(used)
     local dc   = uccodes[char]
     if not dc then
         return start, false, true
     elseif dc == char then
         local lfa = lastfont[n]
         if lfa then
-            setfield(first,"font",lfa)
+            setfield(used,"font",lfa)
             return start, true, true
         else
             return start, false, true
         end
     else
-        replacer(first or start,uccodes)
+        if check_kerns then
+            local p = getprev(used)
+            if p and getid(p) == glyph_code then
+                local c = lccodes[char]
+                local c = type(c) == "table" and c[1] or c
+                replacer(used,uccodes)
+                local fp = getfont(p)
+                local fc = getfont(used)
+                if fp ~= fc then
+                    local k = fonts.getkern(fontdata[fp],getchar(p),c)
+                    if k ~= 0 then
+                        insert_after(p,p,newkern(k))
+                    end
+                end
+            else
+                replacer(used,uccodes)
+            end
+        else
+            replacer(used,uccodes)
+        end
         return start, true, true
     end
 end

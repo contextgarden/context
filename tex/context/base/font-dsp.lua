@@ -1745,6 +1745,7 @@ do
             },
             nofsteps  = 1,
             type      = "gpos_pair",
+         -- type      = "gpos_single", -- maybe better
             flags     = { false, false, false, false },
             order     = { name },
             features  = { [name] = feature },

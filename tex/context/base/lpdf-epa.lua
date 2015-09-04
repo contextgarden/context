@@ -12,6 +12,7 @@ if not modules then modules = { } end modules ['lpdf-epa'] = {
 local type, tonumber = type, tonumber
 local format, gsub, lower = string.format, string.gsub, string.lower
 local formatters = string.formatters
+local abs = math.abs
 
 ----- lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
@@ -37,6 +38,8 @@ local codeinjections = backends.pdf.codeinjections
 local escapetex      = characters.filters.utf.private.escape
 
 local bookmarks      = structures.bookmarks
+
+local maxdimen       = 2^30-1
 
 local layerspec = { -- predefining saves time
     "epdflinks"
@@ -178,7 +181,11 @@ function codeinjections.mergereferences(specification)
                         local h         = yscale * (a_ury - a_lly)
                         if subtype == "Link" then
                             local a = annotation.A
-                            if a then
+                            if not a then
+                                report_link("missing link annotation")
+                            elseif w > width or h > height or w < 0 or h < 0 or abs(x) > (maxdimen/2) or abs(y) > (maxdimen/2) then
+                                report_link("broken link rectangle [%f %f %f %f] (max: %f)",a_llx,a_lly,a_urx,a_ury,maxdimen/2)
+                            else
                                 local linktype = a.S
                                 if linktype == "GoTo" then
                                     link_goto(x,y,w,h,document,annotation,pagedata,namespace)
@@ -189,8 +196,6 @@ function codeinjections.mergereferences(specification)
                                 elseif trace_links then
                                     report_link("unsupported link annotation %a",linktype)
                                 end
-                            else
-                                report_link("missing link annotation")
                             end
                         elseif trace_links then
                             report_link("unsupported annotation %a",subtype)

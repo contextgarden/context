@@ -138,6 +138,8 @@ function fonts.setdiscexpansion(v)
     end
 end
 
+fonts.setdiscexpansion(true)
+
 function handlers.characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)

@@ -204,7 +204,10 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
 end
 
 function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2lflag & tfmchr not used
-    local x, y, w, h = factor*spec[1], factor*spec[2], factor*spec[3], factor*spec[4]
+    local x = factor*spec[1]
+    local y = factor*spec[2]
+    local w = factor*spec[3]
+    local h = factor*spec[4]
     if x ~= 0 or w ~= 0 or y ~= 0 or h ~= 0 then -- okay?
         local yoffset   = y - h
         local leftkern  = x      -- both kerns are set in a pair kern compared
@@ -549,9 +552,19 @@ local function inject_marks(marks,marki,nofmarks)
                         else
                             -- kern(x) glyph(p) kern(w-x) mark(n)
                          -- ox = px - getfield(p,"width") + pn.markx - pp.leftkern
-                            local leftkern = pp.leftkern
-                            if leftkern then
-                                ox = px - pn.markx - leftkern
+                            --
+							-- According to Kai we don't need to handle leftkern here but I'm
+                            -- pretty sure I've run into a case where it was needed so maybe
+	                        -- some day we need something more clever here.
+                            --
+							if false then
+                                -- a mark with kerning
+                                local leftkern = pp.leftkern
+                                if leftkern then
+                                    ox = px - pn.markx - leftkern
+                                else
+                                    ox = px - pn.markx
+                                end
                             else
                                 ox = px - pn.markx
                             end
@@ -714,7 +727,7 @@ local function inject_kerns(head,glist,ilist,length) -- not complete ! compare w
 					if leftkern and leftkern ~= 0 then
 						local t = find_tail(dp)
 						insert_node_after(dp,t,newkern(leftkern))
-setfield(p,"post",dp) -- currently we need to force a tail refresh
+                        setfield(p,"post",dp) -- currently we need to force a tail refresh
 					end
 				end
 			end
@@ -725,7 +738,7 @@ setfield(p,"post",dp) -- currently we need to force a tail refresh
 					if leftkern and leftkern ~= 0 then
 						local t = find_tail(dr)
 						insert_node_after(dr,t,newkern(leftkern))
-setfield(p,"replace",dr) -- currently we need to force a tail refresh
+                        setfield(p,"replace",dr) -- currently we need to force a tail refresh
 					end
 				end
 			else
@@ -788,7 +801,7 @@ local function inject_kerns_only(head,where)
         trace(head,"kerns")
     end
     local n = head
-    local p = nil
+    local p = nil -- disc node when non-nil
     while n do
         local id = getid(n)
         if id == glyph_code then
@@ -804,7 +817,7 @@ local function inject_kerns_only(head,where)
                                 if leftkern and leftkern ~= 0 then
                                     local t = find_tail(d)
                                     insert_node_after(d,t,newkern(leftkern))
-setfield(p,"post",d) -- currently we need to force a tail refresh
+                                    setfield(p,"post",d) -- currently we need to force a tail refresh
                                 end
                             end
                         end
@@ -816,7 +829,7 @@ setfield(p,"post",d) -- currently we need to force a tail refresh
                                 if leftkern and leftkern ~= 0 then
                                     local t = find_tail(d)
                                     insert_node_after(d,t,newkern(leftkern))
-setfield(p,"replace",d) -- currently we need to force a tail refresh
+                                    setfield(p,"replace",d) -- currently we need to force a tail refresh
                                 end
                             end
                         else
@@ -829,6 +842,7 @@ setfield(p,"replace",d) -- currently we need to force a tail refresh
                             end
                         end
                     else
+                        -- this is the most common case
                         local i = rawget(pn,"injections")
                         if i then
                             local leftkern = i.leftkern
@@ -838,8 +852,6 @@ setfield(p,"replace",d) -- currently we need to force a tail refresh
                         end
                     end
                 end
-            else
-                break
             end
             p = nil
         elseif id == disc_code then
@@ -866,7 +878,6 @@ setfield(p,"replace",d) -- currently we need to force a tail refresh
                     setfield(n,"pre",h)
                 end
             end
-            -- weird
             local d = getfield(n,"post")
             if d then
                 local h = d
@@ -895,7 +906,7 @@ setfield(p,"replace",d) -- currently we need to force a tail refresh
                 local h = d
                 for n in traverse_id(glyph_code,d) do
                     if getsubtype(n) < 256 then
-                        local pn = rawget(properties,n) -- why can it be empty { }
+                        local pn = rawget(properties,n)
                         if pn then
                             local i = rawget(pn,"replaceinjections")
                             if i then
@@ -933,7 +944,6 @@ local function inject_pairs_only(head,where)
     if trace_injections then
         trace(head,"pairs")
     end
-    --
     local n = head
     local p = nil -- disc node when non-nil
     while n do
@@ -951,7 +961,7 @@ local function inject_pairs_only(head,where)
                                 if leftkern and leftkern ~= 0 then
                                     local t = find_tail(d)
                                     insert_node_after(d,t,newkern(leftkern))
-setfield(p,"post",d) -- currently we need to force a tail refresh
+                                    setfield(p,"post",d) -- currently we need to force a tail refresh
                                 end
                              -- local rightkern = i.rightkern
                              -- if rightkern and rightkern ~= 0 then
@@ -968,7 +978,7 @@ setfield(p,"post",d) -- currently we need to force a tail refresh
                                 if leftkern and leftkern ~= 0 then
                                     local t = find_tail(d)
                                     insert_node_after(d,t,newkern(leftkern))
-setfield(p,"replace",d) -- currently we need to force a tail refresh
+                                    setfield(p,"replace",d) -- currently we need to force a tail refresh
                                 end
                              -- local rightkern = i.rightkern
                              -- if rightkern and rightkern ~= 0 then
@@ -994,24 +1004,22 @@ setfield(p,"replace",d) -- currently we need to force a tail refresh
                         -- this is the most common case
                         local i = rawget(pn,"injections")
                         if i then
-                            local yoffset = i.yoffset
-                            if yoffset and yoffset ~= 0 then
-                                setfield(n,"yoffset",yoffset)
-                            end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                insert_node_before(head,n,newkern(leftkern))
+                                head = insert_node_before(head,n,newkern(leftkern))
                             end
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
                                 insert_node_after(head,n,newkern(rightkern))
                                 n = getnext(n) -- to be checked
                             end
+                            local yoffset = i.yoffset
+                            if yoffset and yoffset ~= 0 then
+                                setfield(n,"yoffset",yoffset)
+                            end
                         end
                     end
                 end
-            else
-                break
             end
             p = nil
         elseif id == disc_code then
@@ -1020,22 +1028,22 @@ setfield(p,"replace",d) -- currently we need to force a tail refresh
                 local h = d
                 for n in traverse_id(glyph_code,d) do
                     if getsubtype(n) < 256 then
-                        local p = rawget(properties,n)
-                        if p then
-                            local i = rawget(p,"preinjections")
+                        local pn = rawget(properties,n)
+                        if pn then
+                            local i = rawget(pn,"preinjections")
                             if i then
-                                local yoffset = i.yoffset
-                                if yoffset and yoffset ~= 0 then
-                                    setfield(n,"yoffset",yoffset)
-                                end
                                 local leftkern = i.leftkern
-                                if leftkern ~= 0 then
+                                if leftkern and leftkern ~= 0 then
                                     h = insert_node_before(h,n,newkern(leftkern))
                                 end
                                 local rightkern = i.rightkern
                                 if rightkern and rightkern ~= 0 then
                                     insert_node_after(head,n,newkern(rightkern))
                                     n = getnext(n) -- to be checked
+                                end
+                                local yoffset = i.yoffset
+                                if yoffset and yoffset ~= 0 then
+                                    setfield(n,"yoffset",yoffset)
                                 end
                             end
                         end
@@ -1052,14 +1060,10 @@ setfield(p,"replace",d) -- currently we need to force a tail refresh
                 local h = d
                 for n in traverse_id(glyph_code,d) do
                     if getsubtype(n) < 256 then
-                        local p = rawget(properties,n)
-                        if p then
-                            local i = rawget(p,"postinjections")
+                        local pn = rawget(properties,n)
+                        if pn then
+                            local i = rawget(pn,"postinjections")
                             if i then
-                                local yoffset = i.yoffset
-                                if yoffset and yoffset ~= 0 then
-                                    setfield(n,"yoffset",yoffset)
-                                end
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
                                     h = insert_node_before(h,n,newkern(leftkern))
@@ -1068,6 +1072,10 @@ setfield(p,"replace",d) -- currently we need to force a tail refresh
                                 if rightkern and rightkern ~= 0 then
                                     insert_node_after(head,n,newkern(rightkern))
                                     n = getnext(n) -- to be checked
+                                end
+                                local yoffset = i.yoffset
+                                if yoffset and yoffset ~= 0 then
+                                    setfield(n,"yoffset",yoffset)
                                 end
                             end
                         end
@@ -1084,14 +1092,10 @@ setfield(p,"replace",d) -- currently we need to force a tail refresh
                 local h = d
                 for n in traverse_id(glyph_code,d) do
                     if getsubtype(n) < 256 then
-                        local p = rawget(properties,n)
-                        if p then
-                            local i = rawget(p,"replaceinjections")
+                        local pn = rawget(properties,n)
+                        if pn then
+                            local i = rawget(pn,"replaceinjections")
                             if i then
-                                local yoffset = i.yoffset
-                                if yoffset and yoffset ~= 0 then
-                                    setfield(n,"yoffset",yoffset)
-                                end
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
                                     h = insert_node_before(h,n,newkern(leftkern))
@@ -1100,6 +1104,10 @@ setfield(p,"replace",d) -- currently we need to force a tail refresh
                                 if rightkern and rightkern ~= 0 then
                                     insert_node_after(head,n,newkern(rightkern))
                                     n = getnext(n) -- to be checked
+                                end
+                                local yoffset = i.yoffset
+                                if yoffset and yoffset ~= 0 then
+                                    setfield(n,"yoffset",yoffset)
                                 end
                             end
                         end

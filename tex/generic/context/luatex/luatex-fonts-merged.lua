@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/01/15 11:10:11
+-- merge date  : 09/04/15 11:00:13
 
 do -- begin closure to overcome local limits and interference
 
@@ -9496,6 +9496,22 @@ function otf.getmultiple(tfmdata,k,kind)
   end
   return { k }
 end
+function otf.getkern(tfmdata,left,right,kind)
+  local kerns=getgsub(tfmdata,left,kind or "kern",true) 
+  if kerns then
+    local found=kerns[right]
+    local kind=type(found)
+    if kind=="table" then
+      found=found[1][3] 
+    elseif kind~="number" then
+      found=false
+    end
+    if found then
+      return found*tfmdata.parameters.factor
+    end
+  end
+  return 0
+end
 
 end -- closure
 
@@ -10572,9 +10588,15 @@ local function inject_marks(marks,marki,nofmarks)
             if pn.markdir<0 then
               ox=px-pn.markx-rightkern
             else
-              local leftkern=pp.leftkern
-              if leftkern then
-                ox=px-pn.markx-leftkern
+							
+	
+							if false then
+                local leftkern=pp.leftkern
+                if leftkern then
+                  ox=px-pn.markx-leftkern
+                else
+                  ox=px-pn.markx
+                end
               else
                 ox=px-pn.markx
               end

@@ -184,6 +184,7 @@ function char_tracers.string(t)
 end
 
 local f_unicode = formatters["%U"]
+local f_badcode = formatters["{%i}"]
 
 function char_tracers.unicodes(t,decimal)
     local tt = { }
@@ -489,30 +490,35 @@ local function toutf(list,result,nofresult,stopcriterium)
                     result, nofresult = toutf(components,result,nofresult)
                 else
                     local c = getchar(n)
-                    local fc = fontcharacters[getfont(n)]
-                    if fc then
-                        local fcc = fc[c]
-                        if fcc then
-                            local u = fcc.unicode
-                            if not u then
-                                nofresult = nofresult + 1
-                                result[nofresult] = utfchar(c)
-                            elseif type(u) == "table" then
-                                for i=1,#u do
+                    if c > 0 then
+                        local fc = fontcharacters[getfont(n)]
+                        if fc then
+                            local fcc = fc[c]
+                            if fcc then
+                                local u = fcc.unicode
+                                if not u then
                                     nofresult = nofresult + 1
-                                    result[nofresult] = utfchar(u[i])
+                                    result[nofresult] = utfchar(c)
+                                elseif type(u) == "table" then
+                                    for i=1,#u do
+                                        nofresult = nofresult + 1
+                                        result[nofresult] = utfchar(u[i])
+                                    end
+                                else
+                                    nofresult = nofresult + 1
+                                    result[nofresult] = utfchar(u)
                                 end
                             else
                                 nofresult = nofresult + 1
-                                result[nofresult] = utfchar(u)
+                                result[nofresult] = utfchar(c)
                             end
                         else
                             nofresult = nofresult + 1
-                            result[nofresult] = utfchar(c)
+                            result[nofresult] = f_unicode(c)
                         end
                     else
                         nofresult = nofresult + 1
-                        result[nofresult] = f_unicode(c)
+                        result[nofresult] = f_badcode(c)
                     end
                 end
             elseif id == disc_code then

@@ -50,6 +50,7 @@ local implement           = interfaces.implement
 local fonts               = fonts
 local handlers            = fonts.handlers
 local otf                 = handlers.otf -- brrr
+----- afm                 = handlers.afm -- brrr
 local names               = fonts.names
 local definers            = fonts.definers
 local specifiers          = fonts.specifiers
@@ -1366,14 +1367,14 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
         if special then
             -- we also have available specification.textsize
             local parameters = tfmdata.parameters
-            local designsize = parameters.designsize
+         -- local designsize = parameters.designsize
             if     special == "ht" then
---         inspect(parameters)
-                local height = parameters.ascender * designsize / parameters.units
-                scaledpoints = (scaledpoints/height) * designsize
+                local height = parameters.ascender / parameters.units
+                scaledpoints = scaledpoints / height
             elseif special == "cp" then
-                local height = (tfmdata.descriptions[utf.byte("X")].height or parameters.ascender) * designsize / parameters.units
-                scaledpoints = (scaledpoints/height) * designsize
+                local glyph  = tfmdata.descriptions[utfbyte("X")]
+                local height = (glyph and glyph.height or parameters.ascender) / parameters.units
+                scaledpoints = scaledpoints / height
             end
         end
     end

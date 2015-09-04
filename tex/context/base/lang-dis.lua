@@ -47,6 +47,8 @@ local setattribute       = tex.setattribute
 
 local getlanguagedata    = languages.getdata
 
+local check_regular      = true
+
 -- local expanders = {
 --     [disccodes.discretionary] = function(d,template)
 --         -- \discretionary
@@ -207,41 +209,47 @@ local expanders = {
         return template
     end,
     [disccodes.regular] = function(d,template)
-        -- simple
-        if not template then
-            -- can there be font kerns already?
-            template = getprev(d)
-            if template and getid(template) ~= glyph_code then
-                template = getnext(d)
+        if check_regular then
+            -- simple
+            if not template then
+                -- can there be font kerns already?
+                template = getprev(d)
                 if template and getid(template) ~= glyph_code then
-                    template = nil
+                    template = getnext(d)
+                    if template and getid(template) ~= glyph_code then
+                        template = nil
+                    end
                 end
             end
-        end
-        if template then
-            local language = template and getfield(template,"lang")
-            local data     = getlanguagedata(language)
-            local prechar  = data.prehyphenchar
-            local postchar = data.posthyphenchar
-            local pre, post, replace = getdisc(d) -- pre can be set
-            local done     = false
-            if prechar and prechar > 0 then
-                done = true
-                pre  = copy_node(template)
-                setfield(pre,"char",prechar)
+            if template then
+                local language = template and getfield(template,"lang")
+                local data     = getlanguagedata(language)
+                local prechar  = data.prehyphenchar
+                local postchar = data.posthyphenchar
+                local pre, post, replace = getdisc(d) -- pre can be set
+                local done     = false
+                if prechar and prechar > 0 then
+                    done = true
+                    pre  = copy_node(template)
+                 -- setfield(pre,"char",prechar)
+                    setchar(pre,prechar)
+                end
+                if postchar and postchar > 0 then
+                    done = true
+                    post = copy_node(template)
+                 -- setfield(post,"char",postchar)
+                    setchar(post,postchar)
+                end
+                if done then
+                    setdisc(d,pre,post,replace,discretionary_code)
+                end
+            else
+             -- print("lone regular discretionary ignored")
             end
-            if postchar and postchar > 0 then
-                done = true
-                post = copy_node(template)
-                setfield(post,"char",postchar)
-            end
-            if done then
-                setdisc(d,pre,post,replace,discretionary_code)
-            end
+            return template
         else
-         -- print("lone regular discretionary ignored")
+            setfield(d,"subtype",discretionary_code)
         end
-        return template
     end,
     [disccodes.first] = function()
         -- forget about them

@@ -1,0 +1,273 @@
+%D \module
+%D   [       file=m-morse,
+%D        version=2010.12.10,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Morse,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo: act upon the node list
+% make it a buffer operation
+% nice in cld manual
+
+\startluacode
+
+moduledata.morse = moduledata.morse or { }
+local morse      = moduledata.morse
+
+local utfcharacters, gsub = string.utfcharacters, string.gsub
+local ucchars, shchars = characters.ucchars, characters.shchars
+
+local codes = {
+
+    ["A"] = "·—",
+    ["B"] = "—···",
+    ["C"] = "—·—·",
+    ["D"] = "—··",
+    ["E"] = "·",
+    ["F"] = "··—·",
+    ["G"] = "——·",
+    ["H"] = "····",
+    ["I"] = "··",
+    ["J"] = "·———",
+    ["K"] = "—·—",
+    ["L"] = "·—··",
+    ["M"] = "——",
+    ["N"] = "—·",
+    ["O"] = "———",
+    ["P"] = "·——·",
+    ["Q"] = "——·—",
+    ["R"] = "·—·",
+    ["S"] = "···",
+    ["T"] = "—",
+    ["U"] = "··—",
+    ["V"] = "···—",
+    ["W"] = "·——",
+    ["X"] = "—··—",
+    ["Y"] = "—·——",
+    ["Z"] = "——··",
+
+    ["0"] = "—————",
+    ["1"] = "·————",
+    ["2"] = "··———",
+    ["3"] = "···——",
+    ["4"] = "····—",
+    ["5"] = "·····",
+    ["6"] = "—····",
+    ["7"] = "——···",
+    ["8"] = "———··",
+    ["9"] = "————·",
+
+    ["."] = "·—·—·—",
+    [","] = "——··——",
+    [":"] = "———···",
+    [";"] = "—·—·—",
+
+    ["?"] = "··——··",
+    ["!"] = "—·—·——",
+
+    ["-"] = "—····—",
+    ["/"] = "—··—· ",
+
+    ["("] = "—·——·",
+    [")"] = "—·——·—",
+
+    ["="] = "—···—",
+    ["@"] = "·——·—·",
+
+    ["'"] = "·————·",
+    ['"'] = "·—··—·",
+
+    ["À"] =	"·——·—",
+    ["Å"] =	"·——·—",
+    ["Ä"] =	"·—·—",
+    ["Æ"] =	"·—·—",
+    ["Ç"] =	"—·—··",
+    ["É"] =	"··—··",
+    ["È"] =	"·—··—",
+    ["Ñ"] =	"——·——",
+    ["Ö"] =	"———·",
+    ["Ø"] =	"———·",
+    ["Ü"] =	"··——",
+    ["ß"] =	"··· ···",
+
+}
+
+morse.codes = codes
+
+local fallbackself = false
+
+local function codefallback(t,k)
+    if k then
+        local u = ucchars[k]
+        local v = rawget(t,u) or rawget(t,shchars[u]) or false
+        t[k] = v
+        return v
+    elseif fallbackself then
+        return k
+    else
+        return false
+    end
+end
+
+table.setmetatableindex(codes,codefallback)
+
+local MorseBetweenWords      = context.MorseBetweenWords
+local MorseBetweenCharacters = context.MorseBetweenCharacters
+local MorseLong              = context.MorseLong
+local MorseShort             = context.MorseShort
+local MorseSpace             = context.MorseSpace
+local MorseUnknown           = context.MorseUnknown
+
+local function toverbose(str)
+    str = gsub(str,"%s*+%s*","+")
+    str = gsub(str,"%s+"," ")
+    local done = false
+    for m in utfcharacters(str) do
+        if done then
+            MorseBetweenCharacters()
+        end
+        if m == "·" or m == "." then
+            MorseShort()
+            done = true
+        elseif m == "—" or m == "-" then
+            MorseLong()
+            done = true
+        elseif m == " " then
+            if done then
+                MorseBetweenCharacters()
+            end
+            done = false
+        elseif m == "+" then
+            MorseBetweenWords()
+            done = false
+        else
+            MorseUnknown(m)
+        end
+    end
+end
+
+local function toregular(str)
+    local inmorse = false
+    for s in utfcharacters(str) do
+        local m = codes[s]
+        if m then
+            if inmorse then
+                MorseBetweenWords()
+            else
+                inmorse = true
+            end
+            local done = false
+            for m in utfcharacters(m) do
+                if done then
+                    MorseBetweenCharacters()
+                else
+                    done = true
+                end
+                if m == "·" then
+                    MorseShort()
+                elseif m == "—" then
+                    MorseLong()
+                elseif m == " " then
+                    MorseBetweenCharacters()
+                end
+            end
+            inmorse = true
+        elseif s == "\n" or s == " " then
+            MorseSpace()
+            inmorse = false
+        else
+            if inmorse then
+                MorseBetweenWords()
+            else
+                inmorse = true
+            end
+            MorseUnknown(s)
+        end
+    end
+end
+
+local function tomorse(str,verbose)
+    if verbose then
+        toverbose(str)
+    else
+        toregular(str)
+    end
+end
+
+morse.tomorse = tomorse
+
+function morse.filetomorse(name,verbose)
+    tomorse(resolvers.loadtexfile(name),verbose)
+end
+
+function morse.showtable()
+    context.starttabulate { "|l|l|" } -- { "|l|l|l|" }
+    for k, v in table.sortedpairs(codes) do
+        context.NC() context(k)
+     -- context.NC() context(v)
+        context.NC() tomorse(v,true)
+        context.NC() context.NR()
+    end
+    context.stoptabulate()
+end
+
+\stopluacode
+
+\unprotect
+
+% todo: \setupmorse, but probably it's not worth the trouble.
+
+\def\MorseWidth             {0.4em}
+\def\MorseHeight            {0.2em}
+%def\MorseShort             {\dontleavehmode\blackrule[\c!height=\MorseHeight,\c!width=\dimexpr\MorseWidth]}
+%def\MorseLong              {\dontleavehmode\blackrule[\c!height=\MorseHeight,\c!width=3\dimexpr\MorseWidth]}
+\def\MorseShort             {\dontleavehmode\vrule\!!width \dimexpr\MorseWidth\!!height\MorseHeight\!!depth\zeropoint\relax}
+\def\MorseLong              {\dontleavehmode\vrule\!!width3\dimexpr\MorseWidth\!!height\MorseHeight\!!depth\zeropoint\relax}
+\def\MorseBetweenCharacters {\kern\MorseWidth}
+\def\MorseBetweenWords      {\hskip3\dimexpr\MorseWidth\relax}
+\def\MorseSpace             {\hskip7\dimexpr\MorseWidth\relax}
+\def\MorseUnknown      #text{[\detokenize{#text}]}
+
+\unexpanded\def\MorseCode      #text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es,true)}}
+\unexpanded\def\MorseString    #text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es)}}
+\unexpanded\def\MorseFile      #text{\ctxlua{moduledata.morse.filetomorse("#text")}}
+\unexpanded\def\MorseTable          {\ctxlua{moduledata.morse.showtable()}}
+
+\let\Morse     \MorseString
+
+%def\MorseShort             {·}
+%def\MorseLong              {—}
+
+\protect
+
+\continueifinputfile{m-morse.mkvi}
+
+\starttext
+
+\MorseTable
+
+\startlines
+\MorseCode{—·—· ——— —· — · —··— —+—— —·— ·· ···—}
+\MorseCode{—·—· ——— —· — · —··— — + —— —·— ·· ···—}
+\Morse{ÀÁÂÃÄÅàáâãäå}
+\Morse{ÆÇæç}
+\Morse{ÈÉÊËèéêë}
+\Morse{ÌÍÎÏìíîï}
+\Morse{Ññ}
+\Morse{ÒÓÔÕÖòóôõö}
+\Morse{Øø}
+\Morse{ÙÚÛÜùúû}
+\Morse{Ýýÿ}
+\Morse{ß}
+\Morse{Ţţ}
+\stoplines
+
+\Morse{A B C D E F G H I J K L M N O P Q R S T U V W X Y Z}
+
+\stoptext
