@@ -36,6 +36,7 @@ local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getattr            = nuts.getattr
 local setfield           = nuts.setfield
+local getfield           = nuts.getfield
 local setattr            = nuts.setattr
 
 local traverse_nodes     = nuts.traverse
@@ -313,7 +314,7 @@ local function firstcharinbox(n)
 end
 
 nuts .firstcharinbox = firstcharinbox
-nodes.firstcharinbox = firstcharinbox
+nodes.firstcharinbox = firstcharinbox -- hm, ok ?
 nodes.firstcharacter = vianuts(firstcharacter)
 
 interfaces.implement {
@@ -555,4 +556,19 @@ end
 --     end
 -- end
 
+function nuts.effectiveglue(glue,parent)
+    local spec  = getfield(glue,"spec")
+    local width = getfield(spec,"width")
+    local sign  = getfield(parent,"glue_sign")
+    if sign == 1 then
+        if getfield(spec,"stretch_order") == getfield(parent,"glue_order") then
+            return width + getfield(spec,"stretch") * getfield(parent,"glue_set")
+        end
+    elseif sign == 2 then
+        if getfield(spec,"shrink_order") == getfield(parent,"glue_order") then
+            return width - getfield(spec,"shrink") * getfield(parent,"glue_set")
+        end
+    end
+    return width
+end
 

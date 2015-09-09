@@ -19,6 +19,12 @@ if not modules then modules = { } end modules ['math-noa'] = {
 -- 20D6 -> 2190
 -- 20D7 -> 2192
 
+-- future luatex will return font for a math char too
+--
+-- local function getfont(n)
+--     return font_of_family(getfield(n,"fam"))
+-- end
+
 -- todo: most is math_char so we can have simple dedicated loops
 
 local utfchar, utfbyte = utf.char, utf.byte
@@ -85,7 +91,7 @@ local setfield             = nuts.setfield
 local getnext              = nuts.getnext
 local getprev              = nuts.getprev
 local getid                = nuts.getid
-local getfont              = nuts.getfont
+----- getfont              = nuts.getfont
 local getsubtype           = nuts.getsubtype
 local getchar              = nuts.getchar
 local getattr              = nuts.getattr

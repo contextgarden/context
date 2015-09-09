@@ -46,6 +46,12 @@ local hpack_node         = nodes.hpack
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
 
+local normalize_global   = true
+local normalize_local    = true
+
+directives.register("paragraphs.normalize.global", function(v) normalize_global = v end) -- adds 2% runtime
+directives.register("paragraphs.normalize.local",  function(v) normalize_local  = v end) -- adds 2% runtime
+
 storage.register("builders/paragraphs/constructors/names",   names,   "builders.paragraphs.constructors.names")
 storage.register("builders/paragraphs/constructors/numbers", numbers, "builders.paragraphs.constructors.numbers")
 
@@ -187,7 +193,9 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
-        normalize(head,true) -- a bit weird place
+        if normalize_local then
+            normalize(head,true) -- a bit weird place
+        end
         if trace_vpacking then
             local before = nodes.count(head)
             head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
@@ -235,7 +243,7 @@ function builders.buildpage_filter(groupcode)
     -- the next check saves 1% runtime on 1000 tufte pages
     local head = texlists.contrib_head
     local done = false
-    if build_par_codes[groupcode] then
+    if normalize_global and build_par_codes[groupcode] then
         -- also called in vbox .. we really need another callback for these four
         normalize(head) -- a bit weird place
     end

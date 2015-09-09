@@ -97,7 +97,10 @@ local new_kern           = nodepool.kern
 local ctx_convertnumber  = context.convertnumber
 local ctx_makelinenumber = context.makelinenumber
 
-local addtoline          = typesetters.paragraphs.addtoline
+local paragraphs         = typesetters.paragraphs
+local addtoline          = paragraphs.addtoline
+local checkline          = paragraphs.checkline
+local moveinline         = paragraphs.moveinline
 
 -- cross referencing
 
@@ -244,7 +247,7 @@ local function check_number(n,a,skip,sameline)
                 report_lines("skipping line number %s for setup %a: %s (%s)",#current_list,a,s,d.continue or v_no)
             end
         end
-        local p = getprop(n,"line")
+        local p = checkline(n)
         if p then
             ctx_makelinenumber(tag,skipflag,s,p.hsize,p.reverse and "TRT" or "TLT")
         else

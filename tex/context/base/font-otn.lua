@@ -2184,6 +2184,7 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                 if f == l then -- new, else last out of sync (f is > 1)
                  -- match = true
                 else
+                    local discfound = nil
                     local n = f + 1
                     last = getnext(last)
                     while n <= l do
@@ -2211,19 +2212,35 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                             end
                                             n = n + 1
                                         else
-                                            match = false
+                                            if discfound then
+                                                notmatchreplace[discfound] = true
+                                                match = not notmatchpre[discfound]
+                                            else
+                                                match = false
+                                            end
                                             break
                                         end
                                     else
-                                        match = false
+                                        if discfound then
+                                            notmatchreplace[discfound] = true
+                                            match = not notmatchpre[discfound]
+                                        else
+                                            match = false
+                                        end
                                         break
                                     end
                                 else
-                                    match = false
+                                    if discfound then
+                                        notmatchreplace[discfound] = true
+                                        match = not notmatchpre[discfound]
+                                    else
+                                        match = false
+                                    end
                                     break
                                 end
                             elseif id == disc_code then
                                 diskseen              = true
+                                discfound             = last
                                 notmatchpre[last]     = nil
                                 notmatchpost[last]    = true
                                 notmatchreplace[last] = nil
@@ -2235,15 +2252,16 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                         if seq[n][getchar(pre)] then
                                             n = n + 1
                                             pre = getnext(pre)
-                                            if not pre then
-                                                break
-                                            elseif n > l then
+                                            if n > l then
                                                 break
                                             end
                                         else
                                             notmatchpre[last] = true
                                             break
                                         end
+                                    end
+                                    if n <= l then
+                                        notmatchpre[last] = true
                                     end
                                 else
                                     notmatchpre[last] = true
@@ -2254,25 +2272,16 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                         if seq[n][getchar(replace)] then
                                             n = n + 1
                                             replace = getnext(replace)
-                                            if not replace then
-                                                break
-                                            elseif n > l then
-                                             -- match = false
+                                            if n > l then
                                                 break
                                             end
                                         else
                                             notmatchreplace[last] = true
-                                            if notmatchpre[last] then
-                                                match = false
-                                            end
+                                            match = not notmatchpre[last]
                                             break
                                         end
                                     end
-                                    if not match then
-                                        break
-                                    end
-                                else
-                                    notmatchreplace[last] = true
+                                    match = not notmatchpre[last]
                                 end
                                 last = getnext(last)
                             else
@@ -2295,7 +2304,8 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                      -- sweeptype = nil
                     end
                     if prev then
-                        local n = f-1
+                        local discfound = nil
+                        local n = f - 1
                         while n >= 1 do
                             if prev then
                                 local id = getid(prev)
@@ -2313,20 +2323,36 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                             elseif seq[n][char] then
                                                 n = n -1
                                             else
-                                                match = false
+                                                if discfound then
+                                                    notmatchreplace[discfound] = true
+                                                    match = not notmatchpost[discfound]
+                                                else
+                                                    match = false
+                                                end
                                                 break
                                             end
                                         else
-                                            match = false
+                                            if discfound then
+                                                notmatchreplace[discfound] = true
+                                                match = not notmatchpost[discfound]
+                                            else
+                                                match = false
+                                            end
                                             break
                                         end
                                     else
-                                        match = false
+                                        if discfound then
+                                            notmatchreplace[discfound] = true
+                                            match = not notmatchpost[discfound]
+                                        else
+                                            match = false
+                                        end
                                         break
                                     end
                                 elseif id == disc_code then
                                     -- the special case: f i where i becomes dottless i ..
                                     diskseen              = true
+                                    discfound             = prev
                                     notmatchpre[prev]     = true
                                     notmatchpost[prev]    = nil
                                     notmatchreplace[prev] = nil
@@ -2336,44 +2362,46 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                     if pre ~= start and post ~= start and replace ~= start then
                                         if post then
                                             local n = n
-                                            post = find_node_tail(post)
-                                            local finish = getprev(post)
-                                            while post do
-                                                if seq[n][getchar(post)] then
+                                            local posttail = find_node_tail(post)
+                                            while posttail do
+                                                if seq[n][getchar(posttail)] then
                                                     n = n - 1
-                                                    post = getprev(post)
-                                                    if not post or post == finish then
+                                                    if posttail == post then
                                                         break
-                                                    elseif n < 1 then
-                                                        break
+                                                    else
+                                                        posttail = getprev(posttail)
+                                                        if n < 1 then
+                                                            break
+                                                        end
                                                     end
                                                 else
                                                     notmatchpost[prev] = true
                                                     break
                                                 end
                                             end
+                                            if n >= 1 then
+                                                notmatchpost[prev] = true
+                                            end
                                         else
                                             notmatchpost[prev] = true
                                         end
                                         if replace then
                                             -- we seldom enter this branch (e.g. on brill efficient)
-                                            replace = find_node_tail(replace)
-                                            local finish = getprev(replace)
-                                            while replace do
-                                                if seq[n][getchar(replace)] then
+                                            local replacetail = find_node_tail(replace)
+                                            while replacetail do
+                                                if seq[n][getchar(replacetail)] then
                                                     n = n - 1
-                                                    replace = getprev(replace)
-                                                    if not replace or replace == finish then
+                                                    if replacetail == replace then
                                                         break
-                                                    elseif n < 1 then
-                                                     -- match = false
-                                                        break
+                                                    else
+                                                        replacetail = getprev(replacetail)
+                                                        if n < 1 then
+                                                            break
+                                                        end
                                                     end
                                                 else
                                                     notmatchreplace[prev] = true
-                                                    if notmatchpost[prev] then
-                                                        match = false
-                                                    end
+                                                    match = not notmatchpost[prev]
                                                     break
                                                 end
                                             end
@@ -2417,6 +2445,7 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                     end
                 end
                 if current then
+                    local discfound = nil
                     -- removed optimization for s-l == 1, we have to deal with marks anyway
                     local n = l + 1
                     while n <= s do
@@ -2436,19 +2465,35 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                         elseif seq[n][char] then
                                             n = n + 1
                                         else
-                                            match = false
+                                            if discfound then
+                                                notmatchreplace[discfound] = true
+                                                match = not notmatchpre[discfound]
+                                            else
+                                                match = false
+                                            end
                                             break
                                         end
                                     else
-                                        match = false
+                                        if discfound then
+                                            notmatchreplace[discfound] = true
+                                            match = not notmatchpre[discfound]
+                                        else
+                                            match = false
+                                        end
                                         break
                                     end
                                 else
-                                    match = false
+                                    if discfound then
+                                        notmatchreplace[discfound] = true
+                                        match = not notmatchpre[discfound]
+                                    else
+                                        match = false
+                                    end
                                     break
                                 end
                             elseif id == disc_code then
                                 diskseen                 = true
+                                discfound                = current
                                 notmatchpre[current]     = nil
                                 notmatchpost[current]    = true
                                 notmatchreplace[current] = nil
@@ -2460,15 +2505,16 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                         if seq[n][getchar(pre)] then
                                             n = n + 1
                                             pre = getnext(pre)
-                                            if not pre then
-                                                break
-                                            elseif n > s then
+                                            if n > s then
                                                 break
                                             end
                                         else
                                             notmatchpre[current] = true
                                             break
                                         end
+                                    end
+                                    if n <= s then
+                                        notmatchpre[current] = true
                                     end
                                 else
                                     notmatchpre[current] = true
@@ -2479,16 +2525,12 @@ local function normal_handle_contextchain(head,start,kind,chainname,contexts,seq
                                         if seq[n][getchar(replace)] then
                                             n = n + 1
                                             replace = getnext(replace)
-                                            if not replace then
-                                                break
-                                            elseif n > s then
+                                            if n > s then
                                                 break
                                             end
                                         else
                                             notmatchreplace[current] = true
-                                            if notmatchpre[current] then
-                                                match = false
-                                            end
+                                            match = notmatchpre[current]
                                             break
                                         end
                                     end

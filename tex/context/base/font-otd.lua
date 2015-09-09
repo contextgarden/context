@@ -183,12 +183,7 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                     end
                 end
             end
-            -- { valid, attribute, chain, "generic", sequence } -- false anyway, could be flag instead of table
-        else
-            -- can't happen
         end
-    else
-        -- { false, false, chain, false, sequence } -- indirect lookup, part of chain (todo: make this a separate table)
     end
 end
 

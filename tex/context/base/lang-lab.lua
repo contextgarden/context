@@ -164,8 +164,8 @@ implement {
         {
             { "text" },
             { "separators" },
-            { "first" },
-            { "second" },
+            { "separator" },
+            { "last" },
         }
     }
 }

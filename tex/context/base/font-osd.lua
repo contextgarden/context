@@ -479,7 +479,7 @@ local both_joiners_true = {
 }
 
 local sequence_reorder_matras = {
-    chain     = 0,
+    chain     = 0, -- obsolete
     features  = { dv01 = dev2_defaults },
     flags     = false_flags,
     name      = "dv01_reorder_matras",
@@ -487,12 +487,15 @@ local sequence_reorder_matras = {
     type      = "devanagari_reorder_matras",
     nofsteps  = 1,
     steps     = {
-        { coverage = pre_mark }
+        {
+            osdstep  = true,
+            coverage = pre_mark,
+        }
     }
 }
 
 local sequence_reorder_reph = {
-    chain     = 0,
+    chain     = 0, -- obsolete
     features  = { dv02 = dev2_defaults },
     flags     = false_flags,
     name      = "dv02_reorder_reph",
@@ -500,12 +503,15 @@ local sequence_reorder_reph = {
     type      = "devanagari_reorder_reph",
     nofsteps  = 1,
     steps     = {
-        { coverage = { } }
+        {
+            osdstep  = true,
+            coverage = { },
+        }
     }
 }
 
 local sequence_reorder_pre_base_reordering_consonants = {
-    chain     = 0,
+    chain     = 0, -- obsolete
     features  = { dv03 = dev2_defaults },
     flags     = false_flags,
     name      = "dv03_reorder_pre_base_reordering_consonants",
@@ -513,12 +519,15 @@ local sequence_reorder_pre_base_reordering_consonants = {
     type      = "devanagari_reorder_pre_base_reordering_consonants",
     nofsteps  = 1,
     steps     = {
-        { coverage = { } }
+        {
+            osdstep  = true,
+            coverage = { },
+        }
     }
 }
 
 local sequence_remove_joiners = {
-    chain     = 0,
+    chain     = 0, -- obsolete
     features  = { dv04 = deva_defaults },
     flags     = false_flags,
     name      = "dv04_remove_joiners",
@@ -526,7 +535,9 @@ local sequence_remove_joiners = {
     type      = "devanagari_remove_joiners",
     nofsteps  = 1,
     steps     = {
-        { coverage = both_joiners_true },
+        {  osdstep  = true,
+           coverage = both_joiners_true,
+        },
     }
 }
 
@@ -650,11 +661,8 @@ local function initializedevanagi(tfmdata)
                         local step     = steps[i]
                         local coverage = step.coverage
                         if coverage then
-                            local reph  = false
-                            local chain = dataset[3]
-                            if chain ~= 0 then --rphf is result of of chain
-                                -- rphf might be result of other handler/chainproc
-                            else
+                            local reph = false
+                            if step.osdstep then
                                 -- rphf acts on consonant + halant
                                 for k, v in next, ra do
                                     local r = coverage[k]
@@ -672,13 +680,15 @@ local function initializedevanagi(tfmdata)
                                         end
                                     end
                                 end
+                            else
+                                -- rphf might be result of other handler/chainproc
                             end
                             seqsubset[#seqsubset+1] = { kind, coverage, reph }
                         end
                     end
                 end
                 if kind == "pref" then
-                    local sequence = dataset[5]
+                    local sequence = dataset[3] -- was [5]
                     local steps    = sequence.steps
                     local nofsteps = sequence.nofsteps
                     for i=1,nofsteps do

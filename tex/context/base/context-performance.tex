@@ -1,0 +1,51 @@
+% language=uk
+
+\usemodule[art-01,abr-01]
+
+\starttext
+
+If you use \PDFTEX, \XETEX\ and \LUATEX\ you will notice a difference in speed.
+Don't draw conclusions too easily from simple tests like:
+
+\starttyping
+\dorecurse{1000}{test\page}
+\stoptyping
+
+or (also tests the file system):
+
+\starttyping
+\dorecurse{1000}{\input tufte\blank}
+\stoptyping
+
+The wide engines \XETEX\ and \LUATEX\ have more work to do than \PDFTEX, because
+the input is \UTF\ and \UNICODE\ fonts are used. Of course running \PDFTEX\ on
+extensive \UTF\ input will compensate it a bit.
+
+Comparing \XETEX\ and \PDFTEX\ (using \MKII) and \LUATEX\ (using \MKIV) is kind
+of useless anyway because the \LUATEX\ with \MKIV\ combination is not only doing
+more advanced things, which costs time, but at the other hand has more efficient
+alternatives, like for instance using \MPLIB, which gains a lot.
+
+So, it's best to compare speeds with a mixed content document: multiple fonts,
+text and math, images, \METAPOST\ graphics, structural components, tables, etc.
+
+On the average \PDFTEX\ is the fastest, but offering less functionality, while
+\LUATEX\ with \MKIV\ is faster than \XETEX\ with \MKII. On complex products like
+the \METAFUN\ manual or when processing complex \XML\ files a \LUATEX\ is much
+faster than a \PDFTEX\ run.
+
+There is some startup time involved which is normally not that much, and initial
+font loading is also not really a burden, but of course for a few page document
+it brings down the number of pages processed per second. Normalizing the input
+takes a bit but applying \OPENTYPE\ font features takes much more. If you find
+unacceptable bottlenecks just let me know (but better first check performance in
+the other engines). Of course inefficient coding of styles (massive font switches
+where a simple one could do) are no reason for a complaint.
+
+A lot of time went into making sure that \CONTEXT\ runs efficiently on \LUATEX\
+and we keep improving the performance. This is not so much an engine issue but
+more one of the macro package. Of course what is true for \CONTEXT\ \MKIV\ can be
+different for other macro packages but comparing with them makes no sense because
+the differences in functionality.
+
+\stoptext

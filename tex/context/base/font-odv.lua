@@ -638,8 +638,7 @@ local function deva_initialize(font,attr)
                     -- deva
                     vattu = true
                     -- dev2
-                 -- local subtables = sequence.subtables -- dataset[5].subtables
-                    local subtables = dataset[5].subtables
+                    local subtables = dataset[3].subtables
                     for i=1,#subtables do
                         local lookupname = subtables[i]
                         local lookupcache = lookuphash[lookupname]
@@ -1317,8 +1316,7 @@ local function dev2_initialize(font,attr)
                 local kind = dataset[4]
                 if kind and valid[kind] then
                     -- could become a function call
-                 -- local subtables = sequence.subtables
-                    local subtables = dataset[5].subtables
+                    local subtables = dataset[3].subtables
                     for i=1,#subtables do
                         local lookupname = subtables[i]
                         local lookupcache = lookuphash[lookupname]

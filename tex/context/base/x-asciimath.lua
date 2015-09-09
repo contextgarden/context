@@ -707,7 +707,18 @@ local reserved = {
     ["&gt;"]     = { true, ">" },
     ["&lt;"]     = { true, "<" },
 
+    -- extra:
+
+    -- also, invisible times
+
+    ["dd"]       = { false, "{\\tf d}" },
+    ["ee"]       = { false, "{\\tf e}" },
+    ["xxx"]      = { true, utfchar(0x2063) }, -- invisible times
+
 }
+
+-- a..z A..Z : allemaal op italic alphabet
+-- en dan default naar upright "upr a"
 
 for k, v in next, characters.data do
     local name = v.mathname

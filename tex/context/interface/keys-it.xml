@@ -982,6 +982,7 @@
 		<cd:constant name='reset' value='reset'/>
 		<cd:constant name='resetnumber' value='resetnumber'/>
 		<cd:constant name='resolution' value='risoluzione'/>
+		<cd:constant name='reverse' value='invertito'/>
 		<cd:constant name='right' value='destra'/>
 		<cd:constant name='rightcolor' value='coloredestra'/>
 		<cd:constant name='rightcompoundhyphen' value='rightcompoundhyphen'/>

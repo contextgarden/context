@@ -13,6 +13,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% maybe dontleavehmode when scope is local
+
 % todo: tags
 % todo: force inline with option (saves pos)
 % todo: margintitle (also less position then)
@@ -120,6 +122,7 @@
    \c!scope=\v!global,
    \c!width=,
  % \c!stack=,
+ % \c!option=, % \v!paragraph (follow shape)
    \c!line=0,
    \c!anchor=\v!text,
    \c!bottomspace=\strutdepth, % slack used for keeptogether
@@ -190,6 +193,10 @@
 \unexpanded\def\typo_margins_data_nop_indeed[#dataparameters][#textparameters]#content%
   {}
 
+% todo: naturalhbox
+
+\let\margindatahbox\naturalhbox % \hbox
+
 \unexpanded\def\typo_margins_data_yes_indeed[#dataparameters][#textparameters]#content%
   {\iffirstargument
      \setupcurrentmargindata[#dataparameters]%
@@ -203,7 +210,7 @@
      \edef\currentmargindatastrut{\margindataparameter\c!strut}%
      \dostarttaggedchained\t!margintext\currentmargindata\??margindata
      \ifcsname\currentmarginframedhash\s!parent\endcsname
-       \setbox\nextbox\hbox \currentmarginreference \bgroup
+       \setbox\nextbox\margindatahbox \currentmarginreference \bgroup
          \the\everymargindatacontent
          \usemargindatastyleandcolor\c!style\c!color
          \setupcurrentmarginframed[\c!location=\v!normal,#textparameters]%
@@ -222,7 +229,7 @@
      \else
        \edef\currentmargindatawidth{\margindataparameter\c!width}%
        \ifx\currentmargindatawidth\empty
-         \setbox\nextbox\hbox \currentmarginreference \bgroup
+         \setbox\nextbox\margindatahbox \currentmarginreference \bgroup
            \typo_margins_data_synchronize
            \the\everymargindatacontent
            \usemargindatastyleandcolor\c!style\c!color
@@ -236,7 +243,7 @@
          \egroup
          \let\currentmarginfirstheight\empty
        \else
-         \setbox\nextbox\hbox \currentmarginreference \bgroup
+         \setbox\nextbox\margindatahbox \currentmarginreference \bgroup
            \typo_margins_data_synchronize
            \dosetraggedcommand{\margindataparameter\c!align}%
            \vtop \bgroup
@@ -266,6 +273,7 @@
        category    {\margindataparameter\c!category}%
        name        {\margindataparameter\c!name}%
        scope       {\margindataparameter\c!scope}%
+       option      {\margindataparameter\c!option}%
        number      \nextbox
        margin      {\margindataparameter\c!margin}% local normal margin edge
        distance    \dimexpr\margindataparameter\c!distance\relax

@@ -982,6 +982,7 @@
 		<cd:constant name='reset' value='بازنشانی'/>
 		<cd:constant name='resetnumber' value='بازنشانی‌شماره'/>
 		<cd:constant name='resolution' value='کیفیت'/>
+		<cd:constant name='reverse' value='برعکس'/>
 		<cd:constant name='right' value='راست'/>
 		<cd:constant name='rightcolor' value='رنگ‌راست'/>
 		<cd:constant name='rightcompoundhyphen' value='rightcompoundhyphen'/>

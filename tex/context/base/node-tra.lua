@@ -189,20 +189,29 @@ end
 function nodes.idstostring(head,tail)
     head = tonut(head)
     tail = tail and tonut(tail)
-    local t, last_id, last_n = { }, nil, 0
+    local t       = { }
+    local last_id = nil
+    local last_n  = 0
     for n in traverse_nodes(head,tail) do -- hm, does not stop at tail
         local id = getid(n)
+        if id == whatsit_code then
+            id = whatcodes[getsubtype(n)]
+        else
+            id = nodecodes[id]
+        end
         if not last_id then
-            last_id, last_n = id, 1
+            last_id = id
+            last_n  = 1
         elseif last_id == id then
             last_n = last_n + 1
         else
             if last_n > 1 then
-                t[#t+1] = formatters["[%s*%s]"](last_n,nodecodes[last_id] or "?")
+                t[#t+1] = formatters["[%s*%s]"](last_n,last_id)
             else
-                t[#t+1] = formatters["[%s]"](nodecodes[last_id] or "?")
+                t[#t+1] = formatters["[%s]"](last_id)
             end
-            last_id, last_n = id, 1
+            last_id = id
+            last_n  = 1
         end
         if n == tail then
             break
@@ -210,10 +219,12 @@ function nodes.idstostring(head,tail)
     end
     if not last_id then
         t[#t+1] = "no nodes"
-    elseif last_n > 1 then
-        t[#t+1] = formatters["[%s*%s]"](last_n,nodecodes[last_id] or "?")
     else
-        t[#t+1] = formatters["[%s]"](nodecodes[last_id] or "?")
+        if last_n > 1 then
+            t[#t+1] = formatters["[%s*%s]"](last_n,last_id)
+        else
+            t[#t+1] = formatters["[%s]"](last_id)
+        end
     end
     return concat(t," ")
 end

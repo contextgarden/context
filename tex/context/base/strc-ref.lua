@@ -197,7 +197,7 @@ local function initializer() -- can we use a tobesaved as metatable for collecte
     nofreferred = #referred
 end
 
--- no longer fone this way
+-- no longer done this way
 
 -- references.resolvers = references.resolvers or { }
 -- local resolvers = references.resolvers
@@ -983,6 +983,9 @@ local function loadexternalreferences(name,utilitydata)
         local pages    = struc.pages.collected      -- pagenumber data
         -- a bit weird one, as we don't have the externals in the collected
         for prefix, set in next, external do
+if prefix == "" then
+    prefix = name -- this can clash!
+end
             for reference, data in next, set do
                 if trace_importing then
                     report_importing("registering %a reference, kind %a, name %a, prefix %a, reference %a",
@@ -1010,6 +1013,9 @@ local function loadexternalreferences(name,utilitydata)
                     if kind and realpage then
                         references.pagedata = pages[realpage]
                         local prefix = references.prefix or ""
+if prefix == "" then
+    prefix = name -- this can clash!
+end
                         local target = external[prefix]
                         if not target then
                             target = { }

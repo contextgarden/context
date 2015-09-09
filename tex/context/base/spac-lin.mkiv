@@ -137,8 +137,19 @@
 \unexpanded\def\emptylines
   {\dosingleempty\spac_lines_empty}
 
+% \def\spac_lines_empty[#1]%
+%   {\endgraf
+%    \dorecurse{\iffirstargument#1\else3\fi}\crlf}
+
 \def\spac_lines_empty[#1]%
-  {\endgraf\dorecurse{\iffirstargument#1\else3\fi}\crlf}
+  {\endgraf
+   \begingroup
+  %\forgetall % debatable
+   \ifhmode
+      \crlf % finish the current line
+   \fi
+   \dorecurse{\iffirstargument#1\else3\fi}{\strut\crlf}%
+   \endgroup}
 
 \ifdefined\startlines \else
     \expandafter\let\expandafter\startlines\csname\e!start\v!lines\endcsname

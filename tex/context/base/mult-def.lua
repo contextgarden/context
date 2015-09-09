@@ -9823,6 +9823,16 @@ return {
    ["pe"]="کیفیت",
    ["ro"]="rezolutie",
   },
+  ["reverse"]={
+   ["cs"]="reverse",
+   ["de"]="reverse",
+   ["en"]="reverse",
+   ["fr"]="inverse",
+   ["it"]="invertito",
+   ["nl"]="omgekeerd",
+   ["pe"]="برعکس",
+   ["ro"]="reverse",
+  },
   ["right"]={
    ["cs"]="vpravo",
    ["de"]="rechts",

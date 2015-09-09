@@ -1197,21 +1197,26 @@ implement {
 -- j and jj obsolete
 
 local function currentdate(str,currentlanguage) -- second argument false : no label
-    local list = utilities.parsers.settings_to_array(str)
+    local list       = utilities.parsers.settings_to_array(str)
     local splitlabel = languages.labels.split or string.itself -- we need to get the loading order right
-    local year, month, day = tex.year, tex.month, tex.day
-    local auto = true
+    local year       = tex.year
+    local month      = tex.month
+    local day        = tex.day
+    local auto       = true
     if currentlanguage == "" then
         currentlanguage = false
     end
     for i=1,#list do
         local entry = list[i]
         local tag, plus = splitlabel(entry)
-        local ordinal, mnemonic, whatordinal = false, false, nil
+        local ordinal, mnemonic, whatordinal, highordinal = false, false, nil, false
         if not tag then
             tag = entry
         elseif plus == "+" or plus == "ord" then
             ordinal = true
+        elseif plus == "++" or plus == "highord" then
+            ordinal = true
+            highordinal = true
         elseif plus == "mnem" then
             mnemonic = true
         end
@@ -1272,7 +1277,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
             if currentlanguage == false then
                 -- ignore
             else
-                context.highordinalstr(converters.ordinal(whatordinal,currentlanguage))
+                context[highordinal and "highordinalstr" or "ordinalstr"](converters.ordinal(whatordinal,currentlanguage))
             end
         end
     end

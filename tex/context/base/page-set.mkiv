@@ -1495,7 +1495,7 @@
      \unexpanded\def\page_set_setup_step##1%
        {\doifelse{##1}\v!each
           {\dorecurse{\namedcolumnsetparameter{#1}\c!n}{\page_set_setup_step\recurselevel}}
-          {\normalexpanded{\page_set_setup_saved[#1:\recurselevel]}[#3]}}%
+          {\normalexpanded{\page_set_setup_saved[#1:##1]}[#3]}}%
      \processcommalist[#2]\page_set_setup_step
    \else
      \page_set_setup_saved[#1][#2]%

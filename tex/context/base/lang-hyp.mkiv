@@ -167,10 +167,10 @@
 
 \unexpanded\def\atleastoneword#1%
   {\begingroup
-   \starthyphenation[\c!method=traditional]% this might become default or a faster switch
+   \starthyphenation[traditional]% this might become default or a faster switch
    \sethyphenationfeatures[words]%
    #1\par
-   \stopthyphenation
+   \stophyphenation
    \endgroup}
 
 %D For me:
