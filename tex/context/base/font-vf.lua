@@ -23,6 +23,7 @@ local fastcopy          = table.fastcopy
 local fonts             = fonts
 local constructors      = fonts.constructors
 local vf                = constructors.newhandler("vf")
+vf.version              = 1.000 -- same as tfm
 
 --[[ldx--
 <p>We overload the <l n='vf'/> reader.</p>

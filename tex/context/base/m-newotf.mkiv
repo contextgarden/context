@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% \endinput
+\endinput
 
 %D This module will go away as soon as we use the new loader code by default.
 %D That will happen after extensive testing. Generic support will happen after
@@ -43,7 +43,11 @@
     local findfile  = resolvers.findfile
     local addsuffix = file.addsuffix
     report()
-    report("replacing font loader code by experimental code")
+    if fonts.handlers.otf.version >= 3.000 then
+        report("replacing new font loader code by experimental code")
+    else
+        report("replacing old font loader code by new loader code")
+    end
     report()
     for i=1,#files do
         local foundfile = findfile(addsuffix(files[i],"lua"))

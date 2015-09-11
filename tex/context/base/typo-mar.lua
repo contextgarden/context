@@ -182,7 +182,6 @@ local registertogether   = builders.paragraphs.registertogether -- tonode
 
 local paragraphs         = typesetters.paragraphs
 local addtoline          = paragraphs.addtoline
-local addanchortoline    = paragraphs.addanchortoline
 local moveinline         = paragraphs.moveinline
 local calculatedelta     = paragraphs.calculatedelta
 
@@ -842,9 +841,9 @@ local trialtypesetting = context.trialtypesetting
 
 function margins.localhandler(head,group) -- sometimes group is "" which is weird
 
--- if trialtypesetting() then
---     return head, false
--- end
+if trialtypesetting() then
+    return head, false
+end
 
     local inhibit = conditionals.inhibitmargindata
     if inhibit then
@@ -864,9 +863,9 @@ end
 
 function margins.globalhandler(head,group) -- check group
 
--- if trialtypesetting() then
---     return head, false
--- end
+if trialtypesetting() then
+    return head, false
+end
 
     local inhibit = conditionals.inhibitmargindata
     if inhibit or nofstored == 0 then

@@ -379,7 +379,7 @@
 \def\pack_combinations_pickup_package_pair % we need to store the caption row
   {\vbox
      {\forgetall
-      \m_pack_combinations_valigner{\copy\b_pack_combinations_content}%
+      \m_pack_combinations_valigner{\box\b_pack_combinations_content}%
       % we need to save the caption for a next alignment line
       \pack_combinations_save_caption}%
    \ifnum\c_pack_combinations_n>\plusone

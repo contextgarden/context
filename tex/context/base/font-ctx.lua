@@ -50,7 +50,8 @@ local implement           = interfaces.implement
 local fonts               = fonts
 local handlers            = fonts.handlers
 local otf                 = handlers.otf -- brrr
------ afm                 = handlers.afm -- brrr
+local afm                 = handlers.afm -- brrr
+local tfm                 = handlers.tfm -- brrr
 local names               = fonts.names
 local definers            = fonts.definers
 local specifiers          = fonts.specifiers
@@ -913,9 +914,9 @@ definers.registersplit('*',starred,"featureset")
 -- sort of xetex mode, but without [] and / as we have file: and name: etc
 
 local space      = P(" ")
+local spaces     = space^0
 local separator  = S(";,")
 local equal      = P("=")
-local spaces     = space^0
 local sometext   = C((1-equal-space-separator)^1)
 local truevalue  = P("+") * spaces * sometext                           * Cc(true)
 local falsevalue = P("-") * spaces * sometext                           * Cc(false)
@@ -932,8 +933,8 @@ definers.registersplit(":",colonized,"direct")
 
 -- define (two steps)
 
-local space        = P(" ")
-local spaces       = space^0
+----- space        = P(" ")
+----- spaces       = space^0
 local leftparent   = (P"(")
 local rightparent  = (P")")
 local value        = C((leftparent * (1-rightparent)^0 * rightparent + (1-space))^1)
@@ -1738,14 +1739,21 @@ end
 
 luatex.registerstopactions(loggers.reportusedfeatures)
 
-statistics.register("fonts load time", function()
+-- maybe move this to font-log.lua:
+
+statistics.register("font engine", function()
     local elapsed   = statistics.elapsedseconds(fonts)
     local nofshared = constructors.nofsharedfonts or 0
+    local nofloaded = constructors.noffontsloaded or 0
     if nofshared > 0 then
-        return format("%sfor %s fonts, %s shared in backend, %s common vectors, %s common hashes",
-            elapsed,constructors.noffontsloaded,nofshared,constructors.nofsharedvectors,constructors.nofsharedhashes)
+        return format("otf %0.3f, afm %0.3f, tfm %0.3f, %s instances, %s shared in backend, %s common vectors, %s common hashes, load time %s",
+            otf.version,afm.version,tfm.version,nofloaded,
+            nofshared,constructors.nofsharedvectors,constructors.nofsharedhashes,
+            elapsed)
     else
-        return elapsed
+        return format("otf %0.3f, afm %0.3f, tfm %0.3f, %s instances, load time %s",
+            otf.version,afm.version,tfm.version,nofloaded,
+            elapsed)
     end
 end)
 

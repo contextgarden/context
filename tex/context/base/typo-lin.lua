@@ -32,22 +32,20 @@ if not modules then modules = { } end modules ['typo-lin'] = {
 -- mechanisms can push stuff in front too. Actually that alone can mess up analysis when we
 -- delay too much. So in the end we need to accept the slow down.
 --
--- We only need to normalize the left side because when we mess around
--- we keep the page stream order (and adding content to the right of the
--- line is a no-go for tagged etc. For the same reason we don't use two
--- left anchors (each side fo leftskip) because there can be stretch. But,
--- maybe there are good reasons for having just that anchor (mostly for
--- educational purposes I guess.)
+-- We only need to normalize the left side because when we mess around we keep the page stream
+-- order (and adding content to the right of the line is a no-go for tagged etc. For the same
+-- reason we don't use two left anchors (each side fo leftskip) because there can be stretch.
+-- But, maybe there are good reasons for having just that anchor (mostly for educational purposes
+-- I guess.)
 --
--- At this stage the localpar node is no longer of any use so we remove
--- it (each line has the direction attached). We might at some point also
--- strip the disc nodes as they no longer serve a purpose but that can
--- better be a helper. Anchoring left has advantage of keeping page stream.
+-- At this stage the localpar node is no longer of any use so we remove it (each line has the
+-- direction attached). We might at some point also strip the disc nodes as they no longer serve
+-- a purpose but that can better be a helper. Anchoring left has advantage of keeping page
+-- stream.
 --
--- This looks a bit messy but we want to keep the box as it is so \showboxes still
--- visualizes as expected. Normally left and rightskips end up in the line while
--- hangindents become shifts and hsize corrections. We could normalize this to
--- a line with
+-- This looks a bit messy but we want to keep the box as it is so \showboxes still visualizes as
+-- expected. Normally left and rightskips end up in the line while hangindents become shifts and
+-- hsize corrections. We could normalize this to a line with
 
 -- indent     : hlist type 3
 -- hangindent : shift and width
@@ -82,7 +80,7 @@ local tonode            = nodes.tonode
 local traverse_id       = nuts.traverse_id
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
-local findtail          = nuts.tail
+local find_tail         = nuts.tail
 local remove_node       = nuts.remove
 local hpack_nodes       = nuts.hpack
 local copy_list         = nuts.copy_list
@@ -96,7 +94,7 @@ local getfield          = nuts.getfield
 local setfield          = nuts.setfield
 
 local setprop           = nuts.setprop
-local getprop           = nuts.getprop
+local getprop           = nuts.rawprop -- getprop
 
 local nodepool          = nuts.pool
 local new_glue          = nodepool.glue
@@ -125,6 +123,16 @@ local noflines          = 0
 -- This is the third version, a mix between immediate (prestice lines) and delayed
 -- as we don't want anchors that are not used.
 
+-- if reverse then delta = - delta end
+-- head = insert_before(head,head,nodepool.textdir("-TLT"))
+-- ....
+-- head = insert_before(head,head,nodepool.textdir("TLT"))
+
+-- todo: figure out metatable mess ... when we copy we also need to copy
+-- anchors ... use rawgets
+
+-- problem: what if a box is copied ... we could check an attribute
+
 local function finalize(prop,key) -- delayed calculations
     local line     = prop.line
     local hsize    = prop.hsize
@@ -139,19 +147,18 @@ local function finalize(prop,key) -- delayed calculations
     else
         delta =   shift
     end
- -- if reverse then delta = - delta end
- -- head = insert_before(head,head,nodepool.textdir("-TLT"))
-    head = insert_before(head,head,new_kern(delta))
+    local kern1 = new_kern(delta)
+    local kern2 = new_kern(-delta)
+    head = insert_before(head,head,kern1)
     head = insert_before(head,head,pack)
-    head = insert_before(head,head,new_kern(-delta))
- -- head = insert_before(head,head,nodepool.textdir("TLT"))
+    head = insert_before(head,head,kern2)
     setfield(line,"list",head)
     local where = {
         pack = pack,
         head = nil,
         tail = nil,
     }
-    prop.anchor  = where
+    prop.where   = where
     prop.reverse = reverse
     prop.shift   = shift
     setmetatableindex(prop,nil)
@@ -185,7 +192,7 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
             head = remove_node(head,head,true)
         end
     end
-    local tail    = findtail(head)
+    local tail    = find_tail(head)
     local current = tail
     local id      = getid(current)
     if id == glue_code then
@@ -225,8 +232,8 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
         line        = line,
         number      = noflines,
     }
-    setmetatableindex(prop,finalize)
     setprop(line,"line",prop)
+    setmetatableindex(prop,finalize)
     return prop
 end
 
@@ -254,7 +261,7 @@ end
 
 -- todo: only in mvl or explicitly, e.g. framed or so, not in all lines
 
-function paragraphs.addtoline(n,list,option)
+local function addtoline(n,list,option)
     local line = getprop(n,"line")
     if not line then
         line = normalize(n,true)
@@ -264,17 +271,17 @@ function paragraphs.addtoline(n,list,option)
             line.traced = true
             local rule = new_rule(2*65536,2*65536,1*65536)
             local list = insert_before(rule,rule,new_kern(-1*65536))
-            paragraphs.addtoline(n,list)
+            addtoline(n,list)
             local rule = new_rule(2*65536,6*65536,-3*65536)
             local list = insert_before(rule,rule,new_kern(-1*65536))
-            paragraphs.addtoline(n,list,"internal")
+            addtoline(n,list,"internal")
         else
             line.traced = true
         end
         local list  = tonut(list)
-        local where = line.anchor
-        local tail  = where.tail
+        local where = line.where
         local head  = where.head
+        local tail  = where.tail
         local blob  = new_hlist(list)
         local delta = 0
         if option == "internal" then
@@ -313,34 +320,28 @@ local function addanchortoline(n,anchor)
     end
     if line then
         local anchor = tonut(anchor)
-        local where  = line.anchor
-        local head   = where.head
+        local where  = line.where
         if trace_anchors then
             local rule1 = new_rule(65536/2,4*65536,4*65536)
             local rule2 = new_rule(8*65536,65536/4,65536/4)
             local kern1 = new_kern(-65536/4)
             local kern2 = new_kern(-65536/4-4*65536)
-            local list  = new_hlist(nuts.link { anchor, kern1, rule1, kern2, rule2 })
-            setfield(list,"width",0)
-            insert_before(head,head,list)
-            if not where.tail then
-                where.tail = list
-
-            end
-            setfield(where.pack,"list",list)
-            where.head = list
-        else
-            insert_before(head,head,anchor)
-            if not where.tail then
-                where.tail = anchor
-            end
-            setfield(where.pack,"list",anchor)
-            where.head = anchor
+            anchor = new_hlist(nuts.link { anchor, kern1, rule1, kern2, rule2 })
+            setfield(anchor,"width",0)
         end
-        return line, anchor
+        if where.tail then
+            local head = where.head
+            insert_before(head,head,anchor)
+        else
+            where.tail = anchor
+        end
+        setfield(where.pack,"list",anchor)
+        where.head = anchor
+        return line
     end
 end
 
+paragraphs.addtoline       = addtoline
 paragraphs.addanchortoline = addanchortoline
 
 function paragraphs.moveinline(n,blob,dx,dy)

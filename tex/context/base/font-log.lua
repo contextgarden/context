@@ -64,6 +64,8 @@ function loggers.format(name) -- should be avoided
     return usedfonts[name] or "unknown"
 end
 
+-- maybe move this to font-ctx.lua
+
 statistics.register("loaded fonts", function()
     if next(usedfonts) then
         local t, n = { }, 0

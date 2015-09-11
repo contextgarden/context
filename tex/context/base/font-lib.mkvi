@@ -28,8 +28,8 @@
 \registerctxluafile{font-otr}{1.001} % opentype fontloader
 \registerctxluafile{font-cff}{1.001} % quadratic outlines
 \registerctxluafile{font-ttf}{1.001} % cubic outlines
-\registerctxluafile{font-tmp}{1.001} % temporary placeholder
-%registerctxluafile{font-dsp}{1.001} % ... for this one
+%registerctxluafile{font-tmp}{1.001} % temporary placeholder
+\registerctxluafile{font-dsp}{1.001} % ... for this one
 \registerctxluafile{font-off}{1.001} % the old loader
 
 \registerctxluafile{font-syn}{1.001}
@@ -46,21 +46,35 @@
 
 \registerctxluafile{font-oti}{1.001} % otf initialization
 \registerctxluafile{font-ott}{1.001} % otf tables (first)
-\registerctxluafile{font-otf}{1.001} % otf main
-\registerctxluafile{font-otb}{1.001} % otf main base
 
-\registerctxluafile{font-inj}{1.001}
+% \iffalse % new methods
+\iftrue  % old methods
 
-\registerctxluafile{font-ota}{1.001} % otf analyzers
+    \registerctxluafile{font-otf}{1.001} % otf main
+    \registerctxluafile{font-otb}{1.001} % otf main base
+    \registerctxluafile{font-inj}{1.001} % kern injector
+    \registerctxluafile{font-ota}{1.001} % otf analyzers
+    \registerctxluafile{font-otn}{1.001} % otf main node
+    \registerctxluafile{font-otd}{1.001} % otf dynamics (does an overload)
+    \registerctxluafile{font-otp}{1.001} % otf pack
+    \registerctxluafile{font-otc}{1.001} % otf context
+    \registerctxluafile{font-oth}{1.001} % otf helpers
+    \registerctxluafile{font-odv}{1.001} % otf devanagari (experimental)
 
-\registerctxluafile{font-otn}{1.001} % otf main node
+\else
 
-\registerctxluafile{font-otd}{1.001} % otf dynamics (does an overload)
-\registerctxluafile{font-otp}{1.001} % otf pack
-\registerctxluafile{font-otc}{1.001} % otf context
-\registerctxluafile{font-oth}{1.001} % otf helpers
+    \registerctxluafile{font-otl}{1.001} % otf
+    \registerctxluafile{font-oto}{1.001} % otb
+    \registerctxluafile{font-otj}{1.001} % inj
+    \registerctxluafile{font-oup}{1.001} % otp
+    \registerctxluafile{font-ota}{1.001}
+    \registerctxluafile{font-ots}{1.001} % otn
+    \registerctxluafile{font-otd}{1.001}
+    \registerctxluafile{font-otc}{1.001}
+    \registerctxluafile{font-oth}{1.001}
+    \registerctxluafile{font-osd}{1.001} % odv
 
-\registerctxluafile{font-odv}{1.001} % otf devanagari (experimental)
+\fi
 
 \registerctxluafile{font-pat}{1.001} % patchers
 

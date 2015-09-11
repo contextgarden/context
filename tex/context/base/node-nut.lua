@@ -777,63 +777,56 @@ local propertydata = direct.get_properties_table and direct.get_properties_table
 local getattr = nuts.getattr
 local setattr = nuts.setattr
 
-if propertydata then
+nodes.properties = {
+    data = propertydata,
+}
 
-    nodes.properties = {
-        data = propertydata,
-    }
+------.set_properties_mode(true,false) -- shallow copy ... problem: in fonts we then affect the originals too
+direct.set_properties_mode(true,true)  -- create metatable, slower but needed for font-inj.lua (unless we use an intermediate table)
 
- -- direct.set_properties_mode(true,false) -- shallow copy ... problem: in fonts we then affect the originals too
-    direct.set_properties_mode(true,true)  -- create metatable, slower but needed for font-inj.lua (unless we use an intermediate table)
+-- todo:
+--
+-- function direct.set_properties_mode()
+--     -- we really need the set modes
+-- end
 
-    -- todo:
-    --
-    -- function direct.set_properties_mode()
-    --     -- we really need the set modes
-    -- end
+-- experimental code with respect to copying attributes has been removed
+-- as it doesn't pay of (most attributes are only accessed once anyway)
 
-    -- experimental code with respect to copying attributes has been removed
-    -- as it doesn't pay of (most attributes are only accessed once anyway)
-
-    nuts.getprop = function(n,k)
-        local p = propertydata[n]
-        if p then
-            return p[k]
-        end
+nuts.getprop = function(n,k)
+    local p = propertydata[n]
+    if p then
+        return p[k]
     end
-
-    nuts.setprop = function(n,k,v)
-        local p = propertydata[n]
-        if p then
-            p[k] = v
-        else
-            propertydata[n] = { [k] = v }
-        end
-    end
-
-    nuts.theprop = function(n)
-        local p = propertydata[n]
-        if not p then
-            p = { }
-            propertydata[n] = p
-        end
-        return p
-    end
-
-    nodes.setprop = nodes.setproperty
-    nodes.getprop = nodes.getproperty
-
-else
-
-    -- for testing and simple cases
-
-    nuts.getprop  = getattr
-    nuts.setprop  = setattr
-
-    nodes.setprop = getattr
-    nodes.getprop = setattr
-
 end
+
+nuts.rawprop = function(n,k)
+    local p = rawget(propertydata,n)
+    if p then
+        return p[k]
+    end
+end
+
+nuts.setprop = function(n,k,v)
+    local p = propertydata[n]
+    if p then
+        p[k] = v
+    else
+        propertydata[n] = { [k] = v }
+    end
+end
+
+nuts.theprop = function(n)
+    local p = propertydata[n]
+    if not p then
+        p = { }
+        propertydata[n] = p
+    end
+    return p
+end
+
+nodes.setprop = nodes.setproperty
+nodes.getprop = nodes.getproperty
 
 function nuts.copy_properties(source,target,what)
     local newprops = propertydata[source]

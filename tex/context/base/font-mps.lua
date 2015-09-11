@@ -398,7 +398,8 @@ function fonts.metapost.boxtomp(n,kind)
                 boxtomp(current,distance + shift,current.glue_set*current.glue_sign)
                 distance = distance - current.height
             elseif id == vlist_code then
-                print("vertical >>>",nodecodes[id])
+                print("vertical >>>")
+                vertical(current.list,0)
             elseif id == kern_code then
                 distance = distance - current.kern
                 advance  = 0
