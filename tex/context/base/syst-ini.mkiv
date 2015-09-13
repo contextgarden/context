@@ -1100,6 +1100,11 @@
     \matheqnogapstep  \zerocount
 \fi
 
+%D New primitives:
+
+\ifdefined\hyphenationmin \else \newcount\hyphenationmin \fi
+\ifdefined\discpenalty    \else \newcount\discpenalty    \fi
+
 %D While cleaning this code up a bit I was listening to Heather Nova's \CD\ Redbird.
 %D The first song on that \CD\ ends with a few lines suitable for ending this
 %D initialization module:

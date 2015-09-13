@@ -21,6 +21,8 @@ if not modules then modules = { } end modules ['node-par'] = {
 -- todo: check and improve protrusion
 -- todo: arabic etc (we could use pretty large scales there) .. marks and cursive
 
+-- todo: optimize a bit more (less par.*)
+
 --[[
 
     This code is derived from traditional TeX and has bits of pdfTeX, Aleph (Omega), and of course LuaTeX. So,
@@ -2239,6 +2241,19 @@ function constructors.methods.basic(head,d)
                     local line_break_dir = par.line_break_dir
                     if second_pass or subtype <= automatic_disc_code then
                         local actual_pen = subtype == automatic_disc_code and par.ex_hyphen_penalty or par.hyphen_penalty
+                        -- > 0.81
+                     -- local actual_pen = getfield(current,"penalty")
+                     -- if actual_pen == 0 then
+                     --     -- take that one
+                     -- elseif subtype == automatic_disc_code then
+                     --     actual_pen = par.ex_hyphen_penalty
+                     -- else
+                     --     actual_pen = par.hyphen_penalty
+                     -- end
+                        --
+                        if discpenalty > 0 then
+                            actual_pen = discpenalty
+                        end
                         local pre = getfield(current,"pre")
                         if not pre then    --  trivial pre-break
                             disc_width.size = 0
@@ -2311,7 +2326,7 @@ function constructors.methods.basic(head,d)
             elseif id == kern_code then
                 if getsubtype(current) == userkern_code then
                     local v = getnext(current)
---                     if par.auto_breaking and getid(v) == glue_code then
+               --   if par.auto_breaking and getid(v) == glue_code then
                     if auto_breaking and getid(v) == glue_code then
                         p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
                     end

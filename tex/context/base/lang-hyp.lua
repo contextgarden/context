@@ -818,7 +818,7 @@ if context then
         local joinerchars  = featureset.joiners
         local alternative  = featureset.alternative
         local rightwordmin = tonumber(featureset.rightwordmin)
-        local charmin      = tonumber(featureset.charmin)
+        local charmin      = tonumber(featureset.charmin) -- luatex now also has hyphenationmin
         local leftcharmin  = tonumber(featureset.leftcharmin)
         local rightcharmin = tonumber(featureset.rightcharmin)
         local rightedge    = featureset.rightedge
@@ -958,6 +958,7 @@ if context then
         local characters   = nil
         local unicodes     = nil
         local exhyphenchar = tex.exhyphenchar
+     -- local discpenalty  = tex.discpenalty -- makes no sense globally
         local extrachars   = nil
         local hyphenchars  = nil
         local language     = nil
@@ -1180,6 +1181,9 @@ if context then
                     if attributes then
                         setfield(disc,"attr",attributes)
                     end
+                 -- if discpenalty > 0 then
+                 --     setfield(disc,"penalty",discpenalty)
+                 -- end
                     -- could be a replace as well
                     insert_before(first,current,disc)
                 elseif type(r) == "table" then
@@ -1201,6 +1205,9 @@ if context then
                     if attributes then
                         setfield(disc,"attr",attributes)
                     end
+                 -- if discpenalty > 0 then
+                 --     setfield(disc,"penalty",discpenalty)
+                 -- end
                     insert_before(first,current,disc)
                 else
                     setfield(current,"char",characters[r])

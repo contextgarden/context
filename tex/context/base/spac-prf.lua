@@ -477,10 +477,10 @@ local function inject(top,bot,amount) -- todo: look at penalties
     setattr(glue,a_profilemethod,0)
     setattr(glue,a_visual,getattr(top,a_visual))
     --
+    setfield(bot,"prev",glue)
     setfield(glue,"next",bot)
     setfield(glue,"prev",top)
     setfield(top,"next",glue)
-    setfield(bot,"prev",glue)
 end
 
 methods[v_none] = function()
@@ -550,7 +550,6 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
             return true
         end
 
-
         local delta  = getdelta(t_profile,b_profile)
 
         local dp = strutdp
@@ -574,7 +573,7 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
 
     end
 
-    if delta < lineheight + distance then
+    if total < lineheight then
         setfield(top,"depth",strutdp)
         setfield(bot,"height",strutht)
         return true
@@ -589,24 +588,16 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
         total = total - height + strutht
     end
 
+    local delta      = getdelta(t_profile,b_profile)
+
     local target     = total - delta
     local factor     = specification.factor or 1
- -- local lines      = specification.lines or 0
     local step       = lineheight / factor
     local correction = 0
     local nofsteps   = 0
-    while correction < target - step do -- a loop is more accurate, for now
+    while correction < target - step - distance do -- a loop is more accurate, for now
         correction = correction + step
         nofsteps   = nofsteps + 1
-    end
-
-    -- target + distance   = wanted
-    -- total  - correction = calculated
-
-    local d = (total - correction) - (target + distance)
-
-    if d > 0 then
-        correction = correction - d
     end
 
     if trace_profile then

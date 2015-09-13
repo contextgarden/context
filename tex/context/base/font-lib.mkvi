@@ -47,12 +47,12 @@
 \registerctxluafile{font-oti}{1.001} % otf initialization
 \registerctxluafile{font-ott}{1.001} % otf tables (first)
 
-% \iffalse % new methods
-\iftrue  % old methods
+% \iffalse % use new loader
+\iftrue  % use old loader
 
     \registerctxluafile{font-otf}{1.001} % otf main
     \registerctxluafile{font-otb}{1.001} % otf main base
-    \registerctxluafile{font-inj}{1.001} % kern injector
+    \registerctxluafile{font-inj}{1.001} % otf kern injector
     \registerctxluafile{font-ota}{1.001} % otf analyzers
     \registerctxluafile{font-otn}{1.001} % otf main node
     \registerctxluafile{font-otd}{1.001} % otf dynamics (does an overload)
@@ -63,16 +63,16 @@
 
 \else
 
-    \registerctxluafile{font-otl}{1.001} % otf
-    \registerctxluafile{font-oto}{1.001} % otb
-    \registerctxluafile{font-otj}{1.001} % inj
-    \registerctxluafile{font-oup}{1.001} % otp
+    \registerctxluafile{font-otl}{1.001} % otf replacement
+    \registerctxluafile{font-oto}{1.001} % otb replacement
+    \registerctxluafile{font-otj}{1.001} % inj replacement
+    \registerctxluafile{font-oup}{1.001} % otp replacement
     \registerctxluafile{font-ota}{1.001}
-    \registerctxluafile{font-ots}{1.001} % otn
+    \registerctxluafile{font-ots}{1.001} % otn replacement
     \registerctxluafile{font-otd}{1.001}
     \registerctxluafile{font-otc}{1.001}
     \registerctxluafile{font-oth}{1.001}
-    \registerctxluafile{font-osd}{1.001} % odv
+    \registerctxluafile{font-osd}{1.001} % odv replacement
 
 \fi
 

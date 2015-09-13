@@ -157,6 +157,8 @@
    \c!ntop=2,
    \c!nbottom=0,
    \c!nlines=4, % used?
+   \c!topoffset=\zeropoint,
+   \c!bottomoffset=\zeropoint,
   %\c!local=,
   %\c!bottombefore=, % e.g. \vfill
   %\c!bottomafter=,
@@ -552,10 +554,14 @@
 \def\strc_floats_start_place_indeed[#settings][#userdata]%
   {\strc_floats_reset_variables
    \edef\savedfloatlocation{\floatcaptionparameter\c!location}%
+   \setexpandedfloatcaptionparameter\c!topoffset   {\floatparameter\c!topoffset}%
+   \setexpandedfloatcaptionparameter\c!bottomoffset{\floatparameter\c!bottomoffset}%
    \setupcurrentfloatcaption[\c!location=,\c!reference=,\c!title=,\c!marking=,\c!list=,\c!bookmark=,#settings]%
+   \setexpandedfloatparameter\c!topoffset   {\floatcaptionparameter\c!topoffset}%
+   \setexpandedfloatparameter\c!bottomoffset{\floatcaptionparameter\c!bottomoffset}%
    \def\m_strc_floats_saved_userdata{#2}%
    \edef\floatlocation{\floatcaptionparameter\c!location}%
-   \setupcurrentfloatcaption[\c!location=\savedfloatlocation]%
+   \setfloatcaptionparameter\c!location{\savedfloatlocation}% not expanded
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}%
    \fi
@@ -741,6 +747,8 @@
        {\global\d_page_sides_topskip   \zeropoint
         \global\d_page_sides_bottomskip\zeropoint
         \global\d_strc_floats_margin   \zeropoint}%
+     \global\advance\d_page_sides_topskip   \floatparameter\c!topoffset
+     \global\advance\d_page_sides_bottomskip\floatparameter\c!bottomoffset
    \else
      \processallactionsinset
        [\floatlocation]

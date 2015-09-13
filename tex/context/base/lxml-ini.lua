@@ -119,7 +119,7 @@ implement { name = "xmlaftersetup",           actions = lxml.installsetup,      
 implement { name = "xmlprependdocumentsetup", actions = lxml.installsetup,      arguments = { 1, "string", "string" } }
 implement { name = "xmlappenddocumentsetup",  actions = lxml.installsetup,      arguments = { 2, "string", "string" } }
 implement { name = "xmlbeforedocumentsetup",  actions = lxml.installsetup,      arguments = { 3, "string", "string", "string" } }
-implement { name = "xmlafterdocumentsetup",   actions = lxml.installsetup,      arguments = { 4, "string", "string" } }
+implement { name = "xmlafterdocumentsetup",   actions = lxml.installsetup,      arguments = { 4, "string", "string", "string" } }
 implement { name = "xmlremovesetup",          actions = lxml.removesetup,       arguments = { "string", "string" } }              -- 1:*
 implement { name = "xmlremovedocumentsetup",  actions = lxml.removesetup,       arguments = { "string", "string" } }
 implement { name = "xmlflushdocumentsetups",  actions = lxml.flushsetups,       arguments = { "string", "string", "string" } }    -- 2:*

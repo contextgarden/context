@@ -246,6 +246,8 @@ return {
   "posthyphenchar",
   "preexhyphenchar",
   "prehyphenchar",
+  "hyphenationmin",
+  "discpenalty",
   "primitive",
   "savecatcodetable",
   "scantextokens",
