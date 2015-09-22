@@ -6,9 +6,9 @@ if not modules then modules = { } end modules ['lxml-ctx'] = {
     license   = "see context related readme files"
 }
 
--- is this still used?
+-- will be cleaned up
 
-local format, find = string.format, string.find
+local format, find, gsub = string.format, string.find, string.gsub
 
 local xml         = xml
 xml.ctx           = { }
@@ -36,6 +36,11 @@ local nodesettostring = xml.nodesettostring
 
 -- maybe use detokenize instead of \type
 
+local function cleaned(str)
+    str = gsub(str,"|","\\textbar ")
+    return str
+end
+
 function xml.ctx.tshow(specification)
     local pattern = specification.pattern
     local xmlroot = specification.xmlroot
@@ -48,9 +53,9 @@ function xml.ctx.tshow(specification)
         local parsed = xml.lpath(xmlpattern)
         local titlecommand = specification.title or "type"
         if parsed.state then
-            context[titlecommand]("pattern: " .. pattern .. " (".. parsed.state .. ")")
+            context[titlecommand]("pattern: " .. cleaned(pattern) .. " (".. parsed.state .. ")")
         else
-            context[titlecommand]("pattern: " .. pattern)
+            context[titlecommand]("pattern: " .. cleaned(pattern))
         end
         context.starttabulate({ "|Tr|Tl|Tp|" } )
         if specification.warning then
@@ -75,15 +80,15 @@ function xml.ctx.tshow(specification)
             context(kind)
             context.NC()
             if kind == "axis" then
-                context(pp.axis)
+                context(cleaned(pp.axis))
             elseif kind == "nodes" then
-                context(nodesettostring(pp.nodes,pp.nodetest))
+                context(cleaned(nodesettostring(pp.nodes,pp.nodetest)))
             elseif kind == "expression" then
---~ context("%s => %s",pp.expression,pp.converted)
-                context(pp.expression)
+--              -- context("%s => %s",pp.expression,pp.converted)
+                context(cleaned(pp.expression))
             elseif kind == "finalizer" then
                 context("%s(%s)",pp.name,pp.arguments)
-            elseif kind == "error" and pp.error then
+            elseif kind == "error" and pp.eqrror then
                 context(pp.error)
             end
             context.NC()

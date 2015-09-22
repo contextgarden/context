@@ -89,19 +89,9 @@ if not modules then modules = { } end modules ['node-met'] = {
 local type, rawget = type, rawget
 
 local nodes               = nodes
-local gonuts              = nodes.gonuts
 local direct              = node.direct
 
 local fastcopy            = table.fastcopy
-
--- if type(direct) ~= "table" then
---     return
--- elseif gonuts then
---     statistics.register("running in nuts mode", function() return "yes" end)
--- else
---     statistics.register("running in nuts mode", function() return "no" end)
---     return
--- end
 
 local texget              = tex.get
 
@@ -208,6 +198,32 @@ nuts.unset_attribute      = direct.unset_attribute
 nuts.protect_glyphs       = direct.protect_glyphs
 nuts.unprotect_glyphs     = direct.unprotect_glyphs
 
+nuts.effective_glue       = direct.effective_glue
+
+if not nuts.effective_glue then
+
+    local getfield = nuts.getfield
+
+    function nuts.effective_glue(glue,parent)
+        local spec  = getfield(glue,"spec")
+        local width = getfield(spec,"width")
+        if parent then
+            local sign  = getfield(parent,"glue_sign")
+            if sign == 1 then
+                if getfield(spec,"stretch_order") == getfield(parent,"glue_order") then
+                    return width + getfield(spec,"stretch") * getfield(parent,"glue_set")
+                end
+            elseif sign == 2 then
+                if getfield(spec,"shrink_order") == getfield(parent,"glue_order") then
+                    return width - getfield(spec,"shrink") * getfield(parent,"glue_set")
+                end
+            end
+        end
+        return width
+    end
+
+end
+
 -- placeholders
 
 if not direct.kerning then
@@ -276,12 +292,15 @@ if not direct.getdisc then
     -- this one is more efficient than three assignments and we need to
     -- do it in order to updat ethe internal tail data (will change)
 
-    function direct.setdisc(n,pre,post,replace,subtype)
+    function direct.setdisc(n,pre,post,replace,subtype,penalty)
         setfield(n,"pre",pre)
         setfield(n,"post",post)
         setfield(n,"replace",replace)
         if subtype then
             setfield(n,"subtype",subtype)
+        end
+        if penalty then
+         -- setfield(n,"penalty",penalty)
         end
     end
 

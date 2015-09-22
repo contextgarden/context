@@ -352,7 +352,7 @@
 \unexpanded\def\structurelistpagenumber
   {\dostarttagged\t!listpage\empty
    \clf_listprefixedpage
-     {\currentlist}
+     {\currentlist}%
      \currentlistindex
      {
        separatorset  {\listparameter\c!pageprefixseparatorset}
@@ -360,13 +360,13 @@
        set           {\listparameter\c!pageprefixset}
        segments      {\listparameter\c!pageprefixsegments}
        connector     {\listparameter\c!pageprefixconnector}
-     }
+     }%
      {
        prefix        {\listparameter\c!pageprefix}
        conversionset {\listparameter\c!pageconversionset}
        starter       {\listparameter\c!pagestarter}
        stopper       {\listparameter\c!pagestopper}
-     }
+     }%
    \relax
    \dostoptagged}
 

@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D I will remove pdftex and xetex stuff from this file.
+
 %D We used to load plain \TEX\ in a special way, but redefining a couple of
 %D primitives so that for instance font loading was ignored. For those interested,
 %D this loader is found in \type {syst-tex.tex}. Some of the comment's are Don
@@ -986,34 +988,6 @@
      \expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname
    \fi \fi}
 
-%D Because \XETEX\ also implements some \PDFTEX\ functionality, we take care of this
-%D here instead of a dedicated module. Later modules need to handle the undefined
-%D cases.
-
-%D These messy checks will disappear.
-
-% new after 1.10, watch the change in prefix
-
-% \bindprimitive quitvmode      ptexquitvmode
-% \bindprimitive noligatures    ptexnoligatures
-% \bindprimitive setrandomseed  ptexsetrandomseed
-% \bindprimitive uniformdeviate ptexuniformdeviate
-
-% \bindprimitive quitvmode      pdfquitvmode
-% \bindprimitive noligatures    pdfnoligatures
-% \bindprimitive setrandomseed  pdfsetrandomseed
-% \bindprimitive uniformdeviate pdfuniformdeviate
-
-% \bindprimitive resettimer     pdfresettimer
-% \bindprimitive elapsedtime    pdfelapsedtime
-
-% new per 1.40
-
-% \bindprimitive ifprimitive    ifpdfprimitive
-% \bindprimitive primitive      pdfprimitive
-% \bindprimitive ifabsdim       ifpdfabsdim
-% \bindprimitive ifabsnum       ifpdfabsnum
-
 %D We need to make sure that we start up in \DVI\ mode, so, after testing for running
 %D \PDFTEX, we default to \DVI. Why?
 
@@ -1034,8 +1008,9 @@
 
 \normalpdfcompression
 
-\let\normalsetrandomseed \setrandomseed
-\let\normaluniformdeviate\uniformdeviate
+% \let\normalsetrandomseed \setrandomseed
+% \let\normaluniformdeviate\uniformdeviate
+% \let\normalnormaldeviate \normaldeviate
 
 %D Basic status stuff.
 

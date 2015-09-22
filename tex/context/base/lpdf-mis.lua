@@ -259,19 +259,19 @@ local pagespecs = {
 local pagespec, topoffset, leftoffset, height, width, doublesided = "default", 0, 0, 0, 0, false
 local cropoffset, bleedoffset, trimoffset, artoffset = 0, 0, 0, 0
 
-local pdfpaperheight = tex.pdfpageheight
-local pdfpaperwidth  = tex.pdfpagewidth
+local pdfpaperheight = tex.pageheight
+local pdfpaperwidth  = tex.pagewidth
 
 function codeinjections.setupcanvas(specification)
     local paperheight = specification.paperheight
     local paperwidth  = specification.paperwidth
     local paperdouble = specification.doublesided
     if paperheight then
-        texset('global','pdfpageheight',paperheight)
+        texset('global','pageheight',paperheight)
         pdfpaperheight = paperheight
     end
     if paperwidth then
-        texset('global','pdfpagewidth',paperwidth)
+        texset('global','pagewidth',paperwidth)
         pdfpaperwidth = paperwidth
     end
     pagespec    = specification.mode        or pagespec

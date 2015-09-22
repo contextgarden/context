@@ -157,8 +157,8 @@ else
             \voffset=\hoffset
             \topskip=0pt
             \setbox0=\hbox{%s}\relax
-            \pdfpageheight=\ht0
-            \pdfpagewidth=\wd0
+            \pageheight=\ht0
+            \pagewidth=\wd0
             \box0
             \bye
         ]]

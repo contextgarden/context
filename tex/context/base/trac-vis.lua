@@ -91,6 +91,8 @@ local insert_node_after   = nuts.insert_after
 local traverse_nodes      = nuts.traverse
 local linked_nodes        = nuts.linked
 
+local effectiveglue       = nuts.effective_glue
+
 local fast_hpack          = nuts.fasthpack
 local fast_hpack_string   = nuts.typesetters.fast_hpack
 
@@ -694,12 +696,13 @@ local tags = {
 
 -- we sometimes pass previous as we can have issues in math (not watertight for all)
 
-local function ruledglue(head,current,vertical)
-    local spec = getfield(current,"spec")
-    local width = getfield(spec,"width")
+local function ruledglue(head,current,vertical,parent)
+    ----- spec    = getfield(current,"spec")
+    ----- width   = getfield(spec,"width")
     local subtype = getsubtype(current)
-    local amount = formatters["%s:%0.3f"](tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
-    local info = (vertical and g_cache_v or g_cache_h)[amount]
+    local width   = effectiveglue(current,parent)
+    local amount  = formatters["%s:%0.3f"](tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
+    local info    = (vertical and g_cache_v or g_cache_h)[amount]
     if info then
         -- print("glue hit")
     else
@@ -805,7 +808,7 @@ local function ruledpenalty(head,current,vertical)
     return head, getnext(current)
 end
 
-local function visualize(head,vertical,forced)
+local function visualize(head,vertical,forced,parent)
     local trace_hbox     = false
     local trace_vbox     = false
     local trace_vtop     = false
@@ -871,15 +874,15 @@ local function visualize(head,vertical,forced)
         elseif id == disc_code then
             local pre = getfield(current,"pre")
             if pre then
-                setfield(current,"pre",visualize(pre,false,a))
+                setfield(current,"pre",visualize(pre,false,a,parent))
             end
             local post = getfield(current,"post")
             if post then
-                setfield(current,"post",visualize(post,false,a))
+                setfield(current,"post",visualize(post,false,a,parent))
             end
             local replace = getfield(current,"replace")
             if replace then
-                setfield(current,"replace",visualize(replace,false,a))
+                setfield(current,"replace",visualize(replace,false,a,parent))
             end
         elseif id == kern_code then
             local subtype = getsubtype(current)
@@ -898,9 +901,9 @@ local function visualize(head,vertical,forced)
         elseif id == glue_code then
             local content = getleader(current)
             if content then
-                setfield(current,"leader",visualize(content,false))
+                setfield(current,"leader",visualize(content,false,nil,parent))
             elseif trace_glue then
-                head, current = ruledglue(head,current,vertical)
+                head, current = ruledglue(head,current,vertical,parent)
             end
         elseif id == penalty_code then
             if trace_penalty then
@@ -909,7 +912,7 @@ local function visualize(head,vertical,forced)
         elseif id == hlist_code then
             local content = getlist(current)
             if content then
-                setfield(current,"list",visualize(content,false))
+                setfield(current,"list",visualize(content,false,nil,current))
             end
             if trace_hbox then
                 head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous)
@@ -917,7 +920,7 @@ local function visualize(head,vertical,forced)
         elseif id == vlist_code then
             local content = getlist(current)
             if content then
-                setfield(current,"list",visualize(content,true))
+                setfield(current,"list",visualize(content,true,nil,current))
             end
             if trace_vtop then
                 head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple,previous)

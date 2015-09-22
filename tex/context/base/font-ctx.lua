@@ -1750,10 +1750,13 @@ statistics.register("font engine", function()
             otf.version,afm.version,tfm.version,nofloaded,
             nofshared,constructors.nofsharedvectors,constructors.nofsharedhashes,
             elapsed)
-    else
+    elseif nofloaded > 0 and elapsed then
         return format("otf %0.3f, afm %0.3f, tfm %0.3f, %s instances, load time %s",
             otf.version,afm.version,tfm.version,nofloaded,
             elapsed)
+    else
+        return format("otf %0.3f, afm %0.3f, tfm %0.3f",
+            otf.version,afm.version,tfm.version)
     end
 end)
 

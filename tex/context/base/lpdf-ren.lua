@@ -46,6 +46,8 @@ local addtopageattributes = lpdf.addtopageattributes
 local addtopageresources  = lpdf.addtopageresources
 local addtocatalog        = lpdf.addtocatalog
 
+local escaped             = lpdf.escaped
+
 local nodepool            = nodes.pool
 local register            = nodepool.register
 local pdfliteral          = nodepool.pdfliteral
@@ -86,6 +88,12 @@ local pdfln, pdfld = { }, { }
 local textlayers, hidelayers, videlayers = pdfarray(), pdfarray(), pdfarray()
 local pagelayers, pagelayersreference, cache = nil, nil, { }
 local alphabetic = { }
+
+local escapednames   = table.setmetatableindex(function(t,k)
+    local v = escaped(k)
+    t[k] = v
+    return v
+end)
 
 local specifications = { }
 local initialized    = { }
@@ -139,7 +147,7 @@ local function useviewerlayer(name) -- move up so that we can use it as local
             else
                 hidelayers[#hidelayers+1] = nr
             end
-            pagelayers[tag] = dr -- check
+            pagelayers[escapednames[tag]] = dr -- check
         else
             -- todo: message
         end
@@ -183,14 +191,13 @@ local function flushtextlayers()
                     ON        = videlayers,
                     OFF       = hidelayers,
                     BaseState = pdf_on,
-
-AS = pdfarray {
-    pdfdictionary {
-        Category = pdfarray { pdfconstant("Print") },
-        Event    = pdfconstant("Print"),
-        OCGs     = (viewerlayers.hasorder and sortedlayers) or nil,
-    }
-},
+                    AS = pdfarray {
+                        pdfdictionary {
+                            Category = pdfarray { pdfconstant("Print") },
+                            Event    = pdfconstant("Print"),
+                            OCGs     = (viewerlayers.hasorder and sortedlayers) or nil,
+                        }
+                    },
                 },
             }
             addtocatalog("OCProperties",d)
@@ -235,7 +242,7 @@ function codeinjections.startlayer(name) -- used in mp
         name = "unknown"
     end
     useviewerlayer(name)
-    return format("/OC /%s BDC",name)
+    return format("/OC /%s BDC",escapednames[name])
 end
 
 function codeinjections.stoplayer(name) -- used in mp
@@ -248,7 +255,7 @@ function nodeinjections.startlayer(name)
     local c = cache[name]
     if not c then
         useviewerlayer(name)
-        c = register(pdfliteral(format("/OC /%s BDC",name)))
+        c = register(pdfliteral(format("/OC /%s BDC",escapednames[name])))
         cache[name] = c
     end
     return copy_node(c)

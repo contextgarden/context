@@ -286,6 +286,7 @@ local infinite_penalty     =  10000
 local eject_penalty        = -10000
 local infinite_badness     =  10000
 local awful_badness        = 0x3FFFFFFF
+local ignore_depth         = -65536000
 
 local fit_very_loose_class = 0  -- fitness for lines stretching more than their stretchability
 local fit_loose_class      = 1  -- fitness for lines stretching 0.5 to 1.0 of their stretchability
@@ -799,7 +800,8 @@ end
 
 local function append_to_vlist(par, b)
     local prev_depth = par.prev_depth
-    if prev_depth > par.ignored_dimen then
+ -- if prev_depth > par.ignored_dimen then
+    if prev_depth > ignore_depth then
         if getid(b) == hlist_code then
             local d = getfield(par.baseline_skip,"width") - prev_depth - getfield(b,"height") -- deficiency of space between baselines
             local s = d < par.line_skip_limit and new_lineskip(par.lineskip) or new_baselineskip(d)
@@ -932,11 +934,12 @@ local function initialize_line_break(head,display)
 
         first_line                   = 0, -- tex.nest[tex.nest.ptr].modeline, -- 0, -- cur_list.pg_field
 
-        each_line_height             = tex.pdfeachlineheight    or 0, -- this will go away
-        each_line_depth              = tex.pdfeachlinedepth     or 0, -- this will go away
-        first_line_height            = tex.pdffirstlineheight   or 0, -- this will go away
-        last_line_depth              = tex.pdflastlinedepth     or 0, -- this will go away
-        ignored_dimen                = tex.pdfignoreddimen      or 0, -- this will go away
+     -- each_line_height             = tex.pdfeachlineheight    or 0, -- this will go away
+     -- each_line_depth              = tex.pdfeachlinedepth     or 0, -- this will go away
+     -- first_line_height            = tex.pdffirstlineheight   or 0, -- this will go away
+     -- last_line_depth              = tex.pdflastlinedepth     or 0, -- this will go away
+
+     -- ignored_dimen                = tex.pdfignoreddimen      or 0,
 
         baseline_skip                = tonut(tex.baselineskip),
         lineskip                     = tonut(tex.lineskip),
@@ -1144,7 +1147,7 @@ local function post_line_break(par)
     local leftskip       = par.used_left_skip -- used or normal ?
     local rightskip      = par.right_skip
     local parshape       = par.par_shape_ptr
-    local ignored_dimen  = par.ignored_dimen
+    ----- ignored_dimen  = par.ignored_dimen
 
     local adapt_width    = par.adapt_width
 
@@ -1359,20 +1362,22 @@ local function post_line_break(par)
         local pre_adjust_head = texlists.pre_adjust_head
         --
         setfield(finished_line,"shift",cur_indent)
-        -- this will probably go away:
-        if par.each_line_height ~= ignored_dimen then
-            setfield(finished_line,"height",par.each_line_height)
-        end
-        if par.each_line_depth ~= ignored_dimen then
-            setfield(finished_line,"depth",par.each_line_depth)
-        end
-        if par.first_line_height ~= ignored_dimen and (current_line == par.first_line + 1) then
-            setfield(finished_line,"height",par.first_line_height)
-        end
-        if par.last_line_depth ~= ignored_dimen and current_line + 1 == par.best_line then
-            setfield(finished_line,"depth",par.last_line_depth)
-        end
-        --
+     --
+     -- -- this is gone:
+     --
+     -- if par.each_line_height ~= ignored_dimen then
+     --     setfield(finished_line,"height",par.each_line_height)
+     -- end
+     -- if par.each_line_depth ~= ignored_dimen then
+     --     setfield(finished_line,"depth",par.each_line_depth)
+     -- end
+     -- if par.first_line_height ~= ignored_dimen and (current_line == par.first_line + 1) then
+     --     setfield(finished_line,"height",par.first_line_height)
+     -- end
+     -- if par.last_line_depth ~= ignored_dimen and current_line + 1 == par.best_line then
+     --     setfield(finished_line,"depth",par.last_line_depth)
+     -- end
+     --
         if texlists.pre_adjust_head ~= pre_adjust_head then
             append_list(par, texlists.pre_adjust_head)
             texlists.pre_adjust_head = pre_adjust_head
@@ -1428,10 +1433,10 @@ local function post_line_break(par)
                 elseif id < math_code then
                     -- messy criterium
                     break
-elseif id == math_code then
-    -- keep the math node
-    setfield(next,"surround",0)
-    break
+                elseif id == math_code then
+                    -- keep the math node
+                    setfield(next,"surround",0)
+                    break
                 elseif id == kern_code and (subtype ~= userkern_code and not getattr(next,a_fontkern)) then
                     -- fontkerns and accent kerns as well as otf injections
                     break

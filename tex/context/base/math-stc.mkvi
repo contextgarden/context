@@ -642,13 +642,17 @@
 \unexpanded\def\mathdouble{\begingroup\dodoubleempty\math_stackers_handle_double}
 
 \def\math_stackers_handle_over[#category]%
-  {\math_stackers_direct_double\plusone\zerocount{\iffirstargument#category\else\v!top   \fi}} % will be defined later on
+  {\math_stackers_direct_double\plusone\zerocount
+     {\iffirstargument#category\else\v!top   \fi}} % will be defined later on
 
 \def\math_stackers_handle_under[#category]%
-  {\math_stackers_direct_double\zerocount\plusone{\iffirstargument#category\else\v!bottom\fi}} % will be defined later on
+  {\math_stackers_direct_double\zerocount\plusone
+     {\iffirstargument#category\else\v!bottom\fi}} % will be defined later on
 
-\def\math_stackers_handle_double[#category]%
-  {\math_stackers_direct_double\plusone\plusone  {\iffirstargument#category\else\v!bottom\fi}} % will be defined later on
+\def\math_stackers_handle_double[#topcategory][#bottomcategory]%
+  {\math_stackers_direct_double\plusone\plusone
+     {\iffirstargument    #topcategory\else\v!top   \fi}%
+     {\ifsecondargument#bottomcategory\else\v!bottom\fi}}
 
 \def\math_stackers_direct_double#top#bottom#category#codepoint#text%
   {\math_stackers_make_double#top#bottom{#category}{#codepoint}{0}{#text}%
@@ -1236,9 +1240,9 @@
 
 %D Extra:
 
-\unexpanded\edef\singlebond{\mathematics{\mathsurround\zeropoint\char\number"002D}}
-\unexpanded\edef\doublebond{\mathematics{\mathsurround\zeropoint\char\number"003D}}
-\unexpanded\edef\triplebond{\mathematics{\mathsurround\zeropoint\char\number"2261}}
+\unexpanded\edef\singlebond{\mathematics{\mathsurround\zeropoint\char\number"002D\relax}}
+\unexpanded\edef\doublebond{\mathematics{\mathsurround\zeropoint\char\number"003D\relax}}
+\unexpanded\edef\triplebond{\mathematics{\mathsurround\zeropoint\char\number"2261\relax}}
 
 % \mathchardef\singlebond"002D
 % \mathchardef\doublebond"003D
@@ -1261,13 +1265,13 @@
    \edef\currentmathstackers{#category}%
    \edef\p_moffset{\mathstackersparameter\c!moffset}%
    \ifx\p_moffset\empty \else
-     \mskip\scratchmuskip
+     \mskip\p_moffset\relax
    \fi
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\usemathstackerscolorparameter\c!color
       \Umathchar\zerocount\defaultmathfamily#codepoint}%
    \ifx\p_moffset\empty \else
-     \mskip\scratchmuskip
+     \mskip\p_moffset\relax
    \fi
    \endgroup}
 

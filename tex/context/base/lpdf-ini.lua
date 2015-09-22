@@ -542,6 +542,13 @@ local function pdfconstant(str,default)
     return c
 end
 
+local escaped = Cs((S(forbidden)/replacements + P(1))^0)
+----- escaped = Cs((1-forbidden)^0 * S(forbidden)/replacements * ((S(forbidden)/replacements + P(1))^0)
+
+function lpdf.escaped(str)
+    return lpegmatch(escaped,str) or str
+end
+
 local p_null  = { } setmetatable(p_null, mt_z)
 local p_true  = { } setmetatable(p_true, mt_t)
 local p_false = { } setmetatable(p_false,mt_f)

@@ -556,19 +556,3 @@ end
 --     end
 -- end
 
-function nuts.effectiveglue(glue,parent)
-    local spec  = getfield(glue,"spec")
-    local width = getfield(spec,"width")
-    local sign  = getfield(parent,"glue_sign")
-    if sign == 1 then
-        if getfield(spec,"stretch_order") == getfield(parent,"glue_order") then
-            return width + getfield(spec,"stretch") * getfield(parent,"glue_set")
-        end
-    elseif sign == 2 then
-        if getfield(spec,"shrink_order") == getfield(parent,"glue_order") then
-            return width - getfield(spec,"shrink") * getfield(parent,"glue_set")
-        end
-    end
-    return width
-end
-

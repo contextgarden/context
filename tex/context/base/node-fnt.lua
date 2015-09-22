@@ -142,7 +142,7 @@ function fonts.getdiscexpansion()
     return expanders and true or false
 end
 
--- fonts.setdiscexpansion(true)
+fonts.setdiscexpansion(true)
 
 function handlers.characters(head)
     -- either next or not, but definitely no already processed list

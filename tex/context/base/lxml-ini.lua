@@ -33,9 +33,9 @@ implement { name = "xmldoifelsetext",         actions = lxml.doifelsetext,      
 implement { name = "xmldoifempty",            actions = lxml.doifempty,         arguments = { "string", "string" } }
 implement { name = "xmldoifnotempty",         actions = lxml.doifnotempty,      arguments = { "string", "string" } }
 implement { name = "xmldoifelseempty",        actions = lxml.doifelseempty,     arguments = { "string", "string" } }
-implement { name = "xmldoifselfempty",        actions = lxml.doifempty,         arguments = "string" }
-implement { name = "xmldoifnotselfempty",     actions = lxml.doifnotempty,      arguments = "string" }
-implement { name = "xmldoifelseselfempty",    actions = lxml.doifelseempty,     arguments = "string" }
+implement { name = "xmldoifselfempty",        actions = lxml.doifempty,         arguments = { "string", false } }
+implement { name = "xmldoifnotselfempty",     actions = lxml.doifnotempty,      arguments = { "string", false } }
+implement { name = "xmldoifelseselfempty",    actions = lxml.doifelseempty,     arguments = { "string", false } }
 
 --------- { name = "xmlcontent",              actions = lxml.content,           arguments = "string" }
 --------- { name = "xmlflushstripped",        actions = lxml.strip,             arguments = { "string", true } }
@@ -76,7 +76,7 @@ implement { name = "xmlbadinclusions",        actions = lxml.badinclusions,     
 implement { name = "xmlindex",                actions = lxml.index,             arguments = { "string", "string", "string" } } -- can be integer but now we can alias
 implement { name = "xmlinfo",                 actions = lxml.info,              arguments = "string" }
 implement { name = "xmlinlineverbatim",       actions = lxml.inlineverbatim,    arguments = "string" }
-implement { name = "xmllast",                 actions = lxml.last,              arguments = "string" }
+implement { name = "xmllast",                 actions = lxml.last,              arguments = { "string", "string" } }
 implement { name = "xmlload",                 actions = lxml.load,              arguments = { "string", "string", "string", "string" } }
 implement { name = "xmlloadbuffer",           actions = lxml.loadbuffer,        arguments = { "string", "string", "string", "string" } }
 implement { name = "xmlloaddata",             actions = lxml.loaddata,          arguments = { "string", "string", "string", "string" } }
@@ -122,7 +122,7 @@ implement { name = "xmlbeforedocumentsetup",  actions = lxml.installsetup,      
 implement { name = "xmlafterdocumentsetup",   actions = lxml.installsetup,      arguments = { 4, "string", "string", "string" } }
 implement { name = "xmlremovesetup",          actions = lxml.removesetup,       arguments = { "string", "string" } }              -- 1:*
 implement { name = "xmlremovedocumentsetup",  actions = lxml.removesetup,       arguments = { "string", "string" } }
-implement { name = "xmlflushdocumentsetups",  actions = lxml.flushsetups,       arguments = { "string", "string", "string" } }    -- 2:*
+implement { name = "xmlflushdocumentsetups",  actions = lxml.flushsetups,       arguments = { "string", "string" } }
 implement { name = "xmlresetdocumentsetups",  actions = lxml.resetsetups,       arguments = "string" }
 
 implement { name = "xmlgetindex",             actions = lxml.getindex,          arguments = { "string", "string" } }

@@ -108,7 +108,8 @@
    #2%
    \math_fenced_right
    \stopusemathstyleparameter
-   \endgroup}
+   \endgroup
+   \advance\c_math_fenced_nesting\minusone}
 
 \appendtoks
     \let\fenced\math_fenced_fenced
@@ -240,16 +241,19 @@
 
 \unexpanded\def\lfence#1%
   {\settrue\c_math_fenced_done
+   \let\nexttoken#1%
    \edef\m_math_left{\meaning#1}%
    \csname\??mathleft\ifcsname\??mathleft\m_math_left\endcsname\m_math_left\else\s!unknown\fi\endcsname}
 
 \unexpanded\def\rfence#1%
   {\settrue\c_math_fenced_done
+   \let\nexttoken#1%
    \edef\m_math_right{\meaning#1}%
    \csname\??mathright\ifcsname\??mathright\m_math_right\endcsname\m_math_right\else\s!unknown\fi\endcsname}
 
 \unexpanded\def\mfence#1%
   {\settrue\c_math_fenced_done
+   \let\nexttoken#1%
    \edef\m_math_middle{\meaning#1}%
    \csname\??mathmiddle\ifcsname\??mathmiddle\m_math_middle\endcsname\m_math_middle\else\s!unknown\fi\endcsname}
 
@@ -327,11 +331,11 @@
 \installmathfencepair \lfloor     \Lfloor       \rfloor     \Rfloor
 \installmathfencepair \lceil      \Lceil        \rceil      \Rceil
 
-\installmathfencepair \ulcorner   \Luppercorner \ulcorner   \Ruppercorner
-\installmathfencepair \llcorner   \Llowercorner \llcorner   \Rlowercorner
-\installmathfencepair \lmoustache \Lmoustache   \lmoustache \Rmoustache
-\installmathfencepair \llbracket  \Lopenbracket \llbracket  \Ropenbracket
-\installmathfencepair \lgroup     \Lgroup       \lgroup     \Rgroup
+\installmathfencepair \ulcorner   \Luppercorner \urcorner   \Ruppercorner
+\installmathfencepair \llcorner   \Llowercorner \lrcorner   \Rlowercorner
+\installmathfencepair \lmoustache \Lmoustache   \rmoustache \Rmoustache
+\installmathfencepair \llbracket  \Lopenbracket \lrbracket  \Ropenbracket
+\installmathfencepair \lgroup     \Lgroup       \rgroup     \Rgroup
 
 % \setupmathfences[color=darkgreen]
 

@@ -1187,10 +1187,6 @@
 
 \installcorenamespace{fontenvironmentknown}
 
-% \let\bodyfontenvironmentlist\empty % used in font-run (might change)
-
-\newtoks\bodyfontenvironmentlist
-
 \def\font_helpers_register_environment#class#body%
   {\expandafter\let\csname\??fontenvironmentknown#class#body\endcsname\empty}
 
@@ -1224,7 +1220,6 @@
    \else
      \normalizebodyfontsize\m_font_body_normalized\m_font_body
      \font_basics_define_body_font_environment_size[#class][\m_font_body_normalized][#settings]%
-    %\addtocommalist\m_font_body_normalized\bodyfontenvironmentlist
      \clf_registerbodyfontsize{\m_font_body_normalized}%
    \fi}
 

@@ -96,6 +96,8 @@ local setfield          = nuts.setfield
 local setprop           = nuts.setprop
 local getprop           = nuts.rawprop -- getprop
 
+local effectiveglue     = nuts.effective_glue
+
 local nodepool          = nuts.pool
 local new_glue          = nodepool.glue
 local new_kern          = nodepool.kern
@@ -205,7 +207,7 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
         end
         if id == glue_code then
             if getsubtype(current) == parfillskip_code then
-                pskip = nuts.effectiveglue(current,line)
+                pskip = effectiveglue(current,line)
             end
         end
     end

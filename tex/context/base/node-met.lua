@@ -60,13 +60,11 @@ end
 -- We start with some helpers and provide all relevant basic functions in the
 -- node namespace as well.
 
-local gonuts               = type(node.direct) == "table"
--- local gonuts            = false
-
 nodes                      = nodes or { }
 local nodes                = nodes
 
-nodes.gonuts               = gonuts
+----- gonuts               = type(node.direct) == "table"
+-----.gonuts               = gonuts
 
 local nodecodes            = nodes.nodecodes
 local hlist_code           = nodecodes.hlist
@@ -115,15 +113,15 @@ nodes.kerning              = node.kerning
 nodes.ligaturing           = node.ligaturing
 nodes.mlist_to_hlist       = node.mlist_to_hlist
 
-if not gonuts or not node.getfield then
-    node.getfield = metatable.__index
-    node.setfield = metatable.__newindex
-end
+nodes.effective_glue       = node.effective_glue
 
--- if gonuts then
-    nodes.tonode = function(n) return n end
-    nodes.tonut  = function(n) return n end
+-- if not gonuts or not node.getfield then
+--     node.getfield = metatable.__index
+--     node.setfield = metatable.__newindex
 -- end
+
+nodes.tonode = function(n) return n end
+nodes.tonut  = function(n) return n end
 
 local getfield          = node.getfield
 local setfield          = node.setfield
@@ -354,23 +352,23 @@ function nodes.free_spec(old)
     end
 end
 
-if gonuts then
+-- if gonuts then
 
-    function nodes.reference(n)
-        return n and tonut(n) or "<none>"
-    end
-
-else
-
-    local left, space = lpeg.P("<"), lpeg.P(" ")
-
-    local reference = left * (1-left)^0 * left * space^0 * lpeg.C((1-space)^0)
-
-    function nodes.reference(n)
-        return n and lpegmatch(reference,tostring(n)) or "<none>"
-    end
-
+function nodes.reference(n)
+    return n and tonut(n) or "<none>"
 end
+
+-- else
+--
+--     local left, space = lpeg.P("<"), lpeg.P(" ")
+--
+--     local reference = left * (1-left)^0 * left * space^0 * lpeg.C((1-space)^0)
+--
+--     function nodes.reference(n)
+--         return n and lpegmatch(reference,tostring(n)) or "<none>"
+--     end
+--
+-- end
 
 -- Here starts an experiment with metatables. Of course this only works with nodes
 -- wrapped in userdata with a metatable.
@@ -619,23 +617,23 @@ end
 
 -- see node-nut.lua for more info on going nuts
 
-if not gonuts then
-
-    local nuts = { }
-    nodes.nuts = nuts
-
-    local function dummy(f) return f end
-
-    nodes.vianuts  = dummy
-    nodes.vianodes = dummy
-
-    for k, v in next, nodes do
-        if type(v) == "function" then
-            nuts[k] = v
-        end
-    end
-
-end
+-- if not gonuts then
+--
+--     local nuts = { }
+--     nodes.nuts = nuts
+--
+--     local function dummy(f) return f end
+--
+--     nodes.vianuts  = dummy
+--     nodes.vianodes = dummy
+--
+--     for k, v in next, nodes do
+--         if type(v) == "function" then
+--             nuts[k] = v
+--         end
+--     end
+--
+-- end
 
 -- also handy
 

@@ -341,7 +341,7 @@ function mptex.set(str)
 end
 
 function mptex.setfrombuffer(name)
-    environments[#environments+1] = buffers.content(name)
+    environments[#environments+1] = buffers.getcontent(name)
 end
 
 function mptex.get()
