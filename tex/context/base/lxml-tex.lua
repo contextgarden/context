@@ -1742,7 +1742,7 @@ local function checkedempty(id,pattern)
         local nt = #dt
         return (nt == 0) or (nt == 1 and dt[1] == "")
     else
-        return isempty(getid(id),pattern)
+        return empty(getid(id),pattern)
     end
 end
 

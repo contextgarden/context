@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D I will remove pdftex and xetex stuff from this file.
-
 %D We used to load plain \TEX\ in a special way, but redefining a couple of
 %D primitives so that for instance font loading was ignored. For those interested,
 %D this loader is found in \type {syst-tex.tex}. Some of the comment's are Don
@@ -100,13 +98,16 @@
     local etex   = extraprimitives("etex")
     local pdftex = extraprimitives("pdftex")
     local luatex = extraprimitives("luatex")
-    local omega = {
+    local omega = { % now luatex
+        "pagewidth", "pageheight",
         "textdir", "pagedir", "mathdir", "pardir", "bodydir",
-        "leftghost", "rightghost", "localleftbox", "localrightbox",
+        "leftghost", "rightghost",
+        "localleftbox", "localrightbox",
         "localinterlinepenalty", "localbrokenpenalty",
     }
-    local aleph = {
-        "boxdir", "pagebottomoffset", "pagerightoffset",
+    local aleph = { % now luatex
+        "boxdir",
+        "pagebottomoffset", "pagerightoffset",
     }
     for _, subset in next, { etex, pdftex, luatex, omega, aleph } do
         enableprimitives("",subset)
@@ -115,6 +116,14 @@
         enableprimitives("normal",subset)
     end
 }
+
+% for the moment:
+
+\ifdefined\pagewidth     \else \let\pagewidth    \pdfpagewidth     \let\normalpagewidth    \pdfpagewidth  \fi
+\ifdefined\pageheight    \else \let\pageheight   \pdfpageheight    \let\normalpageheight   \pdfpageheight \fi
+
+\ifdefined\adjustspacing \else \let\adjustspacing\pdfadjustspacing \let\normaladjustspacing\adjustspacing \fi
+\ifdefined\protrudechars \else \let\protrudechars\pdfprotrudechars \let\normalprotrudechars\protrudechars \fi
 
 %D \ETEX\ has a not so handy way of telling you the version number, i.e. the revision
 %D number has a period in it:

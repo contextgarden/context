@@ -39,8 +39,8 @@
 
 \bgroup
 
-    \pdfprotrudechars2
-    \pdfadjustspacing2
+    \ifdefined\pdfprotrudechars \pdfprotrudechars \else \protrudechars \fi 2 \relax
+    \ifdefined\pdfadjustspacing \pdfadjustspacing \else \adjustspacing \fi 2 \relax
 
     \font\testb=file:lmroman12-regular:+liga;extend=1.5         at 12pt \testb \input tufte \par
     \font\testb=file:lmroman12-regular:+liga;slant=0.8          at 12pt \testb \input tufte \par

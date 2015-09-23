@@ -33,9 +33,9 @@ implement { name = "xmldoifelsetext",         actions = lxml.doifelsetext,      
 implement { name = "xmldoifempty",            actions = lxml.doifempty,         arguments = { "string", "string" } }
 implement { name = "xmldoifnotempty",         actions = lxml.doifnotempty,      arguments = { "string", "string" } }
 implement { name = "xmldoifelseempty",        actions = lxml.doifelseempty,     arguments = { "string", "string" } }
-implement { name = "xmldoifselfempty",        actions = lxml.doifempty,         arguments = { "string", false } }
-implement { name = "xmldoifnotselfempty",     actions = lxml.doifnotempty,      arguments = { "string", false } }
-implement { name = "xmldoifelseselfempty",    actions = lxml.doifelseempty,     arguments = { "string", false } }
+implement { name = "xmldoifselfempty",        actions = lxml.doifempty,         arguments = "string" } -- second arg is not passed (used)
+implement { name = "xmldoifnotselfempty",     actions = lxml.doifnotempty,      arguments = "string" } -- second arg is not passed (used)
+implement { name = "xmldoifelseselfempty",    actions = lxml.doifelseempty,     arguments = "string" } -- second arg is not passed (used)
 
 --------- { name = "xmlcontent",              actions = lxml.content,           arguments = "string" }
 --------- { name = "xmlflushstripped",        actions = lxml.strip,             arguments = { "string", true } }
@@ -122,7 +122,7 @@ implement { name = "xmlbeforedocumentsetup",  actions = lxml.installsetup,      
 implement { name = "xmlafterdocumentsetup",   actions = lxml.installsetup,      arguments = { 4, "string", "string", "string" } }
 implement { name = "xmlremovesetup",          actions = lxml.removesetup,       arguments = { "string", "string" } }              -- 1:*
 implement { name = "xmlremovedocumentsetup",  actions = lxml.removesetup,       arguments = { "string", "string" } }
-implement { name = "xmlflushdocumentsetups",  actions = lxml.flushsetups,       arguments = { "string", "string" } }
+implement { name = "xmlflushdocumentsetups",  actions = lxml.flushsetups,       arguments = { "string", "string", "string" } }    -- 2:*
 implement { name = "xmlresetdocumentsetups",  actions = lxml.resetsetups,       arguments = "string" }
 
 implement { name = "xmlgetindex",             actions = lxml.getindex,          arguments = { "string", "string" } }

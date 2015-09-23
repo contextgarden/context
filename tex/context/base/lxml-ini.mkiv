@@ -256,7 +256,7 @@
 \unexpanded\def\xmlremovesetup             #1{\clf_xmlremovesetup         {*}{#1}}
 \unexpanded\def\xmlremovedocumentsetup   #1#2{\clf_xmlremovedocumentsetup {#1}{#2}}
 
-\unexpanded\def\xmlflushdocumentsetups   #1#2{\clf_xmlflushdocumentsetups {#1}{#2}}
+\unexpanded\def\xmlflushdocumentsetups   #1#2{\clf_xmlflushdocumentsetups {#1}{*}{#2}} % #1 == id where to apply * and #2
 \unexpanded\def\xmlresetdocumentsetups     #1{\clf_xmlresetdocumentsetups {#1}}
 
 \let\xmlregistersetup        \xmlappendsetup
@@ -303,7 +303,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:process
-    \xmlregistereddocumentsetups{#1}{}
+    \xmlregistereddocumentsetups{#1}{#1}
     \xmlmain{#1}
 \stopxmlsetups
 

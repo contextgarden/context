@@ -48,13 +48,13 @@
 % \setupfontprotrusion[quality-upright][vector=quality]
 % \setupfontprotrusion[quality-slanted][vector=quality,right=1.5]
 
-\let\pdfadjustspacing\relax \newcount\pdfadjustspacing % a little bit protection
-\let\pdfprotrudechars\relax \newcount\pdfprotrudechars % a little bit protection
+\let\adjustspacing\relax \newcount\adjustspacing % a little bit protection
+\let\protrudechars\relax \newcount\protrudechars % a little bit protection
 
-\def\font_expansion_enable  {\normalpdfadjustspacing\plustwo  } % these will become normal primitives
-\def\font_expansion_disable {\normalpdfadjustspacing\zerocount} % these will become normal primitives
-\def\font_protruding_enable {\normalpdfprotrudechars\plustwo  } % these will become normal primitives
-\def\font_protruding_disable{\normalpdfprotrudechars\zerocount} % these will become normal primitives
+\def\font_expansion_enable  {\normaladjustspacing\plustwo  } % these will become normal primitives
+\def\font_expansion_disable {\normaladjustspacing\zerocount} % these will become normal primitives
+\def\font_protruding_enable {\normalprotrudechars\plustwo  } % these will become normal primitives
+\def\font_protruding_disable{\normalprotrudechars\zerocount} % these will become normal primitives
 
 \appendtoks \font_expansion_disable  \to \everyforgetall % Here or not here?
 \appendtoks \font_protruding_disable \to \everyforgetall % Here or not here?

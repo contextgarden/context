@@ -259,8 +259,8 @@ local pagespecs = {
 local pagespec, topoffset, leftoffset, height, width, doublesided = "default", 0, 0, 0, 0, false
 local cropoffset, bleedoffset, trimoffset, artoffset = 0, 0, 0, 0
 
-local pdfpaperheight = tex.pageheight
-local pdfpaperwidth  = tex.pagewidth
+local pdfpaperheight = tex.normalpageheight -- we use normal because one never knows if an user
+local pdfpaperwidth  = tex.normalpagewidth  -- defines a dimen is defined that overloads the internal
 
 function codeinjections.setupcanvas(specification)
     local paperheight = specification.paperheight

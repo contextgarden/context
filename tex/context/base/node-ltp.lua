@@ -868,8 +868,8 @@ local function initialize_line_break(head,display)
     local right_skip     = tonut(tex.rightskip) -- nodes
     local pretolerance   = tex.pretolerance
     local tolerance      = tex.tolerance
-    local adjust_spacing = tex.pdfadjustspacing
-    local protrude_chars = tex.pdfprotrudechars
+    local adjust_spacing = tex.adjustspacing
+    local protrude_chars = tex.protrudechars
     local last_line_fit  = tex.lastlinefit
 
     local newhead = new_temp()
@@ -2302,7 +2302,7 @@ function constructors.methods.basic(head,d)
                                         -- do_one_seven_eight(sub_disc_width_from_active_width);
                                         -- do_one_seven_eight(reset_disc_width);
                                         -- s = vlink_no_break(vlink(current));
-                                        -- add_to_widths(s, line_break_dir, pdf_adjust_spacing,disc_width);
+                                        -- add_to_widths(s, line_break_dir, adjust_spacing,disc_width);
                                         -- ext_try_break(...,first_p,vlink(current));
                                         --
                                     else
