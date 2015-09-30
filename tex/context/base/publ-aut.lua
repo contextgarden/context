@@ -734,7 +734,7 @@ authorhashers.short = function(authors)
             else
                 local s = surnames[1]
                 local c = lpegmatch(p_clean,s)
-                if s ~= c then
+                if trace_hashing and s ~= c then
                     report_cite("name %a cleaned to %a for short construction",s,c)
                 end
                 return utfsub(c,1,3)

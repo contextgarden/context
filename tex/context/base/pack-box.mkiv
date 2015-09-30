@@ -391,6 +391,7 @@
 \unexpanded\def\placelayeredtext[#1]%
   {\bgroup
    \edef\currentlayeredtext{#1}%
+   \checklayeredtextparent % bonus
    \dodoubleempty\pack_layeredtexts_place}
 
 \def\pack_layeredtexts_place[#1][#2]#3% layersettings content(framed)settings content

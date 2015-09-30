@@ -2246,19 +2246,9 @@ function constructors.methods.basic(head,d)
                     local line_break_dir = par.line_break_dir
                     if second_pass or subtype <= automatic_disc_code then
                         local actual_pen = subtype == automatic_disc_code and par.ex_hyphen_penalty or par.hyphen_penalty
-                        -- > 0.81
-                     -- local actual_pen = getfield(current,"penalty")
-                     -- if actual_pen == 0 then
-                     --     -- take that one
-                     -- elseif subtype == automatic_disc_code then
-                     --     actual_pen = par.ex_hyphen_penalty
-                     -- else
-                     --     actual_pen = par.hyphen_penalty
-                     -- end
+                        -- 0.81 :
+                        -- local actual_pen = getfield(current,"penalty")
                         --
-                        if discpenalty > 0 then
-                            actual_pen = discpenalty
-                        end
                         local pre = getfield(current,"pre")
                         if not pre then    --  trivial pre-break
                             disc_width.size = 0

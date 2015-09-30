@@ -49,8 +49,6 @@ local getlanguagedata    = languages.getdata
 
 local check_regular      = true
 
--- exhyphenpanalty | hyphenpenalty | discpenalty
-
 local expanders = {
     [disccodes.discretionary] = function(d,template)
         -- \discretionary
@@ -69,11 +67,7 @@ local expanders = {
             post = nil
         end
         if done then
-            local penalty = tex.discpenalty
-            if discpenalty == 0 then
-                penalty = tex.hyphenpenalty
-            end
-            setdisc(d,pre,post,replace,discretionary_code,penalty)
+            setdisc(d,pre,post,replace,discretionary_code,tex.exhyphenpenalty)
         end
         return template
     end,
@@ -83,10 +77,6 @@ local expanders = {
         -- hyphen is already injected ... downside: the font handler sees this
         -- so this is another argument for doing a hyphenation pass in context
         local pre, post, replace = getdisc(d)
-        local penalty = tex.discpenalty
-        if discpenalty == 0 then
-            penalty = tex.exhyphenpenalty
-        end
         if pre then
             -- we have a preex characters and want that one to replace the
             -- character in front which is the trigger
@@ -112,12 +102,12 @@ local expanders = {
                 else
                     -- can't happen
                 end
-                setdisc(d,pre,post,replace,discretionary_code,penalty)
+                setdisc(d,pre,post,replace,discretionary_code,tex.hyphenpenalty)
             else
              -- print("lone regular discretionary ignored")
             end
         else
-            setdisc(d,pre,post,replace,discretionary_code,penalty)
+            setdisc(d,pre,post,replace,discretionary_code,tex.hyphenpenalty)
         end
         return template
     end,
@@ -154,11 +144,7 @@ local expanders = {
                     setchar(post,postchar)
                 end
                 if done then
-                    local penalty = tex.discpenalty
-                    if discpenalty == 0 then
-                        penalty = tex.hyphenpenalty
-                    end
-                    setdisc(d,pre,post,replace,discretionary_code,penalty)
+                    setdisc(d,pre,post,replace,discretionary_code,tex.hyphenpenalty)
                 end
             else
              -- print("lone regular discretionary ignored")

@@ -1,0 +1,184 @@
+%D \module
+%D   [       file=m-escrito,
+%D        version=2015.09.27,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=ESCRITO,
+%D         author={Taco Hoekwater \& Hans Hagen},
+%D           date=\currentdate,
+%D      copyright={\CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{m-escrito}{1.001}
+
+%D This is a fun project and not meant for production (yet). It's a follow up on a
+%D project by Taco presented at a Bacho\TeX\ meeting years ago. I probably messed up
+%D the code so much that some things don't work but then, fonts are not really
+%D supported well anyway. However for simple \POSTSCRIPT\ things work out ok.
+%D
+%D I (Hans) will occasionally have a look at the code. Who knows what our trips to
+%D \TeX\ meetings lead to.
+
+\unprotect
+
+\unexpanded\def\startESCRITOgraphic#1#2#3#4%
+  {\dontleavehmode
+   \begingroup
+   \MPllx#1\onebasepoint
+   \MPlly#2\onebasepoint
+   \MPurx#3\onebasepoint
+   \MPury#4\onebasepoint
+   \setbox\b_meta_graphic\hbox\bgroup}
+
+\unexpanded\def\stopESCRITOgraphic
+  {\egroup
+   \setbox\b_meta_graphic\ruledhbox\bgroup
+     \kern-\MPllx\raise-\MPlly\box\b_meta_graphic
+   \egroup
+   \wd\b_meta_graphic\dimexpr\MPurx-\MPllx\relax
+   \ht\b_meta_graphic\dimexpr\MPury-\MPlly\relax
+   \dp\b_meta_graphic\zeropoint
+   \box\b_meta_graphic
+   \endgroup}
+
+\unexpanded\def\flushESCRITOtext#1#2#3% no fratures so pretty weak, better use overlays
+  {\smash{\rlap{\definedfont[#1 at #2bp]#3}}}
+
+\unexpanded\def\stopESCRITO
+  {\edef\p_option{\namedbufferparameter{ESCRITO}\c!option}%
+   \ctxlua{escrito.convert {
+        buffer       = "\thedefinedbuffer{ESCRITO}",
+        calculatebox = \ifx\p_option\v!fit true\else false\fi,
+  }}}
+
+\unexpanded\def\processESCRITO[#1]%
+  {\begingroup
+   \getdummyparameters[\c!file=,\c!option=,#1]%
+   \edef\p_option{\dummyparameter\c!option}%
+   \ctxlua{escrito.convert {
+        filename     = "\dummyparameter\c!file",
+        calculatebox = \ifx\p_option\v!fit true\else false\fi,
+   }}%
+   \endgroup}
+
+\definebuffer
+  [ESCRITO]
+
+\setupbuffer
+  [ESCRITO]
+  [\c!option=,
+   \c!after=\processESCRITO]
+
+\protect
+
+% This will move to m-escrito.lua once we know how to deal with it ... no time
+% now.
+
+\startluacode
+
+    local literal = nodes.pool.register(node.new("whatsit",nodes.whatsitcodes.pdfliteral))
+    literal.mode = 0
+
+    local function newliteral(result)
+        local l = nodes.copy(literal)
+        l.data = result
+        return l
+    end
+
+    local p = escrito.devices.pdf
+
+    function p.startpage(llx,lly,urx,ury)
+        context.startESCRITOgraphic(llx,lly,urx,ury)
+    end
+
+    function p.stoppage()
+        context.stopESCRITOgraphic()
+    end
+
+    function p.flushpage(result)
+        context(newliteral(result))
+    end
+
+    -- todo
+
+    local fontnames = { }
+    local fontfiles = { }
+
+    fontnames['NimbusSanL-Regu']     = 'Sans'
+    fontnames['StandardSymL']        = 'rpsyr'
+    fontnames['dejavuserif-regular'] = 'dejavuserif-regular'
+
+    function p.showfont(object)
+        local color  = object.color
+        local ctype  = object.colortype
+        local matrix = object.matrix
+        local text   = object.string
+        local size   = object.fontmatrix[1] * 1000
+        local result = { "q" }
+        context(newliteral(formatters['%f %f %f %f %f %f cm'](matrix[1],matrix[2],matrix[3],matrix[4],matrix[5],matrix[6])))
+        if ctype == "rgb" then
+            local r, g, b = color[1], color[2], color[3]
+            context(newliteral(formatters["%f %f %f rg %f %f %f RG"](r,g,b,r,g,b)))
+        elseif ctype == "cmyk" then
+            local c, m, y, k = color[1], color[2], color[3], color[4]
+            context(newliteral(formatters["%f %f %f k %f %f %f K"](c,m,y,k,c,m,y,k)))
+        elseif ctype == "gray" then
+            context(newliteral(formatters["%f g %f G"](color,color)))
+        end
+        context.flushESCRITOtext(fontnames[object.fontname],size,text)
+        context(newliteral("Q"))
+    end
+
+    local function findfont(fontname)
+        return fontfiles[fontname]
+    end
+
+\stopluacode
+
+\continueifinputfile{m-escrito.mkiv}
+
+\starttext
+
+% \startluacode
+%     local n = 5
+%     for i=1,n do
+%         context.startTEXpage()
+%         local runtime = escrito.convert { filename = "tiger.eps", calculatebox = true }
+%         context.par()
+%         context("calculated boundingbox, time: %s",runtime)
+%         context.stopTEXpage()
+%     end
+%     for i=1,n do
+%         context.startTEXpage()
+%         local runtime = escrito.convert { filename = "tiger.eps", calculatebox = false }
+%         context.par()
+%         context("built in boundingbox, time: %s",runtime)
+%         context.stopTEXpage()
+%     end
+% \stopluacode
+
+\startTEXpage
+    \startESCRITO
+        (tiger.eps) run
+    \stopESCRITO
+\stopTEXpage
+
+\startTEXpage
+    \setupbuffer[ESCRITO][option=fit]%
+    \startESCRITO
+        (tiger.eps) run
+    \stopESCRITO
+\stopTEXpage
+
+\startTEXpage
+    \processESCRITO[file=tiger.eps]
+\stopTEXpage
+
+\startTEXpage
+    \processESCRITO[file=tiger.eps,option=fit]
+\stopTEXpage
+
+\stoptext
+

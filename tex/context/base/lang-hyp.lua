@@ -949,40 +949,40 @@ if context then
 
     function traditional.hyphenate(head)
 
-        local first        = tonut(head)
-        local tail         = nil
-        local last         = nil
-        local current      = first
-        local dictionary   = nil
-        local instance     = nil
-        local characters   = nil
-        local unicodes     = nil
-        local exhyphenchar = tex.exhyphenchar
-     -- local discpenalty  = tex.discpenalty -- makes no sense globally
-        local extrachars   = nil
-        local hyphenchars  = nil
-        local language     = nil
-        local start        = nil
-        local stop         = nil
-        local word         = { } -- we reuse this table
-        local size         = 0
-        local leftchar     = false
-        local rightchar    = false -- utfbyte("-")
-        local leftexchar   = false
-        local rightexchar  = false -- utfbyte("-")
-        local leftmin      = 0
-        local rightmin     = 0
-        local charmin      = 1
-        local leftcharmin  = nil
-        local rightcharmin = nil
-        ----- leftwordmin  = nil
-        local rightwordmin = nil
-        local leftchar     = nil
-        local rightchar    = nil
-        local attr         = nil
-        local lastwordlast = nil
-        local hyphenated   = hyphenate
-        local strict       = nil
+        local first         = tonut(head)
+        local tail          = nil
+        local last          = nil
+        local current       = first
+        local dictionary    = nil
+        local instance      = nil
+        local characters    = nil
+        local unicodes      = nil
+        local exhyphenchar  = tex.exhyphenchar
+        local extrachars    = nil
+        local hyphenchars   = nil
+        local language      = nil
+        local start         = nil
+        local stop          = nil
+        local word          = { } -- we reuse this table
+        local size          = 0
+        local leftchar      = false
+        local rightchar     = false -- utfbyte("-")
+        local leftexchar    = false
+        local rightexchar   = false -- utfbyte("-")
+        local leftmin       = 0
+        local rightmin      = 0
+        local charmin       = 1
+        local leftcharmin   = nil
+        local rightcharmin  = nil
+        ----- leftwordmin   = nil
+        local rightwordmin  = nil
+        local leftchar      = nil
+        local rightchar     = nil
+        local attr          = nil
+        local lastwordlast  = nil
+        local hyphenated    = hyphenate
+        local strict        = nil
+        local hyphenpenalty = tex.hyphenpenalty
 
         -- We cannot use an 'enabled' boolean (false when no characters or extras) because we
         -- can have plugins that set a characters metatable and so) ... it doesn't save much
@@ -1172,18 +1172,18 @@ if context then
                 local r = result[i]
                 if r == true then
                     local disc = new_disc()
+                    local pre  = nil
+                    local post = nil
                     if rightchar then
-                        setfield(disc,"pre",serialize(true,rightchar))
+                        pre = serialize(true,rightchar)
                     end
                     if leftchar then
-                        setfield(disc,"post",serialize(true,leftchar))
+                        post = serialize(true,leftchar)
                     end
+                    setdisc(disc,pre,post,nil,discretionary_code,hyphenpenalty)
                     if attributes then
                         setfield(disc,"attr",attributes)
                     end
-                 -- if discpenalty > 0 then
-                 --     setfield(disc,"penalty",discpenalty)
-                 -- end
                     -- could be a replace as well
                     insert_before(first,current,disc)
                 elseif type(r) == "table" then
@@ -1193,21 +1193,31 @@ if context then
                     local replace = r[3]
                     local right   = r[4] ~= false and rightchar
                     local left    = r[5] ~= false and leftchar
-                    if pre and pre ~= "" then
-                        setfield(disc,"pre",serialize(pre,false,right))
+                    if pre then
+                        if pre ~= "" then
+                            pre = serialize(pre,false,right)
+                        else
+                            pre = nil
+                        end
                     end
-                    if post and post ~= "" then
-                        setfield(disc,"post",serialize(post,left,false))
+                    if post then
+                        if post ~= "" then
+                            post = serialize(post,left,false)
+                        else
+                            post = nil
+                        end
                     end
-                    if replace and replace ~= "" then
-                        setfield(disc,"replace",serialize(replace))
+                    if replace then
+                        if replace ~= "" then
+                            replace = serialize(replace)
+                        else
+                            replace = nil
+                        end
                     end
+                    setdisc(disc,pre,post,replace,discretionary_code,hyphenpenalty)
                     if attributes then
                         setfield(disc,"attr",attributes)
                     end
-                 -- if discpenalty > 0 then
-                 --     setfield(disc,"penalty",discpenalty)
-                 -- end
                     insert_before(first,current,disc)
                 else
                     setfield(current,"char",characters[r])
@@ -1235,20 +1245,21 @@ if context then
                     setcolor(glyph,"darkred")  -- these get checked
                     setcolor(disc,"darkgreen") -- in the colorizer
                 end
-                setfield(disc,"replace",glyph)
+                local pre     = mil
+                local post    = nil
+                local replace = glyph
                 if not leftchar then
                     leftchar = code
                 end
                 if rightchar then
-                    local glyph = copy_node(glyph)
-                    setfield(glyph,"char",rightchar)
-                    setfield(disc,"pre",glyph)
+                    pre = copy_node(glyph)
+                    setfield(pre,"char",rightchar)
                 end
                 if leftchar then
-                    local glyph = copy_node(glyph)
-                    setfield(glyph,"char",leftchar)
-                    setfield(disc,"post",glyph)
+                    post = copy_node(glyph)
+                    setfield(post,"char",leftchar)
                 end
+                setdisc(disc,pre,post,replace,discretionary_code,hyphenpenalty)
                 if attributes then
                     setfield(disc,"attr",attributes)
                 end

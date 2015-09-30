@@ -151,9 +151,9 @@ function nodeinjections.injectbitmap(t)
         CS  = colorspace,
         BPC = 8,
         F   = pdfconstant("AHx"),
---~ CS  = nil,
---~ BPC = 1,
---~ IM = true,
+     -- CS  = nil,
+     -- BPC = 1,
+     -- IM = true,
     }
     -- for some reasons it only works well if we take a 1bp boundingbox
     local urx, ury = 1/basepoints, 1/basepoints

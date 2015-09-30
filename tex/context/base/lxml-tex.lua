@@ -181,36 +181,77 @@ local texfinalizers = finalizers.tex
 
 -- serialization with entity handling
 
-local ampersand = P("&")
-local semicolon = P(";")
-local entity    = ampersand * C((1-semicolon)^1) * semicolon / lxml.resolvedentity -- context.bold
+local exceptions = false
 
-local _, xmltextcapture = context.newtexthandler {
+local ampersand  = P("&")
+local semicolon  = P(";")
+local entity     = ampersand * C((1-semicolon)^1) * semicolon / lxml.resolvedentity -- context.bold
+
+local _, xmltextcapture_yes = context.newtexthandler {
+    catcodes  = notcatcodes,
     exception = entity,
+}
+local _, xmltextcapture_nop = context.newtexthandler {
     catcodes  = notcatcodes,
 }
 
-local _, xmlspacecapture = context.newtexthandler {
+local _, xmlspacecapture_yes = context.newtexthandler {
     endofline  = context.xmlcdataobeyedline,
     emptyline  = context.xmlcdataobeyedline,
     simpleline = context.xmlcdataobeyedline,
     space      = context.xmlcdataobeyedspace,
-    exception  = entity,
     catcodes   = notcatcodes,
+    exception  = entity,
 }
-
-local _, xmllinecapture = context.newtexthandler {
+local _, xmlspacecapture_nop = context.newtexthandler {
     endofline  = context.xmlcdataobeyedline,
     emptyline  = context.xmlcdataobeyedline,
     simpleline = context.xmlcdataobeyedline,
-    exception  = entity,
+    space      = context.xmlcdataobeyedspace,
     catcodes   = notcatcodes,
 }
 
-local _, ctxtextcapture = context.newtexthandler {
+local _, xmllinecapture_yes = context.newtexthandler {
+    endofline  = context.xmlcdataobeyedline,
+    emptyline  = context.xmlcdataobeyedline,
+    simpleline = context.xmlcdataobeyedline,
+    catcodes   = notcatcodes,
+    exception  = entity,
+}
+local _, xmllinecapture_nop = context.newtexthandler {
+    endofline  = context.xmlcdataobeyedline,
+    emptyline  = context.xmlcdataobeyedline,
+    simpleline = context.xmlcdataobeyedline,
+    catcodes   = notcatcodes,
+}
+
+local _, ctxtextcapture_yes = context.newtexthandler {
+    catcodes  = ctxcatcodes,
     exception = entity,
+}
+local _, ctxtextcapture_nop = context.newtexthandler {
     catcodes  = ctxcatcodes,
 }
+
+local xmltextcapture, xmlspacecapture, xmllinecapture, ctxtextcapture
+
+function lxml.setescapedentities(v)
+    if v then
+        xmltextcapture  = xmltextcapture_yes
+        xmlspacecapture = xmlspacecapture_yes
+        xmllinecapture  = xmllinecapture_yes
+        ctxtextcapture  = ctxtextcapture_yes
+    else
+        xmltextcapture  = xmltextcapture_nop
+        xmlspacecapture = xmlspacecapture_nop
+        xmllinecapture  = xmllinecapture_nop
+        ctxtextcapture  = ctxtextcapture_nop
+    end
+end
+
+lxml.setescapedentities()
+
+directives.register("lxml.escapedentities",lxml.setescapedentities)
 
 -- cdata
 
@@ -427,7 +468,7 @@ local function entityconverter(id,str)
     return xmlentities[str] or xmlprivatetoken(str) or "" -- roundtrip handler
 end
 
-function lxml.convert(id,data,entities,compress,currentresource)
+local function lxmlconvert(id,data,compress,currentresource)
     local settings = { -- we're now roundtrip anyway
         unify_predefined_entities   = true,
         utfize_entities             = true,
@@ -438,23 +479,20 @@ function lxml.convert(id,data,entities,compress,currentresource)
     if compress and compress == variables.yes then
         settings.strip_cm_and_dt = true
     end
- -- if entities and entities == variables.yes then
- --     settings.utfize_entities = true
- --  -- settings.resolve_entities = function (str) return entityconverter(id,str) end
- -- end
     return xml.convert(data,settings)
 end
 
-function lxml.load(id,filename,compress,entities)
+lxml.convert = lxmlconvert
+
+function lxml.load(id,filename,compress)
     filename = ctxrunner.preparedfile(filename)
     if trace_loading then
         report_lxml("loading file %a as %a",filename,id)
     end
     noffiles, nofconverted = noffiles + 1, nofconverted + 1
- -- local xmltable = xml.load(filename)
     starttiming(xml)
     local ok, data = resolvers.loadbinfile(filename)
-    local xmltable = lxml.convert(id,(ok and data) or "",compress,entities,format("id: %s, file: %s",id,filename))
+    local xmltable = lxmlconvert(id,(ok and data) or "",compress,format("id: %s, file: %s",id,filename))
     stoptiming(xml)
     lxml.store(id,xmltable,filename)
     return xmltable, filename
@@ -541,29 +579,29 @@ function lxml.save(id,name)
     xml.save(getid(id),name)
 end
 
-function xml.getbuffer(name,compress,entities) -- we need to make sure that commands are processed
+function xml.getbuffer(name,compress) -- we need to make sure that commands are processed
     if not name or name == "" then
         name = tex.jobname
     end
     nofconverted = nofconverted + 1
     local data = buffers.getcontent(name)
-    xmltostring(lxml.convert(name,data,compress,entities,format("buffer: %s",tostring(name or "?")))) -- one buffer
+    xmltostring(lxmlconvert(name,data,compress,format("buffer: %s",tostring(name or "?")))) -- one buffer
 end
 
-function lxml.loadbuffer(id,name,compress,entities)
+function lxml.loadbuffer(id,name,compress)
     starttiming(xml)
     nofconverted = nofconverted + 1
     local data = buffers.collectcontent(name or id) -- name can be list
-    local xmltable = lxml.convert(id,data,compress,entities,format("buffer: %s",tostring(name or id or "?")))
+    local xmltable = lxmlconvert(id,data,compress,format("buffer: %s",tostring(name or id or "?")))
     lxml.store(id,xmltable)
     stoptiming(xml)
     return xmltable, name or id
 end
 
-function lxml.loaddata(id,str,compress,entities)
+function lxml.loaddata(id,str,compress)
     starttiming(xml)
     nofconverted = nofconverted + 1
-    local xmltable = lxml.convert(id,str or "",compress,entities,format("id: %s",id))
+    local xmltable = lxmlconvert(id,str or "",compress,format("id: %s",id))
     lxml.store(id,xmltable)
     stoptiming(xml)
     return xmltable, id

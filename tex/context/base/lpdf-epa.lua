@@ -155,8 +155,8 @@ function codeinjections.mergereferences(specification)
             local size        = specification.size    or "crop" -- todo
             local pagedata    = document.pages[pagenumber]
             local annotations = pagedata and pagedata.Annots
-            local namespace = makenamespace(fullname)
-            local reference = namespace .. pagenumber
+            local namespace   = makenamespace(fullname)
+            local reference   = namespace .. pagenumber
             if annotations and annotations.n > 0 then
                 local mediabox  = pagedata.MediaBox
                 local llx       = mediabox[1]

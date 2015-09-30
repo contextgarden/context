@@ -475,10 +475,10 @@
    \let\currentbtxbacklink \empty
    \let\currentbtxbacktrace\empty
    \let\currentbtxlanguage \empty
-   \let\currentbtxtag      \empty
    \let\currentbtxsuffix   \empty
-   \let\currentbtxnumber   \empty
-   \let\currentbtxdataset  \empty}
+  %\let\currentbtxdataset  \empty % will always be set
+  %\let\currentbtxtag      \empty % will always be set
+   \let\currentbtxnumber   \empty}
 
 \unexpanded\def\btx_reset_cite % check for less .. not all resets needed when we're grouped (only subcites)
   {\let        \currentbtxfirst      \empty
@@ -492,8 +492,8 @@
    \let        \currentbtxbacklink   \empty
    \let        \currentbtxbacktrace  \empty % not used here
    \let        \currentbtxlanguage   \empty
-   \let        \currentbtxdataset    \empty
-   \let        \currentbtxtag        \empty
+  %\let        \currentbtxdataset    \empty % will always be set, beware of local reset ~
+  %\let        \currentbtxtag        \empty % will always be set, beware of local reset ~
    \let        \currentbtxnumber     \empty
    \setconstant\currentbtxoverflow   \zerocount
    \setconstant\currentbtxconcat     \zerocount
@@ -1448,42 +1448,47 @@
 \unexpanded\def\publ_fast_btx_setup_chain_inbetween
   {\allowbreak->\allowbreak}
 
+\unexpanded\def\publ_fast_btx_setup_colon_inbetween
+  {\allowbreak:\allowbreak}
+
 \unexpanded\def\publ_fast_btx_setup_chain_yes#1#2%
   {\dontleavehmode\begingroup
+   \let\:\publ_fast_btx_setup_colon_inbetween
    \infofont
    \ifcase\btxsetuptype\darkred\or\darkblue\or\darkgreen\or\darkcyan\or\darkmagenta\else\darkred\fi
-   [%
-   \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else
+   [\prewordbreak
+   \currentbtxspecification        \:#1\:#2\ifcsname\??setup:\s!btx:\currentbtxspecification:#1:#2\endcsname\else
    \publ_fast_btx_setup_chain_inbetween
-   \currentbtxspecificationfallback:#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback                :#1:#2\endcsname\else
+   \currentbtxspecificationfallback\:#1\:#2\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:#2\endcsname\else
    \publ_fast_btx_setup_chain_inbetween
-                                    #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else
+                                     #1\:#2\ifcsname\??setup:\s!btx:#1:#2\endcsname\else
    \publ_fast_btx_setup_chain_inbetween
-   \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else
+   \currentbtxspecification        \:#1\:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification:#1:\s!unknown\endcsname\else
    \publ_fast_btx_setup_chain_inbetween
-   \currentbtxspecificationfallback:#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:\s!unknown\endcsname\else
+   \currentbtxspecificationfallback\:#1\:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecificationfallback:#1:\s!unknown\endcsname\else
    \publ_fast_btx_setup_chain_inbetween
    unset\fi\fi\fi\fi\fi
    \space @\space
    \currentbtx
-   ]%
+   \prewordbreak]%
    \endgroup}
 
 \unexpanded\def\publ_fast_btx_setup_chain_nop#1#2%
   {\dontleavehmode\begingroup
+   \let\:\publ_fast_btx_setup_colon_inbetween
    \infofont
    \darkred
-   [%
-   \currentbtxspecification        :#1:#2\ifcsname\??setup:\s!btx:\currentbtxspecification                        :#1:#2\endcsname\else
+   [\prewordbreak
+   \currentbtxspecification\:#1\:#2\ifcsname\??setup:\s!btx:\currentbtxspecification:#1:#2\endcsname\else
    \publ_fast_btx_setup_chain_inbetween
-                                    #1:#2\ifcsname\??setup:\s!btx                                                 :#1:#2\endcsname\else
+                             #1\:#2\ifcsname\??setup:\s!btx:#1:#2\endcsname\else
    \publ_fast_btx_setup_chain_inbetween
-   \currentbtxspecification        :#1:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification        :#1:\s!unknown\endcsname\else
+   \currentbtxspecification\:#1\:\s!unknown\ifcsname\??setup:\s!btx:\currentbtxspecification:#1:\s!unknown\endcsname\else
    \publ_fast_btx_setup_chain_inbetween
    unset\fi\fi\fi
    \space @\space
    \currentbtx
-   ]%
+   \prewordbreak]%
    \endgroup}
 
 \unexpanded\def\publ_fast_btx_setup_normal#1%

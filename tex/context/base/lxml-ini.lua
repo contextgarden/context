@@ -77,11 +77,11 @@ implement { name = "xmlindex",                actions = lxml.index,             
 implement { name = "xmlinfo",                 actions = lxml.info,              arguments = "string" }
 implement { name = "xmlinlineverbatim",       actions = lxml.inlineverbatim,    arguments = "string" }
 implement { name = "xmllast",                 actions = lxml.last,              arguments = { "string", "string" } }
-implement { name = "xmlload",                 actions = lxml.load,              arguments = { "string", "string", "string", "string" } }
-implement { name = "xmlloadbuffer",           actions = lxml.loadbuffer,        arguments = { "string", "string", "string", "string" } }
-implement { name = "xmlloaddata",             actions = lxml.loaddata,          arguments = { "string", "string", "string", "string" } }
+implement { name = "xmlload",                 actions = lxml.load,              arguments = { "string", "string", "string" } }
+implement { name = "xmlloadbuffer",           actions = lxml.loadbuffer,        arguments = { "string", "string", "string" } }
+implement { name = "xmlloaddata",             actions = lxml.loaddata,          arguments = { "string", "string", "string" } }
 implement { name = "xmlloaddirectives",       actions = lxml.directives.load,   arguments = "string" }
-implement { name = "xmlloadregistered",       actions = lxml.loadregistered,    arguments = { "string", "string", "string" } }
+implement { name = "xmlloadregistered",       actions = lxml.loadregistered,    arguments = "string" }
 implement { name = "xmlmain",                 actions = lxml.main,              arguments = "string" }
 implement { name = "xmlmatch",                actions = lxml.match,             arguments = "string" }
 implement { name = "xmlname",                 actions = lxml.name,              arguments = "string" }

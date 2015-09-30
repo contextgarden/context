@@ -2084,3 +2084,15 @@ implement {
         figures.defaultheight = height
     end
 }
+
+-- require("util-lib-imp-gm")
+--
+-- figures.converters.tif.pdf = function(oldname,newname,resolution)
+--     logs.report("graphics","using gm library to convert %a",oldname)
+--     utilities.graphicmagick.convert {
+--         inputname  = oldname,
+--         outputname = newname,
+--     }
+-- end
+--
+-- \externalfigure[t:/sources/hakker1b.tiff]

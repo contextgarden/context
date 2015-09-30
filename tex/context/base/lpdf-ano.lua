@@ -1063,32 +1063,39 @@ local function build(levels,start,parent,method,nested)
             local level     = current.level
             local title     = current.title
             local reference = current.reference
-            local block     = reference.block
             local opened    = current.opened
             local reftype   = type(reference)
+            local block     = nil
             local variant   = "unknown"
             if reftype == "table" then
                 -- we're okay
-                variant  = "list"
+                variant = "list"
+                block   = reference.block
             elseif reftype == "string" then
                 local resolved = references.identify("",reference)
                 local realpage = resolved and structures.references.setreferencerealpage(resolved) or 0
                 if realpage > 0 then
-                    variant  = "realpage"
-                    realpage = realpage
+                    variant   = "realpage"
+                    realpage  = realpage
+                    reference = structures.pages.collected[realpage]
+                    block     = reference and reference.block
                 end
             elseif reftype == "number" then
                 if reference > 0 then
-                    variant  = "realpage"
-                    realpage = reference
+                    variant   = "realpage"
+                    realpage  = reference
+                    reference = structures.pages.collected[realpage]
+                    block     = reference and reference.block
                 end
             else
                 -- error
             end
+            current.block = block
             if variant == "unknown" then
                 -- error, ignore
                 i = i + 1
-            elseif (level < startlevel) or (i > 1 and block ~= levels[i-1].reference.block) then
+         -- elseif (level < startlevel) or (i > 1 and block ~= levels[i-1].reference.block) then
+            elseif (level < startlevel) or (i > 1 and block ~= levels[i-1].block) then
                 if nested then -- could be an option but otherwise we quit too soon
                     if entry then
                         pdfflushobject(child,entry)
@@ -1103,7 +1110,7 @@ local function build(levels,start,parent,method,nested)
             end
             if level == startlevel then
                 if trace_bookmarks then
-                    report_bookmark("%3i %w%s %s",reference.realpage,(level-1)*2,(opened and "+") or "-",title)
+                    report_bookmark("%3i %w%s %s",realpage,(level-1)*2,(opened and "+") or "-",title)
                 end
                 local prev = child
                 child = pdfreserveobject()
@@ -1116,6 +1123,8 @@ local function build(levels,start,parent,method,nested)
                     action = somedestination(reference.internal,reference.internal,reference.realpage)
                 elseif variant == "realpage" then
                     action = pagereferences[realpage]
+                else
+                    -- hm, what to do
                 end
                 entry = pdfdictionary {
                     Title  = pdfunicode(title),

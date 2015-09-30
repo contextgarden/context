@@ -1081,7 +1081,7 @@ do
         end
         -- we have two suffixes: author (dependent of type) and short
         local kind    = dataset.authorconversion or "name"
-        local field   = "author"  -- currently only author
+        local fields  = { "author", "editor" } -- will be entry in data definition
         local shorts  = { }
         local authors = { }
         local hasher  = publications.authorhashers[kind]
@@ -1101,36 +1101,42 @@ do
                         if btxspc then
                             -- we could act on the 3rd arg returned by getcasted but in general any string will do
                             -- so we deal with it in the author hashers ... maybe some day ...
-                            local author = getcasted(dataset,tag,field,specifications[btxspc])
-                            local kind   = type(author)
-                            if kind == "table" or kind == "string" then
-                                if u then
-                                    u = listentry.entries.text -- hm
-                                else
-                                    u = "0"
+                            local done = false
+                            for i=1,#fields do
+                                local field = fields[i]
+                                local author = getcasted(dataset,tag,field,specifications[btxspc])
+                                local kind   = type(author)
+                                if kind == "table" or kind == "string" then
+                                    if u then
+                                        u = listentry.entries.text -- hm
+                                    else
+                                        u = "0"
+                                    end
+                                    local year  = tonumber(entry.year) or 9999
+                                    local data  = { tag, year, u, i }
+                                    -- authors
+                                    local hash  = hasher(author)
+                                    local found = authors[hash]
+                                    if not found then
+                                        authors[hash] = { data }
+                                    else
+                                        found[#found+1] = data
+                                    end
+                                    -- shorts
+                                    local hash  = shorter(author)
+                                    local short = f_short(hash,mod(year,100))
+                                    local found = shorts[short]
+                                    if not found then
+                                        shorts[short] = { data }
+                                    else
+                                        found[#found+1] = data
+                                    end
+                                    done = true
+                                    break
                                 end
-                                local year  = tonumber(entry.year) or 9999
-                                local data  = { tag, year, u, i }
-                                -- authors
-                                local hash  = hasher(author)
-                                local found = authors[hash]
-                                if not found then
-                                    authors[hash] = { data }
-                                else
-                                    found[#found+1] = data
-                                end
-                                -- shorts
-                                local hash  = shorter(author)
-                                local short = f_short(hash,mod(year,100))
-                                local found = shorts[short]
-                                if not found then
-                                    shorts[short] = { data }
-                                else
-                                    found[#found+1] = data
-                                end
-                                --
-                            else
-                                report("author typecast expected for field %a",field)
+                            end
+                            if not done then
+                                report("unable to create short for %a, needs one of [%,t]",tag,fields)
                             end
                         else
                             --- no spec so let's forget about it

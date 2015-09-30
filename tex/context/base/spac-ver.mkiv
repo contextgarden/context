@@ -2159,10 +2159,10 @@
    \dp\nextbox\strutdp
    \scratchwidth\dimexpr\wd\nextbox+\scratchdistance\relax
    \ifx\m_spac_hanging_location\v!right
-     \hangindent-\scratchwidth
+     \hangindent\ifconditional\displaylefttoright-\fi\scratchwidth
      \rlap{\hskip\dimexpr\hsize-\wd\nextbox\relax\box\nextbox}%
    \else
-     \hangindent\scratchwidth
+     \hangindent\ifconditional\displaylefttoright\else-\fi\scratchwidth
      \llap{\box\nextbox\hskip\scratchdistance}%
    \fi
    \ignorespaces}
