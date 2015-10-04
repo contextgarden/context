@@ -962,7 +962,7 @@
    \ifx\p_framed_region\v!yes % maybe later named
      \pack_framed_add_region
    \fi
-   \getparameters[\currentframed][#3]% no \expanded !
+   \setupcurrentframed[#3]%
    \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
    \d_framed_frameoffset\framedparameter\c!frameoffset\relax     % also used in backgrounds
    \edef\p_framed_frame{\framedparameter\c!frame}%

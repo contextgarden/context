@@ -514,7 +514,7 @@
    \startpacked[\v!blank]
    \doifelseassignment{#1}
      {\setupcurrenttyping[#1]}
-     {\doifinset\v!continue{#1}{\lettypingparameter\c!continue\v!yes}}%
+     {\doif\v!continue{#1}{\lettypingparameter\c!continue\v!yes}}%
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_setup_keep_together
@@ -605,6 +605,10 @@
 
 \unexpanded\def\typefile
   {\dodoubleempty\buff_verbatim_type_file}
+
+\appendtoks
+    \setuevalue{\e!type\currenttyping\v!file}{\typefile[\currenttyping]}%
+\to \everydefinetyping
 
 \def\buff_verbatim_type_file[#1][#2]#3%
   {\begingroup
@@ -776,8 +780,13 @@
 
 % [name] [settings] | [name] | [settings]
 
+% \unexpanded\def\typebuffer
+%   {\dodoubleempty\buff_verbatim_type_buffer}
+
 \unexpanded\def\typebuffer
-  {\dodoubleempty\buff_verbatim_type_buffer}
+  {\begingroup
+   \let\currenttyping\v!buffer
+   \dodoubleempty\buff_verbatim_type_buffer}
 
 \unexpanded\def\buff_verbatim_type_defined_buffer
   {\dotripleempty\buff_verbatim_type_defined_buffer_indeed}
@@ -789,22 +798,45 @@
     \setuevalue{\e!type\currentbuffer}{\buff_verbatim_type_defined_buffer[\v!buffer][\currentdefinedbuffer]}%
 \to \everydefinebuffer
 
+\appendtoks % \e!buffer
+    \setuevalue{\e!type\currenttyping\v!buffer}{\buff_verbatim_type_buffer_class{\currenttyping}}%
+\to \everydefinetyping
+
+% \unexpanded\def\buff_verbatim_type_buffer[#1][#2]%
+%   {\begingroup
+%    \ifsecondargument
+%      \setuptyping[\v!buffer][#2]%
+%      \processcommalist[#1]{\buff_verbatim_type_buffer_indeed\v!buffer}% [name] [settings]
+%    \else\iffirstargument
+%      \doifelseassignment{#1}
+%        {\setuptyping[\v!buffer][#1]%
+%         \buff_verbatim_type_buffer_indeed\v!buffer\empty}% [settings]
+%        {\processcommalist[#1]{\buff_verbatim_type_buffer_indeed\v!buffer}}% [name]
+%    \else
+%      \buff_verbatim_type_buffer_indeed\v!buffer\empty% []
+%    \fi\fi
+%    \endgroup}
+
 \unexpanded\def\buff_verbatim_type_buffer[#1][#2]%
-  {\begingroup
-   \ifsecondargument
-     \setuptyping[\v!buffer][#2]%
-     \processcommalist[#1]{\buff_verbatim_type_buffer_indeed\v!buffer}% [name] [settings]
+  {\ifsecondargument
+     \setupcurrenttyping[#2]%
+     \processcommalist[#1]{\buff_verbatim_type_buffer_indeed\currenttyping}% [name] [settings]
    \else\iffirstargument
      \doifelseassignment{#1}
-       {\setuptyping[\v!buffer][#1]%
-        \buff_verbatim_type_buffer_indeed\v!buffer\empty}% [settings]
-       {\processcommalist[#1]{\buff_verbatim_type_buffer_indeed\v!buffer}}% [name]
+       {\setupcurrenttyping[#1]%
+        \buff_verbatim_type_buffer_indeed\currenttyping\empty}% [settings]
+       {\processcommalist[#1]{\buff_verbatim_type_buffer_indeed\currenttyping}}% [name]
    \else
-     \buff_verbatim_type_buffer_indeed\v!buffer\empty% []
+     \buff_verbatim_type_buffer_indeed\currenttyping\empty% []
    \fi\fi
    \endgroup}
 
-\def\buff_verbatim_type_defined_buffer_indeed[#1][#2][#3]% category name settings
+\unexpanded\def\buff_verbatim_type_buffer_class#1%
+  {\begingroup
+   \edef\currenttyping{#1}%
+   \dodoubleempty\buff_verbatim_type_buffer}
+
+\unexpanded\def\buff_verbatim_type_defined_buffer_indeed[#1][#2][#3]% category name settings
   {\begingroup
    \ifthirdargument
      \setuptyping[#1][#3]%
@@ -812,7 +844,7 @@
    \buff_verbatim_type_buffer_indeed{#1}{#2}%
    \endgroup}
 
-\def\buff_verbatim_type_buffer_indeed#1#2% category name
+\unexpanded\def\buff_verbatim_type_buffer_indeed#1#2% category name
   {\edef\currenttyping{#1}%
    \typingparameter\c!before
    \startpacked[\v!blank]

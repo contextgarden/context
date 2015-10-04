@@ -1712,9 +1712,11 @@ do
 
     function extras.registerlocation(di,element,n,fulltag)
         local data = referencehash[fulltag]
-        if data then
+        if type(data) == "table" then
             extras.addinternal(di,data.references)
             return true
+        else
+            -- needs checking, probably bookmarks
         end
     end
 

@@ -3306,7 +3306,7 @@ if not a or (a == attr) then
                                     rlmode = -1
                                 elseif dir == "-TLT" or dir == "-TRT" then
                                     topstack = topstack - 1
-                                    rlmode = dirstack[topstack] == "+TLT" and 1 or -1
+                                    rlmode = dirstack[topstack] == "+TRT" and -1 or 1
                                 else
                                     rlmode = rlparmode
                                 end
@@ -3582,7 +3582,7 @@ if not a or (a == attr) then
                                 rlmode = -1
                             elseif dir == "-TLT" or dir == "-TRT" then
                                 topstack = topstack - 1
-                                rlmode = dirstack[topstack] == "+TLT" and 1 or -1
+                                rlmode = dirstack[topstack] == "+TRT" and -1 or 1
                             else
                                 rlmode = rlparmode
                             end

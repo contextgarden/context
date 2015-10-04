@@ -15,6 +15,9 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 -- todo: use lua nodes with lua data (>0.79)
 -- see ** can go when 0.79
 
+-- needs to be redone, too many calls and tests now ... still within some
+-- luatex limitations
+
 -- this code dates from the beginning and is kind of experimental; it
 -- will be optimized and improved soon .. it's way too complex now but
 -- dates from less possibilities

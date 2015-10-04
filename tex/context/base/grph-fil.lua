@@ -57,6 +57,8 @@ end
 
 --
 
+local done = { }
+
 function jobfiles.context(name,options)
     if type(name) == "table" then
         local result = { }
@@ -65,8 +67,12 @@ function jobfiles.context(name,options)
         end
         return result
     else
-        jobfiles.run(name,"context ".. (options or "") .. " " .. name)
-        return file.replacesuffix(name,"pdf")
+        local result = file.replacesuffix(name,"pdf")
+        if not done[result] then
+            jobfiles.run(name,"context ".. (options or "") .. " " .. name)
+            done[result] = true
+        end
+        return result
     end
 end
 

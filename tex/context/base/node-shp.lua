@@ -54,7 +54,6 @@ local removables     = {
     [whatsitcodes.open]       = true,
     [whatsitcodes.close]      = true,
     [whatsitcodes.write]      = true,
-    [whatsitcodes.savepos]    = true,
     [whatsitcodes.savepos       or
      whatsitcodes.pdfsavepos] = true, -- for now
     [whatsitcodes.latelua]    = true,

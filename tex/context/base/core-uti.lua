@@ -198,7 +198,15 @@ local packlist = {
 --  "references", -- we need to rename of them as only one packs (not structures.lists.references)
 }
 
-local jobpacker = packers.new(packlist,job.packversion) -- jump number when changs in hash
+local skiplist = {
+    "datasets",
+    "userdata",
+}
+
+-- not ok as we can have arbitrary keys in userdata and dataset so some day we
+-- might need a bit more granularity, like skippers
+
+local jobpacker = packers.new(packlist,job.packversion,skiplist) -- jump number when changs in hash
 
 job.pack = true
 -- job.pack = false

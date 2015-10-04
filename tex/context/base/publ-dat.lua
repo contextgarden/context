@@ -908,12 +908,16 @@ do
         return v
     end)
 
+    local done = setmetatableindex("table")
+
     function publications.load(specification)
-        local current  = datasets[specification.dataset or v_default]
+        local name     = specification.dataset or v_default
+        local current  = datasets[name]
         local files    = settings_to_array(specification.filename)
         local kind     = specification.kind
         local dataspec = specification.specification
         statistics.starttiming(publications)
+        local somedone = false
         for i=1,#files do
             local filetype, filename = string.splitup(files[i],"::")
             if not filename then
@@ -927,7 +931,13 @@ do
                 if file.suffix(filename) == "" then
                     file.addsuffix(filename,filetype)
                 end
-                loaders[filetype](current,filename)
+                if done[current][filename] then
+                    report("file %a is already loaded in dataset %a",filename,name)
+                else
+                    loaders[filetype](current,filename)
+                    done[current][filename] = true
+                    somedone = true
+                end
                 if kind then
                     current.loaded[current.fullname or filename] = kind
                 end
@@ -936,9 +946,11 @@ do
                 end
             end
         end
-        local runner = enhancer.runner
-        if runner then
-            runner(current)
+        if somedone then
+            local runner = enhancer.runner
+            if runner then
+                runner(current)
+            end
         end
         statistics.stoptiming(publications)
         return current

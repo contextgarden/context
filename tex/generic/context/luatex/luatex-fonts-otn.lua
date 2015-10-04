@@ -553,7 +553,7 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
     resetinjection(base)
     setfield(base,"char",char)
     setfield(base,"subtype",ligature_code)
-    setfield(base,"components",comp) -- start can have components .. do we need to flush?
+    setfield(base,"components",comp) -- start can have components ... do we need to flush?
     if prev then
         setfield(prev,"next",base)
     end
@@ -3334,7 +3334,7 @@ local function featuresprocessor(head,font,attr)
                                     rlmode = -1
                                 elseif dir == "-TLT" or dir == "-TRT" then
                                     topstack = topstack - 1
-                                    rlmode = dirstack[topstack] == "+TLT" and 1 or -1
+                                    rlmode = dirstack[topstack] == "+TRT" and -1 or 1
                                 else
                                     rlmode = rlparmode
                                 end
@@ -3606,7 +3606,7 @@ local function featuresprocessor(head,font,attr)
                                 rlmode = -1
                             elseif dir == "-TLT" or dir == "-TRT" then
                                 topstack = topstack - 1
-                                rlmode = dirstack[topstack] == "+TLT" and 1 or -1
+                                rlmode = dirstack[topstack] == "+TRT" and -1 or 1
                             else
                                 rlmode = rlparmode
                             end

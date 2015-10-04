@@ -9,31 +9,31 @@ if not modules then modules = { } end modules ['publ-sor'] = {
 -- if needed we can optimize this one: chekc if it's detail or something else
 -- and use direct access, but in practice it's fast enough
 
-local type         = type
-local concat       = table.concat
-local formatters   = string.formatters
-local compare      = sorters.comparers.basic -- (a,b)
-local sort         = table.sort
+local type          = type
+local concat        = table.concat
+local formatters    = string.formatters
+local compare       = sorters.comparers.basic -- (a,b)
+local sort          = table.sort
 
-local toarray      = utilities.parsers.settings_to_array
-local utfchar      = utf.char
+local toarray       = utilities.parsers.settings_to_array
+local utfchar       = utf.char
 
-local publications = publications
-local writers      = publications.writers
+local publications  = publications
+local writers       = publications.writers
 
-local variables    = interfaces.variables
-local v_short      = variables.short
-local v_default    = variables.default
-local v_reference  = variables.reference
-local v_dataset    = variables.dataset
-local v_list       = variables.list
-local v_index      = variables.index
-local v_cite       = variables.cite
-local v_used       = variables.used
+local variables     = interfaces.variables
+local v_short       = variables.short
+local v_default     = variables.default
+local v_reference   = variables.reference
+local v_dataset     = variables.dataset
+local v_list        = variables.list
+local v_index       = variables.index
+local v_cite        = variables.cite
+local v_used        = variables.used
 
-local report       = logs.reporter("publications","sorters")
+local report        = logs.reporter("publications","sorters")
 
-local trace_sorters  trackers.register("publications.sorters",function(v) trace_sorters = v end)
+local trace_sorters = false  trackers.register("publications.sorters",function(v) trace_sorters = v end)
 
 -- authors(s) | year | journal | title | pages
 

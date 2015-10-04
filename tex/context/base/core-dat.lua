@@ -79,7 +79,7 @@ local function setdata(settings)
         data = settings_to_hash(data)
     end
     if type(data) ~= "table" then
-        data = { data = settings.data }
+        data = { data = data }
     end
     if not tag then
         tag = #list + 1

@@ -34,46 +34,48 @@ local function luatable_to_c_array(t)
     return gsargv
 end
 
---
-
-local function reader(instance,str,len)
-    return 0
-end
-
-local buffer
-
-local function writer(instance,str,len)
-    if buffer then
-        str = buffer .. str
-        buffer = nil
-    end
-    if not string.find(str,"[\n\r]$") then
-        str, buffer = string.match(str,"(.-)([^\n\r]+)$")
-    end
-    for s in string.gmatch(str,"[^\n\r]+") do
-        report_gs(s)
-    end
-    return len
-end
-
 -- the more abstract interface
 
 local interface       = { }
 ghostscript.interface = interface
 
 function interface.new()
+
     local instance = helpers.new_void_p_p()
-    local result = gs.gsapi_new_instance(instance,nil)
+    local result   = gs.gsapi_new_instance(instance,nil)
+    local buffer   = nil
+    local object   = { }
+
+    local function reader(instance,str,len)
+        return 0
+    end
+
+    local function writer(instance,str,len)
+        if buffer then
+            str = buffer .. str
+            buffer = nil
+        end
+        if not string.find(str,"[\n\r]$") then
+            str, buffer = string.match(str,"(.-)([^\n\r]+)$")
+        end
+        local log = object.log
+        for s in string.gmatch(str,"[^\n\r]+") do
+            insert(log,s)
+            report_gs(s)
+        end
+        return len
+    end
+
     if result < 0 then
         return nil
     else
         local job = helpers.void_p_p_value(instance)
-        gs.gsapi_set_stdio(job,reader,writer,writer) -- could be option
-        return {
-            instance = instance,
-            job      = job,
-            result   = 0,
-        }
+        gs.gsapi_set_stdio_callback(job,reader,writer,writer) -- could be option
+        object.instance = instance
+        object.job      = job
+        object.result   = 0
+        object.log      = { }
+        return object
     end
 end
 
@@ -84,6 +86,7 @@ function interface.dispose(run)
     end
     if run.instance then
         helpers.delete_void_p_p(run.instance)
+        run.instance = nil
     end
 end
 
@@ -92,11 +95,12 @@ function interface.init(run,options)
         if not options then
             options = { "ps2pdf" }
         else
-            insert(options,1,"ps2pdf") -- a dummy
+          insert(options,1,"ps2pdf") -- a dummy
         end
+        run.log = { }
         local ct = luatable_to_c_array(options)
         local result = gs.gsapi_init_with_args(run.job,#options,ct)
-        helpers.delete_char_p_array(gsargv)
+        helpers.delete_char_p_array(ct)
         run.initresult = result
         return result >= 0
     end
@@ -127,7 +131,7 @@ function ghostscript.convert(specification)
     nofruns = nofruns + 1
     statistics.starttiming(ghostscript)
     --
-    local inputname  = specification.inputname
+    local inputname = specification.inputname
     if not inputname or inputname == "" then
         report_gs("invalid run %s, no inputname specified",nofruns)
         statistics.stoptiming(ghostscript)
@@ -149,6 +153,11 @@ function ghostscript.convert(specification)
         device = "pdfwrite"
     end
     --
+    local code = specification.code
+    if not code or code == "" then
+        code = ".setpdfwrite"
+    end
+    --
     local run = interface.new()
     if gsinstance then
         report_gs("invalid run %s, initialization error",nofruns)
@@ -164,7 +173,7 @@ function ghostscript.convert(specification)
     insert(options,formatters["-sDEVICE=%s"](device))
     insert(options,formatters["-sOutputFile=%s"](outputname))
     insert(options,"-c")
-    insert(options,".setpdfwrite")
+    insert(options,code)
     insert(options,"-f")
     insert(options,inputname)
     --
@@ -196,7 +205,8 @@ function ghostscript.statistics(report)
     end
 end
 
-for i=1,5 do
-    ghostscript.convert { inputname = "e:/tmp/colorcir.ps" }
-end
-ghostscript.statistics(true)
+-- for i=1,100 do
+--     ghostscript.convert { inputname = "temp.eps" }
+--     ghostscript.convert { inputname = "t:/escrito/tiger.eps" }
+-- end
+-- ghostscript.statistics(true)
