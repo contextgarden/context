@@ -29,7 +29,10 @@ local function primaryflags() -- not yet ok
     return concat(flags," ")
 end
 
-function environment.make_format(name)
+-- The silent option is Taco. It's a bit of a hack because we cannot yet mess
+-- with directives. In fact, I could probably clean up the maker a bit by now.
+
+function environment.make_format(name,silent)
     local engine = environment.ownmain or "luatex"
     -- change to format path (early as we need expanded paths)
     local olddir = dir.current()
@@ -93,9 +96,21 @@ function environment.make_format(name)
         return
     end
     -- generate format
-    local command = format("%s --ini %s --lua=%s %s %sdump",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
-    report_format("running command: %s\n",command)
-    os.execute(command)
+    local dump = os.platform=="unix" and "\\\\dump" or "\\dump"
+    if silent then
+        local start   = os.clock()
+        local command = format("%s --ini --interaction=batchmode %s --lua=%s %s %s > temp.log",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),dump)
+        if os.execute(command) ~= 0 then
+            print(format("context silent make > fatal error when making format %q",name)) -- we use a basic print
+        else
+            print(format("context silent make > format %q made in %.3f seconds",name,os.clock()-start)) -- we use a basic print
+        end
+        os.remove("temp.log")
+    else
+        local command = format("%s --ini %s --lua=%s %s %sdump",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),dump)
+        report_format("running command: %s\n",command)
+        os.execute(command)
+    end
     -- remove related mem files
     local pattern = file.removesuffix(file.basename(usedluastub)).."-*.mem"
  -- report_format("removing related mplib format with pattern %a", pattern)

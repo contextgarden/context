@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['font-oup'] = {
 local next, type = next, type
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 local lpegmatch = lpeg.match
-local insert, remove = table.insert, table.remove
+local insert, remove, copy = table.insert, table.remove, table.copy
 
 local formatters        = string.formatters
 local sortedkeys        = table.sortedkeys
@@ -23,9 +23,12 @@ local trace_markwidth   = false  trackers.register("otf.markwidth",function(v) t
 local readers           = fonts.handlers.otf.readers
 local privateoffset     = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
 
-local f_private = formatters["P%05X"]
-local f_unicode = formatters["U%05X"]
-local f_index   = formatters["I%05X"]
+local f_private         = formatters["P%05X"]
+local f_unicode         = formatters["U%05X"]
+local f_index           = formatters["I%05X"]
+local f_character       = formatters["%C"]
+
+local doduplicates      = true -- can become an option (pseudo feature)
 
 local function replaced(list,index,replacement)
     if type(list) == "number" then
@@ -102,6 +105,11 @@ local function unifyresources(fontdata,indices)
     --
     local done = { } -- we need to deal with shared !
     --
+    local duplicates = doduplicates and resources.duplicates
+    if duplicates and not next(duplicates) then
+        duplicates = false
+    end
+    --
     local function recover(cover) -- can be packed
         for i=1,#cover do
             local c = cover[i]
@@ -128,6 +136,9 @@ local function unifyresources(fontdata,indices)
         return t
     end
     --
+    -- the duplicates need checking (probably only in cjk fonts): currently we only check
+    -- gsub_single, gsub_alternate and gsub_multiple
+    --
     local function unifythem(sequences)
         if not sequences then
             return
@@ -146,8 +157,23 @@ local function unifyresources(fontdata,indices)
                             local t1 = done[c]
                             if not t1 then
                                 t1 = { }
-                                for g1, d1 in next, c do
-                                    t1[indices[g1]] = indices[d1]
+                                if duplicates then
+                                    for g1, d1 in next, c do
+                                        local ug1 = indices[g1]
+                                        local ud1 = indices[d1]
+                                        t1[ug1] = ud1
+                                        --
+                                        local dg1 = duplicates[ug1]
+                                        if dg1 then
+                                            for u in next, dg1 do
+                                                t1[u] = ud1
+                                            end
+                                        end
+                                    end
+                                else
+                                    for g1, d1 in next, c do
+                                        t1[indices[g1]] = indices[d1]
+                                    end
                                 end
                                 done[c] = t1
                             end
@@ -185,11 +211,28 @@ local function unifyresources(fontdata,indices)
                             local t1 = done[c]
                             if not t1 then
                                 t1 = { }
-                                for g1, d1 in next, c do
-                                    for i=1,#d1 do
-                                        d1[i] = indices[d1[i]]
+                                if duplicates then
+                                    for g1, d1 in next, c do
+                                        for i=1,#d1 do
+                                            d1[i] = indices[d1[i]]
+                                        end
+                                        local ug1 = indices[g1]
+                                        t1[ug1] = d1
+                                        --
+                                        local dg1 = duplicates[ug1]
+                                        if dg1 then
+                                            for u in next, dg1 do
+                                                t1[u] = copy(d1)
+                                            end
+                                        end
                                     end
-                                    t1[indices[g1]] = d1
+                                else
+                                    for g1, d1 in next, c do
+                                        for i=1,#d1 do
+                                            d1[i] = indices[d1[i]]
+                                        end
+                                        t1[indices[g1]] = d1
+                                    end
                                 end
                                 done[c] = t1
                             end
@@ -270,6 +313,25 @@ local function unifyresources(fontdata,indices)
     --
     unifythem(resources.sequences)
     unifythem(resources.sublookups)
+end
+
+local function copyduplicates(fontdata)
+    if doduplicates then
+        local descriptions = fontdata.descriptions
+        local resources    = fontdata.resources
+        local duplicates   = resources.duplicates
+        if duplicates then
+            for u, d in next, duplicates do
+                local du = descriptions[u]
+                local t  = { f_character(u) }
+                for u in next, d do
+                    descriptions[u] = copy(du)
+                    t[#t+1] = f_character(u)
+                end
+                report("duplicates: % t",t)
+            end
+        end
+    end
 end
 
 local ignore = { -- should we fix them?
@@ -618,12 +680,14 @@ function readers.rehash(fontdata,hashmethod) -- TODO: combine loops in one
         fontdata.hashmethod = "names"
         local indices = unifyglyphs(fontdata,true)
         unifyresources(fontdata,indices)
+        copyduplicates(fontdata)
         unifymissing(fontdata)
      -- stripredundant(fontdata)
     else
         fontdata.hashmethod = "unicode"
         local indices = unifyglyphs(fontdata)
         unifyresources(fontdata,indices)
+        copyduplicates(fontdata)
         unifymissing(fontdata)
         stripredundant(fontdata)
     end
@@ -635,6 +699,7 @@ function readers.checkhash(fontdata)
         fontdata.names = nil -- just to be sure
     elseif hashmethod == "names" and fontdata.names then
         unifyresources(fontdata,fontdata.names)
+        copyduplicates(fontdata)
         fontdata.hashmethod = "unicode"
         fontdata.names = nil -- no need for it
     else
