@@ -963,10 +963,106 @@ local function make_mkiv_format(name,engine)
     environment.make_format(name,environment.arguments.silent) -- jit is picked up later
 end
 
-local function make_mkii_format(name,engine)
-    local command = format("mtxrun texexec.rb --make %s --%s",name,engine)
-    report("running command: %s",command)
-    os.spawn(command)
+local make_mkii_format
+
+do -- more or less copied from mtx-plain.lua:
+
+    local function mktexlsr()
+        if environment.arguments.silent then
+            local result = os.execute("mktexlsr --quiet > temp.log")
+            if result ~= 0 then
+                print("mktexlsr silent run > fatal error") -- we use a basic print
+            else
+                print("mktexlsr silent run") -- we use a basic print
+            end
+            os.remove("temp.log")
+        else
+            report("running mktexlsr")
+            os.execute("mktexlsr")
+        end
+    end
+
+    local function engine(texengine,texformat)
+        local command = string.format('%s --ini --etex --8bit %s \\dump',texengine,file.addsuffix(texformat,"mkii"))
+        if environment.arguments.silent then
+            statistics.starttiming()
+            local command = format("%s > temp.log",command)
+            local result  = os.execute(command)
+            local runtime = statistics.stoptiming()
+            if result ~= 0 then
+                print(format("%s silent make > fatal error when making format %q",texengine,texformat)) -- we use a basic print
+            else
+                print(format("%s silent make > format %q made in %.3f seconds",texengine,texformat,runtime)) -- we use a basic print
+            end
+            os.remove("temp.log")
+        else
+            report("running command: %s",command)
+            os.execute(command)
+        end
+    end
+
+    local function resultof(...)
+        local command = string.format(...)
+        report("running command %a",command)
+        return string.strip(os.resultof(command) or "")
+    end
+
+    local function make(texengine,texformat)
+        report("generating kpse file database")
+        mktexlsr()
+        local fmtpathspec = resultof("kpsewhich --var-value=TEXFORMATS --engine=%s",texengine)
+        if fmtpathspec ~= "" then
+            report("using path specification %a",fmtpathspec)
+            fmtpathspec = resultof('kpsewhich -expand-braces="%s"',fmtpathspec)
+        end
+        if fmtpathspec ~= "" then
+            report("using path expansion %a",fmtpathspec)
+        else
+            report("no valid path reported, trying alternative")
+            fmtpathspec = resultof("kpsewhich --show-path=fmt --engine=%s",texengine)
+            if fmtpathspec ~= "" then
+                report("using path expansion %a",fmtpathspec)
+            else
+                report("no valid path reported, falling back to current path")
+                fmtpathspec = "."
+            end
+        end
+        fmtpathspec = string.splitlines(fmtpathspec)[1] or fmtpathspec
+        fmtpathspec = file.splitpath(fmtpathspec)
+        local fmtpath = nil
+        for i=1,#fmtpathspec do
+            local path = fmtpathspec[i]
+            if path ~= "." then
+                dir.makedirs(path)
+                if lfs.isdir(path) and file.is_writable(path) then
+                    fmtpath = path
+                    break
+                end
+            end
+        end
+        if not fmtpath or fmtpath == "" then
+            fmtpath = "."
+        else
+            lfs.chdir(fmtpath)
+        end
+        engine(texengine,texformat)
+        report("generating kpse file database")
+        mktexlsr()
+        report("format %a saved on path %a",texformat,fmtpath)
+    end
+
+    local function run(texengine,texformat,filename)
+        local t = { }
+        for k, v in next, environment.arguments do
+            t[#t+1] = string.format("--mtx:%s=%s",k,v)
+        end
+        execute('%s --fmt=%s %s "%s"',texengine,file.removesuffix(texformat),table.concat(t," "),filename)
+    end
+
+    make_mkii_format = function(name,engine)
+        make(engine,name)
+    end
+
 end
 
 function scripts.context.generate()

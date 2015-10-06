@@ -42,6 +42,7 @@ local helpinfo = [[
     <flag name="state"><short>update tree using saved state</short></flag>
     <flag name="cygwin"><short>adapt drive specs to cygwin</short></flag>
     <flag name="mingw"><short>assume mingw binaries being used</short></flag>
+    <flag name="silent"><short>less (or no) logging</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -84,10 +85,10 @@ scripts.update.texformats = {
     "plain"
 }
 
-scripts.update.mpformats = {
- -- "metafun",
- -- "mpost",
-}
+-- scripts.update.mpformats = {
+--  -- "metafun",
+--  -- "mpost",
+-- }
 
 -- experimental is not functional at the moment
 
@@ -280,6 +281,8 @@ function scripts.update.synchronize()
     local fonts        = states.get("fonts")             -- fonts (experimental or special)
     local goodies      = states.get("goodies")           -- goodies (like editors)
     local force        = environment.argument("force")
+    local silent       = environment.argument("silent") and "--silent" or ""
+    local quiet        = silent == "" and "" or "--quiet"
 
     bin = gsub(bin,"\\","/")
 
@@ -517,9 +520,9 @@ function scripts.update.synchronize()
     resolvers.load_tree(texroot) -- else we operate in the wrong tree
 
     -- update filename database for pdftex/xetex
-    scripts.update.run(format('mtxrun --tree="%s" --direct --resolve mktexlsr',texroot))
+    scripts.update.run(format('mtxrun --tree="%s" %s --direct --resolve mktexlsr %s',texroot,silent,quiet))
     -- update filename database for luatex
-    scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
+    scripts.update.run(format('mtxrun --tree="%s" %s --generate',texroot,silent))
 
     report("update, done")
 end
@@ -538,6 +541,8 @@ function scripts.update.make()
     report("make, start")
 
     local force     = environment.argument("force")
+    local silent    = environment.argument("silent") and "--silent" or ""
+    local quiet     = silent == "" and "" or "--quiet"
     local texroot   = scripts.update.fullpath(states.get("paths.root"))
     local engines   = states.get('engines')
     local goodies   = states.get('goodies')
@@ -546,43 +551,44 @@ function scripts.update.make()
 
     resolvers.load_tree(texroot)
 
-    scripts.update.run(format('mtxrun --tree="%s" --direct --resolve mktexlsr',texroot))
-    scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
+    scripts.update.run(format('mtxrun --tree="%s" %s --direct --resolve mktexlsr %s',texroot,silent,quiet))
+    scripts.update.run(format('mtxrun --tree="%s" %s --generate',texroot,silent))
 
     local askedformats = formats
     local texformats = table.tohash(scripts.update.texformats)
-    local mpformats = table.tohash(scripts.update.mpformats)
+ -- local mpformats = table.tohash(scripts.update.mpformats)
     for k,v in table.sortedhash(texformats) do
         if not askedformats[k] then
             texformats[k] = nil
         end
     end
-    for k,v in table.sortedhash(mpformats) do
-        if not askedformats[k] then
-            mpformats[k] = nil
-        end
-    end
+ -- for k,v in table.sortedhash(mpformats) do
+ --     if not askedformats[k] then
+ --         mpformats[k] = nil
+ --     end
+ -- end
     local formatlist = concat(table.fromhash(texformats), " ")
     if formatlist ~= "" then
         for engine in table.sortedhash(engines) do
             if engine == "luatex" or engine == "luajittex" then
-                scripts.update.run(format('mtxrun --tree="%s" --script context --autogenerate --make',texroot))
-                scripts.update.run(format('mtxrun --tree="%s" --script context --autogenerate --make --engine=luajittex',texroot))
+                scripts.update.run(format('mtxrun --tree="%s" %s --script context --autogenerate --make %s',texroot,silent,silent))
+                scripts.update.run(format('mtxrun --tree="%s" %s --script context --autogenerate --make --engine=luajittex %s',texroot,silent,silent))
             else
-                scripts.update.run(format('mtxrun --tree="%s" --script texexec --make --all --%s %s',texroot,engine,formatlist))
+             -- scripts.update.run(format('mtxrun --tree="%s" %s --script texexec --make --all %s --%s %s',texroot,silent,silent,engine,formatlist))
+                scripts.update.run(format('mtxrun --tree="%s" --resolve %s --script context --resolve --make %s --engine=%s %s',texroot,silent,silent,engine,formatlist))
             end
         end
     end
-    local formatlist = concat(table.fromhash(mpformats), " ")
-    if formatlist ~= "" then
-        scripts.update.run(format('mtxrun --tree="%s" --script texexec --make --all %s',texroot,formatlist))
-    end
+ -- local formatlist = concat(table.fromhash(mpformats), " ")
+ -- if formatlist ~= "" then
+ --     scripts.update.run(format('mtxrun --tree="%s" %s --script texexec --make --all %s %s',texroot,silent,silent,formatlist))
+ -- end
     if not force then
         report("make, use --force to really make formats")
     end
 
-    scripts.update.run(format('mtxrun --tree="%s" --direct --resolve mktexlsr',texroot)) -- needed for mpost
-    scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
+ -- scripts.update.run(format('mtxrun --tree="%s" %s --direct --resolve mktexlsr',texroot,silent)) -- needed for mpost
+    scripts.update.run(format('mtxrun --tree="%s" %s --generate',texroot,silent))
 
     report("make, done")
 end
@@ -649,14 +655,14 @@ if scripts.savestate then
     for r in gmatch(environment.argument("formats") or "","([^, ]+)") do
         if valid[r] then states.set("formats." .. r, true) end
     end
-    local valid = table.tohash(scripts.update.mpformats)
-    for r in gmatch(environment.argument("formats") or "","([^, ]+)") do
-        if valid[r] then states.set("formats." .. r, true) end
-    end
+ -- local valid = table.tohash(scripts.update.mpformats)
+ -- for r in gmatch(environment.argument("formats") or "","([^, ]+)") do
+ --     if valid[r] then states.set("formats." .. r, true) end
+ -- end
 
     states.set("formats.cont-en", true)
     states.set("formats.cont-nl", true)
-    states.set("formats.metafun", true)
+ -- states.set("formats.metafun", true)
 
     for r in gmatch(environment.argument("extras") or "","([^, ]+)") do -- for old times sake
         if r ~= "all" and not find(r,"^[a-z]%-") then

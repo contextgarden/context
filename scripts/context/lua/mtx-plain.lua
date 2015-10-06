@@ -49,7 +49,7 @@ scripts.plain = scripts.plain or { }
 local function execute(...)
     local command = string.format(...)
     report("running command %a\n",command)
-    os.execute(command)
+    return os.execute(command)
 end
 
 local function resultof(...)
@@ -91,6 +91,7 @@ function scripts.plain.make(texengine,texformat)
             end
         end
     end
+    local fmtpath = --expand-path $safe-out-name=$TEXFORMATS
     if not fmtpath or fmtpath == "" then
         fmtpath = "."
     else

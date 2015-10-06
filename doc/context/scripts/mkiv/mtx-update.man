@@ -64,6 +64,9 @@ adapt drive specs to cygwin
 .TP
 .B --mingw
 assume mingw binaries being used
+.TP
+.B --silent
+less (or no) logging
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

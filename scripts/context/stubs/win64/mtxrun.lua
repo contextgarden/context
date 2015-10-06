@@ -18197,7 +18197,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 6893, stripped down to: 5566
+-- original size: 6967, stripped down to: 5631
 
 if not modules then modules={} end modules ['luat-fmt']={
   version=1.001,
@@ -18285,12 +18285,14 @@ function environment.make_format(name,silent)
   end
   local dump=os.platform=="unix" and "\\\\dump" or "\\dump"
   if silent then
-    local start=os.clock()
+    statistics.starttiming()
     local command=format("%s --ini --interaction=batchmode %s --lua=%s %s %s > temp.log",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),dump)
-    if os.execute(command)~=0 then
-      print(format("context silent make > fatal error when making format %q",name)) 
+    local result=os.execute(command)
+    local runtime=statistics.stoptiming()
+    if result~=0 then
+      print(format("%s silent make > fatal error when making format %q",engine,name)) 
     else
-      print(format("context silent make > format %q made in %.3f seconds",name,os.clock()-start)) 
+      print(format("%s silent make > format %q made in %.3f seconds",engine,name,runtime)) 
     end
     os.remove("temp.log")
   else
@@ -18343,8 +18345,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 781558
--- stripped bytes    : 283203
+-- original bytes    : 781632
+-- stripped bytes    : 283212
 
 -- end library merge
 

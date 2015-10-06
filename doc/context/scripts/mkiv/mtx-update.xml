@@ -26,6 +26,7 @@
     <flag name="state"><short>update tree using saved state</short></flag>
     <flag name="cygwin"><short>adapt drive specs to cygwin</short></flag>
     <flag name="mingw"><short>assume mingw binaries being used</short></flag>
+    <flag name="silent"><short>less (or no) logging</short></flag>
    </subcategory>
   </category>
  </flags>

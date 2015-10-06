@@ -98,12 +98,14 @@ function environment.make_format(name,silent)
     -- generate format
     local dump = os.platform=="unix" and "\\\\dump" or "\\dump"
     if silent then
-        local start   = os.clock()
+        statistics.starttiming()
         local command = format("%s --ini --interaction=batchmode %s --lua=%s %s %s > temp.log",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),dump)
-        if os.execute(command) ~= 0 then
-            print(format("context silent make > fatal error when making format %q",name)) -- we use a basic print
+        local result  = os.execute(command)
+        local runtime = statistics.stoptiming()
+        if result ~= 0 then
+            print(format("%s silent make > fatal error when making format %q",engine,name)) -- we use a basic print
         else
-            print(format("context silent make > format %q made in %.3f seconds",name,os.clock()-start)) -- we use a basic print
+            print(format("%s silent make > format %q made in %.3f seconds",engine,name,runtime)) -- we use a basic print
         end
         os.remove("temp.log")
     else
