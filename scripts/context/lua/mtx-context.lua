@@ -1028,15 +1028,17 @@ do -- more or less copied from mtx-plain.lua:
             end
         end
         fmtpathspec = string.splitlines(fmtpathspec)[1] or fmtpathspec
-        fmtpathspec = file.splitpath(fmtpathspec)
+        fmtpathspec = fmtpathspec and file.splitpath(fmtpathspec)
         local fmtpath = nil
-        for i=1,#fmtpathspec do
-            local path = fmtpathspec[i]
-            if path ~= "." then
-                dir.makedirs(path)
-                if lfs.isdir(path) and file.is_writable(path) then
-                    fmtpath = path
-                    break
+        if fmtpathspec then
+            for i=1,#fmtpathspec do
+                local path = fmtpathspec[i]
+                if path ~= "." then
+                    dir.makedirs(path)
+                    if lfs.isdir(path) and file.is_writable(path) then
+                        fmtpath = path
+                        break
+                    end
                 end
             end
         end
@@ -1060,6 +1062,17 @@ do -- more or less copied from mtx-plain.lua:
     end
 
     make_mkii_format = function(name,engine)
+
+        -- let the binary sort it out
+
+        os.setenv('SELFAUTOPARENT', "")
+        os.setenv('SELFAUTODIR',    "")
+        os.setenv('SELFAUTOLOC',    "")
+        os.setenv('TEXROOT',        "")
+        os.setenv('TEXOS',          "")
+        os.setenv('TEXMFOS',        "")
+        os.setenv('TEXMFCNF',       "")
+
         make(engine,name)
     end
 

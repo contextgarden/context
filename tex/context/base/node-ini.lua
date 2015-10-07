@@ -108,6 +108,16 @@ local noadcodes = allocate { -- simple nodes
     [12] = "vcenter",
 }
 
+local radicalcodes = allocate {
+    [0] = "radical",
+    [1] = "uradical",
+    [2] = "uroot",
+    [3] = "uunderdelimiter",
+    [4] = "uoverdelimiter",
+    [5] = "udelimiterunder",
+    [6] = "udelimiterover",
+}
+
 local listcodes = allocate {
     [ 0] = "unknown",
     [ 1] = "line",
@@ -186,6 +196,7 @@ local whatcodes = simplified(node.whatsits())
 
 skipcodes    = allocate(swapped(skipcodes,skipcodes))
 noadcodes    = allocate(swapped(noadcodes,noadcodes))
+radicalcodes = allocate(swapped(radicalcodes,radicalcodes))
 nodecodes    = allocate(swapped(nodecodes,nodecodes))
 whatcodes    = allocate(swapped(whatcodes,whatcodes))
 listcodes    = allocate(swapped(listcodes,listcodes))

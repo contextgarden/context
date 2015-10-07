@@ -27,6 +27,8 @@ if not modules then modules = { } end modules ['math-noa'] = {
 
 -- todo: most is math_char so we can have simple dedicated loops
 
+-- nota bene: uunderdelimiter uoverdelimiter etc are radicals (we have 5 types)
+
 local utfchar, utfbyte = utf.char, utf.byte
 local formatters = string.formatters
 local sortedhash = table.sortedhash
