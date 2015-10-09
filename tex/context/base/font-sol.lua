@@ -95,12 +95,13 @@ local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
 local hlist_code         = nodecodes.hlist
+local dir_code           = nodecodes.dir or whatsitcodes.dir
+local localpar_code      = nodecodes.localpar or whatsitcodes.localpar
+
 local whatsit_code       = nodecodes.whatsit
 
 local fontkern_code      = kerncodes.fontkern
 
-local localpar_code      = whatsitcodes.localpar
-local dir_code           = whatsitcodes.dir
 local userdefined_code   = whatsitcodes.userdefined
 
 local nodepool           = nuts.pool
@@ -414,6 +415,11 @@ function splitters.split(head)
             else
                 start, stop = nil, nil
             end
+        elseif id == dir_code or id == localpar_code then
+            if start then
+                flush()
+            end
+            rlmode = getfield(current,"dir")
         elseif id == whatsit_code then
             if start then
                 flush()

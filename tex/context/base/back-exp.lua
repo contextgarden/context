@@ -93,7 +93,6 @@ local disc_code         = nodecodes.disc
 local insert_code       = nodecodes.insert
 local whatsit_code      = nodecodes.whatsit
 local refximage_code    = whatsitcodes.pdfrefximage
-local localpar_code     = whatsitcodes.localpar
 
 local userskip_code     = skipcodes.userskip
 local rightskip_code    = skipcodes.rightskip
@@ -2535,8 +2534,6 @@ local function finishexport()
         report_export("%w<!-- stop finalizing -->",currentdepth)
     end
 end
-
--- whatsit_code localpar_code
 
 local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
     local p

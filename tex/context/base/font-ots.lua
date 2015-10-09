@@ -194,9 +194,9 @@ local glue_code          = nodecodes.glue
 local disc_code          = nodecodes.disc
 local whatsit_code       = nodecodes.whatsit
 local math_code          = nodecodes.math
+local dir_code           = nodecodes.dir or whatcodes.dir
+local localpar_code      = nodecodes.localpar or whatcodes.localpar
 
-local dir_code           = whatcodes.dir
-local localpar_code      = whatcodes.localpar
 local discretionary_code = disccodes.discretionary
 local ligature_code      = glyphcodes.ligature
 
@@ -731,26 +731,31 @@ local function get_alternative_glyph(start,alternatives,value)
         return alternatives[1], trace_alternatives and formatters["value %a, taking %a"](value,1)
     elseif value == "last" then
         return alternatives[n], trace_alternatives and formatters["value %a, taking %a"](value,n)
-    else
-        value = value == true and 1 or tonumber(value)
-        if type(value) ~= "number" then
-            return alternatives[1], trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
-        elseif value > n then
-            local defaultalt = otf.defaultnodealternate
-            if defaultalt == "first" then
-                return alternatives[n], trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
-            elseif defaultalt == "last" then
-                return alternatives[1], trace_alternatives and formatters["invalid value %s, taking %a"](value,n)
-            else
-                return false, trace_alternatives and formatters["invalid value %a, %s"](value,"out of range")
-            end
-        elseif value == 0 then
-            return getchar(start), trace_alternatives and formatters["invalid value %a, %s"](value,"no change")
-        elseif value < 1 then
-            return alternatives[1], trace_alternatives and formatters["invalid value %a, taking %a"](value,1)
+    end
+    value = value == true and 1 or tonumber(value)
+    if type(value) ~= "number" then
+        return alternatives[1], trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
+    end
+ -- local a = alternatives[value]
+ -- if a then
+ --     -- some kind of hash
+ --     return a, trace_alternatives and formatters["value %a, taking %a"](value,a)
+ -- end
+    if value > n then
+        local defaultalt = otf.defaultnodealternate
+        if defaultalt == "first" then
+            return alternatives[n], trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
+        elseif defaultalt == "last" then
+            return alternatives[1], trace_alternatives and formatters["invalid value %s, taking %a"](value,n)
         else
-            return alternatives[value], trace_alternatives and formatters["value %a, taking %a"](value,value)
+            return false, trace_alternatives and formatters["invalid value %a, %s"](value,"out of range")
         end
+    elseif value == 0 then
+        return getchar(start), trace_alternatives and formatters["invalid value %a, %s"](value,"no change")
+    elseif value < 1 then
+        return alternatives[1], trace_alternatives and formatters["invalid value %a, taking %a"](value,1)
+    else
+        return alternatives[value], trace_alternatives and formatters["value %a, taking %a"](value,value)
     end
 end
 
@@ -3292,7 +3297,7 @@ if not a or (a == attr) then
                                 comprun(start,c_run)
                                 start = getnext(start)
                             end
-                        elseif id == whatsit_code then -- will be function
+                        elseif id == whatsit_code then
                             local subtype = getsubtype(start)
                             if subtype == dir_code then
                                 local dir = getfield(start,"dir")
@@ -3331,6 +3336,41 @@ if not a or (a == attr) then
                             start = getnext(start)
                         elseif id == math_code then
                             start = getnext(end_of_math(start))
+                        elseif id == dir_code then
+                            local dir = getfield(start,"dir")
+                            if dir == "+TLT" then
+                                topstack = topstack + 1
+                                dirstack[topstack] = dir
+                                rlmode = 1
+                            elseif dir == "+TRT" then
+                                topstack = topstack + 1
+                                dirstack[topstack] = dir
+                                rlmode = -1
+                            elseif dir == "-TLT" or dir == "-TRT" then
+                                topstack = topstack - 1
+                                rlmode = dirstack[topstack] == "+TRT" and -1 or 1
+                            else
+                                rlmode = rlparmode
+                            end
+                            if trace_directions then
+                                report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,mref(rlparmode),mref(rlmode),topstack,mref(newdir))
+                            end
+                            start = getnext(start)
+                        elseif id == localpar_code then
+                            local dir = getfield(start,"dir")
+                            if dir == "TRT" then
+                                rlparmode = -1
+                            elseif dir == "TLT" then
+                                rlparmode = 1
+                            else
+                                rlparmode = 0
+                            end
+                            -- one might wonder if the par dir should be looked at, so we might as well drop the next line
+                            rlmode = rlparmode
+                            if trace_directions then
+                                report_process("directions after pardir %a: parmode %a, txtmode %a",dir,mref(rlparmode),mref(rlmode))
+                            end
+                            start = getnext(start)
                         else
                             start = getnext(start)
                         end
@@ -3606,6 +3646,40 @@ if not a or (a == attr) then
                         start = getnext(start)
                     elseif id == math_code then
                         start = getnext(end_of_math(start))
+                    elseif id == dir_code then
+                        local dir = getfield(start,"dir")
+                        if dir == "+TLT" then
+                            topstack = topstack + 1
+                            dirstack[topstack] = dir
+                            rlmode = 1
+                        elseif dir == "+TRT" then
+                            topstack = topstack + 1
+                            dirstack[topstack] = dir
+                            rlmode = -1
+                        elseif dir == "-TLT" or dir == "-TRT" then
+                            topstack = topstack - 1
+                            rlmode = dirstack[topstack] == "+TRT" and -1 or 1
+                        else
+                            rlmode = rlparmode
+                        end
+                        if trace_directions then
+                            report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,mref(rlparmode),mref(rlmode),topstack,mref(newdir))
+                        end
+                        start = getnext(start)
+                    elseif id == localpar_code then
+                        local dir = getfield(start,"dir")
+                        if dir == "TRT" then
+                            rlparmode = -1
+                        elseif dir == "TLT" then
+                            rlparmode = 1
+                        else
+                            rlparmode = 0
+                        end
+                        rlmode = rlparmode
+                        if trace_directions then
+                            report_process("directions after pardir %a: parmode %a, txtmode %a",dir,mref(rlparmode),mref(rlmode))
+                        end
+                        start = getnext(start)
                     else
                         start = getnext(start)
                     end

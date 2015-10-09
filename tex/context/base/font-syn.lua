@@ -1392,7 +1392,7 @@ end
 function names.resolve(askedname,sub)
     local found = names.resolvedspecification(askedname,sub)
     if found then
-        return found.filename, found.subfont and found.rawname
+        return found.filename, found.subfont and found.rawname, found.subfont
     end
 end
 

@@ -67,7 +67,7 @@ local hlist_code        = nodecodes.hlist
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
 local whatsit_code      = nodecodes.whatsit
-local localpar_code     = whatsitcodes.localpar
+local localpar_code     = nodecodes.localpar or whatsitcodes.localpar
 
 local actions           = { }
 initials.actions        = actions
@@ -129,7 +129,8 @@ interfaces.implement {
 
 -- actions[v_default] = function(head,setting)
 --     local done = false
---     if getid(head) == whatsit_code and getsubtype(head) == localpar_code then
+--     local id   = getid(head)
+--     if (id == localpar_code) or (id == whatsit_code and getsubtype(head) == localpar_code) then
 --         -- begin of par
 --         local first = getnext(head)
 --         -- parbox .. needs to be set at 0
@@ -222,7 +223,8 @@ interfaces.implement {
 
 actions[v_default] = function(head,setting)
     local done = false
-    if getid(head) == whatsit_code and getsubtype(head) == localpar_code then
+    local id   = getid(head)
+    if (id == localpar_code) or (id == whatsit_code and getsubtype(head) == localpar_code) then
         -- begin of par
         local first  = getnext(head)
         local indent = false

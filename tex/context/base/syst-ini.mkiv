@@ -119,11 +119,20 @@
 
 % for the moment:
 
-\ifdefined\pagewidth     \else \let\pagewidth    \pdfpagewidth     \let\normalpagewidth    \pdfpagewidth  \fi
-\ifdefined\pageheight    \else \let\pageheight   \pdfpageheight    \let\normalpageheight   \pdfpageheight \fi
+\ifdefined\pagewidth         \else \let\pagewidth          \pdfpagewidth                \let\normalpagewidth         \pdfpagewidth      \fi
+\ifdefined\pageheight        \else \let\pageheight         \pdfpageheight               \let\normalpageheight        \pdfpageheight     \fi
 
-\ifdefined\adjustspacing \else \let\adjustspacing\pdfadjustspacing \let\normaladjustspacing\adjustspacing \fi
-\ifdefined\protrudechars \else \let\protrudechars\pdfprotrudechars \let\normalprotrudechars\protrudechars \fi
+\ifdefined\adjustspacing     \else \let\adjustspacing      \pdfadjustspacing            \let\normaladjustspacing     \adjustspacing     \fi
+\ifdefined\protrudechars     \else \let\protrudechars      \pdfprotrudechars            \let\normalprotrudechars     \protrudechars     \fi
+
+\ifdefined\pdfxform          \else \let\pdfxform           \saveboxresource             \let\normalpdfxform          \pdfxform          \fi
+\ifdefined\pdflastxform      \else \let\pdflastxform       \lastsavedboxresourceindex   \let\normalpdflastxform      \pdflastxform      \fi
+\ifdefined\pdfrefxform       \else \let\pdfrefxform        \useboxresource              \let\normalpdfrefxform       \pdfrefxform       \fi
+
+\ifdefined\pdfximage         \else \let\pdfximage          \saveimageresource           \let\normalpdfximage         \pdfximage         \fi
+\ifdefined\pdflastximage     \else \let\pdflastximage      \lastsavedimageresourceindex \let\normalpdflastximage     \pdflastximage     \fi
+\ifdefined\pdflastximagepages\else \let\pdflastximagepages \lastsavedimageresourcepages \let\normalpdflastximagepages\pdflastximagepages\fi
+\ifdefined\pdfrefximage      \else \let\pdfrefximage       \useimageresource            \let\normalpdfrefximage      \pdfrefximage      \fi
 
 %D \ETEX\ has a not so handy way of telling you the version number, i.e. the revision
 %D number has a period in it:

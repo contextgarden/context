@@ -58,7 +58,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.818 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 2.819 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -2130,18 +2130,21 @@ actions["check metadata"] = function(data,filename,raw)
         end
     end
     --
+    local names = raw.names
+    --
     if metadata.validation_state and table.contains(metadata.validation_state,"bad_ps_fontname") then
         -- the ff library does a bit too much (and wrong) checking ... so we need to catch this
         -- at least for now
         local function valid(what)
-            local names = raw.names
-            for i=1,#names do
-                local list = names[i]
-                local names = list.names
-                if names then
-                    local name = names[what]
-                    if name and valid_ps_name(name) then
-                        return name
+            if names then
+                for i=1,#names do
+                    local list = names[i]
+                    local names = list.names
+                    if names then
+                        local name = names[what]
+                        if name and valid_ps_name(name) then
+                            return name
+                        end
                     end
                 end
             end
@@ -2163,6 +2166,33 @@ actions["check metadata"] = function(data,filename,raw)
         end
         check("fontname")
         check("fullname")
+    end
+    --
+    if names then
+        local psname = metadata.psname
+        if not psname or psname == "" then
+            for i=1,#names do
+                local name = names[i]
+                -- Currently we use the same restricted search as in the new context (specific) font loader
+                -- but we might add more lang checks (it worked ok in the new loaded so now we're in sync)
+                -- This check here is also because there are (esp) cjk fonts out there with psnames different
+                -- from fontnames (gives a bad lookup in backend).
+                if lower(name.lang) == "english (us)" then
+                    local specification = name.names
+                    if specification then
+                        local postscriptname = specification.postscriptname
+                        if postscriptname then
+                            psname = postscriptname
+                        end
+                    end
+                end
+                break
+            end
+        end
+        if psname ~= metadata.fontname then
+            report_otf("fontname %a, fullname %a, psname %a",metadata.fontname,metadata.fullname,psname)
+        end
+        metadata.psname = psname
     end
     --
 end
@@ -2617,7 +2647,7 @@ local function copytotfm(data,cache_id)
         local filename = constructors.checkedfilename(resources)
         local fontname = metadata.fontname
         local fullname = metadata.fullname or fontname
-        local psname   = fontname or fullname
+        local psname   = metadata.psname or fontname or fullname
         local units    = metadata.units or metadata.units_per_em or 1000
         --
         if units == 0 then -- catch bugs in fonts

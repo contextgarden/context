@@ -34,6 +34,8 @@ local formatters = string.formatters
 -- todo: inline concat (more efficient)
 -- todo: tags can also be numbers (just add to hash)
 
+-- todo: dir and localpar nodes
+
 local nodecodes           = nodes.nodecodes
 local disc_code           = nodecodes.disc
 local kern_code           = nodecodes.kern

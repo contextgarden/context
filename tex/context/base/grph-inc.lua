@@ -1602,7 +1602,7 @@ directives.register("graphics.conversion.eps.cleanup.ai",function(v) cleanups.ai
 
 cleaners.ai = function(name)
     local tmpname = name .. ".tmp"
-    io.savedata(tmpname,lpegmatch(pattern,io.loaddata(name)))
+    io.savedata(tmpname,lpegmatch(pattern,io.loaddata(name) or ""))
     return tmpname
 end
 
@@ -1611,6 +1611,9 @@ function epsconverter.pdf(oldname,newname,resolution,colorspace) -- the resoluti
     local presets  = epstopdf.resolutions[resolution or "high"] or epstopdf.resolutions.high
     local level    = codeinjections.getformatoption("pdf_level") or "1.3"
     local tmpname  = oldname
+    if not tmpname or tmpname == "" or not lfs.isfile(tmpname) then
+        return
+    end
     if cleanups.ai then
         tmpname = cleaners.ai(oldname)
     end

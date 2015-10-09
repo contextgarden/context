@@ -53,7 +53,7 @@ local report_otf         = logs.reporter("fonts","otf loading")
 local fonts              = fonts
 local otf                = fonts.handlers.otf
 
-otf.version              = 3.004 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 3.005 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otl", otf.version, true)
 
 local otfreaders         = otf.readers
@@ -194,7 +194,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
     if featurefile then
         name = name .. "@" .. file.removesuffix(file.basename(featurefile))
     end
-    -- or: sub = tonumber(sub)
+    -- sub can be number of string
     if sub == "" then
         sub = false
     end
@@ -229,27 +229,27 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         report_otf("forced reload of %a due to hard coded flag",filename)
         reload = true
     end
-    if not reload then
-        local featuredata = data.featuredata
-        if featurefiles then
-            if not featuredata or #featuredata ~= #featurefiles then
-                reload = true
-            else
-                for i=1,#featurefiles do
-                    local fi, fd = featurefiles[i], featuredata[i]
-                    if fi.name ~= fd.name or fi.size ~= fd.size or fi.time ~= fd.time then
-                        reload = true
-                        break
-                    end
-                end
-            end
-        elseif featuredata then
-            reload = true
-        end
-        if reload then
-           report_otf("loading: forced reload due to changed featurefile specification %a",featurefile)
-        end
-     end
+ -- if not reload then
+ --     local featuredata = data.featuredata
+ --     if featurefiles then
+ --         if not featuredata or #featuredata ~= #featurefiles then
+ --             reload = true
+ --         else
+ --             for i=1,#featurefiles do
+ --                 local fi, fd = featurefiles[i], featuredata[i]
+ --                 if fi.name ~= fd.name or fi.size ~= fd.size or fi.time ~= fd.time then
+ --                     reload = true
+ --                     break
+ --                 end
+ --             end
+ --         end
+ --     elseif featuredata then
+ --         reload = true
+ --     end
+ --     if reload then
+ --        report_otf("loading: forced reload due to changed featurefile specification %a",featurefile)
+ --     end
+ --  end
      if reload then
         report_otf("loading %a, hash %a",filename,hash)
         --
@@ -548,6 +548,7 @@ local function otftotfm(specification)
     if not tfmdata then
         local name     = specification.name
         local sub      = specification.sub
+        local subindex = specification.subindex
         local filename = specification.filename
         local features = specification.features.normal
         local rawdata  = otf.load(filename,sub,features and features.featurefile)

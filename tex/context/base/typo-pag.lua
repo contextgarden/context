@@ -49,7 +49,7 @@ local enabled             = false
 trackers.register("parbuilders.keeptogether", function(v) trace_keeptogether  = v end)
 
 -- todo: also support lines = 3 etc (e.g. dropped caps) but how to set that
--- when no hlists are there ? ... maybe the local_par
+-- when no hlists are there ?
 
 function parbuilders.registertogether(line,specification) -- might change
     if not specification then

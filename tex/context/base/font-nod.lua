@@ -51,10 +51,9 @@ local disc_code        = nodecodes.disc
 local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
 local rule_code        = nodecodes.rule
+local dir_code         = nodecodes.dir or whatcodes.dir
+local localpar_code    = nodecodes.localpar or whatcodes.localpar
 local whatsit_code     = nodecodes.whatsit
-
-local localpar_code    = whatcodes.localpar
-local dir_code         = whatcodes.dir
 
 local nuts             = nodes.nuts
 local tonut            = nuts.tonut
@@ -394,6 +393,8 @@ function step_tracers.codes(i,command,space)
         local id = getid(c)
         if id == glyph_code then
             showchar(c)
+        elseif id == dir_code or id == localpar_code then
+            context("[%s]",getfield(c,"dir"))
         elseif id == whatsit_code and (getsubtype(c) == localpar_code or getsubtype(c) == dir_code) then
             context("[%s]",getfield(c,"dir"))
         elseif id == disc_code then

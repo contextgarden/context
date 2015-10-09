@@ -1749,8 +1749,9 @@ local function readdata(f,offset,specification)
     --
     local askedname = specification.askedname
     if askedname then
-        local cleanname = gsub(askedname,"[^azAZ09]","")
-        local foundname = gsub(getname(fontdata,"fullname") or "","[^azAZ09]","")
+        local fullname  = getname(fontdata,"fullname") or ""
+        local cleanname = gsub(askedname,"[^a-zA-Z0-9]","")
+        local foundname = gsub(fullname,"[^a-zA-Z0-9]","")
         if lower(cleanname) ~= lower(foundname) then
             return -- keep searching
         end

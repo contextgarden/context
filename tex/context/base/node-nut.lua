@@ -903,10 +903,13 @@ local whatcodes         = nodes.whatcodes
 local pdfrefximage_code = whatcodes.pdfrefximage
 local pdfrefxform_code  = whatcodes.pdfrefxform
 
-getwidth     [pdfrefximage_code] = get_width
-getwidth     [pdfrefxform_code ] = get_width
+if pdfrefxform_code then
+    getwidth     [pdfrefxform_code ] = get_width
+    getdimensions[pdfrefxform_code ] = get_dimensions
+end
 
-getdimensions[pdfrefximage_code] = get_dimensions
-getdimensions[pdfrefxform_code ] = get_dimensions
-
+if pdfrefximage_code then
+    getwidth     [pdfrefximage_code] = get_width
+    getdimensions[pdfrefximage_code] = get_dimensions
+end
 

@@ -162,9 +162,6 @@ local cell_code          = listcodes.cell
 local alignment_code     = listcodes.alignment
 local userdefined_code   = whatsitcodes.userdefined
 
-local dir_code           = whatsitcodes.dir
-local localpar_code      = whatsitcodes.localpar
-
 local nodepool           = nuts.pool
 
 local new_kern           = nodepool.kern

@@ -77,13 +77,12 @@ local glue_code           = nodecodes.glue
 local glyph_code          = nodecodes.glyph
 local rule_code           = nodecodes.rule
 local whatsit_code        = nodecodes.whatsit
+local dir_code            = nodecodes.dir or whatcodes.dir
+local localpar_code       = nodecodes.localpar or whatcodes.localpar
 
 local leftskip_code       = skipcodes.leftskip
 local rightskip_code      = skipcodes.rightskip
 local parfillskip_code    = skipcodes.parfillskip
-
-local localpar_code       = whatcodes.localpar
-local dir_code            = whatcodes.dir
 
 local line_code           = listcodes.line
 
@@ -351,6 +350,10 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 if r then
                     done[r] = done[r] - 1
                 end
+            elseif id == dir_code then
+                txtdir = getfield(current,"dir")
+            elseif id == localpar_code then
+                pardir = getfield(current,"dir")
             elseif id == whatsit_code then
                 local subtype = getsubtype(current)
                 if subtype == localpar_code then
@@ -403,6 +406,10 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                 if list then
                     setfield(current,"list",(inject_area(list,attribute,make,stack,done,current,pardir,txtdir)))
                 end
+            elseif id == dir_code then
+                txtdir = getfield(current,"dir")
+            elseif id == localpar_code then
+                pardir = getfield(current,"dir")
             elseif id == whatsit_code then
                 local subtype = getsubtype(current)
                 if subtype == localpar_code then

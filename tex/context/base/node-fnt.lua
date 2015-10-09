@@ -15,6 +15,7 @@ local nodes, node, fonts = nodes, node, fonts
 
 local trace_characters  = false  trackers  .register("nodes.characters",    function(v) trace_characters = v end)
 local trace_fontrun     = false  trackers  .register("nodes.fontrun",       function(v) trace_fontrun    = v end)
+local trace_variants    = false  trackers  .register("nodes.variants",      function(v) trace_variants   = v end)
 
 local force_discrun     = true   directives.register("nodes.discrun",       function(v) force_discrun    = v end)
 local force_basepass    = true   directives.register("nodes.basepass",      function(v) force_basepass   = v end)
@@ -232,8 +233,12 @@ function handlers.characters(head)
                     if hash then
                         local p = getprev(n)
                         if p and getid(p) == glyph_code then
-                            local variant = hash[getchar(p)]
+                            local char    = getchar(p)
+                            local variant = hash[char]
                             if variant then
+                                if trace_variants then
+                                    report_fonts("replacing %C by %C",char,variant)
+                                end
                                 setfield(p,"char",variant)
                                 if not redundant then
                                     redundant = { n }

@@ -139,7 +139,15 @@ local penalty           = register_nut(new_nut("penalty"))
 local glue              = register_nut(new_nut("glue")) -- glue.spec = nil
 local glue_spec         = register_nut(new_nut("glue_spec"))
 local glyph             = register_nut(new_nut("glyph",0))
-local textdir           = register_nut(new_nut("whatsit",whatsitcodes.dir))
+
+local textdir           = nil
+
+if nodes.nativedir then
+    textdir = register_nut(new_nut("dir"))
+else
+    textdir = register_nut(new_nut("whatsit",whatsitcodes.dir))
+end
+
 local latelua           = register_nut(new_nut("whatsit",whatsitcodes.latelua))
 local special           = register_nut(new_nut("whatsit",whatsitcodes.special))
 local user_n            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_n,"type",100) -- 44

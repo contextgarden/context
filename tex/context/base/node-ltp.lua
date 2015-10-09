@@ -247,11 +247,11 @@ local hlist_code           = nodecodes.hlist
 local vlist_code           = nodecodes.vlist
 local unset_code           = nodecodes.unset
 local marginkern_code      = nodecodes.marginkern
+local dir_code             = nodecodes.dir or whatcodes.dir
 
 local leaders_code         = gluecodes.leaders
 
-local localpar_code        = whatcodes.localpar
-local dir_code             = whatcodes.dir
+local localpar_code        = nodecodes.localpar or whatcodes.localpar
 local pdfrefximage_code    = whatcodes.pdfrefximage
 local pdfrefxform_code     = whatcodes.pdfrefxform
 
@@ -355,7 +355,8 @@ local function inject_dirs_at_end_of_line(stack,current,start,stop)
     local n = stack.n
     local h = nil
     while start and start ~= stop do
-        if getid(start) == whatsit_code and getsubtype(start) == dir_code then
+        local id = getid(start)
+        if id == dir_code or (id == whatsit_code and getsubtype(start) == dir_code) then
             if not dir_pops[getfield(start,"dir")] then -- weird, what is this #
                 n = n + 1
                 stack[n] = start
@@ -1428,7 +1429,7 @@ local function post_line_break(par)
                 end
                 local id      = getid(next)
                 local subtype = getsubtype(next)
-                if id == whatsit_code and subtype == localpar_code then
+                if (id == localpar_code) or (id == whatsit_code and subtype == localpar_code) then
                     -- nothing
                 elseif id < math_code then
                     -- messy criterium
@@ -2160,15 +2161,18 @@ function constructors.methods.basic(head,d)
 
         par.font_in_short_display   = 0
 
-        if current and getid(current) == whatsit_code and getsubtype(current) == localpar_code then
-            par.init_internal_left_box       = getfield(current,"box_left")
-            par.init_internal_left_box_width = getfield(current,"box_left_width")
-            par.internal_pen_inter           = getfield(current,"pen_inter")
-            par.internal_pen_broken          = getfield(current,"pen_broken")
-            par.internal_left_box            = par.init_internal_left_box
-            par.internal_left_box_width      = par.init_internal_left_box_width
-            par.internal_right_box           = getfield(current,"box_right")
-            par.internal_right_box_width     = getfield(current,"box_right_width")
+        if current then
+            local id = getid(current)
+            if (id == localpar_code) or (id == whatsit_code and getsubtype(current) == localpar_code) then
+                par.init_internal_left_box       = getfield(current,"box_left")
+                par.init_internal_left_box_width = getfield(current,"box_left_width")
+                par.internal_pen_inter           = getfield(current,"pen_inter")
+                par.internal_pen_broken          = getfield(current,"pen_broken")
+                par.internal_left_box            = par.init_internal_left_box
+                par.internal_left_box_width      = par.init_internal_left_box_width
+                par.internal_right_box           = getfield(current,"box_right")
+                par.internal_right_box_width     = getfield(current,"box_right_width")
+            end
         end
 
         -- all passes are combined in this loop so maybe we should split this into
@@ -2227,7 +2231,7 @@ function constructors.methods.basic(head,d)
                     local prev_p = getprev(current)
                     if prev_p and prev_p ~= temp_head then
                         local id = getid(prev_p)
-                        if id == glyph_code or
+                        if id == glyph_code or -- dir_code is < math
                             (id < math_code and (id ~= whatsit_code or getsubtype(prev_p) ~= dir_code)) or -- was: precedes_break(prev_p)
                             (id == kern_code and getsubtype(prev_p) ~= userkern_code) then
                             p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
@@ -2358,6 +2362,15 @@ function constructors.methods.basic(head,d)
                 active_width.size = active_width.size + getfield(current,"width")
             elseif id == penalty_code then
                 p_active, n_active = try_break(getfield(current,"penalty"), unhyphenated_code, par, first_p, current, checked_expansion)
+            elseif id == dir_code then
+                par.line_break_dir = checked_line_dir(dirstack) or par.line_break_dir
+            elseif id == localpar_code then
+                par.internal_pen_inter       = getfield(current,"pen_inter")
+                par.internal_pen_broken      = getfield(current,"pen_broken")
+                par.internal_left_box        = getfield(current,"box_left")
+                par.internal_left_box_width  = getfield(current,"box_left_width")
+                par.internal_right_box       = getfield(current,"box_right")
+                par.internal_right_box_width = getfield(current,"box_right_width")
             elseif id == whatsit_code then
                 local subtype = getsubtype(current)
                 if subtype == localpar_code then
@@ -2971,6 +2984,8 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     adjust_head = list
                 end
                 adjust_tail = slide_nodelist(list) -- find_tail(list)
+           elseif id == dir_code then
+                hpack_dir = checked_line_dir(stack,current) or hpack_dir
             elseif id == whatsit_code then
                 local subtype = getsubtype(current)
                 if subtype == dir_code then

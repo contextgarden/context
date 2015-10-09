@@ -83,9 +83,8 @@ local kern_code          = nodecodes.kern
 local glue_code          = nodecodes.glue
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
-
-local localpar_code      = whatcodes.localpar
-local dir_code           = whatcodes.dir
+local dir_code           = nodecodes.dir or whatcodes.dir
+local localpar_code      = nodecodes.localpar or whatcodes.localpar
 
 local new_textdir        = nodepool.textdir
 
@@ -313,6 +312,33 @@ local function process(start)
                 setprop(current,"direction",'g')
             elseif id == kern_code then
                 setprop(current,"direction",'k')
+            elseif id == dir_code then
+               local dir = getfield(current,"dir")
+                if dir == "+TRT" then
+                    autodir = -1
+                elseif dir == "+TLT" then
+                    autodir = 1
+                elseif dir == "-TRT" or dir == "-TLT" then
+                    if embedded and embedded~= 0 then
+                        autodir = embedded
+                    else
+                        autodir = 0
+                    end
+                else
+                    -- message
+                end
+                textdir = autodir
+                setprop(current,"direction",true)
+            elseif id == localpar_code then
+                local dir = getfield(current,"dir")
+                if dir == 'TRT' then
+                    autodir = -1
+                elseif dir == 'TLT' then
+                    autodir = 1
+                end
+                pardir  = autodir
+                textdir = pardir
+                setprop(current,"direction",true)
             elseif id == whatsit_code then
                 local subtype = getsubtype(current)
                 if subtype == localpar_code then

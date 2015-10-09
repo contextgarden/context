@@ -92,7 +92,7 @@ local nodecodes       = nodes.nodecodes
 local whatsitcodes    = nodes.whatsitcodes
 local glyph_code      = nodecodes.glyph
 local whatsit_code    = nodecodes.whatsit
-local localpar_code   = whatsitcodes.localpar
+local localpar_code   = nodecodes.localpar or whatsitcodes.localpar
 
 local texnest         = tex.nest
 local free_node       = node.free
@@ -171,7 +171,8 @@ local function pickup(head,tail,str)
         while true do
             local prev = first.prev
             if prev and prev[a_marked] == attr then
-                if prev.id == whatsit_code and prev.subtype == localpar_code then
+                local id = prev.id
+                if (id == localpar_code) or (id == whatsit_code and prev.subtype == localpar_code) then
                     break
                 else
                     first = prev

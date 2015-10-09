@@ -2207,25 +2207,69 @@ end
 
 -- a fontkern plug:
 
-local copy_node = nuts.copy
-local kern      = nuts.pool.register(nuts.pool.kern())
+do
 
-setattr(kern,attributes.private('fontkern'),1) -- we can have several, attributes are shared
+    local copy_node = nuts.copy
+    local kern      = nuts.pool.register(nuts.pool.kern())
 
-nodes.injections.installnewkern(function(k)
-    local c = copy_node(kern)
-    setfield(c,"kern",k)
-    return c
-end)
+    setattr(kern,attributes.private('fontkern'),1) -- we can have several, attributes are shared
 
-directives.register("nodes.injections.fontkern", function(v) setfield(kern,"subtype",v and 0 or 1) end)
+    nodes.injections.installnewkern(function(k)
+        local c = copy_node(kern)
+        setfield(c,"kern",k)
+        return c
+    end)
+
+    directives.register("nodes.injections.fontkern", function(v) setfield(kern,"subtype",v and 0 or 1) end)
+
+end
+
+do
+
+    local report = logs.reporter("otf","variants")
+
+    local function replace(tfmdata,feature,value)
+        local characters = tfmdata.characters
+        local variants   = tfmdata.resources.variants
+        if variants then
+            local t = { }
+            for k, v in sortedhash(variants) do
+                t[#t+1] = formatters["0x%X (%i)"](k,k)
+            end
+            value = tonumber(value) or 0xFE00 -- 917762
+            report("fontname : %s",tfmdata.properties.fontname)
+            report("available: % t",t)
+            local v = variants[value]
+            if v then
+                report("using    : %X (%i)",value,value)
+                for k, v in next, v do
+                    local c = characters[v]
+                    if c then
+                        characters[k] = c
+                    end
+                end
+            else
+                report("unknown  : %X (%i)",value,value)
+            end
+        end
+    end
+
+    registerotffeature {
+        name         = 'variant',
+        description  = 'unicode variant',
+        manipulators = {
+            base = replace,
+            node = replace,
+        }
+    }
+
+end
 
 -- here (todo: closure)
 
-local trace_analyzing    = false  trackers.register("otf.analyzing", function(v) trace_analyzing = v end)
+-- make a closure (200 limit):
 
------ otffeatures        = constructors.newfeatures("otf")
-local registerotffeature = otffeatures.register
+local trace_analyzing    = false  trackers.register("otf.analyzing", function(v) trace_analyzing = v end)
 
 local analyzers          = fonts.analyzers
 local methods            = analyzers.methods

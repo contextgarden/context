@@ -41,7 +41,7 @@ local whatsit_code     = nodecodes.whatsit
 local hlist_code       = nodecodes.hlist
 local vlist_code       = nodecodes.vlist
 local userdefined_code = whatsitcodes.userdefined
-local localpar_code    = whatsitcodes.localpar
+local localpar_code    = nodecodes.localpar or whatsitcodes.localpar
 
 local nodepool         = nodes.pool
 local new_usernumber   = nodepool.usernumber

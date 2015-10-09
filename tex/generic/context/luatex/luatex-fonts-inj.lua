@@ -462,7 +462,11 @@ local function collect_glyphs(head,offsets)
         local f = getfont(n)
         if f ~= nf then
             nf = f
-            tm = fontdata[nf].resources.marks -- other hash in ctx
+            -- other hash in ctx:
+            tm = fontdata[nf].resources
+            if tm then
+                tm = tm.marks
+            end
         end
         if tm and tm[getchar(n)] then
             nofmarks = nofmarks + 1

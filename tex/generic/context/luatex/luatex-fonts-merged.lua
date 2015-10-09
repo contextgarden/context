@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/05/15 22:46:40
+-- merge date  : 10/09/15 21:44:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -7126,7 +7126,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.818 
+otf.version=2.819 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -8770,16 +8770,18 @@ actions["check metadata"]=function(data,filename,raw)
       ttftables[i].data="deleted"
     end
   end
+  local names=raw.names
   if metadata.validation_state and table.contains(metadata.validation_state,"bad_ps_fontname") then
     local function valid(what)
-      local names=raw.names
-      for i=1,#names do
-        local list=names[i]
-        local names=list.names
-        if names then
-          local name=names[what]
-          if name and valid_ps_name(name) then
-            return name
+      if names then
+        for i=1,#names do
+          local list=names[i]
+          local names=list.names
+          if names then
+            local name=names[what]
+            if name and valid_ps_name(name) then
+              return name
+            end
           end
         end
       end
@@ -8801,6 +8803,28 @@ actions["check metadata"]=function(data,filename,raw)
     end
     check("fontname")
     check("fullname")
+  end
+  if names then
+    local psname=metadata.psname
+    if not psname or psname=="" then
+      for i=1,#names do
+        local name=names[i]
+        if lower(name.lang)=="english (us)" then
+          local specification=name.names
+          if specification then
+            local postscriptname=specification.postscriptname
+            if postscriptname then
+              psname=postscriptname
+            end
+          end
+        end
+        break
+      end
+    end
+    if psname~=metadata.fontname then
+      report_otf("fontname %a, fullname %a, psname %a",metadata.fontname,metadata.fullname,psname)
+    end
+    metadata.psname=psname
   end
 end
 actions["cleanup tables"]=function(data,filename,raw)
@@ -9166,7 +9190,7 @@ local function copytotfm(data,cache_id)
     local filename=constructors.checkedfilename(resources)
     local fontname=metadata.fontname
     local fullname=metadata.fullname or fontname
-    local psname=fontname or fullname
+    local psname=metadata.psname or fontname or fullname
     local units=metadata.units or metadata.units_per_em or 1000
     if units==0 then 
       units=1000 
@@ -10510,7 +10534,10 @@ local function collect_glyphs(head,offsets)
     local f=getfont(n)
     if f~=nf then
       nf=f
-      tm=fontdata[nf].resources.marks 
+      tm=fontdata[nf].resources
+      if tm then
+        tm=tm.marks
+      end
     end
     if tm and tm[getchar(n)] then
       nofmarks=nofmarks+1
@@ -15742,10 +15769,11 @@ end
 function resolvers.name(specification)
   local resolve=fonts.names.resolve
   if resolve then
-    local resolved,sub=resolve(specification.name,specification.sub,specification) 
+    local resolved,sub,subindex=resolve(specification.name,specification.sub,specification) 
     if resolved then
       specification.resolved=resolved
       specification.sub=sub
+      specification.subindex=subindex
       local suffix=lower(suffixonly(resolved))
       if fonts.formats[suffix] then
         specification.forced=suffix
@@ -15762,10 +15790,11 @@ end
 function resolvers.spec(specification)
   local resolvespec=fonts.names.resolvespec
   if resolvespec then
-    local resolved,sub=resolvespec(specification.name,specification.sub,specification) 
+    local resolved,sub,subindex=resolvespec(specification.name,specification.sub,specification) 
     if resolved then
       specification.resolved=resolved
       specification.sub=sub
+      specification.subindex=subindex
       specification.forced=lower(suffixonly(resolved))
       specification.forcedname=resolved
       specification.name=removesuffix(resolved)

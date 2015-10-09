@@ -160,7 +160,7 @@ local function check_names(names)
     if names then
         for i=1,#names do
             local name = names[i]
-            if name.lang == "English (US)" then
+            if lower(name.lang) == "english (us)" then -- lower added
                 return name.names
             end
         end

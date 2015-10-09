@@ -52,7 +52,6 @@ local glue_code          = nodecodes.glue
 local glyph_code         = nodecodes.glyph
 local line_code          = listcodes.line
 local leftskip_code      = skipcodes.leftskip
-local textdir_code       = whatcodes.dir
 
 local a_displaymath      = attributes.private('displaymath')
 local a_linenumber       = attributes.private('linenumber')

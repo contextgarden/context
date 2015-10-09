@@ -43,6 +43,8 @@ setmetatableindex(types, function(t,k) t[k] = k return k end) -- "key"
 local everywhere = { ["*"] = { ["*"] = true } } -- or: { ["*"] = { "*" } }
 local noflags    = { }
 
+-- beware: shared, maybe we should copy the sequence
+
 local function addfeature(data,feature,specifications)
     local descriptions = data.descriptions
     local resources    = data.resources
@@ -87,7 +89,7 @@ local function addfeature(data,feature,specifications)
             local initialize = specification.initialize
             if initialize then
                 -- when false is returned we initialize only once
-                specification.initialize = initialize(specification) and initialize or nil
+                specification.initialize = initialize(specification,data) and initialize or nil
             end
             local askedfeatures = specification.features or everywhere
             local askedsteps    = specifications.steps or specification.subtables or { specification.data } or { }
