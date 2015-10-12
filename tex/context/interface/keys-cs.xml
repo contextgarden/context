@@ -231,7 +231,7 @@
 		<cd:variable name='ininner' value='ininner'/>
 		<cd:variable name='ininneredge' value='ininneredge'/>
 		<cd:variable name='ininnermargin' value='ininnermargin'/>
-		<cd:variable name='inleft' value='vlevo'/>
+		<cd:variable name='inleft' value='ivlevo'/>
 		<cd:variable name='inleftedge' value='nalevo'/>
 		<cd:variable name='inleftmargin' value='nalevyokraj'/>
 		<cd:variable name='inmargin' value='naokraji'/>
@@ -242,7 +242,7 @@
 		<cd:variable name='inouter' value='inouter'/>
 		<cd:variable name='inouteredge' value='inouteredge'/>
 		<cd:variable name='inoutermargin' value='inoutermargin'/>
-		<cd:variable name='inright' value='vpravo'/>
+		<cd:variable name='inright' value='ivpravo'/>
 		<cd:variable name='inrightedge' value='napravo'/>
 		<cd:variable name='inrightmargin' value='napravyokraj'/>
 		<cd:variable name='interaction' value='interakce'/>

@@ -254,7 +254,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         report_otf("loading %a, hash %a",filename,hash)
         --
         starttiming(otfreaders)
-        data = otfreaders.loadfont(filename,sub or 1)
+        data = otfreaders.loadfont(filename,sub or 1) -- we can pass the number instead (if it comes from a name search)
         --
         -- if featurefiles then
         --     for i=1,#featurefiles do

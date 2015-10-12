@@ -119,20 +119,51 @@
 
 % for the moment:
 
-\ifdefined\pagewidth         \else \let\pagewidth          \pdfpagewidth                \let\normalpagewidth         \pdfpagewidth      \fi
-\ifdefined\pageheight        \else \let\pageheight         \pdfpageheight               \let\normalpageheight        \pdfpageheight     \fi
+\ifdefined\outputmode                 \else \let\outputmode                 \pdfoutput           \fi
 
-\ifdefined\adjustspacing     \else \let\adjustspacing      \pdfadjustspacing            \let\normaladjustspacing     \adjustspacing     \fi
-\ifdefined\protrudechars     \else \let\protrudechars      \pdfprotrudechars            \let\normalprotrudechars     \protrudechars     \fi
+\ifdefined\pagewidth                  \else \let\pagewidth                  \pdfpagewidth        \let\normalpagewidth                  \pdfpagewidth                \fi
+\ifdefined\pageheight                 \else \let\pageheight                 \pdfpageheight       \let\normalpageheight                 \pdfpageheight               \fi
 
-\ifdefined\pdfxform          \else \let\pdfxform           \saveboxresource             \let\normalpdfxform          \pdfxform          \fi
-\ifdefined\pdflastxform      \else \let\pdflastxform       \lastsavedboxresourceindex   \let\normalpdflastxform      \pdflastxform      \fi
-\ifdefined\pdfrefxform       \else \let\pdfrefxform        \useboxresource              \let\normalpdfrefxform       \pdfrefxform       \fi
+\ifdefined\adjustspacing              \else \let\adjustspacing              \pdfadjustspacing    \let\normaladjustspacing              \adjustspacing               \fi
+\ifdefined\protrudechars              \else \let\protrudechars              \pdfprotrudechars    \let\normalprotrudechars              \protrudechars               \fi
 
-\ifdefined\pdfximage         \else \let\pdfximage          \saveimageresource           \let\normalpdfximage         \pdfximage         \fi
-\ifdefined\pdflastximage     \else \let\pdflastximage      \lastsavedimageresourceindex \let\normalpdflastximage     \pdflastximage     \fi
-\ifdefined\pdflastximagepages\else \let\pdflastximagepages \lastsavedimageresourcepages \let\normalpdflastximagepages\pdflastximagepages\fi
-\ifdefined\pdfrefximage      \else \let\pdfrefximage       \useimageresource            \let\normalpdfrefximage      \pdfrefximage      \fi
+\ifdefined\saveboxresource            \else \let\saveboxresource            \pdfxform            \let\normalsaveboxresource            \saveboxresource             \fi
+\ifdefined\lastsavedboxresourceindex  \else \let\lastsavedboxresourceindex  \pdflastxform        \let\normallastsavedboxresourceindex  \lastsavedboxresourceindex   \fi
+\ifdefined\useboxresource             \else \let\useboxresource             \pdfrefxform         \let\normaluseboxresource             \useboxresource              \fi
+
+\ifdefined\saveimageresource          \else \let\saveimageresource          \pdfximage           \let\normalsaveimageresource          \saveimageresource           \fi
+\ifdefined\lastsavedimageresourceindex\else \let\lastsavedimageresourceindex\pdflastximage       \let\normallastsavedimageresourceindex\lastsavedimageresourceindex \fi
+\ifdefined\lastsavedimageresourcepages\else \let\lastsavedimageresourcepages\pdflastximagepages  \let\normallastsavedimageresourcepages\lastsavedimageresourcepages \fi
+\ifdefined\useimageresource           \else \let\useimageresource           \pdfrefximage        \let\normaluseimageresource           \useimageresource            \fi
+
+\ifdefined\pdfextension
+
+    \normalprotected\def\pdfliteral        {\pdfextension literal }
+    \normalprotected\def\pdfcolorstack     {\pdfextension colorstack }
+    \normalprotected\def\pdfsetmatrix      {\pdfextension setmatrix }
+    \normalprotected\def\pdfsave           {\pdfextension save\relax}
+    \normalprotected\def\pdfrestore        {\pdfextension restore\relax}
+    \normalprotected\def\pdfobj            {\pdfextension obj }
+    \normalprotected\def\pdfrefobj         {\pdfextension refobj }
+    \normalprotected\def\pdfannot          {\pdfextension annot }
+    \normalprotected\def\pdfstartlink      {\pdfextension startlink }
+    \normalprotected\def\pdfendlink        {\pdfextension endlink\relax}
+    \normalprotected\def\pdfoutline        {\pdfextension outline }
+    \normalprotected\def\pdfdest           {\pdfextension dest }
+    \normalprotected\def\pdfthread         {\pdfextension thread }
+    \normalprotected\def\pdfstartthread    {\pdfextension startthread }
+    \normalprotected\def\pdfendthread      {\pdfextension endthread\relax}
+    \normalprotected\def\pdfinfo           {\pdfextension info }
+    \normalprotected\def\pdfcatalog        {\pdfextension catalog }
+    \normalprotected\def\pdfnames          {\pdfextension names }
+    \normalprotected\def\pdfincludechars   {\pdfextension includechars }
+    \normalprotected\def\pdffontattr       {\pdfextension fontattr }
+    \normalprotected\def\pdfmapfile        {\pdfextension mapfile }
+    \normalprotected\def\pdfmapline        {\pdfextension mapline }
+    \normalprotected\def\pdftrailer        {\pdfextension trailer }
+    \normalprotected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
+
+\fi
 
 %D \ETEX\ has a not so handy way of telling you the version number, i.e. the revision
 %D number has a period in it:
@@ -323,6 +354,42 @@
 %D strings. This macro is never used in \CONTEXT.
 
 \normalprotected\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
+
+%D For the moment:
+
+\ifdefined\pdfcompresslevel \else
+
+    \newcount\pdfcompresslevel        \pdfcompresslevel          9
+    \newcount\pdfobjcompresslevel     \pdfobjcompresslevel       1
+    \newcount\pdfdecimaldigits        \pdfdecimaldigits          3
+    \newcount\pdfgamma                \pdfgamma               1000
+    \newcount\pdfimageresolution      \pdfimageresolution       71
+    \newcount\pdfimageapplygamma      \pdfimageapplygamma        0
+    \newcount\pdfimagegamma           \pdfimagegamma          2200
+    \newcount\pdfimagehicolor         \pdfimagehicolor           1
+    \newcount\pdfpkresolution         \pdfpkresolution          72
+    \newcount\pdfinclusioncopyfonts   \pdfinclusioncopyfonts     0
+    \newcount\pdfinclusionerrorlevel  \pdfinclusionerrorlevel    0
+    \newcount\pdfreplacefont          \pdfreplacefont            0
+    \newcount\pdfgentounicode         \pdfgentounicode           0
+    \newcount\pdfpagebox              \pdfpagebox                0
+    \newcount\pdfminorversion         \pdfminorversion           4
+    \newcount\pdfuniqueresname        \pdfuniqueresname          0
+
+    \newdimen\pdfhorigin              \pdfhorigin                1in
+    \newdimen\pdfvorigin              \pdfvorigin                1in
+    \newdimen\pdflinkmargin           \pdflinkmargin             0pt
+    \newdimen\pdfdestmargin           \pdfdestmargin             0pt
+    \newdimen\pdfthreadmargin         \pdfthreadmargin           0pt
+
+    \newtoks \pdfpagesattr
+    \newtoks \pdfpageattr
+    \newtoks \pdfpageresources
+    \newtoks \pdfxformattr
+    \newtoks \pdfxformresources
+    \newtoks \pdfpkmode
+
+\fi
 
 %D \macros
 %D   {scratchcounter,
@@ -1009,7 +1076,7 @@
 %D We need to make sure that we start up in \DVI\ mode, so, after testing for running
 %D \PDFTEX, we default to \DVI. Why?
 
-\pdfoutput              \zerocount
+\outputmode             \zerocount
 \pdfminorversion        \plusseven
 \pdfgentounicode        \plusone
 \pdfinclusioncopyfonts  \plusone

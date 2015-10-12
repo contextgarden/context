@@ -13717,7 +13717,7 @@ return {
    ["ro"]="ininner",
   },
   ["inleft"]={
-   ["cs"]="vlevo",
+   ["cs"]="ivlevo", -- needs to be different from left
    ["de"]="imlinken",
    ["en"]="inleft",
    ["fr"]="dansgauche",
@@ -13839,7 +13839,7 @@ return {
    ["ro"]="inouter",
   },
   ["inright"]={
-   ["cs"]="vpravo",
+   ["cs"]="ivpravo", -- needs to be different from right
    ["de"]="imrechten",
    ["en"]="inright",
    ["fr"]="dansdroit",

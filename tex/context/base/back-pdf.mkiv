@@ -41,12 +41,12 @@
 %D
 %D Here we initialize some internal quantities. We also protect them.
 
-\pdfoutput  \plusone    \let\pdfoutput \undefined \newcount\pdfoutput  \pdfoutput  \plusone
+\outputmode  \plusone    \let\modeoutput \undefined \newcount\outputmode  \outputmode  \plusone
 
 %D These are already set:
 
-\pdfhorigin 1 true in   \let\pdfhorigin\undefined \newdimen\pdfhorigin \pdfhorigin 1 true in
-\pdfvorigin \pdfhorigin \let\pdfvorigin\undefined \newdimen\pdfvorigin \pdfvorigin \pdfhorigin
+\pdfhorigin 1 true in
+\pdfvorigin \pdfhorigin
 
 %D These too and most of them will be protected as well:
 
@@ -97,7 +97,7 @@
 
 %D For the moment we keep these.
 
-\newtoks \pdfbackendeveryximage
+%newtoks \pdfbackendeveryximage
 \newtoks \pdfbackendeveryxform
 
 %D These are the only official methods to add stuff to the resources.
@@ -308,11 +308,13 @@
 
 % attr {/Group << /S /Transparency /I false /K true >>}
 
+% this will become lua code
+
 \def\back_object_register#1#2%
   {\the\pdfbackendeveryxform
    \finalizeobjectbox\objectbox
-   \immediate\pdfxform resources {\pdfbackendcurrentresources}\objectbox
-   \dosetobjectreference{#1}{#2}\pdflastxform}
+   \immediate\saveboxresource resources {\pdfbackendcurrentresources}\objectbox
+   \dosetobjectreference{#1}{#2}\lastsavedboxresourceindex}
 
 \let\m_back_object_reference\empty
 
@@ -320,7 +322,7 @@
   {\begingroup
    \doifelseobjectreferencefound{#1}{#2}
      {\dogetobjectreference{#1}{#2}\m_back_object_reference
-      \pdfrefxform\m_back_object_reference}%
+      \useboxresource\m_back_object_reference}%
      \donothing
    \endgroup}
 

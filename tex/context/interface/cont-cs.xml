@@ -3152,8 +3152,8 @@
           <cd:constant type="vrsek"/>
           <cd:constant type="semknuto"/>
           <cd:constant type="naokraji"/>
-          <cd:constant type="vlevo"/>
-          <cd:constant type="vpravo"/>
+          <cd:constant type="ivlevo"/>
+          <cd:constant type="ivpravo"/>
           <cd:constant type="visici"/>
         </cd:parameter>
         <cd:parameter name="stylhlavicky">
@@ -4186,8 +4186,8 @@
           <cd:constant type="nastred"/>
           <cd:constant type="marginalie"/>
           <cd:constant type="textovahrana"/>
-          <cd:constant type="vlevo"/>
-          <cd:constant type="vpravo"/>
+          <cd:constant type="ivlevo"/>
+          <cd:constant type="ivpravo"/>
         </cd:parameter>
         <cd:parameter name="konverze">
           <cd:constant type="cisla"/>
@@ -5489,9 +5489,9 @@
           <cd:constant type="vlevo"/>
           <cd:constant type="marginalie"/>
           <cd:constant type="naokraji"/>
-          <cd:constant type="vlevo"/>
+          <cd:constant type="ivlevo"/>
           <cd:constant type="vpravo"/>
-          <cd:constant type="vpravo"/>
+          <cd:constant type="ivpravo"/>
           <cd:constant type="uvnitr"/>
           <cd:constant type="vnejsi"/>
           <cd:constant type="text"/>
@@ -6708,8 +6708,8 @@
           <cd:constant type="vrsek"/>
           <cd:constant type="semknuto"/>
           <cd:constant type="naokraji"/>
-          <cd:constant type="vlevo"/>
-          <cd:constant type="vpravo"/>
+          <cd:constant type="ivlevo"/>
+          <cd:constant type="ivpravo"/>
         </cd:parameter>
         <cd:parameter name="sirka">
           <cd:constant type="cd:dimension"/>
@@ -7629,8 +7629,8 @@
         <cd:constant type="zde" default="yes"/>
         <cd:constant type="vrsek"/>
         <cd:constant type="spodek"/>
-        <cd:constant type="vlevo"/>
-        <cd:constant type="vpravo"/>
+        <cd:constant type="ivlevo"/>
+        <cd:constant type="ivpravo"/>
         <cd:constant type="naokraji"/>
         <cd:constant type="marginalie"/>
         <cd:constant type="levyokraj"/>

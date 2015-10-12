@@ -171,8 +171,8 @@
 
 \def\setMPPDFobject#1#2% resources boxnumber
   {\ifx\everyPDFxform\undefined\else\the\everyPDFxform\fi
-   \immediate\pdfxform resources{#1}#2%
-   \edef\getMPPDFobject{\noexpand\pdfrefxform\the\pdflastxform}}
+   \immediate\saveboxresource resources{#1}#2%
+   \edef\getMPPDFobject{\noexpand\useboxresource\the\lastsavedboxresourceindex}}
 
 \let\getMPPDFobject\relax
 

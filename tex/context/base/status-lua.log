@@ -1,0 +1,226 @@
+system          > callbacks > not registering frozen 'find_format_file'
+
+open source     > 1 > 1 > cont-yes.mkiv
+
+ConTeXt  ver: 2015.10.12 22:50 MKIV beta  fmt: 2015.10.12  int: english/english
+
+system          > 'cont-new.mkiv' loaded
+open source     > 2 > 2 > cont-new.mkiv
+close source    > 2 > 2 > cont-new.mkiv
+system          > 'cont-loc.mkiv' loaded
+open source     > 2 > 3 > c:/data/develop/context/sources/cont-loc.mkiv
+!!!!            > using dejavu-math in texmf-fonts
+!!!!            > testing new mp function maketext
+!!!!            > testing adapted side float parskip
+!!!!            > testing mixed columns replacement
+close source    > 2 > 3 > c:/data/develop/context/sources/cont-loc.mkiv
+system          > 'cont-exp.mkiv' loaded
+interface       > macros > processed mkvi file 'c:/data/develop/context/sources/cont-exp.mkiv', delta 0
+interface       > macros > processed mkvi file 'c:/data/develop/context/sources/cont-exp.mkiv', delta 0
+open source     > 2 > 4 > c:/data/develop/context/sources/cont-exp.mkiv
+system          > beware: some patches loaded from cont-exp.mkiv
+system          > beware: casing kern checker enabled
+close source    > 2 > 4 > c:/data/develop/context/sources/cont-exp.mkiv
+system          > files > jobname 's-inf-03', input './s-inf-03.mkiv', result 'status-lua.pdf'
+fonts           > latin modern fonts are not preloaded
+languages       > language 'en' is active
+open source     > 2 > 5 > c:/data/develop/context/texmf/tex/context/base/s-inf-03.mkiv
+open source     > 3 > 6 > type-imp-dejavu.mkiv
+close source    > 3 > 6 > type-imp-dejavu.mkiv
+references      > unknown reference '[][MP]'
+references      > unknown reference '[][attributes]'
+references      > unknown reference '[][backends]'
+references      > unknown reference '[][bit]'
+references      > unknown reference '[][bit32]'
+references      > unknown reference '[][blobs]'
+references      > unknown reference '[][boolean]'
+references      > unknown reference '[][buffers]'
+references      > unknown reference '[][builders]'
+references      > unknown reference '[][caches]'
+references      > unknown reference '[][callback]'
+references      > unknown reference '[][callbacks]'
+references      > unknown reference '[][catcodes]'
+references      > unknown reference '[][characters]'
+references      > unknown reference '[][chemistry]'
+references      > unknown reference '[][commands]'
+references      > unknown reference '[][containers]'
+references      > unknown reference '[][context]'
+references      > unknown reference '[][converters]'
+references      > unknown reference '[][coroutine]'
+references      > unknown reference '[][ctxrunner]'
+references      > unknown reference '[][debug]'
+references      > unknown reference '[][dir]'
+references      > unknown reference '[][directives]'
+references      > unknown reference '[][document]'
+references      > unknown reference '[][documentdata]'
+references      > unknown reference '[][environment]'
+references      > unknown reference '[][epdf]'
+references      > unknown reference '[][experiments]'
+references      > unknown reference '[][figures]'
+references      > unknown reference '[][floats]'
+references      > unknown reference '[][font]'
+references      > unknown reference '[][fontloader]'
+references      > unknown reference '[][fonts]'
+references      > unknown reference '[][functions]'
+references      > unknown reference '[][graphics]'
+references      > unknown reference '[][gzip]'
+references      > unknown reference '[][img]'
+references      > unknown reference '[][interactions]'
+references      > unknown reference '[][interfaces]'
+references      > unknown reference '[][io]'
+references      > unknown reference '[][jit]'
+references      > unknown reference '[][job]'
+references      > unknown reference '[][lang]'
+references      > unknown reference '[][languages]'
+references      > unknown reference '[][layouts]'
+references      > unknown reference '[][lfs]'
+references      > unknown reference '[][libraries]'
+references      > unknown reference '[][lmx]'
+references      > unknown reference '[][logs]'
+references      > unknown reference '[][lpdf]'
+references      > unknown reference '[][lpeg]'
+references      > unknown reference '[][ltn12]'
+references      > unknown reference '[][lua]'
+references      > unknown reference '[][luatex]'
+references      > unknown reference '[][lxml]'
+references      > unknown reference '[][math]'
+references      > unknown reference '[][mathematics]'
+references      > unknown reference '[][mbox]'
+references      > unknown reference '[][md5]'
+references      > unknown reference '[][metapost]'
+references      > unknown reference '[][mime]'
+references      > unknown reference '[][moduledata]'
+references      > unknown reference '[][modules]'
+references      > unknown reference '[][mp]'
+references      > unknown reference '[][mplib]'
+references      > unknown reference '[][newtoken]'
+references      > unknown reference '[][noads]'
+references      > unknown reference '[][node]'
+references      > unknown reference '[][nodes]'
+references      > unknown reference '[][number]'
+references      > unknown reference '[][os]'
+references      > unknown reference '[][package]'
+references      > unknown reference '[][pagebuilders]'
+references      > unknown reference '[][parametersets]'
+references      > unknown reference '[][pdf]'
+references      > unknown reference '[][pdfscanner]'
+references      > unknown reference '[][physics]'
+references      > unknown reference '[][profiler]'
+references      > unknown reference '[][publications]'
+references      > unknown reference '[][regimes]'
+references      > unknown reference '[][resolvers]'
+references      > unknown reference '[][sandbox]'
+references      > unknown reference '[][scripts]'
+references      > unknown reference '[][set]'
+references      > unknown reference '[][socket]'
+references      > unknown reference '[][sorters]'
+references      > unknown reference '[][statistics]'
+references      > unknown reference '[][status]'
+references      > unknown reference '[][storage]'
+references      > unknown reference '[][streams]'
+references      > unknown reference '[][string]'
+references      > unknown reference '[][structures]'
+references      > unknown reference '[][table]'
+references      > unknown reference '[][tex]'
+references      > unknown reference '[][texconfig]'
+references      > unknown reference '[][texio]'
+references      > unknown reference '[][thirddata]'
+references      > unknown reference '[][tokens]'
+references      > unknown reference '[][tracers]'
+references      > unknown reference '[][trackers]'
+references      > unknown reference '[][typesetters]'
+references      > unknown reference '[][unicode]'
+references      > unknown reference '[][userdata]'
+references      > unknown reference '[][utilities]'
+references      > unknown reference '[][vf]'
+references      > unknown reference '[][visualizers]'
+references      > unknown reference '[][xml]'
+references      > unknown reference '[][zip]'
+references      > unknown reference '[][zlib]'
+backend         > xmp > using file 'lpdf-pdx.xml'
+pages           > flushing realpage 1, userpage 1
+structure       > sectioning > title @ level 2 : 0.0 -> global (alias: _G)
+references      > unknown reference '[][arg]'
+references      > unknown reference '[][utf]'
+pages           > flushing realpage 2, userpage 1
+pages           > flushing realpage 3, userpage 2
+structure       > sectioning > title @ level 2 : 0.0 -> attributes (context)
+pages           > flushing realpage 4, userpage 3
+pages           > flushing realpage 5, userpage 4
+structure       > sectioning > title @ level 2 : 0.0 -> backends (context)
+pages           > flushing realpage 6, userpage 5
+pages           > flushing realpage 7, userpage 6
+structure       > sectioning > title @ level 2 : 0.0 -> bit (context)
+pages           > flushing realpage 8, userpage 7
+structure       > sectioning > xtitle @ level 2 : 0.0 -> bit32 (basic lua)
+pages           > flushing realpage 9, userpage 8
+structure       > sectioning > title @ level 2 : 0.0 -> blobs (context)
+pages           > flushing realpage 10, userpage 9
+structure       > sectioning > title @ level 2 : 0.0 -> boolean (context)
+pages           > flushing realpage 11, userpage 10
+structure       > sectioning > title @ level 2 : 0.0 -> buffers (context)
+pages           > flushing realpage 12, userpage 11
+structure       > sectioning > title @ level 2 : 0.0 -> builders (context)
+pages           > flushing realpage 13, userpage 12
+structure       > sectioning > title @ level 2 : 0.0 -> caches (context)
+pages           > flushing realpage 14, userpage 13
+structure       > sectioning > xtitle @ level 2 : 0.0 -> callback (basic tex)
+pages           > flushing realpage 15, userpage 14
+structure       > sectioning > title @ level 2 : 0.0 -> callbacks (context)
+pages           > flushing realpage 16, userpage 15
+structure       > sectioning > title @ level 2 : 0.0 -> catcodes (context)
+pages           > flushing realpage 17, userpage 16
+structure       > sectioning > title @ level 2 : 0.0 -> characters (context)
+pages           > flushing realpage 18, userpage 17
+pages           > flushing realpage 19, userpage 18
+structure       > sectioning > title @ level 2 : 0.0 -> chemistry (context)
+pages           > flushing realpage 20, userpage 19
+structure       > sectioning > title @ level 2 : 0.0 -> containers (context)
+pages           > flushing realpage 21, userpage 20
+structure       > sectioning > title @ level 2 : 0.0 -> converters (context)
+pages           > flushing realpage 22, userpage 21
+structure       > sectioning > xtitle @ level 2 : 0.0 -> coroutine (basic lua)
+pages           > flushing realpage 23, userpage 22
+structure       > sectioning > title @ level 2 : 0.0 -> ctxrunner (context)
+pages           > flushing realpage 24, userpage 23
+structure       > sectioning > xtitle @ level 2 : 0.0 -> debug (basic lua)
+pages           > flushing realpage 25, userpage 24
+structure       > sectioning > title @ level 2 : 0.0 -> dir (context)
+pages           > flushing realpage 26, userpage 25
+structure       > sectioning > title @ level 2 : 0.0 -> directives (context)
+pages           > flushing realpage 27, userpage 26
+structure       > sectioning > title @ level 2 : 0.0 -> document (context)
+pages           > flushing realpage 28, userpage 27
+structure       > sectioning > title @ level 2 : 0.0 -> environment (context)
+pages           > flushing realpage 29, userpage 28
+structure       > sectioning > xtitle @ level 2 : 0.0 -> epdf (extra tex)
+pages           > flushing realpage 30, userpage 29
+structure       > sectioning > title @ level 2 : 0.0 -> experiments (context)
+pages           > flushing realpage 31, userpage 30
+structure       > sectioning > title @ level 2 : 0.0 -> figures (context)
+pages           > flushing realpage 32, userpage 31
+structure       > sectioning > xtitle @ level 2 : 0.0 -> file (basic lua)
+pages           > flushing realpage 33, userpage 32
+structure       > sectioning > title @ level 2 : 0.0 -> floats (context)
+pages           > flushing realpage 34, userpage 33
+structure       > sectioning > xtitle @ level 2 : 0.0 -> font (basic tex)
+pages           > flushing realpage 35, userpage 34
+structure       > sectioning > xtitle @ level 2 : 0.0 -> fontloader (extra tex)
+pages           > flushing realpage 36, userpage 35
+structure       > sectioning > title @ level 2 : 0.0 -> fonts (context)
+pages           > flushing realpage 37, userpage 36
+pages           > flushing realpage 38, userpage 37
+pages           > flushing realpage 39, userpage 38
+pages           > flushing realpage 40, userpage 39
+pages           > flushing realpage 41, userpage 40
+pages           > flushing realpage 42, userpage 41
+pages           > flushing realpage 43, userpage 42
+pages           > flushing realpage 44, userpage 43
+pages           > flushing realpage 45, userpage 44
+pages           > flushing realpage 46, userpage 45
+pages           > flushing realpage 47, userpage 46
+structure       > sectioning > title @ level 2 : 0.0 -> functions (context)
+pages           > flushing realpage 48, userpage 47
+structure       > sectioning > title @ level 2 : 0.0 -> graphics (context)
+pages           > flushing realpage 49, userpage 48
+str

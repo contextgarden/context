@@ -196,7 +196,7 @@ local function flushxmpinfo()
         logs.poptarget()
     end
     blob = format(xpacket,packetid,blob)
-    if not verbose and tex.pdfcompresslevel > 0 then
+    if not verbose and (tex.pdfcompresslevel or tex.getcount("pdfcompresslevel")) > 0 then
         blob = gsub(blob,">%s+<","><")
     end
     local r = pdfflushstreamobject(blob,md,false) -- uncompressed

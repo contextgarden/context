@@ -134,12 +134,12 @@
    \wd\scratchbox \dimexpr#5\onebasepoint-#3\onebasepoint+2\onebasepoint\relax
    \ht\scratchbox #6\onebasepoint
    \dp\scratchbox-#4\onebasepoint
-   \pdfxform
+   \saveboxresource
      attr      {/Group << /S /Transparency /I \ifnum#1=1 true \else false \fi /K \ifnum#1=1 true \else false \fi >>}
      resources {\pdfbackendcurrentresources}
      \scratchbox
-   \setbox\scratchbox\hbox\bgroup\kern-\onebasepoint\pdfrefxform\pdflastxform\egroup
-   \setbox\scratchbox\hbox\bgroup\kern-\onebasepoint\pdfrefxform\pdflastxform\egroup
+ % \setbox\scratchbox\hbox\bgroup\kern-\onebasepoint\useboxresource\lastsavedboxresourceindex\egroup % why twice?
+   \setbox\scratchbox\hbox\bgroup\kern-\onebasepoint\useboxresource\lastsavedboxresourceindex\egroup
    \wd\scratchbox\zeropoint
    \ht\scratchbox\zeropoint
    \dp\scratchbox\zeropoint
