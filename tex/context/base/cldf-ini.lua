@@ -207,6 +207,7 @@ local registerfunction, unregisterfunction, reservefunction, knownfunctions, cal
                 local slot = slots[i]
                 local data = storedfunctions[slot]
                 luafunctions[slot] = function(...)
+                    -- print(data) -- could be trace
                     return expose(slot,data,...)
                 end
             end
