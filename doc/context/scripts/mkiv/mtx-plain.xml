@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-plain</entry>
+  <entry name="detail">Plain TeX Runner</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="make"><short>create format file</short></flag>
+    <flag name="fonts"><short>create plain font database</short></flag>
+    <flag name="run"><short>process file</short></flag>
+    <flag name="format" value="string"><short>format name (default: luatex-plain)</short></flag>
+    <flag name="engine" value="string"><short>engine to use (default: luatex)</short></flag>
+    <flag name="jit"><short>use luajittex</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

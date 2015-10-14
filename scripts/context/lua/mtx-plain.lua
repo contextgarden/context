@@ -91,7 +91,7 @@ function scripts.plain.make(texengine,texformat)
             end
         end
     end
-    local fmtpath = --expand-path $safe-out-name=$TEXFORMATS
+    local fmtpath = os.resultof("kpsewhich --expand-path $safe-out-name=$TEXFORMATS")
     if not fmtpath or fmtpath == "" then
         fmtpath = "."
     else

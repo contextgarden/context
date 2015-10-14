@@ -1,0 +1,136 @@
+% This is a pdftex compatibility file. We could use \ifprimitive instead.
+
+\ifdefined\pdfextension
+
+    % promoted
+
+    \let\pdfpagewidth      \pagewidth
+    \let\pdfpageheight     \pageheight
+
+    \let\pdfadjustspacing  \adjustspacing
+    \let\pdfprotrudechars  \protrudechars
+    \let\pdfnoligatures    \ignoreligaturesinfont
+    \let\pdffontexpand     \expandglyphsinfont
+    \let\pdfcopyfont       \copyfont
+
+    \let\pdfxform          \saveboxresource
+    \let\pdflastxform      \lastsavedboxresourceindex
+    \let\pdfrefxform       \useboxresource
+
+    \let\pdfximage         \saveimageresource
+    \let\pdflastximage     \lastsavedimageresourceindex
+    \let\pdflastximagepages\lastsavedimageresourcepages
+    \let\pdfrefximage      \useimageresource
+
+    \let\pdfsavepos        \savepos
+    \let\pdflastxpos       \lastxpos
+    \let\pdflastypos       \lastypos
+
+    \let\pdftexversion     \luatexversion
+    \let\pdftexrevision    \luatexrevision
+    \let\pdftexbanner      \luatexbanner
+
+    \let\pdfoutput         \outputmode
+    \let\pdfdraftmode      \draftmode
+
+    \let\pdfpxdimen        \pxdimen
+
+    \let\pdfinsertht       \insertht
+
+    % also promoted
+
+  % \let\pdfnormaldeviate  \normaldeviate
+  % \let\pdfuniformdeviate \uniformdeviate
+  % \let\pdfsetrandomseed  \setrandomseed
+  % \let\pdfrandomseed     \randomseed
+  %
+  % \let\pdfprimitive      \primitive
+  %
+  % \let\expandafter\csname    ifpdfabsnum\expandafter\endcsname\csname    ifabsnum\endcsname
+  % \let\expandafter\csname    ifpdfabsdim\expandafter\endcsname\csname    ifabsdim\endcsname
+  % \let\expandafter\csname ifpdfprimitive\expandafter\endcsname\csname ifprimitive\endcsname
+
+    % removed (also some others but already long ago)
+
+    \newdimen\pdfeachlineheight
+    \newdimen\pdfeachlinedepth
+    \newdimen\pdflastlinedepth
+    \newdimen\pdffirstlineheight
+    \newdimen\pdfignoreddimen
+
+    % grouped
+
+    \protected\def\pdfliteral        {\pdfextension literal}
+    \protected\def\pdfcolorstack     {\pdfextension colorstack}
+    \protected\def\pdfsetmatrix      {\pdfextension setmatrix}
+    \protected\def\pdfsave           {\pdfextension save\relax}
+    \protected\def\pdfrestore        {\pdfextension restore\relax}
+    \protected\def\pdfobj            {\pdfextension obj }
+    \protected\def\pdfrefobj         {\pdfextension refobj }
+    \protected\def\pdfannot          {\pdfextension annot }
+    \protected\def\pdfstartlink      {\pdfextension startlink }
+    \protected\def\pdfendlink        {\pdfextension endlink\relax}
+    \protected\def\pdfoutline        {\pdfextension outline }
+    \protected\def\pdfdest           {\pdfextension dest }
+    \protected\def\pdfthread         {\pdfextension thread }
+    \protected\def\pdfstartthread    {\pdfextension startthread }
+    \protected\def\pdfendthread      {\pdfextension endthread\relax}
+    \protected\def\pdfinfo           {\pdfextension info }
+    \protected\def\pdfcatalog        {\pdfextension catalog }
+    \protected\def\pdfnames          {\pdfextension names }
+    \protected\def\pdfincludechars   {\pdfextension includechars }
+    \protected\def\pdffontattr       {\pdfextension fontattr }
+    \protected\def\pdfmapfile        {\pdfextension mapfile }
+    \protected\def\pdfmapline        {\pdfextension mapline }
+    \protected\def\pdftrailer        {\pdfextension trailer }
+    \protected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
+
+    % grouped
+
+    \def\pdflastlink       {\numexpr\pdffeedback lastlink}
+    \def\pdfretval         {\numexpr\pdffeedback retval}
+    \def\pdflastobj        {\numexpr\pdffeedback lastobj}
+    \def\pdflastannot      {\numexpr\pdffeedback lastannot}
+    \def\pdfxformname      {\numexpr\pdffeedback xformname}
+    \def\pdfcreationdate           {\pdffeedback creationdate}
+    \def\pdffontname       {\numexpr\pdffeedback fontname}
+    \def\pdffontobjnum     {\numexpr\pdffeedback fontobjnum}
+    \def\pdffontsize       {\dimexpr\pdffeedback fontsize}
+    \def\pdfpageref        {\numexpr\pdffeedback pageref}
+    \def\pdfcolorstackinit         {\pdffeedback colorstackinit}
+
+    % used when defined
+
+    \newcount\pdfcompresslevel         \pdfcompresslevel          9
+    \newcount\pdfobjcompresslevel      \pdfobjcompresslevel       1
+    \newcount\pdfdecimaldigits         \pdfdecimaldigits          3
+    \newcount\pdfgamma                 \pdfgamma               1000
+    \newcount\pdfimageresolution       \pdfimageresolution       71
+    \newcount\pdfimageapplygamma       \pdfimageapplygamma        0
+    \newcount\pdfimagegamma            \pdfimagegamma          2200
+    \newcount\pdfimagehicolor          \pdfimagehicolor           1
+    \newcount\pdfpkresolution          \pdfpkresolution          72
+    \newcount\pdfinclusioncopyfonts    \pdfinclusioncopyfonts     0
+    \newcount\pdfinclusionerrorlevel   \pdfinclusionerrorlevel    0
+    \newcount\pdfreplacefont           \pdfreplacefont            0
+    \newcount\pdfgentounicode          \pdfgentounicode           0
+    \newcount\pdfpagebox               \pdfpagebox                0
+    \newcount\pdfminorversion          \pdfminorversion           4
+    \newcount\pdfuniqueresname         \pdfuniqueresname          0
+
+    \newdimen\pdfhorigin               \pdfhorigin              1in
+    \newdimen\pdfvorigin               \pdfvorigin              1in
+    \newdimen\pdflinkmargin            \pdflinkmargin           0pt
+    \newdimen\pdfdestmargin            \pdfdestmargin           0pt
+    \newdimen\pdfthreadmargin          \pdfthreadmargin         0pt
+
+    \newtoks \pdfpagesattr
+    \newtoks \pdfpageattr
+    \newtoks \pdfpageresources
+    \newtoks \pdfxformattr
+    \newtoks \pdfxformresources
+    \newtoks \pdfpkmode
+
+\fi
+
+\endinput

@@ -165,6 +165,22 @@
 
 \fi
 
+\ifdefined\pdfextension
+
+    \def\pdflastlink               {\numexpr\pdffeedback lastlink}
+    \def\pdfretval                 {\numexpr\pdffeedback retval}
+    \def\pdflastobj                {\numexpr\pdffeedback lastobj}
+    \def\pdflastannot              {\numexpr\pdffeedback lastannot}
+    \def\pdfxformname              {\numexpr\pdffeedback xformname}
+    \def\pdfcreationdate                   {\pdffeedback creationdate}
+    \def\pdffontname               {\numexpr\pdffeedback fontname}
+    \def\pdffontobjnum             {\numexpr\pdffeedback fontobjnum}
+    \def\pdffontsize               {\dimexpr\pdffeedback fontsize}
+    \def\pdfpageref                {\numexpr\pdffeedback pageref}
+    \def\pdfcolorstackinit                 {\pdffeedback colorstackinit}
+
+\fi
+
 %D \ETEX\ has a not so handy way of telling you the version number, i.e. the revision
 %D number has a period in it:
 
