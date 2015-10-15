@@ -619,6 +619,7 @@ if context then
     local getprev            = nuts.getprev
     local getsubtype         = nuts.getsubtype
     local getlist            = nuts.getlist
+    local setdisc            = nuts.setdisc
     local insert_before      = nuts.insert_before
     local insert_after       = nuts.insert_after
     local copy_node          = nuts.copy

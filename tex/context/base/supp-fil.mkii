@@ -37,9 +37,17 @@
   \def\f!parentpath   {..}
 \fi
 
-\def\openinputfile #1#2{\immediate\openin #1="#2"\relax} \def\closeinputfile #1{\immediate\closein #1}
-\def\openoutputfile#1#2{\immediate\openout#1="#2"\relax} \def\closeoutputfile#1{\immediate\closeout#1}
-
+\ifnum\texengine=\luatexengine
+    \def\openinputfile #1#2{\openin #1{#2}\relax}
+    \def\openoutputfile#1#2{\immediate\openout#1{#2}\relax}
+\else
+    \def\openinputfile #1#2{\openin #1 "#2"\relax}
+    \def\openoutputfile#1#2{\immediate\openout#1 "#2"\relax}
+\fi
+
+\def\closeinputfile #1{\immediate\closein #1}
+\def\closeoutputfile#1{\immediate\closeout#1}
+
 %D \macros
 %D   {pushendofline,popendofline}
 %D
@@ -235,7 +243,11 @@
 
 \unexpanded\def\input{\normalinput}
 
-\def\inputgivenfile#1{\normalinput"#1"\relax}
+\ifnum\texengine=\luatexengine
+    \def\inputgivenfile#1{\normalinput{#1}\relax}
+\else
+    \def\inputgivenfile#1{\normalinput"#1"\relax}
+\fi
 
 %D \macros
 %D   {readfile,ReadFile,maxreadlevel}

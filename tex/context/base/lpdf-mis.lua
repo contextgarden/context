@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ['lpdf-mis'] = {
 
 local next, tostring = next, tostring
 local format, gsub, formatters = string.format, string.gsub, string.formatters
-local texset = tex.set
+local texset, texget = tex.set, tex.get
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 
@@ -259,26 +259,21 @@ local pagespecs = {
 local pagespec, topoffset, leftoffset, height, width, doublesided = "default", 0, 0, 0, 0, false
 local cropoffset, bleedoffset, trimoffset, artoffset = 0, 0, 0, 0
 
-local pdfpaperheight = tex.normalpageheight -- we use normal because one never knows if an user
-local pdfpaperwidth  = tex.normalpagewidth  -- defines a dimen is defined that overloads the internal
-
 function codeinjections.setupcanvas(specification)
     local paperheight = specification.paperheight
     local paperwidth  = specification.paperwidth
     local paperdouble = specification.doublesided
     if paperheight then
         texset('global','pageheight',paperheight)
-        pdfpaperheight = paperheight
     end
     if paperwidth then
         texset('global','pagewidth',paperwidth)
-        pdfpaperwidth = paperwidth
     end
     pagespec    = specification.mode        or pagespec
     topoffset   = specification.topoffset   or 0
     leftoffset  = specification.leftoffset  or 0
-    height      = specification.height      or pdfpaperheight
-    width       = specification.width       or pdfpaperwidth
+    height      = specification.height      or texget("pageheight")
+    width       = specification.width       or texget("pagewidth")
     --
     cropoffset  = specification.cropoffset  or 0
     trimoffset  = cropoffset  - (specification.trimoffset  or 0)
@@ -348,9 +343,9 @@ end
 
 local function pagespecification()
     local llx = leftoffset
-    local lly = pdfpaperheight + topoffset - height
+    local lly = texget("pageheight") + topoffset - height
     local urx = width - leftoffset
-    local ury = pdfpaperheight - topoffset
+    local ury = texget("pageheight") - topoffset
     -- boxes can be cached
     local function extrabox(WhatBox,offset,always)
         if offset ~= 0 or always then

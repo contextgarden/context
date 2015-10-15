@@ -90,10 +90,9 @@
     \expandafter\end
 \fi
 
-%  todo: pdfsave pdfrestore pdfcolor... don't initialize them
-
 \ifnum\texengine=\luatexengine
     \directlua 0 { % this info is stored in the format
+      % kpse.set_program_name("context")
         lua.name[0] = "main ctx instance"
         local extraprimitives  = tex.extraprimitives
         local enableprimitives = tex.enableprimitives
@@ -277,6 +276,12 @@
      \expandafter\expandafter\expandafter\allocateregisternop
    \fi\fi
    #1#2#3#4#5}
+
+%D Goodie:
+
+\ifnum\texengine=\luatexengine
+    \input luatex-pdf \relax
+\fi
 
 %D Since the number of chars exceed 256 now, we can use \type
 %D {\chardef} instead of the more limited \type {\mathchardef}.
