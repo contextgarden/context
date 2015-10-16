@@ -670,9 +670,9 @@
 
 \def\nopatterns{\normallanguage\minusone}
 
-%D \XETEX\ is \UNICODE:
+%D \XETEX\ (and also \LUATEX) are \UNICODE:
 
-\ifnum\texengine=\xetexengine
+\ifnum\texengine>\pdftexengine
 
     \def\synchronizepatternswithfont{}
     \def\doloadpatterns         #1#2{\dodoloadpatterns{#1}{#2}\s!default\s!default}

@@ -617,6 +617,7 @@ return {
   "bodydir",
   "botmark",
   "botmarks",
+  "boundary",
   "box",
   "boxdir",
   "boxmaxdepth",
