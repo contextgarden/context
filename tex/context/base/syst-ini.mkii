@@ -118,6 +118,139 @@
     }
 \fi
 
+\ifdefined\pdfextension
+
+    % promoted
+
+    \let\pdfpagewidth      \pagewidth
+    \let\pdfpageheight     \pageheight
+
+    \let\pdfadjustspacing  \adjustspacing
+    \let\pdfprotrudechars  \protrudechars
+    \let\pdfnoligatures    \ignoreligaturesinfont
+    \let\pdffontexpand     \expandglyphsinfont
+    \let\pdfcopyfont       \copyfont
+
+    \let\pdfxform          \saveboxresource
+    \let\pdflastxform      \lastsavedboxresourceindex
+    \let\pdfrefxform       \useboxresource
+
+    \let\pdfximage         \saveimageresource
+    \let\pdflastximage     \lastsavedimageresourceindex
+    \let\pdflastximagepages\lastsavedimageresourcepages
+    \let\pdfrefximage      \useimageresource
+
+    \let\pdfsavepos        \savepos
+    \let\pdflastxpos       \lastxpos
+    \let\pdflastypos       \lastypos
+
+    \let\pdftexversion     \luatexversion
+    \let\pdftexrevision    \luatexrevision
+    \let\pdftexbanner      \luatexbanner
+
+    \let\pdfoutput         \outputmode
+    \let\pdfdraftmode      \draftmode
+
+    \let\pdfpxdimen        \pxdimen
+
+    \let\pdfinsertht       \insertht
+
+    % also promoted
+
+  % \let\pdfnormaldeviate  \normaldeviate
+  % \let\pdfuniformdeviate \uniformdeviate
+  % \let\pdfsetrandomseed  \setrandomseed
+  % \let\pdfrandomseed     \randomseed
+  %
+  % \let\pdfprimitive      \primitive
+  %
+  % \let\expandafter\csname    ifpdfabsnum\expandafter\endcsname\csname    ifabsnum\endcsname
+  % \let\expandafter\csname    ifpdfabsdim\expandafter\endcsname\csname    ifabsdim\endcsname
+  % \let\expandafter\csname ifpdfprimitive\expandafter\endcsname\csname ifprimitive\endcsname
+
+    % removed (also some others but already long ago)
+
+    \newdimen\pdfeachlineheight
+    \newdimen\pdfeachlinedepth
+    \newdimen\pdflastlinedepth
+    \newdimen\pdffirstlineheight
+    \newdimen\pdfignoreddimen
+
+    % grouped
+
+    \protected\def\pdfliteral        {\pdfextension literal}
+    \protected\def\pdfcolorstack     {\pdfextension colorstack}
+    \protected\def\pdfsetmatrix      {\pdfextension setmatrix}
+    \protected\def\pdfsave           {\pdfextension save\relax}
+    \protected\def\pdfrestore        {\pdfextension restore\relax}
+    \protected\def\pdfobj            {\pdfextension obj }
+    \protected\def\pdfrefobj         {\pdfextension refobj }
+    \protected\def\pdfannot          {\pdfextension annot }
+    \protected\def\pdfstartlink      {\pdfextension startlink }
+    \protected\def\pdfendlink        {\pdfextension endlink\relax}
+    \protected\def\pdfoutline        {\pdfextension outline }
+    \protected\def\pdfdest           {\pdfextension dest }
+    \protected\def\pdfthread         {\pdfextension thread }
+    \protected\def\pdfstartthread    {\pdfextension startthread }
+    \protected\def\pdfendthread      {\pdfextension endthread\relax}
+    \protected\def\pdfinfo           {\pdfextension info }
+    \protected\def\pdfcatalog        {\pdfextension catalog }
+    \protected\def\pdfnames          {\pdfextension names }
+    \protected\def\pdfincludechars   {\pdfextension includechars }
+    \protected\def\pdffontattr       {\pdfextension fontattr }
+    \protected\def\pdfmapfile        {\pdfextension mapfile }
+    \protected\def\pdfmapline        {\pdfextension mapline }
+    \protected\def\pdftrailer        {\pdfextension trailer }
+    \protected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
+
+    % grouped
+
+    \def\pdflastlink       {\numexpr\pdffeedback lastlink}
+    \def\pdfretval         {\numexpr\pdffeedback retval}
+    \def\pdflastobj        {\numexpr\pdffeedback lastobj}
+    \def\pdflastannot      {\numexpr\pdffeedback lastannot}
+    \def\pdfxformname      {\numexpr\pdffeedback xformname}
+    \def\pdfcreationdate           {\pdffeedback creationdate}
+    \def\pdffontname       {\numexpr\pdffeedback fontname}
+    \def\pdffontobjnum     {\numexpr\pdffeedback fontobjnum}
+    \def\pdffontsize       {\dimexpr\pdffeedback fontsize}
+    \def\pdfpageref        {\numexpr\pdffeedback pageref}
+    \def\pdfcolorstackinit         {\pdffeedback colorstackinit}
+
+    % used when defined
+
+    \edef\pdfcompresslevel       {\pdfvariable compresslevel}       \pdfcompresslevel         9
+    \edef\pdfobjcompresslevel    {\pdfvariable objcompresslevel}    \pdfobjcompresslevel      1
+    \edef\pdfdecimaldigits       {\pdfvariable decimaldigits}       \pdfdecimaldigits         3
+    \edef\pdfgamma               {\pdfvariable gamma}               \pdfgamma              1000
+    \edef\pdfimageresolution     {\pdfvariable imageresolution}     \pdfimageresolution      71
+    \edef\pdfimageapplygamma     {\pdfvariable imageapplygamma}     \pdfimageapplygamma       0
+    \edef\pdfimagegamma          {\pdfvariable imagegamma}          \pdfimagegamma         2200
+    \edef\pdfimagehicolor        {\pdfvariable imagehicolor}        \pdfimagehicolor          1
+    \edef\pdfpkresolution        {\pdfvariable pkresolution}        \pdfpkresolution         72
+    \edef\pdfinclusioncopyfonts  {\pdfvariable inclusioncopyfonts}  \pdfinclusioncopyfonts    0
+    \edef\pdfinclusionerrorlevel {\pdfvariable inclusionerrorlevel} \pdfinclusionerrorlevel   0
+    \edef\pdfreplacefont         {\pdfvariable replacefont}         \pdfreplacefont           0
+    \edef\pdfgentounicode        {\pdfvariable gentounicode}        \pdfgentounicode          0
+    \edef\pdfpagebox             {\pdfvariable pagebox}             \pdfpagebox               0
+    \edef\pdfminorversion        {\pdfvariable minorversion}        \pdfminorversion          4
+    \edef\pdfuniqueresname       {\pdfvariable uniqueresname}       \pdfuniqueresname         0
+
+    \edef\pdfhorigin             {\pdfvariable horigin}             \pdfhorigin             1in
+    \edef\pdfvorigin             {\pdfvariable vorigin}             \pdfvorigin             1in
+    \edef\pdflinkmargin          {\pdfvariable linkmargin}          \pdflinkmargin          0pt
+    \edef\pdfdestmargin          {\pdfvariable destmargin}          \pdfdestmargin          0pt
+    \edef\pdfthreadmargin        {\pdfvariable threadmargin}        \pdfthreadmargin        0pt
+
+    \edef\pdfpagesattr           {\pdfvariable pagesattr}
+    \edef\pdfpageattr            {\pdfvariable pageattr}
+    \edef\pdfpageresources       {\pdfvariable pageresources}
+    \edef\pdfxformattr           {\pdfvariable xformattr}
+    \edef\pdfxformresources      {\pdfvariable xformresources}
+    \edef\pdfpkmode              {\pdfvariable pkmode}
+
+\fi
+
 %D \ETEX\ has a not so handy way of telling you the version number,
 %D i.e. the revision number has a period in it:
 

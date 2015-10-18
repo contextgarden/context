@@ -151,6 +151,12 @@ end
 
 local t = { } for i=1,24 do t[i] = random() end
 
+if not pdf.getcompresslevel then
+    pdf.getcompresslevel = function()
+        return tex.pdfcompresslevel or tex.getcount("pdfcompresslevel")
+    end
+end
+
 local function flushxmpinfo()
     commands.pushrandomseed()
     commands.setrandomseed(os.time())
@@ -196,7 +202,7 @@ local function flushxmpinfo()
         logs.poptarget()
     end
     blob = format(xpacket,packetid,blob)
-    if not verbose and (tex.pdfcompresslevel or tex.getcount("pdfcompresslevel")) > 0 then
+    if not verbose and pdf.getcompresslevel() > 0 then
         blob = gsub(blob,">%s+<","><")
     end
     local r = pdfflushstreamobject(blob,md,false) -- uncompressed

@@ -1,136 +1,170 @@
 % This is a pdftex compatibility file. We could use \ifprimitive instead.
 
+\begingroup
+
+\catcode`\{ =  1 % left  brace is begin-group character
+\catcode`\} =  2 % right brace is end-group   character
+
 \ifdefined\pdfextension
 
     % promoted
 
-    \let\pdfpagewidth      \pagewidth
-    \let\pdfpageheight     \pageheight
+    \global\let\pdfpagewidth      \pagewidth
+    \global\let\pdfpageheight     \pageheight
 
-    \let\pdfadjustspacing  \adjustspacing
-    \let\pdfprotrudechars  \protrudechars
-    \let\pdfnoligatures    \ignoreligaturesinfont
-    \let\pdffontexpand     \expandglyphsinfont
-    \let\pdfcopyfont       \copyfont
+    \global\let\pdfadjustspacing  \adjustspacing
+    \global\let\pdfprotrudechars  \protrudechars
+    \global\let\pdfnoligatures    \ignoreligaturesinfont
+    \global\let\pdffontexpand     \expandglyphsinfont
+    \global\let\pdfcopyfont       \copyfont
 
-    \let\pdfxform          \saveboxresource
-    \let\pdflastxform      \lastsavedboxresourceindex
-    \let\pdfrefxform       \useboxresource
+    \global\let\pdfxform          \saveboxresource
+    \global\let\pdflastxform      \lastsavedboxresourceindex
+    \global\let\pdfrefxform       \useboxresource
 
-    \let\pdfximage         \saveimageresource
-    \let\pdflastximage     \lastsavedimageresourceindex
-    \let\pdflastximagepages\lastsavedimageresourcepages
-    \let\pdfrefximage      \useimageresource
+    \global\let\pdfximage         \saveimageresource
+    \global\let\pdflastximage     \lastsavedimageresourceindex
+    \global\let\pdflastximagepages\lastsavedimageresourcepages
+    \global\let\pdfrefximage      \useimageresource
 
-    \let\pdfsavepos        \savepos
-    \let\pdflastxpos       \lastxpos
-    \let\pdflastypos       \lastypos
+    \global\let\pdfsavepos        \savepos
+    \global\let\pdflastxpos       \lastxpos
+    \global\let\pdflastypos       \lastypos
 
-    \let\pdftexversion     \luatexversion
-    \let\pdftexrevision    \luatexrevision
-    \let\pdftexbanner      \luatexbanner
+    \global\let\pdftexversion     \luatexversion
+    \global\let\pdftexrevision    \luatexrevision
+    \global\let\pdftexbanner      \luatexbanner
 
-    \let\pdfoutput         \outputmode
-    \let\pdfdraftmode      \draftmode
+    \global\let\pdfoutput         \outputmode
+    \global\let\pdfdraftmode      \draftmode
 
-    \let\pdfpxdimen        \pxdimen
+    \global\let\pdfpxdimen        \pxdimen
 
-    \let\pdfinsertht       \insertht
+    \global\let\pdfinsertht       \insertht
 
     % also promoted
 
-  % \let\pdfnormaldeviate  \normaldeviate
-  % \let\pdfuniformdeviate \uniformdeviate
-  % \let\pdfsetrandomseed  \setrandomseed
-  % \let\pdfrandomseed     \randomseed
+  % \global\let\pdfnormaldeviate  \normaldeviate
+  % \global\let\pdfuniformdeviate \uniformdeviate
+  % \global\let\pdfsetrandomseed  \setrandomseed
+  % \global\let\pdfrandomseed     \randomseed
   %
   % \let\pdfprimitive      \primitive
   %
-  % \let\expandafter\csname    ifpdfabsnum\expandafter\endcsname\csname    ifabsnum\endcsname
-  % \let\expandafter\csname    ifpdfabsdim\expandafter\endcsname\csname    ifabsdim\endcsname
-  % \let\expandafter\csname ifpdfprimitive\expandafter\endcsname\csname ifprimitive\endcsname
+  % \global\let\expandafter\csname    ifpdfabsnum\expandafter\endcsname\csname    ifabsnum\endcsname
+  % \global\let\expandafter\csname    ifpdfabsdim\expandafter\endcsname\csname    ifabsdim\endcsname
+  % \global\let\expandafter\csname ifpdfprimitive\expandafter\endcsname\csname ifprimitive\endcsname
 
     % removed (also some others but already long ago)
 
-    \newdimen\pdfeachlineheight
-    \newdimen\pdfeachlinedepth
-    \newdimen\pdflastlinedepth
-    \newdimen\pdffirstlineheight
-    \newdimen\pdfignoreddimen
+    \ifdefined\newdimen
+        \newdimen\pdfeachlineheight
+        \newdimen\pdfeachlinedepth
+        \newdimen\pdflastlinedepth
+        \newdimen\pdffirstlineheight
+        \newdimen\pdfignoreddimen
+    \fi
 
-    % grouped
+    % commands
 
-    \protected\def\pdfliteral        {\pdfextension literal}
-    \protected\def\pdfcolorstack     {\pdfextension colorstack}
-    \protected\def\pdfsetmatrix      {\pdfextension setmatrix}
-    \protected\def\pdfsave           {\pdfextension save\relax}
-    \protected\def\pdfrestore        {\pdfextension restore\relax}
-    \protected\def\pdfobj            {\pdfextension obj }
-    \protected\def\pdfrefobj         {\pdfextension refobj }
-    \protected\def\pdfannot          {\pdfextension annot }
-    \protected\def\pdfstartlink      {\pdfextension startlink }
-    \protected\def\pdfendlink        {\pdfextension endlink\relax}
-    \protected\def\pdfoutline        {\pdfextension outline }
-    \protected\def\pdfdest           {\pdfextension dest }
-    \protected\def\pdfthread         {\pdfextension thread }
-    \protected\def\pdfstartthread    {\pdfextension startthread }
-    \protected\def\pdfendthread      {\pdfextension endthread\relax}
-    \protected\def\pdfinfo           {\pdfextension info }
-    \protected\def\pdfcatalog        {\pdfextension catalog }
-    \protected\def\pdfnames          {\pdfextension names }
-    \protected\def\pdfincludechars   {\pdfextension includechars }
-    \protected\def\pdffontattr       {\pdfextension fontattr }
-    \protected\def\pdfmapfile        {\pdfextension mapfile }
-    \protected\def\pdfmapline        {\pdfextension mapline }
-    \protected\def\pdftrailer        {\pdfextension trailer }
-    \protected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
+    \protected\gdef\pdfliteral        {\pdfextension literal}
+    \protected\gdef\pdfcolorstack     {\pdfextension colorstack}
+    \protected\gdef\pdfsetmatrix      {\pdfextension setmatrix}
+    \protected\gdef\pdfsave           {\pdfextension save\relax}
+    \protected\gdef\pdfrestore        {\pdfextension restore\relax}
+    \protected\gdef\pdfobj            {\pdfextension obj }
+    \protected\gdef\pdfrefobj         {\pdfextension refobj }
+    \protected\gdef\pdfannot          {\pdfextension annot }
+    \protected\gdef\pdfstartlink      {\pdfextension startlink }
+    \protected\gdef\pdfendlink        {\pdfextension endlink\relax}
+    \protected\gdef\pdfoutline        {\pdfextension outline }
+    \protected\gdef\pdfdest           {\pdfextension dest }
+    \protected\gdef\pdfthread         {\pdfextension thread }
+    \protected\gdef\pdfstartthread    {\pdfextension startthread }
+    \protected\gdef\pdfendthread      {\pdfextension endthread\relax}
+    \protected\gdef\pdfinfo           {\pdfextension info }
+    \protected\gdef\pdfcatalog        {\pdfextension catalog }
+    \protected\gdef\pdfnames          {\pdfextension names }
+    \protected\gdef\pdfincludechars   {\pdfextension includechars }
+    \protected\gdef\pdffontattr       {\pdfextension fontattr }
+    \protected\gdef\pdfmapfile        {\pdfextension mapfile }
+    \protected\gdef\pdfmapline        {\pdfextension mapline }
+    \protected\gdef\pdftrailer        {\pdfextension trailer }
+    \protected\gdef\pdfglyphtounicode {\pdfextension glyphtounicode }
 
-    % grouped
+    % converted
 
-    \def\pdflastlink       {\numexpr\pdffeedback lastlink}
-    \def\pdfretval         {\numexpr\pdffeedback retval}
-    \def\pdflastobj        {\numexpr\pdffeedback lastobj}
-    \def\pdflastannot      {\numexpr\pdffeedback lastannot}
-    \def\pdfxformname      {\numexpr\pdffeedback xformname}
-    \def\pdfcreationdate           {\pdffeedback creationdate}
-    \def\pdffontname       {\numexpr\pdffeedback fontname}
-    \def\pdffontobjnum     {\numexpr\pdffeedback fontobjnum}
-    \def\pdffontsize       {\dimexpr\pdffeedback fontsize}
-    \def\pdfpageref        {\numexpr\pdffeedback pageref}
-    \def\pdfcolorstackinit         {\pdffeedback colorstackinit}
+    \gdef\pdflastlink         {\numexpr\pdffeedback lastlink}
+    \gdef\pdfretval           {\numexpr\pdffeedback retval}
+    \gdef\pdflastobj          {\numexpr\pdffeedback lastobj}
+    \gdef\pdflastannot        {\numexpr\pdffeedback lastannot}
+    \gdef\pdfxformname        {\numexpr\pdffeedback xformname}
+    \gdef\pdfcreationdate             {\pdffeedback creationdate}
+    \gdef\pdffontname         {\numexpr\pdffeedback fontname}
+    \gdef\pdffontobjnum       {\numexpr\pdffeedback fontobjnum}
+    \gdef\pdffontsize         {\dimexpr\pdffeedback fontsize}
+    \gdef\pdfpageref          {\numexpr\pdffeedback pageref}
+    \gdef\pdfcolorstackinit           {\pdffeedback colorstackinit}
 
-    % used when defined
+    % registers
 
-    \newcount\pdfcompresslevel         \pdfcompresslevel          9
-    \newcount\pdfobjcompresslevel      \pdfobjcompresslevel       1
-    \newcount\pdfdecimaldigits         \pdfdecimaldigits          3
-    \newcount\pdfgamma                 \pdfgamma               1000
-    \newcount\pdfimageresolution       \pdfimageresolution       71
-    \newcount\pdfimageapplygamma       \pdfimageapplygamma        0
-    \newcount\pdfimagegamma            \pdfimagegamma          2200
-    \newcount\pdfimagehicolor          \pdfimagehicolor           1
-    \newcount\pdfpkresolution          \pdfpkresolution          72
-    \newcount\pdfinclusioncopyfonts    \pdfinclusioncopyfonts     0
-    \newcount\pdfinclusionerrorlevel   \pdfinclusionerrorlevel    0
-    \newcount\pdfreplacefont           \pdfreplacefont            0
-    \newcount\pdfgentounicode          \pdfgentounicode           0
-    \newcount\pdfpagebox               \pdfpagebox                0
-    \newcount\pdfminorversion          \pdfminorversion           4
-    \newcount\pdfuniqueresname         \pdfuniqueresname          0
+    \xdef\pdfcompresslevel            {\pdfvariable compresslevel}
+    \xdef\pdfobjcompresslevel         {\pdfvariable objcompresslevel}
+    \xdef\pdfdecimaldigits            {\pdfvariable decimaldigits}
+    \xdef\pdfgamma                    {\pdfvariable gamma}
+    \xdef\pdfimageresolution          {\pdfvariable imageresolution}
+    \xdef\pdfimageapplygamma          {\pdfvariable imageapplygamma}
+    \xdef\pdfimagegamma               {\pdfvariable imagegamma}
+    \xdef\pdfimagehicolor             {\pdfvariable imagehicolor}
+    \xdef\pdfpkresolution             {\pdfvariable pkresolution}
+    \xdef\pdfinclusioncopyfonts       {\pdfvariable inclusioncopyfonts}
+    \xdef\pdfinclusionerrorlevel      {\pdfvariable inclusionerrorlevel}
+    \xdef\pdfreplacefont              {\pdfvariable replacefont}
+    \xdef\pdfgentounicode             {\pdfvariable gentounicode}
+    \xdef\pdfpagebox                  {\pdfvariable pagebox}
+    \xdef\pdfminorversion             {\pdfvariable minorversion}
+    \xdef\pdfuniqueresname            {\pdfvariable uniqueresname}
 
-    \newdimen\pdfhorigin               \pdfhorigin              1in
-    \newdimen\pdfvorigin               \pdfvorigin              1in
-    \newdimen\pdflinkmargin            \pdflinkmargin           0pt
-    \newdimen\pdfdestmargin            \pdfdestmargin           0pt
-    \newdimen\pdfthreadmargin          \pdfthreadmargin         0pt
+    \xdef\pdfhorigin                  {\pdfvariable horigin}
+    \xdef\pdfvorigin                  {\pdfvariable vorigin}
+    \xdef\pdflinkmargin               {\pdfvariable linkmargin}
+    \xdef\pdfdestmargin               {\pdfvariable destmargin}
+    \xdef\pdfthreadmargin             {\pdfvariable threadmargin}
 
-    \newtoks \pdfpagesattr
-    \newtoks \pdfpageattr
-    \newtoks \pdfpageresources
-    \newtoks \pdfxformattr
-    \newtoks \pdfxformresources
-    \newtoks \pdfpkmode
+    \xdef\pdfpagesattr                {\pdfvariable pagesattr}
+    \xdef\pdfpageattr                 {\pdfvariable pageattr}
+    \xdef\pdfpageresources            {\pdfvariable pageresources}
+    \xdef\pdfxformattr                {\pdfvariable xformattr}
+    \xdef\pdfxformresources           {\pdfvariable xformresources}
+    \xdef\pdfpkmode                   {\pdfvariable pkmode}
+
+    % initializations
+
+    \global\pdfcompresslevel         9
+    \global\pdfobjcompresslevel      1
+    \global\pdfdecimaldigits         3
+    \global\pdfgamma              1000
+    \global\pdfimageresolution      71
+    \global\pdfimageapplygamma       0
+    \global\pdfimagegamma         2200
+    \global\pdfimagehicolor          1
+    \global\pdfpkresolution         72
+    \global\pdfinclusioncopyfonts    0
+    \global\pdfinclusionerrorlevel   0
+    \global\pdfreplacefont           0
+    \global\pdfgentounicode          0
+    \global\pdfpagebox               0
+    \global\pdfminorversion          4
+    \global\pdfuniqueresname         0
+
+    \global\pdfhorigin             1in
+    \global\pdfvorigin             1in
+    \global\pdflinkmargin          0pt
+    \global\pdfdestmargin          0pt
+    \global\pdfthreadmargin        0pt
 
 \fi
+
+\endgroup
 
 \endinput

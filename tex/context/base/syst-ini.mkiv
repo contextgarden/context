@@ -117,79 +117,25 @@
     end
 }
 
-% for the moment, this will move to the backend module
-
-\ifdefined\outputmode                 \else \let\outputmode                 \pdfoutput           \fi
-
-\ifdefined\pagewidth                  \else \let\pagewidth                  \pdfpagewidth        \let\normalpagewidth                  \pdfpagewidth                \fi
-\ifdefined\pageheight                 \else \let\pageheight                 \pdfpageheight       \let\normalpageheight                 \pdfpageheight               \fi
-
-\ifdefined\adjustspacing              \else \let\adjustspacing              \pdfadjustspacing    \let\normaladjustspacing              \adjustspacing               \fi
-\ifdefined\protrudechars              \else \let\protrudechars              \pdfprotrudechars    \let\normalprotrudechars              \protrudechars               \fi
-
-\ifdefined\saveboxresource            \else \let\saveboxresource            \pdfxform            \let\normalsaveboxresource            \saveboxresource             \fi
-\ifdefined\lastsavedboxresourceindex  \else \let\lastsavedboxresourceindex  \pdflastxform        \let\normallastsavedboxresourceindex  \lastsavedboxresourceindex   \fi
-\ifdefined\useboxresource             \else \let\useboxresource             \pdfrefxform         \let\normaluseboxresource             \useboxresource              \fi
-
-\ifdefined\saveimageresource          \else \let\saveimageresource          \pdfximage           \let\normalsaveimageresource          \saveimageresource           \fi
-\ifdefined\lastsavedimageresourceindex\else \let\lastsavedimageresourceindex\pdflastximage       \let\normallastsavedimageresourceindex\lastsavedimageresourceindex \fi
-\ifdefined\lastsavedimageresourcepages\else \let\lastsavedimageresourcepages\pdflastximagepages  \let\normallastsavedimageresourcepages\lastsavedimageresourcepages \fi
-\ifdefined\useimageresource           \else \let\useimageresource           \pdfrefximage        \let\normaluseimageresource           \useimageresource            \fi
-
-\ifdefined\pdfextension
-
-    \normalprotected\def\pdfliteral        {\pdfextension literal }
-    \normalprotected\def\pdfcolorstack     {\pdfextension colorstack }
-    \normalprotected\def\pdfsetmatrix      {\pdfextension setmatrix }
-    \normalprotected\def\pdfsave           {\pdfextension save\relax}
-    \normalprotected\def\pdfrestore        {\pdfextension restore\relax}
-    \normalprotected\def\pdfobj            {\pdfextension obj }
-    \normalprotected\def\pdfrefobj         {\pdfextension refobj }
-    \normalprotected\def\pdfannot          {\pdfextension annot }
-    \normalprotected\def\pdfstartlink      {\pdfextension startlink }
-    \normalprotected\def\pdfendlink        {\pdfextension endlink\relax}
-    \normalprotected\def\pdfoutline        {\pdfextension outline }
-    \normalprotected\def\pdfdest           {\pdfextension dest }
-    \normalprotected\def\pdfthread         {\pdfextension thread }
-    \normalprotected\def\pdfstartthread    {\pdfextension startthread }
-    \normalprotected\def\pdfendthread      {\pdfextension endthread\relax}
-    \normalprotected\def\pdfinfo           {\pdfextension info }
-    \normalprotected\def\pdfcatalog        {\pdfextension catalog }
-    \normalprotected\def\pdfnames          {\pdfextension names }
-    \normalprotected\def\pdfincludechars   {\pdfextension includechars }
-    \normalprotected\def\pdffontattr       {\pdfextension fontattr }
-    \normalprotected\def\pdfmapfile        {\pdfextension mapfile }
-    \normalprotected\def\pdfmapline        {\pdfextension mapline }
-    \normalprotected\def\pdftrailer        {\pdfextension trailer }
-    \normalprotected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
-
-\fi
-
-\ifdefined\pdfextension
-
-    \def\pdflastlink               {\numexpr\pdffeedback lastlink}
-    \def\pdfretval                 {\numexpr\pdffeedback retval}
-    \def\pdflastobj                {\numexpr\pdffeedback lastobj}
-    \def\pdflastannot              {\numexpr\pdffeedback lastannot}
-    \def\pdfxformname              {\numexpr\pdffeedback xformname}
-    \def\pdfcreationdate                   {\pdffeedback creationdate}
-    \def\pdffontname               {\numexpr\pdffeedback fontname}
-    \def\pdffontobjnum             {\numexpr\pdffeedback fontobjnum}
-    \def\pdffontsize               {\dimexpr\pdffeedback fontsize}
-    \def\pdfpageref                {\numexpr\pdffeedback pageref}
-    \def\pdfcolorstackinit                 {\pdffeedback colorstackinit}
-
-\fi
-
-\ifdefined\pdfxform \else
-    \let \pdfxform            \saveboxresource
-    \let \pdflastxform        \lastsavedboxresourceindex
-    \let \pdfrefxform         \useboxresource
-    \let \pdfximage           \saveimageresource
-    \let \pdflastximage       \lastsavedimageresourceindex
-    \let \pdflastximagepages  \lastsavedimageresourcepages
-    \let \pdfrefximage        \useimageresource
-\fi
+% will become:
+%
+% \directlua 0 { % this info is stored in the format
+%     lua.name[0] = "main ctx instance"
+%
+%     local coreprimitives   = tex.extraprimitives("core")
+%     local texprimitives    = tex.extraprimitives("tex")
+%     local etexprimitives   = tex.extraprimitives("etex")
+%     local luatexprimitives = tex.extraprimitives("luatex")
+%
+%     tex.enableprimitives("",etexprimitives)
+%     tex.enableprimitives("",pdftexprimitives)
+%     tex.enableprimitives("",luatexprimitives)
+%
+%     tex.enableprimitives("normal",coreprimitives)
+%     tex.enableprimitives("normal",texprimitives)
+%     tex.enableprimitives("normal",etexprimitives)
+%     tex.enableprimitives("normal",luatexprimitives)
+% }
 
 %D \ETEX\ has a not so handy way of telling you the version number, i.e. the revision
 %D number has a period in it:
@@ -383,37 +329,113 @@
 
 %D For the moment:
 
-\ifdefined\pdfcompresslevel \else
+% for the moment (till 0.82)
 
-    \newcount\pdfcompresslevel        \pdfcompresslevel          9
-    \newcount\pdfobjcompresslevel     \pdfobjcompresslevel       1
-    \newcount\pdfdecimaldigits        \pdfdecimaldigits          3
-    \newcount\pdfgamma                \pdfgamma               1000
-    \newcount\pdfimageresolution      \pdfimageresolution       71
-    \newcount\pdfimageapplygamma      \pdfimageapplygamma        0
-    \newcount\pdfimagegamma           \pdfimagegamma          2200
-    \newcount\pdfimagehicolor         \pdfimagehicolor           1
-    \newcount\pdfpkresolution         \pdfpkresolution          72
-    \newcount\pdfinclusioncopyfonts   \pdfinclusioncopyfonts     0
-    \newcount\pdfinclusionerrorlevel  \pdfinclusionerrorlevel    0
-    \newcount\pdfreplacefont          \pdfreplacefont            0
-    \newcount\pdfgentounicode         \pdfgentounicode           0
-    \newcount\pdfpagebox              \pdfpagebox                0
-    \newcount\pdfminorversion         \pdfminorversion           4
-    \newcount\pdfuniqueresname        \pdfuniqueresname          0
+\ifdefined\outputmode                 \else \let\outputmode                 \pdfoutput           \fi
 
-    \newdimen\pdfhorigin              \pdfhorigin                1in
-    \newdimen\pdfvorigin              \pdfvorigin                1in
-    \newdimen\pdflinkmargin           \pdflinkmargin             0pt
-    \newdimen\pdfdestmargin           \pdfdestmargin             0pt
-    \newdimen\pdfthreadmargin         \pdfthreadmargin           0pt
+\ifdefined\pagewidth                  \else \let\pagewidth                  \pdfpagewidth        \let\normalpagewidth                  \pdfpagewidth                \fi
+\ifdefined\pageheight                 \else \let\pageheight                 \pdfpageheight       \let\normalpageheight                 \pdfpageheight               \fi
 
-    \newtoks \pdfpagesattr
-    \newtoks \pdfpageattr
-    \newtoks \pdfpageresources
-    \newtoks \pdfxformattr
-    \newtoks \pdfxformresources
-    \newtoks \pdfpkmode
+\ifdefined\adjustspacing              \else \let\adjustspacing              \pdfadjustspacing    \let\normaladjustspacing              \adjustspacing               \fi
+\ifdefined\protrudechars              \else \let\protrudechars              \pdfprotrudechars    \let\normalprotrudechars              \protrudechars               \fi
+
+\ifdefined\saveboxresource            \else \let\saveboxresource            \pdfxform            \let\normalsaveboxresource            \saveboxresource             \fi
+\ifdefined\lastsavedboxresourceindex  \else \let\lastsavedboxresourceindex  \pdflastxform        \let\normallastsavedboxresourceindex  \lastsavedboxresourceindex   \fi
+\ifdefined\useboxresource             \else \let\useboxresource             \pdfrefxform         \let\normaluseboxresource             \useboxresource              \fi
+
+\ifdefined\saveimageresource          \else \let\saveimageresource          \pdfximage           \let\normalsaveimageresource          \saveimageresource           \fi
+\ifdefined\lastsavedimageresourceindex\else \let\lastsavedimageresourceindex\pdflastximage       \let\normallastsavedimageresourceindex\lastsavedimageresourceindex \fi
+\ifdefined\lastsavedimageresourcepages\else \let\lastsavedimageresourcepages\pdflastximagepages  \let\normallastsavedimageresourcepages\lastsavedimageresourcepages \fi
+\ifdefined\useimageresource           \else \let\useimageresource           \pdfrefximage        \let\normaluseimageresource           \useimageresource            \fi
+
+% for the moment, this will move to the backend module
+
+\ifdefined\pdfextension
+
+    \normalprotected\def\pdfliteral        {\pdfextension literal }
+    \normalprotected\def\pdfcolorstack     {\pdfextension colorstack }
+    \normalprotected\def\pdfsetmatrix      {\pdfextension setmatrix }
+    \normalprotected\def\pdfsave           {\pdfextension save\relax}
+    \normalprotected\def\pdfrestore        {\pdfextension restore\relax}
+    \normalprotected\def\pdfobj            {\pdfextension obj }
+    \normalprotected\def\pdfrefobj         {\pdfextension refobj }
+    \normalprotected\def\pdfannot          {\pdfextension annot }
+    \normalprotected\def\pdfstartlink      {\pdfextension startlink }
+    \normalprotected\def\pdfendlink        {\pdfextension endlink\relax}
+    \normalprotected\def\pdfoutline        {\pdfextension outline }
+    \normalprotected\def\pdfdest           {\pdfextension dest }
+    \normalprotected\def\pdfthread         {\pdfextension thread }
+    \normalprotected\def\pdfstartthread    {\pdfextension startthread }
+    \normalprotected\def\pdfendthread      {\pdfextension endthread\relax}
+    \normalprotected\def\pdfinfo           {\pdfextension info }
+    \normalprotected\def\pdfcatalog        {\pdfextension catalog }
+    \normalprotected\def\pdfnames          {\pdfextension names }
+    \normalprotected\def\pdfincludechars   {\pdfextension includechars }
+    \normalprotected\def\pdffontattr       {\pdfextension fontattr }
+    \normalprotected\def\pdfmapfile        {\pdfextension mapfile }
+    \normalprotected\def\pdfmapline        {\pdfextension mapline }
+    \normalprotected\def\pdftrailer        {\pdfextension trailer }
+    \normalprotected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
+
+\fi
+
+\ifdefined\pdfextension
+
+    \def\pdflastlink               {\numexpr\pdffeedback lastlink}
+    \def\pdfretval                 {\numexpr\pdffeedback retval}
+    \def\pdflastobj                {\numexpr\pdffeedback lastobj}
+    \def\pdflastannot              {\numexpr\pdffeedback lastannot}
+    \def\pdfxformname              {\numexpr\pdffeedback xformname}
+    \def\pdfcreationdate                   {\pdffeedback creationdate}
+    \def\pdffontname               {\numexpr\pdffeedback fontname}
+    \def\pdffontobjnum             {\numexpr\pdffeedback fontobjnum}
+    \def\pdffontsize               {\dimexpr\pdffeedback fontsize}
+    \def\pdfpageref                {\numexpr\pdffeedback pageref}
+    \def\pdfcolorstackinit                 {\pdffeedback colorstackinit}
+
+\fi
+
+\ifdefined\pdfxform \else
+    \let \pdfxform            \saveboxresource
+    \let \pdflastxform        \lastsavedboxresourceindex
+    \let \pdfrefxform         \useboxresource
+    \let \pdfximage           \saveimageresource
+    \let \pdflastximage       \lastsavedimageresourceindex
+    \let \pdflastximagepages  \lastsavedimageresourcepages
+    \let \pdfrefximage        \useimageresource
+\fi
+
+\ifdefined\pdfvariable
+
+    \edef\pdfcompresslevel       {\pdfvariable compresslevel}       \pdfcompresslevel         9
+    \edef\pdfobjcompresslevel    {\pdfvariable objcompresslevel}    \pdfobjcompresslevel      1
+    \edef\pdfdecimaldigits       {\pdfvariable decimaldigits}       \pdfdecimaldigits         3
+    \edef\pdfgamma               {\pdfvariable gamma}               \pdfgamma              1000
+    \edef\pdfimageresolution     {\pdfvariable imageresolution}     \pdfimageresolution      71
+    \edef\pdfimageapplygamma     {\pdfvariable imageapplygamma}     \pdfimageapplygamma       0
+    \edef\pdfimagegamma          {\pdfvariable imagegamma}          \pdfimagegamma         2200
+    \edef\pdfimagehicolor        {\pdfvariable imagehicolor}        \pdfimagehicolor          1
+    \edef\pdfpkresolution        {\pdfvariable pkresolution}        \pdfpkresolution         72
+    \edef\pdfinclusioncopyfonts  {\pdfvariable inclusioncopyfonts}  \pdfinclusioncopyfonts    0
+    \edef\pdfinclusionerrorlevel {\pdfvariable inclusionerrorlevel} \pdfinclusionerrorlevel   0
+    \edef\pdfreplacefont         {\pdfvariable replacefont}         \pdfreplacefont           0
+    \edef\pdfgentounicode        {\pdfvariable gentounicode}        \pdfgentounicode          0
+    \edef\pdfpagebox             {\pdfvariable pagebox}             \pdfpagebox               0
+    \edef\pdfminorversion        {\pdfvariable minorversion}        \pdfminorversion          4
+    \edef\pdfuniqueresname       {\pdfvariable uniqueresname}       \pdfuniqueresname         0
+
+    \edef\pdfhorigin             {\pdfvariable horigin}             \pdfhorigin             1in
+    \edef\pdfvorigin             {\pdfvariable vorigin}             \pdfvorigin             1in
+    \edef\pdflinkmargin          {\pdfvariable linkmargin}          \pdflinkmargin          0pt
+    \edef\pdfdestmargin          {\pdfvariable destmargin}          \pdfdestmargin          0pt
+    \edef\pdfthreadmargin        {\pdfvariable threadmargin}        \pdfthreadmargin        0pt
+
+    \edef\pdfpagesattr           {\pdfvariable pagesattr}
+    \edef\pdfpageattr            {\pdfvariable pageattr}
+    \edef\pdfpageresources       {\pdfvariable pageresources}
+    \edef\pdfxformattr           {\pdfvariable xformattr}
+    \edef\pdfxformresources      {\pdfvariable xformresources}
+    \edef\pdfpkmode              {\pdfvariable pkmode}
 
 \fi
 
@@ -1056,49 +1078,6 @@
        \spanomit \advance\mscount\minusone
    \repeat}
 
-%D The next section deals with selective definitions in later modules. One can of
-%D course use the \type {\texengine} number that we defined earlier instead.
-
-\bgroup \obeylines
-    \gdef\pickupSOMETEX#1%
-      {\expandafter\gdef\csname begin#1\endcsname{\bgroup\obeylines\dopickupSOMETEX{#1}}}
-    \gdef\dopickupSOMETEX#1#2
-    % {\egroup\immediate\write16{special code for #1 -> [line \the\inputlineno] \detokenize{#2}}}
-      {\egroup}
-\egroup
-
-\let\endTEX   \relax \def\beginTEX   #1\endTEX   {}
-\let\endETEX  \relax \def\beginETEX  #1\endETEX  {}
-\let\endXETEX \relax \def\beginXETEX #1\endXETEX {}
-\let\endLUATEX\relax \def\beginLUATEX#1\endLUATEX{}
-\let\endOLDTEX\relax \def\beginOLDTEX#1\endOLDTEX{}
-\let\endNEWTEX\relax \def\beginNEWTEX#1\endNEWTEX{}
-
-\pickupSOMETEX{ETEX}
-
-\ifnum\texengine=\xetexengine
-    \pickupSOMETEX{XETEX}
-\fi
-\ifnum\texengine=\luatexengine
-    \pickupSOMETEX{LUATEX}
-\fi
-\ifnum\texengine<\xetexengine
-    \pickupSOMETEX{OLDTEX}
-\else
-    \pickupSOMETEX{NEWTEX}
-\fi
-
-%D \macros
-%D   {bindprimitive}
-%D
-%D We can remap primitives (which is needed because of changes in for instance
-%D \PDFTEX).
-
-\def\bindprimitive#1 #2 % new old
-  {\ifcsname#1\endcsname \else \ifcsname#2\endcsname
-     \expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname
-   \fi \fi}
-
 %D We need to make sure that we start up in \DVI\ mode, so, after testing for running
 %D \PDFTEX, we default to \DVI. Why?
 
@@ -1119,10 +1098,6 @@
 
 \normalpdfcompression
 
-% \let\normalsetrandomseed \setrandomseed
-% \let\normaluniformdeviate\uniformdeviate
-% \let\normalnormaldeviate \normaldeviate
-
 %D Basic status stuff.
 
 \newif\ifproductionrun
@@ -1136,28 +1111,6 @@
 
 \def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
 \def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
-
-% \ifnum\texengine=\xetexengine
-%     \edef\xetexversion   {\numexpr\XeTeXversion*100+(\expandafter\gobbleoneargument\XeTeXrevision-5)/10\relax}
-%     \edef\xetexrevision  {\the\numexpr(\expandafter\gobbleoneargument\XeTeXrevision-50)/100\relax}
-% \fi
-%
-% \ifcase\texengine
-%     \def \texenginename   {impossible}
-%     \edef\texengineversion{0}
-% \or
-%     \def \texenginename   {pdfTeX}
-%     \edef\texengineversion{\dividenumber{100}\pdftexversion.\modulonumber{100}\pdftexversion.\pdftexrevision}
-% \or
-%     \def \texenginename   {XeTeX}
-%     \edef\texengineversion{\dividenumber{100}\xetexversion .\modulonumber{100}\xetexversion .\xetexrevision}
-% \or
-%     \def \texenginename   {LuaTeX}
-%     \edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
-% \else
-%     \def \texenginename   {impossible}
-%     \edef\texengineversion{0}
-% \fi
 
 \def \texenginename   {LuaTeX}
 \edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
@@ -1177,10 +1130,10 @@
 
 %D Handy.
 
-\suppresslongerror    \plusone
-\suppressoutererror   \plusone
-\suppressmathparerror \plusone
-\suppressifcsnameerror\plusone
+\suppresslongerror    \plusone % \let\suppresslongerror    \relax
+\suppressoutererror   \plusone % \let\suppressoutererror   \relax
+\suppressmathparerror \plusone % \let\suppressmathparerror \relax
+\suppressifcsnameerror\plusone % \let\suppressifcsnameerror\relax
 
 \ifdefined\matheqnogapstep % for now
     \matheqnogapstep  \zerocount
