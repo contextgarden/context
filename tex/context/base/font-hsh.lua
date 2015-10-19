@@ -96,6 +96,26 @@ setmetatableindex(identifiers, function(t,k)
     return k == true and identifiers[currentfont()] or nulldata
 end)
 
+do
+
+    -- to be used
+
+    local define  = font.define
+    local setfont = font.setfont
+    local frozen  = font.frozen
+
+    function fonts.reserveid(fontdata)
+        return define(fontdata or nulldata)
+    end
+
+    function fonts.enhanceid(id,fontdata)
+        if not frozen(id) then
+            setfont(id,fontdata)
+        end
+    end
+
+end
+
 setmetatableindex(characters, function(t,k)
     if k == true then
         return characters[currentfont()]

@@ -968,6 +968,7 @@ return {
   "pdfglyphtounicode",
   "pdfhorigin",
   "pdfignoreddimen",
+  "pdfimageaddfilename",
   "pdfimageapplygamma",
   "pdfimagegamma",
   "pdfimagehicolor",

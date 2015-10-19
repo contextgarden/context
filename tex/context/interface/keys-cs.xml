@@ -200,6 +200,7 @@
 		<cd:variable name='friday' value='patek'/>
 		<cd:variable name='frontmatter' value='prednicasti'/>
 		<cd:variable name='frontpart' value='prednicast'/>
+		<cd:variable name='fullhz' value='fullhz'/>
 		<cd:variable name='global' value='globalne'/>
 		<cd:variable name='graphic' value='graf'/>
 		<cd:variable name='graphics' value='grafy'/>

@@ -200,6 +200,7 @@
 		<cd:variable name='friday' value='جمعه'/>
 		<cd:variable name='frontmatter' value='پیش‌مطلب'/>
 		<cd:variable name='frontpart' value='پیش‌قسمت'/>
+		<cd:variable name='fullhz' value='fullhz'/>
 		<cd:variable name='global' value='سراسری'/>
 		<cd:variable name='graphic' value='گرافیک'/>
 		<cd:variable name='graphics' value='گرافیکها'/>

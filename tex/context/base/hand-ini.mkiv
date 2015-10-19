@@ -51,10 +51,19 @@
 \let\adjustspacing\relax \newcount\adjustspacing % a little bit protection
 \let\protrudechars\relax \newcount\protrudechars % a little bit protection
 
-\def\font_expansion_enable  {\normaladjustspacing\plustwo  } % these will become normal primitives
-\def\font_expansion_disable {\normaladjustspacing\zerocount} % these will become normal primitives
-\def\font_protruding_enable {\normalprotrudechars\plustwo  } % these will become normal primitives
-\def\font_protruding_disable{\normalprotrudechars\zerocount} % these will become normal primitives
+% at some point we can introduce extreme expansion, i.e. \normaladjustspacing\plustwo
+
+% 0 = disabled
+% 1 = notused (thesis)
+% 2 = glyph + kern
+% 3 = glyph only
+
+\def\font_expansion_enable  {\normaladjustspacing\plusthree}
+\def\font_expansion_enable_k{\normaladjustspacing\plustwo}
+\def\font_expansion_disable {\normaladjustspacing\zerocount}
+
+\def\font_protruding_enable {\normalprotrudechars\plustwo  }
+\def\font_protruding_disable{\normalprotrudechars\zerocount}
 
 \appendtoks \font_expansion_disable  \to \everyforgetall % Here or not here?
 \appendtoks \font_protruding_disable \to \everyforgetall % Here or not here?

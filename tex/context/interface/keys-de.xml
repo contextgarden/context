@@ -200,6 +200,7 @@
 		<cd:variable name='friday' value='freitag'/>
 		<cd:variable name='frontmatter' value='einleitungen'/>
 		<cd:variable name='frontpart' value='einleitung'/>
+		<cd:variable name='fullhz' value='fullhz'/>
 		<cd:variable name='global' value='global'/>
 		<cd:variable name='graphic' value='grafik'/>
 		<cd:variable name='graphics' value='grafiken'/>

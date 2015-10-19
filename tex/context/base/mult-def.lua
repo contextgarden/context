@@ -14728,6 +14728,16 @@ return {
    ["pe"]="nohz",
    ["ro"]="nohz",
   },
+  ["fullhz"]={
+   ["cs"]="fullhz",
+   ["de"]="fullhz",
+   ["en"]="fullhz",
+   ["fr"]="fullhz",
+   ["it"]="fullhz",
+   ["nl"]="fullenhz",
+   ["pe"]="fullhz",
+   ["ro"]="fullhz",
+  },
   ["nomarking"]={
    ["cs"]="zadneznaceni",
    ["de"]="keinebeschriftung",

@@ -66,7 +66,7 @@ appendaction("processors",   "lists",       "languages.visualizediscretionaries"
 -- appendaction("processors",   "lists",       "typesetters.initials.handler")                   -- disabled
 
 appendaction("shipouts",     "normalizers", "typesetters.margins.finalhandler")                  -- disabled
-appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
+------------("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
 appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
 appendaction("shipouts",     "normalizers", "nodes.references.handler")                          -- disabled
