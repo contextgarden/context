@@ -183,6 +183,13 @@ local fencecodes = allocate {
     [3] = "right",
 }
 
+local rulecodes = allocate {
+    [0] = "normal",
+    [1] = "box",
+    [2] = "image",
+    [3] = "empty",
+}
+
 local function simplified(t)
     local r = { }
     for k, v in next, t do
@@ -209,6 +216,7 @@ margincodes  = allocate(swapped(margincodes,margincodes))
 disccodes    = allocate(swapped(disccodes,disccodes))
 accentcodes  = allocate(swapped(accentcodes,accentcodes))
 fencecodes   = allocate(swapped(fencecodes,fencecodes))
+rulecodes    = allocate(swapped(rulecodes,rulecodes))
 
 nodes.skipcodes    = skipcodes     nodes.gluecodes    = skipcodes -- more official
 nodes.noadcodes    = noadcodes
@@ -224,6 +232,7 @@ nodes.margincodes  = margincodes
 nodes.disccodes    = disccodes     nodes.discretionarycodes = disccodes
 nodes.accentcodes  = accentcodes
 nodes.fencecodes   = fencecodes
+nodes.rulecodes    = rulecodes
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment

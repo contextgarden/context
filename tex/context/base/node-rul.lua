@@ -187,8 +187,6 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     end
                     f, l, a = nil, nil, nil
                 end
---             elseif f and (id == disc_code or (id == kern_code and getsubtype(n) == kerning_code)) then
---                 l = n
             elseif id == disc_code then
                 if f then
                     l = n

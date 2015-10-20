@@ -144,8 +144,8 @@
     \let\pdflastxpos       \lastxpos
     \let\pdflastypos       \lastypos
 
-    \let\pdftexversion     \luatexversion
-    \let\pdftexrevision    \luatexrevision
+  % \let\pdftexversion     \luatexversion
+  % \let\pdftexrevision    \luatexrevision
     \let\pdftexbanner      \luatexbanner
 
     \let\pdfoutput         \outputmode
@@ -205,6 +205,8 @@
 
     % grouped
 
+    \def\pdftexversion     {\numexpr\pdffeedback version}
+    \def\pdftexrevision            {\pdffeedback revision}
     \def\pdflastlink       {\numexpr\pdffeedback lastlink}
     \def\pdfretval         {\numexpr\pdffeedback retval}
     \def\pdflastobj        {\numexpr\pdffeedback lastobj}

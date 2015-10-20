@@ -502,18 +502,18 @@ local function kern_stretch_shrink(p,d)
     return 0, 0
 end
 
-local expand_kerns = false
------ expand_kerns = "both"
+local expand_kerns_mode = false
+local expand_kerns      = false
 
 directives.register("builders.paragraphs.adjusting.kerns",function(v)
     if not v then
-        expand_kerns = false
+        expand_kerns_mode = false
     elseif v == "stretch" or v == "shrink" then
-        expand_kerns = v
+        expand_kerns_mode = v
     elseif v == "both" then
-        expand_kerns = true
+        expand_kerns_mode = true
     else
-        expand_kerns = toboolean(v,true) or false
+        expand_kerns_mode = toboolean(v,true) or false
     end
 end)
 
@@ -1036,6 +1036,8 @@ local function initialize_line_break(head,display)
             end
             par.tolerance = hztolerance
         end
+
+        expand_kerns = expand_kerns_mode or (adjust_spacing == 2)
 
     end
 

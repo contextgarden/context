@@ -34,6 +34,7 @@ local insert_node_after  = nuts.insert_after
 
 local nodecodes          = nodes.nodecodes
 local whatcodes          = nodes.whatcodes
+local rulecodes          = nodes.rulecodes
 
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
@@ -42,6 +43,8 @@ local rule_code          = nodecodes.rule
 local whatsit_code       = nodecodes.whatsit
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
+
+local normal_rule        = rulecodes.normal
 
 local pdfliteral_code    = whatcodes.pdfliteral
 
@@ -215,7 +218,9 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                 -- end nested --
             end
         elseif id == rule_code then
+-- if subtype(stack) == normal_rule then
             check = getfield(stack,"width") ~= 0
+-- end
         end
         -- much faster this way than using a check() and nested() function
         if check then
@@ -330,7 +335,9 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                 -- end nested
             end
         elseif id == rule_code then
+-- if subtype(stack) == normal_rule then
             check = getfield(stack,"width") ~= 0
+-- end
         end
 
         if check then
@@ -449,7 +456,9 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
                 end
             end
         elseif id == rule_code then
+-- if subtype(stack) == normal_rule then
             check = getfield(stack,"width") ~= 0
+-- end
         end
 
         if check then
@@ -535,7 +544,9 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
                 done = done or ok
             end
         elseif id == rule_code then
+-- if subtype(stack) == normal_rule then
             check = getfield(current,"width") ~= 0
+-- end
         end
 
         if check then
