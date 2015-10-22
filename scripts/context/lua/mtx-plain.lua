@@ -55,7 +55,9 @@ end
 local function resultof(...)
     local command = string.format(...)
     report("running command %a",command)
-    return string.strip(os.resultof(command) or "")
+    local result = os.resultof(command) or ""
+    result = string.gsub(result,"[\n\r]+","")
+    return result
 end
 
 function scripts.plain.make(texengine,texformat)
@@ -64,13 +66,13 @@ function scripts.plain.make(texengine,texformat)
     local fmtpathspec = resultof("kpsewhich --var-value=TEXFORMATS --engine=%s",texengine)
     if fmtpathspec ~= "" then
         report("using path specification %a",fmtpathspec)
-        fmtpathspec = resultof('kpsewhich -expand-braces="%s"',fmtpathspec)
+        fmtpathspec = resultof('kpsewhich --expand-braces="%s"',fmtpathspec)
     end
     if fmtpathspec ~= "" then
         report("using path expansion %a",fmtpathspec)
     else
         report("no valid path reported, trying alternative")
-        fmtpathspec = resultof("kpsewhich --show-path=fmt --engine=%s",texengine)
+--         fmtpathspec = resultof("kpsewhich --show-path=fmt --engine=%s",texengine)
         if fmtpathspec ~= "" then
             report("using path expansion %a",fmtpathspec)
         else
@@ -91,7 +93,7 @@ function scripts.plain.make(texengine,texformat)
             end
         end
     end
-    local fmtpath = os.resultof("kpsewhich --expand-path $safe-out-name=$TEXFORMATS")
+--  local fmtpath = resultof("kpsewhich --expand-path $safe-out-name=$TEXFORMATS")
     if not fmtpath or fmtpath == "" then
         fmtpath = "."
     else

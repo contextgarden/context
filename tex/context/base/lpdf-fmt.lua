@@ -36,8 +36,6 @@ local pdfstring                = lpdf.string
 local pdfverbose               = lpdf.verbose
 local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 
-local texset                   = tex.set
-
 local addtoinfo                = lpdf.addtoinfo
 local injectxmpinfo            = lpdf.injectxmpinfo
 local insertxmpinfo            = lpdf.insertxmpinfo
@@ -654,11 +652,11 @@ function codeinjections.setformat(s)
             local minorversion = math.mod(pdf_version,10)
             local objectcompression = spec.object_compression and pdf_version >= 15
             local compresslevel = level or tex.pdfcompresslevel -- keep default
-            local objectcompresslevel = (objectcompression and (level or tex.pdfobjcompresslevel)) or 0
-            texset("global","pdfcompresslevel",compresslevel)
-            texset("global","pdfobjcompresslevel",objectcompresslevel)
-            texset("global","pdfmajorversion",majorversion)
-            texset("global","pdfminorversion",minorversion)
+            local objectcompresslevel = (objectcompression and (level or pdf.getobjcompresslevel())) or 0
+            pdf.setcompresslevel   (compresslevel)
+            pdf.setobjcompresslevel(objectcompresslevel)
+            pdf.setmajorversion    (majorversion)
+            pdf.setminorversion    (minorversion)
             if objectcompression then
                 report_backend("forcing pdf version %s.%s, compression level %s, object compression level %s",
                     majorversion,minorversion,compresslevel,objectcompresslevel)
@@ -718,8 +716,8 @@ function codeinjections.setformat(s)
             report_backend("error, format %a is not supported",format)
         end
     elseif level then
-        texset("global","pdfcompresslevel",level)
-        texset("global","pdfobjcompresslevel",level)
+        pdf.setcompresslevel(level)
+        pdf.setobjcompresslevel(level)
     else
         -- we ignore this as we hook it in \everysetupbackend
     end

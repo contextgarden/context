@@ -72,6 +72,29 @@ if pdf.setinfo then
     -- the getters are harmless
 end
 
+do
+
+    local texget = tex.get
+    local texset = tex.set
+
+    if pdf.setminorversion then
+        function pdf.setmajorversion (n) texset("global","pdfmajorversion", n) end
+        function pdf.getmajorversion ( ) return texget("pdfmajorversion") end
+    else
+        --
+        function pdf.setmajorversion    (n) texset("global","pdfmajorversion",n) end
+        function pdf.setminorversion    (n) texset("global","pdfminorversion",n) end
+        function pdf.setcompresslevel   (n) texset("global","pdfcompresslevel",n) end
+        function pdf.setobjcompresslevel(n) texset("global","pdfobjcompresslevel",n) end
+        --
+        function pdf.getmajorversion    ( ) return texget("pdfmajorversion") end
+        function pdf.getminorversion    ( ) return texget("pdfminorversion") end
+        function pdf.getcompresslevel   ( ) return texget("pdfcompresslevel") end
+        function pdf.getobjcompresslevel( ) return texget("pdfobjcompresslevel") end
+    end
+
+end
+
 if not pdf.setinfo then
     function pdf.setinfo   (s) pdf.info    = s end
     function pdf.setcatalog(s) pdf.catalog = s end
@@ -80,10 +103,10 @@ if not pdf.setinfo then
 end
 
 if not pdf.getpos then
-    function pdf.getpos   () return pdf.h, pdf.v     end
-    function pdf.gethpos  () return pdf.h            end
-    function pdf.getvpos  () return pdf.v            end
-    function pdf.hasmatrix() return false            end
+    function pdf.getpos   () return pdf.h, pdf.v end
+    function pdf.gethpos  () return pdf.h end
+    function pdf.getvpos  () return pdf.v end
+    function pdf.hasmatrix() return false end
     function pdf.getmatrix() return 1, 0, 0, 1, 0, 0 end
 end
 

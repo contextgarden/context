@@ -329,7 +329,7 @@ local function documentspecification()
         })
     end
     addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
-    addtocatalog("Version", pdfconstant(format("1.%s",tex.pdfminorversion)))
+    addtocatalog("Version", pdfconstant(format("1.%s",pdf.getminorversion())))
 end
 
 -- temp hack: the mediabox is not under our control and has a precision of 4 digits

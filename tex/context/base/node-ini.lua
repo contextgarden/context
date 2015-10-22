@@ -80,6 +80,7 @@ local skipcodes = allocate {
     [ 16] = "thinmuskip",
     [ 17] = "medmuskip",
     [ 18] = "thickmuskip",
+    [ 19] = "mathskip", -- experiment
     [100] = "leaders",
     [101] = "cleaders",
     [102] = "xleaders",
