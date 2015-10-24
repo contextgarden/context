@@ -72,6 +72,12 @@
 \def\Umathbotaccent{\Umathaccent \s!bottom }
 \def\Umathaccents  {\Umathaccent \s!both   }
 
+\ifdefined\Umathcharclass \else
+    \def\Umathcharclass{\cldcontext{tex.getmathcode(token.scan_int())[1]}}
+    \def\Umathcharfam  {\cldcontext{tex.getmathcode(token.scan_int())[2]}}
+    \def\Umathcharslot {\cldcontext{tex.getmathcode(token.scan_int())[3]}}
+\fi
+
 %D The attributes that we will use:
 
 \definesystemattribute[mathalphabet]   [public]

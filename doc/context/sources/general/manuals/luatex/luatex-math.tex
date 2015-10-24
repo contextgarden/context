@@ -612,7 +612,36 @@ the subscript in \type {\Uunderdelimiter} is cramped as well.
 \LUATEX\ internally uses a structure that supports \OPENTYPE\ \quote
 {MathVariants} as well as \TFM\ \quote {extensible recipes}.
 
-\section{Other Math changes}
+\section {Extracting values}
+
+You can extract the components of a math character. Say that we have defined:
+
+\starttyping
+\Umathcode 1 2 3 4
+\stoptyping
+
+then
+
+\starttyping
+[\Umathcharclass1] [\Umathcharfam1] [\Umathcharslot1]
+\stoptyping
+
+will return:
+
+\starttyping
+[2] [3] [4]
+\stoptyping
+
+These commands are provides as convenience. before they came available you could
+do the following:
+
+\starttyping
+\def\Umathcharclass{\directlua{tex.print(tex.getmathcode(token.scan_int())[1])}}
+\def\Umathcharfam  {\directlua{tex.print(tex.getmathcode(token.scan_int())[2])}}
+\def\Umathcharslot {\directlua{tex.print(tex.getmathcode(token.scan_int())[3])}}
+\stoptyping
+
+\section {Other Math changes}
 
 \subsection {Verbose versions of single-character math commands}
 
@@ -644,27 +673,158 @@ are the result of \type {\mathchardef} or \type {\Umathchardef} are also
 acceptable in the horizontal and vertical modes. In those cases, the \type
 {\textfont} from the requested math family is used.
 
-\section{Math todo}
+\section{Math surrounding skips}
 
-The following items are still todo.
+Inline math is surrounded by (optional) \type {\mathsurround} spacing but that is fixed
+dimension. There is now an additional parameter \type {\mathsurroundskip}. When set to a
+non|-|zero value (or zero with some stretch or shrink) this parameter will replace
+\type {\mathsurround}. By using an additional parameter instead of changing the nature
+of \type {\mathsurround}, we can remain compatible.
 
-\startitemize
-\startitem
-    Pre-scripts.
-\stopitem
-\startitem
-    Multi-story stacks.
-\stopitem
-\startitem
-    Flattened accents for high characters (maybe).
-\stopitem
-\startitem
-    Better control over the spacing around displays and handling of equation numbers.
-\stopitem
-\startitem
-    Support for multi|-|line displays using \MATHML\ style alignment points.
-\stopitem
-\stopitemize
+% \section{Math todo}
+%
+% The following items are still todo.
+%
+% \startitemize
+% \startitem
+%     Pre-scripts.
+% \stopitem
+% \startitem
+%     Multi-story stacks.
+% \stopitem
+% \startitem
+%     Flattened accents for high characters (maybe).
+% \stopitem
+% \startitem
+%     Better control over the spacing around displays and handling of equation numbers.
+% \stopitem
+% \startitem
+%     Support for multi|-|line displays using \MATHML\ style alignment points.
+% \stopitem
+% \stopitemize
+
+\subsection {Delimiters}
+
+You can force delimiters to certain sizes by putting an empty box or rule next to
+it. The resulting delimiter will either be a character from the stepwise size
+range or an extensible. The latter can be quiote differently positioned that the
+characters as it depends on the fit aas well as the fact if the used characters
+in the font have depth or height. Commands like (plain \TEX s) \type {\big} need
+use this feature. In \LUATEX\ we provide a bit more control by supporting optional
+parameters \type {height}, \type {depth} and \type {axis}. The following example
+uses this:
+
+\startbuffer
+\normalleft   height 30pt depth 10pt      \Udelimiter "0 "0 "000028
+\quad x\quad
+\normalmiddle height 40pt depth 15pt      \Udelimiter "0 "0 "002016
+\quad x\quad
+\normalright  height 30pt depth 10pt      \Udelimiter "0 "0 "000029
+\quad \quad \quad
+\normalleft   height 30pt depth 10pt axis \Udelimiter "0 "0 "000028
+\quad x\quad
+\normalmiddle height 40pt depth 15pt axis \Udelimiter "0 "0 "002016
+\quad x\quad
+\normalright  height 30pt depth 10pt axis \Udelimiter "0 "0 "000029
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\ruledhbox{\mathematics{\getbuffer}}
+\stoplinecorrection
+
+\subsection {Math options}
+
+The logic in the math engine is rather complex and there are often no universal
+solutions (read: what works out well for one font, fails for another). Therefore
+some variations in the implementation will be driven by options for which a new
+primitive \type {\mathoption} has been introduced (so that we don't end up with
+many new commands). The approach of options also permits us to see what effect a
+specific solution has.
+
+\subsubsection {\type {\mathoption noitaliccompensation}}
+
+This option compensates placement for characters with a built|-|in italic
+correction.
+
+\startbuffer
+{\showboxes\int}\quad
+{\showboxes\int_{|}^{|}}\quad
+{\showboxes\int\limits_{|}^{|}}
+\stopbuffer
+
+\typebuffer
+
+Gives (with computer modern that has such italics):
+
+\startlinecorrection[blank]
+    \switchtobodyfont[modern]
+    \startcombination[nx=2,ny=2,distance=5em]
+        {\mathoption noitaliccompensation 0\relax \mathematics{\getbuffer}}
+            {\nohyphens\type{0:inline}}
+        {\mathoption noitaliccompensation 0\relax \mathematics{\displaymath\getbuffer}}
+            {\nohyphens\type{0:display}}
+        {\mathoption noitaliccompensation 1\relax \mathematics{\getbuffer}}
+            {\nohyphens\type{1:inline}}
+        {\mathoption noitaliccompensation 1\relax \mathematics{\displaymath\getbuffer}}
+            {\nohyphens\type{1:display}}
+    \stopcombination
+\stoplinecorrection
+
+\subsubsection {\type {\mathoption nocharitalic}}
+
+When two characters follow each other italic correction can interfere. The
+following example shows what this option does:
+
+\startbuffer
+\catcode"1D443=11
+\catcode"1D444=11
+\catcode"1D445=11
+P( PP PQR
+\stopbuffer
+
+\typebuffer
+
+Gives (with computer modern that has such italics):
+
+\startlinecorrection[blank]
+    \switchtobodyfont[modern]
+    \startcombination[nx=2,ny=2,distance=5em]
+        {\mathoption nocharitalic 0\relax \mathematics{\getbuffer}}
+            {\nohyphens\type{0:inline}}
+        {\mathoption nocharitalic 0\relax \mathematics{\displaymath\getbuffer}}
+            {\nohyphens\type{0:display}}
+        {\mathoption nocharitalic 1\relax \mathematics{\getbuffer}}
+            {\nohyphens\type{1:inline}}
+        {\mathoption nocharitalic 1\relax \mathematics{\displaymath\getbuffer}}
+            {\nohyphens\type{1:display}}
+    \stopcombination
+\stoplinecorrection
+
+\subsubsection {\type {\mathoption nodelimitershift}}
+
+When set to~1 a vertical delimiter will not be shifted relatiev to the math axis
+and its dimensions. This option can be handy when testing macros because this
+shifting can confuse testing.
+
+\startbuffer
+\dostepwiserecurse{6}{50}{2} {
+    \ruledhbox{$\normalleft\Udelimiter "0 "0 "002016
+    {\maincolor\vrule height #1pt width 2pt}
+    \normalright.$}
+}
+\stopbuffer
+
+\startlinecorrection[blank]
+    \startcombination[nx=2,ny=2]
+        {\mathoption nodelimitershift 0 \mathematics{\getbuffer}} {\type{0}}
+        {\mathoption nodelimitershift 1 \mathematics{\getbuffer}} {\type{1}}
+    \stopcombination
+\stoplinecorrection
+
+In this example you see the transition from normal stepwise larger symbols to
+extensibles. As said, this is only for debugging.
 
 \stopchapter
 

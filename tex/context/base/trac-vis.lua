@@ -116,6 +116,8 @@ local new_rule            = nodepool.rule
 local new_kern            = nodepool.kern
 local new_glue            = nodepool.glue
 local new_penalty         = nodepool.penalty
+local new_hlist           = nodepool.hlist
+local new_vlist           = nodepool.vlist
 
 local tracers             = nodes.tracers
 local visualizers         = nodes.visualizers
@@ -549,39 +551,15 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
         if baseskip then
             info = linked_nodes(info,baseskip,baseline) -- could be in previous linked
         end
-        local shft
-        if shift == 0 then
-            shift = nil
-        else
-            local sh = shift > 0 and   shift or 0
-            local sd = shift < 0 and - shift or 0
-            shft = fast_hpack(new_rule(2*emwidth/fraction,sh,sd))
-            setfield(shft,"width",0)
-            if sh > 0 then
-                setfield(shft,"height",0)
-            end
-            if sd > 0 then
-                setfield(shft,"depth",0)
-            end
-        end
         setlisttransparency(info,c_text)
         info = fast_hpack(info)
         setfield(info,"width",0)
         setfield(info,"height",0)
         setfield(info,"depth",0)
         setattr(info,a_layer,layer)
-        local info = linked_nodes(shft,current,new_kern(-wd),info)
-        info = fast_hpack(info,wd)
-        if vertical then
-            info = vpack_nodes(info)
-        end
-        if shift then
-            setfield(current,"shift",0)
-            setfield(info,"width",wd)
-            setfield(info,"height",ht)
-            setfield(info,"depth",dp)
-            setfield(info,"shift",shift)
-        end
+        local info = linked_nodes(current,new_kern(-wd),info)
+        setfield(current,"shift",0)
+        info = (vertical and new_vlist or new_hlist)(info,wd,ht,dp,shift)
         if next then
             setfield(info,"next",next)
             setfield(next,"prev",info)

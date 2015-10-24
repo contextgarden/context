@@ -432,7 +432,7 @@ function nutpool.noad()
     return copy_nut(noad)
 end
 
-function nutpool.hlist(list,width,height,depth)
+function nutpool.hlist(list,width,height,depth,shift)
     local n = copy_nut(hlist)
     if list then
         setfield(n,"list",list)
@@ -446,10 +446,13 @@ function nutpool.hlist(list,width,height,depth)
     if depth then
         setfield(n,"depth",depth)
     end
+    if shift then
+        setfield(n,"shift",shift)
+    end
     return n
 end
 
-function nutpool.vlist(list,width,height,depth)
+function nutpool.vlist(list,width,height,depth,shift)
     local n = copy_nut(vlist)
     if list then
         setfield(n,"list",list)
@@ -462,6 +465,9 @@ function nutpool.vlist(list,width,height,depth)
     end
     if depth then
         setfield(n,"depth",depth)
+    end
+    if shift then
+        setfield(n,"shift",shift)
     end
     return n
 end

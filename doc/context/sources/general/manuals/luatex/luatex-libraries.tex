@@ -1352,8 +1352,6 @@ conversion in memory and passing the result directly to the backend. This might
 save some runtime in one|-|pass workflows. This feature is currently not meant
 for production.
 
-%***********************************************************************
-
 \section{The \type {font} library}
 
 The font library provides the interface into the internals of the font system,
@@ -2537,8 +2535,6 @@ reversecoverage:
 \NC replacements \NC string   \NC \NC \NR
 \stoptabulate
 
-%***********************************************************************
-
 \section{The \type {img} library}
 
 The \type {img} library can be used as an alternative to \type {\pdfximage} and
@@ -2824,8 +2820,6 @@ these are \type {pdf}, \type {png}, \type {jpg}, \type {jp2} (JPEG~2000), and
 This function returns a list with the supported \PDF\ page box names, currently
 these are \type {media}, \type {crop}, \type {bleed}, \type {trim}, and \type
 {art} (all in lowercase letters).
-
-%***********************************************************************
 
 \section{The \type {kpse} library}
 
@@ -5577,6 +5571,26 @@ tex.definefont(<boolean> global, <string> csname, <number> fontid)
 Associates \type {csname} with the internal font number \type {fontid}. The
 definition is global if (and only if) \type {global} is specified and true (the
 setting of \type {globaldefs} is not taken into account).
+
+\subsubsection{\type {tex.getlinenumber} and \type {tex.setlinenumber}}
+
+You can mess with the current line number:
+
+\startfunctioncall
+local n = tex.getlinenumber()
+tex.setlinenumber(n+10)
+\stopfunctioncall
+
+which can be shortcut to:
+
+\startfunctioncall
+tex.setlinenumber(10,true)
+\stopfunctioncall
+
+This might be handy when you have a callback that read numbers from a file and
+combines them in one line (in which case an error message probably has to refer
+to the original line). Interference with \TEX's internal handling of numbers is
+of course possible.
 
 \subsubsection{\type {tex.error}}
 
