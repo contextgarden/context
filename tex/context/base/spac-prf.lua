@@ -27,7 +27,6 @@ local hlist_code        = nodecodes.hlist
 local vlist_code        = nodecodes.vlist
 local unset_code        = nodecodes.unset
 local math_code         = nodecodes.math
-local whatsit_code      = nodecodes.whatsit
 local rule_code         = nodecodes.rule
 local marginkern_code   = nodecodes.marginkern
 
@@ -70,8 +69,6 @@ local link_nodes        = nuts.link
 local find_node_tail    = nuts.tail
 
 local properties        = nodes.properties.data
-
-local get_dimensions    = nodes.whatsitters.getters.dimensions
 
 local a_visual          = attributes.private("visual")
 local a_snapmethod      = attributes.private("snapmethod")
@@ -227,14 +224,6 @@ local function getprofile(line,step)
                 ht = 0
                 dp = 0
                 progress()
-            elseif id == whatsit_code then
-                local subtype  = getsubtype(current)
-                local getdimen = get_dimensions[subtype]
-                if getdimen then
-                    -- unlikely to happen as we always wrap images etc in a box
-                    wd, ht, dp = get_dimensions(current)
-                    progress()
-                end
             elseif id == marginkern_code then
                 wd = getfield(current,"width")
                 ht = 0

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/22/15 17:11:44
+-- merge date  : 11/01/15 16:15:35
 
 do -- begin closure to overcome local limits and interference
 
@@ -4650,6 +4650,10 @@ function constructors.scale(tfmdata,specification)
           end
         end
       end
+      local vi=character.vert_italic
+      if vi and vi~=0 then
+        chr.vert_italic=vi*hdelta
+      end
       local va=character.accent
       if va then
         chr.top_accent=vdelta*va
@@ -9145,6 +9149,7 @@ local function copytotfm(data,cache_id)
         local m=d.math
         if m then
           local italic=m.italic
+          local vitalic=m.vitalic
           local variants=m.hvariants
           local parts=m.hparts
           if variants then
@@ -9171,10 +9176,12 @@ local function copytotfm(data,cache_id)
             c.vert_variants=parts
           elseif parts then
             character.vert_variants=parts
-            italic=m.vitalic
           end
           if italic and italic~=0 then
             character.italic=italic 
+          end
+          if vitalic and vitalic~=0 then
+            character.vert_italic=vitalic
           end
           local accent=m.accent
           if accent then
@@ -11610,7 +11617,6 @@ local disccodes=nodes.disccodes
 local glyph_code=nodecodes.glyph
 local glue_code=nodecodes.glue
 local disc_code=nodecodes.disc
-local whatsit_code=nodecodes.whatsit
 local math_code=nodecodes.math
 local dir_code=whatcodes.dir
 local localpar_code=whatcodes.localpar
@@ -14245,42 +14251,6 @@ local function featuresprocessor(head,font,attr)
                 comprun(start,c_run)
                 start=getnext(start)
               end
-            elseif id==whatsit_code then 
-              local subtype=getsubtype(start)
-              if subtype==dir_code then
-                local dir=getfield(start,"dir")
-                if dir=="+TLT" then
-                  topstack=topstack+1
-                  dirstack[topstack]=dir
-                  rlmode=1
-                elseif dir=="+TRT" then
-                  topstack=topstack+1
-                  dirstack[topstack]=dir
-                  rlmode=-1
-                elseif dir=="-TLT" or dir=="-TRT" then
-                  topstack=topstack-1
-                  rlmode=dirstack[topstack]=="+TRT" and -1 or 1
-                else
-                  rlmode=rlparmode
-                end
-                if trace_directions then
-                  report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
-                end
-              elseif subtype==localpar_code then
-                local dir=getfield(start,"dir")
-                if dir=="TRT" then
-                  rlparmode=-1
-                elseif dir=="TLT" then
-                  rlparmode=1
-                else
-                  rlparmode=0
-                end
-                rlmode=rlparmode
-                if trace_directions then
-                  report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
-                end
-              end
-              start=getnext(start)
             elseif id==math_code then
               start=getnext(end_of_math(start))
             else
@@ -14501,42 +14471,6 @@ local function featuresprocessor(head,font,attr)
               comprun(start,c_run)
               start=getnext(start)
             end
-          elseif id==whatsit_code then
-            local subtype=getsubtype(start)
-            if subtype==dir_code then
-              local dir=getfield(start,"dir")
-              if dir=="+TLT" then
-                topstack=topstack+1
-                dirstack[topstack]=dir
-                rlmode=1
-              elseif dir=="+TRT" then
-                topstack=topstack+1
-                dirstack[topstack]=dir
-                rlmode=-1
-              elseif dir=="-TLT" or dir=="-TRT" then
-                topstack=topstack-1
-                rlmode=dirstack[topstack]=="+TRT" and -1 or 1
-              else
-                rlmode=rlparmode
-              end
-              if trace_directions then
-                report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
-              end
-            elseif subtype==localpar_code then
-              local dir=getfield(start,"dir")
-              if dir=="TRT" then
-                rlparmode=-1
-              elseif dir=="TLT" then
-                rlparmode=1
-              else
-                rlparmode=0
-              end
-              rlmode=rlparmode
-              if trace_directions then
-                report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
-              end
-            end
-            start=getnext(start)
           elseif id==math_code then
             start=getnext(end_of_math(start))
           else

@@ -106,7 +106,6 @@ local v_foreground       = variables.foreground
 
 local nodecodes          = nodes.nodecodes
 local skipcodes          = nodes.skipcodes
-local whatcodes          = nodes.whatcodes
 local kerncodes          = nodes.kerncodes
 
 local glyph_code         = nodecodes.glyph
@@ -117,8 +116,7 @@ local kern_code          = nodecodes.kern
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local rule_code          = nodecodes.rule
-local dir_code           = nodecodes.dir or whatcodes.dir
-local whatsit_code       = nodecodes.whatsit
+local dir_code           = nodecodes.dir
 
 local userskip_code      = skipcodes.userskip
 local spaceskip_code     = skipcodes.spaceskip
@@ -204,7 +202,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                 if list then
                     setfield(n,"list",(processwords(attribute,data,flush,list,n))) -- watch ()
                 end
-            elseif checkdir and (id == dir_code or (id == whatsit_code and getsubtype(n) == dir_code)) then -- only changes in dir, we assume proper boundaries
+            elseif checkdir and id == dir_code then -- only changes in dir, we assume proper boundaries
                 if f and a then
                     l = n
                 end

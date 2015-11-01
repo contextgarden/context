@@ -81,7 +81,6 @@ local languagenames     = languages.numbers
 
 local nodecodes         = nodes.nodecodes
 local skipcodes         = nodes.skipcodes
-local whatsitcodes      = nodes.whatsitcodes
 local listcodes         = nodes.listcodes
 
 local hlist_code        = nodecodes.hlist
@@ -91,8 +90,6 @@ local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
 local disc_code         = nodecodes.disc
 local insert_code       = nodecodes.insert
-local whatsit_code      = nodecodes.whatsit
-local refximage_code    = whatsitcodes.pdfrefximage
 
 local userskip_code     = skipcodes.userskip
 local rightskip_code    = skipcodes.rightskip

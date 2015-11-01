@@ -90,7 +90,6 @@ local nodepool            = nuts.pool
 local new_textdir         = nodepool.textdir
 
 local nodecodes           = nodes.nodecodes
-local whatsitcodes        = nodes.whatsitcodes
 local skipcodes           = nodes.skipcodes
 
 local glyph_code          = nodecodes.glyph
@@ -98,9 +97,8 @@ local glue_code           = nodecodes.glue
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local math_code           = nodecodes.math
-local dir_code            = nodecodes.dir or whatsitcodes.dir
-local localpar_code       = nodecodes.localpar or whatcodes.localpar
-local whatsit_code        = nodecodes.whatsit
+local dir_code            = nodecodes.dir
+local localpar_code       = nodecodes.localpar
 local parfillskip_code    = skipcodes.skipcodes
 
 ----- object_replacement  = 0xFFFC -- object replacement character
@@ -233,7 +231,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
         elseif id == glue_code then -- and how about kern
             list[size] = { char = 0x0020, direction = "ws", original = "ws", level = 0 }
             current = getnext(current)
-        elseif id == dir_code or (id == whatsit_code and getsubtype(current) == dir_code) then
+        elseif id == dir_code then
             local dir = getfield(current,"dir")
             if dir == "+TLT" then
                 list[size] = { char = 0x202A, direction = "lre", original = "lre", level = 0 }
@@ -261,7 +259,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             current    = getnext(current)
             while n do
                 local id = getid(current)
-                if id ~= glyph_code and id ~= glue_code and id ~= dir_code and not (id == whatsit_code and getsubtype(current) == dir_code) then
+                if id ~= glyph_code and id ~= glue_code and id ~= dir_code then
                     skip    = skip + 1
                     last    = id
                     current = getnext(current)
@@ -325,7 +323,7 @@ end
 
 local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for localpar)
     local id = getid(head)
-    if (id == localpar_code) or (id == whatsit_code and getsubtype(head) == localpar_code) then
+    if id == localpar_code then
         if getfield(head,"dir") == "TRT" then
             return 1, "TRT", true
         else
@@ -761,7 +759,7 @@ local function apply_to_list(list,size,head,pardir)
                 done = true
             end
         elseif begindir then
-            if (id == localpar_code) or (id == whatsit_code and getsubtype(current) == localpar_code) then
+            if id == localpar_code then
                 -- localpar should always be the 1st node
                 local d = new_textdir(begindir)
                 setprop(d,"directions",true)

@@ -223,7 +223,6 @@ local setnodecolor         = nodes.tracers.colors.set
 local nodepool             = nuts.pool
 
 local nodecodes            = nodes.nodecodes
-local whatcodes            = nodes.whatcodes
 local kerncodes            = nodes.kerncodes
 local glyphcodes           = nodes.glyphcodes
 local gluecodes            = nodes.gluecodes
@@ -238,7 +237,6 @@ local ins_code             = nodecodes.ins
 local mark_code            = nodecodes.mark
 local adjust_code          = nodecodes.adjust
 local penalty_code         = nodecodes.penalty
-local whatsit_code         = nodecodes.whatsit
 local disc_code            = nodecodes.disc
 local math_code            = nodecodes.math
 local kern_code            = nodecodes.kern
@@ -247,13 +245,11 @@ local hlist_code           = nodecodes.hlist
 local vlist_code           = nodecodes.vlist
 local unset_code           = nodecodes.unset
 local marginkern_code      = nodecodes.marginkern
-local dir_code             = nodecodes.dir or whatcodes.dir
+local dir_code             = nodecodes.dir
 
 local leaders_code         = gluecodes.leaders
 
-local localpar_code        = nodecodes.localpar or whatcodes.localpar
-local pdfrefximage_code    = whatcodes.pdfrefximage
-local pdfrefxform_code     = whatcodes.pdfrefxform
+local localpar_code        = nodecodes.localpar
 
 local kerning_code         = kerncodes.kerning -- font kern
 local userkern_code        = kerncodes.userkern
@@ -356,7 +352,7 @@ local function inject_dirs_at_end_of_line(stack,current,start,stop)
     local h = nil
     while start and start ~= stop do
         local id = getid(start)
-        if id == dir_code or (id == whatsit_code and getsubtype(start) == dir_code) then
+        if id == dir_code then
             if not dir_pops[getfield(start,"dir")] then -- weird, what is this #
                 n = n + 1
                 stack[n] = start
@@ -407,11 +403,6 @@ local function register_statistics(par)
     nofprotrudedlines = nofprotrudedlines + statistics.nofprotrudedlines
     nofadjustedlines  = nofadjustedlines  + statistics.nofadjustedlines
 end
-
--- resolvers --
-
-local get_whatsit_width      = nodes.whatsitters.getters.width
-local get_whatsit_dimensions = nodes.whatsitters.getters.dimensions
 
 -- expansion etc --
 
@@ -1431,7 +1422,7 @@ local function post_line_break(par)
                 end
                 local id      = getid(next)
                 local subtype = getsubtype(next)
-                if (id == localpar_code) or (id == whatsit_code and subtype == localpar_code) then
+                if id == localpar_code then
                     -- nothing
                 elseif id < math_code then
                     -- messy criterium
@@ -2165,7 +2156,7 @@ function constructors.methods.basic(head,d)
 
         if current then
             local id = getid(current)
-            if (id == localpar_code) or (id == whatsit_code and getsubtype(current) == localpar_code) then
+            if id == localpar_code then
                 par.init_internal_left_box       = getfield(current,"box_left")
                 par.init_internal_left_box_width = getfield(current,"box_left_width")
                 par.internal_pen_inter           = getfield(current,"pen_inter")
@@ -2233,9 +2224,9 @@ function constructors.methods.basic(head,d)
                     local prev_p = getprev(current)
                     if prev_p and prev_p ~= temp_head then
                         local id = getid(prev_p)
-                        if id == glyph_code or -- dir_code is < math
-                            (id < math_code and (id ~= whatsit_code or getsubtype(prev_p) ~= dir_code)) or -- was: precedes_break(prev_p)
-                            (id == kern_code and getsubtype(prev_p) ~= userkern_code) then
+                        if (id == glyph_code) or -- dir_code is < math
+                           (id < math_code) or -- was: precedes_break(prev_p)
+                           (id == kern_code and getsubtype(prev_p) ~= userkern_code) then
                             p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
                         end
                     end
@@ -2373,23 +2364,6 @@ function constructors.methods.basic(head,d)
                 par.internal_left_box_width  = getfield(current,"box_left_width")
                 par.internal_right_box       = getfield(current,"box_right")
                 par.internal_right_box_width = getfield(current,"box_right_width")
-            elseif id == whatsit_code then
-                local subtype = getsubtype(current)
-                if subtype == localpar_code then
-                    par.internal_pen_inter       = getfield(current,"pen_inter")
-                    par.internal_pen_broken      = getfield(current,"pen_broken")
-                    par.internal_left_box        = getfield(current,"box_left")
-                    par.internal_left_box_width  = getfield(current,"box_left_width")
-                    par.internal_right_box       = getfield(current,"box_right")
-                    par.internal_right_box_width = getfield(current,"box_right_width")
-                elseif subtype == dir_code then
-                    par.line_break_dir = checked_line_dir(dirstack) or par.line_break_dir
-                else
-                    local get_width = get_whatsit_width[subtype]
-                    if get_width then
-                        active_width.size = active_width.size + get_width(current,par.line_break_dir)
-                    end
-                end
             elseif trace_unsupported then
                 if id == mark_code or id == ins_code or id == adjust_code then
                     -- skip
@@ -2986,25 +2960,8 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     adjust_head = list
                 end
                 adjust_tail = slide_nodelist(list) -- find_tail(list)
-           elseif id == dir_code then
+            elseif id == dir_code then
                 hpack_dir = checked_line_dir(stack,current) or hpack_dir
-            elseif id == whatsit_code then
-                local subtype = getsubtype(current)
-                if subtype == dir_code then
-                    hpack_dir = checked_line_dir(stack,current) or hpack_dir
-                else
-                    local get_dimensions = get_whatsit_dimensions[subtype]
-                    if get_dimensions then
-                        local wd, ht, dp = get_dimensions(current,hpack_dir)
-                        natural = natural + wd
-                        if ht > height then
-                            height = ht
-                        end
-                        if dp > depth then
-                            depth = dp
-                        end
-                    end
-                end
             elseif id == marginkern_code then
                 local width = getfield(current,"width")
                 if cal_expand_ratio then

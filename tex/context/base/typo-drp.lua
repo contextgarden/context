@@ -39,7 +39,6 @@ local setattr           = nuts.setattr
 local hpack_nodes       = nuts.hpack
 
 local nodecodes         = nodes.nodecodes
-local whatsitcodes      = nodes.whatsitcodes
 
 local nodepool          = nuts.pool
 local new_kern          = nodepool.kern
@@ -66,8 +65,7 @@ local glyph_code        = nodecodes.glyph
 local hlist_code        = nodecodes.hlist
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
-local whatsit_code      = nodecodes.whatsit
-local localpar_code     = nodecodes.localpar or whatsitcodes.localpar
+local localpar_code     = nodecodes.localpar
 
 local actions           = { }
 initials.actions        = actions
@@ -127,104 +125,10 @@ interfaces.implement {
 -- todo: prevent linebreak .. but normally a initial ends up at the top of
 -- a page so this has a low priority
 
--- actions[v_default] = function(head,setting)
---     local done = false
---     local id   = getid(head)
---     if (id == localpar_code) or (id == whatsit_code and getsubtype(head) == localpar_code) then
---         -- begin of par
---         local first = getnext(head)
---         -- parbox .. needs to be set at 0
---         if first and getid(first) == hlist_code then
---             first = getnext(first)
---         end
---         -- we need to skip over kerns and glues (signals)
---         while first and getid(first) ~= glyph_code do
---             first = getnext(first)
---         end
---         if first and getid(first) == glyph_code then
---             local char = getchar(first)
---             local prev = getprev(first)
---             local next = getnext(first)
---          -- if getid(prev) == hlist_code then
---          --     -- set the width to 0
---          -- end
---             if next and getid(next) == kern_code then
---                 setfield(next,"kern",0)
---             end
---             if setting.font then
---                 setfield(first,"font",setting.font)
---             end
---             if setting.dynamic > 0 then
---                 setattr(first,0,setting.dynamic)
---             end
---             -- can be a helper
---             local ma = setting.ma or 0
---             local ca = setting.ca
---             local ta = setting.ta
---             if ca and ca > 0 then
---                 setattr(first,a_colorspace,ma == 0 and 1 or ma)
---                 setattr(first,a_color,ca)
---             end
---             if ta and ta > 0 then
---                 setattr(first,a_transparency,ta)
---             end
---             --
---             local width     = getfield(first,"width")
---             local height    = getfield(first,"height")
---             local depth     = getfield(first,"depth")
---             local distance  = setting.distance or 0
---             local voffset   = setting.voffset or 0
---             local hoffset   = setting.hoffset or 0
---             local parindent = tex.parindent
---             local baseline  = texget("baselineskip").width
---             local lines     = tonumber(setting.n) or 0
---             --
---             setfield(first,"xoffset",- width  - hoffset - distance - parindent)
---             setfield(first,"yoffset",- voffset) -- no longer - height here
---             -- We pack so that successive handling cannot touch the dropped cap. Packaging
---             -- in a hlist is also needed because we cannot locally adapt e.g. parindent (not
---             -- yet stored in with localpar).
---             setfield(first,"prev",nil)
---             setfield(first,"next",nil)
---             local h = hpack_nodes(first)
---             setfield(h,"width",0)
---             setfield(h,"height",0)
---             setfield(h,"depth",0)
---             setfield(prev,"next",h)
---             setfield(next,"prev",h)
---             setfield(h,"next",next)
---             setfield(h,"prev",prev)
---             first = h
---             -- end of packaging
---             if setting.location == v_margin then
---                 -- okay
---             else
---                 if lines == 0 then -- safeguard, not too precise
---                     lines = ceil((height+voffset) / baseline)
---                 end
---                 -- We cannot set parshape yet ... when we can I'll add a slope
---                 -- option (positive and negative, in emwidth).
---                 local hangafter  = - lines
---                 local hangindent = width + distance + parindent
---                 if trace_initials then
---                     report_initials("setting hangafter to %i and hangindent to %p",hangafter,hangindent)
---                 end
---                 tex.hangafter  = hangafter
---                 tex.hangindent = hangindent
---                 if parindent ~= 0 then
---                     insert_after(first,first,new_kern(-parindent))
---                 end
---             end
---             done = true
---         end
---     end
---     return head, done
--- end
-
 actions[v_default] = function(head,setting)
     local done = false
     local id   = getid(head)
-    if (id == localpar_code) or (id == whatsit_code and getsubtype(head) == localpar_code) then
+    if id == localpar_code then
         -- begin of par
         local first  = getnext(head)
         local indent = false

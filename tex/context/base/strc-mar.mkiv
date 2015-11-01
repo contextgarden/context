@@ -120,7 +120,7 @@
 
 % the fetchers are fully expandable: [name][method]
 
-\def\fetchonemark[#1]#2[#3]{\ifconditional\inhibitgetmarking\else\clf_fetchonemark {#1}{\v!page}{#2}\fi}
+\def\fetchonemark[#1]#2[#3]{\ifconditional\inhibitgetmarking\else\clf_fetchonemark {#1}{\v!page}{#3}\fi}
 \def\fetchtwomarks     [#1]{\ifconditional\inhibitgetmarking\else\clf_fetchtwomarks{#1}{\v!page}\fi}
 \def\fetchallmarks     [#1]{\ifconditional\inhibitgetmarking\else\clf_fetchallmarks{#1}{\v!page}\fi}
 

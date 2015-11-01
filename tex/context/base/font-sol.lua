@@ -95,8 +95,8 @@ local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
 local hlist_code         = nodecodes.hlist
-local dir_code           = nodecodes.dir or whatsitcodes.dir
-local localpar_code      = nodecodes.localpar or whatsitcodes.localpar
+local dir_code           = nodecodes.dir
+local localpar_code      = nodecodes.localpar
 
 local whatsit_code       = nodecodes.whatsit
 
@@ -420,14 +420,6 @@ function splitters.split(head)
                 flush()
             end
             rlmode = getfield(current,"dir")
-        elseif id == whatsit_code then
-            if start then
-                flush()
-            end
-            local subtype = getsubtype(current)
-            if subtype == dir_code or subtype == localpar_code then
-                rlmode = getfield(current,"dir")
-            end
         else
             if start then
                 flush()

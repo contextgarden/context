@@ -1112,6 +1112,7 @@ end
 -- is no real gain.
 
 local formatreaders = { }
+local duplicatestoo = true
 
 formatreaders[4] = function(f,fontdata,offset)
     setposition(f,offset+2) -- skip format
@@ -1166,13 +1167,22 @@ formatreaders[4] = function(f,fontdata,offset)
                         local gu = glyph.unicode
                         if not gu then
                             glyph.unicode = unicode
-                        else
-                            -- no duplicates ... weird side effects in lm
+                        elseif gu ~= unicode then
+                            if duplicatestoo then
+                                local d = duplicates[gu]
+                                if d then
+                                    d[unicode] = true
+                                else
+                                    duplicates[gu] = { [unicode] = true }
+                                end
+                            else
+                                -- no duplicates ... weird side effects in lm
+                                report("duplicate case 1: %C %04i %s",unicode,index,glyphs[index].name)
+                            end
                         end
                         if not mapping[index] then
                             mapping[index] = unicode
                         end
-                     -- report("case 1: %C %04i %s",unicode,index,glyphs[index].name)
                     end
                 end
             end
@@ -1188,13 +1198,22 @@ formatreaders[4] = function(f,fontdata,offset)
                         local gu = glyph.unicode
                         if not gu then
                             glyph.unicode = unicode
-                        else
-                            -- no duplicates ... weird side effects in lm
+                        elseif gu ~= unicode then
+                            if duplicatestoo then
+                                local d = duplicates[gu]
+                                if d then
+                                    d[unicode] = true
+                                else
+                                    duplicates[gu] = { [unicode] = true }
+                                end
+                            else
+                                -- no duplicates ... weird side effects in lm
+                                report("duplicate case 2: %C %04i %s",unicode,index,glyphs[index].name)
+                            end
                         end
                         if not mapping[index] then
                             mapping[index] = unicode
                         end
-                     -- report("case 2: %C %04i %s",unicode,index,glyphs[index].name)
                     end
                 end
             end

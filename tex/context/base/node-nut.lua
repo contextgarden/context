@@ -887,29 +887,29 @@ nodes.whatsitters = {
     setters = { width = setwidth, dimensions = setdimensions },
 }
 
--- this might move (in fact forms and images will become nodes)
+-- obsolete
 
-local function get_width(n,dir)
-    n = tonut(n)
-    return getfield(n,"width")
-end
-
-local function get_dimensions(n,dir)
-    n = tonut(n)
-    return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
-end
-
-local whatcodes         = nodes.whatcodes
-local pdfrefximage_code = whatcodes.pdfrefximage
-local pdfrefxform_code  = whatcodes.pdfrefxform
-
-if pdfrefxform_code then
-    getwidth     [pdfrefxform_code ] = get_width
-    getdimensions[pdfrefxform_code ] = get_dimensions
-end
-
-if pdfrefximage_code then
-    getwidth     [pdfrefximage_code] = get_width
-    getdimensions[pdfrefximage_code] = get_dimensions
-end
+-- local function get_width(n,dir)
+--     n = tonut(n)
+--     return getfield(n,"width")
+-- end
+--
+-- local function get_dimensions(n,dir)
+--     n = tonut(n)
+--     return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
+-- end
+--
+-- local whatcodes         = nodes.whatcodes
+-- local pdfrefximage_code = whatcodes.pdfrefximage
+-- local pdfrefxform_code  = whatcodes.pdfrefxform
+--
+-- if pdfrefxform_code then
+--     getwidth     [pdfrefxform_code ] = get_width
+--     getdimensions[pdfrefxform_code ] = get_dimensions
+-- end
+--
+-- if pdfrefximage_code then
+--     getwidth     [pdfrefximage_code] = get_width
+--     getdimensions[pdfrefximage_code] = get_dimensions
+-- end
 

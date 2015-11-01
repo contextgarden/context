@@ -700,6 +700,7 @@ function constructors.scale(tfmdata,specification)
         end
         --
         if hasmath then
+            --
             -- todo, just operate on descriptions.math
             local vn = character.next
             if vn then
@@ -736,6 +737,11 @@ function constructors.scale(tfmdata,specification)
                         chr.horiz_variants = t
                     end
                 end
+                -- todo also check mathitalics (or that one can go away)
+            end
+            local vi = character.vert_italic
+            if vi and vi ~= 0 then
+                chr.vert_italic = vi*hdelta
             end
             local va = character.accent
             if va then

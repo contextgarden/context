@@ -125,14 +125,13 @@ local new_gluespec        = nodepool.gluespec
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
-local whatsitcodes        = nodes.whatsitcodes
 
 local penalty_code        = nodecodes.penalty
 local kern_code           = nodecodes.kern
 local glue_code           = nodecodes.glue
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
-local whatsit_code        = nodecodes.whatsit
+local localpar_code       = nodecodes.localpar
 
 local vspacing            = builders.vspacing or { }
 builders.vspacing         = vspacing
@@ -229,7 +228,7 @@ end
 local function validvbox(parentid,list)
     if parentid == hlist_code then
         local id = getid(list)
-        if id == whatsit_code then -- check for initial par subtype
+        if id == localpar_code then -- check for initial par subtype
             list = getnext(list)
             if not next then
                 return nil
@@ -264,7 +263,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
     -- problem: any snapped vbox ends up in a line
     if list and parentid == hlist_code then
         local id = getid(list)
-        if id == whatsit_code then -- check for initial par subtype
+        if id == localpar_code then -- check for initial par subtype
             list = getnext(list)
             if not next then
                 return false
@@ -281,7 +280,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
                 elseif a == 0 then
                     return true -- already snapped
                 end
-            elseif id == glue_code or id == penalty_code then -- whatsit is weak spot
+            elseif id == glue_code or id == penalty_code then
                 -- go on
             else
                 return false -- whatever

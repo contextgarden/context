@@ -188,7 +188,7 @@
 
 \def\page_lines_start_zero[#1][#2]%
   {\edef\m_argument{\linenumberingparameter\c!continue}%
-   \ifx\m_argument\v!continue
+   \ifx\m_argument\v!yes
      \c_page_lines_mode\zerocount
    \else
      \c_page_lines_mode\plusone

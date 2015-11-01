@@ -53,7 +53,7 @@ local report_otf         = logs.reporter("fonts","otf loading")
 local fonts              = fonts
 local otf                = fonts.handlers.otf
 
-otf.version              = 3.005 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 3.006 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otl", otf.version, true)
 
 local otfreaders         = otf.readers
@@ -377,6 +377,7 @@ local function copytotfm(data,cache_id)
                     -- watch out: luatex uses horiz_variants for the parts
                     --
                     local italic   = m.italic
+                    local vitalic  = m.vitalic
                     --
                     local variants = m.hvariants
                     local parts    = m.hparts
@@ -407,11 +408,14 @@ local function copytotfm(data,cache_id)
                         c.vert_variants = parts
                     elseif parts then
                         character.vert_variants = parts
-                        italic = m.vitalic
                     end
                     --
                     if italic and italic ~= 0 then
                         character.italic = italic
+                    end
+                    --
+                    if vitalic and vitalic ~= 0 then
+                        character.vert_italic = vitalic
                     end
                     --
                     local accent = m.accent -- taccent?

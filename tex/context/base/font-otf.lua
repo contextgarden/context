@@ -2583,6 +2583,7 @@ local function copytotfm(data,cache_id)
                     -- watch out: luatex uses horiz_variants for the parts
                     --
                     local italic   = m.italic
+                    local vitalic  = m.vitalic
                     --
                     local variants = m.hvariants
                     local parts    = m.hparts
@@ -2623,11 +2624,13 @@ local function copytotfm(data,cache_id)
                         c.vert_variants = parts
                     elseif parts then
                         character.vert_variants = parts
-                        italic = m.vitalic
                     end
                     --
                     if italic and italic ~= 0 then
                         character.italic = italic -- overload
+                    end
+                    if vitalic and vitalic ~= 0 then
+                        character.vert_italic = vitalic
                     end
                     --
                     local accent = m.accent

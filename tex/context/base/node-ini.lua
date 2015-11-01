@@ -282,11 +282,7 @@ end
 
 trackers.register("system.showcodes", nodes.showcodes)
 
--- new:
-
-nodes.nativedir = nodecodes.dir and true or false
-
-nodecodes.dir      = 98
-nodecodes[98]      = "dir"
-nodecodes.localpar = 99
-nodecodes[99]      = "localpar"
+if not nodecodes.dir then
+    report_codes("use a newer version of luatex")
+    os.exit()
+end

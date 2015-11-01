@@ -57,13 +57,7 @@ end
 -- subtype width leader spec (stretch shrink ...
 
 function formatters.whatsit(n,comment)
-    local subtype = n.subtype
-    local whatsit = whatsitcodes[subtype]
-    if whatsit == "dir" or whatsit == "localpar" then
-        return format("\\doFLOWdirnode{%s}{%s}{%s}",comment,whatsit,n.dir)
-    else
-        return nodecodes[n.id]
-    end
+    return whatsitcodes[n.id] or "unknown whatsit"
 end
 
 function formatters.dir(n,comment)

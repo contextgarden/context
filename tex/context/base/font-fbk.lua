@@ -89,21 +89,22 @@ local function composecharacters(tfmdata)
                                 end
                             end
                             local charsacc = characters[acc]
-                        --~ local ca = charsacc.category
-                        --~ if ca == "mn" then
-                        --~     -- mark nonspacing
-                        --~ elseif ca == "ms" then
-                        --~     -- mark spacing combining
-                        --~ elseif ca == "me" then
-                        --~     -- mark enclosing
-                        --~ else
+                         -- local ca = charsacc.category
+                         -- if ca == "mn" then
+                         --     -- mark nonspacing
+                         -- elseif ca == "ms" then
+                         --     -- mark spacing combining
+                         -- elseif ca == "me" then
+                         --     -- mark enclosing
+                         -- else
                             if not charsacc then -- fallback accents
                                 acc = unicodefallbacks[acc]
                                 charsacc = acc and characters[acc]
                             end
                             local chr_t = cache[chr]
                             if not chr_t then
-                                chr_t = {"slot", 1, chr}
+                                chr_t = { "slot", 1, chr }
+                    -- will be: chr_t = { "slot", 0, chr }
                                 cache[chr] = chr_t
                             end
                             if charsacc then
@@ -112,7 +113,8 @@ local function composecharacters(tfmdata)
                                 end
                                 local acc_t = cache[acc]
                                 if not acc_t then
-                                    acc_t = {"slot", 1, acc}
+                                    acc_t = { "slot", 1, acc }
+                        -- will be: acc_t = { "slot", 0, acc }
                                     cache[acc] = acc_t
                                 end
                                 local cb = descriptions[chr].boundingbox

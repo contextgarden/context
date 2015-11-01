@@ -31,7 +31,6 @@ if not modules then modules = { } end modules ['typo-dha'] = {
 -- elseif d == "ws"  then -- Whitespace
 -- elseif d == "on"  then -- Other Neutrals
 
--- beware: math adds whatsits afterwards so that will mess things up
 -- todo  : use new dir functions
 -- todo  : make faster
 -- todo  : move dir info into nodes
@@ -76,7 +75,6 @@ local whatcodes          = nodes.whatcodes
 local mathcodes          = nodes.mathcodes
 
 local glyph_code         = nodecodes.glyph
-local whatsit_code       = nodecodes.whatsit
 local math_code          = nodecodes.math
 local penalty_code       = nodecodes.penalty
 local kern_code          = nodecodes.kern
@@ -338,35 +336,6 @@ local function process(start)
                 end
                 pardir  = autodir
                 textdir = pardir
-                setprop(current,"direction",true)
-            elseif id == whatsit_code then
-                local subtype = getsubtype(current)
-                if subtype == localpar_code then
-                    local dir = getfield(current,"dir")
-                    if dir == 'TRT' then
-                        autodir = -1
-                    elseif dir == 'TLT' then
-                        autodir = 1
-                    end
-                    pardir  = autodir
-                    textdir = pardir
-                elseif subtype == dir_code then
-                    local dir = getfield(current,"dir")
-                    if dir == "+TRT" then
-                        autodir = -1
-                    elseif dir == "+TLT" then
-                        autodir = 1
-                    elseif dir == "-TRT" or dir == "-TLT" then
-                        if embedded and embedded~= 0 then
-                            autodir = embedded
-                        else
-                            autodir = 0
-                        end
-                    else
-                        -- message
-                    end
-                    textdir = autodir
-                end
                 setprop(current,"direction",true)
             else
                 setprop(current,"direction",true)

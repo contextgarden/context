@@ -68,7 +68,6 @@ local find_node_tail      = nuts.tail
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
-local whatcodes           = nodes.whatcodes
 local listcodes           = nodes.listcodes
 
 local hlist_code          = nodecodes.hlist
@@ -76,9 +75,8 @@ local vlist_code          = nodecodes.vlist
 local glue_code           = nodecodes.glue
 local glyph_code          = nodecodes.glyph
 local rule_code           = nodecodes.rule
-local whatsit_code        = nodecodes.whatsit
-local dir_code            = nodecodes.dir or whatcodes.dir
-local localpar_code       = nodecodes.localpar or whatcodes.localpar
+local dir_code            = nodecodes.dir
+local localpar_code       = nodecodes.localpar
 
 local leftskip_code       = skipcodes.leftskip
 local rightskip_code      = skipcodes.rightskip
@@ -96,7 +94,7 @@ local tosequence          = nodes.tosequence
 local implement           = interfaces.implement
 
 -- Normally a (destination) area is a box or a simple stretch if nodes but when it is
--- a paragraph we hav ea problem: we cannot calculate the height well. This happens
+-- a paragraph we have a problem: we cannot calculate the height well. This happens
 -- with footnotes or content broken across a page.
 
 local function vlist_dimensions(start,stop)
@@ -354,13 +352,6 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 txtdir = getfield(current,"dir")
             elseif id == localpar_code then
                 pardir = getfield(current,"dir")
-            elseif id == whatsit_code then
-                local subtype = getsubtype(current)
-                if subtype == localpar_code then
-                    pardir = getfield(current,"dir")
-                elseif subtype == dir_code then
-                    txtdir = getfield(current,"dir")
-                end
             elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
                 --
             else
@@ -410,13 +401,6 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                 txtdir = getfield(current,"dir")
             elseif id == localpar_code then
                 pardir = getfield(current,"dir")
-            elseif id == whatsit_code then
-                local subtype = getsubtype(current)
-                if subtype == localpar_code then
-                    pardir = getfield(current,"dir")
-                elseif subtype == dir_code then
-                    txtdir = getfield(current,"dir")
-                end
             else
                 local r = getattr(current,attribute)
                 if r and not done[r] then

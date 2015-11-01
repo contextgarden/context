@@ -60,18 +60,16 @@ local nuts              = nodes.nuts
 local nodecodes         = nodes.nodecodes
 local gluecodes         = nodes.gluecodes
 local listcodes         = nodes.listcodes
-local whatcodes         = nodes.whatsitcodes
 
 local hlist_code        = nodecodes.hlist
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
-local whatsit_code      = nodecodes.whatsit
 local line_code         = listcodes.line
+local localpar_code     = nodecodes.localpar
 local userskip_code     = gluecodes.userskip
 local leftskip_code     = gluecodes.leftskip
 local rightskip_code    = gluecodes.rightskip
 local parfillskip_code  = gluecodes.parfillskip
-local localpar_code     = nodecodes.localpar or whatcodes.localpar
 
 local tonut             = nodes.tonut
 local tonode            = nodes.tonode
@@ -188,9 +186,10 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
         current = getnext(head)
         id      = getid(current)
     end
-    if (id == localpar_code) or (id == whatsit_code and getsubtype(head) == localpar_code) then
-        head = remove_node(head,head,true)
-    end
+-- no:
+--     if id == localpar_code then
+--         head = remove_node(head,head,true)
+--     end
     local tail    = find_tail(head)
     local current = tail
     local id      = getid(current)

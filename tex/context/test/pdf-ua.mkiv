@@ -1,0 +1,44 @@
+\setupinteraction
+  [title=TITLE,
+    subtitle=SUBTITLE,
+    author=AUTHOR,
+    keyword={{KEYWORD1, KEYWORD2}, KEYWORD3}]
+
+\setupbackend
+  [format={pdf/ua-1},
+%    profile=srgb.icc, % can't validate PDF/A-3, so this only blows up the PDF
+%    intent={ISO Coated v2 300\letterpercent\space (ECI)},
+    level=0]
+
+\setuptagging[state=start] % should be set automatically, if 'tagging = true'
+
+\setuplanguage[en]
+  
+% DisplayDocTitle key is not set to true
+%
+% [from PDFUA-Reference-09_(English-invoice).pdf]
+% 129 0 obj
+% <</Type/Catalog/Pages 1 0 R/ViewerPreferences<</DisplayDocTitle true>>/PageMode/UseOutlines/Outlines 43 0 R/Lang(en)/StructTreeRoot 2 0 R/MarkInfo<</Marked true/Suspects false>>/OutputIntents[ 128 0 R]/Metadata 127 0 R>>
+% endobj
+% this may interfer with other ViewerPreferences settings?
+\startluacode
+    lpdf.addtocatalog("ViewerPreferences",lpdf.dictionary{DisplayDocTitle = true})
+\stopluacode
+
+\def\tag#1{\quote{\tt#1}}
+
+\starttext
+  Warning: This document may contain errors and traces of hazelnuts.
+  
+  \blank[big]
+
+  \startMPcode
+    fill fullcircle scaled 3cm withcolor red;
+  \stopMPcode
+  
+  \blank[big]
+
+  The \quote{Matterhorn Protocol} gives a condensed overview of the possible failure conditions
+  and the used structure types (p.4).\par
+
+\stoptext

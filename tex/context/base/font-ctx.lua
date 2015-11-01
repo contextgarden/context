@@ -1961,9 +1961,11 @@ dimenfactors.pct  = nil
 to scale virtual characters.</p>
 --ldx]]--
 
+-- in versions > 0.82 0 is supported as equivalent of self
+
 function constructors.checkvirtualids(tfmdata)
     -- begin of experiment: we can use { "slot", 0, number } in virtual fonts
-    local fonts = tfmdata.fonts
+    local fonts  = tfmdata.fonts
     local selfid = font.nextid()
     if fonts and #fonts > 0 then
         for i=1,#fonts do

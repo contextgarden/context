@@ -41,7 +41,6 @@ local whatsit_code     = nodecodes.whatsit
 local hlist_code       = nodecodes.hlist
 local vlist_code       = nodecodes.vlist
 local userdefined_code = whatsitcodes.userdefined
-local localpar_code    = nodecodes.localpar or whatsitcodes.localpar
 
 local nodepool         = nodes.pool
 local new_usernumber   = nodepool.usernumber
@@ -302,8 +301,6 @@ local anchored = {
                 local subtype = getsubtype(n)
                 if (subtype == userdefined_code and getfield(n,"user_id") == property_id) then
                     -- continue
-                elseif subtype == localpar_code then
-                    -- continue .. can't happen anyway as we cannot write
                 else
                     return n
                 end

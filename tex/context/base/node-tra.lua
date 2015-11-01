@@ -71,8 +71,8 @@ local disc_code        = nodecodes.disc
 local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
 local rule_code        = nodecodes.rule
-local dir_code         = nodecodes.dir or whatcodes.dir
-local localpar_code    = nodecodes.localpar or whatcodes.localpar
+local dir_code         = nodecodes.dir
+local localpar_code    = nodecodes.localpar
 local whatsit_code     = nodecodes.whatsit
 local gluespec_code    = nodecodes.gluespec
 
@@ -148,8 +148,6 @@ local function tosequence(start,stop,compact)
                     t[#t+1] = nodecodes[id]
                 end
             elseif id == dir_code or id == localpar_code then
-                t[#t+1] = "[" .. getfield(start,"dir") .. "]"
-            elseif id == whatsit_code and (getsubtype(start) == localpar_code or getsubtype(start) == dir_code) then
                 t[#t+1] = "[" .. getfield(start,"dir") .. "]"
             elseif compact then
                 t[#t+1] = "[]"

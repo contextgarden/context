@@ -181,7 +181,7 @@ local function make_1(present,tree,name)
     end
 end
 
-local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,done,sequence)
+local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,done)
     for k, v in next, tree do
         if k == "ligature" then
             local character = characters[preceding]
@@ -198,9 +198,9 @@ local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,don
                 character.ligatures = { [unicode] = { char = v } }
             end
             if done then
-                local d = done[lookupname]
+                local d = done[name]
                 if not d then
-                    done[lookupname] = { "dummy", v }
+                    done[name] = { "dummy", v }
                 else
                     d[#d+1] = v
                 end
@@ -208,7 +208,7 @@ local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,don
         else
             local code = present[name] or unicode
             local name = name .. "_" .. k
-            make_2(present,tfmdata,characters,v,name,code,k,done,sequence)
+            make_2(present,tfmdata,characters,v,name,code,k,done)
         end
     end
 end
