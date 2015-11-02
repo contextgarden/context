@@ -372,32 +372,36 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
     if subtype == 1 then
         local coverage     = readushort(f)
         local subclasssets = readarray(f)
-              coverage     = readcoverage(f,tableoffset+coverage,true)
         local rules        = { }
-        for i=1,#subclasssets do
-            local offset = subclasssets[i]
-            if offset > 0 then
-                local firstcoverage = coverage[i]
-                local rulesoffset   = tableoffset + offset
-                local subclassrules = readarray(f,rulesoffset)
-                for rule=1,#subclassrules do
-                    setposition(f,rulesoffset + subclassrules[rule])
-                    local nofcurrent = readushort(f)
-                    local noflookups = readushort(f)
-                    local current    = { { firstcoverage } }
-                    for i=2,nofcurrent do
-                        current[i] = { readushort(f) }
+        if subclassets then
+            coverage = readcoverage(f,tableoffset+coverage,true)
+            for i=1,#subclasssets do
+                local offset = subclasssets[i]
+                if offset > 0 then
+                    local firstcoverage = coverage[i]
+                    local rulesoffset   = tableoffset + offset
+                    local subclassrules = readarray(f,rulesoffset)
+                    for rule=1,#subclassrules do
+                        setposition(f,rulesoffset + subclassrules[rule])
+                        local nofcurrent = readushort(f)
+                        local noflookups = readushort(f)
+                        local current    = { { firstcoverage } }
+                        for i=2,nofcurrent do
+                            current[i] = { readushort(f) }
+                        end
+                        local lookups = { }
+                        for i=1,noflookups do
+                            lookups[readushort(f)+1] = readushort(f) + 1
+                        end
+                        rules[#rules+1] = {
+                            current = current,
+                            lookups = lookups
+                        }
                     end
-                    local lookups = { }
-                    for i=1,noflookups do
-                        lookups[readushort(f)+1] = readushort(f) + 1
-                    end
-                    rules[#rules+1] = {
-                        current = current,
-                        lookups = lookups
-                    }
                 end
             end
+        else
+            report("empty subclassset in %a subtype %i","unchainedcontext",subtype)
         end
         return {
             format = "glyphs",
@@ -409,43 +413,47 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
         local coverage        = readushort(f)
         local currentclassdef = readushort(f)
         local subclasssets    = readarray(f)
-              coverage        = readcoverage(f,tableoffset + coverage)
-              currentclassdef = readclassdef(f,tableoffset + currentclassdef)
-        local currentclasses  = classtocoverage(currentclassdef,fontdata.glyphs)
         local rules           = { }
-        for class=1,#subclasssets do
-            local offset = subclasssets[class]
-            if offset > 0 then
-                local firstcoverage = currentclasses[class]
-                if firstcoverage then
-                    firstcoverage = covered(firstcoverage,coverage) -- bonus
+        if subclasssets then
+            coverage             = readcoverage(f,tableoffset + coverage)
+            currentclassdef      = readclassdef(f,tableoffset + currentclassdef)
+            local currentclasses = classtocoverage(currentclassdef,fontdata.glyphs)
+            for class=1,#subclasssets do
+                local offset = subclasssets[class]
+                if offset > 0 then
+                    local firstcoverage = currentclasses[class]
                     if firstcoverage then
-                        local rulesoffset   = tableoffset + offset
-                        local subclassrules = readarray(f,rulesoffset)
-                        for rule=1,#subclassrules do
-                            setposition(f,rulesoffset + subclassrules[rule])
-                            local nofcurrent = readushort(f)
-                            local noflookups = readushort(f)
-                            local current    = { firstcoverage }
-                            for i=2,nofcurrent do
-                                current[i] = currentclasses[readushort(f) + 1]
+                        firstcoverage = covered(firstcoverage,coverage) -- bonus
+                        if firstcoverage then
+                            local rulesoffset   = tableoffset + offset
+                            local subclassrules = readarray(f,rulesoffset)
+                            for rule=1,#subclassrules do
+                                setposition(f,rulesoffset + subclassrules[rule])
+                                local nofcurrent = readushort(f)
+                                local noflookups = readushort(f)
+                                local current    = { firstcoverage }
+                                for i=2,nofcurrent do
+                                    current[i] = currentclasses[readushort(f) + 1]
+                                end
+                                local lookups = { }
+                                for i=1,noflookups do
+                                    lookups[readushort(f)+1] = readushort(f) + 1
+                                end
+                                rules[#rules+1] = {
+                                    current = current,
+                                    lookups = lookups
+                                }
                             end
-                            local lookups = { }
-                            for i=1,noflookups do
-                                lookups[readushort(f)+1] = readushort(f) + 1
-                            end
-                            rules[#rules+1] = {
-                                current = current,
-                                lookups = lookups
-                            }
+                        else
+                            report("no coverage")
                         end
                     else
-                        report("no coverage")
+                        report("no coverage class")
                     end
-                else
-                    report("no coverage class")
                 end
             end
+        else
+            report("empty subclassset in %a subtype %i","unchainedcontext",subtype)
         end
         return {
             format = "class",
@@ -469,7 +477,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
             }
         }
     else
-        report("unsupported subtype %a in %a %s",subtype,"chainedcontext",what)
+        report("unsupported subtype %a in %a %s",subtype,"unchainedcontext",what)
     end
 end
 
@@ -484,50 +492,54 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
     if subtype == 1 then
         local coverage     = readushort(f)
         local subclasssets = readarray(f)
-              coverage     = readcoverage(f,tableoffset+coverage,true)
         local rules        = { }
-        for i=1,#subclasssets do
-            local offset = subclasssets[i]
-            if offset > 0 then
-                local firstcoverage = coverage[i]
-                local rulesoffset   = tableoffset + offset
-                local subclassrules = readarray(f,rulesoffset)
-                for rule=1,#subclassrules do
-                    setposition(f,rulesoffset + subclassrules[rule])
-                    local nofbefore = readushort(f)
-                    local before
-                    if nofbefore > 0 then
-                        before = { }
-                        for i=1,nofbefore do
-                            before[i] = { readushort(f) }
+        if subclasssets then
+            coverage = readcoverage(f,tableoffset+coverage,true)
+            for i=1,#subclasssets do
+                local offset = subclasssets[i]
+                if offset > 0 then
+                    local firstcoverage = coverage[i]
+                    local rulesoffset   = tableoffset + offset
+                    local subclassrules = readarray(f,rulesoffset)
+                    for rule=1,#subclassrules do
+                        setposition(f,rulesoffset + subclassrules[rule])
+                        local nofbefore = readushort(f)
+                        local before
+                        if nofbefore > 0 then
+                            before = { }
+                            for i=1,nofbefore do
+                                before[i] = { readushort(f) }
+                            end
                         end
-                    end
-                    local nofcurrent = readushort(f)
-                    local current    = { { firstcoverage } }
-                    for i=2,nofcurrent do
-                        current[i] = { readushort(f) }
-                    end
-                    local nofafter = readushort(f)
-                    local after
-                    if nofafter > 0 then
-                        after = { }
-                        for i=1,nofafter do
-                            after[i] = { readushort(f) }
+                        local nofcurrent = readushort(f)
+                        local current    = { { firstcoverage } }
+                        for i=2,nofcurrent do
+                            current[i] = { readushort(f) }
                         end
+                        local nofafter = readushort(f)
+                        local after
+                        if nofafter > 0 then
+                            after = { }
+                            for i=1,nofafter do
+                                after[i] = { readushort(f) }
+                            end
+                        end
+                        local noflookups = readushort(f)
+                        local lookups = { }
+                        for i=1,noflookups do
+                            lookups[readushort(f)+1] = readushort(f) + 1
+                        end
+                        rules[#rules+1] = {
+                            before  = before,
+                            current = current,
+                            after   = after,
+                            lookups = lookups,
+                        }
                     end
-                    local noflookups = readushort(f)
-                    local lookups = { }
-                    for i=1,noflookups do
-                        lookups[readushort(f)+1] = readushort(f) + 1
-                    end
-                    rules[#rules+1] = {
-                        before  = before,
-                        current = current,
-                        after   = after,
-                        lookups = lookups,
-                    }
                 end
             end
+        else
+            report("empty subclassset in %a subtype %i","chainedcontext",subtype)
         end
         return {
             format = "glyphs",
@@ -539,68 +551,72 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
         local currentclassdef = readushort(f)
         local afterclassdef   = readushort(f)
         local subclasssets    = readarray(f)
-        local coverage        = readcoverage(f,tableoffset + coverage)
-        local beforeclassdef  = readclassdef(f,tableoffset + beforeclassdef)
-        local currentclassdef = readclassdef(f,tableoffset + currentclassdef)
-        local afterclassdef   = readclassdef(f,tableoffset + afterclassdef)
-        local beforeclasses   = classtocoverage(beforeclassdef,fontdata.glyphs)
-        local currentclasses  = classtocoverage(currentclassdef,fontdata.glyphs)
-        local afterclasses    = classtocoverage(afterclassdef,fontdata.glyphs)
         local rules           = { }
-        for class=1,#subclasssets do
-            local offset = subclasssets[class]
-            if offset > 0 then
-                local firstcoverage = currentclasses[class]
-                if firstcoverage then
-                    firstcoverage = covered(firstcoverage,coverage) -- bonus
+        if subclasssets then
+            local coverage        = readcoverage(f,tableoffset + coverage)
+            local beforeclassdef  = readclassdef(f,tableoffset + beforeclassdef)
+            local currentclassdef = readclassdef(f,tableoffset + currentclassdef)
+            local afterclassdef   = readclassdef(f,tableoffset + afterclassdef)
+            local beforeclasses   = classtocoverage(beforeclassdef,fontdata.glyphs)
+            local currentclasses  = classtocoverage(currentclassdef,fontdata.glyphs)
+            local afterclasses    = classtocoverage(afterclassdef,fontdata.glyphs)
+            for class=1,#subclasssets do
+                local offset = subclasssets[class]
+                if offset > 0 then
+                    local firstcoverage = currentclasses[class]
                     if firstcoverage then
-                        local rulesoffset   = tableoffset + offset
-                        local subclassrules = readarray(f,rulesoffset)
-                        for rule=1,#subclassrules do
-                            -- watch out, in context we first get the counts and then the arrays while
-                            -- here we get them mixed
-                            setposition(f,rulesoffset + subclassrules[rule])
-                            local nofbefore = readushort(f)
-                            local before
-                            if nofbefore > 0 then
-                                before = { }
-                                for i=1,nofbefore do
-                                    before[i] = beforeclasses[readushort(f) + 1]
+                        firstcoverage = covered(firstcoverage,coverage) -- bonus
+                        if firstcoverage then
+                            local rulesoffset   = tableoffset + offset
+                            local subclassrules = readarray(f,rulesoffset)
+                            for rule=1,#subclassrules do
+                                -- watch out, in context we first get the counts and then the arrays while
+                                -- here we get them mixed
+                                setposition(f,rulesoffset + subclassrules[rule])
+                                local nofbefore = readushort(f)
+                                local before
+                                if nofbefore > 0 then
+                                    before = { }
+                                    for i=1,nofbefore do
+                                        before[i] = beforeclasses[readushort(f) + 1]
+                                    end
                                 end
-                            end
-                            local nofcurrent = readushort(f)
-                            local current    = { firstcoverage }
-                            for i=2,nofcurrent do
-                                current[i] = currentclasses[readushort(f)+ 1]
-                            end
-                            local nofafter = readushort(f)
-                            local after
-                            if nofafter > 0 then
-                                after = { }
-                                for i=1,nofafter do
-                                    after[i] = afterclasses[readushort(f) + 1]
+                                local nofcurrent = readushort(f)
+                                local current    = { firstcoverage }
+                                for i=2,nofcurrent do
+                                    current[i] = currentclasses[readushort(f)+ 1]
                                 end
+                                local nofafter = readushort(f)
+                                local after
+                                if nofafter > 0 then
+                                    after = { }
+                                    for i=1,nofafter do
+                                        after[i] = afterclasses[readushort(f) + 1]
+                                    end
+                                end
+                                -- no sequence index here (so why in context as it saves nothing)
+                                local noflookups = readushort(f)
+                                local lookups    = { }
+                                for i=1,noflookups do
+                                    lookups[readushort(f)+1] = readushort(f) + 1
+                                end
+                                rules[#rules+1] = {
+                                    before  = before,
+                                    current = current,
+                                    after   = after,
+                                    lookups = lookups,
+                                }
                             end
-                            -- no sequence index here (so why in context as it saves nothing)
-                            local noflookups = readushort(f)
-                            local lookups    = { }
-                            for i=1,noflookups do
-                                lookups[readushort(f)+1] = readushort(f) + 1
-                            end
-                            rules[#rules+1] = {
-                                before  = before,
-                                current = current,
-                                after   = after,
-                                lookups = lookups,
-                            }
+                        else
+                            report("no coverage")
                         end
                     else
-                        report("no coverage")
+                        report("class is not covered")
                     end
-                else
-                    report("class is not covered")
                 end
             end
+        else
+            report("empty subclassset in %a subtype %i","chainedcontext",subtype)
         end
         return {
             format = "class",
@@ -967,7 +983,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
         local nofclasses1  = readushort(f) -- incl class 0
         local nofclasses2  = readushort(f) -- incl class 0
         local classlist    = readpairclasssets(f,nofclasses1,nofclasses2,format1,format2)
-              coverage     = readcoverage(f,tableoffset+coverage,true)
+              coverage     = readcoverage(f,tableoffset+coverage)
               classdef1    = readclassdef(f,tableoffset+classdef1)
               classdef2    = readclassdef(f,tableoffset+classdef2)
         local usedcoverage = { }
@@ -1052,7 +1068,7 @@ local function handlemark(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofglyp
         local baseoffset   = tableoffset + readushort(f)
         --
         local markcoverage = readcoverage(f,markcoverage)
-        local basecoverage = readcoverage(f,basecoverage,true)
+        local basecoverage = readcoverage(f,basecoverage,true) -- TO BE CHECKED: true
         --
         setposition(f,markoffset)
         local markclasses    = { }

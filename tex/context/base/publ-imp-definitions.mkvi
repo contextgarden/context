@@ -27,7 +27,7 @@
     \btxfield{short}
 \stopxmlsetups
 
-\starttexdefinition btx:format:inject #link #content
+\starttexdefinition unexpanded btx:format:inject #link #content
     \ifx\currentbtxinternal\empty
         #content
     \else\ifconditional\btxinteractive
@@ -86,7 +86,7 @@
 
 % macros:
 
-\starttexdefinition btx:style:italic #content
+\starttexdefinition unexpanded btx:style:italic #content
     \dontleavehmode
     \begingroup
         \it
@@ -95,7 +95,7 @@
     \endgroup
 \stoptexdefinition
 
-\starttexdefinition btx:style:bold #content
+\starttexdefinition unexpanded btx:style:bold #content
     \dontleavehmode
     \begingroup
         \bf
@@ -103,14 +103,14 @@
     \endgroup
 \stoptexdefinition
 
-\starttexdefinition btx:style:quote #content
+\starttexdefinition unexpanded btx:style:quote #content
     \dontleavehmode
     \startquote
         #content
     \stopquote
 \stoptexdefinition
 
-\starttexdefinition btx:style #style #content
+\starttexdefinition unexpanded btx:style #style #content
     \doifelsedefined {btx:style:#style} {
         \texdefinition{btx:style:#style} {
             #content

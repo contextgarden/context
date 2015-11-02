@@ -13,7 +13,7 @@
 
 \unprotect
 
-\starttexdefinition btx:list:inject #content
+\starttexdefinition unexpanded btx:list:inject #content
     \ifconditional\btxinteractive
         \ifx\currentbtxinternal\empty
             #content
@@ -29,7 +29,7 @@
     \fi
 \stoptexdefinition
 
-\starttexdefinition btx:list:helpers:concat
+\starttexdefinition unexpanded btx:list:helpers:concat
     \space
 \stoptexdefinition
 

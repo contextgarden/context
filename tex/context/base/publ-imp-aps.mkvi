@@ -631,7 +631,7 @@
 %D returned. In lua syntax, it can be understood as
 %D author or editor or publisher or title or ""
 
-\starttexdefinition btx:aps:composed-title #title
+\starttexdefinition unexpanded btx:aps:composed-title #title
     \btxstartstyleandcolor [aps:\s!list:title:\currentbtxcategory]
         \begingroup
             \language[\currentbtxlanguage]
@@ -646,7 +646,7 @@
     \btxstopstyleandcolor
 \stoptexdefinition
 
-\starttexdefinition btx:aps:title
+\starttexdefinition unexpanded btx:aps:title
     \btxdoif {title} {
         % we make the title active, opening file
         \btxdoifelse {file} {
@@ -662,13 +662,13 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:aps:optional-title
+\starttexdefinition unexpanded btx:aps:optional-title
     \doif{\btxparameter{\c!title}}\v!yes {
         \texdefinition {btx:aps:title}
     }
 \stoptexdefinition
 
-\starttexdefinition btx:aps:year
+\starttexdefinition unexpanded btx:aps:year
     \btxdoifelse {year} {
         \btxflush{year}
     } {
@@ -678,7 +678,7 @@
 
 % #author may be author(set) or editor
 
-\starttexdefinition btx:aps:author-or-editor #author
+\starttexdefinition unexpanded btx:aps:author-or-editor #author
     \btxdoif {#author} {
         \btxflush{#author}
         \doifelse {\btxfoundname{#author}} {editor} {
@@ -699,12 +699,12 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:aps:author
+\starttexdefinition unexpanded btx:aps:author
     \btxflush{author}
     \btxcomma
 \stoptexdefinition
 
-\starttexdefinition btx:aps:editor-in
+\starttexdefinition unexpanded btx:aps:editor-in
     \btxdoif {booktitle} {
         \btxlabeltext{aps:In}
         \doifnot {\btxfoundname{author}} {editor} {
@@ -712,12 +712,12 @@
             \texdefinition{btx:aps:author-or-editor} {editor}
         }
         \btxspace
-        \texdefinition{btx:aps:composed-title} {booktitle}
+        \texdefinition{btx:aps:composed-title}{booktitle}
         \btxcomma
     }
 \stoptexdefinition
 
-\starttexdefinition btx:aps:editionset
+\starttexdefinition unexpanded btx:aps:editionset
     \doif {\currentbtxcategory} {techreport} {
         \btxdoifelse {type} {
             \btxusecommand [\currentbtx:type] {
@@ -762,7 +762,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:aps:journal-volume-year
+\starttexdefinition unexpanded btx:aps:journal-volume-year
     \btxdoif {journal} {
         \btxstartstyleandcolor [aps:\s!list:journal]
             % expandedjournal abbreviatedjournal
@@ -795,7 +795,7 @@
     \btxrightparenthesis
 \stoptexdefinition
 
-\starttexdefinition btx:aps:publisher-wherefrom-year
+\starttexdefinition unexpanded btx:aps:publisher-wherefrom-year
     \removeunwantedspaces
     \removepunctuation
     \btxleftparenthesis
@@ -819,7 +819,7 @@
     \btxrightparenthesis
 \stoptexdefinition
 
-\starttexdefinition btx:aps:note
+\starttexdefinition unexpanded btx:aps:note
     \btxperiod
     \btxdoif {note} {
         \btxleftparenthesis
@@ -828,7 +828,7 @@
     }
 \stoptexdefinition
 
-\starttexdefinition btx:aps:doi-url #text
+\starttexdefinition unexpanded btx:aps:doi-url #text
     \ifconditional\btxinteractive
         \btxdoifelse {doi} {
             \goto {#text} [url(http://dx.doi.org/\btxflush{doi})]

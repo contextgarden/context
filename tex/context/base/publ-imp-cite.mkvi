@@ -13,7 +13,7 @@
 
 \unprotect
 
-\starttexdefinition btx:cite:inject #content
+\starttexdefinition unexpanded btx:cite:inject #content
     \ifconditional\btxinteractive
         \ifx\currentbtxinternal\empty
             #content
@@ -29,7 +29,7 @@
     \fi
 \stoptexdefinition
 
-\starttexdefinition btx:cite:checkconcat
+\starttexdefinition unexpanded btx:cite:checkconcat
     \ifnum\currentbtxcount>\zerocount
         \let\currentbtxinternal\empty
         \let\currentbtxbacklink\empty
@@ -66,7 +66,7 @@
      {\tt <\currentbtxreference>}
 \stopsetups
 
-\starttexdefinition btx:cite:concat
+\starttexdefinition unexpanded btx:cite:concat
     \btxparameter{\c!separator:\number\currentbtxconcat}
 \stoptexdefinition
 

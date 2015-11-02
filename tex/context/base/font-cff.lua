@@ -1303,7 +1303,7 @@ do
             --
             process(tab)
             --
-            local boundingbox = { xmin, ymin, xmax, ymax }
+            local boundingbox = { round(xmin), round(ymin), round(xmax), round(ymax) }
             --
             if width == true or width == false then
                 width = defaultwidth

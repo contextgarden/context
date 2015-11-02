@@ -59,6 +59,9 @@ local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
 
+local getdisc            = nuts.getdisc
+local setdisc            = nuts.setdisc
+
 local traverse_id        = nuts.traverse_id
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
@@ -414,9 +417,7 @@ local function trace(head,where)
             show(n,"replaceinjections",false,"=")
             show(n,"emptyinjections",false,"*")
         elseif id == disc_code then
-            local pre     = getfield(n,"pre")
-            local post    = getfield(n,"post")
-            local replace = getfield(n,"replace")
+            local pre, post, replace = getdisc(n)
             if pre then
                 showsub(pre,"preinjections","pre")
             end
@@ -490,8 +491,7 @@ local function inject_kerns_only(head,where)
                         end
                     end
                     if prevdisc then
-                        local postdone    = false
-                        local replacedone = false
+                        local done = false
                         if post then
                             local i = rawget(p,"postinjections")
                             if i then
@@ -499,7 +499,7 @@ local function inject_kerns_only(head,where)
                                 if leftkern and leftkern ~= 0 then
                                     local posttail = find_tail(post)
                                     insert_node_after(post,posttail,newkern(leftkern))
-                                    postdone = true
+                                    done = true
                                 end
                             end
                         end
@@ -510,7 +510,7 @@ local function inject_kerns_only(head,where)
                                 if leftkern and leftkern ~= 0 then
                                     local replacetail = find_tail(replace)
                                     insert_node_after(replace,replacetail,newkern(leftkern))
-                                    replacedone = true
+                                    done = true
                                 end
                             end
                         else
@@ -524,11 +524,8 @@ local function inject_kerns_only(head,where)
 --     end
 -- end
                         end
-                        if postdone then
-                            setfield(prevdisc,"post",post)
-                        end
-                        if replacedone then
-                            setfield(prevdisc,"replace",replace)
+                        if done then
+                            setdisc(prevdisc,pre,post,replace)
                         end
                     end
                 end
@@ -536,12 +533,8 @@ local function inject_kerns_only(head,where)
             prevdisc  = nil
             prevglyph = current
         elseif id == disc_code then
-            pre     = getfield(current,"pre")
-            post    = getfield(current,"post")
-            replace = getfield(current,"replace")
-            local predone     = false
-            local postdone    = false
-            local replacedone = false
+            pre, post, replace = getdisc(current)
+            local done = false
             if pre then
                 -- left|pre glyphs|right
                 for n in traverse_id(glyph_code,pre) do
@@ -552,8 +545,8 @@ local function inject_kerns_only(head,where)
                             if i then
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    pre     = insert_node_before(pre,n,newkern(leftkern))
-                                    predone = true
+                                    pre  = insert_node_before(pre,n,newkern(leftkern))
+                                    done = true
                                 end
                             end
                         end
@@ -570,8 +563,8 @@ local function inject_kerns_only(head,where)
                             if i then
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    post     = insert_node_before(post,n,newkern(leftkern))
-                                    postdone = true
+                                    post = insert_node_before(post,n,newkern(leftkern))
+                                    done = true
                                 end
                             end
                         end
@@ -588,22 +581,16 @@ local function inject_kerns_only(head,where)
                             if i then
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    replace     = insert_node_before(replace,n,newkern(leftkern))
-                                    replacedone = true
+                                    replace = insert_node_before(replace,n,newkern(leftkern))
+                                    done    = true
                                 end
                             end
                         end
                     end
                 end
             end
-            if predone then
-                setfield(current,"pre",pre)
-            end
-            if postdone then
-                setfield(current,"post",post)
-            end
-            if replacedone then
-                setfield(current,"replace",replace)
+            if done then
+                setdisc(current,pre,post,replace)
             end
             prevglyph = nil
             prevdisc  = current
@@ -659,13 +646,13 @@ local function inject_pairs_only(head,where)
                             insert_node_after(head,current,newkern(rightkern))
                         end
                     else
-                        local i = rawget(p,"replaceinjections")
+                        local i = rawget(p,"emptyinjections")
                         if i then
                             -- glyph|disc|glyph (special case)
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
                                 if next and getid(next) == disc_code then
-                                    local replace = getfield(pr,"replace")
+                                    local replace = getfield(next,"replace")
                                     if replace then
                                         -- error, we expect an empty one
                                     else
@@ -676,8 +663,7 @@ local function inject_pairs_only(head,where)
                         end
                     end
                     if prevdisc and p then
-                        local postdone    = false
-                        local replacedone = false
+                        local done = false
                         if post then
                             local i = rawget(p,"postinjections")
                             if i then
@@ -685,7 +671,7 @@ local function inject_pairs_only(head,where)
                                 if leftkern and leftkern ~= 0 then
                                     local posttail = find_tail(post)
                                     insert_node_after(post,posttail,newkern(leftkern))
-                                    postdone = true
+                                    done = true
                                 end
                             end
                         end
@@ -696,15 +682,12 @@ local function inject_pairs_only(head,where)
                                 if leftkern and leftkern ~= 0 then
                                     local replacetail = find_tail(replace)
                                     insert_node_after(replace,replacetail,newkern(leftkern))
-                                    replacedone = true
+                                    done = true
                                 end
                             end
                         end
-                        if postdone then
-                            setfield(prevdisc,"post",post)
-                        end
-                        if replacedone then
-                            setfield(prevdisc,"replace",replace)
+                        if done then
+                            setdisc(prevdisc,pre,post,replace)
                         end
                     end
                 end
@@ -712,12 +695,8 @@ local function inject_pairs_only(head,where)
             prevdisc  = nil
             prevglyph = current
         elseif id == disc_code then
-            pre     = getfield(current,"pre")
-            post    = getfield(current,"post")
-            replace = getfield(current,"replace")
-            local predone     = false
-            local postdone    = false
-            local replacedone = false
+            pre, post, replace = getdisc(current)
+            local done = false
             if pre then
                 -- left|pre glyphs|right
                 for n in traverse_id(glyph_code,pre) do
@@ -732,13 +711,13 @@ local function inject_pairs_only(head,where)
                                 end
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    pre = insert_node_before(pre,n,newkern(leftkern))
-                                    predone = true
+                                    pre  = insert_node_before(pre,n,newkern(leftkern))
+                                    done = true
                                 end
                                 local rightkern = i.rightkern
                                 if rightkern and rightkern ~= 0 then
                                     insert_node_after(pre,n,newkern(rightkern))
-                                    predone = true
+                                    done = true
                                 end
                             end
                         end
@@ -760,12 +739,12 @@ local function inject_pairs_only(head,where)
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
                                     post = insert_node_before(post,n,newkern(leftkern))
-                                    postdone = true
+                                    done = true
                                 end
                                 local rightkern = i.rightkern
                                 if rightkern and rightkern ~= 0 then
                                     insert_node_after(post,n,newkern(rightkern))
-                                    postdone = true
+                                    done = true
                                 end
                             end
                         end
@@ -786,13 +765,13 @@ local function inject_pairs_only(head,where)
                                 end
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    replace     = insert_node_before(replace,n,newkern(leftkern))
-                                    replacedone = true
+                                    replace = insert_node_before(replace,n,newkern(leftkern))
+                                    done    = true
                                 end
                                 local rightkern = i.rightkern
                                 if rightkern and rightkern ~= 0 then
                                     insert_node_after(replace,n,newkern(rightkern))
-                                    replacedone = true
+                                    done = true
                                 end
                             end
                         end
@@ -808,8 +787,8 @@ local function inject_pairs_only(head,where)
                             -- glyph|pre glyphs
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                pre     = insert_node_before(pre,pre,newkern(rightkern))
-                                predone = true
+                                pre  = insert_node_before(pre,pre,newkern(rightkern))
+                                done = true
                             end
                         end
                     end
@@ -822,21 +801,15 @@ local function inject_pairs_only(head,where)
                             -- glyph|replace glyphs
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                replace     = insert_node_before(replace,replace,newkern(rightkern))
-                                replacedone = true
+                                replace = insert_node_before(replace,replace,newkern(rightkern))
+                                done    = true
                             end
                         end
                     end
                 end
             end
-            if predone then
-                setfield(current,"pre",pre)
-            end
-            if postdone then
-                setfield(current,"post",post)
-            end
-            if replacedone then
-                setfield(current,"replace",replace)
+            if done then
+                setdisc(current,pre,post,replace)
             end
             prevglyph = nil
             prevdisc  = current
@@ -1029,13 +1002,13 @@ local function inject_everything(head,where)
                             insert_node_after(head,current,newkern(rightkern))
                         end
                     else
-                        local i = rawget(p,"replaceinjections")
+                        local i = rawget(p,"emptyinjections")
                         if i then
                             -- glyph|disc|glyph (special case)
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
                                 if next and getid(next) == disc_code then
-                                    local replace = getfield(pr,"replace")
+                                    local replace = getfield(next,"replace")
                                     if replace then
                                         -- error, we expect an empty one
                                     else
@@ -1047,8 +1020,7 @@ local function inject_everything(head,where)
                     end
                     if prevdisc then
                         if p then
-                            local postdone    = false
-                            local replacedone = false
+                            local done = false
                             if post then
                                 local i = rawget(p,"postinjections")
                                 if i then
@@ -1056,7 +1028,7 @@ local function inject_everything(head,where)
                                     if leftkern and leftkern ~= 0 then
                                         local posttail = find_tail(post)
                                         insert_node_after(post,posttail,newkern(leftkern))
-                                        postdone = true
+                                        done = true
                                     end
                                 end
                             end
@@ -1067,15 +1039,12 @@ local function inject_everything(head,where)
                                     if leftkern and leftkern ~= 0 then
                                         local replacetail = find_tail(replace)
                                         insert_node_after(replace,replacetail,newkern(leftkern))
-                                        replacedone = true
+                                        done = true
                                     end
                                 end
                             end
-                            if postdone then
-                                setfield(prevdisc,"post",post)
-                            end
-                            if replacedone then
-                                setfield(prevdisc,"replace",replace)
+                            if done then
+                                setdisc(prevdisc,pre,post,replace)
                             end
                         end
                     end
@@ -1097,12 +1066,8 @@ local function inject_everything(head,where)
             prevdisc  = nil
             prevglyph = current
         elseif id == disc_code then
-            pre     = getfield(current,"pre")
-            post    = getfield(current,"post")
-            replace = getfield(current,"replace")
-            local predone     = false
-            local postdone    = false
-            local replacedone = false
+            pre, post, replace = getdisc(current)
+            local done = false
             if pre then
                 -- left|pre glyphs|right
                 for n in traverse_id(glyph_code,pre) do
@@ -1117,13 +1082,13 @@ local function inject_everything(head,where)
                                 end
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    pre = insert_node_before(pre,n,newkern(leftkern))
-                                    predone = true
+                                    pre  = insert_node_before(pre,n,newkern(leftkern))
+                                    done = true
                                 end
                                 local rightkern = i.rightkern
                                 if rightkern and rightkern ~= 0 then
                                     insert_node_after(pre,n,newkern(rightkern))
-                                    predone = true
+                                    done = true
                                 end
                             end
                             if hasmarks then
@@ -1151,12 +1116,12 @@ local function inject_everything(head,where)
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
                                     post = insert_node_before(post,n,newkern(leftkern))
-                                    postdone = true
+                                    done = true
                                 end
                                 local rightkern = i.rightkern
                                 if rightkern and rightkern ~= 0 then
                                     insert_node_after(post,n,newkern(rightkern))
-                                    postdone = true
+                                    done = true
                                 end
                             end
                             if hasmarks then
@@ -1183,13 +1148,13 @@ local function inject_everything(head,where)
                                 end
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    insert_node_before(replace,n,newkern(leftkern))
-                                    replacedone = true
+                                    replace = insert_node_before(replace,n,newkern(leftkern))
+                                    done    = true
                                 end
                                 local rightkern = i.rightkern
                                 if rightkern and rightkern ~= 0 then
                                     insert_node_after(replace,n,newkern(rightkern))
-                                    replacedone = true
+                                    done = true
                                 end
                             end
                             if hasmarks then
@@ -1211,8 +1176,8 @@ local function inject_everything(head,where)
                             -- glyph|pre glyphs
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
-                                pre = insert_node_before(pre,pre,newkern(rightkern))
-                                predone = true
+                                pre  = insert_node_before(pre,pre,newkern(rightkern))
+                                done = true
                             end
                         end
                     end
@@ -1226,20 +1191,14 @@ local function inject_everything(head,where)
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
                                 replace = insert_node_before(replace,replace,newkern(rightkern))
-                                replacedone = true
+                                done    = true
                             end
                         end
                     end
                 end
             end
-            if predone then
-                setfield(current,"pre",pre)
-            end
-            if postdone then
-                setfield(current,"post",post)
-            end
-            if replacedone then
-                setfield(current,"replace",replace)
+            if done then
+                setdisc(current,pre,post.replace)
             end
             prevglyph = nil
             prevdisc  = current

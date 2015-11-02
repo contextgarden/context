@@ -1200,12 +1200,12 @@
   {\OTRSETcheckprefered
    \enoughcolumncellsfalse
    \donefalse
-   \dostepwiserecurse{#1}{#2}{#31}
+   \dostepwiserecurse{#1}{#2}{#3#4}
      {\ifdone
         \exitloop
       \else
         #4=\recurselevel
-        \dostepwiserecurse{#5}{#6}{#71}
+        \dostepwiserecurse{#5}{#6}{#7#8}
           {\ifdone
              \exitloop
            \else
