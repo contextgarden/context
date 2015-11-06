@@ -420,7 +420,7 @@ local function copytotfm(data,cache_id)
                     --
                     local accent = m.accent -- taccent?
                     if accent then
-                        character.top_accent = accent
+                        character.accent = accent
                     end
                     --
                     local kerns = m.kerns

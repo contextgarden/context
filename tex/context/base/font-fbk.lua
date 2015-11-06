@@ -226,7 +226,7 @@ local function composecharacters(tfmdata)
                                 end
                             else
                                 if trace_combining_define then
-                                    report_combining("%C becomes simplfied %C",i,chr)
+                                    report_combining("%C becomes simplified %C",i,chr)
                                 end
                                 t.commands = { chr_t } -- else index mess
                             end

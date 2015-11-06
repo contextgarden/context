@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/02/15 15:06:43
+-- merge date  : 11/07/15 00:11:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -4211,8 +4211,8 @@ end
 constructors.setfactor()
 function constructors.scaled(scaledpoints,designsize) 
   if scaledpoints<0 then
+    local factor=constructors.factor
     if designsize then
-      local factor=constructors.factor
       if designsize>factor then 
         return (- scaledpoints/1000)*designsize 
       else
@@ -5837,6 +5837,8 @@ local constructors=fonts.constructors
 local encodings=fonts.encodings
 local tfm=constructors.newhandler("tfm")
 tfm.version=1.000
+tfm.maxnestingdepth=5
+tfm.maxnestingsize=65536*1024
 local tfmfeatures=constructors.newfeatures("tfm")
 local registertfmfeature=tfmfeatures.register
 constructors.resolvevirtualtoo=false 
@@ -5849,9 +5851,11 @@ function tfm.setfeatures(tfmdata,features)
     return {} 
   end
 end
+local depth={} 
 local function read_from_tfm(specification)
   local filename=specification.filename
   local size=specification.size
+  depth[filename]=(depth[filename] or 0)+1
   if trace_defining then
     report_defining("loading tfm file %a at size %s",filename,size)
   end
@@ -5895,6 +5899,24 @@ local function read_from_tfm(specification)
           end
           properties.virtualized=true
           tfmdata.fonts=vfdata.fonts
+          tfmdata.type="virtual"
+          local fontlist=vfdata.fonts
+          local name=file.nameonly(filename)
+          for i=1,#fontlist do
+            local n=fontlist[i].name
+            local s=fontlist[i].size
+            s=constructors.scaled(s,vfdata.designsize)
+            if depth[filename]>tfm.maxnestingdepth then
+              report_defining("too deeply nested virtual font %a with size %a, max nesting depth %s",n,s,tfm.maxnestingdepth)
+              fontlist[i]={ id=0 }
+            elseif s>tfm.maxnestingsize then
+              report_defining("virtual font %a exceeds size %s",n,s)
+              fontlist[i]={ id=0 }
+            else
+              local t,id=fonts.constructors.readanddefine(n,s)
+              fontlist[i]={ id=id }
+            end
+          end
         end
       end
     end
@@ -5910,7 +5932,10 @@ local function read_from_tfm(specification)
     properties.haslogatures=true
     resources.unicodes={}
     resources.lookuptags={}
+    depth[filename]=depth[filename]-1
     return tfmdata
+  else
+    depth[filename]=depth[filename]-1
   end
 end
 local function check_tfm(specification,fullname) 

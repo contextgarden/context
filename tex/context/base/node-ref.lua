@@ -131,7 +131,15 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
             if trace_areas then
                 report_area("dimensions taken of %a",nodecodes[id])
             end
-            return getfield(start,"width"), getfield(parent,"height"), getfield(parent,"depth")
+            -- hm, parent can be zero
+            local width  = getfield(start,"width")
+            local height = getfield(parent,"height")
+            local depth  = getfield(parent,"depth")
+            if height == 0 and depth == 0 then
+                height = getfield(start,"height")
+                depth  = getfield(start,"depth")
+            end
+            return width, height, depth
         else
             if trace_areas then
                 report_area("dimensions calculated of %a",nodecodes[id])
@@ -196,7 +204,8 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
             local l = getlist(line)
             if trace_areas then
                 report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","line",
-                    reference,pardir or "---",txtdir or "---",tosequence(l,nil,true),width,height,depth,resolved)
+                    reference,pardir or "---",txtdir or "---",
+                    tosequence(l,nil,true),width,height,depth,resolved)
             end
             setfield(line,"list",result)
             setfield(result,"next",l)
@@ -206,7 +215,8 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
             if head == first then
                 if trace_areas then
                     report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","head",
-                        reference,pardir or "---",txtdir or "---",tosequence(first,last,true),width,height,depth,resolved)
+                        reference,pardir or "---",txtdir or "---",
+                        tosequence(first,last,true),width,height,depth,resolved)
                 end
                 setfield(result,"next",first)
                 setfield(first,"prev",result)
@@ -214,7 +224,8 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
             else
                 if trace_areas then
                     report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","middle",
-                        reference,pardir or "---",txtdir or "---",tosequence(first,last,true),width,height,depth,resolved)
+                        reference,pardir or "---",txtdir or "---",
+                        tosequence(first,last,true),width,height,depth,resolved)
                 end
                 local prev = getprev(first)
                 if prev then

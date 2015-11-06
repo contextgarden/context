@@ -31,6 +31,7 @@ local setattr         = nuts.setattr
 local getfont         = nuts.getfont
 local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
+local getdisc         = nuts.getdisc
 
 local copy_node       = nuts.copy
 local end_of_math     = nuts.end_of_math
@@ -385,7 +386,7 @@ function cases.handler(head) -- not real fast but also not used on much data
                 end
                 local action = actions[n] -- map back to low number
                 if action then
-                    local replace = getfield(start,"replace")
+                    local pre, post, replace = getdisc(start)
                     if replace then
                         local cnt = count
                         for g in traverse_id(glyph_code,replace) do
@@ -395,7 +396,6 @@ function cases.handler(head) -- not real fast but also not used on much data
                             if quit then break end
                         end
                     end
-                    local pre = getfield(start,"pre")
                     if pre then
                         local cnt = count
                         for g in traverse_id(glyph_code,pre) do
@@ -405,7 +405,6 @@ function cases.handler(head) -- not real fast but also not used on much data
                             if quit then break end
                         end
                     end
-                    local post = getfield(start,"post")
                     if post then
                         local cnt = count
                         for g in traverse_id(glyph_code,post) do

@@ -39,6 +39,7 @@ local setattr            = nuts.setattr
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
+local getdisc            = nuts.getdisc
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
@@ -477,9 +478,7 @@ function kerns.handler(head)
                     pglyph  = prev and getid(prev) == glyph_code
                     languages.expand(start,pglyph and prev)
                 end
-                local pre     = getfield(start,"pre")
-                local post    = getfield(start,"post")
-                local replace = getfield(start,"replace")
+                local pre, post, replace = getdisc(start)
                 -- we really need to reasign the fields as luatex keeps track of
                 -- the tail in a temp preceding head .. kind of messy so we might
                 -- want to come up with a better solution some day like a real

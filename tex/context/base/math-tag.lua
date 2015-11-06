@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['math-tag'] = {
 }
 
 -- todo: have a local list with local tags that then get appended
+-- todo: use tex.getmathcodes (no table)
 
 -- use lpeg matchers
 
@@ -24,6 +25,7 @@ local getid               = nuts.getid
 local getchar             = nuts.getchar
 local getlist             = nuts.getlist
 local getfield            = nuts.getfield
+local getdisc             = nuts.getdisc
 local getsubtype          = nuts.getsubtype
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
@@ -316,9 +318,10 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                 elseif id == glyph_code then
                                     runner(getfield(n,"components"),depth+1) -- this should not be needed
                                 elseif id == disc_code then
-                                    runner(getfield(n,"pre"),depth+1)        -- idem
-                                    runner(getfield(n,"post"),depth+1)       -- idem
-                                    runner(getfield(n,"replace"),depth+1)    -- idem
+                                    local pre, post, replace = getdisc(n)
+                                    runner(pre,depth+1)     -- idem
+                                    runner(post,depth+1)    -- idem
+                                    runner(replace,depth+1) -- idem
                                 end
                                 if mth == 1 then
                                     stop_tagged()

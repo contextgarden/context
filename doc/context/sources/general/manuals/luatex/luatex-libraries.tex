@@ -18,7 +18,12 @@ the \LUATEX\ executable. Together, they allow \LUA\ scripts to query and change 
 number of \TEX's internal variables, run various internal \TEX\ functions, and
 set up \LUATEX's hooks to execute \LUA\ code.
 
-The following sections are in alphabetical order.
+The following sections are in alphabetical order. For any callback (and
+manipulation of nodes) the following is true: you have a lot of freedom which
+also means that you can mess up the node lists and nodes themselves. So, a bit of
+defensive programming doesn't hurt. A crash can happen when you spoil things or
+when \LUATEX\ can recognize the issue, a panic exit will happen. Don't bother the
+team with such issues.
 
 \section{The \type {callback} library}
 
@@ -637,6 +642,9 @@ and because it can sometimes be handy when special processing has to take place.
 Setting this callback to \type {false} will prevent the internal ligature
 creation pass.
 
+You must not ruin the node list. For instance, the head normally is a local par node,
+and the tail a glue. Messing too much can push \LUATEX\ into panic mode.
+
 \subsubsection{\type {kerning}}
 
 \startfunctioncall
@@ -649,6 +657,9 @@ node list it receives. See \type {ligaturing} for calling conventions.
 
 Setting this callback to \type {false} will prevent the internal kern insertion
 pass.
+
+You must not ruin the node list. For instance, the head normally is a local par node,
+and the tail a glue. Messing too much can push \LUATEX\ into panic mode.
 
 \subsubsection{\type {mlist_to_hlist}}
 
@@ -4469,6 +4480,15 @@ page without doing anything else. This function can only be used from within
 pdf.registerannot (<number> objnum)
 \stopfunctioncall
 
+\subsection{\type {pdf.newcolorstack}}
+
+This function allocates a new color stack and returns it's id. The arguments
+are the same as for the similar backend extension primitive.
+
+\startfunctioncall
+pdf.newcolorstack("0 g","page",true) -- page|direct|origin
+\stopfunctioncall
+
 \section{The \type {pdfscanner} library}
 
 The \type {pdfscanner} library allows interpretation of PDF content streams and
@@ -4681,6 +4701,7 @@ The current list is:
 \NC hash_size          \NC size of hash \NC \NR
 \NC hash_extra         \NC extra allowed hash \NC \NR
 \NC font_ptr           \NC number of active fonts \NC \NR
+\NC input_ptr          \NC th elevel of input we're at \NC \NR
 \NC max_in_stack       \NC max used input stack entries \NC \NR
 \NC max_nest_stack     \NC max used nesting stack entries \NC \NR
 \NC max_param_stack    \NC max used parameter stack entries \NC \NR
@@ -4758,6 +4779,18 @@ tex.set (<string> n, ...)
 tex.set ("global", <string> n, ...)
 ... = tex.get (<string> n)
 \stopfunctioncall
+
+There are also dedicated setters, getters and checkers:
+
+\startfunctioncall
+local d = tex.getdimen("foo")
+if tex.isdimen("bar") then
+    tex.setdimen("bar",d)
+end
+\stopfunctioncall
+
+There are such helpers for \type {dimen}, \type {count}, \type {skip}, \type
+{box} and \type {attribute} registers.
 
 \subsubsection{Integer parameters}
 
@@ -5138,8 +5171,10 @@ tex.setskip ('global',<string> s, <node> s)
 <node> s = tex.getskip (<string> s)
 \stopfunctioncall
 
-We have similar setters for \type {count}, \type {dimen} and \type {toks}. For
-tokens registers we have an alternative where a catcode table is specified:
+We have similar setters for \type {count}, \type {dimen}, \type {muskip}, and
+\type {toks}. Counters and dimen are represented by numbers, skips and muskips by
+nodes, and toks by strings. For tokens registers we have an alternative where a
+catcode table is specified:
 
 \startfunctioncall
 tex.scantoks(0,3,"$e=mc^2$")
@@ -5219,6 +5254,13 @@ And the table for \type {delcode} is an array with 4 numbers, like this:
 \starttyping
 {<number> small_fam, <number> small_char, <number> large_fam, <number> large_char}
 \stoptyping
+
+You can also avoid the table:
+
+\startfunctioncall
+class, family, char = tex.getmathcodes (<number> n)
+smallfam, smallchar, largefam, largechar = tex.getdelcodes (<number> n)
+\stopfunctioncall
 
 Normally, the third and fourth values in a delimiter code assignment will be zero
 according to \type {\Udelcode} usage, but the returned table can have values there
@@ -5341,6 +5383,10 @@ text          crampedtext
 script        crampedscript
 scriptscript  crampedscriptscript
 \stoptyping
+
+The value is either a number (representing a dimension or number) or a glue spec
+node representing a muskip for \type {ordordspacing} and similar spacing
+parameters.
 
 \subsection{Special list heads}
 

@@ -57,7 +57,7 @@ local pdfsetmatrix = nodes.pool.pdfsetmatrix
 local stack        = { }
 local restore      = true -- false
 
-scanners.pdfstartrotation = function() -- a
+scanners.pdfstartrotation = function()
     local a = scannumber()
     if a == 0 then
         insert(stack,false)
@@ -69,40 +69,10 @@ scanners.pdfstartrotation = function() -- a
     end
 end
 
-scanners.pdfstartscaling = function() --  sx sy
-    local sx, sy = 0, 0
+scanners.pdfstartscaling = function() -- at the tex end we use sx and sy instead of rx and ry
+    local rx, ry = 1, 1
     while true do
-        if scankeyword("sx") then
-            sx = scannumber()
-        elseif scankeyword("sy") then
-            sy = scannumber()
-        else
-            break
-        end
-    end
-    if sx == 1 and sy == 1 then
-        insert(stack,false)
-    else
-        if sx == 0 then
-            sx = 0.0001
-        end
-        if sy == 0 then
-            sy = 0.0001
-        end
-        context(pdfsave())
-        context(pdfsetmatrix(sx,0,0,sy))
-        insert(stack,restore and { 1/sx, 0, 0, 1/sy } or true)
-    end
-end
-
-scanners.pdfstartmatrix = function() -- sx rx ry sy  -- tx, ty
-    local sx, rx, ry, sy = 0, 0, 0, 0
-    while true do
-        if scankeyword("sx") then
-            sx = scannumber()
-        elseif scankeyword("sy") then
-            sy = scannumber()
-        elseif scankeyword("rx") then
+        if scankeyword("rx") then
             rx = scannumber()
         elseif scankeyword("ry") then
             ry = scannumber()
@@ -110,12 +80,36 @@ scanners.pdfstartmatrix = function() -- sx rx ry sy  -- tx, ty
             break
         end
     end
-    if sx == 1 and rx == 0 and ry == 0 and sy == 1 then
+    if rx == 1 and ry == 1 then
+        insert(stack,false)
+    else
+        if rx == 0 then
+            rx = 0.0001
+        end
+        if ry == 0 then
+            ry = 0.0001
+        end
+        context(pdfsave())
+        context(pdfsetmatrix(rx,0,0,ry))
+        insert(stack,restore and { 1/rx, 0, 0, 1/ry } or true)
+    end
+end
+
+scanners.pdfstartmatrix = function() -- rx sx sy ry  -- tx, ty
+    local rx, sx, sy, ry = 1, 0, 0, 1
+    while true do
+            if scankeyword("rx") then rx = scannumber()
+        elseif scankeyword("ry") then ry = scannumber()
+        elseif scankeyword("sx") then sx = scannumber()
+        elseif scankeyword("sy") then sy = scannumber()
+        else   break end
+    end
+    if rx == 1 and sx == 0 and sy == 0 and ry == 1 then
         insert(stack,false)
     else
         context(pdfsave())
-        context(pdfsetmatrix(sx,rx,ry,sy))
-        insert(stack,store and { -sx, -rx, -ry, -sy } or true)
+        context(pdfsetmatrix(rx,sx,sy,ry))
+        insert(stack,store and { -rx, -sx, -sy, -ry } or true)
     end
 end
 
@@ -126,7 +120,7 @@ local function pdfstopsomething()
     elseif top == true then
         context(pdfrestore())
     elseif top then
-        context(pdfsetmatrix(unpack(top)))
+        context(pdfsetmatrix(unpack(top))) -- not really needed anymore
         context(pdfrestore())
     else
         -- nesting error

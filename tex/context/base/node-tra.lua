@@ -45,6 +45,7 @@ local getid            = nuts.getid
 local getchar          = nuts.getchar
 local getsubtype       = nuts.getsubtype
 local getlist          = nuts.getlist
+local getdisc          = nuts.getdisc
 
 local setattr          = nuts.setattr
 
@@ -300,9 +301,7 @@ local function listtoutf(h,joiner,textonly,last)
                 w[#w+1] = joiner
             end
         elseif id == disc_code then
-            local pre = getfield(h,"pre")
-            local pos = getfield(h,"post")
-            local rep = getfield(h,"replace")
+            local pre, pos, rep = getdisc(h)
             w[#w+1] = formatters["[%s|%s|%s]"] (
                 pre and listtoutf(pre,joiner,textonly) or "",
                 pos and listtoutf(pos,joiner,textonly) or "",

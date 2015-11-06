@@ -129,20 +129,9 @@
     \pdfbackendsetinfo{ConTeXt.Support}{contextgarden.net}%
 \to \everylastbackendshipout
 
-%D Transformations. Some day we will use primitives (once they're fixed).
+%D Transformations
 
-% todo: inject at the lua end cq. deal with #5 and #6 too
-
-% % % rotation % % %
-
-% \unexpanded\def\dostartrotation#1% grouped
-%   {\forcecolorhack
-%    \pdfsave
-%    \pdfsetmatrix{\clf_pdfrotation#1}}
-
-% \unexpanded\def\dostoprotation
-%   {\pdfrestore
-%    \forcecolorhack}
+% rotation
 
 \unexpanded\def\dostartrotation#1%
   {\forcecolorhack
@@ -151,36 +140,16 @@
 \unexpanded\def\dostoprotation
   {\clf_pdfstoprotation}
 
-% % % scaling % % %
-
-% \unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-%   {\forcecolorhack % maybe use signal instead
-%    \pdfsave
-%    \pdfsetmatrix
-%      {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
-%       \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
-
-% \unexpanded\def\dostopscaling
-%   {\pdfrestore
-%    \forcecolorhack}
+% scaling
 
 \unexpanded\def\dostartscaling#1#2%
   {\forcecolorhack
-   \clf_pdfstartscaling sx #1 sy #2\relax}
+   \clf_pdfstartscaling rx #1 ry #2\relax}
 
 \unexpanded\def\dostopscaling
   {\clf_pdfstopscaling}
 
-% % % mirroring % % %
-
-% \unexpanded\def\dostartmirroring
-%   {\forcecolorhack
-%    \pdfsave
-%    \pdfsetmatrix{-1 0 0 1}} % 0 0
-
-% \unexpanded\def\dostopmirroring
-%   {\pdfrestore
-%    \forcecolorhack}
+% mirroring
 
 \unexpanded\def\dostartmirroring
   {\clf_pdfstartmirroring}
@@ -188,35 +157,9 @@
 \unexpanded\def\dostopmirroring
   {\clf_pdfstopmirroring}
 
-% % % transform % % %
+% transform
 
-% \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
-%   {\dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
-
-% \unexpanded\def\dodotransformnextbox#1#2#3%
-%   {\hbox
-%      {\kern#1\onebasepoint
-%       \raise#2\onebasepoint\hbox
-%         {\pdfsave
-%          \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
-%          \box\nextbox
-%          \pdfrestore
-%          }}}
-
-% \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
-%   {% fixing ht/dp/wd should happen elsewhere
-%    \dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
-
-% \unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
-%   {\hbox
-%      {\kern #5\onebasepoint
-%       \raise#6\onebasepoint
-%       \hbox
-%         {\clf_pdfstartmatrix sx #1 rx #2 ry #3 sy #4\relax
-%          \box\nextbox
-%          \clf_pdfstopmatrix}}}
-
-\unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
+\unexpanded\def\dotransformnextbox#1#2#3#4#5#6%
   {\dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
 
 \unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
@@ -224,7 +167,7 @@
      {\kern #5\onebasepoint
       \raise#6\onebasepoint
       \hbox
-        {\clf_pdfstartmatrix sx #1 rx #2 ry #3 sy #4\relax
+        {\clf_pdfstartmatrix rx #1 sx #2 sy #3 ry #4\relax
          \box\nextbox
          \clf_pdfstopmatrix}}}
 
@@ -235,8 +178,8 @@
 %    \box\nextbox}
 %
 % \startluacode
-%     function commands.pdftransformbox(box,sx,rx,ry,sy,tx,ty)
-%         if sx == 1 and rx == 0 and ry == 0 and sy == 1 then
+%     function commands.pdftransformbox(box,rx,sx,sy,ry,tx,ty)
+%         if rx == 1 and sx == 0 and sy == 0 and ry == 1 then
 %             if tx == 0 and ty == 0 then
 %                 local b = nodes.hpack(nodes.concat {
 %                     nodes.pool.kern(tx),
@@ -251,9 +194,9 @@
 %             local b = nodes.hpack(nodes.concat {
 %                 nodes.pool.kern(tx),
 %                 nodes.pool.pdfsave(),
-%                 nodes.pool.pdfsetmatrix(sx,rx,ry,sy),
+%                 nodes.pool.pdfsetmatrix(rx,sx,sy,ry),
 %                 nodes.takebox(box),
-%                 nodes.pool.pdfsetmatrix(-sx,-rx,-ry,-sy),
+%                 nodes.pool.pdfsetmatrix(-rx,-sx,-sy,-ry),
 %                 nodes.pool.pdfrestore(),
 %             })
 %             b.shift = -ty
@@ -262,7 +205,7 @@
 %     end
 % \stopluacode
 
-% % % clipping % % %
+% clipping
 
 \unexpanded\def\dostartclipping#1#2#3% we can move this to lua and only set a box here
   {\PointsToBigPoints{#2}\width

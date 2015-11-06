@@ -71,6 +71,7 @@ local tonode              = nuts.tonode
 local getfield            = nuts.getfield
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
+local getdisc             = nuts.getdisc
 local getid               = nuts.getid
 local setfield            = nuts.setfield
 local getattr             = nuts.getattr
@@ -847,15 +848,13 @@ local function visualize(head,vertical,forced,parent)
                 head, current = ruledglyph(head,current,previous)
             end
         elseif id == disc_code then
-            local pre = getfield(current,"pre")
+            local pre, post, replace = getdisc(current)
             if pre then
                 setfield(current,"pre",visualize(pre,false,a,parent))
             end
-            local post = getfield(current,"post")
             if post then
                 setfield(current,"post",visualize(post,false,a,parent))
             end
-            local replace = getfield(current,"replace")
             if replace then
                 setfield(current,"replace",visualize(replace,false,a,parent))
             end

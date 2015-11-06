@@ -243,10 +243,10 @@ disableaction("processors", "builders.kernel.kerning")
 
 directives.register("nodes.basepass", function(v)
     if v then
-         disableaction("processors", "builders.kernel.ligaturing")
-         disableaction("processors", "builders.kernel.kerning")
-    else
          enableaction("processors", "builders.kernel.ligaturing")
          enableaction("processors", "builders.kernel.kerning")
+    else
+         disableaction("processors", "builders.kernel.ligaturing")
+         disableaction("processors", "builders.kernel.kerning")
     end
 end)

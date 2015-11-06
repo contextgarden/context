@@ -36,6 +36,7 @@ local tonode        = nuts.tonode
 local getfield      = nuts.getfield
 local getnext       = nuts.getnext
 local getprev       = nuts.getprev
+local getdisc       = nuts.getdisc
 local getid         = nuts.getid
 local getlist       = nuts.getlist
 local getattribute  = nuts.getattribute
@@ -75,9 +76,7 @@ local function hyphenatedlist(head,usecolor)
         local next = getnext(current)
         local prev = getprev(current)
         if id == disc_code then
-            local pre     = getfield(current,"pre")
-            local post    = getfield(current,"post")
-            local replace = getfield(current,"replace")
+            local pre, post, replace = getdisc(current)
             if pre then
                 setfield(current,"pre",nil)
             end

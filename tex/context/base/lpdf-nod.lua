@@ -28,8 +28,8 @@ local pdfliteral     = register(new_node("whatsit", whatsitcodes.pdfliteral))   
 local pdfsave        = register(new_node("whatsit", whatsitcodes.pdfsave))
 local pdfrestore     = register(new_node("whatsit", whatsitcodes.pdfrestore))
 local pdfsetmatrix   = register(new_node("whatsit", whatsitcodes.pdfsetmatrix))
-local pdfdest        = register(new_node("whatsit", whatsitcodes.pdfdest))       setfield(pdfdest,"named_id",1) -- xyz_zoom untouched
-local pdfannot       = register(new_node("whatsit", whatsitcodes.pdfannot))
+----- pdfdest        = register(new_node("whatsit", whatsitcodes.pdfdest))       setfield(pdfdest,"named_id",1) -- xyz_zoom untouched
+----- pdfannot       = register(new_node("whatsit", whatsitcodes.pdfannot))
 
 local variables      = interfaces.variables
 
@@ -108,23 +108,23 @@ nodeinjections.transform = nodepool.pdfsetmatrix
 function nodepool.pdfannotation(w,h,d,data,n)
     report("don't use node based annotations!")
     os.exit()
---     local t = copy_node(pdfannot)
---     if w and w ~= 0 then
---         setfield(t,"width",w)
---     end
---     if h and h ~= 0 then
---         setfield(t,"height",h)
---     end
---     if d and d ~= 0 then
---         setfield(t,"depth",d)
---     end
---     if n then
---         setfield(t,"objnum",n)
---     end
---     if data and data ~= "" then
---         setfield(t,"data",data)
---     end
---     return t
+ -- local t = copy_node(pdfannot)
+ -- if w and w ~= 0 then
+ --     setfield(t,"width",w)
+ -- end
+ -- if h and h ~= 0 then
+ --     setfield(t,"height",h)
+ -- end
+ -- if d and d ~= 0 then
+ --     setfield(t,"depth",d)
+ -- end
+ -- if n then
+ --     setfield(t,"objnum",n)
+ -- end
+ -- if data and data ~= "" then
+ --     setfield(t,"data",data)
+ -- end
+ -- return t
 end
 
 -- (!) The next code in pdfdest.w is wrong:
@@ -143,41 +143,41 @@ end
 function nodepool.pdfdestination(w,h,d,name,view,n)
     report("don't use node based destinations!")
     os.exit()
---     local t = copy_node(pdfdest)
---     local hasdimensions = false
---     if w and w ~= 0 then
---         setfield(t,"width",w)
---         hasdimensions = true
---     end
---     if h and h ~= 0 then
---         setfield(t,"height",h)
---         hasdimensions = true
---     end
---     if d and d ~= 0 then
---         setfield(t,"depth",d)
---         hasdimensions = true
---     end
---     if n then
---         setfield(t,"objnum",n)
---     end
---     view = views[view] or view or 1 -- fit is default
---     setfield(t,"dest_id",name)
---     setfield(t,"dest_type",view)
---     if hasdimensions and view == 0 then -- xyz
---         -- see (!) s -> m -> t -> r
---         -- linked
---         local s = copy_node(pdfsave)
---         local m = copy_node(pdfsetmatrix)
---         local r = copy_node(pdfrestore)
---         setfield(m,"data","1 0 0 1")
---         setfield(s,"next",m)
---         setfield(m,"next",t)
---         setfield(t,"next",r)
---         setfield(m,"prev",s)
---         setfield(t,"prev",m)
---         setfield(r,"prev",t)
---         return s -- a list
---     else
---         return t
---     end
+ -- local t = copy_node(pdfdest)
+ -- local hasdimensions = false
+ -- if w and w ~= 0 then
+ --     setfield(t,"width",w)
+ --     hasdimensions = true
+ -- end
+ -- if h and h ~= 0 then
+ --     setfield(t,"height",h)
+ --     hasdimensions = true
+ -- end
+ -- if d and d ~= 0 then
+ --     setfield(t,"depth",d)
+ --     hasdimensions = true
+ -- end
+ -- if n then
+ --     setfield(t,"objnum",n)
+ -- end
+ -- view = views[view] or view or 1 -- fit is default
+ -- setfield(t,"dest_id",name)
+ -- setfield(t,"dest_type",view)
+ -- if hasdimensions and view == 0 then -- xyz
+ --     -- see (!) s -> m -> t -> r
+ --     -- linked
+ --     local s = copy_node(pdfsave)
+ --     local m = copy_node(pdfsetmatrix)
+ --     local r = copy_node(pdfrestore)
+ --     setfield(m,"data","1 0 0 1")
+ --     setfield(s,"next",m)
+ --     setfield(m,"next",t)
+ --     setfield(t,"next",r)
+ --     setfield(m,"prev",s)
+ --     setfield(t,"prev",m)
+ --     setfield(r,"prev",t)
+ --     return s -- a list
+ -- else
+ --     return t
+ -- end
 end

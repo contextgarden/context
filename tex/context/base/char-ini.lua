@@ -723,20 +723,27 @@ table we derive a few more.</p>
 
 if not characters.fallbacks then
 
-    characters.fallbacks = { } -- not than many
+    characters.fallbacks = {
+        [0x0308] = 0x00A8, [0x00A8] = 0x0308, -- dieresiscmb      dieresis
+        [0x0304] = 0x00AF, [0x00AF] = 0x0304, -- macroncmb        macron
+        [0x0301] = 0x00B4, [0x00B4] = 0x0301, -- acutecomb        acute
+        [0x0327] = 0x00B8, [0x00B8] = 0x0327, -- cedillacmb       cedilla
+        [0x0302] = 0x02C6, [0x02C6] = 0x0302, -- circumflexcmb    circumflex
+        [0x030C] = 0x02C7, [0x02C7] = 0x030C, -- caroncmb         caron
+        [0x0306] = 0x02D8, [0x02D8] = 0x0306, -- brevecmb         breve
+        [0x0307] = 0x02D9, [0x02D9] = 0x0307, -- dotaccentcmb     dotaccent
+        [0x030A] = 0x02DA, [0x02DA] = 0x030A, -- ringcmb          ring
+        [0x0328] = 0x02DB, [0x02DB] = 0x0328, -- ogonekcmb        ogonek
+        [0x0303] = 0x02DC, [0x02DC] = 0x0303, -- tildecomb        tilde
+        [0x030B] = 0x02DD, [0x02DD] = 0x030B, -- hungarumlautcmb  hungarumlaut
+        [0x0305] = 0x203E, [0x203E] = 0x0305, -- overlinecmb      overline
+        [0x0300] = 0x0060, [0x0060] = 0x0333, -- gravecomb        grave
+    }
 
-    local fallbacks = characters.fallbacks
-
-    for k, d in next, data do
-        local specials = d.specials
-        if specials and specials[1] == "compat" and specials[2] == 0x0020 then
-            local s = specials[3]
-            if s then
-                fallbacks[k] = s
-                fallbacks[s] = k
-            end
-        end
-    end
+    -- not done (would mess up mapping):
+    --
+    -- 0X0301/0X0384 0X0314/0X1FFE 0X0313/0X1FBD 0X0313/0X1FBF 0X0342/0X1FC0
+    -- 0X3099/0X309B 0X309A/0X309C 0X0333/0X2017 0X0345/0X037A
 
 end
 

@@ -353,6 +353,8 @@ local v_tight     = variables.tight
 -- and finger zooming this whole view is rather useless and as with any zooming
 -- one looses the overview and keeps zooming.
 
+-- todo: scaling
+
 local destinationactions = {
  -- [v_standard]  = function(r,w,h,d) return f_xyz  (r,pdfrectangle(w,h,d)) end,                   -- local left,top with zoom (0 in our case)
     [v_standard]  = function(r,w,h,d) return f_xyz  (r,gethpos()*factor,(getvpos()+h)*factor) end, -- local left,top with no zoom

@@ -170,8 +170,8 @@ constructors.setfactor()
 
 function constructors.scaled(scaledpoints, designsize) -- handles designsize in sp as well
     if scaledpoints < 0 then
+        local factor = constructors.factor
         if designsize then
-            local factor = constructors.factor
             if designsize > factor then -- or just 1000 / when? mp?
                 return (- scaledpoints/1000) * designsize -- sp's
             else

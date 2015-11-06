@@ -46,6 +46,7 @@ local getchar           = nuts.getchar
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getfield          = nuts.getfield
+----- getdisc           = nuts.getdisc
 local setfield          = nuts.setfield
 
 local traverse_id       = nuts.traverse_id
@@ -648,9 +649,10 @@ handlers.unprotectglyphs = function(n) return d_unprotect_glyphs(tonut(n)) end
 -- function handlers.protectglyphs(h)
 --     local h = tonut(h)
 --     for n in traverse_id(disc_code,h) do
---         local d = getfield(n,"pre")     if d then d_protect_glyphs(d) end
---         local d = getfield(n,"post")    if d then d_protect_glyphs(d) end
---         local d = getfield(n,"replace") if d then d_protect_glyphs(d) end
+--         local pre, post, replace = getdisc(n)
+--         if pre     then d_protect_glyphs(pre)     end
+--         if post    then d_protect_glyphs(post)    end
+--         if replace then d_protect_glyphs(replace) end
 --     end
 --     return d_protect_glyphs(h)
 -- end
