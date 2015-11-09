@@ -72,7 +72,10 @@ statistics.register("result saved in file", function()
     -- suffix will be fetched from backend
     local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
     if (tex.pdfoutput or tex.outputmode) > 0 then
-        return format("%s.%s, compresslevel %s, objectcompresslevel %s",outputfilename,"pdf",tex.pdfcompresslevel, tex.pdfobjcompresslevel)
+        return format("%s.%s, compresslevel %s, objectcompresslevel %s",outputfilename,"pdf",
+            tex.pdfcompresslevel    or pdf.getcompresslevel(),
+            tex.pdfobjcompresslevel or pdf.getobjcompresslevel()
+        )
     else
         return format("%s.%s",outputfilename,"dvi") -- hard to imagine
     end

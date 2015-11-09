@@ -105,7 +105,7 @@ if not environment.luafilechunk then
             filename = sourcepath .. "/" .. filename
         end
         local data = loadfile(filename)
-        texio.write("<",data and "+ " or "- ",filename,">")
+        texio.write("term and log","<",data and "+ " or "- ",filename,">")
         if data then
             data()
         end

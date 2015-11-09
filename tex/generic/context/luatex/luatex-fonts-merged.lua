@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/07/15 00:11:17
+-- merge date  : 11/09/15 10:54:01
 
 do -- begin closure to overcome local limits and interference
 
@@ -5899,17 +5899,18 @@ local function read_from_tfm(specification)
           end
           properties.virtualized=true
           tfmdata.fonts=vfdata.fonts
-          tfmdata.type="virtual"
+          tfmdata.type="virtual" 
           local fontlist=vfdata.fonts
           local name=file.nameonly(filename)
           for i=1,#fontlist do
             local n=fontlist[i].name
             local s=fontlist[i].size
+            local d=depth[filename]
             s=constructors.scaled(s,vfdata.designsize)
-            if depth[filename]>tfm.maxnestingdepth then
+            if d>tfm.maxnestingdepth then
               report_defining("too deeply nested virtual font %a with size %a, max nesting depth %s",n,s,tfm.maxnestingdepth)
               fontlist[i]={ id=0 }
-            elseif s>tfm.maxnestingsize then
+            elseif (d>1) and (s>tfm.maxnestingsize) then
               report_defining("virtual font %a exceeds size %s",n,s)
               fontlist[i]={ id=0 }
             else
@@ -8681,7 +8682,7 @@ actions["merge kern classes"]=function(data,filename,raw)
           local subtable=subtables[s]
           local kernclass=subtable.kernclass 
           local lookup=subtable.lookup or subtable.name
-          if kernclass then 
+          if kernclass then
             if #kernclass>0 then
               kernclass=kernclass[1]
               lookup=type(kernclass.lookup)=="string" and kernclass.lookup or lookup
@@ -8706,14 +8707,16 @@ actions["merge kern classes"]=function(data,filename,raw)
               if splt then
                 local extrakerns={}
                 local baseoffset=(fk-1)*maxseconds
-                for sk=2,maxseconds do 
+                for sk=2,maxseconds do
                   local sv=seconds[sk]
-                  local splt=split[sv]
-                  if splt then 
-                    local offset=offsets[baseoffset+sk]
-                    if offset then
-                      for i=1,#splt do
-                        extrakerns[splt[i]]=offset
+                  if sv then
+                    local splt=split[sv]
+                    if splt then 
+                      local offset=offsets[baseoffset+sk]
+                      if offset then
+                        for i=1,#splt do
+                          extrakerns[splt[i]]=offset
+                        end
                       end
                     end
                   end

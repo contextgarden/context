@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
     license   = "see context related readme files"
 }
 
+-- see cldf-tod.* !
+
 -- This started as an experiment: generating context code at the lua end. After all
 -- it is surprisingly simple to implement due to metatables. I was wondering if
 -- there was a more natural way to deal with commands at the lua end. Of course it's

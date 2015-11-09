@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['trac-deb'] = {
 local lpeg, status = lpeg, status
 
 local lpegmatch = lpeg.match
-local format, concat, match, find = string.format, table.concat, string.match, string.find
+local format, concat, match, find, gsub = string.format, table.concat, string.match, string.find, string.gsub
 local tonumber, tostring = tonumber, tostring
 
 -- maybe tracers -> tracers.tex (and tracers.lua for current debugger)
@@ -168,27 +168,33 @@ end
 
 -- todo: \starttext bla \blank[foo] bla \stoptext
 
+local nop = function() end
+local resetmessages = status.resetmessages() or nop
+
 local function processerror(offset)
+ -- print("[[ last tex error: " .. tostring(status.lasterrorstring     or "<unset>") .. " ]]")
+ -- print("[[ last lua error: " .. tostring(status.lastluaerrorstring  or "<unset>") .. " ]]")
+ -- print("[[ last warning  : " .. tostring(status.lastwarningstring   or "<unset>") .. " ]]")
+ -- print("[[ last location : " .. tostring(status.lastwarninglocation or "<unset>") .. " ]]")
+ -- print("[[ last context  : " .. tostring(status.lasterrorcontext    or "<unset>") .. " ]]")
+
     local inputstack   = resolvers.inputstack
     local filename     = inputstack[#inputstack] or status.filename
     local linenumber   = tonumber(status.linenumber) or 0
-    --
-    -- print("[[ last tex error: " .. tostring(status.lasterrorstring) .. " ]]")
-    -- print("[[ last lua error: " .. tostring(status.lastluaerrorstring) .. " ]]")
-    -- print("[[ start errorcontext ]]")
-    -- tex.show_context()
-    -- print("\n[[ stop errorcontext ]]")
-    --
+    local lastcontext  = status.lasterrorcontext
     local lasttexerror = status.lasterrorstring or "?"
     local lastluaerror = status.lastluaerrorstring or lasttexerror
     local luaerrorline = match(lastluaerror,[[lua%]?:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
+    resetmessages()
+    lastluaerror = gsub(lastluaerror,"%[\\directlua%]","[ctxlua]")
     tracers.printerror {
         filename     = filename,
         linenumber   = linenumber,
+        offset       = tonumber(offset) or 10,
         lasttexerror = lasttexerror,
         lastluaerror = lastluaerror,
         luaerrorline = luaerrorline,
-        offset       = tonumber(offset) or 10,
+        lastcontext  = lastcontext,
     }
 end
 
@@ -199,6 +205,7 @@ function tracers.printerror(specification)
     local linenumber   = specification.linenumber
     local lasttexerror = specification.lasttexerror
     local lastluaerror = specification.lastluaerror
+    local lastcontext  = specification.lasterrorcontext
     local luaerrorline = specification.luaerrorline
     local offset       = specification.offset
     local report       = errorreporter(luaerrorline)
@@ -213,7 +220,11 @@ function tracers.printerror(specification)
          -- report("error on line %s in file %s:\n\n%s",linenumber,filename,lasttexerror)
         else
             report("tex error on line %s in file %s: %s",linenumber,filename,lasttexerror)
-            if tex.show_context then
+            if lastcontext then
+                report_nl()
+                report_str(lastcontext)
+                report_nl()
+            elseif tex.show_context then
                 report_nl()
                 tex.show_context()
             end
@@ -224,17 +235,37 @@ function tracers.printerror(specification)
     end
 end
 
-local nop = function() end
+local function processwarning(offset)
+ -- local inputstack   = resolvers.inputstack
+ -- local filename     = inputstack[#inputstack] or status.filename
+ -- local linenumber   = tonumber(status.linenumber) or 0
+    local lastwarning  = status.lastwarningstring or "?"
+    local lastlocation = status.lastwarningtag or "?"
+    resetmessages()
+    tracers.printwarning {
+     -- filename     = filename,
+     -- linenumber   = linenumber,
+     -- offset       = tonumber(offset) or 10,
+        lastwarning  = lastwarning ,
+        lastlocation = lastlocation,
+    }
+end
+
+function tracers.printwarning(specification)
+    logs.report("luatex warning","%s: %s",specification.lastlocation,specification.lastwarning)
+end
 
 directives.register("system.errorcontext", function(v)
     local register = callback.register
     if v then
         register('show_error_message',  nop)
+        register('show_warning_message',function() processwarning(v) end)
         register('show_error_hook',     function() processerror(v) end)
         register('show_lua_error_hook', nop)
     else
         register('show_error_message',  nil)
         register('show_error_hook',     nil)
+        register('show_warning_message',nil)
         register('show_lua_error_hook', nil)
     end
 end)

@@ -132,6 +132,8 @@ if tex and (tex.jobname or tex.formatname) then
             elseif target == "term" then
                 texio_write_nl("term","")
                 io_write(...)
+            elseif type(target) == "number" then
+                texio_write_nl(target,...) -- a tex output channel
             elseif target ~= "none" then
                 texio_write_nl("log",target,...)
                 texio_write_nl("term","")
@@ -150,6 +152,8 @@ if tex and (tex.jobname or tex.formatname) then
                 texio_write("log",...)
             elseif target == "term" then
                 io_write(...)
+            elseif type(target) == "number" then
+                texio_write(target,...) -- a tex output channel
             elseif target ~= "none" then
                 texio_write("log",target,...)
                 io_write(target,...)
