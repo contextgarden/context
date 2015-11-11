@@ -11,7 +11,7 @@ local f_two_colon = string.formatters["%s:%s"]
 
 local function registerbuttons(tag,register,language)
     local data = sorters.definitions[language]
-    local orders = daya and data.orders or sorters.definitions.default.orders
+    local orders = data and data.orders or sorters.definitions.default.orders
     local tag = tag == "" and { "" } or { tag }
     for i=1,#orders do
         local order = orders[i]

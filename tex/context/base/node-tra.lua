@@ -290,7 +290,7 @@ end
 
 nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 
-local function listtoutf(h,joiner,textonly,last)
+local function listtoutf(h,joiner,textonly,last,nodisc)
     local w = { }
     while h do
         local id = getid(h)
@@ -302,11 +302,15 @@ local function listtoutf(h,joiner,textonly,last)
             end
         elseif id == disc_code then
             local pre, pos, rep = getdisc(h)
-            w[#w+1] = formatters["[%s|%s|%s]"] (
-                pre and listtoutf(pre,joiner,textonly) or "",
-                pos and listtoutf(pos,joiner,textonly) or "",
-                rep and listtoutf(rep,joiner,textonly) or ""
-            )
+            if not nodisc then
+                w[#w+1] = formatters["[%s|%s|%s]"] (
+                    pre and listtoutf(pre,joiner,textonly) or "",
+                    pos and listtoutf(pos,joiner,textonly) or "",
+                    rep and listtoutf(rep,joiner,textonly) or ""
+                )
+            elseif rep then
+                w[#w+1] = listtoutf(rep,joiner,textonly) or ""
+            end
         elseif textonly then
             if id == glue_code then
                 local spec = getfield(h,"spec")
@@ -328,10 +332,10 @@ local function listtoutf(h,joiner,textonly,last)
     return concat(w)
 end
 
-function nodes.listtoutf(h,joiner,textonly,last)
+function nodes.listtoutf(h,joiner,textonly,last,nodisc)
     if h then
         local joiner = joiner == true and utfchar(0x200C) or joiner -- zwnj
-        return listtoutf(tonut(h),joiner,textonly,last and tonut(last))
+        return listtoutf(tonut(h),joiner,textonly,last and tonut(last),nodisc)
     else
         return ""
     end

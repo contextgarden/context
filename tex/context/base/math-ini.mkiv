@@ -681,6 +681,8 @@
 % Once this is stable we can store the number at the tex end which is
 % faster. Functions getnumbers >= 1000.
 
+% \setupmathematics[functionstyle=normal] % will give ligatures and kerning
+
 \setupmathematics
   [\c!textstyle=,     % rm ss etc i.e. known alternatives, otherwise math
    \c!textcolor=,
@@ -790,6 +792,8 @@
 %       \let\mfunction         \math_function_style_mfunction
 %       \let\mfunctionlabeltext\math_function_style_mfunctionlabeltext}}
 
+\def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
+
 \unexpanded\def\mscaledtext#1%
   {\mathchoice
      {\hbox{\csname\currentmscaledstyle\endcsname\tf  #1}}
@@ -799,21 +803,6 @@
 
 \unexpanded\def\setmathfunctionstyle#1%
   {\setupmathematics[\c!functionstyle=#1]} % for old times sake
-
-%D We can force the way functions are typeset by manipulating the text option:
-%D
-%D \starttyping
-%D \definetypeface[iwona][ss][sans][iwona][default][encoding=texnansi]
-%D \definetypeface[iwona][mm][math][iwona][default][encoding=texnansi,text=ss]
-%D \stoptyping
-%D
-%D This hooks into the math handler with:
-
-% no longer supported this way, has to be done with \setupmathematics
-%
-% \appendtoks
-%     \setmathfunctionstyle\currentmathtextstyle
-% \to \everybodyfont
 
 %D Usage:
 %D

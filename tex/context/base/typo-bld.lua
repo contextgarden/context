@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['typo-bld'] = { -- was node-par
+if modules then modules = { } end modules ['typo-bld'] = { -- was node-par
     version   = 1.001,
     comment   = "companion to typo-bld.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -287,3 +287,86 @@ implement { name = "startparbuilder",   actions = constructors.start,  arguments
 implement { name = "stopparbuilder",    actions = constructors.stop    }
 implement { name = "enableparbuilder",  actions = constructors.enable  }
 implement { name = "disableparbuilder", actions = constructors.disable }
+
+-- Here are some tracers:
+
+local new_kern     = nodes.pool.kern
+local new_rule     = nodes.pool.rule
+local hpack        = nodes.hpack
+local setcolor     = nodes.tracers.colors.set
+local listtoutf    = nodes.listtoutf
+
+local report_hpack = logs.reporter("hpack routine")
+local report_vpack = logs.reporter("vpack routine")
+
+-- overflow|badness w h d dir
+
+local function vpack_quality(how,n,detail,first,last)
+    if last <= 0 then
+        report_vpack("%s vbox",how)
+    elseif first > 0 and first < last then
+        report_vpack("%s vbox at line %i - %i",how,first,last)
+    else
+        report_vpack("%s vbox at line %i",how,last)
+    end
+end
+
+trackers.register("builders.vpack.quality",function(v)
+    callback.register("vpack_quality",v and report_vpack_quality or nil)
+end)
+
+local report, show = false, false
+
+local function hpack_quality(how,detail,n,first,last)
+    if report then
+        local str = listtoutf(n.head,"",true,nil,true)
+        if last <= 0 then
+            report_hpack("%s hbox: %s",how,str)
+        elseif first > 0 and first < last then
+            report_hpack("%s hbox at line %i - %i: %s",how,first,last,str)
+        else
+            report_hpack("%s hbox at line %i: %s",how,last,str)
+        end
+    end
+    if show then
+        local width  = 2*65536
+        local height = n.height
+        local depth  = n.depth
+        local dir    = n.dir
+        if height < 4*65526 then
+            height = 4*65526
+        end
+        if depth < 2*65526 then
+            depth = 2*65526
+        end
+        local rule = new_rule(width,height,depth)
+        rule.dir = dir
+        if how == "overfull" then
+            setcolor(rule,"red")
+            local kern = new_kern(-detail)
+            kern.next = rule
+            rule.prev = kern
+            rule = kern
+        elseif how == "underfull" then
+            setcolor(rule,"blue")
+        elseif how == "loose" then
+            setcolor(rule,"magenta")
+        elseif how == "tight" then
+            setcolor(rule,"cyan")
+        end
+        rule = hpack(rule)
+        rule.width = 0
+        rule.dir = dir
+        return rule
+    end
+end
+
+trackers.register("builders.hpack.quality",function(v)
+    report = v
+    callback.register("hpack_quality",(report or show) and hpack_quality or nil)
+end)
+
+trackers.register("builders.hpack.overflow",function(v)
+    show = v
+    callback.register("hpack_quality",(report or show) and hpack_quality or nil)
+end)

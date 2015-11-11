@@ -16,7 +16,7 @@
 %D The code here is already pretty old and is used for simple
 %D backgrounds. As it is still used WS adapted the code to the
 %D new command handler methods so that it gets a second life. So
-%D it made sense to mkvi ir as well. Some more code is moved here
+%D it made sense to mkvi as well. Some more code is moved here
 %D too.
 
 %D \macros
@@ -87,7 +87,9 @@
   {\setupcurrentbackground[#settings,\c!state=\v!start,\c!offset=\v!overlay]%
    \let\pack_backgrounds_stop\pack_backgrounds_stop_indeed
    \setbox0\vbox\bgroup
-     \vbox to \lineheight{}\vskip\zeropoint
+     \strut
+     \vskip-2\lineheight
+     \strut
      \blank[\v!disable]
      \leftskip \backgroundparameter\c!leftoffset
      \rightskip\backgroundparameter\c!rightoffset}
@@ -100,6 +102,9 @@
 \unexpanded\def\pack_backgrounds_stop_indeed % we shoul duse the fast background variant of framed
   {\endgraf
    \removelastskip
+   \strut
+   \vskip-2\lineheight
+   \strut
    \egroup
    \dimen2\leftskip % new **
    \forgetall
@@ -114,7 +119,6 @@
    \else
      \splitmaxdepth\boxmaxdepth
      \splittopskip\topskip
-     \setbox2\vsplit0 to \lineheight % get rid of fake line
      \doloop
        {\ifdim\pagetotal=\zeropoint % empty page
           \scratchdimen\textheight
@@ -124,7 +128,13 @@
           \scratchdimen\dimexpr\pagegoal-\ht2-\pagetotal\relax
           \backgroundsplitmode\plustwo % split to partial height
         \fi
-        \advance\scratchdimen\dimexpr-\backgroundparameter\c!topoffset-\backgroundparameter\c!bottomoffset\relax
+        \ifdim\scratchdimen<\zeropoint
+            \scratchdimen\pagegoal
+        \fi
+        \advance\scratchdimen\dimexpr
+            -\backgroundparameter\c!topoffset
+            -\backgroundparameter\c!bottomoffset
+        \relax
         \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
           \ifdim\ht0>\scratchdimen % larger than page
             \setbox2\vsplit0 to \scratchdimen

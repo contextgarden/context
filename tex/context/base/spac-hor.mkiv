@@ -774,10 +774,15 @@
 
 \installtolerancemethod \v!horizontal \v!stretch      {\emergencystretch\bodyfontsize}
 \installtolerancemethod \v!horizontal \v!space        {\spaceskip.5em\s!plus.25em\s!minus.25em\relax}
-\installtolerancemethod \v!horizontal \v!verystrict   {\tolerance 200 }
+\installtolerancemethod \v!horizontal \v!verystrict   {\tolerance\plustwohundred}
 \installtolerancemethod \v!horizontal \v!strict       {\tolerance1500 }
 \installtolerancemethod \v!horizontal \v!tolerant     {\tolerance3000 }
 \installtolerancemethod \v!horizontal \v!verytolerant {\tolerance4500 }
+
+\appendetoks
+     \pretolerance\plushundred
+     \tolerance   \plustwohundred
+\to\everyforgetall
 
 \def\spac_tolerances_step_vertical  #1{\csname\??tolerancemethods\v!vertical  :#1\endcsname}
 \def\spac_tolerances_step_horizontal#1{\csname\??tolerancemethods\v!horizontal:#1\endcsname}

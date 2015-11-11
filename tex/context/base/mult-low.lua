@@ -12,7 +12,7 @@ return {
     ["constants"] = {
         --
         "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
-        "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen", "plushundred",
+        "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen", "plushundred", "plustwohundred",
         "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",

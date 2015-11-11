@@ -346,7 +346,6 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
                         end
                     end
                 else
-                    -- normally we don't end up here (yet untested)
                     for unicode, data in next, steps[i].coverage do
                         local character = characters[unicode]
                         local kerns     = character.kerns
@@ -354,6 +353,8 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
                             if not kern[2] and not (kerns and kerns[otherunicode]) then
                                 local kern = kern[1]
                                 if kern[1] ~= 0 or kern[2] ~= 0 or kern[4] ~= 0 then
+                                    -- a complex pair not suitable for basemode
+                                else
                                     kern = kern[3]
                                     if kern ~= 0 then
                                         if kerns then
