@@ -561,3 +561,40 @@
 
 % \unexpanded\def\mthfrac#1#2#3{[mthfrac: #1 #2 #3]}
 % \unexpanded\def\mthsqrt#1#2#3{[mthsqrt: #1 #2 #3]}
+
+% used for prototypine \Uskewed
+%
+% \unexpanded\def\skewedfractiona#1#2{%
+%     \raise
+%         \Umathskewedfractionvgap\textstyle
+%         \hbox\bgroup
+%             $\scriptstyle#1\hskip\dimexpr\Umathskewedfractionhgap\scriptstyle/2\relax$%
+%         \egroup
+%         \hbox to \zeropoint\bgroup
+%             \hss$\textstyle/$\hss
+%         \egroup
+%     \lower
+%         \Umathskewedfractionvgap\textstyle
+%         \hbox\bgroup
+%             $\hskip\dimexpr\Umathskewedfractionhgap\scriptstyle/2\relax\scriptstyle#2$%
+%         \egroup
+% }
+%
+% \unexpanded\def\skewedfractionb#1#2{%
+%     \raise
+%         \Umathskewedfractionvgap\textstyle
+%         \hbox\bgroup
+%             $\scriptstyle#1\hskip\dimexpr\Umathskewedfractionhgap\textstyle/2\relax$%
+%         \egroup
+%         \hbox to \zeropoint\bgroup
+%             \hss$\textstyle/$\hss
+%         \egroup
+%     \lower
+%         \Umathskewedfractionvgap\textstyle
+%         \hbox\bgroup
+%             $\hskip\dimexpr\Umathskewedfractionhgap\textstyle/2\relax\scriptstyle#2$%
+%         \egroup
+% }
+%
+% $\skewedfractiona{1}{2}$
+% $\skewedfractionb{1}{2}$

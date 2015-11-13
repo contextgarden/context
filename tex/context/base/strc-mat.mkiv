@@ -56,6 +56,56 @@
     \setupformulas[\c!distance=\emwidth]
 \fi
 
+% \ifdefined\mathdisplayskipmode
+%     \mathdisplayskipmode\plustwo % only when not zero / needs adapted space handler
+% \fi
+
+% \mathdisplayskipmode\plusthree
+%
+% \hbox\bgroup
+%     \setbox0\vbox\bgroup
+%         xxxxxxxxx\par
+%         \vskip-\baselineskip
+%         $$a^2_2$$\par
+%         xxxxxxxxx\par
+%     \egroup
+%     \box0
+%     \vbox\bgroup
+%         xxxxxxxxx\par
+%         \vskip-\baselineskip
+%         $$a^2$$\par
+%         xxxxxxxxx\par
+%     \egroup
+%     \vbox\bgroup
+%         xxxxxxxxx
+% \vskip-\baselineskip
+%         $$a_2$$
+%         xxxxxxxxx
+%     \egroup
+% \egroup
+%
+% \hbox\bgroup
+%     \setbox0\vbox\bgroup
+%         xxxxxxxxx\par
+%         \ctxlua{tex.prevdepth=-1000 *65536}
+%         $$a^2_2$$\par
+%         xxxxxxxxx\par
+%     \egroup
+%     \box0
+%     \vbox\bgroup
+%         xxxxxxxxx\par
+%         \ctxlua{tex.prevdepth=-1000 *65536}
+%         $$a^2$$\par
+%         xxxxxxxxx\par
+%     \egroup
+%     \vbox\bgroup
+%         xxxxxxxxx
+%         \ctxlua{tex.prevdepth=-1000 *65536}
+%         $$a_2$$
+%         xxxxxxxxx
+%     \egroup
+% \egroup
+
 \setupsubformulas % subformulas could be last in chain
   [\c!indentnext=\formulaparameter\c!indentnext]
 

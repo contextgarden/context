@@ -1476,13 +1476,13 @@
 
 \def\triggermathstyle#1% #1 is number
   {\ifcase\numexpr#1\relax
-     \displaystyle             \or
-     \crampeddisplaystyle      \or
-     \textstyle                \or
-     \crampedtextstyle         \or
-     \scriptstyle              \or
-     \crampedscriptstyle       \or
-     \scriptscriptstyle        \or
+     \displaystyle             \or % 0
+     \crampeddisplaystyle      \or % 1
+     \textstyle                \or % 2
+     \crampedtextstyle         \or % 3
+     \scriptstyle              \or % 4
+     \crampedscriptstyle       \or % 5
+     \scriptscriptstyle        \or % 6
      \crampedscriptscriptstyle \else
      % error
    \fi}

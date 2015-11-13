@@ -387,6 +387,8 @@
 %      \fi
 %    \fi}
 
+\let\triggerpagebuilder\relax
+
 \installcorenamespace {pagechecker}
 \installcorenamespace {pagecheckermethod}
 
@@ -414,6 +416,8 @@
 \def\page_check[#1][#2]%
   {\relax % needed before \if
    \endgraf
+   \triggerpagebuilder
+   \relax
    \ifconditional\c_page_breaks_enabled
      \begingroup
      \edef\currentpagechecker{#1}%

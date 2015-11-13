@@ -76,6 +76,15 @@ scanners.pdfstartscaling = function() -- at the tex end we use sx and sy instead
             rx = scannumber()
         elseif scankeyword("ry") then
             ry = scannumber()
+     -- elseif scankeyword("revert") then
+     --     local top = stack[#stack]
+     --     if top then
+     --         rx = top[1]
+     --         ry = top[4]
+     --     else
+     --         rx = 1
+     --         ry = 1
+     --     end
         else
             break
         end

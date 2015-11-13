@@ -13,6 +13,8 @@ modules.</p>
 
 -- this module is being reconstructed
 
+-- todo: query names with new node.subtypes
+
 local next, type, tostring = next, type, tostring
 local gsub = string.gsub
 local concat, remove = table.concat, table.remove
@@ -87,6 +89,13 @@ local skipcodes = allocate {
     [103] = "gleaders",
 }
 
+local leadercodes = allocate {
+    [100] = "leaders",
+    [101] = "cleaders",
+    [102] = "xleaders",
+    [103] = "gleaders",
+}
+
 local penaltycodes = allocate { -- unfortunately not used
     [ 0] = "userpenalty",
 }
@@ -120,12 +129,14 @@ local radicalcodes = allocate {
 }
 
 local listcodes = allocate {
-    [ 0] = "unknown",
-    [ 1] = "line",
-    [ 2] = "box",
-    [ 3] = "indent",
-    [ 4] = "alignment", -- row or column
-    [ 5] = "cell",
+    [0] = "unknown",
+    [1] = "line",
+    [2] = "box",
+    [3] = "indent",
+    [4] = "alignment", -- row or column
+    [5] = "cell",
+    [6] = "equation",
+    [7] = "equationnumber",
 }
 
 local glyphcodes = allocate {
@@ -191,6 +202,8 @@ local rulecodes = allocate {
     [3] = "empty",
 }
 
+-- maybe we also need fractioncodes
+
 local function simplified(t)
     local r = { }
     for k, v in next, t do
@@ -218,6 +231,7 @@ disccodes    = allocate(swapped(disccodes,disccodes))
 accentcodes  = allocate(swapped(accentcodes,accentcodes))
 fencecodes   = allocate(swapped(fencecodes,fencecodes))
 rulecodes    = allocate(swapped(rulecodes,rulecodes))
+leadercodes  = allocate(swapped(leadercodes,leadercodes))
 
 nodes.skipcodes    = skipcodes     nodes.gluecodes    = skipcodes -- more official
 nodes.noadcodes    = noadcodes
@@ -229,11 +243,13 @@ nodes.kerncodes    = kerncodes
 nodes.penaltycodes = penaltycodes
 nodes.mathcodes    = mathcodes
 nodes.fillcodes    = fillcodes
-nodes.margincodes  = margincodes
+nodes.margincodes  = margincodes   nodes.marginkerncodes    = margincodes
 nodes.disccodes    = disccodes     nodes.discretionarycodes = disccodes
 nodes.accentcodes  = accentcodes
+nodes.radicalcodes = radicalcodes
 nodes.fencecodes   = fencecodes
 nodes.rulecodes    = rulecodes
+nodes.leadercodes  = leadercodes
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment

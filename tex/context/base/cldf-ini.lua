@@ -8,6 +8,12 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 
 -- see cldf-tod.* !
 
+-- maybe:
+--
+-- 0.528 local foo = tex.ctxcatcodes
+-- 0.651 local foo = getcount("ctxcatcodes")
+-- 0.408 local foo = getcount(ctxcatcodes) -- local ctxcatcodes = tex.iscount("ctxcatcodes")
+
 -- This started as an experiment: generating context code at the lua end. After all
 -- it is surprisingly simple to implement due to metatables. I was wondering if
 -- there was a more natural way to deal with commands at the lua end. Of course it's

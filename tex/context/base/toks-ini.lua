@@ -39,6 +39,7 @@ if setinspector then
                     expandable = t.expandable,
                     protected  = t.protected,
                     mode       = t.mode,
+                    index      = t.index,
                     cmdname    = cmdname,
                 }
             end

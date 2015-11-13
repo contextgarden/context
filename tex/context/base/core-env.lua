@@ -107,32 +107,45 @@ setmetatablecall(tex.isdefined, function(t,k)
     return k and cache[k].mode ~= 0
 end)
 
-local dimencode   = cache["scratchdimen"  ].command
-local countcode   = cache["scratchcounter"].command
-local tokencode   = cache["scratchtoken"  ].command
-local skipcode    = cache["scratchskip"   ].command
+local dimencode     = cache["scratchdimen"]    .command
+local countcode     = cache["scratchcounter"]  .command
+local tokencode     = cache["scratchtoken"]    .command
+local skipcode      = cache["scratchskip"]     .command
+local muskipcode    = cache["scratchmuskip"]   .command
+---- attributecode = cache["scratchattribute"].command
 
 local types = {
-    [dimencode] = "dimen",
-    [countcode] = "count",
-    [tokencode] = "token",
-    [skipcode ] = "skip",
+    [dimencode]     = "dimen",
+    [countcode]     = "count",
+    [tokencode]     = "token",
+    [skipcode]      = "skip",
+    [muskipcode]    = "muskip",
+ -- [attributecode] = "attribute",
 }
 
 function tex.isdimen(name)
-    return cache[name].command == dimencode
+    local hit = cache[name]
+    return hit.command == dimencode and hit.index or true
 end
 
 function tex.iscount(name)
-    return cache[name].command == countcode
+    local hit = cache[name]
+    return hit.command == countcode and hit.index or true
 end
 
 function tex.istoken(name)
-    return cache[name].command == tokencode
+    local hit = cache[name]
+    return hit.command == tokencode and hit.index or true
 end
 
 function tex.isskip(name)
-    return cache[name].command == skipcode
+    local hit = cache[name]
+    return hit.command == skipcode and hit.index or true
+end
+
+function tex.ismuskip(name)
+    local hit = cache[name]
+    return hit.command == muskipcode and hit.index or true
 end
 
 function tex.type(name)

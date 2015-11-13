@@ -370,3 +370,30 @@ trackers.register("builders.hpack.overflow",function(v)
     show = v
     callback.register("hpack_quality",(report or show) and hpack_quality or nil)
 end)
+
+-- local ignoredepth = - 65536000
+--
+-- callback.register("append_to_vlist_filter", function(box,location,prevdepth,mirrored)
+--     if prevdepth > ignoredepth then
+--         local b = tex.baselineskip
+--         local d = b.width - prevdepth
+--         local g = nil
+--         if mirrored then
+--             d = d - box.depth
+--         else
+--             d = d - box.height
+--         end
+--         if d < tex.lineskiplimit then
+--             g = nodes.pool.glue()
+--             g.spec = tex.lineskip
+--         else
+--             g = nodes.pool.baselineskip(d)
+--         end
+--         g.next = box
+--         box.prev = g
+--         return g, mirrored and box.height or box.depth
+--     else
+--         return box, mirrored and box.height or box.depth
+--     end
+-- end)
+--
