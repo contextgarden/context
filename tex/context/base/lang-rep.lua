@@ -38,13 +38,18 @@ local nuts               = nodes.nuts
 local tonut              = nuts.tonut
 local tonode             = nuts.tonode
 
-local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getattr            = nuts.getattr
-local setattr            = nuts.setattr
 local getid              = nuts.getid
 local getchar            = nuts.getchar
+
+local setfield           = nuts.setfield
+local setattr            = nuts.setattr
+local setlink            = nuts.setlink
+local setnext            = nuts.setnext
+local setprev            = nuts.setprev
+local setchar            = nuts.setchar
 
 local insert_node_before = nuts.insert_before
 local remove_node        = nuts.remove
@@ -163,7 +168,7 @@ local function tonodes(list,template)
     local head, current
     for i=1,#list do
         local new = copy_node(template)
-        setfield(new,"char",list[i])
+        setchar(new,list[i])
         if head then
             head, current = insert_after(head,current,new)
         else
@@ -196,11 +201,8 @@ function replacements.handler(head)
                         local prev = getprev(current)
                         local next = getnext(last)
                         local list = current
-                        setfield(last,"next",nil)
-                        setfield(prev,"next",next)
-                        if next then
-                            setfield(next,"prev",prev)
-                        end
+                        setnext(last)
+                        setlink(prev,next)
                         current = prev
                         if not current then
                             head = nil
@@ -229,7 +231,7 @@ function replacements.handler(head)
                                     local list = codes[2]
                                     for i=1,#list do
                                         new = copy_node(last)
-                                        setfield(new,"char",list[i])
+                                        setchar(new,list[i])
                                         setattr(new,a_noligature,1)
                                         head, current = insert_after(head,current,new)
                                     end
@@ -238,7 +240,7 @@ function replacements.handler(head)
                                 end
                             else
                                 new = copy_node(last)
-                                setfield(new,"char",codes)
+                                setchar(new,codes)
                                 head, current = insert_after(head,current,new)
                             end
                             i = i + 1
@@ -246,18 +248,18 @@ function replacements.handler(head)
                         flush_list(list)
                     elseif oldlength == newlength then -- #old == #new
                         for i=1,newlength do
-                            setfield(current,"char",newcodes[i])
+                            setchar(current,newcodes[i])
                             current = getnext(current)
                         end
                     elseif oldlength < newlength then -- #old < #new
                         for i=1,newlength-oldlength do
                             local n = copy_node(current)
-                            setfield(n,"char",newcodes[i])
+                            setchar(n,newcodes[i])
                             head, current = insert_node_before(head,current,n)
                             current = getnext(current)
                         end
                         for i=newlength-oldlength+1,newlength do
-                            setfield(current,"char",newcodes[i])
+                            setchar(current,newcodes[i])
                             current = getnext(current)
                         end
                     else -- #old > #new
@@ -265,7 +267,7 @@ function replacements.handler(head)
                             head, current = remove_node(head,current,true)
                         end
                         for i=1,newlength do
-                            setfield(current,"char",newcodes[i])
+                            setchar(current,newcodes[i])
                             current = getnext(current)
                         end
                     end

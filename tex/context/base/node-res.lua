@@ -67,9 +67,11 @@ local tonode    = nuts.tonode
 
 local getbox    = nuts.getbox
 local getfield  = nuts.getfield
-local setfield  = nuts.setfield
 local getid     = nuts.getid
 local getlist   = nuts.getlist
+
+local setfield  = nuts.setfield
+local setchar   = nuts.setchar
 
 local copy_nut  = nuts.copy
 local new_nut   = nuts.new
@@ -177,7 +179,7 @@ end
 function nutpool.glyph(fnt,chr)
     local n = copy_nut(glyph)
     if fnt then setfield(n,"font",fnt) end
-    if chr then setfield(n,"char",chr) end
+    if chr then setchar(n,chr) end
     return n
 end
 

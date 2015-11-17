@@ -609,7 +609,6 @@ if context then
     local new_disc           = nodepool.disc
     local new_glyph          = nodepool.glyph
 
-    local setfield           = nuts.setfield
     local getfield           = nuts.getfield
     local getfont            = nuts.getfont
     local getchar            = nuts.getchar
@@ -619,7 +618,11 @@ if context then
     local getprev            = nuts.getprev
     local getsubtype         = nuts.getsubtype
     local getlist            = nuts.getlist
+
+    local setfield           = nuts.setfield
+    local setchar            = nuts.setchar
     local setdisc            = nuts.setdisc
+
     local insert_before      = nuts.insert_before
     local insert_after       = nuts.insert_after
     local copy_node          = nuts.copy
@@ -1124,7 +1127,7 @@ if context then
                     return
                 elseif replacement == true then
                     local glyph = copy_node(stop)
-                    setfield(glyph,"char",leftchar or rightchar)
+                    setchar(glyph,leftchar or rightchar)
                     return glyph
                 end
                 local head    = nil
@@ -1132,12 +1135,12 @@ if context then
                 if leftchar then
                     head    = copy_node(stop)
                     current = head
-                    setfield(head,"char",leftchar)
+                    setchar(head,leftchar)
                 end
                 local rsize = #replacement
                 if rsize == 1 then
                     local glyph = copy_node(stop)
-                    setfield(glyph,"char",characters[replacement])
+                    setchar(glyph,characters[replacement])
                     if head then
                         insert_after(current,current,glyph)
                     else
@@ -1148,7 +1151,7 @@ if context then
                     local list = lpegmatch(p_split,replacement) -- this is an utf split (could be cached)
                     for i=1,#list do
                         local glyph = copy_node(stop)
-                        setfield(glyph,"char",characters[list[i]])
+                        setchar(glyph,characters[list[i]])
                         if head then
                             insert_after(current,current,glyph)
                         else
@@ -1160,7 +1163,7 @@ if context then
                 if rightchar then
                     local glyph = copy_node(stop)
                     insert_after(current,current,glyph)
-                    setfield(glyph,"char",rightchar)
+                    setchar(glyph,rightchar)
                 end
                 return head
             end
@@ -1221,7 +1224,7 @@ if context then
                     end
                     insert_before(first,current,disc)
                 else
-                    setfield(current,"char",characters[r])
+                    setchar(current,characters[r])
                     if i < rsize then
                         current = getnext(current)
                     end
@@ -1254,11 +1257,11 @@ if context then
                 end
                 if rightchar then
                     pre = copy_node(glyph)
-                    setfield(pre,"char",rightchar)
+                    setchar(pre,rightchar)
                 end
                 if leftchar then
                     post = copy_node(glyph)
-                    setfield(post,"char",leftchar)
+                    setchar(post,leftchar)
                 end
                 setdisc(disc,pre,post,replace,discretionary_code,hyphenpenalty)
                 if attributes then

@@ -68,20 +68,24 @@ local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 local tonode              = nuts.tonode
 
-local getfield            = nuts.getfield
-local getnext             = nuts.getnext
-local getprev             = nuts.getprev
-local getdisc             = nuts.getdisc
-local getid               = nuts.getid
 local setfield            = nuts.setfield
-local getattr             = nuts.getattr
+local setboth             = nuts.setboth
+local setlink             = nuts.setlink
+local setdisc             = nuts.setdisc
 local setattr             = nuts.setattr
+
+local getfield            = nuts.getfield
+local getid               = nuts.getid
 local getfont             = nuts.getfont
+local getattr             = nuts.getattr
 local getsubtype          = nuts.getsubtype
 local getchar             = nuts.getchar
 local getbox              = nuts.getbox
 local getlist             = nuts.getlist
 local getleader           = nuts.getleader
+local getnext             = nuts.getnext
+local getprev             = nuts.getprev
+local getdisc             = nuts.getdisc
 
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
@@ -484,8 +488,7 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
         local next = getnext(current)
         local prev = previous
      -- local prev = getprev(current) -- prev can be wrong in math mode < 0.78.3
-        setfield(current,"next",nil)
-        setfield(current,"prev",nil)
+        setboth(current)
         local linewidth = emwidth/fraction
         local baseline, baseskip
         if dp ~= 0 and ht ~= 0 then
@@ -556,16 +559,14 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
         setfield(current,"shift",0)
         info = (vertical and new_vlist or new_hlist)(info,wd,ht,dp,shift)
         if next then
-            setfield(info,"next",next)
-            setfield(next,"prev",info)
+            setlink(info,next)
         end
         if prev then
             if getid(prev) == gluespec_code then
                 report_visualize("ignoring invalid prev")
                 -- weird, how can this happen, an inline glue-spec, probably math
             else
-                setfield(info,"prev",prev)
-                setfield(prev,"next",info)
+                setlink(prev,info)
             end
         end
         if head == current then
@@ -580,14 +581,13 @@ end
 
 local function ruledglyph(head,current,previous)
     local wd = getfield(current,"width")
- -- local wd = chardata[getfield(current,"font")][getfield(current,"char")].width
+ -- local wd = chardata[getfont(current)][getchar(current)].width
     if wd ~= 0 then
         local ht = getfield(current,"height")
         local dp = getfield(current,"depth")
         local next = getnext(current)
         local prev = previous
-        setfield(current,"next",nil)
-        setfield(current,"prev",nil)
+        setboth(current)
         local linewidth = emwidth/(2*fraction)
         local baseline
      -- if dp ~= 0 and ht ~= 0 then
@@ -605,14 +605,14 @@ local function ruledglyph(head,current,previous)
             new_kern(-wd+doublelinewidth),
             baseline
         )
-local char = chardata[getfield(current,"font")][getfield(current,"char")]
-if char and char.tounicode and #char.tounicode > 4 then -- hack test
-        setlistcolor(info,c_ligature)
-        setlisttransparency(info,c_ligature_d)
-else
-        setlistcolor(info,c_glyph)
-        setlisttransparency(info,c_glyph_d)
-end
+        local char = chardata[getfont(current)][getchar(current)]
+        if char and char.tounicode and #char.tounicode > 4 then -- hack test
+            setlistcolor(info,c_ligature)
+            setlisttransparency(info,c_ligature_d)
+        else
+            setlistcolor(info,c_glyph)
+            setlisttransparency(info,c_glyph_d)
+        end
         info = fast_hpack(info)
         setfield(info,"width",0)
         setfield(info,"height",0)
@@ -622,12 +622,10 @@ end
         info = fast_hpack(info)
         setfield(info,"width",wd)
         if next then
-            setfield(info,"next",next)
-            setfield(next,"prev",info)
+            setlink(info,next)
         end
         if prev then
-            setfield(info,"prev",prev)
-            setfield(prev,"next",info)
+            setlink(prev,info)
         end
         if head == current then
             return info, info
@@ -850,14 +848,15 @@ local function visualize(head,vertical,forced,parent)
         elseif id == disc_code then
             local pre, post, replace = getdisc(current)
             if pre then
-                setfield(current,"pre",visualize(pre,false,a,parent))
+                pre = visualize(pre,false,a,parent)
             end
             if post then
-                setfield(current,"post",visualize(post,false,a,parent))
+                post = visualize(post,false,a,parent)
             end
             if replace then
-                setfield(current,"replace",visualize(replace,false,a,parent))
+                replace = visualize(replace,false,a,parent)
             end
+            setdisc(current,pre,post,replace)
         elseif id == kern_code then
             local subtype = getsubtype(current)
             -- tricky ... we don't copy the trace attribute in node-inj (yet)

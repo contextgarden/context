@@ -24,6 +24,8 @@ local getnext        = nuts.getnext
 
 local setfield       = nuts.setfield
 local setattr        = nuts.setattr
+local setlink        = nuts.setlink
+local setchar        = nuts.setchar
 
 local traverse_nodes = nuts.traverse
 local traverse_id    = nuts.traverse_id
@@ -71,13 +73,11 @@ local function injectspaces(head)
                 local s = getfield(n,"spec")
                 s = s == 0 and new_gluespec(0) or copy_node(s)
                 --
-                setfield(g,"char",32)
+                setchar(g,32)
                 setfield(n,"spec",s)
              -- insert_after(p,p,g)
-                setfield(p,"next",g)
-                setfield(g,"prev",p)
-                setfield(g,"next",n)
-                setfield(n,"prev",g)
+                setlink(p,g)
+                setlink(g,n)
                 setfield(s,"width",getfield(s,"width") - getfield(g,"width"))
                 if a then
                     setattr(g,a_characters,a)

@@ -47,7 +47,8 @@ local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getfield          = nuts.getfield
 ----- getdisc           = nuts.getdisc
-local setfield          = nuts.setfield
+local setchar           = nuts.setchar
+local setlink           = nuts.setlink
 
 local traverse_id       = nuts.traverse_id
 local delete_node       = nuts.delete
@@ -240,7 +241,7 @@ function handlers.characters(head)
                                 if trace_variants then
                                     report_fonts("replacing %C by %C",char,variant)
                                 end
-                                setfield(p,"char",variant)
+                                setchar(p,variant)
                                 if not redundant then
                                     redundant = { n }
                                 else
@@ -423,12 +424,10 @@ function handlers.characters(head)
                     start = kerning(start)
                 end
                 if prev then
-                    setfield(start,"prev",prev)
-                    setfield(prev,"next",start)
+                    setlink(prev,start)
                 end
                 if next then
-                    setfield(stop,"next",next)
-                    setfield(next,"prev",start)
+                    setlink(stop,next)
                 end
                 if front then
                     head  = start
@@ -593,7 +592,7 @@ end
 --                         if p and getid(p) == glyph_code then
 --                             local variant = hash[getchar(p)]
 --                             if variant then
---                                 setfield(p,"char",variant)
+--                                 setchar(p,variant)
 --                                 delete_node(nuthead,n)
 --                             end
 --                         end

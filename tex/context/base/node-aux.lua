@@ -35,9 +35,13 @@ local getlist            = nuts.getlist
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getattr            = nuts.getattr
-local setfield           = nuts.setfield
 local getfield           = nuts.getfield
+
+local setfield           = nuts.setfield
 local setattr            = nuts.setattr
+local setlink            = nuts.setlink
+local setnext            = nuts.setnext
+local setprev            = nuts.setprev
 
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
@@ -452,8 +456,8 @@ local function link(list,currentfont,currentattr,head,tail) -- an oldie, might b
                     elseif not head then
                         head, tail = h, t
                     else
-                        setfield(tail,"next",h)
-                        setfield(h,"prev",t)
+                        setnext(tail,h)
+                        setprev(h,t)
                         tail = t
                     end
                 end
@@ -476,8 +480,7 @@ local function link(list,currentfont,currentattr,head,tail) -- an oldie, might b
                 end
                 os.exit()
             else
-                setfield(tail,"next",n)
-                setfield(n,"prev",tail)
+                setlink(tail,n)
                 if getnext(n) then
                     tail = find_tail(n)
                 else

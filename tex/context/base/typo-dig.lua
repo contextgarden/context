@@ -29,8 +29,11 @@ local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getattr            = nuts.getattr
+
+local setlink            = nuts.setlink
+local setnext            = nuts.setnext
+local setprev            = nuts.setprev
 local setattr            = nuts.setattr
 
 local hpack_node         = nuts.hpack
@@ -82,16 +85,14 @@ function nodes.aligned(head,start,stop,width,how)
     end
     local prv = getprev(start)
     local nxt = getnext(stop)
-    setfield(start,"prev",nil)
-    setfield(stop,"next",nil)
+    setprev(start)
+    setnext(stop)
     local packed = hpack_node(start,width,"exactly") -- no directional mess here, just lr
     if prv then
-        setfield(prv,"next",packed)
-        setfield(packed,"prev",prv)
+        setlink(prv,packed)
     end
     if nxt then
-        setfield(nxt,"prev",packed)
-        setfield(packed,"next",nxt)
+        setlink(packed,nxt)
     end
     if getprev(packed) then
         return head, packed

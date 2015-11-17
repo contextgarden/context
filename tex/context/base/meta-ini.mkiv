@@ -696,6 +696,9 @@
   {\MPllx#2\MPlly#3\MPurx#4\MPury#5%
    \hbox{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
 
+\unexpanded\def\meta_use_box
+  {\setobject{MP}}
+
 \def\meta_handle_unique_graphic#1#2#3% when there are too many, we can store data at the lua end, although,
   {\begingroup                  % when there are that many they're probably not that unique anyway
    \edef\currentmpvariableclass{#1}%
@@ -703,7 +706,7 @@
    \ifcsname\??mpgraphic\overlaystamp:#1\endcsname\else
      \meta_enable_include % redundant
      \global\advance\c_meta_object_counter\plusone
-     \setobject{MP}{\number\c_meta_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
+     \meta_use_box{\number\c_meta_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
      \setxvalue{\??mpgraphic\overlaystamp:#1}{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
    \fi
    \getvalue{\??mpgraphic\overlaystamp:#1}%
@@ -790,7 +793,7 @@
    \fi
    \meta_enable_include % redundant
    \global\advance\c_meta_object_counter\plusone
-   \setobject{MP}{\number\c_meta_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
+   \meta_use_box{\number\c_meta_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
    \setxvalue{\??mpgraphic#1}{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
    \getvalue{\??mpgraphic#1}%
    \endgroup}

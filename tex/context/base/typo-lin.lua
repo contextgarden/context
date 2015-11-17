@@ -87,6 +87,7 @@ local getlist           = nuts.getlist
 local getid             = nuts.getid
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
+local getboth           = nuts.getboth
 local getfield          = nuts.getfield
 local setfield          = nuts.setfield
 
@@ -356,8 +357,7 @@ function paragraphs.moveinline(n,blob,dx,dy)
         local line = type(n) ~= "table" and getprop(n,"line") or n
         if line then
             if dx ~= 0 then
-                local prev = getprev(blob)
-                local next = getnext(blob)
+                local prev, next = getboth(blob)
                 if prev and getid(prev) == kern_code then
                     setfield(prev,"kern",getfield(prev,"kern") + dx)
                 end

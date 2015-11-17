@@ -42,14 +42,8 @@
 %D versions might support more backends again, but this has a low
 %D priority.
 %D
-%D The big question is: what is to be considered a backend issue and
-%D what not. For the moment we treat image inclusion, object reuse,
-%D position tracking and color as frontend issues, if only because we
-%D deal with them via \LUA\ code and as such we don't depend too much
-%D on macro calls that need to inject code for the backend.
-%D
 %D Not everything here makes sense and the content of this file will
-%D definitely change.
+%D definitely change (or even go away).
 
 \let \dostartrotation   \gobbleoneargument
 \let \dostoprotation    \donothing
@@ -89,45 +83,6 @@
 
 \let \dostartclipping \gobblethreearguments
 \let \dostopclipping  \donothing
-
-%D \macros
-%D   {dostartobject,
-%D    dostopobject,
-%D    doresetobjects,
-%D    doinsertobject}
-%D
-%D Reuse of object can reduce the output filesize
-%D considerably. Reusable objects are implemented with:
-%D
-%D \starttyping
-%D \dostartobject{class}{name}{width}{height}{depth}
-%D some typeset material
-%D \dostopobject
-%D \stoptyping
-%D
-%D \starttyping
-%D \doinsertobject{class}{name}
-%D \stoptyping
-%D
-%D The savings can be huge in interactive texts. The next macro needs
-%D to be called after a graphic is inserted (in order to clean up
-%D global references).
-%D
-%D \starttyping
-%D \doresetobjects
-%D \stoptyping
-
-\let \dostartobject   \gobblefourarguments
-\let \dostopobject    \donothing
-\let \doinsertobject  \gobbletwoarguments
-\let \doresetobjects  \donothing
-
-%D From now on, mapfile loading is also a special; we assume the
-%D more or less standard dvips syntax.
-
-%let \doresetmapfilelist \donothing
-%let \doloadmapfile      \gobbletwoarguments % + - = | filename
-%let \doloadmapline      \gobbletwoarguments % + - = | fileline
 
 %D \macros
 %D   {jobsuffix}

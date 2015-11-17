@@ -44,6 +44,9 @@ local find_tail      = nuts.tail
 
 local getfield       = nuts.getfield
 local setfield       = nuts.setfield
+local setsetlink     = nuts.setlink
+local setsetprev     = nuts.setprev
+local setsetnext     = nuts.setnext
 local getid          = nuts.getid
 local getnext        = nuts.getnext
 local getprev        = nuts.getprev
@@ -86,14 +89,12 @@ local function cleanup_redundant(head) -- better name is: flatten_page
                         remove_node(head,start,true)
                     end
                     if next then
-                        setfield(tail,"next",next)
-                        setfield(next,"prev",tail)
+                        setlink(tail,next)
                     end
                     if prev then
-                        setfield(prev,"next",replace)
-                        setfield(replace,"prev",prev)
+                        setlink(prev,replace)
                     else
-                        setfield(replace,"prev",nil) -- to be sure
+                        setprev(replace) -- to be sure
                     end
                     start = next
                 elseif wipedisc then

@@ -32,9 +32,14 @@ local getchar           = nuts.getchar
 local getid             = nuts.getid
 local getsubtype        = nuts.getsubtype
 local getfield          = nuts.getfield
-local setfield          = nuts.setfield
 local getattr           = nuts.getattr
+
+local setfield          = nuts.setfield
 local setattr           = nuts.setattr
+local setlink           = nuts.setlink
+local setprev           = nuts.setprev
+local setnext           = nuts.setnext
+local setchar           = nuts.setchar
 
 local hpack_nodes       = nuts.hpack
 
@@ -256,7 +261,7 @@ actions[v_default] = function(head,setting)
 -- g.subtype = 0
 -- nodes.handlers.characters(g)
 -- nodes.handlers.protectglyphs(g)
--- setfield(current,"char",g.char)
+-- setchar(current,g.char)
 -- nodes.free(g)
 
                     -- can be a helper
@@ -281,8 +286,8 @@ actions[v_default] = function(head,setting)
             local prev = getprev(first)
             local next = getnext(last)
             --
-            setfield(first,"prev",nil)
-            setfield(last,"next",nil)
+            setprev(first)
+            setnext(last)
             local dropper = hpack_nodes(first)
             local width   = getfield(dropper,"width")
             local height  = getfield(dropper,"height")
@@ -291,12 +296,8 @@ actions[v_default] = function(head,setting)
             setfield(dropper,"height",0)
             setfield(dropper,"depth",0)
             --
-            setfield(prev,"next",dropper)
-            if next then
-                setfield(next,"prev",dropper)
-            end
-            setfield(dropper,"next",next)
-            setfield(dropper,"prev",prev)
+            setlink(prev,dropper)
+            setlink(dropper,next)
             --
             if next then
                 local current = next

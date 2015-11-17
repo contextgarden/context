@@ -53,13 +53,17 @@ local traversenodes       = nuts.traverse
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
+local setlink             = nuts.setlink
+local setnext             = nuts.setnext
+local setprev             = nuts.setprev
+local setbox              = nuts.setbox
+
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid
 local getlist             = nuts.getlist
 local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
-local setbox              = nuts.setbox
 local getskip             = nuts.getskip
 local getattribute        = nuts.getattribute
 
@@ -186,7 +190,7 @@ local function discardtopglue(current,discarded)
         end
     end
     if current then
-        setfield(current,"prev",nil) -- prevent look back
+        setprev(current) -- prevent look back
     end
     return current, size
 end
@@ -761,19 +765,18 @@ local function finalize(result)
             local r = results[i]
             local h = r.head
             if h then
-                setfield(h,"prev",nil)
+                setprev(h)
 if r.back then
     local k = new_glue(r.back)
-    setfield(h,"prev",k)
-    setfield(k,"next",h)
+    setlink(k,h)
     h = k
     r.head = h
 end
                 local t = r.tail
                 if t then
-                    setfield(t,"next",nil)
+                    setnext(t,nil)
                 else
-                    setfield(h,"next",nil)
+                    setnext(h,nil)
                     r.tail = h
                 end
                 for c, list in next, r.inserts do
@@ -787,8 +790,8 @@ end
                         setfield(h,"depth",getfield(l,"depth"))
                         setfield(l,"head",nil)
                     end
-                    setfield(t[1],"prev",nil)  -- needs checking
-                    setfield(t[#t],"next",nil) -- needs checking
+                    setprev(t[1])  -- needs checking
+                    setnext(t[#t]) -- needs checking
                     r.inserts[c] = t
                 end
             end
@@ -870,7 +873,7 @@ local function getsplit(result,n)
         return new_glue(result.originalwidth)
     end
 
-    setfield(h,"prev",nil) -- move up
+    setprev(h) -- move up
     local strutht    = result.strutht
     local strutdp    = result.strutdp
     local lineheight = strutht + strutdp

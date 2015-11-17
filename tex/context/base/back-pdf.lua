@@ -145,9 +145,3 @@ scanners.pdfstartmirroring = function()
 end
 
 scanners.pdfstopmirroring = scanners.pdfstartmirroring
-
-scanners.registerbackendsymbol = function()
-    backends.codeinjections.registersymbol(scanstring(),scaninteger())
-end
-
--- todo : clipping

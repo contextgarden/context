@@ -16,6 +16,9 @@ local tonode          = nuts.tonode
 local tonut           = nuts.tonut
 
 local setfield        = nuts.setfield
+local setlink         = nuts.setlink
+local setchar         = nuts.setchar
+
 local getfont         = nuts.getfont
 
 local hpack_node_list = nuts.hpack
@@ -58,7 +61,7 @@ local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
             end
         elseif templateglyph then
             next = copy_glyph(templateglyph)
-            setfield(next,"char",c)
+            setchar(next,c)
             spacedone = false
         else
             next = new_glyph(fontid or 1,c)
@@ -69,8 +72,7 @@ local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
         elseif not head then
             head = next
         else
-            setfield(prev,"next",next)
-            setfield(next,"prev",prev)
+            setlink(prev,next)
         end
         prev = next
     end

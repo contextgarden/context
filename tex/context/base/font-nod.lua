@@ -58,7 +58,6 @@ local tonut            = nuts.tonut
 local tonode           = nuts.tonode
 
 local getfield         = nuts.getfield
-local setfield         = nuts.setfield
 local getnext          = nuts.getnext
 local getprev          = nuts.getprev
 local getid            = nuts.getid
@@ -67,7 +66,10 @@ local getsubtype       = nuts.getsubtype
 local getchar          = nuts.getchar
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
+
+local setfield         = nuts.setfield
 local setbox           = nuts.setbox
+local setchar          = nuts.setchar
 
 local copy_node_list   = nuts.copy_list
 local hpack_node_list  = nuts.hpack
@@ -324,7 +326,7 @@ end
 function tracers.fontchar(font,char)
     local n = new_glyph()
     setfield(n,"font",font)
-    setfield(n,"char",char)
+    setchar(n,"char",char)
     setfield(n,"subtype",256)
     context(tonode(n))
 end

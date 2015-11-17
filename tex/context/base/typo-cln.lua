@@ -31,10 +31,12 @@ local texsetattribute = tex.setattribute
 local nuts            = nodes.nuts
 local tonut           = nuts.tonut
 
-local setfield        = nuts.setfield
 local getchar         = nuts.getchar
 local getattr         = nuts.getattr
 local setattr         = nuts.setattr
+
+local setfield        = nuts.setfield
+local setchar         = nuts.setchar
 
 local traverse_id     = nuts.traverse_id
 
@@ -67,7 +69,7 @@ function cleaners.handler(head)
                 if type(upper) == "table" then
                     -- some day, not much change that \SS ends up here
                 else
-                    setfield(n,"char",upper)
+                    setchar(n,upper)
                     done = true
                     if trace_autocase then
                         report_autocase("")

@@ -194,15 +194,23 @@ local tonut                = nuts.tonut
 local tonode               = nuts.tonode
 
 local getfield             = nuts.getfield
-local setfield             = nuts.setfield
 local getid                = nuts.getid
 local getsubtype           = nuts.getsubtype
 local getnext              = nuts.getnext
 local getprev              = nuts.getprev
+local getboth              = nuts.getboth
 local getlist              = nuts.getlist
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
 local getattr              = nuts.getattr
+local getdisc              = nuts.getdisc
+
+local setfield             = nuts.setfield
+local setlink              = nuts.setlink
+local setboth              = nuts.setboth
+local setnext              = nuts.setnext
+local setprev              = nuts.setprev
+local setdisc              = nuts.setdisc
 
 local slide_nodelist       = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
@@ -740,14 +748,13 @@ local function compute_break_width(par,break_type,p) -- split in two
         local break_size           = break_width.size           + disc_width.size
         local break_adjust_stretch = break_width.adjust_stretch + disc_width.adjust_stretch
         local break_adjust_shrink  = break_width.adjust_shrink  + disc_width.adjust_shrink
-        local replace = getfield(p,"replace")
+        local pre, post, replace = getdisc(p)
         if replace then
             local size, adjust_stretch, adjust_shrink = add_to_width(line_break_dir,checked_expansion,replace)
             break_size           = break_size           - size
             break_adjust_stretch = break_adjust_stretch - adjust_stretch
             break_adjust_shrink  = break_adjust_shrink  - adjust_shrink
         end
-        local post = getfield(p,"post")
         if post then
             local size, adjust_stretch, adjust_shrink = add_to_width(line_break_dir,checked_expansion,post)
             break_size           = break_size           + size
@@ -807,8 +814,7 @@ local function append_to_vlist(par, b)
             local head_field = par.head_field
             if head_field then
                 local n = slide_nodelist(head_field) -- todo: find_tail
-                setfield(n,"next",s)
-                setfield(s,"prev",n)
+                setlink(n,s)
             else
                 par.head_field = s
             end
@@ -817,8 +823,7 @@ local function append_to_vlist(par, b)
     local head_field = par.head_field
     if head_field then
         local n = slide_nodelist(head_field) -- todo: find_tail
-        setfield(n,"next",b)
-        setfield(b,"prev",n)
+        setlink(n,b)
     else
         par.head_field = b
     end
@@ -833,8 +838,7 @@ local function append_list(par, b)
     local head_field = par.head_field
     if head_field then
         local n = slide_nodelist(head_field) -- todo: find_tail
-        setfield(n,"next",b)
-        setfield(b,"prev",n)
+        setlink(n,b)
     else
         par.head_field = b
     end
@@ -865,7 +869,7 @@ local function initialize_line_break(head,display)
     local last_line_fit  = tex.lastlinefit
 
     local newhead = new_temp()
-    setfield(newhead,"next",head)
+    setnext(newhead,head)
 
     local adjust_spacing_status = adjust_spacing > 1 and -1 or 0
 
@@ -1191,42 +1195,33 @@ local function post_line_break(par)
                 local prevlast = getprev(lastnode)
                 local nextlast = getnext(lastnode)
                 local subtype  = getsubtype(lastnode)
-                local pre      = getfield(lastnode,"pre")
-                local post     = getfield(lastnode,"post")
-                local replace  = getfield(lastnode,"replace")
+                local pre, post, replace = getdisc(lastnode)
                 if subtype == second_disc_code then
                     if not (getid(prevlast) == disc_code and getsubtype(prevlast) == first_disc_code) then
                         report_parbuilders('unsupported disc at location %a',3)
                     end
                     if pre then
                         flush_nodelist(pre)
-                        setfield(lastnode,"pre",nil)
                         pre = nil -- signal
                     end
                     if replace then
                         local n = find_tail(replace)
-                        setfield(prevlast,"next",replace)
-                        setfield(replace,"prev",prevlast)
-                        setfield(n,"next",lastnode)
-                        setfield(lastnode,"prev",n)
-                        setfield(lastnode,"replace",nil)
+                        setlink(prevlast,replace)
+                        setlink(n,lastnode)
                         replace = nil -- signal
                     end
-                    local pre     = getfield(prevlast,"pre")
-                    local post    = getfield(prevlast,"post")
-                    local replace = getfield(prevlast,"replace")
+                    setdisc(pre,post,replace)
+                    local pre, post, replace = getdisc(prevlast)
                     if pre then
                         flush_nodelist(pre)
-                        setfield(prevlast,"pre",nil)
                     end
                     if replace then
                         flush_nodelist(replace)
-                        setfield(prevlast,"replace",nil)
                     end
                     if post then
                         flush_nodelist(post)
-                        setfield(prevlast,"post",nil)
                     end
+                    setdisc(prevlast) -- nil,nil,nil
                 elseif subtype == first_disc_code then
                     -- what is v ... next probably
                     if not (getid(v) == disc_code and getsubtype(v) == second_disc_code) then
@@ -1234,29 +1229,23 @@ local function post_line_break(par)
                     end
                     setfield(nextlast,"subtype",regular_disc_code)
                     setfield(nextlast,"replace",post)
-                    setfield(lastnode,"post",nil)
+                    setfield(lastnode,"post")
                 end
                 if replace then
-                    setfield(lastnode,"replace",nil) -- free
                     flush_nodelist(replace)
                 end
                 if pre then
                     local n = find_tail(pre)
-                    setfield(prevlast,"next",pre)
-                    setfield(pre,"prev",prevlast)
-                    setfield(n,"next",lastnode)
-                    setfield(lastnode,"prev",n)
-                    setfield(lastnode,"pre",nil)
+                    setlink(prevlast,pre)
+                    setlink(n,lastnode)
                 end
                 if post then
                     local n = find_tail(post)
-                    setfield(lastnode,"next",post)
-                    setfield(post,"prev",lastnode)
-                    setfield(n,"next",nextlast)
-                    setfield(nextlast,"prev",n)
-                    setfield(lastnode,"post",nil)
+                    setlink(lastnode,post)
+                    setlink(n,nextlast)
                     post_disc_break = true
                 end
+                setdisc(lastnode) -- nil, nil, nil
                 disc_break = true
             elseif id == kern_code then
                 setfield(lastnode,"kern",0)
@@ -1286,7 +1275,7 @@ local function post_line_break(par)
         end
         -- we finish the line
         local r = getnext(lineend)
-        setfield(lineend,"next",nil)
+        setnext(lineend)
         if not glue_break then
             if rightskip then
                 insert_node_after(lineend,lineend,new_rightskip(right_skip)) -- lineend moves on as pseudo head
@@ -1294,10 +1283,7 @@ local function post_line_break(par)
         end
         -- each time ?
         local q = getnext(head)
-        setfield(head,"next",r)
-        if r then
-            setfield(r,"prev",head)
-        end
+        setlink(head,r)
         -- insert leftbox (if needed after parindent)
         local leftbox = current_break.passive_left_box
         if leftbox then
@@ -1438,12 +1424,9 @@ local function post_line_break(par)
                 current = next
             end
             if current ~= head then
-                setfield(current,"next",nil)
+                setnext(current)
                 flush_nodelist(getnext(head))
-                setfield(head,"next",next)
-                if next then
-                    setfield(next,"prev",head)
-                end
+                setlink(head,next)
             end
         end
     end
@@ -2145,7 +2128,7 @@ function constructors.methods.basic(head,d)
         par.pass_number             = 0
 --         par.auto_breaking           = true
 
-        setfield(temp_head,"next",head)
+        setnext(temp_head,head)
 
         local current               = head
         local first_p               = current
@@ -2533,10 +2516,10 @@ function diagnostics.feasible_break(par, current, r, b, pi, d, artificial_demeri
             par.font_in_short_display = short_display("log",getnext(printed_node),par.font_in_short_display)
         else
             local save_link = getnext(current)
-            setfield(current,"next",nil)
+            setnext(current)
             write_nl("log","")
             par.font_in_short_display = short_display("log",getnext(printed_node),par.font_in_short_display)
-            setfield(current,"next",save_link)
+            setnext(current,save_link)
         end
         par.printed_node = current
     end
@@ -2933,29 +2916,21 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     depth = ds
                 end
             elseif id == ins_code or id == mark_code then
-                local prev = getprev(current)
-                local next = getnext(current)
+                local prev, next = getboth(current)
                 if adjust_tail then -- todo
-                    if next then
-                        setfield(next,"prev",prev)
-                    end
-                    if prev then
-                        setfield(prev,"next",next)
-                    end
-                    setfield(current,"prev",adjust_tail)
-                    setfield(current,"next",nil)
-                    adjust_setfield(tail,"next",current)
+                    setlink(prev,next)
+                    setlink(adjust_tail,current)
+                    setnext(current)
                     adjust_tail = current
                 else
                     adjust_head = current
                     adjust_tail = current
-                    setfield(current,"prev",nil)
-                    setfield(current,"next",nil)
+                    setboth(current)
                 end
             elseif id == adjust_code then
                 local list = getlist(current)
                 if adjust_tail then
-                    adjust_setfield(tail,"next",list)
+                    setnext(adjust_tail,list)
                 else
                     adjust_head = list
                 end

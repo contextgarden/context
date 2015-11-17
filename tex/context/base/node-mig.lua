@@ -28,6 +28,9 @@ local getattr       = nuts.getattr
 
 local setfield      = nuts.setfield
 local setattr       = nuts.setattr
+local setlink       = nuts.setlink
+local setprev       = nuts.setprev
+local setnext       = nuts.setnext
 
 local remove_node   = nuts.remove
 
@@ -57,12 +60,11 @@ local function locate(head,first,last,ni,nm)
         elseif migrate_inserts and id == insert_code then
             local insert
             head, current, insert = remove_node(head,current)
-            setfield(insert,"next",nil)
+            setnext(insert)
             if first then
-                setfield(insert,"prev",last)
-                setfield(last,"next",insert)
+                setlink(last,insert)
             else
-                setfield(insert,"prev",nil)
+                setprev(insert)
                 first = insert
             end
             last = insert
@@ -70,12 +72,11 @@ local function locate(head,first,last,ni,nm)
         elseif migrate_marks and id == mark_code then
             local mark
             head, current, mark = remove_node(head,current)
-            setfield(mark,"next",nil)
+            setnext(mark)
             if first then
-                setfield(mark,"prev",last)
-                setfield(last,"next",mark)
+                setlink(last,mark)
             else
-                setfield(mark,"prev",nil)
+                setprev(mark)
                 first = mark
             end
             last = mark
@@ -120,11 +121,9 @@ function nodes.handlers.migrate(head,where)
                     -- inserts after head, use insert_after
                     local n = getnext(current)
                     if n then
-                        setfield(last,"next",n)
-                        setfield(n,"prev",last)
+                        setlink(last,n)
                     end
-                    setfield(current,"next",first)
-                    setfield(first,"prev",current)
+                    setlink(current,first)
                     done = true
                     current = last
                 end

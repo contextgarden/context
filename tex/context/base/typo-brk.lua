@@ -27,14 +27,19 @@ local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
+local getboth            = nuts.getboth
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
 local getfont            = nuts.getfont
 local getid              = nuts.getid
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getattr            = nuts.getattr
+
+local setfield           = nuts.setfield
 local setattr            = nuts.setattr
+local setlink            = nuts.setlink
+local setchar            = nuts.setchar
+local setdisc            = nuts.setdisc
 
 local copy_node          = nuts.copy
 local copy_nodelist      = nuts.copy_list
@@ -98,14 +103,16 @@ local function insert_break(head,start,before,after)
 end
 
 methods[1] = function(head,start)
-    if getprev(start) and getnext(start) then
+    local p, n = getboth(start)
+    if p and n then
         insert_break(head,start,10000,0)
     end
     return head, start
 end
 
 methods[2] = function(head,start) -- ( => (-
-    if getprev(start) and getnext(start) then
+    local p, n = getboth(start)
+    if p and n then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
@@ -114,9 +121,8 @@ methods[2] = function(head,start) -- ( => (-
         setfield(start,"replace",tmp)
         local tmp = copy_node(tmp)
         local hyphen = copy_node(tmp)
-        setfield(hyphen,"char",languages.prehyphenchar(getfield(tmp,"lang")))
-        setfield(tmp,"next",hyphen)
-        setfield(hyphen,"prev",tmp)
+        setchar(hyphen,languages.prehyphenchar(getfield(tmp,"lang")))
+        setlink(tmp,hyphen)
         setfield(start,"post",tmp)
         insert_break(head,start,10000,10000)
     end
@@ -124,7 +130,8 @@ methods[2] = function(head,start) -- ( => (-
 end
 
 methods[3] = function(head,start) -- ) => -)
-    if getprev(start) and getnext(start) then
+    local p, n = getboth(start)
+    if p and n then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
@@ -133,9 +140,8 @@ methods[3] = function(head,start) -- ) => -)
         setfield(start,"replace",tmp)
         local tmp = copy_node(tmp)
         local hyphen = copy_node(tmp)
-        setfield(hyphen,"char",languages.prehyphenchar(getfield(tmp,"lang")))
-        setfield(tmp,"prev",hyphen)
-        setfield(hyphen,"next",tmp)
+        setchar(hyphen,languages.prehyphenchar(getfield(tmp,"lang")))
+        setlink(hyphen,tmp)
         setfield(start,"pre",hyphen)
         insert_break(head,start,10000,10000)
     end
@@ -143,22 +149,22 @@ methods[3] = function(head,start) -- ) => -)
 end
 
 methods[4] = function(head,start) -- - => - - -
-    if getprev(start) and getnext(start) then
+    local p, n = getboth(start)
+    if p and n then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
      -- setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
         setfield(start,"attr",getfield(tmp,"attr"))
-        setfield(start,"pre",copy_node(tmp))
-        setfield(start,"post",copy_node(tmp))
-        setfield(start,"replace",tmp)
+        setdisc(start,copy_node(tmp),copy_node(tmp),tmp)
         insert_break(head,start,10000,10000)
     end
     return head, start
 end
 
 methods[5] = function(head,start,settings) -- x => p q r
-    if getprev(start) and getnext(start) then
+    local p, n = getboth(start)
+    if p and n then
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
@@ -168,14 +174,15 @@ methods[5] = function(head,start,settings) -- x => p q r
         local right = settings.right
         local middle = settings.middle
         if left then
-            setfield(start,"pre",(tonodes(tostring(left),font,attr))) -- was right
+             left = tonodes(tostring(left),font,attr)
         end
         if right then
-            setfield(start,"post",(tonodes(tostring(right),font,attr))) -- was left
+             right = tonodes(tostring(right),font,attr)
         end
         if middle then
-            setfield(start,"replace",(tonodes(tostring(middle),font,attr)))
+            middle = tonodes(tostring(middle),font,attr)
         end
+        setdisc(start,left,right,middle)
      -- setfield(start,"attr",copy_nodelist(attr)) -- todo: critical only -- just a copy will do
         setfield(start,"attr",attr) -- todo: critical only -- just a copy will do
         free_node(tmp)

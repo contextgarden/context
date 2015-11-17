@@ -58,10 +58,12 @@ local getid              = nuts.getid
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getattr            = nuts.getattr
 local getprop            = nuts.getprop
+
+local setfield           = nuts.setfield
 local setprop            = nuts.setprop
+local setchar            = nuts.setchar
 
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
@@ -205,10 +207,10 @@ local function process(start)
                                 local class = charclasses[character]
                                 if class == "open" then
                                     if nextisright(current) then
-                                        setfield(current,"char",mirror)
+                                        setchar(current,mirror)
                                         setprop(current,"direction","r")
                                     elseif autodir < 0 then
-                                        setfield(current,"char",mirror)
+                                        setchar(current,mirror)
                                         setprop(current,"direction","r")
                                     else
                                         mirror = false
@@ -220,14 +222,14 @@ local function process(start)
                                     local fencedir = fences[#fences]
                                     fences[#fences] = nil
                                     if fencedir < 0 then
-                                        setfield(current,"char",mirror)
+                                        setchard(current,mirror)
                                         setprop(current,"direction","r")
                                     else
                                         setprop(current,"direction","l")
                                         mirror = false
                                     end
                                 elseif autodir < 0 then
-                                    setfield(current,"char",mirror)
+                                    setchar(current,mirror)
                                     setprop(current,"direction","r")
                                 else
                                     setprop(current,"direction","l")

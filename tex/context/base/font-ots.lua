@@ -155,22 +155,24 @@ local getfield           = nuts.getfield
 local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
+local getboth            = nuts.getboth
 local getid              = nuts.getid
 local getattr            = nuts.getattr
-local setattr            = nuts.setattr
 local getprop            = nuts.getprop
-local setprop            = nuts.setprop
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
-
 local getdisc            = nuts.getdisc
+
+local setattr            = nuts.setattr
+local setprop            = nuts.setprop
 local setdisc            = nuts.setdisc
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
 local setlink            = nuts.setlink
 local setboth            = nuts.setboth
-local getboth            = nuts.getboth
+local setchar            = nuts.setchar
+
 local ischar             = nuts.is_char
 
 local insert_node_before = nuts.insert_before
@@ -513,7 +515,7 @@ local function markstoligature(head,start,stop,char)
             head = base
         end
         resetinjection(base)
-        setfield(base,"char",char)
+        setchar(base,char)
         setfield(base,"subtype",ligature_code)
         setfield(base,"components",start)
         setlink(prev,base)
@@ -556,7 +558,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
     end
     if start == stop and getchar(start) == char then
         resetinjection(start)
-        setfield(start,"char",char)
+        setchar(start,char)
         return head, start
     end
     -- needs testing (side effects):
@@ -576,7 +578,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
         head = base
     end
     resetinjection(base)
-    setfield(base,"char",char)
+    setchar(base,char)
     setfield(base,"subtype",ligature_code)
     setfield(base,"components",comp) -- start can have components .. do we need to flush?
     if prev then
@@ -666,7 +668,7 @@ local function multiple_glyphs(head,start,multiple,ignoremarks)
     local nofmultiples = #multiple
     if nofmultiples > 0 then
         resetinjection(start)
-        setfield(start,"char",multiple[1])
+        setchar(start,multiple[1])
         if nofmultiples > 1 then
             local sn = getnext(start)
             for k=2,nofmultiples do -- todo: use insert_node
@@ -677,7 +679,7 @@ local function multiple_glyphs(head,start,multiple,ignoremarks)
 -- end
                 local n = copy_node(start) -- ignore components
                 resetinjection(n)
-                setfield(n,"char",multiple[k])
+                setchar(n,multiple[k])
                 setboth(n,start,sn)
                 if sn then
                     setprev(sn,n)
@@ -739,7 +741,7 @@ function handlers.gsub_single(head,start,dataset,sequence,replacement)
         logprocess("%s: replacing %s by single %s",pref(dataset,sequence),gref(getchar(start)),gref(replacement))
     end
     resetinjection(start)
-    setfield(start,"char",replacement)
+    setchar(start,replacement)
     return head, start, true
 end
 
@@ -753,7 +755,7 @@ function handlers.gsub_alternate(head,start,dataset,sequence,alternative)
             logprocess("%s: replacing %s by alternative %a to %s, %s",pref(dataset,sequence),gref(getchar(start)),gref(choice),comment)
         end
         resetinjection(start)
-        setfield(start,"char",choice)
+        setchar(start,choice)
     else
         if trace_alternatives then
             logwarning("%s: no variant %a for %s, %s",pref(dataset,sequence),value,gref(getchar(start)),comment)
@@ -853,7 +855,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
             else
                 -- weird but happens (in some arabic font)
                 resetinjection(start)
-                setfield(start,"char",lig)
+                setchar(start,lig)
                 if trace_ligatures then
                     logprocess("%s: replacing %s by (no real) ligature %s case 3",pref(dataset,sequence),gref(startchar),gref(lig))
                 end
@@ -1165,7 +1167,7 @@ function chainprocs.reversesub(head,start,stop,dataset,sequence,replacements,rlm
             logprocess("%s: single reverse replacement of %s by %s",cref(dataset,sequence),gref(char),gref(replacement))
         end
         resetinjection(start)
-        setfield(start,"char",replacement)
+        setchar(start,replacement)
         return head, start, true
     else
         return head, start, false
@@ -1250,7 +1252,7 @@ function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,c
                     logprocess("%s: replacing single %s by %s",cref(dataset,sequence,chainindex),gref(currentchar),gref(replacement))
                 end
                 resetinjection(current)
-                setfield(current,"char",replacement)
+                setchar(current,replacement)
             end
             return head, start, true
         elseif current == stop then
@@ -1320,7 +1322,7 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
                         logprocess("%s: replacing %s by alternative %a to %s, %s",cref(dataset,sequence),gref(char),choice,gref(choice),comment)
                     end
                     resetinjection(start)
-                    setfield(start,"char",choice)
+                    setchar(start,choice)
                 else
                     if trace_alternatives then
                         logwarning("%s: no variant %a for %s, %s",cref(dataset,sequence),value,gref(char),comment)

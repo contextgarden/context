@@ -837,6 +837,10 @@
 
 \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
 
+% \unexpanded\def\strut
+%   {\relax
+%    \ifmmode\copy\else\dontleavehmode\unhcopy\fi\strutbox}
+
 \let\normalstrut\strut
 
 % The double \hbox construction enables us to \backtrack
@@ -1001,6 +1005,10 @@
   {\relax
    \dontleavehmode
    \copy\strutbox}
+
+% \unexpanded\def\strut % slightly faster
+%   {\relax
+%    \ifmmode\copy\else\dontleavehmode\unhcopy\fi\strutbox}
 
 \let\normalstrut\strut
 

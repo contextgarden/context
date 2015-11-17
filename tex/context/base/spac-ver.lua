@@ -88,6 +88,7 @@ local ntostring           = nuts.tostring
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
 local getnext             = nuts.getnext
+local setlink             = nuts.setlink
 local getprev             = nuts.getprev
 local getid               = nuts.getid
 local getlist             = nuts.getlist
@@ -1041,9 +1042,6 @@ local function check_experimental_overlay(head,current)
     local p = nil
     local c = current
     local n = nil
-
- -- setfield(head,"prev",nil) -- till we have 0.79 **
-
     local function overlay(p,n,mvl)
         local p_ht  = getfield(p,"height")
         local p_dp  = getfield(p,"depth")
@@ -1689,8 +1687,7 @@ function vspacing.pagehandler(newhead,where)
         if flush then
             if stackhead then
                 if trace_collect_vspacing then report("appending %s nodes to stack (final): %s",newhead) end
-                setfield(stacktail,"next",newhead)
-                setfield(newhead,"prev",stacktail)
+                setlink(stacktail,newhead)
                 newhead = stackhead
                 stackhead, stacktail = nil, nil
             end
@@ -1707,8 +1704,7 @@ function vspacing.pagehandler(newhead,where)
         else
             if stackhead then
                 if trace_collect_vspacing then report("appending %s nodes to stack (intermediate): %s",newhead) end
-                setfield(stacktail,"next",newhead)
-                setfield(newhead,"prev",stacktail)
+                setlink(stacktail,newhead)
             else
                 if trace_collect_vspacing then report("storing %s nodes in stack (initial): %s",newhead) end
                 stackhead = newhead

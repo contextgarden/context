@@ -77,9 +77,11 @@ local getid               = nuts.getid
 local getsubtype          = nuts.getsubtype
 local getlist             = nuts.getlist
 local getfield            = nuts.getfield
-local setfield            = nuts.setfield
 local getprop             = nuts.getprop
+
+local setfield            = nuts.setfield
 local setprop             = nuts.setprop
+local setchar             = nuts.setchar
 
 local remove_node         = nuts.remove
 local copy_node           = nuts.copy
@@ -740,7 +742,7 @@ local function apply_to_list(list,size,head,pardir)
         if id == glyph_code then
             local mirror = entry.mirror
             if mirror then
-                setfield(current,"char",mirror)
+                setchar(current,mirror)
             end
             if trace_directions then
                 local direction = entry.direction

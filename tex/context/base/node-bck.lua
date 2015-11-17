@@ -28,18 +28,19 @@ local tonode            = nuts.tonode
 local tonut             = nuts.tonut
 
 local getfield          = nuts.getfield
-local setfield          = nuts.setfield
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getid             = nuts.getid
 local getlist           = nuts.getlist
 local getattr           = nuts.getattr
-local setattr           = nuts.setattr
 local getsubtype        = nuts.getsubtype
+
+local setfield          = nuts.setfield
+local setattr           = nuts.setattr
+local setlink           = nuts.setlink
 
 local traverse          = nuts.traverse
 local traverse_id       = nuts.traverse_id
-
 
 local new_rule          = nodepool.rule
 local new_glue          = nodepool.glue
@@ -85,11 +86,9 @@ local function add_backgrounds(head) -- rather old code .. to be redone
                         if transparency then
                             setattr(rule,a_transparency,transparency)
                         end
-                        setfield(rule,"next",glue)
-                        setfield(glue,"prev",rule)
+                        setlink(rule,glue)
                         if list then
-                            setfield(glue,"next",list)
-                            setfield(list,"prev",glue)
+                            setlink(glue,list)
                         end
                         setfield(current,"list",rule)
                     end
@@ -146,11 +145,9 @@ local function add_alignbackgrounds(head)
                             if transparency then
                                 setattr(rule,a_transparency,transparency)
                             end
-                            setfield(rule,"next",glue)
-                            setfield(glue,"prev",rule)
+                            setlink(rule,glue)
                             if list then
-                                setfield(glue,"next",list)
-                                setfield(list,"prev",glue)
+                                setlink(glue,list)
                             end
                             setfield(current,"list",rule)
                         end

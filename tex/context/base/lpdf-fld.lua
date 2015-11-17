@@ -693,6 +693,12 @@ function codeinjections.setfieldcalculationset(tag)
     calculationset = tag
 end
 
+interfaces.implement {
+    name      = "setfieldcalculationset",
+    actions   = codeinjections.setfieldcalculationset,
+    arguments = "string",
+}
+
 local function predefinesymbols(specification)
     local values = specification.values
     if values then

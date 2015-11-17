@@ -68,6 +68,7 @@ local getfield                = nuts.getfield
 local getbox                  = nuts.getbox
 
 local setfield                = nuts.setfield
+local setlink                 = nuts.setlink
 
 local copy_node_list          = nuts.copy_list
 local hpack_node_list         = nuts.hpack
@@ -829,8 +830,7 @@ function xtables.construct()
                 list = h
                 --
                 if start then
-                    setfield(stop,"next",list)
-                    setfield(list,"prev",stop)
+                    setlink(stop,list)
                 else
                     start = list
                 end
@@ -842,8 +842,7 @@ function xtables.construct()
             end
             local kern = new_kern(step)
             if stop then
-                setfield(stop,"next",kern)
-                setfield(kern,"prev",stop)
+                setlink(stop,kern)
             else -- can be first spanning next row (ny=...)
                 start = kern
             end
@@ -852,8 +851,7 @@ function xtables.construct()
         if start then
             if rightmargindistance > 0 then
                 local kern = new_kern(rightmargindistance)
-                setfield(stop,"next",kern)
-                setfield(kern,"prev",stop)
+                setlink(stop,kern)
              -- stop = kern
             end
             return start, heights[r] + depths[r], hasspan

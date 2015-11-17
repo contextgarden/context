@@ -63,6 +63,7 @@ local scan_keyword = newtoken.scan_keyword
 local scan_token   = newtoken.scan_token
 local scan_word    = newtoken.scan_word
 local scan_number  = newtoken.scan_number
+local scan_csname  = newtoken.scan_csname
 
 local get_next     = newtoken.get_next
 
@@ -200,8 +201,18 @@ local function scan_boolean()
     end
 end
 
+if not scan_csname then
+
+    scan_csname = function()
+        local t = get_next()
+        local n = t.csname
+        return n ~= "" and n or nil
+    end
+
+end
+
 tokens.scanners = { -- these expand
-    token     = scan_token or get_next,
+    token     = scan_token,
     toks      = scan_toks,
     tokens    = scan_toks,
     dimen     = scan_dimen,
@@ -216,12 +227,17 @@ tokens.scanners = { -- these expand
     number    = scan_number,
     boolean   = scan_boolean,
     keyword   = scan_keyword,
+    csname    = scan_csname,
 }
 
 tokens.getters = { -- these don't expand
     token = get_next,
     count = tex.getcount,
     dimen = tex.getdimen,
+    skip  = tex.getglue,
+    glue  = tex.getglue,
+    skip  = tex.getmuglue,
+    glue  = tex.getmuglue,
     box   = tex.getbox,
 }
 
@@ -229,6 +245,10 @@ tokens.setters = {
     macro = set_macro,
     count = tex.setcount,
     dimen = tex.setdimen,
+    skip  = tex.setglue,
+    glue  = tex.setglue,
+    skip  = tex.setmuglue,
+    glue  = tex.setmuglue,
     box   = tex.setbox,
 }
 

@@ -378,6 +378,8 @@ local d_insert_before   = direct.insert_before
 local d_slide           = direct.slide
 local d_copy_node       = direct.copy
 local d_traverse        = direct.traverse
+local d_setlink         = direct.setlink
+local d_setboth         = direct.setboth
 
 local function remove(head,current,free_too)
     local t = current
@@ -388,40 +390,12 @@ local function remove(head,current,free_too)
         d_free_node(t)
         t = nil
     else
-        d_setfield(t,"next",nil) -- not that much needed (slows down unless we check the source on this)
-        d_setfield(t,"prev",nil) -- not that much needed (slows down unless we check the source on this)
+        d_setboth(t) -- (t,nil,nil)
     end
     return head, current, t
 end
 
 -- bad: we can have prev's being glue_spec
-
--- local function remove(head,current,free_too) -- d_remove_node does a slide which can fail
---     local prev = d_getprev(current)          -- weird
---     local next = d_getnext(current)
---     if next then
---     -- print("!!!!!!!! prev is gluespec",
---     --     nodes.nodecodes[d_getid(current)],
---     --     nodes.nodecodes[d_getid(next)],
---     --     nodes.nodecodes[d_getid(prev)])
---         d_setfield(prev,"next",next)
---         d_setfield(next,"prev",prev)
---     else
---         d_setfield(prev,"next",nil)
---     end
---     if free_too then
---         d_free_node(current)
---         current = nil
---     else
---         d_setfield(current,"next",nil) -- use this fact !
---         d_setfield(current,"prev",nil) -- use this fact !
---     end
---     if head == current then
---         return next, next, current
---     else
---         return head, next, current
---     end
--- end
 
 nuts.remove = remove
 
@@ -433,15 +407,12 @@ function nuts.replace(head,current,new) -- no head returned if false
     if not new then
         head, current, new = false, head, current
     end
-    local prev = d_getprev(current)
-    local next = d_getnext(current)
+    local prev, next = d_getboth(current)
     if next then
-        d_setfield(new,"next",next)
-        d_setfield(next,"prev",new)
+        d_setlink(new,next)
     end
     if prev then
-        d_setfield(new,"prev",prev)
-        d_setfield(prev,"next",new)
+        d_setlink(new,prev)
     end
     if head then
         if head == current then
@@ -496,8 +467,7 @@ function nuts.linked(...)
         local next = select(i,...)
         if next then
             if head then
-                d_setfield(last,"next",next)
-                d_setfield(next,"prev",last)
+                d_setlink(last,next)
             else
                 head = next
             end
@@ -513,8 +483,7 @@ function nuts.concat(list) -- consider tail instead of slide
         local li = list[i]
         if li then
             if head then
-                d_setfield(tail,"next",li)
-                d_setfield(li,"prev",tail)
+                d_setlink(tail,li)
             else
                 head = li
             end
@@ -553,24 +522,6 @@ function nodes.vianodes(f) return function(n,...) return tonut (f(tonode(n),...)
 
 nuts.vianuts  = nodes.vianuts
 nuts.vianodes = nodes.vianodes
-
--- for k, v in next, nuts do
---     if type(v) == "function" then
---         if not string.find(k,"^[sg]et") and not string.find(k,"^to") then
---             local f = v
---             nuts[k] = function(...) print("d",k,...) return f(...) end
---         end
---     end
--- end
-
--- for k, v in next, nodes do
---     if type(v) == "function" then
---         if not string.find(k,"^[sg]et") and not string.find(k,"^to") then
---             local f = v
---             nodes[k] = function(...) print("n",k,...) return f(...) end
---         end
---     end
--- end
 
 -- function nodes.insert_before(h,c,n)
 --     if c then
@@ -613,6 +564,7 @@ function nodes.insert_list_after(h,c,n)
     if c then
         local cn = n_getnext(c)
         if cn then
+            -- no setboth here yet
             n_setfield(t,"next",cn)
             n_setfield(cn,"prev",t)
         else
@@ -628,17 +580,17 @@ end
 -- function nuts.insert_before(h,c,n)
 --     if c then
 --         if c == h then
---             d_setfield(n,"next",h)
---             d_setfield(n,"prev",nil)
---             d_setfield(h,"prev",n)
+--             d_setnext(n,h)
+--             d_setprev(n)
+--             d_setprev(h,n)
 --         else
 --             local cp = d_getprev(c)
---             d_setfield(n,"next",c)
---             d_setfield(n,"prev",cp)
+--             d_setnext(n,c)
+--             d_setprev(n,cp)
 --             if cp then
---                 d_setfield(cp,"next",n)
+--                 d_setnext(cp,n)
 --             end
---             d_setfield(c,"prev",n)
+--             d_setprev(c,n)
 --             return h, n
 --         end
 --     end
@@ -649,13 +601,11 @@ end
 --     if c then
 --         local cn = d_getnext(c)
 --         if cn then
---             d_setfield(n,"next",cn)
---             d_setfield(cn,"prev",n)
+--             d_setlink(n,cn)
 --         else
---             d_setfield(n,"next",nil)
+--             d_setnext(n,nil)
 --         end
---         d_setfield(c,"next",n)
---         d_setfield(n,"prev",c)
+--         d_setlink(c,n)
 --         return h, n
 --     end
 --     return n, n
@@ -666,13 +616,11 @@ function nuts.insert_list_after(h,c,n)
     if c then
         local cn = d_getnext(c)
         if cn then
-            d_setfield(t,"next",cn)
-            d_setfield(cn,"prev",t)
+            d_setlink(t,cn)
         else
-            d_setfield(t,"next",nil)
+            d_setnext(t)
         end
-        d_setfield(c,"next",n)
-        d_setfield(n,"prev",c)
+        d_setlink(c,n)
         return h, n
     end
     return n, t

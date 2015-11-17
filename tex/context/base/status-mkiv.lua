@@ -3574,6 +3574,11 @@ return {
   },
   {
    category = "lua",
+   filename = "lpdf-res",
+   status   = "todo",
+  },
+  {
+   category = "lua",
    filename = "lpdf-col",
    status   = "todo",
   },

@@ -63,7 +63,9 @@ local getattr             = nuts.getattr
 local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getlist             = nuts.getlist
+
 local setfield            = nuts.setfield
+local setlink             = nuts.setlink
 
 local traverse_nodes      = nuts.traverse
 local tosequence          = nuts.tosequence
@@ -423,11 +425,9 @@ function nodeinjections.addtags(head)
         if literal then
             local prev = getprev(start)
             if prev then
-                setfield(prev,"next",literal)
-                setfield(literal,"prev",prev)
+                setlink(prev,literal)
             end
-            setfield(start,"prev",literal)
-            setfield(literal,"next",start)
+            setlink(literal,start)
             if list and getlist(list) == start then
                 setfield(list,"list",literal)
             end
@@ -435,11 +435,9 @@ function nodeinjections.addtags(head)
             local literal = pdfliteral("EMC")
             local next    = getnext(stop)
             if next then
-                setfield(next,"prev",literal)
-                setfield(literal,"next",next)
+                setlink(literal,next)
             end
-            setfield(stop,"next",literal)
-            setfield(literal,"prev",stop)
+            setlink(stop,literal)
         end
         top    = taglist
         noftop = noftags
@@ -570,11 +568,9 @@ end
 --             local literal = pdfliteral(result)
 --             local prev = getprev(start)
 --             if prev then
---                 setfield(prev,"next",literal)
---                 setfield(literal,"prev",prev)
+--                 setlink(prev,literal)
 --             end
---             setfield(start,"prev",literal)
---             setfield(literal,"next",start)
+--             setlink(literal,start)
 --             if list and getlist(list) == start then
 --                 setfield(list,"list",literal)
 --             end
@@ -595,11 +591,9 @@ end
 --         -- use insert instead:
 --         local next = getnext(last)
 --         if next then
---             setfield(next,"prev",literal)
---             setfield(literal,"next",next)
+--             setlink(literal,next)
 --         end
---         setfield(last,"next",literal)
---         setfield(literal,"prev",last)
+--         setlink(last,literal)
 --     end
 --
 --     finishpage()

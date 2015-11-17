@@ -28,6 +28,7 @@ local scanword       = scanners.word
 local scancode       = scanners.code
 local scanboolean    = scanners.boolean
 local scandimen      = scanners.dimen
+local scancsname     = scanners.csname
 
 local todimen        = number.todimen
 local toboolean      = toboolean
@@ -125,6 +126,7 @@ local shortcuts = {
     scanopen        = scanopen,
     scanclose       = scanclose,
     scanlist        = scanlist,
+    scancsname      = scancsname,
     todimen         = todimen,
     tonumber        = tonumber,
     tostring        = tostring,

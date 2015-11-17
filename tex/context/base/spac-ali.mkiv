@@ -725,7 +725,7 @@
 
 % Box commands.
 
-\unexpanded\def\ibox#1#2#3%
+\unexpanded\def\ibox
   {\vbox\bgroup
      \forgetall
      \let\\=\endgraf
@@ -733,7 +733,7 @@
      \doifelserightpage\spac_align_set_horizontal_right\spac_align_set_horizontal_left
      \let\next}
 
-\unexpanded\def\obox#1#2#3%
+\unexpanded\def\obox
   {\vbox\bgroup
      \forgetall
      \let\\=\endgraf

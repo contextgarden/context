@@ -266,6 +266,7 @@
      \dostoptagged
    \fi
    \ifdone
+     \edef\p_anchor{\margindataparameter\c!anchor}%
      \anch_positions_initialize % we use positions at the lua end
      \clf_savemargindata
        location    {\margindataparameter\c!location}%
@@ -288,7 +289,7 @@
      \ifhmode
        inline      true %
      \fi
-       anchor      {\margindataparameter\c!anchor}%
+       anchor      {\p_anchor\ifx\p_anchor\v!region:0\fi}% kind of a hack to force column anchoring (for now)
    %
    % we're not in forgetall
    %

@@ -31,8 +31,10 @@ local getnext            = nuts.getnext
 local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getlist            = nuts.getlist
-local setfield           = nuts.setfield
 local getattr            = nuts.getattr
+
+local setfield           = nuts.setfield
+local setchar            = nuts.setchar
 
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
@@ -94,7 +96,7 @@ local function processmath(head)
                     if mirror then
                         local class = charclasses[char]
                         if class == "open" or class == "close" then
-                            setfield(current,"char",mirror)
+                            setchar(current,mirror)
                             if trace_directions then
                                 report_directions("mirrored: %C to %C",char,mirror)
                             end

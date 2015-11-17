@@ -19,6 +19,7 @@
 \registerctxluafile{lpdf-col}{1.000}
 \registerctxluafile{lpdf-xmp}{1.001}
 \registerctxluafile{lpdf-ano}{1.001}
+\registerctxluafile{lpdf-res}{1.001}
 \registerctxluafile{lpdf-mis}{1.001}
 \registerctxluafile{lpdf-ren}{1.001}
 \registerctxluafile{lpdf-grp}{1.001}
@@ -221,53 +222,12 @@
 \unexpanded\def\dostopclipping
   {\pdfliteral{Q}}
 
-%D The following will move to the backend \LUA\ code:
-
-%appendtoks \ctxlua{backends.codeinjections.finalizepage    ()}\to \everybackendshipout       % is immediate
-%appendtoks \ctxlua{backends.codeinjections.finalizedocument()}\to \everylastbackendshipout   % is immediate
-
 %D Temporary hack, will be removed or improved or default.
-
-%def\TransparencyHack{\ctxlua{backends.codeinjections.addtransparencygroup()}}
-\def\TransparencyHack{\setupcolors[\c!pagecolormodel=\v!auto]}
-
-%D \macros
-%D  {dostartobject,dostopobject,doinsertobject}
-
-%D This will change:
-
-\newbox\objectbox
-
-\unexpanded\def\dostartobject#1#2#3#4#5% needs to be \unexpanded
-  {\bgroup
-   \setbox\objectbox\vbox\bgroup
-   \def\back_object_stop{\egroup\back_object_register{#1}{#2}}}
-
-\unexpanded\def\dostopobject % needs to be \unexpanded
-  {\back_object_stop
-   \egroup}
-
-\let\back_object_stop\relax
 
 % attr {/Group << /S /Transparency /I false /K true >>}
 
-% this will become lua code
-
-\def\back_object_register#1#2%
-  {\the\pdfbackendeveryxform
-   \finalizeobjectbox\objectbox
-   \immediate\saveboxresource resources {\pdfbackendcurrentresources}\objectbox
-   \dosetobjectreference{#1}{#2}\lastsavedboxresourceindex}
-
-\let\m_back_object_reference\empty
-
-\unexpanded\def\doinsertobject#1#2%
-  {\begingroup
-   \doifelseobjectreferencefound{#1}{#2}
-     {\dogetobjectreference{#1}{#2}\m_back_object_reference
-      \useboxresource\m_back_object_reference}%
-     \donothing
-   \endgroup}
+%def\TransparencyHack{\ctxlua{backends.codeinjections.addtransparencygroup()}}
+\def\TransparencyHack{\setupcolors[\c!pagecolormodel=\v!auto]}
 
 \let\lastpredefinedsymbol\empty % some day we can do more at the lua end
 
@@ -279,7 +239,7 @@
    \clf_registerbackendsymbol{#1}\m_back_object_reference\relax
    \endgroup}
 
-% for the moment here
+% Still here:
 
 %D \macros
 %D  {back_ovalbox}

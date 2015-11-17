@@ -34,7 +34,8 @@ local getid              = nuts.getid
 local getattr            = nuts.getattr
 local getsubtype         = nuts.getsubtype
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
+
+local setchar            = nuts.setchar
 
 local nodepool           = nuts.pool
 local new_glue           = nodepool.glue
@@ -514,13 +515,13 @@ function scripts.decomposehangul(head)
     for current in traverse_id(glyph_code,head) do
         local lead_consonant, medial_vowel, tail_consonant = decomposed(getchar(current))
         if lead_consonant then
-            setfield(current,"char",lead_consonant)
+            setchar(current,lead_consonant)
             local m = copy_node(current)
-            setfield(m,"char",medial_vowel)
+            setchar(m,medial_vowel)
             head, current = insert_node_after(head,current,m)
             if tail_consonant then
                 local t = copy_node(current)
-                setfield(t,"char",tail_consonant)
+                setchar(t,tail_consonant)
                 head, current = insert_node_after(head,current,t)
             end
             done = true

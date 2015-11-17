@@ -42,10 +42,11 @@ local getid                = nuts.getid
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
 local getfield             = nuts.getfield
-local setfield             = nuts.setfield
-
 local getattr              = nuts.getattr
+
+local setfield             = nuts.setfield
 local setattr              = nuts.setattr
+local setchar              = nuts.setchar
 
 local insert_node_before   = nuts.insert_before
 local insert_node_after    = nuts.insert_after
@@ -228,7 +229,7 @@ function characteralign.handler(originalhead,where)
                                         setcolor(sign,"darkyellow")
                                     end
                                 else
-                                    setfield(sign,"char",new)
+                                    setchar(sign,new)
                                     if trace_split then
                                         setcolor(sign,"darkmagenta")
                                     end

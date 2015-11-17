@@ -19,9 +19,13 @@ local fastcopy = table.fastcopy
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
+
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
+
 local setfield           = nuts.setfield
+local setchar            = nuts.setchar
+
 local traverse_id        = nuts.traverse_id
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
@@ -269,7 +273,7 @@ function collections.process(head) -- this way we keep feature processing
                     )
                 end
                 setfield(n,"font",newfont)
-                setfield(n,"char",newchar)
+                setchar(n,newchar)
                 done = true
             else
                 if trace_collecting then

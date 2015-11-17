@@ -30,16 +30,19 @@ local insert_node_after  = nuts.insert_after
 local end_of_math        = nuts.end_of_math
 
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
+local getboth            = nuts.getboth
 local getid              = nuts.getid
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
 local getdisc            = nuts.getdisc
+
+local setfield           = nuts.setfield
+local getattr            = nuts.getattr
+local setattr            = nuts.setattr
+local setlink            = nuts.setlink
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
@@ -242,8 +245,7 @@ local function inject_begin(boundary,prev,keeptogether,krn,ok) -- prev is a glyp
                 local chartwo = getchar(boundary)
                 local kerns   = chardata[font][charone].kerns
                 local kern    = new_kern((kerns and kerns[chartwo] or 0) + quaddata[font]*krn)
-                setfield(boundary,"prev",kern)
-                setfield(kern,"next",boundary)
+                setlink(kern,boundary)
                 return kern, true
             end
         end
@@ -402,17 +404,14 @@ function kerns.handler(head)
                     while c do
                         local s = start
                         local t = find_node_tail(c)
-                        local p = getprev(s)
-                        local n = getnext(s)
+                        local p, n = getboth(s)
                         if p then
-                            setfield(p,"next",c)
-                            setfield(c,"prev",p)
+                            setlink(p,c)
                         else
                             head = c
                         end
                         if n then
-                            setfield(n,"prev",t)
-                            setfield(t,"next",n)
+                            setlink(t,n)
                         end
                         start = c
                         setfield(s,"components",nil)

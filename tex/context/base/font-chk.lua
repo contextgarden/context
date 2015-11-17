@@ -56,7 +56,9 @@ local tonode             = nuts.tonode
 
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
+
 local setfield           = nuts.setfield
+local setchar            = nuts.setchar
 
 local traverse_id        = nuts.traverse_id
 local remove_node        = nuts.remove
@@ -287,7 +289,7 @@ function checkers.missing(head)
                 insert_node_after(head,node,tonut(char))
                 head = remove_node(head,node,true)
             elseif kind == "char" then
-                setfield(node,"char",char)
+                setchar(node,char)
             else
                 -- error
             end

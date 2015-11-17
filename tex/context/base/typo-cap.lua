@@ -22,16 +22,18 @@ local tonode          = nuts.tonode
 local tonut           = nuts.tonut
 
 local getfield        = nuts.getfield
-local setfield        = nuts.setfield
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
 local getid           = nuts.getid
 local getattr         = nuts.getattr
-local setattr         = nuts.setattr
 local getfont         = nuts.getfont
 local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
 local getdisc         = nuts.getdisc
+
+local setfield        = nuts.setfield
+local setattr         = nuts.setattr
+local setchar         = nuts.setchar
 
 local copy_node       = nuts.copy
 local end_of_math     = nuts.end_of_math
@@ -137,16 +139,16 @@ local function replacer(start,codes)
             for i=#dc,1,-1 do
                 local chr = dc[i]
                 if i == 1 then
-                    setfield(start,"char",chr)
+                    setchar(start,chr)
                 else
                     local g = copy_node(start)
-                    setfield(g,"char",chr)
+                    setchar(g,chr)
                     insert_after(start,start,g)
                 end
             end
             return start, true
         elseif ifc[dc] then
-            setfield(start,"char",dc)
+            setchar(start,dc)
             return start, true
         end
     end
@@ -305,7 +307,7 @@ local function random(start,attr,lastfont,n,count,where,first)
         while true do
             local n = randomnumber(0x41,0x5A)
             if tfm[n] then -- this also intercepts tables
-                setfield(used,"char",n)
+                setchar(used,n)
                 return start, true
             end
         end
@@ -313,7 +315,7 @@ local function random(start,attr,lastfont,n,count,where,first)
         while true do
             local n = randomnumber(0x61,0x7A)
             if tfm[n] then -- this also intercepts tables
-                setfield(used,"char",n)
+                setchar(used,n)
                 return start, true
             end
         end

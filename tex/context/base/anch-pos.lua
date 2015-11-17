@@ -55,6 +55,7 @@ local nuts              = nodes.nuts
 
 local getfield          = nuts.getfield
 local setfield          = nuts.setfield
+local setlink           = nuts.setlink
 local getlist           = nuts.getlist
 local getbox            = nuts.getbox
 local getskip           = nuts.getskip
@@ -444,13 +445,10 @@ local function markregionbox(n,tag,correct)
     local head = getlist(box)
     if head then
         local tail = find_tail(head)
-        setfield(head,"prev",push)
-        setfield(push,"next",head)
-        setfield(pop,"prev",tail)
-        setfield(tail,"next",pop)
+        setlink(push,head)
+        setlink(tail,pop)
     else -- we can have a simple push/pop
-        setfield(push,"next",pop)
-        setfield(pop,"prev",push)
+        setlink(push,pop)
     end
     setfield(box,"list",push)
 end

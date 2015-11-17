@@ -19,6 +19,9 @@ local tonut        = nuts.tonut
 
 local getfield     = nuts.getfield
 local setfield     = nuts.setfield
+local setnext      = nuts.setnext
+local setprev      = nuts.setprev
+local setlink      = nuts.setlink
 local getnext      = nuts.getnext
 local getprev      = nuts.getprev
 local getid        = nuts.getid
@@ -387,20 +390,18 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     end
     local prev = getprev(first)
     local next = getnext(last)
-    setfield(first,"prev",nil)
-    setfield(last,"next",nil)
+    setprev(first)
+    setnext(last)
     local width, height, depth = list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),first,next)
     local list = hpack_nodes(first,width,"exactly")
     if first == head then
         head = list
     end
     if prev then
-       setfield(prev,"next",list)
-       setfield(list,"prev",prev)
+       setlink(prev,list)
     end
     if next then
-        setfield(next,"prev",list)
-        setfield(list,"next",next)
+        setlink(next,list)
     end
     local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
     setfield(list,"shift",raise)

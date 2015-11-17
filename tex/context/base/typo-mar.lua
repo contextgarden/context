@@ -422,7 +422,7 @@ local function realign(current,candidate)
     local rightdistance = distance
     --
     if not anchor or anchor == "" then
-        anchor = v_text
+        anchor = v_text -- this has to become more clever: region:0|column:n|column
     end
     if margin == v_normal then
         --

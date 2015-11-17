@@ -89,7 +89,7 @@
    \dontleavehmode \hbox \bgroup
      \dontcomplain
      \setbox\b_scrn_help_box\hbox{\strut#text}%
-     \doregisterhelp{#target}%
+     \scrn_help_register{#target}%
    \egroup % can be usernode instead
    \goto
      {\helpsignal{\number\c_scrn_help_n}#target}%

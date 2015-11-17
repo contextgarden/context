@@ -45,8 +45,7 @@ local taketexbox        = tex.takebox
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
 local tonode            = nuts.tonode
-local setfield          = nuts.setfield
-local setattr           = nuts.setattr
+
 local getfield          = nuts.getfield
 local getattr           = nuts.getattr
 local getid             = nuts.getid
@@ -55,6 +54,10 @@ local getprev           = nuts.getprev
 local getsubtype        = nuts.getsubtype
 local getlist           = nuts.getlist
 local gettexbox         = nuts.getbox
+
+local setfield          = nuts.setfield
+local setlink           = nuts.setlink
+local setattr           = nuts.setattr
 
 local theprop           = nuts.theprop
 
@@ -356,8 +359,7 @@ local function addprofile(node,profile,step)
             settransparency(what,visual)
         end
         if tail then
-            setfield(tail,"next",what)
-            setfield(what,"prev",tail)
+            setlink(tail,what)
         else
             head = what
         end
@@ -395,15 +397,13 @@ local function addprofile(node,profile,step)
  --         formatters["%0.4f"](getfield(rule,"depth") /65536)
  --     )
  --
- --     setfield(text,"next",rule)
- --     setfield(rule,"prev",text)
+ --     setlink(text,rule)
  --
  --     rule = text
  --
  -- end
 
-    setfield(rule,"next",list)
-    setfield(list,"prev",rule)
+    setlink(rule,list)
     setfield(line,"list",rule)
 
 end
@@ -466,10 +466,8 @@ local function inject(top,bot,amount) -- todo: look at penalties
     setattr(glue,a_profilemethod,0)
     setattr(glue,a_visual,getattr(top,a_visual))
     --
-    setfield(bot,"prev",glue)
-    setfield(glue,"next",bot)
-    setfield(glue,"prev",top)
-    setfield(top,"next",glue)
+    setlink(glue,bot)
+    setlink(top,glue)
 end
 
 methods[v_none] = function()
