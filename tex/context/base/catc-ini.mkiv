@@ -279,9 +279,9 @@
    \fi}
 
 \normalprotected\def\syst_catcodes_trace_nesting_error
-  {\immediate\write16{}%
-   \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this! (restore level: \number\c_syst_catcodes_level)}\wait\end
-   \immediate\write16{}}
+  {\immediate\write\statuswrite{}%
+   \immediate\write\statuswrite{Fatal error: catcode push/pop mismatch. Fix this! (restore level: \number\c_syst_catcodes_level)}\wait\end
+   \immediate\write\statuswrite{}}
 
 \normalprotected\def\restorecatcodes % takes previous level
   {\ifnum\c_syst_catcodes_level>\plusone
@@ -306,7 +306,7 @@
    \def\syst_catcodes_trace_push{\syst_catcodes_trace{push \catcodetablename\space from \syst_catcodes_prev\space at \number\c_syst_catcodes_level}}%
    \def\syst_catcodes_trace_pop {\syst_catcodes_trace{pop  \catcodetablename\space to   \syst_catcodes_prev\space at \number\c_syst_catcodes_level}}}
 
-\def\syst_catcodes_trace#1{\immediate\write16{[#1]}}
+\def\syst_catcodes_trace#1{\immediate\write\statuswrite{[#1]}}
 
 \def\syst_catcodes_prev
   {\ifnum\numexpr\c_syst_catcodes_level-1\relax>\zerocount

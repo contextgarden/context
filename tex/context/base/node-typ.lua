@@ -118,7 +118,7 @@ typesetters.hpack       = typesetters.tohpack     -- obsolete
 typesetters.fast_hpack  = typesetters.tofasthpack -- obsolete
 typesetters.vpack       = typesetters.tovpack     -- obsolete
 
--- node.write(nodes.typestters.hpack("Hello World!"))
--- node.write(nodes.typestters.hpack("Hello World!",1,100*1024*10))
+-- node.write(nodes.typesetters.hpack("Hello World!"))
+-- node.write(nodes.typesetters.hpack("Hello World!",1,100*1024*10))
 
 string.tonodes = function(...) return tonode(tonodes(...)) end  -- quite convenient

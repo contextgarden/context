@@ -194,18 +194,6 @@ implement {
     actions   = os.execute -- wrapped in sandbox
 }
 
--- function commands.write(n,str)
---     if n == 18 then
---         os.execute(str)
---     elseif n == 16 then
---         -- immediate
---         logs.report(str)
---     else
---         -- at the tex end we can still drop the write / also delayed vs immediate
---         context.writeviatex(n,str)
---     end
--- end
-
 implement {
     name      = "doifelsesame",
     arguments = two_strings,
