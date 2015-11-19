@@ -7959,7 +7959,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 30650, stripped down to: 21273
+-- original size: 30685, stripped down to: 21298
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -8110,7 +8110,7 @@ if tex and (tex.jobname or tex.formatname) then
     write_nl(target,"\n")
   end
   report=function(a,b,c,...)
-    if c then
+    if c~=nil then
       write_nl(target,report_yes(translations[a],formatters[formats[b]](c,...)))
     elseif b then
       write_nl(target,report_yes(translations[a],formats[b]))
@@ -8121,7 +8121,7 @@ if tex and (tex.jobname or tex.formatname) then
     end
   end
   direct=function(a,b,c,...)
-    if c then
+    if c~=nil then
       return direct_yes(translations[a],formatters[formats[b]](c,...))
     elseif b then
       return direct_yes(translations[a],formats[b])
@@ -8132,7 +8132,7 @@ if tex and (tex.jobname or tex.formatname) then
     end
   end
   subreport=function(a,s,b,c,...)
-    if c then
+    if c~=nil then
       write_nl(target,subreport_yes(translations[a],translations[s],formatters[formats[b]](c,...)))
     elseif b then
       write_nl(target,subreport_yes(translations[a],translations[s],formats[b]))
@@ -8143,7 +8143,7 @@ if tex and (tex.jobname or tex.formatname) then
     end
   end
   subdirect=function(a,s,b,c,...)
-    if c then
+    if c~=nil then
       return subdirect_yes(translations[a],translations[s],formatters[formats[b]](c,...))
     elseif b then
       return subdirect_yes(translations[a],translations[s],formats[b])
@@ -8154,7 +8154,7 @@ if tex and (tex.jobname or tex.formatname) then
     end
   end
   status=function(a,b,c,...)
-    if c then
+    if c~=nil then
       write_nl(target,status_yes(translations[a],formatters[formats[b]](c,...)))
     elseif b then
       write_nl(target,status_yes(translations[a],formats[b]))
@@ -18349,8 +18349,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 781865
--- stripped bytes    : 283292
+-- original bytes    : 781900
+-- stripped bytes    : 283302
 
 -- end library merge
 

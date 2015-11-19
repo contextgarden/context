@@ -237,7 +237,7 @@ if tex and (tex.jobname or tex.formatname) then
     end
 
     report = function(a,b,c,...)
-        if c then
+        if c ~= nil then
             write_nl(target,report_yes(translations[a],formatters[formats[b]](c,...)))
         elseif b then
             write_nl(target,report_yes(translations[a],formats[b]))
@@ -249,7 +249,7 @@ if tex and (tex.jobname or tex.formatname) then
     end
 
     direct = function(a,b,c,...)
-        if c then
+        if c ~= nil then
             return direct_yes(translations[a],formatters[formats[b]](c,...))
         elseif b then
             return direct_yes(translations[a],formats[b])
@@ -261,7 +261,7 @@ if tex and (tex.jobname or tex.formatname) then
     end
 
     subreport = function(a,s,b,c,...)
-        if c then
+        if c ~= nil then
             write_nl(target,subreport_yes(translations[a],translations[s],formatters[formats[b]](c,...)))
         elseif b then
             write_nl(target,subreport_yes(translations[a],translations[s],formats[b]))
@@ -273,7 +273,7 @@ if tex and (tex.jobname or tex.formatname) then
     end
 
     subdirect = function(a,s,b,c,...)
-        if c then
+        if c ~= nil then
             return subdirect_yes(translations[a],translations[s],formatters[formats[b]](c,...))
         elseif b then
             return subdirect_yes(translations[a],translations[s],formats[b])
@@ -285,7 +285,7 @@ if tex and (tex.jobname or tex.formatname) then
     end
 
     status = function(a,b,c,...)
-        if c then
+        if c ~= nil then
             write_nl(target,status_yes(translations[a],formatters[formats[b]](c,...)))
         elseif b then
             write_nl(target,status_yes(translations[a],formats[b]))

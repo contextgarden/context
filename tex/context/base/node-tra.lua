@@ -175,7 +175,7 @@ nodes.tosequence = tosequence
 nuts .tosequence = tosequence
 
 function nodes.report(t,done)
-    report_nodes("output %a, %changed %a, %s nodes",status.output_active,done,count_nodes(tonut(t)))
+    report_nodes("output %a, changed %a, %s nodes",status.output_active,done,count_nodes(tonut(t)))
 end
 
 function nodes.packlist(head)
