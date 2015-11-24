@@ -82,7 +82,7 @@ local function special(n)
         elseif id == penalty_code then
             return true
         elseif id == glue_code then
-            local width = getfield(getfield(n,"spec"),"width")
+            local width = getfield(n,"width")
             return width < threshold
         elseif id == hlist_code then
             local width = getfield(n,"width")
@@ -117,7 +117,7 @@ local function mark(head,current,id,color)
     if id == glue_code then
         -- the glue can have stretch and/or shrink so the rule can overlap with the
         -- following glyph .. no big deal as that one then sits on top of the rule
-        local width = getfield(getfield(current,"spec"),"width")
+        local width = getfield(current,"width")
         local rule  = new_rule(width)
         local kern  = new_kern(-width)
         head = insert_before(head,current,rule)

@@ -1078,7 +1078,7 @@
   {\ifcsname\??struts#1\endcsname
      \csname\??struts#1\endcsname
    \else
-     \setcharstrut\m_strut
+     \setcharstrut{#1}%
    \fi}
 
 \unexpanded\def\showstruts % adapts .. is wrong
@@ -1668,6 +1668,7 @@
 \unexpanded\def\setgridbox#1#2#3% maybe ifgridsnapping at outer level
   {\setbox#1\gridboxvbox to #3 % given size
      {\forgetall
+      \resetvisualizers
       \resetteststrut
       \offinterlineskip
       \hsize#2%

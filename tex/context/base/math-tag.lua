@@ -528,8 +528,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     processsubsup(start)
                 end
             elseif id == glue_code then
-             -- local spec = getfield(start,"spec")
-             -- setattr(start,a_tagged,start_tagged("mspace",{ width = getfield(spec,"width") }))
+             -- setattr(start,a_tagged,start_tagged("mspace",{ width = getfield(start,"width") }))
                 setattr(start,a_tagged,start_tagged("mspace"))
                 stop_tagged()
             else

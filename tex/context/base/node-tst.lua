@@ -39,7 +39,7 @@ function nuts.leftmarginwidth(n) -- todo: three values
     while n do
         local id = getid(n)
         if id == glue_code then
-            return getsubtype(n) == leftskip_code and getfield(getfield(n,"spec"),"width") or 0
+            return getsubtype(n) == leftskip_code and getfield(n,"width") or 0
         elseif id == whatsit_code then
             n = getnext(n)
         elseif id == hlist_code then
@@ -57,7 +57,7 @@ function nuts.rightmarginwidth(n)
         while n do
             local id = getid(n)
             if id == glue_code then
-                return getsubtype(n) == rightskip_code and getfield(getfield(n,"spec"),"width") or 0
+                return getsubtype(n) == rightskip_code and getfield(n,"width") or 0
             elseif id == whatsit_code then
                 n = getprev(n)
             else
@@ -72,7 +72,8 @@ function nuts.somespace(n,all)
     if n then
         local id = getid(n)
         if id == glue_code then
-            return (all or (getfield(getfield(n,"spec"),"width") ~= 0)) and glue_code
+            return (all or ((getfield(n,"width") or 0) ~= 0)) and glue_code -- temp: or 0
+         -- return (all or (getfield(n,"width") ~= 0)) and glue_code
         elseif id == kern_code then
             return (all or (getfield(n,"kern") ~= 0)) and kern
         elseif id == glyph_code then

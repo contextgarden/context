@@ -19,11 +19,12 @@ local setfield        = nuts.setfield
 local setlink         = nuts.setlink
 local setchar         = nuts.setchar
 
+local getfield        = nuts.getfield
 local getfont         = nuts.getfont
 
 local hpack_node_list = nuts.hpack
 local vpack_node_list = nuts.vpack
-local fast_hpack_list = nuts.fasthpack
+local full_hpack_list = nuts.fullhpack
 local copy_node       = nuts.copy
 
 local nodepool        = nuts.pool
@@ -33,15 +34,19 @@ local new_glue        = nodepool.glue
 local utfvalues       = utf.values
 
 local currentfont     = font.current
+local currentattr     = node.current_attr
 local fontparameters  = fonts.hashes.parameters
 
 local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
     local head, prev = nil, nil
+--     local attrid = nil
     if not fontid then
         if templateglyph then
             fontid = getfont(templateglyph)
+--             attrid = getfield(templateglyph,"attr")
         else
             fontid = currentfont()
+--             attrid = currentattr()
         end
     end
     local fp = fontparameters[fontid]
@@ -70,8 +75,10 @@ local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
         if not next then
             -- nothing
         elseif not head then
+-- setfield(next,"attr",attrid)
             head = next
         else
+-- setfield(next,"attr",attrid)
             setlink(prev,next)
         end
         prev = next
@@ -83,42 +90,40 @@ local function tohpack(str,fontid,spacing)
     return hpack_node_list(tonodes(str,fontid,spacing),"exactly")
 end
 
-local function tohpackfast(str,fontid,spacing)
-    return fast_hpack_list(tonodes(str,fontid,spacing),"exactly")
+local function tohbox(str,fontid,spacing)
+    return full_hpack_list(tonodes(str,fontid,spacing),"exactly")
 end
 
 local function tovpack(str,fontid,spacing)
-    -- vpack is just a hack, and a proper implentation is on the agenda
+    -- vpack is just a hack, and a proper implemtation is on the agenda
     -- as it needs more info etc than currently available
     return vpack_node_list(tonodes(str,fontid,spacing))
 end
 
-local tovpackfast = tovpack
+local tovbox = tovpack -- for now no vpack filter
 
 local tnuts       = { }
 nuts.typesetters  = tnuts
 
 tnuts.tonodes     = tonodes
 tnuts.tohpack     = tohpack
-tnuts.tohpackfast = tohpackfast
+tnuts.tohbox      = tohbox
 tnuts.tovpack     = tovpack
-tnuts.tovpackfast = tovpackfast
+tnuts.tovbox      = tovbox
 
-tnuts.hpack       = tohpack     -- obsolete
-tnuts.fast_hpack  = tohpackfast -- obsolete
-tnuts.vpack       = tovpack     -- obsolete
+typesetters.tonodes  = function(...) local h, b = tonodes(...) return tonode(h), b end
+typesetters.tohpack  = function(...) local h, b = tohpack(...) return tonode(h), b end
+typesetters.tohbox   = function(...) local h, b = tohbox (...) return tonode(h), b end
+typesetters.tovpack  = function(...) local h, b = tovpack(...) return tonode(h), b end
+typesetters.tovbox   = function(...) local h, b = tovbox (...) return tonode(h), b end
 
-typesetters.tonodes     = function(...) local h, b = tonodes    (...) return tonode(h), b end
-typesetters.tohpack     = function(...) local h, b = tohpack    (...) return tonode(h), b end
-typesetters.tohpackfast = function(...) local h, b = tohpackfast(...) return tonode(h), b end
-typesetters.tovpack     = function(...) local h, b = tovpack    (...) return tonode(h), b end
-typesetters.tovpackfast = function(...) local h, b = tovpackfast(...) return tonode(h), b end
+typesetters.hpack    = typesetters.tohpack  -- obsolete
+typesetters.hbox     = typesetters.tohbox   -- obsolete
+typesetters.vpack    = typesetters.tovpack  -- obsolete
 
-typesetters.hpack       = typesetters.tohpack     -- obsolete
-typesetters.fast_hpack  = typesetters.tofasthpack -- obsolete
-typesetters.vpack       = typesetters.tovpack     -- obsolete
-
--- node.write(nodes.typesetters.hpack("Hello World!"))
--- node.write(nodes.typesetters.hpack("Hello World!",1,100*1024*10))
+-- node.write(nodes.typesetters.tohpack("Hello World!"))
+-- node.write(nodes.typesetters.tohbox ("Hello World!"))
+-- node.write(nodes.typesetters.tohpack("Hello World!",1,100*1024*10))
+-- node.write(nodes.typesetters.tohbox ("Hello World!",1,100*1024*10))
 
 string.tonodes = function(...) return tonode(tonodes(...)) end  -- quite convenient

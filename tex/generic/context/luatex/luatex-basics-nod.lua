@@ -51,17 +51,23 @@ nodes              = { }
 nodes.pool         = { }
 nodes.handlers     = { }
 
-local nodecodes    = { } for k,v in next, node.types   () do nodecodes[string.gsub(v,"_","")] = k end
-local whatcodes    = { } for k,v in next, node.whatsits() do whatcodes[string.gsub(v,"_","")] = k end
-local glyphcodes   = { [0] = "character", "glyph", "ligature", "ghost", "left", "right" }
-local disccodes    = { [0] = "discretionary", "explicit", "automatic", "regular", "first", "second" }
+local nodecodes    = { }
+local glyphcodes   = node.subtypes("glyph")
+local disccodes    = node.subtypes("disc")
 
-for i=0,#glyphcodes do glyphcodes[glyphcodes[i]] = i end
-for i=0,#disccodes  do disccodes [disccodes [i]] = i end
+for k, v in next, node.types() do
+    v = string.gsub(v,"_","")
+    nodecodes[k] = v
+    nodecodes[v] = k
+end
+for i=0,#glyphcodes do
+    glyphcodes[glyphcodes[i]] = i
+end
+for i=0,#disccodes do
+    disccodes[disccodes[i]] = i
+end
 
 nodes.nodecodes    = nodecodes
-nodes.whatcodes    = whatcodes
-nodes.whatsitcodes = whatcodes
 nodes.glyphcodes   = glyphcodes
 nodes.disccodes    = disccodes
 
@@ -177,7 +183,6 @@ nodes.tonut              = tonut
 
 nuts.tonode              = tonode
 nuts.tonut               = tonut
-
 
 local getfield           = direct.getfield
 local setfield           = direct.setfield

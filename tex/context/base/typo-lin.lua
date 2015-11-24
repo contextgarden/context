@@ -180,9 +180,8 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
     if id == glue_code then
         local subtype = getsubtype(head)
         if subtype == leftskip_code then
-            local spec = getfield(head,"spec")
-            leftskip   = head
-            lskip      = getfield(spec,"width")
+            leftskip = head
+            lskip    = getfield(head,"width") or 0
         end
         current = getnext(head)
         id      = getid(current)
@@ -196,9 +195,8 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
     local id      = getid(current)
     if id == glue_code then
         if getsubtype(current) == rightskip_code then
-            local spec = getfield(current,"spec")
             rightskip  = tail
-            rskip      = getfield(spec,"width")
+            rskip      = getfield(current,"width") or 0
             current    = getprev(tail)
             id         = getid(current)
         end

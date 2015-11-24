@@ -57,150 +57,182 @@ nodes               = nodes or { }
 local nodes         = nodes
 nodes.handlers      = nodes.handlers or { }
 
+local mark          = utilities.storage.mark
 local allocate      = utilities.storage.allocate
 local formatcolumns = utilities.formatters.formatcolumns
 
--- there will be more of this:
+local getsubtypes   = node.subtypes
 
-local skipcodes = allocate {
-    [  0] = "userskip",
-    [  1] = "lineskip",
-    [  2] = "baselineskip",
-    [  3] = "parskip",
-    [  4] = "abovedisplayskip",
-    [  5] = "belowdisplayskip",
-    [  6] = "abovedisplayshortskip",
-    [  7] = "belowdisplayshortskip",
-    [  8] = "leftskip",
-    [  9] = "rightskip",
-    [ 10] = "topskip",
-    [ 11] = "splittopskip",
-    [ 12] = "tabskip",
-    [ 13] = "spaceskip",
-    [ 14] = "xspaceskip",
-    [ 15] = "parfillskip",
-    [ 16] = "thinmuskip",
-    [ 17] = "medmuskip",
-    [ 18] = "thickmuskip",
-    [ 19] = "mathskip", -- experiment
-    [100] = "leaders",
-    [101] = "cleaders",
-    [102] = "xleaders",
-    [103] = "gleaders",
-}
+-- local listcodes = allocate {
+--     [0] = "unknown",
+--     [1] = "line",
+--     [2] = "box",
+--     [3] = "indent",
+--     [4] = "alignment", -- row or column
+--     [5] = "cell",
+--     [6] = "equation",
+--     [7] = "equationnumber",
+-- }
 
-local leadercodes = allocate {
-    [100] = "leaders",
-    [101] = "cleaders",
-    [102] = "xleaders",
-    [103] = "gleaders",
-}
+local listcodes = mark(getsubtypes("list"))
 
-local penaltycodes = allocate { -- unfortunately not used
-    [ 0] = "userpenalty",
-}
+-- local rulecodes = allocate {
+--     [0] = "normal",
+--     [1] = "box",
+--     [2] = "image",
+--     [3] = "empty",
+--     [4] = "user",
+-- }
+
+local rulecodes = mark(getsubtypes("rule"))
+
+-- local glyphcodes = allocate {
+--     [0] = "character",
+--     [1] = "glyph",
+--     [2] = "ligature",
+--     [3] = "ghost",
+--     [4] = "left",
+--     [5] = "right",
+-- }
+
+local glyphcodes = mark(getsubtypes("glyph"))
+
+-- local disccodes = allocate {
+--     [0] = "discretionary", -- \discretionary
+--     [1] = "explicit",      -- \-
+--     [2] = "automatic",     -- following a -
+--     [3] = "regular",       -- by hyphenator: simple
+--     [4] = "first",         -- by hyphenator: hard first item
+--     [5] = "second",        -- by hyphenator: hard second item
+-- }
+
+local disccodes = mark(getsubtypes("disc"))
+
+-- local skipcodes = allocate {
+--     [  0] = "userskip",
+--     [  1] = "lineskip",
+--     [  2] = "baselineskip",
+--     [  3] = "parskip",
+--     [  4] = "abovedisplayskip",
+--     [  5] = "belowdisplayskip",
+--     [  6] = "abovedisplayshortskip",
+--     [  7] = "belowdisplayshortskip",
+--     [  8] = "leftskip",
+--     [  9] = "rightskip",
+--     [ 10] = "topskip",
+--     [ 11] = "splittopskip",
+--     [ 12] = "tabskip",
+--     [ 13] = "spaceskip",
+--     [ 14] = "xspaceskip",
+--     [ 15] = "parfillskip",
+--     [ 16] = "thinmuskip",
+--     [ 17] = "medmuskip",
+--     [ 18] = "thickmuskip",
+--     [ 19] = "mathskip", -- experiment
+--     [100] = "leaders",
+--     [101] = "cleaders",
+--     [102] = "xleaders",
+--     [103] = "gleaders",
+-- }
+
+local skipcodes = mark(getsubtypes("glue"))
+
+-- local leadercodes = allocate {
+--     [100] = "leaders",
+--     [101] = "cleaders",
+--     [102] = "xleaders",
+--     [103] = "gleaders",
+-- }
+
+local leadercodes = mark(getsubtypes("leader"))
+
+-- local fillcodes = allocate {
+--     [0] = "stretch",
+--     [1] = "fi",
+--     [2] = "fil",
+--     [3] = "fill",
+--     [4] = "filll",
+-- }
+
+local fillcodes = mark(getsubtypes("fill"))
+
+-- local penaltycodes = allocate { -- unfortunately not used (yet)
+--     [ 0] = "userpenalty",
+-- }
+
+local penaltycodes = mark(getsubtypes("penalty"))
 
 table.setmetatableindex(penaltycodes,function(t,k) return "userpenalty" end) -- not used anyway
 
-local noadcodes = allocate { -- simple nodes
-    [ 0] = "ord",
-    [ 1] = "opdisplaylimits",
-    [ 2] = "oplimits",
-    [ 3] = "opnolimits",
-    [ 4] = "bin",
-    [ 5] = "rel",
-    [ 6] = "open",
-    [ 7] = "close",
-    [ 8] = "punct",
-    [ 9] = "inner",
-    [10] = "under",
-    [11] = "over",
-    [12] = "vcenter",
-}
+-- local kerncodes = allocate {
+--     [0] = "fontkern",
+--     [1] = "userkern",
+--     [2] = "accentkern",
+-- }
 
-local radicalcodes = allocate {
-    [0] = "radical",
-    [1] = "uradical",
-    [2] = "uroot",
-    [3] = "uunderdelimiter",
-    [4] = "uoverdelimiter",
-    [5] = "udelimiterunder",
-    [6] = "udelimiterover",
-}
+local kerncodes = mark(getsubtypes("kern"))
 
-local listcodes = allocate {
-    [0] = "unknown",
-    [1] = "line",
-    [2] = "box",
-    [3] = "indent",
-    [4] = "alignment", -- row or column
-    [5] = "cell",
-    [6] = "equation",
-    [7] = "equationnumber",
-}
+-- local margincodes = allocate {
+--     [0] = "left",
+--     [1] = "right",
+-- }
 
-local glyphcodes = allocate {
-    [0] = "character",
-    [1] = "glyph",
-    [2] = "ligature",
-    [3] = "ghost",
-    [4] = "left",
-    [5] = "right",
-}
+local margincodes = mark(getsubtypes("marginkern"))
 
-local kerncodes = allocate {
-    [0] = "fontkern",
-    [1] = "userkern",
-    [2] = "accentkern",
-}
+-- local mathcodes = allocate {
+--     [0] = "beginmath",
+--     [1] = "endmath",
+-- }
 
-local mathcodes = allocate {
-    [0] = "beginmath",
-    [1] = "endmath",
-}
+local mathcodes = mark(getsubtypes("math"))
 
-local fillcodes = allocate {
-    [0] = "stretch",
-    [1] = "fi",
-    [2] = "fil",
-    [3] = "fill",
-    [4] = "filll",
-}
+-- local noadcodes = allocate { -- simple nodes
+--     [ 0] = "ord",
+--     [ 1] = "opdisplaylimits",
+--     [ 2] = "oplimits",
+--     [ 3] = "opnolimits",
+--     [ 4] = "bin",
+--     [ 5] = "rel",
+--     [ 6] = "open",
+--     [ 7] = "close",
+--     [ 8] = "punct",
+--     [ 9] = "inner",
+--     [10] = "under",
+--     [11] = "over",
+--     [12] = "vcenter",
+-- }
 
-local margincodes = allocate {
-    [0] = "left",
-    [1] = "right",
-}
+local noadcodes = mark(getsubtypes("noad"))
 
-local disccodes = allocate {
-    [0] = "discretionary", -- \discretionary
-    [1] = "explicit",      -- \-
-    [2] = "automatic",     -- following a -
-    [3] = "regular",       -- by hyphenator: simple
-    [4] = "first",         -- by hyphenator: hard first item
-    [5] = "second",        -- by hyphenator: hard second item
-}
+-- local radicalcodes = allocate {
+--     [0] = "radical",
+--     [1] = "uradical",
+--     [2] = "uroot",
+--     [3] = "uunderdelimiter",
+--     [4] = "uoverdelimiter",
+--     [5] = "udelimiterunder",
+--     [6] = "udelimiterover",
+-- }
 
-local accentcodes = allocate {
-    [0] = "bothflexible",
-    [1] = "fixedtop",
-    [2] = "fixedbottom",
-    [3] = "fixedboth",
-}
+local radicalcodes = mark(getsubtypes("radical"))
 
-local fencecodes = allocate {
-    [0] = "unset",
-    [1] = "left",
-    [2] = "middle",
-    [3] = "right",
-}
+-- local accentcodes = allocate {
+--     [0] = "bothflexible",
+--     [1] = "fixedtop",
+--     [2] = "fixedbottom",
+--     [3] = "fixedboth",
+-- }
 
-local rulecodes = allocate {
-    [0] = "normal",
-    [1] = "box",
-    [2] = "image",
-    [3] = "empty",
-}
+local accentcodes = mark(getsubtypes("accent"))
+
+-- local fencecodes = allocate {
+--     [0] = "unset",
+--     [1] = "left",
+--     [2] = "middle",
+--     [3] = "right",
+-- }
+
+local fencecodes = mark(getsubtypes("fence"))
 
 -- maybe we also need fractioncodes
 

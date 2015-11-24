@@ -264,12 +264,10 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
                     if prev and getid(prev) == glue_code and getsubtype(prev) == parfillskip_code then
                         width = dimensions(current,first,getprev(prev)) -- maybe not current as we already take care of it
                     else
-                        if moveright and getfield(first,"writable") then
-                            width = width - getfield(getfield(first,"spec"),"stretch") * getfield(current,"glue_set") * getfield(current,"glue_sign")
+                        if moveright then
+                            width = width - getfield(first,"stretch") * getfield(current,"glue_set") * getfield(current,"glue_sign")
                         end
-                        if getfield(last,"writable") then
-                            width = width - getfield(getfield(last,"spec"),"stretch") * getfield(current,"glue_set") * getfield(current,"glue_sign")
-                        end
+                        width = width - getfield(last,"stretch") * getfield(current,"glue_set") * getfield(current,"glue_sign")
                     end
                 end
             else
@@ -448,12 +446,10 @@ local function addstring(what,str,shift) --todo make a pluggable helper (in font
                 str   = str .. " "
                 shift = (shift or 2) * exheight
             end
-            local text = typesetters.fast_hpack(str,infofont)
+            local text = typesetters.tohpack(str,infofont)
             local rule = new_rule(emwidth/5,4*exheight,3*exheight)
             setfield(text,"shift",shift)
-            return nuts.fasthpack(nuts.linked(text,rule))
-         -- local text = typesetters.fast_hpack(str,fonts.infofont())
-         -- return text
+            return hpack_list(nuts.linked(text,rule))
         end
     end
 end

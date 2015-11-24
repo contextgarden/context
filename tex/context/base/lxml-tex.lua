@@ -249,7 +249,7 @@ function lxml.setescapedentities(v)
     end
 end
 
-lxml.setescapedentities()
+lxml.setescapedentities() -- off by default (for now)
 
 directives.register("lxml.escapedentities",lxml.setescapedentities)
 

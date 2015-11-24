@@ -28,7 +28,7 @@ local getattr          = nuts.getattr
 local setattr          = nuts.setattr
 local getsubtype       = nuts.getsubtype
 
-local hpack_nodes      = nuts.hpack -- nodes.fasthpack not really faster here
+local hpack_nodes      = nuts.hpack
 local linked_nodes     = nuts.linked
 
 local unsetvalue       = attributes.unsetvalue

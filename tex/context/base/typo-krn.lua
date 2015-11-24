@@ -194,9 +194,8 @@ end
 local function kern_injector(fillup,kern)
     if fillup then
         local g = new_glue(kern)
-        local s = getfield(g,"spec")
-        setfield(s,"stretch",kern)
-        setfield(s,"stretch_order",1)
+        setfield(g,"stretch",kern)
+        setfield(g,"stretch_order",1)
         return g
     else
         return new_kern(kern)
@@ -547,12 +546,11 @@ function kerns.handler(head)
             elseif id == glue_code then
                 local subtype = getsubtype(start)
                 if subtype == userskip_code or subtype == xspaceskip_code or subtype == spaceskip_code then
-                    local s = getfield(start,"spec")
-                    local w = getfield(s,"width")
+                    local w = getfield(start,"width")
                     if w > 0 then
                         local width   = w+gluefactor*w*krn
-                        local stretch = getfield(s,"stretch")
-                        local shrink  = getfield(s,"shrink")
+                        local stretch = getfield(start,"stretch")
+                        local shrink  = getfield(start,"shrink")
                         setfield(start,"spec",spec_injector(fillup,width,stretch*width/w,shrink*width/w))
                         done = true
                     end

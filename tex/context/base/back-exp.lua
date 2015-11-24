@@ -2696,8 +2696,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
             else
                 local subtype = getsubtype(n)
                 if subtype == userskip_code then
-                    local spec = getfield(n,"spec")
-                    if getfield(spec,"width") > threshold then
+                    if getfield(n,"width") > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
                             local a = getattr(n,a_tagged) or pat
                             if a == last then

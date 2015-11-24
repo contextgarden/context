@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/17/15 16:11:24
+-- merge date  : 11/24/15 18:25:02
 
 do -- begin closure to overcome local limits and interference
 
@@ -3901,15 +3901,21 @@ end
 nodes={}
 nodes.pool={}
 nodes.handlers={}
-local nodecodes={} for k,v in next,node.types  () do nodecodes[string.gsub(v,"_","")]=k end
-local whatcodes={} for k,v in next,node.whatsits() do whatcodes[string.gsub(v,"_","")]=k end
-local glyphcodes={ [0]="character","glyph","ligature","ghost","left","right" }
-local disccodes={ [0]="discretionary","explicit","automatic","regular","first","second" }
-for i=0,#glyphcodes do glyphcodes[glyphcodes[i]]=i end
-for i=0,#disccodes do disccodes [disccodes [i]]=i end
+local nodecodes={}
+local glyphcodes=node.subtypes("glyph")
+local disccodes=node.subtypes("disc")
+for k,v in next,node.types() do
+  v=string.gsub(v,"_","")
+  nodecodes[k]=v
+  nodecodes[v]=k
+end
+for i=0,#glyphcodes do
+  glyphcodes[glyphcodes[i]]=i
+end
+for i=0,#disccodes do
+  disccodes[disccodes[i]]=i
+end
 nodes.nodecodes=nodecodes
-nodes.whatcodes=whatcodes
-nodes.whatsitcodes=whatcodes
 nodes.glyphcodes=glyphcodes
 nodes.disccodes=disccodes
 local free_node=node.free
@@ -11194,7 +11200,6 @@ local initializers=allocate()
 local methods=allocate()
 analyzers.initializers=initializers
 analyzers.methods=methods
-analyzers.useunicodemarks=false
 local a_state=attributes.private('state')
 local nuts=nodes.nuts
 local tonut=nuts.tonut
@@ -11250,6 +11255,7 @@ local features={
 }
 analyzers.states=states
 analyzers.features=features
+analyzers.useunicodemarks=false
 function analyzers.setstate(head,font)
   local useunicodemarks=analyzers.useunicodemarks
   local tfmdata=fontdata[font]
@@ -11263,7 +11269,10 @@ function analyzers.setstate(head,font)
       local char=getchar(current)
       local d=descriptions[char]
       if d then
-        if d.class=="mark" or (useunicodemarks and categories[char]=="mn") then
+        if d.class=="mark" then
+          done=true
+          setprop(current,a_state,s_mark)
+        elseif useunicodemarks and categories[char]=="mn" then
           done=true
           setprop(current,a_state,s_mark)
         elseif n==0 then
@@ -11646,8 +11655,8 @@ local glyph_code=nodecodes.glyph
 local glue_code=nodecodes.glue
 local disc_code=nodecodes.disc
 local math_code=nodecodes.math
-local dir_code=whatcodes.dir
-local localpar_code=whatcodes.localpar
+local dir_code=nodecodes.dir
+local localpar_code=nodecodes.localpar
 local discretionary_code=disccodes.discretionary
 local ligature_code=glyphcodes.ligature
 local privateattribute=attributes.private
@@ -14281,6 +14290,40 @@ local function featuresprocessor(head,font,attr)
               end
             elseif id==math_code then
               start=getnext(end_of_math(start))
+            elseif id==dir_code then
+              local dir=getfield(start,"dir")
+              if dir=="+TLT" then
+                topstack=topstack+1
+                dirstack[topstack]=dir
+                rlmode=1
+              elseif dir=="+TRT" then
+                topstack=topstack+1
+                dirstack[topstack]=dir
+                rlmode=-1
+              elseif dir=="-TLT" or dir=="-TRT" then
+                topstack=topstack-1
+                rlmode=dirstack[topstack]=="+TRT" and -1 or 1
+              else
+                rlmode=rlparmode
+              end
+              if trace_directions then
+                report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
+              end
+              start=getnext(start)
+            elseif id==localpar_code then
+              local dir=getfield(start,"dir")
+              if dir=="TRT" then
+                rlparmode=-1
+              elseif dir=="TLT" then
+                rlparmode=1
+              else
+                rlparmode=0
+              end
+              rlmode=rlparmode
+              if trace_directions then
+                report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
+              end
+              start=getnext(start)
             else
               start=getnext(start)
             end
@@ -14501,6 +14544,40 @@ local function featuresprocessor(head,font,attr)
             end
           elseif id==math_code then
             start=getnext(end_of_math(start))
+          elseif id==dir_code then
+            local dir=getfield(start,"dir")
+            if dir=="+TLT" then
+              topstack=topstack+1
+              dirstack[topstack]=dir
+              rlmode=1
+            elseif dir=="+TRT" then
+              topstack=topstack+1
+              dirstack[topstack]=dir
+              rlmode=-1
+            elseif dir=="-TLT" or dir=="-TRT" then
+              topstack=topstack-1
+              rlmode=dirstack[topstack]=="+TRT" and -1 or 1
+            else
+              rlmode=rlparmode
+            end
+            if trace_directions then
+              report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,rlparmode,rlmode,topstack,newdir)
+            end
+            start=getnext(start)
+          elseif id==localpar_code then
+            local dir=getfield(start,"dir")
+            if dir=="TRT" then
+              rlparmode=-1
+            elseif dir=="TLT" then
+              rlparmode=1
+            else
+              rlparmode=0
+            end
+            rlmode=rlparmode
+            if trace_directions then
+              report_process("directions after pardir %a: parmode %a, txtmode %a",dir,rlparmode,rlmode)
+            end
+            start=getnext(start)
           else
             start=getnext(start)
           end

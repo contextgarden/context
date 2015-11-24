@@ -128,7 +128,7 @@ local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
 local copy_node_list     = nuts.copy_list
-local hpack_nodes        = nuts.hpack -- nodes.fasthpack not really faster here
+local hpack_nodes        = nuts.hpack
 local traverse_id        = nuts.traverse_id
 local free_node_list     = nuts.flush_list
 local insert_node_after  = nuts.insert_after

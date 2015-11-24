@@ -956,7 +956,7 @@ local function process(head,first,last)
                         else -- if head ~= first then
                             if id == glue_code and getsubtype(first) == userskip_code then -- also scriptstatus check?
                                 -- for the moment no distinction possible between space and userskip
-                                local w = getfield(getfield(first,"spec"),"width")
+                                local w = getfield(first,"width")
                                 local s = spacedata[getfont(p)]
                                 if w == s then -- could be option
                                     if trace_details then

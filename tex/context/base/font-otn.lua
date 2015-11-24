@@ -315,8 +315,6 @@ local notmatchpre         = { }
 local notmatchpost        = { }
 local notmatchreplace     = { }
 
--- head is always a whatsit so we can safely assume that head is not changed
-
 -- we use this for special testing and documentation
 
 local checkstep       = (nodes and nodes.tracers and nodes.tracers.steppers.check)    or function() end

@@ -101,46 +101,46 @@ function processors.pre_linebreak_filter(head,groupcode) -- ,size,packtype,direc
     return true
 end
 
-local enabled = true
-
-function processors.hpack_filter(head,groupcode,size,packtype,direction)
-    if enabled then
-     -- local first, found = first_glyph(head) -- they really need to be glyphs
-        local found = force_processors or has_glyph(head)
-        if found then
-            if trace_callbacks then
-                local before = nodes.count(head,true)
-                local head, done = actions(head,groupcode,size,packtype,direction)
-                local after = nodes.count(head,true)
-                if done then
-                    tracer("hpack","changed",head,groupcode,before,after,true)
-                else
-                    tracer("hpack","unchanged",head,groupcode,before,after,true)
-                end
-                return done and head or true
+local function hpack_filter(head,groupcode,size,packtype,direction)
+ -- local first, found = first_glyph(head) -- they really need to be glyphs
+    local found = force_processors or has_glyph(head)
+    if found then
+        if trace_callbacks then
+            local before = nodes.count(head,true)
+            local head, done = actions(head,groupcode,size,packtype,direction)
+            local after = nodes.count(head,true)
+            if done then
+                tracer("hpack","changed",head,groupcode,before,after,true)
             else
-                local head, done = actions(head,groupcode,size,packtype,direction)
-                return done and head or true
+                tracer("hpack","unchanged",head,groupcode,before,after,true)
             end
-        elseif trace_callbacks then
-            local n = nodes.count(head,false)
-            tracer("hpack","no chars",head,groupcode,n,n)
+            return done and head or true
+        else
+            local head, done = actions(head,groupcode,size,packtype,direction)
+            return done and head or true
         end
+    elseif trace_callbacks then
+        local n = nodes.count(head,false)
+        tracer("hpack","no chars",head,groupcode,n,n)
     end
     return true
 end
+
+processors.hpack_filter = hpack_filter
 
 do
 
     local setfield = nodes.setfield
     local hpack    = nodes.hpack
 
-    function nodes.fasthpack(...) -- todo: pass explicit arguments
-        enabled = false
-        local hp, b = hpack(...)
+    function nodes.fullhpack(head,...)
+        local ok = hpack_filter(head)
+        if not done or done == true then
+            ok = head
+        end
+        local hp, b = hpack(ok,...)
         setfield(hp,"prev",nil)
         setfield(hp,"next",nil)
-        enabled = true
         return hp, b
     end
 
@@ -148,15 +148,18 @@ end
 
 do
 
-    local setfield = nuts.setfield
-    local hpack    = nuts.hpack
+    local setboth = nuts.setboth
+    local hpack   = nuts.hpack
 
-    function nuts.fasthpack(...) -- todo: pass explicit arguments
-        enabled = false
+    function nuts.fullhpack(head,...)
+        local ok = hpack_filter(tonode(head))
+        if not done or done == true then
+            ok = head
+        else
+            ok = tonut(ok)
+        end
         local hp, b = hpack(...)
-        setfield(hp,"prev",nil)
-        setfield(hp,"next",nil)
-        enabled = true
+        setboth(hp)
         return hp, b
     end
 

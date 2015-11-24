@@ -174,14 +174,6 @@ local n_slide           = nodes.slide
 
 local n_remove_node     = node.remove -- not yet nodes.remove
 
--- if t.id == glue_code then
---     local s = t.spec
---     if s and s.writable then
---         free_node(s)
---     end
---     t.spec = nil
--- end
-
 local function remove(head,current,free_too)
     local t = current
     head, current = n_remove_node(head,current)
@@ -317,6 +309,8 @@ glue being a noticeable one). So, next we wrap this into a function
 and hide it for the user. And yes, LuaTeX now gives a warning as
 well.</p>
 ]]--
+
+-- writable will go away
 
 function nodes.writable_spec(n) -- not pool
     local spec = n_getfield(n,"spec")
@@ -688,34 +682,3 @@ end
 
 nodes.keys   = keys       -- [id][subtype]
 nodes.fields = nodefields -- (n)
-
--- one issue solved in flush_node:
---
--- case glue_spec_node:
---     if (glue_ref_count(p)!=null) {
---         decr(glue_ref_count(p));
---         return ;
---     /*
---     } else if (! valid_node(p)) {
---          return ;
---     */
---     /*
---     } else {
---         free_node(p, get_node_size(type(p), subtype(p)));
---         return ;
---     */
---     }
---     break ;
---
--- or:
---
--- case glue_spec_node:
---     if (glue_ref_count(p)!=null) {
---         decr(glue_ref_count(p));
---         return ;
---     } else if (valid_node(p)) {
---         free_node(p, get_node_size(type(p), subtype(p)));
---         return ;
---     } else {
---         break ;
---     }

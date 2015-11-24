@@ -85,6 +85,7 @@ local getlist             = nuts.getlist
 local getleader           = nuts.getleader
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
+local getboth             = nuts.getboth
 local getdisc             = nuts.getdisc
 
 local hpack_nodes         = nuts.hpack
@@ -100,8 +101,7 @@ local linked_nodes        = nuts.linked
 
 local effectiveglue       = nuts.effective_glue
 
-local fast_hpack          = nuts.fasthpack
-local fast_hpack_string   = nuts.typesetters.fast_hpack
+local hpack_string        = nuts.typesetters.tohpack
 
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
@@ -160,38 +160,37 @@ local trace_italic
 local report_visualize = logs.reporter("visualize")
 
 local modes = {
-    hbox       =    1,
-    vbox       =    2,
-    vtop       =    4,
-    kern       =    8,
-    glue       =   16,
-    penalty    =   32,
-    fontkern   =   64,
-    strut      =  128,
-    whatsit    =  256,
-    glyph      =  512,
-    simple     = 1024,
-    simplehbox = 1024 + 1,
-    simplevbox = 1024 + 2,
-    simplevtop = 1024 + 4,
-    user       = 2048,
-    math       = 4096,
-    italic     = 8192,
+    hbox       =     1,
+    vbox       =     2,
+    vtop       =     4,
+    kern       =     8,
+    glue       =    16,
+    penalty    =    32,
+    fontkern   =    64,
+    strut      =   128,
+    whatsit    =   256,
+    glyph      =   512,
+    simple     =  1024,
+    simplehbox =  1024 + 1,
+    simplevbox =  1024 + 2,
+    simplevtop =  1024 + 4,
+    user       =  2048,
+    math       =  4096,
+    italic     =  8192,
+    origin     = 16384,
 }
 
-local modes_makeup = { "hbox", "vbox", "kern", "glue", "penalty" }
-local modes_boxes  = { "hbox", "vbox"  }
-local modes_all    = { "hbox", "vbox", "kern", "glue", "penalty", "fontkern", "whatsit", "glyph", "user", "math" }
-
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin
 
 local enabled = false
 local layers  = { }
 
-local preset_boxes  = modes.hbox + modes.vbox
-local preset_makeup = preset_boxes + modes.kern + modes.glue + modes.penalty
-local preset_all    = preset_makeup + modes.fontkern + modes.whatsit + modes.glyph + modes.user + modes.math
+local preset_boxes  = modes.hbox + modes.vbox + modes.origin
+local preset_makeup = preset_boxes
+                    + modes.kern + modes.glue + modes.penalty
+local preset_all    = preset_makeup
+                    + modes.fontkern + modes.whatsit + modes.glyph + modes.user + modes.math
 
 function visualizers.setfont(id)
     usedfont = id or current_font()
@@ -230,6 +229,7 @@ local function enable()
     l_user     = layers.user
     l_math     = layers.math
     l_italic   = layers.italic
+    l_origin   = layers.origin
     nodes.tasks.enableaction("shipouts","nodes.visualizers.handler")
     report_visualize("enabled")
     enabled = true
@@ -325,6 +325,7 @@ local c_glyph      = "trace:o"
 local c_ligature   = "trace:s"
 local c_white      = "trace:w"
 local c_math       = "trace:r"
+local c_origin     = "trace:o"
 
 local c_positive_d = "trace:db"
 local c_negative_d = "trace:dr"
@@ -337,9 +338,10 @@ local c_glyph_d    = "trace:do"
 local c_ligature_d = "trace:ds"
 local c_white_d    = "trace:dw"
 local c_math_d     = "trace:dr"
+local c_origin_d   = "trace:do"
 
 local function sometext(str,layer,color,textcolor,lap) -- we can just paste verbatim together .. no typesteting needed
-    local text = fast_hpack_string(str,usedfont)
+    local text = hpack_string(str,usedfont)
     local size = getfield(text,"width")
     local rule = new_rule(size,2*exheight,exheight/2)
     local kern = new_kern(-size)
@@ -351,17 +353,14 @@ local function sometext(str,layer,color,textcolor,lap) -- we can just paste verb
     end
     local info = linked_nodes(rule,kern,text)
     setlisttransparency(info,c_zero)
-    info = fast_hpack(info)
+    info = new_hlist(info)
     local width = getfield(info,"width")
     if lap then
-        info = fast_hpack(linked_nodes(new_kern(-width),info))
+        info = new_hlist(linked_nodes(new_kern(-width),info))
     end
     if layer then
         setattr(info,a_layer,layer)
     end
-    setfield(info,"width",0)
-    setfield(info,"height",0)
-    setfield(info,"depth",0)
     return info, width
 end
 
@@ -373,7 +372,7 @@ local function fontkern(head,current)
     if info then
         -- print("hit fontkern")
     else
-        local text = fast_hpack_string(formatters[" %0.3f"](kern*pt_factor),usedfont)
+        local text = hpack_string(formatters[" %0.3f"](kern*pt_factor),usedfont)
         local rule = new_rule(emwidth/fraction,6*exheight,2*exheight)
         local list = getlist(text)
         if kern > 0 then
@@ -386,11 +385,8 @@ local function fontkern(head,current)
         setlisttransparency(list,c_text_d)
         settransparency(rule,c_text_d)
         setfield(text,"shift",-5 * exheight)
-        info = fast_hpack(linked_nodes(rule,text))
+        info = new_hlist(linked_nodes(rule,text))
         setattr(info,a_layer,l_fontkern)
-        setfield(info,"width",0)
-        setfield(info,"height",0)
-        setfield(info,"depth",0)
         f_cache[kern] = info
     end
     head = insert_node_before(head,current,copy_list(info))
@@ -479,7 +475,17 @@ end
 
 local b_cache = { }
 
-local function ruledbox(head,current,vertical,layer,what,simple,previous)
+local o_cache = table.setmetatableindex(function(t,size)
+    local rule = new_rule(2*size,size,size)
+    origin = hpack_nodes(rule)
+    setcolor(rule,c_origin_d)
+    settransparency(rule,c_origin_d)
+    setattr(rule,a_layer,l_origin)
+    t[size] = origin
+    return origin
+end)
+
+local function ruledbox(head,current,vertical,layer,what,simple,previous,trace_origin,parent)
     local wd = getfield(current,"width")
     if wd ~= 0 then
         local ht = getfield(current,"height")
@@ -490,6 +496,7 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
      -- local prev = getprev(current) -- prev can be wrong in math mode < 0.78.3
         setboth(current)
         local linewidth = emwidth/fraction
+        local size      = 2*linewidth
         local baseline, baseskip
         if dp ~= 0 and ht ~= 0 then
             if wd > 20*linewidth then
@@ -497,43 +504,37 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
                 if not baseline then
                     -- due to an optimized leader color/transparency we need to set the glue node in order
                     -- to trigger this mechanism
-                    local leader = linked_nodes(new_glue(2*linewidth),new_rule(6*linewidth,linewidth,0),new_glue(2*linewidth))
-                 -- setlisttransparency(leader,c_text)
-                    leader = fast_hpack(leader)
-                 -- setlisttransparency(leader,c_text)
+                    local leader = linked_nodes(new_glue(size),new_rule(3*size,linewidth,0),new_glue(size))
+                    leader = hpack_nodes(leader)
                     baseline = new_glue(0)
                     setfield(baseline,"leader",leader)
                     setfield(baseline,"subtype",cleaders_code)
-                    local spec = getfield(baseline,"spec")
-                    setfield(spec,"stretch",65536)
-                    setfield(spec,"stretch_order",2)
+                    setfield(baseline,"stretch",65536)
+                    setfield(baseline,"stretch_order",2)
                     setlisttransparency(baseline,c_text)
                     b_cache.baseline = baseline
                 end
                 baseline = copy_list(baseline)
-                baseline = fast_hpack(baseline,wd-2*linewidth)
-                -- or new hpack node, set head and also:
+                baseline = hpack_nodes(baseline,wd-size)
+                -- or new_hlist, set head and also:
                 -- baseline.width = wd
                 -- baseline.glue_set = wd/65536
                 -- baseline.glue_order = 2
                 -- baseline.glue_sign = 1
                 baseskip = new_kern(-wd+linewidth)
             else
-                baseline = new_rule(wd-2*linewidth,linewidth,0)
-                baseskip = new_kern(-wd+2*linewidth)
+                baseline = new_rule(wd-size,linewidth,0)
+                baseskip = new_kern(-wd+size)
             end
         end
         local this
         if not simple then
             this = b_cache[what]
             if not this then
-                local text = fast_hpack_string(what,usedfont)
+                local text = hpack_string(what,usedfont)
                 this = linked_nodes(new_kern(-getfield(text,"width")),text)
                 setlisttransparency(this,c_text)
-                this = fast_hpack(this)
-                setfield(this,"width",0)
-                setfield(this,"height",0)
-                setfield(this,"depth",0)
+                this = new_hlist(this)
                 b_cache[what] = this
             end
         end
@@ -541,23 +542,68 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
         local info = linked_nodes(
             this and copy_list(this) or nil,
             new_rule(linewidth,ht,dp),
-            new_rule(wd-2*linewidth,-dp+linewidth,dp),
+            new_rule(wd-size,-dp+linewidth,dp),
             new_rule(linewidth,ht,dp),
             new_kern(-wd+linewidth),
-            new_rule(wd-2*linewidth,ht,-ht+linewidth)
+            new_rule(wd-size,ht,-ht+linewidth)
         )
         if baseskip then
             info = linked_nodes(info,baseskip,baseline) -- could be in previous linked
         end
         setlisttransparency(info,c_text)
-        info = fast_hpack(info)
-        setfield(info,"width",0)
-        setfield(info,"height",0)
-        setfield(info,"depth",0)
+        info = new_hlist(info)
+        --
         setattr(info,a_layer,layer)
-        local info = linked_nodes(current,new_kern(-wd),info)
-        setfield(current,"shift",0)
-        info = (vertical and new_vlist or new_hlist)(info,wd,ht,dp,shift)
+        if vertical then
+            if shift == 0 then
+                info = linked_nodes(current,info)
+            elseif trace_origin then
+                local size   = 2*size
+                local origin = o_cache[size]
+                origin = copy_list(origin)
+                if getid(parent) == vlist_code then
+                    setfield(origin,"shift",-shift)
+                    info = linked_nodes(current,new_kern(-size),origin,new_kern(-size),info)
+                else
+                    -- todo .. i need an example
+                    info = linked_nodes(current,info)
+                end
+                setfield(current,"shift",0)
+            else
+                info = linked_nodes(current,info)
+                setfield(current,"shift",0)
+            end
+            info = new_vlist(info,wd,ht,dp,shift)
+        else
+            if shift == 0 then
+                info = linked_nodes(current,new_kern(-wd),info)
+            elseif trace_origin then
+                local size   = 2*size
+                local origin = o_cache[size]
+                origin = copy_list(origin)
+                if getid(parent) == vlist_code then
+                    info = linked_nodes(current,new_kern(-wd-size-shift),origin,new_kern(-size+shift),info)
+                else
+                    setfield(origin,"shift",-shift)
+                    info = linked_nodes(current,new_kern(-wd-size),origin,new_kern(-size),info)
+                end
+                setfield(current,"shift",0)
+            else
+                info = linked_nodes(current,new_kern(-wd),info)
+                setfield(current,"shift",0)
+            end
+            info = new_hlist(info,wd,ht,dp,shift)
+        end
+
+-- how about dir, so maybe just copy the node
+--
+-- local l = getlist(current)
+-- setfield(current,"list",nil)
+-- local c = copy_node(current)
+-- setfield(current,"list",l)
+-- setfield(c,"list",info)
+-- info = c
+
         if next then
             setlink(info,next)
         end
@@ -578,6 +624,13 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous)
         return head, current
     end
 end
+
+local bpfactor =  number.dimenfactors.bp
+
+callback.register("process_rule",function(n,h,v)
+    local p = string.formatters["0 0 %0.6F %0.6F re f"](h*bpfactor,v*bpfactor)
+    pdf.print("direct",p)
+end)
 
 local function ruledglyph(head,current,previous)
     local wd = getfield(current,"width")
@@ -605,6 +658,15 @@ local function ruledglyph(head,current,previous)
             new_kern(-wd+doublelinewidth),
             baseline
         )
+
+-- local rule = new_rule(wd,ht,dp)
+-- setfield(rule,"subtype",4) -- todo
+-- local info = linked_nodes(
+--     rule,
+--     new_kern(-wd),
+--     baseline
+-- )
+
         local char = chardata[getfont(current)][getchar(current)]
         if char and char.tounicode and #char.tounicode > 4 then -- hack test
             setlistcolor(info,c_ligature)
@@ -613,13 +675,10 @@ local function ruledglyph(head,current,previous)
             setlistcolor(info,c_glyph)
             setlisttransparency(info,c_glyph_d)
         end
-        info = fast_hpack(info)
-        setfield(info,"width",0)
-        setfield(info,"height",0)
-        setfield(info,"depth",0)
+        info = new_hlist(info)
         setattr(info,a_layer,l_glyph)
         local info = linked_nodes(current,new_kern(-wd),info)
-        info = fast_hpack(info)
+        info = hpack_nodes(info)
         setfield(info,"width",wd)
         if next then
             setlink(info,next)
@@ -671,8 +730,6 @@ local tags = {
 -- we sometimes pass previous as we can have issues in math (not watertight for all)
 
 local function ruledglue(head,current,vertical,parent)
-    ----- spec    = getfield(current,"spec")
-    ----- width   = getfield(spec,"width")
     local subtype = getsubtype(current)
     local width   = effectiveglue(current,parent)
     local amount  = formatters["%s:%0.3f"](tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
@@ -797,6 +854,7 @@ local function visualize(head,vertical,forced,parent)
     local trace_user     = false
     local trace_math     = false
     local trace_italic   = false
+    local trace_origin   = false
     local current        = head
     local previous       = nil
     local attr           = unsetvalue
@@ -821,21 +879,23 @@ local function visualize(head,vertical,forced,parent)
                 trace_user     = false
                 trace_math     = false
                 trace_italic   = false
+                trace_origin   = false
             else -- dead slow:
-                trace_hbox     = hasbit(a,   1)
-                trace_vbox     = hasbit(a,   2)
-                trace_vtop     = hasbit(a,   4)
-                trace_kern     = hasbit(a,   8)
-                trace_glue     = hasbit(a,  16)
-                trace_penalty  = hasbit(a,  32)
-                trace_fontkern = hasbit(a,  64)
-                trace_strut    = hasbit(a, 128)
-                trace_whatsit  = hasbit(a, 256)
-                trace_glyph    = hasbit(a, 512)
-                trace_simple   = hasbit(a,1024)
-                trace_user     = hasbit(a,2048)
-                trace_math     = hasbit(a,4096)
-                trace_italic   = hasbit(a,8192)
+                trace_hbox     = hasbit(a,    1)
+                trace_vbox     = hasbit(a,    2)
+                trace_vtop     = hasbit(a,    4)
+                trace_kern     = hasbit(a,    8)
+                trace_glue     = hasbit(a,   16)
+                trace_penalty  = hasbit(a,   32)
+                trace_fontkern = hasbit(a,   64)
+                trace_strut    = hasbit(a,  128)
+                trace_whatsit  = hasbit(a,  256)
+                trace_glyph    = hasbit(a,  512)
+                trace_simple   = hasbit(a, 1024)
+                trace_user     = hasbit(a, 2048)
+                trace_math     = hasbit(a, 4096)
+                trace_italic   = hasbit(a, 8192)
+                trace_origin   = hasbit(a,16384)
             end
             attr = a
         end
@@ -888,7 +948,7 @@ local function visualize(head,vertical,forced,parent)
                 setfield(current,"list",visualize(content,false,nil,current))
             end
             if trace_hbox then
-                head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous)
+                head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous,trace_origin,parent)
             end
         elseif id == vlist_code then
             local content = getlist(current)
@@ -896,9 +956,9 @@ local function visualize(head,vertical,forced,parent)
                 setfield(current,"list",visualize(content,true,nil,current))
             end
             if trace_vtop then
-                head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple,previous)
+                head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple,previous,trace_origin,parent)
             elseif trace_vbox then
-                head, current = ruledbox(head,current,true,l_vbox,"__V",trace_simple,previous)
+                head, current = ruledbox(head,current,true,l_vbox,"__V",trace_simple,previous,trace_origin,parent)
             end
         elseif id == whatsit_code then
             if trace_whatsit then
@@ -937,14 +997,15 @@ local function cleanup()
     nf,   f_cache   = freed(f_cache)
     nw,   w_cache   = freed(w_cache)
     nb,   b_cache   = freed(b_cache)
+    no,   o_cache   = freed(o_cache)
     ng_v, g_cache_v = freed(g_cache_v)
     ng_h, g_cache_h = freed(g_cache_h)
     np_v, p_cache_v = freed(p_cache_v)
     np_h, p_cache_h = freed(p_cache_h)
     nk_v, k_cache_v = freed(k_cache_v)
     nk_h, k_cache_h = freed(k_cache_h)
- -- report_visualize("cache cleanup: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes",
- --     nf,ng_v+ng_h,np_v+np_h,nk_v+nk_h,nw,nb)
+ -- report_visualize("cache cleanup: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes, %s origins",
+ --     nf,ng_v+ng_h,np_v+np_h,nk_v+nk_h,nw,nb,no)
 end
 
 local function handler(head)
@@ -981,36 +1042,40 @@ function visualizers.box(n)
     end
 end
 
-local last = nil
-local used = nil
+do
 
-local mark = {
-    "trace:1", "trace:2", "trace:3",
-    "trace:4", "trace:5", "trace:6",
-    "trace:7",
-}
+    local last = nil
+    local used = nil
 
-local function markfonts(list)
-    for n in traverse_nodes(list) do
-        local id = getid(n)
-        if id == glyph_code then
-            local font = getfont(n)
-            local okay = used[font]
-            if not okay then
-                last = last + 1
-                okay = mark[last]
-                used[font] = okay
+    local mark = {
+        "trace:1", "trace:2", "trace:3",
+        "trace:4", "trace:5", "trace:6",
+        "trace:7",
+    }
+
+    local function markfonts(list)
+        for n in traverse_nodes(list) do
+            local id = getid(n)
+            if id == glyph_code then
+                local font = getfont(n)
+                local okay = used[font]
+                if not okay then
+                    last = last + 1
+                    okay = mark[last]
+                    used[font] = okay
+                end
+                setcolor(n,okay)
+            elseif id == hlist_code or id == vlist_code then
+                markfonts(getlist(n))
             end
-            setcolor(n,okay)
-        elseif id == hlist_code or id == vlist_code then
-            markfonts(getlist(n))
         end
     end
-end
 
-function visualizers.markfonts(list)
-    last, used = 0, { }
-    markfonts(type(n) == "number" and getlist(getbox(n)) or n)
+    function visualizers.markfonts(list)
+        last, used = 0, { }
+        markfonts(type(n) == "number" and getlist(getbox(n)) or n)
+    end
+
 end
 
 luatex.registerstopactions(cleanup)

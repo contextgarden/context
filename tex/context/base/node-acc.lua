@@ -57,8 +57,8 @@ local function injectspaces(head)
     while n do
         local id = getid(n)
         if id == glue_code then -- todo: check for subtype related to spacing (13/14 but most seems to be 0)
-       -- if getfield(getfield(n,"spec"),"width") > 0 then -- threshold
---          if p and p_id == glyph_code then
+       -- if getfield(n,."width") > 0 then -- threshold
+         -- if p and p_id == glyph_code then
             if p and getid(p) == glyph_code then
                 local g = copy_node(p)
                 local c = getfield(g,"components")
@@ -68,21 +68,13 @@ local function injectspaces(head)
                     setfield(g,"subtype",256)
                 end
                 local a = getattr(n,a_characters)
-                -- local s = copy_node(getfield(n,"spec"))
-                -- this will be fixed in luatex but for now a temp hack (zero test)
-                local s = getfield(n,"spec")
-                s = s == 0 and new_gluespec(0) or copy_node(s)
-                --
                 setchar(g,32)
-                setfield(n,"spec",s)
-             -- insert_after(p,p,g)
                 setlink(p,g)
                 setlink(g,n)
-                setfield(s,"width",getfield(s,"width") - getfield(g,"width"))
+                setfield(n,"width",getfield(n,"width") - getfield(g,"width"))
                 if a then
                     setattr(g,a_characters,a)
                 end
-                setattr(s,a_characters,0)
                 setattr(n,a_characters,0)
                 nofreplaced = nofreplaced + 1
             end

@@ -178,15 +178,14 @@ local function getprofile(line,step)
                     process(replace)
                 end
             elseif id == glue_code then
-                local spec = getfield(current,"spec")
-                wd = getfield(spec,"width")
+                wd = getfield(current,"width")
                 if glue_sign == 1 then
-                    if getfield(spec,"stretch_order") == glue_order then
-                        wd = wd + getfield(spec,"stretch") * glue_set
+                    if getfield(current,"stretch_order") == glue_order then
+                        wd = wd + getfield(current,"stretch") * glue_set
                     end
                 elseif glue_sign == 2 then
-                    if getfield(spec,"shrink_order") == glue_order then
-                        wd = wd - getfield(spec,"shrink") * glue_set
+                    if getfield(current,"shrink_order") == glue_order then
+                        wd = wd - getfield(current,"shrink") * glue_set
                     end
                 end
                 if getsubtype(current) >= leaders_code then
@@ -295,11 +294,11 @@ local function addstring(height,depth)
     local exheight = hashes.exheights[infofont]
     local httext   = height
     local dptext   = depth
-    local httext   = typesetters.fast_hpack(height,infofont)
-    local dptext   = typesetters.fast_hpack(depth,infofont)
+    local httext   = typesetters.tohpack(height,infofont)
+    local dptext   = typesetters.tohpack(depth,infofont)
     setfield(httext,"shift",- 1.2 * exheight)
     setfield(dptext,"shift",  0.6 * exheight)
-    local text = nuts.fasthpack(
+    local text = nuts.hpack(
         nuts.linked(
             new_kern(-getfield(httext,"width")-emwidth),
             httext,
@@ -671,8 +670,7 @@ local function profilelist(line,mvl)
                     end
                     break
                 elseif id == glue_code then
-                    local spec = getfield(current,"spec")
-                    local wd = getfield(spec,"width")
+                    local wd = getfield(current,"width")
                     if not wd or wd == 0 then
                         -- go on
                     else
@@ -746,8 +744,7 @@ local function profilelist(line,mvl)
                 if top then
                     local subtype = getsubtype(current)
                  -- if subtype == lineskip_code or subtype == baselineskip_code then
-                        local spec = getfield(current,"spec")
-                        local wd   = getfield(spec,"width")
+                        local wd   = getfield(current,"width")
                         if wd > 0 then
                             distance = wd
                             lastglue = current
@@ -852,8 +849,7 @@ function profiling.profilebox(specification)
             local subtype = getsubtype(current)
             if subtype == lineskip_code or subtype == baselineskip_code then
                 if top then
-                    local spec = getfield(current,"spec")
-                    local wd   = getfield(spec,"width")
+                    local wd   = getfield(current,"width")
                     if wd > 0 then
                         distance = wd
                         lastglue = current

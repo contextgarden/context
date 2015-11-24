@@ -133,7 +133,7 @@ local function keeptogether(start,a)
                     end
                 elseif id == glue_code then
                     -- hm, breakpoint, maybe turn this into kern
-                    total = total + getfield(getfield(current,"spec"),"width")
+                    total = total + getfield(current,"width")
                     if trace_keeptogether then
                         report_keeptogether("%s, index %s, total %p, threshold %p","glue",a,total,threshold)
                     end

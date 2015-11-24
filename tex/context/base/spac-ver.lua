@@ -109,7 +109,7 @@ local remove_node         = nuts.remove
 local count_nodes         = nuts.count
 local hpack_node          = nuts.hpack
 local vpack_node          = nuts.vpack
-local writable_spec       = nuts.writable_spec
+----- writable_spec       = nuts.writable_spec
 local nodereference       = nuts.reference
 
 local theprop             = nuts.theprop
@@ -550,13 +550,13 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
     if offset then
         -- we need to set the attr
         if t then
-            t[#t+1] = formatters["before offset: %p (width %p height %p depth %p)"](offset,getfield(current,"width"),getfield(current,"height"),getfield(current,"depth"))
+            t[#t+1] = formatters["before offset: %p (width %p height %p depth %p)"](offset,getfield(current,"width") or 0,getfield(current,"height"),getfield(current,"depth"))
         end
         local shifted = hpack_node(getlist(current))
         setfield(shifted,"shift",offset)
         setfield(current,"list",shifted)
         if t then
-            t[#t+1] = formatters["after offset: %p (width %p height %p depth %p)"](offset,getfield(current,"width"),getfield(current,"height"),getfield(current,"depth"))
+            t[#t+1] = formatters["after offset: %p (width %p height %p depth %p)"](offset,getfield(current,"width") or 0,getfield(current,"height"),getfield(current,"depth"))
         end
         setattr(shifted,a_snapmethod,0)
         setattr(current,a_snapmethod,0)
@@ -593,15 +593,21 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
     return h, d, ch, cd, lines
 end
 
+-- local function snap_topskip(current,method)
+--     local spec = getfield(current,"spec")
+--     local w = w and getfield(spec,"width") or 0
+--     local wd = w
+--     if getfield(spec,"writable") then
+--         setfield(spec,"width",0)
+--         wd = 0
+--     end
+--     return w, wd
+-- end
+
 local function snap_topskip(current,method)
-    local spec = getfield(current,"spec")
-    local w = getfield(spec,"width")
-    local wd = w
-    if getfield(spec,"writable") then
-        setfield(spec,"width",0)
-        wd = 0
-    end
-    return w, wd
+    local w = getfield(current,"width") or 0
+    setfield(current,"width",0)
+    return w, 0
 end
 
 local categories = allocate {
@@ -844,18 +850,6 @@ local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
 local topskip_code               = skipcodes.topskip
 local splittopskip_code          = skipcodes.splittopskip
 
--- local function free_glue_node(n)
---     free_node(n)
---     local s = getfield(n,"spec")
---     if s then
---         free_node(s)
---     end
--- end
-
-local free_glue_node = free_node
-local free_glue_spec = function() end
------ free_glue_spec = free_node -- can be enabled in in 0.73 (so for the moment we leak due to old luatex engine issues)
-
 function vspacing.snapbox(n,how)
     local sv = snapmethods[how]
     if sv then
@@ -909,7 +903,7 @@ local w, h, d = 0, 0, 0
 local function forced_skip(head,current,width,where,trace)
     if head == current then
         if getsubtype(head) == baselineskip_code then
-            width = width - getfield(getfield(head,"spec"),"width")
+            width = width - (getfield(head,"width") or 0)
         end
     end
     if width == 0 then
@@ -1055,7 +1049,7 @@ local function check_experimental_overlay(head,current)
         while c and c ~= n do
             local id = getid(c)
             if id == glue_code then
-                skips = skips + getfield(getfield(c,"glue_spec"),"width")
+                skips = skips + (getfield(c,"width") or 0)
             elseif id == kern_code then
                 skips = skips + getfield(c,"kern")
             end
@@ -1188,18 +1182,16 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
 -- end
         end
         if glue_data then
-            local spec = getfield(glue_data,"spec")
             if force_glue then
                 if trace then trace_done("flushed due to " .. why,glue_data) end
-                head = forced_skip(head,current,getfield(spec,"width"),"before",trace)
-                free_glue_node(glue_data)
-            elseif getfield(spec,"writable") then
+                head = forced_skip(head,current,getfield(glue_data,"width") or 0,"before",trace)
+                free_node(glue_data)
+            else
                 if trace then trace_done("flushed due to " .. why,glue_data) end
                 head = insert_node_before(head,current,glue_data)
-            else
-                free_glue_node(glue_data)
             end
         end
+
         if trace then trace_node(current) end
         glue_order, glue_data, force_glue = 0, nil, false
         penalty_order, penalty_data, natural_penalty = 0, nil, nil
@@ -1356,27 +1348,16 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         -- todo: prev can be whatsit (latelua)
                         local previous = getprev(current)
                         if previous and getid(previous) == glue_code and getsubtype(previous) == userskip_code then
-                            local ps = getfield(previous,"spec")
-                            if getfield(ps,"writable") then
-                                local cs = getfield(current,"spec")
-                                if getfield(cs,"writable") and getfield(ps,"stretch_order") == 0 and getfield(ps,"shrink_order") == 0 and getfield(cs,"stretch_order") == 0 and getfield(cs,"shrink_order") == 0 then
-                                    local pw, pp, pm = getfield(ps,"width"), getfield(ps,"stretch"), getfield(ps,"shrink")
-                                    local cw, cp, cm = getfield(cs,"width"), getfield(cs,"stretch"), getfield(cs,"shrink")
-                                 -- ps = writable_spec(previous) -- no writable needed here
-                                 -- ps.width, ps.stretch, ps.shrink = pw + cw, pp + cp, pm + cm
-                                    free_glue_spec(ps)
-                                    setfield(previous,"spec",new_gluespec(pw + cw, pp + cp, pm + cm)) -- else topskip can disappear
-                                    if trace then trace_natural("removed",current) end
-                                    head, current = remove_node(head, current, true)
-                                 -- current = previous
-                                    if trace then trace_natural("collapsed",previous) end
-                                 -- current = getnext(current)
-                                else
-                                    if trace then trace_natural("filler",current) end
-                                    current = getnext(current)
-                                end
+                            if getfield(previous,"stretch_order") == 0 and getfield(previous,"shrink_order") == 0 and
+                               getfield(current, "stretch_order") == 0 and getfield(current, "shrink_order") == 0 then
+                                setfield(previous,"width",  (getfield(previous,"width")   or 0) + (getfield(current,"width")   or 0))
+                                setfield(previous,"stretch",(getfield(previous,"stretch") or 0) + (getfield(current,"stretch") or 0))
+                                setfield(previous,"shrink", (getfield(previous,"shrink")  or 0) + (getfield(current,"shrink")  or 0))
+                                if trace then trace_natural("removed",current) end
+                                head, current = remove_node(head, current, true)
+                                if trace then trace_natural("collapsed",previous) end
                             else
-                                if trace then trace_natural("natural (no prev spec)",current) end
+                                if trace then trace_natural("filler",current) end
                                 current = getnext(current)
                             end
                         else
@@ -1415,16 +1396,16 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 elseif glue_order < so then
                     if trace then trace_skip("force",sc,so,sp,current) end
                     glue_order = so
-                    free_glue_node(glue_data)
+                    free_node(glue_data)
                     head, current, glue_data = remove_node(head, current)
                 elseif glue_order == so then
                     -- is now exclusive, maybe support goback as combi, else why a set
                     if sc == largest then
-                        local cs, gs = getfield(current,"spec"), getfield(glue_data,"spec")
-                        local cw, gw = getfield(cs,"width"), getfield(gs,"width")
+                        local cw = getfield(current,"width")   or 0
+                        local gw = getfield(glue_data,"width") or 0
                         if cw > gw then
                             if trace then trace_skip("largest",sc,so,sp,current) end
-                            free_glue_node(glue_data) -- also free spec
+                            free_node(glue_data)
                             head, current, glue_data = remove_node(head,current)
                         else
                             if trace then trace_skip("remove smallest",sc,so,sp,current) end
@@ -1432,26 +1413,24 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         end
                     elseif sc == goback then
                         if trace then trace_skip("goback",sc,so,sp,current) end
-                        free_glue_node(glue_data) -- also free spec
+                        free_node(glue_data)
                         head, current, glue_data = remove_node(head,current)
                     elseif sc == force then
                         -- last one counts, some day we can provide an accumulator and largest etc
                         -- but not now
                         if trace then trace_skip("force",sc,so,sp,current) end
-                        free_glue_node(glue_data) -- also free spec
+                        free_node(glue_data)
                         head, current, glue_data = remove_node(head, current)
                     elseif sc == penalty then
                         if trace then trace_skip("penalty",sc,so,sp,current) end
-                        free_glue_node(glue_data) -- also free spec
+                        free_node(glue_data)
                         glue_data = nil
                         head, current = remove_node(head, current, true)
                     elseif sc == add then
                         if trace then trace_skip("add",sc,so,sp,current) end
-                     -- local old, new = glue_data.spec, getfield(current,"spec")
-                        local old, new = writable_spec(glue_data), getfield(current,"spec")
-                        setfield(old,"width",getfield(old,"width") + getfield(new,"width"))
-                        setfield(old,"stretch",getfield(old,"stretch") + getfield(new,"stretch"))
-                        setfield(old,"shrink",getfield(old,"shrink") + getfield(new,"shrink"))
+                        setfield(old,"width",  (getfield(glue_data,"width")   or 0) + (getfield(current,"width")   or 0))
+                        setfield(old,"stretch",(getfield(glue_data,"stretch") or 0) + (getfield(current,"stretch") or 0))
+                        setfield(old,"shrink", (getfield(glue_data,"shrink")  or 0) + (getfield(current,"shrink")  or 0))
                         -- toto: order
                         head, current = remove_node(head, current, true)
                     else
@@ -1470,13 +1449,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     local s = getattr(current,a_snapmethod)
                     if s and s ~= 0 then
                         setattr(current,a_snapmethod,0)
-                        local spec = getfield(current,"spec")
-                        if getfield(spec,"writable") then
-                            local spec = writable_spec(current)
-                            setfield(spec,"width",0)
-                            if trace_vsnapping then
-                                report_snapper("lineskip set to zero")
-                            end
+                        setfield(current,"width",0)
+                        if trace_vsnapping then
+                            report_snapper("lineskip set to zero")
                         end
                     else
                         if trace then trace_skip("lineskip",sc,so,sp,current) end
@@ -1492,13 +1467,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     local s = getattr(current,a_snapmethod)
                     if s and s ~= 0 then
                         setattr(current,a_snapmethod,0)
-                        local spec = getfield(current,"spec")
-                        if getfield(spec,"writable") then
-                            local spec = writable_spec(current)
-                            setfield(spec,"width",0)
-                            if trace_vsnapping then
-                                report_snapper("baselineskip set to zero")
-                            end
+                        setfield(current,"width",0)
+                        if trace_vsnapping then
+                            report_snapper("baselineskip set to zero")
                         end
                     else
                         if trace then trace_skip("baselineskip",sc,so,sp,current) end
@@ -1515,15 +1486,14 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     if trace then trace_natural("ignored parskip",current) end
                     head, current = remove_node(head, current, true)
                 elseif glue_data then
-                    local ps = getfield(current,"spec")
-                    local gs = getfield(glue_data,"spec")
-                    if getfield(ps,"writable") and getfield(gs,"writable") and getfield(ps,"width") > getfield(gs,"width") then
-                        setfield(glue_data,"spec",copy_node(ps))
+                    if (getfield(current,"width") or 0) > (getfield(glue_data,"width") or 0) then
+                        glue_data = current
+                        head, current = remove_node(head, current)
                         if trace then trace_natural("taking parskip",current) end
                     else
+                        head, current = remove_node(head, current, true)
                         if trace then trace_natural("removed parskip",current) end
                     end
-                    head, current = remove_node(head, current, true)
                 else
                     if trace then trace_natural("honored parskip",current) end
                     head, current, glue_data = remove_node(head, current)
@@ -1573,10 +1543,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 --
             else -- other glue
                 if snap and trace_vsnapping then
-                    local spec = getfield(current,"spec")
-                    if getfield(spec,"writable") and getfield(spec,"width") ~= 0 then
-                        report_snapper("glue %p of type %a kept",getfield(spec,"width"),skipcodes[subtype])
-                     -- setfield(spec,"width",0)
+                    local w = getfield(current,"width") or 0
+                    if w ~= 0 then
+                        report_snapper("glue %p of type %a kept",w,skipcodes[subtype])
                     end
                 end
                 if trace then trace_skip(formatters["glue of type %a"](subtype),sc,so,sp,current) end
@@ -1616,9 +1585,8 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         if not tail then tail = find_node_tail(head) end
         if trace then trace_done("result",glue_data) end
         if force_glue then
-            local spec = getfield(glue_data,"spec")
-            head, tail = forced_skip(head,tail,getfield(spec,"width"),"after",trace)
-            free_glue_node(glue_data)
+            head, tail = forced_skip(head,tail,getfield(glue_data,"width") or 0,"after",trace)
+            free_node(glue_data)
         else
             head, tail = insert_node_after(head,tail,glue_data)
         end
