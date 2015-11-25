@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/24/15 18:25:02
+-- merge date  : 11/25/15 18:57:31
 
 do -- begin closure to overcome local limits and interference
 
@@ -10170,7 +10170,7 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['font-inj']={
+if not modules then modules={} end modules ['luatex-fonts-inj']={
   version=1.001,
   comment="companion to font-lib.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -11183,7 +11183,7 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['font-otx']={
+if not modules then modules={} end modules ['luatex-fonts-ota']={
   version=1.001,
   comment="companion to font-otf.lua (analysing)",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -11563,7 +11563,7 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['font-otn']={
+if not modules then modules={} end modules ['luatex-fonts-otn']={
   version=1.001,
   comment="companion to font-ini.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -16029,7 +16029,7 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['luatex-font-def']={
+if not modules then modules={} end modules ['luatex-fonts-def']={
   version=1.001,
   comment="companion to luatex-*.tex",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",

@@ -6,18 +6,15 @@ if not modules then modules = { } end modules ['font-agl'] = {
     original  = "Adobe Glyph List, version 2.0, September 20, 2002",
 }
 
-local allocate = utilities.storage.allocate
+local allocate      = utilities.storage.allocate
 
-local names    = allocate {
-    -- filled from char-def.lua
-}
-local unicodes = allocate {
-    -- filled from char-def.lua
-}
+fonts               = fonts or { }
+local encodings     = fonts.encodings or { }
+fonts.encodings     = encodings
+local agl           = fonts.encodings.agl or { }
+fonts.encodings.agl = agl
 
-local ctxcodes = allocate {
-    -- filled from char-def.lua
-}
+table.setmetatableindex(agl,nil) -- prevent recursive lookups otherwise when autoloaded
 
 local synonyms = {
     Acyrillic                      = 0x0410,
@@ -636,48 +633,60 @@ local extras   = allocate { -- private extensions
     twodotenleader  = 0x2025,
 }
 
-for u, c in next, characters.data do
-    local a = c.adobename
-    if a then
-        unicodes[a] = u
-        names   [u] = a
-    end
-    local n = c.contextname
-    if n then
-        ctxcodes[n] = u
-     -- names   [u] = a
-    end
-end
-
-for a, u in next, extras do
-    unicodes[a] = u
-    if not names[u] then
-        names[u] = a
-    end
-end
-
-for s, u in next, synonyms do
-    unicodes[s] = u
-    if not names[u] then
-        names[u] = s
-    end
-end
-
 -- We load this table only when needed. We could use a loading mechanism
 -- return the table but there are no more vectors like this so why bother.
 --
 -- Well, we currently have this table preloaded anyway.
 
-local agl = {
-    names    = names,     -- unicode -> name
-    unicodes = unicodes,  -- name -> unicode
-    ctxcodes = ctxcodes,  -- name -> unicode
-    synonyms = synonyms,  -- merged into the other two
-    extras   = extras,    -- merged into the other two
-}
+local names    = agl.names
+local unicodes = agl.unicodes
+local ctxcodes = agl.ctxcodes
 
-fonts               = fonts or { }
-fonts.encodings     = fonts.encodings or { }
-fonts.encodings.agl = agl
+if not names then
+
+    names    = allocate { } -- filled from char-def.lua
+    unicodes = allocate { }
+    ctxcodes = allocate { }
+
+    for u, c in next, characters.data do
+        local a = c.adobename
+        if a then
+            unicodes[a] = u
+            names   [u] = a
+        end
+        local n = c.contextname
+        if n then
+            ctxcodes[n] = u
+         -- names   [u] = a
+        end
+    end
+
+    for a, u in next, extras do
+        unicodes[a] = u
+        if not names[u] then
+            names[u] = a
+        end
+    end
+
+    for s, u in next, synonyms do
+        unicodes[s] = u
+        if not names[u] then
+            names[u] = s
+        end
+    end
+
+    if storage then
+        storage.register("encodings/names",    names,    "fonts.encodings.names")
+        storage.register("encodings/unicodes", unicodes, "fonts.encodings.unicodes")
+        storage.register("encodings/ctxcodes", ctxcodes, "fonts.encodings.ctxcodes")
+    end
+
+end
+
+agl.names    = names     -- unicode -> name
+agl.unicodes = unicodes  -- name -> unicode
+agl.ctxcodes = ctxcodes  -- name -> unicode
+agl.synonyms = synonyms  -- merged into the other two
+agl.extras   = extras    -- merged into the other two
 
 return agl

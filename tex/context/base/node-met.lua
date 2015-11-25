@@ -86,6 +86,7 @@ nodes.new                  = node.new
 nodes.tail                 = node.tail
 nodes.traverse             = node.traverse
 nodes.traverse_id          = node.traverse_id
+nodes.traverse_char        = node.traverse_char
 nodes.slide                = node.slide
 nodes.vpack                = node.vpack
 nodes.fields               = node.fields

@@ -173,6 +173,7 @@ nuts.new                  = direct.new
 nuts.tail                 = direct.tail
 nuts.traverse             = direct.traverse
 nuts.traverse_id          = direct.traverse_id
+nuts.traverse_char        = direct.traverse_char
 nuts.slide                = direct.slide
 nuts.writable_spec        = direct.writable_spec
 nuts.vpack                = direct.vpack

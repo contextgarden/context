@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-inj'] = {
+if not modules then modules = { } end modules ['luatex-fonts-inj'] = {
     version   = 1.001,
     comment   = "companion to font-lib.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

@@ -1301,7 +1301,7 @@ if not characters.superscripts then
     if storage then
         storage.register("characters/superscripts", superscripts, "characters.superscripts")
         storage.register("characters/subscripts",   subscripts,   "characters.subscripts")
-        storage.register("characters/fractions",    fractions,   "characters.fractions")
+        storage.register("characters/fractions",    fractions,    "characters.fractions")
     end
 
 end

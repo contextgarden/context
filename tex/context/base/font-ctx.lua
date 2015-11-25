@@ -2278,7 +2278,7 @@ local methods            = analyzers.methods
 
 local unsetvalue         = attributes.unsetvalue
 
-local traverse_by_id     = nuts.traverse_id
+local traverse_id        = nuts.traverse_id
 
 local a_color            = attributes.private('color')
 local a_colormodel       = attributes.private('colormodel')
@@ -2307,7 +2307,7 @@ local function markstates(head)
     if head then
         head = tonut(head)
         local model = getattr(head,a_colormodel) or 1
-        for glyph in traverse_by_id(glyph_code,head) do
+        for glyph in traverse_id(glyph_code,head) do
             local a = getprop(glyph,a_state)
             if a then
                 local name = colornames[a]
@@ -2357,7 +2357,7 @@ registerotffeature { -- adapts
 }
 
 function methods.nocolor(head,font,attr)
-    for n in traverse_by_id(glyph_code,head) do
+    for n in traverse_id(glyph_code,head) do
         if not font or getfont(n) == font then
             setattr(n,a_color,unsetvalue)
         end

@@ -668,7 +668,7 @@ local function ruledglyph(head,current,previous)
 -- )
 
         local char = chardata[getfont(current)][getchar(current)]
-        if char and char.tounicode and #char.tounicode > 4 then -- hack test
+        if char and type(char.unicode) == "table" then -- hackery test
             setlistcolor(info,c_ligature)
             setlisttransparency(info,c_ligature_d)
         else

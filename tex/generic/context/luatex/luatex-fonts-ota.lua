@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-otx'] = {
+if not modules then modules = { } end modules ['luatex-fonts-ota'] = {
     version   = 1.001,
     comment   = "companion to font-otf.lua (analysing)",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

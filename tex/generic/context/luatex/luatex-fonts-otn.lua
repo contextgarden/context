@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-otn'] = {
+if not modules then modules = { } end modules ['luatex-fonts-otn'] = {
     version   = 1.001,
     comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

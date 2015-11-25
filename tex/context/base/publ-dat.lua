@@ -53,7 +53,7 @@ local report_duplicates = logs.reporter("publications","duplicates")
 local allocate          = utilities.storage.allocate
 
 local commands          = commands
-local implement         = interfaces.implement
+local implement         = interfaces and interfaces.implement
 
 publications            = publications or { }
 local publications      = publications
