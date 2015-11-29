@@ -31,7 +31,7 @@ local getlist            = nuts.getlist
 local getattr            = nuts.getattr
 local getbox             = nuts.getbox
 
-local traversenodes      = nuts.traverse
+local traverse_nodes     = nuts.traverse
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
@@ -117,7 +117,7 @@ end
 -- identify range
 
 local function sweep(head,first,last)
-    for n in traversenodes(head) do
+    for n in traverse_nodes(head) do
         local id = getid(n)
         if id == glyph_code then
             local a = getattr(n,a_marks)

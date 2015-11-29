@@ -49,7 +49,6 @@ local vpack               = nuts.vpack
 local freenode            = nuts.free
 local concatnodes         = nuts.concat
 local slidenodes          = nuts.slide -- ok here as we mess with prev links intermediately
-local traversenodes       = nuts.traverse
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield

@@ -19,7 +19,7 @@ local nuts              = nodes.nuts
 local tonut             = nodes.tonut
 local tonode            = nodes.tonode
 
-local findtail          = nuts.tail
+local find_node_tail    = nuts.tail
 local getprev           = nuts.getprev
 local getid             = nuts.getid
 local getsubtype        = nuts.getsubtype
@@ -60,7 +60,7 @@ end
 function wrappers.handler(head)
     local head = tonut(head)
     if head then
-        local tail = findtail(head)
+        local tail = find_node_tail(head)
         local done = false
         head, tail, done = remove_dangling_crlf(head,tail) -- will be action chain
     end

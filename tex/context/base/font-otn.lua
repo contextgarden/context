@@ -243,7 +243,6 @@ local wildcard           = "*"
 local default            = "dflt"
 
 local nodecodes          = nodes.nodecodes
-local whatcodes          = nodes.whatcodes
 local glyphcodes         = nodes.glyphcodes
 local disccodes          = nodes.disccodes
 
@@ -2759,20 +2758,33 @@ end)
 
 -- fonts.hashes.lookups = lookuphashes
 
-local autofeatures = fonts.analyzers.features -- was: constants
+local autofeatures    = fonts.analyzers.features
+local featuretypes    = otf.tables.featuretypes
+local defaultscript   = otf.features.checkeddefaultscript
+local defaultlanguage = otf.features.checkeddefaultlanguage
 
-local function initialize(sequence,script,language,enabled)
+local function initialize(sequence,script,language,enabled,autoscript,autolanguage)
     local features = sequence.features
     if features then
         local order = sequence.order
         if order then
-            for i=1,#order do --
-                local kind  = order[i] --
+            local featuretype = featuretypes[sequence.type or "unknown"]
+            for i=1,#order do
+                local kind  = order[i]
                 local valid = enabled[kind]
                 if valid then
-                    local scripts = features[kind] --
-                    local languages = scripts[script] or scripts[wildcard]
-                    if languages and (languages[language] or languages[wildcard]) then
+                    local scripts   = features[kind]
+                    local languages = scripts and (
+                        scripts[script] or
+                        scripts[wildcard] or
+                        (autoscript and defaultscript(featuretype,autoscript,scripts))
+                    )
+                    local enabled = languages and (
+                        languages[language] or
+                        languages[wildcard] or
+                        (autolanguage and defaultlanguage(featuretype,autolanguage,languages))
+                    )
+                    if enabled then
                         return { valid, autofeatures[kind] or false, sequence, kind }
                     end
                 end
@@ -2785,11 +2797,13 @@ local function initialize(sequence,script,language,enabled)
 end
 
 function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
-    local shared     = tfmdata.shared
-    local properties = tfmdata.properties
-    local language   = properties.language or "dflt"
-    local script     = properties.script   or "dflt"
-    local enabled    = shared.features
+    local shared       = tfmdata.shared
+    local properties   = tfmdata.properties
+    local language     = properties.language or "dflt"
+    local script       = properties.script   or "dflt"
+    local enabled      = shared.features
+    local autoscript   = enabled and enabled.autoscript
+    local autolanguage = enabled and enabled.autolanguage
     local res = resolved[font]
     if not res then
         res = { }
@@ -2808,7 +2822,7 @@ function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
         rs[language] = rl
         local sequences = tfmdata.resources.sequences
         for s=1,#sequences do
-            local v = enabled and initialize(sequences[s],script,language,enabled)
+            local v = enabled and initialize(sequences[s],script,language,enabled,autoscript,autolanguage)
             if v then
                 rl[#rl+1] = v
             end

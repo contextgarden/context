@@ -373,7 +373,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
         local coverage     = readushort(f)
         local subclasssets = readarray(f)
         local rules        = { }
-        if subclassets then
+        if subclasssets then
             coverage = readcoverage(f,tableoffset+coverage,true)
             for i=1,#subclasssets do
                 local offset = subclasssets[i]
@@ -1479,7 +1479,7 @@ do
         local glyphs         = fontdata.glyphs
         local nofglyphs      = fontdata.nofglyphs or #glyphs
         local noflookups     = #lookups
-        local lookupprefix   = sub(what,1,1)
+        local lookupprefix   = sub(what,2,2) -- g[s|p][ub|os]
         --
         for lookupid=1,noflookups do
             local lookup     = lookups[lookupid]
@@ -1652,8 +1652,9 @@ do
         end
 
         for i, n in sortedhash(sublookupcheck) do
-            if n == 0 then
-                report("%s lookup %i is not used",what,i) -- lookups[i].done.lookupid
+            local t = lookups[i].type
+            if n == 0 and t ~= "extension" then
+                report("%s lookup %i of type %a is not used",what,i,t)
             end
         end
 

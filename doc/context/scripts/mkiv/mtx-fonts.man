@@ -54,7 +54,7 @@ enable trackers
 some info about the database
 .TP
 .B --names
-uise name instead of unicodes
+use name instead of unicodes
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

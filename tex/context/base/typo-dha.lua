@@ -73,7 +73,6 @@ local end_of_math        = nuts.end_of_math
 local nodepool           = nuts.pool
 
 local nodecodes          = nodes.nodecodes
-local whatcodes          = nodes.whatcodes
 local mathcodes          = nodes.mathcodes
 
 local glyph_code         = nodecodes.glyph
@@ -83,8 +82,8 @@ local kern_code          = nodecodes.kern
 local glue_code          = nodecodes.glue
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
-local dir_code           = nodecodes.dir or whatcodes.dir
-local localpar_code      = nodecodes.localpar or whatcodes.localpar
+local dir_code           = nodecodes.dir
+local localpar_code      = nodecodes.localpar
 
 local new_textdir        = nodepool.textdir
 

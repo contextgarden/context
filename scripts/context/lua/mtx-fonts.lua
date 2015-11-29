@@ -43,7 +43,7 @@ local helpinfo = [[
     <flag name="info"><short>give more details</short></flag>
     <flag name="trackers" value="list"><short>enable trackers</short></flag>
     <flag name="statistics"><short>some info about the database</short></flag>
-    <flag name="names"><short>uise name instead of unicodes</short></flag>
+    <flag name="names"><short>use name instead of unicodes</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -72,9 +72,9 @@ local helpinfo = [[
     <example><command>mtxrun --script font --list --file --pattern=*somename*</command></example>
    </subcategory>
    <subcategory>
-    <example><command>mtxrun --script font --save --texgyrepagella-regular.otf</command></example>
-    <example><command>mtxrun --script font --convert --texgyrepagella-regular.otf</command></example>
-    <example><command>mtxrun --script font --convert --names --texgyrepagella-regular.otf</command></example>
+    <example><command>mtxrun --script font --save texgyrepagella-regular.otf</command></example>
+    <example><command>mtxrun --script font --convert texgyrepagella-regular.otf</command></example>
+    <example><command>mtxrun --script font --convert --names texgyrepagella-regular.otf</command></example>
    </subcategory>
   </category>
  </examples>

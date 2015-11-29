@@ -8,8 +8,9 @@ if not modules then modules = { } end modules ['mtx-profile'] = {
 
 -- todo: also line number
 -- todo: sort runtime as option
+-- todo: make it more efficient .. real old code
 
-local match, format, find = string.match, string.format, string.find
+local match, format, find, gsub = string.match, string.format, string.find, string.gsub
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -57,7 +58,7 @@ function scripts.profiler.analyze(filename)
         local totalruntime, totalcount, totalcalls = 0, 0, 0
         for line in f:lines() do
             if not find(line,"__index") and not find(line,"__newindex") then
-                local stacklevel, filename, functionname, linenumber, currentline, localtime, totaltime = line:match("^(%d+)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)")
+                local stacklevel, filename, functionname, linenumber, currentline, localtime, totaltime = match(line,"^(%d+)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)\t(.-)")
                 if not filename then
                     -- next
                 elseif filename == "=[C]" then
@@ -65,7 +66,7 @@ function scripts.profiler.analyze(filename)
                         calls[functionname] = (calls[functionname] or 0) + 1
                     end
                 else
-                    local filename = filename:match("^@(.*)$")
+                    local filename = match(filename,"^@(.*)$")
                     if filename then
                         local fi = times[filename]
                         if not fi then fi = { } times[filename] = fi end
@@ -90,7 +91,7 @@ function scripts.profiler.analyze(filename)
                 totalcount = totalcount + count
                 if totaltime > timethreshold or count > countthreshold then
                     totalruntime = totalruntime + totaltime
-                    local functionfile, somenumber = functionname:match("^@(.+):(.-)$")
+                    local functionfile, somenumber = match(functionname,"^@(.+):(.-)$")
                     if functionfile then
                         local number = tonumber(somenumber)
                         if number then
@@ -98,13 +99,13 @@ function scripts.profiler.analyze(filename)
                                 loaded[functionfile] = string.splitlines(io.loaddata(functionfile) or "")
                             end
                             functionname = loaded[functionfile][number] or functionname
-                            functionname = functionname:gsub("^%s*","")
-                            functionname = functionname:gsub("%s*%-%-.*$","")
+                            functionname = gsub(functionname,"^%s*","")
+                            functionname = gsub(functionname,"%s*%-%-.*$","")
                             functionname = number .. ": " .. functionname
                         end
                     end
                     filename = file.basename(filename)
-                    print(functiontemplate:format(filename,totaltime,count,functionname))
+                    print(format(functiontemplate,filename,totaltime,count,functionname))
                 end
             end
         end
@@ -149,7 +150,7 @@ function scripts.profiler.x_analyze(filename)
         end
         f:close()
         local noc = 0
-local criterium = 100
+        local criterium = 100
         for name, n in next, calls do
             if n > criterium then
                 if find(name,"^@@[a-z][a-z]") then

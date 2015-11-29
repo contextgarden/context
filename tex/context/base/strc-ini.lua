@@ -370,7 +370,6 @@ function sets.get(namespace,block,name,level,default) -- check if name is passed
     if not dn then
         return default
     end
--- inspect(dn)
     local dl = dn[1][level]
     return dl or dn[2] or default
 end

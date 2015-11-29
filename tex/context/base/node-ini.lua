@@ -289,8 +289,6 @@ listcodes.column           = listcodes.alignment
 kerncodes.italiccorrection = kerncodes.userkern
 kerncodes.kerning          = kerncodes.fontkern
 
-whatcodes.textdir          = whatcodes.dir
-
 nodes.codes = allocate { -- mostly for listing
     glue    = skipcodes,
     noad    = noadcodes,

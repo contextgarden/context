@@ -55,7 +55,7 @@ function scripts.package.merge_luatex_files(name)
             collected[#collected+1] = format("-- parent file : %s\n",oldname)
             collected[#collected+1] = format("-- merge date  : %s\n",os.date())
             -- loadmodule can have extra arguments
-            for lib in gmatch(data,"loadmodule *%([\'\"](.-)[\'\"]") do
+            for lib in gmatch(data,"loadmodule *%([\'\"](.-)[\'\"]") do -- todo: not -- lines
                 if file.basename(lib) ~= file.basename(newname) then
                     local fullname = resolvers.findfile(lib) or ""
                     if fullname == "" then

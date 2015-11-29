@@ -196,7 +196,6 @@ local wildcard           = "*"
 local default            = "dflt"
 
 local nodecodes          = nodes.nodecodes
-local whatcodes          = nodes.whatcodes
 local glyphcodes         = nodes.glyphcodes
 local disccodes          = nodes.disccodes
 
@@ -204,8 +203,8 @@ local glyph_code         = nodecodes.glyph
 local glue_code          = nodecodes.glue
 local disc_code          = nodecodes.disc
 local math_code          = nodecodes.math
-local dir_code           = nodecodes.dir or whatcodes.dir
-local localpar_code      = nodecodes.localpar or whatcodes.localpar
+local dir_code           = nodecodes.dir
+local localpar_code      = nodecodes.localpar
 
 local discretionary_code = disccodes.discretionary
 local ligature_code      = glyphcodes.ligature
@@ -314,7 +313,9 @@ local function gref(n) -- currently the same as in font-otb
 end
 
 local function cref(dataset,sequence,index)
-    if index then
+    if not dataset then
+        return "no valid dataset"
+    elseif index then
         return formatters["feature %a, type %a, chain lookup %a, index %a"](dataset[4],sequence.type,sequence.name,index)
     else
         return formatters["feature %a, type %a, chain lookup %a"](dataset[4],sequence.type,sequence.name)
@@ -671,7 +672,7 @@ local function multiple_glyphs(head,start,multiple,ignoremarks)
         setchar(start,multiple[1])
         if nofmultiples > 1 then
             local sn = getnext(start)
-            for k=2,nofmultiples do -- todo: use insert_node
+            for k=2,nofmultiples do
 -- untested:
 --
 -- while ignoremarks and marks[getchar(sn)] then
@@ -680,11 +681,7 @@ local function multiple_glyphs(head,start,multiple,ignoremarks)
                 local n = copy_node(start) -- ignore components
                 resetinjection(n)
                 setchar(n,multiple[k])
-                setboth(n,start,sn)
-                if sn then
-                    setprev(sn,n)
-                end
-                setnext(start,n)
+                insert_node_after(head,start,n)
                 start = n
             end
         end
@@ -1282,7 +1279,7 @@ function chainprocs.gsub_multiple(head,start,stop,dataset,sequence,currentlookup
         end
     else
         if trace_multiples then
-            logprocess("%s: replacing %s by multiple characters %s",cref(dataset,sequence),gref(startchar),gref(replacements))
+            logprocess("%s: replacing %s by multiple characters %s",cref(dataset,sequence),gref(startchar),gref(replacement))
         end
         return multiple_glyphs(head,start,replacement,currentlookup.flags[1]) -- not sequence.flags?
     end
@@ -2534,7 +2531,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                             done = true
                         end
                     else
-                        logprocess("%s: %s is not yet supported",cref(dataset,sequence),chainkind)
+                        logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
                     end
                  else
                     local i = 1
@@ -2591,7 +2588,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                 end
                             else
                                 -- actually an error
-                                logprocess("%s: %s is not yet supported",cref(dataset,sequence),chainkind)
+                                logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
                             end
                             i = i + 1
                         end
@@ -2632,6 +2629,23 @@ handlers.gsub_reversecontextchain = handle_contextchain
 handlers.gpos_contextchain        = handle_contextchain
 handlers.gpos_context             = handle_contextchain
 
+-- this needs testing
+
+function chained_contextchain(head,start,stop,dataset,sequence,currentlookup,rlmode)
+    local steps    = currentlookup.steps
+    local nofsteps = currentlookup.nofsteps
+    if nofsteps > 1 then
+        reportmoresteps(dataset,sequence)
+    end
+    return handle_contextchain(head,start,dataset,sequence,currentlookup,rlmode)
+end
+
+chainprocs.gsub_context             = chained_contextchain
+chainprocs.gsub_contextchain        = chained_contextchain
+chainprocs.gsub_reversecontextchain = chained_contextchain
+chainprocs.gpos_contextchain        = chained_contextchain
+chainprocs.gpos_context             = chained_contextchain
+
 local missing = setmetatableindex("table")
 
 local function logprocess(...)
@@ -2667,20 +2681,33 @@ end)
 
 -- fonts.hashes.sequences = sequencelists
 
-local autofeatures = fonts.analyzers.features -- was: constants
+local autofeatures    = fonts.analyzers.features
+local featuretypes    = otf.tables.featuretypes
+local defaultscript   = otf.features.checkeddefaultscript
+local defaultlanguage = otf.features.checkeddefaultlanguage
 
-local function initialize(sequence,script,language,enabled)
+local function initialize(sequence,script,language,enabled,autoscript,autolanguage)
     local features = sequence.features
     if features then
         local order = sequence.order
         if order then
-            for i=1,#order do --
-                local kind  = order[i] --
+            local featuretype = featuretypes[sequence.type or "unknown"]
+            for i=1,#order do
+                local kind  = order[i]
                 local valid = enabled[kind]
                 if valid then
-                    local scripts = features[kind] --
-                    local languages = scripts[script] or scripts[wildcard]
-                    if languages and (languages[language] or languages[wildcard]) then
+                    local scripts   = features[kind]
+                    local languages = scripts and (
+                        scripts[script] or
+                        scripts[wildcard] or
+                        (autoscript and defaultscript(featuretype,autoscript,scripts))
+                    )
+                    local enabled = languages and (
+                        languages[language] or
+                        languages[wildcard] or
+                        (autolanguage and defaultlanguage(featuretype,autolanguage,languages))
+                    )
+                    if enabled then
                         return { valid, autofeatures[kind] or false, sequence, kind }
                     end
                 end
@@ -2693,11 +2720,13 @@ local function initialize(sequence,script,language,enabled)
 end
 
 function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
-    local shared     = tfmdata.shared
-    local properties = tfmdata.properties
-    local language   = properties.language or "dflt"
-    local script     = properties.script   or "dflt"
-    local enabled    = shared.features
+    local shared       = tfmdata.shared
+    local properties   = tfmdata.properties
+    local language     = properties.language or "dflt"
+    local script       = properties.script   or "dflt"
+    local enabled      = shared.features
+    local autoscript   = enabled and enabled.autoscript
+    local autolanguage = enabled and enabled.autolanguage
     local res = resolved[font]
     if not res then
         res = { }
@@ -2716,7 +2745,7 @@ function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
         rs[language] = rl
         local sequences = tfmdata.resources.sequences
         for s=1,#sequences do
-            local v = enabled and initialize(sequences[s],script,language,enabled)
+            local v = enabled and initialize(sequences[s],script,language,enabled,autoscript,autolanguage)
             if v then
                 rl[#rl+1] = v
             end

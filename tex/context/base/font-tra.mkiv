@@ -15,6 +15,8 @@
 
 \writestatus{loading}{ConTeXt Font Macros / Tracing}
 
+%D just use fontid
+
 %D \macros
 %D   {showbodyfont}
 %D
@@ -122,7 +124,7 @@
 
 \unexpanded\def\otfstepcharcommand#1#2#3% font char class
   {\otfstepspace
-  \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
+   \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
    \otfstepspace}
 
 \unexpanded\def\otfstepfontcommand#1#2#3% id font size

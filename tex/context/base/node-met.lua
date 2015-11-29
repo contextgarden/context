@@ -93,7 +93,6 @@ nodes.fields               = node.fields
 nodes.is_node              = node.is_node
 
 nodes.first_glyph          = node.first_glyph
-nodes.first_character      = node.first_character
 nodes.has_glyph            = node.has_glyph or node.first_glyph
 
 nodes.current_attr         = node.current_attr
