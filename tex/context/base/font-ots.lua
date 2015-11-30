@@ -1156,7 +1156,7 @@ local logwarning = report_chain
 -- in a bit weird way. There is no lookup and the replacement comes from the lookup
 -- itself. It is meant mostly for dealing with Urdu.
 
-function chainprocs.reversesub(head,start,stop,dataset,sequence,replacements,rlmode)
+local function reversesub(head,start,stop,dataset,sequence,replacements,rlmode)
     local char        = getchar(start)
     local replacement = replacements[char]
     if replacement then
@@ -1170,6 +1170,9 @@ function chainprocs.reversesub(head,start,stop,dataset,sequence,replacements,rlm
         return head, start, false
     end
 end
+
+
+chainprocs.reversesub = reversesub
 
 --[[ldx--
 <p>This chain stuff is somewhat tricky since we can have a sequence of actions to be
@@ -2264,7 +2267,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                             if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
                                                 skipped = true
                                                 if trace_skips then
-                                                    show_skip(kind,chainname,char,ck,class)
+                                                    show_skip(dataset,sequence,char,ck,class)
                                                 end
                                             elseif seq[n][char] then
                                                 n = n -1
@@ -2402,7 +2405,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                         if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
                                             skipped = true
                                             if trace_skips then
-                                                show_skip(kind,chainname,char,ck,class)
+                                                show_skip(dataset,sequence,char,ck,class)
                                             end
                                         elseif seq[n][char] then
                                             n = n + 1
@@ -2602,7 +2605,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             else
                 local replacements = ck[7]
                 if replacements then
-                    head, start, done = chainprocs.reversesub(head,start,last,dataset,sequence,replacements,rlmode)
+                    head, start, done = reversesub(head,start,last,dataset,sequence,replacements,rlmode)
                 else
                     done = quit_on_no_replacement -- can be meant to be skipped / quite inconsistent in fonts
                     if trace_contexts then

@@ -25,6 +25,8 @@
   [always]
   [mode=node,    % we had 'auto', but let's try 'node' for a while and see what the impact is
    script=auto,  % on speed; 'base' just doesn't play well with dynamics; some day we can even
+   autoscript=position,
+   autolanguage=position,
    kern=yes,     % consider skipping the base passes when no base mode is used
    mark=yes,
    mkmk=yes,
@@ -106,6 +108,7 @@
 \definefontfeature
   [semitic-complete]
   [mode=node,analyze=yes,language=dflt,ccmp=yes,
+   autoscript=position,autolanguage=position,
    init=yes,medi=yes,fina=yes,isol=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes,
    liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes]
@@ -113,6 +116,7 @@
 \definefontfeature
   [semitic-simple]
   [mode=node,analyze=yes,language=dflt,ccmp=yes,
+   autoscript=position,autolanguage=position,
    init=yes,medi=yes,fina=yes,isol=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes,
    rlig=yes,calt=yes]

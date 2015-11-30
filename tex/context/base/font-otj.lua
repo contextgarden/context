@@ -88,8 +88,6 @@ local nofregisteredmarks    = 0
 local nofregisteredcursives = 0
 local keepregisteredcounts  = false
 
-local markanchors           = { }
-
 function injections.keepcounts()
     keepregisteredcounts = true
 end
@@ -364,7 +362,6 @@ end
 function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk) -- ba=baseanchor, ma=markanchor
     local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])
     nofregisteredmarks = nofregisteredmarks + 1
-    markanchors[nofregisteredmarks] = base
     if rlmode >= 0 then
         dx = tfmbase.width - dx -- see later commented ox
     end
@@ -381,7 +378,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk) -- ba=b
                 i.marky        = dy
                 i.markdir      = rlmode or 0
                 i.markbase     = nofregisteredmarks
-             -- i.markbasenode = base
+                i.markbasenode = base
                 i.markmark     = mkmk
             end
         else
@@ -390,7 +387,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk) -- ba=b
                 marky        = dy,
                 markdir      = rlmode or 0,
                 markbase     = nofregisteredmarks,
-             -- markbasenode = base,
+                markbasenode = base,
                 markmark     = mkmk,
             }
         end
@@ -401,7 +398,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk) -- ba=b
                 marky        = dy,
                 markdir      = rlmode or 0,
                 markbase     = nofregisteredmarks,
-             -- markbasenode = base,
+                markbasenode = base,
                 markmark     = mkmk,
             },
         }
@@ -1008,7 +1005,6 @@ local function inject_everything(head,where)
         if trace_marks then
             showoffset(n,true)
         end
-        markanchors[p] = nil
     end
     -- todo: marks in disc
     while current do
@@ -1021,27 +1017,11 @@ local function inject_everything(head,where)
                  -- local i = rawget(p,"injections")
                     local i = p.injections
                     if i then
-                        local f = getfont(current)
-                        if f ~= font then
-                            font = f
-                            markdata = fontdata[f].resources
-                            if markdata then
-                                markdata = markdata.marks
-                            end
-                        end
-                        local ismark = markdata and markdata[getchar(current)]
-                        if ismark then
-                            local pm = markanchors[i.markbase] -- markbasenode
-                            if pm then
-                                nofmarks = nofmarks + 1
-                                marks[nofmarks] = current
-                            else
-                                ismark = false
-                            end
+                        local pm = i.markbasenode
+                        if pm then
+                            nofmarks = nofmarks + 1
+                            marks[nofmarks] = current
                         else
-                            ismark = false
-                        end
-                        if not ismark then
                             if hascursives then
                                 local cursivex = i.cursivex
                                 if cursivex then
@@ -1200,7 +1180,7 @@ local function inject_everything(head,where)
                             end
                         end
                         if hasmarks then
-                            local pm = markanchors[i.markbase] -- markbasenode
+                            local pm = i.markbasenode
                             if pm then
                                 processmark(pm,current,i)
                             end
@@ -1232,7 +1212,7 @@ local function inject_everything(head,where)
                             end
                         end
                         if hasmarks then
-                            local pm = markanchors[i.markbase] -- markbasenode
+                            local pm = i.markbasenode
                             if pm then
                                 processmark(pm,current,i)
                             end
@@ -1264,7 +1244,7 @@ local function inject_everything(head,where)
                             end
                         end
                         if hasmarks then
-                            local pm = markanchors[i.markbase] -- markbasenode
+                            local pm = i.markbasenode
                             if pm then
                                 processmark(pm,current,i)
                             end
@@ -1335,7 +1315,7 @@ local function inject_everything(head,where)
             local p = rawget(properties,m)
          -- local i = rawget(p,"injections")
             local i = p.injections
-            local b = markanchors[i.markbase] -- markbasenode
+            local b = i.markbasenode
             processmark(b,m,i)
         end
     elseif hasmarks then

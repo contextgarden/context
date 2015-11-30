@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/29/15 20:29:45
+-- merge date  : 11/30/15 14:16:56
 
 do -- begin closure to overcome local limits and interference
 
@@ -13843,25 +13843,40 @@ otf.chainhandlers={
   normal=normal_handle_contextchain,
   verbose=verbose_handle_contextchain,
 }
+local handle_contextchain=nil
+function chained_contextchain(head,start,stop,...)
+  local steps=currentlookup.steps
+  local nofsteps=currentlookup.nofsteps
+  if nofsteps>1 then
+    reportmoresteps(dataset,sequence)
+  end
+  return handle_contextchain(head,start,...)
+end
 function otf.setcontextchain(method)
   if not method or method=="normal" or not otf.chainhandlers[method] then
-    if handlers.contextchain then 
+    if handle_contextchain then 
       logwarning("installing normal contextchain handler")
     end
-    handlers.contextchain=normal_handle_contextchain
+    handle_contextchain=normal_handle_contextchain
   else
     logwarning("installing contextchain handler %a",method)
     local handler=otf.chainhandlers[method]
-    handlers.contextchain=function(...)
+    handle_contextchain=function(...)
       return handler(currentfont,...) 
     end
   end
-  handlers.gsub_context=handlers.contextchain
-  handlers.gsub_contextchain=handlers.contextchain
-  handlers.gsub_reversecontextchain=handlers.contextchain
-  handlers.gpos_contextchain=handlers.contextchain
-  handlers.gpos_context=handlers.contextchain
+  handlers.gsub_context=handle_contextchain
+  handlers.gsub_contextchain=handle_contextchain
+  handlers.gsub_reversecontextchain=handle_contextchain
+  handlers.gpos_contextchain=handle_contextchain
+  handlers.gpos_context=handle_contextchain
+  handlers.contextchain=handle_contextchain
 end
+chainprocs.gsub_context=chained_contextchain
+chainprocs.gsub_contextchain=chained_contextchain
+chainprocs.gsub_reversecontextchain=chained_contextchain
+chainprocs.gpos_contextchain=chained_contextchain
+chainprocs.gpos_context=chained_contextchain
 otf.setcontextchain()
 local missing={} 
 local function logprocess(...)
@@ -14801,10 +14816,10 @@ local function split(replacement,original)
   end
   return result
 end
-local valid={
-  coverage={ chainsub=true,chainpos=true,contextsub=true },
+local valid={ 
+  coverage={ chainsub=true,chainpos=true,contextsub=true,contextpos=true },
   reversecoverage={ reversesub=true },
-  glyphs={ chainsub=true,chainpos=true },
+  glyphs={ chainsub=true,chainpos=true,contextsub=true,contextpos=true },
 }
 local function prepare_contextchains(tfmdata)
   local rawdata=tfmdata.shared.rawdata
