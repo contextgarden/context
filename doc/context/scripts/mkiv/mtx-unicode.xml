@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-unicode</entry>
+  <entry name="detail">Checker for char-dat.lua</entry>
+  <entry name="version">1.02</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="whatever"><short>do whatever</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

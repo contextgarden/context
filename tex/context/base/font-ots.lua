@@ -775,8 +775,9 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
     if marks[startchar] then
         while current do
             local id = getid(current)
-            if ischar(current,currentfont) then
-                local lg = ligature[getchar(current)]
+            local ch = ischar(current,currentfont)
+            if ch then
+                local lg = ligature[ch]
                 if lg then
                     stop     = current
                     ligature = lg
@@ -811,8 +812,8 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
             local id = getid(current)
             -- weird test here
             if id == glyph_code then -- not needed
-                if ischar(current,currentfont) then
-                    local char = getchar(current)
+                local char = ischar(current,currentfont)
+                if char then
                     if skipmark and marks[char] then
                         current = getnext(current)
                     else -- ligature is a tree
@@ -891,50 +892,54 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
     else
         local prev = start
         local done = false
-        while snext and ischar(snext,currentfont) do
-            local nextchar = getchar(snext)
-            local krn = kerns[nextchar]
-            if not krn and marks[nextchar] then
-                prev = snext
-                snext = getnext(snext)
-            elseif not krn then
-                break
-            elseif step.format == "pair" then
-                local a, b = krn[1], krn[2]
-                if optimizekerns then
-                    -- this permits a mixed table, but we could also decide to optimize this
-                    -- in the loader and use format 'kern'
-                    if not b and a[1] == 0 and a[2] == 0 and a[4] == 0 then
-                        local k = setkern(snext,factor,rlmode,a[3],injection)
-                        if trace_kerns then
-                            logprocess("%s: shifting single %s by %p",pref(dataset,sequence),gref(nextchar),k)
+        while snext do
+            local nextchar = ischar(snext,currentfont)
+            if nextchar then
+                local krn = kerns[nextchar]
+                if not krn and marks[nextchar] then
+                    prev = snext
+                    snext = getnext(snext)
+                elseif not krn then
+                    break
+                elseif step.format == "pair" then
+                    local a, b = krn[1], krn[2]
+                    if optimizekerns then
+                        -- this permits a mixed table, but we could also decide to optimize this
+                        -- in the loader and use format 'kern'
+                        if not b and a[1] == 0 and a[2] == 0 and a[4] == 0 then
+                            local k = setkern(snext,factor,rlmode,a[3],injection)
+                            if trace_kerns then
+                                logprocess("%s: shifting single %s by %p",pref(dataset,sequence),gref(nextchar),k)
+                            end
+                            done = true
+                            break
                         end
-                        done = true
-                        break
                     end
-                end
-                if a and #a > 0 then
-                    local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,injection)
+                    if a and #a > 0 then
+                        local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,injection)
+                        if trace_kerns then
+                            local startchar = getchar(start)
+                            logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+                        end
+                    end
+                    if b and #b > 0 then
+                        local x, y, w, h = setpair(snext,factor,rlmode,sequence.flags[4],b,injection)
+                        if trace_kerns then
+                            local startchar = getchar(snext)
+                            logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+                        end
+                    end
+                    done = true
+                    break
+                elseif krn ~= 0 then
+                    local k = setkern(snext,factor,rlmode,krn,injection)
                     if trace_kerns then
-                        local startchar = getchar(start)
-                        logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+                        logprocess("%s: inserting kern %p between %s and %s as %s",pref(dataset,sequence),k,gref(getchar(prev)),gref(nextchar),injection or "injections")
                     end
+                    done = true
+                    break
                 end
-                if b and #b > 0 then
-                    local x, y, w, h = setpair(snext,factor,rlmode,sequence.flags[4],b,injection)
-                    if trace_kerns then
-                        local startchar = getchar(snext)
-                        logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
-                    end
-                end
-                done = true
-                break
-            elseif krn ~= 0 then
-                local k = setkern(snext,factor,rlmode,krn,injection)
-                if trace_kerns then
-                    logprocess("%s: inserting kern %p between %s and %s as %s",pref(dataset,sequence),k,gref(getchar(prev)),gref(nextchar),injection or "injections")
-                end
-                done = true
+            else
                 break
             end
         end
@@ -953,36 +958,47 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode)
     local markchar = getchar(start)
     if marks[markchar] then
         local base = getprev(start) -- [glyph] [start=mark]
-        if base and ischar(base,currentfont) then
-            local basechar = getchar(base)
-            if marks[basechar] then
-                while true do
-                    base = getprev(base)
-                    if base and ischar(base,currentfont) then
-                        basechar = getchar(base)
-                        if not marks[basechar] then
-                            break
+        if base then
+            local basechar = ischar(base,currentfont)
+            if basechar then
+                if marks[basechar] then
+                    while true do
+                        base = getprev(base)
+                        if base then
+                            basechar = ischar(base,currentfont)
+                            if basechar then
+                                if not marks[basechar] then
+                                    break
+                                end
+                            else
+                                if trace_bugs then
+                                    logwarning("%s: no base for mark %s, case %i",pref(dataset,sequence),gref(markchar),1)
+                                end
+                                return head, start, false
+                            end
+                        else
+                            if trace_bugs then
+                                logwarning("%s: no base for mark %s, case %i",pref(dataset,sequence),gref(markchar),2)
+                            end
+                            return head, start, false
                         end
-                    else
-                        if trace_bugs then
-                            logwarning("%s: no base for mark %s",pref(dataset,sequence),gref(markchar))
-                        end
-                        return head, start, false
                     end
                 end
-            end
-            local ba = markanchors[1][basechar]
-            if ba then
-                local ma = markanchors[2]
-                local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
-                if trace_marks then
-                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
-                        pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                local ba = markanchors[1][basechar]
+                if ba then
+                    local ma = markanchors[2]
+                    local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
+                    if trace_marks then
+                        logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
+                            pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                    end
+                    return head, start, true
                 end
-                return head, start, true
+            elseif trace_bugs then
+                logwarning("%s: nothing preceding, case %i",pref(dataset,sequence),1)
             end
         elseif trace_bugs then
-            logwarning("%s: prev node is no char",pref(dataset,sequence))
+            logwarning("%s: nothing preceding, case %i",pref(dataset,sequence),2)
         end
     elseif trace_bugs then
         logwarning("%s: mark %s is no mark",pref(dataset,sequence),gref(markchar))
@@ -996,49 +1012,60 @@ function handlers.gpos_mark2ligature(head,start,dataset,sequence,markanchors,rlm
     local markchar = getchar(start)
     if marks[markchar] then
         local base = getprev(start) -- [glyph] [optional marks] [start=mark]
-        if base and ischar(base,currentfont) then
-            local basechar = getchar(base)
-            if marks[basechar] then
-                while true do
-                    base = getprev(base)
-                    if base and ischar(base,currentfont) then
-                        basechar = getchar(base)
-                        if not marks[basechar] then
-                            break
+        if base then
+            local basechar = ischar(base,currentfont)
+            if basechar then
+                if marks[basechar] then
+                    while true do
+                        base = getprev(base)
+                        if base then
+                            basechar = ischar(base,currentfont)
+                            if basechar then
+                                if not marks[basechar] then
+                                    break
+                                end
+                            else
+                                if trace_bugs then
+                                    logwarning("%s: no base for mark %s, case %i",pref(dataset,sequence),gref(markchar),1)
+                                end
+                                return head, start, false
+                            end
+                        else
+                            if trace_bugs then
+                                logwarning("%s: no base for mark %s, case %i",pref(dataset,sequence),gref(markchar),2)
+                            end
+                            return head, start, false
                         end
-                    else
-                        if trace_bugs then
-                            logwarning("%s: no base for mark %s",pref(dataset,sequence),gref(markchar))
-                        end
-                        return head, start, false
                     end
                 end
-            end
-            local ba = markanchors[1][basechar]
-            if ba then
-                local ma = markanchors[2]
-                if ma then
-                    local index = getligaindex(start)
-                    ba = ba[index]
-                    if ba then
-                        local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar]) -- index
-                        if trace_marks then
-                            logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
-                                pref(dataset,sequence),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
-                        end
-                        return head, start, true
-                    else
-                        if trace_bugs then
-                            logwarning("%s: no matching anchors for mark %s and baselig %s with index %a",pref(dataset,sequence),gref(markchar),gref(basechar),index)
+                local ba = markanchors[1][basechar]
+                if ba then
+                    local ma = markanchors[2]
+                    if ma then
+                        local index = getligaindex(start)
+                        ba = ba[index]
+                        if ba then
+                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar]) -- index
+                            if trace_marks then
+                                logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
+                                    pref(dataset,sequence),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
+                            end
+                            return head, start, true
+                        else
+                            if trace_bugs then
+                                logwarning("%s: no matching anchors for mark %s and baselig %s with index %a",pref(dataset,sequence),gref(markchar),gref(basechar),index)
+                            end
                         end
                     end
+                elseif trace_bugs then
+                --  logwarning("%s: char %s is missing in font",pref(dataset,sequence),gref(basechar))
+                    onetimemessage(currentfont,basechar,"no base anchors",report_fonts)
                 end
             elseif trace_bugs then
-            --  logwarning("%s: char %s is missing in font",pref(dataset,sequence),gref(basechar))
-                onetimemessage(currentfont,basechar,"no base anchors",report_fonts)
+                logwarning("%s: prev node is no char, case %i",pref(dataset,sequence),1)
             end
         elseif trace_bugs then
-            logwarning("%s: prev node is no char",pref(dataset,sequence))
+            logwarning("%s: prev node is no char, case %i",pref(dataset,sequence),2)
         end
     elseif trace_bugs then
         logwarning("%s: mark %s is no mark",pref(dataset,sequence),gref(markchar))
@@ -1061,17 +1088,19 @@ function handlers.gpos_mark2mark(head,start,dataset,sequence,markanchors,rlmode)
                 end
             end
         end
-        if base and ischar(base,currentfont) then -- subtype test can go
-            local basechar = getchar(base)
-            local ba = markanchors[1][basechar] -- slot 1 has been made copy of the class hash
-            if ba then
-                local ma = markanchors[2]
-                local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true)
-                if trace_marks then
-                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
-                        pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+        if base then
+            local basechar = ischar(base,currentfont)
+            if basechar then -- subtype test can go
+                local ba = markanchors[1][basechar] -- slot 1 has been made copy of the class hash
+                if ba then
+                    local ma = markanchors[2]
+                    local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true)
+                    if trace_marks then
+                        logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
+                            pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                    end
+                    return head, start, true
                 end
-                return head, start, true
             end
         end
     elseif trace_bugs then
@@ -1091,9 +1120,11 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,st
             end
         else
             local nxt = getnext(start)
-            while not done and nxt and ischar(nxt,currentfont) do
-                local nextchar = getchar(nxt)
-                if marks[nextchar] then
+            while not done and nxt do
+                local nextchar = ischar(nxt,currentfont)
+                if not nextchar then
+                    break
+                elseif marks[nextchar] then
                     -- should not happen (maybe warning)
                     nxt = getnext(nxt)
                 else
@@ -1463,8 +1494,11 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
         if kerns then
             local prev = start
             local done = false
-            while snext and ischar(snext,currentfont) do
-                local nextchar = getchar(snext)
+            while snext do
+                local nextchar = ischar(snext,currentfont)
+                if not nextchar then
+                    break
+                end
                 local krn = kerns[nextchar]
                 if not krn and marks[nextchar] then
                     prev = snext
@@ -1527,38 +1561,49 @@ function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlooku
         local markanchors = steps[1].coverage[markchar] -- always 1 step
         if markanchors then
             local base = getprev(start) -- [glyph] [start=mark]
-            if base and ischar(base,currentfont) then
-                local basechar = getchar(base)
-                if marks[basechar] then
-                    while true do
-                        base = getprev(base)
-                        if base and ischar(base,currentfont) then
-                            basechar = getchar(base)
-                            if not marks[basechar] then
-                                break
+            if base then
+                local basechar = ischar(base,currentfont)
+                if basechar then
+                    if marks[basechar] then
+                        while true do
+                            base = getprev(base)
+                            if base then
+                                local basechar = ischar(base,currentfont)
+                                if basechar then
+                                    if not marks[basechar] then
+                                        break
+                                    end
+                                else
+                                    if trace_bugs then
+                                        logwarning("%s: no base for mark %s, case %i",pref(dataset,sequence),gref(markchar),1)
+                                    end
+                                    return head, start, false
+                                end
+                            else
+                                if trace_bugs then
+                                    logwarning("%s: no base for mark %s, case %i",pref(dataset,sequence),gref(markchar),2)
+                                end
+                                return head, start, false
                             end
-                        else
-                            if trace_bugs then
-                                logwarning("%s: no base for mark %s",pref(dataset,sequence),gref(markchar))
-                            end
-                            return head, start, false
                         end
                     end
-                end
-                local ba = markanchors[1][basechar]
-                if ba then
-                    local ma = markanchors[2]
-                    if ma then
-                        local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
-                        if trace_marks then
-                            logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
-                                cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                    local ba = markanchors[1][basechar]
+                    if ba then
+                        local ma = markanchors[2]
+                        if ma then
+                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
+                            if trace_marks then
+                                logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
+                                    cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                            end
+                            return head, start, true
                         end
-                        return head, start, true
                     end
+                elseif trace_bugs then
+                    logwarning("%s: prev node is no char, case %i",cref(dataset,sequence),1)
                 end
             elseif trace_bugs then
-                logwarning("%s: prev node is no char",cref(dataset,sequence))
+                logwarning("%s: prev node is no char, case %i",cref(dataset,sequence),2)
             end
         elseif trace_bugs then
             logwarning("%s: mark %s has no anchors",cref(dataset,sequence),gref(markchar))
@@ -1580,42 +1625,53 @@ function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentl
         local markanchors = steps[1].coverage[markchar] -- always 1 step
         if markanchors then
             local base = getprev(start) -- [glyph] [optional marks] [start=mark]
-            if base and ischar(base,currentfont) then
-                local basechar = getchar(base)
-                if marks[basechar] then
-                    while true do
-                        base = getprev(base)
-                        if base and ischar(base,currentfont) then
-                            basechar = getchar(base)
-                            if not marks[basechar] then
-                                break
+            if base then
+                local basechar = ischar(base,currentfont)
+                if basechar then
+                    if marks[basechar] then
+                        while true do
+                            base = getprev(base)
+                            if base then
+                                local basechar = ischar(base,currentfont)
+                                if basechar then
+                                    if not marks[basechar] then
+                                        break
+                                    end
+                                else
+                                    if trace_bugs then
+                                        logwarning("%s: no base for mark %s, case %i",cref(dataset,sequence),markchar,1)
+                                    end
+                                    return head, start, false
+                                end
+                            else
+                                if trace_bugs then
+                                    logwarning("%s: no base for mark %s, case %i",cref(dataset,sequence),markchar,2)
+                                end
+                                return head, start, false
                             end
-                        else
-                            if trace_bugs then
-                                logwarning("%s: no base for mark %s",cref(dataset,sequence),markchar)
-                            end
-                            return head, start, false
                         end
                     end
-                end
-                local ba = markanchors[1][basechar]
-                if ba then
-                    local ma = markanchors[2]
-                    if ma then
-                        local index = getligaindex(start)
-                        ba = ba[index]
-                        if ba then
-                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
-                            if trace_marks then
-                                logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
-                                    cref(dataset,sequence),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
+                    local ba = markanchors[1][basechar]
+                    if ba then
+                        local ma = markanchors[2]
+                        if ma then
+                            local index = getligaindex(start)
+                            ba = ba[index]
+                            if ba then
+                                local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
+                                if trace_marks then
+                                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
+                                        cref(dataset,sequence),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
+                                end
+                                return head, start, true
                             end
-                            return head, start, true
                         end
                     end
+                elseif trace_bugs then
+                    logwarning("%s, prev node is no char, case %i",cref(dataset,sequence),1)
                 end
             elseif trace_bugs then
-                logwarning("%s, prev node is no char",cref(dataset,sequence))
+                logwarning("%s, prev node is no char, case %i",cref(dataset,sequence),2)
             end
         elseif trace_bugs then
             logwarning("%s, mark %s has no anchors",cref(dataset,sequence),gref(markchar))
@@ -1648,22 +1704,26 @@ function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlooku
                     end
                 end
             end
-            if base and ischar(base,currentfont) then -- subtype test can go
-                local basechar = getchar(base)
-                local ba = markanchors[1][basechar]
-                if ba then
-                    local ma = markanchors[2]
-                    if ma then
-                        local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true)
-                        if trace_marks then
-                            logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
-                                cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+            if base then -- subtype test can go
+                local basechar = ischar(base,currentfont)
+                if basechar then
+                    local ba = markanchors[1][basechar]
+                    if ba then
+                        local ma = markanchors[2]
+                        if ma then
+                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true)
+                            if trace_marks then
+                                logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
+                                    cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                            end
+                            return head, start, true
                         end
-                        return head, start, true
                     end
+                elseif trace_bugs then
+                    logwarning("%s: prev node is no mark, case %i",cref(dataset,sequence),1)
                 end
             elseif trace_bugs then
-                logwarning("%s: prev node is no mark",cref(dataset,sequence))
+                logwarning("%s: prev node is no mark, case %i",cref(dataset,sequence),2)
             end
         elseif trace_bugs then
             logwarning("%s: mark %s has no anchors",cref(dataset,sequence),gref(markchar))
@@ -1692,9 +1752,11 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
                 end
             else
                 local nxt = getnext(start)
-                while not done and nxt and ischar(nxt,currentfont) do
-                    local nextchar = getchar(nxt)
-                    if marks[nextchar] then
+                while not done and nxt do
+                    local nextchar = ischar(nxt,currentfont)
+                    if not nextchar then
+                        break
+                    elseif marks[nextchar] then
                         -- should not happen (maybe warning)
                         nxt = getnext(nxt)
                     else
@@ -1934,11 +1996,16 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
         local cprev         = getprev(start)
         local insertedmarks = 0
 
-        while cprev and ischar(cf,currentfont) and marks[getchar(cf)] do
-            insertedmarks = insertedmarks + 1
-            cf            = cprev
-            startishead   = cf == head
-            cprev         = getprev(cprev)
+        while cprev do
+            local char = ischar(cf,currentfont)
+            if char and marks[char] then
+                insertedmarks = insertedmarks + 1
+                cf            = cprev
+                startishead   = cf == head
+                cprev         = getprev(cprev)
+            else
+                break
+            end
         end
 
         setprev(lookaheaddisc,cprev)
@@ -1985,10 +2052,15 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
         local cnext         = getnext(start)
         local insertedmarks = 0
 
-        while cnext and ischar(cnext,currentfont) and marks[getchar(cnext)] do
-            insertedmarks = insertedmarks + 1
-            cl            = cnext
-            cnext         = getnext(cnext)
+        while cnext do
+            local char = ischar(cnext,currentfont)
+            if char and marks[char] then
+                insertedmarks = insertedmarks + 1
+                cl            = cnext
+                cnext         = getnext(cnext)
+            else
+                break
+            end
         end
         if cnext then
             setprev(cnext,backtrackdisc)
@@ -2119,7 +2191,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
         -- f..l = mid string
         if s == 1 then
             -- never happens
-            match = ischar(current,currentfont) and seq[1][getchar(current)]
+            local char = ischar(current,currentfont)
+            match = char and seq[1][char]
         else
             -- maybe we need a better space check (maybe check for glue or category or combination)
             -- we cannot optimize for n=2 because there can be disc nodes
@@ -2145,8 +2218,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                         if last then
                             local id = getid(last)
                             if id == glyph_code then
-                                if ischar(last,currentfont) then
-                                    local char = getchar(last)
+                                local char = ischar(last,currentfont)
+                                if char then
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class or "base"
@@ -2259,8 +2332,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                             if prev then
                                 local id = getid(prev)
                                 if id == glyph_code then
-                                    if ischar(prev,currentfont) then
-                                        local char = getchar(prev)
+                                    local char = ischar(prev,currentfont)
+                                    if char then
                                         local ccd = descriptions[char]
                                         if ccd then
                                             local class = ccd.class
@@ -2397,8 +2470,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                         if current then
                             local id = getid(current)
                             if id == glyph_code then
-                                if ischar(current,currentfont) then
-                                    local char = getchar(current)
+                                local char = ischar(current,currentfont)
+                                if char then
                                     local ccd = descriptions[char]
                                     if ccd then
                                         local class = ccd.class
@@ -2778,8 +2851,13 @@ local function kernrun(disc,run)
     -- can be optional, because why on earth do we get a disc after a mark (okay, maybe when a ccmp
     -- has happened but then it should be in the disc so basically this test indicates an error)
     --
-    while prevmarks and ischar(prevmarks,currentfont) and marks[getchar(prevmarks)] do
-        prevmarks = getprev(prevmarks)
+    while prevmarks do
+        local char = ischar(prevmarks,currentfont)
+        if char and marks[char] then
+            prevmarks = getprev(prevmarks)
+        else
+            break
+        end
     end
     --
     if prev and (pre or replace) and not ischar(prev,currentfont) then
@@ -3046,8 +3124,9 @@ local function featuresprocessor(head,font,attr)
             -- we need to get rid of this slide! probably no longer needed in latest luatex
             local start = find_node_tail(head) -- slow (we can store tail because there's always a skip at the end): todo
             while start do
-                local id = getid(start)
-                if ischar(start,font) then
+                local id   = getid(start)
+                local char = ischar(start,font)
+                if char then
                     local a = getattr(start,0)
                     if a then
                         a = a == attr
@@ -3055,7 +3134,6 @@ local function featuresprocessor(head,font,attr)
                         a = true
                     end
                     if a then
-                        local char = getchar(start)
                         for i=1,nofsteps do
                             local step = steps[i]
                             local lookupcache = step.coverage
@@ -3101,32 +3179,35 @@ local function featuresprocessor(head,font,attr)
                         while start do
                             local id = getid(start)
                             if id ~= glyph_code then
-                                -- very unlikely
+                                -- very unlikely (if so we could use ischar)
                                 start = getnext(start)
-                            elseif ischar(start,font) then
-                                local a = getattr(start,0)
---                                 if a then
---                                     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
---                                 else
---                                     a = not attribute or getprop(start,a_state) == attribute
---                                 end
---                                 if a then
-if not a or (a == attr) then
-                                    local lookupmatch = lookupcache[getchar(start)]
-                                    if lookupmatch then
-                                        -- sequence kan weg
-                                        local ok
-                                        head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
-                                        if ok then
-                                            done = true
-                                        end
-                                    end
-                                    if start then start = getnext(start) end
-                                else
-                                    start = getnext(start)
-                                end
                             else
-                                return head, false
+                                local char = ischar(start,font)
+                                if char then
+                                    local a = getattr(start,0)
+                                 -- if a then
+                                 --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
+                                 -- else
+                                 --     a = not attribute or getprop(start,a_state) == attribute
+                                 -- end
+                                 -- if a then
+                                    if not a or (a == attr) then
+                                        local lookupmatch = lookupcache[char]
+                                        if lookupmatch then
+                                            -- sequence kan weg
+                                            local ok
+                                            head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
+                                            if ok then
+                                                done = true
+                                            end
+                                        end
+                                        if start then start = getnext(start) end
+                                    else
+                                        start = getnext(start)
+                                    end
+                                else
+                                    return head, false
+                                end
                             end
                         end
                         if done then
@@ -3138,16 +3219,17 @@ if not a or (a == attr) then
                     local function t_run(start,stop)
                         while start ~= stop do
                             local id = getid(start)
-                            if ischar(start,font) then
+                            local char = ischar(start,font)
+                            if char then
                                 local a = getattr(start,0)
---                                 if a then
---                                     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
---                                 else
---                                     a = not attribute or getprop(start,a_state) == attribute
---                                 end
---                                 if a then
-if not a or (a == attr) then
-                                    local lookupmatch = lookupcache[getchar(start)]
+                             -- if a then
+                             --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
+                             -- else
+                             --     a = not attribute or getprop(start,a_state) == attribute
+                             -- end
+                             -- if a then
+                                if not a or (a == attr) then
+                                    local lookupmatch = lookupcache[char]
                                     if lookupmatch then -- hm, hyphens can match (tlig) so we need to really check
                                         -- if we need more than ligatures we can outline the code and use functions
                                         local s = getnext(start)
@@ -3175,13 +3257,13 @@ if not a or (a == attr) then
 
                     local function d_run(prev) -- we can assume that prev and next are glyphs
                         local a = getattr(prev,0)
---                         if a then
---                             a = (a == attr) and (not attribute or getprop(prev,a_state) == attribute)
---                         else
---                             a = not attribute or getprop(prev,a_state) == attribute
---                         end
---                         if a then
-if not a or (a == attr) then
+                     -- if a then
+                     --     a = (a == attr) and (not attribute or getprop(prev,a_state) == attribute)
+                     -- else
+                     --     a = not attribute or getprop(prev,a_state) == attribute
+                     -- end
+                     -- if a then
+                        if not a or (a == attr) then
                             local lookupmatch = lookupcache[getchar(prev)]
                             if lookupmatch then
                                 -- sequence kan weg
@@ -3196,13 +3278,13 @@ if not a or (a == attr) then
 
                     local function k_run(sub,injection,last)
                         local a = getattr(sub,0)
---                         if a then
---                             a = (a == attr) and (not attribute or getprop(sub,a_state) == attribute)
---                         else
---                             a = not attribute or getprop(sub,a_state) == attribute
---                         end
---                         if a then
-if not a or (a == attr) then
+                     -- if a then
+                     --     a = (a == attr) and (not attribute or getprop(sub,a_state) == attribute)
+                     -- else
+                     --     a = not attribute or getprop(sub,a_state) == attribute
+                     -- end
+                     -- if a then
+                        if not a or (a == attr) then
                             -- sequence kan weg
                             for n in traverse_nodes(sub) do -- only gpos
                                 if n == last then
@@ -3228,7 +3310,8 @@ if not a or (a == attr) then
                     while start do
                         local id = getid(start)
                         if id == glyph_code then
-                            if ischar(start,font) then
+                            local char = ischar(start,font)
+                            if char then
                                 local a = getattr(start,0)
                                 if a then
                                     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
@@ -3236,7 +3319,6 @@ if not a or (a == attr) then
                                     a = not attribute or getprop(start,a_state) == attribute
                                 end
                                 if a then
-                                    local char        = getchar(start)
                                     local lookupmatch = lookupcache[char]
                                     if lookupmatch then
                                         -- sequence kan weg
@@ -3325,43 +3407,45 @@ if not a or (a == attr) then
                         if id ~= glyph_code then
                             -- very unlikely
                             start = getnext(start)
-                        elseif ischar(start,font) then
-                            local a = getattr(start,0)
---                             if a then
---                                 a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
---                             else
---                                 a = not attribute or getprop(start,a_state) == attribute
---                             end
---                             if a then
-if not a or (a == attr) then
-                                local char = getchar(start)
-                                for i=1,nofsteps do
-                                    local step        = steps[i]
-                                    local lookupcache = step.coverage
-                                    if lookupcache then
-                                        local lookupmatch = lookupcache[char]
-                                        if lookupmatch then
-                                            -- we could move all code inline but that makes things even more unreadable
-                                            local ok
-                                            head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-                                            if ok then
-                                                done = true
-                                                break
-                                            elseif not start then
-                                                -- don't ask why ... shouldn't happen
-                                                break
-                                            end
-                                        end
-                                    else
-                                        report_missing_cache(dataset,sequence)
-                                    end
-                                end
-                                if start then start = getnext(start) end
-                            else
-                                start = getnext(start)
-                            end
                         else
-                            return head, false
+                            local char = ischar(start,font)
+                            if char then
+                                local a = getattr(start,0)
+                             -- if a then
+                             --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
+                             -- else
+                             --     a = not attribute or getprop(start,a_state) == attribute
+                             -- end
+                             -- if a then
+                                if not a or (a == attr) then
+                                    for i=1,nofsteps do
+                                        local step        = steps[i]
+                                        local lookupcache = step.coverage
+                                        if lookupcache then
+                                            local lookupmatch = lookupcache[char]
+                                            if lookupmatch then
+                                                -- we could move all code inline but that makes things even more unreadable
+                                                local ok
+                                                head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                                                if ok then
+                                                    done = true
+                                                    break
+                                                elseif not start then
+                                                    -- don't ask why ... shouldn't happen
+                                                    break
+                                                end
+                                            end
+                                        else
+                                            report_missing_cache(dataset,sequence)
+                                        end
+                                    end
+                                    if start then start = getnext(start) end
+                                else
+                                    start = getnext(start)
+                                end
+                            else
+                                return head, false
+                            end
                         end
                     end
                     if done then
@@ -3372,13 +3456,13 @@ if not a or (a == attr) then
 
                 local function d_run(prev)
                     local a = getattr(prev,0)
---                     if a then
---                         a = (a == attr) and (not attribute or getprop(prev,a_state) == attribute)
---                     else
---                         a = not attribute or getprop(prev,a_state) == attribute
---                     end
---                     if a then
-if not a or (a == attr) then
+                 -- if a then
+                 --     a = (a == attr) and (not attribute or getprop(prev,a_state) == attribute)
+                 -- else
+                 --     a = not attribute or getprop(prev,a_state) == attribute
+                 -- end
+                 -- if a then
+                if not a or (a == attr) then
                         -- brr prev can be disc
                         local char = getchar(prev)
                         for i=1,nofsteps do
@@ -3403,13 +3487,13 @@ if not a or (a == attr) then
 
                 local function k_run(sub,injection,last)
                     local a = getattr(sub,0)
---                     if a then
---                         a = (a == attr) and (not attribute or getprop(sub,a_state) == attribute)
---                     else
---                         a = not attribute or getprop(sub,a_state) == attribute
---                     end
---                     if a then
-if not a or (a == attr) then
+                 -- if a then
+                 --     a = (a == attr) and (not attribute or getprop(sub,a_state) == attribute)
+                 -- else
+                 --     a = not attribute or getprop(sub,a_state) == attribute
+                 -- end
+                 -- if a then
+                    if not a or (a == attr) then
                         for n in traverse_nodes(sub) do -- only gpos
                             if n == last then
                                 break
@@ -3442,17 +3526,17 @@ if not a or (a == attr) then
 
                 local function t_run(start,stop)
                     while start ~= stop do
-                        local id = getid(start)
-                        if ischar(start,font) then
+                        local id   = getid(start)
+                        local char = ischar(start,font)
+                        if char then
                             local a = getattr(start,0)
---                             if a then
---                                 a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
---                             else
---                                 a = not attribute or getprop(start,a_state) == attribute
---                             end
---                             if a then
-if not a or (a == attr) then
-                                local char = getchar(start)
+                         -- if a then
+                         --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
+                         -- else
+                         --     a = not attribute or getprop(start,a_state) == attribute
+                         -- end
+                         -- if a then
+                            if not a or (a == attr) then
                                 for i=1,nofsteps do
                                     local step = steps[i]
                                     local lookupcache = step.coverage
@@ -3490,7 +3574,8 @@ if not a or (a == attr) then
                 while start do
                     local id = getid(start)
                     if id == glyph_code then
-                        if ischar(start,font) then
+                        local char = ischar(start,font)
+                        if char then
                             local a = getattr(start,0)
                             if a then
                                 a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
@@ -3502,7 +3587,7 @@ if not a or (a == attr) then
                                     local step        = steps[i]
                                     local lookupcache = step.coverage
                                     if lookupcache then
-                                        local char = getchar(start)
+                                     -- local char = getchar(start)
                                         local lookupmatch = lookupcache[char]
                                         if lookupmatch then
                                             -- we could move all code inline but that makes things even more unreadable

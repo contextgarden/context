@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/30/15 14:16:56
+-- merge date  : 12/01/15 20:30:14
 
 do -- begin closure to overcome local limits and interference
 
@@ -4009,7 +4009,7 @@ nuts.setfield=setfield
 nuts.getnext=direct.getnext
 nuts.getprev=direct.getprev
 nuts.getid=direct.getid
-nuts.getattr=getfield
+nuts.getattr=direct.get_attribute or direct.has_attribute or getfield
 nuts.setattr=setfield
 nuts.getfont=direct.getfont
 nuts.getsubtype=direct.getsubtype

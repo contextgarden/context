@@ -97,7 +97,7 @@ function cleaners.set(n)
             end
             enabled = true
         end
-        texsetattribute(a_cleaner,n)
+        texsetattribute(a_cleaner,tonumber(n))
     end
 end
 

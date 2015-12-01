@@ -126,7 +126,7 @@ nodes.tonut  = function(n) return n end
 local getfield          = node.getfield
 local setfield          = node.setfield
 
-local getattr           = getfield
+local getattr           = node.get_attribute or node.has_attribute or getfield
 local setattr           = setfield
 
 local getnext           = node.getnext    or function(n) return getfield(n,"next")    end
