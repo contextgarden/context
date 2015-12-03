@@ -774,7 +774,6 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
     local startchar = getchar(start)
     if marks[startchar] then
         while current do
-            local id = getid(current)
             local ch = ischar(current,currentfont)
             if ch then
                 local lg = ligature[ch]

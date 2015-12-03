@@ -228,12 +228,13 @@ local function process(start,what,n,parent)
                  -- report_processing("stop processing")
                 end
             end
-        elseif id == math_char or id == math_textchar or id == math_delim then
-            break
         elseif id == math_noad then
+            -- single characters are like this
             local noad = getfield(start,"nucleus")      if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"sup")          if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"sub")          if noad then process(noad,what,n,start) end -- list
+        elseif id == math_char or id == math_textchar or id == math_delim then
+            break
         elseif id == math_box or id == math_sub then
             local noad = getfield(start,"list")         if noad then process(noad,what,n,start) end -- list (not getlist !)
         elseif id == math_fraction then

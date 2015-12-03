@@ -1935,30 +1935,6 @@
    \rawprocesscommacommand[#2]\math_style_collect
    \expandafter\let\csname\??mathstyle#1\normalexpanded{\endcsname\math_style_add_to_cache_choice}}
 
-% \def\math_style_set_indeed
-%   {\ifcsname\??mathstyle\m_math_style_asked\endcsname
-%      \csname\??mathstyle\m_math_style_asked\endcsname
-%    \else
-%      \math_style_set_indeed_cached
-%    \fi}
-%
-% \def\math_style_set_indeed_cached
-%   {\ifcsname\??mathstylecache\m_math_style_asked\endcsname
-%      % already in cache
-%    \else
-%      \math_style_add_to_cache
-%    \fi
-%    \csname\??mathstylecache\m_math_style_asked\endcsname}
-%
-% \def\math_style_add_to_cache
-%   {\c_math_styles_state_style  \zerocount
-%    \c_math_styles_state_cramped\zerocount
-%    \c_math_styles_state_size   \zerocount
-%    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
-%    \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}}
-%
-% ugly but more efficient (as called often)
-
 \def\math_style_set_indeed
   {\csname\??mathstyle
      \ifcsname\??mathstyle\m_math_style_asked\endcsname
@@ -2021,40 +1997,44 @@
 %D version is a variation on the one in the math module (see \type{m-math} and|/|or
 %D \type {m-newmat}).
 
-\unexpanded\def\mathtext
-  {\mathortext\math_text_choice\hbox}
+\let\m_math_text_choice_face\relax
 
-% \def\math_text_choice#1%
-%   {\mathchoice
-%      {\math_text_choice_indeed\displaystyle\textface        {#1}}%
-%      {\math_text_choice_indeed\textstyle   \textface        {#1}}%
-%      {\math_text_choice_indeed\textstyle   \scriptface      {#1}}%
-%      {\math_text_choice_indeed\textstyle   \scriptscriptface{#1}}}
-%
-% \def\math_text_choice_indeed#1#2#3% no \everymath !
-%   {\hbox{\everymath{#1}\switchtobodyfont[#2]#3}} % 15 sec
+% if needed we can get rid of the normalize (predo in font code)
 
-% \let\m_math_text_choice_style\relax
-%
-% \def\math_text_choice#1%
-%   {\edef\m_math_text_choice_style{\normalmathstyle}%
-%    \hbox\bgroup
-%    % \everymath{\triggermathstyle\m_math_text_choice_style}%
-%      \normalizebodyfontsize\m_math_text_choice_style{\mathstylefont\m_math_text_choice_style}%
-%      \font_basics_switchtobodyfont\m_math_text_choice_style
-%      #1%
-%    \egroup}
-
-\let\m_math_text_choice_face \relax
-
-% \def\math_text_choice#1% if needed we can get rid of the normalize (predo in font code)
-%   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
-%    \hbox{\font_basics_switchtobodyfont\m_math_text_choice_face#1}}
-
-\def\math_text_choice% if needed we can get rid of the normalize (predo in font code)
+\def\math_text_choice_font#1%
   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
-  %\showmathstyle
-   \hbox\bgroup\font_basics_switchtobodyfont\m_math_text_choice_face\let\next}
+   \hbox\bgroup
+   \font_basics_switchtobodyfont\m_math_text_choice_face
+   #1%
+   \let\next}
+
+\def\math_text_choice_word#1%
+  {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+   \hbox\bgroup
+   \font_basics_switchtobodyfont\m_math_text_choice_face
+   #1%
+   \nospacing % \normalnospaces\plusone
+   \let\next}
+
+% \ruledhbox{$\mathtext{abc ffi}$}
+% \ruledhbox{$\mathword{abc ffi}$}
+
+\unexpanded\def\mathtext  {\mathortext{\math_text_choice_font\relax}\hbox}
+\unexpanded\def\mathword  {\mathortext{\math_text_choice_word\relax}\hbox}
+
+\unexpanded\def\mathtexttf{\mathortext{\math_text_choice_font\tf}\hbox}
+\unexpanded\def\mathtextit{\mathortext{\math_text_choice_font\it}\hbox}
+\unexpanded\def\mathtextsl{\mathortext{\math_text_choice_font\sl}\hbox}
+\unexpanded\def\mathtextbf{\mathortext{\math_text_choice_font\bf}\hbox}
+\unexpanded\def\mathtextbi{\mathortext{\math_text_choice_font\bi}\hbox}
+\unexpanded\def\mathtextbs{\mathortext{\math_text_choice_font\bs}\hbox}
+
+\unexpanded\def\mathwordtf{\mathortext{\math_text_choice_word\tf}\hbox}
+\unexpanded\def\mathwordit{\mathortext{\math_text_choice_word\it}\hbox}
+\unexpanded\def\mathwordsl{\mathortext{\math_text_choice_word\sl}\hbox}
+\unexpanded\def\mathwordbf{\mathortext{\math_text_choice_word\bf}\hbox}
+\unexpanded\def\mathwordbi{\mathortext{\math_text_choice_word\bi}\hbox}
+\unexpanded\def\mathwordbs{\mathortext{\math_text_choice_word\bs}\hbox}
 
 %D Safeguard against redefinitions:
 

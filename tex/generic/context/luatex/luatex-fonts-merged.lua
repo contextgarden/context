@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/01/15 20:30:14
+-- merge date  : 12/03/15 22:49:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -4027,6 +4027,9 @@ nuts.is_node=direct.is_node
 nuts.end_of_math=direct.end_of_math
 nuts.traverse=direct.traverse
 nuts.traverse_id=direct.traverse_id
+nuts.traverse_char=direct.traverse_char
+nuts.ligaturing=direct.ligaturing
+nuts.kerning=direct.kerning
 nuts.getprop=nuts.getattr
 nuts.setprop=nuts.setattr
 local new_nut=direct.new

@@ -203,16 +203,22 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                     local outer = getattr(stack,attribute)
                     if outer ~= inheritance then
                         local list, ok = process(namespace,attribute,content,inheritance,outer)
+if content ~= list then
                         setfield(stack,"list",list)
+end
                         done = done or ok
                     else
                         local list, ok = process(namespace,attribute,content,inheritance,default)
+if content ~= list then
                         setfield(stack,"list",list)
+end
                         done = done or ok
                     end
                 else
                     local list, ok = process(namespace,attribute,content,inheritance,default)
+if content ~= list then
                     setfield(stack,"list",list)
+end
                     done = done or ok
                 end
                 -- end nested --
@@ -251,16 +257,22 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                         local outer = getattr(stack,attribute)
                         if outer ~= inheritance then
                             local list, ok = process(namespace,attribute,leader,inheritance,outer)
+if leader ~= list then
                             setfield(stack,"leader",list)
+end
                             done = done or ok
                         else
                             local list, ok = process(namespace,attribute,leader,inheritance,default)
+if leader ~= list then
                             setfield(stack,"leader",list)
+end
                             done = done or ok
                         end
                     else
                         local list, ok = process(namespace,attribute,leader,inheritance,default)
+if leader ~= list then
                         setfield(stack,"leader",list)
+end
                         done = done or ok
                     end
                     -- end nested --
@@ -320,16 +332,22 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                     local outer = getattr(stack,attribute)
                     if outer ~= inheritance then
                         local list, ok = selective(namespace,attribute,content,inheritance,outer)
+if content ~= list then
                         setfield(stack,"list",list)
+end
                         done = done or ok
                     else
                         local list, ok = selective(namespace,attribute,content,inheritance,default)
+if content ~= list then
                         setfield(stack,"list",list)
+end
                         done = done or ok
                     end
                 else
                     local list, ok = selective(namespace,attribute,content,inheritance,default)
+if content ~= list then
                     setfield(stack,"list",list)
+end
                     done = done or ok
                 end
                 -- end nested
@@ -366,16 +384,22 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                         local outer = getatribute(stack,attribute)
                         if outer ~= inheritance then
                             local list, ok = selective(namespace,attribute,leader,inheritance,outer)
+if leader ~= list then
                             setfield(stack,"leader",list)
+end
                             done = done or ok
                         else
                             local list, ok = selective(namespace,attribute,leader,inheritance,default)
+if leader ~= list then
                             setfield(stack,"leader",list)
+end
                             done = done or ok
                         end
                     else
                         local list, ok = selective(namespace,attribute,leader,inheritance,default)
+if leader ~= list then
                         setfield(stack,"leader",list)
+end
                         done = done or ok
                     end
                     -- end nested
@@ -440,18 +464,24 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
                         current = a
                         head = insert_node_before(head,stack,copied(nsdata[a]))
                         local list = stacked(namespace,attribute,content,current) -- two return values
+if content ~= list then
                         setfield(stack,"list",list)
+end
                         done = true
                         head, stack = insert_node_after(head,stack,copied(nsnone))
                         current = p
                     else
                         local list, ok = stacked(namespace,attribute,content,current)
+if content ~= list then
                         setfield(stack,"list",list) -- only if ok
+end
                         done = done or ok
                     end
                 else
                     local list, ok = stacked(namespace,attribute,content,current)
+if content ~= list then
                     setfield(stack,"list",list) -- only if ok
+end
                     done = done or ok
                 end
             end
@@ -471,7 +501,9 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
                 end
                 if leader then
                     local list, ok = stacked(namespace,attribute,content,current)
+if leader ~= list then
                     setfield(stack,"leader",list) -- only if ok
+end
                     done = done or ok
                     leader = false
                 end

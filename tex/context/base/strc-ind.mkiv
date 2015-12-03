@@ -104,6 +104,12 @@
    \par
    \endgroup}
 
+\unexpanded\def\startindentedtext
+  {\dosingleempty\strc_indentedtexts_start_direct}
+
+\def\strc_indentedtexts_start_direct[#1]%
+  {\strc_indentedtexts_start{#1}\c_strc_indentedtexts_nesting}
+
 \let\stopindentedtext\strc_indentedtexts_stop
 
 \unexpanded\def\strc_indentedtexts_direct#1#2#3\par % no longer clever grabpar trickery

@@ -25,6 +25,7 @@ local report_fonts      = logs.reporter("fonts","processing")
 local fonthashes        = fonts.hashes
 local fontdata          = fonthashes.identifiers
 local fontvariants      = fonthashes.variants
+local fontmodes         = fonthashes.modes
 
 local otf               = fonts.handlers.otf
 
@@ -49,10 +50,12 @@ local getfield          = nuts.getfield
 ----- getdisc           = nuts.getdisc
 local setchar           = nuts.setchar
 local setlink           = nuts.setlink
+local setfield          = nuts.setfield
 
 local traverse_id       = nuts.traverse_id
 local traverse_char     = nuts.traverse_char
 local delete_node       = nuts.delete
+local protect_glyph     = nuts.protect_glyph
 
 local glyph_code        = nodecodes.glyph
 local disc_code         = nodecodes.disc
@@ -127,8 +130,8 @@ fonts.hashes.processes   = fontprocesses
 -- we need to deal with the basemode fonts here and can only run over ranges as we
 -- otherwise get luatex craches due to all kind of asserts in the disc/lig builder
 
-local ligaturing = node.ligaturing
-local kerning    = node.kerning
+local ligaturing = nuts.ligaturing
+local kerning    = nuts.kerning
 
 local expanders
 
@@ -148,52 +151,59 @@ end
 
 fonts.setdiscexpansion(true)
 
-if traverse_char then
+function handlers.characters(head)
+    -- either next or not, but definitely no already processed list
+    starttiming(nodes)
 
-    function handlers.characters(head)
-        -- either next or not, but definitely no already processed list
-        starttiming(nodes)
+    local usedfonts = { }
+    local attrfonts = { }
+    local basefonts = { }
+    local a, u, b   = 0, 0, 0
+    local basefont  = nil
+    local prevfont  = nil
+    local prevattr  = 0
+    local mode      = nil
+    local done      = false
+    local variants  = nil
+    local redundant = nil
 
-        local usedfonts = { }
-        local attrfonts = { }
-        local basefonts = { }
-        local a, u, b   = 0, 0, 0
-        local basefont  = nil
-        local prevfont  = nil
-        local prevattr  = 0
-        local done      = false
-        local variants  = nil
-        local redundant = nil
-
-        if trace_fontrun then
-            run = run + 1
-            report_fonts()
-            report_fonts("checking node list, run %s",run)
-            report_fonts()
-            local n = tonut(head)
-            while n do
-                local id = getid(n)
-                if id == glyph_code then
-                    local font = getfont(n)
-                    local attr = getattr(n,0) or 0
-                    report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,getchar(n))
-                elseif id == disc_code then
-                    report_fonts("[disc] %s",nodes.listtoutf(n,true,false,n))
-                else
-                    report_fonts("[%s]",nodecodes[id])
-                end
-                n = getnext(n)
+    if trace_fontrun then
+        run = run + 1
+        report_fonts()
+        report_fonts("checking node list, run %s",run)
+        report_fonts()
+        local n = tonut(head)
+        while n do
+            local id = getid(n)
+            if id == glyph_code then
+                local font = getfont(n)
+                local attr = getattr(n,0) or 0
+                report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,getchar(n))
+            elseif id == disc_code then
+                report_fonts("[disc] %s",nodes.listtoutf(n,true,false,n))
+            else
+                report_fonts("[%s]",nodecodes[id])
             end
+            n = getnext(n)
         end
+    end
 
-        local nuthead = tonut(head)
+    local nuthead = tonut(head)
 
-        for n in traverse_char(nuthead) do
-            local font = getfont(n)
-            local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-            if font ~= prevfont or attr ~= prevattr then
+    for n in traverse_char(nuthead) do
+        local font = getfont(n)
+        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+        if font ~= prevfont or attr ~= prevattr then
+            prevfont = font
+            prevattr = attr
+            mode     = fontmodes[font] -- we can also avoid the attr check
+            variants = fontvariants[font]
+            if mode == "none" then
+                -- skip
+                protect_glyph(n)
+            else
                 if basefont then
-                    basefont[2] = tonode(getprev(n)) -- todo, save p
+                    basefont[2] = getprev(n)
                 end
                 if attr > 0 then
                     local used = attrfonts[font]
@@ -208,7 +218,7 @@ if traverse_char then
                             a = a + 1
                         elseif force_basepass then
                             b = b + 1
-                            basefont = { tonode(n), nil }
+                            basefont = { n, nil }
                             basefonts[b] = basefont
                         end
                     end
@@ -221,428 +231,132 @@ if traverse_char then
                             u = u + 1
                         elseif force_basepass then
                             b = b + 1
-                            basefont = { tonode(n), nil }
+                            basefont = { n, nil }
                             basefonts[b] = basefont
                         end
                     end
                 end
-                prevfont = font
-                prevattr = attr
-                variants = fontvariants[font]
             end
-            if variants then
-                local char = getchar(n)
-                if char >= 0xFE00 and (char <= 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF)) then
-                    local hash = variants[char]
-                    if hash then
-                        local p = getprev(n)
-                        if p and getid(p) == glyph_code then
-                            local char    = getchar(p)
-                            local variant = hash[char]
-                            if variant then
-                                if trace_variants then
-                                    report_fonts("replacing %C by %C",char,variant)
-                                end
-                                setchar(p,variant)
-                                if not redundant then
-                                    redundant = { n }
-                                else
-                                    redundant[#redundant+1] = n
-                                end
+        end
+        if variants then
+            local char = getchar(n)
+            if char >= 0xFE00 and (char <= 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF)) then
+                local hash = variants[char]
+                if hash then
+                    local p = getprev(n)
+                    if p and getid(p) == glyph_code then
+                        local char    = getchar(p)
+                        local variant = hash[char]
+                        if variant then
+                            if trace_variants then
+                                report_fonts("replacing %C by %C",char,variant)
                             end
-                        end
-                    end
-                end
-            end
-        end
-
-        if redundant then
-            for i=1,#redundant do
-                delete_node(nuthead,n)
-            end
-        end
-
-        -- could be an optional pass : seldom needed, only for documentation as a discretionary
-        -- with pre/post/replace will normally not occur on it's own
-
-        local e = 0
-
-        if force_discrun then
-
-            -- basefont is not supported in disc only runs ... it would mean a lot of
-            -- ranges .. we could try to run basemode as a separate processor run but
-            -- not for now (we can consider it when the new node code is tested
-
-         -- local prevfont  = nil
-         -- local prevattr  = 0
-
-            for d in traverse_id(disc_code,nuthead) do
-                -- we could use first_glyph
-                local r = getfield(d,"replace") -- good enough
-                if r then
-                    for n in traverse_char(r) do
-                        local font = getfont(n)
-                        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-                        if font ~= prevfont or attr ~= prevattr then
-                            if attr > 0 then
-                                local used = attrfonts[font]
-                                if not used then
-                                    used = { }
-                                    attrfonts[font] = used
-                                end
-                                if not used[attr] then
-                                    local fd = setfontdynamics[font]
-                                    if fd then
-                                        used[attr] = fd[attr]
-                                        a = a + 1
-                                    end
-                                end
+                            setchar(p,variant)
+                            if not redundant then
+                                redundant = { n }
                             else
-                                local used = usedfonts[font]
-                                if not used then
-                                    local fp = fontprocesses[font]
-                                    if fp then
-                                        usedfonts[font] = fp
-                                        u = u + 1
-                                    end
-                                end
+                                redundant[#redundant+1] = n
                             end
-                            prevfont = font
-                            prevattr = attr
-                        end
-                    end
-                    break
-                elseif expanders then
-                    local subtype = getsubtype(d)
-                    if subtype == discretionary_code then
-                        -- already done when replace
-                    else
-                        expanders[subtype](d)
-                        e = e + 1
-                    end
-                end
-            end
-
-        end
-
-        if trace_fontrun then
-            report_fonts()
-            report_fonts("statics : %s",u > 0 and concat(keys(usedfonts)," ") or "none")
-            report_fonts("dynamics: %s",a > 0 and concat(keys(attrfonts)," ") or "none")
-            report_fonts("built-in: %s",b > 0 and b                           or "none")
-        if expanders then
-            report_fonts("expanded: %s",e > 0 and e                           or "none")
-        end
-            report_fonts()
-        end
-        -- in context we always have at least 2 processors
-        if u == 0 then
-            -- skip
-        elseif u == 1 then
-            local font, processors = next(usedfonts)
-            for i=1,#processors do
-                local h, d = processors[i](head,font,0)
-                if d then
-                    head = h or head
-                    done = true
-                end
-            end
-        else
-            for font, processors in next, usedfonts do
-                for i=1,#processors do
-                    local h, d = processors[i](head,font,0)
-                    if d then
-                        head = h or head
-                        done = true
-                    end
-                end
-            end
-        end
-        if a == 0 then
-            -- skip
-        elseif a == 1 then
-            local font, dynamics = next(attrfonts)
-            for attribute, processors in next, dynamics do -- attr can switch in between
-                for i=1,#processors do
-                    local h, d = processors[i](head,font,attribute)
-                    if d then
-                        head = h or head
-                        done = true
-                    end
-                end
-            end
-        else
-            for font, dynamics in next, attrfonts do
-                for attribute, processors in next, dynamics do -- attr can switch in between
-                    for i=1,#processors do
-                        local h, d = processors[i](head,font,attribute)
-                        if d then
-                            head = h or head
-                            done = true
                         end
                     end
                 end
             end
         end
-        if b == 0 then
-            -- skip
-        elseif b == 1 then
-            -- only one font
-            local range = basefonts[1]
-            local start = range[1]
-            local stop  = range[2]
-            if (start or stop) and (start ~= stop) then
-                local front = head == start
-                if stop then
-                    start, stop = ligaturing(start,stop)
-                    start, stop = kerning(start,stop)
-                elseif start then -- safeguard
-                    start = ligaturing(start)
-                    start = kerning(start)
-                end
-                if front then
-                    head = start
-                end
-            end
-        else
-            -- multiple fonts
-            local front = head == start
-            for i=1,b do
-                local range = basefonts[i]
-                local start = range[1]
-                local stop  = range[2]
-                if (start or stop) and (start ~= stop) then
-                    local prev, next
-                    if stop then
-                        next = getnext(stop)
-                        start, stop = ligaturing(start,stop)
-                        start, stop = kerning(start,stop)
-                    elseif start then -- safeguard
-                        prev  = getprev(start)
-                        start = ligaturing(start)
-                        start = kerning(start)
-                    end
-                    if prev then
-                        setlink(prev,start)
-                    end
-                    if next then
-                        setlink(stop,next)
-                    end
-                    if front then
-                        head  = start
-                        front = nil -- we assume a proper sequence
-                    end
-                end
-                if front then
-                    -- shouldn't happen
-                    head = start
-                end
-            end
-        end
-        stoptiming(nodes)
-        if trace_characters then
-            nodes.report(head,done)
-        end
-        return head, true
     end
 
-else
+    if redundant then
+        for i=1,#redundant do
+            delete_node(nuthead,n)
+        end
+    end
 
+    -- could be an optional pass : seldom needed, only for documentation as a discretionary
+    -- with pre/post/replace will normally not occur on it's own
 
-    function handlers.characters(head)
-        -- either next or not, but definitely no already processed list
-        starttiming(nodes)
+    local e = 0
 
-        local usedfonts = { }
-        local attrfonts = { }
-        local basefonts = { }
-        local a, u, b   = 0, 0, 0
-        local basefont  = nil
-        local prevfont  = nil
-        local prevattr  = 0
-        local done      = false
-        local variants  = nil
-        local redundant = nil
+    if force_discrun then
 
-        if trace_fontrun then
-            run = run + 1
-            report_fonts()
-            report_fonts("checking node list, run %s",run)
-            report_fonts()
-            local n = tonut(head)
-            while n do
-                local id = getid(n)
-                if id == glyph_code then
+        -- basefont is not supported in disc only runs ... it would mean a lot of
+        -- ranges .. we could try to run basemode as a separate processor run but
+        -- not for now (we can consider it when the new node code is tested
+
+     -- local prevfont  = nil
+     -- local prevattr  = 0
+
+        for d in traverse_id(disc_code,nuthead) do
+            -- we could use first_glyph
+            local r = getfield(d,"replace") -- good enough
+            if r then
+                for n in traverse_char(r) do
                     local font = getfont(n)
-                    local attr = getattr(n,0) or 0
-                    report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,getchar(n))
-                elseif id == disc_code then
-                    report_fonts("[disc] %s",nodes.listtoutf(n,true,false,n))
+                    local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+                    if font ~= prevfont or attr ~= prevattr then
+                        if attr > 0 then
+                            local used = attrfonts[font]
+                            if not used then
+                                used = { }
+                                attrfonts[font] = used
+                            end
+                            if not used[attr] then
+                                local fd = setfontdynamics[font]
+                                if fd then
+                                    used[attr] = fd[attr]
+                                    a = a + 1
+                                end
+                            end
+                        else
+                            local used = usedfonts[font]
+                            if not used then
+                                local fp = fontprocesses[font]
+                                if fp then
+                                    usedfonts[font] = fp
+                                    u = u + 1
+                                end
+                            end
+                        end
+                        prevfont = font
+                        prevattr = attr
+                    end
+                end
+                break
+            elseif expanders then
+                local subtype = getsubtype(d)
+                if subtype == discretionary_code then
+                    -- already done when replace
                 else
-                    report_fonts("[%s]",nodecodes[id])
-                end
-                n = getnext(n)
-            end
-        end
-
-        local nuthead = tonut(head)
-
-        for n in traverse_id(glyph_code,nuthead) do
-            if getsubtype(n) < 256 then -- all are 1
-                local font = getfont(n)
-                local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-                if font ~= prevfont or attr ~= prevattr then
-                    if basefont then
-                        basefont[2] = tonode(getprev(n)) -- todo, save p
-                    end
-                    if attr > 0 then
-                        local used = attrfonts[font]
-                        if not used then
-                            used = { }
-                            attrfonts[font] = used
-                        end
-                        if not used[attr] then
-                            local fd = setfontdynamics[font]
-                            if fd then
-                                used[attr] = fd[attr]
-                                a = a + 1
-                            elseif force_basepass then
-                                b = b + 1
-                                basefont = { tonode(n), nil }
-                                basefonts[b] = basefont
-                            end
-                        end
-                    else
-                        local used = usedfonts[font]
-                        if not used then
-                            local fp = fontprocesses[font]
-                            if fp then
-                                usedfonts[font] = fp
-                                u = u + 1
-                            elseif force_basepass then
-                                b = b + 1
-                                basefont = { tonode(n), nil }
-                                basefonts[b] = basefont
-                            end
-                        end
-                    end
-                    prevfont = font
-                    prevattr = attr
-                    variants = fontvariants[font]
-                end
-                if variants then
-                    local char = getchar(n)
-                    if char >= 0xFE00 and (char <= 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF)) then
-                        local hash = variants[char]
-                        if hash then
-                            local p = getprev(n)
-                            if p and getid(p) == glyph_code then
-                                local char    = getchar(p)
-                                local variant = hash[char]
-                                if variant then
-                                    if trace_variants then
-                                        report_fonts("replacing %C by %C",char,variant)
-                                    end
-                                    setchar(p,variant)
-                                    if not redundant then
-                                        redundant = { n }
-                                    else
-                                        redundant[#redundant+1] = n
-                                    end
-                                end
-                            end
-                        end
-                    end
+                    expanders[subtype](d)
+                    e = e + 1
                 end
             end
         end
 
-        if redundant then
-            for i=1,#redundant do
-                delete_node(nuthead,n)
+    end
+
+    if trace_fontrun then
+        report_fonts()
+        report_fonts("statics : %s",u > 0 and concat(keys(usedfonts)," ") or "none")
+        report_fonts("dynamics: %s",a > 0 and concat(keys(attrfonts)," ") or "none")
+        report_fonts("built-in: %s",b > 0 and b                           or "none")
+    if expanders then
+        report_fonts("expanded: %s",e > 0 and e                           or "none")
+    end
+        report_fonts()
+    end
+    -- in context we always have at least 2 processors
+    if u == 0 then
+        -- skip
+    elseif u == 1 then
+        local font, processors = next(usedfonts)
+        for i=1,#processors do
+            local h, d = processors[i](head,font,0)
+            if d then
+                head = h or head
+                done = true
             end
         end
-
-        -- could be an optional pass : seldom needed, only for documentation as a discretionary
-        -- with pre/post/replace will normally not occur on it's own
-
-        local e = 0
-
-        if force_discrun then
-
-            -- basefont is not supported in disc only runs ... it would mean a lot of
-            -- ranges .. we could try to run basemode as a separate processor run but
-            -- not for now (we can consider it when the new node code is tested
-
-         -- local prevfont  = nil
-         -- local prevattr  = 0
-
-            for d in traverse_id(disc_code,nuthead) do
-                -- we could use first_glyph
-                local r = getfield(d,"replace") -- good enough
-                if r then
-                    for n in traverse_id(glyph_code,r) do
-                        if getsubtype(n) < 256 then -- all are 1
-                            local font = getfont(n)
-                            local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-                            if font ~= prevfont or attr ~= prevattr then
-                                if attr > 0 then
-                                    local used = attrfonts[font]
-                                    if not used then
-                                        used = { }
-                                        attrfonts[font] = used
-                                    end
-                                    if not used[attr] then
-                                        local fd = setfontdynamics[font]
-                                        if fd then
-                                            used[attr] = fd[attr]
-                                            a = a + 1
-                                        end
-                                    end
-                                else
-                                    local used = usedfonts[font]
-                                    if not used then
-                                        local fp = fontprocesses[font]
-                                        if fp then
-                                            usedfonts[font] = fp
-                                            u = u + 1
-                                        end
-                                    end
-                                end
-                                prevfont = font
-                                prevattr = attr
-                            end
-                        end
-                        break
-                    end
-                elseif expanders then
-                    local subtype = getsubtype(d)
-                    if subtype == discretionary_code then
-                        -- already done when replace
-                    else
-                        expanders[subtype](d)
-                        e = e + 1
-                    end
-                end
-            end
-
-        end
-
-        if trace_fontrun then
-            report_fonts()
-            report_fonts("statics : %s",u > 0 and concat(keys(usedfonts)," ") or "none")
-            report_fonts("dynamics: %s",a > 0 and concat(keys(attrfonts)," ") or "none")
-            report_fonts("built-in: %s",b > 0 and b                           or "none")
-        if expanders then
-            report_fonts("expanded: %s",e > 0 and e                           or "none")
-        end
-            report_fonts()
-        end
-        -- in context we always have at least 2 processors
-        if u == 0 then
-            -- skip
-        elseif u == 1 then
-            local font, processors = next(usedfonts)
+    else
+        for font, processors in next, usedfonts do
             for i=1,#processors do
                 local h, d = processors[i](head,font,0)
                 if d then
@@ -650,21 +364,23 @@ else
                     done = true
                 end
             end
-        else
-            for font, processors in next, usedfonts do
-                for i=1,#processors do
-                    local h, d = processors[i](head,font,0)
-                    if d then
-                        head = h or head
-                        done = true
-                    end
+        end
+    end
+    if a == 0 then
+        -- skip
+    elseif a == 1 then
+        local font, dynamics = next(attrfonts)
+        for attribute, processors in next, dynamics do -- attr can switch in between
+            for i=1,#processors do
+                local h, d = processors[i](head,font,attribute)
+                if d then
+                    head = h or head
+                    done = true
                 end
             end
         end
-        if a == 0 then
-            -- skip
-        elseif a == 1 then
-            local font, dynamics = next(attrfonts)
+    else
+        for font, dynamics in next, attrfonts do
             for attribute, processors in next, dynamics do -- attr can switch in between
                 for i=1,#processors do
                     local h, d = processors[i](head,font,attribute)
@@ -674,81 +390,71 @@ else
                     end
                 end
             end
-        else
-            for font, dynamics in next, attrfonts do
-                for attribute, processors in next, dynamics do -- attr can switch in between
-                    for i=1,#processors do
-                        local h, d = processors[i](head,font,attribute)
-                        if d then
-                            head = h or head
-                            done = true
-                        end
-                    end
-                end
+        end
+    end
+    if b == 0 then
+        -- skip
+    elseif b == 1 then
+        -- only one font
+        local range = basefonts[1]
+        local start = range[1]
+        local stop  = range[2]
+        if (start or stop) and (start ~= stop) then
+            local front = nuthead == start
+            if stop then
+                start, stop = ligaturing(start,stop)
+                start, stop = kerning(start,stop)
+            elseif start then -- safeguard
+                start = ligaturing(start)
+                start = kerning(start)
+            end
+            if front then
+                head = tonode(start)
             end
         end
-        if b == 0 then
-            -- skip
-        elseif b == 1 then
-            -- only one font
-            local range = basefonts[1]
+    else
+        -- multiple fonts
+        local front = nuthead == start
+        for i=1,b do
+            local range = basefonts[i]
             local start = range[1]
             local stop  = range[2]
             if (start or stop) and (start ~= stop) then
-                local front = head == start
+                local prev, next
                 if stop then
+                    next = getnext(stop)
                     start, stop = ligaturing(start,stop)
                     start, stop = kerning(start,stop)
                 elseif start then -- safeguard
+                    prev  = getprev(start)
                     start = ligaturing(start)
                     start = kerning(start)
                 end
-                if front then
-                    head = start
+                if prev then
+                    setlink(prev,start)
                 end
-            end
-        else
-            -- multiple fonts
-            local front = head == start
-            for i=1,b do
-                local range = basefonts[i]
-                local start = range[1]
-                local stop  = range[2]
-                if (start or stop) and (start ~= stop) then
-                    local prev, next
-                    if stop then
-                        next = getnext(stop)
-                        start, stop = ligaturing(start,stop)
-                        start, stop = kerning(start,stop)
-                    elseif start then -- safeguard
-                        prev  = getprev(start)
-                        start = ligaturing(start)
-                        start = kerning(start)
-                    end
-                    if prev then
-                        setlink(prev,start)
-                    end
-                    if next then
-                        setlink(stop,next)
-                    end
-                    if front then
-                        head  = start
-                        front = nil -- we assume a proper sequence
-                    end
+                if next then
+                    setlink(stop,next)
                 end
                 if front then
-                    -- shouldn't happen
-                    head = start
+                    nuthead  = start
+                    front = nil -- we assume a proper sequence
                 end
             end
+            if front then
+                -- shouldn't happen
+                nuthead = start
+            end
         end
-        stoptiming(nodes)
-        if trace_characters then
-            nodes.report(head,done)
+        if front then
+            head = tonode(nuthead)
         end
-        return head, true
     end
-
+    stoptiming(nodes)
+    if trace_characters then
+        nodes.report(head,done)
+    end
+    return head, true
 end
 
 --     local formatters = string.formatters

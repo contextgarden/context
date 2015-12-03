@@ -409,5 +409,7 @@ return {
         "Ucheckedstartdisplaymath", "Ucheckedstopdisplaymath",
         --
         "nobreak", "allowbreak", "goodbreak",
+        --
+        "nospace", "nospacing", "dospacing",
     }
 }

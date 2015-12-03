@@ -210,6 +210,9 @@ nuts.is_node             = direct.is_node
 nuts.end_of_math         = direct.end_of_math
 nuts.traverse            = direct.traverse
 nuts.traverse_id         = direct.traverse_id
+nuts.traverse_char       = direct.traverse_char
+nuts.ligaturing          = direct.ligaturing
+nuts.kerning             = direct.kerning
 
 nuts.getprop             = nuts.getattr
 nuts.setprop             = nuts.setattr

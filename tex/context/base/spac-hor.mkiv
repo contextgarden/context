@@ -460,7 +460,17 @@
 \unexpanded\def\removelastspace{\ifhmode\unskip\fi}
 \unexpanded\def\nospace        {\removelastspace\ignorespaces}
 
-\ifdefined\softhyphen \else \let\softhyphen\- \fi
+\ifdefined\nospaces
+    \unexpanded\def\nospacing{\normalnospaces\plusone}
+    \unexpanded\def\dospacing{\normalnospaces\zerocount}
+\else
+    \unexpanded\def\nospacing{\spaceskip\scaledpoint     \xspaceskip\zeropoint}
+    \unexpanded\def\dospacing{\spaceskip\currentspaceskip\xspaceskip\zeropoint} % what
+\fi
+
+\ifdefined\softhyphen \else
+    \let\softhyphen\-
+\fi
 
 \cldcontext{"\string\\unexpanded\string\\def\string\\\string\n{\string\\space}"}
 %cldcontext{"\string\\let\string\\\string\n=\string\\space"}

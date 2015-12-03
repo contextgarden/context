@@ -108,6 +108,7 @@ nodes.set_attribute        = node.set_attribute
 nodes.unset_attribute      = node.unset_attribute
 
 nodes.protect_glyphs       = node.protect_glyphs
+nodes.protect_glyph        = node.protect_glyph
 nodes.unprotect_glyphs     = node.unprotect_glyphs
 nodes.kerning              = node.kerning
 nodes.ligaturing           = node.ligaturing

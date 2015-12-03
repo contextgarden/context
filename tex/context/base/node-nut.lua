@@ -196,8 +196,10 @@ nuts.set_attribute        = direct.set_attribute
 nuts.unset_attribute      = direct.unset_attribute
 
 nuts.protect_glyphs       = direct.protect_glyphs
+nuts.protect_glyph        = direct.protect_glyph
 nuts.unprotect_glyphs     = direct.unprotect_glyphs
-
+nuts.ligaturing           = direct.ligaturing
+nuts.kerning              = direct.kerning
 nuts.effective_glue       = direct.effective_glue
 
 if not nuts.effective_glue then
@@ -226,7 +228,7 @@ end
 
 -- placeholders
 
-if not direct.kerning then
+if not nuts.kerning then
 
     local n_kerning = node.kerning
 
@@ -236,7 +238,7 @@ if not direct.kerning then
 
 end
 
-if not direct.ligaturing then
+if not nuts.ligaturing then
 
     local n_ligaturing = node.ligaturing
 
