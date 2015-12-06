@@ -256,14 +256,14 @@
 \unexpanded\def\tracelinenotes
   {\let\strc_linenotes_traced\strc_linenotes_traced_indeed}
 
+% We predefine one, namely \type {\linenote} cum suis.
+
+\definelinenote[\v!linenote]
+
 %D Use these when not properly nested:
 
 \let\fromlinenote\startlinenote
 \let\tolinenote  \stoplinenote
-
-% We predefine one, namely \type {\linenote} cum suis.
-
-\definelinenote[\v!linenote]
 
 % beware: line numbers are added later on so grouping setups is a bad idea
 %

@@ -8749,7 +8749,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 6913, stripped down to: 5481
+-- original size: 6916, stripped down to: 5484
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -8870,13 +8870,13 @@ function statistics.show()
       end
     end
     register("lua properties",function()
-      local list=status.list()
-      local hashchar=tonumber(list.luatex_hashchars)
+      local hashchar=tonumber(status.luatex_hashchars)
+      local hashtype=status.luatex_hashtype
       local mask=lua.mask or "ascii"
       return format("engine: %s, used memory: %s, hash type: %s, hash chars: min(%s,40), symbol mask: %s (%s)",
         jit and "luajit" or "lua",
         statistics.memused(),
-        list.luatex_hashtype or "default",
+        hashtype or "default",
         hashchar and 2^hashchar or "unknown",
         mask,
         mask=="utf" and "τεχ" or "tex")
@@ -18349,7 +18349,7 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 781900
+-- original bytes    : 781903
 -- stripped bytes    : 283302
 
 -- end library merge

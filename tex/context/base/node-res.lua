@@ -619,7 +619,10 @@ statistics.register("cleaned up reserved nodes", function()
 end) -- \topofboxstack
 
 statistics.register("node memory usage", function() -- comes after cleanup !
-    return status.node_mem_usage
+    local usage = status.node_mem_usage
+    if usage ~= "" then
+        return usage
+    end
 end)
 
 lua.registerfinalizer(cleanup, "cleanup reserved nodes")
