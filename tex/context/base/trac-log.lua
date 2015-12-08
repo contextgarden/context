@@ -110,6 +110,10 @@ local direct, subdirect, writer, pushtarget, poptarget, setlogfile, settimedlog,
 
 if tex and (tex.jobname or tex.formatname) then
 
+    if texio.setescape then
+        texio.setescape(0)
+    end
+
     local function useluawrites()
 
         -- quick hack, awaiting speedup in engine (8 -> 6.4 sec for --make with console2)

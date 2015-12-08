@@ -1954,7 +1954,8 @@ function readers.loadfont(filename,n)
                 hasitalics = fontdata.hasitalics or false,
             },
             resources     = {
-                filename      = fontdata.filename,
+             -- filename      = fontdata.filename,
+                filename      = filename,
                 private       = privateoffset,
                 duplicates    = fontdata.duplicates  or { },
                 features      = fontdata.features    or { }, -- we need to add these in the loader

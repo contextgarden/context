@@ -3257,6 +3257,9 @@ lang.sethjcode(<language> l, <number> char, <number> usedchar)
 <number> usedchar = lang.gethjcode(<language> l, <number> char)
 \stopfunctioncall
 
+When you set a hjcode the current sets get initialized unless the set was already
+initialized due to \type {\savinghyphcodes} being larger than zero.
+
 \section{The \type {lua} library}
 
 This library contains one read|-|only  item:
@@ -6142,6 +6145,11 @@ texio.write_nl(<string> s, ...)
 This function behaves like \type {texio.write}, but make sure that the given
 strings will appear at the beginning of a new line. You can pass a single empty
 string if you only want to move to the next line.
+
+\subsubsection{\type {texio.setescape}}
+
+You can disable \type {^^} escaping of control characters by passing a value of
+zero.
 
 % \section[luatokens]{The \type {oldtoken} library (obsolete)}
 %

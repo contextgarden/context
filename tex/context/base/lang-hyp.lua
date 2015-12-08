@@ -328,9 +328,11 @@ local function hyphenate(dictionary,word,n) -- odd is okay
     end
     local l = 1
     local w = { "." }
+ -- local d = dictionary.codehash or lcchars[c]
     for i=1,n do
         local c = word[i]
         l = l + 1
+     -- w[l] = d[c] or c -- needs testing
         w[l] = lcchars[c] or c
     end
     l = l + 1
@@ -359,8 +361,8 @@ local function hyphenate(dictionary,word,n) -- odd is okay
         show_1(w)
     end
     --
-    local specials   = dictionary.specials
-    local patterns   = dictionary.patterns
+    local specials = dictionary.specials
+    local patterns = dictionary.patterns
     --
 -- inspect(specials)
     local spec
@@ -647,8 +649,6 @@ if context then
     local posthyphenchar     = lang.posthyphenchar
     local preexhyphenchar    = lang.preexhyphenchar
     local postexhyphenchar   = lang.postexhyphenchar
-
-    local lccodes            = characters.lccodes
 
     local a_hyphenation      = attributes.private("hyphenation")
 

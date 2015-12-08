@@ -221,7 +221,7 @@ local function process(start)
                                     local fencedir = fences[#fences]
                                     fences[#fences] = nil
                                     if fencedir < 0 then
-                                        setchard(current,mirror)
+                                        setchar(current,mirror)
                                         setprop(current,"direction","r")
                                     else
                                         setprop(current,"direction","l")

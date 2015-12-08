@@ -142,10 +142,13 @@ has no effect. However, you can adapt the set with:
 
 This change is global which makes sense if you keep in mind that the moment that
 hyphenation happens is (normally) when the paragraph or a horizontal box is
-constructed. Carrying all this information with each glyph would give too much
-overhead and also make the definition more complex. (A solution with hj codesets
-was considered but rejected because in practice the current approach is
-sufficient and it would not be compatible.)
+constructed. When \type {\savinghyphcodes} was zero when the language got
+initialized you start out with nothing, otherwise you already have a set.
+
+Carrying all this information with each glyph would give too much overhead and
+also make the definition more complex. A solution with hj codesets was considered
+but rejected because in practice the current approach is sufficient and it would
+not be compatible anyway.
 
 Beware: the values are always saved in the format, independent of the setting
 of \type {\savinghyphcodes} at the mnoment the format is dumped.

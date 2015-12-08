@@ -133,17 +133,24 @@ local function validdata(loaded,what,tag)
 end
 
 local function sethjcodes(instance,loaded,what)
-    local c = loaded[what]
-    local c = c and c.characters
+    local l = loaded[what]
+    local c = l and l.characters
     if c then
+        local h = l.codehash
+        if not h then
+            h = { }
+            l.codehash = h
+        end
         local s = tex.savinghyphcodes
         tex.savinghyphcodes = 0
         for l in utfbytes(c) do
             local u = uccodes[l]
             sethjcode(instance,l,l)
+            h[l] = l
             if type(u) == "number" then
                 -- we don't want ß -> SS
                 sethjcode(instance,u,l)
+                h[u] = l
             end
         end
         tex.savinghyphcodes = s
@@ -186,13 +193,13 @@ local function loaddefinitions(tag,specification)
                     local loaded = table.load(fullname,gzipped and gzip.load)
                     if loaded then -- todo: version test
                         ok, nofloaded = true, nofloaded + 1
-                        instance:patterns   (validdata(loaded,"patterns",  tag) or "")
-                        instance:hyphenation(validdata(loaded,"exceptions",tag) or "")
-                        resources[#resources+1] = loaded -- so we can use them otherwise
 if sethjcodes then -- for now
                         sethjcodes(instance,loaded,"patterns")
                         sethjcodes(instance,loaded,"exceptions")
 end
+                        instance:patterns   (validdata(loaded,"patterns",  tag) or "")
+                        instance:hyphenation(validdata(loaded,"exceptions",tag) or "")
+                        resources[#resources+1] = loaded -- so we can use them otherwise
                     else
                         report_initialization("invalid definition %a for language %a in %a",definition,tag,filename)
                     end
