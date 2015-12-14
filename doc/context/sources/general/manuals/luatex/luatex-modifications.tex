@@ -96,11 +96,6 @@ functionality, but with a few small adaptions.
 \stopitem
 
 \startitem
-    The \type {\savinghyphcodes} command is a no|-|op. \in {Chapter} [languages]
-    explains why.
-\stopitem
-
-\startitem
     When kpathsea is used to find files, \LUATEX\ uses the \type {ofm} file
     format to search for font metrics. In turn, this means that \LUATEX\ looks at
     the \type {OFMFONTS} configuration variable (like \OMEGA\ and \ALEPH) instead
@@ -548,7 +543,6 @@ The configuration related registers have become:
 \edef\pdfpkresolution             {\pdfvariable pkresolution}
 \edef\pdfinclusioncopyfonts       {\pdfvariable inclusioncopyfonts}
 \edef\pdfinclusionerrorlevel      {\pdfvariable inclusionerrorlevel}
-\edef\pdfreplacefont              {\pdfvariable replacefont}
 \edef\pdfgentounicode             {\pdfvariable gentounicode}
 \edef\pdfpagebox                  {\pdfvariable pagebox}
 \edef\pdfminorversion             {\pdfvariable minorversion}
@@ -602,7 +596,6 @@ the defaults; these are:
 \pdfpkresolution         72
 \pdfinclusioncopyfonts    0
 \pdfinclusionerrorlevel   0
-\pdfreplacefont           0
 \pdfgentounicode          0
 \pdfpagebox               0
 \pdfminorversion          4

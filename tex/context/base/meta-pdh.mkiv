@@ -106,10 +106,10 @@
 
 \def\convertMPtoPDF#1#2#3% watch the transparency reset
   {\resetMPvariables{#1}{#2}{#3}%
-   \vbox\bgroup
+   \vpack\bgroup
      \forgetall
      \offinterlineskip
-     \setbox\scratchbox\vbox\bgroup
+     \setbox\scratchbox\vpack\bgroup
         \setnormalcatcodes % we can be in verbatim or so
         \message{[MP to PDF]}%
         \startMPresources
@@ -120,12 +120,12 @@
         \pdfliteral{\letterpercent\space mps end}%
         \stopMPresources
      \egroup
-     \setbox\scratchbox\hbox\bgroup
+     \setbox\scratchbox\hpack\bgroup
         \hskip-\MPllx\onebasepoint
         \raise-\MPlly\onebasepoint
         \box\scratchbox
      \egroup
-     \setbox\scratchbox\vbox to \MPheight\bgroup
+     \setbox\scratchbox\vpack to \MPheight\bgroup
        \vfill
        \hsize\MPwidth
        \smashbox\scratchbox
@@ -154,13 +154,13 @@
    \or
      \scratchdimen\PDFMPformoffset\relax
      \ifdim\scratchdimen>\zeropoint % compensate for error
-       \setbox#1\vbox spread 2\scratchdimen
-         {\forgetall\vss\hbox spread 2\scratchdimen{\hss\box#1\hss}\vss}%
+       \setbox#1\vpack spread 2\scratchdimen
+         {\forgetall\vss\hpack spread 2\scratchdimen{\hss\box#1\hss}\vss}%
      \fi
      \setMPPDFobject{\currentPDFresources}{#1}%
      \ifdim\scratchdimen>\zeropoint % compensate for error
-       \vbox to \MPheight
-         {\forgetall\vss\hbox to \MPwidth{\hss\getMPPDFobject\hss}\vss}%
+       \vpack to \MPheight
+         {\forgetall\vss\hpack to \MPwidth{\hss\getMPPDFobject\hss}\vss}%
      \else
        \getMPPDFobject
      \fi
@@ -669,12 +669,12 @@
    \defconvertedcommand\MPtextdata\MPtextdata % no edef
    \splitstring\MPtextdata\at::::\to\MPtexttag\and\MPtextnumber
    \executeifdefined{handleMPtext\MPtexttag}
-     {\setbox\scratchbox\hbox
+     {\setbox\scratchbox\hbox % text
         {\font\temp=#1\space at #2\onebasepoint
          \let\c\char
          \temp
          \MPfshowcommand{#3}}%
-      \setbox\scratchbox\hbox
+      \setbox\scratchbox\hpack
         {\hskip#4\onebasepoint
          \raise#5\onebasepoint
          \box\scratchbox}%

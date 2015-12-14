@@ -281,7 +281,8 @@
 
 \def\syst_boxes_smash_process_option#1%
   {\ifx#1\relax\else
-     \ifcsname\??smashoptions#1\endcsname\csname\??smashoptions#1\endcsname\fi
+    %\csname\??smashoptions#1\endcsname\csname\??smashoptions#1\endcsname\fi
+     \begincsname\??smashoptions#1\endcsname
      \expandafter\syst_boxes_smash_process_option
    \fi}
 
@@ -726,9 +727,9 @@
 %D Some well known friends, but we implement them our own
 %D way. We want the macros to work in both math and text mode.
 
-\def\dodorlap{\hbox to \zeropoint{\box\nextbox\normalhss}\endgroup}
-\def\dodollap{\hbox to \zeropoint{\normalhss\box\nextbox}\endgroup}
-\def\dodoclap{\hbox to \zeropoint{\normalhss\box\nextbox\normalhss}\endgroup}
+\def\dodorlap{\hpack to \zeropoint{\box\nextbox\normalhss}\endgroup}
+\def\dodollap{\hpack to \zeropoint{\normalhss\box\nextbox}\endgroup}
+\def\dodoclap{\hpack to \zeropoint{\normalhss\box\nextbox\normalhss}\endgroup}
 
 \def\dorlap{\begingroup\dowithnextboxcs\dodorlap\hbox}
 \def\dollap{\begingroup\dowithnextboxcs\dodollap\hbox}
@@ -742,8 +743,8 @@
 \unexpanded\def\llap{\mathortext\domathllap\dollap}
 \unexpanded\def\clap{\mathortext\domathclap\doclap}
 
-\def\dodotlap{\vbox to \zeropoint{\normalvss\box\nextbox}\endgroup}
-\def\dodoblap{\vbox to \zeropoint{\box\nextbox\normalvss}\endgroup}
+\def\dodotlap{\vpack to \zeropoint{\normalvss\box\nextbox}\endgroup}
+\def\dodoblap{\vpack to \zeropoint{\box\nextbox\normalvss}\endgroup}
 
 \unexpanded\def\tlap{\begingroup\dowithnextboxcs\dodotlap\vbox}
 \unexpanded\def\blap{\begingroup\dowithnextboxcs\dodoblap\vbox}
@@ -915,7 +916,7 @@
 % We will turn this into a \MKIV\ variant.
 
 \unexpanded\def\insertshapesignal
-  {\hbox to \shapesignal{\strut\hss}% plus \strut
+  {\hpack to \shapesignal{\strut\hss}% plus \strut
    \prevdepth\strutdp} % never \nointerlineskip
 
 \unexpanded\def\restoreshapebox % compensates for the signal
@@ -1263,7 +1264,7 @@
           \fi
           \unvbox\nextbox
           \setbox\nextbox\lastbox
-          \global\setbox1\hbox
+          \global\setbox1\hpack
             {\ifdone
                \unhbox\nextbox\unskip\kern\zeropoint\box\scratchbox
              \else
@@ -1341,7 +1342,7 @@
           {\ifx\clip\undefined
              \box\plusone
            \else\ifdim\wd\plusone>\hsize
-             \lower\strutdepth\hbox{\clip[\c!width=\hsize,\c!height=\lineheight]{\hbox{\raise\strutdepth\box\plusone}}}%
+             \lower\strutdepth\hpack{\clip[\c!width=\hsize,\c!height=\lineheight]{\hpack{\raise\strutdepth\box\plusone}}}%
            \else
              \box\plusone
            \fi\fi
@@ -1499,7 +1500,7 @@
    \dowithnextboxcs\syst_boxes_sbox_finish\vbox}
 
 \unexpanded\def\syst_boxes_sbox_finish
-  {\setbox\nextbox\hbox
+  {\setbox\nextbox\hpack
      {\strut
       \dp\nextbox\zeropoint
       \lower\strutdp\box\nextbox}%
@@ -1513,7 +1514,7 @@
 \unexpanded\def\inlinedbox
   {\bgroup
    \dowithnextbox
-     {\setbox\nextbox\hbox
+     {\setbox\nextbox\hpack
         {\lower
            \dimexpr(\htdp\nextbox-\lineheight)/\plustwo+\strutdp\relax
            \box\nextbox}%
@@ -1551,7 +1552,7 @@
 
 \def\syst_boxes_topskippedbox_finish
   {\edef\m_boxes_tmp{\ifdim\strutdepth=\dp\nextbox\dp\nextbox\the\dp\nextbox\fi}%
-   \lower\topskip\hbox{\raise\strutheight\box\nextbox}%
+   \lower\topskip\hpack{\raise\strutheight\box\nextbox}%
    \m_boxes_tmp
    \egroup}
 
@@ -1603,7 +1604,7 @@
 
 \unexpanded\def\centeredbox#1#%   height +/-dimen width +/-dimen
   {\bgroup
-   \setbox0\vbox to \vsize
+   \setbox0\vpack to \vsize
      \bgroup
        \dontcomplain
        \forgetall
@@ -1611,11 +1612,11 @@
        \setbox2\vbox{\hrule\s!height\zeropoint#1}%
        \advance\vsize \ht2
        \advance\hsize \wd0
-       \vbox to \vsize
+       \vpack to \vsize
          \bgroup
            \vskip-\ht2
            \vss
-           \hbox to \hsize
+           \hpack to \hsize
              \bgroup
                \dowithnextbox
                  {\hskip-\wd0
@@ -1671,7 +1672,7 @@
       \ifzeropt\wd\scratchbox\else\hsize\wd\scratchbox\fi
       \setbox\scratchbox\vbox{\hrule\s!height\zeropoint#1}%
       \ifzeropt\ht\scratchbox\else\vsize\ht\scratchbox\fi
-      \vbox to \vsize{\vss\hbox to \hsize{\hss\box\nextbox\hss}\vss}%
+      \vpack to \vsize{\vss\hpack to \hsize{\hss\box\nextbox\hss}\vss}%
       \egroup}%
      \hbox}
 
@@ -1757,7 +1758,7 @@
         \setbox0=\box\rigidcolumnbox
         \doloop
           {\setbox\rigidcolumnbox=\copy0
-           \setbox\scratchbox\hbox to \savedrigidhsize
+           \setbox\scratchbox\hpack to \savedrigidhsize
              {\dorecurse\rigidcolumns
                 {\setbox\scratchbox\vsplit\rigidcolumnbox to \scratchdimen
                    \dp\scratchbox\openstrutdepth
@@ -1772,10 +1773,10 @@
               \hfillneg}%
           \ifvoid\rigidcolumnbox\exitloop\else\advance\scratchdimen\lineheight\fi}%
        \iftightrigidcolumns
-         \setbox\scratchbox\hbox{\raise\dp\scratchbox\box\scratchbox}%
+         \setbox\scratchbox\hpack{\raise\dp\scratchbox\box\scratchbox}%
        \else
          \advance\scratchdimen -\openstrutdepth
-         \setbox\scratchbox\hbox{\raise\scratchdimen\box\scratchbox}%
+         \setbox\scratchbox\hpack{\raise\scratchdimen\box\scratchbox}%
          \dp\scratchbox\openstrutdepth
          \ht\scratchbox\scratchdimen
        \fi
@@ -1949,7 +1950,7 @@
       \ht\hhbox\strutht
       \dp\hhbox\strutdp
       \ifzeropt\hhboxindent\else % \ifdim\hhboxindent=\zeropoint\else
-        \setbox\hhbox\hbox{\kern-\hhboxindent\box\hhbox}%
+        \setbox\hhbox\hpack{\kern-\hhboxindent\box\hhbox}%
         \hhboxindent\zeropoint
       \fi
       \global\lasthhboxwidth\wd\hhbox
@@ -1962,7 +1963,7 @@
    \egroup}
 
 \def\dohboxofvbox
-  {\setbox0\vbox{\unvbox\scratchcounter\global\setbox1\lastbox}%
+  {\setbox0\vpack{\unvbox\scratchcounter\global\setbox1\lastbox}%
    \unhbox1
    \egroup}
 
@@ -2130,17 +2131,17 @@
   {%\removeunwantedspaces % already done
    \scratchdepth\dp\ifdim\dp\nextbox>\dp\processbox\nextbox\else\processbox\fi
    \ifdim\ht\nextbox>\ht\processbox
-     \setbox\processbox\vbox to \ht\nextbox   {\dp\processbox\zeropoint\vss\box\processbox\vss}%
+     \setbox\processbox\vpack to \ht\nextbox   {\dp\processbox\zeropoint\vss\box\processbox\vss}%
    \else
-     \setbox\nextbox   \vbox to \ht\processbox{\dp\nextbox   \zeropoint\vss\box\nextbox   \vss}%
+     \setbox\nextbox   \vpack to \ht\processbox{\dp\nextbox   \zeropoint\vss\box\nextbox   \vss}%
    \fi
    \dp\nextbox   \scratchdepth
    \dp\processbox\scratchdepth
    \scratchwidth\wd\ifdim\wd\nextbox>\wd\processbox\nextbox\else\processbox\fi
-   \setbox\processbox\hbox to \scratchwidth
-     {\hbox to \scratchwidth{\hss\box\processbox\hss}%
+   \setbox\processbox\hpack to \scratchwidth
+     {\hpack to \scratchwidth{\hss\box\processbox\hss}%
       \kern-\scratchwidth
-      \hbox to \scratchwidth{\hss\box\nextbox   \hss}}}
+      \hpack to \scratchwidth{\hss\box\nextbox   \hss}}}
 
 \unexpanded\def\startoverlay
   {\bgroup
@@ -2226,7 +2227,7 @@
   {\scratchdepth\dimexpr\ht\nextbox+\dp\nextbox-\ht\strutbox\relax
    \ht\nextbox\ht\strutbox
    \dp\nextbox\scratchdepth
-   \setbox\nextbox\hbox{\lower\dp\nextbox\box\nextbox}%
+   \setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}%
    \ht\nextbox\ht\strutbox
    \dp\nextbox\scratchdepth
    \box\nextbox
@@ -2236,7 +2237,7 @@
   {\scratchheight\dimexpr\ht\nextbox+\dp\nextbox-\dp\strutbox\relax
    \dp\nextbox\dp\strutbox
    \ht\nextbox\scratchheight
-   \setbox\nextbox\hbox{\lower\dp\nextbox\box\nextbox}%
+   \setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}%
    \dp\nextbox\dp\strutbox
    \ht\nextbox\scratchheight
    \box\nextbox
@@ -2247,9 +2248,9 @@
 %D
 %D A few more boxes.
 
-\def\dodolhbox{\hbox to \hsize{\box\nextbox\hss    }}
-\def\dodomhbox{\hbox to \hsize{\hss\box\nextbox\hss}}
-\def\dodorhbox{\hbox to \hsize{\hss\box\nextbox    }}
+\def\dodolhbox{\hpack to \hsize{\box\nextbox\hss    }}
+\def\dodomhbox{\hpack to \hsize{\hss\box\nextbox\hss}}
+\def\dodorhbox{\hpack to \hsize{\hss\box\nextbox    }}
 
 \unexpanded\def\lhbox{\dowithnextboxcs\dodolhbox\hbox}
 \unexpanded\def\mhbox{\dowithnextboxcs\dodomhbox\hbox}
@@ -2315,7 +2316,7 @@
       \dimen0\ht\nextbox
       \ht\nextbox\strutht
       \dp\nextbox\strutdp
-      \hbox{\box\nextbox}
+      \hpack{\box\nextbox}
       \prevdepth\strutdp
       \doloop
         {\advance\dimen0 -\lineheight
@@ -2323,7 +2324,7 @@
            \exitloop
          \else
            \nobreak
-           \hbox{\strut}
+           \hpack{\strut}
          \fi}
       \egroup}
      \vbox}
@@ -2341,7 +2342,7 @@
   {\iftraceboxplacement
      \bgroup
      \scratchdimen2\onepoint
-     \setbox\scratchbox\hbox to \zeropoint
+     \setbox\scratchbox\hpack to \zeropoint
        {\hss
         \vrule
           \s!width \scratchdimen
@@ -2476,7 +2477,7 @@
    \dowithnextboxcontent
      {\advance\hsize-#1\advance\hsize-#2\relax
       \advance\vsize-#3\advance\vsize-#4\relax}
-     {\forgetall\vbox to \vsize{\vskip#3\hbox to \hsize{\hskip#1\box\nextbox\hss}\vss}\egroup}
+     {\forgetall\vpack to \vsize{\vskip#3\hpack to \hsize{\hskip#1\box\nextbox\hss}\vss}\egroup}
      \vbox}
 
 %D \macros
@@ -2518,6 +2519,8 @@
 %D \hbox{y:\foundbox{two}{a}} \par
 %D \stoptyping
 
+%D Kind of obsolete:
+
 \installcorenamespace {stackbox}
 \installcorenamespace {stacklst}
 
@@ -2530,7 +2533,7 @@
 \unexpanded\def\initializeboxstack#1%
   {\def\docommand##1{\setstackbox{#1}{##1}{}}%
    \ifcsname\??stacklst#1\endcsname
-     \processcommacommand[\getvalue{\??stacklst#1}]\docommand
+     \expandafter\processcommacommand\expandafter[\lastnamedcs]\docommand
    \fi
    \letgvalueempty{\??stacklst#1}}
 
@@ -2538,28 +2541,32 @@
   {% beware, \setxvalue defines the cs beforehand so we cannot use the
    % test inside the { }
    \ifcsname\??stacklst#1\endcsname
-     \setxvalue{\??stacklst#1}{\csname\??stacklst#1\endcsname,#2}%
+    %\setxvalue{\??stacklst#1}{\csname\??stacklst#1\endcsname,#2}%
+     \expandafter\xdef\csname\??stacklst#1\expandafter\endcsname\expandafter{\lastnamedcs,#2}%
    \else
-     \setxvalue{\??stacklst#1}{#2}%
+     \expandafter\xdef\csname\??stacklst#1\endcsname{#2}%
    \fi
    \setstackbox{#1}{#2}}
 
 \unexpanded\def\restorebox#1#2% unwrapped
   {\ifcsname\??stackbox#1:#2\endcsname
-     \copy\csname\??stackbox#1:#2\endcsname
+    %\copy\csname\??stackbox#1:#2\endcsname
+     \copy\lastnamedcs
    \else
      \emptybox
    \fi}
 
 \unexpanded\def\foundbox#1#2% wrapped
-  {\vbox
+  {\vpack
      {\ifcsname\??stackbox#1:#2\endcsname
-        \copy\csname\??stackbox#1:#2\endcsname
+       %\copy\csname\??stackbox#1:#2\endcsname
+        \copy\lastnamedcs
       \fi}}
 
 \unexpanded\def\doifelsebox#1#2#3#4%
   {\ifcsname\??stackbox#1:#2\endcsname
-     \ifvoid\csname\??stackbox#1:#2\endcsname#4\else#3\fi
+    %\ifvoid\csname\??stackbox#1:#2\endcsname#4\else#3\fi
+     \ifvoid\lastnamedcs#4\else#3\fi
    \else
      #4%
    \fi}
@@ -2665,14 +2672,14 @@
 \def\syst_boxes_lower_indeed{\dowithnextboxcs\syst_boxes_lower_finish}
 
 \def\syst_boxes_raise_finish
-  {\setbox\nextbox\hbox{\raise\scratchdimen\box\nextbox}%
+  {\setbox\nextbox\hpack{\raise\scratchdimen\box\nextbox}%
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
    \box\nextbox
    \egroup}
 
 \def\syst_boxes_lower_finish
-  {\setbox\nextbox\hbox{\lower\scratchdimen\box\nextbox}%
+  {\setbox\nextbox\hpack{\lower\scratchdimen\box\nextbox}%
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
    \box\nextbox
@@ -2712,9 +2719,10 @@
 
 \ifdefined\textdir
 
-    \unexpanded\def\naturalhbox{\hbox dir TLT}
-    \unexpanded\def\naturalvbox{\vbox dir TLT}
-   %\unexpanded\def\naturalvtop{\normalvtop dir TLT}
+    \unexpanded\def\naturalhbox {\hbox dir TLT}
+    \unexpanded\def\naturalvbox {\vbox dir TLT}
+    \unexpanded\def\naturalhpack{\hpack dir TLT}
+    \unexpanded\def\naturalvpack{\vpack dir TLT}
 
 \fi
 
@@ -2728,7 +2736,7 @@
    \dowithnextboxcs\syst_boxes_vcenter_finish\vbox}
 
 \def\syst_boxes_vcenter_finish
-  {\hbox{$\normalvcenter{\box\nextbox}$}%
+  {\hpack{$\normalvcenter{\box\nextbox}$}%
    \egroup}
 
 % could be \everymathematics
@@ -2748,7 +2756,7 @@
    \dowithnextboxcs\syst_boxes_frozenhbox_finish\hbox}
 
 \def\syst_boxes_frozenhbox_finish
-  {\hbox{\hbox{\box\nextbox}}%
+  {\hpack{\hpack{\box\nextbox}}%
    \egroup}
 
 %D \macros
@@ -2831,7 +2839,7 @@
 \unexpanded\def\minimalhbox#1#%
   {\dowithnextbox
      {\bgroup
-      \setbox\scratchbox\hbox#1{\hss}%
+      \setbox\scratchbox\hpack#1{\hss}%
       \ifdim\wd\nextbox<\wd\scratchbox\wd\nextbox\wd\scratchbox\fi
       \box\nextbox
       \egroup}

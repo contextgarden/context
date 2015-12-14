@@ -77,7 +77,8 @@
    \fi}
 
 \def\applyalternativestyle#name% public
-  {\ifcsname\??alternativestyles#name\endcsname\csname\??alternativestyles#name\expandafter\endcsname\fi}
+ %{\ifcsname\??alternativestyles#name\endcsname\csname\??alternativestyles#name\expandafter\endcsname\fi}
+  {\begincsname\??alternativestyles#name\endcsname}
 
 %D Maybe too geneneric, but probably ok is the following. (Maybe one
 %D day we will use a dedicated grouped command for styles.)
@@ -150,9 +151,11 @@
 \def\font_helpers_do_convert_font
   {\edef\m_current_convert_font_dt{\detokenize\expandafter{\m_current_convert_font}}%
    \ifcsname\??alternativestyles\m_current_convert_font_dt\endcsname
-     \csname\??alternativestyles\m_current_convert_font_dt\expandafter\endcsname
+    %\csname\??alternativestyles\m_current_convert_font_dt\expandafter\endcsname
+     \expandafter\lastnamedcs
    \else\ifcsname\m_current_convert_font_dt\endcsname
      \csname\m_current_convert_font_dt\expandafter\endcsname
+     \expandafter\lastnamedcs
    \else
      \doubleexpandafter\m_current_convert_font
    \fi\fi}
@@ -182,16 +185,19 @@
 
 \unexpanded\def\dousestylehashparameter#hash#parameter%
   {\ifcsname#hash#parameter\endcsname
-     \expandafter\dousestyleparameter\csname#hash#parameter\endcsname
+    %\expandafter\dousestyleparameter\csname#hash#parameter\endcsname
+     \expandafter\dousestyleparameter\lastnamedcs
    \fi}
 
 \unexpanded\def\dousecurrentstyleparameter % empty check outside here
   {\edef\detokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
    \settrue\fontattributeisset % reset is done elsewhere
    \ifcsname\??alternativestyles\detokenizedstyleparameter\endcsname
-     \csname\??alternativestyles\detokenizedstyleparameter\endcsname
+    %\csname\??alternativestyles\detokenizedstyleparameter\endcsname
+     \lastnamedcs
    \else\ifcsname\detokenizedstyleparameter\endcsname
-     \csname\detokenizedstyleparameter\endcsname
+    %\csname\detokenizedstyleparameter\endcsname
+     \lastnamedcs
    \else
      \currentstyleparameter
    \fi\fi}
@@ -369,7 +375,7 @@
 %   {\executeifdefined{\??stylecollection#instance::\fontalternative}
 %   {\getvalue        {\??stylecollection#instance::\s!default}}}}}
 
-\unexpanded\def\styleinstance[#instance]%
+\unexpanded\def\styleinstance[#instance]% maybe \lastnamedcs here too
   {\csname\??stylecollection#instance:%
      \ifcsname\??stylecollection#instance:\fontstyle:\fontalternative\endcsname
        \fontstyle:\fontalternative

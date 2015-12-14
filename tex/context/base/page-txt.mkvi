@@ -283,7 +283,8 @@
    \uselayoutelementstyleandcolor#style#color%
    \csname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
    \ifcsname\??layouttextspecial\m_page_layouts_element_content\endcsname
-     \csname\??layouttextspecial\m_page_layouts_element_content\endcsname
+    %\csname\??layouttextspecial\m_page_layouts_element_content\endcsname
+     \lastnamedcs
    \else
      \edef\currentlayoutelementwidth{\layoutelementparameter#width}%
      \ifx\currentlayoutelementwidth\empty
@@ -355,8 +356,13 @@
 \to \everybeforeflushedpagefloat
 
 \unexpanded\def\page_layouts_place_text_line#vertical%
-  {\page_layouts_set_element_status#vertical%
-   \csname\??layouttextsline\ifcsname\??layouttextsline\textlinestatus\endcsname\textlinestatus\else\s!unknown\fi\endcsname#vertical}
+  {\page_layouts_set_element_status#vertical\relax
+  %\csname\??layouttextsline\ifcsname\??layouttextsline\textlinestatus\endcsname\textlinestatus\else\s!unknown\fi\endcsname#vertical}
+   \ifcsname\??layouttextsline\textlinestatus\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\page_layouts_place_text_line_unknown
+   \fi#vertical}
 
 \unexpanded\def\doifelselayouttextline#vertical% shown or not
   {\edef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
@@ -407,7 +413,7 @@
    \page_layouts_place_text_line_indeed#vertical#height%
    \egroup}
 
-\setvalue{\??layouttextsline\s!unknown}#vertical#height%
+\def\page_layouts_place_text_line_unknown#vertical#height%
   {\global\settrue\resyncaftertextline
    \begingroup % new
    \page_layouts_reset_element_status#vertical%
@@ -417,6 +423,8 @@
    \csname\namedlayoutelementhash#vertical\v!edge  \textlinestatus\endcsname
    \page_layouts_place_text_line_indeed#vertical#height%
    \endgroup}
+
+\letvalue{\??layouttextsline\s!unknown}\page_layouts_place_text_line_unknown
 
 %D The following macro has to be called after a page
 %D is flushed.
@@ -513,7 +521,7 @@
 \let\page_layouts_place_extra_text_right\relax % historic
 
 \def\page_layouts_place_text_line_right
-  {\hbox
+  {\hpack
      {\ifdim\leftedgewidth>\zeropoint
         \page_layouts_left_edge_element\c!lefttext
       \fi
@@ -534,7 +542,7 @@
       \fi}}
 
 \def\page_layouts_place_text_line_left
-  {\hbox
+  {\hpack
      {\ifdim\leftedgewidth>\zeropoint
         \page_layouts_left_edge_element\c!righttext
       \fi
@@ -807,7 +815,7 @@
    \fi}
 
 \def\page_layouts_place_elements_indeed
-  {\setbox\b_page_layouts_element\vbox
+  {\setbox\b_page_layouts_element\vpack
      {\dontcomplain
       \calculatereducedvsizes
       \swapmargins
@@ -832,7 +840,7 @@
   \box\b_page_layouts_element}
 
 \def\page_insert_body#1#2%
-  {\setbox\b_page_layouts_element\vbox
+  {\setbox\b_page_layouts_element\vpack
      {\offinterlineskip
       \calculatereducedvsizes
       \calculatehsizes
@@ -881,7 +889,7 @@
 % clear up the experimental mess
 
 \def\settextpagecontent#1#2#3% #2 and #3 will disappear / is overloaded
-  {\setbox#1\hbox to \makeupwidth
+  {\setbox#1\hbox to \makeupwidth % maybe \hpack
      {\hss                     % so don't change this
       \setlayoutcomponentattribute{\v!page:\v!text}%
       \vbox \layoutcomponentboxattribute to \textheight

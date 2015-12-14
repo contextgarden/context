@@ -58,15 +58,19 @@
 \def\page_breaks_handle_step#1%
   {\edef\page_breaks_current_option{#1}% can be used in handler
    \ifcsname\??pagebreakmethod\page_breaks_current_option\endcsname
-     \csname\??pagebreakmethod\page_breaks_current_option\endcsname
+    %\csname\??pagebreakmethod\page_breaks_current_option\endcsname
+     \lastnamedcs
    \else\ifcsname\??pagebreaks\page_breaks_current_option\endcsname
-     \expandafter\page_breaks_handle\csname\??pagebreaks\page_breaks_current_option\endcsname
+    %\expandafter\page_breaks_handle\csname\??pagebreaks\page_breaks_current_option\endcsname
+     \lastnamedcs
    \else
-     \csname\??pagebreakmethod\s!unknown\endcsname
+    %\csname\??pagebreakmethod\s!unknown\endcsname
+     \page_breaks_unknown
    \fi\fi}
 
 \def\page_breaks_handle_direct#1%
-  {\csname\??pagebreakmethod#1\endcsname}
+ %{\csname\??pagebreakmethod#1\endcsname}
+  {\begincsname\??pagebreakmethod#1\endcsname}
 
 \unexpanded\def\installpagebreakmethod#1#2% low level definer
   {\setvalue{\??pagebreakmethod#1}{#2}}
@@ -133,7 +137,7 @@
    \page[\v!empty]
    \endgroup}
 
-\installpagebreakmethod \s!unknown
+\unexpanded\def\page_breaks_unknown % how often called ?
   {\doifelseinstring{+}\page_breaks_current_option
      {\page_otr_flush_all_floats
       \page_otr_command_next_page
@@ -148,6 +152,9 @@
               \exitloop
             \fi}}
         {}}}
+
+\installpagebreakmethod \s!unknown
+ {\page_breaks_unknown}
 
 \installpagebreakmethod \s!default
   {} % do nothing if empty
@@ -277,15 +284,18 @@
 \def\page_breaks_columns_handle_step#1%
   {\edef\page_breaks_columns_current_option{#1}%
    \ifcsname\??columnbreakmethod\currentoutputroutine:\page_breaks_columns_current_option\endcsname
-     \csname\??columnbreakmethod\currentoutputroutine:\page_breaks_columns_current_option\endcsname
+    %\csname\??columnbreakmethod\currentoutputroutine:\page_breaks_columns_current_option\endcsname
+     \lastnamedcs
    \else\ifcsname\??columnbreaks\page_breaks_columns_current_option\endcsname
-     \expandafter\csname\page_breaks_columns_handle\??columnbreaks\page_breaks_columns_current_option\endcsname
-   \else
-     \csname\??columnbreakmethod\currentoutputroutine:\s!unknown\endcsname
-   \fi\fi}
+    %\expandafter\csname\page_breaks_columns_handle\??columnbreaks\page_breaks_columns_current_option\endcsname
+     \lastnamedcs
+   \else\ifcsname\??columnbreakmethod\currentoutputroutine:\s!unknown\endcsname
+     \lastnamedcs
+   \fi\fi\fi}
 
 \def\page_breaks_columns_handle_direct#1%
-  {\csname\??columnbreakmethod\currentoutputroutine:#1\endcsname}
+ %{\csname\??columnbreakmethod\currentoutputroutine:#1\endcsname}
+  {\begincsname\??columnbreakmethod\currentoutputroutine:#1\endcsname}
 
 \unexpanded\def\installcolumnbreakmethod#1#2#3% #1=otr-id #2=tag #3=action
   {\setvalue{\??columnbreakmethod#1:#2}{#3}}

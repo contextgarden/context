@@ -211,7 +211,7 @@
   {\ifcsname#1\endcsname
      \pushmacro\math_arrows_do
      \def\math_arrows_do[##1][##2]{\setuvalue{#1}{\math_arrows_do[#2][##2]}}%
-     \getvalue{#1}%
+     \csname#1\endcsname
      \popmacro\math_arrows_do
    \fi}
 

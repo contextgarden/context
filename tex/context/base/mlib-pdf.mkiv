@@ -48,7 +48,7 @@
    \global\MPury   \zeropoint}
 
 \def\repositionMPboxindeed
-  {\setbox\MPbox\hbox\bgroup
+  {\setbox\MPbox\hpack\bgroup
      \kern-\MPllx
      \raise-\MPlly
      \box\MPbox
@@ -67,7 +67,7 @@
 
 \def\finalizeMPbox
   {\repositionMPbox
-   \setbox\MPbox\vbox to \MPheight\bgroup
+   \setbox\MPbox\vpack to \MPheight\bgroup
      \vfill
      \hsize\MPwidth
      \smashbox\MPbox
@@ -78,7 +78,7 @@
 
 \def\MPtextext#1#2#3#4#5% beware: we use a different method now (see mlib-pps)
   {\begingroup
-   \setbox\MPbox\hbox{\font\temp=#1\space at #2\onebasepoint \let\c\char \temp #3}%
+   \setbox\MPbox\hbox{\font\temp=#1\space at #2\onebasepoint \let\c\char \temp #3}% text
    \MPllx-#4\onebasepoint
    \MPlly-#5\onebasepoint
    \repositionMPbox
@@ -96,7 +96,7 @@
    \naturalhbox attr \imageattribute 1 \bgroup
    \dousecolorparameter\s!black\forcecolorhack
    \setMPboundingbox{#1}{#2}{#3}{#4}%
-   \setbox\MPbox\vbox\bgroup
+   \setbox\MPbox\vpack\bgroup
  % \forgetall % already done elsewhere
    \noindent} % forces the proper cm in the backend
 

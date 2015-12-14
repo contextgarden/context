@@ -86,7 +86,7 @@
    \egroup
    % finalize
    \doif{\fittingpageparameter\c!margin}\v!page
-     {\setbox\b_page_fitting\hbox\bgroup
+     {\setbox\b_page_fitting\hpack\bgroup
         \offsetbox
           [\c!leftoffset=\backspace,
            \c!rightoffset=\cutspace,
@@ -95,7 +95,7 @@
           {\box\b_page_fitting}%
        \egroup}%
    \doifsomething{\fittingpageparameter\c!scale}
-     {\setbox\b_page_fitting\hbox\bgroup
+     {\setbox\b_page_fitting\hpack\bgroup
         \scale[\c!scale=\fittingpageparameter\c!scale]{\box\b_page_fitting}%
       \egroup}%
    \ifdim\ht\b_page_fitting=\zeropoint

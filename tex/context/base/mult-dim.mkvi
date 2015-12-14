@@ -36,6 +36,8 @@
 
 \installcorenamespace{dimensionnormal}
 
+\def\assign_dimension_direct#value#dimension#small#medium#big{#dimension=#value\relax}
+
 \setvalue{\??dimensionnormal \v!none  }#value#dimension#small#medium#big{#dimension\zeropoint}
 \setvalue{\??dimensionnormal \empty   }#value#dimension#small#medium#big{#dimension\zeropoint}
 \setvalue{\??dimensionnormal \v!small }#value#dimension#small#medium#big{#dimension=#small\relax}
@@ -44,10 +46,17 @@
 \setvalue{\??dimensionnormal-\v!small }#value#dimension#small#medium#big{#dimension=-#small\relax}
 \setvalue{\??dimensionnormal-\v!medium}#value#dimension#small#medium#big{#dimension=-#medium\relax}
 \setvalue{\??dimensionnormal-\v!big   }#value#dimension#small#medium#big{#dimension=-#big\relax}
-\setvalue{\??dimensionnormal\s!unknown}#value#dimension#small#medium#big{#dimension=#value\relax}
+\letvalue{\??dimensionnormal\s!unknown}\assign_dimension_direct
+
+% \unexpanded\def\assigndimension#value%
+%   {\csname\??dimensionnormal\ifcsname\??dimensionnormal#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
 
 \unexpanded\def\assigndimension#value%
-  {\csname\??dimensionnormal\ifcsname\??dimensionnormal#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
+  {\ifcsname\??dimensionnormal#value\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\assign_dimension_direct
+   \fi{#value}}
 
 %D The next variant assigns to a macro instead of a dimension.
 %D
@@ -64,14 +73,24 @@
 
 \installcorenamespace{dimensionalfa}
 
+\def\assign_alpha_dimension_direct#value#macro#small#medium#big{\edef#macro{#value}}
+
 \setvalue{\??dimensionalfa\v!none   }#value#macro#small#medium#big{\let #macro\!!zerocount}
 \setvalue{\??dimensionalfa\v!small  }#value#macro#small#medium#big{\edef#macro{#small}}
 \setvalue{\??dimensionalfa\v!medium }#value#macro#small#medium#big{\edef#macro{#medium}}
 \setvalue{\??dimensionalfa\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
-\setvalue{\??dimensionalfa\s!unknown}#value#macro#small#medium#big{\edef#macro{#value}}
+\letvalue{\??dimensionalfa\s!unknown}\assign_alpha_dimension_direct
+
+% \unexpanded\def\assignalfadimension#value%
+%   {\csname\??dimensionalfa\ifcsname\??dimensionalfa#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
 
 \unexpanded\def\assignalfadimension#value%
-  {\csname\??dimensionalfa\ifcsname\??dimensionalfa#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
+  {\ifcsname\??dimensionalfa#value\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\assign_alpha_dimension_direct
+   \fi
+   {#value}}
 
 %D \macros
 %D   {assignvalue}
@@ -89,13 +108,22 @@
 
 \installcorenamespace{dimensionvalue}
 
+\def\assign_value_direct#value#macro#small#medium#big{\edef#macro{#value}}
+
 \setvalue{\??dimensionvalue\v!small  }#value#macro#small#medium#big{\edef#macro{#small}}
 \setvalue{\??dimensionvalue\v!medium }#value#macro#small#medium#big{\edef#macro{#medium}}
 \setvalue{\??dimensionvalue\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
-\setvalue{\??dimensionvalue\s!unknown}#value#macro#small#medium#big{\edef#macro{#value}}
+\letvalue{\??dimensionvalue\s!unknown}\assign_value_direct
+
+% \unexpanded\def\assignvalue#value%
+%   {\csname\??dimensionvalue\ifcsname\??dimensionvalue#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
 
 \unexpanded\def\assignvalue#value%
-  {\csname\??dimensionvalue\ifcsname\??dimensionvalue#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
+  {\ifcsname\??dimensionvalue#value\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\assign_value_direct
+  \fi{#value}}
 
 %D \macros
 %D   {assignwidth}
@@ -115,15 +143,24 @@
 
 \newbox\b_assign_width
 
+\def\assign_width_direct#value#dimension#content#extra{#dimension=#value\relax}
+
 \setvalue{\??dimensionwidth          }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
                                                                      \setbox\b_assign_width\emptybox}
 \setvalue{\??dimensionwidth\v!fit    }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
                                                                      \setbox\b_assign_width\emptybox}
 \setvalue{\??dimensionwidth\v!broad  }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\dimexpr\wd\b_assign_width+#extra\relax
                                                                      \setbox\b_assign_width\emptybox}
-\setvalue{\??dimensionwidth\s!unknown}#value#dimension#content#extra{#dimension=#value\relax}
+\letvalue{\??dimensionwidth\s!unknown}\assign_width_direct
+
+% \unexpanded\def\assignwidth#value%
+%   {\csname\??dimensionwidth\ifcsname\??dimensionwidth#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
 
 \unexpanded\def\assignwidth#value%
-  {\csname\??dimensionwidth\ifcsname\??dimensionwidth#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
+  {\ifcsname\??dimensionwidth#value\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\assign_width_direct
+   \fi{#value}}
 
 \protect \endinput

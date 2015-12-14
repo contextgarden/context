@@ -28,10 +28,15 @@
 
 \def\colorattr#1%
   {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
-     \thecolorattr{\currentcolorprefix#1}%
+     \node_backgrounds_thecolorattr{\currentcolorprefix#1}%
    \else\ifcsname\??colorattribute#1\endcsname
-     \thecolorattr{#1}%
+     \node_backgrounds_thecolorattr{#1}%
    \fi\fi}
+
+\def\node_backgrounds_thecolorattr#1%
+  {attr \colormodelattribute   \attribute\colormodelattribute
+   attr \colorattribute        \lastnamedcs
+   attr \transparencyattribute \thetransparencyattribute{#1} } % can be optimized
 
 \def\thecolorattr#1%
   {attr \colormodelattribute   \attribute\colormodelattribute
@@ -40,15 +45,21 @@
 
 \def\backgroundcolorattr#1%
   {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
-     \thebackgroundcolorattr{\currentcolorprefix#1}%
+     \node_backgrounds_thebackgroundcolorattr{\currentcolorprefix#1}%
    \else\ifcsname\??colorattribute#1\endcsname
-     \thebackgroundcolorattr{#1}%
+     \node_backgrounds_thebackgroundcolorattr{#1}%
    \fi\fi}
 
 \def\thebackgroundcolorattr#1%
   {attr \backgroundattribute      \plusone
    attr \colormodelattribute      \attribute\colormodelattribute
    attr \colorattribute           \csname\??colorattribute#1\endcsname
+   attr \transparencyattribute    \thetransparencyattribute{#1} } % can be optimized
+
+\def\node_backgrounds_thebackgroundcolorattr#1%
+  {attr \backgroundattribute      \plusone
+   attr \colormodelattribute      \attribute\colormodelattribute
+   attr \colorattribute           \lastnamedcs
    attr \transparencyattribute    \thetransparencyattribute{#1} } % can be optimized
 
 \def\thealignbackgroundcolorattr#1%

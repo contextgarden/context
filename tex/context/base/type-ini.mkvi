@@ -258,9 +258,12 @@
 \def\font_typescripts_synonym_define[#name][#synonym]%
   {\ifsecondargument\setevalue{\??typescriptsynonyms#name}{#synonym}\fi}
 
-\def\truetypescript#name%
+\def\truetypescript#name% recursove so no \lastnamedcs
   {\ifcsname\??typescriptsynonyms#name\endcsname
-     \expandafter\truetypescript\csname\??typescriptsynonyms#name\endcsname\else#name%
+    %\expandafter\truetypescript\csname\??typescriptsynonyms#name\endcsname
+     \expandafter\truetypescript\lastnamedcs
+   \else
+     #name%
    \fi}
 
 % script [serif] [default]         [size]
@@ -417,7 +420,8 @@
 % with testing:
 
 \def\typescriptprefix#name%
-  {\ifcsname\??typescriptprefix#name\endcsname\csname\??typescriptprefix#name\endcsname\else#name\fi}
+ %{\ifcsname\??typescriptprefix#name\endcsname\csname\??typescriptprefix#name\endcsname\else#name\fi}
+  {\ifcsname\??typescriptprefix#name\endcsname\lastnamedcs\else#name\fi}
 
 % defining typefaces:
 %
@@ -555,7 +559,8 @@
    \else\ifx\fontclass\empty
      \setupbodyfont[\s!rm]%
    \else\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
-     \setupbodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
+    %\setupbodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
+     \expandafter\setupbodyfont\expandafter[\lastnamedcs]%
    \else
      \setupbodyfont[\s!rm]%
    \fi \fi \fi
@@ -569,7 +574,8 @@
    \else\ifx\fontclass\empty
      \switchtobodyfont[\s!rm]%
    \else\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
-     \switchtobodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
+    %\switchtobodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
+     \expandafter\switchtobodyfont\expandafter[\lastnamedcs]%
    \else
      \switchtobodyfont[\s!rm]%
    \fi \fi \fi
@@ -601,7 +607,8 @@
 
 \def\font_typescripts_inherit_check_indeed#name% called often
   {\ifcsname\??typescriptinheritances\fontclass:#name\endcsname
-     \expandafter\let\expandafter\fontclass\csname\??typescriptinheritances\fontclass:#name\endcsname
+    %\expandafter\let\expandafter\fontclass\csname\??typescriptinheritances\fontclass:#name\endcsname
+     \expandafter\let\expandafter\fontclass\lastnamedcs
    \fi}
 
 \let\font_typescripts_inherit_check\gobbleoneargument
@@ -626,7 +633,8 @@
   {\ifx\fontclass\empty
      \let\fontstyle\s!rm
    \else\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
-     \edef\fontstyle{\csname\??typescriptdefaultstyles\fontclass\endcsname}%
+    %\edef\fontstyle{\csname\??typescriptdefaultstyles\fontclass\endcsname}%
+     \edef\fontstyle{\lastnamedcs}%
    \else
      \let\fontstyle\s!rm
    \fi\fi}

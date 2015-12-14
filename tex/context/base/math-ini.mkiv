@@ -334,9 +334,11 @@
 
 \unexpanded\def\math_set_font_style_alternate#1%
   {\ifcsname\??mathstylealternate\fontclass:#1\endcsname
-     \expandafter\math_set_font_alternate\csname\??mathstylealternate\fontclass:#1\endcsname
+    %\expandafter\math_set_font_alternate\csname\??mathstylealternate\fontclass:#1\endcsname
+     \expandafter\math_set_font_alternate\lastnamedcs
    \else\ifcsname\??mathstylealternate#1\endcsname
-     \expandafter\math_set_font_alternate\csname\??mathstylealternate#1\endcsname
+    %\expandafter\math_set_font_alternate\csname\??mathstylealternate#1\endcsname
+     \expandafter\math_set_font_alternate\lastnamedcs
    \fi\fi}
 
 \unexpanded\def\setupmathrendering % the name might change
@@ -1148,12 +1150,20 @@
 
 \newcount\c_math_bidi
 
-\setvalue{\??mathbidi\v!no }{\clf_setmathdirection\zerocount\relax\c_math_bidi\attributeunsetvalue}
-\setvalue{\??mathbidi\v!yes}{\clf_setmathdirection\plusone  \relax\c_math_bidi\plusone}
+\def\math_bidi_enable {\clf_setmathdirection\plusone  \relax\c_math_bidi\plusone}
+\def\math_bidi_disable{\clf_setmathdirection\zerocount\relax\c_math_bidi\attributeunsetvalue}
+
+\letvalue{\??mathbidi\v!yes}\math_bidi_enable
+\letvalue{\??mathbidi\v!no }\math_bidi_disable
+
+% \appendtoks
+%     \edef\p_bidi{\mathematicsparameter\c!bidi}%
+%     \csname\??mathbidi\ifcsname\??mathbidi\p_bidi\endcsname\p_bidi\else\v!no\fi\endcsname
+% \to \everysetupmathematics
 
 \appendtoks
-    \edef\p_bidi{\mathematicsparameter\c!bidi}%
-    \csname\??mathbidi\ifcsname\??mathbidi\p_bidi\endcsname\p_bidi\else\v!no\fi\endcsname
+    \edef\p_bidi{\mathematicsparameter\c!bidi}% still needed ?
+    \ifcsname\??mathbidi\p_bidi\endcsname\lastnamedcs\else\math_bidi_disable\fi
 \to \everysetupmathematics
 
 \appendtoks
@@ -1182,14 +1192,28 @@
 \setvalue{\??mathgreek\v!normal}{2}
 \setvalue{\??mathgreek\v!italic}{3}
 
+% \appendtoks
+%     \edef\p_sygreek{\mathematicsparameter\s!sygreek}%
+%     \edef\p_lcgreek{\mathematicsparameter\s!lcgreek}%
+%     \edef\p_ucgreek{\mathematicsparameter\s!ucgreek}%
+%     \c_math_greek_attribute"% hex digits
+%       \csname\??mathgreek\ifcsname\??mathgreek\p_sygreek\endcsname\p_sygreek\else\v!none\fi\endcsname
+%       \csname\??mathgreek\ifcsname\??mathgreek\p_lcgreek\endcsname\p_lcgreek\else\v!none\fi\endcsname
+%       \csname\??mathgreek\ifcsname\??mathgreek\p_ucgreek\endcsname\p_ucgreek\else\v!none\fi\endcsname
+%     \relax
+%     \ifcase\c_math_greek_attribute
+%       \c_math_greek_attribute\attributeunsetvalue
+%     \fi
+% \to \everyswitchmathematics
+
 \appendtoks
-    \edef\p_sygreek{\mathematicsparameter\s!sygreek}%
-    \edef\p_lcgreek{\mathematicsparameter\s!lcgreek}%
-    \edef\p_ucgreek{\mathematicsparameter\s!ucgreek}%
+    \edef\p_sygreek{\mathematicsparameter\s!sygreek}% still needed ?
+    \edef\p_lcgreek{\mathematicsparameter\s!lcgreek}% still needed ?
+    \edef\p_ucgreek{\mathematicsparameter\s!ucgreek}% still needed ?
     \c_math_greek_attribute"% hex digits
-      \csname\??mathgreek\ifcsname\??mathgreek\p_sygreek\endcsname\p_sygreek\else\v!none\fi\endcsname
-      \csname\??mathgreek\ifcsname\??mathgreek\p_lcgreek\endcsname\p_lcgreek\else\v!none\fi\endcsname
-      \csname\??mathgreek\ifcsname\??mathgreek\p_ucgreek\endcsname\p_ucgreek\else\v!none\fi\endcsname
+      \ifcsname\??mathgreek\p_sygreek\endcsname\lastnamedcs\else1\fi
+      \ifcsname\??mathgreek\p_lcgreek\endcsname\lastnamedcs\else1\fi
+      \ifcsname\??mathgreek\p_ucgreek\endcsname\lastnamedcs\else1\fi
     \relax
     \ifcase\c_math_greek_attribute
       \c_math_greek_attribute\attributeunsetvalue
@@ -1236,11 +1260,19 @@
      \global\let\math_italics_initialize\relax
    \fi}
 
+% \appendtoks
+%     \edef\p_italics{\mathematicsparameter\s!italics}%
+%     \c_math_italics_attribute\csname\??mathitalics
+%         \ifcsname\??mathitalics\p_italics\endcsname\p_italics\else\v!none\fi
+%     \endcsname\relax
+%   % \math_italics_initialize
+% \to \everyswitchmathematics % only in mathematics
+
 \appendtoks
     \edef\p_italics{\mathematicsparameter\s!italics}%
-    \c_math_italics_attribute\csname\??mathitalics
-        \ifcsname\??mathitalics\p_italics\endcsname\p_italics\else\v!none\fi
-    \endcsname\relax
+    \c_math_italics_attribute
+        \ifcsname\??mathitalics\p_italics\endcsname\lastnamedcs\else\attributeunsetvalue\fi
+    \relax
   % \math_italics_initialize
 \to \everyswitchmathematics % only in mathematics
 

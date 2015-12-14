@@ -500,10 +500,10 @@
 \setuvalue{\??linenumberinghandler\v!end  }{\page_line_handle_end  \p_align}
 \setuvalue{\??linenumberinghandler\v!text }{\page_line_handle_begin\p_align}
 
-\setuevalue{\??linenumberinghandler\v!inleft  }{\getvalue{\??linenumberinghandler\v!left }}
-\setuevalue{\??linenumberinghandler\v!inmargin}{\getvalue{\??linenumberinghandler\v!left }}
-\setuevalue{\??linenumberinghandler\v!margin  }{\getvalue{\??linenumberinghandler\v!left }}
-\setuevalue{\??linenumberinghandler\v!inright }{\getvalue{\??linenumberinghandler\v!right}}
+\expandafter\let\csname\??linenumberinghandler\v!inleft  \expandafter\endcsname\csname\??linenumberinghandler\v!left \endcsname
+\expandafter\let\csname\??linenumberinghandler\v!inmargin\expandafter\endcsname\csname\??linenumberinghandler\v!left \endcsname
+\expandafter\let\csname\??linenumberinghandler\v!margin  \expandafter\endcsname\csname\??linenumberinghandler\v!left \endcsname
+\expandafter\let\csname\??linenumberinghandler\v!inright \expandafter\endcsname\csname\??linenumberinghandler\v!right\endcsname
 
 % referencing: \permithyphenation, also removes leading spaces (new per 29-11-2013)
 

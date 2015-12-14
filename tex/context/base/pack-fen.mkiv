@@ -63,24 +63,24 @@
 
 \def\whateverleftframe#1%
   {\setinstalledframedimensions
-   \setbox\b_framed_rendered\vbox to \d_overlay_height{\vss#1\vss}%
-   \setbox\b_framed_rendered\hbox to \zeropoint{\box\b_framed_rendered\hss}%
+   \setbox\b_framed_rendered\vpack to \d_overlay_height{\vss#1\vss}%
+   \setbox\b_framed_rendered\hpack to \zeropoint{\box\b_framed_rendered\hss}%
    \ht\b_framed_rendered\zeropoint
    \dp\b_framed_rendered\zeropoint
    \box\b_framed_rendered}
 
 \def\whateverrightframe#1%
   {\setinstalledframedimensions
-   \setbox\b_framed_rendered\vbox to \d_overlay_height{\vss#1\vss}%
-   \setbox\b_framed_rendered\hbox to \zeropoint{\hss\box\b_framed_rendered}%
+   \setbox\b_framed_rendered\vpack to \d_overlay_height{\vss#1\vss}%
+   \setbox\b_framed_rendered\hpack to \zeropoint{\hss\box\b_framed_rendered}%
    \ht\b_framed_rendered\zeropoint
    \dp\b_framed_rendered\zeropoint
    \box\b_framed_rendered}
 
 \def\whatevertopframe#1%
   {\setinstalledframedimensions
-   \setbox\b_framed_rendered\hbox to \d_overlay_width{\hss#1\hss}%
-   \setbox\b_framed_rendered\vbox to \zeropoint{\box\b_framed_rendered\vss}%
+   \setbox\b_framed_rendered\hpack to \d_overlay_width{\hss#1\hss}%
+   \setbox\b_framed_rendered\vpack to \zeropoint{\box\b_framed_rendered\vss}%
    \ht\b_framed_rendered\zeropoint
    \dp\b_framed_rendered\zeropoint
    \box\b_framed_rendered
@@ -88,8 +88,8 @@
 
 \def\whateverbottomframe#1%
   {\setinstalledframedimensions
-   \setbox\b_framed_rendered\hbox to \d_overlay_width{\hss#1\hss}%
-   \setbox\b_framed_rendered\vbox to \zeropoint{\vss\box\b_framed_rendered}%
+   \setbox\b_framed_rendered\hpack to \d_overlay_width{\hss#1\hss}%
+   \setbox\b_framed_rendered\vpack to \zeropoint{\vss\box\b_framed_rendered}%
    \ht\b_framed_rendered\zeropoint
    \dp\b_framed_rendered\zeropoint
    \box\b_framed_rendered}

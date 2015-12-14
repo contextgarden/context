@@ -43,7 +43,7 @@
 \let\m_font_emphasized_typeface\empty
 
 \def\font_emphasis_checked_typeface#slanted#italic%
-  {\edef\m_font_emphasized_typeface{\bodyfontvariable\s!em}%
+  {\edef\m_font_emphasized_typeface{\font_bodyfontvariable\s!em}%
    \ifx\m_font_emphasized_typeface\v!slanted
      #slanted%
    \else\ifx\m_font_emphasized_typeface\v!italic

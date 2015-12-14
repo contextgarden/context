@@ -222,7 +222,11 @@
 \newconditional\c_math_fenced_done
 \newconditional\c_math_fenced_unknown  \settrue\c_math_fenced_unknown
 
-% maybe use \detokenize ...
+% maybe use \detokenize ... todo \lastnamedcs
+
+\setvalue{\??mathleft  \s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalleft  \nexttoken\fi}
+\setvalue{\??mathright \s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalright \nexttoken\fi}
+\setvalue{\??mathmiddle\s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalmiddle\nexttoken\fi}
 
 \def\math_left
   {\settrue\c_math_fenced_done
@@ -256,10 +260,6 @@
    \let\nexttoken#1%
    \edef\m_math_middle{\meaning#1}%
    \csname\??mathmiddle\ifcsname\??mathmiddle\m_math_middle\endcsname\m_math_middle\else\s!unknown\fi\endcsname}
-
-\setvalue{\??mathleft  \s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalleft  \nexttoken\fi}
-\setvalue{\??mathright \s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalright \nexttoken\fi}
-\setvalue{\??mathmiddle\s!unknown}{\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalmiddle\nexttoken\fi}
 
 \unexpanded\def\installmathfencepair#1#2#3#4%
   {\expandafter\let\csname\??mathleft \meaning#1\endcsname#2%
@@ -391,7 +391,7 @@
           \attribute\mathsizeattribute\numexpr\bigmathdelimitervariant*\plushundred+#1\relax
           \math_fenced_step#2\relax
         \else
-          \math_fenced_step#2{\vbox to\getvalue{\??mathbig\number#1}\bodyfontsize{}}%
+          \math_fenced_step#2{\vbox to\csname\??mathbig\number#1\endcsname\bodyfontsize{}}%
         \fi
         \nulldelimiterspace\zeropoint\relax
         \mathsurround\zeropoint

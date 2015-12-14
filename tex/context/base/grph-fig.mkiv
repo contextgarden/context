@@ -112,8 +112,8 @@
 \let\placestopfigure\relax
 
 \unexpanded\def\placestartfigure[#1][#2][#3]#4\placestopfigure[#5]%
-  {\hbox
-     {\setbox\scratchbox\hbox
+  {\hpack
+     {\setbox\scratchbox\hpack
         {\useexternalfigure[\s!dummy][#2][#3,#5]%
          \externalfigure[\s!dummy]}%
       \grph_steps_calculate
@@ -161,10 +161,10 @@
 
 \unexpanded\def\grph_steps_two_colorbar#1[#2]
   {\begingroup
-   \global\setbox\b_grph_steps_colorbar\vbox
+   \global\setbox\b_grph_steps_colorbar\vpack % \vbox ?
      {\forgetall
       \processcommalist[#2]\grph_colorbar_make_step}%
-   \global\setbox\b_grph_steps_colorbar\vbox
+   \global\setbox\b_grph_steps_colorbar\vpack
      {\hskip2\emwidth\box\b_grph_steps_colorbar}%
    \global\wd\b_grph_steps_colorbar\zeropoint
    \endgroup}
@@ -193,7 +193,7 @@
 
 \unexpanded\def\teststartfigure[#1][#2][#3]#4\teststopfigure
   {\begingroup
-     \setbox\scratchbox\hbox
+     \setbox\scratchbox\hpack
        {\useexternalfigure[\s!dummy][#2][\c!wfactor=\v!max]%
         \externalfigure[\s!dummy]}%
      \let\referring\grph_steps_three_referring
@@ -201,7 +201,7 @@
      \let\remark   \grph_steps_three_remark
      \let\colorbar \grph_steps_three_colorbar
      \c_grph_steps_reference\zerocount
-     \setbox0\vbox
+     \setbox0\vpack
        {\hsize240\points
         \startpositioning
           \grph_steps_calculate
@@ -232,7 +232,7 @@
      \let\marking  \grph_steps_four_marking
      \let\remark   \grph_steps_four_remark
      \let\colorbar \grph_steps_four_colorbar
-     \setbox2\vbox
+     \setbox2\vbox % \vpack ?
        {{\tfa\doifelsenothing{#1}{#2}{#1}}
         \blank
         \tfxx#4
@@ -242,10 +242,10 @@
      \else
        \ht0\ht2
      \fi
-     \hbox
+     \hpack
        {\hskip3\emwidth
-        \vtop{\vskip12\points\box0\vskip6\points}%
-        \vtop{\vskip12\points\box2\vskip6\points}}%
+        \tpack{\vskip12\points\box0\vskip6\points}%
+        \tpack{\vskip12\points\box2\vskip6\points}}%
    \endgroup}
 
 \unexpanded\def\grph_steps_three_referring(#1,#2)#3(#4,#5)#6[#7]%
@@ -307,11 +307,11 @@
 %   {\position(0,0){\getvalue{#1}}}
 
 \def\grph_steps_goto(#1,#2)#3[#4]%    (h,b)kader[ref]
-  {\gotobox{\vbox{\grph_steps_area(#1,#2)#3{}}}[#4]}
+  {\gotobox{\vpack{\grph_steps_area(#1,#2)#3{}}}[#4]}
 
 \def\grph_steps_text#1(#2,#3)#4(#5,#6)#7[#8]%
   {\advance\c_grph_steps_reference\plusone
-   \hbox
+   \hbox % \hpack ?
      {\quad
       \thisissomeinternal\s!vwb
         {#8}%

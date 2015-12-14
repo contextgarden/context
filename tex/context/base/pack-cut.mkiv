@@ -93,7 +93,7 @@
         {\scratchdimen\dimexpr\cutmarklength/2\relax
          \scratchskip \ifx\cutmarkhoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
          \normalvss
-         \hbox to \d_pack_cutmarks_width
+         \hpack to \d_pack_cutmarks_width
            {\llap{\copy\scratchbox\normalhskip\scratchskip}%
             \normalhskip\scratchdimen\hss\infofont#1\hss\normalhskip\scratchdimen
             \rlap{\normalhskip\scratchskip\copy\scratchbox}}%
@@ -116,7 +116,7 @@
         {\setbox\scratchbox\normalhbox{\horizontalcuts}%
          \scratchskip\ifx\cutmarkvoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
          \tlap{\copy\scratchbox\normalvskip\scratchskip}%
-         \hbox to \d_pack_cutmarks_width
+         \hpack to \d_pack_cutmarks_width
            {\scratchskip\ifx\cutmarkhoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
             \setbox\scratchbox\normalhbox{\verticalcuts}%
             \llap{\copy\scratchbox\normalhskip\scratchskip}%

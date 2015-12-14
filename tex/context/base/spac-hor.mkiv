@@ -101,15 +101,42 @@
 \def\spac_indenting_define[#1][#2]% todo: mixes
   {\setevalue{\??indentingpreset#1}{#2}}
 
-\def\spac_indentation_apply_step_one_nested#1%
-  {\expandafter\processcommacommand\expandafter[\csname\??indentingpreset#1\endcsname]\spac_indentation_apply_step_one}
+% \def\spac_indentation_apply_step_one_nested#1%
+%   {\expandafter\processcommacommand\expandafter[\csname\??indentingpreset#1\endcsname]\spac_indentation_apply_step_one}
+%
+% \def\spac_indentation_apply_step_two_nested#1%
+%   {\expandafter\processcommacommand\expandafter[\csname\??indentingpreset#1\endcsname]\spac_indentation_apply_step_two}
+%
+% \def\spac_indentation_apply_step_one#1%
+%   {\ifcsname\??indentingpreset#1\endcsname
+%      \spac_indentation_apply_step_one_nested{#1}%
+%    \else\ifcsname\??indentingmethod#1\endcsname
+%      % case two
+%    \else
+%      \edef\v_spac_indentation_current{#1}% single entry in list
+%      \let\normalindentation\v_spac_indentation_current
+%      \spac_indentation_setup_size
+%    \fi\fi}
+%
+% \def\spac_indentation_apply_step_two#1%
+%   {\ifcsname\??indentingpreset#1\endcsname
+%      \spac_indentation_apply_step_two_nested{#1}%
+%    \else\ifcsname\??indentingmethod#1\endcsname
+%     %\csname\??indentingmethod#1\endcsname
+%      \lastnamedcs
+%    \else
+%      % case one
+%    \fi\fi}
 
-\def\spac_indentation_apply_step_two_nested#1%
-  {\expandafter\processcommacommand\expandafter[\csname\??indentingpreset#1\endcsname]\spac_indentation_apply_step_two}
+\def\spac_indentation_apply_step_one_nested
+  {\expandafter\processcommacommand\expandafter[\lastnamedcs]\spac_indentation_apply_step_one}
+
+\def\spac_indentation_apply_step_two_nested
+  {\expandafter\processcommacommand\expandafter[\lastnamedcs]\spac_indentation_apply_step_two}
 
 \def\spac_indentation_apply_step_one#1%
   {\ifcsname\??indentingpreset#1\endcsname
-     \spac_indentation_apply_step_one_nested{#1}%
+     \spac_indentation_apply_step_one_nested
    \else\ifcsname\??indentingmethod#1\endcsname
      % case two
    \else
@@ -120,9 +147,10 @@
 
 \def\spac_indentation_apply_step_two#1%
   {\ifcsname\??indentingpreset#1\endcsname
-     \spac_indentation_apply_step_two_nested{#1}%
+     \spac_indentation_apply_step_two_nested
    \else\ifcsname\??indentingmethod#1\endcsname
-     \csname\??indentingmethod#1\endcsname
+    %\csname\??indentingmethod#1\endcsname
+     \lastnamedcs
    \else
      % case one
    \fi\fi}
@@ -275,12 +303,14 @@
 \installcorenamespace{indentnext}
 
 \unexpanded\def\checknextindentation[#1]%
-  {\csname\??indentnext\ifcsname\??indentnext#1\endcsname#1\fi\endcsname}
+ %{\csname\??indentnext\ifcsname\??indentnext#1\endcsname#1\fi\endcsname}
+  {\begincsname\??indentnext#1\endcsname}
 
 \unexpanded\def\useindentnextparameter#1% new, the more efficient variant
   {\edef\p_indentnext{#1\c!indentnext}%
    \ifx\p_indentnext\empty\else
-     \csname\??indentnext\ifcsname\??indentnext\p_indentnext\endcsname\p_indentnext\fi\endcsname
+    %\csname\??indentnext\ifcsname\??indentnext\p_indentnext\endcsname\p_indentnext\fi\endcsname
+     \begincsname\??indentnext\p_indentnext\endcsname
    \fi}
 
 \letvalue{\??indentnext       }\donothing
@@ -608,7 +638,8 @@
 
 \unexpanded\def\spac_narrower_method_analyze#1%
   {\ifcsname\??narrowermethod#1\endcsname
-     \csname\??narrowermethod#1\endcsname
+    %\csname\??narrowermethod#1\endcsname
+     \lastnamedcs
    \else
      \global\advance\s_spac_narrower_mid#1\relax
    \fi}
@@ -746,8 +777,11 @@
 \letvalue{\??skipadaptionright\v!no      }\zeropoint
 \letvalue{\??skipadaptionright\empty     }\zeropoint
 
-\unexpanded\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\csname\??skipadaptionleft #1\endcsname\else#1\fi\relax}
-\unexpanded\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\csname\??skipadaptionright#1\endcsname\else#1\fi\relax}
+% \unexpanded\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\csname\??skipadaptionleft #1\endcsname\else#1\fi\relax}
+% \unexpanded\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\csname\??skipadaptionright#1\endcsname\else#1\fi\relax}
+
+\unexpanded\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\lastnamedcs\else#1\fi\relax}
+\unexpanded\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\lastnamedcs\else#1\fi\relax}
 
 \unexpanded\def\doadaptleftskip #1{\normalexpanded{\dosetleftskipadaption {#1}}\advance\leftskip \leftskipadaption }
 \unexpanded\def\doadaptrightskip#1{\normalexpanded{\dosetrightskipadaption{#1}}\advance\rightskip\rightskipadaption}

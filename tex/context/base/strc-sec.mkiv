@@ -671,7 +671,8 @@
 \unexpanded\def\strc_sectioning_initialize_increment
   {\edef\currentheadincrement{\headparameter\c!incrementnumber}%
    \ifcsname\??headincrement\currentheadincrement\endcsname
-     \csname\??headincrement\currentheadincrement\endcsname
+    %\csname\??headincrement\currentheadincrement\endcsname
+     \lastnamedcs
    \else
      \settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list
      % \filterheadnumber

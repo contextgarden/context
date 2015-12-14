@@ -284,7 +284,7 @@
    \endgroup}
 
 \def\meta_process_graphic_start
-  {\setbox\b_meta_graphic\hbox\bgroup}
+  {\setbox\b_meta_graphic\hpack\bgroup}
 
 \def\meta_process_graphic_stop
   {\egroup
@@ -369,7 +369,8 @@
 
 \def\includeMPgraphic#1% gets expanded !
   {\ifcsname\??mpgraphic#1\endcsname
-     \doubleexpandafter\fourthoffourarguments\csname\??mpgraphic#1\endcsname ; % ; is safeguard
+    %\doubleexpandafter\fourthoffourarguments\csname\??mpgraphic#1\endcsname ; % ; is safeguard
+     \doubleexpandafter\fourthoffourarguments\lastnamedcs ; % ; is safeguard
    \fi}
 
 \let\meta_enable_include\relax
@@ -540,10 +541,12 @@
    \fi}
 
 \def\MPrawvar#1#2% no checking
-  {\csname\??graphicvariable#1:#2\endcsname}
+ %{\csname\??graphicvariable#1:#2\endcsname}
+  {\begincsname\??graphicvariable#1:#2\endcsname}
 
 \def\MPvariable#1% todo: could be a framed chain
-  {\csname\??graphicvariable\currentmpvariableclass:#1\endcsname}
+ %{\csname\??graphicvariable\currentmpvariableclass:#1\endcsname}
+  {\begincsname\??graphicvariable\currentmpvariableclass:#1\endcsname}
 
 \unexpanded\def\useMPvariables
   {\dodoubleargument\meta_use_variables}
@@ -607,7 +610,7 @@
    \doifelsecolor \ascii                              % with 2\bodyfontsize
      {\meta_prepare_variable_color}
      {\begingroup
-      \setbox\b_meta_variable_box\hbox{\scratchdimen\m_meta_current_variable sp}%
+      \setbox\b_meta_variable_box\hpack{\scratchdimen\m_meta_current_variable sp}%
       \ifzeropt\wd\b_meta_variable_box
         \endgroup\meta_prepare_variable_number
       \else
@@ -665,7 +668,7 @@
 % hm, isn't this already done elsewhere?
 
 \unexpanded\def\meta_obey_box_depth
-  {\setbox\b_meta_graphic\hbox\bgroup
+  {\setbox\b_meta_graphic\hpack\bgroup
      \raise\MPlly\box\b_meta_graphic
    \egroup}
 
@@ -677,7 +680,7 @@
       \dp\b_meta_graphic\the\dp\b_meta_graphic}}
 
 \unexpanded\def\meta_obey_box_origin
-  {\setbox\b_meta_graphic\hbox\bgroup
+  {\setbox\b_meta_graphic\hpack\bgroup
      \kern\MPllx\raise\MPlly\box\b_meta_graphic
    \egroup}
 
@@ -694,7 +697,7 @@
 
 \unexpanded\def\meta_reuse_box#1#2#3#4#5% space delimiting would save some tokens
   {\MPllx#2\MPlly#3\MPurx#4\MPury#5%
-   \hbox{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
+   \hpack{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
 
 \unexpanded\def\meta_use_box
   {\setobject{MP}}
@@ -706,10 +709,10 @@
    \ifcsname\??mpgraphic\overlaystamp:#1\endcsname\else
      \meta_enable_include % redundant
      \global\advance\c_meta_object_counter\plusone
-     \meta_use_box{\number\c_meta_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
+     \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
      \setxvalue{\??mpgraphic\overlaystamp:#1}{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
    \fi
-   \getvalue{\??mpgraphic\overlaystamp:#1}%
+   \csname\??mpgraphic\overlaystamp:#1\endcsname\empty
    \endgroup}
 
 \unexpanded\def\startuniqueMPgraphic
@@ -733,7 +736,7 @@
   {\meta_begin_graphic_group{#1}%
 %    \setupMPvariables[\currentMPgraphicname][#2]%
    \setupMPvariables[#1][#2]%
-   \getvalue{\??mpgraphic#1}\empty
+   \csname\??mpgraphic#1\endcsname\empty
    \meta_end_graphic_group}
 
 \def\meta_handle_use_graphic#1#2#3%
@@ -793,9 +796,9 @@
    \fi
    \meta_enable_include % redundant
    \global\advance\c_meta_object_counter\plusone
-   \meta_use_box{\number\c_meta_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
+   \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
    \setxvalue{\??mpgraphic#1}{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
-   \getvalue{\??mpgraphic#1}%
+   \csname\??mpgraphic#1\endcsname\empty
    \endgroup}
 
 \unexpanded\def\startreusableMPgraphic
@@ -819,7 +822,7 @@
   {\meta_begin_graphic_group{#1}%
 %    \doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
    \doifsomething{#2}{\setupMPvariables[#1][#2]}%
-   \getvalue{\??mpgraphic#1}\empty
+   \csname\??mpgraphic#1\endcsname\empty
    \meta_end_graphic_group}
 
 \let\reuseMPgraphic   \useMPgraphic   % we can save a setup here if needed
@@ -869,7 +872,7 @@
    \let\overlaystamp\overlaypagestamp
 %    \setupMPvariables[\m_meta_page_prefix:\currentMPgraphicname][#2]% prefix is new here
    \setupMPvariables[\m_meta_page_prefix:#1][#2]% prefix is new here
-   \getvalue{\??mpgraphic\m_meta_page_prefix:#1}{}%
+   \csname\??mpgraphic\m_meta_page_prefix:#1\endcsname\empty
    \meta_end_graphic_group}
 
 %D One way of defining a stamp is:
@@ -1489,7 +1492,7 @@
 
 \unexpanded\def\startMPcalculation
   {\begingroup
-   \setbox\nextbox\hbox\bgroup
+   \setbox\nextbox\hpack\bgroup
    \dosinglegroupempty\meta_start_calculation}
 
 \def\meta_start_calculation

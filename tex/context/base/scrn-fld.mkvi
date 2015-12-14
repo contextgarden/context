@@ -746,12 +746,16 @@
 
 % todo: expand #symbols
 
+\installcorenamespace {fieldstack}
+
 \unexpanded\def\definefieldstack
   {\dotripleargument\scrn_fieldstack_define}
 
 \def\scrn_fieldstack_define[#tag][#symbols][#settings]%
-  {\ifcsname scrn_fieldstack:#tag\endcsname \else
-     \setgvalue{scrn_fieldstack:#tag}{\scrn_fieldstack_construct[#tag][#symbols][#settings]}%
+  {\ifcsname \??fieldstack#tag\endcsname
+     % already done
+   \else
+     \setgvalue{\??fieldstack#tag}{\scrn_fieldstack_construct[#tag][#symbols][#settings]}%
    \fi}
 
 \unexpanded\def\fieldstack
@@ -761,7 +765,7 @@
   {\ifsecondargument
      \scrn_fieldstack_define[#tag][#symbols][#settings]%
    \fi
-   \getvalue{scrn_fieldstack:#tag}}
+   \csname\??fieldstack#tag\endcsname}
 
 \newbox\b_scrn_fieldstack_box
 

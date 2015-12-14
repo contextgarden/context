@@ -435,7 +435,7 @@
      \ifcsname\??naturaltableset\m_tabl_tbl_level:#1\endcsname
        \def\tabl_ntb_parameters_get[##1]%
          {\setvalue{\??naturaltableset\m_tabl_tbl_level:#1}{\tabl_ntb_parameters_get[##1,#2]}}%
-       \getvalue{\??naturaltableset\m_tabl_tbl_level:#1}%
+       \csname\??naturaltableset\m_tabl_tbl_level:#1\endcsname
        \let\tabl_ntb_parameters_get\setupcurrentnaturaltablelocal
      \else
        \setvalue{\??naturaltableset\m_tabl_tbl_level:#1}{\tabl_ntb_parameters_get[#2]}%

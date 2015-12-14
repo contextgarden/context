@@ -379,8 +379,11 @@
     \letvalue{\??layoutcurrent\currentlayouttarget}\relax
 \to \everydefinelayouttarget
 
-\def\page_paper_the_paper_size#1{\ifcsname\??layoutpaper#1\endcsname\csname\??layoutpaper#1\endcsname\else#1\fi}
-\def\page_paper_the_print_size#1{\ifcsname\??layoutprint#1\endcsname\csname\??layoutprint#1\endcsname\else#1\fi}
+%def\page_paper_the_paper_size#1{\ifcsname\??layoutpaper#1\endcsname\csname\??layoutpaper#1\endcsname\else#1\fi}
+%def\page_paper_the_print_size#1{\ifcsname\??layoutprint#1\endcsname\csname\??layoutprint#1\endcsname\else#1\fi}
+
+\def\page_paper_the_paper_size#1{\ifcsname\??layoutpaper#1\endcsname\lastnamedcs\else#1\fi}
+\def\page_paper_the_print_size#1{\ifcsname\??layoutprint#1\endcsname\lastnamedcs\else#1\fi}
 
 % \setuppaper    [page=A4,paper=A3] % the k/v variant, changes the current page mapping
 % \setuppapersize[A4][a=b,c=d]      % the k/v variant, changes nothing, just settings
@@ -497,8 +500,11 @@
 \setvalue{\??layoutprint\number\leftrotationangle }{\global\c_page_target_print_orientation\leftrotationangle
                                                     \global\c_page_target_print_reverse    \rightrotationangle}
 
-\def\page_paper_handle_page_option #1{\ifcsname\??layoutpaper#1\endcsname\csname\??layoutpaper#1\endcsname\fi}
-\def\page_paper_handle_print_option#1{\ifcsname\??layoutprint#1\endcsname\csname\??layoutprint#1\endcsname\fi}
+%def\page_paper_handle_page_option #1{\ifcsname\??layoutpaper#1\endcsname\csname\??layoutpaper#1\endcsname\fi}
+%def\page_paper_handle_print_option#1{\ifcsname\??layoutprint#1\endcsname\csname\??layoutprint#1\endcsname\fi}
+
+\def\page_paper_handle_page_option #1{\begincsname\??layoutpaper#1\endcsname}
+\def\page_paper_handle_print_option#1{\begincsname\??layoutprint#1\endcsname}
 
 \unexpanded\def\page_paper_identify_target#1%
   {\ifcsname\??layoutcurrent#1\endcsname
@@ -730,7 +736,7 @@
 
 \letvalue{\??layoutcolumn0}\zeropoint
 
-\def\layoutcolumnoffset#1%
+\def\layoutcolumnoffset#1% can travel around so we can't use \lastnamedcs
   {\csname\??layoutcolumn\ifcsname\??layoutcolumn#1\endcsname#1\else0\fi\endcsname}
 
 \def\page_layouts_synchronize_at_start
@@ -821,12 +827,19 @@
 \installlayoutmethod\v!default{\page_layouts_check_default}
 \installlayoutmethod\v!normal {\page_layouts_check_default}
 
+% \def\page_layouts_check_next
+%   {\csname\??layoutmethod\ifcsname\??layoutmethod\layoutparameter\c!method\endcsname
+%      \layoutparameter\c!method
+%    \else
+%      \v!normal
+%    \fi\endcsname}
+
 \def\page_layouts_check_next
-  {\csname\??layoutmethod\ifcsname\??layoutmethod\layoutparameter\c!method\endcsname
-     \layoutparameter\c!method
+  {\ifcsname\??layoutmethod\layoutparameter\c!method\endcsname
+     \lastnamedcs
    \else
-     \v!normal
-   \fi\endcsname}
+     \page_layouts_check_default
+   \fi}
 
 \let\checkcurrentlayout\page_layouts_check_next % public and used in naw, so this synonym will stay
 
@@ -908,7 +921,8 @@
 \setvalue{\??layoutlocation\v!singlesided}{\setfalse\c_page_target_print_doublesided}
 
 \def\page_target_check_centering_indeed#1%
-  {\ifcsname\??layoutlocation#1\endcsname\csname\??layoutlocation#1\endcsname\fi}
+ % {\ifcsname\??layoutlocation#1\endcsname\csname\??layoutlocation#1\endcsname\fi}
+  {\begincsname\??layoutlocation#1\endcsname}
 
 \unexpanded\def\page_target_check_centering
   {\setfalse\c_page_target_print_doublesided
@@ -933,12 +947,19 @@
 \installlayoutalternative\v!default{\page_boxes_construct_content_default}
 \installlayoutalternative\v!normal {\page_boxes_construct_content_default}
 
+% \def\page_boxes_construct_content % targetbox flusher box
+%   {\csname\??layoutalternative\ifcsname\??layoutalternative\layoutparameter\c!alternative\endcsname
+%      \layoutparameter\c!alternative
+%    \else
+%      \v!normal
+%    \fi\endcsname}
+
 \def\page_boxes_construct_content % targetbox flusher box
-  {\csname\??layoutalternative\ifcsname\??layoutalternative\layoutparameter\c!alternative\endcsname
-     \layoutparameter\c!alternative
+  {\ifcsname\??layoutalternative\layoutparameter\c!alternative\endcsname
+     \expandafter\lastnamedcs
    \else
-     \v!normal
-   \fi\endcsname}
+     \expandafter\page_boxes_construct_content_default
+   \fi}
 
 %D \macros
 %D   {adaptlayout}
@@ -998,12 +1019,20 @@
    \global\let\page_adepts_push\relax
    \global\let\page_adepts_pop\page_adepts_pop_indeed}
 
+% \def\page_adapts_check
+%   {\csname\??pageadaptations\the\ifcsname\??pageadaptations\the\realpageno\endcsname\realpageno\else\zerocount\fi\endcsname}
+%
+% \def\page_adapts_reset
+%   {\ifcsname\??pageadaptations\the\realpageno\endcsname
+%      \global\undefinevalue{\??pageadaptations\the\realpageno}%
+%    \fi}
+
 \def\page_adapts_check
-  {\csname\??pageadaptations\the\ifcsname\??pageadaptations\the\realpageno\endcsname\realpageno\else\zerocount\fi\endcsname}
+  {\begincsname\??pageadaptations\the\realpageno\endcsname}
 
 \def\page_adapts_reset
   {\ifcsname\??pageadaptations\the\realpageno\endcsname
-     \global\undefinevalue{\??pageadaptations\the\realpageno}%
+     \expandafter\glet\csname\??pageadaptations\the\realpageno\endcsname\relax
    \fi}
 
 \def\page_adepts_push_indeed

@@ -179,7 +179,7 @@
    \endgroup
    \makeupparameter\c!after\relax
    \ifdoublesided \ifodd\realpageno \else
-     \getvalue{\??makeupdoublesided\makeupparameter\c!doublesided}%
+     \csname\??makeupdoublesided\makeupparameter\c!doublesided\endcsname
    \fi \fi
    \strc_pagenumbers_page_state_pop % new
    \egroup

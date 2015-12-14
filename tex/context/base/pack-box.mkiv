@@ -147,7 +147,8 @@
 
 \unexpanded\def\resetcollector[#1]%
   {\ifcsname\??collectorbox#1\endcsname
-     \global\setbox\csname\??collectorbox#1\endcsname\emptybox
+    %\global\setbox\csname\??collectorbox#1\endcsname\emptybox
+     \global\setbox\lastnamedcs\emptybox
    \fi}
 
 \newconditional\c_pack_boxes_collector_valid_box
@@ -158,7 +159,8 @@
   {\edef\currentcollector{#1}%
    \ifcsname\??collectorbox\currentcollector\endcsname
      \settrue\c_pack_boxes_collector_valid_box
-     \expandafter\let\expandafter\b_pack_boxes_collector\csname\??collectorbox\currentcollector\endcsname
+    %\expandafter\let\expandafter\b_pack_boxes_collector\csname\??collectorbox\currentcollector\endcsname
+     \expandafter\let\expandafter\b_pack_boxes_collector\lastnamedcs
    \else
      \setfalse\c_pack_boxes_collector_valid_box
      \writestatus{collector}{unknown collector \currentcollector}%
@@ -209,14 +211,15 @@
 
 \def\pack_boxes_collector_check_corner#1%
   {\ifcsname\??collectorcorners#1\endcsname
-     \csname\??collectorcorners#1\endcsname
+    %\csname\??collectorcorners#1\endcsname
+     \lastnamedcs
    \fi}
 
 \def\pack_boxes_collector_finish
   {\edef\p_collector_rotation{\collectorparameter\c!rotation}%
    \edef\p_collector_corner  {\collectorparameter\c!corner}%
    \ifx\p_collector_rotation\empty \else
-     \setbox\nextbox\hbox
+     \setbox\nextbox\hpack
        {\rotate
           [\c!location=\v!high,
            \c!rotation=\p_collector_rotation]
@@ -227,24 +230,24 @@
    \d_pack_layers_x_position\dimexpr\collectorparameter\c!x+\collectorparameter\c!hoffset\relax
    \d_pack_layers_y_position\dimexpr\collectorparameter\c!y+\collectorparameter\c!voffset\relax
    \rawprocesscommacommand[\p_collector_corner]\pack_boxes_collector_check_corner
-   \setbox\nextbox\hbox
-     {\alignedbox[\collectorparameter\c!location]\vbox{\box\nextbox}}%
+   \setbox\nextbox\hpack
+     {\alignedbox[\collectorparameter\c!location]\vpack{\box\nextbox}}%
    \boxmaxdepth\zeropoint % really needed, nice example
    \global\advance\boxhdisplacement\d_pack_layers_x_position
    \ifdim\boxhdisplacement<\zeropoint
-     \global\setbox\b_pack_boxes_collector\hbox
+     \global\setbox\b_pack_boxes_collector\hpack
        {\kern-\boxhdisplacement
         \box\b_pack_boxes_collector}%
    \fi
    \global\advance\boxvdisplacement\d_pack_layers_y_position
    \ifdim\boxvdisplacement<\zeropoint
-     \global\setbox\b_pack_boxes_collector\hbox
+     \global\setbox\b_pack_boxes_collector\hpack
        {\lower-\boxvdisplacement
         \box\b_pack_boxes_collector}%
    \fi
    \d_pack_layers_x_size\wd\b_pack_boxes_collector
    \d_pack_layers_y_size\htdp\b_pack_boxes_collector
-   \global\setbox\b_pack_boxes_collector\hbox
+   \global\setbox\b_pack_boxes_collector\hpack
      {\box\b_pack_boxes_collector
       \kern\dimexpr
         -\d_pack_layers_x_size
@@ -253,13 +256,13 @@
            -\boxhdisplacement
          \fi
       \relax
-      \lower\d_pack_layers_y_position\hbox
+      \lower\d_pack_layers_y_position\hpack
         {\ifdim\boxvdisplacement<\zeropoint
            \lower-\boxvdisplacement
          \fi
          \box\nextbox}}%
    % combine height and depth into depth only (later flushed as height)
-   \global\setbox\b_pack_boxes_collector\hbox
+   \global\setbox\b_pack_boxes_collector\hpack
      {\lower\ht\b_pack_boxes_collector\box\b_pack_boxes_collector}%
    % just to be sure
    \ifdim\wd\b_pack_boxes_collector<\d_pack_layers_x_size
@@ -273,7 +276,7 @@
    \ifconditional\c_pack_boxes_collector_valid_box
      \edef\p_collector_state{\collectorparameter\c!state}%
      \ifx\p_collector_state\v!stop \else
-       \vbox{\hbox{\raise
+       \vpack{\hpack{\raise
          \dp\b_pack_boxes_collector
          \ifx\p_collector_state\v!repeat\copy\else\box\fi\b_pack_boxes_collector}}%
      \fi
@@ -588,13 +591,13 @@
 \def\pack_boxes_bleed_finish
   {\doif{\bleedingparameter\c!page}\v!yes
      {\setbox\nextbox\topskippedbox{\box\nextbox}}%
-   \setbox\nextbox\hbox to \scratchwidth
+   \setbox\nextbox\hpack to \scratchwidth
      {\ifconditional\c_pack_boxes_l\hss\fi
       \box\nextbox
       \ifconditional\c_pack_boxes_r\hss\fi}%
    \ifconditional\c_pack_boxes_b
-     \setbox\nextbox\hbox
-       {\lower\bleedheight\hbox{\raise\scratchheight\box\nextbox}}%
+     \setbox\nextbox\hpack
+       {\lower\bleedheight\hpack{\raise\scratchheight\box\nextbox}}%
    \fi
    \wd\nextbox\scratchwidth
    \ht\nextbox\scratchheight
@@ -763,10 +766,18 @@
 \def\pack_boxes_aligned_box[#1]{\bgroup\serializecommalist[#1]\dowithnextboxcs\pack_boxes_aligned_finish}
 \def\pack_boxes_aligned    [#1]{\bgroup\serializecommalist[#1]\dowithnextboxcs\pack_boxes_aligned_finish\hbox}
 
+% \def\pack_boxes_aligned_finish
+%   {\csname\??alignedboxes
+%      \ifcsname\??alignedboxes\serializedcommalist\endcsname\serializedcommalist\else\v!middle\fi
+%    \endcsname{\flushnextbox}%
+%    \egroup}
+
 \def\pack_boxes_aligned_finish
-  {\csname\??alignedboxes
-     \ifcsname\??alignedboxes\serializedcommalist\endcsname\serializedcommalist\else\v!middle\fi
-   \endcsname{\flushnextbox}%
+  {\ifcsname\??alignedboxes\serializedcommalist\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\middlebox
+   \fi{\flushnextbox}%
    \egroup}
 
 \letvalue{\??alignedboxes                  }\middlebox
@@ -888,11 +899,11 @@
      \fi
    \fi
    \ifdone
-     \setbox\nextbox\vbox
+     \setbox\nextbox\vpack
        {\forgetall % already done
         \offinterlineskip
         \kern\scratchtopoffset
-        \hbox
+        \hpack
           {\kern\scratchleftoffset
            \box\nextbox
            \kern\scratchrightoffset}%
@@ -904,13 +915,13 @@
    \scratchheight\offsetboxparameter\c!height
    \scratchdepth \offsetboxparameter\c!depth
    \edef\p_location{\offsetboxparameter\c!location}%
-   \setbox\nextbox\hbox
+   \setbox\nextbox\hpack
      {\kern\scratchxposition
-      \lower\scratchyposition\hbox
+      \lower\scratchyposition\hpack
         {\ifx\p_location\empty
            \box\nextbox
          \else
-           \alignedbox[\p_location]\hbox{\box\nextbox}%
+           \alignedbox[\p_location]\hpack{\box\nextbox}%
          \fi}}%
    \wd\nextbox\scratchwidth
    \ht\nextbox\scratchheight
@@ -955,8 +966,8 @@
 \def\pack_boxes_tabbed#1#2#3#4%
   {\dontleavehmode
    \begingroup
-   \setbox\scratchbox\hbox{#3}%
-   \hbox to \wd\scratchbox{#1#4#2}%
+   \setbox\scratchbox\hpack{#3}%
+   \hpack to \wd\scratchbox{#1#4#2}%
    \endgroup}
 
 \unexpanded\def\ltabbed{\pack_boxes_tabbed\relax\hss}
@@ -968,7 +979,7 @@
 % to be documented
 
 \unexpanded\def\phantombox[#1]% == \framed[\c!empty=\v!yes,\c!offset=\v!overlay,#1]{}
-  {\hbox\bgroup
+  {\hpack\bgroup
    \letdummyparameter\c!width \zeropoint
    \letdummyparameter\c!height\zeropoint
    \letdummyparameter\c!depth \zeropoint
@@ -1018,21 +1029,21 @@
      % to be considered: methods
      \ifcase\scratchcounter
      \or % x and y
-       \setbox\nextbox\hbox{\dorecurse\scratchnx{\copy\nextbox}}%
-       \setbox\nextbox\vbox{\dorecurse\scratchny{\copy\nextbox\endgraf}}%
+       \setbox\nextbox\hpack{\dorecurse\scratchnx{\copy\nextbox}}%
+       \setbox\nextbox\vpack{\dorecurse\scratchny{\copy\nextbox\endgraf}}%
      \or % x
-       \setbox\nextbox\hbox{\dorecurse\scratchnx{\copy\nextbox}}%
+       \setbox\nextbox\hpack{\dorecurse\scratchnx{\copy\nextbox}}%
      \or % y
-       \setbox\nextbox\vbox{\dorecurse\scratchny{\copy\nextbox\endgraf}}%
+       \setbox\nextbox\vpack{\dorecurse\scratchny{\copy\nextbox\endgraf}}%
      \fi
    \fi
    \ifdim\wd\nextbox>\scratchwidth
-     \setbox\nextbox\hbox to \scratchwidth{\hss\box\nextbox\hss}%
-     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=\the\scratchwidth,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
+     \setbox\nextbox\hpack to \scratchwidth{\hss\box\nextbox\hss}%
+     \setbox\nextbox\hpack{\normalexpanded{\clip[\c!width=\the\scratchwidth,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
    \fi
    \ifdim\ht\nextbox>\scratchheight
-     \setbox\nextbox\vbox to \scratchheight{\vss\box\nextbox\vss}%
-     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=\the\wd\nextbox,\c!height=\the\scratchheight]{\box\nextbox}}}%
+     \setbox\nextbox\vpack to \scratchheight{\vss\box\nextbox\vss}%
+     \setbox\nextbox\hpack{\normalexpanded{\clip[\c!width=\the\wd\nextbox,\c!height=\the\scratchheight]{\box\nextbox}}}%
    \fi
    \box\nextbox
    \egroup}
@@ -1047,7 +1058,7 @@
 
 \def\pack_boxes_background_image_fill
   {\offinterlineskip
-   \setbox\nextbox\hbox\bgroup
+   \setbox\nextbox\hpack\bgroup
      \ifdim\scratchwidth>\scratchheight
        \scale[\c!width=\the\scratchwidth]{\box\nextbox}%
      \else
@@ -1055,7 +1066,7 @@
      \fi
    \egroup
    \ifdim\wd\nextbox>\scratchwidth
-     \setbox\nextbox\hbox to \scratchwidth
+     \setbox\nextbox\hpack to \scratchwidth
        {\ifcase\scratchcounter
           \hss\box\nextbox\hss
         \or
@@ -1065,10 +1076,11 @@
         \else
           \hss\box\nextbox\hss
         \fi}%
-     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=\the\scratchwidth,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
+     \setbox\nextbox\hpack
+       {\normalexpanded{\clip[\c!width=\the\scratchwidth,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
    \fi
    \ifdim\ht\nextbox>\scratchheight
-     \setbox\nextbox\vbox to \scratchheight
+     \setbox\nextbox\vpack to \scratchheight
        {\ifcase\scratchcounter
           \vss\box\nextbox\vss
         \or
@@ -1078,7 +1090,8 @@
         \else
           \vss\box\nextbox\vss
         \fi}%
-     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=\the\wd\nextbox,\c!height=\the\scratchheight]{\box\nextbox}}}%
+     \setbox\nextbox\hpack
+       {\normalexpanded{\clip[\c!width=\the\wd\nextbox,\c!height=\the\scratchheight]{\box\nextbox}}}%
    \fi
    \box\nextbox
    \egroup}

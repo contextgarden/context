@@ -277,8 +277,8 @@
 %D a document source but nowadays that is less an issue in the
 %D sense that the extra few lines are neglectable to the rest.
 
-\unexpanded\def\systemsuppliedchapter {\getvalue{\v!chapter}} % obsolete
-\unexpanded\def\systemsuppliedtitle   {\getvalue{\v!title}}   % obsolete
+\unexpanded\def\systemsuppliedchapter {\csname\v!chapter\endcsname} % obsolete
+\unexpanded\def\systemsuppliedtitle   {\csname\v!title  \endcsname} % obsolete
 
 \unexpanded\def\completelist
   {\dodoubleempty\strc_lists_complete}
@@ -588,22 +588,29 @@
 
 \installcorenamespace{listsymbollabels}
 
-\unexpanded\def\strc_lists_symbol_default
-  {\dontleavehmode
-   \strut
-   \begingroup
-   \edef\currentlistlabel{\listparameter\c!label}% can be used in label
-   \csname\??listsymbollabels
-     \ifcsname\??listsymbollabels\currentlistlabel\endcsname\currentlistlabel\else\s!unknown\fi
-   \endcsname
-   \endgroup}
-
-\setvalue{\??listsymbollabels\s!unknown}% use whatever is set
+\def\strc_lists_symbol_label_unknown
   {\leftlabeltext\currentlistlabel
    \listparameter\c!starter
    \currentlistentrynumber
    \listparameter\c!stopper
    \rightlabeltext\currentlistlabel}
+
+\unexpanded\def\strc_lists_symbol_default
+  {\dontleavehmode
+   \strut
+   \begingroup
+   \edef\currentlistlabel{\listparameter\c!label}% can be used in label
+%    \csname\??listsymbollabels
+%      \ifcsname\??listsymbollabels\currentlistlabel\endcsname\currentlistlabel\else\s!unknown\fi
+%    \endcsname
+   \ifcsname\??listsymbollabels\currentlistlabel\endcsname
+      \lastnamedcs
+   \else
+     \strc_lists_symbol_label_unknown
+   \fi
+   \endgroup}
+
+\letvalue{\??listsymbollabels\s!unknown}\strc_lists_symbol_default
 
 \setvalue{\??listsymbollabels}% default (empty)
   {\listparameter\c!starter
@@ -920,7 +927,7 @@
         \listalternativeparameter\c!after
    \else
         \noindent % otherwise annotations are mirrored up
-\typo_injectors_mark_list
+        \typo_injectors_mark_list
         \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
             \p_command\currentlistentrynumber\currentlistentrytitle\currentlistentrypagenumber
         }

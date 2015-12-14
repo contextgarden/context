@@ -262,14 +262,21 @@
      \expandafter\tabl_tabulate_initialize_boxes_step
    \fi}
 
+% \def\tabl_tabulate_initialize_box#1% also used elsewhere
+%   {\ifcsname\??tabulatebox\number#1\endcsname
+%      \tabl_tabulate_initialize_box_yes#1%
+%    \else
+%      \tabl_tabulate_initialize_box_nop#1%
+%    \fi}
 \def\tabl_tabulate_initialize_box#1% also used elsewhere
   {\ifcsname\??tabulatebox\number#1\endcsname
-     \tabl_tabulate_initialize_box_yes#1%
+     \tabl_tabulate_initialize_box_yes
    \else
      \tabl_tabulate_initialize_box_nop#1%
    \fi}
 
-\def\tabl_tabulate_initialize_box_yes#1{\global     \setbox\csname\??tabulatebox\number#1\endcsname\emptybox}
+%def\tabl_tabulate_initialize_box_yes#1{\global     \setbox\csname\??tabulatebox\number#1\endcsname\emptybox}
+\def\tabl_tabulate_initialize_box_yes  {\global     \setbox\lastnamedcs\emptybox}
 \def\tabl_tabulate_initialize_box_nop#1{\expandafter\newbox\csname\??tabulatebox\number#1\endcsname}
 
 \tabl_tabulate_initialize_boxes{16} % not really needed
@@ -586,7 +593,8 @@
 
 \def\tabl_tabulate_set_preamble#1%
   {\ifcsname\??tabulatepreamble\string#1\endcsname
-     \expandafter\tabl_tabulate_set_preamble_yes
+    %\expandafter\tabl_tabulate_set_preamble_yes
+     \expandafter\expandafter\expandafter\lastnamedcs\expandafter\gobbleoneargument
    \else
      \expandafter\tabl_tabulate_set_preamble_nop
    \fi{#1}}
@@ -830,7 +838,7 @@
    \fi}
 
 \def\tabl_tabulate_check_whitespace
-  {\setbox\scratchbox\vbox
+  {\setbox\scratchbox\vpack
      {\splitdiscards
       \unskip
       \ifdim\lastskip>\d_tabl_tabulate_splitoff_betweenskip
@@ -853,7 +861,7 @@
      \tabl_tabulate_check_whitespace
    \fi
    \tabl_tabulate_color_repeat % needs to end up in a cell
-   \setbox\b_tabl_tabulate\hbox to \wd\b_tabl_tabulate
+   \setbox\b_tabl_tabulate\hpack to \wd\b_tabl_tabulate
      {\hss\tabl_tabulate_hook_yes{\box\b_tabl_tabulate}\hss}%
    \tabl_tabulate_normalize_splitline
    \tabl_tabulate_check_linenumbers
@@ -1054,7 +1062,8 @@
 
 \def\tabl_tabulate_check_full_content % - needed, else confusion with \c!header
   {\ifcsname\??tabulatehead\currenttabulation\endcsname
-     \expandafter\ifx\csname\??tabulatehead\currenttabulation\endcsname\empty
+    %\expandafter\ifx\csname\??tabulatehead\currenttabulation\endcsname\empty
+     \expandafter\ifx\lastnamedcs\empty
        \let\tabl_tabulate_insert_head\empty
      \else
        \let\tabl_tabulate_insert_head\tabl_tabulate_insert_head_content
@@ -1064,6 +1073,7 @@
    \fi
    \ifcsname\??tabulatefoot\currenttabulation\endcsname
      \expandafter\ifx\csname\??tabulatefoot\currenttabulation\endcsname\empty
+    %\expandafter\ifx\lastnamedcs\empty
        \let\tabl_tabulate_insert_foot\empty
      \else
        \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_head_content
@@ -1209,6 +1219,9 @@
      \tabulationparameter\c!before
    \fi
    \bgroup % settings
+   %
+   \t_tabl_tabulate_preamble\emptytoks
+   \t_tabl_tabulate_dummy   \emptytoks
    %
    \resetcharacteralign
    %
@@ -1426,7 +1439,8 @@
 
 \def\tabl_tabulate_column_rule_separator_step#1%
   {\ifcsname\??tabulateseparator#1\endcsname
-     \csname\??tabulateseparator#1\endcsname
+    %\csname\??tabulateseparator#1\endcsname
+     \lastnamedcs
    \else
      \s_tabl_tabulate_separator#1\relax
    \fi}
@@ -1535,16 +1549,15 @@
    \setxvalue{\??tabulatecolor\the\c_tabl_tabulate_column}{#1}%
   %\attribute\alignbackgroundattribute\plusone
   %\dousecolorparameter{#1}\char\zerocount\strut % hack
-   \hbox \thealignbackgroundcolorattr{#1}{}%
+   \hbox \thealignbackgroundcolorattr{#1}{}% pack ?
    \endgroup}
 
 \def\tabl_tabulate_color_repeat_second % for split off lines
   {\begingroup
    \scratchcounter\numexpr\c_tabl_tabulate_column-\plusone\relax % ugly !
    \ifcsname\??tabulatecolor\the\scratchcounter\endcsname
-    %\expandafter\dousecolorparameter\csname\??tabulatecolor\the\scratchcounter\endcsname
-    %\strut\char\zerocount % hack
-     \hbox \thealignbackgroundcolorattr{\csname\??tabulatecolor\the\scratchcounter\endcsname}{}%
+    %\hbox \thealignbackgroundcolorattr{\csname\??tabulatecolor\the\scratchcounter\endcsname}{}% pack ?
+     \hbox \thealignbackgroundcolorattr{\lastnamedcs}{}% pack ?
    \fi
    \endgroup}
 
@@ -1617,7 +1630,7 @@
 
 \def\tabl_tabulate_flush_indent
   {\ifnum\c_tabl_tabulate_column=\zerocount
-     \hbox to \d_tabl_tabulate_indent
+     \hbox to \d_tabl_tabulate_indent % pack ?
        {% we now have a local hsize, and since we want to
         % register positional info (i.e. real hsizes) we
         % need to reconstitute the original hsize

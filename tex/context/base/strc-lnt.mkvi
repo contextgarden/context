@@ -148,7 +148,7 @@
    \let\currentnote\currentnotation
    \letnotationparameter\c!numbercommand\linenotelinenumber% todo: deep hook
    \letnoteparameter    \c!textcommand  \gobbleoneargument % todo: deep hook
-   \getvalue{\??linenote\currentnotation}{#3}%
+   \csname\??linenote\currentnotation\endcsname{#3}%
    \expandafter\glet\csname\??linenotespreviousfrom\currentnotation\endcsname\m_page_lines_current_from
    \expandafter\glet\csname\??linenotespreviousto  \currentnotation\endcsname\m_page_lines_current_to
    \endgroup}

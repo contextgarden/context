@@ -92,21 +92,28 @@
      \def#3{#5#4}%
      \def#5##1##2% ##1=language
        {\ifcsname\??label\currentlabelcategory#1:##1:##2\endcsname
-          \csname\??label\currentlabelcategory#1:##1:##2\endcsname
+         %\csname\??label\currentlabelcategory#1:##1:##2\endcsname
+          \lastnamedcs
         \else\ifcsname\??label#1:##1:##2\endcsname
-          \csname\??label#1:##1:##2\endcsname
+         %\csname\??label#1:##1:##2\endcsname
+          \lastnamedcs
       % \else\ifcsname\??language#4\s!default\endcsname
       %   \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
         \else\ifcsname\??language##1\s!default\endcsname
-          \expandafter#5\csname\??language##1\s!default\endcsname{##2}%
+         %\expandafter#5\csname\??language##1\s!default\endcsname{##2}%
+          \expandafter#5\lastnamedcs{##2}%
         \else\ifcsname\??label\currentlabelcategory#1:##2\endcsname
-          \csname\??label\currentlabelcategory#1:##2\endcsname
+         %\csname\??label\currentlabelcategory#1:##2\endcsname
+          \lastnamedcs
         \else\ifcsname\??label#1:##2\endcsname
-          \csname\??label#1:##2\endcsname
+         %\csname\??label#1:##2\endcsname
+          \lastnamedcs
         \else\ifcsname\??label\currentlabelcategory#1:\s!en:##2\endcsname
-          \csname\??label\currentlabelcategory#1:\s!en:##2\endcsname
+         %\csname\??label\currentlabelcategory#1:\s!en:##2\endcsname
+          \lastnamedcs
         \else\ifcsname\??label#1:\s!en:##2\endcsname
-          \csname\??label#1:\s!en:##2\endcsname
+         %\csname\??label#1:\s!en:##2\endcsname
+          \lastnamedcs
         \else
           ##2%
         \fi\fi\fi\fi\fi\fi\fi}%
@@ -118,13 +125,17 @@
      \unexpanded\def#3{#5#4}%
      \unexpanded\def#5##1##2%
        {\ifcsname\??label#1:##1:##2\endcsname
-          \expandafter\let\expandafter\thetextprefix\csname\??label#1:##1:##2\endcsname
+         %\expandafter\let\expandafter\thetextprefix\csname\??label#1:##1:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\lastnamedcs
         \else\ifcsname\??language#4\s!default\endcsname
-          \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
+         %\expandafter#5\csname\??language#4\s!default\endcsname{##2}%
+          \expandafter#5\lastnamedcs{##2}%
         \else\ifcsname\??label#1:##2\endcsname
-          \expandafter\let\expandafter\thetextprefix\csname\??label#1:##2\endcsname
+         %\expandafter\let\expandafter\thetextprefix\csname\??label#1:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\lastnamedcs
         \else\ifcsname\??label#1:\s!en:##2\endcsname
-          \expandafter\let\expandafter\thetextprefix\csname\??label#1:\s!en:##2\endcsname
+         %\expandafter\let\expandafter\thetextprefix\csname\??label#1:\s!en:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\lastnamedcs
         \else
           \let\thetextprefix\dummytextprefix
         \fi\fi\fi\fi}%
@@ -218,18 +229,34 @@
 \let\m_lang_labels_left \empty
 \let\m_lang_labels_right\empty
 
+% \def\lang_labels_text_prefix_assign_yes#1[#2,#3,#4]%
+%   {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues
+%    \def\m_lang_labels_right{#3}% no longer an edef ... else \Word undefined expansion issues
+%    \ifx\m_lang_labels_right\empty
+%      \ifx\m_lang_labels_left\empty
+%        \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{\empty\empty}%
+%      \else
+%        \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}\empty}%
+%      \fi
+%    \else
+%      \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}{#3}}%
+%    \fi}
+%
+% how we love obscure efficicency ...
+
 \def\lang_labels_text_prefix_assign_yes#1[#2,#3,#4]%
   {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues
    \def\m_lang_labels_right{#3}% no longer an edef ... else \Word undefined expansion issues
-   \ifx\m_lang_labels_right\empty
-     \ifx\m_lang_labels_left\empty
-       \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{\empty\empty}%
+   \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1%
+     \ifx\m_lang_labels_right\empty
+       \ifx\m_lang_labels_left\empty
+         \endcsname{\empty\empty}%
+       \else
+         \endcsname{{#2}\empty}%
+       \fi
      \else
-       \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}\empty}%
-     \fi
-   \else
-     \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}{#3}}%
-   \fi}
+       \endcsname{{#2}{#3}}%
+     \fi}
 
 \def\lang_labels_text_prefix_assign_nop#1[#2]%
   {}
@@ -297,9 +324,11 @@
 \def\lang_translate[#1]%
   {\getparameters[\??translation][#1]%
    \ifcsname\??translation\currentlanguage\endcsname
-     \csname\??translation\currentlanguage\endcsname
+    %\csname\??translation\currentlanguage\endcsname
+     \lastnamedcs
    \else\ifcsname\??translation\s!en\endcsname
-     \csname\??translation\s!en\endcsname
+    %\csname\??translation\s!en\endcsname
+     \lastnamedcs
    \else
      [translation #1]%
    \fi\fi}

@@ -57,7 +57,8 @@
 
 \unexpanded\def\page_backgrounds_check_background
   {\ifcsname\??framed\currentotrbackground:\c!background\endcsname
-     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!background\endcsname}%
+    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!background\endcsname}%
+     \edef\page_background_temp{\lastnamedcs}%
      \ifx\page_background_temp\empty
        \expandafter\expandafter\expandafter\page_backgrounds_check_frame
      \else
@@ -69,7 +70,8 @@
 
 \def\page_backgrounds_check_frame
   {\ifcsname\??framed\currentotrbackground:\c!frame\endcsname
-     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!frame\endcsname}%
+    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!frame\endcsname}%
+     \edef\page_background_temp{\lastnamedcs}%
      \ifx\page_background_temp\v!on
        \page_backgrounds_set_yes
      \else
@@ -81,7 +83,8 @@
 
 \def\page_backgrounds_check_leftframe
   {\ifcsname\??framed\currentotrbackground:\c!leftframe\endcsname
-     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!leftframe\endcsname}%
+    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!leftframe\endcsname}%
+     \edef\page_background_temp{\lastnamedcs}%
      \ifx\page_background_temp\v!on
        \page_backgrounds_set_yes
      \else
@@ -93,7 +96,8 @@
 
 \def\page_backgrounds_check_rightframe
   {\ifcsname\??framed\currentotrbackground:\c!rightframe\endcsname
-     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!rightframe\endcsname}%
+    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!rightframe\endcsname}%
+     \edef\page_background_temp{\lastnamedcs}%
      \ifx\page_background_temp\v!on
        \page_backgrounds_set_yes
      \else
@@ -105,7 +109,8 @@
 
 \def\page_backgrounds_check_topframe
   {\ifcsname\??framed\currentotrbackground:\c!topframe\endcsname
-     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!topframe\endcsname}%
+    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!topframe\endcsname}%
+     \edef\page_background_temp{\lastnamedcs}%
      \ifx\page_background_temp\v!on
        \page_backgrounds_set_yes
      \else
@@ -117,7 +122,8 @@
 
 \def\page_backgrounds_check_bottomframe
   {\ifcsname\??framed\currentotrbackground:\c!bottomframe\endcsname
-     \edef\page_background_temp{\csname\??framed\currentotrbackground:\c!bottomframe\endcsname}%
+    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!bottomframe\endcsname}%
+     \edef\page_background_temp{\lastnamedcs}%
      \ifx\page_background_temp\v!on
        \page_backgrounds_set_yes
      \else
@@ -176,7 +182,7 @@
      \doprocesslocalsetups\p_page_backgrounds_setups % should not produce funny spaces !
    \fi
    % #2 has the right dimensions already
-   \setbox#2\hbox{\localbackgroundframed{\??layoutbackgrounds#1}#1#2}}% a real framed (including foreground)
+   \setbox#2\hpack{\localbackgroundframed{\??layoutbackgrounds#1}#1#2}}% a real framed (including foreground)
 
 
 %D There are quite some backgrounds. At the bottom layer, there is the {\em
@@ -277,7 +283,7 @@
 \def\page_backgrounds_add_to_main#1% todo: dimension spec
   {\ifconditional\c_page_backgrounds_some
      \page_backgrounds_set_boxes
-     \setbox#1\vbox
+     \setbox#1\vpack
        {\offinterlineskip
         \doifelsemarginswap{\copy\leftbackground}{\copy\rightbackground}%
         \box#1}%
@@ -341,7 +347,7 @@
 \newconditional\swapbackgroundmargins \settrue\swapbackgroundmargins
 
 \def\page_backgrounds_set_box#1% #2%
-  {\global\setbox#1\vbox
+  {\global\setbox#1\vpack
      {\dontcomplain
       \swapmargins
       \ifconditional\swapbackgroundmargins
@@ -378,8 +384,8 @@
    \smashbox#1}
 
 \def\page_backgrounds_set_box_row#1#2% maybe helper
-  {\setbox\scratchbox\vbox to #2
-     \bgroup\hbox\bgroup
+  {\setbox\scratchbox\vpack to #2
+     \bgroup\hpack\bgroup
        \goleftonpage
        \ifdim\leftedgewidth>\zeropoint
          \ifcsname\??layoutbackgrounds#1\v!leftedge\endcsname
@@ -446,7 +452,7 @@
    \ht\scratchbox#2}
 
 \def\page_backgrounds_set_box_cell_yes#1#2%
-  {\setbox\scratchbox\vbox to #2{\vss\hbox to#1{\hss\p_page_backgrounds_command\hss}\vss}%
+  {\setbox\scratchbox\vpack to #2{\vss\hpack to#1{\hss\p_page_backgrounds_command\hss}\vss}%
    \dp\scratchbox\zeropoint}
 
 %D The background mechanism is quite demanding in terms or resources. We used to

@@ -438,7 +438,7 @@
   {\ifsecondargument
      \expandafter\strc_references_content_pickup_yes
    \else
-     \expandafter\strc_references_content_pickup_yes
+     \expandafter\strc_references_content_pickup_nop
    \fi}
 
 \def\strc_references_content_pickup_yes[#1][#2]%
@@ -1187,7 +1187,7 @@
 
 \installcorenamespace{referencinginteraction}
 
-\setvalue{\??referencinginteraction\v!all}%
+\def\strc_references_interaction_all
   {\the\leftreferencetoks
    \doifelsesometoks\leftreferencetoks \leftofreferencecontent \donothing
    \leftofreference
@@ -1195,6 +1195,8 @@
    \rightofreference
    \doifelsesometoks\rightreferencetoks\rightofreferencecontent\donothing
    \the\rightreferencetoks}
+
+\letvalue{\??referencinginteraction\v!all}\strc_references_interaction_all
 
 \setvalue{\??referencinginteraction\v!label}%
   {\leftofreference
@@ -1210,14 +1212,21 @@
 \setvalue{\??referencinginteraction\v!symbol}%
   {\referencesymbol}
 
+% \def\referencesequence
+%   {\csname\??referencinginteraction
+%      \ifcsname\??referencinginteraction\referencingparameter\c!interaction\endcsname
+%        \referencingparameter\c!interaction
+%      \else
+%        \v!all
+%      \fi
+%    \endcsname}
+
 \def\referencesequence
-  {\csname\??referencinginteraction
-     \ifcsname\??referencinginteraction\referencingparameter\c!interaction\endcsname
-       \referencingparameter\c!interaction
-     \else
-       \v!all
-     \fi
-   \endcsname}
+  {\ifcsname\??referencinginteraction\referencingparameter\c!interaction\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\strc_references_interaction_all
+   \fi}
 
 \newtoks\everyresetinatreference
 
@@ -2121,11 +2130,14 @@
 
 \def\referencestructureprefixparameter#kind#name#category#parameter%
   {\ifcsname\??referencingprefix#name:#category#parameter\endcsname
-     \csname\??referencingprefix#name:#category#parameter\endcsname
+    %\csname\??referencingprefix#name:#category#parameter\endcsname
+     \lastnamedcs
    \else\ifcsname\??referencingprefix#kind:#category#parameter\endcsname
-     \csname     \??referencingprefix#kind:#category#parameter\endcsname
+    %\csname     \??referencingprefix#kind:#category#parameter\endcsname
+     \lastnamedcs
    \else\ifcsname\??referencingprefix:#category#parameter\endcsname
-     \csname     \??referencingprefix:#category#parameter\endcsname
+    %\csname     \??referencingprefix:#category#parameter\endcsname
+     \lastnamedcs
    \fi\fi\fi}
 
 \def\currentreferencedefault % for some reason we need to explicitly expand

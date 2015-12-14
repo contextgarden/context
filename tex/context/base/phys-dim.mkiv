@@ -400,11 +400,15 @@
 \unexpanded\def\installunitsseparator#1#2%
   {\setvalue{\??unitseparator#1}{#2}}
 
+% \unexpanded\def\phys_units_separator
+%   {\edef\currentunitsseparator{\unitparameter\c!separator}%
+%    \csname\??unitseparator
+%      \ifcsname\??unitseparator\currentunitsseparator\endcsname\currentunitsseparator\else\v!normal\fi
+%    \endcsname}
+
 \unexpanded\def\phys_units_separator
-  {\edef\currentunitsseparator{\unitparameter\c!separator}%
-   \csname\??unitseparator
-     \ifcsname\??unitseparator\currentunitsseparator\endcsname\currentunitsseparator\else\v!normal\fi
-   \endcsname}
+  {\edef\currentunitsseparator{\unitparameter\c!separator}% no longer needed
+   \ifcsname\??unitseparator\currentunitsseparator\endcsname\lastnamedcs\else\cdot\fi}
 
 \installunitsseparator\v!normal {\cdot}
 \installunitsseparator\v!big    {\unitsbigspace}
@@ -415,12 +419,17 @@
 \unexpanded\def\installunitsspace#1#2%
   {\setvalue{\??unitspace#1}{#2}}
 
+% \unexpanded\def\phys_units_space
+%   {\unskip % weird, why is unskip needed
+%    \edef\currentunitsspace{\unitparameter\c!space}%
+%    \csname\??unitspace
+%      \ifcsname\??unitspace\currentunitsspace\endcsname\currentunitsspace\else\v!normal\fi
+%    \endcsname}
+
 \unexpanded\def\phys_units_space
   {\unskip % weird, why is unskip needed
    \edef\currentunitsspace{\unitparameter\c!space}%
-   \csname\??unitspace
-     \ifcsname\??unitspace\currentunitsspace\endcsname\currentunitsspace\else\v!normal\fi
-   \endcsname}
+   \ifcsname\??unitspace\currentunitsspace\endcsname\lastnamedcs\else\unitsmediumspace\fi}
 
 \installunitsspace\v!normal {\unitsmediumspace}
 \installunitsspace\v!big    {\unitsbigspace}

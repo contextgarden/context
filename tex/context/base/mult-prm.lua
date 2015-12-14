@@ -333,6 +333,16 @@ return {
   "uniformdeviate",
   "useboxresource",
   "useimageresource",
+  --
+  "vpack",
+  "hpack",
+  "tpack",
+  "begincsname",
+  "lastnamedcs",
+  "toksapp",
+  "tokspre",
+  "etoksapp",
+  "etokspre",
  },
  ["omega"]={
   "OmegaVersion",
@@ -1236,6 +1246,16 @@ return {
   "xleaders",
   "xspaceskip",
   "year",
+  --
+  "vpack",
+  "hpack",
+  "tpack",
+  "begincsname",
+  "lastnamedcs",
+  "toksapp",
+  "tokspre",
+  "etoksapp",
+  "etokspre",
  },
  ["xetex"]={
   "XeTeXversion",

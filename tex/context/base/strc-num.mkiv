@@ -118,8 +118,8 @@
 \unexpanded\def\prevcounter       {\dodoubleargument\strc_counters_prev_interfaced}
 \unexpanded\def\countersubs       {\dodoubleargument\strc_counters_subs_interfaced}
 
-\unexpanded\def\savecounter       {\dodoubleempty   \strc_counters_save_interfaced}
-\unexpanded\def\restorecounter    {\dodoubleempty   \strc_counters_restore_interfaced}
+\unexpanded\def\savecounter       {\dosingleempty   \strc_counters_save_interfaced}
+\unexpanded\def\restorecounter    {\dosingleempty   \strc_counters_restore_interfaced}
 
 \def\strc_counters_set_interfaced
   {\ifthirdargument
@@ -322,11 +322,11 @@
 \def\nextcountervalue    [#1]{\clf_nextcountervalue    {\namedcounterparameter{#1}\s!name}}
 \def\prevcountervalue    [#1]{\clf_previouscountervalue{\namedcounterparameter{#1}\s!name}}
 
-\let\rawsubcountervalue       \strc_counters_raw_two
-\let\lastsubcountervalue      \strc_counters_last_two
-\let\firstsubcountervalue     \strc_counters_first_two
-\let\nextsubcountervalue      \strc_counters_next_two
-\let\prevsubcountervalue      \strc_counters_prev_two
+\def\rawsubcountervalue  [#1]#2[#3]{\clf_subcountervalue        {\namedcounterparameter{#1}\s!name}\numexpr#3\relax}
+\def\lastsubcountervalue [#1]#2[#3]{\clf_lastsubcountervalue    {\namedcounterparameter{#1}\s!name}\numexpr#3\relax}
+\def\firstsubcountervalue[#1]#2[#3]{\clf_firstsubcountervalue   {\namedcounterparameter{#1}\s!name}\numexpr#3\relax}
+\def\nextsubcountervalue [#1]#2[#3]{\clf_nextsubcountervalue    {\namedcounterparameter{#1}\s!name}\numexpr#3\relax}
+\def\prevsubcountervalue [#1]#2[#3]{\clf_previoussubcountervalue{\namedcounterparameter{#1}\s!name}\numexpr#3\relax}
 
 % The bypage check needs a multipass reference and therefore we only check for it when we increment
 % and know that some content will be placed. We could also check for spreads.

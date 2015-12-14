@@ -122,7 +122,7 @@
 
 \unexpanded\def\buff_stop#1%
   {\endgroup % (3 & 4 & 5 & 6)
-   \getvalue{#1}}
+   \csname#1\endcsname}
 
 % \installctxfunction\dopickupbuffer{commands.dopickupbuffer}
 

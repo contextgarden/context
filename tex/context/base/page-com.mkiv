@@ -114,7 +114,7 @@
   {}% \setuppapersize[\c!bottom=,\c!top=,\c!left=,\c!right=]}
 
 \unexpanded\def\page_comments_top_bottom
-  {\vbox to \printpaperheight
+  {\vpack to \printpaperheight
      {%\forgetall
       \hsize\printpaperwidth\relax
       \ifx\p_page_commands_location\v!bottom
@@ -140,7 +140,7 @@
       \fi}}
 
 \unexpanded\def\page_comments_left_right
-  {\hbox to \printpaperwidth
+  {\hpack to \printpaperwidth
      {\ifx\p_page_commands_location\v!right
         \hskip\dimexpr\paperwidth+\d_page_comments_distance+\d_page_comments_offset\relax
       \else

@@ -24,8 +24,11 @@
 \setvalue{\??multilingual  persian}{pe}
 \setvalue{\??multilingual romanian}{ro}
 
-\def\userinterfacetag{\ifcsname\??multilingual\currentinterface\endcsname\csname\??multilingual\currentinterface\endcsname\else en\fi}
-\def\userresponsestag{\ifcsname\??multilingual\currentresponses\endcsname\csname\??multilingual\currentresponses\endcsname\else en\fi}
+% \def\userinterfacetag{\ifcsname\??multilingual\currentinterface\endcsname\csname\??multilingual\currentinterface\endcsname\else en\fi}
+% \def\userresponsestag{\ifcsname\??multilingual\currentresponses\endcsname\csname\??multilingual\currentresponses\endcsname\else en\fi}
+
+\def\userinterfacetag{\ifcsname\??multilingual\currentinterface\endcsname\lastnamedcs\else en\fi}
+\def\userresponsestag{\ifcsname\??multilingual\currentresponses\endcsname\lastnamedcs\else en\fi}
 
 % \input mult-\userinterfacetag  \relax
 % \input mult-m\userresponsestag \relax

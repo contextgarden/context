@@ -73,12 +73,19 @@
 \unexpanded\def\invokepagehandler#1%
   {\expandnamespacevalue\??shipoutmethod{#1}\v!normal}
 
+% \def\page_shipouts_handle
+%   {\csname\??shipoutmethod\ifcsname\??shipoutmethod\v_page_target_method\endcsname
+%      \v_page_target_method
+%    \else
+%      \v!none
+%    \fi\endcsname}
+
 \def\page_shipouts_handle
-  {\csname\??shipoutmethod\ifcsname\??shipoutmethod\v_page_target_method\endcsname
-     \v_page_target_method
+  {\ifcsname\??shipoutmethod\v_page_target_method\endcsname
+     \expandafter\lastnamedcs
    \else
-     \v!none
-   \fi\endcsname}
+     \expandafter\page_shipouts_ignore
+   \fi}
 
 \installshipoutmethod \v!normal
   {\ifarrangingpages
@@ -108,7 +115,7 @@
    \ifcase\shipoutfinalizemethod
      \page_shipouts_handle{#1}%
    \else
-     \setbox\shipoutscratchbox\hbox{#1}% just in case there are objects there, hook for testing (will go away)
+     \setbox\shipoutscratchbox\hpack{#1}% just in case there are objects there, hook for testing (will go away)
      \finalizeshipoutbox\shipoutscratchbox
      \page_shipouts_handle{\box\shipoutscratchbox}%
    \fi
@@ -124,13 +131,13 @@
      {[\ifarrangingpages arranged \fi page
        \ifarrangingpages\the\arrangeno\else\the\realpageno\fi\normalspace
        not flushed]}%
-   \setbox\scratchbox\hbox{#1}%
+   \setbox\scratchbox\hpack{#1}%
    \deadcycles\zerocount
    \endgroup}
 
 \def\page_otr_flush_every_stuff
   {\begingroup
-   \setbox\scratchbox\hbox
+   \setbox\scratchbox\hpack
      {% before the main one !
       \ifcase\realfolio \or
         \the\everyfirstshipout
@@ -166,15 +173,15 @@
      \normalexpanded{\doifelseinset{\the\shippedoutpages}{\pagestoshipout}}\donetrue\donefalse
    \fi
    \ifdone
-     \setbox\shipoutscratchbox\hbox{#1}%
+     \setbox\shipoutscratchbox\hpack{#1}%
      \ifcase\shipoutfinalizemethod
        \finalizeshipoutbox\shipoutscratchbox
      \fi
-     \normalshipout\vbox
+     \normalshipout\vpack
        {\offinterlineskip
         \vskip\d_page_shipouts_offset
         \hskip\d_page_shipouts_offset
-        \hbox
+        \hpack
           {\page_otr_flush_every_stuff
            \page_otr_flush_special_content
            \box\shipoutscratchbox}}%
@@ -185,7 +192,7 @@
 \def\page_shipouts_arrange#1%
   {% \global\advance\shippedoutpages\plusone
    \begingroup
-   \setbox\scratchbox\hbox
+   \setbox\scratchbox\hpack
      {\page_otr_flush_every_stuff
       \page_otr_flush_special_content
       \box\shipoutscratchbox}%
@@ -375,12 +382,12 @@
    \fi}
 
 \def\handlearrangedpageXandY#1#2#3#4#5%
-  {\global\setbox#5\hbox to \arrangedpageX\paperwidth
-     {\setbox\scratchbox\vbox to \arrangedpageY\paperheight
+  {\global\setbox#5\hpack to \arrangedpageX\paperwidth
+     {\setbox\scratchbox\vpack to \arrangedpageY\paperheight
         {\offinterlineskip
          \vskip#4\paperheight
          \hskip#3\paperwidth
-         \dorotatebox{\ifcase#2 0\else180\fi}\hbox{\box#1}%
+         \dorotatebox{\ifcase#2 0\else180\fi}\hpack{\box#1}%
          \vfill}%
       \wd\scratchbox\zeropoint
       \box\scratchbox\box#5\hss}}
@@ -394,15 +401,15 @@
    \forgetall % somehow we're back and need to redo this
    \gotonextarrangepage
    \ifnum\arrangedrotationO\arrangedrotationE>\zerocount
-     \setbox#1\vbox
+     \setbox#1\vpack
        {\ifconditional\arrangeddoublestate
           \ifodd\arrangeno
-            \dorotatebox\arrangedrotationO\hbox{\box#1}%
+            \dorotatebox\arrangedrotationO\hpack{\box#1}%
           \else
-            \dorotatebox\arrangedrotationE\hbox{\box#1}%
+            \dorotatebox\arrangedrotationE\hpack{\box#1}%
           \fi
         \else
-          \dorotatebox\arrangedrotationO\hbox{\box#1}%
+          \dorotatebox\arrangedrotationO\hpack{\box#1}%
         \fi}%
    \fi
    \ifconditional\arrangedmirrorstate
@@ -550,14 +557,14 @@
 \def\handlearrangedpageSIDE
   {\wd\arrangedpageA\paperwidth
    \wd\arrangedpageB\paperwidth
-   \global\setbox\arrangedpageA\hbox
+   \global\setbox\arrangedpageA\hpack
      {\box\arrangedpageA\box\arrangedpageB}%
    \ht\arrangedpageA\paperheight}
 
 \def\handlearrangedpageTOP
   {\ht\arrangedpageA\paperheight
    \ht\arrangedpageB\paperheight
-   \global\setbox\arrangedpageA\vbox
+   \global\setbox\arrangedpageA\vpack
      {\offinterlineskip\vskip\paperheight
       \box\arrangedpageA\box\arrangedpageB}%
    \global\setbox\arrangedpageB\box\scratchbox} % ?
@@ -577,14 +584,14 @@
    \ht\arrangedpageA\paperheight
    \ht\arrangedpageB\paperheight
    \ifconditional\arrangedswapstate
-     \global\setbox\arrangedpageA\hbox
+     \global\setbox\arrangedpageA\hpack
        {\page_boxes_apply_clip_print_left \arrangedpageA
         \box\arrangedpageA
         \page_boxes_apply_clip_print_right\arrangedpageB
         \box\arrangedpageB}%
      \setfalse\arrangedswapstate
    \else
-     \global\setbox\arrangedpageA\hbox
+     \global\setbox\arrangedpageA\hpack
        {\page_boxes_apply_clip_print_left \arrangedpageB
         \box\arrangedpageB
         \page_boxes_apply_clip_print_right\arrangedpageA
@@ -598,14 +605,14 @@
    \ht\arrangedpageA\paperheight
    \ht\arrangedpageB\paperheight
    \ifconditional\arrangedswapstate
-     \global\setbox\arrangedpageA\vbox
+     \global\setbox\arrangedpageA\vpack
        {\offinterlineskip
         \vskip\paperheight
         \box\arrangedpageA
         \box\arrangedpageB}%
      \setfalse\arrangedswapstate
    \else
-     \global\setbox\arrangedpageA\vbox
+     \global\setbox\arrangedpageA\vpack
        {\offinterlineskip
         \vskip\paperheight
         \box\arrangedpageB
@@ -635,14 +642,14 @@
 \def\pusharrangedpageTWO#1%
   {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
-   \global\setbox\arrangedpageB\vbox
+   \global\setbox\arrangedpageB\vpack
      {\offinterlineskip
       \unvbox\arrangedpageB
       \allowbreak
-      \setbox#1\vbox{\box#1}% really needed in order to keep real dimensions
+      \setbox#1\vpack{\box#1}% really needed in order to keep real dimensions
       \ht#1\onepoint
       \dp#1\zeropoint
-      \vbox{\box#1}}}
+      \vpack{\box#1}}}
 
 \def\poparrangedpagesTWOTOPSIDE
   {\ifnum\arrangedpageN>\zerocount
@@ -1189,7 +1196,7 @@
   {\advancearrangedpageN
    \global\advance\arrangedpageM\plusone
    \reportarrangedpage\arrangedpageN
-   \global\setbox\arrangedpageB\hbox \ifdim\v_page_target_width>\zeropoint to \v_page_target_width \fi
+   \global\setbox\arrangedpageB\hpack \ifdim\v_page_target_width>\zeropoint to \v_page_target_width \fi
       {\ifvoid\arrangedpageB\else
          \unhbox\arrangedpageB
          \ifdim\v_page_target_dx>\zeropoint
@@ -1202,7 +1209,7 @@
        \fi
        \box#1}%
     \ifnum\arrangedpageM<\arrangedpageX\else
-      \global\setbox\arrangedpageA\vbox \ifdim\v_page_target_height>\zeropoint to \v_page_target_height \fi
+      \global\setbox\arrangedpageA\vpack \ifdim\v_page_target_height>\zeropoint to \v_page_target_height \fi
         {\offinterlineskip
          \ifvoid\arrangedpageA\else
            \unvbox\arrangedpageA
@@ -1334,7 +1341,7 @@
 
 \def\page_boxes_apply_shift_indeed#1%
   {\edef\next{\wd#1\the\wd#1\ht#1\the\ht#1\dp#1\the\dp#1}%
-   \setbox#1\vbox
+   \setbox#1\vpack
      {\offinterlineskip
       \vskip\d_page_boxes_v_shifts
       \hskip\d_page_boxes_h_shifts
@@ -1346,8 +1353,10 @@
 
 \def\page_boxes_setup_shift[#1][#2][#3]% page|paper horizontal vertical
   {\ifthirdargument                    % paper=arrange
-     \edef\page_boxes_h_shifts{\ifcsname\??pageshift\v!horizontal:#2\endcsname\csname\??pageshift\v!horizontal:#2\endcsname\fi}%
-     \edef\page_boxes_v_shifts{\ifcsname\??pageshift\v!vertical  :#3\endcsname\csname\??pageshift\v!vertical  :#3\endcsname\fi}%
+     %edef\page_boxes_h_shifts{\ifcsname\??pageshift\v!horizontal:#2\endcsname\csname\??pageshift\v!horizontal:#2\endcsname\fi}%
+     %edef\page_boxes_v_shifts{\ifcsname\??pageshift\v!vertical  :#3\endcsname\csname\??pageshift\v!vertical  :#3\endcsname\fi}%
+     \edef\page_boxes_h_shifts{\begincsname\??pageshift\v!horizontal:#2\endcsname}%
+     \edef\page_boxes_v_shifts{\begincsname\??pageshift\v!vertical  :#3\endcsname}%
      \doifelse{#1}\v!page {\let\page_boxes_apply_shift_print\page_boxes_apply_shift}{\let\page_boxes_apply_shift_print\gobbleoneargument}%
      \doifelse{#1}\v!paper{\let\page_boxes_apply_shift_paper\page_boxes_apply_shift}{\let\page_boxes_apply_shift_paper\gobbleoneargument}%
    \else\ifsecondargument

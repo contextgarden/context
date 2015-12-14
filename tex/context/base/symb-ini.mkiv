@@ -72,8 +72,6 @@
      \addvalue{\??symbolset\m_symb_current_set}{#1}%
    \fi}
 
-\letvalue{\??symbolset}\empty
-
 \unexpanded\def\doifelseinsymbolset#1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
 \unexpanded\def\doifinsymbolset    #1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
 \unexpanded\def\doifelsesymbolset    #1{\ifcsname\??symbolset#1\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
@@ -81,7 +79,11 @@
 \let\doifinsymbolsetelse\doifelseinsymbolset
 \let\doifsymbolsetelse  \doifelsesymbolset
 
-\def\symbolset#1{\csname\??symbolset\ifcsname\??symbolset#1\endcsname#1\fi\endcsname} % no [#1], to be used in commalists etc
+\letvalue{\??symbolset}\empty
+
+%def\symbolset#1{\csname\??symbolset\ifcsname\??symbolset#1\endcsname#1\fi\endcsname} % no [#1], to be used in commalists etc
+
+\def\symbolset#1{\begincsname\??symbolset#1\endcsname} % no [#1], to be used in commalists etc
 
 %D Since symbols are used frequently in interactive
 %D documents, we speed up this one. Well, that was history,
@@ -148,7 +150,8 @@
 \letvalue{\??symbol}\firstofoneargument
 
 \def\directsymbol#1#2% no \relax, there can be an argument, see lists
-  {\csname\??symbol\ifcsname\??symbol#1:#2\endcsname#1:#2\fi\endcsname}
+ %{\csname\??symbol\ifcsname\??symbol#1:#2\endcsname#1:#2\fi\endcsname}
+  {\begincsname\??symbol#1:#2\endcsname}
 
 \unexpanded\def\symb_fetch
   {\ifconditional\c_symb_found

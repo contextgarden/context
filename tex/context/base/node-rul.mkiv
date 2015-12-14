@@ -101,7 +101,8 @@
 
 \appendtoks
     \ifcsname\??barindex\currentbar\endcsname
-        \csname\??barindex\currentbar\endcsname\zerocount
+       %\csname\??barindex\currentbar\endcsname\zerocount
+        \lastnamedcs
     \else
         \expandafter\newcount\csname\??barindex\currentbar\endcsname
     \fi
@@ -141,13 +142,15 @@
 %\unexpanded\def\node_rules_set_indeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
 
 \unexpanded\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
-  {\clf_enablerules % will be relaxed
-   \edef\currentbar{#1}%
+  {\edef\currentbar{#1}%
+   \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   % todo: move this to lua .. we callout anyway
    \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
    \advance\c_node_rules_index\plusone
-   \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \clf_enablerules % will be relaxed
    \attribute\ruledattribute\numexpr
       \plusthousand*\c_node_rules_index
+      % optimizing this one needs testing
      +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
    \relax}
 
@@ -275,7 +278,8 @@
 
 \appendtoks
     \ifcsname\??shiftindex\currentshift\endcsname
-        \csname\??shiftindex\currentshift\endcsname\zerocount
+       %\csname\??shiftindex\currentshift\endcsname\zerocount
+        \lastnamedcs\zerocount
     \else
         \expandafter\newcount\csname\??shiftindex\currentshift\endcsname
     \fi
@@ -303,9 +307,8 @@
 %
 % \def\node_shifts_set_indeed#1% todo: check parent !
 
-\unexpanded\def\node_shifts_set#1% todo: check parent !
-  {\clf_enableshifts
-   \def\currentshift{#1}%
+\unexpanded\def\node_shifts_set#1% todo: check parent ! todo: move attr etc to lua
+  {\def\currentshift{#1}%
    \expandafter\let\expandafter\c_node_shifts_index\csname\??shiftindex#1\endcsname
    \advance\c_node_shifts_index\plusone
    \attribute\shiftedattribute\numexpr

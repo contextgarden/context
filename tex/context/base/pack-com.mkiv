@@ -422,8 +422,8 @@
    \egroup}
 
 \def\pack_combinations_save_caption
-  {\global\setbox\b_pack_combinations_captions\hbox
-     {\hbox{\box\b_pack_combinations_caption}%
+  {\global\setbox\b_pack_combinations_captions\hpack
+     {\hpack{\box\b_pack_combinations_caption}%
       \unhbox\b_pack_combinations_captions}}
 
 \def\pack_combinations_flush_captions
@@ -441,7 +441,7 @@
    \crcr}
 
 \def\pack_combinations_flush_captions_yes
-  {\global\setbox\b_pack_combinations_captions\hbox
+  {\global\setbox\b_pack_combinations_captions\hpack
      {\unhbox\b_pack_combinations_captions
       \global\setbox\b_pack_combinations_temp\lastbox}%
    \box\b_pack_combinations_temp
@@ -803,8 +803,8 @@
 \setvalue{\??pairedboxalign\v!bottom}{\getvalue{\??pairedboxalign\v!low }}
 \setvalue{\??pairedboxalign   \v!top}{\getvalue{\??pairedboxalign\v!high}}
 
-\def\pack_pairedbox_valign#1{\setbox#1\vbox to \s_pack_pairedboxes_size{\pack_pairedboxes_align_t\box#1\pack_pairedboxes_align_b}}
-\def\pack_pairedbox_halign#1{\setbox#1\hbox to \s_pack_pairedboxes_size{\pack_pairedboxes_align_l\box#1\pack_pairedboxes_align_r}}
+\def\pack_pairedbox_valign#1{\setbox#1\vpack to \s_pack_pairedboxes_size{\pack_pairedboxes_align_t\box#1\pack_pairedboxes_align_b}}
+\def\pack_pairedbox_halign#1{\setbox#1\hpack to \s_pack_pairedboxes_size{\pack_pairedboxes_align_l\box#1\pack_pairedboxes_align_r}}
 
 \def\pack_pairedboxes_before
   {\ifx\p_location\empty
@@ -862,7 +862,7 @@
    \fi}
 
 \def\pack_pairedboxes_after
-  {\setbox\b_pack_pairedboxes_second\vbox
+  {\setbox\b_pack_pairedboxes_second\vpack
      {\ifnum\p_n>\plusone
         \rigidcolumnbalance\nextbox
       \else
@@ -896,7 +896,7 @@
    \egroup}
 
 \def\pack_pairedboxes_pack_vertical
-  {\dontleavehmode\vbox\bgroup
+  {\dontleavehmode\vpack\bgroup
      \forgetall
      \s_pack_pairedboxes_size\wd
        \ifdim\wd\b_pack_pairedboxes_first>\wd\b_pack_pairedboxes_second
@@ -915,7 +915,7 @@
        \s_pack_pairedboxes_size\pairedboxparameter\c!maxheight\relax % \relax needed
      \fi
      \ifdim\s_pack_pairedboxes_size>\ht\b_pack_pairedboxes_second
-       \setbox\b_pack_pairedboxes_second\vbox to \s_pack_pairedboxes_size
+       \setbox\b_pack_pairedboxes_second\vpack to \s_pack_pairedboxes_size
          {\pack_pairedboxes_fill_top
           \box\b_pack_pairedboxes_second
           \pack_pairedboxes_fill_bottom}% \kern\zeropoint

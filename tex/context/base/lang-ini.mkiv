@@ -88,7 +88,8 @@
 
 \def\defaultlanguage#1%
   {\ifcsname\??language#1\s!default\endcsname
-     \expandafter\defaultlanguage\csname\??language#1\s!default\endcsname
+    %\expandafter\defaultlanguage\csname\??language#1\s!default\endcsname
+     \expandafter\defaultlanguage\lastnamedcs
    \else
      #1%
    \fi}

@@ -90,13 +90,9 @@
    \let\obeyedspace\specialobeyedspace
    \let\controlspace\specialcontrolspace
    \edef\p_buff_lines{\typeparameter\c!lines}%
-   \ifcsname\??typinglines\p_buff_lines\endcsname
-     \csname\??typinglines\p_buff_lines\endcsname
-   \fi
+   \begincsname\??typinglines\p_buff_lines\endcsname
    \edef\p_buff_space{\typeparameter\c!space}%
-   \ifcsname\??typingspace\p_buff_space\endcsname
-     \csname\??typingspace\p_buff_space\endcsname
-   \fi
+   \begincsname\??typingspace\p_buff_space\endcsname
    \relax\the\everyinitializeverbatim\relax}
 
 \unexpanded\def\doinitializeverbatim % for use elsewhere .. temp hack (see lxml-ini)
@@ -136,13 +132,9 @@
    \let\obeyedspace\specialobeyedspace
    \let\controlspace\specialcontrolspace
    \edef\p_buff_lines{\typingparameter\c!lines}%
-   \ifcsname\??typinglines\p_buff_lines\endcsname
-     \csname\??typinglines\p_buff_lines\endcsname
-   \fi
+   \begincsname\??typinglines\p_buff_lines\endcsname
    \edef\p_buff_space{\typingparameter\c!space}%
-   \ifcsname\??typingspace\p_buff_space\endcsname
-     \csname\??typingspace\p_buff_space\endcsname
-   \fi
+   \begincsname\??typingspace\p_buff_space\endcsname
    \relax\the\everyinitializeverbatim\relax}
 
 %D \macros

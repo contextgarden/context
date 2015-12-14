@@ -220,8 +220,9 @@
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
  % \def#7##1{\mult_interfaces_detokenize{\csname#4{#1#2}{##1}\endcsname}}% compact version
  % \def#7##1{\mult_interfaces_detokenize{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}}%
-   \def#8##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\s!empty\fi\endcsname}%
-   \def#9##1{\csname#1#2:##1\endcsname}}
+%% \def#8##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\s!empty\fi\endcsname}%
+   \def#8##1{\begincsname#1#2:##1\endcsname}%
+   \def#9##1{\csname#1#2:##1\endcsname}} % can go when we use \begincsname
 
 % pre-expansion can be a bit faster but handly any effect on a normal run so let's go for
 % saving some memory
@@ -610,7 +611,8 @@
 %D We don't need colons for such simple cases.
 
 \unexpanded\def\mult_interfaces_install_direct_parameter_handler#1#2#3#4#5%
-  {\def#3##1{\csname\ifcsname#1##1\endcsname#1##1\else\s!empty\fi\endcsname}%
+%%{\def#3##1{\csname\ifcsname#1##1\endcsname#1##1\else\s!empty\fi\endcsname}%
+  {\def#3##1{\begincsname#1##1\endcsname}%
    \def#4##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}%
  % \def#4##1{\mult_interfaces_detokenize{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}}%
    \def#5##1{\csname#1##1\endcsname}}
@@ -802,7 +804,8 @@
 
 \letvalue\??dummy\empty
 
-           \def\dummyparameter      #1{\csname\??dummy\ifcsname\??dummy#1\endcsname#1\fi\endcsname}
+%%         \def\dummyparameter      #1{\csname\??dummy\ifcsname\??dummy#1\endcsname#1\fi\endcsname}
+           \def\dummyparameter      #1{\begincsname\??dummy#1\endcsname}
            \def\directdummyparameter#1{\csname\??dummy#1\endcsname}
 \unexpanded\def\setdummyparameter   #1{\expandafter\def\csname\??dummy#1\endcsname}
 \unexpanded\def\letdummyparameter   #1{\expandafter\let\csname\??dummy#1\endcsname}

@@ -247,7 +247,7 @@
    \glet\strc_formulas_place_number_nested\strc_formulas_place_number_nested_indeed}
 
 \def\strc_formulas_handle_number % formulas
-  {\strc_formulas_check_reference\c_strc_formulas_number_mode\currentformulareference}
+  {\strc_formulas_check_reference\c_strc_formulas_number_mode\currentformulasreference}
 
 \def\strc_formulas_handle_sub_number_indeed % sub formulas
   {\strc_formulas_check_reference\c_strc_formulas_sub_number_mode\currentsubformulasreference
@@ -629,7 +629,7 @@
    \let\strc_formulas_start_formula\strc_formulas_start_formula_nested
   %\freezedimenmacro\predisplaysizethreshhold
    \strc_formulas_forget_display_skips
-   \getvalue{\e!start\formulaparameter\c!alternative\v!formula}}
+   \csname\e!start\formulaparameter\c!alternative\v!formula\endcsname}
 
 \unexpanded\def\strc_formulas_start_formula_nested#1%
   {\bgroup
@@ -647,7 +647,7 @@
    \strc_formulas_place_number
    \dostoptagged
    \dostarttagged\t!formulacontent\empty
-   \getvalue{\e!stop\formulaparameter\c!alternative\v!formula}%
+   \csname\e!stop\formulaparameter\c!alternative\v!formula\endcsname
    \dostoptagged
    \dostoptagged
    \nonoindentation
@@ -890,7 +890,7 @@
 
 \def\strc_formulas_number_again[#1]%
   {\def\currentformulareference{#1}%
-   \dosinglegroupempty\strc_formulas_number_indeed}
+   \strc_formulas_number_indeed}
 
 \unexpanded\def\placeformula
   {\global\settrue\c_strc_formulas_inside_place
@@ -905,7 +905,7 @@
 \def\strc_formulas_place[#1]%
   {\def\currentplaceformulareference{#1}%
    \let\currentplaceformulasuffix\empty
-   \doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop\strc_formulas_place_nop} % [ref]{}
+   \doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop} % [ref]{}
 
 \def\strc_formulas_place_yes#1%
   {\def\currentplaceformulasuffix{#1}%

@@ -129,7 +129,7 @@
 \unexpanded\def\page_otr_triggered_output_routine_traced
   {\ifcsname\??otrtriggers\the\outputpenalty\endcsname
      \page_otr_message_b{special}%
-     \csname\??otrtriggers\the\outputpenalty\endcsname
+     \csname\??otrtriggers\the\outputpenalty\endcsname % \lastnamedcs can be gone
      \page_otr_message_e{special}%
    \else
      \page_otr_message_b{normal}%
@@ -139,7 +139,8 @@
 
 \unexpanded\def\page_otr_triggered_output_routine_normal
   {\ifcsname\??otrtriggers\the\outputpenalty\endcsname
-     \csname\??otrtriggers\the\outputpenalty\endcsname
+    %\csname\??otrtriggers\the\outputpenalty\endcsname
+     \lastnamedcs
    \else
      \page_otr_command_routine
    \fi}

@@ -370,7 +370,7 @@
 \let\dowithfigure\relax % name might change (into a proper hook)
 
 \unexpanded\def\doscalefigure % used at lua end
-  {\global\setbox\foundexternalfigure\vbox{\scale[\v!figure]{\dowithfigure{\box\foundexternalfigure}}}}
+  {\global\setbox\foundexternalfigure\vpack{\scale[\v!figure]{\dowithfigure{\box\foundexternalfigure}}}}
 
 \definescale % some day we will inherit
   [\v!figure]
@@ -543,7 +543,7 @@
 %D Internal graphics are handled at the \TEX\ end:
 
 \def\grph_include_process_tex#1%
-  {\global\setbox\foundexternalfigure\vbox\framed
+  {\global\setbox\foundexternalfigure\vbox\framed % no \vpack
      [\c!strut=\v!no,\c!align=\v!normal,\c!frame=\v!off,
       \c!offset=\v!overlay,\c!width=\v!fit,\c!height=\v!fit]
      {\blank[\v!disable]#1\endgraf\removelastskip}} % disable should stay here!
@@ -552,15 +552,15 @@
 
 \unexpanded\def\docheckfigurebuffer  #1{\grph_include_process_tex{\getbuffer[#1]}}
 \unexpanded\def\docheckfiguretex     #1{\grph_include_process_tex{\input{#1}}}
-\unexpanded\def\docheckfigurecld     #1{\global\setbox\foundexternalfigure\vbox{\cldprocessfile{#1}}}
-\unexpanded\def\docheckfiguremps     #1{\global\setbox\foundexternalfigure\vbox{\convertMPtoPDF{#1}11}}
-\unexpanded\def\docheckfiguremprun #1#2{\global\setbox\foundexternalfigure\vbox{\useMPrun{#1}{#2}}}
+\unexpanded\def\docheckfigurecld     #1{\global\setbox\foundexternalfigure\vbox {\cldprocessfile{#1}}}
+\unexpanded\def\docheckfiguremps     #1{\global\setbox\foundexternalfigure\vpack{\convertMPtoPDF{#1}11}}
+\unexpanded\def\docheckfiguremprun #1#2{\global\setbox\foundexternalfigure\vpack{\useMPrun{#1}{#2}}}
 
 \unexpanded\def\relocateexternalfigure % easier here than in lua
-  {\global\setbox\foundexternalfigure\vbox to \ht\foundexternalfigure\bgroup
+  {\global\setbox\foundexternalfigure\vpack to \ht\foundexternalfigure\bgroup
      \vss
      \ht\foundexternalfigure\zeropoint
-     \hbox to \wd\foundexternalfigure\bgroup
+     \hpack to \wd\foundexternalfigure\bgroup
         \box\foundexternalfigure
         \hss
      \egroup
@@ -667,10 +667,10 @@
 % Helpers (will be replaced when xforms are accessible at the lua end)
 
 \unexpanded\def\dosetfigureobject#1%
-  {\setobject{FIG}{#1}\vbox{\box\foundexternalfigure}}
+  {\setobject{FIG}{#1}\vpack{\box\foundexternalfigure}}
 
 \unexpanded\def\doboxfigureobject#1%
-  {\global\setbox\foundexternalfigure\vbox{\getobject{FIG}{#1}}} % probably one vbox too many
+  {\global\setbox\foundexternalfigure\vpack{\getobject{FIG}{#1}}} % probably one vbox too many
 
 % Figure bases
 

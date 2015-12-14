@@ -89,7 +89,7 @@
 
 \def\page_info_add_to_box_indeed#1%
   {\scratchdimen\wd#1%
-   \setbox\b_page_versions\vbox to \ht#1%
+   \setbox\b_page_versions\vpack to \ht#1%
      {\vfill
       \settexthoffset
       \hsize\dimexpr\scratchdimen-2\texthoffset\relax
@@ -98,7 +98,7 @@
       \vskip\bodyfontsize}%
    \dp\b_page_versions\zeropoint
    \wd\b_page_versions\scratchdimen
-   \setbox#1\hbox{\box#1\hskip-\scratchdimen\box\b_page_versions}}
+   \setbox#1\hpack{\box#1\hskip-\scratchdimen\box\b_page_versions}}
 
 \setupversion % resets
   [\v!final]

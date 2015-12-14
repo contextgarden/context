@@ -115,10 +115,13 @@
 %    \fi
 %    \let\currentmoduleparameters\empty}
 
+% \def\moduleparameter#name#parameter% should have been \namedmoduleparameter
+%   {\csname\??module
+%      \ifcsname\??module#name:#parameter\endcsname#name:#parameter\fi
+%    \endcsname}
+
 \def\moduleparameter#name#parameter% should have been \namedmoduleparameter
-  {\csname\??module
-     \ifcsname\??module#name:#parameter\endcsname#name:#parameter\fi
-   \endcsname}
+  {\begincsname\??module#name:#parameter\endcsname}
 
 \letvalue\??module\empty % so we default to empty as with all parameters
 

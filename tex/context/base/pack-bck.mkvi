@@ -201,9 +201,9 @@
 \definebackground[\v!background]
 
 \ifdefined\startbackground \else
-    \expandafter\let\startbackground\csname\e!start\v!background\endcsname
-    \expandafter\let\stopbackground \csname\e!stop \v!background\endcsname
-    \expandafter\let\background     \csname        \v!background\endcsname
+    \expandafter\let\expandafter\startbackground\csname\e!start\v!background\endcsname
+    \expandafter\let\expandafter\stopbackground \csname\e!stop \v!background\endcsname
+    \expandafter\let\expandafter\background     \csname        \v!background\endcsname
 \fi
 
 \setupbackground

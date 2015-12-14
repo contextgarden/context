@@ -1172,8 +1172,8 @@
 \newconditional\c_strc_notes_symbol \settrue\c_strc_notes_symbol % not used
 \newconditional\c_strc_notes_skip
 
-\unexpanded\def\setnote    [#tag]{\getvalue{#tag}}
-\unexpanded\def\setnotetext[#tag]{\global\settrue\c_strc_notes_skip\getvalue{#tag}}
+\unexpanded\def\setnote    [#tag]{\csname#tag\endcsname}
+\unexpanded\def\setnotetext[#tag]{\global\settrue\c_strc_notes_skip\csname#tag\endcsname}
 
 \unexpanded\def\handlenoteinsert#tag#id%
   {\begingroup
@@ -1570,8 +1570,6 @@
         \noteparameter\c!after
       \fi}}
 
-\setvalue{\??notealternative}{\getvalue{\??notealternative\v!none}}
-
 %D A stupid alternative is also provided:
 %D
 %D \starttyping
@@ -1583,6 +1581,9 @@
 \def\flushlocalnotes#tag{\clf_flushnotes{#tag}{store}{\noteparameter\c!criterium}}
 
 \installnotealternative \v!none
+  {\flushlocalnotes\currentnote}
+
+\installnotealternative \empty
   {\flushlocalnotes\currentnote}
 
 \installnotealternative \v!grid % test if n > 0
@@ -1772,7 +1773,7 @@
 %D }
 %D \stoptyping
 
-\def\doifelsenoteonsamepage[#tag]{\clf_doifnoteonsamepageasprevious{#tag}}
+\def\doifelsenoteonsamepage#tag{\clf_doifnoteonsamepageasprevious{#tag}}
 
 \let\doifnoteonsamepageelse\doifelsenoteonsamepage
 

@@ -213,7 +213,7 @@
      % preceding is overwritten ... needs to be figured out some day
      \page_one_command_routine
    \fi
-   \global\setbox\b_page_mix_preceding\vbox
+   \global\setbox\b_page_mix_preceding\vbox % pack ?
      {\page_otr_command_flush_top_insertions
       \ifdim\htdp\b_page_mix_preceding=\zeropoint \else
         \writestatus\m!columns{preceding error}%
@@ -522,7 +522,7 @@
        % moved here, before the packaging
        \page_postprocessors_linenumbers_deepbox\b_page_mix_preceding
        % we need to avoid unvboxing with successive balanced on one page
-       \global\setbox\b_page_mix_preceding\vbox{\box\b_page_mix_preceding}%
+       \global\setbox\b_page_mix_preceding\vpack{\box\b_page_mix_preceding}%
        \wd\b_page_mix_preceding\scratchwidth % \makeupwidth
        \page_grids_add_to_one\b_page_mix_preceding
      \fi
@@ -619,7 +619,7 @@
    \setbox\b_page_mix_collected\vbox \bgroup
      \ifvoid\b_page_mix_preceding \else
      % \page_postprocessors_linenumbers_deepbox\b_page_mix_preceding % already done
-       \vbox\bgroup
+       \vpack\bgroup
          \box\b_page_mix_preceding
        \egroup
        \global\d_page_mix_preceding_height\zeropoint
@@ -650,7 +650,7 @@
   {\bgroup
    \forgetall
    \dontcomplain
-   \setbox\b_page_mix_collected\vbox{\unvbox\normalpagebox}% brrr we need to make a tight box (combine this in lua)
+   \setbox\b_page_mix_collected\vpack{\unvbox\normalpagebox}% brrr we need to make a tight box (combine this in lua)
    \page_mix_routine_construct\v!no
    \page_mix_routine_package
    \page_otr_construct_and_shipout\box\b_page_mix_collected
@@ -662,13 +662,13 @@
   {\bgroup
    \forgetall
    \dontcomplain
-   \setbox\b_page_mix_collected\vbox{\unvbox\normalpagebox}% brrr we need to make a tight box (combine this in lua)
+   \setbox\b_page_mix_collected\vpack{\unvbox\normalpagebox}% brrr we need to make a tight box (combine this in lua)
    \doloop
      {%writestatus\m!columns{construct continue (\the\htdp\b_page_mix_collected)}%
       \page_mix_routine_construct\v!no
       \ifcase\clf_mixstate\relax
         % 0 = okay, we can balance
-        \setbox\b_page_mix_collected\vbox{\clf_mixflushlist}% we could avoid this
+        \setbox\b_page_mix_collected\vpack{\clf_mixflushlist}% we could avoid this
         %writestatus\m!columns{construct balance}%
         \page_mix_routine_construct\v!yes
         \page_mix_routine_package
@@ -692,7 +692,7 @@
         %writestatus\m!columns{flush continue}%
         \page_mix_routine_package
         \page_otr_construct_and_shipout\box\b_page_mix_collected
-        \setbox\b_page_mix_collected\vbox{\clf_mixflushrest}% we could avoid this
+        \setbox\b_page_mix_collected\vpack{\clf_mixflushrest}% we could avoid this
         \clf_mixcleanup
         \ifdim\ht\b_page_mix_collected=\zeropoint
             \exitloop
@@ -805,7 +805,7 @@
       % and glue in between and when we're too large we run into issues
       % so mayb best limit correction to one line
       \profilegivenbox\p_profile\b_page_mix_collected
-      \setbox\b_page_mix_collected\vbox{\unvbox\b_page_mix_collected}%
+      \setbox\b_page_mix_collected\vpack{\unvbox\b_page_mix_collected}%
       % tracing
       % \addprofiletobox\b_page_mix_collected
    \fi

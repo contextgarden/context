@@ -194,7 +194,7 @@
      \page_floats_flush\s!text\plusone
      \ifconditional\c_page_floats_center_box
        \ifdim\wd\globalscratchbox<\hsize
-         \global\setbox\floatbox\hbox to \hsize{\hss\box\floatbox\hss}%
+         \global\setbox\floatbox\hpack to \hsize{\hss\box\floatbox\hss}%
        \else
          % retain special alignments
          \ifinsidecolumns
@@ -258,7 +258,7 @@
   {\page_floats_flush{#1}\plusone
    \edef\floatspecification{\clf_getfloatvariable{specification}}% Is this okay?
    \the\everybeforeflushedpagefloat
-   \vbox to \textheight
+   \vpack to \textheight
      {\doifnotinset\v!high\floatspecification\vfill
       \box\floatbox
       \doifnotinset\v!low\floatspecification\vfill}%

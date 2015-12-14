@@ -514,7 +514,8 @@
    \c_spac_align_state_direction \zerocount % what is default ?
    \c_spac_align_state_page      \zerocount
    \ifcsname\??aligncommand\m_spac_align_asked\endcsname
-     \csname\??aligncommand\m_spac_align_asked\endcsname % not much gain in new method
+    %\csname\??aligncommand\m_spac_align_asked\endcsname % not much gain in new method
+     \lastnamedcs
    \else
      \rawprocesscommacommand[\m_spac_align_asked]\spac_align_collect
    \fi
@@ -753,13 +754,15 @@
 
 \def\spac_align_set_ragged_vbox#1%
   {\ifcsname\??alignvertical#1\endcsname
-     \csname\??alignvertical#1\endcsname
+    %\csname\??alignvertical#1\endcsname
+     \lastnamedcs
      \quitcommalist
    \fi}
 
 \def\spac_align_set_ragged_hbox#1%
   {\ifcsname\??alignhorizontal#1\endcsname
-     \csname\??alignhorizontal#1\endcsname
+    %\csname\??alignhorizontal#1\endcsname
+     \lastnamedcs
      \quitcommalist
    \fi}
 
@@ -911,8 +914,11 @@
 \setuvalue{\??alignwrapper\v!right }{\doalignline\hss   \relax}
 \setuvalue{\??alignwrapper\v!max   }{\doalignline\relax \relax}
 
+\def\spac_align_wrapper_middle      {\doalignline\hss   \hss}
+
 \def\spac_align_wrapper_handle#1%
-  {\csname\??alignwrapper\ifcsname\??alignwrapper#1\endcsname#1\else\v!middle\fi\endcsname}
+ %{\csname\??alignwrapper\ifcsname\??alignwrapper#1\endcsname#1\else\v!middle\fi\endcsname}
+  {\ifcsname\??alignwrapper#1\endcsname\expandafter\lastnamedcs\else\expandafter\spac_align_wrapper_middle\fi}
 
 \unexpanded\def\spac_align_wrapper_start[#1]%
   {\spac_align_wrapper_handle{#1}%
@@ -996,7 +1002,12 @@
   {\csname\??alignline#1\endcsname} % no \resetrealignsignal here ?
 
 \def\alignedline#1#2% setting default
-  {\csname\??alignline\ifcsname\??alignline#1\endcsname#1\else#2\fi\endcsname}
+ % {\csname\??alignline\ifcsname\??alignline#1\endcsname#1\else#2\fi\endcsname}
+  {\ifcsname\??alignline#1\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \csname\??alignline#2\expandafter\endcsname
+   \fi}
 
 % beware: \wordright{whatever\kern-\rightskip} should work!
 % so, no funny boxing here
@@ -1074,26 +1085,72 @@
 \letvalue{\??alignsimplereverse\v!flushright}\spac_align_simple_left
 \letvalue{\??alignsimplereverse\v!middle    }\spac_align_simple_middle
 
+% \unexpanded\def\simplealignedbox#1#2%
+%   {\hbox \ifdim#1>\zeropoint to #1
+%      \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
+%    \fi}
+
+% \unexpanded\def\simplealignedboxplus#1#2#3%
+%   {\hbox #3 \ifdim#1>\zeropoint to #1
+%      \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
+%    \fi}
+
+% \unexpanded\def\simplealignedbox#1#2%
+%   {\hbox \ifdim#1>\zeropoint to #1
+%      \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
+%    \fi}
+%
+% \unexpanded\def\simplealignedboxplus#1#2#3%
+%   {\hbox #3 \ifdim#1>\zeropoint to #1
+%      \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
+%    \fi}
+
 \unexpanded\def\simplealignedbox#1#2%
   {\hbox \ifdim#1>\zeropoint to #1
-     \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
+     \ifcsname\??alignsimple#2\endcsname
+       \doubleexpandafter\lastnamedcs
+     \else
+       \doubleexpandafter\spac_align_simple_left
+     \fi
    \fi}
 
 \unexpanded\def\simplealignedboxplus#1#2#3%
   {\hbox #3 \ifdim#1>\zeropoint to #1
-     \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
+     \ifcsname\??alignsimple#2\endcsname
+       \doubleexpandafter\lastnamedcs
+     \else
+       \doubleexpandafter\spac_align_simple_left
+     \fi
    \fi}
 
 \newconditional\alignsimplelefttoright \settrue\alignsimplelefttoright
 
+% \unexpanded\def\simplereversealignedbox#1#2%
+%   {\hbox \ifdim#1>\zeropoint to #1
+%      \csname\??alignsimplereverse\ifcsname\??alignsimplereverse#2\endcsname#2\else\v!left\fi\expandafter\endcsname
+%    \fi}
+%
+% \unexpanded\def\simplereversealignedboxplus#1#2#3%
+%   {\hbox #3 \ifdim#1>\zeropoint to #1
+%      \csname\??alignsimplereverse\ifcsname\??alignsimplereverse#2\endcsname#2\else\v!left\fi\expandafter\endcsname
+%    \fi}
+
 \unexpanded\def\simplereversealignedbox#1#2%
   {\hbox \ifdim#1>\zeropoint to #1
-     \csname\??alignsimplereverse\ifcsname\??alignsimplereverse#2\endcsname#2\else\v!left\fi\expandafter\endcsname
+     \ifcsname\??alignsimplereverse#2\endcsname
+       \doubleexpandafter\lastnamedcs
+     \else
+       \doubleexpandafter\spac_align_simple_left
+     \fi
    \fi}
 
 \unexpanded\def\simplereversealignedboxplus#1#2#3%
   {\hbox #3 \ifdim#1>\zeropoint to #1
-     \csname\??alignsimplereverse\ifcsname\??alignsimplereverse#2\endcsname#2\else\v!left\fi\expandafter\endcsname
+     \ifcsname\??alignsimplereverse#2\endcsname
+       \doubleexpandafter\lastnamedcs
+     \else
+       \doubleexpandafter\spac_align_simple_left
+     \fi
    \fi}
 
 % \installnamespace{alignsets}

@@ -137,7 +137,7 @@
    %
    % \setbox\b_page_one_contents\vbox \ifconditional\c_notes_bottom_present to \textheight \fi
    %
-   \setbox\b_page_one_contents\vbox to \textheight
+   \setbox\b_page_one_contents\vbox to \textheight % probably no pack
      {\page_otr_command_flush_top_insertions
       % this is messy ... we will provide a more tight area (no big deal as we can
       % do that at the lua end)
@@ -175,13 +175,13 @@
      \else
        \scratchoffset\ht\b_page_one_contents
      \fi
-     \setbox\b_page_one_bottom_notes\hbox
+     \setbox\b_page_one_bottom_notes\hpack
        {\checksinglecolumnfootnotes % why this check? ***
-        \lower\scratchoffset\vbox{\placebottomnotes\par\kern\zeropoint}}% kerns makes notes sit on bottom
+        \lower\scratchoffset\vbox{\placebottomnotes\par\kern\zeropoint}}% kerns makes notes sit on bottom % pack ?
      \smashbox\b_page_one_bottom_notes
      \ht\b_page_one_contents\zeropoint
      \page_one_registered_text_area_b
-       {\vbox to \textheight
+       {\vpack to \textheight
           {\box\b_page_one_contents
            \box\b_page_one_bottom_notes}}%
    \else
@@ -356,9 +356,9 @@
 
 \unexpanded\def\page_one_command_flush_float_box
   {\ifconditional\c_page_floats_center_box \ifdim\wd\floatbox<\hsize
-     \global\setbox\floatbox\hbox to \hsize{\hss\box\floatbox\hss}%
+     \global\setbox\floatbox\hpack to \hsize{\hss\box\floatbox\hss}%
    \fi \fi
-   \snaptogrid\hbox{\box\floatbox}} % was copy
+   \snaptogrid\hpack{\box\floatbox}} % was copy
 
 \def\page_one_command_flush_floats_indeed % much in common with OTRSET
   {\ifconditional\c_page_floats_some_waiting
@@ -470,7 +470,7 @@
    \page_one_place_float_here_indeed}
 
 \def\page_one_place_float_side_indeed#1%
-  {\setbox\floatbox\vbox{\box\floatbox}% ? can go
+  {\setbox\floatbox\vpack{\box\floatbox}% ? can go
    \wd\floatbox\floatwidth
    #1{\box\floatbox}%
    \doifinset\v!tall\floatlocationmethod\page_sides_flush_floats_after_par}

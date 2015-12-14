@@ -44,7 +44,7 @@
 \def\getTeXtext#1%
   {\getvalue{\??graphictextext#1}}
 
-\setvalue{\??graphictexdepth d}{\setbox\nextbox\hbox{\lower\dp\nextbox\box\nextbox}}  % unchecked
+\setvalue{\??graphictexdepth d}{\setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}}  % unchecked
 \letvalue{\??graphictexdepth n}\donothing                                             % unchecked
 
 \setvalue{\??graphictexdepth\s!depth  }{\getvalue{\??graphictexdepth d}}

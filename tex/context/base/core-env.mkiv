@@ -62,22 +62,22 @@
 
 \unexpanded\def\setmode#1%
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \csname\??mode#1\endcsname\enabledmode}
+   \lastnamedcs\enabledmode}
 
 \unexpanded\def\resetmode#1%
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \csname\??mode#1\endcsname\disabledmode}
+   \lastnamedcs\disabledmode}
 
 \unexpanded\def\newsystemmode#1%
   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi}
 
 \unexpanded\def\setsystemmode#1%
   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
-   \csname\??mode\systemmodeprefix#1\endcsname\enabledmode}
+   \lastnamedcs\enabledmode}
 
 \unexpanded\def\resetsystemmode#1%
   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
-   \csname\??mode\systemmodeprefix#1\endcsname\disabledmode}
+   \lastnamedcs\disabledmode}
 
 % \def\dosetsystemmode#1%
 %   {\csname\??mode\systemmodeprefix#1\endcsname\enabledmode}
@@ -117,18 +117,18 @@
 
 \def\syst_modes_prevent_indeed#1%
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \syst_mode_prefix\csname\??mode#1\endcsname\preventedmode}
+   \syst_mode_prefix\lastnamedcs\preventedmode}
 
 \def\syst_modes_enable_indeed#1% we can speed it up by moving the new outside
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
    \ifnum\csname\??mode#1\endcsname=\preventedmode \else
-     \syst_mode_prefix\csname\??mode#1\endcsname\enabledmode
+     \syst_mode_prefix\lastnamedcs\enabledmode
    \fi}
 
 \def\syst_modes_disable_indeed#1%
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
    \ifnum\csname\??mode#1\endcsname=\preventedmode \else
-     \syst_mode_prefix\csname\??mode#1\endcsname\disabledmode
+     \syst_mode_prefix\lastnamedcs\disabledmode
    \fi}
 
 %D If you do a lot of mode testing, it makes sense to define modes (or disable them
@@ -162,7 +162,8 @@
 
 \def\booleanmodevalue#1%
   {\ifcsname\??mode#1\endcsname
-     \ifcase\csname\??mode#1\endcsname
+    %\ifcase\csname\??mode#1\endcsname
+     \ifcase\lastnamedcs
        \s!false
      \or
        \s!true
@@ -204,7 +205,8 @@
 
 \def\syst_modes_check_indeed#1%
   {\ifcsname\??mode#1\endcsname
-     \ifcase\csname\??mode#1\endcsname\else
+    %\ifcase\csname\??mode#1\endcsname\else
+     \ifcase\lastnamedcs
        \let\syst_modes_check_step\gobbleoneargument
      \fi
    \fi}
@@ -238,7 +240,8 @@
 
 \def\syst_modes_check_all_indeed#1%
   {\ifcsname\??mode#1\endcsname
-     \ifcase\csname\??mode#1\endcsname
+    %\ifcase\csname\??mode#1\endcsname
+     \ifcase\lastnamedcs
        \let\syst_modes_check_all_step\gobbleoneargument
      \or
        % enabled
@@ -764,7 +767,8 @@
 \letvalue{\??variables:}\empty
 
 \unexpanded\def\doifelseemptyvariable#1#2%
-  {\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+ %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+  {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
    \ifx\m_syst_string_one\empty
      \expandafter\firstoffourarguments
    \else
@@ -774,7 +778,8 @@
 \let\doifemptyvariableelse\doifelseemptyvariable
 
 \unexpanded\def\doifemptyvariable#1#2%
-  {\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+ %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+  {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
    \ifx\m_syst_string_one\empty
      \expandafter\firstofoneargument
    \else
@@ -782,16 +787,21 @@
    \fi}
 
 \unexpanded\def\doifnotemptyvariable#1#2%
-  {\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+ %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
+  {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
    \ifx\m_syst_string_one\empty
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
-
-\def\getvariabledefault#1#2% #3% can be command, so no ifcsname here
-  {\executeifdefined{\??variables#1:#2}}% {#3}
+\def\getvariabledefault#1#2% #3% can be command
+ %{\executeifdefined{\??variables#1:#2}}% {#3}
+  {\ifcsname\??variables#1:#2\endcsname
+     \expandafter\expandafter\expandafter\lastnamedcs\expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
 \unexpanded\def\setupenv
   {\dotripleargument\syst_variables_set[\getrawparameters][\s!environment]}

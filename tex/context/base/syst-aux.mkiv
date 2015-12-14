@@ -3337,7 +3337,9 @@
 
 \egroup
 
-\unexpanded\def\texdefinition#1{\csname\ifcsname#1\endcsname#1\else donothing\fi\endcsname} % todo: a nop cs: char 0 or some corenamespace
+% \unexpanded\def\texdefinition#1{\csname\ifcsname#1\endcsname#1\else donothing\fi\endcsname} % todo: a nop cs: char 0 or some corenamespace
+
+\unexpanded\def\texdefinition#1{\begincsname#1\endcsname}
 
 % This is a first variant, more might be added:
 
@@ -4882,7 +4884,7 @@
 \newtoks\t_syst_helpers_scratch
 \let    \m_syst_helpers_scratch\empty
 
-% no longer \def but \let to target toks
+% no longer \def but \let to target toks .. the space gobbling \relax will go
 
 \unexpanded\def\appendtoks     {\syst_helpers_append_toks      \relax}
 \unexpanded\def\prependtoks    {\syst_helpers_prepend_toks     \relax}
@@ -4897,21 +4899,107 @@
 
 \def\syst_helpers_append_toks#1\to#2%
   {\let\m_syst_helpers_scratch#2%
-   \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}\syst_helpers_append_toks_indeed}
+   \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
+   \syst_helpers_append_toks_indeed}
 
 \def\syst_helpers_prepend_toks#1\to#2%
   {\let\m_syst_helpers_scratch#2%
-   \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}\syst_helpers_prepend_toks_indeed}
+   \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
+   \syst_helpers_prepend_toks_indeed}
 
 \def\syst_helpers_append_toks_once#1\to#2%
   {\let\m_syst_helpers_scratch#2%
    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
-   \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch\donothing\syst_helpers_append_toks_indeed}
+   \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
+     \donothing
+     \syst_helpers_append_toks_indeed}
 
 \def\syst_helpers_prepend_toks_once#1\to#2%
   {\let\m_syst_helpers_scratch#2%
    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
-   \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch\donothing\syst_helpers_prepend_toks_indeed}
+   \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
+     \donothing
+     \syst_helpers_prepend_toks_indeed}
+
+\ifdefined\toksapp
+
+  % \def\syst_helpers_append_toks#1\to#2%
+  %   {\toksapp#2\expandafter{\gobbleoneargument#1}%
+  %    \ifx\dodoglobal\relax\else
+  %      \global#2#2%
+  %    \fi}
+  %
+  % \def\syst_helpers_prepend_toks#1\to#2%
+  %   {\tokspre#2\expandafter{\gobbleoneargument#1}%
+  %    \ifx\dodoglobal\relax\else
+  %       \global#2#2%
+  %    \fi}
+  %
+  % \def\syst_helpers_append_toks_indeed
+  %   {\toksapp\m_syst_helpers_scratch\t_syst_helpers_scratch
+  %    \ifx\dodoglobal\relax\else
+  %      \global\m_syst_helpers_scratch\m_syst_helpers_scratch
+  %    \fi}
+  %
+  % \def\syst_helpers_prepend_toks_indeed
+  %   {\tokspre\m_syst_helpers_scratch\t_syst_helpers_scratch
+  %    \ifx\dodoglobal\relax\else
+  %      \global\m_syst_helpers_scratch\m_syst_helpers_scratch
+  %    \fi}
+  %
+  % \def\syst_helpers_append_toks_once#1\to#2%
+  %   {\let\m_syst_helpers_scratch#2%
+  %    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
+  %    \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
+  %      \donothing
+  %      \syst_helpers_append_toks_indeed}
+  %
+  % \def\syst_helpers_prepend_toks_once#1\to#2%
+  %   {\let\m_syst_helpers_scratch#2%
+  %    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
+  %    \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
+  %      \donothing
+  %      \syst_helpers_prepend_toks_indeed}
+
+    \unexpanded\def\appendtoks#1\to#2%
+      {\toksapp#2{#1}%
+       \ifx\dodoglobal\relax\else
+         \global#2#2%
+       \fi}
+
+    \unexpanded\def\prependtoks#1\to#2%
+      {\tokspre#2{#1}%
+       \ifx\dodoglobal\relax\else
+          \global#2#2%
+       \fi}
+
+    \def\syst_helpers_append_toks_indeed
+      {\toksapp\m_syst_helpers_scratch\t_syst_helpers_scratch
+       \ifx\dodoglobal\relax\else
+         \global\m_syst_helpers_scratch\m_syst_helpers_scratch
+       \fi}
+
+    \def\syst_helpers_prepend_toks_indeed
+      {\tokspre\m_syst_helpers_scratch\t_syst_helpers_scratch
+       \ifx\dodoglobal\relax\else
+         \global\m_syst_helpers_scratch\m_syst_helpers_scratch
+       \fi}
+
+    \unexpanded\def\appendtoksonce#1\to#2%
+      {\let\m_syst_helpers_scratch#2%
+       \t_syst_helpers_scratch{#1}%
+       \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
+         \donothing
+         \syst_helpers_append_toks_indeed}
+
+    \unexpanded\def\prependtoksonce#1\to#2%
+      {\let\m_syst_helpers_scratch#2%
+       \t_syst_helpers_scratch{#1}%
+       \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
+         \donothing
+         \syst_helpers_prepend_toks_indeed}
+
+\fi
 
 %D The test macro:
 
@@ -4940,6 +5028,22 @@
 
 \unexpanded\def\appendetoks #1\to{\normalexpanded{\appendtoks #1}\to}
 \unexpanded\def\prependetoks#1\to{\normalexpanded{\prependtoks#1}\to}
+
+\ifdefined\toksapp
+
+    \def\appendetoks#1\to#2%
+      {\toksapp#2{#1}%
+       \ifx\dodoglobal\relax\else
+         \global#2#2%
+       \fi}
+
+    \def\prependetoks#1\to#2%
+      {\tokspre#2{#1}%
+       \ifx\dodoglobal\relax\else
+          \global#2#2%
+       \fi}
+
+\fi
 
 %D Hm.
 
@@ -5754,7 +5858,8 @@
 
 \def\executeifdefined#1% #2 / never change this one again
   {\ifcsname#1\endcsname
-     \csname#1\expandafter\expandafter\expandafter\endcsname\expandafter\gobbleoneargument
+   % \csname#1\expandafter\expandafter\expandafter\endcsname\expandafter\gobbleoneargument
+     \expandafter\expandafter\expandafter\lastnamedcs\expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}

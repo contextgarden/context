@@ -30,7 +30,7 @@
 %D will negate the colors in box zero.
 
 \unexpanded\def\negatecolorbox#1% or just set attr of #1
-  {\setbox#1\hbox to \wd#1%
+  {\setbox#1\hpack to \wd#1%
      {\scratchdimen\wd#1\relax
       \startnegative % might change
       \blackrule[\c!color=\s!white,\c!height=\ht#1,\c!depth=\dp#1,\c!width=\scratchdimen]%

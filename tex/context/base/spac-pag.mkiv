@@ -163,7 +163,7 @@
    \doforcedtrackpagestate{#2}{#3}%
    \edef\m_spac_pagestates_realpage{\pagestaterealpage{#2}{\number#3}}%
    \ifx\m_spac_pagestates_realpage\empty \else
-     \ifnum\m_spac_pagestates_realpage>0\getvalue{\??pagechanges#2:#1}\relax
+     \ifnum\m_spac_pagestates_realpage>0\csname\??pagechanges#2:#1\endcsname\relax
        \pagechangedtrue
      \fi
    \fi

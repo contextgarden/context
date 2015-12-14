@@ -272,8 +272,8 @@
         \exitloop
       \fi}}
 
-\setvalue{\??combinepagesalternative\v!horizontal}{\getvalue{\??combinepagesalternative\v!a}}
-\setvalue{\??combinepagesalternative\v!vertical  }{\getvalue{\??combinepagesalternative\v!c}}
+\expandafter\let\csname\??combinepagesalternative\v!horizontal\expandafter\endcsname\csname\??combinepagesalternative\v!a\endcsname
+\expandafter\let\csname\??combinepagesalternative\v!vertical  \expandafter\endcsname\csname\??combinepagesalternative\v!c\endcsname
 
 \setvalue{\??combinepagesalternative\v!b}%
   {\global\combinedpagescounter\directwithpagesparameter\c!start\relax

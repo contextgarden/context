@@ -337,12 +337,12 @@
     \setgvalue{\??itemgroupsetting\currentitemgroup}{\setupcurrentitemgroup[#settings]}}
 
 \def\strc_itemgroups_fetch_continue_state
-  {\getvalue{\??itemgroupoption \currentitemgroup}%
-   \getvalue{\??itemgroupsetting\currentitemgroup}}
+  {\csname\??itemgroupoption \currentitemgroup\endcsname
+   \csname\??itemgroupsetting\currentitemgroup\endcsname}
 
 \def\strc_itemgroups_reset_continue_state
-  {\letgvalue{\??itemgroupoption \currentitemgroup}\relax
-   \letgvalue{\??itemgroupsetting\currentitemgroup}\relax}
+  {\global\expandafter\let\csname\??itemgroupoption \currentitemgroup\endcsname\relax
+   \global\expandafter\let\csname\??itemgroupsetting\currentitemgroup\endcsname\relax}
 
 % These will become keywords. We will also add a feature to keep the while set
 % together.
@@ -388,7 +388,8 @@
         \let\itemgroupfirst\!!plusone
      \fi
      \ifcsname\??itemgroupkeyword\itemgroupsecond\endcsname
-       \csname\??itemgroupkeyword\itemgroupsecond\endcsname
+      %\csname\??itemgroupkeyword\itemgroupsecond\endcsname
+       \lastnamedcs
      \else
        \strc_itemgroups_set_symbol\itemgroupconstantvalue
      \fi
@@ -482,7 +483,8 @@
 
 \def\strc_itemgroups_preset_stage_one_indeed#option%
   {\ifcsname\??itemgroupfirst#option\endcsname
-     \csname\??itemgroupfirst#option\endcsname
+    %\csname\??itemgroupfirst#option\endcsname
+     \lastnamedcs
    \fi}
 
 \ifdefined\dotagsetitemgroup \else \let\dotagsetitemgroup\relax             \fi
@@ -861,10 +863,10 @@
   {\letgvalue{\??itemgrouplocal\currentitemlevel}#symbol}
 
 \def\strc_itemgroups_fetch_global_symbol
-  {\getvalue{\??itemgroupglobal\currentitemlevel}}
+  {\csname\??itemgroupglobal\currentitemlevel\endcsname}
 
 \def\strc_itemgroups_fetch_local_symbol
-  {\getvalue{\??itemgrouplocal\currentitemlevel}}
+  {\csname\??itemgrouplocal\currentitemlevel\endcsname}
 
 \def\strc_itemgroups_setup_symbol_default
   {\edef\strc_itemgroups_asked_symbol{\itemgroupparameter\c!symbol}%
@@ -1183,8 +1185,15 @@
      {\dorecurse{0\itemgroupparameter\c!items}{\strc_itemgroups_used_symbol\hss}%
       \unskip}}
 
+% \unexpanded\def\startspecialitemgroupitem[#name]%
+%   {\csname\??itemgroupstart\ifcsname\??itemgroupstart#name\endcsname#name\else\v!item\fi\endcsname}
+
 \unexpanded\def\startspecialitemgroupitem[#name]%
-  {\csname\??itemgroupstart\ifcsname\??itemgroupstart#name\endcsname#name\else\v!item\fi\endcsname}
+  {\ifcsname\??itemgroupstart#name\endcsname
+      \expandafter\lastnamedcs
+    \else
+      \expandafter\strc_itemgroups_start_do_item
+    \fi}
 
 \unexpanded\def\stopspecialitemgroupitem
   {\stopitemgroupitem}
@@ -1422,7 +1431,8 @@
    \ifx\m_strc_itemgroups_text_distance\empty
      %
    \else\ifcsname\??itemgroupdistance\m_strc_itemgroups_text_distance\endcsname
-     \csname\??itemgroupdistance\m_strc_itemgroups_text_distance\endcsname
+    %\csname\??itemgroupdistance\m_strc_itemgroups_text_distance\endcsname
+     \lastnamedcs
    \else
      \strc_itemgroups_set_text_item_distance_indeed
    \fi\fi}
@@ -1533,7 +1543,8 @@
      \advance\c_strc_itemgroups_collected_current\plusone
    \fi
    \ifcsname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname
-     \getvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
+    %\csname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname
+     \lastnamedcs
      \letbeundefined{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
      \advance\c_strc_itemgroups_collected_done\plusone
    \fi

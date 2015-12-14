@@ -1023,11 +1023,22 @@
 %      \ifcsname\??fontenvironments\s!default\s!text  \endcsname  \s!text    \fi\fi
 %    \endcsname}
 
+% \def\currentfontbodysize % gets number (the normal sa 1 etc)
+%   {\ifcsname\??fontenvironments\fontclass\s!default\somefontsize\endcsname
+%      \csname\??fontenvironments\fontclass\s!default\somefontsize\endcsname
+%    \else\ifcsname\??fontenvironments\s!default\somefontsize\endcsname
+%      \csname\??fontenvironments\s!default\somefontsize\endcsname
+%    \else
+%      \somefontsize
+%    \fi\fi}
+
 \def\currentfontbodysize % gets number (the normal sa 1 etc)
   {\ifcsname\??fontenvironments\fontclass\s!default\somefontsize\endcsname
-     \csname\??fontenvironments\fontclass\s!default\somefontsize\endcsname
+    %\csname\??fontenvironments\fontclass\s!default\somefontsize\endcsname
+     \lastnamedcs
    \else\ifcsname\??fontenvironments\s!default\somefontsize\endcsname
-     \csname\??fontenvironments\s!default\somefontsize\endcsname
+    %\csname\??fontenvironments\s!default\somefontsize\endcsname
+     \lastnamedcs
    \else
      \somefontsize
    \fi\fi}
@@ -1041,6 +1052,13 @@
                                                                                   \s!default         \fi\fi\fi\fi
    \endcsname}
 
+\def\font_currentfontbodyscale % gets character (x xx a etc)
+  {\ifcsname\??fontenvironments\fontclass\s!default\fontsize\endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments          \s!default\fontsize\endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments\fontclass\s!default\s!text  \endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments          \s!default\s!text  \endcsname\lastnamedcs\else
+     \csname\??fontenvironments          \s!default         \endcsname            \fi\fi\fi\fi}
+
 \def\currentfontscale % used in default definition
   {\csname\??fontenvironments
      \ifcsname\??fontenvironments\fontclass\s!default\xfontsize\endcsname\fontclass\s!default\fontsize\else
@@ -1049,6 +1067,13 @@
      \ifcsname\??fontenvironments          \s!default\s!text   \endcsname          \s!default\s!text  \else
                                                                                    \s!default         \fi\fi\fi\fi
    \endcsname}
+
+\def\font_currentfontscale % used in default definition
+  {\ifcsname\??fontenvironments\fontclass\s!default\xfontsize\endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments          \s!default\xfontsize\endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments\fontclass\s!default\s!text   \endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments          \s!default\s!text   \endcsname\lastnamedcs\else
+     \csname\??fontenvironments          \s!default          \endcsname            \fi\fi\fi\fi}
 
 \setvalue{\??fontenvironments\s!default}{1}
 
@@ -1159,6 +1184,12 @@
      \ifcsname\??fontenvironments\s!default                       #parameter\endcsname\s!default                       #parameter\fi\fi\fi\fi
    \endcsname}
 
+\def\font_bodyfontvariable#parameter%
+  {\ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments\fontclass                       #parameter\endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments          \normalizedbodyfontsize#parameter\endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments\s!default                       #parameter\endcsname\lastnamedcs\fi\fi\fi\fi}
+
 \def\bodyfontsizevariable#size#parameter%
   {\csname\??fontenvironments
      \ifcsname\??fontenvironments\fontclass#size#parameter\endcsname\fontclass#size#parameter\else
@@ -1167,17 +1198,31 @@
      \ifcsname\??fontenvironments\s!default     #parameter\endcsname\s!default     #parameter\fi\fi\fi\fi
    \endcsname}
 
+\def\font_bodyfontsizevariable#size#parameter%
+  {\ifcsname\??fontenvironments\fontclass#size#parameter\endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments\fontclass     #parameter\endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments          #size#parameter\endcsname\lastnamedcs\else
+   \ifcsname\??fontenvironments\s!default     #parameter\endcsname\lastnamedcs\fi\fi\fi\fi}
+
 \def\bodyfontinterlinespace{\bodyfontvariable\c!interlinespace} % used elsewhere
+
+% \def\bodyfontdimension#class#size#parameter#body%
+%   {\the\dimexpr
+%      \ifcsname\??fontenvironments     #class#size#parameter\endcsname
+%        \csname\??fontenvironments     #class#size#parameter\endcsname                   \else
+%      \ifcsname\??fontenvironments#class\s!default#parameter\endcsname
+%        \csname\??fontenvironments#class\s!default#parameter\endcsname\dimexpr#body\relax\else     % factor
+%      \ifcsname\??fontenvironments           #size#parameter\endcsname
+%        \csname\??fontenvironments           #size#parameter\endcsname                   \else
+%        \csname\??fontenvironments      \s!default#parameter\endcsname\dimexpr#body\relax\fi\fi\fi % factor
+%    \relax}
 
 \def\bodyfontdimension#class#size#parameter#body%
   {\the\dimexpr
-     \ifcsname\??fontenvironments     #class#size#parameter\endcsname
-       \csname\??fontenvironments     #class#size#parameter\endcsname                   \else
-     \ifcsname\??fontenvironments#class\s!default#parameter\endcsname
-       \csname\??fontenvironments#class\s!default#parameter\endcsname\dimexpr#body\relax\else     % factor
-     \ifcsname\??fontenvironments           #size#parameter\endcsname
-       \csname\??fontenvironments           #size#parameter\endcsname                   \else
-       \csname\??fontenvironments      \s!default#parameter\endcsname\dimexpr#body\relax\fi\fi\fi % factor
+     \ifcsname\??fontenvironments     #class#size#parameter\endcsname \lastnamedcs                   \else
+     \ifcsname\??fontenvironments#class\s!default#parameter\endcsname \lastnamedcs\dimexpr#body\relax\else     % factor
+     \ifcsname\??fontenvironments           #size#parameter\endcsname \lastnamedcs                   \else
+                                                                      \lastnamedcs\dimexpr#body\relax\fi\fi\fi % factor
    \relax}
 
 \unexpanded\def\definebodyfontenvironment
@@ -1638,7 +1683,8 @@
 
 \unexpanded\def\font_basics_switch_style#style%
   {\ifcsname\??fontstyle#style\endcsname
-     \csname\??fontstyle#style\endcsname
+    %\csname\??fontstyle#style\endcsname
+     \lastnamedcs
      \edef\fontstyle{#style}%
      \ifmmode\mr\fi % in order to be compatible with \rm in math mode
      % \the\everybodyfont % cleaner, in setting size as well as style
@@ -1689,7 +1735,7 @@
 \unexpanded\def\font_helpers_set_font_set_font_option_keyword#method#keyword#message%
   {\edef\m_font_keyword{#keyword}%
    \ifcsname\??fontenvironments\normalizedbodyfontsize\m_font_keyword\endcsname
-     \edef\m_font_step{\bodyfontvariable\m_font_keyword}%
+     \edef\m_font_step{\font_bodyfontvariable\m_font_keyword}%
      \normalexpanded{\font_helpers_set_font_set_font_option_body{#method}{\m_font_step}{#message}}%
    \else\ifx\m_font_keyword\v!reset
      \let\fontstyle\empty % new 31/7/2006
@@ -1830,7 +1876,8 @@
 \def\font_helpers_check_strategy_class_a % --- --- --- --- % pt tt bf a
   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\fontalternative-\fontsize-\fontface\endcsname
      \setfalse\c_font_auto_size
-     \csname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\fontalternative-\fontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\fontalternative-\fontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_class_b
    \fi}
@@ -1838,7 +1885,8 @@
 \def\font_helpers_check_strategy_class_b % --- --- --- def % pt tt bf
   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\fontalternative-\defaultfontsize-\fontface\endcsname
      \settrue\c_font_auto_size
-     \csname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\fontalternative-\defaultfontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\fontalternative-\defaultfontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_class_c
    \fi}
@@ -1846,7 +1894,8 @@
 \def\font_helpers_check_strategy_class_c % --- --- def --- % pt tt tf a
   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\defaultfontalternative-\fontsize-\fontface\endcsname
      \settrue\c_font_auto_size
-     \csname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\defaultfontalternative-\fontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\defaultfontalternative-\fontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_class_d
    \fi}
@@ -1854,7 +1903,8 @@
 \def\font_helpers_check_strategy_class_d % --- --- def def % pt tt tf
   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
      \settrue\c_font_auto_size
-     \csname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_class_e
    \fi}
@@ -1862,7 +1912,8 @@
 \def\font_helpers_check_strategy_class_e % --- def def def % pt rm tf
   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
      \setfalse\c_font_auto_size
-     \csname\??fontinstanceready\fontclass-\fontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontclass-\fontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_class_f
    % \expandafter\font_helpers_check_strategy_a
@@ -1871,7 +1922,8 @@
 \def\font_helpers_check_strategy_class_f % def def def def % rm tf
   {\ifcsname\??fontinstanceready\fontclass-\defaultfontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
      \settrue\c_font_auto_size
-     \csname\??fontinstanceready\fontclass-\defaultfontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontclass-\defaultfontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_a
    \fi}
@@ -1881,7 +1933,8 @@
 \def\font_helpers_check_strategy_a % --- --- --- --- % pt tt bf a
   {\ifcsname\??fontinstanceready\fontbody-\fontstyle-\fontalternative-\fontsize-\fontface\endcsname
      \setfalse\c_font_auto_size
-     \csname\??fontinstanceready\fontbody-\fontstyle-\fontalternative-\fontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontbody-\fontstyle-\fontalternative-\fontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_b
    \fi}
@@ -1889,7 +1942,8 @@
 \def\font_helpers_check_strategy_b % --- --- --- --- % pt tt bf a
   {\ifcsname\??fontinstanceready\fontbody-\fontstyle-\fontalternative-\defaultfontsize-\fontface\endcsname
      \settrue\c_font_auto_size
-     \csname\??fontinstanceready\fontbody-\fontstyle-\fontalternative-\defaultfontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontbody-\fontstyle-\fontalternative-\defaultfontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_c
    \fi}
@@ -1897,7 +1951,8 @@
 \def\font_helpers_check_strategy_c % --- --- --- --- % pt tt bf a
   {\ifcsname\??fontinstanceready\fontbody-\fontstyle-\defaultfontalternative-\fontsize-\fontface\endcsname
      \settrue\c_font_auto_size
-     \csname\??fontinstanceready\fontbody-\fontstyle-\defaultfontalternative-\fontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontbody-\fontstyle-\defaultfontalternative-\fontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_d
    \fi}
@@ -1905,7 +1960,8 @@
 \def\font_helpers_check_strategy_d % --- --- --- --- % pt tt bf a
   {\ifcsname\??fontinstanceready\fontbody-\fontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
      \settrue\c_font_auto_size
-     \csname\??fontinstanceready\fontbody-\fontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontbody-\fontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_e
    \fi}
@@ -1913,7 +1969,8 @@
 \def\font_helpers_check_strategy_e % --- --- --- --- % pt tt bf a
   {\ifcsname\??fontinstanceready\fontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
      \setfalse\c_font_auto_size
-     \csname\??fontinstanceready\fontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\fontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+     \lastnamedcs
    \else
      \expandafter\font_helpers_check_strategy_f
    \fi}
@@ -1921,7 +1978,8 @@
 \def\font_helpers_check_strategy_f % --- --- --- --- % pt tt bf a
   {\ifcsname\??fontinstanceready\defaultfontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
      \settrue\c_font_auto_size
-     \csname\??fontinstanceready\defaultfontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+    %\csname\??fontinstanceready\defaultfontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize-\fontface\endcsname
+     \lastnamedcs
    \fi}
 
 \let\applyfontstrategies     \font_helpers_check_strategy_a
@@ -2156,7 +2214,7 @@
       \the\everysetupbodyfont}}
 
 \unexpanded\def\font_basics_switchtobodyfont#specification%
-  {\edef\m_font_step{\bodyfontvariable{#specification}}%
+  {\edef\m_font_step{\font_bodyfontvariable{#specification}}%
    \ifx\m_font_step\empty
      \font_helpers_set_font\zerocount{#specification}%
    \else
@@ -2307,7 +2365,7 @@
 \newmacro\m_font_step
 
 \def\font_helpers_set_bodyfont_step#step%
-  {\edef\m_font_step{\bodyfontvariable{#step}}% not always \cs
+  {\edef\m_font_step{\font_bodyfontvariable{#step}}% not always \cs
    \font_basics_switch_points\m_font_step
    \font_basics_switch_style \fontstyle}
 

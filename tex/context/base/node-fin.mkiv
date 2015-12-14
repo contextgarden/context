@@ -45,18 +45,18 @@
 \def\dodoattributedcopy
   {\startinheritattributes
    \ifvbox\attributeboxcount
-     \vbox{\unvcopy\attributeboxcount}%
+     \vpack{\unvcopy\attributeboxcount}%
    \else
-     \hbox{\unhcopy\attributeboxcount}%
+     \hpack{\unhcopy\attributeboxcount}%
    \fi
    \stopinheritattributes}
 
 \def\dodoattributedbox
   {\startinheritattributes
    \ifvbox\attributeboxcount
-     \vbox{\unvbox\attributeboxcount}%
+     \vpack{\unvbox\attributeboxcount}%
    \else
-     \hbox{\unhbox\attributeboxcount}%
+     \hpack{\unhbox\attributeboxcount}%
    \fi
    \stopinheritattributes}
 

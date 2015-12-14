@@ -79,27 +79,51 @@
 % can be some interference here, which is why we use a different method
 % for bold.
 
+% \def\font_helpers_set_math_family_a
+%   {\ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+%      \csname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \else
+%    \ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+%      \csname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily          \endcsname \else
+%      \font_helpers_set_math_family_b
+%    \fi\fi}
+
+% \def\font_helpers_set_math_family_b
+%   {\ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+%      \csname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \else
+%    \ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+%      \csname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily          \endcsname \else
+%      \font_helpers_set_math_family_c
+%    \fi\fi}
+
+% \def\font_helpers_set_math_family_c
+%   {\ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+%      \csname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily-\fontsize\endcsname \else
+%    \ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+%      \csname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily          \endcsname \else
+%                                                                                                   \settrue \c_font_auto_size
+%    \fi\fi}
+
 \def\font_helpers_set_math_family_a
   {\ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
-     \csname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \else
+     \lastnamedcs \else
    \ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
-     \csname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily          \endcsname \else
+     \lastnamedcs \else
      \font_helpers_set_math_family_b
    \fi\fi}
 
 \def\font_helpers_set_math_family_b
   {\ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
-     \csname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \else
+     \lastnamedcs \else
    \ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
-     \csname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily          \endcsname \else
+     \lastnamedcs \else
      \font_helpers_set_math_family_c
    \fi\fi}
 
 \def\font_helpers_set_math_family_c
   {\ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
-     \csname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily-\fontsize\endcsname \else
+     \lastnamedcs \else
    \ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
-     \csname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily          \endcsname \else
+     \lastnamedcs \else
                                                                                                   \settrue \c_font_auto_size
    \fi\fi}
 
@@ -114,11 +138,19 @@
    \let\fontbody\savedfontbody
    \setfalse\c_font_auto_size}
 
+% \def\font_helpers_set_math_family_bold_a#font#mbfam#mrfam%
+%   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+%      \csname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname #font#mbfam\font \else
+%    \ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+%      \csname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname #font#mbfam\font \else
+%      #font#mbfam#font#mrfam%
+%    \fi\fi}
+
 \def\font_helpers_set_math_family_bold_a#font#mbfam#mrfam%
   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
-     \csname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname #font#mbfam\font \else
+     \lastnamedcs #font#mbfam\font \else
    \ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
-     \csname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname #font#mbfam\font \else
+     \lastnamedcs #font#mbfam\font \else
      #font#mbfam#font#mrfam%
    \fi\fi}
 
@@ -221,7 +253,8 @@
 
 \appendtoks % can be analyzed once
     % why here ..
-    \edef\m_font_class_direction{\ifcsname\??fontclass\fontclass\s!mm\s!direction\endcsname\csname\??fontclass\fontclass\s!mm\s!direction\endcsname\fi}%
+   %\edef\m_font_class_direction{\ifcsname\??fontclass\fontclass\s!mm\s!direction\endcsname\csname\??fontclass\fontclass\s!mm\s!direction\endcsname\fi}%
+    \edef\m_font_class_direction{\begincsname\??fontclass\fontclass\s!mm\s!direction\endcsname}%
     % ...
     \ifx\m_font_class_direction\v!both
       \settrue\c_font_bidirectional_mathstrategy
@@ -362,8 +395,15 @@
 \letvalue{\??fontmathsynchronizer\s!bi }\font_helpers_synchronize_math_family_mb
 \letvalue{\??fontmathsynchronizer\empty}\font_helpers_synchronize_math_family_mr
 
+% \def\font_helpers_synchronize_math_family
+%   {\csname\??fontmathsynchronizer\ifcsname\??fontmathsynchronizer\fontalternative\endcsname\fontalternative\fi\endcsname}
+
 \def\font_helpers_synchronize_math_family
-  {\csname\??fontmathsynchronizer\ifcsname\??fontmathsynchronizer\fontalternative\endcsname\fontalternative\fi\endcsname}
+  {\ifcsname\??fontmathsynchronizer\fontalternative\endcsname
+     \lastnamedcs
+   \else
+     \font_helpers_synchronize_math_family_mr
+   \fi}
 
 \ifdefined \fontid % we need to keep this test for a while
     \appendtoks
@@ -385,7 +425,8 @@
     \to \t_font_math_strategies
 \fi
 
-\def\font_helpers_synchronize_math_bold_strategy{\csname\??fontmathstoredstrategy\fontclass\endcsname}
+%def\font_helpers_synchronize_math_bold_strategy{\csname\??fontmathstoredstrategy\fontclass\endcsname}
+\def\font_helpers_synchronize_math_bold_strategy{\begincsname\??fontmathstoredstrategy\fontclass\endcsname}
 
 \newconditional\c_font_pseudo_bold_math_state
 

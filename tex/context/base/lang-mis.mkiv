@@ -269,7 +269,8 @@
    \ifx\discretionarytoken\empty
      \ifx#1\nextnext % takes care of ||| and +++ and ......
        \ifcsname\??discretionaryaction\string#1\endcsname
-         \csname\??discretionaryaction\string#1\endcsname
+        %\csname\??discretionaryaction\string#1\endcsname
+         \lastnamedcs
        \else\ifconditional\spaceafterdiscretionary
          \prewordbreak\hbox{\string#1}\relax
        \else\ifconditional\punctafterdiscretionary
@@ -284,7 +285,8 @@
        % \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
        % but an hbox blocks a possible \discretionary
        \ifcsname\??discretionaryaction\endcsname
-         \csname\??discretionaryaction\endcsname
+        %\csname\??discretionaryaction\endcsname
+         \lastnamedcs
        \else\ifconditional\spaceafterdiscretionary
          \prewordbreak\textmodediscretionary\relax
        \else\ifconditional\punctafterdiscretionary
@@ -295,7 +297,8 @@
      %  \prewordbreak\textmodediscretionary\nextnext\allowbreak\postwordbreak
      \fi
    \else\ifcsname\??discretionaryaction\discretionarytoken\endcsname
-     \csname\??discretionaryaction\discretionarytoken\endcsname
+    %\csname\??discretionaryaction\discretionarytoken\endcsname
+     \lastnamedcs
    \else
      \lang_discretionaries_check_before
      \ifconditional\spaceafterdiscretionary

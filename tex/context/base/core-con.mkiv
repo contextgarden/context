@@ -598,7 +598,8 @@
 \setvalue{\??conversionwords\v!four }{4}
 \setvalue{\??conversionwords\v!five }{5}
 
-\def\wordtonumber#1#2{\ifcsname\??conversionwords#1\endcsname\csname\??conversionwords#1\endcsname\else#2\fi}
+%def\wordtonumber#1#2{\ifcsname\??conversionwords#1\endcsname\csname\??conversionwords#1\endcsname\else#2\fi}
+\def\wordtonumber#1#2{\ifcsname\??conversionwords#1\endcsname\lastnamedcs\else#2\fi}
 
 % \defineconversion[ctx][c,o,n,t,e,x,t]
 %

@@ -42,14 +42,14 @@
 
 \unexpanded\def\MPLIBsetNtext#1% #2% box text
   {\MPLIBflushenvironment
-   \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup
+   \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup % text
      \meta_set_current_color
      \let\MPLIBflushenvironment\doMPLIBflushenvironment
      \let\next} % gobble open brace
 
 \unexpanded\def\MPLIBsetCtext#1#2% #3% box colorspec text
   {\MPLIBflushenvironment
-   \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup
+   \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup % text
      \directcolored[#2]%
      \meta_set_current_color % so, textcolor wins !
      \let\MPLIBflushenvironment\doMPLIBflushenvironment
@@ -59,22 +59,22 @@
 
 \unexpanded\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
   {\clf_mpgettext\MPtextbox #1%
-   \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=#2,\c!sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
+   \vpack to \zeropoint{\vss\hpack to \zeropoint{\scale[\c!sx=#2,\c!sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
 
 \unexpanded\def\MPLIBfigure#1#2%
-  {\setbox\scratchbox\hbox{\externalfigure[#1][\c!mask=#2]}%
+  {\setbox\scratchbox\hpack{\externalfigure[#1][\c!mask=#2]}%
    \clf_mpsetsxsy\wd\scratchbox\ht\scratchbox\zeropoint
-   \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=\sx,\c!sy=\sy]{\box\scratchbox}\hss}}}
+   \vpack to \zeropoint{\vss\hpack to \zeropoint{\scale[\c!sx=\sx,\c!sy=\sy]{\box\scratchbox}\hss}}}
 
 % horrible (we could inline scale and matrix code):
 
 \unexpanded\def\MPLIBgettextscaledcm#1#2#3#4#5#6#7#8#9% 2-7: sx,rx,ry,sy,tx,ty
   {\clf_mpgettext\MPtextbox #1%
-   \setbox\MPbox\hbox\bgroup
+   \setbox\MPbox\hpack\bgroup
      \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}% does push pop ... will be changed to proper lua call (avoid small numbers)
-       \vbox to \zeropoint\bgroup
+       \vpack to \zeropoint\bgroup
           \vss
-          \hbox to \zeropoint \bgroup
+          \hpack to \zeropoint \bgroup
            % \scale[\c!sx=#8,\c!sy=#9]{\raise\dp\MPtextbox\box\MPtextbox}%
            % \scale[\c!sx=#8,\c!sy=#9,\c!depth=\v!no]{\box\MPtextbox}%
              \fastsxsy{#8}{#9}{\raise\dp\MPtextbox\box\MPtextbox}%
@@ -130,7 +130,7 @@
 
 \def\doMPLIBstopgroup#1#2#3#4#5#6% some day this might happen elsewhere
   {\egroup
-   \setbox\scratchbox\hbox{\kern\onebasepoint\box\scratchbox}% weird correction
+   \setbox\scratchbox\hpack{\kern\onebasepoint\box\scratchbox}% weird correction
    \wd\scratchbox \dimexpr#5\onebasepoint-#3\onebasepoint+2\onebasepoint\relax
    \ht\scratchbox #6\onebasepoint
    \dp\scratchbox-#4\onebasepoint
@@ -139,7 +139,7 @@
      resources {\pdfbackendcurrentresources}
      \scratchbox
  % \setbox\scratchbox\hbox\bgroup\kern-\onebasepoint\useboxresource\lastsavedboxresourceindex\egroup % why twice?
-   \setbox\scratchbox\hbox\bgroup\kern-\onebasepoint\useboxresource\lastsavedboxresourceindex\egroup
+   \setbox\scratchbox\hpack\bgroup\kern-\onebasepoint\useboxresource\lastsavedboxresourceindex\egroup
    \wd\scratchbox\zeropoint
    \ht\scratchbox\zeropoint
    \dp\scratchbox\zeropoint
@@ -148,7 +148,7 @@
 
 \unexpanded\def\MPLIBstartgroup#1#2#3#4#5#6% isolated 0/1, knockout 0/1 llx lly urx ury
   {\begingroup
-   \setbox\scratchbox\hbox\bgroup
+   \setbox\scratchbox\hpack\bgroup
    \unexpanded\def\MPLIBstopgroup{\doMPLIBstopgroup{#1}{#2}{#3}{#4}{#5}{#6}}}
 
 \protect \endinput

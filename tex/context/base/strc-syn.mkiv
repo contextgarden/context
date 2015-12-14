@@ -281,9 +281,11 @@
    \ifx\currentsynonymtag\empty
      % todo: error message
    \else
+     % this is not that efficient, esp when we load a big list
      \edef\currentsynonymexpansion{\simplelistparameter\c!expansion}%
      \preprocessexpansion\currentsynonymexpansion\m_synonyms_text   \currentsynonymcoding{#4}%
      \preprocessexpansion\currentsynonymexpansion\m_synonyms_meaning\currentsynonymcoding{#5}%
+     %
      \clf_registersynonym
         {\currentsynonym}%
         {synonym}%

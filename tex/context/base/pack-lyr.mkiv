@@ -180,7 +180,8 @@
 
 \def\pack_layers_reset_box#1%
   {\ifcsname\??layerbox#1\endcsname
-     \global\setbox\csname\??layerbox#1\endcsname\emptybox
+    %\global\setbox\csname\??layerbox#1\endcsname\emptybox
+     \global\setbox\lastnamedcs\emptybox
    \fi}
 
 \def\resetlayer[#1]%
@@ -211,8 +212,11 @@
 % \def\thelayerwidth #1{\the\wd\executeifdefined{\??layerbox#1}\emptybox}
 % \def\thelayerheight#1{\the\ht\executeifdefined{\??layerbox#1}\emptybox}
 
-\def\thelayerwidth #1{\the\ifcsname\??layerbox#1\endcsname\wd\csname\??layerbox#1\endcsname\else\zeropoint\fi}
-\def\thelayerheight#1{\the\ifcsname\??layerbox#1\endcsname\ht\csname\??layerbox#1\endcsname\else\zeropoint\fi}
+%def\thelayerwidth #1{\the\ifcsname\??layerbox#1\endcsname\wd\csname\??layerbox#1\endcsname\else\zeropoint\fi}
+%def\thelayerheight#1{\the\ifcsname\??layerbox#1\endcsname\ht\csname\??layerbox#1\endcsname\else\zeropoint\fi}
+
+\def\thelayerwidth #1{\the\ifcsname\??layerbox#1\endcsname\wd\lastnamedcs\else\zeropoint\fi}
+\def\thelayerheight#1{\the\ifcsname\??layerbox#1\endcsname\ht\lastnamedcs\else\zeropoint\fi}
 
 \unexpanded\def\setlayer
   {\dotripleempty\pack_layers_set}
@@ -222,7 +226,7 @@
    \edef\currentlayer{#1}%
    \edef\p_pack_layers_state{\layerparameter\c!state}%
    \ifx\p_pack_layers_state\v!stop
-     \dowithnextboxcs\egroup\hbox
+     \dowithnextboxcs\egroup\hbox % no pack ?
    \else\ifthirdargument
      \pack_layers_set_indeed[#1][#2][#3]%
    \else
@@ -272,19 +276,6 @@
 
 % todo: get position data in one go
 
-% \def\pack_layers_set_last_position_yes
-%   {\edef\m_pack_layers_page{\MPp{\??layerposition\the\c_pack_layers_current_data}}%
-%    \xdef\lastlayerxpos{\the\dimexpr-\MPx{\??layerposition\m_pack_layers_target\currentlayer:\m_pack_layers_page}+\MPx{\??layerposition\the\c_pack_layers_current_data}\relax}%
-%    \xdef\lastlayerypos{\the\dimexpr \MPy{\??layerposition\m_pack_layers_target\currentlayer:\m_pack_layers_page}-\MPy{\??layerposition\the\c_pack_layers_current_data}\relax}%}
-%    \d_pack_layers_x_position\lastlayerxpos
-%    \d_pack_layers_y_position\lastlayerypos
-%    \begingroup
-%      \edef\currentlayer{\currentlayer\m_pack_layers_page}%
-%      \global\letlayerparameter\c!position\v!yes
-%    \endgroup
-%    \global\letlayerparameter\c!state\v!start % needed ?
-%    \setbox\b_layers\vbox to \d_pack_layers_y_size{\hbox to \d_pack_layers_x_size{\xypos{\??layerposition\the\c_pack_layers_current_data}\hss}\vss}}
-
 \def\pack_layers_set_last_position_yes % target: left|right
   {% this will become one call
    \edef\m_pack_layers_anchor{\??layerposition\the\c_pack_layers_current_data}%
@@ -302,8 +293,8 @@
    %   \global\letlayerparameter\c!position\v!yes
    % \endgroup
    \global\letlayerparameter\c!state\v!start % needed ?
-   \setbox\b_layers\vbox to \d_pack_layers_y_size
-     {\hbox to \d_pack_layers_x_size
+   \setbox\b_layers\vpack to \d_pack_layers_y_size
+     {\hpack to \d_pack_layers_x_size
         {\xypos\m_pack_layers_anchor\hss}%
       \vss}}
 
@@ -335,7 +326,8 @@
    \edef\p_pack_layers_preset   {\layerparameter\c!preset  }%
    %
    \ifcsname\??layerpreset\p_pack_layers_preset\endcsname
-     \csname\??layerpreset\p_pack_layers_preset\endcsname
+    %\csname\??layerpreset\p_pack_layers_preset\endcsname
+     \lastnamedcs
      \setupcurrentlayer[#1]% postroll
    \fi
    %
@@ -365,7 +357,8 @@
    \fi
    \ifx\p_pack_layers_rotation\empty \else
      % use direct call
-     \setbox\nextbox\hbox{\rotate[\c!location=\v!high,\c!rotation=\layerparameter\c!rotation]{\box\nextbox}}%
+     \setbox\nextbox\hpack
+       {\rotate[\c!location=\v!high,\c!rotation=\layerparameter\c!rotation]{\box\nextbox}}%
    \fi
    \d_pack_layers_x_offset\p_pack_layers_sx\dimexpr
      \ifx\p_pack_layers_hoffset\v!max\d_pack_layers_x_size\else\p_pack_layers_hoffset\fi+\p_pack_layers_offset+\p_pack_layers_dx
@@ -392,7 +385,7 @@
      \gsetboxllx\layerpagebox\zeropoint
      \gsetboxlly\layerpagebox\zeropoint
    \fi
-   \global\setbox\layerpagebox\vbox %to \layerparameter\c!height % new, otherwise no negative y possible
+   \global\setbox\layerpagebox\vpack %to \layerparameter\c!height % new, otherwise no negative y possible
      {\offinterlineskip
       \ifvoid\layerpagebox
         \let\lastlayerwidth \zeropoint
@@ -416,7 +409,8 @@
         \ht\nextbox\strutheight
         \dp\nextbox\strutdepth
       \else
-        \setbox\nextbox\hbox{\alignedbox[\p_pack_layers_location]\vbox{\box\nextbox}}%
+        \setbox\nextbox\hpack
+          {\alignedbox[\p_pack_layers_location]\vpack{\box\nextbox}}%
       \fi
       \ifnum\p_pack_layers_line=\zerocount\else % no \ifcase, can be negative
         \advance\d_pack_layers_y_position\dimexpr\p_pack_layers_line\lineheight+\topskip-\lineheight-\ht\nextbox\relax
@@ -425,7 +419,8 @@
         \advance\d_pack_layers_x_position\layoutcolumnoffset\p_pack_layers_column\relax
       \fi
       \ifx\p_pack_layers_location\v!grid
-        \setbox\nextbox\hbox{\alignedbox[rb]\vbox{\box\nextbox}}%
+        \setbox\nextbox\hpack
+          {\alignedbox[rb]\vpack{\box\nextbox}}%
       \fi
       % ll registration
       \scratchdimen\dimexpr\d_pack_layers_x_position+\d_pack_layers_x_offset\relax
@@ -444,7 +439,7 @@
       \dp\nextbox\zeropoint
       % placement
       \hsize\p_pack_layers_width
-      \vbox to \p_pack_layers_height \bgroup
+      \vpack to \p_pack_layers_height \bgroup
         \smashbox\nextbox
         \vskip\dimexpr\d_pack_layers_y_position+\d_pack_layers_y_offset\relax
         \hskip\dimexpr\d_pack_layers_x_position+\d_pack_layers_x_offset\relax
@@ -498,7 +493,8 @@
 
 \def\doifelselayerdata#1%
   {\ifcsname\??layerbox#1\endcsname
-     \ifvoid\csname\??layerbox#1\endcsname
+    %\ifvoid\csname\??layerbox#1\endcsname
+     \ifvoid\lastnamedcs
        \doubleexpandafter\secondoftwoarguments
      \else
        \doubleexpandafter\firstoftwoarguments
@@ -550,6 +546,8 @@
 
 %  \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
 
+% todo: pass the layer with \lastnamedcs
+
 \def\pack_layers_flush_single
   {\startoverlay
      {\ifcsname\??layerbox  \currentlayer                \endcsname\pack_layers_flush_indeed\plusone   \currentlayer                 \fi}%
@@ -564,66 +562,6 @@
      {\ifcsname\??layerbox#1\currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount{#1\currentlayer:\the\realpageno}\fi}%
    \stopoverlay}
 
-% \def\pack_layers_flush_indeed#1#2% quite core, so optimized
-%   {\begingroup % already grouped
-%    \offinterlineskip
-%    \edef\p_pack_layers_preset{\layerparameter\c!preset}%
-%    \ifcsname\??layerpreset\p_pack_layers_preset\endcsname
-%      \csname\??layerpreset\p_pack_layers_preset\endcsname
-%    \fi
-%    \edef\p_pack_layers_method{\layerparameter\c!method}%
-%    \edef\p_pack_layers_option{\layerparameter\c!option}%
-%    \ifx\p_pack_layers_option\v!test
-%      \settrue\c_pack_layers_trace
-%      \traceboxplacementtrue
-%    \fi
-%    \ifcase#1\relax
-%      \setfalse\c_pack_layers_repeated
-%    \else
-%      \edef\p_pack_layers_position{\layerparameter\c!position}%
-%      \ifx\p_pack_layers_position\v!yes
-%        \setfalse\c_pack_layers_repeated
-%      \else
-%        \edef\p_pack_layers_repeat{\layerparameter\c!repeat}%
-%        \ifx\p_pack_layers_repeat\v!yes
-%          \settrue\c_pack_layers_repeated
-%        \else\ifx\p_pack_layers_state\v!repeat
-%          \settrue\c_pack_layers_repeated
-%        \else
-%          \setfalse\c_pack_layers_repeated
-%        \fi\fi
-%      \fi
-%    \fi
-%    \chardef\b_layers\csname\??layerbox#2\endcsname % trick
-%    % we need to copy in order to retain the negative offsets for a next
-%    % stage of additions, i.e. llx/lly accumulate in repeat mode and the
-%    % compensation may differ each flush depending on added content
-%    \setbox\nextbox
-%      \ifx\p_pack_layers_method\v!fit
-%        \pack_layers_positioned_box_yes
-%      \else
-%        \pack_layers_positioned_box_nop
-%      \fi
-%    % todo: method=offset => overlayoffset right/down (handy for backgrounds with offset)
-%    \doifoverlayelse{#2}%
-%      {\setlayoutcomponentattribute{\v!layer:#2}}%
-%      \resetlayoutcomponentattribute
-%    \ifx\p_pack_layers_option\v!test \ruledvbox \else \vbox \fi \ifx\p_pack_layers_method\v!overlay to \overlayheight \fi \layoutcomponentboxattribute
-%      {\hbox \ifx\p_pack_layers_method\v!overlay to \d_overlay_width \fi
-%         {\edef\currentlayer{#2\the\realpageno}% local
-%          \edef\p_pack_layers_position{\layerparameter\c!position}% local
-%          \ifx\p_pack_layers_position\v!yes
-%            \xypos{\??layerposition#2:\the\realpageno}%
-%          \fi
-%          \box\nextbox
-%          \hss}%
-%       \vss}%
-%    \ifconditional\c_pack_layers_repeated\else
-%      \gsetboxllx\b_layers\zeropoint
-%      \gsetboxlly\b_layers\zeropoint
-%    \fi
-%    \endgroup}
-
 \let\pack_layers_top_fill   \relax
 \let\pack_layers_bottom_fill\vss
 
@@ -632,7 +570,8 @@
    \offinterlineskip
    \edef\p_pack_layers_preset{\layerparameter\c!preset}%
    \ifcsname\??layerpreset\p_pack_layers_preset\endcsname
-     \csname\??layerpreset\p_pack_layers_preset\endcsname
+    %\csname\??layerpreset\p_pack_layers_preset\endcsname
+     \lastnamedcs
    \fi
    \edef\p_pack_layers_method{\layerparameter\c!method}%
    \edef\p_pack_layers_option{\layerparameter\c!option}%
@@ -674,9 +613,9 @@
    % we have conflicting demands: some mechanisms want ll anchoring .. I need to figure this out
    % an dmaybe we will have 'origin=bottom' or so
    \setbox\nextbox
-   \ifx\p_pack_layers_option\v!test \ruledvbox \else \vbox \fi \ifx\p_pack_layers_method\v!overlay to \d_overlay_height \fi \layoutcomponentboxattribute
+   \ifx\p_pack_layers_option\v!test \ruledvbox \else \vpack \fi \ifx\p_pack_layers_method\v!overlay to \d_overlay_height \fi \layoutcomponentboxattribute
      {\pack_layers_top_fill
-      \hbox \ifx\p_pack_layers_method\v!overlay to \d_overlay_width \fi
+      \hpack \ifx\p_pack_layers_method\v!overlay to \d_overlay_width \fi
         {\box\nextbox
          \hss}%
       \pack_layers_bottom_fill}%
@@ -698,7 +637,7 @@
    \endgroup}
 
 \def\pack_layers_positioned_box_yes
-  {\vbox
+  {\vpack
      {\vskip-\getboxlly\b_layers
       \hskip-\getboxllx\b_layers
       \hsize-\dimexpr\getboxllx\b_layers-\wd\b_layers\relax
@@ -732,7 +671,7 @@
 %       \composedlayer{#1}}}
 
 \unexpanded\def\tightlayer[#1]%
-  {\hbox
+  {\hpack
      {\def\currentlayer{#1}% todo: left/right
       \setbox\nextbox\emptybox
       \d_overlay_width \layerparameter\c!width
@@ -807,7 +746,7 @@
 
 \unexpanded\def\settextpagecontent#1#2#3% #2 and #3 will disappear
   {\doifelselayerdata{OTRTEXT}
-     {\setbox#1\hbox to \makeupwidth
+     {\setbox#1\hpack to \makeupwidth
         {\startoverlay
            {\tightlayer[OTRTEXT]} % first, otherwise problems with toc
            {\normalsettextpagecontent{#1}{#2}{#3}\box#1}
